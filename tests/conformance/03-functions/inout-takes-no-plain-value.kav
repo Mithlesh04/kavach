@@ -1,0 +1,11 @@
+// Rule: A value or a call can't be given for an `inout` parameter: there is no place to write back to.
+// Spec: 3.9
+// expect compile error
+
+fn bump(inout n: Int) {
+    n += 1
+}
+
+fn main() {
+    bump(5)                         // error: 5 is not a variable
+}

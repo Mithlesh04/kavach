@@ -1,0 +1,30 @@
+// Rule: A `while` whose condition reads only variables the loop never changes, with nothing inside that leaves it, never ends: a warning. `while true` gets none.
+// Spec: 4.7
+// expect warning
+// expect output: 3
+
+fn spin(n: Int) {
+    while n < 10 {    // warning: `n` never changes in the loop
+        print(n)
+    }
+}
+
+fn count() -> Int {
+    let n = 0
+    while n < 3 {
+        n += 1
+    }
+    while true {
+        if n > 2 {
+            break
+        }
+    }
+    n
+}
+
+fn main() {
+    if count() > 5 {
+        spin(0)
+    }
+    print(count())
+}

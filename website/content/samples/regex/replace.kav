@@ -1,0 +1,8 @@
+use std.regex
+
+fn main() ! Error {
+    const date = try regex.new(r"(?<day>\d{2})/(?<month>\d{2})/(?<year>\d{4})")
+    print(date.replace_all("from 03/11/2026 to 10/11/2026", r"${year}-${month}-${day}"))
+    const card = try regex.new(r"\d{4} \d{4} \d{4} (\d{4})")
+    print(card.replace("card 4242 4242 4242 1881", r"**** **** **** $1"))
+}

@@ -1,0 +1,1 @@
+error: `Shared<Int>` can't be written as JSON, so it can't go to another process (spec 9.8)

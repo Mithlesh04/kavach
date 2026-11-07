@@ -1,0 +1,6 @@
+fn main() {
+    const names = ["Asha", "Ravi", "Meena"]
+    for name in names {
+        print("Hello, {name}")
+    }
+}

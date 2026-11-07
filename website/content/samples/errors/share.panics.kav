@@ -1,0 +1,8 @@
+fn share(total: Int, people: Int) -> Int {
+    total / people
+}
+
+fn main() {
+    print(share(100, 4))
+    print(share(100, 0))
+}

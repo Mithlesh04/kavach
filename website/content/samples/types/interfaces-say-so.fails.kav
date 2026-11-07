@@ -1,0 +1,11 @@
+interface Describe {
+    fn describe(self) -> String
+}
+
+fn show<T: Describe>(item: T) -> String {
+    item.describe()
+}
+
+fn main() {
+    print(show("text"))
+}

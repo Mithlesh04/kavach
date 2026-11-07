@@ -1,0 +1,10 @@
+fn side() -> Bool {
+    print("side() ran")
+    true
+}
+
+fn main() {
+    print(false and side())
+    print(true or side())
+    print(true and side())
+}

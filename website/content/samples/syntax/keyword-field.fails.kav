@@ -1,0 +1,7 @@
+type Robot {
+    agent: String
+}
+
+fn main() {
+    print("never runs")
+}

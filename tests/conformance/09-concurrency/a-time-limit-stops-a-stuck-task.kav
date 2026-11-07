@@ -1,0 +1,21 @@
+// Rule: `spawn … within d` stops a task when its time is up, even one stuck in a loop that never waits, and `.wait()` on it fails with `timed out after … ms`.
+// Spec: 9.6
+// expect output: timed out after 50 ms
+// expect output: main goes on
+
+fn spin() -> Int {
+    let n = 0
+    while true {
+        n = n % 1000 + 1
+    }
+    n
+}
+
+fn main() {
+    const stuck = spawn spin() within 50.ms
+    const _result = stuck.wait() catch e => {
+        print(e)
+        0
+    }
+    print("main goes on")
+}

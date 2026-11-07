@@ -1,0 +1,8 @@
+fn midpoint(low: Int32, high: Int32) -> Int32 {
+    (low + high) / 2
+}
+
+fn main() {
+    print(midpoint(10, 20))
+    print(midpoint(1_500_000_000, 2_000_000_000))
+}

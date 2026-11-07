@@ -1,0 +1,27 @@
+type Order {
+    id: Int
+    amount: Decimal
+    paid: Bool
+}
+
+/// The total of the paid orders.
+fn total_paid(orders: [Order]) -> Decimal
+    ensure result >= 0
+{
+    let total: Decimal = 0
+    for o in orders {
+        if o.paid {
+            total += o.amount
+        }
+    }
+    total
+}
+
+fn report(orders: [Order]) -> String {
+    "paid: {total_paid(orders)}"
+}
+
+fn main() {
+    const orders = [Order(id: 1, amount: 9.50, paid: true), Order(id: 2, amount: 4.00, paid: false)]
+    print(report(orders))
+}

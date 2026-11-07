@@ -1,0 +1,11 @@
+// Rule: A `gpu fn` can't reach itself through calls: a GPU has no call stack.
+// Spec: 15.1
+// expect compile error
+
+gpu fn countdown(x: Int32) -> Int32 {   // error: `countdown` calls itself
+    if x == 0 { 0 } else { countdown(x - 1) }
+}
+
+fn main() {
+    print(countdown(3))
+}

@@ -1,0 +1,17 @@
+type User {
+    name: String
+}
+
+fn main() {
+    const missing: Int? = none
+    print("Asha" == "asha")
+    print("Asha".lower() == "asha".lower())
+    print("apple" < "banana")
+    print("Zebra" < "apple")
+    print("10" < "9")
+    print(10 < 9)
+    print('a' < 'b')
+    print("\u{e9}" == "e\u{301}")
+    print(missing == none)
+    print(User(name: "Asha") == User(name: "Asha"))
+}

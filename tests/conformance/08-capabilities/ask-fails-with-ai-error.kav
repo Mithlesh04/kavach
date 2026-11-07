@@ -1,0 +1,24 @@
+// Rule: `ask` fails with an `AiError`, so a function failing with `AiError` passes it on with `try`, and a `match` names its variants.
+// Spec: 8.4
+// expect output: checked
+
+type Verdict {
+    ok: Bool
+}
+
+fn review(text: String) -> Bool ! AiError uses Ai {
+    const v = try ask<Verdict>("Is this fine? {text}")
+    v.ok
+}
+
+fn describe(e: AiError) -> String {
+    match e {
+        AiError.NoKey(variable: v) => "no key in {v}",
+        _ => "another AI error",
+    }
+}
+
+fn main() {
+    // Never called: a test must not reach a paid model.
+    print("checked")
+}

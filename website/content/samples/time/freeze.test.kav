@@ -1,0 +1,24 @@
+use std.time
+
+type Trial {
+    started: Int
+
+    fn ended(self) -> Bool
+        require self.started >= 0
+        example Trial(started: 1_767_225_600_000).ended() == false
+    {
+        time.now_ms() - self.started >= 30.days.ms
+    }
+}
+
+test "a trial ends after 30 days" {
+    time.freeze(1_767_225_600_000)       // 2026-01-01 00:00 UTC
+    const trial = Trial(started: time.now_ms())
+    time.sleep(29.days)
+    assert not trial.ended()
+    time.sleep(1.days)
+    assert trial.ended()
+}
+
+fn main() {
+}

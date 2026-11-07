@@ -1,0 +1,14 @@
+// Rule: An invariant is checked when a value is created.
+// Spec: 7.3, 7.4
+// expect panic: contract failed: invariant balance >= 0
+
+type Account {
+    owner: String
+    balance: Int
+
+    invariant balance >= 0
+}
+
+fn main() {
+    const _bad = Account(owner: "Asha", balance: -1)
+}

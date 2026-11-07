@@ -1,0 +1,16 @@
+gpu fn step(x: Int32) -> Int32 {
+    (x * 7 + 3) % 1_009
+}
+
+fn main() {
+    let xs: [Int32] = []
+    for i in 0..1_000 {
+        xs.push(Int32(i))
+    }
+    for _ in 0..100 {
+        xs = xs.map(x => step(x))
+    }
+    print(xs[7])
+    print(xs.sum(x => x))
+    print(xs.max() ?? 0)
+}

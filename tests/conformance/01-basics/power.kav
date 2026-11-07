@@ -1,0 +1,22 @@
+// Rule: `a ** b` is `a` to the power `b`: right to left, and tighter than a minus on its left.
+// Spec: 1.8
+// expect output: 1024
+// expect output: 512
+// expect output: -4
+// expect output: -8
+// expect output: 1.4142135623730951
+// expect output: 243
+// expect output: 81
+
+fn main() {
+    print(2 ** 10)
+    print(2 ** 3 ** 2)          // 2 ** 9
+    print(-2 ** 2)              // -(2 ** 2)
+    print((-2) ** 3)
+    print(2.0 ** 0.5)
+    const u: UInt8 = 3
+    print(u ** 5)
+    let n = 3
+    n **= 4
+    print(n)
+}

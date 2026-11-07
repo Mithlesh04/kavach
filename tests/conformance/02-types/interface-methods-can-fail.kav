@@ -1,0 +1,48 @@
+// Rule: A method that can fail fails the same way through an interface value: the call takes `try` or `catch`, and the concrete type's error comes out.
+// Spec: 2.15
+// expect output: skipped: Empty
+// expect output: 5
+// expect output: skipped: Broken(why: "disk")
+// expect output: -1
+
+type ReadError = Empty | Broken(why: String)
+
+interface Source {
+    fn read(self) -> Int ! ReadError
+}
+
+type Full: Source {
+    n: Int
+
+    fn read(self) -> Int ! ReadError {
+        self.n
+    }
+}
+
+type Dry: Source {
+    why: String
+
+    fn read(self) -> Int ! ReadError {
+        if self.why == "" {
+            fail ReadError.Empty
+        }
+        fail ReadError.Broken(why: self.why)
+    }
+}
+
+fn total(sources: [Source]) -> Int ! ReadError {
+    let sum = 0
+    for s in sources {
+        sum += s.read() catch e => {
+            print("skipped: {e}")
+            0
+        }
+    }
+    const last = sources[sources.len() - 1]
+    sum + try last.read()
+}
+
+fn main() {
+    print(total([Full(n: 1), Dry(why: ""), Full(n: 2)]) catch _ => -1)
+    print(total([Full(n: 5), Dry(why: "disk")]) catch _ => -1)
+}

@@ -1,0 +1,8 @@
+type PayError = Declined | Unavailable
+
+capability Payments {
+    fn refund(order: Int, amount: Int) ! PayError
+}
+
+fn main() {
+}

@@ -1,0 +1,7 @@
+// Rule: `b.as_list<T>()` takes only a number of fixed size, and needs its type written.
+// Spec: 2.13
+// expect compile error
+
+fn main() {
+    print("hi".bytes().as_list<String>())     // error: `as_list` reads numbers of a fixed size
+}

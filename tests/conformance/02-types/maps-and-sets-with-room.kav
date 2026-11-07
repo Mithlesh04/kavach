@@ -1,0 +1,26 @@
+// Rule: `Map.with_capacity(n)` and `Set.with_capacity(n)` make an empty map or set with room for `n` entries; the number is a hint, not a limit, and below 0 counts as 0.
+// Spec: 2.2
+// expect output: 2000
+// expect output: 3996001
+// expect output: ["asha": 31, "ravi": 27]
+// expect output: 1
+// expect output: true
+
+fn main() {
+    let squares: [Int: Int] = Map.with_capacity(1000)
+    for i in 0..2000 {
+        squares[i] = i * i
+    }
+    print(squares.len())
+    print(squares[1999] ?? 0)
+    let names: [String: Int] = Map.with_capacity(3)
+    names["asha"] = 31
+    names["ravi"] = 27
+    print(names)
+    let seen: Set<Int> = Set.with_capacity(-5)
+    seen.add(3)
+    seen.add(3)
+    print(seen.len())
+    const empty: [Int: Int] = Map.with_capacity(10)
+    print(empty.is_empty())
+}

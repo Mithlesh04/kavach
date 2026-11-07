@@ -1,0 +1,12 @@
+// Rule: In a generated test, the clock starts at 2026-01-01 00:00 UTC, and `sleep` moves it forward at once.
+// Spec: 11.5
+// expect test pass
+
+use std.time
+
+fn after_an_hour() -> Int uses Clock
+    ensure result == 1_767_229_200_000
+{
+    time.sleep(1.hours)
+    time.now_ms()
+}

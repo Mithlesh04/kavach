@@ -1,0 +1,7 @@
+// Rule: `random_bits` is how `std.random` gets bits from the runtime; a program can't call it.
+// Spec: 14.15
+// expect compile error
+
+fn main() {
+    print(random_bits())            // error: only std.random may call it
+}

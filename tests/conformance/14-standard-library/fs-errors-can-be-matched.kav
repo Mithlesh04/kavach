@@ -1,0 +1,21 @@
+// Rule: An `FsError` is a union that code can `match` on, naming its variants through the module (`fs.NotFound`) or alone.
+// Spec: 14.3, 10.2
+// expect output: using defaults: no-such-settings.toml is missing
+// expect output: 0
+
+use std.fs
+
+fn load(path: String) -> String uses Fs, Console {
+    fs.read_text(path) catch e => match e {
+        fs.NotFound(missing) => {
+            print("using defaults: {missing} is missing")
+            ""
+        }
+        FsError.Denied(_) => panic("can't read the settings"),
+        _ => panic("something went wrong"),
+    }
+}
+
+fn main() {
+    print(load("no-such-settings.toml").len())
+}

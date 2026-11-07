@@ -1,0 +1,15 @@
+// Rule: A block has the value of its last expression.
+// Spec: 1.9
+// expect output: A
+// expect output: 42
+
+fn main() {
+    const score = 95
+    const grade = if score >= 90 { "A" } else { "B" }
+    const answer = {
+        const x = 21
+        x * 2
+    }
+    print(grade)
+    print(answer)
+}

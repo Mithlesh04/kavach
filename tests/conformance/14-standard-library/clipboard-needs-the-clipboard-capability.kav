@@ -1,0 +1,13 @@
+// Rule: Reading or writing the clipboard needs the capability `Clipboard`: what a person copied is private.
+// Spec: 14.17, 8.1
+// expect compile error
+
+use std.clipboard
+
+pub fn copied() -> String ! Error uses Console {
+    try clipboard.read_text()      // error: copied doesn't list Clipboard
+}
+
+fn main() {
+    print(copied() catch _ => "")
+}

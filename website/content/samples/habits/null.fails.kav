@@ -1,0 +1,4 @@
+fn main() {
+    let nickname: String? = null
+    print(nickname ?? "no nickname")
+}

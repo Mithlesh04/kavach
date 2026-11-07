@@ -1,0 +1,17 @@
+type User {
+    name: String
+    age: Int
+}
+
+fn main() {
+    const price: Decimal = 499.00
+    const nickname: String? = none
+    print(7.0)
+    print(price)
+    print('क')
+    print(["asha", "ravi"])
+    print(["asha": 31])
+    print((200, "OK"))
+    print(nickname)
+    print(User(name: "Asha", age: 31))
+}

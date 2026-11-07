@@ -1,0 +1,13 @@
+// Rule: A function longer than `fn_lines` is only a warning; the program still runs.
+// Spec: 12.1
+// expect output: 10
+
+// This folder's kavach.toml sets fn_lines = 6.
+fn main() {
+    let total = 0
+    total += 1
+    total += 2
+    total += 3
+    total += 4
+    print(total)
+}

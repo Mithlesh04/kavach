@@ -1,0 +1,4 @@
+fn main() {
+    const match = 3
+    print(match)
+}

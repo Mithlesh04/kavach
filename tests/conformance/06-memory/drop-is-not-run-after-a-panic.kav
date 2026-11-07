@@ -1,0 +1,31 @@
+// Rule: a panic runs no `drop`: what a task that panics held is never dropped, and the program goes on.
+// Spec: 6.1, 9.1
+// expect output: working
+// expect output: released kept
+// expect output: main goes on
+// expect stderr: panic: index 3 is out of range: the list has 1 item
+// expect stderr:   at drop-is-not-run-after-a-panic.kav:21
+
+type Guard: Drop {
+    name: String
+
+    fn drop(self) {
+        print("released {self.name}")
+    }
+}
+
+fn work(at: Int) -> Int {
+    const g = Guard(name: "lost")
+    print("working")
+    const xs = [1]
+    xs[at] + g.name.len()
+}
+
+fn main() {
+    const t = spawn work(3)
+    const _n = t.wait() catch _ => 0
+    if true {
+        const _kept = Guard(name: "kept")
+    }
+    print("main goes on")
+}

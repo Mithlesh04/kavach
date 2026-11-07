@@ -1,0 +1,18 @@
+// Rule: `b.crc32c()` is the CRC32C checksum of the bytes (Castagnoli), an `Int` in `0..2^32`, matching the published check vectors.
+// Spec: 2.13
+// expect output: 3808858755
+// expect output: 0
+// expect output: 2324772522
+// expect output: true
+
+fn main() {
+    print("123456789".bytes().crc32c())
+    print(Bytes([]).crc32c())
+    let zeros: [UInt8] = []
+    for _ in 0..32 {
+        zeros.push(UInt8(0))
+    }
+    print(Bytes(zeros).crc32c())
+    // The same bytes, the same sum, however they were made.
+    print(("12345" .bytes() + "6789".bytes()).crc32c() == 3808858755)
+}

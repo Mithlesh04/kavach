@@ -1,0 +1,9 @@
+INFO RefundIssued(order: 1, amount: 400)
+WARN RefundBlocked(order: 2, reason: "Denied(reason: \"limit broken: amount <= 500\")")
+-- the audit log --
+Refunder request#1 Payments.refund(order: 1, amount: 400)
+  verdict: allowed
+  result: ok
+Refunder request#2 Payments.refund(order: 2, amount: 900)
+  verdict: refused (limit broken: amount <= 500)
+  result: denied: limit broken: amount <= 500

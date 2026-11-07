@@ -1,0 +1,20 @@
+type Verdict {
+    /// true if the review is positive
+    positive: Bool
+    /// one short reason
+    reason: String
+}
+
+agent Reader {
+    can Ai, Console
+
+    on review(text: String) ! Error {
+        const v = try ask<Verdict>("Is this review positive? {text}")
+        print("positive: {v.positive}")
+    }
+}
+
+fn main() {
+    const bot = Reader.start()
+    bot.review("Loved it, fast delivery") catch e => print("failed: {e}")
+}

@@ -1,0 +1,150 @@
+// std.math (spec 14.5): the parts written in Kavach. `sqrt`, `pow` and
+// the rounding functions, and `pi` and `e`, come from the runtime.
+
+/// The greatest common divisor of two numbers that are not negative.
+pub fn gcd(a: Int, b: Int) -> Int
+    require a >= 0
+    require b >= 0
+    ensure result >= 0
+    example gcd(12, 18) == 6
+    example gcd(0, 5) == 5
+    example gcd(7, 0) == 7
+{
+    let x = a
+    let y = b
+    while y != 0 {
+        const r = x % y
+        x = y
+        y = r
+    }
+    x
+}
+
+/// The least common multiple, or `none` when it doesn't fit in `Int`.
+pub fn lcm(a: Int, b: Int) -> Int?
+    require a >= 0
+    require b >= 0
+    example lcm(4, 6) == 12
+    example lcm(0, 5) == 0
+    example lcm(9_223_372_036_854_775_807, 2) == none
+{
+    if a == 0 or b == 0 {
+        return 0
+    }
+    (a / gcd(a, b)).checked_mul(b)
+}
+
+/// `n!` for `0 <= n <= 20`; larger values don't fit in `Int`.
+pub fn factorial(n: Int) -> Int
+    require n >= 0
+    require n <= 20
+    ensure result >= 1
+    example factorial(0) == 1
+    example factorial(5) == 120
+    example factorial(20) == 2_432_902_008_176_640_000
+{
+    let out = 1
+    for i in 2..=n {
+        out *= i
+    }
+    out
+}
+
+/// The average of the numbers, or `none` for an empty list.
+pub fn mean(xs: [Float]) -> Float?
+    example mean([1.0, 2.0, 6.0]) == 3.0
+    example mean([]) == none
+{
+    if xs.is_empty() {
+        return none
+    }
+    xs.sum(x => x) / Float(xs.len())
+}
+
+/// `a * b % m` without overflow: doubling and adding (`m` < 2^63).
+fn mul_mod(a: UInt64, b: UInt64, m: UInt64) -> UInt64
+    require m > 0
+    require m < 9_223_372_036_854_775_808
+{
+    let result: UInt64 = 0
+    let x = a % m
+    let y = b
+    while y > 0 {
+        if y % 2 == 1 {
+            result = (result + x) % m
+        }
+        x = (x + x) % m
+        y = y / 2
+    }
+    result
+}
+
+/// `base ^ exp % m`.
+fn pow_mod(base: UInt64, exp: UInt64, m: UInt64) -> UInt64
+    require m > 0
+    require m < 9_223_372_036_854_775_808
+{
+    let result: UInt64 = 1
+    let b = base % m
+    let e = exp
+    while e > 0 {
+        if e % 2 == 1 {
+            result = mul_mod(result, b, m)
+        }
+        b = mul_mod(b, b, m)
+        e = e / 2
+    }
+    result
+}
+
+/// Whether `n` is prime. A Miller-Rabin test with fixed bases, which is
+/// exact for every `Int` and takes microseconds even for the largest.
+pub fn is_prime(n: Int) -> Bool
+    example is_prime(2)
+    example is_prime(97)
+    example not is_prime(1)
+    example not is_prime(91)
+    example is_prime(1_000_000_007)
+    example is_prime(9_223_372_036_854_775_783)
+    example not is_prime(9_223_372_036_854_775_807)
+{
+    if n < 2 {
+        return false
+    }
+    const small = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37]
+    for p in small {
+        if n == p {
+            return true
+        }
+        if n % p == 0 {
+            return false
+        }
+    }
+    const m = UInt64(n)
+    // n - 1 = d * 2^s with d odd.
+    let d = m - 1
+    let s = 0
+    while d % 2 == 0 {
+        d = d / 2
+        s += 1
+    }
+    for p in small {
+        let x = pow_mod(UInt64(p), d, m)
+        if x != 1 and x != m - 1 {
+            let round = 1
+            let witness = true
+            while round < s {
+                x = mul_mod(x, x, m)
+                if x == m - 1 {
+                    witness = false
+                    break
+                }
+                round += 1
+            }
+            if witness {
+                return false
+            }
+        }
+    }
+    true
+}

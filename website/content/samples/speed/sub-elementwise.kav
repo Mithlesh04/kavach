@@ -1,0 +1,12 @@
+fn main() {
+    let xs = []
+    let ys = []
+    for i in 0..1_000_000 {
+        xs.push(Float(i % 1000) * 0.125)
+        ys.push(0.0)
+    }
+    for i in 0..1_000_000 {
+        ys[i] = xs[i] * 2.5 + 1.0
+    }
+    print(ys[999_999])
+}

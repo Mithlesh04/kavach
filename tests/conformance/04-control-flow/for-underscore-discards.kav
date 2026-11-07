@@ -1,0 +1,17 @@
+// Rule: `for _ in …` discards the value and repeats the body.
+// Spec: 4.4
+// expect output: 3
+// expect output: 2
+
+fn main() {
+    let count = 0
+    for _ in 0..3 {
+        count += 1
+    }
+    print(count)
+    count = 0
+    for _ in [10, 20] {
+        count += 1
+    }
+    print(count)
+}

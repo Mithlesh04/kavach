@@ -1,0 +1,14 @@
+gpu fn glow(x: Float32, gain: Float32) -> Float32 {
+    let v = x
+    for _ in 0..100 {
+        v = v * 0.99 + gain
+    }
+    v
+}
+
+fn main() {
+    const pixels: [Float32] = [0.0, 0.5, 1.0]
+    const gain: Float32 = 0.25
+    const lit = pixels.map(p => glow(p, gain))
+    print(lit)
+}

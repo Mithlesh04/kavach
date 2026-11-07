@@ -1,0 +1,22 @@
+// Rule: A type that implements `Sample` gets its generated values from its own `sample`.
+// Spec: 11.3
+// expect test pass
+
+type Email: Sample {
+    value: String
+
+    fn sample(gen: Gen) -> Email {
+        Email(value: "{gen.word()}@{gen.pick(["example.com", "test.in"])}")
+    }
+}
+
+// Default values ("", "a", …) would break this `ensure`; sampled ones don't.
+fn domain(e: Email) -> String
+    ensure result == "example.com" or result == "test.in"
+{
+    const parts = e.value.split("@")
+    if parts.len() < 2 {
+        return ""
+    }
+    parts[1]
+}

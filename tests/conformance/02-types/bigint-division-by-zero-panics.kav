@@ -1,0 +1,9 @@
+// Rule: Dividing a `BigInt` by zero panics, as `Int` does.
+// Spec: 2.1, 5.6
+// expect panic: division by zero
+
+fn main() {
+    const a = 2 ** 100
+    const zero: BigInt = 0
+    print(a / zero)
+}

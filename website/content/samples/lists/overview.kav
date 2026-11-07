@@ -1,0 +1,10 @@
+fn main() {
+    let fruits = ["mango", "fig"]
+    fruits.push("yuzu")
+    print(fruits)
+    print(fruits[0])
+    print(fruits.len())
+    for fruit in fruits {
+        print(fruit.upper())
+    }
+}

@@ -1,0 +1,5 @@
+fn main() {
+    const name = "asha"
+    const age = 31
+    print("{name} turns {age} this year")
+}

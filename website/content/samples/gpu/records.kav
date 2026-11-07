@@ -1,0 +1,23 @@
+use std.collections
+
+type Particle {
+    x: Float32
+    v: Float32
+}
+
+gpu fn step(x: Float32, v: Float32) -> Float32 {
+    x + v * 0.5
+}
+
+gpu fn add(a: Float32, b: Float32) -> Float32 {
+    a + b
+}
+
+fn main() {
+    const particles = [Particle(x: 0.0, v: 2.0), Particle(x: 10.0, v: -4.0)]
+    print(particles.map(p => step(p.x, p.v)))
+
+    const xs: [Float32] = [1.0, 2.0, 3.0]
+    const ys: [Float32] = [10.0, 20.0, 30.0]
+    print(collections.zip(xs, ys).map(t => add(t.0, t.1)))
+}

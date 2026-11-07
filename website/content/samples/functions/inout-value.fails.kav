@@ -1,0 +1,10 @@
+fn bump(inout n: Int) {
+    n += 1
+}
+
+fn main() {
+    const f = bump
+    let n = 1
+    f(n)
+    print(n)
+}

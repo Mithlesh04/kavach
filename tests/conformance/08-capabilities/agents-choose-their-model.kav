@@ -1,0 +1,27 @@
+// Rule: An agent's `model` and a call's `model:` are `Model` values, worked out when the program is built: written there, or from a function with no parameters that gives one.
+// Spec: 8.3, 8.4
+// expect output: checked
+
+type Verdict {
+    ok: Bool
+}
+
+fn careful() -> Model {
+    Model(name: "claude-opus-5-5", max_tokens: 2000)
+}
+
+agent Reviewer {
+    model careful()
+    can Ai
+    on check(text: String) -> Bool ! Error {
+        (try ask<Verdict>("Is this fine? {text}")).ok
+    }
+    on quick(text: String) -> Bool ! Error {
+        (try ask<Verdict>(text, model: Model(name: "claude-haiku-5-5"))).ok
+    }
+}
+
+fn main() {
+    // Never asked: a test must not reach a paid model.
+    print("checked")
+}

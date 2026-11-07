@@ -1,0 +1,20 @@
+// Rule: An agent can't answer approvals: `Approvals` may never be listed in an agent's `can`.
+// Spec: 14.16, 8.3
+// expect compile error
+
+type PayError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn pay(amount: Int) -> Int ! PayError
+}
+
+agent Bot {
+    can Payments.pay, Approvals      // error: Approvals can't be in can
+
+    on request(amount: Int) -> Int ! Error {
+        try Payments.pay(amount)
+    }
+}
+
+fn main() {
+}

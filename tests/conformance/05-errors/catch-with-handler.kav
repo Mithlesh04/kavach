@@ -1,0 +1,21 @@
+// Rule: `catch e => { … }` runs code with the error and gives a value.
+// Spec: 5.3
+// expect output: bad age
+// expect output: -1
+
+type AgeError = TooLarge(value: Int)
+
+fn check_age(age: Int) -> Int ! AgeError {
+    if age > 150 {
+        fail AgeError.TooLarge(value: age)
+    }
+    age
+}
+
+fn main() {
+    const age = check_age(200) catch _ => {
+        print("bad age")
+        -1
+    }
+    print(age)
+}

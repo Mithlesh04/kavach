@@ -1,0 +1,1 @@
+SELECT * FROM orders WHERE paid AND amount > 100 LIMIT 10

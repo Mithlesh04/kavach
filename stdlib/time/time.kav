@@ -1,0 +1,440 @@
+// std.time (spec 14.4): `Duration`, and dates and times of day, written
+// in Kavach. Clocks, sleeping and intervals come from the runtime.
+
+use std.time
+use std.time.digits
+
+/// A length of time, in milliseconds. Written with a unit after a whole
+/// number: `200.ms`, `5.seconds`, `2.minutes`, `1.hours`, `3.days`.
+pub type Duration {
+    pub ms: Int
+}
+
+/// A day of the week.
+pub type Weekday = Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday
+
+/// Why text isn't a date or a time.
+pub type DateError = Invalid(text: String)
+
+/// A day of the calendar, with no time and no zone: months 1 to 12, days
+/// 1 to the month's last. The calendar is the Gregorian one, for every
+/// year, with no exceptions (spec 14.4).
+pub type Date {
+    pub year: Int
+    pub month: Int
+    pub day: Int
+
+    invariant year >= -1_000_000 and year <= 1_000_000
+    invariant month >= 1 and month <= 12
+    invariant day >= 1 and day <= days_in_month(year, month)
+
+    /// The day of the week.
+    pub fn weekday(self) -> Weekday
+        example Date(year: 2024, month: 1, day: 31).weekday() == Weekday.Wednesday
+        example Date(year: 1970, month: 1, day: 1).weekday() == Weekday.Thursday
+    {
+        match days_from_civil(self.year, self.month, self.day).mod(7) {
+            0 => Weekday.Thursday,
+            1 => Weekday.Friday,
+            2 => Weekday.Saturday,
+            3 => Weekday.Sunday,
+            4 => Weekday.Monday,
+            5 => Weekday.Tuesday,
+            _ => Weekday.Wednesday,
+        }
+    }
+
+    /// The date `n` days later (or earlier, for a negative `n`).
+    pub fn add_days(self, n: Int) -> Date
+        require n >= -730_000_000 and n <= 730_000_000
+        require days_from_civil(self.year, self.month, self.day) + n >= -365_000_000
+        require days_from_civil(self.year, self.month, self.day) + n <= 364_000_000
+        example Date(year: 2024, month: 2, day: 28).add_days(1) == Date(year: 2024, month: 2, day: 29)
+        example Date(year: 2026, month: 1, day: 1).add_days(-1) == Date(year: 2025, month: 12, day: 31)
+    {
+        civil_from_days(days_from_civil(self.year, self.month, self.day) + n)
+    }
+
+    /// The date `n` months later (or earlier): the same day, or the
+    /// month's last when it is shorter (January 31 and one month is
+    /// February 28 or 29).
+    pub fn add_months(self, n: Int) -> Date
+        require n >= -24_000_000 and n <= 24_000_000
+        require self.year * 12 + n >= -11_990_000 and self.year * 12 + n <= 11_990_000
+        example Date(year: 2024, month: 1, day: 31).add_months(1) == Date(year: 2024, month: 2, day: 29)
+        example Date(year: 2026, month: 3, day: 15).add_months(-3) == Date(year: 2025, month: 12, day: 15)
+    {
+        const months = self.year * 12 + (self.month - 1) + n
+        const year = months.div_floor(12)
+        const month = months.mod(12) + 1
+        Date(year: year, month: month, day: self.day.min(days_in_month(year, month)))
+    }
+
+    /// How many days from this date to `other`: negative when `other`
+    /// comes first.
+    pub fn days_until(self, other: Date) -> Int
+        example Date(year: 2024, month: 1, day: 1).days_until(Date(year: 2025, month: 1, day: 1)) == 366
+        example Date(year: 2026, month: 1, day: 2).days_until(Date(year: 2026, month: 1, day: 1)) == -1
+    {
+        days_from_civil(other.year, other.month, other.day) - days_from_civil(self.year, self.month, self.day)
+    }
+
+    /// `2026-11-04`, as ISO 8601 writes it.
+    pub fn iso(self) -> String
+        example Date(year: 2026, month: 11, day: 4).iso() == "2026-11-04"
+    {
+        "{digits.padded(self.year, 4)}-{digits.padded(self.month, 2)}-{digits.padded(self.day, 2)}"
+    }
+}
+
+/// A time of day, with no date and no zone.
+pub type Time {
+    pub hour: Int
+    pub minute: Int
+    pub second: Int
+    pub ms: Int
+
+    invariant hour >= 0 and hour <= 23
+    invariant minute >= 0 and minute <= 59
+    invariant second >= 0 and second <= 59
+    invariant ms >= 0 and ms <= 999
+
+    /// `09:05:30`, with `.250` when there are milliseconds.
+    pub fn iso(self) -> String
+        example Time(hour: 9, minute: 5, second: 30, ms: 0).iso() == "09:05:30"
+        example Time(hour: 23, minute: 0, second: 0, ms: 250).iso() == "23:00:00.250"
+    {
+        const base = "{digits.padded(self.hour, 2)}:{digits.padded(self.minute, 2)}:{digits.padded(self.second, 2)}"
+        if self.ms == 0 {
+            return base
+        }
+        "{base}.{digits.padded(self.ms, 3)}"
+    }
+}
+
+/// A date and a time of day, with no zone: what a wall clock and a
+/// calendar show. A moment is a number of milliseconds (`time.now_ms()`);
+/// `time.utc` turns one into this, as it is in UTC.
+pub type DateTime {
+    pub date: Date
+    pub time: Time
+
+    /// `2026-11-04T09:05:30`.
+    pub fn iso(self) -> String
+        example utc(1_762_247_130_000).iso() == "2025-11-04T09:05:30"
+    {
+        "{self.date.iso()}T{self.time.iso()}"
+    }
+
+    /// The moment this is in UTC, in milliseconds since 1970-01-01 UTC.
+    pub fn utc_ms(self) -> Int
+        example utc(1_762_247_130_250).utc_ms() == 1_762_247_130_250
+        example utc(-1).utc_ms() == -1
+    {
+        const d = self.date
+        const t = self.time
+        const days = days_from_civil(d.year, d.month, d.day)
+        days * 86_400_000 + t.hour * 3_600_000 + t.minute * 60_000 + t.second * 1_000 + t.ms
+    }
+}
+
+/// Why a name isn't a time zone.
+pub type ZoneError = UnknownZone(name: String)
+
+/// Which moments show a date and time of day in a zone (spec 14.4): one,
+/// none (skipped when daylight saving time began: the moments it would be
+/// with the offset after and before the jump), or two (repeated when it
+/// ended).
+pub type Local = Exact(ms: Int) | Skipped(earlier: Int, later: Int) | Repeated(earlier: Int, later: Int)
+
+/// A time zone of the IANA database, by name, or a fixed offset from UTC
+/// (`+05:30`): what the clocks there show at each moment, daylight saving
+/// time included (spec 14.4).
+pub type Zone {
+    pub name: String
+
+    invariant digits.offset(name) != none or time.zone_offset(name, 0) != none
+
+    /// How many seconds the zone is ahead of UTC at the moment `ms`.
+    pub fn offset_seconds(self, ms: Int) -> Int
+        example Zone(name: "Asia/Kolkata").offset_seconds(0) == 19_800
+        example Zone(name: "UTC").offset_seconds(0) == 0
+        example Zone(name: "-08:00").offset_seconds(0) == -28_800
+    {
+        digits.offset(self.name) ?? (time.zone_offset(self.name, ms) ?? 0)
+    }
+
+    /// The date and time of day the clocks in the zone show at `ms`.
+    pub fn at(self, ms: Int) -> DateTime
+        require ms >= -30_000_000_000_000_000 and ms <= 30_000_000_000_000_000
+        example Zone(name: "Asia/Kolkata").at(0).iso() == "1970-01-01T05:30:00"
+    {
+        utc(ms + self.offset_seconds(ms) * 1_000)
+    }
+
+    /// The moment `ms` as the clocks in the zone show it, with the offset:
+    /// `2026-11-04T14:35:30+05:30`, and `Z` for an offset of zero.
+    pub fn iso(self, ms: Int) -> String
+        require ms >= -30_000_000_000_000_000 and ms <= 30_000_000_000_000_000
+        example Zone(name: "+05:30").iso(0) == "1970-01-01T05:30:00+05:30"
+        example Zone(name: "-08:00").iso(0) == "1969-12-31T16:00:00-08:00"
+        example Zone(name: "UTC").iso(0) == "1970-01-01T00:00:00Z"
+    {
+        "{self.at(ms).iso()}{digits.offset_text(self.offset_seconds(ms))}"
+    }
+
+    /// Which moments the clocks in the zone show `dt`.
+    pub fn resolve(self, dt: DateTime) -> Local
+        require dt.date.year >= -100_000 and dt.date.year <= 100_000
+        example Zone(name: "UTC").resolve(utc(0)) == Local.Exact(ms: 0)
+    {
+        const wall = dt.utc_ms()
+        // The offsets a day before and a day after: they differ when the
+        // zone's clocks changed in between.
+        const before = self.offset_seconds(wall - 86_400_000) * 1_000
+        const after = self.offset_seconds(wall + 86_400_000) * 1_000
+        const old = wall - before
+        const new = wall - after
+        const old_fits = self.offset_seconds(old) * 1_000 == before
+        const new_fits = self.offset_seconds(new) * 1_000 == after
+        if old_fits and new_fits and old != new {
+            return Local.Repeated(earlier: old.min(new), later: old.max(new))
+        }
+        if old_fits {
+            return Local.Exact(ms: old)
+        }
+        if new_fits {
+            return Local.Exact(ms: new)
+        }
+        Local.Skipped(earlier: old.min(new), later: old.max(new))
+    }
+
+    /// The moment the clocks in the zone show `dt`: a skipped time moves
+    /// later by the gap, a repeated one is its earlier moment (RFC 5545,
+    /// as `java.time` and `jiff` do).
+    pub fn moment(self, dt: DateTime) -> Int
+        require dt.date.year >= -100_000 and dt.date.year <= 100_000
+        example Zone(name: "Asia/Kolkata").moment(utc(19_800_000)) == 0
+    {
+        match self.resolve(dt) {
+            Local.Exact(ms) => ms,
+            Local.Skipped(_, later) => later,
+            Local.Repeated(earlier, _) => earlier,
+        }
+    }
+}
+
+/// The time zone named `name` in the IANA database (`Asia/Kolkata`,
+/// `Europe/Berlin`, `UTC`), or the fixed offset `+05:30`.
+pub fn zone(name: String) -> Zone ! ZoneError
+    example zone("Asia/Kolkata") == Zone(name: "Asia/Kolkata")
+    example zone("+05:30") == Zone(name: "+05:30")
+    example zone("Mars/Olympus") fails ZoneError.UnknownZone(name: "Mars/Olympus")
+    example zone("+24:00") fails ZoneError.UnknownZone(name: "+24:00")
+{
+    if digits.offset(name) == none and time.zone_offset(name, 0) == none {
+        fail ZoneError.UnknownZone(name: name)
+    }
+    Zone(name: name)
+}
+
+/// Whether `year` has a February 29.
+pub fn is_leap_year(year: Int) -> Bool
+    example is_leap_year(2024)
+    example not is_leap_year(1900)
+    example is_leap_year(2000)
+    example not is_leap_year(2026)
+{
+    year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
+}
+
+/// How many days month `month` (1 to 12) of `year` has.
+pub fn days_in_month(year: Int, month: Int) -> Int
+    require month >= 1 and month <= 12
+    example days_in_month(2024, 2) == 29
+    example days_in_month(2026, 2) == 28
+    example days_in_month(2026, 4) == 30
+    example days_in_month(2026, 12) == 31
+{
+    if month == 2 {
+        return if is_leap_year(year) { 29 } else { 28 }
+    }
+    if month == 4 or month == 6 or month == 9 or month == 11 {
+        return 30
+    }
+    31
+}
+
+/// The date and time of day the moment `ms` (since 1970-01-01 UTC) is in
+/// UTC.
+pub fn utc(ms: Int) -> DateTime
+    require ms >= -31_000_000_000_000_000 and ms <= 31_000_000_000_000_000
+    example utc(0).iso() == "1970-01-01T00:00:00"
+    example utc(1_762_247_130_250).iso() == "2025-11-04T09:05:30.250"
+    example utc(-1).iso() == "1969-12-31T23:59:59.999"
+{
+    const day = ms.div_floor(86_400_000)
+    const rest = ms.mod(86_400_000)
+    DateTime(
+        date: civil_from_days(day),
+        time: Time(
+            hour: rest / 3_600_000,
+            minute: rest / 60_000 % 60,
+            second: rest / 1_000 % 60,
+            ms: rest % 1_000,
+        ),
+    )
+}
+
+/// Today's date in UTC.
+pub fn today() -> Date {
+    utc(time.now_ms()).date
+}
+
+/// The date and time of day now, in UTC.
+pub fn now() -> DateTime {
+    utc(time.now_ms())
+}
+
+/// The date `text` writes as ISO 8601 does: `2026-11-04`.
+pub fn parse_date(text: String) -> Date ! DateError
+    example parse_date("2026-11-04") == Date(year: 2026, month: 11, day: 4)
+    example parse_date("2026-02-30") fails DateError.Invalid(text: "2026-02-30")
+    example parse_date("4 Nov 2026") fails DateError.Invalid(text: "4 Nov 2026")
+    example parse_date("2026-+1-04") fails DateError.Invalid(text: "2026-+1-04")
+{
+    const parts = text.trim().split("-")
+    if parts.len() != 3 {
+        fail DateError.Invalid(text: text)
+    }
+    const year = digits.read(parts[0], 4) ?? fail DateError.Invalid(text: text)
+    const month = digits.read(parts[1], 2) ?? fail DateError.Invalid(text: text)
+    const day = digits.read(parts[2], 2) ?? fail DateError.Invalid(text: text)
+    if month < 1 or month > 12 or day < 1 or day > days_in_month(year, month) {
+        fail DateError.Invalid(text: text)
+    }
+    Date(year: year, month: month, day: day)
+}
+
+/// The time of day `text` writes: `09:05`, `09:05:30`, `09:05:30.250`.
+pub fn parse_time(text: String) -> Time ! DateError
+    example parse_time("09:05") == Time(hour: 9, minute: 5, second: 0, ms: 0)
+    example parse_time("09:05:30.25") == Time(hour: 9, minute: 5, second: 30, ms: 250)
+    example parse_time("09:05:30.1239") == Time(hour: 9, minute: 5, second: 30, ms: 123)
+    example parse_time("24:00") fails DateError.Invalid(text: "24:00")
+    example parse_time("9:05") fails DateError.Invalid(text: "9:05")
+    example parse_time("09:05.5") fails DateError.Invalid(text: "09:05.5")
+{
+    time_of(text.trim()) ?? fail DateError.Invalid(text: text)
+}
+
+/// The date and time of day `text` writes, with no zone:
+/// `2026-11-04T09:05:30`.
+pub fn parse_datetime(text: String) -> DateTime ! DateError
+    example parse_datetime("2026-11-04T09:05").iso() == "2026-11-04T09:05:00"
+    example parse_datetime("2026-11-04T09:05:30Z") fails DateError.Invalid(text: "2026-11-04T09:05:30Z")
+    example parse_datetime("2026-11-04") fails DateError.Invalid(text: "2026-11-04")
+{
+    const parts = text.trim().split("T")
+    if parts.len() != 2 {
+        fail DateError.Invalid(text: text)
+    }
+    DateTime(
+        date: parse_date(parts[0]) catch _ => fail DateError.Invalid(text: text),
+        time: time_of(parts[1]) ?? fail DateError.Invalid(text: text),
+    )
+}
+
+/// The moment `text` writes, which must say its offset from UTC:
+/// `2026-11-04T09:05:30Z`, `2026-11-04T14:35:30+05:30`.
+pub fn parse_moment(text: String) -> Int ! DateError
+    example parse_moment("1970-01-01T05:30:00+05:30") == 0
+    example parse_moment("1969-12-31T16:00:00-08:00") == 0
+    example parse_moment("1970-01-01T00:00:00.250Z") == 250
+    example parse_moment("1970-01-01T00:00:00") fails DateError.Invalid(text: "1970-01-01T00:00:00")
+{
+    const parts = text.trim().split("T")
+    if parts.len() != 2 {
+        fail DateError.Invalid(text: text)
+    }
+    const clock = parts[1]
+    const zulu = clock.ends_with("Z")
+    const from = if zulu {
+        clock.len() - 1
+    } else {
+        clock.index_of("+") ?? (clock.index_of("-") ?? fail DateError.Invalid(text: text))
+    }
+    const offset = if zulu {
+        0
+    } else {
+        digits.offset(clock.slice(from, clock.len())) ?? fail DateError.Invalid(text: text)
+    }
+    const dt = DateTime(
+        date: parse_date(parts[0]) catch _ => fail DateError.Invalid(text: text),
+        time: time_of(clock.slice(0, from)) ?? fail DateError.Invalid(text: text),
+    )
+    dt.utc_ms() - offset * 1_000
+}
+
+/// The time of day `text` writes, if it writes one.
+fn time_of(text: String) -> Time? {
+    const fields = text.split(".")
+    const parts = fields[0].split(":")
+    if fields.len() > 2 or parts.len() < 2 or parts.len() > 3 {
+        return none
+    }
+    const hour = digits.read(parts[0], 2) ?? return none
+    const minute = digits.read(parts[1], 2) ?? return none
+    const second = if parts.len() == 3 { digits.read(parts[2], 2) ?? return none } else { 0 }
+    if hour > 23 or minute > 59 or second > 59 {
+        return none
+    }
+    if fields.len() == 1 {
+        return Time(hour: hour, minute: minute, second: second, ms: 0)
+    }
+    // A fraction: 1 to 9 digits, of which the first three count.
+    const fraction = fields[1]
+    if parts.len() != 3 or fraction.len() < 1 or fraction.len() > 9 {
+        return none
+    }
+    const _all_digits = digits.read(fraction, fraction.len()) ?? return none
+    const ms = digits.read("{fraction}00".slice(0, 3), 3) ?? return none
+    Time(hour: hour, minute: minute, second: second, ms: ms)
+}
+
+/// Days since 1970-01-01 of a date (Howard Hinnant's `days_from_civil`).
+fn days_from_civil(year: Int, month: Int, day: Int) -> Int
+    require year >= -1_000_000 and year <= 1_000_000
+    require month >= 1 and month <= 12
+    require day >= 1 and day <= 31
+    example days_from_civil(1970, 1, 1) == 0
+    example days_from_civil(2000, 3, 1) == 11_017
+    example days_from_civil(1969, 12, 31) == -1
+{
+    const y = if month <= 2 { year - 1 } else { year }
+    const era = y.div_floor(400)
+    const yoe = y - era * 400
+    const m = if month > 2 { month - 3 } else { month + 9 }
+    const doy = (153 * m + 2) / 5 + day - 1
+    const doe = yoe * 365 + yoe / 4 - yoe / 100 + doy
+    era * 146_097 + doe - 719_468
+}
+
+/// The date `days` days after 1970-01-01 (Hinnant's `civil_from_days`).
+fn civil_from_days(days: Int) -> Date
+    require days >= -365_000_000 and days <= 364_000_000
+    example civil_from_days(0) == Date(year: 1970, month: 1, day: 1)
+    example civil_from_days(11_017) == Date(year: 2000, month: 3, day: 1)
+    example civil_from_days(-1) == Date(year: 1969, month: 12, day: 31)
+{
+    const z = days + 719_468
+    const era = z.div_floor(146_097)
+    const doe = z - era * 146_097
+    const yoe = (doe - doe / 1_460 + doe / 36_524 - doe / 146_096) / 365
+    const doy = doe - (365 * yoe + yoe / 4 - yoe / 100)
+    const mp = (5 * doy + 2) / 153
+    const day = doy - (153 * mp + 2) / 5 + 1
+    const month = if mp < 10 { mp + 3 } else { mp - 9 }
+    const year = yoe + era * 400 + if month <= 2 { 1 } else { 0 }
+    Date(year: year, month: month, day: day)
+}

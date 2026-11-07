@@ -1,0 +1,1 @@
+error: a `gpu fn` can't use `try`, `catch` or `fail`: it can't fail, since on the GPU there is no error to give back. Check the value first with `if`, and give a result for every item (spec 15.1)

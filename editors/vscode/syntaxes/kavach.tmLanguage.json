@@ -1,0 +1,313 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Kavach",
+  "scopeName": "source.kavach",
+  "fileTypes": ["kav"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#chars" },
+    { "include": "#numbers" },
+    { "include": "#labels" },
+    { "include": "#declarations" },
+    { "include": "#keywords" },
+    { "include": "#constants" },
+    { "include": "#builtin-types" },
+    { "include": "#builtin-functions" },
+    { "include": "#types" },
+    { "include": "#function-calls" },
+    { "include": "#variables" },
+    { "include": "#operators" }
+  ],
+  "repository": {
+    "labels": {
+      "patterns": [
+        {
+          "comment": "A loop's label, `outer: for` (spec 4.6)",
+          "match": "\\b([\\p{L}_][\\p{L}\\p{N}_]*)(:)(?=\\s*(?:for|while)\\b)",
+          "captures": {
+            "1": { "name": "entity.name.label.kavach" }
+          }
+        },
+        {
+          "comment": "The label `break` and `continue` name (spec 4.6)",
+          "match": "\\b(break|continue)\\s+([\\p{L}_][\\p{L}\\p{N}_]*)",
+          "captures": {
+            "1": { "name": "keyword.control.kavach" },
+            "2": { "name": "entity.name.label.kavach" }
+          }
+        }
+      ]
+    },
+    "comments": {
+      "patterns": [
+        { "name": "comment.line.documentation.kavach", "match": "///.*$" },
+        { "name": "comment.line.double-slash.kavach", "match": "//.*$" },
+        { "include": "#block-comment" }
+      ]
+    },
+    "block-comment": {
+      "comment": "`/* … */` may hold others (spec 1.2), so it nests",
+      "name": "comment.block.kavach",
+      "begin": "/\\*",
+      "end": "\\*/",
+      "beginCaptures": { "0": { "name": "punctuation.definition.comment.begin.kavach" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.comment.end.kavach" } },
+      "patterns": [{ "include": "#block-comment" }]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.triple.kavach",
+          "begin": "\"\"\"",
+          "end": "\"\"\"",
+          "patterns": [{ "include": "#escapes" }, { "include": "#interpolation" }]
+        },
+        {
+          "name": "string.quoted.raw.kavach",
+          "begin": "\\br\"",
+          "end": "\""
+        },
+        {
+          "name": "string.quoted.double.kavach",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [{ "include": "#escapes" }, { "include": "#interpolation" }]
+        }
+      ]
+    },
+    "escapes": {
+      "name": "constant.character.escape.kavach",
+      "match": "\\\\(?:[nt\\\\\"'{]|u\\{[0-9A-Fa-f]{1,6}\\})"
+    },
+    "interpolation": {
+      "comment": "The scope names of JavaScript's `${…}`, so every theme colours the braces like keywords and the code inside like code, not like the string around it",
+      "name": "meta.template.expression.kavach",
+      "begin": "\\{",
+      "end": "\\}",
+      "beginCaptures": { "0": { "name": "punctuation.definition.template-expression.begin.kavach" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.template-expression.end.kavach" } },
+      "contentName": "meta.embedded.line.kavach",
+      "patterns": [{ "include": "#interpolation-braces" }, { "include": "$self" }]
+    },
+    "interpolation-braces": {
+      "comment": "Braces inside {…}, such as a record literal, nest instead of closing it",
+      "begin": "\\{",
+      "end": "\\}",
+      "patterns": [{ "include": "#interpolation-braces" }, { "include": "$self" }]
+    },
+    "chars": {
+      "name": "constant.character.kavach",
+      "match": "'(?:[^'\\\\]|\\\\(?:[nt\\\\\"'{]|u\\{[0-9A-Fa-f]{1,6}\\}))'"
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "comment": "`5.seconds`: a whole number with a unit is a `Duration` (spec 14.4); the unit is built in, not a field",
+          "match": "\\b([0-9][0-9_]*)(\\.)(ms|seconds|minutes|hours|days)\\b",
+          "captures": {
+            "1": { "name": "constant.numeric.integer.kavach" },
+            "3": { "name": "keyword.other.unit.kavach" }
+          }
+        },
+        { "name": "constant.numeric.hex.kavach", "match": "\\b0x[0-9A-Fa-f_]+\\b" },
+        { "name": "constant.numeric.binary.kavach", "match": "\\b0b[01_]+\\b" },
+        { "name": "constant.numeric.float.kavach", "match": "\\b[0-9][0-9_]*\\.[0-9][0-9_]*(?:[eE][+-]?[0-9]+)?\\b" },
+        { "name": "constant.numeric.float.kavach", "match": "\\b[0-9][0-9_]*[eE][+-]?[0-9]+\\b" },
+        { "name": "constant.numeric.integer.kavach", "match": "\\b[0-9][0-9_]*\\b" }
+      ]
+    },
+    "declarations": {
+      "patterns": [
+        {
+          "match": "\\b(fn)\\s+([\\p{L}_][\\p{L}\\p{N}_]*)",
+          "captures": {
+            "1": { "name": "storage.type.function.kavach" },
+            "2": { "name": "entity.name.function.kavach" }
+          }
+        },
+        {
+          "match": "\\b(type|interface|agent|capability|extend)\\s+([A-Z][\\p{L}\\p{N}_]*)",
+          "captures": {
+            "1": { "name": "storage.type.kavach" },
+            "2": { "name": "entity.name.type.kavach" }
+          }
+        },
+        {
+          "match": "\\b(on)\\s+([\\p{L}_][\\p{L}\\p{N}_]*)\\s*(?=\\()",
+          "captures": {
+            "1": { "name": "keyword.other.agent.kavach" },
+            "2": { "name": "entity.name.function.kavach" }
+          }
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "comment": "`var` is not Kavach (decision 0034): show it as an error",
+          "name": "invalid.illegal.var.kavach",
+          "match": "\\bvar\\b"
+        },
+        {
+          "name": "keyword.control.kavach",
+          "match": "\\b(if|else|match|for|in|while|break|continue|return|try|catch|fail|when)\\b"
+        },
+        {
+          "name": "keyword.control.contract.kavach",
+          "match": "\\b(require|ensure|invariant|example|fails|assert)\\b"
+        },
+        {
+          "comment": "A limit's window, `per day` (spec 8.5): the unit is part of the keyword",
+          "match": "\\b(per)\\s+(minute|hour|day|week|month)\\b",
+          "captures": {
+            "1": { "name": "keyword.other.agent.kavach" },
+            "2": { "name": "keyword.other.agent.kavach" }
+          }
+        },
+        {
+          "comment": "An agent's `model` clause (spec 8.3): at the start of a line and followed by a name, so a named argument `model: quick()` and a variable called `model` stay plain",
+          "match": "^\\s*(model)\\s+(?=[\\p{L}_])",
+          "captures": {
+            "1": { "name": "keyword.other.agent.kavach" }
+          }
+        },
+        {
+          "comment": "An agent's `can`, `limit` and `approve` clauses (spec 8.3; `on` is with the declarations): at the start of a line and followed by a name, so a field, argument or variable called `limit` stays plain",
+          "match": "^\\s*(can|limit|approve)\\s+(?=[\\p{L}_])",
+          "captures": {
+            "1": { "name": "keyword.other.agent.kavach" }
+          }
+        },
+        {
+          "comment": "`within` after a spawned call on the same line is the task's time limit (spec 9.6), colored as `spawn` is; what lies between is colored as usual (no string in it, so a `within` in a text isn't taken)",
+          "match": "\\b(spawn)\\b(?:\\s+(thread|cores|process)\\b(?=\\s*[A-Za-z_{]))?([^\\n\"]*?)\\b(within)\\b(?!\\s*(:|=(?!=)))",
+          "captures": {
+            "1": { "name": "keyword.other.kavach" },
+            "2": { "name": "keyword.other.kavach" },
+            "3": { "patterns": [{ "include": "$self" }] },
+            "4": { "name": "keyword.other.kavach" }
+          }
+        },
+        {
+          "comment": "`} within 5.seconds`: a spawned block's time limit (spec 9.6)",
+          "match": "(?<=\\})\\s*(within)\\b(?!\\s*(:|=(?!=)))",
+          "captures": {
+            "1": { "name": "keyword.other.kavach" }
+          }
+        },
+        {
+          "comment": "`by`, `per`, `within` and `uses` inside a clause or signature (`within`: an approval's deadline, decision 0072); not after a dot, and not a name given a value (`per: 3`, `by = 2`)",
+          "name": "keyword.other.agent.kavach",
+          "match": "(?<!\\.)\\b(by|per|within|uses)\\b(?!\\s*(:|=(?!=)))"
+        },
+        {
+          "comment": "`const` is a declaration keyword, scoped as TypeScript's `const` is, so themes color both alike (owner, 2026-11-03)",
+          "name": "storage.type.const.kavach",
+          "match": "\\bconst\\b"
+        },
+        {
+          "name": "storage.type.kavach",
+          "match": "\\b(fn|type|interface|extend|agent|capability|let|test)\\b"
+        },
+        {
+          "name": "storage.modifier.kavach",
+          "match": "\\b(pub|secret|extern|deprecated)\\b"
+        },
+        {
+          "comment": "`inout` is a keyword only before a parameter's name (spec 3.9)",
+          "name": "storage.modifier.kavach",
+          "match": "\\binout\\b(?=\\s+[a-z_])"
+        },
+        {
+          "comment": "`context` is a keyword only after a `try` expression, before its note text (spec 1.6, 5.7); elsewhere it is an ordinary name",
+          "name": "keyword.control.kavach",
+          "match": "\\bcontext\\b(?=\\s+r?\")"
+        },
+        {
+          "comment": "`gpu` is a keyword only before `fn` (spec 15.1)",
+          "name": "storage.modifier.kavach",
+          "match": "\\bgpu\\b(?=\\s+fn\\b)"
+        },
+        {
+          "comment": "`thread`, `cores` and `process` are keywords only right after `spawn`, before a name or a block (spec 9.8); elsewhere they are ordinary names",
+          "match": "\\b(spawn)\\s+(thread|cores|process)\\b(?=\\s*[A-Za-z_{])",
+          "captures": {
+            "1": { "name": "keyword.other.kavach" },
+            "2": { "name": "keyword.other.kavach" }
+          }
+        },
+        {
+          "name": "keyword.other.kavach",
+          "match": "\\b(use|as|with|arena|unsafe|spawn|fix)\\b"
+        },
+        {
+          "name": "keyword.operator.logical.kavach",
+          "match": "\\b(and|or|not)\\b"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        { "name": "constant.language.kavach", "match": "\\b(true|false|none)\\b" },
+        { "name": "variable.language.self.kavach", "match": "\\bself\\b" },
+        { "name": "variable.language.result.kavach", "match": "\\bresult\\b" }
+      ]
+    },
+    "builtin-types": {
+      "patterns": [
+        {
+          "name": "support.type.primitive.kavach",
+          "match": "\\b(Int|Int8|Int16|Int32|UInt8|UInt16|UInt32|UInt64|Float|Float32|Decimal|Bool|Char|String|Bytes|Json)\\b"
+        },
+        {
+          "name": "support.type.kavach",
+          "match": "\\b(List|Map|Set|Shared|Weak|Task|Channel|Sender|Receiver|Duration|Ptr|Error|Self)\\b"
+        },
+        {
+          "name": "support.class.capability.kavach",
+          "match": "\\b(Console|Fs|Net|Env|Clock|Random|Ai|Foreign)\\b"
+        }
+      ]
+    },
+    "builtin-functions": {
+      "name": "support.function.builtin.kavach",
+      "match": "\\b(print|debug|panic|ask|reveal|env)\\b(?=\\s*[(<])"
+    },
+    "types": {
+      "name": "entity.name.type.kavach",
+      "match": "\\b[A-Z][\\p{L}\\p{N}_]*\\b"
+    },
+    "function-calls": {
+      "match": "\\b([\\p{L}_][\\p{L}\\p{N}_]*)\\s*(?=\\()",
+      "captures": { "1": { "name": "entity.name.function.call.kavach" } }
+    },
+    "variables": {
+      "patterns": [
+        {
+          "comment": "A name after one `.` (not `..`) is a field: user.name",
+          "name": "variable.other.property.kavach",
+          "match": "(?<=[^.]\\.)[\\p{Ll}\\p{Lo}_][\\p{L}\\p{N}_]*\\b"
+        },
+        {
+          "comment": "Any other name starting with a small letter is a variable, also inside {…} in a string",
+          "name": "variable.other.readwrite.kavach",
+          "match": "\\b[\\p{Ll}\\p{Lo}_][\\p{L}\\p{N}_]*\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        { "name": "storage.type.function.arrow.kavach", "match": "=>|->" },
+        { "name": "keyword.operator.optional.kavach", "match": "\\?\\?|\\?\\." },
+        { "name": "keyword.operator.range.kavach", "match": "\\.\\.=?" },
+        { "name": "keyword.operator.assignment.kavach", "match": "\\*\\*=|<<=|>>=|[&|^]=" },
+        { "name": "keyword.operator.comparison.kavach", "match": "==|!=|<=|>=" },
+        { "name": "keyword.operator.assignment.kavach", "match": "[-+*/%]?=" },
+        { "name": "keyword.operator.kavach", "match": "\\*\\*" },
+        { "name": "keyword.operator.error.kavach", "match": "!" },
+        { "name": "keyword.operator.kavach", "match": "[-+*/%<>&|^~?]" }
+      ]
+    }
+  }
+}

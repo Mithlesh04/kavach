@@ -1,0 +1,13 @@
+// Rule: a `Shared<T>` can't be used as a `Shared<T?>`: every copy sees one value, so its type can't change.
+// Spec: 6.2
+// expect compile error
+
+type Node {
+    name: String
+}
+
+fn main() {
+    const made: Shared<Node> = Shared(Node(name: "a"))
+    const held: Shared<Node?> = made     // error: every copy of a `Shared` sees one value
+    print(held.get() == none)
+}

@@ -1,0 +1,1 @@
+error: `factorial` calls itself, directly or through other `gpu fn`s: a GPU has no call stack (spec 15.1)

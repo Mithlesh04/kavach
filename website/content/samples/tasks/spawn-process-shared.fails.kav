@@ -1,0 +1,9 @@
+fn add(total: Shared<Int>, n: Int) {
+    total.update(t => t + n)
+}
+
+fn main() ! Error {
+    const total = Shared(0)
+    const job = spawn process add(total, 5)
+    try job.wait()
+}

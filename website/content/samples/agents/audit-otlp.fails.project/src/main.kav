@@ -1,0 +1,12 @@
+agent Support {
+    settings AgentSettings(audit: Audit(otlp: true))
+    can Console
+
+    on note(text: String) {
+        print(text)
+    }
+}
+
+fn main() {
+    Support.start().note("never runs")
+}

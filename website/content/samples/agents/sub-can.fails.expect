@@ -1,0 +1,1 @@
+error: the handler `welcome` uses Files.delete, but the agent `Greeter` can't: add `Files.delete` to its `can` (spec 8.3)

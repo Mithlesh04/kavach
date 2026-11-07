@@ -1,0 +1,7 @@
+// Rule: A `pub` function must write its `uses` clause.
+// Spec: 8.1
+// expect compile error
+
+pub fn greet(name: String) {
+    print("hello {name}")       // error: `greet` is pub but doesn't say it uses Console
+}

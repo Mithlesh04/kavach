@@ -1,0 +1,18 @@
+gpu fn steps(start: Int32) -> Int32 {
+    let n = start
+    let count = 0
+    while n != 1 {
+        if n % 2 == 0 {
+            n = n / 2
+        } else {
+            n = 3 * n + 1
+        }
+        count += 1
+    }
+    count
+}
+
+fn main() {
+    const starts: [Int32] = [6, 7, 27]
+    print(starts.map(s => steps(s)))
+}

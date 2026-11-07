@@ -1,0 +1,25 @@
+// Rule: `start` takes one implementation, named by its capability, for every declared capability the agent can use.
+// Spec: 8.8
+// expect compile error
+
+type EmailError = NotSent | Denied(reason: String)
+
+capability Email {
+    fn send(to: String) ! EmailError
+}
+
+type Outbox: Email {
+    fn send(self, to: String) ! EmailError {}
+}
+
+agent Bot {
+    can Email.send
+
+    on ping(to: String) ! EmailError {
+        try Email.send(to)
+    }
+}
+
+fn main() {
+    const bot = Bot.start()               // error: no implementation of Email
+}

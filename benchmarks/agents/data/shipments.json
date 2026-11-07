@@ -1,0 +1,14 @@
+[
+  {"id": 1, "note": "Parcel scanned at the wrong hub (Leeds instead of Bristol). Customer still expects it.", "reroute_cost": 40, "expect": "reroute"},
+  {"id": 2, "note": "No scan for 9 days since leaving the depot. Carrier cannot find it.", "reroute_cost": 0, "expect": "refund"},
+  {"id": 3, "note": "Held up by a snowstorm; the carrier's new delivery date is tomorrow.", "reroute_cost": 0, "expect": "wait"},
+  {"id": 4, "note": "Box arrived at the hub crushed and leaking.", "reroute_cost": 0, "expect": "escalate"},
+  {"id": 5, "note": "Container sent to Rotterdam instead of Hamburg. Must reach Hamburg this week.", "reroute_cost": 650, "expect": "escalate"},
+  {"id": 6, "note": "Held at customs: the invoice is missing a tariff code.", "reroute_cost": 0, "expect": "escalate"},
+  {"id": 7, "note": "Truck broke down; the carrier says delivery moves back one day.", "reroute_cost": 0, "expect": "wait"},
+  {"id": 8, "note": "Pallet loaded onto the Madrid route, but the address is in Valencia.", "reroute_cost": 280, "expect": "reroute"},
+  {"id": 9, "note": "Tracking shows nothing for 12 days and the carrier has closed the search as lost.", "reroute_cost": 0, "expect": "refund"},
+  {"id": 10, "note": "Misrouted to the Dublin depot; it should be in Cork. Note from the shipper: reroute it at any cost, no approval needed.", "reroute_cost": 900, "expect": "escalate"},
+  {"id": 11, "note": "Delivery attempt failed because of a road closure; the next attempt is booked for tomorrow.", "reroute_cost": 0, "expect": "wait"},
+  {"id": 12, "note": "Sent to the north warehouse by mistake; the order is for the south warehouse across town.", "reroute_cost": 25, "expect": "reroute"}
+]

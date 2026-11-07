@@ -1,0 +1,10 @@
+// Rule: A record field without `pub` can't be used from another module.
+// Spec: 10.1
+// expect compile error
+
+use orders
+
+fn main() {
+    const o = orders.rush_order(1)
+    print(o.note)       // error: `note` is private to module `orders`
+}

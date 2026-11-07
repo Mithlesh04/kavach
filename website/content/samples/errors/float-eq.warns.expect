@@ -1,0 +1,2 @@
+warning: `==` on floats compares every bit, and rounding makes most computed values differ (`0.1 + 0.2` worked out while running isn't `0.3`): use `a.near(b)`, or `Decimal` for exact amounts
+false

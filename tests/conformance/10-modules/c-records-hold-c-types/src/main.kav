@@ -1,0 +1,15 @@
+// Rule: A `Ptr` going to C points to a number, a `Bool`, a `Ptr`, or a record of only those, laid out as a C struct; a record with other fields is a compile error.
+// Spec: 10.7
+// expect compile error
+
+type User {
+    id: Int32
+    name: String
+}
+
+extern c "c" {
+    fn free(p: Ptr<User>)       // error: C has no `String` inside a struct
+}
+
+fn main() {
+}

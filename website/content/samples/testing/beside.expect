@@ -1,0 +1,12 @@
+$ kavach run
+27
+$ kavach test --seed 7
+✓ total_paid: example total_paid([]) == 0
+✓ fee: example fee(10) == 11
+✓ test "only paid orders count"
+✓ test "the fee is one"
+4 passed, 0 failed
+seed 7
+✓ total_paid  200 cases
+✓ fee  200 cases
+2 functions   2 ✓   0 ✗   0 weakly tested

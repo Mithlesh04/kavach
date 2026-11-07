@@ -1,0 +1,6 @@
+fn main() {
+    const parts = "a,b,c".split(",")
+    print(parts.len())
+    print(parts[1])
+    print(parts.join("-"))
+}

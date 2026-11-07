@@ -1,0 +1,11 @@
+type Status = Pending | Paid | Refunded
+
+fn label(s: Status) -> String {
+    match s {
+        Status.Pending => "waiting"
+        Status.Paid => "done"
+    }
+}
+
+fn main() {
+}

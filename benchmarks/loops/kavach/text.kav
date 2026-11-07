@@ -1,0 +1,16 @@
+// Text: build 1 million words into one text, then split and count them.
+fn main() {
+    let parts: [String] = []
+    for i in 0..1_000_000 {
+        parts.push("word{i % 50}")
+    }
+    const text = parts.join(" ")
+    const words = text.split(" ")
+    let long_words = 0
+    for w in words {
+        if w.len() > 5 {
+            long_words += 1
+        }
+    }
+    print(long_words)
+}

@@ -1,0 +1,6 @@
+fn main() {
+    let empty: [String: Int] = [:]
+    const full = ["asha": 31, "omar": 27]
+    print(empty.len())
+    print(full.len())
+}

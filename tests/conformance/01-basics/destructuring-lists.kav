@@ -1,0 +1,26 @@
+// Rule: `const [a, b] = xs` takes a list apart by position: a missing item is `none` (the name is `T?`) unless it has a default; `...rest` gets the items left; `_` skips one; a list literal with an item for every name gives plain types.
+// Spec: 1.12
+// expect output: 90 75 none
+// expect output: 90 75 -1
+// expect output: asha ["ravi", "mei"]
+// expect output: ravi
+// expect output: 5
+// expect output: none []
+
+fn main() {
+    const scores = [90, 75]
+    const [first, second, third] = scores
+    print("{first} {second} {third}")
+    const [low = 0, high = 100, extra = -1] = scores
+    print("{low} {high} {extra}")
+    const names = ["asha", "ravi", "mei"]
+    const [head, ...rest] = names
+    print("{head} {rest}")
+    const [_, second_name] = names
+    print(second_name)
+    const [two, three] = [2, 3]
+    print(two + three)              // plain Ints: the literal has both items
+    const empty: [Int] = []
+    const [a, ...b] = empty
+    print("{a} {b}")
+}

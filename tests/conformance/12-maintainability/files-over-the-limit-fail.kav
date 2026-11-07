@@ -1,0 +1,32 @@
+// Rule: A file longer than `file_lines` is a compile error.
+// Spec: 12.1
+// expect compile error
+
+// This folder's kavach.toml sets file_lines = 30, and this file has 32 lines.
+// The message points at the first line past the limit.
+
+fn one() -> Int {
+    1
+}
+
+fn two() -> Int {
+    2
+}
+
+fn three() -> Int {
+    3
+}
+
+fn four() -> Int {
+    4
+}
+
+fn five() -> Int {
+    5
+}
+
+fn main() {
+    print(one() + two() + three() + four() + five())
+}
+
+// end

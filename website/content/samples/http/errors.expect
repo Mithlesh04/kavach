@@ -1,0 +1,2 @@
+couldn't connect: Refused(address: "127.0.0.1:1")
+not an http address: ftp://example.com/file

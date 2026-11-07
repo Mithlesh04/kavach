@@ -1,0 +1,11 @@
+// Mistake: A call that breaks the function's own contract.
+
+fn half(x: Int) -> Int
+    require x > 0
+{
+    x / 2
+}
+
+fn main() {
+    print(half(-4))
+}

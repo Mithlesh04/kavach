@@ -1,0 +1,12 @@
+// Rule: A multi-line string drops the line breaks next to its delimiters and the common indentation.
+// Spec: 1.7
+// expect output: first
+// expect output:   second
+
+fn main() {
+    const text = """
+        first
+          second
+        """
+    print(text)
+}

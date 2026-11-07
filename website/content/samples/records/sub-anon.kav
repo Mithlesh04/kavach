@@ -1,0 +1,10 @@
+fn minmax(xs: [Int]) -> (lo: Int, hi: Int) {
+    (lo: xs.min() ?? 0, hi: xs.max() ?? 0)
+}
+
+fn main() {
+    const r = minmax([3, 1, 4])
+    print("lo {r.lo}, hi {r.hi}")
+    const retry = (times: 3, wait_ms: 200)
+    print(retry.times)
+}

@@ -1,0 +1,22 @@
+// Rule: A `gpu fn` may use `math.sqrt`, `floor`, `ceil`, `round` and `pow` on `Float32`; they give a `Float32`.
+// Spec: 15.1, 14.5
+// expect output: [5.0, 4.7169905, 4.031129]
+// expect output: [3.0, 2.0, -3.0, 0.0]
+
+use std.math
+
+gpu fn dist(x: Float32, y: Float32) -> Float32 {
+    math.sqrt(x * x + y * y)
+}
+
+gpu fn nearest(x: Float32) -> Float32 {
+    math.round(x)
+}
+
+fn main() {
+    const xs: [Float32] = [3.0, 2.5, 0.5]
+    const four: Float32 = 4.0
+    print(xs.map(x => dist(x, four)))
+    const ys: [Float32] = [2.5, 1.5, -2.5, 0.49999997]
+    print(ys.map(nearest))          // halves away from zero
+}

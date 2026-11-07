@@ -1,0 +1,19 @@
+// Rule: Where a `Json` is expected, literals become `Json` values, and values inside them are encoded.
+// Spec: 2.12
+// expect output: {"id":1042,"customer":"Asha","items":["pen","ink"],"paid":true,"note":null,"total":-12.5}
+// expect output: true
+
+fn main() {
+    const name = "Asha"
+    const order: Json = [
+        "id": 1042,
+        "customer": name,
+        "items": ["pen", "ink"],
+        "paid": true,
+        "note": none,
+        "total": -12.5,
+    ]
+    print(order)
+    const flag: Json = true
+    print(flag.bool() ?? false)
+}

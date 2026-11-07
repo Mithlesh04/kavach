@@ -1,0 +1,13 @@
+$ kavach test --seed 7
+✓ with_tax: example with_tax(1_000) == 1_180
+1 passed, 0 failed
+seed 7
+✓ number  200 cases
+✓ with_tax  200 cases
+✓ label  200 cases
+3 functions   3 ✓   0 ✗   2 weakly tested
+weakly tested (no contract or example; only checked for panics):
+  src/billing/invoice.kav:2   number
+  src/orders.kav:10   label
+nothing checked by hand (no example, ensure, invariant or test) in:
+  src/billing/invoice.kav

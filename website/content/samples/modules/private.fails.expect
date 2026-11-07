@@ -1,0 +1,1 @@
+error: `Invoice` has a private field (`note`), so only module `billing.invoice` can create one: add a `pub fn` there that makes it (spec 10.1)

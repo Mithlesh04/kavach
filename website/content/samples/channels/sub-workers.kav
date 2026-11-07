@@ -1,0 +1,23 @@
+fn main() ! Error {
+    const (send, receive) = Channel<Int>(capacity: 8)
+    const a = spawn {
+        for n in 0..3 {
+            send.put(n)
+        }
+    }
+    const b = spawn {
+        for n in 10..13 {
+            send.put(n)
+        }
+    }
+    const _closer = spawn {
+        try a.wait()
+        try b.wait()
+        send.close()
+    }
+    let total = 0
+    for n in receive {
+        total += n
+    }
+    print(total)
+}

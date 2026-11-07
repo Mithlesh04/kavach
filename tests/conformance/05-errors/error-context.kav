@@ -1,0 +1,20 @@
+// Rule: `context` adds text in front of a passed-on error's message.
+// Spec: 5.7
+// expect output: loading config: MissingConfig
+
+type SetupError = MissingConfig
+
+fn read_config() -> Int ! SetupError {
+    fail SetupError.MissingConfig
+}
+
+fn load() -> Int ! SetupError {
+    try read_config() context "loading config"
+}
+
+fn main() {
+    const _n = load() catch e => {
+        print("{e}")
+        0
+    }
+}

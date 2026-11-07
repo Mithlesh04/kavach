@@ -1,0 +1,21 @@
+// Rule: `if` is an expression; `else if` chains are allowed.
+// Spec: 4.1
+// expect output: due
+// expect output: Only 3 left
+
+fn stock_text(stock: Int) -> String {
+    if stock == 0 {
+        "Sold out"
+    } else if stock < 5 {
+        "Only {stock} left"
+    } else {
+        "In stock"
+    }
+}
+
+fn main() {
+    const paid = false
+    const label = if paid { "paid" } else { "due" }
+    print(label)
+    print(stock_text(3))
+}

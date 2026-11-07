@@ -1,0 +1,26 @@
+// Rule: Where an anonymous record of known fields is expected, a `T` fills a field of type `T?`, as it does anywhere else.
+// Spec: 2.14, 2.7
+// expect output: Item(name: "b")
+// expect output: 2
+// expect output: none
+
+type Item {
+    name: String
+}
+
+fn find(items: [Item], name: String) -> (found: Item?, looked: Int) {
+    for i in items {
+        if i.name == name {
+            return (found: i, looked: items.len())
+        }
+    }
+    (found: none, looked: items.len())
+}
+
+fn main() {
+    const items = [Item(name: "a"), Item(name: "b")]
+    const r = find(items, "b")
+    print(r.found)
+    print(r.looked)
+    print(find(items, "z").found)
+}

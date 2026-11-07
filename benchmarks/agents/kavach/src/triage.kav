@@ -1,0 +1,44 @@
+// Small: sort support tickets. One `ask` each, for a checked `Triage`.
+
+use std.fs
+use std.json
+
+pub type Kind = Billing | Bug | Account | Feature | Other
+
+pub type Triage {
+    /// what the ticket is about
+    kind: Kind
+    /// 1 (can wait) to 5 (customers are losing money now)
+    urgency: Int
+    /// true if a person must answer, not a canned reply
+    needs_person: Bool
+}
+
+type Ticket {
+    id: Int
+    text: String
+}
+
+/// Each ticket of the file at `path`, asked at the same time when
+/// `together`, else one after another.
+pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs {
+    const tickets = try json.decode<[Ticket]>(try fs.read_text(path))
+    if not together {
+        for t in tickets {
+            print(try sort(t))
+        }
+        return
+    }
+    let asked: [Task<String>] = []
+    for t in tickets {
+        asked.push(spawn sort(t))
+    }
+    for a in asked {
+        print(try a.wait())
+    }
+}
+
+fn sort(t: Ticket) -> String ! Error uses Ai {
+    const r = try ask<Triage>("Triage this support ticket: {t.text}")
+    "{t.id} {r.kind} {r.needs_person}"
+}

@@ -1,0 +1,15 @@
+// Rule: Recursion runs as deep as the stack allows; a few thousand calls deep is well within it, in every build.
+// Spec: 3.8
+// expect output: 4000
+
+fn depth(n: Int) -> Int {
+    if n == 0 {
+        0
+    } else {
+        1 + depth(n - 1)
+    }
+}
+
+fn main() {
+    print(depth(4_000))
+}

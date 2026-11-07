@@ -1,0 +1,5 @@
+fn main() {
+    print("namaste, duniya")
+    const languages = ["Kavach", "Rust", "Python"]
+    print(languages.len())
+}

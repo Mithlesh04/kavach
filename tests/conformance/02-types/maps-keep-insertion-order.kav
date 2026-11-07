@@ -1,0 +1,12 @@
+// Rule: Maps keep insertion order when iterated.
+// Spec: 2.2
+// expect output: ravi 27
+// expect output: asha 31
+// expect output: meera 40
+
+fn main() {
+    const ages = ["ravi": 27, "asha": 31, "meera": 40]
+    for (name, age) in ages {
+        print("{name} {age}")
+    }
+}

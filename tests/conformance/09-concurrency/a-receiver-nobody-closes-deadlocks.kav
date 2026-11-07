@@ -1,0 +1,14 @@
+// Rule: when every task waits and none can go on, such as a receiver whose sender never closes, the program panics with a deadlock.
+// Spec: 9.4, 9.7
+// expect output: took 1
+// expect panic: deadlock
+
+fn main() {
+    const (send, receive) = Channel<Int>(capacity: 4)
+    const _producer = spawn {
+        send.put(1)
+    }
+    for n in receive {
+        print("took {n}")
+    }
+}

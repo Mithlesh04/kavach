@@ -1,0 +1,9 @@
+fn main() {
+    let ages: [String: Int] = Map.with_capacity(3)
+    ages["asha"] = 31
+    ages["ravi"] = 27
+    ages["mira"] = 9
+    ages["omar"] = 40
+    print(ages.len())
+    print(ages)
+}

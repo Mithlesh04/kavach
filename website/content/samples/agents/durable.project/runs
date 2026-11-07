@@ -1,0 +1,2 @@
+run src/main.kav power-cut
+run src/main.kav

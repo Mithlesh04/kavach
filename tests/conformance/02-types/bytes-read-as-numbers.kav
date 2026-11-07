@@ -1,0 +1,44 @@
+// Rule: `b.as_list<T>()` reads the bytes as little-endian numbers of a fixed size, or gives `none` when their length isn't a whole number of them.
+// Spec: 2.13
+// expect output: [1.0, 2.0]
+// expect output: [1.0, 2.0]
+// expect output: [-1, 1]
+// expect output: [65535, 1]
+// expect output: [-2, 2147483647]
+// expect output: [4294967295, 1]
+// expect output: [-1]
+// expect output: [18446744073709551615]
+// expect output: [255, 1]
+// expect output: [-1, 1]
+// expect output: none
+// expect output: none
+// expect output: []
+// expect output: 3.0
+// expect output: 8.0
+
+fn main() {
+    const float32s = Bytes([0, 0, 128, 63, 0, 0, 0, 64])
+    print(float32s.as_list<Float32>() ?? [])
+    const floats = Bytes([0, 0, 0, 0, 0, 0, 240, 63, 0, 0, 0, 0, 0, 0, 0, 64])
+    print(floats.as_list<Float>() ?? [])
+    const pairs = Bytes([255, 255, 1, 0])
+    print(pairs.as_list<Int16>() ?? [])
+    print(pairs.as_list<UInt16>() ?? [])
+    const fours = Bytes([254, 255, 255, 255, 255, 255, 255, 127])
+    print(fours.as_list<Int32>() ?? [])
+    print(Bytes([255, 255, 255, 255, 1, 0, 0, 0]).as_list<UInt32>() ?? [])
+    const eights = Bytes([255, 255, 255, 255, 255, 255, 255, 255])
+    print(eights.as_list<Int>() ?? [])
+    print(eights.as_list<UInt64>() ?? [])
+    print(Bytes([255, 1]).as_list<UInt8>() ?? [])
+    print(Bytes([255, 1]).as_list<Int8>() ?? [])
+    // 3 bytes are no whole `Int16`, and no whole `Float32`.
+    print(Bytes([1, 2, 3]).as_list<Int16>())
+    print(Bytes([1, 2, 3]).as_list<Float32>())
+    print(Bytes([]).as_list<Float32>() ?? [Float32(1)])
+    // The lists work as any list does: they can grow and be summed.
+    let xs = float32s.as_list<Float32>() ?? []
+    print(xs.sum(x => x))
+    xs.push(5)
+    print(xs.sum(x => x))
+}

@@ -1,0 +1,10 @@
+// Rule: A number literal takes its type from context, so a Decimal literal is exact.
+// Spec: 1.7
+// expect output: true
+
+fn main() {
+    const a: Decimal = 0.1
+    const b: Decimal = 0.2
+    const c: Decimal = 0.3
+    print(a + b == c)
+}

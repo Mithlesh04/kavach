@@ -1,0 +1,22 @@
+// Rule: A union whose variants carry no fields is an enum: `Type.all()` gives its variants in order, `v.name()` a variant's name, and `Type.parse(text)` the variant with that name or `none`.
+// Spec: 2.6
+// expect output: Pending
+// expect output: Paid
+// expect output: Refunded
+// expect output: Paid
+// expect output: true
+// expect output: Circle
+
+type Status = Pending | Paid | Refunded
+
+type Shape = Circle(r: Float) | Square(side: Float)
+
+fn main() {
+    for s in Status.all() {
+        print(s.name())
+    }
+    print(Status.parse("Paid") ?? Status.Pending)
+    print(Status.parse("Lost") == none)
+    // `name` works on any union value.
+    print(Shape.Circle(r: 1.0).name())
+}

@@ -1,0 +1,9 @@
+fn main() {
+    const age = 31
+    const height = 1.68
+    const price: Decimal = 499.99
+    const name = "Asha"
+    const initial = 'A'
+    const member = true
+    print("{name} ({initial}), {age}, {height} m, pays {price}, member: {member}")
+}

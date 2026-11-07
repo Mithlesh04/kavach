@@ -1,0 +1,8 @@
+fn square(n: Int) -> Int {
+    n * n
+}
+
+fn main() {
+    const results = [1, 2, 3, 4].parallel_map(n => square(n), max: 2)
+    print(results)
+}

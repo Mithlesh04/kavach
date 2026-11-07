@@ -1,0 +1,52 @@
+// An echo server with 100 clients at once, each making 100 round trips
+// of 4 bytes over TCP on this machine: the server spawns a task per
+// connection. The time is how well waiting tasks share the machine.
+use std.net
+
+fn echo(conn: Connection) -> Int ! NetError uses Net {
+    let n = 0
+    while true {
+        const data = (try conn.read()) ?? break
+        try conn.write(data)
+        n += 1
+    }
+    n
+}
+
+fn serve(listener: Listener, clients: Int) -> Int ! NetError uses Net {
+    let handlers: [Task<Int>] = []
+    for _ in 0..clients {
+        const conn = try listener.accept()
+        handlers.push(spawn echo(conn))
+    }
+    let total = 0
+    for h in handlers {
+        total += h.wait() catch _ => 0
+    }
+    total
+}
+
+fn client(address: String, trips: Int) -> Int ! NetError uses Net {
+    const conn = try net.connect(address)
+    let back = 0
+    for _ in 0..trips {
+        try conn.write("ping".bytes())
+        back += ((try conn.read()) ?? Bytes([])).len()
+    }
+    conn.close()
+    back
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const server = spawn serve(listener, 100)
+    let clients: [Task<Int>] = []
+    for _ in 0..100 {
+        clients.push(spawn client(listener.address(), 100))
+    }
+    let back = 0
+    for c in clients {
+        back += try c.wait()
+    }
+    print("{try server.wait()} trips, {back} bytes back")
+}

@@ -1,0 +1,20 @@
+use std.log
+
+type Started: LogEvent {
+    port: Int
+}
+
+type Retrying: LogEvent {
+    attempt: Int
+}
+
+type DiskFull: LogEvent {
+    free_mb: Int
+}
+
+fn main() {
+    log.debug(Started(port: 8080))
+    log.info(Started(port: 8080))
+    log.warn(Retrying(attempt: 2))
+    log.error(DiskFull(free_mb: 12))
+}

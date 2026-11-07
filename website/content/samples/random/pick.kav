@@ -1,0 +1,10 @@
+use std.random
+
+fn main() {
+    const names = ["Asha", "Omar", "Zoe", "Ravi"]
+    const winner = random.pick(names) ?? "nobody"
+    print("the winner is one of them: {names.contains(winner)}")
+    const order = random.shuffle(names)
+    print("same names, new order: {order.sort() == names.sort()}")
+    print("a token of 16 bytes: {random.bytes(16).len()}")
+}

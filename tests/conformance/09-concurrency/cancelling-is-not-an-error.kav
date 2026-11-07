@@ -1,0 +1,24 @@
+// Rule: cancelling is not an error: `catch` doesn't see it, so a cancelled task stops even inside `catch`.
+// Spec: 9.6
+// expect output: returning
+// expect output: run returned
+
+use std.time
+
+fn nap() -> Int ! Error {
+    time.sleep_ms(10_000)
+    1
+}
+
+fn run() {
+    const _t = spawn {
+        const n = nap() catch _ => -1
+        print("caught {n}")
+    }
+    print("returning")
+}
+
+fn main() {
+    run()
+    print("run returned")
+}

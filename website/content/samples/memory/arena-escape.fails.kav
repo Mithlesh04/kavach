@@ -1,0 +1,8 @@
+fn main() {
+    let kept: [String] = []
+    arena {
+        const words = "a b c".split(" ")
+        kept = words
+    }
+    print(kept)
+}

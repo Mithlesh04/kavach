@@ -1,0 +1,61 @@
+// Rule: `sum(…)` and `count` in a `limit` rule count the calls that ran in the window, this one included.
+// Spec: 8.3
+// expect output: 1: refunded r1
+// expect output: 2: refunded r2
+// expect output: 3: denied, limit broken: sum(amount) <= 100 per day
+// expect output: 4: refunded r4
+// expect output: 5: denied, limit broken: count <= 3 per day
+
+type Receipt { id: String }
+type PaymentError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn refund(order_id: Int, amount: Int) -> Receipt ! PaymentError
+}
+
+type FakePayments: Payments {
+    fn refund(self, order_id: Int, amount: Int) -> Receipt ! PaymentError {
+        Receipt(id: "r{order_id}")
+    }
+}
+
+agent Bot {
+    can Payments.refund
+
+    limit Payments.refund {
+        sum(amount) <= 100 per day
+        count <= 3 per day
+    }
+
+    on refund(order_id: Int, amount: Int) -> Receipt ! PaymentError {
+        try Payments.refund(order_id, amount)
+    }
+}
+
+fn show(bot: Bot, order_id: Int, amount: Int) {
+    const r = bot.refund(order_id, amount) catch e => match e {
+        PaymentError.Denied(reason) => {
+            print("{order_id}: denied, {reason}")
+            return
+        }
+        PaymentError.Declined => {
+            print("{order_id}: declined")
+            return
+        }
+        // A send can also fail with its handler's panic (decision 0076).
+        _ => {
+            print("{order_id}: {e}")
+            return
+        }
+    }
+    print("{order_id}: refunded {r.id}")
+}
+
+fn main() {
+    const bot = Bot.start(Payments: FakePayments())
+    show(bot, 1, 60)
+    show(bot, 2, 30)
+    show(bot, 3, 20)          // 60 + 30 + 20 would be 110
+    show(bot, 4, 10)
+    show(bot, 5, 0)           // a fourth call
+}

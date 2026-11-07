@@ -1,0 +1,6 @@
+// Mistake: Text added to a number.
+
+fn main() {
+    const count = 3
+    print("items: " + count)
+}

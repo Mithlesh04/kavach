@@ -1,0 +1,11 @@
+[package]
+name = "refund-bot"
+version = "0.1.0"
+edition = "2026"
+
+[ai]
+provider = "anthropic"
+# The model is chosen in the code (`model` in the agent). The API key is
+# read from the ANTHROPIC_API_KEY environment variable, never from here.
+# The agent's mode and audit log are its `settings`, in the code; its
+# state and journal are kept in agents/RefundBot/ (spec 8.5).

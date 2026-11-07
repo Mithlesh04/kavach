@@ -1,0 +1,25 @@
+// Rule: When a function gives an `inout` parameter a new value, the old value drops when the call returns: until then the caller's variable holds it.
+// Spec: 6.1, 3.9
+// expect output: renew: new value given
+// expect output: freed first
+// expect output: back in main: second
+// expect output: freed second
+
+type Note: Drop {
+    name: String
+
+    fn drop(self) uses Console {
+        print("freed {self.name}")
+    }
+}
+
+fn renew(inout n: Note) {
+    n = Note(name: "second")
+    print("renew: new value given")
+}
+
+fn main() {
+    let n = Note(name: "first")
+    renew(n)
+    print("back in main: {n.name}")
+}

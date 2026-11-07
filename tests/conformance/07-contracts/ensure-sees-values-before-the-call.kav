@@ -1,0 +1,19 @@
+// Rule: In `ensure`, parameters are the values from before the call.
+// Spec: 7.2
+// expect output: 70
+
+type Account {
+    owner: String
+    balance: Int
+}
+
+fn withdraw(account: Account, amount: Int) -> Account
+    ensure result.balance == account.balance - amount
+{
+    account with { balance: account.balance - amount }
+}
+
+fn main() {
+    const after = withdraw(Account(owner: "Asha", balance: 100), 30)
+    print(after.balance)
+}

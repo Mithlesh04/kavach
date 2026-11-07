@@ -1,0 +1,9 @@
+// Rule: Only values of types that implement `LogEvent` can be logged; text cannot.
+// Spec: 14.12
+// expect compile error
+
+use std.log
+
+fn main() {
+    log.info("order 7 placed")      // error: String does not implement LogEvent
+}

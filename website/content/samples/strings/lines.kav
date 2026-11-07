@@ -1,0 +1,6 @@
+fn main() {
+    const text = "first line\nsecond line"
+    for line in text.lines() {
+        print(line.upper())
+    }
+}

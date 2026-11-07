@@ -1,0 +1,104 @@
+// Hostile bytes never crash the wire decoders (to-do item 4): Protocol
+// Buffers (`grpc.decode<T>`), HPACK and QPACK answer byte soup and
+// corrupted real messages with an error, never a panic. Deterministic,
+// so a failure reproduces.
+
+use std.grpc
+use std.http.hpack
+use std.http.h3
+
+type Inner {
+    d: Float
+    on: Bool
+}
+
+type Message {
+    a: Int
+    b: String
+    inner: Inner
+    tags: [Int]
+}
+
+/// A Lehmer step: deterministic, and no overflow (48271 * (2^31 - 1)
+/// fits an `Int`).
+fn next(seed: Int) -> Int
+    require seed >= 0 and seed < 2147483647
+{
+    (seed * 48271) % 2147483647
+}
+
+/// `len` pseudo-random bytes from `start`.
+fn hostile(start: Int, len: Int) -> Bytes
+    require start >= 0 and start < 2147483647
+    require len >= 0 and len <= 1000
+{
+    let xs: [UInt8] = []
+    let seed = start
+    for i in 0..len {
+        seed = next(seed)
+        xs.push(UInt8(seed % 256))
+    }
+    Bytes(xs)
+}
+
+test "random bytes never crash the protobuf decoder" {
+    let seed = 7
+    let done = 0
+    for round in 0..200 {
+        seed = next(seed)
+        match grpc.decode<Message>(hostile(seed, round % 60)) {
+            ok(v) => { done = done + 1 }
+            err(e) => { done = done + 1 }
+        }
+    }
+    assert done == 200
+}
+
+test "a corrupted real message decodes or fails, never crashes" {
+    const good = grpc.encode<Message>(Message(
+        a: 150,
+        b: "testing",
+        inner: Inner(d: 2.5, on: true),
+        tags: [3, 270, 86942],
+    ))
+    let seed = 11
+    let done = 0
+    for round in 0..200 {
+        seed = next(seed)
+        let xs = good.to_list()
+        const at = seed % xs.len()
+        seed = next(seed)
+        xs[at] = UInt8(seed % 256)
+        match grpc.decode<Message>(Bytes(xs)) {
+            ok(v) => { done = done + 1 }
+            err(e) => { done = done + 1 }
+        }
+    }
+    assert done == 200
+}
+
+test "random bytes never crash the HPACK decoder" {
+    let seed = 13
+    let done = 0
+    for round in 0..200 {
+        seed = next(seed)
+        match hpack.decode(hostile(seed, round % 60), hpack.new_table(4096)) {
+            ok(d) => { done = done + 1 }
+            err(e) => { done = done + 1 }
+        }
+    }
+    assert done == 200
+}
+
+test "random bytes never crash the QPACK decoder" {
+    let seed = 17
+    let done = 0
+    for round in 0..200 {
+        seed = next(seed)
+        match h3.decode(hostile(seed, round % 60)) {
+            ok(headers) => { done = done + 1 }
+            err(e) => { done = done + 1 }
+        }
+    }
+    assert done == 200
+}

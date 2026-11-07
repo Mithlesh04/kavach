@@ -1,0 +1,12 @@
+// Mistake: A `match` arm that can never match.
+
+fn name(n: Int) -> String {
+    match n {
+        _ => "other",
+        1 => "one",
+    }
+}
+
+fn main() {
+    print(name(1))
+}

@@ -1,0 +1,6 @@
+fn main() {
+    let count = 0
+    const bump = (inout n: Int) => {
+        n += 1
+    }
+}

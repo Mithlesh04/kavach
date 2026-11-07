@@ -1,0 +1,165 @@
+// HTTP/1.1 messages for std.http (spec 14.11): finding where a message's
+// head ends, reading its first line and headers, reading a body sent in
+// chunks (`transfer-encoding: chunked`, RFC 9112 7.1), and finding where
+// a whole message ends, so a connection can carry the next. Public so
+// std.http can use it from its client and its server; programs use
+// std.http.
+
+/// The first line, headers and body of an HTTP message.
+pub type Message {
+    pub first: String
+    pub headers: [String: String]
+    pub body: Bytes
+}
+
+/// Where the head of a message ends (its blank line), if it has.
+pub fn head_end(data: Bytes) -> Int? {
+    let i = 0
+    while i + 3 < data.len() {
+        if data[i] == 13 and data[i + 1] == 10 and data[i + 2] == 13 and data[i + 3] == 10 {
+            return i
+        }
+        i += 1
+    }
+    none
+}
+
+pub fn parse(data: Bytes) -> Message? {
+    const end = head_end(data) ?? return none
+    const head = data.slice(0, end).text() ?? return none
+    const lines = head.split("\u{D}\n")
+    let headers: [String: String] = [:]
+    for line in lines.skip(1) {
+        const colon = line.index_of(":") ?? continue
+        headers[line.slice(0, colon).trim().lower()] = line.slice(colon + 1, line.len()).trim()
+    }
+    const body = data.slice(end + 4, data.len())
+    Message(first: lines.first() ?? "", headers: headers, body: body)
+}
+
+/// Whether a message's body comes in chunks (RFC 9112 7.1).
+pub fn chunked(headers: [String: String]) -> Bool {
+    (headers.get("transfer-encoding") ?? "").lower().contains("chunked")
+}
+
+/// The data of a body sent in chunks, without the chunk sizes and the
+/// trailers; none until the last chunk (size 0) has come, or when the
+/// chunks are not well formed.
+pub fn dechunk(body: Bytes) -> Bytes? {
+    const whole = unchunk(body) ?? return none
+    whole.data
+}
+
+/// The complete message at the start of `data`, its body sized by
+/// `content-length` (none means an empty body) or sent in chunks, and how
+/// many bytes of `data` it took; none until all of it has come.
+pub fn whole(data: Bytes) -> (message: Message, used: Int)? {
+    const m = parse(data) ?? return none
+    const head = data.len() - m.body.len()
+    if chunked(m.headers) {
+        const body = unchunk(m.body) ?? return none
+        const done = Message(first: m.first, headers: m.headers, body: body.data)
+        return (message: done, used: head + body.used)
+    }
+    const length = Int(m.headers.get("content-length") ?? "0") catch e => 0
+    if m.body.len() < length {
+        return none
+    }
+    const done = Message(first: m.first, headers: m.headers, body: m.body.slice(0, length))
+    (message: done, used: head + length)
+}
+
+/// A body sent in chunks: its data, and how many bytes of `body` it
+/// took, through the empty line after the trailers; none until all of it
+/// has come, or when the chunks are not well formed.
+pub fn unchunk(body: Bytes) -> (data: Bytes, used: Int)? {
+    let out = Bytes([])
+    let at = 0
+    while true {
+        // A size in hexadecimal, then maybe `;` and extensions, then CRLF.
+        let size = 0
+        let digits = 0
+        while at < body.len() {
+            const d = hex_digit(body[at]) ?? break
+            if digits == 15 {
+                return none
+            }
+            size = size * 16 + d
+            digits += 1
+            at += 1
+        }
+        if digits == 0 {
+            return none
+        }
+        while at + 1 < body.len() and not (body[at] == 13 and body[at + 1] == 10) {
+            at += 1
+        }
+        if at + 1 >= body.len() {
+            return none
+        }
+        at += 2
+        if size == 0 {
+            // Trailer lines, if any, then an empty line.
+            while true {
+                const end = line_end(body, at) ?? return none
+                if end == at {
+                    return (data: out, used: at + 2)
+                }
+                at = end + 2
+            }
+        }
+        if size > body.len() - at - 2 {
+            return none
+        }
+        out = out + body.slice(at, at + size)
+        at += size + 2
+    }
+    none
+}
+
+/// Where the line starting at `from` ends (its CRLF), if it does.
+fn line_end(data: Bytes, from: Int) -> Int?
+    require from >= 0
+{
+    let i = from
+    while i < data.len() - 1 {
+        if data[i] == 13 and data[i + 1] == 10 {
+            return i
+        }
+        i += 1
+    }
+    none
+}
+
+/// A line end in HTTP.
+pub fn crlf() -> String {
+    "\u{D}\n"
+}
+
+/// The reason phrase that goes with `status` in a status line.
+pub fn reason(status: Int) -> String {
+    match status {
+        200 => "OK",
+        201 => "Created",
+        204 => "No Content",
+        400 => "Bad Request",
+        404 => "Not Found",
+        500 => "Internal Server Error",
+        _ => "Status",
+    }
+}
+
+/// The value of hexadecimal digit `b`, if it is one.
+pub fn hex_digit(b: UInt8) -> Int? {
+    const n = Int(b)
+    if n >= 48 and n <= 57 {
+        return n - 48
+    }
+    if n >= 97 and n <= 102 {
+        return n - 87
+    }
+    if n >= 65 and n <= 70 {
+        return n - 55
+    }
+    none
+}

@@ -1,0 +1,6 @@
+fn main() {
+    const ages = ["asha": 31, "ravi": 27]
+    for (name, age) in ages {
+        print("{name} is {age}")
+    }
+}

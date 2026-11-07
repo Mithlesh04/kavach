@@ -1,0 +1,57 @@
+// JSON: 300,000 orders written to JSON text, parsed back, read field by
+// field, and decoded straight into records. Prints each step's time.
+use std.json
+use std.time
+
+type Item {
+    sku: String
+    qty: Int
+    price: Float
+}
+
+type Order {
+    id: Int
+    customer: String
+    paid: Bool
+    note: String?
+    items: [Item]
+}
+
+fn order(i: Int) -> Order {
+    let items: [Item] = []
+    for k in 0..1 + i % 4 {
+        items.push(Item(sku: "SKU-{(i + k) % 97}", qty: 1 + k, price: Float(i % 1000) / 4.0))
+    }
+    const note: String? = if i % 5 == 0 { "leave at the door" } else { none }
+    Order(id: i, customer: "customer {i % 1000}", paid: i % 3 == 0, note: note, items: items)
+}
+
+fn main() ! JsonError {
+    let orders: [Order] = []
+    for i in 0..300_000 {
+        orders.push(order(i))
+    }
+
+    const t0 = time.monotonic_ms()
+    const text = json.stringify(orders)
+    const t1 = time.monotonic_ms()
+    const doc = try json.parse(text)
+    const t2 = time.monotonic_ms()
+    let qty = 0
+    let total = 0.0
+    for o in doc.list() ?? [] {
+        for item in o["items"].list() ?? [] {
+            qty += item["qty"].int() ?? 0
+            total += item["price"].float() ?? 0.0
+        }
+    }
+    const t3 = time.monotonic_ms()
+    const decoded = try json.decode<[Order]>(text)
+    const t4 = time.monotonic_ms()
+
+    print("{text.len() / 1_000_000} MB, {qty} items, total {total}, {decoded.len()} decoded")
+    print("stringify {t1 - t0} ms")
+    print("parse {t2 - t1} ms")
+    print("read {t3 - t2} ms")
+    print("decode {t4 - t3} ms")
+}

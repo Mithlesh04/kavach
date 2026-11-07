@@ -1,0 +1,31 @@
+// Rule: A `catch` handler may leave instead of giving a value: `return` from the function, or `continue` and `break` in a loop.
+// Spec: 5.3
+// expect output: -1
+// expect output: 4
+// expect output: 1
+
+fn parse_or_quit(text: String) -> Int {
+    const n = Int(text) catch _ => {
+        return -1
+    }
+    n * 2
+}
+
+fn main() {
+    print(parse_or_quit("x"))
+    let total = 0
+    for s in ["1", "x", "3"] {
+        const n = Int(s) catch _ => {
+            continue
+        }
+        total += n
+    }
+    print(total)
+    let first = 0
+    for s in ["1", "x", "3"] {
+        first = Int(s) catch _ => {
+            break
+        }
+    }
+    print(first)
+}

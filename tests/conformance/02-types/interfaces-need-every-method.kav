@@ -1,0 +1,19 @@
+// Rule: A type that says it implements an interface has each of the interface's methods.
+// Spec: 2.8
+// expect compile error
+
+interface Shape {
+    fn area(self) -> Int
+    fn name(self) -> String
+}
+
+type Square: Shape {     // error: `Square` has no method `name`
+    side: Int
+
+    fn area(self) -> Int { self.side * self.side }
+}
+
+fn main() {
+    const s: Shape = Square(side: 2)
+    print(s.area())
+}

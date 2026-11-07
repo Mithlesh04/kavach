@@ -1,0 +1,12 @@
+fn main() {
+    const n: Int = 7
+    const f = Float(n) / 2.0
+    print(f)
+    const typed = "42"
+    const parsed = Int(typed) catch _ => 0
+    print(parsed + 1)
+    const answer = "forty-two"
+    const bad = Int(answer) catch _ => -1
+    print(bad)
+    print(Int("2") + Int("2"))
+}

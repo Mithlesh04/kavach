@@ -1,0 +1,11 @@
+fn shout(message: String) {
+    print("{message}!")
+}
+
+pub fn greet(name: String) uses Console {
+    shout("Namaste, {name}")
+}
+
+fn main() {
+    greet("Asha")
+}

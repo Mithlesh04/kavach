@@ -1,0 +1,15 @@
+fn main() {
+    const xs = [10, 20, 30, 40]
+    let total = 0
+    for x in xs {
+        total += x
+    }
+    print(total)
+    let big: [Int] = []
+    for x in xs {
+        if x > 15 {
+            big.push(x)
+        }
+    }
+    print(big)
+}

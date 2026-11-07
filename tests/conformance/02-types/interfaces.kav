@@ -1,0 +1,31 @@
+// Rule: A type implements an interface with `type T: I` or `extend T: I`.
+// Spec: 2.8
+// expect output: User Asha
+// expect output: Rect 2x3
+
+interface Describe {
+    fn describe(self) -> String
+}
+
+type User: Describe {
+    name: String
+    fn describe(self) -> String { "User {self.name}" }
+}
+
+type Rect {
+    width: Int
+    height: Int
+}
+
+extend Rect: Describe {
+    fn describe(self) -> String { "Rect {self.width}x{self.height}" }
+}
+
+fn show<T: Describe>(item: T) -> String {
+    item.describe()
+}
+
+fn main() {
+    print(show(User(name: "Asha")))
+    print(show(Rect(width: 2, height: 3)))
+}

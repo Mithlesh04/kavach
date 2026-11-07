@@ -1,0 +1,14 @@
+// Rule: `/` between two whole-number literals that don't divide evenly gives a warning: the fraction is lost.
+// Spec: 1.8
+// expect warning
+// expect output: 0
+// expect output: -3
+// expect output: 2
+// expect output: 0.5
+
+fn main() {
+    print(1 / 2)         // warning: `1 / 2` is `0`
+    print(-7 / 2)        // warning: `-7 / 2` is `-3`
+    print(4 / 2)
+    print(1.0 / 2.0)
+}

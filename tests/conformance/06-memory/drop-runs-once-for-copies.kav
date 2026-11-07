@@ -1,0 +1,35 @@
+// Rule: Copies of a `Drop` value are the same value: `drop` runs once, when the last holder ends; a changed copy is a value of its own.
+// Spec: 6.1
+// expect output: in make
+// expect output: got made
+// expect output: copied x
+// expect output: released y
+// expect output: released x
+// expect output: released made
+
+type Guard: Drop {
+    name: String
+
+    fn drop(self) {
+        print("released {self.name}")
+    }
+}
+
+fn make() -> Guard {
+    const g = Guard(name: "made")
+    print("in make")
+    g
+}
+
+fn copies() {
+    const a = Guard(name: "x")
+    let b = a
+    print("copied {b.name}")
+    b.name = "y"
+}
+
+fn main() {
+    const m = make()
+    print("got {m.name}")
+    copies()
+}

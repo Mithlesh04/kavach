@@ -1,0 +1,36 @@
+// Rule: A `let` a branch, a loop or a lambda may set, an `if` tests, or an `inout` call may change, is not assumed to hold a known value.
+// Spec: 1.8
+// expect output: 127 126 121 100 50
+// expect output: 3
+
+fn drop_to(inout n: Int8, to: Int8) {
+    n = to
+}
+
+fn main() {
+    let tested: Int8 = 127
+    if tested < 127 {
+        tested += 1
+    }
+    let looped: Int8 = 127
+    for _ in 0..1 {
+        looped -= 1
+    }
+    looped += 0
+    let branched: Int8 = 127
+    if looped == 126 {
+        branched = 120
+    }
+    branched += 1
+    let given: Int8 = 127
+    drop_to(given, 90)
+    given += 10
+    let waited: Int8 = 50
+    const copy = () => waited
+    print("{tested} {looped} {branched} {given} {copy()}")
+    let steps = 0
+    while steps < 3 {
+        steps += 1
+    }
+    print(steps)
+}

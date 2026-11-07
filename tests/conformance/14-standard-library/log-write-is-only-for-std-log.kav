@@ -1,0 +1,7 @@
+// Rule: `log_write` is how `std.log` hands lines to the runtime; a program can't call it, so every log line comes from a typed event.
+// Spec: 14.12
+// expect compile error
+
+fn main() {
+    log_write(1, "order 7 placed")     // error: only std.log may write lines
+}

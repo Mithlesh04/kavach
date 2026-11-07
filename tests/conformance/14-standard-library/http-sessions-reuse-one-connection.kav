@@ -1,0 +1,56 @@
+// Rule: `http.open(url)` gives a session whose requests all go over one connection, each waiting for its response, sized by `content-length` or chunks; `close` ends it.
+// Spec: 14.11
+// expect output: 200 answer 1 to GET /a
+// expect output: 200 hello
+// expect output: 200 answer 3 to POST /c
+// expect output: connections: 1
+
+use std.http
+use std.net
+
+// A server that takes one connection only: a session that opened a
+// second one would never get its answer.
+fn one_connection(listener: Listener) -> Int ! NetError uses Net {
+    const conn = try listener.accept()
+    const crlf = "\u{D}\n"
+    let data = ""
+    let answered = 0
+    while answered < 3 {
+        const piece = (try conn.read()) ?? break
+        data = data + (piece.text() ?? "")
+        // Each request ends with its blank line; the POST's body is "xyz".
+        while true {
+            const end = data.index_of("{crlf}{crlf}") ?? break
+            let size = end + 4
+            if data.starts_with("POST") {
+                if data.len() < size + 3 {
+                    break
+                }
+                size += 3
+            }
+            answered += 1
+            const first = data.slice(0, data.index_of(" HTTP") ?? 0)
+            data = data.slice(size, data.len())
+            if answered == 2 {
+                const body = "5{crlf}hello{crlf}0{crlf}{crlf}"
+                try conn.write("HTTP/1.1 200 OK{crlf}transfer-encoding: chunked{crlf}{crlf}{body}".bytes())
+            } else {
+                const body = "answer {answered} to {first}"
+                try conn.write("HTTP/1.1 200 OK{crlf}content-length: {body.len()}{crlf}{crlf}{body}".bytes())
+            }
+        }
+    }
+    conn.close()
+    1
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const server = spawn one_connection(listener)
+    const s = try http.open("http://{listener.address()}/ignored")
+    for r in [try s.get("/a"), try s.get("/b"), try s.post("/c", "xyz".bytes())] {
+        print("{r.status} {r.body.text() ?? "?"}")
+    }
+    s.close()
+    print("connections: {try server.wait()}")
+}

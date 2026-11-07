@@ -1,0 +1,195 @@
+// std.text (spec 14.9): text helpers, written in Kavach.
+
+/// Whether `c` is a space, tab or line break.
+fn is_space(c: Char) -> Bool
+    example is_space('	')
+    example not is_space('a')
+{
+    c == ' ' or c == '\t' or c == '\n' or c == '\u{D}'
+}
+
+/// `s` with `fill` added in front until it is `width` characters long.
+pub fn pad_left(s: String, width: Int, fill: Char = ' ') -> String
+    require width >= 0
+    require width <= 1_000_000
+    ensure result.len() >= s.len()
+    example pad_left("7", 3, '0') == "007"
+    example pad_left("hello", 3) == "hello"
+{
+    const missing = width - s.len()
+    if missing <= 0 {
+        return s
+    }
+    "{fill}".repeat(missing) + s
+}
+
+/// `s` with `fill` added after it until it is `width` characters long.
+pub fn pad_right(s: String, width: Int, fill: Char = ' ') -> String
+    require width >= 0
+    require width <= 1_000_000
+    ensure result.len() >= s.len()
+    example pad_right("ab", 4, '.') == "ab.."
+{
+    const missing = width - s.len()
+    if missing <= 0 {
+        return s
+    }
+    s + "{fill}".repeat(missing)
+}
+
+/// The parts of `s` between runs of spaces, tabs and line breaks.
+pub fn words(s: String) -> [String]
+    example words("  to be\tor\nnot ") == ["to", "be", "or", "not"]
+    example words("") == []
+{
+    let out: [String] = []
+    let current = ""
+    for c in s.chars() {
+        if is_space(c) {
+            if not current.is_empty() {
+                out.push(current)
+                current = ""
+            }
+        } else {
+            current = current + "{c}"
+        }
+    }
+    if not current.is_empty() {
+        out.push(current)
+    }
+    out
+}
+
+/// `s` with its first character in upper case.
+pub fn capitalize(s: String) -> String
+    ensure result.len() == s.len() or s.is_empty()
+    example capitalize("asha") == "Asha"
+    example capitalize("") == ""
+{
+    if s.is_empty() {
+        return s
+    }
+    s.slice(0, 1).upper() + s.slice(1, s.len())
+}
+
+/// At most `max` characters of `s`.
+pub fn truncate(s: String, max: Int) -> String
+    require max >= 0
+    ensure result.len() <= max
+    example truncate("Kavach", 3) == "Kav"
+    example truncate("hi", 5) == "hi"
+{
+    s.slice(0, max)
+}
+
+/// Whether `s` has only spaces, tabs and line breaks.
+pub fn is_blank(s: String) -> Bool
+    example is_blank(" \t\n")
+    example not is_blank(" a ")
+{
+    s.chars().all(c => is_space(c))
+}
+
+/// Whether `c` is one of the digits 0 to 9.
+fn is_digit(c: Char) -> Bool
+    example is_digit('7')
+    example not is_digit('x')
+{
+    '0' <= c <= '9'
+}
+
+/// Whether `c` is a letter or digit of the Latin alphabet.
+fn is_word(c: Char) -> Bool
+    example is_word('Q')
+    example not is_word('-')
+{
+    is_digit(c) or 'a' <= c <= 'z' or 'A' <= c <= 'Z'
+}
+
+/// The numbers written in `s`, as text: each run of digits, with one
+/// `.` and more digits when `fraction` is set, and a `-` just before it
+/// unless that `-` follows a letter or digit (`item-3` is a name).
+fn number_texts(s: String, fraction: Bool) -> [String]
+    example number_texts("x -1.5 and 2", true) == ["-1.5", "2"]
+    example number_texts("a-1.5", false) == ["1", "5"]
+{
+    const cs = s.chars()
+    let out: [String] = []
+    let i = 0
+    while i < cs.len() {
+        const c = cs[i]
+        if not is_digit(c) {
+            i += 1
+            continue
+        }
+        let start = i
+        if i > 0 and cs[i - 1] == '-' and (i == 1 or not is_word(cs[i - 2])) {
+            start = i - 1
+        }
+        while i < cs.len() and is_digit(cs[i]) {
+            i += 1
+        }
+        if fraction and i + 1 < cs.len() and cs[i] == '.' and is_digit(cs[i + 1]) {
+            i += 1
+            while i < cs.len() and is_digit(cs[i]) {
+                i += 1
+            }
+        }
+        let text = ""
+        for k in start..i {
+            text = text + "{cs[k]}"
+        }
+        out.push(text)
+    }
+    out
+}
+
+/// Every whole number written in `s`, in order (`"a12b-3"` gives
+/// `[12, -3]`). A comma or any other mark ends a number, and one too big
+/// for `Int` is left out. Unlike `Int(s)`, which reads the whole text
+/// strictly (spec 2.1), this looks for numbers inside other text.
+pub fn find_ints(s: String) -> [Int]
+    example find_ints("a12b34") == [12, 34]
+    example find_ints("pages 10-20") == [10, 20]
+    example find_ints("none here") == []
+{
+    let out: [Int] = []
+    for t in number_texts(s, false) {
+        const n = Int(t) catch _ => {
+            continue
+        }
+        out.push(n)
+    }
+    out
+}
+
+/// The first whole number written in `s`, as `find_ints` reads them, or
+/// `none` when there is none.
+pub fn find_int(s: String) -> Int?
+    example find_int("12sdsfs") == 12
+    example find_int("sd23") == 23
+    example find_int("sd3f") == 3
+    example find_int("-5 °C") == -5
+    example find_int("item-3") == 3
+    example find_int("₹1,299") == 1
+    example find_int("no digits") == none
+{
+    find_ints(s).get(0)
+}
+
+/// The first number written in `s`, with a fraction if it has one
+/// (`"v2.5b"` is 2.5, `"x3"` is 3.0), or `none` when there is none.
+pub fn find_float(s: String) -> Float?
+    example find_float("pi is 3.14!") == 3.14
+    example find_float("x3") == 3.0
+    example find_float("-0.5 m") == -0.5
+    example find_float("end.") == none
+{
+    for t in number_texts(s, true) {
+        const f = Float(t) catch _ => {
+            continue
+        }
+        return f
+    }
+    none
+}

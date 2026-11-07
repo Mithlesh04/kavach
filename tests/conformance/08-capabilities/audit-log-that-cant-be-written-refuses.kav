@@ -1,0 +1,37 @@
+// Rule: An audit log that can't be written refuses the agent's calls: the call whose entry failed has run, and the next one is refused with `Denied`.
+// Spec: 8.6
+// expect output: paid 1
+// expect output: refused: true
+
+type PayError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn pay(n: Int) -> Int ! PayError
+}
+
+type Till: Payments {
+    fn pay(self, n: Int) -> Int ! PayError {
+        n
+    }
+}
+
+agent Bot {
+    // The folder itself: no entry can be written to it.
+    settings AgentSettings(audit: Audit(file: "."))
+
+    can Payments.pay
+
+    on charge(n: Int) -> Int ! Error {
+        try Payments.pay(n)
+    }
+}
+
+fn main() ! Error {
+    const bot = Bot.start(Payments: Till())
+    print("paid {try bot.charge(1)}")
+    const _second = bot.charge(2) catch e => {
+        print("refused: {"{e}".contains("the audit log can't be written")}")
+        return
+    }
+    print("not refused")
+}

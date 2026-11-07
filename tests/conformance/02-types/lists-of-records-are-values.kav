@@ -1,0 +1,57 @@
+// Rule: A list of records holds values: changing a copy, or an item taken out, never changes the original.
+// Spec: 2.4
+// expect output: [Point(x: 0, y: 0), Point(x: 1, y: 1), Point(x: 2, y: 2)]
+// expect output: 3
+// expect output: Point(x: 9, y: 2)
+// expect output: Point(x: 2, y: 2)
+// expect output: Point(x: 100, y: 200)
+// expect output: Point(x: 0, y: 0)
+// expect output: 1
+// expect output: [Point(x: 2, y: 2), Point(x: 1, y: 1), Point(x: 0, y: 0)]
+// expect output: true
+// expect output: 1.5 true z
+// expect output: (3, 4)
+
+type Point {
+    x: Int
+    y: Int
+}
+
+type Mixed {
+    a: Float
+    b: Bool
+    c: Char
+}
+
+fn main() {
+    let points: [Point] = []
+    for i in 0..3 {
+        points.push(Point(x: i, y: i))
+    }
+    print(points)
+    let total = 0
+    for p in points {
+        total += p.x
+    }
+    print(total)
+    let taken = points[2]
+    taken.x = 9
+    print(taken)
+    print(points[2])
+    let copy = points
+    copy[0] = Point(x: 100, y: 200)
+    print(copy[0])
+    print(points[0])
+    let kept: [Point] = []
+    for p in points {
+        kept.push(p)
+    }
+    print(kept[1].y)
+    print(points.sort_by(p => -p.x))
+    print(points == [Point(x: 0, y: 0), Point(x: 1, y: 1), Point(x: 2, y: 2)])
+    const mixed = [Mixed(a: 1.5, b: true, c: 'z')]
+    for m in mixed {
+        print("{m.a} {m.b} {m.c}")
+    }
+    print([(1, 2), (3, 4)][1])
+}

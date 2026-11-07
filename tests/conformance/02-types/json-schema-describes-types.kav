@@ -1,0 +1,30 @@
+// Rule: `json.schema<T>()` gives the JSON Schema of `T` as a `Json` value, with a record's fields in the order they are declared, also for the type a generic function was called with.
+// Spec: 2.12
+// expect output: ["id","item","tags","note"]
+// expect output: {"type":"integer"} {"type":"string"} {"type":"array","items":{"type":"number"}}
+// expect output: {"anyOf":[{"type":"string"},{"type":"null"}]}
+// expect output: ["id","item","tags"]
+// expect output: {"type":"array","items":{"type":"boolean"}}
+
+use std.json
+
+type Order {
+    id: Int
+    item: String
+    tags: [Float]
+    note: String?
+}
+
+fn shape<T>() -> Json {
+    json.schema<T>()
+}
+
+fn main() {
+    const s = json.schema<Order>()
+    const props = s.get("properties").object() ?? [:]
+    print(json.of(props.keys()))
+    print("{props["id"] ?? Json.Null} {props["item"] ?? Json.Null} {props["tags"] ?? Json.Null}")
+    print(props["note"] ?? Json.Null)
+    print(s.get("required"))
+    print(shape<[Bool]>())
+}

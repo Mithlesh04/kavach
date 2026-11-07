@@ -1,0 +1,8 @@
+// Rule: A `/*` comment that is never closed with `*/` is an error.
+// Spec: 1.2
+// expect compile error
+
+fn main() {
+    print(1)
+}
+/* never closed   // error: the comment has no `*/`

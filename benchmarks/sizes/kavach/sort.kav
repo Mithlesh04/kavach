@@ -1,0 +1,18 @@
+// Sorting `--items` integers a Lehmer generator makes.
+use std.cli
+
+type Args {
+    items: Int = 10_000_000
+}
+
+fn main() ! Error {
+    const args = try cli.parse<Args>()
+    let xs: [Int] = []
+    let j = 12345
+    for _ in 0..args.items {
+        j = j * 48271 % 2147483647
+        xs.push(j)
+    }
+    const sorted = xs.sort()
+    print(sorted[0] + sorted[sorted.len() / 2] + sorted[sorted.len() - 1])
+}

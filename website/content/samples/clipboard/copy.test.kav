@@ -1,0 +1,12 @@
+use std.clipboard
+
+/// Copies a receipt line, and gives back what the clipboard then holds.
+fn copy_receipt(order_id: Int) -> String ! ClipboardError uses Clipboard
+    ensure result == "order {order_id}: refunded"
+{
+    try clipboard.write_text("order {order_id}: refunded")
+    try clipboard.read_text()
+}
+
+fn main() {
+}

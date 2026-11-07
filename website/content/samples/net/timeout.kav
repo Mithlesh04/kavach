@@ -1,0 +1,22 @@
+use std.net
+use std.time
+
+fn silent(listener: Listener) ! NetError uses Net, Clock {
+    const conn = try listener.accept()
+    time.sleep(2.seconds)
+    conn.close()
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn silent(listener)
+    const conn = try net.connect(listener.address())
+    const data = conn.read().timeout(200.ms) catch e => match e {
+        NetError.TimedOut(_) => {
+            print("no answer within 200 ms: gave up")
+            return
+        }
+        _ => fail e,
+    }
+    print(data)
+}

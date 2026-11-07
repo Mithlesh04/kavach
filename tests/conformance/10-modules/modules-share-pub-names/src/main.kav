@@ -1,0 +1,19 @@
+// Rule: `use` brings in another module; its `pub` names are used through it, or directly.
+// Spec: 10.2
+// expect output: 100
+// expect output: #1: 100
+// expect output: #2: 50
+
+use orders
+use billing.invoice.{line}
+
+fn main() {
+    const list = [
+        orders.Order(id: 1, amount: 100, status: orders.Status.Paid),
+        orders.Order(id: 2, amount: 50),
+    ]
+    print(orders.total_paid(list))
+    for o in list {
+        print(line(o))
+    }
+}

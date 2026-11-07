@@ -1,0 +1,11 @@
+// Rule: A `Date` that can't exist can't be made: February 30 breaks its invariant.
+// Spec: 14.4
+// expect panic
+
+use std.time
+
+fn main() {
+    const day = 30
+    const d = time.Date(year: 2026, month: 2, day: day)
+    print(d.iso())
+}

@@ -1,0 +1,20 @@
+[package]
+name = "kavach-driver"
+description = "Runs the Kavach compiler pipeline and renders its messages"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+kavach-ast = { path = "../ast" }
+kavach-checker = { path = "../checker" }
+kavach-parser = { path = "../parser" }
+kavach-resolver = { path = "../resolver" }
+kavach-runtime-core = { path = "../../runtime/core" }
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+
+[lints]
+workspace = true

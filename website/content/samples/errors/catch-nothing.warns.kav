@@ -1,0 +1,4 @@
+fn main() {
+    const two = Int("2") catch 0
+    print(two)
+}

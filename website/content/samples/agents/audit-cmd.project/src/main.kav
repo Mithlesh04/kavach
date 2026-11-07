@@ -1,0 +1,15 @@
+type Order {
+    id: Int
+    secret card: String
+}
+
+fn charge(secret card: String, amount: Int) -> String {
+    "charged {amount}, card of {card.len()} digits"
+}
+
+fn main() {
+    const order = Order(id: 7, card: "4242424242421881")
+    print(charge(order.card, 499))
+    const card = reveal(order.card)
+    print("ends in {card.slice(12, 16)}")
+}

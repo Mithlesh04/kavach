@@ -1,0 +1,18 @@
+// Rule: A never-used variable that hides a `let` of the same name in an outer scope gets a warning that says so.
+// Spec: 1.4
+// expect warning
+// expect output: 0
+// expect output: 3
+
+fn main() {
+    let total = 0
+    for i in 0..3 {
+        let total = total + i    // warning: makes a new `total`, hiding the one declared above
+    }
+    print(total)
+    let count = 0
+    for _ in 0..3 {
+        count = count + 1
+    }
+    print(count)
+}

@@ -1,0 +1,18 @@
+type Rect {
+    width: Float
+    height: Float
+
+    fn area(self) -> Float {
+        self.width * self.height
+    }
+
+    fn square(size: Float) -> Rect {
+        Rect(width: size, height: size)
+    }
+}
+
+fn main() {
+    const r = Rect(width: 3.0, height: 2.0)
+    print(r.area())
+    print(Rect.square(4.0).area())
+}

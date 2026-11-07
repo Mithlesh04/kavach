@@ -1,0 +1,6 @@
+use std.agents
+
+fn count() -> Int uses Console {
+    print("counting")
+    agents.waiting().len()
+}

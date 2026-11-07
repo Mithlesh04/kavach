@@ -1,0 +1,9 @@
+use std.math
+
+fn main() {
+    print(math.floor(2.7))
+    print(math.ceil(2.1))
+    print(math.round(2.5))
+    print(math.round(-2.5))
+    print(Int(2.7))
+}

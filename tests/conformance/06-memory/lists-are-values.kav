@@ -1,0 +1,12 @@
+// Rule: Assigning a list never shares it; changing the copy leaves the original alone.
+// Spec: 6.1
+// expect output: 3
+// expect output: 4
+
+fn main() {
+    let a = [1, 2, 3]
+    let b = a
+    b.push(4)
+    print(a.len())
+    print(b.len())
+}

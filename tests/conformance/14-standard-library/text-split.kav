@@ -1,0 +1,15 @@
+// Rule: split returns the parts between separators, empty parts included.
+// Spec: 14.2
+// expect output: ["a", "b", "", "c"]
+// expect output: ["", "x", ""]
+// expect output: ["one", "two"]
+// expect output: ["α", "γ"]
+// expect output: ["no separator"]
+
+fn main() {
+    print("a,b,,c".split(","))
+    print(",x,".split(","))
+    print("one::two".split("::"))
+    print("αβγ".split("β"))
+    print("no separator".split(";"))
+}

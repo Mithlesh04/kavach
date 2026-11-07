@@ -1,0 +1,6 @@
+// Mistake: An overflow the values already show.
+
+fn main() {
+    const limit: Int32 = 2147483647
+    print(limit + 1)
+}

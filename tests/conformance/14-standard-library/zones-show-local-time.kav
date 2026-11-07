@@ -1,0 +1,15 @@
+// Rule: A `Zone` from `time.zone(name)` gives the date and time its clocks show at a moment, daylight saving time included.
+// Spec: 14.4
+// expect output: 1970-01-01T05:30:00
+// expect output: 2026-01-01T07:00:00
+// expect output: 2026-07-01T08:00:00
+
+use std.time
+
+fn main() ! Error {
+    const india = try time.zone("Asia/Kolkata")
+    print(india.at(0).iso())
+    const new_york = try time.zone("America/New_York")
+    print(new_york.at(1_767_268_800_000).iso())     // 2026-01-01T12:00:00Z, winter
+    print(new_york.at(1_782_907_200_000).iso())     // 2026-07-01T12:00:00Z, summer
+}

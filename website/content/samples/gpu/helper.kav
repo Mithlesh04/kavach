@@ -1,0 +1,13 @@
+use std.math
+
+gpu fn square(x: Float32) -> Float32 {
+    x * x
+}
+
+gpu fn hypotenuse(a: Float32, b: Float32) -> Float32 {
+    math.sqrt(square(a) + square(b))
+}
+
+fn main() {
+    print(hypotenuse(3.0, 4.0))
+}

@@ -1,0 +1,41 @@
+// Records, unions, functions, lists and match.
+
+type Status = Pending | Paid | Refunded
+
+type Order {
+    id: Int
+    customer: String
+    amount: Decimal
+    status: Status = Status.Pending
+}
+
+/// Sum of all paid orders. No `uses` clause, so this function is pure.
+fn total_paid(orders: [Order]) -> Decimal {
+    orders.filter(.status == Status.Paid).sum(.amount)
+}
+
+fn label(status: Status) -> String {
+    match status {
+        Status.Pending => "waiting for payment"
+        Status.Paid => "paid"
+        Status.Refunded => "refunded"
+    }
+}
+
+fn main() {
+    const orders = [
+        Order(id: 1, customer: "Asha", amount: 499.00, status: Status.Paid),
+        Order(id: 2, customer: "Ravi", amount: 1_250.50),
+        Order(id: 3, customer: "Meera", amount: 89.99, status: Status.Paid),
+    ]
+
+    for order in orders {
+        print("#{order.id} {order.customer}: {label(order.status)}")
+    }
+
+    print("Total paid: {total_paid(orders)}")
+
+    // Records are values: `with` makes an updated copy.
+    const refunded = orders[0] with { status: Status.Refunded }
+    print("Order {refunded.id} is now {label(refunded.status)}")
+}

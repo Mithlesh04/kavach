@@ -1,0 +1,5 @@
+fn main() {
+    let small: [UInt8] = [250, 10]
+    print(small.len())
+    print(small[0] + small[1])
+}

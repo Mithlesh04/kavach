@@ -1,0 +1,11 @@
+use std.time
+
+fn main() ! Error {
+    const at = try time.parse_moment("2026-11-04T14:35:30+05:30")
+    print(at)
+    const berlin = try time.zone("Europe/Berlin")
+    print(berlin.iso(at))
+    print((try time.parse_time("09:05")).iso())
+    print((try time.parse_datetime("2026-11-04T09:05:30.250")).iso())
+    print((try time.parse_time("09:05:30.1239")).ms)
+}

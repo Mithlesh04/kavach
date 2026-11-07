@@ -1,0 +1,14 @@
+// Rule: `b.xxhash64()` is the XXH64 hash of the bytes with seed 0, a `UInt64`, matching the reference implementation.
+// Spec: 2.13
+// expect output: 17241709254077376921
+// expect output: 10139926970967174787
+// expect output: 5871943873476799531
+// expect output: true
+
+fn main() {
+    print(Bytes([]).xxhash64())
+    print("123456789".bytes().xxhash64())
+    print("abc".repeat(100).bytes().xxhash64())
+    // The same bytes, the same hash, however they were made.
+    print(("1234".bytes() + "56789".bytes()).xxhash64() == "123456789".bytes().xxhash64())
+}

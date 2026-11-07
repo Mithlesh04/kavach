@@ -1,0 +1,42 @@
+// Rule: A value is freed when its last use ends, also when the expression it was made for leaves early with `??`, `try`, `return` or `continue`.
+// Spec: 6.1, 2.7, 5.2
+// expect output: ab
+// expect output: none
+// expect output: failed
+// expect output: XYZg
+// expect output: 6
+
+type Oops = Bad(reason: String)
+
+fn joined(left: String, right: String?) -> String? {
+    const both = left.upper().lower() + (right ?? return none)
+    both
+}
+
+fn part(ok: Bool) -> String ! Oops {
+    if not ok {
+        fail Oops.Bad(reason: "no")
+    }
+    "g"
+}
+
+fn tried(ok: Bool) -> String ! Oops {
+    "xyz".upper() + (try part(ok))
+}
+
+fn counted(xs: [Int?]) -> Int {
+    let total = 0
+    for x in xs {
+        const s = "n".repeat(2) + "{x ?? continue}"
+        total += s.len()
+    }
+    total
+}
+
+fn main() {
+    print(joined("a", "b") ?? "none")
+    print(joined("a", none) ?? "none")
+    print(tried(false) catch _ => "failed")
+    print(tried(true) catch _ => "failed")
+    print(counted([1, none, 3]))
+}

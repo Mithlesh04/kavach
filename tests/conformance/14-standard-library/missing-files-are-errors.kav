@@ -1,0 +1,12 @@
+// Rule: A file operation that fails returns an error value, not a crash: an `FsError`.
+// Spec: 14.3
+// expect output: NotFound(path: "no-such-file.txt")
+
+use std.fs
+
+fn main() {
+    const _text = fs.read_text("no-such-file.txt") catch e => {
+        print(e)
+        ""
+    }
+}

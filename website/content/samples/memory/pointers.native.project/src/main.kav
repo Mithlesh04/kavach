@@ -1,0 +1,11 @@
+fn main() {
+    unsafe {
+        const p: Ptr<Int32> = alloc(3)
+        *p = 7
+        p[1] = 8
+        const q = p + 2
+        *q = *p + p[1]
+        print(p[2])
+        free(p)
+    }
+}

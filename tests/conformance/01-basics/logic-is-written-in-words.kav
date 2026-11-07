@@ -1,0 +1,8 @@
+// Rule: Logic is written in words: `!ready` is a compile error that says to write `not` (as `&&` and `||` say `and` and `or`).
+// Spec: 1.8
+// expect compile error
+
+fn main() {
+    const ready = true
+    print(!ready)          // error: Kavach has no `!` for "not": write `not`
+}

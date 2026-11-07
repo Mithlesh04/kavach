@@ -1,0 +1,9 @@
+fn main() {
+    const visits = ["asha", "ravi", "asha", "mira", "ravi"]
+    let people = Set.of()
+    for name in visits {
+        people.add(name)
+    }
+    print(people.len())
+    print(people.to_list())
+}

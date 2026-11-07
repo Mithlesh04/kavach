@@ -1,0 +1,46 @@
+// Rule: A list of 16- or 32-bit numbers holds every value of its item type, which it gives back, sorts and copies unchanged.
+// Spec: 2.2
+// expect output: [-32768, 300, -1, -5]
+// expect output: [65535, 1, 2]
+// expect output: [42, 5, -2147483648, 2147483647, -7]
+// expect output: [-2147483648, -7, 5, 42, 2147483647]
+// expect output: [4294967295, 0, 7, 9]
+// expect output: [9.75, -2.25, 3.0, 0.5]
+// expect output: -4.5
+// expect output: -500 499 -500
+// expect output: -500 1 false
+
+fn main() {
+    let c: [Int16] = [-32768, 32767, -1]
+    c.push(-5)
+    c[1] = 300
+    print(c)
+    let d: [UInt16] = [65535, 1]
+    d.push(2)
+    print(d)
+
+    let a: [Int32] = [-1, 5, -2147483648, 2147483647]
+    a.push(-7)
+    a[0] = 42
+    print(a)
+    print(a.sort())
+    let b: [UInt32] = [4294967295, 0, 7]
+    b.push(9)
+    print(b)
+
+    let f: [Float32] = [1.5, -2.25, 3.0]
+    f.push(0.5)
+    f[0] = 9.75
+    print(f)
+    print(f[1] * 2.0)
+
+    // Many items, pushed one at a time; a copy keeps its own values.
+    let big: [Int32] = []
+    for i in 0..1000 {
+        big.push(Int32(i - 500))
+    }
+    print("{big[0]} {big[999]} {big.sort()[0]}")
+    const copy = big
+    big[0] = 1
+    print("{copy[0]} {big[0]} {copy == big}")
+}

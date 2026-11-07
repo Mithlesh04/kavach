@@ -1,0 +1,8 @@
+$ kavach check src/main.kav
+src/main.kav:26: note: this loop waits for the GPU each round: the loop also reads what it adds up to
+src/main.kav:31: note: this loop waits for the GPU each round: the statement does more than work out numbers
+src/main.kav:35: note: this loop waits for the GPU each round: the loop can leave in the middle of an expression
+src/main.kav:42: note: this loop waits for the GPU each round: the statement reads a value the loop changes
+src/main.kav:46: note: this loop waits for the GPU each round: the round uses the sum at once
+src/main.kav:49: note: this loop waits for the GPU each round: the CPU reads the result each round
+src/main.kav: no errors

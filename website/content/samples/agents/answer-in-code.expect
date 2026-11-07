@@ -1,0 +1,5 @@
+$ kavach run src/main.kav
+Refunder-1-1: Payments.refund(order: 1, amount: 900), by finance when amount > 100
+refunded 900 on order 1
+again: NotWaiting(id: "Refunder-1-1")
+approval needed by finance: Payments.refund(order: 1, amount: 900) (request Refunder-1-1): kavach approve Refunder-1-1 --as <name>, or kavach deny

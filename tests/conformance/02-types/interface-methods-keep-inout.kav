@@ -1,0 +1,21 @@
+// Rule: A method that implements an interface's method marks the same parameters `inout`.
+// Spec: 2.8, 3.9
+// expect compile error
+
+interface Counter {
+    fn bump(self, inout n: Int)
+}
+
+type Step: Counter {     // error: `n` of `Step.bump` is not `inout`
+    size: Int
+
+    fn bump(self, n: Int) {
+        print(n + self.size)
+    }
+}
+
+fn main() {
+    const c: Counter = Step(size: 3)
+    let n = 1
+    c.bump(n)
+}

@@ -1,0 +1,16 @@
+// Rule: A `match` case names its variant with its union's name, as values do: a bare case is a compile error.
+// Spec: 2.6, 4.3
+// expect compile error
+
+type Status = Pending | Paid | Refunded
+
+fn describe(s: Status) -> String {
+    match s {
+        Paid => "paid",     // error: write `Status.Paid`
+        _ => "not paid",
+    }
+}
+
+fn main() {
+    print(describe(Status.Paid))
+}

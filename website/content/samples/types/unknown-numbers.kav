@@ -1,0 +1,10 @@
+use std.json
+
+fn main() ! Error {
+    const prices = try json.parse("[10, 2.5, \"free\", 7]")
+    let total = 0.0
+    for p in prices.list() ?? [] {
+        total += p.float() ?? 0.0
+    }
+    print(total)
+}

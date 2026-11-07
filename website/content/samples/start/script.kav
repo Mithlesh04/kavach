@@ -1,0 +1,3 @@
+print("Hello, Kavach!")
+const year = 2026
+print("Written in {year}")

@@ -1,0 +1,51 @@
+// Rule: an interface name is also a value type: any type that implements it fits, in parameters and lists alike, and a method call finds the concrete type's method at run time.
+// Spec: 2.15
+// expect output: User Asha
+// expect output: Rect 2x3
+// expect output: User Ravi
+// expect output: Rect 1x1
+// expect output: User(name: "Asha")
+// expect output: true
+// expect output: false
+
+interface Describe {
+    fn describe(self) -> String
+}
+
+type User: Describe {
+    name: String
+
+    fn describe(self) -> String {
+        "User {self.name}"
+    }
+}
+
+type Rect: Describe {
+    width: Int
+    height: Int
+
+    fn describe(self) -> String {
+        "Rect {self.width}x{self.height}"
+    }
+}
+
+fn announce(sink: Describe) {
+    print(sink.describe())
+}
+
+fn main() {
+    announce(User(name: "Asha"))
+    announce(Rect(width: 2, height: 3))
+    const all: [Describe] = [User(name: "Ravi"), Rect(width: 1, height: 1)]
+    for d in all {
+        print(d.describe())
+    }
+    // Printing shows the concrete value; equality is the same concrete
+    // type with equal values.
+    const a: Describe = User(name: "Asha")
+    const b: Describe = User(name: "Asha")
+    const c: Describe = Rect(width: 1, height: 1)
+    print(a)
+    print(a == b)
+    print(a == c)
+}

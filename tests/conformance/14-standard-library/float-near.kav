@@ -1,0 +1,13 @@
+// Rule: `x.near(y)` is true for floats equal but for rounding, and never for `NaN`.
+// Spec: 14.2
+// expect output: true false
+// expect output: true false
+
+fn main() {
+    let a = 0.1
+    const sum = a + 0.2
+    print("{sum.near(0.3)} {sum.near(0.31)}")
+    const nan = 0.0 / 0.0
+    const inf = 1.0 / 0.0
+    print("{inf.near(inf)} {nan.near(nan)}")
+}

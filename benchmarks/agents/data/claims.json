@@ -1,0 +1,14 @@
+[
+  {"id": 1, "amount": 1800, "text": "Another car hit mine at a red light; police report and repair quote attached.", "expect": "pay"},
+  {"id": 2, "amount": 900, "text": "A pipe burst in the kitchen and flooded the floor. Plumber's invoice attached.", "expect": "pay"},
+  {"id": 3, "amount": 400, "text": "My sofa is worn out after ten years, please replace it.", "expect": "deny"},
+  {"id": 4, "amount": 3500, "text": "Burglars took my laptop and TV. Police report number 88-1042 attached.", "expect": "review"},
+  {"id": 5, "amount": 650, "text": "I cancelled my trip because I had the flu; doctor's note attached.", "expect": "pay"},
+  {"id": 6, "amount": 1200, "text": "The river flooded the basement after a week of rain.", "expect": "deny"},
+  {"id": 7, "amount": 700, "text": "My suitcase was lost on the flight. I have no report from the airline.", "expect": "deny"},
+  {"id": 8, "amount": 2400, "text": "Car accident yesterday, second claim this month, no photos, please pay in cash today, it is urgent.", "expect": "review"},
+  {"id": 9, "amount": 300, "text": "A scratch on the car door, purely cosmetic.", "expect": "deny"},
+  {"id": 10, "amount": 1500, "text": "Burst pipe in the bathroom damaged the ceiling below; photos and invoice attached.", "expect": "pay"},
+  {"id": 11, "amount": 1900, "text": "Stolen bicycle and phone from my house; I didn't report it to the police.", "expect": "deny"},
+  {"id": 12, "amount": 800, "text": "Trip cancelled because my father was taken to hospital; hospital letter attached.", "expect": "pay"}
+]

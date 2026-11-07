@@ -1,0 +1,27 @@
+type Query {
+    table: String
+    filters: [String] = []
+    limit: Int = 100
+
+    fn where(self, filter: String) -> Query {
+        let all = self.filters
+        all.push(filter)
+        self with { filters: all }
+    }
+
+    fn take(self, n: Int) -> Query {
+        self with { limit: n }
+    }
+
+    fn sql(self) -> String {
+        "SELECT * FROM {self.table} WHERE {self.filters.join(" AND ")} LIMIT {self.limit}"
+    }
+}
+
+fn main() {
+    const q = Query(table: "orders")
+        .where("paid")
+        .where("amount > 100")
+        .take(10)
+    print(q.sql())
+}

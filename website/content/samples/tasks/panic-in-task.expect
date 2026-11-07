@@ -1,0 +1,6 @@
+$ kavach run src/main.kav
+main waits
+panicked: index 2 is out of range: the list has 2 items at src/main.kav:2
+main goes on
+panic: index 2 is out of range: the list has 2 items
+  at src/main.kav:2

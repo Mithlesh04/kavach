@@ -1,0 +1,35 @@
+// Rule: A file can get its own limit in `[limits.files]` of kavach.toml.
+// Spec: 12.1
+// expect output: 3
+
+// This folder's kavach.toml sets file_lines = 30, but 40 for this file,
+// so its 35 lines are fine.
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+fn one() -> Int {
+    1
+}
+
+fn two() -> Int {
+    2
+}
+
+fn main() {
+    print(one() + two())
+}

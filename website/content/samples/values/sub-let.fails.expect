@@ -1,0 +1,1 @@
+error: `price` is a `const`, so it can't change: declare it with `let`

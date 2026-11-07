@@ -1,0 +1,5 @@
+fn main() {
+    const name = "Asha"
+    const limit: Int = 10
+    print("{name} may borrow {limit} books")
+}

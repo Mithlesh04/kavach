@@ -1,0 +1,18 @@
+// Rule: `fail` returns an error; `catch value` uses a default instead.
+// Spec: 5.1
+// expect output: 30
+// expect output: 0
+
+type AgeError = TooLarge(value: Int)
+
+fn check_age(age: Int) -> Int ! AgeError {
+    if age > 150 {
+        fail AgeError.TooLarge(value: age)
+    }
+    age
+}
+
+fn main() {
+    print(check_age(30) catch 0)
+    print(check_age(200) catch 0)
+}

@@ -1,0 +1,11 @@
+// Rule: A record pattern can only name fields the record has.
+// Spec: 1.12
+// expect compile error
+
+type User {
+    name: String
+}
+
+fn main() {
+    const { zip } = User(name: "Asha")       // error: User has no field zip
+}

@@ -1,0 +1,13 @@
+// Rule: Listing, opening, reading and writing serial ports needs the capability `Serial`.
+// Spec: 14.18, 8.1
+// expect compile error
+
+use std.devices
+
+pub fn ports() -> Int uses Console {
+    devices.serial_ports().len()      // error: ports doesn't list Serial
+}
+
+fn main() {
+    print(ports())
+}

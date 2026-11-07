@@ -1,0 +1,14 @@
+type Note: Drop {
+    name: String
+
+    fn drop(self) uses Console {
+        print("freed {self.name}")
+    }
+}
+
+fn main() {
+    let notes = [Note(name: "first")]
+    notes.push(Note(name: "second"))     // lives as long as the list holds it
+    print("{notes.len()} notes")
+    print("end of main")
+}

@@ -1,0 +1,36 @@
+// Rule: A lambda calling `gpu fn`s maps a list of records or tuples of the four types, reading their fields.
+// Spec: 15.2
+// expect output: [2.0, 5.0, -1.0]
+// expect output: [13, 26, 39]
+
+use std.collections
+
+type Particle {
+    x: Float32
+    v: Float32
+    alive: Bool
+}
+
+gpu fn step(x: Float32, v: Float32, alive: Bool) -> Float32 {
+    if alive {
+        x + v * 0.5
+    } else {
+        x
+    }
+}
+
+gpu fn madd(a: Int32, b: Int32) -> Int32 {
+    a * 3 + b
+}
+
+fn main() {
+    const ps = [
+        Particle(x: 1.0, v: 2.0, alive: true),
+        Particle(x: 5.0, v: -4.0, alive: false),
+        Particle(x: -1.5, v: 1.0, alive: true),
+    ]
+    print(ps.map(p => step(p.x, p.v, p.alive)))
+    const a: [Int32] = [1, 2, 3, 4]
+    const b: [Int32] = [10, 20, 30]
+    print(collections.zip(a, b).map(t => madd(t.0, t.1)))   // as long as the shorter list
+}

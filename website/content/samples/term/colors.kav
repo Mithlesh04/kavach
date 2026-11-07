@@ -1,0 +1,7 @@
+use std.term
+
+fn main() {
+    print(term.red("error:") + " file not found")
+    print(term.bold(term.green("done") + " in 2 s"))
+    print(term.yellow("warning:") + " " + term.underline("disk") + " almost full")
+}

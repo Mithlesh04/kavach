@@ -1,0 +1,4 @@
+refunded 400 on order 1
+refused: Denied(reason: "limit broken: amount <= 500")
+refunded 250 on order 3
+refused: Denied(reason: "limit broken: sum(amount) <= 700 per day")

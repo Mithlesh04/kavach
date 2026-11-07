@@ -1,0 +1,7 @@
+fn main() {
+    const names = ["Asha", "Ravi", "Meena"]
+    print(names[0])
+    print(names[2])
+    print(names.get(5) ?? "nobody")
+    print(names.len())
+}

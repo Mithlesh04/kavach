@@ -1,0 +1,8 @@
+gpu fn limit(sample: Float32, gain: Float32) -> Float32 {
+    (sample * gain).clamp(-1.0, 1.0)
+}
+
+fn main() {
+    const audio: [Float32] = [0.1, -0.3, 0.6, -0.9]
+    print(audio.map(s => limit(s, 2.0)))
+}

@@ -1,0 +1,14 @@
+// Rule: `task.cancel()` stops a task at once, even one in a loop that never waits.
+// Spec: 9.6
+// expect output: stopped
+
+fn main() {
+    const counting = spawn {
+        let n = 0
+        while true {
+            n += 1
+        }
+    }
+    counting.cancel()
+    print("stopped")
+}

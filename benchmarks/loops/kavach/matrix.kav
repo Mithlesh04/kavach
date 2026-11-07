@@ -1,0 +1,30 @@
+// Nested lists: multiply two 300 x 300 matrices (27 million multiply-adds).
+fn make(n: Int, seed: Int) -> [[Float]] {
+    let rows: [[Float]] = []
+    for i in 0..n {
+        let row: [Float] = []
+        for j in 0..n {
+            row.push(Float((i * seed + j) % 10))
+        }
+        rows.push(row)
+    }
+    rows
+}
+
+fn main() {
+    const n = 300
+    const a = make(n, 3)
+    const b = make(n, 7)
+    let total = 0.0
+    for i in 0..n {
+        const row = a[i]
+        for j in 0..n {
+            let cell = 0.0
+            for k in 0..n {
+                cell += row[k] * b[k][j]
+            }
+            total += cell
+        }
+    }
+    print(total)
+}

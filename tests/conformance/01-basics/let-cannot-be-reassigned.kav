@@ -1,0 +1,8 @@
+// Rule: A `const` binding cannot be reassigned.
+// Spec: 1.4
+// expect compile error
+
+fn main() {
+    const count = 1
+    count = 2           // error: count is a let, so it cannot change
+}

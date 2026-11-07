@@ -1,0 +1,15 @@
+// Rule: Number types convert explicitly with `T(value)`; reading text can fail, so it takes `try` or `catch`.
+// Spec: 2.1
+// expect output: true
+// expect output: 43
+// expect output: 0
+
+fn main() {
+    const n: Int = 7
+    print(Float(n) == 7.0)
+    const text = "42"
+    const parsed = Int(text) catch 0
+    print(parsed + 1)
+    const bad = "23sd"
+    print(Int(bad) catch 0)
+}

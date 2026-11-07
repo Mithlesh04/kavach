@@ -1,0 +1,18 @@
+[package]
+name = "kavach-lsp"
+description = "The Kavach language server: errors as you type, in any editor that speaks LSP"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+kavach-ast = { path = "../../compiler/ast" }
+kavach-checker = { path = "../../compiler/checker" }
+kavach-driver = { path = "../../compiler/driver" }
+kavach-resolver = { path = "../../compiler/resolver" }
+serde_json = "1"
+
+[lints]
+workspace = true

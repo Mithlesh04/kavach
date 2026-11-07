@@ -1,0 +1,11 @@
+// Rule: A record has no order: `<` on two records is a compile error.
+// Spec: 1.8
+// expect compile error
+
+type Point {
+    x: Int
+}
+
+fn main() {
+    print(Point(x: 1) < Point(x: 2))       // error: `<` needs values with an order
+}

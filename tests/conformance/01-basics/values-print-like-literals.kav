@@ -1,0 +1,31 @@
+// Rule: print shows values the way they are written in code.
+// Spec: 1.11
+// expect output: 7.0
+// expect output: 499.00
+// expect output: [1, 2]
+// expect output: ["a", "b"]
+// expect output: User(name: "Asha", age: 31)
+// expect output: TooLarge(value: 200)
+// expect output: none
+// expect output: (200, "OK")
+
+type User {
+    name: String
+    age: Int
+}
+
+type AgeError = TooLarge(value: Int)
+
+fn main() {
+    const f: Float = 7.0
+    const price: Decimal = 499.00
+    const missing: Int? = none
+    print(f)
+    print(price)
+    print([1, 2])
+    print(["a", "b"])
+    print(User(name: "Asha", age: 31))
+    print(AgeError.TooLarge(value: 200))
+    print(missing)
+    print((200, "OK"))
+}

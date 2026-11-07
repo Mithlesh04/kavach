@@ -1,0 +1,7 @@
+﻿// Rule: a byte order mark at the start of a file counts as a space.
+// Spec: 1.1
+// expect output: hello
+
+fn main() {
+    print("hello")
+}

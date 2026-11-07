@@ -1,0 +1,23 @@
+// Rule: tasks may compute at the same time, but what they print happens in the order of their turns: a task that finishes computing first still waits for the turns before it.
+// Spec: 9.7
+// expect output: done
+// expect output: long: 999999000000
+// expect output: short: 45
+
+fn sum_to(n: Int) -> Int {
+    let total = 0
+    for i in 0..n {
+        total += i * 2
+    }
+    total
+}
+
+fn main() {
+    const _long = spawn {
+        print("long: {sum_to(1_000_000)}")
+    }
+    const _short = spawn {
+        print("short: {sum_to(10) / 2}")
+    }
+    print("done")
+}

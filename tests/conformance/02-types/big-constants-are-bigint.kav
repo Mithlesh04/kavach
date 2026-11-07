@@ -1,0 +1,16 @@
+// Rule: A constant of whole-number literals that doesn't fit `Int`, with no type written, is an exact `BigInt`.
+// Spec: 2.1
+// expect output: 5486765947055418407382
+// expect output: 5486765947055418407383
+// expect output: 1267650600228229401496703205376
+// expect output: 123456789012345678901234567891
+// expect output: 9223372036854775807
+
+fn main() {
+    let d = 234234 * 23424293429030023
+    print(d)
+    print(d + 1)                                   // 1 is a BigInt here
+    print(2 ** 100)
+    print(123456789012345678901234567890 + 1)      // a literal of any size
+    print(9223372036854775807)                     // fits: an Int
+}

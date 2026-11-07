@@ -1,0 +1,33 @@
+// Rule: A `for` over `0..=xs.len()` that reads `xs[i]` gets a warning: its last turn reads one past the end. A loop that changes `xs`, or leaves first, gets none.
+// Spec: 4.4
+// expect warning
+// expect output: 3
+// expect output: 1
+
+fn show(xs: [Int]) {
+    for i in 0..=xs.len() {     // warning: `i` reaches `xs.len()`
+        print(xs[i])
+    }
+}
+
+fn grow() -> Int {
+    let xs = [0]
+    for i in 0..=xs.len() {
+        if i > 8 {
+            break
+        }
+        xs.push(xs[i] + 1)
+    }
+    xs.len()
+}
+
+fn main() {
+    print(grow())
+    if grow() > 99 {
+        show([1])
+    }
+    const ys = [1]
+    for i in 0..ys.len() {
+        print(ys[i])
+    }
+}

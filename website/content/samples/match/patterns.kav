@@ -1,0 +1,15 @@
+fn main() {
+    const score = 72
+    print(match score {
+        90..=100 => "A"
+        75..=89 => "B"
+        0..=74 => "C"
+        _ => "not a score"
+    })
+    const point = (0, 5)
+    print(match point {
+        (0, 0) => "the origin"
+        (0, y) => "on the y axis, at {y}"
+        _ => "somewhere else"
+    })
+}

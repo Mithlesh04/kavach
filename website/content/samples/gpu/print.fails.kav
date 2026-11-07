@@ -1,0 +1,7 @@
+gpu fn twice(x: Float32) -> Float32 {
+    print(x)
+    x * 2.0
+}
+
+fn main() {
+}

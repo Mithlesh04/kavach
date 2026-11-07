@@ -1,0 +1,340 @@
+// std.grpc (spec 14.14, decision 0027): gRPC clients and servers from
+// Kavach types, written in Kavach on std.http.h2. A call is an HTTP/2
+// POST to `/<service>/<method>` with `content-type: application/grpc`;
+// each message is a Protocol Buffers message (`protobuf.kav`) behind a
+// 5-byte prefix, and the status comes in the `grpc-status` trailer.
+// Variants are written `GrpcError.Status`: a program may have its own.
+
+use std.grpc.frames
+use std.grpc.protobuf
+use std.http.h2
+use std.http.hpack
+use std.json
+use std.net
+
+/// A call as a server's handler gets it: the method's path and the
+/// messages the client sent, still encoded (`read` and `read_all` decode
+/// them). `message` is the first; a client that streams sends several.
+pub type GrpcCall {
+    pub method: String
+    pub message: Bytes
+    pub messages: [Bytes]
+}
+
+/// A server's answer: a message, a stream of messages, or a gRPC
+/// status other than OK.
+pub type GrpcReply = Message(data: Bytes) | Stream(messages: [Bytes]) | Failed(code: Int, message: String)
+
+/// `value` as a Protocol Buffers message.
+pub fn encode<T>(value: T) -> Bytes {
+    const schema = json.schema<T>()
+    protobuf.encode(json.of(value), schema) catch e => {
+        panic("this type can't go into a gRPC message yet: unions and maps can't (spec 14.14)")
+    }
+}
+
+/// A Protocol Buffers message decoded into a `T`.
+pub fn decode<T>(data: Bytes) -> T ! GrpcError {
+    const tree = protobuf.decode(data, json.schema<T>()) catch e => {
+        fail GrpcError.BadMessage(reason: "{e}")
+    }
+    json.decode_value<T>(tree) catch e => fail GrpcError.BadMessage(reason: "{e}")
+}
+
+/// A call's message decoded into a `T`.
+pub fn read<T>(call: GrpcCall) -> T ! GrpcError {
+    try decode<T>(call.message)
+}
+
+/// Every message the client sent on `call`, in order, each decoded into a `T`.
+pub fn read_all<T>(call: GrpcCall) -> [T] ! GrpcError {
+    let values: [T] = []
+    for m in call.messages {
+        values.push(try decode<T>(m))
+    }
+    values
+}
+
+/// An answer with `value`.
+pub fn reply<T>(value: T) -> GrpcReply {
+    GrpcReply.Message(data: encode<T>(value))
+}
+
+/// An answer that streams `values`, one message each (spec 14.14).
+pub fn reply_stream<T>(values: [T]) -> GrpcReply {
+    GrpcReply.Stream(messages: values.map(v => encode<T>(v)))
+}
+
+/// An answer with gRPC status `code` (not 0) and `message`.
+pub fn failed(code: Int, message: String) -> GrpcReply {
+    GrpcReply.Failed(code: code, message: message)
+}
+
+/// Calls `method` (`/shop.Orders/Place`) on the server at `target`
+/// (`http://host:port`, or `https://` for TLS) with `request`.
+pub fn call<Req, Res>(target: String, method: String, request: Req) -> Res ! GrpcError uses Net {
+    try answer<Res>(target, method, frames.framed(encode<Req>(request)))
+}
+
+/// Client streaming: calls `method` with each of `requests` as its own
+/// message on one stream, and decodes the one answer.
+pub fn call_stream<Req, Res>(target: String, method: String, requests: [Req]) -> Res ! GrpcError uses Net {
+    try answer<Res>(target, method, framed_all<Req>(requests))
+}
+
+/// Calls streaming `method` on the server at `target` with `request`,
+/// running `on` for each message as it arrives; returns when the server
+/// finishes with status OK, and fails with `Status` otherwise.
+pub fn each<Req, Res>(target: String, method: String, request: Req, on: fn(Res)) ! GrpcError uses Net {
+    try answers<Res>(target, method, frames.framed(encode<Req>(request)), on)
+}
+
+/// Two-way streaming: sends each of `requests` on one stream, ends the
+/// client's side, then runs `on` for each answer as it arrives, like `each`.
+pub fn each_stream<Req, Res>(target: String, method: String, requests: [Req], on: fn(Res)) ! GrpcError uses Net {
+    try answers<Res>(target, method, framed_all<Req>(requests), on)
+}
+
+/// A two-way conversation: sends `first`, then runs `on` for each answer
+/// as it arrives; `on` gives the messages to send next, or none to end
+/// the client's side. Returns when the server finishes with status OK.
+pub fn talk_with<Req, Res>(target: String, method: String, first: [Req], on: fn(Res) -> [Req]?) ! GrpcError uses Net {
+    const o = try opening(target, method)
+    const conn = o.conn
+    let link = h2.begin(conn, o.headers) catch e => {
+        conn.close()
+        fail frames.from_h2(e)
+    }
+    link = h2.send_data(link, 1, framed_all<Req>(first), false) catch e => {
+        conn.close()
+        fail frames.from_h2(e)
+    }
+    let sending = true
+    let pending = Bytes([])
+    while true {
+        const got = h2.pull(link) catch e => {
+            conn.close()
+            fail frames.from_h2(e)
+        }
+        link = got.link
+        const split = try frames.split_messages(pending + got.data)
+        pending = split.rest
+        for m in split.messages {
+            const next = on(try decode<Res>(m))
+            if sending {
+                const more = next ?? []
+                sending = next != none
+                link = h2.send_data(link, 1, framed_all<Req>(more), not sending) catch e => {
+                    conn.close()
+                    fail frames.from_h2(e)
+                }
+            }
+        }
+        if got.ended {
+            conn.close()
+            try frames.check_status(got.trailers)
+            return
+        }
+    }
+}
+
+/// A connection to `target`, and the headers that open a call to `method`.
+type Opening {
+    conn: Connection
+    headers: [Header]
+}
+
+fn opening(target: String, method: String) -> Opening ! GrpcError uses Net {
+    const secure = target.starts_with("https://")
+    if not secure and not target.starts_with("http://") {
+        fail GrpcError.Protocol(reason: "a target starts with `http://` or `https://`: {target}")
+    }
+    const host = target.slice(if secure { 8 } else { 7 }, target.len())
+    const conn = if secure {
+        net.connect_tls(host, ["h2"]) catch e => fail GrpcError.Network(error: e)
+    } else {
+        net.connect(host) catch e => fail GrpcError.Network(error: e)
+    }
+    Opening(conn: conn, headers: [
+        Header(name: ":method", value: "POST"),
+        Header(name: ":scheme", value: if secure { "https" } else { "http" }),
+        Header(name: ":authority", value: host),
+        Header(name: ":path", value: method),
+        Header(name: "content-type", value: "application/grpc"),
+        Header(name: "te", value: "trailers"),
+    ])
+}
+
+/// Sends `body` (framed messages) and decodes the one answer.
+fn answer<Res>(target: String, method: String, body: Bytes) -> Res ! GrpcError uses Net {
+    const o = try opening(target, method)
+    const reply = h2.request(o.conn, o.headers, body) catch e => {
+        o.conn.close()
+        fail frames.from_h2(e)
+    }
+    o.conn.close()
+    try frames.check_status(reply.headers)
+    try decode<Res>(try frames.unframed(reply.body))
+}
+
+/// Sends `body` (framed messages), then runs `on` for each answer as it
+/// arrives, until the server's status.
+fn answers<Res>(target: String, method: String, body: Bytes, on: fn(Res)) ! GrpcError uses Net {
+    const o = try opening(target, method)
+    const conn = o.conn
+    let link = h2.open(conn, o.headers, body) catch e => {
+        conn.close()
+        fail frames.from_h2(e)
+    }
+    let pending = Bytes([])
+    while true {
+        const got = h2.pull(link) catch e => {
+            conn.close()
+            fail frames.from_h2(e)
+        }
+        link = got.link
+        const split = try frames.split_messages(pending + got.data)
+        pending = split.rest
+        for m in split.messages {
+            on(try decode<Res>(m))
+        }
+        if got.ended {
+            conn.close()
+            try frames.check_status(got.trailers)
+            return
+        }
+    }
+}
+
+/// Serves gRPC on `listener`: each connection in a task of its own, each
+/// call answered by `handler`.
+pub fn serve(listener: Listener, handler: fn(GrpcCall) -> GrpcReply) ! NetError uses Net {
+    try serve_talks(listener, handler, [])
+}
+
+/// Serves gRPC like `serve`, but holds a conversation on each method in
+/// `talks`: `handler` answers each of its messages as soon as it arrives,
+/// and the answer goes back at once (spec 14.14).
+pub fn serve_talks(listener: Listener, handler: fn(GrpcCall) -> GrpcReply, talks: [String]) ! NetError uses Net {
+    while true {
+        const conn = try listener.accept()
+        const task = spawn answer_all(conn, handler, talks)
+    }
+}
+
+/// A call being received on one stream.
+type Calling {
+    method: String
+    body: Bytes
+    /// A conversation: each message is answered as it arrives.
+    talk: Bool
+    /// A conversation the handler ended early with a failure.
+    over: Bool
+}
+
+fn ok_headers() -> [Header] {
+    [Header(name: ":status", value: "200"), Header(name: "content-type", value: "application/grpc")]
+}
+
+/// The calls of one connection, until the client is done: a talk's
+/// messages are answered as they arrive, other calls once they end.
+fn answer_all(conn: Connection, handler: fn(GrpcCall) -> GrpcReply, talks: [String]) ! H2Error uses Net {
+    let link = try h2.accept(conn, Bytes([]))
+    let calls: [Int: Calling] = [:]
+    let serving = true
+    while serving {
+        const w = try h2.watch(link)
+        link = w.link
+        match w.event {
+            H2Event.StreamOpened(stream, headers) => {
+                const method = headers.get(":path") ?? ""
+                const talk = talks.contains(method)
+                calls[stream] = Calling(method: method, body: Bytes([]), talk: talk, over: false)
+                if talk {
+                    link = try h2.send_headers(link, stream, ok_headers())
+                }
+            }
+            H2Event.StreamData(stream, data) => {
+                if let c = calls.get(stream) {
+                    let call = c
+                    call.body = call.body + data
+                    if call.talk {
+                        const split = frames.split_messages(call.body) catch e => Split(messages: [], rest: call.body)
+                        call.body = split.rest
+                        for m in split.messages {
+                            if not call.over {
+                                const reply = handler(GrpcCall(method: call.method, message: m, messages: [m]))
+                                match reply {
+                                    GrpcReply.Failed(code, message) => {
+                                        call.over = true
+                                        link = try h2.send_trailers(link, stream, frames.status_trailers(code, message))
+                                    }
+                                    _ => {
+                                        link = try h2.send_data(link, stream, answer_body(reply), false)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    calls[stream] = call
+                }
+            }
+            H2Event.StreamEnded(stream) => {
+                if let call = calls.get(stream) {
+                    calls.remove(stream)
+                    if call.talk {
+                        if not call.over {
+                            link = try h2.send_trailers(link, stream, frames.status_trailers(0, ""))
+                        }
+                    } else {
+                        link = try answer_whole(link, stream, call, handler)
+                    }
+                }
+            }
+            H2Event.ClientDone => {
+                serving = false
+            }
+        }
+    }
+    conn.close()
+}
+
+/// Answers a call that has all its messages, with `handler`.
+fn answer_whole(link: Link, stream: Int, call: Calling, handler: fn(GrpcCall) -> GrpcReply) -> Link ! H2Error uses Net {
+    const messages = frames.unframed_all(call.body) catch e => []
+    const reply = handler(GrpcCall(
+        method: call.method,
+        message: messages.first() ?? Bytes([]),
+        messages: messages,
+    ))
+    const trailers = match reply {
+        GrpcReply.Failed(code, message) => frames.status_trailers(code, message),
+        _ => frames.status_trailers(0, ""),
+    }
+    try h2.respond_with_trailers(link, stream, ok_headers(), answer_body(reply), trailers)
+}
+
+/// A reply's messages, each behind its prefix (none for a failure).
+fn answer_body(reply: GrpcReply) -> Bytes {
+    match reply {
+        GrpcReply.Message(data) => frames.framed(data),
+        GrpcReply.Stream(messages) => {
+            let body = Bytes([])
+            for m in messages {
+                body = body + frames.framed(m)
+            }
+            body
+        }
+        GrpcReply.Failed(_, _) => Bytes([]),
+    }
+}
+
+/// Each of `values` as a message behind its prefix, one after another.
+fn framed_all<T>(values: [T]) -> Bytes {
+    let body = Bytes([])
+    for v in values {
+        body = body + frames.framed(encode<T>(v))
+    }
+    body
+}
+

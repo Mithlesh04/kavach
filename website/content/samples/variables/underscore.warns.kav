@@ -1,0 +1,9 @@
+fn main() {
+    let draft = "not used yet"
+    let _later = "not used yet, on purpose"
+    const [_, second] = [1, 2]
+    for _ in 0..2 {
+        print("round")
+    }
+    print(second)
+}

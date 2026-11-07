@@ -1,0 +1,46 @@
+// Rule: `xs = xs.map(f)` gives `xs` the new items and leaves every copy of the old list as it was, whether the list is held once or twice.
+// Spec: 2.2
+// expect output: [2, 4, 6] [1, 2, 3]
+// expect output: ["a!", "bb!"]
+// expect output: [4, 5, 6]
+// expect output: 5 1004
+// expect output: [P(x: 4, y: 11), P(x: 8, y: 13)] [P(x: 1, y: 2), P(x: 3, y: 4)]
+// expect output: P(x: 3, y: 1)
+
+type P {
+    x: Int
+    y: Int
+}
+
+fn swap(p: P) -> P {
+    P(x: p.y, y: p.x)
+}
+
+fn main() {
+    let a = [1, 2, 3]
+    const b = a
+    a = a.map(n => n * 2)
+    print("{a} {b}")
+    let words = ["a", "bb"]
+    words = words.map(w => "{w}!")
+    print(words)
+    let n = [1, 2, 3]
+    n = n.map(v => v + n.len())
+    print(n)
+    let big: [Int] = []
+    for i in 0..1000 {
+        big.push(i)
+    }
+    for _ in 0..5 {
+        big = big.map(v => v + 1)
+    }
+    print("{big[0]} {big[999]}")
+    let ps = [P(x: 1, y: 2), P(x: 3, y: 4)]
+    const keep = ps
+    ps = ps.map(p => P(x: p.y, y: p.x + 10))
+    ps = ps.map(p => P(x: p.x * 2, y: p.y))
+    print("{ps} {keep}")
+    let one = [P(x: 1, y: 3)]
+    one = one.map(swap)
+    print(one[0])
+}

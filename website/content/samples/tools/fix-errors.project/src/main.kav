@@ -1,0 +1,12 @@
+fn main() {
+    const counts = [3, 4, 7]
+    counts.push(8)
+    for i in 0..=counts.len() {
+        if counts[i] = 4 {
+            print("four")
+        }
+        if counts[i] % 2 == 1 {
+            print("{counts[i]} is odd")
+        }
+    }
+}

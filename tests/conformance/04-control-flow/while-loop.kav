@@ -1,0 +1,11 @@
+// Rule: `while` repeats while its condition is true.
+// Spec: 4.5
+// expect output: 3
+
+fn main() {
+    let attempts = 0
+    while attempts < 3 {
+        attempts += 1
+    }
+    print(attempts)
+}

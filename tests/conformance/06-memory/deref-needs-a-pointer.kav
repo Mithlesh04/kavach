@@ -1,0 +1,8 @@
+// Rule: `*` before a value reads through a pointer, so the value must be a `Ptr`.
+// Spec: 6.4
+// expect compile error
+
+fn main() {
+    const n = 5
+    print(*n)                       // error: n is an Int, not a pointer
+}

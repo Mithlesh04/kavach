@@ -1,0 +1,15 @@
+// Rule: A time of day the clocks skipped when daylight saving time began moves later by the gap, as RFC 5545 does; `resolve` gives both moments.
+// Spec: 14.4
+// expect output: 2026-03-08T03:30:00
+// expect output: Skipped(earlier: 1772951400000, later: 1772955000000)
+
+use std.time
+
+fn main() ! Error {
+    const new_york = try time.zone("America/New_York")
+    // Clocks went from 02:00 straight to 03:00 that night.
+    const date = time.Date(year: 2026, month: 3, day: 8)
+    const skipped = time.DateTime(date: date, time: time.Time(hour: 2, minute: 30, second: 0, ms: 0))
+    print(new_york.at(new_york.moment(skipped)).iso())
+    print(new_york.resolve(skipped))
+}

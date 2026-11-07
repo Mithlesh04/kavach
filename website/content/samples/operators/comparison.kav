@@ -1,0 +1,9 @@
+fn main() {
+    const age = 25
+    print(age == 25)
+    print(age != 30)
+    print(age >= 18)
+    print(18 <= age < 65)
+    print([1, 2] == [1, 2])
+    print(["a": 1, "b": 2] == ["b": 2, "a": 1])
+}

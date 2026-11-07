@@ -1,0 +1,28 @@
+use std.time
+
+fn main() {
+    for text in ["2026-11-04T09:05:30", "2026-11-04 09:05:30Z"] {
+        const _moment = time.parse_moment(text) catch e => {
+            print("moment: {e}")
+            continue
+        }
+    }
+    for text in ["2026-11-04T09:05:30+05:30", "2026-11-04T9:05:30"] {
+        const _wall = time.parse_datetime(text) catch e => {
+            print("datetime: {e}")
+            continue
+        }
+    }
+    for text in ["9:05", "23:59:60"] {
+        const _time = time.parse_time(text) catch e => {
+            print("time: {e}")
+            continue
+        }
+    }
+    for text in ["2026-11-4", "2026-+1-04"] {
+        const _date = time.parse_date(text) catch e => {
+            print("date: {e}")
+            continue
+        }
+    }
+}

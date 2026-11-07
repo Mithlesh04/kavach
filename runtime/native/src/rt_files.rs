@@ -1,0 +1,207 @@
+//! Streamed reads in native code (spec 14.3), as in the interpreter
+//! (`compiler/interp/src/files.rs`): `fs.lines(path)` and `fs.chunks(path,
+//! size)` read as a `for` loop goes. Reading is an effect, so a task
+//! running ahead waits for its turn first (`rt_tasks::turn`). Copies of a
+//! reader share the open file. Big pieces are read ahead on a helper
+//! thread, so the disk and the loop's work overlap (decision 0067).
+
+use crate::heap::{Data, alloc, release};
+use crate::rt::{panic_with, type_of};
+use crate::shapes::{shape, str_of};
+use kavach_kir::{RtOp, Shape, Type};
+use std::io::{BufRead, BufReader, Read};
+use std::sync::mpsc::{Receiver, sync_channel};
+use std::sync::{Arc, Mutex};
+
+/// Pieces of at least this size are read ahead: below it, a read is cheap
+/// next to the thread.
+const READ_AHEAD: usize = 1024 * 1024;
+
+pub struct Reader {
+    file: BufReader<std::fs::File>,
+    path: String,
+    chunk: Option<usize>,
+    /// The pieces the helper thread reads, once it runs.
+    ahead: Option<Receiver<std::io::Result<Vec<u8>>>>,
+}
+
+/// One piece of at most `size` bytes of `file`; empty at the end.
+fn read_piece(mut file: impl Read, size: usize) -> std::io::Result<Vec<u8>> {
+    let mut piece = Vec::with_capacity(size);
+    file.by_ref().take(size as u64).read_to_end(&mut piece)?;
+    Ok(piece)
+}
+
+impl Reader {
+    /// Starts the helper thread on its own handle of the file, which reads
+    /// one piece more than the loop has asked for and waits to hand it
+    /// over. It ends at the file's end or when the reader is gone.
+    fn start_ahead(&mut self, size: usize) -> std::io::Result<()> {
+        let file = self.file.get_ref().try_clone()?;
+        let (give, take) = sync_channel(0);
+        std::thread::spawn(move || {
+            loop {
+                let piece = read_piece(&file, size);
+                let last = !matches!(&piece, Ok(p) if !p.is_empty());
+                if give.send(piece).is_err() || last {
+                    return;
+                }
+            }
+        });
+        self.ahead = Some(take);
+        Ok(())
+    }
+
+    /// The next piece of at most `size` bytes; empty at the end.
+    fn next_piece(&mut self, size: usize) -> std::io::Result<Vec<u8>> {
+        if size < READ_AHEAD {
+            return read_piece(&mut self.file, size);
+        }
+        if self.ahead.is_none() {
+            self.start_ahead(size)?;
+        }
+        match self.ahead.as_ref().map(Receiver::recv) {
+            Some(Ok(piece)) => piece,
+            // The helper has ended, at the file's end or after an error.
+            _ => Ok(Vec::new()),
+        }
+    }
+}
+
+pub type Shared = Arc<Mutex<Reader>>;
+
+thread_local! {
+    /// The folders file access is kept inside (`uses Fs("./data")`, spec
+    /// 8.1), resolved: one for each such call running in this task.
+    static SCOPES: std::cell::RefCell<Vec<std::path::PathBuf>> =
+        const { std::cell::RefCell::new(Vec::new()) };
+}
+
+/// This task's folders, for a task it spawns (which keeps them).
+/// Puts `scopes` in place of this thread's, giving those: tasks switching
+/// on one thread keep their own (`rt_coroutines.rs`).
+pub(crate) fn swap_scopes(scopes: Vec<std::path::PathBuf>) -> Vec<std::path::PathBuf> {
+    SCOPES.with(|s| std::mem::replace(&mut *s.borrow_mut(), scopes))
+}
+
+pub(crate) fn scopes() -> Vec<std::path::PathBuf> {
+    SCOPES.with(|s| s.borrow().clone())
+}
+
+pub(crate) fn set_scopes(scopes: Vec<std::path::PathBuf>) {
+    SCOPES.with(|s| *s.borrow_mut() = scopes);
+}
+
+/// Whether `path` is inside this task's folders.
+pub(crate) fn allowed(path: &str) -> bool {
+    SCOPES.with(|s| kavach_runtime_core::fs_scope::inside(&s.borrow(), path))
+}
+
+/// 0 with `Denied(path)` set: `path` is outside this task's folders.
+pub(crate) fn denied(path: &str) -> i64 {
+    let e = std::io::Error::from(std::io::ErrorKind::PermissionDenied);
+    crate::rt_std::fail("open", path, e)
+}
+
+/// `fs.lines(path)` (`size` 0) and `fs.chunks(path, size)`: a reader of
+/// type `code`, or 0 with the `FsError` set.
+pub fn open(path: i64, size: Option<i64>, code: i64) -> i64 {
+    crate::rt_tasks::turn();
+    let p = str_of(path);
+    release(path);
+    if !allowed(&p) {
+        return denied(&p);
+    }
+    match std::fs::File::open(&p) {
+        Ok(f) => alloc(
+            type_of(code),
+            Data::Reader(Arc::new(Mutex::new(Reader {
+                file: BufReader::new(f),
+                path: p,
+                chunk: size.map(|n| n.max(1) as usize),
+                ahead: None,
+            }))),
+        ),
+        Err(e) => crate::rt_std::fail("open", &p, e),
+    }
+}
+
+/// The next line or piece of reader `r` (owned) as an optional of type
+/// `code`: `none` at the end. A failed read is 0 with the `FsError` set
+/// when the loop's header handles it (`fails`, spec 14.3), else a panic.
+pub fn next(r: i64, code: i64, fails: bool, line: i32) -> i64 {
+    crate::rt_tasks::turn();
+    let reader = match &*crate::heap::data(r).borrow() {
+        Data::Reader(x) => Arc::clone(x),
+        _ => return 0,
+    };
+    release(r);
+    let mut rd = reader.lock().unwrap_or_else(|e| e.into_inner());
+    let item = match shape(type_of(code)) {
+        Shape::Optional(t) => *t,
+        _ => Type::Unit,
+    };
+    let failed = |path: &str, e: std::io::Error| -> i64 {
+        if fails {
+            return crate::rt_std::fail("read", path, e);
+        }
+        panic_with(&format!("can't read {path}: {e}"), line)
+    };
+    match rd.chunk {
+        None => {
+            let mut raw = Vec::new();
+            let n = match rd.file.read_until(b'\n', &mut raw) {
+                Ok(n) => n,
+                Err(e) => return failed(&rd.path, e),
+            };
+            if n == 0 {
+                return 0;
+            }
+            if raw.ends_with(b"\n") {
+                raw.pop();
+                if raw.ends_with(b"\r") {
+                    raw.pop();
+                }
+            }
+            match String::from_utf8(raw) {
+                Ok(text) => crate::shapes::new_text(&text, item),
+                Err(_) => {
+                    let e = std::io::Error::new(std::io::ErrorKind::InvalidData, "not UTF-8");
+                    failed(&rd.path, e)
+                }
+            }
+        }
+        Some(size) => {
+            let piece = match rd.next_piece(size) {
+                Ok(piece) => piece,
+                Err(e) => return failed(&rd.path, e),
+            };
+            if piece.is_empty() {
+                return 0;
+            }
+            crate::rt_bytes::new_bytes(piece, item)
+        }
+    }
+}
+
+/// The reader ops (operands owned).
+pub fn reader_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
+    match op {
+        RtOp::FsLines => open(a, None, code),
+        RtOp::FsChunks => open(a, Some(b), code),
+        RtOp::FsScopeEnter => {
+            let folder = kavach_runtime_core::fs_scope::resolve(&str_of(a));
+            release(a);
+            SCOPES.with(|s| {
+                let mut s = s.borrow_mut();
+                s.push(folder);
+                s.len() as i64 - 1
+            })
+        }
+        RtOp::FsScopeLeave => {
+            SCOPES.with(|s| s.borrow_mut().truncate(a.max(0) as usize));
+            0
+        }
+        _ => next(a, code, op == RtOp::ReaderTryNext, line),
+    }
+}

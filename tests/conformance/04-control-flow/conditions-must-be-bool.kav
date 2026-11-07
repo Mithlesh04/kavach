@@ -1,0 +1,10 @@
+// Rule: Conditions must be Bool; there is no truthiness.
+// Spec: 4.1
+// expect compile error
+
+fn main() {
+    const count = 3
+    if count {          // error: count is an Int; write count != 0
+        print("some")
+    }
+}

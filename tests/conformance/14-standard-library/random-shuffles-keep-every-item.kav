@@ -1,0 +1,13 @@
+// Rule: `random.shuffle(items)` gives a copy of `items` in some order: the same items, each as often as before.
+// Spec: 14.15
+// expect output: [1, 1, 2, 3, 5, 8]
+// expect output: [1, 1, 2, 3, 5, 8]
+
+use std.random
+
+fn main() {
+    const items = [8, 1, 5, 1, 3, 2]
+    const mixed = random.shuffle(items)
+    print(mixed.sort())
+    print(items.sort())
+}

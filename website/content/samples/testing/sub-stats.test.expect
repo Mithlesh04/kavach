@@ -1,0 +1,16 @@
+0 passed, 0 failed
+seed 7
+✗ average: panicked (division by zero)
+    stats.kav:6   total / xs.len()
+  smallest failing input: xs = []
+  How to fix (pick one):
+    1. Return an error. Change the signature to `-> Int ! SomeError` and `fail` when the value is bad.
+       Choose this if the value can come from users, files, the network or AI.
+    2. Forbid it. Add: require xs.len() != 0
+       Choose this if such a value here is always a bug in the calling code.
+    3. Use a default. Add: if xs.len() == 0 { return … }
+       Choose this if a default is a correct answer.
+  saved to tests/found/stats.kavf  (replayed on every run)
+1 functions   0 ✓   1 ✗   0 weakly tested
+nothing checked by hand (no example, ensure, invariant or test) in:
+  stats.kav

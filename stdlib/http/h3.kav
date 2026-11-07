@@ -1,0 +1,349 @@
+// HTTP/3 (RFC 9114) for std.http (decision 0022): a request on a QUIC
+// connection (`net.connect_quic`), with QPACK (RFC 9204) header
+// compression. Kavach announces a QPACK dynamic table of size 0, so
+// header blocks use only the static table and literals. Huffman-coded
+// literals use HPACK's code, which QPACK shares.
+
+use std.net
+use std.http.hpack
+
+/// Why an HTTP/3 exchange failed.
+pub type H3Error = Network(error: NetError) | Protocol(reason: String)
+
+/// A response: headers, names in lower case and with `:status`, and the
+/// body.
+pub type H3Message {
+    pub headers: [String: String]
+    pub body: Bytes
+}
+
+/// Sends one request on a new connection and reads the response.
+/// `headers` has `:method`, `:scheme`, `:authority`, `:path`.
+pub fn request(conn: Connection, headers: [Header], body: Bytes) -> H3Message ! H3Error uses Net {
+    // The control stream (type 0), with empty SETTINGS: no dynamic table.
+    const control = try open(conn, false)
+    try send(conn, control, Bytes([UInt8(0)]) + frame(4, Bytes([])), false)
+    const stream = try open(conn, true)
+    let out = frame(1, encode(headers))
+    if body.len() > 0 {
+        out = out + frame(0, body)
+    }
+    try send(conn, stream, out, true)
+    let got = Bytes([])
+    while true {
+        const data = (conn.read_stream(stream) catch e => {
+            fail H3Error.Network(error: e)
+        }) ?? break
+        got = got + data
+    }
+    try response(got)
+}
+
+fn open(conn: Connection, two_way: Bool) -> Int ! H3Error uses Net {
+    conn.open_stream(two_way) catch e => {
+        fail H3Error.Network(error: e)
+    }
+}
+
+fn send(conn: Connection, stream: Int, data: Bytes, done: Bool) ! H3Error uses Net {
+    conn.write_stream(stream, data, done) catch e => {
+        fail H3Error.Network(error: e)
+    }
+}
+
+/// A frame: its type and length as variable-length numbers, then
+/// `payload` (RFC 9114 7.1).
+fn frame(kind: Int, payload: Bytes) -> Bytes
+    require kind >= 0 and kind < 64
+{
+    number(kind) + number(payload.len()) + payload
+}
+
+/// The response in a stream's frames: the final HEADERS (after any
+/// 1xx ones) and the DATA. Other frame types are skipped, as RFC 9114
+/// 9 asks.
+fn response(data: Bytes) -> H3Message ! H3Error {
+    let headers: [String: String] = [:]
+    let body = Bytes([])
+    let final = false
+    let i = 0
+    while i < data.len() {
+        const kind = try read_number(data, i)
+        const size = try read_number(data, kind.next)
+        const end = size.next + size.value
+        if end > data.len() {
+            fail H3Error.Protocol(reason: "a frame is cut off")
+        }
+        const payload = data.slice(size.next, end)
+        if kind.value == 1 and not final {
+            headers = [:]
+            for h in try decode(payload) {
+                headers[h.name] = h.value
+            }
+            final = not (headers.get(":status") ?? "").starts_with("1")
+        } else if kind.value == 0 {
+            body = body + payload
+        }
+        i = end
+    }
+    if not final {
+        fail H3Error.Protocol(reason: "no response headers")
+    }
+    H3Message(headers: headers, body: body)
+}
+
+/// A QPACK header block of `headers`, each a literal with a literal
+/// name, names in lower case (RFC 9204 4.5.6).
+pub fn encode(headers: [Header]) -> Bytes {
+    // Required Insert Count and Base: 0, no dynamic table.
+    let out = Bytes([UInt8(0), UInt8(0)])
+    for h in headers {
+        const name = h.name.lower().bytes()
+        const value = h.value.bytes()
+        out = out + prefixed(name.len(), 3, 32) + name + prefixed(value.len(), 7, 0) + value
+    }
+    out
+}
+
+/// The headers of a QPACK block that uses no dynamic table.
+pub fn decode(block: Bytes) -> [Header] ! H3Error {
+    if block.len() < 2 {
+        fail H3Error.Protocol(reason: "a header block is cut off")
+    }
+    const count = try prefix_number(block, 0, 8)
+    if count.value != 0 {
+        fail H3Error.Protocol(reason: "a header block uses a dynamic table")
+    }
+    const base = try prefix_number(block, count.next, 7)
+    let out: [Header] = []
+    let i = base.next
+    while i < block.len() {
+        const b = Int(block[i])
+        if b & 128 != 0 {
+            // An indexed field line (`1T`): only the static table (T).
+            if b & 64 == 0 {
+                fail H3Error.Protocol(reason: "a header block uses a dynamic table")
+            }
+            const n = try prefix_number(block, i, 6)
+            out.push(try static_entry(n.value))
+            i = n.next
+        } else if b & 64 != 0 {
+            // A literal value with a name reference (`01NT`).
+            if b & 16 == 0 {
+                fail H3Error.Protocol(reason: "a header block uses a dynamic table")
+            }
+            const n = try prefix_number(block, i, 4)
+            const value = try string(block, n.next, 7)
+            out.push(Header(name: (try static_entry(n.value)).name, value: value.value))
+            i = value.next
+        } else if b & 32 != 0 {
+            // A literal name and value (`001NH`).
+            const name = try string(block, i, 3)
+            const value = try string(block, name.next, 7)
+            out.push(Header(name: name.value, value: value.value))
+            i = value.next
+        } else {
+            fail H3Error.Protocol(reason: "a header block uses a dynamic table")
+        }
+    }
+    out
+}
+
+/// `n` as a QUIC variable-length number (RFC 9000 16): 1, 2, 4 or 8
+/// bytes, the length in the top two bits.
+fn number(n: Int) -> Bytes
+    require n >= 0 and n < 4_611_686_018_427_387_904
+    example number(37) == Bytes([37])
+    example number(15_293) == Bytes([123, 189])
+{
+    if n < 64 {
+        return Bytes([UInt8(n)])
+    }
+    let size = 8
+    let flag = 192
+    if n < 16_384 {
+        size = 2
+        flag = 64
+    } else if n < 1_073_741_824 {
+        size = 4
+        flag = 128
+    }
+    let out: [UInt8] = []
+    let i = size - 1
+    while i >= 0 {
+        let b = (n >> (i * 8)) & 255
+        if i == size - 1 {
+            b = b | flag
+        }
+        out.push(UInt8(b))
+        i -= 1
+    }
+    Bytes(out)
+}
+
+/// A number read at `at`, and where what follows it starts.
+type Number {
+    value: Int
+    next: Int
+}
+
+/// The QUIC variable-length number at `at`.
+fn read_number(data: Bytes, at: Int) -> Number ! H3Error
+    require at >= 0
+    example read_number(Bytes([123, 189]), 0) == Number(value: 15_293, next: 2)
+{
+    const first = Int(data.get(at) ?? fail H3Error.Protocol(reason: "a number is cut off"))
+    const size = 1 << (first >> 6)
+    if at + size > data.len() {
+        fail H3Error.Protocol(reason: "a number is cut off")
+    }
+    let value = first & 63
+    let i = at + 1
+    while i < at + size {
+        value = (value << 8) | Int(data[i])
+        i += 1
+    }
+    Number(value: value, next: at + size)
+}
+
+/// `value` with an `n`-bit prefix, after the bits `flags` (RFC 7541 5.1,
+/// which QPACK uses too).
+fn prefixed(value: Int, n: Int, flags: Int) -> Bytes
+    require value >= 0
+    require n >= 1 and n <= 8
+    require flags >= 0 and flags <= 255
+    example prefixed(10, 5, 0) == Bytes([10])
+    example prefixed(1337, 5, 0) == Bytes([31, 154, 10])
+{
+    const full = (1 << n) - 1
+    if value < full {
+        return Bytes([UInt8(flags | value)])
+    }
+    let out: [UInt8] = [UInt8(flags | full)]
+    let rest = value - full
+    while rest >= 128 {
+        out.push(UInt8(rest % 128 + 128))
+        rest = rest / 128
+    }
+    out.push(UInt8(rest))
+    Bytes(out)
+}
+
+/// The number with an `n`-bit prefix at `at`.
+fn prefix_number(data: Bytes, at: Int, n: Int) -> Number ! H3Error
+    require at >= 0
+    require n >= 1 and n <= 8
+{
+    const full = (1 << n) - 1
+    let value = Int(data.get(at) ?? fail H3Error.Protocol(reason: "a number is missing")) & full
+    let i = at + 1
+    if value < full {
+        return Number(value: value, next: i)
+    }
+    let shift = 0
+    while true {
+        const b = Int(data.get(i) ?? fail H3Error.Protocol(reason: "a number is cut off"))
+        i += 1
+        if shift > 28 {
+            fail H3Error.Protocol(reason: "a number is too large")
+        }
+        value += (b & 127) << shift
+        shift += 7
+        if b & 128 == 0 {
+            break
+        }
+    }
+    Number(value: value, next: i)
+}
+
+/// A text read at `at`, and where what follows it starts.
+type Text {
+    value: String
+    next: Int
+}
+
+/// A string: an `n`-bit prefix length, Huffman-coded when the bit above
+/// the prefix is set, then the bytes.
+fn string(data: Bytes, at: Int, n: Int) -> Text ! H3Error
+    require at >= 0
+    require n >= 1 and n <= 7
+{
+    const first = Int(data.get(at) ?? fail H3Error.Protocol(reason: "a string is missing"))
+    const size = try prefix_number(data, at, n)
+    const end = size.next + size.value
+    if end > data.len() {
+        fail H3Error.Protocol(reason: "a string is cut off")
+    }
+    const raw = data.slice(size.next, end)
+    const bytes = if (first & (1 << n)) != 0 {
+        hpack.huffman(raw) catch e => {
+            fail H3Error.Protocol(reason: "a Huffman code is broken")
+        }
+    } else {
+        raw
+    }
+    const value = bytes.text() ?? fail H3Error.Protocol(reason: "a header is not UTF-8")
+    Text(value: value, next: end)
+}
+
+/// Entry `index` of QPACK's static table (RFC 9204 appendix A).
+fn static_entry(index: Int) -> Header ! H3Error {
+    const table = static_table()
+    table.get(index) ?? fail H3Error.Protocol(reason: "no header at index {index}")
+}
+
+fn h(name: String, value: String) -> Header {
+    Header(name: name, value: value)
+}
+
+fn static_table() -> [Header] {
+    [
+        h(":authority", ""), h(":path", "/"), h("age", "0"), h("content-disposition", ""),
+        h("content-length", "0"), h("cookie", ""), h("date", ""), h("etag", ""),
+        h("if-modified-since", ""), h("if-none-match", ""), h("last-modified", ""),
+        h("link", ""), h("location", ""), h("referer", ""), h("set-cookie", ""),
+        h(":method", "CONNECT"), h(":method", "DELETE"), h(":method", "GET"),
+        h(":method", "HEAD"), h(":method", "OPTIONS"), h(":method", "POST"),
+        h(":method", "PUT"), h(":scheme", "http"), h(":scheme", "https"),
+        h(":status", "103"), h(":status", "200"), h(":status", "304"),
+        h(":status", "404"), h(":status", "503"), h("accept", "*/*"),
+        h("accept", "application/dns-message"), h("accept-encoding", "gzip, deflate, br"),
+        h("accept-ranges", "bytes"), h("access-control-allow-headers", "cache-control"),
+        h("access-control-allow-headers", "content-type"),
+        h("access-control-allow-origin", "*"), h("cache-control", "max-age=0"),
+        h("cache-control", "max-age=2592000"), h("cache-control", "max-age=604800"),
+        h("cache-control", "no-cache"), h("cache-control", "no-store"),
+        h("cache-control", "public, max-age=31536000"), h("content-encoding", "br"),
+        h("content-encoding", "gzip"), h("content-type", "application/dns-message"),
+        h("content-type", "application/javascript"), h("content-type", "application/json"),
+        h("content-type", "application/x-www-form-urlencoded"),
+        h("content-type", "image/gif"), h("content-type", "image/jpeg"),
+        h("content-type", "image/png"), h("content-type", "text/css"),
+        h("content-type", "text/html; charset=utf-8"), h("content-type", "text/plain"),
+        h("content-type", "text/plain;charset=utf-8"), h("range", "bytes=0-"),
+        h("strict-transport-security", "max-age=31536000"),
+        h("strict-transport-security", "max-age=31536000; includesubdomains"),
+        h("strict-transport-security", "max-age=31536000; includesubdomains; preload"),
+        h("vary", "accept-encoding"), h("vary", "origin"),
+        h("x-content-type-options", "nosniff"), h("x-xss-protection", "1; mode=block"),
+        h(":status", "100"), h(":status", "204"), h(":status", "206"),
+        h(":status", "302"), h(":status", "400"), h(":status", "403"),
+        h(":status", "421"), h(":status", "425"), h(":status", "500"),
+        h("accept-language", ""), h("access-control-allow-credentials", "FALSE"),
+        h("access-control-allow-credentials", "TRUE"),
+        h("access-control-allow-headers", "*"), h("access-control-allow-methods", "get"),
+        h("access-control-allow-methods", "get, post, options"),
+        h("access-control-allow-methods", "options"),
+        h("access-control-expose-headers", "content-length"),
+        h("access-control-request-headers", "content-type"),
+        h("access-control-request-method", "get"),
+        h("access-control-request-method", "post"), h("alt-svc", "clear"),
+        h("authorization", ""),
+        h("content-security-policy", "script-src 'none'; object-src 'none'; base-uri 'none'"),
+        h("early-data", "1"), h("expect-ct", ""), h("forwarded", ""), h("if-range", ""),
+        h("origin", ""), h("purpose", "prefetch"), h("server", ""),
+        h("timing-allow-origin", "*"), h("upgrade-insecure-requests", "1"),
+        h("user-agent", ""), h("x-forwarded-for", ""), h("x-frame-options", "deny"),
+        h("x-frame-options", "sameorigin"),
+    ]
+}

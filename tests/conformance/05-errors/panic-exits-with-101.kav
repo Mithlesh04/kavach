@@ -1,0 +1,8 @@
+// Rule: A panic in the main task exits with code 101.
+// Spec: 5.8
+// expect panic: stop here
+// expect exit: 101
+
+fn main() {
+    panic("stop here")
+}

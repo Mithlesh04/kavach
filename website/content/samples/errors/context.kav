@@ -1,0 +1,15 @@
+fn read_port(text: String) -> Int ! Error {
+    Int(text) catch _ => fail Error("not a number: {text}")
+}
+
+fn load_settings(port_text: String) -> Int ! Error {
+    try read_port(port_text) context "loading settings"
+}
+
+fn main() {
+    const port = load_settings("80a") catch e => {
+        print("{e}")
+        0
+    }
+    print(port)
+}

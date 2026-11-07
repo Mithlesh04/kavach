@@ -1,0 +1,21 @@
+// The dot product of two 20-million-item float lists, 10 times. The sum
+// keeps its order (spec: float results are exactly the plain loop's), so
+// no compiler may reorder it into wider additions.
+fn main() {
+    let xs = []
+    let ys = []
+    for i in 0..20_000_000 {
+        const f = Float(i % 1000)
+        xs.push(f * 0.5)
+        ys.push(f * 0.25 + 1.0)
+    }
+    let total = 0.0
+    for round in 0..10 {
+        let dot = 0.0
+        for i in 0..20_000_000 {
+            dot += xs[i] * ys[i]
+        }
+        total += dot
+    }
+    print(total > 0.0)
+}

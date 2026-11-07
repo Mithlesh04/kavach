@@ -1,0 +1,3 @@
+[package]
+name = "c-records-hold-c-types"
+unsafe = true

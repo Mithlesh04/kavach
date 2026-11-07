@@ -1,0 +1,1 @@
+error: `=` sets a variable: to compare, write `==` (spec 4.1)

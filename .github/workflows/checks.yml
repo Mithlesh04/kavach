@@ -1,0 +1,60 @@
+# Checks the repository rules in AGENTS.md: file length and links, commit messages,
+# and the VS Code grammar tests.
+# Manual only for now (Actions tab -> checks -> Run workflow). To run it on every
+# push and pull request again, add:  push: { branches: [main] }  and  pull_request:
+name: checks
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  repo:
+    name: Repo rules (file length, links)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sh scripts/check-repo.sh
+
+  vscode-grammar:
+    name: VS Code grammar tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test
+        working-directory: editors/vscode
+
+  commits:
+    name: Commit messages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check every new commit with scripts/hooks/commit-msg
+        env:
+          BEFORE: ${{ github.event.before }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ -n "$BASE" ]; then
+            range="$BASE..$HEAD"
+          elif git cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            range="$BEFORE..$HEAD"
+          else
+            range="$HEAD"    # new branch or force push: check the whole history
+          fi
+          fail=0
+          for c in $(git rev-list --no-merges "$range"); do
+            git log -1 --format=%B "$c" > "$RUNNER_TEMP/msg"
+            if ! sh scripts/hooks/commit-msg "$RUNNER_TEMP/msg"; then
+              echo "::error::commit $c breaks the commit rules (AGENTS.md section 10)"
+              fail=1
+            fi
+          done
+          exit "$fail"

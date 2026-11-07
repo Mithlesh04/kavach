@@ -1,0 +1,9 @@
+use std.clipboard
+
+fn copied() -> String ! Error uses Console {
+    try clipboard.read_text()
+}
+
+fn main() {
+    print(copied() catch _ => "")
+}

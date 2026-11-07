@@ -1,0 +1,22 @@
+// Rule: a panic inside the function of a `Shared` value's `update` leaves the value as it was, and other tasks can go on using it.
+// Spec: 9.1, 6.2
+// expect output: counter 1
+// expect stderr: panic: index 3 is out of range: the list has 1 item
+// expect stderr:   at a-panic-inside-update-lets-the-value-go.kav:9
+
+fn bad(n: Int) -> Int {
+    const xs = [1]
+    xs[n + 3]
+}
+
+fn bump(counter: Shared<Int>) {
+    counter.update(n => n + bad(n))
+}
+
+fn main() {
+    const counter = Shared(0)
+    const t = spawn cores bump(counter)
+    t.wait() catch _ => {}
+    counter.update(n => n + 1)
+    print("counter {counter.get()}")
+}

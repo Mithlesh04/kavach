@@ -1,0 +1,11 @@
+fn half(n: Int) -> Int ! String {
+    if n % 2 != 0 {
+        fail "odd: {n}"
+    }
+    n / 2
+}
+
+fn main() {
+    print(half(10) catch 0)
+    print(half(7) catch 0)
+}

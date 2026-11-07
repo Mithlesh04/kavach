@@ -1,0 +1,6 @@
+use std.term
+
+fn main() {
+    const age = term.prompt_int("Your age?") ?? 0
+    print("Next year you will be {age + 1}")
+}

@@ -1,0 +1,21 @@
+// Rule: a sum panics at its first failing round, however it is run
+// (decision 0031: a chunk's stored prefix bounds catch a spike the
+// chunk totals alone would hide, and the plain loop replays).
+// Spec: 4.4
+// expect panic: integer overflow: 9223372036854775800 + 10 doesn't fit in Int
+
+fn main() {
+    let xs: [Int] = []
+    for i in 0..200_000 {
+        if i % 2 == 0 {
+            xs.push(10)
+        } else {
+            xs.push(-10)
+        }
+    }
+    let total = 9_223_372_036_854_775_800
+    for x in xs {
+        total += x
+    }
+    print(total)
+}

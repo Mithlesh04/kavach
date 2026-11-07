@@ -1,0 +1,12 @@
+// Rule: using a `Connection` needs the `Net` capability, like making one.
+// Spec: 14.10, 8.1
+// expect compile error
+
+use std.net
+
+fn first_bytes(conn: Connection) -> Bytes? ! NetError uses Console {
+    try conn.read()    // error: `first_bytes` uses Net, which its `uses` clause doesn't list
+}
+
+fn main() {
+}

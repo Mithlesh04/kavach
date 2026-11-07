@@ -1,0 +1,15 @@
+// Rule: A statement continues when a line ends with an operator or the next line starts with `.`.
+// Spec: 1.1
+// expect output: 6
+// expect output: 2
+
+fn main() {
+    const total = 1 +
+        2 +
+        3
+    const count = ["asha", "ravi", "jo"]
+        .filter(.len() > 3)
+        .len()
+    print(total)
+    print(count)
+}

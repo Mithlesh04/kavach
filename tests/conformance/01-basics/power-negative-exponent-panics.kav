@@ -1,0 +1,8 @@
+// Rule: A whole number to a negative power panics: the result wouldn't be whole.
+// Spec: 1.8
+// expect panic: 2 ** -1: a whole number to a negative power isn't whole; use floats
+
+fn main() {
+    const e = -1
+    print(2 ** e)
+}

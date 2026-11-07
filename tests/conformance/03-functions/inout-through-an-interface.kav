@@ -1,0 +1,42 @@
+// Rule: A call through an interface value to a method with `inout` parameters changes the caller's variable.
+// Spec: 3.9, 2.15
+// expect output: false 7
+// expect output: true 10
+// expect output: 2
+// expect output: full
+// expect output: 2
+
+interface Counter {
+    fn bump(self, inout n: Int, by: Int) -> Bool
+    fn grow(self, inout names: [String]) ! String
+}
+
+type Step: Counter {
+    size: Int
+
+    fn bump(self, inout n: Int, by: Int) -> Bool {
+        n = n + by * self.size
+        n > 7
+    }
+
+    fn grow(self, inout names: [String]) ! String {
+        names.push("s{self.size}")
+        if names.len() > 2 {
+            fail "full"
+        }
+    }
+}
+
+fn main() {
+    const c: Counter = Step(size: 3)
+    let n = 1
+    const big = c.bump(n, 2)
+    print("{big} {n}")
+    const now = c.bump(n, 1)
+    print("{now} {n}")
+    let names = ["a"]
+    c.grow(names) catch e => print(e)
+    print(names.len())
+    c.grow(names) catch e => print(e)
+    print(names.len())
+}

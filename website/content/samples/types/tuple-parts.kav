@@ -1,0 +1,9 @@
+fn min_max(xs: [Int]) -> (Int, Int) {
+    (xs.min() ?? 0, xs.max() ?? 0)
+}
+
+fn main() {
+    const (low, high) = min_max([4, 9, 2, 7])
+    print("from {low} to {high}")
+    print(min_max([5]))
+}

@@ -1,0 +1,22 @@
+type Row {
+    amount: Int
+}
+
+fn load_rows() -> [Row] {
+    [Row(amount: 120), Row(amount: 80), Row(amount: 300)]
+}
+
+fn send(total: Int) {
+    print("sent {total}")
+}
+
+fn report() {
+    const rows = load_rows()        // say this is 500 MB
+    const total = rows.sum(r => r.amount)
+    // `rows` is freed here: nothing reads it after this line
+    send(total)                     // runs without the 500 MB
+}
+
+fn main() {
+    report()
+}

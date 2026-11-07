@@ -1,0 +1,32 @@
+// Rule: A lambda made inside a generic function keeps that call's type arguments wherever it is called later.
+// Spec: 2.9, 3.3
+// expect output: 1: {"type":"object","properties":{"x":{"type":"integer"}},"required":["x"],"additionalProperties":false}
+// expect output: true
+// expect output: false
+
+use std.json
+
+type Point {
+    x: Int
+}
+
+fn describer<T>() -> fn(Int) -> String {
+    n => "{n}: {json.schema<T>()}"
+}
+
+fn valid<T>(text: String) -> Bool {
+    const _v = json.decode<T>(text) catch _ => return false
+    true
+}
+
+fn checker<T>() -> fn(String) -> Bool {
+    text => valid<T>(text)
+}
+
+fn main() {
+    const d = describer<Point>()
+    print(d(1))
+    const check = checker<Point>()
+    print(check("\{\"x\": 3}"))
+    print(check("[]"))
+}

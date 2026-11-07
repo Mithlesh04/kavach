@@ -1,0 +1,1 @@
+error: `half` gives a `Float`, and a `gpu fn` works with `Float32`, `Int32`, `UInt32` and `Bool`, and records and tuples of 1 to 8 of them (spec 15.1)

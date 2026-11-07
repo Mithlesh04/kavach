@@ -1,0 +1,16 @@
+// Rule: In a generated test, `Fs` is a file system in memory: what a case writes, it reads back, and nothing reaches the disk.
+// Spec: 11.5
+// expect test pass
+
+use std.fs
+
+// On disk the folder doesn't exist, so the write would fail; in memory,
+// folders are made as needed. (A full fake disk fails the write too,
+// and then there is nothing to read back.)
+fn kept(note: String) -> Bool uses Fs
+    ensure result
+{
+    fs.write_text("kavach-no-such-folder/note.txt", note) catch _ => return true
+    const back = fs.read_text("kavach-no-such-folder/note.txt") catch _ => return false
+    back == note
+}

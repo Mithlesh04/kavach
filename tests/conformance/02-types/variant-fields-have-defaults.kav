@@ -1,0 +1,11 @@
+// Rule: A variant's fields may have defaults, which may be left out.
+// Spec: 2.6
+// expect output: Circle(radius: 1)
+// expect output: Circle(radius: 3)
+
+type Shape = Circle(radius: Int = 1) | Dot
+
+fn main() {
+    print(Shape.Circle())
+    print(Shape.Circle(radius: 3))
+}

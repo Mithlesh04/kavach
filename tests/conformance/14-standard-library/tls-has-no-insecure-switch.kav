@@ -1,0 +1,10 @@
+// Rule: TLS verification can't be turned off: `net.connect_tls` has no argument that skips certificate checks, so asking for one is refused.
+// Spec: 14.10
+// expect compile error
+
+use std.net
+
+fn main() ! Error {
+    const conn = try net.connect_tls("example.com:443", verify: false)    // error: no such argument
+    conn.close()
+}

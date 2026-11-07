@@ -1,0 +1,15 @@
+# 10. Modules and packages
+
+Conformance tests for spec chapter [10. Modules and packages](../../../docs/spec/10-modules-and-packages.md). Format: [../README.md](../README.md). Each test is a small project: a folder with `kavach.toml` and `src/`; the header is in `src/main.kav`, and the other files of `src/` are its modules.
+
+| Spec | Test | Rule | Expects |
+|---|---|---|---|
+| 10.2 | [modules-share-pub-names/](modules-share-pub-names/src/main.kav) | `use` brings in another module; its `pub` names are used through it, or directly. | runs |
+| 10.1 | [private-names-stay-private/](private-names-stay-private/src/main.kav) | A name without `pub` can't be used from another module. | compile error |
+| 10.1 | [private-fields-stay-private/](private-fields-stay-private/src/main.kav) | A record field without `pub` can't be used from another module. | compile error |
+| 10.1 | [records-with-private-fields-stay-in-their-module/](records-with-private-fields-stay-in-their-module/src/main.kav) | A record with a private field can be created only in its own module. | compile error |
+| 10.3 | [only-the-entry-has-main/](only-the-entry-has-main/src/main.kav) | Only the entry file can have `main`. | compile error |
+| 10.7 | [c-calls-need-unsafe/](c-calls-need-unsafe/src/main.kav) | A C function is called only inside `unsafe`. | compile error |
+| 10.7 | [c-functions-take-c-types/](c-functions-take-c-types/src/main.kav) | A C function takes numbers, booleans, `Ptr`s and `String`s, and gives numbers, booleans, `Ptr`s or nothing. | compile error |
+| 10.7 | [c-records-hold-c-types/](c-records-hold-c-types/src/main.kav) | A `Ptr` going to C points to a number, a `Bool`, a `Ptr`, or a record of only those. | compile error |
+| 10.7 | [c-callbacks-are-named-functions/](c-callbacks-are-named-functions/src/main.kav) | A C callback is the name of a Kavach function that can't fail; a lambda or closure is a compile error. | compile error |

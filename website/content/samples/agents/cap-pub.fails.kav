@@ -1,0 +1,8 @@
+use std.fs
+
+pub fn load(name: String) -> String ! FsError {
+    try fs.read_text(name)
+}
+
+fn main() {
+}

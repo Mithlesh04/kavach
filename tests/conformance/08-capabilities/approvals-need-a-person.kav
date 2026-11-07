@@ -1,0 +1,52 @@
+// Rule: When an `approve` condition holds, a person must approve the call; with no one to ask it is refused with `Denied`.
+// Spec: 8.3
+// expect output: 1: refunded r1
+// expect output: 2: denied, not approved by finance (amount > 50)
+
+type Receipt { id: String }
+type PaymentError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn refund(order_id: Int, amount: Int) -> Receipt ! PaymentError
+}
+
+type FakePayments: Payments {
+    fn refund(self, order_id: Int, amount: Int) -> Receipt ! PaymentError {
+        Receipt(id: "r{order_id}")
+    }
+}
+
+agent Bot {
+    can Payments.refund
+
+    approve Payments.refund when amount > 50 by "finance"
+
+    on refund(order_id: Int, amount: Int) -> Receipt ! PaymentError {
+        try Payments.refund(order_id, amount)
+    }
+}
+
+fn show(bot: Bot, order_id: Int, amount: Int) {
+    const r = bot.refund(order_id, amount) catch e => match e {
+        PaymentError.Denied(reason) => {
+            print("{order_id}: denied, {reason}")
+            return
+        }
+        PaymentError.Declined => {
+            print("{order_id}: declined")
+            return
+        }
+        // A send can also fail with its handler's panic (decision 0076).
+        _ => {
+            print("{order_id}: {e}")
+            return
+        }
+    }
+    print("{order_id}: refunded {r.id}")
+}
+
+fn main() {
+    const bot = Bot.start(Payments: FakePayments())
+    show(bot, 1, 40)
+    show(bot, 2, 70)
+}

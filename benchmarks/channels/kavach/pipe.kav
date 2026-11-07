@@ -1,0 +1,16 @@
+// One task sends 2 million integers through a channel that holds 1024;
+// main receives them and adds them up.
+fn main() {
+    const (send, receive) = Channel<Int>(capacity: 1024)
+    const producer = spawn {
+        for i in 0..2_000_000 {
+            send.put(i)
+        }
+        send.close()
+    }
+    let total = 0
+    for n in receive {
+        total += n
+    }
+    print(total)
+}

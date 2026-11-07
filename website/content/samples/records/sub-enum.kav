@@ -1,0 +1,13 @@
+type Status = Pending | Paid | Refunded
+
+type Code = Ok = 200 | NotFound = 404 | Failed = 500
+
+fn main() {
+    for s in Status.all() {
+        print(s.name())
+    }
+    const chosen = Status.parse("Paid") ?? Status.Pending
+    print(chosen)
+    print(Code.NotFound.value())
+    print(Code.from(500) ?? Code.Ok)
+}

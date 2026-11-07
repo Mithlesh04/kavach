@@ -1,0 +1,17 @@
+// Rule: cli.parse reads options into a record; fields with defaults are optional.
+// Spec: 14.6
+// expect output: data.csv 10 false none
+
+use std.cli
+
+type Args {
+    input: String = "data.csv"
+    limit: Int = 10
+    verbose: Bool = false
+    name: String?
+}
+
+fn main() ! Error {
+    const args = try cli.parse<Args>()
+    print("{args.input} {args.limit} {args.verbose} {args.name}")
+}

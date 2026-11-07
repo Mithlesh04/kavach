@@ -1,0 +1,51 @@
+// std.log (spec 14.12): log events are records the program defines, not
+// strings. Written in Kavach; the runtime writes each line (`log_write`).
+// Logging needs no capability: where events go is set by the program's
+// owner, in `kavach.toml`, not by the code that writes them.
+
+/// A type whose values can be logged: `type OrderPlaced: LogEvent { … }`.
+/// An event is written in its printed form (spec 1.11), so secret fields
+/// show as `<secret>`, and a type can choose its own form with `Display`.
+pub interface LogEvent {}
+
+/// Writes `event` at level `debug`: details for finding a problem. Left
+/// out unless `kavach.toml` sets the level to `debug`.
+pub fn debug<E: LogEvent>(event: E) {
+    write(0, event)
+}
+
+/// Writes `event` at level `info`: what the program did.
+pub fn info<E: LogEvent>(event: E) {
+    write(1, event)
+}
+
+/// Writes `event` at level `warn`: something unexpected that the program
+/// handled.
+pub fn warn<E: LogEvent>(event: E) {
+    write(2, event)
+}
+
+/// Writes `event` at level `error`: something failed.
+pub fn error<E: LogEvent>(event: E) {
+    write(3, event)
+}
+
+/// The name of a level as the console shows it.
+fn level_name(level: Int) -> String
+    example level_name(0) == "DEBUG"
+    example level_name(3) == "ERROR"
+{
+    match level {
+        0 => "DEBUG",
+        1 => "INFO",
+        2 => "WARN",
+        _ => "ERROR",
+    }
+}
+
+/// One line per event, written where `[log]` in `kavach.toml` says (the
+/// console unless it says otherwise), unless below the lowest level for
+/// the event's type (the runtime knows it from `event`).
+fn write<E: LogEvent>(level: Int, event: E) {
+    log_write(level, "{level_name(level)} {event}", event)
+}

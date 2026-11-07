@@ -1,0 +1,100 @@
+// A hostile server never crashes the HTTP clients (to-do item 4): a
+// server answering junk bytes makes `http.get` (HTTP/1) and an HTTP/2
+// request fail with an error, never a panic or a hang. And hostile text
+// never crashes `json.decode<T>`. Deterministic, so a failure reproduces.
+
+use std.net
+use std.http
+use std.http.h2
+use std.json
+
+/// A Lehmer step: deterministic, and no overflow.
+fn next(seed: Int) -> Int
+    require seed >= 0 and seed < 2147483647
+{
+    (seed * 48271) % 2147483647
+}
+
+/// `len` pseudo-random bytes from `start`.
+fn junk(start: Int, len: Int) -> Bytes
+    require start >= 0 and start < 2147483647
+    require len >= 0 and len <= 400
+{
+    let xs: [UInt8] = []
+    let seed = start
+    for i in 0..len {
+        seed = next(seed)
+        xs.push(UInt8(seed % 256))
+    }
+    Bytes(xs)
+}
+
+/// Answers every connection with junk derived from `seed`, then closes.
+fn hostile(listener: Listener, rounds: Int, seed: Int) ! NetError uses Net
+    require rounds >= 1 and rounds <= 50
+    require seed >= 0 and seed < 2147483647
+{
+    let s = seed
+    for round in 0..rounds {
+        const conn = try listener.accept()
+        const _ = try conn.read()
+        s = next(s)
+        try conn.write(junk(s, 1 + s % 300))
+        conn.close()
+    }
+}
+
+test "junk answers never crash the HTTP/1 client" uses Net {
+    const listener = net.listen("127.0.0.1:0") catch e => panic("no listener")
+    const server = spawn hostile(listener, 20, 7)
+    let done = 0
+    for round in 0..20 {
+        match http.get("http://{listener.address()}") {
+            ok(r) => { done = done + 1 }
+            err(e) => { done = done + 1 }
+        }
+    }
+    assert done == 20
+}
+
+test "junk frames never crash the HTTP/2 client" uses Net {
+    const listener = net.listen("127.0.0.1:0") catch e => panic("no listener")
+    const server = spawn hostile(listener, 20, 11)
+    let done = 0
+    for round in 0..20 {
+        const conn = net.connect(listener.address()) catch e => continue
+        match h2.request(conn, [Header(name: ":method", value: "GET")], Bytes([])) {
+            ok(m) => { done = done + 1 }
+            err(e) => { done = done + 1 }
+        }
+        conn.close()
+    }
+    assert done == 20
+}
+
+type Point {
+    x: Int
+    y: Float
+    name: String
+    tags: [Int]
+}
+
+test "hostile text never crashes json.decode" {
+    let seed = 13
+    let done = 0
+    for round in 0..200 {
+        seed = next(seed)
+        let text = ""
+        let s = seed
+        for i in 0..(round % 40) {
+            s = next(s)
+            const pieces = ["{", "}", "[", "]", "\"", ":", ",", "x", "1e99", "-", "null", "true", "\"x\":", "9999999999999999999"]
+            text = text + pieces[s % pieces.len()]
+        }
+        match json.decode<Point>(text) {
+            ok(p) => { done = done + 1 }
+            err(e) => { done = done + 1 }
+        }
+    }
+    assert done == 200
+}

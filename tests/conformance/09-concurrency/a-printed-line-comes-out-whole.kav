@@ -1,0 +1,14 @@
+// Rule: a printed line comes out whole: when its values wait for a task, nothing of it is written before they are ready.
+// Spec: 9.8
+// expect output: in the task: 3
+// expect output: result 6
+
+fn work(n: Int) -> Int {
+    print("in the task: {n}")
+    n * 2
+}
+
+fn main() ! Error {
+    const a = spawn work(3)
+    print("result {try a.wait()}")
+}

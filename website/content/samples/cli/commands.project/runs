@@ -1,0 +1,4 @@
+run src/main.kav add-item --name milk --count 2
+run src/main.kav show --limit 3
+run src/main.kav --help
+run src/main.kav add-item --help

@@ -1,0 +1,18 @@
+// Rule: A program's variant may have the name of one of `Json`'s: each is written with its own union's name.
+// Spec: 2.12, 2.6
+// expect output: token 3
+// expect output: "x"
+
+type Token = Number(value: Int) | Text(value: String)
+
+fn show(t: Token) -> String {
+    match t {
+        Token.Number(n) => "token {n}",
+        Token.Text(s) => "token {s}",
+    }
+}
+
+fn main() {
+    print(show(Token.Number(value: 3)))
+    print(Json.Text(value: "x"))
+}

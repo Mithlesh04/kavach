@@ -1,0 +1,405 @@
+// std.http (spec 14.11): HTTP/1.1 and HTTP/2 clients and servers,
+// written in Kavach on top of std.net. A client's HTTP/1.1 connection
+// carries one request and its response (`connection: close`), and a
+// session (`http.open`) keeps one open for several; a server keeps a
+// connection open for the next request. Bodies are sized by
+// `content-length` or sent in chunks. `https://` goes through TLS (`net.connect_tls`,
+// decision 0021) and speaks HTTP/2 when the server chooses it; HTTP/2
+// itself is in `h2.kav` (decision 0022). `get3` speaks HTTP/3, over
+// QUIC (`h3.kav`). Variants are written
+// `HttpError.BadUrl`: a program may have its own.
+
+use std.http.h2
+use std.http.h3
+use std.http.hpack
+use std.json
+use std.http.message
+use std.net
+use std.time
+
+/// An HTTP request, as a server's handler gets it.
+pub type Request {
+    pub method: String
+    pub path: String
+    /// Header names in lower case.
+    pub headers: [String: String]
+    pub body: Bytes
+}
+
+/// An HTTP response.
+pub type Response {
+    pub status: Int
+    /// Header names in lower case.
+    pub headers: [String: String]
+    pub body: Bytes
+}
+
+/// Why an HTTP request failed: `Status` and `BadJson` come from the
+/// JSON calls (`get_json`, `post_json`).
+pub type HttpError = Network(error: NetError) |
+    BadUrl(url: String) |
+    BadMessage(reason: String) |
+    Status(code: Int) |
+    BadJson(error: JsonError)
+
+/// A response with text: `http.text(200, "hello")`.
+pub fn text(status: Int, body: String) -> Response {
+    Response(status: status, headers: ["content-type": "text/plain; charset=utf-8"], body: body.bytes())
+}
+
+/// `GET url`.
+pub fn get(url: String) -> Response ! HttpError uses Net {
+    try request("GET", url, Bytes([]), "")
+}
+
+/// `POST url` with `body`.
+pub fn post(url: String, body: Bytes) -> Response ! HttpError uses Net {
+    try request("POST", url, body, "")
+}
+
+/// `GET url`, its JSON body decoded into a `T`.
+pub fn get_json<T>(url: String) -> T ! HttpError uses Net {
+    const r = try request("GET", url, Bytes([]), "")
+    try decoded<T>(r)
+}
+
+/// `POST url` with the JSON `body`, the JSON answer decoded into a `T`.
+pub fn post_json<T>(url: String, body: Json) -> T ! HttpError uses Net {
+    const text = json.stringify(body, 0)
+    const r = try request("POST", url, text.bytes(), "application/json")
+    try decoded<T>(r)
+}
+
+/// A response with JSON: `http.json_response(200, json.of(order))`.
+pub fn json_response(status: Int, value: Json) -> Response {
+    const headers = ["content-type": "application/json"]
+    Response(status: status, headers: headers, body: json.stringify(value, 0).bytes())
+}
+
+/// A request's JSON body decoded into a `T`.
+pub fn read_json<T>(r: Request) -> T ! JsonError {
+    const text = r.body.text() ?? fail JsonError.Mismatch(path: "", expected: "UTF-8 text")
+    try json.decode<T>(text)
+}
+
+/// A response's JSON body as a `T`, when its status is 2xx.
+fn decoded<T>(r: Response) -> T ! HttpError {
+    if r.status < 200 or r.status > 299 {
+        fail HttpError.Status(code: r.status)
+    }
+    const text = r.body.text() ?? fail HttpError.BadMessage(reason: "the body isn't UTF-8")
+    json.decode<T>(text) catch e => fail HttpError.BadJson(error: e)
+}
+
+/// `GET url` over HTTP/3 (an `https://` URL).
+pub fn get3(url: String) -> Response ! HttpError uses Net {
+    const target = try split_url(url)
+    if not target.secure {
+        fail HttpError.BadUrl(url: url)
+    }
+    const name = target.host.slice(0, target.host.index_of(":") ?? target.host.len())
+    const conn = net.connect_quic(target.host, ["h3"]) catch e => {
+        fail HttpError.Network(error: e)
+    }
+    const pseudo = [
+        Header(name: ":method", value: "GET"),
+        Header(name: ":scheme", value: "https"),
+        Header(name: ":authority", value: name),
+        Header(name: ":path", value: target.path),
+    ]
+    const reply = h3.request(conn, pseudo, Bytes([])) catch e => {
+        conn.close()
+        fail match e {
+            H3Error.Network(n) => HttpError.Network(error: n),
+            H3Error.Protocol(reason) => HttpError.BadMessage(reason: reason),
+        }
+    }
+    conn.close()
+    const status = Int(reply.headers.get(":status") ?? "") catch e => {
+        fail HttpError.BadMessage(reason: "no status in an HTTP/3 response")
+    }
+    Response(status: status, headers: plain(reply.headers), body: reply.body)
+}
+
+/// One HTTP/1.1 connection kept open for several requests to one server
+/// (spec 14.11). For one task at a time.
+pub type Session {
+    conn: Connection
+    host: String
+
+    /// `GET path` on the session's connection.
+    pub fn get(self, path: String) -> Response ! HttpError uses Net {
+        try self.send("GET", path, Bytes([]))
+    }
+
+    /// `POST path` with `body` on the session's connection.
+    pub fn post(self, path: String, body: Bytes) -> Response ! HttpError uses Net {
+        try self.send("POST", path, body)
+    }
+
+    /// Closes the session's connection.
+    pub fn close(self) uses Net {
+        self.conn.close()
+    }
+
+    /// Sends a request and reads its response, which must say its length.
+    fn send(self, method: String, path: String, body: Bytes) -> Response ! HttpError uses Net {
+        const crlf = message.crlf()
+        const head = "{method} {path} HTTP/1.1{crlf}host: {self.host}{crlf}content-length: {body.len()}{crlf}{crlf}"
+        self.conn.write(head.bytes() + body) catch e => {
+            fail HttpError.Network(error: e)
+        }
+        let data = Bytes([])
+        while true {
+            if let got = message.whole(data) {
+                const parts = got.message.first.split(" ")
+                const status = Int(parts.get(1) ?? "") catch e => {
+                    fail HttpError.BadMessage(reason: "no status in `{got.message.first}`")
+                }
+                return Response(status: status, headers: got.message.headers, body: got.message.body)
+            }
+            const piece = self.conn.read() catch e => {
+                fail HttpError.Network(error: e)
+            }
+            const closed = NetError.Failed(address: self.host, reason: "the server closed the connection")
+            data = data + (piece ?? fail HttpError.Network(error: closed))
+        }
+        fail HttpError.BadMessage(reason: "no response")
+    }
+}
+
+/// A session with the server of `url`: one connection, kept open.
+pub fn open(url: String) -> Session ! HttpError uses Net {
+    const target = try split_url(url)
+    const conn = if target.secure {
+        net.connect_tls(target.host, protocols: ["http/1.1"]) catch e => fail HttpError.Network(error: e)
+    } else {
+        net.connect(target.host) catch e => fail HttpError.Network(error: e)
+    }
+    const host = target.host.slice(0, target.host.index_of(":") ?? target.host.len())
+    Session(conn: conn, host: host)
+}
+
+/// Serves HTTP on `listener`: each connection in a task of its own, its
+/// request answered by `handler`. Runs until the function that called it
+/// returns (its tasks are cancelled then, spec 9.2).
+pub fn serve(listener: Listener, handler: fn(Request) -> Response) ! NetError uses Net {
+    while true {
+        const conn = try listener.accept()
+        const task = spawn answer(conn, handler)
+    }
+}
+
+/// Where a URL points: its host (with the port), its path, and whether
+/// it is `https://`.
+type Target {
+    host: String
+    path: String
+    secure: Bool
+}
+
+fn split_url(url: String) -> Target ! HttpError {
+    const secure = url.starts_with("https://")
+    if not secure and not url.starts_with("http://") {
+        fail HttpError.BadUrl(url: url)
+    }
+    const rest = url.slice(if secure { 8 } else { 7 }, url.len())
+    const slash = rest.index_of("/") ?? rest.len()
+    let host = rest.slice(0, slash)
+    if host.is_empty() {
+        fail HttpError.BadUrl(url: url)
+    }
+    if not host.contains(":") {
+        host = host + if secure { ":443" } else { ":80" }
+    }
+    const path = if slash < rest.len() { rest.slice(slash, rest.len()) } else { "/" }
+    Target(host: host, path: path, secure: secure)
+}
+
+/// `kind` is the body's `content-type` (none when empty); a JSON body
+/// asks for JSON back.
+fn request(method: String, url: String, body: Bytes, kind: String) -> Response ! HttpError uses Net {
+    const target = try split_url(url)
+    const name = target.host.slice(0, target.host.index_of(":") ?? target.host.len())
+    const conn = connect(target) catch e => {
+        fail HttpError.Network(error: e)
+    }
+    if conn.protocol() == "h2" {
+        let pseudo = [
+            Header(name: ":method", value: method),
+            Header(name: ":scheme", value: "https"),
+            Header(name: ":authority", value: name),
+            Header(name: ":path", value: target.path),
+        ]
+        if not kind.is_empty() {
+            pseudo.push(Header(name: "content-type", value: kind))
+        }
+        const reply = h2.request(conn, pseudo, body) catch e => {
+            conn.close()
+            fail from_h2(e)
+        }
+        conn.close()
+        const status = Int(reply.headers.get(":status") ?? "") catch e => {
+            fail HttpError.BadMessage(reason: "no status in an HTTP/2 response")
+        }
+        return Response(status: status, headers: plain(reply.headers), body: reply.body)
+    }
+    let head = "{method} {target.path} HTTP/1.1{message.crlf()}host: {name}{message.crlf()}"
+    if not kind.is_empty() {
+        head = head + "content-type: {kind}{message.crlf()}"
+    }
+    head = head + "content-length: {body.len()}{message.crlf()}connection: close{message.crlf()}{message.crlf()}"
+    const all = exchange(conn, head.bytes() + body) catch e => {
+        fail HttpError.Network(error: e)
+    }
+    const reply = message.parse(all) ?? fail HttpError.BadMessage(reason: "the response is not HTTP")
+    const parts = reply.first.split(" ")
+    const status = Int(parts.get(1) ?? "") catch e => {
+        fail HttpError.BadMessage(reason: "no status in `{reply.first}`")
+    }
+    const body = if message.chunked(reply.headers) {
+        message.dechunk(reply.body) ?? fail HttpError.BadMessage(reason: "a chunked body is cut off")
+    } else {
+        reply.body
+    }
+    Response(status: status, headers: reply.headers, body: body)
+}
+
+/// A connection to `target`; with TLS, HTTP/2 is offered too.
+fn connect(target: Target) -> Connection ! NetError uses Net {
+    if target.secure {
+        return try net.connect_tls(target.host, protocols: ["h2", "http/1.1"])
+    }
+    try net.connect(target.host)
+}
+
+/// Sends `data` on `conn` and reads everything that comes back.
+fn exchange(conn: Connection, data: Bytes) -> Bytes ! NetError uses Net {
+    try conn.write(data)
+    let all = Bytes([])
+    while true {
+        const piece = (try conn.read()) ?? break
+        all = all + piece
+    }
+    conn.close()
+    all
+}
+
+/// Serves `conn`: HTTP/1.1 requests one after another, each answered by
+/// `handler`, until the client closes, asks to close, or sends nothing
+/// for 5 seconds (spec 14.11); or HTTP/2 when the client starts with its
+/// preface.
+fn answer(conn: Connection, handler: fn(Request) -> Response) ! NetError uses Net {
+    let data = Bytes([])
+    let first = true
+    while true {
+        const got = read_request(conn, data)
+        if first and got.data.len() >= 4 and got.data.slice(0, 4) == "PRI ".bytes() {
+            serve_h2(conn, got.data, handler) catch e => conn.close()
+            return
+        }
+        first = false
+        if got.message == none and got.data.is_empty() {
+            conn.close()
+            return
+        }
+        const keep = try respond(conn, got.message, handler)
+        if not keep {
+            conn.close()
+            return
+        }
+        // What came after the request: the start of the next one.
+        data = got.data.slice(got.used, got.data.len())
+    }
+}
+
+/// The next request on `conn`, `data` holding what came with the last: the
+/// request, how many bytes it took, and all the bytes read. No request
+/// when the client closed, sent nothing for 5 seconds, or started
+/// HTTP/2's preface (`PRI `).
+fn read_request(conn: Connection, data: Bytes) -> (message: Message?, used: Int, data: Bytes) uses Net {
+    let all = data
+    while true {
+        if all.len() >= 4 and all.slice(0, 4) == "PRI ".bytes() {
+            break
+        }
+        if let got = message.whole(all) {
+            return (message: got.message, used: got.used, data: all)
+        }
+        const got = conn.read().timeout(5.seconds) catch e => none
+        const piece = got ?? break
+        all = all + piece
+    }
+    (message: none, used: 0, data: all)
+}
+
+/// Answers `received` with `handler`, or with 400 when it isn't HTTP.
+/// Whether the connection stays open: not when the client asked to
+/// close or spoke HTTP/1.0 without `keep-alive`.
+fn respond(conn: Connection, received: Message?, handler: fn(Request) -> Response) -> Bool ! NetError uses Net {
+    let keep = false
+    let response = text(400, "bad request")
+    if let m = received {
+        const parts = m.first.split(" ")
+        const asked = (m.headers.get("connection") ?? "").lower()
+        const old = (parts.get(2) ?? "") == "HTTP/1.0"
+        keep = asked != "close" and (not old or asked == "keep-alive")
+        const request = Request(method: parts.get(0) ?? "", path: parts.get(1) ?? "/", headers: m.headers, body: m.body)
+        response = handler(request)
+    }
+    let head = "HTTP/1.1 {response.status} {message.reason(response.status)}{message.crlf()}"
+    for (name, value) in response.headers {
+        head = head + "{name}: {value}{message.crlf()}"
+    }
+    const connection = if keep { "keep-alive" } else { "close" }
+    head = head + "content-length: {response.body.len()}{message.crlf()}connection: {connection}{message.crlf()}{message.crlf()}"
+    try conn.write(head.bytes() + response.body)
+    keep
+}
+
+/// Serves HTTP/2 on `conn`, which began with `data`: requests one at a
+/// time, each answered by `handler`.
+fn serve_h2(conn: Connection, data: Bytes, handler: fn(Request) -> Response) ! H2Error uses Net {
+    let link = try h2.accept(conn, data)
+    while true {
+        const next = try h2.next(link)
+        link = next.link
+        const m = next.message ?? break
+        const request = Request(
+            method: m.headers.get(":method") ?? "GET",
+            path: m.headers.get(":path") ?? "/",
+            headers: plain(m.headers),
+            body: m.body,
+        )
+        const response = handler(request)
+        let headers = [Header(name: ":status", value: "{response.status}")]
+        for (name, value) in response.headers {
+            // Headers about the connection don't exist in HTTP/2.
+            if not ["connection", "keep-alive", "transfer-encoding", "upgrade", "content-length"].contains(name) {
+                headers.push(Header(name: name, value: value))
+            }
+        }
+        headers.push(Header(name: "content-length", value: "{response.body.len()}"))
+        link = try h2.respond(link, m.stream, headers, response.body)
+    }
+    conn.close()
+}
+
+/// HTTP/2 headers without the pseudo-headers (`:status`, `:path`, …).
+fn plain(headers: [String: String]) -> [String: String] {
+    let out: [String: String] = [:]
+    for (name, value) in headers {
+        if not name.starts_with(":") {
+            out[name] = value
+        }
+    }
+    out
+}
+
+fn from_h2(e: H2Error) -> HttpError {
+    match e {
+        H2Error.Network(n) => HttpError.Network(error: n),
+        H2Error.Protocol(reason) => HttpError.BadMessage(reason: reason),
+        H2Error.Reset(_, code) => HttpError.BadMessage(reason: "the server reset the stream (code {code})"),
+    }
+}

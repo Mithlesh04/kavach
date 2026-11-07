@@ -1,0 +1,22 @@
+// Rule: `net.bind` makes a UDP socket; `send` sends one datagram to an address and `receive` waits for the next one, with the address it came from.
+// Spec: 14.10
+// expect output: PING
+// expect output: true
+
+use std.net
+
+fn echo(sock: UdpSocket) ! NetError uses Net {
+    const d = try sock.receive()
+    try sock.send((d.data.text() ?? "").upper().bytes(), d.from)
+}
+
+fn main() ! Error {
+    const server = try net.bind("127.0.0.1:0")
+    const task = spawn echo(server)
+    const client = try net.bind("127.0.0.1:0")
+    try client.send("ping".bytes(), server.address())
+    const reply = try client.receive()
+    print(reply.data.text() ?? "?")
+    print(reply.from == server.address())
+    try task.wait()
+}

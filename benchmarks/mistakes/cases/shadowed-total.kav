@@ -1,0 +1,9 @@
+// Mistake: A running total that shadows itself in a loop.
+
+fn main() {
+    let total = 0
+    for i in 0..10 {
+        let total = total + i
+    }
+    print(total)
+}

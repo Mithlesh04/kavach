@@ -1,0 +1,122 @@
+// Complex: insurance claims through three agents, each on the model its
+// work needs. Intake and Fraud read every claim on a quick model; the
+// Adjuster decides on a careful one, and a payout over 2,000 needs a
+// senior person's approval (none answers in the benchmark, so it goes to
+// review).
+
+use std.fs
+use std.json
+
+type Claim {
+    id: Int
+    amount: Int
+    text: String
+}
+
+type Intake {
+    /// true if the policy covers what happened
+    covered: Bool
+    /// true if the documents the policy asks for are missing
+    missing_documents: Bool
+}
+
+type Fraud {
+    /// true if the claim shows signs of fraud: urgency, pressure for cash, repeated claims, no evidence
+    suspicious: Bool
+}
+
+type Payout {
+    /// true if the claim should be paid in full
+    pay: Bool
+}
+
+type Receipt { id: String }
+type PayoutError = Failed | Denied(reason: String)
+
+pub capability Payouts {
+    fn pay(claim_id: Int, amount: Int) -> Receipt ! PayoutError
+}
+
+type Bank: Payouts {
+    fn pay(self, claim_id: Int, amount: Int) -> Receipt ! PayoutError {
+        Receipt(id: "p{claim_id}")
+    }
+}
+
+/// The policy every agent reads.
+fn policy() -> String {
+    "Policy: covers car accidents, home water damage from burst pipes, home theft reported to the police, and trip cancellation for illness of the traveller or close family with a doctor's or hospital letter. It does not cover wear and tear, floods from rivers or rain, lost luggage without an airline report, or cosmetic damage."
+}
+
+fn quick() -> Model {
+    Model(name: "claude-haiku-5-5")
+}
+
+fn careful() -> Model {
+    Model(name: "claude-sonnet-5-5")
+}
+
+agent IntakeDesk {
+    model quick()
+    can Ai
+    on read(c: Claim) -> Intake ! Error {
+        try ask<Intake>("{policy()}\n\nClaim {c.id}, {c.amount} USD: {c.text}")
+    }
+}
+
+agent FraudCheck {
+    model quick()
+    can Ai
+    on read(c: Claim) -> Fraud ! Error {
+        try ask<Fraud>("Does this insurance claim look fraudulent? Claim {c.id}, {c.amount} USD: {c.text}")
+    }
+}
+
+agent Adjuster {
+    model careful()
+    can Ai, Payouts.pay
+    approve Payouts.pay when amount > 2_000 by "senior"
+    on decide(c: Claim) -> String ! Error {
+        const p = try ask<Payout>("{policy()}\n\nThe claim is covered and its documents are in order. Should we pay it? Claim {c.id}, {c.amount} USD: {c.text}")
+        if not p.pay {
+            return "deny"
+        }
+        const _r = Payouts.pay(c.id, c.amount) catch _ => {
+            return "review"
+        }
+        "pay"
+    }
+}
+
+/// One claim through the three agents.
+fn handle(c: Claim, intake: IntakeDesk, fraud: FraudCheck, adjuster: Adjuster) -> String ! Error uses Ai, Payouts.pay {
+    const i = try intake.read(c)
+    if not i.covered {
+        return "{c.id} deny"
+    }
+    const f = try fraud.read(c)
+    if f.suspicious or i.missing_documents {
+        return "{c.id} review"
+    }
+    "{c.id} {try adjuster.decide(c)}"
+}
+
+pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Payouts.pay {
+    const claims = try json.decode<[Claim]>(try fs.read_text(path))
+    const intake = IntakeDesk.start()
+    const fraud = FraudCheck.start()
+    const adjuster = Adjuster.start(Payouts: Bank())
+    if not together {
+        for c in claims {
+            print(try handle(c, intake, fraud, adjuster))
+        }
+        return
+    }
+    let asked: [Task<String>] = []
+    for c in claims {
+        asked.push(spawn handle(c, intake, fraud, adjuster))
+    }
+    for a in asked {
+        print(try a.wait())
+    }
+}

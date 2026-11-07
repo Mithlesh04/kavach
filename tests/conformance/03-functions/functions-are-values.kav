@@ -1,0 +1,12 @@
+// Rule: Functions are values and can be stored in variables.
+// Spec: 3.4
+// expect output: 5
+
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
+
+fn main() {
+    const op: fn(Int, Int) -> Int = add
+    print(op(2, 3))
+}

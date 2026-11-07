@@ -1,0 +1,7 @@
+fn main() {
+    const xs = [3, 1, 4]
+    print(xs[0])
+    print(xs.first() ?? 0)
+    print(xs.last() ?? 0)
+    print(xs.contains(4))
+}

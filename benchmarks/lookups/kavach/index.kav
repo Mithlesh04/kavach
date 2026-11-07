@@ -1,0 +1,15 @@
+// Single reads from a large list: 50 million lookups at indexes a
+// Lehmer generator picks, over 10 million items (80 MB, past the caches).
+fn main() {
+    let xs: [Int] = []
+    for i in 0..10_000_000 {
+        xs.push(i * 2)
+    }
+    let j = 12345
+    let total = 0
+    for _ in 0..50_000_000 {
+        j = j * 48271 % 2147483647
+        total += xs[j % 10_000_000]
+    }
+    print(total)
+}

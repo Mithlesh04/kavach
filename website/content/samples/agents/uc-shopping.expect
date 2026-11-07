@@ -1,0 +1,4 @@
+bought rice for 900
+not bought laptop: Denied(reason: "limit broken: price <= 2_000")
+bought pan for 1500
+not bought tea: Denied(reason: "limit broken: sum(price) <= 3_000 per day")

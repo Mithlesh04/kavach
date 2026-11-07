@@ -1,0 +1,1 @@
+error: `pick` can fail: handle the error with `try`, `catch` or `match`

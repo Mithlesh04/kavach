@@ -1,0 +1,15 @@
+// Rule: A built-in type meets an interface bound only when an `extend` says it implements the interface.
+// Spec: 2.8, 2.9
+// expect compile error
+
+interface Describe {
+    fn describe(self) -> String
+}
+
+fn show<T: Describe>(item: T) -> String {
+    item.describe()
+}
+
+fn main() {
+    print(show("text"))         // error: String does not implement Describe
+}

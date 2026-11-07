@@ -1,0 +1,28 @@
+type Category = Billing | Bug | Question
+
+type Triage {
+    /// what the customer needs
+    category: Category
+    /// true if the customer can't use the product at all
+    urgent: Bool
+    /// a one-line summary for the support team
+    summary: String
+}
+
+agent Inbox {
+    can Ai, Console
+
+    on message(text: String) ! Error {
+        const t = try ask<Triage>("Sort this support message: {text}")
+        match t.category {
+            Category.Billing => print("to billing, urgent: {t.urgent}"),
+            Category.Bug => print("to engineering, urgent: {t.urgent}"),
+            Category.Question => print("to the help desk, urgent: {t.urgent}"),
+        }
+    }
+}
+
+fn main() {
+    const bot = Inbox.start()
+    bot.message("I was charged twice this month") catch e => print("failed: {e}")
+}

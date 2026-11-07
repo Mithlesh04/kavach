@@ -1,0 +1,8 @@
+// Mistake: `=` written where `==` was meant.
+
+fn main() {
+    let x = 3
+    if x = 4 {
+        print("four")
+    }
+}

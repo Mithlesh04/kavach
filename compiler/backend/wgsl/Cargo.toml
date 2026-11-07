@@ -1,0 +1,17 @@
+[package]
+name = "kavach-backend-wgsl"
+description = "KIR to WGSL: the kernels of gpu fn (spec 15) for the GPU runtime"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+kavach-kir = { path = "../../kir" }
+
+[dev-dependencies]
+kavach-driver = { path = "../../driver" }
+
+[lints]
+workspace = true

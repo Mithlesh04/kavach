@@ -1,0 +1,26 @@
+// Rule: `summary?: String` is short for `summary: String? = none`: a record made or decoded without it holds `none`, and `ask` doesn't require it.
+// Spec: 2.4
+// expect output: no summary
+// expect output: printer jam
+// expect output: no summary
+// expect output: ["urgent"]
+
+use std.json
+
+type Triage {
+    /// true if the customer can't use the product at all
+    urgent: Bool
+    /// a one-line summary for the support team
+    summary?: String
+}
+
+fn main() {
+    const quick = Triage(urgent: true)
+    print(quick.summary ?? "no summary")
+    const full = Triage(urgent: false, summary: "printer jam")
+    print(full.summary ?? "no summary")
+    const answer: Json = ["urgent": true]
+    const read = json.decode_value<Triage>(answer) catch _ => full
+    print(read.summary ?? "no summary")
+    print(json.stringify(json.schema<Triage>()["required"]))
+}

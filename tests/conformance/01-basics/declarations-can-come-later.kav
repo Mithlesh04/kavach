@@ -1,0 +1,11 @@
+// Rule: Top-level declarations can be used before they appear in the file.
+// Spec: 1.4
+// expect output: 6
+
+fn main() {
+    print(triple(2))
+}
+
+fn triple(n: Int) -> Int {
+    n * 3
+}

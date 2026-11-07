@@ -1,0 +1,10 @@
+/// Half of `n`, rounded down.
+pub fn half_of(n: Int) -> Int {
+    n.div_floor(2)
+}
+
+/// The old name, kept so callers have time to move.
+deprecated "use half_of instead" fix half_of(n)
+pub fn half(n: Int) -> Int {
+    half_of(n)
+}

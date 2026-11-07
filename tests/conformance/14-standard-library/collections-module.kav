@@ -1,0 +1,17 @@
+// Rule: `std.collections` makes chunks, zips two lists, keeps each item once, counts items and flattens lists.
+// Spec: 14.9
+// expect output: [[1, 2], [3, 4], [5]]
+// expect output: [(1, "a"), (2, "b")]
+// expect output: [3, 1, 2]
+// expect output: ["a": 2, "b": 1]
+// expect output: [1, 2, 3]
+
+use std.collections
+
+fn main() {
+    print(collections.chunks([1, 2, 3, 4, 5], 2))
+    print(collections.zip([1, 2, 3], ["a", "b"]))
+    print(collections.unique([3, 1, 3, 2, 1]))
+    print(collections.counts(["a", "b", "a"]))
+    print(collections.flatten([[1, 2], [], [3]]))
+}

@@ -1,0 +1,15 @@
+fn first<T>(items: [T]) -> T? {
+    items.get(0)
+}
+
+type Pair<A, B> {
+    left: A
+    right: B
+}
+
+fn main() {
+    print(first([3, 1, 2]) ?? 0)
+    print(first(["x", "y"]) ?? "")
+    const p = Pair(left: "age", right: 31)
+    print("{p.left}: {p.right}")
+}

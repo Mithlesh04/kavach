@@ -1,0 +1,25 @@
+// Rule: `Bytes` holds raw data: made from text or a list of `UInt8`, read by index, sliced, joined, compared, and turned back into text when it is UTF-8.
+// Spec: 2.13
+// expect output: 2
+// expect output: 80
+// expect output: Bytes(6869)
+// expect output: hi
+// expect output: not text
+// expect output: Bytes(698950)
+// expect output: 0
+// expect output: [137, 80, 78, 71]
+// expect output: true
+
+fn main() {
+    const greeting = "hi".bytes()
+    const header = Bytes([137, 80, 78, 71])
+    print(greeting.len())
+    print(header[1])
+    print(greeting)
+    print(greeting.text() ?? "?")
+    print(header.text() ?? "not text")
+    print((greeting + header).slice(1, 4))
+    print(header.get(9) ?? 0)
+    print(header.to_list())
+    print("hi".bytes() == greeting)
+}

@@ -1,0 +1,12 @@
+// Rule: Running out of stack is a panic, at the line of the call that went too deep.
+// Spec: 3.8, 5.6
+// expect panic: stack-overflow-panics.kav:7
+// expect exit: 101
+
+fn forever(n: Int) -> Int {
+    forever(n + 1)
+}
+
+fn main() {
+    const _ = forever(0)
+}

@@ -1,0 +1,19 @@
+// Rule: `extend` makes a built-in type implement an interface, so it meets that bound.
+// Spec: 2.8
+// expect output: number 5
+
+interface Describe {
+    fn describe(self) -> String
+}
+
+extend Int: Describe {
+    fn describe(self) -> String { "number {self}" }
+}
+
+fn show<T: Describe>(item: T) -> String {
+    item.describe()
+}
+
+fn main() {
+    print(show(5))
+}

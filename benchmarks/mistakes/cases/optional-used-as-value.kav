@@ -1,0 +1,6 @@
+// Mistake: A value that may be missing, used as if it were there.
+
+fn main() {
+    const ages = ["asha": 31]
+    print(ages["ravi"] + 1)
+}

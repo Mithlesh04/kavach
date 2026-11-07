@@ -1,0 +1,6 @@
+fn main() {
+const totalPrice = 5
+
+
+  print( totalPrice )
+}

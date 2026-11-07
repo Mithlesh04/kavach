@@ -1,0 +1,9 @@
+// Rule: `x op= v` is checked as `x op v` is: the operator must apply to `x`'s type.
+// Spec: 1.8
+// expect compile error
+
+fn main() {
+    let name = "Asha"
+    name -= "a"       // error: `-` needs a number, and this is `String`
+    print(name)
+}

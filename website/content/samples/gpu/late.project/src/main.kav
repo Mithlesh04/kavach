@@ -1,0 +1,16 @@
+gpu fn square(n: Int32) -> Int32 {
+    n * n
+}
+
+fn main() {
+    let ns: [Int32] = []
+    for i in 0..1000 {
+        ns.push(Int32(i % 7))
+    }
+    ns.push(100000)
+    for _ in 0..3 {
+        ns = ns.map(square)
+    }
+    print("looped")
+    print(ns[0])
+}

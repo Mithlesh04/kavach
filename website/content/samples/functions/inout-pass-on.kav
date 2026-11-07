@@ -1,0 +1,29 @@
+fn add_tax(inout price: Int) {
+    price += price / 10
+}
+
+fn add_fee(inout price: Int) {
+    price += 5
+}
+
+fn checkout(inout price: Int) {
+    add_tax(price)
+    add_fee(price)
+}
+
+fn count_down(n: Int, inout total: Int) {
+    if n == 0 {
+        return
+    }
+    total += n
+    count_down(n - 1, total)
+}
+
+fn main() {
+    let price = 100
+    checkout(price)
+    print(price)
+    let total = 0
+    count_down(4, total)
+    print(total)
+}

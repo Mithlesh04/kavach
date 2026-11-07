@@ -1,0 +1,26 @@
+extern c "m" {
+    fn cbrt(x: Float) -> Float
+    fn pow(x: Float, y: Float) -> Float
+}
+
+extern c "c" {
+    fn llabs(n: Int) -> Int
+}
+
+fn cube_root(x: Float) -> Float {
+    unsafe { cbrt(x) }
+}
+
+fn power(x: Float, y: Float) -> Float {
+    unsafe { pow(x, y) }
+}
+
+fn absolute(n: Int) -> Int {
+    unsafe { llabs(n) }
+}
+
+fn main() {
+    print(cube_root(27.0))
+    print(power(2.0, 10.0))
+    print(absolute(-42))
+}

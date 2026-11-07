@@ -1,0 +1,23 @@
+// Rule: A generic function used as a value takes its types from where it is used.
+// Spec: 3.4, 2.9
+// expect output: 7
+// expect output: a
+// expect output: 5
+// expect output: -1
+
+fn first<T>(xs: [T]) -> T? {
+    xs.get(0)
+}
+
+fn apply(f: fn([Int]) -> Int?, xs: [Int]) -> Int {
+    f(xs) ?? -1
+}
+
+fn main() {
+    const ints: fn([Int]) -> Int? = first
+    const words: fn([String]) -> String? = first
+    print(ints([7, 8]) ?? 0)
+    print(words(["a", "b"]) ?? "")
+    print(apply(first, [5]))
+    print(apply(first, []))
+}

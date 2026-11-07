@@ -1,0 +1,13 @@
+fn parse_age(text: String) -> Int ! ParseError {
+    try Int(text)
+}
+
+fn main() {
+    const good = spawn parse_age("31")
+    const bad = spawn parse_age("thirty")
+    print(good.wait() catch _ => -1)
+    print(bad.wait() catch e => {
+        print("the task failed: {e}")
+        -1
+    })
+}

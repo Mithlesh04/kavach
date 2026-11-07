@@ -1,0 +1,11 @@
+// Rule: Dividing a sized integer's smallest value by a constant -1 panics with an overflow, as any overflow does; `%` by -1 gives 0.
+// Spec: 5.6
+// expect output: 0
+// expect panic
+
+fn main() {
+    const low: Int8 = -128
+    const minus: Int8 = -1
+    print(low % minus)
+    print(low / minus)
+}

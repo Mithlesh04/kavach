@@ -1,0 +1,10 @@
+fn total(prices: [Int]) -> Int {
+    prices.sum(p => p)
+}
+
+fn main() {
+    print(total([4, 8, 15]))
+    print(total([]))
+    const cart = [1, 2, 3]
+    print(total(cart))          // a list passes on as it is
+}

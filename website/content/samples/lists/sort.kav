@@ -1,0 +1,14 @@
+type Player {
+    name: String
+    score: Int
+}
+
+fn main() {
+    const xs = [3, 1, 4, 1, 5]
+    print(xs.sort())
+    print(xs.sort().reverse())
+    print(xs)
+    print(xs.max() ?? 0)
+    const players = [Player(name: "Asha", score: 72), Player(name: "Ravi", score: 90)]
+    print(players.sort_by(.score).reverse().map(.name))
+}

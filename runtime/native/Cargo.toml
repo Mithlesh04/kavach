@@ -1,0 +1,31 @@
+[package]
+name = "kavach-runtime-native"
+description = "The run-time library of native Kavach programs: heap values, printing, panics"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[lib]
+# `rlib` for running in memory (`kavach run --native`), `staticlib` to link
+# into executables (`kavach build`).
+crate-type = ["rlib", "staticlib"]
+
+[dependencies]
+kavach-runtime-core = { path = "../core" }
+kavach-runtime-net = { path = "../net" }
+kavach-runtime-gpu = { path = "../gpu" }
+kavach-kir = { path = "../../compiler/kir" }
+# Tasks as stackful coroutines (decision 0048).
+corosensei = "0.3"
+
+# Ctrl+C and SIGTERM (decision 0063).
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_System_Console"] }
+
+[lints]
+workspace = true

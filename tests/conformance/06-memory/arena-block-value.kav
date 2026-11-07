@@ -1,0 +1,11 @@
+// Rule: The value of an arena block is copied out of it.
+// Spec: 6.3
+// expect output: 12
+
+fn main() {
+    const total = arena {
+        const doubled = [1, 2, 3].map(n => n * 2)
+        doubled.sum(n => n)
+    }
+    print(total)
+}

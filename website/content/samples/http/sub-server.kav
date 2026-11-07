@@ -1,0 +1,14 @@
+use std.http
+use std.net
+
+fn hello(r: Request) -> Response {
+    http.text(200, "hello from {r.path}")
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, hello)
+    const page = try http.get("http://{listener.address()}/home")
+    print(page.status)
+    print(page.body.text() ?? "")
+}

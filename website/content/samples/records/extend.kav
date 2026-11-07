@@ -1,0 +1,9 @@
+extend String {
+    fn shout(self) -> String {
+        self.upper() + "!"
+    }
+}
+
+fn main() {
+    print("namaste".shout())
+}

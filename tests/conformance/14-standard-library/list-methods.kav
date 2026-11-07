@@ -1,0 +1,24 @@
+// Rule: Lists have join, sort, sort_by, reverse, take, skip, find, count, index_of, min and max.
+// Spec: 14.2
+// expect output: a-b-c
+// expect output: [1, 2, 3]
+// expect output: ["bb", "cc", "a"]
+// expect output: [3, 2, 1]
+// expect output: [1, 2] [3]
+// expect output: 2 2
+// expect output: 1
+// expect output: 1 3
+// expect output: none
+
+fn main() {
+    print(["a", "b", "c"].join("-"))
+    print([3, 1, 2].sort())
+    print(["a", "bb", "cc"].sort_by(s => -s.len()))
+    print([1, 2, 3].reverse())
+    print("{[1, 2, 3].take(2)} {[1, 2, 3].skip(2)}")
+    print("{[1, 2, 3].find(x => x > 1) ?? 0} {[1, 2, 3].count(x => x > 1)}")
+    print([5, 6].index_of(6) ?? -1)
+    print("{[2, 1, 3].min() ?? 0} {[2, 1, 3].max() ?? 0}")
+    const empty: [Int] = []
+    print(empty.min())
+}

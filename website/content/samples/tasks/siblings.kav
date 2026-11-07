@@ -1,0 +1,27 @@
+use std.time
+
+fn slow_part() -> Int uses Clock, Console {
+    time.sleep_ms(300)
+    print("slow part finished")
+    1
+}
+
+fn broken_part() -> Int ! Error uses Clock {
+    time.sleep_ms(50)
+    fail Error("the second part broke")
+}
+
+fn both() -> Int ! Error uses Clock, Console {
+    const a = spawn slow_part()
+    const b = spawn broken_part()
+    const _ = try b.wait()
+    try a.wait()
+}
+
+fn main() {
+    const _ = both() catch e => {
+        print("both failed: {e}")
+        0
+    }
+    print("main goes on; the slow part never printed")
+}

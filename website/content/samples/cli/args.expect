@@ -1,0 +1,6 @@
+$ kavach run src/main.kav Asha Pune
+2 arguments: ["Asha", "Pune"]
+Namaste, Asha!
+$ kavach run src/main.kav
+0 arguments: []
+Namaste, friend!

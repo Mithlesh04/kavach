@@ -1,0 +1,14 @@
+gpu fn brighten(x: Float32, gain: Float32) -> Float32 {
+    const k = 1.5
+    let v = x * k + gain
+    if v > 1.0 {
+        v = 1.0
+    }
+    v
+}
+
+fn main() {
+    print(brighten(0.2, 0.1))
+    const pixels: [Float32] = [0.1, 0.4, 0.9]
+    print(pixels.map(p => brighten(p, 0.1)))
+}

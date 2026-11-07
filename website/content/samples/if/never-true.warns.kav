@@ -1,0 +1,13 @@
+fn grade(score: Int) -> String {
+    if score > 10 {
+        "good"
+    } else if score > 50 {
+        "great"
+    } else {
+        "keep going"
+    }
+}
+
+fn main() {
+    print(grade(70))
+}

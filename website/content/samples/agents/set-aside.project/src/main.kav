@@ -1,0 +1,43 @@
+use std.cli
+use std.fs
+
+type PayError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn pay(order_id: Int) -> Int ! PayError
+}
+
+type Till: Payments {
+    crash: Bool
+
+    fn pay(self, order_id: Int) -> Int ! PayError uses Console, Env {
+        if self.crash {
+            cli.exit(3)
+        }
+        order_id
+    }
+}
+
+agent Bot {
+    settings AgentSettings(audit: Audit())
+    can Payments.pay
+
+    on request(order_id: Int) -> Int ! Error {
+        try Payments.pay(order_id)
+    }
+}
+
+fn main() ! Error {
+    const crash = cli.args().contains("crash")
+    const bot = Bot.start(Payments: Till(crash: crash))
+    if crash {
+        const _paid = try bot.request(7)
+    }
+    print("started")
+    for line in try fs.lines("agents/Bot/set-aside") {
+        print("set-aside: {line}")
+    }
+    for line in try fs.lines("agents/Bot/audit.log") {
+        print(line.split("Z ").last() ?? line)
+    }
+}

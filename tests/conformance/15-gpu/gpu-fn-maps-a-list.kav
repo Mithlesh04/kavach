@@ -1,0 +1,26 @@
+// Rule: A `gpu fn`, or a lambda calling one, maps a list; in a `gpu fn`, literals are 32-bit.
+// Spec: 15.1, 15.2
+// expect output: [32.064423, 32.430454, 32.796494]
+// expect output: [2, 4, 6]
+// expect output: 1.5
+
+gpu fn glow(x: Float32, gain: Float32) -> Float32 {
+    let v = x
+    for _ in 0..100 {
+        v = v * 0.99 + gain
+    }
+    v
+}
+
+gpu fn twice(n: Int32) -> Int32 {
+    n * 2
+}
+
+fn main() {
+    const xs: [Float32] = [1.0, 2.0, 3.0]
+    const gain: Float32 = 0.5
+    print(xs.map(p => glow(p, gain)))
+    const ns: [Int32] = [1, 2, 3]
+    print(ns.map(twice))
+    print(glow(1.5, 0.0) * 0.0 + 1.5)       // a gpu fn is an ordinary function too
+}

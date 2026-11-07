@@ -1,0 +1,5 @@
+# One line per size: its label, then the arguments every program gets.
+thousands --items 1000
+millions --items 1000000
+tens-of-millions --items 10000000
+hundreds-of-millions --items 100000000

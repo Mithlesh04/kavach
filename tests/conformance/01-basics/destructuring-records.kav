@@ -1,0 +1,22 @@
+// Rule: `const { name, age: years } = user` takes a record apart by field name; `age: years` renames; a default fills a `T?` field that is `none`; with `let` the names are variables.
+// Spec: 1.12
+// expect output: Asha 31 unknown
+// expect output: 32
+// expect output: 3
+
+type User {
+    name: String
+    age: Int
+    city: String?
+}
+
+fn main() {
+    const u = User(name: "Asha", age: 31, city: none)
+    const { name, age: years, city = "unknown" } = u
+    print("{name} {years} {city}")
+    let { age } = u
+    age += 1
+    print(age)
+    const { x, y } = (x: 1, y: 2)
+    print(x + y)
+}

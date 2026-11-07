@@ -1,0 +1,15 @@
+use std.time
+
+fn slow_answer() -> Int uses Clock {
+    time.sleep_ms(1_000)
+    42
+}
+
+fn main() {
+    const t = spawn slow_answer()
+    const answer = t.wait().timeout(100.ms) catch e => {
+        print("gave up: {e}")
+        0
+    }
+    print(answer)
+}

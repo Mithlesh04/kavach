@@ -1,0 +1,7 @@
+$ kavach run src/main.kav crash
+outside a call: none
+[pay] refund 7, key Bot-1-1
+[email] order 7, key Bot-1-2
+$ kavach run src/main.kav
+[email] order 7, key Bot-1-2
+outside a call: none

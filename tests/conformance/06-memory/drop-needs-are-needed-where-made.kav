@@ -1,0 +1,16 @@
+// Rule: The capabilities a type's `drop` uses are needed wherever a value of the type is made.
+// Spec: 6.1
+// expect compile error
+
+type Note: Drop {
+    text: String
+
+    fn drop(self) uses Console {
+        print("dropping {self.text}")
+    }
+}
+
+pub fn make() -> String uses Fs {
+    const n = Note(text: "hi")  // error: `drop` uses Console, which `make` doesn't list
+    n.text
+}

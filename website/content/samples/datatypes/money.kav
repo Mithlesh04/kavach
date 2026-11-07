@@ -1,0 +1,8 @@
+fn main() {
+    const price: Decimal = 499.99
+    const quantity: Decimal = 3
+    print(price * quantity)
+    const huge: Decimal = 99999999999999999999999999999999999999.99
+    const tiny: Decimal = 0.000000000000000000000000000001
+    print(huge + tiny)
+}

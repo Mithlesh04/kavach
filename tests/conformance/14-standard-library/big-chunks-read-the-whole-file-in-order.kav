@@ -1,0 +1,35 @@
+// Rule: pieces of 1 MB or more come as any others do: the file's bytes in order, the last one shorter, and the file can go when the loop stops early.
+// Spec: 14.3
+// expect output: 3 pieces
+// expect output: true
+// expect output: 1048576
+// expect output: false
+
+use std.fs
+
+fn main() ! Error uses Fs {
+    const path = "kavach-big-chunks-test.bin"
+    let items: [UInt8] = []
+    for i in 0..2_500_000 {
+        items.push(UInt8(i % 251))
+    }
+    const data = Bytes(items)
+    try fs.write_bytes(path, data)
+
+    let pieces = 0
+    let back = Bytes([])
+    for piece in try fs.chunks(path, 1_048_576) {
+        pieces += 1
+        back = back + piece
+    }
+    print("{pieces} pieces")
+    print(back == data)
+
+    // Stopping early lets the file go.
+    for piece in try fs.chunks(path, 1_048_576) {
+        print(piece.len())
+        break
+    }
+    try fs.remove(path)
+    print(fs.exists(path))
+}

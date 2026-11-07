@@ -1,0 +1,29 @@
+// Rule: when a function returns, the tasks it spawned are cancelled: each stops at its next waiting point, and nothing after it runs.
+// Spec: 9.2, 9.6
+// expect output: tick 0
+// expect output: tick 1
+// expect output: tick 2
+// expect output: watching stopped
+
+use std.time
+
+fn watch() {
+    const (send, receive) = Channel<Int>(capacity: 1)
+    const _ticker = spawn {
+        for tick in time.every_ms(100) {
+            print("tick {tick}")
+            if tick == 2 {
+                send.put(tick)
+            }
+        }
+    }
+    // Told after the third tick, not timed: a busy machine can't make
+    // the ticks late. The ticker then waits for its next tick, and is
+    // cancelled there when `watch` returns.
+    const _seen = receive.take()
+}
+
+fn main() {
+    watch()
+    print("watching stopped")
+}

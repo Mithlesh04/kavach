@@ -1,0 +1,8 @@
+fn main() {
+    print(-7 / 2)
+    print((-7).div_floor(2))
+    print(-7 % 3)
+    print((-7).mod(3))
+    const today = 1
+    print((today - 3).mod(7))
+}

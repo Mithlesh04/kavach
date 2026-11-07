@@ -1,0 +1,6 @@
+$ kavach run
+sent to asha@example.com
+sent to omar@example.com
+$ kavach run
+sent to asha@example.com
+refused: Denied(reason: "limit broken: count <= 3 per day")

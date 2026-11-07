@@ -1,0 +1,34 @@
+// Rule: `start` gives a running agent; each handler is a method on it, and its capability calls, also through functions it calls, go to the implementations the agent was started with.
+// Spec: 8.8
+// expect output: sent to asha: welcome
+// expect output: sent to ravi: welcome
+
+type EmailError = NotSent | Denied(reason: String)
+
+capability Email {
+    fn send(to: String, body: String) ! EmailError
+}
+
+type ConsoleEmail: Email {
+    fn send(self, to: String, body: String) ! EmailError uses Console {
+        print("sent to {to}: {body}")
+    }
+}
+
+fn greet(name: String) ! EmailError {
+    try Email.send(name, "welcome")
+}
+
+agent Greeter {
+    can Email.send
+
+    on joined(name: String) ! EmailError {
+        try greet(name)
+    }
+}
+
+fn main() ! Error {
+    const bot = Greeter.start(Email: ConsoleEmail())
+    try bot.joined("asha")
+    try bot.joined("ravi")
+}

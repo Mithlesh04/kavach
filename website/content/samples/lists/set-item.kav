@@ -1,0 +1,5 @@
+fn main() {
+    let scores = [70, 85, 90]
+    scores[1] = 88
+    print(scores)
+}

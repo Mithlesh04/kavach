@@ -1,0 +1,10 @@
+use std.time
+
+fn main() {
+    for tick in time.every_ms(100) {
+        print("tick {tick}")
+        if tick == 3 {
+            break
+        }
+    }
+}

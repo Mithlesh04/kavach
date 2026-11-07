@@ -1,0 +1,7 @@
+fn save(report: String) -> Int ! Error {
+    fail Error("disk full")
+}
+
+fn main() {
+    const saving = spawn save("weekly report")
+}

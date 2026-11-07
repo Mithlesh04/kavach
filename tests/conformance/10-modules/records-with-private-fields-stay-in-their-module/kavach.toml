@@ -1,0 +1,4 @@
+[package]
+name = "records-with-private-fields-stay-in-their-module"
+version = "0.1.0"
+edition = "2026"

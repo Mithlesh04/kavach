@@ -1,0 +1,5 @@
+fn main() {
+    const total = 40 * 3
+    debug(total)
+    print("done")
+}

@@ -1,0 +1,30 @@
+type PayError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn pay(n: Int) -> Int ! PayError
+}
+
+type Till: Payments {
+    fn pay(self, n: Int) -> Int ! PayError {
+        n
+    }
+}
+
+agent Bot {
+    settings AgentSettings(audit: Audit(file: "."))
+    can Payments.pay
+
+    on charge(n: Int) -> Int ! Error {
+        try Payments.pay(n)
+    }
+}
+
+fn main() ! Error {
+    const bot = Bot.start(Payments: Till())
+    print("paid {try bot.charge(1)}")
+    const second = bot.charge(2) catch e => {
+        print(e)
+        return
+    }
+    print("paid {second}")
+}

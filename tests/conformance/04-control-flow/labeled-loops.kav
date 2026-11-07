@@ -1,0 +1,63 @@
+// Rule: A loop may have a label; `break name` leaves that loop and `continue name` goes on with its next round, from inside inner loops; a plain `break` still leaves the innermost.
+// Spec: 4.6
+// expect output: found 2 at row 1
+// expect output: rows without negatives: [0, 2]
+// expect output: stopped at 0 1 2
+// expect output: inner breaks: 3
+
+fn main() {
+    const grid = [[1, 3], [5, 2, 7], [2, 9]]
+
+    // `break outer` leaves both loops at once.
+    let found = ""
+    outer: for (i, row) in grid.enumerate() {
+        for cell in row {
+            if cell == 2 {
+                found = "found {cell} at row {i}"
+                break outer
+            }
+        }
+    }
+    print(found)
+
+    // `continue rows` skips the rest of a row, and goes on with the next.
+    const signs = [[1, 2], [3, -4, 5], [6]]
+    let kept: [Int] = []
+    rows: for (i, row) in signs.enumerate() {
+        for cell in row {
+            if cell < 0 {
+                continue rows
+            }
+        }
+        kept.push(i)
+    }
+    print("rows without negatives: {kept}")
+
+    // Three loops, a `while` in the middle: leaving the outermost.
+    let seen = ""
+    let a = 0
+    first: while a < 3 {
+        for b in 0..3 {
+            for c in 0..3 {
+                if a + b + c == 3 {
+                    seen = "stopped at {a} {b} {c}"
+                    break first
+                }
+            }
+        }
+        a += 1
+    }
+    print(seen)
+
+    // A plain `break` inside a labeled loop leaves only its own loop.
+    let breaks = 0
+    named: for i in 0..3 {
+        for j in 0..5 {
+            if j == i {
+                breaks += 1
+                break
+            }
+        }
+    }
+    print("inner breaks: {breaks}")
+}

@@ -1,0 +1,19 @@
+// Rule: `filter` of a list a GPU `map` made keeps the items the CPU keeps, in their order, and can be mapped and summed after it.
+// Spec: 15.2
+// expect output: [5, 9, 7]
+// expect output: 21
+// expect output: 0
+
+gpu fn step(x: Int32) -> Int32 {
+    x * 2 - 1
+}
+
+fn main() {
+    let xs: [Int32] = [3, -4, 5, 0, 4, 1]
+    xs = xs.map(step)
+    let big = xs.filter(x => x > 4)
+    print(big)
+    big = big.map(x => step(x) - x)
+    print(big.sum(x => x) + 3)
+    print(xs.filter(x => x > 100).len())
+}

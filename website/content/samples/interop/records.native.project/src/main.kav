@@ -1,0 +1,16 @@
+type Point {
+    x: Int32
+    y: Int32
+}
+
+fn main() {
+    unsafe {
+        const ps: Ptr<Point> = alloc(2)
+        ps.write(0, Point(x: 1, y: 2))
+        ps.write(1, Point(x: 3, y: 4))
+        print(ps.read(1).y)
+        const second = ps + 1
+        print((*second).x)
+        free(ps)
+    }
+}

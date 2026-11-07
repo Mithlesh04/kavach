@@ -1,0 +1,11 @@
+// Rule: Integer overflow is always checked and panics.
+// Spec: 5.6
+// expect panic
+
+fn add_one(n: Int) -> Int {
+    n + 1
+}
+
+fn main() {
+    const _n = add_one(9_223_372_036_854_775_807)
+}

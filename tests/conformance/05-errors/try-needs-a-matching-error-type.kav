@@ -1,0 +1,17 @@
+// Rule: `try` only works when the callee's error is part of the caller's error type.
+// Spec: 5.2
+// expect compile error
+
+type AgeError = TooLarge(value: Int)
+
+fn check_age(age: Int) -> Int ! AgeError {
+    if age > 150 {
+        fail AgeError.TooLarge(value: age)
+    }
+    age
+}
+
+fn double_age(age: Int) -> Int {
+    const checked = try check_age(age)    // error: double_age has no `!` for AgeError
+    checked * 2
+}

@@ -1,0 +1,7 @@
+fn main() {
+    const names = ["Asha", "Ravi"]
+    print(names.get(5) ?? "nobody")
+    const ages = ["asha": 31]
+    print(ages["asha"] ?? 0)
+    print(ages["omar"] ?? 0)
+}

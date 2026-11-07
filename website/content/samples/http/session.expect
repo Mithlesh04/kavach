@@ -1,0 +1,3 @@
+GET /users/1
+GET /users/2
+POST /users

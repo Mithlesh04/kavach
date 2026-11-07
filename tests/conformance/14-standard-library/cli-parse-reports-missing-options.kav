@@ -1,0 +1,19 @@
+// Rule: A field with no default is a required option; cli.parse says which is missing, then the usage.
+// Spec: 14.6
+// expect output: missing --input
+// expect output: usage: cli-parse-reports-missing-options [options]
+// expect output:   --input <String>         (required)
+// expect exit: 2
+
+use std.cli
+
+type Args {
+    input: String
+}
+
+fn main() {
+    const _args = cli.parse<Args>() catch e => {
+        print(e)
+        cli.exit(2)
+    }
+}

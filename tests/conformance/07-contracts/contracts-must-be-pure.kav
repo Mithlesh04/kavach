@@ -1,0 +1,14 @@
+// Rule: A contract must not use any capability.
+// Spec: 7.5
+// expect compile error
+
+fn noisy_check(n: Int) -> Bool uses Console {
+    print("checking")
+    n > 0
+}
+
+fn half(n: Int) -> Int
+    require noisy_check(n)  // error: contracts can't call functions with `uses`
+{
+    n / 2
+}

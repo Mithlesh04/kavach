@@ -1,0 +1,6 @@
+// Mistake: A literal index past the end of a literal list.
+
+fn main() {
+    const xs = [1, 2, 3]
+    print(xs[5])
+}

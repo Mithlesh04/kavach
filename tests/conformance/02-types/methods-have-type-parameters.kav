@@ -1,0 +1,25 @@
+// Rule: A method may have type parameters of its own, like a function, and each call fills them in.
+// Spec: 2.9, 2.5
+// expect output: 30
+// expect output: y
+// expect output: 1 one
+
+type Picker {
+    seed: Int
+
+    fn pick<T>(self, items: [T]) -> T {
+        items[self.seed % items.len()]
+    }
+
+    fn both<A, B>(self, a: A, b: B) -> (A, B) {
+        (a, b)
+    }
+}
+
+fn main() {
+    const p = Picker(seed: 5)
+    print(p.pick([10, 20, 30]))
+    print(p.pick(["x", "y"]))
+    const (n, s) = p.both(1, "one")
+    print("{n} {s}")
+}

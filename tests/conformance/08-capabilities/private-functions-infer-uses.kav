@@ -1,0 +1,11 @@
+// Rule: A private function may leave out `uses`; the compiler infers it.
+// Spec: 8.1
+// expect output: hello Asha
+
+fn greet(name: String) {
+    print("hello {name}")
+}
+
+fn main() {
+    greet("Asha")
+}

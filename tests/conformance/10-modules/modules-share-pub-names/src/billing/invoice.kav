@@ -1,0 +1,5 @@
+use orders.{Order}
+
+pub fn line(o: Order) -> String {
+    "#{o.id}: {o.amount}"
+}

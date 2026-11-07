@@ -1,0 +1,1 @@
+error: `String` does not implement `LogEvent`: log events are records, so a log line can be searched by its fields. Declare one, as `type OrderPlaced: LogEvent { order_id: Int }`, and log that: `log.info(OrderPlaced(order_id: 7))` (spec 14.12)

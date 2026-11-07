@@ -1,0 +1,14 @@
+type Account {
+    owner: String
+    balance: Decimal
+
+    invariant balance >= 0
+}
+
+fn main() {
+    let a = Account(owner: "Asha", balance: 100)
+    a.balance -= 30
+    print(a.balance)
+    a.balance -= 200
+    print(a.balance)
+}

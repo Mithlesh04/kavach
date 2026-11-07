@@ -1,0 +1,7 @@
+$ kavach run src/main.kav
+panicked: index 5 is out of range: the list has 2 items at src/main.kav:7
+first: 0
+next: 2
+Picker pick panicked: index 5 is out of range: the list has 2 items at src/main.kav:7
+panic: index 5 is out of range: the list has 2 items
+  at src/main.kav:7

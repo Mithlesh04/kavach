@@ -1,0 +1,13 @@
+// Rule: `map`, `filter` and `sum` in a row panic where the first failing step is as written: here `map` overflows on the last item, though the sum would overflow sooner.
+// Spec: 3.3, 5.8
+// expect output: start
+// expect panic: overflow
+
+fn main() {
+    const half = 4_611_686_018_427_387_903
+    const items = [half, half, half + half]
+    print("start")
+    const doubled = items.map(x => x * 2)
+    const kept = doubled.filter(x => x > 0)
+    print(kept.sum(x => x))
+}

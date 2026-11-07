@@ -1,0 +1,11 @@
+// Rule: A function may only call functions whose capabilities it also has.
+// Spec: 8.1
+// expect compile error
+
+fn log(message: String) uses Console {
+    print(message)
+}
+
+pub fn work() uses Fs {
+    log("working")              // error: `log` uses Console, which `work` doesn't list
+}

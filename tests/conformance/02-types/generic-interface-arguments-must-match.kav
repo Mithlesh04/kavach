@@ -1,0 +1,47 @@
+// Rule: A type fits a generic interface value only with the same type arguments: one that implements `Getter<String>` is not a `Getter<Int>`.
+// Spec: 2.15
+// expect compile error
+
+interface Getter<T> {
+    fn get(self) -> T
+    fn put(self, value: T) -> String
+}
+
+type Five: Getter<Int> {
+    n: Int
+
+    fn get(self) -> Int {
+        5 + self.n
+    }
+
+    fn put(self, value: Int) -> String {
+        "put {value}"
+    }
+}
+
+type Word: Getter<String> {
+    w: String
+
+    fn get(self) -> String {
+        self.w
+    }
+
+    fn put(self, value: String) -> String {
+        "put '{value}'"
+    }
+}
+
+fn twice(g: Getter<Int>) -> Int {
+    g.get() * 2
+}
+
+fn main() {
+    print(twice(Word(w: "oops")))       // error: a Getter<String> is not a Getter<Int>
+    const gs: [Getter<String>] = [Word(w: "a"), Word(w: "b")]
+    for g in gs {
+        print(g.get() + "!")
+        print(g.put("x"))
+    }
+    const f: Getter<Int> = Five(n: 0)
+    print(f.put(7))
+}

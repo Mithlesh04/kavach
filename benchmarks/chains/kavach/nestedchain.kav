@@ -1,0 +1,17 @@
+// A chain inside a chain: ten thousand rows, each row put through its
+// own map–filter–sum chain inside the outer chain's lambda.
+fn main() {
+    let rows: [[Int]] = []
+    for r in 0..10_000 {
+        let row: [Int] = []
+        for i in 0..1_000 {
+            row.push((r + i) % 1000)
+        }
+        rows.push(row)
+    }
+    const total = rows.sum(row => row
+        .map(x => x * 2)
+        .filter(x => x % 3 != 0)
+        .sum(x => x))
+    print(total)
+}

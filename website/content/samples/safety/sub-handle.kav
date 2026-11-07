@@ -1,0 +1,14 @@
+fn half(n: Int) -> Int ! String {
+    if n % 2 != 0 {
+        fail "odd: {n}"
+    }
+    n / 2
+}
+
+fn main() {
+    const b = half(7) catch e => {
+        print("could not: {e}")
+        0
+    }
+    print(b)
+}

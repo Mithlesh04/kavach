@@ -1,0 +1,11 @@
+type Player {
+    name: String
+    score: Int
+}
+
+fn main() {
+    const players = [Player(name: "Zoe", score: 70), Player(name: "Asha", score: 90), Player(name: "Omar", score: 70)]
+    print(players.sort_by(.score).map(.name))
+    print(players.sort_by(p => -p.score).map(.name))
+    print(players.sort_by(.name).map(.name))
+}

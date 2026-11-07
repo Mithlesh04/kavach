@@ -1,0 +1,11 @@
+// Rule: Tuples group values and can be destructured.
+// Spec: 2.3
+// expect output: 200
+// expect output: OK
+
+fn main() {
+    const pair = (200, "OK")
+    const (code, message) = pair
+    print(code)
+    print(message)
+}

@@ -1,0 +1,6 @@
+fn main() {
+    const names = ["Asha", "Ravi"]
+    for i in 0..3 {
+        print(names[i])
+    }
+}

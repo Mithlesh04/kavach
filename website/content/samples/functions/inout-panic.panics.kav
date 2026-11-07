@@ -1,0 +1,11 @@
+fn halve(inout n: Int, by: Int) {
+    n = n / by
+}
+
+fn main() {
+    let n = 10
+    halve(n, 2)
+    print(n)
+    halve(n, 0)
+    print(n)
+}

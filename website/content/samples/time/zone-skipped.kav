@@ -1,0 +1,14 @@
+use std.time
+
+fn main() ! Error {
+    const new_york = try time.zone("America/New_York")
+    // That night, the clocks went from 02:00 straight to 03:00.
+    const night = time.Date(year: 2026, month: 3, day: 8)
+    const alarm = time.DateTime(date: night, time: time.Time(hour: 2, minute: 30, second: 0, ms: 0))
+    print("moment: {new_york.at(new_york.moment(alarm)).iso()}")
+    match new_york.resolve(alarm) {
+        time.Exact(_) => print("02:30 happened once"),
+        time.Skipped(earlier, _) => print("an hour early instead: {new_york.at(earlier).iso()}"),
+        time.Repeated(_, _) => print("02:30 happened twice"),
+    }
+}

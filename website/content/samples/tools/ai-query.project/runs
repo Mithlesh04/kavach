@@ -1,0 +1,4 @@
+query callers total_paid src/main.kav
+query uses Console src/main.kav
+query type Order src/main.kav
+query find total src/main.kav

@@ -1,0 +1,2 @@
+1000
+panic: stack overflow: calls are nested too deeply (spec 3.8)

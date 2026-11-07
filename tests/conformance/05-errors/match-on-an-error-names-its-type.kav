@@ -1,0 +1,49 @@
+// Rule: A `match` on an `Error` names variants with their type and ends with `_`; an arm matches the error's type and variant, through any `context`.
+// Spec: 5.5
+// expect output: missing nope.txt
+// expect output: line 1: broken
+// expect output: inbox denied
+// expect output: other: disk full
+// expect output: err arm: missing gone.txt
+
+use std.fs
+use std.json
+
+type InboxError = Denied(path: String) | Full
+
+fn read(p: String) -> String ! Error uses Fs {
+    try fs.read_text(p) context "reading {p}"
+}
+
+fn parse() -> Json ! Error {
+    try json.parse("[1,")
+}
+
+fn inbox() ! Error {
+    fail InboxError.Denied(path: "inbox")
+}
+
+fn describe(e: Error) -> String {
+    match e {
+        FsError.NotFound(path) => "missing {path}",
+        FsError.Denied(path) => "fs denied {path}",
+        JsonError.Syntax(line, column: _, message: _) => "line {line}: broken",
+        InboxError.Denied(path: _) => "inbox denied",
+        _ => "other: {e}",
+    }
+}
+
+fn main() uses Fs {
+    print(read("nope.txt") catch e => describe(e))
+    print(match parse() {
+        ok(_) => "parsed",
+        err(e) => describe(e),
+    })
+    inbox() catch e => print(describe(e))
+    print(describe(Error("disk full")))
+    print(match read("gone.txt") {
+        ok(text) => text,
+        err(FsError.NotFound(path)) => "err arm: missing {path}",
+        err(_) => "other",
+    })
+}

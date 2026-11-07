@@ -1,0 +1,11 @@
+#!/bin/sh
+# Enforces AGENTS.md section 11: parallel sessions never push. Only the
+# main checkout pushes, after the coordinator has landed a branch on main.
+
+git_dir=$(git rev-parse --git-dir)
+common=$(git rev-parse --git-common-dir)
+if [ "$(cd "$git_dir" && pwd -P)" != "$(cd "$common" && pwd -P)" ]; then
+    echo "pre-push: pushing from a worktree is not allowed. Ask the coordinator to land your branch (AGENTS.md section 11)." >&2
+    exit 1
+fi
+exit 0

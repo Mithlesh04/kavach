@@ -1,0 +1,11 @@
+risky: true, greeting: false
+Reviewer request#1 ask("Is this clause risky? The buyer pays all fees.")
+  verdict: dry run
+  model: claude-opus-5-5 (dry run: no tokens)
+  result: ok Verdict(risky: true)
+Reviewer request#1 ask("Is this a greeting? The buyer pays all fees.")
+  verdict: dry run
+  model: claude-haiku-5-5 (dry run: no tokens)
+  result: ok Verdict(risky: false)
+[dry run] ask("Is this clause risky? The buyer pays all fees.") -> Verdict(risky: true)
+[dry run] ask("Is this a greeting? The buyer pays all fees.") -> Verdict(risky: false)

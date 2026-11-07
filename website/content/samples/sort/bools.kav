@@ -1,0 +1,4 @@
+fn main() {
+    print([true, false, true, false].sort())
+    print([(2, "b"), (1, "z"), (2, "a")].sort())
+}

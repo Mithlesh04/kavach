@@ -1,0 +1,1 @@
+error: `Name.get` gives `Int`, and `Getter<String>.get` gives `String`: they must match

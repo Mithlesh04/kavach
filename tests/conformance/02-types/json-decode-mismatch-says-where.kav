@@ -1,0 +1,43 @@
+// Rule: When JSON doesn't fit the type, decoding fails with a `Mismatch` that says where and what was expected; numbers must fit their type.
+// Spec: 2.12
+// expect output: lines[0].price: a number
+// expect output: id: a whole number that fits `Int`
+// expect output: [2]: a whole number that fits `UInt8`
+// expect output: : a field `id`
+
+use std.json
+
+type Line {
+    price: Float
+}
+
+type Order {
+    id: Int
+    lines: [Line]
+}
+
+fn explain(e: JsonError) {
+    match e {
+        JsonError.Mismatch(path, expected) => print("{path}: {expected}"),
+        _ => print("other"),
+    }
+}
+
+fn main() {
+    match json.decode<Order>("\{\"id\": 1, \"lines\": [\{\"price\": \"two\"}]}") {
+        ok(_) => print("ok"),
+        err(e) => explain(e),
+    }
+    match json.decode<Order>("\{\"id\": 1.5, \"lines\": []}") {
+        ok(_) => print("ok"),
+        err(e) => explain(e),
+    }
+    match json.decode<[UInt8]>("[1, 2, 300]") {
+        ok(_) => print("ok"),
+        err(e) => explain(e),
+    }
+    match json.decode<Order>("\{\"lines\": []}") {
+        ok(_) => print("ok"),
+        err(e) => explain(e),
+    }
+}

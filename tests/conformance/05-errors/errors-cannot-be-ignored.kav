@@ -1,0 +1,16 @@
+// Rule: The result of a call that can fail must be handled with try, catch or match.
+// Spec: 5 (introduction)
+// expect compile error
+
+type AgeError = TooLarge(value: Int)
+
+fn check_age(age: Int) -> Int ! AgeError {
+    if age > 150 {
+        fail AgeError.TooLarge(value: age)
+    }
+    age
+}
+
+fn main() {
+    const age = check_age(200)    // error: check_age can fail; use try, catch or match
+}

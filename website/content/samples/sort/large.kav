@@ -1,0 +1,15 @@
+fn main() {
+    let xs: [Int] = []
+    for i in 0..1_000_000 {
+        xs.push((i * 7_919) % 1_000_003 - 500_000)
+    }
+    const sorted = xs.sort()
+    let in_order = true
+    for i in 1..sorted.len() {
+        if sorted[i - 1] > sorted[i] {
+            in_order = false
+        }
+    }
+    print("{sorted.len()} numbers, in order: {in_order}")
+    print("smallest {sorted[0]}, largest {sorted[sorted.len() - 1]}")
+}

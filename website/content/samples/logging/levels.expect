@@ -1,0 +1,2 @@
+WARN Retrying(attempt: 2)
+ERROR DiskFull(free_mb: 12)

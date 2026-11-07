@@ -1,0 +1,26 @@
+// Rule: `z.iso(ms)` writes a moment as the clocks in `z` show it, with the offset, `Z` for an offset of zero; `parse_moment` reads back what it wrote.
+// Spec: 14.4
+// expect output: 1970-01-01T05:30:00+05:30
+// expect output: 1970-01-01T00:00:00Z
+// expect output: 2026-11-04T10:05:30+01:00
+// expect output: 2026-07-04T11:05:30+02:00
+// expect output: 1874-12-01T00:00:00+05:21:10
+// expect output: true
+
+use std.time
+
+fn main() ! Error {
+    const india = try time.zone("Asia/Kolkata")
+    const berlin = try time.zone("Europe/Berlin")
+    print(india.iso(0))
+    print((try time.zone("UTC")).iso(0))
+    print(berlin.iso(1_793_783_130_000))
+    print(berlin.iso(1_783_155_930_000))
+    const old = india.moment(time.DateTime(date: time.Date(year: 1874, month: 12, day: 1), time: time.Time(hour: 0, minute: 0, second: 0, ms: 0)))
+    print(india.iso(old))
+    let back = true
+    for ms in [0, 250, -1, old, 1_793_783_130_000] {
+        back = back and try time.parse_moment(india.iso(ms)) == ms
+    }
+    print(back)
+}

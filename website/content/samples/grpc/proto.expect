@@ -1,0 +1,23 @@
+$ kavach proto src/main.kav
+// Written by `kavach proto` from src/main.kav.
+syntax = "proto3";
+
+message Status {
+  oneof value {
+    Pending pending = 1;
+    Paid paid = 2;
+  }
+  message Pending {}
+  message Paid {
+    double amount = 1;
+  }
+}
+
+message Order {
+  int64 id = 1;
+  string item = 2;
+  int64 qty = 3;
+  Status status = 4;
+  repeated string tags = 5;
+  map<string, string> notes = 6;
+}

@@ -1,0 +1,7 @@
+fn main() {
+    const first = "Asha"
+    const last = "Rao"
+    print(first + " " + last)
+    print(["red", "green", "blue"].join(", "))
+    print("ab".repeat(3))
+}

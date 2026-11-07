@@ -1,0 +1,11 @@
+fn speed(distance: Float, hours: Float) -> Float
+    require hours > 0.0
+{
+    distance / hours
+}
+
+fn main() {
+    for hours in [2.0, 0.0] {
+        print(speed(120.0, hours))
+    }
+}

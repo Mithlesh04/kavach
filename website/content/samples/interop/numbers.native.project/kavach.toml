@@ -1,0 +1,4 @@
+[package]
+name = "c-numbers"
+version = "0.1.0"
+unsafe = true

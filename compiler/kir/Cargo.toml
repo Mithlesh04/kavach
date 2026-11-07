@@ -1,0 +1,18 @@
+[package]
+name = "kavach-kir"
+description = "Kavach IR: a small typed program form between the checker and the code generators"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+kavach-ast = { path = "../ast" }
+kavach-checker = { path = "../checker" }
+kavach-driver = { path = "../driver" }
+kavach-resolver = { path = "../resolver" }
+kavach-runtime-core = { path = "../../runtime/core" }
+
+[lints]
+workspace = true

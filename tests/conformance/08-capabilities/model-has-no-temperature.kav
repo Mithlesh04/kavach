@@ -1,0 +1,11 @@
+// Rule: `Model` has no `temperature`: setting it is a compile error that says to use `effort`.
+// Spec: 8.4
+// expect compile error
+
+fn chosen() -> Model {
+    Model(name: "claude-haiku-5-5", temperature: 0.2)    // error: `Model` has no `temperature`
+}
+
+fn main() {
+    print(chosen().name)
+}

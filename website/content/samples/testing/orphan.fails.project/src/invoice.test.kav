@@ -1,0 +1,3 @@
+test "an invoice adds up" {
+    assert 1 + 1 == 2
+}

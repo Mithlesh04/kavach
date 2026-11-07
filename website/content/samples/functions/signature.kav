@@ -1,0 +1,18 @@
+type Account {
+    owner: String
+    balance: Decimal
+}
+
+fn withdraw(account: Account, amount: Decimal) -> Account
+    require amount > 0
+    require amount <= account.balance
+    ensure result.balance == account.balance - amount
+{
+    account with { balance: account.balance - amount }
+}
+
+fn main() {
+    const before = Account(owner: "Asha", balance: 500)
+    const after = withdraw(before, 120)
+    print(after.balance)
+}

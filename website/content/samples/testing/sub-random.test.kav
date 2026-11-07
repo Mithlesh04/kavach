@@ -1,0 +1,16 @@
+use std.random
+
+fn roll() -> Int uses Random
+    ensure 1 <= result <= 6
+{
+    random.int(1, 7)
+}
+
+test "rolls stay on the die" {
+    for _ in 0..100 {
+        assert 1 <= roll() <= 6
+    }
+}
+
+fn main() {
+}

@@ -1,0 +1,1 @@
+error: this value was made inside the `arena` and can't be stored outside it: return it as the arena's value instead

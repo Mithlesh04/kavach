@@ -1,0 +1,12 @@
+use std.fs
+
+fn main() ! Error {
+    try fs.write_text("server.log", "INFO start\nERROR disk full\nINFO retry\nERROR disk full\n")
+    let errors = 0
+    for line in try fs.lines("server.log") {
+        if line.contains("ERROR") {
+            errors += 1
+        }
+    }
+    print("{errors} errors")
+}

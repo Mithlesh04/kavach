@@ -1,0 +1,375 @@
+// The wire side of HTTP/2 (RFC 9113) for std.http.h2: frames, header
+// blocks, flow control and the state of one side of a connection. Its
+// names are public so std.http.h2 can use them; programs use std.http.h2
+// instead, and pass its `Link` values back without looking inside.
+
+use std.net
+use std.http.hpack
+
+/// Why an HTTP/2 exchange failed.
+pub type H2Error = Network(error: NetError) |
+    Protocol(reason: String) |
+    Reset(stream: Int, code: Int)
+
+/// A whole message on one stream: headers, names in lower case and with
+/// the pseudo-headers such as `:status`, and the body.
+pub type H2Message {
+    pub stream: Int
+    pub headers: [String: String]
+    pub body: Bytes
+}
+
+/// One side of a connection, between frames.
+pub type Link {
+    pub conn: Connection
+    /// Bytes read but not used yet.
+    pub buffer: Bytes
+    /// The header table for blocks the other side sends.
+    pub table: Table
+    /// How much this side may still send: on the connection, and per
+    /// stream (`initial` for a stream not listed).
+    pub window: Int
+    pub windows: [Int: Int]
+    pub initial: Int
+    /// The largest frame the other side takes.
+    pub max_frame: Int
+    /// Messages being received, then complete ones, in order.
+    pub partial: [Int: Partial]
+    pub done: [H2Message]
+    /// Streams the other side reset, with the reason's code.
+    pub resets: [Int: Int]
+    /// The stream a header block goes on with, or 0.
+    pub continuing: Int
+    /// The other side is going away (GOAWAY).
+    pub leaving: Bool
+    /// Streams `watch` has reported open and not yet ended.
+    pub announced: [Int: Bool]
+}
+
+/// One frame (RFC 9113 4.1).
+pub type Frame {
+    pub kind: Int
+    pub flags: Int
+    pub stream: Int
+    pub payload: Bytes
+}
+
+/// A message being received.
+pub type Partial {
+    pub headers: [String: String]
+    pub body: Bytes
+    /// A header block waiting for its CONTINUATION frames.
+    pub block: Bytes
+    pub has_headers: Bool
+    /// The other side ends the stream with this header block.
+    pub ending: Bool
+}
+
+/// The windows this side opens: 16 MB, so a sender rarely waits.
+pub fn big_window() -> Int {
+    16_777_216
+}
+
+/// "PRI * HTTP/2.0", a blank line, "SM" and a blank line.
+pub fn preface() -> Bytes {
+    "PRI * HTTP/2.0\u{D}\n\u{D}\nSM\u{D}\n\u{D}\n".bytes()
+}
+
+pub fn start(conn: Connection, buffer: Bytes) -> Link {
+    Link(
+        conn: conn,
+        buffer: buffer,
+        table: hpack.new_table(4096),
+        window: 65_535,
+        windows: [:],
+        initial: 65_535,
+        max_frame: 16_384,
+        partial: [:],
+        done: [],
+        resets: [:],
+        continuing: 0,
+        leaving: false,
+        announced: [:],
+    )
+}
+
+pub fn write(conn: Connection, data: Bytes) ! H2Error uses Net {
+    conn.write(data) catch e => {
+        fail H2Error.Network(error: e)
+    }
+}
+
+/// A frame's bytes: a 9-byte header, then the payload.
+pub fn frame(kind: Int, flags: Int, stream: Int, payload: Bytes) -> Bytes
+    require kind >= 0 and kind <= 255
+    require flags >= 0 and flags <= 255
+    require stream >= 0 and stream <= 2_147_483_647
+    require payload.len() <= 16_777_215
+{
+    const n = payload.len()
+    Bytes([UInt8(n >> 16), UInt8(n >> 8 & 255), UInt8(n & 255), UInt8(kind), UInt8(flags)]) +
+        four(stream) +
+        payload
+}
+
+/// A 32-bit number, most significant byte first.
+pub fn four(n: Int) -> Bytes
+    require n >= 0 and n <= 4_294_967_295
+    example four(258) == Bytes([0, 0, 1, 2])
+{
+    Bytes([UInt8(n >> 24), UInt8(n >> 16 & 255), UInt8(n >> 8 & 255), UInt8(n & 255)])
+}
+
+/// The 32-bit number at `at`.
+pub fn number32(data: Bytes, at: Int) -> Int
+    require at >= 0 and at <= data.len() - 4
+    example number32(Bytes([0, 0, 1, 2]), 0) == 258
+{
+    Int(data[at]) << 24 | Int(data[at + 1]) << 16 | Int(data[at + 2]) << 8 | Int(data[at + 3])
+}
+
+/// One setting: a 16-bit id and a 32-bit value.
+pub fn setting(id: Int, value: Int) -> Bytes
+    require id >= 0 and id <= 65_535
+    require value >= 0 and value <= 4_294_967_295
+{
+    Bytes([UInt8(id >> 8), UInt8(id & 255)]) + four(value)
+}
+
+/// Reads one frame and acts on it; none when the connection closed.
+pub fn step(l: Link) -> Link? ! H2Error uses Net {
+    let data = l.buffer
+    while data.len() < 9 or data.len() < 9 + (Int(data[0]) << 16 | Int(data[1]) << 8 | Int(data[2])) {
+        const piece = l.conn.read() catch e => {
+            fail H2Error.Network(error: e)
+        }
+        data = data + (piece ?? return none)
+    }
+    const n = Int(data[0]) << 16 | Int(data[1]) << 8 | Int(data[2])
+    if n > 16_384 {
+        fail H2Error.Protocol(reason: "a frame of {n} bytes is over the limit")
+    }
+    const f = Frame(
+        kind: Int(data[3]),
+        flags: Int(data[4]),
+        stream: number32(data, 5) & 2_147_483_647,
+        payload: data.slice(9, 9 + n),
+    )
+    let next = l
+    next.buffer = data.slice(9 + n, data.len())
+    try handle(next, f)
+}
+
+/// Acts on one frame (RFC 9113 6).
+pub fn handle(link: Link, f: Frame) -> Link ! H2Error uses Net {
+    let l = link
+    if l.continuing != 0 and (f.kind != 9 or f.stream != l.continuing) {
+        fail H2Error.Protocol(reason: "a header block was cut off")
+    }
+    if f.kind == 0 {
+        return try data_frame(l, f)
+    }
+    if f.kind == 1 or f.kind == 9 {
+        return try header_frame(l, f)
+    }
+    if f.kind == 3 and f.payload.len() == 4 {
+        l.resets[f.stream] = number32(f.payload, 0)
+        l.partial.remove(f.stream)
+    } else if f.kind == 4 and f.flags & 1 == 0 {
+        l = try settings(l, f.payload)
+        try write(l.conn, frame(4, 1, 0, Bytes([])))
+    } else if f.kind == 5 {
+        fail H2Error.Protocol(reason: "server push was not allowed")
+    } else if f.kind == 6 and f.flags & 1 == 0 {
+        try write(l.conn, frame(6, 1, 0, f.payload.slice(0, 8)))
+    } else if f.kind == 7 {
+        l.leaving = true
+    } else if f.kind == 8 and f.payload.len() == 4 {
+        const more = number32(f.payload, 0) & 2_147_483_647
+        if f.stream == 0 {
+            l.window += more
+        } else {
+            l.windows[f.stream] = (l.windows.get(f.stream) ?? l.initial) + more
+        }
+    }
+    l
+}
+
+/// The other side's settings: window and frame sizes matter here.
+pub fn settings(link: Link, payload: Bytes) -> Link ! H2Error {
+    let l = link
+    if payload.len() % 6 != 0 {
+        fail H2Error.Protocol(reason: "a SETTINGS frame of {payload.len()} bytes")
+    }
+    let at = 0
+    while at < payload.len() {
+        const id = Int(payload[at]) << 8 | Int(payload[at + 1])
+        const value = number32(payload, at + 2)
+        if id == 4 {
+            // Stream windows move by the change (RFC 9113 6.9.2).
+            for (stream, w) in l.windows {
+                l.windows[stream] = w + value - l.initial
+            }
+            l.initial = value
+        } else if id == 5 {
+            l.max_frame = value.max(16_384).min(16_777_215)
+        }
+        at += 6
+    }
+    l
+}
+
+/// HEADERS and CONTINUATION frames: a header block, maybe in pieces.
+pub fn header_frame(link: Link, f: Frame) -> Link ! H2Error uses Net {
+    let l = link
+    let payload = f.payload
+    if f.kind == 1 {
+        payload = try unpad(f)
+        if f.flags & 32 != 0 {
+            // A priority (ignored).
+            payload = payload.slice(5, payload.len())
+        }
+    }
+    let p = l.partial.get(f.stream) ?? Partial(
+        headers: [:],
+        body: Bytes([]),
+        block: Bytes([]),
+        has_headers: false,
+        ending: false,
+    )
+    p.block = p.block + payload
+    if f.kind == 1 and f.flags & 1 != 0 {
+        p.ending = true
+    }
+    l.partial[f.stream] = p
+    l.continuing = f.stream
+    if f.flags & 4 == 0 {
+        return l
+    }
+    // The block is whole.
+    l.continuing = 0
+    const decoded = hpack.decode(p.block, l.table) catch e => {
+        fail H2Error.Protocol(reason: "a header block can't be read")
+    }
+    l.table = decoded.table
+    p.block = Bytes([])
+    const status = decoded.headers.find(h => h.name == ":status")
+    const informational = if let s = status { s.value.starts_with("1") } else { false }
+    if not informational {
+        for h in decoded.headers {
+            p.headers[h.name] = if let old = p.headers.get(h.name) { "{old}, {h.value}" } else { h.value }
+        }
+        p.has_headers = true
+    }
+    l.partial[f.stream] = p
+    if p.ending {
+        l = finish(l, f.stream)
+    }
+    l
+}
+
+/// DATA frames: the body, a piece at a time.
+pub fn data_frame(link: Link, f: Frame) -> Link ! H2Error uses Net {
+    let l = link
+    let p = l.partial.get(f.stream) ?? fail H2Error.Protocol(reason: "data before headers")
+    p.body = p.body + (try unpad(f))
+    l.partial[f.stream] = p
+    // Let the other side send as much again.
+    const used = f.payload.len()
+    if used > 0 {
+        let more = frame(8, 0, 0, four(used))
+        if f.flags & 1 == 0 {
+            more = more + frame(8, 0, f.stream, four(used))
+        }
+        try write(l.conn, more)
+    }
+    if f.flags & 1 != 0 {
+        l = finish(l, f.stream)
+    }
+    l
+}
+
+/// A frame's payload without its padding (flag 8).
+pub fn unpad(f: Frame) -> Bytes ! H2Error {
+    if f.flags & 8 == 0 {
+        return f.payload
+    }
+    const pad = Int(f.payload.get(0) ?? fail H2Error.Protocol(reason: "padding is missing"))
+    if pad + 1 > f.payload.len() {
+        fail H2Error.Protocol(reason: "more padding than payload")
+    }
+    f.payload.slice(1, f.payload.len() - pad)
+}
+
+/// Moves the message on `stream` to the complete ones.
+pub fn finish(link: Link, stream: Int) -> Link {
+    let l = link
+    if let p = l.partial.get(stream) {
+        l.done.push(H2Message(stream: stream, headers: p.headers, body: p.body))
+        l.partial.remove(stream)
+    }
+    l
+}
+
+/// Sends a header block and body on `stream`, in frames that fit the
+/// other side's windows; waits for WINDOW_UPDATE frames when they are full.
+/// `trailers`, when there are any, end the stream after the body.
+pub fn send(link: Link, stream: Int, headers: [Header], body: Bytes, trailers: [Header]) -> Link ! H2Error uses Net {
+    let l = try block(link, stream, headers, body.len() == 0 and trailers.is_empty())
+    if body.len() > 0 {
+        l = try data(l, stream, body, trailers.is_empty())
+    }
+    if not trailers.is_empty() {
+        l = try block(l, stream, trailers, true)
+    }
+    l
+}
+
+/// Sends a header block on `stream`: a HEADERS frame, then CONTINUATION
+/// frames when it is bigger than a frame. `end` ends this side's stream.
+pub fn block(link: Link, stream: Int, headers: [Header], end: Bool) -> Link ! H2Error uses Net {
+    const encoded = hpack.encode(headers)
+    const ending = if end { 1 } else { 0 }
+    let at = 0
+    let first = true
+    while first or at < encoded.len() {
+        const size = (encoded.len() - at).min(link.max_frame)
+        const piece = encoded.slice(at, at + size)
+        at += size
+        const last = if at >= encoded.len() { 4 } else { 0 }
+        try write(link.conn, if first { frame(1, ending | last, stream, piece) } else { frame(9, last, stream, piece) })
+        first = false
+    }
+    link
+}
+
+/// Sends `body` on `stream` as DATA frames that fit the other side's
+/// windows, waiting for WINDOW_UPDATE frames when they are full. `end`
+/// ends this side's stream (with an empty frame when `body` is empty).
+pub fn data(link: Link, stream: Int, body: Bytes, end: Bool) -> Link ! H2Error uses Net {
+    let l = link
+    if body.len() == 0 {
+        if end {
+            try write(l.conn, frame(0, 1, stream, Bytes([])))
+        }
+        return l
+    }
+    let sent = 0
+    while sent < body.len() {
+        const room = l.window.min(l.windows.get(stream) ?? l.initial).min(l.max_frame)
+        if room <= 0 {
+            l = try step(l) ?? fail H2Error.Protocol(reason: "the connection closed")
+            if let code = l.resets.get(stream) {
+                fail H2Error.Reset(stream: stream, code: code)
+            }
+            continue
+        }
+        const size = room.min(body.len() - sent)
+        const flags = if end and sent + size == body.len() { 1 } else { 0 }
+        try write(l.conn, frame(0, flags, stream, body.slice(sent, sent + size)))
+        sent += size
+        l.window -= size
+        l.windows[stream] = (l.windows.get(stream) ?? l.initial) - size
+    }
+    l
+}

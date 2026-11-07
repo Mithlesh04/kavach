@@ -1,0 +1,15 @@
+// Rule: A `match` on an `Error` must have a `_` arm, since an `Error` can hold any type.
+// Spec: 5.5
+// expect compile error
+
+fn describe(e: Error) -> String {
+    match e {       // error: a `match` on an `Error` needs a `_ => …` arm
+        FsError.NotFound(path) => "missing {path}",
+        FsError.Denied(path) => "denied {path}",
+        FsError.Failed(path, reason) => "failed {path}: {reason}",
+    }
+}
+
+fn main() {
+    print(describe(Error("disk full")))
+}

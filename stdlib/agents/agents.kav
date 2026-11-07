@@ -1,0 +1,45 @@
+// std.agents (spec 14.16): approval requests answered in code. Finding
+// and answering them needs the agents' folder, so the runtime provides
+// them as texts; this file gives them their types. `agents.call_key()`
+// is the runtime's alone.
+
+use std.agents
+
+/// A request that waits for a person's answer (spec 8.3).
+pub type ApprovalRequest {
+    /// The request's number, `RefundBot-17-2`.
+    pub id: String
+    /// The agent that asks, `RefundBot`.
+    pub agent_name: String
+    /// The call waiting, with secrets hidden.
+    pub call: String
+    /// The role asked, `finance`.
+    pub by: String
+    /// The rule that asked, `amount > 5_000`.
+    pub why: String
+    /// When it was asked and when it runs out, in UTC.
+    pub asked: String
+    pub until: String
+}
+
+/// Why an answer wasn't given.
+pub type ApprovalError = NotWaiting(id: String) | Failed(id: String, reason: String)
+
+/// The requests that wait for an answer, oldest first.
+pub fn waiting() -> [ApprovalRequest] uses Approvals {
+    const f = agents.request_fields()
+    let found: [ApprovalRequest] = []
+    let i = 0
+    while i + 7 <= f.len() {
+        found.push(ApprovalRequest(id: f[i], agent_name: f[i + 1], call: f[i + 2], by: f[i + 3], why: f[i + 4], asked: f[i + 5], until: f[i + 6]))
+        i += 7
+    }
+    found
+}
+
+/// Answers request `id`, as `kavach approve` and `kavach deny` do. `by`
+/// names the person who answers; it goes to the audit log.
+pub fn answer(id: String, approved: Bool, by: String, reason: String? = none) ! ApprovalError uses Approvals {
+    const word = if approved { "yes" } else { "no" }
+    try agents.answer_request([id, word, by, reason ?? ""])
+}

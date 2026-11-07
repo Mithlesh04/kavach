@@ -1,0 +1,3 @@
+[package]
+name = "c-callbacks-are-named-functions"
+unsafe = true

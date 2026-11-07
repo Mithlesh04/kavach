@@ -1,0 +1,32 @@
+// Rule: `spawn`, `spawn thread` and `spawn cores` each start a task, mixed in one program, and the program prints the same as with plain `spawn`.
+// Spec: 9.8
+// expect output: both started, total 45
+// expect output: fast done
+// expect output: slow done
+// expect output: slow and fast are back
+
+use std.time
+
+fn report(name: String, ms: Int) -> String {
+    time.sleep_ms(ms)
+    print("{name} done")
+    name
+}
+
+fn main() ! Error {
+    const (send, receive) = Channel<Int>(capacity: 4)
+    const _producer = spawn cores {
+        for i in 0..10 {
+            send.put(i)
+        }
+        send.close()
+    }
+    let total = 0
+    for n in receive {
+        total += n
+    }
+    const slow = spawn thread report("slow", 300)  // far apart, so a busy machine keeps the order
+    const fast = spawn report("fast", 20)
+    print("both started, total {total}")
+    print("{try slow.wait()} and {try fast.wait()} are back")
+}

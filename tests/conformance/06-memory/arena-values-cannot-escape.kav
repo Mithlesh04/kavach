@@ -1,0 +1,12 @@
+// Rule: Storing an arena value outside the arena is a compile error.
+// Spec: 6.3
+// expect compile error
+
+fn main() {
+    let kept: [[Int]] = []
+    const total = arena {
+        const doubled = [1, 2, 3].map(n => n * 2)
+        kept.push(doubled)      // error: doubled was created in the arena and can't be stored outside it
+        doubled.sum(n => n)
+    }
+}

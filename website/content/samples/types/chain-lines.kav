@@ -1,0 +1,13 @@
+type Order {
+    amount: Int
+    paid: Bool
+}
+
+fn main() {
+    const orders = [Order(amount: 300, paid: true), Order(amount: 120, paid: false), Order(amount: 80, paid: true)]
+    const total = orders
+        .filter(.paid)
+        .map(.amount)
+        .sum(a => a)
+    print(total)
+}

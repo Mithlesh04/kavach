@@ -1,0 +1,10 @@
+fn load_rows() -> [Int] {
+    [4, 8, 15, 16, 23, 42]
+}
+
+fn main() {
+    let rows = load_rows()          // a large list
+    const total = rows.len()
+    rows = []                       // the old list is freed here
+    print(total)
+}

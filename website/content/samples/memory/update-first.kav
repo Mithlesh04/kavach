@@ -1,0 +1,16 @@
+use std.time
+
+fn slow_count() -> Int uses Clock {
+    time.sleep_ms(10)
+    1
+}
+
+fn main() {
+    const counter = Shared(0)
+    const _ = [1, 2, 3, 4].parallel_map(n => {
+        const extra = slow_count()
+        counter.update(c => c + extra)
+        n
+    })
+    print(counter.get())
+}

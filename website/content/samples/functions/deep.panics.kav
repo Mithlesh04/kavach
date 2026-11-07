@@ -1,0 +1,8 @@
+fn depth(n: Int) -> Int {
+    if n == 0 { 0 } else { 1 + depth(n - 1) }
+}
+
+fn main() {
+    print(depth(1000))
+    print(depth(100_000_000))
+}

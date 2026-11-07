@@ -1,0 +1,21 @@
+// Rule: `Error(message)` makes an error that is only its message: printing it prints the message, and `main` returning it prints `error: <message>` and exits with code 1.
+// Spec: 5.5
+// expect output: 5
+// expect output: failed: age can't be negative: -2
+// expect exit: 1
+
+fn check(age: Int) -> Int ! Error {
+    if age < 0 {
+        fail Error("age can't be negative: {age}")
+    }
+    age
+}
+
+fn main() ! Error {
+    print(check(5) catch _ => -1)
+    const r = check(-2) catch e => {
+        print("failed: {e}")
+        0
+    }
+    fail Error("stopped: {r} left")
+}

@@ -1,0 +1,19 @@
+use std.math
+
+type Point {
+    x: Float32
+    y: Float32
+}
+
+gpu fn distance(x: Float32, y: Float32, cx: Float32, cy: Float32) -> Float32 {
+    const dx = x - cx
+    const dy = y - cy
+    math.sqrt(dx * dx + dy * dy)
+}
+
+fn main() {
+    const shops = [Point(x: 3.0, y: 4.0), Point(x: 6.0, y: 8.0), Point(x: 0.0, y: 1.0)]
+    const home_x: Float32 = 0.0
+    const home_y: Float32 = 0.0
+    print(shops.map(s => distance(s.x, s.y, home_x, home_y)))
+}

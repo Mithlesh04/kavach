@@ -1,0 +1,13 @@
+// Rule: a modular sum's result doesn't depend on how the loop is run
+// (decision 0031: `acc = (acc + v) % m` with a never-negative `v` is
+// the flat sum `% m`, and the chunks combine to exactly that).
+// Spec: 4.4
+// expect output: 799680
+
+fn main() {
+    let total = 7
+    for i in 0..100_000 {
+        total = (total + i % 97) % 1_000_003
+    }
+    print(total)
+}

@@ -1,0 +1,69 @@
+// std.collections (spec 14.9): helpers for lists, written in Kavach.
+
+/// The items in lists of `size`; the last list may be shorter.
+pub fn chunks<T>(items: [T], size: Int) -> [[T]]
+    require size > 0
+    example chunks([1, 2, 3, 4, 5], 2) == [[1, 2], [3, 4], [5]]
+    example chunks([1], 3) == [[1]]
+{
+    let out: [[T]] = []
+    let current: [T] = []
+    for item in items {
+        current.push(item)
+        if current.len() == size {
+            out.push(current)
+            current = []
+        }
+    }
+    if not current.is_empty() {
+        out.push(current)
+    }
+    out
+}
+
+/// Pairs of items at the same position, as long as the shorter list.
+pub fn zip<A, B>(a: [A], b: [B]) -> [(A, B)]
+    example zip([1, 2, 3], ["a", "b"]) == [(1, "a"), (2, "b")]
+{
+    let out: [(A, B)] = []
+    const n = a.len().min(b.len())
+    let i = 0
+    while i < n {
+        out.push((a[i], b[i]))
+        i += 1
+    }
+    out
+}
+
+/// Each item once, in the order first seen.
+pub fn unique<T>(items: [T]) -> [T]
+    example unique([3, 1, 3, 2, 1]) == [3, 1, 2]
+{
+    let seen: Set<T> = Set.of()
+    let out: [T] = []
+    for item in items {
+        if not seen.contains(item) {
+            seen.add(item)
+            out.push(item)
+        }
+    }
+    out
+}
+
+/// How many times each item appears, in the order first seen.
+pub fn counts<T>(items: [T]) -> [T: Int]
+    example counts(["a", "b", "a"]) == ["a": 2, "b": 1]
+{
+    let out: [T: Int] = [:]
+    for item in items {
+        out[item] = (out[item] ?? 0) + 1
+    }
+    out
+}
+
+/// The items of all the lists, in order.
+pub fn flatten<T>(lists: [[T]]) -> [T]
+    example flatten([[1, 2], [], [3]]) == [1, 2, 3]
+{
+    lists.flat_map(x => x)
+}

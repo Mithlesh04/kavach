@@ -1,0 +1,11 @@
+// Rule: `b.is_empty()` gives whether `Bytes` holds no bytes.
+// Spec: 2.13
+// expect output: true
+// expect output: false
+// expect output: true
+
+fn main() {
+    print(Bytes([]).is_empty())
+    print("hi".bytes().is_empty())
+    print("hi".bytes().slice(2, 2).is_empty())
+}

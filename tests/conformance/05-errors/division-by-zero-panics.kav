@@ -1,0 +1,11 @@
+// Rule: Integer division by zero panics.
+// Spec: 5.6
+// expect panic
+
+fn divide(a: Int, b: Int) -> Int {
+    a / b
+}
+
+fn main() {
+    const _n = divide(1, 0)
+}

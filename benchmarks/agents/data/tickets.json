@@ -1,0 +1,22 @@
+[
+  {"id": 1, "text": "I was charged twice for my March invoice, please refund one.", "kind": "Billing", "needs_person": true},
+  {"id": 2, "text": "The export button crashes the app every time on Windows 11.", "kind": "Bug", "needs_person": true},
+  {"id": 3, "text": "how do i change my email", "kind": "Account", "needs_person": false},
+  {"id": 4, "text": "Would love a dark mode :)", "kind": "Feature", "needs_person": false},
+  {"id": 5, "text": "Your API returns 500 for every order created since the deploy an hour ago. Checkout is down.", "kind": "Bug", "needs_person": true},
+  {"id": 6, "text": "Can I get an invoice with my company's VAT number on it?", "kind": "Billing", "needs_person": false},
+  {"id": 7, "text": "Please add an export to CSV for the reports page.", "kind": "Feature", "needs_person": false},
+  {"id": 8, "text": "My card was declined but the money left my account anyway.", "kind": "Billing", "needs_person": true},
+  {"id": 9, "text": "The search box ignores accents: café finds nothing.", "kind": "Bug", "needs_person": true},
+  {"id": 10, "text": "Where do I turn on two-factor login?", "kind": "Account", "needs_person": false},
+  {"id": 11, "text": "It would be great to schedule reports weekly.", "kind": "Feature", "needs_person": false},
+  {"id": 12, "text": "Someone logged into my account from another country and changed my password!", "kind": "Account", "needs_person": true},
+  {"id": 13, "text": "Images in the mobile app load upside down on Android 15.", "kind": "Bug", "needs_person": true},
+  {"id": 14, "text": "What payment methods do you take?", "kind": "Billing", "needs_person": false},
+  {"id": 15, "text": "Add keyboard shortcuts for the editor please.", "kind": "Feature", "needs_person": false},
+  {"id": 16, "text": "I cancelled last month but you charged me again this month.", "kind": "Billing", "needs_person": true},
+  {"id": 17, "text": "How do I delete my account and all my data?", "kind": "Account", "needs_person": false},
+  {"id": 18, "text": "Saving a document with more than 100 pages loses the last page.", "kind": "Bug", "needs_person": true},
+  {"id": 19, "text": "A dark theme for the dashboard would be nice.", "kind": "Feature", "needs_person": false},
+  {"id": 20, "text": "Our team's seats show 5 but we pay for 10; please fix the bill.", "kind": "Billing", "needs_person": true}
+]

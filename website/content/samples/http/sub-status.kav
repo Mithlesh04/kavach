@@ -1,0 +1,26 @@
+use std.http
+use std.net
+
+type Order {
+    id: Int
+}
+
+fn shop(r: Request) -> Response {
+    if r.path == "/orders/7" {
+        return http.text(200, "\{\"id\": 7}")
+    }
+    http.text(404, "no such order")
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, shop)
+    const base = "http://{listener.address()}"
+    const found = try http.get_json<Order>("{base}/orders/7")
+    print("found {found.id}")
+    const missing = http.get_json<Order>("{base}/orders/8") catch e => {
+        print("failed: {e}")
+        return
+    }
+    print(missing.id)
+}

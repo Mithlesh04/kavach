@@ -1,0 +1,19 @@
+// Assignment: a record copied, changed and read 100 million times. Each
+// round depends on the last, so no compiler can fold the loop away.
+type Point {
+    x: Int
+    y: Int
+    z: Int
+}
+
+fn main() {
+    let p = Point(x: 1, y: 2, z: 3)
+    let total = 0
+    for i in 0..100_000_000 {
+        let q = p
+        q.x = i + (total & 1)
+        total += q.x + q.z
+        p.y = total & 15
+    }
+    print(total)
+}

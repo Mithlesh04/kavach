@@ -1,0 +1,8 @@
+pub type Order {
+    pub id: Int
+    note: String
+}
+
+pub fn rush_order(id: Int) -> Order {
+    Order(id: id, note: "rush")
+}

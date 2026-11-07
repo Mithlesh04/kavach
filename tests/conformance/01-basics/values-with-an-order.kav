@@ -1,0 +1,27 @@
+// Rule: Numbers, text, characters, `Bool` and tuples have an order: text by code point, `false` before `true`, tuples item by item; `sort_by` takes such a key.
+// Spec: 1.8, 14.2
+// expect output: true
+// expect output: ["Apple", "apple", "zebra", "Éclair"]
+// expect output: [false, true]
+// expect output: 25 Asha, 25 Dev, 30 Meera, 30 Ravi
+// expect output: Ravi Dev Asha Meera
+
+type Person {
+    name: String
+    age: Int
+    vip: Bool
+}
+
+fn main() {
+    print((30, "Asha") < (30, "Ravi"))
+    print(["zebra", "Éclair", "apple", "Apple"].sort())
+    print([true, false].sort())
+    const people = [
+        Person(name: "Ravi", age: 30, vip: false),
+        Person(name: "Asha", age: 25, vip: true),
+        Person(name: "Meera", age: 30, vip: true),
+        Person(name: "Dev", age: 25, vip: false),
+    ]
+    print(people.sort_by(p => (p.age, p.name)).map(p => "{p.age} {p.name}").join(", "))
+    print(people.sort_by(.vip).map(p => p.name).join(" "))
+}

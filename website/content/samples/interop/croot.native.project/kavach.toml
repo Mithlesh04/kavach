@@ -1,0 +1,4 @@
+[package]
+name = "croot"
+version = "0.1.0"
+unsafe = true

@@ -1,0 +1,12 @@
+// Rule: A `gpu fn` calls only other `gpu fn`s, conversions, and `abs`, `min`, `max`, `clamp`.
+// Spec: 15.1
+// expect compile error
+
+gpu fn loud(x: Int32) -> Int32 {
+    print(x)                           // error: `print` isn't a `gpu fn`
+    x
+}
+
+fn main() {
+    print(loud(1))
+}

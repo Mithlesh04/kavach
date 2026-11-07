@@ -1,0 +1,32 @@
+// Rule: A `Weak` gives back its `Shared` while it lives and `none` once it was freed; a `Shared` lives to the end of its block.
+// Spec: 6.2
+// expect output: hall
+// expect output: Weak(none)
+// expect output: true
+
+type Room {
+    name: String
+    doors: Shared<[Door]>
+}
+
+type Door {
+    to: Weak<Room>
+}
+
+fn main() {
+    const no_doors: [Door] = []
+    const hall = Shared(Room(name: "hall", doors: Shared(no_doors)))
+    const back = hall.weak()
+    hall.get().doors.update(doors => {
+        let more = doors
+        more.push(Door(to: back))
+        more
+    })
+    // `hall` is not used again, but lives to the end of `main`.
+    if let room = back.shared() {
+        print(room.get().name)
+    }
+    const lost = Shared(5).weak()
+    print(lost)
+    print(lost.shared() == none)
+}

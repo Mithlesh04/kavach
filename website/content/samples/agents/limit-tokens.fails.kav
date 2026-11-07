@@ -1,0 +1,21 @@
+type PayError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn refund(order: Int, amount: Int) ! PayError
+}
+
+agent Refunder {
+    can Payments.refund
+
+    limit Payments.refund {
+        tokens <= 100 per day
+    }
+
+    on refund(order: Int, amount: Int) ! PayError {
+        try Payments.refund(order, amount)
+    }
+}
+
+fn main() {
+    print("never runs")
+}

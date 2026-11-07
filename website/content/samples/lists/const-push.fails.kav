@@ -1,0 +1,5 @@
+fn main() {
+    const fixed = [1, 2]
+    fixed.push(3)
+    print(fixed)
+}

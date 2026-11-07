@@ -1,0 +1,196 @@
+import Link from "next/link";
+import { CodeBlock } from "@/components/code-block";
+import { C } from "@/components/inline-code";
+import { SrcRef } from "@/components/src-ref";
+import { Terminal } from "@/components/terminal";
+import type { LessonDoc } from "@/lib/chapter";
+import { loadProject } from "@/lib/samples";
+import { Files, Note, P, Syntax } from "./parts";
+import { Limits } from "./limits";
+
+const limits = loadProject("projects/limits.fails", ["kavach.toml", "src/main.kav"]);
+
+// ---------- Modules ----------
+
+export const modulesDoc: LessonDoc = {
+  lead: "One file is one module, a folder groups modules, and nothing leaves a module unless it is marked pub.",
+  simple: <>A big program is split into files, like a big book into chapters, and folders group them like the parts of the book. Each file keeps what it holds to itself, unless it marks it <C>pub</C>.</>,
+  minutes: 5,
+  before: ["tools/project-layout"],
+  body: (
+    <>
+      <Files name="modules/shop" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>src/billing/invoice.kav</C> is the module <C>billing.invoice</C>: the path is the name, so you always know which file a name comes from.</li>
+        <li><C>use billing.invoice</C> brings it in; then <C>invoice.create(…)</C> calls its <C>pub</C> function.</li>
+        <li>Everything is private until marked <C>pub</C>, fields included.</li>
+      </ul>
+      <Note>
+        Private by default means you can change a module&apos;s inside freely: nothing outside can depend on what it
+        doesn&apos;t make <C>pub</C>.
+      </Note>
+    </>
+  ),
+};
+
+export const useDoc: LessonDoc = {
+  lead: "use brings in a module, the standard library or a dependency; use a.b.{X, y} brings names in directly.",
+  simple: <><C>use</C> is like borrowing from a neighbour&apos;s shed: once a tool is in your hands, you can use it. You can borrow the whole toolbox, or just the one tool you need.</>,
+  minutes: 2,
+  body: (
+    <>
+      <Syntax
+        code={
+          "use billing.invoice                    // then write invoice.create(…)\nuse billing.invoice.{Invoice, create}  // then write create(…)\nuse std.json                           // the standard library\nuse std.collections.Set as HashSet     // a new name"
+        }
+      />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Names are looked up in your own modules first, then <C>std</C>, then dependencies.</li>
+        <li>Some names need no <C>use</C> at all: the built-in types, <C>print</C>, <C>debug</C>, <C>ask</C>, <C>panic</C>, <C>env</C>, <C>Shared</C> and <C>Channel</C>.</li>
+      </ul>
+    </>
+  ),
+};
+
+export const pubDoc: LessonDoc = {
+  lead: "pub makes a type, a function or a field visible to other modules. Without it, only the module itself sees it.",
+  simple: <><C>pub</C> is like a shop window: what is in it, everyone outside can see and use. What isn&apos;t stays in the back room, where only the shop itself can touch it, so the shop stays in charge of it.</>,
+  minutes: 3,
+  body: (
+    <>
+      <P>
+        A record with a private field can be made only in its own module, so that module stays in charge of what the
+        field holds. Another module that tries is refused:
+      </P>
+      <Files name="modules/private.fails" outcome="refused" />
+      <P>The fix is the one the message gives: a <C>pub fn</C> in <C>billing.invoice</C> that makes an <C>Invoice</C>, as <C>create</C> does.</P>
+    </>
+  ),
+};
+
+// ---------- Small Files ----------
+
+export const smallFilesDoc: LessonDoc = {
+  lead: "A file may have at most 500 lines, and a function about 80: small files are easier to read, review, test and give to an AI.",
+  simple: <>A long file is hard to read, like a book with no chapters. Kavach limits how long a file or a function may be, so code stays easy to read, review and test, for people and for AI.</>,
+  minutes: 3,
+  before: ["tools/modules"],
+  body: (
+    <>
+      <P>The limits are set in <C>kavach.toml</C>. This project sets a tiny one, to show what happens:</P>
+      <CodeBlock code={limits.files[0].code} file="kavach.toml" lang="toml" />
+      <CodeBlock code={limits.files[1].code} file="src/main.kav" output={limits.output} outcome="refused" />
+      <Limits id="files" />
+      <Note>
+        Every line counts, comments and blank lines too: a rule that skipped comments would push people to delete
+        useful ones. Generated files are never counted. See <Link href="/docs/tools/settings/">Settings</Link> for the{" "}
+        <C>[limits]</C> keys.
+      </Note>
+      <div><SrcRef file="docs/spec/12-maintainability.md" label="spec 12.1 · file and function length" /></div>
+    </>
+  ),
+};
+
+// ---------- Tools for AI ----------
+
+const outline = loadProject("tools/ai-outline", ["src/main.kav"]);
+const query = loadProject("tools/ai-query", ["src/main.kav"]);
+const context = loadProject("tools/ai-context", ["src/main.kav"]);
+
+export const aiToolsDoc: LessonDoc = {
+  lead: "AI assistants pay for every token they read. Kavach hands them the part of the code they need, instead of whole files.",
+  simple: <>An AI assistant pays for every piece of code it reads. Instead of handing it the whole book, Kavach hands it the table of contents and the one page it needs, which costs far less.</>,
+  minutes: 4,
+  before: ["functions/signatures"],
+  body: (
+    <>
+      <P>
+        Most of an assistant&apos;s tokens go on finding and reading code, not on writing the change. A Kavach signature
+        already says what a function takes, gives, can fail with, can touch and promises, so the body is rarely needed.
+      </P>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-[15px]">
+          <thead>
+            <tr className="border-b border-line text-left text-soft">
+              <th className="py-2 pr-4 font-bold">Command</th>
+              <th className="py-2 font-bold">Gives</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              ["kavach outline file.kav", "a file's declarations, without the bodies"],
+              ["kavach query callers | uses | fails | type | find", "one exact answer per question, instead of a text search and many reads"],
+              ["kavach context name --budget N", "a function, plus the types and signatures it uses, within a token budget"],
+              ["kavach mcp", "all of these, served to AI assistants over MCP"],
+            ].map(([cmd, gives]) => (
+              <tr key={cmd} className="border-b border-line align-top">
+                <td className="py-2 pr-4"><C>{cmd}</C></td>
+                <td className="py-2 text-muted">{gives}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <P>The program they answer about:</P>
+      <CodeBlock code={outline.files[0].code} file="src/main.kav" />
+    </>
+  ),
+};
+
+export const outlineDoc: LessonDoc = {
+  lead: "kavach outline shows a file's declarations, contracts and doc comments, with every body left out.",
+  simple: <><C>kavach outline</C> is like a book&apos;s table of contents: it shows what a file offers, the names and what each part promises, and leaves out the long details inside.</>,
+  minutes: 2,
+  body: (
+    <>
+      <Terminal session={outline.output ?? ""} outputLang="kavach" />
+      <P>An assistant learns what the file offers for a fraction of the tokens the whole file would cost.</P>
+    </>
+  ),
+};
+
+export const queryDoc: LessonDoc = {
+  lead: "kavach query answers one question exactly: who calls a function, what a type holds, which names match.",
+  simple: <>Searching for a word finds it everywhere, even in notes and comments. <C>kavach query</C> is like asking a librarian instead of turning every page: you get the exact answer, such as who uses a function.</>,
+  minutes: 2,
+  body: (
+    <>
+      <Terminal session={query.output ?? ""} />
+      <P>
+        A text search for <C>total</C> would also find it in comments and strings, and an assistant would read files
+        to sort them out. A query finds only real declarations and uses. <C>uses Console</C> lists the functions that
+        can touch a capability, here only <C>main</C>, which prints; <C>fails BankError</C> lists those that can fail
+        with an error.
+      </P>
+    </>
+  ),
+};
+
+export const contextDoc: LessonDoc = {
+  lead: "kavach context gives a function, then what it uses, within a budget of tokens.",
+  simple: <>Like packing a suitcase with a weight limit: <C>kavach context</C> packs a function first, then the things it uses, and stops at the limit you set. An AI gets what it needs to change that function, and nothing else.</>,
+  minutes: 2,
+  body: (
+    <>
+      <Terminal session={context.output ?? ""} outputLang="kavach" />
+      <P>Everything needed to change <C>report</C>, and nothing else.</P>
+    </>
+  ),
+};
+
+export const mcpDoc: LessonDoc = {
+  lead: "kavach mcp serves these tools to AI assistants such as Claude Code or Cursor, over the Model Context Protocol.",
+  simple: <>MCP is a common plug that AI assistants know how to use. <C>kavach mcp</C> offers Kavach&apos;s code tools through that plug, on your own machine, so your code never leaves it.</>,
+  minutes: 2,
+  body: (
+    <>
+      <Terminal commands session="kavach mcp" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>It runs on your machine and talks over standard input and output: your code never leaves the machine.</li>
+        <li>Add it to an assistant as an MCP server whose command is <C>kavach mcp</C>.</li>
+        <li>Inside a project, answers come from an index kept in <C>.kavach/index</C>, so they are quick.</li>
+      </ul>
+      <Note>The site also serves <Link href="/llms.txt">llms.txt</Link>: a short guide to the whole language that an assistant reads once.</Note>
+    </>
+  ),
+};

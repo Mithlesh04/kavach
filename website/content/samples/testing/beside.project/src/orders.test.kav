@@ -1,0 +1,8 @@
+test "only paid orders count" {
+    const list = [Order(amount: 100, paid: true), Order(amount: 50, paid: false)]
+    assert total_paid(list) == 101
+}
+
+test "the fee is one" {
+    assert fee(10) == 11
+}

@@ -1,0 +1,8 @@
+refused: Denied(reason: "not approved by a person")
+refused: Denied(reason: "limit broken: amount <= 500")
+Refunder request#1 Payments.refund(order: 1, amount: 400)
+  verdict: not approved by a person
+  result: denied: not approved by a person
+Refunder request#2 Payments.refund(order: 2, amount: 900)
+  verdict: refused (limit broken: amount <= 500)
+  result: denied: limit broken: amount <= 500

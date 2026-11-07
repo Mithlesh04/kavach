@@ -1,0 +1,16 @@
+type Item = Num(n: Int) | Many(items: [Item])
+
+fn total(item: Item) -> Int {
+    match item {
+        Item.Num(n) => n,
+        Item.Many(items) => items.sum(i => total(i)),
+    }
+}
+
+fn main() {
+    // [2, 3, [4, 5, [2, 1, 4]], 5]
+    const inner = Item.Many(items: [Item.Num(n: 2), Item.Num(n: 1), Item.Num(n: 4)])
+    const middle = Item.Many(items: [Item.Num(n: 4), Item.Num(n: 5), inner])
+    const xs = Item.Many(items: [Item.Num(n: 2), Item.Num(n: 3), middle, Item.Num(n: 5)])
+    print(total(xs))
+}

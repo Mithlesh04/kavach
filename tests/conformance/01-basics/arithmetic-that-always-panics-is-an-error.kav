@@ -1,0 +1,8 @@
+// Rule: A whole-number division by a `0` the compiler knows, or `+ - *` of known values whose result doesn't fit the type, is a compile error.
+// Spec: 1.8
+// expect compile error
+
+fn main() {
+    const limit: Int32 = 2147483647
+    print(limit + 1)    // error: always overflows
+}

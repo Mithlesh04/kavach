@@ -1,0 +1,52 @@
+gpu fn step(x: Int32) -> Int32 {
+    x + 1
+}
+
+fn logged(n: Int) -> Int {
+    print(n)
+    n
+}
+
+fn main() ! Error {
+    const rounds: [[Int32]] = [[1, 2], [3, 4]]
+
+    // These two don't wait, so they get no note.
+    let quiet = 0
+    for xs in rounds {
+        quiet += Int(xs.map(step).sum(x => x))
+    }
+    let kept = 0
+    for xs in rounds {
+        const s = xs.map(step).sum(x => x)
+        kept += Int(s)
+    }
+
+    let a = 0
+    for xs in rounds {
+        a += Int(xs.map(step).sum(x => x))
+        print(a)
+    }
+    let b = 0
+    for xs in rounds {
+        b += logged(Int(xs.map(step).sum(x => x)))
+    }
+    let c = 0
+    for xs in rounds {
+        c += Int(xs.map(step).sum(x => x))
+        const size = if xs.len() > 0 { xs.len() } else { fail Error("empty") }
+        print(size)
+    }
+    let d = 0
+    let k: Int32 = 1
+    for xs in rounds {
+        d += Int(xs.map(step).sum(x => x + k))
+        k = k + 1
+    }
+    for xs in rounds {
+        print(xs.map(step).sum(x => x))
+    }
+    for xs in rounds {
+        print(xs.map(step))
+    }
+    print("{quiet} {kept} {a} {b} {c} {d}")
+}

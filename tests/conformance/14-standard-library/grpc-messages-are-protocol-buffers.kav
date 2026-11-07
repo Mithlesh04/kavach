@@ -1,0 +1,42 @@
+// Rule: `grpc.encode<T>` writes a value as a Protocol Buffers message whose field `n` is the type's `n`th declared field, and `grpc.decode<T>` reads it back.
+// Spec: 14.14
+// expect output: [8, 150, 1]
+// expect output: [8, 150, 1, 18, 7, 116, 101, 115, 116, 105, 110, 103]
+// expect output: [8, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1, 17, 0, 0, 0, 0, 0, 0, 4, 64]
+// expect output: Mixed(a: -1, d: 2.5, tags: [3, 270], on: true, inner: Test1(a: 150), note: none)
+// expect output: Test1(a: 0)
+
+use std.grpc
+
+// The two examples of the Protocol Buffers encoding guide: `a = 150` is
+// 08 96 01, and a string "testing" in field 2 is 12 07 followed by it.
+type Test1 {
+    a: Int
+}
+
+type Test2 {
+    a: Int
+    b: String
+}
+
+type Mixed {
+    a: Int
+    d: Float
+    tags: [Int]
+    on: Bool
+    inner: Test1
+    note: String?
+}
+
+fn main() {
+    print(grpc.encode(Test1(a: 150)).to_list())
+    print(grpc.encode(Test2(a: 150, b: "testing")).to_list())
+    // -1 takes ten bytes; 2.5 is field 2's eight little-endian bytes.
+    const negative = grpc.encode(Test2(a: -1, b: "")).slice(0, 11)
+    const double = grpc.encode(Mixed(a: 0, d: 2.5, tags: [], on: false, inner: Test1(a: 0), note: none))
+    print((negative + double.slice(2, 11)).to_list())
+    const m = Mixed(a: -1, d: 2.5, tags: [3, 270], on: true, inner: Test1(a: 150), note: none)
+    const back = grpc.decode<Mixed>(grpc.encode(m)) catch _ => m
+    print(back)
+    print(grpc.decode<Test1>(Bytes([])) catch _ => Test1(a: 99))
+}

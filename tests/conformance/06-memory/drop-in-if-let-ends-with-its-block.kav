@@ -1,0 +1,27 @@
+// Rule: A `Drop` value bound by `if let` drops at the end of the `if let`'s block, before the next statement.
+// Spec: 6.1, 2.7
+// expect output: 3
+// expect output: drop 3
+// expect output: end
+
+type Guard: Drop {
+    n: Int
+
+    fn drop(self) {
+        print("drop {self.n}")
+    }
+}
+
+fn find(n: Int) -> Guard? {
+    if n > 0 {
+        return Guard(n: n)
+    }
+    none
+}
+
+fn main() {
+    if let g = find(3) {
+        print(g.n)
+    }
+    print("end")
+}

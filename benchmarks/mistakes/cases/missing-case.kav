@@ -1,0 +1,14 @@
+// Mistake: A `match` that forgets a case.
+
+type Status = Paid | Pending | Refunded
+
+fn label(s: Status) -> String {
+    match s {
+        Status.Paid => "paid",
+        Status.Pending => "pending",
+    }
+}
+
+fn main() {
+    print(label(Status.Paid))
+}

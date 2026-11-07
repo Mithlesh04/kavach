@@ -1,0 +1,9 @@
+fn main() {
+    let xs: [UInt8] = []
+    for i in 0..1_000 {
+        xs.push(UInt8(i % 251))
+    }
+    const b = Bytes(xs)
+    print(b.len())
+    print(b.crc32c())
+}

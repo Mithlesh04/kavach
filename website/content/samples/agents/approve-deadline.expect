@@ -1,0 +1,7 @@
+$ kavach run src/main.kav
+refused: Denied(reason: "not approved by finance (amount > 100) within 1 second")
+approval needed by finance: Payments.refund(order: 1, amount: 900) (request Refunder-1-1): kavach approve Refunder-1-1 --as <name>, or kavach deny
+$ kavach approvals
+no requests wait for approval
+$ kavach approve Refunder-1-1
+error: say who answers: `--as <name>`, written to the audit log

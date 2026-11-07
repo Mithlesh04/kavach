@@ -1,0 +1,14 @@
+fn main() {
+    let ages: [String: Int] = [:]
+    ages["asha"] = 31
+    ages["omar"] = 27
+
+    print(ages["asha"] ?? 0)   // 31 — missing key → your fallback
+
+    for (name, age) in ages {     // insertion order, always
+        print("{name} is {age}")
+    }
+
+    ages.remove("omar")
+    print(ages.len())              // 1
+}

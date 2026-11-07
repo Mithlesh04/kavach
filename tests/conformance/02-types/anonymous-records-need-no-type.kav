@@ -1,0 +1,37 @@
+// Rule: a record value or type can be written inline with no declaration: `(on: f)` builds an anonymous record, the same syntax types parameters and returns, matching is structural (field order doesn't matter), and `type X = (…)` aliases the shape.
+// Spec: 2.14
+// expect output: 3
+// expect output: 110
+// expect output: 1..5
+// expect output: 55
+// expect output: true
+
+type Handler = (on: fn(Int) -> Int)
+
+fn add_tax(x: Int) -> Int {
+    x + x / 10
+}
+
+fn run(h: Handler, x: Int) -> Int {
+    h.on(x)
+}
+
+fn minmax(xs: [Int]) -> (lo: Int, hi: Int) {
+    let lo = xs[0]
+    let hi = xs[0]
+    for x in xs {
+        if x < lo { lo = x }
+        if x > hi { hi = x }
+    }
+    (lo: lo, hi: hi)
+}
+
+fn main() {
+    const h = (on: add_tax, retries: 3)
+    print(h.retries)
+    print(h.on(100))
+    const r = minmax([3, 1, 4, 1, 5])
+    print("{r.lo}..{r.hi}")
+    print(run((on: add_tax), 50))
+    print((hi: 9, lo: 2) == (lo: 2, hi: 9))
+}

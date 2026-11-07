@@ -1,0 +1,8 @@
+// Rule: Methods that change a collection (`push`, `remove`) need a `let`.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    const fixed = [1, 2]
+    fixed.push(3)       // error: `fixed` is a `const`, so `push` can't change it
+}

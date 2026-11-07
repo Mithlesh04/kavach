@@ -1,0 +1,6 @@
+fn main() {
+    const s = "the cat sat"
+    print(s.index_of("cat") ?? -1)
+    print(s.index_of("dog") ?? -1)
+    print(s.replace("cat", "dog"))
+}

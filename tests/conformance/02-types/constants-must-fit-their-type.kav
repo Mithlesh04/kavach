@@ -1,0 +1,8 @@
+// Rule: Where a type is written, a constant that doesn't fit it is a compile error.
+// Spec: 2.1
+// expect compile error
+
+fn main() {
+    const small: Int8 = 300        // error: `300` doesn't fit in `Int8`, which holds -128 to 127: use `Int16`
+    print(small)
+}

@@ -1,0 +1,500 @@
+{
+  "_about": "Which README table row and column feeds each chart. No numbers here: scripts/build-benchmarks.mjs reads them from the benchmark READMEs (where every measured run is recorded) and writes benchmarks.json.",
+  "suites": {
+    "lookups": {
+      "title": "Single reads, large data",
+      "readme": "benchmarks/lookups/README.md",
+      "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · Python 3.12 · best of 9 (Python best of 3)",
+      "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/lookups",
+      "series": [
+        {
+          "id": "kavach",
+          "label": "Kavach",
+          "column": "Kavach ms",
+          "color": "kavach"
+        },
+        {
+          "id": "cpp",
+          "label": "C++ -O2",
+          "column": "C++ ms",
+          "color": "cpp"
+        },
+        {
+          "id": "python",
+          "label": "Python 3.12",
+          "column": "Python ms",
+          "color": "python"
+        }
+      ],
+      "benchmarks": {
+        "dict": {
+          "row": "`dict`",
+          "title": "dict — 20M random reads from a 2M-entry map"
+        },
+        "index": {
+          "row": "`index`",
+          "title": "index — 50M random reads from a 10M-item list"
+        }
+      }
+    },
+    "loops": {
+      "title": "Loops, calls and lists",
+      "readme": "benchmarks/loops/README.md",
+      "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · best of 9",
+      "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/loops",
+      "series": [
+        {
+          "id": "kavach",
+          "label": "Kavach",
+          "column": "Kavach ms",
+          "color": "kavach"
+        },
+        {
+          "id": "cpp",
+          "label": "C++ -O2",
+          "column": "C++ ms",
+          "color": "cpp"
+        }
+      ],
+      "benchmarks": {
+        "loop": {
+          "row": "`loop`",
+          "title": "loop — 500M rounds of modular arithmetic"
+        },
+        "sort": {
+          "row": "`sort`",
+          "title": "sort — 5M integers"
+        },
+        "lists": {
+          "row": "`lists`",
+          "title": "lists — build, read, change and sum 10M items"
+        },
+        "text": {
+          "row": "`text`",
+          "title": "text — build, split and search large text"
+        },
+        "sizedmaps": {
+          "row": "`sizedmaps`",
+          "title": "sizedmaps — 2M keys into a map told its size (C++ reserves too)"
+        }
+      }
+    },
+    "bytes": {
+      "title": "Raw bytes",
+      "readme": "benchmarks/bytes/README.md",
+      "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · best of 9",
+      "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/bytes",
+      "series": [
+        {
+          "id": "kavach",
+          "label": "Kavach",
+          "column": "Kavach ms",
+          "color": "kavach"
+        },
+        {
+          "id": "cpp",
+          "label": "C++ -O2",
+          "column": "C++ ms",
+          "color": "cpp"
+        }
+      ],
+      "benchmarks": {
+        "crc": {
+          "row": "`crc`",
+          "title": "crc — build 64 MB byte by byte, checksum it (CRC32C)"
+        }
+      }
+    },
+    "json": {
+      "title": "JSON on large data",
+      "readme": "benchmarks/json/README.md",
+      "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · Python 3.12 (its json module is C) · typical of 5 runs",
+      "verify": "kavach build benchmarks/json/kavach/json.kav && ./json; python3 benchmarks/json/python/json_bench.py",
+      "series": [
+        {
+          "id": "kavach",
+          "label": "Kavach",
+          "column": "Kavach ms",
+          "color": "kavach"
+        },
+        {
+          "id": "python",
+          "label": "Python 3.12",
+          "column": "Python ms",
+          "color": "python"
+        }
+      ],
+      "benchmarks": {
+        "whole": {
+          "row": "whole program",
+          "title": "300,000 orders (52 MB): write, parse, read, decode"
+        },
+        "stringify": {
+          "row": "stringify",
+          "title": "stringify — every order to JSON text"
+        },
+        "parse": {
+          "row": "parse",
+          "title": "parse — the text back into dynamic values"
+        },
+        "read": {
+          "row": "read",
+          "title": "read — qty and price of 1.5M items from parsed values"
+        },
+        "decode": {
+          "row": "decode",
+          "title": "decode — the text straight into records"
+        }
+      }
+    },
+    "tasks": {
+      "title": "Tasks on all cores",
+      "readme": "benchmarks/tasks/README.md",
+      "environment": "WSL Ubuntu 24.04 · i7-13700HX (8 fast cores) · kavach build (LLVM) · typical of 3 runs",
+      "verify": "kavach build benchmarks/tasks/kavach/parallel-map.kav && ./parallel-map",
+      "series": [
+        {
+          "id": "parallel",
+          "label": "parallel_map",
+          "row": "`parallel_map`",
+          "column": "ms",
+          "color": "kavach"
+        },
+        {
+          "id": "serial",
+          "label": "map, one by one",
+          "row": "`map` (one by one)",
+          "column": "ms",
+          "color": "cpp"
+        }
+      ],
+      "benchmarks": {
+        "sums": {
+          "title": "eight sums of 150M rounds each, in one program"
+        }
+      }
+    },
+    "channels": {
+      "title": "Channels",
+      "readme": "benchmarks/channels/README.md",
+      "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · Python 3.12 · best of 9 (Python best of 3)",
+      "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/channels",
+      "series": [
+        {
+          "id": "kavach",
+          "label": "Kavach",
+          "column": "Kavach ms",
+          "color": "kavach"
+        },
+        {
+          "id": "cpp",
+          "label": "C++ -O2 (mutex queue)",
+          "column": "C++ ms",
+          "color": "cpp"
+        },
+        {
+          "id": "python",
+          "label": "Python 3.12",
+          "column": "Python ms",
+          "color": "python"
+        }
+      ],
+      "benchmarks": {
+        "pipe": {
+          "row": "`pipe`",
+          "title": "pipe — 2M integers from one task to another, capacity 1024"
+        }
+      }
+    },
+    "sizes": {
+      "title": "As data grows",
+      "readme": "benchmarks/sizes/README.md",
+      "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · Python 3.12 · best of 9 (Python best of 3)",
+      "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/sizes",
+      "series": [
+        {
+          "id": "kavach",
+          "label": "Kavach",
+          "column": "Kavach ms",
+          "color": "kavach"
+        },
+        {
+          "id": "cpp",
+          "label": "C++ -O2",
+          "column": "C++ ms",
+          "color": "cpp"
+        },
+        {
+          "id": "python",
+          "label": "Python 3.12",
+          "column": "Python ms",
+          "color": "python"
+        }
+      ],
+      "benchmarks": {
+        "index-thousands": {
+          "row": "`index` · thousands",
+          "title": "index — 50M random reads from a list of 1,000 items"
+        },
+        "index-millions": {
+          "row": "`index` · millions",
+          "title": "index — 50M random reads from a list of 1,000,000 items"
+        },
+        "index-tens-of-millions": {
+          "row": "`index` · tens-of-millions",
+          "title": "index — 50M random reads from a list of 10,000,000 items"
+        },
+        "index-hundreds-of-millions": {
+          "row": "`index` · hundreds-of-millions",
+          "title": "index — 50M random reads from a list of 100,000,000 items"
+        },
+        "sort-thousands": {
+          "row": "`sort` · thousands",
+          "title": "sort — 1,000 integers"
+        },
+        "sort-millions": {
+          "row": "`sort` · millions",
+          "title": "sort — 1,000,000 integers"
+        },
+        "sort-tens-of-millions": {
+          "row": "`sort` · tens-of-millions",
+          "title": "sort — 10,000,000 integers"
+        },
+        "sort-hundreds-of-millions": {
+          "row": "`sort` · hundreds-of-millions",
+          "title": "sort — 100,000,000 integers"
+        }
+      }
+    },
+    "chains": {
+      "title": "Method chains",
+      "readme": "benchmarks/chains/README.md",
+      "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · Python 3.12 · best of 9",
+      "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/chains",
+      "series": [
+        {
+          "id": "kavach",
+          "label": "Kavach",
+          "column": "Kavach ms",
+          "color": "kavach"
+        },
+        {
+          "id": "cpp",
+          "label": "C++ -O2",
+          "column": "C++ ms",
+          "color": "cpp"
+        },
+        {
+          "id": "python",
+          "label": "Python 3.12",
+          "column": "Python ms",
+          "color": "python"
+        }
+      ],
+      "benchmarks": {
+        "datachain": {
+          "row": "`datachain`",
+          "title": "datachain — map, filter, map, sum over 10 million items"
+        },
+        "builderchain": {
+          "row": "`builderchain`",
+          "title": "builderchain — five chained builder calls, 10 million times"
+        },
+        "nestedchain": {
+          "row": "`nestedchain`",
+          "title": "nestedchain — a chain inside a chain, ten thousand rows"
+        }
+      }
+    },
+    "everyday": {
+      "title": "Everyday operations",
+      "readme": "benchmarks/everyday/README.md",
+      "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · best of 9",
+      "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/everyday",
+      "series": [
+        {
+          "id": "kavach",
+          "label": "Kavach",
+          "column": "Kavach ms",
+          "color": "kavach"
+        },
+        {
+          "id": "cpp",
+          "label": "C++ -O2",
+          "column": "C++ ms",
+          "color": "cpp"
+        }
+      ],
+      "benchmarks": {
+        "alloc": {
+          "row": "`alloc`",
+          "title": "alloc — a short-lived list made, read and freed 20 million times"
+        },
+        "callbacks": {
+          "row": "`callbacks`",
+          "title": "callbacks — a callback held in a record, called 100 million times"
+        },
+        "nested": {
+          "row": "`nested`",
+          "title": "nested — fifty handlers each wrapping the next, 100 million hops"
+        },
+        "copies": {
+          "row": "`copies`",
+          "title": "copies — a record copied, changed and read 100 million times"
+        },
+        "branches": {
+          "row": "`branches`",
+          "title": "branches — an if/else chain decided 200 million times"
+        },
+        "stacks": {
+          "row": "`stacks`",
+          "title": "stacks — recursion 100 thousand frames deep, a thousand times"
+        }
+      }
+    },
+    "math": {
+      "title": "Math on large data",
+      "readme": "benchmarks/math/README.md",
+      "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · best of 9",
+      "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/math",
+      "series": [
+        {
+          "id": "kavach",
+          "label": "Kavach",
+          "column": "Kavach ms",
+          "color": "kavach"
+        },
+        {
+          "id": "cpp",
+          "label": "C++ -O2",
+          "column": "C++ ms",
+          "color": "cpp"
+        }
+      ],
+      "benchmarks": {
+        "sum": {
+          "row": "`sum`",
+          "title": "sum — 50 million integers, 10 times, every addition overflow-checked"
+        },
+        "scale": {
+          "row": "`scale`",
+          "title": "scale — y = x * 2.5 + 1.0 over 20 million floats, 10 times"
+        },
+        "roots": {
+          "row": "`roots`",
+          "title": "roots — sqrt over 20 million floats, 10 times"
+        },
+        "dot": {
+          "row": "`dot`",
+          "title": "dot — the dot product of two 20-million-float lists, 10 times"
+        }
+      }
+    },
+    "gpu": {
+      "title": "On the GPU",
+      "readme": "benchmarks/gpu/README.md",
+      "environment": "Windows 11 · i7-13700HX · RTX 4050 Laptop · g++ -O3 -march=native -fopenmp for 24 threads",
+      "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/gpu",
+      "series": [
+        {
+          "id": "kavach",
+          "label": "Kavach on the GPU",
+          "row": "**Kavach, GPU**",
+          "color": "kavach"
+        },
+        {
+          "id": "cpp",
+          "label": "C++ on 24 threads",
+          "row": "C++ `-O3 -march=native -fopenmp`, 24 threads",
+          "color": "cpp"
+        },
+        {
+          "id": "cpp-one-core",
+          "label": "C++ -O2, one core",
+          "row": "C++ `-O2`, one core",
+          "color": "cpp"
+        },
+        {
+          "id": "kavach-cpu",
+          "label": "Kavach on the CPU",
+          "row": "Kavach, CPU (`KAVACH_GPU=off`)",
+          "color": "kavach"
+        }
+      ],
+      "benchmarks": {
+        "first": {
+          "column": "First `map`",
+          "title": "glow, first map — 4 million Float32 items, 1,000 steps each, sent to the GPU"
+        },
+        "second": {
+          "column": "Second `map`",
+          "title": "glow, second map — the same list, already in GPU memory"
+        }
+      }
+    },
+    "net": {
+      "title": "Network waits",
+      "readme": "benchmarks/net/README.md",
+      "environment": "WSL Ubuntu 24.04 · i7-13700HX · g++ 13 -O2 · Python 3.12",
+      "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/net",
+      "series": [
+        {
+          "id": "kavach",
+          "label": "Kavach",
+          "row": "**Kavach, waking only the next task, which spins a moment first**",
+          "color": "kavach"
+        },
+        {
+          "id": "cpp",
+          "label": "C++, blocking sockets",
+          "row": "C++, blocking sockets",
+          "color": "cpp"
+        },
+        {
+          "id": "python",
+          "label": "Python 3.12",
+          "row": "Python, blocking sockets",
+          "color": "python"
+        }
+      ],
+      "benchmarks": {
+        "pingpong": {
+          "column": "Linux",
+          "title": "pingpong — 10,000 TCP round trips between two tasks (Linux)"
+        }
+      }
+    },
+    "net-clients": {
+      "title": "Many network clients",
+      "readme": "benchmarks/net/README.md",
+      "environment": "WSL Ubuntu 24.04 · i7-13700HX · g++ 13 -O2",
+      "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/net",
+      "series": [
+        {
+          "id": "kavach",
+          "label": "Kavach, a coroutine per task",
+          "row": "**Kavach, a coroutine per task** ([decision 0048](../../docs/decisions/0048-tasks-as-coroutines-per-core.md), step 1)",
+          "color": "kavach"
+        },
+        {
+          "id": "cpp",
+          "label": "C++, all 24 cores",
+          "row": "C++, all 24 cores",
+          "color": "cpp"
+        },
+        {
+          "id": "cpp-one-core",
+          "label": "C++, one core",
+          "row": "C++, one core (`taskset -c 0`)",
+          "color": "cpp"
+        }
+      ],
+      "benchmarks": {
+        "clients": {
+          "column": "1,000 trips each",
+          "title": "clients — an echo server with 100 clients, 1,000 round trips each"
+        }
+      }
+    }
+  }
+}

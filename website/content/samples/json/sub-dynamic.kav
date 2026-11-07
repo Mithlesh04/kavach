@@ -1,0 +1,10 @@
+use std.json
+
+fn main() ! Error {
+    const body = "\{\"user\": \{\"name\": \"asha\"}, \"tags\": [\"vip\", \"new\"]}"
+    const doc = try json.parse(body)
+    print(doc["user"]["name"].text() ?? "guest")
+    print(doc["user"]["email"].text() ?? "no email")
+    print(doc["tags"][0].text() ?? "none")
+    print(doc["tags"].len())
+}

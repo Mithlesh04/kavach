@@ -1,0 +1,11 @@
+// Rule: Strings support the escapes \" \\ and \u{…}.
+// Spec: 1.7
+// expect output: say "hi"
+// expect output: a\b
+// expect output: क
+
+fn main() {
+    print("say \"hi\"")
+    print("a\\b")
+    print("\u{0915}")
+}

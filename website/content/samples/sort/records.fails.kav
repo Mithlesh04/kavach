@@ -1,0 +1,9 @@
+type Player {
+    name: String
+    score: Int
+}
+
+fn main() {
+    const players = [Player(name: "Zoe", score: 70), Player(name: "Asha", score: 90)]
+    print(players.sort())
+}

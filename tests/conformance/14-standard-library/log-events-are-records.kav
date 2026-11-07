@@ -1,0 +1,24 @@
+// Rule: A log event is a value of a type that implements `LogEvent`; the console shows its level and its printed form.
+// Spec: 14.12
+// expect output: INFO OrderPlaced(order_id: 7, amount: 499.00)
+// expect output: WARN Retrying(attempt: 2)
+// expect output: ERROR Started
+
+use std.log
+
+type OrderPlaced: LogEvent {
+    order_id: Int
+    amount: Decimal
+}
+
+type Retrying: LogEvent {
+    attempt: Int
+}
+
+type Started: LogEvent {}
+
+fn main() {
+    log.info(OrderPlaced(order_id: 7, amount: 499.00))
+    log.warn(Retrying(attempt: 2))
+    log.error(Started())
+}

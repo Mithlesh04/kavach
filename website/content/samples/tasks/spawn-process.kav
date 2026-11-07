@@ -1,0 +1,35 @@
+type Page {
+    title: String
+    words: Int
+}
+
+fn count(pages: [Page]) -> Int {
+    print("counting {pages.len()} pages")
+    let total = 0
+    for page in pages {
+        total += page.words
+    }
+    total
+}
+
+// Stands in for a library call that never returns.
+fn convert(file: String) -> String {
+    let x = file.len()
+    while true {
+        x = x % 1000 + 1
+    }
+    file
+}
+
+fn main() ! Error {
+    const pages = [Page(title: "Home", words: 120), Page(title: "About", words: 80)]
+    const job = spawn process count(pages)
+    print("started")
+    print("total {try job.wait()} words")
+
+    const stuck = spawn process convert("report.doc") within 200.ms
+    const _pdf = stuck.wait() catch e => {
+        print(e)
+        ""
+    }
+}

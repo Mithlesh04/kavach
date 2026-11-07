@@ -1,0 +1,19 @@
+// Rule: In an argument, an expression starting with `.` is a lambda over one value.
+// Spec: 3.3
+// expect output: 150
+// expect output: 2
+
+type Item {
+    price: Int
+    paid: Bool
+}
+
+fn main() {
+    const items = [
+        Item(price: 100, paid: true),
+        Item(price: 70, paid: false),
+        Item(price: 50, paid: true),
+    ]
+    print(items.filter(.paid).sum(.price))
+    print(items.filter(.price > 60).len())
+}

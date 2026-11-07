@@ -1,0 +1,12 @@
+// A map with 2 million keys: insert, then look every key up.
+fn main() {
+    let squares: [Int: Int] = [:]
+    for i in 0..2_000_000 {
+        squares[i] = i * i % 1000
+    }
+    let total = 0
+    for i in 0..2_000_000 {
+        total += squares[i] ?? 0
+    }
+    print(total)
+}

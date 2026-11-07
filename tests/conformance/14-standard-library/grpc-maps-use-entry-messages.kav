@@ -1,0 +1,25 @@
+// Rule: a map field with `String` keys travels as Protocol Buffers' map encoding — a repeated entry message per key, the key as field 1 and the value as field 2 — and `json.schema` gives such a map `{"type": "object", "additionalProperties": …}`.
+// Spec: 14.14, 2.12
+// expect output: {"type":"object","additionalProperties":{"type":"integer"}}
+// expect output: [10, 4, 104, 105, 116, 115, 18, 7, 10, 3, 109, 111, 110, 16, 3, 18, 7, 10, 3, 116, 117, 101, 16, 5]
+// expect output: true
+
+use std.grpc
+use std.json
+
+type Counts {
+    name: String
+    by_day: [String: Int]
+}
+
+fn main() {
+    print(json.schema<Counts>().get("properties").get("by_day"))
+    let m: [String: Int] = [:]
+    m["mon"] = 3
+    m["tue"] = 5
+    const c = Counts(name: "hits", by_day: m)
+    const wire = grpc.encode<Counts>(c)
+    print(wire.to_list())
+    const back = grpc.decode<Counts>(wire) catch _ => Counts(name: "", by_day: [:])
+    print(back == c)
+}

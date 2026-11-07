@@ -1,0 +1,13 @@
+// Rule: `std.math` has the runtime's `sqrt` and `pi` and, written in Kavach, `gcd`, `lcm`, `factorial`, `is_prime` and `mean`.
+// Spec: 14.5
+// expect output: 4.0 true
+// expect output: 6 12 none 120
+// expect output: true false 3.0
+
+use std.math
+
+fn main() {
+    print("{math.sqrt(16.0)} {math.pi > 3.0}")
+    print("{math.gcd(12, 18)} {math.lcm(4, 6) ?? 0} {math.lcm(9_223_372_036_854_775_807, 2)} {math.factorial(5)}")
+    print("{math.is_prime(1_000_000_007)} {math.is_prime(91)} {math.mean([1.0, 2.0, 6.0]) ?? 0.0}")
+}

@@ -1,0 +1,22 @@
+// Rule: a sum's result doesn't depend on how the loop is run (decision
+// 0031: chunked integer sums combine to exactly the plain loop's sum).
+// Spec: 4.4
+// expect output: 34965000
+// expect output: 300095
+
+fn main() {
+    let xs: [Int] = []
+    for i in 0..70_000 {
+        xs.push(i % 1000)
+    }
+    let total = 0
+    for x in xs {
+        total += x
+    }
+    print(total)
+    let t2 = 100
+    for i in 0..100_000 {
+        t2 += i % 7
+    }
+    print(t2)
+}

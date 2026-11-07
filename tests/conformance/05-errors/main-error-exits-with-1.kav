@@ -1,0 +1,13 @@
+// Rule: When main returns an error, the program exits with code 1.
+// Spec: 5.5
+// expect exit: 1
+
+type SetupError = MissingConfig
+
+fn load_config() -> Int ! SetupError {
+    fail SetupError.MissingConfig
+}
+
+fn main() ! Error {
+    const _config = try load_config()
+}

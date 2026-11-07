@@ -1,0 +1,40 @@
+// Rule: `limit` rules and `approve` conditions are checked like code: the limited method's parameters have its types, so `amount <= 100` compares two `Decimal`s.
+// Spec: 8.3
+// expect output: refunded 49.99
+// expect output: Denied(reason: "limit broken: amount <= 100")
+
+type Receipt { amount: Decimal }
+type PaymentError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn refund(amount: Decimal) -> Receipt ! PaymentError
+}
+
+type FakePayments: Payments {
+    fn refund(self, amount: Decimal) -> Receipt ! PaymentError {
+        Receipt(amount: amount)
+    }
+}
+
+agent Bot {
+    can Payments.refund
+
+    limit Payments.refund {
+        amount <= 100
+    }
+
+    on refund(amount: Decimal) -> Receipt ! PaymentError {
+        try Payments.refund(amount)
+    }
+}
+
+fn main() {
+    const bot = Bot.start(Payments: FakePayments())
+    for amount in [49.99, 120.00] {
+        const r = bot.refund(amount) catch e => {
+            print(e)
+            continue
+        }
+        print("refunded {r.amount}")
+    }
+}

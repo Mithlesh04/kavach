@@ -1,0 +1,15 @@
+// Rule: A time of day the clocks showed twice when daylight saving time ended is its earlier moment, as RFC 5545 does; `resolve` gives both.
+// Spec: 14.4
+// expect output: -14400
+// expect output: Repeated(earlier: 1793511000000, later: 1793514600000)
+
+use std.time
+
+fn main() ! Error {
+    const new_york = try time.zone("America/New_York")
+    // Clocks went back from 02:00 to 01:00 that night.
+    const date = time.Date(year: 2026, month: 11, day: 1)
+    const twice = time.DateTime(date: date, time: time.Time(hour: 1, minute: 30, second: 0, ms: 0))
+    print(new_york.offset_seconds(new_york.moment(twice)))     // still summer time
+    print(new_york.resolve(twice))
+}

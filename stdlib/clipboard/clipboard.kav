@@ -1,0 +1,6 @@
+// std.clipboard (spec 14.17): the errors of the clipboard. Reading and
+// writing it need the operating system, so the runtime provides them;
+// they fail with these values.
+
+/// Why the clipboard couldn't be read or written.
+pub type ClipboardError = Empty | Unavailable(reason: String)

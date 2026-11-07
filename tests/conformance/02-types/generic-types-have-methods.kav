@@ -1,0 +1,28 @@
+// Rule: Methods of a generic type work for every type argument.
+// Spec: 2.9
+// expect output: 3
+// expect output: #3
+// expect output: hi
+
+type Box<T> {
+    value: T
+
+    fn get(self) -> T {
+        self.value
+    }
+
+    fn map_to<U>(self, f: fn(T) -> U) -> Box<U> {
+        Box(value: f(self.value))
+    }
+
+    fn make(value: T) -> Box<T> {
+        Box(value: value)
+    }
+}
+
+fn main() {
+    const b = Box(value: 3)
+    print(b.get())
+    print(b.map_to(x => "#{x}").get())
+    print(Box.make("hi").get())
+}

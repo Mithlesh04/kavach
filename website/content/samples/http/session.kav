@@ -1,0 +1,19 @@
+use std.http
+use std.net
+
+fn api(r: Request) -> Response {
+    http.text(200, "{r.method} {r.path}")
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, api)
+    const session = try http.open("http://{listener.address()}")
+    for path in ["/users/1", "/users/2"] {
+        const reply = try session.get(path)
+        print(reply.body.text() ?? "")
+    }
+    const made = try session.post("/users", "Asha".bytes())
+    print(made.body.text() ?? "")
+    session.close()
+}

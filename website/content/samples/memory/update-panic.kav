@@ -1,0 +1,16 @@
+fn bonus(scores: [Int]) -> Int {
+    scores[3]
+}
+
+fn add_bonus(total: Shared<Int>) {
+    total.update(n => n + bonus([5]))
+}
+
+fn main() {
+    const total = Shared(10)
+    const t = spawn cores add_bonus(total)
+    t.wait() catch _ => {}
+    print("total {total.get()}")
+    total.update(n => n + 1)
+    print("total {total.get()}")
+}

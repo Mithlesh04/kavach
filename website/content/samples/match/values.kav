@@ -1,0 +1,10 @@
+fn main() {
+    const day = 6
+    const name = match day {
+        1 => "Monday"
+        6 => "Saturday"
+        7 => "Sunday"
+        _ => "a weekday"
+    }
+    print(name)
+}

@@ -1,0 +1,9 @@
+use std.devices
+
+pub fn ports() -> [String] uses Console {
+    devices.serial_ports()
+}
+
+fn main() uses Console {
+    print(ports())
+}

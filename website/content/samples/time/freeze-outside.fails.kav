@@ -1,0 +1,6 @@
+use std.time
+
+fn main() {
+    time.freeze(0)
+    print(time.now_ms())
+}

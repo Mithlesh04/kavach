@@ -1,0 +1,15 @@
+// Rule: A false `ensure` is a panic that shows the contract.
+// Spec: 7.2, 7.4
+// expect output: 4
+// expect panic: contract failed: ensure result == n * 2
+
+fn double(n: Int) -> Int
+    ensure result == n * 2
+{
+    n + 2               // a bug: only right for n == 2
+}
+
+fn main() {
+    print(double(2))
+    print(double(5))
+}

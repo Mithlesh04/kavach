@@ -1,0 +1,28 @@
+use std.http
+use std.net
+
+fn shop(r: Request) -> Response {
+    if r.method == "GET" and r.path == "/" {
+        return http.text(200, "Welcome to the shop")
+    }
+    if r.method == "GET" and r.path.starts_with("/items/") {
+        const id = r.path.slice(7, r.path.len())
+        return http.text(200, "item {id}")
+    }
+    if r.method == "POST" and r.path == "/orders" {
+        return http.text(201, "order placed: {r.body.text() ?? ""}")
+    }
+    http.text(404, "nothing at {r.path}")
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, shop)
+    const base = "http://{listener.address()}"
+    for path in ["/", "/items/42", "/basket"] {
+        const page = try http.get("{base}{path}")
+        print("GET {path}: {page.status} {page.body.text() ?? ""}")
+    }
+    const made = try http.post("{base}/orders", "2 pens".bytes())
+    print("POST /orders: {made.status} {made.body.text() ?? ""}")
+}

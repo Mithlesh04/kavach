@@ -1,0 +1,22 @@
+// Rule: Match patterns include exact values, ranges, guards and `_`.
+// Spec: 4.3
+// expect output: zero
+// expect output: small
+// expect output: negative
+// expect output: large
+
+fn size(n: Int) -> String {
+    match n {
+        0 => "zero"
+        1..=9 => "small"
+        _ if n < 0 => "negative"
+        _ => "large"
+    }
+}
+
+fn main() {
+    print(size(0))
+    print(size(5))
+    print(size(-3))
+    print(size(42))
+}

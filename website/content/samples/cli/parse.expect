@@ -1,0 +1,15 @@
+$ kavach run src/main.kav --input sales.csv --limit 5 --verbose
+reading sales.csv, at most 5 rows, verbose: true
+$ kavach run src/main.kav --input sales.csv
+reading sales.csv, at most 10 rows, verbose: false
+$ kavach run src/main.kav --limit 5
+missing --input
+usage: main [options]
+  --input <String>         (required)
+  --limit <Int>            (default 10)
+  --verbose
+$ kavach run src/main.kav --help
+usage: main [options]
+  --input <String>         (required)
+  --limit <Int>            (default 10)
+  --verbose

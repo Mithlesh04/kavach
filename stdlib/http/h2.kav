@@ -1,0 +1,213 @@
+// HTTP/2 (RFC 9113) for std.http (decision 0022): frames, streams and
+// flow control on one connection. `std.http` speaks it to `https://`
+// servers that choose `h2`, and to clients that start with the HTTP/2
+// preface. Messages are plain values here; `std.http` turns them into
+// its `Request` and `Response`. Server push is never used, and stream
+// priorities are ignored, as RFC 9113 allows.
+
+use std.net
+use std.http.hpack
+use std.http.h2.wire
+
+/// What `next` found: the link, and a request unless the client is done.
+pub type Next {
+    pub link: Link
+    pub message: H2Message?
+}
+
+/// Sends one request on stream 1 of a new connection and reads the
+/// response. `headers` has `:method`, `:scheme`, `:authority`, `:path`.
+pub fn request(conn: Connection, headers: [Header], body: Bytes) -> H2Message ! H2Error uses Net {
+    try hello(conn)
+    let l = try wire.send(wire.start(conn, Bytes([])), 1, headers, body, [])
+    while l.done.is_empty() {
+        if let code = l.resets.get(1) {
+            fail H2Error.Reset(stream: 1, code: code)
+        }
+        if l.leaving and l.partial.get(1) == none {
+            fail H2Error.Protocol(reason: "the server went away")
+        }
+        l = try wire.step(l) ?? fail H2Error.Protocol(reason: "the connection closed")
+    }
+    l.done[0]
+}
+
+/// Opens a request without waiting for the answer: `pull` then reads
+/// it as it arrives (spec 14.14 streams on this).
+pub fn open(conn: Connection, headers: [Header], body: Bytes) -> Link ! H2Error uses Net {
+    try hello(conn)
+    try wire.send(wire.start(conn, Bytes([])), 1, headers, body, [])
+}
+
+/// Opens a request on stream 1 of a new connection and leaves the
+/// stream open: `send_data` sends its body piece by piece, and `pull`
+/// reads the answer as it arrives, so both can go on at once.
+pub fn begin(conn: Connection, headers: [Header]) -> Link ! H2Error uses Net {
+    try hello(conn)
+    try wire.block(wire.start(conn, Bytes([])), 1, headers, false)
+}
+
+/// Sends `data` on `stream`; `end` ends this side of the stream.
+pub fn send_data(link: Link, stream: Int, data: Bytes, end: Bool) -> Link ! H2Error uses Net {
+    try wire.data(link, stream, data, end)
+}
+
+/// Sends a response's headers on `stream` and leaves it open for
+/// `send_data` and `send_trailers`.
+pub fn send_headers(link: Link, stream: Int, headers: [Header]) -> Link ! H2Error uses Net {
+    try wire.block(link, stream, headers, false)
+}
+
+/// Sends header fields after the body (trailers), ending the stream.
+pub fn send_trailers(link: Link, stream: Int, trailers: [Header]) -> Link ! H2Error uses Net {
+    try wire.block(link, stream, trailers, true)
+}
+
+/// The client's side of a connection: its settings, and room to send.
+fn hello(conn: Connection) ! H2Error uses Net {
+    const settings = wire.frame(4, 0, 0, wire.setting(2, 0) + wire.setting(4, wire.big_window()))
+    try wire.write(conn, wire.preface() + settings + wire.frame(8, 0, 0, wire.four(wire.big_window() - 65_535)))
+}
+
+/// What `pull` found: body bytes that arrived (maybe none yet), and the
+/// trailing headers once the answer ended.
+pub type Pulled {
+    pub link: Link
+    pub data: Bytes
+    pub ended: Bool
+    pub trailers: [String: String]
+}
+
+/// The next piece of the answer on stream 1: waits until bytes arrive
+/// or the answer ends.
+pub fn pull(link: Link) -> Pulled ! H2Error uses Net {
+    let l = link
+    while true {
+        if not l.done.is_empty() {
+            const m = l.done[0]
+            l.done = l.done.skip(1)
+            return Pulled(link: l, data: m.body, ended: true, trailers: m.headers)
+        }
+        if let p = l.partial.get(1) {
+            if p.body.len() > 0 {
+                let drained = p
+                drained.body = Bytes([])
+                l.partial[1] = drained
+                return Pulled(link: l, data: p.body, ended: false, trailers: [:])
+            }
+        }
+        if let code = l.resets.get(1) {
+            fail H2Error.Reset(stream: 1, code: code)
+        }
+        if l.leaving and l.partial.get(1) == none {
+            fail H2Error.Protocol(reason: "the server went away")
+        }
+        l = try wire.step(l) ?? fail H2Error.Protocol(reason: "the connection closed")
+    }
+    fail H2Error.Protocol(reason: "the connection closed")
+}
+
+/// Starts the server side of a connection that began with `data` (the
+/// preface, or its start).
+pub fn accept(conn: Connection, data: Bytes) -> Link ! H2Error uses Net {
+    let got = data
+    while got.len() < 24 {
+        const piece = conn.read() catch e => {
+            fail H2Error.Network(error: e)
+        }
+        got = got + (piece ?? fail H2Error.Protocol(reason: "no HTTP/2 preface"))
+    }
+    if got.slice(0, 24) != wire.preface() {
+        fail H2Error.Protocol(reason: "no HTTP/2 preface")
+    }
+    const hello = wire.frame(4, 0, 0, wire.setting(4, wire.big_window()))
+    try wire.write(conn, hello + wire.frame(8, 0, 0, wire.four(wire.big_window() - 65_535)))
+    wire.start(conn, got.slice(24, got.len()))
+}
+
+/// The next whole request, or none once the client is done.
+pub fn next(link: Link) -> Next ! H2Error uses Net {
+    let l = link
+    while l.done.is_empty() {
+        if l.leaving and l.partial.is_empty() {
+            return Next(link: l, message: none)
+        }
+        const stepped = try wire.step(l)
+        l = stepped ?? return Next(link: l, message: none)
+    }
+    const m = l.done[0]
+    l.done = l.done.skip(1)
+    Next(link: l, message: m)
+}
+
+/// What happened on a server's connection, in the order it happened.
+pub type H2Event = StreamOpened(stream: Int, headers: [String: String]) |
+    StreamData(stream: Int, data: Bytes) |
+    StreamEnded(stream: Int) |
+    ClientDone
+
+/// What `watch` found: the link, and the event.
+pub type H2Watched {
+    pub link: Link
+    pub event: H2Event
+}
+
+/// The server side, piece by piece: a request's headers as soon as they
+/// arrive, then its body bytes as they arrive, then its end; `ClientDone`
+/// once the client is done. Use it instead of `next`, never with it.
+pub fn watch(link: Link) -> H2Watched ! H2Error uses Net {
+    let l = link
+    while true {
+        if not l.done.is_empty() {
+            const m = l.done[0]
+            if l.announced.get(m.stream) == none {
+                l.announced[m.stream] = true
+                return H2Watched(link: l, event: H2Event.StreamOpened(stream: m.stream, headers: m.headers))
+            }
+            if m.body.len() > 0 {
+                let rest = m
+                rest.body = Bytes([])
+                l.done[0] = rest
+                return H2Watched(link: l, event: H2Event.StreamData(stream: m.stream, data: m.body))
+            }
+            l.done = l.done.skip(1)
+            l.announced.remove(m.stream)
+            return H2Watched(link: l, event: H2Event.StreamEnded(stream: m.stream))
+        }
+        for (stream, p) in l.partial {
+            if p.has_headers and l.announced.get(stream) == none {
+                l.announced[stream] = true
+                return H2Watched(link: l, event: H2Event.StreamOpened(stream: stream, headers: p.headers))
+            }
+            if p.body.len() > 0 and l.announced.get(stream) != none {
+                let drained = p
+                drained.body = Bytes([])
+                l.partial[stream] = drained
+                return H2Watched(link: l, event: H2Event.StreamData(stream: stream, data: p.body))
+            }
+        }
+        if l.leaving and l.partial.is_empty() {
+            return H2Watched(link: l, event: H2Event.ClientDone)
+        }
+        l = try wire.step(l) ?? return H2Watched(link: l, event: H2Event.ClientDone)
+    }
+    fail H2Error.Protocol(reason: "the connection closed")
+}
+
+/// Sends a response on `stream`; `headers` starts with `:status`.
+pub fn respond(link: Link, stream: Int, headers: [Header], body: Bytes) -> Link ! H2Error uses Net {
+    try wire.send(link, stream, headers, body, [])
+}
+
+/// Sends a response on `stream` with header fields after its body
+/// (trailers), as gRPC sends its status.
+pub fn respond_with_trailers(
+    link: Link,
+    stream: Int,
+    headers: [Header],
+    body: Bytes,
+    trailers: [Header],
+) -> Link ! H2Error uses Net {
+    try wire.send(link, stream, headers, body, trailers)
+}
+

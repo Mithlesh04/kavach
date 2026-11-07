@@ -1,0 +1,104 @@
+// A refund agent with guardrails.
+// Try it safely first: kavach run --dry-run
+
+type Order {
+    id: Int
+    customer_email: String
+    amount: Decimal
+    note: String
+    secret card_last4: String
+}
+
+type RefundDecision {
+    /// true if the refund should be issued
+    approve: Bool
+    /// one sentence, shown to the finance team
+    reason: String
+}
+
+// ---- Outside systems the agent depends on ----
+
+type Receipt { id: String }
+// Every capability call can be refused by a limit or a person: Denied (spec 8.2).
+type PaymentError = Declined | Unavailable | Denied(reason: String)
+type EmailError = BadAddress | NotSent | Denied(reason: String)
+
+capability Payments {
+    fn refund(order_id: Int, amount: Decimal) -> Receipt ! PaymentError
+}
+
+capability Email {
+    fn send(to: String, body: String) ! EmailError
+}
+
+// ---- The agent ----
+
+/// The model the refund decisions use (spec 8.4).
+fn decisions() -> Model {
+    Model(name: "claude-sonnet-5-5", max_tokens: 1000)
+}
+
+agent RefundBot {
+    model decisions()
+    // observe: run normally, and only report what the limits and
+    // approvals would have done; suggest: a person approves every call;
+    // enforce: limits and approvals act on their own.
+    settings AgentSettings(mode: AgentMode.Observe, audit: Audit(file: "audit/refund-bot.log"))
+    can Ai, Payments.refund, Email.send
+
+    limit Payments.refund {
+        amount <= 10_000
+        sum(amount) <= 50_000 per day
+        count <= 100 per day
+    }
+
+    limit Ai {
+        count <= 1_000 per day
+    }
+
+    approve Payments.refund when amount > 5_000 by "finance"
+
+    on request(order: Order) ! Error {
+        // Writing {order.card_last4} in this prompt would be a compile error:
+        // secret values can't flow into prompts or logs.
+        const decision = try ask<RefundDecision>(
+            "A customer asked for a refund of {order.amount} on order {order.id}. " +
+            "Their note: {order.note}. Should we refund?"
+        )
+        if not decision.approve {
+            return
+        }
+        const receipt = try Payments.refund(order.id, order.amount)
+        try Email.send(order.customer_email, "Your refund of {order.amount} is on its way (receipt {receipt.id}).")
+    }
+}
+
+// ---- Simple implementations for trying it locally ----
+// In production, swap these for real ones (e.g. a Stripe client).
+
+type FakePayments: Payments {
+    fn refund(self, order_id: Int, amount: Decimal) -> Receipt ! PaymentError {
+        Receipt(id: "fake-{order_id}")
+    }
+}
+
+type ConsoleEmail: Email {
+    fn send(self, to: String, body: String) ! EmailError uses Console {
+        print("[email to {to}] {body}")
+    }
+}
+
+fn main() ! Error {
+    const bot = RefundBot.start(
+        Payments: FakePayments(),
+        Email: ConsoleEmail(),
+    )
+
+    try bot.request(Order(
+        id: 1042,
+        customer_email: "asha@example.com",
+        amount: 1_499,
+        note: "The item arrived broken.",
+        card_last4: "4242",
+    ))
+}

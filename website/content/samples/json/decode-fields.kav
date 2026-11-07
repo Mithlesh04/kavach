@@ -1,0 +1,15 @@
+use std.json
+
+type User {
+    name: String
+    city: String = "Pune"
+    nickname: String?
+}
+
+fn main() ! Error {
+    const text = "\{\"name\": \"Asha\", \"plan\": \"gold\"}"
+    const user = try json.decode<User>(text)
+    print(user.name)
+    print(user.city)
+    print(user.nickname ?? "no nickname")
+}

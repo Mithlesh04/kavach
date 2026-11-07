@@ -1,0 +1,16 @@
+// Rule: A known value a function returns that makes an `ensure` false is a compile error, even in a branch that may not run.
+// Spec: 7.7
+// expect compile error
+
+fn clamp_low(x: Int) -> Int
+    ensure result >= 0
+{
+    if x < 0 {
+        return -1    // error: this always breaks `ensure result >= 0` of `clamp_low`: `result` is -1
+    }
+    x
+}
+
+fn main() {
+    print(clamp_low(5))
+}

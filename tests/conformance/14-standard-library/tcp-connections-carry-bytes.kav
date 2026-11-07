@@ -1,0 +1,28 @@
+// Rule: `net.listen` and `net.connect` make TCP connections that carry `Bytes` both ways; `read` gives `none` once the other side has closed, and a task waiting for the network lets others run.
+// Spec: 14.10, 9.7
+// expect output: HELLO
+// expect output: server read 5 bytes
+
+use std.net
+
+fn serve(listener: Listener) -> Int ! NetError uses Net {
+    const conn = try listener.accept()
+    let total = 0
+    while true {
+        const data = (try conn.read()) ?? break
+        total += data.len()
+        try conn.write((data.text() ?? "").upper().bytes())
+    }
+    total
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const server = spawn serve(listener)
+    const conn = try net.connect(listener.address())
+    try conn.write("hello".bytes())
+    const reply = (try conn.read()) ?? Bytes([])
+    print(reply.text() ?? "?")
+    conn.close()
+    print("server read {try server.wait()} bytes")
+}

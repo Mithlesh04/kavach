@@ -1,0 +1,38 @@
+// Rule: `http.serve` answers HTTP/2 from a client that starts with its preface, and `h2.request` sends one request over HTTP/2, with flow control for a large body; HTTP/1.1 clients still work.
+// Spec: 14.11
+// expect output: 200
+// expect output: text/plain; charset=utf-8
+// expect output: POST /upload: 100000 bytes
+// expect output: GET /old: 0 bytes
+
+use std.http
+use std.http.h2
+use std.http.hpack
+use std.net
+
+fn hello(r: Request) -> Response {
+    http.text(200, "{r.method} {r.path}: {r.body.len()} bytes")
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, hello)
+    let body: [UInt8] = []
+    for i in 0..100_000 {
+        body.push(UInt8(i % 256))
+    }
+    const conn = try net.connect(listener.address())
+    const headers = [
+        Header(name: ":method", value: "POST"),
+        Header(name: ":scheme", value: "http"),
+        Header(name: ":authority", value: "localhost"),
+        Header(name: ":path", value: "/upload"),
+    ]
+    const reply = try h2.request(conn, headers, Bytes(body))
+    conn.close()
+    print(reply.headers.get(":status") ?? "?")
+    print(reply.headers.get("content-type") ?? "?")
+    print(reply.body.text() ?? "?")
+    const page = try http.get("http://{listener.address()}/old")
+    print(page.body.text() ?? "?")
+}

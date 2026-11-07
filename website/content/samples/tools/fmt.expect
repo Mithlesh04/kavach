@@ -1,0 +1,8 @@
+$ kavach fmt --check
+not formatted: src/main.kav
+1 file, 1 need formatting
+$ kavach fmt
+formatted src/main.kav
+1 file, 1 changed
+$ kavach fmt --check
+1 file, 0 need formatting

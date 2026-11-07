@@ -1,0 +1,8 @@
+fn main() {
+    let cart = ["pen", "book"]
+    cart.push("bag")
+    print(cart)
+    cart = cart.filter(item => item != "book")
+    print(cart)
+    print(cart.len())
+}

@@ -1,0 +1,28 @@
+// Rule: a loop's results don't depend on how it is run (decision 0031:
+// a loop on all cores stores exactly what the plain loop stores).
+// Spec: 4.4
+// expect output: 4514104.0
+// expect output: 70001
+
+fn main() {
+    let xs = []
+    let ys = []
+    let zs: [Int] = []
+    for i in 0..70_000 {
+        xs.push(Float(i % 128) * 0.25)
+        ys.push(0.0)
+        zs.push(0)
+    }
+    for i in 0..70_000 {
+        ys[i] = xs[i] * 4.0 + 1.0
+    }
+    for i in 0..70_000 {
+        zs[i] = i + 1
+    }
+    let total = 0.0
+    for y in ys {
+        total += y
+    }
+    print(total)
+    print(zs[69_999] + 1)
+}

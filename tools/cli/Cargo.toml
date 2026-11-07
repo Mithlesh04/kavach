@@ -1,0 +1,29 @@
+[package]
+name = "kavach-cli"
+description = "The kavach command: run, test and check Kavach programs"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[[bin]]
+name = "kavach"
+path = "src/main.rs"
+
+[dependencies]
+kavach-ai = { path = "../ai" }
+kavach-ast = { path = "../../compiler/ast" }
+kavach-driver = { path = "../../compiler/driver" }
+kavach-fmt = { path = "../fmt" }
+kavach-interp = { path = "../../compiler/interp" }
+kavach-kir = { path = "../../compiler/kir" }
+kavach-lsp = { path = "../lsp" }
+kavach-backend-cranelift = { path = "../../compiler/backend/cranelift" }
+kavach-backend-llvm = { path = "../../compiler/backend/llvm" }
+kavach-backend-wgsl = { path = "../../compiler/backend/wgsl" }
+kavach-runtime-core = { path = "../../runtime/core" }
+kavach-runtime-native = { path = "../../runtime/native" }
+
+[lints]
+workspace = true

@@ -1,0 +1,8 @@
+fn main() {
+    for n in 1..=6 {
+        if n % 3 == 0 {
+            continue
+        }
+        print(n)
+    }
+}

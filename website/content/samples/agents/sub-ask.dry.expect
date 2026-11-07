@@ -1,0 +1,2 @@
+positive: true
+[dry run] ask("Is this review positive? Loved it, fast delivery") -> Verdict(positive: true, reason: " fry ey")

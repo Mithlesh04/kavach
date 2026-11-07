@@ -1,0 +1,10 @@
+// Rule: A `let` set to known values, with nothing in between that may change it another way, is checked as a `const` is.
+// Spec: 1.8
+// expect compile error
+
+fn main() {
+    let count: Int8 = 120
+    count += 7
+    count += 1    // error: this always panics: integer overflow: 127 + 1 doesn't fit in Int8
+    print(count)
+}

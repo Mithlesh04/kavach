@@ -1,0 +1,5 @@
+fn main() {
+    const low: Int32 = 1_500_000_000
+    const high: Int32 = 2_000_000_000
+    print((low + high) / 2)
+}

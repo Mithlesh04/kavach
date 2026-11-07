@@ -1,0 +1,16 @@
+// Rule: Outside a running agent nothing implements a declared capability, so a call fails with `Denied`.
+// Spec: 8.2
+// expect output: denied: no implementation of Email
+
+type EmailError = NotSent | Denied(reason: String)
+
+capability Email {
+    fn send(to: String) ! EmailError
+}
+
+fn main() {
+    Email.send("asha") catch e => match e {
+        EmailError.Denied(reason) => print("denied: {reason}"),
+        EmailError.NotSent => print("not sent"),
+    }
+}

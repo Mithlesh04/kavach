@@ -1,0 +1,50 @@
+// Rule: A response or request whose body comes in chunks (`transfer-encoding: chunked`) is read whole, without chunk sizes or trailers; a chunked response cut off before its last chunk fails with `BadMessage`.
+// Spec: 14.11
+// expect output: hello, world!
+// expect output: cut: BadMessage(reason: "a chunked body is cut off")
+// expect output: echo: Wikipedia
+
+use std.http
+use std.net
+
+// A server that answers in chunks, as many real servers do.
+fn chunked_server(listener: Listener, whole: Bool) ! NetError uses Net {
+    while true {
+        const conn = try listener.accept()
+        const _got = try conn.read()
+        let reply = "HTTP/1.1 200 OK\u{D}\ntransfer-encoding: chunked\u{D}\n\u{D}\n5\u{D}\nhello\u{D}\n8;note=x\u{D}\n, world!\u{D}\n"
+        if whole {
+            reply = reply + "0\u{D}\nx-trailer: done\u{D}\n\u{D}\n"
+        }
+        try conn.write(reply.bytes())
+        conn.close()
+    }
+}
+
+fn echo(r: Request) -> Response {
+    http.text(200, "echo: {r.body.text() ?? "?"}")
+}
+
+fn main() ! Error {
+    const whole = try net.listen("127.0.0.1:0")
+    const _a = spawn chunked_server(whole, true)
+    const page = try http.get("http://{whole.address()}/")
+    print(page.body.text() ?? "")
+    const cut = try net.listen("127.0.0.1:0")
+    const _b = spawn chunked_server(cut, false)
+    const _failed = http.get("http://{cut.address()}/") catch e => {
+        print("cut: {e}")
+        Response(status: 0, headers: [:], body: Bytes([]))
+    }
+    const server = try net.listen("127.0.0.1:0")
+    const _c = spawn http.serve(server, echo)
+    const conn = try net.connect(server.address())
+    try conn.write("POST / HTTP/1.1\u{D}\nhost: x\u{D}\ntransfer-encoding: chunked\u{D}\n\u{D}\n4\u{D}\nWiki\u{D}\n5\u{D}\npedia\u{D}\n0\u{D}\n\u{D}\n".bytes())
+    let answer = Bytes([])
+    while true {
+        const piece = (try conn.read()) ?? break
+        answer = answer + piece
+    }
+    const text = answer.text() ?? ""
+    print(text.split("\u{D}\n\u{D}\n").last() ?? "")
+}

@@ -1,0 +1,6 @@
+fn main() {
+    print([42, -7, 0, 1_000, 3].sort())
+    const sizes: [UInt8] = [200, 3, 77]
+    print(sizes.sort())
+    print([10, 2, 33].sort().reverse())
+}

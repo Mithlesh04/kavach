@@ -1,0 +1,6 @@
+fn main() {
+    const s = "kavach.io"
+    print(s.contains("vach"))
+    print(s.starts_with("kavach"))
+    print(s.ends_with(".io"))
+}

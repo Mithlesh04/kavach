@@ -1,0 +1,20 @@
+// Rule: A method that implements an interface's method has its types, with the interface's type arguments put in.
+// Spec: 2.8
+// expect compile error
+
+interface Getter<T> {
+    fn get(self) -> T
+}
+
+type Name: Getter<String> {
+    text: String
+
+    fn get(self) -> Int {     // error: `Name.get` gives `Int`, and `Getter<String>.get` gives `String`
+        self.text.len()
+    }
+}
+
+fn main() {
+    const g: Getter<String> = Name(text: "Ada")
+    print(g.get())
+}

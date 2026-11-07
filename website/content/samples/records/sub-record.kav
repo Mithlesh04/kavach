@@ -1,0 +1,15 @@
+type User {
+    name: String
+    age: Int
+    city: String = "Pune"
+}
+
+fn main() {
+    const asha = User(name: "Asha", age: 31)
+    print("{asha.name}, {asha.age}, {asha.city}")
+    const older = asha with { age: 32 }
+    print("{asha.age} -> {older.age}")
+    let copy = asha
+    copy.city = "Delhi"
+    print("{asha.city} / {copy.city}")
+}

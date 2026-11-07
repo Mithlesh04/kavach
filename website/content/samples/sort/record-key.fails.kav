@@ -1,0 +1,9 @@
+type Point {
+    x: Int
+    y: Int
+}
+
+fn main() {
+    const points = [Point(x: 2, y: 1), Point(x: 1, y: 5)]
+    print(points.sort_by(p => p))
+}

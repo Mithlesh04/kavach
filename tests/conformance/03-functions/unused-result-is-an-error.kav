@@ -1,0 +1,11 @@
+// Rule: A call's value must be used or discarded with `const _ =`.
+// Spec: 3.7
+// expect compile error
+
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
+
+fn main() {
+    add(1, 2)           // error: the result of add is unused; write `const _ = add(1, 2)`
+}

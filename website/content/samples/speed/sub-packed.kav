@@ -1,0 +1,10 @@
+fn main() {
+    let flags: [Bool] = []
+    for i in 0..10 {
+        flags.push(i % 3 == 0)
+    }
+    print(flags.len())
+    print(flags)
+    let small: [UInt8] = [250, 5]
+    print(small[0] + small[1])
+}

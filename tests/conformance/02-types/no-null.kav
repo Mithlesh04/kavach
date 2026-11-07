@@ -1,0 +1,7 @@
+// Rule: There is no null; only an optional type can hold none.
+// Spec: 2.7
+// expect compile error
+
+fn main() {
+    const count: Int = none   // error: Int can't be none; use Int?
+}

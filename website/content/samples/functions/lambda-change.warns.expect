@@ -1,0 +1,6 @@
+warning: `total` is a copy inside this lambda: the change doesn't reach the outside. Give the value back instead, or use `Shared` to share it (spec 3.3)
+warning: `log` is a copy inside this lambda: the change doesn't reach the outside. Give the value back instead, or use `Shared` to share it (spec 3.3)
+[1, 2, 3]
+0
+[2, 2, 2]
+[0]

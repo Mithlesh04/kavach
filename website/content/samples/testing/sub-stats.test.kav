@@ -1,0 +1,10 @@
+fn average(xs: [Int]) -> Int {
+    let total = 0
+    for x in xs {
+        total += x
+    }
+    total / xs.len()
+}
+
+fn main() {
+}

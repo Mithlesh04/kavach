@@ -1,0 +1,8 @@
+// Rule: A float that isn't a number (`NaN`) doesn't fit any whole-number type, so converting it panics.
+// Spec: 2.1, 5.6
+// expect panic: NaN doesn't fit in Int
+
+fn main() {
+    const nan = 0.0 / 0.0
+    print(Int(nan))
+}

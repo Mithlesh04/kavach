@@ -1,0 +1,15 @@
+// Rule: `break` leaves only the innermost loop.
+// Spec: 4.6
+// expect output: 0 0
+// expect output: 1 0
+
+fn main() {
+    for outer in 0..2 {
+        for inner in 0..5 {
+            if inner == 1 {
+                break
+            }
+            print("{outer} {inner}")
+        }
+    }
+}

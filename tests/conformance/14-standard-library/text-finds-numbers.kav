@@ -1,0 +1,17 @@
+// Rule: `std.text` finds numbers inside other text: digit runs, a `-` sign unless it follows a letter or digit, any other mark ends a number.
+// Spec: 14.9
+// expect output: 12 23 3
+// expect output: -5 3 1
+// expect output: none
+// expect output: [12, 34, 7]
+// expect output: 3.14 -0.5
+
+use std.text
+
+fn main() {
+    print("{text.find_int("12sdsfs") ?? 0} {text.find_int("sd23") ?? 0} {text.find_int("sd3f") ?? 0}")
+    print("{text.find_int("-5 °C") ?? 0} {text.find_int("item-3") ?? 0} {text.find_int("₹1,299") ?? 0}")
+    print(text.find_int("no digits"))
+    print(text.find_ints("a12b34, then 99999999999999999999 and 7"))
+    print("{text.find_float("pi is 3.14!") ?? 0.0} {text.find_float("-0.5 m") ?? 0.0}")
+}

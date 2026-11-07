@@ -1,0 +1,17 @@
+// Rule: `kavach test` runs every example, including `fails` examples.
+// Spec: 7.6
+// expect test pass
+
+type BankError = InsufficientFunds(needed: Int)
+
+fn withdraw(balance: Int, amount: Int) -> Int ! BankError
+    require balance >= 0
+    require amount > 0
+    example withdraw(100, 30) == 70
+    example withdraw(10, 50) fails BankError.InsufficientFunds(needed: 40)
+{
+    if amount > balance {
+        fail BankError.InsufficientFunds(needed: amount - balance)
+    }
+    balance - amount
+}

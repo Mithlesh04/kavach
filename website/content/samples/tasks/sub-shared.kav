@@ -1,0 +1,8 @@
+fn main() {
+    const visits = Shared(0)
+    const _ = [1, 2, 3, 4, 5].parallel_map(n => {
+        visits.update(v => v + 1)
+        n
+    })
+    print(visits.get())
+}

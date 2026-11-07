@@ -1,0 +1,18 @@
+type AgeError = Empty | NotANumber(text: String) | TooLarge(value: Int)
+
+fn parse_age(text: String) -> Int ! AgeError {
+    if text.is_empty() {
+        fail AgeError.Empty
+    }
+    const n = Int(text) catch _ => fail AgeError.NotANumber(text: text)
+    if n > 150 {
+        fail AgeError.TooLarge(value: n)
+    }
+    n
+}
+
+fn main() {
+    print(parse_age("31") catch 0)
+    print(parse_age("abc") catch 0)
+    print(parse_age("999") catch 0)
+}

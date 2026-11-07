@@ -1,0 +1,7 @@
+// Rule: panic("message") stops the task with that message.
+// Spec: 5.6
+// expect panic: this should never happen
+
+fn main() {
+    panic("this should never happen")
+}

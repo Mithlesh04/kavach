@@ -1,0 +1,19 @@
+// Rule: A false `require` is a panic that shows the contract.
+// Spec: 7.1, 7.4
+// expect output: 5
+// expect panic: contract failed: require amount > 0
+
+fn half(amount: Int) -> Int
+    require amount > 0
+{
+    amount / 2
+}
+
+fn main() {
+    print(half(10))
+    // An item of a list, which the compiler doesn't follow, so the check
+    // is at run time; with `-4` written in the call it is a compile error
+    // (7.7).
+    const owed = [-4][0]
+    print(half(owed))
+}

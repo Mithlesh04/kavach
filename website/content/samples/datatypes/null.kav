@@ -1,0 +1,16 @@
+use std.json
+
+type User {
+    name: String
+    nickname: String?
+}
+
+fn main() ! Error {
+    const text = "\{\"name\": \"Asha\", \"nickname\": null}"
+    const doc = try json.parse(text)
+    print(doc["nickname"].is_null())
+    print(doc["missing"].is_null())
+    const user = try json.decode<User>(text)
+    print(user.nickname ?? "no nickname")
+    print(user.nickname == none)
+}

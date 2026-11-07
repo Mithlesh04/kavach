@@ -1,0 +1,7 @@
+// Rule: Function parameters must have written types.
+// Spec: 2.10
+// expect compile error
+
+fn double(x) -> Int {   // error: write the type of x
+    x * 2
+}

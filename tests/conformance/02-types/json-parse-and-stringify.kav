@@ -1,0 +1,19 @@
+// Rule: `json.parse` reads JSON text into a `Json`; `json.stringify` writes it back, compact or indented.
+// Spec: 2.12
+// expect output: {"a":[1,2.5,"x"],"b":null}
+// expect output: {
+// expect output:   "a": 1
+// expect output: }
+// expect output: number 1
+
+use std.json
+
+fn main() ! JsonError {
+    const doc = try json.parse(" \{ \"a\": [1, 2.5, \"x\"], \"b\": null } ")
+    print(json.stringify(doc))
+    print(json.stringify(["a": 1], indent: 2))
+    match doc["a"][0] {
+        Json.Number(digits) => print("number {digits}"),
+        _ => print("something else"),
+    }
+}

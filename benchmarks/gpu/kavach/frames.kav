@@ -1,0 +1,45 @@
+// A game-style loop: 1 million particles, each moved and bounced inside a
+// box for 300 frames. Each frame maps the list of the last frame; the
+// list stays in GPU memory from frame to frame (decision 0055), and only
+// the last frame comes back.
+use std.time
+
+type Particle {
+    x: Float32
+    y: Float32
+    vx: Float32
+    vy: Float32
+}
+
+gpu fn step(p: Particle) -> Particle {
+    const dt: Float32 = 0.016
+    let vy = p.vy - 9.8 * dt
+    let x = p.x + p.vx * dt
+    let y = p.y + vy * dt
+    let vx = p.vx
+    if x < 0.0 or x > 100.0 {
+        vx = 0.0 - vx
+        x = x.max(0.0).min(100.0)
+    }
+    if y < 0.0 {
+        vy = 0.0 - vy * 0.9
+        y = 0.0
+    }
+    Particle(x: x, y: y, vx: vx, vy: vy)
+}
+
+fn main() {
+    let ps: [Particle] = []
+    for i in 0..1000000 {
+        const f = Float32(i % 1000)
+        ps.push(Particle(x: f * 0.1, y: 50.0 + f * 0.01, vx: f * 0.003 - 1.5, vy: 0.0))
+    }
+    const t0 = time.monotonic_ms()
+    for _ in 0..300 {
+        ps = ps.map(step)
+    }
+    const last = ps[999999]
+    const t1 = time.monotonic_ms()
+    print("300 frames in {t1 - t0} ms")
+    print("{last.x} {last.y}")
+}

@@ -1,0 +1,21 @@
+type ToolError = Denied(reason: String)
+
+capability Email {
+    fn send(to: String) ! ToolError
+}
+
+capability Files {
+    fn delete(path: String) ! ToolError
+}
+
+agent Greeter {
+    can Email.send
+
+    on welcome(to: String) ! ToolError {
+        try Email.send(to)
+        try Files.delete("/home")
+    }
+}
+
+fn main() {
+}

@@ -1,0 +1,17 @@
+// Rule: Reading the clock needs no capability, even in a `pub` function; waiting still needs `Clock`.
+// Spec: 14.4, 8.1
+// expect output: true
+
+use std.time
+
+pub fn year() -> Int {
+    time.today().year
+}
+
+pub fn elapsed() -> Int {
+    time.monotonic_ms() - time.monotonic_ms()
+}
+
+fn main() {
+    print(year() >= 2026 and elapsed() <= 0)
+}

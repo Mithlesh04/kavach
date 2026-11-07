@@ -1,0 +1,12 @@
+// Rule: Whole-number overflow in a `gpu fn` panics, as it does on the CPU.
+// Spec: 15.2, 5.6
+// expect panic: integer overflow: 100000 * 100000 doesn't fit in Int32
+
+gpu fn square(n: Int32) -> Int32 {
+    n * n
+}
+
+fn main() {
+    const ns: [Int32] = [3, 100000]
+    print(ns.map(square))
+}

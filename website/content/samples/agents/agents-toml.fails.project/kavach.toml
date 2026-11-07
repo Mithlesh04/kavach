@@ -1,0 +1,8 @@
+[package]
+name = "support"
+version = "0.1.0"
+
+[agents.Support]
+mode = "observe"
+audit_log = "audit.log"
+audit_format = "json"

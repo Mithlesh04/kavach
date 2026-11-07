@@ -1,0 +1,11 @@
+fn swap(inout a: Int, inout b: Int) {
+    const t = a
+    a = b
+    b = t
+}
+
+fn main() {
+    let x = 1
+    swap(x, x)
+    print(x)
+}

@@ -1,0 +1,6 @@
+use billing.invoice.{Invoice}
+
+fn main() {
+    const inv = Invoice(id: 7, total: 1, note: "free!")
+    print(inv.total)
+}

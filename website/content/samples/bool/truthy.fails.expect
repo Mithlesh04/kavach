@@ -1,0 +1,1 @@
+error: conditions must be `Bool`, not `Int`: there is no truthiness, so compare explicitly (for example `!= 0`)

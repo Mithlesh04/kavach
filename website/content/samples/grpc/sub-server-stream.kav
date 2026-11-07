@@ -1,0 +1,35 @@
+use std.grpc
+use std.net
+
+pub type Watch {
+    id: Int
+}
+
+pub type Update {
+    seq: Int
+    text: String
+}
+
+fn updates(call: GrpcCall) -> GrpcReply {
+    if call.method != "/shop.Orders/Watch" {
+        return grpc.failed(12, "no method {call.method}")
+    }
+    const w = grpc.read<Watch>(call) catch _ => Watch(id: 0)
+    if w.id == 0 {
+        return grpc.failed(3, "not a watch")
+    }
+    grpc.reply_stream([
+        Update(seq: 1, text: "packed"),
+        Update(seq: 2, text: "shipped"),
+        Update(seq: 3, text: "delivered"),
+    ])
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn grpc.serve(listener, updates)
+    const target = "http://{listener.address()}"
+    try grpc.each<Watch, Update>(target, "/shop.Orders/Watch", Watch(id: 7), u => print("{u.seq}: {u.text}"))
+    print("done")
+    grpc.each<Watch, Update>(target, "/shop.Orders/Watch", Watch(id: 0), u => print("?")) catch e => print("can't: {e}")
+}

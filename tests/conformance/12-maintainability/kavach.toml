@@ -1,0 +1,7 @@
+# Small limits, so the tests in this folder stay short (spec 12.1).
+[limits]
+file_lines = 30
+fn_lines = 6
+
+[limits.files]
+"limit-exceptions-live-in-kavach-toml.kav" = 40

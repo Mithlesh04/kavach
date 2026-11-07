@@ -1,0 +1,8 @@
+fn main() {
+    const people = 1_400_000_000
+    print(people)
+    print(0xff)
+    print(0b1010)
+    print(7 / 2)
+    print(7 % 2)
+}

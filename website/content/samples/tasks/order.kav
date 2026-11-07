@@ -1,0 +1,11 @@
+use std.time
+
+fn fetch(n: Int) -> String uses Clock {
+    time.sleep_ms(100 - n * 20)
+    "page {n}"
+}
+
+fn main() {
+    const pages = [1, 2, 3, 4].parallel_map(n => fetch(n), max: 4)
+    print(pages)
+}

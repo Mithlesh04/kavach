@@ -1,0 +1,11 @@
+// Recursive calls: fib(38) makes about 126 million calls.
+fn fib(n: Int) -> Int {
+    if n < 2 {
+        return n
+    }
+    fib(n - 1) + fib(n - 2)
+}
+
+fn main() {
+    print(fib(38))
+}

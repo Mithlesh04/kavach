@@ -1,0 +1,10 @@
+// Rule: Every capability method declares an error type with the variant `Denied(reason: String)`, since any call can be refused.
+// Spec: 8.2
+// expect compile error
+
+type Receipt { id: String }
+type PaymentError = Declined | Unavailable
+
+capability Payments {
+    fn refund(order_id: Int) -> Receipt ! PaymentError   // error: no `Denied(reason: String)`
+}

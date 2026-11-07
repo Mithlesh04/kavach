@@ -1,0 +1,20 @@
+// Rule: `fs.write_durable` replaces the file atomically and forces it to the disk before returning, so after it a power cut keeps the new contents; it reads back like any write, and stays inside the function's file scope.
+// Spec: 14.3
+// expect output: v2
+// expect output: ok: Denied(path: "../kavach-durable-outside.txt")
+
+use std.fs
+
+fn keep(path: String, text: String) ! FsError uses Fs("./kavach-durable-scope") {
+    try fs.write_durable(path, text.bytes())
+}
+
+fn main() ! Error {
+    try fs.create_dir("./kavach-durable-scope")
+    try keep("./kavach-durable-scope/state.txt", "v1")
+    try keep("./kavach-durable-scope/state.txt", "v2")
+    print(try fs.read_text("./kavach-durable-scope/state.txt"))
+    keep("../kavach-durable-outside.txt", "x") catch e => print("ok: {e}")
+    try fs.remove("./kavach-durable-scope/state.txt")
+    try fs.remove("./kavach-durable-scope")
+}

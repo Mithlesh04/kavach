@@ -1,0 +1,14 @@
+// Mistake: A return that breaks the function's own promise.
+
+fn clamp_low(x: Int) -> Int
+    ensure result >= 0
+{
+    if x < 0 {
+        return -1
+    }
+    x
+}
+
+fn main() {
+    print(clamp_low(5))
+}

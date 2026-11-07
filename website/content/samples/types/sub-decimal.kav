@@ -1,0 +1,9 @@
+fn main() {
+    const a = 0.1 + 0.2
+    print(a)
+    let x = 0.1
+    print(x + 0.2)
+    const price: Decimal = 0.1
+    const total = price + Decimal(0.2)
+    print(total)
+}

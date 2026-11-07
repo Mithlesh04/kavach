@@ -1,0 +1,24 @@
+$ kavach check
+error: Kavach has no `!` for "not": write `not`, as in `not locked` (spec 1.8)
+ --> src/main.kav:5:8
+  |
+5 |     if !locked && open_hours || alarm {
+  |        ^
+
+error: Kavach has no `&&`: write `and` (spec 1.8)
+ --> src/main.kav:5:16
+  |
+5 |     if !locked && open_hours || alarm {
+  |                ^^
+
+error: Kavach has no `||`: write `or` (spec 1.8)
+ --> src/main.kav:5:30
+  |
+5 |     if !locked && open_hours || alarm {
+  |                              ^^
+$ kavach fix src
+src/main.kav: Write `not`
+src/main.kav: Write `and`
+src/main.kav: Write `or`
+$ kavach run
+come in

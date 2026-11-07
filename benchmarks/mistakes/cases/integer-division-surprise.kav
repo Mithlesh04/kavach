@@ -1,0 +1,6 @@
+// Mistake: Whole-number division where a fraction was meant.
+
+fn main() {
+    const half = 1 / 2
+    print(half * 10)
+}

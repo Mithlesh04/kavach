@@ -1,0 +1,7 @@
+fn main() {
+    const tags = Set.of("new", "sale", "gift")
+    for t in tags {
+        print(t)
+    }
+    print(tags.contains("sale"))
+}

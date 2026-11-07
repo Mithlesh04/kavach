@@ -1,0 +1,14 @@
+// Rule: A variant pattern on an `Error` names its type: `NotFound(path)` alone is an error, since an `Error` belongs to no single type.
+// Spec: 5.5
+// expect compile error
+
+fn describe(e: Error) -> String {
+    match e {
+        NotFound(path) => "missing {path}",       // error: an `Error` can hold any error type
+        _ => "other",
+    }
+}
+
+fn main() {
+    print(describe(Error("disk full")))
+}

@@ -1,0 +1,11 @@
+// Rule: Inferred capabilities count when a `pub` function calls a private one.
+// Spec: 8.1
+// expect compile error
+
+fn shout(text: String) {
+    print(text.upper())
+}
+
+pub fn announce(text: String) {
+    shout(text)                 // error: `shout` uses Console, so `announce` must say `uses Console`
+}

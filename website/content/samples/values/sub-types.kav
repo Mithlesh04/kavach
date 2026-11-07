@@ -1,0 +1,9 @@
+fn main() {
+    const age = 31
+    const price: Float = 4.99
+    const name = "asha"
+    const happy = true
+    let count = 0
+    count += 1
+    print("{name} is {age}, happy: {happy}, {price}, count {count}")
+}

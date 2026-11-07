@@ -1,0 +1,32 @@
+// Rule: `==` compares contents at every depth; maps and sets hold the same keys in any order, lists keep order.
+// Spec: 1.8
+// expect output: true
+// expect output: true
+// expect output: false
+// expect output: false
+// expect output: false
+// expect output: true
+// expect output: true
+// expect output: false
+// expect output: true
+
+type Point {
+    x: Int
+    y: Float
+}
+
+fn main() {
+    const a = ["x": [1, 2], "y": [3]]
+    const b = a
+    print(a == b)
+    print(["a": 1, "b": 2] == ["b": 2, "a": 1])
+    print(["a": 1, "b": 2] == ["a": 1, "c": 2])     // same size, another key
+    print(["a": 1, "b": 2] == ["a": 1, "b": 3])     // same keys, another value
+    print([1, 2] == [2, 1])
+    print(Set.of(1, 2, 3) == Set.of(3, 2, 1))
+    print([Point(x: 1, y: 2.0)] == [Point(x: 1, y: 2.0)])
+    print([Point(x: 1, y: 2.0)] == [Point(x: 1, y: 2.5)])
+    // Equal maps hash the same, so a set finds one in another order.
+    const seen = Set.of(["a": 1, "b": 2])
+    print(seen.contains(["b": 2, "a": 1]))
+}

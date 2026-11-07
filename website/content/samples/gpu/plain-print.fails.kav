@@ -1,0 +1,11 @@
+fn loud(x: Float32) -> Float32 {
+    print(x)
+    x
+}
+
+gpu fn shout(x: Float32) -> Float32 {
+    loud(x) * 2.0
+}
+
+fn main() {
+}

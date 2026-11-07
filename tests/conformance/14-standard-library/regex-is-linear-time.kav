@@ -1,0 +1,11 @@
+// Rule: regex.new matches in time that grows with the text only, whatever the pattern.
+// Spec: 14.8
+// expect output: false
+
+use std.regex
+
+fn main() ! Error {
+    // A pattern that makes backtracking engines take years on this text.
+    const nested = try regex.new(r"^(a+)+$")
+    print(nested.is_match("{"a".repeat(50_000)}!"))
+}

@@ -1,0 +1,6 @@
+# Keep LF line endings in the repository on every platform.
+* text=auto eol=lf
+
+# Shell scripts and git hooks break with CRLF, even on Windows.
+*.sh text eol=lf
+scripts/hooks/* text eol=lf

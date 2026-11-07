@@ -1,0 +1,10 @@
+fn double(n: Int) -> Int
+    require n >= 0 and n < 1_000_000
+    ensure result >= n
+    example double(21) == 42
+{
+    n * 2
+}
+
+fn main() {
+}

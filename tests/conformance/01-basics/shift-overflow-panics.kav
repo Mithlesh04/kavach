@@ -1,0 +1,10 @@
+// Rule: `a << n` panics when the result doesn't fit in the type.
+// Spec: 1.8, 5.6
+// expect output: 192
+// expect panic: integer overflow: 3 << 7 doesn't fit in UInt8
+
+fn main() {
+    const u: UInt8 = 3
+    print(u << 6)
+    print(u << 7)
+}

@@ -1,0 +1,22 @@
+name: Use case
+description: "I would use Kavach for X, but Y blocks me."
+title: "Use case: "
+body:
+  - type: textarea
+    id: build
+    attributes:
+      label: What would you build with Kavach?
+      placeholder: e.g. an AI agent that issues refunds, a payments API, a CLI tool
+    validations:
+      required: true
+  - type: textarea
+    id: blocker
+    attributes:
+      label: What blocks you, or is missing?
+    validations:
+      required: true
+  - type: textarea
+    id: today
+    attributes:
+      label: How do you build it today?
+      description: Language, framework, and what hurts about it.

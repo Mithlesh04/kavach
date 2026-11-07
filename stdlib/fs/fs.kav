@@ -1,0 +1,6 @@
+// std.fs (spec 14.3): the errors of file operations. The operations
+// themselves (`fs.read_text`, …) need the operating system, so the runtime
+// provides them; they fail with these values.
+
+/// Why a file operation failed.
+pub type FsError = NotFound(path: String) | Denied(path: String) | Failed(path: String, reason: String)

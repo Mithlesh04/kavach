@@ -1,0 +1,7 @@
+# The Rust every machine builds Kavach with, so builds and clippy agree.
+# 1.89 brought `File::try_lock`, which an agent's folder lock uses (spec
+# 8.5); `llvm-tools` gives the LLVM backend its `opt` and `llc` (decision
+# 0018).
+[toolchain]
+channel = "1.99.1"
+components = ["clippy", "rustfmt", "llvm-tools"]

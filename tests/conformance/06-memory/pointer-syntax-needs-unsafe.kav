@@ -1,0 +1,10 @@
+// Rule: `*p`, `p[i]` and `p + n` work on raw memory, so they are allowed only inside `unsafe { … }`.
+// Spec: 6.4
+// expect compile error
+
+fn first(p: Ptr<Int32>) -> Int32 {
+    *p                              // error: raw memory outside unsafe
+}
+
+fn main() {
+}

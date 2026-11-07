@@ -1,0 +1,5 @@
+use std.time
+
+fn main() {
+    print(2.months.ms)
+}

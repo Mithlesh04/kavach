@@ -1,0 +1,18 @@
+type Person {
+    name: String
+    city: String
+    age: Int
+}
+
+fn main() {
+    const people = [
+        Person(name: "Zoe", city: "Pune", age: 30),
+        Person(name: "Asha", city: "Delhi", age: 25),
+        Person(name: "Omar", city: "Pune", age: 25),
+        Person(name: "Bo", city: "Delhi", age: 30),
+    ]
+    for p in people.sort_by(p => (p.city, p.name)) {
+        print("{p.city}: {p.name}")
+    }
+    print(people.sort_by(p => (-p.age, p.name)).map(.name))
+}

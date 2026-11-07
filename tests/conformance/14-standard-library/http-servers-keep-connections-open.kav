@@ -1,0 +1,35 @@
+// Rule: `http.serve` keeps an HTTP/1.1 connection open for the next request, after a body sent in chunks too, answering requests in the order they come, and closes it when the client asks (`connection: close`).
+// Spec: 14.11
+// expect output: answers: 2
+// expect output: in order: true
+// expect output: closed at the end: true
+
+use std.http
+use std.net
+
+fn echo(r: Request) -> Response {
+    http.text(200, "you asked for {r.path} with {r.body.len()} bytes")
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, echo)
+    const conn = try net.connect(listener.address())
+    // Two requests at once, on one connection: the first sends its body
+    // in chunks, the second asks to close.
+    const crlf = "\u{D}\n"
+    const first = "POST /one HTTP/1.1{crlf}host: x{crlf}transfer-encoding: chunked{crlf}{crlf}3{crlf}abc{crlf}0{crlf}{crlf}"
+    const second = "GET /two HTTP/1.1{crlf}host: x{crlf}connection: close{crlf}{crlf}"
+    try conn.write((first + second).bytes())
+    let all = Bytes([])
+    while true {
+        const piece = (try conn.read()) ?? break
+        all = all + piece
+    }
+    const text = all.text() ?? ""
+    print("answers: {text.split("HTTP/1.1 200").len() - 1}")
+    const one = text.index_of("you asked for /one with 3 bytes") ?? -1
+    const two = text.index_of("you asked for /two with 0 bytes") ?? -1
+    print("in order: {one >= 0 and one < two}")
+    print("closed at the end: {text.ends_with("you asked for /two with 0 bytes")}")
+}

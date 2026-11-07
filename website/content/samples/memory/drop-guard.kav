@@ -1,0 +1,18 @@
+type Guard: Drop {
+    name: String
+
+    fn drop(self) uses Console {
+        print("released {self.name}")
+    }
+}
+
+fn work() {
+    const g = Guard(name: "data")
+    print("working")
+    print("still guarded")
+}
+
+fn main() {
+    work()
+    print("done")
+}

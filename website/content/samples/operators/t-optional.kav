@@ -1,0 +1,10 @@
+type User {
+    name: String
+}
+
+fn main() {
+    const nickname: String? = none
+    const found: User? = User(name: "Asha")
+    print(nickname ?? "friend")
+    print(found?.name)
+}

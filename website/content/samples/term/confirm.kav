@@ -1,0 +1,10 @@
+use std.term
+
+fn main() {
+    const size = term.choose("Which size?", ["Small", "Medium", "Large"]) ?? 1
+    if term.confirm("Order a {["Small", "Medium", "Large"][size]} tea?", default: false) {
+        print("one tea coming up")
+    } else {
+        print("maybe later")
+    }
+}

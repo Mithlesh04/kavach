@@ -1,0 +1,10 @@
+use std.fs
+
+fn main() ! Error {
+    try fs.write_bytes("logo.bin", "GIF89a".bytes())
+    const data = try fs.read_bytes("logo.bin")
+    print(data.len())
+    for chunk in try fs.chunks("logo.bin", 4) {
+        print(chunk.len())
+    }
+}

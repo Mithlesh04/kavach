@@ -1,0 +1,13 @@
+gpu fn grow(balance: Float32, rate: Float32, years: Int32) -> Float32 {
+    let b = balance
+    for _ in 0..years {
+        b = b * (1.0 + rate)
+    }
+    b
+}
+
+fn main() {
+    const balances: [Float32] = [1000.0, 2500.0, 10000.0]
+    const rate: Float32 = 0.07
+    print(balances.map(b => grow(b, rate, 10)))
+}

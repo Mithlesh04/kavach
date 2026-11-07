@@ -1,0 +1,11 @@
+// Rule: Numbers have abs, min, max and clamp.
+// Spec: 14.2
+// expect output: 5 2.5
+// expect output: 3 9
+// expect output: 10 0
+
+fn main() {
+    print("{(-5).abs()} {(-2.5).abs()}")
+    print("{3.min(9)} {3.max(9)}")
+    print("{25.clamp(0, 10)} {(-4).clamp(0, 10)}")
+}

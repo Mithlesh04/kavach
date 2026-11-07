@@ -1,0 +1,36 @@
+// Rule: Nested loops run every round in order, whatever the optimizer does: sums keep their order and effects happen one `j` at a time.
+// Spec: 4.4
+// expect output: 0 0.0
+// expect output: 1 30.0
+// expect output: 2 60.0
+// expect output: 3 90.0
+// expect output: 4 120.0
+// expect output: 5 150.0
+// expect output: 6 180.0
+// expect output: 7 210.0
+// expect output: 8 240.0
+// expect output: 9 270.0
+// expect output: 10 300.0
+// expect output: 1650.0
+
+fn main() {
+    let rows: [[Float]] = []
+    for _ in 0..5 {
+        let row: [Float] = []
+        for j in 0..11 {
+            row.push(Float(j * 3))
+        }
+        rows.push(row)
+    }
+    const weights = [0.5, 1.5, 2.0, 3.0, 3.0]
+    let total = 0.0
+    for j in 0..11 {
+        let cell = 0.0
+        for k in 0..5 {
+            cell += weights[k] * rows[k][j]
+        }
+        print("{j} {cell}")
+        total += cell
+    }
+    print(total)
+}

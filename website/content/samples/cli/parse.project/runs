@@ -1,0 +1,4 @@
+run src/main.kav --input sales.csv --limit 5 --verbose
+run src/main.kav --input sales.csv
+run src/main.kav --limit 5
+run src/main.kav --help

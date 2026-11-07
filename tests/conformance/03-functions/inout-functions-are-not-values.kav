@@ -1,0 +1,11 @@
+// Rule: A function with `inout` parameters can't be used as a function value.
+// Spec: 3.9, 3.4
+// expect compile error
+
+fn bump(inout n: Int) {
+    n += 1
+}
+
+fn main() {
+    const f = bump                  // error: bump has inout parameters
+}

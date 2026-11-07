@@ -1,0 +1,17 @@
+// The call stack: recursion 100 thousand frames deep, a thousand times.
+// Every call pushes a frame and checks the stack has room.
+fn down(n: Int, salt: Int) -> Int {
+    if n == 0 {
+        salt
+    } else {
+        (n + salt) % 3 + down(n - 1, salt)
+    }
+}
+
+fn main() {
+    let total = 0
+    for round in 0..1000 {
+        total += down(100_000, round % 5)
+    }
+    print(total)
+}

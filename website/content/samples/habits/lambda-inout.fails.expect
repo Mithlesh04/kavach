@@ -1,0 +1,1 @@
+error: a lambda can't have `inout` parameters (spec 3.9): give the function a name, as `fn bump(inout n: Int) { … }`

@@ -1,0 +1,10 @@
+// Mistake: A result computed and thrown away.
+
+fn total(xs: [Int]) -> Int {
+    xs.sum(x => x)
+}
+
+fn main() {
+    total([1, 2])
+    print("done")
+}

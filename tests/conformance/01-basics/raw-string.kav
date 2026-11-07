@@ -1,0 +1,7 @@
+// Rule: A raw string has no escapes and no interpolation.
+// Spec: 1.7
+// expect output: C:\path\{not interpolated}
+
+fn main() {
+    print(r"C:\path\{not interpolated}")
+}

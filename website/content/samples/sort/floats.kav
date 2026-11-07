@@ -1,0 +1,5 @@
+fn main() {
+    const nan = 0.0 / 0.0
+    print([2.5, nan, -1.0, 0.1 + 0.2, 0.3].sort())
+    print([0.0, -0.0, -1.5].sort())
+}

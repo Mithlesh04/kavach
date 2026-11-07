@@ -1,0 +1,2 @@
+warning: this condition is never true here: `score > 50` means `score > 10`, and that branch is taken above. Check the order of the conditions (spec 4.7)
+good

@@ -1,0 +1,4 @@
+$ kavach run
+done
+leak: a `Shared` value made at src/main.kav:8 was never freed: a cycle keeps it
+  make the link back a `Weak`, so no cycle forms (spec 6.2)

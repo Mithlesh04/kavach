@@ -1,0 +1,14 @@
+// Rule: A `gpu fn` can't use capabilities: reading a file in one is a compile error that says so.
+// Spec: 15.1
+// expect compile error
+
+use std.fs
+
+gpu fn size(x: Float32) -> Float32 {
+    const t = fs.read_text("a.txt") catch _ => ""       // error: a `gpu fn` can't use `fs.read_text`
+    x
+}
+
+fn main() {
+    print([1.0].map(size))
+}

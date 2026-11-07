@@ -1,0 +1,17 @@
+// Rule: A lambda keeps a copy of an `inout` parameter: a change inside it doesn't reach the caller, and the compiler warns.
+// Spec: 3.9, 3.3
+// expect warning
+// expect output: 0
+
+fn add_all(items: [Int], inout total: Int) {
+    const _seen = items.map(x => {
+        total += x       // warning: `total` is a copy inside this lambda
+        x
+    })
+}
+
+fn main() {
+    let total = 0
+    add_all([1, 2, 3], total)
+    print(total)
+}

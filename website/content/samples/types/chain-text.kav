@@ -1,0 +1,5 @@
+fn main() {
+    const name = "  asha RAO  "
+    print(name.trim().lower().replace("rao", "Rao"))
+    print([5, 3, 8, 1].sort().reverse().take(2))
+}

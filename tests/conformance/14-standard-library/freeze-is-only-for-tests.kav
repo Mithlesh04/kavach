@@ -1,0 +1,10 @@
+// Rule: `time.freeze` is a compile error anywhere but directly in a `test` block.
+// Spec: 14.4
+// expect compile error
+
+use std.time
+
+fn main() {
+    time.freeze(0)     // error: `time.freeze` is only for tests
+    print(time.now_ms())
+}

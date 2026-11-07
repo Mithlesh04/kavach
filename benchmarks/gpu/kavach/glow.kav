@@ -1,0 +1,26 @@
+// 4 million Float32 items, each through 1,000 steps of a multiply-add:
+// heavy work per item, the kind a GPU is built for (spec 15).
+use std.time
+
+gpu fn glow(x: Float32, gain: Float32) -> Float32 {
+    let v = x
+    for _ in 0..1000 {
+        v = v * 0.999 + gain
+    }
+    v
+}
+
+fn main() {
+    let xs: [Float32] = []
+    for i in 0..4000000 {
+        xs.push(Float32(i % 1000) * 0.001)
+    }
+    const gain: Float32 = 0.25
+    const t0 = time.monotonic_ms()
+    const first = xs.map(p => glow(p, gain))
+    const t1 = time.monotonic_ms()
+    const second = xs.map(p => glow(p, gain + 0.5))
+    const t2 = time.monotonic_ms()
+    print("first map {t1 - t0} ms, second map {t2 - t1} ms")
+    print("{first[3999999]} {second[7]}")
+}

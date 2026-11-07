@@ -1,0 +1,17 @@
+// Rule: Changing a field through a var changes only that variable's value.
+// Spec: 2.4
+// expect output: 31
+// expect output: 32
+
+type User {
+    name: String
+    age: Int
+}
+
+fn main() {
+    const asha = User(name: "Asha", age: 31)
+    let user = asha
+    user.age = 32
+    print(asha.age)
+    print(user.age)
+}

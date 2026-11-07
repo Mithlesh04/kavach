@@ -1,0 +1,51 @@
+[workspace]
+resolver = "3"
+members = ["compiler/lexer", "compiler/ast", "compiler/parser", "compiler/resolver", "compiler/checker", "compiler/driver", "compiler/interp", "compiler/kir", "compiler/backend/cranelift", "compiler/backend/llvm", "compiler/backend/wgsl", "runtime/core", "runtime/net", "runtime/gpu", "runtime/native", "tools/ai", "tools/fmt", "tools/lsp", "tools/cli"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/Mithlesh04/kavach"
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+
+# The native runtime is linked into every program `kavach build` makes, so
+# it is optimized even in development builds of the compiler. Without
+# debug information, the archive every build (and test) links stays
+# small, so linking is quick.
+[profile.dev.package.kavach-runtime-native]
+opt-level = 3
+debug = false
+
+[profile.dev.package.kavach-runtime-core]
+opt-level = 3
+debug = false
+
+[profile.dev.package.kavach-runtime-net]
+opt-level = 3
+debug = false
+
+[profile.dev.package.kavach-runtime-gpu]
+opt-level = 3
+debug = false
+
+# Third-party crates change rarely, so development builds compile them
+# once, optimized and without debug information: Cranelift and the others
+# run several times faster in tests, and the runtime archive stays small.
+[profile.dev.package."*"]
+opt-level = 2
+debug = false
+
+# Small compiled units keep each runtime feature apart, so the linker
+# leaves out the features a program doesn't use (decision 0024); thin LTO
+# still inlines across them, so the runtime loses no speed.
+[profile.release]
+lto = "thin"
+
+[profile.release.package.kavach-runtime-native]
+codegen-units = 256

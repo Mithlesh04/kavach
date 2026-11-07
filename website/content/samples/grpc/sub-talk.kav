@@ -1,0 +1,27 @@
+use std.grpc
+use std.net
+
+pub type Count {
+    n: Int
+}
+
+fn plus_one(call: GrpcCall) -> GrpcReply {
+    const c = grpc.read<Count>(call) catch _ => Count(n: 0)
+    if c.n == 0 {
+        return grpc.failed(3, "not a count")
+    }
+    print("server got {c.n}")
+    grpc.reply(Count(n: c.n + 1))
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn grpc.serve_talks(listener, plus_one, ["/game.Count/Up"])
+    const target = "http://{listener.address()}"
+    try grpc.talk_with<Count, Count>(target, "/game.Count/Up", [Count(n: 1)], c => {
+        print("client got {c.n}")
+        if c.n < 6 { [Count(n: c.n + 1)] } else { none }
+    })
+    print("done")
+    grpc.talk_with<Count, Count>(target, "/game.Count/Up", [Count(n: 0)], c => none) catch e => print("bad: {e}")
+}

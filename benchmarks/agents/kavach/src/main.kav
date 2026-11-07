@@ -1,0 +1,35 @@
+// The agent benchmark's Kavach side (benchmarks/agents/README.md): one
+// case per run, named on the command line, reading its data from
+// `../data/`. Each prints one line per item, which `run.py` grades.
+
+use std.cli
+use claims
+use devops
+use devops.{Ops}
+use health
+use legal
+use logistics
+use logistics.{Carrier}
+use claims.{Payouts}
+use refunds
+use refunds.{Payments}
+use triage
+
+fn main() ! Error uses Ai, Console, Env, Fs, Payments.refund, Payouts.pay, Ops.restart, Ops.scale, Carrier.reroute {
+    const args = cli.args()
+    if args.len() < 2 {
+        print("usage: kavach run src/main.kav -- <case> <data file> [one-by-one]")
+        return
+    }
+    const together = args.len() < 3
+    match args[0] {
+        "triage" => try triage.run(args[1], together),
+        "refunds" => try refunds.run(args[1], together),
+        "claims" => try claims.run(args[1], together),
+        "health" => try health.run(args[1], together),
+        "devops" => try devops.run(args[1], together),
+        "legal" => try legal.run(args[1], together),
+        "logistics" => try logistics.run(args[1], together),
+        other => print("no case {other}"),
+    }
+}

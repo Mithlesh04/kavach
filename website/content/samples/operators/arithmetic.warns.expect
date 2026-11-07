@@ -1,0 +1,8 @@
+warning: `7 / 2` is `3`: whole numbers divide to a whole number. Write `7.0 / 2.0` for a fraction, or `7.div_floor(2)` when the whole part is meant (spec 1.8)
+9
+5
+14
+3
+1
+1024
+3.5

@@ -1,0 +1,25 @@
+// Rule: a handler that panics is stopped: the send fails with `panicked: <message> at <file>:<line>`, and the agent goes on serving other events.
+// Spec: 8.8, 5.6
+// expect output: true
+// expect output: true
+// expect output: next 2
+// expect stderr: panic: index 5 is out of range: the list has 2 items
+// expect stderr:   at a-handler-that-panics-fails-its-send.kav:11
+
+agent Counter {
+    on pick(items: [Int], at: Int) -> Int {
+        items[at]
+    }
+}
+
+fn main() {
+    const bot = Counter.start()
+    const shown = match bot.pick([1, 2], 5) {
+        ok(n) => "{n}"
+        err(e) => "{e}"
+    }
+    print(shown.starts_with("panicked: index 5 is out of range: the list has 2 items at "))
+    print(shown.ends_with("a-handler-that-panics-fails-its-send.kav:11"))
+    const next = bot.pick([1, 2], 1) catch _ => 0
+    print("next {next}")
+}

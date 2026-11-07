@@ -1,0 +1,2 @@
+// Found by `kavach test` (spec 11.4). Generated: commit it, never edit it.
+number32(Bytes(0d0a0d0a), 9223372036854775804)

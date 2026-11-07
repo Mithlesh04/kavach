@@ -1,0 +1,22 @@
+$ kavach run
+pass
+none
+warning: this condition is never true here: `score > 80` means `score > 50`, and that branch is taken above. Check the order of the conditions (spec 4.7)
+ --> src/main.kav:4:15
+  |
+4 |     } else if score > 80 {
+  |               ^^^^^^^^^^
+
+warning: this arm never matches: the arm above it matches every value first. Remove it, or move it up (spec 4.7)
+  --> src/main.kav:15:9
+   |
+15 |         2 => "silver",
+   |         ^
+$ kavach fix src
+src/main.kav: Remove this branch
+src/main.kav: Remove this arm
+$ kavach fix src
+nothing to fix
+$ kavach run
+pass
+none

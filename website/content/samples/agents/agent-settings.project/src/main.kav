@@ -1,0 +1,50 @@
+use std.fs
+
+type PayError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn refund(order: Int, amount: Int) ! PayError
+}
+
+type Bank: Payments {
+    fn refund(self, order: Int, amount: Int) ! PayError {
+    }
+}
+
+fn standard() -> AgentSettings {
+    AgentSettings(audit: Audit())
+}
+
+agent Refunder {
+    settings standard()
+    can Payments.refund
+    limit Payments.refund {
+        amount <= 500
+    }
+    on refund(order: Int, amount: Int) ! PayError {
+        try Payments.refund(order, amount)
+    }
+}
+
+agent Trainee {
+    settings standard() with { mode: AgentMode.Observe }
+    can Payments.refund
+    limit Payments.refund {
+        amount <= 500
+    }
+    on refund(order: Int, amount: Int) ! PayError {
+        try Payments.refund(order, amount)
+    }
+}
+
+fn main() ! Error {
+    Refunder.start(Payments: Bank()).refund(1, 900) catch e => print("Refunder: {e}")
+    Trainee.start(Payments: Bank()).refund(2, 900) catch e => print("Trainee: {e}")
+    for name in ["Refunder", "Trainee"] {
+        for line in try fs.lines("agents/{name}/audit.log") {
+            if line.trim().starts_with("verdict:") {
+                print("{name} {line.trim()}")
+            }
+        }
+    }
+}

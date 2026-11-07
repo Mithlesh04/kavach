@@ -1,0 +1,5 @@
+fn main() {
+    const age = 31
+    const next: String = age + 1
+    print(next)
+}

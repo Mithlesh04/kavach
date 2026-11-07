@@ -1,0 +1,16 @@
+// Rule: `with` creates a copy with some fields changed.
+// Spec: 2.4
+// expect output: 31
+// expect output: 32
+
+type User {
+    name: String
+    age: Int
+}
+
+fn main() {
+    const asha = User(name: "Asha", age: 31)
+    const older = asha with { age: asha.age + 1 }
+    print(asha.age)
+    print(older.age)
+}

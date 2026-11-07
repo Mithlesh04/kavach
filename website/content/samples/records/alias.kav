@@ -1,0 +1,10 @@
+type Retry = (times: Int, wait_ms: Int)
+
+fn describe(r: Retry) -> String {
+    "{r.times} tries, {r.wait_ms} ms apart"
+}
+
+fn main() {
+    print(describe((times: 3, wait_ms: 200)))
+    print(describe((wait_ms: 50, times: 5)))
+}

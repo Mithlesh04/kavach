@@ -1,0 +1,48 @@
+// A chain of builder methods: a transfer built through five chained
+// calls and checked, 10 million times — the fluent style of builders
+// and transaction APIs.
+type Transfer {
+    from: Int
+    to: Int
+    amount: Int
+    fee: Int
+    note: Int
+
+    fn from_account(self, a: Int) -> Transfer {
+        Transfer(from: a, to: self.to, amount: self.amount, fee: self.fee, note: self.note)
+    }
+
+    fn to_account(self, a: Int) -> Transfer {
+        Transfer(from: self.from, to: a, amount: self.amount, fee: self.fee, note: self.note)
+    }
+
+    fn pay(self, n: Int) -> Transfer {
+        Transfer(from: self.from, to: self.to, amount: n, fee: self.fee, note: self.note)
+    }
+
+    fn with_fee(self, n: Int) -> Transfer {
+        Transfer(from: self.from, to: self.to, amount: self.amount, fee: n, note: self.note)
+    }
+
+    fn tagged(self, n: Int) -> Transfer {
+        Transfer(from: self.from, to: self.to, amount: self.amount, fee: self.fee, note: n)
+    }
+}
+
+fn empty() -> Transfer {
+    Transfer(from: 0, to: 0, amount: 0, fee: 0, note: 0)
+}
+
+fn main() {
+    let total = 0
+    for i in 0..10_000_000 {
+        const t = empty()
+            .from_account(i)
+            .to_account(i + 1)
+            .pay(i % 100)
+            .with_fee(i % 7)
+            .tagged(i % 3)
+        total += t.amount + t.fee + t.note
+    }
+    print(total)
+}

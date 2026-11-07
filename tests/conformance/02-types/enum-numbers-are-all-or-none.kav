@@ -1,0 +1,9 @@
+// Rule: Either every variant of an enum has a number or none does.
+// Spec: 2.6
+// expect compile error
+
+type Code = Ok = 200 | NotFound       // error: NotFound has no number
+
+fn main() {
+    print(Code.Ok)
+}

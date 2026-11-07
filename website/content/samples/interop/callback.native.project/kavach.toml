@@ -1,0 +1,4 @@
+[package]
+name = "c-callback"
+version = "0.1.0"
+unsafe = true

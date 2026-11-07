@@ -1,0 +1,32 @@
+// Rule: `.timeout(d)` on `wait`, `take` and `put` waits at most `d`, then fails with an error; a wait that ends in time gives its value.
+// Spec: 9.6
+// expect output: gave up: timed out after 50 ms
+// expect output: -1
+// expect output: 42
+// expect output: -2
+// expect output: still full
+// expect output: 1
+
+use std.time
+
+fn slow() -> Int {
+    time.sleep(1.seconds)
+    7
+}
+
+fn main() ! Error {
+    const t = spawn slow()
+    const first = t.wait().timeout(50.ms) catch e => {
+        print("gave up: {e}")
+        -1
+    }
+    print(first)
+    const quick = spawn 42
+    print(try quick.wait().timeout(2.seconds))
+    const (send, receive) = Channel<Int>(capacity: 1)
+    const got = receive.take().timeout(30.ms) catch _ => -2
+    print(got ?? -3)
+    send.put(1)
+    send.put(2).timeout(20.ms) catch _ => print("still full")
+    print(receive.take() ?? 0)
+}

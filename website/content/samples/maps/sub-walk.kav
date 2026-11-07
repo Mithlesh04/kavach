@@ -1,0 +1,12 @@
+fn main() {
+    const ages = ["asha": 31, "omar": 27]
+    for (name, age) in ages {
+        print("{name} is {age}")
+    }
+    for name in ages.keys() {
+        print(name)
+    }
+    for age in ages.values() {
+        print(age)
+    }
+}

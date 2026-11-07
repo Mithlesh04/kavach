@@ -1,0 +1,8 @@
+// Rule: `b[i]` with `i` out of range panics.
+// Spec: 2.13
+// expect panic: index 3 is out of range: there are 2 bytes
+
+fn main() {
+    const b = "hi".bytes()
+    print(b[3])
+}

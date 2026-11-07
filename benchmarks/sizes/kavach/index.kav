@@ -1,0 +1,24 @@
+// 50 million reads at indexes a Lehmer generator picks, from a list of
+// `--items` integers: the same work at every size, so the time shows
+// what happens as the list outgrows each cache.
+use std.cli
+
+type Args {
+    items: Int = 10_000_000
+}
+
+fn main() ! Error {
+    const args = try cli.parse<Args>()
+    const n = args.items
+    let xs: [Int] = []
+    for i in 0..n {
+        xs.push(i * 2)
+    }
+    let j = 12345
+    let total = 0
+    for _ in 0..50_000_000 {
+        j = j * 48271 % 2147483647
+        total += xs[j % n]
+    }
+    print(total)
+}

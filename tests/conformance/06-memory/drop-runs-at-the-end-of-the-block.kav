@@ -1,0 +1,29 @@
+// Rule: A value of a `Drop` type lives until the end of the block that holds it, even after its last use; `drop` runs there.
+// Spec: 6.1
+// expect output: working
+// expect output: released data
+// expect output: in the branch
+// expect output: released inner
+// expect output: back in main
+
+type Guard: Drop {
+    name: String
+
+    fn drop(self) {
+        print("released {self.name}")
+    }
+}
+
+fn work() {
+    const g = Guard(name: "data")   // never read again
+    print("working")
+}
+
+fn main() {
+    work()
+    if true {
+        const inner = Guard(name: "inner")
+        print("in the branch")
+    }
+    print("back in main")
+}

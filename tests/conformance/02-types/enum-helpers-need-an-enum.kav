@@ -1,0 +1,9 @@
+// Rule: `Type.all()`, `Type.parse(text)` and `Type.from(n)` are for enums: unions whose variants carry no fields.
+// Spec: 2.6
+// expect compile error
+
+type Shape = Circle(r: Float) | Square(side: Float)
+
+fn main() {
+    print(Shape.all())                // error: Shape's variants carry fields
+}

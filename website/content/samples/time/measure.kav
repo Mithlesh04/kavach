@@ -1,0 +1,9 @@
+use std.time
+
+fn main() {
+    const start = time.monotonic_ms()
+    time.sleep(200.ms)
+    const took = time.monotonic_ms() - start
+    print("took at least 200 ms: {took >= 200}")
+    print("a date after 2026 began: {time.now_ms() > 1_767_225_600_000}")
+}

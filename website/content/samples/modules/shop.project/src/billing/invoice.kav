@@ -1,0 +1,13 @@
+pub type Invoice {
+    pub id: Int
+    pub total: Int
+    note: String
+}
+
+pub fn create(id: Int, total: Int) -> Invoice {
+    Invoice(id: id, total: round_up(total), note: "made by billing")
+}
+
+fn round_up(x: Int) -> Int {
+    (x + 9) / 10 * 10
+}

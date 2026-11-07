@@ -1,0 +1,10 @@
+// Rule: List and record patterns go in `const` and `let`, not in `match` (yet).
+// Spec: 1.12
+// expect compile error
+
+fn main() {
+    match [1, 2] {
+        [a, b] => print(a)          // error: list patterns go in const and let
+        _ => print(0)
+    }
+}

@@ -1,0 +1,8 @@
+fn main() {
+    let seen = Set.of(2, 7)
+    seen.add(2)
+    print(seen.len())
+    print(seen.contains(7))
+    seen.remove(7)
+    print(seen.len())
+}

@@ -1,0 +1,4 @@
+// The smallest Kavach program.
+// Run with: kavach run hello.kav
+
+print("Hello, Kavach!")

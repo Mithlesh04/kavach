@@ -1,0 +1,55 @@
+// Rule: `std.http.hpack` decodes RFC 7541's examples: Huffman codes, the dynamic table, and entries dropped when it is full; `encode` gives blocks it reads back.
+// Spec: 14.11
+// expect output: :authority: www.example.com
+// expect output: cache-control: no-cache
+// expect output: custom-key: custom-value
+// expect output: 3 entries, 164 bytes
+// expect output: location: https://www.example.com
+// expect output: :status: 307
+// expect output: 4 entries, 222 bytes
+// expect output: content-type: text/plain
+// expect output: x-name: ü
+
+use std.http.hpack
+
+fn last(d: Decoded) {
+    const h = d.headers[d.headers.len() - 1]
+    print("{h.name}: {h.value}")
+}
+
+fn main() ! Error {
+    // RFC 7541 C.4: requests with Huffman codes, sharing one table.
+    const r1 = try hpack.decode(Bytes([
+        130, 134, 132, 65, 140, 241, 227, 194, 229, 242, 58, 107, 160, 171, 144, 244,
+        255
+        ]), hpack.new_table(4096))
+    last(r1)
+    const r2 = try hpack.decode(Bytes([
+        130, 134, 132, 190, 88, 134, 168, 235, 16, 100, 156, 191
+        ]), r1.table)
+    last(r2)
+    const r3 = try hpack.decode(Bytes([
+        130, 135, 133, 191, 64, 136, 37, 168, 73, 233, 91, 169, 125, 127, 137, 37,
+        168, 73, 233, 91, 184, 232, 180, 191
+        ]), r2.table)
+    last(r3)
+    print("{r3.table.entries.len()} entries, {r3.table.size} bytes")
+    // C.6: responses in a 256-byte table; the second one drops the oldest entry.
+    const s1 = try hpack.decode(Bytes([
+        72, 130, 100, 2, 88, 133, 174, 195, 119, 26, 75, 97, 150, 208, 122, 190,
+        148, 16, 84, 212, 68, 168, 32, 5, 149, 4, 11, 129, 102, 224, 130, 166,
+        45, 27, 255, 110, 145, 157, 41, 173, 23, 24, 99, 199, 143, 11, 151, 200,
+        233, 174, 130, 174, 67, 211
+        ]), hpack.new_table(256))
+    last(s1)
+    const s2 = try hpack.decode(Bytes([72, 131, 100, 14, 255, 193, 192, 191]), s1.table)
+    print("{s2.headers[0].name}: {s2.headers[0].value}")
+    print("{s2.table.entries.len()} entries, {s2.table.size} bytes")
+    const block = hpack.encode([
+        Header(name: "Content-Type", value: "text/plain"),
+        Header(name: "x-name", value: "ü"),
+    ])
+    const back = try hpack.decode(block, hpack.new_table(4096))
+    print("{back.headers[0].name}: {back.headers[0].value}")
+    last(back)
+}

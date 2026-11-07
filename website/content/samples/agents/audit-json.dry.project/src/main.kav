@@ -1,0 +1,45 @@
+use std.fs
+
+type Verdict {
+    /// true if the customer is unhappy
+    complaint: Bool
+}
+
+type PayError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn refund(order: Int, amount: Int) ! PayError
+}
+
+type Bank: Payments {
+    fn refund(self, order: Int, amount: Int) ! PayError {
+        print("refunded {amount} on order {order}")
+    }
+}
+
+agent Support {
+    model Model(name: "claude-haiku-5-5", thinking: false)
+    settings AgentSettings(audit: Audit(format: AuditFormat.JsonLines))
+    can Ai, Payments.refund
+
+    limit Payments.refund {
+        amount <= 500
+    }
+
+    on handle(order: Int, amount: Int, note: String) ! Error {
+        const v = try ask<Verdict>("Is this a complaint? {note}")
+        if v.complaint {
+            try Payments.refund(order, amount)
+        }
+    }
+}
+
+fn main() ! Error {
+    const bot = Support.start(Payments: Bank())
+    try bot.handle(7, 40, "My order never came.")
+    bot.handle(8, 900, "It broke on day one.") catch e => print("refused: {e}")
+    for line in try fs.lines("agents/Support/audit.log") {
+        // The time changes every run, so it is cut out here.
+        print("{line.slice(0, 9)}…{line.slice(29, line.len())}")
+    }
+}

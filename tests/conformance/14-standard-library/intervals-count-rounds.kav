@@ -1,0 +1,19 @@
+// Rule: A for loop over time.every_ms counts rounds, each starting ms after the one before.
+// Spec: 14.4
+// expect output: 0
+// expect output: 1
+// expect output: 2
+// expect output: true
+
+use std.time
+
+fn main() {
+    const start = time.monotonic_ms()
+    for tick in time.every_ms(20) {
+        print(tick)
+        if tick == 2 {
+            break
+        }
+    }
+    print(time.monotonic_ms() - start >= 60)
+}

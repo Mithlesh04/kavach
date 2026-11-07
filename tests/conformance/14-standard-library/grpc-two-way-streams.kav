@@ -1,0 +1,33 @@
+// Rule: `grpc.each_stream` sends each request as its own message on one call, then runs its function for each message of the answer as it arrives, returning on status OK and failing with `Status` otherwise.
+// Spec: 14.14
+// expect output: echo: one
+// expect output: echo: two
+// expect output: echo: three
+// expect output: done
+// expect output: silent: Status(code: 3, message: "nothing to echo")
+
+use std.grpc
+use std.net
+
+pub type Line {
+    text: String
+}
+
+fn echo(call: GrpcCall) -> GrpcReply {
+    const lines = grpc.read_all<Line>(call) catch _ => []
+    if lines.len() == 0 {
+        return grpc.failed(3, "nothing to echo")
+    }
+    grpc.reply_stream(lines.map(l => Line(text: "echo: {l.text}")))
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn grpc.serve(listener, echo)
+    const target = "http://{listener.address()}"
+    const lines = [Line(text: "one"), Line(text: "two"), Line(text: "three")]
+    try grpc.each_stream<Line, Line>(target, "/chat.Echo/Talk", lines, l => print(l.text))
+    print("done")
+    const silent: [Line] = []
+    grpc.each_stream<Line, Line>(target, "/chat.Echo/Talk", silent, l => print("?")) catch e => print("silent: {e}")
+}

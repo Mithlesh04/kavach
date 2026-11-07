@@ -1,0 +1,20 @@
+pub type Order {
+    pub amount: Int
+    pub paid: Bool
+}
+
+/// What the paid orders add up to.
+pub fn total_paid(orders: [Order]) -> Int
+    require orders.len() <= 1_000
+    require orders.all(o => o.amount >= 0 and o.amount <= 1_000_000)
+    example total_paid([]) == 0
+{
+    orders.filter(o => o.paid).sum(o => fee(o.amount))
+}
+
+fn fee(amount: Int) -> Int
+    require amount >= 0 and amount <= 1_000_000
+    example fee(10) == 11
+{
+    amount + 1
+}

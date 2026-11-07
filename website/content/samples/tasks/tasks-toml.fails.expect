@@ -1,0 +1,1 @@
+error: `tasks` in `[package]` moved into the code: write `spawn thread …` or `spawn cores …` where a task should run another way; a plain `spawn` is a coroutine (spec 9.8, decision 0069)

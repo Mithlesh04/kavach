@@ -1,0 +1,17 @@
+// Rule: Records are created with named arguments; fields with defaults may be left out.
+// Spec: 2.4
+// expect output: 0
+// expect output: 27
+
+type User {
+    name: String
+    email: String
+    age: Int = 0
+}
+
+fn main() {
+    const asha = User(name: "Asha", email: "asha@example.com")
+    const ravi = User(name: "Ravi", email: "ravi@example.com", age: 27)
+    print(asha.age)
+    print(ravi.age)
+}

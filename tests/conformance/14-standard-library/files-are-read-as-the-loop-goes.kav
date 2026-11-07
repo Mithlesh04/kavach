@@ -1,0 +1,32 @@
+// Rule: `fs.lines` and `fs.chunks` read a file as the loop goes: lines without their `\n` or `\r\n`, or `Bytes` pieces of the size asked (the last shorter); opening a missing file is an `FsError`.
+// Spec: 14.3
+// expect output: 1: [one]
+// expect output: 2: [two]
+// expect output: 3: [ERROR three]
+// expect output: 4: []
+// expect output: 5: [last]
+// expect output: 8
+// expect output: 8
+// expect output: 8
+// expect output: 2
+// expect output: can't open: NotFound(path: "no-such-file.txt")
+
+use std.fs
+
+fn main() ! FsError uses Fs, Console {
+    const path = "kavach-test-lines.txt"
+    try fs.write_text(path, "one\ntwo\u{D}\nERROR three\n\nlast")
+    let n = 0
+    for line in try fs.lines(path) {
+        n += 1
+        print("{n}: [{line}]")
+    }
+    for piece in try fs.chunks(path, 8) {
+        print(piece.len())
+    }
+    try fs.remove(path)
+    const _missing = fs.lines("no-such-file.txt") catch e => {
+        print("can't open: {e}")
+        return
+    }
+}

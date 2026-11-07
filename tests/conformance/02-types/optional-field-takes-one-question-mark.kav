@@ -1,0 +1,11 @@
+// Rule: A field that may be left out takes its `?` once: `summary?: String?` is an error.
+// Spec: 2.4
+// expect compile error
+
+type Triage {
+    summary?: String?       // error: `summary?` already makes the field optional
+}
+
+fn main() {
+    print(Triage().summary ?? "none")
+}

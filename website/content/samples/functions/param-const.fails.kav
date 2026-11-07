@@ -1,0 +1,10 @@
+fn countdown(n: Int) {
+    while n > 0 {
+        print(n)
+        n -= 1
+    }
+}
+
+fn main() {
+    countdown(3)
+}

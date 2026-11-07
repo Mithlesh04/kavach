@@ -1,0 +1,4 @@
+/// The invoice number for an order.
+pub fn number(order: Int) -> String {
+    "INV-{order}"
+}

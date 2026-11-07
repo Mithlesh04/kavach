@@ -1,0 +1,25 @@
+// Rule: A task that has ended is let go of while the function that spawned it still runs; a handle the program kept still gives the task's result.
+// Spec: 9.2
+// expect output: 300 tasks
+// expect output: kept 0, 100, 200 -> 0, 200, 400
+
+fn double(n: Int) -> Int {
+    n * 2
+}
+
+fn main() ! Error {
+    let kept: [Task<Int>] = []
+    let started = 0
+    for i in 0..300 {
+        const t = spawn double(i)
+        if i % 100 == 0 {
+            kept.push(t)
+        }
+        started += 1
+    }
+    print("{started} tasks")
+    const a = try kept[0].wait()
+    const b = try kept[1].wait()
+    const c = try kept[2].wait()
+    print("kept 0, 100, 200 -> {a}, {b}, {c}")
+}

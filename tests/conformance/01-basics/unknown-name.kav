@@ -1,0 +1,8 @@
+// Rule: Using a name that was never declared is a compile error.
+// Spec: 1.4
+// expect compile error
+
+fn main() {
+    const total = 10
+    print(totl)         // error: `totl` is not defined; did you mean `total`?
+}

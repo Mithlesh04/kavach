@@ -1,0 +1,11 @@
+[{"name":"pen","price":20},{"name":"ink","price":45}]
+[
+  {
+    "name": "pen",
+    "price": 20
+  },
+  {
+    "name": "ink",
+    "price": 45
+  }
+]

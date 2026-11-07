@@ -1,0 +1,10 @@
+fn main() {
+    const double = x => x * 2
+    print(double(21))
+    const prices = [120, 40, 300]
+    print(prices.map(p => p + 10))
+    let limit = 10
+    const over = n => n > limit
+    limit = 0
+    print(over(5))
+}

@@ -1,0 +1,17 @@
+// Rule: A function that handles every error of a faked capability passes its generated tests: fakes need no real payment system.
+// Spec: 11.5
+// expect test pass
+
+type Receipt { id: String }
+type PaymentError = Declined | Unavailable | Denied(reason: String)
+
+capability Payments {
+    fn refund(order_id: Int, amount: Int) -> Receipt ! PaymentError
+}
+
+fn settle(order_id: Int, amount: Int) -> String uses Payments.refund {
+    const r = Payments.refund(order_id, amount) catch e => {
+        return "not refunded: {e}"
+    }
+    "refunded {r.id}"
+}

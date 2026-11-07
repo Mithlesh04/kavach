@@ -1,0 +1,5 @@
+fn main() {
+    print("😀".len())
+    print("ß".upper())
+    print([10, 9, 1, 2].sort())
+}

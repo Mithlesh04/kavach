@@ -1,0 +1,1 @@
+error: `String` does not implement `Describe`: write `extend String: Describe`

@@ -1,0 +1,23 @@
+use std.fs
+
+agent Picker {
+    settings AgentSettings(audit: Audit())
+
+    on pick(items: [Int], at: Int) -> Int {
+        items[at]
+    }
+}
+
+fn main() ! Error {
+    const bot = Picker.start()
+    const first = bot.pick([1, 2], 5) catch e => {
+        print("{e}")
+        0
+    }
+    print("first: {first}")
+    const next = try bot.pick([1, 2], 1)
+    print("next: {next}")
+    for line in try fs.lines("agents/Picker/audit.log") {
+        print(line.split("Z ").last() ?? line)
+    }
+}

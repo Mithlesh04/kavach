@@ -1,0 +1,1 @@
+error: `break outer` names no loop around it: it is inside a lambda or `spawn`, whose body is a function of its own, so it can't leave a loop outside it. A label goes before its loop, as `outer: for … {`, in the same function (spec 4.6)

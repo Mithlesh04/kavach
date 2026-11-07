@@ -1,0 +1,7 @@
+fn main() {
+    const (send, receive) = Channel<Int>(capacity: 1)
+    send.put(1)
+    for n in receive {
+        print(n)
+    }
+}

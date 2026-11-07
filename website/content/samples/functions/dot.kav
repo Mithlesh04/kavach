@@ -1,0 +1,12 @@
+type Order {
+    amount: Int
+    paid: Bool
+}
+
+fn main() {
+    const names = ["asha", "ravi", "meenakshi"]
+    print(names.map(.upper()))
+    print(names.filter(.len() > 4))
+    const orders = [Order(amount: 300, paid: true), Order(amount: 120, paid: false)]
+    print(orders.filter(.paid).sum(.amount))
+}

@@ -1,0 +1,8 @@
+// Rule: Parameters can't be reassigned.
+// Spec: 3.1
+// expect compile error
+
+fn grow(size: Int) -> Int {
+    size = size + 1     // error: size is a parameter; copy it into a `let` first
+    size
+}

@@ -1,0 +1,26 @@
+use std.json
+
+fn main() ! Error {
+    const text = """
+        \{
+            "order": \{
+                "id": 7,
+                "customer": \{ "name": "Asha", "city": "Pune" },
+                "items": [
+                    \{ "name": "pen", "price": 20 },
+                    \{ "name": "ink", "price": 45 }
+                ]
+            }
+        }
+        """
+    const doc = try json.parse(text)
+    const order = doc["order"]
+    print(order["customer"]["name"].text() ?? "")
+    print(order["items"][1]["price"].int() ?? 0)
+    let total = 0
+    for item in order["items"].list() ?? [] {
+        total += item["price"].int() ?? 0
+    }
+    print("{order["items"].len()} items, {total} in all")
+    print(order["customer"]["phone"]["mobile"].text() ?? "no phone")
+}

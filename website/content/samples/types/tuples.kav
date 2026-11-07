@@ -1,0 +1,9 @@
+fn status() -> (Int, String) {
+    (200, "OK")
+}
+
+fn main() {
+    const pair = status()
+    const (code, message) = pair
+    print("{code} {message}")
+}

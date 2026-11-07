@@ -1,0 +1,6 @@
+fn main() {
+    const name = "Asha"
+    print("Hello, {name}!")
+    print(name.len())
+    print(name.upper())
+}

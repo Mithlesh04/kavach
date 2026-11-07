@@ -1,0 +1,20 @@
+// Rule: A type implements an interface only when it says so.
+// Spec: 2.8
+// expect compile error
+
+interface Describe {
+    fn describe(self) -> String
+}
+
+type User {
+    name: String
+    fn describe(self) -> String { "User {self.name}" }
+}
+
+fn show<T: Describe>(item: T) -> String {
+    item.describe()
+}
+
+fn main() {
+    print(show(User(name: "Asha")))     // error: User does not declare `: Describe`
+}

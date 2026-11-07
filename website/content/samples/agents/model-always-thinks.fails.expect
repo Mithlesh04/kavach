@@ -1,0 +1,1 @@
+error: `claude-opus-5-5` always thinks before it answers, so `thinking: false` would fail: leave it out, and lower `effort` for fewer tokens (spec 8.4)

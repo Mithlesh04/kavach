@@ -1,0 +1,24 @@
+use std.fs
+use std.json
+
+type Settings {
+    port: Int
+}
+
+fn read_settings(path: String) -> String ! FsError {
+    try fs.read_text(path)
+}
+
+fn parse_settings(text: String) -> Settings ! JsonError {
+    try json.decode<Settings>(text)
+}
+
+fn load(path: String) -> Settings ! Error {
+    const text = try read_settings(path)
+    try parse_settings(text)
+}
+
+fn main() {
+    const settings = load("settings.json") catch e => Settings(port: 8080)
+    print(settings.port)
+}

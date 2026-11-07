@@ -1,0 +1,11 @@
+// Rule: A call that doesn't finish within its time budget is a failure.
+// Spec: 11.9
+// expect test fail
+
+fn count_to(n: Int) -> Int {
+    let i = 0
+    while i != n {          // never ends for negative n
+        i += 1
+    }
+    i
+}

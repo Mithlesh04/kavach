@@ -1,0 +1,10 @@
+use std.json
+
+fn main() {
+    const text = "\{\"amount\": 10, \"amount\": 10000}"
+    const doc = json.parse(text) catch e => {
+        print("refused: {e}")
+        return
+    }
+    print(doc)
+}

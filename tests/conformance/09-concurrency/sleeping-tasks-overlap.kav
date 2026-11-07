@@ -1,0 +1,22 @@
+// Rule: while a task sleeps, other tasks run, so sleeps overlap; tasks wake in the order of their times.
+// Spec: 9.7, 14.4
+// expect output: both started
+// expect output: fast done
+// expect output: slow done
+// expect output: slow and fast are back
+
+use std.time
+
+fn report(name: String, ms: Int) -> String {
+    time.sleep_ms(ms)
+    print("{name} done")
+    name
+}
+
+fn main() ! Error {
+    // `slow` starts first: one after the other, it would finish first.
+    const slow = spawn report("slow", 400)
+    const fast = spawn report("fast", 200)
+    print("both started")
+    print("{try slow.wait()} and {try fast.wait()} are back")
+}

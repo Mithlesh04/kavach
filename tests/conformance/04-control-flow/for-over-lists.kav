@@ -1,0 +1,16 @@
+// Rule: `for` walks a list in order; enumerate() adds an index starting at 0.
+// Spec: 4.4
+// expect output: Asha
+// expect output: Ravi
+// expect output: 0: Asha
+// expect output: 1: Ravi
+
+fn main() {
+    const names = ["Asha", "Ravi"]
+    for name in names {
+        print(name)
+    }
+    for (index, name) in names.enumerate() {
+        print("{index}: {name}")
+    }
+}

@@ -1,0 +1,24 @@
+// Rule: A `Shared` value still alive when the program ends, which only a cycle can keep, is reported with the line that made it.
+// Spec: 6.2
+// expect output: 1
+// expect output: done
+// expect stderr: leak: a `Shared` value made at leaked-shared-cycles-are-reported.kav:16 was never freed: a cycle keeps it
+// expect stderr:   make the link back a `Weak`, so no cycle forms (spec 6.2)
+
+type Room {
+    name: String
+    doors: Shared<[Room]>
+}
+
+fn main() {
+    const none_yet: [Room] = []
+    const freed = Shared(1)
+    const hall = Room(name: "hall", doors: Shared(none_yet))
+    hall.doors.update(doors => {
+        let more = doors
+        more.push(hall)
+        more
+    })
+    print(freed.get())
+    print("done")
+}

@@ -1,0 +1,14 @@
+// A chain over data: map, filter, map, sum across 10 million items, the
+// fluent style of JavaScript arrays, Java streams and C# LINQ.
+fn main() {
+    let xs: [Int] = []
+    for i in 0..10_000_000 {
+        xs.push(i % 1000)
+    }
+    const total = xs
+        .map(x => x * 3 + 1)
+        .filter(x => x % 2 == 0)
+        .map(x => x / 2)
+        .sum(x => x)
+    print(total)
+}

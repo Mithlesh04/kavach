@@ -1,0 +1,27 @@
+// Rule: `json.of` encodes records as objects, unions by variant name, optionals as `null`, and maps with text keys as objects.
+// Spec: 2.12
+// expect output: {"name":"ink","price":2.0,"tags":["blue"]}
+// expect output: ["Open",{"Closed":{"reason":"done"}}]
+// expect output: {"pets":{"rex":{"name":"rex","age":null}}}
+
+use std.json
+
+type Item {
+    name: String
+    price: Float
+    tags: [String] = []
+}
+
+type Status = Open | Closed(reason: String)
+
+type Pet {
+    name: String
+    age: Int? = none
+}
+
+fn main() {
+    print(json.of(Item(name: "ink", price: 2.0, tags: ["blue"])))
+    print(json.of([Status.Open, Status.Closed(reason: "done")]))
+    const pets = ["rex": Pet(name: "rex")]
+    print(json.of(["pets": pets]))
+}

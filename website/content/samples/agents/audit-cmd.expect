@@ -1,0 +1,7 @@
+$ kavach audit
+unsafe code:
+  nothing
+revealed secrets:
+  src/main.kav:13  reveal(…)
+capability use:
+  src/main.kav:10  fn main: Console

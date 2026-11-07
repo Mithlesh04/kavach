@@ -1,0 +1,42 @@
+use std.agents
+use std.time
+
+type PayError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn refund(order: Int, amount: Int) ! PayError
+}
+
+type Bank: Payments {
+    fn refund(self, order: Int, amount: Int) ! PayError {
+        print("refunded {amount} on order {order}")
+    }
+}
+
+agent Refunder {
+    can Payments.refund
+
+    approve Payments.refund when amount > 100 by "finance" within 2.days
+
+    on refund(order: Int, amount: Int) ! PayError {
+        try Payments.refund(order, amount)
+    }
+}
+
+fn review(person: String) ! ApprovalError uses Approvals, Console {
+    for r in agents.waiting() {
+        print("{r.id}: {r.call}, by {r.by} when {r.why}")
+        try agents.answer(r.id, approved: true, by: person)
+    }
+}
+
+fn main() ! Error uses Approvals, Clock, Console {
+    const bot = Refunder.start(Payments: Bank())
+    const waits = spawn {
+        bot.refund(1, 900) catch e => print("refused: {e}")
+    }
+    time.sleep(1.seconds)
+    try review("asha")
+    try waits.wait()
+    agents.answer("Refunder-1-1", approved: true, by: "asha") catch e => print("again: {e}")
+}
