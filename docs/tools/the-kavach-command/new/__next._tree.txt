@@ -1,0 +1,9 @@
+:HL["/kavach/_next/static/chunks/2r2sxv8-4fl5s.css","style"]
+:HL["/kavach/_next/static/media/07c7676b89ed2778-s.p.2bn3s6zvc0dyp.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+:HL["/kavach/_next/static/media/53897e768d329f66-s.p.3t6q91iet4nsy.woff2","font",{"crossOrigin":"","type":"font/woff2"}]
+5:[["children",{"s":"__PAGE__","h":160}]]
+4:[["children",{"s":{"n":"sub","t":"d","k":"new","s":[]},"h":96,"c":"$Q5"}]]
+3:[["children",{"s":{"n":"page","t":"d","k":"the-kavach-command","s":[]},"h":96,"c":"$Q4"}]]
+2:[["children",{"s":{"n":"part","t":"d","k":"tools","s":["benchmarks"]},"h":64,"c":"$Q3"}]]
+1:[["children",{"s":"docs","h":32,"c":"$Q2"}]]
+0:{"b":"dCnWigtVE4GXWESGGyu9x","t":{"t":{"s":"","h":80,"c":"$Q1"}}}
