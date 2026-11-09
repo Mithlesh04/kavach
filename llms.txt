@@ -1,0 +1,356 @@
+# Kavach
+
+> A compiled, statically typed, general-purpose programming language:
+> as quick to try as a script (`kavach run`), compiled to one native
+> executable (`kavach build`), with no garbage collector. Every integer
+> and index checked, and faster than C++ in 29 of 36 published,
+> reproducible benchmarks.
+
+The course teaches one idea per page, in 14 parts. A page with several
+forms has sub-pages under it. Source references are pinned to the docs
+version's git tag; benchmarks carry one command to reproduce them.
+
+
+## Part 0: Start here
+
+- [Kavach Home](https://mithlesh04.github.io/kavach/docs/start/kavach-home/): Kavach (कवच) is a compiled, statically typed, general-purpose programming language: as quick to try as a script, and checked and fast like a systems language.
+- [Why Kavach?](https://mithlesh04.github.io/kavach/docs/start/why-kavach/): There are already hundreds of languages, and many make life easier. Kavach exists for something they weren't built for: AI writes much of today's code, and AI agents now take real actions.
+- [What Kavach Does for You](https://mithlesh04.github.io/kavach/docs/start/what-kavach-does-for-you/): The things Kavach does without being asked: fewer mistakes, exact numbers, clear messages, speed and safety. Each one links to its proof.
+- [Classic Mistakes, Fixed](https://mithlesh04.github.io/kavach/docs/start/classic-mistakes-fixed/): 0.1 + 0.2 is 0.3, a NaN can't break a sort, "😀" is one character long: the everyday traps of other languages, fixed.
+- [Mistakes Caught Before a Run](https://mithlesh04.github.io/kavach/docs/start/mistakes-caught-before-a-run/): Everyday mistakes, each one a small program, and the step that catches it before the program runs, with the message it gives.
+- [Who Kavach Is For](https://mithlesh04.github.io/kavach/docs/start/who-kavach-is-for/): Kavach is for teams that need AI agents they can trust, developers who want speed without memory bugs, and anyone learning to program.
+- [What You Can Build](https://mithlesh04.github.io/kavach/docs/start/what-you-can-build/): Project ideas from your first afternoon to expert work, each with the pages that teach what it needs.
+- [What a Program Is](https://mithlesh04.github.io/kavach/docs/start/what-a-program-is/): A program is a list of steps for the computer, written in a language both you and the computer can read.
+- [The Terminal](https://mithlesh04.github.io/kavach/docs/start/the-terminal/): The terminal is a window where you type commands. You need four of them to run Kavach programs.
+- [Install](https://mithlesh04.github.io/kavach/docs/start/install/): One clone, one build. A single-command installer comes with the first public release.
+- [Your First Program](https://mithlesh04.github.io/kavach/docs/start/your-first-program/): Write a file, run it, and turn it into a program anyone can start.
+- [Reading Errors](https://mithlesh04.github.io/kavach/docs/start/reading-errors/): Error messages are help: each one says what is wrong, where, and usually what to write instead.
+
+## Part 1: Basics
+
+- [Syntax](https://mithlesh04.github.io/kavach/docs/basics/syntax/): How a Kavach file is written: one statement per line, blocks in braces, no semicolons.
+- [Syntax: Source files](https://mithlesh04.github.io/kavach/docs/basics/syntax/source-files/): A statement ends at the end of its line, unless the line clearly isn't finished.
+- [Syntax: The main function](https://mithlesh04.github.io/kavach/docs/basics/syntax/the-main-function/): A program starts at fn main(). In a single-file script, the lines at the top level are main.
+- [Syntax: Blocks are values](https://mithlesh04.github.io/kavach/docs/basics/syntax/blocks-are-values/): A block { … } has a value: the value of its last line.
+- [Syntax: Names](https://mithlesh04.github.io/kavach/docs/basics/syntax/names/): Names are made of letters, digits and _, in snake_case for values and PascalCase for types.
+- [Syntax: Keywords](https://mithlesh04.github.io/kavach/docs/basics/syntax/keywords/): Keywords are the words the language itself uses. They can't be used as names.
+- [Output](https://mithlesh04.github.io/kavach/docs/basics/output/): print(value) writes a value to the screen, followed by a new line.
+- [Output: print](https://mithlesh04.github.io/kavach/docs/basics/output/print/): Each print call writes exactly one line to standard output.
+- [Output: How values print](https://mithlesh04.github.io/kavach/docs/basics/output/how-values-print/): print shows a value the way you would write it in code, so the output is never ambiguous.
+- [Output: debug](https://mithlesh04.github.io/kavach/docs/basics/output/debug/): debug(value) prints a value with its file and line while you develop, and disappears from release builds.
+- [Comments](https://mithlesh04.github.io/kavach/docs/basics/comments/): Comments are notes for people: the compiler skips them.
+- [Variables](https://mithlesh04.github.io/kavach/docs/basics/variables/): A variable is a name for a value. const names one that never changes; let names one that can.
+- [Variables: const](https://mithlesh04.github.io/kavach/docs/basics/variables/const/): const names a value that never changes after it is made.
+- [Variables: let](https://mithlesh04.github.io/kavach/docs/basics/variables/let/): let names a variable: a value that can change later.
+- [Variables: Changing a value](https://mithlesh04.github.io/kavach/docs/basics/variables/changing-a-value/): Give a let a new value with =, or change it in place with +=, -=, *= and the others.
+- [Variables: Destructuring](https://mithlesh04.github.io/kavach/docs/basics/variables/destructuring/): Take a list, a record or a map apart into several names in one line.
+- [User Input](https://mithlesh04.github.io/kavach/docs/basics/user-input/): term.prompt(question) prints a question and gives back the line the user types.
+- [User Input: Ask for text](https://mithlesh04.github.io/kavach/docs/basics/user-input/ask-for-text/): term.prompt gives the line typed, as text, or none when the input has ended.
+- [User Input: Ask for a number](https://mithlesh04.github.io/kavach/docs/basics/user-input/ask-for-a-number/): term.prompt_int asks for a whole number, and asks again until it gets one.
+- [User Input: Ask for a password](https://mithlesh04.github.io/kavach/docs/basics/user-input/ask-for-a-password/): term.prompt_secret reads a password without showing it, and keeps it secret afterwards too.
+- [Data Types](https://mithlesh04.github.io/kavach/docs/basics/data-types/): Every value has a type: whole numbers are Int, text is String, true and false are Bool, and so on.
+- [Data Types: Int](https://mithlesh04.github.io/kavach/docs/basics/data-types/int/): Int is a whole number, positive or negative, up to about nine quintillion.
+- [Data Types: Sized integers](https://mithlesh04.github.io/kavach/docs/basics/data-types/sized-integers/): Int8 to Int32 and UInt8 to UInt64 hold whole numbers in less space, or only positive ones.
+- [Data Types: Float and Float32](https://mithlesh04.github.io/kavach/docs/basics/data-types/float-and-float32/): Float is a number with a fraction, in 64 bits; Float32 is the 32-bit kind that GPUs compute fastest.
+- [Data Types: Decimal](https://mithlesh04.github.io/kavach/docs/basics/data-types/decimal/): Decimal holds decimal numbers exactly, with as many digits as they need: it is Kavach's big decimal. Use it for money.
+- [Data Types: BigInt](https://mithlesh04.github.io/kavach/docs/basics/data-types/bigint/): BigInt is a whole number of any size, worked out exactly.
+- [Data Types: Bool](https://mithlesh04.github.io/kavach/docs/basics/data-types/bool/): Bool has two values, true and false. Comparisons give a Bool.
+- [Data Types: Char](https://mithlesh04.github.io/kavach/docs/basics/data-types/char/): Char is one character, written in single quotes: 'k', 'क'.
+- [Data Types: Converting types](https://mithlesh04.github.io/kavach/docs/basics/data-types/converting-types/): Convert a value with the name of the type you want: Float(n), Int(text), String(x).
+- [Operators](https://mithlesh04.github.io/kavach/docs/basics/operators/): Operators compute with values: + adds, == compares, and combines two conditions, ?? picks a default.
+- [Operators: Arithmetic](https://mithlesh04.github.io/kavach/docs/basics/operators/arithmetic/): + - * / work as in school; % is the remainder and ** the power.
+- [Operators: Assignment](https://mithlesh04.github.io/kavach/docs/basics/operators/assignment/): = gives a variable a new value; += and the others change it in place.
+- [Operators: Comparison](https://mithlesh04.github.io/kavach/docs/basics/operators/comparison/): == != < <= > >= compare two values and give a Bool. They chain, and == compares contents.
+- [Operators: Logical](https://mithlesh04.github.io/kavach/docs/basics/operators/logical/): and is true when both sides are; or when either is; not turns true to false.
+- [Operators: Precedence](https://mithlesh04.github.io/kavach/docs/basics/operators/precedence/): * and / come before + and -, as in school. When in doubt, use parentheses.
+- [Strings](https://mithlesh04.github.io/kavach/docs/basics/strings/): A String is text: letters, digits, spaces, any script. Write it in double quotes.
+- [Strings: Making strings](https://mithlesh04.github.io/kavach/docs/basics/strings/making-strings/): Plain strings, multi-line strings in triple quotes, and raw strings that take every character as written.
+- [Strings: Interpolation](https://mithlesh04.github.io/kavach/docs/basics/strings/interpolation/): Write any expression in braces inside a string, and its value is put in its place.
+- [Strings: Joining](https://mithlesh04.github.io/kavach/docs/basics/strings/joining/): + joins two strings; join() puts a list of strings together; repeat() repeats one.
+- [Strings: Length and characters](https://mithlesh04.github.io/kavach/docs/basics/strings/length-and-characters/): len() counts the characters of a string; slice() and chars() take it apart.
+- [Strings: Searching](https://mithlesh04.github.io/kavach/docs/basics/strings/searching/): contains, starts_with and ends_with answer yes or no; index_of says where; replace swaps parts.
+- [Strings: Splitting](https://mithlesh04.github.io/kavach/docs/basics/strings/splitting/): split(sep) cuts a string into a list of strings; lines() cuts it at line breaks.
+- [Strings: Strings to numbers](https://mithlesh04.github.io/kavach/docs/basics/strings/strings-to-numbers/): Int(text) reads a whole string as a number, and can fail; std.text finds numbers inside other text.
+- [Math](https://mithlesh04.github.io/kavach/docs/basics/math/): std.math has square roots, powers, rounding, pi and more.
+- [Math: Math functions](https://mithlesh04.github.io/kavach/docs/basics/math/math-functions/): sqrt, pow, gcd, lcm, is_prime, factorial, mean, and the constants pi and e.
+- [Math: Rounding](https://mithlesh04.github.io/kavach/docs/basics/math/rounding/): floor rounds down, ceil rounds up, round rounds to the nearest, halves away from zero.
+- [Math: Exact numbers](https://mithlesh04.github.io/kavach/docs/basics/math/exact-numbers/): Numbers written in the code are worked out exactly, so 0.1 + 0.2 == 0.3 is true.
+- [Booleans](https://mithlesh04.github.io/kavach/docs/basics/booleans/): A Bool is true or false. Comparisons make them, and and, or, not combine them.
+- [If...Else](https://mithlesh04.github.io/kavach/docs/basics/if-else/): if runs a block only when its condition is true; else gives the other way.
+- [If...Else: if](https://mithlesh04.github.io/kavach/docs/basics/if-else/if/): if on its own: the block runs when the condition is true, and is skipped when it isn't.
+- [If...Else: else if](https://mithlesh04.github.io/kavach/docs/basics/if-else/else-if/): else if tries another condition; the final else catches everything left.
+- [If...Else: if as a value](https://mithlesh04.github.io/kavach/docs/basics/if-else/if-as-a-value/): An if is a value: it picks between two values in one line.
+- [If Let](https://mithlesh04.github.io/kavach/docs/basics/if-let/): if let runs a block only when an optional value is there, and gives you the value inside.
+- [Match](https://mithlesh04.github.io/kavach/docs/basics/match/): match compares a value against patterns, top to bottom, and runs the first that fits.
+- [Match: Matching values](https://mithlesh04.github.io/kavach/docs/basics/match/matching-values/): Match exact values: numbers, text, true and false.
+- [Match: Patterns](https://mithlesh04.github.io/kavach/docs/basics/match/patterns/): Patterns can be ranges, tuples, union variants, none, or _ for anything.
+- [Match: Guards](https://mithlesh04.github.io/kavach/docs/basics/match/guards/): A guard, pattern if condition, adds a check to a pattern.
+- [For Loop](https://mithlesh04.github.io/kavach/docs/basics/for-loop/): A for loop runs a block of code once for each item: each item of a list, each number of a range, each entry of a map.
+- [For Loop: Over a list](https://mithlesh04.github.io/kavach/docs/basics/for-loop/over-a-list/): Loop over a list: the block runs once per item, in order, and the name you choose holds the item.
+- [For Loop: Over a range](https://mithlesh04.github.io/kavach/docs/basics/for-loop/over-a-range/): Loop over a range of numbers: .. leaves the end out, ..= puts it in.
+- [For Loop: Over a map](https://mithlesh04.github.io/kavach/docs/basics/for-loop/over-a-map/): Loop over a map: each round gives a key and its value together.
+- [For Loop: With an index](https://mithlesh04.github.io/kavach/docs/basics/for-loop/with-an-index/): When you need each item's position too, loop over list.enumerate().
+- [For Loop: Repeat n times](https://mithlesh04.github.io/kavach/docs/basics/for-loop/repeat-n-times/): To repeat a block a number of times without using the number, name it _.
+- [While Loop](https://mithlesh04.github.io/kavach/docs/basics/while-loop/): A while loop repeats a block as long as its condition is true.
+- [While Loop: while](https://mithlesh04.github.io/kavach/docs/basics/while-loop/while/): while condition { … } checks the condition, runs the block, and checks again.
+- [While Loop: Endless loops](https://mithlesh04.github.io/kavach/docs/basics/while-loop/endless-loops/): while true { … } runs until a break inside it stops the loop.
+- [Break/Continue](https://mithlesh04.github.io/kavach/docs/basics/break-continue/): break leaves a loop at once; continue skips the rest of this round and starts the next.
+
+## Part 2: Functions
+
+- [Functions](https://mithlesh04.github.io/kavach/docs/functions/functions/): A function is a named block of code. Write it once, then run it as often as you like by calling its name.
+- [Functions: Declaring](https://mithlesh04.github.io/kavach/docs/functions/functions/declaring/): fn name() { … } declares a function; name() calls it.
+- [Functions: Parameters](https://mithlesh04.github.io/kavach/docs/functions/functions/parameters/): Parameters are the values a function takes, each with a name and a type.
+- [Functions: Returning a value](https://mithlesh04.github.io/kavach/docs/functions/functions/returning-a-value/): The last line is the result; return leaves early with a result.
+- [Named Arguments](https://mithlesh04.github.io/kavach/docs/functions/named-arguments/): Any argument can be passed by its name, and a parameter can have a default value.
+- [Named Arguments: Named arguments](https://mithlesh04.github.io/kavach/docs/functions/named-arguments/named-arguments/): Name the arguments, and their order no longer matters.
+- [Named Arguments: Default values](https://mithlesh04.github.io/kavach/docs/functions/named-arguments/default-values/): A parameter with = value may be left out of a call, and then takes that value.
+- [Using Results](https://mithlesh04.github.io/kavach/docs/functions/using-results/): A result must be used. To throw one away on purpose, write const _ = …
+- [Lambdas](https://mithlesh04.github.io/kavach/docs/functions/lambdas/): A lambda is a small function without a name, written where it is used: x => x * 2.
+- [Lambdas: Writing a lambda](https://mithlesh04.github.io/kavach/docs/functions/lambdas/writing-a-lambda/): One parameter: x => …. Several: (a, b) => …. A longer body goes in braces.
+- [Lambdas: Dot shorthand](https://mithlesh04.github.io/kavach/docs/functions/lambdas/dot-shorthand/): In an argument, .something is short for a lambda over one value: .upper() means x => x.upper().
+- [Functions as Values](https://mithlesh04.github.io/kavach/docs/functions/functions-as-values/): A function is a value: store it in a variable, or pass it to another function.
+- [Recursion](https://mithlesh04.github.io/kavach/docs/functions/recursion/): A function may call itself, as long as each call gets closer to a case that stops.
+- [inout Parameters](https://mithlesh04.github.io/kavach/docs/functions/inout-parameters/): A parameter marked inout lets the function change the caller's variable, and only when it succeeds.
+- [Signatures](https://mithlesh04.github.io/kavach/docs/functions/signatures/): A function's first lines say what it takes, gives, may fail with, may touch, and promises.
+- [Deprecating a Function](https://mithlesh04.github.io/kavach/docs/functions/deprecating-a-function/): deprecated marks a function that is on its way out: every call warns, and kavach fix rewrites the calls to the new one.
+
+## Part 3: Collections
+
+- [Lists](https://mithlesh04.github.io/kavach/docs/collections/lists/): A list holds many values of one type, in order, under one name: ["mango", "fig"].
+- [Lists: Making a list](https://mithlesh04.github.io/kavach/docs/collections/lists/making-a-list/): Write the items in square brackets, or start empty with a type and push.
+- [Lists: Reading by index](https://mithlesh04.github.io/kavach/docs/collections/lists/reading-by-index/): list[i] reads the item at position i, counting from 0; list.get(i) gives none instead of stopping.
+- [Lists: Changing items](https://mithlesh04.github.io/kavach/docs/collections/lists/changing-items/): list[i] = value replaces an item. The list must be a let.
+- [Lists: Adding and removing](https://mithlesh04.github.io/kavach/docs/collections/lists/adding-and-removing/): push adds an item to the end; filter keeps only the items you want.
+- [Lists: Sorting](https://mithlesh04.github.io/kavach/docs/collections/lists/sorting/): sort() gives a sorted copy; sort_by sorts by a key; reverse() turns a list around.
+- [Lists: map, filter, sum](https://mithlesh04.github.io/kavach/docs/collections/lists/map-filter-sum/): map changes every item, filter keeps some, sum adds them up, and count, any, all and find ask questions.
+- [Maps](https://mithlesh04.github.io/kavach/docs/collections/maps/): A map stores values under keys: ["asha": 31] keeps 31 under the key "asha".
+- [Maps: Making a map](https://mithlesh04.github.io/kavach/docs/collections/maps/making-a-map/): Write key: value pairs in square brackets, or start empty with [:] and a type.
+- [Maps: Reading a value](https://mithlesh04.github.io/kavach/docs/collections/maps/reading-a-value/): map[key] gives an optional: the value, or none when the key isn't there.
+- [Maps: Adding and changing](https://mithlesh04.github.io/kavach/docs/collections/maps/adding-and-changing/): map[key] = value adds a key or changes its value; remove(key) takes it out.
+- [Maps: Looping over a map](https://mithlesh04.github.io/kavach/docs/collections/maps/looping-over-a-map/): Loop over (key, value) pairs, or over keys() or values() alone.
+- [Sets](https://mithlesh04.github.io/kavach/docs/collections/sets/): A set holds each value once. Adding a value it already has changes nothing.
+- [Sets: Making a set](https://mithlesh04.github.io/kavach/docs/collections/sets/making-a-set/): Set.of(…) makes a set; add and remove change it, so it must be a let.
+- [Sets: Adding and checking](https://mithlesh04.github.io/kavach/docs/collections/sets/adding-and-checking/): contains asks whether a value is in the set; a loop visits the values in insertion order.
+- [Tuples](https://mithlesh04.github.io/kavach/docs/collections/tuples/): A tuple groups a few values, of any types, in brackets: (200, "OK").
+- [Sorting](https://mithlesh04.github.io/kavach/docs/collections/sorting/): list.sort() gives a sorted copy of a list of numbers, text, characters, Bools or tuples. sort_by(key) sorts anything else, by a key you choose.
+- [Sorting: Numbers](https://mithlesh04.github.io/kavach/docs/collections/sorting/numbers/): Numbers sort smallest first, exactly: NaN goes last, and Decimal and BigInt sort by their full value.
+- [Sorting: Text](https://mithlesh04.github.io/kavach/docs/collections/sorting/text/): Text sorts by Unicode code point, character by character: the same on every machine, whatever its language settings.
+- [Sorting: By a key](https://mithlesh04.github.io/kavach/docs/collections/sorting/by-a-key/): sort_by(key) sorts by what key gives for each item: a field, or any number or text worked out from it.
+- [Sorting: Two keys](https://mithlesh04.github.io/kavach/docs/collections/sorting/two-keys/): To sort by two keys, give sort_by a tuple: (p.city, p.name) sorts by city, then by name within a city.
+
+## Part 4: Your Own Types
+
+- [Records](https://mithlesh04.github.io/kavach/docs/types/records/): A record is a type of your own: named fields grouped under one name, such as a User with a name and an age.
+- [Records: Declaring](https://mithlesh04.github.io/kavach/docs/types/records/declaring/): type Name { field: Type … } declares a record; Name(field: value, …) makes one.
+- [Records: Default values](https://mithlesh04.github.io/kavach/docs/types/records/default-values/): A field with = value may be left out when the record is made, and then takes that value.
+- [Records: Updating with with](https://mithlesh04.github.io/kavach/docs/types/records/updating-with-with/): record with { field: value } makes a copy with some fields changed.
+- [Methods](https://mithlesh04.github.io/kavach/docs/types/methods/): A method is a function that belongs to a type, written inside it. self is the value it is called on.
+- [Method Chains](https://mithlesh04.github.io/kavach/docs/types/method-chains/): Call one method on the result of the last: text.trim().lower(). Each step gives a new value for the next.
+- [Extend](https://mithlesh04.github.io/kavach/docs/types/extend/): extend adds methods to a type you didn't write: a built-in type, a union, or a type from another module.
+- [Unions](https://mithlesh04.github.io/kavach/docs/types/unions/): A union is a value that is exactly one of several cases: a Shape is a Circle or a Rect.
+- [Unions: Declaring](https://mithlesh04.github.io/kavach/docs/types/unions/declaring/): type Name = A | B(field: Type) | … declares a union.
+- [Unions: Matching a union](https://mithlesh04.github.io/kavach/docs/types/unions/matching-a-union/): match on a union takes each variant apart, and the compiler checks that none is forgotten.
+- [Optionals](https://mithlesh04.github.io/kavach/docs/types/optionals/): There is no null. A value that may be missing has a type ending in ?, and you must say what happens when it is.
+- [Optionals: What an optional is](https://mithlesh04.github.io/kavach/docs/types/optionals/what-an-optional-is/): T? means a T or none. Lookups that can find nothing give one.
+- [Optionals: Reading one safely](https://mithlesh04.github.io/kavach/docs/types/optionals/reading-one-safely/): Read an optional with ?? for a default, ?. to read through, or if let to act only when it is there.
+- [Anonymous Records](https://mithlesh04.github.io/kavach/docs/types/anonymous-records/): (times: 3, wait_ms: 200) is a record written on the spot, with no type declared for it.
+- [Generics](https://mithlesh04.github.io/kavach/docs/types/generics/): A generic function or type works for any type: fn first<T>(items: [T]) -> T? works on a list of anything.
+- [Interfaces](https://mithlesh04.github.io/kavach/docs/types/interfaces/): An interface names methods a type promises to have. A type keeps the promise only when it says so.
+- [Interface Values](https://mithlesh04.github.io/kavach/docs/types/interface-values/): An interface is also a type for values: a [Describe] can hold users and rectangles together.
+- [Classes and Inheritance](https://mithlesh04.github.io/kavach/docs/types/classes-and-inheritance/): Kavach has no classes and no inheritance. Records, methods, interfaces and composition do the same jobs, with fewer surprises.
+- [Writing Types](https://mithlesh04.github.io/kavach/docs/types/writing-types/): Types are written where people read them: parameters, results and record fields. Everywhere else they are worked out.
+
+## Part 5: Errors & Contracts
+
+- [Kinds of Errors](https://mithlesh04.github.io/kavach/docs/errors/kinds-of-errors/): Kavach reports problems in four ways: compile errors and warnings before the program runs, errors and panics while it runs.
+- [Errors](https://mithlesh04.github.io/kavach/docs/errors/errors/): A function that can fail says so with ! after its result type, and every caller must deal with it. There are no exceptions.
+- [try](https://mithlesh04.github.io/kavach/docs/errors/try/): try passes an error on to your own caller: if the call fails, your function fails with the same error.
+- [catch](https://mithlesh04.github.io/kavach/docs/errors/catch/): catch handles an error on the spot: give a value to use instead, or run code with the error.
+- [Matching Errors](https://mithlesh04.github.io/kavach/docs/errors/matching-errors/): match on a call that can fail: ok(value) for success, err(…) for each kind of error.
+- [The Error Catch-all](https://mithlesh04.github.io/kavach/docs/errors/the-error-catch-all/): ! Error accepts any error. Use it in scripts and in main, where you just want to stop with a message.
+- [Adding Context](https://mithlesh04.github.io/kavach/docs/errors/adding-context/): context adds a short note to an error that try passes on, so the message says what was being done.
+- [Panics](https://mithlesh04.github.io/kavach/docs/errors/panics/): A panic stops the program at once, or only its task in a task. It is for bugs, not for failures you expect.
+- [Panics: Panics](https://mithlesh04.github.io/kavach/docs/errors/panics/panics/): Write panic("message") for a state that must never happen. For overflow you expect, use checked_add.
+- [Panics: When a program stops](https://mithlesh04.github.io/kavach/docs/errors/panics/when-a-program-stops/): How a program ends tells the shell what happened: 0 for success, 1 for an error from main, 101 for a panic in main.
+- [Contracts](https://mithlesh04.github.io/kavach/docs/errors/contracts/): A contract states in one line what a function needs and what it promises, and Kavach checks it.
+- [Contracts: require](https://mithlesh04.github.io/kavach/docs/errors/contracts/require/): require states what callers must make true. A call that breaks it stops the program, naming the rule.
+- [Contracts: ensure](https://mithlesh04.github.io/kavach/docs/errors/contracts/ensure/): ensure states what the function promises; result is the value it gives back.
+- [Contracts: invariant](https://mithlesh04.github.io/kavach/docs/errors/contracts/invariant/): invariant states what is always true of a type. A value that breaks it can't exist.
+- [Contracts: example](https://mithlesh04.github.io/kavach/docs/errors/contracts/example/): example shows one real call and its expected result. kavach test runs every one.
+- [Contracts: How they are checked](https://mithlesh04.github.io/kavach/docs/errors/contracts/how-they-are-checked/): While you develop, every contract is checked. In a release build, public functions' contracts and every invariant are.
+- [Testing](https://mithlesh04.github.io/kavach/docs/errors/testing/): kavach test tests every function from its types and contracts. Most code needs no test file at all.
+- [Testing: Tests from types](https://mithlesh04.github.io/kavach/docs/errors/testing/tests-from-types/): From a function's types and contracts alone, kavach test makes the inputs and checks the results.
+- [Testing: test blocks](https://mithlesh04.github.io/kavach/docs/errors/testing/test-blocks/): A test block checks a story of several steps that contracts can't express.
+- [Testing: Fakes](https://mithlesh04.github.io/kavach/docs/errors/testing/fakes/): In a test, files, the network, the clock and your own capabilities are fakes: nothing real is touched.
+
+## Part 6: Memory
+
+- [Values, Not References](https://mithlesh04.github.io/kavach/docs/memory/values-not-references/): Every value in Kavach is a value: assigning or passing it never makes two names share it.
+- [Automatic Memory](https://mithlesh04.github.io/kavach/docs/memory/automatic-memory/): You never allocate or free memory yourself, and there is no garbage collector that pauses your program.
+- [Automatic Memory: How it stays fast](https://mithlesh04.github.io/kavach/docs/memory/automatic-memory/how-it-stays-fast/): Values look copied, but the compiler moves them, shares them and copies only when it must.
+- [Automatic Memory: Freed immediately](https://mithlesh04.github.io/kavach/docs/memory/automatic-memory/freed-immediately/): A value is freed when its last use ends: no garbage collector, no pauses. A type can run its own cleanup with Drop.
+- [Shared State](https://mithlesh04.github.io/kavach/docs/memory/shared-state/): When several parts of a program must change the same thing, say so with Shared<T>: the one value that is shared.
+- [Arenas](https://mithlesh04.github.io/kavach/docs/memory/arenas/): An arena makes many short-lived values quickly from one block of memory, and frees them all at once at its end.
+- [Unsafe](https://mithlesh04.github.io/kavach/docs/memory/unsafe/): unsafe { … } turns off the safety checks for a block, to work with raw memory and C. A package must allow it.
+
+## Part 7: Standard Library
+
+- [Files](https://mithlesh04.github.io/kavach/docs/standard-library/files/): std.fs reads and writes files and folders. Paths are text, relative to the folder the program runs in.
+- [Files: Reading](https://mithlesh04.github.io/kavach/docs/standard-library/files/reading/): fs.read_text reads a whole file; fs.lines reads it one line at a time, for files of any size.
+- [Files: Writing](https://mithlesh04.github.io/kavach/docs/standard-library/files/writing/): fs.write_text replaces a file in one step; fs.append_text adds to its end.
+- [Files: Folders](https://mithlesh04.github.io/kavach/docs/standard-library/files/folders/): fs.create_dir makes a folder and its parents; fs.list gives the names in a folder, sorted.
+- [Command-line Programs](https://mithlesh04.github.io/kavach/docs/standard-library/command-line-programs/): A command-line program reads the words typed after its name. cli.args gives them as a list; cli.parse turns them into a record.
+- [Command-line Programs: Arguments](https://mithlesh04.github.io/kavach/docs/standard-library/command-line-programs/arguments/): Describe the options as a record, and cli.parse reads them, checks their types, and writes the help text for you.
+- [Command-line Programs: Commands](https://mithlesh04.github.io/kavach/docs/standard-library/command-line-programs/commands/): Parse into a union, and each case is a command with its own options, like git add and git log.
+- [The Terminal](https://mithlesh04.github.io/kavach/docs/standard-library/the-terminal/): std.term colors and styles text, draws progress bars, and asks questions. It turns its colors off by itself when output isn't a terminal.
+- [The Terminal: Colors and styles](https://mithlesh04.github.io/kavach/docs/standard-library/the-terminal/colors-and-styles/): Each color or style function takes text and gives it back colored. They nest: an inner style ends only itself.
+- [The Terminal: Prompts](https://mithlesh04.github.io/kavach/docs/standard-library/the-terminal/prompts/): term.prompt, prompt_int, confirm and choose ask the user a question and give a typed answer.
+- [Time](https://mithlesh04.github.io/kavach/docs/standard-library/time/): std.time tells the time, measures how long something takes, waits, repeats work at an interval, works with dates and time zones, and reads and writes times as text.
+- [Random Numbers](https://mithlesh04.github.io/kavach/docs/standard-library/random-numbers/): std.random gives random whole numbers, picks and shuffles. Its numbers are safe for passwords and keys; there is no weaker kind to pick by mistake.
+- [Regex](https://mithlesh04.github.io/kavach/docs/standard-library/regex/): A regular expression is a pattern that text can match. regex.new makes one; its methods find, capture, replace and split.
+- [Logging](https://mithlesh04.github.io/kavach/docs/standard-library/logging/): A log event is a record you define, not a string. log.info, warn, error and debug write it, and the program's owner decides where it goes.
+- [Agents](https://mithlesh04.github.io/kavach/docs/standard-library/agents/): std.agents gives a capability's implementation the key of the call it is running, so a service can drop a repeated call, and lets a program answer agents' approval requests.
+- [Clipboard](https://mithlesh04.github.io/kavach/docs/standard-library/clipboard/): std.clipboard reads and writes the system clipboard's text. What a person copied can be private, so it needs the capability Clipboard.
+- [Devices](https://mithlesh04.github.io/kavach/docs/standard-library/devices/): std.devices talks to devices on a cable. Serial ports come first: boards, sensors and modems on USB or RS-232. They need the capability Serial.
+- [JSON](https://mithlesh04.github.io/kavach/docs/standard-library/json/): JSON is text that carries data between programs. Kavach reads it straight into your own types, or into a Json value when its shape is known only while the program runs.
+- [JSON: Json values](https://mithlesh04.github.io/kavach/docs/standard-library/json/json-values/): A Json value holds JSON whose shape is known only while the program runs. It is a union of six cases, one for each kind of JSON value.
+- [JSON: Reading](https://mithlesh04.github.io/kavach/docs/standard-library/json/reading/): json.parse gives a Json value; doc["key"] and doc[i] read into it, and .text(), .int() and the others give the value as an optional.
+- [JSON: Nested data](https://mithlesh04.github.io/kavach/docs/standard-library/json/nested-data/): Objects inside objects and lists inside them: chain reads to go down, or decode the whole shape into records inside records.
+- [JSON: Building](https://mithlesh04.github.io/kavach/docs/standard-library/json/building/): Where a Json is expected, ordinary literals become JSON; json.stringify writes any value as JSON text.
+- [JSON: Decoding into a type](https://mithlesh04.github.io/kavach/docs/standard-library/json/decoding-into-a-type/): json.decode<T> reads JSON text straight into your type T, and says exactly where it doesn't fit.
+- [Bytes](https://mithlesh04.github.io/kavach/docs/standard-library/bytes/): Bytes holds raw data: a file's contents, an image, a network message. It is stored compactly, one byte per byte.
+
+## Part 8: Networks
+
+- [HTTP](https://mithlesh04.github.io/kavach/docs/networks/http/): std.http calls web APIs and serves them: HTTP/1.1 and HTTP/2, with HTTP/3 for calls, written in Kavach itself.
+- [HTTP: Calling an API](https://mithlesh04.github.io/kavach/docs/networks/http/calling-an-api/): http.get and http.post call a URL and give its Response: the status, the headers and the body.
+- [HTTP: Serving](https://mithlesh04.github.io/kavach/docs/networks/http/serving/): A server is one function from Request to Response. Route by r.method and r.path; answer with http.text or http.json_response.
+- [HTTP: JSON over HTTP](https://mithlesh04.github.io/kavach/docs/networks/http/json-over-http/): post_json and get_json send and read your own types; read_json and json_response do it on the server. The type is the contract.
+- [HTTP: Sessions](https://mithlesh04.github.io/kavach/docs/networks/http/sessions/): http.open keeps one connection open for many requests, instead of connecting again for each.
+- [Sockets](https://mithlesh04.github.io/kavach/docs/networks/sockets/): std.net speaks the protocols under HTTP: TCP connections, UDP datagrams, TLS encryption and QUIC.
+- [Sockets: TCP](https://mithlesh04.github.io/kavach/docs/networks/sockets/tcp/): TCP is a connection: bytes arrive complete and in order. net.listen and accept on one side, net.connect on the other.
+- [Sockets: UDP](https://mithlesh04.github.io/kavach/docs/networks/sockets/udp/): UDP sends datagrams: single messages with no connection, fast, but each may be lost, doubled or come out of order.
+- [Sockets: TLS](https://mithlesh04.github.io/kavach/docs/networks/sockets/tls/): net.connect_tls encrypts a connection and checks the server's certificate; there is no way to skip the check.
+- [Sockets: Timeouts](https://mithlesh04.github.io/kavach/docs/networks/sockets/timeouts/): Every network wait gives up after 30 seconds. .timeout(d) sets a shorter or longer deadline for one call.
+- [gRPC](https://mithlesh04.github.io/kavach/docs/networks/grpc/): gRPC services from your own Kavach types: no .proto file to write first, no code generator, and any gRPC library can call them.
+- [gRPC: Server streaming](https://mithlesh04.github.io/kavach/docs/networks/grpc/server-streaming/): The server answers with many messages, and the client handles each as it arrives: order tracking, live prices, logs.
+- [gRPC: Client streaming](https://mithlesh04.github.io/kavach/docs/networks/grpc/client-streaming/): The client sends many messages on one call, and the server answers once: uploads, batches, totals.
+- [gRPC: Two-way and conversations](https://mithlesh04.github.io/kavach/docs/networks/grpc/two-way-and-conversations/): Two-way streams send many messages each way; a conversation answers each message as it arrives.
+- [gRPC: kavach proto](https://mithlesh04.github.io/kavach/docs/networks/grpc/kavach-proto/): kavach proto writes the .proto file for your types, so a service in any other language can generate matching code.
+
+## Part 9: Concurrency
+
+- [Tasks](https://mithlesh04.github.io/kavach/docs/concurrency/tasks/): spawn starts a task that runs alongside the rest of the program; .wait() gets its result. There is no async and no await.
+- [Tasks: When a task fails](https://mithlesh04.github.io/kavach/docs/concurrency/tasks/when-a-task-fails/): A task's error comes out of .wait(), like the error of an ordinary call, and an error nobody reads is printed, not lost.
+- [Tasks Never Leak](https://mithlesh04.github.io/kavach/docs/concurrency/tasks-never-leak/): A task can't outlive the function that spawned it: when the function returns, its tasks still running are cancelled.
+- [Many Things at Once](https://mithlesh04.github.io/kavach/docs/concurrency/many-things-at-once/): list.parallel_map(f, max: n) runs f on every item in tasks of their own, at most n at a time, and gives the results in the list's order.
+- [Channels](https://mithlesh04.github.io/kavach/docs/concurrency/channels/): A channel passes values from one task to another, in order. put adds a value, take takes the next, and close says no more will come.
+- [Channels: put and take](https://mithlesh04.github.io/kavach/docs/concurrency/channels/put-and-take/): take() gives the next value as an optional: none once the channel is closed and empty.
+- [Channels: Many senders](https://mithlesh04.github.io/kavach/docs/concurrency/channels/many-senders/): Several tasks can put into one channel; close it once all of them are done.
+- [Channels: Deadlocks](https://mithlesh04.github.io/kavach/docs/concurrency/channels/deadlocks/): If every task waits and none can go on, the program stops with a clear panic instead of hanging forever.
+- [No Data Races](https://mithlesh04.github.io/kavach/docs/concurrency/no-data-races/): Each task works on its own copy of a value, so two tasks can't change the same thing at once. To share on purpose, use Shared.
+- [Timeouts & Cancellation](https://mithlesh04.github.io/kavach/docs/concurrency/timeouts-and-cancellation/): .timeout(d) puts a time limit on a wait. task.cancel() and spawn … within d stop a task, even one stuck in a loop that never waits.
+- [Taking Turns](https://mithlesh04.github.io/kavach/docs/concurrency/taking-turns/): Tasks take turns in an order the language defines, so a program with tasks prints the same thing on every run.
+- [How Tasks Run](https://mithlesh04.github.io/kavach/docs/concurrency/how-tasks-run/): Each spawn says how its task runs: plain spawn is a coroutine, spawn thread gets a thread of its own, spawn cores runs on any core, spawn process gets a process of its own. The turns, and the output, stay the same.
+
+## Part 10: Capabilities & Agents
+
+- [Capabilities](https://mithlesh04.github.io/kavach/docs/agents/capabilities/): A capability is permission to touch the outside world: files, the network, the terminal. A function says which ones it uses, and the compiler checks it.
+- [Capabilities: uses](https://mithlesh04.github.io/kavach/docs/agents/capabilities/uses/): A pub function must write its uses clause. A private one may leave it out: the compiler works it out.
+- [Capabilities: Pure functions](https://mithlesh04.github.io/kavach/docs/agents/capabilities/pure-functions/): A function without uses is pure: it can't affect the outside world at all.
+- [Capabilities: Narrower file access](https://mithlesh04.github.io/kavach/docs/agents/capabilities/narrower-file-access/): Fs can be granted in part: Fs.read only reads, Fs.write only changes, and Fs("./data") stays inside one folder.
+- [Your Own Capabilities](https://mithlesh04.github.io/kavach/docs/agents/your-own-capabilities/): Declare a capability for an outside system your code depends on, such as payments or email. Code calls it by name; who answers is decided elsewhere.
+- [Your Own Capabilities: Declaring a capability](https://mithlesh04.github.io/kavach/docs/agents/your-own-capabilities/declaring-a-capability/): A capability names methods. Every method can be refused, so its error type must have a Denied(reason: String) case.
+- [Your Own Capabilities: Implementing one](https://mithlesh04.github.io/kavach/docs/agents/your-own-capabilities/implementing-one/): An implementation is an ordinary type with type Name: Capability, giving a body to each method.
+- [Your Own Capabilities: When a call is refused](https://mithlesh04.github.io/kavach/docs/agents/your-own-capabilities/when-a-call-is-refused/): A refused call fails with Denied(reason), an ordinary error: match on it like any other.
+- [Agents](https://mithlesh04.github.io/kavach/docs/agents/agents/): An agent is a program that reacts to events and acts on the world. Its declaration says what it may touch, how much, and when a person decides; the compiler and the runtime hold it to that.
+- [Agents: Declaring an agent](https://mithlesh04.github.io/kavach/docs/agents/agents/declaring-an-agent/): agent Name { … } declares an agent: its model, its can, its limits and approvals, and its on handlers.
+- [Agents: model](https://mithlesh04.github.io/kavach/docs/agents/agents/model/): model names the AI model, and its settings, for every ask in the agent's handlers.
+- [Agents: settings](https://mithlesh04.github.io/kavach/docs/agents/agents/settings/): settings says how an agent runs: its mode, its audit log, and what it keeps across restarts. Agents can share one, and change a field each.
+- [Agents: can](https://mithlesh04.github.io/kavach/docs/agents/agents/can/): can lists what the agent's handlers may touch. A handler that needs anything else is a compile error.
+- [Agents: limit](https://mithlesh04.github.io/kavach/docs/agents/agents/limit/): limit sets hard boundaries on a capability method: on each call, on totals, and on the number of calls in a window.
+- [Agents: approve](https://mithlesh04.github.io/kavach/docs/agents/agents/approve/): approve … when … by "role" makes the handler wait for a person in that role to say yes.
+- [Agents: The order of checks](https://mithlesh04.github.io/kavach/docs/agents/agents/the-order-of-checks/): Every capability call goes through the same checks, in the same order: can, dry run, limits, approval, then the call.
+- [Agents: on: events](https://mithlesh04.github.io/kavach/docs/agents/agents/on-events/): on name(params) { … } is an event the agent handles. An agent can have as many as it needs.
+- [Running an Agent](https://mithlesh04.github.io/kavach/docs/agents/running-an-agent/): Start an agent with Name.start(…), giving one implementation for each capability it can use. Each on handler is then a method you call, and that call can always fail.
+- [ask<T>](https://mithlesh04.github.io/kavach/docs/agents/ask/): ask<T>(prompt) asks an AI model and gives back a checked value of type T, never loose text to parse.
+- [ask<T>: Typed answers](https://mithlesh04.github.io/kavach/docs/agents/ask/typed-answers/): The answer's type can hold anything a type can: true or false, text, numbers, lists and unions.
+- [ask<T>: When the AI fails](https://mithlesh04.github.io/kavach/docs/agents/ask/when-the-ai-fails/): ask can fail: no key, a network or provider error, an answer that never fits the type, or a limit. Handle it like any error.
+- [ask<T>: Choosing the model](https://mithlesh04.github.io/kavach/docs/agents/ask/choosing-the-model/): An agent chooses its AI model in code, with model; a single call can choose another, with model:. The key comes from an environment variable, never from a file.
+- [Agent Modes](https://mithlesh04.github.io/kavach/docs/agents/agent-modes/): Each agent runs in a mode, set in its settings: Observe only reports, Suggest asks a person every time, Enforce acts. Trust is earned step by step.
+- [Agent Modes: observe](https://mithlesh04.github.io/kavach/docs/agents/agent-modes/observe/): observe: calls run normally, and limits and approvals are only reported.
+- [Agent Modes: suggest](https://mithlesh04.github.io/kavach/docs/agents/agent-modes/suggest/): suggest: every capability call waits for a person to approve it.
+- [Agent Modes: enforce](https://mithlesh04.github.io/kavach/docs/agents/agent-modes/enforce/): enforce, the default: allowed calls run by themselves, a broken limit refuses, and an approval waits for a person.
+- [Agent Modes: Dry runs](https://mithlesh04.github.io/kavach/docs/agents/agent-modes/dry-runs/): kavach run --dry-run runs a program without making any capability call, and answers each one with a made-up value.
+- [Audit Log](https://mithlesh04.github.io/kavach/docs/agents/audit-log/): The runtime writes down every capability call an agent makes, with its arguments, its verdict and its result. No line of your code has to remember to.
+- [Monitoring Agents](https://mithlesh04.github.io/kavach/docs/agents/monitoring-agents/): Two records say what an agent did: the audit log the runtime writes for every capability call, and the events the agent logs itself, which go on to the monitoring tools you already run.
+- [Durable Agents](https://mithlesh04.github.io/kavach/docs/agents/durable-agents/): An agent keeps a journal, so a handler that stopped half way finishes after a restart, without doing a finished call again.
+- [Durable Agents: Limits across restarts](https://mithlesh04.github.io/kavach/docs/agents/durable-agents/limits-across-restarts/): An agent keeps its limit totals in a state file, so a daily limit stays daily even if the program starts again.
+- [Secrets](https://mithlesh04.github.io/kavach/docs/agents/secrets/): Mark a field secret, and the compiler follows its value everywhere: it can't reach print, text, prompts, errors, logs or JSON unless you write reveal().
+- [Secrets: Secret fields](https://mithlesh04.github.io/kavach/docs/agents/secrets/secret-fields/): secret before a field marks it. Logs show such a field as <secret>.
+- [Secrets: Secret parameters](https://mithlesh04.github.io/kavach/docs/agents/secrets/secret-parameters/): A secret can go to a parameter that is secret itself, and nowhere else.
+- [Secrets: reveal](https://mithlesh04.github.io/kavach/docs/agents/secrets/reveal/): reveal(value) lets a secret through on purpose, where review can see it.
+- [Agent Use Cases](https://mithlesh04.github.io/kavach/docs/agents/agent-use-cases/): Four agents, each with a real risk and the line of code that removes it: a spending limit, a person who approves, a model that can only sort, a folder that can't be left.
+- [Agents in Practice](https://mithlesh04.github.io/kavach/docs/agents/agents-in-practice/): Real AI tasks from support, retail, insurance, health care, operations, law, logistics and finance, measured against Python done the usual ways: the same inputs, the same models, the same right answers. Kavach's goal: fewer tokens, no worse answers, less time.
+
+## Part 11: Projects & Tools
+
+- [Modules](https://mithlesh04.github.io/kavach/docs/tools/modules/): One file is one module, a folder groups modules, and nothing leaves a module unless it is marked pub.
+- [Modules: use](https://mithlesh04.github.io/kavach/docs/tools/modules/use/): use brings in a module, the standard library or a dependency; use a.b.{X, y} brings names in directly.
+- [Modules: pub](https://mithlesh04.github.io/kavach/docs/tools/modules/pub/): pub makes a type, a function or a field visible to other modules. Without it, only the module itself sees it.
+- [Project Layout](https://mithlesh04.github.io/kavach/docs/tools/project-layout/): A project is a folder: kavach.toml at the top, your code in src/, and build output in .kavach/, never committed.
+- [Settings](https://mithlesh04.github.io/kavach/docs/tools/settings/): Every setting a project can have, with its values and its default: kavach.toml, then environment variables.
+- [Editions](https://mithlesh04.github.io/kavach/docs/tools/editions/): Code that compiles today keeps compiling. A change that would break old code comes in a new edition, which each package chooses.
+- [Limits and Sizes](https://mithlesh04.github.io/kavach/docs/tools/limits-and-sizes/): Every limit and size in Kavach in one place: number ranges, text, lists, tasks, the network, JSON, AI calls, the GPU and files, each linked to the page that explains it.
+- [The kavach Command](https://mithlesh04.github.io/kavach/docs/tools/the-kavach-command/): One program, kavach, makes, runs, builds, tests and checks your code.
+- [The kavach Command: new](https://mithlesh04.github.io/kavach/docs/tools/the-kavach-command/new/): kavach new my-app makes a project folder you can run at once.
+- [The kavach Command: run](https://mithlesh04.github.io/kavach/docs/tools/the-kavach-command/run/): kavach run checks a program and runs it at once, like a script. Words after -- go to the program.
+- [The kavach Command: build](https://mithlesh04.github.io/kavach/docs/tools/the-kavach-command/build/): kavach build writes an executable: one file that runs your program at native speed.
+- [The kavach Command: test](https://mithlesh04.github.io/kavach/docs/tools/the-kavach-command/test/): kavach test runs a file's examples and test blocks, then tests it generates from your types and contracts.
+- [The kavach Command: check](https://mithlesh04.github.io/kavach/docs/tools/the-kavach-command/check/): kavach check finds every error without running anything: quick, and safe to run on any code.
+- [The kavach Command: fix](https://mithlesh04.github.io/kavach/docs/tools/the-kavach-command/fix/): kavach fix makes the changes that have one right answer, in every file you name, and says what it changed.
+- [Formatter](https://mithlesh04.github.io/kavach/docs/tools/formatter/): kavach fmt lays out every file the same way. It has no options, so teams never argue about style.
+- [Editor Setup](https://mithlesh04.github.io/kavach/docs/tools/editor-setup/): The Kavach extension for VS Code, Cursor and other VS Code-based editors colors code and shows errors as you type.
+- [Small Files](https://mithlesh04.github.io/kavach/docs/tools/small-files/): A file may have at most 500 lines, and a function about 80: small files are easier to read, review, test and give to an AI.
+- [Tools for AI](https://mithlesh04.github.io/kavach/docs/tools/tools-for-ai/): AI assistants pay for every token they read. Kavach hands them the part of the code they need, instead of whole files.
+- [Tools for AI: outline](https://mithlesh04.github.io/kavach/docs/tools/tools-for-ai/outline/): kavach outline shows a file's declarations, contracts and doc comments, with every body left out.
+- [Tools for AI: query](https://mithlesh04.github.io/kavach/docs/tools/tools-for-ai/query/): kavach query answers one question exactly: who calls a function, what a type holds, which names match.
+- [Tools for AI: context](https://mithlesh04.github.io/kavach/docs/tools/tools-for-ai/context/): kavach context gives a function, then what it uses, within a budget of tokens.
+- [Tools for AI: mcp](https://mithlesh04.github.io/kavach/docs/tools/tools-for-ai/mcp/): kavach mcp serves these tools to AI assistants such as Claude Code or Cursor, over the Model Context Protocol.
+
+## Part 12: Speed
+
+- [How Kavach Is Fast](https://mithlesh04.github.io/kavach/docs/speed/how-kavach-is-fast/): Kavach is fast because it does less work: no interpreter, no garbage collector, no copies it can avoid, and every core when a loop allows it.
+- [Loops on All Cores](https://mithlesh04.github.io/kavach/docs/speed/loops-on-all-cores/): You write the plain loop. The compiler proves it can be split, the runtime runs it on every core, and the answer is the one-core answer, exactly.
+- [Byte-packed Lists](https://mithlesh04.github.io/kavach/docs/speed/byte-packed-lists/): A list of bytes stores bytes: [UInt8], [Int8] and [Bool] take one byte per item, so binary work runs at cache speed.
+- [Fast Sorting](https://mithlesh04.github.io/kavach/docs/speed/fast-sorting/): Long lists of whole numbers sort with a radix sort, a few passes by digit instead of comparing pairs, with buckets on every core.
+- [As Data Grows](https://mithlesh04.github.io/kavach/docs/speed/as-data-grows/): Speed at one size can mislead. The same reads and sorts at four sizes, from data that fits in the fastest cache to data that only fits in memory.
+- [GPU](https://mithlesh04.github.io/kavach/docs/speed/gpu/): Mark a function gpu fn and map a list with it. No buffers, no indices, no launches: the compiler and the runtime do the GPU work, and the answers are the CPU's.
+- [GPU: gpu fn](https://mithlesh04.github.io/kavach/docs/speed/gpu/gpu-fn/): A gpu fn uses only what a GPU can do: 32-bit numbers and Bool, arithmetic, if, loops and other gpu fns. Anything else is a compile error that names it.
+- [GPU: map on the GPU](https://mithlesh04.github.io/kavach/docs/speed/gpu/map-on-the-gpu/): list.map(f) runs on the GPU when f is a gpu fn, the items are 32-bit numbers, and the list is long enough to be worth it.
+- [GPU: Records and two lists](https://mithlesh04.github.io/kavach/docs/speed/gpu/records-and-two-lists/): Items can be records or tuples of 1 to 8 GPU-type fields, and two lists can run together through collections.zip.
+- [GPU: Same results as the CPU](https://mithlesh04.github.io/kavach/docs/speed/gpu/same-results-as-the-cpu/): The GPU gives the CPU's answers: overflow still panics with the same message, and + - * give the same bits.
+- [GPU: CPU or GPU](https://mithlesh04.github.io/kavach/docs/speed/gpu/cpu-or-gpu/): The runtime chooses CPU or GPU for each map. KAVACH_GPU overrides it, to debug or to compare.
+- [GPU: Can I use it on the GPU?](https://mithlesh04.github.io/kavach/docs/speed/gpu/can-i-use-it-on-the-gpu/): Pointers, inout, files and recursion stay on the CPU; helpers, loops and pipelines of maps run on the GPU. Every rule is checked when compiling.
+- [GPU: Sums in a loop](https://mithlesh04.github.io/kavach/docs/speed/gpu/sums-in-a-loop/): A loop that adds up what the GPU works out doesn't wait for each sum, so the next chunk is read and copied over while the GPU works.
+- [GPU: Use cases](https://mithlesh04.github.io/kavach/docs/speed/gpu/use-cases/): Work that does the same thing to many items, with enough math in each, is GPU work: images, audio, maps, finance, science and simulation.
+- [Native Executables](https://mithlesh04.github.io/kavach/docs/speed/native-executables/): kavach build turns a program into one executable file of native machine code, about half a megabyte, that runs on its own.
+
+## Part 13: Other Languages
+
+- [Calling C](https://mithlesh04.github.io/kavach/docs/other-languages/calling-c/): extern c declares the functions of a C library; Kavach calls them directly. Every call is unsafe, so you wrap it once in a safe function.
+- [Calling C: Numbers](https://mithlesh04.github.io/kavach/docs/other-languages/calling-c/numbers/): Numbers and Bools cross to C exactly as C passes them, with no conversion.
+- [Calling C: Text](https://mithlesh04.github.io/kavach/docs/other-languages/calling-c/text/): A String goes to C as a copy ending in a zero byte. Text C gives back comes as a Ptr<UInt8>, and .text() copies it.
+- [Calling C: Callbacks](https://mithlesh04.github.io/kavach/docs/other-languages/calling-c/callbacks/): A C function can call back into Kavach: pass the name of a Kavach function whose type matches C's function pointer.
+- [Calling C: Records](https://mithlesh04.github.io/kavach/docs/other-languages/calling-c/records/): A record of C types is laid out as a C struct, and reaches C through a Ptr: Ptr<Point> is C's struct point*.
+- [A Library for Any Language](https://mithlesh04.github.io/kavach/docs/other-languages/a-library-for-any-language/): kavach build --lib turns Kavach code into a shared library with a C header, which Python, Node.js, Java, Go and C# can load like any other.
+- [kavach audit](https://mithlesh04.github.io/kavach/docs/other-languages/kavach-audit/): kavach audit lists the places a reviewer must look first: unsafe code, revealed secrets, and what each function can touch.
+
+## Benchmarks
+
+- [Benchmarks](https://mithlesh04.github.io/kavach/docs/benchmarks/): every suite against C++ and Python, wins and losses, each with one command to reproduce it.
+
+## Source
+
+- [Repository](https://github.com/Mithlesh04/kavach)
