@@ -1,0 +1,38 @@
+// Rule: Error types are ordinary types: a function can fail with an `Int` or a `Float`, and `try`, `catch` and `main` treat it as any other error.
+// Spec: 5.1
+// expect output: 2
+// expect output: 300
+// expect output: 2
+// expect output: 3
+// expect output: float error 2.5
+// expect output: 3
+// expect exit: 1
+
+fn half(n: Int) -> Int ! Int {
+    if n % 2 == 1 {
+        fail n
+    }
+    n / 2
+}
+
+fn quarter(n: Int) -> Int ! Int {
+    const h = try half(n)
+    try half(h)
+}
+
+fn check(code: Float) ! Float {
+    if code > 1.5 {
+        fail code
+    }
+}
+
+fn main() ! Int {
+    print(half(4) catch _ => -1)
+    print(half(3) catch e => e * 100)
+    print(quarter(8) catch _ => -1)
+    print(quarter(6) catch e => e)
+    check(2.5) catch e => print("float error {e}")
+    const last = try quarter(12)
+    print(last)
+    const _never = try half(7)
+}

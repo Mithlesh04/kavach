@@ -1,0 +1,12 @@
+use std.json
+
+type Item {
+    name: String
+    price: Int
+}
+
+fn main() {
+    const cart = [Item(name: "pen", price: 20), Item(name: "ink", price: 45)]
+    print(json.stringify(cart))
+    print(json.stringify(cart, indent: 2))
+}

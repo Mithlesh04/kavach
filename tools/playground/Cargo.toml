@@ -1,0 +1,15 @@
+[package]
+name = "kavach-playground"
+description = "The docs site's playground engine: checks a program read on standard input and writes the messages as JSON"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+kavach-driver = { path = "../../compiler/driver" }
+kavach-runtime-core = { path = "../../runtime/core", default-features = false }
+
+[lints]
+workspace = true

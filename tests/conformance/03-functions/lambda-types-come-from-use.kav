@@ -1,0 +1,8 @@
+// Rule: Lambda parameter types are inferred from where the lambda is used.
+// Spec: 3.3
+// expect compile error
+
+fn main() {
+    const length = text => text.len()     // error: `length(5)` makes `text` an Int, which has no `len`
+    print(length(5))
+}

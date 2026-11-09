@@ -1,0 +1,5 @@
+// Rule: Type names must be PascalCase.
+// Spec: 1.5
+// expect compile error
+
+type order_status = Open | Closed   // error: types use PascalCase: OrderStatus

@@ -1,0 +1,21 @@
+// Rule: An unknown command is an error: the problem, then the usage with every command and its options.
+// Spec: 14.6
+// args: remove
+// expect output: unknown command `remove`
+// expect output: usage: cli-parse-reports-unknown-commands <command> [options]
+// expect output:   add
+// expect output:     --name <String>        (required)
+// expect output:     --force
+// expect output:   list
+// expect exit: 2
+
+use std.cli
+
+type Command = Add(name: String, force: Bool = false) | List
+
+fn main() {
+    const _command = cli.parse<Command>() catch e => {
+        print(e)
+        cli.exit(2)
+    }
+}

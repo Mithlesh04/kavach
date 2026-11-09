@@ -1,0 +1,10 @@
+// Rule: A package may use `unsafe` only when kavach.toml sets unsafe = true (default: false).
+// Spec: 6.4
+// expect compile error
+
+fn main() {
+    unsafe {            // error: this package does not allow unsafe code
+        const p: Ptr<UInt8> = alloc(16)
+        free(p)
+    }
+}

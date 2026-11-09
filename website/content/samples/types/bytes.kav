@@ -1,0 +1,9 @@
+fn main() {
+    const greeting = "hi".bytes()
+    const header = Bytes([137, 80, 78, 71])
+    print(greeting.len())
+    print(header[1])
+    print(greeting)
+    print(greeting.text() ?? "?")
+    print((greeting + header).len())
+}

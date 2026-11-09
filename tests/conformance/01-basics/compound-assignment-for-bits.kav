@@ -1,0 +1,21 @@
+// Rule: `&= |= ^= <<= >>=` change a variable as `x = x op v` would.
+// Spec: 1.8
+// expect output: 2
+// expect output: 11
+// expect output: 8
+// expect output: 32
+// expect output: 4
+
+fn main() {
+    let flags = 10
+    flags &= 6
+    print(flags)
+    flags |= 9
+    print(flags)
+    flags ^= 3
+    print(flags)
+    flags <<= 2
+    print(flags)
+    flags >>= 3
+    print(flags)
+}

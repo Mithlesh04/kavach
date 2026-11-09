@@ -1,0 +1,24 @@
+// Rule: A `Drop` value made without a name drops at the end of its statement; a variable given a new value drops the old one there.
+// Spec: 6.1
+// expect output: t
+// expect output: released t
+// expect output: next
+// expect output: released one
+// expect output: holding two
+// expect output: released two
+
+type Guard: Drop {
+    name: String
+
+    fn drop(self) {
+        print("released {self.name}")
+    }
+}
+
+fn main() {
+    print(Guard(name: "t").name)
+    print("next")
+    let g = Guard(name: "one")
+    g = Guard(name: "two")
+    print("holding {g.name}")
+}

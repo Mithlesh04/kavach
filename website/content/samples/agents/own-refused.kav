@@ -1,0 +1,35 @@
+type PayError = Declined | Unavailable | Denied(reason: String)
+
+capability Payments {
+    fn refund(order: Int, amount: Int) ! PayError
+}
+
+type Bank: Payments {
+    fn refund(self, order: Int, amount: Int) ! PayError {
+        print("refunded {amount} on order {order}")
+    }
+}
+
+agent Refunder {
+    can Payments.refund
+
+    limit Payments.refund {
+        amount <= 500
+    }
+
+    on refund(order: Int, amount: Int) ! PayError {
+        try Payments.refund(order, amount)
+    }
+}
+
+fn main() {
+    const bot = Refunder.start(Payments: Bank())
+    for r in [(order: 1, amount: 200), (order: 2, amount: 900)] {
+        bot.refund(r.order, r.amount) catch e => match e {
+            PayError.Denied(reason) => print("order {r.order}: blocked, {reason}"),
+            PayError.Declined => print("order {r.order}: the bank said no"),
+            PayError.Unavailable => print("order {r.order}: try again later"),
+            _ => print("order {r.order}: {e}"),
+        }
+    }
+}

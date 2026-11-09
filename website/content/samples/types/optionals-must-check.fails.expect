@@ -1,0 +1,1 @@
+error: expected a number, found `Int?`: it may be `none`, so give a default with `?? 0`, or check it with `if let` (spec 2.7)

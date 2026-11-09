@@ -1,0 +1,11 @@
+use std.term
+
+fn main() {
+    const files = ["a.txt", "b.txt", "c.txt", "d.txt"]
+    let bar = term.progress(files.len())
+    for _ in files {
+        bar = bar.step(1)
+    }
+    bar.done()
+    print("copied {files.len()} files")
+}

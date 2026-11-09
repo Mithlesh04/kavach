@@ -1,0 +1,46 @@
+# tools/cli (`kavach`)
+
+The `kavach` command.
+
+```
+kavach new <name>                     create a project (spec 10.5)
+kavach run <file.kav> [-- args…]      check a file, then run it
+kavach run --native <file.kav>        compile it to machine code first
+kavach build <file.kav> [-o <out>]    write an executable
+kavach test <file.kav> [--seed N] [--deep]   examples, test blocks and generated tests
+kavach check <file.kav>               only check it for errors
+kavach check --format json <file.kav>
+kavach outline <file.kav>
+kavach query callers|uses|fails|type|find <name> [file.kav]
+kavach context <name> [file.kav] [--budget N]
+kavach mcp
+kavach lsp                            language server for editors (tools/lsp)
+kavach --version
+```
+
+Inside a project (a folder with `kavach.toml`, or below it), `run`, `build`, `test` and `check` need no file: they use `src/main.kav`, and `build` writes `.kavach/bin/<name>`. So do `query` and `context`, which answer from the project's index in `.kavach/index` (spec 13.9).
+
+Install it from the repository root with `cargo install --path tools/cli`, or run it without installing: `cargo run -p kavach-cli -- run file.kav`.
+
+Exit codes: 0 success, 1 compile errors or an error returned from `main`, 101 a panic (spec 5.8), 2 wrong usage, 3 not supported by the native compiler yet.
+
+| File | Job |
+|---|---|
+| `src/main.rs` | Commands |
+| `src/context.rs` | `kavach query` and `kavach context`, from the program's index |
+| `src/project.rs` | `kavach new`, and finding the project's entry file |
+| `src/library.rs` | `kavach build --lib`: a shared library and its C header (spec 10.10) |
+| `src/fmt.rs` | `kavach fmt`: names first, then the layout of each file |
+| `src/keep.rs` | `kavach test --keep`: passing found cases become `example` clauses (spec 11.4) |
+| `tests/conformance.rs` | The conformance runner: every test in `tests/conformance/`, plus examples 01–04 |
+| `tests/native.rs` | Native code must match the interpreter on every program it supports |
+| `tests/project.rs` | `kavach new` and commands without a file inside a project |
+| `tests/context.rs` | `query` and `context` without a file inside a project |
+| `tests/keep.rs` | `kavach test --keep` |
+| `tests/stdlib.rs` | The standard library modules written in Kavach pass `kavach test` |
+| `tests/tls.rs` | TLS servers and mutual TLS, with certificates made for the test by `openssl` |
+| `tests/ai_crowd.rs` | Forty `ask`s at once against a fake provider that takes four at a time: all get through the shared gate (spec 8.4) |
+| `tests/limits_parallel.rs` | A limit's total holds when 30 handlers pay at once: exactly 10 refunds of 100 under `sum(amount) <= 1000 per day` |
+| `tests/version.rs` | `kavach --version`, `kavach version <program>`, and `--version` answered by a program only with `[build] version_flag` (spec 10.5) |
+| `tests/token_budget.rs` | Ten `ask`s at once under `tokens <= 200 per day`: each `asks_under_way` setting lets through what it promises (spec 8.3) |
+| `tests/online.rs` | Tests that need the internet (`https://`); they run only with `--ignored` |

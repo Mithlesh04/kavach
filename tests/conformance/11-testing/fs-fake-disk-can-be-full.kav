@@ -1,0 +1,13 @@
+// Rule: In a generated test, the fake disk is full for some paths: writing there fails with `Failed(path, "no space left on device")`, so code that can't handle a failed save is found.
+// Spec: 11.5
+// expect test fail
+
+use std.fs
+
+// Assumes every save works: a full disk makes it panic.
+fn save(name: String) -> Int uses Fs {
+    fs.write_text("notes/{name}.txt", name) catch _ => {
+        panic("lost the note")
+    }
+    1
+}

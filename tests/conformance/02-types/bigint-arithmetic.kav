@@ -1,0 +1,29 @@
+// Rule: `BigInt` takes `+ - * / % **`, comparisons and `==`, works as a map key, and converts with `BigInt(n)` and `Int(b)`.
+// Spec: 2.1
+// expect output: 265252859812191058636308480000000
+// expect output: 790627
+// expect output: true
+// expect output: 1
+// expect output: 22539340290692258087863249
+// expect output: 43
+
+fn factorial(n: Int) -> BigInt {
+    let total: BigInt = 1
+    for i in 1..=n {
+        total *= BigInt(i)
+    }
+    total
+}
+
+fn main() {
+    const f = factorial(30)
+    print(f)
+    print(f % 1000007)
+    print(-f < f)
+    let counts: [BigInt: Int] = [:]
+    counts[f] = 1
+    counts[factorial(30)] = 2
+    print(counts.len())
+    print(BigInt(7) ** 30)
+    print(Int(BigInt(42)) + 1)
+}

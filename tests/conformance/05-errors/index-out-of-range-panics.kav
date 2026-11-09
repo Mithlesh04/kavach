@@ -1,0 +1,11 @@
+// Rule: An out-of-range index panics.
+// Spec: 5.6
+// expect panic
+
+fn at(names: [String], i: Int) -> String {
+    names[i]
+}
+
+fn main() {
+    const _name = at(["Asha", "Ravi"], 99)
+}

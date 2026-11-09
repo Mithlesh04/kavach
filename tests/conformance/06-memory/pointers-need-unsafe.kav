@@ -1,0 +1,7 @@
+// Rule: `alloc`, `free` and reading or writing through a `Ptr` work on raw memory, so they are allowed only inside `unsafe { … }`.
+// Spec: 6.4
+// expect compile error
+
+fn main() {
+    const p: Ptr<Int> = alloc(4)      // error: raw memory outside `unsafe`
+}

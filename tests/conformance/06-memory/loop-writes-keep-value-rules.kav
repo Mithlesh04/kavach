@@ -1,0 +1,28 @@
+// Rule: Writing `list[i]` in a loop follows the value rules exactly: a copy made before the loop keeps the old items, and only the variable written through sees the new ones.
+// Spec: 6.1
+// expect output: [10, 11, 12, 13]
+// expect output: [0, 0, 0, 0]
+// expect output: [5, 6, 7]
+// expect output: 6
+
+fn main() {
+    let ys = [0, 0, 0, 0]
+    const before = ys
+    for i in 0..4 {
+        ys[i] = 10 + i
+    }
+    print(ys)
+    print(before)
+
+    // A fresh list each round: writes to one never show in another.
+    let rows: [[Int]] = []
+    for r in 0..2 {
+        let row = [0, 0, 0]
+        for i in 0..3 {
+            row[i] = 5 + i + r
+        }
+        rows.push(row)
+    }
+    print(rows[0])
+    print(rows[1][0])
+}

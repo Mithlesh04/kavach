@@ -1,0 +1,15 @@
+// Rule: A `for` over known numbers that passes a function a value its `require` refuses is a compile error, naming the first such value.
+// Spec: 1.8, 7.7
+// expect compile error
+
+fn half(x: Int) -> Int
+    require x > 0
+{
+    x / 2
+}
+
+fn main() {
+    for i in -3..0 {
+        print(half(i))    // error: this call always breaks `require x > 0` of `half`: `x` is -3
+    }
+}

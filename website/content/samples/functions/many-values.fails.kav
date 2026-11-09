@@ -1,0 +1,7 @@
+fn total(prices: [Int]) -> Int {
+    prices.sum(p => p)
+}
+
+fn main() {
+    print(total(4, 8, 15))
+}

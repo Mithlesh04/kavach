@@ -1,0 +1,26 @@
+/* mathlib.h: the C interface of the Kavach library `mathlib`,
+   made by `kavach build --lib` (spec 10.10). */
+
+#ifndef MATHLIB_H
+#define MATHLIB_H
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int64_t mathlib_add(int64_t a, int64_t b);
+char* mathlib_greet(const char* name);
+
+/* Frees text this library gave (a `char*` result). */
+void mathlib_free(char* text);
+/* The last error, as text to free with mathlib_free; null before any. */
+char* mathlib_last_error(void);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

@@ -1,0 +1,434 @@
+// std.grpc.protobuf (spec 14.14, decision 0027): Protocol Buffers
+// messages from `Json` values and a type's JSON Schema
+// (`json.schema<T>()`). Field `n` of a message is the `n`th property of the
+// schema, which is the type's `n`th declared field. Everything here is
+// Kavach code: the compiler knows nothing about Protocol Buffers.
+
+use std.json
+
+/// Why a message can't be read, or a value can't be sent.
+pub type ProtoError = Malformed(reason: String) | Unsupported(reason: String)
+
+/// A field as the wire carries it (wire types 0, 1, 2 and 5).
+type Raw = Varint(value: UInt64) | Fixed64(value: UInt64) | Chunk(data: Bytes) | Fixed32(value: UInt64)
+
+/// A number read from `data`, and where the bytes after it start.
+type Read {
+    value: UInt64
+    next: Int
+}
+
+/// `value` (as `json.of` gives it) as a message with `schema`'s fields.
+pub fn encode(value: Json, schema: Json) -> Bytes ! ProtoError {
+    const fields = value.object() ?? [:]
+    let out = Bytes([])
+    let n = 0
+    for (name, s) in schema.get("properties").object() ?? [:] {
+        n += 1
+        out = out + (try field(n, fields.get(name) ?? Json.Null, s))
+    }
+    out
+}
+
+/// A message `data` as a `Json` object with `schema`'s fields: a field
+/// that isn't there is `null`, or its type's zero value.
+pub fn decode(data: Bytes, schema: Json) -> Json ! ProtoError {
+    const found = try fields(data)
+    let out: [String: Json] = [:]
+    let n = 0
+    for (name, s) in schema.get("properties").object() ?? [:] {
+        n += 1
+        out[name] = try value_of(found.get(n) ?? [], s)
+    }
+    Json.Object(fields: out)
+}
+
+/// The field `n` with value `v` of schema `s`; nothing for `null`.
+fn field(n: Int, v: Json, s: Json) -> Bytes ! ProtoError {
+    if v.is_null() {
+        return Bytes([])
+    }
+    const kind = s.get("type").text() ?? ""
+    if kind == "array" {
+        const items = v.list() ?? []
+        const item = s.get("items")
+        if scalar(item) {
+            // Packed: one length-delimited field holding them all.
+            let packed = Bytes([])
+            for x in items {
+                packed = packed + (try plain(x, item))
+            }
+            return if packed.len() == 0 { packed } else { chunk(n, packed) }
+        }
+        let out = Bytes([])
+        for x in items {
+            out = out + (try field(n, x, item))
+        }
+        return out
+    }
+    if kind == "object" {
+        if s.get("properties").is_null() {
+            // A map (spec 14.14): one entry message per key, the key as
+            // field 1 and the value as field 2.
+            const vs = s.get("additionalProperties")
+            let out = Bytes([])
+            for (name, item) in v.object() ?? [:] {
+                out = out + chunk(n, chunk(1, name.bytes()) + (try field(2, item, vs)))
+            }
+            return out
+        }
+        return chunk(n, try encode(v, s))
+    }
+    if kind == "string" {
+        return chunk(n, (v.text() ?? "").bytes())
+    }
+    if kind == "" {
+        const opts = s.get("anyOf").list() ?? []
+        if opts.any(o => o.get("type").text() == "null") {
+            // An optional (`anyOf` with `null`): its other kind.
+            const other = opts.find(o => o.get("type").text() != "null")
+            const o = other ?? fail ProtoError.Unsupported(reason: "an empty `anyOf`")
+            return try field(n, v, o)
+        }
+        // A union (spec 14.14): a wrapper message holding a oneof.
+        return chunk(n, try union_bytes(v, opts))
+    }
+    const wire = if kind == "number" { 1 } else { 0 }
+    key(n, wire) + (try plain(v, s))
+}
+
+/// A number or boolean without its key: a varint, or 8 bytes for a
+/// `double`.
+fn plain(v: Json, s: Json) -> Bytes ! ProtoError {
+    const kind = s.get("type").text() ?? ""
+    if kind == "number" {
+        const bits = (v.float() ?? 0.0).bits()
+        let out: [UInt8] = []
+        for i in 0..8 {
+            out.push(UInt8((bits >> UInt64(8 * i)) & 255))
+        }
+        return Bytes(out)
+    }
+    if kind == "boolean" {
+        return varint(if v.bool() ?? false { 1 } else { 0 })
+    }
+    if kind == "integer" {
+        return varint(v.int() ?? 0)
+    }
+    fail ProtoError.Unsupported(reason: "a `{kind}` can't be packed")
+}
+
+/// Whether a list of `s` goes packed (numbers and booleans).
+fn scalar(s: Json) -> Bool {
+    const kind = s.get("type").text() ?? ""
+    kind == "integer" or kind == "number" or kind == "boolean"
+}
+
+/// The key of field `n` with wire type `wire`.
+fn key(n: Int, wire: Int) -> Bytes
+    require n >= 1 and n < 536_870_912
+    require wire >= 0 and wire <= 5
+{
+    varint(n * 8 + wire)
+}
+
+/// A length-delimited field `n`.
+fn chunk(n: Int, data: Bytes) -> Bytes
+    require n >= 1 and n < 536_870_912
+{
+    key(n, 2) + varint(data.len()) + data
+}
+
+/// `n` as a varint; a negative `n` takes ten bytes, as `int64` does.
+pub fn varint(n: Int) -> Bytes
+    example varint(1) == Bytes([UInt8(1)])
+    example varint(150) == Bytes([UInt8(150), UInt8(1)])
+    example varint(-1).len() == 10
+{
+    let out: [UInt8] = []
+    let rest = n
+    // `>>` keeps the sign: the mask drops the copies of the sign bit, as
+    // an unsigned shift would.
+    let first = true
+    while first or rest != 0 {
+        first = false
+        const low = rest & 127
+        rest = (rest >> 7) & 144_115_188_075_855_871
+        out.push(UInt8(if rest == 0 { low } else { low | 128 }))
+    }
+    Bytes(out)
+}
+
+/// The varint at `at` in `data`.
+fn read_varint(data: Bytes, at: Int) -> Read ! ProtoError
+    require at >= 0
+{
+    let value: UInt64 = 0
+    let shift = 0
+    let i = at
+    while true {
+        const b = data.get(i) ?? fail ProtoError.Malformed(reason: "a number is cut off")
+        i += 1
+        const part = UInt64(b & 127)
+        if shift == 63 and part > 1 or shift > 63 {
+            fail ProtoError.Malformed(reason: "a number is too long")
+        }
+        value = value | part << UInt64(shift)
+        shift += 7
+        if b & 128 == 0 {
+            return Read(value: value, next: i)
+        }
+    }
+    fail ProtoError.Malformed(reason: "a number is cut off")
+}
+
+/// `n` bytes at `at`, little-endian.
+fn read_fixed(data: Bytes, at: Int, n: Int) -> UInt64 ! ProtoError
+    require at >= 0
+    require n >= 0 and n <= 8
+{
+    if at > data.len() or n > data.len() - at {
+        fail ProtoError.Malformed(reason: "a field is cut off")
+    }
+    let value: UInt64 = 0
+    for i in 0..n {
+        value = value | UInt64(data[at + i]) << UInt64(8 * i)
+    }
+    value
+}
+
+/// The fields of message `data`, by number, in the order they came.
+fn fields(data: Bytes) -> [Int: [Raw]] ! ProtoError {
+    let out: [Int: [Raw]] = [:]
+    let at = 0
+    while at < data.len() {
+        const k = try read_varint(data, at)
+        at = k.next
+        const n = Int(k.value >> 3)
+        const raw = match k.value & 7 {
+            0 => {
+                const v = try read_varint(data, at)
+                at = v.next
+                Raw.Varint(value: v.value)
+            }
+            1 => {
+                const v = try read_fixed(data, at, 8)
+                at += 8
+                Raw.Fixed64(value: v)
+            }
+            2 => {
+                const len = try read_varint(data, at)
+                if len.value > UInt64(data.len() - len.next) {
+                    fail ProtoError.Malformed(reason: "a field is cut off")
+                }
+                const end = len.next + Int(len.value)
+                at = end
+                Raw.Chunk(data: data.slice(len.next, end))
+            }
+            5 => {
+                const v = try read_fixed(data, at, 4)
+                at += 4
+                Raw.Fixed32(value: v)
+            }
+            _ => fail ProtoError.Malformed(reason: "an unknown wire type")
+        }
+        let list = out.get(n) ?? []
+        list.push(raw)
+        out[n] = list
+    }
+    out
+}
+
+/// The `Json` of a field of schema `s` that came as `raws` (none, one,
+/// or several for a repeated field).
+fn value_of(raws: [Raw], s: Json) -> Json ! ProtoError {
+    const kind = s.get("type").text() ?? ""
+    if kind == "array" {
+        const item = s.get("items")
+        let items: [Json] = []
+        for r in raws {
+            match r {
+                Raw.Chunk(data) if scalar(item) => {
+                    // Packed numbers.
+                    let at = 0
+                    while at < data.len() {
+                        if item.get("type").text() == "number" {
+                            items.push(number(try read_fixed(data, at, 8)))
+                            at += 8
+                        } else {
+                            const v = try read_varint(data, at)
+                            at = v.next
+                            items.push(try one(Raw.Varint(value: v.value), item))
+                        }
+                    }
+                }
+                _ => items.push(try one(r, item)),
+            }
+        }
+        return Json.Array(items: items)
+    }
+    if kind == "" {
+        const opts = s.get("anyOf").list() ?? []
+        if opts.any(o => o.get("type").text() == "null") {
+            // An optional: `null` when the field isn't there.
+            const other = opts.find(o => o.get("type").text() != "null")
+            const o = other ?? fail ProtoError.Unsupported(reason: "an empty `anyOf`")
+            return if raws.is_empty() { Json.Null } else { try value_of(raws, o) }
+        }
+        // A union: `null` when it never arrived (there is no default
+        // variant), the wrapped variant otherwise.
+        if raws.is_empty() {
+            return Json.Null
+        }
+        return match raws[raws.len() - 1] {
+            Raw.Chunk(data) => try union_value(data, opts),
+            _ => fail ProtoError.Malformed(reason: "a union field of the wrong kind"),
+        }
+    }
+    if kind == "object" and s.get("properties").is_null() {
+        let out: [String: Json] = [:]
+        const vs = s.get("additionalProperties")
+        for r in raws {
+            match r {
+                Raw.Chunk(data) => {
+                    const entry = try fields(data)
+                    const name = match (entry.get(1) ?? [])[0] {
+                        Raw.Chunk(data) => data.text() ?? fail ProtoError.Malformed(reason: "a key isn't UTF-8"),
+                        _ => fail ProtoError.Malformed(reason: "a key of the wrong kind"),
+                    }
+                    out[name] = try value_of(entry.get(2) ?? [], vs)
+                }
+                _ => fail ProtoError.Malformed(reason: "a map field of the wrong kind"),
+            }
+        }
+        return Json.Object(fields: out)
+    }
+    if raws.is_empty() {
+        return try zero(s)
+    }
+    // The last one wins, as Protocol Buffers says.
+    try one(raws[raws.len() - 1], s)
+}
+
+/// One value of schema `s`.
+fn one(r: Raw, s: Json) -> Json ! ProtoError {
+    const kind = s.get("type").text() ?? ""
+    match r {
+        Raw.Varint(value) if kind == "integer" => Json.Number(digits: "{signed(value)}"),
+        Raw.Varint(value) if kind == "boolean" => Json.Boolean(value: value != 0),
+        Raw.Fixed64(value) if kind == "number" => number(value),
+        Raw.Chunk(data) if kind == "string" => {
+            const text = data.text() ?? fail ProtoError.Malformed(reason: "text isn't UTF-8")
+            Json.Text(value: text)
+        }
+        Raw.Chunk(data) if kind == "object" => try decode(data, s),
+        _ => fail ProtoError.Malformed(reason: "a field of the wrong kind for `{kind}`")
+    }
+}
+
+/// The value of a field that isn't there.
+fn zero(s: Json) -> Json ! ProtoError {
+    match s.get("type").text() ?? "" {
+        "integer" => Json.Number(digits: "0"),
+        "number" => Json.Number(digits: "0.0"),
+        "boolean" => Json.Boolean(value: false),
+        "string" => Json.Text(value: ""),
+        "object" => try decode(Bytes([]), s),
+        _ => Json.Null,
+    }
+}
+
+/// A union value as its wrapper message (spec 14.14): counting the
+/// fieldless variants first, variant `k` is field `k` — an empty message
+/// for a fieldless one, the variant's fields as a message otherwise.
+fn union_bytes(v: Json, opts: [Json]) -> Bytes ! ProtoError {
+    const plains = plain_names(opts)
+    if let name = v.text() {
+        let k = 0
+        for (i, p) in plains.enumerate() {
+            if p == name {
+                k = i + 1
+            }
+        }
+        if k == 0 {
+            fail ProtoError.Unsupported(reason: "no variant `{name}`")
+        }
+        return chunk(k, Bytes([]))
+    }
+    const obj = v.object() ?? fail ProtoError.Unsupported(reason: "not a union value")
+    for (name, inner) in obj {
+        for (i, o) in fielded(opts).enumerate() {
+            for (vname, vs) in o.get("properties").object() ?? [:] {
+                if vname == name {
+                    return chunk(plains.len() + i + 1, try encode(inner, vs))
+                }
+            }
+        }
+        fail ProtoError.Unsupported(reason: "no variant `{name}`")
+    }
+    fail ProtoError.Unsupported(reason: "an empty union value")
+}
+
+/// The variant a wrapper message holds, back as `json.of` writes it.
+fn union_value(data: Bytes, opts: [Json]) -> Json ! ProtoError {
+    const plains = plain_names(opts)
+    const found = try fields(data)
+    let k = 0
+    for n in 1..=(plains.len() + fielded(opts).len()) {
+        if found.contains_key(n) {
+            k = n
+        }
+    }
+    if k == 0 {
+        fail ProtoError.Malformed(reason: "an empty union message")
+    }
+    if k <= plains.len() {
+        return Json.Text(value: plains[k - 1])
+    }
+    const o = fielded(opts)[k - plains.len() - 1]
+    for (vname, vs) in o.get("properties").object() ?? [:] {
+        const raw = (found.get(k) ?? [])[0]
+        return match raw {
+            Raw.Chunk(data) => {
+                let out: [String: Json] = [:]
+                out[vname] = try decode(data, vs)
+                Json.Object(fields: out)
+            }
+            _ => fail ProtoError.Malformed(reason: "a variant of the wrong kind"),
+        }
+    }
+    fail ProtoError.Malformed(reason: "a variant without fields")
+}
+
+/// The fieldless variant names of a union schema, in order.
+fn plain_names(opts: [Json]) -> [String] {
+    let out: [String] = []
+    for o in opts {
+        if o.get("type").text() == "string" {
+            for e in o.get("enum").list() ?? [] {
+                out.push(e.text() ?? "")
+            }
+        }
+    }
+    out
+}
+
+/// The variant-with-fields options of a union schema, in order.
+fn fielded(opts: [Json]) -> [Json] {
+    let out: [Json] = []
+    for o in opts {
+        if o.get("type").text() != "string" {
+            out.push(o)
+        }
+    }
+    out
+}
+
+fn number(bits: UInt64) -> Json {
+    json.of(Float.from_bits(bits))
+}
+
+/// An `int64` read as a varint: above `Int`'s largest, it is negative.
+fn signed(u: UInt64) -> Int {
+    if u <= 9_223_372_036_854_775_807 { Int(u) } else { -Int(~u) - 1 }
+}

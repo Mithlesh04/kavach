@@ -1,0 +1,55 @@
+use std.fs
+
+type Verdict {
+    /// true if the text is risky
+    risky: Bool
+}
+
+fn careful() -> Model {
+    Model(name: "claude-opus-5-5", max_tokens: 2000)
+}
+
+fn logged() -> AgentSettings {
+    AgentSettings(audit: Audit())
+}
+
+agent Reviewer {
+    model careful()
+    settings logged()
+    can Ai
+    on check(text: String) -> Verdict ! Error {
+        try ask<Verdict>("Is this clause risky? {text}")
+    }
+}
+
+agent Auditor {
+    model careful()
+    settings logged()
+    can Ai
+    on audit(text: String) -> Verdict ! Error {
+        try ask<Verdict>("Does this break our policy? {text}")
+    }
+}
+
+agent Greeter {
+    settings logged()
+    can Ai
+    on greet(text: String) -> Verdict ! Error {
+        try ask<Verdict>("Is this rude? {text}")
+    }
+}
+
+fn main() ! Error {
+    const _r = try Reviewer.start().check("The buyer pays all fees.")
+    const _a = try Auditor.start().audit("Refunds within 90 days.")
+    const _g = try Greeter.start().greet("Hello there!")
+    for name in ["Reviewer", "Auditor", "Greeter"] {
+        for line in try fs.lines("agents/{name}/audit.log") {
+            if line.trim().starts_with("model:") {
+                print(line.trim())
+            } else if not line.starts_with(" ") {
+                print(line.split("Z ").last() ?? line)
+            }
+        }
+    }
+}

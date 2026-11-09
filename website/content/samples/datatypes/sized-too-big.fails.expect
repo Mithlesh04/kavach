@@ -1,0 +1,1 @@
+error: `300` doesn't fit in `UInt8`, which holds 0 to 255: use `UInt16`

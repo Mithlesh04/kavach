@@ -1,0 +1,21 @@
+// Rule: A record field holding a function is called like a method: `h.on(x)` calls the field's function with `x`.
+// Spec: 3.4
+// expect output: 14
+// expect output: 15
+// expect output: 29
+
+type Handler {
+    on: fn(Int) -> Int
+}
+
+fn double(n: Int) -> Int {
+    n * 2
+}
+
+fn main() {
+    const h = Handler(on: double)
+    print(h.on(7))
+    const wrapped = Handler(on: x => h.on(x) + 1)
+    print(wrapped.on(7))
+    print((h.on)(7) + wrapped.on(7))
+}

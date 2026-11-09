@@ -1,0 +1,11 @@
+// Rule: A field that may be left out is `none` when left out, so it takes no other default: `count?: Int = 3` is an error.
+// Spec: 2.4
+// expect compile error
+
+type Tally {
+    count?: Int = 3       // error: `count?` is `none` when left out
+}
+
+fn main() {
+    print(Tally().count ?? 0)
+}

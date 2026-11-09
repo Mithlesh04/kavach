@@ -1,0 +1,9 @@
+// Rule: A whole number takes only the units of a `Duration`: `2.months` is a compile error, since a month has no fixed length.
+// Spec: 14.4
+// expect compile error
+
+use std.time
+
+fn main() {
+    print(2.months.ms)       // error: `2` has no field `months`
+}

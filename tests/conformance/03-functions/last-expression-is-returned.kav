@@ -1,0 +1,11 @@
+// Rule: A function returns its last expression.
+// Spec: 3.1
+// expect output: 5
+
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
+
+fn main() {
+    print(add(2, 3))
+}

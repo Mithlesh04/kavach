@@ -1,0 +1,4 @@
+fn main() {
+    const card = "4242424242421881"
+    print(card.slice(-4))
+}

@@ -1,0 +1,23 @@
+interface Describe {
+    fn describe(self) -> String
+}
+
+type User: Describe {
+    name: String
+
+    fn describe(self) -> String { "User {self.name}" }
+}
+
+type Rect: Describe {
+    width: Int
+    height: Int
+
+    fn describe(self) -> String { "Rect {self.width}x{self.height}" }
+}
+
+fn main() {
+    const all: [Describe] = [User(name: "Ravi"), Rect(width: 1, height: 1), User(name: "Mira")]
+    for d in all {
+        print(d.describe())
+    }
+}

@@ -1,0 +1,9 @@
+use std.time
+
+fn main() {
+    const counter = Shared(0)
+    counter.update(n => {
+        time.sleep_ms(10)
+        n + 1
+    })
+}

@@ -1,0 +1,24 @@
+// A file of `Int32`s worked on by the GPU in chunks of 64 MB, the sum of
+// each kept: `stream <file>`. How the disk, the copies and the GPU share
+// the time ([decision 0067](../../../docs/decisions/0067-streaming-data-through-the-gpu.md)).
+use std.cli
+use std.fs
+use std.time
+
+gpu fn work(x: Int32) -> Int32 {
+    let v = x
+    for _ in 0..200 {
+        v = (v * 3 + 1) % 100
+    }
+    v
+}
+
+fn main() ! Error uses Fs {
+    const t0 = time.monotonic_ms()
+    let total = 0
+    for chunk in try fs.chunks(cli.args()[0], 67_108_864) {
+        const xs = chunk.as_list<Int32>() ?? []
+        total += Int(xs.map(x => work(x)).sum(x => x))
+    }
+    print("sum {total}, {time.monotonic_ms() - t0} ms")
+}

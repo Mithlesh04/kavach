@@ -1,0 +1,13 @@
+// Rule: time.monotonic_ms never goes back, and time.sleep_ms waits.
+// Spec: 14.4
+// expect output: true
+// expect output: true
+
+use std.time
+
+fn main() {
+    const start = time.monotonic_ms()
+    time.sleep_ms(5)
+    print(time.monotonic_ms() - start >= 5)
+    print(time.now_ms() > 1_700_000_000_000)
+}

@@ -1,0 +1,40 @@
+// Rule: `parse_time` and `parse_datetime` read the formats `iso` writes; digits past the third of a fraction are dropped; anything else, a leap second or an offset too, fails with `Invalid`.
+// Spec: 14.4
+// expect output: 09:05:00
+// expect output: 09:05:30
+// expect output: 09:05:30.250
+// expect output: 09:05:30.123
+// expect output: 2026-11-04T09:05:30
+// expect output: Invalid(text: "9:05")
+// expect output: Invalid(text: "24:00")
+// expect output: Invalid(text: "23:59:60")
+// expect output: Invalid(text: "09:05.5")
+// expect output: Invalid(text: "09:05:30.1234567890")
+// expect output: Invalid(text: "2026-11-04T09:05:30Z")
+// expect output: Invalid(text: "2026-11-04T09:05:30+05:30")
+// expect output: Invalid(text: "2026-+1-04")
+
+use std.time
+
+fn main() ! Error {
+    for text in ["09:05", "09:05:30", "09:05:30.25", "09:05:30.1239"] {
+        print((try time.parse_time(text)).iso())
+    }
+    print((try time.parse_datetime("2026-11-04T09:05:30")).iso())
+    for text in ["9:05", "24:00", "23:59:60", "09:05.5", "09:05:30.1234567890"] {
+        const _t = time.parse_time(text) catch e => {
+            print("{e}")
+            continue
+        }
+    }
+    for text in ["2026-11-04T09:05:30Z", "2026-11-04T09:05:30+05:30"] {
+        const _t = time.parse_datetime(text) catch e => {
+            print("{e}")
+            continue
+        }
+    }
+    const _d = time.parse_date("2026-+1-04") catch e => {
+        print("{e}")
+        return
+    }
+}

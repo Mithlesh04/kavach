@@ -1,0 +1,7 @@
+// Rule: Statements end at the end of a line; there are no semicolons.
+// Spec: 1.1
+// expect compile error
+
+fn main() {
+    const x = 1;          // error: Kavach has no semicolons
+}

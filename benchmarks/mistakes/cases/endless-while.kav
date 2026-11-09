@@ -1,0 +1,14 @@
+// Mistake: A `while` whose variable never changes.
+
+fn count(limit: Int) {
+    let n = 0
+    while n < limit {
+        print(n)
+    }
+}
+
+fn main() {
+    if 1 > 2 {
+        count(3)
+    }
+}

@@ -1,0 +1,28 @@
+// Rule: `update` holds the `Shared` value's lock while its function runs, so updates from many tasks never lose one.
+// Spec: 6.2
+// expect output: 20000
+// expect output: 21
+
+fn main() {
+    const counter = Shared(0)
+    const names = Shared([""])
+    let tasks: [Task<Int>] = []
+    for i in 0..20 {
+        tasks.push(spawn {
+            for _ in 0..1000 {
+                counter.update(n => n + 1)
+            }
+            names.update(xs => {
+                let ys = xs
+                ys.push("task {i}")
+                ys
+            })
+            i
+        })
+    }
+    for t in tasks {
+        const _i = t.wait() catch _ => 0
+    }
+    print(counter.get())
+    print(names.get().len())
+}

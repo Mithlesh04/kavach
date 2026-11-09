@@ -1,0 +1,34 @@
+use std.json
+
+type Status = Pending | Paid(amount: Decimal)
+
+type Example {
+    whole: Int
+    decimal: Float
+    money: Decimal
+    yes: Bool
+    letter: Char
+    text: String
+    list: [Int]
+    map: [String: Int]
+    missing: String?
+    pending: Status
+    paid: Status
+}
+
+fn main() {
+    const e = Example(
+        whole: 42,
+        decimal: 2.5,
+        money: 19.99,
+        yes: true,
+        letter: 'k',
+        text: "Asha",
+        list: [1, 2],
+        map: ["a": 1],
+        missing: none,
+        pending: Status.Pending,
+        paid: Status.Paid(amount: 5.00),
+    )
+    print(json.stringify(e, indent: 2))
+}

@@ -1,0 +1,16 @@
+fn search(depth: Int) -> Int {
+    let best = 0
+    while true {            // a bug: the search never ends
+        best = best % 1000 + depth
+    }
+    best
+}
+
+fn main() {
+    const result = spawn search(3) within 50.ms
+    const best = result.wait() catch e => {
+        print(e)
+        0
+    }
+    print("best: {best}")
+}

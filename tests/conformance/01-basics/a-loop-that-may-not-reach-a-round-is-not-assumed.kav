@@ -1,0 +1,44 @@
+// Rule: A `for` that can leave early, a statement in an `if`, an inner loop that may not run, or a range that fits gets no compile error.
+// Spec: 1.8
+// expect output: 1
+// expect output: 2
+// expect output: 3
+// expect output: 6
+// expect output: 100
+// expect output: 3 0
+
+fn main() {
+    const sizes = [1, 2, 3]
+    for i in 0..9 {
+        if i == 3 {
+            break
+        }
+        print(sizes[i])
+    }
+    for d in 0..4 {
+        if d > 0 {
+            if d == 2 {
+                print(12 / d)
+            }
+        }
+    }
+    let hits: Int8 = 0
+    for _ in 0..100 {
+        hits += 1
+    }
+    print(hits)
+    let seen = 0
+    let zero = 0
+    for i in 0..3 {
+        for _ in 0..zero {
+            print(sizes[i + 5])
+        }
+        seen += 1
+    }
+    let empty = 0
+    for i in 5..5 {
+        empty += 1
+        print(sizes[i])
+    }
+    print("{seen} {empty}")
+}

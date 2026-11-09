@@ -1,0 +1,9 @@
+// Rule: Calling std.fs needs the Fs capability.
+// Spec: 14.1
+// expect compile error
+
+use std.fs
+
+pub fn has_config() -> Bool uses Console {
+    fs.exists("kavach.toml")        // error: Fs is not listed in `uses`
+}

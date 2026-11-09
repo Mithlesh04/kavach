@@ -1,0 +1,10 @@
+// Rule: An advanced pattern that needs too much work on some text panics instead of hanging.
+// Spec: 14.8
+// expect panic: regex gave up
+
+use std.regex
+
+fn main() ! Error {
+    const slow = try regex.advanced(r"^(?:a|a)*(?!a)c")
+    print(slow.is_match("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa!"))
+}

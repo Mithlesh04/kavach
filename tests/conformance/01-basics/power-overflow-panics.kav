@@ -1,0 +1,8 @@
+// Rule: A whole-number power that doesn't fit its type panics, as `*` does.
+// Spec: 1.8, 5.6
+// expect panic: integer overflow: 2 ** 63 doesn't fit in Int
+
+fn main() {
+    const n = 63
+    print(2 ** n)
+}

@@ -1,0 +1,25 @@
+// Rule: `time.zone` also takes a fixed offset from UTC, which never changes; an offset that can't be fails with `UnknownZone`.
+// Spec: 14.4
+// expect output: 1970-01-01T05:30:00
+// expect output: 1969-12-31T16:00:00
+// expect output: -28800
+// expect output: 0
+// expect output: UnknownZone(name: "+24:00")
+// expect output: UnknownZone(name: "+5:30")
+
+use std.time
+
+fn main() ! Error {
+    const india = try time.zone("+05:30")
+    const west = try time.zone("-08:00")
+    print(india.at(0).iso())
+    print(west.at(0).iso())
+    print(west.offset_seconds(1_762_247_130_000))
+    print(west.moment(west.at(0)))
+    for name in ["+24:00", "+5:30"] {
+        const _z = time.zone(name) catch e => {
+            print("{e}")
+            continue
+        }
+    }
+}

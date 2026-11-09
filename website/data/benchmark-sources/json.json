@@ -1,0 +1,42 @@
+{
+  "title": "JSON on large data",
+  "readme": "benchmarks/json/README.md",
+  "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · Python 3.12 (its json module is C) · typical of 5 runs",
+  "verify": "kavach build benchmarks/json/kavach/json.kav && ./json; python3 benchmarks/json/python/json_bench.py",
+  "series": [
+    {
+      "id": "kavach",
+      "label": "Kavach",
+      "column": "Kavach ms",
+      "color": "kavach"
+    },
+    {
+      "id": "python",
+      "label": "Python 3.12",
+      "column": "Python ms",
+      "color": "python"
+    }
+  ],
+  "benchmarks": {
+    "whole": {
+      "row": "whole program",
+      "title": "300,000 orders (52 MB): write, parse, read, decode"
+    },
+    "stringify": {
+      "row": "stringify",
+      "title": "stringify — every order to JSON text"
+    },
+    "parse": {
+      "row": "parse",
+      "title": "parse — the text back into dynamic values"
+    },
+    "read": {
+      "row": "read",
+      "title": "read — qty and price of 1.5M items from parsed values"
+    },
+    "decode": {
+      "row": "decode",
+      "title": "decode — the text straight into records"
+    }
+  }
+}

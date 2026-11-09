@@ -1,0 +1,12 @@
+// Rule: A record field without a default must be given.
+// Spec: 2.4
+// expect compile error
+
+type User {
+    name: String
+    email: String
+}
+
+fn main() {
+    const u = User(name: "Asha")      // error: missing field email
+}

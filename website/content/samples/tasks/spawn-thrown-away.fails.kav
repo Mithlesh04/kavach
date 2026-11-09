@@ -1,0 +1,8 @@
+fn save(report: String) -> Int ! Error {
+    fail Error("disk full")
+}
+
+fn main() uses Console {
+    spawn save("weekly report")
+    print("main goes on")
+}

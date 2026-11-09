@@ -1,0 +1,2 @@
+$ kavach build
+built .kavach/bin/my-app.exe

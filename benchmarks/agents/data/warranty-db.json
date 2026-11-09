@@ -1,0 +1,90 @@
+{
+ "orders": {
+  "A100": {
+   "product": "blender",
+   "status": "delivered",
+   "days": 40,
+   "price": 89
+  },
+  "A101": {
+   "product": "headphones",
+   "status": "delivered",
+   "days": 400,
+   "price": 120
+  },
+  "A102": {
+   "product": "kettle",
+   "status": "lost",
+   "days": 0,
+   "price": 45
+  },
+  "A103": {
+   "product": "laptop",
+   "status": "delivered",
+   "days": 200,
+   "price": 1400
+  },
+  "A104": {
+   "product": "lamp",
+   "status": "in transit",
+   "days": 0,
+   "price": 60
+  },
+  "A105": {
+   "product": "toaster",
+   "status": "delivered",
+   "days": 800,
+   "price": 70
+  },
+  "A106": {
+   "product": "power bank",
+   "status": "delivered",
+   "days": 10,
+   "price": 25
+  },
+  "A107": {
+   "product": "vacuum",
+   "status": "delivered",
+   "days": 300,
+   "price": 250
+  },
+  "A108": {
+   "product": "speaker",
+   "status": "lost",
+   "days": 0,
+   "price": 180
+  },
+  "A109": {
+   "product": "monitor",
+   "status": "delivered",
+   "days": 100,
+   "price": 320
+  },
+  "A110": {
+   "product": "mixer",
+   "status": "in transit",
+   "days": 0,
+   "price": 150
+  },
+  "A111": {
+   "product": "router",
+   "status": "delivered",
+   "days": 500,
+   "price": 95
+  }
+ },
+ "warranty_months": {
+  "blender": 24,
+  "headphones": 12,
+  "kettle": 12,
+  "laptop": 24,
+  "lamp": 12,
+  "toaster": 24,
+  "vacuum": 24,
+  "speaker": 12,
+  "monitor": 36,
+  "mixer": 24,
+  "router": 12,
+  "power bank": 6
+ }
+}

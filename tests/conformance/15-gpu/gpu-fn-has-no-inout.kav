@@ -1,0 +1,13 @@
+// Rule: A `gpu fn` gives its result back; it can't take `inout` parameters.
+// Spec: 15.1
+// expect compile error
+
+gpu fn bump(inout x: Float32) {       // error: a `gpu fn` can't take `inout` parameters
+    x = x + 1.0
+}
+
+fn main() {
+    let v: Float32 = 1.0
+    bump(v)
+    print(v)
+}

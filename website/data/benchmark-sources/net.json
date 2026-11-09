@@ -1,0 +1,32 @@
+{
+  "title": "Network waits",
+  "readme": "benchmarks/net/README.md",
+  "environment": "WSL Ubuntu 24.04 · i7-13700HX · g++ 13 -O2 · Python 3.12",
+  "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/net",
+  "series": [
+    {
+      "id": "kavach",
+      "label": "Kavach",
+      "row": "**Kavach, waking only the next task, which spins a moment first**",
+      "color": "kavach"
+    },
+    {
+      "id": "cpp",
+      "label": "C++, blocking sockets",
+      "row": "C++, blocking sockets",
+      "color": "cpp"
+    },
+    {
+      "id": "python",
+      "label": "Python 3.12",
+      "row": "Python, blocking sockets",
+      "color": "python"
+    }
+  ],
+  "benchmarks": {
+    "pingpong": {
+      "column": "Linux",
+      "title": "pingpong — 10,000 TCP round trips between two tasks (Linux)"
+    }
+  }
+}

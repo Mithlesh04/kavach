@@ -1,0 +1,15 @@
+use std.cli
+
+type Command = AddItem(name: String, count: Int = 1) | Show(limit: Int = 10)
+
+fn main() {
+    const command = cli.parse<Command>() catch e => {
+        print(e)
+        cli.exit(2)
+        return
+    }
+    match command {
+        Command.AddItem(name, count) => print("add {count} {name}"),
+        Command.Show(limit) => print("show {limit} items"),
+    }
+}

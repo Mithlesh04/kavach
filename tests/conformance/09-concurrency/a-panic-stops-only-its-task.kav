@@ -1,0 +1,26 @@
+// Rule: a panic stops only the task it happens in: it is printed when it happens, `.wait()` on that task fails with `panicked: <message> at <file>:<line>`, and the program goes on.
+// Spec: 9.1, 5.6
+// expect output: main waits
+// expect output: true
+// expect output: true
+// expect output: main goes on
+// expect stderr: panic: index 5 is out of range: the list has 3 items
+// expect stderr:   at a-panic-stops-only-its-task.kav:13
+
+fn fifth(items: [Int]) -> Int {
+    // The task stops here: nothing after it in the task runs.
+    const n = items.len()
+    items[n + 2]
+}
+
+fn main() {
+    const t = spawn fifth([1, 2, 3])
+    print("main waits")
+    const shown = match t.wait() {
+        ok(n) => "{n}"
+        err(e) => "{e}"
+    }
+    print(shown.starts_with("panicked: index 5 is out of range: the list has 3 items at "))
+    print(shown.ends_with("a-panic-stops-only-its-task.kav:13"))
+    print("main goes on")
+}

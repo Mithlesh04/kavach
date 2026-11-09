@@ -1,0 +1,5 @@
+$ kavach run src/main.kav power-cut
+[pay] refund 7
+$ kavach run src/main.kav
+[email] order 7: r7
+started

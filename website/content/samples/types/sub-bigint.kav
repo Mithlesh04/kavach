@@ -1,0 +1,10 @@
+fn main() {
+    let d = 234234 * 23424293429030023
+    print(d)
+    print(2 ** 100)
+    let total: BigInt = 1
+    for i in 1..=25 {
+        total *= BigInt(i)
+    }
+    print(total)
+}

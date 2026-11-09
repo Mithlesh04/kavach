@@ -1,0 +1,19 @@
+// Rule: `x.div_floor(n)` rounds down and `x.mod(n)` has the sign of `n`; `d.round(places)` rounds a half away from zero and `d.round_even(places)` to the even digit.
+// Spec: 14.2
+// expect output: (-4, 2, -3, -1)
+// expect output: (-4, -2, 2, 0)
+// expect output: (2.35, 2.34, -2.35, 2.36)
+// expect output: (2.5, 1, 0)
+
+fn main() {
+    const a = -7
+    print((a.div_floor(2), a.mod(3), a / 2, a % 3))
+    const b = 7
+    print((b.div_floor(-2), b.mod(-3), 6.div_floor(3), 6.mod(3)))
+    const price: Decimal = 2.345
+    const other: Decimal = 2.355
+    print((price.round(2), price.round_even(2), (-price).round(2), other.round_even(2)))
+    const half: Decimal = 0.5
+    const short: Decimal = 2.5
+    print((short.round(3), half.round(0), half.round_even(0)))
+}

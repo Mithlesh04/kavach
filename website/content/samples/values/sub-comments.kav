@@ -1,0 +1,16 @@
+// A line comment runs to the end of the line.
+
+/* A block comment can run
+   over several lines. */
+
+/// A doc comment describes what follows: editors show it on hover.
+fn total(price: Int, items: Int) -> Int {
+    price * items /* inside a line too */
+}
+
+fn main() {
+    /* Code put aside, comments and all:
+    print(total(1, 2))   /* an old note */
+    */
+    print(total(30, 4))
+}

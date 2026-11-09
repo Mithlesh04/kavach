@@ -1,0 +1,8 @@
+fn main() {
+    const label = "outside"
+    if true {
+        const label = "inside"
+        print(label)
+    }
+    print(label)
+}

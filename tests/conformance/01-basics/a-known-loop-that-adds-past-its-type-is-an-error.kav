@@ -1,0 +1,11 @@
+// Rule: `t += c` in a `for` over known numbers that carries `t` past its type is a compile error, naming the round that does.
+// Spec: 1.8
+// expect compile error
+
+fn main() {
+    let hits: Int8 = 0
+    for _ in 0..200 {
+        hits += 1    // error: this always panics: integer overflow: 127 + 1 doesn't fit in Int8
+    }
+    print(hits)
+}

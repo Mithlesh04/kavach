@@ -1,0 +1,28 @@
+use std.json
+
+type Customer {
+    name: String
+    city: String
+}
+
+type Item {
+    name: String
+    price: Int
+}
+
+type Order {
+    id: Int
+    customer: Customer
+    items: [Item]
+}
+
+fn main() ! Error {
+    const text = """
+        \{ "id": 7, "customer": \{ "name": "Asha", "city": "Pune" },
+          "items": [ \{ "name": "pen", "price": 20 }, \{ "name": "ink", "price": 45 } ] }
+        """
+    const order = try json.decode<Order>(text)
+    print(order.customer.city)
+    print(order.items.map(i => i.name))
+    print(order.items.sum(i => i.price))
+}

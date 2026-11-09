@@ -1,0 +1,17 @@
+// Element-wise arithmetic: y[i] = x[i] * 2.5 + 1.0 over 20 million
+// floats, 10 times. Each element stands alone, so this may be done many
+// elements at a time without changing any result.
+fn main() {
+    let xs = []
+    let ys = []
+    for i in 0..20_000_000 {
+        xs.push(Float(i % 1000) * 0.125)
+        ys.push(0.0)
+    }
+    for round in 0..10 {
+        for i in 0..20_000_000 {
+            ys[i] = xs[i] * 2.5 + 1.0
+        }
+    }
+    print(ys[19_999_999] > 0.0)
+}

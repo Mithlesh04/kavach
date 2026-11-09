@@ -1,0 +1,11 @@
+use std.net
+
+fn main() ! Error {
+    const server = try net.bind("127.0.0.1:0")
+    const client = try net.bind("127.0.0.1:0")
+    try client.send("ping".bytes(), server.address())
+    const got = try server.receive()
+    print("{got.data.text() ?? "?"} from the client: {got.from == client.address()}")
+    try server.send("pong".bytes(), got.from)
+    print((try client.receive()).data.text() ?? "?")
+}

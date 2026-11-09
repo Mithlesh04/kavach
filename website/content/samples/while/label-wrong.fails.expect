@@ -1,0 +1,1 @@
+error: `break inner` names no loop around it: the loops around it are named `outer`. A label goes before its loop, as `inner: for … {`, in the same function (spec 4.6)

@@ -1,0 +1,22 @@
+// Rule: `time.after(d, f)` is a task that calls `f` after `d`; like any task, it is cancelled when the function that made it returns.
+// Spec: 14.4, 9.2
+// expect output: scheduled
+// expect output: later ran
+// expect output: 42
+// expect output: waited: true
+// expect output: leaving
+
+use std.time
+
+fn main() ! Error {
+    const start = time.monotonic_ms()
+    const later = time.after(50.ms, () => {
+        print("later ran")
+        6 * 7
+    })
+    print("scheduled")
+    print(try later.wait())
+    print("waited: {time.monotonic_ms() - start >= 50}")
+    const _never = time.after(10.seconds, () => print("never"))
+    print("leaving")
+}

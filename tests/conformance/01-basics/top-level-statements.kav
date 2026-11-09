@@ -1,0 +1,5 @@
+// Rule: An entry file may contain top-level statements; they become the body of main.
+// Spec: 1.3
+// expect output: Hello, Kavach!
+
+print("Hello, Kavach!")

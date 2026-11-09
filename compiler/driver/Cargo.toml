@@ -1,0 +1,22 @@
+[package]
+name = "kavach-driver"
+description = "Runs the Kavach compiler pipeline and renders its messages"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+kavach-ast = { path = "../ast" }
+kavach-checker = { path = "../checker" }
+kavach-parser = { path = "../parser" }
+kavach-resolver = { path = "../resolver" }
+# Without the default `devices` (clipboard, serial ports, hidden input),
+# so the checker builds for the browser playground (decision 0078).
+kavach-runtime-core = { path = "../../runtime/core", default-features = false }
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"
+
+[lints]
+workspace = true

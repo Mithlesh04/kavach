@@ -1,0 +1,23 @@
+type AgeError = Empty | NotANumber(text: String)
+
+fn parse_age(text: String) -> Int ! AgeError {
+    if text.is_empty() {
+        fail AgeError.Empty
+    }
+    Int(text) catch _ => fail AgeError.NotANumber(text: text)
+}
+
+fn total_age(a: String, b: String) -> Int ! AgeError {
+    const first = try parse_age(a)
+    const second = try parse_age(b)
+    first + second
+}
+
+fn main() {
+    print(total_age("31", "27") catch -1)
+    const bad = total_age("31", "x") catch e => {
+        print("failed: {e}")
+        -1
+    }
+    print(bad)
+}

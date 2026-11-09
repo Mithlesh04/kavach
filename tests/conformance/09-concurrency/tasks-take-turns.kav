@@ -1,0 +1,21 @@
+// Rule: a spawned task runs only when the running task waits, and ready tasks run in the order they became ready.
+// Spec: 9.7
+// expect output: main first
+// expect output: a
+// expect output: b
+// expect output: back in main
+// expect output: 3
+
+fn say(name: String) -> Int {
+    print(name)
+    name.len()
+}
+
+fn main() ! Error {
+    const a = spawn say("a")
+    const b = spawn say("b")
+    print("main first")
+    const total = (try b.wait()) + (try a.wait())
+    print("back in main")
+    print(total + 1)
+}

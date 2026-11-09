@@ -1,0 +1,1 @@
+error: expected `Shared<Node?>`, found `Shared<Node>`: every copy of a `Shared` sees one value, so its type can't change; make it as `Shared<Node?>` from the start

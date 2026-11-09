@@ -1,0 +1,22 @@
+// Rule: Methods take self; functions without self are called on the type.
+// Spec: 2.5
+// expect output: 12
+// expect output: 9
+
+type Rect {
+    width: Int
+    height: Int
+
+    fn area(self) -> Int {
+        self.width * self.height
+    }
+
+    fn square(size: Int) -> Rect {
+        Rect(width: size, height: size)
+    }
+}
+
+fn main() {
+    print(Rect(width: 3, height: 4).area())
+    print(Rect.square(3).area())
+}

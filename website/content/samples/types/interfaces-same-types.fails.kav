@@ -1,0 +1,16 @@
+interface Getter<T> {
+    fn get(self) -> T
+}
+
+type Name: Getter<String> {
+    text: String
+
+    fn get(self) -> Int {
+        self.text.len()
+    }
+}
+
+fn main() {
+    const g: Getter<String> = Name(text: "Ada")
+    print(g.get())
+}

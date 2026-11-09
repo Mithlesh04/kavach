@@ -1,0 +1,13 @@
+// Rule: `std.text` pads, splits into words, capitalizes, truncates and finds blank text.
+// Spec: 14.9
+// expect output: 007|ab..
+// expect output: ["to", "be", "or", "not"]
+// expect output: Asha Kav true
+
+use std.text
+
+fn main() {
+    print("{text.pad_left("7", 3, '0')}|{text.pad_right("ab", 4, '.')}")
+    print(text.words("  to be\tor\nnot "))
+    print("{text.capitalize("asha")} {text.truncate("Kavach", 3)} {text.is_blank(" \t")}")
+}

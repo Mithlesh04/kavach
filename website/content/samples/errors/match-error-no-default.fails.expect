@@ -1,0 +1,1 @@
+error: a `match` on an `Error` needs a `_ => …` arm: an `Error` can hold any error type

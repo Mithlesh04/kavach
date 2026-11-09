@@ -1,0 +1,7 @@
+// Rule: A function without `->` returns nothing, so its body must not end with a value.
+// Spec: 3.1
+// expect compile error
+
+fn double(x: Int) {
+    x * 2               // error: double has no `->`; write `-> Int`
+}

@@ -1,0 +1,29 @@
+type EmailError = NotSent | Denied(reason: String)
+
+capability Email {
+    fn send(to: String, text: String) ! EmailError
+}
+
+type Outbox: Email {
+    fn send(self, to: String, text: String) ! EmailError {
+        print("to {to}: {text}")
+    }
+}
+
+agent Concierge {
+    can Email.send
+
+    on welcome(name: String, email: String) ! EmailError {
+        try Email.send(email, "Welcome, {name}!")
+    }
+
+    on shipped(order: Int, email: String) ! EmailError {
+        try Email.send(email, "Order {order} is on its way.")
+    }
+}
+
+fn main() ! Error {
+    const bot = Concierge.start(Email: Outbox())
+    try bot.welcome("Asha", "asha@example.com")
+    try bot.shipped(1042, "asha@example.com")
+}

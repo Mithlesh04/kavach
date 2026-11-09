@@ -1,0 +1,24 @@
+fn main() {
+    const a = 5
+    const b = 5
+    const c = 3
+    const d = 7
+    const e = 2
+    const f = 9
+    const g = 9
+    print(a == b != c)
+    print(c < a <= b)
+    print(a == b != c < d)
+    print(a == b != c < d > e)
+    print(e < c < a == b < d)
+    print(a != b == c)
+    print(a != c != b)
+    print(e < c < a == b < d < f == g)
+    print((a == b) != (c == d))
+    print((c < a) == (e < d))
+    print((a < b) == (d > f) == (e > c))
+    print(a == b == c or d == e == d)
+    print(a == b == 5 or d == e == d)
+    print(c < a == b and d > e < c)
+    print(not (a == b == c))
+}

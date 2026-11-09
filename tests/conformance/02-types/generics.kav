@@ -1,0 +1,21 @@
+// Rule: Functions and types can be generic.
+// Spec: 2.9
+// expect output: 3
+// expect output: a
+// expect output: 1 one
+
+fn first<T>(items: [T]) -> T? {
+    items.get(0)
+}
+
+type Pair<A, B> {
+    left: A
+    right: B
+}
+
+fn main() {
+    print(first([3, 4]) ?? 0)
+    print(first(["a", "b"]) ?? "none")
+    const p = Pair(left: 1, right: "one")
+    print("{p.left} {p.right}")
+}

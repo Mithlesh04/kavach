@@ -1,0 +1,52 @@
+// Rule: A generic interface is a value type with its type arguments: a `Getter<Int>` holds any type implementing `Getter<Int>`, and its methods give and take `Int`.
+// Spec: 2.15
+// expect output: 12
+// expect output: a!
+// expect output: put 'x'
+// expect output: b!
+// expect output: put 'x'
+// expect output: put 7
+
+interface Getter<T> {
+    fn get(self) -> T
+    fn put(self, value: T) -> String
+}
+
+type Five: Getter<Int> {
+    n: Int
+
+    fn get(self) -> Int {
+        5 + self.n
+    }
+
+    fn put(self, value: Int) -> String {
+        "put {value}"
+    }
+}
+
+type Word: Getter<String> {
+    w: String
+
+    fn get(self) -> String {
+        self.w
+    }
+
+    fn put(self, value: String) -> String {
+        "put '{value}'"
+    }
+}
+
+fn twice(g: Getter<Int>) -> Int {
+    g.get() * 2
+}
+
+fn main() {
+    print(twice(Five(n: 1)))
+    const gs: [Getter<String>] = [Word(w: "a"), Word(w: "b")]
+    for g in gs {
+        print(g.get() + "!")
+        print(g.put("x"))
+    }
+    const f: Getter<Int> = Five(n: 0)
+    print(f.put(7))
+}

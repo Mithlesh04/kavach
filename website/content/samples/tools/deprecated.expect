@@ -1,0 +1,24 @@
+$ kavach run
+2
+3
+warning: `half` is deprecated: use half_of instead (spec 12.6)
+ --> src/main.kav:5:11
+  |
+5 |     print(billing.half(4))
+  |           ^^^^^^^^^^^^
+
+warning: `half` is deprecated: use half_of instead (spec 12.6)
+ --> src/main.kav:6:11
+  |
+6 |     print(half(6))
+  |           ^^^^
+$ kavach fix src
+src/main.kav: Replace with `billing.half_of(4)`
+$ kavach run
+2
+3
+warning: `half` is deprecated: use half_of instead (spec 12.6)
+ --> src/main.kav:6:11
+  |
+6 |     print(half(6))
+  |           ^^^^

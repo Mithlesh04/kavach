@@ -1,0 +1,19 @@
+type Verdict {
+    risky: Bool
+}
+
+fn pick(level: Int) -> Model {
+    if level > 1 { Model(name: "claude-opus-5-5") } else { Model(name: "claude-haiku-5-5") }
+}
+
+agent Reviewer {
+    model pick(2)
+    can Ai
+
+    on check(text: String) -> Verdict ! Error {
+        try ask<Verdict>(text)
+    }
+}
+
+fn main() {
+}

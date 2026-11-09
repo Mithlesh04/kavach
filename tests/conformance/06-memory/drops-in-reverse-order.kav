@@ -1,0 +1,21 @@
+// Rule: At the end of a block, the `Drop` values it made drop in the reverse order they were made.
+// Spec: 6.1
+// expect output: made three
+// expect output: released c
+// expect output: released b
+// expect output: released a
+
+type Guard: Drop {
+    name: String
+
+    fn drop(self) {
+        print("released {self.name}")
+    }
+}
+
+fn main() {
+    const a = Guard(name: "a")
+    const b = Guard(name: "b")
+    const c = Guard(name: "c")
+    print("made three")
+}

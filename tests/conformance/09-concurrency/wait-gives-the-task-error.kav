@@ -1,0 +1,30 @@
+// Rule: spawned code may fail without `try`: `.wait()` gives its value, or its error.
+// Spec: 9.1
+// expect output: 4
+// expect output: odd: -1
+// expect output: c spawned
+// expect output: in c
+// expect output: 6
+
+type HalfError = Odd(n: Int)
+
+fn half(n: Int) -> Int ! HalfError {
+    if n % 2 == 1 {
+        fail HalfError.Odd(n: n)
+    }
+    n / 2
+}
+
+fn main() ! Error {
+    const a = spawn half(8)
+    const b = spawn half(3)
+    print(try a.wait())
+    const r = b.wait() catch _ => -1
+    print("odd: {r}")
+    const c = spawn {
+        print("in c")
+        try half(10) + 1
+    }
+    print("c spawned")
+    print(try c.wait())
+}

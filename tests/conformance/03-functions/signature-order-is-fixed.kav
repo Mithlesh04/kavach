@@ -1,0 +1,15 @@
+// Rule: The parts of a signature always come in the same order: ->, !, uses, require, ensure, example.
+// Spec: 3.5
+// expect compile error
+
+type DivError = DivideByZero
+
+fn divide(a: Int, b: Int) -> Int
+    require a >= 0
+    ! DivError          // error: `!` must come before `require`
+{
+    if b == 0 {
+        fail DivError.DivideByZero
+    }
+    a / b
+}

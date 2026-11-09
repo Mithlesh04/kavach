@@ -1,0 +1,11 @@
+// Rule: `extend` adds methods to an existing type.
+// Spec: 2.5
+// expect output: HI!
+
+extend String {
+    fn shout(self) -> String { self.upper() + "!" }
+}
+
+fn main() {
+    print("hi".shout())
+}

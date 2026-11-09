@@ -1,0 +1,11 @@
+use std.log
+
+type OrderPlaced: LogEvent {
+    order_id: Int
+    amount: Decimal
+    secret card: String
+}
+
+fn main() {
+    log.info(OrderPlaced(order_id: 7, amount: 499.00, card: "4242 4242 4242 4242"))
+}

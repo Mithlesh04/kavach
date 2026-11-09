@@ -1,0 +1,20 @@
+interface Counter {
+    fn bump(self, inout n: Int)
+}
+
+type Step: Counter {
+    size: Int
+
+    fn bump(self, inout n: Int) {
+        n += self.size
+    }
+}
+
+fn main() {
+    const counters: [Counter] = [Step(size: 1), Step(size: 10)]
+    let total = 0
+    for c in counters {
+        c.bump(total)
+    }
+    print(total)
+}

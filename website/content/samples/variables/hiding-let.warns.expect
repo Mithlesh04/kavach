@@ -1,0 +1,2 @@
+warning: `total` is never used: this makes a new `total`, hiding the one declared above. To change that one, write `total = …` without `let` (spec 1.4)
+0

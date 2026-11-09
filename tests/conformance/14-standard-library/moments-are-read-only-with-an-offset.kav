@@ -1,0 +1,25 @@
+// Rule: `parse_moment` reads a date and time with `Z` or an offset, and gives the moment; text with no offset fails, since a time with no zone is no moment.
+// Spec: 14.4
+// expect output: 1793783130000
+// expect output: 1793783130000
+// expect output: 1793783130250
+// expect output: 1793783130000
+// expect output: Invalid(text: "2026-11-04T09:05:30")
+// expect output: Invalid(text: "2026-11-04T09:05:30+5:30")
+// expect output: Invalid(text: "2026-11-04 09:05:30Z")
+// expect output: Invalid(text: "2026-02-30T09:05:30Z")
+
+use std.time
+
+fn main() ! Error {
+    print(try time.parse_moment("2026-11-04T09:05:30Z"))
+    print(try time.parse_moment("2026-11-04T14:35:30+05:30"))
+    print(try time.parse_moment("2026-11-04T09:05:30.250Z"))
+    print(try time.parse_moment("2026-11-04T01:05:30-08:00"))
+    for text in ["2026-11-04T09:05:30", "2026-11-04T09:05:30+5:30", "2026-11-04 09:05:30Z", "2026-02-30T09:05:30Z"] {
+        const _m = time.parse_moment(text) catch e => {
+            print("{e}")
+            continue
+        }
+    }
+}

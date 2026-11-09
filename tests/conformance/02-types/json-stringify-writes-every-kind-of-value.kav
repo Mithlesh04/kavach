@@ -1,0 +1,125 @@
+// Rule: `json.stringify` writes every kind of value, compact or indented, as the same text in the interpreter and native code.
+// Spec: 2.12
+// expect output: [1,-2,0,9223372036854775807]
+// expect output: [0,255]
+// expect output: [-300,300]
+// expect output: [1.5,-0.25]
+// expect output: [{"x":1,"y":2.5},{"x":-3,"y":1.0}]
+// expect output: ["short","a text longer than fifteen bytes",""]
+// expect output: "quote\" back\\ line\n tab\t return\r control\u0001 é 😀 /"
+// expect output: [1.0,0.1,1e20,1e-7,null,0.0]
+// expect output: [1,"x",true,"c"]
+// expect output: [[1,"one"],[2,"two"]]
+// expect output: [3,1,2]
+// expect output: {"b":1,"a":2}
+// expect output: {"name":"n","size":null,"tags":[]}
+// expect output: {"name":"n","size":4,"tags":["t"]}
+// expect output: {}
+// expect output: ["Open",{"Closed":{"reason":"x","code":7}}]
+// expect output: [1.50,-0.001]
+// expect output: 123456789012345678901234567890
+// expect output: 18446744073709551615
+// expect output: [[],[1]]
+// expect output: [null,5]
+// expect output: {"a":[1,2.50,"x",true,null],"e":[],"o":{},"big":12345678901234567890}
+// expect output: {
+// expect output:   "a": [
+// expect output:     1,
+// expect output:     2.50,
+// expect output:     "x",
+// expect output:     true,
+// expect output:     null
+// expect output:   ],
+// expect output:   "e": [],
+// expect output:   "o": {},
+// expect output:   "big": 12345678901234567890
+// expect output: }
+// expect output: [
+// expect output:  {
+// expect output:   "x": 1,
+// expect output:   "y": 2.5
+// expect output:  },
+// expect output:  {
+// expect output:   "x": -3,
+// expect output:   "y": 1.0
+// expect output:  }
+// expect output: ]
+// expect output: [
+// expect output:   {
+// expect output:     "Closed": {
+// expect output:       "reason": "x",
+// expect output:       "code": 7
+// expect output:     }
+// expect output:   }
+// expect output: ]
+// expect output: [
+// expect output:    {
+// expect output:       "k": [
+// expect output:          1
+// expect output:       ]
+// expect output:    },
+// expect output:    {},
+// expect output:    []
+// expect output: ]
+
+use std.json
+
+type Point {
+    x: Int
+    y: Float
+}
+
+type Named {
+    name: String
+    size: Int?
+    tags: [String]
+}
+
+type Empty {
+}
+
+type Status = Open | Closed(reason: String, code: Int)
+
+fn main() {
+    const plain: [Int] = [1, -2, 0, 9_223_372_036_854_775_807]
+    const small: [UInt8] = [0, 255]
+    const low: [Int16] = [-300, 300]
+    const floats: [Float32] = [1.5, -0.25]
+    const points = [Point(x: 1, y: 2.5), Point(x: -3, y: 1.0)]
+    const words = ["short", "a text longer than fifteen bytes", ""]
+    const hard = "quote\" back\\ line\n tab\t return\u{D} control\u{1} é 😀 /"
+    const big_float = 1.0e20
+    const tiny_float = 1.0e-7
+    const nan = 0.0 / 0.0
+    const pairs = [(1, "one"), (2, "two")]
+    const nothing: [Int] = []
+    print(json.stringify(plain))
+    print(json.stringify(small))
+    print(json.stringify(low))
+    print(json.stringify(floats))
+    print(json.stringify(points))
+    print(json.stringify(words))
+    print(json.stringify(hard))
+    print(json.stringify([1.0, 0.1, big_float, tiny_float, nan, -0.0]))
+    print(json.stringify((1, "x", true, 'c')))
+    print(json.stringify(pairs))
+    print(json.stringify(Set.of(3, 1, 2)))
+    print(json.stringify(["b": 1, "a": 2]))
+    print(json.stringify(Named(name: "n", size: none, tags: [])))
+    print(json.stringify(Named(name: "n", size: 4, tags: ["t"])))
+    print(json.stringify(Empty()))
+    print(json.stringify([Status.Open, Status.Closed(reason: "x", code: 7)]))
+    print(json.stringify([Decimal("1.50"), Decimal("-0.001")]))
+    print(json.stringify(BigInt("123456789012345678901234567890")))
+    print(json.stringify(UInt64(18_446_744_073_709_551_615)))
+    print(json.stringify([[], [1]]))
+    const none_value: Int? = none
+    const some_value: Int? = 5
+    print(json.stringify([none_value, some_value]))
+    const doc: Json = ["a": [1, 2.50, "x", true, none], "e": [], "o": [:], "big": 12345678901234567890]
+    print(json.stringify(doc))
+    print(json.stringify(doc, indent: 2))
+    print(json.stringify(points, indent: 1))
+    print(json.stringify([Status.Closed(reason: "x", code: 7)], indent: 2))
+    print(json.stringify((["k": [1]], Empty(), nothing), indent: 3))
+}

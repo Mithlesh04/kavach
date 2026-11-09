@@ -1,0 +1,60 @@
+// Rule: An `inout` parameter's last value goes back to the caller's place when the function returns: a `let` variable, or a field or list item of one; other names for the old value don't change.
+// Spec: 3.9
+// expect output: 2
+// expect output: 2 1
+// expect output: [0, 1, 2]
+// expect output: 31 31
+// expect output: 32
+// expect output: [10, 21]
+// expect output: [11, 21] [10, 21]
+
+type User {
+    name: String
+    age: Int
+}
+
+fn bump(inout n: Int) {
+    n += 1
+}
+
+fn swap(inout a: Int, inout b: Int) {
+    const t = a
+    a = b
+    b = t
+}
+
+fn fill(inout items: [Int], to: Int) {
+    for i in 0..to {
+        items.push(i)
+    }
+}
+
+fn birthday(inout u: User) -> Int {
+    u.age += 1
+    u.age
+}
+
+fn main() {
+    let count = 0
+    bump(count)
+    bump(count)
+    print(count)
+    let x = 1
+    let y = 2
+    swap(x, y)
+    print("{x} {y}")
+    let list: [Int] = []
+    fill(list, to: 3)
+    print(list)
+    let u = User(name: "Asha", age: 30)
+    const now = birthday(u)
+    print("{now} {u.age}")
+    bump(u.age)
+    print(u.age)
+    let scores = [10, 20]
+    bump(scores[1])
+    print(scores)
+    const copy = scores
+    bump(scores[0])
+    print("{scores} {copy}")
+}

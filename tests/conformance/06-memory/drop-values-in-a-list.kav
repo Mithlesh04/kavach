@@ -1,0 +1,29 @@
+// Rule: A `Drop` value in a list lives as long as the list holds it, and drops when the list ends, in a `Shared` too.
+// Spec: 6.1, 6.2
+// expect output: 1
+// expect output: 2
+// expect output: end
+// expect output: drop 2
+// expect output: drop 1
+
+type Guard: Drop {
+    n: Int
+
+    fn drop(self) {
+        print("drop {self.n}")
+    }
+}
+
+fn main() {
+    const mine = [Guard(n: 1)]
+    print(mine.len())
+    const none_yet: [Guard] = []
+    const held = Shared(none_yet)
+    held.update(gs => {
+        let more = gs
+        more.push(Guard(n: 2))
+        more
+    })
+    print(held.get()[0].n)
+    print("end")
+}

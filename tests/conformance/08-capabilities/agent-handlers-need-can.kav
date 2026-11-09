@@ -1,0 +1,24 @@
+// Rule: An agent's handler may only use the capabilities the agent lists in `can`, also through functions it calls.
+// Spec: 8.3
+// expect compile error
+
+type Receipt { id: String }
+type PaymentError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn refund(order_id: Int) -> Receipt ! PaymentError
+    fn charge(order_id: Int) -> Receipt ! PaymentError
+}
+
+fn charge_again(order_id: Int) ! PaymentError {
+    const receipt = try Payments.charge(order_id)
+}
+
+agent Bot {
+    can Payments.refund
+
+    on request(order_id: Int) ! PaymentError {
+        const receipt = try Payments.refund(order_id)
+        try charge_again(order_id)      // error: Payments.charge is not in `can`
+    }
+}

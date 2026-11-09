@@ -1,0 +1,6 @@
+fn main() {
+    const prices: [Decimal] = [19.99, 5.00, 19.90]
+    print(prices.sort())
+    const big = [BigInt(2) ** 100, BigInt(-5), BigInt(10) ** 30]
+    print(big.sort())
+}

@@ -1,0 +1,11 @@
+// Rule: `NaN` sorts after every number, so a list holding one still sorts.
+// Spec: 14.2
+// expect output: [-2.0, 0.5, 1.0, 3.0, NaN]
+// expect output: -2.0 NaN
+
+fn main() {
+    const nan = 0.0 / 0.0
+    const xs = [3.0, nan, 1.0, -2.0, 0.5]
+    print(xs.sort())
+    print("{xs.min() ?? 0.0} {xs.max() ?? 0.0}")
+}

@@ -1,0 +1,12 @@
+// Rule: `debug()` needs no capability.
+// Spec: 8.1
+// expect output: 6
+
+pub fn double(n: Int) -> Int {
+    debug(n)
+    n * 2
+}
+
+fn main() {
+    print(double(3))
+}

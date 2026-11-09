@@ -1,0 +1,10 @@
+use std.fs
+
+fn main() ! Error {
+    try fs.write_text("visits.log", "Asha\n")
+    try fs.append_text("visits.log", "Omar\n")
+    try fs.append_text("visits.log", "Zoe\n")
+    print(try fs.read_text("visits.log"))
+    try fs.write_text("visits.log", "reset\n")
+    print(try fs.read_text("visits.log"))
+}

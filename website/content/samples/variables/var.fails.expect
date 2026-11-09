@@ -1,0 +1,1 @@
+error: `var` is not Kavach: write `let` for a variable, or `const` for a value that never changes

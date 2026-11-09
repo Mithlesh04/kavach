@@ -1,0 +1,9 @@
+fn main() {
+    const a = 5
+    const b = 5
+    const c = 7
+    print(a == b == 5)
+    print(a == b != c)
+    print(a <= b < c)
+    print(a != c != b)
+}

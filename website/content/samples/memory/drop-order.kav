@@ -1,0 +1,13 @@
+type Door: Drop {
+    name: String
+
+    fn drop(self) uses Console {
+        print("closing {self.name}")
+    }
+}
+
+fn main() {
+    const front = Door(name: "front")
+    const back = Door(name: "back")
+    print("both open")
+}

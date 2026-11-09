@@ -1,0 +1,16 @@
+// Rule: A wait inside `update` reached through another function panics, since the value stays locked until the function returns.
+// Spec: 6.2
+// expect panic
+
+use std.time
+
+fn slow_add(n: Int) -> Int {
+    time.sleep_ms(1)
+    n + 1
+}
+
+fn main() {
+    const visits = Shared(0)
+    visits.update(n => slow_add(n))
+    print(visits.get())
+}

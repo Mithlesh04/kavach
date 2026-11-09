@@ -1,0 +1,7 @@
+fn main() {
+    const sunny = true
+    const age = 17
+    const adult = age >= 18
+    print(sunny)
+    print(adult)
+}

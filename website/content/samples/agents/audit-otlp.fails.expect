@@ -1,0 +1,1 @@
+error: `otlp: true` sends the audit log to a collector: add a `[log.otlp]` section with its `endpoint` to `kavach.toml` (spec 8.6, 14.12)

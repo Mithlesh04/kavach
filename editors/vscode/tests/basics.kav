@@ -1,0 +1,157 @@
+// SYNTAX TEST "source.kavach" "comments, strings, numbers, operators"
+
+/// Sum of all paid orders.
+// <--- comment.line.documentation.kavach
+
+// a plain comment
+// <-- comment.line.double-slash.kavach
+
+/* a block /* inside it */ comment */
+// <-- comment.block.kavach
+//                                  ^^ comment.block.kavach
+
+pub fn withdraw(account: Account, amount: Decimal) -> Account ! BankError
+// <--- storage.modifier.kavach
+//  ^^ storage.type.function.kavach
+//     ^^^^^^^^ entity.name.function.kavach
+//                       ^^^^^^^ entity.name.type.kavach
+//                                        ^^^^^^^ support.type.primitive.kavach
+//                                                 ^^ storage.type.function.arrow.kavach
+//                                                            ^ keyword.operator.error.kavach
+//                                                              ^^^^^^^^^ entity.name.type.kavach
+
+    require amount > 0
+//  ^^^^^^^ keyword.control.contract.kavach
+//                   ^ constant.numeric.integer.kavach
+
+    ensure result.balance == account.balance - amount
+//  ^^^^^^ keyword.control.contract.kavach
+//         ^^^^^^ variable.language.result.kavach
+//                        ^^ keyword.operator.comparison.kavach
+
+    example withdraw(Account(owner: "Asha", balance: 100), 30).balance == 70
+//  ^^^^^^^ keyword.control.contract.kavach
+//          ^^^^^^^^ entity.name.function.call.kavach
+//                                  ^^^^^^ string.quoted.double.kavach
+
+const greeting = "Hello, {user.name}! \{literal}"
+// <----- storage.type.const.kavach
+//                       ^ punctuation.definition.template-expression.begin.kavach
+//                        ^^^^ meta.embedded.line.kavach
+//                        ^^^^ variable.other.readwrite.kavach
+//                             ^^^^ variable.other.property.kavach
+//                                    ^^ constant.character.escape.kavach
+
+print("{price + order.total} and {Json.Null}")
+//     ^ punctuation.definition.template-expression.begin.kavach
+//      ^^^^^ variable.other.readwrite.kavach
+//            ^ keyword.operator.kavach
+//              ^^^^^ variable.other.readwrite.kavach
+//                    ^^^^^ variable.other.property.kavach
+//                         ^ punctuation.definition.template-expression.end.kavach
+//                          ^^^^^ string.quoted.double.kavach - meta.embedded.line.kavach
+//                                ^^^^ support.type.primitive.kavach
+
+print("{Point(x: 1).x} done")
+//            ^ variable.other.readwrite.kavach
+//                   ^ punctuation.definition.template-expression.end.kavach
+//                     ^^^^ string.quoted.double.kavach
+
+var old = 1
+// <--- invalid.illegal.var.kavach
+
+let changing = 1
+// <--- storage.type.kavach - variable.other.constant.kavach
+
+const path = r"C:\path\{x}"
+//                    ^^ string.quoted.raw.kavach - constant.character.escape.kavach
+
+const big = 1_000_000 + 0xff + 0b1010 + 2.5e-3
+//          ^^^^^^^^^ constant.numeric.integer.kavach
+//                      ^^^^ constant.numeric.hex.kavach
+//                             ^^^^^^ constant.numeric.binary.kavach
+//                                      ^^^^^^ constant.numeric.float.kavach
+
+const letter = 'क'
+//             ^^^ constant.character.kavach
+
+const ok = true or none
+//         ^^^^ constant.language.kavach
+//              ^^ keyword.operator.wordlike.kavach
+//                 ^^^^ constant.language.kavach
+
+if not done and count >= 3 {
+// <-- keyword.control.kavach
+// ^^^ keyword.operator.wordlike.kavach
+//          ^^^ keyword.operator.wordlike.kavach
+
+const label = user?.name ?? "guest"
+//                ^^ keyword.operator.optional.kavach
+//                       ^^ keyword.operator.optional.kavach
+
+for i in 0..=9 {
+// <--- keyword.control.kavach
+//    ^^ keyword.control.kavach
+//        ^^^ keyword.operator.range.kavach
+
+const double = x => x * 2
+//               ^^ storage.type.function.arrow.kavach
+
+print(self.name)
+// <----- support.function.builtin.kavach
+//    ^^^^ variable.language.self.kavach
+
+    flags <<= 2 ** n
+//        ^^^ keyword.operator.assignment.kavach
+//              ^^ keyword.operator.kavach
+
+    const text = try read_file(path) context "loading settings"
+//               ^^^ keyword.control.kavach
+//                                   ^^^^^^^ keyword.control.kavach
+
+const context = 3
+//    ^^^^^^^ source.kavach - keyword.control.kavach
+
+print(context)
+//    ^^^^^^^ source.kavach - keyword.control.kavach
+
+const wait = 5.seconds
+//           ^ constant.numeric.integer.kavach
+//             ^^^^^^^ keyword.other.unit.kavach
+const tick = 250.ms + 2.minutes + 1.hours + 3.days
+//               ^^ keyword.other.unit.kavach
+//                      ^^^^^^^ keyword.other.unit.kavach
+//                                  ^^^^^ keyword.other.unit.kavach
+//                                            ^^^^ keyword.other.unit.kavach
+const field = order.seconds
+//                  ^^^^^^^ variable.other.property.kavach
+
+outer: for row in grid {
+// <----- entity.name.label.kavach
+    for cell in row {
+        break outer
+//      ^^^^^ keyword.control.kavach
+//            ^^^^^ entity.name.label.kavach
+    }
+}
+
+const job = spawn thread fetch(1)
+//          ^^^^^ keyword.other.kavach
+//                ^^^^^^ keyword.other.kavach
+const heavy = spawn cores { render(frame) }
+//                  ^^^^^ keyword.other.kavach
+const child = spawn process convert(1)
+//                  ^^^^^^^ keyword.other.kavach
+const named = spawn thread()
+//                  ^^^^^^ entity.name.function.call.kavach
+const limited = spawn cores search(3) within 50.ms
+//              ^^^^^ keyword.other.kavach
+//                    ^^^^^ keyword.other.kavach
+//                          ^^^^^^ entity.name.function.call.kavach
+//                                    ^^^^^^ keyword.other.kavach
+//                                           ^^ constant.numeric.integer.kavach
+//                                              ^^ keyword.other.unit.kavach
+const block = spawn {
+    work()
+} within 5.seconds
+//^^^^^^ keyword.other.kavach

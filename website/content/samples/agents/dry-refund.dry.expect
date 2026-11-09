@@ -1,0 +1,4 @@
+order 1: receipt ofry 
+refused: Denied(reason: "limit broken: amount <= 500")
+[dry run] Payments.refund(order: 1, amount: 400) -> Receipt(id: "ofry ")
+[dry run] Payments.refund(order: 2, amount: 900) refused: limit broken: amount <= 500

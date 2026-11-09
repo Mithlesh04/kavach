@@ -1,0 +1,11 @@
+fn main() {
+    const data = Bytes([0, 0, 128, 63, 0, 0, 0, 64])
+    print(data.as_list<Float32>() ?? [])
+    print(data.as_list<Int>() ?? [])
+    print(data.slice(0, 3).as_list<Int32>())
+
+    // A list like any other: it can grow, and be summed.
+    let xs = data.as_list<Float32>() ?? []
+    xs.push(5)
+    print(xs.sum(x => x))
+}

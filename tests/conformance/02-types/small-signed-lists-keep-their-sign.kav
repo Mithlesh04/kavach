@@ -1,0 +1,14 @@
+// Rule: A list of `Int8` holds negative numbers, which print, compare and sort as numbers.
+// Spec: 2.2
+// expect output: [-1, 5, -128]
+// expect output: [-128, -1, 5]
+// expect output: 0
+// expect output: true
+
+fn main() {
+    const xs: [Int8] = [-1, 5, -128]
+    print(xs)
+    print(xs.sort())
+    print(xs[0] + 1)
+    print(xs == [Int8(-1), 5, -128])
+}

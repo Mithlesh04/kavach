@@ -1,0 +1,5 @@
+fn main() {
+    const total = 10
+    const total = 20
+    print(total)
+}

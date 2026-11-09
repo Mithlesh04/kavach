@@ -1,0 +1,1 @@
+error: the result of `add` is unused: use it, or write `const _ = …` to throw it away

@@ -1,0 +1,16 @@
+// Rule: In a generated test, each round of `time.every` moves the clock forward at once, as `sleep` does.
+// Spec: 11.5
+// expect test pass
+
+use std.time
+
+fn three_rounds() -> Int uses Clock
+    ensure result == 1_767_236_400_000
+{
+    for tick in time.every(1.hours) {
+        if tick == 2 {
+            break
+        }
+    }
+    time.now_ms()
+}

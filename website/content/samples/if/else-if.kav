@@ -1,0 +1,10 @@
+fn main() {
+    const stock = 3
+    if stock == 0 {
+        print("Sold out")
+    } else if stock < 5 {
+        print("Only {stock} left")
+    } else {
+        print("In stock")
+    }
+}

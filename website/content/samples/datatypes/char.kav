@@ -1,0 +1,8 @@
+fn main() {
+    const letter: Char = 'k'
+    const hindi: Char = 'क'
+    print(letter)
+    print(hindi)
+    print(Int('a'))
+    print("kavach".chars())
+}

@@ -1,0 +1,18 @@
+// Rule: `json.decode<T>` reads a field of type `Json` as written, whatever it holds.
+// Spec: 2.12
+// expect output: 7 {"tags":["a","b"],"n":null}
+// expect output: 8 null
+
+use std.json
+
+type Event {
+    id: Int
+    data: Json
+}
+
+fn main() ! JsonError {
+    const a = try json.decode<Event>("\{\"id\": 7, \"data\": \{\"tags\": [\"a\", \"b\"], \"n\": null}}")
+    print("{a.id} {a.data}")
+    const b = try json.decode<Event>("\{\"id\": 8, \"data\": null}")
+    print("{b.id} {b.data}")
+}

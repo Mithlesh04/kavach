@@ -1,0 +1,12 @@
+/// The price with tax, in cents.
+pub fn with_tax(cents: Int) -> Int
+    require cents >= 0 and cents <= 1_000_000
+    example with_tax(1_000) == 1_180
+{
+    cents + cents * 18 / 100
+}
+
+/// A short label for an order.
+pub fn label(id: Int) -> String {
+    "order {id}"
+}

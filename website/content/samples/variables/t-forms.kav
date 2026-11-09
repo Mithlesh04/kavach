@@ -1,0 +1,14 @@
+fn main() {
+    const city = "Pune"
+    print(city)
+    let count = 3
+    print(count)
+    count = count + 1
+    print(count)
+    count += 10
+    print(count)
+    const limit: Int = 10
+    print(limit)
+    const [first, second] = [7, 8]
+    print(second)
+}

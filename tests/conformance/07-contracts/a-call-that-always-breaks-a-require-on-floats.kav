@@ -1,0 +1,13 @@
+// Rule: A known float argument that makes a `require` false is a compile error too.
+// Spec: 7.7
+// expect compile error
+
+fn speed(distance: Float, hours: Float) -> Float
+    require hours > 0.0
+{
+    distance / hours
+}
+
+fn main() {
+    print(speed(10.0, -2.0))    // error: always breaks `require hours > 0.0`
+}

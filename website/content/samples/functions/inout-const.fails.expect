@@ -1,0 +1,1 @@
+error: `n` is `inout`, so `count` must be able to change: declare it with `let`, not `const` (spec 3.9)

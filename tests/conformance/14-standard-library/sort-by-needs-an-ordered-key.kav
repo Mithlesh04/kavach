@@ -1,0 +1,12 @@
+// Rule: `sort_by`'s key must have an order: a record key is a compile error, not a list left unsorted.
+// Spec: 14.2
+// expect compile error
+
+type Point {
+    x: Int
+}
+
+fn main() {
+    const points = [Point(x: 2), Point(x: 1)]
+    print(points.sort_by(p => p).len())       // error: `sort_by`'s key needs values with an order
+}

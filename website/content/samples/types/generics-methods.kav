@@ -1,0 +1,22 @@
+type Picker {
+    seed: Int
+
+    fn pick<T>(self, items: [T]) -> T {
+        items[self.seed % items.len()]
+    }
+}
+
+fn first<T>(xs: [T]) -> T? {
+    xs.get(0)
+}
+
+fn apply(f: fn([Int]) -> Int?, xs: [Int]) -> Int {
+    f(xs) ?? -1
+}
+
+fn main() {
+    const p = Picker(seed: 5)
+    print(p.pick([10, 20, 30]))
+    print(p.pick(["x", "y"]))
+    print(apply(first, [7, 8]))
+}

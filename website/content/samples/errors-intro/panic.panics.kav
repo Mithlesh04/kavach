@@ -1,0 +1,9 @@
+fn show(names: List<String>, count: Int) {
+    for i in 0..count {
+        print(names[i])
+    }
+}
+
+fn main() {
+    show(["Asha", "Ravi"], 3)
+}

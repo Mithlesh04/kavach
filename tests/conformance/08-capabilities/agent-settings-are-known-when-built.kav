@@ -1,0 +1,16 @@
+// Rule: An agent's `settings` are worked out when the program is built: a value only known when it runs is a compile error.
+// Spec: 8.5
+// expect compile error
+
+fn chosen(quiet: Bool) -> AgentSettings {
+    AgentSettings(state: quiet)
+}
+
+agent Bot {
+    settings chosen(true)    // error: chosen when the program is built
+    can Ai
+}
+
+fn main() {
+    print("never runs")
+}

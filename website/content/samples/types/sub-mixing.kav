@@ -1,0 +1,7 @@
+fn main() {
+    print(2 + 2.4)
+    const n: Int = 2
+    const f: Float = 2.4
+    print(Float(n) + f)
+    print(n + Int(f))
+}

@@ -1,0 +1,14 @@
+fn withdraw(inout balance: Int, amount: Int) ! String {
+    balance -= amount
+    if balance < 0 {
+        fail "not enough money"
+    }
+}
+
+fn main() {
+    let balance = 50
+    withdraw(balance, 30) catch e => print("failed: {e}")
+    print(balance)
+    withdraw(balance, 100) catch e => print("failed: {e}")
+    print(balance)
+}

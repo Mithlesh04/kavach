@@ -1,0 +1,29 @@
+// Rule: Text converts to numbers, `Bool` and `Char`; characters and whole numbers convert by code point.
+// Spec: 2.1
+// expect output: 2.5
+// expect output: true
+// expect output: k
+// expect output: x
+// expect output: 97
+// expect output: a
+// expect output: -1
+// expect output: 123456789012345678901234567890
+// expect output: 2.5
+
+fn main() {
+    const t = "2.5"
+    print(Float(t) catch 0.0)
+    const yes = " true "
+    print(Bool(yes) catch false)
+    const one = "k"
+    print(Char(one) catch 'x')
+    const two = "kk"
+    print(Char(two) catch 'x')        // not one character: fails
+    print(Int('a'))
+    print(Char(97))
+    const big = "300"
+    print(Int8(big) catch -1)         // doesn't fit Int8: fails
+    const digits = "123456789012345678901234567890"
+    print(BigInt(digits) catch 0)
+    print(String(2.5))
+}

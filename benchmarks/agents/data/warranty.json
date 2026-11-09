@@ -1,0 +1,14 @@
+[
+  {"id": 1, "order": "A100", "message": "My blender stopped working, the motor makes no sound.", "expect": "replace"},
+  {"id": 2, "order": "A101", "message": "The left ear of my headphones went silent.", "expect": "decline"},
+  {"id": 3, "order": "A102", "message": "Where is my kettle? It's been weeks.", "expect": "refund"},
+  {"id": 4, "order": "A103", "message": "The laptop screen flickers and then goes black.", "expect": "escalate"},
+  {"id": 5, "order": "A104", "message": "When will my lamp arrive?", "expect": "wait"},
+  {"id": 6, "order": "A105", "message": "My toaster burns everything now.", "expect": "decline"},
+  {"id": 7, "order": "A106", "message": "The power bank stopped charging after a week.", "expect": "replace"},
+  {"id": 8, "order": "A107", "message": "The vacuum lost its suction.", "expect": "replace"},
+  {"id": 9, "order": "A108", "message": "My speaker never came.", "expect": "refund"},
+  {"id": 10, "order": "A109", "message": "Dead pixels in the middle of the monitor. Replace it or I'll sue.", "expect": "escalate"},
+  {"id": 11, "order": "A110", "message": "Is my mixer on its way? I need it for Sunday.", "expect": "wait"},
+  {"id": 12, "order": "A111", "message": "The router keeps dropping wifi.", "expect": "decline"}
+]

@@ -1,0 +1,11 @@
+pub type Status = Pending | Paid
+
+pub type Order {
+    pub id: Int
+    pub amount: Int
+    pub status: Status = Status.Pending
+}
+
+pub fn total_paid(orders: [Order]) -> Int {
+    orders.filter(.status == Status.Paid).sum(.amount)
+}

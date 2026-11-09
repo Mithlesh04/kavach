@@ -1,0 +1,16 @@
+use std.time
+
+fn main() ! Error {
+    const new_york = try time.zone("America/New_York")
+    // That night, the clocks went back from 02:00 to 01:00.
+    const night = time.Date(year: 2026, month: 11, day: 1)
+    const twice = time.DateTime(date: night, time: time.Time(hour: 1, minute: 30, second: 0, ms: 0))
+    match new_york.resolve(twice) {
+        time.Repeated(earlier, later) => {
+            print("first 01:30: {new_york.offset_seconds(earlier) / 3600} h from UTC")
+            print("second 01:30: {new_york.offset_seconds(later) / 3600} h from UTC")
+            print("moment gives the first: {new_york.moment(twice) == earlier}")
+        }
+        _ => print("01:30 happened once"),
+    }
+}

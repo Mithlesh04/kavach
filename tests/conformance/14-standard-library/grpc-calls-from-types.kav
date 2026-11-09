@@ -1,0 +1,53 @@
+// Rule: `grpc.call<Req, Res>` calls a gRPC method with a typed request and decodes the typed answer; `grpc.serve` answers each call with its handler, and a status other than OK fails the call with `Status`.
+// Spec: 14.14
+// expect output: placed #7: 5.0
+// expect output: can't: Status(code: 3, message: "not an order")
+// expect output: can't: Status(code: 12, message: "no method /shop.Orders/Cancel")
+// expect output: can't: Protocol(reason: "a target starts with `http://` or `https://`: ftp://x")
+
+use std.grpc
+use std.net
+
+pub type Order {
+    id: Int
+    item: String
+    qty: Int = 1
+}
+
+pub type Placed {
+    id: Int
+    total: Float
+}
+
+fn orders(call: GrpcCall) -> GrpcReply {
+    if call.method != "/shop.Orders/Place" {
+        return grpc.failed(12, "no method {call.method}")
+    }
+    const order = grpc.read<Order>(call) catch _ => Order(id: 0, item: "")
+    if order.id == 0 {
+        return grpc.failed(3, "not an order")
+    }
+    grpc.reply(Placed(id: order.id, total: 2.5 * Float(order.qty)))
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn grpc.serve(listener, orders)
+    const target = "http://{listener.address()}"
+    const order = Order(id: 7, item: "pen", qty: 2)
+    const placed = try grpc.call<Order, Placed>(target, "/shop.Orders/Place", order)
+    print("placed #{placed.id}: {placed.total}")
+    const empty = Order(id: 0, item: "")
+    const _refused = grpc.call<Order, Placed>(target, "/shop.Orders/Place", empty) catch e => {
+        print("can't: {e}")
+        Placed(id: 0, total: 0.0)
+    }
+    const _unknown = grpc.call<Order, Placed>(target, "/shop.Orders/Cancel", order) catch e => {
+        print("can't: {e}")
+        Placed(id: 0, total: 0.0)
+    }
+    const _wrong = grpc.call<Order, Placed>("ftp://x", "/shop.Orders/Place", order) catch e => {
+        print("can't: {e}")
+        Placed(id: 0, total: 0.0)
+    }
+}

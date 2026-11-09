@@ -1,0 +1,1 @@
+error: a model is chosen when the program is built: write `Model(name: "…")` with plain values, or call a function with no parameters that gives one, such as `careful()` (spec 8.4)

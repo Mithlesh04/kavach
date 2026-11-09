@@ -1,0 +1,86 @@
+// std.ai (spec 8.4): the error `ask<T>` fails with. Calling the model
+// needs the network and the provider's API, so the runtime does it.
+
+/// Why an AI call failed.
+pub type AiError = NoKey(variable: String) |
+    Failed(status: Int, message: String) |
+    InvalidOutput(answer: String) |
+    Denied(reason: String)
+
+/// How hard a model works on an answer, and how many tokens it spends
+/// (spec 8.4).
+pub type Effort = Low | Medium | High | XHigh | Max
+
+/// Which model an `ask` uses, and with what settings (spec 8.4, decisions
+/// 0056 and 0059): an agent's `model`, or a call's `model:`.
+pub type Model {
+    /// the provider's name for the model, such as "claude-haiku-5-5"
+    pub name: String
+    /// none: the model's own; how hard it works on an answer, from `Low`
+    /// to `Max`: more effort, better answers and more tokens
+    pub effort?: Effort
+    /// none: 4,096; the most tokens an answer may take, thinking included,
+    /// from 1 to 128,000
+    pub max_tokens?: Int
+    /// none: the model's own; false: answer without thinking first, for
+    /// fewer output tokens (spec 8.4)
+    pub thinking?: Bool
+    /// none: none; standing instructions sent with every `ask` (a system
+    /// prompt)
+    pub instructions?: String
+    /// none: none; text that ends the answer where the model writes it
+    pub stop?: [String]
+    /// none: 120 seconds; how long one try may take before it is sent again
+    pub timeout?: Duration
+    /// none: 4; how many times a busy, dropped or late call is sent again,
+    /// from 0 to 10
+    pub retries?: Int
+    /// none: `KAVACH_AI_URL`, or Anthropic's address; where the calls go
+    pub api_url?: String
+    /// none: "ANTHROPIC_API_KEY"; the environment variable holding the key
+    pub api_key_env?: String
+    /// none: none; more request fields, as the text of a JSON object
+    pub extra?: String
+}
+
+/// How an agent treats its limits and approvals (spec 8.5).
+pub type AgentMode = Enforce | Suggest | Observe
+
+/// How each audit entry is written (spec 8.6).
+pub type AuditFormat = Text | JsonLines
+
+/// An agent's audit log (spec 8.6): on when its settings have one.
+pub type Audit {
+    /// none: "audit.log", in the agent's folder; the file's path
+    pub file?: String
+    /// none: Text; JsonLines: one JSON object per entry, for log shippers
+    pub format?: AuditFormat
+    /// none: false; true: each entry to the `[log.otlp]` collector too
+    pub otlp?: Bool
+}
+
+/// An agent's settings (spec 8.5, decision 0060): its `settings`.
+pub type AgentSettings {
+    /// none: Enforce; how the agent treats its limits and approvals
+    pub mode?: AgentMode
+    /// none: no audit log; an `Audit` turns it on
+    pub audit?: Audit
+    /// none: true in a project; false: limit totals last only while the
+    /// program runs
+    pub state?: Bool
+    /// none: true in a project; false: a handler cut off half way is not
+    /// run again after a restart
+    pub journal?: Bool
+    /// none: `agents/<Name>/` beside kavach.toml; the folder the agent's
+    /// files go in
+    pub folder?: String
+    /// none: Average; how a `tokens` limit counts the `ask`s still waiting
+    /// for their answer (spec 8.3)
+    pub asks_under_way?: UnderWay
+}
+
+/// How a `tokens` limit counts the `ask`s still waiting for their answer
+/// (spec 8.3). Average: at the average size of the answered ones, and a
+/// new `ask` the limit would refuse waits for them. Largest: at the most
+/// each can take. NotCounted: not at all.
+pub type UnderWay = Average | Largest | NotCounted

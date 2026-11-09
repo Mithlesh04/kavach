@@ -1,0 +1,7 @@
+[package]
+name = "shop"
+version = "0.1.0"
+
+# A small limit, so this sample stays short; the default is 500.
+[limits]
+file_lines = 12

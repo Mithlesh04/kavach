@@ -1,0 +1,17 @@
+// Rule: `const ["asha": a] = m` takes a map apart by key: a missing key is `none` unless the name has a default; a bare name, or `name:`, is the text key spelled like it.
+// Spec: 1.12
+// expect output: 31 none
+// expect output: example.com 8080 fast
+// expect output: Not Found ?
+
+fn main() {
+    const ages = ["asha": 31, "ravi": 40]
+    const ["asha": a, "mei": m] = ages
+    print("{a} {m}")
+    const settings = ["host": "example.com", "mode": "fast"]
+    const [host: server, port = "8080", mode] = settings
+    print("{server} {port} {mode}")
+    const codes = [200: "OK", 404: "Not Found"]
+    const [404: missing, 500: broken = "?"] = codes
+    print("{missing} {broken}")
+}

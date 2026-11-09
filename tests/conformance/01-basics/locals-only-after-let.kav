@@ -1,0 +1,8 @@
+// Rule: A local variable can be used only after its `const`.
+// Spec: 1.4
+// expect compile error
+
+fn main() {
+    print(count)        // error: `count` is not defined yet; it is declared on a later line
+    const count = 1
+}

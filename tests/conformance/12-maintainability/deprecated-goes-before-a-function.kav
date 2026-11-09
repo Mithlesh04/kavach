@@ -1,0 +1,10 @@
+// Rule: `deprecated` only goes before a function.
+// Spec: 12.6
+// expect compile error
+
+deprecated "use Size instead"    // error: `deprecated` only goes before a function
+type Shape = Small | Large
+
+fn main() {
+    print(Shape.Small)
+}

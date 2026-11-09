@@ -1,0 +1,43 @@
+// Rule: a handler answering `grpc.reply_stream(values)` sends each value as its own message on one stream, and `grpc.each` runs its function for every message as it arrives, returning on status OK and failing with `Status` otherwise.
+// Spec: 14.14
+// expect output: 1: packed
+// expect output: 2: shipped
+// expect output: 3: delivered
+// expect output: done
+// expect output: can't: Status(code: 3, message: "not a watch")
+
+use std.grpc
+use std.net
+
+pub type Watch {
+    id: Int
+}
+
+pub type Update {
+    seq: Int
+    text: String
+}
+
+fn updates(call: GrpcCall) -> GrpcReply {
+    if call.method != "/shop.Orders/Watch" {
+        return grpc.failed(12, "no method {call.method}")
+    }
+    const w = grpc.read<Watch>(call) catch _ => Watch(id: 0)
+    if w.id == 0 {
+        return grpc.failed(3, "not a watch")
+    }
+    grpc.reply_stream([
+        Update(seq: 1, text: "packed"),
+        Update(seq: 2, text: "shipped"),
+        Update(seq: 3, text: "delivered"),
+    ])
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn grpc.serve(listener, updates)
+    const target = "http://{listener.address()}"
+    try grpc.each<Watch, Update>(target, "/shop.Orders/Watch", Watch(id: 7), u => print("{u.seq}: {u.text}"))
+    print("done")
+    grpc.each<Watch, Update>(target, "/shop.Orders/Watch", Watch(id: 0), u => print("?")) catch e => print("can't: {e}")
+}

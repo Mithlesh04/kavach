@@ -1,0 +1,15 @@
+// Mistake: An `else if` an earlier condition already covers.
+
+fn grade(score: Int) -> String {
+    if score > 10 {
+        "good"
+    } else if score > 50 {
+        "great"
+    } else {
+        "low"
+    }
+}
+
+fn main() {
+    print(grade(60))
+}

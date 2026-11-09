@@ -1,0 +1,8 @@
+fn main() {
+    const ages = ["asha": 31]
+    print(ages["asha"] ?? 0)
+    print(ages["zoe"] ?? 0)
+    if let age = ages["asha"] {
+        print("found {age}")
+    }
+}

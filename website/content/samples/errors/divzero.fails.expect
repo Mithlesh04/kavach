@@ -1,0 +1,1 @@
+error: this always panics: division by zero. Divide by something that can't be 0 (spec 1.8)

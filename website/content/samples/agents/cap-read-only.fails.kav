@@ -1,0 +1,9 @@
+use std.fs
+
+pub fn read_config() -> String ! FsError uses Fs.read {
+    try fs.write_text("config.txt", "reset")
+    try fs.read_text("config.txt")
+}
+
+fn main() {
+}

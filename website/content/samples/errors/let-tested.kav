@@ -1,0 +1,7 @@
+fn main() {
+    let count: Int8 = 127
+    if count < 127 {
+        count += 1
+    }
+    print(count)
+}

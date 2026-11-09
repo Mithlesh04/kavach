@@ -1,0 +1,13 @@
+// Rule: A call whose known arguments make a `require` false is a compile error: it would always panic.
+// Spec: 7.7
+// expect compile error
+
+fn half(amount: Int) -> Int
+    require amount > 0
+{
+    amount / 2
+}
+
+fn main() {
+    print(half(-4))    // error: always breaks `require amount > 0`
+}

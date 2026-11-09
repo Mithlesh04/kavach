@@ -1,0 +1,17 @@
+use std.json
+
+type Point {
+    x: Int
+    y: Int
+}
+
+fn main() {
+    const order: Json = [
+        "id": 1042,
+        "items": ["pen", "ink"],
+        "paid": true,
+        "note": none,
+    ]
+    print(order)
+    print(json.stringify(Point(x: 1, y: 2)))
+}

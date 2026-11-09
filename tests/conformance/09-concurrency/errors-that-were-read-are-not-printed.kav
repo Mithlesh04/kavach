@@ -1,0 +1,16 @@
+// Rule: A task's error that `.wait()` read is not printed again.
+// Spec: 9.1
+// expect output: caught: disk full
+// expect no stderr
+
+fn risky() -> Int ! Error {
+    fail Error("disk full")
+}
+
+fn main() {
+    const task = spawn risky()
+    const _n = task.wait() catch e => {
+        print("caught: {e}")
+        0
+    }
+}

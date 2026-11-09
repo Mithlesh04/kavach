@@ -1,0 +1,17 @@
+type Person {
+    name: String
+    city: String
+}
+
+fn main() {
+    const people = [
+        Person(name: "Zoe", city: "Pune"),
+        Person(name: "Asha", city: "Delhi"),
+        Person(name: "Omar", city: "Pune"),
+        Person(name: "Bo", city: "Delhi"),
+    ]
+    const sorted = people.sort_by(.name).sort_by(.city)
+    for p in sorted {
+        print("{p.city}: {p.name}")
+    }
+}

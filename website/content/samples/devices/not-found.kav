@@ -1,0 +1,9 @@
+use std.devices
+
+fn main() uses Serial, Console {
+    const board = devices.open_serial("COM250", 115_200) catch e => {
+        print("can't open it: {e}")
+        return
+    }
+    board.close()
+}

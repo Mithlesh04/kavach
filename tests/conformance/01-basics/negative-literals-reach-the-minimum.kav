@@ -1,0 +1,13 @@
+// Rule: A minus before a whole-number literal belongs to it, so the smallest value of each type can be written.
+// Spec: 1.7
+// expect output: -128
+// expect output: -2147483648
+// expect output: -9223372036854775808
+
+fn main() {
+    const a: Int8 = -128
+    print(a)
+    const b: Int32 = -2147483648
+    print(b)
+    print(-9223372036854775808)
+}

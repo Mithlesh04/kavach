@@ -1,0 +1,34 @@
+// Rule: a channel passes values in the order they were put; `put` waits while the channel is full, `take` while it is empty, and taking from a closed, empty channel gives `none`.
+// Spec: 9.4, 9.7
+// expect output: put 10
+// expect output: put 20
+// expect output: took 10
+// expect output: took 20
+// expect output: put 30
+// expect output: put 40
+// expect output: took 30
+// expect output: took 40
+// expect output: put 50
+// expect output: closed
+// expect output: took 50
+// expect output: total 150
+// expect output: -1
+
+fn main() {
+    const (send, receive) = Channel<Int>(capacity: 2)
+    const _producer = spawn {
+        for i in 1..=5 {
+            send.put(i * 10)
+            print("put {i * 10}")
+        }
+        send.close()
+        print("closed")
+    }
+    let total = 0
+    for n in receive {
+        print("took {n}")
+        total += n
+    }
+    print("total {total}")
+    print(receive.take() ?? -1)
+}

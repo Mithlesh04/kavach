@@ -1,0 +1,2 @@
+refunded 40 on order 1
+refused: Denied(reason: "not approved by finance (amount > 100)")

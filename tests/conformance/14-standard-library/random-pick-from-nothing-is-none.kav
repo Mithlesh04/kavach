@@ -1,0 +1,13 @@
+// Rule: `random.pick(items)` gives one of the items, or `none` when there are none.
+// Spec: 14.15
+// expect output: true
+// expect output: true
+
+use std.random
+
+fn main() {
+    const empty: [String] = []
+    print(random.pick(empty) == none)
+    const one = ["only"]
+    print(random.pick(one) == "only")
+}

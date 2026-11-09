@@ -1,0 +1,8 @@
+// Mistake: An error left unhandled.
+
+use std.fs
+
+fn main() uses Fs {
+    const text = fs.read_text("config.toml")
+    print(text)
+}

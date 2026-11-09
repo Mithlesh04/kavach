@@ -1,0 +1,11 @@
+use std.fs
+
+fn save(note: String) -> String ! FsError uses Fs
+    ensure result == note
+{
+    try fs.write_text("notes/today.txt", note)
+    try fs.read_text("notes/today.txt")
+}
+
+fn main() {
+}

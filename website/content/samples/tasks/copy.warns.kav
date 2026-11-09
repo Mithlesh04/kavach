@@ -1,0 +1,8 @@
+fn main() {
+    let count = 0
+    const _ = [1, 2, 3].parallel_map(n => {
+        count += 1
+        n
+    })
+    print(count)
+}

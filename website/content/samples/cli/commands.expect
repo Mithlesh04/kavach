@@ -1,0 +1,15 @@
+$ kavach run src/main.kav add-item --name milk --count 2
+add 2 milk
+$ kavach run src/main.kav show --limit 3
+show 3 items
+$ kavach run src/main.kav --help
+usage: main <command> [options]
+  add-item
+    --name <String>        (required)
+    --count <Int>          (default 1)
+  show
+    --limit <Int>          (default 10)
+$ kavach run src/main.kav add-item --help
+usage: main add-item [options]
+  --name <String>          (required)
+  --count <Int>            (default 1)

@@ -1,0 +1,10 @@
+// Float arithmetic in a loop: 200 million rounds.
+fn main() {
+    let x = 0.0
+    let y = 1.0
+    for i in 0..200_000_000 {
+        x = x * 0.999999 + y
+        y = y * 1.0000001 - 0.0000001
+    }
+    print(x > 0.0)
+}

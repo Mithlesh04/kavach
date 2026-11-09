@@ -1,0 +1,8 @@
+deprecated "use Order instead"
+type OldOrder {
+    id: Int
+}
+
+fn main() {
+    print("never runs")
+}

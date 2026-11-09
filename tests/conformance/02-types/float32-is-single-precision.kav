@@ -1,0 +1,18 @@
+// Rule: `Float32` rounds to single precision at every step, and prints as the shortest text that reads back as the same value.
+// Spec: 2.1
+// expect output: 0.1
+// expect output: 0.3
+// expect output: 16777216.0
+// expect output: 0.10000000149011612
+// expect output: 0.33333334
+
+fn main() {
+    const x: Float32 = 0.1
+    print(x)
+    print(x + 0.2)
+    const big: Float32 = 16777216.0
+    print(big + 1.0)            // 2^24 + 1 needs 25 bits: rounds back
+    print(Float(x))             // the value it really holds, widened exactly
+    const third: Float32 = 1.0 / 3.0
+    print(third)
+}

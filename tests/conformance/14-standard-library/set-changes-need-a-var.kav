@@ -1,0 +1,8 @@
+// Rule: Changing a set with `add` or `remove` needs a `let`.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    const names = Set.of("asha")
+    names.add("ravi")       // error: `names` is a `const`
+}

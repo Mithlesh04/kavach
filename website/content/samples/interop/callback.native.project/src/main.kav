@@ -1,0 +1,22 @@
+extern c "c" {
+    fn qsort(items: Ptr<Int32>, count: UInt64, size: UInt64, compare: fn(Ptr<Int32>, Ptr<Int32>) -> Int32)
+}
+
+fn by_value(a: Ptr<Int32>, b: Ptr<Int32>) -> Int32 {
+    unsafe { a.read(0) - b.read(0) }
+}
+
+fn main() {
+    unsafe {
+        const items: Ptr<Int32> = alloc(5)
+        const values = [42, 7, 19, 3, 25]
+        for i in 0..5 {
+            items.write(i, Int32(values[i]))
+        }
+        qsort(items, 5, 4, by_value)
+        for i in 0..5 {
+            print(items.read(i))
+        }
+        free(items)
+    }
+}

@@ -1,0 +1,9 @@
+fn main() {
+    const sizes = [10, 20, 30]
+    for i in 0..4 {
+        if i == sizes.len() {
+            break
+        }
+        print(sizes[i])
+    }
+}

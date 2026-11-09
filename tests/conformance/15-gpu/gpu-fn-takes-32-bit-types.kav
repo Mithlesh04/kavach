@@ -1,0 +1,11 @@
+// Rule: A `gpu fn` takes and gives only `Float32`, `Int32`, `UInt32` and `Bool`, and records and tuples of them.
+// Spec: 15.1
+// expect compile error
+
+gpu fn one(x: Float) -> Float32 {       // error: `x` is a `Float`, 64 bits
+    1.0
+}
+
+fn main() {
+    print(one(1.0))
+}

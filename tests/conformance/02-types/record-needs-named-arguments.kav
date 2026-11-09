@@ -1,0 +1,12 @@
+// Rule: Records are created with named arguments, not positional ones.
+// Spec: 2.4
+// expect compile error
+
+type User {
+    name: String
+    email: String
+}
+
+fn main() {
+    const u = User("Asha", "asha@example.com")    // error: write User(name: …, email: …)
+}

@@ -1,0 +1,11 @@
+use std.json
+
+fn main() ! Error {
+    const text = "\{\n  // where the server listens\n  \"port\": 8080,\n  \"hosts\": [\"a\", \"b\",],\n}"
+    const settings = try json.parse(text, comments: true)
+    print(settings["port"].int() ?? 0)
+    const _ = json.parse(text) catch e => {
+        print("plain parse: {e}")
+        Json.Null
+    }
+}

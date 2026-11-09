@@ -1,0 +1,37 @@
+use std.cli
+use std.time
+
+type PayError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn refund(order: Int, amount: Int) ! PayError
+}
+
+type Bank: Payments {
+    fn refund(self, order: Int, amount: Int) ! PayError {
+        print("refunded {amount} on order {order}")
+    }
+}
+
+agent Refunder {
+    can Payments.refund
+
+    approve Payments.refund when amount > 100 by "finance" within 2.days
+
+    on refund(order: Int, amount: Int) ! PayError {
+        try Payments.refund(order, amount)
+    }
+}
+
+fn main() ! Error uses Clock, Console, Env {
+    const bot = Refunder.start(Payments: Bank())
+    if cli.args().contains("send") {
+        const _waits = spawn {
+            bot.refund(1, 900) catch e => print("refused: {e}")
+        }
+        time.sleep(2.seconds)
+        print("the program ends while the refund waits")
+        cli.exit(0)
+    }
+    print("started")
+}

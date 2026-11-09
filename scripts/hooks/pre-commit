@@ -1,0 +1,54 @@
+#!/bin/sh
+# Enforces AGENTS.md section 11 for parallel work: a commit made in a git
+# worktree (a parallel session) may only change the paths its claim allows.
+# Claims are files written by the coordinator in the main checkout:
+#   .kavach/claims/<branch>   one path or glob per line (`#` starts a comment)
+# Commits in the main checkout, or in a clone without worktrees, are not
+# limited here: they go through review instead.
+
+git_dir=$(git rev-parse --git-dir)
+common=$(git rev-parse --git-common-dir)
+[ "$(cd "$git_dir" && pwd -P)" = "$(cd "$common" && pwd -P)" ] && exit 0
+
+branch=$(git symbolic-ref --short HEAD 2>/dev/null)
+if [ -z "$branch" ] || [ "$branch" = "main" ]; then
+    echo "pre-commit: a parallel session commits only on its own branch, never on main (AGENTS.md section 11)." >&2
+    exit 1
+fi
+
+main_dir=$(cd "$common/.." && pwd -P)
+here=$(git rev-parse --show-toplevel)
+case "$(cd "$here" && pwd -P)" in
+    "$main_dir/.kavach/wt/"*) ;;
+    *)
+        echo "pre-commit: this worktree is outside the project. Worktrees live only in $main_dir/.kavach/wt/<branch> (AGENTS.md section 11)." >&2
+        exit 1 ;;
+esac
+
+claim="$main_dir/.kavach/claims/$branch"
+if [ ! -f "$claim" ]; then
+    echo "pre-commit: branch '$branch' has no claim ($claim)." >&2
+    echo "Claim a task and wait for the coordinator's go: it writes the claim (AGENTS.md section 11)." >&2
+    exit 1
+fi
+
+outside=""
+for file in $(git diff --cached --name-only); do
+    allowed=no
+    while IFS= read -r pattern || [ -n "$pattern" ]; do
+        pattern=$(printf '%s' "$pattern" | sed 's/#.*//; s/[[:space:]]*$//')
+        [ -z "$pattern" ] && continue
+        case "$file" in
+            $pattern | $pattern/*) allowed=yes; break ;;
+        esac
+    done < "$claim"
+    [ "$allowed" = no ] && outside="$outside
+  $file"
+done
+
+if [ -n "$outside" ]; then
+    echo "pre-commit: these files are outside the claim of '$branch':$outside" >&2
+    echo "Unstage them, or ask the coordinator to add them to $claim (AGENTS.md section 11)." >&2
+    exit 1
+fi
+exit 0

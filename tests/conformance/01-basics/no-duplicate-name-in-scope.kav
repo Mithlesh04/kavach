@@ -1,0 +1,8 @@
+// Rule: A name must not be declared twice in the same scope.
+// Spec: 1.4
+// expect compile error
+
+fn main() {
+    const total = 1
+    const total = 2       // error: total is already declared in this scope
+}

@@ -1,0 +1,43 @@
+// Rule: When a function with `inout` parameters fails, the caller's places keep their old values.
+// Spec: 3.9, 5.2, 5.3
+// expect output: 16 8
+// expect output: -1 8
+// expect output: empty
+// expect output: 1
+// expect output: 10 5
+// expect output: 5
+
+fn take(inout total: Int, n: Int) -> Int ! String {
+    total = total + n
+    if total > 10 {
+        fail "too much"
+    }
+    total * 2
+}
+
+fn add(inout names: [String], name: String) ! String {
+    names.push(name)
+    if name == "" {
+        fail "empty"
+    }
+}
+
+fn twice() -> Int ! String {
+    let t = 1
+    const a = try take(t, 4)
+    print("{a} {t}")
+    t
+}
+
+fn main() {
+    let t = 5
+    const b = take(t, 3) catch 0
+    print("{b} {t}")
+    const c = take(t, 3) catch -1
+    print("{c} {t}")
+    let names = ["a"]
+    add(names, "") catch e => print(e)
+    print(names.len())
+    const r = twice() catch 0
+    print(r)
+}

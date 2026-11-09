@@ -1,0 +1,15 @@
+// Rule: `time.zone(name)` fails with `UnknownZone(name)` for a name the IANA database doesn't have.
+// Spec: 14.4
+// expect output: UnknownZone(name: "Mars/Olympus")
+// expect output: none
+
+use std.time
+
+fn main() {
+    const z = time.zone("Mars/Olympus") catch e => {
+        print("{e}")
+        print(time.zone_offset("Mars/Olympus", 0))
+        return
+    }
+    print(z.name)
+}

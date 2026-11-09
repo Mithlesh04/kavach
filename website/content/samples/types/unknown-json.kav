@@ -1,0 +1,15 @@
+use std.json
+
+fn main() ! Error {
+    const text = "[1, 2.5, \"three\", true, null, [4]]"
+    const items = try json.parse(text)
+    for item in items.list() ?? [] {
+        match item {
+            Json.Number(digits) => print("number {digits}"),
+            Json.Text(s) => print("text {s}"),
+            Json.Boolean(b) => print("true or false: {b}"),
+            Json.Null => print("nothing"),
+            _ => print("a list or an object"),
+        }
+    }
+}

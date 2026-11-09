@@ -1,0 +1,10 @@
+fn main() {
+    const poem = """
+        Roses are red,
+          violets are blue
+        """
+    print(poem)
+    print(r"C:\users\{name}")
+    print("Tab:\tdone")
+    print("She said \"hi\"")
+}

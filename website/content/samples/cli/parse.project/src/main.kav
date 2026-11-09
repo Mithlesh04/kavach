@@ -1,0 +1,16 @@
+use std.cli
+
+type Args {
+    input: String
+    limit: Int = 10
+    verbose: Bool = false
+}
+
+fn main() {
+    const args = cli.parse<Args>() catch e => {
+        print(e)
+        cli.exit(2)
+        return
+    }
+    print("reading {args.input}, at most {args.limit} rows, verbose: {args.verbose}")
+}

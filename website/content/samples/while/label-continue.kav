@@ -1,0 +1,14 @@
+fn main() {
+    const orders = [[5, 10], [3, -1, 8], [7]]
+    rows: for items in orders {
+        let total = 0
+        for qty in items {
+            if qty < 0 {
+                print("skipping an order with a bad item")
+                continue rows
+            }
+            total += qty
+        }
+        print("order total {total}")
+    }
+}

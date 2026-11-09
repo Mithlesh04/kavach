@@ -1,0 +1,27 @@
+// Rule: When a row is too short, the nested loops still panic at the same round, after the output of the rounds before it.
+// Spec: 4.4, 5.6
+// expect output: 0 3.0
+// expect output: 1 6.0
+// expect output: 2 9.0
+// expect panic
+
+fn main() {
+    let rows: [[Float]] = []
+    for k in 0..3 {
+        let row: [Float] = []
+        for j in 0..20 {
+            if k == 1 and j == 3 {
+                break
+            }
+            row.push(Float(j + 1))
+        }
+        rows.push(row)
+    }
+    for j in 0..20 {
+        let cell = 0.0
+        for k in 0..3 {
+            cell += rows[k][j]
+        }
+        print("{j} {cell}")
+    }
+}

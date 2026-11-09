@@ -1,0 +1,1 @@
+error: `double` has no `->`, so it returns nothing, but its last line is a value: write `-> Int`

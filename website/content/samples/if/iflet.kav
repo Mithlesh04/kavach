@@ -1,0 +1,11 @@
+fn main() {
+    const ages = ["asha": 31, "ravi": 27]
+    if let age = ages["asha"] {
+        print("Asha is {age}")
+    }
+    if let age = ages["omar"] {
+        print("Omar is {age}")
+    } else {
+        print("No age for Omar")
+    }
+}

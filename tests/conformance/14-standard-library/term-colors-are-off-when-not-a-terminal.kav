@@ -1,0 +1,14 @@
+// Rule: std.term colors and styles text only when standard output is a terminal.
+// Spec: 14.13, 14.6
+// expect output: false
+// expect output: error: not found
+// expect output: done!
+
+use std.io
+use std.term
+
+fn main() {
+    print(io.is_terminal())
+    print(term.red("error:") + " not found")
+    print(term.bold(term.green("done") + "!"))
+}

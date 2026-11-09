@@ -1,0 +1,32 @@
+{
+  "title": "Channels",
+  "readme": "benchmarks/channels/README.md",
+  "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · Python 3.12 · best of 9 (Python best of 3)",
+  "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/channels",
+  "series": [
+    {
+      "id": "kavach",
+      "label": "Kavach",
+      "column": "Kavach ms",
+      "color": "kavach"
+    },
+    {
+      "id": "cpp",
+      "label": "C++ -O2 (mutex queue)",
+      "column": "C++ ms",
+      "color": "cpp"
+    },
+    {
+      "id": "python",
+      "label": "Python 3.12",
+      "column": "Python ms",
+      "color": "python"
+    }
+  ],
+  "benchmarks": {
+    "pipe": {
+      "row": "`pipe`",
+      "title": "pipe — 2M integers from one task to another, capacity 1024"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+agent Counter {
+    can Ai
+
+    on tick(n: Int) {
+        print("tick {n}")
+    }
+}
+
+fn main() {
+    const bot = Counter.start()
+    bot.tick(1)
+}

@@ -1,0 +1,22 @@
+{
+  "whole": 42,
+  "decimal": 2.5,
+  "money": 19.99,
+  "yes": true,
+  "letter": "k",
+  "text": "Asha",
+  "list": [
+    1,
+    2
+  ],
+  "map": {
+    "a": 1
+  },
+  "missing": null,
+  "pending": "Pending",
+  "paid": {
+    "Paid": {
+      "amount": 5.00
+    }
+  }
+}

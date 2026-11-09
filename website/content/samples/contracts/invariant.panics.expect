@@ -1,0 +1,2 @@
+70
+panic: contract failed: invariant balance >= 0

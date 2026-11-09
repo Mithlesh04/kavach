@@ -1,0 +1,11 @@
+fn half(owed: Int) -> Int
+    require owed > 0
+{
+    owed / 2
+}
+
+fn main() {
+    for i in -3..0 {
+        print(half(i))
+    }
+}

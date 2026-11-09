@@ -1,0 +1,32 @@
+type StoreError = OutOfStock | Denied(reason: String)
+
+capability Store {
+    fn buy(item: String, price: Int) ! StoreError
+}
+
+type TestStore: Store {
+    fn buy(self, item: String, price: Int) ! StoreError {
+        print("bought {item} for {price}")
+    }
+}
+
+agent Shopper {
+    can Store.buy
+
+    limit Store.buy {
+        price <= 2_000
+        sum(price) <= 3_000 per day
+        count <= 3 per hour
+    }
+
+    on order(item: String, price: Int) ! StoreError {
+        try Store.buy(item, price)
+    }
+}
+
+fn main() {
+    const bot = Shopper.start(Store: TestStore())
+    for r in [(item: "rice", price: 900), (item: "laptop", price: 45_000), (item: "pan", price: 1_500), (item: "tea", price: 800)] {
+        bot.order(r.item, r.price) catch e => print("not bought {r.item}: {e}")
+    }
+}

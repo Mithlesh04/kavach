@@ -1,0 +1,9 @@
+// Rule: putting a value into a closed channel panics.
+// Spec: 9.4
+// expect panic: closed channel
+
+fn main() {
+    const (send, _receive) = Channel<String>(capacity: 1)
+    send.close()
+    send.put("late")
+}

@@ -1,0 +1,6 @@
+[package]
+name = "reviews"
+version = "0.1.0"
+
+[ai]
+model = "claude-sonnet-5-5"

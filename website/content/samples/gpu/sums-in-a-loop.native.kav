@@ -1,0 +1,19 @@
+use std.fs
+
+gpu fn work(x: Int32) -> Int32 {
+    x * 2 + 1
+}
+
+fn main() ! Error {
+    const numbers = Bytes([
+        1, 0, 0, 0, 2, 0, 0, 0,
+        3, 0, 0, 0, 4, 0, 0, 0,
+    ])
+    try fs.write_bytes("numbers.bin", numbers)
+    let total = 0
+    for chunk in try fs.chunks("numbers.bin", 8) {
+        const xs = chunk.as_list<Int32>() ?? []
+        total += Int(xs.map(x => work(x)).sum(x => x))
+    }
+    print(total)
+}

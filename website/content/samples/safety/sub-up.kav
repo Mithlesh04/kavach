@@ -1,0 +1,11 @@
+fn read_age(text: String) -> Int ! String {
+    if text == "" {
+        fail "empty"
+    }
+    Int(text) catch _ => fail "not a number: {text}"
+}
+
+fn main() {
+    print(read_age("42") catch 0)
+    print(read_age("") catch 0)
+}

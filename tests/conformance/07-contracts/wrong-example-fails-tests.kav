@@ -1,0 +1,9 @@
+// Rule: A false example makes `kavach test` fail.
+// Spec: 7.6
+// expect test fail
+
+fn add(a: Int, b: Int) -> Int
+    example add(2, 2) == 5
+{
+    a + b
+}

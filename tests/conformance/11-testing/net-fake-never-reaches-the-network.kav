@@ -1,0 +1,26 @@
+// Rule: In a generated test, `Net` never reaches the network: a connection fails with `Refused` or `TimedOut`, or reaches a fake server that answers HTTP with HTTP.
+// Spec: 11.5
+// expect test pass
+
+use std.net
+
+// For real, `.invalid` names never resolve, so `connect` fails with
+// `Failed`, and the `ensure` with it.
+fn honest(path: String) -> Bool uses Net
+    ensure result
+{
+    const conn = net.connect("kavach.invalid:80") catch e => return not failed(e)
+    const request = "GET /{path} HTTP/1.1\u{D}\nhost: kavach.invalid\u{D}\n\u{D}\n"
+    conn.write(request.bytes()) catch _ => return false
+    const answer = conn.read() catch _ => return false
+    const bytes = answer ?? return false
+    const text = bytes.text() ?? return false
+    text.starts_with("HTTP/1.1 ")
+}
+
+fn failed(e: NetError) -> Bool {
+    match e {
+        NetError.Failed(_address, _reason) => true
+        _ => false
+    }
+}

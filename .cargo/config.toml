@@ -1,0 +1,5 @@
+# C code in dependencies (TLS's `ring`) gets a section per function and
+# per piece of data, as Rust code does, so the linker can leave out what a
+# program never uses (decision 0024). `cc` adds the same on other systems.
+[env]
+CFLAGS_x86_64_pc_windows_msvc = "/Gy /Gw"

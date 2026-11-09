@@ -1,0 +1,6 @@
+fn main() {
+    const names = ["Asha", "Ravi", "Meena"]
+    for (index, name) in names.enumerate() {
+        print("{index}: {name}")
+    }
+}

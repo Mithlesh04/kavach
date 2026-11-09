@@ -1,0 +1,11 @@
+use std.fs
+
+fn main() ! Error {
+    try fs.create_dir("photos/2026/june")
+    try fs.write_text("photos/2026/june/beach.txt", "sea")
+    try fs.write_text("photos/2026/june/hills.txt", "green")
+    print(try fs.list("photos/2026/june"))
+    print(fs.exists("photos/2026"))
+    try fs.remove("photos/2026/june/beach.txt")
+    print(try fs.list("photos/2026/june"))
+}

@@ -1,0 +1,17 @@
+// Rule: An enum's variants may each have a whole number: `v.value()` gives it, and `Type.from(n)` gives the variant with that number or `none`.
+// Spec: 2.6
+// expect output: 404
+// expect output: Failed
+// expect output: true
+// expect output: -1
+
+type Code = Ok = 200 | NotFound = 404 | Failed = 500
+
+type Level = Low = -1 | High = 1
+
+fn main() {
+    print(Code.NotFound.value())
+    print(Code.from(500) ?? Code.Ok)
+    print(Code.from(1) == none)
+    print(Level.Low.value())
+}

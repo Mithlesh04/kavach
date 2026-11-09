@@ -1,0 +1,21 @@
+// Rule: A `match` arm after one that matches everything, or after one with the same pattern, never matches: a warning.
+// Spec: 4.7
+// expect warning
+// expect output: two
+// expect output: other
+
+fn name(n: Int) -> String {
+    match n {
+        2 => "two",
+        2 => "deux",    // warning: an arm above it has the same pattern
+        _ => "other",
+    }
+}
+
+fn main() {
+    print(name(2))
+    print(match 5 {
+        _ => "other",
+        5 => "five",    // warning: the arm above it matches every value
+    })
+}

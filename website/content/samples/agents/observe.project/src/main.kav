@@ -1,0 +1,34 @@
+use std.fs
+
+type PayError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn refund(order: Int, amount: Int) ! PayError
+}
+
+type Bank: Payments {
+    fn refund(self, order: Int, amount: Int) ! PayError {
+    }
+}
+
+agent Refunder {
+    settings AgentSettings(mode: AgentMode.Observe, audit: Audit())
+    can Payments.refund
+
+    limit Payments.refund {
+        amount <= 500
+    }
+
+    on refund(order: Int, amount: Int) ! PayError {
+        try Payments.refund(order, amount)
+    }
+}
+
+fn main() ! Error {
+    const bot = Refunder.start(Payments: Bank())
+    bot.refund(1, 400) catch e => print("refused: {e}")
+    bot.refund(2, 900) catch e => print("refused: {e}")
+    for line in try fs.lines("agents/Refunder/audit.log") {
+        print(line.split("Z ").last() ?? line)
+    }
+}

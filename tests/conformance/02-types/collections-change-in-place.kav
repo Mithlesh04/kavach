@@ -1,0 +1,19 @@
+// Rule: `items[i] = v`, `map[key] = v`, `push` and `remove` change a `let` collection, also inside a field.
+// Spec: 2.2
+// expect output: Bag(items: [1, 20, 3])
+// expect output: ["meera": 40, "ravi": 27]
+
+type Bag {
+    items: [Int]
+}
+
+fn main() {
+    let bag = Bag(items: [1, 2])
+    bag.items.push(3)
+    bag.items[1] = 20
+    print(bag)
+    let ages = ["asha": 31, "meera": 40]
+    ages["ravi"] = 27
+    ages.remove("asha")
+    print(ages)
+}

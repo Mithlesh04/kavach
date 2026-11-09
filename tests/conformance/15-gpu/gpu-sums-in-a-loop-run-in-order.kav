@@ -1,0 +1,29 @@
+// Rule: a loop's sums the loop doesn't wait for are added in order, each with its checks, before any code after the loop.
+// Spec: 15.2
+// expect output: 48 -1 9
+// expect output: done
+// expect panic: integer overflow: 2147483647 + 2 doesn't fit in Int32
+
+gpu fn step(x: Int32) -> Int32 {
+    x * 2 + 1
+}
+
+fn main() {
+    const rounds: [[Int32]] = [[1, 2], [3, 4], [-1, 0]]
+    let total = 0
+    let lowest: Int32? = none
+    let highest = 0
+    for xs in rounds {
+        total += Int(xs.map(step).sum(x => x)) * 2
+        lowest = xs.map(step).min()
+        const biggest = xs.map(step).max() ?? 0
+        highest = highest.max(Int(biggest))
+    }
+    print("{total} {lowest} {highest}")
+    print("done")
+    let narrow: Int32 = 2147483647
+    for xs in rounds {
+        narrow += xs.map(x => x * 0 + 1).sum(x => x)
+    }
+    print("never: {narrow}")
+}

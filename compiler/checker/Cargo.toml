@@ -1,0 +1,21 @@
+[package]
+name = "kavach-checker"
+description = "Type checker for the Kavach programming language"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+kavach-ast = { path = "../ast" }
+kavach-resolver = { path = "../resolver" }
+# Constants worked out exactly (decision 0041).
+num-bigint = "0.4"
+
+[dev-dependencies]
+kavach-driver = { path = "../driver" }
+kavach-parser = { path = "../parser" }
+
+[lints]
+workspace = true

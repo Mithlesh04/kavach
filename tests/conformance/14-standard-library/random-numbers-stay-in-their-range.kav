@@ -1,0 +1,19 @@
+// Rule: `random.int(from, until)` gives a whole number from `from` up to, not including, `until`; `random.float()` a number from 0.0 up to, not including, 1.0.
+// Spec: 14.15
+// expect output: true
+// expect output: true
+
+use std.random
+
+fn main() {
+    let ints = true
+    let floats = true
+    for _ in 0..1000 {
+        const n = random.int(-3, 4)
+        ints = ints and n >= -3 and n < 4
+        const f = random.float()
+        floats = floats and f >= 0.0 and f < 1.0
+    }
+    print(ints)
+    print(floats)
+}

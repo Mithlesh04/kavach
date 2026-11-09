@@ -1,0 +1,11 @@
+agent Counter {
+    on pick(items: [Int], at: Int) -> Int {
+        items[at]
+    }
+}
+
+fn main() {
+    const bot = Counter.start()
+    const n: Int = bot.pick([1, 2], 1)
+    print(n)
+}

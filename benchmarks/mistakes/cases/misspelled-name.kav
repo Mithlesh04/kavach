@@ -1,0 +1,6 @@
+// Mistake: A name misspelled.
+
+fn main() {
+    const total = 1
+    print(totl)
+}

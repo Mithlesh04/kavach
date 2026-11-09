@@ -1,0 +1,8 @@
+// Rule: A whole-number division or remainder by a `0` the compiler knows is a compile error: it would always panic.
+// Spec: 1.8
+// expect compile error
+
+fn main() {
+    const none_left = 0
+    print(10 / none_left)    // error: always divides by zero
+}

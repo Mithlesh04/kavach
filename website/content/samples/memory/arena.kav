@@ -1,0 +1,10 @@
+fn total_length(lines: [String]) -> Int {
+    arena {
+        const words = lines.flat_map(l => l.split(" "))
+        words.sum(w => w.len())
+    }
+}
+
+fn main() {
+    print(total_length(["the quick fox", "jumps high"]))
+}

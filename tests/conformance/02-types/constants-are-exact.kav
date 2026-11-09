@@ -1,0 +1,16 @@
+// Rule: A constant of number literals is worked out exactly, then rounded once; values worked out while running are rounded at each step.
+// Spec: 2.1
+// expect output: 0.3
+// expect output: true
+// expect output: 0.1
+// expect output: 110.0
+// expect output: 0.30000000000000004
+
+fn main() {
+    print(0.1 + 0.2)
+    print(0.1 + 0.2 == 0.3)
+    print(1.0 - 0.9)
+    print(100 * 1.1)
+    let a = 0.1
+    print(a + 0.2)        // worked out while running: rounded twice
+}

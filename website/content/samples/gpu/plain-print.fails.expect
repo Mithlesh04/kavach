@@ -1,0 +1,1 @@
+error: a `gpu fn` can't use `loud`: it isn't a `gpu fn`, and can't be one, since it uses `print`: it reaches outside the program (files, the network, the terminal, time, AI), and on the GPU a `gpu fn` runs alone, item by item, with only its own values (spec 15.1)

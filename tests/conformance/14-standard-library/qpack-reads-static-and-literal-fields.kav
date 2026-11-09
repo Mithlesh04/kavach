@@ -1,0 +1,38 @@
+// Rule: `std.http.h3` decodes QPACK blocks that use the static table and literals (RFC 9204), Huffman codes included; `encode` gives blocks it reads back; a block that needs a dynamic table fails.
+// Spec: 14.11
+// expect output: :path: /index.html
+// expect output: :method: GET
+// expect output: :authority: www.example.com
+// expect output: content-type: text/plain
+// expect output: x-name: ü
+// expect output: refused: Protocol(reason: "a header block uses a dynamic table")
+
+use std.http.h3
+
+fn show(headers: [Header]) {
+    for h in headers {
+        print("{h.name}: {h.value}")
+    }
+}
+
+fn main() ! Error {
+    // RFC 9204 B.1: a literal value with a static name (`:path`, index 1).
+    show(try h3.decode(Bytes([
+        0, 0, 81, 11, 47, 105, 110, 100, 101, 120, 46, 104, 116, 109, 108
+    ])))
+    // An indexed static entry (17: `:method: GET`), then `:authority`
+    // (index 0) with a Huffman-coded value (RFC 7541 C.4.1).
+    show(try h3.decode(Bytes([
+        0, 0, 209, 80, 140, 241, 227, 194, 229, 242, 58, 107, 160, 171, 144, 244, 255
+    ])))
+    show(try h3.decode(h3.encode([
+        Header(name: "Content-Type", value: "text/plain"),
+        Header(name: "x-name", value: "ü"),
+    ])))
+    // Required Insert Count 1: entries this side never has.
+    const refused = h3.decode(Bytes([2, 0, 128])) catch e => {
+        print("refused: {e}")
+        return
+    }
+    show(refused)
+}

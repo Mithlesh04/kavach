@@ -1,0 +1,14 @@
+// Rule: A progress bar is drawn only when output is a terminal: into a file or a pipe, `term.progress`, `bar.step` and `bar.done` print nothing.
+// Spec: 14.13
+// expect output: copied 3 files
+
+use std.term
+
+fn main() {
+    let bar = term.progress(3)
+    for _ in 0..3 {
+        bar = bar.step(1)
+    }
+    bar.done()
+    print("copied 3 files")
+}

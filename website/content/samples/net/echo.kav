@@ -1,0 +1,19 @@
+use std.net
+
+fn echo_once(listener: Listener) ! NetError uses Net {
+    const conn = try listener.accept()
+    while true {
+        const data = (try conn.read()) ?? break
+        try conn.write(data)
+    }
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn echo_once(listener)
+    const conn = try net.connect(listener.address())
+    try conn.write("namaste".bytes())
+    const back = (try conn.read()) ?? Bytes([])
+    print(back.text() ?? "?")
+    conn.close()
+}

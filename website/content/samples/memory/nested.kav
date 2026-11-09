@@ -1,0 +1,21 @@
+fn main() {
+    let a = [[2, 3], [4, 5], [5]]
+    let b = a                     // shared: nothing copied yet
+    b[1].push(9)                  // b changes; a is still as it was
+    print(a)
+    print(b)
+
+    let deep = [[[2, 1, 4]], [[5]]]
+    let other = deep
+    other[0][0][1] = 99
+    print(deep)
+    print(other)
+
+    let shop: [String: [String]] = [:]
+    shop["fruit"] = ["apple", "pear"]
+    shop["veg"] = ["leek"]
+    let copy = shop
+    copy["veg"] = ["leek", "kale"]
+    print(shop)
+    print(copy)
+}

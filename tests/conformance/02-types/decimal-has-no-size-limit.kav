@@ -1,0 +1,23 @@
+// Rule: A `Decimal` keeps every digit, however many: no overflow, and division keeps 18 places.
+// Spec: 2.1
+// expect output: 99999999999999999999999999999999999999.990000000000000000000000000001
+// expect output: 170141183460469231731687303715884105728
+// expect output: true
+// expect output: 56713727820156410577229101238628035242.666666666666666666
+// expect output: 0.3
+// expect output: 0.333333333333333333
+
+fn main() {
+    const rate: Decimal = 0.000000000000000000000000000001
+    const huge: Decimal = 99999999999999999999999999999999999999.99
+    print(huge + rate)
+    const max: Decimal = 170141183460469231731687303715884105727
+    const one: Decimal = 1
+    const over = max + one          // past 128 bits
+    print(over)
+    print(over - one == max)        // back in the fast form, and equal
+    print(over / 3)
+    const price: Decimal = 0.1
+    print(price + 0.2)
+    print(one / 3)
+}

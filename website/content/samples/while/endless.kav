@@ -1,0 +1,10 @@
+fn main() {
+    let n = 1
+    while true {
+        n *= 2
+        if n > 100 {
+            break
+        }
+    }
+    print(n)
+}

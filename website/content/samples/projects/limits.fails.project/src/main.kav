@@ -1,0 +1,13 @@
+type Order {
+    id: Int
+    paid: Bool
+}
+
+fn paid_count(orders: [Order]) -> Int {
+    orders.count(o => o.paid)
+}
+
+fn main() {
+    const orders = [Order(id: 1, paid: true)]
+    print(paid_count(orders))
+}

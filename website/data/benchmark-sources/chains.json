@@ -1,0 +1,40 @@
+{
+  "title": "Method chains",
+  "readme": "benchmarks/chains/README.md",
+  "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · Python 3.12 · best of 9",
+  "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/chains",
+  "series": [
+    {
+      "id": "kavach",
+      "label": "Kavach",
+      "column": "Kavach ms",
+      "color": "kavach"
+    },
+    {
+      "id": "cpp",
+      "label": "C++ -O2",
+      "column": "C++ ms",
+      "color": "cpp"
+    },
+    {
+      "id": "python",
+      "label": "Python 3.12",
+      "column": "Python ms",
+      "color": "python"
+    }
+  ],
+  "benchmarks": {
+    "datachain": {
+      "row": "`datachain`",
+      "title": "datachain — map, filter, map, sum over 10 million items"
+    },
+    "builderchain": {
+      "row": "`builderchain`",
+      "title": "builderchain — five chained builder calls, 10 million times"
+    },
+    "nestedchain": {
+      "row": "`nestedchain`",
+      "title": "nestedchain — a chain inside a chain, ten thousand rows"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+// Rule: a panic in a `spawn process` call stops only that task: `.wait()` fails with `panicked: <message> at <file>:<line>`, and the program goes on.
+// Spec: 9.8, 9.1
+// expect output: true
+// expect output: main goes on
+// expect stderr: panic: index 7 is out of range: the list has 3 items
+// expect stderr:   at a-process-panic-fails-its-task.kav:10
+
+fn boom(n: Int) -> Int {
+    const xs = [1, 2, 3]
+    xs[n]
+}
+
+fn main() {
+    const t = spawn process boom(7)
+    const shown = match t.wait() {
+        ok(n) => "{n}"
+        err(e) => "{e}"
+    }
+    print(shown.starts_with("panicked: index 7 is out of range: the list has 3 items at "))
+    print("main goes on")
+}

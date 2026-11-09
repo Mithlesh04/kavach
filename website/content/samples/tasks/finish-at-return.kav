@@ -1,0 +1,15 @@
+fn start() {
+    const _sum = spawn {
+        let total = 0
+        for i in 0..1_000_000 {
+            total += i % 7
+        }
+        print("sum: {total}")
+    }
+    print("start returns")
+}
+
+fn main() {
+    start()
+    print("back in main")
+}

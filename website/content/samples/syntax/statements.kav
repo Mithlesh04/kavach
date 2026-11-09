@@ -1,0 +1,9 @@
+fn main() {
+    const price = 40
+    const total = price * 3 +
+        20
+    const words = ["kavach", "is", "here"]
+        .map(w => w.len())
+    print(total)
+    print(words)
+}

@@ -1,0 +1,12 @@
+fn main() {
+    let total = 0
+    for x in [5, -3, 10, 200, 7] {
+        const add = match x {
+            _ if x > 100 => break,     // too big: stop the loop
+            _ if x < 0 => continue,    // below zero: skip this one
+            _ => x,
+        }
+        total += add
+    }
+    print(total)
+}

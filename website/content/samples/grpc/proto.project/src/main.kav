@@ -1,0 +1,13 @@
+type Status = Pending | Paid(amount: Float)
+
+type Order {
+    id: Int
+    item: String
+    qty: Int = 1
+    status: Status
+    tags: [String]
+    notes: [String: String]
+}
+
+fn main() {
+}

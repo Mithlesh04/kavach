@@ -1,0 +1,8 @@
+// Rule: `Int.parse(text)` is gone: every conversion is `T(value)`.
+// Spec: 2.1
+// expect compile error
+
+fn main() {
+    const text = "42"
+    print(Int.parse(text) catch 0)     // error: write `Int(text)`
+}

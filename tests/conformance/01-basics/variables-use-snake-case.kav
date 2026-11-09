@@ -1,0 +1,7 @@
+// Rule: Variable names must be snake_case.
+// Spec: 1.5
+// expect compile error
+
+fn main() {
+    const orderCount = 3  // error: variables use snake_case: order_count
+}

@@ -1,0 +1,10 @@
+// Rule: A variant is always written with its union's name: a bare variant name is a compile error, even when only one union has it.
+// Spec: 2.6
+// expect compile error
+
+type Status = Pending | Paid | Refunded
+
+fn main() {
+    const chosen = Status.parse("Paid") ?? Pending    // error: write `Status.Pending`
+    print(chosen)
+}

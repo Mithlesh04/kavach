@@ -1,0 +1,4 @@
+fn main() {
+    const 2nd_place = "Ravi"
+    print(2nd_place)
+}

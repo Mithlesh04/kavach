@@ -1,0 +1,17 @@
+// Rule: Generated records never break their invariants.
+// Spec: 11.3
+// expect test pass
+
+type Span {
+    lo: Int
+    hi: Int
+    invariant lo >= 0
+    invariant hi >= lo
+    invariant hi < 1_000_000
+
+    fn width(self) -> Int
+        ensure result >= 0
+    {
+        self.hi - self.lo
+    }
+}

@@ -1,0 +1,15 @@
+[package]
+name = "kavach-runtime-gpu"
+description = "GPU compute for gpu fn (spec 15): map over 32-bit items through wgpu"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+# Every vendor through Vulkan, DirectX 12 and Metal (decision 0044).
+wgpu = "30"
+
+[lints]
+workspace = true

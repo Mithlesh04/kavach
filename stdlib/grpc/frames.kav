@@ -1,0 +1,95 @@
+// The framing of gRPC for std.grpc: each message behind a 5-byte
+// prefix (not compressed, then its length), the status trailers, and why
+// a call failed. Public so std.grpc can use it from its client and its
+// server; programs use std.grpc.
+
+use std.http.h2
+
+/// Why a gRPC call failed: `Status` is the server's answer.
+pub type GrpcError = Network(error: NetError) |
+    Protocol(reason: String) |
+    BadMessage(reason: String) |
+    Status(code: Int, message: String)
+
+/// The trailers that carry a call's gRPC status.
+pub fn status_trailers(code: Int, message: String) -> [Header] {
+    if code == 0 {
+        return [Header(name: "grpc-status", value: "0")]
+    }
+    [Header(name: "grpc-status", value: "{code}"), Header(name: "grpc-message", value: message)]
+}
+
+/// Fails with the server's status unless it is OK.
+pub fn check_status(trailers: [String: String]) ! GrpcError {
+    const status = trailers.get("grpc-status") ?? fail GrpcError.Protocol(reason: "no grpc-status in the answer")
+    const code = Int(status) catch e => fail GrpcError.Protocol(reason: "grpc-status `{status}`")
+    if code != 0 {
+        fail GrpcError.Status(code: code, message: trailers.get("grpc-message") ?? "")
+    }
+}
+
+/// Whole messages at the start of `pending`, and the bytes after them.
+pub type Split {
+    pub messages: [Bytes]
+    pub rest: Bytes
+}
+
+pub fn split_messages(pending: Bytes) -> Split ! GrpcError {
+    let messages: [Bytes] = []
+    let at = 0
+    while pending.len() - at >= 5 {
+        if pending[at] != 0 {
+            fail GrpcError.Protocol(reason: "a compressed message (not supported yet)")
+        }
+        const n = Int(pending[at + 1]) << 24 | Int(pending[at + 2]) << 16 | Int(pending[at + 3]) << 8 | Int(pending[at + 4])
+        if n > pending.len() - at - 5 {
+            break
+        }
+        messages.push(pending.slice(at + 5, at + 5 + n))
+        at += 5 + n
+    }
+    Split(messages: messages, rest: pending.slice(at, pending.len()))
+}
+
+/// A message behind gRPC's prefix: not compressed (0), then its length in
+/// four bytes, most significant first.
+pub fn framed(data: Bytes) -> Bytes {
+    const n = data.len()
+    Bytes([UInt8(0), UInt8(n >> 24 & 255), UInt8(n >> 16 & 255), UInt8(n >> 8 & 255), UInt8(n & 255)]) + data
+}
+
+/// Every message in `body`, without their prefixes.
+pub fn unframed_all(body: Bytes) -> [Bytes] ! GrpcError {
+    let messages: [Bytes] = []
+    let at = 0
+    while at < body.len() {
+        const rest = body.slice(at, body.len())
+        const m = try unframed(rest)
+        messages.push(m)
+        at += 5 + m.len()
+    }
+    messages
+}
+
+/// The first message in `body`, without its prefix.
+pub fn unframed(body: Bytes) -> Bytes ! GrpcError {
+    if body.len() < 5 {
+        fail GrpcError.Protocol(reason: "no message in the answer")
+    }
+    if body[0] != 0 {
+        fail GrpcError.Protocol(reason: "a compressed message (not supported yet)")
+    }
+    const n = Int(body[1]) << 24 | Int(body[2]) << 16 | Int(body[3]) << 8 | Int(body[4])
+    if n > body.len() - 5 {
+        fail GrpcError.Protocol(reason: "a message is cut off")
+    }
+    body.slice(5, 5 + n)
+}
+
+pub fn from_h2(e: H2Error) -> GrpcError {
+    match e {
+        H2Error.Network(n) => GrpcError.Network(error: n),
+        H2Error.Protocol(reason) => GrpcError.Protocol(reason: reason),
+        H2Error.Reset(_, code) => GrpcError.Protocol(reason: "the server reset the stream (code {code})"),
+    }
+}

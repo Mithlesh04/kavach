@@ -1,0 +1,12 @@
+// Rule: Operators follow the precedence table: * before +, not before and, ?? lowest.
+// Spec: 1.8
+// expect output: 7
+// expect output: false
+// expect output: 5
+
+fn main() {
+    print(1 + 2 * 3)
+    print(not false and false)
+    const present: Int? = 5
+    print(present ?? 1 + 1)
+}

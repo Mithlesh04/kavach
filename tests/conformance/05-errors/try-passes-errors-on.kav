@@ -1,0 +1,27 @@
+// Rule: `try` returns the error to the caller when a call fails.
+// Spec: 5.2
+// expect output: 40
+// expect output: too large: 200
+
+type AgeError = Empty | TooLarge(value: Int)
+
+fn check_age(age: Int) -> Int ! AgeError {
+    if age > 150 {
+        fail AgeError.TooLarge(value: age)
+    }
+    age
+}
+
+fn double_age(age: Int) -> Int ! AgeError {
+    const checked = try check_age(age)
+    checked * 2
+}
+
+fn main() {
+    print(double_age(20) catch 0)
+    match double_age(200) {
+        ok(value) => print(value)
+        err(AgeError.Empty) => print("empty")
+        err(AgeError.TooLarge(value)) => print("too large: {value}")
+    }
+}

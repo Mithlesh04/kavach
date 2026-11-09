@@ -1,0 +1,8 @@
+fn welcome(name: String, city: String) {
+    print("Welcome, {name}, from {city}")
+}
+
+fn main() {
+    welcome("Asha", "Pune")
+    welcome("Ravi", "Delhi")
+}

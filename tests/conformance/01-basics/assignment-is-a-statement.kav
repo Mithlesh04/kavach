@@ -1,0 +1,9 @@
+// Rule: Assignment is a statement, not an expression.
+// Spec: 1.8
+// expect compile error
+
+fn main() {
+    let a = 0
+    let b = 0
+    a = b = 1           // error: assignment has no value, so it cannot be assigned
+}

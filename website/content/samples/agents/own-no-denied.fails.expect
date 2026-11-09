@@ -1,0 +1,1 @@
+error: `Payments.refund` can be refused, so its error type needs a variant `Denied(reason: String)` (spec 8.2)

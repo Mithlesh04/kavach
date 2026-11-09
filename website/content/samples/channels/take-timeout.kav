@@ -1,0 +1,9 @@
+fn main() {
+    const (send, receive) = Channel<String>(capacity: 1)
+    const next = receive.take().timeout(200.ms) catch e => {
+        print("no message: {e}")
+        none
+    }
+    print(next ?? "nothing came")
+    send.close()
+}

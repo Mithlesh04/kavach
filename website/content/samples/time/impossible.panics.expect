@@ -1,0 +1,1 @@
+panic: contract failed: invariant day >= 1 and day <= days_in_month(year, month)

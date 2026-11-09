@@ -1,0 +1,6 @@
+fn main() {
+    const stock = 4
+    if stock = 4 {
+        print("four left")
+    }
+}

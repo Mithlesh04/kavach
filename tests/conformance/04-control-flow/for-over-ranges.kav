@@ -1,0 +1,17 @@
+// Rule: `..` excludes the end; `..=` includes it.
+// Spec: 4.4
+// expect output: 0
+// expect output: 1
+// expect output: 2
+// expect output: 1
+// expect output: 2
+// expect output: 3
+
+fn main() {
+    for i in 0..3 {
+        print(i)
+    }
+    for i in 1..=3 {
+        print(i)
+    }
+}

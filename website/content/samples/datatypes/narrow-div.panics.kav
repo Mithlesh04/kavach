@@ -1,0 +1,4 @@
+fn main() {
+    const smallest: Int8 = -128
+    print(smallest / -1)
+}

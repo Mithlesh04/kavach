@@ -1,0 +1,78 @@
+// Logistics: shipment exceptions, under a policy. The model picks an
+// action; the code carries it out, and a reroute costing over 300 needs
+// a dispatcher's approval (none answers in the benchmark: after a second
+// the call is refused and the shipment escalated). One note tells the model no approval is needed.
+
+use std.fs
+use std.json
+
+type Shipment {
+    id: Int
+    note: String
+    reroute_cost: Int
+}
+
+type Action = Reroute | Refund | Wait | Escalate
+
+// No doc note on `action`: the policy says it all, and the Python side
+// sends none, so both send the same.
+type Plan {
+    action: Action
+}
+
+type Rerouted { to: String }
+type CarrierError = Failed | Denied(reason: String)
+
+pub capability Carrier {
+    fn reroute(id: Int, cost: Int) -> Rerouted ! CarrierError
+}
+
+type Fleet: Carrier {
+    fn reroute(self, id: Int, cost: Int) -> Rerouted ! CarrierError {
+        Rerouted(to: "the right hub")
+    }
+}
+
+/// The policy the model decides by.
+fn policy() -> String {
+    "Policy: reroute a shipment that went to the wrong place. Refund one the carrier has lost (no scan for over a week, or the search closed). Wait when it is only delayed and has a new date within two days. Escalate damage, customs holds, and anything you are unsure about."
+}
+
+agent Dispatch {
+    can Ai, Carrier.reroute
+
+    approve Carrier.reroute when cost > 300 by "dispatcher" within 1.seconds
+
+    on exception(s: Shipment) -> String ! Error {
+        const p = try ask<Plan>("{policy()}\n\nShipment {s.id}: {s.note}")
+        match p.action {
+            Action.Reroute => {
+                const _r = Carrier.reroute(s.id, s.reroute_cost) catch _ => {
+                    return "{s.id} escalate"
+                }
+                "{s.id} reroute"
+            },
+            Action.Refund => "{s.id} refund",
+            Action.Wait => "{s.id} wait",
+            Action.Escalate => "{s.id} escalate",
+        }
+    }
+}
+
+pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Carrier.reroute {
+    const shipments = try json.decode<[Shipment]>(try fs.read_text(path))
+    const desk = Dispatch.start(Carrier: Fleet())
+    if not together {
+        for s in shipments {
+            print(desk.exception(s) catch e => "error {e}")
+        }
+        return
+    }
+    let asked: [Task<String>] = []
+    for s in shipments {
+        asked.push(spawn desk.exception(s))
+    }
+    for a in asked {
+        print(a.wait() catch e => "error {e}")
+    }
+}

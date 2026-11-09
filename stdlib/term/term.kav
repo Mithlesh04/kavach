@@ -1,0 +1,262 @@
+// std.term (spec 14.13): colors and styles for text printed to a
+// terminal, written in Kavach. Whether standard output shows colors
+// (`io.colors()`) and is a terminal (`io.is_terminal()`) comes from the
+// runtime (spec 14.6).
+
+use std.io
+
+/// `s` between the escape codes `open` and `close` when `on`, else `s`.
+/// A `close` inside `s`, from a nested style of the same kind, opens this
+/// style again, so the rest of `s` keeps it.
+fn paint(s: String, open: Int, close: Int, on: Bool) -> String
+    example paint("hi", 31, 39, false) == "hi"
+    example paint("hi", 31, 39, true) == "\u{1B}[31mhi\u{1B}[39m"
+    example paint("a\u{1B}[39mb", 31, 39, true) == "\u{1B}[31ma\u{1B}[39m\u{1B}[31mb\u{1B}[39m"
+{
+    if not on {
+        return s
+    }
+    const start = "\u{1B}[{open}m"
+    const end = "\u{1B}[{close}m"
+    start + s.replace(end, end + start) + end
+}
+
+/// `s` in color `code`, ended with the default color (39).
+fn color(s: String, code: Int) -> String uses Console {
+    paint(s, code, 39, io.colors())
+}
+
+/// `s` in black.
+pub fn black(s: String) -> String uses Console {
+    color(s, 30)
+}
+
+/// `s` in red.
+pub fn red(s: String) -> String uses Console {
+    color(s, 31)
+}
+
+/// `s` in green.
+pub fn green(s: String) -> String uses Console {
+    color(s, 32)
+}
+
+/// `s` in yellow.
+pub fn yellow(s: String) -> String uses Console {
+    color(s, 33)
+}
+
+/// `s` in blue.
+pub fn blue(s: String) -> String uses Console {
+    color(s, 34)
+}
+
+/// `s` in magenta.
+pub fn magenta(s: String) -> String uses Console {
+    color(s, 35)
+}
+
+/// `s` in cyan.
+pub fn cyan(s: String) -> String uses Console {
+    color(s, 36)
+}
+
+/// `s` in white.
+pub fn white(s: String) -> String uses Console {
+    color(s, 37)
+}
+
+/// `s` in gray.
+pub fn gray(s: String) -> String uses Console {
+    color(s, 90)
+}
+
+/// `s` in bold.
+pub fn bold(s: String) -> String uses Console {
+    paint(s, 1, 22, io.colors())
+}
+
+/// `s` faint.
+pub fn dim(s: String) -> String uses Console {
+    paint(s, 2, 22, io.colors())
+}
+
+/// `s` in italics.
+pub fn italic(s: String) -> String uses Console {
+    paint(s, 3, 23, io.colors())
+}
+
+/// `s` underlined.
+pub fn underline(s: String) -> String uses Console {
+    paint(s, 4, 24, io.colors())
+}
+
+/// A progress bar (spec 14.13): the job's size, the steps done, and the
+/// percentage drawn last (-1 before the first).
+pub type Progress {
+    total: Int
+    steps: Int
+    shown: Int
+
+    invariant total >= 0 and total <= 1_000_000_000_000
+    invariant steps >= 0 and steps <= total
+    invariant shown >= -1 and shown <= 100
+
+    /// `n` more steps of the job are done: the bar is drawn again. Steps
+    /// past the job's size leave it full.
+    pub fn step(self, n: Int) -> Progress uses Console
+        require n >= 0 and n <= 1_000_000_000_000
+    {
+        const sum = self.steps + n
+        const steps = if sum < self.total { sum } else { self.total }
+        draw(Progress(total: self.total, steps: steps, shown: self.shown))
+    }
+
+    /// The job is over: the bar is drawn full and its line ends.
+    pub fn done(self) uses Console {
+        const _full = draw(Progress(total: self.total, steps: self.total, shown: self.shown))
+        if io.is_terminal() {
+            io.write("\n")
+        }
+    }
+}
+
+/// How much of `total` steps `done` is, in whole percent (100 for a job
+/// of no steps).
+fn percent_of(done: Int, total: Int) -> Int
+    require total >= 0 and total <= 1_000_000_000_000
+    require done >= 0 and done <= 1_000_000_000_000
+    example percent_of(6, 10) == 60
+    example percent_of(15, 10) == 100
+    example percent_of(0, 0) == 100
+{
+    if total == 0 or done >= total {
+        return 100
+    }
+    done * 100 / total
+}
+
+/// The bar for `done` of `total` steps, `width` marks wide:
+/// `[############--------]  60%  6/10`.
+fn bar_text(done: Int, total: Int, width: Int) -> String
+    require total >= 0 and total <= 1_000_000_000_000
+    require done >= 0 and done <= 1_000_000_000_000
+    require width >= 1 and width <= 200
+    example bar_text(6, 10, 20) == "[############--------]  60%  6/10"
+    example bar_text(1, 3, 4) == "[#---]  33%  1/3"
+    example bar_text(0, 0, 4) == "[####] 100%  0/0"
+{
+    const percent = percent_of(done, total)
+    const filled = width * percent / 100
+    const shown = "{percent}%"
+    const pad = " ".repeat(5 - shown.len())
+    "[" + "#".repeat(filled) + "-".repeat(width - filled) + "]" + pad + shown + "  {done}/{total}"
+}
+
+/// Draws `bar` on its line again, when its percentage changed and output
+/// is a terminal.
+fn draw(bar: Progress) -> Progress uses Console {
+    const percent = percent_of(bar.steps, bar.total)
+    if percent == bar.shown {
+        return bar
+    }
+    if io.is_terminal() {
+        io.write("\u{D}" + bar_text(bar.steps, bar.total, 20))
+    }
+    Progress(total: bar.total, steps: bar.steps, shown: percent)
+}
+
+/// A progress bar for a job of `total` steps, drawn at 0%.
+pub fn progress(total: Int) -> Progress uses Console
+    require total >= 0 and total <= 1_000_000_000_000
+{
+    draw(Progress(total: total, steps: 0, shown: -1))
+}
+
+/// Prints `question` and a space, and gives the line typed, or `none` at
+/// the end of input.
+pub fn prompt(question: String) -> String? uses Console {
+    io.write(question + " ")
+    io.read_line()
+}
+
+/// Asks for a whole number until the answer is one; `none` at the end
+/// of input.
+pub fn prompt_int(question: String) -> Int? uses Console {
+    while true {
+        const answer = prompt(question) ?? return none
+        const n = Int(answer.trim()) catch e => {
+            print("Please type a whole number.")
+            continue
+        }
+        return n
+    }
+    none
+}
+
+/// Asks for a number until the answer is one; `none` at the end of input.
+pub fn prompt_float(question: String) -> Float? uses Console {
+    while true {
+        const answer = prompt(question) ?? return none
+        const n = Float(answer.trim()) catch e => {
+            print("Please type a number.")
+            continue
+        }
+        return n
+    }
+    none
+}
+
+/// A password or a token, as `term.prompt_secret` gives it: `text` is a
+/// `secret` field, kept out of `print` and logs (spec 8.7).
+pub type Secret {
+    pub secret text: String
+}
+
+/// Asks for a password or a token, the typing not shown; `none` at the
+/// end of input.
+pub fn prompt_secret(question: String) -> Secret? uses Console {
+    io.write(question + " ")
+    const typed = io.read_hidden() ?? return none
+    Secret(text: typed)
+}
+
+/// `true` for a yes, `false` for a no, `none` for anything else.
+fn yes_no(answer: String) -> Bool?
+    example yes_no(" Yes ") == true
+    example yes_no("n") == false
+    example yes_no("") == none
+{
+    const a = answer.trim().lower()
+    if a == "y" or a == "yes" {
+        return true
+    }
+    if a == "n" or a == "no" {
+        return false
+    }
+    none
+}
+
+/// Asks a yes-or-no question; anything but a yes or a no gives
+/// `default`.
+pub fn confirm(question: String, default: Bool) -> Bool uses Console {
+    const hint = if default { "[Y/n]" } else { "[y/N]" }
+    yes_no(prompt("{question} {hint}") ?? "") ?? default
+}
+
+/// Prints `question` and `options`, numbered from 1, and gives the index
+/// (from 0) of the one chosen, or `none` for an answer that is not one.
+pub fn choose(question: String, options: [String]) -> Int? uses Console {
+    print(question)
+    for i in 0..options.len() {
+        print("  {i + 1}. {options[i]}")
+    }
+    const answer = prompt("Choose 1-{options.len()}:") ?? return none
+    const n = Int(answer.trim()) catch e => {
+        return none
+    }
+    if n < 1 or n > options.len() {
+        return none
+    }
+    n - 1
+}

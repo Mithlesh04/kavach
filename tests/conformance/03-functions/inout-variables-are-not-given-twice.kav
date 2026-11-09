@@ -1,0 +1,12 @@
+// Rule: A variable given for an `inout` parameter can't be another argument of the same call.
+// Spec: 3.9
+// expect compile error
+
+fn add(inout n: Int, by: Int) {
+    n += by
+}
+
+fn main() {
+    let x = 1
+    add(x, x)                       // error: x is given as inout and again
+}

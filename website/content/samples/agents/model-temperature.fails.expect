@@ -1,0 +1,1 @@
+error: `Model` has no `temperature`: current models take only their own, and newer API versions refuse it. Use `effort` (`Low` to `Max`) to trade quality against tokens (spec 8.4)

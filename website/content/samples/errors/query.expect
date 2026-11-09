@@ -1,0 +1,6 @@
+$ kavach query fails FsError
+src/main.kav:8  fn read_settings(path: String) -> String ! FsError
+src/main.kav:16  fn load(path: String) -> Settings ! Error
+$ kavach query fails JsonError
+src/main.kav:12  fn parse_settings(text: String) -> Settings ! JsonError
+src/main.kav:16  fn load(path: String) -> Settings ! Error

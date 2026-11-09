@@ -1,0 +1,87 @@
+// std.time.digits (spec 14.4): the digits and offsets of times as text,
+// for `std.time`.
+
+/// `n` as text of at least `width` digits, with zeros in front.
+pub fn padded(n: Int, width: Int) -> String
+    require n >= -1_000_000_000 and n <= 1_000_000_000
+    require width >= 1 and width <= 20
+    example padded(7, 2) == "07"
+    example padded(2026, 4) == "2026"
+    example padded(-5, 3) == "-005"
+{
+    const digits = "{n.abs()}"
+    const zeros = "0".repeat((width - digits.len()).max(0))
+    if n < 0 {
+        return "-{zeros}{digits}"
+    }
+    "{zeros}{digits}"
+}
+
+/// The whole number `text` writes in exactly `width` digits, with no sign
+/// and no spaces: `Int(text)` takes both.
+pub fn read(text: String, width: Int) -> Int?
+    require width >= 1 and width <= 9
+    example read("07", 2) == 7
+    example read("+7", 2) == none
+    example read("7", 2) == none
+    example read("a7", 2) == none
+{
+    if text.len() != width {
+        return none
+    }
+    for c in text.chars() {
+        if c < '0' or c > '9' {
+            return none
+        }
+    }
+    Int(text) catch _ => return none
+}
+
+/// How many seconds ahead of UTC the offset `+05:30` is, if `text` is one;
+/// it may have seconds, `+05:21:10`.
+pub fn offset(text: String) -> Int?
+    example offset("+05:30") == 19_800
+    example offset("-08:00") == -28_800
+    example offset("+05:21:10") == 19_270
+    example offset("05:30") == none
+    example offset("+24:00") == none
+    example offset("+5:30") == none
+    example offset("Asia/Kolkata") == none
+{
+    const west = text.starts_with("-")
+    if not west and not text.starts_with("+") {
+        return none
+    }
+    const parts = text.slice(1, text.len()).split(":")
+    if parts.len() < 2 or parts.len() > 3 {
+        return none
+    }
+    const hours = read(parts[0], 2) ?? return none
+    const minutes = read(parts[1], 2) ?? return none
+    const seconds = if parts.len() == 3 { read(parts[2], 2) ?? return none } else { 0 }
+    if hours > 23 or minutes > 59 or seconds > 59 {
+        return none
+    }
+    const total = hours * 3_600 + minutes * 60 + seconds
+    if west { -total } else { total }
+}
+
+/// An offset of `seconds` as text: `+05:30`, and `Z` for none.
+pub fn offset_text(seconds: Int) -> String
+    require seconds > -86_400 and seconds < 86_400
+    example offset_text(19_800) == "+05:30"
+    example offset_text(-28_800) == "-08:00"
+    example offset_text(19_270) == "+05:21:10"
+    example offset_text(0) == "Z"
+{
+    if seconds == 0 {
+        return "Z"
+    }
+    const size = seconds.abs()
+    const sign = if seconds < 0 { "-" } else { "+" }
+    const base = "{sign}{padded(size / 3_600, 2)}:{padded(size / 60 % 60, 2)}"
+    if size % 60 == 0 {
+        return base
+    }
+    "{base}:{padded(size % 60, 2)}"
+}

@@ -1,0 +1,7 @@
+// Found by `kavach test` (spec 11.4). Generated: commit it, never edit it.
+padded(-9223372036854775808, 1)
+civil_from_days(364523338)
+Date.add_days(Date(year: 0, month: 1, day: 1), 365719529)
+Date.add_months(Date(year: 0, month: 1, day: 1), 12000012)
+Date.add_months(Date(year: -923104, month: 1, day: 1), -922753)
+Zone.at(Zone(name: "nz"), 30999999953200001)

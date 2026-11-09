@@ -1,0 +1,39 @@
+// Contracts: state intent in one line, and Kavach checks it.
+// There is no test file: `kavach test bank.kav` tests everything from the contracts.
+
+type Account {
+    owner: String
+    balance: Decimal
+
+    // An Account with a negative balance can never exist.
+    invariant balance >= 0
+}
+
+type BankError = InsufficientFunds(needed: Decimal)
+
+pub fn withdraw(account: Account, amount: Decimal) -> Account ! BankError
+    require amount > 0
+    ensure result.balance == account.balance - amount
+    // Concrete cases. `kavach test` runs them, plus hundreds of generated ones.
+    example withdraw(Account(owner: "Asha", balance: 100), 30).balance == 70
+    example withdraw(Account(owner: "Asha", balance: 10), 50) fails BankError.InsufficientFunds(needed: 40)
+{
+    if amount > account.balance {
+        fail BankError.InsufficientFunds(needed: amount - account.balance)
+    }
+    account with { balance: account.balance - amount }
+}
+
+fn main() {
+    const account = Account(owner: "Asha", balance: 1_000)
+
+    const after = withdraw(account, 250) catch e => {
+        print("withdraw failed: {e}")
+        account
+    }
+    print("{after.owner} now has {after.balance}")
+
+    // Uncommenting the next line stops the program with:
+    //   contract failed: require amount > 0
+    // withdraw(account, -5)
+}

@@ -1,0 +1,10 @@
+type Animal {
+    name: String
+}
+
+type Dog: Animal {
+    breed: String
+}
+
+fn main() {
+}

@@ -1,0 +1,13 @@
+// Rule: Listing and answering approval requests in code needs the capability `Approvals`.
+// Spec: 14.16, 8.1
+// expect compile error
+
+use std.agents
+
+pub fn count() -> Int uses Console {
+    agents.waiting().len()      // error: count doesn't list Approvals
+}
+
+fn main() {
+    print(count())
+}

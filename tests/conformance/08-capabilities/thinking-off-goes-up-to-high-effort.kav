@@ -1,0 +1,19 @@
+// Rule: `thinking: false` with `effort: XHigh` or `Max` is a compile error: with thinking off, effort goes up to `High`.
+// Spec: 8.4
+// expect compile error
+
+fn quick() -> Model {
+    Model(name: "claude-haiku-5-5", effort: Effort.Max, thinking: false)
+}
+
+agent Sorter {
+    model quick()    // error: `thinking: false` can't go with `effort: Max`
+    can Ai
+    on sort(text: String) -> Bool ! Error {
+        try ask<Bool>(text)
+    }
+}
+
+fn main() {
+    print("never runs")
+}

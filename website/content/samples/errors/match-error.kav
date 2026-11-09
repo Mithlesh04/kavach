@@ -1,0 +1,29 @@
+use std.fs
+use std.json
+
+type Settings {
+    port: Int
+}
+
+fn load(path: String) -> Settings ! Error {
+    const text = try fs.read_text(path)
+    try json.decode<Settings>(text)
+}
+
+fn main() ! Error {
+    try fs.write_text("broken.json", "\{\"port\": 80")
+    for path in ["missing.json", "broken.json"] {
+        const settings = load(path) catch e => match e {
+            FsError.NotFound(p) => {
+                print("{p} isn't there: using port 8080")
+                Settings(port: 8080)
+            }
+            JsonError.Syntax(line, column, _) => {
+                print("{path} is broken at line {line}, column {column}: using port 8080")
+                Settings(port: 8080)
+            }
+            _ => fail e,
+        }
+        print(settings.port)
+    }
+}

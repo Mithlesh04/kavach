@@ -1,0 +1,17 @@
+// Rule: Passing a value to a function never shares it.
+// Spec: 6.1
+// expect output: 1
+// expect output: 2
+
+fn with_extra(items: [Int]) -> [Int] {
+    let copy = items
+    copy.push(0)
+    copy
+}
+
+fn main() {
+    const original = [7]
+    const bigger = with_extra(original)
+    print(original.len())
+    print(bigger.len())
+}

@@ -1,0 +1,6 @@
+fn main() {
+    let count: Int8 = 120
+    count += 7
+    count += 1
+    print(count)
+}

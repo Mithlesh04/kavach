@@ -1,0 +1,6 @@
+fn main() {
+    print(["banana", "Apple", "cherry", "apple"].sort())
+    print(["zebra", "Éclair", "eclair"].sort())
+    print(["file10", "file9", "file1"].sort())
+    print(['b', 'A', 'a', '1'].sort())
+}

@@ -1,0 +1,12 @@
+$ kavach run src/main.kav crash
+
+$ kavach run src/main.kav
+started
+Bot finished after a restart: event #1 of request: ok 7
+$ kavach run src/main.kav crash
+
+$ kavach run src/main.kav decline
+started
+Bot finished after a restart: event #1 of request: ok 7
+Bot finished after a restart: event #2 of request: error Declined
+error in an event run again after a restart: event #2 of request: Declined

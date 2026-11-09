@@ -1,0 +1,19 @@
+use std.time
+
+fn main() ! Error {
+    const fixed = try time.zone("+05:30")
+    print(fixed.iso(0))
+    print((try time.zone("UTC")).iso(0))
+
+    // Kolkata's oldest offset has seconds.
+    const kolkata = try time.zone("Asia/Kolkata")
+    const long_ago = time.DateTime(date: time.Date(year: 1874, month: 12, day: 1), time: time.Time(hour: 0, minute: 0, second: 0, ms: 0))
+    print(kolkata.iso(kolkata.moment(long_ago)))
+
+    for name in ["+24:00", "+5:30"] {
+        const _zone = time.zone(name) catch e => {
+            print("refused: {e}")
+            continue
+        }
+    }
+}

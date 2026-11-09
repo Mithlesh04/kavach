@@ -1,0 +1,23 @@
+// Rule: `asks_under_way` (how a `tokens` limit counts the `ask`s waiting for their answer) is chosen when the program is built, as an `UnderWay` variant written in the settings: a value known only when it runs is a compile error.
+// Spec: 8.3, 8.5
+// expect compile error
+
+fn way(careful: Bool) -> UnderWay {
+    if careful {
+        UnderWay.Largest
+    } else {
+        UnderWay.Average
+    }
+}
+
+agent Writer {
+    settings AgentSettings(asks_under_way: way(true))    // error: chosen when the program is built
+    can Ai
+    limit Ai {
+        tokens <= 200_000 per day
+    }
+}
+
+fn main() {
+    print("never runs")
+}

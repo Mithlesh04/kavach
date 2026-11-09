@@ -1,0 +1,13 @@
+use std.fs
+
+fn load(path: String) -> String ! Error {
+    try fs.read_text(path)
+}
+
+fn main() {
+    const text = load("app.toml") catch e => match e {
+        NotFound(p) => "no {p}",
+        _ => "something else",
+    }
+    print(text)
+}

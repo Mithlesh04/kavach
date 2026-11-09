@@ -1,0 +1,11 @@
+// Rule: Every result of a generated call must meet `ensure`.
+// Spec: 11.2
+// expect test fail
+
+fn halve(n: Int) -> Int
+    require n > 10
+    require n < 1_000
+    ensure result * 2 == n      // false for odd numbers
+{
+    n / 2
+}

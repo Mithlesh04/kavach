@@ -1,0 +1,2 @@
+$ kavach run --native hello.kav
+Hello from a native program

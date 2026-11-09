@@ -1,0 +1,6 @@
+fn main() {
+    const small: UInt8 = 200
+    const low: Int8 = -128
+    print(small)
+    print(low)
+}

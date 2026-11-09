@@ -1,0 +1,5 @@
+fn main() {
+    const whole: Int = 1
+    const real: Float = 1.0
+    print(whole == real)
+}

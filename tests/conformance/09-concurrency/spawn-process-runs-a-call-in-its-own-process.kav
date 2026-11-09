@@ -1,0 +1,26 @@
+// Rule: `spawn process f(args)` runs the call in a process of its own: its arguments go in as copies, its value comes back, and what it prints comes out in turn.
+// Spec: 9.8
+// expect output: started
+// expect output: adding 3 items
+// expect output: total 12
+
+type Item {
+    name: String
+    price: Int
+}
+
+fn add(items: [Item], times: Int) -> Int {
+    print("adding {items.len()} items")
+    let total = 0
+    for item in items {
+        total += item.price * times
+    }
+    total
+}
+
+fn main() ! Error {
+    const items = [Item(name: "a", price: 1), Item(name: "b", price: 2), Item(name: "c", price: 3)]
+    const job = spawn process add(items, 2)
+    print("started")
+    print("total {try job.wait()}")
+}

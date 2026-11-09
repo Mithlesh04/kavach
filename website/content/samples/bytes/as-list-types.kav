@@ -1,0 +1,12 @@
+fn main() {
+    print(Bytes([255]).as_list<Int8>() ?? [])
+    print(Bytes([255]).as_list<UInt8>() ?? [])
+    print(Bytes([255, 255]).as_list<Int16>() ?? [])
+    print(Bytes([255, 255]).as_list<UInt16>() ?? [])
+    print(Bytes([255, 255, 255, 255]).as_list<Int32>() ?? [])
+    print(Bytes([255, 255, 255, 255]).as_list<UInt32>() ?? [])
+    print(Bytes([255, 255, 255, 255, 255, 255, 255, 255]).as_list<Int>() ?? [])
+    print(Bytes([255, 255, 255, 255, 255, 255, 255, 255]).as_list<UInt64>() ?? [])
+    print(Bytes([0, 0, 128, 63]).as_list<Float32>() ?? [])
+    print(Bytes([0, 0, 0, 0, 0, 0, 240, 63]).as_list<Float>() ?? [])
+}

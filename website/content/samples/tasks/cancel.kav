@@ -1,0 +1,11 @@
+fn main() {
+    const counting = spawn {
+        let n = 0
+        while true {        // never waits
+            n += 1
+        }
+    }
+    counting.cancel()       // stops it all the same
+    print("stopped")
+    counting.wait() catch e => print(e)
+}

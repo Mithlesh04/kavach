@@ -1,0 +1,58 @@
+// Rule: `for v in receive` takes every value until `take()` gives `none`, whatever the values' type.
+// Spec: 9.4
+// expect output: 7.75
+// expect output: 2 of 3
+// expect output: abc
+// expect output: 3 points
+
+type Point {
+    x: Int
+}
+
+fn main() {
+    const (floats, float_in) = Channel<Float>(capacity: 2)
+    const (bools, bool_in) = Channel<Bool>(capacity: 2)
+    const (chars, char_in) = Channel<Char>(capacity: 2)
+    const (points, point_in) = Channel<Point>(capacity: 2)
+    const _producer = spawn {
+        for x in [0.5, 2.25, 5.0] {
+            floats.put(x)
+        }
+        floats.close()
+        for b in [true, false, true] {
+            bools.put(b)
+        }
+        bools.close()
+        for c in ['a', 'b', 'c'] {
+            chars.put(c)
+        }
+        chars.close()
+        for i in 0..3 {
+            points.put(Point(x: i))
+        }
+        points.close()
+    }
+    let sum = 0.0
+    for x in float_in {
+        sum += x
+    }
+    print(sum)
+    let (yes, all) = (0, 0)
+    for b in bool_in {
+        all += 1
+        if b {
+            yes += 1
+        }
+    }
+    print("{yes} of {all}")
+    let text = ""
+    for c in char_in {
+        text += "{c}"
+    }
+    print(text)
+    let n = 0
+    for _ in point_in {
+        n += 1
+    }
+    print("{n} points")
+}

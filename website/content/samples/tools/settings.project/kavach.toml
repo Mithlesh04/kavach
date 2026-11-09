@@ -1,0 +1,10 @@
+[package]
+name = "shop"
+version = "0.1.0"
+edition = "2026"
+
+[test]
+cases = 500
+
+[log]
+level = "warn"

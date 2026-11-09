@@ -1,0 +1,9 @@
+use std.regex
+
+fn main() ! Error {
+    const number = try regex.new(r"\d+")
+    print(number.find("order 42 of 7") ?? "none")
+    print(number.find_all("order 42 of 7, room 301"))
+    const spaces = try regex.new(r"\s*,\s*")
+    print(spaces.split("mango , fig,  tea"))
+}

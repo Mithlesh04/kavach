@@ -1,0 +1,12 @@
+// Rule: In a generated test, `time.after` moves the clock forward at once, as `sleep` does.
+// Spec: 11.5
+// expect test pass
+
+use std.time
+
+fn an_hour_later() -> Int uses Clock
+    ensure result == 1_767_229_200_000
+{
+    const later = time.after(1.hours, () => time.now_ms())
+    later.wait() catch _ => 0
+}

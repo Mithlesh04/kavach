@@ -1,0 +1,16 @@
+// Rule: cli.parse into a union reads the first argument as the command (a variant's name in kebab-case) and the rest as its options.
+// Spec: 14.6
+// args: add-item --name milk
+// expect output: add milk x1
+
+use std.cli
+
+type Command = AddItem(name: String, count: Int = 1) | Show(limit: Int = 10)
+
+fn main() ! Error {
+    const command = try cli.parse<Command>()
+    match command {
+        Command.AddItem(name, count) => print("add {name} x{count}")
+        Command.Show(limit) => print("show {limit}")
+    }
+}

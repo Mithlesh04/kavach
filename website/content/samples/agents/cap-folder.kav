@@ -1,0 +1,13 @@
+use std.fs
+
+fn load_report(name: String) -> String ! FsError uses Fs.read("./reports") {
+    try fs.read_text("./reports/{name}.txt")
+}
+
+fn main() ! Error {
+    try fs.create_dir("reports")
+    try fs.write_text("reports/june.txt", "sales: 42")
+    try fs.write_text("secrets.txt", "the safe code")
+    print(try load_report("june"))
+    print(load_report("../secrets") catch e => "refused: {e}")
+}

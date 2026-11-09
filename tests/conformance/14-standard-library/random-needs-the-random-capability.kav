@@ -1,0 +1,13 @@
+// Rule: Every `std.random` function needs the `Random` capability.
+// Spec: 14.15
+// expect compile error
+
+use std.random
+
+pub fn roll() -> Int uses Console {
+    random.int(1, 7)                // error: roll doesn't list Random
+}
+
+fn main() {
+    print(roll())
+}

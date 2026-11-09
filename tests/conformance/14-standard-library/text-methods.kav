@@ -1,0 +1,17 @@
+// Rule: Text has replace, lines, chars, index_of and slice; positions count characters.
+// Spec: 14.2
+// expect output: hell0 w0rld
+// expect output: ["a", "b"]
+// expect output: ['न', 'म']
+// expect output: 1
+// expect output: none
+// expect output: मस्
+
+fn main() {
+    print("hello world".replace("o", "0"))
+    print("a\nb".lines())
+    print("नम".chars())
+    print("नमस्ते".index_of("म") ?? 0)
+    print("abc".index_of("z"))
+    print("नमस्ते".slice(1, 4))
+}

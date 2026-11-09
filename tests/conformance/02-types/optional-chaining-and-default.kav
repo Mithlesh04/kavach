@@ -1,0 +1,21 @@
+// Rule: ?. reads through an optional, ?? gives a default, if let unwraps.
+// Spec: 2.7
+// expect output: Asha
+// expect output: guest
+// expect output: found Asha
+
+type User {
+    name: String
+}
+
+fn find(id: Int) -> User? {
+    if id == 1 { User(name: "Asha") } else { none }
+}
+
+fn main() {
+    print(find(1)?.name ?? "guest")
+    print(find(2)?.name ?? "guest")
+    if let u = find(1) {
+        print("found {u.name}")
+    }
+}

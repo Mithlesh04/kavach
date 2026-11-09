@@ -1,0 +1,15 @@
+type Shape = Circle(radius: Float) | Rect(width: Int, height: Int)
+
+fn describe(shape: Shape) -> String {
+    match shape {
+        Shape.Circle(radius) => "circle of radius {radius}"
+        Shape.Rect(width, height) if width == height => "square of side {width}"
+        Shape.Rect(width, height) => "{width} by {height} rectangle"
+    }
+}
+
+fn main() {
+    print(describe(Shape.Circle(radius: 2.0)))
+    print(describe(Shape.Rect(width: 3, height: 3)))
+    print(describe(Shape.Rect(width: 4, height: 2)))
+}

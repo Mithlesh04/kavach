@@ -1,0 +1,4 @@
+fn main() {
+    var count = 0
+    print(count)
+}

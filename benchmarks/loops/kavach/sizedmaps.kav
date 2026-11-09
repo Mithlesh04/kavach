@@ -1,0 +1,14 @@
+// The maps benchmark when the program knows the size: 2 million keys
+// into a map made with room for them (C++ reserves the same), then look
+// every key up.
+fn main() {
+    let squares: [Int: Int] = Map.with_capacity(2_000_000)
+    for i in 0..2_000_000 {
+        squares[i] = i * i % 1000
+    }
+    let total = 0
+    for i in 0..2_000_000 {
+        total += squares[i] ?? 0
+    }
+    print(total)
+}

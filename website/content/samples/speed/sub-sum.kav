@@ -1,0 +1,11 @@
+fn main() {
+    let xs = []
+    for i in 0..1_000_000 {
+        xs.push(i % 100)
+    }
+    let total = 0
+    for i in 0..1_000_000 {
+        total += xs[i] * 3
+    }
+    print(total)
+}

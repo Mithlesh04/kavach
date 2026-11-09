@@ -1,0 +1,17 @@
+// Rule: the error of a function run with `spawn process` comes out of `.wait()`, as any task's does.
+// Spec: 9.8
+// expect output: Missing(path: "notes.txt")
+
+type LoadError = Missing(path: String) | Empty
+
+fn load(path: String) -> Int ! LoadError {
+    fail LoadError.Missing(path: path)
+}
+
+fn main() {
+    const job = spawn process load("notes.txt")
+    const _n = job.wait() catch e => {
+        print(e)
+        0
+    }
+}

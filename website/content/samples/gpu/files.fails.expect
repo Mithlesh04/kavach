@@ -1,0 +1,1 @@
+error: a `gpu fn` can't use `fs.read_text`: it reaches outside the program (files, the network, the terminal, time, AI), and on the GPU a `gpu fn` runs alone, item by item, with only its own values (spec 15.1)

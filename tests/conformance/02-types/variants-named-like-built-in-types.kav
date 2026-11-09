@@ -1,0 +1,27 @@
+// Rule: A variant may have the name of a built-in type: as a value or a pattern the name means the program's variant, and in a type it still means the built-in type.
+// Spec: 2.6
+// expect output: list of 3
+// expect output: single 7
+// expect output: failed: disk full
+
+type View = List(items: [Int]) | Single(item: Int)
+
+type Outcome = Done | Error(reason: String)
+
+fn show(v: View) -> String {
+    match v {
+        View.List(items) => "list of {items.len()}",
+        View.Single(item) => "single {item}",
+    }
+}
+
+fn main() {
+    const numbers: List<Int> = [1, 2, 3]
+    print(show(View.List(items: numbers)))
+    print(show(View.Single(item: 7)))
+    const o = Outcome.Error(reason: "disk full")
+    match o {
+        Outcome.Done => print("done"),
+        Outcome.Error(reason) => print("failed: {reason}"),
+    }
+}

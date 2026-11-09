@@ -1,0 +1,12 @@
+use std.time
+
+fn save(report: String) -> Int ! Error {
+    fail Error("disk full")
+}
+
+fn main() uses Console, Clock {
+    // `_`: nobody waits for this task, on purpose
+    const _saving = spawn save("weekly report")
+    time.sleep(10.ms)       // the task runs and fails meanwhile
+    print("main goes on")
+}

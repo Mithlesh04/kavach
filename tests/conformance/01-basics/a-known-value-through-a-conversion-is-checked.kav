@@ -1,0 +1,9 @@
+// Rule: A known whole number converted to a whole-number type it fits stays known: `Int8(i) * 2` in a `for` over known numbers is a compile error at the first round that overflows.
+// Spec: 1.8
+// expect compile error
+
+fn main() {
+    for i in 0..100 {
+        print(Int8(i) * 2)    // error: this always panics: integer overflow: 64 * 2 doesn't fit in Int8
+    }
+}

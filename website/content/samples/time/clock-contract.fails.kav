@@ -1,0 +1,11 @@
+use std.time
+
+fn expires(at_ms: Int) -> Bool
+    require at_ms > time.now_ms()
+{
+    true
+}
+
+fn main() {
+    print(expires(0))
+}

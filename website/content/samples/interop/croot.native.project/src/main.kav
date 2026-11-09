@@ -1,0 +1,20 @@
+extern c "m" {
+    fn cbrt(x: Float) -> Float
+}
+
+extern c "c" {
+    fn strlen(s: String) -> UInt64
+}
+
+fn cube_root(x: Float) -> Float {
+    unsafe { cbrt(x) }
+}
+
+fn c_length(s: String) -> UInt64 {
+    unsafe { strlen(s) }
+}
+
+fn main() {
+    print(cube_root(27.0))
+    print(c_length("namaste"))
+}

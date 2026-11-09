@@ -1,0 +1,15 @@
+// Rule: A contract may not read the clock: its answer would change from run to run.
+// Spec: 14.4
+// expect compile error
+
+use std.time
+
+fn stamp(ms: Int) -> Int
+    require ms <= time.now_ms()    // error: a contract can't call `time.now_ms`
+{
+    ms
+}
+
+fn main() {
+    print(stamp(0))
+}

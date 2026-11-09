@@ -1,0 +1,16 @@
+fn main() {
+    let total = 0
+    const sums = [1, 2, 3].map(x => {
+        total += x       // warning: `total` is a copy inside this lambda
+        total
+    })
+    print(sums)
+    print(total)
+    let log = [0]
+    const lens = [1, 2, 3].map(x => {
+        log.push(x)      // warning: `log` is a copy inside this lambda
+        log.len()
+    })
+    print(lens)
+    print(log)
+}

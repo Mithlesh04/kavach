@@ -1,0 +1,4 @@
+fn main() {
+    const xs: [Int32] = [2_147_483_000, 600, 47, 1]
+    print(xs.sum(x => x))
+}

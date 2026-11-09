@@ -1,0 +1,18 @@
+[package]
+name = "kavach-fmt"
+description = "The Kavach formatter: one style, no options"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+kavach-ast = { path = "../../compiler/ast" }
+kavach-checker = { path = "../../compiler/checker" }
+kavach-driver = { path = "../../compiler/driver" }
+kavach-lexer = { path = "../../compiler/lexer" }
+kavach-resolver = { path = "../../compiler/resolver" }
+
+[lints]
+workspace = true

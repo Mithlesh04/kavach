@@ -1,0 +1,22 @@
+type Order {
+    id: Int
+    paid: Bool
+}
+
+fn total_paid(orders: [Order]) -> Int {
+    let n = 0
+    for o in orders {
+        if o.paid {
+            n += 1
+        }
+    }
+    n
+}
+
+test "only paid orders count" {
+    const list = [Order(id: 1, paid: true), Order(id: 2, paid: false), Order(id: 3, paid: true)]
+    assert total_paid(list) == 2
+}
+
+fn main() {
+}

@@ -1,0 +1,12 @@
+type Size = Small | Medium | Large
+
+fn label(s: Size) -> String {
+    match s {
+        _ => "any size",
+        Size.Small => "small",
+    }
+}
+
+fn main() {
+    print(label(Size.Small))
+}

@@ -1,0 +1,16 @@
+$ kavach outline src/main.kav
+type Order {
+    id: Int
+    amount: Decimal
+    paid: Bool
+}
+
+/// The total of the paid orders.
+fn total_paid(orders: [Order]) -> Decimal
+    ensure result >= 0
+{ … }
+
+fn report(orders: [Order]) -> String { … }
+
+fn main() { … }
+outline: 229 of 508 characters (45%)

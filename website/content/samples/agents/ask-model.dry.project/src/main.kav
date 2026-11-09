@@ -1,0 +1,34 @@
+use std.fs
+
+type Verdict {
+    /// true if the text is risky
+    risky: Bool
+}
+
+fn careful() -> Model {
+    Model(name: "claude-opus-5-5", max_tokens: 2000)
+}
+
+fn quick() -> Model {
+    Model(name: "claude-haiku-5-5", thinking: false)
+}
+
+agent Reviewer {
+    model careful()
+    settings AgentSettings(audit: Audit())
+    can Ai, Console
+
+    on check(text: String) ! Error {
+        const deep = try ask<Verdict>("Is this clause risky? {text}")
+        const fast = try ask<Verdict>("Is this a greeting? {text}", model: quick())
+        print("risky: {deep.risky}, greeting: {fast.risky}")
+    }
+}
+
+fn main() ! Error {
+    const bot = Reviewer.start()
+    try bot.check("The buyer pays all fees.")
+    for line in try fs.lines("agents/Reviewer/audit.log") {
+        print(line.split("Z ").last() ?? line)
+    }
+}

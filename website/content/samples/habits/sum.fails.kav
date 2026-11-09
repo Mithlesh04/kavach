@@ -1,0 +1,4 @@
+fn main() {
+    const prices = [120, 80, 45]
+    print(prices.sum())
+}

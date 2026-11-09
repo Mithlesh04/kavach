@@ -1,0 +1,6 @@
+// Rule: Only the entry file can have `main`.
+// Spec: 10.3
+// expect compile error
+
+fn main() {
+}

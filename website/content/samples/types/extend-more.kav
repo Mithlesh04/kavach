@@ -1,0 +1,21 @@
+type Status = Pending | Paid
+
+extend Status {
+    fn label(self) -> String {
+        match self {
+            Status.Pending => "waiting for payment"
+            Status.Paid => "done"
+        }
+    }
+}
+
+extend Int {
+    fn is_even(self) -> Bool {
+        self % 2 == 0
+    }
+}
+
+fn main() {
+    print(Status.Paid.label())
+    print(10.is_even())
+}

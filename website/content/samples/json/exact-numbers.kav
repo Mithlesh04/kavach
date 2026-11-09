@@ -1,0 +1,9 @@
+use std.json
+
+fn main() ! Error {
+    const doc = try json.parse("\{\"id\": 12345678901234567890, \"price\": 0.1}")
+    print(doc["id"].bigint())
+    print(doc["id"].int())
+    print(doc["price"].decimal())
+    print(json.stringify(doc))
+}

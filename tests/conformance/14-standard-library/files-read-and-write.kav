@@ -1,0 +1,25 @@
+// Rule: std.fs reads, writes, appends, lists and removes files.
+// Spec: 14.3
+// expect output: true
+// expect output: one
+// expect output: two
+// expect output: ["notes.txt"]
+// expect output: false
+
+use std.fs
+
+fn main() ! Error {
+    const folder = "kavach-conformance-fs"
+    try fs.create_dir(folder)
+    const path = "{folder}/notes.txt"
+    try fs.write_text(path, "one\n")
+    try fs.append_text(path, "two\n")
+    print(fs.exists(path))
+    for line in (try fs.read_text(path)).lines() {
+        print(line)
+    }
+    print(try fs.list(folder))
+    try fs.remove(path)
+    try fs.remove(folder)
+    print(fs.exists(folder))
+}

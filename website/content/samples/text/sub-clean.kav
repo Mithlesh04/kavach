@@ -1,0 +1,6 @@
+fn main() {
+    const s = "  Namaste  "
+    print(s.trim())
+    print(s.trim().upper())
+    print(s.trim().lower())
+}

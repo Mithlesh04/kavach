@@ -1,0 +1,11 @@
+type Order {
+    id: Int
+    total: Int
+}
+
+fn main() {
+    const orders = [Order(id: 1, total: 30), Order(id: 2, total: 10), Order(id: 3, total: 20)]
+    for o in orders.sort_by(.total) {
+        print("order {o.id}: {o.total}")
+    }
+}

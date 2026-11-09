@@ -1,0 +1,1 @@
+error: this always breaks `ensure result >= 0` of `clamp_low`: `result` is -1 (spec 7.7)

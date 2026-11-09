@@ -1,0 +1,12 @@
+[
+  {"id": 1, "text": "Patient reports headaches. Started ibuprofen 400 mg three times a day with food. Continue lisinopril 10 mg once daily.", "meds": "ibuprofen 400x3, lisinopril 10x1"},
+  {"id": 2, "text": "Type 2 diabetes, stable. Metformin 500 mg twice daily. No other medicines.", "meds": "metformin 500x2"},
+  {"id": 3, "text": "Sore throat, no fever. Advised rest and fluids. No medication prescribed.", "meds": "none"},
+  {"id": 4, "text": "Amoxicillin 500 mg every 8 hours for 7 days. Paracetamol 1000 mg up to four times a day for pain.", "meds": "amoxicillin 500x3"},
+  {"id": 5, "text": "Atorvastatin 20 mg at night. Stopped aspirin last month because of stomach pain.", "meds": "atorvastatin 20x1"},
+  {"id": 6, "text": "Asthma review. Uses salbutamol 100 mcg inhaler as needed; no tablets.", "meds": "none"},
+  {"id": 7, "text": "Levothyroxine 50 mg every morning before breakfast. Vitamin D 25 mg once a day.", "meds": "levothyroxine 50x1, vitamin d 25x1"},
+  {"id": 8, "text": "Hypertension: amlodipine 5 mg once daily, increased from 2.5 mg today. Omeprazole 20 mg twice a day for two weeks.", "meds": "amlodipine 5x1, omeprazole 20x2"},
+  {"id": 9, "text": "Patient declined the suggested sertraline. Follow up in four weeks.", "meds": "none"},
+  {"id": 10, "text": "Prednisolone 30 mg once daily for five days, then stop. Continue metformin 850 mg twice a day.", "meds": "metformin 850x2, prednisolone 30x1"}
+]

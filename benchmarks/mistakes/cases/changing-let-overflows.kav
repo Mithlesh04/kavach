@@ -1,0 +1,8 @@
+// Mistake: A count that overflows after it was changed.
+
+fn main() {
+    let count: Int8 = 120
+    count += 7
+    count += 1
+    print(count)
+}

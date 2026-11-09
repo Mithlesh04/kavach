@@ -1,0 +1,38 @@
+// Rule: A `match` arm may leave instead of giving a value: `return`, `break` or `continue`; the `match` has the value of the arm taken.
+// Spec: 4.3
+// expect output: refund 90
+// expect output: refund 45
+// expect output: refund 0
+// expect output: escalate
+// expect output: 15
+
+type Share = Full | Half | Nothing | Escalate
+
+fn refund(price: Int, share: Share) -> String {
+    const amount = match share {
+        Share.Full => price,
+        Share.Half => price / 2,
+        Share.Nothing => 0,
+        Share.Escalate => return "escalate",
+    }
+    "refund {amount}"
+}
+
+fn sum_until_big(xs: [Int]) -> Int {
+    let total = 0
+    for x in xs {
+        const add = match x > 100 {
+            true => break,
+            false => if x < 0 { continue } else { x },
+        }
+        total += add
+    }
+    total
+}
+
+fn main() {
+    for s in [Share.Full, Share.Half, Share.Nothing, Share.Escalate] {
+        print(refund(90, s))
+    }
+    print(sum_until_big([5, -3, 10, 200, 7]))
+}

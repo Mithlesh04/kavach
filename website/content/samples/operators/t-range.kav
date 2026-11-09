@@ -1,0 +1,12 @@
+fn main() {
+    let a: [Int] = []
+    for i in 0..3 {
+        a.push(i)
+    }
+    print(a)
+    let b: [Int] = []
+    for i in 0..=3 {
+        b.push(i)
+    }
+    print(b)
+}

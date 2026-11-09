@@ -1,0 +1,8 @@
+// Rule: Text given as a literal is read while compiling: one that isn't a valid value of the type is a compile error.
+// Spec: 2.1
+// expect compile error
+
+fn main() {
+    print(Int("2") + 1)          // fine: just 3
+    print(Int("abc"))            // error: `abc` is not a valid Int
+}

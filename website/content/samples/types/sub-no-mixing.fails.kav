@@ -1,0 +1,5 @@
+fn main() {
+    const n: Int = 7
+    const f: Float = 2.5
+    print(n + f)
+}

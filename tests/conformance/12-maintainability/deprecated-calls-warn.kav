@@ -1,0 +1,19 @@
+// Rule: A call to a deprecated function gives a warning that shows its message; the function still works.
+// Spec: 12.6
+// expect warning
+// expect output: 5
+// expect output: 7
+
+deprecated "use half_of instead" fix half_of(n)
+fn half(n: Int) -> Int {
+    n / 2
+}
+
+fn half_of(n: Int) -> Int {
+    n / 2
+}
+
+fn main() {
+    print(half(10))    // warning: `half` is deprecated
+    print(half_of(14))
+}

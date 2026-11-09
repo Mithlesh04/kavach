@@ -1,0 +1,11 @@
+// Rule: `io.colors()` is `false` when standard output is not a terminal, whether or not `NO_COLOR` is set.
+// Spec: 14.6
+// expect output: false
+// expect output: false
+
+use std.io
+
+fn main() {
+    print(io.colors())
+    print(io.colors() and not io.is_terminal())
+}

@@ -1,0 +1,7 @@
+use std.time
+
+fn main() {
+    const month = 2
+    const day = time.Date(year: 2026, month: month, day: 30)
+    print(day.iso())
+}

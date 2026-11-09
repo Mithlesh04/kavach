@@ -1,0 +1,45 @@
+// Rule: `.timeout(d)` on a network wait sets its deadline; when it passes, the call fails with `NetError.TimedOut`.
+// Spec: 14.10, 9.6
+// expect output: receive: timed out
+// expect output: accept: timed out
+// expect output: PONG
+
+use std.net
+
+fn why(e: NetError) -> String {
+    match e {
+        NetError.TimedOut(_) => "timed out",
+        _ => "failed",
+    }
+}
+
+fn quiet(sock: UdpSocket) -> String ! NetError uses Net {
+    const d = try sock.receive().timeout(50.ms)
+    "got {d.data.len()} bytes"
+}
+
+fn lonely(listener: Listener) -> String ! NetError uses Net {
+    const conn = try listener.accept().timeout(20.ms)
+    conn.close()
+    "connected"
+}
+
+fn answer(sock: UdpSocket) ! NetError uses Net {
+    const d = try sock.receive().timeout(5.seconds)
+    try sock.send("pong".bytes(), d.from).timeout(5.seconds)
+}
+
+fn main() ! Error {
+    const sock = try net.bind("127.0.0.1:0")
+    const received = quiet(sock) catch e => why(e)
+    print("receive: {received}")
+    const listener = try net.listen("127.0.0.1:0")
+    const accepted = lonely(listener) catch e => why(e)
+    print("accept: {accepted}")
+    const task = spawn answer(sock)
+    const client = try net.bind("127.0.0.1:0")
+    try client.send("ping".bytes(), sock.address())
+    const reply = try client.receive().timeout(5.seconds)
+    print((reply.data.text() ?? "").upper())
+    try task.wait()
+}

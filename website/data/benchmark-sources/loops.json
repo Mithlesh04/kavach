@@ -1,0 +1,42 @@
+{
+  "title": "Loops, calls and lists",
+  "readme": "benchmarks/loops/README.md",
+  "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · best of 9",
+  "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/loops",
+  "series": [
+    {
+      "id": "kavach",
+      "label": "Kavach",
+      "column": "Kavach ms",
+      "color": "kavach"
+    },
+    {
+      "id": "cpp",
+      "label": "C++ -O2",
+      "column": "C++ ms",
+      "color": "cpp"
+    }
+  ],
+  "benchmarks": {
+    "loop": {
+      "row": "`loop`",
+      "title": "loop — 500M rounds of modular arithmetic"
+    },
+    "sort": {
+      "row": "`sort`",
+      "title": "sort — 5M integers"
+    },
+    "lists": {
+      "row": "`lists`",
+      "title": "lists — build, read, change and sum 10M items"
+    },
+    "text": {
+      "row": "`text`",
+      "title": "text — build, split and search large text"
+    },
+    "sizedmaps": {
+      "row": "`sizedmaps`",
+      "title": "sizedmaps — 2M keys into a map told its size (C++ reserves too)"
+    }
+  }
+}

@@ -1,0 +1,39 @@
+// Rule: Patterns nest in lists, maps and records; when the part a nested pattern takes apart may be missing, every name inside it is `none` when it is, unless it has a default.
+// Spec: 1.12
+// expect output: [1, 2] 3 none
+// expect output: 3 none none none
+// expect output: 0 9
+// expect output: 7 8
+// expect output: Pune 0 none
+// expect output: 5432 1 none
+
+type Address {
+    city: String
+    zip: Int?
+}
+
+type User {
+    name: String
+    home: Address
+    work: Address?
+}
+
+fn main() {
+    const pairs = [[1, 2], [3]]
+    const [first, [x, y]] = pairs
+    print("{first} {x} {y}")
+    const [_, [a, b], [c, d]] = pairs
+    print("{a} {b} {c} {d}")
+    const [_, _, [low = 0, high = 9]] = pairs
+    print("{low} {high}")
+    const [_, _, [p, q] = [7, 8]] = pairs
+    print("{p} {q}")
+
+    const u = User(name: "Asha", home: Address(city: "Pune", zip: none), work: none)
+    const { home: { city, zip = 0 }, work: { city: office } } = u
+    print("{city} {zip} {office}")
+
+    const settings = ["db": ["port": 5432], "cache": ["port": 6379, "size": 64]]
+    const [db: [port, size = 1], queue: [port: qport]] = settings
+    print("{port} {size} {qport}")
+}

@@ -1,0 +1,27 @@
+// Rule: An interface value holding a `Drop` value keeps it to the end of its block, as the value itself would.
+// Spec: 6.1, 2.15
+// expect output: named boxed
+// expect output: end of main
+// expect output: freed boxed
+
+interface Named {
+    fn name(self) -> String
+}
+
+type Note: Drop, Named {
+    text: String
+
+    fn name(self) -> String {
+        self.text
+    }
+
+    fn drop(self) uses Console {
+        print("freed {self.text}")
+    }
+}
+
+fn main() {
+    const n: Named = Note(text: "boxed")
+    print("named {n.name()}")
+    print("end of main")
+}

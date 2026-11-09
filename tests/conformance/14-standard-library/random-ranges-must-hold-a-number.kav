@@ -1,0 +1,10 @@
+// Rule: `random.int(from, until)` requires `until` to be greater than `from`; an empty range is a contract failure.
+// Spec: 14.15
+// expect panic: contract failed
+
+use std.random
+
+fn main() {
+    const from = [5][0]
+    print(random.int(from, 5))
+}

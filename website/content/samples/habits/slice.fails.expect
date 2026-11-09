@@ -1,0 +1,1 @@
+error: `slice` takes where to start and where to end: `s.slice(0, 4)`. Positions start at 0 and aren't negative: the last 4 are `s.slice(s.len() - 4, s.len())`

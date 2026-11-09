@@ -1,0 +1,14 @@
+use std.log
+
+type Refunded: LogEvent {
+    order_id: Int
+}
+
+pub fn refund(order_id: Int) -> Int {
+    log.info(Refunded(order_id: order_id))
+    order_id
+}
+
+fn main() {
+    print(refund(42))
+}

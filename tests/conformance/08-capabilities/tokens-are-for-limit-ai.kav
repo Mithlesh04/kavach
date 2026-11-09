@@ -1,0 +1,24 @@
+// Rule: `tokens` in a limit rule counts what AI calls took, so it is only for `limit Ai`; on another capability it is a compile error.
+// Spec: 8.3
+// expect compile error
+
+type Receipt { id: String }
+type PaymentError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn refund(order_id: Int, amount: Int) -> Receipt ! PaymentError
+}
+
+agent Bot {
+    can Payments.refund
+    limit Payments.refund {
+        tokens <= 100    // error: tokens are for `limit Ai`
+    }
+    on go() -> Receipt ! PaymentError {
+        try Payments.refund(1, 5)
+    }
+}
+
+fn main() {
+    print("never")
+}

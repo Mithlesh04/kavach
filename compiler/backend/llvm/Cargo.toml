@@ -1,0 +1,17 @@
+[package]
+name = "kavach-backend-llvm"
+description = "Optimized native code for Kavach through LLVM"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+kavach-kir = { path = "../../kir" }
+kavach-runtime-native = { path = "../../../runtime/native" }
+# Links the object file with the runtime library, as for Cranelift.
+kavach-backend-cranelift = { path = "../cranelift" }
+
+[lints]
+workspace = true

@@ -1,0 +1,14 @@
+// Summing a big list: 50 million integers, added up 10 times.
+fn main() {
+    let xs = []
+    for i in 0..50_000_000 {
+        xs.push(i % 1000)
+    }
+    let total = 0
+    for round in 0..10 {
+        for x in xs {
+            total += x
+        }
+    }
+    print(total)
+}

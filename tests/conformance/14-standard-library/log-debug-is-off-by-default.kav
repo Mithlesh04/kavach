@@ -1,0 +1,14 @@
+// Rule: Events below level `info` are left out unless the level is set lower.
+// Spec: 14.12
+// expect output: INFO CacheMiss(key: "b")
+
+use std.log
+
+type CacheMiss: LogEvent {
+    key: String
+}
+
+fn main() {
+    log.debug(CacheMiss(key: "a"))
+    log.info(CacheMiss(key: "b"))
+}

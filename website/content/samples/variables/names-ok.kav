@@ -1,0 +1,7 @@
+fn main() {
+    const player_2 = "Ravi"
+    const नाम = "Asha"
+    const _hidden = 7
+    const total_price = 499
+    print("{player_2} {नाम} {_hidden} {total_price}")
+}

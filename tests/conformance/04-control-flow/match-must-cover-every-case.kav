@@ -1,0 +1,12 @@
+// Rule: A match must cover every possible case.
+// Spec: 4.3
+// expect compile error
+
+type Status = Pending | Paid | Refunded
+
+fn label(status: Status) -> String {
+    match status {      // error: Refunded is not covered
+        Status.Pending => "waiting"
+        Status.Paid => "paid"
+    }
+}

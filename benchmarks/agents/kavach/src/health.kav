@@ -1,0 +1,48 @@
+// Health records: the medicines a clinical note says the patient takes
+// now, as a checked list. A list is an answer like any other type.
+
+use std.fs
+use std.json
+
+type Note {
+    id: Int
+    text: String
+}
+
+type Medication {
+    /// the medicine's name, in lowercase, without the dose
+    name: String
+    /// one dose, in mg
+    dose_mg: Int
+    /// how many doses a day
+    times_per_day: Int
+}
+
+pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs {
+    const notes = try json.decode<[Note]>(try fs.read_text(path))
+    if not together {
+        for n in notes {
+            print(read(n) catch e => "error {e}")
+        }
+        return
+    }
+    let asked: [Task<String>] = []
+    for n in notes {
+        asked.push(spawn read(n))
+    }
+    for a in asked {
+        print(a.wait() catch e => "error {e}")
+    }
+}
+
+fn read(n: Note) -> String ! Error uses Ai {
+    const meds = try ask<[Medication]>(
+        "List the medicines this clinical note says the patient takes now, with the dose " +
+        "and how often. Leave out medicines stopped, declined or used only as needed. Note: {n.text}"
+    )
+    if meds.is_empty() {
+        return "{n.id} none"
+    }
+    const each = meds.map(m => "{m.name} {m.dose_mg}x{m.times_per_day}").sort()
+    "{n.id} {each.join(", ")}"
+}

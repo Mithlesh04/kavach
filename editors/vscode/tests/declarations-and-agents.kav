@@ -1,0 +1,94 @@
+// SYNTAX TEST "source.kavach" "types, agents, capabilities, contracts"
+
+type Shape = Circle(radius: Float) | Rect(width: Float, height: Float)
+// <---- storage.type.kavach
+//   ^^^^^ entity.name.type.kavach
+//           ^^^^^^ entity.name.type.kavach
+//                          ^^^^^ support.type.primitive.kavach
+
+agent RefundBot {
+// <----- storage.type.kavach
+//    ^^^^^^^^^ entity.name.type.kavach
+
+    model careful()
+//  ^^^^^ keyword.other.agent.kavach
+
+    can Ai, Payments.refund, Email.send
+//  ^^^ keyword.other.agent.kavach
+//      ^^ support.class.capability.kavach
+//          ^^^^^^^^ entity.name.type.kavach
+
+    limit Payments.refund {
+//  ^^^^^ keyword.other.agent.kavach
+
+        sum(amount) <= 50_000 per day
+//                  ^^ keyword.operator.comparison.kavach
+//                            ^^^ keyword.other.agent.kavach
+//                                ^^^ keyword.other.agent.kavach
+        count <= 3 per hour
+//                 ^^^ keyword.other.agent.kavach
+//                     ^^^^ keyword.other.agent.kavach
+        count <= 100 per month
+//                       ^^^^^ keyword.other.agent.kavach
+
+    approve Payments.refund when amount > 5_000 by "finance"
+//  ^^^^^^^ keyword.other.agent.kavach
+//                          ^^^^ keyword.control.kavach
+//                                              ^^ keyword.other.agent.kavach
+    approve Email.send when count > 9 by "support" within 2.days
+//                                                 ^^^^^^ keyword.other.agent.kavach
+
+    on request(order: Order) ! Error {
+//  ^^ keyword.other.agent.kavach
+//     ^^^^^^^ entity.name.function.kavach
+//                             ^^^^^ support.type.kavach
+
+        const decision = try ask<RefundDecision>("Refund {order.id}?")
+//                       ^^^ keyword.control.kavach
+//                           ^^^ support.function.builtin.kavach
+//                               ^^^^^^^^^^^^^^ entity.name.type.kavach
+
+    secret card_last4: String
+//  ^^^^^^ storage.modifier.kavach
+//                     ^^^^^^ support.type.primitive.kavach
+
+fn total(orders: [Order]) -> Decimal uses Console, Net {
+//                                   ^^^^ keyword.other.agent.kavach
+//                                        ^^^^^^^ support.class.capability.kavach
+
+test "refunds are capped" {
+// <---- storage.type.kavach
+//   ^^^^^^^^^^^^^^^^^^^^ string.quoted.double.kavach
+
+
+fn bump(inout n: Int) {
+//      ^^^^^ storage.modifier.kavach
+}
+
+gpu fn glow(x: Float32) -> Float32 {
+// <--- storage.modifier.kavach
+    x
+}
+
+fn pick() -> Verdict ! Error uses Ai {
+    let model = quick()
+//      ^^^^^ - keyword.other.agent.kavach
+    try ask<Verdict>("Fine?", model: model)
+//                            ^^^^^ - keyword.other.agent.kavach
+}
+
+type Query {
+    limit: Int = 100
+//  ^^^^^ - keyword.other.agent.kavach
+
+    fn take(self, n: Int) -> Query {
+        self with { limit: n }
+//      ^^^^ variable.language.self.kavach
+//                  ^^^^^ - keyword.other.agent.kavach
+    }
+
+    fn show(self) -> String {
+        "LIMIT {self.limit}"
+//                   ^^^^^ - keyword.other.agent.kavach
+    }
+}

@@ -1,0 +1,5 @@
+use orders.{Order, total_paid}
+
+fn main() {
+    print(total_paid([Order(amount: 20, paid: true), Order(amount: 5, paid: true)]))
+}

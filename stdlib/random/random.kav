@@ -1,0 +1,89 @@
+// std.random (spec 14.15): random numbers behind the `Random` capability.
+// The runtime gives 64 bits at a time from the operating system's
+// cryptographically secure generator (`random_bits`), or from the test
+// run's seed under `kavach test` (spec 11.5); the rest is here.
+
+/// The largest `Int`, 2^63 - 1.
+fn largest() -> Int {
+    9_223_372_036_854_775_807
+}
+
+/// 63 random bits: a whole number from 0 to 2^63 - 1, each equally likely.
+fn bits63() -> Int uses Random
+    ensure result >= 0
+{
+    random_bits() & largest()
+}
+
+/// A whole number from `from` up to, not including, `until`, each equally
+/// likely.
+pub fn int(from: Int, until: Int) -> Int uses Random
+    require until > from
+    require from >= 0 or until <= largest() + from
+    ensure result >= from and result < until
+{
+    const span = until - from
+    // 2^63 values come from `bits63`; keep the largest multiple of `span`
+    // of them, so no result comes up more often than another.
+    const extra = (largest() % span + 1) % span
+    const limit = largest() - extra
+    let r = bits63()
+    while r > limit {
+        r = bits63()
+    }
+    from + r % span
+}
+
+/// A number from 0.0 up to, not including, 1.0.
+pub fn float() -> Float uses Random
+    ensure result >= 0.0 and result < 1.0
+{
+    // 53 bits: every Float with this spacing in [0, 1) equally likely.
+    Float(bits63() >> 10) / 9_007_199_254_740_992.0
+}
+
+/// `true` or `false`, each half the time.
+pub fn bool() -> Bool uses Random {
+    bits63() & 1 == 1
+}
+
+/// One of `items`, each equally likely; none when there are none.
+pub fn pick<T>(items: [T]) -> T? uses Random {
+    if items.is_empty() {
+        return none
+    }
+    items[int(0, items.len())]
+}
+
+/// A copy of `items` in a random order, every order equally likely
+/// (Fisher and Yates' shuffle).
+pub fn shuffle<T>(items: [T]) -> [T] uses Random {
+    let out = items
+    let i = out.len() - 1
+    while i > 0 {
+        const j = int(0, i + 1)
+        const keep = out[i]
+        out[i] = out[j]
+        out[j] = keep
+        i -= 1
+    }
+    out
+}
+
+/// `n` random bytes, up to 64 KiB at a time.
+pub fn bytes(n: Int) -> Bytes uses Random
+    require n >= 0 and n <= 65_536
+    ensure result.len() == n
+{
+    let list: [UInt8] = []
+    while list.len() < n {
+        let b = bits63()
+        for _ in 0..7 {
+            if list.len() < n {
+                list.push(UInt8(b & 255))
+                b = b >> 8
+            }
+        }
+    }
+    Bytes(list)
+}

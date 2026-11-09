@@ -1,0 +1,8 @@
+fn main() {
+    const locked = false
+    const open_hours = true
+    const alarm = false
+    if !locked && open_hours || alarm {
+        print("come in")
+    }
+}

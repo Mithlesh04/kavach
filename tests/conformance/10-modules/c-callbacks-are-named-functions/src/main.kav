@@ -1,0 +1,15 @@
+// Rule: A C callback is the name of a Kavach function that can't fail; a lambda or closure is a compile error, since C can't keep what it captures.
+// Spec: 10.7
+// expect compile error
+
+extern c "c" {
+    fn qsort(items: Ptr<Int32>, count: UInt64, size: UInt64, compare: fn(Ptr<Int32>, Ptr<Int32>) -> Int32)
+}
+
+fn main() {
+    unsafe {
+        const xs: Ptr<Int32> = alloc(2)
+        qsort(xs, 2, 4, (a, b) => 0)        // error: a lambda, not a named function
+        free(xs)
+    }
+}

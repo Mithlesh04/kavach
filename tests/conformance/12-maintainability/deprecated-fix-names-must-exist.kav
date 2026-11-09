@@ -1,0 +1,12 @@
+// Rule: The names in a `fix` expression must exist; its parameters are the function's.
+// Spec: 12.6
+// expect compile error
+
+deprecated "use halve instead" fix halve(n)    // error: `halve` is not defined
+fn half(n: Int) -> Int {
+    n / 2
+}
+
+fn main() {
+    print(half(10))
+}

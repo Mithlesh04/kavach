@@ -1,0 +1,12 @@
+[
+  {"id": 1, "text": "Invoice #A-101 from Brightline Office Supplies. 3 x A4 paper boxes at $24.00 each, 2 x toner cartridge at $89.50 each. Total due: $251.00.", "expect": "USD 2 25100"},
+  {"id": 2, "text": "Rechnung Nr. 2024-77, Müller GmbH. Pos. 1: 10 Stück Schrauben M6 à 0,45 €; Pos. 2: 1 Bohrmaschine à 129,90 €. Gesamtbetrag: 134,40 €.", "expect": "EUR 2 13440"},
+  {"id": 3, "text": "Hi! For the website work in March: design 12 hours at £60/hour, development 20 hours at £75/hour. Please pay £2,220.00 by the 30th.", "expect": "GBP 2 222000"},
+  {"id": 4, "text": "INVOICE, Sharma Traders, Pune. 50 kg basmati rice @ ₹110/kg, 20 L mustard oil @ ₹180/L, 5 kg turmeric @ ₹240/kg. Grand total ₹10,300.", "expect": "INR 3 1030000"},
+  {"id": 5, "text": "Order 5512: 1 laptop stand $45.99, 1 USB-C hub $32.50, 2 HDMI cables $8.75 each. Discount code SPRING: -$10.00. Total $85.99.", "expect": "USD 3 8599"},
+  {"id": 6, "text": "Invoice 88 from Coastline Catering: lunch for 40 people at €18.50 per person, 40 coffees at €2.25. Delivery €25. VAT is included. Amount due €855.00.", "expect": "EUR 2 85500"},
+  {"id": 7, "text": "Your subscription: Pro plan, 12 months at $19 a month = $228. Tax (8%): $18.24. Total charged: $246.24. Prices are in USD; your bank may show the amount in your card's currency.", "expect": "USD 1 24624"},
+  {"id": 8, "text": "Bill from Kumar Electricals: wiring repair labour 3 hrs @ Rs. 450, 2 switches @ Rs. 85, 1 MCB @ Rs. 520. Total Rs. 2,040.", "expect": "INR 3 204000"},
+  {"id": 9, "text": "Invoice INV-3302, Nordic Wood AB: 4 oak boards at EUR 37.25 each, 1 tin of varnish at EUR 22.00. Shipping EUR 15.00. Total EUR 186.00.", "expect": "EUR 2 18600"},
+  {"id": 10, "text": "Thanks for shopping at Green Leaf! 2 x Organic honey £6.49, 3 x Oat milk £1.85, 1 x Sourdough loaf £3.20. Subtotal £21.73. Total £21.73.", "expect": "GBP 3 2173"}
+]

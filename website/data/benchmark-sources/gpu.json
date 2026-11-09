@@ -1,0 +1,42 @@
+{
+  "title": "On the GPU",
+  "readme": "benchmarks/gpu/README.md",
+  "environment": "Windows 11 · i7-13700HX · RTX 4050 Laptop · g++ -O3 -march=native -fopenmp for 24 threads",
+  "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/gpu",
+  "series": [
+    {
+      "id": "kavach",
+      "label": "Kavach on the GPU",
+      "row": "**Kavach, GPU**",
+      "color": "kavach"
+    },
+    {
+      "id": "cpp",
+      "label": "C++ on 24 threads",
+      "row": "C++ `-O3 -march=native -fopenmp`, 24 threads",
+      "color": "cpp"
+    },
+    {
+      "id": "cpp-one-core",
+      "label": "C++ -O2, one core",
+      "row": "C++ `-O2`, one core",
+      "color": "cpp"
+    },
+    {
+      "id": "kavach-cpu",
+      "label": "Kavach on the CPU",
+      "row": "Kavach, CPU (`KAVACH_GPU=off`)",
+      "color": "kavach"
+    }
+  ],
+  "benchmarks": {
+    "first": {
+      "column": "First `map`",
+      "title": "glow, first map — 4 million Float32 items, 1,000 steps each, sent to the GPU"
+    },
+    "second": {
+      "column": "Second `map`",
+      "title": "glow, second map — the same list, already in GPU memory"
+    }
+  }
+}

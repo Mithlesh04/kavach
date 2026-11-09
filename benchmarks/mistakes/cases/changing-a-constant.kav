@@ -1,0 +1,7 @@
+// Mistake: A list declared constant, then changed.
+
+fn main() {
+    const xs = [1, 2]
+    xs.push(3)
+    print(xs)
+}

@@ -1,0 +1,15 @@
+// Rule: Calling a method needs the capabilities the method uses, as calling a function does.
+// Spec: 8.1
+// expect compile error
+
+type Note {
+    text: String
+
+    fn show(self) uses Console {
+        print(self.text)
+    }
+}
+
+pub fn work(n: Note) uses Fs {
+    n.show()                    // error: `show` uses Console, which `work` doesn't list
+}

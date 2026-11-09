@@ -1,0 +1,7 @@
+fn main() {
+    const age = 25
+    const member = false
+    print(age >= 18 and member)
+    print(age >= 18 or member)
+    print(not member)
+}

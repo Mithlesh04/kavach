@@ -1,0 +1,319 @@
+@import "tailwindcss";
+
+/*
+ * The one place every color, surface and chart hue lives (decision 0033).
+ * Light is the default; dark comes from the browser setting, and a forced
+ * choice via html[data-theme] wins over both. Components never hardcode
+ * a color — they use the token classes Tailwind derives below.
+ */
+:root {
+  /* What dims the page behind the course menu, in both themes. */
+  --scrim: rgba(0, 0, 0, 0.5);
+  --bg: #fcfbf8;
+  --panel: #ffffff;
+  --ink: #1c1917;
+  --muted: #57534e;
+  --soft: #78716c;
+  --line: #e7e2da;
+  --line-2: #ede8df;
+  --active: #edece9;
+  --chip: #edece9;
+  --accent: #b45309;
+  --accent-text: #92400e;
+  --link: #2156c8;
+  --accent-soft: #fbf6ec;
+  --glow: #f3e3c8;
+  --inv-bg: #1c1917;
+  --inv-ink: #fcfbf8;
+  --face: #ffffff;
+  --ok: #166534;
+  --bad: #991b1b;
+  --ok-bg: #eaf3e6;
+  --bad-bg: #f9ecec;
+  --track: #f3ede2;
+  --side-link: #565a60;
+  --side-head: #9a9ca1;
+  --side-active: rgba(28, 25, 23, 0.07);
+  /* chart series — validated for colorblind safety on the light surface */
+  --ch-k: #b45309;
+  --ch-c: #3b5bdb;
+  --ch-p: #be185d;
+  /* code blocks stay dark in both themes */
+  --code-bg: #171412;
+  --code-line: #2b2721;
+  --code-ink: #e7e0d4;
+  --code-soft: #857c6e;
+  --code-border: #3a352e;
+  --tok-kw: #e6a23c;
+  --tok-fn: #8fc1ea;
+  --tok-str: #9bb97f;
+  --tok-num: #d9a0c7;
+  --tok-err: #f08a8a;
+  --tok-const: #56c2a6;
+  --tok-doc: #4fa8a8;
+  --tok-imported: #c3a6ff;
+  --tok-builtin: #d7ba7d;
+  /* terminal windows: dark in both themes, like code; the bar's three
+     dots are the familiar close / minimize / zoom colors */
+  --term-bg: #100e0c;
+  --term-bar: #1c1916;
+  --term-out: #c4bcae;
+  --term-red: #ec6a5e;
+  --term-yellow: #f4bf4f;
+  --term-green: #61c554;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141210;
+    --panel: #1c1917;
+    --ink: #f0ede6;
+    --muted: #b5aea2;
+    --soft: #8f887b;
+    --line: #2e2a24;
+    --line-2: #272320;
+    --active: #292926;
+    --chip: #292926;
+    --accent: #e6a23c;
+    --accent-text: #e6a23c;
+    --link: #8ab1f7;
+    --accent-soft: #241d12;
+    --glow: #3a2e18;
+    --inv-bg: #f0ede6;
+    --inv-ink: #141210;
+    --face: #1c1917;
+    --ok: #7fc98f;
+    --bad: #f08a8a;
+    --ok-bg: #1c2a1e;
+    --bad-bg: #2e1b1b;
+    --track: #2e2a24;
+    --side-link: #a4a7ad;
+    --side-head: #686b71;
+    --side-active: rgba(240, 237, 230, 0.09);
+    /* chart series — separately validated on the dark surface */
+    --ch-k: #c9802c;
+    --ch-c: #3987e5;
+    --ch-p: #d55181;
+    --code-bg: #100e0c;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #141210;
+  --panel: #1c1917;
+  --ink: #f0ede6;
+  --muted: #b5aea2;
+  --soft: #8f887b;
+  --line: #2e2a24;
+  --line-2: #272320;
+  --active: #292926;
+  --chip: #292926;
+  --accent: #e6a23c;
+  --accent-text: #e6a23c;
+  --link: #8ab1f7;
+  --accent-soft: #241d12;
+  --glow: #3a2e18;
+  --inv-bg: #f0ede6;
+  --inv-ink: #141210;
+  --face: #1c1917;
+  --ok: #7fc98f;
+  --bad: #f08a8a;
+  --ok-bg: #1c2a1e;
+  --bad-bg: #2e1b1b;
+  --track: #2e2a24;
+  --side-link: #a4a7ad;
+  --side-head: #686b71;
+  --side-active: rgba(240, 237, 230, 0.09);
+  --ch-k: #c9802c;
+  --ch-c: #3987e5;
+  --ch-p: #d55181;
+  --code-bg: #100e0c;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-scrim: var(--scrim);
+  --color-panel: var(--panel);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-soft: var(--soft);
+  --color-line: var(--line);
+  --color-line-2: var(--line-2);
+  --color-active: var(--active);
+  --color-chip: var(--chip);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-link: var(--link);
+  --color-accent-soft: var(--accent-soft);
+  --color-inv-bg: var(--inv-bg);
+  --color-inv-ink: var(--inv-ink);
+  --color-face: var(--face);
+  --color-ok: var(--ok);
+  --color-bad: var(--bad);
+  --color-ok-bg: var(--ok-bg);
+  --color-bad-bg: var(--bad-bg);
+  --color-track: var(--track);
+  --color-side-link: var(--side-link);
+  --color-side-head: var(--side-head);
+  --color-side-active: var(--side-active);
+  --color-ch-k: var(--ch-k);
+  --color-ch-c: var(--ch-c);
+  --color-ch-p: var(--ch-p);
+  --color-code-bg: var(--code-bg);
+  --color-code-line: var(--code-line);
+  --color-code-ink: var(--code-ink);
+  --color-code-soft: var(--code-soft);
+  --color-code-border: var(--code-border);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains);
+}
+
+/* Base rules live in the base layer, so every text-* utility on a
+   specific element wins over them (unlayered CSS would beat utilities). */
+@layer base {
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-inter), system-ui, sans-serif;
+  }
+
+  a {
+    color: var(--link);
+  }
+
+  /* Code shows the characters a reader must type: no ligatures, so `=>`
+     never turns into one arrow glyph a beginner can't find on the keyboard. */
+  code,
+  pre,
+  .font-mono {
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0, "calt" 0;
+  }
+}
+
+/* scrollbars wear the theme */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 6px;
+  border: 2.5px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--soft);
+}
+pre {
+  scrollbar-color: var(--code-border) transparent;
+}
+pre::-webkit-scrollbar-thumb {
+  background: var(--code-border);
+  border-color: var(--code-bg);
+}
+
+/* the animated explainers */
+@keyframes keyfly {
+  0% { transform: translateX(0); opacity: 0; }
+  12% { opacity: 1; }
+  45%, 70% { transform: translateX(252px); opacity: 1; }
+  100% { transform: translateX(252px); opacity: 0; }
+}
+@keyframes bucketglow {
+  0%, 40% { box-shadow: none; border-color: var(--line); }
+  52%, 80% { box-shadow: 0 0 0 4px var(--glow); border-color: var(--accent); }
+  100% { box-shadow: none; border-color: var(--line); }
+}
+@keyframes valuepop {
+  0%, 48% { opacity: 0; transform: scale(0.7); }
+  58%, 86% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; }
+}
+@keyframes hop1 {
+  0% { transform: translateX(0); }
+  30%, 100% { transform: translateX(236px); }
+}
+@keyframes hop3 {
+  0% { transform: translateX(0); }
+  22%, 24% { transform: translateX(104px); }
+  50%, 52% { transform: translateX(206px); }
+  82%, 100% { transform: translateX(308px); }
+}
+/* every race bar fills at the same speed: width% equals timeline% */
+@keyframes race {
+  0% { width: 0; }
+}
+@keyframes reveal {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+/* a quiz finished: confetti flies out from the ribbon (components/quiz-celebration.tsx) */
+@keyframes confetti {
+  0% { transform: translate(0, 0) rotate(0); opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)); opacity: 0; }
+}
+@keyframes ribbon-in {
+  from { transform: scale(0.6) rotate(-4deg); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+/* a ribbon: notched ends */
+.quiz-ribbon {
+  clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 50%, 100% 100%, 0 100%, 14px 50%);
+}
+/* the cursor waiting at a terminal's last prompt */
+@keyframes termblink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+/* hover-to-learn notes on code (shiki decorations add .tip spans; components/tip-layer.tsx shows the note) */
+.tip {
+  position: relative;
+  border-bottom: 1.5px dotted var(--tok-kw);
+  border-radius: 2px;
+  cursor: help;
+}
+.tip:hover {
+  background: rgba(230, 162, 60, 0.14);
+}
+.tip-new { border-bottom-color: var(--tok-kw); }
+.tip-why { border-bottom-color: var(--ch-c); }
+.tip-style { border-bottom-color: var(--ch-p); }
+/* the floating note's label (components/tip-layer.tsx), one color per kind */
+.tip-chip-new { color: var(--accent-text); }
+.tip-chip-why { color: var(--ch-c); }
+.tip-chip-style { color: var(--ch-p); }
+
+/* Two windows in a row (code or terminal) get room between them, so each
+   reads as an example of its own. */
+.code-window + .code-window {
+  margin-top: 1.75rem;
+}
+
+/* Lines of text stay short enough to read; code, tables and charts take the page's width. */
+.lesson-body > :is(p, ul, ol, blockquote, h2, h3) {
+  max-width: 72ch;
+}
+@media (min-width: 1920px) {
+  .lesson-body > :is(p, ul, ol, blockquote, h2, h3) {
+    max-width: 80ch;
+  }
+}
+
+/* A heading reached by its address clears the header that stays on top. */
+main h2 {
+  scroll-margin-top: 5rem;
+}
+
+/* Readers who ask for less motion get none. */
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}

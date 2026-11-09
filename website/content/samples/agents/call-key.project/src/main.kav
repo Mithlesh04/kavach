@@ -1,0 +1,49 @@
+use std.agents
+use std.cli
+
+type PaymentError = Declined | Denied(reason: String)
+type EmailError = NotSent | Denied(reason: String)
+
+capability Payments {
+    fn refund(order_id: Int) ! PaymentError
+}
+
+capability Email {
+    fn send(to: String) ! EmailError
+}
+
+type Bank: Payments {
+    fn refund(self, order_id: Int) ! PaymentError uses Console {
+        // A real bank would get the key, and drop a refund it has seen before.
+        print("[pay] refund {order_id}, key {agents.call_key()}")
+    }
+}
+
+type Mail: Email {
+    crash: Bool
+
+    fn send(self, to: String) ! EmailError uses Console, Env {
+        print("[email] {to}, key {agents.call_key()}")
+        if self.crash {
+            cli.exit(3)
+        }
+    }
+}
+
+agent Bot {
+    can Payments.refund, Email.send
+
+    on request(order_id: Int) ! Error {
+        try Payments.refund(order_id)
+        try Email.send("order {order_id}")
+    }
+}
+
+fn main() ! Error {
+    const crash = cli.args().contains("crash")
+    const bot = Bot.start(Payments: Bank(), Email: Mail(crash: crash))
+    print("outside a call: {agents.call_key()}")
+    if crash {
+        try bot.request(7)
+    }
+}

@@ -1,0 +1,13 @@
+$ kavach query callers total_paid src/main.kav
+src/main.kav:21  in report: "paid: {total_paid(orders)}"
+$ kavach query uses Console src/main.kav
+src/main.kav:24  fn main()
+$ kavach query type Order src/main.kav
+src/main.kav:1
+type Order {
+    id: Int
+    amount: Decimal
+    paid: Bool
+}
+$ kavach query find total src/main.kav
+src/main.kav:8  fn total_paid

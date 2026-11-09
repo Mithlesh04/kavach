@@ -1,0 +1,14 @@
+// Rule: The function given to `update` can't wait: a sleep, a channel, a task's `.wait()` or the network in it is a compile error.
+// Spec: 6.2
+// expect compile error
+
+use std.time
+
+fn main() {
+    const visits = Shared(0)
+    visits.update(n => {
+        time.sleep_ms(1)       // error: `time.sleep_ms` waits, and the function given to `update` can't wait
+        n + 1
+    })
+    print(visits.get())
+}

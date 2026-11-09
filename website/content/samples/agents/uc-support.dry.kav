@@ -1,0 +1,42 @@
+type Team = Billing | Engineering | HelpDesk
+
+type Triage {
+    /// the team that should answer
+    team: Team
+    /// one line for that team
+    summary: String
+}
+
+type DeskError = Closed | Denied(reason: String)
+
+capability Desk {
+    fn assign(team: Team, summary: String) ! DeskError
+}
+
+type TestDesk: Desk {
+    fn assign(self, team: Team, summary: String) ! DeskError {
+        print("assigned to {team}")
+    }
+}
+
+agent Support {
+    can Ai, Desk.assign
+
+    limit Desk.assign {
+        count <= 200 per hour
+    }
+
+    limit Ai {
+        count <= 1_000 per day
+    }
+
+    on message(text: String) ! Error {
+        const t = try ask<Triage>("Which team should answer this message? {text}")
+        try Desk.assign(t.team, t.summary)
+    }
+}
+
+fn main() {
+    const bot = Support.start(Desk: TestDesk())
+    bot.message("I was charged twice this month") catch e => print("failed: {e}")
+}

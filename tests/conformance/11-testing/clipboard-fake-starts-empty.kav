@@ -1,0 +1,16 @@
+// Rule: In a generated test, the clipboard is a fake in memory: it starts empty, and what is written is read back.
+// Spec: 11.5, 14.17
+// expect test pass
+
+use std.clipboard
+
+fn copy_back(text: String) -> String uses Clipboard
+    ensure result == text
+{
+    const before = clipboard.read_text() catch e => "{e}"
+    if before != "Empty" {
+        return "not empty: {before}"
+    }
+    clipboard.write_text(text) catch _ => return "not written"
+    clipboard.read_text() catch _ => "not read"
+}

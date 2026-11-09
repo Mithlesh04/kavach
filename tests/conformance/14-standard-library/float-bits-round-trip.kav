@@ -1,0 +1,12 @@
+// Rule: `x.bits()` gives a `Float`'s IEEE 754 bits as a `UInt64`, and `Float.from_bits(n)` gives the `Float` back.
+// Spec: 14.2
+// expect output: 4607182418800017408 13835058055282163712 4591870180066957722
+// expect output: 0.1 -2.0
+// expect output: true
+
+fn main() {
+    print("{1.0.bits()} {(-2.0).bits()} {0.1.bits()}")
+    print("{Float.from_bits(4591870180066957722)} {Float.from_bits((-2.0).bits())}")
+    const x = 123.456
+    print(Float.from_bits(x.bits()) == x)
+}

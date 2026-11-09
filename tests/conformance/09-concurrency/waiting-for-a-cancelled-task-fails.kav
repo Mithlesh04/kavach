@@ -1,0 +1,22 @@
+// Rule: `.wait()` on a task that was cancelled fails with the error `the task was cancelled`.
+// Spec: 9.6
+// expect output: the task was cancelled
+// expect output: -1
+
+use std.time
+
+fn start() -> Task<Int> {
+    spawn {
+        time.sleep_ms(10_000)
+        5
+    }
+}
+
+fn main() {
+    const t = start()
+    const n = t.wait() catch e => {
+        print(e)
+        -1
+    }
+    print(n)
+}

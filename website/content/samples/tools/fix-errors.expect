@@ -1,0 +1,33 @@
+$ kavach check
+error: `push` changes `counts`, but it is a `const`: declare it with `let`
+ --> src/main.kav:3:5
+  |
+3 |     counts.push(8)
+  |     ^^^^^^
+
+warning: `i` reaches `counts.len()`, one past the last index of `counts`, so `counts[i]` panics on the last turn: write `..` instead of `..=`, or loop over `counts` itself (spec 4.4)
+ --> src/main.kav:4:14
+  |
+4 |     for i in 0..=counts.len() {
+  |              ^^^^^^^^^^^^^^^^
+
+error: `=` sets a variable: to compare, write `==` (spec 4.1)
+ --> src/main.kav:5:22
+  |
+5 |         if counts[i] = 4 {
+  |                      ^
+
+warning: `x % 2 == 1` is wrong for a negative odd `x`, since `-3 % 2` is `-1`: write `x % 2 != 0`
+ --> src/main.kav:8:12
+  |
+8 |         if counts[i] % 2 == 1 {
+  |            ^^^^^^^^^^^^^
+$ kavach fix src
+src/main.kav: Declare it with `let`
+src/main.kav: Write `..` instead of `..=`
+src/main.kav: Write `==`
+src/main.kav: Write `counts[i] % 2 != 0`
+$ kavach run
+3 is odd
+four
+7 is odd

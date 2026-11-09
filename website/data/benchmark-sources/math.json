@@ -1,0 +1,38 @@
+{
+  "title": "Math on large data",
+  "readme": "benchmarks/math/README.md",
+  "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · best of 9",
+  "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/math",
+  "series": [
+    {
+      "id": "kavach",
+      "label": "Kavach",
+      "column": "Kavach ms",
+      "color": "kavach"
+    },
+    {
+      "id": "cpp",
+      "label": "C++ -O2",
+      "column": "C++ ms",
+      "color": "cpp"
+    }
+  ],
+  "benchmarks": {
+    "sum": {
+      "row": "`sum`",
+      "title": "sum — 50 million integers, 10 times, every addition overflow-checked"
+    },
+    "scale": {
+      "row": "`scale`",
+      "title": "scale — y = x * 2.5 + 1.0 over 20 million floats, 10 times"
+    },
+    "roots": {
+      "row": "`roots`",
+      "title": "roots — sqrt over 20 million floats, 10 times"
+    },
+    "dot": {
+      "row": "`dot`",
+      "title": "dot — the dot product of two 20-million-float lists, 10 times"
+    }
+  }
+}

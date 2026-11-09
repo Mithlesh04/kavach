@@ -1,0 +1,9 @@
+// Rule: `agents.call_key()` is `none` outside a capability call of a durable agent's handler.
+// Spec: 14.16
+// expect output: none
+
+use std.agents
+
+fn main() {
+    print(agents.call_key())
+}

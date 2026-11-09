@@ -1,0 +1,17 @@
+type User {
+    name: String
+}
+
+fn find_user(id: Int) -> User? {
+    if id == 7 { User(name: "Asha") } else { none }
+}
+
+fn main() {
+    const found = find_user(7)
+    const missing = find_user(8)
+    print(found?.name ?? "guest")
+    print(missing?.name ?? "guest")
+    if let u = find_user(7) {
+        print("Found {u.name}")
+    }
+}

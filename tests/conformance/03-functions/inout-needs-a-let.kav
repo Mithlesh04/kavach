@@ -1,0 +1,12 @@
+// Rule: The argument for an `inout` parameter must be a place that can change: a `let` variable, or a field or item of one.
+// Spec: 3.9
+// expect compile error
+
+fn bump(inout n: Int) {
+    n += 1
+}
+
+fn main() {
+    const fixed = 1
+    bump(fixed)                     // error: fixed is a const
+}

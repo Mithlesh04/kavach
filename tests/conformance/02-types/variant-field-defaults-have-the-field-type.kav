@@ -1,0 +1,9 @@
+// Rule: A variant field's default must have the field's type.
+// Spec: 2.6
+// expect compile error
+
+type Shape = Circle(radius: Int = "big") | Dot    // error: the default is text, not Int
+
+fn main() {
+    print(Shape.Dot)
+}

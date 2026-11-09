@@ -1,0 +1,24 @@
+// Rule: Match patterns bind variant fields, rename them, ignore them, and take guards; first match wins.
+// Spec: 4.3
+// expect output: circle 2
+// expect output: wide
+// expect output: square 3
+// expect output: rect 2x5
+
+type Shape = Circle(radius: Int) | Rect(width: Int, height: Int)
+
+fn name(shape: Shape) -> String {
+    match shape {
+        Shape.Circle(radius) => "circle {radius}"
+        Shape.Rect(width: w, height: _) if w > 10 => "wide"
+        Shape.Rect(width, height) if width == height => "square {width}"
+        Shape.Rect(width, height) => "rect {width}x{height}"
+    }
+}
+
+fn main() {
+    print(name(Shape.Circle(radius: 2)))
+    print(name(Shape.Rect(width: 20, height: 20)))
+    print(name(Shape.Rect(width: 3, height: 3)))
+    print(name(Shape.Rect(width: 2, height: 5)))
+}

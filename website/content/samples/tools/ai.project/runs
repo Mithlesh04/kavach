@@ -1,0 +1,3 @@
+outline src/main.kav
+query callers total_paid src/main.kav
+context report src/main.kav --budget 300

@@ -1,0 +1,12 @@
+// Rule: `random.bytes(n)` gives at most 65,536 bytes at a time; asking for more is a contract failure.
+// Spec: 14.15
+// expect output: 65536
+// expect panic: contract failed
+
+use std.random
+
+fn main() {
+    print(random.bytes(65_536).len())
+    const more = [65_537][0]
+    print(random.bytes(more).len())
+}

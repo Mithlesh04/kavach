@@ -1,0 +1,27 @@
+type DeployError = BuildFailed | Denied(reason: String)
+
+capability Deploy {
+    fn release(version: String, env: String) ! DeployError
+}
+
+type Pipeline: Deploy {
+    fn release(self, version: String, env: String) ! DeployError {
+        print("released {version} to {env}")
+    }
+}
+
+agent Releaser {
+    can Deploy.release
+
+    approve Deploy.release when env == "production" by "oncall"
+
+    on ship(version: String, env: String) ! DeployError {
+        try Deploy.release(version, env)
+    }
+}
+
+fn main() {
+    const bot = Releaser.start(Deploy: Pipeline())
+    bot.ship("2.4.0", "staging") catch e => print("not released: {e}")
+    bot.ship("2.4.0", "production") catch e => print("not released: {e}")
+}

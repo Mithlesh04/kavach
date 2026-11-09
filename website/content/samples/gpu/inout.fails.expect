@@ -1,0 +1,1 @@
+error: a `gpu fn` can't take `inout` parameters: give the new value back instead, as `gpu fn bump(x: Float32) -> Float32` (spec 15.1)

@@ -1,0 +1,17 @@
+type Ball {
+    y: Float32
+    vy: Float32
+}
+
+gpu fn fall(b: Ball) -> Ball {
+    const vy = b.vy - 9.8 * 0.016
+    Ball(y: b.y + vy * 0.016, vy: vy)
+}
+
+fn main() {
+    let balls = [Ball(y: 100.0, vy: 0.0), Ball(y: 50.0, vy: 5.0)]
+    for _ in 0..60 {
+        balls = balls.map(fall)
+    }
+    print(balls)
+}

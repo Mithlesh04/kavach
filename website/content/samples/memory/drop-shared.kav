@@ -1,0 +1,19 @@
+type Note: Drop {
+    name: String
+
+    fn drop(self) uses Console {
+        print("freed {self.name}")
+    }
+}
+
+fn show(s: Shared<Note>) {
+    const t = s                 // one more holder of the same cell
+    print("show sees {t.get().name}")
+}
+
+fn main() {
+    const s = Shared(Note(name: "scoreboard"))
+    show(s)
+    print("show ended; s still holds it")
+    print("end of main")
+}

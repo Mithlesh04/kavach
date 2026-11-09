@@ -1,0 +1,2 @@
+warning: `x % 2 == 1` is wrong for a negative odd `x`, since `-3 % 2` is `-1`: write `x % 2 != 0`
+false

@@ -1,0 +1,9 @@
+fn main() {
+    let shows: [fn() -> Int] = []
+    for i in 0..3 {
+        shows.push(() => i)
+    }
+    for show in shows {
+        print(show())
+    }
+}

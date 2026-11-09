@@ -1,0 +1,69 @@
+// Rule: `as_list` on a big chunk of a file gives its numbers, whether or not anything else holds the chunk, and a chunk read again keeps its bytes.
+// Spec: 2.13, 14.3
+// expect output: 0 262143
+// expect output: 262144 524287
+// expect output: 524288 786431
+// expect output: 786432 786432
+// expect output: 4 pieces, 786433 numbers
+// expect output: 262144 1048576 0
+// expect output: 262144 1048576 0
+// expect output: 262144 1048576 0
+// expect output: 1 4 0
+// expect output: 131072 524288
+// expect output: 131072 524288
+// expect output: 131072 524288
+// expect output: 0 2
+// expect output: true
+// expect output: true
+// expect output: true
+// expect output: true
+
+use std.fs
+
+fn main() ! Error uses Fs {
+    // Three pieces of 1 MiB: big enough to be read ahead (spec 14.3).
+    const size = 1_048_576
+    const path = "kavach-big-chunks-as-numbers-test.bin"
+    let numbers: [Int32] = []
+    for i in 0..(size * 3 / 4 + 1) {
+        numbers.push(Int32(i))
+    }
+    let raw: [UInt8] = []
+    for n in numbers {
+        const u = UInt32(n)
+        raw.push(UInt8(u & 255))
+        raw.push(UInt8((u >> 8) & 255))
+        raw.push(UInt8((u >> 16) & 255))
+        raw.push(UInt8((u >> 24) & 255))
+    }
+    try fs.write_bytes(path, Bytes(raw))
+
+    // Nothing else holds the chunk.
+    let total = 0
+    let pieces = 0
+    for chunk in try fs.chunks(path, size) {
+        const xs = chunk.as_list<Int32>() ?? []
+        total += xs.len()
+        pieces += 1
+        print("{xs[0]} {xs[xs.len() - 1]}")
+    }
+    print("{pieces} pieces, {total} numbers")
+
+    // The chunk is read again after: it must still hold its bytes.
+    for chunk in try fs.chunks(path, size) {
+        const xs = chunk.as_list<Int32>() ?? []
+        print("{xs.len()} {chunk.len()} {chunk[1]}")
+    }
+
+    // Other item sizes, and a length that is no whole number of items.
+    for chunk in try fs.chunks(path, size) {
+        const wide = chunk.as_list<Int>()
+        const short = chunk.as_list<Int16>()
+        print("{(wide ?? []).len()} {(short ?? []).len()}")
+    }
+    for chunk in try fs.chunks(path, size + 1) {
+        const whole = chunk.as_list<Int32>()
+        print(whole == none)
+    }
+    try fs.remove(path)
+}

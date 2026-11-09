@@ -1,0 +1,30 @@
+{
+  "title": "Tasks on all cores",
+  "readme": "benchmarks/tasks/README.md",
+  "environment": "WSL Ubuntu 24.04 · i7-13700HX (8 fast cores) · kavach build (LLVM) · g++ 13 -O2 · best of 3 rounds of 3 runs",
+  "verify": "kavach build benchmarks/tasks/kavach/parallel-map.kav && ./parallel-map",
+  "series": [
+    {
+      "id": "kavach",
+      "label": "Kavach",
+      "column": "Kavach ms",
+      "color": "kavach"
+    },
+    {
+      "id": "cpp",
+      "label": "C++",
+      "column": "C++ ms",
+      "color": "cpp"
+    }
+  ],
+  "benchmarks": {
+    "parallel": {
+      "row": "`parallel_map`",
+      "title": "parallel_map: eight sums of 150M rounds each, one task each"
+    },
+    "serial": {
+      "row": "`map` (one by one)",
+      "title": "map: the same eight sums, one after another"
+    }
+  }
+}

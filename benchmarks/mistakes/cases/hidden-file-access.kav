@@ -1,0 +1,11 @@
+// Mistake: A public function that reads a file without saying so.
+
+use std.fs
+
+pub fn price() -> String ! Error {
+    try fs.read_text("price.txt")
+}
+
+fn main() ! Error uses Fs {
+    print(try price())
+}

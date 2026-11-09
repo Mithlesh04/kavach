@@ -1,0 +1,13 @@
+// Rule: `<<` and `>>` shift an integer's bits; `>>` keeps the sign.
+// Spec: 1.8
+// expect output: 51207
+// expect output: -4
+// expect output: 192
+
+fn main() {
+    const b = Bytes([200, 7])
+    print(Int(b[0]) << 8 | Int(b[1]))
+    print(-16 >> 2)
+    const u: UInt8 = 3
+    print(u << 6)
+}

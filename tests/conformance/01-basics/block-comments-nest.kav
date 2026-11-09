@@ -1,0 +1,14 @@
+// Rule: `/* … */` is a comment that may run over lines, hold other block comments, and sit between tokens; a line break inside it doesn't end the statement.
+// Spec: 1.2
+// expect output: 3
+// expect output: /* not a comment */
+
+/* A comment
+   over several lines. */
+fn main() {
+    /* code put aside:
+    print("never")   /* a comment in it */
+    */
+    print(1 + /* inside a line */ 2)
+    print("/* not a comment */")
+}

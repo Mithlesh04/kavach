@@ -1,0 +1,18 @@
+// A callback held in a record, called 100 million times: the shape of
+// servers, sorters and event handlers.
+type Handler {
+    on: fn(Int) -> Int
+}
+
+fn add_tax(n: Int) -> Int {
+    n + n / 5
+}
+
+fn main() {
+    const h = Handler(on: add_tax)
+    let total = 0
+    for i in 0..100_000_000 {
+        total += h.on(i % 1000)
+    }
+    print(total)
+}

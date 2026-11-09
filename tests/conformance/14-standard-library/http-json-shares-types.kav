@@ -1,0 +1,49 @@
+// Rule: `std.http`'s JSON calls let a server and its client share types: `read_json<T>` and `json_response` on the server, `get_json<T>` and `post_json<T>` on the client; a status other than 2xx is `Status` and a body of the wrong shape is `BadJson`.
+// Spec: 14.11
+// expect output: pen, packed (7)
+// expect output: 2 orders, first #1
+// expect output: can't: Status(code: 400)
+// expect output: can't: BadJson(error: Mismatch(path: "", expected: "an array"))
+
+use std.http
+use std.json
+use std.net
+
+pub type Order {
+    id: Int
+    item: String
+}
+
+fn orders(r: Request) -> Response {
+    if r.path == "/list" {
+        const all = [Order(id: 1, item: "ink"), Order(id: 2, item: "pad")]
+        return http.json_response(200, json.of(all))
+    }
+    if r.path == "/one" {
+        return http.json_response(200, json.of(Order(id: 3, item: "cap")))
+    }
+    const wanted = http.read_json<Order>(r) catch _ => Order(id: 0, item: "")
+    if wanted.id == 0 {
+        return http.text(400, "not an order")
+    }
+    http.json_response(200, json.of(Order(id: wanted.id, item: "{wanted.item}, packed")))
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, orders)
+    const base = "http://{listener.address()}"
+    const order = Order(id: 7, item: "pen")
+    const packed = try http.post_json<Order>("{base}/orders", json.of(order))
+    print("{packed.item} ({packed.id})")
+    const all = try http.get_json<[Order]>("{base}/list")
+    print("{all.len()} orders, first #{all[0].id}")
+    const _refused = http.post_json<Order>("{base}/orders", json.of("not an order")) catch e => {
+        print("can't: {e}")
+        Order(id: 0, item: "")
+    }
+    const _wrong = http.get_json<[Order]>("{base}/one") catch e => {
+        print("can't: {e}")
+        []
+    }
+}

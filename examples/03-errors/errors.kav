@@ -1,0 +1,36 @@
+// Errors are values. A function that can fail says so with `!`.
+
+type AgeError = Empty | NotANumber(text: String) | OutOfRange(value: Int)
+
+fn parse_age(text: String) -> Int ! AgeError {
+    if text.is_empty() {
+        fail AgeError.Empty
+    }
+    const n = Int(text) catch _ => fail AgeError.NotANumber(text: text)
+    if n < 0 or n > 150 {
+        fail AgeError.OutOfRange(value: n)
+    }
+    n
+}
+
+/// `try` passes the error on to the caller.
+fn age_next_year(text: String) -> Int ! AgeError {
+    const age = try parse_age(text)
+    age + 1
+}
+
+fn main() {
+    // Handle every case with match.
+    for input in ["31", "", "abc", "200"] {
+        match parse_age(input) {
+            ok(age) => print("age = {age}")
+            err(AgeError.Empty) => print("please enter an age")
+            err(AgeError.NotANumber(text)) => print("'{text}' is not a number")
+            err(AgeError.OutOfRange(value)) => print("{value} is out of range")
+        }
+    }
+
+    // Or use a default when anything goes wrong.
+    const next = age_next_year("abc") catch 0
+    print("next year: {next}")
+}

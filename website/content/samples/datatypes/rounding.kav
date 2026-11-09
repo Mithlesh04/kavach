@@ -1,0 +1,9 @@
+fn main() {
+    const a: Decimal = 2.345
+    const b: Decimal = -2.345
+    const c: Decimal = 2.355
+    print(a.round(2))
+    print(b.round(2))
+    print(a.round_even(2))
+    print(c.round_even(2))
+}

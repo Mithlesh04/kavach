@@ -1,0 +1,61 @@
+// Invoices: read 10 invoices written every which way (decimal commas,
+// rupees, discounts, tax, delivery) into a checked `Invoice`: a choice
+// of currency, a list of line items and an exact `Decimal` total. The
+// answer has a nested shape, so a wrong type is easy to give.
+
+use std.fs
+use std.json
+
+type Text {
+    id: Int
+    text: String
+}
+
+type Currency = USD | EUR | GBP | INR
+
+type Line {
+    description: String
+    quantity: Int
+    unit_price: Decimal
+}
+
+type Invoice {
+    currency: Currency
+    /// only the goods or services bought: not discounts, tax, delivery or shipping
+    lines: [Line]
+    /// the amount due, with tax, delivery and discounts
+    total: Decimal
+}
+
+fn code(c: Currency) -> String {
+    match c {
+        Currency.USD => "USD",
+        Currency.EUR => "EUR",
+        Currency.GBP => "GBP",
+        Currency.INR => "INR",
+    }
+}
+
+/// One invoice, as `id currency lines cents`.
+fn read(t: Text) -> String ! Error uses Ai {
+    const inv = try ask<Invoice>("Read this invoice.\n\n{t.text}")
+    const cents = Int(inv.total * Decimal(100))
+    "{t.id} {code(inv.currency)} {inv.lines.len()} {cents}"
+}
+
+pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs {
+    const texts = try json.decode<[Text]>(try fs.read_text(path))
+    if not together {
+        for t in texts {
+            print(read(t) catch e => "error {e}")
+        }
+        return
+    }
+    let asked: [Task<String>] = []
+    for t in texts {
+        asked.push(spawn read(t))
+    }
+    for a in asked {
+        print(a.wait() catch e => "error {e}")
+    }
+}

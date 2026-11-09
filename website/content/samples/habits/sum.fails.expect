@@ -1,0 +1,1 @@
+error: `sum` takes a function that gives each item's number: `prices.sum(p => p)`, or `orders.sum(o => o.total)`

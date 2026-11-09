@@ -1,0 +1,33 @@
+// Rule: Every line counts toward the file limit, including comments and blank lines.
+// Spec: 12.1
+// expect compile error
+
+// This folder's kavach.toml sets file_lines = 30.
+// The code is short, but comments and blank lines make the file over 30 lines.
+// The limit counts them all.
+//
+// A rule that skipped comments would push people to delete useful ones,
+// so comments count like any other line.
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+fn main() {
+    print("hi")
+}

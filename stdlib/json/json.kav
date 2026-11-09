@@ -1,0 +1,153 @@
+// std.json (spec 2.12): the `Json` and `JsonError` types, and reading a
+// `Json` value, written in Kavach. Every program has them (spec 2.1).
+// Variants are written `Json.Text`: a program may have its own `Text`.
+// Parsing and writing JSON text are built into the compiler and runtime
+// (`runtime/core/src/json.rs`), so they are fast and exactly alike.
+
+/// A JSON value whose shape is known only when the program runs. A
+/// `Number` keeps the digits it was written with (decision 0071).
+pub type Json = Null |
+    Boolean(value: Bool) |
+    Number(digits: String) |
+    Text(value: String) |
+    Array(items: [Json]) |
+    Object(fields: [String: Json])
+
+/// Why JSON text could not be read (spec 2.12).
+pub type JsonError = Syntax(line: Int, column: Int, message: String) |
+    TooDeep(limit: Int) |
+    TooLarge(limit: Int) |
+    DuplicateKey(key: String, line: Int, column: Int) |
+    Mismatch(path: String, expected: String)
+
+/// The largest power of ten `decimal()` reads (spec 2.12), so a short
+/// text like `1e999999999` can't make a huge value.
+fn exponent_limit() -> Int {
+    10_000
+}
+
+/// The largest finite `Float`: a bigger number reads as infinity.
+fn largest_float() -> Float {
+    1.7976931348623157e308
+}
+
+/// Whether the exponent of `digits`, if it has one, is within the limit.
+fn exponent_fits(digits: String) -> Bool {
+    const parts = digits.lower().split("e")
+    if parts.len() < 2 {
+        return true
+    }
+    const e = Int(parts[1]) catch _ => exponent_limit() + 1
+    e >= -exponent_limit() and e <= exponent_limit()
+}
+
+extend Json {
+    /// The text of a `Text`.
+    pub fn text(self) -> String? {
+        match self {
+            Json.Text(value) => value,
+            _ => none,
+        }
+    }
+
+    /// A `Number` written without a fraction or exponent that fits `Int`.
+    pub fn int(self) -> Int? {
+        match self {
+            Json.Number(digits) => match Int(digits) {
+                ok(n) => n,
+                err(_) => none,
+            },
+            _ => none,
+        }
+    }
+
+    /// A `Number` written without a fraction or exponent, of any size.
+    pub fn bigint(self) -> BigInt? {
+        match self {
+            Json.Number(digits) => match BigInt(digits) {
+                ok(n) => n,
+                err(_) => none,
+            },
+            _ => none,
+        }
+    }
+
+    /// A `Number`, as the nearest `Float`; `none` past `Float`'s range.
+    pub fn float(self) -> Float? {
+        match self {
+            Json.Number(digits) => match Float(digits) {
+                ok(f) => if f >= -largest_float() and f <= largest_float() { f } else { none },
+                err(_) => none,
+            },
+            _ => none,
+        }
+    }
+
+    /// A `Number`, exactly.
+    pub fn decimal(self) -> Decimal? {
+        match self {
+            Json.Number(digits) if exponent_fits(digits) => match Decimal(digits) {
+                ok(d) => d,
+                err(_) => none,
+            },
+            _ => none,
+        }
+    }
+
+    /// The value of a `Boolean`.
+    pub fn bool(self) -> Bool? {
+        match self {
+            Json.Boolean(value) => value,
+            _ => none,
+        }
+    }
+
+    /// The items of an `Array`.
+    pub fn list(self) -> [Json]? {
+        match self {
+            Json.Array(items) => items,
+            _ => none,
+        }
+    }
+
+    /// The fields of an `Object`.
+    pub fn object(self) -> [String: Json]? {
+        match self {
+            Json.Object(fields) => fields,
+            _ => none,
+        }
+    }
+
+    /// Whether this is `Null`.
+    pub fn is_null(self) -> Bool {
+        match self {
+            Json.Null => true,
+            _ => false,
+        }
+    }
+
+    /// The items of an `Array` or fields of an `Object`, otherwise 0.
+    pub fn len(self) -> Int {
+        match self {
+            Json.Array(items) => items.len(),
+            Json.Object(fields) => fields.len(),
+            _ => 0,
+        }
+    }
+
+    /// `j["key"]`: the field, or `Null` when there is none.
+    pub fn get(self, key: String) -> Json {
+        match self {
+            Json.Object(fields) => fields[key] ?? Json.Null,
+            _ => Json.Null,
+        }
+    }
+
+    /// `j[i]`: the item, or `Null` when there is none.
+    pub fn at(self, i: Int) -> Json {
+        match self {
+            Json.Array(items) => items.get(i) ?? Json.Null,
+            _ => Json.Null,
+        }
+    }
+}

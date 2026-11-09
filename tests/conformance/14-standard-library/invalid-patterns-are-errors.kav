@@ -1,0 +1,12 @@
+// Rule: An invalid pattern is an error value, not a crash.
+// Spec: 14.8
+// expect output: invalid pattern
+
+use std.regex
+
+fn main() {
+    const _r = regex.new("(unclosed") catch e => {
+        print("{e}".slice(0, 15))
+        return
+    }
+}

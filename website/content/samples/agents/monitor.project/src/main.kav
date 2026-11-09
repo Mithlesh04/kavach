@@ -1,0 +1,50 @@
+use std.fs
+use std.log
+
+type PayError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn refund(order: Int, amount: Int) ! PayError
+}
+
+type Bank: Payments {
+    fn refund(self, order: Int, amount: Int) ! PayError {
+    }
+}
+
+type RefundIssued: LogEvent {
+    order: Int
+    amount: Int
+}
+
+type RefundBlocked: LogEvent {
+    order: Int
+    reason: String
+}
+
+agent Refunder {
+    settings AgentSettings(audit: Audit())
+    can Payments.refund
+
+    limit Payments.refund {
+        amount <= 500
+    }
+
+    on refund(order: Int, amount: Int) ! PayError {
+        Payments.refund(order, amount) catch e => {
+            log.warn(RefundBlocked(order: order, reason: "{e}"))
+            fail e
+        }
+        log.info(RefundIssued(order: order, amount: amount))
+    }
+}
+
+fn main() ! Error {
+    const bot = Refunder.start(Payments: Bank())
+    bot.refund(1, 400) catch _ => {}
+    bot.refund(2, 900) catch _ => {}
+    print("-- the audit log --")
+    for line in try fs.lines("agents/Refunder/audit.log") {
+        print(line.split("Z ").last() ?? line)
+    }
+}

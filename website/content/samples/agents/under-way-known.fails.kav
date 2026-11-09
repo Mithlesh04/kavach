@@ -1,0 +1,15 @@
+fn way(careful: Bool) -> UnderWay {
+    if careful { UnderWay.Largest } else { UnderWay.Average }
+}
+
+agent Writer {
+    settings AgentSettings(asks_under_way: way(true))
+    can Ai
+    limit Ai {
+        tokens <= 200_000 per day
+    }
+}
+
+fn main() {
+    print("never runs")
+}

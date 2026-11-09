@@ -1,0 +1,4 @@
+warning: `i` reaches `items.len()`, one past the last index of `items`, so `items[i]` panics on the last turn: write `..` instead of `..=`, or loop over `items` itself (spec 4.4)
+tea
+milk
+panic: index 2 is out of range: the list has 2 items

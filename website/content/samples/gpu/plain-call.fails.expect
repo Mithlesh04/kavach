@@ -1,0 +1,1 @@
+error: a `gpu fn` can't use `square`: it isn't a `gpu fn`, but it fits the GPU's rules. Mark it `gpu fn square`; it still runs on the CPU when called there (spec 15.1)

@@ -1,0 +1,11 @@
+// Rule: `t -= c` in a `for` over known numbers that carries `t` below its type is a compile error, naming the round that does.
+// Spec: 1.8
+// expect compile error
+
+fn main() {
+    let low: Int8 = -100
+    for _ in 0..3 {
+        low -= 20    // error: this always panics: integer overflow: -120 - 20 doesn't fit in Int8
+    }
+    print(low)
+}

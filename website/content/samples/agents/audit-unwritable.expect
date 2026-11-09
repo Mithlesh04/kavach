@@ -1,0 +1,2 @@
+paid 1
+Denied(reason: "the audit log can't be written: Access is denied. (os error 5)")

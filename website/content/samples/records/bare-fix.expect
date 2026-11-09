@@ -1,0 +1,17 @@
+$ kavach check
+error: `Circle` is a variant of `Shape`: write `Shape.Circle` (decision 0070)
+ --> src/main.kav:5:9
+  |
+5 |         Circle(radius) => 3.14 * radius * radius,
+  |         ^^^^^^
+
+error: `Circle` is a variant of `Shape`: write `Shape.Circle` (decision 0070)
+  --> src/main.kav:11:16
+   |
+11 |     print(area(Circle(radius: 1.0)))
+   |                ^^^^^^
+$ kavach fix src
+src/main.kav: Write `Shape.Circle`
+src/main.kav: Write `Shape.Circle`
+$ kavach run
+3.14

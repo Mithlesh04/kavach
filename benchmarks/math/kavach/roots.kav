@@ -1,0 +1,18 @@
+// Square roots over a big list: 20 million, 10 times. `sqrt` is exactly
+// rounded, so doing several at once gives the same results.
+use std.math
+
+fn main() {
+    let xs = []
+    let ys = []
+    for i in 0..20_000_000 {
+        xs.push(Float(i % 1000) + 0.5)
+        ys.push(0.0)
+    }
+    for round in 0..10 {
+        for i in 0..20_000_000 {
+            ys[i] = math.sqrt(xs[i])
+        }
+    }
+    print(ys[1234] > 1.0)
+}

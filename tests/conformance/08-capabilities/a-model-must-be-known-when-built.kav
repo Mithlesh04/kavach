@@ -1,0 +1,19 @@
+// Rule: A model is chosen when the program is built: a `Model` made from a value known only at run time is a compile error.
+// Spec: 8.4
+// expect compile error
+
+fn chosen(name: String) -> Model {
+    Model(name: name)
+}
+
+agent Reviewer {
+    model chosen("claude-opus-5-5")    // error: not known when the program is built
+    can Ai
+    on check(text: String) -> Bool ! Error {
+        true
+    }
+}
+
+fn main() {
+    print("never")
+}

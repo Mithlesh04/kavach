@@ -1,0 +1,6 @@
+// Mistake: A division by zero.
+
+fn main() {
+    const parts = 0
+    print(100 / parts)
+}

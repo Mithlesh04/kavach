@@ -1,0 +1,12 @@
+fn add_bonus(scores: [Int]) -> [Int] {
+    let changed = scores
+    changed.push(100)
+    changed
+}
+
+fn main() {
+    const mine = [70, 80]
+    const theirs = add_bonus(mine)
+    print(mine)
+    print(theirs)
+}

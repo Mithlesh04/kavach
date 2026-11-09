@@ -1,0 +1,12 @@
+fn greet(name: String) -> String {
+    "namaste, {name}"
+}
+
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
+
+fn main() {
+    print(greet("asha"))
+    print(add(2, 3))
+}

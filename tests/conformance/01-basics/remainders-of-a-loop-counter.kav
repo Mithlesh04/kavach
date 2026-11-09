@@ -1,0 +1,43 @@
+// Rule: `i % n` of a counted loop's counter is its remainder in every round, from any start, with `continue`, `break` and nested loops.
+// Spec: 1.8
+// expect output: 10991
+// expect output: 386
+// expect output: 88
+// expect output: 93
+
+fn main() {
+    let sums = 0
+    for i in 0..1000 {
+        sums += i % 7 * 3 + i % 5
+    }
+    print(sums)
+
+    let skipped = 0
+    for i in 13..=100 {
+        if i % 4 == 0 {
+            continue
+        }
+        if i % 9 == 8 and i > 90 {
+            break
+        }
+        skipped += i % 4 + i % 9
+    }
+    print(skipped)
+
+    let grid = 0
+    for i in 0..50 {
+        for j in 0..i % 6 {
+            grid += j % 3
+        }
+    }
+    print(grid)
+
+    // A start held in a variable.
+    let start = 1
+    start += 2
+    let later = 0
+    for i in start..40 {
+        later += i % 6
+    }
+    print(later)
+}

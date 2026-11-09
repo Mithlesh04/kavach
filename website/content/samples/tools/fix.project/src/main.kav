@@ -1,0 +1,22 @@
+fn grade(score: Int) -> String {
+    if score > 50 {
+        "pass"
+    } else if score > 80 {
+        "great"
+    } else {
+        "try again"
+    }
+}
+
+fn medal(place: Int) -> String {
+    match place {
+        1 => "gold",
+        _ => "none",
+        2 => "silver",
+    }
+}
+
+fn main() {
+    print(grade(90))
+    print(medal(2))
+}

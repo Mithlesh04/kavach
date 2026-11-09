@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
+  <title>Kavach</title>
+  <!-- The Velocity K blades (armor in motion): the small mark of the
+       Kavach brand. Transparent, so it sits on any editor theme; the
+       amber reads on light and dark alike. -->
+  <path d="M3 6.7 L8.5 0.5 H11.7 L5.4 7.4 Z" fill="#C2410C"/>
+  <path d="M3 9.3 L8.5 15.5 H11.7 L5.4 8.6 Z" fill="#E8590C"/>
+</svg>

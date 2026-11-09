@@ -1,0 +1,1 @@
+error: this always panics: integer overflow: 64 * 2 doesn't fit in Int8 (spec 1.8)

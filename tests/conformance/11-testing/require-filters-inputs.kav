@@ -1,0 +1,10 @@
+// Rule: Generated arguments that break a `require` are not used.
+// Spec: 11.2
+// expect test pass
+
+fn share(total: Int, people: Int) -> Int
+    require people > 0
+    require total >= 0
+{
+    total / people
+}

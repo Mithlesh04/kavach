@@ -1,0 +1,17 @@
+// Rule: Generated tests fake the program's own capabilities: a call gives a generated value or one of the method's declared errors, so error paths are tried without a test being written.
+// Spec: 11.5
+// expect test fail
+
+type Receipt { id: String }
+type PaymentError = Declined | Unavailable | Denied(reason: String)
+
+capability Payments {
+    fn refund(order_id: Int, amount: Int) -> Receipt ! PaymentError
+}
+
+fn settle(order_id: Int, amount: Int) -> String uses Payments.refund {
+    const r = Payments.refund(order_id, amount) catch e => {
+        panic("the refund failed: {e}")   // found: the fake answers with an error
+    }
+    "refunded {r.id}"
+}

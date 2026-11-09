@@ -1,0 +1,15 @@
+// std.net (spec 14.10): the `NetError` union network operations fail with,
+// and the `Datagram` record, written in Kavach. Listening, connecting,
+// reading, writing and datagrams need the operating system, so the
+// runtime provides them.
+
+/// Why a network operation failed.
+pub type NetError = Refused(address: String) |
+    TimedOut(address: String) |
+    Failed(address: String, reason: String)
+
+/// A UDP datagram that came in, with the address it came from.
+pub type Datagram {
+    pub data: Bytes
+    pub from: String
+}

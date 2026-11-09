@@ -1,0 +1,19 @@
+{
+  "_how": "The cheer/nudge pools every quiz draws from. Add freely; the renderer never repeats the same line twice in a row.",
+  "cheers": [
+    "Sharp. That is the exact rule.",
+    "Clean hit — you would pass the code review.",
+    "Right. Your future self thanks you.",
+    "Correct — and faster than the compiler checks it.",
+    "Yes. That one trips up plenty of veterans.",
+    "Nailed it — on to the next idea."
+  ],
+  "nudges": [
+    "Close — the answer hides in the Introduction tab. One peek.",
+    "Good guess, wrong shelf. Re-run the Code tab in your head.",
+    "Almost. Nothing here crashes — that is the whole point. Try again.",
+    "Not this time — champions re-read, then retry.",
+    "So near. Look at the last line once more; it matters most.",
+    "Wrong turn, right road. Have another go."
+  ]
+}

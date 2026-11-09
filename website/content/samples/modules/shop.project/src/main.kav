@@ -1,0 +1,6 @@
+use billing.invoice
+
+fn main() {
+    const inv = invoice.create(7, 123)
+    print("invoice {inv.id}: {inv.total}")
+}

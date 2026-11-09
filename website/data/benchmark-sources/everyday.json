@@ -1,0 +1,46 @@
+{
+  "title": "Everyday operations",
+  "readme": "benchmarks/everyday/README.md",
+  "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · best of 9",
+  "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/everyday",
+  "series": [
+    {
+      "id": "kavach",
+      "label": "Kavach",
+      "column": "Kavach ms",
+      "color": "kavach"
+    },
+    {
+      "id": "cpp",
+      "label": "C++ -O2",
+      "column": "C++ ms",
+      "color": "cpp"
+    }
+  ],
+  "benchmarks": {
+    "alloc": {
+      "row": "`alloc`",
+      "title": "alloc — a short-lived list made, read and freed 20 million times"
+    },
+    "callbacks": {
+      "row": "`callbacks`",
+      "title": "callbacks — a callback held in a record, called 100 million times"
+    },
+    "nested": {
+      "row": "`nested`",
+      "title": "nested — fifty handlers each wrapping the next, 100 million hops"
+    },
+    "copies": {
+      "row": "`copies`",
+      "title": "copies — a record copied, changed and read 100 million times"
+    },
+    "branches": {
+      "row": "`branches`",
+      "title": "branches — an if/else chain decided 200 million times"
+    },
+    "stacks": {
+      "row": "`stacks`",
+      "title": "stacks — recursion 100 thousand frames deep, a thousand times"
+    }
+  }
+}

@@ -1,0 +1,35 @@
+// Rule: `std.http` serves HTTP from a handler, each connection in a task, and its client gets, posts and reads the status, headers and body; a URL that isn't `http://` or `https://` gives `BadUrl`.
+// Spec: 14.11
+// expect output: 200 hello, GET with 0 bytes
+// expect output: text/plain; charset=utf-8
+// expect output: 200 hello, POST with 3 bytes
+// expect output: 404 no page /nothing
+// expect output: can't: BadUrl(url: "ftp://example.com")
+
+use std.http
+use std.net
+
+fn hello(r: Request) -> Response {
+    if r.path == "/hello" {
+        http.text(200, "hello, {r.method} with {r.body.len()} bytes")
+    } else {
+        http.text(404, "no page {r.path}")
+    }
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, hello)
+    const base = "http://{listener.address()}"
+    const a = try http.get("{base}/hello")
+    print("{a.status} {a.body.text() ?? "?"}")
+    print(a.headers.get("content-type") ?? "-")
+    const b = try http.post("{base}/hello", "abc".bytes())
+    print("{b.status} {b.body.text() ?? "?"}")
+    const c = try http.get("{base}/nothing")
+    print("{c.status} {c.body.text() ?? "?"}")
+    const _bad = http.get("ftp://example.com") catch e => {
+        print("can't: {e}")
+        return
+    }
+}

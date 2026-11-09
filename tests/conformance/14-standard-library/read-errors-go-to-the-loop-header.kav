@@ -1,0 +1,42 @@
+// Rule: A read that fails during a loop over `fs.lines` (here, a line that isn't UTF-8) goes to the `try` or `catch` of the loop's header: `try` returns the error, `catch` runs its handler.
+// Spec: 14.3
+// expect output: line: fine
+// expect output: try gave: Failed(path: "kavach-test-bad-lines.txt", reason: "not UTF-8")
+// expect output: line: fine
+// expect output: catch got: Failed(path: "kavach-test-bad-lines.txt", reason: "not UTF-8")
+// expect output: done
+
+use std.fs
+
+fn read_all(path: String) -> Int ! FsError uses Fs, Console {
+    let n = 0
+    for line in try fs.lines(path) {
+        print("line: {line}")
+        n += 1
+    }
+    n
+}
+
+fn show_all(path: String) uses Fs, Console {
+    for line in fs.lines(path) catch e => {
+        print("catch got: {e}")
+        return
+    } {
+        print("line: {line}")
+    }
+    print("never here: the read failed")
+}
+
+fn main() ! FsError uses Fs, Console {
+    const path = "kavach-test-bad-lines.txt"
+    // "fine", then a line with the byte 255, which UTF-8 never uses.
+    const bad = Bytes([UInt8(255), UInt8(10)])
+    try fs.write_bytes(path, "fine\n".bytes() + bad + "last\n".bytes())
+    const _got = read_all(path) catch e => {
+        print("try gave: {e}")
+        0
+    }
+    show_all(path)
+    try fs.remove(path)
+    print("done")
+}

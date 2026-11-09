@@ -1,0 +1,6 @@
+fn main() {
+    const big: Int8 = 120
+    print(big.checked_add(5) ?? 0)
+    print(big.checked_add(10) ?? -1)
+    print(big.wrapping_add(10))
+}

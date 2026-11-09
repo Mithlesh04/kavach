@@ -1,0 +1,8 @@
+pub fn price_with_tax(price: Decimal) -> Decimal {
+    debug("working out tax on {price}")
+    price * 1.18
+}
+
+fn main() {
+    print(price_with_tax(100.00))
+}

@@ -1,0 +1,9 @@
+fn bump(inout n: Int) {
+    n += 1
+}
+
+fn main() {
+    const count = 0
+    bump(count)
+    print(count)
+}

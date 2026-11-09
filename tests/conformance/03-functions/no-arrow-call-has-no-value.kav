@@ -1,0 +1,11 @@
+// Rule: A call to a function without `->` can't be used as a value.
+// Spec: 3.1
+// expect compile error
+
+fn greet(name: String) {
+    print("Hello, {name}!")
+}
+
+fn main() {
+    const result = greet("Asha")  // error: greet returns nothing
+}

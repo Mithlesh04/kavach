@@ -1,0 +1,11 @@
+// Rule: a keyword can't name a field: the field could never be read, since `r.agent` can't be written.
+// Spec: 1.6
+// expect compile error
+
+type Robot {
+    agent: String     // error: `agent` is a keyword, so it can't name a field
+}
+
+fn main() {
+    print("never runs")
+}

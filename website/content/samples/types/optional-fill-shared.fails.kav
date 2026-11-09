@@ -1,0 +1,9 @@
+type Node {
+    name: String
+}
+
+fn main() {
+    const made: Shared<Node> = Shared(Node(name: "b"))
+    const held: Shared<Node?> = made
+    print(held.get()?.name ?? "none")
+}

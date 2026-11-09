@@ -1,0 +1,10 @@
+// Checksums: 64 MB built byte by byte, then its CRC32C, as a storage
+// engine writes and verifies a batch of pages (to-do item 5).
+fn main() {
+    let xs: [UInt8] = []
+    for i in 0..67_108_864 {
+        xs.push(UInt8(i % 251))
+    }
+    const data = Bytes(xs)
+    print(data.crc32c())
+}

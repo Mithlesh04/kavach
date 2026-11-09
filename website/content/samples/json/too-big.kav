@@ -1,0 +1,20 @@
+use std.json
+
+type Order {
+    id: Int
+}
+
+type BigOrder {
+    id: BigInt
+}
+
+fn main() ! Error {
+    const text = "\{\"id\": 12345678901234567890}"
+    const big = try json.decode<BigOrder>(text)
+    print(big.id)
+    const order = json.decode<Order>(text) catch e => {
+        print("rejected: {e}")
+        return
+    }
+    print(order.id)
+}

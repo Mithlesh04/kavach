@@ -1,0 +1,18 @@
+// Rule: `ensure` is checked only when the function succeeds.
+// Spec: 7.2
+// expect output: 0
+
+type CountError = Negative
+
+fn big(n: Int) -> Int ! CountError
+    ensure result > 100
+{
+    if n < 0 {
+        fail CountError.Negative
+    }
+    n + 200
+}
+
+fn main() {
+    print(big(-1) catch 0)
+}

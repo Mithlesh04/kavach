@@ -1,0 +1,22 @@
+// Rule: `map` runs its lambda on every item before `filter` starts, so lambdas that print show each step in full, in order.
+// Spec: 3.3
+// expect output: map 1
+// expect output: map 2
+// expect output: map 3
+// expect output: keep 2
+// expect output: keep 4
+// expect output: keep 6
+// expect output: 10
+
+fn main() {
+    const items = [1, 2, 3]
+    const doubled = items.map(x => {
+        print("map {x}")
+        x * 2
+    })
+    const kept = doubled.filter(x => {
+        print("keep {x}")
+        x > 2
+    })
+    print(kept.sum(x => x))
+}

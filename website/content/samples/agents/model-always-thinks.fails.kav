@@ -1,0 +1,12 @@
+fn quick() -> Model {
+    Model(name: "claude-opus-5-5", thinking: false)
+}
+
+agent Reviewer {
+    model quick()
+    can Ai
+}
+
+fn main() {
+    print("never runs")
+}

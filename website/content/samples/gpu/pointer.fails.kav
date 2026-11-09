@@ -1,0 +1,6 @@
+gpu fn first(p: Ptr<Float32>) -> Float32 {
+    1.0
+}
+
+fn main() {
+}

@@ -1,0 +1,15 @@
+type Room {
+    name: String
+    doors: Shared<[Room]>
+}
+
+fn main() {
+    const none_yet: [Room] = []
+    const hall = Room(name: "hall", doors: Shared(none_yet))
+    hall.doors.update(doors => {
+        let more = doors
+        more.push(hall)       // the hall holds itself: a cycle
+        more
+    })
+    print("done")
+}

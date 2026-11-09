@@ -1,0 +1,12 @@
+use std.time
+
+fn slow_count() -> Int uses Clock {
+    time.sleep_ms(10)
+    1
+}
+
+fn main() {
+    const counter = Shared(0)
+    counter.update(c => c + slow_count())
+    print(counter.get())
+}

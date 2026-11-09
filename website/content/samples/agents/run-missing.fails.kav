@@ -1,0 +1,17 @@
+type EmailError = NotSent | Denied(reason: String)
+
+capability Email {
+    fn send(to: String) ! EmailError
+}
+
+agent Greeter {
+    can Email.send
+
+    on welcome(to: String) ! EmailError {
+        try Email.send(to)
+    }
+}
+
+fn main() {
+    const bot = Greeter.start()
+}

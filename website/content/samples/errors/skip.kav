@@ -1,0 +1,11 @@
+fn main() {
+    const lines = ["12", "oops", "30", "", "8"]
+    let total = 0
+    for line in lines {
+        const n = Int(line) catch _ => {
+            continue
+        }
+        total += n
+    }
+    print(total)
+}

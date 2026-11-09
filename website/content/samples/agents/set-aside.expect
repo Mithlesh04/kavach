@@ -1,0 +1,12 @@
+$ kavach run src/main.kav crash
+
+$ kavach run src/main.kav crash
+
+$ kavach run src/main.kav crash
+
+$ kavach run src/main.kav
+started
+set-aside: {"event":1,"handler":"request","args":[7]}
+set-aside: {"again":1}
+set-aside: {"again":1}
+Bot set aside: event #1 of request (started 3 times without finishing)

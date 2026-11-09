@@ -1,0 +1,5 @@
+fn main() {
+    const ages = ["asha": 31]
+    const next = ages["asha"] + 1
+    print(next)
+}

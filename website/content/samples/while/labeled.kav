@@ -1,0 +1,14 @@
+fn main() {
+    const grid = [[1, 2, 3], [4, 42, 6], [7, 8, 9]]
+    const target = 42
+    let found = "nowhere"
+    outer: for r in 0..grid.len() {
+        for c in 0..grid[r].len() {
+            if grid[r][c] == target {
+                found = "row {r}, column {c}"
+                break outer
+            }
+        }
+    }
+    print("{target} is at {found}")
+}

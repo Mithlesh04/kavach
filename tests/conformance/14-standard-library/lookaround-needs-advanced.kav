@@ -1,0 +1,17 @@
+// Rule: Lookaround and backreferences need regex.advanced.
+// Spec: 14.8
+// expect output: true
+// expect output: 5
+// expect output: true
+
+use std.regex
+
+fn main() ! Error {
+    const _refused = regex.new(r"\d+(?= kg)") catch e => {
+        print("{e}".contains("regex.advanced"))
+        try regex.new("")
+    }
+    const kg = try regex.advanced(r"\d+(?= kg)")
+    print(kg.find("weight: 5 kg") ?? "")
+    print((try regex.advanced(r"(\w+) \1")).is_match("hello hello"))
+}

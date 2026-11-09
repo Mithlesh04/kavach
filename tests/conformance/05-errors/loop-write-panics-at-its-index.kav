@@ -1,0 +1,14 @@
+// Rule: A write past a list's end panics when the loop reaches it, after the writes and output before it.
+// Spec: 5.6
+// expect output: wrote 0
+// expect output: wrote 1
+// expect panic
+
+fn main() {
+    let ys = [7, 7]
+    for i in 0..5 {
+        ys[i] = i
+        print("wrote {i}")
+    }
+    print(ys)
+}

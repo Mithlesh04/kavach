@@ -1,0 +1,30 @@
+type EmailError = NotSent | Denied(reason: String)
+
+capability Email {
+    fn send(to: String) ! EmailError
+}
+
+type Outbox: Email {
+    fn send(self, to: String) ! EmailError {
+        print("sent to {to}")
+    }
+}
+
+agent Greeter {
+    can Email.send
+
+    limit Email.send {
+        count <= 2 per day
+    }
+
+    on welcome(to: String) ! EmailError {
+        try Email.send(to)
+    }
+}
+
+fn main() {
+    const bot = Greeter.start(Email: Outbox())
+    bot.welcome("asha@example.com") catch e => print("refused: {e}")
+    bot.welcome("omar@example.com") catch e => print("refused: {e}")
+    bot.welcome("zoe@example.com") catch e => print("refused: {e}")
+}

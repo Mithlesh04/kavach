@@ -1,0 +1,3 @@
+Refunder: Denied(reason: "limit broken: amount <= 500")
+Refunder verdict: refused (limit broken: amount <= 500)
+Trainee verdict: would be refused (limit broken: amount <= 500)

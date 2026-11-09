@@ -1,0 +1,8 @@
+type OrderStatus = Pending | Paid
+
+fn main() {
+    const total_price = 499
+    const नाम = "Asha"
+    const status = OrderStatus.Paid
+    print("{नाम} owes {total_price}: {status}")
+}

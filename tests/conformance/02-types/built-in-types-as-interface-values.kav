@@ -1,0 +1,61 @@
+// Rule: A built-in type that implements an interface (`extend Int: Describe`) fits an interface value like any other type, a number literal too.
+// Spec: 2.15
+// expect output: the number 7
+// expect output: the number 4
+// expect output: the text 'hi'
+// expect output: about 2.5
+// expect output: a point at 1
+// expect output: 4
+// expect output: hi
+// expect output: true
+// expect output: false
+
+interface Describe {
+    fn describe(self) -> String
+}
+
+extend Int: Describe {
+    fn describe(self) -> String {
+        "the number {self}"
+    }
+}
+
+extend String: Describe {
+    fn describe(self) -> String {
+        "the text '{self}'"
+    }
+}
+
+extend Float: Describe {
+    fn describe(self) -> String {
+        "about {self}"
+    }
+}
+
+type Point: Describe {
+    x: Int
+
+    fn describe(self) -> String {
+        "a point at {self.x}"
+    }
+}
+
+fn show(d: Describe) {
+    print(d.describe())
+}
+
+fn main() {
+    show(7)
+    const n: Int = 4
+    const s: String = "hi"
+    const f: Float = 2.5
+    const all: [Describe] = [n, s, f, Point(x: 1)]
+    for d in all {
+        print(d.describe())
+    }
+    print(all[0])
+    print(all[1])
+    const again: Describe = n
+    print(all[0] == again)
+    print(all[0] == all[1])
+}

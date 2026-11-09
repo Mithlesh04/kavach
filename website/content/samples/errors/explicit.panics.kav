@@ -1,0 +1,7 @@
+fn main() {
+    const level = 7
+    if level > 5 {
+        panic("level {level} should never be above 5")
+    }
+    print("fine")
+}

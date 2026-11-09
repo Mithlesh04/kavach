@@ -1,0 +1,116 @@
+// Warranty desk: what to do about 12 customer messages, which needs the
+// order and the product's warranty from two records first. The code
+// looks both up through capabilities and asks once with the facts; a
+// replacement worth over 1,000 needs a supervisor's approval (none
+// answers in the benchmark: after a second it is refused and escalated).
+
+use std.fs
+use std.json
+
+type Ticket {
+    id: Int
+    order: String
+    message: String
+}
+
+type Order {
+    product: String
+    status: String
+    days: Int
+    price: Int
+}
+
+type Db {
+    orders: [String: Order]
+    warranty_months: [String: Int]
+}
+
+type Action = Replace | Refund | Wait | Decline | Escalate
+
+// No doc note on `action`: the policy says it all, and the Python side
+// sends none, so both send the same.
+type Plan {
+    action: Action
+}
+
+type RecordError = Missing | Denied(reason: String)
+type Done { id: String }
+type ServiceError = Failed | Denied(reason: String)
+
+pub capability Records {
+    fn order(id: String) -> Order ! RecordError
+    fn warranty_months(product: String) -> Int ! RecordError
+}
+
+pub capability Service {
+    fn replace(order: String, price: Int) -> Done ! ServiceError
+}
+
+type Archive: Records {
+    db: Db
+
+    fn order(self, id: String) -> Order ! RecordError {
+        self.db.orders[id] ?? fail RecordError.Missing
+    }
+
+    fn warranty_months(self, product: String) -> Int ! RecordError {
+        self.db.warranty_months[product] ?? fail RecordError.Missing
+    }
+}
+
+type Workshop: Service {
+    fn replace(self, order: String, price: Int) -> Done ! ServiceError {
+        Done(id: "x{order}")
+    }
+}
+
+/// The policy the model decides by.
+fn policy() -> String {
+    "Warranty policy: replace an item that stopped working while still under warranty (delivered no more days ago than its warranty in months times 30). Decline when the warranty has ended. Refund an order the carrier lost. Tell the customer to wait when the order is in transit. Escalate a threat, and anything you are unsure about."
+}
+
+agent Desk {
+    can Ai, Records.order, Records.warranty_months, Service.replace
+
+    approve Service.replace when price > 1000 by "supervisor" within 1.seconds
+
+    on ticket(t: Ticket) -> String ! Error {
+        const o = try Records.order(t.order)
+        const months = try Records.warranty_months(o.product)
+        const plan = try ask<Plan>(
+            "{policy()}\n\nOrder {t.order}: {o.product}, {o.price} USD, status {o.status}, " +
+            "delivered {o.days} days ago, warranty {months} months.\nThe customer writes: {t.message}"
+        )
+        match plan.action {
+            Action.Replace => {
+                const _d = Service.replace(t.order, o.price) catch _ => {
+                    return "{t.id} escalate"
+                }
+                "{t.id} replace"
+            },
+            Action.Refund => "{t.id} refund",
+            Action.Wait => "{t.id} wait",
+            Action.Decline => "{t.id} decline",
+            Action.Escalate => "{t.id} escalate",
+        }
+    }
+}
+
+pub fn run(path: String, db_path: String, together: Bool) ! Error uses Ai, Console, Fs, Records.order, Records.warranty_months, Service.replace {
+    const tickets = try json.decode<[Ticket]>(try fs.read_text(path))
+    const db = try json.decode<Db>(try fs.read_text(db_path))
+    const desk = Desk.start(Records: Archive(db: db), Service: Workshop())
+    if not together {
+        for t in tickets {
+            print(desk.ticket(t) catch e => "error {e}")
+        }
+        return
+    }
+    let asked: [Task<String>] = []
+    for t in tickets {
+        asked.push(spawn desk.ticket(t))
+    }
+    for a in asked {
+        print(a.wait() catch e => "error {e}")
+    }
+}

@@ -1,0 +1,16 @@
+type Share = Full | Half | Escalate
+
+fn refund(price: Int, share: Share) -> String {
+    const amount = match share {
+        Share.Full => price,
+        Share.Half => price / 2,
+        Share.Escalate => return "escalate",    // leaves the function
+    }
+    "refund {amount}"
+}
+
+fn main() {
+    print(refund(90, Share.Full))
+    print(refund(90, Share.Half))
+    print(refund(90, Share.Escalate))
+}

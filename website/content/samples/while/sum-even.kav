@@ -1,0 +1,10 @@
+fn main() {
+    let total = 0
+    for n in 1..=10 {
+        if n % 2 != 0 {
+            continue
+        }
+        total += n
+    }
+    print(total)
+}

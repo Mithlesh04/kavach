@@ -1,0 +1,6 @@
+use std.term
+
+fn main() {
+    const name = term.prompt("Your name?") ?? "friend"
+    print("Hello, {name}")
+}

@@ -1,0 +1,1 @@
+error: the handler `tick` uses Console, but the agent `Counter` can't: add `Console` to its `can` (spec 8.3)

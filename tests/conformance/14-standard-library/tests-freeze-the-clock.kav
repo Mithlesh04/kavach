@@ -1,0 +1,22 @@
+// Rule: A `test` block freezes the clock with `time.freeze`: `sleep` moves it on at once, and a second freeze jumps only the wall clock.
+// Spec: 14.4
+// expect test pass
+
+use std.time
+
+test "a trial ends after 30 days" {
+    time.freeze(1_767_225_600_000)
+    const started = time.now_ms()
+    assert started == 1_767_225_600_000
+    time.sleep(30.days)
+    assert time.now_ms() - started == 30 * 86_400_000
+    assert time.monotonic_ms() == 30 * 86_400_000
+}
+
+test "a clock set back doesn't move the monotonic clock" {
+    time.freeze(1_767_225_600_000)
+    time.sleep_ms(500)
+    time.freeze(1_767_225_000_000)
+    assert time.now_ms() == 1_767_225_000_000
+    assert time.monotonic_ms() == 500
+}

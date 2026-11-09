@@ -1,0 +1,12 @@
+// Rule: Returning a declared error is not a failure.
+// Spec: 11.2
+// expect test pass
+
+type AgeError = Negative
+
+fn check(age: Int) -> Int ! AgeError {
+    if age < 0 {
+        fail AgeError.Negative
+    }
+    age
+}

@@ -1,0 +1,18 @@
+// Rule: Reading a `Json` never panics: a missing key or index gives `Null`, and the methods give `none` when the value has another kind.
+// Spec: 2.12
+// expect output: Asha
+// expect output: guest
+// expect output: null
+// expect output: none
+// expect output: 31.0
+// expect output: 2
+
+fn main() {
+    const doc: Json = ["user": ["name": "Asha", "age": 31], "tags": ["a", "b"]]
+    print(doc["user"]["name"].text() ?? "guest")
+    print(doc["user"]["email"]["domain"].text() ?? "guest")
+    print(doc["tags"][9])
+    print(doc["tags"].int())
+    print(doc["user"]["age"].float() ?? 0.0)
+    print(doc["tags"].len())
+}

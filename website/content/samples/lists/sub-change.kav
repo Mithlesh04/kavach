@@ -1,0 +1,8 @@
+fn main() {
+    let xs = [3, 1, 4]
+    xs[0] = 99
+    xs.push(1)
+    print(xs)
+    const sorted = xs.sort()
+    print(sorted)
+}

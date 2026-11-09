@@ -1,0 +1,42 @@
+// Rule: A value of a generic type fits an interface it implements, whatever its type arguments: each holds the methods made for its own arguments.
+// Spec: 2.15
+// expect output: 3
+// expect output: 1
+// expect output: 1
+// expect output: a
+// expect output: 2
+// expect output: true
+// expect output: none
+
+type StackError = Empty
+
+interface Sized {
+    fn size(self) -> Int
+    fn first_text(self) -> String ! StackError
+}
+
+type Stack<T>: Sized {
+    items: [T]
+
+    fn size(self) -> Int {
+        self.items.len()
+    }
+
+    fn first_text(self) -> String ! StackError {
+        if self.items.is_empty() {
+            fail StackError.Empty
+        }
+        "{self.items[0]}"
+    }
+}
+
+fn main() {
+    const all: [Sized] = [Stack(items: [1, 2, 3]), Stack(items: ["a"]), Stack(items: [true, false])]
+    for s in all {
+        print(s.size())
+        print(s.first_text() catch _ => "none")
+    }
+    const nothing: [Int] = []
+    const e: Sized = Stack(items: nothing)
+    print(e.first_text() catch _ => "none")
+}

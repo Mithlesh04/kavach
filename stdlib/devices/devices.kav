@@ -1,0 +1,37 @@
+// std.devices (spec 14.18): serial ports. Opening, reading and writing
+// them need the operating system, so the runtime provides them, by the
+// port's number; this file gives the port its methods.
+
+use std.devices
+
+/// Why a device couldn't be opened, read or written.
+pub type DeviceError = NotFound(path: String) | Denied(path: String) | Failed(path: String, reason: String)
+
+/// An open serial port.
+pub type SerialPort {
+    pub path: String
+    id: Int
+
+    /// Sends `data`.
+    pub fn write(self, data: Bytes) ! DeviceError uses Serial {
+        try devices.write_serial(self.id, data)
+    }
+
+    /// Up to `max` bytes: what has arrived, waiting at most a second for
+    /// the first. Empty when none came.
+    pub fn read(self, max: Int) -> Bytes ! DeviceError uses Serial {
+        try devices.read_serial(self.id, max)
+    }
+
+    /// Closes the port.
+    pub fn close(self) uses Serial {
+        devices.close_serial(self.id)
+    }
+}
+
+/// Opens the serial port at `path` (`COM3`, `/dev/ttyUSB0`) at `baud`
+/// bits a second, 8 data bits, no parity, 1 stop bit.
+pub fn open_serial(path: String, baud: Int) -> SerialPort ! DeviceError uses Serial {
+    const id = try devices.open_serial_id(path, baud)
+    SerialPort(path: path, id: id)
+}

@@ -1,0 +1,12 @@
+use std.fs
+
+fn main() {
+    const config = fs.read_text("app.toml") catch e => match e {
+        fs.NotFound(path) => {
+            print("no {path} yet, using defaults")
+            ""
+        }
+        _ => panic("can't read app.toml")
+    }
+    print(config.len())
+}

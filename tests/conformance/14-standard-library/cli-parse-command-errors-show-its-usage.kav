@@ -1,0 +1,18 @@
+// Rule: A problem with a command's options gives that command's usage.
+// Spec: 14.6
+// args: add --count two
+// expect output: --count needs Int, not `two`
+// expect output: usage: cli-parse-command-errors-show-its-usage add [options]
+// expect output:   --count <Int>            (default 1)
+// expect exit: 2
+
+use std.cli
+
+type Command = Add(count: Int = 1) | List
+
+fn main() {
+    const _command = cli.parse<Command>() catch e => {
+        print(e)
+        cli.exit(2)
+    }
+}

@@ -1,0 +1,7 @@
+// Rule: A function with a `uses` clause can only use the capabilities it lists.
+// Spec: 8.1
+// expect compile error
+
+fn save(text: String) uses Fs {
+    print(text)                 // error: Console is not listed in `uses Fs`
+}

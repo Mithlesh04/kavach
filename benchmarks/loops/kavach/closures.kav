@@ -1,0 +1,10 @@
+// Lambdas over a big list: map then filter then sum, 10 million items.
+fn main() {
+    let items: [Int] = []
+    for i in 0..10_000_000 {
+        items.push(i % 1000)
+    }
+    const doubled = items.map(x => x * 2)
+    const big = doubled.filter(x => x > 1000)
+    print(big.sum(x => x))
+}

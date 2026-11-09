@@ -1,0 +1,7 @@
+// Rule: a channel's capacity must be at least 1.
+// Spec: 9.4
+// expect panic: at least 1
+
+fn main() {
+    const (_send, _receive) = Channel<Int>(capacity: 0)
+}

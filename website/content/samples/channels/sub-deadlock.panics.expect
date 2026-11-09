@@ -1,0 +1,2 @@
+1
+panic: every task is waiting for another one (a deadlock)

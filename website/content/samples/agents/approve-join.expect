@@ -1,0 +1,14 @@
+$ kavach run src/main.kav send
+started
+the program ends while the refund waits
+approval needed by finance: Payments.refund(order: 1, amount: 900) (request Refunder-1-1): kavach approve Refunder-1-1 --as <name>, or kavach deny
+$ kavach run src/main.kav again
+started
+waiting: Refunder-1-1
+refunded 900 on order 1
+Refunder request#1 Payments.refund(order: 1, amount: 900)
+  verdict: approved by asha for finance (amount > 100)
+  result: ok
+Refunder finished after a restart: event #1 of refund: ok ()
+$ kavach approvals
+no requests wait for approval

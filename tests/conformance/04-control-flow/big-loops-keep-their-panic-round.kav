@@ -1,0 +1,17 @@
+// Rule: a loop panics at its first failing round, however it is run
+// (decision 0031: a chunked loop re-runs serially to panic right).
+// Spec: 4.4
+// expect panic: integer overflow: 50001 * 184467440737095 doesn't fit in Int
+
+fn main() {
+    let xs: [Int] = []
+    let ys: [Int] = []
+    for i in 0..100_000 {
+        xs.push(i)
+        ys.push(0)
+    }
+    for i in 0..100_000 {
+        ys[i] = xs[i] * 184_467_440_737_095 + 1
+    }
+    print(ys[0])
+}

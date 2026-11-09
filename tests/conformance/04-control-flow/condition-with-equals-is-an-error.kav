@@ -1,0 +1,10 @@
+// Rule: A condition written with `=` is a compile error that says to write `==`.
+// Spec: 4.1
+// expect compile error
+
+fn main() {
+    let x = 3
+    if x = 4 {         // error: `=` sets a variable: to compare, write `==`
+        print("four")
+    }
+}

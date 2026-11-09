@@ -1,0 +1,34 @@
+use std.fs
+
+type InboxError = Missing(name: String) | Denied(reason: String)
+
+capability Inbox {
+    fn read(name: String) -> String ! InboxError
+}
+
+type InboxFolder: Inbox {
+    fn read(self, name: String) -> String ! InboxError uses Fs.read("./inbox") {
+        fs.read_text("./inbox/{name}") catch e => match e {
+            FsError.Denied(path) => fail InboxError.Denied(reason: "outside ./inbox: {path}"),
+            _ => fail InboxError.Missing(name: name),
+        }
+    }
+}
+
+agent Summarizer {
+    can Inbox.read, Console
+
+    on summarize(name: String) ! InboxError {
+        const text = try Inbox.read(name)
+        print("{name}: {text.len()} characters")
+    }
+}
+
+fn main() ! Error {
+    try fs.create_dir("inbox")
+    try fs.write_text("inbox/note.txt", "Call the bank on Monday.")
+    try fs.write_text("passwords.txt", "do not share")
+    const bot = Summarizer.start(Inbox: InboxFolder())
+    bot.summarize("note.txt") catch e => print("failed: {e}")
+    bot.summarize("../passwords.txt") catch e => print("failed: {e}")
+}

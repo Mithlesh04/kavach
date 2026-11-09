@@ -1,0 +1,10 @@
+fn main() {
+    const total = {
+        const base = 100
+        const tax = 18
+        base + tax
+    }
+    print(total)
+    const size = if total > 100 { "big" } else { "small" }
+    print(size)
+}

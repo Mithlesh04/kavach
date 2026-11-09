@@ -1,0 +1,57 @@
+// The agent benchmark's Kavach side (benchmarks/agents/README.md): one
+// case per run, named on the command line, reading its data from
+// `../data/`. Each prints one line per item, which `run.py` grades.
+
+use std.cli
+use amounts
+use amounts.{Till}
+use attacks
+use attacks.{Wallet}
+use claims
+use crash
+use crash.{Bank}
+use devops
+use devops.{Ops}
+use finance
+use finance.{Cards}
+use health
+use invoices
+use legal
+use logistics
+use logistics.{Carrier}
+use claims.{Payouts}
+use refunds
+use refunds.{Payments}
+use retail
+use retail.{Stock}
+use triage
+use warranty
+use warranty.{Records, Service}
+
+fn main() ! Error uses Ai, Console, Env, Fs, Payments.refund, Payouts.pay, Ops.restart, Ops.scale, Carrier.reroute, Cards.release, Stock.order, Bank.refund, Till.refund, Wallet.refund, Records.order, Records.warranty_months, Service.replace {
+    const args = cli.args()
+    if args.len() < 2 {
+        print("usage: kavach run src/main.kav -- <case> <data file> [one-by-one]")
+        return
+    }
+    const together = args.len() < 3
+    match args[0] {
+        "triage" => try triage.run(args[1], together),
+        "refunds" => try refunds.run(args[1], together),
+        "claims" => try claims.run(args[1], together),
+        "health" => try health.run(args[1], together),
+        "devops" => try devops.run(args[1], together),
+        "legal" => try legal.run(args[1], together),
+        "logistics" => try logistics.run(args[1], together),
+        "finance" => try finance.run(args[1], together),
+        "retail" => try retail.run(args[1], together),
+        "amounts" => try amounts.run(args[1], together),
+        "invoices" => try invoices.run(args[1], together),
+        "attacks" => try attacks.run(args[1], together),
+        // `warranty <tickets> <records> [one-by-one]`
+        "warranty" => try warranty.run(args[1], args[2], args.len() < 4),
+        // `crash <data> <bank url> <start|resume>` (crash_run.py)
+        "crash" => try crash.run(args[1], args[2], args[3]),
+        other => print("no case {other}"),
+    }
+}

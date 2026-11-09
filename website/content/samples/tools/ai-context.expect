@@ -1,0 +1,18 @@
+$ kavach context report src/main.kav --budget 300
+// context for `report` in src/main.kav (~61 tokens)
+fn report(orders: [Order]) -> String {
+    "paid: {total_paid(orders)}"
+}
+
+// used by `report`:
+
+type Order {
+    id: Int
+    amount: Decimal
+    paid: Bool
+}
+
+/// The total of the paid orders.
+fn total_paid(orders: [Order]) -> Decimal
+    ensure result >= 0
+{ … }

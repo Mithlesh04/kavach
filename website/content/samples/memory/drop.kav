@@ -1,0 +1,17 @@
+type Door: Drop {
+    name: String
+
+    fn drop(self) uses Console {
+        print("closing {self.name}")
+    }
+}
+
+fn visit() {
+    const d = Door(name: "kitchen")
+    print("inside {d.name}")
+}
+
+fn main() {
+    visit()
+    print("back in main")
+}

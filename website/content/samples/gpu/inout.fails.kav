@@ -1,0 +1,6 @@
+gpu fn bump(inout x: Float32) {
+    x = x + 1.0
+}
+
+fn main() {
+}

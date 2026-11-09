@@ -1,0 +1,30 @@
+// Rule: Parsing stops with an error, not a crash, on text nested too deep, keys given twice and bad syntax; a huge number is read by its digits.
+// Spec: 2.12
+// expect output: too deep: 128
+// expect output: key a twice, at 1:10
+// expect output: [99999999999999999999]
+// expect output: syntax at 1:4: expected a value
+
+use std.json
+
+fn explain(text: String) {
+    const doc = json.parse(text) catch e => {
+        match e {
+            JsonError.TooDeep(limit) => print("too deep: {limit}"),
+            JsonError.DuplicateKey(key, line, column) => print("key {key} twice, at {line}:{column}"),
+            JsonError.Syntax(line, column, message) => print("syntax at {line}:{column}: {message}"),
+            _ => print("other"),
+        }
+        Json.Null
+    }
+    if not doc.is_null() {
+        print(json.stringify(doc))
+    }
+}
+
+fn main() {
+    explain("[".repeat(500))
+    explain("\{\"a\": 1, \"a\": 2}")
+    explain("[99999999999999999999]")
+    explain("[1,]")
+}

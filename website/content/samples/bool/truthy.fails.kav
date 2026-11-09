@@ -1,0 +1,6 @@
+fn main() {
+    const count = 3
+    if count {
+        print("some")
+    }
+}

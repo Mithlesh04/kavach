@@ -1,0 +1,44 @@
+// Rule: A list of text gives back every item as it was put in, short or long, ASCII or not, and copies of the list are independent.
+// Spec: 2.2
+// expect output: ["w0", "w1", "this text is much longer than fifteen bytes", "ünï", ""]
+// expect output: 5
+// expect output: this text is much longer than fifteen bytes
+// expect output: 3
+// expect output: 2
+// expect output: changed
+// expect output: w0
+// expect output: w0-w1-this text is much longer than fifteen bytes-ünï-
+// expect output: ["", "this text is much longer than fifteen bytes", "w0", "w1", "ünï"]
+// expect output: ["", "ünï", "this text is much longer than fifteen bytes", "w1", "w0"]
+// expect output: true
+// expect output: ["W0", "W1", "THIS TEXT IS MUCH LONGER THAN FIFTEEN BYTES", "ÜNÏ", ""]
+
+fn main() {
+    let words: [String] = []
+    for i in 0..2 {
+        words.push("w{i}")
+    }
+    words.push("this text is much longer than fifteen bytes")
+    words.push("ünï")
+    words.push("")
+    print(words)
+    print(words.len())
+    print(words[2])
+    print(words[3].len())
+    let short = 0
+    for w in words {
+        if w.len() == 2 {
+            short += 1
+        }
+    }
+    print(short)
+    let copy = words
+    copy[0] = "changed"
+    print(copy[0])
+    print(words[0])
+    print(words.join("-"))
+    print(words.sort())
+    print(words.reverse())
+    print(words.contains("ünï"))
+    print(words.map(w => w.upper()))
+}

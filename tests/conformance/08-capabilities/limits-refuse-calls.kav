@@ -1,0 +1,54 @@
+// Rule: A call that breaks a `limit` rule is not executed; it fails with `Denied`, naming the rule.
+// Spec: 8.3
+// expect output: 1: refunded r1
+// expect output: 2: denied, limit broken: amount <= 100
+
+type Receipt { id: String }
+type PaymentError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn refund(order_id: Int, amount: Int) -> Receipt ! PaymentError
+}
+
+type FakePayments: Payments {
+    fn refund(self, order_id: Int, amount: Int) -> Receipt ! PaymentError {
+        Receipt(id: "r{order_id}")
+    }
+}
+
+agent Bot {
+    can Payments.refund
+
+    limit Payments.refund {
+        amount <= 100
+    }
+
+    on refund(order_id: Int, amount: Int) -> Receipt ! PaymentError {
+        try Payments.refund(order_id, amount)
+    }
+}
+
+fn show(bot: Bot, order_id: Int, amount: Int) {
+    const r = bot.refund(order_id, amount) catch e => match e {
+        PaymentError.Denied(reason) => {
+            print("{order_id}: denied, {reason}")
+            return
+        }
+        PaymentError.Declined => {
+            print("{order_id}: declined")
+            return
+        }
+        // A send can also fail with its handler's panic (decision 0076).
+        _ => {
+            print("{order_id}: {e}")
+            return
+        }
+    }
+    print("{order_id}: refunded {r.id}")
+}
+
+fn main() {
+    const bot = Bot.start(Payments: FakePayments())
+    show(bot, 1, 50)
+    show(bot, 2, 150)
+}

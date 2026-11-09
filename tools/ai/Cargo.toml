@@ -1,0 +1,22 @@
+[package]
+name = "kavach-ai"
+description = "Token-saving tools for AI assistants: outline, query, compact messages (spec chapter 13)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+kavach-ast = { path = "../../compiler/ast" }
+kavach-driver = { path = "../../compiler/driver" }
+kavach-interp = { path = "../../compiler/interp" }
+kavach-resolver = { path = "../../compiler/resolver" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[dev-dependencies]
+kavach-parser = { path = "../../compiler/parser" }
+
+[lints]
+workspace = true

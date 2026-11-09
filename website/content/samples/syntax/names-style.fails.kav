@@ -1,0 +1,4 @@
+fn main() {
+    const totalPrice = 499
+    print(totalPrice)
+}

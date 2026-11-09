@@ -1,0 +1,10 @@
+use std.cli
+
+fn main() {
+    const args = cli.args()
+    if args.contains("--loud") {
+        print("NAMASTE!")
+    } else {
+        print("Namaste")
+    }
+}

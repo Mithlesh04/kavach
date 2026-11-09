@@ -1,0 +1,50 @@
+use std.cli
+
+type Receipt { id: String }
+type PaymentError = Declined | Denied(reason: String)
+type EmailError = NotSent | Denied(reason: String)
+
+capability Payments {
+    fn refund(order_id: Int) -> Receipt ! PaymentError
+}
+
+capability Email {
+    fn send(to: String) ! EmailError
+}
+
+type Shop: Payments {
+    fn refund(self, order_id: Int) -> Receipt ! PaymentError uses Console {
+        print("[pay] refund {order_id}")
+        Receipt(id: "r{order_id}")
+    }
+}
+
+type Mail: Email {
+    power_cut: Bool
+
+    fn send(self, to: String) ! EmailError uses Console, Env {
+        if self.power_cut {
+            cli.exit(3)
+        }
+        print("[email] {to}")
+    }
+}
+
+agent Bot {
+    can Payments.refund, Email.send
+
+    on request(order_id: Int) -> String ! Error {
+        const r = try Payments.refund(order_id)
+        try Email.send("order {order_id}: {r.id}")
+        r.id
+    }
+}
+
+fn main() ! Error {
+    const power_cut = cli.args().contains("power-cut")
+    const bot = Bot.start(Payments: Shop(), Email: Mail(power_cut: power_cut))
+    if power_cut {
+        const _id = try bot.request(7)
+    }
+    print("started")
+}

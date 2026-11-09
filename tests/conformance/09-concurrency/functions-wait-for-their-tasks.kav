@@ -1,0 +1,19 @@
+// Rule: a task can't outlive the function that spawned it: when the function returns, its tasks are cancelled and waited for, and one that waits stops there.
+// Spec: 9.2
+// expect output: start
+// expect output: start returned
+
+use std.time
+
+fn start() {
+    const _task = spawn {
+        time.sleep_ms(20)
+        print("task done")
+    }
+    print("start")
+}
+
+fn main() {
+    start()
+    print("start returned")
+}

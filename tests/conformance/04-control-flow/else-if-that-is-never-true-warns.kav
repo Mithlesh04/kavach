@@ -1,0 +1,25 @@
+// Rule: An `else if` whose condition can only be true when an earlier condition of the chain is true never runs: a warning.
+// Spec: 4.7
+// expect warning
+// expect output: good
+// expect output: one
+
+fn grade(score: Int) -> String {
+    if score > 10 {
+        "good"
+    } else if score > 50 {    // warning: `score > 50` means `score > 10`
+        "great"
+    } else {
+        "low"
+    }
+}
+
+fn main() {
+    print(grade(60))
+    const n = 1
+    if n == 1 {
+        print("one")
+    } else if n == 1 {    // warning: the same condition again
+        print("uno")
+    }
+}

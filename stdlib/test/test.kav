@@ -1,0 +1,49 @@
+// std.test (spec 14.7): `Sample`, for types that make their own values in
+// generated tests (spec 11.3), and `Gen`, the random choices they make
+// them from. `kavach test` seeds the choices, so a run can be repeated;
+// the numbers come from the runtime's `test_random`.
+
+/// A type that makes its own values for generated tests: whenever
+/// `kavach test` needs a value of the type, it calls `sample`.
+pub interface Sample {
+    fn sample(gen: Gen) -> Self
+}
+
+/// Random choices for `sample`. They are the test run's, seeded, never
+/// the real world's: real random numbers need the `Random` capability.
+pub type Gen {
+    /// A whole number from `from` to `to`, both included.
+    fn int(self, from: Int, to: Int) -> Int
+        require from <= to
+        require from >= 0 or to <= 9_223_372_036_854_775_807 + from
+        ensure result >= from and result <= to
+        example Gen().int(3, 3) == 3
+    {
+        from + test_random(to - from)
+    }
+
+    /// `true` or `false`.
+    fn bool(self) -> Bool {
+        test_random(1) == 1
+    }
+
+    /// One of `items`.
+    fn pick<T>(self, items: [T]) -> T
+        require not items.is_empty()
+        example Gen().pick([7]) == 7
+    {
+        items[self.int(0, items.len() - 1)]
+    }
+
+    /// A word of 1 to 8 lowercase letters.
+    fn word(self) -> String
+        ensure result.len() >= 1 and result.len() <= 8
+    {
+        const letters = "abcdefghijklmnopqrstuvwxyz".chars()
+        let out = ""
+        for _ in 1..=self.int(1, 8) {
+            out = "{out}{self.pick(letters)}"
+        }
+        out
+    }
+}

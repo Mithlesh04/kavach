@@ -1,0 +1,6 @@
+fn main() {
+    const counter = Shared(0)
+    counter.update(n => n + 1)
+    counter.update(n => n + 10)
+    print(counter.get())
+}

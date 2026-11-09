@@ -1,0 +1,29 @@
+use std.fs
+
+type PayError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn charge(secret card: String, amount: Int) ! PayError
+}
+
+type Bank: Payments {
+    fn charge(self, secret card: String, amount: Int) ! PayError {
+    }
+}
+
+agent Checkout {
+    settings AgentSettings(audit: Audit())
+    can Payments.charge
+
+    on pay(secret card: String, amount: Int) ! PayError {
+        try Payments.charge(card, amount)
+    }
+}
+
+fn main() ! Error {
+    const shop = Checkout.start(Payments: Bank())
+    try shop.pay("4242 4242 4242 4242", 499)
+    for line in try fs.lines("agents/Checkout/audit.log") {
+        print(line.split("Z ").last() ?? line)
+    }
+}

@@ -1,0 +1,10 @@
+fn main() {
+    const prices = [120, 40, 300, 75]
+    print(prices.map(p => p * 2))
+    print(prices.filter(p => p > 100))
+    print(prices.sum(p => p))
+    print(prices.count(p => p > 100))
+    print(prices.any(p => p > 250))
+    print(prices.all(p => p > 0))
+    print(prices.find(p => p < 50) ?? 0)
+}

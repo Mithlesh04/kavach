@@ -1,0 +1,11 @@
+// Rule: Every function is called with generated arguments; a panic is a failure.
+// Spec: 11.2
+// expect test fail
+
+fn average(items: [Int]) -> Int {
+    let total = 0
+    for x in items {
+        total += x
+    }
+    total / items.len()     // panics for items = []
+}

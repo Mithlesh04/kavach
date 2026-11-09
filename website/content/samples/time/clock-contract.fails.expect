@@ -1,0 +1,1 @@
+error: a contract can't call `time.now_ms`: it reads the clock, and contracts must give the same answer every time (spec 7.5)

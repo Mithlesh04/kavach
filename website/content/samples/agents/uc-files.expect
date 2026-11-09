@@ -1,0 +1,2 @@
+note.txt: 24 characters
+failed: Denied(reason: "outside ./inbox: ./inbox/../passwords.txt")

@@ -1,0 +1,15 @@
+use std.json
+
+type Order {
+    id: Int
+    total: Float
+}
+
+fn main() {
+    const text = "\{\"id\": \"seven\", \"total\": 9.5}"
+    const order = json.decode<Order>(text) catch e => {
+        print("rejected: {e}")
+        return
+    }
+    print(order.id)
+}

@@ -1,0 +1,12 @@
+fn careful() -> Model {
+    Model(name: "claude-opus-5-5", temperature: 0.2)
+}
+
+agent Reviewer {
+    model careful()
+    can Ai
+}
+
+fn main() {
+    print("never runs")
+}

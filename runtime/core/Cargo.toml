@@ -1,0 +1,32 @@
+[package]
+name = "kavach-runtime-core"
+description = "Values shared by every way of running Kavach: exact decimals, number printing and regular expressions"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+regex = "1"
+fancy-regex = "0.20"
+# Reading a password without showing it (decision 0036).
+rpassword = { version = "7", optional = true }
+# Whole numbers of any size, `BigInt` (decision 0041).
+num-bigint = "0.4"
+# Time zones from the IANA database: the system's, or a copy built in on
+# Windows (decision 0064).
+jiff = { version = "0.2", default-features = false, features = ["std", "tzdb-zoneinfo", "tzdb-bundle-platform"] }
+# The system clipboard, text only (decision 0066).
+arboard = { version = "3", default-features = false, optional = true }
+# Serial ports (decision 0068).
+serial2 = { version = "0.2", optional = true }
+
+[features]
+default = ["devices"]
+# The clipboard, serial ports and hidden input. Off only in the browser
+# playground (decision 0078), whose platform has none of them.
+devices = ["dep:arboard", "dep:rpassword", "dep:serial2"]
+
+[lints]
+workspace = true

@@ -1,0 +1,1 @@
+error: `bump` has `inout` parameters, so it can't be a function value (spec 3.9)

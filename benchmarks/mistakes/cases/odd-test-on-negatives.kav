@@ -1,0 +1,9 @@
+// Mistake: `x % 2 == 1` used as the odd test.
+
+fn odd(x: Int) -> Bool {
+    x % 2 == 1
+}
+
+fn main() {
+    print(odd(-3))
+}

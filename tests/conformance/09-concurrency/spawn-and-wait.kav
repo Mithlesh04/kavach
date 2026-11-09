@@ -1,0 +1,15 @@
+// Rule: `spawn` starts a task and `.wait()` gives its result.
+// Spec: 9.1
+// expect output: 59
+
+fn square(n: Int) -> Int {
+    n * n
+}
+
+fn main() ! Error {
+    const a = spawn square(7)
+    const b = spawn {
+        square(3) + 1
+    }
+    print((try a.wait()) + (try b.wait()))
+}

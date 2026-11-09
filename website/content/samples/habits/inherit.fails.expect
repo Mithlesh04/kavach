@@ -1,0 +1,1 @@
+error: `Dog` can't extend `Animal`: `Animal` is a type, not an interface, and Kavach has no inheritance (decision 0029). Give `Dog` a field `animal: Animal`, or make `Animal` an interface

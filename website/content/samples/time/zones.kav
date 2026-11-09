@@ -1,0 +1,9 @@
+use std.time
+
+fn main() ! Error {
+    const call = 1_782_907_200_000      // 2026-07-01, 12:00 UTC
+    for name in ["Asia/Kolkata", "Europe/Berlin", "America/New_York"] {
+        const z = try time.zone(name)
+        print("{name}: {z.at(call).iso()}, UTC offset {z.offset_seconds(call) / 60} minutes")
+    }
+}

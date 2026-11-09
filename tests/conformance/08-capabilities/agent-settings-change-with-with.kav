@@ -1,0 +1,64 @@
+// Rule: An agent's `settings` are an `AgentSettings`; a function with no parameters shares them, and `with { … }` changes fields for one agent.
+// Spec: 8.5
+// expect output: 1: r1
+// expect output: 2: r2
+// expect output: 1: r1
+// expect output: 2: Denied(reason: "limit broken: amount <= 100")
+
+type Receipt { id: String }
+type PaymentError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn refund(order_id: Int, amount: Int) -> Receipt ! PaymentError
+}
+
+type FakePayments: Payments {
+    fn refund(self, order_id: Int, amount: Int) -> Receipt ! PaymentError {
+        Receipt(id: "r{order_id}")
+    }
+}
+
+fn standard() -> AgentSettings {
+    AgentSettings(mode: AgentMode.Enforce, state: false)
+}
+
+agent Watcher {
+    settings standard() with { mode: AgentMode.Observe }
+    can Payments.refund
+    limit Payments.refund {
+        amount <= 100
+    }
+    on refund(order_id: Int, amount: Int) -> Receipt ! PaymentError {
+        try Payments.refund(order_id, amount)
+    }
+}
+
+agent Keeper {
+    settings standard()
+    can Payments.refund
+    limit Payments.refund {
+        amount <= 100
+    }
+    on refund(order_id: Int, amount: Int) -> Receipt ! PaymentError {
+        try Payments.refund(order_id, amount)
+    }
+}
+
+fn main() {
+    const w = Watcher.start(Payments: FakePayments())
+    const k = Keeper.start(Payments: FakePayments())
+    for (id, amount) in [(1, 50), (2, 150)] {
+        const r = w.refund(id, amount) catch e => {
+            print("{id}: {e}")
+            continue
+        }
+        print("{id}: {r.id}")
+    }
+    for (id, amount) in [(1, 50), (2, 150)] {
+        const r = k.refund(id, amount) catch e => {
+            print("{id}: {e}")
+            continue
+        }
+        print("{id}: {r.id}")
+    }
+}

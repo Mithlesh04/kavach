@@ -1,0 +1,4 @@
+fn main() {
+    const words = ["banana", "Apple", "cherry", "apple"]
+    print(words.sort_by(w => w.lower()))
+}

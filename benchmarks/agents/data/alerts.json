@@ -1,0 +1,14 @@
+[
+  {"id": 1, "service": "checkout", "env": "staging", "alert": "Process crashed with exit code 137 and did not come back.", "expect": "restart"},
+  {"id": 2, "service": "checkout", "env": "production", "alert": "Process crashed with exit code 137 and did not come back.", "expect": "page"},
+  {"id": 3, "service": "search", "env": "production", "alert": "p99 latency 2.4 s, CPU 95% on all pods, no errors.", "expect": "scale"},
+  {"id": 4, "service": "orders-db", "env": "production", "alert": "Replica reports 3,000 rows missing after failover.", "expect": "page"},
+  {"id": 5, "service": "login", "env": "production", "alert": "900 failed logins per minute from one address range.", "expect": "page"},
+  {"id": 6, "service": "reports", "env": "test", "alert": "Disk 81% full on a throwaway test runner.", "expect": "ignore"},
+  {"id": 7, "service": "images", "env": "staging", "alert": "Worker stuck: no progress for 40 minutes, queue growing.", "expect": "restart"},
+  {"id": 8, "service": "api", "env": "production", "alert": "Requests per second doubled for the sale; error rate normal, CPU 88%.", "expect": "scale"},
+  {"id": 9, "service": "emails", "env": "test", "alert": "Flaky health check failed once and passed on retry.", "expect": "ignore"},
+  {"id": 10, "service": "billing", "env": "production", "alert": "Worker stuck: no progress for 25 minutes, invoices not sent.", "expect": "page"},
+  {"id": 11, "service": "feed", "env": "test", "alert": "Memory climbing 2% an hour on a load-test box, all requests healthy.", "expect": "ignore"},
+  {"id": 12, "service": "payments", "env": "production", "alert": "TLS certificate on the public endpoint expired 5 minutes ago.", "expect": "page"}
+]

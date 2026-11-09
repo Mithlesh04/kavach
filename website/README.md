@@ -1,0 +1,132 @@
+# website/ — the docs site
+
+The official docs site ([decision 0033](../docs/decisions/0033-docs-site-in-the-repo.md)):
+Next.js + Tailwind, fully static export, deployed to Vercel or GitHub Pages.
+The approved design lives on the project's design canvas; this app mirrors it.
+
+```
+npm install        # once
+npm run dev        # work on it
+npm run check      # BEFORE finishing any change: types + lint + static build
+```
+
+## What lives where
+
+| Folder / file | What it is |
+|---|---|
+| `app/` | The shell: home page, docs layout, the chapter route, the playground |
+| `components/` | Every shared widget (tabs, race chart, quiz, code block, …) |
+| `content/lessons/` | The one-idea pages ([decision 0047](../docs/decisions/0047-docs-one-idea-per-page.md)) + their registry (`index.ts`) |
+| `content/smart.tsx` | What Kavach does for you: each smart thing, the page that teaches it, its proof |
+| `content/samples/` | Every code sample + its `.expect`, checked against the real `kavach` |
+| `content/feedback.json` | The quiz cheer/nudge pools |
+| `data/benchmarks.json` | Benchmark numbers — generated from `../benchmarks/` runs |
+| `data/benchmark-sources/` | Which README row and column feed each benchmark chart, one file per suite |
+| `data/versions.json` | Published docs versions; how deletion and pinning work |
+| `lib/course.ts` | The course tree: parts → pages → sub-pages, each page tied to a spec section |
+| `lib/nav.ts`, `lib/site.ts` | Addresses in the tree; which pages have content (sidebar, routes, sitemap, prev/next) |
+| `lib/chapter.ts` | The types a chapter's content must fit |
+| `app/globals.css` | Every color, token, keyframe and scrollbar rule |
+| `components/nav-drawer.tsx`, `components/page-toc.tsx` | The course menu below `lg` (1024 px), and "On this page" from 1440 px |
+
+## Rules for every change (people and AI agents)
+
+**One source of truth — change it there, nowhere else:**
+
+| To change… | Edit only |
+|---|---|
+| A color, surface, chart hue, animation | `app/globals.css` (tokens; both themes) |
+| The sidebar, page order, parts and sub-pages | `lib/course.ts` |
+| A "What Kavach does for you" item | `content/smart.tsx` (it shows on its page and on the full list) |
+| A benchmark number | record the run in its `../benchmarks/<suite>/README.md` table; `npm run check` regenerates `data/benchmarks.json` — **never type one** |
+| Which numbers a chart shows | `data/benchmark-sources/<suite>.json` (README row + column; no numbers) |
+| Docs versions (add, delete, retag) | `data/versions.json` |
+| Who makes Kavach (shown in headers, footers, Kavach Home, page metadata) | `data/project.json` |
+| Quiz encouragement lines | `content/feedback.json` |
+| The logo or file icon | `components/logo.tsx` / `app/icon.svg` (one set of paths) |
+| How a widget looks or behaves | its one file in `components/` |
+
+**Never:**
+
+1. **Never hand-color code.** No `<span style>` in samples, no manual token colors.
+   All code is colored by the repository's own grammar
+   (`../editors/vscode/syntaxes/kavach.tmLanguage.json`), through `CodeBlock` or
+   its helpers in `components/code-block.tsx`: `codeHtml` (the home page,
+   `Terminal`) and `codeLines` (the quiz, colored at build time by `QuizBlock`).
+   If highlighting looks wrong, fix the grammar — the editor and the site share it.
+2. **Never type a benchmark number into a page.** Charts read `data/benchmarks.json`
+   and prose uses `<Ratio>`; `scripts/build-benchmarks.mjs` writes that file from
+   the benchmark READMEs, where each measured run is recorded.
+3. **Never hardcode a color.** Use token classes (`bg-panel`, `text-ink`,
+   `border-line`, `let(--…)`). The one exception is the permanently-dark code
+   and hero panels, whose fixed hexes mirror the `--code-*` tokens.
+4. **Never add a dependency silently.** A new npm package gets a line here
+   (name, why, rough size); anything heavy, ask a maintainer first.
+   Current extras beyond create-next-app: `shiki` (grammar-true highlighting),
+   `@next/mdx` + `@mdx-js/*` (reserved for MDX chapters), `pagefind`
+   (build-time search index; ~3 MB dev-only).
+5. **One idea per page.** A page teaches one thing; an idea with several
+   forms gets sub-pages in `lib/course.ts` (For Loop › Over a range), never
+   several ideas on one page. A page lists in the sidebar only once its
+   content exists. No page builds its own sidebar.
+
+**Writing chapters:**
+
+- Plain, easy words. One "what" and one "why" per idea. The goal is that the
+  reader understands — never that the work looks hard.
+- Annotate (hover notes) **only what the chapter introduces**.
+- Show where Kavach loses as readily as where it wins.
+- Every claim gets its link: a `SrcRef` to the exact file and line (pinned to
+  the docs version's tag) or a benchmark component — not prose alone.
+- Every code sample lives in `content/samples/<chapter>/`, never as a string
+  in a page: a file `name.kav`, or a project folder `name.project/`
+  (`kavach.toml` + `src/`). `scripts/check-samples.mjs` runs each one with the
+  real `kavach`, in a fresh folder under the git-ignored `../.kavach/`, and
+  fails the check unless the result matches its `.expect` file exactly.
+- The name says what is checked: `name.<kind>.kav` with kind `fails`
+  (refused by the compiler; pass `outcome="refused"` to `CodeBlock`), `panics`
+  (`outcome="panic"`), `warns` (runs, and its warnings are shown before the
+  output; `outcome="warned"`), `dry` (`--dry-run`, so `ask<T>` calls no model), `test`
+  (`kavach test --seed 7`), `lib` (the header `build --lib` writes) or
+  `native`. A file `name.stdin` next to a sample is typed into it, as its
+  standard input. The list and its meanings live in one place:
+  `lib/sample-kinds.mjs`.
+- Never type an `.expect`: run `node scripts/check-samples.mjs --write`, which
+  writes the missing ones from real runs, then read them before committing.
+- A lesson (`LessonDoc`) is one scroll: body, "Try it yourself", the page's
+  smart things (automatic), "Go deeper", a quiz. Show samples with `<Ex>`
+  from `content/lessons/parts.tsx`.
+- A project sample of several `.kav` files goes in `<Files>`, one window with a tab per file. The build fails if a page shows a project's `src/` and leaves a file out.
+- Every width counts, from a 320 px phone to a 2560 px screen: nothing may widen the page. A long line scrolls inside its own box, and lines of text stop at about 72 characters while code and tables take the page's width.
+- In an old chapter, a construct with several forms gets a `TopicTabs` switcher on its Code tab,
+  one verified sample per form; one form visible at a time.
+
+**Before finishing any change:** `npm run check` here, then
+`sh scripts/check-repo.sh` at the repository root. Both must pass. Files we
+write stay under 500 lines like everywhere else in the repo.
+
+## Deploying the site
+
+The site is live at https://mithlesh04.github.io/kavach/, on GitHub Pages. No server
+anywhere, so any static host works:
+
+- **Vercel:** import the repository, set *Root Directory* to `website`,
+  framework Next.js — it runs `npm run build` and serves `out/`. Set
+  `SITE_URL` to the address it serves.
+- **GitHub Pages:** `npm run deploy:pages` (after `npm run check`) builds
+  the site to serve under `/kavach/`, commits `out/` to the `gh-pages`
+  branch and pushes it; CI stays manual-only in this repository. Once, in
+  the repository's Settings → Pages, choose "Deploy from a branch",
+  `gh-pages`, `/ (root)`. The site is then at
+  https://mithlesh04.github.io/kavach/. `SITE_BASE_PATH` and `SITE_URL`
+  set the path and address for any other host; the default address is
+  the GitHub Pages one.
+- Search queries also match common names from other languages
+  (dictionary, array, exception…) through `lib/aliases.ts`.
+
+## Still to build
+
+The MDX chapter pipeline, if TSX chapters ever feel limiting. Search
+stays keyword search with cross-language aliases (`lib/aliases.ts`): Mithlesh
+decided against an in-browser embeddings model for now
+(2026-11-02), so ask before adding one.

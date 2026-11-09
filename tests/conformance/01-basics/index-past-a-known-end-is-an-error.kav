@@ -1,0 +1,9 @@
+// Rule: An index outside a list whose length is known (a list literal, or a `const` set to one) always panics, so it is a compile error.
+// Spec: 1.8
+// expect compile error
+
+fn main() {
+    const sizes = [1, 2, 3]
+    print(sizes[2])
+    print(sizes[3])    // error: index 3 is out of range: the list has 3 items
+}

@@ -1,0 +1,24 @@
+// Rule: A `gpu fn` takes and gives records and tuples of 1 to 8 fields of the four types, reading their fields and making new ones.
+// Spec: 15.1
+// expect output: Ball(y: 0.75, vy: -0.25)
+// expect output: (2, 1.5)
+
+type Ball {
+    y: Float32
+    vy: Float32
+}
+
+gpu fn fall(b: Ball) -> Ball {
+    const vy = b.vy - 0.25
+    Ball(y: b.y + vy, vy: vy)
+}
+
+gpu fn pair(b: Ball) -> (Int32, Float32) {
+    (2, b.y * 2.0)
+}
+
+fn main() {
+    const balls = [Ball(y: 1.0, vy: 0.0)].map(fall)
+    print(balls[0])
+    print(balls.map(pair)[0])
+}

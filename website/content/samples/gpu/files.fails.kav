@@ -1,0 +1,9 @@
+use std.fs
+
+gpu fn load(x: Float32) -> Float32 {
+    const text = fs.read_text("gains.txt") catch _ => ""
+    x
+}
+
+fn main() {
+}

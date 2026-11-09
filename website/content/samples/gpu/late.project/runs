@@ -1,0 +1,2 @@
+KAVACH_GPU=off run --native src/main.kav
+KAVACH_GPU=on run --native src/main.kav

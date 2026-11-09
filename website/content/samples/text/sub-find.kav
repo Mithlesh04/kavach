@@ -1,0 +1,8 @@
+use std.text
+
+fn main() {
+    print(text.find_int("Order #4521 shipped") ?? 0)
+    print(text.find_ints("rooms 12, 14 and 15"))
+    print(text.find_float("pi is about 3.14!") ?? 0.0)
+    print(text.find_int("no number here") ?? -1)
+}

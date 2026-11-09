@@ -1,0 +1,87 @@
+// DevOps: alerts, against a runbook. The model picks an action; the code
+// carries it out, and restarting anything in production needs the
+// on-call person's approval (none answers in the benchmark, so the alert
+// is paged).
+
+use std.fs
+use std.json
+
+type Alert {
+    id: Int
+    service: String
+    env: String
+    alert: String
+}
+
+type Action = Restart | Scale | Page | Ignore
+
+type Decision {
+    /// what to do about the alert, under the runbook
+    action: Action
+}
+
+type Done { what: String }
+type OpsError = Failed | Denied(reason: String)
+
+pub capability Ops {
+    fn restart(service: String, env: String) -> Done ! OpsError
+    fn scale(service: String, env: String) -> Done ! OpsError
+}
+
+type Cluster: Ops {
+    fn restart(self, service: String, env: String) -> Done ! OpsError {
+        Done(what: "restarted {service}")
+    }
+    fn scale(self, service: String, env: String) -> Done ! OpsError {
+        Done(what: "scaled {service}")
+    }
+}
+
+/// The runbook the model decides by.
+fn runbook() -> String {
+    "Runbook: restart a service whose process crashed or is stuck. Scale up when load or latency is high but the service is healthy. Page a person for data loss, security alerts, expired certificates, or anything you are unsure about. Ignore noise from the test environment; staging is not a test environment."
+}
+
+agent OnCall {
+    can Ai, Ops.restart, Ops.scale
+
+    approve Ops.restart when env == "production" by "oncall" within 1.seconds
+
+    on alert(a: Alert) -> String ! Error {
+        const d = try ask<Decision>("{runbook()}\n\nService {a.service} in {a.env}: {a.alert}")
+        match d.action {
+            Action.Restart => {
+                const _done = Ops.restart(a.service, a.env) catch _ => {
+                    return "{a.id} page"
+                }
+                "{a.id} restart"
+            },
+            Action.Scale => {
+                const _done = Ops.scale(a.service, a.env) catch _ => {
+                    return "{a.id} page"
+                }
+                "{a.id} scale"
+            },
+            Action.Page => "{a.id} page",
+            Action.Ignore => "{a.id} ignore",
+        }
+    }
+}
+
+pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Ops.restart, Ops.scale {
+    const alerts = try json.decode<[Alert]>(try fs.read_text(path))
+    const oncall = OnCall.start(Ops: Cluster())
+    if not together {
+        for a in alerts {
+            print(oncall.alert(a) catch e => "error {e}")
+        }
+        return
+    }
+    let asked: [Task<String>] = []
+    for a in alerts {
+        asked.push(spawn oncall.alert(a))
+    }
+    for a in asked {
+        print(a.wait() catch e => "error {e}")
+    }
+}

@@ -1,0 +1,1 @@
+error: `total` takes one list, `prices`, not separate values: put them in a list, as in `total([…])` (spec 3.1)

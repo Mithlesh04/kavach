@@ -1,0 +1,8 @@
+$ kavach check src/main.kav
+warning: this loop never ends: `n` doesn't change in it, and nothing in it leaves it. Change it in the loop, add a `break`, or write `while true` if it should run forever (spec 4.7)
+ --> src/main.kav:3:11
+  |
+3 |     while n < 10 {
+  |           ^^^^^^
+
+src/main.kav: no errors

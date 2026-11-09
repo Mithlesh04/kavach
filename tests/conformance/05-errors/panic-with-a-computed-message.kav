@@ -1,0 +1,15 @@
+// Rule: `panic(message)` may compute its message while the program runs; it is printed with the panic.
+// Spec: 5.6
+// expect output: checking 3
+// expect panic: bad count 3 of 2
+
+fn check(count: Int, limit: Int) {
+    print("checking {count}")
+    if count > limit {
+        panic("bad count {count} of {limit}")
+    }
+}
+
+fn main() {
+    check(3, 2)
+}

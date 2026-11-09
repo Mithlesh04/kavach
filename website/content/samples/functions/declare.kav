@@ -1,0 +1,9 @@
+fn greet() {
+    print("Hello!")
+    print("Welcome to Kavach.")
+}
+
+fn main() {
+    greet()
+    greet()
+}

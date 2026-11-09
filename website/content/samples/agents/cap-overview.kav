@@ -1,0 +1,14 @@
+use std.fs
+
+fn total(prices: [Int]) -> Int {
+    prices.sum(p => p)
+}
+
+pub fn save_total(prices: [Int]) ! FsError uses Fs.write {
+    try fs.write_text("total.txt", "{total(prices)}")
+}
+
+fn main() ! Error {
+    try save_total([120, 80, 45])
+    print(try fs.read_text("total.txt"))
+}

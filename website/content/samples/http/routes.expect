@@ -1,0 +1,4 @@
+GET /: 200 Welcome to the shop
+GET /items/42: 200 item 42
+GET /basket: 404 nothing at /basket
+POST /orders: 201 order placed: 2 pens

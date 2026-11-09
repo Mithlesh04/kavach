@@ -1,0 +1,33 @@
+// Rule: a whole number followed by `ms`, `seconds`, `minutes`, `hours` or `days` is a `Duration`; `time.sleep` and `time.every` take one.
+// Spec: 14.4
+// expect output: 200
+// expect output: 5000
+// expect output: 120000
+// expect output: 3600000
+// expect output: 259200000
+// expect output: Duration(ms: 90000)
+// expect output: slept: true
+// expect output: round 0
+// expect output: round 1
+
+use std.time
+
+fn main() {
+    const n = 3
+    print(200.ms.ms)
+    print(5.seconds.ms)
+    print(2.minutes.ms)
+    print(1.hours.ms)
+    print(n.days.ms)
+    const d: Duration = 90.seconds
+    print(d)
+    const start = time.monotonic_ms()
+    time.sleep(20.ms)
+    print("slept: {time.monotonic_ms() - start >= 20}")
+    for round in time.every(10.ms) {
+        print("round {round}")
+        if round == 1 {
+            break
+        }
+    }
+}

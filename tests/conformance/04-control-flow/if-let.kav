@@ -1,0 +1,17 @@
+// Rule: `if let` runs a block only when an optional has a value.
+// Spec: 4.2
+// expect output: found 7
+// expect output: no value
+
+fn main() {
+    const present: Int? = 7
+    const missing: Int? = none
+    if let n = present {
+        print("found {n}")
+    }
+    if let n = missing {
+        print("found {n}")
+    } else {
+        print("no value")
+    }
+}

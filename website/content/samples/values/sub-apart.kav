@@ -1,0 +1,23 @@
+type User {
+    name: String
+    age: Int
+    city: String?
+}
+
+fn main() {
+    const [first, second, third] = [90, 75]
+    print("{first} {second} {third}")
+    const [head, ...rest] = ["asha", "ravi", "mei"]
+    print("{head} then {rest}")
+
+    const u = User(name: "Asha", age: 31, city: none)
+    const { name, age: years, city = "unknown" } = u
+    print("{name}, {years}, {city}")
+
+    const settings = ["host": "example.com"]
+    const [host, port = "8080"] = settings
+    print("{host}:{port}")
+
+    const [_, [x, y]] = [[1, 2], [3]]
+    print("{x} {y}")
+}

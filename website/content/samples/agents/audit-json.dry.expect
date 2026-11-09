@@ -1,0 +1,9 @@
+refused: Denied(reason: "limit broken: amount <= 500")
+{"time":"…","agent":"Support","request":1,"call":"Ai.ask","shown":"ask(\"Is this a complaint? My order never came.\")","verdict":"dry run","model":"claude-haiku-5-5","result":"ok Verdict(complaint: true)"}
+{"time":"…","agent":"Support","request":1,"call":"Payments.refund","shown":"Payments.refund(order: 7, amount: 40)","verdict":"dry run","result":"simulated ()"}
+{"time":"…","agent":"Support","request":2,"call":"Ai.ask","shown":"ask(\"Is this a complaint? It broke on day one.\")","verdict":"dry run","model":"claude-haiku-5-5","result":"ok Verdict(complaint: true)"}
+{"time":"…","agent":"Support","request":2,"call":"Payments.refund","shown":"Payments.refund(order: 8, amount: 900)","verdict":"refused (limit broken: amount <= 500)","result":"denied: limit broken: amount <= 500"}
+[dry run] ask("Is this a complaint? My order never came.") -> Verdict(complaint: true)
+[dry run] Payments.refund(order: 7, amount: 40)
+[dry run] ask("Is this a complaint? It broke on day one.") -> Verdict(complaint: true)
+[dry run] Payments.refund(order: 8, amount: 900) refused: limit broken: amount <= 500

@@ -1,0 +1,8 @@
+fn main() {
+    for n in [4, 8, 15, 16, 23] {
+        if n % 2 != 0 {
+            print("first odd number: {n}")
+            break
+        }
+    }
+}

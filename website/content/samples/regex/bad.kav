@@ -1,0 +1,9 @@
+use std.regex
+
+fn main() {
+    const pattern = regex.new(r"(\d+") catch e => {
+        print("bad pattern: {e}")
+        return
+    }
+    print(pattern)
+}

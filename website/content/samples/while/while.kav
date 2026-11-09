@@ -1,0 +1,8 @@
+fn main() {
+    let fuel = 3
+    while fuel > 0 {
+        print("burn {fuel}")
+        fuel -= 1
+    }
+    print("empty")
+}

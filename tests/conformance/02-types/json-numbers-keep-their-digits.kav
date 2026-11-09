@@ -1,0 +1,29 @@
+// Rule: A JSON number keeps its digits: big integers and exact decimals survive parsing, decoding and writing, and each method reads it only when it fits.
+// Spec: 2.12
+// expect output: {"id":12345678901234567890,"price":0.1,"huge":1e400,"zero":-0}
+// expect output: 12345678901234567890
+// expect output: none
+// expect output: 0.1
+// expect output: none
+// expect output: 12345678901234567890 costs 0.1
+// expect output: {"id":12345678901234567890,"price":0.1}
+
+use std.json
+
+type Order {
+    id: BigInt
+    price: Decimal
+}
+
+fn main() ! Error {
+    const text = "\{\"id\": 12345678901234567890, \"price\": 0.1, \"huge\": 1e400, \"zero\": -0}"
+    const doc = try json.parse(text)
+    print(json.stringify(doc))
+    print(doc["id"].bigint())
+    print(doc["id"].int())
+    print(doc["price"].decimal())
+    print(doc["huge"].float())
+    const order = try json.decode<Order>(text)
+    print("{order.id} costs {order.price}")
+    print(json.stringify(json.of(order)))
+}

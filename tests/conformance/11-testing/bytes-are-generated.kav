@@ -1,0 +1,9 @@
+// Rule: functions that take `Bytes` get generated `Bytes` arguments, like any other type.
+// Spec: 11.2, 2.13
+// expect test pass
+
+fn first_or_zero(data: Bytes) -> UInt8
+    ensure data.len() > 0 or result == 0
+{
+    data.get(0) ?? 0
+}

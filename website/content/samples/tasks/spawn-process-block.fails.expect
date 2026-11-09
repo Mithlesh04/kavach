@@ -1,0 +1,1 @@
+error: `spawn process` takes a call of a function, not a block: put the block in a function and call it (spec 9.8)

@@ -1,0 +1,9 @@
+use std.fs
+
+fn main() {
+    const text = fs.read_text("no-such-file.txt") catch e => {
+        print("could not read: {e}")
+        ""
+    }
+    print(text.len())
+}

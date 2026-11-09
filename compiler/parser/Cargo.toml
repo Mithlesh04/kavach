@@ -1,0 +1,15 @@
+[package]
+name = "kavach-parser"
+description = "Parser for the Kavach programming language: tokens to syntax tree"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+kavach-ast = { path = "../ast" }
+kavach-lexer = { path = "../lexer" }
+
+[lints]
+workspace = true

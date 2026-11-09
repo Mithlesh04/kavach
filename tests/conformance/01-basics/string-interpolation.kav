@@ -1,0 +1,13 @@
+// Rule: Any expression inside {} in a string is inserted; \{ is a literal brace.
+// Spec: 1.7
+// expect output: Hello, Asha!
+// expect output: 2 + 2 = 4
+// expect output: Use { and } in templates
+
+fn main() {
+    const name = "Asha"
+    const a = 2
+    print("Hello, {name}!")
+    print("{a} + {a} = {a + a}")
+    print("Use \{ and } in templates")
+}

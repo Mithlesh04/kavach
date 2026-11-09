@@ -1,0 +1,3 @@
+warning: `total` is a copy inside this lambda: the change doesn't reach the outside. Give the value back instead, or use `Shared` to share it (spec 3.3)
+0
+6

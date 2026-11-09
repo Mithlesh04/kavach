@@ -1,0 +1,9 @@
+// Rule: `spawn process` takes a call of a function by its name, not a block.
+// Spec: 9.8
+// expect compile error
+
+fn main() {
+    const _job = spawn process {    // error: takes a call of a function, not a block
+        print("hello")
+    }
+}

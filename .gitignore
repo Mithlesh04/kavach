@@ -1,0 +1,26 @@
+# Rust build output (compiler, runtime, tools)
+target/
+
+# Kavach build output and local state
+.kavach/
+# What running the examples writes: agents' audit logs, state and journals (spec 8.5, 8.6)
+examples/*/audit/
+examples/*/state/
+examples/*/agents/
+benchmarks/agents/kavach/agents/
+
+# VS Code extension dependencies and packages
+node_modules/
+*.vsix
+
+# Editors and OS files
+.idea/
+.DS_Store
+Thumbs.db
+
+# The docs site's generated folders (website/)
+website/node_modules/
+website/.next/
+website/out/
+website/next-env.d.ts
+__pycache__/

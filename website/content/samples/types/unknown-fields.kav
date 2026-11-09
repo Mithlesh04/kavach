@@ -1,0 +1,13 @@
+use std.json
+
+fn main() ! Error {
+    const body = "\{\"name\": \"asha\", \"age\": 31, \"extra\": \{\"vip\": true}}"
+    const doc = try json.parse(body)
+    print(doc["name"].text() ?? "nobody")
+    print(doc["age"].int() ?? 0)
+    print(doc["extra"]["vip"].bool() ?? false)
+    print(doc["missing"]["deeper"].text() ?? "not there")
+    for (key, value) in doc.object() ?? [:] {
+        print("{key}: {value}")
+    }
+}

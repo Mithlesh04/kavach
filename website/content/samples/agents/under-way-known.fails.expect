@@ -1,0 +1,1 @@
+error: an agent's settings are chosen when the program is built: write `AgentSettings(…)` with plain values, or call a function with no parameters that gives one, such as `standard()`, perhaps `with { … }` (spec 8.5)

@@ -1,0 +1,11 @@
+fn fill(start: UInt8) {
+    let level = start
+    for _ in 0..10 {
+        level += 1
+        print(level)
+    }
+}
+
+fn main() {
+    fill(250)
+}

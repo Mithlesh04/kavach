@@ -1,0 +1,26 @@
+{
+  "title": "Raw bytes",
+  "readme": "benchmarks/bytes/README.md",
+  "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · best of 9",
+  "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/bytes",
+  "series": [
+    {
+      "id": "kavach",
+      "label": "Kavach",
+      "column": "Kavach ms",
+      "color": "kavach"
+    },
+    {
+      "id": "cpp",
+      "label": "C++ -O2",
+      "column": "C++ ms",
+      "color": "cpp"
+    }
+  ],
+  "benchmarks": {
+    "crc": {
+      "row": "`crc`",
+      "title": "crc — build 64 MB byte by byte, checksum it (CRC32C)"
+    }
+  }
+}

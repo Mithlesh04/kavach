@@ -1,0 +1,8 @@
+gpu fn cube(n: Int32) -> Int32 {
+    n * n * n
+}
+
+fn main() {
+    const sizes: [Int32] = [10, 100, 2000]
+    print(sizes.map(n => cube(n)))
+}

@@ -1,0 +1,18 @@
+// Rule: `cli.exit(code)` ends the program at once with `code`, even while other tasks wait.
+// Spec: 14.6
+// expect output: ending
+// expect exit: 3
+
+use std.cli
+use std.time
+
+fn main() uses Console, Env, Clock {
+    const _late = spawn {
+        time.sleep(10.seconds)
+        print("too late")
+    }
+    // The task now waits in its sleep.
+    time.sleep(10.ms)
+    print("ending")
+    cli.exit(3)
+}

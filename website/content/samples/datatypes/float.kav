@@ -1,0 +1,8 @@
+fn main() {
+    const pi = 3.14159
+    const half: Float32 = 0.5
+    print(pi)
+    print(half)
+    print(7.0 / 2.0)
+    print(1e9)
+}

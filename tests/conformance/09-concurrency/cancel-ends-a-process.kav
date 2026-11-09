@@ -1,0 +1,25 @@
+// Rule: `cancel()` on a `spawn process` task ends its process at once, even one stuck in a loop.
+// Spec: 9.8, 9.6
+// expect output: ended
+// expect output: the task was cancelled
+
+use std.time
+
+fn spin(n: Int) -> Int {
+    let x = n
+    while true {
+        x = x % 1000 + 1
+    }
+    x
+}
+
+fn main() {
+    const stuck = spawn process spin(1)
+    time.sleep_ms(100)
+    stuck.cancel()
+    print("ended")
+    const _n = stuck.wait() catch e => {
+        print(e)
+        0
+    }
+}

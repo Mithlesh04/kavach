@@ -1,0 +1,39 @@
+use std.grpc
+use std.net
+
+pub type Item {
+    qty: Int
+}
+
+pub type Total {
+    count: Int
+    sum: Int
+}
+
+fn add_up(call: GrpcCall) -> GrpcReply {
+    const items = grpc.read_all<Item>(call) catch _ => []
+    if items.len() == 0 {
+        return grpc.failed(3, "no items")
+    }
+    const first = grpc.read<Item>(call) catch _ => Item(qty: 0)
+    print("first: {first.qty}")
+    let sum = 0
+    for i in items {
+        sum += i.qty
+    }
+    grpc.reply(Total(count: items.len(), sum: sum))
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn grpc.serve(listener, add_up)
+    const target = "http://{listener.address()}"
+    const total = try grpc.call_stream<Item, Total>(target, "/shop.Cart/AddUp", [Item(qty: 5), Item(qty: 6), Item(qty: 7)])
+    print("{total.count} items, {total.sum} in all")
+    const empty: [Item] = []
+    const nothing = grpc.call_stream<Item, Total>(target, "/shop.Cart/AddUp", empty) catch e => {
+        print("empty: {e}")
+        return
+    }
+    print(nothing.count)
+}

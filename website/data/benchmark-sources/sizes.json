@@ -1,0 +1,60 @@
+{
+  "title": "As data grows",
+  "readme": "benchmarks/sizes/README.md",
+  "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · Python 3.12 · best of 9 (Python best of 3)",
+  "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/sizes",
+  "series": [
+    {
+      "id": "kavach",
+      "label": "Kavach",
+      "column": "Kavach ms",
+      "color": "kavach"
+    },
+    {
+      "id": "cpp",
+      "label": "C++ -O2",
+      "column": "C++ ms",
+      "color": "cpp"
+    },
+    {
+      "id": "python",
+      "label": "Python 3.12",
+      "column": "Python ms",
+      "color": "python"
+    }
+  ],
+  "benchmarks": {
+    "index-thousands": {
+      "row": "`index` · thousands",
+      "title": "index — 50M random reads from a list of 1,000 items"
+    },
+    "index-millions": {
+      "row": "`index` · millions",
+      "title": "index — 50M random reads from a list of 1,000,000 items"
+    },
+    "index-tens-of-millions": {
+      "row": "`index` · tens-of-millions",
+      "title": "index — 50M random reads from a list of 10,000,000 items"
+    },
+    "index-hundreds-of-millions": {
+      "row": "`index` · hundreds-of-millions",
+      "title": "index — 50M random reads from a list of 100,000,000 items"
+    },
+    "sort-thousands": {
+      "row": "`sort` · thousands",
+      "title": "sort — 1,000 integers"
+    },
+    "sort-millions": {
+      "row": "`sort` · millions",
+      "title": "sort — 1,000,000 integers"
+    },
+    "sort-tens-of-millions": {
+      "row": "`sort` · tens-of-millions",
+      "title": "sort — 10,000,000 integers"
+    },
+    "sort-hundreds-of-millions": {
+      "row": "`sort` · hundreds-of-millions",
+      "title": "sort — 100,000,000 integers"
+    }
+  }
+}

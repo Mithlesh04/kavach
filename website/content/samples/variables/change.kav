@@ -1,0 +1,7 @@
+fn main() {
+    let score = 10
+    score = score + 5
+    score *= 2
+    score -= 1
+    print(score)
+}

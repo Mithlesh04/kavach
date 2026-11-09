@@ -1,0 +1,9 @@
+type PayError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn refund(order: Int, amount: Int) ! PayError
+}
+
+fn main() {
+    Payments.refund(7, 499) catch e => print("refused: {e}")
+}

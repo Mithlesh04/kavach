@@ -1,0 +1,15 @@
+// Nested callbacks: fifty handlers each wrapping the next, the shape of
+// middleware, called two million times — 100 million hops through
+// function values, fifty frames deep each call.
+fn main() {
+    let f: fn(Int) -> Int = x => x + 1
+    for layer in 0..50 {
+        const inner = f
+        f = x => inner(x) + 1
+    }
+    let total = 0
+    for i in 0..2_000_000 {
+        total += f(i % 100)
+    }
+    print(total)
+}

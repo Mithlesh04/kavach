@@ -1,0 +1,18 @@
+// Rule: A `T` can be used wherever a `T?` is expected, also as a lambda's result and as the value of a `Shared<T?>`.
+// Spec: 2.7
+// expect output: x
+// expect output: b
+// expect output: a
+
+type Node {
+    name: String
+}
+
+fn main() {
+    const pick: fn(Int) -> String? = _ => "x"
+    print(pick(1) ?? "none")
+    const held: Shared<Node?> = Shared(Node(name: "b"))
+    print(held.get()?.name ?? "none")
+    held.update(_ => Node(name: "a"))
+    print(held.get()?.name ?? "none")
+}

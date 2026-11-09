@@ -1,0 +1,7 @@
+fn main() {
+    let level: UInt8 = 250
+    for _ in 0..10 {
+        level += 1
+        print(level)
+    }
+}

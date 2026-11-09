@@ -1,0 +1,20 @@
+// Rule: A set holds each value once and keeps insertion order.
+// Spec: 14.2
+// expect output: Set.of("asha", "ravi", "meera")
+// expect output: 2 true false
+// expect output: asha
+// expect output: meera
+// expect output: true
+
+fn main() {
+    let names = Set.of("asha", "ravi")
+    names.add("asha")
+    names.add("meera")
+    print(names)
+    names.remove("ravi")
+    print("{names.len()} {names.contains("asha")} {names.contains("ravi")}")
+    for n in names {
+        print(n)
+    }
+    print(Set.of(1, 2) == Set.of(2, 1))
+}

@@ -1,0 +1,19 @@
+extern c "c" {
+    fn strlen(s: String) -> UInt64
+    fn getenv(name: String) -> Ptr<UInt8>
+}
+
+fn c_length(s: String) -> UInt64 {
+    unsafe { strlen(s) }
+}
+
+fn env_var(name: String) -> String? {
+    unsafe { getenv(name).text() }
+}
+
+fn main() {
+    print(c_length("namaste"))
+    print(c_length("नमस्ते"))
+    print(env_var("PATH") != none)
+    print(env_var("KAVACH_DOCS_NOT_SET") ?? "not set")
+}

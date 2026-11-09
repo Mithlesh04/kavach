@@ -1,0 +1,13 @@
+use std.fs
+
+fn load(path: String) -> String ! Error {
+    try fs.read_text(path) context "loading settings"
+}
+
+fn main() {
+    const text = load("app.toml") catch e => match e {
+        FsError.NotFound(p) => "no {p}: {e}",
+        _ => "something else: {e}",
+    }
+    print(text)
+}

@@ -1,0 +1,6 @@
+// Mistake: The largest item of a list that may be empty.
+
+fn main() {
+    const xs: [Int] = []
+    print(xs.max() + 1)
+}

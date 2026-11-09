@@ -1,0 +1,25 @@
+use std.time
+
+fn report(name: String, ms: Int) -> String {
+    time.sleep_ms(ms)
+    print("{name} done")
+    name
+}
+
+fn main() ! Error {
+    const (send, receive) = Channel<Int>(capacity: 4)
+    const _producer = spawn cores {
+        for i in 0..10 {
+            send.put(i)
+        }
+        send.close()
+    }
+    let total = 0
+    for n in receive {
+        total += n
+    }
+    const slow = spawn thread report("slow", 60)
+    const fast = spawn report("fast", 20)
+    print("both started, total {total}")
+    print("{try slow.wait()} and {try fast.wait()} are back")
+}

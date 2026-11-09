@@ -1,0 +1,8 @@
+// Rule: wrapping_add wraps around instead of panicking.
+// Spec: 5.6
+// expect output: -9223372036854775808
+
+fn main() {
+    const max = 9_223_372_036_854_775_807
+    print(max.wrapping_add(1))
+}

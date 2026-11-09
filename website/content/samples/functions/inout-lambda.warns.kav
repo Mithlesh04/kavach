@@ -1,0 +1,18 @@
+fn add_all(items: [Int], inout total: Int) {
+    const _seen = items.map(x => {
+        total += x
+        x
+    })
+}
+
+fn add_all_right(items: [Int], inout total: Int) {
+    total += items.sum(x => x)
+}
+
+fn main() {
+    let total = 0
+    add_all([1, 2, 3], total)
+    print(total)
+    add_all_right([1, 2, 3], total)
+    print(total)
+}

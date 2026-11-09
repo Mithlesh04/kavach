@@ -1,0 +1,117 @@
+# 2.12 Json
+
+`Json` holds data whose shape is only known when the program runs: a JSON document from a file or a web service, or a value you build to send. It is a built-in union, so `match` sees every case:
+
+```kavach
+type Json = Null |
+    Boolean(value: Bool) |
+    Number(digits: String) |
+    Text(value: String) |
+    Array(items: [Json]) |
+    Object(fields: [String: Json])
+```
+
+A `Number` keeps the digits it was written with, exactly (`"12345678901234567890"`, `"0.1"`, `"-2.5e10"`), so no number is changed by reading it and writing it out again ([decision 0071](../../decisions/0071-json-numbers-keep-their-digits.md)). The methods below read it as the number type a program needs. Objects keep their keys in order, like maps (2.2).
+
+### Reading
+
+Reading never panics. `j["key"]` and `j[i]` give the field or item, or `Null` when there is none (not an object or list, a missing key, an index out of range), so reads chain. A method then gives the value as an optional:
+
+```kavach
+use std.json
+
+const doc = try json.parse(body)
+const name = doc["user"]["name"].text() ?? "guest"
+const first_tag = doc["tags"][0].text()            // String?
+for item in doc["items"].list() ?? [] {
+    print(item["price"].float() ?? 0.0)
+}
+```
+
+| Method | Gives |
+|---|---|
+| `text()` | `String?`: the text of a `Text` |
+| `int()` | `Int?`: a `Number` written without a fraction or exponent that fits `Int` |
+| `bigint()` | `BigInt?`: a `Number` written without a fraction or exponent, of any size |
+| `float()` | `Float?`: a `Number`, as the nearest `Float`; `none` past `Float`'s range |
+| `decimal()` | `Decimal?`: a `Number`, exactly |
+| `bool()` | `Bool?`: the value of a `Boolean` |
+| `list()` | `[Json]?`: the items of an `Array` |
+| `object()` | `[String: Json]?`: the fields of an `Object` |
+| `is_null()` | `Bool`: whether it is `Null` |
+| `len()` | `Int`: the items of an `Array` or fields of an `Object`, otherwise 0 |
+
+### Building
+
+Where a `Json` is expected, literals become `Json` values: numbers, text, `true`, `false`, `none` (which becomes `Null`), lists and maps with text keys, at any depth. Inside such a literal, any other expression whose type can be encoded (below) is converted too:
+
+```kavach
+const order: Json = [
+    "id": 1042,
+    "customer": user.name,
+    "items": ["pen", "ink"],
+    "paid": true,
+    "note": none,
+]
+```
+
+`json.of(value)` converts any value that can be encoded. A `Json` is a value like any other (chapter 6): copies never share changes, and it is freed as soon as nothing holds it. It prints as compact JSON text. Two `Json` values are equal when they are the same variant with equal contents; objects compare like maps, so the order of keys doesn't count (1.8).
+
+### std.json
+
+| Function | Gives |
+|---|---|
+| `json.parse(text) ! JsonError` | The `Json` value written in `text`, which must be standard JSON (RFC 8259) |
+| `json.parse(text, comments: true) ! JsonError` | The same, also taking `//` and `/* */` comments and a trailing comma in arrays and objects (JSONC, as configuration files are written) |
+| `json.decode<T>(text) ! JsonError` | A `T` read straight from `text`, with no `Json` in between |
+| `json.decode_value<T>(j) ! JsonError` | A `T` read from the `Json` value `j` |
+| `json.of(value)` | `value` as a `Json` |
+| `json.stringify(value, indent: 0)` | JSON text for a `Json` or any value that can be encoded; `indent` above 0 puts each field on its own line |
+| `json.schema<T>()` | The [JSON Schema](https://json-schema.org) of `T` as a `Json`: what `ask<T>` sends a model (8.4), for modules that work from a type's shape (14.14) |
+
+**Encoding** works on types the compiler can see through: numbers (sized integers too), `Bool`, `String`, `Char` (text of one character), `Decimal` and `BigInt` (as numbers with all their digits), lists, sets and tuples (arrays), maps with `String` keys (objects), records (objects with the fields in declared order), optionals (`none` is `null`), unions (a variant without fields is its name as text; one with fields is `{"Variant": {fields}}`) and `Json` itself. Anything else is a compile error: functions, maps with other keys, and records with `secret` fields (2.11), so a secret can't leak into JSON by accident. `NaN` and infinities are written as `null`, as JavaScript does.
+
+**Decoding** is the reverse, and strict about values: an integer field takes only a number written without a fraction or exponent that fits its type, and a `BigInt` field one of any size; a `Float` field takes any number, as the nearest `Float`; a `Decimal` field takes any number exactly; text, booleans, arrays and objects must match. A number that doesn't fit its field is a `Mismatch`, as any other value that doesn't fit is. A missing field takes its default or `none` if it has one, otherwise decoding fails. Fields the type doesn't have are ignored, so a service can add fields without breaking its clients.
+
+**A type's schema** is a `Json` value a program can read: a record is `{"type": "object", "properties": {...}, "required": [...]}` with its fields in the order they are declared, `Int` and the sized integers are `{"type": "integer"}`, `Float` and `Decimal` `{"type": "number"}`, `Bool` `{"type": "boolean"}`, `String` `{"type": "string"}`, a list `{"type": "array", "items": ...}`, an optional `{"anyOf": [..., {"type": "null"}]}`, a union `{"anyOf": [...]}` of its variants as JSON writes them, and a map with `String` keys `{"type": "object", "additionalProperties": ...}`. A type with no schema (maps with other keys, tuples, functions) is a compile error. `ask<T>` (8.4) still refuses maps: a model answers closed objects only.
+
+```kavach
+type Point {
+    x: Int
+    y: Float
+}
+
+print(json.schema<Point>().get("properties"))   // {"x":{"type":"integer"},"y":{"type":"number"}}
+```
+
+```kavach
+type Rates {
+    base: String
+    rates: [String: Float]
+}
+
+const r = try json.decode<Rates>(body)
+```
+
+**Safe by default.** Text from outside can be hostile, so parsing and decoding have limits, which a call can raise: nesting deeper than `max_depth: 128` (at most 10_000, whatever the call says), text longer than `max_bytes: 64_000_000`, or an object with more than `max_fields: 100_000` fields is an error, not a stack overflow or a memory blow-up. A key that appears twice in one object is an error. Reading a number never rounds it silently: a number a field can't hold is an error, and a method gives `none`. A number whose exponent puts it beyond 10^10_000, or below 10^-10_000, is out of range for `decimal()` and `bigint()` too, so a short text like `1e999999999` can't make a huge value. Invalid escapes, control characters in text and unpaired surrogates are errors too. `NaN`, `Infinity`, hex numbers and the rest of JSON5 are syntax errors, even with `comments: true`.
+
+```kavach
+const big = try json.parse(body, max_depth: 1_000)
+
+const doc = try json.parse("{\"id\": 12345678901234567890, \"price\": 0.1}")
+print(doc["id"].bigint())       // 12345678901234567890
+print(doc["id"].int())          // none: too big for Int
+print(doc["price"].decimal())   // 0.1, exactly
+```
+
+A `JsonError` says what went wrong and where:
+
+```kavach
+type JsonError = Syntax(line: Int, column: Int, message: String) |
+    TooDeep(limit: Int) |
+    TooLarge(limit: Int) |
+    DuplicateKey(key: String, line: Int, column: Int) |
+    Mismatch(path: String, expected: String)
+```
+
+`Mismatch` comes from decoding: `path` is where in the document (`items[2].price`), `expected` what the type wanted there, naming the field's type where a number doesn't fit it: ``a whole number that fits `UInt8` `` for `300` in a `UInt8` field.

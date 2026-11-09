@@ -1,0 +1,13 @@
+// Rule: `break name` must name a loop around it, in the same function: a name no loop around it has is a compile error that lists the ones it has.
+// Spec: 4.6
+// expect compile error
+
+fn main() {
+    outer: for i in 0..3 {
+        for j in 0..3 {
+            if i == j {
+                break inner       // error: `break inner` names no loop around it
+            }
+        }
+    }
+}

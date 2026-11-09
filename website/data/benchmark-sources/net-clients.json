@@ -1,0 +1,32 @@
+{
+  "title": "Many network clients",
+  "readme": "benchmarks/net/README.md",
+  "environment": "WSL Ubuntu 24.04 · i7-13700HX · g++ 13 -O2",
+  "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/net",
+  "series": [
+    {
+      "id": "kavach",
+      "label": "Kavach, a coroutine per task",
+      "row": "**Kavach, a coroutine per task** ([decision 0048](../../docs/decisions/0048-tasks-as-coroutines-per-core.md), step 1)",
+      "color": "kavach"
+    },
+    {
+      "id": "cpp",
+      "label": "C++, all 24 cores",
+      "row": "C++, all 24 cores",
+      "color": "cpp"
+    },
+    {
+      "id": "cpp-one-core",
+      "label": "C++, one core",
+      "row": "C++, one core (`taskset -c 0`)",
+      "color": "cpp"
+    }
+  ],
+  "benchmarks": {
+    "clients": {
+      "column": "1,000 trips each",
+      "title": "clients — an echo server with 100 clients, 1,000 round trips each"
+    }
+  }
+}

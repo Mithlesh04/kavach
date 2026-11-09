@@ -1,0 +1,15 @@
+// Rule: `fs.write_bytes` writes any bytes, atomically, and `fs.read_bytes` reads them back.
+// Spec: 14.3, 2.13
+// expect output: Bytes(00ff7f)
+// expect output: 3
+
+use std.fs
+
+fn main() ! FsError uses Fs, Console {
+    const path = "kavach-test-bytes.bin"
+    try fs.write_bytes(path, Bytes([0, 255, 127]))
+    const back = try fs.read_bytes(path)
+    print(back)
+    print(back.len())
+    try fs.remove(path)
+}

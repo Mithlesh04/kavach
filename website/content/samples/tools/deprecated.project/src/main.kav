@@ -1,0 +1,7 @@
+use billing
+use billing.{half}
+
+fn main() {
+    print(billing.half(4))
+    print(half(6))
+}

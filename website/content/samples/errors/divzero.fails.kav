@@ -1,0 +1,5 @@
+fn main() {
+    const total = 100
+    const people = 0
+    print(total / people)
+}

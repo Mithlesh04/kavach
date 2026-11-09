@@ -1,0 +1,8 @@
+// Rule: Names may use letters from any Unicode script.
+// Spec: 1.5
+// expect output: नमस्ते, Asha
+
+fn main() {
+    const नाम = "Asha"
+    print("नमस्ते, {नाम}")
+}

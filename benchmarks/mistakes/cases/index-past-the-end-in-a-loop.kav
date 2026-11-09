@@ -1,0 +1,8 @@
+// Mistake: A loop whose range runs past the end of a list.
+
+fn main() {
+    const sizes = [1, 2, 3]
+    for i in 0..4 {
+        print(sizes[i])
+    }
+}

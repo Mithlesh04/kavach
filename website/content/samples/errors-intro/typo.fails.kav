@@ -1,0 +1,4 @@
+fn main() {
+    const total = 40
+    print(totl + 2)
+}

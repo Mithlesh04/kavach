@@ -1,0 +1,15 @@
+// Rule: Any parameter can be passed by name; parameters may have defaults.
+// Spec: 3.2
+// expect output: Hello, Asha!
+// expect output: Namaste, Asha!
+// expect output: Hi, Ravi!
+
+fn greet(name: String, greeting: String = "Hello") -> String {
+    "{greeting}, {name}!"
+}
+
+fn main() {
+    print(greet("Asha"))
+    print(greet("Asha", greeting: "Namaste"))
+    print(greet(greeting: "Hi", name: "Ravi"))
+}

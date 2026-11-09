@@ -1,0 +1,7 @@
+✓ test "only paid orders count"
+1 passed, 0 failed
+seed 7
+✓ total_paid  200 cases
+1 functions   1 ✓   0 ✗   1 weakly tested
+weakly tested (no contract or example; only checked for panics):
+  story.kav:6   total_paid

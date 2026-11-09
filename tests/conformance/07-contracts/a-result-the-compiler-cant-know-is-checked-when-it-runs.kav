@@ -1,0 +1,18 @@
+// Rule: An `ensure` is checked when the program runs for what the compiler can't know, and a known result that keeps it is no error.
+// Spec: 7.7
+// expect output: 1
+// expect panic: contract failed: ensure result > 0
+
+fn positive(x: Int) -> Int
+    ensure result > 0
+{
+    if x == 0 {
+        return 1
+    }
+    x
+}
+
+fn main() {
+    print(positive(0))
+    print(positive(-3))
+}

@@ -1,0 +1,7 @@
+use std.json
+
+fn main() ! Error {
+    const doc = try json.parse("[1e999999999]")
+    print(doc[0].decimal())
+    print(json.stringify(doc))
+}

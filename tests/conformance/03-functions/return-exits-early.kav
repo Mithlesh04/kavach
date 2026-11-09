@@ -1,0 +1,18 @@
+// Rule: `return` exits a function early.
+// Spec: 3.1
+// expect output: invalid
+// expect output: A
+// expect output: B
+
+fn grade(score: Int) -> String {
+    if score < 0 {
+        return "invalid"
+    }
+    if score >= 90 { "A" } else { "B" }
+}
+
+fn main() {
+    print(grade(-1))
+    print(grade(95))
+    print(grade(50))
+}

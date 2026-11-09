@@ -1,0 +1,8 @@
+// Rule: There are no implicit conversions between number types.
+// Spec: 2.1
+// expect compile error
+
+fn main() {
+    const n: Int = 7
+    const f: Float = n    // error: Int is not Float; write Float(n)
+}

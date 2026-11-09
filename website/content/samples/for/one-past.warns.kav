@@ -1,0 +1,6 @@
+fn main() {
+    const items = ["tea", "milk"]
+    for i in 0..=items.len() {
+        print(items[i])
+    }
+}

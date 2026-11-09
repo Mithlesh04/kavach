@@ -1,0 +1,17 @@
+type User {
+    name: String
+    age: Int
+}
+
+fn bump(inout n: Int) {
+    n += 1
+}
+
+fn main() {
+    let scores = [70, 80]
+    bump(scores[0])
+    print(scores)
+    let user = User(name: "Asha", age: 31)
+    bump(user.age)
+    print(user.age)
+}

@@ -1,0 +1,28 @@
+// Rule: a union field travels as a wrapper message holding a oneof: counting fieldless variants first, variant `k` is field `k` — an empty message for a fieldless variant, the variant's fields as a message otherwise; a union that never arrived fails to decode.
+// Spec: 14.14
+// expect output: [8, 7, 18, 2, 10, 0]
+// expect output: [8, 8, 18, 17, 26, 15, 9, 0, 0, 0, 0, 0, 0, 4, 64, 18, 4, 99, 97, 114, 100]
+// expect output: true
+// expect output: missing status: true
+
+use std.grpc
+
+type Status = Pending | Refused | Paid(amount: Float, by: String)
+
+type Order {
+    id: Int
+    status: Status
+}
+
+fn main() {
+    const a = Order(id: 7, status: Status.Pending)
+    const b = Order(id: 8, status: Status.Paid(amount: 2.5, by: "card"))
+    print(grpc.encode<Order>(a).to_list())
+    print(grpc.encode<Order>(b).to_list())
+    const back_a = grpc.decode<Order>(grpc.encode<Order>(a)) catch _ => a
+    const back_b = grpc.decode<Order>(grpc.encode<Order>(b)) catch _ => b
+    print(back_a == a and back_b == b)
+    // Only field 1 (`id`): the union never arrived, so decoding fails.
+    const bare = grpc.decode<Order>(Bytes([8, 9])) catch _ => Order(id: 0, status: Status.Refused)
+    print("missing status: {bare.id == 0}")
+}

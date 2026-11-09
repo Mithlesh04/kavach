@@ -1,0 +1,7 @@
+fn main() {
+    const temperature = 34
+    if temperature > 30 {
+        print("A hot day")
+    }
+    print("Done")
+}

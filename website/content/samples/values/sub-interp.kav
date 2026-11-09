@@ -1,0 +1,6 @@
+fn main() {
+    const items = 3
+    const price = 40
+    print("{items} items cost {items * price}")
+    print("a literal brace: \{items}")
+}

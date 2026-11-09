@@ -1,0 +1,21 @@
+[package]
+name = "kavach-runtime-net"
+description = "Networking shared by the interpreter and native code: TCP, UDP, TLS clients and the model call of ask<T>"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+bytes = "1"
+kavach-runtime-core = { path = "../core" }
+# The I/O event loop (decision 0046): epoll, kqueue and IOCP.
+mio = { version = "1", features = ["os-poll", "net"] }
+quinn-proto = { version = "0.11", default-features = false, features = ["rustls", "ring"] }
+# TLS (decision 0021): rustls with ring, and Mozilla's root certificates.
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+webpki-roots = "0.26"
+
+[lints]
+workspace = true

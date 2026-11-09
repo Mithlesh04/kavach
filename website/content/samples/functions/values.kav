@@ -1,0 +1,18 @@
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
+
+fn double(x: Int) -> Int {
+    x * 2
+}
+
+fn apply_twice(f: fn(Int) -> Int, x: Int) -> Int {
+    f(f(x))
+}
+
+fn main() {
+    const op: fn(Int, Int) -> Int = add
+    print(op(2, 3))
+    print(apply_twice(double, 5))
+    print([1, 2, 3].map(double))
+}

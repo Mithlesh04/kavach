@@ -1,0 +1,1 @@
+error: `model` in `[ai]` moved into the code: give the agent `model Model(name: "…")`, or a call `model:` (spec 8.4, decision 0056)

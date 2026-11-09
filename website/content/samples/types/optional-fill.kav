@@ -1,0 +1,14 @@
+type Node {
+    name: String
+}
+
+fn main() {
+    const nickname: String? = "Ash"         // a String where a String? is wanted
+    print(nickname ?? "none")
+    const pick: fn(Int) -> String? = _ => "x"
+    print(pick(1) ?? "none")
+    const held: Shared<Node?> = Shared(Node(name: "b"))
+    print(held.get()?.name ?? "none")
+    held.update(_ => Node(name: "a"))
+    print(held.get()?.name ?? "none")
+}

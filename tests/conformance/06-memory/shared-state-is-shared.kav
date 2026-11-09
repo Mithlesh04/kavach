@@ -1,0 +1,11 @@
+// Rule: Shared<T> is shared: every copy sees the same value.
+// Spec: 6.2
+// expect output: 2
+
+fn main() {
+    const counter = Shared(0)
+    const same = counter
+    counter.update(n => n + 1)
+    same.update(n => n + 1)
+    print(counter.get())
+}

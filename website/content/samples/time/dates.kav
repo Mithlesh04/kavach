@@ -1,0 +1,20 @@
+use std.time
+
+fn main() ! Error {
+    const due = time.Date(year: 2024, month: 1, day: 31)
+    print(due.add_months(1).iso())
+    print(due.weekday())
+    print(due.add_days(30).iso())
+    print(due.days_until(time.Date(year: 2024, month: 12, day: 25)))
+    print(time.utc(0).iso())
+    print(time.is_leap_year(1900))
+    print(time.is_leap_year(2000))
+    print(time.days_in_month(2026, 2))
+    const day = try time.parse_date("2026-11-04")
+    print(day.weekday())
+    const bad = time.parse_date("2026-02-30") catch e => {
+        print("refused: {e}")
+        return
+    }
+    print(bad.iso())
+}

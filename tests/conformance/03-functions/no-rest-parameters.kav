@@ -1,0 +1,12 @@
+// Rule: There are no rest parameters: a function that takes any number of values takes a list, and separate values are a compile error that says to put them in one.
+// Spec: 3.1
+// expect compile error
+
+fn total(prices: [Int]) -> Int {
+    prices.sum(x => x)
+}
+
+fn main() {
+    print(total([4, 8, 15]))
+    print(total(4, 8, 15))     // error: `total` takes one list, `prices`, not separate values
+}

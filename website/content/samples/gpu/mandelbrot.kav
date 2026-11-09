@@ -1,0 +1,34 @@
+type Point {
+    x: Float32
+    y: Float32
+}
+
+gpu fn escape(cx: Float32, cy: Float32) -> Int32 {
+    let x: Float32 = 0.0
+    let y: Float32 = 0.0
+    let n = 0
+    while n < 50 and x * x + y * y <= 4.0 {
+        const t = x * x - y * y + cx
+        y = 2.0 * x * y + cy
+        x = t
+        n += 1
+    }
+    n
+}
+
+fn main() {
+    let points: [Point] = []
+    for row in 0..12 {
+        for col in 0..40 {
+            points.push(Point(x: -2.2 + Float32(col) * 0.075, y: -1.1 + Float32(row) * 0.2))
+        }
+    }
+    const counts = points.map(p => escape(p.x, p.y))
+    for row in 0..12 {
+        let line = ""
+        for col in 0..40 {
+            line += if counts[row * 40 + col] == 50 { "#" } else { "." }
+        }
+        print(line)
+    }
+}

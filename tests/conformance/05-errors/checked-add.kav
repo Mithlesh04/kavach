@@ -1,0 +1,11 @@
+// Rule: checked_add returns none on overflow.
+// Spec: 5.6
+// expect output: 0
+// expect output: 3
+
+fn main() {
+    const max = 9_223_372_036_854_775_807
+    print(max.checked_add(1) ?? 0)
+    const one = 1
+    print(one.checked_add(2) ?? 0)
+}

@@ -1,0 +1,13 @@
+// Rule: list.get(i) and map[key] return optionals.
+// Spec: 2.2
+// expect output: none
+// expect output: 31
+// expect output: 0
+
+fn main() {
+    const names = ["Asha", "Ravi"]
+    print(names.get(5) ?? "none")
+    const ages = ["asha": 31]
+    print(ages["asha"] ?? 0)
+    print(ages["ravi"] ?? 0)
+}

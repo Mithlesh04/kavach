@@ -1,0 +1,9 @@
+// Rule: A `for` over known numbers whose first round divides by 0 is a compile error.
+// Spec: 1.8
+// expect compile error
+
+fn main() {
+    for d in 0..3 {
+        print(12 / d)    // error: this always panics: division by zero
+    }
+}

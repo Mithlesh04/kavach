@@ -1,0 +1,63 @@
+// Rule: Reading a number from text takes every value its type holds, trims spaces, and gives an error for anything else.
+// Spec: 2.1
+// expect output: ok 42
+// expect output: ok -7
+// expect output: ok 5
+// expect output: ok 9223372036854775807
+// expect output: err `9223372036854775808` is not a valid Int
+// expect output: ok -9223372036854775808
+// expect output: err `` is not a valid Int
+// expect output: err `12x` is not a valid Int
+// expect output: ok 18446744073709551615
+// expect output: err `18446744073709551616` is not a valid UInt64
+// expect output: err `-1` is not a valid UInt64
+// expect output: ok 255
+// expect output: err `256` is not a valid UInt8
+// expect output: ok 2.5
+// expect output: err `nope` is not a valid Float
+
+fn show_u64(text: String) {
+    match UInt64(text) {
+        ok(n) => print("ok {n}"),
+        err(e) => print("err {e}"),
+    }
+}
+
+fn show_int(text: String) {
+    match Int(text) {
+        ok(n) => print("ok {n}"),
+        err(e) => print("err {e}"),
+    }
+}
+
+fn show_u8(text: String) {
+    match UInt8(text) {
+        ok(n) => print("ok {n}"),
+        err(e) => print("err {e}"),
+    }
+}
+
+fn show_float(text: String) {
+    match Float(text) {
+        ok(n) => print("ok {n}"),
+        err(e) => print("err {e}"),
+    }
+}
+
+fn main() {
+    show_int("42")
+    show_int("  -7  ")
+    show_int("+5")
+    show_int("9223372036854775807")
+    show_int("9223372036854775808")
+    show_int("-9223372036854775808")
+    show_int("")
+    show_int("12x")
+    show_u64("18446744073709551615")
+    show_u64("18446744073709551616")
+    show_u64("-1")
+    show_u8("255")
+    show_u8("256")
+    show_float(" 2.5 ")
+    show_float("nope")
+}

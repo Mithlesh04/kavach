@@ -1,0 +1,9 @@
+use std.time
+
+fn main() {
+    const backup = 2.days
+    print(backup.ms)
+    print(90.seconds.ms)
+    const retries = 3
+    print((retries * 5).minutes.ms)
+}

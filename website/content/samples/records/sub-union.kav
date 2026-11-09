@@ -1,0 +1,13 @@
+type Shape = Circle(radius: Float) | Rect(width: Float, height: Float)
+
+fn area(s: Shape) -> Float {
+    match s {
+        Shape.Circle(radius) => 3.14 * radius * radius
+        Shape.Rect(width, height) => width * height
+    }
+}
+
+fn main() {
+    print(area(Shape.Circle(radius: 2.0)))
+    print(area(Shape.Rect(width: 3.0, height: 4.0)))
+}

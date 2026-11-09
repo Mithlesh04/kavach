@@ -1,0 +1,9 @@
+// Rule: A name without `pub` can't be used from another module.
+// Spec: 10.1
+// expect compile error
+
+use orders
+
+fn main() {
+    print(orders.helper())      // error: `helper` is private to module `orders`
+}

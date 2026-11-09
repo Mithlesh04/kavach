@@ -1,0 +1,1 @@
+panic: can't wait inside `update`: the `Shared` value stays locked until its function returns. Get what the update needs first, then update (spec 6.2)
