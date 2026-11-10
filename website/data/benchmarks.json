@@ -347,7 +347,7 @@
     "json": {
       "title": "JSON on large data",
       "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · Python 3.12 (its json module is C) · typical of 5 runs",
-      "measured": "2026-11-09",
+      "measured": "2026-11-10",
       "benchmarks": {
         "whole": {
           "title": "300,000 orders (52 MB): write, parse, read, decode",
@@ -357,13 +357,13 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 1138
+              "value": 1336
             },
             {
               "id": "python",
               "label": "Python 3.12",
               "color": "python",
-              "value": 5467
+              "value": 6519
             }
           ],
           "verify": "kavach build benchmarks/json/kavach/json.kav && ./json; python3 benchmarks/json/python/json_bench.py",
@@ -377,13 +377,13 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 186
+              "value": 209
             },
             {
               "id": "python",
               "label": "Python 3.12",
               "color": "python",
-              "value": 1232
+              "value": 1501
             }
           ],
           "verify": "kavach build benchmarks/json/kavach/json.kav && ./json; python3 benchmarks/json/python/json_bench.py",
@@ -397,13 +397,13 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 448
+              "value": 503
             },
             {
               "id": "python",
               "label": "Python 3.12",
               "color": "python",
-              "value": 564
+              "value": 690
             }
           ],
           "verify": "kavach build benchmarks/json/kavach/json.kav && ./json; python3 benchmarks/json/python/json_bench.py",
@@ -417,13 +417,13 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 95
+              "value": 94
             },
             {
               "id": "python",
               "label": "Python 3.12",
               "color": "python",
-              "value": 48
+              "value": 58
             }
           ],
           "verify": "kavach build benchmarks/json/kavach/json.kav && ./json; python3 benchmarks/json/python/json_bench.py",
@@ -437,13 +437,13 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 310
+              "value": 381
             },
             {
               "id": "python",
               "label": "Python 3.12",
               "color": "python",
-              "value": 2298
+              "value": 2534
             }
           ],
           "verify": "kavach build benchmarks/json/kavach/json.kav && ./json; python3 benchmarks/json/python/json_bench.py",
@@ -988,7 +988,7 @@
     "tasks": {
       "title": "Tasks on all cores",
       "environment": "WSL Ubuntu 24.04 · i7-13700HX (8 fast cores) · kavach build (LLVM) · g++ 13 -O2 · best of 3 rounds of 3 runs",
-      "measured": "2026-11-09",
+      "measured": "2026-11-10",
       "benchmarks": {
         "parallel": {
           "title": "parallel_map: eight sums of 150M rounds each, one task each",
@@ -998,13 +998,13 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 524
+              "value": 677
             },
             {
               "id": "cpp",
               "label": "C++",
               "color": "cpp",
-              "value": 470
+              "value": 776
             }
           ],
           "verify": "kavach build benchmarks/tasks/kavach/parallel-map.kav && ./parallel-map",
@@ -1018,13 +1018,13 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 3555
+              "value": 4456
             },
             {
               "id": "cpp",
               "label": "C++",
               "color": "cpp",
-              "value": 3402
+              "value": 4788
             }
           ],
           "verify": "kavach build benchmarks/tasks/kavach/parallel-map.kav && ./parallel-map",

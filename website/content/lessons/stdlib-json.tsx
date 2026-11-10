@@ -20,8 +20,12 @@ function jsonReadme(re: RegExp, what: string): string {
   if (!said) throw new Error(`benchmarks/json/README.md no longer says ${what}`);
   return said[1];
 }
+const digitsShare = () =>
+  jsonReadme(/read the digits each time, but that is (only about \d+% of `read`) \(profiled/, "how little the digits cost");
+const keysByAddress = () =>
+  jsonReadme(/Since \d{4}-\d{2}-\d{2} (a key is found as Python finds it, .+ one copy of)\./, "how keys are found");
 const readLoses = () =>
-  jsonReadme(/so `int\(\)` and `float\(\)` read the digits each time: (that is most of what `read` still loses to Python), whose parser/, "why read is slower");
+  jsonReadme(/Most of what `read` still loses to Python is (reaching each map: .+ allocations of their own)\./, "why read is slower");
 
 // ---------- JSON ----------
 
@@ -132,8 +136,9 @@ export const jsonDoc: LessonDoc = {
       <Note>
         Since{" "}
         <SrcRef file="docs/decisions/0071-json-numbers-keep-their-digits.md" label="decision 0071" />, a <C>Json</C>{" "}
-        number keeps its exact digits, so <C>int()</C> and <C>float()</C> read the digits each time:{" "}
-        {readLoses().replace("`read`", "reading")}, whose parser made the numbers once.
+        number keeps its exact digits, so <C>int()</C> and <C>float()</C> read the digits each time — but a profile
+        showed that is {digitsShare().replace("`read`", "reading")}. And {keysByAddress()}. Most of what reading
+        still loses to Python is {readLoses()}.
       </Note>
       <VerifyBlock suite="json" id="whole" />
       <div><SrcRef file={`docs/spec/${JSON_SPEC}`} label="spec 2.12 · Json" /></div>
