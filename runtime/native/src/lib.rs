@@ -139,17 +139,17 @@ pub fn run_entry(entry: *const u8, fails: bool) -> i32 {
             kavach_runtime_core::leak_message(*n, &format!("{path}:{line}"))
         );
     }
+    // Not counted: key objects that other threads keep to find keys fast
+    // until the program ends (`rt_maps/known_keys.rs`).
+    let live = || heap::live_objects().saturating_sub(rt_maps::known_keys::held());
     if !cycles.is_empty() {
         eprintln!("{}", kavach_runtime_core::LEAK_HINT);
     } else if check_leaks
-        && heap::live_objects() != 0
+        && live() != 0
         // What a panicking task's frames held is never freed (decision 0065).
         && !rt_task_errors::PANICKED.load(std::sync::atomic::Ordering::Relaxed)
     {
-        eprintln!(
-            "kavach: {} heap objects were not freed",
-            heap::live_objects()
-        );
+        eprintln!("kavach: {} heap objects were not freed", live());
     }
     exit_code
 }

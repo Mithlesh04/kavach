@@ -12,6 +12,8 @@ use crate::rt::{panic_with, type_of};
 use crate::rt_data::optional;
 use kavach_kir::{RtOp, Shape, Type};
 
+pub(crate) mod known_keys;
+
 /// `list[i] = v`: a copy of the list (unless unshared) with item `i` set.
 pub fn list_set(list: i64, i: i64, value: i64, line: i32) -> i64 {
     let q = unique(list);
@@ -92,52 +94,6 @@ pub extern "C-unwind" fn kv_map_get_int(map: i64, key: i64, fallback: i64) -> i6
     }
     value.unwrap_or(fallback)
 }
-
-/// `map[key]` for a text key and a value held by reference, with `map`
-/// borrowed and the key given as UTF-8 bytes: the value (retained), or 0
-/// for `none`. What generated code calls for `j["name"]`: no text object
-/// is made for the key, and nothing is dispatched on the map's type.
-#[unsafe(no_mangle)]
-pub extern "C-unwind" fn kv_map_get_text(map: i64, ptr: *const u8, len: usize) -> i64 {
-    // The key is the program's constant: its address names its text for
-    // the whole run, so its hash and where it was found last are kept by
-    // address. Reading JSON objects of one shape, the key is there again.
-    let at = (ptr as usize >> 3) % KEYS_SEEN;
-    let (key, (hash, hint)) = SEEN.with(|seen| {
-        let (was, known) = seen[at].get();
-        let key = crate::rt::text(ptr, len);
-        if was == (ptr as usize, len) {
-            (key, known)
-        } else {
-            (key, (text_hash(key), usize::MAX))
-        }
-    });
-    let same = |k: u64| crate::heap::with_str(k as i64, |s| s == key);
-    let found = match &*crate::heap::data(map).borrow() {
-        Data::Map(t) => t.find_from(hint, hash, same).map(|e| {
-            let value = t.slots[e * 2 + 1] as i64;
-            retain(value);
-            (value, e)
-        }),
-        _ => None,
-    };
-    let Some((value, e)) = found else { return 0 };
-    if e != hint {
-        SEEN.with(|seen| seen[at].set(((ptr as usize, len), (hash, e))));
-    }
-    value
-}
-
-/// How many constant keys `kv_map_get_text` keeps: a slot each, by address.
-const KEYS_SEEN: usize = 64;
-
-thread_local! {
-    /// Each constant key's address and length, its hash, and the entry it
-    /// was found at.
-    static SEEN: [Seen; KEYS_SEEN] = const { [const { std::cell::Cell::new(((0, 0), (0, usize::MAX))) }; KEYS_SEEN] };
-}
-
-type Seen = std::cell::Cell<((usize, usize), (u64, usize))>;
 
 /// The hash `hash_slot` gives a text key.
 fn text_hash(key: &str) -> u64 {

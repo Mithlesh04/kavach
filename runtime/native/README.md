@@ -58,4 +58,5 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_otlp.rs` | Log events to an OpenTelemetry collector (spec 14.12), with `runtime/net`'s exporter; its own entry, so only programs that export link it |
 | `src/rt_cli.rs` | `cli.parse<T>()`: reading and converting the arguments |
 | `src/rt_maps.rs` | Map and set operations, `Shared`, `list[i] = v` |
+| `src/rt_maps/known_keys.rs` | `map["key"]` for a constant key: each key's hash and entry kept by its address, and the key object held once found twice, so a JSON object's key is found by comparing addresses |
 | `src/display.rs` | Printing (spec 1.11), equality and ordering of heap values |

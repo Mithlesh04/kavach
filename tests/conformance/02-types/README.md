@@ -65,6 +65,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.11 | [secret-cannot-be-printed.kav](secret-cannot-be-printed.kav) | A secret value must not flow into print. | compile error |
 | 2.1 | [numbers-read-from-text-at-their-limits.kav](numbers-read-from-text-at-their-limits.kav) | Reading a number from text takes every value its type holds, trims spaces, and gives an error for anything else. | runs |
 | 2.12 | [json-reads-never-panic.kav](json-reads-never-panic.kav) | Reading a `Json` never panics: a missing key or index gives `Null`, and the methods give `none` when the value has another kind. | runs |
+| 2.12 | [json-reads-find-each-objects-own-field.kav](json-reads-find-each-objects-own-field.kav) | `j["key"]` gives each object's own field, wherever the key is in the object and whatever made it, or `Null` when it has none. | runs |
 | 2.12 | [json-literals-build-values.kav](json-literals-build-values.kav) | Where a `Json` is expected, literals become `Json` values, and values inside them are encoded. | runs |
 | 2.12 | [json-parse-and-stringify.kav](json-parse-and-stringify.kav) | `json.parse` reads JSON text into a `Json`; `json.stringify` writes it back, compact or indented. | runs |
 | 2.12 | [json-decode-in-generic-functions.kav](json-decode-in-generic-functions.kav) | Inside a generic function, `json.decode<T>` decodes into the type its call gave `T`, written or inferred. | runs |
