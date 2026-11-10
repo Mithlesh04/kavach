@@ -16,6 +16,7 @@ const today: [cmd: string, does: string][] = [
   ["kavach run --dry-run", "run without making any capability call"],
   ["kavach run --native", "compile to machine code first"],
   ["kavach build [file.kav] [-o out]", "write an executable"],
+  ["kavach build --compress [=max]", "write a smaller executable, packed without losing anything; it unpacks itself when it starts"],
   ["kavach build --lib lib.kav", "write a shared library and a C header, for other languages"],
   ["kavach test [file.kav]", "run examples, test blocks and generated tests"],
   ["kavach check [file.kav]", "only check for errors; --format json for tools"],
@@ -134,6 +135,14 @@ export const buildDoc: LessonDoc = {
         <C>kavach build hello.kav</C>, becomes <C>hello</C> (<C>hello.exe</C> on Windows) in the current folder;{" "}
         <C>-o</C> names it. See <Link href="/docs/speed/native-executables/">Native Executables</Link>.
       </P>
+      <H2>A smaller executable</H2>
+      <Terminal commands session={"kavach build --compress hello.kav -o hello\n./hello"} />
+      <P>
+        <C>--compress</C> packs the executable without losing anything: it unpacks itself when it starts, and the
+        build prints what it saved, such as <C>packed: 571 KB, 42% of 1346 KB</C>. <C>--compress=max</C> packs
+        harder. Some antivirus tools distrust programs that unpack themselves, which is why packing is asked for,
+        not done by default.
+      </P>
       <H2>A program&apos;s version</H2>
       <P>
         Every executable carries its package&apos;s <C>name</C> and <C>version</C> from <C>kavach.toml</C>, and the
@@ -157,6 +166,7 @@ export const buildDoc: LessonDoc = {
       </ul>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/10-modules-and-packages.md" label="spec 10.5 · a program's version" />
+        <SrcRef file="tools/cli/tests/packed.rs" label="packed executables, tested" />
         <SrcRef file="tools/cli/tests/version.rs" line={26} symbol="a_program_says_what_built_it_and_answers_version_only_when_asked_to" label="its test, in every way of running" />
         <SrcRef file="runtime/native/src/rt_std.rs" line={359} symbol="a_program_for_other_operations_is_stopped_with_a_reason" label="the run-time library's check" />
       </div>
