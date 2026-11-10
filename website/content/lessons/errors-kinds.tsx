@@ -100,6 +100,11 @@ export const errorKindsDoc: LessonDoc = {
       <P>The compiler follows a <C>let</C> too, while nothing in between may change it:</P>
       <Ex name="errors/let-known.fails" />
       <P>
+        Not only arithmetic: <C>.unwrap()</C> on an optional the compiler knows is still <C>none</C> would always
+        panic, so it is caught the same way:
+      </P>
+      <Ex name="errors/unwrap-known.fails" />
+      <P>
         A <C>let</C> is known no more once a branch, a loop or a lambda may set it, once an <C>if</C>, <C>while</C> or{" "}
         <C>match</C> tests it, or once it is passed to an <C>inout</C> parameter. The test may be what keeps the
         arithmetic safe, so this one compiles and runs:
@@ -126,6 +131,7 @@ export const errorKindsDoc: LessonDoc = {
         <SrcRef file="tests/conformance/01-basics/a-known-loop-that-always-panics-is-an-error.kav" label="past the end, tested" />
         <SrcRef file="tests/conformance/01-basics/a-known-loop-that-adds-past-its-type-is-an-error.kav" label="adds past its type, tested" />
         <SrcRef file="tests/conformance/01-basics/a-known-value-through-a-conversion-is-checked.kav" label="through a conversion, tested" />
+        <SrcRef file="tests/conformance/01-basics/unwrap-of-a-known-none-is-an-error.kav" label="unwrap of none, tested" />
         <SrcRef file="tests/conformance/01-basics/a-loop-that-may-not-reach-a-round-is-not-assumed.kav" label="loops not checked, tested" />
       </div>
       <Note>

@@ -1,0 +1,4 @@
+fn main() {
+    let found: Int? = none
+    print(found.unwrap())
+}

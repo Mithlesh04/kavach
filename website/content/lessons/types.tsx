@@ -206,7 +206,16 @@ export const optionalReadDoc: LessonDoc = {
   lead: "Read an optional with ?? for a default, ?. to read through, or if let to act only when it is there.",
   simple: <>Three ways to open a box that might be empty: use a spare when it is empty (<C>??</C>), look inside only if something is there (<C>?.</C>), or do a job only when it is full (<C>if let</C>).</>,
   minutes: 3,
-  body: <Ex name="types/optionals-basic" />,
+  body: (
+    <>
+      <Ex name="types/optionals-basic" />
+      <Note>
+        There is also <C>.unwrap()</C>: the value, or a panic when it is <C>none</C>. Avoid it outside tests. When
+        the compiler knows the value is <C>none</C>, it won&apos;t even compile: see{" "}
+        <Link href="/docs/errors/kinds-of-errors/">Kinds of Errors</Link>.
+      </Note>
+    </>
+  ),
 };
 
 // ---------- Anonymous Records ----------
