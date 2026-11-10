@@ -1,0 +1,7 @@
+// Mistake: `.unwrap()` on a value still `none`, set before a step that was meant to fill it.
+
+fn main() {
+    let winner: String? = none
+    print("counting votes")
+    print("the winner is {winner.unwrap()}")
+}

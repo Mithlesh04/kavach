@@ -1,0 +1,9 @@
+// Rule: `.unwrap()` on a value the compiler knows is `none` always panics, so it is a compile error.
+// Spec: 1.8, 2.7
+// expect compile error
+
+fn main() {
+    let found: Int? = none
+    print("looking")
+    print(found.unwrap())    // error: this always panics: `.unwrap()` on `none`
+}

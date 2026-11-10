@@ -1,0 +1,25 @@
+// Rule: An optional set to `none` is known no more after a branch or a loop that may set it, nor where an `if` tests it, so `.unwrap()` there gets no compile error.
+// Spec: 1.8
+// expect output: 7
+// expect output: 3
+// expect output: 4
+
+fn main() {
+    let found: Int? = none
+    for n in [5, 7] {
+        if n > 6 {
+            found = n
+        }
+    }
+    print(found.unwrap())
+
+    let first: Int? = none
+    if first == none {
+        first = 3
+    }
+    print(first.unwrap())
+
+    let set: Int? = none
+    set = 4
+    print(set.unwrap())
+}

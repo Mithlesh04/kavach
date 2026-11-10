@@ -50,6 +50,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.7 | [optional-chaining-and-default.kav](optional-chaining-and-default.kav) | ?. reads through an optional, ?? gives a default, if let unwraps. | runs |
 | 2.7 | [a-value-fills-an-optional-inside-a-type.kav](a-value-fills-an-optional-inside-a-type.kav) | A `T` can be used wherever a `T?` is expected, also as a lambda's result and as the value of a `Shared<T?>`. | runs |
 | 2.7 | [unwrap-none-panics.kav](unwrap-none-panics.kav) | .unwrap() on none panics. | panic |
+| 2.7 | [unwrap-gives-the-value-of-every-kind.kav](unwrap-gives-the-value-of-every-kind.kav) | `.unwrap()`, `is_some()` and `is_none()` work on an optional of every kind of value. | runs |
 | 2.8 | [interfaces-are-explicit.kav](interfaces-are-explicit.kav) | A type implements an interface only when it says so. | compile error |
 | 2.8 | [interfaces-need-every-method.kav](interfaces-need-every-method.kav) | A type that says it implements an interface has each of its methods. | compile error |
 | 2.8, 3.9 | [interface-methods-keep-inout.kav](interface-methods-keep-inout.kav) | An implementing method marks the same parameters `inout`. | compile error |

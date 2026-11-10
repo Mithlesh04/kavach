@@ -2,7 +2,14 @@
 // Spec: 2.7
 // expect panic
 
+/// `none` from a call: a `none` the compiler knows is a compile error (1.8).
+fn find(id: Int) -> Int? {
+    if id == 7 {
+        return 7
+    }
+    none
+}
+
 fn main() {
-    const missing: Int? = none
-    const _n = missing.unwrap()
+    const _n = find(3).unwrap()
 }

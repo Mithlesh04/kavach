@@ -1,0 +1,17 @@
+// Rule: `.unwrap()`, `is_some()` and `is_none()` work on an optional of every kind of value.
+// Spec: 2.7
+// expect output: 5 true false
+// expect output: hi true
+// expect output: 2
+// expect output: 1.5
+
+fn main() {
+    const n: Int? = 5
+    print("{n.unwrap()} {n.is_some()} {n.is_none()}")
+    const s: String? = "hi"
+    print("{s.unwrap()} {s.is_some()}")
+    const xs: [Int]? = [1, 2]
+    print(xs.unwrap().len())
+    const f: Float? = 1.5
+    print(f.unwrap())
+}

@@ -15,4 +15,4 @@ if let u = find_user(7) {
 
 - A `T` can be used wherever a `T?` is expected.
 - `none` is the missing value.
-- `.unwrap()` returns the value or panics. Avoid it outside tests.
+- `.unwrap()` returns the value or panics. Avoid it outside tests. On a value the compiler knows is `none`, it is a compile error (1.8).

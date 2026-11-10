@@ -4,6 +4,7 @@
 //! that does gives the message. Only a body that can't leave early counts:
 //! a `break` or a `try` may be what keeps the last round from running.
 
+use super::Holds;
 use super::lets::mentions_set;
 use super::{BinaryOp, Known};
 use crate::constants::fits;
@@ -91,7 +92,7 @@ impl Known<'_, '_> {
         for (var, (first, last)) in ranges {
             let mut panics = false;
             for v in [&first, &last] {
-                self.lets.insert(var, v.clone());
+                self.lets.insert(var, Holds::Whole(v.clone()));
                 check(self);
                 panics |= self.errors.len() > errors;
                 self.errors.truncate(errors);
@@ -99,7 +100,7 @@ impl Known<'_, '_> {
             if panics {
                 let mut v = first;
                 for _ in 0..MOST_ROUNDS_TRIED {
-                    self.lets.insert(var, v.clone());
+                    self.lets.insert(var, Holds::Whole(v.clone()));
                     check(self);
                     if self.errors.len() > errors || v == last {
                         break;
@@ -107,7 +108,7 @@ impl Known<'_, '_> {
                     v += 1;
                 }
                 if self.errors.len() == errors {
-                    self.lets.insert(var, last);
+                    self.lets.insert(var, Holds::Whole(last));
                     check(self);
                 }
             }
@@ -156,7 +157,7 @@ impl Known<'_, '_> {
                 continue;
             }
             let (Some(start), Some(step), Some(p)) = (
-                self.lets.get(&t).cloned(),
+                self.lets.get(&t).and_then(Holds::whole).cloned(),
                 self.value(value),
                 self.whole(target),
             ) else {

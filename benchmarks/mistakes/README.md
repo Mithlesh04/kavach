@@ -15,7 +15,7 @@ The mistakes come from [classic-mistakes.md](../../docs/vision/classic-mistakes.
 
 ## Results
 
-Measured 2026-11-07 with `kavach check` and `kavach fix`, at commit time. 27 of 27 caught before a run, 7 of them with an auto-fix.
+Measured 2026-11-10 with `kavach check` and `kavach fix`, at commit time. 28 of 28 caught before a run, 7 of them with an auto-fix.
 
 | Mistake | Caught by | Message |
 |---|---|---|
@@ -45,6 +45,7 @@ Measured 2026-11-07 with `kavach check` and `kavach fix`, at commit time. 27 of 
 | [An error left unhandled](cases/unhandled-error.kav) | compile error | `read_text` can fail: handle the error with `try`, `catch` or `match` |
 | [A `match` arm that can never match](cases/unreachable-arm.kav) | warning, auto-fix | this arm never matches: the arm above it matches every value first. Remove it, or move it up (spec 4.7) |
 | [A result computed and thrown away](cases/unused-result.kav) | compile error | the result of `total` is unused: use it, or write `const _ = …` to throw it away |
+| [`.unwrap()` on a value still `none`, set before a step that was meant to fill it](cases/unwrap-of-none.kav) | compile error | this always panics: `.unwrap()` on `none`. Handle `none` with `if let`, `match` or `?? default` (spec 1.8) |
 | [Text passed where a number is wanted](cases/wrong-argument-type.kav) | compile error | expected `Int`, found `String` |
 
 ## Running it

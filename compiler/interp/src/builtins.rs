@@ -191,6 +191,15 @@ impl<'a> Interp<'a> {
         args: Vec<Value<'a>>,
         span: Span,
     ) -> Eval<'a> {
+        // A present optional is the value itself (spec 2.7), so these come
+        // first, whatever kind of value it holds: only optionals have them.
+        if args.is_empty() && !matches!(recv, Value::None) {
+            match name {
+                "unwrap" => return Ok(recv),
+                "is_some" | "is_none" => return Ok(Value::Bool(name == "is_some")),
+                _ => {}
+            }
+        }
         // `task.wait()` (spec 9.1).
         if let Value::Socket(s) = &recv {
             return self.socket_method(s, name, &args, None, span);
@@ -286,11 +295,8 @@ impl<'a> Interp<'a> {
                 *cell.borrow_mut() = next;
                 Ok(Value::Unit)
             }
-            // A present optional is the value itself (spec 2.7), and `spawn`
-            // runs at once, so a task's value is ready.
-            (v, "unwrap" | "wait") => Ok(v),
-            (_, "is_none") => Ok(Value::Bool(false)),
-            (_, "is_some") => Ok(Value::Bool(true)),
+            // `spawn` runs at once, so a task's value is ready.
+            (v, "wait") => Ok(v),
             (other, _) => {
                 Err(self.panic(format!("{} has no method `{name}`", other.display()), span))
             }

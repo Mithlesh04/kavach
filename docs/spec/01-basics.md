@@ -219,7 +219,7 @@ print(1 < f() <= 10)                   // f is called once
 - `x % 2 == 1` on a signed number. `%` keeps the sign of `x`, so `-3 % 2` is `-1` and the test misses negative odd numbers. Write `x % 2 != 0`.
 - `/` between two whole-number literals that don't divide evenly. `1 / 2` is `0`, since whole numbers divide to a whole number. Write `1.0 / 2.0` for `0.5`, or `1.div_floor(2)` when the whole part is meant.
 
-**Arithmetic that always panics** is a compile error, when the compiler knows the values: a whole-number division or remainder by `0`, `+`, `-` or `*` of known values whose result doesn't fit the type, and an index outside a list whose length is known (a list literal, or a `const` set to one). The message is the one the run would give. A known value is a literal, a `const` set to one, a known whole number converted to a whole-number type it fits (`Int8(i)`), or a `let` set to one with nothing in between that may change it: a branch, a loop or a lambda may or may not run, so a `let` it sets is known no more, nor is a `let` an `if`, `while` or `match` tests, since the test may be what keeps the arithmetic safe.
+**Arithmetic that always panics** is a compile error, when the compiler knows the values: a whole-number division or remainder by `0`, `+`, `-` or `*` of known values whose result doesn't fit the type, an index outside a list whose length is known (a list literal, or a `const` set to one), and `.unwrap()` on a value known to be `none` (2.7). The message is the one the run would give. A known value is a literal (`none` too), a `const` set to one, a known whole number converted to a whole-number type it fits (`Int8(i)`), or a `let` set to one with nothing in between that may change it: a branch, a loop or a lambda may or may not run, so a `let` it sets is known no more, nor is a `let` an `if`, `while` or `match` tests, since the test may be what keeps the arithmetic safe.
 
 A `for` over a range of known numbers counts too, when nothing in its body can leave early (`break`, `continue`, `return`, `fail` or `try`): each statement that always runs in the body is checked for the loop's first and last values, and a `+=` or `-=` of a known number for all its rounds. The message is that of the first round that panics. A body that can leave early may be what keeps that round from running, so it gets no error; nor does a statement inside an `if`, a `match` or an inner loop that may not run.
 
@@ -229,6 +229,9 @@ print(limit + 1)      // error: this always panics: integer overflow: 2147483647
 print(total / 0)      // error: this always panics: division by zero
 const sizes = [1, 2, 3]
 print(sizes[5])       // error: this always panics: index 5 is out of range: the list has 3 items
+
+let found: Int? = none
+print(found.unwrap()) // error: this always panics: `.unwrap()` on `none`
 
 let count: Int8 = 120
 count += 7

@@ -8,7 +8,8 @@
 //! two whole literals that don't divide evenly gets a warning.
 //! A call whose known arguments break a `require` always panics too, as
 //! does a known result that breaks an `ensure` (spec 7.7,
-//! `always_panics/contracts.rs`).
+//! `always_panics/contracts.rs`), and `.unwrap()` on a value known to be
+//! `none`.
 
 use crate::checker::Checker;
 use crate::constants::fits;
@@ -18,6 +19,8 @@ use kavach_ast::*;
 use kavach_resolver::{DefId, DefKind};
 use num_bigint::{BigInt, Sign};
 use std::collections::{HashMap, HashSet};
+
+const UNWRAP_NONE: &str = "this always panics: `.unwrap()` on `none`. Handle `none` with `if let`, `match` or `?? default` (spec 1.8)";
 
 const DIVIDE_BY_ZERO: &str =
     "this always panics: division by zero. Divide by something that can't be 0 (spec 1.8)";
@@ -67,10 +70,10 @@ impl Checker<'_> {
 struct Known<'c, 'r> {
     checker: &'c Checker<'r>,
     types: HashMap<(u32, u32), Ty>,
-    /// The `const`s set to a whole number the compiler knows.
-    consts: HashMap<DefId, BigInt>,
+    /// The `const`s set to a value the compiler knows.
+    consts: HashMap<DefId, Holds>,
     /// The `let`s whose value is known here.
-    lets: HashMap<DefId, BigInt>,
+    lets: HashMap<DefId, Holds>,
     /// The `let`s set in code that may not run, around what is visited.
     frozen: HashSet<DefId>,
     /// The variables of the known loops around what is visited, each with
@@ -86,6 +89,22 @@ struct Known<'c, 'r> {
     warnings: Vec<(Span, String)>,
 }
 
+/// A value the compiler knows.
+#[derive(Clone)]
+enum Holds {
+    Whole(BigInt),
+    Nothing,
+}
+
+impl Holds {
+    fn whole(&self) -> Option<&BigInt> {
+        match self {
+            Holds::Whole(n) => Some(n),
+            Holds::Nothing => None,
+        }
+    }
+}
+
 mod contracts;
 mod lets;
 mod rounds;
@@ -99,7 +118,8 @@ impl Known<'_, '_> {
             ExprKind::Int(n) => Some(BigInt::from(*n)),
             ExprKind::Name(id) => {
                 let d = self.checker.res.uses.get(&id.span.start)?;
-                self.consts.get(d).or_else(|| self.lets.get(d)).cloned()
+                let known = self.consts.get(d).or_else(|| self.lets.get(d))?;
+                known.whole().cloned()
             }
             ExprKind::Unary(UnaryOp::Neg, x) => Some(-self.value(x)?),
             ExprKind::Call { callee, args, .. } => self.converted(callee, args),
@@ -113,6 +133,45 @@ impl Known<'_, '_> {
                 })
             }
             _ => None,
+        }
+    }
+
+    /// What `e` holds when the compiler knows it: a whole number as
+    /// `value` gives it, or `none`.
+    fn holds(&self, e: &Expr) -> Option<Holds> {
+        if self.is_none(e) {
+            return Some(Holds::Nothing);
+        }
+        self.value(e).map(Holds::Whole)
+    }
+
+    /// Whether `e` is known to be `none`.
+    fn is_none(&self, e: &Expr) -> bool {
+        match &e.kind {
+            ExprKind::None => true,
+            ExprKind::Name(id) => {
+                let Some(d) = self.checker.res.uses.get(&id.span.start) else {
+                    return false;
+                };
+                let known = self.consts.get(d).or_else(|| self.lets.get(d));
+                matches!(known, Some(Holds::Nothing))
+            }
+            _ => false,
+        }
+    }
+
+    /// `x.unwrap()` with `x` known to be `none`.
+    fn unwrap(&mut self, e: &Expr, callee: &Expr, args: &[Arg]) {
+        if let ExprKind::Field {
+            base,
+            name,
+            optional: false,
+        } = &callee.kind
+            && name.name == "unwrap"
+            && args.is_empty()
+            && self.is_none(base)
+        {
+            self.errors.push((e.span, UNWRAP_NONE.to_string()));
         }
     }
 
@@ -301,7 +360,7 @@ impl VisitMut for Known<'_, '_> {
                 let PatternKind::Binding(id) = &pattern.kind else {
                     return;
                 };
-                let known = self.value(value);
+                let known = self.holds(value);
                 let def = self.checker.decl.get(&id.span.start).copied();
                 if *mutable {
                     if let (Some(v), Some(d)) = (known, def)
@@ -360,6 +419,7 @@ impl VisitMut for Known<'_, '_> {
             ExprKind::Binary(op, l, r) => self.each_round(|k| k.binary(e, *op, l, r)),
             ExprKind::Call { callee, args, .. } => {
                 self.each_round(|k| k.call(e, callee, args));
+                self.unwrap(e, callee, args);
                 self.after_call(callee, args);
             }
             ExprKind::Index { base, index } => self.each_round(|k| k.index(e, base, index)),

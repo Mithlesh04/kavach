@@ -4,7 +4,7 @@
 //! no more, and what a condition tests isn't assumed inside or after it: it
 //! may be there to keep the arithmetic safe.
 
-use super::Known;
+use super::{Holds, Known};
 use kavach_ast::visit::{VisitMut, walk_expr, walk_stmt};
 use kavach_ast::*;
 use kavach_resolver::DefId;
@@ -116,8 +116,8 @@ impl Known<'_, '_> {
             return;
         };
         let new = match op.binary() {
-            None => self.value(value),
-            Some(bin) => self.compound(s, target, bin, value),
+            None => self.holds(value),
+            Some(bin) => self.compound(s, target, bin, value).map(Holds::Whole),
         };
         match new {
             Some(v) if !self.frozen.contains(&d) => {
