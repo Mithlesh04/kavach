@@ -18,7 +18,7 @@ pub use connect::{Connecting, connect, connect_quic, connect_tls};
 pub use tls::ClientTls;
 
 use std::io::{ErrorKind, Read, Write};
-use std::net::{TcpListener, ToSocketAddrs, UdpSocket};
+use std::net::{ToSocketAddrs, UdpSocket};
 use std::sync::Mutex;
 use std::time::Duration;
 
@@ -259,13 +259,29 @@ fn mio_stream(s: mio::net::TcpStream, address: String) -> Shared {
 
 /// `net.listen(address)`.
 pub fn listen(address: &str) -> Result<Shared, NetFail> {
-    let l = TcpListener::bind(address).map_err(fail_of)?;
-    l.set_nonblocking(true).map_err(fail_of)?;
+    let (l, address) = bind_listener(address).map_err(fail_of)?;
+    Ok(Shared::new(Socket::Listener(l), address))
+}
+
+/// A listening socket at `address`, and the address it got. Connections
+/// not accepted yet wait in the longest queue the system allows (decision
+/// 0079): Rust's `bind` asks for 128 places, and the system drops those
+/// past it, which try again only after a second or more.
+fn bind_listener(address: &str) -> std::io::Result<(mio::net::TcpListener, String)> {
+    use socket2::{Domain, Protocol, Socket as Raw, Type};
+    let at = address_of(address)?;
+    let raw = Raw::new(Domain::for_address(at), Type::STREAM, Some(Protocol::TCP))?;
+    // As Rust's `bind` does: a port can be listened on again at once.
+    #[cfg(unix)]
+    raw.set_reuse_address(true)?;
+    raw.bind(&at.into())?;
+    raw.listen(i32::MAX)?;
+    raw.set_nonblocking(true)?;
+    let l = std::net::TcpListener::from(raw);
     let address = l
         .local_addr()
         .map_or(address.to_string(), |a| a.to_string());
-    let l = mio::net::TcpListener::from_std(l);
-    Ok(Shared::new(Socket::Listener(l), address))
+    Ok((mio::net::TcpListener::from_std(l), address))
 }
 
 /// The address `to` names (`host:port`), looked up when it is a name.
@@ -427,12 +443,7 @@ pub fn listen_tls(
     clients: &str,
 ) -> Result<Shared, NetFail> {
     let config = tls::server_config(cert, key, protocols, clients)?;
-    let l = TcpListener::bind(address).map_err(fail_of)?;
-    l.set_nonblocking(true).map_err(fail_of)?;
-    let address = l
-        .local_addr()
-        .map_or(address.to_string(), |a| a.to_string());
-    let l = mio::net::TcpListener::from_std(l);
+    let (l, address) = bind_listener(address).map_err(fail_of)?;
     Ok(Shared::new(
         Socket::TlsListener(l, config, Vec::new()),
         address,
@@ -455,3 +466,6 @@ pub fn set_next_deadline(d: Duration) {
 pub fn take_next_deadline() -> Option<Duration> {
     NEXT.with(std::cell::Cell::take)
 }
+
+#[cfg(test)]
+mod tests;

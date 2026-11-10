@@ -84,6 +84,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0076](0076-every-send-to-an-agent-can-fail.md) | Every send to an agent can fail: a handler's panic is audit-logged and the send fails with `panicked: …` | Accepted |
 | [0077](0077-kernels-whose-loops-end.md) | Kernels whose loops always end skip wgpu's loop counter: one `unsafe` call in `runtime/gpu` | Accepted |
 | [0078](0078-browser-playground.md) | The docs site's playground runs the checker in the browser, as a WASI build of `tools/playground` | Accepted |
+| [0079](0079-listen-queue-through-socket2.md) | Listeners ask for the system's longest queue of waiting connections, through `socket2` | Accepted |
 
 ## Open decisions
 
