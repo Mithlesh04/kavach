@@ -44,6 +44,7 @@ kavach/
 │   ├── net/                networking, TLS and the model call, shared like core/
 │   ├── gpu/                GPU compute for gpu fn, through wgpu
 │   ├── native/             run-time library of native programs
+│   ├── unpack/             packed executables: the format and the C starter
 │   ├── memory/
 │   ├── tasks/
 │   ├── agents/

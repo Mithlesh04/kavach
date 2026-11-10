@@ -9,10 +9,11 @@ $fail = $false
 
 # The files git keeps or would keep: what .gitignore leaves out (build
 # output, examples' audit logs) is not ours to check. Generated files are
-# not counted either. Keep this list in sync with the .sh twin.
+# not counted either, nor third-party code we vendor (`vendor/` folders).
+# Keep this list in sync with the .sh twin.
 $files = git -C $root ls-files --cached --others --exclude-standard |
     Where-Object { $_ -notmatch '\.lock$' -and $_ -notmatch 'tests/found/' -and $_ -notmatch 'package-lock\.json$' -and
-        $_ -notmatch 'website/data/benchmarks\.json$' } |
+        $_ -notmatch 'website/data/benchmarks\.json$' -and $_ -notmatch '/vendor/' } |
     ForEach-Object { Join-Path $root $_ } |
     Where-Object { Test-Path -LiteralPath $_ -PathType Leaf } |
     ForEach-Object { Get-Item -LiteralPath $_ -Force }

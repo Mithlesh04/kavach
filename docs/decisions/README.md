@@ -86,6 +86,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0078](0078-browser-playground.md) | The docs site's playground runs the checker in the browser, as a WASI build of `tools/playground` | Accepted |
 | [0079](0079-listen-queue-through-socket2.md) | Listeners ask for the system's longest queue of waiting connections, through `socket2` | Accepted |
 | [0080](0080-installing-kavach.md) | An install holds `kavach`, the runtime library and LLVM's tools; the linker is checked, not bundled; archives and install scripts come first | Accepted |
+| [0081](0081-packed-executables.md) | `kavach build --compress` packs a program (deflate, or xz with `=max`) behind a small C starter, carried inside `kavach`, that unpacks it once into a cache folder | Accepted |
 
 ## Open decisions
 

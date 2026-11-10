@@ -6,6 +6,7 @@ mod context;
 mod fmt;
 mod keep;
 mod library;
+mod pack;
 mod project;
 mod proto;
 
@@ -21,7 +22,7 @@ usage:
   kavach run <file.kav> [args…]   check a file, then run it with these arguments
   kavach run --native <f>   compile it to machine code first (a growing subset)
   kavach run --dry-run <f>  run it without executing capability calls (spec 8.5)
-  kavach build <file.kav> [-o <out>]   write an executable (named after the file)
+  kavach build [--compress[=max]] <file.kav> [-o <out>]   write an executable (named after the file), packed smaller if asked
   kavach build --lib <lib.kav> [-o <dir>]   write a shared library and a C header
                             for other languages (spec 10.10)
   kavach test <file.kav> [--seed N] [--deep]
@@ -56,6 +57,7 @@ tools for AI assistants (spec 13), which save reading whole files:
 
 fn main() -> ExitCode {
     let args = project::expand(std::env::args().skip(1).collect());
+    let (args, compress) = pack::take_flag(args);
     // Ctrl+C and SIGTERM end a program as `cli.exit` does (spec 5.8),
     // caught before any other thread starts (decision 0063).
     if args.first().map(String::as_str) == Some("run") {
@@ -91,8 +93,8 @@ fn main() -> ExitCode {
         }
         ["build", "--lib", path] => library::build_lib(path, None),
         ["build", "--lib", path, "-o", dir] => library::build_lib(path, Some(dir)),
-        ["build", path] => build(path, None),
-        ["build", path, "-o", out] => build(path, Some(out)),
+        ["build", path] => build(path, None, compress),
+        ["build", path, "-o", out] => build(path, Some(out), compress),
         ["run", path, rest @ ..] if !path.starts_with("--") => {
             // `kavach run app.kav -- a b` and `kavach run app.kav a b` are the same.
             let rest = rest.strip_prefix(&["--"]).unwrap_or(rest);
@@ -157,7 +159,10 @@ fn main() -> ExitCode {
             ExitCode::SUCCESS
         }
         // What built an executable (spec 10.5).
-        ["version", program] => match std::fs::read(program) {
+        ["version", program] => match std::fs::read(program)
+            .map_err(|e| e.to_string())
+            .and_then(pack::readable)
+        {
             Ok(bytes) => match kavach_driver::find_marked(&bytes) {
                 Some(text) => {
                     println!("{text}");
@@ -400,7 +405,11 @@ help: run it with `kavach run {path}` (the interpreter) for now",
 
 /// `kavach build`: an executable file, named after the source file and
 /// written to the current folder unless `-o` says otherwise (spec 10.9).
-fn build(path: &str, out: Option<&str>) -> ExitCode {
+fn build(
+    path: &str,
+    out: Option<&str>,
+    compress: Option<kavach_runtime_unpack::Method>,
+) -> ExitCode {
     let program = match lowered(path) {
         Ok(p) => p,
         Err(code) => return code,
@@ -414,9 +423,14 @@ fn build(path: &str, out: Option<&str>) -> ExitCode {
             std::path::PathBuf::from(format!("{stem}{}", std::env::consts::EXE_SUFFIX))
         }
     };
-    match build_with_best_backend(&program, &out) {
-        Ok(()) => {
+    let built = build_with_best_backend(&program, &out);
+    let packed = built.and_then(|()| compress.map(|m| pack::pack(&out, m)).transpose());
+    match packed {
+        Ok(sizes) => {
             eprintln!("built {}", kavach_driver::relative_path(&out));
+            if let Some(sizes) = sizes {
+                eprintln!("{sizes}");
+            }
             ExitCode::SUCCESS
         }
         Err(e) => {

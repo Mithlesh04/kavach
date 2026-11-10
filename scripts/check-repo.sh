@@ -15,10 +15,11 @@ fail=0
 
 # The files git keeps or would keep: what .gitignore leaves out (build
 # output, examples' audit logs) is not ours to check. Generated files are
-# not counted either. Keep this list in sync with the .ps1 twin.
+# not counted either, nor third-party code we vendor (`vendor/` folders).
+# Keep this list in sync with the .ps1 twin.
 git ls-files --cached --others --exclude-standard \
     | grep -v -e '\.lock$' -e 'tests/found/' -e 'package-lock\.json$' \
-        -e 'website/data/benchmarks\.json$' \
+        -e 'website/data/benchmarks\.json$' -e '/vendor/' \
     | while read -r f; do [ -f "$f" ] && echo "./$f"; done > "$tmp/files"
 
 # 1. File length: binary files (with -I) and empty ones count 0.

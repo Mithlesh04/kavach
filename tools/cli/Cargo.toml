@@ -24,6 +24,7 @@ kavach-backend-llvm = { path = "../../compiler/backend/llvm" }
 kavach-backend-wgsl = { path = "../../compiler/backend/wgsl" }
 kavach-runtime-core = { path = "../../runtime/core" }
 kavach-runtime-native = { path = "../../runtime/native" }
+kavach-runtime-unpack = { path = "../../runtime/unpack" }
 
 [lints]
 workspace = true

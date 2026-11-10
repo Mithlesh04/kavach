@@ -81,6 +81,7 @@ Other sections are described where they are used: AI models (`[ai]`) and agents'
 | `kavach build` | Compile to an executable file (a project, or one file: 10.9) |
 | `kavach build --release` | Optimized build |
 | `kavach build --lib` | Compile a library into a shared library with a C header, for other languages (10.10) |
+| `kavach build --compress` / `--compress=max` | Write a smaller executable, packed without losing anything; it unpacks itself when it starts (below) |
 | `kavach test` | Run generated and hand-written tests (chapter 11) |
 | `kavach fmt` | Format all code |
 | `kavach add stripe` | Add a dependency |
@@ -112,6 +113,16 @@ built by kavach 0.1.0 (commit 8f8ae051)
 ```
 
 A program built from one file (10.9) has the file's name and no version. With `version_flag = true` under `[build]` in `kavach.toml`, the program answers `--version` itself: run with that one argument, it prints the same two lines and ends with exit code 0, before `main` runs. This holds however it runs: `kavach run -- --version`, `run --native` and the built executable. Without the setting, `--version` is an argument like any other, for the program to read.
+
+**A packed executable.** `kavach build --compress` writes the program packed, with nothing lost: a little under half its size (deflate), or about a third to two fifths with `--compress=max` (xz). Run, it unpacks itself into a cache folder and runs the unpacked copy, which behaves exactly as the program built without `--compress`: the same output, exit code, arguments and environment, and the same messages for panics and errors. The copy is named by a hash of its contents, so the first start unpacks it (a few milliseconds with `--compress`, tens of milliseconds with `--compress=max`) and later starts run it at once; deleting the cache folder is always safe. The folder is `KAVACH_UNPACKED` when set, else `%LOCALAPPDATA%\Kavach\unpacked` on Windows, `~/Library/Caches/kavach/unpacked` on macOS, and `$XDG_CACHE_HOME/kavach/unpacked` (or `~/.cache/kavach/unpacked`) elsewhere. `kavach version` reads a packed program too.
+
+```
+$ kavach build --compress hello.kav -o hello
+$ ./hello
+hello
+```
+
+Some antivirus tools distrust programs that unpack themselves, which is why packing is asked for, not done by default.
 
 A built program also carries which runtime operations its compiler knew. Linked with a runtime library from another Kavach (an old copy, or `KAVACH_RUNTIME_LIB` pointing at one), it stops at its start with exit code 2 and a message saying so, instead of calling the wrong operations.
 
@@ -320,6 +331,7 @@ For running programs:
 | `KAVACH_BACKEND` | `cranelift` | `kavach build` uses Cranelift instead of LLVM | 10.5 |
 | `KAVACH_LLVM_BIN` | a folder | Where LLVM's tools are | 10.5 |
 | `KAVACH_RUNTIME_LIB` | a file's path | Where the runtime library is, for linking | 10.5 |
+| `KAVACH_UNPACKED` | a folder | Where a program built with `--compress` unpacks itself | 10.5 |
 | `KAVACH_SERIAL` | any value | Loops that would run on all cores run on one | 9.3 |
 | `KAVACH_PROCESS_CALL` | a number | Set by `spawn process` for the program it starts: run only that call; not for setting by hand | 9.8 |
 

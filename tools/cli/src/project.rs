@@ -44,7 +44,7 @@ pub(crate) fn expand(args: Vec<String>) -> Vec<String> {
     // the program for real (spec 8.5).
     let own: &[&str] = match command {
         "run" => &["--native", "--dry-run"],
-        "build" => &["--lib"],
+        "build" => &["--lib", "--compress", "--compress=max"],
         _ => &[],
     };
     let mut flags = Vec::new();

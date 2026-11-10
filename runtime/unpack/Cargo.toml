@@ -1,0 +1,20 @@
+[package]
+name = "kavach-runtime-unpack"
+description = "Packed executables (decision 0081): the format, and the C starter that unpacks a program once and runs it"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "kavach_runtime_unpack"
+path = "src/lib.rs"
+
+[dependencies]
+miniz_oxide = "0.8"
+lzma-rust2 = "0.15"
+
+[build-dependencies]
+cc = "1.2"
+
+[lints]
+workspace = true
