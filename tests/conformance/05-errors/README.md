@@ -22,6 +22,7 @@ Conformance tests for spec chapter [5. Errors](../../../docs/spec/05-errors.md).
 | 5.6 | [index-out-of-range-panics.kav](index-out-of-range-panics.kav) | An out-of-range index panics. | panic |
 | 5.6 | [loop-write-panics-at-its-index.kav](loop-write-panics-at-its-index.kav) | A write past a list's end panics when the loop reaches it, after the writes and output before it. | panic |
 | 5.6 | [integer-overflow-panics.kav](integer-overflow-panics.kav) | Integer overflow is always checked and panics. | panic |
+| 5.6 | [loop-overflow-panics-for-a-large-multiplier.kav](loop-overflow-panics-for-a-large-multiplier.kav) | Overflow in a loop panics for the values that overflow it, even where other values run without a check. | panic |
 | 5.6 | [narrow-division-overflow-panics.kav](narrow-division-overflow-panics.kav) | Dividing a sized integer's smallest value by a constant -1 panics with an overflow, as any overflow does; `%` by -1 gives 0. | panic |
 | 5.6 | [wrapping-add.kav](wrapping-add.kav) | wrapping_add wraps around instead of panicking. | runs |
 | 5.6 | [panic-with-a-computed-message.kav](panic-with-a-computed-message.kav) | `panic(message)` may compute its message while the program runs. | panics |

@@ -58,10 +58,28 @@ impl Range {
     }
 }
 
-/// What `cond` says about a local in each branch of an `if`: for
-/// `x < c`, `x` is below `c` in the `then` branch and at least `c` in the
-/// `else` branch. Comparisons of an integer local with a constant only.
-pub(super) fn branch_facts(cond: &Expr) -> Option<(Local, Range, Range)> {
+/// What a condition says about locals: their ranges where it holds, and
+/// where it doesn't.
+pub(super) type Facts = (Vec<(Local, Range)>, Vec<(Local, Range)>);
+
+/// What `cond` says about locals in each branch of an `if`: for `x < c`,
+/// `x` is below `c` in the `then` branch and at least `c` in the `else`
+/// branch. Comparisons of an integer local with a constant, and `&&`s of
+/// them: where `a && b` holds, both do (as in `version.rs`'s test
+/// `0 <= x && x <= hi && total >= 0`); where it doesn't, nothing is known.
+pub(super) fn branch_facts(cond: &Expr) -> Facts {
+    if let ExprKind::And(a, b) = &cond.kind {
+        let (mut yes, _) = branch_facts(a);
+        yes.extend(branch_facts(b).0);
+        return (yes, Vec::new());
+    }
+    compare_facts(cond).map_or_else(Default::default, |(l, yes, no)| {
+        (vec![(l, yes)], vec![(l, no)])
+    })
+}
+
+/// What a comparison of an integer local with a constant says about it.
+fn compare_facts(cond: &Expr) -> Option<(Local, Range, Range)> {
     let ExprKind::Binary(op, a, b) = &cond.kind else {
         return None;
     };

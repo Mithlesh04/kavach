@@ -1,0 +1,20 @@
+// Rule: Overflow in a loop panics for the values that overflow it, even where other values run without a check.
+// Spec: 5.6
+// expect output: 1498500
+// expect output: -1498500
+// expect output: 1498495
+// expect panic
+
+fn work(seed: Int, start: Int) -> Int {
+    let total = start
+    for i in 0..1_000 {
+        total = (total + i * seed) % 1_000_000_007
+    }
+    total
+}
+
+fn main() {
+    for (seed, start) in [(3, 0), (-3, 0), (3, -5), (4_000_000_000_000_000_000, 0)] {
+        print(work(seed, start))
+    }
+}

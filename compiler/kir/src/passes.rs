@@ -63,6 +63,7 @@ pub(crate) fn finish(
         crate::coalesce::coalesce(f);
         crate::jam::jam_loops(f);
         crate::fuse::fuse_loops(f, &l.shapes.list);
+        crate::version::version_loops(f);
         crate::ranges::prove_ranges(f);
         crate::prefetch::prefetch_loops(f, &l.shapes.list);
         // After `coalesce`, which would merge its locals away again.

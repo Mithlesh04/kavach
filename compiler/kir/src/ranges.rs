@@ -20,6 +20,7 @@
 use crate::ir::*;
 
 mod accumulate;
+mod arith;
 mod interval;
 use interval::{Range, branch_facts, limits};
 
@@ -142,21 +143,42 @@ impl Pass {
     }
 
     fn block(&mut self, b: &mut Block) -> Option<Range> {
-        // Past a `Check`, its condition holds: for the rest of the block,
-        // when the block never sets the local it is about.
-        let outer = self.refined.len();
+        self.block_until(b, 0)
+    }
+
+    /// `b`, where the last `own` facts in `refined` (those of the branch
+    /// `b` is) hold until the first statement that may set their local:
+    /// the statements before it run first, once each time the branch runs.
+    fn block_until(&mut self, b: &mut Block, own: usize) -> Option<Range> {
+        let first = self.refined.len() - own;
+        let mut left = own;
         for i in 0..b.stmts.len() {
+            let s = &b.stmts[i];
+            drop_set(&mut self.refined, first, &mut left, |l| {
+                crate::walk::stmt_sets_local(s, l)
+            });
             self.stmt(&mut b.stmts[i]);
-            let fact = match &b.stmts[i] {
-                Stmt::Check { cond, .. } => branch_facts(cond),
-                _ => None,
-            };
-            if let Some((l, yes, _)) = fact.filter(|(l, ..)| !crate::walk::sets_local(b, *l)) {
-                self.refined.push((l, yes));
+            // Past a `Check`, its condition holds: for the rest of the
+            // block, when the block never sets the local it is about.
+            if let Stmt::Check { cond, .. } = &b.stmts[i] {
+                let (yes, _) = branch_facts(cond);
+                let kept = yes
+                    .into_iter()
+                    .filter(|(l, _)| !crate::walk::sets_local(b, *l));
+                self.refined.extend(kept.collect::<Vec<_>>());
             }
         }
+        if let (Some(v), 1..) = (&b.value, left) {
+            let value = Block {
+                stmts: vec![Stmt::Expr(v.as_ref().clone())],
+                value: None,
+            };
+            drop_set(&mut self.refined, first, &mut left, |l| {
+                crate::walk::sets_local(&value, l)
+            });
+        }
         let r = b.value.as_mut().and_then(|v| self.expr(v));
-        self.refined.truncate(outer);
+        self.refined.truncate(first + left);
         r
     }
 
@@ -262,9 +284,9 @@ impl Pass {
             }
             ExprKind::If(cond, then, otherwise) => {
                 self.expr(cond);
-                let facts = branch_facts(cond);
-                let a = self.refined_block(then, facts.map(|(l, yes, _)| (l, yes)));
-                let b = self.refined_block(otherwise, facts.map(|(l, _, no)| (l, no)));
+                let (yes, no) = branch_facts(cond);
+                let a = self.refined_block(then, yes);
+                let b = self.refined_block(otherwise, no);
                 match (a, b) {
                     (Some(a), Some(b)) => Some(a.join(b)),
                     (a, b) => a.or(b),
@@ -303,17 +325,14 @@ impl Pass {
             .try_fold(self.ranges[l as usize]?, |r, (_, fact)| r.meet(*fact))
     }
 
-    /// The range of block `b`, a branch where `fact` holds, unless the
-    /// branch itself sets the local.
-    fn refined_block(&mut self, b: &mut Block, fact: Option<(Local, Range)>) -> Option<Range> {
-        let fact = fact.filter(|(l, _)| !crate::walk::sets_local(b, *l));
-        if let Some(f) = fact {
-            self.refined.push(f);
-        }
-        let r = self.block(b);
-        if fact.is_some() {
-            self.refined.pop();
-        }
+    /// The range of block `b`, a branch where `facts` hold, each until a
+    /// statement of the branch may set its local.
+    fn refined_block(&mut self, b: &mut Block, facts: Vec<(Local, Range)>) -> Option<Range> {
+        let start = self.refined.len();
+        let own = facts.len();
+        self.refined.extend(facts);
+        let r = self.block_until(b, own);
+        self.refined.truncate(start);
         r
     }
 
@@ -369,113 +388,24 @@ impl Pass {
             _ => {}
         }
     }
-
-    /// The range of `a op b`; in the last round, rewrites `e` when the
-    /// ranges prove a check unnecessary.
-    fn binary(
-        &mut self,
-        e: &mut Expr,
-        op: BinOp,
-        ra: Option<Range>,
-        rb: Option<Range>,
-    ) -> Option<Range> {
-        let ty = e.ty;
-        if !ty.is_int() {
-            return None;
-        }
-        let (Some(a), Some(b)) = (ra, rb) else {
-            return Some(limits(ty));
-        };
-        let corners = |f: fn(i128, i128) -> i128| {
-            let c = [f(a.lo, b.lo), f(a.lo, b.hi), f(a.hi, b.lo), f(a.hi, b.hi)];
-            Range {
-                lo: *c.iter().min().expect("four corners"),
-                hi: *c.iter().max().expect("four corners"),
-            }
-        };
-        let (r, fast) = match op {
-            BinOp::Add => (corners(i128::saturating_add), FastOp::Add),
-            BinOp::Sub => (corners(i128::saturating_sub), FastOp::Sub),
-            BinOp::Mul => (corners(i128::saturating_mul), FastOp::Mul),
-            BinOp::Rem if b.lo == b.hi && b.lo > 0 => {
-                let c = b.lo;
-                let r = if a.lo >= 0 {
-                    Range {
-                        lo: 0,
-                        hi: a.hi.min(c - 1),
-                    }
-                } else {
-                    Range {
-                        lo: a.lo.max(-(c - 1)),
-                        hi: a.hi.min(c - 1),
-                    }
-                };
-                if self.phase == Phase::Rewrite && a.lo >= 0 {
-                    rewrite_rem(e, a, c);
-                }
-                return Some(r);
-            }
-            BinOp::Div if b.lo == b.hi && b.lo > 0 => {
-                if self.phase == Phase::Rewrite && a.lo >= 0 {
-                    let small = a.hi.max(b.hi) <= SMALL;
-                    to_fast(
-                        e,
-                        if small {
-                            FastOp::DivSmall
-                        } else {
-                            FastOp::DivPositive
-                        },
-                    );
-                }
-                return Some(Range {
-                    lo: a.lo / b.lo,
-                    hi: a.hi / b.lo,
-                });
-            }
-            BinOp::BitAnd if b.lo >= 0 && a.lo >= 0 => {
-                return Some(Range {
-                    lo: 0,
-                    hi: a.hi.min(b.hi),
-                });
-            }
-            // A mask that isn't negative clears the sign: `t & 1` is 0 or
-            // 1 whatever `t` is.
-            BinOp::BitAnd if b.lo >= 0 => return Some(Range { lo: 0, hi: b.hi }),
-            _ => return Some(limits(ty)),
-        };
-        if self.phase == Phase::Rewrite && r.within(ty) {
-            to_fast(e, fast);
-        }
-        Some(r.clamp(ty))
-    }
 }
 
-/// The largest value 32-bit division takes.
-const SMALL: i128 = u32::MAX as i128;
-
-/// Turns the binary expression `e` into the proven operation `op`.
-fn to_fast(e: &mut Expr, op: FastOp) {
-    let ExprKind::Binary(_, x, y) = std::mem::replace(&mut e.kind, ExprKind::None) else {
-        unreachable!("a binary expression");
-    };
-    e.kind = ExprKind::Fast(op, x, y);
-}
-
-/// `a % c` with `a >= 0`: `a` itself when it is always below `c`, one
-/// subtract when it is below `2c`, otherwise an unsigned remainder.
-fn rewrite_rem(e: &mut Expr, a: Range, c: i128) {
-    if a.hi >= c {
-        let op = if a.hi < 2 * c {
-            FastOp::RemOnce
-        } else if a.hi.max(c) <= SMALL {
-            FastOp::RemSmall
+/// Drops from `refined[first..first + left]`, a branch's facts, those about
+/// a local `sets` says is set.
+fn drop_set(
+    refined: &mut Vec<(Local, Range)>,
+    first: usize,
+    left: &mut usize,
+    sets: impl Fn(Local) -> bool,
+) {
+    let mut j = first;
+    while j < first + *left {
+        if sets(refined[j].0) {
+            refined.remove(j);
+            *left -= 1;
         } else {
-            FastOp::RemPositive
-        };
-        return to_fast(e, op);
-    }
-    if let ExprKind::Binary(_, x, _) = std::mem::replace(&mut e.kind, ExprKind::None) {
-        e.kind = x.kind;
+            j += 1;
+        }
     }
 }
 

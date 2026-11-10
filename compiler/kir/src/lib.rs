@@ -75,6 +75,7 @@ mod stop_points;
 mod types;
 mod unrecurse;
 mod unused;
+mod version;
 pub mod walk;
 mod whole_lines;
 

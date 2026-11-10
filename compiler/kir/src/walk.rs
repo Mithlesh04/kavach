@@ -11,30 +11,46 @@ pub fn any_in_block(block: &Block, test: &mut impl FnMut(&Expr) -> bool) -> bool
 /// Whether running `block` can set local `l`: a `let`, an assignment, a
 /// move out of it, or a loop variable.
 pub fn sets_local(block: &Block, l: Local) -> bool {
-    fn in_stmts(block: &Block, l: Local) -> bool {
-        block.stmts.iter().any(|s| match s {
-            Stmt::Let(x, _) => *x == l,
-            Stmt::LetResult { value, error, .. } => *value == l || *error == l,
-            Stmt::ForRange { var, body, .. } => *var == l || in_stmts(body, l),
-            Stmt::ForEach {
-                var,
-                index,
-                list,
-                body,
-            } => *var == l || *index == l || *list == l || in_stmts(body, l),
-            Stmt::While { body, .. } => in_stmts(body, l),
-            _ => false,
-        })
+    in_stmts(block, l) || any_in_block(block, &mut |e| expr_sets(e, l))
+}
+
+/// Whether running statement `s` can set local `l`, as `sets_local`.
+pub fn stmt_sets_local(s: &Stmt, l: Local) -> bool {
+    stmt_sets(s, l) || any_in_stmt(s, &mut |e| expr_sets(e, l))
+}
+
+/// Whether a statement of `block` sets `l` itself, at any depth.
+fn in_stmts(block: &Block, l: Local) -> bool {
+    block.stmts.iter().any(|s| stmt_sets(s, l))
+}
+
+fn stmt_sets(s: &Stmt, l: Local) -> bool {
+    match s {
+        Stmt::Let(x, _) => *x == l,
+        Stmt::LetResult { value, error, .. } => *value == l || *error == l,
+        Stmt::ForRange { var, body, .. } => *var == l || in_stmts(body, l),
+        Stmt::ForEach {
+            var,
+            index,
+            list,
+            body,
+        } => *var == l || *index == l || *list == l || in_stmts(body, l),
+        Stmt::While { body, .. } => in_stmts(body, l),
+        _ => false,
     }
-    in_stmts(block, l)
-        || any_in_block(block, &mut |e| match &e.kind {
-            ExprKind::Assign(x, _) | ExprKind::Move(x) => *x == l,
-            ExprKind::If(_, then, otherwise) | ExprKind::Fallback(then, otherwise) => {
-                in_stmts(then, l) || in_stmts(otherwise, l)
-            }
-            ExprKind::Block(b) => in_stmts(b, l),
-            _ => false,
-        })
+}
+
+/// Whether expression `e` itself sets `l`, or holds a block whose
+/// statements do.
+fn expr_sets(e: &Expr, l: Local) -> bool {
+    match &e.kind {
+        ExprKind::Assign(x, _) | ExprKind::Move(x) => *x == l,
+        ExprKind::If(_, then, otherwise) | ExprKind::Fallback(then, otherwise) => {
+            in_stmts(then, l) || in_stmts(otherwise, l)
+        }
+        ExprKind::Block(b) => in_stmts(b, l),
+        _ => false,
+    }
 }
 
 fn any_in_stmt(s: &Stmt, test: &mut impl FnMut(&Expr) -> bool) -> bool {

@@ -32,12 +32,28 @@ fn step(l: Local, value: &Expr) -> Option<(bool, &Expr)> {
 }
 
 /// The range of a constant, a local, or a sum, difference, product or
-/// mask of those, from the ranges so far: `q.x + q.z` in `total += q.x +
-/// q.z`. `None` when it may leave its type, or for anything else.
+/// mask of those, or a remainder by a constant, from the ranges so far:
+/// `q.x + q.z` in `total += q.x + q.z`. `None` when it may leave its type,
+/// or for anything else.
 fn simple(e: &Expr, ranges: &[Option<Range>]) -> Option<Range> {
     let r = match &e.kind {
         ExprKind::Int(n) => Range { lo: *n, hi: *n },
         ExprKind::Local(x) | ExprKind::Move(x) => ranges.get(*x as usize).copied().flatten()?,
+        // `a % c` (a constant `c > 0`) is within `c` of 0, whatever `a` is:
+        // `i * k % 1000` with `k` unknown.
+        ExprKind::Binary(BinOp::Rem, a, c) => {
+            let ExprKind::Int(c) = c.kind else {
+                return None;
+            };
+            if c <= 0 {
+                return None;
+            }
+            let lo = match simple(a, ranges) {
+                Some(a) if a.lo >= 0 => 0,
+                _ => -(c - 1),
+            };
+            Range { lo, hi: c - 1 }
+        }
         ExprKind::Binary(op, a, b) => {
             let (a, b) = (simple(a, ranges)?, simple(b, ranges)?);
             let corners = |f: fn(i128, i128) -> Option<i128>| {
@@ -117,6 +133,25 @@ fn counted_loops(b: &mut Block) -> Vec<Counted> {
         for s in &inner.stmts {
             match s {
                 Stmt::Let(l, value) => lets.push((*l, value.clone())),
+                // A loop `version.rs` copied: one of the two runs, so both
+                // bodies' steps together bound what a round adds.
+                Stmt::Expr(Expr {
+                    kind: ExprKind::If(_, fast, written),
+                    ..
+                }) => {
+                    if let (Some(a), Some(b)) = (only_loop(fast), only_loop(written))
+                        && a.var == b.var
+                        && a.inclusive == b.inclusive
+                    {
+                        let mut body = a.body;
+                        body.stmts.extend(b.body.stmts);
+                        found.push(Counted {
+                            body,
+                            lets: lets.clone(),
+                            ..a
+                        });
+                    }
+                }
                 Stmt::ForRange {
                     var,
                     inclusive,
@@ -133,6 +168,29 @@ fn counted_loops(b: &mut Block) -> Vec<Counted> {
         }
     });
     found
+}
+
+/// The loop that is all of block `b`.
+fn only_loop(b: &Block) -> Option<Counted> {
+    match (&b.stmts[..], &b.value) {
+        (
+            [
+                Stmt::ForRange {
+                    var,
+                    inclusive,
+                    body,
+                    ..
+                },
+            ],
+            None,
+        ) => Some(Counted {
+            var: *var,
+            inclusive: *inclusive,
+            body: body.clone(),
+            lets: Vec::new(),
+        }),
+        _ => None,
+    }
 }
 
 /// The ranges the accumulators of `f`'s counted loops stay in, worked out
@@ -218,3 +276,6 @@ pub(super) fn caps(
     }
     caps
 }
+
+#[cfg(test)]
+mod tests;

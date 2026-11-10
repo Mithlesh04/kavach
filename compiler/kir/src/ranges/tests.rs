@@ -1,7 +1,7 @@
 use super::prove_ranges;
 use crate::ir::*;
 
-fn e(kind: ExprKind) -> Expr {
+pub(super) fn e(kind: ExprKind) -> Expr {
     Expr {
         kind,
         ty: Type::I64,
@@ -9,19 +9,19 @@ fn e(kind: ExprKind) -> Expr {
     }
 }
 
-fn int(n: i128) -> Expr {
+pub(super) fn int(n: i128) -> Expr {
     e(ExprKind::Int(n))
 }
 
-fn local(l: Local) -> Expr {
+pub(super) fn local(l: Local) -> Expr {
     e(ExprKind::Local(l))
 }
 
-fn bin(op: BinOp, a: Expr, b: Expr) -> Expr {
+pub(super) fn bin(op: BinOp, a: Expr, b: Expr) -> Expr {
     e(ExprKind::Binary(op, Box::new(a), Box::new(b)))
 }
 
-fn assign(l: Local, value: Expr) -> Stmt {
+pub(super) fn assign(l: Local, value: Expr) -> Stmt {
     Stmt::Expr(Expr {
         kind: ExprKind::Assign(l, Box::new(value)),
         ty: Type::Unit,
@@ -29,7 +29,7 @@ fn assign(l: Local, value: Expr) -> Stmt {
     })
 }
 
-fn function(params: Vec<Local>, locals: usize, stmts: Vec<Stmt>) -> Function {
+pub(super) fn function(params: Vec<Local>, locals: usize, stmts: Vec<Stmt>) -> Function {
     Function {
         name: "f".into(),
         params,
@@ -44,7 +44,7 @@ fn function(params: Vec<Local>, locals: usize, stmts: Vec<Stmt>) -> Function {
 
 /// The operations left in an expression, outermost first: `+` for a
 /// checked add, `fast+` for a proven one, and so on.
-fn ops(x: &Expr, out: &mut Vec<String>) {
+pub(super) fn ops(x: &Expr, out: &mut Vec<String>) {
     match &x.kind {
         ExprKind::Binary(op, a, b) => {
             out.push(op.symbol().to_string());
@@ -61,7 +61,7 @@ fn ops(x: &Expr, out: &mut Vec<String>) {
     }
 }
 
-fn ops_of(s: &Stmt) -> Vec<String> {
+pub(super) fn ops_of(s: &Stmt) -> Vec<String> {
     let mut out = Vec::new();
     match s {
         Stmt::Expr(x) | Stmt::Let(_, x) => ops(x, &mut out),
@@ -243,156 +243,39 @@ fn a_branch_that_changes_the_local_learns_nothing() {
     assert_eq!(ops_left.iter().filter(|o| **o == BinOp::Sub).count(), 2);
 }
 
-/// A counted loop's accumulator stays within its start plus the rounds
-/// times what a round adds (`accumulate.rs`), so its add needs no check:
-/// `total` gains at most 6 a round for 200 million rounds. A loop with
-/// too many rounds for the type keeps the check.
+/// A branch's condition holds until the branch first sets its local: the
+/// statements before that run first.
 #[test]
-fn a_counted_loops_accumulator_needs_no_check() {
-    let counted = |rounds: i128| {
-        // var total = 0
-        // for i in 0..rounds { const x = i % 7; total = total + x }
-        let (total, i, x) = (0, 1, 2);
-        let mut f = function(
-            vec![],
-            3,
-            vec![
-                Stmt::Let(total, int(0)),
-                Stmt::ForRange {
-                    var: i,
-                    start: int(0),
-                    end: int(rounds),
-                    inclusive: false,
-                    body: Block {
-                        stmts: vec![
-                            Stmt::Let(x, bin(BinOp::Rem, local(i), int(7))),
-                            assign(total, bin(BinOp::Add, local(total), local(x))),
-                        ],
-                        value: None,
-                    },
-                },
-            ],
-        );
-        prove_ranges(&mut f);
-        let Stmt::ForRange { body, .. } = &f.body.stmts[1] else {
-            unreachable!()
-        };
-        ops_of(&body.stmts[1])
+fn a_branch_condition_holds_until_the_local_is_set() {
+    // fn f(x, w) { if x <= 100 { let y = x + 1; x = w; let z = x + 1 } }
+    let (x, w, y, z) = (0, 1, 2, 3);
+    let cond = Expr {
+        kind: ExprKind::Binary(BinOp::Le, Box::new(local(x)), Box::new(int(100))),
+        ty: Type::Bool,
+        line: 1,
     };
-    assert_eq!(counted(200_000_000), ["fast Add"]);
-    assert_eq!(counted(i64::MAX as i128), ["+"]);
-}
-
-/// What a round adds may be a sum of bounded parts, one of them a mask of
-/// the accumulator itself: `t & 1` is 0 or 1 whatever `t` is.
-#[test]
-fn an_accumulators_step_may_be_a_bounded_sum() {
-    let counted = |rounds: i128| {
-        // var total = 0
-        // for i in 0..rounds { const x = i + (total & 1); total = total + (x + 3) }
-        let (total, i, x) = (0, 1, 2);
-        let mut f = function(
-            vec![],
-            3,
-            vec![
-                Stmt::Let(total, int(0)),
-                Stmt::ForRange {
-                    var: i,
-                    start: int(0),
-                    end: int(rounds),
-                    inclusive: false,
-                    body: Block {
-                        stmts: vec![
-                            Stmt::Let(
-                                x,
-                                bin(
-                                    BinOp::Add,
-                                    local(i),
-                                    bin(BinOp::BitAnd, local(total), int(1)),
-                                ),
-                            ),
-                            assign(
-                                total,
-                                bin(BinOp::Add, local(total), bin(BinOp::Add, local(x), int(3))),
-                            ),
-                        ],
-                        value: None,
-                    },
-                },
-            ],
-        );
-        prove_ranges(&mut f);
-        let Stmt::ForRange { body, .. } = &f.body.stmts[1] else {
-            unreachable!()
-        };
-        ops_of(&body.stmts[1])
+    let then = Block {
+        stmts: vec![
+            Stmt::Let(y, bin(BinOp::Add, local(x), int(1))),
+            assign(x, local(w)),
+            Stmt::Let(z, bin(BinOp::Add, local(x), int(1))),
+        ],
+        value: None,
     };
-    assert_eq!(counted(100_000_000), ["fast Add", "fast Add"]);
-    // 4 billion rounds of up to 4 billion: past `Int`'s limit.
-    assert_eq!(counted(4_000_000_000)[0], "+");
-}
-
-/// Past a `Check`, its condition holds for the rest of the block, and a
-/// loop's rounds come from its bounds as the loop sees them: so a loop
-/// to a checked parameter, inside another loop, still bounds its
-/// accumulator. Without the checks, both adds keep theirs.
-#[test]
-fn checks_bound_what_follows_them() {
-    let ops_with = |checked: bool| {
-        // fn f(n) { for j in 0..10 {
-        //     check n >= 0; check n <= 1000; const m = n + 1
-        //     var total = 0
-        //     for i in 1..=n { const x = i % 7; total = total + x }
-        // } }
-        let (n, total, i, x, j, m) = (0, 1, 2, 3, 4, 5);
-        let check = |op, k| Stmt::Check {
-            cond: Expr {
-                kind: ExprKind::Binary(op, Box::new(local(n)), Box::new(int(k))),
-                ty: Type::Bool,
-                line: 1,
-            },
-            message: "deep recursion".into(),
-            line: 1,
-        };
-        let mut stmts = Vec::new();
-        if checked {
-            stmts.extend([check(BinOp::Ge, 0), check(BinOp::Le, 1000)]);
-        }
-        stmts.extend([
-            Stmt::Let(m, bin(BinOp::Add, local(n), int(1))),
-            Stmt::Let(total, int(0)),
-            Stmt::ForRange {
-                var: i,
-                start: int(1),
-                end: local(n),
-                inclusive: true,
-                body: Block {
-                    stmts: vec![
-                        Stmt::Let(x, bin(BinOp::Rem, local(i), int(7))),
-                        assign(total, bin(BinOp::Add, local(total), local(x))),
-                    ],
-                    value: None,
-                },
-            },
-        ]);
-        let outer = Stmt::ForRange {
-            var: j,
-            start: int(0),
-            end: int(10),
-            inclusive: false,
-            body: Block { stmts, value: None },
-        };
-        let mut f = function(vec![n], 6, vec![outer]);
-        prove_ranges(&mut f);
-        let Stmt::ForRange { body, .. } = &f.body.stmts[0] else {
-            unreachable!()
-        };
-        let at = body.stmts.len() - 3;
-        let Stmt::ForRange { body: inner, .. } = &body.stmts[at + 2] else {
-            unreachable!()
-        };
-        [ops_of(&body.stmts[at]), ops_of(&inner.stmts[1])]
+    let choice = Expr {
+        kind: ExprKind::If(Box::new(cond), then, Block::default()),
+        ty: Type::Unit,
+        line: 1,
     };
-    assert_eq!(ops_with(true), [["fast Add"], ["fast Add"]]);
-    assert_eq!(ops_with(false), [["+"], ["+"]]);
+    let mut f = function(vec![x, w], 4, vec![Stmt::Expr(choice)]);
+    prove_ranges(&mut f);
+    let Stmt::Expr(Expr {
+        kind: ExprKind::If(_, then, _),
+        ..
+    }) = &f.body.stmts[0]
+    else {
+        unreachable!()
+    };
+    assert_eq!(ops_of(&then.stmts[0]), ["fast Add"], "x <= 100 still holds");
+    assert_eq!(ops_of(&then.stmts[2]), ["+"], "x was set to anything");
 }
