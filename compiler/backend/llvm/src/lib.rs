@@ -164,12 +164,28 @@ pub(crate) fn run(cmd: &mut Command) -> Result<(), String> {
     ))
 }
 
-/// The folder with `opt` and `llc`: `KAVACH_LLVM_BIN`, or rustup's
-/// `llvm-tools` for the Rust toolchain in use.
+/// The folder with `opt` and `llc`: `KAVACH_LLVM_BIN`, an installed
+/// Kavach's own `llvm/` folder, or rustup's `llvm-tools` for the Rust
+/// toolchain in use.
 pub(crate) fn tools() -> Option<PathBuf> {
     let has_tools = |dir: &Path| dir.join(exe("opt")).is_file() && dir.join(exe("llc")).is_file();
     if let Some(dir) = std::env::var_os("KAVACH_LLVM_BIN") {
         return Some(PathBuf::from(dir)).filter(|d| has_tools(d));
+    }
+    // An installed Kavach carries the tools itself (decision 0080):
+    // `<root>/bin/kavach` with `<root>/llvm/`, or `llvm/` next to `kavach`.
+    if let Ok(kavach) = std::env::current_exe()
+        && let Some(bin) = kavach.parent()
+    {
+        let roots = [Some(bin), bin.parent()];
+        if let Some(dir) = roots
+            .into_iter()
+            .flatten()
+            .map(|root| root.join("llvm"))
+            .find(|d| has_tools(d))
+        {
+            return Some(dir);
+        }
     }
     // Asking `rustc` (through rustup) takes about a second, longer than
     // the whole build of a small program: the answer is kept in a file.

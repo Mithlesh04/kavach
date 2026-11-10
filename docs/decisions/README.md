@@ -85,6 +85,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0077](0077-kernels-whose-loops-end.md) | Kernels whose loops always end skip wgpu's loop counter: one `unsafe` call in `runtime/gpu` | Accepted |
 | [0078](0078-browser-playground.md) | The docs site's playground runs the checker in the browser, as a WASI build of `tools/playground` | Accepted |
 | [0079](0079-listen-queue-through-socket2.md) | Listeners ask for the system's longest queue of waiting connections, through `socket2` | Accepted |
+| [0080](0080-installing-kavach.md) | An install holds `kavach`, the runtime library and LLVM's tools; the linker is checked, not bundled; archives and install scripts come first | Accepted |
 
 ## Open decisions
 

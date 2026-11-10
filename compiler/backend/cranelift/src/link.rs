@@ -36,7 +36,14 @@ fn runtime_lib() -> Result<PathBuf, String> {
                 .map_or(String::new(), |n| n.to_string_lossy().to_string());
             name.starts_with(&format!("{stem}-")) && name.ends_with(&format!(".{ext}"))
         });
+    // An installed Kavach keeps it in `lib/` beside `bin/` (decision
+    // 0080): `<root>/bin/kavach` with `<root>/lib/<RUNTIME_LIB>`.
+    let in_lib = [Some(dir), dir.parent()]
+        .into_iter()
+        .flatten()
+        .map(|root| root.join("lib").join(RUNTIME_LIB));
     let newest = std::iter::once(dir.join(RUNTIME_LIB))
+        .chain(in_lib)
         .chain(in_deps)
         .filter(|p| p.is_file())
         .max_by_key(|p| p.metadata().and_then(|m| m.modified()).ok());
@@ -175,9 +182,10 @@ pub fn link_library(
 }
 
 fn run(mut cmd: Command) -> Result<(), String> {
-    let output = cmd
-        .output()
-        .map_err(|e| format!("can't run the linker: {e}"))?;
+    let output = cmd.output().map_err(|e| match e.kind() {
+        std::io::ErrorKind::NotFound => missing_linker(&cmd),
+        _ => format!("can't run the linker: {e}"),
+    })?;
     if output.status.success() {
         return Ok(());
     }
@@ -186,6 +194,20 @@ fn run(mut cmd: Command) -> Result<(), String> {
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     ))
+}
+
+/// What to install when the linker `cmd` runs isn't there (decision
+/// 0080: the linker is checked and named, not bundled).
+fn missing_linker(cmd: &Command) -> String {
+    let name = cmd.get_program().to_string_lossy();
+    let install = if cfg!(windows) {
+        "install the Visual Studio Build Tools with the C++ workload: https://visualstudio.microsoft.com/visual-cpp-build-tools/"
+    } else if cfg!(target_os = "macos") {
+        "install Xcode's command-line tools: xcode-select --install"
+    } else {
+        "install a C compiler: sudo apt install build-essential (Debian, Ubuntu) or sudo dnf install gcc (Fedora)"
+    };
+    format!("can't find the linker `{name}`, which building a program needs; {install}")
 }
 
 #[cfg(windows)]
@@ -206,6 +228,15 @@ fn linker() -> Result<Command, String> {
 
 #[cfg(test)]
 mod tests {
+    /// A missing linker is named, with what to install (decision 0080).
+    #[test]
+    fn a_missing_linker_says_what_to_install() {
+        let cmd = std::process::Command::new("kavach-no-such-linker");
+        let message = super::run(cmd).expect_err("there is no such linker");
+        assert!(message.contains("`kavach-no-such-linker`"), "{message}");
+        assert!(message.contains("install"), "{message}");
+    }
+
     /// A build stopped half way leaves its folder; the next one removes
     /// it once it is old, and only the folders of its own kind.
     #[test]
