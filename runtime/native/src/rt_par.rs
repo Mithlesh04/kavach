@@ -10,7 +10,7 @@
 //! threads share no reference counts, no allocator and no runtime
 //! state.
 
-use std::sync::atomic::{AtomicBool, AtomicI64, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicI64, AtomicUsize, Ordering};
 use std::sync::{Condvar, Mutex, OnceLock};
 
 /// Fewer rounds than this run serially: waking the pool costs more
@@ -108,7 +108,7 @@ fn work() {
                 state = p.go.wait(state).unwrap();
             }
         };
-        run_shares(p, &job);
+        run_shares(p, &job, false);
         // Leaving under the lock too, so the caller's check and this
         // wakeup can't miss each other.
         let _state = p.state.lock().unwrap();
@@ -117,9 +117,34 @@ fn work() {
     }
 }
 
-/// Grabs and runs ranges of `job` until the loop is used up.
-fn run_shares(p: &Pool, job: &Job) {
+/// Loops being run now, by the pool or alone, on every thread.
+static RUNNING: AtomicUsize = AtomicUsize::new(0);
+
+/// Counts a loop in `RUNNING` while it lives.
+struct Running;
+
+impl Running {
+    /// Counts this loop; also gives how many others run now.
+    fn start() -> (Running, usize) {
+        (Running, RUNNING.fetch_add(1, Ordering::AcqRel))
+    }
+}
+
+impl Drop for Running {
+    fn drop(&mut self) {
+        RUNNING.fetch_sub(1, Ordering::AcqRel);
+    }
+}
+
+/// Grabs and runs ranges of `job` until the loop is used up. A worker
+/// (not the loop's `owner`) stops grabbing while other loops run too:
+/// tasks that each run one (`parallel_map`'s) keep the cores busy
+/// already, and helping one of them would take a core from another.
+fn run_shares(p: &Pool, job: &Job, owner: bool) {
     loop {
+        if !owner && RUNNING.load(Ordering::Acquire) > 1 {
+            return;
+        }
         let a = p.next.fetch_add(job.step, Ordering::Relaxed);
         if a >= job.hi {
             return;
@@ -196,14 +221,21 @@ fn fan_out(lo: i64, hi: i64, f: *const u8, caps: *const i64, n: i64, red: bool) 
         // other on the caller's stack, alive across this call.
         *slot = unsafe { *caps.add(k) };
     }
+    let (_running, others) = Running::start();
+    if others > 0 {
+        // The other loops' threads are busy: this one runs alone.
+        return alone(f, lo, hi, &slots[..n as usize], red);
+    }
     let step = ((hi - lo) / (p.workers as i64 * 4))
         .max(4096)
         .max((hi - lo).div_euclid(SLOTS) + 1);
     {
         let mut state = p.state.lock().unwrap();
-        // One loop at a time: wait until the last one's slot clears.
-        while state.job.is_some() {
-            state = p.done.wait(state).unwrap();
+        // One loop at a time. A loop that finds the pool busy (tasks
+        // that each run one, as `parallel_map`'s do) runs on its own
+        // thread, which is free, instead of waiting for the pool.
+        if state.job.is_some() {
+            return alone(f, lo, hi, &slots[..n as usize], red);
         }
         p.next.store(lo, Ordering::Relaxed);
         p.failed.store(false, Ordering::Relaxed);
@@ -231,6 +263,7 @@ fn fan_out(lo: i64, hi: i64, f: *const u8, caps: *const i64, n: i64, red: bool) 
             step,
             red,
         },
+        true,
     );
     let mut state = p.state.lock().unwrap();
     while p.busy.load(Ordering::Acquire) > 0 {
@@ -240,6 +273,17 @@ fn fan_out(lo: i64, hi: i64, f: *const u8, caps: *const i64, n: i64, red: bool) 
     p.done.notify_all();
     drop(state);
     p.failed.load(Ordering::Relaxed) as i64
+}
+
+/// Runs the whole loop on this thread, in one share (slot 0 for a
+/// reduction): 0 when it ran clean, 1 when the plain loop must run.
+fn alone(f: *const u8, lo: i64, hi: i64, caps: &[i64], red: bool) -> i64 {
+    let bad = if red {
+        call_red(f, lo, hi, 0, caps)
+    } else {
+        call(f, lo, hi, caps)
+    };
+    i64::from(bad != 0)
 }
 
 /// Calls a reduction chunk: its slot number, then the captures.

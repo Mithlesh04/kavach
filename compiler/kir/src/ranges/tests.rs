@@ -279,3 +279,48 @@ fn a_branch_condition_holds_until_the_local_is_set() {
     assert_eq!(ops_of(&then.stmts[0]), ["fast Add"], "x <= 100 still holds");
     assert_eq!(ops_of(&then.stmts[2]), ["+"], "x was set to anything");
 }
+
+/// `(total + i * 500_000) % m` with `total` in `0..m`: the remainder of
+/// `i * 500_000` doesn't wait for `total`, which then takes one subtract.
+#[test]
+fn a_remainder_of_a_sum_is_taken_off_the_running_total() {
+    let ops_for = |start: Expr| {
+        // let total = start
+        // for i in 0..1_000_000 { total = (total + i * 500_000) % 1_000_000_007 }
+        let (total, i, p) = (0, 1, 2);
+        let step = bin(
+            BinOp::Rem,
+            bin(
+                BinOp::Add,
+                local(total),
+                bin(BinOp::Mul, local(i), int(500_000)),
+            ),
+            int(1_000_000_007),
+        );
+        let mut f = function(
+            vec![p],
+            3,
+            vec![
+                Stmt::Let(total, start),
+                Stmt::ForRange {
+                    var: i,
+                    start: int(0),
+                    end: int(1_000_000),
+                    inclusive: false,
+                    body: Block {
+                        stmts: vec![assign(total, step)],
+                        value: None,
+                    },
+                },
+            ],
+        );
+        prove_ranges(&mut f);
+        ops_of(&f.body.stmts[1])
+    };
+    assert_eq!(
+        ops_for(int(0)),
+        ["fast RemOnce", "fast Add", "fast RemPositive", "fast Mul"]
+    );
+    // A total that may start negative keeps its `%` and its checks.
+    assert_eq!(ops_for(local(2))[0], "%");
+}

@@ -16,6 +16,13 @@ Conformance tests for spec chapter [4. Control flow](../../../docs/spec/04-contr
 | 2.6, 4.3 | [match-cases-are-written-with-their-type.kav](match-cases-are-written-with-their-type.kav) | A `match` case names its variant with its union's name; a bare case is a compile error. | compile error |
 | 4.4 | [for-over-lists.kav](for-over-lists.kav) | `for` walks a list in order; enumerate() adds an index starting at 0. | runs |
 | 4.4 | [for-over-ranges.kav](for-over-ranges.kav) | `..` excludes the end; `..=` includes it. | runs |
+| 4.4 | [for-underscore-discards.kav](for-underscore-discards.kav) | `for _ in …` discards the value and repeats the body. | runs |
+| 4.4 | [big-loops-give-plain-results.kav](big-loops-give-plain-results.kav) | A loop's results don't depend on how it is run: a loop on all cores stores exactly what the plain loop stores (decision 0031). | runs |
+| 4.4 | [big-loops-keep-their-panic-round.kav](big-loops-keep-their-panic-round.kav) | A loop panics at its first failing round, however it is run: a loop on all cores runs again serially to panic there. | panic |
+| 4.4 | [big-sums-give-plain-results.kav](big-sums-give-plain-results.kav) | A sum's result doesn't depend on how the loop is run. | runs |
+| 4.4 | [big-sums-keep-their-panic-round.kav](big-sums-keep-their-panic-round.kav) | A sum panics at its first failing round, however it is run: each chunk's prefix bounds catch a spike its total alone would hide. | panic |
+| 4.4 | [big-modular-sums-give-plain-results.kav](big-modular-sums-give-plain-results.kav) | A modular sum's result doesn't depend on how the loop is run: `acc = (acc + v) % m` with a never-negative `v` is the flat sum `% m`. | runs |
+| 4.4 | [modular-sums-anywhere-give-plain-results.kav](modular-sums-anywhere-give-plain-results.kav) | A sum taken by a remainder each round gives the plain loop's result after another such loop, inside an outer loop, by a parameter, and in tasks at once. | runs |
 | 4.4 | [loop-one-past-the-end-warns.kav](loop-one-past-the-end-warns.kav) | A `for` over `0..=xs.len()` that reads `xs[i]` gets a warning; one that changes `xs` or leaves first gets none. | warning |
 | 4.4 | [nested-loops-run-in-order.kav](nested-loops-run-in-order.kav) | Nested loops run every round in order, whatever the optimizer does: sums keep their order and effects happen one `j` at a time. | runs |
 | 4.4, 5.6 | [nested-loops-panic-in-order.kav](nested-loops-panic-in-order.kav) | When a row is too short, the nested loops still panic at the same round, after the output of the rounds before it. | panic |

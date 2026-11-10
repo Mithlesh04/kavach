@@ -5,7 +5,7 @@
 use crate::ir::{BinOp, Block, Expr, ExprKind, FastOp, Function, Local, Stmt, Type};
 use crate::par::SLOTS;
 use crate::par::analyze::RedPlan;
-use crate::par::remap_expr;
+use crate::par::chunk::remap_expr;
 use crate::rt_op::RtOp;
 
 /// The line a statement sits on, for synthesized code.

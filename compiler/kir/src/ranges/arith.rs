@@ -46,7 +46,7 @@ impl Pass {
                         hi: a.hi.min(c - 1),
                     }
                 };
-                if self.phase == Phase::Rewrite && a.lo >= 0 {
+                if self.phase == Phase::Rewrite && a.lo >= 0 && !self.split_rem(e, a, c) {
                     rewrite_rem(e, a, c);
                 }
                 return Some(r);
@@ -83,6 +83,62 @@ impl Pass {
             to_fast(e, fast);
         }
         Some(r.clamp(ty))
+    }
+}
+
+impl Pass {
+    /// `(x + y) % c`, the sum proven to fit and at least `2c`, with `x`
+    /// a local in `0..c` and `y` never negative: rewritten as `x + y % c`,
+    /// less `c` when that reaches `c`, the same number. `y % c` doesn't
+    /// wait for `x`, so a loop whose `x` is the round before's result
+    /// waits for an add and a compare, not a division, and the loop is
+    /// the modular sum `par` runs on all cores (`par/analyze.rs`).
+    fn split_rem(&self, e: &mut Expr, a: Range, c: i128) -> bool {
+        if a.hi < 2 * c || c > i128::from(i64::MAX) / 2 {
+            return false;
+        }
+        let ExprKind::Binary(BinOp::Rem, sum, _) = &mut e.kind else {
+            return false;
+        };
+        let ExprKind::Fast(FastOp::Add, x, y) = &mut sum.kind else {
+            return false;
+        };
+        let small = |s: &Expr| match s.kind {
+            ExprKind::Local(l) | ExprKind::Move(l) => {
+                self.read(l).filter(|r| r.lo >= 0 && r.hi < c)
+            }
+            _ => None,
+        };
+        let (r, other) = match (small(x), small(y)) {
+            (Some(r), _) => (r, y),
+            (None, Some(r)) => (r, x),
+            (None, None) => return false,
+        };
+        // `a` is the corners of the add, so the other side's range is
+        // what is left once this side's is taken away.
+        let rest = Range {
+            lo: a.lo - r.lo,
+            hi: a.hi - r.hi,
+        };
+        if rest.lo < 0 {
+            return false;
+        }
+        let ty = e.ty;
+        let at = |kind| Expr {
+            kind,
+            ty,
+            line: e.line,
+        };
+        let value = std::mem::replace(&mut **other, at(ExprKind::Int(0)));
+        let mut part = at(ExprKind::Binary(
+            BinOp::Rem,
+            Box::new(value),
+            Box::new(at(ExprKind::Int(c))),
+        ));
+        rewrite_rem(&mut part, rest, c);
+        **other = part;
+        to_fast(e, FastOp::RemOnce);
+        true
     }
 }
 

@@ -1,0 +1,33 @@
+// Rule: a loop's results don't depend on how it is run: a sum taken by a
+// remainder each round gives the plain loop's result after another such
+// loop, inside an outer loop, by a parameter, and in tasks at once.
+// Spec: 4.4
+// expect output: 3599994
+// expect output: 5999988
+// expect output: 42126026149062
+// expect output: [0, 999849692, 999699377, 999549062]
+
+fn by(seed: Int) -> Int {
+    let total = 0
+    for i in 0..300_000 {
+        total = (total + i * seed) % 1_000_000_007
+    }
+    total
+}
+
+fn main() {
+    let a = 0
+    for i in 0..600_000 {
+        a = (a + i * 7 % 13) % 1_000_000_007
+    }
+    print(a)
+    let b = 0
+    for _ in 0..2 {
+        for j in 0..600_000 {
+            b = (b + j * 3 % 11) % 1_000_000_009
+        }
+    }
+    print(b)
+    print(by(500_000) * 50_000 + by(3))
+    print([0, 1, 2, 3].parallel_map(s => by(s)))
+}

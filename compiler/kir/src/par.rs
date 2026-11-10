@@ -10,12 +10,14 @@
 //! message and line. Only the LLVM backend fans out; Cranelift always
 //! takes the plain loop.
 
-use crate::ir::{BinOp, Block, Expr, ExprKind, FuncId, Function, Local, Shape, Stmt, Type};
-use crate::par::analyze::{Plan, eligible, reduction, unshare, unshare_stmt};
+use crate::ir::{Block, Expr, ExprKind, FuncId, Function, Local, Shape, Stmt, Type};
+use crate::par::analyze::{eligible, reduction, unshare, unshare_stmt};
+use crate::par::chunk::{call_site, make_chunk};
 use crate::par::reduce::{make_red_chunk, red_call_site, stmt_line};
 use crate::rt_op::RtOp;
 
 mod analyze;
+mod chunk;
 mod reduce;
 
 /// Loops with fewer rounds than this are left as they are; the runtime
@@ -106,7 +108,8 @@ fn intern_int_list(shapes: &mut Vec<Shape>) -> u32 {
 }
 
 /// Walks `b`, keeping `fresh` (lists this function made and still owns
-/// alone), and replaces eligible loops. `next` numbers the next chunk.
+/// alone), and replaces eligible loops. `next` is the number of this
+/// function's first chunk, so a new chunk is `next + chunks.len()`.
 #[expect(clippy::too_many_arguments)]
 fn rewrite(
     b: &mut Block,
@@ -126,6 +129,7 @@ fn rewrite(
                 if matches!(e.kind, ExprKind::List(_)) && e.ty.is_ref() {
                     fresh.push(*l);
                 } else {
+                    nested(e, locals, name, fresh, next, chunks, shapes, scratch);
                     unshare(e, fresh);
                 }
             }
@@ -180,16 +184,7 @@ fn rewrite(
                     }
                 }
                 if let Stmt::ForRange { body, .. } | Stmt::While { body, .. } = &mut s {
-                    rewrite(
-                        body,
-                        locals,
-                        name,
-                        fresh,
-                        next + chunks.len(),
-                        chunks,
-                        shapes,
-                        scratch,
-                    );
+                    rewrite(body, locals, name, fresh, next, chunks, shapes, scratch);
                 }
             }
             Stmt::ForEach {
@@ -242,26 +237,55 @@ fn rewrite(
                     continue;
                 }
                 if let Stmt::ForEach { body, .. } = &mut s {
-                    rewrite(
-                        body,
-                        locals,
-                        name,
-                        fresh,
-                        next + chunks.len(),
-                        chunks,
-                        shapes,
-                        scratch,
-                    );
+                    rewrite(body, locals, name, fresh, next, chunks, shapes, scratch);
                 }
             }
-            Stmt::Expr(e) => unshare(e, fresh),
-            other => unshare_stmt(other, fresh),
+            Stmt::Expr(e) => {
+                nested(e, locals, name, fresh, next, chunks, shapes, scratch);
+                unshare(e, fresh);
+            }
+            other => {
+                // `print`, `return`, a call's result, a check: the
+                // blocks of their expressions are tried too.
+                crate::walk::stmt_parts(other, &mut |part| {
+                    if let crate::walk::Part::Expr(x) = part {
+                        nested(x, locals, name, fresh, next, chunks, shapes, scratch);
+                    }
+                });
+                unshare_stmt(other, fresh);
+            }
         }
         b.stmts.push(s);
     }
-    if let Some(v) = &b.value {
+    if let Some(v) = &mut b.value {
+        nested(v, locals, name, fresh, next, chunks, shapes, scratch);
         unshare(v, fresh);
     }
+}
+
+/// The loops in the blocks inside `e`, a statement's expression, at any
+/// depth, tried as `rewrite` tries a block's: an inlined function's body
+/// is a block, often an argument (`xs.push(work(s))`), and a loop
+/// `version.rs` copied sits in an `if`. Each block is tried from what is
+/// fresh before the statement; the caller then unshares `e` as a whole.
+#[expect(clippy::too_many_arguments)]
+fn nested(
+    e: &mut Expr,
+    locals: &mut Vec<Type>,
+    name: &str,
+    fresh: &[Local],
+    next: usize,
+    chunks: &mut Vec<Function>,
+    shapes: &mut Vec<Shape>,
+    scratch: &mut Option<[Local; 3]>,
+) {
+    crate::walk::parts(e, &mut |part| match part {
+        crate::walk::Part::Expr(x) => nested(x, locals, name, fresh, next, chunks, shapes, scratch),
+        crate::walk::Part::Block(b) => {
+            let mut inside = fresh.to_vec();
+            rewrite(b, locals, name, &mut inside, next, chunks, shapes, scratch);
+        }
+    });
 }
 
 /// Both bounds constant and far enough apart to be worth chunking?
@@ -271,173 +295,5 @@ fn big_enough(start: &Expr, end: &Expr) -> bool {
         (ExprKind::Int(a), ExprKind::Int(b)) => b - a >= MIN_ROUNDS,
         (_, ExprKind::Int(b)) => *b >= MIN_ROUNDS,
         _ => matches!(end.kind, ExprKind::Local(_)),
-    }
-}
-
-/// The replacement at the call site: `flag = kv_par_for(…)`, then the
-/// plain loop under `if flag != 0`.
-fn call_site(
-    loop_stmt: &Stmt,
-    plan: &Plan,
-    chunk: usize,
-    locals: &mut Vec<Type>,
-    start: &Expr,
-    end: &Expr,
-) -> (Stmt, Stmt) {
-    let line = start.line;
-    let flag = locals.len() as Local;
-    locals.push(Type::I64);
-    let mut args = vec![
-        start.clone(),
-        end.clone(),
-        Expr {
-            kind: ExprKind::Int(chunk as i128),
-            ty: Type::I64,
-            line,
-        },
-    ];
-    for c in &plan.caps {
-        args.push(Expr {
-            kind: ExprKind::Local(*c),
-            ty: locals[*c as usize],
-            line,
-        });
-    }
-    let call = Expr {
-        kind: ExprKind::Rt(RtOp::ParFor, args),
-        ty: Type::I64,
-        line,
-    };
-    let cond = Expr {
-        kind: ExprKind::Binary(
-            BinOp::Ne,
-            Box::new(Expr {
-                kind: ExprKind::Local(flag),
-                ty: Type::I64,
-                line,
-            }),
-            Box::new(Expr {
-                kind: ExprKind::Int(0),
-                ty: Type::I64,
-                line,
-            }),
-        ),
-        ty: Type::Bool,
-        line,
-    };
-    let then = Block {
-        stmts: vec![loop_stmt.clone()],
-        value: None,
-    };
-    let guard = Expr {
-        kind: ExprKind::If(Box::new(cond), then, Block::default()),
-        ty: Type::Unit,
-        line,
-    };
-    (Stmt::Let(flag, call), Stmt::Expr(guard))
-}
-
-/// The chunk: `fn(lo, hi, caps…) -> 0`, the loop body over `lo..hi` with
-/// every local renumbered.
-fn make_chunk(loop_stmt: &Stmt, plan: &Plan, locals: &[Type], name: &str) -> Function {
-    let Stmt::ForRange {
-        var, body, start, ..
-    } = loop_stmt
-    else {
-        unreachable!("a counted loop");
-    };
-    let line = start.line;
-    let mut map: Vec<(Local, Local)> = Vec::new();
-    let mut chunk_locals = vec![Type::I64, Type::I64];
-    for (k, c) in plan.caps.iter().enumerate() {
-        map.push((*c, (k + 2) as Local));
-        chunk_locals.push(locals[*c as usize]);
-    }
-    let new_var = chunk_locals.len() as Local;
-    chunk_locals.push(Type::I64);
-    map.push((*var, new_var));
-    let mut body = body.clone();
-    remap_block(&mut body, &mut map, &mut chunk_locals, locals);
-    let at = |kind, ty| Expr { kind, ty, line };
-    let run = Stmt::ForRange {
-        var: new_var,
-        start: at(ExprKind::Local(0), Type::I64),
-        end: at(ExprKind::Local(1), Type::I64),
-        inclusive: false,
-        body,
-    };
-    Function {
-        name: format!("{name} chunk"),
-        params: (0..2 + plan.caps.len() as Local).collect(),
-        ret: Type::I64,
-        locals: chunk_locals,
-        body: Block {
-            stmts: vec![run],
-            value: Some(Box::new(at(ExprKind::Int(0), Type::I64))),
-        },
-        line,
-        fails: false,
-        external: None,
-    }
-}
-
-fn remap_block(
-    b: &mut Block,
-    map: &mut Vec<(Local, Local)>,
-    chunk_locals: &mut Vec<Type>,
-    locals: &[Type],
-) {
-    for s in &mut b.stmts {
-        match s {
-            Stmt::Let(l, e) => {
-                remap_expr(e, map);
-                let new = chunk_locals.len() as Local;
-                chunk_locals.push(locals[*l as usize]);
-                map.push((*l, new));
-                *l = new;
-            }
-            Stmt::Expr(e) => remap_expr(e, map),
-            _ => unreachable!("eligible bodies hold only lets and stores"),
-        }
-    }
-}
-
-pub(super) fn remap_expr(e: &mut Expr, map: &mut [(Local, Local)]) {
-    match &mut e.kind {
-        ExprKind::Local(l) | ExprKind::Move(l) => *l = renumber(*l, map),
-        ExprKind::Assign(l, v) => {
-            remap_expr(v, map);
-            *l = renumber(*l, map);
-        }
-        _ => {
-            for_parts(e, |p| remap_expr(p, map));
-        }
-    }
-}
-
-fn renumber(l: Local, map: &[(Local, Local)]) -> Local {
-    map.iter()
-        .rev()
-        .find(|(old, _)| *old == l)
-        .map(|(_, new)| *new)
-        .expect("every local in an eligible body is mapped")
-}
-
-fn for_parts(e: &mut Expr, mut f: impl FnMut(&mut Expr)) {
-    match &mut e.kind {
-        ExprKind::Binary(_, a, b)
-        | ExprKind::Fast(_, a, b)
-        | ExprKind::Index(a, b)
-        | ExprKind::InRange(a, b) => {
-            f(a);
-            f(b);
-        }
-        ExprKind::Unary(_, x) | ExprKind::Convert(x, _) => f(x),
-        ExprKind::Rt(_, args) => {
-            for a in args {
-                f(a);
-            }
-        }
-        _ => {}
     }
 }

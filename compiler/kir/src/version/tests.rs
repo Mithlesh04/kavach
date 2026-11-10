@@ -21,7 +21,7 @@ fn versioned(src: &str) -> Option<(usize, usize, usize)> {
     let (mut first, mut last) = (None, None);
     crate::walk::any_in_block(&all, &mut |e| {
         if let ExprKind::If(cond, fast, written) = &e.kind
-            && matches!(cond.kind, ExprKind::And(..))
+            && is_version_guard(cond)
         {
             first.get_or_insert_with(|| fast.clone());
             last = Some(written.clone());
@@ -37,6 +37,23 @@ fn versioned(src: &str) -> Option<(usize, usize, usize)> {
     Some((super::checks(&fast), signed, super::checks(&written)))
 }
 
+/// Whether `cond` is the test `version.rs` puts before a copy:
+/// `x >= 0 && x <= 2^31 - 1`, then perhaps `&& a >= 0` for accumulators.
+fn is_version_guard(cond: &Expr) -> bool {
+    match &cond.kind {
+        ExprKind::And(a, b) => {
+            let bound = |e: &Expr, op: BinOp, c: i128| {
+                matches!(&e.kind, ExprKind::Binary(o, x, n)
+                    if *o == op
+                        && matches!(x.kind, ExprKind::Local(_))
+                        && matches!(n.kind, ExprKind::Int(v) if v == c))
+            };
+            (bound(a, BinOp::Ge, 0) && bound(b, BinOp::Le, super::SMALL)) || is_version_guard(a)
+        }
+        _ => false,
+    }
+}
+
 /// The loop of the `tasks` benchmark, with the rounds known or not.
 fn work(rounds: &str, step: &str) -> String {
     format!(
@@ -46,7 +63,8 @@ fn work(rounds: &str, step: &str) -> String {
 
 #[test]
 fn a_loop_multiplied_by_a_parameter_gets_a_copy_without_checks() {
-    let src = work("1_000_000", "(total + i * seed) % 1_000_000_007");
+    // Fewer rounds than `par.rs` splits off, so the copy stays one loop.
+    let src = work("50_000", "(total + i * seed) % 1_000_000_007");
     let (fast, signed, written) = versioned(&src).expect("the loop is versioned");
     assert_eq!(fast, 0, "no check is left where 0 <= seed < 2^31");
     assert_eq!(
