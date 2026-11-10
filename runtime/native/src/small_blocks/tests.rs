@@ -82,6 +82,8 @@ fn blocks_freed_on_other_threads_stay_whole() {
 
 #[test]
 fn a_thread_that_ends_leaves_its_blocks_for_others() {
+    let i = size_index(100);
+    let before = LEFT[i].load(std::sync::atomic::Ordering::Relaxed);
     for _ in 0..3 {
         std::thread::spawn(|| {
             // SAFETY: given back at once, with this size.
@@ -94,8 +96,10 @@ fn a_thread_that_ends_leaves_its_blocks_for_others() {
         .join()
         .unwrap();
     }
-    let i = size_index(100);
-    assert_ne!(shared().free[i], 0, "the block was left for other threads");
+    // Not `shared().free[i]`: tests run at once, and another one may have
+    // taken the blocks already.
+    let after = LEFT[i].load(std::sync::atomic::Ordering::Relaxed);
+    assert!(after >= before + 3, "each thread left its block for others");
     // What other threads left is usable, and what they didn't cut too.
     std::thread::spawn(move || {
         // SAFETY: given back with this size.

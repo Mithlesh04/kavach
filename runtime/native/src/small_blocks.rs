@@ -267,6 +267,7 @@ fn pass_on(l: &mut Local, i: usize) {
 }
 
 /// A thread ends: everything it holds goes to the shared lists.
+#[cfg_attr(test, allow(clippy::needless_range_loop))]
 fn leave(l: &mut Local) {
     let mut s = shared();
     for i in 1..SIZES {
@@ -285,6 +286,8 @@ fn leave(l: &mut Local) {
         s.free[i] = first as usize;
         l.free[i] = null_mut();
         l.held[i] = 0;
+        #[cfg(test)]
+        LEFT[i].fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     }
     let left = (l.end as usize) - (l.next as usize);
     if left > MOST {
@@ -303,6 +306,13 @@ fn leave(l: &mut Local) {
     l.next = null_mut();
     l.end = null_mut();
 }
+
+/// For tests: how many times an ending thread left free blocks of each
+/// size to the shared lists. It only grows, so a test can see its own
+/// threads' leaving even while other tests take blocks from those lists.
+#[cfg(test)]
+static LEFT: [std::sync::atomic::AtomicUsize; SIZES] =
+    [const { std::sync::atomic::AtomicUsize::new(0) }; SIZES];
 
 #[cfg(test)]
 mod tests;
