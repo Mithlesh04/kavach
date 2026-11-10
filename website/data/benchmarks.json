@@ -998,13 +998,13 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 677
+              "value": 210
             },
             {
               "id": "cpp",
               "label": "C++",
               "color": "cpp",
-              "value": 776
+              "value": 554
             }
           ],
           "verify": "kavach build benchmarks/tasks/kavach/parallel-map.kav && ./parallel-map",
@@ -1018,13 +1018,13 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 4456
+              "value": 164
             },
             {
               "id": "cpp",
               "label": "C++",
               "color": "cpp",
-              "value": 4788
+              "value": 4261
             }
           ],
           "verify": "kavach build benchmarks/tasks/kavach/parallel-map.kav && ./parallel-map",

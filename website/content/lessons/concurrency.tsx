@@ -150,9 +150,12 @@ export const manyDoc: LessonDoc = {
       </P>
       <P>
         Each task runs as <C>spawn thread</C> makes it (<Link href="/docs/concurrency/how-tasks-run/">How Tasks Run</Link>),
-        so in a release build the items compute on several cores at once. Eight sums of 150 million rounds each take{" "}
-        {kavachMs("parallel")} ms with <C>parallel_map</C>, and {kavachMs("serial")} ms with <C>map</C>, one after
-        another (<Link href="/docs/benchmarks/#tasks">the benchmark</Link>).
+        so in a release build the items compute on several cores at once. In{" "}
+        <Link href="/docs/benchmarks/#tasks">the benchmark</Link>, eight sums of 150 million rounds each take{" "}
+        {kavachMs("parallel")} ms with <C>parallel_map</C> — and {kavachMs("serial")} ms with plain <C>map</C>,
+        because each of these sums is a math loop that already{" "}
+        <Link href="/docs/speed/loops-on-all-cores/">runs on all cores</Link> by itself. <C>parallel_map</C> is for
+        items that can&apos;t spread themselves like that: downloads, files, work of uneven sizes.
       </P>
       <div><SrcRef file="docs/spec/09-concurrency.md" line={66} symbol="Each task runs as `spawn thread` makes it" label="spec 9.3" /></div>
     </>
