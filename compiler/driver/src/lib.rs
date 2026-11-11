@@ -4,6 +4,7 @@
 
 mod config;
 pub mod deps;
+mod fetch_checks;
 mod limits;
 mod project;
 mod schema;

@@ -199,7 +199,7 @@ impl Checker<'_> {
     }
 
     /// Whether `e`'s value is a secret: a secret field, a secret parameter,
-    /// or a variable set from one (spec 8.7).
+    /// `env(…)`, or a variable set from one (spec 8.7, 10.13).
     pub(crate) fn is_secret(&self, e: &Expr) -> bool {
         let mut hits = Vec::new();
         self.find_secrets(e, &mut hits);
@@ -233,9 +233,18 @@ impl Checker<'_> {
             {
                 out.push((e.span, id.name.clone()))
             }
+            // `env(…)` (spec 10.13).
+            ExprKind::Call { .. } if self.secret.contains(&(e.span.start, e.span.end)) => {
+                out.push((e.span, "env(…)".to_string()))
+            }
             ExprKind::Binary(_, l, r) => {
                 self.find_secrets(l, out);
                 self.find_secrets(r, out);
+            }
+            ExprKind::Try { expr, .. } => self.find_secrets(expr, out),
+            ExprKind::Catch { expr, handler, .. } => {
+                self.find_secrets(expr, out);
+                self.find_secrets(handler, out);
             }
             _ => {}
         }

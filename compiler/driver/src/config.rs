@@ -250,6 +250,49 @@ pub struct BuildConfig {
     pub release: Option<toml::Value>,
 }
 
+/// `[env]` (spec 10.13): the `.env` file to read, and single variables
+/// that override it.
+#[derive(Clone, Debug, Default, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct EnvConfig {
+    pub file: Option<String>,
+    /// Text, a number, `true`/`false` or a date: each is given to the
+    /// program as its text (`tools/cli/src/env.rs` checks them).
+    pub vars: std::collections::BTreeMap<String, toml::Value>,
+}
+
+impl EnvConfig {
+    /// `vars` as the text the program gets: an environment variable holds
+    /// text, so a number, `true`/`false` or a date is written as text, and
+    /// a list or a table is refused (spec 10.13).
+    pub fn vars_as_text(&self) -> Result<Vec<(String, String)>, String> {
+        let mut out = Vec::new();
+        for (name, value) in &self.vars {
+            let wrong =
+                |why: &str| format!("`{name}` in `[env.vars]` of kavach.toml: {why} (spec 10.13)");
+            if !kavach_runtime_core::env_file::is_name(name) {
+                return Err(wrong(
+                    "a name is letters, digits and `_`, not starting with a digit",
+                ));
+            }
+            let text = match value {
+                toml::Value::String(s) => s.clone(),
+                toml::Value::Integer(n) => n.to_string(),
+                toml::Value::Float(f) => f.to_string(),
+                toml::Value::Boolean(b) => b.to_string(),
+                toml::Value::Datetime(d) => d.to_string(),
+                toml::Value::Array(_) | toml::Value::Table(_) => {
+                    return Err(wrong(
+                        "an environment variable holds text, so write a list as text, such as \"a,b,c\", and split it in the program",
+                    ));
+                }
+            };
+            out.push((name.clone(), text));
+        }
+        Ok(out)
+    }
+}
+
 /// `kavach.toml`: every key and section is listed in spec 10.11, and any
 /// other is an error, so a misspelled setting isn't ignored silently.
 #[derive(Clone, Debug, Default, Deserialize)]
@@ -265,6 +308,7 @@ pub struct Config {
     /// not read yet.
     pub dependencies: Option<toml::Value>,
     pub build: BuildConfig,
+    pub env: EnvConfig,
     pub workspace: Option<toml::Value>,
     pub architecture: Option<toml::Value>,
     /// The folder `kavach.toml` was found in; `None` without one.

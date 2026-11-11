@@ -425,6 +425,9 @@ pub enum RtOp {
     /// both can fail (`runtime/native/src/rt_clipboard.rs`).
     ClipReadText,
     ClipWriteText,
+    /// `env(name)` (spec 10.13): the variable, or an error when it is
+    /// not set (`runtime/native/src/rt_std.rs`).
+    EnvGet,
     /// Serial ports (spec 14.18), by number: the ports there are, open
     /// (can fail), read and write (can fail), close
     /// (`runtime/native/src/rt_serial.rs`).

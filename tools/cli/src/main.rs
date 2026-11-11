@@ -4,6 +4,7 @@ mod approvals;
 mod audit;
 mod context;
 mod deps;
+mod env;
 mod fmt;
 mod keep;
 mod library;
@@ -57,8 +58,19 @@ tools for AI assistants (spec 13), which save reading whole files:
 ";
 
 fn main() -> ExitCode {
-    let args = project::expand(std::env::args().skip(1).collect());
+    let (args, env_flags) = match env::take_flags(std::env::args().skip(1).collect()) {
+        Ok(taken) => taken,
+        Err(e) => return fail(&e),
+    };
+    let args = project::expand(args);
     let (args, compress) = pack::take_flag(args);
+    // The `.env` file and `--env` values (spec 10.13).
+    if let ([command, ..], Some(path)) = (&args[..], args.iter().find(|a| a.ends_with(".kav")))
+        && matches!(command.as_str(), "run" | "test" | "build")
+        && let Err(e) = env::prepare(command, env_flags, path)
+    {
+        return fail(&e);
+    }
     // Ctrl+C and SIGTERM end a program as `cli.exit` does (spec 5.8),
     // caught before any other thread starts (decision 0063).
     if args.first().map(String::as_str) == Some("run") {
@@ -427,7 +439,7 @@ fn build(
             std::path::PathBuf::from(format!("{stem}{}", std::env::consts::EXE_SUFFIX))
         }
     };
-    let built = build_with_best_backend(&program, &out);
+    let built = build_with_best_backend(&program, &out).and_then(|()| env::write_beside(&out));
     let packed = built.and_then(|()| compress.map(|m| pack::pack(&out, m)).transpose());
     match packed {
         Ok(sizes) => {
@@ -474,4 +486,9 @@ fn native(path: &str, args: &[&str]) -> ExitCode {
             ExitCode::from(3)
         }
     }
+}
+
+fn fail(message: &str) -> ExitCode {
+    eprintln!("error: {message}");
+    ExitCode::from(2)
 }

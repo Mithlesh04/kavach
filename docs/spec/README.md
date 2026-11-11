@@ -17,7 +17,7 @@ This specification is the source of truth for the language. If the compiler and 
 | 7 | [Contracts](07-contracts.md) | `require`, `ensure`, `invariant` |
 | 8 | [Capabilities and agents](08-capabilities-and-agents/README.md) | `uses`, `capability`, `agent`, limits, approvals, `ask<T>`, secrets |
 | 9 | [Concurrency](09-concurrency.md) | Tasks, channels, shared state |
-| 10 | [Modules and packages](10-modules-and-packages.md) | Modules, `use`, `pub`, project layout, tests, interop, editions |
+| 10 | [Modules and packages](10-modules-and-packages.md) | Modules, `use`, `pub`, project layout, tests, interop, editions, dependencies, environment variables and `.env` files |
 | 11 | [Testing](11-testing.md) | Tests generated from types, contracts and `example`; capability fakes; agent exploration; crash fixes |
 | 12 | [Maintainability at scale](12-maintainability.md) | File and function limits, workspaces, architecture rules, API checks, deprecation |
 | 13 | [Tooling for AI: fewer tokens](13-ai-tooling.md) | `query`, `outline`, `context`, edit by name, errors with fixes, MCP server, token benchmark |

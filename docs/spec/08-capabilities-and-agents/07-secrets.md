@@ -25,3 +25,5 @@ remember(reveal(order.card))                          // allowed, and visible in
 ```
 
 Inside `charge`, `card` is a secret like the field it came from, and so is a variable set from a secret (`const c = order.card`). The audit log writes `<secret>` for an argument of a `secret` parameter.
+
+A value read from the environment with `env(name)` is a secret too (10.13): keys and passwords usually come that way.

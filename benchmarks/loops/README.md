@@ -1,6 +1,6 @@
 # benchmarks/loops
 
-Small benchmarks of the basics, in Kavach and C++, doing exactly the same work on large data. They show whether native Kavach code is faster than C++ ([to-do item 1](../../docs/vision/todo.md)): the goal is Kavach at least 2× as fast as `g++ -O2` everywhere, and 3× on plain loops.
+Small benchmarks of the basics, in Kavach and C++, doing exactly the same work on large data. They show whether native Kavach code is faster than C++, and [against Go and C#](#against-go-and-c), than those ([to-do item 1](../../docs/vision/todo.md)): the goal is Kavach at least 2× as fast as `g++ -O2` everywhere, and 3× on plain loops.
 
 | Benchmark | What it measures |
 |---|---|
@@ -39,6 +39,26 @@ Measured 2026-11-09 at commit b65b7ae7 (`kavach --version`), in three rounds of 
 The ratio in each round, in order: `loop` 0.04, 0.04, 0.04; `sort` 0.09, 0.09, 0.09; `closures` 0.20, 0.12, 0.20; `records` 0.39, 0.39, 0.38; `lists` 0.39, 0.41, 0.38; `text` 0.51, 0.51, 0.52; `matrix` 0.53, 0.56, 0.53; `sizedmaps` 0.66, 0.58, 0.61; `maps` 0.73, 0.67, 0.71; `fib` 0.84, 0.84, 0.85; `floats` 1.03, 1.02, 1.02.
 
 `kavach build` uses the LLVM backend ([decision 0018](../../docs/decisions/0018-llvm-backend-through-llvm-tools.md)) for every benchmark.
+
+## Against Go and C#
+
+The same eleven programs written in Go ([go/](go)) and C# ([csharp/](csharp)), line for line as the C++ ones: plain loops, the standard library's list (`append`, `List<T>`), map (`map`, `Dictionary`), text and sort. Go 1.23.4 (`go build`), C# on .NET 8.0.428 (`dotnet publish -c Release`, the default JIT). Measured 2026-11-11 with `kavach 0.1.0 (commit 445b5b61)` and this table's commit's change to freeing lists, in three rounds of best of 9 runs, all four languages in turns; each cell is the best of the three rounds, in milliseconds. Every program printed the same result in every language. An empty C# program takes 105 ms to start .NET and end (Go: 3 ms), and every C# time below includes it.
+
+| Benchmark | Kavach ms | C++ ms | Go ms | C# ms | Kavach against Go | Kavach against C# |
+|---|---|---|---|---|---|---|
+| `loop` | 60 | 1361 | 1377 | 1561 | **23× faster** | **26× faster** |
+| `sort` | 32 | 361 | 450 | 572 | **14× faster** | **18× faster** |
+| `closures` | 21 | 95 | 136 | 238 | **6.5× faster** | **11× faster** |
+| `maps` | 60 | 86 | 403 | 232 | **6.7× faster** | **3.9× faster** |
+| `sizedmaps` | 49 | 69 | 250 | 218 | **5.1× faster** | **4.4× faster** |
+| `matrix` | 8 | 14 | 37 | 135 | **4.6× faster** | **17× faster** |
+| `lists` | 32 | 73 | 124 | 211 | **3.9× faster** | **6.6× faster** |
+| `fib` | 48 | 59 | 166 | 267 | **3.5× faster** | **5.6× faster** |
+| `text` | 38 | 71 | 109 | 257 | 2.9× faster | **6.8× faster** |
+| `records` | 43 | 107 | 102 | 196 | 2.4× faster | **4.6× faster** |
+| `floats` | 347 | 348 | 355 | 433 | about the same | 1.2× faster |
+
+In bold: at least 3× as fast, the target for plain loops ([to-do item 1](../../docs/vision/todo.md)). `floats` is as fast in every language: each round waits for the last multiply and add, whatever compiles it. Go's map and C#'s start-up cost them most; Go's `fib` pays for its growable stacks. Each time in round 1, 2 and 3 is in the run's log; round 3 ran on a busier machine, about 1.6× slower for all four languages alike.
 
 ## Progress
 
@@ -117,3 +137,5 @@ sh scripts/run-benchmarks.sh
 ```
 
 On Windows, `powershell -File scripts/run-benchmarks.ps1` runs the same script in WSL.
+
+With `go` and `dotnet` on the path (or `GO` and `DOTNET` pointing at them), the script times the Go and C# programs too.

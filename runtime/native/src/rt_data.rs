@@ -395,6 +395,7 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         | RtOp::IoColors
         | RtOp::IoWrite
         | RtOp::CliArgs
+        | RtOp::EnvGet
         | RtOp::CliExit
         | RtOp::CliParse => crate::rt_std::std_op(op, a, b, code, line),
         RtOp::TimeWaitUntil => crate::rt_std::wait_until(a, line),

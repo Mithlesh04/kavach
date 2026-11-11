@@ -92,7 +92,9 @@ impl Checker<'_> {
                 };
                 Ty::Result(Box::new(answer), Box::new(error))
             }
+            // Its value is a secret (spec 10.13): keys come this way.
             "env" => {
+                self.secret.insert((span.start, span.end));
                 one(self, Some(string.clone()));
                 Ty::Result(Box::new(string), Box::new(self.error_ty()))
             }

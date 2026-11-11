@@ -164,6 +164,7 @@ impl<'a> Lowerer<'a> {
             "Shared" => K::Rt(RtOp::SharedNew, vec![self.expr(arg)?]),
             "Channel" => K::Rt(RtOp::ChanNew, vec![self.expr(arg)?]),
             "Bytes" => K::Rt(RtOp::BytesNew, vec![self.expr(arg)?]),
+            "env" => K::Rt(RtOp::EnvGet, vec![self.expr(arg)?]),
             // `Error("disk full")`: an error that is only its message (spec 5.5).
             "Error" => {
                 let message = self.expr(arg)?;

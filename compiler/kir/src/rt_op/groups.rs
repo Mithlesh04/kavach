@@ -18,6 +18,7 @@ impl RtOp {
         matches!(
             self,
             RtOp::FsReadText
+                | RtOp::EnvGet
                 | RtOp::ClipReadText
                 | RtOp::ClipWriteText
                 | RtOp::SerialOpen

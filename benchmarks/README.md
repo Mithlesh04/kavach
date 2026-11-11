@@ -31,7 +31,7 @@ Each suite's README gives the compilers and their flags, how many runs there wer
 
 | Folder | What it compares |
 |---|---|
-| [loops/](loops/README.md) | Loops, calls and lists: Kavach against C++ |
+| [loops/](loops/README.md) | Loops, calls and lists: Kavach against C++, Go and C# |
 | [math/](math/README.md) | Arithmetic over large data: sums, dot products, element-wise operations, square roots |
 | [everyday/](everyday/README.md) | What programs do all day: callbacks (nested too), branches, copies, deep call stacks, short-lived values |
 | [bytes/](bytes/README.md) | Raw bytes work storage engines live on: checksums (CRC32C) |

@@ -82,6 +82,9 @@ fn a_git_dependency_stays_at_its_locked_commit() {
         "{lock}"
     );
     assert_eq!(stdout(&kavach(&app, &["run", "src/main.kav"])), "300\n");
+    // Fetched into the project, as npm's node_modules.
+    let fetched = app.join("kavach_modules").join("money");
+    assert!(fetched.join("src/lib.kav").is_file());
 
     // The repository moves on; the lock keeps the build where it was.
     fs::write(
@@ -93,6 +96,29 @@ fn a_git_dependency_stays_at_its_locked_commit() {
     assert_eq!(stdout(&kavach(&app, &["run", "src/main.kav"])), "300\n");
     assert!(kavach(&app, &["update"]).status.success());
     assert_eq!(stdout(&kavach(&app, &["run", "src/main.kav"])), "3000\n");
+    // One folder for each package, moved to the new commit.
+    let folders = fs::read_dir(app.join("kavach_modules")).unwrap().count();
+    assert_eq!(folders, 1);
+    assert!(
+        fs::read_to_string(fetched.join("src/lib.kav"))
+            .unwrap()
+            .contains("1000")
+    );
+
+    // A source that isn't safe to fetch is refused, and not added.
+    let plain = kavach(&app, &["add", "evil", "--git", "http://example.com/evil"]);
+    assert!(!plain.status.success());
+    assert!(String::from_utf8_lossy(&plain.stderr).contains("https://"));
+    let secret = kavach(
+        &app,
+        &["add", "evil", "--git", "https://me:token@example.com/evil"],
+    );
+    assert!(String::from_utf8_lossy(&secret.stderr).contains("password or token"));
+    assert!(
+        !fs::read_to_string(app.join("kavach.toml"))
+            .unwrap()
+            .contains("evil")
+    );
 
     // A package that uses `unsafe`, refused until its entry allows it.
     let raw = dir.join("raw");

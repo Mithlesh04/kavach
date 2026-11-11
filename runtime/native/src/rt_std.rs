@@ -302,6 +302,23 @@ pub fn std_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
             let slots = args.into_iter().map(|s| new_str(s, item) as u64).collect();
             alloc_slots(type_of(code), 0, slots)
         }
+        // `a` is the name (owned); the value is a secret (spec 10.13).
+        RtOp::EnvGet => {
+            if let Err(e) = kavach_runtime_core::env_file::load_once() {
+                flush();
+                eprintln!("error: {e}");
+                std::process::exit(2);
+            }
+            let name = text(a);
+            match kavach_runtime_core::env_file::get(&name) {
+                Some(v) => new_str(v, type_of(code)),
+                None => {
+                    let message = format!("environment variable `{name}` is not set");
+                    set_error(crate::shapes::new_text(&message, str_type()));
+                    0
+                }
+            }
+        }
         RtOp::CliParse => {
             crate::rt_cli::cli_parse(a, b, code, ARGS.get().map_or(&[], Vec::as_slice))
         }

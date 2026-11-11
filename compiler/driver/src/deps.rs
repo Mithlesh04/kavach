@@ -2,9 +2,10 @@
 //! folder (`path`) or a git repository (`git`, with a `tag`, `branch` or
 //! `rev`). `kavach.lock` records the exact commit of each git dependency,
 //! so every build uses the same code; fetched repositories are kept in
-//! `.kavach/deps/`. Only fetching (`resolve` with `fetch`) uses the
-//! network; compiling reads the lock and the folders.
+//! `kavach_modules/<name>/` of the project. Only fetching (`resolve` with
+//! `fetch`) uses the network; compiling reads the lock and the folders.
 
+use crate::fetch_checks::{is_commit, is_device_name, unsafe_url};
 use crate::project::Source;
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
@@ -72,6 +73,11 @@ fn declared(root: &Path) -> Result<Vec<Dep>, String> {
                 "its name is used as a module name: lowercase letters, digits and `_`",
             ));
         }
+        if is_device_name(name) {
+            return Err(wrong(
+                "Windows keeps this name for a device, so it can't be a folder",
+            ));
+        }
         let Some(t) = entry.as_table() else {
             return Err(wrong(
                 "there is no package registry yet: give a `path` or `git` (spec 10.12)",
@@ -87,6 +93,19 @@ fn declared(root: &Path) -> Result<Vec<Dep>, String> {
                     .collect();
                 if wants.len() > 1 {
                     return Err(wrong("give at most one of `tag`, `branch` and `rev`"));
+                }
+                if let Some(why) = unsafe_url(&url) {
+                    return Err(wrong(&format!("can't fetch `{url}`: {why}")));
+                }
+                if let Some((kind, v)) = wants.first() {
+                    let bad = if kind == "rev" {
+                        !is_commit(v)
+                    } else {
+                        v.starts_with('-') || v.chars().any(char::is_control)
+                    };
+                    if bad {
+                        return Err(wrong(&format!("`{kind} = \"{v}\"` is not a {kind} name")));
+                    }
                 }
                 From::Git(url, wants.into_iter().next())
             }
@@ -195,7 +214,7 @@ fn commit_of(url: &str, want: &Option<(String, String)>) -> Result<String, Strin
     };
     // A tag that points at a tag object is listed again with `^{}`: that
     // line names the commit.
-    let listed = git(&["ls-remote", url, &wanted, &format!("{wanted}^{{}}")])?;
+    let listed = git(&["ls-remote", "--", url, &wanted, &format!("{wanted}^{{}}")])?;
     let lines: Vec<&str> = listed.lines().collect();
     let line = lines
         .iter()
@@ -205,8 +224,8 @@ fn commit_of(url: &str, want: &Option<(String, String)>) -> Result<String, Strin
     Ok(line.split_whitespace().next().unwrap_or("").to_string())
 }
 
-/// The folder holding `commit` of `url`, fetched into `.kavach/deps/` of
-/// the project at `top` when `fetch` allows it.
+/// The folder holding `commit` of `url`: `kavach_modules/<name>/` of the
+/// project at `top`, fetched (or moved to `commit`) when `fetch` allows it.
 fn checkout(
     top: &Path,
     name: &str,
@@ -214,25 +233,33 @@ fn checkout(
     commit: &str,
     fetch: bool,
 ) -> Result<PathBuf, String> {
-    let short = &commit[..commit.len().min(12)];
-    let dir = top
-        .join(".kavach")
-        .join("deps")
-        .join(format!("{name}-{short}"));
-    if dir.join("kavach.toml").is_file() {
+    if !is_commit(commit) {
+        return Err(format!(
+            "dependency `{name}`: `{commit}` in kavach.lock is not a commit: run `kavach update`"
+        ));
+    }
+    let dir = top.join("kavach_modules").join(name);
+    // A checked-out commit leaves HEAD detached, holding the commit itself
+    // (in full, where `rev` may give its start).
+    let head = std::fs::read_to_string(dir.join(".git").join("HEAD")).unwrap_or_default();
+    if head.trim().starts_with(commit) && dir.join("kavach.toml").is_file() {
         return Ok(dir);
     }
     if !fetch {
-        return Err(format!(
-            "dependency `{name}` is not fetched yet: run `kavach update`"
-        ));
+        let why = if dir.exists() {
+            "is at another commit"
+        } else {
+            "is not fetched yet"
+        };
+        return Err(format!("dependency `{name}` {why}: run `kavach update`"));
     }
     let part = dir.with_extension("part");
     let _ = std::fs::remove_dir_all(&part);
     std::fs::create_dir_all(dir.parent().unwrap_or(top)).map_err(|e| e.to_string())?;
     let part_s = part.to_string_lossy().to_string();
-    git(&["clone", "--quiet", url, &part_s])?;
-    git(&["-C", &part_s, "checkout", "--quiet", commit])?;
+    git(&["clone", "--quiet", "--", url, &part_s])?;
+    git(&["-C", &part_s, "checkout", "--quiet", commit, "--"])?;
+    let _ = std::fs::remove_dir_all(&dir);
     std::fs::rename(&part, &dir).map_err(|e| e.to_string())?;
     Ok(dir)
 }
@@ -274,6 +301,15 @@ pub fn resolve(top: &Path, fetch: bool) -> Result<Vec<Package>, String> {
                 )
             }
         };
+        // A fetched package reads nothing outside its own folder.
+        if from_root.starts_with(top.join("kavach_modules")) && !root.starts_with(&from_root) {
+            return Err(format!(
+                "dependency `{}` of {} is a folder outside it ({}): a fetched package can't name one (spec 10.12)",
+                dep.name,
+                from_root.display(),
+                root.display()
+            ));
+        }
         let local = top.join("src");
         if from_root == *top
             && (local.join(format!("{}.kav", dep.name)).is_file() || local.join(&dep.name).is_dir())

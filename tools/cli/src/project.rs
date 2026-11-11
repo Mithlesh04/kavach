@@ -128,7 +128,7 @@ pub(crate) fn new(name: &str) -> ExitCode {
         ),
         (
             ".gitignore",
-            "# Build output and caches (spec 10.3).\n.kavach/\n# Each agent's state and journal (spec 8.5).\nagents/\n".to_string(),
+            "# Build output and caches (spec 10.3).\n.kavach/\n# Fetched dependencies (spec 10.12).\nkavach_modules/\n# Environment variables, often secrets (spec 10.13).\n.env\n# Each agent's state and journal (spec 8.5).\nagents/\n".to_string(),
         ),
     ];
     for (path, text) in files {

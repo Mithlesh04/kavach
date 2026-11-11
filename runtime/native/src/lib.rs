@@ -196,6 +196,9 @@ pub extern "C-unwind" fn kv_main(
     }
     rt_stop::catch_stops(end_hooks);
     rt_std::set_args(std::env::args().skip(1).collect());
+    // Its first `env` reads the `.env` beside it, or the one
+    // `KAVACH_ENV_FILE` names (spec 10.13).
+    kavach_runtime_core::env_file::BUILT.store(true, std::sync::atomic::Ordering::Relaxed);
     let path = rt::text(path, path_len).to_string();
     let shapes = kavach_kir::decode_shapes(rt::text(shapes, shapes_len))
         .expect("the compiler wrote a valid shape table");

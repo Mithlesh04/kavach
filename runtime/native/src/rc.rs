@@ -96,6 +96,14 @@ pub extern "C-unwind" fn kv_free(p: i64) {
             }
             _ => {}
         },
+        // A list of objects: every item has the list's item type.
+        LIST if crate::flat::width(o.ty()) == 0
+            && let Shape::List(t) = shape(o.ty()) =>
+        {
+            for &slot in slots(p) {
+                release_slot(slot as i64, *t);
+            }
+        }
         _ => {
             for (i, slot) in slots(p).iter().enumerate() {
                 release_slot(*slot as i64, slot_type(p, i));

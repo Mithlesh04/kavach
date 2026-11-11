@@ -90,9 +90,9 @@ impl<'a> Interp<'a> {
                 }
                 Ok(Value::Shared(v))
             }
-            "env" => match std::env::var(arg.display()) {
-                Ok(v) => Ok(self.str_value(&v)),
-                Err(_) => Err(Flow::Fail(Value::BuiltinError(
+            "env" => match kavach_runtime_core::env_file::get(&arg.display()) {
+                Some(v) => Ok(self.str_value(&v)),
+                None => Err(Flow::Fail(Value::BuiltinError(
                     format!("environment variable `{}` is not set", arg.display()).into(),
                 ))),
             },

@@ -39,6 +39,7 @@ The **prelude** is always available without `use`: built-in types, `print`, `deb
 my-app/
 ├── kavach.toml          project settings and dependencies
 ├── kavach.lock          exact dependency versions (generated, commit it)
+├── kavach_modules/      fetched dependencies (generated, never commit it; 10.12)
 ├── src/
 │   ├── main.kav         entry point (for applications)
 │   ├── orders.kav
@@ -81,11 +82,12 @@ Other sections are described where they are used: AI models (`[ai]`) and agents'
 | `kavach run --dry-run` | Run without executing capability calls |
 | `kavach build` | Compile to an executable file (a project, or one file: 10.9) |
 | `kavach build --release` | Optimized build |
+| `--env-file <path>`, `--env NAME=value`, `--no-env-file` | On `run`, `test` and `build`: which `.env` file and which single variables the program gets (10.13) |
 | `kavach build --lib` | Compile a library into a shared library with a C header, for other languages (10.10) |
 | `kavach build --compress` / `--compress=max` | Write a smaller executable, packed without losing anything; it unpacks itself when it starts (below) |
 | `kavach test` | Run generated and hand-written tests (chapter 11) |
 | `kavach fmt` | Format all code |
-| `kavach add <name> --path <folder>` / `kavach add <name> --git <url> [--tag T \| --branch B \| --rev C] [--unsafe]` | Add a dependency, fetch it and write `kavach.lock` (10.12) |
+| `kavach add <name> --path <folder>` / `kavach add <name> --git <url> [--tag T \| --branch B \| --rev C] [--unsafe]` | Add a dependency, fetch it, write the capabilities it uses into its `can` and write `kavach.lock` (10.12) |
 | `kavach update` | Fetch every git dependency again at the tag, branch or commit `kavach.toml` asks for, and rewrite `kavach.lock` (10.12) |
 | `kavach audit` | List unsafe code, revealed secrets and capability use across all dependencies |
 | `kavach approvals` | List the requests a project's agents wait on: number, call, role, when asked, until when (8.3) |
@@ -317,7 +319,8 @@ Every setting a program can have, in one place. A key or section that isn't list
 | `[log.otlp]` | `endpoint` | a URL; required in this section | none | 14.12 |
 | `[log.otlp]` | `service` | text | the package's `name` | 14.12 |
 
-| `[dependencies]` | a dependency's name | `{ path = "…" }`, or `{ git = "…" }` with at most one of `tag`, `branch` and `rev`; either may add `unsafe = true` | none | 10.12 |
+| `[dependencies]` | a dependency's name | `{ path = "…" }`, or `{ git = "…" }` with at most one of `tag`, `branch` and `rev`; either may add `can = ["Net", …]` (the capabilities it may use) and `unsafe = true` | none | 10.12 |
+| `[env]` | `file`, `vars` | the `.env` file to read; single variables that override it | `.env`, none | 10.13 |
 
 Paths are relative to the folder `kavach.toml` is in. `[build.release]`, `[workspace]` and `[architecture]` are accepted and described where they are used (10.4), but not read yet.
 
@@ -337,6 +340,7 @@ For running programs:
 | `KAVACH_RUNTIME_LIB` | a file's path | Where the runtime library is, for linking | 10.5 |
 | `KAVACH_UNPACKED` | a folder | Where a program built with `--compress` unpacks itself | 10.5 |
 | `KAVACH_SERIAL` | any value | Loops that would run on all cores run on one | 9.3 |
+| `KAVACH_ENV_FILE` | a file's path | The `.env` file a built program reads, instead of the one beside it | 10.13 |
 | `KAVACH_PROCESS_CALL` | a number | Set by `spawn process` for the program it starts: run only that call; not for setting by hand | 9.8 |
 
 For work on the compiler (they print what a pass did, or turn one off):
@@ -376,14 +380,77 @@ fn main() {
 
 - **Names.** The name in `[dependencies]` is the package's module name: lowercase letters, digits and `_`. Its `src/lib.kav` is the module `geometry`, and `src/shapes.kav` is `geometry.shapes`. Only `pub` items can be used from outside the package (10.1).
 - **Inside a package,** `use shapes` names the package's own module `geometry.shapes` first, so a package's code means the same whichever project uses it.
-- **Git.** `tag`, `branch` or `rev` (a commit) says which code to use; without one, the repository's default branch. Fetched repositories are kept in `.kavach/deps/`.
+- **Git.** `tag`, `branch` or `rev` (a commit) says which code to use; without one, the repository's default branch. Fetched repositories are kept in `kavach_modules/<name>/` in the project's folder, one folder for each package, as npm keeps `node_modules/`. Never commit it (`kavach new` puts it in `.gitignore`): `kavach.lock` is enough to fetch it again. A path dependency is read where it is, not copied.
 - **`kavach.lock`** records the exact commit of each git dependency (and the folder of each path one). It is written when a dependency is first fetched, and commit it: every build then uses the same code, and the network is used only when something is missing. `kavach update` fetches each git dependency again and rewrites the lock.
+- **Code from outside is handled with care.** Fetching a dependency only copies its files: none of its code runs then, as Kavach packages have no install scripts. A `git` source must be `https://`, `ssh://`, `user@host:path` or a folder; `http://`, `git://` and other transports are refused, since they are unencrypted or run commands. A URL holding a password or token is refused too, as `kavach.toml` and `kavach.lock` are committed: git finds the credentials for a private repository itself, from a credential helper or an SSH key. A fetched package can't name a `path` outside its own folder. A name that Windows keeps for a device (`con`, `nul`, `com1`…) is refused, so every project builds on every system.
+
+  ```toml
+  money = { git = "https://github.com/example/money" }              # fetched
+  money = { git = "http://github.com/example/money" }               # error: unencrypted
+  money = { git = "https://me:token@github.com/example/money" }     # error: the token would be committed
+  ```
+
 - **Dependencies of dependencies** are used too. Two different packages with one name are an error: rename one in its `[dependencies]`. A module in `src/` with a dependency's name is an error too (10.2).
 - **`unsafe`.** A package that sets `unsafe = true` (6.4) is used only when the project allows it in its entry: `geometry = { path = "../geometry", unsafe = true }`. Otherwise building stops and says so.
 - **Warnings** in a dependency's code are not shown: they are its authors' to fix. Errors are.
 - A dependency's tests (`*.test.kav`) and `src/main.kav` are not compiled into the project that uses it.
+- **Capabilities are granted per dependency.** A dependency may use only the capabilities (8.1) its entry lists in `can`; an entry without `can` grants none, so the package must be pure. Using one more is a compile error that names the function and the capability. A dependency's own dependencies get at most what it was granted. `kavach add` lists the capabilities the package uses and writes them into `can`, so the person adding it sees them ([decision 0084](../decisions/0084-environment-variables-and-granted-capabilities.md)).
+
+  ```toml
+  [dependencies]
+  money = { git = "https://github.com/example/money", tag = "v1.0.0", can = ["Net"] }
+  geometry = { path = "../geometry" }          # pure: no capabilities
+  ```
+
+## 10.13 Environment variables and .env files
+
+`env(name)` reads an environment variable. It needs `Env` (8.1) and fails when the variable is not set. Its value is a **secret** (8.7): it can't be printed, logged or put in a prompt, since keys and passwords usually come this way. A value that isn't secret, such as a port, is revealed with `reveal(…)`, which is visible in review.
+
+```kavach
+fn main() ! Error uses Env, Console {
+    const key = try env("STRIPE_KEY")          // a secret String
+    print(key)                                 // compile error: a secret
+    const port = try Int(reveal(try env("PORT")))  // allowed
+    print("listening on {port}")
+}
+```
+
+A **`.env` file** gives a program variables without setting them in the shell. It is never committed: `kavach new` puts it in `.gitignore`.
+
+```
+# .env
+STRIPE_KEY=sk_test_123
+PORT=8080
+GREETING="Hello, world"
+```
+
+- **Lines** are `NAME=value`, and `export NAME=value` is accepted too. A name is letters, digits and `_`, not starting with a digit. `#` starts a comment line, and blank lines are skipped. A value in double quotes may hold `\n`, `\"` and `\\`; a value in single quotes is taken as written. Nothing is expanded: `$HOME` stays as written. Any other line is an error that names the file and line.
+- **Which file:** `--env-file <path>`, else `[env] file` in `kavach.toml`, else `.env` beside `kavach.toml`, when there is one. A dependency's `.env` is never read.
+- **Single variables** come from `--env NAME=value` (repeatable) and from `[env.vars]` in `kavach.toml`. They override the file.
+- **Values are text,** as environment variables are on every system. In a `.env` file and in `--env`, every value is text: `PORT=8080` gives `"8080"`. In `[env.vars]`, text, a number, `true` or `false`, and a date are accepted, each given as its text (`8080` gives `"8080"`, `1.5` gives `"1.5"`, `true` gives `"true"`). A list or a table is an error: write a list as text, such as `"a,b,c"`, and split it in the program. The program converts what it reads:
+
+  ```kavach
+  const port = try Int(reveal(try env("PORT")))              // "8080" → 8080
+  const debug = try Bool(reveal(env("DEBUG") catch "false"))  // "true" → true
+  const hosts = reveal(try env("HOSTS")).split(",")           // "a,b,c" → ["a", "b", "c"]
+  ```
+- **`kavach run` and `kavach test`** read the file when they start the program.
+- **`kavach build`** copies the file, with `[env.vars]` and `--env` written into it, beside the executable: `.kavach/bin/.env`. The executable reads the `.env` beside it the first time it reads a variable, so a program that never calls `env` pays nothing for it; a file it can't read, or a wrong line in it, ends the program there with exit code 2. Its values are never compiled into the executable, which is shared and copied. `--no-env-file` builds without one.
+- **A built program** reads the file named by the variable `KAVACH_ENV_FILE` instead, when it is set, so a container can keep the file elsewhere: `docker run -e KAVACH_ENV_FILE=/run/secrets/app.env app`.
+- **Which value wins,** strongest first: `--env` given to `kavach run` or `kavach test`; then the real environment (the shell, `docker run -e`, a service manager); then `[env.vars]`; then the file. So the place a built program runs always has the last word.
+
+```toml
+[env]
+file = ".env.local"                # instead of .env
+vars = { LOG_LEVEL = "info" }      # overrides the file; not for secrets, as kavach.toml is committed
+```
+
+```
+kavach run --env-file .env.test --env PORT=9000
+kavach build --env LOG_LEVEL=warn
+docker run -e PORT=80 my-app       # beats the copied .env
+```
 
 ## Open questions
 
 - Registry name and URL (e.g. `hub.kavach.io`), version numbers and how they are chosen, and package signing.
-- Should the dependency manifest record which capabilities each dependency is allowed to use?

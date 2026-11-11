@@ -1,0 +1,8 @@
+// Rule: `env(name)` fails when the variable is not set, and `reveal` lets a value from it be shown.
+// Spec: 10.13
+// expect output: unset
+
+fn main() uses Env, Console {
+    const value = reveal(env("KAVACH_CONFORMANCE_NEVER_SET") catch "unset")
+    print(value)
+}

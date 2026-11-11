@@ -136,7 +136,8 @@ pub(crate) struct Checker<'a> {
     pub(crate) in_example: bool,
     /// The record whose `invariant` is being checked.
     pub(crate) record: Option<DefId>,
-    /// Field accesses that read a `secret` field (spec 2.11).
+    /// Field accesses that read a `secret` field (spec 2.11), and calls
+    /// of `env` (spec 10.13).
     pub(crate) secret: HashSet<(u32, u32)>,
     /// Parameters marked `secret`, and variables set from a secret: their
     /// values are secrets too (spec 8.7).
