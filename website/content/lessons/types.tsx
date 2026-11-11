@@ -209,10 +209,15 @@ export const optionalReadDoc: LessonDoc = {
   body: (
     <>
       <Ex name="types/optionals-basic" />
+      <P>
+        There is also <C>.unwrap()</C>: the value, or a panic when it is <C>none</C>. Outside <C>test</C> blocks and{" "}
+        <C>example</C> clauses it gets a warning, because the panic would say nothing of why:
+      </P>
+      <Ex name="types/unwrap.warns" />
       <Note>
-        There is also <C>.unwrap()</C>: the value, or a panic when it is <C>none</C>. Avoid it outside tests. When
-        the compiler knows the value is <C>none</C>, it won&apos;t even compile: see{" "}
-        <Link href="/docs/errors/kinds-of-errors/">Kinds of Errors</Link>.
+        Handle <C>none</C> with <C>??</C>, <C>?.</C>, <C>if let</C> or <C>match</C>, or say why it can&apos;t happen
+        with <C>?? panic(&quot;…&quot;)</C>. And on a value the compiler already knows is <C>none</C>,{" "}
+        <C>.unwrap()</C> won&apos;t even compile: see <Link href="/docs/errors/kinds-of-errors/">Kinds of Errors</Link>.
       </Note>
     </>
   ),

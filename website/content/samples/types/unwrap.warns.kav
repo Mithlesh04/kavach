@@ -1,0 +1,7 @@
+fn find(id: Int) -> Int? {
+    if id == 1 { 7 } else { none }
+}
+
+fn main() {
+    print(find(1).unwrap())
+}

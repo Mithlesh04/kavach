@@ -1,0 +1,2 @@
+warning: `.unwrap()` panics on `none` and says nothing of why. Handle `none` with `if let`, `match` or `?? default`, or say why it can't happen: `?? panic("…")` (spec 2.7)
+7
