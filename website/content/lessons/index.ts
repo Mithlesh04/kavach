@@ -30,7 +30,7 @@ import {
   coresDoc, howFastDoc, nativeDoc, packedDoc, radixDoc, sizesDoc,
 } from "./speed";
 import {
-  aiToolsDoc, contextDoc as aiContextDoc, mcpDoc, modulesDoc, outlineDoc, pubDoc, queryDoc, smallFilesDoc, useDoc,
+  aiToolsDoc, contextDoc as aiContextDoc, mcpDoc, modulesDoc, outlineDoc, packagesDoc, pubDoc, queryDoc, smallFilesDoc, useDoc,
 } from "./tools-project";
 import {
   buildDoc as kavachBuildDoc, checkDoc, commandDoc, editorDoc, fixDoc, formatterDoc, newDoc, runDoc, testDoc,
@@ -387,6 +387,7 @@ export const lessons: Record<string, LessonDoc> = {
   "tools/modules": modulesDoc,
   "tools/modules/use": useDoc,
   "tools/modules/pub": pubDoc,
+  "tools/packages": packagesDoc,
   "tools/the-kavach-command": commandDoc,
   "tools/the-kavach-command/new": newDoc,
   "tools/the-kavach-command/run": runDoc,

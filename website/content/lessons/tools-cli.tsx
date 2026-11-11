@@ -18,6 +18,8 @@ const today: [cmd: string, does: string][] = [
   ["kavach build [file.kav] [-o out]", "write an executable"],
   ["kavach build --compress [=max]", "write a smaller executable, packed without losing anything; it unpacks itself when it starts"],
   ["kavach build --lib lib.kav", "write a shared library and a C header, for other languages"],
+  ["kavach add <name> --path <folder>", "add a dependency from a folder; --git <url> with --tag, --branch or --rev for a repository, --unsafe to allow one that uses unsafe code"],
+  ["kavach update", "fetch every git dependency again and rewrite kavach.lock"],
   ["kavach test [file.kav]", "run examples, test blocks and generated tests"],
   ["kavach check [file.kav]", "only check for errors; --format json for tools"],
   ["kavach fmt [--check]", "format every file, or report the ones that aren't"],
@@ -32,7 +34,7 @@ const today: [cmd: string, does: string][] = [
   ["kavach version <program>", "print what built an executable: its package's name and version, and the compiler's version and commit"],
 ];
 
-const later = ["kavach add (dependencies)", "kavach repl and kavach eval", "kavach api check", "kavach build --release", "kavach run --watch"];
+const later = ["kavach repl and kavach eval", "kavach api check", "kavach build --release", "kavach run --watch"];
 
 // ---------- The kavach Command ----------
 

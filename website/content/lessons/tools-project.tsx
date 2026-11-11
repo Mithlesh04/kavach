@@ -47,6 +47,7 @@ export const useDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Names are looked up in your own modules first, then <C>std</C>, then dependencies.</li>
         <li>Some names need no <C>use</C> at all: the built-in types, <C>print</C>, <C>debug</C>, <C>ask</C>, <C>panic</C>, <C>env</C>, <C>Shared</C> and <C>Channel</C>.</li>
+        <li>A dependency is used by its name the same way: see <Link href="/docs/tools/packages/">Packages</Link>.</li>
       </ul>
     </>
   ),
@@ -64,6 +65,39 @@ export const pubDoc: LessonDoc = {
       </P>
       <Files name="modules/private.fails" outcome="refused" />
       <P>The fix is the one the message gives: a <C>pub fn</C> in <C>billing.invoice</C> that makes an <C>Invoice</C>, as <C>create</C> does.</P>
+    </>
+  ),
+};
+
+// ---------- Packages ----------
+
+const dep = loadProject("projects/dep", ["kavach.toml", "geometry/src/lib.kav", "src/main.kav"]);
+
+export const packagesDoc: LessonDoc = {
+  lead: "A package is a library another project uses: name it in [dependencies], from a folder or a git repository, and use it like any module.",
+  simple: <>A package is like a toolbox a friend built: you say where it is, once, in your project&apos;s settings, and from then on you use its tools as if they were your own — without copying them into your box.</>,
+  minutes: 4,
+  before: ["tools/modules"],
+  body: (
+    <>
+      <CodeBlock code={dep.files[0].code} file="kavach.toml" lang="toml" />
+      <CodeBlock code={dep.files[2].code} file={dep.files[2].path} also={[dep.files[1]]} output={dep.output} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The name in <C>[dependencies]</C> is the module name: <C>use geometry</C> is the package&apos;s <C>src/lib.kav</C>, and <C>use geometry.shapes</C> would be its <C>src/shapes.kav</C>.</li>
+        <li>Only its <C>pub</C> items can be used, as with <Link href="/docs/tools/modules/">any module</Link>.</li>
+        <li>From a git repository: <C>{"money = { git = \"https://…\", tag = \"v1.0.0\" }"}</C>, or <C>branch</C> or <C>rev</C> instead of <C>tag</C>. <C>kavach add geometry --path ../geometry</C> and <C>kavach add money --git &lt;url&gt;</C> write these lines for you.</li>
+        <li><C>kavach.lock</C> records the exact commit of each git dependency. Commit it: every build then uses the same code. <C>kavach update</C> fetches again and rewrites it.</li>
+        <li>A package whose code uses <C>unsafe</C> is refused until your entry allows it: <C>{"unsafe = true"}</C> in its line.</li>
+        <li>Warnings in a dependency are its authors&apos; to fix, so they are not shown. Errors are.</li>
+      </ul>
+      <Note>
+        There is no package registry yet, so a version number such as <C>{"stripe = \"1.2\""}</C> is an error that
+        says so. The registry, with versions and signing, is an open question in the spec.
+      </Note>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/10-modules-and-packages.md" label="spec 10.12 · dependencies" />
+        <SrcRef file="tests/conformance/10-modules/dependencies-come-from-a-folder/src/main.kav" label="tested" />
+      </div>
     </>
   ),
 };
