@@ -46,7 +46,7 @@ export const aliases: Record<string, string> = {
   "start/install": "setup download get started build from source toolchain rustup cargo",
   "start/your-first-program": "first program getting started main entry point hello world print tutorial",
   "basics/variables":
-    "variable constant const let var declare assignment type inference integer float boolean string interpolation format immutable mutable",
+    "variable constant const let var declare assignment type inference integer float boolean string interpolation format immutable mutable naming rules valid name identifier name length snake_case",
   "basics/for-loop": "for each foreach iterate iteration loop range step counter index enumerate array traversal",
   "basics/while-loop": "while loop repeat until condition endless infinite do while",
   "basics/break-continue": "break continue exit leave loop skip next iteration",

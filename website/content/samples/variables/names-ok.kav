@@ -3,5 +3,7 @@ fn main() {
     const नाम = "Asha"
     const _hidden = 7
     const total_price = 499
-    print("{player_2} {नाम} {_hidden} {total_price}")
+    const i = 1
+    const the_number_of_orders_still_waiting_for_payment_at_the_end_of_the_day = 12
+    print("{player_2} {नाम} {_hidden} {total_price} {i} {the_number_of_orders_still_waiting_for_payment_at_the_end_of_the_day}")
 }

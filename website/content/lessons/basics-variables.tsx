@@ -12,6 +12,7 @@ const naming: [string, React.ReactNode, React.ReactNode][] = [
   ["Any script", <C key="a">नाम</C>, <span key="b" className="text-muted">mixing scripts in one name (a warning)</span>],
   ["snake_case for values", <C key="a">total_price</C>, <C key="b">totalPrice</C>],
   ["Not a keyword", <C key="a">matched</C>, <C key="b">match</C>],
+  ["Any length", <span key="a" className="text-muted"><C>i</C>, or a name of hundreds of characters</span>, <span key="b" className="text-muted">(there is no limit)</span>],
   ["Once per block", <span key="a" className="text-muted">the same name in an inner block</span>, <span key="b" className="text-muted">the same name twice in one block</span>],
   ["Case counts", <span key="a" className="text-muted"><C>total</C> and <C>Total</C> are different names</span>, <span key="b" className="text-muted">(a value&apos;s name is snake_case anyway)</span>],
 ];
@@ -69,6 +70,10 @@ export const variablesDoc: LessonDoc = {
         </table>
       </div>
       <Ex name="variables/names-ok" />
+      <P>
+        A name can be as short or as long as you like: the language sets no limit. Pick the shortest name that still
+        says what the value is — <C>i</C> is fine for a loop counter, <C>total_price</C> for a price.
+      </P>
       <P>A name can&apos;t start with a digit:</P>
       <Ex name="variables/digit.fails" />
       <P>A keyword can&apos;t be a name either, and the message suggests one:</P>
