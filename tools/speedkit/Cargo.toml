@@ -1,0 +1,13 @@
+[package]
+name = "kavach-speedkit"
+description = "The speed kit's runner: times ready-built Kavach and C++ programs against each other"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "compare"
+path = "src/main.rs"
+
+[lints]
+workspace = true
