@@ -22,10 +22,10 @@ function jsonReadme(re: RegExp, what: string): string {
 }
 const digitsShare = () =>
   jsonReadme(/read the digits each time, but that is (only about \d+% of `read`) \(profiled/, "how little the digits cost");
-const keysByAddress = () =>
-  jsonReadme(/Since \d{4}-\d{2}-\d{2} (a key is found as Python finds it, .+ one copy of)\./, "how keys are found");
+const onTape = () =>
+  jsonReadme(/Since \d{4}-\d{2}-\d{2} (a parsed document is one list of words) \(decision 0082\)/, "how a parsed document is held");
 const readLoses = () =>
-  jsonReadme(/Most of what `read` still loses to Python is (reaching each map: .+ allocations of their own)\./, "why read is slower");
+  jsonReadme(/Most of what `read` still loses to Python is (the small object .+ a loop visits)\./, "why read is slower");
 
 // ---------- JSON ----------
 
@@ -137,8 +137,10 @@ export const jsonDoc: LessonDoc = {
         Since{" "}
         <SrcRef file="docs/decisions/0071-json-numbers-keep-their-digits.md" label="decision 0071" />, a <C>Json</C>{" "}
         number keeps its exact digits, so <C>int()</C> and <C>float()</C> read the digits each time — but a profile
-        showed that is {digitsShare().replace("`read`", "reading")}. And {keysByAddress()}. Most of what reading
-        still loses to Python is {readLoses()}.
+        showed that is {digitsShare().replace("`read`", "reading")}. And since{" "}
+        <SrcRef file="docs/decisions/0082-the-json-tape-as-built.md" label="decision 0082" />, {onTape()}:{" "}
+        <C>item[&quot;qty&quot;].int()</C> finds the field on the tape, where a constant key remembers its place, and
+        reads the digits there, making nothing. Most of what reading still loses to Python is {readLoses()}.
       </Note>
       <VerifyBlock suite="json" id="whole" />
       <div><SrcRef file={`docs/spec/${JSON_SPEC}`} label="spec 2.12 · Json" /></div>
