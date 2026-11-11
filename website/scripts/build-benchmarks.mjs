@@ -41,6 +41,21 @@ function tables(markdown) {
   return found;
 }
 
+/**
+ * The lines from the `heading` line to the next heading of its level, for a
+ * suite whose charts read one section's table (several tables in the README
+ * share row and column names, measured on different days).
+ */
+function sectionOf(markdown, heading, where) {
+  const lines = markdown.split(/\r?\n/);
+  const start = lines.indexOf(heading);
+  if (start < 0) throw new Error(`${where}: no heading "${heading}"`);
+  const level = /^#+/.exec(heading)[0];
+  let end = lines.findIndex((l, i) => i > start && l.startsWith(`${level} `));
+  if (end < 0) end = lines.length;
+  return lines.slice(start, end).join("\n");
+}
+
 /** The number in the first table that has this row and column. */
 function lookup(all, row, column, where) {
   for (const t of all) {
@@ -66,7 +81,8 @@ const UNDATED = new Set(["gpu"]);
 
 for (const [suiteId, suite] of Object.entries(sources.suites)) {
   const readmePath = path.join(repo, suite.readme);
-  const markdown = fs.readFileSync(readmePath, "utf8");
+  const whole = fs.readFileSync(readmePath, "utf8");
+  const markdown = suite.section ? sectionOf(whole, suite.section, suite.readme) : whole;
   const all = tables(markdown);
   const measured = UNDATED.has(suiteId) ? null : (markdown.match(/Measured (\d{4}-\d{2}-\d{2})/)?.[1] ?? null);
   const benchmarks = {};

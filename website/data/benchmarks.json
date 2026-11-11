@@ -512,8 +512,8 @@
     },
     "loops": {
       "title": "Loops, calls and lists",
-      "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · best of 9",
-      "measured": "2026-11-09",
+      "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · Go 1.23 · .NET 8 (C# start-up included) · best of 9",
+      "measured": "2026-11-11",
       "benchmarks": {
         "loop": {
           "title": "loop — 500M rounds of modular arithmetic",
@@ -523,13 +523,25 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 56
+              "value": 60
             },
             {
               "id": "cpp",
               "label": "C++ -O2",
               "color": "cpp",
-              "value": 1435
+              "value": 1361
+            },
+            {
+              "id": "go",
+              "label": "Go",
+              "color": "go",
+              "value": 1377
+            },
+            {
+              "id": "csharp",
+              "label": "C#",
+              "color": "csharp",
+              "value": 1561
             }
           ],
           "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/loops",
@@ -543,13 +555,25 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 34
+              "value": 32
             },
             {
               "id": "cpp",
               "label": "C++ -O2",
               "color": "cpp",
-              "value": 378
+              "value": 361
+            },
+            {
+              "id": "go",
+              "label": "Go",
+              "color": "go",
+              "value": 450
+            },
+            {
+              "id": "csharp",
+              "label": "C#",
+              "color": "csharp",
+              "value": 572
             }
           ],
           "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/loops",
@@ -563,13 +587,25 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 30
+              "value": 32
             },
             {
               "id": "cpp",
               "label": "C++ -O2",
               "color": "cpp",
-              "value": 74
+              "value": 73
+            },
+            {
+              "id": "go",
+              "label": "Go",
+              "color": "go",
+              "value": 124
+            },
+            {
+              "id": "csharp",
+              "label": "C#",
+              "color": "csharp",
+              "value": 211
             }
           ],
           "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/loops",
@@ -583,13 +619,25 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 32
+              "value": 38
             },
             {
               "id": "cpp",
               "label": "C++ -O2",
               "color": "cpp",
-              "value": 63
+              "value": 71
+            },
+            {
+              "id": "go",
+              "label": "Go",
+              "color": "go",
+              "value": 109
+            },
+            {
+              "id": "csharp",
+              "label": "C#",
+              "color": "csharp",
+              "value": 257
             }
           ],
           "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/loops",
@@ -603,13 +651,25 @@
               "id": "kavach",
               "label": "Kavach",
               "color": "kavach",
-              "value": 45
+              "value": 49
             },
             {
               "id": "cpp",
               "label": "C++ -O2",
               "color": "cpp",
-              "value": 73
+              "value": 69
+            },
+            {
+              "id": "go",
+              "label": "Go",
+              "color": "go",
+              "value": 250
+            },
+            {
+              "id": "csharp",
+              "label": "C#",
+              "color": "csharp",
+              "value": 218
             }
           ],
           "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/loops",

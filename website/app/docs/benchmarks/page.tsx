@@ -8,7 +8,7 @@ import { fileFigure, fileTables } from "@/lib/spec-tables";
 
 export const metadata = {
   title: "Benchmarks",
-  description: "Every Kavach benchmark in one place: whole programs on one machine against C++ and Python, wins and losses, each with one command to reproduce it.",
+  description: "Every Kavach benchmark in one place: whole programs on one machine against C++, Python, Go and C#, wins and losses, each with one command to reproduce it.",
 };
 
 // Suites in reading order, each with the course page that explains how Kavach gets there.
@@ -49,7 +49,7 @@ export default function BenchmarksPage() {
     <div className="px-10 pb-12 pt-[30px] max-md:px-5 max-sm:px-4 max-sm:pt-5" data-pagefind-meta="title:Benchmarks">
       <h1 className="m-0 mb-2 text-[38px] font-extrabold tracking-tight max-md:text-3xl">Benchmarks</h1>
       <p className="m-0 mb-6 max-w-[64ch] text-[17px] leading-relaxed text-muted">
-        {count} whole programs, each written in Kavach, C++ and often Python, run on one machine. Kavach is faster than
+        {count} whole programs, each written in Kavach, C++ and often Python, Go or C#, run on one machine. Kavach is faster than
         C++ in <strong className="text-ink">{wins} of {total}</strong> of them, and the others are here too.
       </p>
 

@@ -38,6 +38,8 @@
   --ch-k: #b45309;
   --ch-c: #3b5bdb;
   --ch-p: #be185d;
+  --ch-go: #0d9488;
+  --ch-cs: #6d28d9;
   /* code blocks stay dark in both themes */
   --code-bg: #171412;
   --code-line: #2b2721;
@@ -94,6 +96,8 @@
     --ch-k: #c9802c;
     --ch-c: #3987e5;
     --ch-p: #d55181;
+    --ch-go: #2aa394;
+    --ch-cs: #9775fa;
     --code-bg: #100e0c;
   }
 }
@@ -127,6 +131,8 @@
   --ch-k: #c9802c;
   --ch-c: #3987e5;
   --ch-p: #d55181;
+  --ch-go: #2aa394;
+  --ch-cs: #9775fa;
   --code-bg: #100e0c;
 }
 
@@ -159,6 +165,8 @@
   --color-ch-k: var(--ch-k);
   --color-ch-c: var(--ch-c);
   --color-ch-p: var(--ch-p);
+  --color-ch-go: var(--ch-go);
+  --color-ch-cs: var(--ch-cs);
   --color-code-bg: var(--code-bg);
   --color-code-line: var(--code-line);
   --color-code-ink: var(--code-ink);

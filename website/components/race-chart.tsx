@@ -4,6 +4,8 @@ const seriesColor: Record<string, string> = {
   kavach: "var(--ch-k)",
   cpp: "var(--ch-c)",
   python: "var(--ch-p)",
+  go: "var(--ch-go)",
+  csharp: "var(--ch-cs)",
 };
 
 /**

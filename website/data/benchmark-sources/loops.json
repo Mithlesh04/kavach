@@ -1,7 +1,8 @@
 {
   "title": "Loops, calls and lists",
   "readme": "benchmarks/loops/README.md",
-  "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · best of 9",
+  "section": "## Against Go and C#",
+  "environment": "WSL Ubuntu 24.04 · i7-13700HX · kavach build (LLVM) · g++ 13 -O2 · Go 1.23 · .NET 8 (C# start-up included) · best of 9",
   "verify": "sh scripts/run-benchmarks.sh \"\" benchmarks/loops",
   "series": [
     {
@@ -15,6 +16,18 @@
       "label": "C++ -O2",
       "column": "C++ ms",
       "color": "cpp"
+    },
+    {
+      "id": "go",
+      "label": "Go",
+      "column": "Go ms",
+      "color": "go"
+    },
+    {
+      "id": "csharp",
+      "label": "C#",
+      "column": "C# ms",
+      "color": "csharp"
     }
   ],
   "benchmarks": {
