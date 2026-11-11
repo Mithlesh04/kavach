@@ -192,6 +192,7 @@ impl<'a> Interp<'a> {
             _ => return Ok(self.builtin_variant("Json", "Null", vec![])),
         };
         let field_name = match name {
+            "Number" => "digits",
             "Array" => "items",
             "Object" => "fields",
             _ => "value",

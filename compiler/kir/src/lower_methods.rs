@@ -135,6 +135,15 @@ impl<'a> Lowerer<'a> {
                 line,
             });
         }
+        if let Some((op, operands)) =
+            self.json_method(owner.as_ref(), &name.name, &receiver, args)?
+        {
+            return Ok(ir::Expr {
+                kind: K::Rt(op, operands),
+                ty,
+                line,
+            });
+        }
         if let Some(&fid) = owner
             .clone()
             .and_then(|o| self.method_ids.get(&(o, name.name.clone())))

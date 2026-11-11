@@ -111,10 +111,12 @@ pub fn slot_at(p: i64, i: usize) -> (i64, Type) {
     if crate::flat::packed(obj(p).ty()) {
         return (crate::flat::slot_of(slots(p), i, ty) as i64, ty);
     }
-    if let Data::Map(t) = &*data(p).borrow() {
-        return (t.slots[i] as i64, ty);
+    match &*data(p).borrow() {
+        Data::Map(t) => return (t.slots[i] as i64, ty),
+        Data::Json(..) => {}
+        _ => return (slots(p)[i] as i64, ty),
     }
-    (slots(p)[i] as i64, ty)
+    (json_field(p), ty)
 }
 
 /// Item `i` of a list, or slot `i` of a tuple, record, map or set, as
@@ -164,11 +166,28 @@ impl Drop for Items {
     }
 }
 
+/// What makes the list or map of a `Json` on a tape
+/// (`rt_json_tape::field`), set by the first document a program parses.
+/// Reached through this, so a program that never parses JSON doesn't
+/// link the JSON code (decision 0024).
+pub(crate) static JSON_FIELD: std::sync::OnceLock<fn(i64) -> i64> = std::sync::OnceLock::new();
+
+fn json_field(p: i64) -> i64 {
+    JSON_FIELD.get().map_or(0, |f| f(p))
+}
+
 pub fn items_of(p: i64) -> Items {
     if let Data::Map(t) = &*data(p).borrow() {
         let slots = t.slots.clone();
         return Items {
             slots,
+            boxed: false,
+        };
+    }
+    // A `Json` array or object on a tape: its list or map.
+    if matches!(&*data(p).borrow(), Data::Json(..)) {
+        return Items {
+            slots: vec![json_field(p) as u64],
             boxed: false,
         };
     }

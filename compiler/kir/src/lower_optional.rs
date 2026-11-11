@@ -63,7 +63,8 @@ impl<'a> Lowerer<'a> {
 
 /// `map[key] ?? fallback` as one lookup, when the value is a scalar and
 /// the fallback costs nothing to compute (so computing it every time is
-/// the same as computing it only when the key is missing).
+/// the same as computing it only when the key is missing). So too
+/// `j.int() ?? fallback` and `j.float() ?? fallback` of a `Json`.
 fn map_get_or(
     value: ir::Expr,
     fallback: &ir::Expr,
@@ -76,12 +77,23 @@ fn map_get_or(
         K::Int(_) | K::Float(_) | K::Bool(_) | K::Char(_) | K::Local(_)
     );
     let fits = !inner.is_ref() && inner == ty && fallback.ty == ty && simple;
-    let K::Rt(RtOp::MapGet, mut args) = value.kind else {
+    let (op, or) = match &value.kind {
+        K::Rt(RtOp::JsonInt, _) => (RtOp::JsonInt, RtOp::JsonIntOr),
+        K::Rt(RtOp::JsonFloat, _) => (RtOp::JsonFloat, RtOp::JsonFloatOr),
+        _ => (RtOp::MapGet, RtOp::MapGetOr),
+    };
+    let K::Rt(found, mut args) = value.kind else {
         return Err(value);
     };
+    if found != op {
+        return Err(ir::Expr {
+            kind: K::Rt(found, args),
+            ..value
+        });
+    }
     if !fits {
         return Err(ir::Expr {
-            kind: K::Rt(RtOp::MapGet, args),
+            kind: K::Rt(op, args),
             ..value
         });
     }
@@ -99,7 +111,7 @@ fn map_get_or(
     };
     args.push(fallback);
     Ok(ir::Expr {
-        kind: K::Rt(RtOp::MapGetOr, args),
+        kind: K::Rt(or, args),
         ty,
         line,
     })

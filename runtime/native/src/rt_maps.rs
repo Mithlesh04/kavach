@@ -108,7 +108,7 @@ pub extern "C-unwind" fn kv_map_get_str(map: i64, key: i64) -> i64 {
     crate::heap::with_str(key, |k| get_text(map, k))
 }
 
-fn get_text(map: i64, key: &str) -> i64 {
+pub(crate) fn get_text(map: i64, key: &str) -> i64 {
     let hash = text_hash(key);
     let same = |k: u64| crate::heap::with_str(k as i64, |s| s == key);
     match &*crate::heap::data(map).borrow() {

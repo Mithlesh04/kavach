@@ -118,10 +118,10 @@ fn read(r: &mut Pull<'_>, ty: Type, templates: i64) -> Read {
         }
         Shape::Map(k, v) => map(r, ty, *k, *v, templates),
         Shape::Union { .. } if crate::rt_json::is_json(ty) => {
-            let mut b = crate::rt_json_build::Builder::new(ty);
-            let v = r.value(&mut b);
-            b.finish();
-            v.map_err(|_| Wrong)
+            let mut b = crate::rt_json_build::Builder::new(None);
+            let root = r.value(&mut b).map_err(|_| Wrong)?;
+            let (doc, root) = b.finish("".into(), root);
+            Ok(crate::rt_json_tape::value(&doc, root, ty) as u64)
         }
         Shape::Record { fields, .. } => {
             r.object().map_err(|_| Wrong)?;

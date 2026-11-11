@@ -65,17 +65,15 @@ pub fn json_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
         max_fields: limit(2, d.max_fields),
         comments: limit(3, 0) != 0,
     };
-    // Straight into `Json` values, with no tree in between.
+    // Onto a tape (decision 0032), with no tree in between.
     let parsed = with_str(a, |s| {
-        let mut build = crate::rt_json_build::Builder::new(type_of(code));
-        let parsed = json::parse_with(s, &limits, &mut build);
-        build.finish();
-        parsed
+        let mut build = crate::rt_json_build::Builder::new(Some(s));
+        json::parse_with(s, &limits, &mut build).map(|root| build.finish(s.into(), root))
     });
     release(a);
     release(b);
     match parsed {
-        Ok(v) => v as i64,
+        Ok((doc, root)) => crate::rt_json_tape::value(&doc, root, type_of(code)),
         Err(e) => {
             set_error(error(e));
             0
@@ -293,6 +291,9 @@ pub(crate) fn encode(slot: i64, ty: Type) -> Tree {
 
 /// The `Json` value `p` (borrowed) as a tree for the writer.
 pub fn tree(p: i64) -> Tree {
+    if let Some((doc, w)) = crate::rt_json_tape::on_tape(p) {
+        return doc.tree(w);
+    }
     let ty = obj(p).ty();
     let Shape::Union { variants, .. } = shape(ty) else {
         return Tree::Null;
@@ -379,6 +380,7 @@ crate::rt_data::entry!(kv_rt_json, |op, a, b, c, code, line| {
         RtOp::JsonDecode | RtOp::JsonDecodeValue => {
             crate::rt_json_decode::decode_op(op, a, b, c, code)
         }
-        _ => json_op(op, a, b, code, line),
+        RtOp::JsonParse | RtOp::JsonStringify | RtOp::JsonOf => json_op(op, a, b, code, line),
+        _ => crate::rt_json_read::read_op(op, a, b, code),
     }
 });

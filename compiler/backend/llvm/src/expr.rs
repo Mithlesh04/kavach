@@ -17,6 +17,9 @@ impl FnEmit<'_> {
         if let Some(v) = self.data_expr(e) {
             return v;
         }
+        if let Some(v) = self.json_read(e) {
+            return v;
+        }
         match &e.kind {
             // In two's complement at the type's width, as LLVM reads it.
             ExprKind::Int(n) => {

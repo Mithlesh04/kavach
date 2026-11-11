@@ -116,6 +116,24 @@ pub enum RtOp {
     /// (`runtime/native/src/rt_json_decode.rs`).
     JsonDecode,
     JsonDecodeValue,
+    /// Reading a `Json` (decision 0032): `j[key]`, `j[i]` and the methods
+    /// of `stdlib/json/json.kav` named after them, which on a parsed
+    /// document read its tape (`runtime/native/src/rt_json_read.rs`).
+    /// `JsonIntOr` and `JsonFloatOr` are `j.int() ?? fallback` and
+    /// `j.float() ?? fallback` for a fallback that costs nothing to
+    /// compute, with nothing boxed.
+    JsonGet,
+    JsonAt,
+    JsonList,
+    JsonObject,
+    JsonInt,
+    JsonFloat,
+    JsonText,
+    JsonBool,
+    JsonIsNull,
+    JsonLen,
+    JsonIntOr,
+    JsonFloatOr,
     /// Tasks (spec 9, `lower_tasks.rs`): `spawn` with the task's closure;
     /// `.wait()`, which gives the task's error when it failed; how many
     /// tasks the running one has spawned, and waiting for those spawned

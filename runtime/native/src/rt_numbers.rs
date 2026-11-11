@@ -177,9 +177,7 @@ pub extern "C-unwind" fn kv_parse(p: i64, code: i64, str_code: i64) -> i64 {
     let parsed = with_str(p, |raw| {
         let s = raw.trim();
         match to {
-            Type::F64 => {
-                (exact_f64(s).or_else(|| s.parse::<f64>().ok())).map(|f| f.to_bits() as i64)
-            }
+            Type::F64 => float_of(s).map(|f| f.to_bits() as i64),
             Type::F32 => s.parse::<f32>().ok().map(crate::display::f32_slot),
             Type::Bool => match s {
                 "true" => Some(1),
@@ -223,6 +221,11 @@ pub extern "C-unwind" fn kv_parse(p: i64, code: i64, str_code: i64) -> i64 {
     let message = format!("`{raw}` is not a valid {name}");
     set_error(new_str(message, type_of(str_code)));
     0
+}
+
+/// `Float(text)` (spec 2.1) of text with no spaces around it.
+pub(crate) fn float_of(s: &str) -> Option<f64> {
+    exact_f64(s).or_else(|| s.parse::<f64>().ok())
 }
 
 /// A plain decimal such as `249.75`, read at once when that is exact:

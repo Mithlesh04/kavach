@@ -45,6 +45,8 @@ pub mod rt_json;
 pub mod rt_json_build;
 pub mod rt_json_decode;
 mod rt_json_pull;
+mod rt_json_read;
+pub mod rt_json_tape;
 mod rt_json_write;
 mod rt_log;
 pub mod rt_maps;

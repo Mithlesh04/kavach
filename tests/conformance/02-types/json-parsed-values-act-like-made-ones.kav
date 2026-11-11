@@ -1,0 +1,63 @@
+// Rule: A `Json` from `json.parse` reads, matches, compares, prints and writes exactly like the same value made in the program.
+// Spec: 2.12
+// expect output: 2 Ada 36 1.5 true true 3 0
+// expect output: Null Null Null Null
+// expect output: none none none none
+// expect output: 7 2.5 -1
+// expect output: a "quoted" é
+// expect output: true true false
+// expect output: {"name":"Ada","tags":["x","y"],"n":36}
+// expect output: 3 fields, 2 tags
+// expect output: x,y
+// expect output: 36 from a task
+
+use std.json
+
+fn kind(j: Json) -> String {
+    match j {
+        Json.Null => "Null",
+        Json.Boolean(_) => "Boolean",
+        Json.Number(_) => "Number",
+        Json.Text(_) => "Text",
+        Json.Array(_) => "Array",
+        Json.Object(_) => "Object",
+    }
+}
+
+fn main() ! Error {
+    const doc = try json.parse("[\{\"name\": \"Ada\", \"age\": 36, \"x\": 1.5, \"ok\": true, \"n\": null, \"tags\": [1, 2, 3]}, []]")
+    const first = doc[0]
+    print("{doc.len()} {first["name"].text() ?? "?"} {first["age"].int() ?? 0} {first["x"].float() ?? 0.0} {first["ok"].bool() ?? false} {first["n"].is_null()} {first["tags"].len()} {doc[1].len()}")
+    print("{kind(first["missing"])} {kind(doc[5])} {kind(doc[-1])} {kind(first["name"]["deeper"])}")
+    const missing = [
+        if first["age"].text() == none { "none" } else { "text" },
+        if first["name"].int() == none { "none" } else { "int" },
+        if first.list() == none { "none" } else { "list" },
+        if doc.object() == none { "none" } else { "map" },
+    ]
+    print(missing.join(" "))
+
+    const nums = try json.parse("\{\"i\": 7, \"f\": 2.5, \"big\": 99999999999999999999}")
+    print("{nums["i"].int() ?? -1} {nums["f"].float() ?? -1.0} {nums["big"].int() ?? -1}")
+
+    const escaped = try json.parse("[\"a \\\"quoted\\\" \\u00e9\"]")
+    print(escaped[0].text() ?? "?")
+
+    const made: Json = ["name": "Ada", "tags": ["x", "y"], "n": 36]
+    const parsed = try json.parse("\{\"name\": \"Ada\", \"tags\": [\"x\", \"y\"], \"n\": 36}")
+    print("{parsed == made} {parsed["tags"] == made["tags"]} {parsed == doc}")
+    print(json.stringify(parsed))
+
+    match parsed {
+        Json.Object(fields) => print("{fields.len()} fields, {(fields["tags"] ?? Json.Null).len()} tags"),
+        _ => print("not an object"),
+    }
+    let tags: [String] = []
+    for t in parsed["tags"].list() ?? [] {
+        tags.push(t.text() ?? "?")
+    }
+    print(tags.join(","))
+
+    const t = spawn (parsed["n"].int() ?? 0)
+    print("{try t.wait()} from a task")
+}

@@ -85,6 +85,7 @@ pub extern "C-unwind" fn kv_free(p: i64) {
         }
         DATA => match &*data(p).borrow() {
             Data::Context(c) => release(c.1 as i64),
+            Data::Json(_, _, made) => release(*made),
             // Cells that copies share (`send.rs`): what they hold goes
             // with the last copy.
             Data::Task(_) | Data::Channel(_) | Data::Shared(_) => crate::send::free_cell(p),
@@ -139,6 +140,7 @@ pub fn unique(p: i64) -> i64 {
     let held = match &data {
         Data::Map(t) => t.slots.clone(),
         Data::Context(c) => vec![c.1],
+        Data::Json(_, _, made) => vec![*made as u64],
         _ if crate::flat::is_text(o.ty()) => {
             crate::text_items::retain_all(&copied);
             Vec::new()
@@ -148,6 +150,7 @@ pub fn unique(p: i64) -> i64 {
     for (i, slot) in held.iter().enumerate() {
         let t = match &data {
             Data::Context(..) => o.ty(),
+            Data::Json(..) => slot_type(p, 0),
             _ => slot_type(p, i),
         };
         if t.is_ref() {

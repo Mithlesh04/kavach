@@ -283,22 +283,54 @@ impl<'a> Lowerer<'a> {
         Ok(self.encoded(value, json))
     }
 
-    /// `j["key"]` and `j[i]`: calls of the `get` and `at` methods of `Json`
-    /// (`stdlib/json/json.kav`).
+    /// `j["key"]` and `j[i]`: what the `get` and `at` methods of `Json`
+    /// do (`stdlib/json/json.kav`), read by the runtime (decision 0032).
     pub(crate) fn json_index(
         &mut self,
         base: ir::Expr,
         index: &'a ast::Expr,
-        span: ast::Span,
+        _span: ast::Span,
     ) -> Lowered<K> {
         let index = self.expr(index)?;
-        let name = if index.ty == Type::I64 { "at" } else { "get" };
+        let op = if index.ty == Type::I64 {
+            RtOp::JsonAt
+        } else {
+            RtOp::JsonGet
+        };
+        Ok(K::Rt(op, vec![base, index]))
+    }
+
+    /// `j.get(key)`, `j.at(i)`, `j.list()` and `j.object()` of a `Json`
+    /// whose type is `owner`: read by the runtime, as `json_index`.
+    pub(crate) fn json_method(
+        &mut self,
+        owner: Option<&Owner>,
+        name: &str,
+        receiver: &ir::Expr,
+        args: &'a [ast::Arg],
+    ) -> Lowered<Option<(RtOp, Vec<ir::Expr>)>> {
         let json = self.c.resolution.builtin_type("std.json", "Json");
-        let method = json.and_then(|d| self.method_ids.get(&(Owner::Adt(d), name.to_string())));
-        match method {
-            Some(&f) => Ok(K::Call(f, vec![base, index])),
-            None => Err(self.unsupported("indexing this", span)),
+        if json.is_none() || owner != json.map(Owner::Adt).as_ref() {
+            return Ok(None);
         }
+        let op = match (name, args.len()) {
+            ("get", 1) => RtOp::JsonGet,
+            ("at", 1) => RtOp::JsonAt,
+            ("list", 0) => RtOp::JsonList,
+            ("object", 0) => RtOp::JsonObject,
+            ("int", 0) => RtOp::JsonInt,
+            ("float", 0) => RtOp::JsonFloat,
+            ("text", 0) => RtOp::JsonText,
+            ("bool", 0) => RtOp::JsonBool,
+            ("is_null", 0) => RtOp::JsonIsNull,
+            ("len", 0) => RtOp::JsonLen,
+            _ => return Ok(None),
+        };
+        let mut operands = vec![receiver.clone()];
+        if let Some(a) = args.first() {
+            operands.push(self.expr(&a.value)?);
+        }
+        Ok(Some((op, operands)))
     }
 
     pub(crate) fn json_call(

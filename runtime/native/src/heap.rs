@@ -164,6 +164,10 @@ pub enum Data {
     Shared(std::sync::Arc<crate::send::SharedCell>),
     /// A `Weak` (spec 6.2): the cell of a `Shared`, not kept alive.
     Weak(std::sync::Weak<crate::send::SharedCell>),
+    /// A `Json` array or object of a parsed document (decision 0032,
+    /// `rt_json_tape.rs`): the document, the value's word, and its list
+    /// or map once made (0 before).
+    Json(std::sync::Arc<crate::rt_json_tape::Doc>, u64, i64),
 }
 
 fn head(ty: Type, tag: u32, kind: u16, fixed_len: u16) -> Obj {

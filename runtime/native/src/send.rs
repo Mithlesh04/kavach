@@ -329,6 +329,9 @@ pub fn copy(slot: u64, ty: Type) -> u64 {
                 }
             }
             Data::Context(c) => c.1 = copy(c.1, own),
+            // The document is shared as it is: it never changes. Its list
+            // or map is made again on the other side.
+            Data::Json(_, _, made) => *made = 0,
             _ => {}
         }
         return new_obj(own, tag, Vec::new(), d) as u64;

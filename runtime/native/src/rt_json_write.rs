@@ -137,7 +137,33 @@ impl Writer {
         });
     }
 
+    /// Value `w` of a parsed document, written from its tape.
+    fn tape(&mut self, doc: &crate::rt_json_tape::Doc, w: u64, level: usize) {
+        use crate::rt_json_tape::{ARRAY, NUMBER, OBJECT, TEXT, kind};
+        match kind(w) {
+            1 => self.out.push_str("false"),
+            2 => self.out.push_str("true"),
+            NUMBER => self.out.push_str(doc.str(w)),
+            TEXT => write_text(&mut self.out, doc.str(w)),
+            ARRAY => {
+                let items = doc.run(w);
+                self.array(items.len(), level, |o, i| o.tape(doc, items[i], level + 1));
+            }
+            OBJECT => {
+                let fields = doc.run(w);
+                self.object(fields.len() / 2, level, |o, i| {
+                    o.key(doc.str(fields[i * 2]));
+                    o.tape(doc, fields[i * 2 + 1], level + 1);
+                });
+            }
+            _ => self.out.push_str("null"),
+        }
+    }
+
     fn json(&mut self, p: i64, ty: Type, level: usize) {
+        if let Some((doc, w)) = crate::rt_json_tape::on_tape(p) {
+            return self.tape(&doc, w, level);
+        }
         let Shape::Union { variants, .. } = shape(ty) else {
             self.out.push_str("null");
             return;
