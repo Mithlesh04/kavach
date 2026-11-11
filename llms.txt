@@ -3,7 +3,7 @@
 > A compiled, statically typed, general-purpose programming language:
 > as quick to try as a script (`kavach run`), compiled to one native
 > executable (`kavach build`), with no garbage collector. Every integer
-> and index checked, and faster than C++ in 29 of 36 published,
+> and index checked, and faster than C++ in 31 of 36 published,
 > reproducible benchmarks.
 
 The course teaches one idea per page, in 14 parts. A page with several
@@ -299,6 +299,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Modules](https://mithlesh04.github.io/kavach/docs/tools/modules/): One file is one module, a folder groups modules, and nothing leaves a module unless it is marked pub.
 - [Modules: use](https://mithlesh04.github.io/kavach/docs/tools/modules/use/): use brings in a module, the standard library or a dependency; use a.b.{X, y} brings names in directly.
 - [Modules: pub](https://mithlesh04.github.io/kavach/docs/tools/modules/pub/): pub makes a type, a function or a field visible to other modules. Without it, only the module itself sees it.
+- [Packages](https://mithlesh04.github.io/kavach/docs/tools/packages/): A package is a library another project uses: name it in [dependencies], from a folder or a git repository, and use it like any module.
 - [Project Layout](https://mithlesh04.github.io/kavach/docs/tools/project-layout/): A project is a folder: kavach.toml at the top, your code in src/, and build output in .kavach/, never committed.
 - [Settings](https://mithlesh04.github.io/kavach/docs/tools/settings/): Every setting a project can have, with its values and its default: kavach.toml, then environment variables.
 - [Editions](https://mithlesh04.github.io/kavach/docs/tools/editions/): Code that compiles today keeps compiling. A change that would break old code comes in a new edition, which each package chooses.
