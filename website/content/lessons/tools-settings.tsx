@@ -19,6 +19,7 @@ const layoutRows: [string, string, string][] = [
   ["src/orders.test.kav", "The hand-written tests of orders.kav, beside it, if it has any", "yes"],
   ["tests/", "Tests that tell a story across many modules, if any", "yes"],
   ["tests/found/", "Failing inputs kavach test found, replayed on every run (written by Kavach)", "yes"],
+  ["kavach_modules/", "Fetched dependencies, one folder per package (written by Kavach; kavach.lock is enough to fetch them again)", "never"],
   [".kavach/", "Build output and caches: the executable lands in .kavach/bin/", "never"],
 ];
 

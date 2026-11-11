@@ -37,7 +37,7 @@ export const aliases: Record<string, string> = {
   "types/method-chains": "method chaining fluent interface builder pattern pipeline chain dot chaining",
   "types/extend": "extend extension method monkey patch add method to existing type implement interface for",
   "types/classes-and-inheritance": "class classes object oriented oop inheritance extends subclass superclass base class abstract class constructor static method composition polymorphism",
-  "tools/packages": "dependencies dependency package library add install import third party kavach add kavach update kavach.lock lockfile git path registry version unsafe crate module reuse",
+  "tools/packages": "dependencies dependency package library add install import third party kavach add kavach update kavach.lock lockfile git path registry version unsafe crate module reuse kavach_modules node_modules install scripts supply chain security token https ssh",
   "tools/project-layout": "project structure folder layout directory tree src main.kav lib.kav gitignore where files go new project scaffold",
   "tools/limits-and-sizes": "limits sizes maximum minimum range max int overflow stack size depth timeout capacity bytes how big how many",
   "tools/settings": "settings configuration config kavach.toml toml options defaults environment variables env vars dotenv KAVACH_GPU ANTHROPIC_API_KEY NO_COLOR log level",
