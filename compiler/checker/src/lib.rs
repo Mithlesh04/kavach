@@ -46,6 +46,7 @@ mod pointers;
 mod processes;
 mod stdlib;
 mod ty;
+mod unwraps;
 
 pub use agent_settings::{AgentSetup, AuditSetup};
 pub use ai_models::AiModel;
@@ -142,6 +143,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     checker.check_never_runs(file);
     checker.check_always_panics(file);
     checker.check_deprecated(file);
+    checker.check_unwraps(file);
     let (agent_models, ask_models) = checker.ai_models(file);
     let agent_settings = checker.agent_settings(file);
     let literal_types = checker

@@ -15,4 +15,9 @@ if let u = find_user(7) {
 
 - A `T` can be used wherever a `T?` is expected.
 - `none` is the missing value.
-- `.unwrap()` returns the value or panics. Avoid it outside tests. On a value the compiler knows is `none`, it is a compile error (1.8).
+- `.unwrap()` returns the value or panics. Outside `test` blocks and `example` clauses it gets a warning, as the panic says nothing of why: handle `none` with `if let`, `match` or `?? default`, or say why it can't happen with `?? panic("…")`. On a value the compiler knows is `none`, it is a compile error (1.8).
+
+```kavach
+const port = read_port().unwrap()                       // warning: panics on `none`, says nothing of why
+const port = read_port() ?? panic("kavach.toml sets a port")  // no warning: the reason is written
+```

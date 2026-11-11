@@ -1,0 +1,23 @@
+// Rule: `.unwrap()` outside `test` blocks and `example` clauses gets a warning; `?? panic("…")` says why and gets none.
+// Spec: 2.7
+// expect warning
+// expect output: 8080
+// expect output: 8080
+// expect output: 4
+
+fn port(text: String) -> Int? {
+    if text == "" { return none }
+    return 8080
+}
+
+fn twice(n: Int?) -> Int
+    example twice(4) == 8 and port("x").unwrap() == 8080
+{
+    return n.unwrap() * 2    // warning: says nothing of why
+}
+
+fn main() {
+    print(port("x").unwrap())    // warning: says nothing of why
+    print(port("x") ?? panic("a port is set"))
+    print(twice(2))
+}

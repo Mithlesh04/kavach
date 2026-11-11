@@ -1,0 +1,15 @@
+// Rule: `.unwrap()` in a `test` block or an `example` clause gets no warning.
+// Spec: 2.7
+// expect test pass
+// expect warning
+
+fn port(text: String) -> Int?
+    example port("x").unwrap() == 8080
+{
+    if text == "" { return none }
+    return 8080
+}
+
+test "a port is found" {
+    assert port("kavach.toml").unwrap() == 8080
+}
