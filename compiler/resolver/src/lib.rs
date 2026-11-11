@@ -128,6 +128,7 @@ pub fn resolve(file: &File) -> Resolution {
         name: "main".into(),
         start: 0,
         end: u32::MAX,
+        package: String::new(),
     };
     resolve_modules(file, &[whole])
 }

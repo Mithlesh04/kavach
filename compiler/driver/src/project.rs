@@ -8,12 +8,15 @@ use kavach_ast::{Expr, ExprKind, File, TypeExpr, TypeKind};
 use kavach_resolver::{DefKind, Resolution};
 use std::path::{Path, PathBuf};
 
-/// One file of a program: its path, its module name and its text.
-#[derive(Clone, Debug)]
+/// One file of a program: its path, its module name and its text, and
+/// the package it belongs to: empty for the program's own files, else a
+/// dependency's name (spec 10.12).
+#[derive(Clone, Debug, Default)]
 pub struct Source {
     pub path: String,
     pub module: String,
     pub text: String,
+    pub package: String,
 }
 
 /// Where a file starts in the combined source.
@@ -25,7 +28,7 @@ pub struct SourceFile {
     pub first_line: usize,
 }
 
-fn kav_files(dir: &Path, out: &mut Vec<PathBuf>) {
+pub(crate) fn kav_files(dir: &Path, out: &mut Vec<PathBuf>) {
     let Ok(entries) = std::fs::read_dir(dir) else {
         return;
     };
@@ -63,6 +66,7 @@ pub fn project_sources(entry: &Path) -> Option<Vec<Source>> {
         path: entry.to_string_lossy().to_string(),
         module: module_of(rel),
         text: std::fs::read_to_string(&full).ok()?,
+        package: String::new(),
     }];
     for f in files.into_iter().filter(|f| *f != full) {
         let r = f.strip_prefix(&src).ok()?.to_path_buf();
@@ -70,6 +74,7 @@ pub fn project_sources(entry: &Path) -> Option<Vec<Source>> {
             path: r.to_string_lossy().replace('\\', "/").to_string(),
             module: module_of(&r),
             text: std::fs::read_to_string(&f).ok()?,
+            package: String::new(),
         });
     }
     // Each test file right after its module's file, so the two make one
@@ -83,10 +88,12 @@ pub fn project_sources(entry: &Path) -> Option<Vec<Source>> {
         }
     }
     let mut sources = ordered;
+    let local = sources.len();
+    sources.extend(crate::deps::sources(root));
     // Paths in messages are relative to where the entry was named from.
     let shown = entry.parent().map(Path::to_path_buf).unwrap_or_default();
     let base = std::fs::canonicalize(&shown).unwrap_or(shown.clone());
-    for s in sources.iter_mut().skip(1) {
+    for s in sources.iter_mut().take(local).skip(1) {
         let full = src.join(&s.path);
         s.path = match full.strip_prefix(&base) {
             Ok(r) => shown.join(r).to_string_lossy().replace('\\', "/"),

@@ -81,6 +81,7 @@ fn with_builtins(src: &str) -> (String, Vec<kavach_resolver::Module>) {
             name: name.into(),
             start,
             end: all.len() as u32,
+            package: String::new(),
         });
     }
     (all, modules)

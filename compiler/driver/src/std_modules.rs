@@ -239,6 +239,7 @@ pub(crate) fn used(sources: &[Source]) -> Vec<Source> {
             path: path.to_string(),
             module: module.to_string(),
             text: text.to_string(),
+            package: String::new(),
         });
     }
     // In the order of `BUILTIN`, as before.
@@ -255,6 +256,7 @@ mod tests {
             path: "main.kav".into(),
             module: "main".into(),
             text: text.into(),
+            package: String::new(),
         };
         used(&[program]).into_iter().map(|s| s.module).collect()
     }

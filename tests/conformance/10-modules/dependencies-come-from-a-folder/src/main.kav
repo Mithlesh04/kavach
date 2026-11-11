@@ -1,0 +1,15 @@
+// Rule: A dependency named in `[dependencies]` by `path` is a package whose `src/lib.kav` is the module of that name; inside it, `use shapes` names its own module first.
+// Spec: 10.12
+// expect output: 7.0
+// expect output: 12.0
+// expect output: the program's own shapes
+
+use geometry
+use geometry.shapes as gshapes
+use shapes
+
+fn main() {
+    print(geometry.area(2.0, 3.5))
+    print(gshapes.rect(3.0, 4.0))
+    print(shapes.describe())
+}

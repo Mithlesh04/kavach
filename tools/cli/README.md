@@ -29,12 +29,14 @@ Exit codes: 0 success, 1 compile errors or an error returned from `main`, 101 a 
 | `src/main.rs` | Commands |
 | `src/context.rs` | `kavach query` and `kavach context`, from the program's index |
 | `src/project.rs` | `kavach new`, and finding the project's entry file |
+| `src/deps.rs` | `kavach add` and `kavach update`, and fetching dependencies before a compile (spec 10.12) |
 | `src/library.rs` | `kavach build --lib`: a shared library and its C header (spec 10.10) |
 | `src/fmt.rs` | `kavach fmt`: names first, then the layout of each file |
 | `src/keep.rs` | `kavach test --keep`: passing found cases become `example` clauses (spec 11.4) |
 | `tests/conformance.rs` | The conformance runner: every test in `tests/conformance/`, plus examples 01–04 |
 | `tests/native.rs` | Native code must match the interpreter on every program it supports |
 | `tests/project.rs` | `kavach new` and commands without a file inside a project |
+| `tests/packages.rs` | A git dependency: `kavach add`, the commit `kavach.lock` keeps until `kavach update`, and a package using `unsafe` refused until allowed (spec 10.12) |
 | `tests/context.rs` | `query` and `context` without a file inside a project |
 | `tests/keep.rs` | `kavach test --keep` |
 | `tests/stdlib.rs` | The standard library modules written in Kavach pass `kavach test` |

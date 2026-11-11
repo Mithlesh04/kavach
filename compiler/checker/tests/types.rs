@@ -238,9 +238,16 @@ fn unsafe_is_allowed_when_the_package_opts_in() {
         1
     );
     assert!(
-        check(&parsed.file, &resolved, Options { allow_unsafe: true })
-            .errors
-            .is_empty()
+        check(
+            &parsed.file,
+            &resolved,
+            Options {
+                allow_unsafe: true,
+                ..Options::default()
+            }
+        )
+        .errors
+        .is_empty()
     );
 }
 

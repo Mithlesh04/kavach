@@ -1,0 +1,6 @@
+use shapes
+
+/// The area of a `w` by `h` rectangle.
+pub fn area(w: Float, h: Float) -> Float {
+    shapes.rect(w, h)
+}

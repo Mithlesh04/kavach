@@ -3,6 +3,7 @@
 mod approvals;
 mod audit;
 mod context;
+mod deps;
 mod fmt;
 mod keep;
 mod library;
@@ -76,6 +77,8 @@ fn main() -> ExitCode {
         .as_slice()
     {
         ["new", name] => project::new(name),
+        ["add", rest @ ..] => deps::add(rest),
+        ["update"] => deps::update(),
         ["audit", path] => audit::audit(path),
         ["approvals"] => approvals::list(),
         ["approve", id, rest @ ..] => approvals::answer(true, id, rest),
@@ -269,6 +272,7 @@ fn read(path: &str) -> Result<Compiled, ExitCode> {
         eprintln!("error: can't read {path}: {e}");
         ExitCode::from(2)
     })?;
+    deps::fetch_for(path)?;
     let options = config(path)?.options_for(std::path::Path::new(path));
     // In a project, every file of `src/` is compiled with it (spec 10.1).
     if let Some(sources) = kavach_driver::project_sources(std::path::Path::new(path)) {

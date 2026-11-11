@@ -10,12 +10,15 @@ use crate::{DefId, DefKind, Resolution};
 use kavach_ast::{File, Ident, Item, ItemKind, Path, TypeBody};
 use std::collections::{HashMap, HashSet};
 
-/// One module: its name (`billing.invoice`) and where its source is.
-#[derive(Clone, Debug)]
+/// One module: its name (`billing.invoice`), where its source is, and
+/// its package: empty for the program's own modules, else the name of the
+/// dependency it comes from (spec 10.12).
+#[derive(Clone, Debug, Default)]
 pub struct Module {
     pub name: String,
     pub start: u32,
     pub end: u32,
+    pub package: String,
 }
 
 /// What resolving needs to know about the modules.
@@ -189,11 +192,23 @@ impl Resolver {
         }
     }
 
-    /// The module named by `path`, if there is one.
+    /// The module named by `path`, if there is one. Inside a dependency,
+    /// its own modules come first: in package `geometry`, `shapes` is
+    /// `geometry.shapes` (spec 10.12).
     fn module_named(&self, path: &[Ident]) -> Option<usize> {
         let name: Vec<&str> = path.iter().map(|s| s.name.as_str()).collect();
         let name = name.join(".");
-        self.modules.names.iter().position(|n| *n == name)
+        let package = self
+            .res
+            .modules
+            .get(self.modules.current)
+            .map_or("", |m| m.package.as_str());
+        let own = format!("{package}.{name}");
+        let names = &self.modules.names;
+        (!package.is_empty())
+            .then(|| names.iter().position(|n| *n == own))
+            .flatten()
+            .or_else(|| names.iter().position(|n| *n == name))
     }
 
     /// `name` in module `m`, if it may be used from the current module.

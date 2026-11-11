@@ -107,7 +107,12 @@ impl Checker<'_> {
     }
 
     pub(crate) fn check_unsafe(&mut self, span: Span) {
-        if !self.opts.allow_unsafe {
+        let package = &self.res.modules[self.res.module_at(span.start)].package;
+        let allowed = match package.is_empty() {
+            true => self.opts.allow_unsafe,
+            false => self.opts.unsafe_packages.contains(package),
+        };
+        if !allowed {
             self.error(span, "this package doesn't allow `unsafe`: set `unsafe = true` in kavach.toml to use it (spec 6.4)");
         }
     }
@@ -116,8 +121,9 @@ impl Checker<'_> {
 impl Checker<'_> {
     /// A warning at `span`, unless it is in the standard library.
     pub(crate) fn warn(&mut self, span: Span, message: &str) {
-        let module = &self.res.modules[self.res.module_at(span.start)].name;
-        if module.starts_with("std.") {
+        // Warnings in a dependency are its authors' to fix (spec 10.12).
+        let module = &self.res.modules[self.res.module_at(span.start)];
+        if module.name.starts_with("std.") || !module.package.is_empty() {
             return;
         }
         self.warnings.push(crate::Diagnostic {

@@ -383,8 +383,17 @@ impl Config {
                 }
             }
         }
+        let packages = self.root.as_deref().map(|r| crate::deps::resolve(r, false));
+        let unsafe_packages = packages
+            .and_then(Result::ok)
+            .into_iter()
+            .flatten()
+            .filter(|p| p.allow_unsafe)
+            .map(|p| p.name)
+            .collect();
         crate::Options {
             allow_unsafe: self.package.allow_unsafe,
+            unsafe_packages,
             limits,
             log_otlp,
         }

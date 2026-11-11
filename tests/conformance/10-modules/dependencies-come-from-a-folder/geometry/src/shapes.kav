@@ -1,0 +1,3 @@
+pub fn rect(w: Float, h: Float) -> Float {
+    w * h
+}

@@ -88,6 +88,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0080](0080-installing-kavach.md) | An install holds `kavach`, the runtime library and LLVM's tools; the linker is checked, not bundled; archives and install scripts come first | Accepted |
 | [0081](0081-packed-executables.md) | `kavach build --compress` packs a program (deflate, or xz with `=max`) behind a small C starter, carried inside `kavach`, that unpacks it once into a cache folder | Accepted |
 | [0082](0082-the-json-tape-as-built.md) | A parsed JSON document is one list of words; `Json` arrays and objects point into it and make their list or map only when matched; reads in native code go straight to the tape | Accepted |
+| [0083](0083-dependencies-by-path-and-git.md) | Dependencies by `path` and `git` with `kavach.lock`, before a registry; a dependency's modules are named after it, and `unsafe` is allowed per dependency | Accepted |
 
 ## Open decisions
 

@@ -66,7 +66,8 @@ edition = "2026"
 unsafe = false            # must be true to use `unsafe` blocks (chapter 6)
 
 [dependencies]
-stripe = "1.2"
+geometry = { path = "../geometry" }
+stripe = { git = "https://github.com/example/stripe-kavach", tag = "v1.2.0" }
 ```
 
 Other sections are described where they are used: AI models (`[ai]`) and agents' folder (`[agents]`) in chapter 8, release builds (`[build.release]`) in chapter 7, tests (`[test]`) in chapter 11, and limits, workspaces and architecture (`[limits]`, `[workspace]`, `[architecture]`) in chapter 12. Every key, with its values and default, is listed in 10.11.
@@ -84,7 +85,8 @@ Other sections are described where they are used: AI models (`[ai]`) and agents'
 | `kavach build --compress` / `--compress=max` | Write a smaller executable, packed without losing anything; it unpacks itself when it starts (below) |
 | `kavach test` | Run generated and hand-written tests (chapter 11) |
 | `kavach fmt` | Format all code |
-| `kavach add stripe` | Add a dependency |
+| `kavach add <name> --path <folder>` / `kavach add <name> --git <url> [--tag T \| --branch B \| --rev C] [--unsafe]` | Add a dependency, fetch it and write `kavach.lock` (10.12) |
+| `kavach update` | Fetch every git dependency again at the tag, branch or commit `kavach.toml` asks for, and rewrite `kavach.lock` (10.12) |
 | `kavach audit` | List unsafe code, revealed secrets and capability use across all dependencies |
 | `kavach approvals` | List the requests a project's agents wait on: number, call, role, when asked, until when (8.3) |
 | `kavach approve <id> --as <name>` / `kavach deny <id> --as <name> [--reason <text>]` | Answer one; the program waiting sees it within a second, or the next start finds it (8.3) |
@@ -96,7 +98,7 @@ Other sections are described where they are used: AI models (`[ai]`) and agents'
 | `kavach version <program>` | Print what built an executable: its package's name and version, and the compiler's version and commit (below) |
 | `kavach lsp` | Language server for editors, on stdin and stdout: errors as you type, with the same messages as `kavach check`; the type of what is under the cursor (hover); where a name is declared (go to definition); and the names in scope, or after a `.` the fields and methods of the value (completion) |
 
-Not built yet: `kavach add`, `fix`, `api check`, `repl` and `eval` (Phase 3 tools, [roadmap](../vision/roadmap.md)), and `build --release`: `kavach build` already optimizes. Until then they print the command list.
+Not built yet: `fix`, `api check`, `repl` and `eval` (Phase 3 tools, [roadmap](../vision/roadmap.md)), and `build --release`: `kavach build` already optimizes. Until then they print the command list.
 
 `kavach new my-app` creates the folder `my-app` with the layout of 10.3: a `kavach.toml`, a `src/main.kav` that prints a greeting, and a `.gitignore` for `.kavach/`. The name must be lowercase `kebab-case`.
 
@@ -315,7 +317,9 @@ Every setting a program can have, in one place. A key or section that isn't list
 | `[log.otlp]` | `endpoint` | a URL; required in this section | none | 14.12 |
 | `[log.otlp]` | `service` | text | the package's `name` | 14.12 |
 
-Paths are relative to the folder `kavach.toml` is in. `[dependencies]`, `[build.release]`, `[workspace]` and `[architecture]` are accepted and described where they are used (10.4), but not read yet.
+| `[dependencies]` | a dependency's name | `{ path = "…" }`, or `{ git = "…" }` with at most one of `tag`, `branch` and `rev`; either may add `unsafe = true` | none | 10.12 |
+
+Paths are relative to the folder `kavach.toml` is in. `[build.release]`, `[workspace]` and `[architecture]` are accepted and described where they are used (10.4), but not read yet.
 
 ### Environment variables
 
@@ -351,7 +355,35 @@ For work on the compiler (they print what a pass did, or turn one off):
 | `KAVACH_FUZZ_CASES` | How many cases the fuzz tests try |
 | `KAVACH_COMMIT` | When the compiler is built: the commit `kavach --version` and built programs name (10.5), where git can't tell it |
 
+## 10.12 Dependencies
+
+A project uses another Kavach package by naming it in `[dependencies]`. The package is a library (`src/lib.kav`, 10.3), found in a folder or in a git repository. There is no package registry yet: a version number such as `stripe = "1.2"` is an error that says so.
+
+```toml
+[dependencies]
+geometry = { path = "../geometry" }                                   # a folder
+money = { git = "https://github.com/example/money", tag = "v1.0.0" }  # a git repository
+```
+
+```kavach
+use geometry                   // the package's src/lib.kav
+use geometry.shapes            // its src/shapes.kav
+
+fn main() {
+    print(geometry.area(2.0, 3.5))
+}
+```
+
+- **Names.** The name in `[dependencies]` is the package's module name: lowercase letters, digits and `_`. Its `src/lib.kav` is the module `geometry`, and `src/shapes.kav` is `geometry.shapes`. Only `pub` items can be used from outside the package (10.1).
+- **Inside a package,** `use shapes` names the package's own module `geometry.shapes` first, so a package's code means the same whichever project uses it.
+- **Git.** `tag`, `branch` or `rev` (a commit) says which code to use; without one, the repository's default branch. Fetched repositories are kept in `.kavach/deps/`.
+- **`kavach.lock`** records the exact commit of each git dependency (and the folder of each path one). It is written when a dependency is first fetched, and commit it: every build then uses the same code, and the network is used only when something is missing. `kavach update` fetches each git dependency again and rewrites the lock.
+- **Dependencies of dependencies** are used too. Two different packages with one name are an error: rename one in its `[dependencies]`. A module in `src/` with a dependency's name is an error too (10.2).
+- **`unsafe`.** A package that sets `unsafe = true` (6.4) is used only when the project allows it in its entry: `geometry = { path = "../geometry", unsafe = true }`. Otherwise building stops and says so.
+- **Warnings** in a dependency's code are not shown: they are its authors' to fix. Errors are.
+- A dependency's tests (`*.test.kav`) and `src/main.kav` are not compiled into the project that uses it.
+
 ## Open questions
 
-- Registry name and URL (e.g. `hub.kavach.io`), and package signing.
+- Registry name and URL (e.g. `hub.kavach.io`), version numbers and how they are chosen, and package signing.
 - Should the dependency manifest record which capabilities each dependency is allowed to use?

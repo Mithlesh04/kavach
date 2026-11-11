@@ -67,10 +67,12 @@ pub const DURATION_UNITS: [(&str, i64); 5] = [
     ("days", 86_400_000),
 ];
 
-#[derive(Clone, Copy, Debug, Default)]
+#[derive(Clone, Debug, Default)]
 pub struct Options {
     /// `unsafe = true` in `kavach.toml` (spec 6.4). Off by default.
     pub allow_unsafe: bool,
+    /// The dependencies allowed to use `unsafe` (spec 10.12).
+    pub unsafe_packages: Vec<String>,
 }
 
 #[derive(Clone, Debug)]

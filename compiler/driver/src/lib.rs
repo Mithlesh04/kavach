@@ -3,6 +3,7 @@
 //! language server all use this, so messages look the same everywhere.
 
 mod config;
+pub mod deps;
 mod limits;
 mod project;
 mod schema;
@@ -27,6 +28,8 @@ pub use version::{compiler_version, find_marked, marked, program_version};
 pub struct Options {
     /// `unsafe = true` in `[package]` (spec 6.4).
     pub allow_unsafe: bool,
+    /// The dependencies allowed to use `unsafe` (spec 10.12).
+    pub unsafe_packages: Vec<String>,
     pub limits: Limits,
     /// Whether `kavach.toml` has a `[log.otlp]` collector (14.12), which an
     /// agent's `Audit(otlp: true)` needs (spec 8.6).
@@ -268,6 +271,7 @@ pub fn compile(src: &str, path: &str, options: Options) -> Compiled {
         path: path.to_string(),
         module,
         text: src.to_string(),
+        package: String::new(),
     };
     compile_sources(vec![source], options)
 }
@@ -312,6 +316,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
                 name: s.module.clone(),
                 start,
                 end: src.len() as u32,
+                package: s.package.clone(),
             }),
         }
     }
@@ -321,6 +326,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
     project::unqualify(&mut parsed.file, &resolution);
     let checker_options = kavach_checker::Options {
         allow_unsafe: options.allow_unsafe,
+        unsafe_packages: options.unsafe_packages.clone(),
     };
     let checked = kavach_checker::check(&parsed.file, &resolution, checker_options);
 
