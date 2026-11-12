@@ -1,0 +1,2 @@
+test --seed 7
+run packages/shop/src/main.kav

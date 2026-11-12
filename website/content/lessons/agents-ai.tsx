@@ -181,7 +181,7 @@ export const aiFailsDoc: LessonDoc = {
 
 /** The [ai] rows of spec 10.11's settings table. */
 function AiSettings() {
-  const toml = specTables("10-modules-and-packages.md", "10.11").find((t) => t.heading === "kavach.toml");
+  const toml = specTables("10-modules-and-packages/11-settings-reference.md", "10.11").find((t) => t.heading === "kavach.toml");
   const rows = toml?.rows.filter((r) => r[0] === "`[ai]`") ?? [];
   if (!rows.length) throw new Error("spec 10.11: no [ai] settings");
   return (

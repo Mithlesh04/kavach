@@ -9,7 +9,9 @@ import Link from "next/link";
 import { Ex, H2, Note, P } from "./parts";
 import { Cell, Table } from "./spec-table";
 
-const SPEC = "10-modules-and-packages.md";
+const CH10 = "10-modules-and-packages";
+/** The file of one section of spec chapter 10. */
+const SPEC = (file: string) => `${CH10}/${file}`;
 
 // ---------- Project Layout ----------
 
@@ -34,14 +36,14 @@ export const layoutDoc: LessonDoc = {
   before: ["tools/modules"],
   body: (
     <>
-      <CodeBlock code={specBlock(SPEC, "10.3")} file="my-app/" lang="text" />
+      <CodeBlock code={specBlock(SPEC("03-project-layout.md"), "10.3")} file="my-app/" lang="text" />
       <H2>What each part is, and what to commit</H2>
       <Table header={["Path", "What it is", "Commit it?"]} rows={layoutRows} />
       <H2>Start one</H2>
       <P><C>kavach new</C> makes the folder, a first <C>kavach.toml</C>, a <C>src/main.kav</C>, and a <C>.gitignore</C> that leaves <C>.kavach/</C> out:</P>
       <Terminal commands session={"kavach new my-app\ncd my-app\nkavach run"} />
       <P>Inside a project, <C>kavach run</C>, <C>build</C>, <C>test</C> and <C>check</C> need no file name: they use <C>src/main.kav</C>.</P>
-      <div><SrcRef file={`docs/spec/${SPEC}`} label="spec 10.3 · project layout" /></div>
+      <div><SrcRef file={`docs/spec/${SPEC("03-project-layout.md")}`} label="spec 10.3 · project layout" /></div>
     </>
   ),
 };
@@ -68,7 +70,7 @@ export const settingsDoc: LessonDoc = {
       <P>Set in the shell before running a program, for one run, instead of in a file:</P>
       <Table {...envTable(0)} />
       <div className="flex flex-wrap gap-2.5">
-        <SrcRef file={`docs/spec/${SPEC}`} label="spec 10.11 · settings reference" />
+        <SrcRef file={`docs/spec/${SPEC("11-settings-reference.md")}`} label="spec 10.11 · settings reference" />
         <SrcRef file="compiler/driver/tests/settings.rs" label="the test that keeps this table true" />
       </div>
     </>
@@ -82,14 +84,14 @@ export const settingsDoc: LessonDoc = {
 };
 
 function envTable(i: number): SpecTable {
-  const tables = specTables(SPEC, "10.11").filter((t) => t.heading === "Environment variables");
+  const tables = specTables(SPEC("11-settings-reference.md"), "10.11").filter((t) => t.heading === "Environment variables");
   if (!tables[i]) throw new Error(`spec 10.11: no environment table ${i}`);
   return tables[i];
 }
 
 /** The kavach.toml table of spec 10.11, one small table per section. */
 function SettingsTables() {
-  const toml = specTables(SPEC, "10.11").find((t) => t.heading === "kavach.toml");
+  const toml = specTables(SPEC("11-settings-reference.md"), "10.11").find((t) => t.heading === "kavach.toml");
   if (!toml || toml.header.join("|") !== "Section|Key|Values|Default|Spec") {
     throw new Error("spec 10.11: the kavach.toml table changed shape; update the Settings page");
   }
@@ -141,13 +143,13 @@ export const envDoc: LessonDoc = {
         A <C>.env</C> file beside <C>kavach.toml</C> gives a program its variables without setting them in the shell.
         Never commit it: <C>kavach new</C> puts it in <C>.gitignore</C>.
       </P>
-      <CodeBlock code={specBlockWith(SPEC, "10.13", "GREETING=")} file=".env" lang="text" />
+      <CodeBlock code={specBlockWith(SPEC("13-environment-variables.md"), "10.13", "GREETING=")} file=".env" lang="text" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Lines are <C>NAME=value</C>; <C>export NAME=value</C> works too. <C>#</C> starts a comment line. A value in double quotes may hold <C>{"\\n"}</C>, <C>{"\\\""}</C> and <C>{"\\\\"}</C>; in single quotes it is taken as written. Nothing is expanded: <C>$HOME</C> stays as written.</li>
         <li>Any other line is an error that names the file and the line.</li>
         <li>Another file: <C>--env-file &lt;path&gt;</C>, or <C>file</C> in <C>[env]</C>. A dependency&apos;s <C>.env</C> is never read.</li>
       </ul>
-      <CodeBlock code={specBlockWith(SPEC, "10.13", "[env]")} file="kavach.toml" lang="toml" />
+      <CodeBlock code={specBlockWith(SPEC("13-environment-variables.md"), "10.13", "[env]")} file="kavach.toml" lang="toml" />
       <H2>Which value wins</H2>
       <P>Strongest first:</P>
       <ol className="m-0 flex list-decimal flex-col gap-1.5 pl-5">
@@ -163,13 +165,13 @@ export const envDoc: LessonDoc = {
         <li>The executable reads that file the first time it reads a variable, so a program that never calls <C>env</C> pays nothing for it. A file it can&apos;t read, or a wrong line in it, ends the program there with exit code 2.</li>
         <li>The variable <C>KAVACH_ENV_FILE</C> names another file, so a container can keep it elsewhere.</li>
       </ul>
-      <Terminal commands session={specBlockWith(SPEC, "10.13", "kavach run --env-file")} />
+      <Terminal commands session={specBlockWith(SPEC("13-environment-variables.md"), "10.13", "kavach run --env-file")} />
       <Note>
         <C>[env.vars]</C> is committed with <C>kavach.toml</C>, so it is for settings such as a log level, never for
         keys. Keys go in <C>.env</C>, or in the real environment where the program runs.
       </Note>
       <div className="flex flex-wrap gap-2.5">
-        <SrcRef file={`docs/spec/${SPEC}`} label="spec 10.13 · environment variables" />
+        <SrcRef file={`docs/spec/${SPEC("13-environment-variables.md")}`} label="spec 10.13 · environment variables" />
         <SrcRef file="docs/decisions/0084-environment-variables-and-granted-capabilities.md" label="decision 0084" />
         <SrcRef file="tools/cli/tests/env_files.rs" symbol="programs_read_the_dot_env_file" line={28} label="every source and the built copy, tested" />
         <SrcRef file="tests/conformance/10-modules/env-values-are-secret.kav" label="secret, tested" />
@@ -192,7 +194,7 @@ export const editionsDoc: LessonDoc = {
       <P>
         A package names its edition in <C>kavach.toml</C>. <C>kavach new</C> writes the newest one:
       </P>
-      <CodeBlock code={specBlock(SPEC, "10.8")} file="kavach.toml" lang="toml" />
+      <CodeBlock code={specBlock(SPEC("08-editions.md"), "10.8")} file="kavach.toml" lang="toml" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Packages on different editions work together in one program.</li>
         <li>Editions come out rarely, every few years, and only with a tool that upgrades code to the new one.</li>
@@ -200,7 +202,7 @@ export const editionsDoc: LessonDoc = {
       </ul>
       <P>An edition Kavach doesn&apos;t have is an error that names the ones it has:</P>
       <CodeBlock code={edition.files[0].code} file="kavach.toml" lang="toml" output={edition.output} outcome="refused" />
-      <SrcRef file={`docs/spec/${SPEC}`} label="spec 10.8 · editions" />
+      <SrcRef file={`docs/spec/${SPEC("08-editions.md")}`} label="spec 10.8 · editions" />
     </>
   ),
 };

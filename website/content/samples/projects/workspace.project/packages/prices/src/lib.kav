@@ -1,0 +1,7 @@
+/// The price of `qty` pens, in cents.
+pub fn pens(qty: Int) -> Int
+    require qty >= 0 and qty <= 1_000_000
+    example pens(3) == 30
+{
+    qty * 10
+}

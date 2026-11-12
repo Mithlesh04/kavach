@@ -32,7 +32,7 @@ function KindOfLanguage() {
         with no <C>main</C>, no project and no imports. The difference: Kavach checks the whole program before
         it runs, and the same file compiles to fast native code.
       </>,
-      <SrcRef key="s" file="docs/spec/10-modules-and-packages.md" line={184} symbol="scripting language" label="spec 10" />,
+      <SrcRef key="s" file="docs/spec/10-modules-and-packages/09-running-code-quickly.md" line={3} symbol="scripting language" label="spec 10" />,
     ],
     [
       "How are types handled?",

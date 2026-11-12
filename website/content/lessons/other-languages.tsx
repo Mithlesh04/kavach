@@ -69,7 +69,7 @@ export const callingCDoc: LessonDoc = {
         C functions run in native code: <C>kavach build</C> and <C>kavach run --native</C>. The interpreter stops at
         the first call of one and says to run the program natively.
       </Note>
-      <div><SrcRef file="docs/spec/10-modules-and-packages.md" label="spec 10.7 · calling C" /></div>
+      <div><SrcRef file="docs/spec/10-modules-and-packages/07-interop.md" label="spec 10.7 · calling C" /></div>
     </>
   ),
   quiz: [

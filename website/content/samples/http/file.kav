@@ -1,0 +1,18 @@
+use std.fs
+use std.http
+use std.net
+
+fn download(r: Request) -> Response uses Fs.read {
+    http.file("report.txt") catch _ => http.text(404, "no such file")
+}
+
+fn main() ! Error {
+    try fs.write_text("report.txt", "sales up\n".repeat(1000))
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, download)
+    const r = try http.get("http://{listener.address()}/")
+    print(r.header("content-type") ?? "?")
+    print(r.header("content-length") ?? "?")
+    print(r.body == (try fs.read_bytes("report.txt")))
+    try fs.remove("report.txt")
+}

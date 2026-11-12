@@ -148,6 +148,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
   ["tools", "Projects & Tools", "intermediate", [
     ["Modules", "10", ["use", "pub"]],
     ["Packages", "10.12"],
+    ["Workspaces", "10.14"],
     ["Project Layout", "10.3"],
     ["Settings", "10.11"],
     ["Environment Variables", "10.13"],

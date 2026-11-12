@@ -1,0 +1,5 @@
+use prices
+
+fn main() {
+    print("4 pens cost {prices.pens(4)} cents")
+}

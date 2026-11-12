@@ -78,7 +78,44 @@ const granted = loadProject("projects/grant-add", ["kavach.toml"]);
 
 // The spec's example of sources that are and aren't fetched, kept word for word.
 const careToml = () =>
-  fileFigure("docs/spec/10-modules-and-packages.md", /\n {2}```toml\r?\n([\s\S]*?)\r?\n {2}```/).replace(/^ {2}/gm, "");
+  fileFigure("docs/spec/10-modules-and-packages/12-dependencies.md", /\n {2}```toml\r?\n([\s\S]*?)\r?\n {2}```/).replace(/^ {2}/gm, "");
+
+const workspace = loadProject("projects/workspace", ["kavach.toml", "packages/prices/src/lib.kav", "packages/shop/kavach.toml", "packages/shop/src/main.kav"]);
+const WORKSPACES = "10-modules-and-packages/14-workspaces.md";
+
+export const workspacesDoc: LessonDoc = {
+  lead: "A workspace is several packages in one repository, checked, tested and built together, with one lock for all of them.",
+  simple: <>A workspace is like one workshop with several benches: each package has its own bench and tools, but they share one store room, so everyone works with the same parts.</>,
+  minutes: 3,
+  before: ["tools/packages"],
+  body: (
+    <>
+      <P>
+        The <C>kavach.toml</C> at the repository&apos;s root lists the members. <C>packages/*</C> is every folder in{" "}
+        <C>packages/</C> that has a <C>kavach.toml</C>:
+      </P>
+      <CodeBlock code={workspace.files[0].code} file="kavach.toml" lang="toml" />
+      <CodeBlock code={workspace.files[1].code} file={workspace.files[1].path} />
+      <CodeBlock code={workspace.files[2].code} file={workspace.files[2].path} lang="toml" />
+      <CodeBlock code={workspace.files[3].code} file={workspace.files[3].path} />
+      <P>At the root, with no file, <C>kavach check</C>, <C>kavach test</C> and <C>kavach build</C> run on every member, and say which member each line is about. <C>pens</C> is tested from its <C>example</C> and from 200 generated inputs that keep its <C>require</C>:</P>
+      <Terminal session={workspace.output ?? ""} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Members run in the order <C>members</C> lists them, and the command fails when any member fails. In a member&apos;s folder, a command runs on that member alone.</li>
+        <li>Members use each other by <C>path</C>, as any package does: <C>{"prices = { path = \"../prices\" }"}</C>.</li>
+        <li>Every member&apos;s git dependencies are fetched once, into the root&apos;s <C>kavach_modules/</C>, and recorded in the root&apos;s <C>kavach.lock</C>, so all members use the same commit of each.</li>
+        <li>A member&apos;s settings (<C>[build]</C>, <C>[test]</C>, <C>[env]</C>) are its own. The root may be a package too, with a <C>[package]</C> of its own.</li>
+        <li>A package in a folder of a git repository is named with <C>dir</C>: <C>{"router = { git = \"https://…\", dir = \"packages/router\" }"}</C>.</li>
+      </ul>
+      <CodeBlock code={specBlockWith(WORKSPACES, "10.14", "# one for the whole workspace")} file="my-repo/" lang="text" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file={`docs/spec/${WORKSPACES}`} label="spec 10.14 · workspaces" />
+        <SrcRef file="tools/cli/tests/workspaces.rs" label="tested" />
+        <SrcRef file="docs/decisions/0091-workspaces.md" label="decision 0091" />
+      </div>
+    </>
+  ),
+};
 
 export const packagesDoc: LessonDoc = {
   lead: "A package is a library another project uses: name it in [dependencies], from a folder or a git repository, and use it like any module.",
@@ -127,7 +164,7 @@ export const packagesDoc: LessonDoc = {
         sees what it may do:
       </P>
       <Terminal session={granted.output ?? ""} />
-      <CodeBlock code={specBlockWith("10-modules-and-packages.md", "10.12", "can = [")} file="kavach.toml" lang="toml" />
+      <CodeBlock code={specBlockWith("10-modules-and-packages/12-dependencies.md", "10.12", "can = [")} file="kavach.toml" lang="toml" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>The error names the function and the capability, so you can decide whether to trust the package with it.</li>
         <li>A dependency&apos;s own dependencies get at most what it was granted: a package granted only <C>Console</C> can&apos;t pass <C>Net</C> on to another.</li>
@@ -140,7 +177,7 @@ export const packagesDoc: LessonDoc = {
         <SrcRef file="docs/decisions/0084-environment-variables-and-granted-capabilities.md" label="decision 0084" />
       </div>
       <div className="flex flex-wrap gap-2.5">
-        <SrcRef file="docs/spec/10-modules-and-packages.md" label="spec 10.12 · dependencies" />
+        <SrcRef file="docs/spec/10-modules-and-packages/12-dependencies.md" label="spec 10.12 · dependencies" />
         <SrcRef file="tests/conformance/10-modules/dependencies-come-from-a-folder/src/main.kav" label="tested" />
         <SrcRef file="tools/cli/tests/packages.rs" label="every refusal tested" />
       </div>

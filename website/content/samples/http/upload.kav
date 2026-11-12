@@ -1,0 +1,21 @@
+use std.http
+use std.net
+
+fn upload(r: Request) -> Response uses Net {
+    let read = 0
+    while true {
+        const piece = r.read_body() catch _ => return http.text(400, "upload cut off")
+        read += (piece ?? break).len()
+    }
+    http.text(200, "in r.body: {r.body.len()}, read as it came: {read}")
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, upload, limits: ServeLimits(buffered_body: 100))
+    const url = "http://{listener.address()}/"
+    for size in [5, 3000] {
+        const r = try http.post(url, "x".repeat(size).bytes())
+        print("{size} bytes sent: {r.body.text() ?? ""}")
+    }
+}

@@ -65,7 +65,7 @@ export const commandDoc: LessonDoc = {
       </div>
       <P>Inside a project, <C>run</C>, <C>build</C>, <C>test</C> and <C>check</C> need no file name: they use <C>src/main.kav</C>.</P>
       <Note>Coming later, as spec 10.5 describes: {later.join(", ")}.</Note>
-      <div><SrcRef file="docs/spec/10-modules-and-packages.md" label="spec 10.5 · command line" /></div>
+      <div><SrcRef file="docs/spec/10-modules-and-packages/05-command-line.md" label="spec 10.5 · command line" /></div>
     </>
   ),
 };
@@ -105,7 +105,7 @@ const fixes: { key: string; mistake: React.ReactNode; writes: React.ReactNode }[
 ];
 const formatted = loadProject("tools/fmt", ["src/main.kav"]);
 // The spec's own example: the commit in it changes with every compiler, so no sample could hold it still.
-const versionShown = specBlock("10-modules-and-packages.md", "10.5");
+const versionShown = specBlock("10-modules-and-packages/05-command-line.md", "10.5");
 if (!versionShown.includes("kavach version")) throw new Error("spec 10.5: its first code block is no longer the kavach version example");
 
 export const runDoc: LessonDoc = {
@@ -167,7 +167,7 @@ export const buildDoc: LessonDoc = {
         </li>
       </ul>
       <div className="flex flex-wrap gap-2.5">
-        <SrcRef file="docs/spec/10-modules-and-packages.md" label="spec 10.5 · a program's version" />
+        <SrcRef file="docs/spec/10-modules-and-packages/05-command-line.md" label="spec 10.5 · a program's version" />
         <SrcRef file="tools/cli/tests/packed.rs" label="packed executables, tested" />
         <SrcRef file="tools/cli/tests/version.rs" line={26} symbol="a_program_says_what_built_it_and_answers_version_only_when_asked_to" label="its test, in every way of running" />
         <SrcRef file="runtime/native/src/rt_std.rs" line={359} symbol="a_program_for_other_operations_is_stopped_with_a_reason" label="the run-time library's check" />

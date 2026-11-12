@@ -2,9 +2,9 @@ import Link from "next/link";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { fileFigure, specBlockWith } from "@/lib/spec-tables";
+import { fileFigure, specBlockWith, specTables } from "@/lib/spec-tables";
 import { Ex, H2, Note, P, Syntax } from "./parts";
-import { ModuleTable } from "./spec-table";
+import { ModuleTable, Table } from "./spec-table";
 
 // ---------- HTTP ----------
 
@@ -13,6 +13,12 @@ const HTTP_FILE = "14-standard-library/11-http.md";
 const HTTP_SPEC = `docs/spec/${HTTP_FILE}`;
 const computes = () => fileFigure(HTTP_SPEC, /a handler that computes answered in ([\d.–]+ s instead of [\d.–]+ s on one core)/);
 const idles = () => fileFigure(HTTP_SPEC, /one that does nearly nothing in ([\d–]+ ms instead of [\d–]+ ms)/);
+/** Spec 14.11's table of what a form and its parts give. */
+const formTable = () => {
+  const t = specTables(HTTP_FILE, "14.11").find((x) => x.header[0] === "Written" && x.rows.some((r) => r[0].includes("form.next()")));
+  if (!t) throw new Error("spec 14.11: no table of form.next()");
+  return t;
+};
 const servedSetup = () => fileFigure(HTTP_SPEC, /measured on (Windows \(\d+ cores, \d+ clients making \d+ requests each on kept-open connections\))/);
 
 export const httpDoc: LessonDoc = {
@@ -148,6 +154,51 @@ export const httpServeDoc: LessonDoc = {
         <SrcRef file="tests/conformance/14-standard-library/http-headers-keep-repeats.kav" label="headers, tested" />
         <SrcRef file="tests/conformance/14-standard-library/http-serve-limits-refuse-what-is-too-much.kav" label="limits, tested" />
         <SrcRef file="docs/decisions/0087-http-headers-and-server-limits.md" label="decision 0087" />
+      </div>
+      <H2>A client that leaves</H2>
+      <P>
+        While a request is answered, <C>http.serve</C> keeps reading its connection. When the client closes it, the
+        handler&apos;s task is cancelled, so a request nobody waits for stops using the server. A handler that
+        panics gets 500, and the server goes on.
+      </P>
+      <SrcRef file="tests/conformance/14-standard-library/http-handlers-stop-when-the-client-leaves.kav" label="tested" />
+      <H2>Large bodies</H2>
+      <P>
+        A body up to <C>buffered_body</C> (1 MB unless you say) is read whole into <C>r.body</C>. A larger one is
+        left for the handler to read as it comes, a piece at a time, with <C>r.read_body()</C>, which gives{" "}
+        <C>none</C> once it has all come. An upload of any size then needs no more memory than a piece:
+      </P>
+      <Ex name="http/upload" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The 5-byte body fits in <C>buffered_body: 100</C>, so it is all in <C>r.body</C>, and <C>read_body</C> has nothing more.</li>
+        <li>The 3000-byte body is not in <C>r.body</C>: the handler reads it with <C>read_body</C>.</li>
+        <li>A read fails with a <C>NetError</C> when the client goes away during the upload.</li>
+      </ul>
+      <H2>Sending a file</H2>
+      <P>
+        <C>http.file(path)</C> answers with a file as it is read, so a file of any size is sent without being held in
+        memory. Its <C>content-type</C> comes from the file&apos;s extension, and its <C>content-length</C> from its
+        size:
+      </P>
+      <Ex name="http/file" />
+      <P>
+        To send something else as it is read, give a <C>Response</C> a reader from <C>fs.chunks</C> as its{" "}
+        <C>stream</C>: <C>Response(status: 200, headers: [], body: Bytes([]), stream: reader)</C>.
+      </P>
+      <H2>Forms with files</H2>
+      <P>
+        An HTML form with files sends a <C>multipart/form-data</C> body. <C>http.form(r)</C> reads it a part at a
+        time, and each part&apos;s data as it comes, so a large upload is never all in memory:
+      </P>
+      <Syntax code={specBlockWith(HTTP_FILE, "14.11", "const form = try http.form(r)")} />
+      <Table header={formTable().header} rows={formTable().rows} />
+      <P>A form that isn&apos;t <C>multipart/form-data</C>, has no boundary, or is cut off fails with <C>BadMessage</C>.</P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file={HTTP_SPEC} label="spec 14.11 · large bodies, forms" />
+        <SrcRef file="tests/conformance/14-standard-library/http-large-bodies-stream.kav" label="bodies, tested" />
+        <SrcRef file="tests/conformance/14-standard-library/http-forms-read-part-by-part.kav" label="forms, tested" />
+        <SrcRef file="docs/decisions/0089-streamed-http-bodies.md" label="decision 0089" />
+        <SrcRef file="docs/decisions/0090-forms-read-part-by-part.md" label="decision 0090" />
       </div>
     </>
   ),
