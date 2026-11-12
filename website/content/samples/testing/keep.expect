@@ -1,0 +1,8 @@
+$ kavach test stats.kav --seed 7 --keep
+kept: example average([]) == 0
+$ kavach test stats.kav --seed 7
+✓ average: example average([]) == 0
+1 passed, 0 failed
+seed 7
+✓ average  200 cases
+1 functions   1 ✓   0 ✗   0 weakly tested

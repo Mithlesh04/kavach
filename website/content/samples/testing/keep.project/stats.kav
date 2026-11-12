@@ -1,0 +1,15 @@
+fn average(xs: [Int]) -> Int
+    require xs.len() <= 1000 and xs.all(x => x >= 0 and x <= 1_000_000)
+{
+    if xs.len() == 0 {
+        return 0
+    }
+    let total = 0
+    for x in xs {
+        total += x
+    }
+    total / xs.len()
+}
+
+fn main() {
+}

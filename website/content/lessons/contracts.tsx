@@ -1,14 +1,16 @@
 import Link from "next/link";
+import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
-import { loadProjectFiles } from "@/lib/samples";
+import { loadProject, loadProjectFiles } from "@/lib/samples";
 import { Ex, Files, H2, Note, P } from "./parts";
 import { ModuleTable } from "./spec-table";
 
 const beside = loadProjectFiles("testing/beside");
 const missed = loadProjectFiles("testing/missed");
+const kept = loadProject("testing/keep", ["stats.kav", "tests/found/stats.kavf"]);
 
 // ---------- Contracts ----------
 
@@ -150,6 +152,20 @@ export const testingDoc: LessonDoc = {
         It tried many lists, found the smallest one that crashes, <C>[]</C>, and suggests three fixes, each with
         when to choose it. The failing case is saved and replayed on every later run.
       </P>
+      <H2>A found case becomes an example</H2>
+      <P>
+        Found cases are saved in <C>tests/found/</C>, one file per module, each line one call. The files are
+        generated: commit them, but never edit them. Once the bug is fixed, <C>kavach test --keep</C> turns each
+        found case that now passes into an <C>example</C> on its function, so it becomes documentation:
+      </P>
+      <CodeBlock code={kept.files[0].code} file="stats.kav, after the fix" />
+      <CodeBlock code={kept.files[1].code} file={kept.files[1].path} lang="text" />
+      <Terminal session={kept.output ?? ""} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>--keep</C> wrote <C>example average([]) == 0</C> into <C>stats.kav</C>, and the case left <C>tests/found/</C>.</li>
+        <li>A case that still fails stays found, and <C>--keep</C> says why.</li>
+      </ul>
+      <SrcRef file="tools/cli/tests/keep.rs" label="--keep, tested" />
       <H2>What you write, what gets tested</H2>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Types and invariants: valid values of every type, edge cases first.</li>
