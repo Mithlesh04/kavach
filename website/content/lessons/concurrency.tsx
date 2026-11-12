@@ -179,6 +179,14 @@ export const channelsDoc: LessonDoc = {
         <li>Each value is copied into the channel, so the two tasks never share it.</li>
       </ul>
       <Note>Channels are how tasks talk without sharing anything: one task produces, another consumes, and neither waits for a lock.</Note>
+      <H2>Putting without waiting</H2>
+      <P>
+        <C>send.try_put(v)</C> adds <C>v</C> if the channel has room and gives <C>true</C>. When it is full or
+        closed, it gives <C>false</C> at once, and <C>v</C> is let go:
+      </P>
+      <Ex name="channels/try-put" />
+      <P>It never waits, so one slow taker can&apos;t hold up a task that sends to many, such as a server sending news to every listener.</P>
+      <SrcRef file="tests/conformance/09-concurrency/try-put-never-waits.kav" label="tested" />
       <H2>Limits and sizes</H2>
       <Limits id="tasks" />
     </>

@@ -1,0 +1,17 @@
+use std.base64
+
+fn show(text: String) {
+    match base64.decode(text) {
+        ok(data) => print("{text}: {data.len()} bytes")
+        err(Base64Error.BadCharacter(at)) => print("{text}: a bad character at {at}")
+        err(Base64Error.BadLength) => print("{text}: a length no encoding gives")
+        err(Base64Error.BadPadding) => print("{text}: wrong padding")
+        err(Base64Error.ExtraBits) => print("{text}: bits after the last byte")
+    }
+}
+
+fn main() {
+    for text in ["aGk=", "aGk", "aG!=", "a", "aGk==", "aGl="] {
+        show(text)
+    }
+}

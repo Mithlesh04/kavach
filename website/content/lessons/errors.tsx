@@ -115,6 +115,17 @@ export const catchDoc: LessonDoc = {
       <H2>Skip and carry on</H2>
       <P>A handler can also leave: <C>continue</C> skips to the next round of a loop, <C>return</C> leaves the function.</P>
       <Ex name="errors/skip" />
+      <H2>Only the call&apos;s own error</H2>
+      <P>
+        A call&apos;s <C>catch</C> handles that call&apos;s own error, never one raised while its arguments are worked
+        out. A <C>try</C> in an argument leaves the function, as it would with no <C>catch</C> around the call:
+      </P>
+      <Ex name="errors/catch-own-error" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>e</C> is a <C>LookupError</C>: <C>8</C> is parsed, then not found, and the <C>catch</C> handles that.</li>
+        <li><C>x</C> can&apos;t be parsed, so <C>try</C> leaves <C>find</C> with the <C>ParseError</C>, and its caller handles it.</li>
+      </ul>
+      <SrcRef file="tests/conformance/05-errors/a-calls-catch-handles-only-its-own-error.kav" label="tested" />
     </>
   ),
 };

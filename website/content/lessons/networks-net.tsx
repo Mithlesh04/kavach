@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
@@ -74,6 +75,7 @@ export const tlsDoc: LessonDoc = {
         <li>TLS 1.3, or 1.2 for servers without 1.3. The server&apos;s certificate must be valid for the host name, checked against the root certificates built into Kavach and any you add in <C>roots</C>.</li>
         <li><C>protocols</C> offers protocols to the server (ALPN); <C>conn.protocol()</C> says which one it chose.</li>
         <li>With <C>clients</C>, a server accepts only clients whose certificate one of those authorities signed.</li>
+        <li><C>key</C> takes a <Link href="/docs/agents/secrets/">secret</Link>, so a key read with <C>env</C> or kept in a <C>secret</C> field needs no <C>reveal</C>.</li>
         <li>A slow or silent client can&apos;t hold up the others: handshakes go on side by side.</li>
       </ul>
       <Note>
@@ -82,6 +84,7 @@ export const tlsDoc: LessonDoc = {
       </Note>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="tools/cli/tests/tls.rs" label="the TLS test" />
+        <SrcRef file="tests/conformance/08-capabilities/tls-keys-take-secrets.kav" label="secret keys, tested" />
         <SrcRef file="docs/decisions/0021-tls-through-rustls.md" label="decision 0021" />
       </div>
     </>

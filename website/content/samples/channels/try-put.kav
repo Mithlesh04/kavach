@@ -1,0 +1,11 @@
+fn main() {
+    const (send, receive) = Channel<Int>(capacity: 2)
+    for n in 1..=3 {
+        print("try_put({n}): {send.try_put(n)}")
+    }
+    send.close()
+    print("try_put(4) after close: {send.try_put(4)}")
+    for n in receive {
+        print("took {n}")
+    }
+}

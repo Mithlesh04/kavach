@@ -41,7 +41,7 @@ import {
 } from "./concurrency";
 import { howTasksRunDoc, turnsDoc } from "./concurrency-running";
 import { httpCallDoc, httpDoc, httpJsonDoc, httpServeDoc, httpSessionDoc, httpSocketsDoc } from "./networks-http";
-import { cryptoDoc } from "./stdlib-crypto";
+import { base64Doc, cryptoDoc } from "./stdlib-crypto";
 import {
   grpcClientStreamDoc, grpcDoc, grpcProtoDoc, grpcServerStreamDoc, grpcTwoWayDoc, socketsDoc, tcpDoc, timeoutsDoc,
   tlsDoc, udpDoc,
@@ -292,6 +292,7 @@ export const lessons: Record<string, LessonDoc> = {
   "standard-library/clipboard": clipboardDoc,
   "standard-library/devices": devicesDoc,
   "standard-library/cryptography": cryptoDoc,
+  "standard-library/base64": base64Doc,
 
   "standard-library/json": jsonDoc,
   "standard-library/json/json-values": jsonValuesDoc,

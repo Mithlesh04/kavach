@@ -1,0 +1,6 @@
+try_put(1): true
+try_put(2): true
+try_put(3): false
+try_put(4) after close: false
+took 1
+took 2

@@ -244,6 +244,12 @@ export const fakesDoc: LessonDoc = {
         clock starts at a fixed date, and <C>sleep</C>, <C>after</C> and each round of <C>every</C> move it on at
         once, taking no time.
       </P>
+      <P>
+        <C>Env</C> is a fake too: <C>env(name)</C> reads no real variable. Each name is decided the first time a case
+        reads it: not set, so the call fails, or set to generated text (empty, a word, a number, a URL or{" "}
+        <C>true</C>). It stays that way for the rest of the case, and is a secret, as a real one is.
+      </P>
+      <SrcRef file="tests/conformance/11-testing/env-fake-stays-the-same-in-a-case.kav" label="Env fake, tested" />
     </>
   ),
 };

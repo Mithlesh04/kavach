@@ -53,7 +53,37 @@ export const cryptoDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={CRYPTO_SPEC} label="spec 14.19 · std.crypto" />
         <SrcRef file="tests/conformance/14-standard-library/crypto-hashes-signs-and-seals.kav" label="tested" />
+        <SrcRef file="tests/conformance/14-standard-library/crypto-checks-rsa-signatures.kav" label="RSA checks, tested" />
         <SrcRef file="docs/decisions/0093-std-crypto.md" label="decision 0093" />
+      </div>
+    </>
+  ),
+};
+
+// ---------- Base64 ----------
+
+export const base64Doc: LessonDoc = {
+  lead: "std.base64 writes bytes as text and reads them back, in the standard alphabet or the URL-safe one. Tokens, cookies and email use it.",
+  simple: <>Some places only carry plain letters, like a form that takes text only. Base64 turns any bytes into letters, digits and a few signs, so they travel safely, and turns them back into the same bytes at the other end.</>,
+  minutes: 3,
+  before: ["standard-library/bytes"],
+  body: (
+    <>
+      <Ex name="base64/encode" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>url: true</C> uses <C>-</C> and <C>_</C> instead of <C>+</C> and <C>/</C>, so the text can go in a URL. Tokens such as JWTs use it, with <C>pad: false</C>.</li>
+        <li>It needs no capability: it changes nothing outside the program.</li>
+      </ul>
+      <H2>Strict decoding</H2>
+      <P>
+        Decoding is strict, so one value has one text, which signed tokens rely on. Padding may be left out, but when
+        it is there it must be right:
+      </P>
+      <Ex name="base64/strict" />
+      <ModuleTable file="20-base64.md" number="14.20" first="Function" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/14-standard-library/20-base64.md" label="spec 14.20 · std.base64" />
+        <SrcRef file="tests/conformance/14-standard-library/base64-encodes-and-decodes.kav" label="tested" />
       </div>
     </>
   ),

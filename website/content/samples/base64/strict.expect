@@ -1,0 +1,6 @@
+aGk=: 2 bytes
+aGk: 2 bytes
+aG!=: a bad character at 2
+a: a length no encoding gives
+aGk==: wrong padding
+aGl=: bits after the last byte

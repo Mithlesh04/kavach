@@ -1,0 +1,26 @@
+type ParseError = Empty | NotANumber
+type LookupError = Missing(id: Int)
+
+fn parse(text: String) -> Int ! ParseError {
+    if text.is_empty() {
+        fail ParseError.Empty
+    }
+    Int(text) catch _ => fail ParseError.NotANumber
+}
+
+fn lookup(id: Int) -> String ! LookupError {
+    if id == 7 {
+        return "pens"
+    }
+    fail LookupError.Missing(id: id)
+}
+
+fn find(text: String) -> String ! ParseError {
+    lookup(try parse(text)) catch e => "nothing: {e}"
+}
+
+fn main() {
+    for text in ["7", "8", "x"] {
+        print(find(text) catch e => "find failed: {e}")
+    }
+}

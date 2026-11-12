@@ -1,0 +1,9 @@
+use std.base64
+
+fn main() ! Base64Error {
+    const data = "hi?>".bytes()
+    print(base64.encode(data))
+    print(base64.encode(data, url: true, pad: false))
+    print((try base64.decode("aGk/Pg==")).text() ?? "")
+    print((try base64.decode("aGk_Pg", url: true)).text() ?? "")
+}
