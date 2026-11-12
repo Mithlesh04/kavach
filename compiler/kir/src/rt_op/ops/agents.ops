@@ -1,0 +1,71 @@
+// RtOp, agents: Agents, their journals and `ask`. Read by `compiler/kir/build.rs`.
+/// A send to an agent (`bot.request(order)`, spec 8.8): the closure of
+/// its thunk, run at once, the agent, and the handler's name. Its value;
+/// it fails with the handler's error, or `panicked: …` when the
+/// handler panics (decision 0076, `lower_events.rs`).
+AgentRun,
+/// Agents (spec 8.3, `lower_agents.rs`): a new guard from the agent's
+/// description; the stack of running agents (push the agent and its
+/// kind, pop, the running one if of this kind).
+AgentStart,
+AgentPush,
+AgentPop,
+AgentCurrent,
+/// The checks of one capability call (`lower_guard.rs`): begin with
+/// the guard, the call's number and its arguments; the totals `count`
+/// and `sum(x)` of a rule; a rule's verdict (0 passes, 1 refuses, 2
+/// waited for the `ask`s under way: check again); an approval's condition
+/// held; who approves; why it was refused; done (denied, ran with a
+/// value, failed with an error).
+AgentBegin,
+AgentCount,
+AgentSum,
+AgentLimit,
+AgentNeed,
+AgentDecide,
+AgentReason,
+AgentDone,
+/// `ask<T>(prompt)` (spec 8.4) with the request the compiler wrote
+/// and the decoding templates of `T`: waits, can fail.
+AiAsk,
+/// Durable agents (spec 8.5, `runtime/native/src/rt_journal.rs`):
+/// open an agent's journal; the next unfinished event and its
+/// arguments; an event begins and ends; before a call, what the
+/// journal has for it, and that value; after it, its outcome.
+JournalOpen,
+JournalNext,
+JournalArg,
+JournalBegin,
+JournalEnd,
+JournalRecorded,
+JournalValue,
+JournalRecord,
+/// `tokens` in a `limit Ai` rule (spec 8.3): the call being checked
+/// and the rule; gives what the window's asks took, with those under
+/// way counted as the agent's settings say.
+AgentTokens,
+/// `agents.call_key()` (spec 14.16): the running call's idempotency
+/// key, or `none` (`runtime/native/src/rt_journal.rs`).
+JournalCallKey,
+/// `approve … within d`: the request may wait `d` (decision 0072).
+AgentWithin,
+/// `agents.request_fields()` and `agents.answer_request(fields)` (spec
+/// 14.16), with the project's agents folder first; answering can fail
+/// (`runtime/native/src/rt_approvals.rs`).
+AgentApprovals,
+AgentAnswer,
+/// An event run again after a restart (decision 0072,
+/// `runtime/native/src/rt_replays.rs`): its task, from closure `a`,
+/// of agent `b`; `start` waits for it until it ends or asks a person.
+AgentReplay,
+AgentReplayWait,
+/// The replayed event ended: its value (`b` is 1) or error (2), in
+/// tuple `c`, to the audit log when `start` no longer waits for it.
+AgentReplayEnd,
+/// Whether a replayed event of handler `b` with arguments in tuple `c`
+/// still waits for a person; then its task, for the send to join.
+AgentJoining,
+AgentJoined,
+/// An `ask`'s check (spec 8.3): `b` is its model's `max_tokens`; with
+/// the prompt's length, the most the `ask` can take.
+AgentBound,

@@ -22,6 +22,7 @@ const MODULES: &[(&str, Option<&str>)] = &[
     ("clipboard", Some("Clipboard")),
     ("devices", Some("Serial")),
     ("crypto", None),
+    ("base64", None),
 ];
 
 pub(crate) fn number(t: &Ty) -> bool {
@@ -252,6 +253,8 @@ impl Checker<'_> {
             ("devices", "close_serial") => (vec![p("id", &int)], Ty::Unit),
             // std.crypto (spec 14.19): no capability.
             ("crypto", _) => self.crypto_signature(name)?,
+            // std.base64 (spec 14.20): no capability.
+            ("base64", _) => self.base64_signature(name)?,
             // The clipboard (spec 14.17), behind `Clipboard`.
             ("clipboard", "read_text") => {
                 let e = self.builtin_ty("ClipboardError");
@@ -429,8 +432,12 @@ impl Checker<'_> {
                 self.error(span, format!("a contract can't call `{module}.{name}`: it uses {cap}, and contracts must be pure (spec 7.5)"));
             }
         }
-        // Keys and passwords are often secrets: std.crypto takes them (8.7).
-        let secret = vec![module == "crypto"; params.len()];
+        // Keys and passwords are often secrets: std.crypto takes them, and
+        // so does a TLS private `key` (8.7).
+        let secret: Vec<bool> = params
+            .iter()
+            .map(|(n, ..)| module == "crypto" || (module == "net" && n == "key"))
+            .collect();
         self.args_with(
             args,
             &params,

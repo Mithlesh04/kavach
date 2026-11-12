@@ -87,6 +87,7 @@ for order in receive {
 | Method | Does |
 |---|---|
 | `send.put(v)` | Adds `v`. When the channel already holds `capacity` values, it waits until one is taken. Putting into a closed channel panics. |
+| `send.try_put(v) -> Bool` | Adds `v` if the channel has room and gives `true`; when it is full or closed, gives `false` at once and `v` is let go. It never waits, so one slow taker can't hold up a task that sends to many. |
 | `send.close()` | No more values will come. Values already in the channel can still be taken. |
 | `receive.take()` | The next value, in the order they were put, as `T?`. It waits while the channel is empty, and gives `none` once the channel is closed and empty. |
 

@@ -27,6 +27,7 @@ pub mod rt;
 mod rt_agents;
 mod rt_ai;
 mod rt_approvals;
+mod rt_base64;
 pub mod rt_big_decimal;
 pub mod rt_bigint;
 mod rt_bytes;
@@ -76,6 +77,7 @@ mod small_blocks;
 // The entries of the feature groups, for code the JIT compiles.
 pub use rt_agents::kv_rt_agents;
 pub use rt_ai::kv_rt_ai;
+pub use rt_base64::kv_rt_base64;
 pub use rt_clipboard::kv_rt_clipboard;
 pub use rt_crypto::kv_rt_crypto;
 pub use rt_drops::kv_rt_drops;

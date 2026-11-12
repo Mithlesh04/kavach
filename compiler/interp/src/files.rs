@@ -118,13 +118,18 @@ impl<'a> Interp<'a> {
     /// when the loop should end.
     fn header_failed(&mut self, iter: &'a Expr, err: Value<'a>) -> Result<(), Flow<'a>> {
         match &iter.kind {
-            ExprKind::Try { context, .. } => Err(Flow::Fail(match context {
-                Some(c) => {
-                    let text = self.eval(c)?.display();
-                    Value::Context(Rc::from(text), Box::new(err))
-                }
-                None => err,
-            })),
+            ExprKind::Try { context, .. } => {
+                let err = match context {
+                    Some(c) => {
+                        let text = self.eval(c)?.display();
+                        Value::Context(Rc::from(text), Box::new(err))
+                    }
+                    None => err,
+                };
+                // It leaves the function (spec 5.3).
+                self.leaving = true;
+                Err(Flow::Fail(err))
+            }
             ExprKind::Catch {
                 binding, handler, ..
             } => {

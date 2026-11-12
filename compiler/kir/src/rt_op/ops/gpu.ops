@@ -1,0 +1,52 @@
+// RtOp, gpu: The GPU. Read by `compiler/kir/build.rs`.
+/// `list.map(f)` on the GPU (spec 15.2): the list, the closure and the
+/// kernel's WGSL; gives the new list, or `none` for the CPU to do it.
+GpuMap,
+/// With `KAVACH_GPU=check`: the CPU's list from a `map` the GPU also
+/// ran, compared with the GPU's; gives the CPU's list.
+GpuCheck,
+/// `GpuMap` whose result may stay in GPU memory only: every read of
+/// it is a `GpuFetch` first (`gpu_stay.rs`).
+GpuMapStay,
+/// A list, with its items brought back from GPU memory if a
+/// `GpuMapStay` left them only there.
+GpuFetch,
+/// `list.sum(f)` of `Int32` or `UInt32` on the GPU (spec 15.2): the
+/// list, the closure and the kernel's WGSL; gives the sum when
+/// `GpuReduced` says the GPU did it.
+GpuSum,
+/// `list.min()` on the GPU: the list, a placeholder and the kernel.
+GpuMin,
+/// `list.max()` on the GPU, as `GpuMin`.
+GpuMax,
+/// Whether the last `GpuSum`, `GpuMin` or `GpuMax` gave its value; if
+/// not, the CPU works it out, in order.
+GpuReduced,
+/// A `GpuSum`, `GpuMin` or `GpuMax` that doesn't wait (`gpu_later.rs`):
+/// its value comes through the `GpuLaterNext` after it.
+GpuSumLater,
+GpuMinLater,
+GpuMaxLater,
+/// A new queue of reductions that didn't wait.
+GpuLaterNew,
+/// Adds the reduction just made to queue `a`, and gives whether one is
+/// due, which its statement then runs for: the oldest, when too many
+/// are under way or the CPU must do the newest, or when `b` is 1 and
+/// any is left.
+GpuLaterNext,
+/// The value of the reduction `GpuLaterNext` gave; `GpuReduced` says
+/// whether it has one.
+GpuLaterValue,
+/// Its list, for the CPU to work it out when it has no value.
+GpuLaterList,
+/// `list.filter(f)` on the GPU (spec 15.2): the list, the closure and
+/// the kernel's WGSL; gives the new list, or `none` for the CPU to do
+/// it.
+GpuFilter,
+/// `GpuFilter` whose result may stay in GPU memory only, as
+/// `GpuMapStay`.
+GpuFilterStay,
+/// At the start of a program with GPU kernels: open the GPU and
+/// compile the kernels (its text, joined by `\0`) on a background
+/// thread, while the program does its first work.
+GpuWarm,

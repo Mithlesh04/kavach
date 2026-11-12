@@ -1,0 +1,47 @@
+// RtOp, net: `std.net` and `std.crypto`. Read by `compiler/kir/build.rs`.
+/// `std.net` (spec 14.10). All but `address` and `close` can fail, and
+/// all but those and `listen` wait.
+NetListen,
+NetConnect,
+NetAccept,
+NetAddress,
+NetRead,
+NetWrite,
+NetClose,
+/// `net.connect_tls(address)` (decision 0021).
+NetConnectTls,
+/// UDP: `net.bind`, `sock.send(data, to)`, `sock.receive()`. They can
+/// fail; sending and receiving wait.
+NetBind,
+NetSend,
+NetReceive,
+/// Sets the deadline, in ms, of the network op that comes right after
+/// it (`.timeout(d)`, spec 14.10).
+NetDeadline,
+/// `conn.protocol()`: what TLS agreed to speak (ALPN).
+NetProtocol,
+/// QUIC (spec 14.10, decision 0022): `net.connect_quic(address,
+/// protocols)`; a connection's `open_stream(two_way)`,
+/// `write_stream(stream, data, done)` (the stream and `done` in one
+/// operand: `stream * 2 + done`) and `read_stream(stream)`. All wait
+/// and can fail.
+NetConnectQuic,
+NetOpenStream,
+NetWriteStream,
+NetReadStream,
+/// `net.listen_tls` (spec 14.10): the address, the protocols, and the
+/// certificate, key and clients' roots in a list (`lower_tls.rs`).
+NetListenTls,
+/// A WebSocket handshake's piece `c` (decision 0092): 0 the accept
+/// value of key `a`, 1 a client's key, 2 a frame's mask.
+NetWebSocket,
+/// `std.crypto` (spec 14.19, decision 0093): the function is operand
+/// `c` (`kavach_kir::CRYPTO`), the others its arguments; those that can
+/// fail are `CryptoFails`; a signature check takes three arguments.
+Crypto,
+CryptoFails,
+CryptoEd25519Verify,
+CryptoP256Verify,
+/// `crypto.rsa_verify` (spec 14.19): `a` is a list of the modulus, the
+/// exponent, the data and the signature; `b` whether PSS.
+CryptoRsaVerify,

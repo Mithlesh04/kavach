@@ -470,6 +470,7 @@ crate::rt_data::entry!(kv_rt_tasks, |op, a, b, c, code, line| {
             | RtOp::ChanEnded
             | RtOp::ChanTakeFor
             | RtOp::ChanPutFor
+            | RtOp::ChanTryPut
     ) {
         crate::rt_channels::chan_op(op, a, b, c, code, line)
     } else {

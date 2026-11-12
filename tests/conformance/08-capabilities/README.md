@@ -34,6 +34,7 @@ Conformance tests for spec chapter [8. Capabilities and agents](../../../docs/sp
 | 8.7 | [secret-results-stay-secret.kav](secret-results-stay-secret.kav) | The result of a `-> secret T` function is a secret where it is called. | compile error |
 | 8.7 | [secret-results-pass-where-secrets-may-go.kav](secret-results-pass-where-secrets-may-go.kav) | A secret result goes on to `secret` parameters, other `-> secret` functions and `reveal`. | runs |
 | 8.7, 3.3 | [lambdas-return-no-secrets.kav](lambdas-return-no-secrets.kav) | A lambda can't return a secret. | compile error |
+| 8.7, 14.10 | [tls-keys-take-secrets.kav](tls-keys-take-secrets.kav) | The private `key` of `net.listen_tls` and `net.connect_tls` takes a secret. | runs |
 | 8.4 | [ask-fails-with-ai-error.kav](ask-fails-with-ai-error.kav) | `ask` fails with an `AiError`, so a function failing with `AiError` passes it on with `try`, and a `match` names its variants. | runs |
 | 8.3, 8.4 | [agents-choose-their-model.kav](agents-choose-their-model.kav) | An agent's `model` and a call's `model:` are `Model` values known when the program is built: written there, or from a function with no parameters. | runs |
 | 8.4 | [a-model-must-be-known-when-built.kav](a-model-must-be-known-when-built.kav) | A `Model` made from a value known only at run time is a compile error. | compile error |

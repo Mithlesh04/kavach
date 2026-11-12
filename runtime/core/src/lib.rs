@@ -4,6 +4,7 @@
 //! agents' guards (spec 8.3).
 
 pub mod agents;
+pub mod base64;
 mod big_decimal;
 pub mod clipboard;
 mod decimal;

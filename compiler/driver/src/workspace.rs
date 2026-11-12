@@ -89,17 +89,27 @@ pub fn members(root: &Path) -> Result<Vec<PathBuf>, String> {
 /// project at `project`: the root of the workspace it is a member of, or
 /// the project itself.
 pub fn home(project: &Path) -> PathBuf {
-    let canonical = |p: &Path| std::fs::canonicalize(p).unwrap_or_else(|_| p.to_path_buf());
-    let me = canonical(project);
     for dir in project.ancestors().skip(1) {
-        if listed(dir).is_none() {
+        let Some(patterns) = listed(dir) else {
             continue;
-        }
-        if members(dir)
-            .unwrap_or_default()
-            .iter()
-            .any(|m| canonical(m) == me)
-        {
+        };
+        // Matched by its path, so a listed member that is broken or
+        // missing doesn't hide this one.
+        let Ok(rel) = project.strip_prefix(dir) else {
+            continue;
+        };
+        let parts: Vec<String> = rel
+            .components()
+            .map(|c| c.as_os_str().to_string_lossy().to_string())
+            .collect();
+        let fits = |pattern: &String| {
+            let want: Vec<&str> = pattern
+                .split('/')
+                .filter(|p| !p.is_empty() && *p != ".")
+                .collect();
+            want.len() == parts.len() && want.iter().zip(&parts).all(|(w, p)| matches(w, p))
+        };
+        if patterns.iter().any(fits) {
             return dir.to_path_buf();
         }
     }
@@ -109,6 +119,30 @@ pub fn home(project: &Path) -> PathBuf {
 #[cfg(test)]
 mod tests {
     use super::matches;
+
+    #[test]
+    fn a_member_finds_its_root_though_another_member_is_missing() {
+        let root = std::env::temp_dir().join(format!("kavach-ws-home-{}", std::process::id()));
+        let member = root.join("packages").join("router");
+        std::fs::create_dir_all(&member).unwrap();
+        std::fs::write(
+            root.join("kavach.toml"),
+            "[workspace]
+members = [\"packages/*\", \"templates/gone\"]
+",
+        )
+        .unwrap();
+        std::fs::write(
+            member.join("kavach.toml"),
+            "[package]
+name = \"router\"
+",
+        )
+        .unwrap();
+        assert_eq!(super::home(&member), root);
+        assert_eq!(super::home(&root.join("elsewhere")), root.join("elsewhere"));
+        let _ = std::fs::remove_dir_all(&root);
+    }
 
     #[test]
     fn stars_stand_for_any_text() {

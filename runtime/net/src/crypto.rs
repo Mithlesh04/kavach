@@ -140,6 +140,19 @@ pub fn p256_verify(public: &[u8], data: &[u8], sig: &[u8]) -> bool {
         .is_ok()
 }
 
+/// Whether `sig` is an RSA signature of `data` with SHA-256 by the public
+/// key with modulus `n` and exponent `e` (big-endian, as a JWK has them):
+/// RSASSA-PSS when `pss`, else PKCS #1 v1.5. Keys of 2048 to 8192 bits.
+pub fn rsa_verify(n: &[u8], e: &[u8], data: &[u8], sig: &[u8], pss: bool) -> bool {
+    let key = signature::RsaPublicKeyComponents { n, e };
+    let params = if pss {
+        &signature::RSA_PSS_2048_8192_SHA256
+    } else {
+        &signature::RSA_PKCS1_2048_8192_SHA256
+    };
+    key.verify(params, data, sig).is_ok()
+}
+
 pub fn aes_key() -> Vec<u8> {
     random_bytes(32)
 }
@@ -186,6 +199,35 @@ pub fn decrypt(key: &[u8], sealed: &[u8]) -> Done<Vec<u8>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// A 2048-bit key made with OpenSSL, and its two signatures of
+    /// "order 7".
+    const RSA_N: &str = "9ff5faaa63eb1ad63fbca04f1c53ab1efa28e998526d635bd09eef38e92ae7e8c60f0d12ae19b75351d4ca70c3419c4f45a55ba89e97047b96180adb0e234eff89d93e46efdd0b27de2c08621a7368149d587eda0c778dd92a928f420fb364a9155d80bddd9440af40b0768cb221819fa0c7f05c1181719cd2324914ef9752ffa63ef763a7e04988f5cd35895de8edb7943e37069baac0e20647a929572b87b84a4d37ef1b51bdb0fd791d6735f3520e2eca884c945377474515a9645da6091fd0744ec74efb1e5a22ad0f669b89eb784bfbd82d1924d989e79ce868f5499e0686f21bf96d277b8eee7784bfc5190086fb3e09ca2f3fed5a6928a129b18c03b1";
+    const RSA_PKCS1: &str = "6c46a87062d9c1208828ad3704826b79f8a71d38881ee16cffc8ef732deda2c77528f6d34a081b1495c77801b425160e677a7a2a4a8b70ec5190f86b0f448edafd87dbadedb8174a79fa57dc0e57480f75f8d845d27750aa332cff43a251af277d1076fa61cac5d264324f47ef148eacfb370830c3e2009dd392056a778f6c772510f96c3eeb1ceb1f4e805d0ae4a070bb90c784031072a0926d1bd9fcaa38c4e6950e076e90116acd5b4981ef5b76dcb1950ec428615283b6294e914c8438ecb4b83ebd33b206552227ef14196b3dde30d8cfdbbd1384ba8a20134b996711de8ec9490267e6d24c52c73bc6976923a4e4cb40e4e077e548f265fbfb2cccbf31";
+    const RSA_PSS: &str = "6f40a54e2c8d3da674eaba7a44cf97b97062a0087c719352ba2373d4eaa6ca9c3ec82151afa5256cdd99bce7fba47f55d3e2ae88109f7114f912259e875b06a4c4a4a51340252c0cf9aeec2aed46dcc1828805f8586635d3985f7212baaa53038b32dce1bcac5463aba8133d58b6f4c34e0a2144ceda3b17b79b1f5ecd6f3f4442b9efd2a7a980b6e072913a10c02616c493e0156acdd6af65cf74ed2f4f75474dc7c1a822e300bacb6919d07f636f65257db34b510f771dd51b683c75ba649ba1383a3fdefc454e2bd4b5934d3cdefbe39c906c789d93e40ef0f7f457e23a6ef75ab25dce598f88649900614992c5ebfdd25847be4ab32859c386c9a0dc1d6e";
+
+    fn unhex(h: &str) -> Vec<u8> {
+        (0..h.len())
+            .step_by(2)
+            .map(|i| u8::from_str_radix(&h[i..i + 2], 16).unwrap())
+            .collect()
+    }
+
+    #[test]
+    fn rsa_signatures_are_checked() {
+        let (n, e) = (unhex(RSA_N), [1, 0, 1]);
+        assert!(rsa_verify(&n, &e, b"order 7", &unhex(RSA_PKCS1), false));
+        assert!(rsa_verify(&n, &e, b"order 7", &unhex(RSA_PSS), true));
+        assert!(!rsa_verify(&n, &e, b"order 8", &unhex(RSA_PKCS1), false));
+        assert!(!rsa_verify(&n, &e, b"order 7", &unhex(RSA_PKCS1), true));
+        assert!(!rsa_verify(
+            &n[1..],
+            &e,
+            b"order 7",
+            &unhex(RSA_PKCS1),
+            false
+        ));
+    }
 
     #[test]
     fn each_function_does_what_its_library_does() {

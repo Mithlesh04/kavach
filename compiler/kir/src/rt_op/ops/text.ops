@@ -1,0 +1,64 @@
+// RtOp, text: Text, numbers, regular expressions, panics and `std.base64`. Read by `compiler/kir/build.rs`.
+StrLen,
+StrIsEmpty,
+StrUpper,
+StrLower,
+StrTrim,
+StrContains,
+StrStartsWith,
+StrEndsWith,
+StrRepeat,
+WrappingAdd,
+WrappingSub,
+WrappingMul,
+CheckedAdd,
+CheckedSub,
+CheckedMul,
+CheckedDiv,
+/// More methods of text and lists (spec 14.2).
+StrReplace,
+StrLines,
+StrChars,
+StrIndexOf,
+StrSlice,
+MathSqrt,
+MathPow,
+MathFloor,
+MathCeil,
+MathRound,
+/// `std.regex` (spec 14.8). Compiling can fail.
+RegexNew,
+RegexAdvanced,
+RegexIsMatch,
+RegexFind,
+RegexFindAll,
+RegexCaptures,
+RegexNamedCaptures,
+RegexReplace,
+RegexReplaceAll,
+RegexSplit,
+StrSplit,
+StrBytes,
+/// A `Float`'s IEEE 754 bits and back (spec 14.2): the slot already
+/// holds them, so the runtime gives its operand back.
+FloatBits,
+FloatFromBits,
+/// `panic(message)` with a message computed while the program runs
+/// (spec 5.6); a written-out message is `ExprKind::Panic`.
+PanicText,
+/// `a ** b` for whole numbers of the result's type (spec 1.8): panics
+/// when `b` is negative or the result doesn't fit.
+IntPow,
+/// `a.near(b)` on floats (spec 14.2).
+FloatNear,
+/// `d.round(places)` (`c` is 0) and `d.round_even(places)` (`c` is 1)
+/// on a `Decimal` (spec 14.2).
+DecRound,
+/// `match` on an `Error` (spec 5.5): the error it holds, past any
+/// `context`, as the optional of the result's type: `none` when it is
+/// of another type.
+ErrorAs,
+/// `std.base64` (spec 14.20): `encode` (data, URL-safe, padded) and
+/// `decode` (text, URL-safe), which can fail.
+Base64Encode,
+Base64Decode,

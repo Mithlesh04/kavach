@@ -224,6 +224,8 @@ impl Checker<'_> {
             }
             Ty::Builtin("Sender", args) => match name {
                 "put" => sig(vec![args.first().cloned().unwrap_or(Ty::Error)], Ty::Unit),
+                // Never waits: whether there was room (spec 9.4).
+                "try_put" => sig(vec![args.first().cloned().unwrap_or(Ty::Error)], boolean),
                 "close" => sig(vec![], Ty::Unit),
                 _ => None,
             },

@@ -39,6 +39,18 @@ crate::rt_data::entry!(kv_rt_crypto, |op, a, b, c, code, _line| {
     let ty = type_of(code);
     let bytes = |p: i64| with_bytes(p, <[u8]>::to_vec);
     let text = |p: i64| str_of(p);
+    // An RSA check: a list of four `Bytes`, and whether PSS.
+    if op == RtOp::CryptoRsaVerify {
+        let parts: Vec<Vec<u8>> = crate::heap::slots(a)
+            .iter()
+            .map(|p| bytes(*p as i64))
+            .collect();
+        release(a);
+        let [n, e, data, sig] = parts.as_slice() else {
+            return 0;
+        };
+        return i64::from(crypto::rsa_verify(n, e, data, sig, b != 0));
+    }
     // A signature check: three objects, nothing selected.
     if matches!(op, RtOp::CryptoEd25519Verify | RtOp::CryptoP256Verify) {
         let (public, data, sig) = (bytes(a), bytes(b), bytes(c));

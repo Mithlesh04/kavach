@@ -1,0 +1,21 @@
+// Rule: An invariant may call methods on the fields it names (`item.len() > 0`), in native code as in the interpreter.
+// Spec: 7.3
+// expect output: pen
+// expect panic: contract failed: invariant item.len() > 0
+
+type NewOrder {
+    item: String
+    qty: Int
+    tags: [String] = []
+
+    invariant item.len() > 0
+    invariant not item.starts_with(" ")
+    invariant tags.len() < 3
+}
+
+fn main() {
+    const o = NewOrder(item: "pen", qty: 2)
+    print(o.item)
+    const bad = NewOrder(item: "", qty: 1)
+    print(bad.qty)
+}

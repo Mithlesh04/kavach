@@ -90,7 +90,7 @@ impl<'a> Interp<'a> {
                 }
                 Ok(Value::Shared(v))
             }
-            "env" => match kavach_runtime_core::env_file::get(&arg.display()) {
+            "env" => match self.env_value(&arg.display()) {
                 Some(v) => Ok(self.str_value(&v)),
                 None => Err(Flow::Fail(Value::BuiltinError(
                     format!("environment variable `{}` is not set", arg.display()).into(),
@@ -228,6 +228,10 @@ impl<'a> Interp<'a> {
             (Value::Channel(c, true), "put") => {
                 let v = args.into_iter().next().unwrap_or(Value::Unit);
                 return self.channel_put(c, v, None, span);
+            }
+            (Value::Channel(c, true), "try_put") => {
+                let v = args.into_iter().next().unwrap_or(Value::Unit);
+                return Ok(Value::Bool(self.channel_try_put(c, v)));
             }
             (Value::Channel(c, true), "close") => return self.channel_close(c),
             (Value::Channel(c, false), "take") => return self.channel_take(c, None, span),

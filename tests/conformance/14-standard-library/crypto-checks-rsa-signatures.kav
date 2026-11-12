@@ -1,0 +1,23 @@
+// Rule: `crypto.rsa_verify(n, e, data, signature, pss: false)` checks an RSA signature with SHA-256 (RS256, or PS256 with `pss: true`) from a public key's modulus and exponent.
+// Spec: 14.19
+// expect output: true true
+// expect output: false false
+
+use std.base64
+use std.crypto
+
+fn main() ! Base64Error {
+    // A 2048-bit key made with OpenSSL, and two signatures of "order 7".
+    const modulus = "n/X6qmPrGtY/vKBPHFOrHvoo6ZhSbWNb0J7vOOkq5+jGDw0Srhm3U1HUynDDQZxPRaVbqJ6XBHuWGArbDiNO/4nZPkbv3Qsn3iwIYhpzaBSdWH7aDHeN2SqSj0IPs2SpFV2Avd2UQK9AsHaMsiGBn6DH8FwRgXGc0jJJFO+XUv+mPvdjp+BJiPXNNYld6O23lD43BpuqwOIGR6kpVyuHuEpNN+8bUb2w/XkdZzXzUg4uyohMlFN3R0UVqWRdpgkf0HROx077HloirQ9mm4nreEv72C0ZJNmJ55zoaPVJngaG8hv5bSd7ju53hL/FGQCG+z4Jyi8/7VppKKEpsYwDsQ=="
+    const pkcs1 = "bEaocGLZwSCIKK03BIJrefinHTiIHuFs/8jvcy3tosd1KPbTSggbFJXHeAG0JRYOZ3p6KkqLcOxRkPhrD0SO2v2H263tuBdKefpX3A5XSA91+NhF0ndQqjMs/0OiUa8nfRB2+mHKxdJkMk9H7xSOrPs3CDDD4gCd05IFanePbHclEPlsPusc6x9OgF0K5KBwu5DHhAMQcqCSbRvZ/Ko4xOaVDgdukBFqzVtJge9bdtyxlQ7EKGFSg7YpTpFMhDjstLg+vTOyBlUiJ+8UGWs93jDYz9u9E4S6iiATS5lnEd6OyUkCZ+bSTFLHO8aXaSOk5MtA5OB35UjyZfv7LMy/MQ=="
+    const pss_sig = "b0ClTiyNPaZ06rp6RM+XuXBioAh8cZNSuiNz1Oqmypw+yCFRr6UlbN2ZvOf7pH9V0+KuiBCfcRT5EiWeh1sGpMSkpRNAJSwM+a7sKu1G3MGCiAX4WGY105hfchK6qlMDizLc4bysVGOrqBM9WLb0w04KIUTO2jsXt5sfXs1vP0RCue/Sp6mAtuBykToQwCYWxJPgFWrN1q9lz3TtL091R03Hwagi4wC6y2kZ0H9jb2UlfbNLUQ93HdUbaDx1umSboTg6P978RU4r1LWTTTze++OckGx4nZPkDvD39FfiOm73WrJdzlmPiGSZAGFJksXr/dJYR75KsyhZw4bJoNwdbg=="
+    const n = try base64.decode(modulus)
+    const e = Bytes([1, 0, 1])
+    const data = "order 7".bytes()
+    const rs256 = crypto.rsa_verify(n, e, data, try base64.decode(pkcs1))
+    const ps256 = crypto.rsa_verify(n, e, data, try base64.decode(pss_sig), pss: true)
+    print("{rs256} {ps256}")
+    const changed = crypto.rsa_verify(n, e, "order 8".bytes(), try base64.decode(pkcs1))
+    const wrong_kind = crypto.rsa_verify(n, e, data, try base64.decode(pkcs1), pss: true)
+    print("{changed} {wrong_kind}")
+}

@@ -41,7 +41,7 @@ Hindley–Milner-style inference with unification. A number literal starts as an
 | `src/calls.rs` | Calls, record and variant construction, arguments |
 | `src/methods.rs` | Method calls: a type's own, built-ins, `.timeout(d)`, and fields holding functions (spec 3.4) |
 | `src/c_functions.rs` | C functions (spec 10.7): the types their signatures may use, and the Kavach functions C calls back |
-| `src/fields.rs` | Fields, indexing, `with`; secrets and arena escapes |
+| `src/fields.rs` | Fields, indexing, `with`, and arena escapes |
 | `src/patterns.rs` | Patterns, `if`/`match` branches, match coverage |
 | `src/builtins.rs` | Prelude functions |
 | `src/builtin_methods.rs` | Methods of built-in types, and `x.timeout(d)` |
@@ -58,6 +58,10 @@ Hindley–Milner-style inference with unification. A number literal starts as an
 | `src/deprecated.rs` | Calls to a deprecated function warn with its message (spec 12.6) |
 | `src/never_runs.rs` | Code that never runs (spec 4.7): `match` arms that can't match; `never_runs/chains.rs`, an `else if` an earlier condition covers; `never_runs/loops.rs`, a `while` that never ends, and a `for` over `0..=xs.len()` reading `xs[i]` (4.4) |
 | `src/gpu_fit.rs` | Whether a plain `fn` would fit the GPU's rules, for the message when a `gpu fn` calls one |
+| `src/secrets.rs` | Secrets (spec 2.11, 8.7): where a secret may go, and a secret returned without `-> secret` |
+| `src/std_crypto.rs` | The signatures of `std.crypto` (spec 14.19) |
+| `src/std_base64.rs` | The signatures of `std.base64` (spec 14.20) |
+| `src/cli_parse.rs` | `cli.parse<T>()` (spec 14.6): a record of options, or a union of commands |
 | `tests/types.rs` | Valid programs pass; each mistake gets its message on the right line |
 | `tests/from_other_languages.rs` | Habits from other languages (`===`, `null`, inheritance, `2nd_place`, …) get one clear error that says what Kavach does instead |
 | `tests/gpu_messages.rs` | A `gpu fn` calling a plain `fn` says whether it fits the GPU's rules, or what keeps it off |

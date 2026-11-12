@@ -109,6 +109,7 @@ All side effects go through capabilities (chapter 8). Because of that, `kavach t
 | `Fs` | In-memory file system |
 | `Net` | Generated responses, timeouts and connection errors; no real network |
 | `Clock` | A controlled clock that can jump forward |
+| `Env` | Each variable generated, or not set |
 | `Random` | Seeded, so every run can be repeated |
 | `Console` | Captured output |
 | `Ai` | `ask<T>` returns generated values of `T` (11.6); no model is called |
@@ -117,6 +118,7 @@ The built-in fakes in detail:
 
 - `Fs`: each case starts with an empty file system in memory. A file the case didn't write is decided the first time the case reaches it: missing (`NotFound`), or there with generated text; it stays that way for the rest of the case. Writes, appends, folders and removals happen in memory, and folders are made as needed. Like a real disk, the fake one can be full: for some paths, decided the first time the case writes there, every write fails with `Failed(path, "no space left on device")`, so code is tried on what it does when saving fails. `uses Fs("./data")` still limits the paths (8.1).
 - `Net`: nothing goes on the network. A `connect` or `connect_tls` either fails with a generated `NetError` (`Refused` or `TimedOut`) or reaches a fake server. The fake server takes what the case writes; a read gives a generated answer, then the end of the stream. A request that starts like HTTP (`GET /path HTTP/1.1`) gets an HTTP response with a generated status (200, 404 or 500) and body, so code built on `std.http` is tried on success and on failure. `listen`, `bind` and `connect_quic` fail.
+- `Env`: `env(name)` reads no real variable. Each name is decided the first time the case reads it: not set (the call fails), or set to generated text: empty, a word, a number, a URL or `true`. It stays that way for the rest of the case, and is a secret as a real one is (10.13).
 - `Clock`: every case starts at 2026-01-01 00:00 UTC, and `sleep` moves the clock forward at once instead of waiting. A `test` block chooses its own moment with `time.freeze` ([14.4](14-standard-library/04-time.md#the-clock-in-tests)).
 - `Random`: each `test` block and `example` draws from a seed made from the run's seed and its name, and each generated case from its arguments, so adding a test doesn't change another's numbers ([14.15](14-standard-library/15-random.md)).
 

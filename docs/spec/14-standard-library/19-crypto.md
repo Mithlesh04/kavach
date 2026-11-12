@@ -16,6 +16,7 @@ Hashes, message authentication, password hashing, signatures and encryption, fro
 | `crypto.ed25519_sign(key, data) -> Bytes ! CryptoError` | The signature of `data` |
 | `crypto.ed25519_verify(public, data, signature) -> Bool` | Whether `signature` is `data` signed by the key `public` goes with |
 | `crypto.p256_secret()`, `p256_public(key)`, `p256_sign(key, data)`, `p256_verify(public, data, signature)` | The same with ECDSA on P-256 and SHA-256, as JWTs (`ES256`) and WebAuthn use |
+| `crypto.rsa_verify(n, e, data, signature, pss: false) -> Bool` | Whether `signature` is `data` signed with RSA and SHA-256 by the public key with modulus `n` and exponent `e` (big-endian `Bytes`, as a JWK's `n` and `e` decode): PKCS #1 v1.5 (`RS256`), or PSS (`PS256`) with `pss: true`. Keys of 2048 to 8192 bits. Only checking: OpenID Connect providers sign ID tokens this way, and a service signs its own with Ed25519 or P-256 |
 | `crypto.aes_key() -> Bytes` | A new 256-bit AES key |
 | `crypto.encrypt(key, data) -> Bytes ! CryptoError` | `data` sealed with AES-256-GCM: a new random nonce, then the ciphertext and its tag |
 | `crypto.decrypt(key, sealed) -> Bytes ! CryptoError` | `data` back; fails with `Tampered` when `sealed` was changed or the key is another |

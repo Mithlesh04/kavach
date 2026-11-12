@@ -69,6 +69,31 @@ impl<'a> Lowerer<'a> {
             return self.inout_outcome(p, kind, ok, err, plain, line);
         }
         let (value, error) = (self.new_local(ok), self.new_local(err));
+        // `f(try g())`: arguments with statements of their own (a `try`
+        // that may leave) are worked out first, in order, into locals,
+        // so the call gets plain values.
+        let kind = match kind {
+            K::Call(f, args) if args.iter().any(|a| matches!(a.kind, K::Block(_))) => {
+                let mut stmts = Vec::new();
+                let mut plain_args = Vec::new();
+                for a in args {
+                    let (ty, at) = (a.ty, a.line);
+                    let held = self.new_local(ty);
+                    stmts.push(Stmt::Let(held, a));
+                    plain_args.push(self.local_expr(held, at));
+                }
+                let call = ir::Expr {
+                    kind: K::Call(f, plain_args),
+                    ty: ok,
+                    line,
+                };
+                K::Block(Block {
+                    stmts,
+                    value: Some(Box::new(call)),
+                })
+            }
+            kind => kind,
+        };
         let stmt = match kind {
             // A block that ends in the call (a network wait's `.timeout(d)`,
             // spec 14.10): its statements, then the call.
@@ -213,6 +238,10 @@ impl<'a> Lowerer<'a> {
         // leaves instead of giving a value, as `x ?? return y` does.
         if o.ok == Type::Unit || crate::lower::leaves(handler) {
             self.expr_stmt(handler, &mut on_error.stmts)?;
+        } else if matches!(handler.kind, ast::ExprKind::Fail(_)) {
+            // `catch e => fail …` leaves the function too: no value.
+            let failed = self.expr(handler)?;
+            on_error.stmts.push(Stmt::Expr(failed));
         } else {
             let handled = self.expr(handler)?;
             on_error.value = Some(Box::new(self.coerce(handled, o.ok)?));

@@ -206,33 +206,44 @@ impl<'a> Interp<'a> {
             )),
             ExprKind::DotLambda(body) => Ok(self.closure(Vec::new(), body, true)),
             ExprKind::Try { expr, context } => match self.eval(expr) {
-                Err(Flow::Fail(err)) => match context {
-                    Some(c) => {
-                        let text = self.eval(c)?.display();
-                        Err(Flow::Fail(Value::Context(Rc::from(text), Box::new(err))))
-                    }
-                    None => Err(Flow::Fail(err)),
-                },
+                Err(Flow::Fail(err)) => {
+                    let err = match context {
+                        Some(c) => {
+                            let text = self.eval(c)?.display();
+                            Value::Context(Rc::from(text), Box::new(err))
+                        }
+                        None => err,
+                    };
+                    self.leaving = true;
+                    Err(Flow::Fail(err))
+                }
                 other => other,
             },
             ExprKind::Catch {
                 expr,
                 binding,
                 handler,
-            } => match self.eval(expr) {
-                Err(Flow::Fail(err)) => {
-                    if let Some(def) = binding
-                        .as_ref()
-                        .and_then(|b| self.decl.get(&b.span.start).copied())
-                    {
-                        self.frame().vars.insert(def, err);
+            } => {
+                self.leaving = false;
+                let caught = self.eval(expr);
+                match caught {
+                    // One raised by `fail` or `try` in an argument leaves the
+                    // function instead (spec 5.3).
+                    Err(Flow::Fail(err)) if !self.leaving => {
+                        if let Some(def) = binding
+                            .as_ref()
+                            .and_then(|b| self.decl.get(&b.span.start).copied())
+                        {
+                            self.frame().vars.insert(def, err);
+                        }
+                        self.eval(handler)
                     }
-                    self.eval(handler)
+                    other => other,
                 }
-                other => other,
-            },
+            }
             ExprKind::Fail(x) => {
                 let v = self.eval(x)?;
+                self.leaving = true;
                 Err(Flow::Fail(v))
             }
             ExprKind::Return(value) => {

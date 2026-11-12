@@ -42,6 +42,9 @@ Not supported yet: agents, capabilities, `ask` and `unsafe` (Phase 2 and the nat
 | `src/guard.rs` | An agent's limits and approvals, evaluated per call; the bookkeeping is `runtime/core`'s |
 | `src/ai.rs` | `ask<T>` (spec 8.4): through the guard, the model call, the answer checked against `T` |
 | `src/journal.rs` | Durable agents (spec 8.5, decision 0025): events and calls written to the journal (`runtime/core`), and events run again after a crash |
+| `src/run.rs` | The two ways to run a file: `main` and its tests (`example` and `test`) |
+| `src/std_crypto.rs` | `std.crypto` (spec 14.19), from `runtime/net` |
+| `src/std_base64.rs` | `std.base64` (spec 14.20), from `runtime/core` |
 | [src/testing/](src/testing/README.md) | Generated tests: values, shrinking, found cases, fix suggestions (spec 11) |
 
 Tests live in [tools/cli/tests/conformance.rs](../../tools/cli/tests/conformance.rs): every conformance test, plus examples 01–04.

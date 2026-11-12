@@ -33,6 +33,15 @@ impl<'a> Interp<'a> {
                 }
                 let values = match (module.as_str(), name.name.as_str()) {
                     ("net", "connect_tls" | "listen_tls") => self.tls_args(&name.name, values),
+                    // Named flags in their places; one left out is `Unit`.
+                    ("base64", n) => {
+                        let names: &[&str] = match n {
+                            "encode" => &["data", "url", "pad"],
+                            _ => &["text", "url"],
+                        };
+                        let placed = crate::json::arrange(values, names).into_iter();
+                        placed.map(|v| v.unwrap_or(Value::Unit)).collect()
+                    }
                     _ => values.into_iter().map(|(_, v)| v).collect(),
                 };
                 return self.std_call(&module, &name.name, generics, values, e.span);
@@ -124,6 +133,8 @@ impl<'a> Interp<'a> {
                 self.frames.push(frame);
                 let result = self.eval(c.body);
                 let result = self.join_spawned(result, span);
+                // A lambda's `try` and `fail` are its own (spec 3.3).
+                self.leaving = false;
                 self.frames.pop();
                 match result {
                     Err(Flow::Return(v)) => Ok(v),

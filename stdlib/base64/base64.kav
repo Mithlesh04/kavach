@@ -1,0 +1,8 @@
+// std.base64 (spec 14.20): the errors of std.base64. Encoding and
+// decoding are built into the runtime (`runtime/core/src/base64.rs`),
+// which gives these values when decoding fails.
+
+/// Why text isn't base64: a character outside the alphabet (at its
+/// index), a length no encoding gives, wrong `=` padding, or bits after
+/// the last byte that aren't zero.
+pub type Base64Error = BadCharacter(at: Int) | BadLength | BadPadding | ExtraBits

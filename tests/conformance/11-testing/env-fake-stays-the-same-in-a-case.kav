@@ -1,0 +1,11 @@
+// Rule: In a generated test, `Env` is faked: each variable is not set or set to generated text, and keeps that for the rest of the case.
+// Spec: 11.5, 10.13
+// expect test pass
+
+fn same(name: String) -> Bool uses Env
+    ensure result
+{
+    const first = reveal(env("APP_{name}") catch _ => return true)
+    const again = reveal(env("APP_{name}") catch _ => return false)
+    first == again
+}

@@ -11,6 +11,7 @@ Conformance tests for spec chapter [5. Errors](../../../docs/spec/05-errors.md).
 | 5.2 | [try-passes-errors-on.kav](try-passes-errors-on.kav) | `try` returns the error to the caller when a call fails. | runs |
 | 5.3 | [catch-with-handler.kav](catch-with-handler.kav) | `catch e => { … }` runs code with the error and gives a value. | runs |
 | 5.3 | [catch-handler-can-leave.kav](catch-handler-can-leave.kav) | A `catch` handler may leave instead of giving a value: `return` from the function, or `continue` and `break` in a loop. | runs |
+| 5.3 | [a-calls-catch-handles-only-its-own-error.kav](a-calls-catch-handles-only-its-own-error.kav) | A call's `catch` handles only the call's own error: a `fail` or `try` in its arguments leaves the function. | runs |
 | 5.5 | [main-error-exits-with-1.kav](main-error-exits-with-1.kav) | When main returns an error, the program exits with code 1. | exit 1 |
 | 5.5 | [error-with-a-message.kav](error-with-a-message.kav) | `Error(message)` makes an error that is only its message; `main` returning it exits with code 1. | runs |
 | 5.5 | [match-on-an-error-names-its-type.kav](match-on-an-error-names-its-type.kav) | A `match` on an `Error` names variants with their type and ends with `_`; an arm matches the error's type and variant, through any `context`. | runs |

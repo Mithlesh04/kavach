@@ -1,0 +1,18 @@
+// Rule: `send.try_put(v)` adds `v` only when the channel has room and is open, and says whether it did; it never waits.
+// Spec: 9.4
+// expect output: true true false
+// expect output: 1 2
+// expect output: false
+
+fn main() {
+    const (send, receive) = Channel<Int>(capacity: 2)
+    const a = send.try_put(1)
+    const b = send.try_put(2)
+    const c = send.try_put(3)
+    print("{a} {b} {c}")
+    const x = receive.take() ?? 0
+    const y = receive.take() ?? 0
+    print("{x} {y}")
+    send.close()
+    print(send.try_put(4))
+}

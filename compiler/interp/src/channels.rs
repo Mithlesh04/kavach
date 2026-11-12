@@ -53,6 +53,20 @@ impl<'a> Interp<'a> {
 
     /// `send.put(v)`: waits while the channel is full, for at most `limit`
     /// (`.timeout`, spec 9.6).
+    /// `send.try_put(v)` (spec 9.4): in only when the channel is open and
+    /// has room; never waits.
+    pub(crate) fn channel_try_put(&mut self, c: &Channel<'a>, v: Value<'a>) -> bool {
+        let mut st = c.borrow_mut();
+        if st.closed || st.values.len() >= st.capacity {
+            return false;
+        }
+        st.values.push_back(v);
+        let taker = st.takers.pop_front();
+        drop(st);
+        self.unpark(taker);
+        true
+    }
+
     pub(crate) fn channel_put(
         &mut self,
         c: &Channel<'a>,

@@ -35,6 +35,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/lower_lambda/scan.rs` | What a lambda's body reads and changes, so a lambda changes only copies |
 | `src/lower_generic.rs` | Generic functions: type arguments and instances |
 | `src/lower_std.rs` | The standard library: `std` modules, more methods, sets (spec 14) |
+| `src/lower_base64.rs` | `std.base64` (spec 14.20): its two ops, flags in place |
 | `src/lower_every.rs` | `for tick in time.every_ms(ms)`: a loop whose rounds each wait for their start (spec 14.4) |
 | `src/lower_iface.rs` | Interface values (spec 2.15): a box of the value, its type and one closure per method; calls through the box |
 | `src/lower_json.rs` | `Json` literals, `j["key"]`, and `std.json` calls (spec 2.12) |
@@ -48,8 +49,10 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/passes.rs` | The passes after lowering, in order: files and tasks, inlining, dropping what no root reaches, then each function's own |
 | `src/library.rs` | What a library exports (`pub fn`s C can call) and its C header (spec 10.10) |
 | `src/collect.rs` | Lowering every function; one native code can't lower yet stops the build only when the program reaches it |
-| `src/rt_op.rs` | Built-in operations the runtime carries out (`RtOp`) |
-| `src/rt_op/codes.rs` | The code of each op, which native code passes to the runtime |
+| `build.rs` | Makes `RtOp` and `RtOp::ALL` from the op lists in `src/rt_op/ops/` |
+| `src/rt_op.rs` | Built-in operations the runtime carries out (`RtOp`), as `build.rs` makes them |
+| [`src/rt_op/ops/`](src/rt_op/ops/README.md) | The ops, one list per family: an op's code is its place in them |
+| `src/rt_op/codes.rs` | The fingerprint of the op codes, and the code of each op |
 | `src/rt_op/groups.rs` | What each op is like: whether it changes its receiver or can fail, and which runtime entry carries out its group |
 | `src/lower_optional.rs` | `a ?? b`: one map lookup when it can be, and `x ?? break` |
 | `src/lower_closure.rs` | Function values: closures, named functions as values, calls through them |
@@ -83,3 +86,4 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/version.rs` | Loop versioning: a loop that multiplies by a local it never changes gets a copy without checks, run when a test before it shows the local is small; the copy may have locals of its own (`src/version/own.rs`), so its ranges don't mix with the loop as written (tests in `src/version/tests.rs`) |
 | `src/walk.rs` | Looking through KIR: whether any expression in a block matches a test |
 | `src/encode.rs` | The shape table as text, carried inside executables |
+| `src/lower_selected.rs` | `std.crypto` and a WebSocket's handshake: one op per family, the function chosen by its number |

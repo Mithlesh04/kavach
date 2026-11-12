@@ -100,9 +100,14 @@ impl<'a> Lowerer<'a> {
                 let kind = K::Rt(RtOp::FloatFromBits, vec![bits]);
                 return Ok(ir::Expr { kind, ty, line });
             }
+            // A `Field` is one named in an `invariant` (spec 7.3).
             if !matches!(
                 self.c.resolution.defs[def].kind,
-                DefKind::Local { .. } | DefKind::Param | DefKind::Result | DefKind::Variant { .. }
+                DefKind::Local { .. }
+                    | DefKind::Param
+                    | DefKind::Result
+                    | DefKind::Variant { .. }
+                    | DefKind::Field
             ) {
                 return Err(self.unsupported(format!("`{}.{}`", id.name, name.name), span));
             }
@@ -329,6 +334,11 @@ impl<'a> Lowerer<'a> {
                 let value = values.pop().expect("a value");
                 values.push(self.coerce(value, t)?);
                 RtOp::ChanPut
+            }
+            (Some(Shape::Channel(t)), "try_put") => {
+                let value = values.pop().expect("a value");
+                values.push(self.coerce(value, t)?);
+                RtOp::ChanTryPut
             }
             (Some(Shape::Channel(_)), "close") => RtOp::ChanClose,
             (Some(Shape::Str), "bytes") => RtOp::StrBytes,

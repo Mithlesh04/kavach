@@ -22,6 +22,41 @@ const FAILING: [&str; 6] = [
 const WEBSOCKET: [&str; 3] = ["websocket_accept", "websocket_key", "websocket_mask"];
 
 impl<'a> Lowerer<'a> {
+    /// `crypto.rsa_verify(n, e, data, signature, pss: false)`: the four
+    /// `Bytes` in one list (operand `a`), `pss` in `b`.
+    pub(crate) fn rsa_verify(
+        &mut self,
+        args: &'a [ast::Arg],
+        ty: Type,
+        line: u32,
+        span: ast::Span,
+    ) -> Lowered<ir::Expr> {
+        const PARAMS: [&str; 5] = ["n", "e", "data", "signature", "pss"];
+        let mut given: [Option<&'a ast::Expr>; 5] = [None; 5];
+        for (i, a) in args.iter().enumerate() {
+            let at = match &a.name {
+                Some(n) => PARAMS.iter().position(|p| *p == n.name),
+                None => Some(i),
+            };
+            if let Some(slot) = at.and_then(|p| given.get_mut(p)) {
+                *slot = Some(&a.value);
+            }
+        }
+        let mut parts = Vec::new();
+        for e in &given[..4] {
+            let e = e.ok_or_else(|| self.unsupported("`crypto.rsa_verify()`", span))?;
+            parts.push(self.expr(e)?);
+        }
+        let item = parts[0].ty;
+        let list = self.list_type(item);
+        let pss = match given[4] {
+            Some(e) => self.expr(e)?,
+            None => self.at(K::Int(0), Type::Bool, line),
+        };
+        let parts = self.at(K::List(parts), list, line);
+        Ok(self.at(K::Rt(RtOp::CryptoRsaVerify, vec![parts, pss]), ty, line))
+    }
+
     /// `module.name(args)`: its arguments in operands `a` and `b`, its
     /// number in `c`.
     pub(crate) fn selected_call(

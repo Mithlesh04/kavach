@@ -1,0 +1,47 @@
+// RtOp, tasks: Tasks and channels. Read by `compiler/kir/build.rs`.
+/// Tasks (spec 9, `lower_tasks.rs`): `spawn` with the task's closure;
+/// `.wait()`, which gives the task's error when it failed; how many
+/// tasks the running one has spawned, and waiting for those spawned
+/// after such a mark (a function returning, 9.2); and a task's value
+/// or error, handed over when it ends.
+TaskSpawn,
+TaskWait,
+TaskMark,
+TaskJoin,
+TaskDone,
+TaskFail,
+/// Whether the running task is being cancelled (`cancel.rs`).
+TaskCancelling,
+/// `task.cancel()` (spec 9.6): the task stops at once, even while it
+/// only computes.
+TaskCancel,
+/// A point where a task cancelled with `cancel()` stops: a function's
+/// start, a loop round's (`stop_points.rs`). For such a task it sets
+/// the cancelling flag, as a cancelled wait does.
+TaskStopPoint,
+/// `spawn … within d` (spec 9.6): the task (given back) stops once the
+/// milliseconds given have passed.
+TaskWithin,
+/// `.timeout(d)` (spec 9.6) on `task.wait()`, `receive.take()` and
+/// `send.put(v)`: the same waits, for at most the milliseconds given
+/// last. They can fail.
+TaskWaitFor,
+ChanTakeFor,
+ChanPutFor,
+/// Channels (spec 9.4): a new one (both ends, as a tuple), `put`,
+/// `close`, and `take` (an optional).
+ChanNew,
+ChanPut,
+ChanClose,
+ChanTake,
+/// `for v in receive` over values held by value (spec 9.4): the next
+/// value itself, with no optional made for it; `ChanEnded` then says
+/// whether there was none, as the channel was closed and empty.
+ChanTakeValue,
+ChanEnded,
+/// At the start of a program with a `spawn cores` (spec 9.8): a
+/// worker thread per core, for those tasks.
+TaskParallel,
+/// `send.try_put(v)` (spec 9.4): puts `v` only when there is room, and
+/// says whether it did; it never waits.
+ChanTryPut,

@@ -1,0 +1,99 @@
+// RtOp, system: Files, the console, the command line, time, logs, the clipboard, serial ports, processes and random numbers. Read by `compiler/kir/build.rs`.
+/// `std.fs` (spec 14.3). The ones that can fail leave their error
+/// for `kv_take_error`, like `parse`.
+FsReadText,
+FsWriteText,
+FsAppendText,
+FsExists,
+FsList,
+FsRemove,
+FsCreateDir,
+/// `std.time`, `std.math`, `std.io`, `std.cli` (spec 14.4–14.6).
+TimeNowMs,
+TimeMonotonicMs,
+TimeSleepMs,
+IoReadLine,
+CliArgs,
+CliExit,
+/// `cli.parse<T>()`: the arguments as a tuple of optionals, one per
+/// field (`lower_cli.rs`).
+CliParse,
+TimeWaitUntil,
+/// `spawn process f(args)` (spec 9.8, `lower_process.rs`): in the
+/// parent's task, the call run in a child (it can fail); in the child,
+/// which call it runs, its arguments, and its value or error given
+/// back.
+ProcessRun,
+ProcessSite,
+ProcessArgs,
+ProcessDone,
+ProcessFailed,
+FsReadBytes,
+FsWriteBytes,
+FsWriteDurable,
+/// Streamed reads (spec 14.3): opening (which can fail), and the next
+/// line or piece, an optional.
+FsLines,
+FsChunks,
+ReaderNext,
+/// `uses Fs("folder")` (spec 8.1): file access kept inside the folder
+/// until the matching leave; enter gives the depth to go back to.
+FsScopeEnter,
+FsScopeLeave,
+/// `io.is_terminal()`: whether standard output is a terminal (spec 14.6).
+IoIsTerminal,
+/// `io.write(text)`: text without a line end, shown at once (14.6).
+IoWrite,
+/// `std.log` (spec 14.12): the `[log]` settings, passed once at the
+/// start of `main`; a line at a level.
+LogConfigure,
+LogWrite,
+/// OpenTelemetry export (spec 14.12): the collector, passed once at
+/// the start of `main`; an event's level, line and type name.
+OtlpConfigure,
+OtlpExport,
+/// `random_bits()` (spec 14.15): 64 random bits for `std.random`.
+RandomBits,
+/// `io.colors()`: whether standard output shows colors (spec 14.6).
+IoColors,
+/// The next item of a reader whose loop header has `try` or `catch`
+/// (spec 14.3): a failed read sets an `FsError` instead of panicking.
+ReaderTryNext,
+/// `io.read_hidden()` (spec 14.6): a line typed unseen.
+IoReadHidden,
+/// `cli.stop_hold(grace_ms)`, `cli.stop_asked()` and `cli.stop_done(id)`
+/// in `std/cli.kav` (decision 0088): holds on the program's stop.
+CliStopHold,
+CliStopAsked,
+CliStopDone,
+/// `time.zone_offset(name, ms)` (spec 14.4): seconds ahead of UTC, or
+/// `none` for an unknown zone (`runtime/native/src/rt_zone.rs`).
+ZoneOffset,
+/// `clipboard.read_text()` and `write_text(text)` (spec 14.17);
+/// both can fail (`runtime/native/src/rt_clipboard.rs`).
+ClipReadText,
+ClipWriteText,
+/// `env(name)` (spec 10.13): the variable, or an error when it is
+/// not set (`runtime/native/src/rt_std.rs`).
+EnvGet,
+/// A file's details as numbers (for `fs.info` in `std/fs.kav`), its
+/// permissions, renaming, copying and removing a folder with its
+/// contents (spec 14.3); all can fail (`runtime/native/src/rt_file_info.rs`).
+FileInfoStat,
+FileInfoSetReadOnly,
+FileInfoSetPermissions,
+FileInfoRename,
+FileInfoCopy,
+FileInfoRemoveAll,
+/// Serial ports (spec 14.18), by number: the ports there are, open
+/// (can fail), read and write (can fail), close
+/// (`runtime/native/src/rt_serial.rs`).
+SerialPorts,
+SerialOpen,
+SerialRead,
+SerialWrite,
+SerialClose,
+/// At the start of `main` (spec 10.5): what built the program, between
+/// its marks; whether it answers `--version` with it; and the
+/// compiler's `RtOp::FINGERPRINT`, which the runtime checks.
+CliVersion,

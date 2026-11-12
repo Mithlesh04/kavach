@@ -184,6 +184,7 @@ pub fn chan_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             put(a, b, crate::rt_tasks::limit(c, line), line);
             0
         }
+        RtOp::ChanTryPut => i64::from(try_put(a, b, line)),
         RtOp::ChanTakeFor => take(a, code, crate::rt_tasks::limit(b, line), line),
         RtOp::ChanTakeValue => {
             let v = next(a, None, line);
@@ -239,6 +240,32 @@ fn new(capacity: i64, code: i64, line: i32) -> i64 {
 }
 
 /// `put` (the value owned): waits while the channel is full.
+/// `send.try_put(v)` (spec 9.4): `value` goes in only when the channel is
+/// open and has room; never waits. Whether it went in.
+fn try_put(chan: i64, value: i64, line: i32) -> bool {
+    let item = item_type(chan);
+    let many = many_workers();
+    let value = sent(value, item, many, line);
+    let (done, taker, putter) = with(chan, |c| {
+        let mut st = c.lock();
+        if st.closed || st.values.len() >= c.capacity {
+            return (false, None, None);
+        }
+        st.values.push_back(value);
+        let next = if many {
+            st.putter_to_wake(c.capacity, many)
+        } else {
+            None
+        };
+        (true, st.takers.pop_front(), next)
+    });
+    taker.into_iter().chain(putter).for_each(|w| wake(many, w));
+    if !done {
+        release_slot(value as i64, item);
+    }
+    done
+}
+
 fn put(chan: i64, value: i64, limit: crate::rt_tasks::Limit, line: i32) {
     let item = item_type(chan);
     let many = many_workers();

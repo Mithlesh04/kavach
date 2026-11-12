@@ -96,6 +96,12 @@ fn type_mismatches() {
             &["2: expected a number, found `Bool`"],
         ),
         (
+            "fn main() {\n  const xs = [1] + [2]\n}",
+            &[
+                "2: expected a number, found `[Int]`: `+` doesn't join lists; copy one into a `let` (`let all = xs`) and `push` the other's items in a `for` loop (spec 2.2)",
+            ],
+        ),
+        (
             "fn main() {\n  const s = \"a\" + 1\n}",
             &["2: expected `String`, found `Int`"],
         ),

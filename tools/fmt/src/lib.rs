@@ -178,9 +178,17 @@ pub fn format(src: &str) -> Result<String, String> {
         if let Some(last) = on_line.last() {
             // A `>` that closes a `<` of its line ends a type, as in
             // `connections: Shared<Int>`: the next line doesn't continue it.
+            // `>>` closes two (`Shared<Slot<C>>`).
             let lt = on_line.iter().filter(|t| matches!(t, T::Lt)).count();
-            let gt = on_line.iter().filter(|t| matches!(t, T::Gt)).count();
-            let closes_type = matches!(last, T::Gt) && lt >= gt;
+            let gt: usize = on_line
+                .iter()
+                .map(|t| match t {
+                    T::Gt => 1,
+                    T::Shr => 2,
+                    _ => 0,
+                })
+                .sum();
+            let closes_type = matches!(last, T::Gt | T::Shr) && lt >= gt;
             previous = if closes_type { None } else { Some(last) };
         }
     }

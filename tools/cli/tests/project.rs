@@ -102,6 +102,15 @@ fn test_files_sit_beside_their_module() {
     let out =
         String::from_utf8_lossy(&test.stdout).to_string() + &String::from_utf8_lossy(&test.stderr);
     assert!(out.contains("✓ test \"total doubles every item\""), "{out}");
+    // A build leaves the tests out (spec 11.8), so native code builds it.
+    let built = kavach(&root, &["run", "--native"]);
+    assert_eq!(
+        String::from_utf8_lossy(&built.stdout),
+        "14
+",
+        "{}",
+        String::from_utf8_lossy(&built.stderr)
+    );
     write(
         "src/billing/invoice.test.kav",
         "test \"alone\" {\n    assert true\n}\n",

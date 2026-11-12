@@ -17,6 +17,7 @@ Conformance tests for spec chapter [9. Concurrency](../../../docs/spec/09-concur
 | 9.4 | [a-receiver-nobody-closes-deadlocks.kav](a-receiver-nobody-closes-deadlocks.kav) | When every task waits and none can go on, the program panics with a deadlock. | panic |
 | 9.4 | [put-into-a-closed-channel-panics.kav](put-into-a-closed-channel-panics.kav) | Putting a value into a closed channel panics. | panic |
 | 9.4 | [channel-capacity-is-at-least-one.kav](channel-capacity-is-at-least-one.kav) | A channel's capacity must be at least 1. | panic |
+| 9.4 | [try-put-never-waits.kav](try-put-never-waits.kav) | `send.try_put(v)` adds `v` only when the channel has room and is open, and says whether it did; it never waits. | runs |
 | 9.3 | [parallel-map-keeps-order-and-limit.kav](parallel-map-keeps-order-and-limit.kav) | `parallel_map` runs each item in its own task, at most `max` at a time, and gives the results in order. | runs |
 | 9.7 | [effects-keep-the-order-of-turns.kav](effects-keep-the-order-of-turns.kav) | Tasks may compute at the same time, but what they print happens in the order of their turns. | runs |
 | 9.8 | [each-spawn-chooses-how-it-runs.kav](each-spawn-chooses-how-it-runs.kav) | `spawn`, `spawn thread` and `spawn cores`, mixed in one program, print the same. | runs |

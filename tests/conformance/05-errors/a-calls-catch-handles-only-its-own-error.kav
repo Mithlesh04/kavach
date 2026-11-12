@@ -1,0 +1,49 @@
+// Rule: A call's `catch` handles only the call's own error: a `fail` or `try` in its arguments leaves the function.
+// Spec: 5.3
+// expect output: find failed: Parse(e: Bad(text: "x"))
+// expect output: looked up nothing: Missing(id: 7)
+// expect output: find failed: Parse(e: Bad(text: "x"))
+// expect output: looked up nothing: Missing(id: 7)
+
+type ParseError = Bad(text: String)
+type LookupError = Missing(id: Int)
+type AppError = Parse(e: ParseError) | Lookup(e: LookupError)
+
+fn parse(text: String) -> Int ! ParseError {
+    if text == "x" {
+        fail ParseError.Bad(text: text)
+    }
+    7
+}
+
+fn lookup(id: Int) -> String ! LookupError {
+    if id > 5 {
+        fail LookupError.Missing(id: id)
+    }
+    "item {id}"
+}
+
+// A `fail` in an argument's handler.
+fn find(text: String) -> String ! AppError {
+    lookup(parse(text) catch e => fail AppError.Parse(e: e)) catch e => {
+        return "looked up nothing: {e}"
+    }
+}
+
+fn parsed(text: String) -> Int ! AppError {
+    parse(text) catch e => fail AppError.Parse(e: e)
+}
+
+// A `try` in an argument.
+fn find_again(text: String) -> String ! AppError {
+    lookup(try parsed(text)) catch e => {
+        return "looked up nothing: {e}"
+    }
+}
+
+fn main() {
+    print(find("x") catch e => "find failed: {e}")
+    print(find("7") catch e => "find failed: {e}")
+    print(find_again("x") catch e => "find failed: {e}")
+    print(find_again("7") catch e => "find failed: {e}")
+}

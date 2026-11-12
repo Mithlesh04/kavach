@@ -7,6 +7,7 @@ Conformance tests for spec chapter [11. Testing](../../../docs/spec/11-testing.m
 | 11.2 | [panics-are-found.kav](panics-are-found.kav) | Every function is called with generated arguments; a panic is a failure. | tests fail |
 | 11.5 | [capability-errors-are-tried.kav](capability-errors-are-tried.kav) | The program's own capabilities are faked: a call gives a generated value or a declared error, so error paths are tried. | tests fail |
 | 11.5 | [capability-fakes-run-the-success-path.kav](capability-fakes-run-the-success-path.kav) | A function that handles every error of a faked capability passes. | tests pass |
+| 11.5, 10.13 | [env-fake-stays-the-same-in-a-case.kav](env-fake-stays-the-same-in-a-case.kav) | In a generated test, `Env` is faked: each variable is not set or set to generated text, the same for the rest of the case. | tests pass |
 | 11.5 | [fs-fake-is-in-memory.kav](fs-fake-is-in-memory.kav) | In a generated test, `Fs` is a file system in memory: what a case writes, it reads back, and nothing reaches the disk. | tests pass |
 | 11.5 | [fs-fake-disk-can-be-full.kav](fs-fake-disk-can-be-full.kav) | In a generated test, the fake disk is full for some paths, so code that can't handle a failed save is found. | tests fail |
 | 11.5 | [net-fake-never-reaches-the-network.kav](net-fake-never-reaches-the-network.kav) | In a generated test, `Net` never reaches the network: a connection fails with `Refused` or `TimedOut`, or reaches a fake server that answers HTTP with HTTP. | tests pass |

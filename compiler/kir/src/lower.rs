@@ -183,7 +183,8 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
                 }
             }
             ItemKind::Agent(a) => l.add_agent(a),
-            ItemKind::Test(_) => return Err(l.unsupported("tests", item.span)),
+            // `test` blocks are left out of a build (spec 11.8).
+            ItemKind::Test(_) => {}
         }
     }
     // Lowering a body can ask for new instances of generic functions,

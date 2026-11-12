@@ -35,7 +35,14 @@ impl Checker<'_> {
             "ed25519_secret" | "p256_secret" | "aes_key" => (vec![], bytes.clone()),
             "ed25519_public" | "p256_public" => (b(&["key"]), fails),
             "ed25519_sign" | "p256_sign" => (b(&["key", "data"]), fails),
-            "ed25519_verify" | "p256_verify" => (b(&["public", "data", "signature"]), boolean),
+            "ed25519_verify" | "p256_verify" => {
+                (b(&["public", "data", "signature"]), boolean.clone())
+            }
+            "rsa_verify" => {
+                let mut params = b(&["n", "e", "data", "signature"]);
+                params.push(("pss".to_string(), boolean.clone(), true));
+                (params, boolean)
+            }
             "encrypt" => (b(&["key", "data"]), fails),
             "decrypt" => (b(&["key", "sealed"]), fails),
             _ => return None,

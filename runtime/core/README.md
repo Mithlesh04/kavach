@@ -20,3 +20,4 @@ Code that both the interpreter and native code use, so the two give exactly the 
 | `src/agents.rs` | The bookkeeping of agents' guards (spec 8.3, 8.5, 8.6): limit totals over rolling windows, asking a person; the audit log in `src/agents/audit.rs`, the state file in `src/agents/state.rs` (tests in `src/agents/tests.rs`) |
 | `src/journal.rs` | The journal of a durable agent (spec 8.5, decision 0025): events, call outcomes and ends as JSON lines, and the events a crash left unfinished |
 | `src/log.rs` | Where `std.log` writes (spec 14.12): the console, and a file set aside when it grows past a size (tests in the file); whether standard output shows colors (`io.colors()`, spec 14.6) |
+| `src/base64.rs` | `std.base64` (spec 14.20): standard and URL-safe base64, decoded strictly |

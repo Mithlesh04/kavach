@@ -248,6 +248,7 @@ impl<'a> Interp<'a> {
             random: self.random.as_ref().map(|r| r.fork(id as u64)),
             inout_out: Vec::new(),
             next_generics: None,
+            leaving: false,
             fake: self.fake.clone(),
             frozen: self.frozen.clone(),
             drops: std::rc::Rc::clone(&self.drops),

@@ -26,6 +26,7 @@ impl RtOp {
                 | RtOp::FileInfoCopy
                 | RtOp::FileInfoRemoveAll
                 | RtOp::CryptoFails
+                | RtOp::Base64Decode
                 | RtOp::ClipReadText
                 | RtOp::ClipWriteText
                 | RtOp::SerialOpen
@@ -106,6 +107,8 @@ impl RtOp {
             "kv_rt_zone"
         } else if group("Crypto") {
             "kv_rt_crypto"
+        } else if group("Base64") {
+            "kv_rt_base64"
         } else if group("Clip") {
             "kv_rt_clipboard"
         } else if group("FileInfo") {

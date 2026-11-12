@@ -44,7 +44,23 @@ fn parent(path: &str) -> &str {
     path.rfind('/').map_or("", |i| &path[..i])
 }
 
+/// What a variable `env` reads in a case holds, when it is set.
+const ENV_VALUES: [&str; 5] = ["", "shop", "8080", "postgres://shop@db:5432/shop", "true"];
+
 impl World {
+    /// `env(name)` in a case (spec 11.5): not set, or one of
+    /// `ENV_VALUES`, decided from the case's seed and the name, so the
+    /// same case reads the same again.
+    pub(crate) fn env(&self, name: &str) -> Option<&'static str> {
+        let h = name
+            .bytes()
+            .fold(self.seed ^ 0x9e37_79b9_7f4a_7c15, |h, b| {
+                (h ^ u64::from(b)).wrapping_mul(0x0100_0000_01b3)
+            });
+        let pick = (h >> 33) % (ENV_VALUES.len() as u64 + 1);
+        ENV_VALUES.get(pick as usize).copied()
+    }
+
     /// What the case's world is decided from.
     pub(crate) fn seed(&self) -> u64 {
         self.seed
@@ -92,6 +108,15 @@ fn not_found() -> std::io::Error {
 }
 
 impl<'a> Interp<'a> {
+    /// `env(name)`: the case's fake value in a generated test (11.5),
+    /// else the real variable.
+    pub(crate) fn env_value(&self, name: &str) -> Option<String> {
+        match &self.fake {
+            Some(world) => world.borrow().env(name).map(str::to_string),
+            None => kavach_runtime_core::env_file::get(name),
+        }
+    }
+
     /// A `std.fs` call in a generated test, on the case's files in memory.
     pub(crate) fn fake_fs(&mut self, name: &str, args: &[Value<'a>]) -> Eval<'a> {
         let text = |i: usize| match args.get(i) {

@@ -1,0 +1,34 @@
+// RtOp, json: `std.json`: building, reading, encoding and decoding. Read by `compiler/kir/build.rs`.
+/// `std.json` (spec 2.12): parsing can fail, like `parse`.
+JsonParse,
+JsonStringify,
+/// `json.of(value)`: the value comes in a one-item tuple, whose type
+/// tells the runtime how to encode it.
+JsonOf,
+/// `json.decode<T>` and `json.decode_value<T>`: they can fail. The
+/// third operand holds the defaults of record fields
+/// (`runtime/native/src/rt_json_decode.rs`).
+JsonDecode,
+JsonDecodeValue,
+/// Reading a `Json` (decision 0032): `j[key]`, `j[i]` and the methods
+/// of `stdlib/json/json.kav` named after them, which on a parsed
+/// document read its tape (`runtime/native/src/rt_json_read.rs`).
+/// `JsonIntOr` and `JsonFloatOr` are `j.int() ?? fallback` and
+/// `j.float() ?? fallback` for a fallback that costs nothing to
+/// compute, with nothing boxed.
+JsonGet,
+JsonAt,
+JsonList,
+JsonObject,
+JsonInt,
+JsonFloat,
+JsonText,
+JsonBool,
+JsonIsNull,
+JsonLen,
+JsonIntOr,
+JsonFloatOr,
+/// Before a `json.decode` (spec 2.12, decision 0086): records of type
+/// number `a` are checked by closure `b` (`fn(T) -> Int`, the bits of
+/// the invariants broken), whose invariants' texts are list `c`.
+JsonCheckRegister,

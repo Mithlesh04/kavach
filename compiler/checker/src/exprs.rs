@@ -418,6 +418,10 @@ impl Checker<'_> {
                 Ty::Optional(_) => {
                     ": it may be `none`, so give a default with `?? 0`, or check it with `if let` (spec 2.7)"
                 }
+                // `xs + ys`: lists are joined by pushing into a copy.
+                Ty::List(_) => {
+                    ": `+` doesn't join lists; copy one into a `let` (`let all = xs`) and `push` the other's items in a `for` loop (spec 2.2)"
+                }
                 _ => "",
             };
             self.error(e.span, format!("expected {what}, found `{shown}`{hint}"));

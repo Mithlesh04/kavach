@@ -48,6 +48,13 @@ impl<'a> Interp<'a> {
                 &bytes(1),
                 &bytes(2),
             ))),
+            "rsa_verify" => Ok(Value::Bool(crypto::rsa_verify(
+                &bytes(0),
+                &bytes(1),
+                &bytes(2),
+                &bytes(3),
+                matches!(args.get(4), Some(Value::Bool(true))),
+            ))),
             "aes_key" => Ok(b(crypto::aes_key())),
             "encrypt" => crypto::encrypt(&bytes(0), &bytes(1)).map(b),
             "decrypt" => crypto::decrypt(&bytes(0), &bytes(1)).map(b),

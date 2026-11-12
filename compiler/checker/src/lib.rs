@@ -48,6 +48,7 @@ mod pointers;
 mod processes;
 mod secrets;
 mod show;
+mod std_base64;
 mod std_crypto;
 mod stdlib;
 mod ty;

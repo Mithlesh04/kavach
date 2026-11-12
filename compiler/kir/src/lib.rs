@@ -24,6 +24,7 @@ mod library;
 mod lower;
 mod lower_agents;
 mod lower_ai;
+mod lower_base64;
 mod lower_c;
 mod lower_calls;
 mod lower_chain;

@@ -63,6 +63,16 @@ const age = parse_age(input) catch e => {               // run code with the err
 
 A handler may also leave instead of giving a value: `return` from the function, or `break` or `continue` in a loop.
 
+A call's `catch` handles that call's own error, never one raised while its arguments are worked out: a `fail` or `try` in an argument leaves the function, as it would with no `catch` around the call.
+
+```kavach
+fn find(text: String) -> String ! AppError {
+    lookup(try parse(text)) catch e => {     // `e` is a `LookupError`: a bad `text` leaves `find`
+        return "nothing: {e}"
+    }
+}
+```
+
 ```kavach
 for line in lines {
     const n = Int(line) catch _ => {

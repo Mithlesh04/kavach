@@ -41,6 +41,25 @@ const big = a >
     b
 ",
     ),
+    // `>>` closes two `<`: the next field isn't a continuation; `a >>` is.
+    (
+        "type P<C> {
+a: Shared<Slot<C>>
+
+b: Int
+}
+const big = a >>
+b
+",
+        "type P<C> {
+    a: Shared<Slot<C>>
+
+    b: Int
+}
+const big = a >>
+    b
+",
+    ),
     // A multi-line string is left exactly as it is.
     (
         "fn a() {\nconst s = \"\"\"\n   keep   \n  this\n   \"\"\"\n}\n",

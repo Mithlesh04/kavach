@@ -1,0 +1,93 @@
+// RtOp, collections: Lists, maps, sets, bytes, `Shared`, raw memory and drops. Read by `compiler/kir/build.rs`.
+ListLen,
+ListIsEmpty,
+ListPush,
+ListGet,
+ListFirst,
+ListLast,
+ListContains,
+/// `list[i] = v`; panics when out of range.
+ListSet,
+MapGet,
+MapInsert,
+MapRemove,
+MapContains,
+MapLen,
+MapIsEmpty,
+MapKeys,
+MapValues,
+/// The entries as a list of `(key, value)` tuples, for `for`.
+MapEntries,
+SharedNew,
+SharedGet,
+SharedSet,
+/// `update` takes and lets go of the value's lock around its function
+/// (decision 0052).
+SharedLock,
+SharedUnlock,
+ListJoin,
+ListSort,
+/// Sorts the list (first operand) by the keys in the second list.
+ListSortBy,
+ListReverse,
+ListTake,
+ListSkip,
+ListIndexOf,
+ListMin,
+ListMax,
+/// `map[key] ?? fallback` for a scalar value and a fallback that is a
+/// constant or a local: the value, or the fallback (nothing boxed).
+MapGetOr,
+/// `Bytes` (spec 2.13): from a list, from text, `b[i]` (which panics
+/// out of range), its methods, `a + b`; and `std.fs` for bytes, which
+/// can fail.
+BytesNew,
+BytesAt,
+BytesLen,
+BytesGet,
+BytesSlice,
+BytesText,
+BytesToList,
+BytesAsList,
+BytesConcat,
+BytesCrc32c,
+/// Raw memory (spec 6.4, `lower_ptr.rs`): `alloc` (count, item size)
+/// and `free`, C's own; a load from and a store to an address the
+/// compiler worked out, which the backends inline; and a text copied
+/// for C with a zero byte after it (10.7), freed after the call; and
+/// C's text at an address, copied (`none` for a null pointer).
+PtrAlloc,
+PtrFree,
+PtrRead,
+PtrWrite,
+PtrText,
+PtrReadText,
+/// A chunked loop on all cores (decision 0031): the backends call
+/// `kv_par_for`, or give 1 ("run the plain loop yourself").
+ParFor,
+/// A chunked integer reduction (decision 0031): `kv_par_for_red`,
+/// whose chunks also get a slot number for their partial sums.
+ParForRed,
+/// `Map.with_capacity(n)` and `Set.with_capacity(n)` (spec 2.2): an
+/// empty table with room for `n` entries.
+MapWithCapacity,
+/// `b.xxhash64()` (spec 2.13).
+BytesXxhash64,
+/// A hint that item `b` of list `a` will be read soon (`prefetch.rs`):
+/// nothing a program sees; a backend may ignore it.
+ListPrefetch,
+/// A hint that integer key `b` of map `a` will be looked up soon
+/// (`prefetch.rs`): its bucket is asked for.
+MapPrefetch,
+/// At the start of a program with `Drop` (spec 6.1): type number `a`
+/// runs closure `b` (its `drop`) when its last holder ends.
+DropRegister,
+/// At a statement boundary: run the `drop` of the values whose last
+/// holder has ended (`runtime/native/src/rt_drops.rs`).
+DropRun,
+/// `b.index_of(part)` on `Bytes` (spec 2.13).
+BytesIndexOf,
+/// `s.weak()` and `w.shared()` (spec 6.2): a `Weak` has the shape of
+/// its `Shared`, around a weak cell (`runtime/native/src/send.rs`).
+WeakMake,
+WeakShared,

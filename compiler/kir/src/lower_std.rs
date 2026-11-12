@@ -95,9 +95,11 @@ impl<'a> Lowerer<'a> {
             ("agents", "answer_request") => RtOp::AgentAnswer,
             ("crypto", "ed25519_verify") => RtOp::CryptoEd25519Verify,
             ("crypto", "p256_verify") => RtOp::CryptoP256Verify,
+            ("crypto", "rsa_verify") => return self.rsa_verify(args, ty, line, span),
             ("crypto", _) | ("net", "websocket_accept" | "websocket_key" | "websocket_mask") => {
                 return self.selected_call(module, name, args, ty, line);
             }
+            ("base64", _) => return self.base64_call(name, args, ty, line, span),
             ("clipboard", "read_text") => RtOp::ClipReadText,
             ("clipboard", "write_text") => RtOp::ClipWriteText,
             ("devices", "serial_ports") => RtOp::SerialPorts,

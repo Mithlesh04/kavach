@@ -1,0 +1,28 @@
+// Rule: `base64.encode` writes bytes as base64 text, standard or URL-safe, with or without padding, and `base64.decode` reads it back strictly.
+// Spec: 14.20
+// expect output: Zm9vYg==
+// expect output: Zm9vYg
+// expect output: -_8
+// expect output: foob
+// expect output: [251, 255]
+// expect output: BadCharacter(at: 4)
+// expect output: BadPadding
+// expect output: ExtraBits
+
+use std.base64
+
+fn main() {
+    print(base64.encode("foob".bytes()))
+    print(base64.encode("foob".bytes(), pad: false))
+    print(base64.encode(Bytes([251, 255]), url: true, pad: false))
+    const back = base64.decode("Zm9vYg==") catch _ => Bytes([])
+    print(back.text() ?? "?")
+    const url = base64.decode("-_8", url: true) catch _ => Bytes([])
+    print(url.as_list<UInt8>())
+    for bad in ["Zm9v!", "Zg=", "Zh=="] {
+        const _b = base64.decode(bad) catch e => {
+            print(e)
+            continue
+        }
+    }
+}
