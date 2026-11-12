@@ -23,8 +23,12 @@ type Load {
     stop: StopHold
 }
 
+/// What the connection showed while a request was answered.
+type Watched = Left | Sent(data: Bytes)
+
 /// What reading the next request on a connection found.
 type Got = Ready(message: Message, used: Int, data: Bytes) |
+    Streamed(message: Message, length: Int, first: Bytes) |
     Preface(data: Bytes) |
     Closed |
     Refused(status: Int)
@@ -71,12 +75,24 @@ fn answer(conn: Connection, handler: fn(Request) -> Response, limits: ServeLimit
                 return finish(conn, load)
             }
             Got.Ready(m, used, all) => {
-                const keep = respond(conn, m, handler, limits, load) catch e => false
-                if not keep {
+                const answered = respond(conn, m, handler, limits, load, none) catch e => none
+                const kept = answered ?? return finish(conn, load)
+                if not kept.keep {
                     return finish(conn, load)
                 }
                 // What came after the request: the start of the next one.
-                data = all.slice(used, all.len())
+                data = all.slice(used, all.len()) + kept.extra
+            }
+            // A body too large to read whole: the handler reads it.
+            Got.Streamed(m, length, first) => {
+                const body = BodyStream(conn: conn, first: Shared(first), left: Shared(length), after: Shared(Bytes([])), wait: limits.header_timeout)
+                const answered = respond(conn, m, handler, limits, load, body) catch e => none
+                const kept = answered ?? return finish(conn, load)
+                // A body not read to its end leaves the connection mid-way.
+                if not kept.keep or body.left.get() > 0 {
+                    return finish(conn, load)
+                }
+                data = body.after.get()
             }
             Got.Refused(status) => {
                 refuse(conn, status, limits) catch e => {}
@@ -151,6 +167,10 @@ fn read_request(conn: Connection, data: Bytes, limits: ServeLimits, stop: StopHo
             return Got.Closed
         }
     }
+    if length > limits.buffered_body and not message.chunked(head.headers) {
+        const bare = Message(first: head.first, headers: head.headers, body: Bytes([]))
+        return Got.Streamed(message: bare, length: length, first: head.body)
+    }
     const body_started = time.monotonic_ms()
     const head_bytes = all.len() - head.body.len()
     while true {
@@ -174,23 +194,71 @@ fn read_request(conn: Connection, data: Bytes, limits: ServeLimits, stop: StopHo
 }
 
 /// Answers request `m` with `handler`, or with 503 when too many are
-/// being answered. Whether the connection stays open: not when the
-/// client asked to close or spoke HTTP/1.0 without `keep-alive`.
-fn respond(conn: Connection, m: Message, handler: fn(Request) -> Response, limits: ServeLimits, load: Load) -> Bool ! NetError uses Net {
+/// being answered: whether the connection stays open (not when the
+/// client asked to close or spoke HTTP/1.0 without `keep-alive`), and
+/// what the client sent meanwhile; none when the client left.
+fn respond(conn: Connection, m: Message, handler: fn(Request) -> Response, limits: ServeLimits, load: Load, body: BodyStream?) -> (keep: Bool, extra: Bytes)? ! NetError uses Net {
     const parts = m.first.split(" ")
     const asked = (message.first_header(m.headers, "connection") ?? "").lower()
     const old = (parts.get(2) ?? "") == "HTTP/1.0"
     // A stop closes the connection after this answer.
     const keep = asked != "close" and (not old or asked == "keep-alive") and not load.stop.asked()
     load.in_flight.update(n => n + 1)
-    const response = if load.in_flight.get() > limits.max_in_flight {
-        busy(limits)
-    } else {
-        handler(Request(method: parts.get(0) ?? "", path: parts.get(1) ?? "/", headers: m.headers, body: m.body))
+    let extra = Bytes([])
+    let response: Response? = busy(limits)
+    if load.in_flight.get() <= limits.max_in_flight {
+        const request = Request(method: parts.get(0) ?? "", path: parts.get(1) ?? "/", headers: m.headers, body: m.body, stream: body)
+        // A handler reading its body reads the connection itself.
+        const answered = if body == none { run_watched(conn, handler, request) } else { run_alone(handler, request) }
+        response = answered.response
+        extra = answered.extra
     }
     load.in_flight.update(n => n - 1)
-    try send(conn, response, keep)
-    keep
+    try send(conn, response ?? return none, keep)
+    (keep: keep, extra: extra)
+}
+
+/// `handler` on `request` in a task of its own, while another reads the
+/// connection, as Go's server does: when the client closes it, the
+/// handler's task is cancelled and there is no response. A handler that
+/// panics gets 500. What the client sent meanwhile comes back too.
+fn run_watched(conn: Connection, handler: fn(Request) -> Response, request: Request) -> (response: Response?, extra: Bytes) uses Net {
+    const work = spawn handler(request)
+    const watch = spawn watch(conn, work)
+    let done: Response? = none
+    match work.wait() {
+        ok(r) => {
+            done = r
+        }
+        err(_) => {}
+    }
+    watch.cancel()
+    const seen = watch.wait() catch e => Watched.Sent(data: Bytes([]))
+    match seen {
+        Watched.Left => (response: none, extra: Bytes([])),
+        Watched.Sent(data) => (response: done ?? http.text(500, "the handler failed"), extra: data),
+    }
+}
+
+/// `handler` on `request` in a task of its own, unwatched; 500 when it
+/// panics.
+fn run_alone(handler: fn(Request) -> Response, request: Request) -> (response: Response?, extra: Bytes) {
+    const work = spawn handler(request)
+    match work.wait() {
+        ok(r) => (response: r, extra: Bytes([])),
+        err(_) => (response: http.text(500, "the handler failed"), extra: Bytes([])),
+    }
+}
+
+/// Reads `conn` while `work` answers its request: when the client
+/// closes it, `work` is cancelled.
+fn watch(conn: Connection, work: Task<Response>) -> Watched uses Net {
+    const got = conn.read() catch e => none
+    if let data = got {
+        return Watched.Sent(data: data)
+    }
+    work.cancel()
+    Watched.Left
 }
 
 /// Answers with `status`: a request that broke a limit. What the client
@@ -223,8 +291,38 @@ fn send(conn: Connection, response: Response, keep: Bool) ! NetError uses Net {
         head = head + "{h.name}: {h.value}{crlf}"
     }
     const connection = if keep { "keep-alive" } else { "close" }
-    head = head + "content-length: {response.body.len()}{crlf}connection: {connection}{crlf}{crlf}"
-    try conn.write(head.bytes() + response.body)
+    const reader = response.stream ?? {
+        head = head + "content-length: {response.body.len()}{crlf}connection: {connection}{crlf}{crlf}"
+        try conn.write(head.bytes() + response.body)
+        return
+    }
+    // Sent as it is read: in chunks, unless the handler gave its length.
+    const sized = message.first_header(response.headers, "content-length") != none
+    if not sized {
+        head = head + "transfer-encoding: chunked{crlf}"
+    }
+    head = head + "connection: {connection}{crlf}{crlf}"
+    try conn.write(head.bytes())
+    try write_piece(conn, response.body, sized)
+    for piece in reader {
+        try write_piece(conn, piece, sized)
+    }
+    if not sized {
+        try conn.write("0{crlf}{crlf}".bytes())
+    }
+}
+
+/// One piece of a streamed body: as it is, or as a chunk.
+fn write_piece(conn: Connection, piece: Bytes, sized: Bool) ! NetError uses Net {
+    if piece.is_empty() {
+        return
+    }
+    if sized {
+        try conn.write(piece)
+        return
+    }
+    const crlf = message.crlf()
+    try conn.write("{message.hex(piece.len())}{crlf}".bytes() + piece + crlf.bytes())
 }
 
 /// Serves HTTP/2 on `conn`, which began with `data`: requests one at a
@@ -249,7 +347,22 @@ fn serve_h2(conn: Connection, data: Bytes, handler: fn(Request) -> Response) ! H
                 headers.push(h)
             }
         }
-        headers.push(Header(name: "content-length", value: "{response.body.len()}"))
-        link = try h2.respond(link, m.stream, headers, response.body)
+        const reader = response.stream ?? {
+            headers.push(Header(name: "content-length", value: "{response.body.len()}"))
+            link = try h2.respond(link, m.stream, headers, response.body)
+            continue
+        }
+        // Sent as it is read, in DATA frames.
+        if let length = message.first_header(response.headers, "content-length") {
+            headers.push(Header(name: "content-length", value: length))
+        }
+        link = try h2.send_headers(link, m.stream, headers)
+        if not response.body.is_empty() {
+            link = try h2.send_data(link, m.stream, response.body, false)
+        }
+        for piece in reader {
+            link = try h2.send_data(link, m.stream, piece, false)
+        }
+        link = try h2.send_data(link, m.stream, Bytes([]), true)
     }
 }

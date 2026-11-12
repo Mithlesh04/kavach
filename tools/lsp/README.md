@@ -1,6 +1,6 @@
 # tools/lsp (`kavach-lsp`)
 
-The Kavach language server, behind `kavach lsp` (spec [10.5](../../docs/spec/10-modules-and-packages.md#105-command-line)). It speaks the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) over stdin and stdout, so any editor that has an LSP client can use it.
+The Kavach language server, behind `kavach lsp` (spec [10.5](../../docs/spec/10-modules-and-packages/05-command-line.md)). It speaks the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) over stdin and stdout, so any editor that has an LSP client can use it.
 
 It uses the same compiler driver as `kavach check`, so the messages are the same everywhere. It needs no outside crate besides `serde_json`: the protocol's framing is a header and a JSON body.
 

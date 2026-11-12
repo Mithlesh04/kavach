@@ -1,6 +1,6 @@
 # 10. Modules and packages
 
-Conformance tests for spec chapter [10. Modules and packages](../../../docs/spec/10-modules-and-packages.md). Format: [../README.md](../README.md). Most tests are a small project: a folder with `kavach.toml` and `src/`; the header is in `src/main.kav`, and the other files of `src/` are its modules. A test that needs no other module is one `.kav` file.
+Conformance tests for spec chapter [10. Modules and packages](../../../docs/spec/10-modules-and-packages/README.md). Format: [../README.md](../README.md). Most tests are a small project: a folder with `kavach.toml` and `src/`; the header is in `src/main.kav`, and the other files of `src/` are its modules. A test that needs no other module is one `.kav` file.
 
 | Spec | Test | Rule | Expects |
 |---|---|---|---|

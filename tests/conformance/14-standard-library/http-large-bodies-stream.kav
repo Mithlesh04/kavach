@@ -1,0 +1,60 @@
+// Rule: a request body past `buffered_body` is read by the handler with `read_body`, piece by piece, and the connection goes on after it; a response sends a `fs.chunks` reader as it is read, with its length (`http.file`) or in chunks.
+// Spec: 14.11
+// expect output: whole: 5, streamed: 3000
+// expect output: next request: got /after
+// expect output: text/plain; charset=utf-8 2048
+// expect output: true
+// expect output: chunked: 2048
+// expect output: over HTTP/2: 200 2048
+
+use std.fs
+use std.http
+use std.http.h2
+use std.net
+
+fn count(r: Request) -> Response uses Fs, Net {
+    if r.path == "/file" {
+        return http.file("kavach-stream.txt") catch _ => http.text(404, "none")
+    }
+    if r.path == "/chunks" {
+        const reader = fs.chunks("kavach-stream.txt", 500) catch _ => return http.text(404, "none")
+        return Response(status: 200, headers: [], body: Bytes([]), stream: reader)
+    }
+    if r.path == "/after" {
+        return http.text(200, "got /after")
+    }
+    let streamed = 0
+    while true {
+        const piece = r.read_body() catch _ => return http.text(400, "cut off")
+        streamed += (piece ?? break).len()
+    }
+    http.text(200, "whole: {r.body.len()}, streamed: {streamed}")
+}
+
+fn main() ! Error {
+    try fs.write_text("kavach-stream.txt", "abcdefgh".repeat(256))
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, count, limits: ServeLimits(buffered_body: 1_000))
+    const at = "http://{listener.address()}"
+    const session = try http.open(at)
+    const small = try session.post("/small", "hello".bytes())
+    const big = try session.post("/big", "x".repeat(3000).bytes())
+    print("whole: {(small.body.text() ?? "").split(", ")[0].split(": ")[1]}, streamed: {(big.body.text() ?? "").split("streamed: ")[1]}")
+    print("next request: {(try session.get("/after")).body.text() ?? ""}")
+    session.close()
+    const file = try http.get("{at}/file")
+    print("{file.header("content-type") ?? "?"} {file.body.len()}")
+    print(file.body == (try fs.read_bytes("kavach-stream.txt")))
+    const chunked = try http.get("{at}/chunks")
+    print("chunked: {chunked.body.len()}")
+    const conn = try net.connect(listener.address())
+    const asked = [
+        Header(name: ":method", value: "GET"),
+        Header(name: ":scheme", value: "http"),
+        Header(name: ":authority", value: "localhost"),
+        Header(name: ":path", value: "/chunks"),
+    ]
+    const reply = try h2.request(conn, asked, Bytes([]))
+    print("over HTTP/2: {reply.headers.get(":status") ?? "?"} {reply.body.len()}")
+    try fs.remove("kavach-stream.txt")
+}

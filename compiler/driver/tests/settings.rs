@@ -14,9 +14,11 @@ fn repo() -> PathBuf {
 
 /// The rows of the tables in spec 10.11, as cells.
 fn rows() -> Vec<Vec<String>> {
-    let spec =
-        std::fs::read_to_string(repo().join("docs/spec/10-modules-and-packages.md")).unwrap();
-    let start = spec.find("## 10.11").expect("spec 10.11");
+    let spec = std::fs::read_to_string(
+        repo().join("docs/spec/10-modules-and-packages/11-settings-reference.md"),
+    )
+    .unwrap();
+    let start = spec.find("# 10.11").expect("spec 10.11");
     let end = spec[start..]
         .find("## Open questions")
         .map_or(spec.len(), |e| start + e);

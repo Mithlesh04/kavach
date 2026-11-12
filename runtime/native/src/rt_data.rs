@@ -364,6 +364,7 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         | RtOp::BytesAsList
         | RtOp::BytesCrc32c
         | RtOp::BytesXxhash64
+        | RtOp::BytesIndexOf
         | RtOp::BytesConcat => crate::rt_bytes::bytes_op(op, a, b, c, code, line),
         RtOp::FsLines
         | RtOp::FsChunks

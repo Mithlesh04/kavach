@@ -62,6 +62,11 @@ pub(crate) const BUILTIN: &[(&str, &str, &str)] = &[
         include_str!("../../../stdlib/cli/cli.kav"),
     ),
     (
+        "std/http/multipart.kav",
+        "std.http.multipart",
+        include_str!("../../../stdlib/http/multipart.kav"),
+    ),
+    (
         "std/http/server.kav",
         "std.http.server",
         include_str!("../../../stdlib/http/server.kav"),
@@ -276,17 +281,20 @@ mod tests {
         for (text, want) in [
             ("print(\"hi\")", vec![]),
             ("use std.json\nprint(json.stringify(1))", vec!["std.json"]),
-            // A module's own `use`s come along: http needs json, net, h2 and
-            // its server, which needs cli for its stop hold.
+            // A module's own `use`s come along: http needs json, fs (for
+            // `http.file`), net, h2, its forms and its server, which needs
+            // cli for its stop hold.
             (
                 "use std.http",
                 vec![
                     "std.json",
+                    "std.fs",
                     "std.time.digits",
                     "std.time",
                     "std.net",
                     "std.http",
                     "std.cli",
+                    "std.http.multipart",
                     "std.http.server",
                     "std.http.hpack",
                     "std.http.message",

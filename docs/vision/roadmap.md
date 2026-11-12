@@ -78,5 +78,5 @@ Each phase ends with a clear **exit test**. We move on only when it passes. No d
 ## v1.0: Stability promise
 
 - Spec frozen for edition 1; backward compatibility promise from here on
-- Changes after this only through [editions](../spec/10-modules-and-packages.md#108-editions)
+- Changes after this only through [editions](../spec/10-modules-and-packages/08-editions.md)
 - Governance moves to an independent foundation

@@ -10,6 +10,7 @@ mod project;
 mod schema;
 mod std_modules;
 mod version;
+pub mod workspace;
 
 pub use config::{
     AgentConfig, AgentMode, AiConfig, Config, Level, Limits, TestConfig, relative_path,

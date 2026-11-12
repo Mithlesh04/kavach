@@ -13,11 +13,11 @@ Headers are a list of `Header(name:, value:)` in the order they are sent, names 
 
 ```kavach
 fn login(r: Request) -> Response {
-    const agent = r.header("User-Agent") ?? "unknown"
+    const client = r.header("User-Agent") ?? "unknown"
     Response(status: 200, headers: [
         Header(name: "set-cookie", value: "session=abc; HttpOnly"),
         Header(name: "set-cookie", value: "theme=dark"),
-    ], body: "hello, {agent}".bytes())
+    ], body: "hello, {client}".bytes())
 }
 ```
 
@@ -88,6 +88,7 @@ A client's HTTP/1.1 connection carries one request and its response (`connection
 pub type ServeLimits {
     pub max_header_bytes: Int = 16_384        // 431 past it
     pub max_body_bytes: Int = 10_000_000      // 413 past it, refused by `content-length` before the body is read
+    pub buffered_body: Int = 1_000_000        // larger bodies are read by the handler, `r.read_body()`
     pub header_timeout: Duration = 10.seconds // 408 when a request's line and headers take longer
     pub min_body_rate: Int = 1_000            // bytes a second, after a second's grace: 408 when slower
     pub idle_timeout: Duration = 5.seconds    // a kept-open connection waiting for its next request
@@ -101,6 +102,56 @@ const server = spawn http.serve(listener, upload, limits: ServeLimits(max_body_b
 ```
 
 A request that breaks a limit is answered with its status and the connection closed; the handler never sees it. A client sending its headers a byte at a time (slowloris) holds a task for at most `header_timeout`, and one sending a body too slowly for at most a second past what `min_body_rate` allows. A request with `expect: 100-continue` gets `100 Continue` once its `content-length` is known to fit, before it sends the body. A 503 says `retry-after`, so well-behaved clients wait before trying again. The counts of connections and requests are kept across every core.
+
+**A client that leaves.** While a request is answered, `http.serve` keeps reading its connection, as Go's server does. When the client closes it, the handler's task is cancelled (9.6), so a request nobody waits for stops using the server; no answer is sent. A handler that panics gets 500, and the server goes on. Anything the client sends meanwhile (the next request, sent ahead) is kept for after the answer.
+
+**Large bodies.** A request's body up to `buffered_body` (a `ServeLimits` field, 1 MB) is read whole into `r.body`. A larger one, up to `max_body_bytes`, is left for the handler to read as it comes, a piece at a time, with `r.read_body() -> Bytes? ! NetError` (`none` once it has all come): an upload of any size then needs no more memory than a piece ([decision 0089](../../decisions/0089-streamed-http-bodies.md)). Such a request's `r.body` is empty. It isn't watched for the client leaving, as its handler reads the connection itself; a read fails when the client goes. A body the handler doesn't read to its end closes the connection after the answer.
+
+A response can be sent as it is read: `Response(status:, headers:, body:, stream:)` takes a reader of `fs.chunks` (14.3) as `stream`, and `body` is then sent before it. The response says its length when its headers give `content-length`, and comes in chunks otherwise. `http.file(path) -> Response ! FsError` answers with a file that way, its `content-type` from the file's extension and its `content-length` from its size, so a file of any size is sent without being held in memory.
+
+```kavach
+fn upload(r: Request) -> Response uses Net {
+    let total = 0
+    while true {
+        const piece = r.read_body() catch e => return http.text(400, "upload cut off")
+        total += (piece ?? break).len()
+    }
+    http.text(200, "got {total} bytes")
+}
+
+fn download(r: Request) -> Response uses Fs.read {
+    http.file("./files/report.pdf") catch e => http.text(404, "no such file")
+}
+```
+
+**Forms with files.** A `multipart/form-data` body (an HTML form with files) is read a part at a time, each part's data as it comes, so a large upload is never all in memory ([decision 0090](../../decisions/0090-forms-read-part-by-part.md)). `http.form(r) -> Form ! HttpError` opens it, from `r.body` or from `r.read_body()` alike.
+
+| Written | Gives |
+|---|---|
+| `form.next() -> FormPart? ! HttpError` | The next part, or `none` after the last; data of the part before not read yet is skipped |
+| `part.name`, `part.filename`, `part.content_type` | The field's name, the file's name (`String?`, `none` for a plain field) and its `content-type` (`text/plain` when not given) |
+| `part.read() -> Bytes? ! HttpError` | The part's next piece of data, or `none` at its end |
+| `part.text() -> String ! HttpError` | The rest of the part as text: for small fields |
+
+A form that isn't `multipart/form-data`, has no boundary, or is cut off fails with `BadMessage`.
+
+```kavach
+fn upload(r: Request) -> Response ! HttpError uses Net, Console {
+    const form = try http.form(r)
+    let received = 0
+    while true {
+        const part = (try form.next()) ?? break
+        if part.filename == none {
+            print("{part.name} = {try part.text()}")
+            continue
+        }
+        while true {
+            received += ((try part.read()) ?? break).len()
+        }
+    }
+    http.text(200, "received {received} bytes")
+}
+```
 
 **Stopping.** `http.serve` holds the program's stop (`cli.on_stop`, 5.8) for `drain_timeout`. On Ctrl+C or `SIGTERM` (how Docker and Kubernetes stop a container), it answers new connections with 503, closes those waiting for their next request, finishes the requests under way, and then lets go, so the program ends without cutting a response off. A second signal ends it at once.
 

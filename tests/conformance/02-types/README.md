@@ -94,6 +94,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.13 | [as-list-needs-a-fixed-size-number.kav](as-list-needs-a-fixed-size-number.kav) | `b.as_list<T>()` takes only a number of fixed size. | compile error |
 | 1.6 | [a-keyword-cant-name-a-field.kav](a-keyword-cant-name-a-field.kav) | A keyword can't name a field, which could never be read. | compile error |
 | 2.13 | [bytes-know-when-empty.kav](bytes-know-when-empty.kav) | `b.is_empty()` gives whether `Bytes` holds no bytes. | runs |
+| 2.13 | [bytes-index-of-finds-a-part.kav](bytes-index-of-finds-a-part.kav) | `b.index_of(part)` gives where `part` first appears in `b`, or `none`; an empty `part` is at 0. | runs |
 | 2.12, 2.6 | [variants-named-like-jsons-are-written-with-their-type.kav](variants-named-like-jsons-are-written-with-their-type.kav) | A program's variant named like one of `Json`'s: each is written with its own union's name. | runs |
 | 2.14 | [anonymous-records-need-no-type.kav](anonymous-records-need-no-type.kav) | A record value or type is written inline with no declaration; matching is structural, and `type X = (…)` aliases the shape. | runs |
 | 2.14, 2.7 | [anonymous-record-fields-take-optionals.kav](anonymous-record-fields-take-optionals.kav) | Where an anonymous record of known fields is expected, a `T` fills a `T?` field. | runs |

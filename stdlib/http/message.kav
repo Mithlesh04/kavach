@@ -190,6 +190,53 @@ pub fn reason(status: Int) -> String {
     }
 }
 
+/// The `content-type` of a file named `path`, from its extension.
+pub fn content_type(path: String) -> String {
+    const types = [
+        "html": "text/html; charset=utf-8",
+        "htm": "text/html; charset=utf-8",
+        "css": "text/css; charset=utf-8",
+        "js": "text/javascript; charset=utf-8",
+        "mjs": "text/javascript; charset=utf-8",
+        "json": "application/json",
+        "txt": "text/plain; charset=utf-8",
+        "md": "text/markdown; charset=utf-8",
+        "svg": "image/svg+xml",
+        "png": "image/png",
+        "jpg": "image/jpeg",
+        "jpeg": "image/jpeg",
+        "gif": "image/gif",
+        "webp": "image/webp",
+        "ico": "image/x-icon",
+        "pdf": "application/pdf",
+        "wasm": "application/wasm",
+        "mp4": "video/mp4",
+        "woff2": "font/woff2",
+    ]
+    const parts = path.split(".")
+    if parts.len() < 2 {
+        return "application/octet-stream"
+    }
+    types.get((parts.last() ?? "").lower()) ?? "application/octet-stream"
+}
+
+/// `n` (0 or more) in hexadecimal, as a chunk's size is written.
+pub fn hex(n: Int) -> String
+    require n >= 0
+{
+    const digits = "0123456789abcdef"
+    if n == 0 {
+        return "0"
+    }
+    let out = ""
+    let left = n
+    while left > 0 {
+        out = digits.slice(left % 16, left % 16 + 1) + out
+        left = left / 16
+    }
+    out
+}
+
 /// The value of hexadecimal digit `b`, if it is one.
 pub fn hex_digit(b: UInt8) -> Int? {
     const n = Int(b)

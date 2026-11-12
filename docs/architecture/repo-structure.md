@@ -84,4 +84,4 @@ The placement table and the steps for creating new files and folders are in [AGE
 
 ## User projects
 
-The layout of a project *written in* Kavach (not this repository) is defined in [spec chapter 10](../spec/10-modules-and-packages.md#103-project-layout).
+The layout of a project *written in* Kavach (not this repository) is defined in [spec chapter 10](../spec/10-modules-and-packages/03-project-layout.md).

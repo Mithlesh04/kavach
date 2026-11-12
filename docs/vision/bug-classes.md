@@ -171,7 +171,7 @@ The attack data says design decides outcomes. npm, with default-executing instal
 But three things are not yet written down:
 
 - **(1) An explicit spec rule that dependencies are compiled only: no install, build or codegen hooks, ever.** This is currently true by omission, which is not a promise.
-- **(2) The per-dependency capability allowlist in `kavach.toml`** (an open question in [spec 10](../spec/10-modules-and-packages.md)). This turns audit into enforcement: `stripe = { version = "1.2", can = ["Net"] }`.
+- **(2) The per-dependency capability allowlist in `kavach.toml`** (an open question in [spec 10](../spec/10-modules-and-packages/README.md)). This turns audit into enforcement: `stripe = { version = "1.2", can = ["Net"] }`.
 - **(3) The registry decisions**: signing, immutable versions, 2FA, no reuse of deleted names. PyPI's deleted-name hijack and the event-stream handoff are the cautionary tales ([devclass](https://devclass.com/2024/09/04/pypi-repository-vulnerable-to-deleted-package-hijack-say-researchers/)).
 
 All three are policy, not research. They just need to be committed before an ecosystem exists.

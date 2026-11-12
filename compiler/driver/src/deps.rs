@@ -2,8 +2,9 @@
 //! folder (`path`) or a git repository (`git`, with a `tag`, `branch` or
 //! `rev`). `kavach.lock` records the exact commit of each git dependency,
 //! so every build uses the same code; fetched repositories are kept in
-//! `kavach_modules/<name>/` of the project. Only fetching (`resolve` with
-//! `fetch`) uses the network; compiling reads the lock and the folders.
+//! `kavach_modules/<name>/` of the project, or of its workspace (spec
+//! 10.14). Only fetching (`resolve` with `fetch`) uses the network;
+//! compiling reads the lock and the folders.
 
 use crate::fetch_checks::{is_commit, is_device_name, unsafe_url};
 use crate::project::Source;
@@ -15,8 +16,9 @@ use std::process::Command;
 #[derive(Clone, Debug, PartialEq)]
 enum From {
     Path(PathBuf),
-    /// The repository, and the tag, branch or commit asked for.
-    Git(String, Option<(String, String)>),
+    /// The repository, the tag, branch or commit asked for, and the
+    /// package's folder in it (`dir`).
+    Git(String, Option<(String, String)>, Option<String>),
 }
 
 /// A dependency as `kavach.toml` declares it.
@@ -112,7 +114,18 @@ fn declared(root: &Path) -> Result<Vec<Dep>, String> {
                         return Err(wrong(&format!("`{kind} = \"{v}\"` is not a {kind} name")));
                     }
                 }
-                From::Git(url, wants.into_iter().next())
+                let dir = text("dir");
+                if let Some(d) = &dir
+                    && (d.starts_with('/')
+                        || d.starts_with('-')
+                        || d.contains('\\')
+                        || d.split('/').any(|p| p == ".." || is_device_name(p)))
+                {
+                    return Err(wrong(&format!(
+                        "`dir = \"{d}\"` must be a folder inside the repository, written with `/`"
+                    )));
+                }
+                From::Git(url, wants.into_iter().next(), dir)
             }
             _ => return Err(wrong("give either `path` or `git`")),
         };
@@ -168,13 +181,29 @@ fn read_lock(root: &Path) -> BTreeMap<String, (String, String)> {
 }
 
 /// `kavach.lock` for `packages`: one entry per dependency, in name order.
-fn lock_text(root: &Path, packages: &[Package]) -> String {
+/// In a workspace, the git entries of other members (`kept`) stay.
+fn lock_text(
+    root: &Path,
+    packages: &[Package],
+    kept: Option<&BTreeMap<String, (String, String)>>,
+) -> String {
     let mut out = String::from(
         "# The exact source of each dependency (spec 10.12). Written by kavach: commit it, don't edit it.\n",
     );
-    let mut sorted: Vec<&Package> = packages.iter().collect();
+    let mut sorted: Vec<Package> = packages.to_vec();
+    for (name, (url, commit)) in kept.into_iter().flatten() {
+        if !sorted.iter().any(|p| &p.name == name) {
+            sorted.push(Package {
+                name: name.clone(),
+                root: PathBuf::new(),
+                allow_unsafe: false,
+                granted: Vec::new(),
+                git: Some((url.clone(), commit.clone())),
+            });
+        }
+    }
     sorted.sort_by(|a, b| a.name.cmp(&b.name));
-    for p in sorted {
+    for p in &sorted {
         out.push_str(&format!("\n[[package]]\nname = \"{}\"\n", p.name));
         match &p.git {
             Some((url, commit)) => {
@@ -268,7 +297,9 @@ fn checkout(
     // A checked-out commit leaves HEAD detached, holding the commit itself
     // (in full, where `rev` may give its start).
     let head = std::fs::read_to_string(dir.join(".git").join("HEAD")).unwrap_or_default();
-    if head.trim().starts_with(commit) && dir.join("kavach.toml").is_file() {
+    // A checkout is renamed into place only once it is whole, and the
+    // package may be in a folder of it (`dir`), so the commit says enough.
+    if head.trim().starts_with(commit) {
         return Ok(dir);
     }
     if !fetch {
@@ -296,7 +327,9 @@ fn checkout(
 /// be there already.
 pub fn resolve(top: &Path, fetch: bool) -> Result<Vec<Package>, String> {
     let top = &plain(&std::fs::canonicalize(top).unwrap_or_else(|_| top.to_path_buf()));
-    let locked = read_lock(top);
+    // A workspace keeps one lock and one `kavach_modules/` (spec 10.14).
+    let home = &crate::workspace::home(top);
+    let locked = read_lock(home);
     let mut found: Vec<Package> = Vec::new();
     // Each with the folder that names it, and what that one was granted
     // (`None` for the project itself, which may use anything).
@@ -316,7 +349,7 @@ pub fn resolve(top: &Path, fetch: bool) -> Result<Vec<Package>, String> {
                 })?),
                 None,
             ),
-            From::Git(url, want) => {
+            From::Git(url, want, dir) => {
                 let commit = match locked.get(&dep.name) {
                     Some((u, c)) if u == url => c.clone(),
                     _ if fetch => commit_of(url, want)?,
@@ -327,14 +360,23 @@ pub fn resolve(top: &Path, fetch: bool) -> Result<Vec<Package>, String> {
                         ));
                     }
                 };
-                (
-                    checkout(top, &dep.name, url, &commit, fetch)?,
-                    Some((url.clone(), commit)),
-                )
+                let fetched = checkout(home, &dep.name, url, &commit, fetch)?;
+                let root = match dir {
+                    Some(d) => fetched.join(d),
+                    None => fetched,
+                };
+                if !root.join("kavach.toml").is_file() {
+                    return Err(format!(
+                        "dependency `{}`: {url} has no package at `{}`",
+                        dep.name,
+                        dir.as_deref().unwrap_or(".")
+                    ));
+                }
+                (root, Some((url.clone(), commit)))
             }
         };
         // A fetched package reads nothing outside its own folder.
-        if from_root.starts_with(top.join("kavach_modules")) && !root.starts_with(&from_root) {
+        if from_root.starts_with(home.join("kavach_modules")) && !root.starts_with(&from_root) {
             return Err(format!(
                 "dependency `{}` of {} is a folder outside it ({}): a fetched package can't name one (spec 10.12)",
                 dep.name,
@@ -395,8 +437,8 @@ pub fn resolve(top: &Path, fetch: bool) -> Result<Vec<Package>, String> {
         });
     }
     if fetch && !found.is_empty() {
-        let text = lock_text(top, &found);
-        let lock = top.join("kavach.lock");
+        let text = lock_text(home, &found, (home != top).then_some(&locked));
+        let lock = home.join("kavach.lock");
         if std::fs::read_to_string(&lock).ok().as_deref() != Some(text.as_str()) {
             std::fs::write(&lock, text)
                 .map_err(|e| format!("can't write {}: {e}", lock.display()))?;

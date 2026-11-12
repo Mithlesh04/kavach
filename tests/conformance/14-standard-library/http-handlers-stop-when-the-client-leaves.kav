@@ -1,0 +1,35 @@
+// Rule: while a request is answered, `http.serve` reads its connection; when the client closes it, the handler's task is cancelled; a handler that panics gets 500.
+// Spec: 14.11
+// expect output: finished: 0
+// expect output: HTTP/1.1 500 Internal Server Error
+
+use std.http
+use std.net
+use std.time
+
+fn main() ! Error {
+    const finished = Shared(0)
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, r => {
+        if r.path == "/panic" {
+            panic("the handler broke")
+        }
+        time.sleep(300.ms)
+        finished.update(n => n + 1)
+        http.text(200, "done")
+    })
+    const crlf = "\u{D}\n"
+    const gone = try net.connect(listener.address())
+    try gone.write("GET /slow HTTP/1.1{crlf}host: x{crlf}{crlf}".bytes())
+    time.sleep(50.ms)
+    gone.close()
+    time.sleep(500.ms)
+    print("finished: {finished.get()}")
+    const conn = try net.connect(listener.address())
+    try conn.write("GET /panic HTTP/1.1{crlf}connection: close{crlf}{crlf}".bytes())
+    let all = Bytes([])
+    while true {
+        all = all + ((try conn.read()) ?? break)
+    }
+    print((all.text() ?? "").split(crlf)[0])
+}

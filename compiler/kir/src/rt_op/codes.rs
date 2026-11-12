@@ -4,7 +4,7 @@ use super::RtOp;
 
 impl RtOp {
     /// Every op, by the code native code passes to the runtime (`kv_rt`).
-    pub const ALL: [RtOp; 267] = [
+    pub const ALL: [RtOp; 268] = [
         RtOp::StrLen,
         RtOp::StrIsEmpty,
         RtOp::StrUpper,
@@ -272,6 +272,7 @@ impl RtOp {
         RtOp::CliStopHold,
         RtOp::CliStopAsked,
         RtOp::CliStopDone,
+        RtOp::BytesIndexOf,
     ];
 
     /// A fingerprint of the codes above: a compiler and a runtime library

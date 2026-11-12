@@ -9,11 +9,13 @@
 // QUIC (`h3.kav`). The server is in `server.kav`. Variants are written
 // `HttpError.BadUrl`: a program may have its own.
 
+use std.fs
 use std.http.h2
 use std.http.h3
 use std.http.hpack
 use std.json
 use std.http.message
+use std.http.multipart
 use std.http.server
 use std.net
 use std.time
@@ -24,7 +26,11 @@ pub type Request {
     pub path: String
     /// In the order they came, names in lower case, repeats kept.
     pub headers: [Header]
+    /// The body, when it was read whole (spec 14.11); empty otherwise.
     pub body: Bytes
+    /// A body too large to read whole, set by the server: read it with
+    /// `read_body`.
+    pub stream: BodyStream? = none
 
     /// The value of the first header named `name`, if any.
     pub fn header(self, name: String) -> String? {
@@ -35,6 +41,44 @@ pub type Request {
     pub fn headers_named(self, name: String) -> [String] {
         message.all_headers(self.headers, name.lower())
     }
+
+    /// The next piece of a large body (spec 14.11), or `none` once it has
+    /// all come; `none` for a body read whole.
+    pub fn read_body(self) -> Bytes? ! NetError uses Net {
+        const s = self.stream ?? return none
+        if s.left.get() <= 0 {
+            return none
+        }
+        let piece = s.first.get()
+        if piece.is_empty() {
+            const got = try s.conn.read().timeout(s.wait)
+            const closed = NetError.Failed(address: "", reason: "the client closed the connection")
+            piece = got ?? fail closed
+        } else {
+            s.first.update(_ => Bytes([]))
+        }
+        // What comes after the body is the next request's.
+        const take = piece.len().min(s.left.get())
+        s.left.update(n => n - take)
+        if take < piece.len() {
+            s.after.update(_ => piece.slice(take, piece.len()))
+        }
+        piece.slice(0, take)
+    }
+}
+
+/// The part of a large request body not read yet, made by the server:
+/// kept across tasks, so the server sees how much the handler read.
+pub type BodyStream {
+    pub conn: Connection
+    /// What came with the request's head, not handed out yet.
+    pub first: Shared<Bytes>
+    /// How many bytes of the body are left.
+    pub left: Shared<Int>
+    /// What came after the body: the start of the next request.
+    pub after: Shared<Bytes>
+    /// How long one piece may take to come.
+    pub wait: Duration
 }
 
 /// An HTTP response.
@@ -44,6 +88,9 @@ pub type Response {
     /// more than once (`set-cookie`).
     pub headers: [Header]
     pub body: Bytes
+    /// Sent after `body` as it is read (spec 14.11): a reader of
+    /// `fs.chunks`.
+    pub stream: Chunks? = none
 
     /// The value of the first header named `name`, if any.
     pub fn header(self, name: String) -> String? {
@@ -76,6 +123,9 @@ pub type ServeLimits {
     pub max_connections: Int = 10_000
     /// The most requests being answered at once: past it, 503.
     pub max_in_flight: Int = 1_000
+    /// The largest request body read whole into `r.body`; a larger one is
+    /// read by the handler with `r.read_body()`.
+    pub buffered_body: Int = 1_000_000
     /// What `retry-after` says on a 503, in seconds.
     pub retry_after: Int = 1
     /// On a stop signal, how long to finish the requests under way
@@ -118,6 +168,24 @@ pub fn post_json<T>(url: String, body: Json) -> T ! HttpError uses Net {
     const text = json.stringify(body, 0)
     const r = try request("POST", url, text.bytes(), "application/json")
     try decoded<T>(r)
+}
+
+/// A response with the file at `path` (spec 14.11), sent as it is read:
+/// its `content-type` from its extension, its `content-length` from its
+/// size.
+pub fn file(path: String) -> Response ! FsError uses Fs.read {
+    const info = try fs.info(path)
+    const reader = try fs.chunks(path, 65_536)
+    const headers = [
+        Header(name: "content-type", value: message.content_type(path)),
+        Header(name: "content-length", value: "{info.size}"),
+    ]
+    Response(status: 200, headers: headers, body: Bytes([]), stream: reader)
+}
+
+/// The `multipart/form-data` form in `r`, read part by part (spec 14.11).
+pub fn form(r: Request) -> Form ! HttpError {
+    try multipart.open(r)
 }
 
 /// A response with JSON: `http.json_response(200, json.of(order))`.

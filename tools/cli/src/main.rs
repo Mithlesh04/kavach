@@ -8,6 +8,7 @@ mod env;
 mod fmt;
 mod keep;
 mod library;
+mod native;
 mod pack;
 mod project;
 mod proto;
@@ -62,6 +63,10 @@ fn main() -> ExitCode {
         Ok(taken) => taken,
         Err(e) => return fail(&e),
     };
+    // At a workspace's root, each member in turn (spec 10.14).
+    if let Some(code) = project::workspace(&args) {
+        return code;
+    }
     let args = project::expand(args);
     let (args, compress) = pack::take_flag(args);
     // The `.env` file and `--env` values (spec 10.13).
@@ -99,7 +104,7 @@ fn main() -> ExitCode {
         ["fmt", rest @ ..] => fmt::fmt(rest),
         // As without `--native`: a `--` before the program's arguments is Kavach's.
         ["run", "--native", path, rest @ ..] => {
-            native(path, rest.strip_prefix(&["--"]).unwrap_or(rest))
+            native::native(path, rest.strip_prefix(&["--"]).unwrap_or(rest))
         }
         ["run", "--dry-run", path, rest @ ..] => {
             let rest = rest.strip_prefix(&["--"]).unwrap_or(rest);
@@ -108,8 +113,8 @@ fn main() -> ExitCode {
         }
         ["build", "--lib", path] => library::build_lib(path, None),
         ["build", "--lib", path, "-o", dir] => library::build_lib(path, Some(dir)),
-        ["build", path] => build(path, None, compress),
-        ["build", path, "-o", out] => build(path, Some(out), compress),
+        ["build", path] => native::build(path, None, compress),
+        ["build", path, "-o", out] => native::build(path, Some(out), compress),
         ["run", path, rest @ ..] if !path.starts_with("--") => {
             // `kavach run app.kav -- a b` and `kavach run app.kav a b` are the same.
             let rest = rest.strip_prefix(&["--"]).unwrap_or(rest);
@@ -386,108 +391,6 @@ fn test(path: &str, flags: &[&str]) -> ExitCode {
         return keep::keep(path, &opts);
     }
     command(path, |c| kavach_interp::test(c, &opts))
-}
-
-/// A checked file lowered to KIR, or the exit code after reporting why not.
-fn lowered(path: &str) -> Result<kavach_kir::Program, ExitCode> {
-    let compiled = load(path)?;
-    let mut program = kavach_kir::lower(&compiled).map_err(|u| unsupported(&compiled, path, &u))?;
-    // The kernels of `map`s that may run on the GPU (spec 15.2).
-    kavach_backend_wgsl::attach(&mut program);
-    Ok(program)
-}
-
-/// Reports what the native compiler doesn't support yet, where.
-fn unsupported(
-    compiled: &kavach_driver::Compiled,
-    path: &str,
-    u: &kavach_kir::Unsupported,
-) -> ExitCode {
-    // `u.line` counts lines of all the program's files together.
-    let file = compiled
-        .files
-        .iter()
-        .rev()
-        .find(|f| f.first_line <= u.line as usize)
-        .map_or((path, u.line as usize), |f| {
-            (f.path.as_str(), u.line as usize - f.first_line + 1)
-        });
-    eprintln!(
-        "error: the native compiler doesn't support {} yet
- --> {}:{}
-help: run it with `kavach run {path}` (the interpreter) for now",
-        u.feature, file.0, file.1
-    );
-    ExitCode::from(3)
-}
-
-/// `kavach build`: an executable file, named after the source file and
-/// written to the current folder unless `-o` says otherwise (spec 10.9).
-fn build(
-    path: &str,
-    out: Option<&str>,
-    compress: Option<kavach_runtime_unpack::Method>,
-) -> ExitCode {
-    let program = match lowered(path) {
-        Ok(p) => p,
-        Err(code) => return code,
-    };
-    let out = match out {
-        Some(o) => std::path::PathBuf::from(o),
-        None => {
-            let stem = std::path::Path::new(path)
-                .file_stem()
-                .map_or("program".into(), |s| s.to_string_lossy().to_string());
-            std::path::PathBuf::from(format!("{stem}{}", std::env::consts::EXE_SUFFIX))
-        }
-    };
-    let built = build_with_best_backend(&program, &out).and_then(|()| env::write_beside(&out));
-    let packed = built.and_then(|()| compress.map(|m| pack::pack(&out, m)).transpose());
-    match packed {
-        Ok(sizes) => {
-            eprintln!("built {}", kavach_driver::relative_path(&out));
-            if let Some(sizes) = sizes {
-                eprintln!("{sizes}");
-            }
-            ExitCode::SUCCESS
-        }
-        Err(e) => {
-            eprintln!("error: {e}");
-            ExitCode::from(3)
-        }
-    }
-}
-
-/// Builds with LLVM when it can (optimized code, decision 0018), otherwise
-/// with Cranelift. `KAVACH_BACKEND=cranelift` always uses Cranelift.
-fn build_with_best_backend(
-    program: &kavach_kir::Program,
-    out: &std::path::Path,
-) -> Result<(), String> {
-    if std::env::var("KAVACH_BACKEND").as_deref() != Ok("cranelift") {
-        match kavach_backend_llvm::build(program, out) {
-            Ok(()) => return Ok(()),
-            Err(kavach_backend_llvm::NotBuilt::Failed(e)) => return Err(e),
-            Err(kavach_backend_llvm::NotBuilt::Unsupported(_)) => {}
-        }
-    }
-    kavach_backend_cranelift::build(program, out)
-}
-
-/// `kavach run --native`: KIR → Cranelift → machine code, run in memory.
-fn native(path: &str, args: &[&str]) -> ExitCode {
-    let program = match lowered(path) {
-        Ok(p) => p,
-        Err(code) => return code,
-    };
-    let args: Vec<String> = args.iter().map(|a| a.to_string()).collect();
-    match kavach_backend_cranelift::run_with_args(&program, &args) {
-        Ok(code) => ExitCode::from(u8::try_from(code).unwrap_or(1)),
-        Err(e) => {
-            eprintln!("error: native code generation failed: {e}");
-            ExitCode::from(3)
-        }
-    }
 }
 
 fn fail(message: &str) -> ExitCode {

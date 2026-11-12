@@ -58,8 +58,16 @@ pub(crate) fn expand(args: Vec<String>) -> Vec<String> {
     let Some(root) = root() else {
         return args;
     };
-    // A library has `src/lib.kav` instead (spec 10.3).
-    let entry = if lib { "lib.kav" } else { "main.kav" };
+    // A library has `src/lib.kav` instead (spec 10.3); `check` and `test`
+    // take it when there is no `main.kav`.
+    let only_lib = !root.join("src").join("main.kav").is_file()
+        && root.join("src").join("lib.kav").is_file()
+        && matches!(command, "check" | "test");
+    let entry = if lib || only_lib {
+        "lib.kav"
+    } else {
+        "main.kav"
+    };
     let main = root.join("src").join(entry).to_string_lossy().to_string();
     // Everything after `--` belongs to the program.
     if let Some(i) = rest.iter().position(|a| a == "--") {
@@ -81,6 +89,53 @@ pub(crate) fn expand(args: Vec<String>) -> Vec<String> {
     }
     out.extend(rest);
     out
+}
+
+/// `kavach check`, `test` or `build` with no file at a workspace's root
+/// (spec 10.14): the command in each member's folder, in the order
+/// `members` lists them, each member's lines headed by its folder. `None`
+/// when this isn't such a command.
+pub(crate) fn workspace(args: &[String]) -> Option<ExitCode> {
+    let command = args.first()?.as_str();
+    if !matches!(command, "check" | "test" | "build") || args.iter().any(|a| a.ends_with(".kav")) {
+        return None;
+    }
+    let here = std::env::current_dir().ok()?;
+    if !here.join("kavach.toml").is_file() {
+        return None;
+    }
+    let members = match kavach_driver::workspace::members(&here) {
+        Ok(m) if !m.is_empty() => m,
+        Ok(_) => return None,
+        Err(e) => {
+            eprintln!("error: {e}");
+            return Some(ExitCode::from(2));
+        }
+    };
+    let me = std::env::current_exe().ok()?;
+    let mut failed = false;
+    for member in members {
+        let shown = member
+            .strip_prefix(&here)
+            .unwrap_or(&member)
+            .to_string_lossy()
+            .replace('\\', "/");
+        println!("== {shown}");
+        if command == "build" && !member.join("src").join("main.kav").is_file() {
+            println!("a library: the packages that use it build it");
+            continue;
+        }
+        let ran = std::process::Command::new(&me)
+            .args(args)
+            .current_dir(&member)
+            .status();
+        failed |= !ran.is_ok_and(|s| s.success());
+    }
+    Some(if failed {
+        ExitCode::from(1)
+    } else {
+        ExitCode::SUCCESS
+    })
 }
 
 /// Where `kavach test` saves found cases for `file`: `tests/found/` of its

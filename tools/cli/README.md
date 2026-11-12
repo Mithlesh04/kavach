@@ -27,6 +27,7 @@ Exit codes: 0 success, 1 compile errors or an error returned from `main`, 101 a 
 | File | Job |
 |---|---|
 | `src/main.rs` | Commands |
+| `src/native.rs` | `kavach build` and `kavach run --native`: native code with LLVM or Cranelift |
 | `src/context.rs` | `kavach query` and `kavach context`, from the program's index |
 | `src/project.rs` | `kavach new`, and finding the project's entry file |
 | `src/deps.rs` | `kavach add` and `kavach update`, and fetching dependencies before a compile (spec 10.12) |
@@ -45,4 +46,6 @@ Exit codes: 0 success, 1 compile errors or an error returned from `main`, 101 a 
 | `tests/limits_parallel.rs` | A limit's total holds when 30 handlers pay at once: exactly 10 refunds of 100 under `sum(amount) <= 1000 per day` |
 | `tests/version.rs` | `kavach --version`, `kavach version <program>`, and `--version` answered by a program only with `[build] version_flag` (spec 10.5) |
 | `tests/token_budget.rs` | Ten `ask`s at once under `tokens <= 200 per day`: each `asks_under_way` setting lets through what it promises (spec 8.3) |
+| `tests/stopping.rs` | A program holding its stop finishes its work after `SIGTERM`, and a server answers the request under way (decision 0088; Unix) |
+| `tests/workspaces.rs` | A workspace: one lock and `kavach_modules/` at the root, members using each other by path, `check` and `build` per member; a git dependency's `dir`, refused when it leaves the repository (spec 10.14) |
 | `tests/online.rs` | Tests that need the internet (`https://`); they run only with `--ignored` |

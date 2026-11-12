@@ -305,6 +305,14 @@ impl Lowerer<'_> {
                     Some(DefKind::Builtin) if first.name == "Bytes" => {
                         self.shapes.intern(Shape::Bytes)
                     }
+                    // `fs.lines` and `fs.chunks` readers (spec 14.3).
+                    Some(DefKind::Builtin) if matches!(first.name.as_str(), "Lines" | "Chunks") => {
+                        let item = match first.name.as_str() {
+                            "Lines" => self.str_type(),
+                            _ => self.shapes.intern(Shape::Bytes),
+                        };
+                        self.shapes.intern(Shape::Reader(item))
+                    }
                     Some(DefKind::Builtin) => Prim::from_name(&first.name)
                         .and_then(prim_type)
                         .ok_or_else(|| {

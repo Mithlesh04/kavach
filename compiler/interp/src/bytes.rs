@@ -120,6 +120,16 @@ impl<'a> Interp<'a> {
                 Prim::UInt64,
             ),
             "is_empty" => Value::Bool(b.is_empty()),
+            "index_of" => {
+                let part = match args.first() {
+                    Some(Value::Bytes(p)) => p.clone(),
+                    _ => Rc::from(&[][..]),
+                };
+                match kavach_runtime_core::files::find_bytes(b, &part) {
+                    Some(i) => Value::Int(i as i128, Prim::Int),
+                    None => Value::None,
+                }
+            }
             _ => return Err(self.panic(format!("`Bytes` has no method `{name}`"), span)),
         })
     }

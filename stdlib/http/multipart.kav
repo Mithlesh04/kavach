@@ -1,0 +1,204 @@
+// Forms sent as `multipart/form-data`, for std.http (spec 14.11,
+// decision 0090): read a part at a time, each part's data as it comes,
+// from a body read whole or one read with `read_body`, so a large upload
+// is never all in memory. Programs call `http.form(r)`.
+
+use std.http
+use std.http.hpack
+use std.http.message
+use std.net
+
+/// The most a part's headers may take.
+fn most_head() -> Int {
+    16_384
+}
+
+/// A `multipart/form-data` body, read part by part.
+pub type Form {
+    request: Request
+    /// What divides the parts: a line end, `--` and the boundary.
+    delimiter: Bytes
+    /// What has come and not been handed out yet.
+    held: Shared<Bytes>
+    /// Whether `request.body` has been taken, for a body read whole.
+    taken: Shared<Bool>
+    /// Whether a part's data is being read.
+    in_part: Shared<Bool>
+    /// Whether the last part has ended.
+    ended: Shared<Bool>
+
+    /// The next part, or `none` after the last. What is left of the part
+    /// before is skipped.
+    pub fn next(self) -> FormPart? ! HttpError uses Net {
+        if self.ended.get() {
+            return none
+        }
+        while self.in_part.get() {
+            const skipped = try self.read_part()
+            if skipped == none {
+                break
+            }
+        }
+        // `held` starts with the delimiter now; then `--` ends the form,
+        // or a line end starts a part's headers.
+        const d = self.delimiter.len()
+        try self.fill_until(d + 2)
+        const h = self.held.get()
+        if h.slice(0, d) != self.delimiter {
+            fail bad("a part doesn't start with the boundary")
+        }
+        if h.slice(d, d + 2) == "--".bytes() {
+            self.ended.update(_ => true)
+            return none
+        }
+        self.held.update(_ => h.slice(d + 2, h.len()))
+        const end = try self.find("\u{D}\n\u{D}\n".bytes(), most_head())
+        const all = self.held.get()
+        const head = all.slice(0, end).text() ?? fail bad("a part's headers aren't text")
+        self.held.update(_ => all.slice(end + 4, all.len()))
+        self.in_part.update(_ => true)
+        let headers: [Header] = []
+        for line in head.split("\u{D}\n") {
+            const colon = line.index_of(":") ?? continue
+            headers.push(Header(name: line.slice(0, colon).trim().lower(), value: line.slice(colon + 1, line.len()).trim()))
+        }
+        const about = message.first_header(headers, "content-disposition") ?? ""
+        FormPart(
+            name: param(about, "name") ?? "",
+            filename: param(about, "filename"),
+            content_type: message.first_header(headers, "content-type") ?? "text/plain",
+            form: self,
+        )
+    }
+
+    /// The next piece of the part being read, or `none` at its end.
+    fn read_part(self) -> Bytes? ! HttpError uses Net {
+        if not self.in_part.get() {
+            return none
+        }
+        while true {
+            const h = self.held.get()
+            if let at = h.index_of(self.delimiter) {
+                if at == 0 {
+                    self.in_part.update(_ => false)
+                    return none
+                }
+                self.held.update(_ => h.slice(at, h.len()))
+                return h.slice(0, at)
+            }
+            // The end of `held` may be the start of the delimiter.
+            const keep = self.delimiter.len() - 1
+            if h.len() > keep {
+                self.held.update(_ => h.slice(h.len() - keep, h.len()))
+                return h.slice(0, h.len() - keep)
+            }
+            if not (try self.more()) {
+                fail bad("the form is cut off")
+            }
+        }
+        none
+    }
+
+    /// Reads until `held` has at least `n` bytes.
+    fn fill_until(self, n: Int) ! HttpError uses Net {
+        while self.held.get().len() < n {
+            if not (try self.more()) {
+                fail bad("the form is cut off")
+            }
+        }
+    }
+
+    /// Where `part` is in `held`, reading more until it comes, at most
+    /// `most` bytes in.
+    fn find(self, part: Bytes, most: Int) -> Int ! HttpError uses Net {
+        while true {
+            if let at = self.held.get().index_of(part) {
+                return at
+            }
+            if self.held.get().len() > most {
+                fail bad("a part's headers are too long")
+            }
+            if not (try self.more()) {
+                fail bad("the form is cut off")
+            }
+        }
+        0
+    }
+
+    /// Adds the next piece of the body to `held`: whether there was one.
+    fn more(self) -> Bool ! HttpError uses Net {
+        if self.request.stream == none {
+            if self.taken.get() {
+                return false
+            }
+            self.taken.update(_ => true)
+            const body = self.request.body
+            self.held.update(h => h + body)
+            return true
+        }
+        const got = self.request.read_body() catch e => fail HttpError.Network(error: e)
+        const piece = got ?? return false
+        self.held.update(h => h + piece)
+        true
+    }
+}
+
+/// One part of a form: a field, or a file.
+pub type FormPart {
+    pub name: String
+    /// The file's name; `none` for a plain field.
+    pub filename: String?
+    pub content_type: String
+    form: Form
+
+    /// The part's next piece of data, or `none` at its end.
+    pub fn read(self) -> Bytes? ! HttpError uses Net {
+        try self.form.read_part()
+    }
+
+    /// The rest of the part as text: for small fields.
+    pub fn text(self) -> String ! HttpError uses Net {
+        let all = Bytes([])
+        while true {
+            const piece = (try self.read()) ?? break
+            all = all + piece
+        }
+        all.text() ?? fail bad("a field isn't text")
+    }
+}
+
+/// The form in request `r`.
+pub fn open(r: Request) -> Form ! HttpError {
+    const kind = r.header("content-type") ?? ""
+    if not kind.lower().starts_with("multipart/form-data") {
+        fail bad("not a multipart/form-data body")
+    }
+    const boundary = param(kind, "boundary") ?? fail bad("the form has no boundary")
+    Form(
+        request: r,
+        delimiter: "\u{D}\n--{boundary}".bytes(),
+        // The first boundary comes without a line end before it.
+        held: Shared("\u{D}\n".bytes()),
+        taken: Shared(false),
+        in_part: Shared(false),
+        ended: Shared(false),
+    )
+}
+
+/// The value of `key` in a header such as `form-data; name="file"`.
+fn param(header: String, key: String) -> String? {
+    for item in header.split(";") {
+        const pair = item.trim()
+        const eq = pair.index_of("=") ?? continue
+        if pair.slice(0, eq).trim().lower() == key {
+            const value = pair.slice(eq + 1, pair.len()).trim()
+            const quoted = value.len() >= 2 and value.starts_with("\"") and value.ends_with("\"")
+            return if quoted { value.slice(1, value.len() - 1) } else { value }
+        }
+    }
+    none
+}
+
+fn bad(reason: String) -> HttpError {
+    HttpError.BadMessage(reason: "form: {reason}")
+}

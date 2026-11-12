@@ -1,0 +1,14 @@
+// Rule: `b.index_of(part)` gives where the bytes `part` first appear in `b`, or `none`; an empty `part` is at 0.
+// Spec: 2.13
+// expect output: 4
+// expect output: none
+// expect output: 0
+// expect output: 9
+
+fn main() {
+    const data = "key=value&next=1".bytes()
+    print(data.index_of("value".bytes()))
+    print(data.index_of("missing".bytes()))
+    print(data.index_of(Bytes([])))
+    print(data.index_of("&".bytes()))
+}

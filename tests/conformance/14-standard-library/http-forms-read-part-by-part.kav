@@ -1,0 +1,57 @@
+// Rule: `http.form(r)` reads a `multipart/form-data` body part by part, each part's name, file name and type, its data as it comes, whether the body was read whole or is read with `read_body`; a part not read is skipped.
+// Spec: 14.11
+// expect output: whole: note=hi, skipped=-, file a.txt text/plain 3000
+// expect output: streamed: note=hi, skipped=-, file a.txt text/plain 3000
+
+use std.http
+use std.net
+
+fn upload(r: Request) -> Response ! HttpError uses Net {
+    const form = try http.form(r)
+    let seen: [String] = []
+    while true {
+        const part = (try form.next()) ?? break
+        if part.name == "skipped" {
+            seen.push("skipped=-")
+            continue
+        }
+        if part.filename == none {
+            seen.push("{part.name}={try part.text()}")
+            continue
+        }
+        let size = 0
+        while true {
+            size += ((try part.read()) ?? break).len()
+        }
+        seen.push("file {part.filename ?? "?"} {part.content_type} {size}")
+    }
+    http.text(200, seen.join(", "))
+}
+
+/// Posts `body` to `address` as a form and gives the answer's body.
+fn post(address: String, body: String) -> String ! NetError uses Net {
+    const crlf = "\u{D}\n"
+    const conn = try net.connect(address)
+    const head = "POST / HTTP/1.1{crlf}content-type: multipart/form-data; boundary=XyZ{crlf}content-length: {body.bytes().len()}{crlf}connection: close{crlf}{crlf}"
+    try conn.write((head + body).bytes())
+    let all = Bytes([])
+    while true {
+        all = all + ((try conn.read()) ?? break)
+    }
+    const text = all.text() ?? ""
+    text.slice((text.index_of("{crlf}{crlf}") ?? 0) + 4, text.len())
+}
+
+fn main() ! Error {
+    const crlf = "\u{D}\n"
+    const body = "--XyZ{crlf}content-disposition: form-data; name=\"note\"{crlf}{crlf}hi{crlf}" +
+        "--XyZ{crlf}content-disposition: form-data; name=\"skipped\"{crlf}{crlf}{"s".repeat(500)}{crlf}" +
+        "--XyZ{crlf}content-disposition: form-data; name=\"file\"; filename=\"a.txt\"{crlf}content-type: text/plain{crlf}{crlf}{"f".repeat(3000)}{crlf}" +
+        "--XyZ--{crlf}"
+    const whole = try net.listen("127.0.0.1:0")
+    const _a = spawn http.serve(whole, r => upload(r) catch e => http.text(400, "{e}"))
+    print("whole: {try post(whole.address(), body)}")
+    const pieces = try net.listen("127.0.0.1:0")
+    const _b = spawn http.serve(pieces, r => upload(r) catch e => http.text(400, "{e}"), limits: ServeLimits(buffered_body: 100))
+    print("streamed: {try post(pieces.address(), body)}")
+}

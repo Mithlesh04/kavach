@@ -417,6 +417,8 @@ pub enum RtOp {
     CliStopHold,
     CliStopAsked,
     CliStopDone,
+    /// `b.index_of(part)` on `Bytes` (spec 2.13).
+    BytesIndexOf,
     /// `d.round(places)` (`c` is 0) and `d.round_even(places)` (`c` is 1)
     /// on a `Decimal` (spec 14.2).
     DecRound,

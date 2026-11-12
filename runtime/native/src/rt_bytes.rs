@@ -108,6 +108,13 @@ pub fn bytes_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             crate::heap::release(a);
             return h as i64;
         }
+        RtOp::BytesIndexOf => {
+            let at = with_bytes(a, |x| {
+                with_bytes(b, |y| kavach_runtime_core::files::find_bytes(x, y))
+            });
+            release(b);
+            crate::rt_data::optional(at.map(|i| i as i64), code)
+        }
         RtOp::BytesToList => {
             let slots = with_bytes(a, |d| d.iter().map(|x| *x as u64).collect());
             alloc_slots(result, 0, slots)

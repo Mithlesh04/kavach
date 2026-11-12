@@ -17,7 +17,7 @@ Folders mirror the spec chapters. Each folder's README lists its tests and the s
 | [07-contracts/](07-contracts/README.md) | [7. Contracts](../../docs/spec/07-contracts.md) |
 | [08-capabilities/](08-capabilities/README.md) | [8. Capabilities and agents](../../docs/spec/08-capabilities-and-agents/README.md) (8.1 so far) |
 | [09-concurrency/](09-concurrency/README.md) | [9. Concurrency](../../docs/spec/09-concurrency.md) (9.1 so far) |
-| [10-modules/](10-modules/README.md) | [10. Modules and packages](../../docs/spec/10-modules-and-packages.md) (10.1–10.3 so far) |
+| [10-modules/](10-modules/README.md) | [10. Modules and packages](../../docs/spec/10-modules-and-packages/README.md) (10.1–10.3 so far) |
 | [11-testing/](11-testing/README.md) | [11. Testing](../../docs/spec/11-testing.md) |
 | [12-maintainability/](12-maintainability/README.md) | [12. Maintainability](../../docs/spec/12-maintainability.md) |
 | [14-standard-library/](14-standard-library/README.md) | [14. Standard library](../../docs/spec/14-standard-library/README.md) |

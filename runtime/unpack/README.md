@@ -1,6 +1,6 @@
 # runtime/unpack
 
-Packed executables ([spec 10.5](../../docs/spec/10-modules-and-packages.md#105-command-line), [decision 0081](../../docs/decisions/0081-packed-executables.md)): what `kavach build --compress` and `--compress=max` write, and the small starter in front of every packed program.
+Packed executables ([spec 10.5](../../docs/spec/10-modules-and-packages/05-command-line.md), [decision 0081](../../docs/decisions/0081-packed-executables.md)): what `kavach build --compress` and `--compress=max` write, and the small starter in front of every packed program.
 
 | File | What it holds |
 |---|---|

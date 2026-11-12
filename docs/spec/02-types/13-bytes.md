@@ -20,6 +20,7 @@ print(greeting.text() ?? "?")          // hi
 | `b[i]` | `UInt8`: byte `i`; panics when `i` is out of range |
 | `b.get(i)` | `UInt8?`: byte `i`, or `none` |
 | `b.slice(start, end)` | `Bytes` `start..end`; positions past the end are clamped |
+| `b.index_of(part)` | `Int?`: where the bytes `part` first appear in `b`, or `none`; an empty `part` is at 0 |
 | `b.crc32c()` | The CRC32C checksum (Castagnoli, as iSCSI, ext4 and gRPC use), an `Int` in `0..2^32`; the processor computes it where it can |
 | `b.xxhash64()` | The XXH64 hash (seed 0), a `UInt64`: a fast check that data didn't change by accident, as storage engines use it; not for passwords or signatures |
 | `b.text()` | `String?`: the bytes as UTF-8 text, or `none` when they aren't valid UTF-8 |

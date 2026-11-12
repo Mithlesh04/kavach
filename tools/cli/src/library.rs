@@ -46,7 +46,7 @@ pub(crate) fn build_lib(path: &str, dir: Option<&str>) -> ExitCode {
     let names: Vec<&str> = lib.exports.iter().map(|(k, _)| k.as_str()).collect();
     let mut program = match kavach_kir::lower_with(&compiled, &names) {
         Ok(p) => p,
-        Err(u) => return crate::unsupported(&compiled, path, &u),
+        Err(u) => return crate::native::unsupported(&compiled, path, &u),
     };
     kavach_backend_wgsl::attach(&mut program);
     // Exported under their C names.
