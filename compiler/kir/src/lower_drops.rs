@@ -53,7 +53,7 @@ impl<'a> Lowerer<'a> {
             let span = Span::new(0, 0);
             let ty = self.kir_type(&Ty::Adt(def, Vec::new()), span)?;
             let Type::Ref(id) = ty else { continue };
-            let fn_ty = self.shapes_intern(Shape::Func(vec![ty], Type::Unit));
+            let fn_ty = self.shapes_intern(Shape::Func(vec![ty], Type::Unit, None));
             let closure = self.function_value(fid, fn_ty, span)?;
             self.drop_records.push(id);
             let code = ir::Expr {

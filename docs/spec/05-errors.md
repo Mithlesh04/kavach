@@ -39,6 +39,15 @@ fn load_profile(path: String) -> Profile ! ProfileError {
 
 `try` works when the callee's error is part of the caller's error type. For example, `ProfileError` could be `type ProfileError = FileError | ParseError`.
 
+A built-in method that takes a function (`map`, `filter`, `sum`, `sort_by`, `Shared.update`, …) passes that function's error on: given a function that can fail with `E`, the call can fail with `E`, and the method stops at the first error. `update` then leaves the shared value as it was. A function written in Kavach does the same by saying so in its types (3.4).
+
+```kavach
+fn price(o: Order) -> Decimal ! PriceError { … }
+
+const prices = try orders.map(price)              // fails with the first order's PriceError
+const total = orders.sum(o => price(o) catch _ => 0.0)  // handled inside: can't fail
+```
+
 `try` or `catch` on something that can't fail is a warning, and does nothing: `Int("2") catch 0` is just `2`, since the compiler read that text already (2.1).
 
 ## 5.3 catch: handle the error here

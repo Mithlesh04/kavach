@@ -29,7 +29,7 @@ impl Checker<'_> {
                 None => self.fresh(),
             })
             .collect();
-        let ty = Ty::Fn(types, Box::new(self.fresh()));
+        let ty = Ty::Fn(types, Box::new(self.fresh()), None);
         self.locals.insert(def, ty.clone());
         self.deferred.insert(def, (value.clone(), ty));
         true
@@ -48,7 +48,13 @@ impl Checker<'_> {
         };
         for d in waiting {
             if let Some((lambda, ty)) = self.deferred.remove(&d) {
-                self.infer(&lambda, Some(&ty));
+                // One that fails has that in its type (spec 3.3).
+                let actual = self.infer(&lambda, Some(&ty));
+                if let Ty::Fn(_, r, _) = &actual
+                    && matches!(**r, Ty::Result(..))
+                {
+                    self.locals.insert(d, actual);
+                }
             }
         }
     }
@@ -60,9 +66,27 @@ impl Checker<'_> {
         expected: Option<&Ty>,
     ) -> Ty {
         let (want_params, want_ret) = match expected.map(|t| self.inf.shallow(t)) {
-            Some(Ty::Fn(ps, r)) if ps.len() == params.len() => (Some(ps), Some(*r)),
+            Some(Ty::Fn(ps, r, _)) if ps.len() == params.len() => (Some(ps), Some(*r)),
             _ => (None, None),
         };
+        // A `try` or `fail` inside is the lambda's own (spec 3.3): its
+        // error is the one wanted, or the first it meets.
+        let (want_ret, want_err) = match want_ret.map(|r| self.inf.shallow(&r)) {
+            Some(Ty::Result(ok, err)) => (Some(*ok), Some(*err)),
+            other => (other, None),
+        };
+        let err = want_err.clone().unwrap_or_else(|| self.fresh());
+        let outer_ctx = self.ctx.clone();
+        let mut ctx = outer_ctx.clone().unwrap_or(crate::checker::Ctx {
+            name: String::new(),
+            ret: Ty::Error,
+            errors: None,
+            self_ty: None,
+        });
+        ctx.name = "this lambda".into();
+        ctx.errors = Some(err.clone());
+        self.ctx = Some(ctx);
+        let outer_failed = std::mem::replace(&mut self.lambda_failed, false);
         let mut types = Vec::new();
         for (i, p) in params.iter().enumerate() {
             let t = match (&p.ty, &want_params) {
@@ -76,6 +100,7 @@ impl Checker<'_> {
             types.push(t);
         }
         self.copies.push((body.span.start, "lambda"));
+        self.lambdas.push(body.span);
         let outer_loops = std::mem::take(&mut self.loops);
         // A body checked against the wanted result gives that type: a
         // `Node` body is a `Node?` lambda where one is wanted (spec 2.7).
@@ -88,6 +113,13 @@ impl Checker<'_> {
         };
         self.loops = outer_loops;
         self.copies.pop();
-        Ty::Fn(types, Box::new(ret))
+        self.lambdas.pop();
+        self.ctx = outer_ctx;
+        let failed = std::mem::replace(&mut self.lambda_failed, outer_failed);
+        let ret = match failed {
+            true => Ty::Result(Box::new(ret), Box::new(err)),
+            false => ret,
+        };
+        Ty::Fn(types, Box::new(ret), None)
     }
 }

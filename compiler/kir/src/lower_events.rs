@@ -38,7 +38,7 @@ impl Lowerer<'_> {
             let values = values.collect();
             self.join_replay(params[0], name, values, ret, line)
         });
-        let func_ty = self.shapes_intern(Shape::Func(Vec::new(), Type::Unit));
+        let func_ty = self.shapes_intern(Shape::Func(Vec::new(), Type::Unit, None));
         let closure = expr(
             K::Closure {
                 func: thunk,

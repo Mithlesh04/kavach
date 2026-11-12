@@ -108,6 +108,27 @@ impl<'a> Interp<'a> {
                 };
                 Ok(self.json_value(tree))
             }
+            // A function described (spec 2.12): `described` in
+            // `std/json.kav` reads the compiler's description.
+            "describe" => {
+                let arg = match &e.kind {
+                    ExprKind::Call { args, .. } => args.first(),
+                    _ => None,
+                };
+                let tree = arg.and_then(|a| kavach_driver::describe_fn(self.c, &a.value));
+                let reader = self.c.file.items.iter().find_map(|item| match &item.kind {
+                    kavach_ast::ItemKind::Fn(f) if f.name.name == "described" => {
+                        let m = self.c.resolution.module_at(item.span.start);
+                        (self.c.resolution.modules[m].name == "std.json").then_some(f)
+                    }
+                    _ => None,
+                });
+                let (Some(tree), Some(reader)) = (tree, reader) else {
+                    return Err(self.panic("this function can't be described (spec 2.12)", span));
+                };
+                let description = self.json_value(tree);
+                self.call_fn(reader, None, vec![(None, description)], span)
+            }
             "stringify" => {
                 let a = arrange(args, &["value", "indent"]);
                 if let Some(v) = &a[0] {

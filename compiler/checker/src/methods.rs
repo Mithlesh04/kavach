@@ -109,7 +109,7 @@ impl Checker<'_> {
                 self.check_captured_change(base);
             }
             let key = match (&recv, name.name.as_str(), m.params.first()) {
-                (Ty::List(_), "sort_by", Some(Ty::Fn(_, key))) => Some((**key).clone()),
+                (Ty::List(_), "sort_by", Some(Ty::Fn(_, key, _))) => Some((**key).clone()),
                 _ => None,
             };
             // `prices.sum()`, `s.slice(-4)`: say what the call takes.
@@ -131,20 +131,17 @@ impl Checker<'_> {
             // The function given to `update` runs with the value locked.
             let update = matches!(&recv, Ty::Builtin("Shared", _)) && name.name == "update";
             self.updating += u32::from(update);
-            self.args(
-                args,
-                &params,
-                e.span,
-                &format!("`{}`", name.name),
-                "argument",
-            );
+            let label = format!("`{}`", name.name);
+            let ret = self.passing_errors_on(m.ret, e.span, |c| {
+                c.args(args, &params, e.span, &label, "argument");
+            });
             self.updating -= u32::from(update);
             // `people.sort_by(p => (p.age, p.name))`: the key must have an
             // order (spec 14.2).
             if let (Some(key), Some(arg)) = (key, args.first()) {
                 self.require_order(&key, arg.value.span, "`sort_by`'s key");
             }
-            return m.ret;
+            return ret;
         }
         // A field holding a function: `h.on(x)` calls it (spec 3.4).
         if let Ty::Adt(def, adt_args) = &recv
@@ -153,7 +150,7 @@ impl Checker<'_> {
         {
             let subst = self.subst_of(*def, adt_args);
             let fty = self.inf.subst(&f.ty, &subst);
-            if let Ty::Fn(ps, ret) = self.inf.resolve(&fty) {
+            if let Ty::Fn(ps, ret, _) = self.inf.resolve(&fty) {
                 self.check_field_access(*def, f, name);
                 let params: Vec<_> = ps
                     .iter()
@@ -172,7 +169,7 @@ impl Checker<'_> {
         }
         if let Ty::Anon(fs) = &recv
             && let Some((_, fty)) = fs.iter().find(|(n, _)| *n == name.name)
-            && let Ty::Fn(ps, ret) = self.inf.resolve(fty)
+            && let Ty::Fn(ps, ret, _) = self.inf.resolve(fty)
         {
             let params: Vec<_> = ps
                 .iter()

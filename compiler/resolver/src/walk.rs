@@ -379,10 +379,18 @@ impl Resolver {
             }
             TypeKind::Tuple(items) => items.iter().for_each(|x| self.type_expr(x)),
             TypeKind::AnonRecord(fields) => fields.iter().for_each(|(_, x)| self.type_expr(x)),
-            TypeKind::Fn { params, ret } => {
+            TypeKind::Fn {
+                params,
+                ret,
+                errors,
+                uses,
+            } => {
                 params.iter().for_each(|x| self.type_expr(x));
-                if let Some(r) = ret {
+                for r in ret.iter().chain(errors) {
                     self.type_expr(r);
+                }
+                for path in uses.iter().flatten() {
+                    self.use_type(&path.segments[0]);
                 }
             }
             TypeKind::Error => {}

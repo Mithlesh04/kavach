@@ -213,7 +213,7 @@ fn unknown(ty: &Ty) -> bool {
         Ty::Map(a, b) | Ty::Result(a, b) => unknown(a) || unknown(b),
         Ty::Tuple(ts) | Ty::Adt(_, ts) | Ty::Builtin(_, ts) => ts.iter().any(unknown),
         Ty::Anon(fs) => fs.iter().any(|(_, t)| unknown(t)),
-        Ty::Fn(ps, r) => ps.iter().any(unknown) || unknown(r),
+        Ty::Fn(ps, r, _) => ps.iter().any(unknown) || unknown(r),
         _ => false,
     }
 }

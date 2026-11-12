@@ -90,6 +90,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0082](0082-the-json-tape-as-built.md) | A parsed JSON document is one list of words; `Json` arrays and objects point into it and make their list or map only when matched; reads in native code go straight to the tape | Accepted |
 | [0083](0083-dependencies-by-path-and-git.md) | Dependencies by `path` and `git` with `kavach.lock`, before a registry; a dependency's modules are named after it, and `unsafe` is allowed per dependency | Accepted |
 | [0084](0084-environment-variables-and-granted-capabilities.md) | Capabilities granted per dependency (`can`); `env` values are secrets; `.env` files read by `kavach run`, `kavach test` and built programs, never compiled in | Accepted |
+| [0085](0085-function-types-with-errors-and-uses.md) | Function types say their errors and `uses`; a lambda's `try` is its own; built-in methods pass a function's error on; `json.describe(f)` | Accepted |
 
 ## Open decisions
 

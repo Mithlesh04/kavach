@@ -67,7 +67,7 @@ impl Infer {
             Ty::Result(o, e) => Ty::Result(b(o), b(e)),
             Ty::Tuple(ts) => Ty::Tuple(ts.iter().map(g).collect()),
             Ty::Anon(fs) => Ty::Anon(fs.iter().map(|(n, t)| (n.clone(), g(t))).collect()),
-            Ty::Fn(ps, r) => Ty::Fn(ps.iter().map(g).collect(), b(r)),
+            Ty::Fn(ps, r, u) => Ty::Fn(ps.iter().map(g).collect(), b(r), u.clone()),
             Ty::Adt(d, ts) => Ty::Adt(*d, ts.iter().map(g).collect()),
             Ty::Builtin(n, ts) => Ty::Builtin(n, ts.iter().map(g).collect()),
             other => other.clone(),
@@ -113,7 +113,7 @@ impl Infer {
                         .zip(ys)
                         .all(|((n, x), (m, y))| n == m && self.unify(x, y))
             }
-            (Ty::Fn(p1, r1), Ty::Fn(p2, r2)) => {
+            (Ty::Fn(p1, r1, _), Ty::Fn(p2, r2, _)) => {
                 p1.len() == p2.len() && self.unify_all(p1, p2) && self.unify(r1, r2)
             }
             (Ty::Adt(d1, a1), Ty::Adt(d2, a2)) => d1 == d2 && self.unify_args(a1, a2),
@@ -147,7 +147,7 @@ fn contains_var(ty: &Ty, var: u32) -> bool {
             ts.iter().any(|t| contains_var(t, var))
         }
         Ty::Anon(fs) => fs.iter().any(|(_, t)| contains_var(t, var)),
-        Ty::Fn(ps, r) => ps.iter().any(|t| contains_var(t, var)) || contains_var(r, var),
+        Ty::Fn(ps, r, _) => ps.iter().any(|t| contains_var(t, var)) || contains_var(r, var),
         _ => false,
     }
 }

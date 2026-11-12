@@ -35,6 +35,58 @@ impl<'a> Lowerer<'a> {
         Some(self.schema_of(generics.first()?, json, line, e.span))
     }
 
+    /// `json.describe(f)` (spec 2.12): the compiler's description of `f`,
+    /// a constant `Json`, read into an `FnSchema` by `described` in
+    /// `std/json.kav`. `None` when `e` is another call.
+    pub(crate) fn describe_call(
+        &mut self,
+        e: &'a ast::Expr,
+        callee: &'a ast::Expr,
+        args: &'a [ast::Arg],
+        ty: Type,
+    ) -> Option<Lowered<ir::Expr>> {
+        let ast::ExprKind::Field { base, name, .. } = &callee.kind else {
+            return None;
+        };
+        let ast::ExprKind::Name(id) = &base.kind else {
+            return None;
+        };
+        let def = self.c.resolution.uses.get(&id.span.start)?;
+        if name.name != "describe" || self.std_modules.get(def).map(String::as_str) != Some("json")
+        {
+            return None;
+        }
+        let line = self.line(e.span);
+        let tree = args
+            .first()
+            .and_then(|a| kavach_driver::describe_fn(self.c, &a.value));
+        let res = &self.c.resolution;
+        let reader = self.c.file.items.iter().find_map(|item| match &item.kind {
+            ast::ItemKind::Fn(f) if f.name.name == "described" => {
+                let m = res.module_at(item.span.start);
+                (res.modules[m].name == "std.json").then_some(f)
+            }
+            _ => None,
+        });
+        let fid = reader
+            .and_then(|f| self.decl.get(&f.name.span.start))
+            .and_then(|d| self.fn_ids.get(d))
+            .copied();
+        let json_def = res.std_type("Json");
+        Some((|| {
+            let (Some(tree), Some(fid), Some(json_def)) = (tree, fid, json_def) else {
+                return Err(self.unsupported("describing this function", e.span));
+            };
+            let json = self.kir_type(&Ty::Adt(json_def, Vec::new()), e.span)?;
+            let description = self.tree_value(&tree, json, line);
+            Ok(ir::Expr {
+                kind: K::Call(fid, vec![description]),
+                ty,
+                line,
+            })
+        })())
+    }
+
     fn schema_of(
         &mut self,
         written: &'a ast::TypeExpr,

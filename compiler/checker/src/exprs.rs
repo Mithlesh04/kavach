@@ -177,16 +177,23 @@ impl Checker<'_> {
             ExprKind::Lambda { params, body } => self.lambda(params, body, expected),
             ExprKind::DotLambda(body) => {
                 let (param, ret) = match expected.map(|t| self.inf.shallow(t)) {
-                    Some(Ty::Fn(ps, r)) if ps.len() == 1 => (ps[0].clone(), Some(*r)),
+                    Some(Ty::Fn(ps, r, _)) if ps.len() == 1 => (ps[0].clone(), Some(*r)),
                     _ => (self.fresh(), None),
                 };
+                // `.amount` can't fail, whatever the wanted type allows.
+                let ret = ret.map(|r| match self.inf.shallow(&r) {
+                    Ty::Result(ok, _) => *ok,
+                    r => r,
+                });
                 self.its.push(param.clone());
+                self.lambdas.push(body.span);
                 let t = match &ret {
                     Some(r) => self.check_expect(body, r),
                     None => self.value(body, None),
                 };
+                self.lambdas.pop();
                 self.its.pop();
-                Ty::Fn(vec![param], Box::new(t))
+                Ty::Fn(vec![param], Box::new(t), None)
             }
             ExprKind::Try { expr, context } => self.try_expr(expr, context.as_deref()),
             ExprKind::Catch {
@@ -312,7 +319,15 @@ impl Checker<'_> {
                         .iter()
                         .map(|p| self.inf.subst(&p.ty, &subst))
                         .collect();
-                    Ty::Fn(params, Box::new(self.inf.subst(&sig.ret, &subst)))
+                    let ret = self.inf.subst(&sig.ret, &subst);
+                    // Its errors are part of its type (spec 3.4).
+                    let ret = match &sig.errors {
+                        Some(err) => {
+                            Ty::Result(Box::new(ret), Box::new(self.inf.subst(err, &subst)))
+                        }
+                        None => ret,
+                    };
+                    Ty::Fn(params, Box::new(ret), None)
                 }
                 None => Ty::Error,
             },

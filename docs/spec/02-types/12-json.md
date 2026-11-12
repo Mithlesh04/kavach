@@ -68,12 +68,13 @@ const order: Json = [
 | `json.of(value)` | `value` as a `Json` |
 | `json.stringify(value, indent: 0)` | JSON text for a `Json` or any value that can be encoded; `indent` above 0 puts each field on its own line |
 | `json.schema<T>()` | The [JSON Schema](https://json-schema.org) of `T` as a `Json`: what `ask<T>` sends a model (8.4), for modules that work from a type's shape (14.14) |
+| `json.describe(f) -> FnSchema` | The function `f` described: its name, doc comment, parameters with their schemas, the schemas of its result and error, the capabilities it `uses`, and its `example` clauses as text |
 
 **Encoding** works on types the compiler can see through: numbers (sized integers too), `Bool`, `String`, `Char` (text of one character), `Decimal` and `BigInt` (as numbers with all their digits), lists, sets and tuples (arrays), maps with `String` keys (objects), records (objects with the fields in declared order), optionals (`none` is `null`), unions (a variant without fields is its name as text; one with fields is `{"Variant": {fields}}`) and `Json` itself. Anything else is a compile error: functions, maps with other keys, and records with `secret` fields (2.11), so a secret can't leak into JSON by accident. `NaN` and infinities are written as `null`, as JavaScript does.
 
 **Decoding** is the reverse, and strict about values: an integer field takes only a number written without a fraction or exponent that fits its type, and a `BigInt` field one of any size; a `Float` field takes any number, as the nearest `Float`; a `Decimal` field takes any number exactly; text, booleans, arrays and objects must match. A number that doesn't fit its field is a `Mismatch`, as any other value that doesn't fit is. A missing field takes its default or `none` if it has one, otherwise decoding fails. Fields the type doesn't have are ignored, so a service can add fields without breaking its clients.
 
-**A type's schema** is a `Json` value a program can read: a record is `{"type": "object", "properties": {...}, "required": [...]}` with its fields in the order they are declared, `Int` and the sized integers are `{"type": "integer"}`, `Float` and `Decimal` `{"type": "number"}`, `Bool` `{"type": "boolean"}`, `String` `{"type": "string"}`, a list `{"type": "array", "items": ...}`, an optional `{"anyOf": [..., {"type": "null"}]}`, a union `{"anyOf": [...]}` of its variants as JSON writes them, and a map with `String` keys `{"type": "object", "additionalProperties": ...}`. A type with no schema (maps with other keys, tuples, functions) is a compile error. `ask<T>` (8.4) still refuses maps: a model answers closed objects only.
+**A type's schema** is a `Json` value a program can read: a record is `{"type": "object", "properties": {...}, "required": [...]}` with its fields in the order they are declared, `Int` and the sized integers are `{"type": "integer"}`, `Float` and `Decimal` `{"type": "number"}`, `Bool` `{"type": "boolean"}`, `String` `{"type": "string"}`, a list `{"type": "array", "items": ...}`, an optional `{"anyOf": [..., {"type": "null"}]}`, a union `{"anyOf": [...]}` of its variants as JSON writes them, and a map with `String` keys `{"type": "object", "additionalProperties": ...}`. A type's doc comment (`///`) becomes its schema's `"description"`, and so does a field's. A type with no schema (maps with other keys, tuples, functions) is a compile error. `ask<T>` (8.4) still refuses maps: a model answers closed objects only.
 
 ```kavach
 type Point {
@@ -85,6 +86,16 @@ print(json.schema<Point>().get("properties"))   // {"x":{"type":"integer"},"y":{
 ```
 
 ```kavach
+/// A place on the map.
+type Place {
+    /// How far east, in metres.
+    x: Int
+}
+
+print(json.schema<Place>().get("description"))   // "A place on the map."
+```
+
+```kavach
 type Rates {
     base: String
     rates: [String: Float]
@@ -92,6 +103,43 @@ type Rates {
 
 const r = try json.decode<Rates>(body)
 ```
+
+**A function described.** `json.describe(f)` works from `f`'s signature when the program is compiled, so `f` must name a function, not hold a function value; it gives a constant, and reading it costs nothing more than reading any value. A web framework uses it, with `json.schema<T>()`, to write an OpenAPI description of its handlers ([decision 0085](../../decisions/0085-function-types-with-errors-and-uses.md)).
+
+```kavach
+pub type FnSchema {
+    pub name: String
+    pub doc: String               // the `///` comment, its lines joined by spaces; "" when it has none
+    pub params: [ParamSchema]
+    pub result: Json              // the schema of what it returns; {"type": "null"} for nothing
+    pub error: Json               // the schema of its error; null when it can't fail
+    pub capabilities: [String]    // what it `uses`, written or worked out (8.1)
+    pub examples: [String]        // each `example` clause as written (7.6)
+}
+
+pub type ParamSchema {
+    pub name: String
+    pub schema: Json
+}
+```
+
+```kavach
+/// Makes an order.
+fn create(o: NewOrder) -> Order ! ApiError uses Db { … }
+
+/// The price of `qty` items.
+fn price(qty: Int) -> Int
+    example price(3) == 30
+{ … }
+
+const d = json.describe(create)
+print(d.doc)                     // Makes an order.
+print(d.params[0].name)          // o
+print(d.capabilities)            // ["Db"]
+print(json.describe(price).examples)   // ["price(3) == 30"]
+```
+
+A parameter, result or error whose type has no schema (a function, a map with other keys) is a compile error, as for `json.schema<T>()`.
 
 **Safe by default.** Text from outside can be hostile, so parsing and decoding have limits, which a call can raise: nesting deeper than `max_depth: 128` (at most 10_000, whatever the call says), text longer than `max_bytes: 64_000_000`, or an object with more than `max_fields: 100_000` fields is an error, not a stack overflow or a memory blow-up. A key that appears twice in one object is an error. Reading a number never rounds it silently: a number a field can't hold is an error, and a method gives `none`. A number whose exponent puts it beyond 10^10_000, or below 10^-10_000, is out of range for `decimal()` and `bigint()` too, so a short text like `1e999999999` can't make a huge value. Invalid escapes, control characters in text and unpaired surrogates are errors too. `NaN`, `Infinity`, hex numbers and the rest of JSON5 are syntax errors, even with `comments: true`.
 

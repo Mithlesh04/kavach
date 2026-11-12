@@ -79,9 +79,13 @@ pub fn encode_shapes(shapes: &[Shape]) -> String {
         Shape::Shared(t) => format!("shared {}", ty(*t)),
         Shape::Task(t) => format!("task {}", ty(*t)),
         Shape::Channel(t) => format!("chan {}", ty(*t)),
-        Shape::Func(params, ret) => {
+        Shape::Func(params, ret, err) => {
             let params: Vec<String> = params.iter().map(|t| ty(*t)).collect();
-            format!("fn {} {}", ty(*ret), params.join(" "))
+            let word = match err {
+                Some(e) => format!("fnf {}", ty(*e)),
+                None => "fn".to_string(),
+            };
+            format!("{word} {} {}", ty(*ret), params.join(" "))
                 .trim_end()
                 .to_string()
         }
@@ -152,6 +156,15 @@ pub fn decode_shapes(text: &str) -> Option<Vec<Shape>> {
                         .map(|t| parse_ty(t))
                         .collect::<Option<_>>()?,
                     parse_ty(rest.first()?)?,
+                    None,
+                ),
+                "fnf" => Shape::Func(
+                    rest[2..]
+                        .iter()
+                        .map(|t| parse_ty(t))
+                        .collect::<Option<_>>()?,
+                    parse_ty(rest.get(1)?)?,
+                    Some(parse_ty(rest.first()?)?),
                 ),
                 "clo" => Shape::Closure(rest.iter().map(|t| parse_ty(t)).collect::<Option<_>>()?),
                 "opt" => Shape::Optional(parse_ty(rest.first()?)?),
@@ -220,8 +233,8 @@ mod tests {
             Shape::Shared(Type::Bool),
             Shape::Task(Type::F64),
             Shape::Channel(Type::I64),
-            Shape::Func(vec![Type::I64, Type::Ref(0)], Type::Unit),
-            Shape::Func(Vec::new(), Type::F64),
+            Shape::Func(vec![Type::I64, Type::Ref(0)], Type::Unit, None),
+            Shape::Func(vec![Type::Bool], Type::F64, Some(Type::Ref(0))),
             Shape::Closure(vec![Type::Ref(1)]),
             Shape::Closure(Vec::new()),
             Shape::Optional(Type::Char),

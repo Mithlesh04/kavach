@@ -33,7 +33,7 @@ impl<'a> Lowerer<'a> {
         let thunk = self.task_thunk(body, env_ty, ret, error_ty, line);
         self.restore_function(saved);
         let thunk = self.add_function(thunk);
-        let func_ty = self.shapes_intern(Shape::Func(Vec::new(), Type::Unit));
+        let func_ty = self.shapes_intern(Shape::Func(Vec::new(), Type::Unit, None));
         let closure = K::Closure {
             func: thunk,
             env: env_ty,

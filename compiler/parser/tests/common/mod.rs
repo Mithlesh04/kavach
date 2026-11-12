@@ -71,12 +71,25 @@ pub fn ty(t: &TypeExpr) -> String {
             "(anon {})",
             list(fs, |(n, t)| format!("{}: {}", n.name, ty(t)))
         ),
-        TypeKind::Fn { params, ret } => {
+        TypeKind::Fn {
+            params,
+            ret,
+            errors,
+            uses,
+        } => {
             let r = ret
                 .as_ref()
                 .map(|r| format!(" -> {}", ty(r)))
                 .unwrap_or_default();
-            format!("fn({}){r}", list(params, ty))
+            let e = errors
+                .as_ref()
+                .map(|e| format!(" ! {}", ty(e)))
+                .unwrap_or_default();
+            let u = uses
+                .as_ref()
+                .map(|u| format!(" uses ({})", list(u, path)))
+                .unwrap_or_default();
+            format!("fn({}){r}{e}{u}", list(params, ty))
         }
         TypeKind::Error => "ERR".to_string(),
     }

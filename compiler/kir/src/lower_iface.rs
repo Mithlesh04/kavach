@@ -105,7 +105,7 @@ impl Lowerer<'_> {
             return Ok(shim);
         }
         let line = 0;
-        let Some(Shape::Func(param_types, ret)) = self.shapes.shape(fty).cloned() else {
+        let Some(Shape::Func(param_types, ret, _)) = self.shapes.shape(fty).cloned() else {
             return Err(Unsupported {
                 feature: "this interface method".to_string(),
                 line,
@@ -238,7 +238,7 @@ impl Lowerer<'_> {
             } else {
                 self.inout_tuple(ret, &inout)
             };
-            let fty = self.shapes.intern(Shape::Func(params, ret));
+            let fty = self.shapes.intern(Shape::Func(params, ret, None));
             methods.push((f.name.name.clone(), fty));
         }
         self.subst = outer;

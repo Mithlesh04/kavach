@@ -1,0 +1,20 @@
+// Rule: a function that can fail doesn't fit a function type without `!`: its error would be lost.
+// Spec: 3.4
+// expect compile error
+
+type E = Big(n: Int)
+
+fn check(n: Int) -> Int ! E {
+    if n > 5 {
+        fail E.Big(n: n)
+    }
+    n
+}
+
+fn apply(f: fn(Int) -> Int, n: Int) -> Int {
+    f(n)
+}
+
+fn main() {
+    print(apply(check, 9))      // error: `fn(Int) -> Int ! E` can fail
+}

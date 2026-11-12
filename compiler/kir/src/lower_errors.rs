@@ -45,7 +45,26 @@ impl<'a> Lowerer<'a> {
             return o;
         }
         self.inout_pending = None;
-        let ir::Expr { kind, ty: ok, line } = self.expr(e)?;
+        let outer = self.pending_error.take();
+        let lowered = self.expr(e)?;
+        // A built-in loop given a function that can fail: its own error.
+        if let Some(error) = std::mem::replace(&mut self.pending_error, outer) {
+            let value = self.new_local(lowered.ty);
+            return Ok(Outcome {
+                stmt: Stmt::Let(value, lowered),
+                value,
+                error,
+                ok: self.locals[value as usize],
+                err,
+                plain,
+            });
+        }
+        if let Some(name) = self.unhandled_failing_method(e) {
+            return Err(
+                self.unsupported(format!("`{name}` given a function that can fail"), e.span)
+            );
+        }
+        let ir::Expr { kind, ty: ok, line } = lowered;
         if let Some(p) = self.inout_pending.take() {
             return self.inout_outcome(p, kind, ok, err, plain, line);
         }

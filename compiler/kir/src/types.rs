@@ -204,13 +204,17 @@ impl Lowerer<'_> {
                 Some(t) => *t,
                 None => return Err(self.unsupported("generic types here", span)),
             },
-            Ty::Fn(params, ret) => {
+            Ty::Fn(params, ret, _) => {
                 let params = params
                     .iter()
                     .map(|t| self.kir_type(t, span))
                     .collect::<Lowered<Vec<_>>>()?;
+                let err = match &**ret {
+                    Ty::Result(_, e) => Some(self.kir_type(e, span)?),
+                    _ => None,
+                };
                 let ret = self.kir_type(ret, span)?;
-                self.shapes.intern(Shape::Func(params, ret))
+                self.shapes.intern(Shape::Func(params, ret, err))
             }
             // A call that can fail: its success value (spec 5).
             Ty::Result(ok, _) => self.kir_type(ok, span)?,
@@ -344,7 +348,12 @@ impl Lowerer<'_> {
                 let (k, v) = (self.written_type(k)?, self.written_type(v)?);
                 self.map_type(k, v)
             }
-            TypeKind::Fn { params, ret } => {
+            TypeKind::Fn {
+                params,
+                ret,
+                errors,
+                ..
+            } => {
                 let params = params
                     .iter()
                     .map(|t| self.written_type(t))
@@ -353,7 +362,11 @@ impl Lowerer<'_> {
                     Some(r) => self.written_type(r)?,
                     None => Type::Unit,
                 };
-                self.shapes.intern(Shape::Func(params, ret))
+                let err = match errors {
+                    Some(e) => Some(self.written_type(e)?),
+                    None => None,
+                };
+                self.shapes.intern(Shape::Func(params, ret, err))
             }
             TypeKind::Tuple(items) => {
                 let items = items

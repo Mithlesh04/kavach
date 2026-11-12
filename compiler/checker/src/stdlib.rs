@@ -254,7 +254,7 @@ impl Checker<'_> {
             // `f` runs after `d`, in a task of the caller's (spec 14.4).
             ("time", "after") => {
                 let t = self.fresh();
-                let f = Ty::Fn(Vec::new(), Box::new(t.clone()));
+                let f = Ty::Fn(Vec::new(), Box::new(t.clone()), None);
                 (
                     vec![p("d", &self.builtin_ty("Duration")), p("f", &f)],
                     Ty::Builtin("Task", vec![t]),
@@ -310,6 +310,7 @@ impl Checker<'_> {
                 }
                 (Vec::new(), json)
             }
+            ("json", "describe") => return Some(self.describe_call(args, span)),
             ("json", "decode" | "decode_value") => {
                 let Some(t) = generics.first().map(|g| self.lower(g, None)) else {
                     self.error(

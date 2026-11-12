@@ -41,9 +41,15 @@ impl<'a> Lowerer<'a> {
         }
         let mut type_args = Vec::new();
         for g in &f.generics {
-            let found = self.decl.get(&g.name.span.start).and_then(|p| subst.get(p));
-            match found {
+            let p = self.decl.get(&g.name.span.start).copied();
+            match p.and_then(|p| subst.get(&p)) {
                 Some(t) => type_args.push(*t),
+                // `! E` where no function given here can fail (spec 3.4):
+                // the error is never made, so any type stands in for it.
+                None if p.is_some() && self.names_an_error(f, &g.name.name) => {
+                    subst.insert(p.expect("checked above"), Type::I64);
+                    type_args.push(Type::I64);
+                }
                 None => return Err(self.unsupported("this generic call", span)),
             }
         }
@@ -64,7 +70,37 @@ impl<'a> Lowerer<'a> {
             ty,
             line,
         };
+        // An instance that can't fail here still returns an error.
+        if f.errors.is_some() && !self.can_fail(e) {
+            // Its error is the stand-in above.
+            let err = self.held_error(Type::I64);
+            let (value, error) = (self.new_local(ty), self.new_local(err));
+            let at = |kind| ir::Expr { kind, ty, line };
+            return Ok(at(K::Block(ir::Block {
+                stmts: vec![ir::Stmt::LetResult { value, error, call }],
+                value: (ty != Type::Unit).then(|| Box::new(self.local_expr(value, line))),
+            })));
+        }
         self.write_back(fid, call, args, 0, ty)
+    }
+
+    /// Whether type parameter `name` of `f` is an error type: in its
+    /// `! E`, or in a function type's among its parameters. Left unknown
+    /// by the arguments, it is in no other place.
+    fn names_an_error(&self, f: &ast::FnDecl, name: &str) -> bool {
+        let after_bang = |text: &str| {
+            text.split('!').skip(1).any(|e| {
+                e.split(|c: char| !c.is_alphanumeric() && c != '_')
+                    .any(|w| w == name)
+            })
+        };
+        f.errors
+            .as_ref()
+            .is_some_and(|t| self.text(t.span).trim() == name)
+            || f.params
+                .iter()
+                .filter_map(|p| p.ty.as_ref())
+                .any(|t| after_bang(self.text(t.span)))
     }
 
     /// Generic function `def` used as a value of function type `ty`
@@ -76,7 +112,7 @@ impl<'a> Lowerer<'a> {
         span: ast::Span,
     ) -> Lowered<ir::Expr> {
         let f = self.generic_fns[&def];
-        let Some(Shape::Func(params, ret)) = self.shapes.shape(ty).cloned() else {
+        let Some(Shape::Func(params, ret, _)) = self.shapes.shape(ty).cloned() else {
             return Err(self.unsupported("generic functions as values", span));
         };
         let mut subst = HashMap::new();
@@ -262,9 +298,20 @@ impl<'a> Lowerer<'a> {
                 self.infer_args(k, kt, out);
                 self.infer_args(v, vt, out);
             }
-            (TypeKind::Fn { params, ret }, Some(Shape::Func(ps, r))) => {
+            (
+                TypeKind::Fn {
+                    params,
+                    ret,
+                    errors,
+                    ..
+                },
+                Some(Shape::Func(ps, r, err)),
+            ) => {
                 for (a, t) in params.iter().zip(ps) {
                     self.infer_args(a, t, out);
+                }
+                if let (Some(e), Some(t)) = (errors, err) {
+                    self.infer_args(e, t, out);
                 }
                 if let Some(ret) = ret {
                     self.infer_args(ret, r, out);

@@ -1,0 +1,17 @@
+// Rule: with `uses` in a function type, a function value may use only what the type lists; a type without `uses` sets no limit.
+// Spec: 3.4, 8.1
+// expect compile error
+
+use std.net
+
+fn talk(n: Int) -> Int uses Net {
+    n
+}
+
+fn run_quietly(f: fn(Int) -> Int uses Console, n: Int) -> Int {
+    f(n)
+}
+
+fn main() {
+    print(run_quietly(talk, 1))     // error: `talk` uses Net, but the function type allows only Console
+}

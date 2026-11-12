@@ -41,6 +41,7 @@ mod lower_events;
 mod lower_every;
 mod lower_expr;
 mod lower_fn;
+mod lower_fn_errors;
 mod lower_generic;
 mod lower_gpu;
 mod lower_guard;

@@ -137,9 +137,11 @@ pub enum Shape {
     Channel(Type),
     /// A compiled regular expression (spec 14.8).
     Regex,
-    /// A function value: parameter types and return type (spec 3.4).
-    /// The object behind it is a `Closure`.
-    Func(Vec<Type>, Type),
+    /// A function value: parameter types, return type, and the error it
+    /// can fail with (spec 3.4): one that can fail returns its value and
+    /// an error, as a failing function does. The object behind it is a
+    /// `Closure`.
+    Func(Vec<Type>, Type, Option<Type>),
     /// A closure object: the function's address, then the captured
     /// values of these types.
     Closure(Vec<Type>),

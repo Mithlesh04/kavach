@@ -34,6 +34,22 @@ Rules:
 5. `debug()` needs no capability (it is removed from release builds).
 6. Logging with `std.log` needs no capability: the program's owner chooses where events go, not the code that writes them ([14.12](../14-standard-library/12-log.md), [decision 0023](../../decisions/0023-logging-needs-no-capability.md)).
 
+A function value carries the rights of the code that made it: naming a function as a value, or writing a lambda, needs what that function uses, as calling it would. Calling a function value needs nothing more, so a library can call the functions it is given (a web framework its handlers) without being granted what they use (10.12). A function type can limit what its functions may use with `uses` (3.4, [decision 0085](../../decisions/0085-function-types-with-errors-and-uses.md)).
+
+```kavach
+fn twice(f: fn(Int) -> Int, n: Int) -> Int {     // pure: it only calls what it is given
+    f(f(n))
+}
+
+pub fn shout(n: Int) -> Int uses Console {          // pays for the lambda's `print`
+    const loud = x => {
+        print(x)
+        x + 1
+    }
+    twice(loud, n)
+}
+```
+
 Reading a signature tells you what code can do:
 
 ```kavach

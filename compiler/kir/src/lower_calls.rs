@@ -20,6 +20,9 @@ impl<'a> Lowerer<'a> {
         if let Some(schema) = self.schema_call(e, callee, ty) {
             return schema;
         }
+        if let Some(described) = self.describe_call(e, callee, args, ty) {
+            return described;
+        }
         let line = self.line(e.span);
         let res = &self.c.resolution;
         match &callee.kind {

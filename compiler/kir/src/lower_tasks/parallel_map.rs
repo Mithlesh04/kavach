@@ -171,7 +171,7 @@ impl<'a> Lowerer<'a> {
             env: env_ty,
             captures: vec![local(f_local, fn_ty, line), local(item, item_ty, line)],
         };
-        let func_ty = self.shapes_intern(Shape::Func(Vec::new(), Type::Unit));
+        let func_ty = self.shapes_intern(Shape::Func(Vec::new(), Type::Unit, None));
         // Each task is a thread (kind 1, as `spawn thread`): in a release
         // build it computes ahead on a core of its own until its first
         // effect, and takes its turn there (decision 0048), so the turns

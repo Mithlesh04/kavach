@@ -104,7 +104,14 @@ pub fn show(c: &Compiled, ty: &Ty) -> String {
         Ty::Optional(t) => format!("{}?", show(c, t)),
         Ty::Range(t) => format!("Range<{}>", show(c, t)),
         Ty::Tuple(ts) => format!("({})", list(ts)),
-        Ty::Fn(ps, r) => format!("fn({}) -> {}", list(ps), show(c, r)),
+        Ty::Fn(ps, r, limit) => {
+            let uses = match limit.as_deref() {
+                None => String::new(),
+                Some([one]) => format!(" uses {one}"),
+                Some(caps) => format!(" uses ({})", caps.join(", ")),
+            };
+            format!("fn({}) -> {}{uses}", list(ps), show(c, r))
+        }
         Ty::Adt(d, ts) => format!("{}{}", name(*d), args(ts)),
         Ty::Builtin(n, ts) => format!("{n}{}", args(ts)),
         Ty::Param(d) => name(*d),

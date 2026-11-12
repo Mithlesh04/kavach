@@ -1,0 +1,21 @@
+// Rule: the code that makes a function value pays for what it uses; calling the value needs nothing more, so a pure function can call what it is given.
+// Spec: 8.1
+// expect output: 1
+// expect output: 3
+// expect output: 3
+
+fn twice(f: fn(Int) -> Int, n: Int) -> Int {     // pure
+    f(f(n))
+}
+
+fn shout(n: Int) -> Int uses Console {            // pays for the lambda's `print`
+    const loud = x => {
+        print(x)
+        x + 2
+    }
+    twice(loud, n)
+}
+
+fn main() {
+    print(shout(1) - 2)
+}

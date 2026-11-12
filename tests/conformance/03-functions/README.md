@@ -36,3 +36,6 @@ Conformance tests for spec chapter [3. Functions](../../../docs/spec/03-function
 | 3.9, 2.15 | [inout-through-an-interface.kav](inout-through-an-interface.kav) | A call through an interface value changes the caller's variable. | runs |
 | 3.9 | [inout-passes-on-to-other-calls.kav](inout-passes-on-to-other-calls.kav) | An `inout` parameter passed on as `inout`, to another function or a recursive call, changes the first caller's variable. | runs |
 | 3.9, 3.3 | [inout-is-a-copy-in-a-lambda.kav](inout-is-a-copy-in-a-lambda.kav) | A lambda changing an `inout` parameter changes its own copy, with a warning. | warning |
+| 3.4 | [function-types-say-their-errors.kav](function-types-say-their-errors.kav) | A function type says its errors, `fn(P) -> R ! E`; `E` may be a type parameter, so generic code keeps the error type, and a function that can't fail fits too. | runs |
+| 3.4 | [a-function-that-can-fail-needs-a-type-that-says-so.kav](a-function-that-can-fail-needs-a-type-that-says-so.kav) | A function that can fail doesn't fit a function type without `!`. | compile error |
+| 3.3 | [a-lambdas-try-is-its-own.kav](a-lambdas-try-is-its-own.kav) | A `try` inside a lambda ends the lambda's call with the error, so the lambda can fail, stored or passed on. | runs |

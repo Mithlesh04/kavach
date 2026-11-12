@@ -18,7 +18,7 @@ impl Checker<'_> {
         };
         // A callback: a C function pointer, with C types only.
         let callback = |c: &Self, t: &Ty| match t {
-            Ty::Fn(params, ret) => {
+            Ty::Fn(params, ret, _) => {
                 params.iter().all(|p| *p != Ty::Unit && plain(c, p)) && plain(c, ret)
             }
             _ => false,

@@ -15,6 +15,7 @@ impl Checker<'_> {
             .map(|c| (c.name.clone(), c.errors.clone()))
         {
             Some((_, Some(err))) => {
+                self.lambda_failed = true;
                 if matches!(err, Ty::Builtin("Error", _)) {
                     self.value(x, None);
                 } else {
@@ -80,7 +81,7 @@ impl Checker<'_> {
                 let (e, o) = (self.show(&err), self.show(&own));
                 self.error(expr.span, format!("`try` can't pass on `{e}`: `{name}` only returns `! {o}`"));
             }
-            Some(_) => {}
+            Some(_) => self.lambda_failed = true,
         }
         *ok
     }

@@ -77,6 +77,12 @@ const sums = [1, 2, 3].map(x => {
 // sums is [1, 2, 3], and total is still 0
 ```
 
+A `try` or `fail` inside a lambda belongs to the lambda: it ends that call of the lambda with the error, and the lambda is a function that can fail (3.4). The error never jumps out of the function the lambda was written in, since the lambda may be called long after that function has returned ([decision 0085](../decisions/0085-function-types-with-errors-and-uses.md)). A built-in method given such a lambda passes its error on (5.2):
+
+```kavach
+const prices = try orders.map(o => try price(o))    // the first order that fails stops `map`
+```
+
 ### Dot shorthand
 
 Assigning to an outside variable inside a lambda changes only the lambda's copy, so the variable outside stays as it was. That is rarely what was meant, so it gives a warning, and the same inside `spawn { … }` (9.5):
@@ -108,6 +114,30 @@ const result = op(2, 3)
 ```
 
 A generic function (2.9) used as a value takes its types from where it is used: `const ints: fn([Int]) -> Int? = first`.
+
+A function type says what its functions can fail with and what they may use, in the order of a signature (3.5): `fn(NewOrder) -> Order ! ApiError uses Db`. Several capabilities go in parentheses, `uses (Net, Db)`, so that a `,` after the type still ends it ([decision 0085](../decisions/0085-function-types-with-errors-and-uses.md)).
+
+- A function that can fail fits only a function type that says so, with an error its own fits (5.2). A function that can't fail fits any.
+- Calling a function value that can fail is a call that can fail: handle it with `try`, `catch` or `match` (chapter 5).
+- The error can be a type parameter, so generic code keeps the error type of the function it is given, and a `match` on it stays exhaustive.
+- With `uses`, a function value may use only what its type lists. Without it, the type sets no limit. Either way, the code that makes the value, by naming a function or writing a lambda, must have what the function uses (8.1).
+
+```kavach
+type ApiError = OutOfStock(item: String) | Bad(reason: String)
+
+fn create(o: NewOrder) -> Order ! ApiError uses Db { … }
+
+fn route<P, R, E>(input: P, handler: fn(P) -> R ! E) -> R ! E {
+    try handler(input)
+}
+
+const strict: fn(NewOrder) -> Order = create               // error: `create` can fail with `ApiError`
+const loose: fn(NewOrder) -> Order ! ApiError uses Fs = create   // error: `create` uses `Db`, and this type allows only `Fs`
+const order = route(new_order, create) catch e => match e {
+    ApiError.OutOfStock(item) => …,
+    ApiError.Bad(reason) => …,
+}
+```
 
 A record field holding a function is called like a method: with `type Handler { on: fn(Int) -> Int }`, both `h.on(x)` and `(h.on)(x)` call the field's function. A method of the same name on the type wins over the field.
 

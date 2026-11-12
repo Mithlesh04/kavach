@@ -91,7 +91,7 @@ impl<'a> Lowerer<'a> {
                     return Err(self.unsupported("this lambda", f.span));
                 };
                 let ret = match self.c.expr_types.get(&(f.span.start, f.span.end)) {
-                    Some(Ty::Fn(_, ret)) => self.kir_type(&ret.clone(), f.span)?,
+                    Some(Ty::Fn(_, ret, _)) => self.kir_type(&ret.clone(), f.span)?,
                     _ => return Err(self.unsupported("this lambda", f.span)),
                 };
                 let local = self.new_local(arg.ty);
@@ -166,7 +166,15 @@ impl<'a> Lowerer<'a> {
         };
         let mut stmts = vec![Stmt::Let(src, list), Stmt::Let(acc, at(start, ty))];
         let item_value = self.local_expr(item, line);
-        let value = self.inline_lambda(f, vec![item_value], line)?;
+        // A function that can fail is called, not inlined: its first
+        // error ends the loop (spec 5.2).
+        let (value, round) = match self.failing_rounds(f, item_value.clone())? {
+            Some((setup, round, value)) => {
+                stmts.extend(setup);
+                (value, round)
+            }
+            None => (self.inline_lambda(f, vec![item_value], line)?, Vec::new()),
+        };
         let body = match method {
             "filter" => {
                 let keep = self.push_to(acc, self.local_expr(item, line));
@@ -217,12 +225,14 @@ impl<'a> Lowerer<'a> {
             }
             _ => self.flat_push(acc, value, line)?,
         };
+        let mut each = round;
+        each.push(Stmt::Expr(body));
         stmts.push(Stmt::ForEach {
             var: item,
             index,
             list: src,
             body: Block {
-                stmts: vec![Stmt::Expr(body)],
+                stmts: each,
                 value: None,
             },
         });

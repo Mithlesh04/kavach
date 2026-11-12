@@ -49,10 +49,34 @@ impl Checker<'_> {
                 fs.sort_by(|a, b| a.0.cmp(&b.0));
                 Ty::Anon(fs)
             }
-            TypeKind::Fn { params, ret } => Ty::Fn(
-                params.iter().map(|t| self.lower(t, self_ty)).collect(),
-                Box::new(ret.as_ref().map_or(Ty::Unit, |r| self.lower(r, self_ty))),
-            ),
+            // A function that can fail returns a `Result` (spec 3.4).
+            TypeKind::Fn {
+                params,
+                ret,
+                errors,
+                uses,
+            } => {
+                let r = ret.as_ref().map_or(Ty::Unit, |r| self.lower(r, self_ty));
+                let r = match errors {
+                    Some(e) => Ty::Result(Box::new(r), Box::new(self.lower(e, self_ty))),
+                    None => r,
+                };
+                let limit = uses.as_ref().map(|paths| {
+                    paths
+                        .iter()
+                        .map(|p| {
+                            let names: Vec<&str> =
+                                p.segments.iter().map(|s| s.name.as_str()).collect();
+                            names.join(".")
+                        })
+                        .collect()
+                });
+                Ty::Fn(
+                    params.iter().map(|t| self.lower(t, self_ty)).collect(),
+                    Box::new(r),
+                    limit,
+                )
+            }
             TypeKind::Error => Ty::Error,
         }
     }

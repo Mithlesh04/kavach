@@ -57,6 +57,11 @@ impl Checker<'_> {
     }
 
     fn note(&mut self, need: Need, span: Span) {
+        // Each lambda around the code needs it too (spec 3.4).
+        for l in &self.lambdas {
+            let at = self.lambda_needs.entry((l.start, l.end)).or_default();
+            at.push(need.clone());
+        }
         if let Some(f) = self.current_fn {
             let in_contract = self.in_contract;
             self.needs.entry(f).or_default().push(NeedAt {
@@ -293,6 +298,8 @@ impl Checker<'_> {
                 ));
             }
         }
+        let lambdas = std::mem::take(&mut self.lambda_needs);
+        errors.extend(self.limits_broken(&effective, &lambdas));
         errors.sort_by_key(|(s, _)| s.start);
         for (span, text) in errors {
             self.error(span, text);

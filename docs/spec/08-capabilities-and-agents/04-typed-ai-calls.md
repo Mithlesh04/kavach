@@ -14,7 +14,7 @@ const decision = try ask<RefundDecision>("Should we refund order {order.id}?")
 ```
 
 - Requires the `Ai` capability.
-- Kavach builds an output schema from `T`. Doc comments (`///`) on fields become field descriptions for the model.
+- Kavach builds an output schema from `T`. Doc comments (`///`) on types and fields become their descriptions for the model.
 - The first try writes `T` into the prompt in a short form (its fields, types, choices and doc comments), which costs a third of the tokens of the provider's structured-output mode ([decision 0057](../../decisions/0057-ask-puts-the-type-in-the-prompt.md)). The response is validated against `T`. An answer that doesn't fit is asked again in structured-output mode, which holds the model to the schema (default: 2 retries), then fails with `AiError.InvalidOutput`.
 - The model is chosen in the code, with a `Model` value from `std.ai` ([decision 0056](../../decisions/0056-the-model-is-chosen-in-code.md), its settings [decision 0059](../../decisions/0059-model-settings-follow-the-providers.md)):
 

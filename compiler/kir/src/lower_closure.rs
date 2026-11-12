@@ -59,7 +59,7 @@ impl<'a> Lowerer<'a> {
     /// The function type `ty` as (parameter types, return type).
     pub(crate) fn fn_parts(&self, ty: Type, span: ast::Span) -> Lowered<(Vec<Type>, Type)> {
         match self.shapes.shape(ty) {
-            Some(Shape::Func(params, ret)) => Ok((params.clone(), *ret)),
+            Some(Shape::Func(params, ret, _)) => Ok((params.clone(), *ret)),
             _ => Err(self.unsupported("this function value", span)),
         }
     }
@@ -105,7 +105,10 @@ impl<'a> Lowerer<'a> {
         let saved = self.save_function(ret);
         let lowered = self.lambda_function(f, env_ty, &param_types, ret, &captured, &types, line);
         self.restore_function(saved);
-        let func = self.add_function(lowered?);
+        let mut lowered = lowered?;
+        // A `try` or `fail` inside is the lambda's own (spec 3.3).
+        lowered.fails = self.fn_error(ty).is_some();
+        let func = self.add_function(lowered);
         Ok(ir::Expr {
             kind: K::Closure {
                 func,
@@ -216,6 +219,7 @@ impl<'a> Lowerer<'a> {
     ) -> Lowered<ir::Expr> {
         let line = self.line(span);
         let (param_types, ret) = self.fn_parts(ty, span)?;
+        let own = self.fn_error(ty);
         let env_ty = self.shapes_intern(Shape::Closure(Vec::new()));
         let wrapper = match self.wrappers.get(&fid) {
             Some(w) => *w,
@@ -230,7 +234,9 @@ impl<'a> Lowerer<'a> {
                     line,
                 };
                 let mut body = ir::Block::default();
-                if ret == Type::Unit {
+                if let Some(own) = own {
+                    body = self.passing_on(call, own);
+                } else if ret == Type::Unit {
                     body.stmts.push(Stmt::Expr(call));
                 } else {
                     body.value = Some(Box::new(call));
@@ -244,7 +250,7 @@ impl<'a> Lowerer<'a> {
                     locals: self.locals.clone(),
                     body,
                     line,
-                    fails: false,
+                    fails: own.is_some(),
                     external: None,
                 };
                 self.restore_function(saved);

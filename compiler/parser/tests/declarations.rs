@@ -76,6 +76,14 @@ fn functions_and_signatures() {
             "(fn op () -> fn(Int Int) -> Int {})",
         ),
         (
+            "fn route<P, R, E>(f: fn(P) -> R ! E uses Db, n: Int) -> R ! E {}",
+            "(fn route <P R E> (f:fn(P) -> R ! E uses (Db) n:Int) -> R ! E {})",
+        ),
+        (
+            "fn run(f: fn() ! Oops uses (Net, Fs.read)) {}",
+            "(fn run (f:fn() ! Oops uses (Net Fs.read)) {})",
+        ),
+        (
             "fn main() ! Error {\n  print(1)\n}",
             "(fn main () ! Error {(call print 1)})",
         ),

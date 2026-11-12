@@ -109,7 +109,7 @@ impl Checker<'_> {
                 named: Vec::new(),
             })
         };
-        let f = |p: Ty, r: Ty| Ty::Fn(vec![p], Box::new(r));
+        let f = |p: Ty, r: Ty| Ty::Fn(vec![p], Box::new(r), None);
         let list = |t: Ty| Ty::List(Box::new(t));
         let opt = |t: Ty| Ty::Optional(Box::new(t));
         match recv {

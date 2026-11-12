@@ -175,7 +175,7 @@ impl<'a> Lowerer<'a> {
                 ty: fty,
                 line,
             };
-            let Some(Shape::Func(wants, _)) = self.shapes.shape(fty).cloned() else {
+            let Some(Shape::Func(wants, ..)) = self.shapes.shape(fty).cloned() else {
                 return Err(self.unsupported("this interface method", span));
             };
             let mut values = Vec::new();

@@ -1,7 +1,7 @@
 //! Types and generic parameters (spec 2).
 
 use crate::parser::Parser;
-use kavach_ast::{GenericParam, TypeExpr, TypeKind};
+use kavach_ast::{GenericParam, Path, TypeExpr, TypeKind};
 use kavach_lexer::{Keyword, TokenKind};
 
 impl Parser<'_> {
@@ -47,7 +47,16 @@ impl Parser<'_> {
                 let ret = self
                     .eat(&TokenKind::Arrow)
                     .then(|| Box::new(self.type_expr()));
-                TypeKind::Fn { params, ret }
+                let errors = self
+                    .eat(&TokenKind::Bang)
+                    .then(|| Box::new(self.type_expr()));
+                let uses = self.eat_kw(Keyword::Uses).then(|| self.fn_type_uses());
+                TypeKind::Fn {
+                    params,
+                    ret,
+                    errors,
+                    uses,
+                }
             }
             TokenKind::Ident => {
                 let path = self.path("a type name");
@@ -77,6 +86,26 @@ impl Parser<'_> {
             };
         }
         ty
+    }
+
+    /// What follows `uses` in a function type (spec 3.4): one capability,
+    /// or several in parentheses, so a `,` after the type still ends it.
+    fn fn_type_uses(&mut self) -> Vec<Path> {
+        if !self.eat(&TokenKind::LParen) {
+            return vec![self.path("a capability")];
+        }
+        let mut caps = Vec::new();
+        while !self.at(&TokenKind::RParen) && !self.at(&TokenKind::Eof) {
+            caps.push(self.path("a capability"));
+            if !self.eat(&TokenKind::Comma) {
+                break;
+            }
+        }
+        self.expect(&TokenKind::RParen, "`)` after the capabilities");
+        if caps.is_empty() {
+            self.error_here("name a capability, or leave `uses` out");
+        }
+        caps
     }
 
     /// `(A, B)`

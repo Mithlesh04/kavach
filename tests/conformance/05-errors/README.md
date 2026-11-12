@@ -28,3 +28,4 @@ Conformance tests for spec chapter [5. Errors](../../../docs/spec/05-errors.md).
 | 5.6 | [panic-with-a-computed-message.kav](panic-with-a-computed-message.kav) | `panic(message)` may compute its message while the program runs. | panics |
 | 5.7 | [error-context.kav](error-context.kav) | `context` adds text in front of a passed-on error's message. | runs |
 | 5.8 | [panic-exits-with-101.kav](panic-exits-with-101.kav) | A panic in the main task exits with code 101. | panic |
+| 5.2 | [built-in-methods-pass-a-functions-error-on.kav](built-in-methods-pass-a-functions-error-on.kav) | A built-in method given a function that can fail can fail with its error, stopping at the first; one handled inside can't fail. | runs |

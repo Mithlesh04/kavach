@@ -213,9 +213,14 @@ pub fn walk_type<V: VisitMut + ?Sized>(v: &mut V, t: &mut TypeExpr) {
         }
         TypeKind::Tuple(items) => items.iter_mut().for_each(|x| v.type_expr(x)),
         TypeKind::AnonRecord(fields) => fields.iter_mut().for_each(|(_, x)| v.type_expr(x)),
-        TypeKind::Fn { params, ret } => {
+        TypeKind::Fn {
+            params,
+            ret,
+            errors,
+            ..
+        } => {
             params.iter_mut().for_each(|x| v.type_expr(x));
-            if let Some(r) = ret {
+            for r in ret.iter_mut().chain(errors.iter_mut()) {
                 v.type_expr(r);
             }
         }

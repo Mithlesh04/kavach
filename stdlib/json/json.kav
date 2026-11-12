@@ -151,3 +151,53 @@ extend Json {
         }
     }
 }
+
+/// A function described by `json.describe(f)` (spec 2.12), for a web
+/// framework's OpenAPI description, say.
+pub type FnSchema {
+    pub name: String
+    /// Its `///` comment, the lines joined by spaces; "" when it has none.
+    pub doc: String
+    pub params: [ParamSchema]
+    /// The schema of what it returns; `{"type": "null"}` for nothing.
+    pub result: Json
+    /// The schema of its error; `Null` when it can't fail.
+    pub error: Json
+    /// What it `uses`, as written or as worked out (spec 8.1).
+    pub capabilities: [String]
+    /// Each `example` clause, as written (spec 7.6).
+    pub examples: [String]
+}
+
+/// One parameter of a described function.
+pub type ParamSchema {
+    pub name: String
+    pub schema: Json
+}
+
+/// The `FnSchema` in `d`, the description the compiler made for
+/// `json.describe(f)`.
+fn described(d: Json) -> FnSchema {
+    let params: [ParamSchema] = []
+    for p in d.get("params").list() ?? [] {
+        params.push(ParamSchema(name: p.get("name").text() ?? "", schema: p.get("schema")))
+    }
+    FnSchema(
+        name: d.get("name").text() ?? "",
+        doc: d.get("doc").text() ?? "",
+        params: params,
+        result: d.get("result"),
+        error: d.get("error"),
+        capabilities: texts(d.get("capabilities")),
+        examples: texts(d.get("examples")),
+    )
+}
+
+/// The texts in the array `j`.
+fn texts(j: Json) -> [String] {
+    let out: [String] = []
+    for t in j.list() ?? [] {
+        out.push(t.text() ?? "")
+    }
+    out
+}

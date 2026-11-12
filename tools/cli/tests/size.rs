@@ -9,8 +9,10 @@ use std::process::Command;
 /// more than the 300 KB the decision sets for release builds (285 KB on
 /// Windows, 2026-11-01); it still fails when a feature creeps back in:
 /// TLS alone adds 150 KB, regular expressions 1 MB. Every program now
-/// catches Ctrl+C and `SIGTERM` (decision 0063): 16 KB on Linux.
-const BUDGET: u64 = 720 * 1024;
+/// catches Ctrl+C and `SIGTERM` (decision 0063): 16 KB on Linux. A
+/// function type's error in the runtime's `Shape` (decision 0085) added
+/// 4.5 KB of code, which page alignment made 12 KB: 725 KB on Linux.
+const BUDGET: u64 = 736 * 1024;
 
 #[test]
 fn hello_world_stays_small() {

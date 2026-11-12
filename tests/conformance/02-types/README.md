@@ -74,6 +74,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.12 | [json-parse-and-stringify.kav](json-parse-and-stringify.kav) | `json.parse` reads JSON text into a `Json`; `json.stringify` writes it back, compact or indented. | runs |
 | 2.12 | [json-decode-in-generic-functions.kav](json-decode-in-generic-functions.kav) | Inside a generic function, `json.decode<T>` decodes into the type its call gave `T`, written or inferred. | runs |
 | 2.12 | [json-schema-describes-types.kav](json-schema-describes-types.kav) | `json.schema<T>()` gives the JSON Schema of `T`, fields in declared order, also for a generic function's type argument. | runs |
+| 2.12 | [json-schema-carries-doc-comments.kav](json-schema-carries-doc-comments.kav) | A type's doc comment becomes its schema's `"description"`, and so does a field's, for records and unions alike. | runs |
 | 2.12 | [json-limits-stop-hostile-text.kav](json-limits-stop-hostile-text.kav) | Parsing stops with an error, not a crash, on text nested too deep, keys given twice and bad syntax; a huge number is read by its digits. | runs |
 | 2.12 | [json-numbers-keep-their-digits.kav](json-numbers-keep-their-digits.kav) | A JSON number keeps its digits: big integers and exact decimals survive parsing, decoding and writing. | runs |
 | 2.12 | [json-stringify-writes-every-kind-of-value.kav](json-stringify-writes-every-kind-of-value.kav) | `json.stringify` writes every kind of value, compact or indented, as the same text in the interpreter and native code. | runs |
@@ -100,3 +101,4 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.15 | [generic-interface-arguments-must-match.kav](generic-interface-arguments-must-match.kav) | A type implementing `Getter<String>` doesn't fit a `Getter<Int>`. | compile error |
 | 2.15 | [generic-types-as-interface-values.kav](generic-types-as-interface-values.kav) | A value of a generic type fits an interface it implements, whatever its type arguments. | runs |
 | 2.15 | [built-in-types-as-interface-values.kav](built-in-types-as-interface-values.kav) | A built-in type that implements an interface fits an interface value, a number literal too. | runs |
+| 2.12 | [json-describe-describes-a-function.kav](json-describe-describes-a-function.kav) | `json.describe(f)` gives a function's name, doc comment, parameters, result and error schemas, capabilities and examples. | runs |

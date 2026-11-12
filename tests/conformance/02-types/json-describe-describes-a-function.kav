@@ -1,0 +1,47 @@
+// Rule: `json.describe(f)` gives `f`'s name, doc comment, parameters with their schemas, the schemas of its result and error, its capabilities and its examples, the same in every runtime.
+// Spec: 2.12
+// expect output: create: Makes an order.
+// expect output: o ["item","qty"]
+// expect output: {"type":"integer"}
+// expect output: 2
+// expect output: ["Fs.read"]
+// expect output: ["twice(3) == 6"]
+// expect output: {"type":"null"} null
+
+use std.fs
+use std.json
+
+type Order {
+    item: String
+    qty: Int
+}
+
+type ApiError = OutOfStock(item: String) | Bad(reason: String)
+
+/// Makes an order.
+fn create(o: Order) -> Int ! ApiError uses Fs.read {
+    if fs.exists("stock-{o.item}") {
+        fail ApiError.OutOfStock(item: o.item)
+    }
+    o.qty
+}
+
+fn twice(n: Int) -> Int
+    example twice(3) == 6
+{
+    n * 2
+}
+
+fn quiet() {}
+
+fn main() {
+    const d = json.describe(create)
+    print("{d.name}: {d.doc}")
+    print("{d.params[0].name} {d.params[0].schema.get("required")}")
+    print(d.result)
+    print(d.error.get("anyOf").len())
+    print(d.capabilities)
+    print(json.describe(twice).examples)
+    const q = json.describe(quiet)
+    print("{q.result} {q.error}")
+}

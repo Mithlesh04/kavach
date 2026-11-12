@@ -93,7 +93,9 @@ pub enum Ty {
     /// kept sorted by name, so equal shapes are equal types.
     Anon(Vec<(String, Ty)>),
     Range(Box<Ty>),
-    Fn(Vec<Ty>, Box<Ty>),
+    /// Parameters, result (a `Result` for one that can fail), and the
+    /// most its functions may use (`uses`, spec 3.4): `None` sets no limit.
+    Fn(Vec<Ty>, Box<Ty>, Option<Vec<String>>),
     /// A record, union, interface, capability or agent, with type arguments.
     Adt(DefId, Vec<Ty>),
     /// Built-in generic and library types: `Shared<T>`, `Task<T>`, `Error`…

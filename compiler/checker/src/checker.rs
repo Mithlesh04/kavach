@@ -63,6 +63,7 @@ pub(crate) struct TypeInfo {
 }
 
 /// The function being checked.
+#[derive(Clone)]
 pub(crate) struct Ctx {
     pub(crate) name: String,
     pub(crate) ret: Ty,
@@ -126,6 +127,20 @@ pub(crate) struct Checker<'a> {
     /// How deep the checker is inside the function given to `update`,
     /// which may not wait (spec 6.2).
     pub(crate) updating: u32,
+    /// While a built-in method's arguments are checked: the errors of the
+    /// functions given to it, which the call passes on (spec 5.2).
+    pub(crate) rethrow: Option<Vec<Ty>>,
+    /// Whether the lambda being checked has passed an error on with
+    /// `try` or `fail` (spec 3.3).
+    pub(crate) lambda_failed: bool,
+    /// The value being fitted to an expected type, and the `uses` limits
+    /// of function types that named functions and lambdas were given to,
+    /// checked once capabilities are known (spec 3.4).
+    pub(crate) fitting: Option<crate::fn_values::Made>,
+    pub(crate) uses_limits: Vec<(crate::fn_values::Made, Vec<String>)>,
+    /// The lambdas being checked, innermost last, and what each needs.
+    pub(crate) lambdas: Vec<Span>,
+    pub(crate) lambda_needs: HashMap<(u32, u32), Vec<crate::capabilities::Need>>,
     /// The loops around the code being checked, innermost last, with
     /// their labels (spec 4.6). A function's or lambda's body starts with
     /// none: a `break` can't leave it.
@@ -205,6 +220,12 @@ impl<'a> Checker<'a> {
             arenas: Vec::new(),
             copies: Vec::new(),
             updating: 0,
+            rethrow: None,
+            lambda_failed: false,
+            fitting: None,
+            uses_limits: Vec::new(),
+            lambdas: Vec::new(),
+            lambda_needs: HashMap::new(),
             loops: Vec::new(),
             in_contract: false,
             in_example: false,
@@ -250,87 +271,6 @@ impl<'a> Checker<'a> {
         &self.res.defs[def].name
     }
 
-    /// A type as people write it, for messages.
-    pub(crate) fn show(&self, ty: &Ty) -> String {
-        let list = |ts: &[Ty]| {
-            ts.iter()
-                .map(|t| self.show(t))
-                .collect::<Vec<_>>()
-                .join(", ")
-        };
-        let args = |ts: &[Ty]| {
-            if ts.is_empty() {
-                String::new()
-            } else {
-                format!("<{}>", list(ts))
-            }
-        };
-        match self.inf.resolve(ty) {
-            Ty::Prim(p) => p.name().to_string(),
-            Ty::Unit => "nothing".to_string(),
-            Ty::Never => "never".to_string(),
-            Ty::Error => "?".to_string(),
-            Ty::List(t) => format!("[{}]", self.show(&t)),
-            Ty::Set(t) => format!("Set<{}>", self.show(&t)),
-            Ty::Map(k, v) => format!("[{}: {}]", self.show(&k), self.show(&v)),
-            Ty::Optional(t) => format!("{}?", self.show(&t)),
-            Ty::Range(t) => format!("Range<{}>", self.show(&t)),
-            Ty::Tuple(ts) => format!("({})", list(&ts)),
-            Ty::Anon(fs) => format!(
-                "({})",
-                fs.iter()
-                    .map(|(n, t)| format!("{n}: {}", self.show(t)))
-                    .collect::<Vec<_>>()
-                    .join(", ")
-            ),
-            Ty::Fn(ps, r) => format!("fn({}) -> {}", list(&ps), self.show(&r)),
-            Ty::Adt(d, ts) => format!("{}{}", self.def_name(d), args(&ts)),
-            Ty::Builtin(n, ts) => format!("{n}{}", args(&ts)),
-            Ty::Param(d) => self.def_name(d).to_string(),
-            Ty::Result(o, _) => self.show(&o),
-            Ty::Var(v) => match self.inf.kind(v) {
-                VarKind::IntLiteral => "Int".to_string(),
-                VarKind::FloatLiteral => "Float".to_string(),
-                VarKind::Any => "_".to_string(),
-            },
-        }
-    }
-
-    /// `ty` with every variable replaced, number literals defaulting to
-    /// `Int` and `Float`, and unknowns becoming `Error`.
-    pub(crate) fn defaulted(&self, ty: &Ty) -> Ty {
-        let resolved = self.inf.resolve(ty);
-        self.default_vars(&resolved)
-    }
-
-    fn default_vars(&self, ty: &Ty) -> Ty {
-        let d = |t: &Ty| Box::new(self.default_vars(t));
-        let all = |ts: &[Ty]| ts.iter().map(|t| self.default_vars(t)).collect();
-        match ty {
-            Ty::Var(v) => match self.inf.kind(*v) {
-                VarKind::IntLiteral => Ty::Prim(crate::ty::Prim::Int),
-                VarKind::FloatLiteral => Ty::Prim(crate::ty::Prim::Float),
-                VarKind::Any => Ty::Error,
-            },
-            Ty::List(t) => Ty::List(d(t)),
-            Ty::Set(t) => Ty::Set(d(t)),
-            Ty::Optional(t) => Ty::Optional(d(t)),
-            Ty::Range(t) => Ty::Range(d(t)),
-            Ty::Map(k, v) => Ty::Map(d(k), d(v)),
-            Ty::Result(o, e) => Ty::Result(d(o), d(e)),
-            Ty::Tuple(ts) => Ty::Tuple(all(ts)),
-            Ty::Anon(fs) => Ty::Anon(
-                fs.iter()
-                    .map(|(n, t)| (n.clone(), self.default_vars(t)))
-                    .collect(),
-            ),
-            Ty::Fn(ps, r) => Ty::Fn(all(ps), d(r)),
-            Ty::Adt(id, ts) => Ty::Adt(*id, all(ts)),
-            Ty::Builtin(n, ts) => Ty::Builtin(n, all(ts)),
-            other => other.clone(),
-        }
-    }
-
     /// Whether a value of type `actual` fits where `expected` is needed.
     /// A `T` fits where a `T?` is expected (spec 2.7).
     pub(crate) fn coerce(&mut self, actual: &Ty, expected: &Ty) -> bool {
@@ -359,6 +299,9 @@ impl<'a> Checker<'a> {
             && self.implements_interface(x, y)
         {
             return self.iface_args_fit(x, y);
+        }
+        if let (Ty::Fn(..), Ty::Fn(..)) = (&a, &e) {
+            return self.fn_fits(&a, &e);
         }
         if let Ty::Optional(inner) = &e {
             // A number literal is never itself optional, so it fills the inner type.
@@ -415,7 +358,10 @@ impl<'a> Checker<'a> {
     /// Checks `e` against `expected`, reporting a clear mismatch.
     pub(crate) fn check_expect(&mut self, e: &Expr, expected: &Ty) -> Ty {
         let actual = self.value(e, Some(expected));
-        if !self.coerce(&actual, expected) {
+        self.fitting = Some(self.made(e));
+        let fits = self.coerce(&actual, expected);
+        self.fitting = None;
+        if !fits {
             self.mismatch(e, expected, &actual);
         }
         actual
@@ -432,6 +378,13 @@ impl<'a> Checker<'a> {
                 "there are no implicit number conversions: expected `{want}`, found `{got}`; convert with `{want}(…)`"
             ),
             (_, Ty::Unit, _) => format!("expected `{want}`, but this returns nothing"),
+            (Ty::Fn(_, w, _), Ty::Fn(_, g, _), _)
+                if matches!(**g, Ty::Result(..)) && !matches!(**w, Ty::Result(..)) =>
+            {
+                format!(
+                    "`{got}` can fail, so it doesn't fit `{want}`: handle the error inside it, or write `! ErrorType` in the function type (spec 3.4)"
+                )
+            }
             (Ty::Builtin(a, x), Ty::Builtin(b, y), _)
                 if *a == "Shared"
                     && *b == "Shared"

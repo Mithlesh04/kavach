@@ -34,6 +34,9 @@ pub(crate) struct Lowerer<'a> {
     pub(crate) ready: HashMap<FuncId, ir::Function>,
     /// The function-value wrapper of each named function (`lower_closure.rs`).
     pub(crate) wrappers: HashMap<FuncId, FuncId>,
+    /// The error of a built-in loop just lowered, given a function that
+    /// can fail (`lower_fn_errors.rs`).
+    pub(crate) pending_error: Option<Local>,
     pub(crate) shapes: Shapes,
     /// Locals of the function being lowered.
     pub(crate) locals: Vec<Type>,
@@ -119,6 +122,7 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
         loop_frames: Vec::new(),
         ready: HashMap::new(),
         wrappers: HashMap::new(),
+        pending_error: None,
         generic_fns: HashMap::new(),
         generic_methods: HashMap::new(),
         instances: HashMap::new(),
@@ -382,6 +386,10 @@ impl<'a> Lowerer<'a> {
                 })
             }
             Some(Shape::Iface { .. }) if expr.ty != want => self.iface_value(expr, want),
+            // A function that can't fail where one that can is wanted.
+            Some(Shape::Func(_, _, Some(_))) if self.fn_error(expr.ty).is_none() => {
+                self.never_failing(expr, want)
+            }
             _ => Ok(expr),
         }
     }

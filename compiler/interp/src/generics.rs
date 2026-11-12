@@ -105,7 +105,7 @@ fn subst(ty: &Ty, generics: &HashMap<DefId, Ty>) -> Ty {
         Ty::Range(t) => Ty::Range(one(t)),
         Ty::Map(k, v) => Ty::Map(one(k), one(v)),
         Ty::Tuple(ts) => Ty::Tuple(all(ts)),
-        Ty::Fn(ps, r) => Ty::Fn(all(ps), one(r)),
+        Ty::Fn(ps, r, u) => Ty::Fn(all(ps), one(r), u.clone()),
         Ty::Adt(d, ts) => Ty::Adt(*d, all(ts)),
         Ty::Builtin(n, ts) => Ty::Builtin(n, all(ts)),
         Ty::Result(ok, err) => Ty::Result(one(ok), one(err)),

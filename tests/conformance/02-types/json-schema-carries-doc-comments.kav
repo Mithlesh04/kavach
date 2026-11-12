@@ -1,0 +1,30 @@
+// Rule: a type's doc comment becomes its schema's `"description"`, and so does a field's, for records and unions alike.
+// Spec: 2.12
+// expect output: "A place on the map."
+// expect output: "How far east, in metres."
+// expect output: "Where a parcel is."
+// expect output: null
+
+use std.json
+
+/// A place on the map.
+type Place {
+    /// How far east, in metres.
+    x: Int
+    y: Int
+}
+
+/// Where a parcel is.
+type Stage = Packed | Sent(at: Place)
+
+type Plain {
+    n: Int
+}
+
+fn main() {
+    const place = json.schema<Place>()
+    print(place.get("description"))
+    print(place.get("properties").get("x").get("description"))
+    print(json.schema<Stage>().get("description"))
+    print(json.schema<Plain>().get("description"))
+}

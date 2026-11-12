@@ -64,7 +64,7 @@ impl Checker<'_> {
         }
         let f = self.value(callee, None);
         match self.inf.resolve(&f) {
-            Ty::Fn(params, ret) => {
+            Ty::Fn(params, ret, _) => {
                 let params: Vec<_> = params
                     .into_iter()
                     .enumerate()
@@ -73,7 +73,17 @@ impl Checker<'_> {
                 self.args(args, &params, e.span, "this function", "argument");
                 if let ExprKind::Name(id) = &callee.kind {
                     let def = self.res.uses.get(&id.span.start).copied();
-                    self.check_deferred(def);
+                    // A lambda checked only now may turn out to fail.
+                    if let Some(d) = def
+                        && self.deferred.contains_key(&d)
+                    {
+                        self.check_deferred(def);
+                        if let Some(Ty::Fn(_, r, _)) =
+                            self.locals.get(&d).map(|t| self.inf.resolve(t))
+                        {
+                            return *r;
+                        }
+                    }
                 }
                 *ret
             }
@@ -168,9 +178,19 @@ impl Checker<'_> {
             self.error(span, format!("a contract can't call `{name}`: it uses {}, and contracts must be pure (spec 7.5)", sig.uses.join(", ")));
         }
         let ret = self.inf.subst(&sig.ret, &subst);
-        match &sig.errors {
-            Some(err) => Ty::Result(Box::new(ret), Box::new(self.inf.subst(err, &subst))),
-            None => ret,
+        let Some(err) = &sig.errors else {
+            return ret;
+        };
+        let err = self.inf.subst(err, &subst);
+        // `! E` with `E` a type parameter that no function given here
+        // fails with: the call can't fail (spec 3.4).
+        match self.inf.shallow(&err) {
+            Ty::Var(_) => {
+                self.inf.unify(&err, &Ty::Never);
+                ret
+            }
+            Ty::Never => ret,
+            _ => Ty::Result(Box::new(ret), Box::new(err)),
         }
     }
 
@@ -218,6 +238,9 @@ impl Checker<'_> {
         }
         let mut filled = vec![false; params.len()];
         let mut next = 0;
+        // A built-in method passes on the errors of the functions it is
+        // given, not of those used inside its arguments (spec 5.2).
+        let mut passing = self.rethrow.take();
         for a in args {
             let index = match &a.name {
                 Some(n) => match params.iter().position(|p| p.0 == n.name) {
@@ -252,11 +275,21 @@ impl Checker<'_> {
                 );
             }
             filled[index] = true;
-            self.check_expect(&a.value, &params[index].1);
+            let want = &params[index].1;
+            let actual = self.value(&a.value, Some(want));
+            self.rethrow = passing.take();
+            self.fitting = Some(self.made(&a.value));
+            let fits = self.coerce(&actual, want);
+            self.fitting = None;
+            if !fits {
+                self.mismatch(&a.value, want, &actual);
+            }
+            passing = self.rethrow.take();
             if !secret.get(index).copied().unwrap_or(false) {
                 self.check_secret_arg(&a.value, what, &params[index].0, owner);
             }
         }
+        self.rethrow = passing;
         for (p, done) in params.iter().zip(filled) {
             if !done && !p.2 {
                 self.error(span, format!("missing {what} `{}` for {owner}", p.0));

@@ -1,0 +1,28 @@
+// Rule: a `try` or `fail` inside a lambda ends that call of the lambda with the error, so the lambda can fail, stored or passed on; the function it was written in doesn't fail with it.
+// Spec: 3.3
+// expect output: 20
+// expect output: too big: 8
+// expect output: 40
+
+type E = Big(n: Int)
+
+fn check(n: Int) -> Int ! E {
+    if n > 5 {
+        fail E.Big(n: n)
+    }
+    n * 10
+}
+
+fn apply(f: fn(Int) -> Int ! E, n: Int) -> Int ! E {
+    try f(n)
+}
+
+fn main() {
+    const tenfold = x => try check(x)
+    print(tenfold(2) catch _ => 0)
+    const big = tenfold(8) catch e => match e {
+        E.Big(n) => -n,
+    }
+    print("too big: {-big}")
+    print(apply(x => try check(x), 4) catch _ => 0)
+}

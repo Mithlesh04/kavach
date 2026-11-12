@@ -1,7 +1,8 @@
 //! The JSON Schema `ask<T>` sends the model (spec 8.4), built from `T`,
-//! with field doc comments as descriptions. Structured outputs need an
-//! object at the top, with every object closed (`additionalProperties:
-//! false`), so a `T` that is not a record is wrapped as `{"value": …}`.
+//! with the doc comments of types and fields as descriptions. Structured
+//! outputs need an object at the top, with every object closed
+//! (`additionalProperties: false`), so a `T` that is not a record is
+//! wrapped as `{"value": …}`.
 //! The interpreter and native code both send this schema.
 
 use crate::Compiled;
@@ -38,6 +39,57 @@ pub fn json_schema(c: &Compiled, t: &Ty) -> Option<Tree> {
     Schemas { c }.schema(t)
 }
 
+/// The description of the function `arg` names, for `json.describe`
+/// (spec 2.12): its name, doc comment, parameters with their schemas, the
+/// schemas of its result and error, its `uses` and its examples as text.
+pub fn describe_fn(c: &Compiled, arg: &kavach_ast::Expr) -> Option<Tree> {
+    let kavach_ast::ExprKind::Name(id) = &arg.kind else {
+        return None;
+    };
+    let def = *c.resolution.uses.get(&id.span.start)?;
+    let Some(Ty::Fn(params, ret, _)) = c.expr_types.get(&(arg.span.start, arg.span.end)) else {
+        return None;
+    };
+    let span = c.resolution.defs[def].span?;
+    let (docs, f) = c.file.items.iter().find_map(|item| match &item.kind {
+        ItemKind::Fn(f) if f.name.span == span => Some((&item.docs, f)),
+        _ => None,
+    })?;
+    let s = Schemas { c };
+    let mut described = Vec::new();
+    for (p, t) in f.params.iter().zip(params) {
+        described.push(Tree::Object(vec![
+            ("name".into(), text(&p.name.name)),
+            ("schema".into(), s.schema(t)?),
+        ]));
+    }
+    let (ok, err) = match &**ret {
+        Ty::Result(ok, err) => (&**ok, Some(s.schema(err)?)),
+        ok => (ok, None),
+    };
+    let result = match ok {
+        Ty::Unit => kind("null"),
+        t => s.schema(t)?,
+    };
+    let uses = c.uses.get(&def).cloned().unwrap_or_default();
+    let examples = f.examples.iter().map(|x| {
+        let end = x.fails.as_ref().map_or(x.expr.span.end, |e| e.span.end);
+        text(&c.src[x.expr.span.start as usize..end as usize])
+    });
+    Some(Tree::Object(vec![
+        ("name".into(), text(&f.name.name)),
+        ("doc".into(), text(&docs.join(" "))),
+        ("params".into(), Tree::Array(described)),
+        ("result".into(), result),
+        ("error".into(), err.unwrap_or(Tree::Null)),
+        (
+            "capabilities".into(),
+            Tree::Array(uses.iter().map(|u| text(u)).collect()),
+        ),
+        ("examples".into(), Tree::Array(examples.collect())),
+    ]))
+}
+
 /// The message for a `T` with no schema.
 pub const NO_SCHEMA: &str = "`ask` can't answer with this type yet: maps, tuples and functions don't fit the model's closed objects (use a list of records)";
 
@@ -67,9 +119,14 @@ struct Schemas<'c> {
 impl<'c> Schemas<'c> {
     /// The declaration of record or union `def`.
     fn decl(&self, def: DefId) -> Option<&'c TypeDecl> {
+        self.item(def).map(|(_, t)| t)
+    }
+
+    /// The declaration of record or union `def`, with its doc comment.
+    fn item(&self, def: DefId) -> Option<(&'c [String], &'c TypeDecl)> {
         let span = self.c.resolution.defs[def].span?;
         self.c.file.items.iter().find_map(|item| match &item.kind {
-            ItemKind::Type(t) if t.name.span == span => Some(t),
+            ItemKind::Type(t) if t.name.span == span => Some((&item.docs[..], t)),
             _ => None,
         })
     }
@@ -98,10 +155,22 @@ impl<'c> Schemas<'c> {
         })
     }
 
+    /// A record or union's schema, with its doc comment as the
+    /// description.
+    fn type_schema(&self, def: DefId) -> Option<Tree> {
+        let (docs, decl) = self.item(def)?;
+        let mut s = self.shape_schema(def, decl)?;
+        if !docs.is_empty()
+            && let Tree::Object(parts) = &mut s
+        {
+            parts.push(("description".into(), text(&docs.join(" "))));
+        }
+        Some(s)
+    }
+
     /// A record: an object with its fields; a union: one of its variants,
     /// as JSON writes them (spec 2.12): a name, or `{"Name": {fields}}`.
-    fn type_schema(&self, def: DefId) -> Option<Tree> {
-        let decl = self.decl(def)?;
+    fn shape_schema(&self, def: DefId, decl: &TypeDecl) -> Option<Tree> {
         let vs = match &decl.body {
             TypeBody::Record(r) => return self.object(def, &r.fields),
             TypeBody::Union(vs) => vs,

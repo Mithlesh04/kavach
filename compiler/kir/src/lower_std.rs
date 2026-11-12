@@ -405,7 +405,7 @@ impl<'a> Lowerer<'a> {
     ) -> Lowered<ir::Expr> {
         let line = self.line(span);
         let key = match self.c.expr_types.get(&(f.span.start, f.span.end)) {
-            Some(Ty::Fn(_, k)) => self.kir_type(&k.clone(), span)?,
+            Some(Ty::Fn(_, k, _)) => self.kir_type(&k.clone(), span)?,
             _ => return Err(self.unsupported("`sort_by` here", span)),
         };
         let keys_ty = self.list_type(key);

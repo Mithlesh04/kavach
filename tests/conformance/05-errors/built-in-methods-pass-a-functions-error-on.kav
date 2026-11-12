@@ -1,0 +1,27 @@
+// Rule: a built-in method given a function that can fail can fail with its error, and stops at the first one; a function that handles its errors inside can't fail.
+// Spec: 5.2
+// expect output: [10, 20, 30]
+// expect output: stopped at 9
+// expect output: [1]
+// expect output: 0
+// expect output: 60
+
+type E = Big(n: Int)
+
+fn price(n: Int) -> Int ! E {
+    if n > 5 {
+        fail E.Big(n: n)
+    }
+    n * 10
+}
+
+fn main() {
+    print([1, 2, 3].map(price) catch _ => [])
+    const stopped = [1, 9, 3].map(x => try price(x)) catch e => match e {
+        E.Big(n) => [-n],
+    }
+    print("stopped at {-stopped[0]}")
+    print([1, 2].filter(x => try price(x) < 20) catch _ => [])
+    print([1, 7].sum(x => try price(x)) catch _ => 0)
+    print([1, 2, 3].sum(x => price(x) catch _ => 0))
+}
