@@ -260,7 +260,10 @@ export const testBlocksDoc: LessonDoc = {
         directly or through a function, is a compile error:
       </P>
       <Ex name="testing/test-uses.fails" />
-      <P>Say what the test needs, and it runs with the fake of it, so nothing real is touched:</P>
+      <P>
+        Say what the test needs with <C>uses</C>. A test given <C>Fs</C> reaches the real file system, so this one
+        writes <C>report.txt</C> in the folder it runs in:
+      </P>
       <Ex name="testing/test-uses.test" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>The console, the clock and random numbers are always there: a test run captures the output, can freeze the clock and seeds the numbers.</li>
