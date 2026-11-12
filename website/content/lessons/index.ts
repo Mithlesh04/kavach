@@ -42,6 +42,7 @@ import {
 import { howTasksRunDoc, turnsDoc } from "./concurrency-running";
 import { httpCallDoc, httpDoc, httpJsonDoc, httpServeDoc, httpSessionDoc, httpSocketsDoc } from "./networks-http";
 import { base64Doc, cryptoDoc } from "./stdlib-crypto";
+import { textCollectionsDoc } from "./stdlib-text";
 import {
   grpcClientStreamDoc, grpcDoc, grpcProtoDoc, grpcServerStreamDoc, grpcTwoWayDoc, socketsDoc, tcpDoc, timeoutsDoc,
   tlsDoc, udpDoc,
@@ -77,7 +78,7 @@ import {
   catchDoc, contextDoc, errorCatchAllDoc, errorsDoc, matchErrorsDoc, panicsDoc, panicsWhatDoc, stopsDoc, tryDoc,
 } from "./errors";
 import {
-  checkedDoc, contractsDoc, ensureDoc, exampleDoc, fakesDoc, fromTypesDoc, invariantDoc, requireDoc, testBlocksDoc,
+  checkedDoc, contractsDoc, ensureDoc, exampleDoc, fakesDoc, fromTypesDoc, invariantDoc, ownValuesDoc, requireDoc, testBlocksDoc,
   testingDoc,
 } from "./contracts";
 import {
@@ -262,6 +263,7 @@ export const lessons: Record<string, LessonDoc> = {
   "errors/contracts/how-they-are-checked": checkedDoc,
   "errors/testing": testingDoc,
   "errors/testing/tests-from-types": fromTypesDoc,
+  "errors/testing/your-own-values": ownValuesDoc,
   "errors/testing/test-blocks": testBlocksDoc,
   "errors/testing/fakes": fakesDoc,
 
@@ -287,6 +289,7 @@ export const lessons: Record<string, LessonDoc> = {
   "standard-library/time": timeDoc,
   "standard-library/random-numbers": randomDoc,
   "standard-library/regex": regexDoc,
+  "standard-library/text-and-collections": textCollectionsDoc,
   "standard-library/logging": loggingDoc,
   "standard-library/agents": agentsStdDoc,
   "standard-library/clipboard": clipboardDoc,

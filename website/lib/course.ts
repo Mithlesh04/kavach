@@ -93,7 +93,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Adding Context", "5.7"],
     ["Panics", "5.6", ["Panics", "When a program stops"]],
     ["Contracts", "7", ["require", "ensure", "invariant", "example", "How they are checked"]],
-    ["Testing", "11", ["Tests from types", "test blocks", "Fakes"]],
+    ["Testing", "11", ["Tests from types", "Your own values", "test blocks", "Fakes"]],
   ]],
   ["memory", "Memory", "advanced", [
     ["Values, Not References", "6.1"],
@@ -109,6 +109,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Time", "14.4"],
     ["Random Numbers", "14.15"],
     ["Regex", "14.8"],
+    ["Text and Collections", "14.9"],
     ["Logging", "14.12"],
     ["Agents", "14.16"],
     ["Clipboard", "14.17"],

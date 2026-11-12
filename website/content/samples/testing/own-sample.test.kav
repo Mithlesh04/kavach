@@ -1,0 +1,20 @@
+type Email: Sample {
+    value: String
+    invariant value.contains("@")
+
+    fn sample(gen: Gen) -> Email
+        ensure result.value.ends_with(".com") or result.value.ends_with(".in")
+    {
+        Email(value: "{gen.word()}@{gen.pick(["example.com", "test.in"])}")
+    }
+}
+
+fn domain(email: Email) -> String
+    ensure result.contains(".")
+    example domain(Email(value: "asha@example.com")) == "example.com"
+{
+    email.value.slice((email.value.index_of("@") ?? 0) + 1, email.value.len())
+}
+
+fn main() {
+}

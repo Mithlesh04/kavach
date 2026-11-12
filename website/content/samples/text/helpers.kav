@@ -1,0 +1,10 @@
+use std.text
+
+fn main() {
+    print("[{text.pad_left("42", 6, '0')}]")
+    print("[{text.pad_right("pens", 8, '.')}]")
+    print(text.words("  red\tgreen\n blue "))
+    print(text.capitalize("asha"))
+    print(text.truncate("a very long title", 6))
+    print(text.is_blank(" \t\n"))
+}

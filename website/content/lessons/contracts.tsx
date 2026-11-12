@@ -5,6 +5,7 @@ import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProjectFiles } from "@/lib/samples";
 import { Ex, Files, H2, Note, P } from "./parts";
+import { ModuleTable } from "./spec-table";
 
 const beside = loadProjectFiles("testing/beside");
 const missed = loadProjectFiles("testing/missed");
@@ -197,6 +198,30 @@ export const fromTypesDoc: LessonDoc = {
     <>
       <Ex name="testing/sub-contracts.test" />
       <P>Two hundred generated calls, each meeting the <C>require</C> and checked against the <C>ensure</C>, plus the example. The <C>seed</C> line lets anyone repeat the run exactly.</P>
+    </>
+  ),
+};
+
+export const ownValuesDoc: LessonDoc = {
+  lead: "When the values kavach test makes up don't suit a type, the type makes its own: it implements Sample, and builds a value from a Gen.",
+  simple: <>The test tool usually invents values by itself, like a cook trying random ingredients. For a type with a strict shape, such as an email address, you hand it a recipe instead, and it cooks many values from it.</>,
+  minutes: 3,
+  before: ["errors/testing/tests-from-types"],
+  body: (
+    <>
+      <Ex name="testing/own-sample.test" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Whenever <C>kavach test</C> needs an <C>Email</C>, it calls <C>sample</C> with a <C>Gen</C>, here 200 times for <C>domain</C>.</li>
+        <li>A <C>Gen</C>&apos;s choices are seeded like the rest of the run, so the run can be repeated. It is not the <C>Random</C> capability, so <C>sample</C> needs no <C>uses</C>.</li>
+        <li>A value from <C>sample</C> that breaks an <C>invariant</C> is not used, and <C>sample</C> is called again.</li>
+        <li><C>sample</C> is tested like any function: its <C>ensure</C> is checked on every value it makes.</li>
+      </ul>
+      <ModuleTable file="07-test.md" number="14.7" first="Method" />
+      <P><C>Sample</C> and <C>Gen</C>, like every standard type, need no <C>use</C>.</P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/11-testing.md" label="spec 11.3 · generated values" />
+        <SrcRef file="docs/spec/14-standard-library/07-test.md" label="spec 14.7 · std.test" />
+      </div>
     </>
   ),
 };

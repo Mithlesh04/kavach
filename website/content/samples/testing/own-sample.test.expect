@@ -1,0 +1,6 @@
+✓ domain: example domain(Email(value: "asha@example.com")) == "example.com"
+1 passed, 0 failed
+seed 7
+✓ domain  200 cases
+✓ Email.sample  200 cases
+2 functions   2 ✓   0 ✗   0 weakly tested
