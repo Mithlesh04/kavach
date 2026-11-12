@@ -36,8 +36,10 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.4 | [record-fields-that-may-be-left-out.kav](record-fields-that-may-be-left-out.kav) | `summary?: String` is short for `summary: String? = none`: a record made or decoded without it holds `none`, and `ask` doesn't require it. | runs |
 | 2.4 | [optional-field-takes-one-question-mark.kav](optional-field-takes-one-question-mark.kav) | A field that may be left out takes its `?` once: `summary?: String?` is an error. | compile error |
 | 2.4 | [optional-field-has-no-other-default.kav](optional-field-has-no-other-default.kav) | A field that may be left out is `none` when left out, so it takes no other default: `count?: Int = 3` is an error. | compile error |
+| 2.4, 2.9 | [generic-fields-take-defaults.kav](generic-fields-take-defaults.kav) | A field whose type uses the record's type parameter can have a default. | runs |
 | 2.5 | [extend-adds-methods.kav](extend-adds-methods.kav) | `extend` adds methods to an existing type. | runs |
 | 2.5 | [methods.kav](methods.kav) | Methods take self; functions without self are called on the type. | runs |
+| 2.5, 14.2 | [methods-may-share-collection-names.kav](methods-may-share-collection-names.kav) | A type's own `add`, `push` or `remove` is its method, not the built-in one of lists, maps and sets. | runs |
 | 2.6 | [variants-are-written-with-their-type.kav](variants-are-written-with-their-type.kav) | A variant is always written with its union's name; a bare name is a compile error. | compile error |
 | 2.6 | [variants-named-like-built-in-types.kav](variants-named-like-built-in-types.kav) | A variant may have a built-in type's name: as a value or pattern it means the variant, in a type the built-in type. | runs |
 | 2.6 | [variant-fields-have-defaults.kav](variant-fields-have-defaults.kav) | A variant's fields may have defaults, which may be left out. | runs |
@@ -63,6 +65,8 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.9 | [generics.kav](generics.kav) | Functions and types can be generic. | runs |
 | 2.9, 2.5 | [methods-have-type-parameters.kav](methods-have-type-parameters.kav) | A method may have type parameters of its own, like a function, and each call fills them in. | runs |
 | 2.9, 3.3 | [lambdas-keep-type-parameters.kav](lambdas-keep-type-parameters.kav) | A lambda made inside a generic function keeps that call's type arguments wherever it is called later. | runs |
+| 2.9, 2.12 | [generic-methods-know-their-type-arguments.kav](generic-methods-know-their-type-arguments.kav) | A generic method runs with the type arguments of its call, written or inferred, as a generic function does. | runs |
+| 2.9, 3.4 | [type-arguments-come-through-function-arguments.kav](type-arguments-come-through-function-arguments.kav) | A type parameter shown only by a function-typed argument is found from that function's type. | runs |
 | 2.9 | [generic-types-have-methods.kav](generic-types-have-methods.kav) | Methods of a generic type work for every type argument. | runs |
 | 2.10 | [parameter-types-required.kav](parameter-types-required.kav) | Function parameters must have written types. | compile error |
 | 2.11 | [secret-cannot-be-printed.kav](secret-cannot-be-printed.kav) | A secret value must not flow into print. | compile error |
@@ -80,10 +84,12 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.12 | [json-stringify-writes-every-kind-of-value.kav](json-stringify-writes-every-kind-of-value.kav) | `json.stringify` writes every kind of value, compact or indented, as the same text in the interpreter and native code. | runs |
 | 2.12 | [json-comments-only-when-asked.kav](json-comments-only-when-asked.kav) | `json.parse(text, comments: true)` takes comments and trailing commas; plain `json.parse` refuses them. | runs |
 | 2.12 | [json-of-encodes-typed-values.kav](json-of-encodes-typed-values.kav) | `json.of` encodes records as objects, unions by variant name, optionals as `null`, and maps with text keys as objects. | runs |
+| 2.12 | [json-of-an-empty-list.kav](json-of-an-empty-list.kav) | `json.of([])` encodes an empty list literal as `[]`. | runs |
 | 2.12, 2.11 | [json-secret-fields-are-not-encoded.kav](json-secret-fields-are-not-encoded.kav) | A record with a `secret` field can't be encoded as JSON. | compile error |
-| 2.12 | [json-decode-into-records.kav](json-decode-into-records.kav) | `json.decode<T>` reads JSON straight into a typed value: missing fields take their default or `none`, unknown fields are ignored, and unions are read by variant name. | runs |
+| 2.12 | [json-decode-into-records.kav](json-decode-into-records.kav) | `json.decode<T>` reads JSON straight into a typed value: missing fields take their default or `none`, and unions are read by variant name. | runs |
 | 2.12 | [json-decode-problems-say-where.kav](json-decode-problems-say-where.kav) | When JSON doesn't fit the type, decoding fails with `Invalid`, whose problems say where and what was expected; numbers must fit their type. | runs |
 | 2.12 | [json-decode-lists-every-problem.kav](json-decode-lists-every-problem.kav) | Decoding goes on after a problem, so `Invalid` lists every problem in the document, in its order. | runs |
+| 2.12 | [json-decode-refuses-unknown-fields.kav](json-decode-refuses-unknown-fields.kav) | Decoding refuses a field the type doesn't have, at its path; `unknown: JsonUnknown.Ignore` skips them. | runs |
 | 2.12, 7.3 | [json-decode-checks-invariants.kav](json-decode-checks-invariants.kav) | A decoded value is checked against its types' invariants; a broken one is a problem with the record's path, not a panic. | runs |
 | 2.12 | [json-decode-keeps-json-fields.kav](json-decode-keeps-json-fields.kav) | Decoding reads a field of type `Json` as written, whatever it holds. | runs |
 | 2.13 | [bytes-hold-raw-data.kav](bytes-hold-raw-data.kav) | `Bytes` holds raw data: from text or `[UInt8]`, indexed, sliced, joined, compared, back to text. | runs |

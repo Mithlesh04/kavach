@@ -1,0 +1,40 @@
+// Rule: Decoding refuses a field the type doesn't have, listing each at its path; `unknown: JsonUnknown.Ignore` skips them.
+// Spec: 2.12
+// expect output: Invalid(problems: [JsonProblem(path: "note", expected: "no field of this name")])
+// expect output: 0
+// expect output: Order(id: 1, item: "pen")
+// expect output: Invalid(problems: [JsonProblem(path: "more", expected: "no field of this name"), JsonProblem(path: "order.extra", expected: "no field of this name")])
+// expect output: Box(order: Order(id: 2, item: "ink"))
+// expect output: Order(id: 3, item: "cap")
+
+use std.json
+
+type Order {
+    id: Int
+    item: String
+}
+
+type Box {
+    order: Order
+}
+
+fn main() {
+    const text = "\{\"id\": 1, \"item\": \"pen\", \"note\": \"x\"}"
+    const strict = json.decode<Order>(text) catch e => {
+        print(e)
+        Order(id: 0, item: "")
+    }
+    print(strict.id)
+    const loose = json.decode<Order>(text, unknown: JsonUnknown.Ignore) catch _ => Order(id: -1, item: "")
+    print(loose)
+    const v = json.parse("\{\"order\": \{\"id\": 2, \"item\": \"ink\", \"extra\": 1}, \"more\": true}") catch _ => {
+        return
+    }
+    const nested = json.decode_value<Box>(v) catch e => {
+        print(e)
+        Box(order: Order(id: 0, item: ""))
+    }
+    print(json.decode_value<Box>(v, unknown: JsonUnknown.Ignore) catch _ => nested)
+    const fast = json.decode<Order>("\{\"id\": 3, \"item\": \"cap\"}") catch _ => Order(id: -3, item: "")
+    print(fast)
+}

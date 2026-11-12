@@ -117,6 +117,13 @@ const now = counter.get()
 const page = try fetch(url)
 cache.update(c => c.with(url, page))     // not: cache.update(c => c.with(url, try fetch(url)))
 ```
+- `update` gives the new value, read while the lock is still held; it may be left unused (3.7). `update_with` takes a function that gives a pair, the new value and a result, and gives the result: take something and know what you took, in one step ([decision 0095](../decisions/0095-shared-update-gives-a-result.md)):
+
+```kavach
+const next_id = Shared(1)
+const id = next_id.update_with(n => (n + 1, n))     // 1, and next_id is 2
+const total = counter.update(n => n + 1)            // the count now
+```
 - `Weak<T>` points to a `Shared<T>` without keeping it alive. Use it for back-links (child → parent) so no cycle forms. `s.weak()` makes one; `w.shared()` gives the `Shared<T>` back while it lives, and `none` once it was freed:
 
 ```kavach

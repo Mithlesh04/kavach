@@ -33,6 +33,8 @@ pub(crate) struct FnSig {
     pub(crate) generics: Vec<(DefId, Vec<DefId>)>,
     pub(crate) params: Vec<ParamInfo>,
     pub(crate) ret: Ty,
+    /// `-> secret T` (spec 8.7).
+    pub(crate) ret_secret: bool,
     pub(crate) errors: Option<Ty>,
     pub(crate) uses: Vec<String>,
     pub(crate) has_self: bool,
@@ -67,6 +69,8 @@ pub(crate) struct TypeInfo {
 pub(crate) struct Ctx {
     pub(crate) name: String,
     pub(crate) ret: Ty,
+    /// Whether it may return a secret (`-> secret T`, spec 8.7).
+    pub(crate) ret_secret: bool,
     pub(crate) errors: Option<Ty>,
     pub(crate) self_ty: Option<Ty>,
 }
@@ -170,6 +174,8 @@ pub(crate) struct Checker<'a> {
     pub(crate) gpu_candidates: Vec<crate::gpu::GpuCandidate>,
     /// Every checked expression and its (possibly still unknown) type.
     pub(crate) expr_types: Vec<(Span, Ty)>,
+    /// `Shared.update` calls, whose result may be left unused (spec 6.2).
+    pub(crate) updates: HashSet<(u32, u32)>,
     /// Lambdas kept in a `let` whose parameters have no written types,
     /// with their type. The body is checked at the first call, once the
     /// argument types are known, or at the end of the function.
@@ -238,6 +244,7 @@ impl<'a> Checker<'a> {
             gpu_fns: HashSet::new(),
             gpu_candidates: Vec::new(),
             expr_types: Vec::new(),
+            updates: HashSet::new(),
             deferred: HashMap::new(),
             current_fn: None,
             std_modules: HashMap::new(),

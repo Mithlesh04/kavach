@@ -179,6 +179,17 @@ impl Checker<'_> {
             own.insert(*h, Ty::Param(*w));
             subst.entry(*w).or_insert(Ty::Param(*w));
         }
+        // Both say `-> secret` or neither (spec 8.7).
+        if have.ret_secret != want.ret_secret {
+            let (yes, no) = match have.ret_secret {
+                true => (what, theirs),
+                false => (theirs, what),
+            };
+            self.error(
+                span,
+                format!("{yes} returns a secret (`-> secret …`) and {no} doesn't: they must agree (spec 8.7)"),
+            );
+        }
         let mut pairs: Vec<(String, String, &Ty, &Ty)> = Vec::new();
         for (h, w) in have.params.iter().zip(&want.params) {
             let mine = format!("`{}` of {what} is", h.name);

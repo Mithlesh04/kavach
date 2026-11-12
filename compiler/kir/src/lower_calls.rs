@@ -62,7 +62,7 @@ impl<'a> Lowerer<'a> {
                 base,
                 name,
                 optional: false,
-            } => self.method_call(base, name, args, ty, line, e.span),
+            } => self.method_call(base, name, args, ty, line, e),
             _ => self.call_through(callee, args, e.span),
         }
     }

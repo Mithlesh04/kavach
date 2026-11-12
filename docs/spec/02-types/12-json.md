@@ -65,6 +65,7 @@ const order: Json = [
 | `json.parse(text, comments: true) ! JsonError` | The same, also taking `//` and `/* */` comments and a trailing comma in arrays and objects (JSONC, as configuration files are written) |
 | `json.decode<T>(text) ! JsonError` | A `T` read straight from `text`, with no `Json` in between |
 | `json.decode_value<T>(j) ! JsonError` | A `T` read from the `Json` value `j` |
+| `json.decode<T>(text, unknown: JsonUnknown.Ignore)` | The same, skipping fields `T` doesn't have (`decode_value` takes it too) |
 | `json.of(value)` | `value` as a `Json` |
 | `json.stringify(value, indent: 0)` | JSON text for a `Json` or any value that can be encoded; `indent` above 0 puts each field on its own line |
 | `json.schema<T>()` | The [JSON Schema](https://json-schema.org) of `T` as a `Json`: what `ask<T>` sends a model (8.4), for modules that work from a type's shape (14.14) |
@@ -72,7 +73,13 @@ const order: Json = [
 
 **Encoding** works on types the compiler can see through: numbers (sized integers too), `Bool`, `String`, `Char` (text of one character), `Decimal` and `BigInt` (as numbers with all their digits), lists, sets and tuples (arrays), maps with `String` keys (objects), records (objects with the fields in declared order), optionals (`none` is `null`), unions (a variant without fields is its name as text; one with fields is `{"Variant": {fields}}`) and `Json` itself. Anything else is a compile error: functions, maps with other keys, and records with `secret` fields (2.11), so a secret can't leak into JSON by accident. `NaN` and infinities are written as `null`, as JavaScript does.
 
-**Decoding** is the reverse, and strict about values: an integer field takes only a number written without a fraction or exponent that fits its type, and a `BigInt` field one of any size; a `Float` field takes any number, as the nearest `Float`; a `Decimal` field takes any number exactly; text, booleans, arrays and objects must match. A number that doesn't fit its field is a `Mismatch`, as any other value that doesn't fit is. A missing field takes its default or `none` if it has one, otherwise decoding fails. Fields the type doesn't have are ignored, so a service can add fields without breaking its clients.
+**Decoding** is the reverse, and strict about values: an integer field takes only a number written without a fraction or exponent that fits its type, and a `BigInt` field one of any size; a `Float` field takes any number, as the nearest `Float`; a `Decimal` field takes any number exactly; text, booleans, arrays and objects must match. A number that doesn't fit its field is a `Mismatch`, as any other value that doesn't fit is. A missing field takes its default or `none` if it has one, otherwise decoding fails. A field the type doesn't have is a problem too, at its path, expecting "no field of this name", as the type's schema says (`additionalProperties: false`), so a misspelled or smuggled field is caught ([decision 0096](../../decisions/0096-unknown-fields-are-refused.md)). To read another service's answers, which may gain fields, write `unknown: JsonUnknown.Ignore`: such fields are then skipped. `std.http`'s client does this for the responses it decodes (14.11).
+
+```kavach
+const text = "\{\"id\": 1, \"note\": \"x\"}"
+const a = json.decode<Order>(text)                               // Invalid: `note` is no field of `Order`
+const b = json.decode<Order>(text, unknown: JsonUnknown.Ignore)  // `note` is skipped
+```
 
 **A type's schema** is a `Json` value a program can read: a record is `{"type": "object", "properties": {...}, "required": [...]}` with its fields in the order they are declared, `Int` and the sized integers are `{"type": "integer"}`, `Float` and `Decimal` `{"type": "number"}`, `Bool` `{"type": "boolean"}`, `String` `{"type": "string"}`, a list `{"type": "array", "items": ...}`, an optional `{"anyOf": [..., {"type": "null"}]}`, a union `{"anyOf": [...]}` of its variants as JSON writes them, and a map with `String` keys `{"type": "object", "additionalProperties": ...}`. A type's doc comment (`///`) becomes its schema's `"description"`, and so does a field's. A type with no schema (maps with other keys, tuples, functions) is a compile error. `ask<T>` (8.4) still refuses maps: a model answers closed objects only.
 

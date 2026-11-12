@@ -56,6 +56,7 @@ impl Checker<'_> {
         let outer = self.ctx.replace(Ctx {
             name: name.to_string(),
             ret,
+            ret_secret: false,
             errors,
             self_ty,
         });
@@ -132,6 +133,9 @@ impl Checker<'_> {
         }
         let name = f.name.name.clone();
         self.with_ctx(&name, sig.ret.clone(), sig.errors.clone(), self_ty, |c| {
+            if let Some(ctx) = c.ctx.as_mut() {
+                ctx.ret_secret = f.ret_secret;
+            }
             c.in_contract = true;
             for e in f.requires.iter().chain(&f.ensures) {
                 c.check_expect(e, &BOOL);
@@ -147,6 +151,11 @@ impl Checker<'_> {
                 return c.block_stmt(body, Some(&name));
             }
             let actual = c.block_value(body, Some(&sig.ret));
+            if !f.ret_secret
+                && let Some(StmtKind::Expr(last)) = body.stmts.last().map(|s| &s.kind)
+            {
+                c.check_secret_return(last, &name);
+            }
             if matches!(c.inf.shallow(&actual), Ty::Unit) && !matches!(sig.ret, Ty::Unit) {
                 let want = c.show(&sig.ret);
                 c.error(
@@ -198,7 +207,7 @@ impl Checker<'_> {
                 && !is_statement_like(e)
             {
                 let t = self.value(e, None);
-                if !self.is_nothing(&t) {
+                if !self.is_nothing(&t) && !self.droppable(e) {
                     let ty = self.show(&t);
                     let message = match (&e.kind, name) {
                         (ExprKind::Call { .. }, "main") => format!(
@@ -357,6 +366,12 @@ impl Checker<'_> {
         );
     }
 
+    /// `counter.update(n => n + 1)`: the new value `update` gives may be
+    /// left unused (spec 6.2).
+    fn droppable(&self, e: &Expr) -> bool {
+        self.updates.contains(&(e.span.start, e.span.end))
+    }
+
     /// An expression on its own line: its value must not be thrown away (spec 3.7).
     pub(crate) fn expr_stmt(&mut self, e: &Expr) {
         if is_statement_like(e) {
@@ -364,7 +379,7 @@ impl Checker<'_> {
             return;
         }
         let t = self.value(e, None);
-        if !self.is_nothing(&t) {
+        if !self.is_nothing(&t) && !self.droppable(e) {
             let message = match &e.kind {
                 ExprKind::Call { .. } => format!(
                     "the result of {} is unused: use it, or write `const _ = …` to throw it away",

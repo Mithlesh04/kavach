@@ -415,10 +415,15 @@ impl<'a> Lowerer<'a> {
     }
 
     /// `shared.update(f)`: stores `f` of the current value (spec 6.2).
+    /// `s.update(f)`, which gives the new value, and `s.update_with(f)`,
+    /// whose `f` gives a pair: the new value and the call's result
+    /// (spec 6.2). `ty` is the call's type.
     pub(crate) fn shared_update(
         &mut self,
         shared: ir::Expr,
         f: &'a ast::Expr,
+        with: bool,
+        ty: Type,
         line: u32,
     ) -> Lowered<ir::Expr> {
         let Some(Shape::Shared(inner)) = self.shapes.shape(shared.ty).cloned() else {
@@ -430,27 +435,48 @@ impl<'a> Lowerer<'a> {
             K::Rt(RtOp::SharedGet, vec![self.local_expr(local, line)]),
             inner,
         );
-        let new = self.inline_lambda(f, vec![current], line)?;
-        let new = self.coerce(new, inner)?;
-        let set = at(
-            K::Rt(RtOp::SharedSet, vec![self.local_expr(local, line), new]),
-            Type::Unit,
-        );
+        let given = self.inline_lambda(f, vec![current], line)?;
         // The lock is held from before the read to after the write, so no
         // other task's update comes between (decision 0052).
         let lock = |l: &Self, op| at(K::Rt(op, vec![l.local_expr(local, line)]), Type::Unit);
         let (take, let_go) = (lock(self, RtOp::SharedLock), lock(self, RtOp::SharedUnlock));
+        let mut stmts = vec![Stmt::Let(local, shared), Stmt::Expr(take)];
+        let result = self.new_local(ty);
+        if with {
+            let Some(Shape::Tuple(parts)) = self.shapes.shape(given.ty).cloned() else {
+                return Err(self.unsupported("`update_with` here", f.span));
+            };
+            let pair_ty = given.ty;
+            let pair = self.new_local(pair_ty);
+            stmts.push(Stmt::Let(pair, given));
+            let new = self.tuple_item(pair, pair_ty, 0, parts[0], line);
+            let new = self.coerce(new, inner)?;
+            let out = self.tuple_item(pair, pair_ty, 1, parts[1], line);
+            stmts.push(Stmt::Expr(at(
+                K::Rt(RtOp::SharedSet, vec![self.local_expr(local, line), new]),
+                Type::Unit,
+            )));
+            stmts.push(Stmt::Let(result, self.coerce(out, ty)?));
+        } else {
+            let new = self.coerce(given, inner)?;
+            stmts.push(Stmt::Expr(at(
+                K::Rt(RtOp::SharedSet, vec![self.local_expr(local, line), new]),
+                Type::Unit,
+            )));
+            // The new value, read while the lock is still held.
+            let now = at(
+                K::Rt(RtOp::SharedGet, vec![self.local_expr(local, line)]),
+                inner,
+            );
+            stmts.push(Stmt::Let(result, self.coerce(now, ty)?));
+        }
+        stmts.push(Stmt::Expr(let_go));
         Ok(at(
             K::Block(Block {
-                stmts: vec![
-                    Stmt::Let(local, shared),
-                    Stmt::Expr(take),
-                    Stmt::Expr(set),
-                    Stmt::Expr(let_go),
-                ],
-                value: None,
+                stmts,
+                value: Some(Box::new(self.local_expr(result, line))),
             }),
-            Type::Unit,
+            ty,
         ))
     }
 }

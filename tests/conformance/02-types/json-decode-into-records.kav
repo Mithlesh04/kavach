@@ -1,4 +1,4 @@
-// Rule: `json.decode<T>` reads JSON straight into a typed value: missing fields take their default or `none`, unknown fields are ignored, and unions are read by variant name.
+// Rule: `json.decode<T>` reads JSON straight into a typed value: missing fields take their default or `none`, and unions are read by variant name.
 // Spec: 2.12
 // expect output: 7 Asha 2 lines, note -, paid Card(last4: "4242")
 // expect output: pen x1
@@ -30,7 +30,7 @@ fn show(order: Order) {
 }
 
 fn main() ! JsonError {
-    show(try json.decode<Order>("\{\"id\": 7, \"customer\": \"Asha\", \"lines\": [\{\"product\": \"pen\"}, \{\"product\": \"ink\", \"qty\": 3}], \"paid\": \{\"Card\": \{\"last4\": \"4242\"}}, \"extra\": true}"))
+    show(try json.decode<Order>("\{\"id\": 7, \"customer\": \"Asha\", \"lines\": [\{\"product\": \"pen\"}, \{\"product\": \"ink\", \"qty\": 3}], \"paid\": \{\"Card\": \{\"last4\": \"4242\"}}}"))
     const doc = try json.parse("\{\"id\": 8, \"customer\": \"Ravi\", \"lines\": [], \"note\": \"gift\", \"paid\": \"Cash\"}")
     show(try json.decode_value<Order>(doc))
 }

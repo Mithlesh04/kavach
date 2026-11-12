@@ -245,7 +245,14 @@ impl<'a> Lowerer<'a> {
         })
     }
 
-    fn tuple_item(&self, tuple: Local, tuple_ty: Type, i: usize, ty: Type, line: u32) -> ir::Expr {
+    pub(crate) fn tuple_item(
+        &self,
+        tuple: Local,
+        tuple_ty: Type,
+        i: usize,
+        ty: Type,
+        line: u32,
+    ) -> ir::Expr {
         let whole = ir::Expr {
             kind: K::Local(tuple),
             ty: tuple_ty,

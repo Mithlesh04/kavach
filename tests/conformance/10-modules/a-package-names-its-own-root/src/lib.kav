@@ -1,0 +1,11 @@
+use parts
+
+pub type Part {
+    pub name: String
+    pub count: Int
+}
+
+/// The label of `p`, twice.
+pub fn both(p: Part) -> String {
+    "{parts.label(p)}, {parts.label(p)}"
+}

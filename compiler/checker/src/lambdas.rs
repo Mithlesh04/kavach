@@ -80,10 +80,12 @@ impl Checker<'_> {
         let mut ctx = outer_ctx.clone().unwrap_or(crate::checker::Ctx {
             name: String::new(),
             ret: Ty::Error,
+            ret_secret: false,
             errors: None,
             self_ty: None,
         });
         ctx.name = "this lambda".into();
+        ctx.ret_secret = false;
         ctx.errors = Some(err.clone());
         self.ctx = Some(ctx);
         let outer_failed = std::mem::replace(&mut self.lambda_failed, false);
@@ -111,6 +113,7 @@ impl Checker<'_> {
             }
             None => self.value(body, None),
         };
+        self.check_secret_return(body, "this lambda");
         self.loops = outer_loops;
         self.copies.pop();
         self.lambdas.pop();

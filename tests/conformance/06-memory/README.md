@@ -11,6 +11,7 @@ Conformance tests for spec chapter [6. Memory](../../../docs/spec/06-memory.md).
 | 6.2 | [shared-updates-never-lose-one.kav](shared-updates-never-lose-one.kav) | `update` holds the `Shared` value's lock while its function runs, so updates from many tasks never lose one. | runs |
 | 6.2 | [update-cant-wait.kav](update-cant-wait.kav) | The function given to `update` can't wait: a sleep, a channel, a task's `.wait()` or the network in it is a compile error. | compile error |
 | 6.2 | [update-cant-wait-through-a-function.kav](update-cant-wait-through-a-function.kav) | A wait inside `update` reached through another function panics, since the value stays locked until the function returns. | panic |
+| 6.2 | [shared-update-gives-a-result.kav](shared-update-gives-a-result.kav) | `update` gives the new value and `update_with` what its function returns beside it, both found under the lock; an `update` result may go unused. | runs |
 | 6.3 | [arena-block-value.kav](arena-block-value.kav) | The value of an arena block is copied out of it. | runs |
 | 6.3 | [arena-values-cannot-escape.kav](arena-values-cannot-escape.kav) | Storing an arena value outside the arena is a compile error. | compile error |
 | 6.4 | [unsafe-needs-opt-in.kav](unsafe-needs-opt-in.kav) | A package may use `unsafe` only when kavach.toml sets unsafe = true (default: false). | compile error |

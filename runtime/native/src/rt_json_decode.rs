@@ -27,6 +27,10 @@ thread_local! {
     /// stop at the first.
     static PROBLEMS: std::cell::RefCell<Option<Vec<Failed>>> =
         const { std::cell::RefCell::new(None) };
+    /// Whether decoding skips fields its type doesn't have: `json.decode`
+    /// sets it from `unknown` (decision 0096); other readers, such as an
+    /// agent's saved state, skip them.
+    pub(crate) static IGNORE: std::cell::Cell<bool> = const { std::cell::Cell::new(true) };
 }
 
 /// `e`, unless the problems are being collected: then it is noted, and
@@ -68,6 +72,8 @@ fn decode_every(t: &Tree, ty: Type, templates: i64) -> Result<u64, Vec<Failed>> 
 /// `json.decode_value<T>(json, 0, templates)`, all owned: a value of type
 /// `code`, or 0 with the error set.
 pub fn decode_op(op: RtOp, a: i64, b: i64, c: i64, code: i64) -> i64 {
+    // The last of `b`'s numbers says whether unknown fields are skipped.
+    IGNORE.with(|i| i.set(slots(b).last().is_some_and(|n| *n != 0)));
     let tree = if op == RtOp::JsonDecode {
         let d = Limits::default();
         let limit = |i: usize, default: usize| {
@@ -79,7 +85,7 @@ pub fn decode_op(op: RtOp, a: i64, b: i64, c: i64, code: i64) -> i64 {
             max_depth: limit(0, d.max_depth),
             max_bytes: limit(1, d.max_bytes),
             max_fields: limit(2, d.max_fields),
-            comments: limit(3, 0) != 0,
+            comments: false,
         };
         // The fast way first: straight from the text. Only when that
         // fails is the text parsed into a tree, to say why.
@@ -115,6 +121,7 @@ pub fn decode_op(op: RtOp, a: i64, b: i64, c: i64, code: i64) -> i64 {
 }
 
 fn finish(a: i64, b: i64, c: i64, result: i64) -> i64 {
+    IGNORE.with(|i| i.set(true));
     release(a);
     release(b);
     release(c);
@@ -339,6 +346,16 @@ fn decode_fields(
     templates: i64,
 ) -> Result<Vec<u64>, Failed> {
     let types: Vec<Type> = fields.iter().map(|f| f.ty).collect();
+    // A field the type doesn't have (decision 0096).
+    if !IGNORE.with(std::cell::Cell::get) {
+        for (k, _) in given {
+            if !fields.iter().any(|f| f.name == *k)
+                && let Some(e) = stop_at((path_field(path, k), expected::NO_FIELD.to_string()))
+            {
+                return Err(e);
+            }
+        }
+    }
     let mut built = Vec::with_capacity(fields.len());
     for (i, f) in fields.iter().enumerate() {
         let slot = match given.iter().find(|(k, _)| *k == f.name) {

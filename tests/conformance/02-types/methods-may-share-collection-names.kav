@@ -1,0 +1,32 @@
+// Rule: A type's own methods named `add`, `push` or `remove` are its methods, not the built-in ones of lists, maps and sets.
+// Spec: 2.5, 14.2
+// expect output: 12
+// expect output: 1
+// expect output: 3
+// expect output: [1, 2, 4]
+
+type Bag {
+    items: [Int] = []
+
+    fn add(self, n: Int) -> Int {
+        self.items.len() + n
+    }
+
+    fn remove(self, n: Int) -> Int {
+        self.items.len() - n
+    }
+
+    fn push(self, n: Int) -> Bag {
+        let items = self.items
+        items.push(n)
+        Bag(items: items)
+    }
+}
+
+fn main() {
+    const b = Bag(items: [1, 2])
+    print(b.add(10))
+    print(b.remove(1))
+    print(b.push(4).items.len())
+    print(b.push(4).items)
+}

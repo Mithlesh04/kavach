@@ -176,6 +176,8 @@ print("done")          // fine: print returns nothing
 
 A forgotten result is a common bug, for example making an updated copy with `order with { … }` and never using it. Errors are stricter still: they must be handled (chapter 5).
 
+The one exception is `Shared.update`, whose new value may be left unused: `counter.update(n => n + 1)` (6.2).
+
 ## 3.8 Recursion
 
 Functions may call themselves. Tail calls are **not** guaranteed to be optimized, so very deep recursion can run out of stack. That is a panic (5.6) with a clear message, never memory corruption. For long loops, use `for` or `while`.

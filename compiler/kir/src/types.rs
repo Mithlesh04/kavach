@@ -139,6 +139,9 @@ impl Lowerer<'_> {
             Ty::Prim(p) => prim_type(*p)
                 .ok_or_else(|| self.unsupported(format!("{} values", p.name()), span))?,
             Ty::Unit | Ty::Never => Type::Unit,
+            // `json.of([])`: nothing tells the items' type, and there are
+            // none, so any type will do.
+            Ty::List(t) if matches!(**t, Ty::Var(_) | Ty::Error) => self.list_type(Type::I64),
             Ty::List(t) => {
                 let item = self.kir_type(t, span)?;
                 self.list_type(item)

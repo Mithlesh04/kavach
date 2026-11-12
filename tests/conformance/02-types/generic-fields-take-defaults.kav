@@ -1,0 +1,21 @@
+// Rule: A field whose type uses the record's type parameter can have a default, made for the type arguments of each value.
+// Spec: 2.4, 2.9
+// expect output: 0
+// expect output: 1 pen
+
+type Item<S> {
+    name: String
+    size: S
+}
+
+type Cart<S> {
+    owner: String
+    items: [Item<S>] = []
+}
+
+fn main() {
+    const c: Cart<Int> = Cart(owner: "asha")
+    print(c.items.len())
+    const d = Cart(owner: "ravi", items: [Item(name: "pen", size: 3)])
+    print("{d.items.len()} {d.items[0].name}")
+}

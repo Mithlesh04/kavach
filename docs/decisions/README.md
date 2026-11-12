@@ -99,6 +99,9 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0091](0091-workspaces.md) | `[workspace] members` in the root `kavach.toml`: one lock and one `kavach_modules/` for every member, commands at the root run on each; `dir` for a package in a folder of a repository | Accepted |
 | [0092](0092-websockets-and-server-sent-events.md) | A handler returns `http.websocket(r, session)` or `http.events(r, feed)`, a response that takes over the connection; `ring` named directly for the handshake's SHA-1 | Accepted |
 | [0093](0093-std-crypto.md) | `std.crypto` from `ring` (already used for TLS) and `argon2` for passwords; no capability | Accepted |
+| [0094](0094-secret-results.md) | A function that returns a secret writes `-> secret T`; returning one without it is a compile error | Accepted |
+| [0095](0095-shared-update-gives-a-result.md) | `Shared.update` gives the new value; `update_with` gives its function's result beside it | Accepted |
+| [0096](0096-unknown-fields-are-refused.md) | Decoding refuses fields the type doesn't have; `unknown: JsonUnknown.Ignore` skips them, as `std.http`'s client does | Accepted |
 
 ## Open decisions
 

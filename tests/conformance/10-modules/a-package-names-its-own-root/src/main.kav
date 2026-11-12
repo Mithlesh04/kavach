@@ -1,0 +1,13 @@
+// Rule: Inside a library's own project, its package name names its root module (`src/lib.kav`), as it does where the package is a dependency, so `use kit.{Part}` means the same in both.
+// Spec: 10.12
+// expect output: bolt x2
+// expect output: bolt x2, bolt x2
+
+use kit
+use kit.parts
+
+fn main() {
+    const p = kit.Part(name: "bolt", count: 2)
+    print(parts.label(p))
+    print(kit.both(p))
+}

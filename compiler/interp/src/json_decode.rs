@@ -21,6 +21,10 @@ thread_local! {
     /// lists every problem (spec 2.12, decision 0086).
     static PROBLEMS: std::cell::RefCell<Option<Vec<(String, String)>>> =
         const { std::cell::RefCell::new(None) };
+    /// Whether decoding skips fields its type doesn't have: `json.decode`
+    /// sets it from `unknown` (decision 0096); other readers, such as an
+    /// agent's saved state, skip them.
+    static IGNORE: std::cell::Cell<bool> = const { std::cell::Cell::new(true) };
 }
 
 impl<'a> Interp<'a> {
@@ -30,9 +34,14 @@ impl<'a> Interp<'a> {
         let Some(Ty::Result(t, _)) = ty else {
             return Ok(Value::Unit);
         };
-        let a = crate::json::arrange(
-            args,
-            &["text", "max_depth", "max_bytes", "max_fields", "comments"],
+        let names: &[&str] = match name {
+            "decode" => &["text", "max_depth", "max_bytes", "max_fields", "unknown"],
+            _ => &["value", "unknown"],
+        };
+        let a = crate::json::arrange(args, names);
+        let ignore = matches!(
+            a.last(),
+            Some(Some(Value::Variant { name, .. })) if &**name == "Ignore"
         );
         let tree = if name == "decode" {
             let text = match &a[0] {
@@ -44,14 +53,16 @@ impl<'a> Interp<'a> {
                 max_depth: crate::json::int_or(&a[1], d.max_depth),
                 max_bytes: crate::json::int_or(&a[2], d.max_bytes),
                 max_fields: crate::json::int_or(&a[3], d.max_fields),
-                comments: matches!(a[4], Some(Value::Bool(true))),
+                comments: false,
             };
             json::parse(&text, &limits).map_err(|e| Flow::Fail(self.json_error(e)))?
         } else {
             a[0].as_ref().map_or(Tree::Null, crate::json::json_tree)
         };
         PROBLEMS.with(|p| *p.borrow_mut() = Some(Vec::new()));
+        IGNORE.with(|i| i.set(ignore));
         let decoded = self.decode(&tree, &t, "");
+        IGNORE.with(|i| i.set(true));
         let mut problems = PROBLEMS.with(|p| p.borrow_mut().take()).unwrap_or_default();
         let value = decoded?;
         // Once the shapes fit, the invariants (spec 7.3).
@@ -319,6 +330,14 @@ impl<'a> Interp<'a> {
         path: &str,
     ) -> Result<Vec<Field<'a>>, Flow<'a>> {
         let mut out = Vec::with_capacity(declared.len());
+        // A field the type doesn't have (decision 0096).
+        if !IGNORE.with(std::cell::Cell::get) {
+            for (k, _) in given {
+                if !declared.iter().any(|f| f.name.name == *k) {
+                    self.problem(&path_field(path, k), expected::NO_FIELD)?;
+                }
+            }
+        }
         for f in declared {
             let name = f.name.name.as_str();
             let ty = self.field_ty(owner, name);

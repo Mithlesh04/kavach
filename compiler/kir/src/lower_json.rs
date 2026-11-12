@@ -34,9 +34,9 @@ impl<'a> Lowerer<'a> {
     ) -> Lowered<ir::Expr> {
         let at = |kind, ty| ir::Expr { kind, ty, line };
         let params: &[&str] = if name == "decode" {
-            &["text", "max_depth", "max_bytes", "max_fields"]
+            &["text", "max_depth", "max_bytes", "max_fields", "unknown"]
         } else {
-            &["value"]
+            &["value", "unknown"]
         };
         let mut given: Vec<Option<&'a ast::Expr>> = vec![None; params.len()];
         for (i, a) in args.iter().enumerate() {
@@ -52,10 +52,25 @@ impl<'a> Lowerer<'a> {
             return Err(self.unsupported(format!("`json.{name}()`"), span));
         };
         let first = self.expr(first)?;
+        // `unknown: JsonUnknown.Ignore` (variant 1) as 1, last of the
+        // numbers the runtime is given (decision 0096).
+        let ignore = match given.last().copied().flatten() {
+            Some(e) => {
+                let value = self.expr(e)?;
+                let number = |n| ir::Block {
+                    stmts: Vec::new(),
+                    value: Some(Box::new(at(K::Int(n), Type::I64))),
+                };
+                let is = at(K::HasVariant(Box::new(value), 1), Type::Bool);
+                at(K::If(Box::new(is), number(1), number(0)), Type::I64)
+            }
+            None => at(K::Int(0), Type::I64),
+        };
+        let list = self.list_type(Type::I64);
         let (op, limits) = if name == "decode" {
             let d = Limits::default();
             let mut limits = Vec::new();
-            for (e, default) in given[1..]
+            for (e, default) in given[1..4]
                 .iter()
                 .zip([d.max_depth, d.max_bytes, d.max_fields])
             {
@@ -64,10 +79,10 @@ impl<'a> Lowerer<'a> {
                     None => at(K::Int(default as i128), Type::I64),
                 });
             }
-            let list = self.list_type(Type::I64);
+            limits.push(ignore);
             (RtOp::JsonDecode, at(K::List(limits), list))
         } else {
-            (RtOp::JsonDecodeValue, at(K::Int(0), Type::I64))
+            (RtOp::JsonDecodeValue, at(K::List(vec![ignore]), list))
         };
         let templates = self.templates(ty, line, span)?;
         let decoded = at(K::Rt(op, vec![first, limits, templates]), ty);

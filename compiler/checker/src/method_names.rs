@@ -82,6 +82,7 @@ pub(crate) const NAMES: &[&str] = &[
     "trim",
     "unwrap",
     "update",
+    "update_with",
     "upper",
     "value",
     "values",

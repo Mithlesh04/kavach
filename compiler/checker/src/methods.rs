@@ -129,8 +129,12 @@ impl Checker<'_> {
                 .chain(named)
                 .collect();
             // The function given to `update` runs with the value locked.
-            let update = matches!(&recv, Ty::Builtin("Shared", _)) && name.name == "update";
+            let update = matches!(&recv, Ty::Builtin("Shared", _))
+                && matches!(name.name.as_str(), "update" | "update_with");
             self.updating += u32::from(update);
+            if update && name.name == "update" {
+                self.updates.insert((e.span.start, e.span.end));
+            }
             let label = format!("`{}`", name.name);
             let ret = self.passing_errors_on(m.ret, e.span, |c| {
                 c.args(args, &params, e.span, &label, "argument");

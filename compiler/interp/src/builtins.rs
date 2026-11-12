@@ -285,15 +285,23 @@ impl<'a> Interp<'a> {
             (Value::Shared(cell), "get") => Ok(cell.borrow().clone()),
             (Value::Shared(cell), "weak") => Ok(Value::Weak(Rc::downgrade(&cell))),
             (Value::Weak(cell), "shared") => Ok(cell.upgrade().map_or(Value::None, Value::Shared)),
-            (Value::Shared(cell), "update") => {
+            (Value::Shared(cell), "update" | "update_with") => {
                 let current = cell.borrow().clone();
                 // Held while the function runs: it may not wait (6.2).
                 kavach_runtime_core::tasks::hold(true);
                 let next = self.call_value(arg, vec![current], span);
                 kavach_runtime_core::tasks::hold(false);
-                let next = next?;
+                // `update` gives the new value; `update_with` the second
+                // of the pair its function gives.
+                let (next, result) = match (name, next?) {
+                    ("update", next) => (next.clone(), next),
+                    (_, Value::Tuple(pair)) if pair.len() == 2 => {
+                        (pair[0].clone(), pair[1].clone())
+                    }
+                    (_, other) => (other, Value::Unit),
+                };
                 *cell.borrow_mut() = next;
-                Ok(Value::Unit)
+                Ok(result)
             }
             // `spawn` runs at once, so a task's value is ready.
             (v, "wait") => Ok(v),

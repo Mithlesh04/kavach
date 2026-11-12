@@ -1,0 +1,42 @@
+// Rule: `update` gives the new value, and `update_with` gives what its function returns beside the new value, both found under the lock.
+// Spec: 6.2
+// expect output: 1
+// expect output: 0 1 2
+// expect output: 3
+// expect output: ["a", "b"] taken: none
+// expect output: 400
+
+fn bump(counter: Shared<Int>) {
+    counter.update(n => n + 1)
+}
+
+fn count(hits: Shared<Int>) -> Int {
+    for _ in 0..100 {
+        const _ = hits.update_with(n => (n + 1, n))
+    }
+    0
+}
+
+fn main() {
+    const counter = Shared(0)
+    print(counter.update(n => n + 1))
+    const ids = Shared(0)
+    const a = ids.update_with(n => (n + 1, n))
+    const b = ids.update_with(n => (n + 1, n))
+    const c = ids.update_with(n => (n + 1, n))
+    print("{a} {b} {c}")
+    print(ids.get())
+    const names = Shared(["a", "b"])
+    const taken: String? = names.update_with(xs => (xs, none))
+    print("{names.get()} taken: {taken}")
+    const hits = Shared(0)
+    const t1 = spawn cores count(hits)
+    const t2 = spawn cores count(hits)
+    const t3 = spawn cores count(hits)
+    const t4 = spawn cores count(hits)
+    for t in [t1, t2, t3, t4] {
+        const _ = t.wait() catch _ => 0
+    }
+    print(hits.get())
+    bump(counter)
+}

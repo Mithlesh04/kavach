@@ -17,7 +17,7 @@ fn main() {
 }
 ```
 
-- **Names.** The name in `[dependencies]` is the package's module name: lowercase letters, digits and `_`. Its `src/lib.kav` is the module `geometry`, and `src/shapes.kav` is `geometry.shapes`. Only `pub` items can be used from outside the package (10.1).
+- **Names.** The name in `[dependencies]` is the package's module name: lowercase letters, digits and `_`. Its `src/lib.kav` is the module `geometry`, and `src/shapes.kav` is `geometry.shapes`. Only `pub` items can be used from outside the package (10.1). Inside the package's own project, its `[package] name` names its modules the same way, so `shapes.kav` reaches the root's types with `use geometry.{Shape}` whichever project is built; `lib` names no module.
 - **Inside a package,** `use shapes` names the package's own module `geometry.shapes` first, so a package's code means the same whichever project uses it.
 - **Git.** `tag`, `branch` or `rev` (a commit) says which code to use; without one, the repository's default branch. Fetched repositories are kept in `kavach_modules/<name>/` in the project's folder, one folder for each package, as npm keeps `node_modules/`. Never commit it (`kavach new` puts it in `.gitignore`): `kavach.lock` is enough to fetch it again. A path dependency is read where it is, not copied.
 - **A folder of a repository.** `dir` names the folder of the repository that holds the package, when one repository holds several: `router = { git = "https://github.com/example/rath", tag = "v1.0.0", dir = "packages/router" }`. It is a path inside the repository, written with `/`: one that starts with `/` or `-`, or has a `..` part, is refused.

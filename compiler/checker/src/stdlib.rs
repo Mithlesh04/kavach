@@ -356,15 +356,17 @@ impl Checker<'_> {
                 if let Some(why) = self.not_decodable(&t) {
                     self.error(span, why);
                 }
+                let unknown = self.builtin_ty("JsonUnknown");
                 let params = if name == "decode" {
                     vec![
                         p("text", &string),
                         with_default("max_depth", &int),
                         with_default("max_bytes", &int),
                         with_default("max_fields", &int),
+                        with_default("unknown", &unknown),
                     ]
                 } else {
-                    vec![p("value", &json)]
+                    vec![p("value", &json), with_default("unknown", &unknown)]
                 };
                 let error = self.builtin_ty("JsonError");
                 (params, Ty::Result(Box::new(t), Box::new(error)))

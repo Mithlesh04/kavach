@@ -52,7 +52,7 @@ impl<'a> Lowerer<'a> {
                 .or_else(|| args.get(i).filter(|a| a.name.is_none()));
             let value = match (given, &f.default) {
                 (Some(a), _) => self.expr(&a.value)?,
-                (None, Some(d)) => self.expr(d)?,
+                (None, Some(d)) => self.field_default(def, d, ty)?,
                 (None, None) => return Err(self.unsupported("this constructor", span)),
             };
             values.push(self.coerce(value, types[i])?);
@@ -70,6 +70,19 @@ impl<'a> Lowerer<'a> {
         }
         self.with_invariants(record)
     }
+    /// Default `d` of a field of type `def`, made as type `ty`: a default
+    /// of generic type (`items: [Item<S>] = []`) takes `ty`'s arguments.
+    fn field_default(&mut self, def: DefId, d: &'a ast::Expr, ty: Type) -> Lowered<ir::Expr> {
+        let params = self.type_generics(def);
+        let args = self.shapes.args_of(ty).unwrap_or_default().to_vec();
+        let mut subst = self.subst.clone();
+        subst.extend(params.into_iter().zip(args));
+        let outer = std::mem::replace(&mut self.subst, subst);
+        let value = self.expr(d);
+        self.subst = outer;
+        value
+    }
+
     /// `value` (a new or changed record), after checking its type's
     /// invariants (spec 7.3): a false one panics with the contract.
     pub(crate) fn with_invariants(&mut self, value: ir::Expr) -> Lowered<ir::Expr> {

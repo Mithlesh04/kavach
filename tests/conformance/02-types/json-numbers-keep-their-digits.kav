@@ -23,7 +23,7 @@ fn main() ! Error {
     print(doc["id"].int())
     print(doc["price"].decimal())
     print(doc["huge"].float())
-    const order = try json.decode<Order>(text)
+    const order = try json.decode<Order>(text, unknown: JsonUnknown.Ignore)
     print("{order.id} costs {order.price}")
     print(json.stringify(json.of(order)))
 }

@@ -40,15 +40,18 @@ impl<'a> Lowerer<'a> {
             self.infer_args(ret, ty, &mut subst);
         }
         let mut type_args = Vec::new();
+        let mut stand_ins = Vec::new();
         for g in &f.generics {
             let p = self.decl.get(&g.name.span.start).copied();
             match p.and_then(|p| subst.get(&p)) {
                 Some(t) => type_args.push(*t),
                 // `! E` where no function given here can fail (spec 3.4):
-                // the error is never made, so any type stands in for it.
+                // the error is never made, so any type stands in for it,
+                // and code that uses one never runs.
                 None if p.is_some() && self.names_an_error(f, &g.name.name) => {
                     subst.insert(p.expect("checked above"), Type::I64);
                     type_args.push(Type::I64);
+                    stand_ins.extend(p);
                 }
                 None => return Err(self.unsupported("this generic call", span)),
             }
@@ -65,6 +68,9 @@ impl<'a> Lowerer<'a> {
             .map(|(v, want)| self.coerce(v, want))
             .collect::<Lowered<Vec<_>>>()?;
         let fid = self.instance(def, f, type_args, subst, None);
+        if !stand_ins.is_empty() {
+            self.fn_stand_ins.insert(fid, stand_ins);
+        }
         let call = ir::Expr {
             kind: K::Call(fid, values),
             ty,
@@ -166,13 +172,22 @@ impl<'a> Lowerer<'a> {
         args: &'a [ast::Arg],
         ty: Type,
         line: u32,
-        span: ast::Span,
+        call: &'a ast::Expr,
     ) -> Lowered<ir::Expr> {
+        let span = call.span;
         let type_params = self.type_generics(owner);
         let mut subst = HashMap::new();
         if let Some(r) = &receiver {
             let args_of = self.shapes.args_of(r.ty).unwrap_or_default().to_vec();
             subst.extend(type_params.iter().copied().zip(args_of));
+        }
+        // The method's own type arguments written at the call (`get<Row>()`).
+        if let ast::ExprKind::Call { generics, .. } = &call.kind {
+            for (g, written) in f.generics.iter().zip(generics) {
+                if let Some(&p) = self.decl.get(&g.name.span.start) {
+                    subst.insert(p, self.written_type(written)?);
+                }
+            }
         }
         let values = self.argument_values(f, args, span)?;
         let params = f.params.iter().filter_map(|p| p.ty.as_ref());

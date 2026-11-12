@@ -10,6 +10,7 @@ Conformance tests for spec chapter [10. Modules and packages](../../../docs/spec
 | 10.1 | [records-with-private-fields-stay-in-their-module/](records-with-private-fields-stay-in-their-module/src/main.kav) | A record with a private field can be created only in its own module. | compile error |
 | 10.3 | [only-the-entry-has-main/](only-the-entry-has-main/src/main.kav) | Only the entry file can have `main`. | compile error |
 | 10.12 | [dependencies-come-from-a-folder/](dependencies-come-from-a-folder/src/main.kav) | A dependency named by `path` is a package whose `src/lib.kav` is the module of that name; inside it, `use shapes` names its own module first. | runs |
+| 10.12 | [a-package-names-its-own-root/](a-package-names-its-own-root/src/main.kav) | Inside a library's own project, its package name names its root module, as where it is a dependency. | runs |
 | 10.12 | [dependencies-use-only-granted-capabilities/](dependencies-use-only-granted-capabilities/src/main.kav) | A dependency may use only the capabilities its entry grants in `can`; one without `can` must be pure. | compile error |
 | 10.12 | [granted-capabilities-let-a-dependency-act/](granted-capabilities-let-a-dependency-act/src/main.kav) | A dependency whose entry grants a capability in `can` may use it. | runs |
 | 10.12 | [dependencies-of-dependencies-get-no-more/](dependencies-of-dependencies-get-no-more/src/main.kav) | A dependency's own dependencies get at most what it was granted, whatever its `kavach.toml` says. | compile error |

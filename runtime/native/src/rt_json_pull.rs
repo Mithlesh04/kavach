@@ -224,7 +224,9 @@ fn fields_of(
             Err(_) => break true,
         };
         let Some(i) = fields.iter().position(|f| f.name == *name) else {
-            if r.skip().is_err() {
+            // Refused unknown fields are reported by the slower decoder.
+            let ignore = crate::rt_json_decode::IGNORE.with(std::cell::Cell::get);
+            if !ignore || r.skip().is_err() {
                 break true;
             }
             continue;

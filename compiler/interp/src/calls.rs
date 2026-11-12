@@ -72,7 +72,7 @@ impl<'a> Interp<'a> {
                     ExprKind::Call { generics, .. } => generics.as_slice(),
                     _ => &[],
                 };
-                let v = self.method(base, name, generics, values, e.span)?;
+                let v = self.method(e, base, name, generics, values)?;
                 self.write_back(args, e.span)?;
                 return Ok(v);
             }
@@ -201,12 +201,13 @@ impl<'a> Interp<'a> {
 
     fn method(
         &mut self,
+        call: &'a Expr,
         base: &'a Expr,
         name: &'a Ident,
         generics: &'a [kavach_ast::TypeExpr],
         args: Args<'a>,
-        span: Span,
     ) -> Eval<'a> {
+        let span = call.span;
         if name.name == "timeout"
             && let Some(r) = self.timeout(base, &args, span)
         {
@@ -226,6 +227,7 @@ impl<'a> Interp<'a> {
                         .and_then(|m| m.get(name.name.as_str()))
                         .copied()
                     {
+                        self.method_generics(f, call);
                         return self.call_fn(f, None, args, span);
                     }
                     if let Some(r) = self.enum_call(def, &name.name, args.first().map(|(_, v)| v)) {
@@ -240,6 +242,7 @@ impl<'a> Interp<'a> {
                         .and_then(|m| m.get(name.name.as_str()))
                         .copied()
                     {
+                        self.method_generics(f, call);
                         return self.call_fn(f, None, args, span);
                     }
                 }
@@ -272,7 +275,12 @@ impl<'a> Interp<'a> {
                 _ => {}
             }
         }
-        if MUTATING.contains(&name.name.as_str()) {
+        // A user type's own `add` or `push` is a method like any other.
+        let user_type = matches!(
+            self.c.expr_types.get(&(base.span.start, base.span.end)),
+            Some(kavach_checker::Ty::Adt(..) | kavach_checker::Ty::Param(_))
+        );
+        if MUTATING.contains(&name.name.as_str()) && !user_type {
             // A variable's list or map moves out while it changes, so
             // `items.push(x)` doesn't copy the whole list.
             let local = match &base.kind {
@@ -298,6 +306,7 @@ impl<'a> Interp<'a> {
             other => type_name(other).and_then(|t| self.ext_methods.get(t)),
         };
         if let Some(f) = user.and_then(|m| m.get(name.name.as_str())).copied() {
+            self.method_generics(f, call);
             return self.call_fn(f, Some(receiver), args, span);
         }
         // A field holding a function: `h.on(x)` calls it (spec 3.4).

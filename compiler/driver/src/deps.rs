@@ -61,6 +61,15 @@ fn read_toml(root: &Path) -> Result<toml::Table, String> {
         .map_err(|e| format!("{}: {e}", file.display()))
 }
 
+/// The `[package] name` of the project at `root`, when it can name a
+/// module: inside its own project too, a library's root module has that
+/// name (spec 10.12).
+pub(crate) fn own_name(root: &Path) -> Option<String> {
+    let table = read_toml(root).ok()?;
+    let name = table.get("package")?.get("name")?.as_str()?;
+    is_name(name).then(|| name.to_string())
+}
+
 /// The dependencies `root/kavach.toml` declares.
 fn declared(root: &Path) -> Result<Vec<Dep>, String> {
     let table = read_toml(root)?;

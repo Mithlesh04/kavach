@@ -21,6 +21,8 @@ pub mod expected {
     pub const CHAR: &str = "text of one character";
     pub const ARRAY: &str = "an array";
     pub const OBJECT: &str = "an object";
+    /// For a field the type doesn't have (decision 0096).
+    pub const NO_FIELD: &str = "no field of this name";
 
     /// For an integer field of type `name` (`Int`, `UInt8`…).
     pub fn integer(name: &str) -> String {

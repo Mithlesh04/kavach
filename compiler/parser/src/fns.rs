@@ -22,6 +22,7 @@ impl Parser<'_> {
             params: self.params(),
             name,
             ret: None,
+            ret_secret: false,
             errors: None,
             uses: Vec::new(),
             fs_scope: None,
@@ -130,7 +131,10 @@ impl Parser<'_> {
             stage = stage.max(rank);
             self.bump();
             match rank {
-                0 => f.ret = Some(self.type_expr()),
+                0 => {
+                    f.ret_secret = self.eat_kw(Keyword::Secret);
+                    f.ret = Some(self.type_expr());
+                }
                 1 => f.errors = Some(self.type_expr()),
                 2 => self.uses_clause(f),
                 3 => f.requires.push(self.expr()),

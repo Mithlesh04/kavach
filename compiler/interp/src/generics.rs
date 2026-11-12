@@ -44,13 +44,25 @@ impl<'a> Interp<'a> {
         if let (Some(written), Some(t)) = (&f.ret, result) {
             self.bind(written, &self.concrete(&t), &mut out);
         }
-        for (p, a) in f.params.iter().zip(args) {
+        // A method's `self` has no written type and no argument.
+        for (p, a) in f.params.iter().filter(|p| p.ty.is_some()).zip(args) {
             let span = a.value.span;
             if let (Some(written), Some(t)) = (&p.ty, types.get(&(span.start, span.end))) {
                 self.bind(written, &self.concrete(t), &mut out);
             }
         }
         out
+    }
+
+    /// Before calling generic method `f` at `call`: its type arguments,
+    /// written or inferred, for the call to run with.
+    pub(crate) fn method_generics(&mut self, f: &'a FnDecl, call: &'a Expr) {
+        if f.generics.is_empty() {
+            return;
+        }
+        if let ExprKind::Call { args, .. } = &call.kind {
+            self.next_generics = Some(self.type_args(f, call, args));
+        }
     }
 
     /// Matches written type `w` with `actual`, recording the generic
@@ -88,6 +100,28 @@ impl<'a> Interp<'a> {
                 self.bind(wv, v, out);
             }
             (TypeKind::Tuple(ws), Ty::Tuple(ts)) => both(out, ws, ts),
+            // `wrap(show)`: a function type's parameters, result and error.
+            (
+                TypeKind::Fn {
+                    params,
+                    ret,
+                    errors,
+                    ..
+                },
+                Ty::Fn(ps, r, _),
+            ) => {
+                both(out, params, ps);
+                let (ok, err) = match &**r {
+                    Ty::Result(ok, err) => (&**ok, Some(&**err)),
+                    r => (r, None),
+                };
+                if let Some(w) = ret {
+                    self.bind(w, ok, out);
+                }
+                if let (Some(w), Some(e)) = (errors, err) {
+                    self.bind(w, e, out);
+                }
+            }
             _ => {}
         }
     }

@@ -20,6 +20,11 @@ pub type JsonError = Syntax(line: Int, column: Int, message: String) |
     DuplicateKey(key: String, line: Int, column: Int) |
     Invalid(problems: [JsonProblem])
 
+/// What decoding does with a field the type doesn't have (spec 2.12):
+/// `Refuse` makes it a problem; `Ignore` skips it, for reading another
+/// service's answers, which may gain fields.
+pub type JsonUnknown = Refuse | Ignore
+
 /// One problem decoding found (spec 2.12): where in the document, and
 /// what the type wanted there.
 pub type JsonProblem {

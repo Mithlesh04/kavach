@@ -1,0 +1,11 @@
+// Rule: `json.of([])` encodes an empty list literal, whose items have no type to tell, as `[]`.
+// Spec: 2.12
+// expect output: []
+// expect output: {"tags":[]}
+
+use std.json
+
+fn main() {
+    print(json.stringify(json.of([])))
+    print(json.stringify(json.of(["tags": []])))
+}

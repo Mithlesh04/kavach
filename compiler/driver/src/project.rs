@@ -88,6 +88,13 @@ pub fn project_sources(entry: &Path) -> Option<Vec<Source>> {
         }
     }
     let mut sources = ordered;
+    // A library's root is named after its package, as it is where the
+    // package is a dependency, so `use shapes` means the same in both.
+    if let (true, Some(name)) = (src.join("lib.kav").is_file(), crate::deps::own_name(root)) {
+        for s in sources.iter_mut().filter(|s| s.module == "lib") {
+            s.module.clone_from(&name);
+        }
+    }
     let local = sources.len();
     sources.extend(crate::deps::sources(root));
     // Paths in messages are relative to where the entry was named from.

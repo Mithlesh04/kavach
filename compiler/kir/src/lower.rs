@@ -66,6 +66,10 @@ pub(crate) struct Lowerer<'a> {
     pub(crate) fn_subst: HashMap<FuncId, HashMap<DefId, Type>>,
     /// The type arguments in effect: generic parameter → type.
     pub(crate) subst: HashMap<DefId, Type>,
+    /// The error parameters of each instance that stand in for an error
+    /// never made (`lower_generic.rs`), and those of the one being made.
+    pub(crate) fn_stand_ins: HashMap<FuncId, Vec<DefId>>,
+    pub(crate) stand_ins: Vec<DefId>,
     /// Names brought in by `use std.<module>`, and the module (spec 14).
     pub(crate) std_modules: HashMap<DefId, String>,
     pub(crate) agents: crate::lower_agents::Agents<'a>,
@@ -128,6 +132,8 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
         instances: HashMap::new(),
         fn_subst: HashMap::new(),
         subst: HashMap::new(),
+        fn_stand_ins: HashMap::new(),
+        stand_ins: Vec::new(),
         std_modules: HashMap::new(),
         agents: Default::default(),
         dest_finals: HashMap::new(),

@@ -209,6 +209,30 @@ impl Resolver {
             .then(|| names.iter().position(|n| *n == own))
             .flatten()
             .or_else(|| names.iter().position(|n| *n == name))
+            .or_else(|| self.own_package_module(path))
+    }
+
+    /// `use shapes.circle` inside package `shapes` itself, whose root
+    /// module is named `shapes`: the module `circle` (spec 10.12).
+    fn own_package_module(&self, path: &[Ident]) -> Option<usize> {
+        let (first, rest) = path.split_first()?;
+        let own = |i: usize| {
+            self.res
+                .modules
+                .get(i)
+                .is_some_and(|m| m.package.is_empty())
+        };
+        let root = self.modules.names.iter().position(|n| *n == first.name)?;
+        if rest.is_empty() || !own(root) || !own(self.modules.current) {
+            return None;
+        }
+        let inner: Vec<&str> = rest.iter().map(|s| s.name.as_str()).collect();
+        let inner = inner.join(".");
+        self.modules
+            .names
+            .iter()
+            .position(|n| *n == inner)
+            .filter(|&i| own(i))
     }
 
     /// `name` in module `m`, if it may be used from the current module.

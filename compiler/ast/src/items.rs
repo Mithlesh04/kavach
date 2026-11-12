@@ -39,6 +39,8 @@ pub struct FnDecl {
     pub params: Vec<Param>,
     /// `-> Type`; `None` means the function returns nothing (spec 3.1).
     pub ret: Option<TypeExpr>,
+    /// `-> secret T`: its result is a secret (spec 8.7).
+    pub ret_secret: bool,
     /// `! ErrorType` (spec 5.1).
     pub errors: Option<TypeExpr>,
     /// `uses Net, Payments.refund` (spec 8.1).

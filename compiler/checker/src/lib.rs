@@ -46,6 +46,7 @@ mod order;
 mod patterns;
 mod pointers;
 mod processes;
+mod secrets;
 mod show;
 mod std_crypto;
 mod stdlib;

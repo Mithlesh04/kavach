@@ -27,3 +27,23 @@ remember(reveal(order.card))                          // allowed, and visible in
 Inside `charge`, `card` is a secret like the field it came from, and so is a variable set from a secret (`const c = order.card`). The audit log writes `<secret>` for an argument of a `secret` parameter.
 
 A value read from the environment with `env(name)` is a secret too (10.13): keys and passwords usually come that way.
+
+**Returning a secret.** A function that returns a secret says so in its result: `-> secret T` ([decision 0094](../../decisions/0094-secret-results.md)). A call to it gives a secret, like the field it came from. Returning a secret from a function whose result isn't `secret` is a compile error, so a helper can't turn a secret into plain text. Interface methods and the methods that implement them agree on it.
+
+```kavach
+fn database_url() -> secret String ! Error uses Env {
+    try env("DATABASE_URL")
+}
+
+fn leak() -> String ! Error uses Env {
+    try env("DATABASE_URL")              // compile error: the result isn't `secret`
+}
+
+fn main() ! Error uses Env {
+    const url = try database_url()       // a secret
+    print("using {url}")                 // compile error: `url` is secret
+    print("using {reveal(url)}")         // allowed, and visible in review
+}
+```
+
+A lambda can't return a secret: a function type has no way to say so, so a named function with `-> secret T` does it.

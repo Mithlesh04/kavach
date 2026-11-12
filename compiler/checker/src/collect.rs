@@ -114,6 +114,7 @@ impl Checker<'_> {
             generics,
             params,
             ret: f.ret.as_ref().map_or(Ty::Unit, |t| self.lower(t, self_ty)),
+            ret_secret: f.ret_secret,
             errors: f.errors.as_ref().map(|t| self.lower(t, self_ty)),
             uses: f
                 .uses

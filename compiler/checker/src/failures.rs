@@ -39,6 +39,11 @@ impl Checker<'_> {
         match value {
             Some(v) => {
                 self.check_expect(v, &ret);
+                let ctx = self.ctx.as_ref();
+                if !ctx.is_some_and(|c| c.ret_secret) {
+                    let name = ctx.map_or(String::new(), |c| c.name.clone());
+                    self.check_secret_return(v, &name);
+                }
             }
             None if !matches!(ret, Ty::Unit | Ty::Error) => {
                 let shown = self.show(&ret);

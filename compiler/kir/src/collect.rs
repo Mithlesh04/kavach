@@ -27,6 +27,7 @@ pub(crate) fn collect_functions(
                 let (f, owner) = l.fns[id as usize].clone();
                 let f = f.expect("a declared function");
                 l.subst = l.fn_subst.get(&id).cloned().unwrap_or_default();
+                l.stand_ins = l.fn_stand_ins.get(&id).cloned().unwrap_or_default();
                 l.function(f, owner)
             }
         };

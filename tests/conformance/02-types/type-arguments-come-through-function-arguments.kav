@@ -1,0 +1,29 @@
+// Rule: A type parameter shown only by a function-typed argument (`wrap(show)`) is found from that function's type.
+// Spec: 2.9, 3.4
+// expect output: true
+// expect output: false
+
+use std.json
+
+type P {
+    n: Int
+}
+
+fn valid<T>(text: String) -> Bool {
+    const _v = json.decode<T>(text) catch _ => return false
+    true
+}
+
+fn wrap<T>(f: fn(T) -> String) -> fn(String) -> Bool {
+    text => valid<T>(text)
+}
+
+fn show(p: P) -> String {
+    "n={p.n}"
+}
+
+fn main() {
+    const h = wrap(show)
+    print(h("\{\"n\": 4}"))
+    print(h("[]"))
+}

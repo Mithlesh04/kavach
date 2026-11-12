@@ -1,0 +1,39 @@
+// Rule: A function that can't fail may be passed where a function type's error `E` has a bound (`E: Status`), and the handler for that error never runs.
+// Spec: 3.4, 2.9
+// expect output: ok 8
+// expect output: ok 3
+// expect output: failed 404
+
+interface Status {
+    fn status(self) -> Int
+}
+
+type NotFound: Status {
+    what: String
+
+    fn status(self) -> Int {
+        404
+    }
+}
+
+fn run<E: Status>(h: fn(Int) -> Int ! E, n: Int) -> String {
+    const v = h(n) catch e => return "failed {e.status()}"
+    "ok {v}"
+}
+
+fn double(n: Int) -> Int {
+    n * 2
+}
+
+fn find(n: Int) -> Int ! NotFound {
+    if n > 5 {
+        fail NotFound(what: "big")
+    }
+    n
+}
+
+fn main() {
+    print(run(double, 4))
+    print(run(find, 3))
+    print(run(find, 9))
+}

@@ -226,13 +226,15 @@ pub fn read_json<T>(r: Request) -> T ! JsonError {
     try json.decode<T>(text)
 }
 
-/// A response's JSON body as a `T`, when its status is 2xx.
+/// A response's JSON body as a `T`, when its status is 2xx. Fields `T`
+/// doesn't have are skipped: a service may add fields without breaking
+/// its clients (decision 0096).
 fn decoded<T>(r: Response) -> T ! HttpError {
     if r.status < 200 or r.status > 299 {
         fail HttpError.Status(code: r.status)
     }
     const text = r.body.text() ?? fail HttpError.BadMessage(reason: "the body isn't UTF-8")
-    json.decode<T>(text) catch e => fail HttpError.BadJson(error: e)
+    json.decode<T>(text, unknown: JsonUnknown.Ignore) catch e => fail HttpError.BadJson(error: e)
 }
 
 /// `GET url` over HTTP/3 (an `https://` URL).

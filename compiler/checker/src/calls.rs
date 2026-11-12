@@ -113,6 +113,10 @@ impl Checker<'_> {
         span: Span,
         name: &str,
     ) -> Ty {
+        // A `-> secret T` function gives a secret (spec 8.7).
+        if sig.ret_secret {
+            self.secret.insert((span.start, span.end));
+        }
         for (i, (g, _)) in sig.generics.iter().enumerate() {
             let t = match explicit.get(i) {
                 Some(t) => self.lower(t, None),

@@ -18,8 +18,22 @@ impl<'a> Lowerer<'a> {
         args: &'a [ast::Arg],
         ty: Type,
         line: u32,
-        span: ast::Span,
+        call: &'a ast::Expr,
     ) -> Lowered<ir::Expr> {
+        let span = call.span;
+        // A method of an error that stands in for one never made: this
+        // code never runs (`lower_generic.rs`).
+        if let Some(kavach_checker::Ty::Param(p)) =
+            self.c.expr_types.get(&(base.span.start, base.span.end))
+            && self.stand_ins.contains(p)
+        {
+            let why = "an error that is never made was used".to_string();
+            return Ok(ir::Expr {
+                kind: K::Panic(why),
+                ty,
+                line,
+            });
+        }
         if name.name == "timeout"
             && let Some(timed) = self.timeout(base, args, ty, line)?
         {
@@ -34,7 +48,7 @@ impl<'a> Lowerer<'a> {
         {
             if self.c.resolution.defs[def].kind == DefKind::Type {
                 if let Some(f) = self.generic_methods.get(&(def, name.name.clone())).copied() {
-                    return self.generic_method_call(def, f, None, args, ty, line, span);
+                    return self.generic_method_call(def, f, None, args, ty, line, call);
                 }
                 if let Some(&fid) = self.method_ids.get(&(Owner::Adt(def), name.name.clone())) {
                     let values = self.arguments(self.decl_of(fid), args, span)?;
@@ -115,7 +129,7 @@ impl<'a> Lowerer<'a> {
                 .get(&(*def, name.name.clone()))
                 .copied()
         {
-            return self.generic_method_call(*def, f, Some(receiver), args, ty, line, span);
+            return self.generic_method_call(*def, f, Some(receiver), args, ty, line, call);
         }
         // `task.wait()` (spec 9.1): it can fail, with the task's error.
         // `task.cancel()` (9.6): it stops at once.
@@ -246,10 +260,11 @@ impl<'a> Lowerer<'a> {
         if let ([f], true, "sort_by") = (args, is_list, name.name.as_str()) {
             return self.sort_by(receiver, &f.value, ty, span);
         }
-        if let (Some(Shape::Shared(_)), "update", [f]) =
+        if let (Some(Shape::Shared(_)), "update" | "update_with", [f]) =
             (self.shapes.shape(receiver.ty), name.name.as_str(), args)
         {
-            return self.shared_update(receiver, &f.value, line);
+            let with = name.name == "update_with";
+            return self.shared_update(receiver, &f.value, with, ty, line);
         }
         let mut values = vec![receiver];
         for a in args {

@@ -1,0 +1,45 @@
+// Rule: A generic method runs with the type arguments of its call, written (`get<Row>()`) or inferred, as a generic function does.
+// Spec: 2.9, 2.12
+// expect output: function: Row(n: 42)
+// expect output: method: Row(n: 42)
+// expect output: inferred: Row(n: 42)
+// expect output: lambda: true false
+
+use std.json
+
+type Row {
+    n: Int
+}
+
+type Box {
+    v: Json
+
+    fn get<T>(self) -> T ! JsonError {
+        try json.decode_value<T>(self.v)
+    }
+
+    fn checker<T>(self) -> fn(String) -> Bool {
+        text => valid<T>(text)
+    }
+}
+
+fn valid<T>(text: String) -> Bool {
+    const _v = json.decode<T>(text) catch _ => return false
+    true
+}
+
+fn read<T>(v: Json) -> T ! JsonError {
+    try json.decode_value<T>(v)
+}
+
+fn main() {
+    const v = json.parse("\{\"n\": 42}") catch _ => {
+        return
+    }
+    print("function: {read<Row>(v) catch _ => Row(n: -1)}")
+    print("method: {Box(v: v).get<Row>() catch _ => Row(n: -2)}")
+    const r: Row = Box(v: v).get() catch _ => Row(n: -3)
+    print("inferred: {r}")
+    const check = Box(v: v).checker<Row>()
+    print("lambda: {check("\{\"n\": 5}")} {check("[]")}")
+}

@@ -198,7 +198,12 @@ impl Checker<'_> {
                 let t = args.first().cloned().unwrap_or(Ty::Error);
                 match name {
                     "get" => sig(vec![], t),
-                    "update" => sig(vec![f(t.clone(), t)], Ty::Unit),
+                    // Both give a result found under the lock (spec 6.2).
+                    "update" => sig(vec![f(t.clone(), t.clone())], t),
+                    "update_with" => {
+                        let r = self.fresh();
+                        sig(vec![f(t.clone(), Ty::Tuple(vec![t, r.clone()]))], r)
+                    }
                     "weak" => sig(vec![], Ty::Builtin("Weak", vec![t])),
                     _ => None,
                 }
