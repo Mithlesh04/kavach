@@ -181,6 +181,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Contracts: How they are checked](https://mithlesh04.github.io/kavach/docs/errors/contracts/how-they-are-checked/): While you develop, every contract is checked. In a release build, public functions' contracts and every invariant are.
 - [Testing](https://mithlesh04.github.io/kavach/docs/errors/testing/): kavach test tests every function from its types and contracts. Most code needs no test file at all.
 - [Testing: Tests from types](https://mithlesh04.github.io/kavach/docs/errors/testing/tests-from-types/): From a function's types and contracts alone, kavach test makes the inputs and checks the results.
+- [Testing: Your own values](https://mithlesh04.github.io/kavach/docs/errors/testing/your-own-values/): When the values kavach test makes up don't suit a type, the type makes its own: it implements Sample, and builds a value from a Gen.
 - [Testing: test blocks](https://mithlesh04.github.io/kavach/docs/errors/testing/test-blocks/): A test block checks a story of several steps that contracts can't express.
 - [Testing: Fakes](https://mithlesh04.github.io/kavach/docs/errors/testing/fakes/): In a test, files, the network, the clock and your own capabilities are fakes: nothing real is touched.
 
@@ -200,6 +201,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Files: Reading](https://mithlesh04.github.io/kavach/docs/standard-library/files/reading/): fs.read_text reads a whole file; fs.lines reads it one line at a time, for files of any size.
 - [Files: Writing](https://mithlesh04.github.io/kavach/docs/standard-library/files/writing/): fs.write_text replaces a file in one step; fs.append_text adds to its end.
 - [Files: Folders](https://mithlesh04.github.io/kavach/docs/standard-library/files/folders/): fs.create_dir makes a folder and its parents; fs.list gives the names in a folder, sorted.
+- [Files: Details and permissions](https://mithlesh04.github.io/kavach/docs/standard-library/files/details-and-permissions/): fs.info gives a file's kind, size, time of change and permissions; fs.set_read_only and fs.set_permissions change them.
 - [Command-line Programs](https://mithlesh04.github.io/kavach/docs/standard-library/command-line-programs/): A command-line program reads the words typed after its name. cli.args gives them as a list; cli.parse turns them into a record.
 - [Command-line Programs: Arguments](https://mithlesh04.github.io/kavach/docs/standard-library/command-line-programs/arguments/): Describe the options as a record, and cli.parse reads them, checks their types, and writes the help text for you.
 - [Command-line Programs: Commands](https://mithlesh04.github.io/kavach/docs/standard-library/command-line-programs/commands/): Parse into a union, and each case is a command with its own options, like git add and git log.
@@ -209,10 +211,13 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Time](https://mithlesh04.github.io/kavach/docs/standard-library/time/): std.time tells the time, measures how long something takes, waits, repeats work at an interval, works with dates and time zones, and reads and writes times as text.
 - [Random Numbers](https://mithlesh04.github.io/kavach/docs/standard-library/random-numbers/): std.random gives random whole numbers, picks and shuffles. Its numbers are safe for passwords and keys; there is no weaker kind to pick by mistake.
 - [Regex](https://mithlesh04.github.io/kavach/docs/standard-library/regex/): A regular expression is a pattern that text can match. regex.new makes one; its methods find, capture, replace and split.
+- [Text and Collections](https://mithlesh04.github.io/kavach/docs/standard-library/text-and-collections/): std.text and std.collections hold small helpers for text and lists: padding, words, chunks, pairs, counts. They are written in Kavach itself.
 - [Logging](https://mithlesh04.github.io/kavach/docs/standard-library/logging/): A log event is a record you define, not a string. log.info, warn, error and debug write it, and the program's owner decides where it goes.
 - [Agents](https://mithlesh04.github.io/kavach/docs/standard-library/agents/): std.agents gives a capability's implementation the key of the call it is running, so a service can drop a repeated call, and lets a program answer agents' approval requests.
 - [Clipboard](https://mithlesh04.github.io/kavach/docs/standard-library/clipboard/): std.clipboard reads and writes the system clipboard's text. What a person copied can be private, so it needs the capability Clipboard.
 - [Devices](https://mithlesh04.github.io/kavach/docs/standard-library/devices/): std.devices talks to devices on a cable. Serial ports come first: boards, sensors and modems on USB or RS-232. They need the capability Serial.
+- [Cryptography](https://mithlesh04.github.io/kavach/docs/standard-library/cryptography/): std.crypto hashes, signs and seals data, and stores passwords safely. It comes from vetted libraries, and needs no capability.
+- [Base64](https://mithlesh04.github.io/kavach/docs/standard-library/base64/): std.base64 writes bytes as text and reads them back, in the standard alphabet or the URL-safe one. Tokens, cookies and email use it.
 - [JSON](https://mithlesh04.github.io/kavach/docs/standard-library/json/): JSON is text that carries data between programs. Kavach reads it straight into your own types, or into a Json value when its shape is known only while the program runs.
 - [JSON: Json values](https://mithlesh04.github.io/kavach/docs/standard-library/json/json-values/): A Json value holds JSON whose shape is known only while the program runs. It is a union of six cases, one for each kind of JSON value.
 - [JSON: Reading](https://mithlesh04.github.io/kavach/docs/standard-library/json/reading/): json.parse gives a Json value; doc["key"] and doc[i] read into it, and .text(), .int() and the others give the value as an optional.
@@ -228,6 +233,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [HTTP: Serving](https://mithlesh04.github.io/kavach/docs/networks/http/serving/): A server is one function from Request to Response. Route by r.method and r.path; answer with http.text or http.json_response.
 - [HTTP: JSON over HTTP](https://mithlesh04.github.io/kavach/docs/networks/http/json-over-http/): post_json and get_json send and read your own types; read_json and json_response do it on the server. The type is the contract.
 - [HTTP: Sessions](https://mithlesh04.github.io/kavach/docs/networks/http/sessions/): http.open keeps one connection open for many requests, instead of connecting again for each.
+- [HTTP: WebSockets and events](https://mithlesh04.github.io/kavach/docs/networks/http/websockets-and-events/): A handler can answer with a connection that stays open: a WebSocket, for messages both ways, or an event stream, for news the server sends.
 - [Sockets](https://mithlesh04.github.io/kavach/docs/networks/sockets/): std.net speaks the protocols under HTTP: TCP connections, UDP datagrams, TLS encryption and QUIC.
 - [Sockets: TCP](https://mithlesh04.github.io/kavach/docs/networks/sockets/tcp/): TCP is a connection: bytes arrive complete and in order. net.listen and accept on one side, net.connect on the other.
 - [Sockets: UDP](https://mithlesh04.github.io/kavach/docs/networks/sockets/udp/): UDP sends datagrams: single messages with no connection, fast, but each may be lost, doubled or come out of order.
@@ -290,6 +296,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Secrets](https://mithlesh04.github.io/kavach/docs/agents/secrets/): Mark a field secret, and the compiler follows its value everywhere: it can't reach print, text, prompts, errors, logs or JSON unless you write reveal().
 - [Secrets: Secret fields](https://mithlesh04.github.io/kavach/docs/agents/secrets/secret-fields/): secret before a field marks it. Logs show such a field as <secret>.
 - [Secrets: Secret parameters](https://mithlesh04.github.io/kavach/docs/agents/secrets/secret-parameters/): A secret can go to a parameter that is secret itself, and nowhere else.
+- [Secrets: Secret results](https://mithlesh04.github.io/kavach/docs/agents/secrets/secret-results/): A function that returns a secret says so in its result: -> secret T. Its caller gets a secret, like the field it came from.
 - [Secrets: reveal](https://mithlesh04.github.io/kavach/docs/agents/secrets/reveal/): reveal(value) lets a secret through on purpose, where review can see it.
 - [Agent Use Cases](https://mithlesh04.github.io/kavach/docs/agents/agent-use-cases/): Four agents, each with a real risk and the line of code that removes it: a spending limit, a person who approves, a model that can only sort, a folder that can't be left.
 - [Agents in Practice](https://mithlesh04.github.io/kavach/docs/agents/agents-in-practice/): Real AI tasks from support, retail, insurance, health care, operations, law, logistics and finance, measured against Python done the usual ways: the same inputs, the same models, the same right answers. Kavach's goal: fewer tokens, no worse answers, less time.
@@ -300,8 +307,10 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Modules: use](https://mithlesh04.github.io/kavach/docs/tools/modules/use/): use brings in a module, the standard library or a dependency; use a.b.{X, y} brings names in directly.
 - [Modules: pub](https://mithlesh04.github.io/kavach/docs/tools/modules/pub/): pub makes a type, a function or a field visible to other modules. Without it, only the module itself sees it.
 - [Packages](https://mithlesh04.github.io/kavach/docs/tools/packages/): A package is a library another project uses: name it in [dependencies], from a folder or a git repository, and use it like any module.
+- [Workspaces](https://mithlesh04.github.io/kavach/docs/tools/workspaces/): A workspace is several packages in one repository, checked, tested and built together, with one lock for all of them.
 - [Project Layout](https://mithlesh04.github.io/kavach/docs/tools/project-layout/): A project is a folder: kavach.toml at the top, your code in src/, and build output in .kavach/, never committed.
 - [Settings](https://mithlesh04.github.io/kavach/docs/tools/settings/): Every setting a project can have, with its values and its default: kavach.toml, then environment variables.
+- [Environment Variables](https://mithlesh04.github.io/kavach/docs/tools/environment-variables/): env(name) reads an environment variable. Its value is a secret, so it can't be printed by mistake. A .env file, kavach.toml or --env can give the values.
 - [Editions](https://mithlesh04.github.io/kavach/docs/tools/editions/): Code that compiles today keeps compiling. A change that would break old code comes in a new edition, which each package chooses.
 - [Limits and Sizes](https://mithlesh04.github.io/kavach/docs/tools/limits-and-sizes/): Every limit and size in Kavach in one place: number ranges, text, lists, tasks, the network, JSON, AI calls, the GPU and files, each linked to the page that explains it.
 - [The kavach Command](https://mithlesh04.github.io/kavach/docs/tools/the-kavach-command/): One program, kavach, makes, runs, builds, tests and checks your code.
