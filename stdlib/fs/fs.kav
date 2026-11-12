@@ -1,6 +1,39 @@
-// std.fs (spec 14.3): the errors of file operations. The operations
-// themselves (`fs.read_text`, …) need the operating system, so the runtime
-// provides them; they fail with these values.
+// std.fs (spec 14.3): the errors of file operations, and a file's
+// details. The operations themselves (`fs.read_text`, …) need the
+// operating system, so the runtime provides them; they fail with these
+// values.
+
+use std.fs
 
 /// Why a file operation failed.
 pub type FsError = NotFound(path: String) | Denied(path: String) | Failed(path: String, reason: String)
+
+/// What kind of thing a path names.
+pub type FileKind = File | Folder | Link
+
+/// What is at a path (`fs.info`).
+pub type FileInfo {
+    pub kind: FileKind
+    /// In bytes; 0 for a folder.
+    pub size: Int
+    /// When it last changed: a moment, in milliseconds since 1970 (14.4).
+    pub modified_ms: Int
+    /// Whether the owner may not write it.
+    pub read_only: Bool
+    /// The Unix permission bits, such as `0o644`.
+    pub permissions: Int
+}
+
+/// What is at `path`: its kind, size, last change and permissions. A
+/// link is described itself, not what it points to.
+pub fn info(path: String) -> FileInfo ! FsError uses Fs.read {
+    // The runtime gives kind (0 file, 1 folder, 2 link), size, the last
+    // change, read-only (0 or 1) and the permission bits.
+    const n = try fs.stat(path)
+    const kind = match n[0] {
+        1 => FileKind.Folder
+        2 => FileKind.Link
+        _ => FileKind.File
+    }
+    FileInfo(kind: kind, size: n[1], modified_ms: n[2], read_only: n[3] == 1, permissions: n[4])
+}

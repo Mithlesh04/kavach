@@ -6,6 +6,7 @@ Code that both the interpreter and native code use, so the two give exactly the 
 |---|---|
 | `src/lib.rs` | How a `Float` prints (spec 1.11) |
 | `src/decimal.rs` | `Decimal`: exact base-10 numbers (spec 2.1) |
+| `src/file_info.rs` | A file's details and permissions, renaming, copying and removing a folder with its contents (spec 14.3), for the interpreter and native code |
 | `src/env_file.rs` | Environment variables and `.env` files (spec 10.13, decision 0084): reading a file, and which value wins (`--env`, the real environment, then the file) |
 | `src/json.rs` | JSON text (spec 2.12): a strict parser with limits and line/column errors, and the words decoding uses in its errors (its loop in `src/json/parse.rs`, the pieces of text in `src/json/read.rs`, writer in `src/json/write.rs`, tests in `src/json/tests.rs`); values are made by a `Build`er, a tree or a program's own values, or read piece by piece for decoding (`src/json/pull.rs`) |
 | `src/input.rs` | A line typed without being shown (`io.read_hidden`, spec 14.6, decision 0036) |

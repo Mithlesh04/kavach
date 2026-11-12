@@ -76,6 +76,13 @@ fn a_git_dependency_stays_at_its_locked_commit() {
         "{}",
         String::from_utf8_lossy(&added.stderr)
     );
+    // It is pure, so it gets no `can` (spec 10.12).
+    assert!(String::from_utf8_lossy(&added.stderr).contains("it uses no capabilities"));
+    assert!(
+        !fs::read_to_string(app.join("kavach.toml"))
+            .unwrap()
+            .contains("can =")
+    );
     let lock = fs::read_to_string(app.join("kavach.lock")).unwrap();
     assert!(
         lock.contains("name = \"money\"") && lock.contains("commit = \""),

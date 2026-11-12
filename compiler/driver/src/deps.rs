@@ -24,6 +24,8 @@ struct Dep {
     name: String,
     from: From,
     allow_unsafe: bool,
+    /// The capabilities its entry grants (`can`).
+    can: Vec<String>,
 }
 
 /// A dependency found: its name, its folder, and whether it may use
@@ -33,6 +35,9 @@ pub struct Package {
     pub name: String,
     pub root: PathBuf,
     pub allow_unsafe: bool,
+    /// The capabilities it may use: what its entry grants, and for a
+    /// dependency of a dependency no more than that one was granted.
+    pub granted: Vec<String>,
     /// The repository and commit, for a git dependency.
     git: Option<(String, String)>,
 }
@@ -112,10 +117,31 @@ fn declared(root: &Path) -> Result<Vec<Dep>, String> {
             _ => return Err(wrong("give either `path` or `git`")),
         };
         let allow_unsafe = t.get("unsafe").and_then(|v| v.as_bool()).unwrap_or(false);
+        let can: Vec<String> = match t.get("can") {
+            None => Vec::new(),
+            Some(toml::Value::Array(items)) => items
+                .iter()
+                .map(|v| v.as_str().map(str::to_string))
+                .collect::<Option<_>>()
+                .ok_or_else(|| {
+                    wrong("`can` lists capability names as text, such as `can = [\"Net\"]`")
+                })?,
+            Some(_) => return Err(wrong("`can` is a list, such as `can = [\"Net\"]`")),
+        };
+        if let Some(bad) = can
+            .iter()
+            .find(|c| !kavach_resolver::CAPABILITIES.contains(&c.as_str()))
+        {
+            let known = kavach_resolver::CAPABILITIES.join(", ");
+            return Err(wrong(&format!(
+                "`{bad}` in `can` is not a capability: they are {known} (spec 8.1)"
+            )));
+        }
         out.push(Dep {
             name: name.clone(),
             from,
             allow_unsafe,
+            can,
         });
     }
     Ok(out)
@@ -272,11 +298,17 @@ pub fn resolve(top: &Path, fetch: bool) -> Result<Vec<Package>, String> {
     let top = &plain(&std::fs::canonicalize(top).unwrap_or_else(|_| top.to_path_buf()));
     let locked = read_lock(top);
     let mut found: Vec<Package> = Vec::new();
-    let mut queue: Vec<(PathBuf, Dep)> = declared(top)?
+    // Each with the folder that names it, and what that one was granted
+    // (`None` for the project itself, which may use anything).
+    let mut queue: Vec<(PathBuf, Dep, Option<Vec<String>>)> = declared(top)?
         .into_iter()
-        .map(|d| (top.to_path_buf(), d))
+        .map(|d| (top.to_path_buf(), d, None))
         .collect();
-    while let Some((from_root, dep)) = queue.pop() {
+    while let Some((from_root, dep, above)) = queue.pop() {
+        let granted: Vec<String> = match &above {
+            None => dep.can.clone(),
+            Some(a) => dep.can.iter().filter(|c| a.contains(c)).cloned().collect(),
+        };
         let (root, git) = match &dep.from {
             From::Path(p) => (
                 plain(&std::fs::canonicalize(p).map_err(|_| {
@@ -349,11 +381,16 @@ pub fn resolve(top: &Path, fetch: bool) -> Result<Vec<Package>, String> {
                 from_root.join("kavach.toml").display()
             ));
         }
-        queue.extend(declared(&root)?.into_iter().map(|d| (root.clone(), d)));
+        queue.extend(
+            declared(&root)?
+                .into_iter()
+                .map(|d| (root.clone(), d, Some(granted.clone()))),
+        );
         found.push(Package {
             name: dep.name,
             root,
             allow_unsafe: own_unsafe,
+            granted,
             git,
         });
     }

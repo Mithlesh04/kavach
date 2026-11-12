@@ -72,6 +72,9 @@ const big = 1_000_000 + 0xff + 0b1010 + 2.5e-3
 //                             ^^^^^^ constant.numeric.binary.kavach
 //                                      ^^^^^^ constant.numeric.float.kavach
 
+const mode = 0o644
+//           ^^^^^ constant.numeric.octal.kavach
+
 const letter = 'क'
 //             ^^^ constant.character.kavach
 

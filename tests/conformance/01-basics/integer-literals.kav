@@ -1,11 +1,13 @@
-// Rule: Integer literals may use `_` separators, hex (0x) and binary (0b).
+// Rule: Integer literals may use `_` separators, hex (0x), octal (0o) and binary (0b).
 // Spec: 1.7
 // expect output: 1000000
 // expect output: 255
+// expect output: 420
 // expect output: 10
 
 fn main() {
     print(1_000_000)
     print(0xff)
+    print(0o644)
     print(0b1010)
 }

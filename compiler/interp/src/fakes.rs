@@ -191,6 +191,49 @@ impl<'a> Interp<'a> {
                 }
                 Value::Unit
             }
+            // A file's details (`fs.info`): the case's files have no
+            // permissions of their own, and never change by the clock.
+            "stat" => {
+                let (kind, size, mode) = match w.entry(&path) {
+                    Entry::File(d) => (0, d.len() as i128, 0o644),
+                    Entry::Folder => (1, 0, 0o755),
+                    Entry::Missing => return fail(self, not_found()),
+                };
+                let n = [kind, size, 0, 0, mode];
+                Value::List(Rc::new(
+                    n.iter().map(|v| Value::Int(*v, Prim::Int)).collect(),
+                ))
+            }
+            "set_read_only" | "set_permissions" => match w.entry(&path) {
+                Entry::Missing => return fail(self, not_found()),
+                _ => Value::Unit,
+            },
+            "rename" | "copy" | "remove_all" => {
+                if let Entry::Missing = w.entry(&path) {
+                    return fail(self, not_found());
+                }
+                let to = clean(&text(1));
+                // The path and everything under it.
+                let under: Vec<(String, Entry)> = (w.paths.iter())
+                    .filter(|(k, _)| *k == &path || k.starts_with(&format!("{path}/")))
+                    .map(|(k, e)| (k.clone(), e.clone()))
+                    .collect();
+                if name == "copy" && !matches!(w.entry(&path), Entry::File(_)) {
+                    return fail(
+                        self,
+                        std::io::Error::other("a folder: copy its files one by one"),
+                    );
+                }
+                for (k, e) in under {
+                    if name != "copy" {
+                        w.paths.insert(k.clone(), Entry::Missing);
+                    }
+                    if name != "remove_all" {
+                        w.paths.insert(format!("{to}{}", &k[path.len()..]), e);
+                    }
+                }
+                Value::Unit
+            }
             _ => {
                 return Err(self.panic(
                     format!("std.fs has no function `{name}`"),

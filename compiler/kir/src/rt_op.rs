@@ -428,6 +428,15 @@ pub enum RtOp {
     /// `env(name)` (spec 10.13): the variable, or an error when it is
     /// not set (`runtime/native/src/rt_std.rs`).
     EnvGet,
+    /// A file's details as numbers (for `fs.info` in `std/fs.kav`), its
+    /// permissions, renaming, copying and removing a folder with its
+    /// contents (spec 14.3); all can fail (`runtime/native/src/rt_file_info.rs`).
+    FileInfoStat,
+    FileInfoSetReadOnly,
+    FileInfoSetPermissions,
+    FileInfoRename,
+    FileInfoCopy,
+    FileInfoRemoveAll,
     /// Serial ports (spec 14.18), by number: the ports there are, open
     /// (can fail), read and write (can fail), close
     /// (`runtime/native/src/rt_serial.rs`).

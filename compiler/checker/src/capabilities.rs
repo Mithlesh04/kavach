@@ -268,6 +268,31 @@ impl Checker<'_> {
                 }
             }
         }
+        // A dependency may use only what its entry grants (spec 10.12):
+        // each capability is reported once per package.
+        let mut reported = BTreeSet::new();
+        let mut ordered: Vec<_> = infos.iter().collect();
+        ordered.sort_by_key(|(_, i)| i.decl.name.span.start);
+        for (d, info) in ordered {
+            let module = &self.res.modules[self.res.module_at(info.decl.name.span.start)];
+            let package = &module.package;
+            let Some((_, granted)) = self.opts.granted.iter().find(|(p, _)| p == package) else {
+                continue;
+            };
+            for cap in effective.get(d).into_iter().flatten() {
+                let base = cap.split_once('.').map_or(cap.as_str(), |(c, _)| c);
+                if granted.iter().any(|g| g == base) || !reported.insert((package, base)) {
+                    continue;
+                }
+                errors.push((
+                    info.decl.name.span,
+                    format!(
+                        "`{}` in the package `{package}` uses {base}, which the package isn't granted: add \"{base}\" to `can` in its entry in kavach.toml, and in the entry of each package it comes through, if you trust them (spec 10.12)",
+                        info.decl.name.name
+                    ),
+                ));
+            }
+        }
         errors.sort_by_key(|(s, _)| s.start);
         for (span, text) in errors {
             self.error(span, text);

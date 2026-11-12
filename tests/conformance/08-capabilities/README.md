@@ -13,6 +13,7 @@ Conformance tests for spec chapter [8. Capabilities and agents](../../../docs/sp
 | 8.7, 2.11 | [reveal-lets-a-secret-through.kav](reveal-lets-a-secret-through.kav) | `reveal(value)` deliberately lets a secret through, where it would otherwise be refused. | runs |
 | 8.1 | [reading-files-is-granted-apart.kav](reading-files-is-granted-apart.kav) | `uses Fs.read` allows reading files only. | compile error |
 | 8.1 | [file-access-stays-inside-its-folder.kav](file-access-stays-inside-its-folder.kav) | With `uses Fs("folder")`, file operations (also in callees and tasks) must stay inside the folder, or fail with `Denied`. | runs |
+| 8.1 | [rename-and-copy-stay-inside-the-folder.kav](rename-and-copy-stay-inside-the-folder.kav) | Inside `uses Fs("folder")`, both paths of `fs.rename` and `fs.copy` must be in the folder, or the call fails with `Denied` for the one outside. | runs |
 | 8.1 | [methods-need-their-capabilities.kav](methods-need-their-capabilities.kav) | Calling a method needs the capabilities the method uses, as calling a function does. | compile error |
 | 8.2 | [capability-errors-have-denied.kav](capability-errors-have-denied.kav) | Every capability method declares an error type with `Denied(reason: String)`. | compile error |
 | 8.2 | [capability-calls-outside-agents-are-denied.kav](capability-calls-outside-agents-are-denied.kav) | Outside a running agent, a declared capability call fails with `Denied`. | runs |

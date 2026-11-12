@@ -427,17 +427,22 @@ impl Config {
                 }
             }
         }
-        let packages = self.root.as_deref().map(|r| crate::deps::resolve(r, false));
-        let unsafe_packages = packages
+        let packages: Vec<crate::deps::Package> = self
+            .root
+            .as_deref()
+            .map(|r| crate::deps::resolve(r, false))
             .and_then(Result::ok)
-            .into_iter()
-            .flatten()
+            .unwrap_or_default();
+        let unsafe_packages = packages
+            .iter()
             .filter(|p| p.allow_unsafe)
-            .map(|p| p.name)
+            .map(|p| p.name.clone())
             .collect();
+        let granted = packages.into_iter().map(|p| (p.name, p.granted)).collect();
         crate::Options {
             allow_unsafe: self.package.allow_unsafe,
             unsafe_packages,
+            granted,
             limits,
             log_otlp,
         }

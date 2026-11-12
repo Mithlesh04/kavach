@@ -1,0 +1,38 @@
+// Rule: `fs.info` gives a path's kind, size and permissions; `set_read_only` and `set_permissions` change them; `copy`, `rename` and `remove_all` move and delete; a mode past 0o7777 fails.
+// Spec: 14.3
+// expect output: File 5
+// expect output: read-only true
+// expect output: 0o444 read-only true
+// expect output: read-only false
+// expect output: Folder 0
+// expect output: ["b.txt", "c.txt"]
+// expect output: gone false
+// expect output: Failed(path: "kavach-fsinfo.txt", reason: "permissions are 0o0 to 0o7777")
+
+use std.fs
+
+fn main() ! FsError uses Fs, Console {
+    try fs.write_text("kavach-fsinfo.txt", "hello")
+    const info = try fs.info("kavach-fsinfo.txt")
+    print("{info.kind} {info.size}")
+    try fs.set_read_only("kavach-fsinfo.txt", true)
+    print("read-only {(try fs.info("kavach-fsinfo.txt")).read_only}")
+    try fs.set_read_only("kavach-fsinfo.txt", false)
+    try fs.set_permissions("kavach-fsinfo.txt", 0o444)
+    // Only read-only is checked here: a drive mounted from Windows (WSL's
+    // /mnt/d) keeps no Unix bits. `runtime/core/src/file_info.rs` checks them.
+    print("0o444 read-only {(try fs.info("kavach-fsinfo.txt")).read_only}")
+    try fs.set_permissions("kavach-fsinfo.txt", 0o644)
+    print("read-only {(try fs.info("kavach-fsinfo.txt")).read_only}")
+    try fs.create_dir("kavach-fsinfo-dir")
+    const folder = try fs.info("kavach-fsinfo-dir")
+    print("{folder.kind} {folder.size}")
+    try fs.copy("kavach-fsinfo.txt", "kavach-fsinfo-dir/b.txt")
+    try fs.copy("kavach-fsinfo.txt", "kavach-fsinfo-dir/a.txt")
+    try fs.rename("kavach-fsinfo-dir/a.txt", "kavach-fsinfo-dir/c.txt")
+    print(try fs.list("kavach-fsinfo-dir"))
+    try fs.remove_all("kavach-fsinfo-dir")
+    print("gone {fs.exists("kavach-fsinfo-dir")}")
+    fs.set_permissions("kavach-fsinfo.txt", 0o10000) catch e => print("{e}")
+    try fs.remove("kavach-fsinfo.txt")
+}

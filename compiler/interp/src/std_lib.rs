@@ -110,8 +110,17 @@ impl<'a> Interp<'a> {
             return self.net_call(name, &args, None, span);
         }
         let path = text(0);
-        // Outside the folders of `uses Fs("…")` (spec 8.1).
-        if module == "fs" && !kavach_runtime_core::fs_scope::inside(&self.fs_scopes, &path) {
+        // Outside the folders of `uses Fs("…")` (spec 8.1): `rename` and
+        // `copy` name two paths, and both must be inside.
+        let inside = |p: &str| kavach_runtime_core::fs_scope::inside(&self.fs_scopes, p);
+        let outside = match (inside(&path), name) {
+            (false, _) => Some(path.clone()),
+            (true, "rename" | "copy") if !inside(&text(1)) => Some(text(1)),
+            _ => None,
+        };
+        if module == "fs"
+            && let Some(path) = outside
+        {
             if name == "exists" {
                 return Ok(Value::Bool(false));
             }
@@ -125,6 +134,14 @@ impl<'a> Interp<'a> {
         // A generated test's files are in memory (spec 11.5).
         if module == "fs" && self.fake.is_some() {
             return self.fake_fs(name, &args);
+        }
+        if module == "fs"
+            && matches!(
+                name,
+                "stat" | "set_read_only" | "set_permissions" | "rename" | "copy" | "remove_all"
+            )
+        {
+            return self.fs_details_call(name, &args);
         }
         Ok(match (module, name) {
             ("fs", "read_text") => self

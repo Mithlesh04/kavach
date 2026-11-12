@@ -1,0 +1,4 @@
+/// Says it uses Net: `mid` grants it Net, but `mid` itself has only Console.
+pub fn local_name() -> String uses Net {
+    "leaf"
+}

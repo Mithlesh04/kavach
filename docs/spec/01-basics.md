@@ -112,7 +112,7 @@ var         while       with
 
 | Kind | Examples |
 |---|---|
-| Integer | `42`, `1_000_000`, `0xff`, `0b1010` |
+| Integer | `42`, `1_000_000`, `0xff` (hex), `0o644` (octal), `0b1010` (binary) |
 | Float | `3.14`, `1e9`, `2.5e-3` |
 | Bool | `true`, `false` |
 | Char | `'a'`, `'क'`, `'\n'` |

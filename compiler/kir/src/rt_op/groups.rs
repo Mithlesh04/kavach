@@ -19,6 +19,12 @@ impl RtOp {
             self,
             RtOp::FsReadText
                 | RtOp::EnvGet
+                | RtOp::FileInfoStat
+                | RtOp::FileInfoSetReadOnly
+                | RtOp::FileInfoSetPermissions
+                | RtOp::FileInfoRename
+                | RtOp::FileInfoCopy
+                | RtOp::FileInfoRemoveAll
                 | RtOp::ClipReadText
                 | RtOp::ClipWriteText
                 | RtOp::SerialOpen
@@ -99,6 +105,8 @@ impl RtOp {
             "kv_rt_zone"
         } else if group("Clip") {
             "kv_rt_clipboard"
+        } else if group("FileInfo") {
+            "kv_rt_file_info"
         } else if group("Serial") {
             "kv_rt_serial"
         } else if group("Weak") {

@@ -8,6 +8,7 @@ mod big_decimal;
 pub mod clipboard;
 mod decimal;
 pub mod env_file;
+pub mod file_info;
 pub mod files;
 pub mod fs_scope;
 pub mod input;

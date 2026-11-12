@@ -73,6 +73,9 @@ pub struct Options {
     pub allow_unsafe: bool,
     /// The dependencies allowed to use `unsafe` (spec 10.12).
     pub unsafe_packages: Vec<String>,
+    /// Each dependency, with the capabilities its entry grants (`can`,
+    /// spec 10.12).
+    pub granted: Vec<(String, Vec<String>)>,
 }
 
 #[derive(Clone, Debug)]

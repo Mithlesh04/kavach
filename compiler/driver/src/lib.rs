@@ -31,6 +31,8 @@ pub struct Options {
     pub allow_unsafe: bool,
     /// The dependencies allowed to use `unsafe` (spec 10.12).
     pub unsafe_packages: Vec<String>,
+    /// Each dependency with the capabilities it is granted (spec 10.12).
+    pub granted: Vec<(String, Vec<String>)>,
     pub limits: Limits,
     /// Whether `kavach.toml` has a `[log.otlp]` collector (14.12), which an
     /// agent's `Audit(otlp: true)` needs (spec 8.6).
@@ -328,6 +330,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
     let checker_options = kavach_checker::Options {
         allow_unsafe: options.allow_unsafe,
         unsafe_packages: options.unsafe_packages.clone(),
+        granted: options.granted.clone(),
     };
     let checked = kavach_checker::check(&parsed.file, &resolution, checker_options);
 

@@ -1,0 +1,5 @@
+use leaf
+
+pub fn hello() uses Console, Net {
+    print(leaf.local_name())
+}

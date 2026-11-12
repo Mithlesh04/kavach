@@ -44,7 +44,7 @@ pub(crate) const TYPES: &[&str] = &[
 ];
 
 /// Built-in capabilities (spec 8.1).
-pub(crate) const CAPABILITIES: &[&str] = &[
+pub const CAPABILITIES: &[&str] = &[
     "Console",
     "Fs",
     "Net",

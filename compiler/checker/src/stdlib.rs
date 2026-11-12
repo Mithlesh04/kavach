@@ -166,7 +166,35 @@ impl Checker<'_> {
                 vec![p("folder", &string)],
                 fs_fails(Ty::List(Box::new(string.clone()))),
             ),
-            ("fs", "remove" | "create_dir") => (vec![p("path", &string)], fs_fails(Ty::Unit)),
+            ("fs", "remove" | "create_dir" | "remove_all") => {
+                (vec![p("path", &string)], fs_fails(Ty::Unit))
+            }
+            // A file's details as numbers, for `fs.info` in `std/fs.kav`.
+            ("fs", "stat") => {
+                let module = &self.res.modules[self.res.module_at(span.start)].name;
+                if !module.starts_with("std.") {
+                    self.error(
+                        span,
+                        "`fs.stat` is for `std.fs`: use `fs.info(path)` (spec 14.3)",
+                    );
+                }
+                (
+                    vec![p("path", &string)],
+                    fs_fails(Ty::List(Box::new(int.clone()))),
+                )
+            }
+            ("fs", "set_read_only") => (
+                vec![p("path", &string), p("read_only", &Ty::Prim(Prim::Bool))],
+                fs_fails(Ty::Unit),
+            ),
+            ("fs", "set_permissions") => (
+                vec![p("path", &string), p("mode", &int)],
+                fs_fails(Ty::Unit),
+            ),
+            ("fs", "rename" | "copy") => (
+                vec![p("from", &string), p("to", &string)],
+                fs_fails(Ty::Unit),
+            ),
             ("time", "now_ms" | "monotonic_ms") => (vec![], int.clone()),
             ("time", "sleep_ms" | "freeze") => (vec![p("ms", &int)], Ty::Unit),
             ("agents", "call_key") => (vec![], Ty::Optional(Box::new(string.clone()))),
@@ -348,9 +376,10 @@ impl Checker<'_> {
         {
             // Reading and changing files are granted apart (spec 8.1).
             let cap = match (module.as_str(), name) {
-                ("fs", "read_text" | "read_bytes" | "lines" | "chunks" | "exists" | "list") => {
-                    "Fs.read"
-                }
+                (
+                    "fs",
+                    "read_text" | "read_bytes" | "lines" | "chunks" | "exists" | "list" | "stat",
+                ) => "Fs.read",
                 ("fs", _) => "Fs.write",
                 _ => cap,
             };

@@ -101,8 +101,32 @@ pub fn add(args: &[&str]) -> ExitCode {
         return ExitCode::from(2);
     }
     match kavach_driver::deps::resolve(&root, true) {
-        Ok(_) => {
-            eprintln!("added `{name}`");
+        Ok(found) => {
+            // What it uses goes into its `can`, for the person adding it
+            // to see (spec 10.12).
+            let lib = found
+                .iter()
+                .find(|p| p.name == *name)
+                .map(|p| p.root.join("src").join("lib.kav"));
+            let caps = lib.map(|l| uses_of(&l)).unwrap_or_default();
+            if caps.is_empty() {
+                eprintln!("added `{name}`: it uses no capabilities");
+                return ExitCode::SUCCESS;
+            }
+            let quoted: Vec<String> = caps.iter().map(|c| format!("\"{c}\"")).collect();
+            let granted = format!(
+                "{name} = {{ {}, can = [{}] }}",
+                parts.join(", "),
+                quoted.join(", ")
+            );
+            if std::fs::write(&file, new.replacen(&entry, &granted, 1)).is_err() {
+                eprintln!("error: can't write {}", file.display());
+                return ExitCode::from(2);
+            }
+            eprintln!(
+                "added `{name}`: it uses {}, granted in its `can` in kavach.toml",
+                caps.join(", ")
+            );
             ExitCode::SUCCESS
         }
         Err(e) => {
@@ -112,4 +136,29 @@ pub fn add(args: &[&str]) -> ExitCode {
             ExitCode::from(2)
         }
     }
+}
+
+/// The capabilities the library `lib` (its `src/lib.kav`) uses anywhere,
+/// by name, sorted.
+fn uses_of(lib: &Path) -> Vec<String> {
+    let Ok(config) = kavach_driver::Config::for_file(lib) else {
+        return Vec::new();
+    };
+    let Some(sources) = kavach_driver::project_sources(lib) else {
+        return Vec::new();
+    };
+    let compiled = kavach_driver::compile_sources(sources, config.options_for(lib));
+    let mut caps: Vec<String> = compiled
+        .uses
+        .values()
+        .flatten()
+        .map(|c| {
+            c.split_once('.')
+                .map_or(c.as_str(), |(base, _)| base)
+                .to_string()
+        })
+        .collect();
+    caps.sort();
+    caps.dedup();
+    caps
 }

@@ -32,6 +32,7 @@ mod processes;
 mod stack;
 mod std_agents;
 mod std_devices;
+mod std_fs;
 mod std_lib;
 mod std_time;
 mod stmts;

@@ -1,0 +1,9 @@
+// Rule: A dependency whose entry grants a capability in `can` may use it.
+// Spec: 10.12
+// expect output: hello, Asha
+
+use greeter
+
+fn main() {
+    greeter.greet("Asha")
+}

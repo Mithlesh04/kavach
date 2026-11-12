@@ -23,7 +23,7 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.5 | [unicode-names.kav](unicode-names.kav) | Names may use letters from any Unicode script. | runs |
 | 1.5 | [variables-use-snake-case.kav](variables-use-snake-case.kav) | Variable names must be snake_case. | compile error |
 | 1.7 | [decimal-literal-from-context.kav](decimal-literal-from-context.kav) | A number literal takes its type from context, so a Decimal literal is exact. | runs |
-| 1.7 | [integer-literals.kav](integer-literals.kav) | Integer literals may use `_` separators, hex (0x) and binary (0b). | runs |
+| 1.7 | [integer-literals.kav](integer-literals.kav) | Integer literals may use `_` separators, hex (0x), octal (0o) and binary (0b). | runs |
 | 1.7 | [multi-line-string.kav](multi-line-string.kav) | A multi-line string drops the line breaks next to its delimiters and the common indentation. | runs |
 | 1.7 | [raw-string.kav](raw-string.kav) | A raw string has no escapes and no interpolation. | runs |
 | 1.7 | [string-escapes.kav](string-escapes.kav) | Strings support the escapes \" \\ and \u{…}. | runs |

@@ -1,0 +1,4 @@
+/// Prints a greeting: it uses the terminal.
+pub fn greet(name: String) uses Console {
+    print("hello, {name}")
+}

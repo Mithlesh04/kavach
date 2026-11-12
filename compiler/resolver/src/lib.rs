@@ -16,6 +16,7 @@ mod walk;
 
 use kavach_ast::{File, Span};
 pub use modules::Module;
+pub use prelude::CAPABILITIES;
 use std::collections::HashMap;
 
 /// Index into [`Resolution::defs`].

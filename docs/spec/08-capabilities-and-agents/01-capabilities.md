@@ -49,8 +49,8 @@ fn sync(order: Order) ! SyncError uses Net, Payments    // network and payments
 | Written | Allows |
 |---|---|
 | `uses Fs` | Every file operation |
-| `uses Fs.read` | Only reading: `read_text`, `read_bytes`, `lines`, `chunks`, `exists`, `list` |
-| `uses Fs.write` | Only changing: `write_text`, `write_bytes`, `append_text`, `remove`, `create_dir` |
+| `uses Fs.read` | Only reading: `read_text`, `read_bytes`, `lines`, `chunks`, `exists`, `list`, `info` |
+| `uses Fs.write` | Only changing: `write_text`, `write_bytes`, `append_text`, `remove`, `create_dir`, `set_read_only`, `set_permissions`, `rename`, `copy`, `remove_all` |
 | `uses Fs("./data")`, `uses Fs.read("./data")` | The same, only inside the folder `./data` |
 
 `Fs.read` and `Fs.write` are checked by the compiler, like any capability. A folder is checked when the program runs, since paths are values: while a function with `uses Fs("./data")` runs, every file operation in it, and in everything it calls, must name a path inside `./data`, or it fails with `Denied(path)` (`fs.exists` gives `false`). `..` can't leave the folder, and neither can a symbolic link that points outside it. Folders nest: inside two of them, a path must be in both. A task keeps the folders of the function that spawned it.

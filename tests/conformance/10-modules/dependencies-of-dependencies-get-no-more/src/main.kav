@@ -1,0 +1,9 @@
+// Rule: A dependency's own dependencies get at most what it was granted, whatever its kavach.toml says.
+// Spec: 10.12
+// expect compile error
+
+use mid
+
+fn main() {
+    mid.hello()   // `leaf` uses Net, which `mid` was never granted
+}

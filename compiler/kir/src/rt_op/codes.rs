@@ -4,7 +4,7 @@ use super::RtOp;
 
 impl RtOp {
     /// Every op, by the code native code passes to the runtime (`kv_rt`).
-    pub const ALL: [RtOp; 257] = [
+    pub const ALL: [RtOp; 263] = [
         RtOp::StrLen,
         RtOp::StrIsEmpty,
         RtOp::StrUpper,
@@ -262,6 +262,12 @@ impl RtOp {
         RtOp::JsonIntOr,
         RtOp::JsonFloatOr,
         RtOp::EnvGet,
+        RtOp::FileInfoStat,
+        RtOp::FileInfoSetReadOnly,
+        RtOp::FileInfoSetPermissions,
+        RtOp::FileInfoRename,
+        RtOp::FileInfoCopy,
+        RtOp::FileInfoRemoveAll,
     ];
 
     /// A fingerprint of the codes above: a compiler and a runtime library

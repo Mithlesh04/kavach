@@ -7,11 +7,11 @@ impl Lexer<'_> {
     pub(crate) fn number(&mut self) {
         let start = self.pos;
         let rest = self.rest();
-        if rest.starts_with("0x") || rest.starts_with("0b") {
-            let (radix, name) = if rest.as_bytes()[1] == b'x' {
-                (16, "hex")
-            } else {
-                (2, "binary")
+        if rest.starts_with("0x") || rest.starts_with("0b") || rest.starts_with("0o") {
+            let (radix, name) = match rest.as_bytes()[1] {
+                b'x' => (16, "hex"),
+                b'o' => (8, "octal"),
+                _ => (2, "binary"),
             };
             self.pos += 2;
             let digits_start = self.pos;
