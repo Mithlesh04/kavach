@@ -261,15 +261,20 @@ export const testBlocksDoc: LessonDoc = {
       </P>
       <Ex name="testing/test-uses.fails" />
       <P>
-        Say what the test needs with <C>uses</C>. A test given <C>Fs</C> reaches the real file system, so this one
-        writes <C>report.txt</C> in the folder it runs in:
+        Say what the test needs with <C>uses</C>. A test given <C>Fs</C>, <C>Net</C>, <C>Env</C> or <C>Clock</C>{" "}
+        reaches the real one. Add <C>with Fs = fake</C> to get an empty file system in memory instead, never full,
+        so nothing the test writes reaches the disk:
       </P>
       <Ex name="testing/test-uses.test" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>The console, the clock and random numbers are always there: a test run captures the output, can freeze the clock and seeds the numbers.</li>
         <li>A test can also hand in its own implementation of a capability: <C>{"test \"refund flow\" with Payments = FakePayments() { … }"}</C>.</li>
       </ul>
-      <SrcRef file="tests/conformance/11-testing/tests-use-nothing-unless-given.kav" label="tested" />
+      <P><C>with Net = fake</C>, <C>with Env = fake</C> and <C>with Clock = fake</C> give the other fakes the same way.</P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/11-testing/tests-use-nothing-unless-given.kav" label="tested" />
+        <SrcRef file="tests/conformance/11-testing/a-test-may-ask-for-the-fake-disk.kav" label="fake disk, tested" />
+      </div>
       <H2>Where test blocks go</H2>
       <P>
         Beside the code they test: the tests of <C>orders.kav</C> go in <C>orders.test.kav</C>, in the same folder.

@@ -66,6 +66,15 @@ export const pubDoc: LessonDoc = {
       </P>
       <Files name="modules/private.fails" outcome="refused" />
       <P>The fix is the one the message gives: a <C>pub fn</C> in <C>billing.invoice</C> that makes an <C>Invoice</C>, as <C>create</C> does.</P>
+      <H2>An extend in the same package</H2>
+      <P>
+        An <C>extend</C> of a type in another file of the <strong>same package</strong> counts as the type&apos;s own
+        module. It may read, change and build the type&apos;s private fields, so a type&apos;s methods can be spread
+        over files without making its fields <C>pub</C>:
+      </P>
+      <Files name="modules/extend-private" first={["src/lib.kav", "src/moves.kav"]} />
+      <P>An <C>extend</C> in another package sees only <C>pub</C> fields.</P>
+      <SrcRef file="tests/conformance/10-modules/an-extend-in-the-package-sees-private-fields/src/main.kav" label="tested" />
     </>
   ),
 };

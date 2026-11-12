@@ -53,6 +53,7 @@ export const callingCDoc: LessonDoc = {
               ["Float", "double"],
               ["Bool", "bool"],
               ["String (a parameter)", "const char*: a copy ending in a zero byte, valid during the call"],
+              ["Bytes (a parameter)", "const uint8_t*: a copy of the bytes, valid during the call; another argument says how many"],
               ["Ptr<T>", "T*: a pointer, also to a struct"],
               ["fn(…) -> … (a parameter)", "a function pointer, to a named Kavach function"],
               ["no ->", "void"],

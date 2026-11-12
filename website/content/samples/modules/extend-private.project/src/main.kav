@@ -1,0 +1,6 @@
+use wallet.{Wallet}
+
+fn main() {
+    print(Wallet.open().pay_in(100).pay_in(50).summary())
+    print(Wallet.open().summary())
+}

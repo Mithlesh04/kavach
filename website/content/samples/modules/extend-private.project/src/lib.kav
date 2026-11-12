@@ -1,0 +1,7 @@
+use moves
+
+/// A wallet whose fields only its own package may touch.
+pub type Wallet {
+    balance: Int = 0
+    payments: Int = 0
+}

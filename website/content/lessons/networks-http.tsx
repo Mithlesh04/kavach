@@ -140,6 +140,10 @@ export const httpServeDoc: LessonDoc = {
         Behind a proxy, <C>peer</C> is the proxy&apos;s address. Trust an address the proxy forwards in a header only
         when the request came from a proxy you list.
       </P>
+      <P>
+        With mutual TLS, <C>r.client_cert</C> holds the names on the client&apos;s certificate, for allowing callers by
+        name, and <C>none</C> otherwise. See <Link href="/docs/networks/sockets/tls/">TLS</Link>.
+      </P>
       <SrcRef file="tests/conformance/14-standard-library/http-requests-know-who-sent-them.kav" label="tested" />
       <H2>Headers</H2>
       <P>

@@ -369,6 +369,13 @@ export const arenasDoc: LessonDoc = {
 
 // ---------- Unsafe ----------
 
+/** Spec 6.4's table of what a pointer can do. */
+const pointerOps = () => {
+  const t = specTables("06-memory.md", "6.4").find((x) => x.header[0] === "Operation");
+  if (!t) throw new Error("spec 6.4: no table of pointer operations");
+  return t;
+};
+
 export const unsafeDoc: LessonDoc = {
   lead: "unsafe { … } turns off the safety checks for a block, to work with raw memory and C. A package must allow it.",
   simple: <>Like taking the safety guard off a power tool: you can do special jobs, such as working directly with C, but nothing stops a slip. A package must say it allows this, and every risky place can be listed.</>,
@@ -388,6 +395,8 @@ export const unsafeDoc: LessonDoc = {
         <li>C&apos;s syntax works inside <C>unsafe</C>: <C>*p</C>, <C>p[1]</C>, <C>p + 2</C>.</li>
         <li>A package uses <C>unsafe</C> only with <C>unsafe = true</C> in its <C>kavach.toml</C>, and <C>kavach audit</C> lists every place.</li>
       </ul>
+      <H2>Every operation</H2>
+      <Table header={pointerOps().header} rows={pointerOps().rows} />
       <Note>
         Nothing is checked inside <C>unsafe</C>: an index past the end or a pointer used after <C>free</C> is as
         dangerous as in C. Keep it in one small function with a safe signature. Pointers run in native code.

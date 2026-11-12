@@ -1,0 +1,15 @@
+use wallet.{Wallet}
+
+extend Wallet {
+    pub fn open() -> Wallet {
+        Wallet()
+    }
+
+    pub fn pay_in(self, amount: Int) -> Wallet {
+        self with { balance: self.balance + amount, payments: self.payments + 1 }
+    }
+
+    pub fn summary(self) -> String {
+        "{self.payments} payments, {self.balance} in total"
+    }
+}
