@@ -1,0 +1,7 @@
+fn main() {
+    const x = 1.5
+    const bits = x.bits()
+    print(bits)
+    print(Float.from_bits(bits))
+    print(Float.from_bits(bits).bits() == bits)
+}

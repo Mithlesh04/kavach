@@ -167,6 +167,12 @@ export const floatDoc: LessonDoc = {
         <C>Int</C>. Floats are stored in binary, so most decimals are kept a tiny bit off; for money, use{" "}
         <Link href="/docs/basics/data-types/decimal/">Decimal</Link>.
       </P>
+      <H2>Its 64 bits</H2>
+      <P>
+        Binary formats store a <C>Float</C> as its 64 bits in IEEE 754 form. <C>x.bits()</C> gives them as a{" "}
+        <C>UInt64</C>, and <C>Float.from_bits(n)</C> turns them back into the same <C>Float</C>:
+      </P>
+      <Ex name="datatypes/float-bits" />
     </>
   ),
 };

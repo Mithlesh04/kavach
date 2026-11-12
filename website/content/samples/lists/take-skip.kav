@@ -1,0 +1,7 @@
+fn main() {
+    const queue = ["asha", "ravi", "meera", "john", "lin"]
+    print(queue.take(2))
+    print(queue.skip(2))
+    print(queue.skip(2).take(2))
+    print(queue.take(10).len())
+}

@@ -5,7 +5,7 @@ import { RaceChart } from "@/components/race-chart";
 import { SrcRef } from "@/components/src-ref";
 import { VerifyBlock } from "@/components/verify-block";
 import type { LessonDoc } from "@/lib/chapter";
-import { Ex, Note, P } from "./parts";
+import { Ex, H2, Note, P } from "./parts";
 import { Limits } from "./limits";
 
 // ---------- Lists ----------
@@ -139,6 +139,9 @@ export const pipelineDoc: LessonDoc = {
       <Ex name="lists/pipeline" />
       <P>Chained, they read like a sentence, and run as a single loop with no list built between the steps:</P>
       <Ex name="functions/dot" />
+      <H2>The first items, and the rest</H2>
+      <P><C>take(n)</C> gives the first <C>n</C> items, and <C>skip(n)</C> all but them. Asking for more than the list holds gives what there is:</P>
+      <Ex name="lists/take-skip" />
     </>
   ),
 };
