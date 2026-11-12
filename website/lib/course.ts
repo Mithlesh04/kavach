@@ -113,11 +113,12 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Agents", "14.16"],
     ["Clipboard", "14.17"],
     ["Devices", "14.18"],
+    ["Cryptography", "14.19"],
     ["JSON", "2.12", ["Json values", "Reading", "Nested data", "Building", "Decoding into a type"]],
     ["Bytes", "2.13"],
   ]],
   ["networks", "Networks", "intermediate", [
-    ["HTTP", "14.11", ["Calling an API", "Serving", "JSON over HTTP", "Sessions"]],
+    ["HTTP", "14.11", ["Calling an API", "Serving", "JSON over HTTP", "Sessions", "WebSockets and events"]],
     ["Sockets", "14.10", ["TCP", "UDP", "TLS", "Timeouts"]],
     ["gRPC", "14.14", ["Server streaming", "Client streaming", "Two-way and conversations", "kavach proto"]],
   ]],

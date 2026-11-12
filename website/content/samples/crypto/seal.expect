@@ -1,0 +1,3 @@
+opened: card 4242
+refused: changed, or another key
+bad key: an AES key is 32 bytes

@@ -1,0 +1,17 @@
+use std.http
+use std.net
+
+fn news(r: Request) -> Response {
+    http.events(r, out => {
+        try out.send("prices are down", event: "news", id: "1")
+        try out.send("shop opens\nat nine", event: "news", id: "2")
+    })
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, news)
+    const r = try http.get("http://{listener.address()}/news")
+    print(r.header("content-type") ?? "")
+    print(r.body.text() ?? "")
+}

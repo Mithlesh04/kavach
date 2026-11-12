@@ -1,0 +1,11 @@
+use std.crypto
+
+fn main() {
+    print(crypto.sha256("abc".bytes()))
+    const key = "webhook secret".bytes()
+    const sent = crypto.hmac_sha256(key, "paid 30".bytes())
+    print(crypto.equal(crypto.hmac_sha256(key, "paid 30".bytes()), sent))
+    print(crypto.equal(crypto.hmac_sha256(key, "paid 3000".bytes()), sent))
+    print(crypto.token().len())
+    print(crypto.random_bytes(16).len())
+}

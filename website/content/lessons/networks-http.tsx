@@ -235,3 +235,49 @@ export const httpSessionDoc: LessonDoc = {
     </>
   ),
 };
+
+/** Spec 14.11's table of WebSockets and event streams. */
+const socketTable = () => {
+  const t = specTables(HTTP_FILE, "14.11").find((x) => x.header[0] === "Written" && x.rows.some((r) => r[0].includes("http.websocket(")));
+  if (!t) throw new Error("spec 14.11: no table of http.websocket");
+  return t;
+};
+
+export const httpSocketsDoc: LessonDoc = {
+  lead: "A handler can answer with a connection that stays open: a WebSocket, for messages both ways, or an event stream, for news the server sends.",
+  simple: <>A normal request is like a letter and its reply. A WebSocket is like a phone call: once it is open, both sides talk whenever they like. An event stream is like a radio: the server keeps sending, and the browser listens.</>,
+  minutes: 4,
+  before: ["networks/http/serving"],
+  body: (
+    <>
+      <P>
+        <C>http.websocket(r, session)</C> accepts a WebSocket, then hands the connection to <C>session</C>, on the
+        connection&apos;s own task, until it returns. This one answers every message:
+      </P>
+      <Ex name="http/websocket" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>ws.receive()</C> gives the next message, <C>WsMessage.Text</C> or <C>WsMessage.Binary</C>, or <C>none</C> once the other end closed, so <C>?? break</C> ends the loop.</li>
+        <li>A request that isn&apos;t a WebSocket gets 400.</li>
+        <li>Pings are answered without the program seeing them.</li>
+      </ul>
+      <H2>Events</H2>
+      <P>
+        <C>http.events(r, feed)</C> answers with server-sent events, which a browser reads with{" "}
+        <C>EventSource</C>. Each line of the data becomes a <C>data:</C> line:
+      </P>
+      <Ex name="http/events" />
+      <H2>Every function</H2>
+      <Table header={socketTable().header} rows={socketTable().rows} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A message larger than <C>max_body_bytes</C> closes the socket with status 1009.</li>
+        <li>A WebSocket or an event stream counts as a connection, not as a request in flight.</li>
+        <li>Over HTTP/2 neither is offered yet: such a request gets 501.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file={HTTP_SPEC} label="spec 14.11 · WebSockets and events" />
+        <SrcRef file="tests/conformance/14-standard-library/http-websockets-and-events.kav" label="tested" />
+        <SrcRef file="docs/decisions/0092-websockets-and-server-sent-events.md" label="decision 0092" />
+      </div>
+    </>
+  ),
+};

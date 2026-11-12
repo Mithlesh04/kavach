@@ -15,6 +15,7 @@ const today: [cmd: string, does: string][] = [
   ["kavach run [file.kav] [-- args]", "check and run a file, or the project's src/main.kav"],
   ["kavach run --dry-run", "run without making any capability call"],
   ["kavach run --native", "compile to machine code first"],
+  ["kavach run --watch", "run, and run again each time a .kav file or kavach.toml of the project changes"],
   ["kavach build [file.kav] [-o out]", "write an executable"],
   ["kavach build --compress [=max]", "write a smaller executable, packed without losing anything; it unpacks itself when it starts"],
   ["kavach build --lib lib.kav", "write a shared library and a C header, for other languages"],
@@ -34,7 +35,7 @@ const today: [cmd: string, does: string][] = [
   ["kavach version <program>", "print what built an executable: its package's name and version, and the compiler's version and commit"],
 ];
 
-const later = ["kavach repl and kavach eval", "kavach api check", "kavach build --release", "kavach run --watch"];
+const later = ["kavach repl and kavach eval", "kavach api check", "kavach build --release"];
 
 // ---------- The kavach Command ----------
 
@@ -64,6 +65,12 @@ export const commandDoc: LessonDoc = {
         </table>
       </div>
       <P>Inside a project, <C>run</C>, <C>build</C>, <C>test</C> and <C>check</C> need no file name: they use <C>src/main.kav</C>.</P>
+      <P>
+        <C>kavach run --watch</C> looks at the project&apos;s <C>src/</C> folder (or the folder of the one file given)
+        and its <C>kavach.toml</C>. When one changes, it stops the running program, prints{" "}
+        <C>-- changed: src/orders.kav, running again</C>, and starts it again. Ctrl+C stops it. It is for working on a
+        program, not for running one in production.
+      </P>
       <Note>Coming later, as spec 10.5 describes: {later.join(", ")}.</Note>
       <div><SrcRef file="docs/spec/10-modules-and-packages/05-command-line.md" label="spec 10.5 · command line" /></div>
     </>

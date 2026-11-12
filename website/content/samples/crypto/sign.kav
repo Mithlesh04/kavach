@@ -1,0 +1,9 @@
+use std.crypto
+
+fn main() ! CryptoError {
+    const signing = crypto.ed25519_secret()
+    const public = try crypto.ed25519_public(signing)
+    const signature = try crypto.ed25519_sign(signing, "order 7".bytes())
+    print(crypto.ed25519_verify(public, "order 7".bytes(), signature))
+    print(crypto.ed25519_verify(public, "order 8".bytes(), signature))
+}

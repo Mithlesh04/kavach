@@ -1,0 +1,9 @@
+text/event-stream
+event: news
+id: 1
+data: prices are down
+
+event: news
+id: 2
+data: shop opens
+data: at nine

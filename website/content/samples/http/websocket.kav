@@ -1,0 +1,28 @@
+use std.http
+use std.net
+
+fn chat(r: Request) -> Response {
+    http.websocket(r, ws => {
+        while true {
+            const message = (try ws.receive()) ?? break
+            match message {
+                WsMessage.Text(text) => try ws.send_text("you said {text}"),
+                WsMessage.Binary(data) => try ws.send_bytes(data),
+            }
+        }
+    })
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, chat)
+    const ws = try http.websocket_connect("ws://{listener.address()}/chat")
+    for word in ["hello", "bye"] {
+        try ws.send_text(word)
+        match (try ws.receive()) ?? WsMessage.Text(text: "closed") {
+            WsMessage.Text(text) => print(text),
+            WsMessage.Binary(data) => print("{data.len()} bytes"),
+        }
+    }
+    ws.close()
+}

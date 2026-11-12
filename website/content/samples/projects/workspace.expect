@@ -1,3 +1,8 @@
+$ kavach check
+== packages/prices
+src/lib.kav: no errors
+== packages/shop
+src/main.kav: no errors
 $ kavach test --seed 7
 == packages/prices
 ✓ pens: example pens(3) == 30
@@ -6,10 +11,8 @@ seed 7
 ✓ pens  200 cases
 1 functions   1 ✓   0 ✗   0 weakly tested
 == packages/shop
-✓ pens: example pens(3) == 30
-1 passed, 0 failed
+0 passed, 0 failed
 seed 7
-✓ pens  200 cases
-1 functions   1 ✓   0 ✗   0 weakly tested
+0 functions   0 ✓   0 ✗   0 weakly tested
 $ kavach run packages/shop/src/main.kav
 4 pens cost 40 cents

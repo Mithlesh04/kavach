@@ -103,6 +103,7 @@ export const workspacesDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Members run in the order <C>members</C> lists them, and the command fails when any member fails. In a member&apos;s folder, a command runs on that member alone.</li>
         <li>Members use each other by <C>path</C>, as any package does: <C>{"prices = { path = \"../prices\" }"}</C>.</li>
+        <li><C>kavach test</C> runs a package&apos;s own tests only: <C>shop</C> uses <C>prices</C>, but doesn&apos;t test <C>pens</C> again.</li>
         <li>Every member&apos;s git dependencies are fetched once, into the root&apos;s <C>kavach_modules/</C>, and recorded in the root&apos;s <C>kavach.lock</C>, so all members use the same commit of each.</li>
         <li>A member&apos;s settings (<C>[build]</C>, <C>[test]</C>, <C>[env]</C>) are its own. The root may be a package too, with a <C>[package]</C> of its own.</li>
         <li>A package in a folder of a git repository is named with <C>dir</C>: <C>{"router = { git = \"https://…\", dir = \"packages/router\" }"}</C>.</li>

@@ -1,0 +1,17 @@
+use std.crypto
+
+fn open(key: Bytes, sealed: Bytes) {
+    match crypto.decrypt(key, sealed) {
+        ok(data) => print("opened: {data.text() ?? ""}")
+        err(CryptoError.Tampered) => print("refused: changed, or another key")
+        err(CryptoError.BadKey(reason)) => print("bad key: {reason}")
+    }
+}
+
+fn main() ! CryptoError {
+    const key = crypto.aes_key()
+    const sealed = try crypto.encrypt(key, "card 4242".bytes())
+    open(key, sealed)
+    open(crypto.aes_key(), sealed)
+    open(Bytes([1, 2, 3]), sealed)
+}

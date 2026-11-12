@@ -40,7 +40,8 @@ import {
   timeoutsDoc as taskTimeoutsDoc,
 } from "./concurrency";
 import { howTasksRunDoc, turnsDoc } from "./concurrency-running";
-import { httpCallDoc, httpDoc, httpJsonDoc, httpServeDoc, httpSessionDoc } from "./networks-http";
+import { httpCallDoc, httpDoc, httpJsonDoc, httpServeDoc, httpSessionDoc, httpSocketsDoc } from "./networks-http";
+import { cryptoDoc } from "./stdlib-crypto";
 import {
   grpcClientStreamDoc, grpcDoc, grpcProtoDoc, grpcServerStreamDoc, grpcTwoWayDoc, socketsDoc, tcpDoc, timeoutsDoc,
   tlsDoc, udpDoc,
@@ -290,6 +291,7 @@ export const lessons: Record<string, LessonDoc> = {
   "standard-library/agents": agentsStdDoc,
   "standard-library/clipboard": clipboardDoc,
   "standard-library/devices": devicesDoc,
+  "standard-library/cryptography": cryptoDoc,
 
   "standard-library/json": jsonDoc,
   "standard-library/json/json-values": jsonValuesDoc,
@@ -318,6 +320,7 @@ export const lessons: Record<string, LessonDoc> = {
   "networks/http/serving": httpServeDoc,
   "networks/http/json-over-http": httpJsonDoc,
   "networks/http/sessions": httpSessionDoc,
+  "networks/http/websockets-and-events": httpSocketsDoc,
   "networks/sockets": socketsDoc,
   "networks/sockets/tcp": tcpDoc,
   "networks/sockets/udp": udpDoc,
