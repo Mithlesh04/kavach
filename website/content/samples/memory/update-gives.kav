@@ -1,0 +1,10 @@
+fn main() {
+    const next_id = Shared(1)
+    const id = next_id.update_with(n => (n + 1, n))
+    print("took id {id}, the next is {next_id.get()}")
+
+    const counter = Shared(0)
+    counter.update(n => n + 1)
+    const total = counter.update(n => n + 10)
+    print("the count is now {total}")
+}

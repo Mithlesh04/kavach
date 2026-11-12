@@ -138,6 +138,10 @@ export const resultsDoc: LessonDoc = {
         don&apos;t need the result, say so:
       </P>
       <Ex name="functions/discard" />
+      <P>
+        The one exception is <C>Shared.update</C>, whose new value may be left unused:{" "}
+        <C>counter.update(n =&gt; n + 1)</C>. See <Link href="/docs/memory/shared-state/">Shared State</Link>.
+      </P>
     </>
   ),
 };

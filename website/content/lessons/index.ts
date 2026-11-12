@@ -71,7 +71,7 @@ import { aiFailsDoc, askDoc, modelDoc, typedAnswersDoc } from "./agents-ai";
 import {
   auditDoc, dryRunDoc, enforceDoc, modesDoc, observeDoc, suggestDoc,
 } from "./agents-trust";
-import { revealDoc, secretFieldsDoc, secretParamsDoc, secretsDoc } from "./agents-secrets";
+import { revealDoc, secretFieldsDoc, secretParamsDoc, secretResultsDoc, secretsDoc } from "./agents-secrets";
 import { useCasesDoc } from "./agents-uses";
 import {
   catchDoc, contextDoc, errorCatchAllDoc, errorsDoc, matchErrorsDoc, panicsDoc, panicsWhatDoc, stopsDoc, tryDoc,
@@ -384,6 +384,7 @@ export const lessons: Record<string, LessonDoc> = {
   "agents/secrets": secretsDoc,
   "agents/secrets/secret-fields": secretFieldsDoc,
   "agents/secrets/secret-parameters": secretParamsDoc,
+  "agents/secrets/secret-results": secretResultsDoc,
   "agents/secrets/reveal": revealDoc,
   "agents/agent-use-cases": useCasesDoc,
   "agents/agents-in-practice": practiceDoc,

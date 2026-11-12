@@ -286,6 +286,18 @@ export const sharedDoc: LessonDoc = {
         <li><C>update</C> holds the value&apos;s lock while its function runs, so updates from many tasks, on any number of cores, never lose one.</li>
         <li>Seeing <C>Shared</C> in code tells every reader: this one is shared.</li>
       </ul>
+      <H2>What update gives</H2>
+      <P>
+        <C>update</C> gives the new value, read while the lock is still held, so no other task can change it in
+        between. It may be left unused. <C>update_with</C> takes a function that gives a pair, the new value and a
+        result, and gives the result: take something and know what you took, in one step:
+      </P>
+      <Ex name="memory/update-gives" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/06-memory.md" label="spec 6.2 · shared state" />
+        <SrcRef file="tests/conformance/06-memory/shared-update-gives-a-result.kav" label="tested" />
+        <SrcRef file="docs/decisions/0095-shared-update-gives-a-result.md" label="decision 0095" />
+      </div>
       <H2>The function given to update can&apos;t wait</H2>
       <P>
         While <C>update</C>&apos;s function runs, every other task that wants the value waits for it. A function that

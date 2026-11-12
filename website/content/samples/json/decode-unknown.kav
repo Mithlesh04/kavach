@@ -1,0 +1,17 @@
+use std.json
+
+type Order {
+    id: Int
+}
+
+fn main() {
+    const text = "\{\"id\": 1, \"note\": \"leave at the door\"}"
+    match json.decode<Order>(text) {
+        ok(order) => print("read order {order.id}")
+        err(e) => print(e)
+    }
+    match json.decode<Order>(text, unknown: JsonUnknown.Ignore) {
+        ok(order) => print("read order {order.id}, note skipped")
+        err(e) => print(e)
+    }
+}

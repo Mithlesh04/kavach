@@ -142,7 +142,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Audit Log", "8.6"],
     ["Monitoring Agents", "8.6"],
     ["Durable Agents", "8.5", ["Limits across restarts"]],
-    ["Secrets", "8.7", ["Secret fields", "Secret parameters", "reveal"]],
+    ["Secrets", "8.7", ["Secret fields", "Secret parameters", "Secret results", "reveal"]],
     ["Agent Use Cases", "8.3"],
     ["Agents in Practice", "8.4"],
   ]],

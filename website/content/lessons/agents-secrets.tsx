@@ -77,6 +77,34 @@ export const secretParamsDoc: LessonDoc = {
   ),
 };
 
+export const secretResultsDoc: LessonDoc = {
+  lead: "A function that returns a secret says so in its result: -> secret T. Its caller gets a secret, like the field it came from.",
+  simple: <>A function that hands back a secret must say so on its label, so the person who gets it knows to keep it secret too. A helper can&apos;t quietly turn a secret into ordinary text.</>,
+  minutes: 3,
+  body: (
+    <>
+      <Ex name="agents/secret-result" />
+      <P>Returning a secret from a function whose result isn&apos;t <C>secret</C> is refused:</P>
+      <Ex name="agents/secret-result-plain.fails" />
+      <P>And what the caller gets stays a secret:</P>
+      <Ex name="agents/secret-result-print.fails" />
+      <P>
+        A lambda can&apos;t return a secret: a function type has no way to say so. Write a named function with{" "}
+        <C>-&gt; secret T</C> instead:
+      </P>
+      <Ex name="agents/secret-result-lambda.fails" />
+      <P>Interface methods and the methods that implement them agree on it.</P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/08-capabilities-and-agents/07-secrets.md" label="spec 8.7 · returning a secret" />
+        <SrcRef file="tests/conformance/08-capabilities/returning-a-secret-says-so.kav" label="tested" />
+        <SrcRef file="tests/conformance/08-capabilities/secret-results-stay-secret.kav" label="stays secret, tested" />
+        <SrcRef file="tests/conformance/08-capabilities/lambdas-return-no-secrets.kav" label="lambdas, tested" />
+        <SrcRef file="docs/decisions/0094-secret-results.md" label="decision 0094" />
+      </div>
+    </>
+  ),
+};
+
 export const revealDoc: LessonDoc = {
   lead: "reveal(value) lets a secret through on purpose, where review can see it.",
   simple: <><C>reveal</C> is like signing your name when you open a sealed envelope: it is allowed, but it leaves a mark. <C>kavach audit</C> lists every place it happens.</>,

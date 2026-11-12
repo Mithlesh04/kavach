@@ -129,6 +129,7 @@ export const packagesDoc: LessonDoc = {
       <CodeBlock code={dep.files[2].code} file={dep.files[2].path} also={[dep.files[1]]} output={dep.output} />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>The name in <C>[dependencies]</C> is the module name: <C>use geometry</C> is the package&apos;s <C>src/lib.kav</C>, and <C>use geometry.shapes</C> would be its <C>src/shapes.kav</C>.</li>
+        <li>Inside the package&apos;s own project, its <C>[package] name</C> names its modules the same way, so <C>shapes.kav</C> reaches the root&apos;s types with <C>{"use geometry.{Shape}"}</C> whichever project is built. <C>lib</C> names no module.</li>
         <li>Only its <C>pub</C> items can be used, as with <Link href="/docs/tools/modules/">any module</Link>.</li>
         <li>From a git repository: <C>{"money = { git = \"https://…\", tag = \"v1.0.0\" }"}</C>, or <C>branch</C> or <C>rev</C> instead of <C>tag</C>. <C>kavach add geometry --path ../geometry</C> and <C>kavach add money --git &lt;url&gt;</C> write these lines for you.</li>
         <li>A fetched repository lands in <C>kavach_modules/money/</C> in your project, as npm keeps <C>node_modules/</C>. Never commit that folder — <C>kavach new</C> puts it in <C>.gitignore</C>. A path dependency is read where it is, not copied.</li>

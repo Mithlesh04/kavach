@@ -92,3 +92,10 @@ type Query {
 //                   ^^^^^ - keyword.other.agent.kavach
     }
 }
+
+fn database_url() -> secret String ! Error uses Env {
+//                ^^ storage.type.function.arrow.kavach
+//                   ^^^^^^ storage.modifier.kavach
+//                          ^^^^^^ support.type.primitive.kavach
+    try env("SHOP_DATABASE_URL")
+}

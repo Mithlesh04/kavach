@@ -7,7 +7,7 @@ type User {
 }
 
 fn main() ! Error {
-    const text = "\{\"name\": \"Asha\", \"plan\": \"gold\"}"
+    const text = "\{\"name\": \"Asha\"}"
     const user = try json.decode<User>(text)
     print(user.name)
     print(user.city)

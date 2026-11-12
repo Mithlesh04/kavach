@@ -282,7 +282,7 @@ export const jsonDecodingDoc: LessonDoc = {
       <Ex name="json/decode-fields" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>A missing field takes its default (<C>city</C>) or <C>none</C> if it is optional (<C>nickname</C>).</li>
-        <li>Fields your type doesn&apos;t have, like <C>plan</C>, are ignored, so a service can add fields without breaking its clients.</li>
+        <li>A field your type doesn&apos;t have is refused too, so a misspelled or smuggled field is caught. See below for reading a service that may add fields.</li>
         <li>Decoding is strict about values: an integer field takes only a number written without a fraction or exponent that fits its type.</li>
         <li>A <C>BigInt</C> field takes a whole number of any size, a <C>Decimal</C> field any number exactly, and a <C>Float</C> field any number, as the nearest <C>Float</C>.</li>
       </ul>
@@ -304,8 +304,21 @@ export const jsonDecodingDoc: LessonDoc = {
         <li>The problem&apos;s <C>path</C> is the record&apos;s: <C>[1]</C> is the second item.</li>
         <li>The invariants are checked once every value has the right shape. Until then, the problems are those of shape.</li>
       </ul>
+      <H2>Fields your type doesn&apos;t have</H2>
+      <P>
+        A field the type doesn&apos;t have is a problem at its path, as the type&apos;s schema says. Another
+        service&apos;s answers may gain fields over time, so to read them write{" "}
+        <C>unknown: JsonUnknown.Ignore</C>, and such fields are skipped:
+      </P>
+      <Ex name="json/decode-unknown" />
+      <P>
+        <C>decode_value</C> takes <C>unknown</C> too. The <Link href="/docs/networks/http/">std.http</Link> client
+        skips unknown fields in the responses it decodes, so a service can add fields without breaking its clients.
+      </P>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${JSON_SPEC}`} label="spec 2.12 · decoding" />
+        <SrcRef file="tests/conformance/02-types/json-decode-refuses-unknown-fields.kav" label="unknown fields, tested" />
+        <SrcRef file="docs/decisions/0096-unknown-fields-are-refused.md" label="decision 0096" />
         <SrcRef file="tests/conformance/02-types/json-decode-lists-every-problem.kav" label="every problem, tested" />
         <SrcRef file="tests/conformance/02-types/json-decode-checks-invariants.kav" label="invariants, tested" />
         <SrcRef file="docs/decisions/0086-decoding-reports-every-problem.md" label="decision 0086" />
