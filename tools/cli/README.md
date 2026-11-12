@@ -27,6 +27,7 @@ Exit codes: 0 success, 1 compile errors or an error returned from `main`, 101 a 
 | File | Job |
 |---|---|
 | `src/main.rs` | Commands |
+| `src/watch.rs` | `kavach run --watch`: the program run again on each change of the project's files |
 | `src/native.rs` | `kavach build` and `kavach run --native`: native code with LLVM or Cranelift |
 | `src/context.rs` | `kavach query` and `kavach context`, from the program's index |
 | `src/project.rs` | `kavach new`, and finding the project's entry file |
@@ -48,4 +49,5 @@ Exit codes: 0 success, 1 compile errors or an error returned from `main`, 101 a 
 | `tests/token_budget.rs` | Ten `ask`s at once under `tokens <= 200 per day`: each `asks_under_way` setting lets through what it promises (spec 8.3) |
 | `tests/stopping.rs` | A program holding its stop finishes its work after `SIGTERM`, and a server answers the request under way (decision 0088; Unix) |
 | `tests/workspaces.rs` | A workspace: one lock and `kavach_modules/` at the root, members using each other by path, `check` and `build` per member; a git dependency's `dir`, refused when it leaves the repository (spec 10.14) |
+| `tests/watch.rs` | `kavach run --watch` runs the program again when its file changes (spec 10.5) |
 | `tests/online.rs` | Tests that need the internet (`https://`); they run only with `--ignored` |

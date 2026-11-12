@@ -94,6 +94,16 @@ impl<'a> Interp<'a> {
             Some(Value::Str(s)) => s.to_string(),
             _ => String::new(),
         };
+        // A WebSocket handshake's pieces (decision 0092): no network.
+        {
+            use kavach_runtime_net::websocket;
+            match name {
+                "websocket_accept" => return Ok(self.str_value(&websocket::accept(&address))),
+                "websocket_key" => return Ok(self.str_value(&websocket::key())),
+                "websocket_mask" => return Ok(Value::Bytes(websocket::mask().as_slice().into())),
+                _ => {}
+            }
+        }
         let address = address.as_str();
         // A generated test never reaches the network (spec 11.5).
         if self.fake.is_some() {

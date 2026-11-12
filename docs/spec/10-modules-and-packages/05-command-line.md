@@ -5,6 +5,7 @@
 | `kavach new my-app` | Create a project |
 | `kavach run` | Compile quickly and run (a project, or one file: 10.9) |
 | `kavach run --dry-run` | Run without executing capability calls |
+| `kavach run --watch` | Run, and run again each time a `.kav` file or `kavach.toml` of the project changes: the running program is stopped first |
 | `kavach build` | Compile to an executable file (a project, or one file: 10.9) |
 | `kavach build --release` | Optimized build |
 | `--env-file <path>`, `--env NAME=value`, `--no-env-file` | On `run`, `test` and `build`: which `.env` file and which single variables the program gets (10.13) |
@@ -40,6 +41,8 @@ $ kavach version .kavach/bin/my-app
 my-app 0.1.0
 built by kavach 0.1.0 (commit 8f8ae051)
 ```
+
+`kavach run --watch` looks at the project's `src/` folder (or the folder of the one file given) and its `kavach.toml` a few times a second. When one changes, it stops the running program, printing `-- changed: src/orders.kav, running again`, and starts it again; a program that ended waits for the next change. It stops when you press Ctrl+C. It is for working on a program, not for running one in production.
 
 A program built from one file (10.9) has the file's name and no version. With `version_flag = true` under `[build]` in `kavach.toml`, the program answers `--version` itself: run with that one argument, it prints the same two lines and ends with exit code 0, before `main` runs. This holds however it runs: `kavach run -- --version`, `run --native` and the built executable. Without the setting, `--version` is an argument like any other, for the program to read.
 

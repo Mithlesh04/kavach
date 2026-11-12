@@ -62,6 +62,16 @@ pub(crate) const BUILTIN: &[(&str, &str, &str)] = &[
         include_str!("../../../stdlib/cli/cli.kav"),
     ),
     (
+        "std/crypto.kav",
+        "std.crypto",
+        include_str!("../../../stdlib/crypto/crypto.kav"),
+    ),
+    (
+        "std/http/upgrade.kav",
+        "std.http.upgrade",
+        include_str!("../../../stdlib/http/upgrade.kav"),
+    ),
+    (
         "std/http/multipart.kav",
         "std.http.multipart",
         include_str!("../../../stdlib/http/multipart.kav"),
@@ -294,6 +304,7 @@ mod tests {
                     "std.net",
                     "std.http",
                     "std.cli",
+                    "std.http.upgrade",
                     "std.http.multipart",
                     "std.http.server",
                     "std.http.hpack",

@@ -15,6 +15,11 @@ mio = { version = "1", features = ["os-poll", "net"] }
 quinn-proto = { version = "0.11", default-features = false, features = ["rustls", "ring"] }
 # TLS (decision 0021): rustls with ring, and Mozilla's root certificates.
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+# The WebSocket handshake's SHA-1 (decision 0092) and std.crypto (0093):
+# the ring TLS uses.
+ring = "0.17"
+# Argon2id passwords for std.crypto (decision 0093); its salt comes from ring.
+argon2 = { version = "0.5", default-features = false, features = ["alloc", "password-hash"] }
 socket2 = "0.6"
 webpki-roots = "0.26"
 

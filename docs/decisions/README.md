@@ -97,6 +97,8 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0089](0089-streamed-http-bodies.md) | HTTP request bodies whole up to `buffered_body`, larger ones read with `r.read_body()`; responses can stream a reader, `http.file(path)` | Accepted |
 | [0090](0090-forms-read-part-by-part.md) | `http.form(r)` reads a `multipart/form-data` body part by part, each part's data as it comes; `Bytes.index_of` | Accepted |
 | [0091](0091-workspaces.md) | `[workspace] members` in the root `kavach.toml`: one lock and one `kavach_modules/` for every member, commands at the root run on each; `dir` for a package in a folder of a repository | Accepted |
+| [0092](0092-websockets-and-server-sent-events.md) | A handler returns `http.websocket(r, session)` or `http.events(r, feed)`, a response that takes over the connection; `ring` named directly for the handshake's SHA-1 | Accepted |
+| [0093](0093-std-crypto.md) | `std.crypto` from `ring` (already used for TLS) and `argon2` for passwords; no capability | Accepted |
 
 ## Open decisions
 

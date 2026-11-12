@@ -175,6 +175,7 @@ pub fn crlf() -> String {
 /// The reason phrase that goes with `status` in a status line.
 pub fn reason(status: Int) -> String {
     match status {
+        101 => "Switching Protocols",
         200 => "OK",
         201 => "Created",
         204 => "No Content",

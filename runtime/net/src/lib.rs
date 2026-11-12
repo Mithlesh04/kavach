@@ -5,6 +5,8 @@
 //! with TLS, and the linker can leave TLS out (decision 0024).
 
 pub mod ai;
+pub mod crypto;
 pub mod net;
 pub mod otlp;
 pub mod random;
+pub mod websocket;

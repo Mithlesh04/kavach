@@ -31,6 +31,7 @@ mod ops;
 mod processes;
 mod stack;
 mod std_agents;
+mod std_crypto;
 mod std_devices;
 mod std_fs;
 mod std_lib;

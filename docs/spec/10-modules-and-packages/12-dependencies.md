@@ -33,7 +33,7 @@ fn main() {
 - **Dependencies of dependencies** are used too. Two different packages with one name are an error: rename one in its `[dependencies]`. A module in `src/` with a dependency's name is an error too (10.2).
 - **`unsafe`.** A package that sets `unsafe = true` (6.4) is used only when the project allows it in its entry: `geometry = { path = "../geometry", unsafe = true }`. Otherwise building stops and says so.
 - **Warnings** in a dependency's code are not shown: they are its authors' to fix. Errors are.
-- A dependency's tests (`*.test.kav`) and `src/main.kav` are not compiled into the project that uses it.
+- A dependency's tests (`*.test.kav`) and `src/main.kav` are not compiled into the project that uses it, and `kavach test` runs none of its examples or generated tests: they are its own package's to run.
 - **Capabilities are granted per dependency.** A dependency may use only the capabilities (8.1) its entry lists in `can`; an entry without `can` grants none, so the package must be pure. Using one more is a compile error that names the function and the capability. A dependency's own dependencies get at most what it was granted. `kavach add` lists the capabilities the package uses and writes them into `can`, so the person adding it sees them ([decision 0084](../../decisions/0084-environment-variables-and-granted-capabilities.md)).
 
   ```toml

@@ -12,6 +12,7 @@ mod native;
 mod pack;
 mod project;
 mod proto;
+mod watch;
 
 use kavach_driver::Compiled;
 use std::io::Write;
@@ -65,6 +66,10 @@ fn main() -> ExitCode {
     };
     // At a workspace's root, each member in turn (spec 10.14).
     if let Some(code) = project::workspace(&args) {
+        return code;
+    }
+    // Run again on each change (spec 10.5).
+    if let Some(code) = watch::watch(&args) {
         return code;
     }
     let args = project::expand(args);

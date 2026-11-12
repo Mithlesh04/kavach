@@ -85,6 +85,9 @@ impl<'a> Interp<'a> {
         if module == "clipboard" {
             return self.clipboard_call(name, &args);
         }
+        if module == "crypto" {
+            return self.crypto_call(name, &args, span);
+        }
         if module == "devices" {
             return self.devices_call(name, &args);
         }

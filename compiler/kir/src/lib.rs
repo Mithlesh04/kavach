@@ -61,6 +61,7 @@ mod lower_ptr;
 mod lower_ptr_syntax;
 mod lower_replay;
 mod lower_schema;
+mod lower_selected;
 mod lower_std;
 mod lower_stmt;
 mod lower_tasks;
@@ -93,3 +94,25 @@ pub struct Unsupported {
     pub feature: String,
     pub line: u32,
 }
+
+/// The functions of `std.crypto` (spec 14.19), in the order their number
+/// (`RtOp::Crypto`'s operand `c`) gives.
+pub const CRYPTO: [&str; 17] = [
+    "sha256",
+    "sha512",
+    "hmac_sha256",
+    "equal",
+    "random_bytes",
+    "token",
+    "hash_password",
+    "check_password",
+    "ed25519_secret",
+    "ed25519_public",
+    "ed25519_sign",
+    "p256_secret",
+    "p256_public",
+    "p256_sign",
+    "aes_key",
+    "encrypt",
+    "decrypt",
+];

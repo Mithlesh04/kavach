@@ -256,7 +256,10 @@ impl Compiled {
             .iter()
             .find(|f| is_builtin(&f.path))
             .map_or(u32::MAX, |f| f.start);
-        offset < end
+        // A dependency's code is its own package's to test (spec 10.12).
+        let m = self.resolution.module_at(offset);
+        let package = self.resolution.modules.get(m).map(|m| m.package.as_str());
+        offset < end && package.is_none_or(str::is_empty)
     }
 
     /// The 1-based line of a byte offset.

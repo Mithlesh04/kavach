@@ -24,6 +24,7 @@ Each section is a file of its own: new sections go at the end, with the next num
 | 14.16 std.agents | [16-agents.md](16-agents.md) |
 | 14.17 std.clipboard | [17-clipboard.md](17-clipboard.md) |
 | 14.18 std.devices | [18-devices.md](18-devices.md) |
+| 14.19 std.crypto | [19-crypto.md](19-crypto.md) |
 
 ## Open questions
 

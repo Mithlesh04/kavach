@@ -2,7 +2,7 @@
 //! brought in with `use std.<module>` (more methods of built-in types are
 //! in `more_methods.rs`).
 
-use crate::checker::{Checker, Shape};
+use crate::checker::Checker;
 use crate::ty::{Prim, Ty};
 use kavach_ast::{Arg, File, ItemKind, Span, TypeExpr};
 use kavach_resolver::DefId;
@@ -21,6 +21,7 @@ const MODULES: &[(&str, Option<&str>)] = &[
     ("agents", None),
     ("clipboard", Some("Clipboard")),
     ("devices", Some("Serial")),
+    ("crypto", None),
 ];
 
 pub(crate) fn number(t: &Ty) -> bool {
@@ -117,6 +118,21 @@ impl Checker<'_> {
             ),
             ("fs", "exists") => (vec![p("path", &string)], Ty::Prim(Prim::Bool)),
             ("fs", "read_bytes") => (vec![p("path", &string)], fs_fails(Ty::Prim(Prim::Bytes))),
+            // A WebSocket handshake's pieces, for `std/http/websocket.kav`.
+            ("net", "websocket_accept" | "websocket_key" | "websocket_mask") => {
+                let module = &self.res.modules[self.res.module_at(span.start)].name;
+                if !module.starts_with("std.") {
+                    self.error(
+                        span,
+                        "this is for the standard library: use `http.websocket` (spec 14.11)",
+                    );
+                }
+                match name {
+                    "websocket_accept" => (vec![p("key", &string)], string.clone()),
+                    "websocket_key" => (vec![], string.clone()),
+                    _ => (vec![], Ty::Prim(Prim::Bytes)),
+                }
+            }
             (
                 "net",
                 "listen" | "listen_tls" | "connect" | "connect_tls" | "connect_quic" | "bind",
@@ -234,6 +250,8 @@ impl Checker<'_> {
                 )
             }
             ("devices", "close_serial") => (vec![p("id", &int)], Ty::Unit),
+            // std.crypto (spec 14.19): no capability.
+            ("crypto", _) => self.crypto_signature(name)?,
             // The clipboard (spec 14.17), behind `Clipboard`.
             ("clipboard", "read_text") => {
                 let e = self.builtin_ty("ClipboardError");
@@ -387,8 +405,10 @@ impl Checker<'_> {
         }
         // `std.agents` needs nothing, except to answer approvals (14.16).
         let answers = module == "agents" && matches!(name, "request_fields" | "answer_request");
-        // A hold on the program's stop needs nothing (decision 0088).
-        let holds = module == "cli" && name.starts_with("stop_");
+        // A hold on the program's stop needs nothing (decision 0088), nor
+        // does working out a WebSocket handshake (0092).
+        let holds = (module == "cli" && name.starts_with("stop_"))
+            || (module == "net" && name.starts_with("websocket_"));
         if let Some(cap) = (MODULES.iter())
             .find(|(m, _)| *m == module && !reads_clock && !reads_zone && !holds)
             .and_then(|(_, c)| if answers { Some("Approvals") } else { *c })
@@ -407,9 +427,12 @@ impl Checker<'_> {
                 self.error(span, format!("a contract can't call `{module}.{name}`: it uses {cap}, and contracts must be pure (spec 7.5)"));
             }
         }
-        self.args(
+        // Keys and passwords are often secrets: std.crypto takes them (8.7).
+        let secret = vec![module == "crypto"; params.len()];
+        self.args_with(
             args,
             &params,
+            &secret,
             span,
             &format!("`{module}.{name}`"),
             "argument",
@@ -436,47 +459,6 @@ impl Checker<'_> {
             Some(def) => Ty::Adt(def, Vec::new()),
             None => Ty::Error,
         }
-    }
-
-    /// `cli.parse<T>()`: `T` must be a record of options, or a union of
-    /// commands whose fields are options (spec 14.6).
-    fn cli_parse(&mut self, generics: &[TypeExpr], args: &[Arg], span: Span) -> Ty {
-        self.note_cap("Env", span);
-        if !args.is_empty() {
-            self.error(span, "`cli.parse` takes no arguments: write the options as a record type, `cli.parse<Args>()`");
-        }
-        let Some(t) = generics.first().map(|g| self.lower(g, None)) else {
-            self.error(
-                span,
-                "`cli.parse` needs the type to parse into: `cli.parse<Args>()`",
-            );
-            return Ty::Error;
-        };
-        let shape = match &t {
-            Ty::Adt(def, _) => self.types.get(def).map(|i| &i.shape),
-            _ => None,
-        };
-        let fields = match shape {
-            Some(Shape::Record(fields)) if !fields.is_empty() => fields.clone(),
-            Some(Shape::Union(variants)) => {
-                variants.iter().flat_map(|v| v.fields.clone()).collect()
-            }
-            _ => {
-                self.error(span, "`cli.parse` needs a record whose fields are the options, or a union whose variants are the commands");
-                Vec::new()
-            }
-        };
-        for f in &fields {
-            let inner = match &f.ty {
-                Ty::Optional(t) => (**t).clone(),
-                t => t.clone(),
-            };
-            if !(number(&inner) || matches!(inner, Ty::Prim(Prim::String | Prim::Bool))) {
-                let shown = self.show(&f.ty);
-                self.error(span, format!("option `{}` is `{shown}`: options can be text, numbers, `Bool` or optionals of these", f.name));
-            }
-        }
-        Ty::Result(Box::new(t), Box::new(Ty::Builtin("CliError", Vec::new())))
     }
 
     /// `Float.from_bits(n)` (spec 14.2): the `Float` with IEEE 754 bits `n`.

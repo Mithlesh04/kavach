@@ -1,0 +1,54 @@
+// Rule: `std.crypto` hashes, checks passwords, signs and verifies, and seals data so that a changed copy fails with `Tampered`; it needs no capability.
+// Spec: 14.19
+// expect output: ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad
+// expect output: true false
+// expect output: true false
+// expect output: true false
+// expect output: card 4242
+// expect output: tampered
+// expect output: bad key
+// expect output: 43 true
+
+use std.crypto
+
+fn hex(b: Bytes) -> String {
+    const digits = "0123456789abcdef"
+    let out = ""
+    for i in 0..b.len() {
+        const n = Int(b[i])
+        out = out + digits.slice(n / 16, n / 16 + 1) + digits.slice(n % 16, n % 16 + 1)
+    }
+    out
+}
+
+pub fn pure_check(a: Bytes, b: Bytes) -> Bool {
+    crypto.equal(a, b)
+}
+
+fn main() ! CryptoError {
+    print(hex(crypto.sha256("abc".bytes())))
+    const stored = crypto.hash_password("correct horse")
+    print("{crypto.check_password("correct horse", stored)} {crypto.check_password("wrong", stored)}")
+    const signing = crypto.ed25519_secret()
+    const signature = try crypto.ed25519_sign(signing, "order 7".bytes())
+    const public = try crypto.ed25519_public(signing)
+    print("{crypto.ed25519_verify(public, "order 7".bytes(), signature)} {crypto.ed25519_verify(public, "order 8".bytes(), signature)}")
+    const p = crypto.p256_secret()
+    const p_signature = try crypto.p256_sign(p, "order 7".bytes())
+    print("{crypto.p256_verify(try crypto.p256_public(p), "order 7".bytes(), p_signature)} {pure_check("a".bytes(), "b".bytes())}")
+    const key = crypto.aes_key()
+    const sealed = try crypto.encrypt(key, "card 4242".bytes())
+    print((try crypto.decrypt(key, sealed)).text() ?? "")
+    const changed = sealed.slice(0, 20) + "x".bytes() + sealed.slice(21, sealed.len())
+    const opened = crypto.decrypt(key, changed) catch e => match e {
+        CryptoError.Tampered => "tampered".bytes(),
+        CryptoError.BadKey(_) => "bad key".bytes(),
+    }
+    print(opened.text() ?? "")
+    const short = crypto.encrypt("short".bytes(), "x".bytes()) catch e => match e {
+        CryptoError.Tampered => "tampered".bytes(),
+        CryptoError.BadKey(_) => "bad key".bytes(),
+    }
+    print(short.text() ?? "")
+    print("{crypto.token().len()} {crypto.random_bytes(16).len() == 16}")
+}

@@ -76,7 +76,7 @@ fn members_share_one_lock_and_run_together() {
     );
     write(
         &ws.join("packages/router/src/lib.kav"),
-        "pub fn route(p: String) -> String {\n    \"route {p}\"\n}\n",
+        "pub fn route(p: String) -> String\n    example route(\"/a\") == \"route /a\"\n{\n    \"route {p}\"\n}\n",
     );
     let app = ws.join("packages/app");
     write(
@@ -103,6 +103,10 @@ fn members_share_one_lock_and_run_together() {
         "{}",
         text(&ran)
     );
+
+    // The app's tests run none of the router's examples (spec 10.12).
+    let tested = kavach(&app, &["test"]);
+    assert!(!text(&tested).contains("route"), "{}", text(&tested));
 
     // At the root: each member in the order listed, folders sorted.
     let checked = kavach(&ws, &["check"]);

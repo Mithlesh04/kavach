@@ -25,6 +25,7 @@ impl RtOp {
                 | RtOp::FileInfoRename
                 | RtOp::FileInfoCopy
                 | RtOp::FileInfoRemoveAll
+                | RtOp::CryptoFails
                 | RtOp::ClipReadText
                 | RtOp::ClipWriteText
                 | RtOp::SerialOpen
@@ -103,6 +104,8 @@ impl RtOp {
             "kv_rt_journal"
         } else if group("Zone") {
             "kv_rt_zone"
+        } else if group("Crypto") {
+            "kv_rt_crypto"
         } else if group("Clip") {
             "kv_rt_clipboard"
         } else if group("FileInfo") {

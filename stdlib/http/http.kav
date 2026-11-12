@@ -17,6 +17,7 @@ use std.json
 use std.http.message
 use std.http.multipart
 use std.http.server
+use std.http.upgrade
 use std.net
 use std.time
 
@@ -91,6 +92,9 @@ pub type Response {
     /// Sent after `body` as it is read (spec 14.11): a reader of
     /// `fs.chunks`.
     pub stream: Chunks? = none
+    /// What runs on the connection after the head: a WebSocket's
+    /// session or an event stream's feed (`http.websocket`, `http.events`).
+    pub take_over: TakeOver? = none
 
     /// The value of the first header named `name`, if any.
     pub fn header(self, name: String) -> String? {
@@ -181,6 +185,28 @@ pub fn file(path: String) -> Response ! FsError uses Fs.read {
         Header(name: "content-length", value: "{info.size}"),
     ]
     Response(status: 200, headers: headers, body: Bytes([]), stream: reader)
+}
+
+/// What a response that takes over runs on the connection, with what
+/// came after the request and the largest message allowed.
+pub type TakeOver {
+    pub run: fn(Connection, Bytes, Int) ! NetError
+}
+
+/// Accepts the WebSocket request `r` and runs `session` on it (spec
+/// 14.11); 400 when `r` isn't one.
+pub fn websocket(r: Request, session: fn(WebSocket) ! NetError) -> Response {
+    upgrade.accept(r, session)
+}
+
+/// Server-sent events, sent by `feed` (spec 14.11).
+pub fn events(r: Request, feed: fn(EventStream) ! NetError) -> Response {
+    upgrade.events(feed)
+}
+
+/// A WebSocket to `url`, `ws://` or `wss://` (spec 14.11).
+pub fn websocket_connect(url: String) -> WebSocket ! HttpError uses Net {
+    try upgrade.connect(url)
 }
 
 /// The `multipart/form-data` form in `r`, read part by part (spec 14.11).

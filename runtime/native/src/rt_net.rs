@@ -111,6 +111,22 @@ fn shared(p: i64) -> Option<Arc<Shared>> {
 
 /// The `std.net` ops (operands owned). `code` is the result type.
 pub fn net_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
+    // A WebSocket handshake's pieces (decision 0092): no waiting.
+    if op == RtOp::NetWebSocket {
+        let ws = &kavach_runtime_net::websocket::accept;
+        return match c {
+            0 => {
+                let key = str_of(a);
+                release(a);
+                new_text(&ws(&key), type_of(code))
+            }
+            1 => new_text(&kavach_runtime_net::websocket::key(), type_of(code)),
+            _ => {
+                let mask = kavach_runtime_net::websocket::mask().to_vec();
+                crate::rt_bytes::new_bytes(mask, type_of(code))
+            }
+        };
+    }
     let limit = net::take_next_deadline();
     crate::rt_tasks::turn();
     let deadline = Some(Instant::now() + limit.unwrap_or(net::DEADLINE));

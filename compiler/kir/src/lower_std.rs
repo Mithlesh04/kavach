@@ -31,7 +31,7 @@ pub(crate) fn std_modules(
 }
 
 impl<'a> Lowerer<'a> {
-    fn at(&self, kind: K, ty: Type, line: u32) -> ir::Expr {
+    pub(crate) fn at(&self, kind: K, ty: Type, line: u32) -> ir::Expr {
         ir::Expr { kind, ty, line }
     }
 
@@ -93,6 +93,11 @@ impl<'a> Lowerer<'a> {
             ("agents", "call_key") => RtOp::JournalCallKey,
             ("agents", "request_fields") => RtOp::AgentApprovals,
             ("agents", "answer_request") => RtOp::AgentAnswer,
+            ("crypto", "ed25519_verify") => RtOp::CryptoEd25519Verify,
+            ("crypto", "p256_verify") => RtOp::CryptoP256Verify,
+            ("crypto", _) | ("net", "websocket_accept" | "websocket_key" | "websocket_mask") => {
+                return self.selected_call(module, name, args, ty, line);
+            }
             ("clipboard", "read_text") => RtOp::ClipReadText,
             ("clipboard", "write_text") => RtOp::ClipWriteText,
             ("devices", "serial_ports") => RtOp::SerialPorts,

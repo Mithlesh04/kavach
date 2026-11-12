@@ -1,0 +1,59 @@
+// Rule: a handler answers with `http.websocket(r, session)` or `http.events(r, feed)`, a response that takes over the connection; a WebSocket carries text and binary messages both ways, and an event stream sends `event:` and `data:` lines.
+// Spec: 14.11
+// expect output: you said hello
+// expect output: 70000 bytes back
+// expect output: closed: true
+// expect output: event: greeting
+// expect output: data: hi
+// expect output: data: there
+
+use std.http
+use std.net
+
+fn handle(r: Request) -> Response {
+    if r.path == "/news" {
+        return http.events(r, out => {
+            try out.send("hi\nthere", event: "greeting")
+        })
+    }
+    http.websocket(r, ws => {
+        while true {
+            const message = (try ws.receive()) ?? break
+            match message {
+                WsMessage.Text(text) => try ws.send_text("you said {text}"),
+                WsMessage.Binary(data) => try ws.send_bytes(data),
+            }
+        }
+    })
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, handle)
+    const ws = try http.websocket_connect("ws://{listener.address()}/chat")
+    try ws.send_text("hello")
+    match (try ws.receive()) ?? WsMessage.Text(text: "nothing") {
+        WsMessage.Text(text) => print(text),
+        WsMessage.Binary(_) => print("binary?"),
+    }
+    try ws.send_bytes("x".repeat(70_000).bytes())
+    match (try ws.receive()) ?? WsMessage.Text(text: "nothing") {
+        WsMessage.Binary(data) => print("{data.len()} bytes back"),
+        WsMessage.Text(text) => print(text),
+    }
+    ws.close()
+    print("closed: true")
+    const crlf = "\u{D}\n"
+    const conn = try net.connect(listener.address())
+    try conn.write("GET /news HTTP/1.1{crlf}host: x{crlf}{crlf}".bytes())
+    let all = Bytes([])
+    while true {
+        all = all + ((try conn.read()) ?? break)
+    }
+    const text = all.text() ?? ""
+    for line in text.slice(text.index_of("{crlf}{crlf}") ?? 0, text.len()).split("\n") {
+        if line.starts_with("event") or line.starts_with("data") {
+            print(line)
+        }
+    }
+}

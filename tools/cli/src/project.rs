@@ -120,9 +120,15 @@ pub(crate) fn workspace(args: &[String]) -> Option<ExitCode> {
             .unwrap_or(&member)
             .to_string_lossy()
             .replace('\\', "/");
-        println!("== {shown}");
+        // On the stream the member's report goes to: `test` reports on
+        // standard output, `check` and `build` on standard error.
+        let say = |line: &str| match command {
+            "test" => println!("{line}"),
+            _ => eprintln!("{line}"),
+        };
+        say(&format!("== {shown}"));
         if command == "build" && !member.join("src").join("main.kav").is_file() {
-            println!("a library: the packages that use it build it");
+            say("a library: the packages that use it build it");
             continue;
         }
         let ran = std::process::Command::new(&me)

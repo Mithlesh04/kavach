@@ -1,0 +1,3 @@
+// Found by `kavach test` (spec 11.4). Generated: commit it, never edit it.
+masked(Bytes(1c02cbda11f6fe), Bytes(69))
+close_code(-1)

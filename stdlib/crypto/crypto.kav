@@ -1,0 +1,7 @@
+// std.crypto (spec 14.19, decision 0093): the errors of std.crypto.
+// Hashing, signing and encrypting come from vetted libraries (`ring`,
+// `argon2`) in the runtime, which gives these values when they fail.
+
+/// Why a function of std.crypto failed: a key of the wrong kind or size,
+/// or sealed data that was changed (or opened with another key).
+pub type CryptoError = BadKey(reason: String) | Tampered

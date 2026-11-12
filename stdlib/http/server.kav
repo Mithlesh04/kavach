@@ -214,7 +214,15 @@ fn respond(conn: Connection, m: Message, handler: fn(Request) -> Response, limit
         extra = answered.extra
     }
     load.in_flight.update(n => n - 1)
-    try send(conn, response ?? return none, keep)
+    const answer = response ?? return none
+    // A WebSocket or an event stream: the head, then the connection is
+    // theirs, and closes after (spec 14.11).
+    if let take = answer.take_over {
+        try send_head(conn, answer)
+        take.run(conn, extra, limits.max_body_bytes) catch e => {}
+        return none
+    }
+    try send(conn, answer, keep)
     (keep: keep, extra: extra)
 }
 
@@ -312,6 +320,16 @@ fn send(conn: Connection, response: Response, keep: Bool) ! NetError uses Net {
     }
 }
 
+/// The head of `response` alone, for one that takes over.
+fn send_head(conn: Connection, response: Response) ! NetError uses Net {
+    const crlf = message.crlf()
+    let head = "HTTP/1.1 {response.status} {message.reason(response.status)}{crlf}"
+    for h in response.headers {
+        head = head + "{h.name}: {h.value}{crlf}"
+    }
+    try conn.write((head + crlf).bytes())
+}
+
 /// One piece of a streamed body: as it is, or as a chunk.
 fn write_piece(conn: Connection, piece: Bytes, sized: Bool) ! NetError uses Net {
     if piece.is_empty() {
@@ -339,7 +357,11 @@ fn serve_h2(conn: Connection, data: Bytes, handler: fn(Request) -> Response) ! H
             headers: message.plain(m.headers),
             body: m.body,
         )
-        const response = handler(request)
+        let response = handler(request)
+        // Not offered over HTTP/2 yet (spec 14.11).
+        if response.take_over != none {
+            response = http.text(501, "WebSockets and events need HTTP/1.1")
+        }
         let headers = [Header(name: ":status", value: "{response.status}")]
         for h in response.headers {
             // Headers about the connection don't exist in HTTP/2.

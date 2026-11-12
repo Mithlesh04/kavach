@@ -1,0 +1,302 @@
+// WebSockets (RFC 6455) and server-sent events for std.http (spec 14.11,
+// decision 0092). A handler returns `http.websocket(r, session)` or
+// `http.events(r, feed)`: the server sends the response's head, then the
+// session or feed has the connection. Framing is written here in Kavach;
+// the handshake's SHA-1 and the random keys and masks come from the
+// runtime (`net.websocket_accept`, `net.websocket_key`,
+// `net.websocket_mask`), which only the standard library calls.
+
+use std.http
+use std.http.hpack
+use std.http.message
+use std.net
+
+/// A message: text, or bytes.
+pub type WsMessage = Text(text: String) | Binary(data: Bytes)
+
+/// One end of a WebSocket.
+pub type WebSocket {
+    conn: Connection
+    /// What has come and isn't read yet.
+    held: Shared<Bytes>
+    /// Whether this end is the client, which masks what it sends.
+    client: Bool
+    /// The largest message taken, in bytes.
+    most: Int
+
+    /// The next message, or `none` once the other end closed. Pings are
+    /// answered here, and a message larger than allowed closes the
+    /// socket with 1009.
+    pub fn receive(self) -> WsMessage? ! NetError uses Net {
+        let message = Bytes([])
+        let kind = 0
+        while true {
+            const frame = (try self.frame()) ?? return none
+            if frame.opcode == 8 {
+                self.send(8, Bytes([])) catch e => {}
+                self.conn.close()
+                return none
+            }
+            if frame.opcode == 9 {
+                try self.send(10, frame.data)
+                continue
+            }
+            if frame.opcode == 10 {
+                continue
+            }
+            if frame.opcode == 1 or frame.opcode == 2 {
+                kind = frame.opcode
+                message = frame.data
+            } else if frame.opcode == 0 {
+                message = message + frame.data
+            } else {
+                fail broken("a frame of an unknown kind")
+            }
+            if message.len() > self.most {
+                self.send(8, close_code(1009)) catch e => {}
+                self.conn.close()
+                fail broken("a message larger than {self.most} bytes")
+            }
+            if frame.fin and kind != 0 {
+                if kind == 2 {
+                    return WsMessage.Binary(data: message)
+                }
+                const text = message.text() ?? fail broken("a text message that isn't UTF-8")
+                return WsMessage.Text(text: text)
+            }
+        }
+        none
+    }
+
+    /// Sends `text` as one message.
+    pub fn send_text(self, text: String) ! NetError uses Net {
+        try self.send(1, text.bytes())
+    }
+
+    /// Sends `data` as one message.
+    pub fn send_bytes(self, data: Bytes) ! NetError uses Net {
+        try self.send(2, data)
+    }
+
+    /// Says goodbye and closes the connection.
+    pub fn close(self) uses Net {
+        self.send(8, close_code(1000)) catch e => {}
+        self.conn.close()
+    }
+
+    /// One frame with `opcode` and `data`, masked when this is a client.
+    fn send(self, opcode: Int, data: Bytes) ! NetError uses Net {
+        const n = data.len()
+        const mask_bit = if self.client { 128 } else { 0 }
+        let head: [UInt8] = [UInt8(128 + opcode)]
+        if n < 126 {
+            head.push(UInt8(n + mask_bit))
+        } else if n < 65_536 {
+            head.push(UInt8(126 + mask_bit))
+            head.push(UInt8(n / 256))
+            head.push(UInt8(n % 256))
+        } else {
+            head.push(UInt8(127 + mask_bit))
+            for shift in [56, 48, 40, 32, 24, 16, 8, 0] {
+                head.push(UInt8((n >> shift) % 256))
+            }
+        }
+        if not self.client {
+            try self.conn.write(Bytes(head) + data)
+            return
+        }
+        const key = net.websocket_mask()
+        try self.conn.write(Bytes(head) + key + masked(data, key))
+    }
+
+    /// The next frame, or `none` once the connection closed.
+    fn frame(self) -> Frame? ! NetError uses Net {
+        if not (try self.fill(2)) {
+            return none
+        }
+        let h = self.held.get()
+        const b0 = Int(h[0])
+        const b1 = Int(h[1])
+        const masked_frame = b1 >= 128
+        const short = b1 % 128
+        let at = 2
+        let length = short
+        if short == 126 {
+            if not (try self.fill(4)) {
+                return none
+            }
+            h = self.held.get()
+            length = Int(h[2]) * 256 + Int(h[3])
+            at = 4
+        } else if short == 127 {
+            if not (try self.fill(10)) {
+                return none
+            }
+            h = self.held.get()
+            length = 0
+            for i in 2..10 {
+                length = length * 256 + Int(h[i])
+            }
+            at = 10
+        }
+        if length > self.most {
+            fail broken("a frame larger than {self.most} bytes")
+        }
+        const key_at = at
+        if masked_frame {
+            at += 4
+        }
+        if not (try self.fill(at + length)) {
+            return none
+        }
+        h = self.held.get()
+        let data = h.slice(at, at + length)
+        if masked_frame {
+            data = masked(data, h.slice(key_at, key_at + 4))
+        }
+        self.held.update(_ => h.slice(at + length, h.len()))
+        Frame(fin: b0 >= 128, opcode: b0 % 16, data: data)
+    }
+
+    /// Reads until `held` has `n` bytes: `false` when the connection
+    /// closed first.
+    fn fill(self, n: Int) -> Bool ! NetError uses Net {
+        while self.held.get().len() < n {
+            const piece = (try self.conn.read()) ?? return false
+            self.held.update(h => h + piece)
+        }
+        true
+    }
+}
+
+/// One frame of a WebSocket.
+type Frame {
+    fin: Bool
+    opcode: Int
+    data: Bytes
+}
+
+/// The server's end of a WebSocket on `conn`, `first` what came after
+/// the request.
+pub fn server_end(conn: Connection, first: Bytes, most: Int) -> WebSocket {
+    WebSocket(conn: conn, held: Shared(first), client: false, most: most)
+}
+
+/// The client's end of a WebSocket on `conn`, `first` what came after
+/// the response.
+pub fn client_end(conn: Connection, first: Bytes, most: Int) -> WebSocket {
+    WebSocket(conn: conn, held: Shared(first), client: true, most: most)
+}
+
+/// `data` masked (or unmasked) with the four bytes of `key`.
+fn masked(data: Bytes, key: Bytes) -> Bytes
+    require key.len() == 4
+{
+    let out: [UInt8] = []
+    for i in 0..data.len() {
+        out.push(data[i] ^ key[i % 4])
+    }
+    Bytes(out)
+}
+
+/// A close frame's body: the status code, two bytes.
+fn close_code(code: Int) -> Bytes
+    require code >= 0 and code < 65_536
+{
+    Bytes([UInt8(code / 256), UInt8(code % 256)])
+}
+
+fn broken(why: String) -> NetError {
+    NetError.Failed(address: "", reason: "websocket: {why}")
+}
+
+/// The server-sent events of a response (`text/event-stream`).
+pub type EventStream {
+    conn: Connection
+
+    /// Sends one event: `data` (a line each for its lines), with an
+    /// `event` name and an `id` when given.
+    pub fn send(self, data: String, event: String = "", id: String = "") ! NetError uses Net {
+        let text = ""
+        if not event.is_empty() {
+            text = text + "event: {event}\n"
+        }
+        if not id.is_empty() {
+            text = text + "id: {id}\n"
+        }
+        for line in data.split("\n") {
+            text = text + "data: {line}\n"
+        }
+        try self.conn.write((text + "\n").bytes())
+    }
+}
+
+/// The events of a response on `conn`.
+pub fn event_stream(conn: Connection) -> EventStream {
+    EventStream(conn: conn)
+}
+
+/// A response accepting the WebSocket request `r`, then running
+/// `session`; 400 when `r` isn't one.
+pub fn accept(r: Request, session: fn(WebSocket) ! NetError) -> Response {
+    const not_one = http.text(400, "not a WebSocket request")
+    const key = r.header("sec-websocket-key") ?? return not_one
+    if (r.header("upgrade") ?? "").lower() != "websocket" {
+        return not_one
+    }
+    const headers = [
+        Header(name: "upgrade", value: "websocket"),
+        Header(name: "connection", value: "Upgrade"),
+        Header(name: "sec-websocket-accept", value: net.websocket_accept(key)),
+    ]
+    const run = (conn: Connection, first: Bytes, most: Int) => try session(server_end(conn, first, most))
+    Response(status: 101, headers: headers, body: Bytes([]), take_over: TakeOver(run: run))
+}
+
+/// A response of server-sent events, sent by `feed`.
+pub fn events(feed: fn(EventStream) ! NetError) -> Response {
+    const headers = [
+        Header(name: "content-type", value: "text/event-stream"),
+        Header(name: "cache-control", value: "no-cache"),
+    ]
+    const run = (conn: Connection, first: Bytes, most: Int) => try feed(EventStream(conn: conn))
+    Response(status: 200, headers: headers, body: Bytes([]), take_over: TakeOver(run: run))
+}
+
+/// A client's WebSocket to `url` (`ws://` or `wss://`).
+pub fn connect(url: String) -> WebSocket ! HttpError uses Net {
+    const secure = url.starts_with("wss://")
+    if not secure and not url.starts_with("ws://") {
+        fail HttpError.BadUrl(url: url)
+    }
+    const rest = url.slice(if secure { 6 } else { 5 }, url.len())
+    const slash = rest.index_of("/") ?? rest.len()
+    let host = rest.slice(0, slash)
+    const name = host.slice(0, host.index_of(":") ?? host.len())
+    if not host.contains(":") {
+        host = host + if secure { ":443" } else { ":80" }
+    }
+    const path = if slash < rest.len() { rest.slice(slash, rest.len()) } else { "/" }
+    const conn = if secure {
+        net.connect_tls(host, protocols: ["http/1.1"]) catch e => fail HttpError.Network(error: e)
+    } else {
+        net.connect(host) catch e => fail HttpError.Network(error: e)
+    }
+    const key = net.websocket_key()
+    const crlf = message.crlf()
+    const head = "GET {path} HTTP/1.1{crlf}host: {name}{crlf}upgrade: websocket{crlf}connection: Upgrade{crlf}sec-websocket-key: {key}{crlf}sec-websocket-version: 13{crlf}{crlf}"
+    conn.write(head.bytes()) catch e => fail HttpError.Network(error: e)
+    let all = Bytes([])
+    while message.head_end(all) == none {
+        const piece = conn.read() catch e => fail HttpError.Network(error: e)
+        all = all + (piece ?? fail HttpError.BadMessage(reason: "the server closed the connection"))
+    }
+    const reply = message.parse(all) ?? fail HttpError.BadMessage(reason: "the answer is not HTTP")
+    const status = reply.first.split(" ").get(1) ?? ""
+    const accepted = message.first_header(reply.headers, "sec-websocket-accept") ?? ""
+    if status != "101" or accepted != net.websocket_accept(key) {
+        conn.close()
+        fail HttpError.BadMessage(reason: "the server didn't accept the WebSocket ({reply.first})")
+    }
+    client_end(conn, reply.body, 10_000_000)
+}

@@ -153,6 +153,39 @@ fn upload(r: Request) -> Response ! HttpError uses Net, Console {
 }
 ```
 
+**WebSockets and events.** A handler can answer with a response that takes over the connection ([decision 0092](../../decisions/0092-websockets-and-server-sent-events.md)): the server sends its head, then gives the connection to a function, on the connection's own task, until that function returns.
+
+| Written | Gives |
+|---|---|
+| `http.websocket(r, session: fn(WebSocket) ! NetError) -> Response` | Accepts a WebSocket (RFC 6455): `101 Switching Protocols`, then `session`; 400 for a request that isn't one |
+| `http.events(r, feed: fn(EventStream) ! NetError) -> Response` | Server-sent events: `200` with `text/event-stream`, then `feed` |
+| `http.websocket_connect(url) -> WebSocket ! HttpError` | A client's WebSocket to `ws://` or `wss://` `url` |
+| `ws.receive() -> WsMessage? ! NetError` | The next message, `WsMessage.Text(text)` or `WsMessage.Binary(data)`, or `none` once the other end closed |
+| `ws.send_text(text)`, `ws.send_bytes(data)` | Sends one message |
+| `ws.close()` | Says goodbye and closes the connection |
+| `out.send(data, event: "", id: "")` | Sends one event; each line of `data` is a `data:` line |
+
+Pings are answered without the program seeing them. A message larger than `max_body_bytes` closes the socket with status 1009. A WebSocket or an event stream counts as a connection, not as a request in flight. Over HTTP/2 neither is offered yet: such a request gets 501.
+
+```kavach
+fn chat(r: Request) -> Response {
+    if r.path == "/news" {
+        return http.events(r, out => {
+            try out.send("hello", event: "greeting")
+        })
+    }
+    http.websocket(r, ws => {
+        while true {
+            const message = (try ws.receive()) ?? break
+            match message {
+                WsMessage.Text(text) => try ws.send_text("you said {text}"),
+                WsMessage.Binary(data) => try ws.send_bytes(data),
+            }
+        }
+    })
+}
+```
+
 **Stopping.** `http.serve` holds the program's stop (`cli.on_stop`, 5.8) for `drain_timeout`. On Ctrl+C or `SIGTERM` (how Docker and Kubernetes stop a container), it answers new connections with 503, closes those waiting for their next request, finishes the requests under way, and then lets go, so the program ends without cutting a response off. A second signal ends it at once.
 
 A session sends its requests one after another on its connection, each waiting for its response, which must say its length (`content-length` or chunks). When the server has closed the connection, the request fails with `Network(error: Failed(address: host, reason: "the server closed the connection"))`; open a new session to go on. A session is for one task at a time: two tasks sending on one session at once could each read the other's response. Give each task its own session.

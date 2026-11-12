@@ -419,6 +419,16 @@ pub enum RtOp {
     CliStopDone,
     /// `b.index_of(part)` on `Bytes` (spec 2.13).
     BytesIndexOf,
+    /// A WebSocket handshake's piece `c` (decision 0092): 0 the accept
+    /// value of key `a`, 1 a client's key, 2 a frame's mask.
+    NetWebSocket,
+    /// `std.crypto` (spec 14.19, decision 0093): the function is operand
+    /// `c` (`kavach_kir::CRYPTO`), the others its arguments; those that can
+    /// fail are `CryptoFails`; a signature check takes three arguments.
+    Crypto,
+    CryptoFails,
+    CryptoEd25519Verify,
+    CryptoP256Verify,
     /// `d.round(places)` (`c` is 0) and `d.round_even(places)` (`c` is 1)
     /// on a `Decimal` (spec 14.2).
     DecRound,
