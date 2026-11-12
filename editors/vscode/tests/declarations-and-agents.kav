@@ -99,3 +99,12 @@ fn database_url() -> secret String ! Error uses Env {
 //                          ^^^^^^ support.type.primitive.kavach
     try env("SHOP_DATABASE_URL")
 }
+
+extend<S> App<S> {
+// <------ storage.type.kavach
+//     ^ entity.name.type.kavach
+//        ^^^ entity.name.type.kavach
+    pub fn state_of(self) -> S {
+        self.state
+    }
+}

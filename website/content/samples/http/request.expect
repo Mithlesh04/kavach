@@ -1,0 +1,2 @@
+PUT /orders/7, auth: Bearer test-token, body: paid
+DELETE /orders/7, auth: none, body:

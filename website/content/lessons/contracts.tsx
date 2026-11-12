@@ -254,6 +254,19 @@ export const testBlocksDoc: LessonDoc = {
         but no contract, so only some of its behaviour is checked.
       </P>
       <Ex name="testing/sub-random.test" />
+      <H2>Tests use nothing unless given</H2>
+      <P>
+        A test runs with no capabilities unless its name is followed by <C>uses</C>. Reaching one without it,
+        directly or through a function, is a compile error:
+      </P>
+      <Ex name="testing/test-uses.fails" />
+      <P>Say what the test needs, and it runs with the fake of it, so nothing real is touched:</P>
+      <Ex name="testing/test-uses.test" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The console, the clock and random numbers are always there: a test run captures the output, can freeze the clock and seeds the numbers.</li>
+        <li>A test can also hand in its own implementation of a capability: <C>{"test \"refund flow\" with Payments = FakePayments() { … }"}</C>.</li>
+      </ul>
+      <SrcRef file="tests/conformance/11-testing/tests-use-nothing-unless-given.kav" label="tested" />
       <H2>Where test blocks go</H2>
       <P>
         Beside the code they test: the tests of <C>orders.kav</C> go in <C>orders.test.kav</C>, in the same folder.

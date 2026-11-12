@@ -1,0 +1,9 @@
+fn main() {
+    const (send, receive) = Channel<Int?>(capacity: 3)
+    send.put(7)
+    send.put(none)
+    send.close()
+    print(receive.take())
+    print(receive.take())
+    print(receive.take())
+}

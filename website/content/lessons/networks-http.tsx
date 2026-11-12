@@ -103,6 +103,18 @@ export const httpCallDoc: LessonDoc = {
         Every network wait has a time limit, so a server that stops answering can&apos;t hang your program: see{" "}
         <Link href="/docs/networks/sockets/timeouts/">Timeouts</Link>.
       </Note>
+      <H2>Any method, any headers</H2>
+      <P>
+        <C>http.request(method, url, headers:, body:)</C> sends any method with the headers you give: a{" "}
+        <C>PUT</C> or <C>DELETE</C>, a bearer token, basic auth, <C>if-none-match</C>:
+      </P>
+      <Ex name="http/request" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>host</C>, <C>content-length</C> and <C>connection</C> are the client&apos;s own, so ones you give are left out.</li>
+        <li>It uses HTTP/2 when the server offers it with TLS, and HTTP/1.1 otherwise.</li>
+        <li>On a <Link href="/docs/networks/http/sessions/">session</Link>, <C>s.request(method, path, …)</C> does the same on its connection.</li>
+      </ul>
+      <SrcRef file="tests/conformance/14-standard-library/http-requests-take-any-method-and-headers.kav" label="tested" />
     </>
   ),
 };
@@ -118,6 +130,17 @@ export const httpServeDoc: LessonDoc = {
         <li>Each connection runs in a task of its own, so one slow client doesn&apos;t hold up the others.</li>
         <li>The status says what happened: <C>200</C> found, <C>201</C> made, <C>404</C> not found, <C>400</C> a bad request.</li>
       </ul>
+      <H2>Who sent it</H2>
+      <P>
+        <C>r.peer</C> is the address of whoever opened the connection, for limits per client. A request made by hand
+        has <C>&quot;&quot;</C>:
+      </P>
+      <Ex name="http/peer" />
+      <P>
+        Behind a proxy, <C>peer</C> is the proxy&apos;s address. Trust an address the proxy forwards in a header only
+        when the request came from a proxy you list.
+      </P>
+      <SrcRef file="tests/conformance/14-standard-library/http-requests-know-who-sent-them.kav" label="tested" />
       <H2>Headers</H2>
       <P>
         Headers are a list of <C>Header(name:, value:)</C>, in the order they are sent, names in lower case. A name

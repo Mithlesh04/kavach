@@ -1,0 +1,8 @@
+use shop.{App}
+
+fn main() {
+    const orders = App(state: "orders").route().route()
+    print("{orders.routes} routes, state: {orders.state_of()}")
+    const counter = App(state: 41).route()
+    print("{counter.routes} route, state: {counter.state_of() + 1}")
+}

@@ -1,0 +1,6 @@
+use routes
+
+pub type App<S> {
+    pub state: S
+    pub routes: Int = 0
+}

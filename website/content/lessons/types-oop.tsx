@@ -2,7 +2,7 @@ import Link from "next/link";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { Ex, H2, Note, P } from "./parts";
+import { Ex, Files, H2, Note, P } from "./parts";
 
 // ---------- Method Chains ----------
 
@@ -57,6 +57,17 @@ export const extendDoc: LessonDoc = {
         Inside <C>extend</C>, methods are written as in a record, with <C>self</C>. A union&apos;s methods go in an{" "}
         <C>extend</C> too, since a union has no body of its own.
       </P>
+      <H2>Extending a generic type</H2>
+      <P>
+        To extend a generic type, name its parameters after <C>extend</C>, as a generic function does:{" "}
+        <C>{"extend<S> App<S>"}</C>. So a type&apos;s many methods can be spread over files:
+      </P>
+      <Files name="types/extend-generic" first={["src/lib.kav", "src/routes.kav"]} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>S</C> stands for the type&apos;s own parameter: <C>state_of</C> gives a <C>String</C> for one app and an <C>Int</C> for the other.</li>
+        <li>A name after <C>extend</C> that isn&apos;t one of the type&apos;s parameters is an error.</li>
+      </ul>
+      <SrcRef file="tests/conformance/02-types/generic-types-are-extended-elsewhere/src/main.kav" label="tested" />
       <H2>Keeping a promise for another type</H2>
       <P>
         <C>extend Rect: Describe {"{ … }"}</C> says that <C>Rect</C>, declared elsewhere, keeps the{" "}

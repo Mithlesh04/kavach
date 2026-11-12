@@ -194,13 +194,26 @@ export const channelsDoc: LessonDoc = {
 };
 
 export const putTakeDoc: LessonDoc = {
-  lead: "take() gives the next value as an optional: none once the channel is closed and empty.",
+  lead: "take() gives the next value as Taken.Item(value), or Taken.Closed once the channel is closed and empty.",
   simple: <>Each <C>take()</C> hands you the next item, or tells you plainly that there is none, once the channel is closed and empty. That is how the receiver knows the work is over.</>,
-  minutes: 2,
+  minutes: 3,
   body: (
     <>
       <Ex name="channels/sub-take" />
-      <P>Putting into a closed channel is a bug, so it panics.</P>
+      <P>
+        <C>{"Taken<T> = Item(value: T) | Closed"}</C> keeps a value and the channel&apos;s end apart, even when the
+        values are optional. A <C>{"Channel<Int?>"}</C> can carry <C>none</C>, and <C>none</C> taken is{" "}
+        <C>Item(value: none)</C>, not <C>Closed</C>:
+      </P>
+      <Ex name="channels/take-none" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>for v in receive</C> takes values until <C>take()</C> gives <C>Closed</C>.</li>
+        <li>Putting into a closed channel is a bug, so it panics.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/09-concurrency/a-sent-none-is-not-the-end.kav" label="tested" />
+        <SrcRef file="docs/decisions/0097-take-gives-taken.md" label="decision 0097" />
+      </div>
     </>
   ),
 };

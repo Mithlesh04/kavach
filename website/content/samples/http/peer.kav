@@ -1,0 +1,16 @@
+use std.http
+use std.net
+
+fn who(r: Request) -> Response {
+    const local = r.peer.starts_with("127.0.0.1:")
+    http.text(200, "a request from this machine: {local}")
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, who)
+    const r = try http.get("http://{listener.address()}/")
+    print(r.body.text() ?? "")
+    const made = Request(method: "GET", path: "/", headers: [], body: Bytes([]))
+    print("by hand: \"{made.peer}\"")
+}

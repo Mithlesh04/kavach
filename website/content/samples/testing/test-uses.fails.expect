@@ -1,0 +1,1 @@
+error: this test uses Fs, but a test runs with no capabilities unless given some: write `uses Fs` after its name, or give it a fake with `with` (spec 11.8)

@@ -1,0 +1,11 @@
+use shop.{App}
+
+extend<S> App<S> {
+    pub fn route(self) -> App<S> {
+        self with { routes: self.routes + 1 }
+    }
+
+    pub fn state_of(self) -> S {
+        self.state
+    }
+}

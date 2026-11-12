@@ -1,0 +1,13 @@
+use std.fs
+
+fn save(text: String) ! FsError uses Fs {
+    try fs.write_text("report.txt", text)
+}
+
+test "writes a report" uses Fs {
+    try save("hi")
+    assert (try fs.read_text("report.txt")) == "hi"
+}
+
+fn main() {
+}
