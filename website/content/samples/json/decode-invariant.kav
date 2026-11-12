@@ -1,0 +1,16 @@
+use std.json
+
+type Item {
+    name: String
+    qty: Int
+
+    invariant qty > 0
+}
+
+fn main() {
+    const items = json.decode<[Item]>("[\{\"name\": \"pen\", \"qty\": 2}, \{\"name\": \"cup\", \"qty\": 0}]") catch e => {
+        print("rejected: {e}")
+        []
+    }
+    print(items.len())
+}

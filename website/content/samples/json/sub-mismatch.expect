@@ -1,1 +1,5 @@
-rejected: Mismatch(path: "id", expected: "a whole number that fits `Int`")
+3 problems:
+  [0].name: text
+  [1]: a field `name`
+  [2].qty: a whole number that fits `Int`
+0

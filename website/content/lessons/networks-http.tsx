@@ -2,14 +2,15 @@ import Link from "next/link";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { fileFigure } from "@/lib/spec-tables";
+import { fileFigure, specBlockWith } from "@/lib/spec-tables";
 import { Ex, H2, Note, P, Syntax } from "./parts";
 import { ModuleTable } from "./spec-table";
 
 // ---------- HTTP ----------
 
 // What spec 14.11 measured for http.serve on every core, read from its sentence.
-const HTTP_SPEC = "docs/spec/14-standard-library/11-http.md";
+const HTTP_FILE = "14-standard-library/11-http.md";
+const HTTP_SPEC = `docs/spec/${HTTP_FILE}`;
 const computes = () => fileFigure(HTTP_SPEC, /a handler that computes answered in ([\d.–]+ s instead of [\d.–]+ s on one core)/);
 const idles = () => fileFigure(HTTP_SPEC, /one that does nearly nothing in ([\d–]+ ms instead of [\d–]+ ms)/);
 const servedSetup = () => fileFigure(HTTP_SPEC, /measured on (Windows \(\d+ cores, \d+ clients making \d+ requests each on kept-open connections\))/);
@@ -110,8 +111,44 @@ export const httpServeDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Each connection runs in a task of its own, so one slow client doesn&apos;t hold up the others.</li>
         <li>The status says what happened: <C>200</C> found, <C>201</C> made, <C>404</C> not found, <C>400</C> a bad request.</li>
-        <li>Header names arrive in lower case, so <C>r.headers[&quot;content-type&quot;]</C> always finds it.</li>
       </ul>
+      <H2>Headers</H2>
+      <P>
+        Headers are a list of <C>Header(name:, value:)</C>, in the order they are sent, names in lower case. A name
+        may come more than once: two <C>set-cookie</C> lines stay two headers.
+      </P>
+      <Ex name="http/headers" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>r.header(name)</C> gives the first value of a name, or <C>none</C>. The name can be in any case.</li>
+        <li><C>r.headers_named(name)</C> gives every value of a name, in order.</li>
+      </ul>
+      <H2>Limits</H2>
+      <P>
+        A server faces clients that are slow, large or hostile, so <C>http.serve</C> holds each one to{" "}
+        <C>ServeLimits</C>. Every field has a safe default, so <C>http.serve(listener, handler)</C> is already
+        protected. Change only the ones you need:
+      </P>
+      <Ex name="http/limits" />
+      <Syntax code={specBlockWith(HTTP_FILE, "14.11", "pub type ServeLimits")} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A request that breaks a limit gets its status and the connection is closed. The handler never sees it.</li>
+        <li>A client that sends its headers a byte at a time holds a task for at most <C>header_timeout</C>.</li>
+        <li>A request with <C>expect: 100-continue</C> gets <C>100 Continue</C> once its size is known to fit, before it sends the body.</li>
+        <li>A 503 says <C>retry-after</C>, so well-behaved clients wait before trying again.</li>
+      </ul>
+      <H2>Stopping</H2>
+      <P>
+        On Ctrl+C or <C>SIGTERM</C> (how Docker and Kubernetes stop a container), <C>http.serve</C> answers new
+        connections with 503, closes those waiting for their next request, and finishes the requests under way, for
+        at most <C>drain_timeout</C>. Then the program ends, without cutting a response off. A second signal ends it
+        at once. See <Link href="/docs/errors/panics/when-a-program-stops/">When a program stops</Link>.
+      </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file={HTTP_SPEC} label="spec 14.11 · headers, limits, stopping" />
+        <SrcRef file="tests/conformance/14-standard-library/http-headers-keep-repeats.kav" label="headers, tested" />
+        <SrcRef file="tests/conformance/14-standard-library/http-serve-limits-refuse-what-is-too-much.kav" label="limits, tested" />
+        <SrcRef file="docs/decisions/0087-http-headers-and-server-limits.md" label="decision 0087" />
+      </div>
     </>
   ),
 };

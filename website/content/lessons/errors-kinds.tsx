@@ -24,7 +24,7 @@ const stdErrors: [string, string, string][] = [
   ["FsError", "Files: NotFound(path), Denied(path), Failed(path, reason)", "14-standard-library/03-fs.md"],
   ["NetError", "Connections: Refused, TimedOut, Failed", "14-standard-library/10-net.md"],
   ["HttpError", "HTTP: the network, a bad URL, a bad message, an error status, or JSON that doesn't fit", "14-standard-library/11-http.md"],
-  ["JsonError", "JSON: bad syntax (with line and column), too deep, too large, a repeated key, or a field that doesn't match", "02-types/12-json.md"],
+  ["JsonError", "JSON: bad syntax (with line and column), too deep, too large, a repeated key, or every place the text doesn't fit the type", "02-types/12-json.md"],
   ["GrpcError", "gRPC calls", "14-standard-library/14-grpc.md"],
   ["RegexError", "A pattern that isn't valid", "14-standard-library/08-regex.md"],
   ["CliError", "Command-line arguments that don't fit", "14-standard-library/06-io-and-cli.md"],

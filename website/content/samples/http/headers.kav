@@ -1,0 +1,25 @@
+use std.http
+use std.net
+
+fn login(r: Request) -> Response {
+    const client = r.header("User-Agent") ?? "unknown"
+    Response(
+        status: 200,
+        headers: [
+            Header(name: "set-cookie", value: "session=abc; HttpOnly"),
+            Header(name: "set-cookie", value: "theme=dark"),
+        ],
+        body: "hello, {client}".bytes(),
+    )
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, login)
+    const r = try http.get("http://{listener.address()}/")
+    print(r.body.text() ?? "")
+    for cookie in r.headers_named("set-cookie") {
+        print(cookie)
+    }
+    print(r.header("x-missing") ?? "no x-missing")
+}

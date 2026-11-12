@@ -288,8 +288,28 @@ export const jsonDecodingDoc: LessonDoc = {
       </ul>
       <P>A number that doesn&apos;t fit its field is refused like any other value that doesn&apos;t fit, never rounded:</P>
       <Ex name="json/too-big" />
-      <P>A value of the wrong type is refused, with where it is and what was expected:</P>
+      <P>
+        Decoding goes on after a problem, so <C>JsonError.Invalid</C> lists every place the text doesn&apos;t fit, in
+        order: where it is (<C>path</C>), and what the type wanted there (<C>expected</C>). A service can answer
+        with all of them at once:
+      </P>
       <Ex name="json/sub-mismatch" />
+      <H2>Invariants are checked too</H2>
+      <P>
+        A decoded value is checked against its type&apos;s <C>invariant</C>s, as any value is when it is made. Text
+        from outside that breaks one is not a mistake in the program, so it is a problem in the list, not a panic:
+      </P>
+      <Ex name="json/decode-invariant" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The problem&apos;s <C>path</C> is the record&apos;s: <C>[1]</C> is the second item.</li>
+        <li>The invariants are checked once every value has the right shape. Until then, the problems are those of shape.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file={`docs/spec/${JSON_SPEC}`} label="spec 2.12 · decoding" />
+        <SrcRef file="tests/conformance/02-types/json-decode-lists-every-problem.kav" label="every problem, tested" />
+        <SrcRef file="tests/conformance/02-types/json-decode-checks-invariants.kav" label="invariants, tested" />
+        <SrcRef file="docs/decisions/0086-decoding-reports-every-problem.md" label="decision 0086" />
+      </div>
     </>
   ),
 };

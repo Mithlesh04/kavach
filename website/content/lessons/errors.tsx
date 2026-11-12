@@ -5,7 +5,7 @@ import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
-import { specTables } from "@/lib/spec-tables";
+import { specBlockWith, specTables } from "@/lib/spec-tables";
 import { Ex, H2, Note, P, Syntax } from "./parts";
 import { Table } from "./spec-table";
 
@@ -269,6 +269,26 @@ export const stopsDoc: LessonDoc = {
         <li>This holds for <C>kavach run</C> and for programs built with <C>kavach build</C>.</li>
       </ul>
       <SrcRef file="docs/decisions/0062-crashes-restarts-and-clocks.md" label="decision 0062 · crashes and clocks" />
+      <H2>Finishing before a stop</H2>
+      <P>
+        A program with work it must not cut off (requests being answered, a file half written, a queue to empty)
+        takes a hold with <C>cli.on_stop(grace)</C>. While a hold is kept, the first stop signal doesn&apos;t end
+        the program: <C>hold.asked()</C> turns <C>true</C>, and the program finishes what it is doing.
+      </P>
+      <Syntax code={specBlockWith("05-errors.md", "5.8", "cli.on_stop(grace: 30.seconds)")} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The program ends, with the signal&apos;s exit code, once every hold is let go of with <C>hold.done()</C>, when the longest <C>grace</C> has passed, or when <C>main</C> returns.</li>
+        <li>A second signal ends it at once.</li>
+        <li>A hold needs no capability. <C>http.serve</C> takes one of its own, so a server finishes the requests under way before the program ends.</li>
+      </ul>
+      <P>Without a stop signal, <C>hold.asked()</C> stays <C>false</C>:</P>
+      <Ex name="errors/on-stop" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/05-errors.md" label="spec 5.8 · how a program ends" />
+        <SrcRef file="tests/conformance/14-standard-library/cli-on-stop-needs-no-capability.kav" label="tested" />
+        <SrcRef file="tools/cli/tests/stopping.rs" label="signals tested (Unix)" />
+        <SrcRef file="docs/decisions/0088-finishing-before-a-stop.md" label="decision 0088" />
+      </div>
     </>
   ),
 };

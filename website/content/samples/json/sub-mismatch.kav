@@ -1,15 +1,21 @@
 use std.json
 
-type Order {
-    id: Int
-    total: Float
+type Item {
+    name: String
+    qty: Int
 }
 
 fn main() {
-    const text = "\{\"id\": \"seven\", \"total\": 9.5}"
-    const order = json.decode<Order>(text) catch e => {
-        print("rejected: {e}")
-        return
+    const text = "[\{\"name\": 5, \"qty\": 1}, \{\"qty\": 2}, \{\"name\": \"cup\", \"qty\": \"x\"}]"
+    const items = json.decode<[Item]>(text) catch e => match e {
+        JsonError.Invalid(problems) => {
+            print("{problems.len()} problems:")
+            for p in problems {
+                print("  {p.path}: {p.expected}")
+            }
+            []
+        }
+        _ => [],
     }
-    print(order.id)
+    print(items.len())
 }

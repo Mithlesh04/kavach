@@ -1,0 +1,16 @@
+use std.http
+use std.net
+
+fn upload(r: Request) -> Response {
+    http.text(200, "got {r.body.len()} bytes")
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, upload, limits: ServeLimits(max_body_bytes: 10))
+    const url = "http://{listener.address()}/"
+    const small = try http.post(url, "hello".bytes())
+    print("{small.status}: {small.body.text() ?? ""}")
+    const big = try http.post(url, "x".repeat(50).bytes())
+    print(big.status)
+}
