@@ -89,7 +89,8 @@ export default async function Home() {
                 <span className="text-[#9bb97f]">kavach {ms(loop.ours.value)} ms</span>
                 <span className="text-[#857c6e]">g++ -O2 {ms(loop.theirs.value)} ms</span>
                 <span className="text-[#e6a23c]">
-                  {loop.shown}× faster, on every core, and it panics exactly where the plain loop would
+                  {loop.shown}× faster than g++ -O2, because it runs on every core, and an overflow still panics at
+                  exactly the round where the plain loop would
                 </span>
               </div>
             </div>
