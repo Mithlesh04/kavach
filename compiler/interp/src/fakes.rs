@@ -32,6 +32,9 @@ pub(crate) struct World {
     now_ms: i128,
     /// The case's clipboard (spec 14.17): empty at the start.
     pub(crate) clipboard: Option<String>,
+    /// The capabilities faked: all of them in a generated test, only
+    /// those a `test` block names with `with Fs = fake` there (11.8).
+    pub(crate) only: Option<Vec<String>>,
 }
 
 /// `./a/b/` and `a/b` are the same path.
@@ -72,12 +75,17 @@ impl World {
             paths: BTreeMap::new(),
             now_ms: START_MS,
             clipboard: None,
+            only: None,
         }
     }
 
     /// Whether writing to `path` fails as on a full disk: decided from
     /// the path, so the case finds the same again (spec 11.5).
     fn full_at(&self, path: &str) -> bool {
+        // A `test` block's disk is plain: empty and never full (11.8).
+        if self.only.is_some() {
+            return false;
+        }
         let h = path.bytes().fold(self.seed ^ 0xD15C_F011, |h, b| {
             h.wrapping_mul(0x100_0000_01B3).wrapping_add(u64::from(b))
         });
@@ -95,6 +103,7 @@ impl World {
         });
         let e = match h % 3 {
             _ if has_children => Entry::Folder,
+            _ if self.only.is_some() => Entry::Missing,
             0 => Entry::Missing,
             n => Entry::File(CONTENTS[(h / 3 + n) as usize % CONTENTS.len()].into()),
         };
@@ -108,12 +117,21 @@ fn not_found() -> std::io::Error {
 }
 
 impl<'a> Interp<'a> {
-    /// `env(name)`: the case's fake value in a generated test (11.5),
-    /// else the real variable.
+    /// Whether capability `cap` is faked now: in a generated test (11.5),
+    /// or in a `test` block that says `with cap = fake` (11.8).
+    pub(crate) fn faking(&self, cap: &str) -> bool {
+        self.fake.as_ref().is_some_and(|w| {
+            let only = &w.borrow().only;
+            only.as_ref().is_none_or(|o| o.iter().any(|c| c == cap))
+        })
+    }
+
+    /// `env(name)`: the case's fake value when `Env` is faked, else the
+    /// real variable.
     pub(crate) fn env_value(&self, name: &str) -> Option<String> {
         match &self.fake {
-            Some(world) => world.borrow().env(name).map(str::to_string),
-            None => kavach_runtime_core::env_file::get(name),
+            Some(world) if self.faking("Env") => world.borrow().env(name).map(str::to_string),
+            _ => kavach_runtime_core::env_file::get(name),
         }
     }
 

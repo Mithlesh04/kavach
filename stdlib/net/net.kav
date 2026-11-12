@@ -8,6 +8,15 @@ pub type NetError = Refused(address: String) |
     TimedOut(address: String) |
     Failed(address: String, reason: String)
 
+/// The names of the certificate a client showed a server, with mutual TLS
+/// (spec 14.10): its common name, and its DNS and URI subject-alternative
+/// names (a SPIFFE id such as `spiffe://shop/orders` is a URI).
+pub type ClientCert {
+    pub common_name: String
+    pub dns: [String]
+    pub uris: [String]
+}
+
 /// A UDP datagram that came in, with the address it came from.
 pub type Datagram {
     pub data: Bytes

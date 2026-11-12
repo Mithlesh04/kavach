@@ -1,0 +1,11 @@
+// Rule: `test … uses Fs` reaches the real disk unless it says `with Fs = fake`: then it gets an empty file system in memory (spec 11.5), and nothing it writes reaches the disk.
+// Spec: 11.8, 11.5
+// expect test pass
+
+use std.fs
+
+test "reports go to an in-memory disk" uses Fs with Fs = fake {
+    assert not fs.exists("kavach-fake-report/out.txt")
+    try fs.write_text("kavach-fake-report/out.txt", "total 3")
+    assert (try fs.read_text("kavach-fake-report/out.txt")) == "total 3"
+}

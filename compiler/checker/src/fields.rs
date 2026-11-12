@@ -248,8 +248,21 @@ impl Checker<'_> {
         );
     }
 
+    /// Whether code at `at` is in an `extend` of type `def` inside the
+    /// type's own package, which may use its private fields (spec 10.1).
+    fn extends_own(&self, def: kavach_resolver::DefId, at: kavach_ast::Span) -> bool {
+        let Some(decl) = self.res.defs[def].span else {
+            return false;
+        };
+        let package = |offset: u32| {
+            let m = self.res.module_at(offset);
+            self.res.modules.get(m).map(|m| m.package.clone())
+        };
+        self.extending == Some(def) && package(decl.start) == package(at.start)
+    }
+
     /// A field that isn't `pub` can be used only inside the module that
-    /// declares its type (spec 10.1).
+    /// declares its type (spec 10.1), or an `extend` of it in its package.
     pub(crate) fn check_field_access(
         &mut self,
         def: kavach_resolver::DefId,
@@ -259,7 +272,10 @@ impl Checker<'_> {
         let Some(decl) = self.res.defs[def].span else {
             return;
         };
-        if f.is_pub || self.res.module_at(decl.start) == self.res.module_at(name.span.start) {
+        if f.is_pub
+            || self.res.module_at(decl.start) == self.res.module_at(name.span.start)
+            || self.extends_own(def, name.span)
+        {
             return;
         }
         let module = &self.res.modules[self.res.module_at(decl.start)].name;
@@ -288,7 +304,9 @@ impl Checker<'_> {
         let Some(private) = fields.iter().find(|f| !f.is_pub) else {
             return;
         };
-        if self.res.module_at(decl.start) == self.res.module_at(span.start) {
+        if self.res.module_at(decl.start) == self.res.module_at(span.start)
+            || self.extends_own(def, span)
+        {
             return;
         }
         let module = &self.res.modules[self.res.module_at(decl.start)].name;

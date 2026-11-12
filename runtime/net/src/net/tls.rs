@@ -247,6 +247,14 @@ impl Handshake {
     }
 }
 
+/// The certificate a client showed this server (mutual TLS), as DER.
+pub(super) fn client_cert(tls: &Stream) -> Option<Vec<u8>> {
+    match tls {
+        Stream::Server(t) => Some(t.conn.peer_certificates()?.first()?.as_ref().to_vec()),
+        Stream::Client(_) => None,
+    }
+}
+
 /// The protocol the two sides agreed on.
 pub(super) fn protocol(tls: &Stream) -> Option<String> {
     let p = match tls {

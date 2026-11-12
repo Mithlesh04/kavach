@@ -95,6 +95,13 @@ impl<'a> Lowerer<'a> {
                     line,
                 });
             }
+            if id.name == "Ptr" && name.name == "from_int" {
+                let n = args
+                    .first()
+                    .ok_or_else(|| self.unsupported("`Ptr.from_int()`", span))?;
+                let n = self.expr(&n.value)?;
+                return Ok(ir::Expr { ty, ..n });
+            }
             if id.name == "Float" && name.name == "from_bits" {
                 let bits = self.expr(&args[0].value)?;
                 let kind = K::Rt(RtOp::FloatFromBits, vec![bits]);
@@ -351,6 +358,7 @@ impl<'a> Lowerer<'a> {
             (Some(Shape::Socket), "protocol") => RtOp::NetProtocol,
             // A connection's address is the other side's.
             (Some(Shape::Socket), "peer") => RtOp::NetAddress,
+            (Some(Shape::Socket), "client_cert") => RtOp::NetClientCert,
             (Some(Shape::Socket), "open_stream") => RtOp::NetOpenStream,
             (Some(Shape::Socket), "read_stream") => RtOp::NetReadStream,
             (Some(Shape::Socket), "write_stream") if values.len() == 4 => {

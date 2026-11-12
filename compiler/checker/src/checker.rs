@@ -192,6 +192,9 @@ pub(crate) struct Checker<'a> {
     /// and what it uses; `current_test` is the one being checked.
     pub(crate) test_needs: Vec<crate::capabilities::TestNeeds>,
     pub(crate) current_test: Option<usize>,
+    /// The type whose `extend` block is being checked: inside the type's
+    /// own package, it sees the type's private fields (spec 10.1).
+    pub(crate) extending: Option<DefId>,
 }
 
 impl<'a> Checker<'a> {
@@ -256,6 +259,7 @@ impl<'a> Checker<'a> {
             needs: HashMap::new(),
             test_needs: Vec::new(),
             current_test: None,
+            extending: None,
         }
     }
 

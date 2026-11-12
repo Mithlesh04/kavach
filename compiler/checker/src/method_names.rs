@@ -21,6 +21,7 @@ pub(crate) const NAMES: &[&str] = &[
     "checked_mul",
     "checked_sub",
     "clamp",
+    "client_cert",
     "close",
     "contains",
     "contains_key",

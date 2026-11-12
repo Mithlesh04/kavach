@@ -91,3 +91,7 @@ BytesIndexOf,
 /// its `Shared`, around a weak cell (`runtime/native/src/send.rs`).
 WeakMake,
 WeakShared,
+/// `Bytes` (owned) copied for C (spec 10.7), and `p.bytes(n)`: `n` bytes
+/// at `p` copied out (spec 6.4).
+PtrBytes,
+PtrReadBytes,

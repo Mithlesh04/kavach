@@ -203,6 +203,8 @@ unsafe {
 | `p.read(i)` | The `i`th value (from 0) |
 | `p.write(i, v)` | Sets the `i`th value to `v` |
 | `p.text()` | For a `Ptr<UInt8>`: a copy of the text there, up to the first zero byte, as C keeps text; `none` for a null pointer; bytes that aren't UTF-8 panic |
+| `p.bytes(n)` | For a `Ptr<UInt8>`: a copy of the `n` bytes there, as `Bytes`; `.text()` on them gives `none` for bytes that aren't UTF-8, where `p.text()` panics |
+| `Ptr.from_int(n)` | The address `n`, for values C defines as numbers cast to pointers (SQLite's `SQLITE_TRANSIENT` is `-1`) |
 
 C's pointer syntax works too, inside `unsafe`, for the same operations:
 

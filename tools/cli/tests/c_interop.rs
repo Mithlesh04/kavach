@@ -262,3 +262,39 @@ fn pointer_syntax_reads_and_writes() {
     let dir = native("syntax", SYNTAX, "15\n16\n8\n5\n3\n");
     std::fs::remove_dir_all(&dir).unwrap();
 }
+
+/// `Bytes` to C as `const uint8_t*` (spec 10.7), `p.bytes(n)` and
+/// `Ptr.from_int(n)` (6.4): what a SQLite binding needs.
+const BYTES: &str = "extern c \"c\" {
+    fn memcmp(a: Bytes, b: Bytes, n: UInt64) -> Int32
+    fn memchr(s: Ptr<UInt8>, c: Int32, n: UInt64) -> Ptr<UInt8>
+}
+
+fn main() {
+    unsafe {
+        print(memcmp(\"abc\".bytes(), \"abd\".bytes(), 3) < 0)
+        const p: Ptr<UInt8> = alloc(4)
+        p[0] = 104
+        p[1] = 105
+        p[2] = 0
+        p[3] = 7
+        print(p.bytes(4).to_list())
+        const found = memchr(p, 105, 4)
+        print(found.bytes(2).to_list())
+        const nothing: Ptr<UInt8> = Ptr.from_int(0)
+        print(nothing.text())
+        free(p)
+    }
+}
+";
+
+#[test]
+fn bytes_go_to_c_and_come_back() {
+    let expected = "true
+[104, 105, 0, 7]
+[105, 0]
+none
+";
+    let dir = native("bytes", BYTES, expected);
+    std::fs::remove_dir_all(&dir).unwrap();
+}

@@ -66,8 +66,25 @@ impl<'a> Interp<'a> {
                     .collect(),
                 ItemKind::Test(t) => {
                     let label = format!("test {}", self.text(t.name.span));
-                    let run: TestCase<'a> =
-                        Box::new(move |i: &mut Self| i.block(&t.body).map(|_| true));
+                    // `with Fs = fake`: those capabilities faked (11.8).
+                    let fakes: Vec<String> = t
+                        .with
+                        .iter()
+                        .filter(|(_, v)| matches!(&v.kind, kavach_ast::ExprKind::Name(n) if n.name == "fake"))
+                        .map(|(c, _)| c.name.clone())
+                        .collect();
+                    let run: TestCase<'a> = Box::new(move |i: &mut Self| {
+                        if fakes.is_empty() {
+                            return i.block(&t.body).map(|_| true);
+                        }
+                        let mut world = crate::fakes::World::new(1);
+                        world.only = Some(fakes.clone());
+                        let world = std::rc::Rc::new(std::cell::RefCell::new(world));
+                        let outer = i.fake.replace(world);
+                        let ran = i.block(&t.body).map(|_| true);
+                        i.fake = outer;
+                        ran
+                    });
                     vec![(label, run)]
                 }
                 _ => Vec::new(),

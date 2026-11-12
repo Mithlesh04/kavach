@@ -24,12 +24,12 @@ impl Checker<'_> {
             _ => false,
         };
         for (p, info) in f.params.iter().zip(&sig.params) {
-            let text = info.ty == Ty::Prim(Prim::String);
+            let text = matches!(info.ty, Ty::Prim(Prim::String | Prim::Bytes));
             if !plain(self, &info.ty) && !text && !callback(self, &info.ty) {
                 let shown = self.show(&info.ty);
                 self.error(
                     p.name.span,
-                    format!("a C function takes numbers, booleans, `Ptr`s, `String`s and callbacks of those (for now), not `{shown}` (spec 10.7)"),
+                    format!("a C function takes numbers, booleans, `Ptr`s, `String`s, `Bytes` and callbacks of those (for now), not `{shown}` (spec 10.7)"),
                 );
             }
         }

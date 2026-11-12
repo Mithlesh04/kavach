@@ -2,7 +2,8 @@
 //! is with its certificate and asks each client for one; a client trusts
 //! a private certificate authority (`roots`) and shows its own. The
 //! certificates are made for the test with `openssl`, so no private key
-//! is kept in the repository.
+//! is kept in the repository. The server reads the names on the client's
+//! certificate (decision 0099).
 
 use std::path::Path;
 use std::process::Command;
@@ -15,7 +16,13 @@ fn serve(listener: Listener) ! NetError uses Net {
     while true {
         const conn = try listener.accept()
         const got = try conn.read()
-        try conn.write(\"hello, {text_of(got)}\".bytes())
+        // Whose certificate it was (decision 0099).
+        const who = if let c = conn.client_cert() {
+            \"{c.common_name} {c.dns} {c.uris}\"
+        } else {
+            \"nobody\"
+        }
+        try conn.write(\"hello, {text_of(got)} from {who}\".bytes())
         conn.close()
     }
 }
@@ -111,7 +118,12 @@ fn certificates(dir: &Path) {
     openssl(dir, &ca);
     for (name, usage, alt) in [
         ("server", "serverAuth", "subjectAltName=IP:127.0.0.1\n"),
-        ("client", "clientAuth", ""),
+        (
+            "client",
+            "clientAuth",
+            "subjectAltName=DNS:orders.shop,URI:spiffe://shop/orders
+",
+        ),
     ] {
         let ext = format!("basicConstraints=CA:FALSE\nextendedKeyUsage={usage}\n{alt}");
         std::fs::write(dir.join(format!("{name}.ext")), ext).unwrap();
@@ -153,7 +165,7 @@ fn servers_and_clients_prove_who_they_are() {
     certificates(&dir);
     let file = dir.join("tls.kav");
     std::fs::write(&file, PROGRAM).unwrap();
-    let expected = "hello, client\nkv\nrefused\nserver not trusted\n";
+    let expected = "hello, client from kavach-client [\"orders.shop\"] [\"spiffe://shop/orders\"]\nkv\nrefused\nserver not trusted\n";
     for native in [false, true] {
         let mut cmd = Command::new(env!("CARGO_BIN_EXE_kavach"));
         cmd.arg("run");

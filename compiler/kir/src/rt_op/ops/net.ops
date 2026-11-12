@@ -45,3 +45,5 @@ CryptoP256Verify,
 /// `crypto.rsa_verify` (spec 14.19): `a` is a list of the modulus, the
 /// exponent, the data and the signature; `b` whether PSS.
 CryptoRsaVerify,
+/// `conn.client_cert()` (decision 0099): a `ClientCert?`.
+NetClientCert,

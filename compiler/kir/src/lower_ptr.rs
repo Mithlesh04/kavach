@@ -127,6 +127,10 @@ impl<'a> Lowerer<'a> {
             Some(i) => (self.expr(base)?, self.expr(&i.value)?),
             None => return Err(self.unsupported(format!("`.{name}()`"), span)),
         };
+        if name == "bytes" {
+            let bytes = self.kir_type(&Ty::Prim(kavach_checker::Prim::Bytes), span)?;
+            return Ok(at(K::Rt(RtOp::PtrReadBytes, vec![p, i]), bytes, line));
+        }
         // No checks, as in C (spec 6.4): the address wraps like C's.
         let size = at(K::Int(size), Type::I64, line);
         let offset = at(
@@ -248,20 +252,26 @@ impl<'a> Lowerer<'a> {
             }
         }
         let text = self.str_type();
-        if values.iter().all(|v| v.ty != text) {
+        let copied = |l: &Self, t: Type| {
+            if t == text {
+                Some(RtOp::PtrText)
+            } else if matches!(l.shapes.shape(t), Some(crate::ir::Shape::Bytes)) {
+                Some(RtOp::PtrBytes)
+            } else {
+                None
+            }
+        };
+        if values.iter().all(|v| copied(self, v.ty).is_none()) {
             return Ok(at(K::Call(fid, values), ty, line));
         }
         let (mut stmts, mut copies, mut args) = (Vec::new(), Vec::new(), Vec::new());
         for v in values {
-            if v.ty != text {
+            let Some(op) = copied(self, v.ty) else {
                 args.push(v);
                 continue;
-            }
+            };
             let copy = self.new_local(Type::I64);
-            stmts.push(Stmt::Let(
-                copy,
-                at(K::Rt(RtOp::PtrText, vec![v]), Type::I64, line),
-            ));
+            stmts.push(Stmt::Let(copy, at(K::Rt(op, vec![v]), Type::I64, line)));
             args.push(self.local_expr(copy, line));
             copies.push(copy);
         }

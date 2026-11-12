@@ -8,6 +8,7 @@ Conformance tests for spec chapter [10. Modules and packages](../../../docs/spec
 | 10.1 | [private-names-stay-private/](private-names-stay-private/src/main.kav) | A name without `pub` can't be used from another module. | compile error |
 | 10.1 | [private-fields-stay-private/](private-fields-stay-private/src/main.kav) | A record field without `pub` can't be used from another module. | compile error |
 | 10.1 | [records-with-private-fields-stay-in-their-module/](records-with-private-fields-stay-in-their-module/src/main.kav) | A record with a private field can be created only in its own module. | compile error |
+| 10.1, 2.5 | [an-extend-in-the-package-sees-private-fields/](an-extend-in-the-package-sees-private-fields/src/main.kav) | An `extend` of a type in another file of the type's own package may read, change and build its private fields. | runs |
 | 10.3 | [only-the-entry-has-main/](only-the-entry-has-main/src/main.kav) | Only the entry file can have `main`. | compile error |
 | 10.12 | [dependencies-come-from-a-folder/](dependencies-come-from-a-folder/src/main.kav) | A dependency named by `path` is a package whose `src/lib.kav` is the module of that name; inside it, `use shapes` names its own module first. | runs |
 | 10.12 | [a-package-names-its-own-root/](a-package-names-its-own-root/src/main.kav) | Inside a library's own project, its package name names its root module, as where it is a dependency. | runs |

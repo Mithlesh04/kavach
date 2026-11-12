@@ -219,6 +219,8 @@ impl Checker<'_> {
                     "read" => sig(vec![int], t),
                     "write" => sig(vec![int, t], Ty::Unit),
                     "text" if t == Ty::Prim(Prim::UInt8) => sig(vec![], opt(string)),
+                    // `n` bytes copied out (spec 6.4).
+                    "bytes" if t == Ty::Prim(Prim::UInt8) => sig(vec![int], Ty::Prim(Prim::Bytes)),
                     _ => None,
                 }
             }
@@ -270,6 +272,8 @@ impl Checker<'_> {
                     "protocol" => sig(vec![], opt(Ty::Prim(Prim::String))),
                     // The other side's address (spec 14.10).
                     "peer" => sig(vec![], Ty::Prim(Prim::String)),
+                    // A client's certificate, with mutual TLS (decision 0099).
+                    "client_cert" => sig(vec![], opt(self.builtin_ty("ClientCert"))),
                     // QUIC streams (spec 14.10).
                     "open_stream" => sig(vec![Ty::Prim(Prim::Bool)], fails(Ty::Prim(Prim::Int))),
                     "write_stream" => sig(

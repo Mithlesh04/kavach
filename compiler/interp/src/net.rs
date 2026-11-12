@@ -106,7 +106,7 @@ impl<'a> Interp<'a> {
         }
         let address = address.as_str();
         // A generated test never reaches the network (spec 11.5).
-        if self.fake.is_some() {
+        if self.faking("Net") {
             return self.fake_net(name, address);
         }
         // `connect_tls`'s protocols to offer (ALPN).
@@ -224,6 +224,33 @@ impl<'a> Interp<'a> {
                 self.net_wait(deadline, &to, span, &**s, || s.send_to(&data, &to))?;
                 Value::Unit
             }
+            "client_cert" => match s.client_cert() {
+                Some(n) => {
+                    let Some(def) = self.c.resolution.std_type("ClientCert") else {
+                        return Err(self.panic("`ClientCert` is missing", span));
+                    };
+                    let field = |name: &str, value| crate::value::Field {
+                        name: name.into(),
+                        value,
+                        secret: false,
+                    };
+                    let list = |i: &Self, names: &[String]| {
+                        let items = names.iter().map(|s| i.str_value(s)).collect();
+                        Value::List(std::rc::Rc::new(items))
+                    };
+                    Value::Record {
+                        def,
+                        life: None,
+                        name: "ClientCert".into(),
+                        fields: vec![
+                            field("common_name", self.str_value(&n.common_name)),
+                            field("dns", list(self, &n.dns)),
+                            field("uris", list(self, &n.uris)),
+                        ],
+                    }
+                }
+                None => Value::None,
+            },
             "receive" => {
                 let (data, from) = self.net_wait(open, &address, span, &**s, || s.recv_from())?;
                 let Some(def) = self.c.resolution.std_type("Datagram") else {

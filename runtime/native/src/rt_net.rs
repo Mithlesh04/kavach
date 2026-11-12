@@ -191,6 +191,13 @@ pub fn net_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             wait(open, &address, line, &*s, || s.accept()).map_or(0, |c| socket(c, ty))
         }
         RtOp::NetAddress => new_text(&address, type_of(code)),
+        RtOp::NetClientCert => {
+            let ty = match shape(type_of(code)) {
+                Shape::Optional(t) => *t,
+                _ => type_of(code),
+            };
+            s.client_cert().map_or(0, |n| client_cert(&n, ty))
+        }
         RtOp::NetProtocol => {
             let text = match shape(type_of(code)) {
                 Shape::Optional(t) => *t,
@@ -258,6 +265,24 @@ pub fn net_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             0
         }
     }
+}
+
+/// A `ClientCert` record of type `ty` (decision 0099).
+fn client_cert(n: &net::cert::CertNames, ty: Type) -> i64 {
+    let Shape::Record { fields, .. } = shape(ty) else {
+        return 0;
+    };
+    let (text_ty, list_ty) = (fields[0].ty, fields[1].ty);
+    let item = match shape(list_ty) {
+        Shape::List(t) => *t,
+        _ => text_ty,
+    };
+    let list = |names: &[String]| {
+        let slots = names.iter().map(|s| new_text(s, item) as u64).collect();
+        crate::heap::alloc_slots(list_ty, 0, slots) as u64
+    };
+    let name = new_text(&n.common_name, text_ty) as u64;
+    crate::heap::alloc_slots(ty, 0, vec![name, list(&n.dns), list(&n.uris)])
 }
 
 /// A `Datagram(data:, from:)` record of type `ty`.

@@ -3,13 +3,13 @@
 HTTP/1.1 and HTTP/2 clients and servers, and HTTP/3 clients, written in Kavach on top of `std.net` (`stdlib/http/`), behind `Net` ([decision 0022](../../decisions/0022-http2-and-http3.md)).
 
 ```kavach
-pub type Request { method: String, path: String, headers: [Header], body: Bytes, peer: String = "" }
+pub type Request { method: String, path: String, headers: [Header], body: Bytes, peer: String = "", client_cert: ClientCert? = none }
 pub type Response { status: Int, headers: [Header], body: Bytes }
 pub type HttpError = Network(error: NetError) | BadUrl(url: String) | BadMessage(reason: String) |
     Status(code: Int) | BadJson(error: JsonError)
 ```
 
-A served request's `peer` is the address of whoever opened the connection (`conn.peer()`, 14.10), for limits per client; behind a proxy it is the proxy's, so trust a forwarded address only from a proxy you list. A request made by hand has `""`.
+A served request's `peer` is the address of whoever opened the connection (`conn.peer()`, 14.10), for limits per client; behind a proxy it is the proxy's, so trust a forwarded address only from a proxy you list. A request made by hand has `""`. With mutual TLS, `r.client_cert` holds the names on the client's certificate (`conn.client_cert()`, 14.10), for allowing callers by name; `none` otherwise.
 
 Headers are a list of `Header(name:, value:)` in the order they are sent, names in lower case, and a name may come more than once: two `set-cookie` lines stay two headers, never one value. `r.header(name)` gives the first value of a name (`String?`, the name in any case), and `r.headers_named(name)` all of them, in order ([decision 0087](../../decisions/0087-http-headers-and-server-limits.md)).
 

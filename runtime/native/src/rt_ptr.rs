@@ -57,7 +57,35 @@ pub fn ptr_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
             unsafe { free(a as *mut std::ffi::c_void) };
             0
         }
+        RtOp::PtrBytes => c_bytes(a, line),
+        RtOp::PtrReadBytes => {
+            let n = usize::try_from(b).unwrap_or(0);
+            let data = if a == 0 || n == 0 {
+                Vec::new()
+            } else {
+                // SAFETY: none possible: the program promised, inside
+                // `unsafe`, that `a` points to `n` readable bytes (6.4).
+                unsafe { std::slice::from_raw_parts(a as *const u8, n).to_vec() }
+            };
+            crate::rt_bytes::new_bytes(data, crate::rt::type_of(code))
+        }
         _ => c_copy(a, line),
+    }
+}
+
+/// The bytes `a` (owned) copied for C; C reads only as many as it is told.
+fn c_bytes(a: i64, line: i32) -> i64 {
+    let data = crate::rt_bytes::with_bytes(a, <[u8]>::to_vec);
+    release(a);
+    // SAFETY: `calloc` gives at least one zeroed byte or null; the copy
+    // fills `data.len()` of them.
+    unsafe {
+        let p = calloc(data.len().max(1), 1).cast::<u8>();
+        if p.is_null() {
+            panic_with("out of memory: bytes passed to C", line);
+        }
+        std::ptr::copy_nonoverlapping(data.as_ptr(), p, data.len());
+        p as i64
     }
 }
 

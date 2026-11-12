@@ -118,7 +118,10 @@ impl Resolver {
                 }
                 for (capability, value) in &t.with {
                     self.use_type(capability);
-                    self.expr(value);
+                    // `with Fs = fake`: the built-in fake (spec 11.8).
+                    if !matches!(&value.kind, ExprKind::Name(n) if n.name == "fake") {
+                        self.expr(value);
+                    }
                 }
                 self.block(&t.body);
             }

@@ -1,0 +1,7 @@
+use moves
+
+/// An account whose fields only its own package may touch.
+pub type Account {
+    balance: Int = 0
+    deposits: Int = 0
+}

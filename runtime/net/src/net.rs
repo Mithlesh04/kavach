@@ -9,6 +9,7 @@
 //! caller polls the same way. QUIC connections (`net/quic.rs`, decision
 //! 0022) carry streams instead of one byte stream.
 
+pub mod cert;
 mod connect;
 pub mod poller;
 mod quic;
@@ -384,6 +385,15 @@ impl Shared {
             },
             Socket::Tls(t) => tls::write(t, data, sent),
             _ => Try::Fail(NetFail::Failed("the connection is closed".into())),
+        })
+    }
+
+    /// `conn.client_cert()`: the names of the certificate a client showed
+    /// this server (mutual TLS), if it showed one.
+    pub fn client_cert(&self) -> Option<cert::CertNames> {
+        self.with(|s| match s {
+            Socket::Tls(t) => tls::client_cert(t).and_then(|der| cert::names(&der)),
+            _ => None,
         })
     }
 

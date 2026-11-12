@@ -1,0 +1,12 @@
+// Rule: An `extend` of a type in another file of the type's own package may read, change (`with`) and build the type's private fields; code outside an `extend` still can't.
+// Spec: 10.1, 2.5
+// expect output: 2 deposits, 150
+// expect output: 0 deposits, 0
+
+use accounts.{Account}
+
+fn main() {
+    const a = Account.open().deposit(100).deposit(50)
+    print(a.summary())
+    print(Account.open().summary())
+}

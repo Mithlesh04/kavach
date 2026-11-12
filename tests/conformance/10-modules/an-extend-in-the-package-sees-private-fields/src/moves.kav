@@ -1,0 +1,15 @@
+use accounts.{Account}
+
+extend Account {
+    pub fn open() -> Account {
+        Account()
+    }
+
+    pub fn deposit(self, amount: Int) -> Account {
+        self with { balance: self.balance + amount, deposits: self.deposits + 1 }
+    }
+
+    pub fn summary(self) -> String {
+        "{self.deposits} deposits, {self.balance}"
+    }
+}

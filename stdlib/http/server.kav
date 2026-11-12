@@ -207,7 +207,7 @@ fn respond(conn: Connection, m: Message, handler: fn(Request) -> Response, limit
     let extra = Bytes([])
     let response: Response? = busy(limits)
     if load.in_flight.get() <= limits.max_in_flight {
-        const request = Request(method: parts.get(0) ?? "", path: parts.get(1) ?? "/", headers: m.headers, body: m.body, stream: body, peer: conn.peer())
+        const request = Request(method: parts.get(0) ?? "", path: parts.get(1) ?? "/", headers: m.headers, body: m.body, stream: body, peer: conn.peer(), client_cert: conn.client_cert())
         // A handler reading its body reads the connection itself.
         const answered = if body == none { run_watched(conn, handler, request) } else { run_alone(handler, request) }
         response = answered.response
@@ -357,6 +357,7 @@ fn serve_h2(conn: Connection, data: Bytes, handler: fn(Request) -> Response) ! H
             headers: message.plain(m.headers),
             body: m.body,
             peer: conn.peer(),
+            client_cert: conn.client_cert(),
         )
         let response = handler(request)
         // Not offered over HTTP/2 yet (spec 14.11).

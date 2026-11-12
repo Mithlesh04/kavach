@@ -448,9 +448,12 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
             release(a);
             found
         }
-        RtOp::PtrAlloc | RtOp::PtrFree | RtOp::PtrText | RtOp::PtrReadText => {
-            crate::rt_ptr::ptr_op(op, a, b, code, line)
-        }
+        RtOp::PtrAlloc
+        | RtOp::PtrFree
+        | RtOp::PtrText
+        | RtOp::PtrReadText
+        | RtOp::PtrBytes
+        | RtOp::PtrReadBytes => crate::rt_ptr::ptr_op(op, a, b, code, line),
         // Ops of the other groups come through their own entries
         // (`RtOp::entry`).
         _ => panic_with(&format!("`{op:?}` goes through `{}`", op.entry()), line),

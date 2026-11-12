@@ -103,6 +103,8 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0095](0095-shared-update-gives-a-result.md) | `Shared.update` gives the new value; `update_with` gives its function's result beside it | Accepted |
 | [0096](0096-unknown-fields-are-refused.md) | Decoding refuses fields the type doesn't have; `unknown: JsonUnknown.Ignore` skips them, as `std.http`'s client does | Accepted |
 | [0097](0097-take-gives-taken.md) | `receive.take()` gives `Taken<T> = Item(value: T) \| Closed`, so a sent `none` isn't a closed channel | Accepted |
+| [0098](0098-kavach-written-modules-in-their-own-repositories.md) | Modules written in Kavach (`std.http`, `std.grpc`, `std.term`'s prompts) move to repositories of their own; what is native stays | Accepted |
+| [0099](0099-client-certificate-names.md) | A client certificate's names with mutual TLS (`conn.client_cert()`, `r.client_cert`), read with `x509-cert` | Accepted |
 
 ## Open decisions
 

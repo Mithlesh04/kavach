@@ -15,11 +15,16 @@ impl Checker<'_> {
                 ItemKind::Type(t) => self.type_decl(t),
                 ItemKind::Extend(e) => {
                     let target = self.lower(&e.target, None);
+                    self.extending = match &target {
+                        Ty::Adt(def, _) => Some(*def),
+                        _ => None,
+                    };
                     for m in &e.methods {
                         if let ItemKind::Fn(f) = &m.kind {
                             self.function(f, Some(target.clone()));
                         }
                     }
+                    self.extending = None;
                 }
                 ItemKind::Agent(a) => {
                     self.check_agent_rules(&a.members);

@@ -36,6 +36,9 @@ pub type Request {
     /// set by the server; empty for a request made by hand. Behind a proxy
     /// it is the proxy's.
     pub peer: String = ""
+    /// With mutual TLS, the names of the certificate the client showed
+    /// (decision 0099); `none` otherwise, and for a request made by hand.
+    pub client_cert: ClientCert? = none
 
     /// The value of the first header named `name`, if any.
     pub fn header(self, name: String) -> String? {

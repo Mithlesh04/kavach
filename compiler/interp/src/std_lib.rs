@@ -137,7 +137,7 @@ impl<'a> Interp<'a> {
             )));
         }
         // A generated test's files are in memory (spec 11.5).
-        if module == "fs" && self.fake.is_some() {
+        if module == "fs" && self.faking("Fs") {
             return self.fake_fs(name, &args);
         }
         if module == "fs"

@@ -38,7 +38,7 @@ impl<'a> Interp<'a> {
             return Ok(v);
         }
         // A generated test's clock (spec 11.5): sleeping moves it on.
-        if self.fake.is_some() {
+        if self.faking("Clock") {
             let ms = match (name, args.first()) {
                 ("sleep_ms", Some(Value::Int(ms, _))) => *ms,
                 ("sleep", d) => duration_ms(d) as i128,
@@ -132,7 +132,7 @@ impl<'a> Interp<'a> {
             .as_micros()
             .div_ceil(1_000) as i128;
         // A generated test's clock moves on at once (spec 11.5).
-        if self.fake.is_some() {
+        if self.faking("Clock") {
             self.fake_clock(ms);
             return Ok(());
         }
