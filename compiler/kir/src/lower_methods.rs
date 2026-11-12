@@ -349,6 +349,8 @@ impl<'a> Lowerer<'a> {
             (Some(Shape::Socket), "write") => RtOp::NetWrite,
             (Some(Shape::Socket), "close") => RtOp::NetClose,
             (Some(Shape::Socket), "protocol") => RtOp::NetProtocol,
+            // A connection's address is the other side's.
+            (Some(Shape::Socket), "peer") => RtOp::NetAddress,
             (Some(Shape::Socket), "open_stream") => RtOp::NetOpenStream,
             (Some(Shape::Socket), "read_stream") => RtOp::NetReadStream,
             (Some(Shape::Socket), "write_stream") if values.len() == 4 => {

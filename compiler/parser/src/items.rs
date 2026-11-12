@@ -73,10 +73,12 @@ impl Parser<'_> {
             }
             TokenKind::Keyword(Keyword::Extend) => {
                 self.bump();
+                let generics = self.generic_params();
                 let target = self.type_expr();
                 let implements = self.implements();
                 let methods = self.methods(true);
                 ItemKind::Extend(ExtendDecl {
+                    generics,
                     target,
                     implements,
                     methods,

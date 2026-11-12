@@ -1,0 +1,14 @@
+// Rule: A `test` block runs with no capabilities unless given some: reaching the file system, the network or the environment, directly or through a function, needs `uses` (the console, the clock and random numbers are always there).
+// Spec: 11.8
+// expect compile error
+
+use std.fs
+
+fn save(text: String) ! FsError uses Fs {
+    try fs.write_text("report.txt", text)
+}
+
+test "writes a report" {
+    print("writing")
+    try save("hi")                    // error: the test doesn't say `uses Fs`
+}

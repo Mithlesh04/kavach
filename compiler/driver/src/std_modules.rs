@@ -72,6 +72,11 @@ pub(crate) const BUILTIN: &[(&str, &str, &str)] = &[
         include_str!("../../../stdlib/base64/base64.kav"),
     ),
     (
+        "std/tasks.kav",
+        "std.tasks",
+        include_str!("../../../stdlib/tasks/tasks.kav"),
+    ),
+    (
         "std/http/upgrade.kav",
         "std.http.upgrade",
         include_str!("../../../stdlib/http/upgrade.kav"),
@@ -241,6 +246,10 @@ pub(crate) fn used(sources: &[Source]) -> Vec<Source> {
     if units.chain(["timeout"]).any(|u| seen.contains(u)) {
         seen.insert("std.time".to_string());
     }
+    // A channel's `take()` gives `Taken<T>` (spec 9.4).
+    if seen.contains("Channel") {
+        seen.insert("std.tasks".to_string());
+    }
     let mut taken = vec![false; BUILTIN.len()];
     for (i, (_, module, _)) in BUILTIN.iter().enumerate() {
         taken[i] = sources.iter().any(|s| s.module == *module);
@@ -263,6 +272,9 @@ pub(crate) fn used(sources: &[Source]) -> Vec<Source> {
         let mut units = kavach_checker::DURATION_UNITS.iter().map(|(u, _)| *u);
         if units.any(|u| own.contains(u)) || own.contains("timeout") {
             seen.insert("std.time".to_string());
+        }
+        if own.contains("Channel") {
+            seen.insert("std.tasks".to_string());
         }
         seen.extend(own.into_iter().filter(|w| w.starts_with("std.")));
         out.push(Source {

@@ -32,6 +32,10 @@ pub type Request {
     /// A body too large to read whole, set by the server: read it with
     /// `read_body`.
     pub stream: BodyStream? = none
+    /// The address of whoever opened the connection (`203.0.113.7:51234`),
+    /// set by the server; empty for a request made by hand. Behind a proxy
+    /// it is the proxy's.
+    pub peer: String = ""
 
     /// The value of the first header named `name`, if any.
     pub fn header(self, name: String) -> String? {
@@ -151,26 +155,32 @@ pub fn text(status: Int, body: String) -> Response {
     Response(status: status, headers: headers, body: body.bytes())
 }
 
+/// A request with any `method`, `headers` and `body`, over HTTP/2 when
+/// the server offers it with TLS, else HTTP/1.1 (spec 14.11).
+pub fn request(method: String, url: String, headers: [Header] = [], body: Bytes = Bytes([])) -> Response ! HttpError uses Net {
+    try call(method, url, headers, body)
+}
+
 /// `GET url`.
 pub fn get(url: String) -> Response ! HttpError uses Net {
-    try request("GET", url, Bytes([]), "")
+    try plain_request("GET", url, Bytes([]), "")
 }
 
 /// `POST url` with `body`.
 pub fn post(url: String, body: Bytes) -> Response ! HttpError uses Net {
-    try request("POST", url, body, "")
+    try plain_request("POST", url, body, "")
 }
 
 /// `GET url`, its JSON body decoded into a `T`.
 pub fn get_json<T>(url: String) -> T ! HttpError uses Net {
-    const r = try request("GET", url, Bytes([]), "")
+    const r = try plain_request("GET", url, Bytes([]), "")
     try decoded<T>(r)
 }
 
 /// `POST url` with the JSON `body`, the JSON answer decoded into a `T`.
 pub fn post_json<T>(url: String, body: Json) -> T ! HttpError uses Net {
     const text = json.stringify(body, 0)
-    const r = try request("POST", url, text.bytes(), "application/json")
+    const r = try plain_request("POST", url, text.bytes(), "application/json")
     try decoded<T>(r)
 }
 
@@ -275,12 +285,18 @@ pub type Session {
 
     /// `GET path` on the session's connection.
     pub fn get(self, path: String) -> Response ! HttpError uses Net {
-        try self.send("GET", path, Bytes([]))
+        try self.send("GET", path, [], Bytes([]))
     }
 
     /// `POST path` with `body` on the session's connection.
     pub fn post(self, path: String, body: Bytes) -> Response ! HttpError uses Net {
-        try self.send("POST", path, body)
+        try self.send("POST", path, [], body)
+    }
+
+    /// A request with any `method`, `headers` and `body` on the session's
+    /// connection.
+    pub fn request(self, method: String, path: String, headers: [Header] = [], body: Bytes = Bytes([])) -> Response ! HttpError uses Net {
+        try self.send(method, path, headers, body)
     }
 
     /// Closes the session's connection.
@@ -289,9 +305,15 @@ pub type Session {
     }
 
     /// Sends a request and reads its response, which must say its length.
-    fn send(self, method: String, path: String, body: Bytes) -> Response ! HttpError uses Net {
+    fn send(self, method: String, path: String, headers: [Header], body: Bytes) -> Response ! HttpError uses Net {
         const crlf = message.crlf()
-        const head = "{method} {path} HTTP/1.1{crlf}host: {self.host}{crlf}content-length: {body.len()}{crlf}{crlf}"
+        let head = "{method} {path} HTTP/1.1{crlf}host: {self.host}{crlf}"
+        for h in headers {
+            if not own_header(h.name) {
+                head = head + "{h.name}: {h.value}{crlf}"
+            }
+        }
+        head = head + "content-length: {body.len()}{crlf}{crlf}"
         self.conn.write(head.bytes() + body) catch e => {
             fail HttpError.Network(error: e)
         }
@@ -360,9 +382,23 @@ fn split_url(url: String) -> Target ! HttpError {
     Target(host: host, path: path, secure: secure)
 }
 
-/// `kind` is the body's `content-type` (none when empty); a JSON body
-/// asks for JSON back.
-fn request(method: String, url: String, body: Bytes, kind: String) -> Response ! HttpError uses Net {
+/// `kind` is the body's `content-type` (none when empty).
+fn plain_request(method: String, url: String, body: Bytes, kind: String) -> Response ! HttpError uses Net {
+    let headers: [Header] = []
+    if not kind.is_empty() {
+        headers.push(Header(name: "content-type", value: kind))
+    }
+    try call(method, url, headers, body)
+}
+
+/// Whether the client writes header `name` itself.
+fn own_header(name: String) -> Bool {
+    const n = name.lower()
+    n == "host" or n == "content-length" or n == "connection"
+}
+
+/// A request to `url` on a connection of its own.
+fn call(method: String, url: String, headers: [Header], body: Bytes) -> Response ! HttpError uses Net {
     const target = try split_url(url)
     const name = target.host.slice(0, target.host.index_of(":") ?? target.host.len())
     const conn = connect(target) catch e => {
@@ -375,8 +411,10 @@ fn request(method: String, url: String, body: Bytes, kind: String) -> Response !
             Header(name: ":authority", value: name),
             Header(name: ":path", value: target.path),
         ]
-        if not kind.is_empty() {
-            pseudo.push(Header(name: "content-type", value: kind))
+        for h in headers {
+            if not own_header(h.name) {
+                pseudo.push(Header(name: h.name.lower(), value: h.value))
+            }
         }
         const reply = h2.request(conn, pseudo, body) catch e => {
             conn.close()
@@ -389,8 +427,10 @@ fn request(method: String, url: String, body: Bytes, kind: String) -> Response !
         return Response(status: status, headers: message.plain(reply.headers), body: reply.body)
     }
     let head = "{method} {target.path} HTTP/1.1{message.crlf()}host: {name}{message.crlf()}"
-    if not kind.is_empty() {
-        head = head + "content-type: {kind}{message.crlf()}"
+    for h in headers {
+        if not own_header(h.name) {
+            head = head + "{h.name}: {h.value}{message.crlf()}"
+        }
     }
     head = head + "content-length: {body.len()}{message.crlf()}connection: close{message.crlf()}{message.crlf()}"
     const all = exchange(conn, head.bytes() + body) catch e => {

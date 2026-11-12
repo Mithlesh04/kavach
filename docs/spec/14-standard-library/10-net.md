@@ -13,6 +13,7 @@ TCP connections and UDP datagrams, behind the `Net` capability (8.1). Addresses 
 | `conn.read() -> Bytes? ! NetError` | Waits for data: the bytes that came (at most 64 KB at a time), or `none` once the other side has closed |
 | `conn.write(data) ! NetError` | Sends all of `data` (`Bytes`) |
 | `conn.protocol() -> String?` | The protocol the two sides agreed on, from those `connect_tls` offered and `listen_tls` takes, or `none` |
+| `conn.peer() -> String` | The other side's address: for a connection a listener accepted, whoever opened it (`203.0.113.7:51234`) |
 | `conn.close()` | Closes the connection (or stops listening) |
 | `net.bind(address) -> UdpSocket ! NetError` | A UDP socket at `address` |
 | `sock.send(data, to) ! NetError` | Sends `data` (`Bytes`) as one datagram to the address `to` |

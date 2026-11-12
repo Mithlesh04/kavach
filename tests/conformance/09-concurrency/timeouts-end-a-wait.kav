@@ -3,9 +3,9 @@
 // expect output: gave up: timed out after 50 ms
 // expect output: -1
 // expect output: 42
-// expect output: -2
+// expect output: Item(value: -2)
 // expect output: still full
-// expect output: 1
+// expect output: Item(value: 1)
 
 use std.time
 
@@ -24,9 +24,9 @@ fn main() ! Error {
     const quick = spawn 42
     print(try quick.wait().timeout(2.seconds))
     const (send, receive) = Channel<Int>(capacity: 1)
-    const got = receive.take().timeout(30.ms) catch _ => -2
-    print(got ?? -3)
+    const got = receive.take().timeout(30.ms) catch _ => Taken.Item(value: -2)
+    print(got)
     send.put(1)
     send.put(2).timeout(20.ms) catch _ => print("still full")
-    print(receive.take() ?? 0)
+    print(receive.take())
 }

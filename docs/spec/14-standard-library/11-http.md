@@ -3,11 +3,13 @@
 HTTP/1.1 and HTTP/2 clients and servers, and HTTP/3 clients, written in Kavach on top of `std.net` (`stdlib/http/`), behind `Net` ([decision 0022](../../decisions/0022-http2-and-http3.md)).
 
 ```kavach
-pub type Request { method: String, path: String, headers: [Header], body: Bytes }
+pub type Request { method: String, path: String, headers: [Header], body: Bytes, peer: String = "" }
 pub type Response { status: Int, headers: [Header], body: Bytes }
 pub type HttpError = Network(error: NetError) | BadUrl(url: String) | BadMessage(reason: String) |
     Status(code: Int) | BadJson(error: JsonError)
 ```
+
+A served request's `peer` is the address of whoever opened the connection (`conn.peer()`, 14.10), for limits per client; behind a proxy it is the proxy's, so trust a forwarded address only from a proxy you list. A request made by hand has `""`.
 
 Headers are a list of `Header(name:, value:)` in the order they are sent, names in lower case, and a name may come more than once: two `set-cookie` lines stay two headers, never one value. `r.header(name)` gives the first value of a name (`String?`, the name in any case), and `r.headers_named(name)` all of them, in order ([decision 0087](../../decisions/0087-http-headers-and-server-limits.md)).
 
@@ -25,9 +27,11 @@ fn login(r: Request) -> Response {
 |---|---|
 | `http.get(url) -> Response ! HttpError` | `GET url` |
 | `http.post(url, body) -> Response ! HttpError` | `POST url` with `body` (`Bytes`) |
+| `http.request(method, url, headers: [Header] = [], body: Bytes = Bytes([])) -> Response ! HttpError` | Any method, with the headers given and a body: a form post with basic auth, a bearer token, `PUT`, `PATCH`, `DELETE`, `if-none-match`. HTTP/2 when the server offers it with TLS, else HTTP/1.1; `host`, `content-length` and `connection` are the client's own, so ones given are left out |
 | `http.get3(url) -> Response ! HttpError` | `GET url` over HTTP/3 |
 | `http.open(url) -> Session ! HttpError` | A session: one HTTP/1.1 connection to the server of `url` (`http://` or `https://`; the path is not used), kept open for several requests |
 | `s.get(path)`, `s.post(path, body) -> Response ! HttpError` | A request on session `s`'s connection, waiting for its response |
+| `s.request(method, path, headers: [Header] = [], body: Bytes = Bytes([])) -> Response ! HttpError` | The same as `http.request`, on session `s`'s connection |
 | `s.close()` | Closes the session's connection |
 | `http.serve(listener, handler, limits: ServeLimits()) ! NetError` | Serves HTTP on `listener`: each connection in a task of its own, on any core (`spawn cores`, 9.8), its requests answered by `handler: fn(Request) -> Response`, each client held to `limits` (below). It runs until the function that called it returns, which cancels it (9.2) |
 | `http.text(status, body) -> Response` | A response with text |

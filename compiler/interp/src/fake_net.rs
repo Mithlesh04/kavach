@@ -109,7 +109,7 @@ impl<'a> Interp<'a> {
                 conn.answered = None;
                 Value::Unit
             }
-            "address" => self.str_value(&conn.address),
+            "address" | "peer" => self.str_value(&conn.address),
             "protocol" => Value::None,
             _ => {
                 let at = ("address", self.str_value(&conn.address));

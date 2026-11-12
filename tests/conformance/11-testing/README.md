@@ -22,3 +22,4 @@ Conformance tests for spec chapter [11. Testing](../../../docs/spec/11-testing.m
 | 11.2 | [bytes-are-generated.kav](bytes-are-generated.kav) | Functions that take `Bytes` get generated `Bytes` arguments. | tests pass |
 | 11.5 | [clipboard-fake-starts-empty.kav](clipboard-fake-starts-empty.kav) | In a generated test, the clipboard is a fake in memory: it starts empty, and what is written is read back. | tests pass |
 | 11.5 | [clock-fake-moves-with-after.kav](clock-fake-moves-with-after.kav) | In a generated test, `time.after` moves the clock forward at once, as `sleep` does. | tests pass |
+| 11.8 | [tests-use-nothing-unless-given.kav](tests-use-nothing-unless-given.kav) | A `test` block runs with no capabilities unless given some: the file system, the network or the environment need `uses`. | compile error |

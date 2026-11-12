@@ -208,7 +208,7 @@ src/
 └── orders.test.kav      // test "total_paid counts only paid orders" { … }
 ```
 - `assert` shows both sides of a failed comparison.
-- Tests run with no capabilities unless given some: `test "fetch" uses Net { … }`.
+- Tests run with no capabilities unless given some: `test "fetch" uses Net { … }`. Reaching a capability without it, directly or through a function, is a compile error. The console, the clock and random numbers are always there: a test run captures the output, can freeze the clock (14.4) and seeds the numbers.
 - A test can provide its own capability implementations: `test "refund flow" with Payments = FakePayments() { … }`.
 
 ## 11.9 Running tests

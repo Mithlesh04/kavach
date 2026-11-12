@@ -1,0 +1,25 @@
+// Rule: `take()` gives `Taken.Item(value)` or `Taken.Closed`, so a `none` sent on a `Channel<T?>` is a value, not the channel's end; `for` takes it too.
+// Spec: 9.4
+// expect output: Item(value: none)
+// expect output: Item(value: 3)
+// expect output: Closed
+// expect output: none 5 done
+
+fn main() {
+    const (send, receive) = Channel<Int?>(capacity: 4)
+    send.put(none)
+    send.put(3)
+    send.close()
+    print(receive.take())
+    print(receive.take())
+    print(receive.take())
+    const (more, taken) = Channel<Int?>(capacity: 4)
+    more.put(none)
+    more.put(5)
+    more.close()
+    let seen = ""
+    for v in taken {
+        seen += "{v} "
+    }
+    print("{seen}done")
+}

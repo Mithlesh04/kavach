@@ -6,7 +6,7 @@
 
 use crate::interp::Interp;
 use crate::tasks::Limit;
-use crate::value::{Eval, Value};
+use crate::value::{Eval, Flow, Value};
 use kavach_ast::Span;
 use kavach_runtime_core::tasks::{Stop, TaskId};
 use std::cell::RefCell;
@@ -97,24 +97,24 @@ impl<'a> Interp<'a> {
         }
     }
 
-    /// `receive.take()`: the next value, or `none` once the channel is
-    /// closed and empty. Waits while it is empty, for at most `limit`.
-    pub(crate) fn channel_take(
+    /// The next value of a channel: `None` once it is closed and empty
+    /// (a `none` sent on a `Channel<T?>` is `Some(Value::None)`).
+    pub(crate) fn channel_next(
         &mut self,
         c: &Channel<'a>,
         limit: Option<Limit>,
         span: Span,
-    ) -> Eval<'a> {
+    ) -> Result<Option<Value<'a>>, Flow<'a>> {
         loop {
             let mut st = c.borrow_mut();
             if let Some(v) = st.values.pop_front() {
                 let putter = st.putters.pop_front();
                 drop(st);
                 self.unpark(putter);
-                return Ok(v);
+                return Ok(Some(v));
             }
             if st.closed {
-                return Ok(Value::None);
+                return Ok(None);
             }
             st.takers.push_back(self.task);
             drop(st);
@@ -124,6 +124,20 @@ impl<'a> Interp<'a> {
                 return Err(self.wait_ended(stop, limit, span));
             }
         }
+    }
+
+    /// `receive.take()`: `Taken.Item(value)`, or `Taken.Closed` (spec 9.4,
+    /// decision 0097).
+    pub(crate) fn channel_take(
+        &mut self,
+        c: &Channel<'a>,
+        limit: Option<Limit>,
+        span: Span,
+    ) -> Eval<'a> {
+        Ok(match self.channel_next(c, limit, span)? {
+            Some(v) => self.builtin_variant("Taken", "Item", vec![("value", v)]),
+            None => self.builtin_variant("Taken", "Closed", Vec::new()),
+        })
     }
 
     /// `send.close()`: every task waiting on the channel goes on.

@@ -29,6 +29,17 @@ pub(crate) struct NeedAt {
     pub(crate) in_contract: bool,
 }
 
+/// A `test` block's uses (spec 11.8): it may use what `uses` and `with`
+/// give it, and the console, the clock and random numbers, which a test
+/// run captures, freezes and seeds.
+pub(crate) struct TestNeeds {
+    pub(crate) allowed: BTreeSet<String>,
+    pub(crate) needs: Vec<NeedAt>,
+}
+
+/// What every `test` block may use.
+const TEST_ALWAYS: [&str; 3] = ["Console", "Clock", "Random"];
+
 /// A function as this check sees it.
 struct FnInfo<'f> {
     decl: &'f FnDecl,
@@ -68,6 +79,12 @@ impl Checker<'_> {
                 need,
                 span,
                 in_contract,
+            });
+        } else if let Some(t) = self.current_test {
+            self.test_needs[t].needs.push(NeedAt {
+                need,
+                span,
+                in_contract: false,
             });
         }
     }
@@ -296,6 +313,26 @@ impl Checker<'_> {
                         info.decl.name.name
                     ),
                 ));
+            }
+        }
+        // A `test` block runs with no capabilities unless given some.
+        for t in std::mem::take(&mut self.test_needs) {
+            let mut reported = BTreeSet::new();
+            for n in &t.needs {
+                let caps = match &n.need {
+                    Need::Cap(c) => BTreeSet::from([c.clone()]),
+                    Need::Fn(f) => effective.get(f).cloned().unwrap_or_default(),
+                };
+                for cap in caps {
+                    let base = cap.split_once('.').map_or(cap.as_str(), |(c, _)| c);
+                    if TEST_ALWAYS.contains(&base)
+                        || covers(&t.allowed, &cap)
+                        || !reported.insert(cap.clone())
+                    {
+                        continue;
+                    }
+                    errors.push((n.span, format!("this test uses {cap}, but a test runs with no capabilities unless given some: write `uses {base}` after its name, or give it a fake with `with` (spec 11.8)")));
+                }
             }
         }
         let lambdas = std::mem::take(&mut self.lambda_needs);

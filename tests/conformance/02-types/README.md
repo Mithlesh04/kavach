@@ -38,6 +38,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.4 | [optional-field-has-no-other-default.kav](optional-field-has-no-other-default.kav) | A field that may be left out is `none` when left out, so it takes no other default: `count?: Int = 3` is an error. | compile error |
 | 2.4, 2.9 | [generic-fields-take-defaults.kav](generic-fields-take-defaults.kav) | A field whose type uses the record's type parameter can have a default. | runs |
 | 2.5 | [extend-adds-methods.kav](extend-adds-methods.kav) | `extend` adds methods to an existing type. | runs |
+| 2.5 | [generic-types-are-extended-elsewhere/](generic-types-are-extended-elsewhere/src/main.kav) | `extend<S> Box<S>` adds methods to a generic type from another module, `S` standing for the type's own parameter. | runs |
 | 2.5 | [methods.kav](methods.kav) | Methods take self; functions without self are called on the type. | runs |
 | 2.5, 14.2 | [methods-may-share-collection-names.kav](methods-may-share-collection-names.kav) | A type's own `add`, `push` or `remove` is its method, not the built-in one of lists, maps and sets. | runs |
 | 2.6 | [variants-are-written-with-their-type.kav](variants-are-written-with-their-type.kav) | A variant is always written with its union's name; a bare name is a compile error. | compile error |

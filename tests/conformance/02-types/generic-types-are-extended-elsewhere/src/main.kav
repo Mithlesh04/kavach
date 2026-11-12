@@ -1,0 +1,13 @@
+// Rule: `extend<S> Box<S>` adds methods to a generic type from another module, `S` standing for the type's own parameter.
+// Spec: 2.5
+// expect output: 2 s
+// expect output: 2 8
+
+use boxes.{Box}
+
+fn main() {
+    const b = Box(state: "s", n: 1).bumped()
+    print("{b.n} {b.state_of()}")
+    const c = Box(state: 7, n: 0).bumped().bumped()
+    print("{c.n} {c.state_of() + 1}")
+}

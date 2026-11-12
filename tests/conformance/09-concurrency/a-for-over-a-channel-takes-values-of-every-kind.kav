@@ -1,4 +1,4 @@
-// Rule: `for v in receive` takes every value until `take()` gives `none`, whatever the values' type.
+// Rule: `for v in receive` takes every value until the channel is closed and empty, whatever the values' type.
 // Spec: 9.4
 // expect output: 7.75
 // expect output: 2 of 3

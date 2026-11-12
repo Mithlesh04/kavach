@@ -1,0 +1,11 @@
+use boxes.{Box}
+
+extend<S> Box<S> {
+    pub fn bumped(self) -> Box<S> {
+        self with { n: self.n + 1 }
+    }
+
+    pub fn state_of(self) -> S {
+        self.state
+    }
+}

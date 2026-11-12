@@ -26,6 +26,7 @@ The standard library, imported as `std.<module>`, e.g. `use std.fs`. Its content
 | [`random/`](random/README.md) | `std.random` | `random.kav`: whole numbers in a range, floats, picks, shuffles and bytes, from the operating system's secure generator, seeded under `kavach test` (spec 14.15) | 2 |
 | `crypto/` | `std.crypto` | `crypto.kav`: the `CryptoError` union; hashes, HMAC, passwords (Argon2id), signatures and AES-GCM come from `ring` and `argon2` in the runtime (spec 14.19, [decision 0093](../docs/decisions/0093-std-crypto.md)) | 2 |
 | `base64/` | `std.base64` | `base64.kav`: the `Base64Error` union; encoding and decoding are built into the runtime (`runtime/core/src/base64.rs`, spec 14.20) | 2 |
+| `tasks/` | `std.tasks` | `tasks.kav`: `Taken<T>`, what a channel's `take()` gives (spec 9.4, [decision 0097](../docs/decisions/0097-take-gives-taken.md)); every program that uses a channel gets it, and tasks and channels themselves are built in | 2 |
 | [`grpc/`](grpc/README.md) | `std.grpc`, `std.grpc.frames`, `std.grpc.protobuf` | `grpc.kav`: gRPC clients and servers from Kavach types; `frames.kav`: message prefixes and status trailers; `protobuf.kav`: Protocol Buffers from a type's JSON Schema, written in Kavach on `std.http.h2` (spec 14.14, [decision 0027](../docs/decisions/0027-grpc-as-a-module.md)) | 3 |
 
 Rule: the standard library stays **small**. Anything that can live as a package lives as a package.

@@ -29,9 +29,25 @@ impl Checker<'_> {
                         }
                     }
                 }
-                ItemKind::Test(t) => self.with_ctx("test", Ty::Unit, Some(error_ty()), None, |c| {
-                    c.block_stmt(&t.body, None)
-                }),
+                ItemKind::Test(t) => {
+                    // What it may use (spec 11.8): `uses` and `with`.
+                    let path = |p: &Path| {
+                        let names: Vec<&str> = p.segments.iter().map(|s| s.name.as_str()).collect();
+                        names.join(".")
+                    };
+                    let mut allowed: std::collections::BTreeSet<String> =
+                        t.uses.iter().map(path).collect();
+                    allowed.extend(t.with.iter().map(|(c, _)| c.name.clone()));
+                    self.test_needs.push(crate::capabilities::TestNeeds {
+                        allowed,
+                        needs: Vec::new(),
+                    });
+                    self.current_test = Some(self.test_needs.len() - 1);
+                    self.with_ctx("test", Ty::Unit, Some(error_ty()), None, |c| {
+                        c.block_stmt(&t.body, None)
+                    });
+                    self.current_test = None;
+                }
                 ItemKind::Stmt(s) => top_level.push(s.clone()),
                 ItemKind::Interface(_) | ItemKind::Capability(_) | ItemKind::Use(_) => {}
             }

@@ -21,6 +21,7 @@ impl Resolver {
                     let Some(id) = self.define(&t.name, DefKind::Type) else {
                         continue;
                     };
+                    self.type_ids.insert(t.name.span.start, id);
                     if let TypeBody::Union(variants) = &t.body {
                         let mut own = HashMap::new();
                         for v in variants {
@@ -99,11 +100,15 @@ impl Resolver {
                 self.pop();
             }
             ItemKind::Extend(e) => {
+                self.push();
+                self.generics(&e.generics);
                 self.type_expr(&e.target);
+                self.extend_generics(e);
                 for t in &e.implements {
                     self.type_expr(t);
                 }
                 self.methods(&e.methods);
+                self.pop();
             }
             ItemKind::Capability(c) => self.methods(&c.methods),
             ItemKind::Agent(a) => self.agent(a),
@@ -130,6 +135,35 @@ impl Resolver {
                 // uses (spec 8.1).
                 self.add_def(&f.name.name, DefKind::Fn, Some(f.name.span));
                 self.function(f);
+            }
+        }
+    }
+
+    /// `extend<S> App<S>`: each name stands for the parameter of `App` in
+    /// its place (spec 2.5); `finish` makes it that parameter.
+    fn extend_generics(&mut self, e: &ExtendDecl) {
+        let TypeKind::Named { path, args } = &e.target.kind else {
+            return;
+        };
+        let ty = path.segments.iter().rev().find_map(|s| {
+            let d = *self.res.uses.get(&s.span.start)?;
+            (self.res.defs[d].kind == DefKind::Type).then_some(d)
+        });
+        for g in &e.generics {
+            let place = args.iter().position(|a| match &a.kind {
+                TypeKind::Named { path, args } => {
+                    args.is_empty()
+                        && path.segments.len() == 1
+                        && path.segments[0].name == g.name.name
+                }
+                _ => false,
+            });
+            match (ty, place, self.in_scope(&g.name.name)) {
+                (Some(ty), Some(i), Some(own)) => self.extend_params.push((own, ty, i)),
+                _ => self.error(
+                    g.name.span,
+                    format!("`{}` isn't one of the type's parameters: write it in the type, as `extend<{0}> App<{0}>` (spec 2.5)", g.name.name),
+                ),
             }
         }
     }
@@ -202,6 +236,14 @@ impl Resolver {
     fn type_decl(&mut self, t: &TypeDecl) {
         self.push();
         self.generics(&t.generics);
+        if let Some(&id) = self.type_ids.get(&t.name.span.start) {
+            let params = t
+                .generics
+                .iter()
+                .filter_map(|g| self.in_scope(&g.name.name));
+            let params = params.collect();
+            self.type_params.insert(id, params);
+        }
         for ty in &t.implements {
             self.type_expr(ty);
         }

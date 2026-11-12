@@ -13,11 +13,12 @@ Conformance tests for spec chapter [9. Concurrency](../../../docs/spec/09-concur
 | 9.7 | [tasks-take-turns.kav](tasks-take-turns.kav) | A spawned task runs when the running one waits; ready tasks run in the order they became ready. | runs |
 | 9.7 | [sleeping-tasks-overlap.kav](sleeping-tasks-overlap.kav) | Other tasks run while one sleeps, so sleeps overlap; tasks wake in time order. | runs |
 | 9.4 | [channels-pass-values-in-order.kav](channels-pass-values-in-order.kav) | A channel passes values in order; `put` waits while it is full, `take` while it is empty; a closed, empty channel gives `none`. | runs |
-| 9.4 | [a-for-over-a-channel-takes-values-of-every-kind.kav](a-for-over-a-channel-takes-values-of-every-kind.kav) | `for v in receive` takes every value until `take()` gives `none`, whatever the values' type. | runs |
+| 9.4 | [a-for-over-a-channel-takes-values-of-every-kind.kav](a-for-over-a-channel-takes-values-of-every-kind.kav) | `for v in receive` takes every value until the channel is closed and empty, whatever the values' type. | runs |
 | 9.4 | [a-receiver-nobody-closes-deadlocks.kav](a-receiver-nobody-closes-deadlocks.kav) | When every task waits and none can go on, the program panics with a deadlock. | panic |
 | 9.4 | [put-into-a-closed-channel-panics.kav](put-into-a-closed-channel-panics.kav) | Putting a value into a closed channel panics. | panic |
 | 9.4 | [channel-capacity-is-at-least-one.kav](channel-capacity-is-at-least-one.kav) | A channel's capacity must be at least 1. | panic |
 | 9.4 | [try-put-never-waits.kav](try-put-never-waits.kav) | `send.try_put(v)` adds `v` only when the channel has room and is open, and says whether it did; it never waits. | runs |
+| 9.4 | [a-sent-none-is-not-the-end.kav](a-sent-none-is-not-the-end.kav) | `take()` gives `Taken.Item(value)` or `Taken.Closed`, so a `none` sent on a `Channel<T?>` is a value, not the channel's end. | runs |
 | 9.3 | [parallel-map-keeps-order-and-limit.kav](parallel-map-keeps-order-and-limit.kav) | `parallel_map` runs each item in its own task, at most `max` at a time, and gives the results in order. | runs |
 | 9.7 | [effects-keep-the-order-of-turns.kav](effects-keep-the-order-of-turns.kav) | Tasks may compute at the same time, but what they print happens in the order of their turns. | runs |
 | 9.8 | [each-spawn-chooses-how-it-runs.kav](each-spawn-chooses-how-it-runs.kav) | `spawn`, `spawn thread` and `spawn cores`, mixed in one program, print the same. | runs |

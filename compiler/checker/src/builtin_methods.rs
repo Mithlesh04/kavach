@@ -230,7 +230,15 @@ impl Checker<'_> {
                 _ => None,
             },
             Ty::Builtin("Receiver", args) => match name {
-                "take" => sig(vec![], opt(args.first().cloned().unwrap_or(Ty::Error))),
+                // `Taken<T>` (spec 9.4, decision 0097).
+                "take" => {
+                    let item = args.first().cloned().unwrap_or(Ty::Error);
+                    let taken = match self.res.std_type("Taken") {
+                        Some(def) => Ty::Adt(def, vec![item]),
+                        None => Ty::Error,
+                    };
+                    sig(vec![], taken)
+                }
                 _ => None,
             },
             // `std.net` (spec 14.10).
@@ -260,6 +268,8 @@ impl Checker<'_> {
                     "read" => sig(vec![], fails(opt(bytes.clone()))),
                     "write" => sig(vec![bytes.clone()], fails(Ty::Unit)),
                     "protocol" => sig(vec![], opt(Ty::Prim(Prim::String))),
+                    // The other side's address (spec 14.10).
+                    "peer" => sig(vec![], Ty::Prim(Prim::String)),
                     // QUIC streams (spec 14.10).
                     "open_stream" => sig(vec![Ty::Prim(Prim::Bool)], fails(Ty::Prim(Prim::Int))),
                     "write_stream" => sig(

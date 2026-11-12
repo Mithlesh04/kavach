@@ -26,6 +26,12 @@ pub(crate) struct Resolver {
     /// `approve` rules, which can use the method's parameters (spec 8.3).
     pub(crate) capability_params: HashMap<String, HashMap<String, Vec<String>>>,
     pub(crate) modules: crate::modules::Modules,
+    /// Each type's declaration (its name's start), and its parameters.
+    pub(crate) type_ids: HashMap<u32, DefId>,
+    pub(crate) type_params: HashMap<DefId, Vec<DefId>>,
+    /// `extend<S> App<S>`: each name the extend gives, the type, and the
+    /// place of the parameter it names, made the type's own at the end.
+    pub(crate) extend_params: Vec<(DefId, DefId, usize)>,
 }
 
 impl Resolver {
@@ -40,6 +46,9 @@ impl Resolver {
             union_variants: HashMap::new(),
             capability_params: HashMap::new(),
             modules: Default::default(),
+            type_ids: HashMap::new(),
+            type_params: HashMap::new(),
+            extend_params: Vec::new(),
         };
         let builtins = prelude::TYPES
             .iter()
@@ -68,6 +77,15 @@ impl Resolver {
     }
 
     pub(crate) fn finish(mut self) -> Resolution {
+        // `extend<S> App<S>`: `S` is `App`'s own parameter (spec 2.5).
+        for (own, ty, i) in std::mem::take(&mut self.extend_params) {
+            let Some(&param) = self.type_params.get(&ty).and_then(|ps| ps.get(i)) else {
+                continue;
+            };
+            for d in self.res.uses.values_mut().filter(|d| **d == own) {
+                *d = param;
+            }
+        }
         self.res.errors.sort_by_key(|e| e.span.start);
         self.res.warnings.sort_by_key(|e| e.span.start);
         self.res
@@ -87,6 +105,11 @@ impl Resolver {
             message: message.into(),
             span,
         });
+    }
+
+    /// What `name` names in the innermost scope.
+    pub(crate) fn in_scope(&self, name: &str) -> Option<DefId> {
+        self.scopes.last().and_then(|s| s.get(name)).copied()
     }
 
     pub(crate) fn push(&mut self) {

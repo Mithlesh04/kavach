@@ -1,0 +1,6 @@
+use more
+
+pub type Box<S> {
+    pub state: S
+    pub n: Int
+}

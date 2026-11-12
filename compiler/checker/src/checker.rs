@@ -188,6 +188,10 @@ pub(crate) struct Checker<'a> {
     /// What each function uses, once worked out (`capabilities.rs`).
     pub(crate) fn_uses: HashMap<DefId, Vec<String>>,
     pub(crate) needs: HashMap<DefId, Vec<crate::capabilities::NeedAt>>,
+    /// Each `test` block (spec 11.8): what it may use (`uses`, `with`),
+    /// and what it uses; `current_test` is the one being checked.
+    pub(crate) test_needs: Vec<crate::capabilities::TestNeeds>,
+    pub(crate) current_test: Option<usize>,
 }
 
 impl<'a> Checker<'a> {
@@ -250,6 +254,8 @@ impl<'a> Checker<'a> {
             std_modules: HashMap::new(),
             fn_uses: HashMap::new(),
             needs: HashMap::new(),
+            test_needs: Vec::new(),
+            current_test: None,
         }
     }
 

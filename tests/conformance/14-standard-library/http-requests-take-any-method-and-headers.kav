@@ -1,0 +1,32 @@
+// Rule: `http.request(method, url, headers, body)` and `session.request(…)` send any method, the headers given and a body; the client's own `host` and `content-length` aren't written twice.
+// Spec: 14.11
+// expect output: 200 PUT /items/7 token abc 2 bytes hi
+// expect output: 200 DELETE /items/7 token none 0 bytes
+// expect output: 200 PATCH /x token s1 3 bytes abc
+
+use std.http
+use std.net
+
+fn echo(r: Request) -> Response {
+    const token = r.header("x-token") ?? "none"
+    const hosts = r.headers_named("host").len()
+    if hosts != 1 {
+        return http.text(400, "{hosts} host headers")
+    }
+    http.text(200, "{r.method} {r.path} token {token} {r.body.len()} bytes {r.body.text() ?? ""}")
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, echo)
+    const base = "http://{listener.address()}"
+    const headers = [Header(name: "x-token", value: "abc"), Header(name: "host", value: "ignored")]
+    const a = try http.request("PUT", "{base}/items/7", headers: headers, body: "hi".bytes())
+    print("{a.status} {(a.body.text() ?? "?").trim()}")
+    const b = try http.request("DELETE", "{base}/items/7")
+    print("{b.status} {(b.body.text() ?? "?").trim()}")
+    const s = try http.open(base)
+    const c = try s.request("PATCH", "/x", headers: [Header(name: "x-token", value: "s1")], body: "abc".bytes())
+    print("{c.status} {(c.body.text() ?? "?").trim()}")
+    s.close()
+}

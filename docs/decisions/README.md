@@ -102,6 +102,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0094](0094-secret-results.md) | A function that returns a secret writes `-> secret T`; returning one without it is a compile error | Accepted |
 | [0095](0095-shared-update-gives-a-result.md) | `Shared.update` gives the new value; `update_with` gives its function's result beside it | Accepted |
 | [0096](0096-unknown-fields-are-refused.md) | Decoding refuses fields the type doesn't have; `unknown: JsonUnknown.Ignore` skips them, as `std.http`'s client does | Accepted |
+| [0097](0097-take-gives-taken.md) | `receive.take()` gives `Taken<T> = Item(value: T) \| Closed`, so a sent `none` isn't a closed channel | Accepted |
 
 ## Open decisions
 

@@ -124,9 +124,11 @@ impl<'a> Interp<'a> {
                 };
                 for item in items {
                     let item = match &receiver {
-                        Some(c) => match self.channel_take(c, None, s.span)? {
-                            Value::None => break,
-                            v => v,
+                        // Only the channel's end stops it: a sent `none` is a
+                        // value (decision 0097).
+                        Some(c) => match self.channel_next(c, None, s.span)? {
+                            Some(v) => v,
+                            None => break,
                         },
                         None => item,
                     };

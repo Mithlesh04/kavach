@@ -29,7 +29,7 @@ TaskWaitFor,
 ChanTakeFor,
 ChanPutFor,
 /// Channels (spec 9.4): a new one (both ends, as a tuple), `put`,
-/// `close`, and `take` (an optional).
+/// `close`, and `take` (a `Taken<T>`, decision 0097).
 ChanNew,
 ChanPut,
 ChanClose,

@@ -230,7 +230,7 @@ agent Bot {
 
     on wait() ! Error uses Clock {
         const (_send, receive) = Channel<Int>(capacity: 1)
-        const got = receive.take().timeout(3.seconds) catch _ => none
+        const got = receive.take().timeout(3.seconds) catch _ => Taken.Closed
         try Email.send(\"got {got}\")
     }
 }
@@ -277,7 +277,7 @@ fn a_timeout_ends_when_it_would_have_after_a_restart() {
         let said = String::from_utf8_lossy(&out.stderr);
         assert_eq!(
             String::from_utf8_lossy(&out.stdout),
-            "[email] got none\n",
+            "[email] got Closed\n",
             "{name}: {said}"
         );
         assert!(

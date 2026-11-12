@@ -150,6 +150,8 @@ pub struct InterfaceDecl {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct ExtendDecl {
+    /// `extend<S> App<S>`: names for the type's own parameters (spec 2.5).
+    pub generics: Vec<GenericParam>,
     pub target: TypeExpr,
     pub implements: Vec<TypeExpr>,
     pub methods: Vec<Item>,

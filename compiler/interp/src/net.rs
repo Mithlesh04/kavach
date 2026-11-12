@@ -162,7 +162,7 @@ impl<'a> Interp<'a> {
                 let conn = self.net_wait(open, &address, span, &**s, || s.accept())?;
                 Value::Socket(Arc::new(conn))
             }
-            "address" => self.str_value(&address),
+            "address" | "peer" => self.str_value(&address),
             "protocol" => match s.protocol() {
                 Some(p) => self.str_value(&p),
                 None => Value::None,

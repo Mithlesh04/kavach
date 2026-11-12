@@ -1,0 +1,21 @@
+// Rule: A served `Request` has `peer`, the address of whoever opened the connection, as `conn.peer()` gives it; a request made by hand has none.
+// Spec: 14.11, 14.10
+// expect output: 200 from 127.0.0.1
+// expect output: by hand: ""
+
+use std.http
+use std.net
+
+fn who(r: Request) -> Response {
+    // Only the address, not the port the client was given.
+    http.text(200, "from {r.peer.slice(0, r.peer.index_of(":") ?? r.peer.len())}")
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, who)
+    const a = try http.get("http://{listener.address()}/")
+    print("{a.status} {(a.body.text() ?? "?").trim()}")
+    const r = Request(method: "GET", path: "/", headers: [], body: Bytes([]))
+    print("by hand: \"{r.peer}\"")
+}

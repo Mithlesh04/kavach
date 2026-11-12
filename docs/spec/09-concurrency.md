@@ -89,9 +89,18 @@ for order in receive {
 | `send.put(v)` | Adds `v`. When the channel already holds `capacity` values, it waits until one is taken. Putting into a closed channel panics. |
 | `send.try_put(v) -> Bool` | Adds `v` if the channel has room and gives `true`; when it is full or closed, gives `false` at once and `v` is let go. It never waits, so one slow taker can't hold up a task that sends to many. |
 | `send.close()` | No more values will come. Values already in the channel can still be taken. |
-| `receive.take()` | The next value, in the order they were put, as `T?`. It waits while the channel is empty, and gives `none` once the channel is closed and empty. |
+| `receive.take() -> Taken<T>` | The next value, in the order they were put, as `Taken.Item(value)`. It waits while the channel is empty, and gives `Taken.Closed` once the channel is closed and empty. |
 
-`for v in receive` takes values until `take()` gives `none`. Waiting in `put` and `take` is waiting in the sense of 9.7: other tasks run meanwhile, and tasks waiting on one channel go on in the order they started waiting. If every task waits and none can go on (a receiver whose sender never closes, say), the program panics with a deadlock.
+`Taken<T> = Item(value: T) | Closed` keeps a value and the channel's end apart, even when the values are optional: a `Channel<Order?>` can carry `none`, and `none` taken is `Item(value: none)`, not `Closed` ([decision 0097](../decisions/0097-take-gives-taken.md)).
+
+```kavach
+match receive.take() {
+    Taken.Item(order) => process(order),
+    Taken.Closed => print("no more orders"),
+}
+```
+
+`for v in receive` takes values until `take()` gives `Closed`. Waiting in `put` and `take` is waiting in the sense of 9.7: other tasks run meanwhile, and tasks waiting on one channel go on in the order they started waiting. If every task waits and none can go on (a receiver whose sender never closes, say), the program panics with a deadlock.
 
 `capacity` must be at least 1. Copies of an end share the channel, like `Shared` (6.2).
 
@@ -173,7 +182,7 @@ A wait can be given a time limit, a `Duration` (14.4), with `.timeout(d)` on `ta
 
 ```kavach
 const page = try fetch.wait().timeout(5.seconds)
-const next = receive.take().timeout(200.ms) catch e => none
+const next = receive.take().timeout(200.ms) catch e => Taken.Closed
 ```
 
 ## 9.7 Taking turns

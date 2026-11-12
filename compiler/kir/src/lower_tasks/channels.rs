@@ -1,5 +1,5 @@
 //! `for v in receive` (spec 9.4): a loop that takes from the channel
-//! until it gives `none`.
+//! until it is closed and empty.
 
 use super::{at, local};
 use crate::ir::{self, Block, ExprKind as K, Shape, Stmt, Type};
@@ -47,9 +47,10 @@ impl<'a> Lowerer<'a> {
         };
         let take = K::Rt(next, vec![local(chan, chan_ty, line)]);
         let mut first = Vec::new();
-        if next == RtOp::ChanTake && !item_ty.is_ref() {
-            // A value held by value comes back as itself, with no optional
-            // made for it, and `ChanEnded` says when there was none.
+        if next == RtOp::ChanTake {
+            // The value comes back as itself, with no optional made for
+            // it, and `ChanEnded` says when there was none: a sent `none`
+            // is a value (decision 0097).
             first.push(Stmt::Let(
                 var,
                 at(

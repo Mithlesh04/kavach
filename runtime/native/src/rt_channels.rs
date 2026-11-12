@@ -327,8 +327,15 @@ thread_local! {
 
 /// The next value as an optional of type `code`, or `none` once the
 /// channel is closed and empty.
+/// `receive.take()`: a `Taken<T>` of type `code`, `Item(value)` or
+/// `Closed` (spec 9.4, decision 0097). When the wait failed, the error is
+/// set and `Closed` is never seen.
 fn take(chan: i64, code: i64, limit: crate::rt_tasks::Limit, line: i32) -> i64 {
-    next(chan, limit, line).map_or(0, |v| crate::rt_data::optional(Some(v as i64), code))
+    let ty = type_of(code);
+    match next(chan, limit, line) {
+        Some(v) => crate::rt_json::new_variant(ty, "Item", &[v]),
+        None => crate::rt_json::new_variant(ty, "Closed", &[]),
+    }
 }
 
 /// The next value, or `None` once the channel is closed and empty, or the

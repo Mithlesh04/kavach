@@ -12,7 +12,7 @@
 // expect output: closed
 // expect output: took 50
 // expect output: total 150
-// expect output: -1
+// expect output: Closed
 
 fn main() {
     const (send, receive) = Channel<Int>(capacity: 2)
@@ -30,5 +30,5 @@ fn main() {
         total += n
     }
     print("total {total}")
-    print(receive.take() ?? -1)
+    print(receive.take())
 }

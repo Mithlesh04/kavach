@@ -1,0 +1,8 @@
+// std.tasks (spec 9.4): what taking from a channel gives. Tasks and
+// channels themselves are built into the compiler and runtime; every
+// program that uses a channel gets this module.
+
+/// What `receive.take()` gives: the next value, or `Closed` once the
+/// channel is closed and empty. A `none` sent on a `Channel<T?>` is
+/// `Item(value: none)`, never `Closed` (decision 0097).
+pub type Taken<T> = Item(value: T) | Closed

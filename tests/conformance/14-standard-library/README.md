@@ -72,6 +72,8 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.11 | [http-serves-and-fetches.kav](http-serves-and-fetches.kav) | `std.http` serves from a handler and fetches status, headers and body; other URLs than `http://` and `https://` give `BadUrl`. | runs |
 | 14.11 | [http-servers-keep-connections-open.kav](http-servers-keep-connections-open.kav) | `http.serve` keeps an HTTP/1.1 connection open for the next request, after a chunked body too, and closes it when asked. | runs |
 | 14.11 | [http-sessions-reuse-one-connection.kav](http-sessions-reuse-one-connection.kav) | A session's requests all go over one connection, each waiting for its response. | runs |
+| 14.11 | [http-requests-take-any-method-and-headers.kav](http-requests-take-any-method-and-headers.kav) | `http.request(method, url, headers, body)` and `session.request(…)` send any method, the headers given and a body. | runs |
+| 14.11, 14.10 | [http-requests-know-who-sent-them.kav](http-requests-know-who-sent-them.kav) | A served `Request` has `peer`, the address of whoever opened the connection, as `conn.peer()` gives it. | runs |
 | 14.11 | [http-json-shares-types.kav](http-json-shares-types.kav) | A server and its client share types through `std.http`'s JSON calls; a status other than 2xx is `Status`, a body of the wrong shape `BadJson`. | runs |
 | 14.2 | [float-bits-round-trip.kav](float-bits-round-trip.kav) | `x.bits()` gives a `Float`'s IEEE 754 bits; `Float.from_bits(n)` gives it back. | runs |
 | 14.14 | [grpc-messages-are-protocol-buffers.kav](grpc-messages-are-protocol-buffers.kav) | `grpc.encode<T>` writes Protocol Buffers with field `n` the type's `n`th field; `grpc.decode<T>` reads them back. | runs |
