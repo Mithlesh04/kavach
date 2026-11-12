@@ -279,6 +279,23 @@ impl<'a> Interp<'a> {
                 return Err(Flow::Exit(code));
             }
             ("cli", "parse") => return self.cli_parse(generics, span),
+            ("cli", "stop_hold") => {
+                let ms = match args.first() {
+                    Some(Value::Int(n, _)) => *n as i64,
+                    _ => 0,
+                };
+                Value::Int(
+                    i128::from(kavach_runtime_core::stop_holds::hold(ms)),
+                    Prim::Int,
+                )
+            }
+            ("cli", "stop_asked") => Value::Bool(kavach_runtime_core::stop_holds::asked()),
+            ("cli", "stop_done") => {
+                if let Some(Value::Int(n, _)) = args.first() {
+                    kavach_runtime_core::stop_holds::done(*n as i64);
+                }
+                Value::Unit
+            }
             ("regex", "new" | "advanced") => {
                 let pattern = Pattern::new(&text(0), name == "advanced")
                     .map_err(|e| Flow::Fail(Value::BuiltinError(e.into())))?;

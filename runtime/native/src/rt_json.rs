@@ -318,24 +318,32 @@ pub fn tree(p: i64) -> Tree {
     }
 }
 
-/// A `JsonError.Mismatch`: decoding wanted `want` at `path`.
-pub(crate) fn mismatch(path: &str, want: &str) -> i64 {
+/// A `JsonError.Invalid` listing `problems`, each where decoding failed
+/// and what it wanted there (spec 2.12).
+pub(crate) fn invalid(problems: &[(String, String)]) -> i64 {
     let Some(ty) = crate::shapes::find_union("JsonError", "Syntax") else {
         return 0;
     };
-    let text_ty = match shape(ty) {
-        Shape::Union { variants, .. } => variants
-            .iter()
-            .flat_map(|v| &v.fields)
-            .find(|f| f.name == "path")
-            .map_or(Type::I64, |f| f.ty),
+    let list_ty = variant(ty, "Invalid").1.unwrap_or(Type::I64);
+    let Shape::List(record) = shape(list_ty) else {
+        return 0;
+    };
+    let text_ty = match shape(*record) {
+        Shape::Record { fields, .. } => fields.first().map_or(Type::I64, |f| f.ty),
         _ => Type::I64,
     };
-    let fields = [
-        new_text(path, text_ty) as u64,
-        new_text(want, text_ty) as u64,
-    ];
-    new_variant(ty, "Mismatch", &fields)
+    let items = problems
+        .iter()
+        .map(|(path, want)| {
+            let fields = vec![
+                new_text(path, text_ty) as u64,
+                new_text(want, text_ty) as u64,
+            ];
+            crate::rt_json_decode::fixed(*record, 0, &fields)
+        })
+        .collect();
+    let list = crate::heap::alloc_slots(list_ty, 0, items);
+    new_variant(ty, "Invalid", &[list as u64])
 }
 
 /// `e` as a `JsonError` value.
@@ -381,6 +389,7 @@ crate::rt_data::entry!(kv_rt_json, |op, a, b, c, code, line| {
             crate::rt_json_decode::decode_op(op, a, b, c, code)
         }
         RtOp::JsonParse | RtOp::JsonStringify | RtOp::JsonOf => json_op(op, a, b, code, line),
+        RtOp::JsonCheckRegister => crate::rt_json_checks::register(a, b, c),
         _ => crate::rt_json_read::read_op(op, a, b, code),
     }
 });

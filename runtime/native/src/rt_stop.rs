@@ -2,7 +2,8 @@
 //! and 0063): the program ends as `cli.exit` does, with its end hooks
 //! run and its output flushed, and exit code 130 (`SIGINT`), 143
 //! (`SIGTERM`) or 129 (`SIGHUP`, the terminal closed). A second one
-//! ends it at once.
+//! ends it at once. Holds (`cli.on_stop`, decision 0088) get their grace
+//! first (`kavach_runtime_core::stop_holds`).
 
 use std::sync::OnceLock;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -30,6 +31,7 @@ fn stop(code: i32) {
     if STOPPING.swap(true, Ordering::SeqCst) {
         std::process::exit(code);
     }
+    kavach_runtime_core::stop_holds::let_holders_finish(code);
     if let Some(hooks) = HOOKS.get() {
         hooks();
     }

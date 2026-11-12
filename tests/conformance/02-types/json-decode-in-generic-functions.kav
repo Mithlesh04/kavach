@@ -2,7 +2,7 @@
 // Spec: 2.12
 // expect output: 2
 // expect output: [3, 4]
-// expect output: Mismatch(path: "y", expected: "a whole number that fits `Int`")
+// expect output: Invalid(problems: [JsonProblem(path: "y", expected: "a whole number that fits `Int`")])
 
 use std.json
 

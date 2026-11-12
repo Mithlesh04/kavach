@@ -5,11 +5,35 @@
 // std.http can use it from its client and its server; programs use
 // std.http.
 
-/// The first line, headers and body of an HTTP message.
+use std.http.hpack
+
+/// The first line, headers and body of an HTTP message. Header names are
+/// in lower case, in the order they came, repeats kept.
 pub type Message {
     pub first: String
-    pub headers: [String: String]
+    pub headers: [Header]
     pub body: Bytes
+}
+
+/// The value of the first header named `name` (in lower case), if any.
+pub fn first_header(headers: [Header], name: String) -> String? {
+    for h in headers {
+        if h.name == name {
+            return h.value
+        }
+    }
+    none
+}
+
+/// The values of every header named `name` (in lower case), in order.
+pub fn all_headers(headers: [Header], name: String) -> [String] {
+    let out: [String] = []
+    for h in headers {
+        if h.name == name {
+            out.push(h.value)
+        }
+    }
+    out
 }
 
 /// Where the head of a message ends (its blank line), if it has.
@@ -28,18 +52,30 @@ pub fn parse(data: Bytes) -> Message? {
     const end = head_end(data) ?? return none
     const head = data.slice(0, end).text() ?? return none
     const lines = head.split("\u{D}\n")
-    let headers: [String: String] = [:]
+    let headers: [Header] = []
     for line in lines.skip(1) {
         const colon = line.index_of(":") ?? continue
-        headers[line.slice(0, colon).trim().lower()] = line.slice(colon + 1, line.len()).trim()
+        const name = line.slice(0, colon).trim().lower()
+        headers.push(Header(name: name, value: line.slice(colon + 1, line.len()).trim()))
     }
     const body = data.slice(end + 4, data.len())
     Message(first: lines.first() ?? "", headers: headers, body: body)
 }
 
+/// HTTP/2 headers without the pseudo-headers (`:status`, `:path`, …).
+pub fn plain(headers: [String: String]) -> [Header] {
+    let out: [Header] = []
+    for (name, value) in headers {
+        if not name.starts_with(":") {
+            out.push(Header(name: name, value: value))
+        }
+    }
+    out
+}
+
 /// Whether a message's body comes in chunks (RFC 9112 7.1).
-pub fn chunked(headers: [String: String]) -> Bool {
-    (headers.get("transfer-encoding") ?? "").lower().contains("chunked")
+pub fn chunked(headers: [Header]) -> Bool {
+    (first_header(headers, "transfer-encoding") ?? "").lower().contains("chunked")
 }
 
 /// The data of a body sent in chunks, without the chunk sizes and the
@@ -61,7 +97,7 @@ pub fn whole(data: Bytes) -> (message: Message, used: Int)? {
         const done = Message(first: m.first, headers: m.headers, body: body.data)
         return (message: done, used: head + body.used)
     }
-    const length = Int(m.headers.get("content-length") ?? "0") catch e => 0
+    const length = Int(first_header(m.headers, "content-length") ?? "0") catch e => 0
     if m.body.len() < length {
         return none
     }
@@ -144,7 +180,12 @@ pub fn reason(status: Int) -> String {
         204 => "No Content",
         400 => "Bad Request",
         404 => "Not Found",
+        408 => "Request Timeout",
+        413 => "Content Too Large",
+        417 => "Expectation Failed",
+        431 => "Request Header Fields Too Large",
         500 => "Internal Server Error",
+        503 => "Service Unavailable",
         _ => "Status",
     }
 }

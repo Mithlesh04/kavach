@@ -3,7 +3,7 @@
 // expect output: pen, packed (7)
 // expect output: 2 orders, first #1
 // expect output: can't: Status(code: 400)
-// expect output: can't: BadJson(error: Mismatch(path: "", expected: "an array"))
+// expect output: can't: BadJson(error: Invalid(problems: [JsonProblem(path: "", expected: "an array")]))
 
 use std.http
 use std.json

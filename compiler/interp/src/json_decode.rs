@@ -15,6 +15,14 @@ use std::rc::Rc;
 
 type Decoded<'a> = Result<Value<'a>, Flow<'a>>;
 
+thread_local! {
+    /// While `json.decode` decodes: the problems found so far, each where
+    /// and what was wanted. Decoding then goes on after one, so the error
+    /// lists every problem (spec 2.12, decision 0086).
+    static PROBLEMS: std::cell::RefCell<Option<Vec<(String, String)>>> =
+        const { std::cell::RefCell::new(None) };
+}
+
 impl<'a> Interp<'a> {
     /// `json.decode<T>(text, limits…)` or `json.decode_value<T>(j)`; `ty` is
     /// the call's type, `T ! JsonError`.
@@ -42,19 +50,114 @@ impl<'a> Interp<'a> {
         } else {
             a[0].as_ref().map_or(Tree::Null, crate::json::json_tree)
         };
-        self.decode(&tree, &t, "")
+        PROBLEMS.with(|p| *p.borrow_mut() = Some(Vec::new()));
+        let decoded = self.decode(&tree, &t, "");
+        let mut problems = PROBLEMS.with(|p| p.borrow_mut().take()).unwrap_or_default();
+        let value = decoded?;
+        // Once the shapes fit, the invariants (spec 7.3).
+        if problems.is_empty() {
+            self.invariants_broken(&value, "", &mut problems)?;
+        }
+        match problems.is_empty() {
+            true => Ok(value),
+            false => Err(Flow::Fail(self.invalid(&problems))),
+        }
     }
 
-    fn mismatch(&self, path: &str, want: &str) -> Flow<'a> {
-        let fields = vec![
-            ("path", self.str_value(path)),
-            ("expected", self.str_value(want)),
-        ];
-        Flow::Fail(self.builtin_variant("JsonError", "Mismatch", fields))
+    /// A `JsonError.Invalid` listing `problems` (spec 2.12).
+    fn invalid(&self, problems: &[(String, String)]) -> Value<'a> {
+        let list = problems
+            .iter()
+            .map(|(path, want)| Value::Record {
+                def: self.c.resolution.std_type("JsonProblem").unwrap_or(0),
+                name: Rc::from("JsonProblem"),
+                fields: vec![
+                    Field {
+                        name: Rc::from("path"),
+                        value: self.str_value(path),
+                        secret: false,
+                    },
+                    Field {
+                        name: Rc::from("expected"),
+                        value: self.str_value(want),
+                        secret: false,
+                    },
+                ],
+                life: None,
+            })
+            .collect();
+        let fields = vec![("problems", Value::List(Rc::new(list)))];
+        self.builtin_variant("JsonError", "Invalid", fields)
+    }
+
+    /// A problem at `path`, where decoding wanted `want`: noted, with an
+    /// empty value in its place, while every problem is collected;
+    /// otherwise the error at once.
+    fn problem(&self, path: &str, want: &str) -> Decoded<'a> {
+        let noted = PROBLEMS.with(|p| match p.borrow_mut().as_mut() {
+            Some(all) => {
+                all.push((path.to_string(), want.to_string()));
+                true
+            }
+            None => false,
+        });
+        match noted {
+            true => Ok(Value::Unit),
+            false => Err(Flow::Fail(
+                self.invalid(&[(path.to_string(), want.to_string())]),
+            )),
+        }
+    }
+
+    /// Notes each invariant decoded `value` (of a record, or holding
+    /// records) breaks, with the record's path.
+    fn invariants_broken(
+        &mut self,
+        value: &Value<'a>,
+        path: &str,
+        out: &mut Vec<(String, String)>,
+    ) -> Result<(), Flow<'a>> {
+        match value {
+            Value::Record { fields, .. } => {
+                for text in self.broken_invariants(value)? {
+                    out.push((path.to_string(), format!("invariant `{text}`")));
+                }
+                for f in fields.clone() {
+                    self.invariants_broken(&f.value, &path_field(path, &f.name), out)?;
+                }
+            }
+            Value::Variant { name, fields, .. } => {
+                let at = path_field(path, name);
+                for f in fields.clone() {
+                    self.invariants_broken(&f.value, &path_field(&at, &f.name), out)?;
+                }
+            }
+            Value::List(items) => {
+                for (i, v) in items.clone().iter().enumerate() {
+                    self.invariants_broken(v, &path_item(path, i), out)?;
+                }
+            }
+            Value::Tuple(items) => {
+                for (i, v) in items.clone().iter().enumerate() {
+                    self.invariants_broken(v, &path_item(path, i), out)?;
+                }
+            }
+            Value::Map(m) => {
+                for (k, v) in m.entries.clone().iter() {
+                    let key = match k {
+                        Value::Str(s) => s.to_string(),
+                        _ => String::new(),
+                    };
+                    self.invariants_broken(v, &path_field(path, &key), out)?;
+                }
+            }
+            _ => {}
+        }
+        Ok(())
     }
 
     pub(crate) fn decode(&mut self, t: &Tree, ty: &Ty, path: &str) -> Decoded<'a> {
-        let wrong = |want: &str| Err(self.mismatch(path, want));
+        let wrong = |want: &str| self.problem(path, want);
         match (ty, t) {
             (Ty::Prim(Prim::Bool), Tree::Bool(b)) => Ok(Value::Bool(*b)),
             (Ty::Prim(Prim::Bool), _) => wrong(expected::BOOL),
@@ -162,7 +265,7 @@ impl<'a> Interp<'a> {
         let name: Rc<str> = Rc::from(self.c.resolution.defs[def].name.as_str());
         if let Some(decl) = self.records.get(&def).copied() {
             let (Tree::Object(given), TypeBody::Record(r)) = (t, &decl.body) else {
-                return Err(self.mismatch(path, expected::OBJECT));
+                return self.problem(path, expected::OBJECT);
             };
             let fields = self.decode_fields(given, &r.fields, def, path)?;
             return Ok(Value::Record {
@@ -173,7 +276,7 @@ impl<'a> Interp<'a> {
             });
         }
         let Some(TypeBody::Union(variants)) = self.unions.get(&def).map(|d| &d.body) else {
-            return Err(self.mismatch(path, expected::OBJECT));
+            return self.problem(path, expected::OBJECT);
         };
         let found = match t {
             Tree::Text(v) => variants
@@ -190,7 +293,7 @@ impl<'a> Interp<'a> {
             _ => None,
         };
         let Some((variant, given)) = found else {
-            return Err(self.mismatch(path, &expected::variant(&name)));
+            return self.problem(path, &expected::variant(&name));
         };
         let at = path_field(path, &variant.name.name);
         let owner = self
@@ -224,7 +327,7 @@ impl<'a> Interp<'a> {
                 (Some((_, t)), _, Some(ty)) => self.decode(t, ty, &at)?,
                 (None, Some(d), _) => self.eval(d)?,
                 (None, None, Some(Ty::Optional(_))) => Value::None,
-                _ => return Err(self.mismatch(path, &expected::field(name))),
+                _ => self.problem(path, &expected::field(name))?,
             };
             out.push(Field {
                 name: Rc::from(name),

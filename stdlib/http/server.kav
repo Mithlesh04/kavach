@@ -1,0 +1,255 @@
+// The HTTP server of std.http (spec 14.11): each connection in a task on
+// any core, HTTP/1.1 requests one after another, or HTTP/2 when the
+// client starts with its preface. Every client is held to the server's
+// `ServeLimits`: how large a request may be, how fast it must come, and
+// how many connections and requests there may be at once. On a stop
+// signal it drains: it holds the program's stop (`cli.on_stop`), answers
+// the requests under way and closes its connections, then lets go.
+// Programs call it through `http.serve`.
+
+use std.cli
+use std.http
+use std.http.h2
+use std.http.hpack
+use std.http.message
+use std.net
+use std.time
+
+/// How many connections are open, and requests being answered, across
+/// every core; and the hold on the program's stop.
+type Load {
+    connections: Shared<Int>
+    in_flight: Shared<Int>
+    stop: StopHold
+}
+
+/// What reading the next request on a connection found.
+type Got = Ready(message: Message, used: Int, data: Bytes) |
+    Preface(data: Bytes) |
+    Closed |
+    Refused(status: Int)
+
+pub fn serve(listener: Listener, handler: fn(Request) -> Response, limits: ServeLimits) ! NetError uses Net {
+    const stop = cli.on_stop(grace: limits.drain_timeout)
+    const load = Load(connections: Shared(0), in_flight: Shared(0), stop: stop)
+    while not stop.asked() {
+        const conn = listener.accept().timeout(200.ms) catch e => match e {
+            NetError.TimedOut(_) => continue,
+            _ => {
+                stop.done()
+                fail e
+            }
+        }
+        load.connections.update(n => n + 1)
+        const task = spawn cores answer(conn, handler, limits, load)
+    }
+    // Draining: new connections get 503 while the others finish.
+    while load.connections.get() > 0 {
+        const late = listener.accept().timeout(50.ms) catch e => continue
+        refuse(late, 503, limits) catch e => {}
+        late.close()
+    }
+    stop.done()
+}
+
+/// Serves `conn` until the client closes, asks to close, waits too long
+/// or breaks a limit; or HTTP/2 when the client starts with its preface.
+fn answer(conn: Connection, handler: fn(Request) -> Response, limits: ServeLimits, load: Load) ! NetError uses Net {
+    if load.connections.get() > limits.max_connections {
+        refuse(conn, 503, limits) catch e => {}
+        return finish(conn, load)
+    }
+    let data = Bytes([])
+    let first = true
+    while true {
+        if load.stop.asked() {
+            return finish(conn, load)
+        }
+        match read_request(conn, data, limits, load.stop) {
+            Got.Preface(all) if first => {
+                serve_h2(conn, all, handler) catch e => {}
+                return finish(conn, load)
+            }
+            Got.Ready(m, used, all) => {
+                const keep = respond(conn, m, handler, limits, load) catch e => false
+                if not keep {
+                    return finish(conn, load)
+                }
+                // What came after the request: the start of the next one.
+                data = all.slice(used, all.len())
+            }
+            Got.Refused(status) => {
+                refuse(conn, status, limits) catch e => {}
+                return finish(conn, load)
+            }
+            _ => return finish(conn, load),
+        }
+        first = false
+    }
+}
+
+/// Closes `conn`, which no longer counts.
+fn finish(conn: Connection, load: Load) uses Net {
+    conn.close()
+    load.connections.update(n => n - 1)
+}
+
+/// The next request on `conn`, `data` holding what came with the last.
+/// Its line and headers must come within `header_timeout` and fit
+/// `max_header_bytes`; its body must fit `max_body_bytes` and come at
+/// `min_body_rate` or faster.
+fn read_request(conn: Connection, data: Bytes, limits: ServeLimits, stop: StopHold) -> Got uses Net {
+    let all = data
+    // When the request's first byte came; -1 while waiting for one.
+    let started = if all.is_empty() { -1 } else { time.monotonic_ms() }
+    const waited = time.monotonic_ms()
+    while true {
+        if all.len() >= 4 and all.slice(0, 4) == "PRI ".bytes() {
+            return Got.Preface(data: all)
+        }
+        if let end = message.head_end(all) {
+            if end > limits.max_header_bytes {
+                return Got.Refused(status: 431)
+            }
+            break
+        }
+        if all.len() > limits.max_header_bytes {
+            return Got.Refused(status: 431)
+        }
+        const left = if started < 0 {
+            limits.idle_timeout.ms - (time.monotonic_ms() - waited)
+        } else {
+            limits.header_timeout.ms - (time.monotonic_ms() - started)
+        }
+        if left <= 0 {
+            return if started < 0 { Got.Closed } else { Got.Refused(status: 408) }
+        }
+        // Waiting for a next request: a stop closes the connection.
+        if started < 0 and stop.asked() {
+            return Got.Closed
+        }
+        const slice = if started < 0 { left.min(200) } else { left }
+        const got = conn.read().timeout(slice.ms) catch e => match e {
+            NetError.TimedOut(_) => continue,
+            _ => return Got.Closed,
+        }
+        all = all + (got ?? return Got.Closed)
+        if started < 0 {
+            started = time.monotonic_ms()
+        }
+    }
+    const head = message.parse(all) ?? return Got.Refused(status: 400)
+    const length = Int(message.first_header(head.headers, "content-length") ?? "0") catch e => {
+        return Got.Refused(status: 400)
+    }
+    if length > limits.max_body_bytes or length < 0 {
+        return Got.Refused(status: 413)
+    }
+    // The client waits for a go-ahead before sending the body.
+    if (message.first_header(head.headers, "expect") ?? "").lower() == "100-continue" {
+        conn.write("HTTP/1.1 100 Continue{message.crlf()}{message.crlf()}".bytes()) catch e => {
+            return Got.Closed
+        }
+    }
+    const body_started = time.monotonic_ms()
+    const head_bytes = all.len() - head.body.len()
+    while true {
+        if let got = message.whole(all) {
+            return Got.Ready(message: got.message, used: got.used, data: all)
+        }
+        const received = all.len() - head_bytes
+        if received > limits.max_body_bytes {
+            return Got.Refused(status: 413)
+        }
+        // A second's grace, then `min_body_rate` bytes a second.
+        const allowed = 1_000 + received * 1_000 / limits.min_body_rate.max(1)
+        const left = allowed - (time.monotonic_ms() - body_started)
+        if left <= 0 {
+            return Got.Refused(status: 408)
+        }
+        const got = conn.read().timeout(left.ms) catch e => return Got.Refused(status: 408)
+        all = all + (got ?? return Got.Closed)
+    }
+    Got.Closed
+}
+
+/// Answers request `m` with `handler`, or with 503 when too many are
+/// being answered. Whether the connection stays open: not when the
+/// client asked to close or spoke HTTP/1.0 without `keep-alive`.
+fn respond(conn: Connection, m: Message, handler: fn(Request) -> Response, limits: ServeLimits, load: Load) -> Bool ! NetError uses Net {
+    const parts = m.first.split(" ")
+    const asked = (message.first_header(m.headers, "connection") ?? "").lower()
+    const old = (parts.get(2) ?? "") == "HTTP/1.0"
+    // A stop closes the connection after this answer.
+    const keep = asked != "close" and (not old or asked == "keep-alive") and not load.stop.asked()
+    load.in_flight.update(n => n + 1)
+    const response = if load.in_flight.get() > limits.max_in_flight {
+        busy(limits)
+    } else {
+        handler(Request(method: parts.get(0) ?? "", path: parts.get(1) ?? "/", headers: m.headers, body: m.body))
+    }
+    load.in_flight.update(n => n - 1)
+    try send(conn, response, keep)
+    keep
+}
+
+/// Answers with `status`: a request that broke a limit. What the client
+/// sent meanwhile is read and dropped first, for a moment and at most
+/// 64 KB, so closing doesn't reset the connection before it reads the
+/// answer.
+fn refuse(conn: Connection, status: Int, limits: ServeLimits) ! NetError uses Net {
+    const response = if status == 503 { busy(limits) } else { http.text(status, message.reason(status)) }
+    try send(conn, response, false)
+    let dropped = 0
+    while dropped < 65_536 {
+        const got = conn.read().timeout(50.ms) catch e => break
+        dropped += (got ?? break).len()
+    }
+}
+
+/// 503, saying when to come back.
+fn busy(limits: ServeLimits) -> Response {
+    const r = http.text(503, "the server is busy: try again soon")
+    let headers = r.headers
+    headers.push(Header(name: "retry-after", value: "{limits.retry_after}"))
+    Response(status: 503, headers: headers, body: r.body)
+}
+
+/// Writes `response` on `conn`, saying whether the connection stays open.
+fn send(conn: Connection, response: Response, keep: Bool) ! NetError uses Net {
+    const crlf = message.crlf()
+    let head = "HTTP/1.1 {response.status} {message.reason(response.status)}{crlf}"
+    for h in response.headers {
+        head = head + "{h.name}: {h.value}{crlf}"
+    }
+    const connection = if keep { "keep-alive" } else { "close" }
+    head = head + "content-length: {response.body.len()}{crlf}connection: {connection}{crlf}{crlf}"
+    try conn.write(head.bytes() + response.body)
+}
+
+/// Serves HTTP/2 on `conn`, which began with `data`: requests one at a
+/// time, each answered by `handler`.
+fn serve_h2(conn: Connection, data: Bytes, handler: fn(Request) -> Response) ! H2Error uses Net {
+    let link = try h2.accept(conn, data)
+    while true {
+        const next = try h2.next(link)
+        link = next.link
+        const m = next.message ?? break
+        const request = Request(
+            method: m.headers.get(":method") ?? "GET",
+            path: m.headers.get(":path") ?? "/",
+            headers: message.plain(m.headers),
+            body: m.body,
+        )
+        const response = handler(request)
+        let headers = [Header(name: ":status", value: "{response.status}")]
+        for h in response.headers {
+            // Headers about the connection don't exist in HTTP/2.
+            if not ["connection", "keep-alive", "transfer-encoding", "upgrade", "content-length"].contains(h.name) {
+                headers.push(h)
+            }
+        }
+        headers.push(Header(name: "content-length", value: "{response.body.len()}"))
+        link = try h2.respond(link, m.stream, headers, response.body)
+    }
+}

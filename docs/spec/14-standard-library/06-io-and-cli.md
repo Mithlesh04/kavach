@@ -10,6 +10,9 @@
 | `cli.args() -> [String]` | The program's arguments, without its own name. Needs `Env` |
 | `cli.exit(code)` | Ends the program at once with `code`. Needs `Env` |
 | `cli.parse<T>() -> T ! CliError` | The arguments, parsed into record type `T`, or into union type `T` of commands. Needs `Env` |
+| `cli.on_stop(grace: 10.seconds) -> StopHold` | A hold on the program's stop (5.8): while it is held, the first Ctrl+C, `SIGTERM` or closed terminal lets the program finish its work, for at most `grace`, instead of ending it at once |
+| `hold.asked() -> Bool` | Whether a stop has been asked for |
+| `hold.done()` | Lets go of the hold: once no hold is left after a stop was asked, the program ends |
 
 `cli.parse` reads options from the field names and types of `T`, so a command line is described once, as a type:
 

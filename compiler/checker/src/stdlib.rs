@@ -273,6 +273,22 @@ impl Checker<'_> {
             ("io", "write") => (vec![p("text", &string)], Ty::Unit),
             ("cli", "args") => (vec![], Ty::List(Box::new(string.clone()))),
             ("cli", "exit") => (vec![p("code", &int)], Ty::Never),
+            // Holds on the program's stop, for `cli.on_stop` in
+            // `std/cli.kav` (decision 0088).
+            ("cli", "stop_hold" | "stop_asked" | "stop_done") => {
+                let module = &self.res.modules[self.res.module_at(span.start)].name;
+                if !module.starts_with("std.") {
+                    self.error(
+                        span,
+                        "this is for the standard library: use `cli.on_stop(grace)` (spec 14.6)",
+                    );
+                }
+                match name {
+                    "stop_hold" => (vec![p("grace_ms", &int)], int.clone()),
+                    "stop_asked" => (vec![], Ty::Prim(Prim::Bool)),
+                    _ => (vec![p("id", &int)], Ty::Unit),
+                }
+            }
             ("time", "every_ms") => (vec![p("ms", &int)], Ty::Builtin("Ticker", Vec::new())),
             ("regex", "new" | "advanced") => (
                 vec![p("pattern", &string)],
@@ -371,8 +387,10 @@ impl Checker<'_> {
         }
         // `std.agents` needs nothing, except to answer approvals (14.16).
         let answers = module == "agents" && matches!(name, "request_fields" | "answer_request");
+        // A hold on the program's stop needs nothing (decision 0088).
+        let holds = module == "cli" && name.starts_with("stop_");
         if let Some(cap) = (MODULES.iter())
-            .find(|(m, _)| *m == module && !reads_clock && !reads_zone)
+            .find(|(m, _)| *m == module && !reads_clock && !reads_zone && !holds)
             .and_then(|(_, c)| if answers { Some("Approvals") } else { *c })
         {
             // Reading and changing files are granted apart (spec 8.1).

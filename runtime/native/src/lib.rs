@@ -44,6 +44,7 @@ mod rt_gpu;
 mod rt_journal;
 pub mod rt_json;
 pub mod rt_json_build;
+mod rt_json_checks;
 pub mod rt_json_decode;
 mod rt_json_pull;
 mod rt_json_read;
@@ -127,6 +128,11 @@ pub fn run_entry(entry: *const u8, fails: bool) -> i32 {
         1
     } else {
         0
+    };
+    // `main` returned while a stop signal let it finish (decision 0088).
+    let exit_code = match kavach_runtime_core::stop_holds::asked_code() {
+        Some(code) if exit_code == 0 => code,
+        _ => exit_code,
     };
     rt::run_at_exit();
     // With KAVACH_CHECK_LEAKS=1, report `Shared` values a cycle kept

@@ -1,0 +1,18 @@
+// Rule: `cli.on_stop(grace)` gives a hold on the program's stop, not asked until a stop signal comes; taking and letting go of one needs no capability.
+// Spec: 5.8, 14.6
+// expect output: asked: false
+// expect output: let go
+
+use std.cli
+
+pub fn take_and_let_go() -> Bool {
+    const hold = cli.on_stop(grace: 2.seconds)
+    const asked = hold.asked()
+    hold.done()
+    asked
+}
+
+fn main() {
+    print("asked: {take_and_let_go()}")
+    print("let go")
+}

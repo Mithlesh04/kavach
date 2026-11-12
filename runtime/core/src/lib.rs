@@ -18,6 +18,7 @@ pub mod log;
 pub mod processes;
 pub mod regex;
 pub mod serial;
+pub mod stop_holds;
 pub mod tasks;
 pub mod zones;
 

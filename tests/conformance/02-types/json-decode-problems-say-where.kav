@@ -1,4 +1,4 @@
-// Rule: When JSON doesn't fit the type, decoding fails with a `Mismatch` that says where and what was expected; numbers must fit their type.
+// Rule: When JSON doesn't fit the type, decoding fails with `Invalid`, whose problems each say where and what was expected; numbers must fit their type.
 // Spec: 2.12
 // expect output: lines[0].price: a number
 // expect output: id: a whole number that fits `Int`
@@ -18,7 +18,11 @@ type Order {
 
 fn explain(e: JsonError) {
     match e {
-        JsonError.Mismatch(path, expected) => print("{path}: {expected}"),
+        JsonError.Invalid(problems) => {
+            for p in problems {
+                print("{p.path}: {p.expected}")
+            }
+        }
         _ => print("other"),
     }
 }

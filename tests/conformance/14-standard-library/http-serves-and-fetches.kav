@@ -23,7 +23,7 @@ fn main() ! Error {
     const base = "http://{listener.address()}"
     const a = try http.get("{base}/hello")
     print("{a.status} {a.body.text() ?? "?"}")
-    print(a.headers.get("content-type") ?? "-")
+    print(a.header("content-type") ?? "-")
     const b = try http.post("{base}/hello", "abc".bytes())
     print("{b.status} {b.body.text() ?? "?"}")
     const c = try http.get("{base}/nothing")

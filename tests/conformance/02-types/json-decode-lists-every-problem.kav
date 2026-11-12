@@ -1,0 +1,29 @@
+// Rule: decoding goes on after a problem, so `Invalid` lists every problem in the document, in its order, not only the first.
+// Spec: 2.12
+// expect output: 3 problems
+// expect output: [0].name: text
+// expect output: [1]: a field `name`
+// expect output: [2].qty: a whole number that fits `Int`
+
+use std.json
+
+type Item {
+    name: String
+    qty: Int
+}
+
+fn main() {
+    const text = "[\{\"name\": 5, \"qty\": 1}, \{\"qty\": 2}, \{\"name\": \"cup\", \"qty\": \"x\"}]"
+    match json.decode<[Item]>(text) {
+        ok(_) => print("decoded"),
+        err(e) => match e {
+            JsonError.Invalid(problems) => {
+                print("{problems.len()} problems")
+                for p in problems {
+                    print("{p.path}: {p.expected}")
+                }
+            }
+            _ => print("other"),
+        },
+    }
+}

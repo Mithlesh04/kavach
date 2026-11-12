@@ -1,0 +1,29 @@
+// std.cli (spec 14.6): the parts written in Kavach. Arguments, `exit` and
+// `parse` are built into the compiler and runtime; this file holds the
+// holds on a program's stop (spec 5.8, decision 0088), over three
+// functions only the standard library may call.
+
+use std.cli
+
+/// A hold on the program's stop: while it is kept, the first Ctrl+C,
+/// `SIGTERM` or closed terminal lets the program finish its work, for at
+/// most its grace, instead of ending it at once.
+pub type StopHold {
+    id: Int
+
+    /// Whether a stop has been asked for.
+    pub fn asked(self) -> Bool {
+        cli.stop_asked()
+    }
+
+    /// Lets go of the hold: once no hold is left after a stop was asked,
+    /// the program ends, with the signal's exit code.
+    pub fn done(self) {
+        cli.stop_done(self.id)
+    }
+}
+
+/// A hold on the program's stop, with `grace` to finish in.
+pub fn on_stop(grace: Duration = 10.seconds) -> StopHold {
+    StopHold(id: cli.stop_hold(grace.ms))
+}

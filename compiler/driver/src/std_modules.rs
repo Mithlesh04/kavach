@@ -57,6 +57,16 @@ pub(crate) const BUILTIN: &[(&str, &str, &str)] = &[
         include_str!("../../../stdlib/http/http.kav"),
     ),
     (
+        "std/cli.kav",
+        "std.cli",
+        include_str!("../../../stdlib/cli/cli.kav"),
+    ),
+    (
+        "std/http/server.kav",
+        "std.http.server",
+        include_str!("../../../stdlib/http/server.kav"),
+    ),
+    (
         "std/http/hpack.kav",
         "std.http.hpack",
         include_str!("../../../stdlib/http/hpack.kav"),
@@ -266,7 +276,8 @@ mod tests {
         for (text, want) in [
             ("print(\"hi\")", vec![]),
             ("use std.json\nprint(json.stringify(1))", vec!["std.json"]),
-            // A module's own `use`s come along: http needs json, net and h2.
+            // A module's own `use`s come along: http needs json, net, h2 and
+            // its server, which needs cli for its stop hold.
             (
                 "use std.http",
                 vec![
@@ -275,6 +286,8 @@ mod tests {
                     "std.time",
                     "std.net",
                     "std.http",
+                    "std.cli",
+                    "std.http.server",
                     "std.http.hpack",
                     "std.http.message",
                     "std.http.h2.wire",

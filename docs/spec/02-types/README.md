@@ -29,6 +29,5 @@ Each section is a file of its own: new sections go at the end, with the next num
 - **Decoding unions:** the `{"Variant": {…}}` form only, or also a tag field (`"type": "Circle"`) chosen on the union?
 - **`BigInt` and bits:** should `& | ^ << >> ~` work on `BigInt`, as on the other whole numbers? Not yet.
 - **`BigInt` back to `Int`:** comes with the conversions planned for every built-in type (`Int(b)`, failing when it doesn't fit).
-- **Decoding and invariants:** decoded records are not checked against their type's `invariant`s (7.3) yet. Should a broken one be a `Mismatch` error?
 
 Decisions are recorded in [0013](../../decisions/0013-core-language-decisions.md) and, for `Json`, [0019](../../decisions/0019-json-values.md).

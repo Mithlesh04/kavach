@@ -11,7 +11,7 @@
 //! exactly as an `i64` or an `f64` is kept as one, which is fast; any
 //! other keeps its text.
 
-/// What decoding wanted where a value didn't fit (`Mismatch`'s
+/// What decoding wanted where a value didn't fit (a `JsonProblem`'s
 /// `expected`), the same in the interpreter and native code.
 pub mod expected {
     pub const NUMBER: &str = "a number";

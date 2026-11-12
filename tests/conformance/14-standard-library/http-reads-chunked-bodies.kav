@@ -34,7 +34,7 @@ fn main() ! Error {
     const _b = spawn chunked_server(cut, false)
     const _failed = http.get("http://{cut.address()}/") catch e => {
         print("cut: {e}")
-        Response(status: 0, headers: [:], body: Bytes([]))
+        Response(status: 0, headers: [], body: Bytes([]))
     }
     const server = try net.listen("127.0.0.1:0")
     const _c = spawn http.serve(server, echo)

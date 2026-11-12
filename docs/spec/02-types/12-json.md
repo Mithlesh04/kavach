@@ -159,7 +159,38 @@ type JsonError = Syntax(line: Int, column: Int, message: String) |
     TooDeep(limit: Int) |
     TooLarge(limit: Int) |
     DuplicateKey(key: String, line: Int, column: Int) |
-    Mismatch(path: String, expected: String)
+    Invalid(problems: [JsonProblem])
+
+pub type JsonProblem {
+    pub path: String
+    pub expected: String
+}
 ```
 
-`Mismatch` comes from decoding: `path` is where in the document (`items[2].price`), `expected` what the type wanted there, naming the field's type where a number doesn't fit it: ``a whole number that fits `UInt8` `` for `300` in a `UInt8` field.
+`Invalid` comes from decoding, and lists **every** problem in the document, in its order, not only the first, so a service can answer with all of them at once ([decision 0086](../../decisions/0086-decoding-reports-every-problem.md)). Each problem's `path` is where in the document (`items[2].price`, `""` for the whole), and `expected` what the type wanted there, naming the field's type where a number doesn't fit it: ``a whole number that fits `UInt8` `` for `300` in a `UInt8` field.
+
+A decoded value is checked against its types' `invariant`s (7.3), as any value is when it is made. Text from outside breaking one is not a mistake in the program, so it is a problem too, not a panic: its `path` is the record's, and `expected` is ``invariant `qty > 0` ``. The invariants are checked once every value has the right shape: until then, the problems are those of shape.
+
+```kavach
+type Item {
+    name: String
+    qty: Int
+
+    invariant qty > 0
+}
+
+const text = "[\{\"name\": 5, \"qty\": 1}, \{\"qty\": 2}]"
+const items = json.decode<[Item]>(text) catch e => match e {
+    JsonError.Invalid(problems) => {
+        for p in problems {
+            print("{p.path}: {p.expected}")      // [0].name: text
+        }                                        // [1]: a field `name`
+        []
+    }
+    _ => [],
+}
+const none_left = json.decode<[Item]>("[\{\"name\": \"pen\", \"qty\": 0}]") catch e => {
+    print(e)    // Invalid(problems: [JsonProblem(path: "[0]", expected: "invariant `qty > 0`")])
+    []
+}
+```

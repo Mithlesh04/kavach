@@ -1,0 +1,41 @@
+// Rule: a request's and a response's headers are a list in the order sent, names in lower case, repeats kept; `header(name)` gives the first, `headers_named(name)` every one.
+// Spec: 14.11
+// expect output: a=1, b=2
+// expect output: text/plain; charset=utf-8
+// expect output: none
+// expect output: cookie seen: 2
+
+use std.http
+use std.net
+
+fn cookies(r: Request) -> Response {
+    const seen = r.headers_named("Cookie").len()
+    Response(
+        status: 200,
+        headers: [
+            Header(name: "content-type", value: "text/plain; charset=utf-8"),
+            Header(name: "set-cookie", value: "a=1"),
+            Header(name: "set-cookie", value: "b=2"),
+        ],
+        body: "cookie seen: {seen}".bytes(),
+    )
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, cookies)
+    const r = try http.get("http://{listener.address()}/")
+    print(r.headers_named("set-cookie").join(", "))
+    print(r.header("Content-Type") ?? "none")
+    print(r.header("x-missing") ?? "none")
+    // Two `cookie` lines reach the handler as two headers.
+    const conn = try net.connect(listener.address())
+    const crlf = "\u{D}\n"
+    try conn.write("GET / HTTP/1.1{crlf}host: x{crlf}cookie: a=1{crlf}cookie: b=2{crlf}connection: close{crlf}{crlf}".bytes())
+    let all = Bytes([])
+    while true {
+        all = all + ((try conn.read()) ?? break)
+    }
+    const text = all.text() ?? ""
+    print(text.slice(text.index_of("cookie seen") ?? 0, text.len()))
+}

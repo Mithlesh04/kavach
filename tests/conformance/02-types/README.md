@@ -82,7 +82,9 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.12 | [json-of-encodes-typed-values.kav](json-of-encodes-typed-values.kav) | `json.of` encodes records as objects, unions by variant name, optionals as `null`, and maps with text keys as objects. | runs |
 | 2.12, 2.11 | [json-secret-fields-are-not-encoded.kav](json-secret-fields-are-not-encoded.kav) | A record with a `secret` field can't be encoded as JSON. | compile error |
 | 2.12 | [json-decode-into-records.kav](json-decode-into-records.kav) | `json.decode<T>` reads JSON straight into a typed value: missing fields take their default or `none`, unknown fields are ignored, and unions are read by variant name. | runs |
-| 2.12 | [json-decode-mismatch-says-where.kav](json-decode-mismatch-says-where.kav) | When JSON doesn't fit the type, decoding fails with a `Mismatch` that says where and what was expected; numbers must fit their type. | runs |
+| 2.12 | [json-decode-problems-say-where.kav](json-decode-problems-say-where.kav) | When JSON doesn't fit the type, decoding fails with `Invalid`, whose problems say where and what was expected; numbers must fit their type. | runs |
+| 2.12 | [json-decode-lists-every-problem.kav](json-decode-lists-every-problem.kav) | Decoding goes on after a problem, so `Invalid` lists every problem in the document, in its order. | runs |
+| 2.12, 7.3 | [json-decode-checks-invariants.kav](json-decode-checks-invariants.kav) | A decoded value is checked against its types' invariants; a broken one is a problem with the record's path, not a panic. | runs |
 | 2.12 | [json-decode-keeps-json-fields.kav](json-decode-keeps-json-fields.kav) | Decoding reads a field of type `Json` as written, whatever it holds. | runs |
 | 2.13 | [bytes-hold-raw-data.kav](bytes-hold-raw-data.kav) | `Bytes` holds raw data: from text or `[UInt8]`, indexed, sliced, joined, compared, back to text. | runs |
 | 2.13 | [bytes-index-out-of-range-panics.kav](bytes-index-out-of-range-panics.kav) | `b[i]` out of range panics. | panic |

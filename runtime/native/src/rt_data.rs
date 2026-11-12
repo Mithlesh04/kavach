@@ -399,6 +399,13 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         | RtOp::CliExit
         | RtOp::CliParse => crate::rt_std::std_op(op, a, b, code, line),
         RtOp::TimeWaitUntil => crate::rt_std::wait_until(a, line),
+        // Holds on the program's stop (decision 0088).
+        RtOp::CliStopHold => kavach_runtime_core::stop_holds::hold(a),
+        RtOp::CliStopAsked => i64::from(kavach_runtime_core::stop_holds::asked()),
+        RtOp::CliStopDone => {
+            kavach_runtime_core::stop_holds::done(a);
+            0
+        }
         RtOp::MapGet
         | RtOp::MapGetOr
         | RtOp::MapInsert

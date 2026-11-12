@@ -408,6 +408,15 @@ pub enum RtOp {
     /// At a statement boundary: run the `drop` of the values whose last
     /// holder has ended (`runtime/native/src/rt_drops.rs`).
     DropRun,
+    /// Before a `json.decode` (spec 2.12, decision 0086): records of type
+    /// number `a` are checked by closure `b` (`fn(T) -> Int`, the bits of
+    /// the invariants broken), whose invariants' texts are list `c`.
+    JsonCheckRegister,
+    /// `cli.stop_hold(grace_ms)`, `cli.stop_asked()` and `cli.stop_done(id)`
+    /// in `std/cli.kav` (decision 0088): holds on the program's stop.
+    CliStopHold,
+    CliStopAsked,
+    CliStopDone,
     /// `d.round(places)` (`c` is 0) and `d.round_even(places)` (`c` is 1)
     /// on a `Decimal` (spec 14.2).
     DecRound,

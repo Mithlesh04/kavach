@@ -333,7 +333,9 @@ fn command(path: &str, run: impl FnOnce(&Compiled) -> kavach_interp::Output) -> 
     let output = run(&compiled);
     let _ = std::io::stdout().write_all(output.stdout.as_bytes());
     let _ = std::io::stderr().write_all(output.stderr.as_bytes());
-    ExitCode::from(u8::try_from(output.exit_code).unwrap_or(1))
+    // `main` returned while a stop signal let it finish (decision 0088).
+    let code = kavach_runtime_core::stop_holds::asked_code().filter(|_| output.exit_code == 0);
+    ExitCode::from(u8::try_from(code.unwrap_or(output.exit_code)).unwrap_or(1))
 }
 
 /// `kavach test`: examples, `test` blocks and generated tests (spec 11.9).

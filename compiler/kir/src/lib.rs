@@ -48,6 +48,7 @@ mod lower_guard;
 mod lower_iface;
 mod lower_inout;
 mod lower_json;
+mod lower_json_checks;
 mod lower_labels;
 mod lower_lambda;
 mod lower_log;

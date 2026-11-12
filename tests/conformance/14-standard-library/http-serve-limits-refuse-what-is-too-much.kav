@@ -1,0 +1,60 @@
+// Rule: `http.serve` holds each client to its `ServeLimits`: a body larger than `max_body_bytes` is refused by its `content-length` (413), headers past `max_header_bytes` get 431, headers too slow to come get 408, `expect: 100-continue` is answered before the body, and past `max_in_flight` or `max_connections` a request gets 503 with `retry-after`.
+// Spec: 14.11
+// expect output: HTTP/1.1 413 Content Too Large
+// expect output: HTTP/1.1 431 Request Header Fields Too Large
+// expect output: HTTP/1.1 408 Request Timeout
+// expect output: HTTP/1.1 100 Continue
+// expect output: got 5 bytes
+// expect output: HTTP/1.1 503 Service Unavailable
+// expect output: retry-after: 7
+// expect output: HTTP/1.1 503 Service Unavailable
+
+use std.http
+use std.net
+use std.time
+
+fn sizes(r: Request) -> Response {
+    http.text(200, "got {r.body.len()} bytes")
+}
+
+/// Sends `text` and gives every line that comes back.
+fn exchange(address: String, text: String, then: String) -> [String] ! NetError uses Net, Clock {
+    const conn = try net.connect(address)
+    try conn.write(text.bytes())
+    if not then.is_empty() {
+        time.sleep(100.ms)
+        try conn.write(then.bytes())
+    }
+    let all = Bytes([])
+    while true {
+        all = all + ((try conn.read()) ?? break)
+    }
+    conn.close()
+    (all.text() ?? "").split("\u{D}\n")
+}
+
+fn main() ! Error {
+    const crlf = "\u{D}\n"
+    const limits = ServeLimits(max_header_bytes: 200, max_body_bytes: 10, header_timeout: 300.ms)
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, sizes, limits: limits)
+    const at = listener.address()
+    const big = try exchange(at, "POST / HTTP/1.1{crlf}content-length: 50{crlf}{crlf}", "")
+    print(big[0])
+    const long = try exchange(at, "GET / HTTP/1.1{crlf}x-long: {"a".repeat(300)}{crlf}{crlf}", "")
+    print(long[0])
+    const slow = try exchange(at, "GET / HTTP/1.1{crlf}host: x", "")
+    print(slow[0])
+    const ask = "POST / HTTP/1.1{crlf}content-length: 5{crlf}expect: 100-continue{crlf}connection: close{crlf}{crlf}"
+    const continued = try exchange(at, ask, "hello")
+    print(continued[0])
+    print(continued[continued.len() - 1])
+    const full = try net.listen("127.0.0.1:0")
+    const _busy = spawn http.serve(full, sizes, limits: ServeLimits(max_in_flight: 0, retry_after: 7))
+    const busy = try exchange(full.address(), "GET / HTTP/1.1{crlf}connection: close{crlf}{crlf}", "")
+    print(busy[0])
+    print(busy.find(l => l.starts_with("retry-after")) ?? "none")
+    const crowded = try net.listen("127.0.0.1:0")
+    const _crowded = spawn http.serve(crowded, sizes, limits: ServeLimits(max_connections: 0))
+    print((try exchange(crowded.address(), "GET / HTTP/1.1{crlf}{crlf}", ""))[0])
+}

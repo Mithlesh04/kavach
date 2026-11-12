@@ -1,0 +1,37 @@
+// Rule: a decoded value is checked against its types' invariants; text breaking one is a problem with the record's path, not a panic, and a value that keeps them decodes.
+// Spec: 2.12, 7.3
+// expect output: items[1]: invariant `qty > 0`
+// expect output: gift: invariant `qty > 0`
+// expect output: decoded 7
+
+use std.json
+
+type Item {
+    name: String
+    qty: Int
+
+    invariant qty > 0
+}
+
+type Order {
+    id: Int
+    items: [Item]
+    gift: Item?
+}
+
+fn main() {
+    const broken = "\{\"id\": 1, \"items\": [\{\"name\": \"a\", \"qty\": 2}, \{\"name\": \"b\", \"qty\": -1}], \"gift\": \{\"name\": \"g\", \"qty\": 0}}"
+    match json.decode<Order>(broken) {
+        ok(_) => print("decoded"),
+        err(e) => match e {
+            JsonError.Invalid(problems) => {
+                for p in problems {
+                    print("{p.path}: {p.expected}")
+                }
+            }
+            _ => print("other"),
+        },
+    }
+    const fine = json.decode<Order>("\{\"id\": 7, \"items\": [\{\"name\": \"a\", \"qty\": 2}]}") catch _ => Order(id: 0, items: [], gift: none)
+    print("decoded {fine.id}")
+}

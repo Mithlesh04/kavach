@@ -144,7 +144,7 @@ For an AI-agent language this is the most valuable capability refinement. SSRF a
 
 It is also what remains in Kavach of the mass-assignment class (GitHub 2012, [The Hacker News](https://thehackernews.com/2012/03/github-hacked-with-ruby-on-rails-public.html)): wire data constructing records directly.
 
-**Rule needed: decoding enforces invariants; a violation is a `Mismatch` error.** Close this open question with a yes. It is one of the single decisions on the board that pays back the most.
+**Done (2026-11-12, [decision 0086](../decisions/0086-decoding-reports-every-problem.md)): decoding enforces invariants; a violation is a problem in the decode's `Invalid` error, with the record's path.** It was one of the single decisions on the board that paid back the most.
 
 **Swallowed error handlers** (the OSDI 35% slice: empty or log-only handlers). Errors can't be *ignored*, but they can be explicitly discarded. `catch _ => {}` and `catch default` are legal, and the spec itself uses one in `Drop`. Yuan's Aspirator checker found 143 real bugs just by flagging these patterns. Kavach's agent findings report already does the deep version ("Email.send fails after a refund succeeded in 61 scenarios", [spec 11](../spec/11-testing.md)).
 

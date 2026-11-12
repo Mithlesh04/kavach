@@ -20,6 +20,50 @@ use kavach_runtime_core::{Decimal, format_float};
 /// Where decoding failed, and what it wanted there.
 type Failed = (String, String);
 
+thread_local! {
+    /// While `json.decode` decodes: the problems found so far. Decoding
+    /// then goes on after one, with an empty slot in its place, so the
+    /// error lists every problem (spec 2.12, decision 0086). Other callers
+    /// stop at the first.
+    static PROBLEMS: std::cell::RefCell<Option<Vec<Failed>>> =
+        const { std::cell::RefCell::new(None) };
+}
+
+/// `e`, unless the problems are being collected: then it is noted, and
+/// decoding goes on.
+fn stop_at(e: Failed) -> Option<Failed> {
+    PROBLEMS.with(|p| match p.borrow_mut().as_mut() {
+        Some(all) => {
+            all.push(e);
+            None
+        }
+        None => Some(e),
+    })
+}
+
+/// Decodes `t` as type `ty` for `json.decode`, listing every problem:
+/// those of shape, or, when the shapes fit, each broken invariant.
+fn decode_every(t: &Tree, ty: Type, templates: i64) -> Result<u64, Vec<Failed>> {
+    PROBLEMS.with(|p| *p.borrow_mut() = Some(Vec::new()));
+    let result = decode(t, ty, "", templates);
+    let mut problems = PROBLEMS.with(|p| p.borrow_mut().take()).unwrap_or_default();
+    let slot = match result {
+        Ok(slot) => slot,
+        Err(e) => {
+            problems.push(e);
+            0
+        }
+    };
+    if problems.is_empty() {
+        problems = crate::rt_json_checks::broken(slot, ty);
+    }
+    if problems.is_empty() {
+        return Ok(slot);
+    }
+    release_slot(slot as i64, ty);
+    Err(problems)
+}
+
 /// `json.decode<T>(text, limits, templates)` or
 /// `json.decode_value<T>(json, 0, templates)`, all owned: a value of type
 /// `code`, or 0 with the error set.
@@ -41,7 +85,13 @@ pub fn decode_op(op: RtOp, a: i64, b: i64, c: i64, code: i64) -> i64 {
         // fails is the text parsed into a tree, to say why.
         let ty = type_of(code);
         if let Some(v) = with_str(a, |s| crate::rt_json_pull::decode(s, &limits, ty, c)) {
-            return finish(a, b, c, v as i64);
+            let broken = crate::rt_json_checks::broken(v, ty);
+            if broken.is_empty() {
+                return finish(a, b, c, v as i64);
+            }
+            release_slot(v as i64, ty);
+            set_error(crate::rt_json::invalid(&broken));
+            return finish(a, b, c, 0);
         }
         let parsed = with_str(a, |s| json::parse(s, &limits));
         match parsed {
@@ -54,10 +104,10 @@ pub fn decode_op(op: RtOp, a: i64, b: i64, c: i64, code: i64) -> i64 {
     } else {
         crate::rt_json::tree(a)
     };
-    let result = match decode(&tree, type_of(code), "", c) {
+    let result = match decode_every(&tree, type_of(code), c) {
         Ok(slot) => slot as i64,
-        Err((path, want)) => {
-            set_error(crate::rt_json::mismatch(&path, &want));
+        Err(problems) => {
+            set_error(crate::rt_json::invalid(&problems));
             0
         }
     };
@@ -169,9 +219,10 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
             let keys: Vec<String> = fields.iter().map(|(k, _)| path_field(path, k)).collect();
             let mut built = Vec::with_capacity(values.len());
             for (i, (value, at)) in values.iter().zip(&keys).enumerate() {
-                match decode(value, types[i], at, templates) {
+                match decode(value, types[i], at, templates).map_err(stop_at) {
                     Ok(slot) => built.push(slot),
-                    Err(e) => return Err(drop_all(built, &types, e)),
+                    Err(None) => built.push(0),
+                    Err(Some(e)) => return Err(drop_all(built, &types, e)),
                 }
             }
             let mut map = crate::rt_maps::kv_map_new(type_code(ty));
@@ -232,7 +283,7 @@ pub(crate) fn exact_number(text: &str, ty: Type) -> Option<u64> {
     }
 }
 
-/// What a `Decimal` or `BigInt` field wants, for a `Mismatch`.
+/// What a `Decimal` or `BigInt` field wants, for a `JsonProblem`.
 fn wanted(ty: Type) -> &'static str {
     match shape(ty) {
         Shape::BigInt => expected::WHOLE,
@@ -262,9 +313,10 @@ fn decode_all(
 ) -> Result<Vec<u64>, Failed> {
     let mut built = Vec::with_capacity(items.len());
     for (i, (item, t)) in items.iter().zip(types).enumerate() {
-        match decode(item, *t, &path_item(path, i), templates) {
+        match decode(item, *t, &path_item(path, i), templates).map_err(stop_at) {
             Ok(slot) => built.push(slot),
-            Err(e) => return Err(drop_all(built, types, e)),
+            Err(None) => built.push(0),
+            Err(Some(e)) => return Err(drop_all(built, types, e)),
         }
     }
     Ok(built)
@@ -303,9 +355,10 @@ fn decode_fields(
                 _ => Err((path.to_string(), expected::field(&f.name))),
             },
         };
-        match slot {
+        match slot.map_err(stop_at) {
             Ok(s) => built.push(s),
-            Err(e) => return Err(drop_all(built, &types, e)),
+            Err(None) => built.push(0),
+            Err(Some(e)) => return Err(drop_all(built, &types, e)),
         }
     }
     Ok(built)

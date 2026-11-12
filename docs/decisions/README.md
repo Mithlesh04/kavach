@@ -91,6 +91,9 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0083](0083-dependencies-by-path-and-git.md) | Dependencies by `path` and `git` with `kavach.lock`, before a registry; a dependency's modules are named after it, and `unsafe` is allowed per dependency | Accepted |
 | [0084](0084-environment-variables-and-granted-capabilities.md) | Capabilities granted per dependency (`can`); `env` values are secrets; `.env` files read by `kavach run`, `kavach test` and built programs, never compiled in | Accepted |
 | [0085](0085-function-types-with-errors-and-uses.md) | Function types say their errors and `uses`; a lambda's `try` is its own; built-in methods pass a function's error on; `json.describe(f)` | Accepted |
+| [0086](0086-decoding-reports-every-problem.md) | Decoding lists every problem in one `Invalid` error; decoded values are checked against their invariants, a broken one being a problem | Accepted |
+| [0087](0087-http-headers-and-server-limits.md) | HTTP headers as a list of `Header`s with `header(name)` and `headers_named(name)`; `http.serve` takes one `limits: ServeLimits` record with safe defaults | Accepted |
+| [0088](0088-finishing-before-a-stop.md) | `cli.on_stop(grace)` holds a program's stop so it can finish its work; `http.serve` drains by itself on a stop signal | Accepted |
 
 ## Open decisions
 

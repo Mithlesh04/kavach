@@ -18,7 +18,14 @@ pub type JsonError = Syntax(line: Int, column: Int, message: String) |
     TooDeep(limit: Int) |
     TooLarge(limit: Int) |
     DuplicateKey(key: String, line: Int, column: Int) |
-    Mismatch(path: String, expected: String)
+    Invalid(problems: [JsonProblem])
+
+/// One problem decoding found (spec 2.12): where in the document, and
+/// what the type wanted there.
+pub type JsonProblem {
+    pub path: String
+    pub expected: String
+}
 
 /// The largest power of ten `decimal()` reads (spec 2.12), so a short
 /// text like `1e999999999` can't make a huge value.

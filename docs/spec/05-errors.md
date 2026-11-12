@@ -168,6 +168,22 @@ The error's message becomes `loading settings: <original message>`. The original
 
 Ctrl+C, a closed terminal and `SIGTERM` end the program the way `cli.exit` does: what it printed is flushed, and logs and traces are sent before it ends ([decision 0062](../decisions/0062-crashes-restarts-and-clocks.md)). A second Ctrl+C ends it at once.
 
+**Finishing before a stop.** A program with work it must not cut off (requests being answered, a file half written, a queue to empty) takes a hold with `cli.on_stop(grace)` (14.6). While a hold is kept, the first stop signal doesn't end the program: `hold.asked()` turns `true`, and the program finishes what it is doing. It ends, with the signal's exit code, once every hold is let go of with `hold.done()`, or when the longest `grace` has passed, or when `main` returns; a second signal ends it at once. `http.serve` takes a hold of its own, so a server turns new connections away and finishes the requests under way before the program ends (14.11, [decision 0088](../decisions/0088-finishing-before-a-stop.md)).
+
+```kavach
+use std.cli
+use std.time
+
+fn main() uses Clock {
+    const hold = cli.on_stop(grace: 30.seconds)
+    while not hold.asked() {
+        work_a_little()
+    }
+    save_progress()         // Docker's SIGTERM: this still runs
+    hold.done()
+}
+```
+
 In debug builds, an error also records every `try` it passed through. When `main` returns the error, this **error trace** is printed below the message, so you can see the path the error took without a debugger.
 
 These messages never go to standard output, so a program's real output stays clean.

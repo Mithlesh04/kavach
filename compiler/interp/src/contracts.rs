@@ -48,4 +48,29 @@ impl<'a> Interp<'a> {
         self.invariant_fields.pop();
         result
     }
+
+    /// The texts of the invariants record `value` breaks, for decoding
+    /// (spec 2.12): there a broken one is a problem, not a panic.
+    pub(crate) fn broken_invariants(&mut self, value: &Value<'a>) -> Result<Vec<String>, Flow<'a>> {
+        let Value::Record { def, fields, .. } = value else {
+            return Ok(Vec::new());
+        };
+        let Some(TypeBody::Record(r)) = self.records.get(def).map(|t| &t.body) else {
+            return Ok(Vec::new());
+        };
+        let mut broken = Vec::new();
+        self.invariant_fields.push(fields.clone());
+        for inv in &r.invariants {
+            match self.eval(inv) {
+                Ok(Value::Bool(true)) => {}
+                Ok(_) => broken.push(self.text(inv.span).to_string()),
+                Err(flow) => {
+                    self.invariant_fields.pop();
+                    return Err(flow);
+                }
+            }
+        }
+        self.invariant_fields.pop();
+        Ok(broken)
+    }
 }

@@ -70,7 +70,19 @@ impl<'a> Lowerer<'a> {
             (RtOp::JsonDecodeValue, at(K::Int(0), Type::I64))
         };
         let templates = self.templates(ty, line, span)?;
-        Ok(at(K::Rt(op, vec![first, limits, templates]), ty))
+        let decoded = at(K::Rt(op, vec![first, limits, templates]), ty);
+        // The invariants of what it holds are checked too (spec 2.12).
+        let checks = self.invariant_checks(ty, line)?;
+        if checks.is_empty() {
+            return Ok(decoded);
+        }
+        Ok(at(
+            K::Block(ir::Block {
+                stmts: checks,
+                value: Some(Box::new(decoded)),
+            }),
+            ty,
+        ))
     }
 
     /// For each record type reachable from `ty` whose fields have
