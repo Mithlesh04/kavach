@@ -6,6 +6,7 @@ import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
 import { OpTable, operatorGroups } from "./operator-tables";
 import { Ex, H2, Note, P } from "./parts";
+import { ModuleTable } from "./spec-table";
 
 const symbolsFix = loadProject("operators/symbols-fix", ["src/main.kav"]);
 
@@ -205,7 +206,12 @@ export const mathFunctionsDoc: LessonDoc = {
   lead: "sqrt, pow, gcd, lcm, is_prime, factorial, mean, and the constants pi and e.",
   simple: <>These are the buttons of a scientific calculator, ready to use in code. Each one takes numbers and gives back an answer, such as the square root of a number.</>,
   minutes: 2,
-  body: <Ex name="math/functions" />,
+  body: (
+    <>
+      <Ex name="math/functions" />
+      <ModuleTable file="05-math.md" number="14.5" first="Name" />
+    </>
+  ),
 };
 
 export const roundingDoc: LessonDoc = {
