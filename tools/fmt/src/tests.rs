@@ -24,6 +24,23 @@ const CASES: &[(&str, &str)] = &[
     ),
     // `\r\n` becomes `\n`.
     ("fn a() {\r\nx()\r\n}\r\n", "fn a() {\n    x()\n}\n"),
+    // A line ending in a type's `>` doesn't continue; one ending in `a >` does.
+    (
+        "type Load {
+live: Shared<Int>
+stop: Int
+}
+const big = a >
+b
+",
+        "type Load {
+    live: Shared<Int>
+    stop: Int
+}
+const big = a >
+    b
+",
+    ),
     // A multi-line string is left exactly as it is.
     (
         "fn a() {\nconst s = \"\"\"\n   keep   \n  this\n   \"\"\"\n}\n",

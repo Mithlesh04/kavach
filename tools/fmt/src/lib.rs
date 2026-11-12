@@ -176,7 +176,12 @@ pub fn format(src: &str) -> Result<String, String> {
         }
         out.push(format!("{}{text}", "    ".repeat(level as usize)));
         if let Some(last) = on_line.last() {
-            previous = Some(last);
+            // A `>` that closes a `<` of its line ends a type, as in
+            // `connections: Shared<Int>`: the next line doesn't continue it.
+            let lt = on_line.iter().filter(|t| matches!(t, T::Lt)).count();
+            let gt = on_line.iter().filter(|t| matches!(t, T::Gt)).count();
+            let closes_type = matches!(last, T::Gt) && lt >= gt;
+            previous = if closes_type { None } else { Some(last) };
         }
     }
     for (at, comment_depth) in comments {
