@@ -1,7 +1,7 @@
 //! How each task runs, chosen where it is spawned (spec 9.8, decision
 //! 0069): `spawn`, `spawn thread` and `spawn cores` print the same, alone
 //! or mixed in one program; `tasks =` in `kavach.toml` says where the
-//! choice went.
+//! choice went; `http.serve`'s handlers run on every core (spec 14.11).
 
 use std::path::Path;
 use std::process::Command;
@@ -101,5 +101,25 @@ tasks = \"threads\"
     assert!(
         err.contains("kavach.toml") && err.contains("spawn thread"),
         "{err}"
+    );
+}
+
+#[test]
+fn http_handlers_on_every_core_answer_right() {
+    let toml = "[package]
+name = \"t\"
+";
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(
+        "../../tests/conformance/14-standard-library/http-serves-many-clients-on-every-core.kav",
+    );
+    let program = std::fs::read_to_string(path).unwrap();
+    let got = build_and_run("http", toml, &program);
+    assert_eq!(
+        got.as_deref(),
+        Ok("answers: 80
+right: 80
+counted: 80
+"),
+        "built with workers on every core"
     );
 }

@@ -180,13 +180,14 @@ pub fn open(url: String) -> Session ! HttpError uses Net {
     Session(conn: conn, host: host)
 }
 
-/// Serves HTTP on `listener`: each connection in a task of its own, its
-/// request answered by `handler`. Runs until the function that called it
-/// returns (its tasks are cancelled then, spec 9.2).
+/// Serves HTTP on `listener`: each connection in a task of its own, on
+/// any core (spec 14.11), its requests answered by `handler`. Runs until
+/// the function that called it returns (its tasks are cancelled then,
+/// spec 9.2).
 pub fn serve(listener: Listener, handler: fn(Request) -> Response) ! NetError uses Net {
     while true {
         const conn = try listener.accept()
-        const task = spawn answer(conn, handler)
+        const task = spawn cores answer(conn, handler)
     }
 }
 

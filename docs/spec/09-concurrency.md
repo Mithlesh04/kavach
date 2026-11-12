@@ -220,9 +220,9 @@ spawn cores render(frame)     // on any core of the machine
 
 | Written | How the task runs | Best for |
 |---|---|---|
-| `spawn` | A coroutine on the thread of the task that spawned it: passing the turn needs no operating system ([decision 0048](../decisions/0048-tasks-as-coroutines-per-core.md)) | Many tasks that mostly wait, such as a server's task per connection |
+| `spawn` | A coroutine on the thread of the task that spawned it: passing the turn needs no operating system ([decision 0048](../decisions/0048-tasks-as-coroutines-per-core.md)) | Many tasks that mostly wait on each other, such as the stages of a pipeline passing values on |
 | `spawn thread` | An operating-system thread of its own; a release build (`kavach build`) lets it compute ahead on another core until its first effect (9.7) | A task that blocks inside a C library, or computes for long |
-| `spawn cores` | On a worker thread per core, the next one in turn, started when the first such task is spawned | Heavy computing, spread over every core |
+| `spawn cores` | On a worker thread per core, the next one in turn, started when the first such task is spawned | Heavy computing, spread over every core, and a server's task per connection (`http.serve` uses it, 14.11) |
 | `spawn process` | An operating-system process of its own, running the program's code; the call's arguments and its result are copied in and out | Code Kavach can't check, such as a C or Python library that may hang: `cancel()` ends the process at once |
 
 - `spawn`, `spawn thread` and `spawn cores` take the same things: a call or a block, and the task is a `Task<T>` either way.

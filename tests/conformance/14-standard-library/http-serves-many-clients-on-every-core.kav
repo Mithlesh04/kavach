@@ -1,0 +1,43 @@
+// Rule: `http.serve` answers each connection in a `spawn cores` task, so many clients are served at once with the right answers, and handlers share only what a `Shared` value holds.
+// Spec: 14.11
+// expect output: answers: 80
+// expect output: right: 80
+// expect output: counted: 80
+
+use std.http
+use std.net
+
+fn ask(address: String, client: Int) -> Int ! HttpError uses Net {
+    const session = try http.open("http://{address}")
+    let right = 0
+    for n in 0..10 {
+        const r = try session.get("/{client}/{n}")
+        if r.body.text() == "/{client}/{n} squared is {n * n}" {
+            right += 1
+        }
+    }
+    session.close()
+    right
+}
+
+fn main() ! Error {
+    const count = Shared(0)
+    const listener = try net.listen("127.0.0.1:0")
+    const address = listener.address()
+    const _server = spawn http.serve(listener, r => {
+        count.update(c => c + 1)
+        const n = Int(r.path.split("/")[2]) catch _ => 0
+        http.text(200, "{r.path} squared is {n * n}")
+    })
+    let clients = []
+    for client in 0..8 {
+        clients.push(spawn cores ask(address, client))
+    }
+    let right = 0
+    for c in clients {
+        right += try c.wait()
+    }
+    print("answers: {8 * 10}")
+    print("right: {right}")
+    print("counted: {count.get()}")
+}

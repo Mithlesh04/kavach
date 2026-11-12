@@ -19,7 +19,7 @@ Header names are in lower case.
 | `http.open(url) -> Session ! HttpError` | A session: one HTTP/1.1 connection to the server of `url` (`http://` or `https://`; the path is not used), kept open for several requests |
 | `s.get(path)`, `s.post(path, body) -> Response ! HttpError` | A request on session `s`'s connection, waiting for its response |
 | `s.close()` | Closes the session's connection |
-| `http.serve(listener, handler) ! NetError` | Serves HTTP on `listener`: each connection in a task of its own, its request answered by `handler: fn(Request) -> Response`. It runs until the function that called it returns, which cancels it (9.2) |
+| `http.serve(listener, handler) ! NetError` | Serves HTTP on `listener`: each connection in a task of its own, on any core (`spawn cores`, 9.8), its requests answered by `handler: fn(Request) -> Response`. It runs until the function that called it returns, which cancels it (9.2) |
 | `http.text(status, body) -> Response` | A response with text |
 | `http.get_json<T>(url) -> T ! HttpError` | `GET url`, the response's JSON body decoded into a `T` (`json.decode<T>`, 2.12) |
 | `http.post_json<T>(url, body) -> T ! HttpError` | `POST url` with the `Json` value `body`, the response's JSON decoded into a `T` |
@@ -69,6 +69,8 @@ fn main() ! Error {
 ```
 
 A client's HTTP/1.1 connection carries one request and its response (`connection: close`). `http.serve` keeps a connection open for more, as HTTP/1.1 does by default: it answers the requests in the order they come, and closes the connection when the client asks (`connection: close`, or HTTP/1.0 without `connection: keep-alive`), or when the client sends nothing for 5 seconds.
+
+`http.serve` spreads its connections over every core of the machine: each connection's task is spawned with `spawn cores` (9.8), so in a release build (`kavach build`) handlers run at once on all cores, and other runs answer them on one core, in turn, with the same responses. A handler is a function value, so it shares nothing with the others but what it reaches through a `Shared` value (6.2) or a channel. What handlers print keeps the order `spawn cores` tasks keep ([decision 0049](../../decisions/0049-tasks-on-all-cores-keep-the-programs-order.md)): each handler's own lines in the order it prints them, whole. One task accepts the connections and hands each to a core; measured on Windows (24 cores, 32 clients making 200 requests each on kept-open connections), a handler that computes answered in 2.5–3.0 s instead of 18–20 s on one core, and one that does nearly nothing in 131–221 ms instead of 461–633 ms.
 
 A session sends its requests one after another on its connection, each waiting for its response, which must say its length (`content-length` or chunks). When the server has closed the connection, the request fails with `Network(error: Failed(address: host, reason: "the server closed the connection"))`; open a new session to go on. A session is for one task at a time: two tasks sending on one session at once could each read the other's response. Give each task its own session.
 
