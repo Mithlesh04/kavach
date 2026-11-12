@@ -1,0 +1,1 @@
+error: `greet` in the package `greeter` uses Console, which the package isn't granted: add "Console" to `can` in its entry in kavach.toml, and in the entry of each package it comes through, if you trust them (spec 10.12)

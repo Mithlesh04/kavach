@@ -5,7 +5,7 @@ import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
-import { fileFigure } from "@/lib/spec-tables";
+import { fileFigure, specBlockWith } from "@/lib/spec-tables";
 import { Files, H2, Note, P, Syntax } from "./parts";
 import { Limits } from "./limits";
 
@@ -73,6 +73,8 @@ export const pubDoc: LessonDoc = {
 // ---------- Packages ----------
 
 const dep = loadProject("projects/dep", ["kavach.toml", "geometry/src/lib.kav", "src/main.kav"]);
+const refused = loadProject("projects/grant.fails", ["kavach.toml", "greeter/src/lib.kav", "src/main.kav"]);
+const granted = loadProject("projects/grant-add", ["kavach.toml"]);
 
 // The spec's example of sources that are and aren't fetched, kept word for word.
 const careToml = () =>
@@ -112,6 +114,31 @@ export const packagesDoc: LessonDoc = {
         <li>A URL holding a password or token is refused, because <C>kavach.toml</C> and <C>kavach.lock</C> are committed. git finds the credentials for a private repository itself, from a credential helper or an SSH key.</li>
         <li>A fetched package can&apos;t name a <C>path</C> outside its own folder, and a name Windows keeps for a device (<C>con</C>, <C>nul</C>, <C>com1</C>…) is refused, so every project builds on every system.</li>
       </ul>
+      <H2>Each package gets only the capabilities you grant</H2>
+      <P>
+        A dependency may use only the <Link href="/docs/agents/capabilities/">capabilities</Link> its entry lists in{" "}
+        <C>can</C>. An entry without <C>can</C> grants none, so the package must be pure: it can&apos;t read files,
+        reach the network or print. Here <C>greeter</C> prints, and its entry grants nothing:
+      </P>
+      <CodeBlock code={refused.files[1].code} file="greeter/src/lib.kav" />
+      <CodeBlock code={refused.files[0].code} file="kavach.toml" lang="toml" output={refused.output} outcome="refused" />
+      <P>
+        <C>kavach add</C> reads what a package uses, says so, and writes it into <C>can</C>, so the person adding it
+        sees what it may do:
+      </P>
+      <Terminal session={granted.output ?? ""} />
+      <CodeBlock code={specBlockWith("10-modules-and-packages.md", "10.12", "can = [")} file="kavach.toml" lang="toml" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The error names the function and the capability, so you can decide whether to trust the package with it.</li>
+        <li>A dependency&apos;s own dependencies get at most what it was granted: a package granted only <C>Console</C> can&apos;t pass <C>Net</C> on to another.</li>
+        <li>An update that starts using a new capability fails to build until you grant it, so it can&apos;t quietly start reaching the network.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/10-modules/dependencies-use-only-granted-capabilities/src/main.kav" label="refused, tested" />
+        <SrcRef file="tests/conformance/10-modules/granted-capabilities-let-a-dependency-act/src/main.kav" label="granted, tested" />
+        <SrcRef file="tests/conformance/10-modules/dependencies-of-dependencies-get-no-more/src/main.kav" label="no more for theirs, tested" />
+        <SrcRef file="docs/decisions/0084-environment-variables-and-granted-capabilities.md" label="decision 0084" />
+      </div>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/10-modules-and-packages.md" label="spec 10.12 · dependencies" />
         <SrcRef file="tests/conformance/10-modules/dependencies-come-from-a-folder/src/main.kav" label="tested" />

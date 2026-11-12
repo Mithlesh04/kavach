@@ -1,0 +1,2 @@
+add greeter --path greeter
+run src/main.kav

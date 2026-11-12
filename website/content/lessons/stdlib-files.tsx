@@ -5,6 +5,7 @@ import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
+import { specBlockWith } from "@/lib/spec-tables";
 import { Ex, H2, Note, P } from "./parts";
 import { ModuleTable } from "./spec-table";
 
@@ -110,6 +111,40 @@ export const foldersDoc: LessonDoc = {
         <C>fs.remove</C> deletes a file or an empty folder, and <C>fs.exists</C> says whether something is there.
         Paths are relative to the folder the program runs in.
       </P>
+      <H2>Copy, rename and remove a whole folder</H2>
+      <Ex name="files/move" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>fs.copy</C> copies a file; <C>fs.rename</C> moves or renames a file or a folder.</li>
+        <li><C>fs.remove_all</C> deletes a folder with everything in it.</li>
+        <li>Under <C>{'uses Fs("folder")'}</C>, both paths of <C>copy</C> and <C>rename</C> must be inside that folder, so a file can&apos;t be carried out of it.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/14-standard-library/fs-info-and-permissions.kav" label="tested" />
+        <SrcRef file="tests/conformance/08-capabilities/rename-and-copy-stay-inside-the-folder.kav" label="both paths inside the folder, tested" />
+      </div>
+    </>
+  ),
+};
+
+export const fileInfoDoc: LessonDoc = {
+  lead: "fs.info gives a file's kind, size, time of change and permissions; fs.set_read_only and fs.set_permissions change them.",
+  simple: <>Every file has a label: is it a file or a folder, how big it is, when it last changed, and who may change it. <C>fs.info</C> reads the label, and two functions change who may write the file.</>,
+  minutes: 3,
+  before: ["standard-library/files"],
+  body: (
+    <>
+      <Ex name="files/info" />
+      <CodeBlock code={specBlockWith("14-standard-library/03-fs.md", "14.3", "pub type FileInfo")} file="std.fs" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>permissions</C> are the Unix bits, written in octal: <C>0o644</C> lets the owner read and write, and everyone else read; <C>0o755</C> lets anyone run the file.</li>
+        <li>A mode outside <C>0o0</C> to <C>0o7777</C> fails, as the last line shows.</li>
+        <li><strong className="text-ink">On Windows,</strong> files have no Unix bits. <C>permissions</C> is <C>0o444</C> for a read-only file and <C>0o666</C> otherwise (<C>0o555</C> and <C>0o777</C> for a folder), as Go and Rust report them. <C>set_permissions</C> keeps only the owner&apos;s write bit, <C>0o200</C>. A drive that keeps no Unix bits, such as a Windows drive mounted in Linux, keeps only read-only too.</li>
+        <li><C>fs.info</C> reads, so it needs <C>Fs.read</C>; the others change files and need <C>Fs.write</C>.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/14-standard-library/03-fs.md" label="spec 14.3 · file details and permissions" />
+        <SrcRef file="tests/conformance/14-standard-library/fs-info-and-permissions.kav" label="tested" />
+      </div>
     </>
   ),
 };

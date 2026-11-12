@@ -1,0 +1,1 @@
+error: `SHOP_HOSTS` in `[env.vars]` of kavach.toml: an environment variable holds text, so write a list as text, such as "a,b,c", and split it in the program (spec 10.13)

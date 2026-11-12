@@ -9,7 +9,7 @@ import { commentsDoc, debugDoc, outputDoc, printDoc, valuesPrintDoc } from "./ba
 import { blocksDoc, keywordsDoc, mainFunctionDoc, namesDoc, sourceFilesDoc, syntaxDoc } from "./basics-syntax";
 import { changeDoc, constDoc, destructuringDoc, letDoc, variablesDoc } from "./basics-variables";
 import { firstProgramDoc, homeDoc, smartDoc } from "./start";
-import { editionsDoc, layoutDoc, settingsDoc } from "./tools-settings";
+import { editionsDoc, envDoc, layoutDoc, settingsDoc } from "./tools-settings";
 import { limitsDoc } from "./limits";
 import { chainsDoc, classesDoc, extendDoc } from "./types-oop";
 import { agentModelDoc } from "./agents-model";
@@ -52,7 +52,7 @@ import {
   bytesDoc, jsonBuildingDoc, jsonDecodingDoc, jsonDoc, jsonNestedDoc, jsonReadingDoc, jsonValuesDoc,
 } from "./stdlib-json";
 import {
-  argumentsDoc, cliDoc, commandsDoc, filesDoc, foldersDoc, readingDoc, writingDoc,
+  argumentsDoc, cliDoc, commandsDoc, fileInfoDoc, filesDoc, foldersDoc, readingDoc, writingDoc,
 } from "./stdlib-files";
 import {
   clipboardDoc, colorsDoc, devicesDoc, loggingDoc, promptsDoc, randomDoc, regexDoc, termDoc, timeDoc,
@@ -276,6 +276,7 @@ export const lessons: Record<string, LessonDoc> = {
   "standard-library/files/reading": readingDoc,
   "standard-library/files/writing": writingDoc,
   "standard-library/files/folders": foldersDoc,
+  "standard-library/files/details-and-permissions": fileInfoDoc,
   "standard-library/command-line-programs": cliDoc,
   "standard-library/command-line-programs/arguments": argumentsDoc,
   "standard-library/command-line-programs/commands": commandsDoc,
@@ -405,6 +406,7 @@ export const lessons: Record<string, LessonDoc> = {
   "tools/tools-for-ai/mcp": mcpDoc,
   "tools/project-layout": layoutDoc,
   "tools/settings": settingsDoc,
+  "tools/environment-variables": envDoc,
   "tools/editions": editionsDoc,
   "tools/limits-and-sizes": limitsDoc,
 };

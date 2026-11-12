@@ -4,8 +4,9 @@ import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
-import { specBlock, specTables, type SpecTable } from "@/lib/spec-tables";
-import { H2, P } from "./parts";
+import { specBlock, specBlockWith, specTables, type SpecTable } from "@/lib/spec-tables";
+import Link from "next/link";
+import { Ex, H2, Note, P } from "./parts";
 import { Cell, Table } from "./spec-table";
 
 const SPEC = "10-modules-and-packages.md";
@@ -104,6 +105,78 @@ function SettingsTables() {
     </>
   );
 }
+
+// ---------- Environment Variables ----------
+
+const envVars = loadProject("env/vars", ["kavach.toml", "src/main.kav"]);
+const envList = loadProject("env/list.fails", ["kavach.toml"]);
+
+export const envDoc: LessonDoc = {
+  lead: "env(name) reads an environment variable. Its value is a secret, so it can't be printed by mistake. A .env file, kavach.toml or --env can give the values.",
+  simple: <>Environment variables are like notes the computer hands a program when it starts: which port to use, which key to send. Keys are private, so Kavach seals every such note: the program opens one only by writing <C>reveal</C>, on purpose.</>,
+  minutes: 5,
+  before: ["tools/settings", "agents/secrets"],
+  body: (
+    <>
+      <P>
+        <C>env</C> needs the <C>Env</C> capability, and it fails when the variable isn&apos;t set. What it gives is a{" "}
+        <Link href="/docs/agents/secrets/">secret</Link>, because keys and passwords usually come this way:
+      </P>
+      <Ex name="env/secret.fails" />
+      <P>A value that isn&apos;t secret, such as a port, is opened with <C>reveal</C>, where review can see it:</P>
+      <CodeBlock code={envVars.files[0].code} file="kavach.toml" lang="toml" />
+      <CodeBlock code={envVars.files[1].code} file="src/main.kav" />
+      <Terminal session={envVars.output ?? ""} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><strong className="text-ink">Values are text,</strong> as environment variables are on every system: <C>8080</C> in <C>[env.vars]</C> arrives as <C>&quot;8080&quot;</C>. The program converts it: <C>Int(…)</C>, <C>Bool(…)</C>, or <C>split</C> for a list written as text.</li>
+        <li><C>--env NAME=value</C> beats <C>[env.vars]</C>: here the port became 9000 for one run.</li>
+        <li>A variable that isn&apos;t set fails, and <C>catch</C> gives a default, as <C>SHOP_MODE</C> does.</li>
+      </ul>
+      <P>A list or a table in <C>[env.vars]</C> is refused, since a variable holds only text:</P>
+      <CodeBlock code={envList.files[0].code} file="kavach.toml" lang="toml" output={envList.output} outcome="refused" />
+      <P>Without a value and without a default, the program ends with an error that names the variable:</P>
+      <Ex name="env/missing.fails" />
+      <H2>A .env file</H2>
+      <P>
+        A <C>.env</C> file beside <C>kavach.toml</C> gives a program its variables without setting them in the shell.
+        Never commit it: <C>kavach new</C> puts it in <C>.gitignore</C>.
+      </P>
+      <CodeBlock code={specBlockWith(SPEC, "10.13", "GREETING=")} file=".env" lang="text" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Lines are <C>NAME=value</C>; <C>export NAME=value</C> works too. <C>#</C> starts a comment line. A value in double quotes may hold <C>{"\\n"}</C>, <C>{"\\\""}</C> and <C>{"\\\\"}</C>; in single quotes it is taken as written. Nothing is expanded: <C>$HOME</C> stays as written.</li>
+        <li>Any other line is an error that names the file and the line.</li>
+        <li>Another file: <C>--env-file &lt;path&gt;</C>, or <C>file</C> in <C>[env]</C>. A dependency&apos;s <C>.env</C> is never read.</li>
+      </ul>
+      <CodeBlock code={specBlockWith(SPEC, "10.13", "[env]")} file="kavach.toml" lang="toml" />
+      <H2>Which value wins</H2>
+      <P>Strongest first:</P>
+      <ol className="m-0 flex list-decimal flex-col gap-1.5 pl-5">
+        <li><C>--env</C> given to <C>kavach run</C> or <C>kavach test</C>;</li>
+        <li>the real environment: the shell, <C>docker run -e</C>, a service manager;</li>
+        <li><C>[env.vars]</C> in <C>kavach.toml</C>;</li>
+        <li>the <C>.env</C> file.</li>
+      </ol>
+      <P>So the place a built program runs always has the last word.</P>
+      <H2>Built programs</H2>
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>kavach build</C> copies the file, with <C>[env.vars]</C> and <C>--env</C> written into it, beside the executable: <C>.kavach/bin/.env</C>. Its values are never compiled in, since an executable is shared and copied. <C>--no-env-file</C> builds without one.</li>
+        <li>The executable reads that file the first time it reads a variable, so a program that never calls <C>env</C> pays nothing for it. A file it can&apos;t read, or a wrong line in it, ends the program there with exit code 2.</li>
+        <li>The variable <C>KAVACH_ENV_FILE</C> names another file, so a container can keep it elsewhere.</li>
+      </ul>
+      <Terminal commands session={specBlockWith(SPEC, "10.13", "kavach run --env-file")} />
+      <Note>
+        <C>[env.vars]</C> is committed with <C>kavach.toml</C>, so it is for settings such as a log level, never for
+        keys. Keys go in <C>.env</C>, or in the real environment where the program runs.
+      </Note>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file={`docs/spec/${SPEC}`} label="spec 10.13 · environment variables" />
+        <SrcRef file="docs/decisions/0084-environment-variables-and-granted-capabilities.md" label="decision 0084" />
+        <SrcRef file="tools/cli/tests/env_files.rs" symbol="programs_read_the_dot_env_file" line={28} label="every source and the built copy, tested" />
+        <SrcRef file="tests/conformance/10-modules/env-values-are-secret.kav" label="secret, tested" />
+      </div>
+    </>
+  ),
+};
 
 // ---------- Editions ----------
 

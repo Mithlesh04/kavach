@@ -1,0 +1,7 @@
+fn main() ! Error uses Env, Console {
+    const port = try Int(reveal(try env("SHOP_PORT")))           // "8080" → 8080
+    const debug = try Bool(reveal(env("SHOP_DEBUG") catch "false"))
+    const hosts = reveal(try env("SHOP_HOSTS")).split(",")
+    print("port {port}, debug {debug}, hosts {hosts}")
+    print("mode {reveal(env("SHOP_MODE") catch "unset")}")
+}

@@ -1,0 +1,16 @@
+use std.fs
+
+fn main() ! FsError uses Fs, Console {
+    try fs.write_text("deploy.sh", "echo hi\n")
+    const info = try fs.info("deploy.sh")
+    print("{info.kind}, {info.size} bytes, read-only {info.read_only}")
+
+    try fs.set_read_only("deploy.sh", true)
+    print("read-only {(try fs.info("deploy.sh")).read_only}")
+
+    try fs.set_permissions("deploy.sh", 0o644)    // the owner may write it again
+    print("read-only {(try fs.info("deploy.sh")).read_only}")
+
+    fs.set_permissions("deploy.sh", 0o10000) catch e => print("{e}")
+    try fs.remove("deploy.sh")
+}

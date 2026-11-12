@@ -1,0 +1,9 @@
+$ kavach run src/main.kav
+port 8080, debug true, hosts ["a.example", "b.example"]
+mode unset
+$ kavach run --env SHOP_PORT=9000 --env SHOP_MODE=test src/main.kav
+port 9000, debug true, hosts ["a.example", "b.example"]
+mode test
+$ kavach run --native src/main.kav
+port 8080, debug true, hosts ["a.example", "b.example"]
+mode unset

@@ -1,0 +1,4 @@
+$ kavach add greeter --path greeter
+added `greeter`: it uses Console, granted in its `can` in kavach.toml
+$ kavach run src/main.kav
+hello, Asha

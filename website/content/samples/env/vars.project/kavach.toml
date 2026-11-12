@@ -1,0 +1,9 @@
+[package]
+name = "shop"
+version = "0.1.0"
+edition = "2026"
+
+[env.vars]
+SHOP_PORT = 8080
+SHOP_DEBUG = true
+SHOP_HOSTS = "a.example,b.example"

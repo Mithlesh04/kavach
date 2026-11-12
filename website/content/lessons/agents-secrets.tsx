@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
@@ -30,6 +31,10 @@ export const secretsDoc: LessonDoc = {
         A card number in a prompt is a leak to a third party; a token in a log is a leak to everyone who reads logs.
         Kavach stops both when compiling, not after the leak.
       </Note>
+      <P>
+        A value read from the environment with <C>env(name)</C> is a secret too, since keys and passwords usually come
+        that way: see <Link href="/docs/tools/environment-variables/">Environment Variables</Link>.
+      </P>
     </>
   ),
   quiz: [

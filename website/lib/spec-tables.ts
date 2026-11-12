@@ -62,6 +62,14 @@ export function fileFigure(rel: string, pattern: RegExp): string {
 }
 
 /** A fenced code block in a spec section: the first, or the one at `index`. */
+/** The code block of a spec section that holds `text`, as written: a block indented under a bullet loses its indent. */
+export function specBlockWith(file: string, number: string, text: string): string {
+  for (const [, indent, code] of section(file, number).matchAll(/^( *)```[a-z]*\r?\n([\s\S]*?)\r?\n\1```/gm)) {
+    if (code.includes(text)) return code.replace(new RegExp(`^${indent}`, "gm"), "");
+  }
+  throw new Error(`spec ${file} ${number}: no code block holds ${JSON.stringify(text)}`);
+}
+
 export function specBlock(file: string, number: string, index = 0): string {
   const blocks = [...section(file, number).matchAll(/```[a-z]*\n([\s\S]*?)\n```/g)];
   if (!blocks[index]) throw new Error(`spec ${file} ${number}: no code block ${index}`);

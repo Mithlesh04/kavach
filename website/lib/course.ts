@@ -103,7 +103,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Unsafe", "6.4"],
   ]],
   ["standard-library", "Standard Library", "intermediate", [
-    ["Files", "14.3", ["Reading", "Writing", "Folders"]],
+    ["Files", "14.3", ["Reading", "Writing", "Folders", "Details and permissions"]],
     ["Command-line Programs", "14.6", ["Arguments", "Commands"]],
     ["The Terminal", "14.13", ["Colors and styles", "Prompts"]],
     ["Time", "14.4"],
@@ -150,6 +150,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Packages", "10.12"],
     ["Project Layout", "10.3"],
     ["Settings", "10.11"],
+    ["Environment Variables", "10.13"],
     ["Editions", "10.8"],
     ["Limits and Sizes", "—"],
     ["The kavach Command", "—", ["new", "run", "build", "test", "check", "fix"]],

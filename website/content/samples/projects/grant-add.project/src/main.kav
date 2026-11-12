@@ -1,0 +1,5 @@
+use greeter
+
+fn main() {
+    greeter.greet("Asha")
+}

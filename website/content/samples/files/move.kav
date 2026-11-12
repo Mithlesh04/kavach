@@ -1,0 +1,12 @@
+use std.fs
+
+fn main() ! FsError uses Fs, Console {
+    try fs.create_dir("reports/2026")
+    try fs.write_text("reports/2026/may.txt", "sales 120")
+    try fs.copy("reports/2026/may.txt", "reports/2026/june.txt")
+    try fs.rename("reports/2026/may.txt", "reports/2026/may-final.txt")
+    print(try fs.list("reports/2026"))
+
+    try fs.remove_all("reports")
+    print("still there: {fs.exists("reports")}")
+}

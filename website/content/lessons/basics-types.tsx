@@ -125,7 +125,7 @@ export const intDoc: LessonDoc = {
       <Ex name="datatypes/int.warns" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>_</C> groups digits so big numbers stay readable; it changes nothing.</li>
-        <li><C>0xff</C> is hexadecimal and <C>0b1010</C> binary.</li>
+        <li><C>0xff</C> is hexadecimal, <C>0o644</C> octal (as file permissions are written) and <C>0b1010</C> binary.</li>
         <li>Dividing two <C>Int</C>s gives an <C>Int</C>: <C>7 / 2</C> is <C>3</C>, and the compiler warns, since that is rarely what was meant (see <Link href="/docs/basics/operators/arithmetic/">Arithmetic</Link>). <C>%</C> gives the remainder.</li>
       </ul>
       <P>An <C>Int</C> that goes past its limit stops the program with a message; it never wraps around to a wrong number.</P>

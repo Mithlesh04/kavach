@@ -1,0 +1,3 @@
+fn main() ! Error uses Env, Console {
+    print(reveal(try env("SHOP_HOSTS")))
+}
