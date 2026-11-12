@@ -281,7 +281,8 @@
       "match": "\\b[A-Z][\\p{L}\\p{N}_]*\\b"
     },
     "function-calls": {
-      "match": "\\b([\\p{L}_][\\p{L}\\p{N}_]*)\\s*(?=\\()",
+      "comment": "A name before `(`, or before type arguments and `(`: read<Row>(v), json.decode_value<[Row]>(v)",
+      "match": "\\b([\\p{L}_][\\p{L}\\p{N}_]*)(?=(?:<[\\p{Lu}\\[][^<>()]*(?:<[^<>()]*>[^<>()]*)*>)?\\s*\\()",
       "captures": { "1": { "name": "entity.name.function.call.kavach" } }
     },
     "variables": {

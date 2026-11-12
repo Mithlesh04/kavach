@@ -158,3 +158,12 @@ const block = spawn {
     work()
 } within 5.seconds
 //^^^^^^ keyword.other.kavach
+const row = read<Row>(v)
+//          ^^^^ entity.name.function.call.kavach
+//               ^^^ entity.name.type.kavach
+const rows = json.decode_value<[Row]>(v)
+//                ^^^^^^^^^^^^ entity.name.function.call.kavach
+const got = Box(v: v).get<Map<String, Int>>()
+//                    ^^^ entity.name.function.call.kavach
+const fewer = count < limit and limit > (count)
+//            ^^^^^ variable.other.readwrite.kavach
