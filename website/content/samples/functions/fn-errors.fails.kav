@@ -1,0 +1,16 @@
+type ShopError = TooMany(qty: Int)
+
+fn check(qty: Int) -> Int ! ShopError {
+    if qty > 10 {
+        fail ShopError.TooMany(qty: qty)
+    }
+    qty
+}
+
+fn apply(f: fn(Int) -> Int, n: Int) -> Int {
+    f(n)
+}
+
+fn main() {
+    print(apply(check, 50))
+}

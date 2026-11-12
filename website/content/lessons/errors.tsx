@@ -79,6 +79,22 @@ export const tryDoc: LessonDoc = {
         <C>try</C> only works in a function that can fail with that error itself: here, both are{" "}
         <C>! AgeError</C>.
       </Note>
+      <H2>Methods that take a function that can fail</H2>
+      <P>
+        A built-in method that takes a function (<C>map</C>, <C>filter</C>, <C>sum</C>, <C>sort_by</C>,{" "}
+        <C>Shared.update</C>, …) passes that function&apos;s error on. Given a function that can fail, the call can
+        fail with its error, and the method stops at the first one:
+      </P>
+      <Ex name="errors/methods-pass-on" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The <C>map</C> call is the one that can fail, so it is the one marked, with <C>try</C> or <C>catch</C>.</li>
+        <li>A lambda that handles the error inside, as in the <C>sum</C>, can&apos;t fail, and neither can the call.</li>
+        <li><C>Shared.update</C> given a function that fails leaves the shared value as it was.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/05-errors.md" label="spec 5.2 · try" />
+        <SrcRef file="tests/conformance/05-errors/built-in-methods-pass-a-functions-error-on.kav" label="tested" />
+      </div>
     </>
   ),
 };

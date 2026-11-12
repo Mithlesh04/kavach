@@ -1,0 +1,17 @@
+type ShopError = TooMany(qty: Int)
+
+fn check(qty: Int) -> Int ! ShopError {
+    if qty > 10 {
+        fail ShopError.TooMany(qty: qty)
+    }
+    qty
+}
+
+fn main() {
+    const doubled = q => try check(q) * 2
+    print(doubled(3) catch _ => 0)
+    const big = doubled(50) catch e => match e {
+        ShopError.TooMany(qty) => -qty,
+    }
+    print(big)
+}

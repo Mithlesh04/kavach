@@ -7,6 +7,7 @@ import { SrcRef } from "@/components/src-ref";
 import { VerifyBlock } from "@/components/verify-block";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadSample } from "@/lib/samples";
+import { specBlockWith } from "@/lib/spec-tables";
 import { Ex, H2, Note, P, Syntax } from "./parts";
 import { Limits } from "./limits";
 import { ModuleTable, Table } from "./spec-table";
@@ -103,6 +104,32 @@ export const jsonDoc: LessonDoc = {
       </div>
       <H2>Every function</H2>
       <ModuleTable file={JSON_SPEC} number="2.12" first="Function" heading="std.json" />
+      <H2>A type&apos;s schema</H2>
+      <P>
+        <C>json.schema&lt;T&gt;()</C> gives the <a href="https://json-schema.org">JSON Schema</a> of a type, as a{" "}
+        <C>Json</C> value. A type&apos;s doc comment (<C>{"///"}</C>) becomes its schema&apos;s{" "}
+        <C>&quot;description&quot;</C>, and so does a field&apos;s:
+      </P>
+      <Ex name="json/schema-docs" />
+      <H2>A function described</H2>
+      <P>
+        <C>json.describe(f)</C> describes a function from its signature, when the program is compiled: its name,
+        doc comment, parameters with their schemas, the schemas of its result and error, what it <C>uses</C>, and
+        its <C>example</C> clauses as text. A web framework uses it, with <C>json.schema&lt;T&gt;()</C>, to write an
+        OpenAPI description of its handlers.
+      </P>
+      <Ex name="json/describe" />
+      <Syntax code={specBlockWith(JSON_SPEC, "2.12", "pub type FnSchema")} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>f</C> must name a function, not hold a function value. The result is a constant, so reading it costs nothing more than reading any value.</li>
+        <li>A parameter, result or error whose type has no schema, such as a function, is a compile error.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file={`docs/spec/${JSON_SPEC}`} label="spec 2.12 · JSON" />
+        <SrcRef file="tests/conformance/02-types/json-describe-describes-a-function.kav" label="describe, tested" />
+        <SrcRef file="tests/conformance/02-types/json-schema-carries-doc-comments.kav" label="descriptions, tested" />
+        <SrcRef file="docs/decisions/0085-function-types-with-errors-and-uses.md" label="decision 0085" />
+      </div>
       <H2>Safe with hostile input</H2>
       <P>Text from outside can be built to do harm. Parsing has limits, and breaking one is an error, not a crash:</P>
       <Ex name="json/deep" />

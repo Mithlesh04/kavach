@@ -1,0 +1,26 @@
+type PriceError = Unknown(item: String)
+
+fn price(item: String) -> Int ! PriceError {
+    match item {
+        "pen" => 10,
+        "cup" => 25,
+        _ => fail PriceError.Unknown(item: item),
+    }
+}
+
+fn total(items: [String]) -> Int ! PriceError {
+    const prices = try items.map(price)
+    prices.sum(p => p)
+}
+
+fn main() {
+    print(total(["pen", "cup"]) catch _ => 0)
+    const stopped = total(["pen", "kite", "cup"]) catch e => match e {
+        PriceError.Unknown(item) => {
+            print("no price for {item}")
+            0
+        },
+    }
+    print(stopped)
+    print(["pen", "kite", "cup"].sum(i => price(i) catch _ => 0))
+}

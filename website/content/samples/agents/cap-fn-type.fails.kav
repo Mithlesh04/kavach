@@ -1,0 +1,13 @@
+use std.net
+
+fn fetch_count(n: Int) -> Int uses Net {
+    n
+}
+
+fn run_quietly(f: fn(Int) -> Int uses Console, n: Int) -> Int {
+    f(n)
+}
+
+fn main() {
+    print(run_quietly(fetch_count, 1))
+}

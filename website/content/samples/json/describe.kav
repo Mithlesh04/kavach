@@ -1,0 +1,36 @@
+use std.json
+
+type NewOrder {
+    item: String
+    qty: Int
+}
+
+type ShopError = OutOfStock(item: String) | TooMany(qty: Int)
+
+/// Places an order and
+/// gives its number.
+fn place(o: NewOrder) -> Int ! ShopError uses Console {
+    if o.qty > 10 {
+        fail ShopError.TooMany(qty: o.qty)
+    }
+    print("placing {o.item}")
+    1
+}
+
+/// The price of `qty` pens.
+fn price(qty: Int) -> Int
+    example price(3) == 30
+{
+    qty * 10
+}
+
+fn main() {
+    const d = json.describe(place)
+    print(d.name)
+    print(d.doc)
+    print(d.params[0].name)
+    print(d.params[0].schema.get("required"))
+    print(d.result)
+    print(d.capabilities)
+    print(json.describe(price).examples)
+}

@@ -170,6 +170,18 @@ export const lambdasDoc: LessonDoc = {
       </P>
       <Ex name="functions/lambda-change.warns" />
       <P>To count from inside, give the new value back from the lambda, or share it on purpose with <C>Shared</C>.</P>
+      <H2>try inside a lambda</H2>
+      <P>
+        A <C>try</C> or <C>fail</C> inside a lambda belongs to the lambda: it ends that call of the lambda with the
+        error, so the lambda is a function that can fail. The error never jumps out of the function the lambda was
+        written in, since the lambda may be called long after that function has returned.
+      </P>
+      <Ex name="functions/lambda-try" />
+      <P>
+        Each call of <C>doubled</C> is a call that can fail, so it gets a <C>catch</C>. Given to a method such as{" "}
+        <C>map</C>, such a lambda makes the <C>map</C> call the one that can fail:{" "}
+        <Link href="/docs/errors/try/">try</Link> shows how.
+      </P>
     </>
   ),
 };
@@ -215,6 +227,26 @@ export const fnValuesDoc: LessonDoc = {
         <C>fn(Int, Int) -&gt; Int</C> is the type of a function that takes two <C>Int</C>s and gives one.{" "}
         <C>apply_twice</C> takes such a function as its parameter <C>f</C> and calls it.
       </P>
+      <H2>Functions that can fail</H2>
+      <P>
+        A function type says what its functions can fail with, and what they may use, in the order of a signature:{" "}
+        <C>fn(NewOrder) -&gt; Order ! ShopError uses Db</C>. Several capabilities go in parentheses:{" "}
+        <C>uses (Net, Db)</C>.
+      </P>
+      <Ex name="functions/fn-errors" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>handle</C> takes any function that can fail. Its error type <C>E</C> is a type parameter, so <C>handle</C> fails with <C>place</C>&apos;s own <C>ShopError</C>, and the <C>match</C> on it must cover every case.</li>
+        <li>Calling a function value that can fail is a call that can fail: <C>try</C>, <C>catch</C> or <C>match</C>, as for any other call.</li>
+        <li>A function that can&apos;t fail fits any function type, with <C>!</C> or without.</li>
+        <li>With <C>uses</C>, a function value may use only what its type lists; without it, the type sets no limit. See <Link href="/docs/agents/capabilities/pure-functions/">Pure Functions</Link>.</li>
+      </ul>
+      <P>A function that can fail doesn&apos;t fit a type without <C>!</C>, since its error would be lost:</P>
+      <Ex name="functions/fn-errors.fails" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/03-functions.md" label="spec 3.4 · function types" />
+        <SrcRef file="tests/conformance/03-functions/function-types-say-their-errors.kav" label="tested" />
+        <SrcRef file="docs/decisions/0085-function-types-with-errors-and-uses.md" label="decision 0085" />
+      </div>
       <H2>Any number of values</H2>
       <P>
         There are no rest parameters, such as <C>...args</C> in JavaScript or <C>*args</C> in Python. A function that

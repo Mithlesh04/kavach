@@ -2,10 +2,17 @@ import Link from "next/link";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
+import { fileFigure } from "@/lib/spec-tables";
 import { Ex, H2, Note, P, Syntax } from "./parts";
 import { ModuleTable } from "./spec-table";
 
 // ---------- HTTP ----------
+
+// What spec 14.11 measured for http.serve on every core, read from its sentence.
+const HTTP_SPEC = "docs/spec/14-standard-library/11-http.md";
+const computes = () => fileFigure(HTTP_SPEC, /a handler that computes answered in ([\d.–]+ s instead of [\d.–]+ s on one core)/);
+const idles = () => fileFigure(HTTP_SPEC, /one that does nearly nothing in ([\d–]+ ms instead of [\d–]+ ms)/);
+const servedSetup = () => fileFigure(HTTP_SPEC, /measured on (Windows \(\d+ cores, \d+ clients making \d+ requests each on kept-open connections\))/);
 
 export const httpDoc: LessonDoc = {
   lead: "std.http calls web APIs and serves them: HTTP/1.1 and HTTP/2, with HTTP/3 for calls, written in Kavach itself.",
@@ -21,6 +28,22 @@ export const httpDoc: LessonDoc = {
         <li><C>spawn http.serve(…)</C> serves in a task of its own, and stops when <C>main</C> returns: a server can&apos;t be left running by mistake.</li>
         <li><C>http.get</C> calls it, here from the same program; a real client is any other program, in any language.</li>
       </ul>
+      <H2>Every core at work</H2>
+      <P>
+        <C>http.serve</C> runs each connection in a task of its own, spawned with <C>spawn cores</C>, so in a release
+        build (<C>kavach build</C>) handlers run at once on every core. <C>kavach run</C> answers them on one core, in
+        turn, with the same responses.
+      </P>
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A handler that computes answered in {computes()}.</li>
+        <li>A handler that does nearly nothing answered in {idles()} on one core.</li>
+        <li>Measured on {servedSetup()}.</li>
+        <li>Handlers share nothing but what they reach through a <C>Shared</C> value or a channel. Each handler&apos;s printed lines come out in its own order, whole.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file={HTTP_SPEC} label="spec 14.11 · serving" />
+        <SrcRef file="tests/conformance/14-standard-library/http-serves-many-clients-on-every-core.kav" label="tested" />
+      </div>
       <H2>Every function</H2>
       <ModuleTable file="11-http.md" number="14.11" first="Function" />
       <Note>

@@ -1,0 +1,1 @@
+error: `fn(Int) -> Int ! ShopError` can fail, so it doesn't fit `fn(Int) -> Int`: handle the error inside it, or write `! ErrorType` in the function type (spec 3.4)

@@ -117,6 +117,24 @@ export const pureDoc: LessonDoc = {
         <li><C>debug()</C> needs no capability: it writes to the error output, and release builds leave it out.</li>
         <li>Logging with <C>std.log</C> needs none either: the program&apos;s owner decides where log events go.</li>
       </ul>
+      <H2>Functions given as values</H2>
+      <P>
+        A function value carries the rights of the code that made it. Naming a function as a value, or writing a
+        lambda, needs what that function uses, as calling it would. Calling a function value needs nothing more:
+      </P>
+      <Ex name="agents/cap-fn-values" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>twice</C> stays pure: it only calls what it is given.</li>
+        <li><C>shout</C> writes the lambda that prints, so <C>shout</C> needs <C>Console</C>.</li>
+        <li>So a library can call the functions it is given, as a web framework calls its handlers, without being granted what they use.</li>
+      </ul>
+      <P>A function type can set a limit with <C>uses</C>: a function value may then use only what the type lists.</P>
+      <Ex name="agents/cap-fn-type.fails" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/08-capabilities-and-agents/01-capabilities.md" label="spec 8.1 · capabilities" />
+        <SrcRef file="tests/conformance/08-capabilities/function-values-carry-their-makers-rights.kav" label="tested" />
+        <SrcRef file="tests/conformance/08-capabilities/function-types-limit-what-functions-use.kav" label="limit tested" />
+      </div>
     </>
   ),
 };

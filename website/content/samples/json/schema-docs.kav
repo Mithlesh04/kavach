@@ -1,0 +1,15 @@
+use std.json
+
+/// A place on the map.
+type Place {
+    /// How far east, in metres.
+    x: Int
+    y: Int
+}
+
+fn main() {
+    const s = json.schema<Place>()
+    print(s.get("description"))
+    print(s.get("properties").get("x"))
+    print(s.get("properties").get("y"))
+}

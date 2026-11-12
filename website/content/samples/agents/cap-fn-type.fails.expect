@@ -1,0 +1,1 @@
+error: `fetch_count` uses Net, but the function type it is given as allows only Console (spec 3.4)

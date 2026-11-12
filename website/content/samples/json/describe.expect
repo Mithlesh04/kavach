@@ -1,0 +1,7 @@
+place
+Places an order and gives its number.
+o
+["item","qty"]
+{"type":"integer"}
+["Console"]
+["price(3) == 30"]
