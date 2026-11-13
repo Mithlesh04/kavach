@@ -1,0 +1,46 @@
+// Rule: a `return` inside a lambda ends that call of the lambda with its value; the function the lambda was written in goes on.
+// Spec: 3.3
+// expect output: ["minus", "zero", "plus"]
+// expect output: 60
+// expect output: HI
+// expect output: still here
+
+fn sign(xs: [Int]) -> [String] {
+    xs.map(x => {
+        if x < 0 {
+            return "minus"
+        }
+        if x == 0 {
+            return "zero"
+        }
+        "plus"
+    })
+}
+
+fn doubled_big(xs: [Int]) -> Int {
+    const f = (x: Int) => {
+        if x > 10 {
+            return x * 2
+        }
+        0
+    }
+    let total = 0
+    for x in xs {
+        total += f(x)
+    }
+    total
+}
+
+fn main() uses Console {
+    print(sign([-3, 0, 5]))
+    print(doubled_big([1, 10, 30]))
+    const shout = (s: String) => {
+        if s.len() == 0 {
+            return
+        }
+        print(s.upper())
+    }
+    shout("")
+    shout("hi")
+    print("still here")
+}

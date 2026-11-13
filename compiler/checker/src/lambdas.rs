@@ -85,6 +85,10 @@ impl Checker<'_> {
             self_ty: None,
         });
         ctx.name = "this lambda".into();
+        // A `return` inside ends the lambda's call (spec 3.3), with the
+        // lambda's own result.
+        let own_ret = want_ret.clone().unwrap_or_else(|| self.fresh());
+        ctx.ret = own_ret.clone();
         ctx.ret_secret = false;
         ctx.errors = Some(err.clone());
         self.ctx = Some(ctx);
@@ -111,7 +115,22 @@ impl Checker<'_> {
                 self.check_expect(body, &r);
                 r
             }
-            None => self.value(body, None),
+            None => {
+                let t = self.value(body, None);
+                if !self.inf.unify(&own_ret, &t) {
+                    let (want, got) = (self.show(&own_ret), self.show(&t));
+                    self.error(
+                        body.span,
+                        format!(
+                            "this lambda's `return` gives `{want}`, but its last value is `{got}`"
+                        ),
+                    );
+                }
+                match self.inf.shallow(&t) {
+                    Ty::Never => own_ret,
+                    _ => t,
+                }
+            }
         };
         self.check_secret_return(body, "this lambda");
         self.loops = outer_loops;

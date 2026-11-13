@@ -1,0 +1,13 @@
+// Rule: a lambda's `return` gives the lambda's result, so its value must be of the same type as the lambda's last value.
+// Spec: 3.3
+// expect compile error
+
+fn main() uses Console {
+    const f = (x: Int) => {    // error: this lambda's `return` gives `Int`, but its last value is `String`
+        if x > 0 {
+            return x
+        }
+        "none"
+    }
+    print(f(1))
+}

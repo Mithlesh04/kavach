@@ -21,3 +21,4 @@ Code that both the interpreter and native code use, so the two give exactly the 
 | `src/journal.rs` | The journal of a durable agent (spec 8.5, decision 0025): events, call outcomes and ends as JSON lines, and the events a crash left unfinished |
 | `src/log.rs` | Where `std.log` writes (spec 14.12): the console, and a file set aside when it grows past a size (tests in the file); whether standard output shows colors (`io.colors()`, spec 14.6) |
 | `src/base64.rs` | `std.base64` (spec 14.20): standard and URL-safe base64, decoded strictly |
+| `src/compress.rs` | `std.compress` (spec 14.21): gzip, deflate, zstd, brotli and lz4, decoding stopped at a limit |

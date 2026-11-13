@@ -1,0 +1,23 @@
+// Rule: a `spawn` on a line of its own starts a task nobody waits for: it still runs, is cancelled when its function returns, and an error in it is printed.
+// Spec: 9.1
+// expect output: main goes on
+// expect output: a runs
+// expect output: block runs
+// expect stderr: error in a task nobody waited for: disk full (spawned at a-spawn-alone-is-waited-for-by-nobody.kav:18)
+
+fn risky() -> Int ! Error {
+    fail Error("disk full")
+}
+
+fn worker(name: String) uses Console {
+    print("{name} runs")
+}
+
+fn main() uses Console {
+    spawn worker("a")
+    spawn risky()
+    spawn {
+        print("block runs")
+    }
+    print("main goes on")
+}

@@ -53,7 +53,7 @@ pub fn serve(conn: Connection, data: Bytes, handler: fn(Request) -> Response) ! 
     while true {
         for m in link.done {
             const _ = slots.take()
-            const _ = spawn answer(out, conn, m, handler, slot_back)
+            spawn answer(out, conn, m, handler, slot_back)
         }
         link.done = []
         if link.leaving and link.partial.is_empty() {

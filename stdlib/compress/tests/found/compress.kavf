@@ -1,0 +1,2 @@
+// Found by `kavach test` (spec 11.4). Generated: commit it, never edit it.
+encode(Bytes(0d0a0d0a), Format.Lz4, -1)

@@ -1,0 +1,28 @@
+// Rule: decoding stops at `most` bytes and fails with `TooLarge`; data not in the format fails with `Corrupt`.
+// Spec: 14.21
+// expect output: too large: 99
+// expect output: corrupt
+// expect output: 100
+
+use std.compress
+
+/// Why decoding failed.
+fn why(e: CompressError) -> String {
+    match e {
+        CompressError.TooLarge(most) => "too large: {most}",
+        CompressError.Corrupt(_) => "corrupt",
+    }
+}
+
+fn main() ! Error uses Console {
+    const packed = compress.encode("x".repeat(100).bytes(), Format.Gzip)
+    const _big = compress.decode(packed, Format.Gzip, most: 99) catch e => {
+        print(why(e))
+        Bytes([])
+    }
+    const _bad = compress.decode("not gzip".bytes(), Format.Gzip) catch e => {
+        print(why(e))
+        Bytes([])
+    }
+    print((try compress.decode(packed, Format.Gzip, most: 100)).len())
+}

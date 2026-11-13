@@ -5,6 +5,7 @@ Conformance tests for spec chapter [9. Concurrency](../../../docs/spec/09-concur
 | Spec | Test | Rule | Expects |
 |---|---|---|---|
 | 9.1 | [spawn-and-wait.kav](spawn-and-wait.kav) | `spawn` starts a task and `.wait()` gives its result. | runs |
+| 9.1 | [a-spawn-alone-is-waited-for-by-nobody.kav](a-spawn-alone-is-waited-for-by-nobody.kav) | A `spawn` on a line of its own starts a task nobody waits for; an error in it is printed. | runs |
 | 9.1 | [wait-gives-the-task-error.kav](wait-gives-the-task-error.kav) | Spawned code may fail without `try`: `.wait()` gives its value, or its error. | runs |
 | 9.1 | [a-panic-stops-only-its-task.kav](a-panic-stops-only-its-task.kav) | A panic stops only its task: printed when it happens, `.wait()` fails with `panicked: … at …`, and the program goes on. | runs |
 | 9.1 | [a-panic-inside-update-lets-the-value-go.kav](a-panic-inside-update-lets-the-value-go.kav) | A panic inside a `Shared` value's `update` leaves the value as it was, and other tasks can go on using it. | runs |
@@ -19,6 +20,8 @@ Conformance tests for spec chapter [9. Concurrency](../../../docs/spec/09-concur
 | 9.4 | [channel-capacity-is-at-least-one.kav](channel-capacity-is-at-least-one.kav) | A channel's capacity must be at least 1. | panic |
 | 9.4 | [try-put-never-waits.kav](try-put-never-waits.kav) | `send.try_put(v)` adds `v` only when the channel has room and is open, and says whether it did; it never waits. | runs |
 | 9.4 | [a-sent-none-is-not-the-end.kav](a-sent-none-is-not-the-end.kav) | `take()` gives `Taken.Item(value)` or `Taken.Closed`, so a `none` sent on a `Channel<T?>` is a value, not the channel's end. | runs |
+| 9.4 | [a-channel-with-no-receivers-takes-nothing.kav](a-channel-with-no-receivers-takes-nothing.kav) | Once every receiver is gone, `try_put` gives `false` and `put` panics. | panics |
+| 9.4 | [a-waiting-put-ends-when-the-receivers-go.kav](a-waiting-put-ends-when-the-receivers-go.kav) | A `put` waiting for room panics when the last receiver goes. | panics |
 | 9.3 | [parallel-map-keeps-order-and-limit.kav](parallel-map-keeps-order-and-limit.kav) | `parallel_map` runs each item in its own task, at most `max` at a time, and gives the results in order. | runs |
 | 9.3 | [parallel-map-passes-a-panic-on.kav](parallel-map-passes-a-panic-on.kav) | A panic in an item's task of `parallel_map` is a panic where `parallel_map` was called. | panics |
 | 9.7 | [effects-keep-the-order-of-turns.kav](effects-keep-the-order-of-turns.kav) | Tasks may compute at the same time, but what they print happens in the order of their turns. | runs |

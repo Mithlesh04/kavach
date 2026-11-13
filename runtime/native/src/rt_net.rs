@@ -8,7 +8,7 @@ use crate::heap::{Data, alloc, release};
 use crate::rt::type_of;
 use crate::shapes::{new_text, shape, str_of};
 use kavach_kir::{RtOp, Shape, Type};
-use kavach_runtime_net::net::poller::{Ready, Waits};
+use kavach_runtime_net::net::poller::{Ready, Waits, Want};
 use kavach_runtime_net::net::{self, NetFail, Shared, Try};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -42,17 +42,18 @@ fn fail(f: NetFail, address: &str) -> i64 {
 
 /// Tries `once` until it is done or fails, or `deadline` passes. `Err`
 /// when it failed (the error is set) or this task is cancelled. Between
-/// tries it waits for `ready`'s next event, when it can tell.
+/// tries it waits for `ready`'s next event of the kind `want` cares
+/// about, when it can tell.
 fn wait<T>(
     deadline: Option<Instant>,
     address: &str,
     line: i32,
-    ready: &dyn Ready,
+    (ready, want): (&dyn Ready, Want),
     mut once: impl FnMut() -> Try<T>,
 ) -> Result<T, ()> {
     let mut n = 0;
     loop {
-        let seen = ready.events();
+        let seen = ready.events_for(want);
         match once() {
             Try::Done(v) => return Ok(v),
             Try::Fail(f) => {
@@ -68,9 +69,9 @@ fn wait<T>(
                 if ready.waits() == Waits::No {
                     crate::rt_tasks::sleep_until(Instant::now() + net::backoff(n), line);
                 } else if !crate::rt_tasks::wait_outside(deadline, line, |wake| {
-                    ready.on_event(seen, wake)
+                    ready.on_event_for(seen, want, wake)
                 }) {
-                    net::poller::wait_alone(ready, seen, deadline);
+                    net::poller::wait_alone(ready, want, seen, deadline);
                 }
                 // A cancel counts even when no wait happened: the socket
                 // may be ready again at once, so the loop never waits.
@@ -178,7 +179,10 @@ pub fn net_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             } else {
                 net::connect(&address)
             };
-            wait(deadline, &address, line, &connecting, || connecting.poll()).ok()
+            wait(deadline, &address, line, (&connecting, Want::Any), || {
+                connecting.poll()
+            })
+            .ok()
         };
         return made.map_or(0, |s| socket(s, type_of(code)));
     }
@@ -190,9 +194,8 @@ pub fn net_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
     release(a);
     let address = s.address.clone();
     match op {
-        RtOp::NetAccept => {
-            wait(open, &address, line, &*s, || s.accept()).map_or(0, |c| socket(c, ty))
-        }
+        RtOp::NetAccept => wait(open, &address, line, (&*s, s.wants_read()), || s.accept())
+            .map_or(0, |c| socket(c, ty)),
         RtOp::NetAddress => new_text(&address, type_of(code)),
         // TLS begun on this plain connection (spec 14.10): a new
         // connection, and this one closed.
@@ -213,9 +216,8 @@ pub fn net_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
                 net::accept_tls(&s, &text(0), &text(1), &protocols, &text(2))
             };
             match started {
-                Ok(st) => {
-                    wait(deadline, &address, line, &st, || st.poll()).map_or(0, |c| socket(c, ty))
-                }
+                Ok(st) => wait(deadline, &address, line, (&st, Want::Any), || st.poll())
+                    .map_or(0, |c| socket(c, ty)),
                 Err(f) => {
                     fail(f, &address);
                     0
@@ -244,7 +246,7 @@ pub fn net_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             };
             s.protocol().map_or(0, |p| new_text(&p, text))
         }
-        RtOp::NetRead => match wait(deadline, &address, line, &*s, || s.read()) {
+        RtOp::NetRead => match wait(deadline, &address, line, (&*s, s.wants_read()), || s.read()) {
             Ok(Some(data)) => {
                 let item = match shape(type_of(code)) {
                     Shape::Optional(t) => *t,
@@ -258,7 +260,9 @@ pub fn net_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             let data = crate::rt_bytes::with_bytes(b, <[u8]>::to_vec);
             release(b);
             let mut sent = 0;
-            let _ = wait(deadline, &address, line, &*s, || s.write(&data, &mut sent));
+            let _ = wait(deadline, &address, line, (&*s, s.wants_write()), || {
+                s.write(&data, &mut sent)
+            });
             0
         }
         RtOp::NetSend => {
@@ -266,15 +270,20 @@ pub fn net_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             let to = str_of(c);
             release(b);
             release(c);
-            let _ = wait(deadline, &to, line, &*s, || s.send_to(&data, &to));
+            let _ = wait(deadline, &to, line, (&*s, s.wants_write()), || {
+                s.send_to(&data, &to)
+            });
             0
         }
         // QUIC streams.
-        RtOp::NetOpenStream => {
-            wait(deadline, &address, line, &*s, || s.open_stream(b != 0)).map_or(0, |n| n as i64)
-        }
+        RtOp::NetOpenStream => wait(deadline, &address, line, (&*s, Want::Any), || {
+            s.open_stream(b != 0)
+        })
+        .map_or(0, |n| n as i64),
         RtOp::NetReadStream => {
-            match wait(deadline, &address, line, &*s, || s.read_stream(b as u64)) {
+            match wait(deadline, &address, line, (&*s, Want::Any), || {
+                s.read_stream(b as u64)
+            }) {
                 Ok(Some(data)) => {
                     let item = match shape(type_of(code)) {
                         Shape::Optional(t) => *t,
@@ -290,12 +299,14 @@ pub fn net_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             let data = crate::rt_bytes::with_bytes(c, <[u8]>::to_vec);
             release(c);
             let mut sent = 0;
-            let _ = wait(deadline, &address, line, &*s, || {
+            let _ = wait(deadline, &address, line, (&*s, Want::Any), || {
                 s.write_stream(stream, &data, &mut sent, done)
             });
             0
         }
-        RtOp::NetReceive => match wait(open, &address, line, &*s, || s.recv_from()) {
+        RtOp::NetReceive => match wait(open, &address, line, (&*s, s.wants_read()), || {
+            s.recv_from()
+        }) {
             Ok((data, from)) => datagram(data, &from, type_of(code)),
             Err(()) => 0,
         },

@@ -33,6 +33,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/lower_errors.rs` | Calls that can fail, `try`, `catch`, `fail`, `context` |
 | `src/lower_lambda.rs` | Inlined lambdas, list methods that take them, `Shared.update` |
 | `src/lower_lambda/scan.rs` | What a lambda's body reads and changes, so a lambda changes only copies |
+| `src/lower_lambda/called.rs` | Lambdas and functions called, not inlined: a named function, and a lambda with a `return` of its own (spec 3.3) |
 | `src/lower_generic.rs` | Generic functions: type arguments and instances |
 | `src/lower_std.rs` | The standard library: `std` modules, more methods, sets (spec 14) |
 | `src/lower_base64.rs` | `std.base64` (spec 14.20): its two ops, flags in place |

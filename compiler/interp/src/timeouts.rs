@@ -88,8 +88,8 @@ impl<'a> Interp<'a> {
             let limit = Some((Instant::now() + std::time::Duration::from_millis(left), ms));
             match (target, name.name.as_str()) {
                 (Value::Task(t), "wait") => me.wait_task(&t, limit, span),
-                (Value::Channel(c, false), "take") => me.channel_take(&c, limit, span),
-                (Value::Channel(c, true), "put") => {
+                (Value::Channel(c, Some(_)), "take") => me.channel_take(&c, limit, span),
+                (Value::Channel(c, None), "put") => {
                     let v = match inner.first() {
                         Some(a) => me.eval(&a.value)?,
                         None => Value::Unit,

@@ -28,6 +28,7 @@ impl RtOp {
                 | RtOp::FileInfoRemoveAll
                 | RtOp::CryptoFails
                 | RtOp::Base64Decode
+                | RtOp::CompressDecode
                 | RtOp::ClipReadText
                 | RtOp::ClipWriteText
                 | RtOp::SerialOpen
@@ -112,6 +113,8 @@ impl RtOp {
             "kv_rt_crypto"
         } else if group("Base64") {
             "kv_rt_base64"
+        } else if group("Compress") {
+            "kv_rt_compress"
         } else if group("Normalize") {
             "kv_rt_normalize"
         } else if group("Clip") {

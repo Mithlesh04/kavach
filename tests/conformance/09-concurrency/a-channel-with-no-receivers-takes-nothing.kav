@@ -1,0 +1,31 @@
+// Rule: once every receiver of a channel is gone, `try_put` gives `false` and `put` panics: nobody could take the value.
+// Spec: 9.4
+// expect output: true
+// expect output: ann got hello
+// expect output: 1
+// expect output: false
+// expect panic: `put` into a channel whose receivers are all gone
+
+fn member(joins: Sender<Sender<String>>, name: String) -> Int uses Console {
+    const (send, receive) = Channel<String>(capacity: 4)
+    joins.put(send)
+    match receive.take() {
+        Taken.Item(m) => print("{name} got {m}"),
+        Taken.Closed => print("{name}: closed"),
+    }
+    1
+}
+
+fn main() ! Error uses Console {
+    const (joins, joined) = Channel<Sender<String>>(capacity: 1)
+    const t = spawn member(joins, "ann")
+    const ann = match joined.take() {
+        Taken.Item(s) => s,
+        Taken.Closed => panic("nobody joined"),
+    }
+    print(ann.try_put("hello"))
+    print(try t.wait())
+    print(ann.try_put("again"))
+    ann.put("again")
+    print("not reached")
+}

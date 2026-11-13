@@ -7,6 +7,7 @@ pub mod agents;
 pub mod base64;
 mod big_decimal;
 pub mod clipboard;
+pub mod compress;
 mod decimal;
 pub mod env_file;
 pub mod file_info;

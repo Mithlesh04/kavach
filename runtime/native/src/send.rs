@@ -265,6 +265,8 @@ pub fn identity(p: i64) -> usize {
         Data::Weak(c) => c.as_ptr() as usize,
         Data::Task(t) => Arc::as_ptr(t) as usize,
         Data::Channel(c) => Arc::as_ptr(c) as usize,
+        // Apart from the sender's: the two ends are different values.
+        Data::Receiver(r) => Arc::as_ptr(r.chan()) as usize + 1,
         Data::Reader(r) => Arc::as_ptr(r) as usize,
         Data::Socket(s) => s.address(),
         _ => p as usize,
@@ -283,6 +285,9 @@ pub fn free_cell(p: i64) {
         Data::Shared(c) if Arc::strong_count(c) == 1 => release_slot(c.value.get() as i64, item),
         Data::Task(t) if Arc::strong_count(t) == 1 => crate::rt_tasks::free_task(t, item),
         Data::Channel(c) if Arc::strong_count(c) == 1 => crate::rt_channels::free_chan(c, item),
+        Data::Receiver(r) if Arc::strong_count(r.chan()) == 1 => {
+            crate::rt_channels::free_chan(r.chan(), item)
+        }
         _ => {}
     }
 }

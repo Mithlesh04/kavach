@@ -104,7 +104,9 @@ pub extern "C-unwind" fn kv_free(p: i64) {
             Data::Json(_, _, made) => release(*made),
             // Cells that copies share (`send.rs`): what they hold goes
             // with the last copy.
-            Data::Task(_) | Data::Channel(_) | Data::Shared(_) => crate::send::free_cell(p),
+            Data::Task(_) | Data::Channel(_) | Data::Receiver(_) | Data::Shared(_) => {
+                crate::send::free_cell(p)
+            }
             Data::Map(t) => {
                 for (i, slot) in t.slots.iter().enumerate() {
                     release_slot(*slot as i64, slot_type(p, i));

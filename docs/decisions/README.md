@@ -108,6 +108,8 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0100](0100-tagged-literals.md) | Tagged literals (`sql"…"`), declared by a package with a pure checker the compiler runs | Accepted |
 | [0101](0101-re-exports.md) | Re-exports with `pub use`: a module shows names declared in another, the same declarations | Accepted |
 | [0102](0102-unicode-normalization.md) | Unicode normal forms in `std.text` (`text.nfc`, `nfd`, `nfkc`, `nfkd`), from `unicode-normalization` | Accepted |
+| [0103](0103-std-compress.md) | `std.compress`: gzip, deflate, zstd, brotli and lz4 through one `encode`/`decode` pair with a `Format` value; decoding stops at `most` (64 MB) | Accepted |
+| [0104](0104-windows-through-winit.md) | `std.window`: windows through `winit`; `Window` and `Input` capabilities; events read with `events()` or `poll()`, and a callback form | Accepted |
 
 ## Open decisions
 

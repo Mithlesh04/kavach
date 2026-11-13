@@ -111,6 +111,9 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.19 | [crypto-hashes-match-their-standard.kav](crypto-hashes-match-their-standard.kav) | `sha256`, `sha384` and `sha512` give the FIPS 180-4 digests of "abc". | runs |
 | 14.19 | [crypto-checks-rsa-signatures.kav](crypto-checks-rsa-signatures.kav) | `crypto.rsa_verify` checks an RSA signature with SHA-256 (RS256, or PS256 with `pss: true`) from a public key's modulus and exponent. | runs |
 | 14.20 | [base64-encodes-and-decodes.kav](base64-encodes-and-decodes.kav) | `base64.encode` writes bytes as base64, standard or URL-safe, with or without padding, and `base64.decode` reads it back strictly. | runs |
+| 14.21 | [compress-gives-back-what-it-took.kav](compress-gives-back-what-it-took.kav) | `compress.decode` gives back what `compress.encode` took, in each of the five formats, smaller when the data repeats; `from_name` reads a header's name. | runs |
+| 14.21 | [compress-decoding-stops-at-most.kav](compress-decoding-stops-at-most.kav) | Decoding stops at `most` bytes with `TooLarge`; data not in the format fails with `Corrupt`. | runs |
+| 14.21 | [compress-levels-outside-the-range-panic.kav](compress-levels-outside-the-range-panic.kav) | A level outside its format's range panics. | panics |
 | 5.8, 14.6 | [cli-on-stop-needs-no-capability.kav](cli-on-stop-needs-no-capability.kav) | `cli.on_stop(grace)` gives a hold that isn't asked until a stop signal comes; taking and letting go of one needs no capability. | runs |
 | 14.12 | [log-events-are-records.kav](log-events-are-records.kav) | A log event is a value of a type that implements `LogEvent`; the console shows its level and its printed form. | runs |
 | 14.12 | [log-hides-secrets.kav](log-hides-secrets.kav) | A secret field of a log event is written as `<secret>`. | runs |

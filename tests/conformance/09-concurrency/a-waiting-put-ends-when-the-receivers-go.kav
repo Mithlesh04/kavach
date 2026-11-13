@@ -1,0 +1,26 @@
+// Rule: a `put` waiting for room panics when the channel's last receiver goes.
+// Spec: 9.4
+// expect output: first in
+// expect panic: `put` into a channel whose receivers are all gone
+
+use std.time
+
+fn member(joins: Sender<Sender<String>>) uses Clock {
+    const (send, receive) = Channel<String>(capacity: 1)
+    joins.put(send)
+    time.sleep(30.ms)
+    const _r = receive
+}
+
+fn main() uses Console, Clock {
+    const (joins, joined) = Channel<Sender<String>>(capacity: 1)
+    const _t = spawn member(joins)
+    const ann = match joined.take() {
+        Taken.Item(s) => s,
+        Taken.Closed => panic("nobody joined"),
+    }
+    ann.put("a")
+    print("first in")
+    ann.put("b")
+    print("not reached")
+}

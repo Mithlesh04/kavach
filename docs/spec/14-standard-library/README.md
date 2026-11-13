@@ -26,6 +26,7 @@ Each section is a file of its own: new sections go at the end, with the next num
 | 14.18 std.devices | [18-devices.md](18-devices.md) |
 | 14.19 std.crypto | [19-crypto.md](19-crypto.md) |
 | 14.20 std.base64 | [20-base64.md](20-base64.md) |
+| 14.21 std.compress | [21-compress.md](21-compress.md) |
 
 ## Open questions
 

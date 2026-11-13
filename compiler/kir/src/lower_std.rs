@@ -111,6 +111,8 @@ impl<'a> Lowerer<'a> {
                 let form = self.at(K::Int(i128::from(form)), Type::I64, line);
                 return Ok(self.at(K::Rt(RtOp::NormalizeText, vec![s, form]), ty, line));
             }
+            ("compress", "encode_bytes") => RtOp::CompressEncode,
+            ("compress", "decode_bytes") => RtOp::CompressDecode,
             ("clipboard", "read_text") => RtOp::ClipReadText,
             ("clipboard", "write_text") => RtOp::ClipWriteText,
             ("devices", "serial_ports") => RtOp::SerialPorts,

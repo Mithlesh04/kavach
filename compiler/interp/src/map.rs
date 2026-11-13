@@ -127,7 +127,7 @@ fn hash_into(v: &Value<'_>, h: &mut DefaultHasher) {
         Value::Reader(r) => std::rc::Rc::as_ptr(r).hash(h),
         Value::Socket(s) => std::sync::Arc::as_ptr(s).hash(h),
         Value::FakeConn(c) => std::rc::Rc::as_ptr(c).hash(h),
-        Value::Channel(c, sender) => (std::rc::Rc::as_ptr(c), sender).hash(h),
+        Value::Channel(c, end) => (std::rc::Rc::as_ptr(c), end.is_none()).hash(h),
         Value::Shared(cell) => std::rc::Rc::as_ptr(cell).hash(h),
         Value::Weak(cell) => cell.as_ptr().hash(h),
         Value::Func(def) => def.hash(h),

@@ -13,6 +13,7 @@ pub mod cert;
 mod connect;
 pub mod poller;
 mod quic;
+mod ready;
 mod tls;
 mod upgrade;
 
@@ -137,26 +138,6 @@ impl Shared {
                 m
             }
             None => n,
-        }
-    }
-}
-
-impl poller::Ready for Shared {
-    fn events(&self) -> u64 {
-        Shared::events(self)
-    }
-
-    fn on_event(&self, seen: u64, wake: poller::Waker) -> bool {
-        // A socket that moved has a new count: `seen` is the old one's, so
-        // the caller tries again and notes the new count first.
-        self.token()
-            .is_some_and(|n| poller::wait(self.here(n), seen, wake))
-    }
-
-    fn waits(&self) -> poller::Waits {
-        match self.token() {
-            Some(_) => poller::Waits::OnQueue,
-            None => poller::Waits::No,
         }
     }
 }

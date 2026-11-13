@@ -83,6 +83,17 @@ A `try` or `fail` inside a lambda belongs to the lambda: it ends that call of th
 const prices = try orders.map(o => try price(o))    // the first order that fails stops `map`
 ```
 
+A `return` inside a lambda belongs to the lambda too: it ends that call of the lambda with its value, as in Rust, Swift and JavaScript, and the function the lambda was written in goes on. Its value has the type of the lambda's last value:
+
+```kavach
+const labels = xs.map(x => {
+    if x < 0 {
+        return "minus"      // this item's label; `map` goes on with the next
+    }
+    "plus"
+})
+```
+
 ### Dot shorthand
 
 Assigning to an outside variable inside a lambda changes only the lambda's copy, so the variable outside stays as it was. That is rarely what was meant, so it gives a warning, and the same inside `spawn { … }` (9.5):

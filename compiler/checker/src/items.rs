@@ -402,7 +402,10 @@ impl Checker<'_> {
             return;
         }
         let t = self.value(e, None);
-        if !self.is_nothing(&t) && !self.droppable(e) {
+        // A `spawn` on its own line: nobody waits for its task, on
+        // purpose (spec 9.1); an error in it is still printed.
+        let spawned = matches!(e.kind, ExprKind::Spawn(..));
+        if !self.is_nothing(&t) && !self.droppable(e) && !spawned {
             let message = match &e.kind {
                 ExprKind::Call { .. } => format!(
                     "the result of {} is unused: use it, or write `const _ = …` to throw it away",

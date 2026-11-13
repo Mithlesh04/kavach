@@ -160,6 +160,8 @@ pub enum Data {
     Task(std::sync::Arc<crate::rt_tasks::TaskObj>),
     /// A channel (spec 9.4, `rt_channels.rs`).
     Channel(std::sync::Arc<crate::rt_channels::ChanObj>),
+    /// A channel's `Receiver`: the channel, with the receivers counted.
+    Receiver(crate::rt_channels::Receiving),
     /// A `Shared` value's cell (spec 6.2): every copy holds the same.
     Shared(std::sync::Arc<crate::send::SharedCell>),
     /// A `Weak` (spec 6.2): the cell of a `Shared`, not kept alive.

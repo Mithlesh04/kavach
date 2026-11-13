@@ -61,6 +61,7 @@ Hindley–Milner-style inference with unification. A number literal starts as an
 | `src/secrets.rs` | Secrets (spec 2.11, 8.7): where a secret may go, and a secret returned without `-> secret` |
 | `src/std_crypto.rs` | The signatures of `std.crypto` (spec 14.19) |
 | `src/std_base64.rs` | The signatures of `std.base64` (spec 14.20) |
+| `src/std_compress.rs` | The signatures of `std.compress`'s built-in functions (spec 14.21) |
 | `src/cli_parse.rs` | `cli.parse<T>()` (spec 14.6): a record of options, or a union of commands |
 | `tests/types.rs` | Valid programs pass; each mistake gets its message on the right line |
 | `tests/from_other_languages.rs` | Habits from other languages (`===`, `null`, inheritance, `2nd_place`, …) get one clear error that says what Kavach does instead |

@@ -87,7 +87,7 @@ fn work() uses Console {
 - After `drop` returns, the value's fields are freed. `drop` runs once per value, in every way of running a program (`kavach run`, `run --native`, `kavach build`).
 - A panic runs no `drop`. In the main task it ends the program (5.8); in another task, or in an agent's handler, it stops just that, and what it held is never dropped ([decision 0065](../decisions/0065-a-panic-stops-only-its-task.md)).
 
-Other values are still freed the moment their last use ends: nothing can tell. (A `Shared` lives to the end of its block too, since a `Weak` can tell, 6.2.)
+Other values are still freed the moment their last use ends: nothing can tell. (A `Shared` lives to the end of its block too, since a `Weak` can tell, 6.2; and so do a channel's ends, since a sender can tell when every receiver is gone, 9.4.)
 
 Files, sockets and locks close at a known point. There is no "eventually, when the collector runs".
 

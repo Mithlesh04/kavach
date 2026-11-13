@@ -11,7 +11,7 @@ fn hello(r: Request) -> Response {
 
 test "a server left running ends with the test" uses Net {
     const listener = net.listen("127.0.0.1:0") catch e => panic("{e}")
-    const _server = spawn http.serve(listener, r => hello(r))
+    spawn http.serve(listener, r => hello(r))
     const reply = http.get("http://{listener.address()}/") catch e => panic("{e}")
     assert reply.status == 200
 }

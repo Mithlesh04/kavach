@@ -41,3 +41,5 @@ Conformance tests for spec chapter [3. Functions](../../../docs/spec/03-function
 | 3.4, 2.9 | [functions-that-cant-fail-meet-error-bounds.kav](functions-that-cant-fail-meet-error-bounds.kav) | A function that can't fail may be passed where `! E` has a bound, and the handler for that error never runs. | runs |
 | 3.4 | [a-function-that-can-fail-needs-a-type-that-says-so.kav](a-function-that-can-fail-needs-a-type-that-says-so.kav) | A function that can fail doesn't fit a function type without `!`. | compile error |
 | 3.3 | [a-lambdas-try-is-its-own.kav](a-lambdas-try-is-its-own.kav) | A `try` inside a lambda ends the lambda's call with the error, so the lambda can fail, stored or passed on. | runs |
+| 3.3 | [a-lambdas-return-is-its-own.kav](a-lambdas-return-is-its-own.kav) | A `return` inside a lambda ends that call of the lambda with its value; the function around it goes on. | runs |
+| 3.3 | [a-lambdas-return-matches-its-value.kav](a-lambdas-return-matches-its-value.kav) | A lambda's `return` must give the same type as the lambda's last value. | compile error |

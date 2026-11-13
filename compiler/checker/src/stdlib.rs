@@ -23,6 +23,7 @@ const MODULES: &[(&str, Option<&str>)] = &[
     ("devices", Some("Serial")),
     ("crypto", None),
     ("base64", None),
+    ("compress", None),
     ("text", None),
 ];
 
@@ -262,6 +263,8 @@ impl Checker<'_> {
             ("text", "nfc" | "nfd" | "nfkc" | "nfkd") => (vec![p("s", &string)], string.clone()),
             // std.base64 (spec 14.20): no capability.
             ("base64", _) => self.base64_signature(name)?,
+            // std.compress (spec 14.21): no capability.
+            ("compress", _) => self.compress_signature(name)?,
             // The clipboard (spec 14.17), behind `Clipboard`.
             ("clipboard", "read_text") => {
                 let e = self.builtin_ty("ClipboardError");

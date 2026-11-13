@@ -23,12 +23,20 @@ arboard = { version = "3", default-features = false, optional = true }
 serial2 = { version = "0.2", optional = true }
 # Unicode normal forms for `std.text` (decision 0102).
 unicode-normalization = "0.1"
+# `std.compress` (decision 0103): gzip and deflate on the pure-Rust
+# backend, brotli, lz4, and zstd through the C libzstd.
+flate2 = { version = "1", default-features = false, features = ["rust_backend"] }
+brotli = "9"
+lz4_flex = "0.14"
+zstd = { version = "0.14", optional = true }
 
 [features]
-default = ["devices"]
+default = ["devices", "zstd"]
 # The clipboard, serial ports and hidden input. Off only in the browser
 # playground (decision 0078), whose platform has none of them.
 devices = ["dep:arboard", "dep:rpassword", "dep:serial2"]
+# zstd builds C code, which the browser playground (WebAssembly) can't.
+zstd = ["dep:zstd"]
 
 [lints]
 workspace = true

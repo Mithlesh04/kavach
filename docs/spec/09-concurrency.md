@@ -37,7 +37,7 @@ fn main() {
 // on standard error: error in a task nobody waited for: disk full (spawned at main.kav:6)
 ```
 
-The compiler keeps such tasks in sight: a `spawn` whose `Task` is thrown away is an error, like any value (3.7), and a `Task` kept in a name that is never used gets a warning (1.4). A name starting with `_`, as above, says nobody waits for it on purpose and silences the warning; an error is still printed if it happens.
+A `spawn` on a line of its own starts a task nobody waits for, as `go f()` does in Go: `spawn serve(app)` is the same as `const _t = spawn serve(app)`. The task is still cancelled when the function that spawned it returns (9.2), and an error in it is still printed. A `Task` kept in a name that is never used gets a warning (1.4); a name starting with `_`, as above, says nobody waits for it on purpose and silences the warning.
 
 A panic (5.6) stops only the task it happens in. It is printed when it happens, `panic: <message>` and its place, and `.wait()` on that task fails with an error whose message is `panicked: <message> at <file>:<line>` ([decision 0065](../decisions/0065-a-panic-stops-only-its-task.md)). A panic in the main task ends the program (5.8). A panic inside the function of a `Shared` value's `update` (6.2) leaves the value as it was, and other tasks can go on using it.
 
@@ -94,8 +94,8 @@ for order in receive {
 
 | Method | Does |
 |---|---|
-| `send.put(v)` | Adds `v`. When the channel already holds `capacity` values, it waits until one is taken. Putting into a closed channel panics. |
-| `send.try_put(v) -> Bool` | Adds `v` if the channel has room and gives `true`; when it is full or closed, gives `false` at once and `v` is let go. It never waits, so one slow taker can't hold up a task that sends to many. |
+| `send.put(v)` | Adds `v`. When the channel already holds `capacity` values, it waits until one is taken. Putting into a closed channel panics, and so does putting into one whose receivers are all gone: nobody could ever take the value. A `put` waiting for room panics when the last receiver goes. |
+| `send.try_put(v) -> Bool` | Adds `v` if the channel has room and gives `true`; when it is full or closed, or its receivers are all gone, gives `false` at once and `v` is let go. It never waits, so one slow taker can't hold up a task that sends to many. |
 | `send.close()` | No more values will come. Values already in the channel can still be taken. |
 | `receive.take() -> Taken<T>` | The next value, in the order they were put, as `Taken.Item(value)`. It waits while the channel is empty, and gives `Taken.Closed` once the channel is closed and empty. |
 
@@ -111,6 +111,12 @@ match receive.take() {
 `for v in receive` takes values until `take()` gives `Closed`. Waiting in `put` and `take` is waiting in the sense of 9.7: other tasks run meanwhile, and tasks waiting on one channel go on in the order they started waiting. If every task waits and none can go on (a receiver whose sender never closes, say), the program panics with a deadlock.
 
 `capacity` must be at least 1. Copies of an end share the channel, like `Shared` (6.2).
+
+A receiver is gone once nothing holds it: every copy of the `Receiver` was let go, as when the task that held it ended. A task that sends to many, such as a chat room's, sees at once that a member left, since `try_put` gives `false`:
+
+```kavach
+members = members.filter(m => m.try_put(message))    // drops members that left, and those too slow to keep up
+```
 
 ## 9.5 No data races
 
@@ -150,7 +156,7 @@ A cancel always wins: no code can put it off. Nothing is left half-done all the 
 - An agent's event that is cut short stays unfinished in its journal and runs again after a restart (8.5).
 - A durable write (`fs.write_durable`, 14.3) is all there or not at all, as after a crash.
 
-**Cleanup that must run however a task ends** (cancelled, failed, panicked or done) is a value whose type implements `Drop` (6.1). There is no `defer` or `on_cancel` block: one way covers every exit. A pool gives each borrower a guard, and the guard gives the slot back:
+**Cleanup that must run however a task ends** (cancelled, failed or done) is a value whose type implements `Drop` (6.1). There is no `defer` or `on_cancel` block: one way covers every exit. A panic is the exception: it runs no `drop`, as 6.1 says ([decision 0065](../decisions/0065-a-panic-stops-only-its-task.md)). A pool gives each borrower a guard, and the guard gives the slot back:
 
 ```kavach
 type Slot: Drop {

@@ -8,8 +8,8 @@ use crate::lower::{Lowered, Lowerer};
 use crate::rt_op::RtOp;
 use kavach_ast::{self as ast, ExprKind};
 use kavach_checker::Ty;
-use kavach_resolver::DefKind;
 
+mod called;
 mod scan;
 use scan::{assigned, mentions};
 
@@ -19,27 +19,6 @@ pub(crate) const LIST_LOOPS: [&str; 8] = [
 ];
 
 impl<'a> Lowerer<'a> {
-    /// The function `f` names, when calling it with `n` values needs
-    /// nothing a plain call doesn't: not generic, not from C, no errors,
-    /// no `inout` and no defaults left out.
-    fn plain_fn(&self, f: &ast::Expr, n: usize) -> Option<ir::FuncId> {
-        let ExprKind::Name(id) = &f.kind else {
-            return None;
-        };
-        let res = &self.c.resolution;
-        let def = *res.uses.get(&id.span.start)?;
-        if !matches!(res.defs[def].kind, DefKind::Fn) || self.generic_fns.contains_key(&def) {
-            return None;
-        }
-        let fid = *self.fn_ids.get(&def)?;
-        let decl = self.decl_of(fid);
-        let plain = decl.c_library.is_none()
-            && decl.errors.is_none()
-            && decl.params.len() == n
-            && decl.params.iter().all(|p| !p.is_inout);
-        plain.then_some(fid)
-    }
-
     /// The lambda's body with `args` bound to its parameters.
     pub(crate) fn inline_lambda(
         &mut self,
@@ -48,6 +27,10 @@ impl<'a> Lowerer<'a> {
         line: u32,
     ) -> Lowered<ir::Expr> {
         let (stmts, body) = match &f.kind {
+            // A `return` inside ends the lambda's own call (spec 3.3).
+            ExprKind::Lambda { body, .. } if called::own_return(body) => {
+                return self.called_lambda(f, args, line);
+            }
             ExprKind::Lambda { params, body } => {
                 let mut stmts = Vec::new();
                 for (p, arg) in params.iter().zip(args) {

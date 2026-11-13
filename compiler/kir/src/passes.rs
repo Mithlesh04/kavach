@@ -44,10 +44,22 @@ pub(crate) fn finish(
         let shared = |i: &u32| matches!(l.shapes.list[*i as usize], Shape::Shared(_));
         kept.extend((0..l.shapes.list.len() as u32).filter(shared));
     }
+    // A sender can tell when every receiver is gone (spec 9.4), so in a
+    // program that makes a channel, its ends live to the end of their
+    // blocks too.
+    let chan = |e: &Expr| matches!(e.kind, ExprKind::Rt(RtOp::ChanNew, _));
+    if functions
+        .iter()
+        .any(|f| crate::walk::any_in_block(&f.body, &mut { chan }))
+    {
+        let ends = |i: &u32| matches!(l.shapes.list[*i as usize], Shape::Channel(_));
+        kept.extend((0..l.shapes.list.len() as u32).filter(ends));
+    }
     let holders = crate::drop_scopes::holders(&l.shapes.list, &kept);
     if !holders.is_empty() {
+        let runs = !l.drop_records.is_empty();
         for f in &mut functions {
-            crate::drop_scopes::scope_drops(f, &holders);
+            crate::drop_scopes::scope_drops(f, &holders, runs);
         }
     }
     crate::lower_log::configure_log(c, &mut functions, roots[0], text_ty);

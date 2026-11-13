@@ -1,0 +1,101 @@
+// std.compress (spec 14.21, decision 0103): bytes compressed and made
+// whole again. Compressing is built into the runtime
+// (`runtime/core/src/compress.rs`), by the format's number; this file
+// gives the formats, their levels and the errors.
+
+use std.compress
+
+/// A way of compressing, as HTTP's `content-encoding` names them.
+pub type Format = Gzip | Deflate | Zstd | Brotli | Lz4
+
+/// Why data couldn't be decoded: it holds more than `most` bytes, or it
+/// isn't in the format, or was cut short.
+pub type CompressError = TooLarge(most: Int) | Corrupt(reason: String)
+
+extend Format {
+    /// The format's name in an HTTP header: `gzip`, `deflate`, `zstd`,
+    /// `br` or `lz4`.
+    pub fn name(self) -> String
+        example Format.Brotli.name() == "br"
+    {
+        match self {
+            Format.Gzip => "gzip",
+            Format.Deflate => "deflate",
+            Format.Zstd => "zstd",
+            Format.Brotli => "br",
+            Format.Lz4 => "lz4",
+        }
+    }
+}
+
+/// The format's number, as `encode_bytes` and `decode_bytes` take it.
+fn number(format: Format) -> Int
+    example number(Format.Gzip) == 0
+    example number(Format.Lz4) == 4
+{
+    match format {
+        Format.Gzip => 0,
+        Format.Deflate => 1,
+        Format.Zstd => 2,
+        Format.Brotli => 3,
+        Format.Lz4 => 4,
+    }
+}
+
+/// The lowest, usual and highest level of `format`.
+fn levels(format: Format) -> (low: Int, usual: Int, high: Int)
+    ensure result.low <= result.usual and result.usual <= result.high
+    example levels(Format.Zstd).high == 22
+{
+    match format {
+        Format.Gzip => (low: 0, usual: 6, high: 9),
+        Format.Deflate => (low: 0, usual: 6, high: 9),
+        Format.Zstd => (low: 1, usual: 3, high: 22),
+        Format.Brotli => (low: 0, usual: 5, high: 11),
+        Format.Lz4 => (low: 0, usual: 0, high: 0),
+    }
+}
+
+/// Whether `level` is one of `format`'s levels; `none`, the usual one,
+/// always is.
+pub fn level_fits(format: Format, level: Int?) -> Bool
+    example level_fits(Format.Gzip, 9)
+    example not level_fits(Format.Gzip, 12)
+    example level_fits(Format.Lz4, none)
+{
+    const range = levels(format)
+    const chosen = level ?? range.usual
+    chosen >= range.low and chosen <= range.high
+}
+
+/// `data` compressed in `format`, at `level` or the format's usual one.
+pub fn encode(data: Bytes, format: Format, level: Int? = none) -> Bytes
+    require level_fits(format, level)
+    ensure result.len() > 0
+{
+    compress.encode_bytes(data, number(format), level ?? levels(format).usual)
+}
+
+/// The bytes `data` holds in `format`; at most `most` of them.
+pub fn decode(data: Bytes, format: Format, most: Int = 64_000_000) -> Bytes ! CompressError
+    require most >= 0
+    ensure result.len() <= most
+{
+    try compress.decode_bytes(data, number(format), most)
+}
+
+/// The format `name` stands for in an HTTP header, `none` for any other.
+pub fn from_name(name: String) -> Format?
+    example from_name(" BR ") == Format.Brotli
+    example from_name("compress") == none
+{
+    match name.trim().lower() {
+        "gzip" => Format.Gzip,
+        "x-gzip" => Format.Gzip,
+        "deflate" => Format.Deflate,
+        "zstd" => Format.Zstd,
+        "br" => Format.Brotli,
+        "lz4" => Format.Lz4,
+        _ => none,
+    }
+}

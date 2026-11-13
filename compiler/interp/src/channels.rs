@@ -8,12 +8,12 @@ use crate::interp::Interp;
 use crate::tasks::Limit;
 use crate::value::{Eval, Flow, Value};
 use kavach_ast::Span;
-use kavach_runtime_core::tasks::{Stop, TaskId};
+use kavach_runtime_core::tasks::{Scheduler, Stop, TaskId};
 use std::cell::RefCell;
 use std::collections::VecDeque;
-use std::rc::Rc;
+use std::rc::{Rc, Weak};
+use std::sync::Arc;
 
-#[derive(Debug)]
 pub struct ChannelState<'a> {
     values: VecDeque<Value<'a>>,
     capacity: usize,
@@ -21,9 +21,44 @@ pub struct ChannelState<'a> {
     /// Tasks waiting for a value, and for room, first come first.
     takers: VecDeque<TaskId>,
     putters: VecDeque<TaskId>,
+    /// Whether every `Receiver` was let go: no value put could be taken.
+    no_receivers: bool,
+    /// The scheduler of the tasks waiting, to wake them when the last
+    /// receiver goes.
+    sched: Option<Arc<Scheduler>>,
 }
 
 pub type Channel<'a> = Rc<RefCell<ChannelState<'a>>>;
+
+impl std::fmt::Debug for ChannelState<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ChannelState")
+            .field("values", &self.values.len())
+            .field("closed", &self.closed)
+            .field("no_receivers", &self.no_receivers)
+            .finish()
+    }
+}
+
+/// What every copy of a `Receiver` holds: when the last copy is let go,
+/// the channel has no receivers left, and a `put` waiting for room is
+/// woken to panic (spec 9.4).
+#[derive(Debug)]
+pub struct Receiving<'a>(Weak<RefCell<ChannelState<'a>>>);
+
+impl Drop for Receiving<'_> {
+    fn drop(&mut self) {
+        let Some(c) = self.0.upgrade() else { return };
+        let Ok(mut st) = c.try_borrow_mut() else {
+            return;
+        };
+        st.no_receivers = true;
+        let putters = std::mem::take(&mut st.putters);
+        if let Some(sched) = &st.sched {
+            putters.into_iter().for_each(|t| sched.unpark(t));
+        }
+    }
+}
 
 impl<'a> Interp<'a> {
     /// `Channel<T>(capacity: n)`: its sender and its receiver.
@@ -44,10 +79,13 @@ impl<'a> Interp<'a> {
             closed: false,
             takers: VecDeque::new(),
             putters: VecDeque::new(),
+            no_receivers: false,
+            sched: None,
         }));
+        let receiving = Rc::new(Receiving(Rc::downgrade(&state)));
         Ok(Value::Tuple(vec![
-            Value::Channel(Rc::clone(&state), true),
-            Value::Channel(state, false),
+            Value::Channel(Rc::clone(&state), None),
+            Value::Channel(state, Some(receiving)),
         ]))
     }
 
@@ -57,7 +95,7 @@ impl<'a> Interp<'a> {
     /// has room; never waits.
     pub(crate) fn channel_try_put(&mut self, c: &Channel<'a>, v: Value<'a>) -> bool {
         let mut st = c.borrow_mut();
-        if st.closed || st.values.len() >= st.capacity {
+        if st.closed || st.no_receivers || st.values.len() >= st.capacity {
             return false;
         }
         st.values.push_back(v);
@@ -80,6 +118,10 @@ impl<'a> Interp<'a> {
                 drop(st);
                 return Err(self.panic("`put` into a closed channel", span));
             }
+            if st.no_receivers {
+                drop(st);
+                return Err(self.panic("`put` into a channel whose receivers are all gone", span));
+            }
             if st.values.len() < st.capacity {
                 st.values.push_back(v);
                 let taker = st.takers.pop_front();
@@ -88,6 +130,7 @@ impl<'a> Interp<'a> {
                 return Ok(Value::Unit);
             }
             st.putters.push_back(self.task);
+            st.sched = self.tasks.as_ref().map(|t| Arc::clone(&t.sched));
             drop(st);
             if let Err(stop) = self.park(limit) {
                 let me = self.task;

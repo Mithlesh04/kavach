@@ -1,4 +1,4 @@
-// RtOp, text: Text, numbers, regular expressions, panics and `std.base64`. Read by `compiler/kir/build.rs`.
+// RtOp, text: Text, numbers, regular expressions, panics, `std.base64` and `std.compress`. Read by `compiler/kir/build.rs`.
 StrLen,
 StrIsEmpty,
 StrUpper,
@@ -65,3 +65,7 @@ Base64Decode,
 /// `std.text`'s normal forms (spec 14.9): the text and the form (0 NFC,
 /// 1 NFD, 2 NFKC, 3 NFKD), from an entry of its own.
 NormalizeText,
+/// `std.compress` (spec 14.21): `encode_bytes` (data, format, level) and
+/// `decode_bytes` (data, format, most), which can fail.
+CompressEncode,
+CompressDecode,

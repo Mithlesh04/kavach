@@ -1,0 +1,11 @@
+// Rule: a level outside its format's range breaks `encode`'s `require`, so it panics: it is a mistake in the program.
+// Spec: 14.21
+// expect output: true
+// expect panic: contract failed: require level_fits(format, level)
+
+use std.compress
+
+fn main() uses Console {
+    print(compress.encode("abc".bytes(), Format.Zstd, level: 19).len() > 0)
+    const _ = compress.encode("abc".bytes(), Format.Gzip, level: 12)
+}

@@ -1,0 +1,22 @@
+// Rule: `compress.decode` gives back the bytes `compress.encode` took, in each format, smaller when the data repeats.
+// Spec: 14.21
+// expect output: gzip true true
+// expect output: deflate true true
+// expect output: zstd true true
+// expect output: br true true
+// expect output: lz4 true true
+// expect output: Brotli
+// expect output: none
+
+use std.compress
+
+fn main() ! Error uses Console {
+    const data = "Hello, World! ".repeat(200).bytes()
+    for format in [Format.Gzip, Format.Deflate, Format.Zstd, Format.Brotli, Format.Lz4] {
+        const packed = compress.encode(data, format)
+        const back = try compress.decode(packed, format)
+        print("{format.name()} {back == data} {packed.len() < data.len() / 10}")
+    }
+    print(compress.from_name(" BR ") ?? Format.Gzip)
+    print(compress.from_name("compress"))
+}

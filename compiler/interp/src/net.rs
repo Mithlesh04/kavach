@@ -6,7 +6,7 @@
 use crate::interp::Interp;
 use crate::value::{Eval, Flow, Value};
 use kavach_ast::Span;
-use kavach_runtime_net::net::poller::{Ready, Waits};
+use kavach_runtime_net::net::poller::{Ready, Waits, Want};
 use kavach_runtime_net::net::{self, NetFail, Shared, Try};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -32,12 +32,12 @@ impl<'a> Interp<'a> {
         deadline: Option<Instant>,
         address: &str,
         span: Span,
-        ready: &dyn Ready,
+        (ready, want): (&dyn Ready, Want),
         mut once: impl FnMut() -> Try<T>,
     ) -> Result<T, Flow<'a>> {
         let mut n = 0;
         loop {
-            let seen = ready.events();
+            let seen = ready.events_for(want);
             match once() {
                 Try::Done(v) => return Ok(v),
                 Try::Fail(f) => return Err(self.net_error(f, address)),
@@ -47,7 +47,7 @@ impl<'a> Interp<'a> {
                     }
                     match ready.waits() {
                         Waits::No => self.sleep_until(Instant::now() + net::backoff(n), span)?,
-                        _ => self.wait_ready(ready, seen, deadline, span)?,
+                        _ => self.wait_ready((ready, want), seen, deadline, span)?,
                     }
                     n += 1;
                 }
@@ -59,20 +59,20 @@ impl<'a> Interp<'a> {
     /// (`net::poller`), or until `at`; other tasks run meanwhile.
     fn wait_ready(
         &mut self,
-        ready: &dyn Ready,
+        (ready, want): (&dyn Ready, Want),
         seen: u64,
         at: Option<Instant>,
         span: Span,
     ) -> Result<(), Flow<'a>> {
         self.refuse_if_held(span)?;
         let Some(sched) = self.tasks.as_ref().map(|t| Arc::clone(&t.sched)) else {
-            net::poller::wait_alone(ready, seen, at);
+            net::poller::wait_alone(ready, want, seen, at);
             return Ok(());
         };
         self.flush();
         let me = self.task;
         let (wait, waker) = (sched.next_wait(me), Arc::clone(&sched));
-        if !ready.on_event(seen, Box::new(move || waker.wake_wait(me, wait))) {
+        if !ready.on_event_for(seen, want, Box::new(move || waker.wake_wait(me, wait))) {
             return Ok(());
         }
         sched
@@ -138,7 +138,9 @@ impl<'a> Interp<'a> {
                 _ => net::connect(address),
             };
             let deadline = Some(Instant::now() + limit.unwrap_or(net::DEADLINE));
-            self.net_wait(deadline, address, span, &connecting, || connecting.poll())?
+            self.net_wait(deadline, address, span, (&connecting, Want::Any), || {
+                connecting.poll()
+            })?
         };
         Ok(Value::Socket(Arc::new(socket)))
     }
@@ -159,7 +161,8 @@ impl<'a> Interp<'a> {
         let address = s.address.clone();
         Ok(match name {
             "accept" => {
-                let conn = self.net_wait(open, &address, span, &**s, || s.accept())?;
+                let conn =
+                    self.net_wait(open, &address, span, (&**s, s.wants_read()), || s.accept())?;
                 Value::Socket(Arc::new(conn))
             }
             "address" | "peer" => self.str_value(&address),
@@ -167,17 +170,23 @@ impl<'a> Interp<'a> {
                 Some(p) => self.str_value(&p),
                 None => Value::None,
             },
-            "read" => match self.net_wait(deadline, &address, span, &**s, || s.read())? {
-                Some(data) => Value::Bytes(data.into()),
-                None => Value::None,
-            },
+            "read" => {
+                match self.net_wait(deadline, &address, span, (&**s, s.wants_read()), || {
+                    s.read()
+                })? {
+                    Some(data) => Value::Bytes(data.into()),
+                    None => Value::None,
+                }
+            }
             "write" => {
                 let data: std::rc::Rc<[u8]> = match args.first() {
                     Some(Value::Bytes(b)) => b.clone(),
                     _ => std::rc::Rc::from(Vec::new()),
                 };
                 let mut sent = 0;
-                self.net_wait(deadline, &address, span, &**s, || s.write(&data, &mut sent))?;
+                self.net_wait(deadline, &address, span, (&**s, s.wants_write()), || {
+                    s.write(&data, &mut sent)
+                })?;
                 Value::Unit
             }
             "close" => {
@@ -187,7 +196,9 @@ impl<'a> Interp<'a> {
             // QUIC streams.
             "open_stream" => {
                 let two_way = matches!(args.first(), Some(Value::Bool(true)));
-                let n = self.net_wait(deadline, &address, span, &**s, || s.open_stream(two_way))?;
+                let n = self.net_wait(deadline, &address, span, (&**s, Want::Any), || {
+                    s.open_stream(two_way)
+                })?;
                 Value::Int(i128::from(n), kavach_checker::Prim::Int)
             }
             "write_stream" | "read_stream" => {
@@ -196,8 +207,9 @@ impl<'a> Interp<'a> {
                     _ => 0,
                 };
                 if name == "read_stream" {
-                    let got =
-                        self.net_wait(deadline, &address, span, &**s, || s.read_stream(stream))?;
+                    let got = self.net_wait(deadline, &address, span, (&**s, Want::Any), || {
+                        s.read_stream(stream)
+                    })?;
                     return Ok(got.map_or(Value::None, |d| Value::Bytes(d.into())));
                 }
                 let data: std::rc::Rc<[u8]> = match args.get(1) {
@@ -206,7 +218,7 @@ impl<'a> Interp<'a> {
                 };
                 let done = matches!(args.get(2), Some(Value::Bool(true)));
                 let mut sent = 0;
-                self.net_wait(deadline, &address, span, &**s, || {
+                self.net_wait(deadline, &address, span, (&**s, Want::Any), || {
                     s.write_stream(stream, &data, &mut sent, done)
                 })?;
                 Value::Unit
@@ -221,7 +233,9 @@ impl<'a> Interp<'a> {
                     Some(Value::Str(t)) => t.to_string(),
                     _ => String::new(),
                 };
-                self.net_wait(deadline, &to, span, &**s, || s.send_to(&data, &to))?;
+                self.net_wait(deadline, &to, span, (&**s, s.wants_write()), || {
+                    s.send_to(&data, &to)
+                })?;
                 Value::Unit
             }
             // TLS begun on this plain connection: a new connection, and
@@ -242,7 +256,10 @@ impl<'a> Interp<'a> {
                     net::accept_tls(s, &text(0), &text(1), &strings(args.get(2)), &text(3))
                 };
                 let started = started.map_err(|f| self.net_error(f, &address))?;
-                let made = self.net_wait(deadline, &address, span, &started, || started.poll())?;
+                let made =
+                    self.net_wait(deadline, &address, span, (&started, Want::Any), || {
+                        started.poll()
+                    })?;
                 Value::Socket(Arc::new(made))
             }
             "peer_certificate" => match s.peer_certificate() {
@@ -277,7 +294,10 @@ impl<'a> Interp<'a> {
                 None => Value::None,
             },
             "receive" => {
-                let (data, from) = self.net_wait(open, &address, span, &**s, || s.recv_from())?;
+                let (data, from) =
+                    self.net_wait(open, &address, span, (&**s, s.wants_read()), || {
+                        s.recv_from()
+                    })?;
                 let Some(def) = self.c.resolution.std_type("Datagram") else {
                     return Err(self.panic("`Datagram` is missing", span));
                 };

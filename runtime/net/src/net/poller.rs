@@ -41,6 +41,27 @@ pub trait Ready {
     /// when one came already: then the caller tries again now.
     fn on_event(&self, seen: u64, wake: Waker) -> bool;
     fn waits(&self) -> Waits;
+    /// `events`, counting only the events a wait for `want` cares about.
+    fn events_for(&self, _want: Want) -> u64 {
+        self.events()
+    }
+    /// `on_event` for the next event a wait for `want` cares about.
+    fn on_event_for(&self, seen: u64, _want: Want, wake: Waker) -> bool {
+        self.on_event(seen, wake)
+    }
+}
+
+/// What a wait on a socket is for. A connected socket is writable nearly
+/// always, and on Windows each look reports it so again: a read woken by
+/// that would try and wait again without end, busy all the time.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Want {
+    /// To read (or accept): readable, closed or failed.
+    Read,
+    /// To write: writable, closed or failed.
+    Write,
+    /// Either, as a TLS stream's reads and writes may need both.
+    Any,
 }
 
 /// How a waiting task learns of the event.
@@ -103,9 +124,22 @@ struct Poller {
 
 #[derive(Default)]
 struct Entry {
-    /// How many events the socket has had.
+    /// How many events the socket has had: any, readable and writable.
     events: u64,
-    waiter: Option<Waker>,
+    reads: u64,
+    writes: u64,
+    /// The task waiting, and for what.
+    waiter: Option<(Waker, Want)>,
+}
+
+impl Entry {
+    fn count(&self, want: Want) -> u64 {
+        match want {
+            Want::Read => self.reads,
+            Want::Write => self.writes,
+            Want::Any => self.events,
+        }
+    }
 }
 
 /// Each worker's poller, made at the first use of any; `None` when the
@@ -213,8 +247,21 @@ fn idle_on(w: usize, timeout: Option<Duration>) {
             .iter()
             .filter_map(|e| {
                 let entry = all.get_mut(&e.token().0)?;
+                let failed = e.is_error();
+                let read = e.is_readable() || e.is_read_closed() || failed;
+                let write = e.is_writable() || e.is_write_closed() || failed;
                 entry.events += 1;
-                entry.waiter.take()
+                entry.reads += u64::from(read);
+                entry.writes += u64::from(write);
+                let wanted = match entry.waiter.as_ref().map(|(_, w)| *w) {
+                    Some(Want::Read) => read,
+                    Some(Want::Write) => write,
+                    _ => true,
+                };
+                if !wanted {
+                    return None;
+                }
+                entry.waiter.take().map(|(wake, _)| wake)
             })
             .collect()
     };
@@ -281,19 +328,29 @@ pub fn move_here(source: &mut impl Source, n: usize) -> Option<usize> {
 
 /// How many events socket `n` has had: noted before each try.
 pub fn events(n: usize) -> u64 {
+    events_for(n, Want::Any)
+}
+
+/// Socket `n`'s count of the events a wait for `want` cares about.
+pub fn events_for(n: usize, want: Want) -> u64 {
     poller_of(n)
-        .and_then(|p| sockets(p).get(&n).map(|e| e.events))
+        .and_then(|p| sockets(p).get(&n).map(|e| e.count(want)))
         .unwrap_or(0)
 }
 
 /// Calls `wake` at socket `n`'s next event, unless one came after the
 /// count `seen`: then `false`, and the caller tries again now.
 pub fn wait(n: usize, seen: u64, wake: Waker) -> bool {
+    wait_for(n, seen, Want::Any, wake)
+}
+
+/// `wait`, for the next event a wait for `want` cares about.
+pub fn wait_for(n: usize, seen: u64, want: Want, wake: Waker) -> bool {
     let Some(p) = poller_of(n) else { return false };
     let mut all = sockets(p);
     match all.get_mut(&n) {
-        Some(entry) if entry.events == seen => {
-            entry.waiter = Some(wake);
+        Some(entry) if entry.count(want) == seen => {
+            entry.waiter = Some((wake, want));
             true
         }
         _ => false,
@@ -319,14 +376,14 @@ fn interrupt_on(w: usize) {
 /// Without tasks: the program's only thread waits for `r`'s next event
 /// after `seen`, or until `at`: on the queue itself, or asleep until the
 /// other thread wakes it.
-pub fn wait_alone(r: &dyn Ready, seen: u64, at: Option<Instant>) {
+pub fn wait_alone(r: &dyn Ready, want: Want, seen: u64, at: Option<Instant>) {
     let ready = Arc::new(AtomicBool::new(false));
     let (flag, thread) = (Arc::clone(&ready), std::thread::current());
     let wake = Box::new(move || {
         flag.store(true, Ordering::Release);
         thread.unpark();
     });
-    if !r.on_event(seen, wake) {
+    if !r.on_event_for(seen, want, wake) {
         return;
     }
     while !ready.load(Ordering::Acquire) {

@@ -72,6 +72,11 @@ pub(crate) const BUILTIN: &[(&str, &str, &str)] = &[
         include_str!("../../../stdlib/base64/base64.kav"),
     ),
     (
+        "std/compress.kav",
+        "std.compress",
+        include_str!("../../../stdlib/compress/compress.kav"),
+    ),
+    (
         "std/tasks.kav",
         "std.tasks",
         include_str!("../../../stdlib/tasks/tasks.kav"),

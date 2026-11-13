@@ -45,6 +45,10 @@ impl Checker<'_> {
                     self.check_secret_return(v, &name);
                 }
             }
+            // A lambda whose result is still open returns nothing.
+            None if matches!(self.inf.shallow(&ret), Ty::Var(_)) => {
+                self.inf.unify(&ret, &Ty::Unit);
+            }
             None if !matches!(ret, Ty::Unit | Ty::Error) => {
                 let shown = self.show(&ret);
                 self.error(

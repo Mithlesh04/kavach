@@ -50,7 +50,12 @@ pub enum Value<'a> {
     /// A spawned task (spec 9.1).
     Task(std::sync::Arc<crate::tasks::TaskHandle<'a>>),
     /// An end of a channel (spec 9.4): its sender when `true`.
-    Channel(crate::channels::Channel<'a>, bool),
+    /// A channel's end: `None` for the `Sender`, the receiver's share
+    /// for the `Receiver` (spec 9.4).
+    Channel(
+        crate::channels::Channel<'a>,
+        Option<Rc<crate::channels::Receiving<'a>>>,
+    ),
     Tuple(Vec<Value<'a>>),
     /// The missing optional. A present optional is just its value.
     None,
@@ -193,7 +198,7 @@ impl PartialEq for Value<'_> {
             (Socket(a), Socket(b)) => std::sync::Arc::ptr_eq(a, b),
             (FakeConn(a), FakeConn(b)) => Rc::ptr_eq(a, b),
             (Task(a), Task(b)) => std::sync::Arc::ptr_eq(a, b),
-            (Channel(a, x), Channel(b, y)) => Rc::ptr_eq(a, b) && x == y,
+            (Channel(a, x), Channel(b, y)) => Rc::ptr_eq(a, b) && x.is_some() == y.is_some(),
             // Sets are equal when they hold the same values, in any order.
             (Set(a), Set(b)) => {
                 Rc::ptr_eq(a, b)

@@ -95,7 +95,7 @@ impl<'a> Interp<'a> {
                 let items: Box<dyn Iterator<Item = Value<'a>>> = match self.eval(iter)? {
                     // Values taken until the channel is closed and empty
                     // (spec 9.4).
-                    Value::Channel(c, false) => {
+                    Value::Channel(c, Some(_)) => {
                         receiver = Some(c);
                         Box::new(std::iter::repeat(Value::Unit))
                     }

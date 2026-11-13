@@ -11,13 +11,57 @@ use kavach_kir::{RtOp, Shape, Type};
 use kavach_runtime_core::tasks::{TaskId, many_workers};
 use std::cell::UnsafeCell;
 use std::collections::VecDeque;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 /// A channel: its state behind a lock, since with tasks on all cores
 /// (decision 0049) tasks on several workers use it at once.
 pub struct ChanObj {
     state: Spin<ChanState>,
     capacity: usize,
+    /// The copies of the `Receiver` alive (`Receiving`): at 0, no value
+    /// put could ever be taken (spec 9.4).
+    receivers: AtomicUsize,
+}
+
+/// What every copy of a `Receiver` holds: the channel, counted, so a
+/// `put` knows when no receiver is left. The last one to go wakes the
+/// `put`s waiting for room, to panic.
+pub struct Receiving(Arc<ChanObj>);
+
+impl Receiving {
+    fn new(c: Arc<ChanObj>) -> Self {
+        c.receivers.fetch_add(1, Ordering::AcqRel);
+        Receiving(c)
+    }
+}
+
+impl Clone for Receiving {
+    fn clone(&self) -> Self {
+        Receiving::new(Arc::clone(&self.0))
+    }
+}
+
+impl Drop for Receiving {
+    fn drop(&mut self) {
+        // Counted down under the lock, so a `put` about to wait sees it.
+        let putters = {
+            let mut st = self.0.lock();
+            if self.0.receivers.fetch_sub(1, Ordering::AcqRel) != 1 {
+                return;
+            }
+            std::mem::take(&mut st.putters)
+        };
+        let many = many_workers();
+        putters.into_iter().for_each(|w| wake(many, w));
+    }
+}
+
+impl Receiving {
+    /// The channel, which every copy of every end shares.
+    pub fn chan(&self) -> &Arc<ChanObj> {
+        &self.0
+    }
 }
 
 /// A lock held only while a value or a waiter goes in or out, a few
@@ -218,25 +262,27 @@ fn new(capacity: i64, code: i64, line: i32) -> i64 {
         );
     }
     let tuple = type_of(code);
-    let end = match shape(tuple) {
-        Shape::Tuple(ts) => ts[0],
-        _ => Type::Unit,
+    let (end, other) = match shape(tuple) {
+        Shape::Tuple(ts) => (ts[0], ts[1]),
+        _ => (Type::Unit, Type::Unit),
     };
-    let chan = alloc(
-        end,
-        Data::Channel(std::sync::Arc::new(ChanObj {
-            state: Spin::new(ChanState {
-                values: VecDeque::new(),
-                closed: false,
-                takers: VecDeque::new(),
-                putters: VecDeque::new(),
-                woken: None,
-            }),
-            capacity: capacity as usize,
-        })),
+    let chan = Arc::new(ChanObj {
+        state: Spin::new(ChanState {
+            values: VecDeque::new(),
+            closed: false,
+            takers: VecDeque::new(),
+            putters: VecDeque::new(),
+            woken: None,
+        }),
+        capacity: capacity as usize,
+        receivers: AtomicUsize::new(0),
+    });
+    let receiving = Receiving::new(Arc::clone(&chan));
+    let (send, receive) = (
+        alloc(end, Data::Channel(chan)),
+        alloc(other, Data::Receiver(receiving)),
     );
-    crate::heap::retain(chan);
-    alloc_slots(tuple, 0, vec![chan as u64, chan as u64])
+    alloc_slots(tuple, 0, vec![send as u64, receive as u64])
 }
 
 /// `put` (the value owned): waits while the channel is full.
@@ -248,7 +294,8 @@ fn try_put(chan: i64, value: i64, line: i32) -> bool {
     let value = sent(value, item, many, line);
     let (done, taker, putter) = with(chan, |c| {
         let mut st = c.lock();
-        if st.closed || st.values.len() >= c.capacity {
+        let gone = c.receivers.load(Ordering::Acquire) == 0;
+        if st.closed || gone || st.values.len() >= c.capacity {
             return (false, None, None);
         }
         st.values.push_back(value);
@@ -280,6 +327,10 @@ fn put(chan: i64, value: i64, limit: crate::rt_tasks::Limit, line: i32) {
             if st.closed {
                 drop(st);
                 panic_with("`put` into a closed channel", line);
+            }
+            if c.receivers.load(Ordering::Acquire) == 0 {
+                drop(st);
+                panic_with("`put` into a channel whose receivers are all gone", line);
             }
             if st.woken == Some(me.0) {
                 st.woken = None;
@@ -376,13 +427,16 @@ fn item_type(chan: i64) -> Type {
 fn with<R>(chan: i64, f: impl FnOnce(&ChanObj) -> R) -> R {
     match &*crate::heap::data(chan).borrow() {
         Data::Channel(c) => f(c),
+        Data::Receiver(r) => f(r.chan()),
         _ => unreachable!("a channel object"),
     }
 }
 
 /// Releases the values still in a channel, when it is freed.
 pub fn free_chan(c: &ChanObj, item: Type) {
-    for v in c.lock().values.drain(..) {
+    // Taken out first: a value let go may hold an end of this channel.
+    let values: Vec<u64> = c.lock().values.drain(..).collect();
+    for v in values {
         release_slot(v as i64, item);
     }
 }

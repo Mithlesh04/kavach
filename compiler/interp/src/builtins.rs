@@ -225,16 +225,16 @@ impl<'a> Interp<'a> {
         }
         // Channels (spec 9.4).
         match (&recv, name) {
-            (Value::Channel(c, true), "put") => {
+            (Value::Channel(c, None), "put") => {
                 let v = args.into_iter().next().unwrap_or(Value::Unit);
                 return self.channel_put(c, v, None, span);
             }
-            (Value::Channel(c, true), "try_put") => {
+            (Value::Channel(c, None), "try_put") => {
                 let v = args.into_iter().next().unwrap_or(Value::Unit);
                 return Ok(Value::Bool(self.channel_try_put(c, v)));
             }
-            (Value::Channel(c, true), "close") => return self.channel_close(c),
-            (Value::Channel(c, false), "take") => return self.channel_take(c, None, span),
+            (Value::Channel(c, None), "close") => return self.channel_close(c),
+            (Value::Channel(c, Some(_)), "take") => return self.channel_take(c, None, span),
             _ => {}
         }
         if let Some(v) = self.more_method(&recv, name, &args, span)? {

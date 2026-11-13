@@ -69,8 +69,9 @@ fn holds(shapes: &[Shape], records: &[u32], t: Type, seen: &mut HashSet<u32>) ->
 }
 
 /// Ends `f`'s variables that hold `Drop` values at the end of their
-/// blocks, and runs waiting `drop`s at each statement boundary.
-pub fn scope_drops(f: &mut Function, holders: &HashSet<Type>) {
+/// blocks, and runs waiting `drop`s at each statement boundary when
+/// `runs`: when the program has `Drop` types, so `drop`s can be waiting.
+pub fn scope_drops(f: &mut Function, holders: &HashSet<Type>, runs: bool) {
     let params: Vec<Local> = (f.params.iter().copied())
         .filter(|p| holders.contains(&f.locals[*p as usize]))
         .collect();
@@ -79,6 +80,7 @@ pub fn scope_drops(f: &mut Function, holders: &HashSet<Type>) {
         locals: std::mem::take(&mut f.locals),
         scopes: vec![params],
         loops: Vec::new(),
+        runs,
     };
     let body = std::mem::take(&mut f.body);
     // The body's block ends the parameters too: they are its outer scope.
@@ -94,6 +96,8 @@ struct Pass<'h> {
     scopes: Vec<Vec<Local>>,
     /// For each enclosing loop: how many scopes are outside its body.
     loops: Vec<usize>,
+    /// Whether `drop`s may be waiting, to run at statement boundaries.
+    runs: bool,
 }
 
 /// Whether `s` leaves its block: `return`, `break`, `continue` or `fail`.
@@ -135,19 +139,21 @@ impl Pass<'_> {
                 out.push(Stmt::Expr(gone));
             }
         }
-        out.push(run());
+        if self.runs {
+            out.push(run());
+        }
     }
 
     /// `b` with its variables (and `made` ones, a loop's own) ended at its
     /// end. With `outer`, the scope below it (the parameters) ends too.
     fn block(&mut self, b: Block, made: Vec<Local>, outer: bool) -> Block {
         self.scopes.push(made);
-        let mut stmts = vec![run()];
+        let mut stmts = if self.runs { vec![run()] } else { Vec::new() };
         for s in b.stmts {
             self.stmt(s, &mut stmts);
             // Nothing after a statement that leaves: code after it is
             // never reached, and would give its block a value it can't have.
-            if !stmts.last().is_some_and(leaves) {
+            if self.runs && !stmts.last().is_some_and(leaves) {
                 stmts.push(run());
             }
         }
