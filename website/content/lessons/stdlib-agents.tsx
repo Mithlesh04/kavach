@@ -65,7 +65,7 @@ export const agentsStdDoc: LessonDoc = {
       <Ex name="agents/approvals-uses.fails" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/14-standard-library/16-agents.md" label="spec 14.16 · std.agents" />
-        <SrcRef file="tools/cli/tests/approvals.rs" label="answering in code, tested" />
+        <SrcRef file="tools/cli/tests/approvals/in_code.rs" label="answering in code, tested" />
       </div>
     </>
   ),

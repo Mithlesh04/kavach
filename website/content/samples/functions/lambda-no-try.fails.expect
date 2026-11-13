@@ -1,0 +1,1 @@
+error: `positive` can fail: write `try` before it to pass the error on from this lambda, which the call that takes the lambda then passes on (spec 3.3), or handle it here with `catch` or `match`

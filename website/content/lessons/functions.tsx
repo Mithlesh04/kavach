@@ -186,6 +186,8 @@ export const lambdasDoc: LessonDoc = {
         <C>map</C>, such a lambda makes the <C>map</C> call the one that can fail:{" "}
         <Link href="/docs/errors/try/">try</Link> shows how.
       </P>
+      <P>A call that can fail, written in a lambda with no <C>try</C>, is an error that says where the error would go:</P>
+      <Ex name="functions/lambda-no-try.fails" />
     </>
   ),
 };

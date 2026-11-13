@@ -1,0 +1,9 @@
+use std.time
+
+fn main() ! Error {
+    const old = try time.parse_date("-0005-01-01")
+    print(old.iso())
+    const far = try time.parse_date("+12345-06-07")
+    print(far.iso())
+    print((try time.parse_date("12345-06-07")) == far)
+}

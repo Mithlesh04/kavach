@@ -41,6 +41,16 @@ export const tcpDoc: LessonDoc = {
     <>
       <Ex name="net/echo" />
       <P>TCP carries a stream of bytes, not messages: a protocol on top of it, as HTTP is, says where one message ends.</P>
+      <H2>Closed when let go</H2>
+      <P>
+        <C>conn.close()</C> closes a connection, and so does letting it go: when its last holder&apos;s block ends, it is
+        closed, as a value with <Link href="/docs/memory/automatic-memory/freed-immediately/#cleanup-of-your-own-drop">Drop</Link> is.
+        So a connection a function opens and doesn&apos;t return is closed when the function ends, and the other side
+        reads the end:
+      </P>
+      <Ex name="net/close-holder" />
+      <P>A listener is closed the same way, and so is an HTTP/2 client.</P>
+      <SrcRef file="tests/conformance/14-standard-library/connections-close-with-their-last-holder.kav" label="tested" />
     </>
   ),
 };
@@ -102,6 +112,7 @@ export const tlsDoc: LessonDoc = {
       </Note>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="tools/cli/tests/tls.rs" label="the TLS test" />
+        <SrcRef file="tests/conformance/14-standard-library/tls-upgrades-that-fail-are-errors.kav" label="failed upgrades, tested" />
         <SrcRef file="tests/conformance/08-capabilities/tls-keys-take-secrets.kav" label="secret keys, tested" />
         <SrcRef file="docs/decisions/0099-client-certificate-names.md" label="decision 0099" />
         <SrcRef file="docs/decisions/0021-tls-through-rustls.md" label="decision 0021" />

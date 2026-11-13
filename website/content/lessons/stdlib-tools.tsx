@@ -194,8 +194,10 @@ export const timeDoc: LessonDoc = {
       <Ex name="time/text" />
       <P>Each of them fails with <C>Invalid(text)</C> for anything else:</P>
       <Ex name="time/text-refused" />
+      <Ex name="time/expanded-years" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Numbers have exactly the digits shown, so <C>9:05</C> and <C>2026-11-4</C> fail, and so does a sign where a digit should be.</li>
+        <li>A year before 0 or after 9999 is written as <C>iso</C> writes it, with a sign or more digits, as ISO 8601&apos;s expanded years are: <C>-0005-01-01</C>, <C>12345-06-07</C> or <C>+12345-06-07</C>.</li>
         <li>A fraction of a second has 1 to 9 digits. Kavach keeps milliseconds, so digits past the third are dropped, not rounded: <C>.1239</C> is 123 ms.</li>
         <li>A leap second (<C>23:59:60</C>) fails: a <C>Time</C> has no such second.</li>
         <li>In JSON, a <C>Date</C>, <C>Time</C> and <C>DateTime</C> are this text too, with a <C>DateTime</C> in UTC: see <Link href="/docs/standard-library/json/decoding-into-a-type/#dates-and-times">Dates and times</Link>.</li>

@@ -1,0 +1,27 @@
+use std.net
+
+fn serve(listener: Listener) -> String ! NetError uses Net {
+    const conn = try listener.accept()
+    let got = ""
+    while true {
+        if let piece = try conn.read() {
+            got = got + (piece.text() ?? "?")
+        } else {
+            return "got {got}, then the end"
+        }
+    }
+    got
+}
+
+/// Opens a connection and writes to it, but never closes it.
+fn send(address: String) ! NetError uses Net {
+    const conn = try net.connect(address)
+    try conn.write("hello".bytes())
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const server = spawn serve(listener)
+    try send(listener.address())
+    print(try server.wait().timeout(5.seconds))
+}

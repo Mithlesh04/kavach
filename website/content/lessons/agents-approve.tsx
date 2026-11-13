@@ -107,7 +107,7 @@ export const approveDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/08-capabilities-and-agents/03-agents.md" label="spec 8.3 · approvals" />
         <SrcRef file="docs/decisions/0072-approvals-that-wait-across-restarts.md" label="decision 0072" />
-        <SrcRef file="tools/cli/tests/approvals.rs" label="approve, deny, deadline, restart and joining, tested" />
+        <SrcRef file="tools/cli/tests/approvals/README.md" label="approve, deny, deadline, restart and joining, tested" />
       </div>
     </>
   ),

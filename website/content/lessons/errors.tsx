@@ -82,7 +82,7 @@ export const tryDoc: LessonDoc = {
       <H2>Methods that take a function that can fail</H2>
       <P>
         A built-in method that takes a function (<C>map</C>, <C>filter</C>, <C>sum</C>, <C>sort_by</C>,{" "}
-        <C>Shared.update</C>, …) passes that function&apos;s error on. Given a function that can fail, the call can
+        <C>parallel_map</C>, <C>Shared.update</C>, …) passes that function&apos;s error on. Given a function that can fail, the call can
         fail with its error, and the method stops at the first one:
       </P>
       <Ex name="errors/methods-pass-on" />
