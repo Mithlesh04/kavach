@@ -242,6 +242,20 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
         (Shape::Union { .. }, _) if crate::rt_json::is_json(ty) => {
             Ok(crate::rt_json::value(t, ty) as u64)
         }
+        // `std.time`'s types from ISO 8601 text (spec 2.12).
+        (Shape::Record { .. }, _) if crate::rt_json::date_kind(ty).is_some() => {
+            let Some(kind) = crate::rt_json::date_kind(ty) else {
+                return wrong(expected::OBJECT);
+            };
+            let numbers = match t {
+                Tree::Text(s) => kavach_runtime_core::json::dates::read(kind, s),
+                _ => None,
+            };
+            match numbers {
+                Some(n) => Ok(crate::rt_json::date_value(ty, kind, &n)),
+                None => wrong(kind.expected()),
+            }
+        }
         (Shape::Record { fields, .. }, Tree::Object(given)) => {
             let built = decode_fields(given, fields, ty, path, templates)?;
             Ok(fixed(ty, 0, &built))

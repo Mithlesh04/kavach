@@ -359,6 +359,7 @@ impl<'a> Lowerer<'a> {
             // A connection's address is the other side's.
             (Some(Shape::Socket), "peer") => RtOp::NetAddress,
             (Some(Shape::Socket), "client_cert") => RtOp::NetClientCert,
+            (Some(Shape::Socket), "peer_certificate") => RtOp::NetPeerCertificate,
             (Some(Shape::Socket), "open_stream") => RtOp::NetOpenStream,
             (Some(Shape::Socket), "read_stream") => RtOp::NetReadStream,
             (Some(Shape::Socket), "write_stream") if values.len() == 4 => {

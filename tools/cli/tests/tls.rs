@@ -50,6 +50,8 @@ fn main() ! Error {
     const answer = try conn.read()
     print(text_of(answer))
     print(conn.protocol() ?? \"-\")
+    // The server's certificate, for channel binding (spec 14.10).
+    print((conn.peer_certificate() ?? Bytes([])).len() > 100)
     conn.close()
 
     // Without a certificate, the server refuses the client: while
@@ -165,7 +167,7 @@ fn servers_and_clients_prove_who_they_are() {
     certificates(&dir);
     let file = dir.join("tls.kav");
     std::fs::write(&file, PROGRAM).unwrap();
-    let expected = "hello, client from kavach-client [\"orders.shop\"] [\"spiffe://shop/orders\"]\nkv\nrefused\nserver not trusted\n";
+    let expected = "hello, client from kavach-client [\"orders.shop\"] [\"spiffe://shop/orders\"]\nkv\ntrue\nrefused\nserver not trusted\n";
     for native in [false, true] {
         let mut cmd = Command::new(env!("CARGO_BIN_EXE_kavach"));
         cmd.arg("run");

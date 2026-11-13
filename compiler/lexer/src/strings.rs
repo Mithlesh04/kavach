@@ -70,6 +70,13 @@ impl Lexer<'_> {
                 }
                 Some('\n') if !multi => {
                     self.flush(&mut text, text_start);
+                    // Inside a `{` the line doesn't close, that `{` is the
+                    // mistake (`"{"`): the line's end reports it.
+                    if matches!(self.delims.last(), Some((Delim::Interp(k), _)) if !k.is_multi()) {
+                        self.push(TokenKind::StrEnd, self.pos);
+                        self.in_string = None;
+                        return;
+                    }
                     return self.unterminated(
                         kind,
                         "text can't continue on the next line: close it with `\"`, or use `\"\"\"` for multi-line text",

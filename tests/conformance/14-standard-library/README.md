@@ -12,6 +12,8 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.2 | [set-changes-need-a-var.kav](set-changes-need-a-var.kav) | Changing a set with `add` or `remove` needs a `let`. | compile error |
 | 14.1 | [files-need-fs.kav](files-need-fs.kav) | Calling std.fs needs the Fs capability. | compile error |
 | 14.1 | [unknown-modules-are-errors.kav](unknown-modules-are-errors.kav) | Only the modules of chapter 14 exist in `std`. | compile error |
+| 14.1 | [std-types-are-named-by-use.kav](std-types-are-named-by-use.kav) | `use std.time.{Date}` names the type itself, which makes values and is checked like any type. | compile error |
+| 14.1 | [runtime-functions-are-not-named-alone.kav](runtime-functions-are-not-named-alone.kav) | `use std.fs.{read_text}` is a compile error: a function the runtime provides is called through its module. | compile error |
 | 14.3 | [files-read-and-write.kav](files-read-and-write.kav) | std.fs reads, writes, appends, lists and removes files. | runs |
 | 14.3 | [missing-files-are-errors.kav](missing-files-are-errors.kav) | A file operation that fails returns an error value, not a crash: an `FsError`. | runs |
 | 14.3 | [files-hold-bytes.kav](files-hold-bytes.kav) | `fs.write_bytes` writes any bytes atomically; `fs.read_bytes` reads them back. | runs |

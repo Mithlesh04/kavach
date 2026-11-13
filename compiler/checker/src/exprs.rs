@@ -62,6 +62,15 @@ impl Checker<'_> {
             ExprKind::Str(parts) => {
                 for part in parts {
                     if let StrPart::Expr(x) = part {
+                        // `"{"` and `"}"` read as one string holding
+                        // another: say what was meant (spec 1.7).
+                        if matches!(&x.kind, ExprKind::Str(inner) if inner.iter().all(|p| matches!(p, StrPart::Text(_))))
+                        {
+                            self.warn(
+                                x.span,
+                                "this `{…}` holds only text, so the string goes on past it: write `\\{` for a brace, or the text itself (spec 1.7)",
+                            );
+                        }
                         self.value(x, None);
                         self.check_secret(x, "text");
                     }

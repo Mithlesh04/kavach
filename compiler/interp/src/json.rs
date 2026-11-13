@@ -379,13 +379,31 @@ pub(crate) fn json_encode(v: &Value<'_>) -> Tree {
                 .map(|(k, v)| (k.display(), json_encode(v)))
                 .collect(),
         ),
-        Value::Record { fields, .. } => object(fields),
+        Value::Record { name, fields, .. } => match date_numbers(name, fields) {
+            Some((kind, n)) => Tree::Text(json::dates::write(kind, &n)),
+            None => object(fields),
+        },
         Value::Variant { name, fields, .. } if fields.is_empty() => Tree::Text(name.to_string()),
         Value::Variant { name, fields, .. } => {
             Tree::Object(vec![(name.to_string(), object(fields))])
         }
         _ => Tree::Null,
     }
+}
+
+/// A `std.time` `Date`, `Time` or `DateTime` (spec 2.12): which, and its
+/// numbers in order, for its ISO 8601 text.
+fn date_numbers(name: &str, fields: &[Field<'_>]) -> Option<(json::dates::Kind, Vec<i64>)> {
+    let kind = json::dates::Kind::of(name, fields.iter().map(|f| &*f.name))?;
+    let mut n = Vec::new();
+    for f in fields {
+        match &f.value {
+            Value::Int(v, _) => n.push(i64::try_from(*v).ok()?),
+            Value::Record { name, fields, .. } => n.extend(date_numbers(name, fields)?.1),
+            _ => return None,
+        }
+    }
+    Some((kind, n))
 }
 
 /// A `Json` value as a tree for the writer.

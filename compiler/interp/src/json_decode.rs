@@ -10,6 +10,7 @@ use crate::value::{Eval, Field, Flow, Value};
 use kavach_ast::TypeBody;
 use kavach_checker::{Prim, Ty};
 use kavach_runtime_core::Decimal;
+use kavach_runtime_core::json::dates::{self, Kind};
 use kavach_runtime_core::json::{self, Limits, Tree, expected, path_field, path_item};
 use std::rc::Rc;
 
@@ -275,6 +276,11 @@ impl<'a> Interp<'a> {
     fn decode_type(&mut self, t: &Tree, def: usize, path: &str) -> Decoded<'a> {
         let name: Rc<str> = Rc::from(self.c.resolution.defs[def].name.as_str());
         if let Some(decl) = self.records.get(&def).copied() {
+            if let TypeBody::Record(r) = &decl.body
+                && let Some(kind) = Kind::of(&name, r.fields.iter().map(|f| &*f.name.name))
+            {
+                return self.decode_date(t, kind, def, path);
+            }
             let (Tree::Object(given), TypeBody::Record(r)) = (t, &decl.body) else {
                 return self.problem(path, expected::OBJECT);
             };
@@ -318,6 +324,54 @@ impl<'a> Interp<'a> {
             name: Rc::from(variant.name.name.as_str()),
             fields,
         })
+    }
+
+    /// A `std.time` `Date`, `Time` or `DateTime` (record `def`) from its
+    /// ISO 8601 text (spec 2.12).
+    fn decode_date(&mut self, t: &Tree, kind: Kind, def: usize, path: &str) -> Decoded<'a> {
+        let numbers = match t {
+            Tree::Text(s) => dates::read(kind, s),
+            _ => None,
+        };
+        let Some(n) = numbers else {
+            return self.problem(path, kind.expected());
+        };
+        Ok(self.date_value(kind, def, &n))
+    }
+
+    /// Record `def` of `kind` holding numbers `n` in order.
+    fn date_value(&self, kind: Kind, def: usize, n: &[i64]) -> Value<'a> {
+        let int = |v: i64| Value::Int(i128::from(v), Prim::Int);
+        let names: &[&str] = match kind {
+            Kind::Date => &["year", "month", "day"],
+            Kind::Time => &["hour", "minute", "second", "ms"],
+            Kind::DateTime => &["date", "time"],
+        };
+        let part = |name: &str, kind: Kind, n: &[i64]| match self.field_ty(def, name) {
+            Some(Ty::Adt(d, _)) => self.date_value(kind, d, n),
+            _ => Value::Unit,
+        };
+        let values: Vec<Value<'a>> = match kind {
+            Kind::DateTime => vec![
+                part("date", Kind::Date, &n[..3]),
+                part("time", Kind::Time, &n[3..]),
+            ],
+            _ => n.iter().map(|v| int(*v)).collect(),
+        };
+        Value::Record {
+            def,
+            name: Rc::from(self.c.resolution.defs[def].name.as_str()),
+            fields: names
+                .iter()
+                .zip(values)
+                .map(|(name, value)| Field {
+                    name: Rc::from(*name),
+                    value,
+                    secret: false,
+                })
+                .collect(),
+            life: None,
+        }
     }
 
     /// The fields of a record or variant: each from `given`, or its

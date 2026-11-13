@@ -1,0 +1,8 @@
+// Rule: In one-line text, a `{` must be closed on its line: `"{"` is one compile error at the `{`, and the rest of the file is read as code again.
+// Spec: 1.7
+// expect compile error
+
+fn main() {
+    const brace = "{"        // error: this { is never closed
+    print(brace)
+}

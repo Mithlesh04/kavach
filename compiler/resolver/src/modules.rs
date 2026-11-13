@@ -94,6 +94,8 @@ impl Resolver {
                 };
                 if u.path.segments.first().is_some_and(|s| s.name != "std") {
                     self.import(&mut scopes[m], &u.path, &u.names, u.alias.as_ref());
+                } else if !u.names.is_empty() {
+                    self.std_names(&mut scopes[m], &u.path.segments, &u.names);
                 } else if let (Some(std), true) =
                     (self.module_named(&u.path.segments), u.names.is_empty())
                 {
@@ -190,6 +192,39 @@ impl Resolver {
                     }
                 }
             }
+        }
+    }
+
+    /// `use std.time.{Date, utc}`: the public types and functions written
+    /// in Kavach themselves (spec 14.1). A name the runtime provides is
+    /// reached through its module.
+    fn std_names(&mut self, scope: &mut HashMap<String, DefId>, path: &[Ident], names: &[Ident]) {
+        let std = self.module_named(path);
+        for n in names {
+            let def = std.and_then(|s| self.modules.own[s].get(&n.name).copied());
+            let def = def.filter(|d| {
+                self.modules.public.contains(d)
+                    && matches!(
+                        self.res.defs[*d].kind,
+                        DefKind::Type | DefKind::Interface | DefKind::Fn
+                    )
+            });
+            if let Some(def) = def {
+                scope.insert(n.name.clone(), def);
+                self.res.uses.insert(n.span.start, def);
+                continue;
+            }
+            let module: Vec<&str> = path.iter().map(|s| s.name.as_str()).collect();
+            let last = module.last().copied().unwrap_or("std");
+            self.error(
+                n.span,
+                format!(
+                    "`{}` can't be named alone: write `use {}` and `{last}.{}` (spec 14.1)",
+                    n.name,
+                    module.join("."),
+                    n.name
+                ),
+            );
         }
     }
 

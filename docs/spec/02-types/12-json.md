@@ -71,9 +71,24 @@ const order: Json = [
 | `json.schema<T>()` | The [JSON Schema](https://json-schema.org) of `T` as a `Json`: what `ask<T>` sends a model (8.4), for modules that work from a type's shape (14.14) |
 | `json.describe(f) -> FnSchema` | The function `f` described: its name, doc comment, parameters with their schemas, the schemas of its result and error, the capabilities it `uses`, and its `example` clauses as text |
 
-**Encoding** works on types the compiler can see through: numbers (sized integers too), `Bool`, `String`, `Char` (text of one character), `Decimal` and `BigInt` (as numbers with all their digits), lists, sets and tuples (arrays), maps with `String` keys (objects), records (objects with the fields in declared order), optionals (`none` is `null`), unions (a variant without fields is its name as text; one with fields is `{"Variant": {fields}}`) and `Json` itself. Anything else is a compile error: functions, maps with other keys, and records with `secret` fields (2.11), so a secret can't leak into JSON by accident. `NaN` and infinities are written as `null`, as JavaScript does.
+**Encoding** works on types the compiler can see through: numbers (sized integers too), `Bool`, `String`, `Char` (text of one character), `Decimal` and `BigInt` (as numbers with all their digits), lists, sets and tuples (arrays), maps with `String` keys (objects), records (objects with the fields in declared order), optionals (`none` is `null`), unions (a variant without fields is its name as text; one with fields is `{"Variant": {fields}}`), `std.time`'s `Date`, `Time` and `DateTime` (below) and `Json` itself. Anything else is a compile error: functions, maps with other keys, and records with `secret` fields (2.11), so a secret can't leak into JSON by accident. `NaN` and infinities are written as `null`, as JavaScript does.
 
 **Decoding** is the reverse, and strict about values: an integer field takes only a number written without a fraction or exponent that fits its type, and a `BigInt` field one of any size; a `Float` field takes any number, as the nearest `Float`; a `Decimal` field takes any number exactly; text, booleans, arrays and objects must match. A number that doesn't fit its field is a `Mismatch`, as any other value that doesn't fit is. A missing field takes its default or `none` if it has one, otherwise decoding fails. A field the type doesn't have is a problem too, at its path, expecting "no field of this name", as the type's schema says (`additionalProperties: false`), so a misspelled or smuggled field is caught ([decision 0096](../../decisions/0096-unknown-fields-are-refused.md)). To read another service's answers, which may gain fields, write `unknown: JsonUnknown.Ignore`: such fields are then skipped. `std.http`'s client does this for the responses it decodes (14.11).
+
+**Dates and times** from `std.time` (14.4) are ISO 8601 text, as their `iso()` writes them: `"2024-01-02"`, `"03:04:05.120"`. A `DateTime` gets a `Z`, `"2024-01-02T03:04:05Z"`: JSON holds it in UTC, as `time.now()` and `time.utc` give it, so other programs read the right moment. Decoding reads the text as `time.parse_date` and `time.parse_time` do, so digits of a second past milliseconds are dropped (`03:04:05.123456` is 123 ms). A `DateTime` may end in `Z`, in an offset, which is turned to UTC (`2024-01-01T02:00:00+05:30` is `2023-12-31T20:30:00`), or in neither. Anything else, such as PostgreSQL's `infinity`, is a problem expecting ``a date such as `2024-01-02` ``, ``a time of day such as `03:04:05` `` or ``a date and time such as `2024-01-02T03:04:05Z` ``. In a schema, a `Date` is `{"type": "string", "format": "date"}`, a `DateTime` has `"format": "date-time"`, and a `Time` has a `"pattern"` (JSON Schema's `time` format needs an offset).
+
+```kavach
+use std.json
+use std.time.{Date, DateTime}
+
+type Booking {
+    day: Date
+    made: DateTime
+}
+
+const b = try json.decode<Booking>("\{\"day\": \"2024-01-02\", \"made\": \"2024-01-01T02:00:00+05:30\"}")
+print(json.stringify(b))   // {"day":"2024-01-02","made":"2023-12-31T20:30:00Z"}
+```
 
 ```kavach
 const text = "\{\"id\": 1, \"note\": \"x\"}"

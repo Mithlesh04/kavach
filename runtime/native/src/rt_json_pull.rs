@@ -123,6 +123,12 @@ fn read(r: &mut Pull<'_>, ty: Type, templates: i64) -> Read {
             let (doc, root) = b.finish("".into(), root);
             Ok(crate::rt_json_tape::value(&doc, root, ty) as u64)
         }
+        Shape::Record { .. } if crate::rt_json::date_kind(ty).is_some() => {
+            let kind = crate::rt_json::date_kind(ty).ok_or(Wrong)?;
+            let text = r.text().map_err(|_| Wrong)?;
+            let n = kavach_runtime_core::json::dates::read(kind, &text).ok_or(Wrong)?;
+            Ok(crate::rt_json::date_value(ty, kind, &n))
+        }
         Shape::Record { fields, .. } => {
             r.object().map_err(|_| Wrong)?;
             let built = fields_of(r, fields, ty, templates)?;

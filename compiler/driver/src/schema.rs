@@ -10,6 +10,7 @@ use kavach_ast::{Field, ItemKind, TypeBody, TypeDecl};
 use kavach_checker::{Prim, Ty};
 use kavach_resolver::DefId;
 use kavach_runtime_core::json::Tree;
+use kavach_runtime_core::json::dates::Kind;
 
 /// The schema for answers of type `t`, and whether the answer is wrapped
 /// in `{"value": …}`; `None` for a type a schema can't express (a map, a
@@ -172,7 +173,18 @@ impl<'c> Schemas<'c> {
     /// as JSON writes them (spec 2.12): a name, or `{"Name": {fields}}`.
     fn shape_schema(&self, def: DefId, decl: &TypeDecl) -> Option<Tree> {
         let vs = match &decl.body {
-            TypeBody::Record(r) => return self.object(def, &r.fields),
+            // `std.time`'s types are ISO 8601 text in JSON.
+            TypeBody::Record(r) => {
+                let names = r.fields.iter().map(|f| f.name.name.as_str());
+                if let Some(kind) = Kind::of(&decl.name.name, names) {
+                    let (key, value) = kind.schema();
+                    return Some(Tree::Object(vec![
+                        ("type".into(), text("string")),
+                        (key.into(), text(value)),
+                    ]));
+                }
+                return self.object(def, &r.fields);
+            }
             TypeBody::Union(vs) => vs,
             // An alias names an anonymous shape; `ask<T>` and JSON take
             // declared types (spec 2.14).

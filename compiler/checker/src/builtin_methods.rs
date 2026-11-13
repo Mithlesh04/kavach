@@ -274,6 +274,8 @@ impl Checker<'_> {
                     "peer" => sig(vec![], Ty::Prim(Prim::String)),
                     // A client's certificate, with mutual TLS (decision 0099).
                     "client_cert" => sig(vec![], opt(self.builtin_ty("ClientCert"))),
+                    // The other side's certificate, as DER (spec 14.10).
+                    "peer_certificate" => sig(vec![], opt(bytes.clone())),
                     // QUIC streams (spec 14.10).
                     "open_stream" => sig(vec![Ty::Prim(Prim::Bool)], fails(Ty::Prim(Prim::Int))),
                     "write_stream" => sig(

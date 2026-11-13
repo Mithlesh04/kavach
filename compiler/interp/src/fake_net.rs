@@ -110,7 +110,7 @@ impl<'a> Interp<'a> {
                 Value::Unit
             }
             "address" | "peer" => self.str_value(&conn.address),
-            "protocol" | "client_cert" => Value::None,
+            "protocol" | "client_cert" | "peer_certificate" => Value::None,
             _ => {
                 let at = ("address", self.str_value(&conn.address));
                 let why = ("reason", self.str_value("not in a generated test"));

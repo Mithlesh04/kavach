@@ -56,6 +56,7 @@ pub(crate) const NAMES: &[&str] = &[
     "open_stream",
     "parallel_map",
     "peer",
+    "peer_certificate",
     "protocol",
     "push",
     "put",

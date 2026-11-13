@@ -1,0 +1,23 @@
+// Rule: A problem in a tagged literal over lines is shown on its own line, at its column there, not at the literal's start.
+// Spec: 10.15
+// expect compile error
+
+pub type Query {
+    text: String
+}
+
+pub literal sql: Query check check_sql
+
+fn check_sql(text: String) -> [LiteralProblem] {
+    const at = text.index_of("selct") ?? return []
+    [LiteralProblem(at: at, length: 5, message: "did you mean `select`?")]
+}
+
+fn main() {
+    const q = sql"""
+        with recent as (
+          selct id from orders
+        )
+        """    // error: from check_sql, two lines up, at `selct`
+    print(q.text)
+}

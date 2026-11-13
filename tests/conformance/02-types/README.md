@@ -78,6 +78,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.12 | [json-literals-build-values.kav](json-literals-build-values.kav) | Where a `Json` is expected, literals become `Json` values, and values inside them are encoded. | runs |
 | 2.12 | [json-parse-and-stringify.kav](json-parse-and-stringify.kav) | `json.parse` reads JSON text into a `Json`; `json.stringify` writes it back, compact or indented. | runs |
 | 2.12 | [json-decode-in-generic-functions.kav](json-decode-in-generic-functions.kav) | Inside a generic function, `json.decode<T>` decodes into the type its call gave `T`, written or inferred. | runs |
+| 2.12 | [json-dates-are-iso-text.kav](json-dates-are-iso-text.kav) | `std.time`'s `Date`, `Time` and `DateTime` are ISO 8601 text in JSON, a `DateTime` in UTC; offsets are turned to UTC, anything else is a problem. | runs |
 | 2.12 | [json-schema-describes-types.kav](json-schema-describes-types.kav) | `json.schema<T>()` gives the JSON Schema of `T`, fields in declared order, also for a generic function's type argument. | runs |
 | 2.12 | [json-schema-carries-doc-comments.kav](json-schema-carries-doc-comments.kav) | A type's doc comment becomes its schema's `"description"`, and so does a field's, for records and unions alike. | runs |
 | 2.12 | [json-limits-stop-hostile-text.kav](json-limits-stop-hostile-text.kav) | Parsing stops with an error, not a crash, on text nested too deep, keys given twice and bad syntax; a huge number is read by its digits. | runs |

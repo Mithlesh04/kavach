@@ -1,0 +1,14 @@
+// Rule: A `{…}` that holds only text gives a warning: `t == "{" or t == "}"` is one string holding another, not two comparisons.
+// Spec: 1.7
+// expect warning
+// expect output: false
+// expect output: true
+
+fn is_brace(t: String) -> Bool {
+    t == "{" or t == "}"     // warning: one string, holding the text ` or t == `
+}
+
+fn main() {
+    print(is_brace("\{"))
+    print(is_brace(" or t == "))
+}

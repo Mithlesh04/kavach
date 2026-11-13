@@ -157,6 +157,8 @@ const none_of_it = time.parse_moment("2026-11-04T09:05:30") catch e => {
 - A leap second (`23:59:60`) fails: a `Time` has no such second, as in Java's `java.time`.
 - An offset may have seconds (`+05:21:10`): some zones' oldest offsets do, and `z.iso` writes them, so `parse_moment` reads back any moment `z.iso` wrote.
 
+In JSON, a `Date`, `Time` and `DateTime` are this text too, with a `DateTime` in UTC (spec [2.12](../02-types/12-json.md)).
+
 Formats other than these are an open question.
 
 ## The clock in tests

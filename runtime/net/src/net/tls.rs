@@ -255,6 +255,16 @@ pub(super) fn client_cert(tls: &Stream) -> Option<Vec<u8>> {
     }
 }
 
+/// The other side's certificate, as DER: the server's on a client, the
+/// client's (mutual TLS) on a server.
+pub(super) fn peer_cert(tls: &Stream) -> Option<Vec<u8>> {
+    let certs = match tls {
+        Stream::Server(t) => t.conn.peer_certificates(),
+        Stream::Client(t) => t.conn.peer_certificates(),
+    };
+    Some(certs?.first()?.as_ref().to_vec())
+}
+
 /// The protocol the two sides agreed on.
 pub(super) fn protocol(tls: &Stream) -> Option<String> {
     let p = match tls {

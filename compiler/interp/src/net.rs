@@ -224,6 +224,10 @@ impl<'a> Interp<'a> {
                 self.net_wait(deadline, &to, span, &**s, || s.send_to(&data, &to))?;
                 Value::Unit
             }
+            "peer_certificate" => match s.peer_certificate() {
+                Some(der) => Value::Bytes(der.into()),
+                None => Value::None,
+            },
             "client_cert" => match s.client_cert() {
                 Some(n) => {
                     let Some(def) = self.c.resolution.std_type("ClientCert") else {

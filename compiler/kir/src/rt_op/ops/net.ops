@@ -47,3 +47,5 @@ CryptoP256Verify,
 CryptoRsaVerify,
 /// `conn.client_cert()` (decision 0099): a `ClientCert?`.
 NetClientCert,
+/// `conn.peer_certificate()`: the other side's TLS certificate, a `Bytes?`.
+NetPeerCertificate,

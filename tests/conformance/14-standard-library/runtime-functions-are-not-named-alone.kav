@@ -1,0 +1,9 @@
+// Rule: A function the runtime provides can't be named alone with `use std.fs.{read_text}`: it is called through its module, `fs.read_text`.
+// Spec: 14.1
+// expect compile error
+
+use std.fs.{read_text}     // error: write use std.fs and fs.read_text
+
+fn main() uses Fs {
+    print(read_text("notes.txt") catch "")
+}

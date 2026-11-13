@@ -146,6 +146,8 @@ print("Use \{ and } in templates")
 
 Escapes: `\n`, `\t`, `\\`, `\"`, `\{`, `\u{1F600}`.
 
+In one-line text, a `{` must close on the same line: `"{"` is a compile error at the `{`. A `{…}` that holds only text gives a warning, because it is almost always a brace that needed `\{`: `t == "{" or t == "}"` is a single string, the text ` or t == ` inside `{…}`, not two comparisons.
+
 ## 1.8 Operators
 
 | Group | Operators | Notes |

@@ -154,6 +154,7 @@ impl<'a> Lexer<'a> {
 
     fn line_break(&mut self) {
         let start = self.pos;
+        self.close_open_interpolations();
         self.pos += 1;
         if !self.statement_continues() {
             self.push(TokenKind::Newline, start);
@@ -319,6 +320,28 @@ impl<'a> Lexer<'a> {
                 self.pos,
                 format!("unexpected `{text}`: nothing here to close"),
             );
+        }
+    }
+
+    /// A `{` in one-line text that the line ends before closing: one error
+    /// at the `{`, and the text ends there, so the rest of the file is read
+    /// as code again (spec 1.7).
+    fn close_open_interpolations(&mut self) {
+        while let Some(index) = self
+            .delims
+            .iter()
+            .rposition(|(d, _)| matches!(d, Delim::Interp(k) if !k.is_multi()))
+        {
+            let at = self.delims[index].1;
+            self.delims.truncate(index);
+            self.error(
+                at,
+                at + 1,
+                "this `{` is never closed: write `\\{` for a brace in text (spec 1.7)",
+            );
+            self.push(TokenKind::InterpEnd, self.pos);
+            self.push(TokenKind::StrEnd, self.pos);
+            self.in_string = None;
         }
     }
 

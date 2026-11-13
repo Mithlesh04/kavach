@@ -397,6 +397,15 @@ impl Shared {
         })
     }
 
+    /// `conn.peer_certificate()`: the other side's TLS certificate, as
+    /// DER, for channel binding (SCRAM's `tls-server-end-point`).
+    pub fn peer_certificate(&self) -> Option<Vec<u8>> {
+        self.with(|s| match s {
+            Socket::Tls(t) => tls::peer_cert(t),
+            _ => None,
+        })
+    }
+
     /// `conn.protocol()`: what TLS agreed to speak (ALPN), if anything.
     pub fn protocol(&self) -> Option<String> {
         self.with(|s| match s {

@@ -1,0 +1,8 @@
+// Rule: `use std.time.{Date}` names the type itself: it makes values and is checked like any type, in a module that names it so.
+// Spec: 14.1
+// expect compile error
+
+use std.time.{Date}
+
+const d = Date(year: 2024, month: 1, day: 2)
+print(d.week)       // error: Date has no field week

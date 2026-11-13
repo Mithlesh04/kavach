@@ -258,6 +258,7 @@ pub fn parse(text: &str, limits: &Limits) -> Result<Tree, Error> {
     parse_with(text, limits, &mut TreeBuild)
 }
 
+pub mod dates;
 mod parse;
 pub use parse::parse_with;
 use parse::{Seen, duplicate, value_at};

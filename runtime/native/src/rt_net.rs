@@ -191,6 +191,14 @@ pub fn net_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             wait(open, &address, line, &*s, || s.accept()).map_or(0, |c| socket(c, ty))
         }
         RtOp::NetAddress => new_text(&address, type_of(code)),
+        RtOp::NetPeerCertificate => {
+            let ty = match shape(type_of(code)) {
+                Shape::Optional(t) => *t,
+                _ => type_of(code),
+            };
+            s.peer_certificate()
+                .map_or(0, |der| crate::rt_bytes::new_bytes(der, ty))
+        }
         RtOp::NetClientCert => {
             let ty = match shape(type_of(code)) {
                 Shape::Optional(t) => *t,

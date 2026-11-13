@@ -114,7 +114,12 @@ impl Writer {
             self.array(words.len() / width, level, |w, i| {
                 let fields = &words[i * width..(i + 1) * width];
                 match shape(item) {
-                    Shape::Record { fields: named, .. } => w.fields(named, fields, level + 1),
+                    Shape::Record { fields: named, .. } => {
+                        match crate::rt_json::date_text(item, fields) {
+                            Some(text) => write_text(&mut w.out, &text),
+                            None => w.fields(named, fields, level + 1),
+                        }
+                    }
                     Shape::Tuple(ts) => w.array(ts.len(), level + 1, |w, f| {
                         w.value(fields[f] as i64, ts[f], level + 2);
                     }),
@@ -246,7 +251,11 @@ impl Writer {
                 });
             }
             Shape::Map(_, v) => self.entries(p, *v, level),
-            Shape::Record { fields, .. } => self.fields(fields, slots(p), level),
+            // `std.time`'s types as ISO 8601 text (spec 2.12).
+            Shape::Record { fields, .. } => match crate::rt_json::date_text(ty, slots(p)) {
+                Some(text) => write_text(&mut self.out, &text),
+                None => self.fields(fields, slots(p), level),
+            },
             Shape::Union { .. } if crate::rt_json::is_json(ty) => self.json(p, ty, level),
             Shape::Union { variants, .. } => {
                 let inner = innermost(p);

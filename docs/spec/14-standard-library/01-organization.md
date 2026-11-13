@@ -11,6 +11,7 @@
   }
   ```
 
+- `use std.time.{Date, utc}` names a module's public types and functions that are written in Kavach directly: `Date(year: 2024, month: 1, day: 2)` makes one, checked as any type is. A function the runtime provides can't be named alone: `use std.fs.{read_text}` is a compile error that says to write `fs.read_text`.
 - A function in a module that touches the outside world needs that capability (8.1). `fs.read_text` needs `Fs`, so a function calling it needs `uses Fs` (or infers it).
 - Functions that can fail return errors as values (chapter 5). `std.fs` errors are an `FsError` union that code can `match` on (14.3); the other modules' errors print as a clear message (`invalid pattern …`).
 - Most of `std` is written in Kavach, in `stdlib/` (it ships with the compiler). The parts that need the operating system (files, clocks, the terminal) or exact low-level work (regex engines) are provided by the runtime. A program can't tell the difference.

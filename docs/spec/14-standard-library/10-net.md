@@ -14,6 +14,7 @@ TCP connections and UDP datagrams, behind the `Net` capability (8.1). Addresses 
 | `conn.write(data) ! NetError` | Sends all of `data` (`Bytes`) |
 | `conn.protocol() -> String?` | The protocol the two sides agreed on, from those `connect_tls` offered and `listen_tls` takes, or `none` |
 | `conn.peer() -> String` | The other side's address: for a connection a listener accepted, whoever opened it (`203.0.113.7:51234`) |
+| `conn.peer_certificate() -> Bytes?` | The other side's TLS certificate as DER: the server's on a client connection, a client's (mutual TLS) on a server one; `none` without TLS. For channel binding, such as SCRAM's `tls-server-end-point`, which hashes it |
 | `conn.client_cert() -> ClientCert?` | With mutual TLS (`clients:` on `listen_tls`), the names on the certificate the client showed: `ClientCert(common_name:, dns:, uris:)`, from its subject and its subject-alternative names (a SPIFFE id such as `spiffe://shop/orders` is a URI); `none` otherwise ([decision 0099](../../decisions/0099-client-certificate-names.md)) |
 | `conn.close()` | Closes the connection (or stops listening) |
 | `net.bind(address) -> UdpSocket ! NetError` | A UDP socket at `address` |

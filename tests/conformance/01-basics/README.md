@@ -28,6 +28,8 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.7 | [raw-string.kav](raw-string.kav) | A raw string has no escapes and no interpolation. | runs |
 | 1.7 | [string-escapes.kav](string-escapes.kav) | Strings support the escapes \" \\ and \u{…}. | runs |
 | 1.7 | [string-interpolation.kav](string-interpolation.kav) | Any expression inside {} in a string is inserted; \{ is a literal brace. | runs |
+| 1.7 | [interpolation-closes-on-its-line.kav](interpolation-closes-on-its-line.kav) | In one-line text, a `{` must close on its line: `"{"` is one error at the `{`. | compile error |
+| 1.7 | [interpolation-of-only-text-warns.kav](interpolation-of-only-text-warns.kav) | A `{…}` holding only text warns: `t == "{" or t == "}"` is a single string. | warning |
 | 1.7 | [negative-literals-reach-the-minimum.kav](negative-literals-reach-the-minimum.kav) | A minus before a whole-number literal belongs to it: `-128` is an `Int8`. | runs |
 | 1.8 | [assignment-is-a-statement.kav](assignment-is-a-statement.kav) | Assignment is a statement, not an expression. | compile error |
 | 1.8 | [integer-division-truncates.kav](integer-division-truncates.kav) | Int / Int is an Int, truncated. | runs |

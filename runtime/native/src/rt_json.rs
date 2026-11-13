@@ -11,6 +11,7 @@ use crate::rt::type_of;
 use crate::rt_errors::set_error;
 use crate::shapes::{new_text, shape, with_str};
 use kavach_kir::{RtOp, Shape, Type};
+use kavach_runtime_core::json::dates::{self, Kind};
 use kavach_runtime_core::json::{self, Error, Limits, Tree};
 
 /// Whether `ty` is the built-in `Json` union (not a program's own type
@@ -18,6 +19,51 @@ use kavach_runtime_core::json::{self, Error, Limits, Tree};
 pub fn is_json(ty: Type) -> bool {
     matches!(shape(ty), Shape::Union { name, variants }
         if name == "Json" && variants.first().is_some_and(|v| v.name == "Null"))
+}
+
+/// `std.time`'s `Date`, `Time` or `DateTime`, which JSON holds as ISO 8601
+/// text (spec 2.12): which, when `ty` is one.
+pub(crate) fn date_kind(ty: Type) -> Option<Kind> {
+    match shape(ty) {
+        Shape::Record { name, fields, .. } => {
+            Kind::of(name, fields.iter().map(|f| f.name.as_str()))
+        }
+        _ => None,
+    }
+}
+
+/// The ISO 8601 text of the record of type `ty` with slots `items`, when
+/// it is a `Date`, `Time` or `DateTime`.
+pub(crate) fn date_text(ty: Type, items: &[u64]) -> Option<String> {
+    fn numbers(ty: Type, items: &[u64], n: &mut Vec<i64>) {
+        if let Shape::Record { fields, .. } = shape(ty) {
+            for (f, s) in fields.iter().zip(items) {
+                match f.ty.is_ref() {
+                    true => numbers(f.ty, crate::heap::slots(*s as i64), n),
+                    false => n.push(*s as i64),
+                }
+            }
+        }
+    }
+    let kind = date_kind(ty)?;
+    let mut n = Vec::with_capacity(7);
+    numbers(ty, items, &mut n);
+    Some(dates::write(kind, &n))
+}
+
+/// A `Date`, `Time` or `DateTime` of type `ty` holding numbers `n`.
+pub(crate) fn date_value(ty: Type, kind: Kind, n: &[i64]) -> u64 {
+    let Shape::Record { fields, .. } = shape(ty) else {
+        return 0;
+    };
+    let built: Vec<u64> = match (kind, &fields[..]) {
+        (Kind::DateTime, [d, t]) => vec![
+            date_value(d.ty, Kind::Date, &n[..3]),
+            date_value(t.ty, Kind::Time, &n[3..]),
+        ],
+        _ => n.iter().map(|v| *v as u64).collect(),
+    };
+    crate::rt_json_decode::fixed(ty, 0, &built)
 }
 
 /// `json.parse(text, limits)` (owned; `limits` is a list of the three
@@ -267,11 +313,14 @@ pub(crate) fn encode(slot: i64, ty: Type) -> Tree {
                     .collect(),
             )
         }
-        Shape::Record { fields, .. } => object(
-            fields.iter().map(|f| f.name.as_str()).collect(),
-            fields.iter().map(|f| f.ty).collect(),
-            p,
-        ),
+        Shape::Record { fields, .. } => match date_text(ty, &items_of(p)) {
+            Some(text) => Tree::Text(text),
+            None => object(
+                fields.iter().map(|f| f.name.as_str()).collect(),
+                fields.iter().map(|f| f.ty).collect(),
+                p,
+            ),
+        },
         Shape::Union { .. } if is_json(ty) => tree(p),
         Shape::Union { variants, .. } => {
             let v = &variants[tag_of(crate::shapes::innermost(p)) as usize];
