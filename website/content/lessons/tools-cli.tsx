@@ -27,7 +27,7 @@ const today: [cmd: string, does: string][] = [
   ["kavach check [file.kav]", "only check for errors; --format json for tools"],
   ["kavach fmt [--check]", "format every file, or report the ones that aren't"],
   ["kavach fix <files or folders>", "apply the fixes that have one right answer and add no error"],
-  ["kavach audit", "list unsafe code, revealed secrets and capability use"],
+  ["kavach audit", "list unsafe code, revealed secrets, audited calls and capability use"],
   ["kavach approvals", "list the agents' requests that wait for a person"],
   ["kavach approve <id> --as <name>", "approve a waiting request; kavach deny <id> --as <name> [--reason …] refuses it"],
   ["kavach proto file.kav", "print the .proto file for the program's types"],

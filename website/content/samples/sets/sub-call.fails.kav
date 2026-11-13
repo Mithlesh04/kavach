@@ -1,0 +1,5 @@
+fn main() {
+    let guests = Set(["Asha", "Ravi"])
+    guests.add("Meera")
+    print(guests.len())
+}

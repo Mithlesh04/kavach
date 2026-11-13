@@ -1,0 +1,12 @@
+$ kavach run src/main.kav
+warning: sql: `*` gets every column, even ones added later (name the columns you need)
+ --> src/main.kav:4:28
+  |
+4 |     const all = sql"select * from orders"
+  |                            ^
+
+error: sql: a query starts with select, insert, update or delete (is `selct` misspelled?)
+ --> src/main.kav:5:24
+  |
+5 |     const recent = sql"selct id from orders where owner = $1"
+  |                        ^^^^^

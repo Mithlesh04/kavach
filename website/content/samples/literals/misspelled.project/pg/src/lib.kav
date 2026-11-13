@@ -1,0 +1,36 @@
+/// A query for PostgreSQL. Its text isn't `pub`, so outside this
+/// package a `Query` comes only from a `sql"…"` literal.
+pub type Query {
+    text: String
+}
+
+/// SQL, checked when the program is compiled.
+pub literal sql: Query check check_sql language "sql"
+
+fn check_sql(text: String) -> [LiteralProblem] {
+    let problems: [LiteralProblem] = []
+    const first = text.trim().split(" ")[0]
+    if not ["select", "insert", "update", "delete"].contains(first) {
+        problems.push(LiteralProblem(
+            at: text.index_of(first) ?? 0,
+            length: first.len(),
+            message: "a query starts with select, insert, update or delete",
+            hint: "is `{first}` misspelled?",
+        ))
+    }
+    const star = text.index_of("select *") ?? -1
+    if star >= 0 {
+        problems.push(LiteralProblem(
+            at: star + 7,
+            message: "`*` gets every column, even ones added later",
+            hint: "name the columns you need",
+            warning: true,
+        ))
+    }
+    problems
+}
+
+/// The query's text, as the database will get it.
+pub fn text_of(q: Query) -> String {
+    q.text
+}

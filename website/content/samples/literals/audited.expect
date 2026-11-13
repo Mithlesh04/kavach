@@ -1,0 +1,12 @@
+$ kavach run src/main.kav
+select id from orders where owner = $1
+select id from orders_2026
+$ kavach audit
+unsafe code:
+  nothing
+revealed secrets:
+  nothing
+audited calls:
+  src/main.kav:7  unchecked(…)
+capability use:
+  src/main.kav:3  fn main: Console

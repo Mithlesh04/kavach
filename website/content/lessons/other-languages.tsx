@@ -192,6 +192,7 @@ export const auditDoc: LessonDoc = {
             {[
               ["unsafe code", "every unsafe block: raw memory and C calls, which Kavach can't check"],
               ["revealed secrets", "every reveal(…), where a secret value is let out on purpose"],
+              ["audited calls", "every call of an audited fn, which makes a checked value such as a sql\"…\" Query from text known only when the program runs"],
               ["capability use", "each function and the capabilities it uses: files, network, terminal, AI…"],
             ].map(([s, l]) => (
               <tr key={s} className="border-b border-line align-top">
@@ -204,8 +205,9 @@ export const auditDoc: LessonDoc = {
       </div>
       <P>
         Everything else the compiler has already checked. So a reviewer, or a security team, starts with this short
-        list instead of reading the whole program: see <Link href="/docs/agents/secrets/reveal/">reveal</Link> and{" "}
-        <Link href="/docs/memory/unsafe/">Unsafe</Link>.
+        list instead of reading the whole program: see <Link href="/docs/agents/secrets/reveal/">reveal</Link>,{" "}
+        <Link href="/docs/memory/unsafe/">Unsafe</Link> and{" "}
+        <Link href="/docs/tools/tagged-literals/#text-known-only-when-the-program-runs">audited fn</Link>.
       </P>
     </>
   ),

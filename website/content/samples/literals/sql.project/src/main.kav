@@ -1,0 +1,9 @@
+use pg
+use pg.{sql}
+
+fn main() {
+    const recent = sql"select id, item from orders where owner = $1"
+    print(pg.text_of(recent))
+    const paid = pg.sql"update orders set paid = true where id = $1"
+    print(pg.text_of(paid))
+}

@@ -3,5 +3,7 @@ unsafe code:
   nothing
 revealed secrets:
   src/main.kav:13  reveal(…)
+audited calls:
+  nothing
 capability use:
   src/main.kav:10  fn main: Console

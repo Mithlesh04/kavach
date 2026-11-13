@@ -33,7 +33,11 @@
       {
         "language": "kavach",
         "scopeName": "source.kavach",
-        "path": "./syntaxes/kavach.tmLanguage.json"
+        "path": "./syntaxes/kavach.tmLanguage.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.sql": "sql",
+          "meta.embedded.line.sql": "sql"
+        }
       },
       {
         "scopeName": "markdown.kavach.codeblock",

@@ -108,3 +108,41 @@ extend<S> App<S> {
         self.state
     }
 }
+
+pub literal sql: Query check check_sql language "sql"
+// <--- storage.modifier.kavach
+//  ^^^^^^^ storage.type.kavach
+//          ^^^ entity.name.function.tag.kavach
+//               ^^^^^ entity.name.type.kavach
+//                     ^^^^^ keyword.other.kavach
+//                           ^^^^^^^^^ entity.name.function.kavach
+//                                     ^^^^^^^^ keyword.other.kavach
+//                                              ^^^^^ string.quoted.double.kavach
+
+audited fn unchecked(text: String) -> Query {
+// <------- storage.modifier.kavach
+//      ^^ storage.type.function.kavach
+    Query(text: text)
+}
+
+fn tags() {
+    const q = sql"select '{raw}' from c where p = 'C:\tmp'"
+//            ^^^ entity.name.function.tag.kavach
+//               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ string.quoted.double.tagged.kavach
+//                        ^^^^^ - meta.template.expression.kavach
+//                                              ^^ - constant.character.escape.kavach
+    const p = pg.sql"select 1"
+//               ^^^ entity.name.function.tag.kavach
+    const g = glob"src/**/*.kav"
+//            ^^^^ entity.name.function.tag.kavach
+//                ^^^^^^^^^^^^^^ string.quoted.double.tagged.kavach
+    const lines = sql"""
+//                ^^^ entity.name.function.tag.kavach
+        select id
+//      ^^^^^^^^^ string.quoted.triple.tagged.kavach
+        """
+    const raw = r"C:\tmp"
+//              ^^^^^^^^^ string.quoted.raw.kavach
+    let literal = 3
+//      ^^^^^^^ variable.other.readwrite.kavach
+}

@@ -259,7 +259,13 @@ export const makeSetDoc: LessonDoc = {
   lead: "Set.of(…) makes a set; add and remove change it, so it must be a let.",
   simple: <>Make a set from a few values, then add or cross out values later, like names on a guest list. Because it changes, it must be a <C>let</C>.</>,
   minutes: 2,
-  body: <Ex name="sets/sub-build" />,
+  body: (
+    <>
+      <Ex name="sets/sub-build" />
+      <P>A set isn&apos;t made by calling its type like a function, as in some other languages. The message says what to write instead:</P>
+      <Ex name="sets/sub-call.fails" />
+    </>
+  ),
 };
 
 export const checkSetDoc: LessonDoc = {

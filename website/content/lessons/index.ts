@@ -10,6 +10,7 @@ import { blocksDoc, keywordsDoc, mainFunctionDoc, namesDoc, sourceFilesDoc, synt
 import { changeDoc, constDoc, destructuringDoc, letDoc, variablesDoc } from "./basics-variables";
 import { firstProgramDoc, homeDoc, smartDoc } from "./start";
 import { editionsDoc, envDoc, layoutDoc, settingsDoc } from "./tools-settings";
+import { taggedLiteralsDoc } from "./tools-literals";
 import { limitsDoc } from "./limits";
 import { chainsDoc, classesDoc, extendDoc } from "./types-oop";
 import { agentModelDoc } from "./agents-model";
@@ -398,6 +399,7 @@ export const lessons: Record<string, LessonDoc> = {
   "tools/modules/pub": pubDoc,
   "tools/packages": packagesDoc,
   "tools/workspaces": workspacesDoc,
+  "tools/tagged-literals": taggedLiteralsDoc,
   "tools/the-kavach-command": commandDoc,
   "tools/the-kavach-command/new": newDoc,
   "tools/the-kavach-command/run": runDoc,

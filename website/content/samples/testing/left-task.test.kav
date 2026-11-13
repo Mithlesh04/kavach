@@ -1,0 +1,14 @@
+/// Waits for jobs, one at a time, until the channel closes.
+fn worker(jobs: Receiver<Int>, done: Sender<Int>) {
+    for job in jobs {
+        done.put(job * 10)
+    }
+}
+
+test "a worker left waiting ends with the test" {
+    const (send, jobs) = Channel<Int>(capacity: 1)
+    const (done, results) = Channel<Int>(capacity: 1)
+    const _worker = spawn worker(jobs, done)
+    send.put(4)
+    assert results.take() == Taken.Item(value: 40)
+}

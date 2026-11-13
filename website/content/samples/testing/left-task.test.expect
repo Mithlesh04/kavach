@@ -1,0 +1,5 @@
+✓ test "a worker left waiting ends with the test"
+1 passed, 0 failed
+seed 7
+0 functions   0 ✓   0 ✗   0 weakly tested
+  not generated: worker: takes values that can't be generated yet

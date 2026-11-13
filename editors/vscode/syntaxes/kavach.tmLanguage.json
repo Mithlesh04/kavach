@@ -56,6 +56,42 @@
       "patterns": [{ "include": "#block-comment" }]
     },
     "strings": {
+      "patterns": [{ "include": "#tagged-strings" }, { "include": "#plain-strings" }]
+    },
+    "tagged-strings": {
+      "comment": "A tagged literal, `sql\"…\"` or `sql\"\"\"…\"\"\"` (spec 10.15): the tag right before the quote, colored as a function; the text is raw, with no escapes or interpolation. `r\"…\"` stays a raw string. Inside `sql`, the text is colored as SQL",
+      "patterns": [
+        {
+          "name": "string.quoted.triple.tagged.kavach",
+          "begin": "\\b(sql)(\"\"\")",
+          "end": "\"\"\"",
+          "beginCaptures": { "1": { "name": "entity.name.function.tag.kavach" } },
+          "contentName": "meta.embedded.block.sql",
+          "patterns": [{ "include": "source.sql" }]
+        },
+        {
+          "name": "string.quoted.double.tagged.kavach",
+          "begin": "\\b(sql)(\")",
+          "end": "\"",
+          "beginCaptures": { "1": { "name": "entity.name.function.tag.kavach" } },
+          "contentName": "meta.embedded.line.sql",
+          "patterns": [{ "include": "source.sql" }]
+        },
+        {
+          "name": "string.quoted.triple.tagged.kavach",
+          "begin": "\\b((?!r\\b)[\\p{L}_][\\p{L}\\p{N}_]*)(\"\"\")",
+          "end": "\"\"\"",
+          "beginCaptures": { "1": { "name": "entity.name.function.tag.kavach" } }
+        },
+        {
+          "name": "string.quoted.double.tagged.kavach",
+          "begin": "\\b((?!r\\b)[\\p{L}_][\\p{L}\\p{N}_]*)(\")",
+          "end": "\"",
+          "beginCaptures": { "1": { "name": "entity.name.function.tag.kavach" } }
+        }
+      ]
+    },
+    "plain-strings": {
       "patterns": [
         {
           "name": "string.quoted.triple.kavach",
@@ -120,6 +156,27 @@
     },
     "declarations": {
       "patterns": [
+        {
+          "comment": "A tag's declaration, `pub literal sql: Query check check_sql language \"sql\"` (spec 10.15): `literal`, `check` and `language` are keywords only on this line, so names already called `literal` keep their color",
+          "begin": "^\\s*(?:(pub)\\s+)?(literal)\\s+([\\p{L}_][\\p{L}\\p{N}_]*)(?=\\s*:)",
+          "end": "$",
+          "beginCaptures": {
+            "1": { "name": "storage.modifier.kavach" },
+            "2": { "name": "storage.type.kavach" },
+            "3": { "name": "entity.name.function.tag.kavach" }
+          },
+          "patterns": [
+            {
+              "match": "\\b(check)\\s+([\\p{L}_][\\p{L}\\p{N}_]*)",
+              "captures": {
+                "1": { "name": "keyword.other.kavach" },
+                "2": { "name": "entity.name.function.kavach" }
+              }
+            },
+            { "match": "\\blanguage\\b(?=\\s*\")", "name": "keyword.other.kavach" },
+            { "include": "$self" }
+          ]
+        },
         {
           "match": "\\b(fn)\\s+([\\p{L}_][\\p{L}\\p{N}_]*)",
           "captures": {
@@ -229,6 +286,11 @@
           "comment": "`gpu` is a keyword only before `fn` (spec 15.1)",
           "name": "storage.modifier.kavach",
           "match": "\\bgpu\\b(?=\\s+fn\\b)"
+        },
+        {
+          "comment": "`audited` is a keyword only before `fn` (spec 10.15)",
+          "name": "storage.modifier.kavach",
+          "match": "\\baudited\\b(?=\\s+fn\\b)"
         },
         {
           "comment": "`thread`, `cores` and `process` are keywords only right after `spawn`, before a name or a block (spec 9.8); elsewhere they are ordinary names",

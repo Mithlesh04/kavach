@@ -1,0 +1,19 @@
+type Query {
+    text: String
+}
+
+literal sql: Query check check_sql
+
+fn check_sql(text: String) -> [LiteralProblem] {
+    []
+}
+
+fn main() {
+    const q = sql"select name from files where name = '{name}' and dir = 'C:\new'"
+    print(q.text)
+    const long = sql"""
+        select id, item
+        from orders
+        """
+    print(long.text)
+}

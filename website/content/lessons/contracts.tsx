@@ -6,6 +6,7 @@ import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject, loadProjectFiles } from "@/lib/samples";
 import { Ex, Files, H2, Note, P } from "./parts";
+import { fileFigure } from "@/lib/spec-tables";
 import { ModuleTable } from "./spec-table";
 
 const beside = loadProjectFiles("testing/beside");
@@ -242,6 +243,12 @@ export const ownValuesDoc: LessonDoc = {
   ),
 };
 
+// The message a stopped test gets, read from the CLI: the test's name and the seconds filled in.
+const stuck = fileFigure("tools/cli/src/main.rs", /"(error: \{name\} has run for [^"]*)"/)
+  .replace("{name}", 'test "…"')
+  .replace("{}", "N")
+  .replace("{}", "M");
+
 export const testBlocksDoc: LessonDoc = {
   lead: "A test block checks a story of several steps that contracts can't express.",
   simple: <>Some checks are a little story: first do this, then that, then look at the result. A <C>test</C> block writes down such a story, for what contracts alone can&apos;t describe.</>,
@@ -274,6 +281,24 @@ export const testBlocksDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="tests/conformance/11-testing/tests-use-nothing-unless-given.kav" label="tested" />
         <SrcRef file="tests/conformance/11-testing/a-test-may-ask-for-the-fake-disk.kav" label="fake disk, tested" />
+      </div>
+      <H2>A test ends with its tasks</H2>
+      <P>
+        A <C>test</C> block is a function of its own for its tasks: those it spawned and left running are cancelled
+        when it ends, as a function&apos;s are (<Link href="/docs/concurrency/tasks-never-leak/">Tasks Never Leak</Link>). Here the worker still waits for
+        a job when the test ends; it is cancelled, and the run goes on. A server a test started doesn&apos;t keep the
+        run going either.
+      </P>
+      <Ex name="testing/left-task.test" />
+      <P>
+        A test, an <C>example</C> or a generated case that runs past sixty times <C>time_budget</C> (a minute by
+        default) is stopped. <C>kavach test</C> names it and fails, so one waiting for something that never comes
+        can&apos;t hang the run:
+      </P>
+      <CodeBlock code={stuck} file="kavach test" lang="text" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/11-testing/a-test-cancels-the-tasks-it-leaves.kav" label="tested" />
+        <SrcRef file="tools/cli/tests/project.rs" symbol="a_stuck_test_is_named_and_stopped" label="time limit, tested" />
       </div>
       <H2>Where test blocks go</H2>
       <P>
