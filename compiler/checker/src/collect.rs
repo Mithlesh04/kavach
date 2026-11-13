@@ -132,6 +132,17 @@ impl Checker<'_> {
         }
     }
 
+    /// Notes the methods among `methods` that aren't `pub` (spec 10.1).
+    fn note_private(&mut self, methods: &[Item]) {
+        for m in methods.iter().filter(|m| !m.is_pub) {
+            if let ItemKind::Fn(f) = &m.kind
+                && let Some(&def) = self.decl.get(&f.name.span.start)
+            {
+                self.private_methods.insert(def);
+            }
+        }
+    }
+
     fn method_sigs(&mut self, methods: &[Item], self_ty: Option<&Ty>) -> Vec<(String, FnSig)> {
         methods
             .iter()
@@ -203,6 +214,7 @@ impl Checker<'_> {
                 ItemKind::Extend(e) => {
                     let target = self.lower(&e.target, None);
                     let sigs = self.method_sigs(&e.methods, Some(&target));
+                    self.note_private(&e.methods);
                     let interfaces: Vec<_> =
                         e.implements.iter().map(|t| self.lower(t, None)).collect();
                     match target {
@@ -286,6 +298,7 @@ impl Checker<'_> {
             TypeBody::Record(r) => {
                 let fields = self.fields(&r.fields, &self_ty);
                 let sigs = self.method_sigs(&r.methods, Some(&self_ty));
+                self.note_private(&r.methods);
                 self.methods.entry(def).or_default().extend(sigs);
                 Shape::Record(fields)
             }

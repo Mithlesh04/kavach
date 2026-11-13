@@ -6,6 +6,7 @@
 pub(crate) const NAMES: &[&str] = &[
     "abs",
     "accept",
+    "accept_tls",
     "add",
     "address",
     "all",
@@ -77,6 +78,7 @@ pub(crate) const NAMES: &[&str] = &[
     "sort",
     "sort_by",
     "split",
+    "start_tls",
     "starts_with",
     "sum",
     "take",

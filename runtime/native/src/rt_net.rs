@@ -191,6 +191,34 @@ pub fn net_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             wait(open, &address, line, &*s, || s.accept()).map_or(0, |c| socket(c, ty))
         }
         RtOp::NetAddress => new_text(&address, type_of(code)),
+        // TLS begun on this plain connection (spec 14.10): a new
+        // connection, and this one closed.
+        RtOp::NetStartTls | RtOp::NetAcceptTls => {
+            let protocols = texts_of(b);
+            release(b);
+            let texts = texts_of(c);
+            release(c);
+            let text = |i: usize| texts.get(i).cloned().unwrap_or_default();
+            let started = if op == RtOp::NetStartTls {
+                let extra = net::ClientTls {
+                    roots: text(1),
+                    cert: text(2),
+                    key: text(3),
+                };
+                net::start_tls(&s, &text(0), &protocols, &extra)
+            } else {
+                net::accept_tls(&s, &text(0), &text(1), &protocols, &text(2))
+            };
+            match started {
+                Ok(st) => {
+                    wait(deadline, &address, line, &st, || st.poll()).map_or(0, |c| socket(c, ty))
+                }
+                Err(f) => {
+                    fail(f, &address);
+                    0
+                }
+            }
+        }
         RtOp::NetPeerCertificate => {
             let ty = match shape(type_of(code)) {
                 Shape::Optional(t) => *t,

@@ -289,6 +289,54 @@ impl Checker<'_> {
         );
     }
 
+    /// A method that isn't `pub` can be called only inside its package
+    /// (spec 10.1); the standard library is a package of its own. A
+    /// method an interface asks for is as public as the interface.
+    pub(crate) fn check_method_access(
+        &mut self,
+        owner: kavach_resolver::DefId,
+        sig: &crate::checker::FnSig,
+        name: &Ident,
+    ) {
+        let Some(method) = sig.def.filter(|m| self.private_methods.contains(m)) else {
+            return;
+        };
+        let Some(decl) = self.res.defs[method].span else {
+            return;
+        };
+        let asked = self.implements.get(&owner).is_some_and(|is| {
+            is.iter().any(|i| {
+                self.methods
+                    .get(i)
+                    .is_some_and(|ms| ms.contains_key(&name.name))
+            })
+        });
+        let package = |offset: u32| {
+            let m = &self.res.modules[self.res.module_at(offset)];
+            match m.name.starts_with("std.") {
+                true => "std".to_string(),
+                false => m.package.clone(),
+            }
+        };
+        let home = package(decl.start);
+        if asked || home == package(name.span.start) {
+            return;
+        }
+        let home = if home.is_empty() {
+            "the program".to_string()
+        } else {
+            format!("package `{home}`")
+        };
+        self.error(
+            name.span,
+            format!(
+                "the method `{}` of `{}` is private to {home}: mark it `pub` there to call it here (spec 10.1)",
+                name.name,
+                self.def_name(owner)
+            ),
+        );
+    }
+
     /// A record with private fields can be created only in its own module;
     /// others call a `pub fn` there that makes one (spec 10.1).
     pub(crate) fn check_construct_access(

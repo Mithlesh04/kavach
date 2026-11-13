@@ -64,7 +64,10 @@ impl Checker<'_> {
                     if let StrPart::Expr(x) = part {
                         // `"{"` and `"}"` read as one string holding
                         // another: say what was meant (spec 1.7).
-                        if matches!(&x.kind, ExprKind::Str(inner) if inner.iter().all(|p| matches!(p, StrPart::Text(_))))
+                        // A `{` the line ends before closing (`"{"`)
+                        // already has its error: both strings end there.
+                        if x.span.end != e.span.end
+                            && matches!(&x.kind, ExprKind::Str(inner) if inner.iter().all(|p| matches!(p, StrPart::Text(_))))
                         {
                             self.warn(
                                 x.span,

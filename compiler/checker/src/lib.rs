@@ -107,7 +107,8 @@ pub struct Checked {
     pub gpu_maps: HashSet<(u32, u32)>,
     /// The type of every checked expression, by its span `(start, end)`.
     /// Code generation reads these. Number literals without context are
-    /// `Int` or `Float` here too.
+    /// `Int` or `Float` here too. A function's name where it is declared
+    /// has its type, for describing a function value (spec 2.12).
     pub expr_types: HashMap<(u32, u32), Ty>,
     /// The capabilities each function uses, written or inferred (spec 8.1).
     pub uses: HashMap<DefId, Vec<String>>,
@@ -174,11 +175,16 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
             (*start, prim)
         })
         .collect();
-    let expr_types: HashMap<(u32, u32), Ty> = checker
+    let mut expr_types: HashMap<(u32, u32), Ty> = checker
         .expr_types
         .iter()
         .map(|(span, ty)| ((span.start, span.end), checker.defaulted(ty)))
         .collect();
+    for (def, sig) in checker.fns.iter().filter(|(_, s)| s.generics.is_empty()) {
+        if let Some(span) = checker.res.defs[*def].span {
+            expr_types.insert((span.start, span.end), checker.fn_value_ty(sig));
+        }
+    }
     let float_constants = checker
         .exact_constants
         .iter()

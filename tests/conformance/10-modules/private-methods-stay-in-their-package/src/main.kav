@@ -1,0 +1,12 @@
+// Rule: A method without `pub` can be called anywhere in its own package, on a value or on the type, but not from another package.
+// Spec: 10.1
+// expect compile error
+
+use shop.{Order}
+
+fn main() {
+    const o = Order(total: 100)
+    print(o.with_tax())
+    print(o.tax())              // error: `tax` is private to package `shop`
+    print(Order.blank())        // error: `blank` is private to package `shop`
+}

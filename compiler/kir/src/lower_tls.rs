@@ -57,4 +57,54 @@ impl<'a> Lowerer<'a> {
         let rest = at(K::List(values), texts);
         Ok(at(K::Rt(op, vec![address, protocols, rest]), ty))
     }
+
+    /// `conn.start_tls(host, …)` or `conn.accept_tls(cert, key, …)` (spec
+    /// 14.10): the connection, the protocols, and the other texts in a
+    /// list, each in its place however the call names them.
+    pub(crate) fn start_tls_call(
+        &mut self,
+        base: &'a ast::Expr,
+        name: &str,
+        args: &'a [ast::Arg],
+        ty: ir::Type,
+        line: u32,
+    ) -> Lowered<ir::Expr> {
+        let (op, params): (RtOp, &[&str]) = if name == "start_tls" {
+            (
+                RtOp::NetStartTls,
+                &["host", "protocols", "roots", "cert", "key"],
+            )
+        } else {
+            (RtOp::NetAcceptTls, &["cert", "key", "protocols", "clients"])
+        };
+        let mut given: Vec<Option<&'a ast::Expr>> = vec![None; params.len()];
+        for (i, a) in args.iter().enumerate() {
+            let at = match &a.name {
+                Some(n) => params.iter().position(|p| *p == n.name),
+                None => Some(i),
+            };
+            if let Some(slot) = at.and_then(|at| given.get_mut(at)) {
+                *slot = Some(&a.value);
+            }
+        }
+        let at = |kind, ty| ir::Expr { kind, ty, line };
+        let text = self.str_type();
+        let texts = self.list_type(text);
+        let conn = self.expr(base)?;
+        let (mut protocols, mut rest) = (at(K::List(Vec::new()), texts), Vec::new());
+        for (p, g) in params.iter().zip(given) {
+            let value = match g {
+                Some(e) => self.expr(e)?,
+                None if *p == "protocols" => at(K::List(Vec::new()), texts),
+                None => at(K::Str(String::new()), text),
+            };
+            if *p == "protocols" {
+                protocols = value;
+            } else {
+                rest.push(value);
+            }
+        }
+        let rest = at(K::List(rest), texts);
+        Ok(at(K::Rt(op, vec![conn, protocols, rest]), ty))
+    }
 }

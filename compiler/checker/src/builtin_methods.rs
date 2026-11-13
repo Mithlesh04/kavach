@@ -35,6 +35,8 @@ impl Checker<'_> {
                 | "connect"
                 | "connect_tls"
                 | "connect_quic"
+                | "start_tls"
+                | "accept_tls"
         );
         if !net && !matches!(name.name.as_str(), "wait" | "take" | "put") {
             return None;
@@ -72,6 +74,8 @@ impl Checker<'_> {
                         | "receive"
                         | "read_stream"
                         | "write_stream"
+                        | "start_tls"
+                        | "accept_tls"
                 )
         ) || (from_net
             && matches!(
@@ -276,6 +280,31 @@ impl Checker<'_> {
                     "client_cert" => sig(vec![], opt(self.builtin_ty("ClientCert"))),
                     // The other side's certificate, as DER (spec 14.10).
                     "peer_certificate" => sig(vec![], opt(bytes.clone())),
+                    // TLS begun on a plain connection (spec 14.10).
+                    "start_tls" | "accept_tls" => {
+                        let text = Ty::Prim(Prim::String);
+                        let texts = Ty::List(Box::new(text.clone()));
+                        let (params, named) = match name {
+                            "start_tls" => (
+                                vec![text.clone()],
+                                vec![
+                                    ("protocols", texts),
+                                    ("roots", text.clone()),
+                                    ("cert", text.clone()),
+                                    ("key", text),
+                                ],
+                            ),
+                            _ => (
+                                vec![text.clone(), text.clone()],
+                                vec![("protocols", texts), ("clients", text)],
+                            ),
+                        };
+                        Some(MethodSig {
+                            params,
+                            ret: fails(Ty::Builtin("Connection", Vec::new())),
+                            named,
+                        })
+                    }
                     // QUIC streams (spec 14.10).
                     "open_stream" => sig(vec![Ty::Prim(Prim::Bool)], fails(Ty::Prim(Prim::Int))),
                     "write_stream" => sig(

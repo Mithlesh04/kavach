@@ -1,0 +1,45 @@
+// Rule: a method of a program's own type can take a function that can fail, `fn(P) -> R ! E`, call it, and handle its error, as a function can.
+// Spec: 3.4
+// expect output: took 1
+// expect output: gave 1 back
+// expect output: 10
+// expect output: took 2
+// expect output: gave 2 back
+// expect output: failed: busy
+
+type DbError = Busy | Gone(reason: String)
+
+type Pool {
+    next: Shared<Int>
+
+    /// Runs `work` with a connection, given back on failure too.
+    fn using<T>(self, work: fn(Int) -> T ! DbError) -> T ! DbError {
+        const conn = self.next.update(n => n + 1)
+        print("took {conn}")
+        const out = work(conn) catch e => {
+            print("gave {conn} back")
+            fail e
+        }
+        print("gave {conn} back")
+        out
+    }
+}
+
+fn query(conn: Int) -> Int ! DbError {
+    if conn > 1 {
+        fail DbError.Busy
+    }
+    conn * 10
+}
+
+fn main() {
+    const pool = Pool(next: Shared(0))
+    print(pool.using(c => try query(c)) catch _ => -1)
+    const second = pool.using(c => try query(c)) catch e => match e {
+        DbError.Busy => -2,
+        DbError.Gone(_) => -3,
+    }
+    if second == -2 {
+        print("failed: busy")
+    }
+}

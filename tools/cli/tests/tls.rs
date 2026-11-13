@@ -3,7 +3,8 @@
 //! a private certificate authority (`roots`) and shows its own. The
 //! certificates are made for the test with `openssl`, so no private key
 //! is kept in the repository. The server reads the names on the client's
-//! certificate (decision 0099).
+//! certificate (decision 0099). And TLS begins on a plain connection, as
+//! PostgreSQL's `SSLRequest` does: `start_tls` and `accept_tls`.
 
 use std::path::Path;
 use std::process::Command;
@@ -25,6 +26,17 @@ fn serve(listener: Listener) ! NetError uses Net {
         try conn.write(\"hello, {text_of(got)} from {who}\".bytes())
         conn.close()
     }
+}
+
+// PostgreSQL's way: plain text first, then TLS on the same connection.
+fn upgrade_one(listener: Listener, cert: String, key: String) ! NetError uses Net {
+    const plain = try listener.accept()
+    const _asked = try plain.read()
+    try plain.write(\"S\".bytes())
+    const conn = try plain.accept_tls(cert, key)
+    const got = try conn.read()
+    try conn.write(\"over tls: {text_of(got)}\".bytes())
+    conn.close()
 }
 
 fn text_of(data: Bytes?) -> String {
@@ -72,6 +84,18 @@ fn main() ! Error {
         err(e) => false
     }
     print(if trusted { \"trusted!\" } else { \"server not trusted\" })
+
+    // TLS begun on a plain connection, on both sides (spec 14.10).
+    const plain_listener = try net.listen(\"127.0.0.1:0\")
+    const _upgrader = spawn upgrade_one(plain_listener, cert, key)
+    const plain = try net.connect(plain_listener.address())
+    try plain.write(\"TLS?\".bytes())
+    print(text_of(try plain.read()))
+    const secured = try plain.start_tls(\"127.0.0.1\", roots: ca)
+    try secured.write(\"hi\".bytes())
+    print(text_of(try secured.read()))
+    print((secured.peer_certificate() ?? Bytes([])).len() > 100)
+    secured.close()
     silent.close()
 }
 ";
@@ -167,7 +191,7 @@ fn servers_and_clients_prove_who_they_are() {
     certificates(&dir);
     let file = dir.join("tls.kav");
     std::fs::write(&file, PROGRAM).unwrap();
-    let expected = "hello, client from kavach-client [\"orders.shop\"] [\"spiffe://shop/orders\"]\nkv\ntrue\nrefused\nserver not trusted\n";
+    let expected = "hello, client from kavach-client [\"orders.shop\"] [\"spiffe://shop/orders\"]\nkv\ntrue\nrefused\nserver not trusted\nS\nover tls: hi\ntrue\n";
     for native in [false, true] {
         let mut cmd = Command::new(env!("CARGO_BIN_EXE_kavach"));
         cmd.arg("run");

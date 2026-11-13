@@ -1,0 +1,6 @@
+use shop.{Order}
+
+/// Another module of the package calls the private `tax`.
+pub fn with_tax(o: Order) -> Int {
+    o.total + o.tax()
+}

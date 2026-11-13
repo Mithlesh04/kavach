@@ -142,6 +142,11 @@ impl Lowerer<'_> {
             // `json.of([])`: nothing tells the items' type, and there are
             // none, so any type will do.
             Ty::List(t) if matches!(**t, Ty::Var(_) | Ty::Error) => self.list_type(Type::I64),
+            // `json.of(none)`: the same, for an optional that is always
+            // `none`.
+            Ty::Optional(t) if matches!(**t, Ty::Var(_) | Ty::Error) => {
+                self.kir_type(&Ty::Optional(Box::new(Ty::Prim(Prim::Int))), span)?
+            }
             Ty::List(t) => {
                 let item = self.kir_type(t, span)?;
                 self.list_type(item)

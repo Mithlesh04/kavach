@@ -337,7 +337,10 @@ impl<'a> Interp<'a> {
         if let (Value::Bytes(b), "as_list", [item]) = (&receiver, name.name.as_str(), generics) {
             return self.bytes_as_list(b, item, span);
         }
-        let args = args.into_iter().map(|(_, v)| v).collect();
+        let args = match (&receiver, name.name.as_str()) {
+            (Value::Socket(_), "start_tls" | "accept_tls") => self.tls_args(&name.name, args),
+            _ => args.into_iter().map(|(_, v)| v).collect(),
+        };
         self.builtin_method(receiver, &name.name, args, span)
     }
 

@@ -98,7 +98,7 @@ pub struct Unsupported {
 
 /// The functions of `std.crypto` (spec 14.19), in the order their number
 /// (`RtOp::Crypto`'s operand `c`) gives.
-pub const CRYPTO: [&str; 17] = [
+pub const CRYPTO: [&str; 18] = [
     "sha256",
     "sha512",
     "hmac_sha256",
@@ -116,4 +116,5 @@ pub const CRYPTO: [&str; 17] = [
     "aes_key",
     "encrypt",
     "decrypt",
+    "sha384",
 ];

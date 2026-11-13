@@ -175,9 +175,15 @@ impl<'a> Lowerer<'a> {
         let ast::ExprKind::Call { callee, args, .. } = &e.kind else {
             return None;
         };
-        let ast::ExprKind::Field { name, .. } = &callee.kind else {
+        let ast::ExprKind::Field { base, name, .. } = &callee.kind else {
             return None;
         };
+        // A method of a program's own type calls the function as any
+        // function value is called, so its error is handled there.
+        let base_ty = self.c.expr_types.get(&(base.span.start, base.span.end));
+        if matches!(base_ty, Some(kavach_checker::Ty::Adt(..))) {
+            return None;
+        }
         let fails = |a: &ast::Arg| {
             let key = (a.value.span.start, a.value.span.end);
             matches!(

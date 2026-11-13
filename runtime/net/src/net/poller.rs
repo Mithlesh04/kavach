@@ -340,6 +340,15 @@ pub fn wait_alone(r: &dyn Ready, seen: u64, at: Option<Instant>) {
     }
 }
 
+/// Takes `source`, socket `n`, off its queue: it is about to change
+/// (a plain connection that starts TLS) and will be registered again.
+pub fn deregister(source: &mut impl Source, n: usize) {
+    if let Some(p) = poller_of(n) {
+        let _ = p.registry.deregister(source);
+        sockets(p).remove(&n);
+    }
+}
+
 /// Socket `n` is closed: it has no more events.
 pub fn forget(n: usize) {
     if let Some(p) = poller_of(n) {

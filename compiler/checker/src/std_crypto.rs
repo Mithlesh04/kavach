@@ -25,7 +25,7 @@ impl Checker<'_> {
             names.iter().map(|n| p(n, &bytes)).collect()
         };
         Some(match name {
-            "sha256" | "sha512" => (b(&["data"]), bytes.clone()),
+            "sha256" | "sha384" | "sha512" => (b(&["data"]), bytes.clone()),
             "hmac_sha256" => (b(&["key", "data"]), bytes.clone()),
             "equal" => (b(&["a", "b"]), boolean),
             "random_bytes" => (vec![p("n", &int)], bytes.clone()),

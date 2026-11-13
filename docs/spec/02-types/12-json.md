@@ -126,7 +126,7 @@ type Rates {
 const r = try json.decode<Rates>(body)
 ```
 
-**A function described.** `json.describe(f)` works from `f`'s signature when the program is compiled, so `f` must name a function, not hold a function value; it gives a constant, and reading it costs nothing more than reading any value. A web framework uses it, with `json.schema<T>()`, to write an OpenAPI description of its handlers ([decision 0085](../../decisions/0085-function-types-with-errors-and-uses.md)).
+**A function described.** `json.describe(f)` works from `f`'s signature when the program is compiled; when `f` names a function, it gives a constant `FnSchema`, and reading it costs nothing more than reading any value. A web framework uses it, with `json.schema<T>()`, to write an OpenAPI description of its handlers ([decision 0085](../../decisions/0085-function-types-with-errors-and-uses.md)).
 
 ```kavach
 pub type FnSchema {
@@ -162,6 +162,23 @@ print(json.describe(price).examples)   // ["price(3) == 30"]
 ```
 
 A parameter, result or error whose type has no schema (a function, a map with other keys) is a compile error, as for `json.schema<T>()`.
+
+**A function value described.** Given a function value instead of a name, such as a parameter or an item of a list of handlers, `json.describe(value)` gives `FnSchema?`: the description of the named function the value is, or `none` for a lambda (and for a generic function, which has no one description). A framework that is handed its routes as values can describe each one.
+
+```kavach
+/// Lists the orders.
+fn list_orders() -> [Order] { … }
+
+fn summary(handler: fn() -> [Order]) -> String {
+    if let d = json.describe(handler) {
+        return d.doc
+    }
+    "no description"
+}
+
+print(summary(list_orders))         // Lists the orders.
+print(summary(() => []))            // no description
+```
 
 **Safe by default.** Text from outside can be hostile, so parsing and decoding have limits, which a call can raise: nesting deeper than `max_depth: 128` (at most 10_000, whatever the call says), text longer than `max_bytes: 64_000_000`, or an object with more than `max_fields: 100_000` fields is an error, not a stack overflow or a memory blow-up. A key that appears twice in one object is an error. Reading a number never rounds it silently: a number a field can't hold is an error, and a method gives `none`. A number whose exponent puts it beyond 10^10_000, or below 10^-10_000, is out of range for `decimal()` and `bigint()` too, so a short text like `1e999999999` can't make a huge value. Invalid escapes, control characters in text and unpaired surrogates are errors too. `NaN`, `Infinity`, hex numbers and the rest of JSON5 are syntax errors, even with `comments: true`.
 

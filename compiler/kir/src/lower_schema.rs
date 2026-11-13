@@ -57,6 +57,14 @@ impl<'a> Lowerer<'a> {
             return None;
         }
         let line = self.line(e.span);
+        let named = args.first().is_some_and(|a| {
+            matches!(&a.value.kind, ast::ExprKind::Name(id)
+                if self.c.resolution.def_at(id.span.start)
+                    .is_some_and(|d| d.kind == kavach_resolver::DefKind::Fn))
+        });
+        if let (false, Some(a)) = (named, args.first()) {
+            return Some(self.describe_value(&a.value, ty, e.span));
+        }
         let tree = args
             .first()
             .and_then(|a| kavach_driver::describe_fn(self.c, &a.value));
@@ -85,6 +93,132 @@ impl<'a> Lowerer<'a> {
                 line,
             })
         })())
+    }
+
+    /// `json.describe(f)` on a function value (spec 2.12): its slot 0, the
+    /// address of the function it calls, is compared with each named
+    /// function of its type that the program uses as a value; a match
+    /// gives that function's description, anything else `none`.
+    fn describe_value(
+        &mut self,
+        arg: &'a ast::Expr,
+        ty: Type,
+        span: ast::Span,
+    ) -> Lowered<ir::Expr> {
+        let line = self.line(span);
+        let fn_ty = self
+            .c
+            .expr_types
+            .get(&(arg.span.start, arg.span.end))
+            .cloned();
+        let Some(Ty::Fn(params, ret, _)) = fn_ty else {
+            return Err(self.unsupported("describing this function", span));
+        };
+        let value = self.expr(arg)?;
+        let local = self.new_local(value.ty);
+        let res = &self.c.resolution;
+        let reader = self.c.file.items.iter().find_map(|item| match &item.kind {
+            ast::ItemKind::Fn(f) if f.name.name == "described" => {
+                let m = res.module_at(item.span.start);
+                (res.modules[m].name == "std.json").then_some(f)
+            }
+            _ => None,
+        });
+        let reader = reader
+            .and_then(|f| self.decl.get(&f.name.span.start))
+            .and_then(|d| self.fn_ids.get(d))
+            .copied();
+        let (Some(reader), Some(json_def)) = (reader, res.std_type("Json")) else {
+            return Err(self.unsupported("describing this function", span));
+        };
+        let json = self.kir_type(&Ty::Adt(json_def, Vec::new()), span)?;
+        // The named functions of this type used as values: their name is
+        // not followed by `(`.
+        let mut found: Vec<(kavach_resolver::DefId, usize)> = Vec::new();
+        for (&at, &def) in &res.uses {
+            let d = &res.defs[def];
+            let called = self.c.src[at as usize + d.name.len()..]
+                .trim_start()
+                .starts_with('(');
+            if d.kind != kavach_resolver::DefKind::Fn || called || found.iter().any(|f| f.0 == def)
+            {
+                continue;
+            }
+            let same = d
+                .span
+                .and_then(|s| self.c.expr_types.get(&(s.start, s.end)))
+                .is_some_and(|t| matches!(t, Ty::Fn(p, r, _) if *p == params && *r == ret));
+            if same {
+                found.push((def, at as usize));
+            }
+        }
+        found.sort_by_key(|f| f.1);
+        let mut answer = ir::Expr {
+            kind: K::None,
+            ty,
+            line,
+        };
+        for (def, _) in found.into_iter().rev() {
+            let (Some(tree), Some(&fid)) = (
+                kavach_driver::describe_def(self.c, def),
+                self.fn_ids.get(&def),
+            ) else {
+                continue;
+            };
+            // The address of the small function a value of `def` calls.
+            self.function_value(fid, value.ty, span)?;
+            let Some(&wrapper) = self.wrappers.get(&fid) else {
+                continue;
+            };
+            let address = |kind| ir::Expr {
+                kind,
+                ty: Type::I64,
+                line,
+            };
+            let slot = address(K::GetField(Box::new(self.local_expr(local, line)), 0));
+            let target = address(K::Closure {
+                func: wrapper,
+                env: Type::Unit,
+                captures: Vec::new(),
+            });
+            let cond = ir::Expr {
+                kind: K::Binary(ir::BinOp::Eq, Box::new(slot), Box::new(target)),
+                ty: Type::Bool,
+                line,
+            };
+            let description = self.tree_value(&tree, json, line);
+            let schema = ir::Expr {
+                kind: K::Call(reader, vec![description]),
+                ty,
+                line,
+            };
+            let yes = ir::Block {
+                stmts: Vec::new(),
+                value: Some(Box::new(ir::Expr {
+                    kind: K::Some(Box::new(schema)),
+                    ty,
+                    line,
+                })),
+            };
+            let no = ir::Block {
+                stmts: Vec::new(),
+                value: Some(Box::new(answer)),
+            };
+            answer = ir::Expr {
+                kind: K::If(Box::new(cond), yes, no),
+                ty,
+                line,
+            };
+        }
+        let block = ir::Block {
+            stmts: vec![ir::Stmt::Let(local, value)],
+            value: Some(Box::new(answer)),
+        };
+        Ok(ir::Expr {
+            kind: K::Block(block),
+            ty,
+            line,
+        })
     }
 
     fn schema_of(

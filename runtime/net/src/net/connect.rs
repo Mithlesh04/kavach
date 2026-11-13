@@ -63,7 +63,7 @@ fn connect_with(address: &str, tls: Option<(Vec<String>, ClientTls)>) -> Connect
 }
 
 /// Runs `work` on a helper thread, which wakes the waiting task when done.
-fn on_helper(
+pub(super) fn on_helper(
     address: &str,
     work: impl FnOnce() -> Result<Socket, NetFail> + Send + 'static,
 ) -> Connecting {

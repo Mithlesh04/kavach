@@ -115,7 +115,22 @@ impl<'a> Interp<'a> {
                     ExprKind::Call { args, .. } => args.first(),
                     _ => None,
                 };
-                let tree = arg.and_then(|a| kavach_driver::describe_fn(self.c, &a.value));
+                let named = arg.is_some_and(|a| {
+                    matches!(&a.value.kind, ExprKind::Name(id)
+                        if self.c.resolution.def_at(id.span.start).is_some_and(|d| d.kind == kavach_resolver::DefKind::Fn))
+                });
+                let tree = match (arg, named) {
+                    (Some(a), true) => kavach_driver::describe_fn(self.c, &a.value),
+                    // A function value: a named function's description,
+                    // `none` for a lambda (spec 2.12).
+                    _ => match args.into_iter().next().map(|(_, v)| v) {
+                        Some(Value::Func(def)) => match kavach_driver::describe_def(self.c, def) {
+                            Some(tree) => Some(tree),
+                            None => return Ok(Value::None),
+                        },
+                        _ => return Ok(Value::None),
+                    },
+                };
                 let reader = self.c.file.items.iter().find_map(|item| match &item.kind {
                     kavach_ast::ItemKind::Fn(f) if f.name.name == "described" => {
                         let m = self.c.resolution.module_at(item.span.start);

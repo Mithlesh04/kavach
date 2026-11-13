@@ -111,6 +111,11 @@ impl<'a> Interp<'a> {
             }
             "address" | "peer" => self.str_value(&conn.address),
             "protocol" | "client_cert" | "peer_certificate" => Value::None,
+            // The case's connection, as if TLS had begun on it.
+            "start_tls" | "accept_tls" => {
+                drop(conn);
+                return Ok(Value::FakeConn(c.clone()));
+            }
             _ => {
                 let at = ("address", self.str_value(&conn.address));
                 let why = ("reason", self.str_value("not in a generated test"));

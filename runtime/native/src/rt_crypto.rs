@@ -33,7 +33,7 @@ fn done(r: Result<i64, CryptoFail>) -> i64 {
 
 /// How many of each function's operands are objects (`Bytes` or text),
 /// by its number.
-const OBJECTS: [usize; 17] = [1, 1, 2, 2, 0, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 2, 2];
+const OBJECTS: [usize; 18] = [1, 1, 2, 2, 0, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 2, 2, 1];
 
 crate::rt_data::entry!(kv_rt_crypto, |op, a, b, c, code, _line| {
     let ty = type_of(code);
@@ -81,6 +81,7 @@ crate::rt_data::entry!(kv_rt_crypto, |op, a, b, c, code, _line| {
         14 => new_bytes(crypto::aes_key(), ty),
         15 => done(crypto::encrypt(&bytes(a), &bytes(b)).map(|v| new_bytes(v, ty))),
         16 => done(crypto::decrypt(&bytes(a), &bytes(b)).map(|v| new_bytes(v, ty))),
+        17 => new_bytes(crypto::sha384(&bytes(a)), ty),
         _ => unreachable!("not a crypto function: {c}"),
     };
     // The operands are owned.

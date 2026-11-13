@@ -412,6 +412,7 @@ impl Checker<'_> {
                     .cloned();
                 match sig {
                     Some(sig) if !sig.has_self || kind == DefKind::Capability => {
+                        self.check_method_access(def, &sig, name);
                         // A capability call needs that method (spec 8.2).
                         if kind == DefKind::Capability {
                             self.note_cap(&format!("{type_name}.{}", name.name), name.span);

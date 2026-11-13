@@ -4,7 +4,7 @@ Hashes, message authentication, password hashing, signatures and encryption, fro
 
 | Function | Gives |
 |---|---|
-| `crypto.sha256(data) -> Bytes`, `crypto.sha512(data) -> Bytes` | The SHA-256 or SHA-512 digest of `data` (`Bytes`) |
+| `crypto.sha256(data) -> Bytes`, `crypto.sha384(data) -> Bytes`, `crypto.sha512(data) -> Bytes` | The SHA-256, SHA-384 or SHA-512 digest of `data` (`Bytes`). SHA-384 is what channel binding (RFC 5929) needs for a certificate signed with it |
 | `crypto.hmac_sha256(key, data) -> Bytes` | HMAC-SHA-256 of `data` with `key` |
 | `crypto.equal(a, b) -> Bool` | Whether two `Bytes` are the same, taking the same time wherever they differ, so a secret can't be guessed byte by byte from timing |
 | `crypto.random_bytes(n) -> Bytes` | `n` random bytes from the system's secure generator |

@@ -39,6 +39,8 @@ fn waits(op: RtOp) -> bool {
             | RtOp::NetReadStream
             | RtOp::NetConnect
             | RtOp::NetConnectTls
+            | RtOp::NetStartTls
+            | RtOp::NetAcceptTls
             | RtOp::NetSend
             | RtOp::NetReceive
             | RtOp::NetAccept

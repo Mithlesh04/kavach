@@ -26,6 +26,12 @@ pub fn sha256(data: &[u8]) -> Vec<u8> {
         .to_vec()
 }
 
+pub fn sha384(data: &[u8]) -> Vec<u8> {
+    ring::digest::digest(&ring::digest::SHA384, data)
+        .as_ref()
+        .to_vec()
+}
+
 pub fn sha512(data: &[u8]) -> Vec<u8> {
     ring::digest::digest(&ring::digest::SHA512, data)
         .as_ref()

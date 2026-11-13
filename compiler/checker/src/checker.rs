@@ -96,6 +96,8 @@ pub(crate) struct Checker<'a> {
     pub(crate) aliases: HashMap<DefId, Ty>,
     /// Methods of records, unions, interfaces, capabilities and agents.
     pub(crate) methods: HashMap<DefId, HashMap<String, FnSig>>,
+    /// Methods of records, unions and `extend`s not marked `pub` (10.1).
+    pub(crate) private_methods: HashSet<DefId>,
     /// Methods added to built-in types with `extend` (spec 2.5), by type name.
     pub(crate) ext_methods: HashMap<String, HashMap<String, FnSig>>,
     pub(crate) implements: HashMap<DefId, HashSet<DefId>>,
@@ -221,6 +223,7 @@ impl<'a> Checker<'a> {
             types: HashMap::new(),
             aliases: HashMap::new(),
             methods: HashMap::new(),
+            private_methods: HashSet::new(),
             ext_methods: HashMap::new(),
             implements: HashMap::new(),
             drop_types: HashSet::new(),

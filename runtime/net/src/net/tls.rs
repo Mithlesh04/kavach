@@ -196,6 +196,13 @@ pub(super) fn handshake(
     Ok(Stream::Client(finish(StreamOwned::new(conn, sock))?))
 }
 
+/// The server's side of a TLS connection over `sock`, which already spoke
+/// plain TCP (`conn.accept_tls`), its handshake done.
+pub(super) fn server_handshake(sock: TcpStream, config: ServerTls) -> Result<Stream, NetFail> {
+    let conn = rustls::ServerConnection::new(config).map_err(|e| NetFail::Failed(e.to_string()))?;
+    Ok(Stream::Server(finish(StreamOwned::new(conn, sock))?))
+}
+
 /// The server side of a connection a TLS listener accepted, in its
 /// handshake, which goes on without blocking (`step`): a slow client
 /// holds up no one.

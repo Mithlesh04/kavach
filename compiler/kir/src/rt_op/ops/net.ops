@@ -49,3 +49,9 @@ CryptoRsaVerify,
 NetClientCert,
 /// `conn.peer_certificate()`: the other side's TLS certificate, a `Bytes?`.
 NetPeerCertificate,
+/// `conn.start_tls(host, …)`: TLS begun as a client on a plain connection;
+/// the protocols, then the host, roots, cert and key in a list.
+NetStartTls,
+/// `conn.accept_tls(cert, key, …)`: TLS begun as a server; the protocols,
+/// then the cert, key and clients in a list.
+NetAcceptTls,

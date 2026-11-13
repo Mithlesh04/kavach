@@ -48,7 +48,19 @@ pub fn describe_fn(c: &Compiled, arg: &kavach_ast::Expr) -> Option<Tree> {
         return None;
     };
     let def = *c.resolution.uses.get(&id.span.start)?;
-    let Some(Ty::Fn(params, ret, _)) = c.expr_types.get(&(arg.span.start, arg.span.end)) else {
+    let ty = c.expr_types.get(&(arg.span.start, arg.span.end))?;
+    describe(c, def, ty)
+}
+
+/// The description of function `def` as a value, for `json.describe` on
+/// a function value (spec 2.12): `None` for a generic function.
+pub fn describe_def(c: &Compiled, def: kavach_resolver::DefId) -> Option<Tree> {
+    let span = c.resolution.defs[def].span?;
+    describe(c, def, c.expr_types.get(&(span.start, span.end))?)
+}
+
+fn describe(c: &Compiled, def: kavach_resolver::DefId, ty: &Ty) -> Option<Tree> {
+    let Ty::Fn(params, ret, _) = ty else {
         return None;
     };
     let span = c.resolution.defs[def].span?;

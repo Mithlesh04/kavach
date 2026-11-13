@@ -13,7 +13,7 @@ pub interface Sample {
 /// the real world's: real random numbers need the `Random` capability.
 pub type Gen {
     /// A whole number from `from` to `to`, both included.
-    fn int(self, from: Int, to: Int) -> Int
+    pub fn int(self, from: Int, to: Int) -> Int
         require from <= to
         require from >= 0 or to <= 9_223_372_036_854_775_807 + from
         ensure result >= from and result <= to
@@ -23,12 +23,12 @@ pub type Gen {
     }
 
     /// `true` or `false`.
-    fn bool(self) -> Bool {
+    pub fn bool(self) -> Bool {
         test_random(1) == 1
     }
 
     /// One of `items`.
-    fn pick<T>(self, items: [T]) -> T
+    pub fn pick<T>(self, items: [T]) -> T
         require not items.is_empty()
         example Gen().pick([7]) == 7
     {
@@ -36,7 +36,7 @@ pub type Gen {
     }
 
     /// A word of 1 to 8 lowercase letters.
-    fn word(self) -> String
+    pub fn word(self) -> String
         ensure result.len() >= 1 and result.len() <= 8
     {
         const letters = "abcdefghijklmnopqrstuvwxyz".chars()

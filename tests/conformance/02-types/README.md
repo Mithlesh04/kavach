@@ -113,3 +113,4 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.15 | [generic-types-as-interface-values.kav](generic-types-as-interface-values.kav) | A value of a generic type fits an interface it implements, whatever its type arguments. | runs |
 | 2.15 | [built-in-types-as-interface-values.kav](built-in-types-as-interface-values.kav) | A built-in type that implements an interface fits an interface value, a number literal too. | runs |
 | 2.12 | [json-describe-describes-a-function.kav](json-describe-describes-a-function.kav) | `json.describe(f)` gives a function's name, doc comment, parameters, result and error schemas, capabilities and examples. | runs |
+| 2.12 | [json-describe-takes-function-values.kav](json-describe-takes-function-values.kav) | `json.describe(value)` on a function value gives `FnSchema?`: a named function's description, `none` for a lambda. | runs |

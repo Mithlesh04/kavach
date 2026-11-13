@@ -6,6 +6,7 @@ Conformance tests for spec chapter [10. Modules and packages](../../../docs/spec
 |---|---|---|---|
 | 10.2 | [modules-share-pub-names/](modules-share-pub-names/src/main.kav) | `use` brings in another module; its `pub` names are used through it, or directly. | runs |
 | 10.1 | [private-names-stay-private/](private-names-stay-private/src/main.kav) | A name without `pub` can't be used from another module. | compile error |
+| 10.1 | [private-methods-stay-in-their-package/](private-methods-stay-in-their-package/src/main.kav) | A method without `pub` can be called anywhere in its own package, but not from another. | compile error |
 | 10.1 | [private-fields-stay-private/](private-fields-stay-private/src/main.kav) | A record field without `pub` can't be used from another module. | compile error |
 | 10.1 | [records-with-private-fields-stay-in-their-module/](records-with-private-fields-stay-in-their-module/src/main.kav) | A record with a private field can be created only in its own module. | compile error |
 | 10.1, 2.5 | [an-extend-in-the-package-sees-private-fields/](an-extend-in-the-package-sees-private-fields/src/main.kav) | An `extend` of a type in another file of the type's own package may read, change and build its private fields. | runs |

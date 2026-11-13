@@ -1,0 +1,34 @@
+// Rule: `json.describe(value)` on a function value gives `FnSchema?`: the description of the named function it is, or `none` for a lambda.
+// Spec: 2.12
+// expect output: twice: Doubles a number.
+// expect output: next: Adds one.
+// expect output: a lambda
+// expect output: n
+
+use std.json
+
+/// Doubles a number.
+fn twice(n: Int) -> Int {
+    n * 2
+}
+
+/// Adds one.
+fn next(n: Int) -> Int {
+    n + 1
+}
+
+fn name_of(f: fn(Int) -> Int) -> String {
+    if let d = json.describe(f) {
+        return "{d.name}: {d.doc}"
+    }
+    "a lambda"
+}
+
+fn main() {
+    const handlers = [twice, next, n => n - 1]
+    for h in handlers {
+        print(name_of(h))
+    }
+    const d = json.describe(next)
+    print(d.params[0].name)
+}

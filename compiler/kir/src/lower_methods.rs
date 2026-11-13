@@ -42,6 +42,15 @@ impl<'a> Lowerer<'a> {
         if let Some(access) = self.ptr_method(base, &name.name, args, line, span) {
             return access;
         }
+        // TLS begun on a plain connection (spec 14.10).
+        if matches!(name.name.as_str(), "start_tls" | "accept_tls")
+            && matches!(
+                self.c.expr_types.get(&(base.span.start, base.span.end)),
+                Some(kavach_checker::Ty::Builtin("Connection", _))
+            )
+        {
+            return self.start_tls_call(base, &name.name, args, ty, line);
+        }
         // `Rect.square(3)` and `Shape.Circle(radius: 1)`: through a type name.
         if let ExprKind::Name(id) = &base.kind
             && let Some(&def) = self.c.resolution.uses.get(&id.span.start)

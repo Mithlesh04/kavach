@@ -165,9 +165,19 @@ impl Checker<'_> {
             _ => None,
         };
         let Some((def, at)) = named else {
+            // A function value: described when it is a named function
+            // (decision D1 in spec 2.12), `none` for a lambda.
+            if let [a] = args
+                && a.name.is_none()
+            {
+                let t = self.value(&a.value, None);
+                if matches!(self.inf.resolve(&t), Ty::Fn(..)) {
+                    return Ty::Optional(Box::new(fn_schema));
+                }
+            }
             self.error(
                 span,
-                "`json.describe` takes the name of a function: `json.describe(create)` (spec 2.12)",
+                "`json.describe` takes a function: `json.describe(create)` (spec 2.12)",
             );
             return fn_schema;
         };
@@ -190,14 +200,20 @@ impl Checker<'_> {
                 self.error(at, format!("`{shown}` has no JSON Schema, so this function can't be described (spec 2.12)"));
             }
         }
-        let ret = match sig.errors {
-            Some(e) => Ty::Result(Box::new(sig.ret), Box::new(e)),
-            None => sig.ret,
-        };
-        let params = sig.params.into_iter().map(|p| p.ty).collect();
-        self.expr_types
-            .push((at, Ty::Fn(params, Box::new(ret), None)));
+        let t = self.fn_value_ty(&sig);
+        self.expr_types.push((at, t));
         fn_schema
+    }
+
+    /// A function's type as a value: its parameters, and its result with
+    /// its error.
+    pub(crate) fn fn_value_ty(&self, sig: &crate::checker::FnSig) -> Ty {
+        let ret = match &sig.errors {
+            Some(e) => Ty::Result(Box::new(sig.ret.clone()), Box::new(e.clone())),
+            None => sig.ret.clone(),
+        };
+        let params = sig.params.iter().map(|p| p.ty.clone()).collect();
+        Ty::Fn(params, Box::new(ret), None)
     }
 }
 

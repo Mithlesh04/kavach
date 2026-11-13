@@ -14,6 +14,8 @@ TCP connections and UDP datagrams, behind the `Net` capability (8.1). Addresses 
 | `conn.write(data) ! NetError` | Sends all of `data` (`Bytes`) |
 | `conn.protocol() -> String?` | The protocol the two sides agreed on, from those `connect_tls` offered and `listen_tls` takes, or `none` |
 | `conn.peer() -> String` | The other side's address: for a connection a listener accepted, whoever opened it (`203.0.113.7:51234`) |
+| `conn.start_tls(host, protocols: [String] = [], roots: String = "", cert: String = "", key: String = "") -> Connection ! NetError` | TLS begun as a client on a connection that has spoken plain TCP so far, the way PostgreSQL's `SSLRequest` and SMTP's `STARTTLS` do it. The server's certificate is checked against `host`, and the other settings are those of `connect_tls`. It gives the encrypted connection; `conn` itself is closed from then on, so nothing is sent in the clear by mistake |
+| `conn.accept_tls(cert, key, protocols: [String] = [], clients: String = "") -> Connection ! NetError` | The server's side of the same: TLS begun on a connection the server accepted, with the settings of `listen_tls` |
 | `conn.peer_certificate() -> Bytes?` | The other side's TLS certificate as DER: the server's on a client connection, a client's (mutual TLS) on a server one; `none` without TLS. For channel binding, such as SCRAM's `tls-server-end-point`, which hashes it |
 | `conn.client_cert() -> ClientCert?` | With mutual TLS (`clients:` on `listen_tls`), the names on the certificate the client showed: `ClientCert(common_name:, dns:, uris:)`, from its subject and its subject-alternative names (a SPIFFE id such as `spiffe://shop/orders` is a URI); `none` otherwise ([decision 0099](../../decisions/0099-client-certificate-names.md)) |
 | `conn.close()` | Closes the connection (or stops listening) |
@@ -26,7 +28,7 @@ Waiting is waiting in the sense of 9.7: while a task waits for the network, othe
 
 A TLS listener's `accept` also runs the handshake, within the same deadline: a client that doesn't finish it is dropped, and `accept` waits for the next one. Handshakes go on side by side, so a slow or silent client holds up neither the other clients nor the program's other tasks.
 
-`.timeout(d)` (9.6) sets a wait's deadline to `d` instead: on `accept`, `read`, `write`, `send`, `receive`, `read_stream`, `write_stream`, `net.connect` and `net.connect_tls`. When `d` passes, the call fails with `TimedOut`; a `write` may have sent part of its data by then.
+`.timeout(d)` (9.6) sets a wait's deadline to `d` instead: on `accept`, `read`, `write`, `send`, `receive`, `read_stream`, `write_stream`, `start_tls`, `accept_tls`, `net.connect` and `net.connect_tls`. When `d` passes, the call fails with `TimedOut`; a `write` may have sent part of its data by then.
 
 ```kavach
 const data = try conn.read().timeout(5.seconds)

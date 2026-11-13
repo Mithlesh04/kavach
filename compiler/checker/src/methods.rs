@@ -76,6 +76,9 @@ impl Checker<'_> {
             _ => None,
         };
         if let Some((sig, subst)) = found {
+            if let Ty::Adt(owner, _) = &recv {
+                self.check_method_access(*owner, &sig, name);
+            }
             return self.apply(&sig, subst, generics, args, e.span, &name.name);
         }
         if let Some(m) = self.builtin_method(&recv, &name.name) {

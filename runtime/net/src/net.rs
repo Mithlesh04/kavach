@@ -14,9 +14,11 @@ mod connect;
 pub mod poller;
 mod quic;
 mod tls;
+mod upgrade;
 
 pub use connect::{Connecting, connect, connect_quic, connect_tls};
 pub use tls::ClientTls;
+pub use upgrade::{accept_tls, start_tls};
 
 use std::io::{ErrorKind, Read, Write};
 use std::net::{ToSocketAddrs, UdpSocket};

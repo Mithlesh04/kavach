@@ -61,10 +61,14 @@ impl<'a> Interp<'a> {
             }
             let target = me.eval(base)?;
             if let Value::Socket(s) = &target {
-                let mut values = Vec::new();
+                let mut args = Vec::new();
                 for a in inner {
-                    values.push(me.eval(&a.value)?);
+                    args.push((a.name.as_ref().map(|n| n.name.as_str()), me.eval(&a.value)?));
                 }
+                let values = match name.name.as_str() {
+                    "start_tls" | "accept_tls" => me.tls_args(&name.name, args),
+                    _ => args.into_iter().map(|(_, v)| v).collect(),
+                };
                 return me.socket_method(s, &name.name, &values, Some(d), span);
             }
             if let Value::FakeConn(c) = &target {

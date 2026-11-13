@@ -19,6 +19,7 @@ impl<'a> Interp<'a> {
         let b = |v: Vec<u8>| Value::Bytes(v.as_slice().into());
         let done: Result<Value<'a>, CryptoFail> = match name {
             "sha256" => Ok(b(crypto::sha256(&bytes(0)))),
+            "sha384" => Ok(b(crypto::sha384(&bytes(0)))),
             "sha512" => Ok(b(crypto::sha512(&bytes(0)))),
             "hmac_sha256" => Ok(b(crypto::hmac_sha256(&bytes(0), &bytes(1)))),
             "equal" => Ok(Value::Bool(crypto::equal(&bytes(0), &bytes(1)))),

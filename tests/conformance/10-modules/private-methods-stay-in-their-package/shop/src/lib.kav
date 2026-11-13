@@ -1,0 +1,19 @@
+use billing
+
+pub type Order {
+    pub total: Int
+
+    /// Callable from anywhere.
+    pub fn with_tax(self) -> Int {
+        billing.with_tax(self)
+    }
+
+    /// Only for this package.
+    fn tax(self) -> Int {
+        self.total / 10
+    }
+
+    fn blank() -> Order {
+        Order(total: 0)
+    }
+}

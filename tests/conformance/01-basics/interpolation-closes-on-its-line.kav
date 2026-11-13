@@ -3,6 +3,6 @@
 // expect compile error
 
 fn main() {
-    const brace = "{"        // error: this { is never closed
+    const brace = "{"        // error: this brace is never closed
     print(brace)
 }

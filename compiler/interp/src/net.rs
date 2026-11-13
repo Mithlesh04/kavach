@@ -224,6 +224,27 @@ impl<'a> Interp<'a> {
                 self.net_wait(deadline, &to, span, &**s, || s.send_to(&data, &to))?;
                 Value::Unit
             }
+            // TLS begun on this plain connection: a new connection, and
+            // this one closed (spec 14.10).
+            "start_tls" | "accept_tls" => {
+                let text = |i: usize| match args.get(i) {
+                    Some(Value::Str(t)) => t.to_string(),
+                    _ => String::new(),
+                };
+                let started = if name == "start_tls" {
+                    let extra = net::ClientTls {
+                        roots: text(2),
+                        cert: text(3),
+                        key: text(4),
+                    };
+                    net::start_tls(s, &text(0), &strings(args.get(1)), &extra)
+                } else {
+                    net::accept_tls(s, &text(0), &text(1), &strings(args.get(2)), &text(3))
+                };
+                let started = started.map_err(|f| self.net_error(f, &address))?;
+                let made = self.net_wait(deadline, &address, span, &started, || started.poll())?;
+                Value::Socket(Arc::new(made))
+            }
             "peer_certificate" => match s.peer_certificate() {
                 Some(der) => Value::Bytes(der.into()),
                 None => Value::None,
@@ -298,10 +319,12 @@ impl<'a> Interp<'a> {
     /// The arguments of `net.connect_tls` or `net.listen_tls` in parameter
     /// order, named ones in their place and missing ones as their default.
     pub(crate) fn tls_args(&self, name: &str, args: crate::calls::Args<'a>) -> Vec<Value<'a>> {
-        let names: &[&str] = if name == "listen_tls" {
-            &["address", "cert", "key", "protocols", "clients"]
-        } else {
-            &["address", "protocols", "roots", "cert", "key"]
+        let names: &[&str] = match name {
+            "listen_tls" => &["address", "cert", "key", "protocols", "clients"],
+            // `conn.start_tls` and `conn.accept_tls` (spec 14.10).
+            "start_tls" => &["host", "protocols", "roots", "cert", "key"],
+            "accept_tls" => &["cert", "key", "protocols", "clients"],
+            _ => &["address", "protocols", "roots", "cert", "key"],
         };
         crate::json::arrange(args, names)
             .into_iter()

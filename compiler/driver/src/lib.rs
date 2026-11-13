@@ -19,7 +19,7 @@ use kavach_ast::{File, Item, Span};
 pub use kavach_checker::{AiModel, Prim, Ty};
 use kavach_resolver::Resolution;
 pub use project::{Source, SourceFile, project_sources};
-pub use schema::{NO_SCHEMA, ask_schema, describe_fn, json_schema};
+pub use schema::{NO_SCHEMA, ask_schema, describe_def, describe_fn, json_schema};
 use std::collections::HashMap;
 use std_modules::{BUILTIN, is_builtin};
 pub use version::{compiler_version, find_marked, marked, program_version};
