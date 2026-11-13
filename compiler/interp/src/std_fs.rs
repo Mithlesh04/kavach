@@ -8,6 +8,18 @@ use kavach_checker::Prim;
 use kavach_runtime_core::file_info;
 use std::rc::Rc;
 
+/// The `std.fs` functions about a file's details, permissions, moves and
+/// links, run by `fs_details_call`.
+pub(crate) const DETAILS: [&str; 7] = [
+    "stat",
+    "set_read_only",
+    "set_permissions",
+    "rename",
+    "copy",
+    "symlink",
+    "remove_all",
+];
+
 impl<'a> Interp<'a> {
     pub(crate) fn fs_details_call(&mut self, name: &str, args: &[Value<'a>]) -> Eval<'a> {
         let text = |i: usize| match args.get(i) {
@@ -36,6 +48,7 @@ impl<'a> Interp<'a> {
             }
             "rename" => file_info::rename(&path, &text(1)),
             "copy" => file_info::copy(&path, &text(1)),
+            "symlink" => file_info::symlink(&path, &text(1)),
             _ => file_info::remove_all(&path),
         };
         done.map_err(|e| self.fs_error(&path, e))?;

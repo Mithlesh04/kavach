@@ -34,6 +34,7 @@ mod gpu_fit;
 mod gpu_walk;
 mod infer;
 mod inout;
+mod instances;
 mod items;
 mod json;
 mod lambdas;

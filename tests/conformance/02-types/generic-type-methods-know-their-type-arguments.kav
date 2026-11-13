@@ -1,5 +1,5 @@
 // Rule: inside a generic type's methods, its type parameter is the type the value was made with, written at the construction or known from the variable's type, so `json.decode<I>` decodes into it.
-// Spec: 2.5
+// Spec: 2.9
 // expect output: written: a
 // expect output: declared: b
 // expect output: in extend: 2

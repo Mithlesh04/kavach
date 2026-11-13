@@ -106,6 +106,37 @@ pub fn copy(from: &str, to: &str) -> io::Result<()> {
     std::fs::copy(from, to).map(|_| ())
 }
 
+/// A symbolic link at `link` to `target`, kept as written. Windows makes
+/// one only in Developer Mode or with administrator rights.
+pub fn symlink(target: &str, link: &str) -> io::Result<()> {
+    #[cfg(unix)]
+    {
+        std::os::unix::fs::symlink(target, link)
+    }
+    #[cfg(windows)]
+    {
+        // A relative target is relative to the link's folder.
+        let folder = std::path::Path::new(link)
+            .parent()
+            .unwrap_or(std::path::Path::new(""));
+        let made = if folder.join(target).is_dir() {
+            std::os::windows::fs::symlink_dir(target, link)
+        } else {
+            std::os::windows::fs::symlink_file(target, link)
+        };
+        // Without the rights to (error 1314), it is a refusal: `Denied`.
+        made.map_err(|e| match e.raw_os_error() {
+            Some(1314) => io::Error::new(io::ErrorKind::PermissionDenied, e),
+            _ => e,
+        })
+    }
+    #[cfg(not(any(unix, windows)))]
+    {
+        let _ = (target, link);
+        Err(io::Error::other("links are not made on this system"))
+    }
+}
+
 /// Deletes a folder and everything in it, or a file or link.
 pub fn remove_all(path: &str) -> io::Result<()> {
     if std::fs::symlink_metadata(path)?.is_dir() {
@@ -153,6 +184,20 @@ mod tests {
         let moved = dir.join("c.txt").to_string_lossy().to_string();
         rename(&file, &moved).unwrap();
         assert!(stat(&file).is_err());
+        // A link to `c.txt`, read through and described itself. Windows
+        // makes one only with the rights to: without them, `Denied`.
+        let link = dir.join("link.txt").to_string_lossy().to_string();
+        match symlink("c.txt", &link) {
+            Ok(()) => {
+                assert_eq!(std::fs::read_to_string(&link).unwrap(), "hello");
+                assert_eq!(stat(&link).unwrap()[0], 2);
+            }
+            // Only Windows may refuse, for lack of the rights to.
+            Err(e) if cfg!(windows) => {
+                assert_eq!(e.kind(), io::ErrorKind::PermissionDenied, "{e}");
+            }
+            Err(e) => panic!("{e}"),
+        }
         remove_all(&dir.to_string_lossy()).unwrap();
         assert!(!dir.exists());
     }

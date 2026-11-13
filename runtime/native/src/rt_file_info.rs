@@ -14,7 +14,10 @@ crate::rt_data::entry!(kv_rt_file_info, |op, a, b, _c, code, _line| {
     crate::rt_tasks::turn();
     let path = str_of(a);
     release(a);
-    let two_paths = matches!(op, RtOp::FileInfoRename | RtOp::FileInfoCopy);
+    let two_paths = matches!(
+        op,
+        RtOp::FileInfoRename | RtOp::FileInfoCopy | RtOp::FileInfoSymlink
+    );
     let to = if two_paths {
         let to = str_of(b);
         release(b);
@@ -40,6 +43,7 @@ crate::rt_data::entry!(kv_rt_file_info, |op, a, b, _c, code, _line| {
         RtOp::FileInfoSetPermissions => file_info::set_permissions(&path, b),
         RtOp::FileInfoRename => file_info::rename(&path, &to),
         RtOp::FileInfoCopy => file_info::copy(&path, &to),
+        RtOp::FileInfoSymlink => file_info::symlink(&path, &to),
         _ => file_info::remove_all(&path),
     };
     match done {

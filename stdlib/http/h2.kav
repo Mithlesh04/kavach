@@ -8,7 +8,7 @@
 use std.net
 use std.http.hpack
 use std.http.h2.wire
-use std.http.h2.wire.{Credit}
+pub use std.http.h2.client.{H2Client, connect}
 
 /// What `next` found: the link, and a request unless the client is done.
 pub type Next {
@@ -19,7 +19,7 @@ pub type Next {
 /// Sends one request on stream 1 of a new connection and reads the
 /// response. `headers` has `:method`, `:scheme`, `:authority`, `:path`.
 pub fn request(conn: Connection, headers: [Header], body: Bytes) -> H2Message ! H2Error uses Net {
-    try hello(conn)
+    try wire.client_hello(conn)
     let l = try wire.send(wire.start(conn, Bytes([])), 1, headers, body, [])
     while l.done.is_empty() {
         if let code = l.resets.get(1) {
@@ -36,7 +36,7 @@ pub fn request(conn: Connection, headers: [Header], body: Bytes) -> H2Message ! 
 /// Opens a request without waiting for the answer: `pull` then reads
 /// it as it arrives (spec 14.14 streams on this).
 pub fn open(conn: Connection, headers: [Header], body: Bytes) -> Link ! H2Error uses Net {
-    try hello(conn)
+    try wire.client_hello(conn)
     try wire.send(wire.start(conn, Bytes([])), 1, headers, body, [])
 }
 
@@ -44,7 +44,7 @@ pub fn open(conn: Connection, headers: [Header], body: Bytes) -> Link ! H2Error 
 /// stream open: `send_data` sends its body piece by piece, and `pull`
 /// reads the answer as it arrives, so both can go on at once.
 pub fn begin(conn: Connection, headers: [Header]) -> Link ! H2Error uses Net {
-    try hello(conn)
+    try wire.client_hello(conn)
     try wire.block(wire.start(conn, Bytes([])), 1, headers, false)
 }
 
@@ -62,12 +62,6 @@ pub fn send_headers(link: Link, stream: Int, headers: [Header]) -> Link ! H2Erro
 /// Sends header fields after the body (trailers), ending the stream.
 pub fn send_trailers(link: Link, stream: Int, trailers: [Header]) -> Link ! H2Error uses Net {
     try wire.block(link, stream, trailers, true)
-}
-
-/// The client's side of a connection: its settings, and room to send.
-fn hello(conn: Connection) ! H2Error uses Net {
-    const settings = wire.frame(4, 0, 0, wire.setting(2, 0) + wire.setting(4, wire.big_window()))
-    try wire.write(conn, wire.preface() + settings + wire.frame(8, 0, 0, wire.four(wire.big_window() - 65_535)))
 }
 
 /// What `pull` found: body bytes that arrived (maybe none yet), and the
@@ -210,219 +204,4 @@ pub fn respond_with_trailers(
     trailers: [Header],
 ) -> Link ! H2Error uses Net {
     try wire.send(link, stream, headers, body, trailers)
-}
-
-/// An HTTP/2 connection that takes many requests (`h2.connect`), so a
-/// service pays for connecting once, not per call. Requests from several
-/// tasks are open at once, each on a stream of its own (spec 14.11):
-/// sending takes turns, and a task waiting for its answer reads the
-/// connection, keeping what comes for the others until they look.
-pub type H2Client {
-    /// The turn to send, with what sending needs.
-    send_turn: Receiver<Sending>
-    send_back: Sender<Sending>
-    /// The turn to read, with the connection's reading side.
-    read_turn: Receiver<Link>
-    read_back: Sender<Link>
-    /// What the server lets this side send, as the reader last saw it,
-    /// and a signal the reader gives after each frame, for a sender
-    /// waiting for credit while another task reads.
-    credit: Shared<Credit>
-    credit_signal: Receiver<Bool>
-    signal_credit: Sender<Bool>
-    reading: Shared<Bool>
-    leaving: Shared<Bool>
-}
-
-/// The sending side: the next stream's number, and how much was sent on
-/// the connection and on each stream, to set against the server's credit.
-type Sending {
-    conn: Connection
-    next: Int
-    sent: Int
-    sent_on: [Int: Int]
-}
-
-/// Starts an HTTP/2 connection on `conn` for many requests.
-pub fn connect(conn: Connection) -> H2Client ! H2Error uses Net {
-    try hello(conn)
-    const link = wire.start(conn, Bytes([]))
-    const (send_back, send_turn) = Channel<Sending>(capacity: 1)
-    send_back.put(Sending(conn: conn, next: 1, sent: 0, sent_on: [:]))
-    const (read_back, read_turn) = Channel<Link>(capacity: 1)
-    read_back.put(link)
-    const (signal_credit, credit_signal) = Channel<Bool>(capacity: 1)
-    H2Client(
-        send_turn: send_turn,
-        send_back: send_back,
-        read_turn: read_turn,
-        read_back: read_back,
-        credit: Shared(wire.credit_of(link)),
-        credit_signal: credit_signal,
-        signal_credit: signal_credit,
-        reading: Shared(false),
-        leaving: Shared(false),
-    )
-}
-
-fn closed() -> H2Error {
-    H2Error.Protocol(reason: "the client was closed")
-}
-
-extend H2Client {
-    /// Sends one request and reads its response. `headers` has
-    /// `:method`, `:scheme`, `:authority`, `:path`.
-    pub fn request(self, headers: [Header], body: Bytes) -> H2Message ! H2Error uses Net {
-        const stream = try self.send_request(headers, body)
-        try self.answer(stream)
-    }
-
-    /// Whether the server said it is going away (GOAWAY), or the
-    /// connection broke: a pool then replaces it with a new one.
-    pub fn going_away(self) -> Bool {
-        self.leaving.get()
-    }
-
-    /// Closes the connection, once the request being sent is sent. A
-    /// request after it fails, and so does one still waiting.
-    pub fn close(self) uses Net {
-        match self.send_turn.take() {
-            Taken.Item(s) => s.conn.close(),
-            Taken.Closed => {}
-        }
-        self.send_back.close()
-    }
-
-    /// Sends a request on the next stream, in its turn; gives the stream.
-    fn send_request(self, headers: [Header], body: Bytes) -> Int ! H2Error uses Net {
-        let s = match self.send_turn.take() {
-            Taken.Item(value) => value,
-            Taken.Closed => fail closed(),
-        }
-        if self.leaving.get() or s.next > 2_147_483_647 {
-            self.send_back.put(s)
-            fail H2Error.Protocol(reason: "the server is going away: connect again")
-        }
-        const stream = s.next
-        s.next = stream + 2
-        const sent = self.write_request(s, stream, headers, body) catch e => {
-            self.broken_by(e)
-            self.send_back.put(s)
-            fail e
-        }
-        self.send_back.put(sent)
-        stream
-    }
-
-    /// Writes a request's header block, as one write so nothing comes
-    /// between its frames, then its body as the server's credit allows.
-    fn write_request(self, sending: Sending, stream: Int, headers: [Header], body: Bytes) -> Sending ! H2Error uses Net {
-        let s = sending
-        const most = self.credit.get().max_frame
-        try wire.write(s.conn, wire.block_frames(stream, headers, body.is_empty(), most))
-        let done = 0
-        while done < body.len() {
-            const c = self.credit.get()
-            const own = (c.windows.get(stream) ?? c.initial) - (s.sent_on.get(stream) ?? 0)
-            const room = (c.window - s.sent).min(own).min(c.max_frame)
-            if let code = c.resets.get(stream) {
-                fail H2Error.Reset(stream: stream, code: code)
-            }
-            if self.leaving.get() {
-                fail H2Error.Protocol(reason: "the connection broke")
-            }
-            if room <= 0 {
-                // No room: wait for the task that reads to see more, or
-                // read for it when no task is reading.
-                if self.reading.get() {
-                    const _ = self.credit_signal.take()
-                } else {
-                    try self.read_once(stream)
-                }
-                continue
-            }
-            const size = room.min(body.len() - done)
-            const end = if done + size == body.len() { 1 } else { 0 }
-            try wire.write(s.conn, wire.frame(0, end, stream, body.slice(done, done + size)))
-            done += size
-            s.sent += size
-            s.sent_on[stream] = (s.sent_on.get(stream) ?? 0) + size
-        }
-        s
-    }
-
-    /// The answer on `stream`: found among what was read, or read for.
-    fn answer(self, stream: Int) -> H2Message ! H2Error uses Net {
-        while true {
-            let l = match self.read_turn.take() {
-                Taken.Item(value) => value,
-                Taken.Closed => fail closed(),
-            }
-            if let m = l.done.find(m => m.stream == stream) {
-                l.done = l.done.filter(m => m.stream != stream)
-                self.read_back.put(l)
-                return m
-            }
-            if let code = l.resets.get(stream) {
-                l.resets.remove(stream)
-                self.read_back.put(l)
-                fail H2Error.Reset(stream: stream, code: code)
-            }
-            if l.leaving and l.partial.get(stream) == none {
-                self.read_back.put(l)
-                fail H2Error.Protocol(reason: "the server went away")
-            }
-            self.read_back.put(l)
-            try self.read_once(0)
-        }
-        fail closed()
-    }
-
-    /// Reads one frame in the reading turn and shares what it changed;
-    /// fails when `stream` (not 0) was reset.
-    fn read_once(self, stream: Int) ! H2Error uses Net {
-        const l = match self.read_turn.take() {
-            Taken.Item(value) => value,
-            Taken.Closed => fail closed(),
-        }
-        const _ = self.reading.update(_ => true)
-        const read = wire.step(l) catch e => {
-            self.broken_by(e)
-            self.done_reading(l)
-            fail e
-        }
-        let next = read ?? {
-            const _ = self.leaving.update(_ => true)
-            self.done_reading(l)
-            fail H2Error.Protocol(reason: "the connection closed")
-        }
-        const _ = self.credit.update(_ => wire.credit_of(next))
-        const _ = self.leaving.update(was => was or next.leaving)
-        const _ = self.reading.update(_ => false)
-        const _ = self.signal_credit.try_put(true)
-        if let code = next.resets.get(stream) {
-            next.resets.remove(stream)
-            self.read_back.put(next)
-            fail H2Error.Reset(stream: stream, code: code)
-        }
-        self.read_back.put(next)
-    }
-
-    /// Gives the reading turn back with `l` after a failed read, and
-    /// wakes a sender waiting for credit, which then sees the failure.
-    fn done_reading(self, l: Link) {
-        const _ = self.reading.update(_ => false)
-        const _ = self.signal_credit.try_put(true)
-        self.read_back.put(l)
-    }
-
-    /// A broken connection takes no more requests; a stream the server
-    /// reset leaves it usable.
-    fn broken_by(self, e: H2Error) {
-        const broken = match e {
-            H2Error.Reset(_, _) => false,
-            _ => true,
-        }
-        const _ = self.leaving.update(was => was or broken)
-    }
 }

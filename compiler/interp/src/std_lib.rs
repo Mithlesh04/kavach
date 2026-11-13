@@ -121,7 +121,7 @@ impl<'a> Interp<'a> {
         let inside = |p: &str| kavach_runtime_core::fs_scope::inside(&self.fs_scopes, p);
         let outside = match (inside(&path), name) {
             (false, _) => Some(path.clone()),
-            (true, "rename" | "copy") if !inside(&text(1)) => Some(text(1)),
+            (true, "rename" | "copy" | "symlink") if !inside(&text(1)) => Some(text(1)),
             _ => None,
         };
         if module == "fs"
@@ -141,12 +141,7 @@ impl<'a> Interp<'a> {
         if module == "fs" && self.faking("Fs") {
             return self.fake_fs(name, &args);
         }
-        if module == "fs"
-            && matches!(
-                name,
-                "stat" | "set_read_only" | "set_permissions" | "rename" | "copy" | "remove_all"
-            )
-        {
+        if module == "fs" && crate::std_fs::DETAILS.contains(&name) {
             return self.fs_details_call(name, &args);
         }
         Ok(match (module, name) {

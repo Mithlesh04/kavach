@@ -423,3 +423,9 @@ pub fn data(link: Link, stream: Int, body: Bytes, end: Bool) -> Link ! H2Error u
     }
     l
 }
+
+/// The client's side of a connection: its settings, and room to send.
+pub fn client_hello(conn: Connection) ! H2Error uses Net {
+    const settings = frame(4, 0, 0, setting(2, 0) + setting(4, big_window()))
+    try write(conn, preface() + settings + frame(8, 0, 0, four(big_window() - 65_535)))
+}

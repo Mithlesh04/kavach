@@ -48,6 +48,9 @@ fn register(ty: i64, drop: i64) -> i64 {
         crate::heap::release(old);
     }
     crate::rc::set_drop_hook(defer);
+    crate::rc::set_drop_runner(|| {
+        let _ = run();
+    });
     static AT_EXIT: std::sync::Once = std::sync::Once::new();
     AT_EXIT.call_once(|| crate::rt::at_exit(forget_all));
     0

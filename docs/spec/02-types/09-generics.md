@@ -26,3 +26,21 @@ fn show<T: Describe>(item: T) -> String { item.describe() }
 
 show("text")        // compile error: String does not implement Describe
 ```
+
+A generic type's arguments are usually worked out from its fields and from where the value goes. When a field doesn't show them, write them at the construction, or give the variable its type:
+
+```kavach
+type Box<I> {
+    raw: String
+
+    fn get(self) -> I ! JsonError {
+        try json.decode<I>(self.raw)        // `I` is the type the box was made with
+    }
+}
+
+const a = Box<Shout>(raw: text)             // written at the construction
+const b: Box<Shout> = Box(raw: text)        // or from the variable's type
+const c = Box<Shout, Int>(raw: text)        // compile error: `Box` takes 1 type argument, not 2
+```
+
+Inside the type's methods, and in an `extend<I> Box<I>` block (2.5), `I` is the type the value was made with.

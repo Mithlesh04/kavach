@@ -89,6 +89,21 @@ impl Scheduler {
         (t.timed_out && t.generation == super::generation(task)).then_some(t.deadline?.1)
     }
 
+    /// Task `me` has stopped and runs its `drop`s (spec 9.6): no cancel
+    /// or time limit stops them. Whether its time ran out is kept, for
+    /// `.wait()`'s error.
+    pub fn cleaning_up(&self, me: TaskId) {
+        let mut st = self.lock_of(me);
+        if st.task(me).is_some() {
+            let t = &mut st.tasks[me & SLOT_MASK];
+            (t.cancelled, t.stop_now) = (false, false);
+            // The limit's milliseconds stay for the error; its end moves
+            // out of the way.
+            let later = Instant::now() + Duration::from_secs(10 * 365 * 86_400);
+            t.deadline = t.deadline.map(|(_, ms)| (later, ms));
+        }
+    }
+
     /// Cancels `task`, a task that `me` spawned and that ends with it: as
     /// `me` was (spec 9.6), so `task.cancel()` stops its tasks at once too.
     pub fn cancel_with(&self, me: TaskId, task: TaskId) {

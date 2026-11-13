@@ -84,6 +84,7 @@ impl<'a> Lowerer<'a> {
             ("fs", "set_read_only") => RtOp::FileInfoSetReadOnly,
             ("fs", "set_permissions") => RtOp::FileInfoSetPermissions,
             ("fs", "rename") => RtOp::FileInfoRename,
+            ("fs", "symlink") => RtOp::FileInfoSymlink,
             ("fs", "copy") => RtOp::FileInfoCopy,
             ("fs", "remove_all") => RtOp::FileInfoRemoveAll,
             ("time", "now_ms") => RtOp::TimeNowMs,

@@ -159,7 +159,7 @@ fn main() {
             .to_string(),
             vec![
                 "5: expected `Box<String>`, found `Box<Int>`",
-                "6: `Box` takes 1 type arguments, not 2",
+                "6: `Box` takes 1 type argument, not 2",
             ],
         ),
     ];

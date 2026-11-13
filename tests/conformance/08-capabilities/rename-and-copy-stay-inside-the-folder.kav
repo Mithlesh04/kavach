@@ -1,5 +1,6 @@
-// Rule: inside `uses Fs("folder")`, both paths of `fs.rename` and `fs.copy` must be in the folder, or the call fails with `Denied` for the one outside.
+// Rule: inside `uses Fs("folder")`, both paths of `fs.rename`, `fs.copy` and `fs.symlink` must be in the folder, or the call fails with `Denied` for the one outside.
 // Spec: 8.1, 14.3
+// expect output: Denied(path: "kavach-scope-out.txt")
 // expect output: Denied(path: "kavach-scope-out.txt")
 // expect output: Denied(path: "kavach-scope-out.txt")
 // expect output: true
@@ -16,11 +17,18 @@ fn copy_out() -> String uses Fs("./kavach-scope-move") {
     "copied"
 }
 
+/// A link inside the folder to a file outside it would let reads out.
+fn link_out() -> String uses Fs("./kavach-scope-move") {
+    fs.symlink("kavach-scope-out.txt", "kavach-scope-move/link.txt") catch e => return "{e}"
+    "linked"
+}
+
 fn main() ! FsError uses Fs, Console {
     try fs.create_dir("kavach-scope-move")
     try fs.write_text("kavach-scope-move/a.txt", "stay")
     print(move_out())
     print(copy_out())
+    print(link_out())
     print(fs.exists("kavach-scope-move/a.txt"))
     try fs.remove_all("kavach-scope-move")
 }

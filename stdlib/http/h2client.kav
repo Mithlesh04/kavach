@@ -1,0 +1,344 @@
+// An HTTP/2 connection that takes many requests (`h2.connect`, spec
+// 14.11), so a service pays for connecting once, not per call. Requests
+// from several tasks are open at once, each on a stream of its own:
+// sending takes turns, one task at a time reads, and each answer goes to
+// the task that asked as soon as it is whole. `std.http.h2` shows
+// `H2Client` and `connect` as its own.
+
+use std.net
+use std.http.h2.wire
+use std.http.h2.wire.{Credit}
+
+/// A connection for many requests, from `h2.connect`.
+pub type H2Client {
+    /// The turn to send, with what sending needs.
+    send_turn: Receiver<Sending>
+    send_back: Sender<Sending>
+    /// The connection's reading side, taken by the task that reads.
+    read_turn: Receiver<Link>
+    read_back: Sender<Link>
+    /// What the server lets this side send, as the reader last saw it,
+    /// and a signal the reader gives after each frame, for a sender
+    /// waiting for credit while another task reads.
+    credit: Shared<Credit>
+    credit_signal: Receiver<Bool>
+    signal_credit: Sender<Bool>
+    /// Whether a task is reading, and where each answer still awaited
+    /// goes: one task reads at a time and hands each answer to its task
+    /// as soon as it is whole, in whatever order the server sends them.
+    waiting: Shared<Waiting>
+    leaving: Shared<Bool>
+}
+
+/// The sending side: the next stream's number, and how much was sent on
+/// the connection and on each stream, to set against the server's credit.
+type Sending {
+    conn: Connection
+    next: Int
+    sent: Int
+    sent_on: [Int: Int]
+}
+
+/// Whether a task reads now, and the streams whose answers are awaited.
+type Waiting {
+    reading: Bool
+    streams: [Int: Sender<Got>]
+}
+
+/// What a waiting task is told: its answer, that it reads now, or why
+/// its request failed.
+type Got = Answer(message: H2Message) | Read | Failed(error: H2Error)
+
+/// Starts an HTTP/2 connection on `conn` for many requests.
+pub fn connect(conn: Connection) -> H2Client ! H2Error uses Net {
+    try wire.client_hello(conn)
+    const link = wire.start(conn, Bytes([]))
+    const (send_back, send_turn) = Channel<Sending>(capacity: 1)
+    send_back.put(Sending(conn: conn, next: 1, sent: 0, sent_on: [:]))
+    const (read_back, read_turn) = Channel<Link>(capacity: 1)
+    read_back.put(link)
+    const (signal_credit, credit_signal) = Channel<Bool>(capacity: 1)
+    H2Client(
+        send_turn: send_turn,
+        send_back: send_back,
+        read_turn: read_turn,
+        read_back: read_back,
+        credit: Shared(wire.credit_of(link)),
+        credit_signal: credit_signal,
+        signal_credit: signal_credit,
+        waiting: Shared(Waiting(reading: false, streams: [:])),
+        leaving: Shared(false),
+    )
+}
+
+fn closed() -> H2Error {
+    H2Error.Protocol(reason: "the client was closed")
+}
+
+extend H2Client {
+    /// Sends one request and reads its response. `headers` has
+    /// `:method`, `:scheme`, `:authority`, `:path`.
+    pub fn request(self, headers: [Header], body: Bytes) -> H2Message ! H2Error uses Net {
+        const (stream, hear) = try self.send_request(headers, body)
+        try self.answer(stream, hear)
+    }
+
+    /// Whether the server said it is going away (GOAWAY), or the
+    /// connection broke: a pool then replaces it with a new one.
+    pub fn going_away(self) -> Bool {
+        self.leaving.get()
+    }
+
+    /// Closes the connection, once the request being sent is sent. A
+    /// request after it fails, and so does one still waiting.
+    pub fn close(self) uses Net {
+        match self.send_turn.take() {
+            Taken.Item(s) => s.conn.close(),
+            Taken.Closed => {}
+        }
+        self.send_back.close()
+    }
+
+    /// Sends a request on the next stream, in its turn: the stream, and
+    /// where its answer will come. The answer is awaited from before the
+    /// request is sent, so it can't come first.
+    fn send_request(self, headers: [Header], body: Bytes) -> (Int, Receiver<Got>) ! H2Error uses Net {
+        let s = match self.send_turn.take() {
+            Taken.Item(value) => value,
+            Taken.Closed => fail closed(),
+        }
+        if self.leaving.get() or s.next > 2_147_483_647 {
+            self.send_back.put(s)
+            fail H2Error.Protocol(reason: "the server is going away: connect again")
+        }
+        const stream = s.next
+        s.next = stream + 2
+        const (tell, hear) = Channel<Got>(capacity: 2)
+        const _ = self.waiting.update(w => {
+            let n = w
+            n.streams[stream] = tell
+            n
+        })
+        const sent = self.write_request(s, stream, headers, body) catch e => {
+            self.broken_by(e)
+            self.forget(stream)
+            self.send_back.put(s)
+            fail e
+        }
+        self.send_back.put(sent)
+        (stream, hear)
+    }
+
+    /// Writes a request's header block, as one write so nothing comes
+    /// between its frames, then its body as the server's credit allows.
+    fn write_request(self, sending: Sending, stream: Int, headers: [Header], body: Bytes) -> Sending ! H2Error uses Net {
+        let s = sending
+        const most = self.credit.get().max_frame
+        try wire.write(s.conn, wire.block_frames(stream, headers, body.is_empty(), most))
+        let done = 0
+        while done < body.len() {
+            const c = self.credit.get()
+            const own = (c.windows.get(stream) ?? c.initial) - (s.sent_on.get(stream) ?? 0)
+            const room = (c.window - s.sent).min(own).min(c.max_frame)
+            if let code = c.resets.get(stream) {
+                fail H2Error.Reset(stream: stream, code: code)
+            }
+            if self.leaving.get() {
+                fail H2Error.Protocol(reason: "the connection broke")
+            }
+            if room <= 0 {
+                // No room: read for the others when no task reads, else
+                // wait for the reading task to see more.
+                if self.start_reading(0) == Role.Read {
+                    const _ = self.read_and_hand_out(0) catch e => {
+                        self.stop_reading(0)
+                        fail e
+                    }
+                    self.stop_reading(0)
+                } else {
+                    const _ = self.credit_signal.take()
+                }
+                continue
+            }
+            const size = room.min(body.len() - done)
+            const end = if done + size == body.len() { 1 } else { 0 }
+            try wire.write(s.conn, wire.frame(0, end, stream, body.slice(done, done + size)))
+            done += size
+            s.sent += size
+            s.sent_on[stream] = (s.sent_on.get(stream) ?? 0) + size
+        }
+        s
+    }
+
+    /// The answer on `stream`: handed over by the task reading, or read
+    /// in turn when no task is reading.
+    fn answer(self, stream: Int, hear: Receiver<Got>) -> H2Message ! H2Error uses Net {
+        let reads = false
+        while true {
+            if not reads {
+                reads = self.start_reading(stream) == Role.Read
+            }
+            if not reads {
+                const got = match hear.take() {
+                    Taken.Item(value) => value,
+                    Taken.Closed => fail closed(),
+                }
+                match got {
+                    Got.Answer(m) => return m,
+                    Got.Failed(e) => fail e,
+                    Got.Read => {
+                        reads = true
+                    },
+                }
+                continue
+            }
+            const mine = self.read_and_hand_out(stream) catch e => {
+                self.stop_reading(stream)
+                fail e
+            }
+            if let m = mine {
+                self.stop_reading(stream)
+                return m
+            }
+        }
+        fail closed()
+    }
+
+    /// Whether this task reads now: when its answer was handed over
+    /// already, or another task reads, it waits instead.
+    fn start_reading(self, stream: Int) -> Role {
+        self.waiting.update_with(w => {
+            const answered = stream != 0 and not w.streams.contains_key(stream)
+            if answered or w.reading {
+                (w, Role.Wait)
+            } else {
+                let n = w
+                n.reading = true
+                (n, Role.Read)
+            }
+        })
+    }
+
+    /// Stops reading, done with `stream`: another task still waiting
+    /// reads on, or none.
+    fn stop_reading(self, stream: Int) {
+        const next = self.waiting.update_with(w => {
+            let n = w
+            n.streams.remove(stream)
+            const others = n.streams.values()
+            n.reading = not others.is_empty()
+            (n, others.first())
+        })
+        if let tell = next {
+            const _ = tell.try_put(Got.Read)
+        }
+    }
+
+    /// No answer is awaited on `stream` any more.
+    fn forget(self, stream: Int) {
+        const _ = self.waiting.update(w => {
+            let n = w
+            n.streams.remove(stream)
+            n
+        })
+    }
+
+    /// Reads one frame, shares what it changed, and hands each whole
+    /// answer, reset or end to the task awaiting it: `stream`'s own
+    /// answer is given back instead. A broken connection fails every
+    /// request awaited.
+    fn read_and_hand_out(self, stream: Int) -> H2Message? ! H2Error uses Net {
+        const l = match self.read_turn.take() {
+            Taken.Item(value) => value,
+            Taken.Closed => fail closed(),
+        }
+        const read = wire.step(l) catch e => {
+            self.broken_by(e)
+            self.fail_all(e)
+            self.read_back.put(l)
+            const _ = self.signal_credit.try_put(true)
+            fail e
+        }
+        let next = read ?? {
+            const gone = H2Error.Protocol(reason: "the connection closed")
+            const _ = self.leaving.update(_ => true)
+            self.fail_all(gone)
+            self.read_back.put(l)
+            const _ = self.signal_credit.try_put(true)
+            fail gone
+        }
+        const _ = self.credit.update(_ => wire.credit_of(next))
+        const _ = self.leaving.update(was => was or next.leaving)
+        const _ = self.signal_credit.try_put(true)
+        let mine: H2Message? = none
+        let own_reset: Int? = none
+        for m in next.done {
+            if m.stream == stream {
+                mine = m
+            } else {
+                self.tell(m.stream, Got.Answer(message: m))
+            }
+        }
+        next.done = []
+        for (s, code) in next.resets {
+            if s == stream {
+                own_reset = code
+            } else {
+                self.tell(s, Got.Failed(error: H2Error.Reset(stream: s, code: code)))
+            }
+        }
+        next.resets = [:]
+        if next.leaving {
+            // Streams the server never started won't be answered.
+            const gone = H2Error.Protocol(reason: "the server went away")
+            for s in self.waiting.get().streams.keys() {
+                if s != stream and next.partial.get(s) == none {
+                    self.tell(s, Got.Failed(error: gone))
+                }
+            }
+            if mine == none and stream != 0 and next.partial.get(stream) == none {
+                self.read_back.put(next)
+                fail gone
+            }
+        }
+        self.read_back.put(next)
+        if let code = own_reset {
+            fail H2Error.Reset(stream: stream, code: code)
+        }
+        mine
+    }
+
+    /// Hands `got` to the task awaiting `stream`, which then awaits it no
+    /// more; nothing when none does.
+    fn tell(self, stream: Int, got: Got) {
+        const to = self.waiting.update_with(w => {
+            let n = w
+            const t = n.streams.get(stream)
+            n.streams.remove(stream)
+            (n, t)
+        })
+        if let t = to {
+            const _ = t.try_put(got)
+        }
+    }
+
+    /// Fails every request awaited with `e`.
+    fn fail_all(self, e: H2Error) {
+        for s in self.waiting.get().streams.keys() {
+            self.tell(s, Got.Failed(error: e))
+        }
+    }
+
+    /// A broken connection takes no more requests; a stream the server
+    /// reset leaves it usable.
+    fn broken_by(self, e: H2Error) {
+        const broken = match e {
+            H2Error.Reset(_, _) => false,
+            _ => true,
+        }
+        const _ = self.leaving.update(was => was or broken)
+    }
+}
+
+/// Whether a task reads the connection now, or waits.
+type Role = Read | Wait

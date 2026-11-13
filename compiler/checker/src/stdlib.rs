@@ -213,6 +213,10 @@ impl Checker<'_> {
                 vec![p("from", &string), p("to", &string)],
                 fs_fails(Ty::Unit),
             ),
+            ("fs", "symlink") => (
+                vec![p("target", &string), p("link", &string)],
+                fs_fails(Ty::Unit),
+            ),
             ("time", "now_ms" | "monotonic_ms") => (vec![], int.clone()),
             ("time", "sleep_ms" | "freeze") => (vec![p("ms", &int)], Ty::Unit),
             ("agents", "call_key") => (vec![], Ty::Optional(Box::new(string.clone()))),

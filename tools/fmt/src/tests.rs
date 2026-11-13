@@ -24,6 +24,13 @@ const CASES: &[(&str, &str)] = &[
     ),
     // `\r\n` becomes `\n`.
     ("fn a() {\r\nx()\r\n}\r\n", "fn a() {\n    x()\n}\n"),
+    // A line starting with closers lines up with the line that opened
+    // them, also when it opens again (`} else {` in a lambda in a call),
+    // and `], arg)` with its call.
+    (
+        "const n = apply(x => if x > 0 {\nx + 1\n} else {\nx - 1\n})\nconst r = f([\n1,\n], g(2))\n",
+        "const n = apply(x => if x > 0 {\n    x + 1\n} else {\n    x - 1\n})\nconst r = f([\n    1,\n], g(2))\n",
+    ),
     // A line ending in a type's `>` doesn't continue; one ending in `a >` does.
     (
         "type Load {

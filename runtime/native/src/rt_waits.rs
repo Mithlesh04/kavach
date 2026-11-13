@@ -55,6 +55,16 @@ pub(crate) fn wait_outside(
     true
 }
 
+/// A cancel that came while this task didn't wait counts now: its next
+/// `cancelling()` is true (spec 9.6).
+pub(crate) fn note_cancel() {
+    if let Some(s) = SCHED.get()
+        && s.is_cancelled(ME.get())
+    {
+        CANCELLING.set(true);
+    }
+}
+
 /// Whether this task is being cancelled (its last wait ended for that).
 pub(crate) fn cancelling() -> bool {
     CANCELLING.get()

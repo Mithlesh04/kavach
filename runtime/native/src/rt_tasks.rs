@@ -32,7 +32,7 @@ use std::time::Instant;
 
 pub use crate::rt_waits::sleep_until;
 pub(crate) use crate::rt_waits::{
-    cancelling, me, park, refuse_if_held, resumed, unpark, wait_outside,
+    cancelling, me, note_cancel, park, refuse_if_held, resumed, unpark, wait_outside,
 };
 
 /// What a `Task` object holds: the task, and once it has ended, its
@@ -352,8 +352,18 @@ fn run(id: TaskId, closure: i64, task: i64, ahead: bool) {
         // unwinds to here, and `.wait()` gets it as an error.
         let ran = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| thunk(closure)));
         release(closure);
-        if let Err(payload) = ran {
-            crate::rt_task_errors::panicked(task, payload);
+        match ran {
+            // What it held is let go of, and the `drop`s run now, even when
+            // it was cancelled: no cancel check stops them (spec 9.6).
+            Ok(()) => {
+                let was = CANCELLING.replace(false);
+                if was {
+                    s.cleaning_up(id);
+                }
+                crate::rc::run_waiting_drops();
+                CANCELLING.set(was);
+            }
+            Err(payload) => crate::rt_task_errors::panicked(task, payload),
         }
         // The thunk's body joined its own tasks; nothing is left.
         turn();

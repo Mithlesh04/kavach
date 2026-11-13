@@ -23,7 +23,7 @@ fn ask(c: H2Client, path: String) -> String ! H2Error uses Net {
         Header(name: ":scheme", value: "http"),
         Header(name: ":authority", value: "localhost"),
         Header(name: ":path", value: path),
-        ], Bytes([]))
+    ], Bytes([]))
     reply.body.text() ?? "?"
 }
 

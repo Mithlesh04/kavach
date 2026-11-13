@@ -72,6 +72,9 @@ fn wait<T>(
                 }) {
                     net::poller::wait_alone(ready, seen, deadline);
                 }
+                // A cancel counts even when no wait happened: the socket
+                // may be ready again at once, so the loop never waits.
+                crate::rt_tasks::note_cancel();
                 if crate::rt_tasks::cancelling() {
                     return Err(());
                 }

@@ -277,6 +277,23 @@ impl<'a> Interp<'a> {
                 }
                 Value::Unit
             }
+            // The fake disk has no links: the link reads as what its
+            // target holds now, a target relative to the link's folder.
+            "symlink" => {
+                let link = clean(&text(1));
+                let target = text(0);
+                let target = match link.rsplit_once('/') {
+                    Some((folder, _)) if !target.starts_with('/') => {
+                        clean(&format!("{folder}/{target}"))
+                    }
+                    _ => clean(&target),
+                };
+                if let Entry::File(_) = w.entry(&target) {
+                    let e = w.entry(&target).clone();
+                    w.paths.insert(link, e);
+                }
+                Value::Unit
+            }
             _ => {
                 return Err(self.panic(
                     format!("std.fs has no function `{name}`"),

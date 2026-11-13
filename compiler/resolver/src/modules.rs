@@ -241,9 +241,6 @@ impl Resolver {
         }
     }
 
-    /// The module named by `path`, if there is one. Inside a dependency,
-    /// its own modules come first: in package `geometry`, `shapes` is
-    /// `geometry.shapes` (spec 10.12).
     /// `pub use client.{Client}` (spec 10.2, decision 0101): each name a
     /// module re-exports joins its own names, so `pg.Client` finds it,
     /// repeated until nothing changes. Only public names are taken; a
@@ -276,9 +273,13 @@ impl Resolver {
                             continue;
                         };
                         // A name the module has already (its own, or
-                        // re-exported before) stays.
+                        // re-exported before) stays; the placeholder its
+                        // `use` made gives way.
+                        let placeholder = |d: &DefId| self.res.defs[*d].kind == DefKind::Import;
                         if !self.modules.public.contains(&def)
-                            || self.modules.own[m].contains_key(&shown.name)
+                            || self.modules.own[m]
+                                .get(&shown.name)
+                                .is_some_and(|d| !placeholder(d))
                         {
                             continue;
                         }
@@ -294,6 +295,9 @@ impl Resolver {
         }
     }
 
+    /// The module named by `path`, if there is one. Inside a dependency,
+    /// its own modules come first: in package `geometry`, `shapes` is
+    /// `geometry.shapes` (spec 10.12).
     fn module_named(&self, path: &[Ident]) -> Option<usize> {
         let name: Vec<&str> = path.iter().map(|s| s.name.as_str()).collect();
         let name = name.join(".");

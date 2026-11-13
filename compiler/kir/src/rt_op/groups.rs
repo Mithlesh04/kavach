@@ -23,6 +23,7 @@ impl RtOp {
                 | RtOp::FileInfoSetReadOnly
                 | RtOp::FileInfoSetPermissions
                 | RtOp::FileInfoRename
+                | RtOp::FileInfoSymlink
                 | RtOp::FileInfoCopy
                 | RtOp::FileInfoRemoveAll
                 | RtOp::CryptoFails

@@ -97,3 +97,6 @@ SerialClose,
 /// its marks; whether it answers `--version` with it; and the
 /// compiler's `RtOp::FINGERPRINT`, which the runtime checks.
 CliVersion,
+/// `fs.symlink(target, link)` (spec 14.3): a symbolic link; can fail
+/// (`runtime/native/src/rt_file_info.rs`).
+FileInfoSymlink,

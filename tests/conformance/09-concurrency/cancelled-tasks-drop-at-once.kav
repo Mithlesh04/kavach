@@ -1,0 +1,28 @@
+// Rule: a task cancelled while it waits runs its `drop`s as it stops, not when some other task next runs, so a canceller waiting for what they do isn't held up.
+// Spec: 9.6
+// expect output: slot given back: true
+
+use std.time
+
+type Slot: Drop {
+    back: Sender<Bool>
+
+    fn drop(self) {
+        const _ = self.back.try_put(true)
+    }
+}
+
+fn hold(back: Sender<Bool>) uses Clock {
+    const _slot = Slot(back: back)
+    time.sleep(1.hours)
+}
+
+fn main() uses Console, Clock {
+    const (back, returned) = Channel<Bool>(capacity: 1)
+    const worker = spawn hold(back)
+    time.sleep(50.ms)
+    worker.cancel()
+    // Nothing else runs meanwhile: only the cancelled task can drop it.
+    const got = returned.take().timeout(2.seconds) catch _ => Taken.Closed
+    print("slot given back: {got == Taken.Item(value: true)}")
+}

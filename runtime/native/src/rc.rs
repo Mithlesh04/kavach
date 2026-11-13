@@ -47,6 +47,22 @@ pub(crate) fn set_drop_hook(hook: fn(i64) -> bool) {
     let _ = DROP_HOOK.set(hook);
 }
 
+/// Runs the `drop`s waiting on this thread (`rt_drops.rs`): set, as the
+/// hook is, only in programs with `Drop`.
+static DROP_RUNNER: std::sync::OnceLock<fn()> = std::sync::OnceLock::new();
+
+pub(crate) fn set_drop_runner(run: fn()) {
+    let _ = DROP_RUNNER.set(run);
+}
+
+/// A task that ended runs the `drop`s of what it held: one cancelled
+/// returned at once, past every statement boundary (spec 9.6).
+pub(crate) fn run_waiting_drops() {
+    if let Some(run) = DROP_RUNNER.get() {
+        run();
+    }
+}
+
 fn waits_for_drop(p: i64) -> bool {
     DROP_HOOK.get().is_some_and(|hook| hook(p))
 }

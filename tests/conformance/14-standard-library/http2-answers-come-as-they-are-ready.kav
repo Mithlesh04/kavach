@@ -1,0 +1,47 @@
+// Rule: on one `H2Client`, each answer goes to the task that asked as soon as it is whole, so a fast request isn't held up by a slow one asked before it.
+// Spec: 14.11
+// expect output: /ping first
+// expect output: /report later
+
+use std.http
+use std.http.h2
+use std.net
+use std.time
+
+fn handle(r: Request) -> Response uses Clock {
+    if r.path == "/report" {
+        time.sleep(300.ms)
+    }
+    http.text(200, r.path)
+}
+
+fn ask(c: H2Client, path: String, order: Shared<[String]>) ! H2Error uses Net {
+    const reply = try c.request([
+        Header(name: ":method", value: "GET"),
+        Header(name: ":scheme", value: "http"),
+        Header(name: ":authority", value: "localhost"),
+        Header(name: ":path", value: path),
+    ], Bytes([]))
+    const answered = reply.body.text() ?? "?"
+    const _ = order.update(o => {
+        let all = o
+        all.push(answered)
+        all
+    })
+}
+
+fn main() ! Error uses Clock {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, r => handle(r))
+    const c = try h2.connect(try net.connect(listener.address()))
+    const order: Shared<[String]> = Shared([])
+    const slow = spawn ask(c, "/report", order)
+    time.sleep(50.ms)
+    const fast = spawn ask(c, "/ping", order)
+    try fast.wait()
+    try slow.wait()
+    const got = order.get()
+    print("{got[0]} first")
+    print("{got[1]} later")
+    c.close()
+}

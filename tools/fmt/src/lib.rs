@@ -103,15 +103,19 @@ pub fn format(src: &str) -> Result<String, String> {
     let mut stack: Vec<(bool, usize)> = Vec::new();
     // The last token of the previous line that has code.
     let mut previous: Option<&T> = None;
+    // A line that starts by closing a delimiter (`} else {`) belongs to the
+    // line that opened it: what it opens counts as opened there.
+    let mut belongs: std::collections::HashMap<usize, usize> = Default::default();
     for line in src.split('\n') {
         let start = offset;
         offset += line.len() + 1;
         // Tokens that start before this line open and close delimiters.
         while next < tokens.len() && (tokens[next].span.start as usize) < start {
             let t = &tokens[next].kind;
-            let opened_on = src[..tokens[next].span.start as usize]
+            let line = src[..tokens[next].span.start as usize]
                 .matches('\n')
                 .count();
+            let opened_on = belongs.get(&line).copied().unwrap_or(line);
             if opens(t) {
                 stack.push((matches!(t, T::LBrace), opened_on));
             } else if closes(t) {
@@ -165,7 +169,17 @@ pub fn format(src: &str) -> Result<String, String> {
                 || clause
                 || previous.is_some_and(continues));
         let kept = &stack[..stack.len().saturating_sub(leading_closers)];
-        let level = levels(kept) + i64::from(continuation && leading_closers == 0);
+        let level = match stack.len().checked_sub(leading_closers) {
+            // Closing: as indented as the line that opened the first one.
+            Some(first) if leading_closers > 0 && first < stack.len() => {
+                let opener = stack[first].1;
+                belongs.insert(out.len(), opener);
+                let before: Vec<(bool, usize)> =
+                    stack.iter().copied().filter(|(_, l)| *l < opener).collect();
+                levels(&before)
+            }
+            _ => levels(kept) + i64::from(continuation && leading_closers == 0),
+        };
         for (at, comment_depth) in comments.drain(..) {
             let l = if leading_closers > 0 {
                 comment_depth
