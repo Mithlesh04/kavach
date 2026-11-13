@@ -19,6 +19,8 @@ const kavachMs = (id: "parallel" | "serial") => {
   return s.value.toLocaleString("en-US");
 };
 
+const itemPanic = loadProject("tasks/parallel-map-panic", ["src/main.kav"]);
+
 // ---------- Tasks ----------
 
 export const tasksDoc: LessonDoc = {
@@ -158,6 +160,15 @@ export const manyDoc: LessonDoc = {
         items that can&apos;t spread themselves like that: downloads, files, work of uneven sizes.
       </P>
       <div><SrcRef file="docs/spec/09-concurrency.md" line={66} symbol="Each task runs as `spawn thread` makes it" label="spec 9.3" /></div>
+      <H2>When an item fails or panics</H2>
+      <P>
+        Given a function that can fail, <C>parallel_map</C> fails with the first error in the items&apos; order. A panic
+        in an item&apos;s task is printed when it happens, as any task&apos;s is, and is then a panic where{" "}
+        <C>parallel_map</C> was called: the call can&apos;t fail by its type, so there is no error to give back.
+      </P>
+      <CodeBlock code={itemPanic.files[0].code} file="src/main.kav" />
+      <Terminal session={itemPanic.output ?? ""} />
+      <SrcRef file="tests/conformance/09-concurrency/parallel-map-passes-a-panic-on.kav" label="tested" />
     </>
   ),
 };
@@ -322,6 +333,15 @@ export const timeoutsDoc: LessonDoc = {
         anyway, and it stays a loop the compiler can vectorize or{" "}
         <Link href="/docs/speed/loops-on-all-cores/">run on all cores</Link>.
       </Note>
+      <H2>Cleanup however a task ends</H2>
+      <P>
+        Cleanup that must run however a task ends, cancelled, failed, panicked or done, is a value whose type
+        implements <Link href="/docs/memory/automatic-memory/freed-immediately/#cleanup-of-your-own-drop">Drop</Link>.
+        There is no <C>defer</C> or <C>on_cancel</C> block: one way covers every exit. Here a guest is cancelled while
+        it waits, and its seat still comes back:
+      </P>
+      <Ex name="tasks/cancel-cleanup" />
+      <SrcRef file="tests/conformance/09-concurrency/cancelled-tasks-run-their-cleanup.kav" label="tested" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={SPEC} label="spec 9.6 · timeouts and cancellation" />
         <SrcRef file="docs/decisions/0075-cancelling-tasks.md" label="decision 0075" />

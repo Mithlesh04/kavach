@@ -1,0 +1,5 @@
+# The exact source of each dependency (spec 10.12). Written by kavach: commit it, don't edit it.
+
+[[package]]
+name = "shop"
+path = "shop"

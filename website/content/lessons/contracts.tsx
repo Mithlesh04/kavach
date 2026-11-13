@@ -112,8 +112,9 @@ export const exampleDoc: LessonDoc = {
       <Ex name="testing/sub-contracts.test" />
       <P>
         An example is documentation that can&apos;t go out of date: editors show it on hover, and a wrong one fails
-        the tests. Examples are left out of the program you ship.
+        the tests. Examples are left out of the program you ship. A method&apos;s examples are run too.
       </P>
+      <SrcRef file="tests/conformance/07-contracts/wrong-method-example-fails-tests.kav" label="examples on methods, tested" />
     </>
   ),
 };
@@ -215,6 +216,17 @@ export const fromTypesDoc: LessonDoc = {
     <>
       <Ex name="testing/sub-contracts.test" />
       <P>Two hundred generated calls, each meeting the <C>require</C> and checked against the <C>ensure</C>, plus the example. The <C>seed</C> line lets anyone repeat the run exactly.</P>
+      <H2>When no inputs are generated</H2>
+      <P>Some functions get no generated arguments. The report lists each as <C>not generated</C>, with the reason:</P>
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>a generic function, or a method of a generic type;</li>
+        <li>a parameter whose values can&apos;t be generated, such as a record holding a <C>Shared</C>, unless its type has a <C>Sample</C>;</li>
+        <li>a capability with no fake yet;</li>
+        <li>a C function, or a function a generated case found reaching one: C runs only in native code.</li>
+      </ul>
+      <P>When no generated input meets a function&apos;s <C>require</C>, its examples are what checks it, and the report says so:</P>
+      <Ex name="testing/not-generated.test" />
+      <SrcRef file="docs/spec/11-testing.md" label="spec 11.2 · every function is tested" />
     </>
   ),
 };

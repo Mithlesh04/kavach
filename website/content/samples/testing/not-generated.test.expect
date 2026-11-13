@@ -1,0 +1,7 @@
+✓ discount: example discount("SHOP-2026") == 10
+1 passed, 0 failed
+seed 7
+✓ discount  checked by its examples only: no generated input met its `require`
+1 functions   1 ✓   0 ✗   0 weakly tested
+  not generated: first: generic
+  not generated: left: takes values that can't be generated yet

@@ -1,0 +1,5 @@
+pub use std.math
+
+fn main() {
+    print(math.sqrt(4.0))
+}

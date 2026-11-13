@@ -1,0 +1,26 @@
+/// The first item, or `none` for an empty list.
+fn first<T>(items: [T]) -> T? {
+    if items.is_empty() {
+        return none
+    }
+    items[0]
+}
+
+/// How many seats are left.
+fn left(seats: Shared<Int>) -> Int {
+    seats.get()
+}
+
+/// The discount a code gives, in percent.
+fn discount(code: String) -> Int
+    require code.starts_with("SHOP-") and code.len() == 9
+    example discount("SHOP-2026") == 10
+{
+    10
+}
+
+fn main() {
+    print(first([3, 4]) ?? 0)
+    print(left(Shared(2)))
+    print(discount("SHOP-2026"))
+}

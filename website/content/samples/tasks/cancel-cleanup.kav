@@ -1,0 +1,32 @@
+use std.time
+
+/// A seat at a table of two. Giving it back is its `drop`, so it is
+/// given back however the task that holds it ends.
+type Seat: Drop {
+    free: Shared<Int>
+
+    fn drop(self) uses Console {
+        const _ = self.free.update(n => n + 1)
+        print("seat given back")
+    }
+}
+
+fn sit(free: Shared<Int>) -> Seat {
+    const _ = free.update(n => n - 1)
+    Seat(free: free)
+}
+
+fn main() uses Console, Clock {
+    const free = Shared(2)
+    const (seated, ready) = Channel<Bool>(capacity: 1)
+    const guest = spawn {
+        const _seat = sit(free)
+        seated.put(true)
+        time.sleep(1.hours)
+    }
+    const _ = ready.take()
+    print("free seats: {free.get()}")
+    guest.cancel()
+    guest.wait() catch _ => {}
+    print("free seats: {free.get()}")
+}

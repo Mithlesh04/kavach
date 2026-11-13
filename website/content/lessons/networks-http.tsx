@@ -269,16 +269,20 @@ export const httpSessionDoc: LessonDoc = {
       <H2>One HTTP/2 connection for many tasks</H2>
       <P>
         A service that speaks HTTP/2 itself, as gRPC does, connects once with <C>h2.connect</C> from{" "}
-        <C>std.http.h2</C>. Several tasks can share the <C>H2Client</C> it gives: their requests take turns, in the
-        order they asked, one exchange at a time on the connection for now.
+        <C>std.http.h2</C>. Several tasks can share the <C>H2Client</C> it gives: each request is on a stream of its
+        own, all open at once, and each answer goes to the task that asked, in whatever order the server sends them.
       </P>
       <Ex name="http/h2-client" />
       <Table header={h2Table().header} rows={h2Table().rows} wrapFirst />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>A pool replaces a client whose <C>going_away()</C> is true: the server sent GOAWAY, or the connection broke.</li>
         <li>After <C>close()</C>, a request fails with <C>Protocol</C>.</li>
+        <li>A stream the server resets fails only its own request.</li>
       </ul>
-      <SrcRef file="tests/conformance/14-standard-library/http2-connections-take-many-requests.kav" label="tested" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/14-standard-library/http2-connections-take-many-requests.kav" label="tested" />
+        <SrcRef file="tests/conformance/14-standard-library/http2-requests-are-open-at-once.kav" label="open at once, tested" />
+      </div>
     </>
   ),
 };
@@ -306,6 +310,7 @@ export const httpSocketsDoc: LessonDoc = {
         <li><C>ws.receive()</C> gives the next message, <C>WsMessage.Text</C> or <C>WsMessage.Binary</C>, or <C>none</C> once the other end closed, so <C>?? break</C> ends the loop.</li>
         <li>A request that isn&apos;t a WebSocket gets 400.</li>
         <li>Pings are answered without the program seeing them.</li>
+        <li>One task may <C>receive</C> while other tasks send on the same WebSocket. Sends take turns, in the order they asked, and each writes its whole message, so two messages never mix on the wire. Receiving is for one task at a time.</li>
       </ul>
       <H2>Events</H2>
       <P>
@@ -323,6 +328,7 @@ export const httpSocketsDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={HTTP_SPEC} label="spec 14.11 · WebSockets and events" />
         <SrcRef file="tests/conformance/14-standard-library/http-websockets-and-events.kav" label="tested" />
+        <SrcRef file="tests/conformance/14-standard-library/websocket-sends-from-many-tasks-stay-whole.kav" label="sends from many tasks, tested" />
         <SrcRef file="docs/decisions/0092-websockets-and-server-sent-events.md" label="decision 0092" />
       </div>
     </>

@@ -1,0 +1,4 @@
+fn main() {
+    print([4, 2].parallel_map(n => 8 / n))
+    print([4, 0, 2].parallel_map(n => 8 / n))
+}

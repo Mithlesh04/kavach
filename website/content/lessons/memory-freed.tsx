@@ -73,6 +73,9 @@ export const freedDoc: LessonDoc = {
         <SrcRef file="tests/conformance/06-memory/drop-runs-when-fail-leaves.kav" label="leaving early, tested" />
         <SrcRef file="tests/conformance/06-memory/drop-runs-for-unions.kav" label="unions, tested" />
         <SrcRef file="tests/conformance/06-memory/drop-runs-for-generic-types.kav" label="generic types, tested" />
+        <SrcRef file="tests/conformance/06-memory/drop-runs-at-the-end-of-each-round.kav" label="each round of a loop, tested" />
+        <SrcRef file="tests/conformance/06-memory/drop-runs-for-what-a-failing-call-gave.kav" label="a failing call, tested" />
+        <SrcRef file="tests/conformance/06-memory/drop-programs-return-from-catch.kav" label="return from catch, tested" />
       </div>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>A value made without a name drops at the end of its statement.</li>

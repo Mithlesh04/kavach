@@ -1,5 +1,6 @@
+✓ Trial.ended: example Trial(started: 4_102_444_800_000).ended() == false
 ✓ test "a trial ends after 30 days"
-1 passed, 0 failed
+2 passed, 0 failed
 seed 7
 ✓ Trial.ended  200 cases
 1 functions   1 ✓   0 ✗   0 weakly tested

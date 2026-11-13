@@ -1,0 +1,1 @@
+error: `pub use` re-exports names, not a whole module: write `pub use module.{Name, …}` (spec 10.2)

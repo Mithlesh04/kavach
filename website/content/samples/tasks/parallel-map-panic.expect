@@ -1,0 +1,6 @@
+$ kavach run src/main.kav
+[2, 4]
+panic: division by zero
+  at src/main.kav:3
+panic: an item of `parallel_map` panicked: division by zero at src/main.kav:3
+  at src/main.kav:3

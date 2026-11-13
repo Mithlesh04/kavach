@@ -54,6 +54,23 @@ export const useDoc: LessonDoc = {
       </ul>
       <Ex name="modules/std-runtime-name.fails" />
       <SrcRef file="tests/conformance/14-standard-library/runtime-functions-are-not-named-alone.kav" label="tested" />
+      <H2>Re-exports</H2>
+      <P>
+        <C>pub use</C> makes the names it brings in part of the module too. So a package can declare each public type
+        in a file of its own and show them all from its root:
+      </P>
+      <Files name="modules/re-export" first={["shop/src/lib.kav", "shop/src/orders.kav", "src/main.kav"]} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A re-exported name is the same declaration, not a copy: <C>shop.Order</C> and <C>shop.orders.Order</C> are one type.</li>
+        <li>Each name must be <C>pub</C> where it is declared, and a re-exported name can be re-exported again.</li>
+        <li>Only names are re-exported, not a whole module:</li>
+      </ul>
+      <Ex name="modules/re-export-module.fails" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/10-modules/re-exports-show-names-from-other-files/src/main.kav" label="tested" />
+        <SrcRef file="tests/conformance/10-modules/re-exports-name-items.kav" label="names only, tested" />
+        <SrcRef file="docs/decisions/0101-re-exports.md" label="decision 0101" />
+      </div>
     </>
   ),
 };

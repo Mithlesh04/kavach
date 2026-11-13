@@ -1,0 +1,9 @@
+use shop
+
+fn describe(o: shop.Order) -> String {
+    "{o.qty} x {o.item}"
+}
+
+fn main() {
+    print(describe(shop.place("pen", 3)))
+}
