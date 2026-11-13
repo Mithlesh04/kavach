@@ -252,7 +252,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Tasks Never Leak](https://mithlesh04.github.io/kavach/docs/concurrency/tasks-never-leak/): A task can't outlive the function that spawned it: when the function returns, its tasks still running are cancelled.
 - [Many Things at Once](https://mithlesh04.github.io/kavach/docs/concurrency/many-things-at-once/): list.parallel_map(f, max: n) runs f on every item in tasks of their own, at most n at a time, and gives the results in the list's order.
 - [Channels](https://mithlesh04.github.io/kavach/docs/concurrency/channels/): A channel passes values from one task to another, in order. put adds a value, take takes the next, and close says no more will come.
-- [Channels: put and take](https://mithlesh04.github.io/kavach/docs/concurrency/channels/put-and-take/): take() gives the next value as an optional: none once the channel is closed and empty.
+- [Channels: put and take](https://mithlesh04.github.io/kavach/docs/concurrency/channels/put-and-take/): take() gives the next value as Taken.Item(value), or Taken.Closed once the channel is closed and empty.
 - [Channels: Many senders](https://mithlesh04.github.io/kavach/docs/concurrency/channels/many-senders/): Several tasks can put into one channel; close it once all of them are done.
 - [Channels: Deadlocks](https://mithlesh04.github.io/kavach/docs/concurrency/channels/deadlocks/): If every task waits and none can go on, the program stops with a clear panic instead of hanging forever.
 - [No Data Races](https://mithlesh04.github.io/kavach/docs/concurrency/no-data-races/): Each task works on its own copy of a value, so two tasks can't change the same thing at once. To share on purpose, use Shared.
@@ -308,6 +308,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Modules: pub](https://mithlesh04.github.io/kavach/docs/tools/modules/pub/): pub makes a type, a function or a field visible to other modules. Without it, only the module itself sees it.
 - [Packages](https://mithlesh04.github.io/kavach/docs/tools/packages/): A package is a library another project uses: name it in [dependencies], from a folder or a git repository, and use it like any module.
 - [Workspaces](https://mithlesh04.github.io/kavach/docs/tools/workspaces/): A workspace is several packages in one repository, checked, tested and built together, with one lock for all of them.
+- [Tagged Literals](https://mithlesh04.github.io/kavach/docs/tools/tagged-literals/): A package can give text a meaning the compiler checks: sql"…" is a Query, and a misspelled keyword in it is a compile error, not a failure in production.
 - [Project Layout](https://mithlesh04.github.io/kavach/docs/tools/project-layout/): A project is a folder: kavach.toml at the top, your code in src/, and build output in .kavach/, never committed.
 - [Settings](https://mithlesh04.github.io/kavach/docs/tools/settings/): Every setting a project can have, with its values and its default: kavach.toml, then environment variables.
 - [Environment Variables](https://mithlesh04.github.io/kavach/docs/tools/environment-variables/): env(name) reads an environment variable. Its value is a secret, so it can't be printed by mistake. A .env file, kavach.toml or --env can give the values.
