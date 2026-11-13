@@ -1,0 +1,31 @@
+/// Joins the room, takes `wants` messages, then leaves.
+fn member(joins: Sender<Sender<String>>, wants: Int) -> [String] {
+    const (send, receive) = Channel<String>(capacity: 4)
+    joins.put(send)
+    let got: [String] = []
+    for _ in 1..=wants {
+        match receive.take() {
+            Taken.Item(m) => got.push(m),
+            Taken.Closed => return got,
+        }
+    }
+    got
+}
+
+fn main() ! Error {
+    const (joins, joined) = Channel<Sender<String>>(capacity: 2)
+    const ann = spawn member(joins, 2)
+    const bob = spawn member(joins, 1)
+    let members: [Sender<String>] = []
+    for _ in 1..=2 {
+        match joined.take() {
+            Taken.Item(s) => members.push(s),
+            Taken.Closed => panic("nobody joined"),
+        }
+    }
+    members = members.filter(m => m.try_put("news 1"))
+    print("bob got {try bob.wait()}")
+    members = members.filter(m => m.try_put("news 2"))   // bob left: his channel takes nothing
+    print("{members.len()} member left")
+    print("ann got {try ann.wait()}")
+}

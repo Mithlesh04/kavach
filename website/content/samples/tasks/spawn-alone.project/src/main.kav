@@ -1,0 +1,13 @@
+fn save(report: String) -> Int ! Error {
+    fail Error("disk full")
+}
+
+fn greet(name: String) uses Console {
+    print("hello, {name}")
+}
+
+fn main() uses Console {
+    spawn greet("ann")              // nobody waits for it
+    spawn save("weekly report")     // nor for this one, and its error is printed
+    print("main goes on")
+}

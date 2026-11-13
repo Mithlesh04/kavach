@@ -1,0 +1,9 @@
+fn main() {
+    const send = {
+        const (send, _receive) = Channel<Int>(capacity: 4)
+        send
+    }
+    print(send.try_put(1))
+    send.put(2)
+    print("not reached")
+}

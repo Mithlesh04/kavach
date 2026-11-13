@@ -1,0 +1,4 @@
+br -> Brotli, sent back as br
+GZIP -> Gzip, sent back as gzip
+x-gzip -> Gzip, sent back as gzip
+compress -> not a format we know

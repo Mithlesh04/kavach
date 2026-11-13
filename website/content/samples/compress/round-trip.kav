@@ -1,0 +1,11 @@
+use std.compress
+
+fn main() ! Error {
+    const page = "<li>an item of the list</li>\n".repeat(100).bytes()
+    print("plain: {page.len()} bytes")
+    for format in [Format.Gzip, Format.Zstd, Format.Brotli, Format.Lz4] {
+        const packed = compress.encode(page, format)
+        const back = try compress.decode(packed, format)
+        print("{format.name()}: {packed.len()} bytes, same when decoded: {back == page}")
+    }
+}

@@ -1,0 +1,9 @@
+fn main() {
+    const label = (p: Int) => {
+        if p == 0 {
+            return 0
+        }
+        "paid {p}"
+    }
+    print(label(5))
+}

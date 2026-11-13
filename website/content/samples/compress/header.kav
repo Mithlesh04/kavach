@@ -1,0 +1,11 @@
+use std.compress
+
+fn main() {
+    for asked in ["br", "GZIP", "x-gzip", "compress"] {
+        if let format = compress.from_name(asked) {
+            print("{asked} -> {format}, sent back as {format.name()}")
+        } else {
+            print("{asked} -> not a format we know")
+        }
+    }
+}

@@ -1,0 +1,8 @@
+use std.compress
+
+fn main() {
+    const text = "hello, hello, hello".bytes()
+    print(compress.encode(text, Format.Zstd, level: 19).len())
+    print(compress.level_fits(Format.Zstd, 30))
+    print(compress.encode(text, Format.Zstd, level: 30).len())
+}

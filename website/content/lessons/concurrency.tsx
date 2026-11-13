@@ -11,6 +11,7 @@ import { Limits } from "./limits";
 
 const SPEC = "docs/spec/09-concurrency.md";
 const unread = loadProject("tasks/unread-error", ["src/main.kav"]);
+const alone = loadProject("tasks/spawn-alone", ["src/main.kav"]);
 
 // The tasks benchmark's Kavach times, read from its README by build-benchmarks.
 const kavachMs = (id: "parallel" | "serial") => {
@@ -85,17 +86,25 @@ export const taskFailsDoc: LessonDoc = {
           <Link href="/docs/agents/audit-log/">the audit log</Link>.
         </li>
       </ul>
-      <P>The compiler keeps such tasks in sight. A <C>spawn</C> whose <C>Task</C> is thrown away is an error, as for any value:</P>
-      <Ex name="tasks/spawn-thrown-away.fails" />
+      <P>
+        A <C>spawn</C> on a line of its own starts a task nobody waits for, as <C>go f()</C> does in Go.{" "}
+        <C>spawn save(r)</C> is the same as <C>const _t = spawn save(r)</C>:
+      </P>
+      <CodeBlock code={alone.files[0].code} file="src/main.kav" />
+      <Terminal session={alone.output ?? ""} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The tasks are still cancelled when <C>main</C> returns. A task cancelled that way stops at its next wait; these two have none, so they finish first.</li>
+        <li>An error in such a task is still printed, with where it was spawned.</li>
+      </ul>
       <P>
         A <C>Task</C> kept in a name that is never used gets a warning. A name starting with <C>_</C>, as in{" "}
-        <C>_saving</C> above, says nobody waits for it on purpose and silences the warning; an error is still printed
-        if it happens.
+        <C>_saving</C> above, says nobody waits for it on purpose and silences the warning.
       </P>
       <Ex name="tasks/task-unused.warns" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={SPEC} label="spec 9.1 · tasks" />
         <SrcRef file="tests/conformance/09-concurrency/errors-nobody-reads-are-printed.kav" label="an unread error, tested" />
+        <SrcRef file="tests/conformance/09-concurrency/a-spawn-alone-is-waited-for-by-nobody.kav" label="a spawn alone, tested" />
       </div>
       <Note>
         A panic is not an error, but a panic in a task stops only that task: it is printed when it happens, and{" "}
@@ -198,6 +207,24 @@ export const channelsDoc: LessonDoc = {
       <Ex name="channels/try-put" />
       <P>It never waits, so one slow taker can&apos;t hold up a task that sends to many, such as a server sending news to every listener.</P>
       <SrcRef file="tests/conformance/09-concurrency/try-put-never-waits.kav" label="tested" />
+      <H2>When the receivers are gone</H2>
+      <P>
+        A receiver is gone once nothing holds it: every copy of the <C>Receiver</C> was let go, as when the task that
+        held it ended. Then <C>try_put</C> gives <C>false</C>, so a task that sends to many, such as a chat room,
+        sees at once that a member left:
+      </P>
+      <Ex name="channels/receivers-gone" />
+      <P>
+        <C>members.filter(m =&gt; m.try_put(…))</C> keeps the members that took the message: it drops those who left,
+        and those too slow to keep up. A <C>put</C> nobody could ever take panics, and so does a <C>put</C> waiting
+        for room when the last receiver goes:
+      </P>
+      <Ex name="channels/put-nobody-takes.panics" />
+      <P>A channel&apos;s ends live to the end of their block, so the receiver above is gone once its block ends.</P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/09-concurrency/a-channel-with-no-receivers-takes-nothing.kav" label="tested" />
+        <SrcRef file="tests/conformance/09-concurrency/a-waiting-put-ends-when-the-receivers-go.kav" label="a waiting put, tested" />
+      </div>
       <H2>Limits and sizes</H2>
       <Limits id="tasks" />
     </>
@@ -219,7 +246,7 @@ export const putTakeDoc: LessonDoc = {
       <Ex name="channels/take-none" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>for v in receive</C> takes values until <C>take()</C> gives <C>Closed</C>.</li>
-        <li>Putting into a closed channel is a bug, so it panics.</li>
+        <li>Putting into a closed channel is a bug, so it panics, as does putting into one whose receivers are all gone.</li>
       </ul>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="tests/conformance/09-concurrency/a-sent-none-is-not-the-end.kav" label="tested" />

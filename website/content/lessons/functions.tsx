@@ -188,6 +188,18 @@ export const lambdasDoc: LessonDoc = {
       </P>
       <P>A call that can fail, written in a lambda with no <C>try</C>, is an error that says where the error would go:</P>
       <Ex name="functions/lambda-no-try.fails" />
+      <H2>return inside a lambda</H2>
+      <P>
+        A <C>return</C> inside a lambda belongs to the lambda too: it ends that call of the lambda with its value, as
+        in Rust, Swift and JavaScript, and the function the lambda was written in goes on:
+      </P>
+      <Ex name="functions/lambda-return" />
+      <P>Its value has the type of the lambda&apos;s last value:</P>
+      <Ex name="functions/lambda-return-type.fails" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/03-functions/a-lambdas-return-is-its-own.kav" label="tested" />
+        <SrcRef file="tests/conformance/03-functions/a-lambdas-return-matches-its-value.kav" label="its type, tested" />
+      </div>
     </>
   ),
 };

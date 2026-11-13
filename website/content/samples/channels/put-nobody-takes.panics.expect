@@ -1,0 +1,2 @@
+false
+panic: `put` into a channel whose receivers are all gone

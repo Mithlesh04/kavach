@@ -1,0 +1,4 @@
+bomb: 1004 bytes packed
+5 bytes
+refused: more than 1000 bytes
+not gzip: unexpected end of file

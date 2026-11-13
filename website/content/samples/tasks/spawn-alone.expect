@@ -1,0 +1,4 @@
+$ kavach run src/main.kav
+main goes on
+hello, ann
+error in a task nobody waited for: disk full (spawned at src/main.kav:11)

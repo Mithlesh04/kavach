@@ -1,0 +1,18 @@
+use std.compress
+
+fn unpack(data: Bytes) -> String {
+    const body = compress.decode(data, Format.Gzip, most: 1_000) catch e => match e {
+        CompressError.TooLarge(most) => return "refused: more than {most} bytes",
+        CompressError.Corrupt(why) => return "not gzip: {why}",
+    }
+    "{body.len()} bytes"
+}
+
+fn main() {
+    const small = compress.encode("hello".bytes(), Format.Gzip)
+    const bomb = compress.encode("0".repeat(1_000_000).bytes(), Format.Gzip)
+    print("bomb: {bomb.len()} bytes packed")
+    print(unpack(small))
+    print(unpack(bomb))
+    print(unpack("hello".bytes()))
+}

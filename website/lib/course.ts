@@ -118,6 +118,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Devices", "14.18"],
     ["Cryptography", "14.19"],
     ["Base64", "14.20"],
+    ["Compression", "14.21"],
     ["JSON", "2.12", ["Json values", "Reading", "Nested data", "Building", "Decoding into a type"]],
     ["Bytes", "2.13"],
   ]],

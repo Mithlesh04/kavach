@@ -1,0 +1,5 @@
+plain: 2900 bytes
+gzip: 73 bytes, same when decoded: true
+zstd: 47 bytes, same when decoded: true
+br: 37 bytes, same when decoded: true
+lz4: 67 bytes, same when decoded: true

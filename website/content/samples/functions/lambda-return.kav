@@ -1,0 +1,14 @@
+fn main() {
+    const prices = [120, 0, -5, 40]
+    const labels = prices.map(p => {
+        if p < 0 {
+            return "refund"      // this item's label; `map` goes on with the next
+        }
+        if p == 0 {
+            return "free"
+        }
+        "paid {p}"
+    })
+    print(labels)
+    print("main goes on")
+}
