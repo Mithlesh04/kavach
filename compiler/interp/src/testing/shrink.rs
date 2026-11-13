@@ -111,6 +111,7 @@ impl<'a> Interp<'a> {
                 union,
                 name,
                 fields,
+                ..
             } => {
                 // A variant without fields is the smallest value of a union.
                 let mut c: Vec<Value<'a>> = match self.unions.get(union).map(|t| &t.body) {
@@ -121,6 +122,7 @@ impl<'a> Interp<'a> {
                             union: *union,
                             name: Rc::from(v.name.name.as_str()),
                             fields: Vec::new(),
+                            life: None,
                         })
                         .collect(),
                     _ => Vec::new(),
@@ -133,6 +135,7 @@ impl<'a> Interp<'a> {
                             union: *union,
                             name: name.clone(),
                             fields: changed,
+                            life: None,
                         });
                     }
                 }

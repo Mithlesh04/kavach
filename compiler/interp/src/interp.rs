@@ -209,6 +209,10 @@ impl<'a> Interp<'a> {
                         TypeBody::Alias(_) => {}
                         TypeBody::Union(_) => {
                             self.unions.insert(def, t);
+                            // A union can implement `Drop` too (spec 6.1).
+                            if self.c.drop_types.contains(&def) {
+                                self.drop_types.insert(def);
+                            }
                         }
                     }
                 }

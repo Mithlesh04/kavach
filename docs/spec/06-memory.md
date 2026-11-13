@@ -77,7 +77,9 @@ fn work() uses Console {
 ```
 
 - At the end of a block, the values it made drop in the reverse order they were made: the last made drops first.
-- A value made without a name (a temporary, as in `print(Door(name: "x").name)`) drops at the end of its statement.
+- `return`, `break`, `continue` and `fail` end the blocks they leave: those blocks' values drop right then, in the same order.
+- A generic type can implement `Drop` too (`type Box<T>: Drop`): every instance (`Box<Int>`, `Box<String>`) runs the same `drop`. So can a union (`type Lock: Drop = Held(name: String) | Free`), with `drop` in an `extend`: it runs for every variant.
+- A value made without a name (a temporary, as in `print(Door(name: "x").name)`) drops at the end of its statement. So does one given to `_` (`const _ = Guard(…)`), since `_` names nothing; a warning says so, as this is almost always meant to keep the value: name it `_guard` instead.
 - Giving a variable a new value drops the old one there, unless something else still holds it.
 - Copies are the same value (6.1): `drop` runs once, when the last holder's block ends. A value returned from a function is held by the caller. Changing a copy makes it a value of its own, which drops on its own.
 - A lambda that uses a `Drop` value holds a copy (3.3), and so does an interface value made from one (2.15): each lives, like any holder, to the end of the block that holds it.

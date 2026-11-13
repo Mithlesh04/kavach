@@ -29,6 +29,26 @@ impl<'a> Interp<'a> {
             Rc::new(Life {
                 def,
                 name: Rc::clone(name),
+                variant: false,
+                fields: RefCell::new(fields.to_vec()),
+                queue: Rc::clone(&self.drops),
+            })
+        })
+    }
+
+    /// The identity of a new value of union `union`, variant `name`, when
+    /// the union implements `Drop`.
+    pub(crate) fn variant_life(
+        &self,
+        union: DefId,
+        name: &Rc<str>,
+        fields: &[Field<'a>],
+    ) -> Option<Rc<Life<'a>>> {
+        self.drop_types.contains(&union).then(|| {
+            Rc::new(Life {
+                def: union,
+                name: Rc::clone(name),
+                variant: true,
                 fields: RefCell::new(fields.to_vec()),
                 queue: Rc::clone(&self.drops),
             })
@@ -48,8 +68,10 @@ impl<'a> Interp<'a> {
                 }
                 queue.remove(self.drop_floor)
             };
-            let Value::Record { def, .. } = &next else {
-                continue;
+            let def = match &next {
+                Value::Record { def, .. } => def,
+                Value::Variant { union, .. } => union,
+                _ => continue,
             };
             let drop = self.methods.get(def).and_then(|m| m.get("drop")).copied();
             if let Some(f) = drop {
@@ -96,6 +118,7 @@ pub(crate) fn renew<'a>(life: &mut Option<Rc<Life<'a>>>, fields: &[Field<'a>], n
     let fresh = Life {
         def: old.def,
         name: Rc::clone(&old.name),
+        variant: old.variant,
         fields: RefCell::new(fields.to_vec()),
         queue: Rc::clone(&old.queue),
     };

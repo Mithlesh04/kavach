@@ -262,7 +262,7 @@ impl<'a> Lowerer<'a> {
     }
 
     /// The function for `def` with these type arguments, made on first use.
-    fn instance(
+    pub(crate) fn instance(
         &mut self,
         def: DefId,
         f: &'a ast::FnDecl,

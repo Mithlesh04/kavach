@@ -181,7 +181,9 @@ impl<'a> Lowerer<'a> {
             "take" => RtOp::ChanTakeFor,
             "put" => RtOp::ChanPutFor,
             "accept" | "read" | "write" | "send" | "receive" | "read_stream" | "write_stream"
-            | "connect" | "connect_tls" | "connect_quic" => RtOp::NetDeadline,
+            | "connect" | "connect_tls" | "connect_quic" | "start_tls" | "accept_tls" => {
+                RtOp::NetDeadline
+            }
             _ => return Ok(None),
         };
         let Some(d) = args.first() else {

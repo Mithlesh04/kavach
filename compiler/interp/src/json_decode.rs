@@ -319,10 +319,13 @@ impl<'a> Interp<'a> {
             .copied()
             .unwrap_or(def);
         let fields = self.decode_fields(&given, &variant.fields, owner, &at)?;
+        let name = Rc::from(variant.name.name.as_str());
+        let life = self.variant_life(def, &name, &fields);
         Ok(Value::Variant {
             union: def,
-            name: Rc::from(variant.name.name.as_str()),
+            name,
             fields,
+            life,
         })
     }
 

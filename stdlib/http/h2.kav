@@ -211,3 +211,100 @@ pub fn respond_with_trailers(
     try wire.send(link, stream, headers, body, trailers)
 }
 
+/// An HTTP/2 connection that takes many requests (`h2.connect`), so a
+/// service pays for connecting once, not per call. Requests from several
+/// tasks take turns: one exchange at a time, in the order they asked.
+pub type H2Client {
+    give: Sender<Held>
+    get: Receiver<Held>
+    leaving: Shared<Bool>
+}
+
+/// The connection between two requests, and its next stream's number.
+type Held {
+    link: Link
+    next: Int
+}
+
+/// The other side's answer, and the connection after it.
+type Exchanged {
+    link: Link
+    message: H2Message
+}
+
+/// Starts an HTTP/2 connection on `conn` for many requests.
+pub fn connect(conn: Connection) -> H2Client ! H2Error uses Net {
+    try hello(conn)
+    const (give, get) = Channel<Held>(capacity: 1)
+    give.put(Held(link: wire.start(conn, Bytes([])), next: 1))
+    H2Client(give: give, get: get, leaving: Shared(false))
+}
+
+extend H2Client {
+    /// Sends one request and reads its response, once the requests that
+    /// asked before it are answered. `headers` has `:method`, `:scheme`,
+    /// `:authority`, `:path`.
+    pub fn request(self, headers: [Header], body: Bytes) -> H2Message ! H2Error uses Net {
+        const held = match self.get.take() {
+            Taken.Item(value) => value,
+            Taken.Closed => fail H2Error.Protocol(reason: "the client was closed"),
+        }
+        if held.link.leaving or held.next > 2_147_483_647 {
+            self.give.put(held)
+            fail H2Error.Protocol(reason: "the server is going away: connect again")
+        }
+        const stream = held.next
+        const done = exchange(held.link, stream, headers, body) catch e => {
+            // A broken connection takes no more requests; a stream the
+            // server reset leaves it usable.
+            let link = held.link
+            link.leaving = match e {
+                H2Error.Reset(_, _) => link.leaving,
+                _ => true,
+            }
+            const _ = self.leaving.update(_ => link.leaving)
+            self.give.put(Held(link: link, next: stream + 2))
+            fail e
+        }
+        const _ = self.leaving.update(_ => done.link.leaving)
+        self.give.put(Held(link: done.link, next: stream + 2))
+        done.message
+    }
+
+    /// Whether the server said it is going away (GOAWAY), or the
+    /// connection broke: a pool then replaces it with a new one.
+    pub fn going_away(self) -> Bool {
+        self.leaving.get()
+    }
+
+    /// Closes the connection, once the request being answered is done.
+    pub fn close(self) uses Net {
+        match self.get.take() {
+            Taken.Item(held) => held.link.conn.close(),
+            Taken.Closed => {}
+        }
+        self.give.close()
+    }
+}
+
+/// Sends a request on `stream` and reads until its answer is complete.
+fn exchange(link: Link, stream: Int, headers: [Header], body: Bytes) -> Exchanged ! H2Error uses Net {
+    let l = try wire.send(link, stream, headers, body, [])
+    while true {
+        for m in l.done {
+            if m.stream == stream {
+                l.done = []
+                return Exchanged(link: l, message: m)
+            }
+        }
+        if let code = l.resets.get(stream) {
+            l.resets.remove(stream)
+            fail H2Error.Reset(stream: stream, code: code)
+        }
+        if l.leaving and l.partial.get(stream) == none {
+            fail H2Error.Protocol(reason: "the server went away")
+        }
+        l = try wire.step(l) ?? fail H2Error.Protocol(reason: "the connection closed")
+    }
+    fail H2Error.Protocol(reason: "the connection closed")
+}

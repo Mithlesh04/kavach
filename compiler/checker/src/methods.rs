@@ -139,8 +139,14 @@ impl Checker<'_> {
                 self.updates.insert((e.span.start, e.span.end));
             }
             let label = format!("`{}`", name.name);
+            // A TLS private `key` takes a secret, as `connect_tls`'s does
+            // (spec 8.7, 14.10).
+            let tls = matches!(recv, Ty::Builtin("Connection", _));
+            let secret: Vec<bool> = (params.iter().enumerate())
+                .map(|(i, p)| tls && (p.0 == "key" || (name.name == "accept_tls" && i == 1)))
+                .collect();
             let ret = self.passing_errors_on(m.ret, e.span, |c| {
-                c.args(args, &params, e.span, &label, "argument");
+                c.args_with(args, &params, &secret, e.span, &label, "argument");
             });
             self.updating -= u32::from(update);
             // `people.sort_by(p => (p.age, p.name))`: the key must have an

@@ -283,6 +283,7 @@ impl<'a> Interp<'a> {
                     secret: false,
                 })
                 .collect(),
+            life: None,
         }
     }
 

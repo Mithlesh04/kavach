@@ -58,4 +58,17 @@ impl Checker<'_> {
             self.note_fn(d, span);
         }
     }
+
+    /// `const _ = Guard(…)`: `_` names nothing, so a `Drop` value given to
+    /// it drops at the end of the statement (spec 6.1), the trap of Rust's
+    /// `let _ = lock()`.
+    pub(crate) fn warn_unnamed_drop(&mut self, pattern: &kavach_ast::Pattern, ty: &Ty) {
+        let ty = self.inf.resolve(ty);
+        if matches!(pattern.kind, kavach_ast::PatternKind::Wildcard) && self.holds_drop(&ty) {
+            self.warn(
+                pattern.span,
+                "`_` names nothing, so this value drops here, at the end of the statement: name it `_guard` to keep it to the end of the block (spec 6.1)",
+            );
+        }
+    }
 }

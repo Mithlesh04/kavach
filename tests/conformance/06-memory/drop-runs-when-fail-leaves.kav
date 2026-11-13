@@ -1,0 +1,27 @@
+// Rule: When `fail` leaves blocks early, the `Drop` values they made drop then, the last made first, as at the end of a block.
+// Spec: 6.1
+// expect output: released inner
+// expect output: released outer
+// expect output: failed
+
+type Guard: Drop {
+    name: String
+
+    fn drop(self) {
+        print("released {self.name}")
+    }
+}
+
+type Oops = Bad
+
+fn work() ! Oops {
+    const _outer = Guard(name: "outer")
+    if true {
+        const _inner = Guard(name: "inner")
+        fail Oops.Bad
+    }
+}
+
+fn main() {
+    work() catch _ => print("failed")
+}

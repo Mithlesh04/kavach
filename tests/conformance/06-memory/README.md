@@ -17,8 +17,12 @@ Conformance tests for spec chapter [6. Memory](../../../docs/spec/06-memory.md).
 | 6.4 | [unsafe-needs-opt-in.kav](unsafe-needs-opt-in.kav) | A package may use `unsafe` only when kavach.toml sets unsafe = true (default: false). | compile error |
 | 6.1 | [loop-writes-keep-value-rules.kav](loop-writes-keep-value-rules.kav) | Writing `list[i]` in a loop follows the value rules exactly: a copy made before keeps the old items. | runs |
 | 6.1 | [drop-runs-at-the-end-of-the-block.kav](drop-runs-at-the-end-of-the-block.kav) | A value of a `Drop` type lives until the end of the block that holds it, even after its last use; `drop` runs there. | runs |
+| 6.1 | [drop-runs-for-generic-types.kav](drop-runs-for-generic-types.kav) | A generic type can implement `Drop`: each instance's values run `drop`. | runs |
+| 6.1 | [drop-runs-for-unions.kav](drop-runs-for-unions.kav) | A union can implement `Drop`: each of its values runs `drop`, whichever variant it is. | runs |
+| 6.1 | [drop-runs-when-fail-leaves.kav](drop-runs-when-fail-leaves.kav) | When `fail` leaves blocks early, their `Drop` values drop then, the last made first. | runs |
 | 6.1 | [drops-in-reverse-order.kav](drops-in-reverse-order.kav) | At the end of a block, the `Drop` values it made drop in the reverse order they were made. | runs |
 | 6.1 | [drop-of-a-temporary.kav](drop-of-a-temporary.kav) | A `Drop` value made without a name drops at the end of its statement; a variable given a new value drops the old one there. | runs |
+| 6.1 | [drop-given-to-underscore-warns.kav](drop-given-to-underscore-warns.kav) | A `Drop` value given to `_` drops at the end of its statement, with a warning to name it `_guard`. | warning |
 | 6.1 | [drop-runs-once-for-copies.kav](drop-runs-once-for-copies.kav) | Copies of a `Drop` value are the same value: `drop` runs once, when the last holder ends; a changed copy is a value of its own. | runs |
 | 6.1, 3.3 | [drop-waits-for-a-lambdas-block.kav](drop-waits-for-a-lambdas-block.kav) | A lambda holding a `Drop` value keeps it to the end of the lambda's block. | runs |
 | 6.1, 2.15 | [drop-waits-for-an-interface-values-block.kav](drop-waits-for-an-interface-values-block.kav) | An interface value holding a `Drop` value keeps it to the end of its block. | runs |

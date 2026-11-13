@@ -1,0 +1,19 @@
+// Rule: A generic type can implement `Drop`: each value of each instance runs `drop` when its last holder's block ends.
+// Spec: 6.1
+// expect output: 3 text
+// expect output: dropped a box of text
+// expect output: dropped a box of 3
+
+type Box<T>: Drop {
+    item: T
+
+    fn drop(self) {
+        print("dropped a box of {self.item}")
+    }
+}
+
+fn main() {
+    const number = Box(item: 3)
+    const text = Box(item: "text")
+    print("{number.item} {text.item}")
+}

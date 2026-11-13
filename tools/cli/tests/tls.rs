@@ -29,7 +29,7 @@ fn serve(listener: Listener) ! NetError uses Net {
 }
 
 // PostgreSQL's way: plain text first, then TLS on the same connection.
-fn upgrade_one(listener: Listener, cert: String, key: String) ! NetError uses Net {
+fn upgrade_one(listener: Listener, cert: String, secret key: String) ! NetError uses Net {
     const plain = try listener.accept()
     const _asked = try plain.read()
     try plain.write(\"S\".bytes())
@@ -91,7 +91,7 @@ fn main() ! Error {
     const plain = try net.connect(plain_listener.address())
     try plain.write(\"TLS?\".bytes())
     print(text_of(try plain.read()))
-    const secured = try plain.start_tls(\"127.0.0.1\", roots: ca)
+    const secured = try plain.start_tls(\"127.0.0.1\", roots: ca).timeout(5.seconds)
     try secured.write(\"hi\".bytes())
     print(text_of(try secured.read()))
     print((secured.peer_certificate() ?? Bytes([])).len() > 100)

@@ -354,6 +354,7 @@ impl<'a> Interp<'a> {
                     union: def,
                     name: Rc::from(v.name.name.as_str()),
                     fields,
+                    life: None,
                 })
             }
         }

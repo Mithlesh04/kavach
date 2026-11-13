@@ -332,6 +332,7 @@ impl<'a> Interp<'a> {
                 value: self.str_value(reason),
                 secret: false,
             }],
+            life: None,
         })
     }
 }

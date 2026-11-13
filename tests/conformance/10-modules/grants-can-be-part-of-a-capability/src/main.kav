@@ -1,0 +1,10 @@
+// Rule: `can` may grant part of a capability, as `uses` names it: with `can = ["Fs.read"]`, a dependency may read files but not write them.
+// Spec: 10.12
+// expect compile error
+
+use notes
+
+fn main() ! FsError uses Fs {
+    print(try notes.read("todo"))
+    try notes.save("todo", "buy ink")
+}

@@ -91,6 +91,7 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.10 | [tls-has-no-insecure-switch.kav](tls-has-no-insecure-switch.kav) | TLS verification can't be turned off: there is no argument that skips certificate checks. | compile error |
 | 14.14 | [grpc-calls-from-types.kav](grpc-calls-from-types.kav) | `grpc.call<Req, Res>` calls a method with typed messages; `grpc.serve` answers; a status other than OK fails with `Status`. | runs |
 | 14.11 | [http2-serves-and-fetches.kav](http2-serves-and-fetches.kav) | `http.serve` answers HTTP/2 from a client that starts with its preface; `h2.request` sends a large body with flow control; HTTP/1.1 still works. | runs |
+| 14.11 | [http2-connections-take-many-requests.kav](http2-connections-take-many-requests.kav) | `h2.connect` gives a client that sends many requests on one connection, from several tasks in turn; `going_away` and `close`. | runs |
 | 14.11 | [http-reads-chunked-bodies.kav](http-reads-chunked-bodies.kav) | Requests and responses sent in chunks are read whole; a chunked response cut off fails with `BadMessage`. | runs |
 | 14.11 | [http-serves-many-clients-on-every-core.kav](http-serves-many-clients-on-every-core.kav) | `http.serve` answers each connection in a `spawn cores` task: 8 clients at once get the right answers, and handlers share only a `Shared` count. | runs |
 | 14.11 | [http-headers-keep-repeats.kav](http-headers-keep-repeats.kav) | Headers are a list in the order sent, repeats kept; `header(name)` gives the first, `headers_named(name)` all. | runs |

@@ -315,7 +315,8 @@ mod tests {
             ("use std.json\nprint(json.stringify(1))", vec!["std.json"]),
             // A module's own `use`s come along: http needs json, fs (for
             // `http.file`), net, h2, its forms and its server, which needs
-            // cli for its stop hold.
+            // cli for its stop hold; h2's client takes turns on a channel,
+            // which brings `Taken` from tasks.
             (
                 "use std.http",
                 vec![
@@ -326,6 +327,7 @@ mod tests {
                     "std.net",
                     "std.http",
                     "std.cli",
+                    "std.tasks",
                     "std.http.upgrade",
                     "std.http.multipart",
                     "std.http.server",

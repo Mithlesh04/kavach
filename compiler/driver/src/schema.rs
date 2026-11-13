@@ -49,40 +49,46 @@ pub fn describe_fn(c: &Compiled, arg: &kavach_ast::Expr) -> Option<Tree> {
     };
     let def = *c.resolution.uses.get(&id.span.start)?;
     let ty = c.expr_types.get(&(arg.span.start, arg.span.end))?;
-    describe(c, def, ty)
+    describe(c, def, ty, false)
 }
 
 /// The description of function `def` as a value, for `json.describe` on
 /// a function value (spec 2.12): `None` for a generic function.
 pub fn describe_def(c: &Compiled, def: kavach_resolver::DefId) -> Option<Tree> {
     let span = c.resolution.defs[def].span?;
-    describe(c, def, c.expr_types.get(&(span.start, span.end))?)
+    describe(c, def, c.expr_types.get(&(span.start, span.end))?, true)
 }
 
-fn describe(c: &Compiled, def: kavach_resolver::DefId, ty: &Ty) -> Option<Tree> {
+/// `any`: a part with no schema (a function, a built-in `Error`) is `{}`,
+/// any value, as a function value's description has it; otherwise the
+/// description fails, which is a compile error for a named function.
+fn describe(c: &Compiled, def: kavach_resolver::DefId, ty: &Ty, any: bool) -> Option<Tree> {
     let Ty::Fn(params, ret, _) = ty else {
         return None;
+    };
+    let schema = |t: &Ty| match (Schemas { c }).schema(t) {
+        None if any => Some(Tree::Object(Vec::new())),
+        found => found,
     };
     let span = c.resolution.defs[def].span?;
     let (docs, f) = c.file.items.iter().find_map(|item| match &item.kind {
         ItemKind::Fn(f) if f.name.span == span => Some((&item.docs, f)),
         _ => None,
     })?;
-    let s = Schemas { c };
     let mut described = Vec::new();
     for (p, t) in f.params.iter().zip(params) {
         described.push(Tree::Object(vec![
             ("name".into(), text(&p.name.name)),
-            ("schema".into(), s.schema(t)?),
+            ("schema".into(), schema(t)?),
         ]));
     }
     let (ok, err) = match &**ret {
-        Ty::Result(ok, err) => (&**ok, Some(s.schema(err)?)),
+        Ty::Result(ok, err) => (&**ok, Some(schema(err)?)),
         ok => (ok, None),
     };
     let result = match ok {
         Ty::Unit => kind("null"),
-        t => s.schema(t)?,
+        t => schema(t)?,
     };
     let uses = c.uses.get(&def).cloned().unwrap_or_default();
     let examples = f.examples.iter().map(|x| {

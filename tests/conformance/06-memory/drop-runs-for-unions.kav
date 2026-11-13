@@ -1,0 +1,22 @@
+// Rule: A union can implement `Drop`: each of its values runs `drop` when its last holder's block ends, the last made first, whichever variant it is.
+// Spec: 6.1
+// expect output: working
+// expect output: nothing to unlock
+// expect output: unlocked door
+
+type Lock: Drop = Held(name: String) | Free
+
+extend Lock {
+    fn drop(self) {
+        match self {
+            Lock.Held(name) => print("unlocked {name}"),
+            Lock.Free => print("nothing to unlock"),
+        }
+    }
+}
+
+fn main() {
+    const _door = Lock.Held(name: "door")
+    const _none = Lock.Free
+    print("working")
+}

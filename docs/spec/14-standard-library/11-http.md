@@ -210,6 +210,10 @@ A body's size comes from `content-length`, or the body comes in chunks (`transfe
 | Function | Gives |
 |---|---|
 | `h2.request(conn, headers, body) -> H2Message ! H2Error` | Sends one request on a new connection (`headers` start with `:method`, `:scheme`, `:authority`, `:path`) and reads the response |
+| `h2.connect(conn) -> H2Client ! H2Error` | Starts a connection that takes many requests, so a service connects once instead of once per call |
+| `c.request(headers, body) -> H2Message ! H2Error` | Sends one request on `c` and reads its response. Requests from several tasks take turns, in the order they asked: one exchange at a time on the connection, for now |
+| `c.going_away() -> Bool` | Whether the server said it is going away (GOAWAY) or the connection broke: a pool replaces such a client with a new one |
+| `c.close()` | Closes the connection once the request being answered is done; a request after it fails with `Protocol` |
 | `h2.accept(conn, data) -> Link ! H2Error` | The server side of a connection that began with `data` |
 | `h2.next(link) -> Next ! H2Error` | `Next(link:, message:)`: the next whole request, or `none` once the client is done |
 | `h2.respond(link, stream, headers, body) -> Link ! H2Error` | Sends the response on `stream`; `headers` start with `:status` |

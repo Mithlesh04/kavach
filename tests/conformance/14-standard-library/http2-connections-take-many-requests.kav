@@ -1,0 +1,50 @@
+// Rule: `h2.connect(conn)` gives an `H2Client` that sends many requests on one connection, from several tasks in turn; `going_away()` tells when to replace it, and after `close()` a request fails.
+// Spec: 14.11
+// expect output: GET /one
+// expect output: GET /two
+// expect output: GET /a
+// expect output: GET /b
+// expect output: GET /c
+// expect output: one connection: true
+// expect output: going away: false
+// expect output: Protocol(reason: "the client was closed")
+
+use std.http
+use std.http.h2
+use std.net
+
+fn hello(r: Request) -> Response {
+    http.text(200, "{r.method} {r.path}|{r.peer}")
+}
+
+fn ask(c: H2Client, path: String) -> String ! H2Error uses Net {
+    const reply = try c.request([
+        Header(name: ":method", value: "GET"),
+        Header(name: ":scheme", value: "http"),
+        Header(name: ":authority", value: "localhost"),
+        Header(name: ":path", value: path),
+        ], Bytes([]))
+    reply.body.text() ?? "?"
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, hello)
+    const c = try h2.connect(try net.connect(listener.address()))
+    let answers = [try ask(c, "/one"), try ask(c, "/two")]
+    const tasks = [spawn ask(c, "/a"), spawn ask(c, "/b"), spawn ask(c, "/c")]
+    for t in tasks {
+        answers.push(try t.wait())
+    }
+    const first = answers[0].split("|")[1]
+    let same = true
+    for a in answers {
+        const parts = a.split("|")
+        print(parts[0])
+        same = same and parts[1] == first
+    }
+    print("one connection: {same}")
+    print("going away: {c.going_away()}")
+    c.close()
+    print(ask(c, "/late") catch e => "{e}")
+}

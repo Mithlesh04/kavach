@@ -38,9 +38,10 @@ fn bad_numbers() {
     check_all(&[
         // Meant as a name: reported, then read as one (spec 1.5).
         ("12abc", "12abc"),
-        ("0x", "ERR"),
-        ("0b102", "ERR"),
-        ("0x10000000000000000", "ERR"),
+        // Reported, then read as `0`, so they cause no second error.
+        ("0x", "int:0"),
+        ("0b102", "int:0"),
+        ("0x10000000000000000", "int:0"),
         // Too big for 64 bits: a `BigInt` (spec 2.1).
         ("18446744073709551616", "bigint:18446744073709551616"),
     ]);

@@ -229,6 +229,7 @@ impl<'s> Reader<'s> {
                         union: *def,
                         name: Rc::from(written),
                         fields: values,
+                        life: None,
                     },
                 }
             }

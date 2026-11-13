@@ -1,11 +1,18 @@
-// Rule: `json.describe(value)` on a function value gives `FnSchema?`: the description of the named function it is, or `none` for a lambda.
+// Rule: `json.describe(value)` on a function value gives `FnSchema?`: the description of the named function it is, also one that can fail, one that can't given where one that can is wanted, or one that takes a value with no schema (whose schema is `{}`), and inside a generic function; `none` for a lambda.
 // Spec: 2.12
 // expect output: twice: Doubles a number.
 // expect output: next: Adds one.
 // expect output: a lambda
 // expect output: n
+// expect output: checked: Fails on a negative number.
+// expect output: twice: Doubles a number.
+// expect output: handle: Takes a context. {}
 
 use std.json
+
+type Ctx {
+    log: fn(String) -> Int
+}
 
 /// Doubles a number.
 fn twice(n: Int) -> Int {
@@ -17,11 +24,38 @@ fn next(n: Int) -> Int {
     n + 1
 }
 
+/// Fails on a negative number.
+fn checked(n: Int) -> Int ! Error {
+    if n < 0 {
+        fail Error("negative")
+    }
+    n
+}
+
+/// Takes a context.
+fn handle(n: Int, ctx: Ctx) -> Int ! Error {
+    ctx.log("{n}")
+}
+
 fn name_of(f: fn(Int) -> Int) -> String {
     if let d = json.describe(f) {
         return "{d.name}: {d.doc}"
     }
     "a lambda"
+}
+
+fn failing(f: fn(Int) -> Int ! Error) -> String {
+    if let d = json.describe(f) {
+        return "{d.name}: {d.doc}"
+    }
+    "none"
+}
+
+fn route<P, R, E>(f: fn(P, Ctx) -> R ! E) -> String {
+    if let d = json.describe(f) {
+        return "{d.name}: {d.doc} {d.params[1].schema}"
+    }
+    "none"
 }
 
 fn main() {
@@ -31,4 +65,7 @@ fn main() {
     }
     const d = json.describe(next)
     print(d.params[0].name)
+    print(failing(checked))
+    print(failing(twice))
+    print(route(handle))
 }

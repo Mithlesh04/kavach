@@ -293,3 +293,15 @@ fn implementing_methods_keep_the_interface_types() {
         ),
     ]);
 }
+
+#[test]
+fn a_bad_number_gives_one_error() {
+    // Not also "`print` takes one argument", as when the number was dropped.
+    check_all(&[(
+        "fn main() {
+    print(0o8)
+}
+",
+        &["2: invalid digit in octal number"],
+    )]);
+}

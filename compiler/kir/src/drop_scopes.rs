@@ -135,7 +135,15 @@ impl Pass<'_> {
             self.stmt(s, &mut stmts);
             stmts.push(run());
         }
-        let mut value = b.value.map(|mut v| {
+        // A block that ends in `fail`: it leaves, as a statement would.
+        let b_value = match b.value {
+            Some(v) if matches!(v.kind, ExprKind::Fail(_)) => {
+                self.stmt(Stmt::Expr(*v), &mut stmts);
+                None
+            }
+            other => other,
+        };
+        let mut value = b_value.map(|mut v| {
             self.expr(&mut v);
             v
         });
@@ -194,6 +202,31 @@ impl Pass<'_> {
                 });
                 self.end_scopes(0, out);
                 out.push(Stmt::Return(e));
+            }
+            // `fail` leaves every block too, so the function's `Drop`
+            // values end first, the last made first, as before `return`.
+            Stmt::Expr(Expr {
+                kind: ExprKind::Fail(error),
+                ty,
+                line,
+            }) => {
+                let mut error = *error;
+                self.expr(&mut error);
+                let keep = self.locals.len() as Local;
+                self.locals.push(error.ty);
+                let error_ty = error.ty;
+                out.push(Stmt::Let(keep, error));
+                self.end_scopes(0, out);
+                let error = Expr {
+                    kind: ExprKind::Move(keep),
+                    ty: error_ty,
+                    line,
+                };
+                out.push(Stmt::Expr(Expr {
+                    kind: ExprKind::Fail(Box::new(error)),
+                    ty,
+                    line,
+                }));
             }
             Stmt::Break | Stmt::Continue => {
                 if let Some(&depth) = self.loops.last() {

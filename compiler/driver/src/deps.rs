@@ -150,13 +150,13 @@ fn declared(root: &Path) -> Result<Vec<Dep>, String> {
                 })?,
             Some(_) => return Err(wrong("`can` is a list, such as `can = [\"Net\"]`")),
         };
-        if let Some(bad) = can
-            .iter()
-            .find(|c| !kavach_resolver::CAPABILITIES.contains(&c.as_str()))
-        {
+        if let Some(bad) = can.iter().find(|c| {
+            !kavach_resolver::CAPABILITIES.contains(&c.as_str())
+                && !crate::grants::NARROW.contains(&c.as_str())
+        }) {
             let known = kavach_resolver::CAPABILITIES.join(", ");
             return Err(wrong(&format!(
-                "`{bad}` in `can` is not a capability: they are {known} (spec 8.1)"
+                "`{bad}` in `can` is not a capability: they are {known}, and `Fs.read` or `Fs.write` for part of `Fs` (spec 8.1)"
             )));
         }
         out.push(Dep {
@@ -349,7 +349,11 @@ pub fn resolve(top: &Path, fetch: bool) -> Result<Vec<Package>, String> {
     while let Some((from_root, dep, above)) = queue.pop() {
         let granted: Vec<String> = match &above {
             None => dep.can.clone(),
-            Some(a) => dep.can.iter().filter(|c| a.contains(c)).cloned().collect(),
+            Some(a) => dep
+                .can
+                .iter()
+                .flat_map(|c| crate::grants::meet(c, a))
+                .collect(),
         };
         let (root, git) = match &dep.from {
             From::Path(p) => (

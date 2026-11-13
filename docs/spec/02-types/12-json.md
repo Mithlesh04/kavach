@@ -163,7 +163,7 @@ print(json.describe(price).examples)   // ["price(3) == 30"]
 
 A parameter, result or error whose type has no schema (a function, a map with other keys) is a compile error, as for `json.schema<T>()`.
 
-**A function value described.** Given a function value instead of a name, such as a parameter or an item of a list of handlers, `json.describe(value)` gives `FnSchema?`: the description of the named function the value is, or `none` for a lambda (and for a generic function, which has no one description). A framework that is handed its routes as values can describe each one.
+**A function value described.** Given a function value instead of a name, such as a parameter or an item of a list of handlers, `json.describe(value)` gives `FnSchema?`: the description of the named function the value is, or `none` for a lambda (and for a generic function, which has no one description). It works inside a generic function too, with the types it was called with. A parameter, result or error with no schema (a function, a record holding one, the built-in `Error`) is `{}`, any value, there, so every named function can be described. A framework that is handed its routes as values can describe each one.
 
 ```kavach
 /// Lists the orders.

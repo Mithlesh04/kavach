@@ -43,6 +43,8 @@ impl<'a> Interp<'a> {
                 | "connect"
                 | "connect_tls"
                 | "connect_quic"
+                | "start_tls"
+                | "accept_tls"
         ) {
             return None;
         }

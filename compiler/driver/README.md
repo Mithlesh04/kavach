@@ -20,6 +20,7 @@ It also reads `kavach.toml` (spec 10.4), found in the file's folder or a parent:
 | `src/project.rs` | Projects: every file of `src/`, parsed as one source; `orders.total` rewritten to the name it links to |
 | `src/deps.rs` | Dependencies (spec 10.12): `[dependencies]` by path or git, fetching into `kavach_modules/`, `kavach.lock`, and each dependency's files as modules of its package |
 | `src/workspace.rs` | Workspaces (spec 10.14): the members a root `kavach.toml` lists, and the folder holding a member's `kavach.lock` and `kavach_modules/` |
+| `src/grants.rs` | What a dependency is granted (spec 10.12): whole capabilities or parts such as `Fs.read`, never more than the package above it |
 | `src/fetch_checks.rs` | What a dependency may name: only sources safe to fetch (no options, passwords or unencrypted transports), commits, and folder names every system can make |
 | `src/std_modules.rs` | The standard library modules written in Kavach, and which of them a program uses: those it names with `std.<name>`, by a public type or variant, or through a built-in such as `ask` (decision 0024) |
 | `src/config.rs` | `kavach.toml`: finding and reading it |

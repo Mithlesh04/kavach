@@ -4,6 +4,14 @@ use crate::lexer::{Lexer, is_ident_continue};
 use crate::token::TokenKind;
 
 impl Lexer<'_> {
+    /// A number written wrong: reported once, then read as `0`, so the
+    /// expression around it is checked as usual and gives no second,
+    /// wrong error (`print(0o8)` still takes one argument).
+    fn bad_number(&mut self, start: usize, why: String) {
+        self.error(start, self.pos, why);
+        self.push(TokenKind::Int(0), start);
+    }
+
     pub(crate) fn number(&mut self) {
         let start = self.pos;
         let rest = self.rest();
@@ -21,17 +29,15 @@ impl Lexer<'_> {
                 .filter(|&c| c != '_')
                 .collect();
             if digits.is_empty() {
-                return self.error_token(
-                    start,
-                    format!("a {name} number needs digits after `{}`", &rest[..2]),
-                );
+                let why = format!("a {name} number needs digits after `{}`", &rest[..2]);
+                return self.bad_number(start, why);
             }
             if !digits.chars().all(|c| c.is_digit(radix)) {
-                return self.error_token(start, format!("invalid digit in {name} number"));
+                return self.bad_number(start, format!("invalid digit in {name} number"));
             }
             return match u64::from_str_radix(&digits, radix) {
                 Ok(value) => self.push(TokenKind::Int(value), start),
-                Err(_) => self.error_token(start, "this number is too large"),
+                Err(_) => self.bad_number(start, "this number is too large".into()),
             };
         }
 

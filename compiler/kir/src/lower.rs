@@ -34,6 +34,9 @@ pub(crate) struct Lowerer<'a> {
     pub(crate) ready: HashMap<FuncId, ir::Function>,
     /// The function-value wrapper of each named function (`lower_closure.rs`).
     pub(crate) wrappers: HashMap<FuncId, FuncId>,
+    /// The closure function that makes a value of each function type that
+    /// can't fail into one of a type that can (`lower_fn_errors.rs`).
+    pub(crate) adapters: HashMap<(Type, Type), FuncId>,
     /// The error of a built-in loop just lowered, given a function that
     /// can fail (`lower_fn_errors.rs`).
     pub(crate) pending_error: Option<Local>,
@@ -126,6 +129,7 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
         loop_frames: Vec::new(),
         ready: HashMap::new(),
         wrappers: HashMap::new(),
+        adapters: HashMap::new(),
         pending_error: None,
         generic_fns: HashMap::new(),
         generic_methods: HashMap::new(),
@@ -232,6 +236,15 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
     // A child of `spawn process` runs its call instead (9.8).
     registers.extend(l.process_starts());
     collect_functions(&mut l, &mut functions, &mut failed)?;
+    // Generic `Drop` types' instances are known now (6.1).
+    loop {
+        let more = l.generic_drop_registrations()?;
+        if more.is_empty() {
+            break;
+        }
+        registers.extend(more);
+        collect_functions(&mut l, &mut functions, &mut failed)?;
+    }
     if let Some(f) = functions.get_mut(entry as usize) {
         f.body.stmts.splice(0..0, registers);
     }

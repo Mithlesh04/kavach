@@ -313,6 +313,7 @@ impl<'a> Interp<'a> {
                     union,
                     name,
                     fields: values,
+                    ..
                 },
             ) => {
                 let last = path.segments.last().expect("a name");

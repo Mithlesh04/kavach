@@ -66,6 +66,10 @@ pub enum Value<'a> {
         union: DefId,
         name: Rc<str>,
         fields: Vec<Field<'a>>,
+        /// For a union that implements `Drop`: as a record's (`drops.rs`).
+        /// Only held, so its `drop` runs when the last copy goes.
+        #[allow(dead_code)]
+        life: Option<Rc<Life<'a>>>,
     },
     Closure(Rc<Closure<'a>>),
     Func(DefId),
@@ -91,18 +95,30 @@ pub enum Value<'a> {
 #[derive(Debug)]
 pub struct Life<'a> {
     pub def: DefId,
+    /// The record's name, or the variant's, for a union.
     pub name: Rc<str>,
+    /// Whether it is a union's value, `def` the union.
+    pub variant: bool,
     pub fields: RefCell<Vec<Field<'a>>>,
     pub queue: Rc<RefCell<Vec<Value<'a>>>>,
 }
 
 impl Drop for Life<'_> {
     fn drop(&mut self) {
-        let value = Value::Record {
-            def: self.def,
-            name: Rc::clone(&self.name),
-            fields: self.fields.take(),
-            life: None,
+        let (name, fields) = (Rc::clone(&self.name), self.fields.take());
+        let value = match self.variant {
+            true => Value::Variant {
+                union: self.def,
+                name,
+                fields,
+                life: None,
+            },
+            false => Value::Record {
+                def: self.def,
+                name,
+                fields,
+                life: None,
+            },
         };
         self.queue.borrow_mut().push(value);
     }
@@ -200,11 +216,13 @@ impl PartialEq for Value<'_> {
                     union: u1,
                     name: n1,
                     fields: f1,
+                    ..
                 },
                 Variant {
                     union: u2,
                     name: n2,
                     fields: f2,
+                    ..
                 },
             ) => u1 == u2 && n1 == n2 && fields_eq(f1, f2),
             (Shared(a), Shared(b)) => Rc::ptr_eq(a, b),
@@ -368,6 +386,7 @@ impl Value<'_> {
                 union: def,
                 name,
                 fields: fs,
+                ..
             } => {
                 if let Some(union) = union.map(|u| u(*def)).filter(|u| !u.is_empty()) {
                     out.push_str(&union);

@@ -10,7 +10,7 @@
 //!   is the loop's, which `try` or `catch` around the call then reads
 //!   (`pending_error`, taken by `outcome`).
 
-use crate::ir::{self, Block, ExprKind as K, Local, Shape, Stmt, Type};
+use crate::ir::{self, Block, ExprKind as K, FuncId, Local, Shape, Stmt, Type};
 use crate::lower::{Lowered, Lowerer};
 use kavach_ast as ast;
 
@@ -56,16 +56,38 @@ impl<'a> Lowerer<'a> {
     /// which can: a closure around it that never fails.
     pub(crate) fn never_failing(&mut self, inner: ir::Expr, want: Type) -> Lowered<ir::Expr> {
         let line = inner.line;
-        let Some(Shape::Func(param_types, ret, _)) = self.shapes.shape(want).cloned() else {
+        let Some(func) = self.adapter(inner.ty, want, line) else {
             return Ok(inner);
         };
         let env_ty = self.shapes_intern(Shape::Closure(vec![inner.ty]));
+        Ok(ir::Expr {
+            kind: K::Closure {
+                func,
+                env: env_ty,
+                captures: vec![inner],
+            },
+            ty: want,
+            line,
+        })
+    }
+
+    /// The closure function that calls a value of type `inner`, which
+    /// can't fail, as one of type `want`, which can: made once per pair,
+    /// so `json.describe` can see through it (spec 2.12).
+    pub(crate) fn adapter(&mut self, inner: Type, want: Type, line: u32) -> Option<FuncId> {
+        if let Some(f) = self.adapters.get(&(inner, want)) {
+            return Some(*f);
+        }
+        let Some(Shape::Func(param_types, ret, _)) = self.shapes.shape(want).cloned() else {
+            return None;
+        };
+        let env_ty = self.shapes_intern(Shape::Closure(vec![inner]));
         let saved = self.save_function(ret);
         let env = self.new_local(env_ty);
         let params: Vec<Local> = param_types.iter().map(|t| self.new_local(*t)).collect();
         let read = ir::Expr {
             kind: K::GetField(Box::new(self.local_expr(env, line)), 1),
-            ty: inner.ty,
+            ty: inner,
             line,
         };
         let call = ir::Expr {
@@ -100,15 +122,8 @@ impl<'a> Lowerer<'a> {
         };
         self.restore_function(saved);
         let func = self.add_function(f);
-        Ok(ir::Expr {
-            kind: K::Closure {
-                func,
-                env: env_ty,
-                captures: vec![inner],
-            },
-            ty: want,
-            line,
-        })
+        self.adapters.insert((inner, want), func);
+        Some(func)
     }
 
     /// For a built-in loop over `item` with function `f` that can fail:

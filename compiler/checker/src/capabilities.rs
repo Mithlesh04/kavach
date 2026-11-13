@@ -51,6 +51,9 @@ struct FnInfo<'f> {
 }
 
 /// Whether `declared` covers `cap`: `Payments` covers `Payments.refund`.
+/// The parts of a built-in capability `can` grants alone (spec 10.12).
+const NARROW: [&str; 2] = ["Fs.read", "Fs.write"];
+
 fn covers(declared: &BTreeSet<String>, cap: &str) -> bool {
     declared.contains(cap)
         || cap
@@ -302,14 +305,23 @@ impl Checker<'_> {
                 continue;
             };
             for cap in effective.get(d).into_iter().flatten() {
+                // `can = ["Fs"]` covers `Fs.read`; `["Fs.read"]` covers only it.
                 let base = cap.split_once('.').map_or(cap.as_str(), |(c, _)| c);
-                if granted.iter().any(|g| g == base) || !reported.insert((package, base)) {
+                // A part of a program's own capability counts as all of it.
+                let shown = if NARROW.contains(&cap.as_str()) {
+                    cap.as_str()
+                } else {
+                    base
+                };
+                if granted.iter().any(|g| g == base || g == shown)
+                    || !reported.insert((package, shown.to_string()))
+                {
                     continue;
                 }
                 errors.push((
                     info.decl.name.span,
                     format!(
-                        "`{}` in the package `{package}` uses {base}, which the package isn't granted: add \"{base}\" to `can` in its entry in kavach.toml, and in the entry of each package it comes through, if you trust them (spec 10.12)",
+                        "`{}` in the package `{package}` uses {shown}, which the package isn't granted: add \"{shown}\" to `can` in its entry in kavach.toml, and in the entry of each package it comes through, if you trust them (spec 10.12)",
                         info.decl.name.name
                     ),
                 ));

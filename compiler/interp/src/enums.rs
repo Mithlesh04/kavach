@@ -26,10 +26,15 @@ impl<'a> Interp<'a> {
         if variants.iter().any(|v| *v.name.name == *name) {
             return None;
         }
-        let variant = |v: &kavach_ast::Variant| Value::Variant {
-            union: def,
-            name: Rc::from(v.name.name.as_str()),
-            fields: Vec::new(),
+        let variant = |v: &kavach_ast::Variant| {
+            let name = Rc::from(v.name.name.as_str());
+            let life = self.variant_life(def, &name, &[]);
+            Value::Variant {
+                union: def,
+                name,
+                fields: Vec::new(),
+                life,
+            }
         };
         let found = match (name, arg) {
             ("all", _) => {

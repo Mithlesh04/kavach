@@ -1,0 +1,11 @@
+use std.fs
+
+/// Reads a note: only reading files.
+pub fn read(name: String) -> String ! FsError uses Fs.read {
+    try fs.read_text("notes/{name}.txt")
+}
+
+/// Saves a note: writing files, which the entry doesn't grant.
+pub fn save(name: String, text: String) ! FsError uses Fs.write {     // error: notes isn't granted Fs.write
+    try fs.write_text("notes/{name}.txt", text)
+}

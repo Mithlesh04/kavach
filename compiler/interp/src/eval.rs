@@ -317,11 +317,16 @@ impl<'a> Interp<'a> {
                 }
                 None => Err(self.panic("`tokens` is only for `limit Ai` rules", span)),
             },
-            DefKind::Variant { of } => Ok(Value::Variant {
-                union: of,
-                name: Rc::from(id.name.as_str()),
-                fields: Vec::new(),
-            }),
+            DefKind::Variant { of } => {
+                let name = Rc::from(id.name.as_str());
+                let life = self.variant_life(of, &name, &[]);
+                Ok(Value::Variant {
+                    union: of,
+                    name,
+                    fields: Vec::new(),
+                    life,
+                })
+            }
             _ => Ok(Value::Unit),
         }
     }
@@ -335,13 +340,16 @@ impl<'a> Interp<'a> {
         let TypeBody::Union(vs) = &self.unions.get(&def)?.body else {
             return None;
         };
-        vs.iter()
-            .any(|v| v.name.name == name.name)
-            .then(|| Value::Variant {
+        vs.iter().any(|v| v.name.name == name.name).then(|| {
+            let name = Rc::from(name.name.as_str());
+            let life = self.variant_life(def, &name, &[]);
+            Value::Variant {
                 union: def,
-                name: Rc::from(name.name.as_str()),
+                name,
                 fields: Vec::new(),
-            })
+                life,
+            }
+        })
     }
 
     fn closure(

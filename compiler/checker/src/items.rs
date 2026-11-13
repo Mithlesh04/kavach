@@ -273,6 +273,7 @@ impl Checker<'_> {
                     );
                 }
                 let ty = declared.unwrap_or(actual);
+                self.warn_unnamed_drop(pattern, &ty);
                 if !self.destructure(pattern, &ty, value) {
                     self.bind(pattern, &ty);
                 }

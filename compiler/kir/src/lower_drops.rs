@@ -45,7 +45,8 @@ impl<'a> Lowerer<'a> {
         defs.sort_unstable();
         let mut out = Vec::new();
         for def in defs {
-            // A generic type's methods are made per use; not yet here.
+            // A generic type's `drop` is made per instance, once the
+            // program has made them (`generic_drop_registrations`).
             let key = (Owner::Adt(def), "drop".to_string());
             let Some(&fid) = self.method_ids.get(&key) else {
                 continue;
@@ -55,6 +56,50 @@ impl<'a> Lowerer<'a> {
             let Type::Ref(id) = ty else { continue };
             let fn_ty = self.shapes_intern(Shape::Func(vec![ty], Type::Unit, None));
             let closure = self.function_value(fid, fn_ty, span)?;
+            self.drop_records.push(id);
+            let code = ir::Expr {
+                kind: K::Int(i128::from(id)),
+                ty: Type::I64,
+                line: 1,
+            };
+            out.push(Stmt::Expr(ir::Expr {
+                kind: K::Rt(RtOp::DropRegister, vec![code, closure]),
+                ty: Type::Unit,
+                line: 1,
+            }));
+        }
+        Ok(out)
+    }
+
+    /// The registrations of each instance of a generic `Drop` type the
+    /// program made (`Box<Int>`) and that isn't registered yet: its `drop`,
+    /// made for those type arguments. Making one may make more instances,
+    /// so the caller asks again until none is left.
+    pub(crate) fn generic_drop_registrations(&mut self) -> Lowered<Vec<Stmt>> {
+        let mut found: Vec<(kavach_resolver::DefId, Vec<Type>, u32)> = (self.shapes.adts.iter())
+            .filter(|((def, args), _)| !args.is_empty() && self.c.drop_types.contains(def))
+            .map(|((def, args), id)| (*def, args.clone(), *id))
+            .filter(|(_, _, id)| !self.drop_records.contains(id))
+            .collect();
+        found.sort_by_key(|f| f.2);
+        let mut out = Vec::new();
+        for (def, args, id) in found {
+            let Some(f) = self
+                .generic_methods
+                .get(&(def, "drop".to_string()))
+                .copied()
+            else {
+                continue;
+            };
+            let subst = self
+                .type_generics(def)
+                .into_iter()
+                .zip(args.iter().copied())
+                .collect();
+            let fid = self.instance(def, f, args, subst, Some(Owner::Adt(def)));
+            let ty = Type::Ref(id);
+            let fn_ty = self.shapes_intern(Shape::Func(vec![ty], Type::Unit, None));
+            let closure = self.function_value(fid, fn_ty, Span::new(0, 0))?;
             self.drop_records.push(id);
             let code = ir::Expr {
                 kind: K::Int(i128::from(id)),

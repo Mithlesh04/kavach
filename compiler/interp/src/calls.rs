@@ -190,11 +190,16 @@ impl<'a> Interp<'a> {
             });
         }
         let value = match variant {
-            Some(v) => Value::Variant {
-                union: def,
-                name: Rc::from(v),
-                fields,
-            },
+            Some(v) => {
+                let name = Rc::from(v);
+                let life = self.variant_life(def, &name, &fields);
+                Value::Variant {
+                    union: def,
+                    name,
+                    fields,
+                    life,
+                }
+            }
             None => {
                 let name: Rc<str> = Rc::from(decl.name.name.as_str());
                 let life = self.life_for(def, &name, &fields);

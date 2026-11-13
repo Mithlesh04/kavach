@@ -1,0 +1,20 @@
+// Rule: A `Drop` value given to `_` drops at the end of its statement, as `_` names nothing; a warning says to name it `_guard` to keep it to the end of the block.
+// Spec: 6.1
+// expect warning
+// expect output: released lost
+// expect output: working
+// expect output: released kept
+
+type Guard: Drop {
+    name: String
+
+    fn drop(self) {
+        print("released {self.name}")
+    }
+}
+
+fn main() {
+    const _ = Guard(name: "lost")          // warning: dropped here, not at the end
+    const _guard = Guard(name: "kept")
+    print("working")
+}
