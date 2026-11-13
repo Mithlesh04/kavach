@@ -1,0 +1,48 @@
+// Rule: in a program with `Drop` types, a `catch` handler may return from its function a value of any type, such as a `Bool` or a `Float`.
+// Spec: 6.1
+// expect output: busy: busy
+// expect output: true
+// expect output: gave c
+// expect output: false
+// expect output: 0.5
+
+type Lease: Drop {
+    n: Int
+
+    fn drop(self) {
+    }
+}
+
+type Client {
+    name: String
+    on: fn(Int) -> Int
+}
+
+fn take(busy: Bool) -> Client ! String {
+    if busy {
+        fail "busy"
+    }
+    Client(name: "c", on: x => x + 1)
+}
+
+fn try_take(busy: Bool) -> Bool uses Console {
+    const extra = take(busy) catch e => {
+        print("busy: {e}")
+        return true
+    }
+    print("gave {extra.name}")
+    false
+}
+
+fn share(busy: Bool) -> Float {
+    const _client = take(busy) catch _ => {
+        return 0.5
+    }
+    1.0
+}
+
+fn main() uses Console {
+    print(try_take(true))
+    print(try_take(false))
+    print(share(true))
+}

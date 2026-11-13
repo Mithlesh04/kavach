@@ -93,6 +93,12 @@ pub(crate) struct Interp<'a> {
     pub(crate) fake: Option<Rc<std::cell::RefCell<crate::fakes::World>>>,
     /// A test's frozen clock (spec 14.4), shared by its tasks.
     pub(crate) frozen: crate::std_time::Frozen,
+    /// A call reached a C function, which runs only in native code:
+    /// generated tests then skip the function they called (spec 11.2).
+    pub(crate) reached_c: bool,
+    /// A cancelled task running its `drop`s (spec 9.6): no stop point
+    /// stops them.
+    pub(crate) cleaning: bool,
     /// Values whose last holder has ended, waiting for their `drop`
     /// (`drops.rs`); tasks share it.
     pub(crate) drops: Rc<std::cell::RefCell<Vec<Value<'a>>>>,
@@ -159,6 +165,8 @@ impl<'a> Interp<'a> {
             leaving: false,
             fake: None,
             frozen: None,
+            reached_c: false,
+            cleaning: false,
             drops: Rc::new(std::cell::RefCell::new(Vec::new())),
             drop_types: std::collections::HashSet::new(),
             block_lets: Vec::new(),
@@ -294,6 +302,7 @@ impl<'a> Interp<'a> {
         self.step(span)?;
         // C functions (spec 10.7) run in native code only.
         if let Some(lib) = &f.c_library {
+            self.reached_c = true;
             return Err(self.panic(
                 format!(
                     "`{}` is a C function (library \"{lib}\"): it runs in native code, so run the program with `kavach run --native` or `kavach build` (spec 10.7)",

@@ -1,0 +1,7 @@
+pub type Client {
+    pub name: String
+}
+
+pub fn connect(name: String) -> Client {
+    Client(name: name)
+}

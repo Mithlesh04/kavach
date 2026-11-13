@@ -1,0 +1,20 @@
+// Rule: `pub use` in a module makes names declared in another module part of it, the same declarations, also when re-exported again.
+// Spec: 10.2
+// expect output: connected to shop
+// expect output: high
+
+use store
+use store.{Level}
+
+fn describe(c: store.Client) -> String {
+    "connected to {c.name}"
+}
+
+fn main() {
+    print(describe(store.connect("shop")))
+    const level = Level.High
+    print(match level {
+        Level.Low => "low",
+        Level.High => "high",
+    })
+}

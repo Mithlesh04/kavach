@@ -20,11 +20,13 @@ Conformance tests for spec chapter [9. Concurrency](../../../docs/spec/09-concur
 | 9.4 | [try-put-never-waits.kav](try-put-never-waits.kav) | `send.try_put(v)` adds `v` only when the channel has room and is open, and says whether it did; it never waits. | runs |
 | 9.4 | [a-sent-none-is-not-the-end.kav](a-sent-none-is-not-the-end.kav) | `take()` gives `Taken.Item(value)` or `Taken.Closed`, so a `none` sent on a `Channel<T?>` is a value, not the channel's end. | runs |
 | 9.3 | [parallel-map-keeps-order-and-limit.kav](parallel-map-keeps-order-and-limit.kav) | `parallel_map` runs each item in its own task, at most `max` at a time, and gives the results in order. | runs |
+| 9.3 | [parallel-map-passes-a-panic-on.kav](parallel-map-passes-a-panic-on.kav) | A panic in an item's task of `parallel_map` is a panic where `parallel_map` was called. | panics |
 | 9.7 | [effects-keep-the-order-of-turns.kav](effects-keep-the-order-of-turns.kav) | Tasks may compute at the same time, but what they print happens in the order of their turns. | runs |
 | 9.8 | [each-spawn-chooses-how-it-runs.kav](each-spawn-chooses-how-it-runs.kav) | `spawn`, `spawn thread` and `spawn cores`, mixed in one program, print the same. | runs |
 | 9.5 | [tasks-share-a-shared-value.kav](tasks-share-a-shared-value.kav) | Tasks that hold a `Shared` value change that one value, in the order of their turns. | runs |
 | 9.6 | [cancelled-tasks-stop-at-their-next-wait.kav](cancelled-tasks-stop-at-their-next-wait.kav) | A cancelled task stops at its next waiting point; nothing after it runs. | runs |
 | 9.6 | [cancel-stops-a-task-that-never-waits.kav](cancel-stops-a-task-that-never-waits.kav) | `task.cancel()` stops a task at once, even in a loop that never waits. | runs |
+| 9.6 | [cancelled-tasks-run-their-cleanup.kav](cancelled-tasks-run-their-cleanup.kav) | A task's cleanup is a `Drop` value: it runs when the task is cancelled while it waits. | runs |
 | 9.6 | [a-time-limit-stops-a-stuck-task.kav](a-time-limit-stops-a-stuck-task.kav) | `spawn … within d` stops a stuck task when its time is up; `.wait()` fails with `timed out after … ms`. | runs |
 | 9.6 | [cancelling-is-not-an-error.kav](cancelling-is-not-an-error.kav) | `catch` doesn't see cancelling, so a cancelled task stops even inside `catch`. | runs |
 | 9.6 | [waiting-for-a-cancelled-task-fails.kav](waiting-for-a-cancelled-task-fails.kav) | `.wait()` on a cancelled task fails with the error `the task was cancelled`. | runs |

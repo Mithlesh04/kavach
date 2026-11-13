@@ -65,6 +65,14 @@ const pages = urls.parallel_map(url => download(url), max: 10)
 
 `parallel_map` runs the function on each item in a task of its own, at most `max` tasks at a time, and returns the results in the original order. Each task runs as `spawn thread` makes it (9.8), so in a release build the items compute on several cores at once. Without `max` (or with 0), every task starts at once. Before it starts the task for item `i`, it waits for the task of item `i - max`, so the turns (9.7) are the same on every run.
 
+Given a function that can fail, `parallel_map` fails with the first error in the items' order (5.2). A panic in an item's task is printed when it happens, as any task's is (9.1), and is then a panic where `parallel_map` was called: the call can't fail by its type, so there is no error to give back. Its message is "an item of `parallel_map` panicked:", then the task's message and where it happened. Rust's Rayon and Java's parallel streams pass a task's panic on the same way.
+
+```kavach
+const halves = [4, 0, 2].parallel_map(n => 8 / n)
+// panic: division by zero
+// panic: an item of `parallel_map` panicked: division by zero at main.kav:1
+```
+
 ## 9.4 Channels
 
 Channels pass values between tasks. `Channel<T>(capacity: n)` gives its two ends, a `Sender<T>` and a `Receiver<T>`:
@@ -141,6 +149,32 @@ A cancel always wins: no code can put it off. Nothing is left half-done all the 
 - Inside `Shared.update` (6.2), the task stops once the update's function returns, so the value is never half-changed.
 - An agent's event that is cut short stays unfinished in its journal and runs again after a restart (8.5).
 - A durable write (`fs.write_durable`, 14.3) is all there or not at all, as after a crash.
+
+**Cleanup that must run however a task ends** (cancelled, failed, panicked or done) is a value whose type implements `Drop` (6.1). There is no `defer` or `on_cancel` block: one way covers every exit. A pool gives each borrower a guard, and the guard gives the slot back:
+
+```kavach
+type Slot: Drop {
+    pool: Shared<Int>       // free slots
+
+    fn drop(self) {
+        const _ = self.pool.update(n => n + 1)
+    }
+}
+
+fn take(pool: Shared<Int>) -> Slot {
+    const _ = pool.update(n => n - 1)
+    Slot(pool: pool)
+}
+
+const pool = Shared(2)
+const worker = spawn {
+    const _slot = take(pool)
+    time.sleep(1.hours)         // cancelled while it waits
+}
+worker.cancel()
+worker.wait() catch _ => {}     // it ended, cancelled
+print(pool.get())               // 2: the slot came back
+```
 
 **A time limit at spawn** stops a task that may get stuck, even one that holds the turn (9.7) so nothing else can run to cancel it. `within d` after the spawned call or block gives it `d` to finish; then it stops at its next such point, as if cancelled, and `.wait()` on it fails with `timed out after 5000 ms`:
 

@@ -1,0 +1,36 @@
+// Rule: a task's cleanup is a `Drop` value: it runs when the task is cancelled while it waits, as on any other exit.
+// Spec: 9.6
+// expect output: free: 1
+// expect output: slot given back
+// expect output: free: 2
+
+use std.time
+
+type Slot: Drop {
+    pool: Shared<Int>
+
+    fn drop(self) uses Console {
+        const _ = self.pool.update(n => n + 1)
+        print("slot given back")
+    }
+}
+
+fn take(pool: Shared<Int>) -> Slot {
+    const _ = pool.update(n => n - 1)
+    Slot(pool: pool)
+}
+
+fn main() uses Console, Clock {
+    const pool = Shared(2)
+    const (started, ran) = Channel<Bool>(capacity: 1)
+    const worker = spawn {
+        const _slot = take(pool)
+        started.put(true)
+        time.sleep(1.hours)
+    }
+    const _ = ran.take()
+    print("free: {pool.get()}")
+    worker.cancel()
+    worker.wait() catch _ => {}
+    print("free: {pool.get()}")
+}

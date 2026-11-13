@@ -300,6 +300,37 @@ impl<'a> Interp<'a> {
         })
     }
 
+    /// Whether `g` can make any value: a record whose fields all can, a
+    /// union with a variant that can, or a type with its own `sample`.
+    /// A record holding a `Shared` can't (its field has no generator).
+    pub(crate) fn generable(&self, g: &Gen, seen: &mut Vec<DefId>) -> bool {
+        let def = match g {
+            Gen::List(x) | Gen::Optional(x) => return self.generable(x, seen),
+            Gen::Map(k, v) => return self.generable(k, seen) && self.generable(v, seen),
+            Gen::Tuple(xs) => return xs.iter().all(|x| self.generable(x, seen)),
+            Gen::Adt(def) => *def,
+            _ => return true,
+        };
+        // A type met again inside itself is judged where it was met first.
+        if seen.contains(&def) || self.sampler(def).is_some() {
+            return true;
+        }
+        seen.push(def);
+        let decl = self.records.get(&def).or_else(|| self.unions.get(&def));
+        let fields_can = |i: &Self, fields: &[kavach_ast::Field], seen: &mut Vec<DefId>| {
+            fields
+                .iter()
+                .all(|f| i.gen_of(&f.ty).is_some_and(|g| i.generable(&g, seen)))
+        };
+        let can = match decl.map(|d| &d.body) {
+            Some(TypeBody::Record(r)) => fields_can(self, &r.fields, seen),
+            Some(TypeBody::Union(vs)) => vs.iter().any(|v| fields_can(self, &v.fields, seen)),
+            _ => false,
+        };
+        seen.pop();
+        can
+    }
+
     /// A record (never one that breaks an invariant) or a union variant.
     fn generate_adt(
         &mut self,

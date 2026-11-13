@@ -251,6 +251,8 @@ impl<'a> Interp<'a> {
             leaving: false,
             fake: self.fake.clone(),
             frozen: self.frozen.clone(),
+            reached_c: false,
+            cleaning: false,
             drops: std::rc::Rc::clone(&self.drops),
             drop_types: self.drop_types.clone(),
             block_lets: Vec::new(),
@@ -291,6 +293,10 @@ impl<'a> Interp<'a> {
                 // Whoever waits for a cancelled task gets an error; it
                 // is no error nobody read.
                 Err(Flow::Cancelled) => {
+                    // What it held is released, and its `drop`s run (9.6).
+                    self.cleaning = true;
+                    let _ = self.run_drops(span);
+                    self.cleaning = false;
                     let cancelled = &handle.unread.cancelled;
                     cancelled.store(true, std::sync::atomic::Ordering::Relaxed);
                     let why = match tasks.sched.timed_out(id) {
@@ -375,6 +381,9 @@ impl<'a> Interp<'a> {
     /// At a loop's round or a call: a task cancelled with `task.cancel()`
     /// stops here too, not only at its waits (spec 9.6, decision 0075).
     pub(crate) fn stop_point(&self) -> Result<(), Flow<'a>> {
+        if self.cleaning {
+            return Ok(());
+        }
         match &self.tasks {
             Some(t)
                 if kavach_runtime_core::tasks::any_stop_now() && t.sched.must_stop(self.task) =>

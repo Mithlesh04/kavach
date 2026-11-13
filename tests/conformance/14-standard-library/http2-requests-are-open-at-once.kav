@@ -1,0 +1,59 @@
+// Rule: requests from several tasks on one `H2Client` are open at once, each on its own stream, and each answer goes to the task that asked, in whatever order the server sends them.
+// Spec: 14.11
+// expect output: /a got 10 bytes
+// expect output: /b got 100000 bytes
+// expect output: /c got 0 bytes
+
+use std.http
+use std.http.h2
+use std.net
+
+/// Reads three requests before it answers any, then answers them last
+/// first: a client sending one request at a time would wait forever.
+fn serve(listener: Listener) ! H2Error uses Net {
+    const conn = listener.accept() catch e => fail H2Error.Network(error: e)
+    let link = try h2.accept(conn, Bytes([]))
+    let asked: [H2Message] = []
+    while asked.len() < 3 {
+        const next = try h2.next(link)
+        link = next.link
+        asked.push(next.message ?? return)
+    }
+    for m in asked.reverse() {
+        const path = m.headers.get(":path") ?? "?"
+        const ok = [Header(name: ":status", value: "200")]
+        link = try h2.respond(link, m.stream, ok, "{path} got {m.body.len()} bytes".bytes())
+    }
+    while true {
+        const next = try h2.next(link)
+        link = next.link
+        if next.message == none {
+            break
+        }
+    }
+}
+
+fn ask(c: H2Client, path: String, size: Int) -> String ! H2Error uses Net {
+    const reply = try c.request([
+        Header(name: ":method", value: "POST"),
+        Header(name: ":scheme", value: "http"),
+        Header(name: ":authority", value: "localhost"),
+        Header(name: ":path", value: path),
+        ], "x".repeat(size).bytes())
+    reply.body.text() ?? "?"
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const server = spawn serve(listener)
+    const c = try h2.connect(try net.connect(listener.address()))
+    // The second body is larger than the server's first window (65,535).
+    const a = spawn ask(c, "/a", 10)
+    const b = spawn ask(c, "/b", 100_000)
+    const d = spawn ask(c, "/c", 0)
+    print(try a.wait())
+    print(try b.wait())
+    print(try d.wait())
+    c.close()
+    server.wait() catch _ => {}
+}

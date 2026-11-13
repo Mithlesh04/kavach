@@ -96,6 +96,18 @@ struct Pass<'h> {
     loops: Vec<usize>,
 }
 
+/// Whether `s` leaves its block: `return`, `break`, `continue` or `fail`.
+fn leaves(s: &Stmt) -> bool {
+    matches!(s, Stmt::Return(_) | Stmt::Break | Stmt::Continue)
+        || matches!(
+            s,
+            Stmt::Expr(Expr {
+                kind: ExprKind::Fail(_),
+                ..
+            })
+        )
+}
+
 fn run() -> Stmt {
     Stmt::Expr(Expr {
         kind: ExprKind::Rt(RtOp::DropRun, Vec::new()),
@@ -133,7 +145,11 @@ impl Pass<'_> {
         let mut stmts = vec![run()];
         for s in b.stmts {
             self.stmt(s, &mut stmts);
-            stmts.push(run());
+            // Nothing after a statement that leaves: code after it is
+            // never reached, and would give its block a value it can't have.
+            if !stmts.last().is_some_and(leaves) {
+                stmts.push(run());
+            }
         }
         // A block that ends in `fail`: it leaves, as a statement would.
         let b_value = match b.value {
@@ -227,6 +243,23 @@ impl Pass<'_> {
                     ty,
                     line,
                 }));
+            }
+            // A call that can fail: its value ends with the innermost loop's
+            // round (or the function), not when the next round overwrites
+            // it. Not with its own block, which its value may outlive (a
+            // `.timeout` wraps the call in one).
+            Stmt::LetResult {
+                value,
+                error,
+                mut call,
+            } => {
+                self.expr(&mut call);
+                out.push(Stmt::LetResult { value, error, call });
+                if self.holds(value) {
+                    let at = self.loops.last().copied().unwrap_or(1);
+                    let at = at.min(self.scopes.len() - 1);
+                    self.scopes[at].push(value);
+                }
             }
             Stmt::Break | Stmt::Continue => {
                 if let Some(&depth) = self.loops.last() {

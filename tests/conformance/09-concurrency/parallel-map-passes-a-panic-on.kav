@@ -1,0 +1,21 @@
+// Rule: a panic in an item's task of `parallel_map` is a panic where `parallel_map` was called.
+// Spec: 9.3
+// expect output: before
+// expect output: the task panicked
+// expect panic: an item of `parallel_map` panicked: division by zero at
+
+fn halves(xs: [Int], max: Int) -> [Int] {
+    // Each item in a task of its own; 8 / 0 panics in one of them.
+    xs.parallel_map(n => 8 / n, max: max)
+}
+
+fn main() {
+    print("before")
+    // In a spawned task, the panic stops that task: `.wait()` gets it.
+    const task = spawn halves([4, 0, 2], 1)
+    const got = task.wait() catch _ => []
+    if got.is_empty() {
+        print("the task panicked")
+    }
+    print(halves([4, 0, 2], 0))
+}

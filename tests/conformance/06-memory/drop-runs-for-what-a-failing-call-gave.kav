@@ -1,0 +1,56 @@
+// Rule: a `Drop` value a call that can fail gave, and that a `Shared` map also keeps, is dropped once its last holder lets it go.
+// Spec: 6.1
+// expect output: using 0
+// expect output: using 1
+// expect output: using 0
+// expect output: using 1
+// expect output: end
+// expect output: drop 0
+// expect output: drop 1
+
+type Guard: Drop {
+    n: Int
+
+    fn drop(self) uses Console {
+        print("drop {self.n}")
+    }
+}
+
+type Entry {
+    g: Guard
+    made: Int
+}
+
+type Cache {
+    map: Shared<[String: Entry]>
+
+    fn get(self, k: String) -> Guard? {
+        self.map.get().get(k)?.g
+    }
+
+    fn put(self, k: String, g: Guard, made: Int) {
+        self.map.update(m => {
+            let n = m
+            n[k] = Entry(g: g, made: made)
+            n
+        })
+    }
+}
+
+fn fetch(c: Cache, k: String, i: Int) -> Guard ! String {
+    if let g = c.get(k) {
+        return g
+    }
+    const g = Guard(n: i)
+    c.put(k, g, i)
+    g
+}
+
+fn main() uses Console {
+    const c = Cache(map: Shared([:]))
+    for i in 0..4 {
+        const g = fetch(c, "k{i % 2}", i) catch e => panic(e)
+        print("using {g.n}")
+    }
+    print("end")
+}

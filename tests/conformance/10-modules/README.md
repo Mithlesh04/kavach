@@ -5,6 +5,8 @@ Conformance tests for spec chapter [10. Modules and packages](../../../docs/spec
 | Spec | Test | Rule | Expects |
 |---|---|---|---|
 | 10.2 | [modules-share-pub-names/](modules-share-pub-names/src/main.kav) | `use` brings in another module; its `pub` names are used through it, or directly. | runs |
+| 10.2 | [re-exports-show-names-from-other-files/](re-exports-show-names-from-other-files/src/main.kav) | `pub use` makes names declared in another module part of this one, the same declarations, also when re-exported again. | runs |
+| 10.2 | [re-exports-name-items.kav](re-exports-name-items.kav) | `pub use` re-exports names, not a whole module. | compile error |
 | 10.1 | [private-names-stay-private/](private-names-stay-private/src/main.kav) | A name without `pub` can't be used from another module. | compile error |
 | 10.1 | [private-methods-stay-in-their-package/](private-methods-stay-in-their-package/src/main.kav) | A method without `pub` can be called anywhere in its own package, but not from another. | compile error |
 | 10.1 | [private-fields-stay-private/](private-fields-stay-private/src/main.kav) | A record field without `pub` can't be used from another module. | compile error |

@@ -24,6 +24,15 @@ impl<'a> Interp<'a> {
         }
         match result {
             Err(e @ (Flow::Panic(..) | Flow::Exit(_))) => Err(e),
+            // Cancelled: its `drop`s still run, with no stop point to
+            // stop them (spec 9.6).
+            Err(Flow::Cancelled) => {
+                let was = std::mem::replace(&mut self.cleaning, true);
+                let ran = self.run_drops(b.span);
+                self.cleaning = was;
+                ran?;
+                Err(Flow::Cancelled)
+            }
             result => {
                 self.run_drops(b.span)?;
                 result

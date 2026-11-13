@@ -44,6 +44,15 @@ With no test file, `kavach test` checks `withdraw` with zero balances, huge amou
 
 A function with no contract and no example is still checked: it must not panic for any input. The report lists it as **weakly tested** (11.7).
 
+Some functions get no generated arguments. The report lists each as **not generated**, with the reason:
+
+- a generic function, or a method of a generic type;
+- a parameter whose values can't be generated, such as a record holding a `Shared`, unless its type has a `Sample` (11.3);
+- a capability with no fake yet (11.5);
+- a C function (10.7), or a function a generated case found reaching one: C runs only in native code.
+
+When no generated input meets a function's `require`, its `example`s are what checks it. The report says "checked by its examples only", or warns when it has none.
+
 ## 11.3 Generated values
 
 Every type gets a generator automatically. No code is needed.

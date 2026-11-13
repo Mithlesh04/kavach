@@ -197,11 +197,22 @@ fn native_code_calls_c_functions() {
     let dir = native("c", PROGRAM, "42\n2.5\n");
     let file = dir.join("src/main.kav");
     let interpreted = kavach().arg("run").arg(&file).output().unwrap();
+    // Generated tests skip C functions and what reaches them, which the
+    // interpreter can't run: no ✗ that isn't a bug.
+    let tested = kavach().arg("test").arg(&file).output().unwrap();
     std::fs::remove_dir_all(&dir).unwrap();
     assert_eq!(interpreted.status.code(), Some(101));
     let said = String::from_utf8_lossy(&interpreted.stderr);
     assert!(said.contains("`llabs` is a C function"), "{said}");
     assert!(said.contains("kavach run --native"), "{said}");
+    let report = String::from_utf8_lossy(&tested.stdout);
+    for skipped in [
+        "not generated: llabs: a C function, which runs only in native code (10.7)",
+        "not generated: magnitude: reaches C, which runs only in native code (10.7)",
+    ] {
+        assert!(report.contains(skipped), "{report}");
+    }
+    assert!(!report.lines().any(|l| l.starts_with('✗')), "{report}");
 }
 
 #[test]

@@ -349,4 +349,33 @@ type Plain {{
             output.stdout
         );
     }
+
+    /// A value holding a `Shared` can't be generated, so a function taking
+    /// one is listed as not generated, not shown as passing with 0 cases;
+    /// one whose `require` no input met but whose examples pass says so.
+    #[test]
+    fn functions_that_get_no_generated_input_say_why() {
+        let src = "type Keys {
+    current: Shared<String>
+
+    fn now(self) -> String {
+        self.current.get()
+    }
+}
+
+fn key(text: String) -> Int
+    require text.starts_with(\"kv1:\") and text.len() == 6
+    example key(\"kv1:ab\") == 6
+{
+    text.len()
+}
+";
+        let compiled = kavach_driver::compile(src, "keys.kav", Default::default());
+        let out = super::test(&compiled, &Default::default()).stdout;
+        let skipped = "not generated: Keys.now: takes values that can't be generated yet";
+        assert!(out.contains(skipped), "{out}");
+        let examples = "✓ key  checked by its examples only: no generated input met its `require`";
+        assert!(out.contains(examples), "{out}");
+        assert!(!out.contains("0 cases"), "{out}");
+    }
 }

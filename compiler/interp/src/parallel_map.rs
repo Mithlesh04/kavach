@@ -3,7 +3,7 @@
 
 use crate::interp::Interp;
 use crate::tasks::{TaskHandle, Work};
-use crate::value::{Eval, Value};
+use crate::value::{Eval, Flow, Value};
 use kavach_ast::Span;
 use std::sync::Arc;
 
@@ -37,7 +37,7 @@ impl<'a> Interp<'a> {
                 let earlier = Arc::clone(&started[i - max]);
                 if let Err(e) = self.wait_task(&earlier, None, span) {
                     read_all(&started);
-                    return Err(e);
+                    return Err(self.passed_on(&earlier, e, span));
                 }
             }
             match self.spawn_work(Work::Call(f.clone(), item.clone(), span), span)? {
@@ -51,10 +51,27 @@ impl<'a> Interp<'a> {
                 Ok(v) => results.push(v),
                 Err(e) => {
                     read_all(&started);
-                    return Err(e);
+                    return Err(self.passed_on(t, e, span));
                 }
             }
         }
         Ok(Value::List(std::rc::Rc::new(results)))
+    }
+
+    /// What task `t`'s ending `e` is for the call: its function's error
+    /// as it is, and a panic as a panic here (spec 9.3), since the call
+    /// can't fail by its type.
+    fn passed_on(&self, t: &TaskHandle<'a>, e: Flow<'a>, span: Span) -> Flow<'a> {
+        // A task that panicked is marked so its error isn't printed again.
+        let marked = t
+            .unread
+            .cancelled
+            .load(std::sync::atomic::Ordering::Relaxed);
+        match e {
+            Flow::Fail(Value::BuiltinError(why)) if marked && why.starts_with("panicked: ") => {
+                self.panic(format!("an item of `parallel_map` {why}"), span)
+            }
+            other => other,
+        }
     }
 }

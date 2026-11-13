@@ -84,6 +84,10 @@ impl Resolver {
         }
         self.modules.own = scopes.clone();
         self.share_builtin_types(&mut scopes);
+        // Re-exports (`pub use client.{Client}`, spec 10.2): their names
+        // join their module's own, until nothing changes, as one may
+        // re-export another. Mistakes are reported by the step below.
+        self.re_exports(&ranges, &mut scopes);
         // 2. `use` of other modules. `use std.math` names the standard
         // library module written in Kavach, when there is one.
         for (m, items) in ranges.iter().enumerate() {
@@ -92,6 +96,15 @@ impl Resolver {
                 let ItemKind::Use(u) = &item.kind else {
                     continue;
                 };
+                if item.is_pub
+                    && u.names.is_empty()
+                    && self.module_named(&u.path.segments).is_some()
+                {
+                    self.error(
+                        u.path.span,
+                        "`pub use` re-exports names, not a whole module: write `pub use module.{Name, …}` (spec 10.2)",
+                    );
+                }
                 if u.path.segments.first().is_some_and(|s| s.name != "std") {
                     self.import(&mut scopes[m], &u.path, &u.names, u.alias.as_ref());
                 } else if !u.names.is_empty() {
@@ -231,6 +244,56 @@ impl Resolver {
     /// The module named by `path`, if there is one. Inside a dependency,
     /// its own modules come first: in package `geometry`, `shapes` is
     /// `geometry.shapes` (spec 10.12).
+    /// `pub use client.{Client}` (spec 10.2, decision 0101): each name a
+    /// module re-exports joins its own names, so `pg.Client` finds it,
+    /// repeated until nothing changes. Only public names are taken; a
+    /// wrong one is reported when the `use` itself is resolved.
+    fn re_exports(&mut self, ranges: &[&[Item]], scopes: &mut [HashMap<String, DefId>]) {
+        loop {
+            let mut changed = false;
+            for (m, items) in ranges.iter().enumerate() {
+                self.modules.current = m;
+                for item in items.iter().filter(|i| i.is_pub) {
+                    let ItemKind::Use(u) = &item.kind else {
+                        continue;
+                    };
+                    let segs = &u.path.segments;
+                    // `pub use a.{X, Y}`, or `pub use a.X` (as `alias`).
+                    let wanted: Vec<(&Ident, &Ident, usize)> = match self.module_named(segs) {
+                        Some(from) => u.names.iter().map(|n| (n, n, from)).collect(),
+                        None => match (
+                            self.module_named(&segs[..segs.len().saturating_sub(1)]),
+                            segs.last(),
+                        ) {
+                            (Some(from), Some(last)) => {
+                                vec![(last, u.alias.as_ref().unwrap_or(last), from)]
+                            }
+                            _ => Vec::new(),
+                        },
+                    };
+                    for (name, shown, from) in wanted {
+                        let Some(&def) = self.modules.own[from].get(&name.name) else {
+                            continue;
+                        };
+                        // A name the module has already (its own, or
+                        // re-exported before) stays.
+                        if !self.modules.public.contains(&def)
+                            || self.modules.own[m].contains_key(&shown.name)
+                        {
+                            continue;
+                        }
+                        self.modules.own[m].insert(shown.name.clone(), def);
+                        scopes[m].entry(shown.name.clone()).or_insert(def);
+                        changed = true;
+                    }
+                }
+            }
+            if !changed {
+                return;
+            }
+        }
+    }
+
     fn module_named(&self, path: &[Ident]) -> Option<usize> {
         let name: Vec<&str> = path.iter().map(|s| s.name.as_str()).collect();
         let name = name.join(".");

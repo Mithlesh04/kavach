@@ -1,0 +1,21 @@
+// Rule: A false example on a method, in a type's body or in an `extend` block, makes `kavach test` fail.
+// Spec: 7.6
+// expect test fail
+
+type User {
+    id: String
+
+    fn signed_in(self) -> Bool
+        example User(id: "u1").signed_in() == false
+    {
+        not self.id.is_empty()
+    }
+}
+
+extend User {
+    fn short(self) -> Bool
+        example User(id: "u1").short()
+    {
+        self.id.len() < 5
+    }
+}

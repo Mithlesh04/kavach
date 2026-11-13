@@ -9,14 +9,15 @@ mod keep;
 
 pub use keep::Kept;
 mod shrink;
+mod targets;
 pub(crate) mod values;
 
 use crate::interp::Interp;
 use crate::value::{Flow, Value};
 use found::{Reader, can_save, write_case};
 use kavach_ast::{FnDecl, ItemKind, Span, TypeBody};
-use kavach_resolver::DefId;
 use std::path::PathBuf;
+use targets::Target;
 use values::{Gen, Pick, Rng};
 
 /// How `kavach test` generates cases (spec 11.9).
@@ -45,114 +46,24 @@ impl Default for TestOptions {
     }
 }
 
-/// A function to test: its name in reports and found cases, and how to
-/// generate its arguments (`self` first, for a method).
-struct Target<'a> {
-    name: String,
-    f: &'a FnDecl,
-    has_self: bool,
-    params: Vec<Gen>,
-    /// Numbers in its `require`s; values next to them are tried (11.3).
-    near: Vec<i128>,
-}
-
 enum Outcome {
     Pass,
     /// The input broke the function's own `require`: not a valid case.
     Invalid,
     Fail(String, Span),
+    /// The call reached a C function, which runs only in native code.
+    Native,
 }
 
 impl<'a> Interp<'a> {
-    fn targets(&self) -> (Vec<Target<'a>>, Vec<String>) {
-        let (mut targets, mut skipped) = (Vec::new(), Vec::new());
-        let mut add = |i: &Self, name: String, f: &'a FnDecl, owner: Option<DefId>| {
-            let has_self = f.params.iter().any(|p| p.ty.is_none());
-            let decl = owner.and_then(|d| i.records.get(&d).or_else(|| i.unions.get(&d)));
-            // `Boxed<S>.sized`: values of a generic type aren't generated.
-            let generic_self = has_self && decl.is_some_and(|t| !t.generics.is_empty());
-            let owner = owner.map(Gen::Adt);
-            let mut params: Vec<Gen> = owner.into_iter().filter(|_| has_self).collect();
-            let typed = f.params.iter().filter_map(|p| p.ty.as_ref());
-            let gens: Option<Vec<Gen>> = typed.map(|t| i.gen_of(t)).collect();
-            // Capabilities are faked (11.5): printing is hidden, declared
-            // capabilities and `ask` give generated answers. Files and the
-            // network have no fake yet.
-            let def = i.decl.get(&f.name.span.start);
-            let uses = def
-                .and_then(|d| i.c.uses.get(d))
-                .cloned()
-                .unwrap_or_default();
-            let written = f.uses.iter().map(|u| i.text(u.span).to_string());
-            let real = uses.into_iter().chain(written).find(|c| !i.faked(c));
-            let why = match gens {
-                _ if !f.generics.is_empty() => Some("generic".to_string()),
-                _ if generic_self => Some("its type is generic".to_string()),
-                _ if real.is_some() => Some(format!(
-                    "uses {} (no fake for it yet)",
-                    real.unwrap_or_default()
-                )),
-                None => Some("takes values that can't be generated yet".to_string()),
-                Some(g) => {
-                    params.extend(g);
-                    None
-                }
-            };
-            match why {
-                Some(why) => skipped.push(format!("{name}: {why}")),
-                None => targets.push(Target {
-                    near: numbers_in(f.requires.iter().map(|r| i.text(r.span))),
-                    name,
-                    f,
-                    has_self,
-                    params,
-                }),
-            }
-        };
-        let mut fns: Vec<&'a FnDecl> = self.fns.values().copied().collect();
-        fns.sort_by_key(|f| f.name.span.start);
-        // The program's own functions, not the standard library's.
-        let own = |f: &&FnDecl| self.c.is_own(f.name.span.start);
-        for f in fns
-            .into_iter()
-            .filter(|f| f.name.name != "main")
-            .filter(own)
-        {
-            add(self, f.name.name.clone(), f, None);
-        }
-        let mut types: Vec<_> = self.methods.iter().collect();
-        types.sort_by_key(|(d, _)| **d);
-        for (def, methods) in types {
-            let type_name = &self.c.resolution.defs[*def].name;
-            let mut ms: Vec<&'a FnDecl> = methods.values().copied().collect();
-            ms.sort_by_key(|f| f.name.span.start);
-            for f in ms.into_iter().filter(own) {
-                add(self, format!("{type_name}.{}", f.name.name), f, Some(*def));
-            }
-        }
-        (targets, skipped)
-    }
-
-    /// Whether generated tests have a fake for capability `c` (11.5): the
-    /// console (its output is hidden), `Ai`, files, the network, the
-    /// clock and the environment (`fakes.rs`), `Random` (nothing to fake yet), and the
-    /// program's own.
-    fn faked(&self, c: &str) -> bool {
-        let name = c.split(['.', '(']).next().unwrap_or(c).trim();
-        matches!(
-            name,
-            "Console" | "Ai" | "Fs" | "Net" | "Clock" | "Random" | "Clipboard" | "Env"
-        ) || self
-            .c
-            .resolution
-            .defs
-            .iter()
-            .any(|d| d.name == name && d.kind == kavach_resolver::DefKind::Capability)
-    }
-
     /// Calls `t` with `args`, its output hidden and its time limited.
     fn run_case(&mut self, t: &Target<'a>, args: &[Value<'a>], budget: u64) -> Outcome {
-        match self.call_case(t, args, budget) {
+        self.reached_c = false;
+        let called = self.call_case(t, args, budget);
+        if std::mem::take(&mut self.reached_c) {
+            return Outcome::Native;
+        }
+        match called {
             Err(Flow::Panic(_, span)) if t.f.requires.iter().any(|r| r.span == span) => {
                 Outcome::Invalid
             }
@@ -256,7 +167,8 @@ impl<'a> Interp<'a> {
     /// Replays found cases, then generates cases for every function.
     /// Returns the number of functions that failed.
     pub(crate) fn generated_tests(&mut self, opts: &TestOptions) -> usize {
-        let (targets, skipped) = self.targets();
+        let (targets, mut skipped) = self.targets();
+        let mut native = 0;
         self.out.push_str(&format!("seed {}\n", opts.seed));
         // Each module's found cases, read once; the new ones, by file.
         let mut saved: std::collections::HashMap<PathBuf, Vec<String>> = Default::default();
@@ -286,8 +198,9 @@ impl<'a> Interp<'a> {
             }
             let mut valid = 0;
             let mut k = 0;
+            let mut reaches_c = false;
             let cases = if t.params.is_empty() { 1 } else { opts.cases };
-            while failure.is_none() && valid < cases && k < cases * 5 {
+            while failure.is_none() && !reaches_c && valid < cases && k < cases * 5 {
                 let pick = if k < 40 { Pick::Edge(k) } else { Pick::Random };
                 k += 1;
                 let args: Option<Vec<Value<'a>>> = t
@@ -306,6 +219,7 @@ impl<'a> Interp<'a> {
                 match self.run_case(t, &args, opts.step_budget) {
                     Outcome::Pass => valid += 1,
                     Outcome::Invalid => {}
+                    Outcome::Native => reaches_c = true,
                     Outcome::Fail(m, at) => {
                         let small = self.shrink(t, args, at, opts.step_budget);
                         let line = write_case(self, &t.name, &small);
@@ -318,14 +232,37 @@ impl<'a> Interp<'a> {
                     }
                 }
             }
+            if reaches_c {
+                let why = "reaches C, which runs only in native code (10.7)";
+                skipped.push(format!("{}: {why}", t.name));
+                native += 1;
+                continue;
+            }
             match failure {
                 Some((m, at, args)) => {
                     failed += 1;
                     self.report_failure(t, &m, at, &args);
                 }
+                // Its examples ran with the hand-written checks above.
+                None if valid == 0 && !t.f.examples.is_empty() => {
+                    let why = match t.f.requires.is_empty() {
+                        true => "no input could be generated",
+                        false => "no generated input met its `require`",
+                    };
+                    let name = &t.name;
+                    let line = format!("✓ {name}  checked by its examples only: {why}\n");
+                    self.out.push_str(&line);
+                }
                 None if valid == 0 && !t.f.requires.is_empty() => {
                     self.out.push_str(&format!(
                         "! {}: no generated input met its `require`; add an `example` (11.3)\n",
+                        t.name
+                    ));
+                }
+                // Never "✓ … 0 cases": nothing was checked.
+                None if valid == 0 => {
+                    self.out.push_str(&format!(
+                        "! {}: no input could be generated; add an `example`, or a `Sample` for its types (11.3)\n",
                         t.name
                     ));
                 }
@@ -339,7 +276,7 @@ impl<'a> Interp<'a> {
             }
         }
         self.save_found(&new_found);
-        let checked = targets.len();
+        let checked = targets.len() - native;
         self.out.push_str(&format!(
             "{checked} functions   {} ✓   {failed} ✗   {} weakly tested\n",
             checked - failed,
@@ -429,19 +366,4 @@ impl<'a> Interp<'a> {
         r.expect(")")?;
         r.is_done().then_some(args)
     }
-}
-
-/// Whole numbers written in `texts` (the `require`s of a function).
-fn numbers_in<'t>(texts: impl Iterator<Item = &'t str>) -> Vec<i128> {
-    let mut out = Vec::new();
-    for text in texts {
-        for word in text.split(|c: char| !(c.is_ascii_digit() || c == '_')) {
-            if let Ok(n) = word.replace('_', "").parse::<i128>() {
-                out.push(n);
-            }
-        }
-    }
-    out.sort_unstable();
-    out.dedup();
-    out
 }

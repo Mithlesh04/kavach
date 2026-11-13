@@ -169,7 +169,7 @@ fn upload(r: Request) -> Response ! HttpError uses Net, Console {
 | `ws.close()` | Says goodbye and closes the connection |
 | `out.send(data, event: "", id: "")` | Sends one event; each line of `data` is a `data:` line |
 
-Pings are answered without the program seeing them. A message larger than `max_body_bytes` closes the socket with status 1009. A WebSocket or an event stream counts as a connection, not as a request in flight. Over HTTP/2 neither is offered yet: such a request gets 501.
+Pings are answered without the program seeing them. A message larger than `max_body_bytes` closes the socket with status 1009. One task may `receive` while other tasks send on the same WebSocket (copies of it share the connection, as a `Connection`'s do): sends take turns, in the order they asked, and each writes its whole message, so two messages never mix on the wire. Receiving is for one task at a time. A WebSocket or an event stream counts as a connection, not as a request in flight. Over HTTP/2 neither is offered yet: such a request gets 501.
 
 ```kavach
 fn chat(r: Request) -> Response {
@@ -211,7 +211,7 @@ A body's size comes from `content-length`, or the body comes in chunks (`transfe
 |---|---|
 | `h2.request(conn, headers, body) -> H2Message ! H2Error` | Sends one request on a new connection (`headers` start with `:method`, `:scheme`, `:authority`, `:path`) and reads the response |
 | `h2.connect(conn) -> H2Client ! H2Error` | Starts a connection that takes many requests, so a service connects once instead of once per call |
-| `c.request(headers, body) -> H2Message ! H2Error` | Sends one request on `c` and reads its response. Requests from several tasks take turns, in the order they asked: one exchange at a time on the connection, for now |
+| `c.request(headers, body) -> H2Message ! H2Error` | Sends one request on `c`, on a stream of its own, and reads its response. Requests from several tasks are open at once: their sends take turns, in the order they asked, and each answer goes to the task that asked, in whatever order the server sends them. A stream the server resets fails only its own request |
 | `c.going_away() -> Bool` | Whether the server said it is going away (GOAWAY) or the connection broke: a pool replaces such a client with a new one |
 | `c.close()` | Closes the connection once the request being answered is done; a request after it fails with `Protocol`. A client is also closed when its last holder lets it go, as its connection is (14.10) |
 | `h2.accept(conn, data) -> Link ! H2Error` | The server side of a connection that began with `data` |

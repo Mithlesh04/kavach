@@ -112,8 +112,13 @@ impl FnGen<'_, '_> {
             }
             return v;
         }
-        let empty = self.int(cranelift_codegen::ir::types::I64, 0);
-        self.b.def_var(var, empty);
+        // Only a heap reference is emptied: a plain value (a `Bool`, a
+        // `Float`) has nothing to hand over, and its variable may not even
+        // be 64 bits wide.
+        if is_ref {
+            let empty = self.int(cranelift_codegen::ir::types::I64, 0);
+            self.b.def_var(var, empty);
+        }
         v
     }
 }

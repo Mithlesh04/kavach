@@ -23,6 +23,10 @@ pub type WebSocket {
     client: Bool
     /// The largest message taken, in bytes.
     most: Int
+    /// The turn to send: one slot, taken by each send while it writes
+    /// its whole frame, so frames from several tasks never mix.
+    turn: Receiver<Bool>
+    turn_back: Sender<Bool>
 
     /// The next message, or `none` once the other end closed. Pings are
     /// answered here, and a message larger than allowed closes the
@@ -84,8 +88,18 @@ pub type WebSocket {
         self.conn.close()
     }
 
-    /// One frame with `opcode` and `data`, masked when this is a client.
+    /// One frame with `opcode` and `data`, sent in its turn (spec 14.11).
     fn send(self, opcode: Int, data: Bytes) ! NetError uses Net {
+        const _ = self.turn.take()
+        self.write_frame(opcode, data) catch e => {
+            self.turn_back.put(true)
+            fail e
+        }
+        self.turn_back.put(true)
+    }
+
+    /// One frame with `opcode` and `data`, masked when this is a client.
+    fn write_frame(self, opcode: Int, data: Bytes) ! NetError uses Net {
         const n = data.len()
         const mask_bit = if self.client { 128 } else { 0 }
         let head: [UInt8] = [UInt8(128 + opcode)]
@@ -179,13 +193,20 @@ type Frame {
 /// The server's end of a WebSocket on `conn`, `first` what came after
 /// the request.
 pub fn server_end(conn: Connection, first: Bytes, most: Int) -> WebSocket {
-    WebSocket(conn: conn, held: Shared(first), client: false, most: most)
+    socket(conn, first, false, most)
 }
 
 /// The client's end of a WebSocket on `conn`, `first` what came after
 /// the response.
 pub fn client_end(conn: Connection, first: Bytes, most: Int) -> WebSocket {
-    WebSocket(conn: conn, held: Shared(first), client: true, most: most)
+    socket(conn, first, true, most)
+}
+
+/// A WebSocket on `conn`, its turn to send free.
+fn socket(conn: Connection, first: Bytes, client: Bool, most: Int) -> WebSocket {
+    const (turn_back, turn) = Channel<Bool>(capacity: 1)
+    turn_back.put(true)
+    WebSocket(conn: conn, held: Shared(first), client: client, most: most, turn: turn, turn_back: turn_back)
 }
 
 /// `data` masked (or unmasked) with the four bytes of `key`.

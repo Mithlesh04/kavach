@@ -172,14 +172,39 @@ impl<'a> Lowerer<'a> {
             task_ty,
             line,
         );
+        // A task's panic is a panic here (spec 9.3): with errors given
+        // back beside the value, the only error a wait can give is that.
+        let text = self.str_type();
+        let prefix = at(K::Str("an item of `parallel_map` ".into()), text, line);
+        let message = at(
+            K::Format(vec![prefix, local(error, error_ty, line)]),
+            text,
+            line,
+        );
+        let panic = at(K::Rt(RtOp::PanicText, vec![message]), Type::Unit, line);
+        let pass_panic = Stmt::Expr(at(
+            K::If(
+                Box::new(self.failed(error, line)),
+                Block {
+                    stmts: vec![Stmt::Expr(panic)],
+                    value: None,
+                },
+                Block::default(),
+            ),
+            Type::Unit,
+            line,
+        ));
         let wait_earlier = K::If(
             Box::new(full),
             Block {
-                stmts: vec![Stmt::LetResult {
-                    value: skipped,
-                    error,
-                    call: wait(earlier),
-                }],
+                stmts: vec![
+                    Stmt::LetResult {
+                        value: skipped,
+                        error,
+                        call: wait(earlier),
+                    },
+                    pass_panic.clone(),
+                ],
                 value: None,
             },
             Block::default(),
@@ -239,17 +264,7 @@ impl<'a> Lowerer<'a> {
                     value: None,
                 };
                 let is_error = at(K::IsSome(Box::new(own)), Type::Bool, line);
-                let kept = at(K::If(Box::new(is_error), failed, pushed), Type::Unit, line);
-                // A task that panicked has no value to look at.
-                let panicked = self.failed(error, line);
-                let kept = K::If(
-                    Box::new(panicked),
-                    Block::default(),
-                    Block {
-                        stmts: vec![Stmt::Expr(kept)],
-                        value: None,
-                    },
-                );
+                let kept = K::If(Box::new(is_error), failed, pushed);
                 (
                     Stmt::Expr(at(kept, Type::Unit, line)),
                     Some((loop_error, err)),
@@ -262,7 +277,7 @@ impl<'a> Lowerer<'a> {
             index: j,
             list: tasks,
             body: Block {
-                stmts: vec![waited, kept],
+                stmts: vec![waited, pass_panic, kept],
                 value: None,
             },
         };

@@ -26,7 +26,7 @@
 | `kavach version <program>` | Print what built an executable: its package's name and version, and the compiler's version and commit (below) |
 | `kavach lsp` | Language server for editors, on stdin and stdout: errors as you type, with the same messages as `kavach check`; the type of what is under the cursor (hover); where a name is declared (go to definition); and the names in scope, or after a `.` the fields and methods of the value (completion) |
 
-Not built yet: `fix`, `api check`, `repl` and `eval` (Phase 3 tools, [roadmap](../../vision/roadmap.md)), and `build --release`: `kavach build` already optimizes. Until then they print the command list.
+Not built yet: `api check`, `repl` and `eval` (Phase 3 tools, [roadmap](../../vision/roadmap.md)), and `build --release`: `kavach build` already optimizes. Until then they print the command list. `kavach fix` works on the files and folders it is given (`kavach fix src`); with none, it doesn't yet fix the whole project, and edition upgrades wait for a second edition (10.8).
 
 `kavach new my-app` creates the folder `my-app` with the layout of 10.3: a `kavach.toml`, a `src/main.kav` that prints a greeting, and a `.gitignore` for `.kavach/`. The name must be lowercase `kebab-case`.
 

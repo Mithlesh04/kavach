@@ -1,0 +1,39 @@
+// Rule: a `Drop` value made in a loop's body is dropped at the end of its own round, also when it comes out of a call that can fail.
+// Spec: 6.1
+// expect output: make 1
+// expect output: use 1
+// expect output: drop 1
+// expect output: make 2
+// expect output: use 2
+// expect output: drop 2
+// expect output: make 3
+// expect output: done: three
+
+type Guard: Drop {
+    n: Int
+
+    fn drop(self) uses Console {
+        print("drop {self.n}")
+    }
+}
+
+fn make(n: Int) -> (Guard, Int) ! String uses Console {
+    print("make {n}")
+    if n == 3 {
+        fail "three"
+    }
+    (Guard(n: n), n)
+}
+
+fn run() ! String uses Console {
+    let i = 1
+    while i <= 3 {
+        const (_guard, used) = try make(i)
+        print("use {used}")
+        i += 1
+    }
+}
+
+fn main() uses Console {
+    run() catch e => print("done: {e}")
+}

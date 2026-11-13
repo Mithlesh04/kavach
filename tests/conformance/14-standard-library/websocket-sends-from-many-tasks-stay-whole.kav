@@ -1,0 +1,49 @@
+// Rule: tasks sending on one WebSocket take turns, and each writes its whole message, so messages never mix on the wire.
+// Spec: 14.11
+// expect output: 1000000 bytes of 1
+// expect output: 1000000 bytes of 2
+// expect output: 1000000 bytes of 3
+// expect output: 1000000 bytes of 4
+
+use std.http
+use std.net
+use std.time
+
+fn handle(r: Request) -> Response {
+    http.websocket(r, ws => {
+        // Four tasks send at once on the same socket.
+        // Spawned here, not in a lambda, which would cancel them when it
+        // returned (9.2).
+        const one = spawn ws.send_bytes("1".repeat(1_000_000).bytes())
+        const two = spawn ws.send_bytes("2".repeat(1_000_000).bytes())
+        const three = spawn ws.send_bytes("3".repeat(1_000_000).bytes())
+        const four = spawn ws.send_bytes("4".repeat(1_000_000).bytes())
+        for t in [one, two, three, four] {
+            t.wait() catch _ => {}
+        }
+    })
+}
+
+fn main() ! Error uses Clock {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, handle)
+    const ws = try http.websocket_connect("ws://{listener.address()}/many")
+    // Read late, so the sends fill the connection and must wait.
+    time.sleep(300.ms)
+    let seen: [String] = []
+    for _ in 0..4 {
+        match (try ws.receive()) ?? WsMessage.Text(text: "nothing") {
+            WsMessage.Binary(data) => {
+                const text = data.text() ?? ""
+                const first = text.slice(0, 1)
+                const whole = text == first.repeat(text.len())
+                seen.push(if whole { "{text.len()} bytes of {first}" } else { "mixed" })
+            }
+            WsMessage.Text(text) => seen.push(text),
+        }
+    }
+    for line in seen.sort_by(s => s) {
+        print(line)
+    }
+    ws.close()
+}

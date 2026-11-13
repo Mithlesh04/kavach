@@ -59,18 +59,28 @@ impl<'a> Interp<'a> {
         let mut failed = 0;
         let mut passed = 0;
         for item in self.c.own_items() {
+            // A function's examples, and its methods' (spec 7.6): in a
+            // type's body and in `extend` blocks.
+            let fns: Vec<(String, &'a kavach_ast::FnDecl)> = match &item.kind {
+                ItemKind::Fn(f) => vec![(f.name.name.clone(), f)],
+                ItemKind::Type(t) => match &t.body {
+                    kavach_ast::TypeBody::Record(r) => methods_of(&t.name.name, &r.methods),
+                    _ => Vec::new(),
+                },
+                ItemKind::Extend(x) => methods_of(self.text(x.target.span), &x.methods),
+                _ => Vec::new(),
+            };
             let cases: Vec<(String, TestCase<'a>)> = match &item.kind {
-                ItemKind::Fn(f) => f
-                    .examples
-                    .iter()
-                    .map(|x| {
+                ItemKind::Fn(_) | ItemKind::Type(_) | ItemKind::Extend(_) => fns
+                    .into_iter()
+                    .flat_map(|(name, f)| f.examples.iter().map(move |x| (name.clone(), x)))
+                    .map(|(name, x)| {
                         let fails = x
                             .fails
                             .as_ref()
                             .map(|e| format!(" fails {}", self.text(e.span)))
                             .unwrap_or_default();
-                        let label =
-                            format!("{}: example {}{fails}", f.name.name, self.text(x.expr.span));
+                        let label = format!("{name}: example {}{fails}", self.text(x.expr.span));
                         let run: TestCase<'a> = Box::new(move |i: &mut Self| match &x.fails {
                             None => Ok(i.eval(&x.expr)? == Value::Bool(true)),
                             Some(want) => match i.eval(&x.expr) {
@@ -157,4 +167,19 @@ impl<'a> Interp<'a> {
         self.frames.pop();
         result
     }
+}
+
+/// The methods among `items`, each named `Type.method`.
+fn methods_of<'a>(
+    ty: &str,
+    items: &'a [kavach_ast::Item],
+) -> Vec<(String, &'a kavach_ast::FnDecl)> {
+    let ty = ty.split('<').next().unwrap_or(ty).trim();
+    items
+        .iter()
+        .filter_map(|m| match &m.kind {
+            ItemKind::Fn(f) => Some((format!("{ty}.{}", f.name.name), f)),
+            _ => None,
+        })
+        .collect()
 }
