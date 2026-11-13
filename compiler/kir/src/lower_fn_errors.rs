@@ -12,6 +12,7 @@
 
 use crate::ir::{self, Block, ExprKind as K, FuncId, Local, Shape, Stmt, Type};
 use crate::lower::{Lowered, Lowerer};
+use crate::rt_op::RtOp;
 use kavach_ast as ast;
 
 impl<'a> Lowerer<'a> {
@@ -182,6 +183,87 @@ impl<'a> Lowerer<'a> {
         let round = vec![Stmt::LetResult { value, error, call }, Stmt::Expr(leave)];
         self.pending_error = Some(loop_error);
         Ok(Some((setup, round, self.local_expr(value, line))))
+    }
+
+    /// `s.update(f)` and `s.update_with(f)` (spec 6.2) with an `f` that
+    /// can fail: `f` is called with the value locked, and its error leaves
+    /// the value as it was and is the call's (spec 5.2). `None` when `f`
+    /// can't fail.
+    pub(crate) fn failing_update(
+        &mut self,
+        shared: ir::Expr,
+        f: &'a ast::Expr,
+        with: bool,
+        ty: Type,
+        line: u32,
+    ) -> Lowered<Option<ir::Expr>> {
+        let fn_ty = self.ty_of(f)?;
+        let Some(own) = self.fn_error(fn_ty) else {
+            return Ok(None);
+        };
+        let Some(Shape::Shared(inner)) = self.shapes.shape(shared.ty).cloned() else {
+            return Err(self.unsupported("`update` here", f.span));
+        };
+        let (params, ret) = self.fn_parts(fn_ty, f.span)?;
+        let at = |kind, ty| ir::Expr { kind, ty, line };
+        let err = self.held_error(own);
+        let (local, held) = (self.new_local(shared.ty), self.new_local(fn_ty));
+        let closure = self.expr(f)?;
+        let rt = |l: &Self, op, mut args: Vec<ir::Expr>, ty| {
+            args.insert(0, l.local_expr(local, line));
+            at(K::Rt(op, args), ty)
+        };
+        let mut current = rt(self, RtOp::SharedGet, Vec::new(), inner);
+        if let Some(t) = params.first() {
+            current = self.coerce(current, *t)?;
+        }
+        let call = at(
+            K::CallValue(Box::new(self.local_expr(held, line)), vec![current]),
+            ret,
+        );
+        let (value, error) = (self.new_local(ret), self.new_local(err));
+        let result = self.new_local(ty);
+        // What `f` gave becomes the value, while the lock is still held.
+        let (new, out) = if with {
+            let Some(Shape::Tuple(parts)) = self.shapes.shape(ret).cloned() else {
+                return Err(self.unsupported("`update_with` here", f.span));
+            };
+            let new = self.tuple_item(value, ret, 0, parts[0], line);
+            (new, self.tuple_item(value, ret, 1, parts[1], line))
+        } else {
+            let now = rt(self, RtOp::SharedGet, Vec::new(), inner);
+            (self.local_expr(value, line), now)
+        };
+        let new = self.coerce(new, inner)?;
+        let set = rt(self, RtOp::SharedSet, vec![new], Type::Unit);
+        let out = self.coerce(out, ty)?;
+        let keep = Block {
+            stmts: vec![
+                Stmt::Expr(set),
+                Stmt::Expr(at(K::Assign(result, Box::new(out)), Type::Unit)),
+            ],
+            value: None,
+        };
+        let changed = at(
+            K::If(
+                Box::new(self.succeeded(error, line)),
+                keep,
+                Block::default(),
+            ),
+            Type::Unit,
+        );
+        let stmts = vec![
+            Stmt::Let(local, shared),
+            Stmt::Let(held, closure),
+            Stmt::Let(result, self.zero_of(ty, line)),
+            Stmt::Expr(rt(self, RtOp::SharedLock, Vec::new(), Type::Unit)),
+            Stmt::LetResult { value, error, call },
+            Stmt::Expr(changed),
+            Stmt::Expr(rt(self, RtOp::SharedUnlock, Vec::new(), Type::Unit)),
+        ];
+        self.pending_error = Some(error);
+        let value = Some(Box::new(self.local_expr(result, line)));
+        Ok(Some(at(K::Block(Block { stmts, value }), ty)))
     }
 
     /// The name of method call `e`, when it is given a function that can

@@ -285,6 +285,11 @@ impl<'a> Lowerer<'a> {
             (self.shapes.shape(receiver.ty), name.name.as_str(), args)
         {
             let with = name.name == "update_with";
+            let fn_ty = self.ty_of(&f.value)?;
+            if self.fn_error(fn_ty).is_some() {
+                let failing = self.failing_update(receiver, &f.value, with, ty, line)?;
+                return failing.ok_or_else(|| self.unsupported("`update` here", span));
+            }
             return self.shared_update(receiver, &f.value, with, ty, line);
         }
         let mut values = vec![receiver];

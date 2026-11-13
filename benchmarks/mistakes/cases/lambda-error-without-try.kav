@@ -1,0 +1,13 @@
+// Mistake: A lambda that calls a function that can fail, with no `try`.
+
+fn positive(n: Int) -> Bool ! String {
+    if n == 0 {
+        fail "zero"
+    }
+    n > 0
+}
+
+fn main() {
+    const kept = [3, -1, 2].filter(n => positive(n))
+    print(kept)
+}

@@ -15,7 +15,7 @@ The mistakes come from [classic-mistakes.md](../../docs/vision/classic-mistakes.
 
 ## Results
 
-Measured 2026-11-10 with `kavach check` and `kavach fix`, at commit time. 28 of 28 caught before a run, 7 of them with an auto-fix.
+Measured 2026-11-13 with `kavach check` and `kavach fix`, at commit time. 29 of 29 caught before a run, 7 of them with an auto-fix.
 
 | Mistake | Caught by | Message |
 |---|---|---|
@@ -33,6 +33,7 @@ Measured 2026-11-10 with `kavach check` and `kavach fix`, at commit time. 28 of 
 | [A literal index past the end of a literal list](cases/index-past-end-known.kav) | compile error | this always panics: index 5 is out of range: the list has 3 items (spec 1.8) |
 | [A loop whose range runs past the end of a list](cases/index-past-the-end-in-a-loop.kav) | compile error | this always panics: index 3 is out of range: the list has 3 items (spec 1.8) |
 | [Whole-number division where a fraction was meant](cases/integer-division-surprise.kav) | warning | `1 / 2` is `0`: whole numbers divide to a whole number. Write `1.0 / 2.0` for a fraction, or `1.div_floor(2)` when the whole part is meant (spec 1.8) |
+| [A lambda that calls a function that can fail, with no `try`](cases/lambda-error-without-try.kav) | compile error | `positive` can fail: write `try` before it to pass the error on from this lambda, which the call that takes the lambda then passes on (spec 3.3), or handle it here with `catch` or `match` |
 | [A `match` that forgets a case](cases/missing-case.kav) | compile error | this `match` does not cover `Status.Refunded` |
 | [A name misspelled](cases/misspelled-name.kav) | compile error | `totl` is not defined; did you mean `total`? |
 | [`x % 2 == 1` used as the odd test](cases/odd-test-on-negatives.kav) | warning, auto-fix | `x % 2 == 1` is wrong for a negative odd `x`, since `-3 % 2` is `-1`: write `x % 2 != 0` |

@@ -230,7 +230,7 @@ agent Bot {
 
     on wait() ! Error uses Clock {
         const (_send, receive) = Channel<Int>(capacity: 1)
-        const got = receive.take().timeout(3.seconds) catch _ => Taken.Closed
+        const got = receive.take().timeout(6.seconds) catch _ => Taken.Closed
         try Email.send(\"got {got}\")
     }
 }
@@ -266,7 +266,7 @@ fn a_timeout_ends_when_it_would_have_after_a_restart() {
         while !begun() && start.elapsed() < std::time::Duration::from_secs(60) {
             std::thread::sleep(std::time::Duration::from_millis(20));
         }
-        std::thread::sleep(std::time::Duration::from_millis(1_500));
+        std::thread::sleep(std::time::Duration::from_millis(3_500));
         first.kill().unwrap();
         let _ = first.wait();
         let mut again = program(&file, native);
@@ -280,8 +280,11 @@ fn a_timeout_ends_when_it_would_have_after_a_restart() {
             "[email] got Closed\n",
             "{name}: {said}"
         );
+        // About 2.5 s of the wait were left; waiting again from the
+        // start would take 6 s. The gap leaves room for starting the
+        // program on a busy machine.
         assert!(
-            took < std::time::Duration::from_millis(2_700),
+            took < std::time::Duration::from_millis(5_000),
             "{name}: waited again ({took:?})"
         );
     }

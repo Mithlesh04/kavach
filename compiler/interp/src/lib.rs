@@ -29,6 +29,7 @@ mod map;
 mod net;
 mod numbers;
 mod ops;
+mod parallel_map;
 mod processes;
 mod run;
 mod stack;
@@ -300,5 +301,52 @@ print(total(items))
         let output = super::run(&compiled);
         assert_eq!(output.stdout, "1249975000\n");
         assert!(start.elapsed() < Duration::from_secs(10));
+    }
+
+    /// A method of a generic type is skipped with that reason, not
+    /// reported as a `require` no input met (values of `Boxed<S>` aren't
+    /// generated).
+    #[test]
+    fn methods_of_generic_types_say_why_they_are_skipped() {
+        let method = |t: &str| {
+            format!(
+                "    fn sized(self, n: Int) -> {t}
+    require n > 0
+    {{
+        self with {{ size: n }}
+    }}
+"
+            )
+        };
+        let src = format!(
+            "type Boxed<S> {{
+    state: S
+    size: Int
+
+{}}}
+
+type Plain {{
+    size: Int
+
+{}}}
+",
+            method("Boxed<S>"),
+            method("Plain")
+        );
+        let compiled = kavach_driver::compile(&src, "gen.kav", Default::default());
+        let output = super::test(&compiled, &Default::default());
+        assert!(
+            output
+                .stdout
+                .contains("not generated: Boxed.sized: its type is generic"),
+            "{}",
+            output.stdout
+        );
+        assert!(output.stdout.contains("✓ Plain.sized"), "{}", output.stdout);
+        assert!(
+            !output.stdout.contains("no generated input"),
+            "{}",
+            output.stdout
+        );
     }
 }

@@ -1,6 +1,6 @@
 // Rule: `std.time`'s `Date`, `Time` and `DateTime` are ISO 8601 text in JSON, a `DateTime` in UTC with `Z`; decoding takes an offset and turns it to UTC, drops digits past milliseconds, and anything else is a problem.
 // Spec: 2.12
-// expect output: {"day":"2024-01-02","at":"03:04:05.120","made":"2024-01-02T03:04:05Z","off":["2024-02-29"]}
+// expect output: {"day":"2024-01-02","at":"03:04:05.120","made":"2024-01-02T03:04:05Z","off":["2024-02-29","-0005-01-01"]}
 // expect output: "2024-01-02"
 // expect output: true
 // expect output: 2023-12-31T20:30:00.123
@@ -25,7 +25,7 @@ const row = Row(
     day: day,
     at: Time(hour: 3, minute: 4, second: 5, ms: 120),
     made: DateTime(date: day, time: Time(hour: 3, minute: 4, second: 5, ms: 0)),
-    off: [Date(year: 2024, month: 2, day: 29)],
+    off: [Date(year: 2024, month: 2, day: 29), Date(year: -5, month: 1, day: 1)],
 )
 const text = json.stringify(row)
 print(text)

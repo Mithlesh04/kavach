@@ -43,6 +43,7 @@ Exit codes: 0 success, 1 compile errors or an error returned from `main`, 101 a 
 | `tests/keep.rs` | `kavach test --keep` |
 | `tests/stdlib.rs` | The standard library modules written in Kavach pass `kavach test` |
 | `tests/tls.rs` | TLS servers and mutual TLS, with certificates made for the test by `openssl` |
+| [`tests/approvals/`](tests/approvals/README.md) | Approvals that wait for a person, across restarts, and answered in code (spec 8.3) |
 | `tests/ai_crowd.rs` | Forty `ask`s at once against a fake provider that takes four at a time: all get through the shared gate (spec 8.4) |
 | `tests/limits_parallel.rs` | A limit's total holds when 30 handlers pay at once: exactly 10 refunds of 100 under `sum(amount) <= 1000 per day` |
 | `tests/version.rs` | `kavach --version`, `kavach version <program>`, and `--version` answered by a program only with `[build] version_flag` (spec 10.5) |

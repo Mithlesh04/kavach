@@ -18,7 +18,7 @@ TCP connections and UDP datagrams, behind the `Net` capability (8.1). Addresses 
 | `conn.accept_tls(cert, key, protocols: [String] = [], clients: String = "") -> Connection ! NetError` | The server's side of the same: TLS begun on a connection the server accepted, with the settings of `listen_tls`; `key` takes a secret |
 | `conn.peer_certificate() -> Bytes?` | The other side's TLS certificate as DER: the server's on a client connection, a client's (mutual TLS) on a server one; `none` without TLS. For channel binding, such as SCRAM's `tls-server-end-point`, which hashes it |
 | `conn.client_cert() -> ClientCert?` | With mutual TLS (`clients:` on `listen_tls`), the names on the certificate the client showed: `ClientCert(common_name:, dns:, uris:)`, from its subject and its subject-alternative names (a SPIFFE id such as `spiffe://shop/orders` is a URI); `none` otherwise ([decision 0099](../../decisions/0099-client-certificate-names.md)) |
-| `conn.close()` | Closes the connection (or stops listening) |
+| `conn.close()` | Closes the connection (or stops listening). A connection or listener is also closed when its last holder lets it go (6.1), so one a function opens and doesn't return is closed when the function ends |
 | `net.bind(address) -> UdpSocket ! NetError` | A UDP socket at `address` |
 | `sock.send(data, to) ! NetError` | Sends `data` (`Bytes`) as one datagram to the address `to` |
 | `sock.receive() -> Datagram ! NetError` | Waits for the next datagram: `Datagram(data: Bytes, from: String)`, with the sender's address |

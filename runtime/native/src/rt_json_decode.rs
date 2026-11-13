@@ -45,6 +45,11 @@ fn stop_at(e: Failed) -> Option<Failed> {
     })
 }
 
+/// How many problems have been noted so far.
+fn problems_noted() -> usize {
+    PROBLEMS.with(|p| p.borrow().as_ref().map_or(0, Vec::len))
+}
+
 /// Decodes `t` as type `ty` for `json.decode`, listing every problem:
 /// those of shape, or, when the shapes fit, each broken invariant.
 fn decode_every(t: &Tree, ty: Type, templates: i64) -> Result<u64, Vec<Failed>> {
@@ -203,11 +208,11 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
             Ok(crate::rt_data::kv_some(v as i64, type_code(ty)) as u64)
         }
         (Shape::List(item), Tree::Array(items)) => {
-            let built = decode_all(items, &vec![*item; items.len()], path, templates)?;
+            let built = whole_items(items, *item, path, templates)?;
             Ok(alloc_slots(ty, 0, built) as u64)
         }
         (Shape::Set(item), Tree::Array(items)) => {
-            let built = decode_all(items, &vec![*item; items.len()], path, templates)?;
+            let built = whole_items(items, *item, path, templates)?;
             let mut set = crate::rt_maps::kv_map_new(type_code(ty));
             for v in built {
                 set = crate::rt_maps::kv_map_insert(set, v as i64, 0);
@@ -322,6 +327,22 @@ pub(crate) fn fixed(ty: Type, tag: u32, fields: &[u64]) -> u64 {
     let p = alloc_zeroed(ty, tag, fields.len());
     slots_mut(p).copy_from_slice(fields);
     p as u64
+}
+
+/// The items of a list or set, each of type `item`. When one had a
+/// problem (noted, so the whole value is thrown away), none: an item left
+/// empty can't go into a list whose items are stored flat, nor be hashed.
+fn whole_items(items: &[Tree], item: Type, path: &str, templates: i64) -> Result<Vec<u64>, Failed> {
+    let types = vec![item; items.len()];
+    let before = problems_noted();
+    let built = decode_all(items, &types, path, templates)?;
+    if problems_noted() == before {
+        return Ok(built);
+    }
+    for slot in built {
+        release_slot(slot as i64, item);
+    }
+    Ok(Vec::new())
 }
 
 /// Each item decoded with its type; on a failure, the ones made so far

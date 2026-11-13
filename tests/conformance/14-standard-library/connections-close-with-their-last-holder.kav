@@ -1,0 +1,31 @@
+// Rule: A connection is closed when its last holder lets it go, as if `close()` were called: the other side reads the end.
+// Spec: 14.10
+// expect output: hi, then the end
+
+use std.net
+
+fn serve(listener: Listener) -> String ! NetError uses Net {
+    const conn = try listener.accept()
+    let got = ""
+    while true {
+        const piece = try conn.read()
+        if let p = piece {
+            got = got + (p.text() ?? "?")
+        } else {
+            return "{got}, then the end"
+        }
+    }
+    got
+}
+
+fn send(address: String) ! NetError uses Net {
+    const conn = try net.connect(address)
+    try conn.write("hi".bytes())
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const server = spawn serve(listener)
+    try send(listener.address())
+    print(try server.wait().timeout(5.seconds))
+}

@@ -65,6 +65,8 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.13 | [term-progress-draws-only-on-a-terminal.kav](term-progress-draws-only-on-a-terminal.kav) | A progress bar prints nothing when output is not a terminal. | runs |
 | 14.13, 8.7 | [term-secrets-cant-be-printed.kav](term-secrets-cant-be-printed.kav) | `term.prompt_secret` gives a `Secret` whose `text` can't be printed. | compile error |
 | 14.9 | [collections-module.kav](collections-module.kav) | `std.collections` makes chunks, zips two lists, keeps each item once, counts items and flattens lists. | runs |
+| 14.10 | [connections-close-with-their-last-holder.kav](connections-close-with-their-last-holder.kav) | A connection is closed when its last holder lets it go: the other side reads the end. | runs |
+| 14.10 | [tls-upgrades-that-fail-are-errors.kav](tls-upgrades-that-fail-are-errors.kav) | `accept_tls` and `start_tls` that fail are errors to handle; the code after them doesn't run. | runs |
 | 14.10 | [tcp-connections-carry-bytes.kav](tcp-connections-carry-bytes.kav) | TCP connections carry `Bytes` both ways; `read` gives `none` once the other side closed. | runs |
 | 14.10 | [connections-need-net.kav](connections-need-net.kav) | Using a `Connection` needs `Net`. | compile error |
 | 14.10 | [udp-carries-datagrams.kav](udp-carries-datagrams.kav) | `net.bind` makes a UDP socket; `send` and `receive` carry datagrams, with the sender's address. | runs |

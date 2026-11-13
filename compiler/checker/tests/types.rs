@@ -189,6 +189,12 @@ fn errors_must_be_handled() {
             vec!["10: `risky` can fail: handle the error with `try`, `catch` or `match`"],
         ),
         (
+            format!("{defs}fn main() {{\n  const xs = [1].filter(n => risky(n) > 0)\n}}"),
+            vec![
+                "10: `risky` can fail: write `try` before it to pass the error on from this lambda, which the call that takes the lambda then passes on (spec 3.3), or handle it here with `catch` or `match`",
+            ],
+        ),
+        (
             format!("{defs}fn f() -> Int ! Other {{\n  try risky(1)\n}}"),
             vec!["10: `try` can't pass on `E`: `f` only returns `! Other`"],
         ),

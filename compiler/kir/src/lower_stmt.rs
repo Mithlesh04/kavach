@@ -276,7 +276,9 @@ impl<'a> Lowerer<'a> {
                     ExprKind::Field { base, name, .. } if name.name == "enumerate" => {
                         (&**base, Some(&ps[0]), &ps[1])
                     }
-                    _ => return Err(self.unsupported("this `for` loop", iter.span)),
+                    // Another call, as `for (k, v) in cache.get()`: a plain
+                    // loop over what it gives.
+                    _ => (iter, None, pattern),
                 }
             }
             _ => (iter, None, pattern),

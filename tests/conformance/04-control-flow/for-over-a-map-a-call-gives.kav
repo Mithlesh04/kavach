@@ -1,0 +1,25 @@
+// Rule: `for (key, value) in` walks a map in insertion order, also when a call gives the map, as `cache.get()` does.
+// Spec: 4.4
+// expect output: a = 1
+// expect output: bb = 2
+// expect output: 6
+
+type Cache {
+    map: Shared<[String: Int]>
+
+    fn total(self) -> Int {
+        let sum = 0
+        for (key, value) in self.map.get() {
+            sum += value + key.len()
+        }
+        sum
+    }
+}
+
+fn main() {
+    const cache = Cache(map: Shared(["a": 1, "bb": 2]))
+    for (key, value) in cache.map.get() {
+        print("{key} = {value}")
+    }
+    print(cache.total())
+}

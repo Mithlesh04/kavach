@@ -69,24 +69,38 @@ impl<'a> Lowerer<'a> {
             return self.inout_outcome(p, kind, ok, err, plain, line);
         }
         let (value, error) = (self.new_local(ok), self.new_local(err));
-        // `f(try g())`: arguments with statements of their own (a `try`
-        // that may leave) are worked out first, in order, into locals,
-        // so the call gets plain values.
+        // `f(try g())`, `f((try g()).items)`: arguments with statements of
+        // their own (a `try` that may leave), at any depth, are worked out
+        // first, in order, into locals, so the call gets plain values.
+        let has_block =
+            |a: &ir::Expr| crate::walk::any_expr(a, &mut |x| matches!(x.kind, K::Block(_)));
         let kind = match kind {
-            K::Call(f, args) if args.iter().any(|a| matches!(a.kind, K::Block(_))) => {
+            K::Call(_, ref args) | K::CallValue(_, ref args) | K::Rt(_, ref args)
+                if args.iter().any(has_block) =>
+            {
                 let mut stmts = Vec::new();
-                let mut plain_args = Vec::new();
-                for a in args {
+                let mut hold = |a: ir::Expr, stmts: &mut Vec<Stmt>| {
                     let (ty, at) = (a.ty, a.line);
                     let held = self.new_local(ty);
                     stmts.push(Stmt::Let(held, a));
-                    plain_args.push(self.local_expr(held, at));
-                }
-                let call = ir::Expr {
-                    kind: K::Call(f, plain_args),
-                    ty: ok,
-                    line,
+                    self.local_expr(held, at)
                 };
+                let kind = match kind {
+                    K::Call(f, args) => {
+                        K::Call(f, args.into_iter().map(|a| hold(a, &mut stmts)).collect())
+                    }
+                    K::Rt(op, args) => {
+                        K::Rt(op, args.into_iter().map(|a| hold(a, &mut stmts)).collect())
+                    }
+                    K::CallValue(callee, args) => {
+                        // The function value first, as it is worked out first.
+                        let callee = Box::new(hold(*callee, &mut stmts));
+                        let args = args.into_iter().map(|a| hold(a, &mut stmts)).collect();
+                        K::CallValue(callee, args)
+                    }
+                    kind => kind,
+                };
+                let call = ir::Expr { kind, ty: ok, line };
                 K::Block(Block {
                     stmts,
                     value: Some(Box::new(call)),

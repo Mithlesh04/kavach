@@ -91,6 +91,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.12 | [json-decode-into-records.kav](json-decode-into-records.kav) | `json.decode<T>` reads JSON straight into a typed value: missing fields take their default or `none`, and unions are read by variant name. | runs |
 | 2.12 | [json-decode-problems-say-where.kav](json-decode-problems-say-where.kav) | When JSON doesn't fit the type, decoding fails with `Invalid`, whose problems say where and what was expected; numbers must fit their type. | runs |
 | 2.12 | [json-decode-lists-every-problem.kav](json-decode-lists-every-problem.kav) | Decoding goes on after a problem, so `Invalid` lists every problem in the document, in its order. | runs |
+| 2.12 | [json-decode-problems-in-list-items.kav](json-decode-problems-in-list-items.kav) | A list item that doesn't fit is a problem at its index, also in a list of records stored flat. | runs |
 | 2.12 | [json-decode-refuses-unknown-fields.kav](json-decode-refuses-unknown-fields.kav) | Decoding refuses a field the type doesn't have, at its path; `unknown: JsonUnknown.Ignore` skips them. | runs |
 | 2.12, 7.3 | [json-decode-checks-invariants.kav](json-decode-checks-invariants.kav) | A decoded value is checked against its types' invariants; a broken one is a problem with the record's path, not a panic. | runs |
 | 2.12 | [json-decode-keeps-json-fields.kav](json-decode-keeps-json-fields.kav) | Decoding reads a field of type `Json` as written, whatever it holds. | runs |

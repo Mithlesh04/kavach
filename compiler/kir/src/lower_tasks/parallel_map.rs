@@ -48,9 +48,16 @@ impl<'a> Lowerer<'a> {
             }
             _ => self.expr(f)?,
         };
+        // A function that can fail (spec 5.2): each task gives its value
+        // with its error beside it, so the error keeps its own type.
+        let fails = self.fn_error(fn_ty).map(|own| self.held_error(own));
+        let task_out = match fails {
+            Some(err) => self.shapes_intern(Shape::Tuple(vec![out_item, err])),
+            None => out_item,
+        };
         // Each task's closure holds the function and its item.
         let env_ty = self.shapes_intern(Shape::Closure(vec![fn_ty, item_ty]));
-        let saved = self.save_function(out_item);
+        let saved = self.save_function(task_out);
         let env = self.new_local(env_ty);
         let field =
             |i: u32, t: Type| at(K::GetField(Box::new(local(env, env_ty, line)), i), t, line);
@@ -59,15 +66,26 @@ impl<'a> Lowerer<'a> {
             out_item,
             line,
         );
-        let body = Function {
-            name: "parallel_map task".into(),
-            params: vec![env],
-            ret: out_item,
-            locals: self.locals.clone(),
-            body: Block {
+        let task_body = match fails {
+            Some(err) => {
+                let (value, error) = (self.new_local(out_item), self.new_local(err));
+                let both = vec![local(value, out_item, line), local(error, err, line)];
+                Block {
+                    stmts: vec![Stmt::LetResult { value, error, call }],
+                    value: Some(Box::new(at(K::Tuple(both), task_out, line))),
+                }
+            }
+            None => Block {
                 stmts: Vec::new(),
                 value: Some(Box::new(call)),
             },
+        };
+        let body = Function {
+            name: "parallel_map task".into(),
+            params: vec![env],
+            ret: task_out,
+            locals: self.locals.clone(),
+            body: task_body,
             line,
             fails: true,
             external: None,
@@ -76,11 +94,11 @@ impl<'a> Lowerer<'a> {
         let body = self.add_function(body);
         let saved = self.save_function(Type::Unit);
         let error_ty = self.error_type();
-        let thunk = self.task_thunk(body, env_ty, out_item, error_ty, line);
+        let thunk = self.task_thunk(body, env_ty, task_out, error_ty, line);
         self.restore_function(saved);
         let thunk = self.add_function(thunk);
 
-        let task_ty = self.shapes_intern(Shape::Task(out_item));
+        let task_ty = self.shapes_intern(Shape::Task(task_out));
         let tasks_ty = self.list_type(task_ty);
         let error_ty = self.error_type();
         let (f_local, max_local, src) = (
@@ -99,12 +117,12 @@ impl<'a> Lowerer<'a> {
             self.new_local(Type::I64),
         );
         let (value, error, skipped) = (
-            self.new_local(out_item),
+            self.new_local(task_out),
             self.new_local(error_ty),
-            self.new_local(out_item),
+            self.new_local(task_out),
         );
         let int = |n| at(K::Int(n), Type::I64, line);
-        let wait = |t: ir::Expr| at(K::Rt(RtOp::TaskWait, vec![t]), out_item, line);
+        let wait = |t: ir::Expr| at(K::Rt(RtOp::TaskWait, vec![t]), task_out, line);
         let push = |acc: Local, acc_ty: Type, v: ir::Expr| {
             let pushed = at(
                 K::Rt(RtOp::ListPush, vec![local(acc, acc_ty, line), v]),
@@ -194,23 +212,66 @@ impl<'a> Lowerer<'a> {
                 value: None,
             },
         };
+        let waited = Stmt::LetResult {
+            value,
+            error,
+            call: wait(local(task, task_ty, line)),
+        };
+        let (kept, loop_error) = match fails {
+            Some(err) => {
+                // The first error, in the items' order, ends the call.
+                let loop_error = self.new_local(err);
+                let own = self.tuple_item(value, task_out, 1, err, line);
+                let failed = Block {
+                    stmts: vec![
+                        Stmt::Expr(at(
+                            K::Assign(loop_error, Box::new(own.clone())),
+                            Type::Unit,
+                            line,
+                        )),
+                        Stmt::Break,
+                    ],
+                    value: None,
+                };
+                let item = self.tuple_item(value, task_out, 0, out_item, line);
+                let pushed = Block {
+                    stmts: vec![push(out, ty, item)],
+                    value: None,
+                };
+                let is_error = at(K::IsSome(Box::new(own)), Type::Bool, line);
+                let kept = at(K::If(Box::new(is_error), failed, pushed), Type::Unit, line);
+                // A task that panicked has no value to look at.
+                let panicked = self.failed(error, line);
+                let kept = K::If(
+                    Box::new(panicked),
+                    Block::default(),
+                    Block {
+                        stmts: vec![Stmt::Expr(kept)],
+                        value: None,
+                    },
+                );
+                (
+                    Stmt::Expr(at(kept, Type::Unit, line)),
+                    Some((loop_error, err)),
+                )
+            }
+            None => (push(out, ty, local(value, out_item, line)), None),
+        };
         let collect = Stmt::ForEach {
             var: task,
             index: j,
             list: tasks,
             body: Block {
-                stmts: vec![
-                    Stmt::LetResult {
-                        value,
-                        error,
-                        call: wait(local(task, task_ty, line)),
-                    },
-                    push(out, ty, local(value, out_item, line)),
-                ],
+                stmts: vec![waited, kept],
                 value: None,
             },
         };
-        let stmts = vec![
+        let mut stmts = Vec::new();
+        if let Some((loop_error, err)) = loop_error {
+            stmts.push(Stmt::Let(loop_error, at(K::None, err, line)));
+            self.pending_error = Some(loop_error);
+        }
+        stmts.extend([
             Stmt::Let(f_local, fv),
             Stmt::Let(max_local, max),
             Stmt::Let(src, list),
@@ -218,7 +279,7 @@ impl<'a> Lowerer<'a> {
             start,
             Stmt::Let(out, at(K::List(Vec::new()), ty, line)),
             collect,
-        ];
+        ]);
         Ok(at(
             K::Block(Block {
                 stmts,

@@ -1,0 +1,39 @@
+// Rule: A list item that doesn't fit its type is a problem at its index, also when the items are records stored flat (all numbers, as `Date` is) and the item isn't an object at all.
+// Spec: 2.12
+// expect output: [1]: a date such as `2024-01-02`
+// expect output: [1]: an object
+// expect output: [1].x: a whole number that fits `Int`
+
+use std.json
+use std.time.{Date}
+
+type Pt {
+    x: Int
+    y: Int
+}
+
+fn show(e: JsonError) {
+    match e {
+        JsonError.Invalid(problems) => {
+            for p in problems {
+                print("{p.path}: {p.expected}")
+            }
+        }
+        _ => print("{e}"),
+    }
+}
+
+fn main() {
+    const _dates = json.decode<[Date]>("[\"2024-01-02\", \"infinity\"]") catch e => {
+        show(e)
+        []
+    }
+    const _points = json.decode<[Pt]>("[\{\"x\": 1, \"y\": 2}, 5]") catch e => {
+        show(e)
+        []
+    }
+    const _wrong = json.decode<[Pt]>("[\{\"x\": 1, \"y\": 2}, \{\"x\": \"no\", \"y\": 2}]") catch e => {
+        show(e)
+        []
+    }
+}

@@ -152,7 +152,7 @@ const none_of_it = time.parse_moment("2026-11-04T09:05:30") catch e => {
 }
 ```
 
-- Numbers have exactly the digits shown: `9:05`, `+5:30` and `2026-11-4` fail, and so do signs where there should be digits (`2026-+1-04`).
+- Numbers have exactly the digits shown: `9:05`, `+5:30` and `2026-11-4` fail, and so do signs where there should be digits (`2026-+1-04`). A year before 0 or after 9999 is written as `iso` writes it, with a sign or more digits, as ISO 8601's expanded years are: `-0005-01-01`, `12345-06-07` (or `+12345-06-07`).
 - A fraction of a second has 1 to 9 digits, as other systems write it. Kavach keeps milliseconds, so digits past the third are dropped, not rounded: `.1239` is 123 ms.
 - A leap second (`23:59:60`) fails: a `Time` has no such second, as in Java's `java.time`.
 - An offset may have seconds (`+05:21:10`): some zones' oldest offsets do, and `z.iso` writes them, so `parse_moment` reads back any moment `z.iso` wrote.

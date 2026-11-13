@@ -107,10 +107,19 @@ fn days_in_month(y: i64, m: i64) -> i64 {
     }
 }
 
-/// `2026-11-04`, as `time.parse_date` reads it.
+/// `2026-11-04`, as `time.parse_date` reads it: a year before 0 or after
+/// 9999 has a sign or more digits (`-0005`, `+12345`, `12345`).
 fn date(text: &str) -> Option<[i64; 3]> {
-    let mut parts = text.split('-');
-    let y = digits(parts.next()?, 4)?;
+    let (west, unsigned) = match text.as_bytes().first()? {
+        b'-' => (true, &text[1..]),
+        b'+' => (false, &text[1..]),
+        _ => (false, text),
+    };
+    let mut parts = unsigned.split('-');
+    let year = parts.next()?;
+    let size =
+        digits(year, year.len()).filter(|n| (4..=7).contains(&year.len()) && *n <= 1_000_000)?;
+    let y = if west { -size } else { size };
     let m = digits(parts.next()?, 2)?;
     let d = digits(parts.next()?, 2)?;
     let ok = parts.next().is_none() && (1..=12).contains(&m) && d >= 1;
@@ -227,6 +236,11 @@ mod tests {
             (Kind::Date, "2024-02-29", Some(&[2024, 2, 29])),
             (Kind::Date, "2023-02-29", None),
             (Kind::Date, "infinity", None),
+            (Kind::Date, "-0005-01-01", Some(&[-5, 1, 1])),
+            (Kind::Date, "+12345-06-07", Some(&[12_345, 6, 7])),
+            (Kind::Date, "12345-06-07", Some(&[12_345, 6, 7])),
+            (Kind::Date, "026-01-01", None),
+            (Kind::Date, "2000000-01-01", None),
             (Kind::Time, "03:04:05.123456", Some(&[3, 4, 5, 123])),
             (Kind::Time, "03:04", Some(&[3, 4, 0, 0])),
             (Kind::Time, "24:00:00", None),
@@ -257,6 +271,8 @@ mod tests {
             assert_eq!(read(*kind, text).as_deref(), *want, "{text}");
         }
         assert_eq!(write(Kind::Date, &[2026, 11, 4]), "2026-11-04");
+        assert_eq!(write(Kind::Date, &[-5, 1, 1]), "-0005-01-01");
+        assert_eq!(read(Kind::Date, "-0005-01-01").unwrap(), [-5, 1, 1]);
         assert_eq!(write(Kind::Time, &[9, 5, 30, 0]), "09:05:30");
         assert_eq!(write(Kind::Time, &[23, 0, 0, 250]), "23:00:00.250");
         let dt = [2026, 1, 2, 3, 4, 5, 6];

@@ -1,18 +1,20 @@
 // Rule: A task's error that no `.wait()` read is printed to standard error, with where the task was spawned, and the program goes on.
 // Spec: 9.1
 // expect output: main goes on
-// expect stderr: error in a task nobody waited for: disk full (spawned at errors-nobody-reads-are-printed.kav:15)
+// expect stderr: error in a task nobody waited for: disk full (spawned at errors-nobody-reads-are-printed.kav:17)
 
-use std.time
-
-fn risky() -> Int ! Error {
+fn risky(started: Sender<Bool>) -> Int ! Error {
+    // Says it ran, then fails: it keeps its turn until it ends (9.7).
+    started.put(true)
     fail Error("disk full")
 }
 
-fn main() uses Console, Clock {
+fn main() uses Console {
+    const (started, ran) = Channel<Bool>(capacity: 1)
     // `_` says nobody waits for it on purpose: no warning, and the error
-    // is still printed.
-    const _late = spawn risky()
-    time.sleep(10.ms)       // the task runs and fails meanwhile
+    // is still printed. Taking from `ran` waits until the task has run
+    // and failed, so the error is there before `main` ends.
+    const _late = spawn risky(started)
+    const _ = ran.take()
     print("main goes on")
 }

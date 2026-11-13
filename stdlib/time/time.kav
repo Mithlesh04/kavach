@@ -296,18 +296,31 @@ pub fn now() -> DateTime {
     utc(time.now_ms())
 }
 
-/// The date `text` writes as ISO 8601 does: `2026-11-04`.
+/// The date `text` writes as ISO 8601 does: `2026-11-04`. A year before
+/// 0 or after 9999 has a sign or more digits, as `iso` writes it:
+/// `-0005-01-01`, `12345-06-07`, `+12345-06-07`.
 pub fn parse_date(text: String) -> Date ! DateError
     example parse_date("2026-11-04") == Date(year: 2026, month: 11, day: 4)
+    example parse_date("-0005-01-01") == Date(year: -5, month: 1, day: 1)
+    example parse_date("+12345-06-07") == Date(year: 12_345, month: 6, day: 7)
     example parse_date("2026-02-30") fails DateError.Invalid(text: "2026-02-30")
     example parse_date("4 Nov 2026") fails DateError.Invalid(text: "4 Nov 2026")
     example parse_date("2026-+1-04") fails DateError.Invalid(text: "2026-+1-04")
+    example parse_date("026-01-01") fails DateError.Invalid(text: "026-01-01")
+    example parse_date("2000000-01-01") fails DateError.Invalid(text: "2000000-01-01")
 {
-    const parts = text.trim().split("-")
-    if parts.len() != 3 {
+    const written = text.trim()
+    const west = written.starts_with("-")
+    const signed = west or written.starts_with("+")
+    const parts = (if signed { written.slice(1, written.len()) } else { written }).split("-")
+    if parts.len() != 3 or parts[0].len() < 4 or parts[0].len() > 7 {
         fail DateError.Invalid(text: text)
     }
-    const year = digits.read(parts[0], 4) ?? fail DateError.Invalid(text: text)
+    const size = digits.read(parts[0], parts[0].len()) ?? fail DateError.Invalid(text: text)
+    if size > 1_000_000 {
+        fail DateError.Invalid(text: text)
+    }
+    const year = if west { -size } else { size }
     const month = digits.read(parts[1], 2) ?? fail DateError.Invalid(text: text)
     const day = digits.read(parts[2], 2) ?? fail DateError.Invalid(text: text)
     if month < 1 or month > 12 or day < 1 or day > days_in_month(year, month) {

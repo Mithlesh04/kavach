@@ -55,6 +55,8 @@ impl RtOp {
                 | RtOp::NetListen
                 | RtOp::NetConnect
                 | RtOp::NetConnectTls
+                | RtOp::NetStartTls
+                | RtOp::NetAcceptTls
                 | RtOp::NetListenTls
                 | RtOp::NetBind
                 | RtOp::NetSend

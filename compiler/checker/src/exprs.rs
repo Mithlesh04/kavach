@@ -15,10 +15,17 @@ impl Checker<'_> {
             Ty::Result(ok, _) if self.in_example => *ok,
             Ty::Result(ok, _) => {
                 let what = self.describe(e);
-                self.error(
-                    e.span,
-                    format!("{what} can fail: handle the error with `try`, `catch` or `match`"),
-                );
+                // `xs.filter(x => valid(x))`: a lambda fails only through
+                // its own `try` (spec 3.3).
+                let in_lambda = self.ctx.as_ref().is_some_and(|c| c.name == "this lambda");
+                let message = if in_lambda {
+                    format!(
+                        "{what} can fail: write `try` before it to pass the error on from this lambda, which the call that takes the lambda then passes on (spec 3.3), or handle it here with `catch` or `match`"
+                    )
+                } else {
+                    format!("{what} can fail: handle the error with `try`, `catch` or `match`")
+                };
+                self.error(e.span, message);
                 *ok
             }
             t => t,

@@ -15,6 +15,7 @@ Conformance tests for spec chapter [4. Control flow](../../../docs/spec/04-contr
 | 4.3 | [a-match-arm-may-leave.kav](a-match-arm-may-leave.kav) | A `match` arm may leave instead of giving a value: `return`, `break` or `continue`; the `match` has the value of the arm taken. | runs |
 | 2.6, 4.3 | [match-cases-are-written-with-their-type.kav](match-cases-are-written-with-their-type.kav) | A `match` case names its variant with its union's name; a bare case is a compile error. | compile error |
 | 4.4 | [for-over-lists.kav](for-over-lists.kav) | `for` walks a list in order; enumerate() adds an index starting at 0. | runs |
+| 4.4 | [for-over-a-map-a-call-gives.kav](for-over-a-map-a-call-gives.kav) | `for (key, value)` walks a map in insertion order, also when a call gives the map. | runs |
 | 4.4 | [for-over-ranges.kav](for-over-ranges.kav) | `..` excludes the end; `..=` includes it. | runs |
 | 4.4 | [for-underscore-discards.kav](for-underscore-discards.kav) | `for _ in …` discards the value and repeats the body. | runs |
 | 4.4 | [big-loops-give-plain-results.kav](big-loops-give-plain-results.kav) | A loop's results don't depend on how it is run: a loop on all cores stores exactly what the plain loop stores (decision 0031). | runs |

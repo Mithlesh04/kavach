@@ -15,6 +15,7 @@ use crate::interp::Interp;
 use crate::value::{Flow, Value};
 use found::{Reader, can_save, write_case};
 use kavach_ast::{FnDecl, ItemKind, Span, TypeBody};
+use kavach_resolver::DefId;
 use std::path::PathBuf;
 use values::{Gen, Pick, Rng};
 
@@ -65,8 +66,12 @@ enum Outcome {
 impl<'a> Interp<'a> {
     fn targets(&self) -> (Vec<Target<'a>>, Vec<String>) {
         let (mut targets, mut skipped) = (Vec::new(), Vec::new());
-        let mut add = |i: &Self, name: String, f: &'a FnDecl, owner: Option<Gen>| {
+        let mut add = |i: &Self, name: String, f: &'a FnDecl, owner: Option<DefId>| {
             let has_self = f.params.iter().any(|p| p.ty.is_none());
+            let decl = owner.and_then(|d| i.records.get(&d).or_else(|| i.unions.get(&d)));
+            // `Boxed<S>.sized`: values of a generic type aren't generated.
+            let generic_self = has_self && decl.is_some_and(|t| !t.generics.is_empty());
+            let owner = owner.map(Gen::Adt);
             let mut params: Vec<Gen> = owner.into_iter().filter(|_| has_self).collect();
             let typed = f.params.iter().filter_map(|p| p.ty.as_ref());
             let gens: Option<Vec<Gen>> = typed.map(|t| i.gen_of(t)).collect();
@@ -82,6 +87,7 @@ impl<'a> Interp<'a> {
             let real = uses.into_iter().chain(written).find(|c| !i.faked(c));
             let why = match gens {
                 _ if !f.generics.is_empty() => Some("generic".to_string()),
+                _ if generic_self => Some("its type is generic".to_string()),
                 _ if real.is_some() => Some(format!(
                     "uses {} (no fake for it yet)",
                     real.unwrap_or_default()
@@ -121,12 +127,7 @@ impl<'a> Interp<'a> {
             let mut ms: Vec<&'a FnDecl> = methods.values().copied().collect();
             ms.sort_by_key(|f| f.name.span.start);
             for f in ms.into_iter().filter(own) {
-                add(
-                    self,
-                    format!("{type_name}.{}", f.name.name),
-                    f,
-                    Some(Gen::Adt(*def)),
-                );
+                add(self, format!("{type_name}.{}", f.name.name), f, Some(*def));
             }
         }
         (targets, skipped)

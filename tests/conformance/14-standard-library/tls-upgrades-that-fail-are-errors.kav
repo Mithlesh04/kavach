@@ -1,0 +1,32 @@
+// Rule: `accept_tls` and `start_tls` that fail are errors to handle, and the code after them doesn't run.
+// Spec: 14.10
+// expect output: server: no TLS
+// expect output: client: no TLS
+
+use std.net
+
+fn serve(l: Listener) -> String ! NetError uses Net {
+    const c = try l.accept()
+    const tls = c.accept_tls("not a certificate", "not a key") catch _ => {
+        c.close()
+        return "no TLS"
+    }
+    tls.close()
+    "TLS"
+}
+
+fn main() uses Net, Console {
+    const l = net.listen("127.0.0.1:0") catch e => panic("{e}")
+    const server = spawn serve(l)
+    const plain = net.connect(l.address()) catch e => panic("{e}")
+    print("server: {server.wait() catch _ => "failed"}")
+    const client = match plain.start_tls("localhost") {
+        ok(conn) => {
+            conn.close()
+            "TLS"
+        }
+        err(_) => "no TLS",
+    }
+    print("client: {client}")
+    l.close()
+}

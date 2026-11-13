@@ -1,0 +1,51 @@
+// Rule: a call that fails keeps its error when one of its arguments holds a `try` deeper inside, as `check((try fetch(n)).items)`, whether it calls a function, a function value or the standard library.
+// Spec: 5.2
+// expect output: 1 -1
+// expect output: 1 -1
+// expect output: -1
+
+use std.fs
+
+type Err = TooBig(n: Int)
+
+type Box {
+    items: [Int]
+}
+
+fn fetch(n: Int) -> Box ! Err {
+    Box(items: [n])
+}
+
+fn check(items: [Int]) -> Int ! Err {
+    if items[0] > 1 {
+        fail Err.TooBig(n: items[0])
+    }
+    items[0]
+}
+
+fn named(n: Int) -> Int ! Err {
+    try check((try fetch(n)).items)
+}
+
+fn by_value(n: Int, f: fn([Int]) -> Int ! Err) -> Int ! Err {
+    try f((try fetch(n)).items)
+}
+
+type Note {
+    path: String
+}
+
+fn note(path: String) -> Note ! Error {
+    Note(path: path)
+}
+
+fn read(path: String) -> Int ! Error uses Fs {
+    const text = try fs.read_text((try note(path)).path)
+    text.len()
+}
+
+fn main() uses Console, Fs {
+    print("{named(1) catch _ => -1} {named(5) catch _ => -1}")
+    print("{by_value(1, check) catch _ => -1} {by_value(5, check) catch _ => -1}")
+    print(read("no-such-folder/no-such-file.txt") catch _ => -1)
+}

@@ -395,7 +395,7 @@ impl<'a> Lowerer<'a> {
         )
     }
 
-    fn zero_of(&self, t: Type, line: u32) -> ir::Expr {
+    pub(crate) fn zero_of(&self, t: Type, line: u32) -> ir::Expr {
         let kind = match (t, self.shapes.shape(t)) {
             (Type::F64 | Type::F32, _) => K::Float(0.0),
             (_, Some(Shape::Decimal)) => K::Decimal("0".into()),
@@ -422,14 +422,32 @@ impl<'a> Lowerer<'a> {
         let tmp = self.new_local(list.ty);
         let src = self.local_expr(tmp, line);
         let keys = self.list_loop("map", src, f, keys_ty, span)?;
-        let sorted = self.at(
-            K::Rt(RtOp::ListSortBy, vec![self.local_expr(tmp, line), keys]),
+        let held = self.new_local(keys_ty);
+        let mut sorted = self.at(
+            K::Rt(
+                RtOp::ListSortBy,
+                vec![self.local_expr(tmp, line), self.local_expr(held, line)],
+            ),
             ty,
             line,
         );
+        // A key that fails ends the loop early, with fewer keys than
+        // items: the call fails then (spec 5.2), and nothing is sorted.
+        if let Some(error) = self.pending_error {
+            let unsorted = self.local_expr(tmp, line);
+            sorted = self.at(
+                K::If(
+                    Box::new(self.failed(error, line)),
+                    wrap_value(unsorted),
+                    wrap_value(sorted),
+                ),
+                ty,
+                line,
+            );
+        }
         Ok(self.at(
             K::Block(Block {
-                stmts: vec![Stmt::Let(tmp, list)],
+                stmts: vec![Stmt::Let(tmp, list), Stmt::Let(held, keys)],
                 value: Some(Box::new(sorted)),
             }),
             ty,
