@@ -18,6 +18,7 @@ import { agentSettingsDoc } from "./agents-settings";
 import { deprecateDoc } from "./functions-deprecate";
 import { mistakesDoc } from "./start-mistakes";
 import { classicDoc } from "./start-classic";
+import { commandsRefDoc, keywordsRefDoc, literalsRefDoc, methodsRefDoc, operatorsRefDoc, stdlibRefDoc } from "./reference";
 import { bridgeDoc, cppDoc, goDoc, javascriptDoc, pythonDoc, rustDoc } from "./start-bridges";
 import { buildDoc, whoDoc } from "./start-who";
 import { whyDoc } from "./start-why";
@@ -109,6 +110,12 @@ import {
 import { elseIfDoc, guardsDoc, ifDoc, ifLetDoc, ifOnlyDoc, ifValueDoc, matchDoc, matchValuesDoc, patternsDoc } from "./basics-if";
 
 export const lessons: Record<string, LessonDoc> = {
+  "reference/keywords": keywordsRefDoc,
+  "reference/operators": operatorsRefDoc,
+  "reference/literals": literalsRefDoc,
+  "reference/built-in-methods": methodsRefDoc,
+  "reference/standard-library": stdlibRefDoc,
+  "reference/commands": commandsRefDoc,
   "start/kavach-home": homeDoc,
   "start/why-kavach": whyDoc,
   "start/what-kavach-does-for-you": smartDoc,

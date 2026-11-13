@@ -180,6 +180,14 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["A Library for Any Language", "—"],
     ["kavach audit", "—"],
   ]],
+  ["reference", "Reference", "intermediate", [
+    ["Keywords", "1.6"],
+    ["Operators", "1.8"],
+    ["Literals", "1.7"],
+    ["Built-in Methods", "14.2"],
+    ["Standard Library", "14"],
+    ["Commands", "10.5"],
+  ]],
 ];
 
 export type CourseSub = { slug: string; title: string };

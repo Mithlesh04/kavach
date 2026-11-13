@@ -7,7 +7,8 @@ import path from "node:path";
 // held to the code by tests (spec 10.11's settings, by
 // compiler/driver/tests/settings.rs).
 
-export type SpecTable = { heading: string; header: string[]; rows: string[][] };
+/** `caption`: the line just before the table when it ends with ":", as "Text (`String`):" does in 14.2. */
+export type SpecTable = { heading: string; header: string[]; rows: string[][]; caption?: string };
 
 function section(file: string, number: string): string {
   const text = fs.readFileSync(path.join(process.cwd(), "..", "docs", "spec", file), "utf8").replace(/\r\n/g, "\n");
@@ -29,15 +30,18 @@ function tablesIn(text: string, where: string): SpecTable[] {
   const found: SpecTable[] = [];
   let heading = "";
   let current: SpecTable | null = null;
+  let lastText = "";
   for (const line of text.split("\n").map((l) => l.trimStart())) {
     const h = line.match(/^#{2,3} (.*)/);
     if (h) heading = h[1].trim();
     if (!line.startsWith("|")) {
       current = null;
+      if (line.trim()) lastText = h ? "" : line.trim();
       continue;
     }
     if (!current) {
-      current = { heading, header: cellsOf(line), rows: [] };
+      current = { heading, header: cellsOf(line), rows: [], caption: lastText.endsWith(":") ? lastText : undefined };
+      lastText = "";
       found.push(current);
     } else if (!cellsOf(line).every((c) => /^:?-+:?$/.test(c))) {
       current.rows.push(cellsOf(line));
