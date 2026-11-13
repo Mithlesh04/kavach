@@ -1,0 +1,7 @@
+use shop.{Order}
+
+fn main() {
+    const o = Order(total: 200)
+    print(o.due())
+    print(o.tax())
+}

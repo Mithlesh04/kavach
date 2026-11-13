@@ -10,6 +10,7 @@ import { Ex, Files, H2, Note, P, Syntax } from "./parts";
 import { Limits } from "./limits";
 
 const limits = loadProject("projects/limits.fails", ["kavach.toml", "src/main.kav"]);
+const privateMethod = loadProject("modules/private-method", ["src/main.kav"]);
 
 // ---------- Modules ----------
 
@@ -78,6 +79,19 @@ export const pubDoc: LessonDoc = {
       <Files name="modules/extend-private" first={["src/lib.kav", "src/moves.kav"]} />
       <P>An <C>extend</C> in another package sees only <C>pub</C> fields.</P>
       <SrcRef file="tests/conformance/10-modules/an-extend-in-the-package-sees-private-fields/src/main.kav" label="tested" />
+      <H2>Methods are private to their package</H2>
+      <P>
+        A method without <C>pub</C> can be called anywhere in its own <strong>package</strong>, so the package&apos;s
+        modules can share helper methods without making them part of what it offers. Here <C>pricing</C> calls{" "}
+        <C>tax</C>, and the program that uses <C>shop</C> can&apos;t:
+      </P>
+      <Files name="modules/private-method" first={["shop/src/lib.kav", "shop/src/pricing.kav", "src/main.kav"]} terminal={false} />
+      <Terminal session={privateMethod.output ?? ""} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The same holds on the type: <C>Order.blank()</C> is refused outside <C>shop</C> when <C>blank</C> isn&apos;t <C>pub</C>.</li>
+        <li>A method an interface asks for can be called wherever the interface can, <C>pub</C> or not.</li>
+      </ul>
+      <SrcRef file="tests/conformance/10-modules/private-methods-stay-in-their-package/src/main.kav" label="tested" />
     </>
   ),
 };

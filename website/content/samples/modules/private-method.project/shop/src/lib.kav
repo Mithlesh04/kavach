@@ -1,0 +1,15 @@
+use pricing
+
+pub type Order {
+    pub total: Int
+
+    /// What the customer pays.
+    pub fn due(self) -> Int {
+        pricing.with_tax(self)
+    }
+
+    /// For this package only.
+    fn tax(self) -> Int {
+        self.total / 10
+    }
+}

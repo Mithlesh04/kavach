@@ -1,0 +1,6 @@
+$ kavach run src/main.kav
+error: the method `tax` of `Order` is private to package `shop`: mark it `pub` there to call it here (spec 10.1)
+ --> src/main.kav:6:13
+  |
+6 |     print(o.tax())
+  |             ^^^

@@ -1,0 +1,29 @@
+use std.json
+
+type Order {
+    id: Int
+}
+
+/// Lists the orders.
+fn list_orders() -> [Order] {
+    [Order(id: 1)]
+}
+
+/// Lists the orders not yet paid.
+fn unpaid() -> [Order] {
+    []
+}
+
+fn summary(handler: fn() -> [Order]) -> String {
+    if let d = json.describe(handler) {
+        return "{d.name}: {d.doc}"
+    }
+    "no description"
+}
+
+fn main() {
+    const routes = [list_orders, unpaid, () => []]
+    for r in routes {
+        print(summary(r))
+    }
+}

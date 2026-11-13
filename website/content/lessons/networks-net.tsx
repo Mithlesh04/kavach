@@ -79,9 +79,26 @@ export const tlsDoc: LessonDoc = {
         <li><C>key</C> takes a <Link href="/docs/agents/secrets/">secret</Link>, so a key read with <C>env</C> or kept in a <C>secret</C> field needs no <C>reveal</C>.</li>
         <li>A slow or silent client can&apos;t hold up the others: handshakes go on side by side.</li>
       </ul>
+      <H2>TLS begun on a plain connection</H2>
+      <P>
+        Some protocols speak plain TCP first and then switch to TLS, as PostgreSQL&apos;s <C>SSLRequest</C> and
+        SMTP&apos;s <C>STARTTLS</C> do. <C>conn.start_tls</C> is the client&apos;s side, <C>conn.accept_tls</C> the
+        server&apos;s:
+      </P>
+      <Syntax
+        code={
+          '// the client asks in plain text, then starts TLS\ntry plain.write("TLS?".bytes())\nconst answer = try plain.read()\nconst secured = try plain.start_tls("db.internal", roots: ca)\n\n// the server answers, then accepts TLS\nconst asked = try plain.read()\ntry plain.write("S".bytes())\nconst conn = try plain.accept_tls(cert, key)'
+        }
+      />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Each gives the encrypted connection. The plain <C>conn</C> is closed from then on, so nothing is sent in the clear by mistake.</li>
+        <li><C>start_tls</C> checks the server&apos;s certificate against <C>host</C> and takes the other settings of <C>connect_tls</C>; <C>accept_tls</C> takes those of <C>listen_tls</C>.</li>
+        <li><C>.timeout(d)</C> sets the deadline of either, as it does for <C>read</C>.</li>
+      </ul>
       <Note>
         A TLS example needs certificates, which expire, so this one isn&apos;t run on this page. The test below makes a
-        fresh certificate authority and runs exactly this, mutual TLS included, every time Kavach&apos;s tests run.
+        fresh certificate authority and runs exactly this, mutual TLS and TLS begun on a plain connection included,
+        every time Kavach&apos;s tests run.
       </Note>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="tools/cli/tests/tls.rs" label="the TLS test" />

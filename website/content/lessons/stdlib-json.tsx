@@ -121,12 +121,20 @@ export const jsonDoc: LessonDoc = {
       <Ex name="json/describe" />
       <Syntax code={specBlockWith(JSON_SPEC, "2.12", "pub type FnSchema")} />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li><C>f</C> must name a function, not hold a function value. The result is a constant, so reading it costs nothing more than reading any value.</li>
+        <li>When <C>f</C> names a function, the result is a constant <C>FnSchema</C>, so reading it costs nothing more than reading any value.</li>
         <li>A parameter, result or error whose type has no schema, such as a function, is a compile error.</li>
       </ul>
+      <P>
+        Given a function value instead, such as a parameter or an item of a list of handlers,{" "}
+        <C>json.describe(value)</C> gives <C>FnSchema?</C>: the description of the named function the value is, or{" "}
+        <C>none</C> for a lambda (and for a generic function, which has no one description). So a framework handed its
+        routes as values can describe each one:
+      </P>
+      <Ex name="json/describe-value" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${JSON_SPEC}`} label="spec 2.12 · JSON" />
         <SrcRef file="tests/conformance/02-types/json-describe-describes-a-function.kav" label="describe, tested" />
+        <SrcRef file="tests/conformance/02-types/json-describe-takes-function-values.kav" label="function values, tested" />
         <SrcRef file="tests/conformance/02-types/json-schema-carries-doc-comments.kav" label="descriptions, tested" />
         <SrcRef file="docs/decisions/0085-function-types-with-errors-and-uses.md" label="decision 0085" />
       </div>
