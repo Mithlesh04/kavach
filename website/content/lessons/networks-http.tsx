@@ -198,6 +198,7 @@ export const httpServeDoc: LessonDoc = {
       <Ex name="http/h2-at-once" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>/report</C> was asked first, but <C>/ping</C> was answered first: its handler didn&apos;t wait for the slow one.</li>
+        <li>On the client, each task gets its answer as soon as it comes, whatever order the requests were sent in.</li>
         <li>At most 100 requests are answered at once on a connection, and the server tells the client so.</li>
         <li>The handler sees the same <C>Request</C> and gives the same <C>Response</C> as over HTTP/1.1.</li>
       </ul>

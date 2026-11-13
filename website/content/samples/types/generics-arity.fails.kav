@@ -1,0 +1,8 @@
+type Box<I> {
+    raw: String
+}
+
+fn main() {
+    const c = Box<String, Int>(raw: "")
+    print(c.raw)
+}

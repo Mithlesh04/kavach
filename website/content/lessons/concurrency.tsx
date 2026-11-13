@@ -335,13 +335,20 @@ export const timeoutsDoc: LessonDoc = {
       </Note>
       <H2>Cleanup however a task ends</H2>
       <P>
-        Cleanup that must run however a task ends, cancelled, failed, panicked or done, is a value whose type
+        Cleanup that must run however a task ends, cancelled, failed or done, is a value whose type
         implements <Link href="/docs/memory/automatic-memory/freed-immediately/#cleanup-of-your-own-drop">Drop</Link>.
         There is no <C>defer</C> or <C>on_cancel</C> block: one way covers every exit. Here a guest is cancelled while
         it waits, and its seat still comes back:
       </P>
       <Ex name="tasks/cancel-cleanup" />
-      <SrcRef file="tests/conformance/09-concurrency/cancelled-tasks-run-their-cleanup.kav" label="tested" />
+      <P>
+        A panic is the exception: it runs no <C>drop</C>, and what the task held is never dropped. See{" "}
+        <Link href="/docs/memory/automatic-memory/freed-immediately/#cleanup-of-your-own-drop">Drop</Link>.
+      </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/09-concurrency/cancelled-tasks-run-their-cleanup.kav" label="tested" />
+        <SrcRef file="tests/conformance/09-concurrency/cancelled-tasks-drop-at-once.kav" label="native code too, tested" />
+      </div>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={SPEC} label="spec 9.6 · timeouts and cancellation" />
         <SrcRef file="docs/decisions/0075-cancelling-tasks.md" label="decision 0075" />

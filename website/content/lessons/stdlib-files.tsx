@@ -117,6 +117,11 @@ export const foldersDoc: LessonDoc = {
         <li><C>fs.copy</C> copies a file; <C>fs.rename</C> moves or renames a file or a folder.</li>
         <li><C>fs.remove_all</C> deletes a folder with everything in it.</li>
         <li>Under <C>{'uses Fs("folder")'}</C>, both paths of <C>copy</C> and <C>rename</C> must be inside that folder, so a file can&apos;t be carried out of it.</li>
+        <li>
+          <C>fs.symlink(target, link)</C> makes a symbolic link. Under <C>{'uses Fs("folder")'}</C> both must be inside
+          the folder, so a link can&apos;t lead out of it. Windows allows links only in Developer Mode or with
+          administrator rights; otherwise it fails with <C>Denied</C>.
+        </li>
       </ul>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="tests/conformance/14-standard-library/fs-info-and-permissions.kav" label="tested" />

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
+import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
@@ -262,6 +263,19 @@ export const genericsDoc: LessonDoc = {
         <C>Pair&lt;A, B&gt;</C> work the same way. A method can have its own placeholders too:
       </P>
       <Ex name="types/generics-methods" />
+      <H2>Type arguments written where a value is made</H2>
+      <P>
+        A generic type&apos;s arguments are usually worked out from its fields and from where the value goes. When no
+        field shows them, write them where the value is made, or give the variable its type. Inside the type&apos;s
+        methods, <C>I</C> is then the type the value was made with:
+      </P>
+      <Ex name="types/generics-construction" />
+      <P>The count must match the type&apos;s parameters:</P>
+      <Ex name="types/generics-arity.fails" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/02-types/09-generics.md" label="spec 2.9 · generics" />
+        <SrcRef file="tests/conformance/02-types/generic-type-methods-know-their-type-arguments.kav" label="tested" />
+      </div>
     </>
   ),
   deeper: (

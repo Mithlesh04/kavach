@@ -1,0 +1,21 @@
+use std.json
+
+type Shout {
+    text: String
+}
+
+/// JSON kept as text until it is needed. No field holds an `I`,
+/// so `I` is written where a box is made.
+type Box<I> {
+    raw: String
+
+    fn get(self) -> I ! JsonError {
+        try json.decode<I>(self.raw)
+    }
+}
+
+fn main() ! Error {
+    const a = Box<Shout>(raw: "\{\"text\":\"hi\"}")
+    const b: Box<Shout> = Box(raw: "\{\"text\":\"there\"}")
+    print("{(try a.get()).text} {(try b.get()).text}")
+}

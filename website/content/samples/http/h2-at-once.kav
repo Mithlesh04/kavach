@@ -3,13 +3,15 @@ use std.http.h2
 use std.net
 use std.time
 
-fn ask(c: H2Client, path: String) -> H2Message ! H2Error uses Net {
-    try c.request([
+/// Asks for `path`, and prints the answer as soon as it comes.
+fn show(c: H2Client, path: String) ! H2Error uses Net, Console {
+    const reply = try c.request([
         Header(name: ":method", value: "GET"),
         Header(name: ":scheme", value: "http"),
         Header(name: ":authority", value: "localhost"),
         Header(name: ":path", value: path),
-        ], Bytes([]))
+    ], Bytes([]))
+    print("got {path}: {reply.body.text() ?? "?"}")
 }
 
 fn main() ! Error uses Clock {
@@ -22,9 +24,9 @@ fn main() ! Error uses Clock {
         http.text(200, "done")
     })
     const c = try h2.connect(try net.connect(listener.address()))
-    const slow = spawn ask(c, "/report")
-    const fast = spawn ask(c, "/ping")
-    const _ = try slow.wait()
-    const _ = try fast.wait()
+    const slow = spawn show(c, "/report")
+    const fast = spawn show(c, "/ping")
+    try slow.wait()
+    try fast.wait()
     c.close()
 }
