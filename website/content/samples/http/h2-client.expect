@@ -1,0 +1,5 @@
+GET /orders
+GET /stock
+GET /prices
+going away: false
+Protocol(reason: "the client was closed")

@@ -127,8 +127,10 @@ export const jsonDoc: LessonDoc = {
       <P>
         Given a function value instead, such as a parameter or an item of a list of handlers,{" "}
         <C>json.describe(value)</C> gives <C>FnSchema?</C>: the description of the named function the value is, or{" "}
-        <C>none</C> for a lambda (and for a generic function, which has no one description). So a framework handed its
-        routes as values can describe each one:
+        <C>none</C> for a lambda (and for a generic function, which has no one description). It works inside a generic
+        function too, with the types it was called with. There, a parameter, result or error with no schema (a
+        function, a record holding one, the built-in <C>Error</C>) is <C>{"{}"}</C>, any value, so every named
+        function can be described. So a framework handed its routes as values can describe each one:
       </P>
       <Ex name="json/describe-value" />
       <div className="flex flex-wrap gap-2.5">

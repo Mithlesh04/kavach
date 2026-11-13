@@ -1,0 +1,6 @@
+use notes
+
+fn main() ! FsError uses Fs {
+    print(try notes.read("todo"))
+    try notes.save("todo", "buy ink")
+}

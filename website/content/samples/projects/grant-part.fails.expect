@@ -1,0 +1,1 @@
+error: `save` in the package `notes` uses Fs.write, which the package isn't granted: add "Fs.write" to `can` in its entry in kavach.toml, and in the entry of each package it comes through, if you trust them (spec 10.12)

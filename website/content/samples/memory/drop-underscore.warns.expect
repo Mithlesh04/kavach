@@ -1,0 +1,4 @@
+warning: `_` names nothing, so this value drops here, at the end of the statement: name it `_guard` to keep it to the end of the block (spec 6.1)
+unlocked front door
+working
+unlocked back door

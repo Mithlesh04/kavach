@@ -1,0 +1,23 @@
+type Lock: Drop {
+    name: String
+
+    fn drop(self) uses Console {
+        print("unlocked {self.name}")
+    }
+}
+
+type StockError = Empty
+
+fn take(stock: Int) -> Int ! StockError {
+    const _shelf = Lock(name: "shelf")
+    if stock == 0 {
+        fail StockError.Empty
+    }
+    print("taking one")
+    stock - 1
+}
+
+fn main() {
+    print(take(3) catch _ => -1)
+    print(take(0) catch _ => -1)
+}

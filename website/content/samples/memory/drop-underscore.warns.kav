@@ -1,0 +1,13 @@
+type Lock: Drop {
+    name: String
+
+    fn drop(self) uses Console {
+        print("unlocked {self.name}")
+    }
+}
+
+fn main() {
+    const _ = Lock(name: "front door")
+    const _guard = Lock(name: "back door")
+    print("working")
+}

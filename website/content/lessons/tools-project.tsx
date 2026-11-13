@@ -101,6 +101,7 @@ export const pubDoc: LessonDoc = {
 const dep = loadProject("projects/dep", ["kavach.toml", "geometry/src/lib.kav", "src/main.kav"]);
 const refused = loadProject("projects/grant.fails", ["kavach.toml", "greeter/src/lib.kav", "src/main.kav"]);
 const granted = loadProject("projects/grant-add", ["kavach.toml"]);
+const partGrant = loadProject("projects/grant-part.fails", ["kavach.toml", "notes/src/lib.kav", "src/main.kav"]);
 
 // The spec's example of sources that are and aren't fetched, kept word for word.
 const careToml = () =>
@@ -198,10 +199,17 @@ export const packagesDoc: LessonDoc = {
         <li>A dependency&apos;s own dependencies get at most what it was granted: a package granted only <C>Console</C> can&apos;t pass <C>Net</C> on to another.</li>
         <li>An update that starts using a new capability fails to build until you grant it, so it can&apos;t quietly start reaching the network.</li>
       </ul>
+      <P>
+        <C>can</C> may grant part of a capability, as <C>uses</C> names it (<Link href="/docs/agents/capabilities/narrower-file-access/">narrower file access</Link>). With <C>{'can = ["Fs.read"]'}</C>,{" "}
+        <C>notes</C> may read files but not write them:
+      </P>
+      <CodeBlock code={partGrant.files[1].code} file="notes/src/lib.kav" />
+      <CodeBlock code={partGrant.files[0].code} file="kavach.toml" lang="toml" output={partGrant.output} outcome="refused" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="tests/conformance/10-modules/dependencies-use-only-granted-capabilities/src/main.kav" label="refused, tested" />
         <SrcRef file="tests/conformance/10-modules/granted-capabilities-let-a-dependency-act/src/main.kav" label="granted, tested" />
         <SrcRef file="tests/conformance/10-modules/dependencies-of-dependencies-get-no-more/src/main.kav" label="no more for theirs, tested" />
+        <SrcRef file="tests/conformance/10-modules/grants-can-be-part-of-a-capability/src/main.kav" label="part of a capability, tested" />
         <SrcRef file="docs/decisions/0084-environment-variables-and-granted-capabilities.md" label="decision 0084" />
       </div>
       <div className="flex flex-wrap gap-2.5">

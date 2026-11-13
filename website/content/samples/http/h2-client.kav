@@ -1,0 +1,31 @@
+use std.http
+use std.http.h2
+use std.net
+
+fn hello(r: Request) -> Response {
+    http.text(200, "{r.method} {r.path}")
+}
+
+fn ask(c: H2Client, path: String) -> String ! H2Error uses Net {
+    const reply = try c.request([
+        Header(name: ":method", value: "GET"),
+        Header(name: ":scheme", value: "http"),
+        Header(name: ":authority", value: "localhost"),
+        Header(name: ":path", value: path),
+        ], Bytes([]))
+    reply.body.text() ?? "?"
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, hello)
+    const c = try h2.connect(try net.connect(listener.address()))
+    print(try ask(c, "/orders"))
+    const tasks = [spawn ask(c, "/stock"), spawn ask(c, "/prices")]
+    for t in tasks {
+        print(try t.wait())
+    }
+    print("going away: {c.going_away()}")
+    c.close()
+    print(ask(c, "/late") catch e => "{e}")
+}

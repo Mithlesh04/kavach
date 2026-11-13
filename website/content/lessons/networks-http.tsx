@@ -248,6 +248,13 @@ export const httpJsonDoc: LessonDoc = {
   ),
 };
 
+/** Spec 14.11's rows for an HTTP/2 client that takes many requests. */
+const h2Table = () => {
+  const t = specTables(HTTP_FILE, "14.11").find((x) => x.header[0] === "Function" && x.rows.some((r) => r[0].includes("h2.connect(")));
+  if (!t) throw new Error("spec 14.11: no table of h2.connect");
+  return { header: t.header, rows: t.rows.filter((r) => /^`(h2\.connect|c\.)/.test(r[0])) };
+};
+
 export const httpSessionDoc: LessonDoc = {
   lead: "http.open keeps one connection open for many requests, instead of connecting again for each.",
   simple: <>Like staying on one phone call to ask several questions, instead of hanging up and dialling again for each one. Each question waits for its answer before the next.</>,
@@ -259,6 +266,19 @@ export const httpSessionDoc: LessonDoc = {
         Requests on a session go one after another, each waiting for its answer. A session is for one task at a time:
         give each task its own, so no task reads another&apos;s answer.
       </P>
+      <H2>One HTTP/2 connection for many tasks</H2>
+      <P>
+        A service that speaks HTTP/2 itself, as gRPC does, connects once with <C>h2.connect</C> from{" "}
+        <C>std.http.h2</C>. Several tasks can share the <C>H2Client</C> it gives: their requests take turns, in the
+        order they asked, one exchange at a time on the connection for now.
+      </P>
+      <Ex name="http/h2-client" />
+      <Table header={h2Table().header} rows={h2Table().rows} wrapFirst />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A pool replaces a client whose <C>going_away()</C> is true: the server sent GOAWAY, or the connection broke.</li>
+        <li>After <C>close()</C>, a request fails with <C>Protocol</C>.</li>
+      </ul>
+      <SrcRef file="tests/conformance/14-standard-library/http2-connections-take-many-requests.kav" label="tested" />
     </>
   ),
 };
