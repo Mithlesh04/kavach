@@ -49,7 +49,7 @@ Some functions get no generated arguments. The report lists each as **not genera
 - a generic function, or a method of a generic type;
 - a parameter whose values can't be generated, such as a record holding a `Shared`, unless its type has a `Sample` (11.3);
 - a capability with no fake yet (11.5);
-- a C function (10.7), or a function a generated case found reaching one: C runs only in native code.
+- a C function (10.7), or a function a generated case found reaching C or raw memory (`alloc`, `*p`, 6.4): they run only in native code.
 
 When no generated input meets a function's `require`, its `example`s are what checks it. The report says "checked by its examples only", or warns when it has none.
 

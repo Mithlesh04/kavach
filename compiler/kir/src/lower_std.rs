@@ -100,6 +100,16 @@ impl<'a> Lowerer<'a> {
                 return self.selected_call(module, name, args, ty, line);
             }
             ("base64", _) => return self.base64_call(name, args, ty, line, span),
+            // `text.nfkc(s)` and the other normal forms (spec 14.9).
+            ("text", "nfc" | "nfd" | "nfkc" | "nfkd") => {
+                let form = kavach_runtime_core::normalize::form_of(name).unwrap_or(0);
+                let s = args
+                    .first()
+                    .ok_or_else(|| self.unsupported("`text.nfc()`", span))?;
+                let s = self.expr(&s.value)?;
+                let form = self.at(K::Int(i128::from(form)), Type::I64, line);
+                return Ok(self.at(K::Rt(RtOp::NormalizeText, vec![s, form]), ty, line));
+            }
             ("clipboard", "read_text") => RtOp::ClipReadText,
             ("clipboard", "write_text") => RtOp::ClipWriteText,
             ("devices", "serial_ports") => RtOp::SerialPorts,

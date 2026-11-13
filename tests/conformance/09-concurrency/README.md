@@ -27,6 +27,7 @@ Conformance tests for spec chapter [9. Concurrency](../../../docs/spec/09-concur
 | 9.6 | [cancelled-tasks-stop-at-their-next-wait.kav](cancelled-tasks-stop-at-their-next-wait.kav) | A cancelled task stops at its next waiting point; nothing after it runs. | runs |
 | 9.6 | [cancel-stops-a-task-that-never-waits.kav](cancel-stops-a-task-that-never-waits.kav) | `task.cancel()` stops a task at once, even in a loop that never waits. | runs |
 | 9.6 | [cancelled-tasks-run-their-cleanup.kav](cancelled-tasks-run-their-cleanup.kav) | A task's cleanup is a `Drop` value: it runs when the task is cancelled while it waits. | runs |
+| 9.6 | [cancel-keeps-errors-of-calls.kav](cancel-keeps-errors-of-calls.kav) | In a program that cancels tasks, a call that fails still fails where it is made, also when its arguments are calls. | runs |
 | 9.6 | [a-time-limit-stops-a-stuck-task.kav](a-time-limit-stops-a-stuck-task.kav) | `spawn … within d` stops a stuck task when its time is up; `.wait()` fails with `timed out after … ms`. | runs |
 | 9.6 | [cancelling-is-not-an-error.kav](cancelling-is-not-an-error.kav) | `catch` doesn't see cancelling, so a cancelled task stops even inside `catch`. | runs |
 | 9.6 | [waiting-for-a-cancelled-task-fails.kav](waiting-for-a-cancelled-task-fails.kav) | `.wait()` on a cancelled task fails with the error `the task was cancelled`. | runs |

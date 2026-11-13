@@ -60,7 +60,11 @@ impl<'a> Interp<'a> {
     fn run_case(&mut self, t: &Target<'a>, args: &[Value<'a>], budget: u64) -> Outcome {
         self.reached_c = false;
         let called = self.call_case(t, args, budget);
-        if std::mem::take(&mut self.reached_c) {
+        // C, or raw memory in `unsafe` code (`alloc`, `*p`): native only.
+        let native = |m: &str| m.contains("native code") || m.contains("native compiler");
+        if std::mem::take(&mut self.reached_c)
+            || matches!(&called, Err(Flow::Panic(m, _)) if native(m))
+        {
             return Outcome::Native;
         }
         match called {
@@ -233,7 +237,7 @@ impl<'a> Interp<'a> {
                 }
             }
             if reaches_c {
-                let why = "reaches C, which runs only in native code (10.7)";
+                let why = "reaches C or raw memory, which run only in native code (10.7, 6.4)";
                 skipped.push(format!("{}: {why}", t.name));
                 native += 1;
                 continue;

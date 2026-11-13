@@ -7,7 +7,7 @@
 //! decode alike.
 
 use crate::interp::Interp;
-use kavach_ast::{Arg, Expr, ExprKind, FnDecl, TypeExpr, TypeKind};
+use kavach_ast::{Arg, Expr, ExprKind, FnDecl, ItemKind, TypeExpr, TypeKind};
 use kavach_checker::Ty;
 use kavach_resolver::{DefId, DefKind};
 use std::collections::HashMap;
@@ -54,14 +54,56 @@ impl<'a> Interp<'a> {
         out
     }
 
-    /// Before calling generic method `f` at `call`: its type arguments,
-    /// written or inferred, for the call to run with.
+    /// Before calling method `f` at `call`: its type arguments, written or
+    /// inferred, and those of the generic type it belongs to, from the
+    /// receiver's type (`Box<Shout>`'s `I` is `Shout`), for the call to
+    /// run with.
     pub(crate) fn method_generics(&mut self, f: &'a FnDecl, call: &'a Expr) {
-        if f.generics.is_empty() {
+        let ExprKind::Call { callee, args, .. } = &call.kind else {
+            return;
+        };
+        let mut out = match f.generics.is_empty() {
+            true => HashMap::new(),
+            false => self.type_args(f, call, args),
+        };
+        if let ExprKind::Field { base, .. } = &callee.kind
+            && let Some(t) = self.c.expr_types.get(&(base.span.start, base.span.end))
+            && let Ty::Adt(def, ts) = self.concrete(t)
+            && !ts.is_empty()
+        {
+            self.owner_generics(f, def, &ts, &mut out);
+        }
+        if !f.generics.is_empty() || !out.is_empty() {
+            self.next_generics = Some(out);
+        }
+    }
+
+    /// The parameters of generic type `def`, given `ts`, as method `f`
+    /// names them: the type's own in its body, or an `extend<S> T<S>`
+    /// block's (spec 2.5).
+    fn owner_generics(&self, f: &FnDecl, def: DefId, ts: &[Ty], out: &mut HashMap<DefId, Ty>) {
+        let has = |items: &[kavach_ast::Item]| {
+            items
+                .iter()
+                .any(|m| matches!(&m.kind, ItemKind::Fn(g) if std::ptr::eq(g, f)))
+        };
+        if let Some(t) = self.records.get(&def)
+            && let kavach_ast::TypeBody::Record(r) = &t.body
+            && has(&r.methods)
+        {
+            for (g, ty) in t.generics.iter().zip(ts) {
+                if let Some(&d) = self.decl.get(&g.name.span.start) {
+                    out.entry(d).or_insert_with(|| ty.clone());
+                }
+            }
             return;
         }
-        if let ExprKind::Call { args, .. } = &call.kind {
-            self.next_generics = Some(self.type_args(f, call, args));
+        let extend = self.c.file.items.iter().find_map(|item| match &item.kind {
+            ItemKind::Extend(x) if has(&x.methods) => Some(x),
+            _ => None,
+        });
+        if let Some(x) = extend {
+            self.bind(&x.target, &Ty::Adt(def, ts.to_vec()), out);
         }
     }
 

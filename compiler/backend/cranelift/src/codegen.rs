@@ -356,7 +356,9 @@ impl FnGen<'_, '_> {
             ExprKind::Float(f) => Some(self.b.ins().f64const(*f)),
             ExprKind::Bool(v) => Some(self.int(types::I8, *v as i64)),
             ExprKind::Char(c) => Some(self.int(types::I32, *c as i64)),
-            ExprKind::Move(l) => Some(self.moved(*l, e.ty.is_ref())),
+            // A local of no type (a `return` of a call that gives nothing)
+            // hands over no value.
+            ExprKind::Move(l) => ty.map(|_| self.moved(*l, e.ty.is_ref())),
             ExprKind::Local(l) => {
                 let v = self.b.use_var(self.vars[*l as usize]);
                 if e.ty.is_ref() {

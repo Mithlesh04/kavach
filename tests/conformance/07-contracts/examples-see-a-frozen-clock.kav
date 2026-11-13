@@ -1,0 +1,14 @@
+// Rule: an example sees the clock a generated case does, 2026-01-01 00:00 UTC, frozen, so an example that reads the clock gives the same result on any day.
+// Spec: 7.6
+// expect test pass
+
+use std.time
+
+/// Whether a trial that began at `started` (ms since 1970) has run 30 days.
+fn ended(started: Int) -> Bool
+    require started >= 0
+    example ended(1_767_225_600_000) == false
+    example ended(1_764_633_600_000) == true
+{
+    time.now_ms() - started >= 30 * 86_400_000
+}

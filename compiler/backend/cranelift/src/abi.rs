@@ -361,6 +361,12 @@ pub(crate) fn runtime_functions() -> Vec<RuntimeFn> {
             &[I64],
         ),
         (
+            "kv_rt_normalize",
+            kavach_runtime_native::kv_rt_normalize as *const u8,
+            &[I64, I64, I64, I64, I64, I32],
+            &[I64],
+        ),
+        (
             "kv_rt_file_info",
             kavach_runtime_native::kv_rt_file_info as *const u8,
             &[I64, I64, I64, I64, I64, I32],

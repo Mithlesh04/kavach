@@ -127,6 +127,11 @@ pub(crate) const BUILTIN: &[(&str, &str, &str)] = &[
         include_str!("../../../stdlib/http/h2.kav"),
     ),
     (
+        "std/http/h2/serving.kav",
+        "std.http.h2.serving",
+        include_str!("../../../stdlib/http/h2serving.kav"),
+    ),
+    (
         "std/http/h3.kav",
         "std.http.h3",
         include_str!("../../../stdlib/http/h3.kav"),
@@ -335,6 +340,7 @@ mod tests {
                     "std.http.message",
                     "std.http.h2.wire",
                     "std.http.h2",
+                    "std.http.h2.serving",
                     "std.http.h3",
                 ],
             ),

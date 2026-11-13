@@ -1,0 +1,2 @@
+// Found by `kavach test` (spec 11.4). Generated: commit it, never edit it.
+block_frames(-1, [], false, 0)

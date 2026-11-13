@@ -40,10 +40,12 @@ impl Checker<'_> {
                                 );
                             }
                         }
-                        DefKind::Type => return self.construct(def, None, args, e.span, &id.name),
+                        DefKind::Type => {
+                            return self.construct(def, None, args, e.span, &id.name, generics);
+                        }
                         DefKind::Variant { of } => {
                             self.bare_variant(id, of);
-                            return self.construct(of, Some(def), args, e.span, &id.name);
+                            return self.construct(of, Some(def), args, e.span, &id.name, generics);
                         }
                         DefKind::Builtin => {
                             let name = self.res.defs[def].name.clone();
@@ -310,8 +312,9 @@ impl Checker<'_> {
         args: &[Arg],
         span: Span,
         name: &str,
+        written: &[kavach_ast::TypeExpr],
     ) -> Ty {
-        let (instance, subst) = self.instance(def);
+        let (instance, subst) = self.written_instance(def, written, span);
         let fields = match (variant, self.types.get(&def).map(|t| t.shape.clone())) {
             (Some(v), _) => self.variant_fields(def, v).unwrap_or_default(),
             (None, Some(Shape::Record(fields))) => fields,
@@ -403,7 +406,7 @@ impl Checker<'_> {
                 if let Some(Shape::Union(vs)) = self.types.get(&def).map(|t| &t.shape)
                     && let Some(v) = vs.iter().find(|v| v.name == name.name).map(|v| v.def)
                 {
-                    return Some(self.construct(def, Some(v), args, span, &name.name));
+                    return Some(self.construct(def, Some(v), args, span, &name.name, &[]));
                 }
                 let sig = self
                     .methods

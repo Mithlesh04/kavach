@@ -1,0 +1,181 @@
+// HTTP/2 for `http.serve` (spec 14.11): each stream's request is handled
+// in a task of its own, up to `wire.most_streams()` at once on one
+// connection, and each response is sent when it is ready, so one slow
+// handler doesn't hold up the others. The connection's own task reads;
+// the streams' tasks take turns to send.
+
+use std.net
+use std.http
+use std.http.h2
+use std.http.h2.wire
+use std.http.h2.wire.{Credit}
+use std.http.message
+
+/// What the streams' tasks share: the turn to send, with how much was
+/// sent, and what the reading task last saw the client allow, with the
+/// signal it gives after each frame.
+type Out {
+    send_turn: Receiver<Sending>
+    send_back: Sender<Sending>
+    credit: Shared<Credit>
+    credit_signal: Receiver<Bool>
+    signal_credit: Sender<Bool>
+}
+
+/// The sending side: how much was sent on the connection and on each
+/// stream still open, to set against the client's credit.
+type Sending {
+    conn: Connection
+    sent: Int
+    sent_on: [Int: Int]
+}
+
+/// Serves the HTTP/2 connection `conn`, which began with `data`, until
+/// the client is done and every stream is answered.
+pub fn serve(conn: Connection, data: Bytes, handler: fn(Request) -> Response) ! H2Error uses Net {
+    let link = try h2.accept(conn, data)
+    const (send_back, send_turn) = Channel<Sending>(capacity: 1)
+    send_back.put(Sending(conn: conn, sent: 0, sent_on: [:]))
+    const (signal_credit, credit_signal) = Channel<Bool>(capacity: 1)
+    const out = Out(
+        send_turn: send_turn,
+        send_back: send_back,
+        credit: Shared(wire.credit_of(link)),
+        credit_signal: credit_signal,
+        signal_credit: signal_credit,
+    )
+    // A slot for each stream answered at once.
+    const most = wire.most_streams()
+    const (slot_back, slots) = Channel<Bool>(capacity: most)
+    for _ in 0..most {
+        slot_back.put(true)
+    }
+    while true {
+        for m in link.done {
+            const _ = slots.take()
+            const _ = spawn answer(out, conn, m, handler, slot_back)
+        }
+        link.done = []
+        if link.leaving and link.partial.is_empty() {
+            break
+        }
+        link = try wire.step(link) ?? break
+        const _ = out.credit.update(_ => wire.credit_of(link))
+        const _ = out.signal_credit.try_put(true)
+    }
+    // The streams still being answered finish first.
+    for _ in 0..most {
+        const _ = slots.take()
+    }
+}
+
+/// Answers stream `m` with `handler` (500 when it panics), then gives the
+/// stream's slot back. A connection that broke ends the reading task too.
+fn answer(out: Out, conn: Connection, m: H2Message, handler: fn(Request) -> Response, slot_back: Sender<Bool>) uses Net {
+    const request = Request(
+        method: m.headers.get(":method") ?? "GET",
+        path: m.headers.get(":path") ?? "/",
+        headers: message.plain(m.headers),
+        body: m.body,
+        peer: conn.peer(),
+        client_cert: conn.client_cert(),
+    )
+    const work = spawn handler(request)
+    let response = work.wait() catch _ => http.text(500, "the handler failed")
+    // Not offered over HTTP/2 yet (spec 14.11).
+    if response.take_over != none {
+        response = http.text(501, "WebSockets and events need HTTP/1.1")
+    }
+    respond(out, m.stream, response) catch _ => {}
+    slot_back.put(true)
+}
+
+/// Sends `response` on `stream`: its headers, then its body, in frames
+/// that fit the client's credit, and what it streams as it is read.
+fn respond(out: Out, stream: Int, response: Response) ! H2Error uses Net {
+    let headers = [Header(name: ":status", value: "{response.status}")]
+    for h in response.headers {
+        // Headers about the connection don't exist in HTTP/2.
+        if not ["connection", "keep-alive", "transfer-encoding", "upgrade", "content-length"].contains(h.name) {
+            headers.push(h)
+        }
+    }
+    if response.stream == none {
+        headers.push(Header(name: "content-length", value: "{response.body.len()}"))
+    } else if let length = message.first_header(response.headers, "content-length") {
+        headers.push(Header(name: "content-length", value: length))
+    }
+    const whole = response.stream == none
+    const most = out.credit.get().max_frame
+    try write(out, wire.block_frames(stream, headers, whole and response.body.is_empty(), most))
+    if not response.body.is_empty() {
+        try send_data(out, stream, response.body, whole)
+    }
+    if let reader = response.stream {
+        for piece in reader {
+            try send_data(out, stream, piece, false)
+        }
+        try send_data(out, stream, Bytes([]), true)
+    }
+}
+
+/// Writes `frames` in the sending turn.
+fn write(out: Out, frames: Bytes) ! H2Error uses Net {
+    const s = match out.send_turn.take() {
+        Taken.Item(value) => value,
+        Taken.Closed => fail H2Error.Protocol(reason: "the connection closed"),
+    }
+    wire.write(s.conn, frames) catch e => {
+        out.send_back.put(s)
+        fail e
+    }
+    out.send_back.put(s)
+}
+
+/// Sends `data` on `stream` as DATA frames the client's credit allows,
+/// a frame per turn; `end` ends the stream.
+fn send_data(out: Out, stream: Int, data: Bytes, end: Bool) ! H2Error uses Net {
+    if data.is_empty() {
+        if end {
+            try write(out, wire.frame(0, 1, stream, Bytes([])))
+        }
+        return
+    }
+    let done = 0
+    while done < data.len() {
+        let s = match out.send_turn.take() {
+            Taken.Item(value) => value,
+            Taken.Closed => fail H2Error.Protocol(reason: "the connection closed"),
+        }
+        const c = out.credit.get()
+        if let code = c.resets.get(stream) {
+            out.send_back.put(s)
+            fail H2Error.Reset(stream: stream, code: code)
+        }
+        const own = (c.windows.get(stream) ?? c.initial) - (s.sent_on.get(stream) ?? 0)
+        const room = (c.window - s.sent).min(own).min(c.max_frame)
+        if room <= 0 {
+            // Waits for the reading task to see more credit.
+            out.send_back.put(s)
+            const _ = out.credit_signal.take()
+            continue
+        }
+        const size = room.min(data.len() - done)
+        const last = end and done + size == data.len()
+        const flags = if last { 1 } else { 0 }
+        let failed: H2Error? = none
+        wire.write(s.conn, wire.frame(0, flags, stream, data.slice(done, done + size))) catch e => {
+            failed = e
+        }
+        s.sent += size
+        s.sent_on[stream] = (s.sent_on.get(stream) ?? 0) + size
+        if last {
+            s.sent_on.remove(stream)
+        }
+        out.send_back.put(s)
+        if let e = failed {
+            fail e
+        }
+        done += size
+    }
+}

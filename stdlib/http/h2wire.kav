@@ -65,6 +65,56 @@ pub type Partial {
     pub ending: Bool
 }
 
+/// What the other side has let this side send since the start, on the
+/// connection and per stream (`initial` for a stream not listed), the
+/// largest frame it takes, and the streams it reset: what a task that
+/// sends needs from the task that reads.
+pub type Credit {
+    pub window: Int
+    pub windows: [Int: Int]
+    pub initial: Int
+    pub max_frame: Int
+    pub resets: [Int: Int]
+}
+
+/// The credit the reading side `l` has seen.
+pub fn credit_of(l: Link) -> Credit {
+    Credit(
+        window: l.window,
+        windows: l.windows,
+        initial: l.initial,
+        max_frame: l.max_frame,
+        resets: l.resets,
+    )
+}
+
+/// How many streams a server answers at once on one connection, which it
+/// tells the client (SETTINGS_MAX_CONCURRENT_STREAMS, RFC 9113 6.5.2).
+pub fn most_streams() -> Int {
+    100
+}
+
+/// A header block on `stream` as frames: HEADERS, then CONTINUATION
+/// frames of at most `most` bytes. Written in one write, so no other
+/// frame comes between them. `end` ends this side's stream.
+pub fn block_frames(stream: Int, headers: [Header], end: Bool, most: Int) -> Bytes
+    require stream >= 0 and stream <= 2_147_483_647
+    require most >= 1
+{
+    const encoded = hpack.encode(headers)
+    let frames = Bytes([])
+    let at = 0
+    while frames.is_empty() or at < encoded.len() {
+        const size = (encoded.len() - at).min(most)
+        const last = if at + size >= encoded.len() { 4 } else { 0 }
+        const kind = if frames.is_empty() { 1 } else { 9 }
+        const ending = if kind == 1 and end { 1 } else { 0 }
+        frames = frames + frame(kind, ending | last, stream, encoded.slice(at, at + size))
+        at += size
+    }
+    frames
+}
+
 /// The windows this side opens: 16 MB, so a sender rarely waits.
 pub fn big_window() -> Int {
     16_777_216

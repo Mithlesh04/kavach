@@ -1,0 +1,19 @@
+// Rule: `text.nfc`, `nfd`, `nfkc` and `nfkd` give a text in a Unicode normal form, so texts written with different code points compare equal.
+// Spec: 14.9
+// expect output: false
+// expect output: true
+// expect output: 1 2
+// expect output: file 12
+// expect output: ﬁle
+
+use std.text
+
+fn main() {
+    const composed = "\u{E9}"            // é as one code point
+    const decomposed = "e\u{301}"        // e and a combining accent
+    print(composed == decomposed)
+    print(text.nfc(decomposed) == composed)
+    print("{text.nfc(decomposed).len()} {text.nfd(composed).len()}")
+    print("{text.nfkc("\u{FB01}le")} {text.nfkc("\u{FF11}\u{FF12}")}")
+    print(text.nfc("\u{FB01}le"))
+}

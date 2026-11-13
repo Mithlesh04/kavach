@@ -1,0 +1,31 @@
+// Rule: in a program with `Drop` types, a function that can fail and gives nothing may `return` a call that gives nothing, also from a `??` or a `match` arm.
+// Spec: 6.1
+// expect output: finished with nothing
+// expect output: finished in a match
+// expect output: finished at the end 5
+
+type Lease: Drop {
+    n: Int
+
+    fn drop(self) {
+    }
+}
+
+fn finish(when: String) uses Console {
+    print("finished {when}")
+}
+
+fn answer(given: Int?, n: Int) ! String uses Console {
+    const got = given ?? return finish("with nothing")
+    match n {
+        0 => return finish("in a match"),
+        _ => {}
+    }
+    finish("at the end {got}")
+}
+
+fn main() ! String uses Console {
+    try answer(none, 1)
+    try answer(5, 0)
+    try answer(5, 1)
+}

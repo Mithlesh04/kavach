@@ -111,6 +111,8 @@ impl RtOp {
             "kv_rt_crypto"
         } else if group("Base64") {
             "kv_rt_base64"
+        } else if group("Normalize") {
+            "kv_rt_normalize"
         } else if group("Clip") {
             "kv_rt_clipboard"
         } else if group("FileInfo") {

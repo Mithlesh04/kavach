@@ -12,7 +12,7 @@ use std::collections::BTreeMap;
 use std::rc::Rc;
 
 /// 2026-01-01 00:00 UTC, when every case starts.
-const START_MS: i128 = 1_767_225_600_000;
+pub(crate) const START_MS: i128 = 1_767_225_600_000;
 
 /// What a file the case didn't write holds, when it is there.
 const CONTENTS: [&str; 5] = ["", "hello\nworld\n", "नमस्ते", "{\"a\": 1}", "1,2,3\n"];

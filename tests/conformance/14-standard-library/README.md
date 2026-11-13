@@ -65,6 +65,7 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.13 | [term-progress-draws-only-on-a-terminal.kav](term-progress-draws-only-on-a-terminal.kav) | A progress bar prints nothing when output is not a terminal. | runs |
 | 14.13, 8.7 | [term-secrets-cant-be-printed.kav](term-secrets-cant-be-printed.kav) | `term.prompt_secret` gives a `Secret` whose `text` can't be printed. | compile error |
 | 14.9 | [collections-module.kav](collections-module.kav) | `std.collections` makes chunks, zips two lists, keeps each item once, counts items and flattens lists. | runs |
+| 14.9 | [text-normal-forms.kav](text-normal-forms.kav) | `text.nfc`, `nfd`, `nfkc` and `nfkd` give a text in a Unicode normal form. | runs |
 | 14.10 | [connections-close-with-their-last-holder.kav](connections-close-with-their-last-holder.kav) | A connection is closed when its last holder lets it go: the other side reads the end. | runs |
 | 14.10 | [tls-upgrades-that-fail-are-errors.kav](tls-upgrades-that-fail-are-errors.kav) | `accept_tls` and `start_tls` that fail are errors to handle; the code after them doesn't run. | runs |
 | 14.10 | [tcp-connections-carry-bytes.kav](tcp-connections-carry-bytes.kav) | TCP connections carry `Bytes` both ways; `read` gives `none` once the other side closed. | runs |
@@ -95,6 +96,7 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.11 | [http2-serves-and-fetches.kav](http2-serves-and-fetches.kav) | `http.serve` answers HTTP/2 from a client that starts with its preface; `h2.request` sends a large body with flow control; HTTP/1.1 still works. | runs |
 | 14.11 | [http2-connections-take-many-requests.kav](http2-connections-take-many-requests.kav) | `h2.connect` gives a client that sends many requests on one connection, from several tasks in turn; `going_away` and `close`. | runs |
 | 14.11 | [http2-requests-are-open-at-once.kav](http2-requests-are-open-at-once.kav) | Requests from several tasks on one `H2Client` are open at once, and each answer goes to the task that asked. | runs |
+| 14.11 | [http2-servers-answer-streams-at-once.kav](http2-servers-answer-streams-at-once.kav) | `http.serve` answers a connection's HTTP/2 streams at once, each handler in a task of its own. | runs |
 | 14.11 | [http-reads-chunked-bodies.kav](http-reads-chunked-bodies.kav) | Requests and responses sent in chunks are read whole; a chunked response cut off fails with `BadMessage`. | runs |
 | 14.11 | [http-serves-many-clients-on-every-core.kav](http-serves-many-clients-on-every-core.kav) | `http.serve` answers each connection in a `spawn cores` task: 8 clients at once get the right answers, and handlers share only a `Shared` count. | runs |
 | 14.11 | [http-headers-keep-repeats.kav](http-headers-keep-repeats.kav) | Headers are a list in the order sent, repeats kept; `header(name)` gives the first, `headers_named(name)` all. | runs |

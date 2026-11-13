@@ -107,6 +107,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0099](0099-client-certificate-names.md) | A client certificate's names with mutual TLS (`conn.client_cert()`, `r.client_cert`), read with `x509-cert` | Accepted |
 | [0100](0100-tagged-literals.md) | Tagged literals (`sql"…"`), declared by a package with a pure checker the compiler runs | Accepted |
 | [0101](0101-re-exports.md) | Re-exports with `pub use`: a module shows names declared in another, the same declarations | Accepted |
+| [0102](0102-unicode-normalization.md) | Unicode normal forms in `std.text` (`text.nfc`, `nfd`, `nfkc`, `nfkd`), from `unicode-normalization` | Accepted |
 
 ## Open decisions
 

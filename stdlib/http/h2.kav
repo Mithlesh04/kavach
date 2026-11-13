@@ -8,6 +8,7 @@
 use std.net
 use std.http.hpack
 use std.http.h2.wire
+use std.http.h2.wire.{Credit}
 
 /// What `next` found: the link, and a request unless the client is done.
 pub type Next {
@@ -120,7 +121,7 @@ pub fn accept(conn: Connection, data: Bytes) -> Link ! H2Error uses Net {
     if got.slice(0, 24) != wire.preface() {
         fail H2Error.Protocol(reason: "no HTTP/2 preface")
     }
-    const hello = wire.frame(4, 0, 0, wire.setting(4, wire.big_window()))
+    const hello = wire.frame(4, 0, 0, wire.setting(3, wire.most_streams()) + wire.setting(4, wire.big_window()))
     try wire.write(conn, hello + wire.frame(8, 0, 0, wire.four(wire.big_window() - 65_535)))
     wire.start(conn, got.slice(24, got.len()))
 }
@@ -242,17 +243,6 @@ type Sending {
     sent_on: [Int: Int]
 }
 
-/// What the server has let this side send since the start, on the
-/// connection and per stream (`initial` for a stream not listed), the
-/// largest frame it takes, and the streams it reset.
-type Credit {
-    window: Int
-    windows: [Int: Int]
-    initial: Int
-    max_frame: Int
-    resets: [Int: Int]
-}
-
 /// Starts an HTTP/2 connection on `conn` for many requests.
 pub fn connect(conn: Connection) -> H2Client ! H2Error uses Net {
     try hello(conn)
@@ -267,22 +257,11 @@ pub fn connect(conn: Connection) -> H2Client ! H2Error uses Net {
         send_back: send_back,
         read_turn: read_turn,
         read_back: read_back,
-        credit: Shared(credit_of(link)),
+        credit: Shared(wire.credit_of(link)),
         credit_signal: credit_signal,
         signal_credit: signal_credit,
         reading: Shared(false),
         leaving: Shared(false),
-    )
-}
-
-/// The credit the reading side `l` has seen.
-fn credit_of(l: Link) -> Credit {
-    Credit(
-        window: l.window,
-        windows: l.windows,
-        initial: l.initial,
-        max_frame: l.max_frame,
-        resets: l.resets,
     )
 }
 
@@ -339,19 +318,8 @@ extend H2Client {
     /// between its frames, then its body as the server's credit allows.
     fn write_request(self, sending: Sending, stream: Int, headers: [Header], body: Bytes) -> Sending ! H2Error uses Net {
         let s = sending
-        const encoded = hpack.encode(headers)
         const most = self.credit.get().max_frame
-        let frames = Bytes([])
-        let at = 0
-        while frames.is_empty() or at < encoded.len() {
-            const size = (encoded.len() - at).min(most)
-            const last = if at + size >= encoded.len() { 4 } else { 0 }
-            const kind = if frames.is_empty() { 1 } else { 9 }
-            const ending = if kind == 1 and body.is_empty() { 1 } else { 0 }
-            frames = frames + wire.frame(kind, ending | last, stream, encoded.slice(at, at + size))
-            at += size
-        }
-        try wire.write(s.conn, frames)
+        try wire.write(s.conn, wire.block_frames(stream, headers, body.is_empty(), most))
         let done = 0
         while done < body.len() {
             const c = self.credit.get()
@@ -428,7 +396,7 @@ extend H2Client {
             self.done_reading(l)
             fail H2Error.Protocol(reason: "the connection closed")
         }
-        const _ = self.credit.update(_ => credit_of(next))
+        const _ = self.credit.update(_ => wire.credit_of(next))
         const _ = self.leaving.update(was => was or next.leaving)
         const _ = self.reading.update(_ => false)
         const _ = self.signal_credit.try_put(true)

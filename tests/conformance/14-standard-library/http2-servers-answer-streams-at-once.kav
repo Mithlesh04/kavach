@@ -1,0 +1,49 @@
+// Rule: `http.serve` answers a connection's HTTP/2 streams at once, each handler in a task of its own, so one waiting handler holds up no other.
+// Spec: 14.11
+// expect output: /a saw 4
+// expect output: /b saw 4
+// expect output: /c saw 4
+// expect output: /d saw 4
+
+use std.http
+use std.http.h2
+use std.net
+use std.time
+
+/// Waits, up to 3 s, until all four requests have arrived: a server
+/// answering one at a time would let each see only itself.
+fn handler(arrived: Shared<Int>) -> fn(Request) -> Response {
+    r => {
+        const _ = arrived.update(n => n + 1)
+        let waited = 0
+        while arrived.get() < 4 and waited < 300 {
+            time.sleep(10.ms)
+            waited += 1
+        }
+        http.text(200, "{r.path} saw {arrived.get()}")
+    }
+}
+
+fn ask(c: H2Client, path: String) -> String ! H2Error uses Net {
+    const reply = try c.request([
+        Header(name: ":method", value: "GET"),
+        Header(name: ":scheme", value: "http"),
+        Header(name: ":authority", value: "localhost"),
+        Header(name: ":path", value: path),
+        ], Bytes([]))
+    reply.body.text() ?? "?"
+}
+
+fn main() ! Error uses Clock {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, handler(Shared(0)))
+    const c = try h2.connect(try net.connect(listener.address()))
+    const a = spawn ask(c, "/a")
+    const b = spawn ask(c, "/b")
+    const d = spawn ask(c, "/c")
+    const e = spawn ask(c, "/d")
+    for t in [a, b, d, e] {
+        print(try t.wait())
+    }
+    c.close()
+}

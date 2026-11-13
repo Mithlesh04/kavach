@@ -1,0 +1,44 @@
+// Rule: inside a generic type's methods, its type parameter is the type the value was made with, written at the construction or known from the variable's type, so `json.decode<I>` decodes into it.
+// Spec: 2.5
+// expect output: written: a
+// expect output: declared: b
+// expect output: in extend: 2
+// expect output: inferred: c
+
+use std.json
+
+type Shout {
+    text: String
+}
+
+type Box<I> {
+    raw: String
+
+    fn get(self) -> I ! JsonError {
+        try json.decode<I>(self.raw)
+    }
+}
+
+extend<I> Box<I> {
+    fn twice(self) -> [I] ! JsonError {
+        [try self.get(), try json.decode<I>(self.raw)]
+    }
+}
+
+/// The value's type comes from the parameter it is given to.
+fn open<I>(raw: String, session: fn(Box<I>) ! JsonError) ! JsonError {
+    try session(Box(raw: raw))
+}
+
+fn shout(b: Box<Shout>) ! JsonError uses Console {
+    print("inferred: {(try b.get()).text}")
+}
+
+fn main() ! Error uses Console {
+    const written = Box<Shout>(raw: "\{\"text\":\"a\"}")
+    print("written: {(try written.get()).text}")
+    const declared: Box<Shout> = Box(raw: "\{\"text\":\"b\"}")
+    print("declared: {(try declared.get()).text}")
+    print("in extend: {(try written.twice()).len()}")
+    try open("\{\"text\":\"c\"}", shout)
+}

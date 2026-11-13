@@ -9,8 +9,7 @@
 
 use std.cli
 use std.http
-use std.http.h2
-use std.http.hpack
+use std.http.h2.serving
 use std.http.message
 use std.net
 use std.time
@@ -71,7 +70,7 @@ fn answer(conn: Connection, handler: fn(Request) -> Response, limits: ServeLimit
         }
         match read_request(conn, data, limits, load.stop) {
             Got.Preface(all) if first => {
-                serve_h2(conn, all, handler) catch e => {}
+                serving.serve(conn, all, handler) catch e => {}
                 return finish(conn, load)
             }
             Got.Ready(m, used, all) => {
@@ -341,52 +340,4 @@ fn write_piece(conn: Connection, piece: Bytes, sized: Bool) ! NetError uses Net 
     }
     const crlf = message.crlf()
     try conn.write("{message.hex(piece.len())}{crlf}".bytes() + piece + crlf.bytes())
-}
-
-/// Serves HTTP/2 on `conn`, which began with `data`: requests one at a
-/// time, each answered by `handler`.
-fn serve_h2(conn: Connection, data: Bytes, handler: fn(Request) -> Response) ! H2Error uses Net {
-    let link = try h2.accept(conn, data)
-    while true {
-        const next = try h2.next(link)
-        link = next.link
-        const m = next.message ?? break
-        const request = Request(
-            method: m.headers.get(":method") ?? "GET",
-            path: m.headers.get(":path") ?? "/",
-            headers: message.plain(m.headers),
-            body: m.body,
-            peer: conn.peer(),
-            client_cert: conn.client_cert(),
-        )
-        let response = handler(request)
-        // Not offered over HTTP/2 yet (spec 14.11).
-        if response.take_over != none {
-            response = http.text(501, "WebSockets and events need HTTP/1.1")
-        }
-        let headers = [Header(name: ":status", value: "{response.status}")]
-        for h in response.headers {
-            // Headers about the connection don't exist in HTTP/2.
-            if not ["connection", "keep-alive", "transfer-encoding", "upgrade", "content-length"].contains(h.name) {
-                headers.push(h)
-            }
-        }
-        const reader = response.stream ?? {
-            headers.push(Header(name: "content-length", value: "{response.body.len()}"))
-            link = try h2.respond(link, m.stream, headers, response.body)
-            continue
-        }
-        // Sent as it is read, in DATA frames.
-        if let length = message.first_header(response.headers, "content-length") {
-            headers.push(Header(name: "content-length", value: length))
-        }
-        link = try h2.send_headers(link, m.stream, headers)
-        if not response.body.is_empty() {
-            link = try h2.send_data(link, m.stream, response.body, false)
-        }
-        for piece in reader {
-            link = try h2.send_data(link, m.stream, piece, false)
-        }
-        link = try h2.send_data(link, m.stream, Bytes([]), true)
-    }
 }

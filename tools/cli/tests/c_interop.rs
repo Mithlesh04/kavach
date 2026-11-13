@@ -208,7 +208,7 @@ fn native_code_calls_c_functions() {
     let report = String::from_utf8_lossy(&tested.stdout);
     for skipped in [
         "not generated: llabs: a C function, which runs only in native code (10.7)",
-        "not generated: magnitude: reaches C, which runs only in native code (10.7)",
+        "not generated: magnitude: reaches C or raw memory, which run only in native code (10.7, 6.4)",
     ] {
         assert!(report.contains(skipped), "{report}");
     }

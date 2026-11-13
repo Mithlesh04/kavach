@@ -121,7 +121,11 @@ impl<'a> Interp<'a> {
                 // Each test's own numbers, whatever runs before it.
                 let salt = crate::testing::values::Rng::hash(seed, &label);
                 self.random = Some(crate::testing::values::Rng::new(salt));
-                self.frozen = None;
+                // An example sees the clock a generated case does, frozen
+                // at its start, so it gives the same result on any day
+                // (spec 7.6); a test block chooses its own (`time.freeze`).
+                self.frozen = (!label.starts_with("test "))
+                    .then(|| std::rc::Rc::new(std::cell::Cell::new((crate::fakes::START_MS, 0))));
                 running(Some(label.clone()));
                 let outcome = run(self);
                 running(None);

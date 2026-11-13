@@ -12,6 +12,7 @@ Written in Kavach, with contracts and examples like any other code.
 | `text.find_ints(s)` | Every whole number written inside `s`, in order: `"a12b34"` gives `[12, 34]` |
 | `text.find_int(s)` | The first of them, or `none`: `"sd23"` gives `23` |
 | `text.find_float(s)` | The first number with its fraction, or `none`: `"pi is 3.14!"` gives `3.14` |
+| `text.nfc(s)`, `text.nfd(s)`, `text.nfkc(s)`, `text.nfkd(s)` | `s` in a Unicode normal form (UAX #15), so texts written with different code points compare equal: `nfc` joins a letter and its accent into one code point, `nfd` splits them, and the `k` forms also turn compatibility characters into plain ones (`ﬁ` into `fi`, full-width `１` into `1`). The runtime gives these four ([decision 0102](../../decisions/0102-unicode-normalization.md)); the rest of `std.text` is written in Kavach |
 | `collections.chunks(items, size)` | The items in lists of `size` (the last may be shorter) |
 | `collections.zip(a, b)` | Pairs of items at the same position, as long as the shorter list |
 | `collections.unique(items)` | Each item once, in the order first seen |

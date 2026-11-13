@@ -21,6 +21,8 @@ jiff = { version = "0.2", default-features = false, features = ["std", "tzdb-zon
 arboard = { version = "3", default-features = false, optional = true }
 # Serial ports (decision 0068).
 serial2 = { version = "0.2", optional = true }
+# Unicode normal forms for `std.text` (decision 0102).
+unicode-normalization = "0.1"
 
 [features]
 default = ["devices"]

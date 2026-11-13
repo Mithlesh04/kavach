@@ -62,3 +62,6 @@ ErrorAs,
 /// `decode` (text, URL-safe), which can fail.
 Base64Encode,
 Base64Decode,
+/// `std.text`'s normal forms (spec 14.9): the text and the form (0 NFC,
+/// 1 NFD, 2 NFKC, 3 NFKD), from an entry of its own.
+NormalizeText,

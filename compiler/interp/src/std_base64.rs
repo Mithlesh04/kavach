@@ -1,5 +1,6 @@
 //! `std.base64` in the interpreter (spec 14.20), from
-//! `kavach_runtime_core::base64`, as native code does.
+//! `kavach_runtime_core::base64`, as native code does; and `std.text`'s
+//! Unicode normal forms (14.9), the other text encoding the runtime gives.
 
 use crate::interp::Interp;
 use crate::value::{Eval, Flow, Value};
@@ -36,5 +37,11 @@ impl<'a> Interp<'a> {
             },
             _ => Ok(Value::Unit),
         }
+    }
+
+    /// `text.nfc(s)`, `nfd`, `nfkc` or `nfkd` (spec 14.9, decision 0102).
+    pub(crate) fn normal_form(&self, name: &str, s: &str) -> Value<'a> {
+        let form = kavach_runtime_core::normalize::form_of(name).unwrap_or(0);
+        self.str_value(&kavach_runtime_core::normalize::normalize(s, form))
     }
 }

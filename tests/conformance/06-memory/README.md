@@ -23,6 +23,7 @@ Conformance tests for spec chapter [6. Memory](../../../docs/spec/06-memory.md).
 | 6.1 | [drop-runs-at-the-end-of-each-round.kav](drop-runs-at-the-end-of-each-round.kav) | A `Drop` value made in a loop's body is dropped at the end of its own round, also out of a call that can fail. | runs |
 | 6.1 | [drop-runs-for-what-a-failing-call-gave.kav](drop-runs-for-what-a-failing-call-gave.kav) | A `Drop` value a call that can fail gave, also kept in a `Shared` map, is dropped once its last holder lets it go. | runs |
 | 6.1 | [drop-programs-return-from-catch.kav](drop-programs-return-from-catch.kav) | In a program with `Drop` types, a `catch` handler may return a value of any type from its function. | runs |
+| 6.1 | [drop-programs-return-nothing-early.kav](drop-programs-return-nothing-early.kav) | In a program with `Drop` types, a function that can fail may `return` a call that gives nothing, also from `??` or a `match` arm. | runs |
 | 6.1 | [drops-in-reverse-order.kav](drops-in-reverse-order.kav) | At the end of a block, the `Drop` values it made drop in the reverse order they were made. | runs |
 | 6.1 | [drop-of-a-temporary.kav](drop-of-a-temporary.kav) | A `Drop` value made without a name drops at the end of its statement; a variable given a new value drops the old one there. | runs |
 | 6.1 | [drop-given-to-underscore-warns.kav](drop-given-to-underscore-warns.kav) | A `Drop` value given to `_` drops at the end of its statement, with a warning to name it `_guard`. | warning |

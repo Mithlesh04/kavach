@@ -1,0 +1,48 @@
+// Rule: in a program that cancels tasks, a call that fails still fails where it is made, also when its arguments are calls.
+// Spec: 9.6
+// expect output: -1
+// expect output: 1
+// expect output: refused
+// expect output: stopped
+
+use std.time
+
+/// Returns from inside a loop, so it stays a call of its own.
+fn make(n: Int) -> Int {
+    let i = 0
+    while i < n {
+        if i == 1000 {
+            return i
+        }
+        i += 1
+    }
+    n
+}
+
+fn fetch(n: Int) -> [Int] ! String {
+    if n > 1 {
+        fail "too big"
+    }
+    [n]
+}
+
+fn check(n: Int) ! String {
+    if n > 1 {
+        fail "refused"
+    }
+}
+
+fn count(n: Int) -> Int ! String {
+    const items = try fetch(make(n) + make(0))
+    items.len()
+}
+
+fn main() uses Console, Clock {
+    print(count(5) catch _ => -1)
+    print(count(1) catch _ => -1)
+    check(make(5) + make(0)) catch e => print(e)
+    // `cancel()` gives every function a stop point (9.6).
+    const sleeper = spawn time.sleep(1.hours)
+    sleeper.cancel()
+    print("stopped")
+}

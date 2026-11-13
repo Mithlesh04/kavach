@@ -203,7 +203,7 @@ api.close()
 
 A body's size comes from `content-length`, or the body comes in chunks (`transfer-encoding: chunked`, RFC 9112 7.1): requests and responses sent that way are read whole, chunk sizes and trailers left out. A chunked response cut off before its last chunk fails with `BadMessage`. `https://` URLs go through `net.connect_tls`, offering `h2` and `http/1.1` (14.10): when the server chooses `h2`, the request goes over HTTP/2. Anything other than `http://` and `https://` gives `BadUrl`.
 
-`http.serve` answers HTTP/2 too, from a client that starts with the HTTP/2 preface without TLS ("prior knowledge", as services calling each other do). It answers that connection's requests one at a time, each with `handler`. The program sees the same `Request` and `Response` either way.
+`http.serve` answers HTTP/2 too, from a client that starts with the HTTP/2 preface without TLS ("prior knowledge", as services calling each other do). It answers that connection's requests at once, as they arrive: each stream's `handler` runs in a task of its own, so one slow handler holds up no other, and each response is sent when it is ready. At most 100 streams are answered at once on a connection, which the server tells the client (`SETTINGS_MAX_CONCURRENT_STREAMS`); a handler that panics gets 500. The program sees the same `Request` and `Response` either way.
 
 `std.http.h2` has the parts, for programs that speak HTTP/2 themselves (gRPC, for one). A message is `H2Message(stream: Int, headers: [String: String], body: Bytes)`, with the pseudo-headers (`:method`, `:path`, `:status`, …) among its headers. Flow control is handled: a large body waits for the other side's window. Server push is never used, and stream priorities are ignored.
 

@@ -112,10 +112,12 @@ impl FnGen<'_, '_> {
             }
             return v;
         }
-        // Only a heap reference is emptied: a plain value (a `Bool`, a
-        // `Float`) has nothing to hand over, and its variable may not even
-        // be 64 bits wide.
-        if is_ref {
+        // A 64-bit variable is emptied, a heap reference above all, by the
+        // local's own type, whatever the move's. Others (a `Bool`, a
+        // `Float`) hold no reference, and a 64-bit zero doesn't fit them.
+        let wide =
+            crate::abi::cl_type(self.types[l as usize]) == Some(cranelift_codegen::ir::types::I64);
+        if wide {
             let empty = self.int(cranelift_codegen::ir::types::I64, 0);
             self.b.def_var(var, empty);
         }

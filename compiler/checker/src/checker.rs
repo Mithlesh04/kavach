@@ -456,6 +456,38 @@ impl<'a> Checker<'a> {
         (Ty::Adt(def, args), subst)
     }
 
+    /// `instance`, with the type arguments written at the construction
+    /// (`Box<Shout>(raw: …)`) in place of fresh ones, so a parameter no
+    /// field mentions still gets its type.
+    pub(crate) fn written_instance(
+        &mut self,
+        def: DefId,
+        written: &[kavach_ast::TypeExpr],
+        span: kavach_ast::Span,
+    ) -> (Ty, HashMap<DefId, Ty>) {
+        let (instance, subst) = self.instance(def);
+        let Ty::Adt(_, args) = &instance else {
+            return (instance, subst);
+        };
+        if !written.is_empty() && written.len() != args.len() {
+            let name = self.res.defs[def].name.clone();
+            self.error(
+                span,
+                format!(
+                    "`{name}` takes {} type arguments, not {}",
+                    args.len(),
+                    written.len()
+                ),
+            );
+        } else {
+            for (arg, w) in args.clone().iter().zip(written) {
+                let t = self.lower(w, None);
+                self.inf.unify(arg, &t);
+            }
+        }
+        (instance, subst)
+    }
+
     /// Maps a type's generic parameters to the arguments of `ty`.
     pub(crate) fn subst_of(&self, def: DefId, args: &[Ty]) -> HashMap<DefId, Ty> {
         let generics = match self.types.get(&def) {

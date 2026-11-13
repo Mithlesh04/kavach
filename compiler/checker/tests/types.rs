@@ -148,6 +148,20 @@ fn records_and_fields() {
             format!("{user}fn f(u: User?) -> String {{\n  u.name\n}}"),
             vec!["6: `User?` might be `none`: use `?.name` or `if let`"],
         ),
+        (
+            "type Box<I> {
+  n: Int
+}
+fn main() {
+  const b: Box<String> = Box<Int>(n: 1)
+  const c = Box<Int, Int>(n: 2)
+}"
+            .to_string(),
+            vec![
+                "5: expected `Box<String>`, found `Box<Int>`",
+                "6: `Box` takes 1 type arguments, not 2",
+            ],
+        ),
     ];
     for (src, want) in cases {
         assert_eq!(errors(&src), want, "{src}");

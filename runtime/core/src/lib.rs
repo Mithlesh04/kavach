@@ -16,6 +16,7 @@ pub mod input;
 pub mod journal;
 pub mod json;
 pub mod log;
+pub mod normalize;
 pub mod processes;
 pub mod regex;
 pub mod serial;

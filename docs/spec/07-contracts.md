@@ -102,7 +102,8 @@ pub fn withdraw(account: Account, amount: Decimal) -> Account ! BankError
 - `example <call> == <value>` (or any `Bool` expression using the call) must be true.
 - `example <call> fails <error>` must return that error.
 - Examples come after `ensure` and follow the same purity rule (7.5).
-- `kavach test` runs every example (chapter 11). Examples also appear in editor hover text and in docs, so they are documentation that can't go out of date.
+- `kavach test` runs every example (chapter 11), the methods' too. Examples also appear in editor hover text and in docs, so they are documentation that can't go out of date.
+- An example sees the clock a generated case does: 2026-01-01 00:00 UTC, frozen (11.5), and seeded random numbers. So an example that reads the clock gives the same result on any day.
 - In an example, a call that can fail needs no `try`: if it fails, the example fails. That is why `withdraw(…).balance == 70` above can read the balance directly.
 - Examples are left out of non-test builds.
 

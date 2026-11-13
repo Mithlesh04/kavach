@@ -15,6 +15,50 @@ pub fn keep_before_exits(f: &mut Function) {
     let mut locals = std::mem::take(&mut f.locals);
     walk::exprs_mut(&mut f.body, &mut |e| keep(e, &mut locals));
     f.locals = locals;
+    walk::blocks_mut(&mut f.body, &mut calls_stay_calls);
+}
+
+/// A call that can fail stays the call of its `LetResult`, which takes
+/// its value and its error: the operands kept in locals go before it.
+/// Code generation reads the error only of a call, so a call wrapped in
+/// a block would lose it, and the caller would go on as if it succeeded.
+fn calls_stay_calls(b: &mut Block) {
+    if !b.stmts.iter().any(
+        |s| matches!(s, Stmt::LetResult { call, .. } if matches!(call.kind, ExprKind::Block(_))),
+    ) {
+        return;
+    }
+    let mut out = Vec::with_capacity(b.stmts.len());
+    for s in std::mem::take(&mut b.stmts) {
+        let Stmt::LetResult {
+            value,
+            error,
+            mut call,
+        } = s
+        else {
+            out.push(s);
+            continue;
+        };
+        // The call is the block's value, or, giving nothing, its last
+        // statement.
+        while let ExprKind::Block(Block { mut stmts, value }) = call.kind {
+            let inner = match value {
+                Some(inner) => *inner,
+                None => match stmts.pop() {
+                    Some(Stmt::Expr(inner)) => inner,
+                    other => {
+                        stmts.extend(other);
+                        call.kind = ExprKind::Block(Block { stmts, value: None });
+                        break;
+                    }
+                },
+            };
+            out.extend(stmts);
+            call = inner;
+        }
+        out.push(Stmt::LetResult { value, error, call });
+    }
+    b.stmts = out;
 }
 
 fn keep(e: &mut Expr, locals: &mut Vec<Type>) {

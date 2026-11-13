@@ -23,6 +23,7 @@ const MODULES: &[(&str, Option<&str>)] = &[
     ("devices", Some("Serial")),
     ("crypto", None),
     ("base64", None),
+    ("text", None),
 ];
 
 pub(crate) fn number(t: &Ty) -> bool {
@@ -253,6 +254,8 @@ impl Checker<'_> {
             ("devices", "close_serial") => (vec![p("id", &int)], Ty::Unit),
             // std.crypto (spec 14.19): no capability.
             ("crypto", _) => self.crypto_signature(name)?,
+            // std.text's normal forms (spec 14.9); the rest is Kavach.
+            ("text", "nfc" | "nfd" | "nfkc" | "nfkd") => (vec![p("s", &string)], string.clone()),
             // std.base64 (spec 14.20): no capability.
             ("base64", _) => self.base64_signature(name)?,
             // The clipboard (spec 14.17), behind `Clipboard`.
