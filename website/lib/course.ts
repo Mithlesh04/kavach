@@ -8,10 +8,11 @@ import type { Level } from "./nav";
 
 type Raw = [title: string, spec: string, subs?: string[]];
 
-/** URL slug from a title: "If...Else" → "if-else", "ask<T>" → "ask". */
+/** URL slug from a title: "If...Else" → "if-else", "ask<T>" → "ask", "C++" → "cpp". */
 export function slugOf(title: string): string {
   return title
     .toLowerCase()
+    .replace(/\+\+/g, "pp")
     .replace(/&/g, " and ")
     .replace(/<[^>]*>/g, "")
     .replace(/[^a-z0-9]+/g, "-")
@@ -26,6 +27,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Classic Mistakes, Fixed", "—"],
     ["Mistakes Caught Before a Run", "—"],
     ["Who Kavach Is For", "—"],
+    ["Coming From Another Language", "—", ["Python", "JavaScript", "C++", "Rust", "Go"]],
     ["What You Can Build", "—"],
     ["What a Program Is", "—"],
     ["The Terminal", "—"],

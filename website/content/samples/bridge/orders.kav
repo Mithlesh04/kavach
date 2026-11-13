@@ -1,0 +1,36 @@
+type Order {
+    item: String
+    qty: Int
+    cents: Int
+
+    fn cost(self) -> Int {
+        self.qty * self.cents
+    }
+}
+
+type OrderError = BadQty(item: String)
+
+fn total(orders: [Order]) -> Int ! OrderError {
+    for o in orders {
+        if o.qty <= 0 {
+            fail OrderError.BadQty(item: o.item)
+        }
+    }
+    orders.sum(o => o.cost())
+}
+
+fn main() {
+    const codes = ["SPRING": 10, "VIP": 25]
+    const orders = [Order(item: "pen", qty: 3, cents: 150), Order(item: "cup", qty: 1, cents: 900)]
+
+    const sum = total(orders) catch _ => 0
+    const off = codes["SPRING"] ?? 0
+    print("total {sum}, with {off}% off {sum * (100 - off) / 100}")
+    print("WINTER gives {codes["WINTER"] ?? 0}%")
+
+    const broken = [Order(item: "kite", qty: 0, cents: 500)]
+    match total(broken) {
+        ok(t) => print("total {t}"),
+        err(OrderError.BadQty(item)) => print("refused: no quantity for {item}"),
+    }
+}

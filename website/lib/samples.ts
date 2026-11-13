@@ -32,6 +32,14 @@ export function loadSample(name: string): { code: string; output?: string; file:
   return { code, output: readExpect(base), file: shownName(path.basename(`${base}.kav`)) };
 }
 
+/**
+ * Another language's version of a sample (`bridge/orders.py`), shown beside
+ * the Kavach one. check-samples doesn't run it: it was run by hand.
+ */
+export function otherSource(name: string): string {
+  return fs.readFileSync(path.join(samplesDir, name), "utf8").replace(/\r\n/g, "\n").trimEnd();
+}
+
 /** The sample's body without `fn main() { … }`, for teaching snippets. */
 export function sampleBody(name: string): { code: string; output?: string; file: string } {
   const sample = loadSample(name);

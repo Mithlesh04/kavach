@@ -18,6 +18,7 @@ import { agentSettingsDoc } from "./agents-settings";
 import { deprecateDoc } from "./functions-deprecate";
 import { mistakesDoc } from "./start-mistakes";
 import { classicDoc } from "./start-classic";
+import { bridgeDoc, cppDoc, goDoc, javascriptDoc, pythonDoc, rustDoc } from "./start-bridges";
 import { buildDoc, whoDoc } from "./start-who";
 import { whyDoc } from "./start-why";
 import { arenasDoc, automaticDoc, fastDoc, sharedDoc, unsafeDoc, valuesDoc } from "./memory";
@@ -114,6 +115,12 @@ export const lessons: Record<string, LessonDoc> = {
   "start/classic-mistakes-fixed": classicDoc,
   "start/mistakes-caught-before-a-run": mistakesDoc,
   "start/who-kavach-is-for": whoDoc,
+  "start/coming-from-another-language": bridgeDoc,
+  "start/coming-from-another-language/python": pythonDoc,
+  "start/coming-from-another-language/javascript": javascriptDoc,
+  "start/coming-from-another-language/cpp": cppDoc,
+  "start/coming-from-another-language/rust": rustDoc,
+  "start/coming-from-another-language/go": goDoc,
   "start/what-you-can-build": buildDoc,
   "start/what-a-program-is": programDoc,
   "start/the-terminal": terminalDoc,

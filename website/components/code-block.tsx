@@ -72,7 +72,7 @@ async function highlighter() {
   const grammar = JSON.parse(fs.readFileSync(grammarPath, "utf8"));
   return getSingletonHighlighter({
     themes: [theme],
-    langs: [{ ...grammar, name: "kavach" }, "shellscript", "toml", "c", "sql"],
+    langs: [{ ...grammar, name: "kavach" }, "shellscript", "toml", "c", "sql", "python", "javascript", "cpp", "rust", "go"],
   });
 }
 
