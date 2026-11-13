@@ -8,6 +8,15 @@ pub fn item(item: &Item) -> String {
     let p = if item.is_pub { "pub " } else { "" };
     match &item.kind {
         ItemKind::Fn(f) => format!("({p}{})", function("fn", f)),
+        ItemKind::Literal(l) => format!(
+            "({p}literal {} {} check {}{})",
+            l.name.name,
+            ty(&l.ty),
+            l.check.name,
+            l.language
+                .as_ref()
+                .map_or(String::new(), |x| format!(" language {x:?}"))
+        ),
         ItemKind::Type(t) => {
             let imps = if t.implements.is_empty() {
                 String::new()

@@ -144,6 +144,8 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
     let mut top_level = Vec::new();
     for item in &c.file.items {
         match &item.kind {
+            // A tag only checks text while the program is compiled.
+            ItemKind::Literal(_) => {}
             ItemKind::Fn(f) => {
                 if let Some(&def) = l.decl.get(&f.name.span.start) {
                     if f.generics.is_empty() {

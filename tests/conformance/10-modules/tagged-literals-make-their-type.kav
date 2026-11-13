@@ -1,0 +1,29 @@
+// Rule: `literal sql: Query check f` declares a tag; `sql"…"` is a `Query` holding its text, written raw (no escapes, no interpolation), over lines with three quotes.
+// Spec: 10.15
+// expect output: select id from orders where note = '{raw}' and path = 'C:\tmp'
+// expect output: select id
+// expect output: from orders
+
+pub type Query {
+    text: String
+}
+
+/// Text that must start with `select`.
+pub literal sql: Query check check_sql language "sql"
+
+fn check_sql(text: String) -> [LiteralProblem] {
+    if text.trim().starts_with("select") {
+        return []
+    }
+    [LiteralProblem(at: 0, message: "a query starts with `select`")]
+}
+
+fn main() {
+    const one = sql"select id from orders where note = '{raw}' and path = 'C:\tmp'"
+    print(one.text)
+    const lines = sql"""
+        select id
+        from orders
+        """
+    print(lines.text)
+}

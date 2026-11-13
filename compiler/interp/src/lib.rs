@@ -24,6 +24,7 @@ mod interp;
 mod journal;
 mod json;
 mod json_decode;
+mod literal_checks;
 mod map;
 mod net;
 mod numbers;
@@ -47,6 +48,7 @@ mod value;
 
 use kavach_driver::Compiled;
 pub use processes::set_restart;
+pub use run::longest_running;
 pub use testing::{Kept, TestOptions};
 use value::Flow;
 
@@ -132,6 +134,21 @@ fn run_main(program: &Compiled, args: &[String], dry_run: bool, live: bool) -> O
 pub fn end_hooks() {
     kavach_runtime_net::otlp::finish();
     let _ = std::io::Write::flush(&mut std::io::stdout());
+}
+
+/// Runs each tag's checker on each tagged literal (spec 10.15): the
+/// problems found, as compile errors and warnings.
+pub fn check_literals(program: &Compiled) -> Vec<kavach_driver::Message> {
+    if program.literal_uses.is_empty() {
+        return Vec::new();
+    }
+    let found = std::sync::Mutex::new(Vec::new());
+    on_big_stack(program, false, |i| {
+        let problems = i.literal_problems();
+        *found.lock().unwrap_or_else(|e| e.into_inner()) = problems;
+        0
+    });
+    found.into_inner().unwrap_or_default()
 }
 
 /// Runs every `example` and `test` block, then generated tests for every

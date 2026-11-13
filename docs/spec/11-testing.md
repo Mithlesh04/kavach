@@ -207,6 +207,7 @@ src/
 ├── orders.kav
 └── orders.test.kav      // test "total_paid counts only paid orders" { … }
 ```
+- A `test` block is a function of its own for its tasks: those it spawned and left running are cancelled when it ends (9.2), so a server it started doesn't keep the run going.
 - `assert` shows both sides of a failed comparison.
 - Tests run with no capabilities unless given some: `test "fetch" uses Net { … }`. Reaching a capability without it, directly or through a function, is a compile error. The console, the clock and random numbers are always there: a test run captures the output, can freeze the clock (14.4) and seeds the numbers.
 - A test can provide its own capability implementations: `test "refund flow" with Payments = FakePayments() { … }`.
@@ -227,6 +228,8 @@ test "reports go to an in-memory disk" uses Fs with Fs = fake {
 | `kavach test --deep` | Many more generated cases; for CI at night or before a release |
 | `kavach test --seed 4211` | Repeat an exact run |
 | `kavach test --changed` | Only what is affected by uncommitted changes (12.3) |
+
+A test, an `example` or a generated case that runs past sixty times `time_budget` (a minute by default) is stopped, and `kavach test` names it and fails, so one waiting for something that never comes can't hang the run.
 
 After its results, `kavach test` names what no person has checked: each function with no `ensure` or `example` ("weakly tested": only checked for panics; a `require` limits its inputs but checks no result), and each module with nothing written to check it, no `example`, `ensure`, `invariant` or `test` block in it or in its `name.test.kav` (11.8). Generated tests still try such code, but only for panics; the list says where a person should look first.
 

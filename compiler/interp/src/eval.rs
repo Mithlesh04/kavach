@@ -47,6 +47,18 @@ impl<'a> Interp<'a> {
             ExprKind::Char(c) => Ok(Value::Char(*c)),
             ExprKind::Bool(b) => Ok(Value::Bool(*b)),
             ExprKind::None => Ok(Value::None),
+            // `sql"…"` (spec 10.15): its tag's record, holding the text.
+            ExprKind::Tagged { args, .. } => {
+                let def = match self.c.expr_types.get(&(e.span.start, e.span.end)) {
+                    Some(kavach_checker::Ty::Adt(def, _)) => *def,
+                    _ => return Err(self.panic("this tagged literal has no type", e.span)),
+                };
+                let mut values = Vec::new();
+                for a in args {
+                    values.push((None, self.eval(&a.value)?));
+                }
+                self.construct(def, None, values, e.span)
+            }
             ExprKind::Str(parts) => {
                 let mut s = String::new();
                 for part in parts {

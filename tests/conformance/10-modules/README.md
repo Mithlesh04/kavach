@@ -21,3 +21,6 @@ Conformance tests for spec chapter [10. Modules and packages](../../../docs/spec
 | 10.7 | [c-functions-take-c-types/](c-functions-take-c-types/src/main.kav) | A C function takes numbers, booleans, `Ptr`s and `String`s, and gives numbers, booleans, `Ptr`s or nothing. | compile error |
 | 10.7 | [c-records-hold-c-types/](c-records-hold-c-types/src/main.kav) | A `Ptr` going to C points to a number, a `Bool`, a `Ptr`, or a record of only those. | compile error |
 | 10.7 | [c-callbacks-are-named-functions/](c-callbacks-are-named-functions/src/main.kav) | A C callback is the name of a Kavach function that can't fail; a lambda or closure is a compile error. | compile error |
+| 10.15 | [tagged-literals-make-their-type.kav](tagged-literals-make-their-type.kav) | `literal sql: Query check f` declares a tag; `sql"…"` is a `Query` holding its raw text, over lines with three quotes. | runs |
+| 10.15 | [tagged-literals-are-checked-when-compiled.kav](tagged-literals-are-checked-when-compiled.kav) | The compiler runs a tag's checker on each literal, and each problem is a compile error at its place. | compile error |
+| 10.15 | [a-tag-checker-uses-nothing.kav](a-tag-checker-uses-nothing.kav) | A tag's checker takes the text, gives `[LiteralProblem]`, and has no `!` and no `uses`. | compile error |

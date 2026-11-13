@@ -1,0 +1,17 @@
+// Rule: A `test` block cancels the tasks it spawned and left running when it ends, as a function does, so a server it started doesn't keep the run going.
+// Spec: 11.8, 9.2
+// expect test pass
+
+use std.http
+use std.net
+
+fn hello(r: Request) -> Response {
+    http.text(200, "hi")
+}
+
+test "a server left running ends with the test" uses Net {
+    const listener = net.listen("127.0.0.1:0") catch e => panic("{e}")
+    const _server = spawn http.serve(listener, r => hello(r))
+    const reply = http.get("http://{listener.address()}/") catch e => panic("{e}")
+    assert reply.status == 200
+}

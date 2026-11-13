@@ -151,6 +151,12 @@ pub enum ExprKind {
         arms: Vec<MatchArm>,
     },
     Block(Block),
+    /// `sql"…"` or `pg.sql"…"` (spec 10.15): `args` holds the text, as
+    /// one argument of the tag's type.
+    Tagged {
+        tag: crate::Path,
+        args: Vec<Arg>,
+    },
     Lambda {
         params: Vec<LambdaParam>,
         body: Box<Expr>,

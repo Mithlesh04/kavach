@@ -205,10 +205,16 @@ impl Parser<'_> {
                         }
                     } else {
                         let name = self.ident("a field or method name after `.`");
-                        ExprKind::Field {
-                            base: Box::new(expr),
-                            name,
-                            optional,
+                        // `pg.sql"…"` (spec 10.15).
+                        match (&expr.kind, optional) {
+                            (ExprKind::Name(module), false) if self.tag_follows(name.span) => {
+                                self.tagged(vec![module.clone(), name])
+                            }
+                            _ => ExprKind::Field {
+                                base: Box::new(expr),
+                                name,
+                                optional,
+                            },
                         }
                     }
                 }

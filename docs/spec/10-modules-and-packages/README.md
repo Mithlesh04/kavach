@@ -18,6 +18,7 @@ How code is split into modules and packages, how a project is laid out and built
 | 10.12 Dependencies | [12-dependencies.md](12-dependencies.md) |
 | 10.13 Environment variables and .env files | [13-environment-variables.md](13-environment-variables.md) |
 | 10.14 Workspaces | [14-workspaces.md](14-workspaces.md) |
+| 10.15 Tagged literals | [15-tagged-literals.md](15-tagged-literals.md) |
 
 ## Open questions
 

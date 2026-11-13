@@ -50,6 +50,23 @@ impl Parser<'_> {
         let is_pub = self.eat_kw(Keyword::Pub);
         let mut kind = match self.kind() {
             TokenKind::Keyword(Keyword::Fn) => ItemKind::Fn(self.fn_decl(true)),
+            // `audited fn` (spec 10.15): a word only before `fn`.
+            TokenKind::Ident
+                if self.at_word("audited") && *self.nth(1) == TokenKind::Keyword(Keyword::Fn) =>
+            {
+                self.bump();
+                let mut f = self.fn_decl(true);
+                f.is_audited = true;
+                ItemKind::Fn(f)
+            }
+            // `literal sql: Query check check_sql` (spec 10.15).
+            TokenKind::Ident
+                if self.at_word("literal")
+                    && *self.nth(1) == TokenKind::Ident
+                    && *self.nth(2) == TokenKind::Colon =>
+            {
+                ItemKind::Literal(self.literal_decl())
+            }
             // `gpu fn` (spec 15.1): a word only before `fn`.
             TokenKind::Ident
                 if self.at_word("gpu") && *self.nth(1) == TokenKind::Keyword(Keyword::Fn) =>

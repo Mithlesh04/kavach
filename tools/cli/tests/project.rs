@@ -192,3 +192,29 @@ fn the_report_names_modules_nothing_checks() {
     assert!(!first.contains("  src/orders.kav\n"), "{first}");
     assert!(!second.contains(heading), "{second}");
 }
+
+/// `kavach test` stops a test that runs past sixty times its time budget,
+/// and names it (spec 11.9): one stuck in `accept` would wait forever.
+#[test]
+fn a_stuck_test_is_named_and_stopped() {
+    let root = std::env::temp_dir().join(format!("kavach-stuck-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(root.join("src")).unwrap();
+    let toml = "[package]\nname = \"stuck\"\n\n[test]\ntime_budget = \"50ms\"\n";
+    std::fs::write(root.join("kavach.toml"), toml).unwrap();
+    std::fs::write(
+        root.join("src/main.kav"),
+        "use std.net\n\nfn main() {\n    print(\"hi\")\n}\n\ntest \"waits for a client\" uses Net {\n    const listener = net.listen(\"127.0.0.1:0\") catch e => panic(\"{e}\")\n    const _conn = listener.accept() catch e => panic(\"{e}\")\n}\n",
+    )
+    .unwrap();
+    let started = std::time::Instant::now();
+    let out = kavach(&root, &["test"]);
+    let err = String::from_utf8_lossy(&out.stderr);
+    assert!(!out.status.success());
+    assert!(
+        err.contains("test \"waits for a client\" has run for"),
+        "{err}"
+    );
+    assert!(started.elapsed().as_secs() < 30);
+    let _ = std::fs::remove_dir_all(&root);
+}

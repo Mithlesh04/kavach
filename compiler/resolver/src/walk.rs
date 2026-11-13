@@ -127,6 +127,23 @@ impl Resolver {
                     self.expr(v);
                 }
             }
+            // `sql"…"` or `pg.sql"…"` (spec 10.15).
+            ExprKind::Tagged { tag, .. } => match tag.segments.as_slice() {
+                [name] => self.use_name(name),
+                [module, name] => {
+                    let base = Expr {
+                        kind: ExprKind::Name(module.clone()),
+                        span: module.span,
+                    };
+                    match self.module_of(&base) {
+                        Some(m) => {
+                            self.member(m, name);
+                        }
+                        None => self.use_name(module),
+                    }
+                }
+                _ => {}
+            },
             // `orders.total`: a name in another module (spec 10.2).
             ExprKind::Field { base, name, .. } if self.module_of(base).is_some() => {
                 let m = self.module_of(base).unwrap_or(0);

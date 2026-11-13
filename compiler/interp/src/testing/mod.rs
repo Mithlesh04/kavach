@@ -169,6 +169,7 @@ impl<'a> Interp<'a> {
         budget: u64,
     ) -> Result<Value<'a>, Flow<'a>> {
         let (out_len, frames) = (self.out.len(), self.frames.len());
+        crate::run::running(Some(format!("the generated test of `{}`", t.name)));
         self.testing = true;
         self.steps = 0;
         self.step_limit = Some(budget);
@@ -194,6 +195,7 @@ impl<'a> Interp<'a> {
         self.testing = false;
         self.out.truncate(out_len);
         self.frames.truncate(frames);
+        crate::run::running(None);
         result
     }
 

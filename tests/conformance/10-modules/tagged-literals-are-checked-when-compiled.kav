@@ -1,0 +1,21 @@
+// Rule: The compiler runs a tag's checker on each literal's text, and each problem it gives is a compile error at its place in the literal.
+// Spec: 10.15
+// expect compile error
+
+pub type Query {
+    text: String
+}
+
+pub literal sql: Query check check_sql
+
+fn check_sql(text: String) -> [LiteralProblem] {
+    if text.starts_with("select") {
+        return []
+    }
+    [LiteralProblem(at: 0, length: 5, message: "a query starts with `select`")]
+}
+
+fn main() {
+    const q = sql"selct id from orders"         // error: from check_sql, at `selct`
+    print(q.text)
+}

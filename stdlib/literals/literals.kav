@@ -1,0 +1,13 @@
+// std.literals (spec 10.15): what a tag's checker gives. Every program
+// whose code names it gets this module.
+
+/// One problem a tag's checker found in a literal's text: where (a
+/// character index into the text, and how many characters), what is
+/// wrong, a hint, and whether it is only a warning.
+pub type LiteralProblem {
+    pub at: Int
+    pub length: Int = 1
+    pub message: String
+    pub hint: String = ""
+    pub warning: Bool = false
+}

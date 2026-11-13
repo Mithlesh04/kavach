@@ -231,6 +231,14 @@ pub fn expr(e: &Expr) -> String {
             })
         ),
         ExprKind::Bool(b) => b.to_string(),
+        ExprKind::Tagged { tag, args } => {
+            let path: Vec<&str> = tag.segments.iter().map(|s| s.name.as_str()).collect();
+            format!(
+                "(tagged {} {})",
+                path.join("."),
+                list(args, |a| expr(&a.value))
+            )
+        }
         ExprKind::None => "none".to_string(),
         ExprKind::Name(i) => i.name.clone(),
         ExprKind::SelfValue => "self".to_string(),

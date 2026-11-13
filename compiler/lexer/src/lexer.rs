@@ -10,6 +10,18 @@ pub(crate) enum StrKind {
     Plain,
     Raw,
     Multi,
+    /// `sql"""…"""`: a tagged literal over lines, raw (spec 10.15).
+    RawMulti,
+}
+
+impl StrKind {
+    pub(crate) fn is_multi(self) -> bool {
+        matches!(self, StrKind::Multi | StrKind::RawMulti)
+    }
+
+    pub(crate) fn is_raw(self) -> bool {
+        matches!(self, StrKind::Raw | StrKind::RawMulti)
+    }
 }
 
 /// An open bracket, or the `{` of a string interpolation.
@@ -187,7 +199,18 @@ impl<'a> Lexer<'a> {
                 Some(keyword) => TokenKind::Keyword(keyword),
                 None => TokenKind::Ident,
             };
+            let ident = kind == TokenKind::Ident;
             self.push(kind, start);
+            // `sql"…"`: a name right before a quote tags a raw literal
+            // (spec 10.15).
+            if ident {
+                let rest = self.rest();
+                if rest.starts_with("\"\"\"") {
+                    self.open_string(StrKind::RawMulti, 3);
+                } else if rest.starts_with('"') {
+                    self.open_string(StrKind::Raw, 1);
+                }
+            }
         } else if c.is_ascii_digit() {
             self.number();
         } else if rest.starts_with("\"\"\"") {

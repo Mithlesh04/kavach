@@ -297,10 +297,16 @@ fn read(path: &str) -> Result<Compiled, ExitCode> {
     deps::fetch_for(path)?;
     let options = config(path)?.options_for(std::path::Path::new(path));
     // In a project, every file of `src/` is compiled with it (spec 10.1).
-    if let Some(sources) = kavach_driver::project_sources(std::path::Path::new(path)) {
-        return Ok(kavach_driver::compile_sources(sources, options));
+    let mut compiled = match kavach_driver::project_sources(std::path::Path::new(path)) {
+        Some(sources) => kavach_driver::compile_sources(sources, options),
+        None => kavach_driver::compile(&src, path, options),
+    };
+    // Tagged literals, checked by their tags' checkers (spec 10.15).
+    if !compiled.has_errors() {
+        let found = kavach_interp::check_literals(&compiled);
+        compiled.messages.extend(found);
     }
-    Ok(kavach_driver::compile(&src, path, options))
+    Ok(compiled)
 }
 
 /// The nearest `kavach.toml` for `path`, or the defaults (spec 10.4).
@@ -346,6 +352,28 @@ fn command(path: &str, run: impl FnOnce(&Compiled) -> kavach_interp::Output) -> 
     // `main` returned while a stop signal let it finish (decision 0088).
     let code = kavach_runtime_core::stop_holds::asked_code().filter(|_| output.exit_code == 0);
     ExitCode::from(u8::try_from(code.unwrap_or(output.exit_code)).unwrap_or(1))
+}
+
+/// Stops `kavach test` when one test, example or generated case runs past
+/// sixty times the time budget (a minute by default), naming it (spec
+/// 11.9): a test waiting forever would otherwise hang the run.
+fn watchdog(budget_ms: u64) {
+    let limit = std::time::Duration::from_millis(budget_ms.saturating_mul(60));
+    std::thread::spawn(move || {
+        loop {
+            std::thread::sleep(std::time::Duration::from_millis(500));
+            if let Some((name, took)) = kavach_interp::longest_running()
+                && took > limit
+            {
+                eprintln!(
+                    "error: {name} has run for {} s, past the limit of {} s, and was stopped (spec 11.9)",
+                    took.as_secs(),
+                    limit.as_secs()
+                );
+                std::process::exit(1);
+            }
+        }
+    });
 }
 
 /// `kavach test`: examples, `test` blocks and generated tests (spec 11.9).
@@ -395,6 +423,7 @@ fn test(path: &str, flags: &[&str]) -> ExitCode {
     if keep {
         return keep::keep(path, &opts);
     }
+    watchdog(budget_ms);
     command(path, |c| kavach_interp::test(c, &opts))
 }
 

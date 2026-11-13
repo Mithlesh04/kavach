@@ -86,6 +86,9 @@ pub struct Compiled {
     pub ask_models: HashMap<(u32, u32), kavach_checker::AiModel>,
     /// Each agent's `settings`, as written (decision 0060).
     pub agent_settings: HashMap<String, kavach_checker::AgentSetup>,
+    /// Each tagged literal, for its tag's checker (spec 10.15), which the
+    /// interpreter runs (`kavach_interp::check_literals`).
+    pub literal_uses: Vec<kavach_checker::LiteralUse>,
     pub messages: Vec<Message>,
 }
 
@@ -435,6 +438,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
         agent_models: checked.agent_models,
         agent_settings: checked.agent_settings,
         ask_models: checked.ask_models,
+        literal_uses: checked.literal_uses,
         messages,
     }
 }

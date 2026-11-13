@@ -48,7 +48,15 @@ impl Parser<'_> {
                     body,
                 }
             }
-            TokenKind::Ident => ExprKind::Name(self.ident("a name")),
+            TokenKind::Ident => {
+                let name = self.ident("a name");
+                // `sql"…"` (spec 10.15).
+                if self.tag_follows(name.span) {
+                    self.tagged(vec![name])
+                } else {
+                    ExprKind::Name(name)
+                }
+            }
             TokenKind::LParen if !self.in_guard && self.paren_is_lambda() => self.lambda(),
             TokenKind::LParen => return self.paren_or_tuple(),
             TokenKind::LBracket => self.list_or_map(),

@@ -37,9 +37,11 @@ mod inout;
 mod items;
 mod json;
 mod lambdas;
+mod literals;
 mod method_names;
 mod methods;
 mod more_methods;
+mod names;
 mod never_runs;
 mod operators;
 mod order;
@@ -60,6 +62,7 @@ pub use json::json_literal_kind;
 use kavach_ast::File;
 pub use kavach_resolver::Diagnostic;
 use kavach_resolver::{DefId, Resolution};
+pub use literals::LiteralUse;
 use std::collections::{HashMap, HashSet};
 pub use ty::{Prim, Ty};
 
@@ -127,6 +130,8 @@ pub struct Checked {
     pub ask_models: HashMap<(u32, u32), AiModel>,
     /// Each agent's `settings`, by its name (decision 0060).
     pub agent_settings: HashMap<String, AgentSetup>,
+    /// Each tagged literal, for its tag's checker (spec 10.15).
+    pub literal_uses: Vec<LiteralUse>,
 }
 
 /// The built-in methods a value of type `t` has (spec 14.2), for tools
@@ -249,5 +254,6 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
         agent_models,
         ask_models,
         agent_settings,
+        literal_uses: std::mem::take(&mut checker.literal_uses),
     }
 }

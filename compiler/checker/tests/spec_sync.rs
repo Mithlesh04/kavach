@@ -46,6 +46,12 @@ fn conformance_tests_and_examples_check() {
             .lines()
             .position(|l| l.contains("// error:"))
             .map(|i| i + 1);
+        // An error a tag's checker finds comes after this stage, when
+        // `kavach` runs the checker (spec 10.15); the conformance runner
+        // checks those.
+        if src.contains("// error: from check_sql") {
+            continue;
+        }
         let ok = match marked {
             None => errors.is_empty(),
             Some(m) => !errors.is_empty() && errors.iter().all(|(l, _)| *l == m),

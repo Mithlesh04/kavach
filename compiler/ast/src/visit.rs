@@ -54,6 +54,7 @@ pub fn walk_item<V: VisitMut + ?Sized>(v: &mut V, item: &mut Item) {
             e.methods.iter_mut().for_each(|m| walk_item(v, m));
         }
         ItemKind::Capability(c) => c.methods.iter_mut().for_each(|m| walk_item(v, m)),
+        ItemKind::Literal(l) => v.type_expr(&mut l.ty),
         ItemKind::Agent(a) => {
             for m in &mut a.members {
                 match m {
@@ -238,6 +239,7 @@ pub fn walk_expr<V: VisitMut + ?Sized>(v: &mut V, e: &mut Expr) {
             }
         }
         ExprKind::List(items) | ExprKind::Tuple(items) => items.iter_mut().for_each(|x| v.expr(x)),
+        ExprKind::Tagged { args, .. } => args.iter_mut().for_each(|a| v.expr(&mut a.value)),
         ExprKind::AnonRecord(fields) => fields.iter_mut().for_each(|(_, x)| v.expr(x)),
         ExprKind::Map(entries) => {
             for (k, x) in entries {

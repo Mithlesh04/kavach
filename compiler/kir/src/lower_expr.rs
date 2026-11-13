@@ -55,6 +55,14 @@ impl<'a> Lowerer<'a> {
                 line,
             });
         }
+        // `sql"…"` (spec 10.15): its tag's record, holding the text.
+        if let ExprKind::Tagged { args, .. } = &e.kind {
+            let def = self
+                .shapes
+                .def_of(ty)
+                .ok_or_else(|| self.unsupported("this tagged literal", e.span))?;
+            return self.construct(def, None, args, ty, line, e.span);
+        }
         let kind = match &e.kind {
             ExprKind::BigInt(digits) if ty.is_float() => K::Float(digits.parse().unwrap_or(0.0)),
             ExprKind::BigInt(digits) => K::Decimal(digits.clone()),

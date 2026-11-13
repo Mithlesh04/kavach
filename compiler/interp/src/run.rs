@@ -5,6 +5,24 @@ use crate::interp::Interp;
 use crate::value::{Flow, Value};
 use kavach_ast::ItemKind;
 
+/// The test, example or generated case running now, and when it began,
+/// for `kavach test`'s watchdog (spec 11.9), which runs on another thread.
+static RUNNING: std::sync::Mutex<Option<(String, std::time::Instant)>> =
+    std::sync::Mutex::new(None);
+
+/// Notes that `name` starts now, or (`None`) that nothing runs.
+pub(crate) fn running(name: Option<String>) {
+    if let Ok(mut r) = RUNNING.lock() {
+        *r = name.map(|n| (n, std::time::Instant::now()));
+    }
+}
+
+/// What has run the longest now, and for how long.
+pub fn longest_running() -> Option<(String, std::time::Duration)> {
+    let r = RUNNING.lock().ok()?;
+    r.as_ref().map(|(n, at)| (n.clone(), at.elapsed()))
+}
+
 /// One `example` or `test`: true when it passes.
 type TestCase<'a> = Box<dyn Fn(&mut Interp<'a>) -> Result<bool, Flow<'a>> + 'a>;
 
@@ -75,13 +93,13 @@ impl<'a> Interp<'a> {
                         .collect();
                     let run: TestCase<'a> = Box::new(move |i: &mut Self| {
                         if fakes.is_empty() {
-                            return i.block(&t.body).map(|_| true);
+                            return i.test_body(&t.body).map(|_| true);
                         }
                         let mut world = crate::fakes::World::new(1);
                         world.only = Some(fakes.clone());
                         let world = std::rc::Rc::new(std::cell::RefCell::new(world));
                         let outer = i.fake.replace(world);
-                        let ran = i.block(&t.body).map(|_| true);
+                        let ran = i.test_body(&t.body).map(|_| true);
                         i.fake = outer;
                         ran
                     });
@@ -94,7 +112,9 @@ impl<'a> Interp<'a> {
                 let salt = crate::testing::values::Rng::hash(seed, &label);
                 self.random = Some(crate::testing::values::Rng::new(salt));
                 self.frozen = None;
+                running(Some(label.clone()));
                 let outcome = run(self);
+                running(None);
                 match outcome {
                     Ok(true) => {
                         passed += 1;
@@ -119,5 +139,22 @@ impl<'a> Interp<'a> {
         self.out
             .push_str(&format!("{passed} passed, {failed} failed\n"));
         failed
+    }
+
+    /// A `test` block's body, in a frame of its own: the tasks it spawned
+    /// and left running are cancelled when it ends, as a function's are
+    /// (spec 9.2), so a server it started doesn't keep the run going.
+    fn test_body(&mut self, body: &'a kavach_ast::Block) -> crate::value::Eval<'a> {
+        self.frames.push(crate::interp::Frame {
+            vars: std::collections::HashMap::new(),
+            self_value: None,
+            its: Vec::new(),
+            spawned: Vec::new(),
+            generics: std::collections::HashMap::new(),
+        });
+        let result = self.block(body);
+        let result = self.join_spawned(result, body.span);
+        self.frames.pop();
+        result
     }
 }

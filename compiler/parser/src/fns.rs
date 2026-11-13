@@ -23,6 +23,7 @@ impl Parser<'_> {
             name,
             ret: None,
             ret_secret: false,
+            is_audited: false,
             errors: None,
             uses: Vec::new(),
             fs_scope: None,

@@ -72,6 +72,6 @@ fn collect_bodies(item: &Item, out: &mut Vec<Span>) {
             }
         }
         ItemKind::Test(t) => out.push(t.body.span),
-        ItemKind::Use(_) | ItemKind::Stmt(_) => {}
+        ItemKind::Use(_) | ItemKind::Stmt(_) | ItemKind::Literal(_) => {}
     }
 }

@@ -1,5 +1,5 @@
-//! `kavach audit` (spec 10.5) lists unsafe code, revealed secrets and
-//! capability use.
+//! `kavach audit` (spec 10.5) lists unsafe code, revealed secrets, calls
+//! of `audited fn`s (10.15) and capability use.
 
 use std::fs;
 use std::process::Command;
@@ -30,9 +30,26 @@ fn charge(secret card: String) {
     print(shown.len())
 }
 
+type Query {
+    text: String
+}
+
+literal sql: Query check check_sql
+
+fn check_sql(text: String) -> [LiteralProblem] {
+    []
+}
+
+/// SQL known only when the program runs (spec 10.15).
+audited fn dynamic(text: String) -> Query {
+    Query(text: text)
+}
+
 fn main() {
     print(risky(2.0))
     charge("4111")
+    print(sql"select 1".text)
+    print(dynamic("select 2").text)
 }
 "#,
     )
@@ -63,6 +80,8 @@ fn main() {
         "reveal(…)",
         "capability use:",
         "fn charge: Console",
+        "audited calls:",
+        "dynamic(…)",
     ] {
         assert!(text.contains(needle), "missing {needle:?} in:\n{text}");
     }

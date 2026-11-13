@@ -219,6 +219,17 @@ impl Checker<'_> {
                     for a in args {
                         self.value(&a.value, None);
                     }
+                    let how = match name {
+                        "Set" => {
+                            ": make a set with `Set.of(1, 2, 3)`, or `Set.with_capacity(n)` and `add`"
+                        }
+                        "Map" => ": make a map with `[\"a\": 1]`, or `Map.with_capacity(n)`",
+                        _ => "",
+                    };
+                    self.error(
+                        span,
+                        format!("`{name}` can't be called like a function{how} (spec 2.2)"),
+                    );
                     Ty::Error
                 }
             },

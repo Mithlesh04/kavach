@@ -88,12 +88,28 @@ const TEXTS: [&str; 6] = ["", "a", " ", "नमस्ते", "Hello, World!", "
 impl<'a> Interp<'a> {
     /// The generator for a written type, or `None` if values of it can't
     /// be generated yet (functions, generics, capabilities).
+    /// Whether type `def` is a tag's (spec 10.15), so only its literals
+    /// make one.
+    fn made_by_literals(&self, def: kavach_resolver::DefId) -> bool {
+        self.c.file.items.iter().any(|item| match &item.kind {
+            kavach_ast::ItemKind::Literal(l) => match &l.ty.kind {
+                TypeKind::Named { path, .. } => {
+                    self.c.resolution.uses.get(&path.segments[0].span.start) == Some(&def)
+                }
+                _ => false,
+            },
+            _ => false,
+        })
+    }
+
     pub(crate) fn gen_of(&self, t: &TypeExpr) -> Option<Gen> {
         Some(match &t.kind {
             TypeKind::Named { path, args } => {
                 let first = &path.segments[0];
                 let def = *self.c.resolution.uses.get(&first.span.start)?;
                 match self.c.resolution.defs[def].kind {
+                    // A tag's type comes only from its literals (10.15).
+                    DefKind::Type if args.is_empty() && self.made_by_literals(def) => return None,
                     DefKind::Type if args.is_empty() => Gen::Adt(def),
                     DefKind::Builtin => match (first.name.as_str(), args.as_slice()) {
                         ("String", []) => Gen::Str,

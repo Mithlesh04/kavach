@@ -105,6 +105,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0097](0097-take-gives-taken.md) | `receive.take()` gives `Taken<T> = Item(value: T) \| Closed`, so a sent `none` isn't a closed channel | Accepted |
 | [0098](0098-kavach-written-modules-in-their-own-repositories.md) | Modules written in Kavach (`std.http`, `std.grpc`, `std.term`'s prompts) move to repositories of their own; what is native stays | Accepted |
 | [0099](0099-client-certificate-names.md) | A client certificate's names with mutual TLS (`conn.client_cert()`, `r.client_cert`), read with `x509-cert` | Accepted |
+| [0100](0100-tagged-literals.md) | Tagged literals (`sql"…"`), declared by a package with a pure checker the compiler runs | Accepted |
 
 ## Open decisions
 

@@ -1,0 +1,20 @@
+// Rule: A tag's checker is `fn(text: String) -> [LiteralProblem]` with no `!` and no `uses`, as it runs while the program is compiled.
+// Spec: 10.15
+// expect compile error
+
+use std.fs
+
+pub type Query {
+    text: String
+}
+
+pub literal sql: Query check check_sql            // error: check_sql uses Fs
+
+fn check_sql(text: String) -> [LiteralProblem] uses Fs {
+    const _known = fs.exists("schema.sql")
+    []
+}
+
+fn main() {
+    print(sql"select 1".text)
+}

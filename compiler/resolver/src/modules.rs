@@ -41,6 +41,7 @@ fn item_name(item: &Item) -> Option<&Ident> {
         ItemKind::Interface(i) => Some(&i.name),
         ItemKind::Capability(c) => Some(&c.name),
         ItemKind::Agent(a) => Some(&a.name),
+        ItemKind::Literal(l) => Some(&l.name),
         _ => None,
     }
 }

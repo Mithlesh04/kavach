@@ -56,6 +56,8 @@ pub enum DefKind {
     Builtin,
     /// Another module, brought in with `use orders` (spec 10.2).
     Module,
+    /// A tag for literals, `literal sql: Query check …` (spec 10.15).
+    Literal,
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

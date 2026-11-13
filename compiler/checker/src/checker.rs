@@ -195,6 +195,9 @@ pub(crate) struct Checker<'a> {
     /// The type whose `extend` block is being checked: inside the type's
     /// own package, it sees the type's private fields (spec 10.1).
     pub(crate) extending: Option<DefId>,
+    /// The tags for literals, and each literal written (spec 10.15).
+    pub(crate) literal_tags: HashMap<DefId, crate::literals::LiteralTag>,
+    pub(crate) literal_uses: Vec<crate::literals::LiteralUse>,
 }
 
 impl<'a> Checker<'a> {
@@ -260,6 +263,8 @@ impl<'a> Checker<'a> {
             test_needs: Vec::new(),
             current_test: None,
             extending: None,
+            literal_tags: HashMap::new(),
+            literal_uses: Vec::new(),
         }
     }
 

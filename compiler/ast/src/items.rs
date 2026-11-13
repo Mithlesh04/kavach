@@ -27,8 +27,21 @@ pub enum ItemKind {
     Agent(AgentDecl),
     Use(UseDecl),
     Test(TestDecl),
+    /// `literal sql: Query check check_sql language "sql"` (spec 10.15).
+    Literal(LiteralDecl),
     /// A top-level statement in an entry file (spec 1.3).
     Stmt(Stmt),
+}
+
+/// A tag for literals: `name"…"` makes a `ty` holding the text, and
+/// function `check` finds its problems when the program is compiled.
+#[derive(Clone, Debug, PartialEq)]
+pub struct LiteralDecl {
+    pub name: Ident,
+    pub ty: TypeExpr,
+    pub check: Ident,
+    /// What editors colour the inside as.
+    pub language: Option<String>,
 }
 
 /// A function, method or agent handler, with its full signature (spec 3.5).
@@ -41,6 +54,8 @@ pub struct FnDecl {
     pub ret: Option<TypeExpr>,
     /// `-> secret T`: its result is a secret (spec 8.7).
     pub ret_secret: bool,
+    /// `audited fn`: `kavach audit` lists its calls (spec 10.15).
+    pub is_audited: bool,
     /// `! ErrorType` (spec 5.1).
     pub errors: Option<TypeExpr>,
     /// `uses Net, Payments.refund` (spec 8.1).

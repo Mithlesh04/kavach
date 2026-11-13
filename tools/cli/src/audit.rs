@@ -1,6 +1,7 @@
-//! `kavach audit` (spec 10.5): list unsafe code, revealed secrets and
-//! capability use across the program and everything it pulls in, so a
-//! review sees every place the safety promises are loosened.
+//! `kavach audit` (spec 10.5): list unsafe code, revealed secrets, calls
+//! of `audited fn`s (spec 10.15) and capability use across the program
+//! and everything it pulls in, so a review sees every place the safety
+//! promises are loosened.
 
 use kavach_ast::visit::{VisitMut, walk_expr, walk_file};
 use kavach_ast::{Expr, ExprKind, ItemKind, Span};
@@ -41,6 +42,35 @@ pub(crate) fn audit(path: &str) -> ExitCode {
         .collect();
     list(&c, lines);
 
+    // Text made into a tagged literal's type while the program runs.
+    println!("audited calls:");
+    let audited: std::collections::HashMap<usize, &str> = c
+        .file
+        .items
+        .iter()
+        .filter_map(|item| match &item.kind {
+            ItemKind::Fn(f) if f.is_audited => Some(&f.name),
+            _ => None,
+        })
+        .filter_map(|name| {
+            let def = c
+                .resolution
+                .defs
+                .iter()
+                .position(|d| d.span == Some(name.span))?;
+            Some((def, name.name.as_str()))
+        })
+        .collect();
+    let lines = found
+        .calls
+        .iter()
+        .filter_map(|(callee, span)| {
+            let def = c.resolution.uses.get(callee)?;
+            audited.get(def).map(|name| (*span, format!("{name}(…)")))
+        })
+        .collect();
+    list(&c, lines);
+
     println!("capability use:");
     let mut lines = Vec::new();
     for (def, uses) in &c.uses {
@@ -75,6 +105,8 @@ fn list(c: &Compiled, mut lines: Vec<(Span, String)>) {
 struct Finder {
     unsafes: Vec<Span>,
     reveals: Vec<Span>,
+    /// Each call: where its callee's name starts, and the call.
+    calls: Vec<(u32, Span)>,
 }
 
 impl VisitMut for Finder {
@@ -84,6 +116,12 @@ impl VisitMut for Finder {
             ExprKind::Call { callee, .. } => {
                 if matches!(&callee.kind, ExprKind::Name(n) if n.name == "reveal") {
                     self.reveals.push(e.span);
+                }
+                match &callee.kind {
+                    ExprKind::Name(n) | ExprKind::Field { name: n, .. } => {
+                        self.calls.push((n.span.start, e.span));
+                    }
+                    _ => {}
                 }
             }
             _ => {}

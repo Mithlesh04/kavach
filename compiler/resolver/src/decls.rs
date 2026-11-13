@@ -16,6 +16,10 @@ impl Resolver {
                     self.check_snake(&f.name, "functions");
                     self.define(&f.name, DefKind::Fn);
                 }
+                ItemKind::Literal(l) => {
+                    self.check_snake(&l.name, "tags");
+                    self.define(&l.name, DefKind::Literal);
+                }
                 ItemKind::Type(t) => {
                     self.check_pascal(&t.name, "types");
                     let Some(id) = self.define(&t.name, DefKind::Type) else {
@@ -93,6 +97,10 @@ impl Resolver {
         match &item.kind {
             ItemKind::Fn(f) => self.function(f),
             ItemKind::Type(t) => self.type_decl(t),
+            ItemKind::Literal(l) => {
+                self.type_expr(&l.ty);
+                self.use_name(&l.check);
+            }
             ItemKind::Interface(i) => {
                 self.push();
                 self.generics(&i.generics);

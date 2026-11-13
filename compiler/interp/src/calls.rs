@@ -150,7 +150,7 @@ impl<'a> Interp<'a> {
     }
 
     /// Creates a record, or a variant of a union when `variant` is set.
-    fn construct(
+    pub(crate) fn construct(
         &mut self,
         def: DefId,
         variant: Option<&str>,

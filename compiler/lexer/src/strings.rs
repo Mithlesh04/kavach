@@ -34,7 +34,7 @@ impl Lexer<'_> {
         self.pos += delimiter_len;
         self.push(TokenKind::StrStart, start);
         self.in_string = Some(kind);
-        if kind == StrKind::Multi {
+        if kind.is_multi() {
             self.eat_while(|c| c == ' ' || c == '\t' || c == '\r');
             if self.peek() == Some('\n') {
                 self.pos += 1;
@@ -55,7 +55,7 @@ impl Lexer<'_> {
 
     /// Reads string text until the string ends or an interpolation starts.
     pub(crate) fn string_body(&mut self, kind: StrKind) {
-        let multi = kind == StrKind::Multi;
+        let multi = kind.is_multi();
         let mut text = String::new();
         let text_start = self.pos;
         loop {
@@ -78,13 +78,13 @@ impl Lexer<'_> {
                 Some('"') if !multi || rest.starts_with("\"\"\"") => {
                     return self.close_string(kind, &mut text, text_start);
                 }
-                Some('\\') if kind != StrKind::Raw => {
+                Some('\\') if !kind.is_raw() => {
                     if let Some(c) = self.escape('"') {
                         text.push(c);
                     }
                     self.mark_content(kind);
                 }
-                Some('{') if kind != StrKind::Raw => {
+                Some('{') if !kind.is_raw() => {
                     self.flush(&mut text, text_start);
                     let start = self.pos;
                     self.pos += 1;
@@ -115,7 +115,7 @@ impl Lexer<'_> {
     }
 
     fn mark_content(&mut self, kind: StrKind) {
-        if kind == StrKind::Multi {
+        if kind.is_multi() {
             self.multi().line_has_content = true;
         }
     }
@@ -153,7 +153,7 @@ impl Lexer<'_> {
     }
 
     fn close_string(&mut self, kind: StrKind, text: &mut String, text_start: usize) {
-        if kind == StrKind::Multi && !self.multi().line_has_content {
+        if kind.is_multi() && !self.multi().line_has_content {
             // The closing `"""` is on its own line: that line and the line
             // break before it are not part of the string.
             if let Some(line) = self.multi().lines.pop() {
@@ -163,10 +163,10 @@ impl Lexer<'_> {
         }
         self.flush(text, text_start);
         let start = self.pos;
-        self.pos += if kind == StrKind::Multi { 3 } else { 1 };
+        self.pos += if kind.is_multi() { 3 } else { 1 };
         self.push(TokenKind::StrEnd, start);
         self.in_string = None;
-        if kind == StrKind::Multi {
+        if kind.is_multi() {
             self.dedent();
         }
     }
@@ -177,7 +177,7 @@ impl Lexer<'_> {
         self.error(self.pos, self.pos, message);
         self.push(TokenKind::StrEnd, self.pos);
         self.in_string = None;
-        if kind == StrKind::Multi {
+        if kind.is_multi() {
             self.dedent();
         }
     }

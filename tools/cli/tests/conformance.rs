@@ -74,10 +74,16 @@ fn check_file(path: &Path) -> Option<String> {
     let options = kavach_driver::Config::for_file(path)
         .expect("a valid kavach.toml")
         .options_for(path);
-    let compiled = match kavach_driver::project_sources(path) {
+    let mut compiled = match kavach_driver::project_sources(path) {
         Some(sources) => kavach_driver::compile_sources(sources, options),
         None => compile(&src, &path.to_string_lossy(), options),
     };
+    // Tagged literals, checked by their tags' checkers, as `kavach` does
+    // (spec 10.15).
+    if !compiled.has_errors() {
+        let found = kavach_interp::check_literals(&compiled);
+        compiled.messages.extend(found);
+    }
     if e.compile_error {
         return (!compiled.has_errors())
             .then(|| "expected a compile error, but it compiled".to_string());

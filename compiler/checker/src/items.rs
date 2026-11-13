@@ -12,6 +12,7 @@ impl Checker<'_> {
         for item in &file.items {
             match &item.kind {
                 ItemKind::Fn(f) => self.function(f, None),
+                ItemKind::Literal(l) => self.check_literal(l),
                 ItemKind::Type(t) => self.type_decl(t),
                 ItemKind::Extend(e) => {
                     let target = self.lower(&e.target, None);

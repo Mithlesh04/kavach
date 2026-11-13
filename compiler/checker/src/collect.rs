@@ -156,6 +156,7 @@ impl Checker<'_> {
         for item in &file.items {
             match &item.kind {
                 ItemKind::Type(t) => self.collect_type(t),
+                ItemKind::Literal(l) => self.collect_literal(l),
                 ItemKind::Interface(i) => {
                     let Some(&def) = self.decl.get(&i.name.span.start) else {
                         continue;
