@@ -1,0 +1,14 @@
+use std.time
+
+/// Days left in a 30-day trial that began at `started` (ms since 1970).
+fn days_left(started: Int) -> Int
+    require started >= 0
+    example days_left(1_767_225_600_000) == 30
+    example days_left(1_766_016_000_000) == 16
+{
+    30 - (time.now_ms() - started) / 86_400_000
+}
+
+fn main() {
+    print(days_left(time.now_ms()))
+}

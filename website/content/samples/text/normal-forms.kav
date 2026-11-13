@@ -1,0 +1,10 @@
+use std.text
+
+fn main() {
+    const typed = "caf\u{E9}"          // é as one code point
+    const pasted = "cafe\u{301}"       // e, then an accent that joins it
+    print(typed == pasted)
+    print(text.nfc(typed) == text.nfc(pasted))
+    print("{typed.len()} {pasted.len()}")
+    print(text.nfkc("\u{FB01}le \u{FF11}\u{FF12}"))
+}

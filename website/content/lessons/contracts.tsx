@@ -6,8 +6,8 @@ import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject, loadProjectFiles } from "@/lib/samples";
 import { Ex, Files, H2, Note, P } from "./parts";
-import { fileFigure } from "@/lib/spec-tables";
-import { ModuleTable } from "./spec-table";
+import { fileFigure, specListAfter } from "@/lib/spec-tables";
+import { Cell, ModuleTable } from "./spec-table";
 
 const beside = loadProjectFiles("testing/beside");
 const missed = loadProjectFiles("testing/missed");
@@ -114,7 +114,15 @@ export const exampleDoc: LessonDoc = {
         An example is documentation that can&apos;t go out of date: editors show it on hover, and a wrong one fails
         the tests. Examples are left out of the program you ship. A method&apos;s examples are run too.
       </P>
-      <SrcRef file="tests/conformance/07-contracts/wrong-method-example-fails-tests.kav" label="examples on methods, tested" />
+      <P>
+        An example sees the clock the generated tests do: 2026-01-01 00:00 UTC, and frozen. So an example that reads
+        the clock gives the same result on any day:
+      </P>
+      <Ex name="testing/example-clock.test" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/07-contracts/wrong-method-example-fails-tests.kav" label="examples on methods, tested" />
+        <SrcRef file="tests/conformance/07-contracts/examples-see-a-frozen-clock.kav" label="a frozen clock, tested" />
+      </div>
     </>
   ),
 };
@@ -219,10 +227,9 @@ export const fromTypesDoc: LessonDoc = {
       <H2>When no inputs are generated</H2>
       <P>Some functions get no generated arguments. The report lists each as <C>not generated</C>, with the reason:</P>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>a generic function, or a method of a generic type;</li>
-        <li>a parameter whose values can&apos;t be generated, such as a record holding a <C>Shared</C>, unless its type has a <C>Sample</C>;</li>
-        <li>a capability with no fake yet;</li>
-        <li>a C function, or a function a generated case found reaching one: C runs only in native code.</li>
+        {specListAfter("11-testing.md", "11.2", "Some functions get no generated arguments").map((item) => (
+          <li key={item}><Cell text={item} /></li>
+        ))}
       </ul>
       <P>When no generated input meets a function&apos;s <C>require</C>, its examples are what checks it, and the report says so:</P>
       <Ex name="testing/not-generated.test" />

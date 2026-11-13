@@ -189,6 +189,19 @@ export const httpServeDoc: LessonDoc = {
         panics gets 500, and the server goes on.
       </P>
       <SrcRef file="tests/conformance/14-standard-library/http-handlers-stop-when-the-client-leaves.kav" label="tested" />
+      <H2>HTTP/2 without TLS</H2>
+      <P>
+        <C>http.serve</C> answers HTTP/2 too, from a client that starts with the HTTP/2 preface without TLS, as
+        services calling each other do. One connection carries many requests at once, and each runs its handler in a
+        task of its own, so a slow request holds up no other:
+      </P>
+      <Ex name="http/h2-at-once" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>/report</C> was asked first, but <C>/ping</C> was answered first: its handler didn&apos;t wait for the slow one.</li>
+        <li>At most 100 requests are answered at once on a connection, and the server tells the client so.</li>
+        <li>The handler sees the same <C>Request</C> and gives the same <C>Response</C> as over HTTP/1.1.</li>
+      </ul>
+      <SrcRef file="tests/conformance/14-standard-library/http2-servers-answer-streams-at-once.kav" label="tested" />
       <H2>Large bodies</H2>
       <P>
         A body up to <C>buffered_body</C> (1 MB unless you say) is read whole into <C>r.body</C>. A larger one is

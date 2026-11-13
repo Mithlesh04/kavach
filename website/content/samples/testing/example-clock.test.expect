@@ -1,0 +1,6 @@
+✓ days_left: example days_left(1_767_225_600_000) == 30
+✓ days_left: example days_left(1_766_016_000_000) == 16
+2 passed, 0 failed
+seed 7
+✓ days_left  200 cases
+1 functions   1 ✓   0 ✗   0 weakly tested

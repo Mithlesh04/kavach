@@ -65,7 +65,23 @@ export function fileFigure(rel: string, pattern: RegExp): string {
   return found[1];
 }
 
-/** A fenced code block in a spec section: the first, or the one at `index`. */
+/**
+ * The bullet list right after the paragraph of a spec section that holds
+ * `text`, one string per item, with spec section numbers left out: a page
+ * links its own way, and "(11.3)" means nothing to a reader of the site.
+ */
+export function specListAfter(file: string, number: string, text: string): string[] {
+  const body = section(file, number);
+  const at = body.indexOf(text);
+  if (at < 0) throw new Error(`spec ${file} ${number}: no ${JSON.stringify(text)}`);
+  const list = body.slice(body.indexOf("\n", at)).match(/^\n+((?:- .*\n?)+)/);
+  if (!list) throw new Error(`spec ${file} ${number}: no list after ${JSON.stringify(text)}`);
+  return list[1]
+    .trimEnd()
+    .split("\n")
+    .map((l) => l.slice(2).replace(/ \(\d+\.\d+\)/g, "").replace(/, \d+\.\d+\)/g, ")"));
+}
+
 /** The code block of a spec section that holds `text`, as written: a block indented under a bullet loses its indent. */
 export function specBlockWith(file: string, number: string, text: string): string {
   for (const [, indent, code] of section(file, number).matchAll(/^( *)```[a-z]*\r?\n([\s\S]*?)\r?\n\1```/gm)) {
@@ -74,6 +90,7 @@ export function specBlockWith(file: string, number: string, text: string): strin
   throw new Error(`spec ${file} ${number}: no code block holds ${JSON.stringify(text)}`);
 }
 
+/** A fenced code block in a spec section: the first, or the one at `index`. */
 export function specBlock(file: string, number: string, index = 0): string {
   const blocks = [...section(file, number).matchAll(/```[a-z]*\n([\s\S]*?)\n```/g)];
   if (!blocks[index]) throw new Error(`spec ${file} ${number}: no code block ${index}`);

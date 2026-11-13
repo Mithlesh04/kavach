@@ -127,7 +127,7 @@ export const timeDoc: LessonDoc = {
           Calling it again jumps the clock forward or back, as when a person changes the machine&apos;s clock.{" "}
           <C>monotonic_ms</C> doesn&apos;t jump: it counts only what the test slept.
         </li>
-        <li>The tests <C>kavach test</C> writes for you need no call: their clock is already frozen at 2026-01-01 00:00 UTC.</li>
+        <li>The tests <C>kavach test</C> writes for you, and every <C>example</C>, need no call: their clock is already frozen at 2026-01-01 00:00 UTC. That is the moment the example above starts its trial.</li>
         <li>Anywhere but directly in a <C>test</C> block, it is an error:</li>
       </ul>
       <Ex name="time/freeze-outside.fails" />

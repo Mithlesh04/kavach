@@ -5,7 +5,7 @@ type Trial {
 
     fn ended(self) -> Bool
         require self.started >= 0
-        example Trial(started: 4_102_444_800_000).ended() == false
+        example Trial(started: 1_767_225_600_000).ended() == false
     {
         time.now_ms() - self.started >= 30.days.ms
     }
