@@ -1,0 +1,30 @@
+type DbError = Busy | Gone(reason: String)
+
+type Pool {
+    next: Shared<Int>
+
+    /// Runs `work` with a connection, given back even when `work` fails.
+    fn using<T>(self, work: fn(Int) -> T ! DbError) -> T ! DbError {
+        const conn = self.next.update(n => n + 1)
+        print("took connection {conn}")
+        const out = work(conn) catch e => {
+            print("gave {conn} back")
+            fail e
+        }
+        print("gave {conn} back")
+        out
+    }
+}
+
+fn count_orders(conn: Int) -> Int ! DbError {
+    if conn > 1 {
+        fail DbError.Busy
+    }
+    conn * 10
+}
+
+fn main() {
+    const pool = Pool(next: Shared(0))
+    print(pool.using(count_orders) catch _ => -1)
+    print(pool.using(count_orders) catch _ => -1)
+}

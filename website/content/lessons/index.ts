@@ -93,9 +93,10 @@ import {
   pipelineDoc, readListDoc, readMapDoc, setsDoc, sortListDoc, tuplesDoc, walkMapDoc,
 } from "./collections";
 import {
-  declaringDoc, defaultsDoc, dotDoc, fnValuesDoc, functionsDoc, inoutDoc, lambdasDoc, namedArgsDoc, namedDoc,
-  parametersDoc, recursionDoc, resultsDoc, returningDoc, signatureDoc, writingLambdaDoc,
+  declaringDoc, defaultsDoc, dotDoc, fnValuesDoc, functionsDoc, lambdasDoc, namedArgsDoc, namedDoc, parametersDoc,
+  recursionDoc, resultsDoc, returningDoc, signatureDoc, writingLambdaDoc,
 } from "./functions";
+import { inoutDoc } from "./functions-inout";
 import { errorsIntroDoc, installDoc, programDoc, terminalDoc } from "./start-first-steps";
 import { askNumberDoc, askPasswordDoc, askTextDoc, inputDoc } from "./basics-input";
 import { bigintDoc, boolDoc, charDoc, convertDoc, dataTypesDoc, decimalDoc, floatDoc, intDoc, sizedDoc } from "./basics-types";
