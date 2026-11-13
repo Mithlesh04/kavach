@@ -187,6 +187,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Built-in Methods", "14.2"],
     ["Standard Library", "14"],
     ["Commands", "10.5"],
+    ["Compiler Messages", "13.6"],
   ]],
 ];
 

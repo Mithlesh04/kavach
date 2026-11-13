@@ -18,6 +18,7 @@ import { agentSettingsDoc } from "./agents-settings";
 import { deprecateDoc } from "./functions-deprecate";
 import { mistakesDoc } from "./start-mistakes";
 import { classicDoc } from "./start-classic";
+import { messagesRefDoc } from "./reference-messages";
 import { commandsRefDoc, keywordsRefDoc, literalsRefDoc, methodsRefDoc, operatorsRefDoc, stdlibRefDoc } from "./reference";
 import { bridgeDoc, cppDoc, goDoc, javascriptDoc, pythonDoc, rustDoc } from "./start-bridges";
 import { buildDoc, whoDoc } from "./start-who";
@@ -116,6 +117,7 @@ export const lessons: Record<string, LessonDoc> = {
   "reference/built-in-methods": methodsRefDoc,
   "reference/standard-library": stdlibRefDoc,
   "reference/commands": commandsRefDoc,
+  "reference/compiler-messages": messagesRefDoc,
   "start/kavach-home": homeDoc,
   "start/why-kavach": whyDoc,
   "start/what-kavach-does-for-you": smartDoc,
