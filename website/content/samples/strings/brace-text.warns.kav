@@ -1,0 +1,8 @@
+fn is_brace(t: String) -> Bool {
+    t == "{" or t == "}"
+}
+
+fn main() {
+    print(is_brace("\{"))
+    print(is_brace(" or t == "))
+}

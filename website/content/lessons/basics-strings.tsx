@@ -1,4 +1,5 @@
 import { C } from "@/components/inline-code";
+import { SrcRef } from "@/components/src-ref";
 import { RaceChart } from "@/components/race-chart";
 import { VerifyBlock } from "@/components/verify-block";
 import type { LessonDoc } from "@/lib/chapter";
@@ -71,6 +72,18 @@ export const interpolationDoc: LessonDoc = {
       <Ex name="text/sub-insert" />
       <P>The braces can hold a calculation too. To write a brace itself, put a backslash before it:</P>
       <Ex name="values/sub-interp" />
+      <P>In text on one line, a <C>{"{"}</C> must close on that line. One left open is an error at the brace, with the fix:</P>
+      <Ex name="strings/brace-open.fails" />
+      <P>
+        A <C>{"{…}"}</C> that holds only text gives a warning, because it is almost always a brace that needed{" "}
+        <C>{"\\{"}</C>. Here the second line is one string, with the text <C> or t == </C> inside its braces, not two
+        comparisons:
+      </P>
+      <Ex name="strings/brace-text.warns" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/01-basics/interpolation-closes-on-its-line.kav" label="tested" />
+        <SrcRef file="tests/conformance/01-basics/interpolation-of-only-text-warns.kav" label="the warning, tested" />
+      </div>
     </>
   ),
 };

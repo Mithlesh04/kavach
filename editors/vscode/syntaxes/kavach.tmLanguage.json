@@ -108,7 +108,15 @@
           "name": "string.quoted.double.kavach",
           "begin": "\"",
           "end": "\"",
-          "patterns": [{ "include": "#escapes" }, { "include": "#interpolation" }]
+          "patterns": [
+            { "include": "#escapes" },
+            {
+              "comment": "In one-line text, a `{` with no `}` after it on its line is never closed: an error at the brace (spec 1.7), and the text goes on as text",
+              "name": "invalid.illegal.unclosed-brace.kavach",
+              "match": "\\{(?![^\\n]*\\})"
+            },
+            { "include": "#interpolation" }
+          ]
         }
       ]
     },

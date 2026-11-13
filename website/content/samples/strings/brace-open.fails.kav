@@ -1,0 +1,4 @@
+fn main() {
+    const open = "{"
+    print("a brace: {open}")
+}

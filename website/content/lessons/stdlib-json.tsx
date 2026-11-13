@@ -265,6 +265,7 @@ export const jsonBuildingDoc: LessonDoc = {
         <li>A <C>Decimal</C> and a <C>BigInt</C> are written as numbers with all their digits: <C>5.00</C> stays <C>5.00</C>.</li>
         <li>A <C>Char</C> is text of one character; an optional that is <C>none</C> is <C>null</C>.</li>
         <li>A union case without fields is its name; one with fields is an object holding them, under its name.</li>
+        <li>A <C>Date</C>, <C>Time</C> or <C>DateTime</C> is ISO 8601 text, a <C>DateTime</C> in UTC: see <Link href="/docs/standard-library/json/decoding-into-a-type/#dates-and-times">Dates and times</Link>.</li>
         <li>Functions, and maps whose keys aren&apos;t <C>String</C>, can&apos;t be written: that is a compile error.</li>
       </ul>
       <P>A record with a <C>secret</C> field can&apos;t be written as JSON, so a secret can&apos;t leave in an API response by accident:</P>
@@ -315,7 +316,20 @@ export const jsonDecodingDoc: LessonDoc = {
         <C>decode_value</C> takes <C>unknown</C> too. The <Link href="/docs/networks/http/">std.http</Link> client
         skips unknown fields in the responses it decodes, so a service can add fields without breaking its clients.
       </P>
+      <H2>Dates and times</H2>
+      <P>
+        <C>std.time</C>&apos;s <C>Date</C>, <C>Time</C> and <C>DateTime</C> are ISO 8601 text in JSON, as their{" "}
+        <C>iso()</C> writes them. A <C>DateTime</C> gets a <C>Z</C>: JSON holds it in UTC, so other programs read the
+        right moment. An offset in the text is turned to UTC when it is read:
+      </P>
+      <Ex name="json/dates" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Decoding reads the text as <Link href="/docs/standard-library/time/#times-as-text">time.parse_date</Link> and <C>time.parse_time</C> do, so digits of a second past milliseconds are dropped.</li>
+        <li>A <C>DateTime</C> may end in <C>Z</C>, in an offset, or in neither. Anything else, such as PostgreSQL&apos;s <C>infinity</C>, is a problem that says what was expected.</li>
+        <li>In a schema, a <C>DateTime</C> has <C>&quot;format&quot;: &quot;date-time&quot;</C>, and a <C>Time</C> a <C>&quot;pattern&quot;</C>, since JSON Schema&apos;s <C>time</C> format needs an offset.</li>
+      </ul>
       <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/02-types/json-dates-are-iso-text.kav" label="dates, tested" />
         <SrcRef file={`docs/spec/${JSON_SPEC}`} label="spec 2.12 · decoding" />
         <SrcRef file="tests/conformance/02-types/json-decode-refuses-unknown-fields.kav" label="unknown fields, tested" />
         <SrcRef file="docs/decisions/0096-unknown-fields-are-refused.md" label="decision 0096" />

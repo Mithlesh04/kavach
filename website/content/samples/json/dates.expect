@@ -1,0 +1,5 @@
+2023-12-31T20:30:00
+{"day":"2024-01-02","made":"2023-12-31T20:30:00Z"}
+[day] a date such as `2024-01-02`
+[made] a date and time such as `2024-01-02T03:04:05Z`
+{"type":"string","format":"date","description":"A day of the calendar, with no time and no zone: months 1 to 12, days 1 to the month's last. The calendar is the Gregorian one, for every year, with no exceptions (spec 14.4)."}

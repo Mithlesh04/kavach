@@ -1,0 +1,1 @@
+error: `read_text` can't be named alone: write `use std.fs` and `fs.read_text` (spec 14.1)

@@ -3,6 +3,11 @@ use pg.{sql, text_of}
 fn main() {
     const all = sql"select * from orders"
     const recent = sql"selct id from orders where owner = $1"
+    const paid = sql"""
+        updte orders set paid = true
+        where day = current_date
+        """
     print(text_of(all))
     print(text_of(recent))
+    print(text_of(paid))
 }

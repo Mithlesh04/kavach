@@ -1,0 +1,3 @@
+warning: this `{…}` holds only text, so the string goes on past it: write `\{` for a brace, or the text itself (spec 1.7)
+false
+true

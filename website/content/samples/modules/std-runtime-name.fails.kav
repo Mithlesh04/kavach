@@ -1,0 +1,5 @@
+use std.fs.{read_text}
+
+fn main() uses Fs {
+    print(read_text("notes.txt") catch "")
+}

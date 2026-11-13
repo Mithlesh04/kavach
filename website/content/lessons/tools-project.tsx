@@ -6,7 +6,7 @@ import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
 import { fileFigure, specBlockWith } from "@/lib/spec-tables";
-import { Files, H2, Note, P, Syntax } from "./parts";
+import { Ex, Files, H2, Note, P, Syntax } from "./parts";
 import { Limits } from "./limits";
 
 const limits = loadProject("projects/limits.fails", ["kavach.toml", "src/main.kav"]);
@@ -42,14 +42,17 @@ export const useDoc: LessonDoc = {
     <>
       <Syntax
         code={
-          "use billing.invoice                    // then write invoice.create(…)\nuse billing.invoice.{Invoice, create}  // then write create(…)\nuse std.json                           // the standard library\nuse std.collections.Set as HashSet     // a new name"
+          "use billing.invoice                    // then write invoice.create(…)\nuse billing.invoice.{Invoice, create}  // then write create(…)\nuse std.json                           // the standard library\nuse std.time.{Date, utc}               // a std type and function\nuse std.collections.Set as HashSet     // a new name"
         }
       />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Names are looked up in your own modules first, then <C>std</C>, then dependencies.</li>
         <li>Some names need no <C>use</C> at all: the built-in types, <C>print</C>, <C>debug</C>, <C>ask</C>, <C>panic</C>, <C>env</C>, <C>Shared</C> and <C>Channel</C>.</li>
         <li>A dependency is used by its name the same way: see <Link href="/docs/tools/packages/">Packages</Link>.</li>
+        <li><C>{"use std.time.{Date, utc}"}</C> names a standard module&apos;s types and functions that are written in Kavach. A function the runtime provides can&apos;t be named alone, and the message says what to write:</li>
       </ul>
+      <Ex name="modules/std-runtime-name.fails" />
+      <SrcRef file="tests/conformance/14-standard-library/runtime-functions-are-not-named-alone.kav" label="tested" />
     </>
   ),
 };

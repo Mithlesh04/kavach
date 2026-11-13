@@ -44,6 +44,7 @@ export const taggedLiteralsDoc: LessonDoc = {
       <CodeBlock code={specBlockWith(LITERALS, "10.15", "pub type LiteralProblem")} file="std.literals" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>at</C> counts characters of the text as written, from 0; <C>length</C> is how many the mark covers.</li>
+        <li>In a literal over lines, <C>at</C> counts the text the checker gets, with the indentation the lines share removed. The problem is shown on its own line, as <C>updte</C> is above.</li>
         <li>
           The checker runs while the program is compiled, so it must be pure: <C>fn(text: String) -&gt; [LiteralProblem]</C>,
           with no <C>!</C> and no <C>uses</C> (<Link href="/docs/agents/capabilities/">capabilities</Link>). One that
@@ -53,6 +54,7 @@ export const taggedLiteralsDoc: LessonDoc = {
       </ul>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="tests/conformance/10-modules/tagged-literals-are-checked-when-compiled.kav" label="tested" />
+        <SrcRef file="tests/conformance/10-modules/tagged-literal-problems-show-on-their-line.kav" label="over lines, tested" />
         <SrcRef file="tests/conformance/10-modules/a-tag-checker-uses-nothing.kav" label="pure checker, tested" />
       </div>
       <H2>The text is raw</H2>

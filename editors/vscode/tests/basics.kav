@@ -167,3 +167,11 @@ const got = Box(v: v).get<Map<String, Int>>()
 //                    ^^^ entity.name.function.call.kavach
 const fewer = count < limit and limit > (count)
 //            ^^^^^ variable.other.readwrite.kavach
+const open = "{"
+//            ^ invalid.illegal.unclosed-brace.kavach
+//             ^ string.quoted.double.kavach - meta.template.expression.kavach
+const after = 1
+//    ^^^^^ variable.other.readwrite.kavach
+const one = t == "{" or t == "}"
+//                ^ punctuation.definition.template-expression.begin.kavach
+//                            ^ punctuation.definition.template-expression.end.kavach

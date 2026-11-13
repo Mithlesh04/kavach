@@ -198,6 +198,7 @@ export const timeDoc: LessonDoc = {
         <li>Numbers have exactly the digits shown, so <C>9:05</C> and <C>2026-11-4</C> fail, and so does a sign where a digit should be.</li>
         <li>A fraction of a second has 1 to 9 digits. Kavach keeps milliseconds, so digits past the third are dropped, not rounded: <C>.1239</C> is 123 ms.</li>
         <li>A leap second (<C>23:59:60</C>) fails: a <C>Time</C> has no such second.</li>
+        <li>In JSON, a <C>Date</C>, <C>Time</C> and <C>DateTime</C> are this text too, with a <C>DateTime</C> in UTC: see <Link href="/docs/standard-library/json/decoding-into-a-type/#dates-and-times">Dates and times</Link>.</li>
         <li><C>parse_moment</C> reads back any moment <C>z.iso</C> wrote, seconds in the offset included.</li>
         <li>Other formats, such as <C>4 Nov 2026</C>, are not read: they are an open question.</li>
       </ul>

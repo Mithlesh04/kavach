@@ -75,6 +75,7 @@ export const tlsDoc: LessonDoc = {
         <li>TLS 1.3, or 1.2 for servers without 1.3. The server&apos;s certificate must be valid for the host name, checked against the root certificates built into Kavach and any you add in <C>roots</C>.</li>
         <li><C>protocols</C> offers protocols to the server (ALPN); <C>conn.protocol()</C> says which one it chose.</li>
         <li>With <C>clients</C>, a server accepts only clients whose certificate one of those authorities signed. <C>conn.client_cert()</C> then gives the names on it, <C>ClientCert(common_name:, dns:, uris:)</C>, to allow callers by name; a SPIFFE id such as <C>spiffe://shop/orders</C> is one of the <C>uris</C>.</li>
+        <li><C>conn.peer_certificate()</C> gives the other side&apos;s certificate as DER <C>Bytes</C>, or <C>none</C> without TLS. It is for channel binding, such as SCRAM&apos;s <C>tls-server-end-point</C>, which hashes it.</li>
         <li><C>key</C> takes a <Link href="/docs/agents/secrets/">secret</Link>, so a key read with <C>env</C> or kept in a <C>secret</C> field needs no <C>reveal</C>.</li>
         <li>A slow or silent client can&apos;t hold up the others: handshakes go on side by side.</li>
       </ul>

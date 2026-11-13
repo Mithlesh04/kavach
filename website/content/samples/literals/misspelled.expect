@@ -10,3 +10,9 @@ error: sql: a query starts with select, insert, update or delete (is `selct` mis
   |
 5 |     const recent = sql"selct id from orders where owner = $1"
   |                        ^^^^^
+
+error: sql: a query starts with select, insert, update or delete (is `updte` misspelled?)
+ --> src/main.kav:7:9
+  |
+7 |         updte orders set paid = true
+  |         ^^^^^
