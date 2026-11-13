@@ -15,7 +15,7 @@ export function Table({ header, rows, wrapFirst = false }: { header: string[]; r
         <thead>
           <tr className="border-b border-line text-left text-soft">
             {header.map((h) => (
-              <th key={h} className="py-2 pr-4 font-bold">{h}</th>
+              <th key={h} className="py-2 pr-4 font-bold"><Cell text={h} /></th>
             ))}
           </tr>
         </thead>

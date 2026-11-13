@@ -7,7 +7,7 @@
     "build": "next build && node -e \"require('fs').rmSync('out/pagefind-dev', { recursive: true, force: true })\" && pagefind --site out",
     "start": "next start",
     "lint": "eslint",
-    "check": "node scripts/build-benchmarks.mjs && node scripts/build-tokens.mjs && tsc --noEmit && eslint . && node scripts/check-refs.mjs && node scripts/check-samples.mjs && node scripts/build-playground.mjs && npm run build",
+    "check": "node scripts/build-benchmarks.mjs && node scripts/build-tokens.mjs && node scripts/build-outlines.mjs && tsc --noEmit && eslint . && node scripts/check-refs.mjs && node scripts/check-samples.mjs && node scripts/build-playground.mjs && npm run build",
     "check:samples": "node scripts/check-samples.mjs",
     "check:refs": "node scripts/check-refs.mjs",
     "benchmarks": "node scripts/build-benchmarks.mjs",

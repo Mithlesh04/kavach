@@ -19,7 +19,9 @@ import { deprecateDoc } from "./functions-deprecate";
 import { mistakesDoc } from "./start-mistakes";
 import { classicDoc } from "./start-classic";
 import { messagesRefDoc } from "./reference-messages";
-import { commandsRefDoc, keywordsRefDoc, literalsRefDoc, methodsRefDoc, operatorsRefDoc, stdlibRefDoc } from "./reference";
+import { commandsRefDoc, keywordsRefDoc, literalsRefDoc, methodsRefDoc, operatorsRefDoc } from "./reference";
+import { stdModuleDocs, stdlibRefDoc } from "./reference-std";
+import { typesRefDoc } from "./reference-types";
 import { bridgeDoc, cppDoc, goDoc, javascriptDoc, pythonDoc, rustDoc } from "./start-bridges";
 import { buildDoc, whoDoc } from "./start-who";
 import { whyDoc } from "./start-why";
@@ -116,7 +118,9 @@ export const lessons: Record<string, LessonDoc> = {
   "reference/operators": operatorsRefDoc,
   "reference/literals": literalsRefDoc,
   "reference/built-in-methods": methodsRefDoc,
+  "reference/built-in-types": typesRefDoc,
   "reference/standard-library": stdlibRefDoc,
+  ...stdModuleDocs,
   "reference/commands": commandsRefDoc,
   "reference/compiler-messages": messagesRefDoc,
   "start/kavach-home": homeDoc,
