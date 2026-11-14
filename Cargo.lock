@@ -1379,6 +1379,7 @@ dependencies = [
  "kavach-driver",
  "kavach-resolver",
  "kavach-runtime-core",
+ "kavach-runtime-gpu",
  "kavach-runtime-net",
  "kavach-runtime-process",
  "kavach-runtime-window",
@@ -1457,6 +1458,7 @@ dependencies = [
 name = "kavach-runtime-gpu"
 version = "0.1.0"
 dependencies = [
+ "kavach-runtime-window",
  "wgpu",
 ]
 

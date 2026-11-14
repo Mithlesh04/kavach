@@ -243,7 +243,7 @@ impl<'a> Interp<'a> {
             testing: self.testing,
             tasks: Some(tasks),
             task: id,
-            fs_scopes: self.fs_scopes.clone(),
+            fs_scopes: kavach_runtime_core::fs_scope::inherited(&self.fs_scopes),
             gen_rng: crate::testing::values::Rng::new(0),
             random: self.random.as_ref().map(|r| r.fork(id as u64)),
             inout_out: Vec::new(),

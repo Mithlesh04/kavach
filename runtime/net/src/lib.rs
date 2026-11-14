@@ -8,5 +8,7 @@ pub mod ai;
 pub mod crypto;
 pub mod net;
 pub mod otlp;
+pub mod otlp_metrics;
+mod otlp_traces;
 pub mod random;
 pub mod websocket;

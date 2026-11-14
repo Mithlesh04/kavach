@@ -26,10 +26,10 @@ crate::rt_data::entry!(kv_rt_file_info, |op, a, b, _c, code, _line| {
         String::new()
     };
     // Outside the folders of `uses Fs("…")` (spec 8.1): both paths count.
-    if !crate::rt_files::allowed(&path) {
+    if !crate::rt_scopes::allowed(&path) {
         return crate::rt_files::denied(&path);
     }
-    if two_paths && !crate::rt_files::allowed(&to) {
+    if two_paths && !crate::rt_scopes::allowed(&to) {
         return crate::rt_files::denied(&to);
     }
     let done = match op {

@@ -1,7 +1,11 @@
 // std.log (spec 14.12): log events are records the program defines, not
 // strings. Written in Kavach; the runtime writes each line (`log_write`).
 // Logging needs no capability: where events go is set by the program's
-// owner, in `kavach.toml`, not by the code that writes them.
+// owner, in `kavach.toml`, not by the code that writes them. Spans
+// (`log.span(name) { … }`, spec 4.8) and metrics go to the collector of
+// `[log.otlp]` too (decision 0107).
+
+use std.log
 
 /// A type whose values can be logged: `type OrderPlaced: LogEvent { … }`.
 /// An event is written in its printed form (spec 1.11), so secret fields
@@ -49,3 +53,42 @@ fn level_name(level: Int) -> String
 fn write<E: LogEvent>(level: Int, event: E) {
     log_write(level, "{level_name(level)} {event}", event)
 }
+
+/// Adds `n` to the counter `name`, sent as an OpenTelemetry sum.
+pub fn count(name: String, n: Int)
+    require n >= 0
+{
+    log.metric_id(0, name, Float(n))
+}
+
+/// The latest `value` of `name`, such as a queue's length.
+pub fn gauge(name: String, value: Float) {
+    log.metric_id(1, name, value)
+}
+
+/// One more `value` of `name`, whose spread is sent as a histogram.
+pub fn histogram(name: String, value: Float) {
+    log.metric_id(2, name, value)
+}
+
+/// The current trace's id, 32 hexadecimal digits; none outside a span.
+pub fn trace_id() -> String? {
+    some_text(log.trace_id_text())
+}
+
+/// The current span's W3C `traceparent` header; none outside a span.
+pub fn traceparent() -> String? {
+    some_text(log.traceparent_text())
+}
+
+/// `text`, or none when it is empty.
+fn some_text(text: String) -> String?
+    example some_text("") == none
+    example some_text("ab") == "ab"
+{
+    if text.is_empty() {
+        return none
+    }
+    text
+}
+

@@ -321,6 +321,22 @@ pub(crate) fn scope_files(
     }
 }
 
+/// Wraps each function holding a block given to a call (spec 4.8) so
+/// that, however it ends, the task's scope stack goes back to where it
+/// started, ending the spans left open (`lower_scoped.rs`).
+pub(crate) fn scope_blocks(functions: &mut Vec<Function>, error_ty: Type) {
+    for id in crate::lower_scoped::scope_blocks(functions) {
+        around(
+            functions,
+            id,
+            error_ty,
+            RtOp::ScopeMark,
+            None,
+            RtOp::FsScopeLeave,
+        );
+    }
+}
+
 /// Turns function `id` into one that runs `enter` (with `arg`, if any),
 /// calls a new function holding its body, runs `exit` with what `enter`
 /// gave, and returns the body's value or passes its error on.
@@ -370,6 +386,31 @@ fn around(
     )];
     if f.fails {
         stmts.push(Stmt::LetResult { value, error, call });
+        // The exit op learns whether the body failed: a span it ends is
+        // then marked as an error (spec 14.12).
+        let failed = K::If(
+            Box::new(at(
+                K::IsSome(Box::new(local(error, error_ty, line))),
+                Type::Bool,
+                line,
+            )),
+            Block {
+                stmts: Vec::new(),
+                value: Some(Box::new(at(K::Int(1), Type::I64, line))),
+            },
+            Block {
+                stmts: Vec::new(),
+                value: Some(Box::new(at(K::Int(0), Type::I64, line))),
+            },
+        );
+        let leave = at(
+            K::Rt(
+                exit,
+                vec![local(mark, Type::I64, line), at(failed, Type::I64, line)],
+            ),
+            Type::Unit,
+            line,
+        );
         stmts.push(Stmt::Expr(leave));
         let fail = at(
             K::Fail(Box::new(local(error, error_ty, line))),

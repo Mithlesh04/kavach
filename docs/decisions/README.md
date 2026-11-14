@@ -111,6 +111,8 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0103](0103-std-compress.md) | `std.compress`: gzip, deflate, zstd, brotli and lz4 through one `encode`/`decode` pair with a `Format` value; decoding stops at `most` (64 MB) | Accepted |
 | [0104](0104-windows-through-winit.md) | `std.window`: windows through `winit`; `Window` and `Input` capabilities; events read with `events()` or `poll()`, and a callback form | Accepted |
 | [0105](0105-std-process.md) | `std.process`: other programs run with no shell, as trees that end together; `Process` and `Process("name")`; our own system calls in `runtime/process`, allowed `unsafe` | Accepted |
+| [0106](0106-drawing-on-the-gpu.md) | Drawing on the GPU: shaders as `gpu vertex fn` and `gpu fragment fn`, a thin `std.gpu`, GPU lists drawn with no copy, pipelines built ahead | Accepted |
+| [0107](0107-traces-and-metrics.md) | Traces and metrics in `std.log`: `log.span(name) { … }` blocks, the trace kept per task, `http` joining traces by `traceparent`, `log.count`/`gauge`/`histogram`; blocks given to a call, also for `random.seeded` | Accepted |
 
 ## Open decisions
 

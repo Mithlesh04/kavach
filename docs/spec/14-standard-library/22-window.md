@@ -21,6 +21,7 @@ A function that only draws needs no `Input`, so it can't read what a person type
 | `win.set_title(title)` | Changes the title |
 | `win.set_fullscreen(on)` | Fills the screen the window is on, or leaves it |
 | `win.lock_cursor(on)` | Hides the mouse pointer and keeps it in the window, as a game's camera wants; `Motion` events still come. Needs `Input` |
+| `win.number() -> Int` | The window's number, which `std.gpu` (14.24) draws into it by |
 | `win.close()` | Closes the window; a window is closed anyway when its last holder ends |
 
 `Event` is a union:

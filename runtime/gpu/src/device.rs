@@ -9,6 +9,10 @@ use std::task::{Context, Poll, Waker};
 /// The program's GPU: its device and queue, the layout every kernel's
 /// buffers follow, and the kernels compiled so far.
 pub(crate) struct Gpu {
+    /// The instance and adapter the device came from: a window's surface
+    /// is made from the same ones (spec 14.24).
+    pub(crate) instance: wgpu::Instance,
+    pub(crate) adapter: wgpu::Adapter,
     pub(crate) device: wgpu::Device,
     pub(crate) queue: wgpu::Queue,
     pub(crate) layout: wgpu::BindGroupLayout,
@@ -35,8 +39,8 @@ fn block_on<F: Future>(f: F) -> F::Output {
     }
 }
 
-/// The GPU on one of `backends`, the fastest first.
-fn adapter(backends: wgpu::Backends) -> Option<wgpu::Adapter> {
+/// The GPU on one of `backends`, the fastest first, with its instance.
+fn adapter(backends: wgpu::Backends) -> Option<(wgpu::Instance, wgpu::Adapter)> {
     let mut desc = wgpu::InstanceDescriptor::new_without_display_handle();
     desc.backends = backends;
     let instance = wgpu::Instance::new(desc);
@@ -44,14 +48,16 @@ fn adapter(backends: wgpu::Backends) -> Option<wgpu::Adapter> {
         power_preference: wgpu::PowerPreference::HighPerformance,
         ..Default::default()
     };
-    block_on(instance.request_adapter(&options)).ok()
+    let adapter = block_on(instance.request_adapter(&options)).ok()?;
+    Some((instance, adapter))
 }
 
 /// Opens the GPU, if there is one.
 fn open() -> Option<Gpu> {
     // Vulkan alone opens in half the time of probing every backend; Metal
     // (Apple) and DirectX 12 are tried only when it finds no GPU.
-    let adapter = adapter(wgpu::Backends::VULKAN).or_else(|| adapter(wgpu::Backends::PRIMARY))?;
+    let (instance, adapter) =
+        adapter(wgpu::Backends::VULKAN).or_else(|| adapter(wgpu::Backends::PRIMARY))?;
     let limits = adapter.limits();
     let descriptor = wgpu::DeviceDescriptor {
         label: Some("kavach"),
@@ -86,6 +92,8 @@ fn open() -> Option<Gpu> {
         .min(limits.max_buffer_size)
         / 4;
     Some(Gpu {
+        instance,
+        adapter,
         device,
         queue,
         layout,

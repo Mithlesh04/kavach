@@ -10,6 +10,7 @@ use std.http.h2
 use std.http.h2.wire
 use std.http.h2.wire.{Credit}
 use std.http.message
+use std.log
 
 /// What the streams' tasks share: the turn to send, with how much was
 /// sent, and what the reading task last saw the client allow, with the
@@ -80,8 +81,10 @@ fn answer(out: Out, conn: Connection, m: H2Message, handler: fn(Request) -> Resp
         peer: conn.peer(),
         client_cert: conn.client_cert(),
     )
-    const work = spawn handler(request)
-    let response = work.wait() catch _ => http.text(500, "the handler failed")
+    let response = log.span("{request.method} {request.path}", from: request.header("traceparent") ?? "") {
+        const work = spawn handler(request)
+        work.wait() catch _ => http.text(500, "the handler failed")
+    }
     // Not offered over HTTP/2 yet (spec 14.11).
     if response.take_over != none {
         response = http.text(501, "WebSockets and events need HTTP/1.1")

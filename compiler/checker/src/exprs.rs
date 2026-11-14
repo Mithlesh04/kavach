@@ -264,6 +264,7 @@ impl Checker<'_> {
                 self.in_unsafe -= 1;
                 t
             }
+            ExprKind::Scoped { call, body } => self.scoped(call, body, expected),
             ExprKind::Error => Ty::Error,
         }
     }

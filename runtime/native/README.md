@@ -46,6 +46,8 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_channels.rs` | Channels (spec 9.4), as in the interpreter |
 | `src/rt_bytes.rs` | `Bytes` (spec 2.13): raw data in one buffer |
 | `src/rt_net.rs` | `std.net` (spec 14.10): TCP, with the code in `runtime/core` |
+| `src/rt_strings.rs` | Text: making it, string interpolation, its length, comparing and `+` (growing text with one holder in place); split from `rt_data.rs`, which re-exports these |
+| `src/rt_scopes.rs` | Each task's scope stack: folders of `uses Fs(…)`, the program of `uses Process(…)`, spans and seeds of blocks given to a call (spec 4.8), swapped as tasks take turns |
 | `src/rt_files.rs` | Files read as a `for` loop goes: `fs.lines`, `fs.chunks` (spec 14.3) |
 | `src/send.rs` | Deep copies of a value for a task that runs ahead on another thread; cells that copies share (`Shared`, channels, tasks) |
 | `src/live.rs` | Counting live objects for the leak check, per thread when tasks run at once |
@@ -56,7 +58,7 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_log.rs` | `std.log`'s lines (spec 14.12): written as `[log]` in `kavach.toml` says, with `runtime/core`'s log writer |
 | `src/rt_journal.rs` | Durable agents (spec 8.5): each agent's journal (`runtime/core`), the events left unfinished, values to and from JSON; its own entry, so only programs with a durable agent link it |
 | `src/rt_ptr.rs` | Raw memory (spec 6.4): `alloc` and `free` are C's `calloc` and `free`; text copied for C with a zero byte after it, and C's text copied back (10.7); text and errors across a library's boundary, `<package>_free` and `<package>_last_error` (10.10) |
-| `src/rt_otlp.rs` | Log events to an OpenTelemetry collector (spec 14.12), with `runtime/net`'s exporter; its own entry, so only programs that export link it |
+| `src/rt_otlp.rs` | Log events, spans and metrics to an OpenTelemetry collector (spec 14.12), with `runtime/net`'s exporter; its own entry, so only programs that export link it |
 | `src/rt_cli.rs` | `cli.parse<T>()`: reading and converting the arguments |
 | `src/rt_maps.rs` | Map and set operations, `Shared`, `list[i] = v` |
 | `src/rt_maps/known_keys.rs` | `map["key"]` for a constant key: each key's hash and entry kept by its address, and the key object held once found twice, so a JSON object's key is found by comparing addresses |
@@ -64,5 +66,6 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_crypto.rs` | `std.crypto` (spec 14.19): its own entry, so only a program that uses it links `ring` and `argon2` |
 | `src/rt_base64.rs` | `std.base64` (spec 14.20): its own entry |
 | `src/rt_compress.rs` | `std.compress` (spec 14.21): its own entry |
+| `src/rt_draw.rs` | `std.gpu`'s drawing (spec 14.24): its own entry, by number |
 | `src/rt_run.rs` | `std.process` (spec 14.23): its own entry, by the child's number; waiting lets other tasks run |
 | `src/rt_window.rs` | `std.window` (spec 14.22): its own entry, so only programs with windows link `winit` |

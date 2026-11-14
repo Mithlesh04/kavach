@@ -160,7 +160,7 @@ pub fn std_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
     );
     if file_op {
         let path = str_of(a);
-        if !crate::rt_files::allowed(&path) {
+        if !crate::rt_scopes::allowed(&path) {
             release(a);
             if matches!(
                 op,

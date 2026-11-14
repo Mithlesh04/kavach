@@ -83,6 +83,7 @@ impl<'a> Lowerer<'a> {
             out.push(plain);
             return;
         };
+        self.leave_for_jump(target, out);
         if target == top {
             out.push(plain);
             return;

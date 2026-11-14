@@ -90,6 +90,9 @@ pub(crate) struct Lowerer<'a> {
     /// The source loops being lowered, innermost last, for labeled
     /// `break` and `continue` (`lower_labels.rs`).
     pub(crate) loop_frames: Vec<crate::lower_labels::LoopFrame>,
+    /// The blocks given to a call being lowered (`lower_scoped.rs`): the
+    /// local holding each one's depth, and how many loops were open.
+    pub(crate) scoped_depths: Vec<(Local, usize)>,
 }
 
 /// Lowers a checked file, or reports the first feature the native
@@ -127,6 +130,7 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
         its: Vec::new(),
         error_views: Vec::new(),
         loop_frames: Vec::new(),
+        scoped_depths: Vec::new(),
         ready: HashMap::new(),
         wrappers: HashMap::new(),
         adapters: HashMap::new(),

@@ -262,6 +262,10 @@ impl Checker<'_> {
                 self.block_stmt(b, None);
                 self.in_unsafe -= 1;
             }
+            ExprKind::Scoped { call, body } => {
+                self.check_scoped_call(call);
+                self.block_stmt(body, None);
+            }
             _ => {
                 self.branches(e, None, false);
             }

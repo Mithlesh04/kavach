@@ -130,3 +130,17 @@ RunExit,
 RunKill,
 RunClose,
 RunPeak,
+/// Blocks given to a call (spec 4.8, decision 0107), kept on the task's
+/// scope stack (`runtime/native/src/rt_scopes.rs`), each giving the depth
+/// `FsScopeLeave` goes back to: a span named `a` (continuing the
+/// `traceparent` text `b`, or 0), a `random.seeded` block with seed `a`,
+/// and the depth now, which a function holding such blocks goes back to
+/// however it ends. Then the current trace's id and `traceparent` text.
+ScopeSpan,
+ScopeSeeded,
+ScopeMark,
+ScopeTraceId,
+ScopeTraceparent,
+/// `log.count`, `log.gauge` and `log.histogram` (spec 14.12): kind `a`,
+/// name `b` (owned), value `c` (a `Float`'s bits), kept for the collector.
+OtlpMetric,

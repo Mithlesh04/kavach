@@ -262,6 +262,7 @@ impl<'a> Lowerer<'a> {
             | ExprKind::Unsafe(_) => {
                 return self.branching(e, true);
             }
+            ExprKind::Scoped { call, body } => return self.scoped(call, body, ty, line),
             _ => {
                 return Err(
                     self.unsupported(format!("`{}`", first_word(self.text(e.span))), e.span)

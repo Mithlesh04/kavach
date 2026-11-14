@@ -13,4 +13,4 @@ The runtime entry that carries out an op is chosen by its name's first word (`Rt
 | `net.ops` | `std.net` and `std.crypto` |
 | `tasks.ops` | Tasks and channels |
 | `agents.ops` | Agents, their journals and `ask` |
-| `gpu.ops` | The GPU |
+| `gpu.ops` | The GPU: computing, and drawing into windows (`std.gpu`) |

@@ -30,6 +30,7 @@ pub(crate) fn finish(
     }
     let text_ty = l.str_type();
     crate::lower_tasks::scope_files(&mut functions, &scoped, error_ty, text_ty);
+    crate::lower_tasks::scope_blocks(&mut functions, error_ty);
     crate::lower_tasks::join_tasks(&mut functions, error_ty);
     for (i, f) in functions.iter_mut().enumerate() {
         crate::unrecurse::unrecurse(i as crate::ir::FuncId, f);

@@ -8,6 +8,8 @@ repository.workspace = true
 publish = false
 
 [dependencies]
+# Windows to draw into (spec 14.24); unused code is left out at link time.
+kavach-runtime-window = { path = "../window" }
 # Every vendor through Vulkan, DirectX 12 and Metal (decision 0044).
 wgpu = "30"
 

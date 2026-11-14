@@ -218,11 +218,14 @@ impl Parser<'_> {
                         }
                     }
                 }
-                TokenKind::LParen => ExprKind::Call {
-                    callee: Box::new(expr),
-                    generics: Vec::new(),
-                    args: self.args(),
-                },
+                TokenKind::LParen => {
+                    let call = ExprKind::Call {
+                        callee: Box::new(expr),
+                        generics: Vec::new(),
+                        args: self.args(),
+                    };
+                    self.scoped(call, start)
+                }
                 TokenKind::Lt if self.generic_call_follows(&expr) => {
                     let generics = self.type_args();
                     ExprKind::Call {
@@ -253,6 +256,39 @@ impl Parser<'_> {
                 kind,
                 span: self.span_from(start),
             };
+        }
+    }
+
+    /// A block given to `log.span(…)` or `random.seeded(…)` on the same
+    /// line (spec 4.8); any other call is left as it is, so `if f(x) {`
+    /// keeps its meaning. The checker makes sure they are the standard
+    /// library's.
+    fn scoped(&mut self, call: ExprKind, start: Span) -> ExprKind {
+        let ExprKind::Call { callee, .. } = &call else {
+            return call;
+        };
+        let takes_block = match &callee.kind {
+            ExprKind::Field { base, name, .. } => {
+                matches!(
+                    (&base.kind, name.name.as_str()),
+                    (ExprKind::Name(m), "span") if m.name == "log"
+                ) || matches!(
+                    (&base.kind, name.name.as_str()),
+                    (ExprKind::Name(m), "seeded") if m.name == "random"
+                )
+            }
+            _ => false,
+        };
+        if !takes_block || !self.at(&TokenKind::LBrace) {
+            return call;
+        }
+        let call = Expr {
+            kind: call,
+            span: self.span_from(start),
+        };
+        ExprKind::Scoped {
+            call: Box::new(call),
+            body: self.block(),
         }
     }
 

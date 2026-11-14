@@ -1,0 +1,27 @@
+// Rule: `gpu.screen(win)` gives what draws into a window, whose frames are cleared and shown, or `GpuError.Unavailable` where there is no GPU or screen; either way the program goes on.
+// Spec: 14.24
+// expect output: shown: true
+
+use std.window
+use std.gpu
+
+fn draw(win: AppWindow) -> Bool ! GpuError uses Window {
+    const screen = try gpu.screen(win)
+    for i in 0..3 {
+        const frame = try screen.frame()
+        frame.clear(Float32(i) / 3.0, 0.5, 1.0)
+        frame.show()
+    }
+    // A frame let go without `show` is thrown away.
+    const unseen = try screen.frame()
+    unseen.clear(1.0, 0.0, 0.0)
+    true
+}
+
+fn main() uses Window {
+    const shown = match window.open("Kavach screen", 320, 200) {
+        ok(win) => draw(win) catch _ => true,
+        err(WindowError.Unavailable(_)) => true,
+    }
+    print("shown: {shown}")
+}

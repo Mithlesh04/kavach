@@ -159,6 +159,23 @@ while n < 10 {              // warning: never ends: `n` doesn't change in the lo
 }
 ```
 
+## 4.8 Blocks given to a call
+
+A few standard library functions run a block inside something they set up, and end it however the block ends ([decision 0107](../decisions/0107-traces-and-metrics.md)): `log.span("checkout") { … }` runs the block as one span of a trace (14.12), and `random.seeded(42) { … }` draws the block's random numbers from a seed (14.15).
+
+```kavach
+const total = log.span("checkout") {
+    const cart = try load_cart(user)
+    cart.sum(item => item.price)
+}
+```
+
+- The block is a plain block, not a lambda (3.3): `try`, `return`, `break` and `continue` act as they would without the call, and it can change the variables around it.
+- The expression's value is the block's value.
+- What the function set up ends when the block ends: by its value, an error, a `return`, a `break` or a panic.
+- The block starts on the same line as the call's `)`.
+- Only the standard library functions that say so take a block. A block after any other call is a compile error, and so is one of these calls without its block.
+
 ## Open questions
 
 None right now. Decisions are recorded in [0013](../decisions/0013-core-language-decisions.md).

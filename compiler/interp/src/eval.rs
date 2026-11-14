@@ -208,6 +208,7 @@ impl<'a> Interp<'a> {
             },
             ExprKind::Match { scrutinee, arms } => self.match_expr(scrutinee, arms, e.span),
             ExprKind::Block(b) | ExprKind::Arena(b) | ExprKind::Unsafe(b) => self.block(b),
+            ExprKind::Scoped { call, body } => self.scoped(call, body),
             ExprKind::Lambda { params, body } => Ok(self.closure(
                 params
                     .iter()

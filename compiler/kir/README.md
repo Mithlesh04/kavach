@@ -46,6 +46,8 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/lower_agents.rs` | Agents (spec 8.3, 8.8): the record a started agent is, `start`, and each handler run with its agent on the runtime's stack |
 | `src/lower_dispatch.rs` | Capability calls (spec 8.2): through the running agent, or `Denied` |
 | `src/lower_guard.rs` | An agent's guarded call: its limits (`sum`, `count`), approvals and implementation (spec 8.3) |
+| `src/std_ops.rs` | The op of each standard library function that is one op, its arguments as they are; `lower_std.rs` checks it first |
+| `src/lower_scoped.rs` | Blocks given to a call (spec 4.8): the scope ops around the block, a leave before a `break` or `continue` out of it, and the functions holding one, which go back to their starting depth however they end |
 | `src/lower_replay.rs` | Events run again after a restart: each a task that `start` waits for until it ends or waits for a person, and a send of the same event joining it (decision 0072) |
 | `src/lower_ai.rs` | `ask<T>` (spec 8.4): through the running agent's guard or straight to the model; the request with its schema, written when compiling |
 | `src/passes.rs` | The passes after lowering, in order: files and tasks, inlining, dropping what no root reaches, then each function's own |

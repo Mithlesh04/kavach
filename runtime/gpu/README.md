@@ -6,7 +6,8 @@ GPU compute for `gpu fn` (spec [chapter 15](../../docs/spec/15-gpu.md), [decisio
 |---|---|
 | [src/lib.rs](src/lib.rs) | Caching pipelines, running a `map` in chunks the device can hold, leaving results in GPU memory, `read` |
 | [src/later.rs](src/later.rs) | `reduce`: a `sum`, `min` or `max` in the GPU's queue, whose partials are read when they are needed |
-| [src/device.rs](src/device.rs) | Opening the program's one device, Vulkan first |
+| [src/device.rs](src/device.rs) | Opening the program's one device, Vulkan first, keeping its instance and adapter for surfaces |
+| [src/draw.rs](src/draw.rs) | Drawing into windows for `std.gpu` (spec 14.24, decision 0106): a screen is a surface made on the window's own thread, sized at each frame; frames cleared and shown, by number |
 | [src/filter.rs](src/filter.rs) | `filter`: the kernel's two runs over the same items, and where each workgroup's kept items start |
 | [src/late.rs](src/late.rs) | The stop flags of `map`s that didn't wait for the GPU, read later (decision 0061) |
 | [src/pipeline.rs](src/pipeline.rs) | Compiling each kernel into a pipeline once; a kernel whose loops surely end goes without `wgpu`'s loop counter ([decision 0077](../../docs/decisions/0077-kernels-whose-loops-end.md)) |

@@ -1,0 +1,25 @@
+// Rule: inside `log.span(name) { … }` the code has a trace and span (`log.trace_id()`, `log.traceparent()`), tasks keep it, it ends with the block, and `from:` continues a `traceparent`.
+// Spec: 14.12
+// expect output: outside: true
+// expect output: inside: 32 55
+// expect output: task: true
+// expect output: after: true
+// expect output: 4bf92f3577b34da6a3ce929d0e0e4736
+
+use std.log
+
+fn main() ! Error {
+    print("outside: {log.trace_id() == none}")
+    log.span("request") {
+        const id = log.trace_id() ?? ""
+        const header = log.traceparent() ?? ""
+        print("inside: {id.len()} {header.len()}")
+        const t = spawn log.trace_id()
+        print("task: {(try t.wait()) == id}")
+    }
+    print("after: {log.trace_id() == none}")
+    const continued = log.span("next", from: "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01") {
+        log.trace_id() ?? ""
+    }
+    print(continued)
+}

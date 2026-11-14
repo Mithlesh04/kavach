@@ -226,6 +226,10 @@ impl Resolver {
                 self.in_unsafe -= 1;
             }
             ExprKind::Block(b) | ExprKind::Arena(b) => self.block(b),
+            ExprKind::Scoped { call, body } => {
+                self.expr(call);
+                self.block(body);
+            }
             ExprKind::Lambda { params, body } => {
                 self.push();
                 for p in params {

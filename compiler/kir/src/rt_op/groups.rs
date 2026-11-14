@@ -31,6 +31,8 @@ impl RtOp {
                 | RtOp::CompressDecode
                 | RtOp::WindowOpen
                 | RtOp::RunStart
+                | RtOp::DrawScreen
+                | RtOp::DrawFrame
                 | RtOp::ClipReadText
                 | RtOp::ClipWriteText
                 | RtOp::SerialOpen
@@ -119,6 +121,18 @@ impl RtOp {
             "kv_rt_window"
         } else if group("Run") {
             "kv_rt_run"
+        } else if matches!(
+            self,
+            RtOp::ScopeSpan
+                | RtOp::ScopeSeeded
+                | RtOp::ScopeMark
+                | RtOp::ScopeTraceId
+                | RtOp::ScopeTraceparent
+        ) {
+            // Spans and seeds (spec 4.8): only programs with them link it.
+            "kv_rt_scopes"
+        } else if group("Draw") {
+            "kv_rt_draw"
         } else if group("Compress") {
             "kv_rt_compress"
         } else if group("Normalize") {

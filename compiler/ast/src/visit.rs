@@ -315,6 +315,10 @@ pub fn walk_expr<V: VisitMut + ?Sized>(v: &mut V, e: &mut Expr) {
             }
         }
         ExprKind::Block(b) | ExprKind::Arena(b) | ExprKind::Unsafe(b) => walk_block(v, b),
+        ExprKind::Scoped { call, body } => {
+            v.expr(call);
+            walk_block(v, body);
+        }
         ExprKind::Lambda { params, body } => {
             for p in params {
                 if let Some(t) = &mut p.ty {

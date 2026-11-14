@@ -387,6 +387,7 @@ pub fn expr(e: &Expr) -> String {
         }
         ExprKind::Arena(b) => format!("(arena {})", block(b)),
         ExprKind::Unsafe(b) => format!("(unsafe {})", block(b)),
+        ExprKind::Scoped { call, body } => format!("(scoped {} {})", expr(call), block(body)),
         ExprKind::Error => "ERR".to_string(),
     }
 }

@@ -12,7 +12,10 @@ use std::process::Command;
 /// catches Ctrl+C and `SIGTERM` (decision 0063): 16 KB on Linux. A
 /// function type's error in the runtime's `Shape` (decision 0085) added
 /// 4.5 KB of code, which page alignment made 12 KB: 725 KB on Linux.
-const BUDGET: u64 = 736 * 1024;
+/// Each task's scope stack holding spans and seeds as well as folders
+/// (spec 4.8, decision 0107) added 1.5 KB of task code on Linux: 737 KB.
+/// The spans' and seeds' own code is apart (`kv_rt_scopes`).
+const BUDGET: u64 = 740 * 1024;
 
 #[test]
 fn hello_world_stays_small() {

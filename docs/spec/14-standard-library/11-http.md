@@ -190,6 +190,8 @@ fn chat(r: Request) -> Response {
 }
 ```
 
+**Traces.** `http.serve` runs each handler in a span named by the request's method and path (`GET /orders`), continuing the trace of the request's W3C `traceparent` header when it has one; `http.request` and the other calls send the current span's `traceparent` (14.12, [decision 0107](../../decisions/0107-traces-and-metrics.md)).
+
 **Stopping.** `http.serve` holds the program's stop (`cli.on_stop`, 5.8) for `drain_timeout`. On Ctrl+C or `SIGTERM` (how Docker and Kubernetes stop a container), it answers new connections with 503, closes those waiting for their next request, finishes the requests under way, and then lets go, so the program ends without cutting a response off. A second signal ends it at once.
 
 A session sends its requests one after another on its connection, each waiting for its response, which must say its length (`content-length` or chunks). When the server has closed the connection, the request fails with `Network(error: Failed(address: host, reason: "the server closed the connection"))`; open a new session to go on. A session is for one task at a time: two tasks sending on one session at once could each read the other's response. Give each task its own session.

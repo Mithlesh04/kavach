@@ -9,7 +9,10 @@
 //! written) is added after it. A path is inside a folder when the folder,
 //! resolved the same way, starts it.
 
+use crate::seeded::Seeded;
+use crate::trace::{Finished, SpanId};
 use std::path::{Component, Path, PathBuf};
+use std::sync::{Arc, Mutex};
 
 /// The absolute path `path` names, `..` and symbolic links resolved as far
 /// as the path exists.
@@ -39,20 +42,94 @@ pub fn resolve(path: &str) -> PathBuf {
     abs
 }
 
-/// What one narrowed `uses` allows while its function runs.
-#[derive(Clone, Debug, PartialEq, Eq)]
+/// What one narrowed `uses` allows while its function runs, or what a
+/// block given to a call set up (spec 4.8).
+#[derive(Clone, Debug)]
 pub enum Scope {
     /// `Fs("./data")`, `resolve`d.
     Folder(PathBuf),
     /// `Process("git")`, as written.
     Program(String),
+    /// `log.span(name) { … }` (14.12): the span, its parent, its name and
+    /// when it started.
+    Span {
+        id: SpanId,
+        parent: Option<u64>,
+        name: String,
+        start_nanos: u128,
+    },
+    /// `random.seeded(seed) { … }` (14.15): the task's generator there.
+    Seeded(Arc<Mutex<Seeded>>),
+}
+
+/// The span the code runs in, if any.
+pub fn current_span(scopes: &[Scope]) -> Option<SpanId> {
+    scopes.iter().rev().find_map(|s| match s {
+        Scope::Span { id, .. } => Some(*id),
+        _ => None,
+    })
+}
+
+/// A new span named `name`: the child of the current one, or of `remote`
+/// (a `traceparent` a request brought) when there is none.
+pub fn span(scopes: &[Scope], name: &str, remote: Option<SpanId>) -> Scope {
+    let parent = current_span(scopes).or(remote);
+    Scope::Span {
+        id: crate::trace::child_of(parent),
+        parent: parent.map(|p| p.span),
+        name: name.to_string(),
+        start_nanos: crate::trace::now_nanos(),
+    }
+}
+
+/// What a task spawned here keeps: all but the seeds, which belong to the
+/// task that runs their block.
+pub fn inherited(scopes: &[Scope]) -> Vec<Scope> {
+    (scopes.iter())
+        .filter(|s| !matches!(s, Scope::Seeded(_)))
+        .cloned()
+        .collect()
+}
+
+/// 64 bits from the innermost `random.seeded` block, if the code is in one.
+pub fn seeded_bits(scopes: &[Scope]) -> Option<u64> {
+    scopes.iter().rev().find_map(|s| match s {
+        Scope::Seeded(g) => Some(g.lock().unwrap_or_else(|e| e.into_inner()).next_u64()),
+        _ => None,
+    })
+}
+
+/// Ends the scopes above `depth`: gives the spans among them, ended now,
+/// marked with `error` when their block failed.
+pub fn leave(scopes: &mut Vec<Scope>, depth: usize, error: Option<&str>) -> Vec<Finished> {
+    let end_nanos = crate::trace::now_nanos();
+    let gone = scopes.split_off(depth.min(scopes.len()));
+    gone.into_iter()
+        .rev()
+        .filter_map(|s| match s {
+            Scope::Span {
+                id,
+                parent,
+                name,
+                start_nanos,
+            } => Some(Finished {
+                name,
+                id,
+                parent,
+                start_nanos,
+                end_nanos,
+                error: error.map(str::to_string),
+            }),
+            _ => None,
+        })
+        .collect()
 }
 
 /// Whether `path` is inside every folder of `scopes`.
 pub fn inside(scopes: &[Scope], path: &str) -> bool {
     let mut folders = scopes.iter().filter_map(|s| match s {
         Scope::Folder(f) => Some(f),
-        Scope::Program(_) => None,
+        _ => None,
     });
     let Some(first) = folders.next() else {
         return true;
@@ -66,7 +143,7 @@ pub fn inside(scopes: &[Scope], path: &str) -> bool {
 pub fn may_run(scopes: &[Scope], program: &str) -> bool {
     scopes.iter().all(|s| match s {
         Scope::Program(p) => p == program,
-        Scope::Folder(_) => true,
+        _ => true,
     })
 }
 

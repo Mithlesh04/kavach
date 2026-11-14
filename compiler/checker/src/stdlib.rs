@@ -26,6 +26,8 @@ const MODULES: &[(&str, Option<&str>)] = &[
     ("compress", None),
     ("window", Some("Window")),
     ("process", Some("Process")),
+    ("gpu", Some("Window")),
+    ("log", None),
     ("text", None),
 ];
 
@@ -94,6 +96,9 @@ impl Checker<'_> {
         span: Span,
     ) -> Option<Ty> {
         let module = self.std_modules.get(&module_def)?.clone();
+        if self.needs_a_block(&module, name, span) {
+            return Some(Ty::Error);
+        }
         // Files, the network and sleeping wait (spec 6.2).
         if matches!(module.as_str(), "fs" | "net")
             || (module == "time" && (name.starts_with("sleep") || name.starts_with("every")))
@@ -234,31 +239,7 @@ impl Checker<'_> {
                 )
             }
             // Serial ports (spec 14.18), behind `Serial`, by the port's number.
-            ("devices", "serial_ports") => (vec![], Ty::List(Box::new(string.clone()))),
-            ("devices", "open_serial_id") => {
-                let e = self.builtin_ty("DeviceError");
-                (
-                    vec![p("path", &string), p("baud", &int)],
-                    Ty::Result(Box::new(int.clone()), Box::new(e)),
-                )
-            }
-            ("devices", "read_serial") => {
-                let e = self.builtin_ty("DeviceError");
-                let bytes = Ty::Prim(Prim::Bytes);
-                (
-                    vec![p("id", &int), p("max", &int)],
-                    Ty::Result(Box::new(bytes), Box::new(e)),
-                )
-            }
-            ("devices", "write_serial") => {
-                let e = self.builtin_ty("DeviceError");
-                let bytes = Ty::Prim(Prim::Bytes);
-                (
-                    vec![p("id", &int), p("data", &bytes)],
-                    Ty::Result(Box::new(Ty::Unit), Box::new(e)),
-                )
-            }
-            ("devices", "close_serial") => (vec![p("id", &int)], Ty::Unit),
+            ("devices", _) => self.devices_signature(name)?,
             // std.crypto (spec 14.19): no capability.
             ("crypto", _) => self.crypto_signature(name)?,
             // std.text's normal forms (spec 14.9); the rest is Kavach.
@@ -270,18 +251,9 @@ impl Checker<'_> {
             // Windows (spec 14.22), behind `Window`, and `Input`.
             ("window", _) => self.window_signature(name)?,
             ("process", _) => self.process_signature(name)?,
-            // The clipboard (spec 14.17), behind `Clipboard`.
-            ("clipboard", "read_text") => {
-                let e = self.builtin_ty("ClipboardError");
-                (vec![], Ty::Result(Box::new(string.clone()), Box::new(e)))
-            }
-            ("clipboard", "write_text") => {
-                let e = self.builtin_ty("ClipboardError");
-                (
-                    vec![p("text", &string)],
-                    Ty::Result(Box::new(Ty::Unit), Box::new(e)),
-                )
-            }
+            ("gpu", _) => self.draw_signature(name)?,
+            ("log", _) => self.log_signature(name)?,
+            ("clipboard", _) => self.clipboard_signature(name)?,
             ("time", "zone_offset") => (
                 vec![p("name", &string), p("ms", &int)],
                 Ty::Optional(Box::new(int.clone())),

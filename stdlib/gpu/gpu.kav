@@ -1,0 +1,57 @@
+// std.gpu (spec 14.24, decision 0106): drawing with the GPU in a window.
+// The runtime makes a surface on the window and the frames drawn into it
+// (`runtime/gpu/src/draw.rs`), by number; this file gives screens and
+// frames their methods.
+
+use std.gpu
+use std.window
+
+/// Why there is nothing to draw into: no GPU, a window that can't be
+/// drawn into, or a frame that can't be had now.
+pub type GpuError = Unavailable(reason: String)
+
+/// What draws into a window.
+pub type Screen: Drop {
+    id: Int
+    window: Int
+
+    /// The next picture to draw, as big as the window is now; it waits for
+    /// the screen's next refresh when the last picture isn't shown yet.
+    pub fn frame(self) -> Frame ! GpuError uses Window {
+        const f = try gpu.frame_id(self.id, self.window)
+        Frame(id: f)
+    }
+
+    fn drop(self) uses Window {
+        gpu.close_id(self.id)
+    }
+}
+
+/// A picture being drawn. One not shown before its last holder ends is
+/// thrown away.
+pub type Frame: Drop {
+    id: Int
+
+    /// Fills the picture with one color, each part from 0 to 1.
+    pub fn clear(self, r: Float32, g: Float32, b: Float32) uses Window
+        require r >= 0.0 and r <= 1.0 and g >= 0.0 and g <= 1.0 and b >= 0.0 and b <= 1.0
+    {
+        gpu.clear_id(self.id, [Float(r), Float(g), Float(b)])
+    }
+
+    /// Puts the picture on the screen.
+    pub fn show(self) uses Window {
+        gpu.show_id(self.id)
+    }
+
+    fn drop(self) uses Window {
+        gpu.drop_frame_id(self.id)
+    }
+}
+
+/// What draws into the window `win`, using the program's GPU.
+pub fn screen(win: AppWindow) -> Screen ! GpuError uses Window {
+    const n = win.number()
+    const id = try gpu.screen_id(n)
+    Screen(id: id, window: n)
+}

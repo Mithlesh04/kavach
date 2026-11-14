@@ -1,0 +1,53 @@
+// Rule: a block given to a call is a plain block: its value is the expression's, `try`, `return` and `break` act as without the call, and it changes the variables around it.
+// Spec: 4.8
+// expect output: 7
+// expect output: -1
+// expect output: 4
+// expect output: 3
+// expect output: ab 2
+
+use std.log
+
+type Oops = Bad
+
+fn inner(fail_it: Bool) -> Int ! Oops {
+    log.span("inner") {
+        if fail_it {
+            fail Oops.Bad
+        }
+        7
+    }
+}
+
+fn first_even(xs: [Int]) -> Int {
+    for x in xs {
+        log.span("check") {
+            if x % 2 == 0 {
+                return x
+            }
+        }
+    }
+    -1
+}
+
+fn main() {
+    print(inner(false) catch _ => -1)
+    print(inner(true) catch _ => -1)
+    print(first_even([1, 3, 4, 5]))
+    let n = 0
+    while true {
+        log.span("loop") {
+            n += 1
+            if n == 3 {
+                break
+            }
+        }
+    }
+    print(n)
+    // The value may read what the block made.
+    const made = log.span("made") {
+        const text = "a" + "b"
+        (text: text, size: text.len())
+    }
+    print("{made.text} {made.size}")
+}

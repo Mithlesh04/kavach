@@ -25,9 +25,12 @@ impl<'a> Interp<'a> {
             return self.new_channel(capacity, span);
         }
         if name == "random_bits" {
-            let bits = match &mut self.random {
-                Some(fake) => fake.next(),
-                None => kavach_runtime_net::random::bits(),
+            // A `random.seeded` block's numbers first (spec 14.15).
+            let seeded = kavach_runtime_core::fs_scope::seeded_bits(&self.fs_scopes);
+            let bits = match (seeded, &mut self.random) {
+                (Some(bits), _) => bits,
+                (None, Some(fake)) => fake.next(),
+                (None, None) => kavach_runtime_net::random::bits(),
             };
             return Ok(Value::Int(bits as i64 as i128, Prim::Int));
         }
@@ -423,42 +426,6 @@ impl<'a> Interp<'a> {
 }
 
 impl Interp<'_> {
-    /// One line from `std.log` (spec 14.12): to the console and the file
-    /// `[log]` in `kavach.toml` names, unless below the level for the
-    /// event's type and module.
-    fn log_write(&mut self, level: i64, line: &str, event: &Value<'_>) {
-        let def = match event {
-            Value::Record { def, .. } => Some(*def),
-            Value::Variant { union, .. } => Some(*union),
-            _ => None,
-        };
-        let res = &self.c.resolution;
-        let (module, name) = def.map_or((String::new(), String::new()), |d| {
-            let start = res.defs[d].span.map_or(0, |s| s.start);
-            let module = res.modules[res.module_at(start)].name.clone();
-            (module, res.defs[d].name.clone())
-        });
-        let settings = self.log.get_or_insert_with(|| {
-            kavach_driver::Config::for_file(std::path::Path::new(&self.c.path))
-                .unwrap_or_default()
-                .log_settings()
-        });
-        if level < settings.level_for(&module, &name) {
-            return;
-        }
-        if let Some((endpoint, service)) = &settings.otlp {
-            let text = line.split_once(' ').map_or(line, |(_, t)| t);
-            kavach_runtime_net::otlp::export(endpoint, service, level, &name, text);
-        }
-        settings.to_file(line);
-        if settings.console {
-            self.out
-                .push_str(&kavach_runtime_core::log::for_console(line));
-            self.out.push('\n');
-            self.show_live();
-        }
-    }
-
     /// Shows what was printed now, when output is live (`kavach run`).
     pub(crate) fn show_live(&mut self) {
         if self.tasks.as_ref().is_some_and(|t| t.live) {

@@ -266,7 +266,7 @@ fn spawn(closure: i64, kind: i64, code: i64, line: i32) -> i64 {
     // own copies.
     let closure = closure as usize;
     // A task keeps the folders file access is kept inside (spec 8.1).
-    let scopes = crate::rt_files::scopes();
+    let scopes = crate::rt_scopes::inherited();
     // And runs inside the agent running where it was spawned (spec 8.3).
     let agent = crate::rt_agents::inherited();
     let ty = type_of(code);
@@ -298,7 +298,7 @@ fn spawn(closure: i64, kind: i64, code: i64, line: i32) -> i64 {
     let body = move |id: TaskId, theirs: i64| {
         let object = theirs as usize;
         move || {
-            crate::rt_files::set_scopes(scopes);
+            crate::rt_scopes::set_scopes(scopes);
             crate::rt_agents::inherit(agent);
             run(id, closure as i64, object as i64, ahead)
         }

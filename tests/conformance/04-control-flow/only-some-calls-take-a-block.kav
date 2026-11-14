@@ -1,0 +1,9 @@
+// Rule: only the standard library functions that say so take a block, and they must have one.
+// Spec: 4.8
+// expect compile error
+
+use std.log
+
+fn main() {
+    log.span("checkout")     // error: `log.span` runs a block: write it after the call
+}

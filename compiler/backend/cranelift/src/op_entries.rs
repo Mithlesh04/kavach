@@ -10,7 +10,7 @@ use kavach_runtime_native::rt_data;
 pub(crate) fn op_entries() -> Vec<RuntimeFn> {
     const PARAMS: &[cranelift_codegen::ir::types::Type] = &[I64, I64, I64, I64, I64, I32];
     const RETURNS: &[cranelift_codegen::ir::types::Type] = &[I64];
-    let entries: [(&'static str, *const u8); 26] = [
+    let entries: &[(&'static str, *const u8)] = &[
         ("kv_rt", rt_data::kv_rt as *const u8),
         (
             "kv_rt_regex",
@@ -66,6 +66,11 @@ pub(crate) fn op_entries() -> Vec<RuntimeFn> {
         ),
         ("kv_rt_run", kavach_runtime_native::kv_rt_run as *const u8),
         (
+            "kv_rt_scopes",
+            kavach_runtime_native::kv_rt_scopes as *const u8,
+        ),
+        ("kv_rt_draw", kavach_runtime_native::kv_rt_draw as *const u8),
+        (
             "kv_rt_normalize",
             kavach_runtime_native::kv_rt_normalize as *const u8,
         ),
@@ -90,7 +95,7 @@ pub(crate) fn op_entries() -> Vec<RuntimeFn> {
         ("kv_rt_ai", kavach_runtime_native::kv_rt_ai as *const u8),
     ];
     entries
-        .into_iter()
-        .map(|(name, address)| (name, address, PARAMS, RETURNS))
+        .iter()
+        .map(|&(name, address)| (name, address, PARAMS, RETURNS))
         .collect()
 }

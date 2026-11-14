@@ -21,9 +21,11 @@ pub mod log;
 pub mod normalize;
 pub mod processes;
 pub mod regex;
+pub mod seeded;
 pub mod serial;
 pub mod stop_holds;
 pub mod tasks;
+pub mod trace;
 pub mod zones;
 
 pub use big_decimal::{AnyDecimal, BigDecimal};

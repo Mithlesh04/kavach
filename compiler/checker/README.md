@@ -61,7 +61,11 @@ Hindley–Milner-style inference with unification. A number literal starts as an
 | `src/secrets.rs` | Secrets (spec 2.11, 8.7): where a secret may go, and a secret returned without `-> secret` |
 | `src/std_crypto.rs` | The signatures of `std.crypto` (spec 14.19) |
 | `src/std_base64.rs` | The signatures of `std.base64` (spec 14.20) |
+| `src/scoped.rs` | Blocks given to a call (spec 4.8): which calls take one, their arguments, and the error for one without its block |
+| `src/std_devices.rs` | The signatures of serial ports' and the clipboard's built-in functions (spec 14.18, 14.17) |
+| `src/std_log.rs` | The signatures of `std.log`'s built-in functions: metrics, the trace's id and `traceparent` (spec 14.12) |
 | `src/std_compress.rs` | The signatures of `std.compress`'s built-in functions (spec 14.21) |
+| `src/std_gpu.rs` | The signatures of `std.gpu`'s built-in functions, screens and frames by number (spec 14.24) |
 | `src/std_process.rs` | The signatures of `std.process`'s built-in functions, by the child's number (spec 14.23) |
 | `src/std_window.rs` | The signatures of `std.window`'s built-in functions, by the window's number (spec 14.22) |
 | `src/cli_parse.rs` | `cli.parse<T>()` (spec 14.6): a record of options, or a union of commands |

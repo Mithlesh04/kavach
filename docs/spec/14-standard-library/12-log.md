@@ -88,3 +88,46 @@ pub fn refund(order_id: Int) -> Int {
     order_id
 }
 ```
+
+## Traces
+
+A trace follows one piece of work, such as a request, through the program and the services it calls ([decision 0107](../../decisions/0107-traces-and-metrics.md)). It is made of spans: `log.span(name) { … }` runs its block as one span (4.8), timed from its start to its end.
+
+```kavach
+fn checkout(cart: Cart) -> Receipt ! ShopError {
+    log.span("checkout") {
+        const paid = try pay(cart)
+        log.info(Paid(amount: paid.amount))     // carries the span's trace and span ids
+        Receipt(id: paid.id)
+    }
+}
+```
+
+- A span inside another is its child. The first span of a task starts a new trace, unless the task already has one.
+- A task keeps the trace of the code that spawned it, so the spans of tasks a request spawns are part of the request's trace.
+- Each event written inside a span carries the span's trace and span ids to the collector.
+- A span whose block fails (5.2) is marked as an error. One cut short by a panic is not sent: the panic says what happened.
+- `log.span(name, from: header) { … }` continues the trace that a W3C `traceparent` header names, when the code isn't in a span already. `log.traceparent()` gives the current span's header, or `none` outside a span. Together they carry a trace over any connection: a queue, gRPC metadata, a file.
+- `http.serve` runs each request's handler in a span named by its method and path (`GET /orders`). When the request has a W3C `traceparent` header, the span continues that trace. `http.request` and the other calls send the current span's `traceparent`. So traces join across services with no code (14.11).
+- `log.trace_id()` gives the current trace's id, 32 hexadecimal digits, or `none` outside a span: for an error page or a header in a reply.
+- With `[log.otlp]` set, each span goes to the collector when it ends, batched as events are (`POST <endpoint>/v1/traces`). Without it, spans are sent nowhere.
+
+## Metrics
+
+Numbers a program counts or measures go to the collector every 10 seconds as OpenTelemetry metrics (`POST <endpoint>/v1/metrics`), when `[log.otlp]` is set:
+
+| Function | Sends |
+|---|---|
+| `log.count(name, n)` | A sum: `n` added to the counter `name`. `n` is 0 or more (a `require`) |
+| `log.gauge(name, value)` | The latest `value` of `name`, such as a queue's length |
+| `log.histogram(name, value)` | How the `value`s of `name` spread, such as each request's time in milliseconds: how many, their sum, the smallest, the largest, and how many fall in each bucket (OpenTelemetry's default bounds: 0, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000) |
+
+```kavach
+log.count("orders_placed", 1)
+log.histogram("checkout_ms", Float(elapsed))
+```
+
+- `name` is plain text; `n` is an `Int`, `value` a `Float`.
+- Without `[log.otlp]`, metrics are kept nowhere and cost almost nothing.
+- Like events, spans and metrics need no capability.
+

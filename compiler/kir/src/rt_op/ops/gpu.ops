@@ -50,3 +50,13 @@ GpuFilterStay,
 /// compile the kernels (its text, joined by `\0`) on a background
 /// thread, while the program does its first work.
 GpuWarm,
+/// Drawing in a window (spec 14.24, `runtime/native/src/rt_draw.rs`), by
+/// number: a screen on window `a` (can fail), the screen's next frame
+/// (`a` the screen, `b` its window; can fail), clearing frame `a` to the
+/// colors in list `b`, showing it, letting it go, and closing a screen.
+DrawScreen,
+DrawFrame,
+DrawClear,
+DrawShow,
+DrawDropFrame,
+DrawClose,

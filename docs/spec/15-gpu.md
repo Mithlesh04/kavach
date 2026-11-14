@@ -124,6 +124,49 @@ const lit = pixels.map(p => scale(p, gain)).map(p => glow(p, 0.5))   // one pass
 
 The environment variable `KAVACH_GPU` changes where it runs, for debugging: `off` runs everything on the CPU, `on` uses the GPU for any length, and `check` runs both and panics at the first item whose results differ (floats compared with `near`, 14.2).
 
+## 15.3 Drawing
+
+A picture is drawn by two kinds of `gpu fn` ([decision 0106](../decisions/0106-drawing-on-the-gpu.md)): a `gpu vertex fn` works out where each corner of a triangle goes on the screen, and a `gpu fragment fn` gives the color of each pixel inside it. `gpu.pipeline` puts the two together, and a frame draws with it (14.24).
+
+```kavach
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Dot {
+    x: Float32
+    y: Float32
+    heat: Float32
+}
+
+type Camera {
+    zoom: Float32
+}
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+    heat: Float32
+}
+
+gpu vertex fn place(c: Corner, d: Dot, cam: Camera) -> Lit {
+    Lit(position: ((c.x + d.x) * cam.zoom, (c.y + d.y) * cam.zoom, 0.0, 1.0), heat: d.heat)
+}
+
+gpu fragment fn glow(l: Lit) -> (Float32, Float32, Float32, Float32) {
+    (l.heat, 0.2, 1.0 - l.heat, 1.0)
+}
+
+const dots = gpu.pipeline(place, glow)
+frame.draw(dots, square, instances: swarm, with: Camera(zoom: 1.0))
+```
+
+- Both follow the rules of a `gpu fn` (15.1), and are ordinary functions on the CPU too.
+- A `gpu vertex fn` takes the vertex, then, if the draw has them, the instance and the value shared by the whole draw, in that order: one, two or three records. It gives a record whose field `position` is four `Float32`s: where the corner lands, from -1 to 1 across the window (x right, y up), then depth and `w`, as GPUs take them. Its other fields, `Float32`s, go to the fragment fn, blended between the triangle's corners.
+- A `gpu fragment fn` takes the vertex fn's result and gives the pixel's color: red, green, blue and opacity, each from 0 to 1.
+- `gpu.pipeline(v, f)` is a compile error unless `v` is a `gpu vertex fn`, `f` a `gpu fragment fn`, and `f` takes what `v` gives. `frame.draw` is a compile error unless its vertices, instances and shared value are what `v` takes.
+- `vertex` and `fragment` are words only between `gpu` and `fn`.
+
 ## Open questions
 
 - `sum`, `min` and `max` of `Float32` on the GPU, and `filter` of records and tuples. Decided (Mithlesh, 2026-11-03): a `sum` of floats keeps its adding order ([decision 0031](../decisions/0031-loops-on-all-cores.md)), so on the GPU it runs only when the program asks for a reordered sum. Float `min` and `max` must keep `NaN` last (14.2).

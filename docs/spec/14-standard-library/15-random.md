@@ -24,3 +24,25 @@ Every function needs `uses Random`. The numbers come from the operating system's
 Under `kavach test`, the `Random` fake (11.5) gives numbers from the test run's seed instead, so a run can be repeated exactly (11.9).
 
 `std.random` asks the runtime for 64 random bits at a time, with `random_bits()`, which only the standard library may call. Everything else is Kavach code in the module: a whole number in a range takes bits until they fall in an unbiased span, so no value comes up more often than another.
+
+## Seeded
+
+`random.seeded(seed) { … }` runs its block with every `std.random` function drawing from `seed` instead of the operating system (4.8, [decision 0107](../../decisions/0107-traces-and-metrics.md)). The same seed gives the same numbers, on every machine and in every version of Kavach: for simulations, generated worlds and games whose players must all see the same thing.
+
+```kavach
+use std.random
+
+fn world(seed: Int) -> [Int] uses Random {
+    random.seeded(seed) {
+        [random.int(0, 100), random.int(0, 100), random.int(0, 100)]
+    }
+}
+// world(7) gives the same three numbers on every run
+```
+
+- The numbers come from xoshiro256**, its state made from `seed` by SplitMix64, as their published versions make it.
+- They are not safe for keys, tokens or passwords: anyone who knows the seed knows the numbers.
+- `uses Random` is still needed, and under `kavach test` the seed wins over the `Random` fake.
+- Seeds nest: an inner `seeded` block draws from its own seed, and the outer one goes on after it where it left off.
+- The seed belongs to the task running the block. A task spawned inside it draws from the operating system: tasks may take turns in different orders on different machines (`spawn cores`, 9.8).
+

@@ -9,6 +9,7 @@ use std::sync::{Arc, Mutex};
 use wgpu::util::DeviceExt;
 
 mod device;
+pub mod draw;
 use device::{Gpu, gpu};
 pub use device::{available, ready};
 

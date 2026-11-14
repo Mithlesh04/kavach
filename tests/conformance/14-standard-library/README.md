@@ -120,11 +120,15 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.23 | [process-output-comes-line-by-line.kav](process-output-comes-line-by-line.kav) | `process.start` gives lines one by one as `Out` or `Err`; `wait()` gives the end. | runs |
 | 14.23 | [process-names-narrow-the-programs.kav](process-names-narrow-the-programs.kav) | `uses Process("name")` runs only that program, others fail with `Denied`; a missing one fails with `NotFound`. | runs |
 | 14.23 | [process-needs-process.kav](process-needs-process.kav) | Running another program needs `Process`. | compile error |
+| 14.15 | [a-seed-gives-the-same-numbers.kav](a-seed-gives-the-same-numbers.kav) | `random.seeded(seed)` draws the block's numbers from the seed: the same seed, the same numbers; seeds nest. | runs |
+| 14.11 | [http-joins-traces.kav](http-joins-traces.kav) | `http.request` sends the current span's `traceparent` and `http.serve` continues it, so the handler's trace is the caller's. | runs |
+| 14.24 | [screens-draw-or-say-why.kav](screens-draw-or-say-why.kav) | `gpu.screen(win)` draws into a window, its frames cleared and shown, or gives `GpuError.Unavailable` with no GPU or screen; the program goes on either way. | runs |
 | 5.8, 14.6 | [cli-on-stop-needs-no-capability.kav](cli-on-stop-needs-no-capability.kav) | `cli.on_stop(grace)` gives a hold that isn't asked until a stop signal comes; taking and letting go of one needs no capability. | runs |
 | 14.12 | [log-events-are-records.kav](log-events-are-records.kav) | A log event is a value of a type that implements `LogEvent`; the console shows its level and its printed form. | runs |
 | 14.12 | [log-hides-secrets.kav](log-hides-secrets.kav) | A secret field of a log event is written as `<secret>`. | runs |
 | 14.12 | [log-debug-is-off-by-default.kav](log-debug-is-off-by-default.kav) | Events below level `info` are left out unless the level is set lower. | runs |
 | 14.12 | [log-needs-no-capability.kav](log-needs-no-capability.kav) | Logging needs no capability, so a function that only logs needs no `uses`. | runs |
+| 14.12 | [spans-carry-the-trace.kav](spans-carry-the-trace.kav) | Inside `log.span` the code has a trace and span, tasks keep it, it ends with the block, and `from:` continues a `traceparent`. | runs |
 | 14.12 | [log-takes-only-events.kav](log-takes-only-events.kav) | Only values of types that implement `LogEvent` can be logged; text cannot. | compile error |
 | 14.12 | [log-write-is-only-for-std-log.kav](log-write-is-only-for-std-log.kav) | `log_write`, how `std.log` hands lines to the runtime, can't be called by a program. | compile error |
 | 14.15 | [random-numbers-stay-in-their-range.kav](random-numbers-stay-in-their-range.kav) | `random.int` stays in `from` up to, not including, `until`; `random.float` in 0.0 up to 1.0. | runs |

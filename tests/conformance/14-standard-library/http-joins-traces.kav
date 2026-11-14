@@ -1,0 +1,26 @@
+// Rule: `http.request` sends the current span's `traceparent`, and `http.serve` runs the handler in a span that continues it, so the handler's trace is the caller's; outside a span, a request starts a trace of its own.
+// Spec: 14.11
+// expect output: same trace: true
+// expect output: own trace: true
+
+use std.http
+use std.log
+use std.net
+
+fn whose(r: Request) -> Response {
+    http.text(200, log.trace_id() ?? "none")
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, whose)
+    const url = "http://{listener.address()}/"
+    const mine = log.span("caller") {
+        const got = try http.get(url)
+        (mine: log.trace_id() ?? "", theirs: got.body.text() ?? "")
+    }
+    print("same trace: {mine.mine == mine.theirs}")
+    const alone = try http.get(url)
+    const theirs = alone.body.text() ?? ""
+    print("own trace: {theirs.len() == 32 and theirs != mine.mine}")
+}

@@ -7,7 +7,7 @@
 //! where `take` finds them.
 
 use std::collections::{HashMap, VecDeque};
-use std::sync::{Condvar, Mutex, OnceLock, mpsc};
+use std::sync::{Arc, Condvar, Mutex, OnceLock, mpsc};
 use std::time::Duration;
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalSize;
@@ -70,6 +70,9 @@ enum Command {
     Fullscreen(i64, bool),
     LockCursor(i64, bool),
     Close(i64),
+    /// Runs on the event loop's thread with the window, or `None` once it
+    /// is closed: some systems give a window's handle only there.
+    Run(i64, Box<dyn FnOnce(Option<Arc<Window>>) + Send>),
 }
 
 /// The running event loop, or why there is none.
@@ -120,7 +123,7 @@ fn event_loop() -> Result<EventLoop<Command>, String> {
 /// The event loop's side: the windows, by number and by `winit`'s id.
 #[derive(Default)]
 struct App {
-    windows: HashMap<i64, Window>,
+    windows: HashMap<i64, Arc<Window>>,
     numbers: HashMap<WindowId, i64>,
     next: i64,
     focused: Option<i64>,
@@ -131,7 +134,7 @@ impl App {
         let attributes = Window::default_attributes()
             .with_title(title)
             .with_inner_size(PhysicalSize::new(w.max(1), h.max(1)));
-        let window = el.create_window(attributes).map_err(|e| e.to_string())?;
+        let window = Arc::new(el.create_window(attributes).map_err(|e| e.to_string())?);
         self.next += 1;
         let n = self.next;
         let size = window.inner_size();
@@ -183,6 +186,7 @@ impl ApplicationHandler<Command> for App {
                     w.set_cursor_visible(!on);
                 }
             }
+            Command::Run(n, f) => f(self.windows.get(&n).cloned()),
             Command::Close(n) => {
                 if let Some(w) = self.windows.remove(&n) {
                     self.numbers.remove(&w.id());
@@ -305,6 +309,23 @@ fn translate(event: WindowEvent, inbox: &mut Inbox) -> Vec<Event> {
         }
         _ => Vec::new(),
     }
+}
+
+/// Calls `f` with window `n` on the event loop's thread, where every
+/// system gives its handle, and gives back what `f` gives; `None` when
+/// the window is closed or there is no event loop. `std.gpu` makes its
+/// surface on the window here (spec 14.24); `f` must be quick, as the
+/// window's events wait meanwhile.
+pub fn with_window<R: Send + 'static>(
+    n: i64,
+    f: impl FnOnce(Arc<Window>) -> R + Send + 'static,
+) -> Option<R> {
+    let (reply, answer) = mpsc::channel();
+    let run = Box::new(move |w: Option<Arc<Window>>| {
+        let _ = reply.send(w.map(f));
+    });
+    proxy().ok()?.send_event(Command::Run(n, run)).ok()?;
+    answer.recv().ok().flatten()
 }
 
 /// Opens a window of `width` × `height` pixels titled `title`: its

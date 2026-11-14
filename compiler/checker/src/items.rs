@@ -462,6 +462,7 @@ pub(crate) fn is_statement_like(e: &Expr) -> bool {
             | ExprKind::Block(_)
             | ExprKind::Arena(_)
             | ExprKind::Unsafe(_)
+            | ExprKind::Scoped { .. }
     )
 }
 

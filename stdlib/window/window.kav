@@ -76,6 +76,11 @@ pub type AppWindow: Drop {
         window.lock_cursor_id(self.id, on)
     }
 
+    /// The window's number, which `std.gpu` draws into it by.
+    pub fn number(self) -> Int {
+        self.id
+    }
+
     /// Closes the window; closing it again does nothing.
     pub fn close(self) uses Window {
         window.close_id(self.id)

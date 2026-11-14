@@ -6,7 +6,10 @@ use kavach_kir::RtOp;
 
 crate::rt_data::entry!(kv_rt_random, |op, _a, _b, _c, _code, _line| {
     match op {
-        RtOp::RandomBits => kavach_runtime_net::random::bits() as i64,
+        // A `random.seeded` block's numbers first (spec 14.15).
+        RtOp::RandomBits => {
+            crate::rt_scopes::seeded_bits().unwrap_or_else(kavach_runtime_net::random::bits) as i64
+        }
         _ => unreachable!("not a random op: {op:?}"),
     }
 });

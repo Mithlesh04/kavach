@@ -77,7 +77,7 @@ crate::rt_data::entry!(kv_rt_run, |op, a, b, c, code, line| {
             for p in [a, b, c] {
                 release(p);
             }
-            if !may_run(&crate::rt_files::scopes(), &program) {
+            if !may_run(&crate::rt_scopes::scopes(), &program) {
                 return fail("Denied", &program);
             }
             match run::start(&program, &args, &setup) {

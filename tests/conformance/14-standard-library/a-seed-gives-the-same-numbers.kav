@@ -1,0 +1,27 @@
+// Rule: `random.seeded(seed) { … }` draws the block's random numbers from the seed: the same seed gives the same numbers, seeds nest, and outside the block numbers come from the system again.
+// Spec: 14.15
+// expect output: true
+// expect output: false
+// expect output: true
+
+use std.random
+
+fn rolls(seed: Int) -> [Int] uses Random {
+    random.seeded(seed) {
+        [random.int(0, 1_000_000), random.int(0, 1_000_000), random.int(0, 1_000_000)]
+    }
+}
+
+fn nested() -> [Int] uses Random {
+    random.seeded(1) {
+        const a = random.int(0, 1_000_000)
+        const inner = rolls(2)
+        [a, random.int(0, 1_000_000), inner[0]]
+    }
+}
+
+fn main() uses Random {
+    print(rolls(7) == rolls(7))
+    print(rolls(7) == rolls(8))
+    print(nested() == nested())
+}

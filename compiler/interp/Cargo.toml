@@ -12,6 +12,7 @@ kavach-runtime-core = { path = "../../runtime/core" }
 kavach-runtime-net = { path = "../../runtime/net" }
 kavach-runtime-window = { path = "../../runtime/window" }
 kavach-runtime-process = { path = "../../runtime/process" }
+kavach-runtime-gpu = { path = "../../runtime/gpu" }
 kavach-ast = { path = "../ast" }
 kavach-checker = { path = "../checker" }
 kavach-driver = { path = "../driver" }

@@ -14,6 +14,7 @@ use std.http.h2
 use std.http.h3
 use std.http.hpack
 use std.json
+use std.log
 use std.http.message
 use std.http.multipart
 use std.http.server
@@ -308,10 +309,10 @@ pub type Session {
     }
 
     /// Sends a request and reads its response, which must say its length.
-    fn send(self, method: String, path: String, headers: [Header], body: Bytes) -> Response ! HttpError uses Net {
+    fn send(self, method: String, path: String, given: [Header], body: Bytes) -> Response ! HttpError uses Net {
         const crlf = message.crlf()
         let head = "{method} {path} HTTP/1.1{crlf}host: {self.host}{crlf}"
-        for h in headers {
+        for h in traced(given) {
             if not own_header(h.name) {
                 head = head + "{h.name}: {h.value}{crlf}"
             }
@@ -386,6 +387,18 @@ fn split_url(url: String) -> Target ! HttpError {
 }
 
 /// `kind` is the body's `content-type` (none when empty).
+/// `headers`, with the current span's `traceparent` when the code runs in
+/// one and they don't name one already (spec 14.11, 14.12).
+fn traced(headers: [Header]) -> [Header] {
+    const parent = log.traceparent() ?? return headers
+    if headers.any(h => h.name.lower() == "traceparent") {
+        return headers
+    }
+    let all = headers
+    all.push(Header(name: "traceparent", value: parent))
+    all
+}
+
 fn plain_request(method: String, url: String, body: Bytes, kind: String) -> Response ! HttpError uses Net {
     let headers: [Header] = []
     if not kind.is_empty() {
@@ -401,7 +414,8 @@ fn own_header(name: String) -> Bool {
 }
 
 /// A request to `url` on a connection of its own.
-fn call(method: String, url: String, headers: [Header], body: Bytes) -> Response ! HttpError uses Net {
+fn call(method: String, url: String, given: [Header], body: Bytes) -> Response ! HttpError uses Net {
+    const headers = traced(given)
     const target = try split_url(url)
     const name = target.host.slice(0, target.host.index_of(":") ?? target.host.len())
     const conn = connect(target) catch e => {

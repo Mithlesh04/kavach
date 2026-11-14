@@ -293,3 +293,76 @@ fn main() {
         std::fs::remove_dir_all(&dir).unwrap();
     }
 }
+
+/// Spans and metrics (spec 14.12, decision 0107) go to the collector too:
+/// spans to `/v1/traces`, a failed block's marked as an error, events in
+/// a span carrying its ids, and metrics to `/v1/metrics` at the end.
+#[test]
+fn spans_and_metrics_go_to_the_collector() {
+    let program = "use std.log
+
+type Paid: LogEvent {
+    cents: Int
+}
+
+type Declined = Card
+
+fn pay(ok: Bool) -> Int ! Declined {
+    log.span(\"pay\") {
+        if not ok {
+            fail Declined.Card
+        }
+        log.info(Paid(cents: 500))
+        500
+    }
+}
+
+fn main() {
+    log.span(\"checkout\") {
+        print(pay(true) catch _ => 0)
+        print(pay(false) catch _ => 0)
+    }
+    log.count(\"orders\", 2)
+    log.histogram(\"checkout_ms\", 12.5)
+}
+";
+    for native in [false, true] {
+        let (url, collector) = fake_collector();
+        let toml = format!("[package]\nname = \"shop\"\n\n[log.otlp]\nendpoint = \"{url}\"\n");
+        let dir =
+            std::env::temp_dir().join(format!("kavach-spans-{native}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(dir.join("src")).unwrap();
+        std::fs::write(dir.join("kavach.toml"), toml).unwrap();
+        std::fs::write(dir.join("src/main.kav"), program).unwrap();
+        let mut cmd = Command::new(env!("CARGO_BIN_EXE_kavach"));
+        cmd.arg("run");
+        if native {
+            cmd.arg("--native");
+        }
+        let out = cmd.arg(dir.join("src/main.kav")).output().unwrap();
+        let printed = String::from_utf8_lossy(&out.stdout).into_owned();
+        assert_eq!(
+            printed, "INFO Paid(cents: 500)\n500\n0\n",
+            "native: {native}"
+        );
+        let sent = collector.join().unwrap().join("\n");
+        for part in [
+            "\"resourceSpans\"",
+            "\"name\":\"checkout\"",
+            "\"name\":\"pay\"",
+            "\"parentSpanId\"",
+            "\"code\":2",
+            "\"traceId\"",
+            "\"name\":\"orders\",\"sum\"",
+            "\"asDouble\":2",
+            "\"name\":\"checkout_ms\",\"histogram\"",
+        ] {
+            assert!(
+                sent.contains(part),
+                "native: {native}: {part} missing in {sent}"
+            );
+        }
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+}

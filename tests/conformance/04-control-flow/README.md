@@ -35,3 +35,5 @@ Conformance tests for spec chapter [4. Control flow](../../../docs/spec/04-contr
 | 4.7 | [match-arm-that-never-matches-warns.kav](match-arm-that-never-matches-warns.kav) | A `match` arm after one that matches everything, or after one with the same pattern, never matches: a warning. | warning |
 | 4.7 | [else-if-that-is-never-true-warns.kav](else-if-that-is-never-true-warns.kav) | An `else if` whose condition can only be true when an earlier one is never runs: a warning. | warning |
 | 4.7 | [while-that-never-ends-warns.kav](while-that-never-ends-warns.kav) | A `while` whose condition reads only variables the loop never changes, with nothing inside that leaves it, never ends: a warning; `while true` gets none. | warning |
+| 4.8 | [a-block-given-to-a-call-is-a-plain-block.kav](a-block-given-to-a-call-is-a-plain-block.kav) | A block given to a call is a plain block: its value is the expression's; `try`, `return` and `break` act as without the call. | runs |
+| 4.8 | [only-some-calls-take-a-block.kav](only-some-calls-take-a-block.kav) | Only the standard library functions that say so take a block, and they must have one. | compile error |

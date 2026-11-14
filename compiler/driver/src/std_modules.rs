@@ -87,6 +87,11 @@ pub(crate) const BUILTIN: &[(&str, &str, &str)] = &[
         include_str!("../../../stdlib/process/process.kav"),
     ),
     (
+        "std/gpu.kav",
+        "std.gpu",
+        include_str!("../../../stdlib/gpu/gpu.kav"),
+    ),
+    (
         "std/tasks.kav",
         "std.tasks",
         include_str!("../../../stdlib/tasks/tasks.kav"),
@@ -357,6 +362,8 @@ mod tests {
                     "std.http.multipart",
                     "std.http.server",
                     "std.http.hpack",
+                    // http joins traces (spec 14.12).
+                    "std.log",
                     "std.http.message",
                     "std.http.h2.wire",
                     "std.http.h2.client",

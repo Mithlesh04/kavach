@@ -1,7 +1,8 @@
 //! OpenTelemetry export of `std.log` events in native code (spec 14.12):
 //! the collector the compiler read from `[log.otlp]` (`OtlpConfigure`, at
-//! the start of `main`), and each event written (`OtlpExport`), sent by
-//! `kavach_runtime_net::otlp`. A module and entry of its own, so only a
+//! the start of `main`), each event written (`OtlpExport`), and metrics
+//! (`OtlpMetric`), sent by `kavach_runtime_net::otlp`; spans that end come
+//! through the hook set here (`rt_scopes::SPAN_SINK`). A module and entry of its own, so only a
 //! program that exports links the network's code (decision 0024).
 
 use crate::heap::release;
@@ -27,6 +28,16 @@ pub fn otlp_op(op: RtOp, a: i64, b: i64, c: i64) -> i64 {
         {
             // The last events go before the program ends.
             crate::rt::at_exit(otlp::finish);
+            let _ = crate::rt_scopes::SPAN_SINK.set(send_spans);
+        }
+        return 0;
+    }
+    if op == RtOp::OtlpMetric {
+        let name = with_str(b, str::to_string);
+        release(b);
+        if let Some((endpoint, service)) = COLLECTOR.get() {
+            let value = f64::from_bits(c as u64);
+            kavach_runtime_net::otlp_metrics::record(endpoint, service, a, &name, value);
         }
         return 0;
     }
@@ -36,9 +47,17 @@ pub fn otlp_op(op: RtOp, a: i64, b: i64, c: i64) -> i64 {
     release(c);
     if let Some((endpoint, service)) = COLLECTOR.get() {
         let text = line.split_once(' ').map_or(line.as_str(), |(_, t)| t);
-        otlp::export(endpoint, service, a, &name, text);
+        let span = crate::rt_scopes::current_span();
+        otlp::export(endpoint, service, a, &name, text, span);
     }
     0
+}
+
+/// Spans that ended, to the collector.
+fn send_spans(spans: Vec<kavach_runtime_core::trace::Finished>) {
+    if let Some((endpoint, service)) = COLLECTOR.get() {
+        otlp::export_spans(endpoint, service, spans);
+    }
 }
 
 // The group's runtime entry (`RtOp::entry`, decision 0024).

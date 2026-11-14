@@ -100,7 +100,7 @@ impl Context {
             error: crate::rt_errors::swap_error(0),
             line: crate::rt::swap_line(String::new()),
             agents: crate::rt_agents::swap_agents(Vec::new()),
-            scopes: crate::rt_files::swap_scopes(Vec::new()),
+            scopes: crate::rt_scopes::swap_scopes(Vec::new()),
             yielder: YIELDER.replace(0),
         }
     }
@@ -110,7 +110,7 @@ impl Context {
         crate::rt_errors::swap_error(self.error);
         crate::rt::swap_line(self.line);
         crate::rt_agents::swap_agents(self.agents);
-        crate::rt_files::swap_scopes(self.scopes);
+        crate::rt_scopes::swap_scopes(self.scopes);
         YIELDER.set(self.yielder);
     }
 }

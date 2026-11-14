@@ -185,6 +185,12 @@ pub enum ExprKind {
     Spawn(SpawnKind, Box<Expr>, Option<Box<Expr>>),
     Arena(Block),
     Unsafe(Block),
+    /// `log.span("name") { … }` and `random.seeded(seed) { … }`: a block
+    /// given to a call, run inside what the call sets up (spec 4.8).
+    Scoped {
+        call: Box<Expr>,
+        body: Block,
+    },
     /// Stands in for an expression that had a syntax error.
     Error,
 }
