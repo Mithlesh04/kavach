@@ -328,7 +328,19 @@ impl<'a> Lowerer<'a> {
             (Some(Shape::Str), "upper") => RtOp::StrUpper,
             (Some(Shape::Str), "lower") => RtOp::StrLower,
             (Some(Shape::Str), "trim") => RtOp::StrTrim,
-            (Some(Shape::Str), "contains") => RtOp::StrContains,
+            (Some(Shape::Str), "contains") => {
+                // `s.contains(c)` with a `Char`: its text (spec 14.2).
+                let part = values.pop().expect("a part");
+                values.push(match part.ty {
+                    Type::Char => ir::Expr {
+                        kind: K::Format(vec![part]),
+                        ty: self.str_type(),
+                        line,
+                    },
+                    _ => part,
+                });
+                RtOp::StrContains
+            }
             (Some(Shape::Str), "starts_with") => RtOp::StrStartsWith,
             (Some(Shape::Str), "ends_with") => RtOp::StrEndsWith,
             (Some(Shape::Str), "repeat") => RtOp::StrRepeat,

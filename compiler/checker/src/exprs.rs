@@ -347,6 +347,14 @@ impl Checker<'_> {
                 }
                 BOOL
             }
+            // `0..xs.max() ?? 0` is `(0..xs.max()) ?? 0` (spec 1.8).
+            Default if matches!(l.kind, ExprKind::Binary(Range | RangeInclusive, ..)) => {
+                self.error(
+                    l.span,
+                    "`??` binds looser than `..`, so this range is on its left: put the `??` in parentheses, as in `0..(xs.max() ?? 0)`",
+                );
+                Ty::Error
+            }
             Default => {
                 let lt = self.value(l, None);
                 match self.inf.shallow(&lt) {

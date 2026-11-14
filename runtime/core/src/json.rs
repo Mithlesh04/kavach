@@ -19,6 +19,8 @@ pub mod expected {
     pub const BOOL: &str = "true or false";
     pub const TEXT: &str = "text";
     pub const CHAR: &str = "text of one character";
+    /// For a `Bytes` field (spec 2.12).
+    pub const BYTES: &str = "base64 text";
     pub const ARRAY: &str = "an array";
     pub const OBJECT: &str = "an object";
     /// For a field the type doesn't have (decision 0096).

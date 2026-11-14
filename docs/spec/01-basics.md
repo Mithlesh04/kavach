@@ -63,6 +63,7 @@ const limit: Int = 10  // an explicit type is optional
 - `const` names a value that never changes; `let` names a variable ([decision 0034](../decisions/0034-const-and-let.md)). Use `const` unless the value must change.
 - Assigning to a `const`, or calling a method that changes it (`push`), is a compile error that says to use `let`.
 - `var` is not Kavach: writing it is a compile error that says to write `let`.
+- Nor is `let mut`: a `let` can already change. `let mut count = 0` is a compile error that says to write `let count`.
 - A name must not be declared twice in the same scope. Inner scopes may reuse a name.
 - Every name must be declared. Using an unknown name is a compile error, and the error suggests similar names (`did you mean total?`).
 - Declarations at the top of a module (`fn`, `type`, `interface`, …) can be used anywhere in that module, before or after they appear. Local variables can be used only after their `const` or `let`.

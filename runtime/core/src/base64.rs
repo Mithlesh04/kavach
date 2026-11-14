@@ -85,8 +85,29 @@ pub fn decode(text: &str, url: bool) -> Result<Vec<u8>, Base64Fail> {
     Ok(out)
 }
 
+/// `Bytes` written in JSON (spec 2.12): standard base64, padded.
+pub fn to_json(data: &[u8]) -> String {
+    encode(data, false, true)
+}
+
+/// `Bytes` read from JSON: standard base64 or the URL-safe kind, padded
+/// or not, as Protocol Buffers' JSON reads them; `None` for other text.
+pub fn from_json(text: &str) -> Option<Vec<u8>> {
+    decode(text, false).or_else(|_| decode(text, true)).ok()
+}
+
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn bytes_in_json_read_both_alphabets() {
+        assert_eq!(super::to_json(b"hi?"), "aGk/");
+        assert_eq!(super::from_json("aGk/"), Some(b"hi?".to_vec()));
+        assert_eq!(super::from_json("aGk_"), Some(b"hi?".to_vec()));
+        assert_eq!(super::from_json("aGk"), Some(b"hi".to_vec()));
+        assert_eq!(super::from_json("aGk="), Some(b"hi".to_vec()));
+        assert_eq!(super::from_json("not base64!"), None);
+    }
+
     use super::*;
 
     #[test]

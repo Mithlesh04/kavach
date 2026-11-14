@@ -3,7 +3,7 @@
 use crate::naming::{mixed_scripts, pascal_case_fix, snake_case_fix};
 use crate::prelude;
 use crate::{Def, DefId, DefKind, Diagnostic, Resolution};
-use kavach_ast::{Ident, Span};
+use kavach_ast::{Arg, Expr, ExprKind, Ident, Span};
 use std::collections::HashMap;
 
 pub(crate) struct Resolver {
@@ -247,6 +247,52 @@ impl Resolver {
             }
         };
         self.error(ident.span, message);
+    }
+
+    /// `len(xs)`, Python's way, for what Kavach writes as a method or a
+    /// conversion: says how to write it. Whether it did.
+    pub(crate) fn method_as_function(&mut self, callee: &Expr, args: &[Arg]) -> bool {
+        let ExprKind::Name(ident) = &callee.kind else {
+            return false;
+        };
+        let name = ident.name.as_str();
+        if args.is_empty() || self.lookup(name).is_some() || self.variants.contains_key(name) {
+            return false;
+        }
+        let first = match &args[0].value.kind {
+            ExprKind::Name(a) => a.name.clone(),
+            _ => "x".to_string(),
+        };
+        let other = match args.get(1).map(|a| &a.value.kind) {
+            Some(ExprKind::Name(a)) => a.name.clone(),
+            _ => "y".to_string(),
+        };
+        let fix = match name {
+            "len" | "length" | "size" => format!("`{first}.len()`"),
+            "sorted" => format!("`{first}.sort()`, a sorted copy"),
+            "reversed" => format!("`{first}.reverse()`, a reversed copy"),
+            "abs" => format!("`{first}.abs()`"),
+            "min" | "max" if args.len() == 2 => format!("`{first}.{name}({other})`"),
+            "min" | "max" => format!("`{first}.{name}()`, which is `none` for an empty list"),
+            "str" | "string" => return self.conversion(ident, "String", &first),
+            "int" => return self.conversion(ident, "Int", &first),
+            "float" => return self.conversion(ident, "Float", &first),
+            _ => return false,
+        };
+        self.error(
+            ident.span,
+            format!("Kavach has no `{name}` function: it is a method, so write {fix}"),
+        );
+        true
+    }
+
+    fn conversion(&mut self, ident: &Ident, ty: &str, first: &str) -> bool {
+        let name = &ident.name;
+        self.error(
+            ident.span,
+            format!("Kavach has no `{name}` function: write `{ty}({first})` (spec 2.1)"),
+        );
+        true
     }
 
     /// The visible name closest to `name`, if it is close enough to be a typo.

@@ -18,7 +18,8 @@ Text (`String`):
 
 | Method | Gives |
 |---|---|
-| `len`, `is_empty`, `upper`, `lower`, `trim`, `contains`, `starts_with`, `ends_with`, `repeat`, `split` | As their names say; `len` counts characters |
+| `len`, `is_empty`, `upper`, `lower`, `trim`, `starts_with`, `ends_with`, `repeat`, `split` | As their names say; `len` counts characters |
+| `s.contains(part)` | Whether `part` is in `s`; `part` is a `String` or a `Char`: `"aeiou".contains(c)` |
 | `s.replace(old, new)` | `s` with every `old` replaced |
 | `s.lines()` | The lines, without line endings |
 | `s.chars()` | The characters, as `[Char]` |
@@ -29,7 +30,7 @@ Lists, in addition to 2.2:
 
 | Method | Gives |
 |---|---|
-| `items.join(sep)` | For `[String]`: the items with `sep` between them |
+| `items.join(sep)` | For `[String]` and `[Char]`: the items with `sep` between them: `s.chars().reverse().join("")` |
 | `items.sort()` | A sorted copy, for lists of values with an order (1.8): numbers, text, characters, `Bool` and tuples of them. `NaN` sorts after every number, here and in `sort_by`, `min` and `max`, so a list holding one still sorts |
 | `items.sort_by(key)` | A copy sorted by `key(item)`, which must have an order (1.8); equal keys keep their order. A tuple sorts by several keys: `people.sort_by(p => (p.age, p.name))` |
 | `items.reverse()` | A reversed copy |

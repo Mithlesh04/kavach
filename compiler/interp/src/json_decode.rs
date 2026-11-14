@@ -175,6 +175,14 @@ impl<'a> Interp<'a> {
             (Ty::Prim(Prim::Bool), _) => wrong(expected::BOOL),
             (Ty::Prim(Prim::String), Tree::Text(s)) => Ok(self.str_value(s)),
             (Ty::Prim(Prim::String), _) => wrong(expected::TEXT),
+            // Base64 text, either alphabet, padded or not (spec 2.12).
+            (Ty::Prim(Prim::Bytes), Tree::Text(s)) => {
+                match kavach_runtime_core::base64::from_json(s) {
+                    Some(b) => Ok(Value::Bytes(b.into())),
+                    None => wrong(expected::BYTES),
+                }
+            }
+            (Ty::Prim(Prim::Bytes), _) => wrong(expected::BYTES),
             (Ty::Prim(Prim::Char), Tree::Text(s)) if s.chars().count() == 1 => {
                 Ok(Value::Char(s.chars().next().unwrap_or(' ')))
             }

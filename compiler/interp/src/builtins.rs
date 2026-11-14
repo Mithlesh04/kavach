@@ -381,7 +381,10 @@ impl<'a> Interp<'a> {
                             Some(kavach_checker::Ty::Prim(Prim::Float)) => Value::Float(0.0),
                             Some(kavach_checker::Ty::Prim(Prim::Float32)) => Value::Float32(0.0),
                             Some(kavach_checker::Ty::Prim(Prim::Decimal)) => {
-                                crate::bigint::decimal_value(kavach_runtime_core::AnyDecimal::parse("0").expect("0 is a number"))
+                                crate::bigint::decimal_value(
+                                    kavach_runtime_core::AnyDecimal::parse("0")
+                                        .expect("0 is a number"),
+                                )
                             }
                             Some(kavach_checker::Ty::Prim(p)) if p.is_int() => Value::Int(0, *p),
                             _ => Value::Int(0, Prim::Int),

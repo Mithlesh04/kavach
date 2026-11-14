@@ -1,0 +1,12 @@
+// Rule: `Bytes` go into and out of a `spawn process` call, as base64 text in the JSON between the processes.
+// Spec: 9.8, 2.12
+// expect output: Bytes(030201)
+
+fn reversed(data: Bytes) -> Bytes {
+    Bytes(data.to_list().reverse())
+}
+
+fn main() ! Error {
+    const t = spawn process reversed(Bytes([1, 2, 3]))
+    print(try t.wait())
+}

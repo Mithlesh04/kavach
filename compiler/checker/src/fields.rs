@@ -109,7 +109,14 @@ impl Checker<'_> {
             }
             None => {
                 let shown = self.show(&inner);
-                self.error(name.span, format!("`{shown}` has no field `{}`", name.name));
+                let message = match crate::methods::kavach_name(&inner, &name.name) {
+                    Some(k) => format!(
+                        "`{shown}` has no field `{}`: Kavach's is the method `{k}`",
+                        name.name
+                    ),
+                    None => format!("`{shown}` has no field `{}`", name.name),
+                };
+                self.error(name.span, message);
                 Ty::Error
             }
         }

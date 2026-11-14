@@ -187,6 +187,12 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
     match (shape(ty), t) {
         (Shape::Str, Tree::Text(s)) => Ok(new_text(s, ty) as u64),
         (Shape::Str, _) => wrong(expected::TEXT),
+        // Base64 text, either alphabet, padded or not (spec 2.12).
+        (Shape::Bytes, Tree::Text(s)) => match kavach_runtime_core::base64::from_json(s) {
+            Some(b) => Ok(crate::rt_bytes::new_bytes(b, ty) as u64),
+            None => wrong(expected::BYTES),
+        },
+        (Shape::Bytes, _) => wrong(expected::BYTES),
         (Shape::Decimal, Tree::Int(n)) => Ok(decimal(Decimal::from_int(*n as i128), ty)),
         (Shape::Decimal, Tree::Float(f)) => {
             let d = Decimal::parse(&format_float(*f)).unwrap_or(Decimal::from_int(0));

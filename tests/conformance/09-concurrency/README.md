@@ -39,6 +39,7 @@ Conformance tests for spec chapter [9. Concurrency](../../../docs/spec/09-concur
 | 9.1 | [errors-nobody-reads-are-printed.kav](errors-nobody-reads-are-printed.kav) | A task's error that no `.wait()` read is printed to standard error, with where the task was spawned, and the program goes on. | runs |
 | 9.1 | [errors-that-were-read-are-not-printed.kav](errors-that-were-read-are-not-printed.kav) | A task's error that `.wait()` read is not printed again. | runs |
 | 9.8 | [spawn-process-runs-a-call-in-its-own-process.kav](spawn-process-runs-a-call-in-its-own-process.kav) | `spawn process f(args)` runs the call in a process of its own: arguments in as copies, its value back, its prints in turn. | runs |
+| 9.8 | [spawn-process-passes-bytes.kav](spawn-process-passes-bytes.kav) | `Bytes` go into and out of a `spawn process` call, as base64 text in the JSON between the processes. | runs |
 | 9.8 | [a-process-error-comes-out-of-wait.kav](a-process-error-comes-out-of-wait.kav) | The error of a `spawn process` call comes out of `.wait()`. | runs |
 | 9.8, 9.1 | [a-process-panic-fails-its-task.kav](a-process-panic-fails-its-task.kav) | A panic in a `spawn process` call stops only its task: `.wait()` fails with `panicked: … at …`. | runs |
 | 9.8 | [cancel-ends-a-process.kav](cancel-ends-a-process.kav) | `cancel()` ends a `spawn process` task's process at once, even one stuck in a loop. | runs |

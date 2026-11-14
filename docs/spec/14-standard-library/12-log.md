@@ -129,7 +129,7 @@ log.histogram("checkout_ms", Float(elapsed))
 ```
 
 - `name` is plain text; `n` is an `Int`, `value` a `Float`.
-- Each takes `attributes: [String: String]` too, empty unless given: `log.histogram("http.server.request.duration", ms, attributes: ["http.route": "/orders/\{id}", "http.response.status_code": "200"])`. Each name and set of attributes is a series of its own, whatever order the attributes were written in. Give attributes with few values (a route's pattern, a method, a status), never ids: each new value makes a new series to keep and send.
+- Each takes `attributes: [String: String]` too, empty unless given: `log.histogram("checkout.duration_ms", ms, attributes: ["http.route": "/orders/\{id}", "http.response.status_code": "200"])`. Each name and set of attributes is a series of its own, whatever order the attributes were written in. Give attributes with few values (a route's pattern, a method, a status), never ids: each new value makes a new series to keep and send. Put the unit in the name (`_ms`): the buckets above are for milliseconds, and OpenTelemetry's own `http.server.request.duration` is in seconds.
 - Without `[log.otlp]`, metrics are kept nowhere and cost almost nothing.
 - Like events, spans and metrics need no capability.
 

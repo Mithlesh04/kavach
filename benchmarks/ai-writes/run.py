@@ -214,6 +214,7 @@ def main():
     a.add_argument("--check", action="store_true", help="check the tasks, with no model")
     a.add_argument("--estimate", action="store_true", help="the most a run could cost, with no model")
     a.add_argument("--out", default="", help="results file (default results/<date>-<language>.json)")
+    a.add_argument("--resume", action="store_true", help="keep the answers already in --out, and run only the others")
     args = a.parse_args()
     lang = load_language(args.language)
     only = {t for t in args.tasks.split(",") if t}
@@ -232,9 +233,16 @@ def main():
     out = args.out or os.path.join(HERE, "results", f"{datetime.date.today()}-{args.language}.json")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     records, spent = [], 0.0
+    if args.resume and os.path.exists(out):
+        with open(out, encoding="utf-8") as f:
+            kept = json.load(f)
+        records, spent = kept["answers"], kept["dollars"]
+    done = {(r["model"], r["condition"], r["task"]) for r in records}
     for model in models:
         for condition in conditions:
             for t in tasks:
+                if (model, condition, t["id"]) in done:
+                    continue
                 if spent >= args.budget:
                     print(f"stopped: ${spent:.2f} spent, the budget is ${args.budget:.2f}")
                     break

@@ -19,8 +19,10 @@ pub fn ask_schema(c: &Compiled, t: &Ty) -> Option<(Tree, bool)> {
     let s = Schemas { c };
     let inner = s.schema(t)?;
     // A model answers closed objects only, so maps stay out of `ask`,
-    // wherever one hides.
-    if open_objects(&inner) {
+    // wherever one hides; and it writes base64 badly, so `Bytes` do too.
+    if open_objects(&inner)
+        || kavach_runtime_core::json::write(&inner, 0).contains("\"contentEncoding\"")
+    {
         return None;
     }
     if let Ty::Adt(def, _) = t
@@ -110,7 +112,7 @@ fn describe(c: &Compiled, def: kavach_resolver::DefId, ty: &Ty, any: bool) -> Op
 }
 
 /// The message for a `T` with no schema.
-pub const NO_SCHEMA: &str = "`ask` can't answer with this type yet: maps, tuples and functions don't fit the model's closed objects (use a list of records)";
+pub const NO_SCHEMA: &str = "`ask` can't answer with this type yet: maps, tuples and functions don't fit the model's closed objects (use a list of records), and models write `Bytes`' base64 badly";
 
 /// Whether the schema holds an object that isn't closed (a map's).
 fn open_objects(t: &Tree) -> bool {
@@ -154,6 +156,11 @@ impl<'c> Schemas<'c> {
         Some(match t {
             Ty::Prim(Prim::Bool) => kind("boolean"),
             Ty::Prim(Prim::String | Prim::Char) => kind("string"),
+            // Base64 text (spec 2.12).
+            Ty::Prim(Prim::Bytes) => Tree::Object(vec![
+                ("type".into(), text("string")),
+                ("contentEncoding".into(), text("base64")),
+            ]),
             Ty::Prim(Prim::Float | Prim::Float32 | Prim::Decimal) => kind("number"),
             Ty::Prim(p) if p.is_int() => kind("integer"),
             Ty::Optional(inner) => Tree::Object(vec![(

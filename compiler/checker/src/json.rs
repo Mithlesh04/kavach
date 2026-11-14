@@ -88,7 +88,6 @@ impl Checker<'_> {
     fn encodable_in(&self, t: &Ty, seen: &mut Vec<DefId>, decoding: bool) -> Option<String> {
         let t = self.inf.resolve(t);
         match &t {
-            Ty::Prim(Prim::Bytes) => Some("`Bytes` can't be written as JSON yet".into()),
             Ty::Prim(_) | Ty::Param(_) | Ty::Error | Ty::Var(_) => None,
             Ty::List(x) | Ty::Set(x) | Ty::Optional(x) => self.encodable_in(x, seen, decoding),
             Ty::Tuple(ts) => ts.iter().find_map(|t| self.encodable_in(t, seen, decoding)),

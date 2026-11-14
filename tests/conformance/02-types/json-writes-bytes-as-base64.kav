@@ -1,0 +1,38 @@
+// Rule: `Bytes` in JSON are base64 text: written in the standard alphabet with padding, read in the standard or URL-safe alphabet, padded or not, bare or in a field; other text is a `Mismatch` expecting "base64 text", and the schema says so.
+// Spec: 2.12
+// expect output: "aGk/"
+// expect output: {"name":"a","data":"aGk/","more":["","AQI="]}
+// expect output: Bytes(68693f)
+// expect output: Bytes(68693f)
+// expect output: Bytes(6869)
+// expect output: {"type":"string","contentEncoding":"base64"}
+// expect output: base64 text
+
+use std.json
+
+type Blob {
+    name: String
+    data: Bytes
+    more: [Bytes]
+}
+
+fn main() ! Error {
+    const b = Bytes([104, 105, 63])
+    print(json.of(b))
+    print(json.stringify(Blob(name: "a", data: b, more: [Bytes([]), Bytes([1, 2])])))
+    print((try json.decode<Blob>("\{\"name\": \"a\", \"data\": \"aGk/\", \"more\": []}")).data)
+    print((try json.decode<Blob>("\{\"name\": \"a\", \"data\": \"aGk_\", \"more\": []}")).data)
+    print(try json.decode<Bytes>("\"aGk\""))
+    print(json.stringify(json.schema<Bytes>()))
+    const bad = json.decode<Bytes>("\"not base64!\"") catch e => match e {
+        JsonError.Invalid(problems) => {
+            print(problems[0].expected)
+            return
+        }
+        _ => {
+            print("other")
+            return
+        }
+    }
+    print(bad)
+}

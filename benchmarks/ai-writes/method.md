@@ -26,7 +26,7 @@ Every condition sends the same request, built by the language's `ask` ([language
 | `zero` | No system prompt. One try |
 | `docs` | The system prompt is Kavach's guide for AI tools, [llms.txt](../../llms.txt) (about 1,500 tokens, cached). One try |
 | `repair` | As `docs`. A failed try's errors (the compiler's or the panic's message, or the lines printed against those wanted) go back to the model, which answers again, up to 3 graded tries |
-| `tools` | As `docs`, with tools: `kavach mcp`'s (`kavach_check`, `kavach_run`, `kavach_test`, `kavach_outline`, `kavach_query`, `kavach_context`), which work on one file, and the runner's own `write_code`, which saves the model's code there. The model may try its code as often as it likes (it can add a `main` to run it), up to 8 API calls for each graded try, and up to 3 graded tries |
+| `tools` | As `docs`, with tools: `kavach mcp`'s (`kavach_check`, `kavach_run`, `kavach_test`, `kavach_outline`, `kavach_query`, `kavach_context`), which work on one file, and the runner's own `write_code`, which saves the model's code there. The model may try its code as often as it likes (it can add a `main` to run it), up to 8 API calls for each graded try, and up to 3 graded tries. A tool call that runs longer than 60 seconds (a loop that never ends) is stopped, and the model is told so |
 
 A task passes under a condition when one of its graded tries passes. Pass@1 is the share of tasks that pass; for `repair` and `tools` it counts the tries the condition allows, and the "Repair rounds" table says how many were used.
 

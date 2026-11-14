@@ -59,6 +59,14 @@ impl Parser<'_> {
                 }
                 let mutable = !self.at_kw(Keyword::Const);
                 self.bump();
+                // `let mut x`, Rust's way: say so, and read on as `let x`.
+                if self.at_word("mut") && *self.nth(1) == TokenKind::Ident {
+                    let name = self.nth_text(1);
+                    self.error_here(format!(
+                        "Kavach has no `let mut`: a `let` can already change, so write `let {name}`"
+                    ));
+                    self.bump();
+                }
                 let pattern = self.pattern();
                 let ty = self.eat(&TokenKind::Colon).then(|| self.type_expr());
                 self.expect(&TokenKind::Eq, "`=` and a value");

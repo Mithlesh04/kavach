@@ -1,0 +1,19 @@
+// Rule: A `[Char]` joins into text, and `contains` looks for a `Char` as for a `String`.
+// Spec: 14.2
+// expect output: hcavak
+// expect output: a-b-c
+// expect output: 5
+// expect output: true
+// expect output: false
+
+fn vowels(s: String) -> Int {
+    return s.chars().count(c => "aeiou".contains(c))
+}
+
+fn main() {
+    print("kavach".chars().reverse().join(""))
+    print(['a', 'b', 'c'].join("-"))
+    print(vowels("education"))
+    print("héllo".contains('é'))
+    print("hello".contains('z'))
+}

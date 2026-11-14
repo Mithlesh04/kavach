@@ -76,6 +76,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.11 | [secret-cannot-be-printed.kav](secret-cannot-be-printed.kav) | A secret value must not flow into print. | compile error |
 | 2.1 | [numbers-read-from-text-at-their-limits.kav](numbers-read-from-text-at-their-limits.kav) | Reading a number from text takes every value its type holds, trims spaces, and gives an error for anything else. | runs |
 | 2.12 | [json-reads-never-panic.kav](json-reads-never-panic.kav) | Reading a `Json` never panics: a missing key or index gives `Null`, and the methods give `none` when the value has another kind. | runs |
+| 2.12 | [json-writes-bytes-as-base64.kav](json-writes-bytes-as-base64.kav) | `Bytes` in JSON are base64 text: written standard and padded, read in either alphabet, padded or not, bare or in a field; other text expects "base64 text"; the schema says so. | runs |
 | 2.12 | [json-reads-find-each-objects-own-field.kav](json-reads-find-each-objects-own-field.kav) | `j["key"]` gives each object's own field, wherever the key is in the object and whatever made it, or `Null` when it has none. | runs |
 | 2.12 | [json-parsed-values-act-like-made-ones.kav](json-parsed-values-act-like-made-ones.kav) | A `Json` from `json.parse` reads, matches, compares, prints and writes exactly like the same value made in the program. | runs |
 | 2.12 | [json-literals-build-values.kav](json-literals-build-values.kav) | Where a `Json` is expected, literals become `Json` values, and values inside them are encoded. | runs |

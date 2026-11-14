@@ -29,6 +29,10 @@ fn messages_point_at_the_problem() {
             ],
         ),
         (
+            "let mut count = 0",
+            &["1: Kavach has no `let mut`: a `let` can already change, so write `let count`"],
+        ),
+        (
             "a = b = 1",
             &[
                 "1: assignment is a statement, not an expression: put each assignment on its own line",

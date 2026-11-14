@@ -7,6 +7,7 @@
 - `const` can't change, `let` can. Parameters can't be reassigned.
 - Values, not references: assigning or passing copies. Only `Shared<T>` is shared.
 - No null: `T?` holds a value or `none`.
+- A union's variant is always written with its type: `Status.Paid`, `Shape.Circle(radius: 1.0)`, in patterns too.
 - No exceptions: a function that can fail says `! ErrorType`; callers must `try`, `catch` or `match`.
 - Every function that returns a value writes `-> Type`. A call's result must be used or discarded with `const _ =`.
 - Names: `snake_case` values and functions, `PascalCase` types, variants, capabilities, agents.
@@ -24,7 +25,7 @@ const raw = r"C:\path"
 const ok = not false and (1 < 2 or false)
 const label = user?.name ?? "guest" // ?. reads through optionals, ?? gives a default
 ```
-Integer overflow and division by zero panic. `Int / Int` is an `Int`. Convert explicitly: `Float(n)`, `Int.parse(text)` (can fail).
+Integer overflow and division by zero panic. `Int / Int` is an `Int`. Convert explicitly: `Float(n)`, `String(n)`, `Int(text)` (can fail).
 
 ## Types
 ```kavach
@@ -34,12 +35,12 @@ type Shape = Circle(radius: Float) | Rect(width: Float, height: Float)
 type Order {
     id: Int
     amount: Decimal
-    status: Status = Pending
+    status: Status = Status.Pending
     secret card: String           // can't reach print, logs or AI prompts
 
     invariant amount >= 0
 
-    fn is_paid(self) -> Bool { self.status == Paid }
+    fn is_paid(self) -> Bool { self.status == Status.Paid }
 }
 
 interface Describe {
@@ -50,7 +51,7 @@ extend Order: Describe {
     fn describe(self) -> String { "Order {self.id}" }
 }
 ```
-Create records with named arguments: `Order(id: 1, amount: 10, card: "x")`. Copy with changes: `order with { status: Paid }`. Collections: `[Int]`, `[String: Int]` (insertion-ordered), `Set<T>`, tuples `(Int, String)`. Generics: `fn first<T>(items: [T]) -> T?`.
+Create records with named arguments: `Order(id: 1, amount: 10, card: "x")`. Copy with changes: `order with { status: Status.Paid }`. Collections: `[Int]`, `[String: Int]` (insertion-ordered), `Set<T>`, tuples `(Int, String)`. Generics: `fn first<T>(items: [T]) -> T?`.
 
 ## Functions
 ```kavach
@@ -58,15 +59,15 @@ pub fn transfer(from: Account, amount: Decimal, note: String = "") -> Account ! 
     uses Payments
     require amount > 0
     ensure result.balance == from.balance - amount
-    example transfer(Account(balance: 10), 50) fails Insufficient(needed: 40)
+    example transfer(Account(balance: 10), 50) fails BankError.Insufficient(needed: 40)
 {
     if amount > from.balance {
-        fail Insufficient(needed: amount - from.balance)
+        fail BankError.Insufficient(needed: amount - from.balance)
     }
     from with { balance: from.balance - amount }
 }
 ```
-Clause order is fixed: `->`, `!`, `uses`, `require`, `ensure`, `example`. The last expression is the result. Lambdas: `x => x * 2`, `(a, b) => a + b`; dot shorthand in arguments: `orders.filter(.status == Paid).sum(.amount)`.
+Clause order is fixed: `->`, `!`, `uses`, `require`, `ensure`, `example`. The last expression is the result. Lambdas: `x => x * 2`, `(a, b) => a + b`; dot shorthand in arguments: `orders.filter(.status == Status.Paid).sum(.amount)`.
 
 ## Control flow
 ```kavach
@@ -75,9 +76,9 @@ if let user = find(7) {
     print(user.name)
 }
 const text = match shape {
-    Circle(radius) => "circle {radius}"
-    Rect(width, height) if width == height => "square"
-    Rect(width: w, height: _) => "rect {w}"
+    Shape.Circle(radius) => "circle {radius}"
+    Shape.Rect(width, height) if width == height => "square"
+    Shape.Rect(width: w, height: _) => "rect {w}"
 }
 for i in 0..10 {
     print(i)
@@ -89,7 +90,7 @@ while attempts < 3 {
     attempts += 1
 }
 ```
-`match` must cover every case. Conditions must be `Bool`. No labeled `break`.
+`match` must cover every case. Conditions must be `Bool`. A loop may have a label (`outer: for row in grid`) for `break outer` and `continue outer`.
 
 ## Errors
 ```kavach
@@ -101,7 +102,7 @@ const next = parse_age(input) catch e => {
 const n = try parse_age(input) context "reading the age"
 match parse_age(input) {
     ok(age) => print(age)
-    err(TooLarge(value)) => print(value)
+    err(AgeError.TooLarge(value)) => print(value)
     err(_) => print("bad")
 }
 ```
@@ -135,7 +136,7 @@ A function without `uses` is pure. Built-in capabilities: `Console`, `Fs`, `Net`
 Automatic, no garbage collector. `Shared(0)` for shared state, `arena { … }` for bulk allocation (values can't escape), `unsafe { … }` only when `kavach.toml` sets `unsafe = true`.
 
 ## Standard library (spec 14)
-`use std.fs` then `fs.read_text(path)`, `fs.write_text(path, text)` (atomic); also `std.time` (`for tick in time.every_ms(500)`), `std.math`, `std.io`, `std.cli` (`cli.parse<Args>()` reads options into a record), `std.regex` (`regex.new(r"\d+")`, linear time; `regex.advanced` for lookaround). Calling them needs the capability (`uses Fs`). Lists: `sort`, `sort_by`, `join`, `find`, `count`, `take`, `skip`; text: `replace`, `lines`, `slice`; `Set.of(1, 2)`.
+`use std.fs` then `fs.read_text(path)`, `fs.write_text(path, text)` (atomic); also `std.time` (`for tick in time.every_ms(500)`), `std.math`, `std.io`, `std.cli` (`cli.parse<Args>()` reads options into a record), `std.regex` (`regex.new(r"\d+")`, linear time; `regex.advanced` for lookaround). Calling them needs the capability (`uses Fs`). Lists: `xs.len()`, `push`, `sort`, `sort_by`, `join`, `find`, `count(test)`, `take`, `skip`, `contains`; `+` doesn't join lists (`push` the items); text: `len`, `chars`, `split`, `replace`, `lines`, `slice`; `Set.of(1, 2)`.
 
 ## Testing: write contracts, not test files
 `kavach test` generates inputs from types and `require`, checks `ensure` and invariants, fakes capabilities, and runs every `example`. Write a `test "name" { … }` block only for multi-step stories.

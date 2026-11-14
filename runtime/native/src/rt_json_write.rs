@@ -228,6 +228,10 @@ impl Writer {
             Shape::Optional(inner) if inner.is_ref() => self.value(p, *inner, level),
             Shape::Optional(inner) => self.value(boxed(p), *inner, level),
             Shape::Str => with_str(p, |s| write_text(&mut self.out, s)),
+            Shape::Bytes => {
+                let text = crate::rt_bytes::with_bytes(p, kavach_runtime_core::base64::to_json);
+                write_text(&mut self.out, &text);
+            }
             // With all their digits (decision 0071).
             Shape::Decimal => match any_decimal_of(p) {
                 AnyDecimal::Small(d) => self.out.push_str(&d.to_string()),

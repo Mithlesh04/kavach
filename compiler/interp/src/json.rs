@@ -386,6 +386,8 @@ pub(crate) fn json_encode(v: &Value<'_>) -> Tree {
         Value::Bool(b) => Tree::Bool(*b),
         Value::Char(c) => Tree::Text(c.to_string()),
         Value::Str(s) => Tree::Text(s.to_string()),
+        // Base64 text (spec 2.12).
+        Value::Bytes(b) => Tree::Text(kavach_runtime_core::base64::to_json(b)),
         Value::List(items) => Tree::Array(items.iter().map(json_encode).collect()),
         Value::Tuple(items) => Tree::Array(items.iter().map(json_encode).collect()),
         Value::Set(set) => Tree::Array(set.entries.iter().map(|(k, _)| json_encode(k)).collect()),

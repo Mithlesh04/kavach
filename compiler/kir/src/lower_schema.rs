@@ -284,6 +284,7 @@ impl<'a> Lowerer<'a> {
             Type::Ref(_) => {
                 return match self.shapes.shape(t)? {
                     Shape::Str => Some(Ty::Prim(Prim::String)),
+                    Shape::Bytes => Some(Ty::Prim(Prim::Bytes)),
                     Shape::Decimal => Some(Ty::Prim(Prim::Decimal)),
                     Shape::List(x) => Some(Ty::List(Box::new(self.checker_ty(*x)?))),
                     Shape::Optional(x) => Some(Ty::Optional(Box::new(self.checker_ty(*x)?))),

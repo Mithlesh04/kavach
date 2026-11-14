@@ -285,6 +285,6 @@ spawn cores render(frame)     // on any core of the machine
 ## Open questions
 
 - `select` over several channels: syntax and whether it is needed in v1.
-- `spawn process` of a generic function, and `Bytes` going in or out of one: both are refused for now, since the arguments and the result go between the processes as JSON, and `Bytes` has no JSON form yet.
+- `spawn process` of a generic function: refused for now, since the arguments and the result go between the processes as JSON. (`Bytes` go as base64 text, 2.12.)
 - A time limit on any call that waits inside (`download(url).timeout(5.seconds)`): cancel the call's work when the time passes, like a task's.
 - Closing a channel when its last `Sender` is gone, instead of with `close()`: when that happens differs between the interpreter and native code, which frees a variable after its last use.

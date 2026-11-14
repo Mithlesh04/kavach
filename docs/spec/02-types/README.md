@@ -25,7 +25,6 @@ Each section is a file of its own: new sections go at the end, with the next num
 ## Open questions
 
 - **Changing a `Json` in place.** `doc["name"] = "Ravi"` on a `let` holding an object would be convenient; today you change the map from `object()` and build a new `Json`.
-- **`Bytes` in JSON:** base64 text, or a compile error as now?
 - **Decoding unions:** the `{"Variant": {…}}` form only, or also a tag field (`"type": "Circle"`) chosen on the union?
 - **`BigInt` and bits:** should `& | ^ << >> ~` work on `BigInt`, as on the other whole numbers? Not yet.
 - **`BigInt` back to `Int`:** comes with the conversions planned for every built-in type (`Int(b)`, failing when it doesn't fit).

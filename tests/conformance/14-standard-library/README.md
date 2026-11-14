@@ -8,6 +8,7 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.2 | [text-methods.kav](text-methods.kav) | Text has replace, lines, chars, index_of and slice; positions count characters. | runs |
 | 14.2 | [text-split.kav](text-split.kav) | split returns the parts between separators, empty parts included. | runs |
 | 14.2 | [list-methods.kav](list-methods.kav) | Lists have join, sort, sort_by, reverse, take, skip, find, count, index_of, min and max. | runs |
+| 14.2 | [chars-join-and-text-contains-a-char.kav](chars-join-and-text-contains-a-char.kav) | A `[Char]` joins into text, and `contains` looks for a `Char` as for a `String`. | runs |
 | 14.2 | [sets-hold-each-value-once.kav](sets-hold-each-value-once.kav) | A set holds each value once and keeps insertion order. | runs |
 | 14.2 | [set-changes-need-a-var.kav](set-changes-need-a-var.kav) | Changing a set with `add` or `remove` needs a `let`. | compile error |
 | 14.1 | [files-need-fs.kav](files-need-fs.kav) | Calling std.fs needs the Fs capability. | compile error |

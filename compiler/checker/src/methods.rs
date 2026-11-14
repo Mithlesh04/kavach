@@ -84,6 +84,19 @@ impl Checker<'_> {
             }
             return self.apply(&sig, subst, generics, args, e.span, &name.name);
         }
+        // `s.contains(c)`: a `Char` is looked for as its text (spec 14.2).
+        if let (Ty::Prim(Prim::String), "contains", [arg]) = (&recv, name.name.as_str(), args)
+            && arg.name.is_none()
+        {
+            let found = self.value(&arg.value, None);
+            let string = Ty::Prim(Prim::String);
+            if !matches!(self.inf.resolve(&found), Ty::Prim(Prim::Char))
+                && !self.coerce(&found, &string)
+            {
+                self.mismatch(&arg.value, &string, &found);
+            }
+            return Ty::Prim(Prim::Bool);
+        }
         if let Some(m) = self.builtin_method(&recv, &name.name) {
             // Waiting for a task, a channel or the network (spec 6.2).
             let waits = matches!(
@@ -208,7 +221,13 @@ impl Checker<'_> {
             let shown = self.show(&recv);
             self.error(
                 name.span,
-                format!("`{shown}` has no method `{}`", name.name),
+                match kavach_name(&recv, &name.name) {
+                    _ if matches!(recv, Ty::List(_)) && name.name == "pop" => format!(
+                        "`{shown}` has no method `pop` yet: the last item is `xs.last()`, and `xs = xs.take(xs.len() - 1)` drops it"
+                    ),
+                    Some(k) => format!("`{shown}` has no method `{}`: Kavach's is `{k}`", name.name),
+                    None => format!("`{shown}` has no method `{}`", name.name),
+                },
             );
         }
         Ty::Error
@@ -225,6 +244,31 @@ fn takes(recv: &Ty, method: &str, given: usize, wanted: usize) -> Option<String>
     Some(match method {
         "sum" if list => "`sum` takes a function that gives each item's number: `prices.sum(p => p)`, or `orders.sum(o => o.total)`".to_string(),
         "slice" => "`slice` takes where to start and where to end: `s.slice(0, 4)`. Positions start at 0 and aren't negative: the last 4 are `s.slice(s.len() - 4, s.len())`".to_string(),
+        "count" if list => "`count` takes a test and counts the items it holds for: `xs.count(x => x > 0)`. The number of items is `xs.len()`".to_string(),
+        _ => return None,
+    })
+}
+
+/// Kavach's name for a method other languages name differently: `length`
+/// is `len`, `append` is `push`. For "has no method" and "has no field".
+pub(crate) fn kavach_name(recv: &Ty, name: &str) -> Option<&'static str> {
+    let text = matches!(recv, Ty::Prim(Prim::String));
+    let list = matches!(recv, Ty::List(_));
+    let sized = text || list || matches!(recv, Ty::Map(..) | Ty::Set(_));
+    Some(match name {
+        "length" | "size" | "count" | "len" if sized => "len()",
+        "append" | "push_back" | "add" if list => "push(x)",
+        "to_lower" | "to_lowercase" | "lowercase" | "toLowerCase" | "downcase" if text => "lower()",
+        "to_upper" | "to_uppercase" | "uppercase" | "toUpperCase" | "upcase" if text => "upper()",
+        "strip" if text => "trim()",
+        "startswith" | "startsWith" if text => "starts_with(part)",
+        "endswith" | "endsWith" if text => "ends_with(part)",
+        "includes" if text || list => "contains(x)",
+        "find" | "indexOf" if text => "index_of(part)",
+        "indexOf" if list => "index_of(x)",
+        "reversed" if list => "reverse()",
+        "sorted" if list => "sort()",
+        "join" | "await" | "get" | "result" if matches!(recv, Ty::Builtin("Task", _)) => "wait()",
         _ => return None,
     })
 }

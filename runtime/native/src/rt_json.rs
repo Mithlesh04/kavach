@@ -280,6 +280,11 @@ pub(crate) fn encode(slot: i64, ty: Type) -> Tree {
         Shape::Optional(inner) if inner.is_ref() => encode(p, *inner),
         Shape::Optional(inner) => encode(crate::display::boxed(p), *inner),
         Shape::Str => Tree::Text(with_str(p, str::to_string)),
+        // Base64 text (spec 2.12).
+        Shape::Bytes => Tree::Text(crate::rt_bytes::with_bytes(
+            p,
+            kavach_runtime_core::base64::to_json,
+        )),
         // With all their digits (decision 0071).
         Shape::Decimal => Tree::Number(match crate::rt_big_decimal::any_decimal_of(p) {
             kavach_runtime_core::AnyDecimal::Small(d) => d.to_string(),

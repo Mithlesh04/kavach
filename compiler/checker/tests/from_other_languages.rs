@@ -36,6 +36,20 @@ fn habits_from_other_languages_get_clear_errors() {
         (main("print(true && false)"), "2: Kavach has no `&&`: write `and` (spec 1.8)"),
         (main("print(true || false)"), "2: Kavach has no `||`: write `or` (spec 1.8)"),
         (main("print([2, 3, [4, 5], 5])"), "2: expected `Int`, found `[Int]`: a list holds one type; to mix numbers and lists, use a union (2.6) or `Json` (2.12)"),
+        // Found by the AI-writability benchmark (benchmarks/ai-writes).
+        (main("const xs = [1]\nprint(len(xs))"), "3: Kavach has no `len` function: it is a method, so write `xs.len()`"),
+        (main("const xs = [1]\nprint(sorted(xs))"), "3: Kavach has no `sorted` function: it is a method, so write `xs.sort()`"),
+        (main("print(str(5))"), "2: Kavach has no `str` function: write `String(x)`"),
+        (main("const xs = [1]\nprint(xs.count())"), "3: `count` takes a test and counts the items it holds for"),
+        (main("print(\"ab\".length)"), "2: `String` has no field `length`: Kavach's is the method `len()`"),
+        (main("let xs = [1]\nxs.append(2)"), "3: `[Int]` has no method `append`: Kavach's is `push(x)`"),
+        (main("print(\"Ab\".to_lowercase())"), "2: `String` has no method `to_lowercase`: Kavach's is `lower()`"),
+        (main("let xs = [1]\nprint(xs.pop())"), "3: `[Int]` has no method `pop` yet"),
+        (main("const xs = [1]\nfor i in 0..xs.max() ?? 0 {\n}"), "3: `??` binds looser than `..`"),
+        (
+            "fn one() -> Int {\n    return 1\n}\nfn main() {\n    const t = spawn one()\n    print(t.join())\n}\n".into(),
+            "6: `Task<Int>` has no method `join`: Kavach's is `wait()`",
+        ),
         (
             "use std.log\n\nfn main() {\n    log.info(\"order placed\")\n}\n".into(),
             "4: `String` does not implement `LogEvent`: log events are records",

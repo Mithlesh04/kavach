@@ -135,6 +135,10 @@ impl Checker<'_> {
                 let t = (**t).clone();
                 let item = self.inf.resolve(&t);
                 match name {
+                    // `[Char]` joins too: `s.chars().reverse().join("")` (spec 14.2).
+                    "join" if matches!(item, Ty::Prim(Prim::Char)) => {
+                        sig(vec![string.clone()], string)
+                    }
                     "join" if self.inf.unify(&t, &string) => sig(vec![string.clone()], string),
                     "sort" | "min" | "max" if self.ordered(&item) == Some(false) => None,
                     "sort" => sig(vec![], list(t)),

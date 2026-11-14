@@ -1,0 +1,9 @@
+// Rule: `let mut` is a compile error: a `let` can already change.
+// Spec: 1.4
+// expect compile error
+
+fn main() {
+    let mut count = 0   // error: write `let count`
+    count += 1
+    print(count)
+}

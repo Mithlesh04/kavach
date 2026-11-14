@@ -173,7 +173,9 @@ impl Resolver {
                 generics,
                 args,
             } => {
-                self.expr(callee);
+                if !self.method_as_function(callee, args) {
+                    self.expr(callee);
+                }
                 generics.iter().for_each(|t| self.type_expr(t));
                 args.iter().for_each(|a| self.expr(&a.value));
             }
