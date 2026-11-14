@@ -70,6 +70,24 @@ gpu fn glow(x: Float32) -> Float32 {
     x
 }
 
+gpu vertex fn place(c: Corner) -> Lit {
+// <--- storage.modifier.kavach
+//  ^^^^^^ storage.modifier.kavach
+//         ^^ storage.type.function.kavach
+//            ^^^^^ entity.name.function.kavach
+    c.lit()
+}
+
+gpu fragment fn shade(l: Lit) -> Float32 {
+// <--- storage.modifier.kavach
+//  ^^^^^^^^ storage.modifier.kavach
+//           ^^ storage.type.function.kavach
+    l.heat
+}
+
+const vertex = 3
+//    ^^^^^^ - storage.modifier.kavach
+
 fn pick() -> Verdict ! Error uses Ai {
     let model = quick()
 //      ^^^^^ - keyword.other.agent.kavach

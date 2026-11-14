@@ -2,11 +2,11 @@ use std.time
 
 fn watch() {
     const _ticker = spawn {
-        for tick in time.every_ms(100) {
+        for tick in time.every_ms(200) {
             print("tick {tick}")
         }
     }
-    time.sleep_ms(350)
+    time.sleep_ms(500)
 }
 
 fn main() {

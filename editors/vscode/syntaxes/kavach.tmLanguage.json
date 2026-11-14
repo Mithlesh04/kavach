@@ -291,9 +291,12 @@
           "match": "\\bcontext\\b(?=\\s+r?\")"
         },
         {
-          "comment": "`gpu` is a keyword only before `fn` (spec 15.1)",
-          "name": "storage.modifier.kavach",
-          "match": "\\bgpu\\b(?=\\s+fn\\b)"
+          "comment": "`gpu` is a keyword only before `fn` (spec 15.1), and `vertex` and `fragment` only between `gpu` and `fn` (spec 15.3)",
+          "match": "\\b(gpu)(?:\\s+(vertex|fragment))?(?=\\s+fn\\b)",
+          "captures": {
+            "1": { "name": "storage.modifier.kavach" },
+            "2": { "name": "storage.modifier.kavach" }
+          }
         },
         {
           "comment": "`audited` is a keyword only before `fn` (spec 10.15)",

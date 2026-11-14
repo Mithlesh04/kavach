@@ -4,10 +4,17 @@ import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
-import { loadProject } from "@/lib/samples";
+import { loadProject, loadSample } from "@/lib/samples";
 import benchmarks from "@/data/benchmarks.json";
 import { Ex, H2, Note, P, Syntax } from "./parts";
 import { Limits } from "./limits";
+
+// How long `watch` waits before it returns, read from the sample.
+const watchMs = (() => {
+  const ms = loadSample("tasks/sub-cancel").code.match(/sleep_ms\((\d+)\)/)?.[1];
+  if (!ms) throw new Error("tasks/sub-cancel: no time.sleep_ms(…) to name");
+  return ms;
+})();
 
 const SPEC = "docs/spec/09-concurrency.md";
 const unread = loadProject("tasks/unread-error", ["src/main.kav"]);
@@ -126,7 +133,7 @@ export const leakDoc: LessonDoc = {
     <>
       <Ex name="tasks/sub-cancel" />
       <P>
-        <C>watch</C> spawns a ticker that would tick forever, then returns after 350 ms. The ticker is cancelled at
+        <C>watch</C> spawns a ticker that would tick forever, then returns after {watchMs} ms. The ticker is cancelled at
         that moment, so nothing keeps running in the background by mistake.
       </P>
       <H2>When one part fails, the others stop</H2>
