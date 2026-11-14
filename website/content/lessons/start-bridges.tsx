@@ -5,8 +5,17 @@ import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
 import { findNode } from "@/lib/nav";
 import { otherSource } from "@/lib/samples";
+import { fileTables } from "@/lib/spec-tables";
 import { Ex, H2, Note, P } from "./parts";
-import { Cell } from "./spec-table";
+import { Cell, Table } from "./spec-table";
+
+const DECORATORS = "docs/decisions/0108-no-user-defined-decorators.md";
+
+function decorators() {
+  const t = fileTables(DECORATORS).find((x) => x.header[0] === "Decorator use elsewhere");
+  if (!t) throw new Error(`${DECORATORS}: no decorator table`);
+  return t;
+}
 
 // ---------- Coming From Another Language ----------
 //
@@ -118,7 +127,16 @@ export const bridgeDoc: LessonDoc = {
         <li>It runs on Linux and Windows on x86-64 today. macOS and ARM64 are planned for a later phase of the roadmap.</li>
         <li>Some habits are refused on purpose: there is no inheritance, no exception that passes up unseen, and no <C>null</C>.</li>
       </ul>
-      <SrcRef file="docs/vision/roadmap.md" label="the roadmap" />
+      <H2>No decorators</H2>
+      <P>
+        Kavach has no <C>@decorator</C>: nothing written above a function can change what it does, so its signature
+        stays the whole story. What decorators do elsewhere is said in the signature or in plain code:
+      </P>
+      <Table header={decorators().header} rows={decorators().rows} wrapFirst />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/vision/roadmap.md" label="the roadmap" />
+        <SrcRef file={DECORATORS} label="decision 0108 · no decorators" />
+      </div>
     </>
   ),
 };
@@ -200,6 +218,7 @@ export const rustDoc = bridge({
   lang: "rust",
   lead: "From Rust: Result and Option are written ! E and T?, there is no borrowing to plan, and tasks need no async runtime.",
   rows: [
+    ["`let mut count = 0`", "`let count = 0`: a `let` can already change, and `const` can't", "basics/variables/let"],
     ["`struct` and `impl`", "`type Order { … }` with its methods inside, or in an `extend`", "types/records"],
     ["traits", "interfaces", "types/interfaces"],
     ["`Result<i64, OrderError>`", "`-> Int ! OrderError`", "errors/errors"],

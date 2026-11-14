@@ -53,6 +53,7 @@ import { compressDoc } from "./stdlib-compress";
 import { windowDoc } from "./stdlib-window";
 import { processDoc } from "./stdlib-process";
 import { loggingDoc } from "./stdlib-log";
+import { aiWritesDoc } from "./tools-ai-writes";
 import { gpuScreenDoc } from "./stdlib-gpu";
 import { textCollectionsDoc } from "./stdlib-text";
 import {
@@ -63,8 +64,9 @@ import { sortingDoc, sortKeyDoc, sortNumbersDoc, sortTextDoc, sortTwoKeysDoc } f
 import { gpuCanDoc, gpuDoc, gpuFnDoc, gpuMapDoc, gpuRecordsDoc, gpuSameDoc, gpuUsesDoc, gpuWhereDoc } from "./speed-gpu";
 import { gpuSumsDoc } from "./gpu-streams";
 import {
-  bytesDoc, jsonBuildingDoc, jsonDecodingDoc, jsonDoc, jsonNestedDoc, jsonReadingDoc, jsonValuesDoc,
+  jsonBuildingDoc, jsonDecodingDoc, jsonDoc, jsonNestedDoc, jsonReadingDoc, jsonValuesDoc,
 } from "./stdlib-json";
+import { bytesDoc } from "./stdlib-bytes";
 import {
   argumentsDoc, cliDoc, commandsDoc, fileInfoDoc, filesDoc, foldersDoc, readingDoc, writingDoc,
 } from "./stdlib-files";
@@ -447,6 +449,7 @@ export const lessons: Record<string, LessonDoc> = {
   "tools/tools-for-ai/query": queryDoc,
   "tools/tools-for-ai/context": aiContextDoc,
   "tools/tools-for-ai/mcp": mcpDoc,
+  "tools/how-well-ai-writes-kavach": aiWritesDoc,
   "tools/project-layout": layoutDoc,
   "tools/settings": settingsDoc,
   "tools/environment-variables": envDoc,

@@ -1,0 +1,10 @@
+fn main() {
+    const evens = [2, 4]
+    const all = evens + [6, 8]
+    print(all)
+    print(evens)
+
+    let log = ["start"]
+    log += ["step 1", "step 2"]
+    print(log)
+}

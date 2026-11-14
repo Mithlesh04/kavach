@@ -1,0 +1,9 @@
+fn main() {
+    let stack = [1, 2, 3]
+    const top = stack.pop() ?? 0
+    print(top)
+    print(stack)
+
+    let empty: [Int] = []
+    print(empty.pop())
+}

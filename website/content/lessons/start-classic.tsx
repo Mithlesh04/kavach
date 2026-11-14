@@ -31,6 +31,11 @@ const habits: [habit: string, from: string, ours: string, sample: string][] = [
   ["s.slice(-4)", "Python, JavaScript", "s.slice(s.len() - 4, s.len())", "habits/slice.fails"],
   ["(inout n) => …", "C#, Swift", "a named fn with inout", "habits/lambda-inout.fails"],
   ['log.info("…")', "most languages", "a LogEvent record", "habits/log-text.fails"],
+  ["let mut count = 0", "Rust", "let count = 0", "habits/let-mut.fails"],
+  ["len(prices)", "Python", "prices.len()", "habits/len.fails"],
+  ["prices.length", "JavaScript", "prices.len()", "habits/length.fails"],
+  ["name.strip()", "Python", "name.trim()", "habits/strip.fails"],
+  ["task.join()", "Rust, Python", "task.wait()", "habits/task-join.fails"],
 ];
 
 export const classicDoc: LessonDoc = {

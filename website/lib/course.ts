@@ -170,6 +170,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Editor Setup", "—"],
     ["Small Files", "12"],
     ["Tools for AI", "13", ["outline", "query", "context", "mcp"]],
+    ["How Well AI Writes Kavach", "—"],
   ]],
   ["speed", "Speed", "advanced", [
     ["How Kavach Is Fast", "—"],

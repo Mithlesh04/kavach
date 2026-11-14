@@ -97,7 +97,7 @@ export const changeListDoc: LessonDoc = {
 };
 
 export const addRemoveDoc: LessonDoc = {
-  lead: "push adds an item to the end; filter keeps only the items you want.",
+  lead: "push adds an item to the end and pop takes the last one off; + joins two lists; filter keeps only the items you want.",
   simple: <>Adding is like putting one more thing in your basket. Filtering is like going through the basket and keeping only what passes a test you choose, and leaving the rest out.</>,
   minutes: 3,
   body: (
@@ -107,6 +107,26 @@ export const addRemoveDoc: LessonDoc = {
         <C>filter</C> makes a new list of the items its test is true for. Assigning it back to <C>cart</C>{" "}
         removes the rest.
       </P>
+      <H2>Two lists together</H2>
+      <Ex name="lists/plus" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>evens + [6, 8]</C> is a new list: the items of the first, then those of the second. Neither changes.</li>
+        <li><C>log += [&quot;step 1&quot;, &quot;step 2&quot;]</C> adds the items to the end of <C>log</C>, so like <C>push</C> it needs a <C>let</C>. When nothing else holds the list, it grows in place, without copying what it holds.</li>
+        <li>Both lists hold the same type.</li>
+      </ul>
+      <H2>Taking the last item</H2>
+      <P>
+        <C>pop()</C> takes the last item out and gives it, or <C>none</C> for an empty list. It changes the list, so it
+        needs a <C>let</C> too:
+      </P>
+      <Ex name="lists/pop" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/02-types/02-collections.md" label="spec 2.2 · lists" />
+        <SrcRef file="tests/conformance/02-types/plus-joins-two-lists.kav" label="+, tested" />
+        <SrcRef file="tests/conformance/02-types/plus-equals-adds-to-a-list.kav" label="+=, tested" />
+        <SrcRef file="tests/conformance/14-standard-library/pop-takes-the-last-item.kav" label="pop, tested" />
+        <SrcRef file="tests/conformance/14-standard-library/pop-on-a-const-list-is-an-error.kav" label="pop needs a let, tested" />
+      </div>
     </>
   ),
 };

@@ -92,7 +92,17 @@ export const joinDoc: LessonDoc = {
   lead: "+ joins two strings; join() puts a list of strings together; repeat() repeats one.",
   simple: <>Joining text is like threading beads: you put pieces end to end to make one longer piece, from two pieces, from a whole list of them, or from one piece used again and again.</>,
   minutes: 2,
-  body: <Ex name="strings/join" />,
+  body: (
+    <>
+      <Ex name="strings/join" />
+      <P>
+        <C>join</C> works on a list of characters too, and <C>contains</C> takes a <C>Char</C> as well as a{" "}
+        <C>String</C>:
+      </P>
+      <Ex name="strings/chars-join" />
+      <SrcRef file="tests/conformance/14-standard-library/chars-join-and-text-contains-a-char.kav" label="tested" />
+    </>
+  ),
 };
 
 export const lengthDoc: LessonDoc = {

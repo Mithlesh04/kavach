@@ -1,0 +1,1 @@
+error: Kavach has no `len` function: it is a method, so write `prices.len()`

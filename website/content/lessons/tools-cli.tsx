@@ -101,6 +101,7 @@ const built = loadProject("tools/build", ["src/main.kav"]);
 const checked = loadProject("tools/check", ["src/main.kav"]);
 const fixed = loadProject("tools/fix", ["src/main.kav"]);
 const fixedErrors = loadProject("tools/fix-errors", ["src/main.kav"]);
+const fixCount = (fixedErrors.output ?? "").split("\n").filter((l) => l.startsWith("src/main.kav: ")).length;
 
 // What `kavach fix` changes, as spec 12.7 lists it; each row links to the
 // page that teaches the mistake.
@@ -212,6 +213,11 @@ export const checkDoc: LessonDoc = {
         A file with mistakes lists each one with its line, as on every page of this course. <C>--format json</C> gives one compact line per message, for editors, scripts and AI tools. Every message
         says what to change; see <Link href="/docs/start/reading-errors/">Reading Errors</Link>.
       </P>
+      <P>
+        A file with syntax errors gets only those. A string left open turns the lines after it into text, so later
+        checks would only mislead whoever fixes the first error.{" "}
+        <SrcRef file="compiler/driver/tests/syntax_first.rs" symbol="syntax_errors_come_alone" line={7} label="tested" />
+      </P>
     </>
   ),
 };
@@ -237,7 +243,10 @@ export const fixDoc: LessonDoc = {
       <P>A program that doesn&apos;t compile can be fixed the same way, when each error has one right answer:</P>
       <CodeBlock code={fixedErrors.files[0].code} file="src/main.kav, before" />
       <Terminal session={fixedErrors.output ?? ""} />
-      <P>Four messages, four fixes, and the program runs. Everything <C>kavach fix</C> does today:</P>
+      <P>
+        <C>kavach check</C> shows only the syntax error, since a file with syntax errors gets only those. <C>kavach
+        fix</C> still makes all {fixCount} fixes, and the program runs. Everything <C>kavach fix</C> does today:
+      </P>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-[15px]">
           <thead>

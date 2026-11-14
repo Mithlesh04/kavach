@@ -1,4 +1,5 @@
 import { C } from "@/components/inline-code";
+import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
 import { OpTable } from "./operator-tables";
 import { Ex, H2, Note, P } from "./parts";
@@ -134,6 +135,9 @@ export const letDoc: LessonDoc = {
         Kavach has no <C>var</C>. Writing it is an error that tells you what to write instead:
       </P>
       <Ex name="variables/var.fails" />
+      <P>Nor is there <C>let mut</C>: a <C>let</C> can already change.</P>
+      <Ex name="habits/let-mut.fails" />
+      <SrcRef file="tests/conformance/01-basics/let-mut-is-not-kavach.kav" label="tested" />
     </>
   ),
 };

@@ -1,0 +1,8 @@
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
+
+fn main() ! Error {
+    const task = spawn add(2, 3)
+    print(try task.join())
+}

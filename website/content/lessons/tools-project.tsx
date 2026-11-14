@@ -7,6 +7,7 @@ import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
 import { fileFigure, specBlockWith } from "@/lib/spec-tables";
 import { Ex, Files, H2, Note, P, Syntax } from "./parts";
+import { Cell } from "./spec-table";
 import { Limits } from "./limits";
 
 const limits = loadProject("projects/limits.fails", ["kavach.toml", "src/main.kav"]);
@@ -378,6 +379,7 @@ export const mcpDoc: LessonDoc = {
         <li>It runs on your machine and talks over standard input and output: your code never leaves the machine.</li>
         <li>Add it to an assistant as an MCP server whose command is <C>kavach mcp</C>.</li>
         <li>Inside a project, answers come from an index kept in <C>.kavach/index</C>, so they are quick.</li>
+        <li><Cell text={fileFigure("docs/spec/13-ai-tooling.md", /(A `run` or `test` that is still going after [^:]+):/)} />. A model&apos;s code that never ends can&apos;t hold the server. <SrcRef file="tools/ai/tests/mcp.rs" symbol="a_run_that_never_ends_is_stopped" line={96} label="tested" /></li>
       </ul>
       <Note>The site also serves <Link href="/llms.txt">llms.txt</Link>: a short guide to the whole language that an assistant reads once.</Note>
     </>
