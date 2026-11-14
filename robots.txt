@@ -1,4 +1,4 @@
 User-Agent: *
 Allow: /
 
-Sitemap: https://mithlesh04.github.io/kavach/sitemap.xml
+Sitemap: https://kavachlang.com/sitemap.xml
