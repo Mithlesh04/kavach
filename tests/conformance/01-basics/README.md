@@ -18,6 +18,7 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.4 | [let-mut-is-not-kavach.kav](let-mut-is-not-kavach.kav) | `let mut` is a compile error that says to write `let`. | compile error |
 | 1.4 | [locals-only-after-let.kav](locals-only-after-let.kav) | A local variable can be used only after its `const`. | compile error |
 | 1.4 | [no-duplicate-name-in-scope.kav](no-duplicate-name-in-scope.kav) | A name must not be declared twice in the same scope. | compile error |
+| 1.4 | [no-overloading.kav](no-overloading.kav) | Two functions can't share a name: Kavach has no overloading. | compile error |
 | 1.4 | [unknown-name.kav](unknown-name.kav) | Using a name that was never declared is a compile error. | compile error |
 | 1.4 | [var-can-change.kav](var-can-change.kav) | A `let` binding can be changed. | runs |
 | 1.5 | [types-use-pascal-case.kav](types-use-pascal-case.kav) | Type names must be PascalCase. | compile error |
@@ -44,6 +45,7 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.8, 5.6 | [power-overflow-panics.kav](power-overflow-panics.kav) | A whole-number power that doesn't fit its type panics. | panic |
 | 1.8 | [power-negative-exponent-panics.kav](power-negative-exponent-panics.kav) | A whole number to a negative power panics. | panic |
 | 1.8 | [compound-assignment-for-bits.kav](compound-assignment-for-bits.kav) | `&= \|= ^= <<= >>=` change a variable as `x = x op v` would. | runs |
+| 1.8 | [default-groups-to-the-right.kav](default-groups-to-the-right.kav) | `a ?? b ?? c` is `a ?? (b ?? c)`: the first value present wins, and `b` may be an optional too. | runs |
 | 1.8 | [compound-assignment-checks-its-operator.kav](compound-assignment-checks-its-operator.kav) | `x op= v` is checked as `x op v` is. | compile error |
 | 1.8 | [shifts-move-bits.kav](shifts-move-bits.kav) | `<<` and `>>` shift bits; `>>` keeps the sign. | runs |
 | 1.8, 5.6 | [shift-overflow-panics.kav](shift-overflow-panics.kav) | `a << n` panics when the result doesn't fit. | panic |

@@ -42,6 +42,13 @@ pub(crate) const TYPES: &[&str] = &[
     "Self",
     "Display",
     "Drop",
+    "Pipeline",
+    "Add",
+    "Sub",
+    "Mul",
+    "Div",
+    "Rem",
+    "Neg",
     "Comparable",
 ];
 

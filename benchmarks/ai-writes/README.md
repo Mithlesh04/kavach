@@ -13,14 +13,14 @@ Can AI models write Kavach? A new language is only as usable as the code AI tool
 
 ## Pass@1
 
-Measured on 2026-11-14 at commit `22a20eb`, all 75 tasks, one run of each cell (1,200 answers, $24.66 in all). Every answer is in [results/2026-11-14-kavach.json](results/2026-11-14-kavach.json); [summarize.py](summarize.py) makes these tables from it.
+Measured on 2026-11-15 at commit `946b610`, all 75 tasks, one run of each cell (1,200 answers, $19.77 in all), the second run (the first, at `22a20eb`, is compared under "Between the two runs"). Every answer is in [results/2026-11-15-kavach.json](results/2026-11-15-kavach.json); [summarize.py](summarize.py) makes these tables from it.
 
 | Model | zero | docs | repair | tools |
 |---|---|---|---|---|
-| Claude Haiku 5.5 | 9% (7/75) | 53% (40/75) | 97% (73/75) | 100% (75/75) |
-| Claude Sonnet 5.5 | 4% (3/75) | 75% (56/75) | 99% (74/75) | 100% (75/75) |
-| Claude Opus 5.5 | 7% (5/75) | 77% (58/75) | 100% (75/75) | 100% (75/75) |
-| Claude Fable 5.2 | 7% (5/75) | 87% (65/75) | 100% (75/75) | 100% (75/75) |
+| Claude Haiku 5.5 | 7% (5/75) | 88% (66/75) | 99% (74/75) | 100% (75/75) |
+| Claude Sonnet 5.5 | 4% (3/75) | 88% (66/75) | 99% (74/75) | 100% (75/75) |
+| Claude Opus 5.5 | 5% (4/75) | 93% (70/75) | 100% (75/75) | 100% (75/75) |
+| Claude Fable 5.2 | 8% (6/75) | 97% (73/75) | 100% (75/75) | 100% (75/75) |
 
 ## Repair rounds
 
@@ -28,10 +28,10 @@ The average number of graded tries a passing task took.
 
 | Model | zero | docs | repair | tools |
 |---|---|---|---|---|
-| Claude Haiku 5.5 | 1.00 | 1.00 | 1.45 | 1.01 |
-| Claude Sonnet 5.5 | 1.00 | 1.00 | 1.30 | 1.00 |
-| Claude Opus 5.5 | 1.00 | 1.00 | 1.24 | 1.00 |
-| Claude Fable 5.2 | 1.00 | 1.00 | 1.16 | 1.00 |
+| Claude Haiku 5.5 | 1.00 | 1.00 | 1.11 | 1.01 |
+| Claude Sonnet 5.5 | 1.00 | 1.00 | 1.11 | 1.00 |
+| Claude Opus 5.5 | 1.00 | 1.00 | 1.05 | 1.00 |
+| Claude Fable 5.2 | 1.00 | 1.00 | 1.01 | 1.00 |
 
 ## Cost and time
 
@@ -39,10 +39,10 @@ Dollars and minutes for all 75 tasks.
 
 | Model | zero | docs | repair | tools |
 |---|---|---|---|---|
-| Claude Haiku 5.5 | $0.02, 5 min | $0.03, 5 min | $0.05, 8 min | $0.09, 9 min |
-| Claude Sonnet 5.5 | $0.43, 6 min | $0.45, 7 min | $0.59, 8 min | $1.32, 35 min |
-| Claude Opus 5.5 | $0.82, 7 min | $0.73, 6 min | $0.89, 7 min | $2.25, 14 min |
-| Claude Fable 5.2 | $3.02, 13 min | $4.57, 20 min | $4.80, 20 min | $4.60, 12 min |
+| Claude Haiku 5.5 | $0.03, 5 min | $0.03, 5 min | $0.03, 6 min | $0.07, 8 min |
+| Claude Sonnet 5.5 | $0.43, 6 min | $0.42, 6 min | $0.50, 7 min | $1.00, 10 min |
+| Claude Opus 5.5 | $0.82, 7 min | $0.69, 6 min | $0.74, 6 min | $1.86, 13 min |
+| Claude Fable 5.2 | $2.97, 13 min | $3.26, 14 min | $3.15, 13 min | $3.77, 11 min |
 
 ## Failure kinds
 
@@ -50,32 +50,46 @@ What the last failed try of each failed task went wrong on: syntax, type (and na
 
 | Model | zero | docs | repair | tools |
 |---|---|---|---|---|
-| Claude Haiku 5.5 | syntax 43, type 25 | type 29, syntax 6 | type 1, syntax 1 | none |
-| Claude Sonnet 5.5 | syntax 45, type 27 | type 12, syntax 7 | type 1 | none |
-| Claude Opus 5.5 | syntax 40, type 30 | type 13, syntax 4 | none | none |
-| Claude Fable 5.2 | syntax 42, type 28 | type 7, syntax 3 | none | none |
+| Claude Haiku 5.5 | type 59, syntax 11 | syntax 5, type 2, panic 1, logic 1 | type 1 | none |
+| Claude Sonnet 5.5 | type 67, syntax 5 | syntax 5, type 4 | type 1 | none |
+| Claude Opus 5.5 | type 62, syntax 9 | type 4, syntax 1 | none | none |
+| Claude Fable 5.2 | type 59, syntax 10 | syntax 1, type 1 | none | none |
 
 ## What the run shows
 
-- **Without help, models write Rust.** Zero-shot, 4–9% pass. Of the 280 failures, 168 stop at Rust's `let mut` (a Kavach `let` can already change), and 40 more at a semicolon. At `22a20eb` the message for `let mut` was a plain "expected `=` and a value"; it now says to write `let`. The models know the language's shape, not its words.
-- **The guide does most of the work.** With [llms.txt](../../llms.txt) as the system prompt (about 1,500 tokens), 53–87% pass, and syntax errors nearly vanish. What remains is mostly type errors: writing a union's variant without its type (decision 0070), joining lists with `+`, leaving out an argument, a method that isn't there.
-- **The guide itself was out of date.** At `22a20eb`, `llms.txt` still showed variants without their type (`status: Status = Pending`, which decision 0070 refuses) and `Int.parse(text)`, which is gone. Those two account for 23 of the 81 `docs` failures. Both are fixed, and its test now compiles every example and refuses such habits.
-- **The compiler's messages finish the job.** Sent back the errors, every model reaches 97–100%, the strongest in 1.2 tries on average. With Kavach's own tools (`kavach mcp`), all four pass every task, almost always on the first graded try.
-- **Tools cost more than they help here.** `repair` reaches nearly the same score as `tools` for less money and time: Sonnet $0.59 against $1.32, 8 minutes against 35.
+- **Without help, models write Rust.** Zero-shot, 4–8% pass. Of the 282 failures, 157 stop at Rust's `let mut` (a Kavach `let` can already change: the message now says so) and 55 at a semicolon. The models know the language's shape, not its words.
+- **The guide does most of the work.** With [llms.txt](../../llms.txt) as the system prompt (about 1,500 tokens), 88–97% pass on the first try. What remains is a handful of type errors and a brace left open in text.
+- **The compiler's messages finish the job.** Sent back the errors, every model reaches 99–100%, in 1.01 to 1.11 tries on average. With Kavach's own tools (`kavach mcp`), all four pass every task.
+- **Tools cost more than they help here.** `repair` reaches the same score as `tools` for less: Sonnet $0.50 against $1.00, Opus $0.74 against $1.86.
 
-The run was stopped once: a model's code looped forever inside `kavach mcp`, which has no time limit of its own. The runner then got its 60-second limit and `--resume`, and finished the rest.
+Fable's times in this run were taken while the compiler's own tests ran on the same machine, so its minutes are longer than they would be alone; its answers and costs are not affected.
+
+## Between the two runs
+
+The first run (2026-11-14, commit `22a20eb`, 1,200 answers, $24.66, [results/2026-11-14-kavach.json](results/2026-11-14-kavach.json)) found what models trip on, and the fixes went in before the second:
+
+- `llms.txt` taught code the compiler refused (union variants without their type, decision 0070; `Int.parse`): 23 of that run's 81 `docs` failures. Fixed, and its test now compiles every example.
+- Clearer errors for other languages' habits (`let mut`, `len(xs)`, `xs.count()`, `.length`, `append`), `xs + ys` for lists, `xs.pop()`, `[Char].join` and `contains` with a `Char`.
+
+| Model | docs, first | docs, second | repair, first | repair, second | repair rounds, first | repair rounds, second |
+|---|---|---|---|---|---|---|
+| Claude Haiku 5.5 | 53% | 88% | 97% | 99% | 1.45 | 1.11 |
+| Claude Sonnet 5.5 | 75% | 88% | 99% | 99% | 1.30 | 1.11 |
+| Claude Opus 5.5 | 77% | 93% | 100% | 100% | 1.24 | 1.05 |
+| Claude Fable 5.2 | 87% | 97% | 100% | 100% | 1.16 | 1.01 |
+
+The two runs differ in Kavach's guide and messages, not in their settings, and each cell is one run: a model's answers vary from run to run, so a few points either way are within that spread.
 
 ## Found while writing the tasks
 
-Writing the reference solutions, and a first small run, turned up idioms that Kavach refuses but that a writer used to Python or JavaScript reaches for. These are candidates for fixes, in the language or in its messages:
+Writing the reference solutions, and a first small run, turned up idioms that Kavach refused but that a writer used to Python or JavaScript reaches for. Most are fixed:
 
-- `chars().reverse().join("")`: `[Char]` has no `join`.
-- `"aeiou".contains(c)` with `c: Char`: `String.contains` takes only a `String`.
-- `c.code()`: a `Char`'s code point is `Int(c)` (spec 2.1), with no method for it.
-- `"([]{})"`: `{` in a string starts interpolation, so a literal brace is written `\{`.
-- `0..xs.min() ?? 0`: `??` binds looser than `..`; the message doesn't suggest the parentheses.
-- `stack.pop()`: lists have no `pop`.
-- `len(xs)`, Python's way: the message suggests `Net`, not `xs.len()`.
+- `chars().reverse().join("")`: `[Char]` now joins (spec 14.2).
+- `"aeiou".contains(c)` with `c: Char`: `contains` now takes a `Char` too.
+- `0..xs.min() ?? 0`: the message now says to put the `??` in parentheses.
+- `stack.pop()`: lists now have `pop` (spec 14.2).
+- `len(xs)`, Python's way: the message now says to write `xs.len()`.
+- Still as they were: `c.code()` (a `Char`'s code point is `Int(c)`, spec 2.1), and `"([]{})"`, where `{` starts interpolation, so a literal brace is written `\{`.
 
 It also found a bug, fixed since: the interpreter gave `0`, not `0.0`, for the `sum` of an empty list with a `Float` lambda.
 

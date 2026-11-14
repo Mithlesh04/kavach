@@ -124,7 +124,10 @@ fn main() -> ExitCode {
             // `kavach run app.kav -- a b` and `kavach run app.kav a b` are the same.
             let rest = rest.strip_prefix(&["--"]).unwrap_or(rest);
             let args: Vec<String> = rest.iter().map(|a| a.to_string()).collect();
-            command(path, |c| kavach_interp::run_live_with_args(c, &args))
+            command(path, |c| {
+                native::give_shaders(c);
+                kavach_interp::run_live_with_args(c, &args)
+            })
         }
         ["test", path, rest @ ..] => test(path, rest),
         ["check", path] => match load(path) {

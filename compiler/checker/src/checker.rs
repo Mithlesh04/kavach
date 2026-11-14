@@ -103,6 +103,15 @@ pub(crate) struct Checker<'a> {
     pub(crate) implements: HashMap<DefId, HashSet<DefId>>,
     /// The record types that implement `Drop` (`drops.rs`).
     pub(crate) drop_types: HashSet<DefId>,
+    /// Each type's operators (spec 2.16, `user_ops.rs`): by type and
+    /// method, the other operand's type, the result's, and where.
+    pub(crate) operators: HashMap<(DefId, &'static str), (Ty, Ty, Span)>,
+    /// The operators used on a program's own types, by `(left start,
+    /// right end)`, with the method each calls; `-x` by `x`'s span; and
+    /// `x op= v` by `(x start, v end)`.
+    pub(crate) user_ops: HashMap<(u32, u32), &'static str>,
+    pub(crate) user_negs: HashSet<(u32, u32)>,
+    pub(crate) user_assigns: HashMap<(u32, u32), &'static str>,
     /// The variant each variant pattern names, by the span start of its
     /// last name: settled from the matched value's type (`patterns.rs`).
     pub(crate) pattern_variants: HashMap<u32, DefId>,
@@ -173,6 +182,10 @@ pub(crate) struct Checker<'a> {
     /// The `gpu fn`s (spec 15), and `map` calls that may run on the GPU:
     /// (span, item type, captured names), settled once types are known.
     pub(crate) gpu_fns: HashSet<DefId>,
+    /// Each `gpu fn`'s stage: a `map`'s, or a draw's (spec 15.3).
+    pub(crate) gpu_stages: HashMap<DefId, kavach_ast::GpuStage>,
+    /// Each `gpu.pipeline(v, f)` call's vertex and fragment fns, by span.
+    pub(crate) pipelines: HashMap<(u32, u32), (DefId, DefId)>,
     pub(crate) gpu_candidates: Vec<crate::gpu::GpuCandidate>,
     /// Every checked expression and its (possibly still unknown) type.
     pub(crate) expr_types: Vec<(Span, Ty)>,
@@ -227,6 +240,10 @@ impl<'a> Checker<'a> {
             ext_methods: HashMap::new(),
             implements: HashMap::new(),
             drop_types: HashSet::new(),
+            operators: HashMap::new(),
+            user_ops: HashMap::new(),
+            user_negs: HashSet::new(),
+            user_assigns: HashMap::new(),
             pattern_variants: HashMap::new(),
             ext_implements: HashMap::new(),
             agent_needs: HashMap::new(),
@@ -255,6 +272,8 @@ impl<'a> Checker<'a> {
             big_constants: HashMap::new(),
             exact_constants: Vec::new(),
             gpu_fns: HashSet::new(),
+            gpu_stages: HashMap::new(),
+            pipelines: HashMap::new(),
             gpu_candidates: Vec::new(),
             expr_types: Vec::new(),
             updates: HashSet::new(),

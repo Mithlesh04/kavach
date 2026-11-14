@@ -396,7 +396,7 @@ impl<'a> Lowerer<'a> {
                     return Err(self.unsupported("this call", e.span));
                 };
                 let changed = self.expr(e)?;
-                out.push(self.assign_path(base, changed)?);
+                self.change_in_place(base, changed, out)?;
             }
             ExprKind::If { .. }
             | ExprKind::IfLet { .. }

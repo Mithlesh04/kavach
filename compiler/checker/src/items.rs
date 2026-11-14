@@ -286,12 +286,18 @@ impl Checker<'_> {
             }
             StmtKind::Assign { target, op, value } => {
                 let t = self.value(target, None);
-                if let Some(bin) = op.binary() {
+                // `c += a` on a program's own type: `c = c.add(a)` (2.16).
+                let user = op
+                    .binary()
+                    .is_some_and(|bin| self.user_assign(bin, target, value, &t));
+                if let Some(bin) = op.binary().filter(|_| !user) {
                     self.check_compound(bin, target, &t);
                 }
                 self.check_unsafe_index_target(target);
                 self.check_captured_change(target);
-                self.check_expect(value, &t);
+                if !user {
+                    self.check_expect(value, &t);
+                }
                 self.check_arena_store(target, value);
             }
             StmtKind::For {

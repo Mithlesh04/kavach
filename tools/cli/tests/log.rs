@@ -325,6 +325,7 @@ fn main() {
     }
     log.count(\"orders\", 2, attributes: [\"route\": \"/cart\"])
     log.histogram(\"checkout_ms\", 12.5)
+    log.histogram(\"wait_s\", 0.2, bounds: [0.1, 0.5])
 }
 ";
     for native in [false, true] {
@@ -359,6 +360,7 @@ fn main() {
             "\"key\":\"route\",\"value\":{\"stringValue\":\"/cart\"}",
             "\"asDouble\":2",
             "\"name\":\"checkout_ms\",\"histogram\"",
+            "\"bucketCounts\":[\"0\",\"1\",\"0\"],\"explicitBounds\":[0.1,0.5]",
         ] {
             assert!(
                 sent.contains(part),

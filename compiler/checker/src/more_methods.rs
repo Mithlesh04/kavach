@@ -148,7 +148,8 @@ impl Checker<'_> {
                         sig(vec![f(t.clone(), key)], list(t))
                     }
                     "reverse" => sig(vec![], list(t)),
-                    "take" | "skip" => sig(vec![int], list(t)),
+                    "take" | "skip" => sig(vec![int.clone()], list(t.clone())),
+                    "slice" => sig(vec![int.clone(), int], list(t)),
                     "find" => sig(vec![f(t.clone(), boolean)], opt(t)),
                     "count" => sig(vec![f(t, boolean)], int),
                     "index_of" => sig(vec![t], opt(int)),

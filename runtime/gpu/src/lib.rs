@@ -10,6 +10,7 @@ use wgpu::util::DeviceExt;
 
 mod device;
 pub mod draw;
+pub mod render;
 use device::{Gpu, gpu};
 pub use device::{available, ready};
 
@@ -124,7 +125,7 @@ impl Gpu {
     }
 
     /// Maps `staging` to read or write (`mode`), as `wait_mapped`.
-    fn wait_mapped_for(
+    pub(crate) fn wait_mapped_for(
         &self,
         staging: &wgpu::Buffer,
         mode: wgpu::MapMode,

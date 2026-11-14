@@ -8,6 +8,7 @@ pub mod deps;
 mod fetch_checks;
 mod grants;
 mod limits;
+mod operators;
 mod project;
 mod schema;
 mod std_modules;
@@ -230,7 +231,8 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
         unsafe_packages: options.unsafe_packages.clone(),
         granted: options.granted.clone(),
     };
-    let checked = kavach_checker::check(&parsed.file, &resolution, checker_options);
+    let mut checked = kavach_checker::check(&parsed.file, &resolution, checker_options);
+    operators::to_method_calls(&mut parsed.file, &mut checked);
 
     let error = |text: &String, span: Span| Message {
         severity: Severity::Error,

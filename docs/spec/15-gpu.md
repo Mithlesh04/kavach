@@ -158,7 +158,7 @@ gpu fragment fn glow(l: Lit) -> (Float32, Float32, Float32, Float32) {
 }
 
 const dots = gpu.pipeline(place, glow)
-frame.draw(dots, square, instances: swarm, with: Camera(zoom: 1.0))
+frame.draw(dots, square, instances: swarm, shared: Camera(zoom: 1.0))
 ```
 
 - Both follow the rules of a `gpu fn` (15.1), and are ordinary functions on the CPU too.
@@ -166,6 +166,8 @@ frame.draw(dots, square, instances: swarm, with: Camera(zoom: 1.0))
 - A `gpu fragment fn` takes the vertex fn's result and gives the pixel's color: red, green, blue and opacity, each from 0 to 1.
 - `gpu.pipeline(v, f)` is a compile error unless `v` is a `gpu vertex fn`, `f` a `gpu fragment fn`, and `f` takes what `v` gives. `frame.draw` is a compile error unless its vertices, instances and shared value are what `v` takes.
 - `vertex` and `fragment` are words only between `gpu` and `fn`.
+- A vertex's, instance's or shared value's fields are `Float32`s, `Int32`s or `UInt32`s, 1 to 8 of them.
+- A draw can't stop the program, so in a vertex or fragment fn a whole-number overflow or a division by zero gives a wrong value for that corner or pixel, not a panic (5.6): the GPU has no way to say so in the middle of a frame. On the CPU, the same fn panics as any other.
 
 ## Open questions
 

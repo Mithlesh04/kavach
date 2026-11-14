@@ -67,9 +67,16 @@ pub fn gauge(name: String, value: Float, attributes: [String: String] = [:]) {
     log.metric_id(1, series(name, attributes), value)
 }
 
-/// One more `value` of `name`, whose spread is sent as a histogram.
-pub fn histogram(name: String, value: Float, attributes: [String: String] = [:]) {
-    log.metric_id(2, series(name, attributes), value)
+/// One more `value` of `name`, whose spread is sent as a histogram:
+/// with OpenTelemetry's default bounds, or the series' first `bounds`.
+pub fn histogram(name: String, value: Float, attributes: [String: String] = [:], bounds: [Float] = [])
+    require bounds.sort() == bounds
+{
+    let id = series(name, attributes)
+    if not bounds.is_empty() {
+        id += "\u{2}" + bounds.map(b => String(b)).join(",")
+    }
+    log.metric_id(2, id, value)
 }
 
 /// A series as the runtime takes it: the name, then each attribute's key

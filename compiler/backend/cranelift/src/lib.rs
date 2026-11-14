@@ -6,6 +6,7 @@
 
 mod abi;
 mod alloc;
+mod bytes;
 mod calls;
 mod codegen;
 mod data;

@@ -217,8 +217,16 @@ impl Checker<'_> {
                     let target = self.lower(&e.target, None);
                     let sigs = self.method_sigs(&e.methods, Some(&target));
                     self.note_private(&e.methods);
-                    let interfaces: Vec<_> =
-                        e.implements.iter().map(|t| self.lower(t, None)).collect();
+                    let owner = match &target {
+                        Ty::Adt(def, _) => Some(*def),
+                        _ => None,
+                    };
+                    let mut interfaces = Vec::new();
+                    for t in &e.implements {
+                        if !self.note_operator(owner, t, &target) {
+                            interfaces.push(self.lower(t, None));
+                        }
+                    }
                     match target {
                         Ty::Adt(def, _) => {
                             self.methods.entry(def).or_default().extend(sigs);
@@ -283,6 +291,10 @@ impl Checker<'_> {
             },
         );
         for i in &t.implements {
+            // `Add`, `Comparable` and the others (spec 2.16).
+            if self.note_operator(Some(def), i, &self_ty) {
+                continue;
+            }
             // `Drop` is built in (spec 6.1).
             if matches!(&i.kind, kavach_ast::TypeKind::Named { path, .. }
                 if path.segments.len() == 1 && path.segments[0].name == "Drop")

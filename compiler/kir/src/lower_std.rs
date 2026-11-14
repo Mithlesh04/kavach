@@ -73,6 +73,7 @@ impl<'a> Lowerer<'a> {
                 return self.selected_call(module, name, args, ty, line);
             }
             ("base64", _) => return self.base64_call(name, args, ty, line, span),
+            ("gpu", "pipeline" | "draw_id") => return self.draw_call(name, args, ty, line, span),
             // `text.nfkc(s)` and the other normal forms (spec 14.9).
             ("text", "nfc" | "nfd" | "nfkc" | "nfkd") => {
                 let form = kavach_runtime_core::normalize::form_of(name).unwrap_or(0);
@@ -191,6 +192,34 @@ impl<'a> Lowerer<'a> {
         }
         if recv == Type::F64 && name == "bits" {
             return Some(Ok(self.at(K::Rt(RtOp::FloatBits, values), ty, line)));
+        }
+        // `xs.slice(a, b)`: `xs.skip(a).take(b - a)`, with `a` no less
+        // than 0; `take` and `skip` clamp the rest (spec 14.2).
+        if let (Some(Shape::List(_)), "slice", [_, _, _]) = (&shape, name, &values[..]) {
+            let end = values.pop().expect("an end");
+            let start = values.pop().expect("a start");
+            let zero = self.at(K::Int(0), start.ty, line);
+            let from = self.number_method("max", vec![start, zero], line);
+            let at = self.new_local(from.ty);
+            let skipped = K::Rt(
+                RtOp::ListSkip,
+                vec![values.pop().expect("a list"), self.local_expr(at, line)],
+            );
+            let n = K::Binary(
+                ir::BinOp::Sub,
+                Box::new(end),
+                Box::new(self.local_expr(at, line)),
+            );
+            let take = K::Rt(
+                RtOp::ListTake,
+                vec![self.at(skipped, ty, line), self.at(n, Type::I64, line)],
+            );
+            let value = self.at(take, ty, line);
+            let block = ir::Block {
+                stmts: vec![ir::Stmt::Let(at, from)],
+                value: Some(Box::new(value)),
+            };
+            return Some(Ok(self.at(K::Block(block), ty, line)));
         }
         let op = match (shape, name) {
             (Some(Shape::Str), "replace") => RtOp::StrReplace,

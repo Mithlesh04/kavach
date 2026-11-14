@@ -1,0 +1,18 @@
+// Rule: `Mul<Meters, Area>` takes a `Meters` and gives an `Area`.
+// Spec: 2.16
+// expect output: 12.0
+
+type Meters: Mul<Meters, Area> {
+    m: Float
+
+    fn mul(self, other: Meters) -> Area { Area(sq: self.m * other.m) }
+}
+
+type Area {
+    sq: Float
+}
+
+fn main() {
+    const room = Meters(m: 3.0) * Meters(m: 4.0)
+    print(room.sq)
+}

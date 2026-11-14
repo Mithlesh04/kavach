@@ -1,0 +1,10 @@
+// Rule: A built-in type can't implement an operator interface.
+// Spec: 2.16
+// expect compile error
+
+extend Int: Add {     // error: Int keeps its own operators
+}
+
+fn main() {
+    print(1 + 2)
+}

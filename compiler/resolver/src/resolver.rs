@@ -134,11 +134,18 @@ impl Resolver {
         if ident.name.is_empty() || ident.name == "_" {
             return None;
         }
-        if self.scopes.last().unwrap().contains_key(&ident.name) {
-            self.error(
-                ident.span,
-                format!("`{}` is already declared in this scope", ident.name),
-            );
+        let earlier = self.scopes.last().unwrap().get(&ident.name).copied();
+        if let Some(e) = earlier {
+            let name = &ident.name;
+            let message = if kind == DefKind::Fn && self.res.defs[e].kind == DefKind::Fn {
+                // `fn area(r)` and `fn area(w, h)`: calls keep the first.
+                format!(
+                    "Kavach has no overloading: a second function can't be named `{name}`; give it another name, or give the first a default argument (spec 3.2) or a union parameter (2.6)"
+                )
+            } else {
+                format!("`{name}` is already declared in this scope")
+            };
+            self.error(ident.span, message);
         }
         if let Some((a, b)) = mixed_scripts(&ident.name) {
             self.res.warnings.push(Diagnostic {
@@ -162,6 +169,9 @@ impl Resolver {
         let id = self.add_def(&ident.name, kind, Some(ident.span));
         if let (DefKind::Local { .. }, Some(o)) = (kind, outer) {
             self.hides.insert(id, o);
+        }
+        if earlier.is_some_and(|e| kind == DefKind::Fn && self.res.defs[e].kind == DefKind::Fn) {
+            return Some(id);
         }
         self.scopes
             .last_mut()

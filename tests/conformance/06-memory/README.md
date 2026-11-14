@@ -42,3 +42,4 @@ Conformance tests for spec chapter [6. Memory](../../../docs/spec/06-memory.md).
 | 6.2 | [weak-does-not-keep-its-shared.kav](weak-does-not-keep-its-shared.kav) | A `Weak` gives back its `Shared` while it lives and `none` once it was freed; a `Shared` lives to the end of its block. | runs |
 | 6.2 | [leaked-shared-cycles-are-reported.kav](leaked-shared-cycles-are-reported.kav) | A `Shared` value still alive when the program ends, which only a cycle can keep, is reported with the line that made it. | runs |
 | 6.1, 6.2 | [drop-values-in-a-list.kav](drop-values-in-a-list.kav) | A `Drop` value in a list lives as long as the list holds it, and drops when the list ends, in a `Shared` too. | runs |
+| 6.1 | [a-list-in-a-field-grows-in-place.kav](a-list-in-a-field-grows-in-place.kav) | `push` onto a list in a field or an item changes it where it is; a copy made before keeps its items, and the pushed value may read the same list. | runs |

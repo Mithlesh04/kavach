@@ -82,7 +82,14 @@ impl Checker<'_> {
             if let Ty::Adt(owner, _) = &recv {
                 self.check_method_access(*owner, &sig, name);
             }
-            return self.apply(&sig, subst, generics, args, e.span, &name.name);
+            let t = self.apply(&sig, subst, generics, args, e.span, &name.name);
+            // `frame.draw(p, …)` gives what `p`'s vertex fn takes (15.3).
+            if name.name == "draw"
+                && matches!(&recv, Ty::Adt(d, _) if self.res.defs[*d].name == "Frame")
+            {
+                self.check_draw_args(args, e.span);
+            }
+            return t;
         }
         // `s.contains(c)`: a `Char` is looked for as its text (spec 14.2).
         if let (Ty::Prim(Prim::String), "contains", [arg]) = (&recv, name.name.as_str(), args)

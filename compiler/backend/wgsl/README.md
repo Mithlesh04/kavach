@@ -6,6 +6,7 @@ KIR to WGSL: the kernel of each `map` that may run on the GPU (spec [chapter 15]
 |---|---|
 | [src/lib.rs](src/lib.rs) | The kernel frame (buffers, checked arithmetic, the stop flag), `kernel` and `attach` |
 | [src/expr.rs](src/expr.rs) | KIR function bodies as WGSL functions |
+| [src/render.rs](src/render.rs) | A pipeline's shaders: the vertex and fragment fns with `vs_main` and `fs_main` around them, and the buffers' layout first (spec 15.3) |
 | [src/ops.rs](src/ops.rs) | Operators as WGSL, and whether written code can stop an item |
 | [src/cost.rs](src/cost.rs) | The work per item, roughly, which the runtime weighs against starting the GPU |
 | [src/filter.rs](src/filter.rs) | The kernel of `filter`: run once to count each workgroup's kept items, then to write them in order |

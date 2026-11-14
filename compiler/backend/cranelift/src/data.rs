@@ -238,6 +238,7 @@ impl FnGen<'_, '_> {
                 let addr = self.text_view(&args[0])?;
                 self.text_len(addr)
             }
+            ExprKind::Rt(RtOp::BytesAt, args) => self.bytes_at(&args[0], &args[1], e.line)?,
             ExprKind::Rt(RtOp::StrLen, args) => {
                 let (text, owned) = self.borrow(&args[0], true)?;
                 let n = self.call_rt("kv_str_len", &[text])[0];

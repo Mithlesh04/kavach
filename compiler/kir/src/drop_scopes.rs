@@ -81,6 +81,7 @@ pub fn scope_drops(f: &mut Function, holders: &HashSet<Type>, runs: bool) {
         scopes: vec![params],
         loops: Vec::new(),
         runs,
+        start: false,
     };
     let body = std::mem::take(&mut f.body);
     // The body's block ends the parameters too: they are its outer scope.
@@ -98,6 +99,9 @@ struct Pass<'h> {
     loops: Vec<usize>,
     /// Whether `drop`s may be waiting, to run at statement boundaries.
     runs: bool,
+    /// Whether the next block starts by running them: what made it (a
+    /// condition, a loop's head) may have left one waiting.
+    start: bool,
 }
 
 /// Whether `s` leaves its block: `return`, `break`, `continue` or `fail`.
@@ -125,6 +129,18 @@ impl Pass<'_> {
         self.holders.contains(&self.locals[l as usize])
     }
 
+    /// Whether `s` can leave a `drop` waiting: it handles a value that is
+    /// or holds a `Drop` value, or calls a function, whose own values may
+    /// end with it. Only then does a boundary after it run the waiting
+    /// ones, so a loop of plain arithmetic pays nothing (Sakshi's S4).
+    fn may_leave(&self, s: &Stmt) -> bool {
+        self.runs
+            && crate::walk::any_in_stmt(s, &mut |e| {
+                self.holders.contains(&e.ty)
+                    || matches!(e.kind, ExprKind::Call(..) | ExprKind::CallValue(..))
+            })
+    }
+
     /// Moves out, so ends, the variables of scopes `from..` (innermost
     /// first, each last made first), then runs their `drop`s.
     fn end_scopes(&self, from: usize, out: &mut Vec<Stmt>) {
@@ -148,15 +164,25 @@ impl Pass<'_> {
     /// end. With `outer`, the scope below it (the parameters) ends too.
     fn block(&mut self, b: Block, made: Vec<Local>, outer: bool) -> Block {
         self.scopes.push(made);
-        let mut stmts = if self.runs { vec![run()] } else { Vec::new() };
+        let head = self.start;
+        let mut stmts = if self.runs && head {
+            vec![run()]
+        } else {
+            Vec::new()
+        };
         for s in b.stmts {
+            let may = self.may_leave(&s);
+            self.start = may;
             self.stmt(s, &mut stmts);
             // Nothing after a statement that leaves: code after it is
             // never reached, and would give its block a value it can't have.
-            if self.runs && !stmts.last().is_some_and(leaves) {
+            if may && !stmts.last().is_some_and(leaves) {
                 stmts.push(run());
             }
         }
+        // The block's value may make or call too; then a sibling block (an
+        // `else`) starts as this one did.
+        self.start = head;
         // A block that ends in `fail`: it leaves, as a statement would.
         let b_value = match b.value {
             Some(v) if matches!(v.kind, ExprKind::Fail(_)) => {
@@ -338,5 +364,49 @@ impl Pass<'_> {
             Part::Expr(x) => self.expr(x),
             Part::Block(b) => *b = self.block(std::mem::take(b), Vec::new(), false),
         });
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::ir::{ExprKind, Stmt};
+    use crate::rt_op::RtOp;
+
+    /// How many `DropRun`s the body of `main`'s first `for` loop has.
+    fn runs_in_loop(src: &str) -> usize {
+        let c = kavach_driver::compile(src, "t.kav", Default::default());
+        let program = crate::lower(&c).expect("lowers");
+        let main = &program.functions[program.entry as usize];
+        let Some(Stmt::ForRange { body, .. }) = main
+            .body
+            .stmts
+            .iter()
+            .find(|s| matches!(s, Stmt::ForRange { .. }))
+        else {
+            panic!("no loop in main");
+        };
+        let mut n = 0;
+        crate::walk::any_in_block(body, &mut |e| {
+            n += usize::from(matches!(e.kind, ExprKind::Rt(RtOp::DropRun, _)));
+            false
+        });
+        n
+    }
+
+    /// Sakshi's S4: a program with a `Drop` type ran the waiting `drop`s
+    /// after every statement, so a loop of arithmetic took 15 times as
+    /// long. Only a statement that handles a `Drop` value, or calls, runs
+    /// them now.
+    #[test]
+    fn a_loop_of_arithmetic_runs_no_drops() {
+        let drop_type = "type Guard: Drop {\n    n: Int\n\n    fn drop(self) {\n        print(self.n)\n    }\n}\n\n";
+        let plain = format!(
+            "{drop_type}fn main() {{\n    const g = Guard(n: 1)\n    let n = 0\n    for i in 0..9 {{\n        if i % 7 == 3 {{\n            n += 1\n        }}\n    }}\n    print(n)\n}}\n"
+        );
+        assert_eq!(runs_in_loop(&plain), 0);
+        let making = format!(
+            "{drop_type}fn main() {{\n    for i in 0..9 {{\n        const g = Guard(n: i)\n    }}\n}}\n"
+        );
+        assert!(runs_in_loop(&making) > 0);
     }
 }

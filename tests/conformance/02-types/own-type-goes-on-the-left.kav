@@ -1,0 +1,13 @@
+// Rule: A program's own type is on the left of its operator: `2.0 * v` is an error.
+// Spec: 2.16
+// expect compile error
+
+type Vec1: Mul<Float> {
+    x: Float
+
+    fn mul(self, other: Float) -> Vec1 { Vec1(x: self.x * other) }
+}
+
+fn main() {
+    print(2.0 * Vec1(x: 1.0))     // error: write the Vec1 first
+}

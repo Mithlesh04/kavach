@@ -26,6 +26,7 @@ mod json;
 mod json_decode;
 mod literal_checks;
 mod map;
+mod more_methods;
 mod net;
 mod numbers;
 mod ops;
@@ -58,6 +59,7 @@ pub use processes::set_restart;
 pub use run::longest_running;
 use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
+pub use std_gpu::give_pipelines;
 pub use testing::{Kept, TestOptions};
 use value::Flow;
 

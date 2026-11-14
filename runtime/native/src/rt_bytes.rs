@@ -267,3 +267,41 @@ fn read_number(d: &[u8], at: i64, big_endian: bool, item: Type) -> Option<i64> {
         _ => bits as i64,
     })
 }
+
+/// Where `b`'s bytes are and how many: read straight, with no borrow
+/// taken, so the two functions below change no memory, and generated
+/// code may read them once before a loop (`compiler/backend/llvm`).
+fn bytes_view(p: i64) -> (i64, i64) {
+    // SAFETY: generated code reads a `Bytes` it holds; nothing changes a
+    // `Bytes` while it is held (a change copies it, spec 2.13), and the
+    // runtime keeps no borrow of its data across a call into it.
+    #[allow(unsafe_code)]
+    let data = unsafe { &*crate::heap::data(p).as_ptr() };
+    match data {
+        Data::Bytes(b) => (b.as_ptr() as i64, b.len() as i64),
+        Data::Words(w) => (w.0.as_ptr() as i64, w.1 as i64),
+        _ => (0, 0),
+    }
+}
+
+/// The address of `b`'s first byte, for `b[i]` in generated code.
+#[unsafe(no_mangle)]
+pub extern "C-unwind" fn kv_bytes_data(p: i64) -> i64 {
+    bytes_view(p).0
+}
+
+/// How many bytes `b` holds, for `b[i]` in generated code.
+#[unsafe(no_mangle)]
+pub extern "C-unwind" fn kv_bytes_count(p: i64) -> i64 {
+    bytes_view(p).1
+}
+
+/// `b[i]` out of range, as `BytesAt` says it (spec 2.13).
+#[unsafe(no_mangle)]
+pub extern "C-unwind" fn kv_bytes_bad_index(i: i64, len: i64, line: i32) {
+    let n = usize::try_from(len).unwrap_or(0);
+    panic_with(
+        &kavach_runtime_core::bytes_index_panic(i128::from(i), n),
+        line,
+    )
+}

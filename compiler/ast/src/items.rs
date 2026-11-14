@@ -44,6 +44,16 @@ pub struct LiteralDecl {
     pub language: Option<String>,
 }
 
+/// What a `gpu fn` is for (spec 15): a `map` and the like, or a draw's
+/// corners or pixels.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum GpuStage {
+    #[default]
+    Compute,
+    Vertex,
+    Fragment,
+}
+
 /// A function, method or agent handler, with its full signature (spec 3.5).
 #[derive(Clone, Debug, PartialEq)]
 pub struct FnDecl {
@@ -74,6 +84,8 @@ pub struct FnDecl {
     pub c_library: Option<String>,
     /// `gpu fn`: may run on the GPU, so uses only what a GPU can (spec 15).
     pub is_gpu: bool,
+    /// `gpu vertex fn` or `gpu fragment fn` (spec 15.3).
+    pub gpu_stage: GpuStage,
     /// `deprecated "…" fix …` on the line before (spec 12.6).
     pub deprecated: Option<Box<Deprecation>>,
 }

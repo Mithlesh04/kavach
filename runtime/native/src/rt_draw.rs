@@ -32,7 +32,7 @@ fn size(n: i64) -> (u32, u32) {
 
 // `a` is a window, screen or frame number; `b` the screen's window, or
 // the list of colors (owned) for `DrawClear`.
-crate::rt_data::entry!(kv_rt_draw, |op, a, b, _c, _code, _line| {
+crate::rt_data::entry!(kv_rt_draw, |op, a, b, c, _code, line| {
     match op {
         RtOp::DrawScreen => draw::screen_on(a, size(a)).unwrap_or_else(|why| fail(&why)),
         RtOp::DrawFrame => {
@@ -54,9 +54,57 @@ crate::rt_data::entry!(kv_rt_draw, |op, a, b, _c, _code, _line| {
             draw::drop_frame(a);
             0
         }
+        // `a` and `b` are the gpu fns, as closures; `c` the module's text.
+        RtOp::DrawPipeline => {
+            release(a);
+            release(b);
+            let text = crate::shapes::with_str(c, str::to_string);
+            release(c);
+            match kavach_runtime_gpu::render::pipeline(&text) {
+                Ok(n) => n,
+                Err(why) => crate::rt::panic_with(&why, line),
+            }
+        }
+        // `a` is the frame, `b` the pipeline, `c` the tuple of vertices,
+        // instances and shared value.
+        RtOp::DrawDraw => {
+            let parts = slots(c).to_vec();
+            let words = [
+                list_words(parts[0] as i64),
+                list_words(parts[1] as i64),
+                record_words(parts[2] as i64),
+            ];
+            release(c);
+            if let Err(why) = draw::draw(a, b, [&words[0], &words[1], &words[2]]) {
+                crate::rt::panic_with(&why, line);
+            }
+            0
+        }
         _ => {
             draw::close(a);
             0
         }
     }
 });
+
+/// A list of records as the GPU reads it: each item's fields, one word
+/// each, item after item.
+fn list_words(list: i64) -> Vec<u32> {
+    let ty = crate::heap::obj(list).ty();
+    let item = crate::flat::item_type(ty);
+    let n = crate::heap::list_len_items_pub(list);
+    crate::rt_gpu::with_kernel_bytes(list, item, n, |bytes| {
+        let (words, _) = bytes.as_chunks::<4>();
+        words.iter().map(|b| u32::from_le_bytes(*b)).collect()
+    })
+}
+
+/// The shared value: a record's fields, one word each; none for `none`.
+fn record_words(record: i64) -> Vec<u32> {
+    if record == 0 {
+        return Vec::new();
+    }
+    (slots(record).iter().enumerate())
+        .map(|(i, s)| crate::rt_gpu::word(*s, crate::shapes::slot_type(record, i)))
+        .collect()
+}

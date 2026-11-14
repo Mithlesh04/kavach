@@ -125,3 +125,10 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.15 | [built-in-types-as-interface-values.kav](built-in-types-as-interface-values.kav) | A built-in type that implements an interface fits an interface value, a number literal too. | runs |
 | 2.12 | [json-describe-describes-a-function.kav](json-describe-describes-a-function.kav) | `json.describe(f)` gives a function's name, doc comment, parameters, result and error schemas, capabilities and examples. | runs |
 | 2.12 | [json-describe-takes-function-values.kav](json-describe-takes-function-values.kav) | `json.describe(value)` on a function value gives `FnSchema?`: a named function's description, `none` for a lambda. | runs |
+| 2.16 | [operators-call-the-types-own-methods.kav](operators-call-the-types-own-methods.kav) | A type that implements `Add`, `Neg` or `Mul<Float>` gets `+`, unary `-` or `* Float`, which call its methods; `x op= v` is `x = x op v`. | runs |
+| 2.16 | [an-operator-can-give-another-type.kav](an-operator-can-give-another-type.kav) | `Mul<Meters, Area>` takes a `Meters` and gives an `Area`. | runs |
+| 2.16 | [comparable-gives-ordering-operators.kav](comparable-gives-ordering-operators.kav) | A type that implements `Comparable` gets `<`, `<=`, `>` and `>=` from its `compare`. | runs |
+| 2.16 | [operator-methods-are-pure.kav](operator-methods-are-pure.kav) | An operator method can't use capabilities or fail. | compile error |
+| 2.16 | [no-operator-without-its-interface.kav](no-operator-without-its-interface.kav) | A program's own type has no operator unless it implements the operator's interface. | compile error |
+| 2.16 | [own-type-goes-on-the-left.kav](own-type-goes-on-the-left.kav) | A program's own type is on the left of its operator: `2.0 * v` is an error. | compile error |
+| 2.16 | [built-in-types-keep-their-operators.kav](built-in-types-keep-their-operators.kav) | A built-in type can't implement an operator interface. | compile error |

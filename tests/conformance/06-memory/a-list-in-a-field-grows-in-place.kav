@@ -1,0 +1,39 @@
+// Rule: `push` onto a list in a field or an item changes it where it is; a copy made before keeps its items, and the pushed value may read the same list.
+// Spec: 6.1
+// expect output: [0, 1, 2]
+// expect output: []
+// expect output: [[5, 6]]
+// expect output: [1]
+// expect output: [7, 3]
+
+type Box {
+    items: [Int]
+}
+
+type Trace {
+    times: [Int]
+}
+
+type Reader {
+    traces: [Trace]
+}
+
+fn main() {
+    let b = Box(items: [])
+    const before = b
+    for _ in 0..3 {
+        b.items.push(b.items.len())
+    }
+    print(b.items)
+    print(before.items)
+    let ls: [[Int]] = [[]]
+    ls[0].push(5)
+    ls[0].push(6)
+    print(ls)
+    let r = Reader(traces: [Trace(times: []), Trace(times: [7])])
+    const k = 1
+    const kept = r.traces[k].times
+    r.traces[k].times.push(3)
+    print([kept.len()])
+    print(r.traces[k].times)
+}

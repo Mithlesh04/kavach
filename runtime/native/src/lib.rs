@@ -30,7 +30,7 @@ mod rt_approvals;
 mod rt_base64;
 pub mod rt_big_decimal;
 pub mod rt_bigint;
-mod rt_bytes;
+pub mod rt_bytes;
 mod rt_channels;
 pub mod rt_cli;
 mod rt_clipboard;

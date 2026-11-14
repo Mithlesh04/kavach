@@ -1,0 +1,28 @@
+// Rule: A gpu vertex fn and a gpu fragment fn are ordinary functions on the CPU too.
+// Spec: 15.3
+// expect output: Lit(position: (0.5, -0.5, 0.0, 1.0), heat: 0.25)
+// expect output: (0.25, 0.2, 0.75, 1.0)
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+    heat: Float32
+}
+
+gpu vertex fn place(c: Corner) -> Lit {
+    Lit(position: (c.x, c.y, 0.0, 1.0), heat: 0.25)
+}
+
+gpu fragment fn glow(l: Lit) -> (Float32, Float32, Float32, Float32) {
+    (l.heat, 0.2, 1.0 - l.heat, 1.0)
+}
+
+fn main() {
+    const l = place(Corner(x: 0.5, y: -0.5))
+    print(l)
+    print(glow(l))
+}

@@ -54,7 +54,13 @@ pub(crate) fn gpu_item(c: &Checker<'_>, t: &Ty) -> bool {
         },
         t => return gpu_type(t),
     };
-    (1..=8).contains(&fields.len()) && fields.iter().all(gpu_type)
+    (1..=8).contains(&fields.len()) && fields.iter().all(|f| gpu_type(f) || vector(f))
+}
+
+/// A tuple of 2 to 4 `Float32`s: a field a GPU holds as one vector, as a
+/// vertex's `position` (spec 15.3).
+pub(crate) fn vector(t: &Ty) -> bool {
+    matches!(t, Ty::Tuple(ts) if (2..=4).contains(&ts.len()) && ts.iter().all(|t| matches!(t, Ty::Prim(Prim::Float32))))
 }
 
 pub(crate) const WHY: &str = "a `gpu fn` works with `Float32`, `Int32`, `UInt32` and `Bool`, and records and tuples of 1 to 8 of them (spec 15.1)";
@@ -68,6 +74,7 @@ impl Checker<'_> {
                 && let (true, Some(&def)) = (f.is_gpu, self.decl.get(&f.name.span.start))
             {
                 self.gpu_fns.insert(def);
+                self.gpu_stages.insert(def, f.gpu_stage);
             }
         }
     }
@@ -142,6 +149,10 @@ impl Checker<'_> {
                 f.name.span,
                 "a `gpu fn` can't be generic, fail (`!`) or use capabilities: on the GPU it runs alone, item by item (spec 15.1)",
             );
+        }
+        // A draw's corners and pixels (spec 15.3).
+        if f.gpu_stage != GpuStage::Compute {
+            return self.stage_signature(f, def);
         }
         let Some(sig) = self.fns.get(&def).cloned() else {
             return;

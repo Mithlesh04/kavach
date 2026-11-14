@@ -1,0 +1,31 @@
+// Rule: gpu.pipeline's fragment fn takes what its vertex fn gives.
+// Spec: 15.3
+// expect compile error
+
+use std.gpu
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+    heat: Float32
+}
+
+type Other {
+    position: (Float32, Float32, Float32, Float32)
+}
+
+gpu vertex fn place(c: Corner) -> Lit {
+    Lit(position: (c.x, c.y, 0.0, 1.0), heat: 1.0)
+}
+
+gpu fragment fn glow(o: Other) -> (Float32, Float32, Float32, Float32) {
+    (1.0, 1.0, 1.0, 1.0)
+}
+
+fn main() {
+    const _ = gpu.pipeline(place, glow)     // error: glow takes an Other
+}

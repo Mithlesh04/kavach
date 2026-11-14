@@ -65,6 +65,7 @@ const limit: Int = 10  // an explicit type is optional
 - `var` is not Kavach: writing it is a compile error that says to write `let`.
 - Nor is `let mut`: a `let` can already change. `let mut count = 0` is a compile error that says to write `let count`.
 - A name must not be declared twice in the same scope. Inner scopes may reuse a name.
+- So two functions can't share a name: Kavach has no overloading. Where other languages overload, a function takes a default argument (3.2), a union (2.6) or a generic type (2.9), or the two get different names. The error says so, and calls go to the first function.
 - Every name must be declared. Using an unknown name is a compile error, and the error suggests similar names (`did you mean total?`).
 - Declarations at the top of a module (`fn`, `type`, `interface`, …) can be used anywhere in that module, before or after they appear. Local variables can be used only after their `const` or `let`.
 - A variable that is never used (a `const`, a `let`, a name a pattern takes, `...rest`, a `for` variable, a `catch` name) gets a warning, so code being written still runs. A name starting with `_` (`_draft`, or `_` alone) is unused on purpose and gets none.
@@ -153,7 +154,7 @@ In one-line text, a `{` must close on the same line: `"{"` is a compile error at
 
 | Group | Operators | Notes |
 |---|---|---|
-| Arithmetic | `+ - * / % **` | `Int / Int` is an `Int` (truncated). Overflow is checked (see 5.6). `a ** b` is `a` to the power `b`, both the same number type; for whole numbers it panics when `b` is negative or the result doesn't fit. `+` also joins two `String`s, two `Bytes` (2.13), and two lists of the same type (2.2) |
+| Arithmetic | `+ - * / % **` | `Int / Int` is an `Int` (truncated). Overflow is checked (see 5.6). `a ** b` is `a` to the power `b`, both the same number type; for whole numbers it panics when `b` is negative or the result doesn't fit. `+` also joins two `String`s, two `Bytes` (2.13), and two lists of the same type (2.2). A program's own types get operators through interfaces (2.16) |
 | Comparison | `== != < <= > >=` | |
 | Logic | `and or not` | Words, not symbols, for readability: `!ready`, `&&` and `\|\|` are compile errors that say which word to write |
 | Bits | `& \| ^ << >> ~` | Integers only. `a << n` panics when the result doesn't fit (5.6); both shifts panic when `n` is negative or not less than the type's width in bits. `>>` keeps the sign |
@@ -174,7 +175,7 @@ Precedence, from highest to lowest:
 9. `== != < <= > >=`
 10. `and`
 11. `or`
-12. `??`
+12. `??`, right to left: `a ?? b ?? c` is `a ?? (b ?? c)`, so `b` may be an optional too, and the first value present wins
 
 ```kavach
 let flags = 0b1010

@@ -4,7 +4,7 @@
 //! WGSL expressions. `None` means KIR used something a kernel can't do.
 
 use crate::ops::{binary, can_stop};
-use crate::{struct_fields, ty_name, wgsl_type};
+use crate::{ty_name, wgsl_type};
 use kavach_kir::{
     BinOp, Block, Expr, ExprKind as K, FastOp, FuncId, Function, Local, Program, RtOp, Stmt, Type,
     UnOp,
@@ -218,6 +218,11 @@ impl<'p> Body<'p> {
                 let name = self.local(*l)?;
                 self.line(&format!("{name} = {v};"));
             }
+            // Values with `drop` freed at a block's end: none on the GPU.
+            Stmt::Expr(Expr {
+                kind: K::Rt(RtOp::DropRun, _),
+                ..
+            }) => {}
             Stmt::Expr(e) => {
                 let v = self.expr(w, e)?;
                 if !v.is_empty() && e.ty != Type::Unit {
@@ -310,18 +315,18 @@ impl<'p> Body<'p> {
                 format!("p{l}_{k}")
             }
             // A field of a record or tuple value.
-            K::GetField(base, k) if struct_fields(self.program, base.ty).is_some() => {
+            K::GetField(base, k) if ty_name(self.program, base.ty).is_some() => {
                 let b = self.expr(w, base)?;
                 format!("({b}).f{k}")
             }
-            K::Index(base, k) if struct_fields(self.program, base.ty).is_some() => {
+            K::Index(base, k) if ty_name(self.program, base.ty).is_some() => {
                 let K::Int(k) = k.kind else { return None };
                 let b = self.expr(w, base)?;
                 format!("({b}).f{k}")
             }
             // A record or tuple made of its fields.
             K::Record { variant: 0, fields } | K::Tuple(fields)
-                if struct_fields(self.program, t).is_some() =>
+                if ty_name(self.program, t).is_some() =>
             {
                 let Type::Ref(id) = t else { return None };
                 w.name_of(t)?;

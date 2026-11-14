@@ -117,7 +117,9 @@ fn errors_explain_the_fix() {
         ),
         (
             "fn f() {}\nfn f() {}",
-            &["2: `f` is already declared in this scope"],
+            &[
+                "2: Kavach has no overloading: a second function can't be named `f`; give it another name, or give the first a default argument (spec 3.2) or a union parameter (2.6)",
+            ],
         ),
         (
             "fn f(s: Int) -> Int {\n  match s {\n    Missing => 1\n  }\n}",

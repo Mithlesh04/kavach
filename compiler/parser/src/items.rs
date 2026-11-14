@@ -67,13 +67,21 @@ impl Parser<'_> {
             {
                 ItemKind::Literal(self.literal_decl())
             }
-            // `gpu fn` (spec 15.1): a word only before `fn`.
-            TokenKind::Ident
-                if self.at_word("gpu") && *self.nth(1) == TokenKind::Keyword(Keyword::Fn) =>
-            {
+            // `gpu fn` (spec 15.1), `gpu vertex fn` and `gpu fragment fn`
+            // (15.3): words only before `fn`.
+            TokenKind::Ident if self.at_word("gpu") && self.at_gpu_fn() => {
                 self.bump();
+                let stage = match self.text() {
+                    "vertex" => GpuStage::Vertex,
+                    "fragment" => GpuStage::Fragment,
+                    _ => GpuStage::Compute,
+                };
+                if stage != GpuStage::Compute {
+                    self.bump();
+                }
                 let mut f = self.fn_decl(true);
                 f.is_gpu = true;
+                f.gpu_stage = stage;
                 ItemKind::Fn(f)
             }
             TokenKind::Keyword(Keyword::Type) => ItemKind::Type(self.type_decl()),

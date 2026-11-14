@@ -1,0 +1,16 @@
+// Rule: An operator method can't use capabilities or fail.
+// Spec: 2.16
+// expect compile error
+
+type Score: Add {     // error: add uses Console
+    points: Int
+
+    fn add(self, other: Score) -> Score uses Console {
+        print("adding")
+        Score(points: self.points + other.points)
+    }
+}
+
+fn main() {
+    print((Score(points: 1) + Score(points: 2)).points)
+}

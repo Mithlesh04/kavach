@@ -1,0 +1,18 @@
+// Rule: A type that implements `Comparable` gets `<`, `<=`, `>` and `>=` from its `compare`.
+// Spec: 2.16
+// expect output: true
+// expect output: false
+// expect output: true
+
+type Money: Add, Comparable {
+    cents: Int
+
+    fn add(self, other: Money) -> Money { Money(cents: self.cents + other.cents) }
+    fn compare(self, other: Money) -> Int { self.cents - other.cents }
+}
+
+fn main() {
+    print(Money(cents: 150) + Money(cents: 99) > Money(cents: 200))
+    print(Money(cents: 5) <= Money(cents: 4))
+    print(Money(cents: 4) >= Money(cents: 4))
+}

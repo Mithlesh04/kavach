@@ -1,6 +1,7 @@
 //! `xs + ys` and `xs += ys` on lists (spec 2.2), as pushes onto a list,
 //! so each backend's kinds of list (flat, text, packed) need nothing new;
-//! and `xs.pop()` (spec 14.2), as its last item and a shorter list.
+//! and `xs.pop()` (spec 14.2), as its last item and a shorter list; and
+//! a change to a list or map in a field or an item, made in place.
 
 use crate::ir::{self, Block, ExprKind as K, Local, Shape, Stmt, Type};
 use crate::lower::{Lowered, Lowerer};
@@ -88,6 +89,69 @@ impl<'a> Lowerer<'a> {
         )))
     }
 
+    /// `b.items.push(x)`, `ls[0].push(x)`: `changed` is the op on what
+    /// `base` holds. A field's or item's list is held by its place too, so
+    /// changing it would copy it each time (Sakshi's S6: 40,000 pushes in 5
+    /// s). Held in a local, with the place emptied while the op runs, it has
+    /// one holder and changes in place (spec 6.1). Only for a path whose
+    /// indexes are names or numbers, as it is written three times.
+    pub(crate) fn change_in_place(
+        &mut self,
+        base: &'a ast::Expr,
+        changed: ir::Expr,
+        out: &mut Vec<Stmt>,
+    ) -> Lowered<()> {
+        let simple = |mut e: &ast::Expr| loop {
+            match &e.kind {
+                ast::ExprKind::Name(_) => return true,
+                ast::ExprKind::Field {
+                    base,
+                    optional: false,
+                    ..
+                } => e = base,
+                ast::ExprKind::Index { base, index }
+                    if matches!(index.kind, ast::ExprKind::Name(_) | ast::ExprKind::Int(_)) =>
+                {
+                    e = base
+                }
+                _ => return false,
+            }
+        };
+        if !matches!(changed.kind, K::Rt(..)) {
+            out.push(self.assign_path(base, changed)?);
+            return Ok(());
+        }
+        let (ty, line) = (changed.ty, changed.line);
+        let K::Rt(op, mut args) = changed.kind else {
+            unreachable!("just checked");
+        };
+        if !op.changes_receiver()
+            || matches!(base.kind, ast::ExprKind::Name(_))
+            || !simple(base)
+            || args.is_empty()
+        {
+            let changed = self.at(K::Rt(op, args), ty, line);
+            out.push(self.assign_path(base, changed)?);
+            return Ok(());
+        }
+        // The receiver, then the other operands, as they were worked out.
+        let mut held = Vec::new();
+        for a in args.drain(..) {
+            let l = self.new_local(a.ty);
+            out.push(Stmt::Let(l, a));
+            held.push(l);
+        }
+        let empty = self.at(K::Int(0), self.locals[held[0] as usize], line);
+        out.push(self.assign_path(base, empty)?);
+        let operands = held
+            .iter()
+            .map(|&l| self.at(K::Move(l), self.locals[l as usize], line))
+            .collect();
+        let changed = self.at(K::Rt(op, operands), ty, line);
+        out.push(self.assign_path(base, changed)?);
+        Ok(())
+    }
+
     /// `for item in r { acc = acc.push(item) }`.
     fn push_all(&mut self, acc: Local, r: ir::Expr, line: u32) -> Vec<Stmt> {
         let list_ty = self.locals[acc as usize];
@@ -122,5 +186,28 @@ impl<'a> Lowerer<'a> {
                 },
             },
         ]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::ir::{ExprKind, Type};
+
+    /// Sakshi's S6: `b.items.push(x)` copied the list each time, as the
+    /// field held it too. The field is emptied (a null) while it changes.
+    #[test]
+    fn a_field_lets_go_of_its_list_while_it_grows() {
+        let src = "type Box {\n    items: [Int]\n}\n\nfn main() {\n    let b = Box(items: [])\n    b.items.push(1)\n    print(b.items)\n}\n";
+        let c = kavach_driver::compile(src, "t.kav", Default::default());
+        let program = crate::lower(&c).expect("lowers");
+        let main = &program.functions[program.entry as usize];
+        let mut emptied = false;
+        crate::walk::any_in_block(&main.body, &mut |e| {
+            if let ExprKind::SetField(_, _, v) = &e.kind {
+                emptied |= matches!(v.kind, ExprKind::Int(0)) && matches!(v.ty, Type::Ref(_));
+            }
+            false
+        });
+        assert!(emptied);
     }
 }

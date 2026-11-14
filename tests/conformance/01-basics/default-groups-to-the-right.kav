@@ -1,0 +1,12 @@
+// Rule: `a ?? b ?? c` is `a ?? (b ?? c)`: the first value present wins, and `b` may be an optional too.
+// Spec: 1.8
+// expect output: 3
+// expect output: 2
+
+fn main() {
+    const a: Int? = none
+    const b: Int? = none
+    print(a ?? b ?? 3)
+    const d: Int? = 2
+    print(a ?? d ?? 3)
+}

@@ -95,6 +95,16 @@ impl<'a> Parser<'a> {
         self.at(&TokenKind::Ident) && self.text() == word
     }
 
+    /// At `gpu fn`, `gpu vertex fn` or `gpu fragment fn` (spec 15), with
+    /// `gpu` the current word.
+    pub(crate) fn at_gpu_fn(&self) -> bool {
+        let fn_kw = TokenKind::Keyword(kavach_lexer::Keyword::Fn);
+        *self.nth(1) == fn_kw
+            || (*self.nth(1) == TokenKind::Ident
+                && matches!(self.nth_text(1), "vertex" | "fragment")
+                && *self.nth(2) == fn_kw)
+    }
+
     pub(crate) fn at_end_of_line(&self) -> bool {
         matches!(
             self.kind(),

@@ -51,7 +51,7 @@ extend Order: Describe {
     fn describe(self) -> String { "Order {self.id}" }
 }
 ```
-Create records with named arguments: `Order(id: 1, amount: 10, card: "x")`. Copy with changes: `order with { status: Status.Paid }`. Collections: `[Int]`, `[String: Int]` (insertion-ordered), `Set<T>`, tuples `(Int, String)`. Generics: `fn first<T>(items: [T]) -> T?`.
+Create records with named arguments: `Order(id: 1, amount: 10, card: "x")`. Copy with changes: `order with { status: Status.Paid }`. Collections: `[Int]`, `[String: Int]` (insertion-ordered), `Set<T>`, tuples `(Int, String)`. Generics: `fn first<T>(items: [T]) -> T?`. Operators for your own types: `type Vec2: Add, Mul<Float>` with `fn add(self, other: Vec2) -> Vec2`, `fn mul(self, other: Float) -> Vec2` (also `Sub`, `Div`, `Rem`, `Neg`, and `Comparable` with `fn compare(self, other: Self) -> Int` for `<`); no overloading.
 
 ## Functions
 ```kavach

@@ -20,13 +20,34 @@ const BOUNDS: [f64; 15] = [
     10000.0,
 ];
 
-#[derive(Default)]
 struct Histogram {
     count: u64,
     sum: f64,
     min: f64,
     max: f64,
-    buckets: [u64; 16],
+    /// The buckets' upper bounds: the series' own, or `BOUNDS`.
+    bounds: Vec<f64>,
+    /// One more bucket than bounds: the last holds what is above them.
+    buckets: Vec<u64>,
+}
+
+impl Histogram {
+    /// An empty histogram with `bounds`, written as `log.histogram` sends
+    /// them (`0.005,0.01`); the default ones when there are none.
+    fn new(bounds: Option<&str>) -> Histogram {
+        let bounds: Vec<f64> = match bounds {
+            Some(text) => text.split(',').filter_map(|b| b.parse().ok()).collect(),
+            None => BOUNDS.to_vec(),
+        };
+        Histogram {
+            count: 0,
+            sum: 0.0,
+            min: 0.0,
+            max: 0.0,
+            buckets: vec![0; bounds.len() + 1],
+            bounds,
+        }
+    }
 }
 
 struct Metrics {
@@ -72,6 +93,11 @@ fn name_and_attributes(series: &str) -> (&str, Tree) {
 /// 1 sets a gauge, 2 adds to a histogram, of the series `name` (its
 /// attributes after it). The first one starts the sending thread.
 pub fn record(endpoint: &str, service: &str, kind: i64, name: &str, value: f64) {
+    // A histogram's own bounds follow its series (`log.histogram`).
+    let (name, bounds) = match name.split_once('\u{2}') {
+        Some((name, bounds)) => (name, Some(bounds)),
+        None => (name, None),
+    };
     let name = &series_key(name);
     let mut all = METRICS.lock().unwrap_or_else(|e| e.into_inner());
     let m = all.get_or_insert_with(|| {
@@ -96,7 +122,8 @@ pub fn record(endpoint: &str, service: &str, kind: i64, name: &str, value: f64) 
             m.gauges.insert(name.to_string(), (value, now_nanos()));
         }
         _ => {
-            let h = m.histograms.entry(name.to_string()).or_default();
+            let h =
+                (m.histograms.entry(name.to_string())).or_insert_with(|| Histogram::new(bounds));
             if h.count == 0 || value < h.min {
                 h.min = value;
             }
@@ -105,7 +132,7 @@ pub fn record(endpoint: &str, service: &str, kind: i64, name: &str, value: f64) 
             }
             h.count += 1;
             h.sum += value;
-            let bucket = BOUNDS.iter().take_while(|b| value > **b).count();
+            let bucket = h.bounds.iter().take_while(|b| value > **b).count();
             h.buckets[bucket] += 1;
         }
     }
@@ -193,7 +220,7 @@ fn request(m: &Metrics) -> String {
                 ),
                 (
                     "explicitBounds".into(),
-                    Tree::Array(BOUNDS.iter().map(|b| Tree::Float(*b)).collect()),
+                    Tree::Array(h.bounds.iter().map(|b| Tree::Float(*b)).collect()),
                 ),
             ],
         );
@@ -240,7 +267,7 @@ mod tests {
             1.0,
         );
         m.gauges.insert("queue".into(), (7.0, 2));
-        let mut h = Histogram::default();
+        let mut h = Histogram::new(None);
         (h.count, h.sum, h.min, h.max) = (2, 30.0, 10.0, 20.0);
         h.buckets[2] = 1;
         h.buckets[3] = 1;

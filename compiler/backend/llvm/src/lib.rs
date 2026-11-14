@@ -7,6 +7,7 @@
 //! `library.rs` builds shared libraries the same way (decision 0026).
 
 mod branches;
+mod bytes;
 mod calls;
 mod check;
 mod data;

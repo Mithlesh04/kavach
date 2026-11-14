@@ -34,6 +34,7 @@ impl Parser<'_> {
             body: None,
             c_library: None,
             is_gpu: false,
+            gpu_stage: GpuStage::Compute,
             deprecated: None,
         };
         self.clauses(&mut f);

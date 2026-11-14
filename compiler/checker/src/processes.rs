@@ -79,7 +79,7 @@ impl Checker<'_> {
     }
 
     /// The type the checker gave the expression at `span`.
-    fn type_at(&self, span: Span) -> Option<Ty> {
+    pub(crate) fn type_at(&self, span: Span) -> Option<Ty> {
         (self.expr_types.iter().rev())
             .find(|(s, _)| *s == span)
             .map(|(_, t)| t.clone())

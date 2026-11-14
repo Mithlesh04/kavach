@@ -12,6 +12,7 @@ kavach-kir = { path = "../../kir" }
 
 [dev-dependencies]
 kavach-driver = { path = "../../driver" }
+kavach-runtime-gpu = { path = "../../../runtime/gpu" }
 
 [lints]
 workspace = true

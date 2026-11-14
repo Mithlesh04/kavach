@@ -152,3 +152,95 @@ fn only_loops_that_surely_end_are_marked() {
         assert!(!k.is_empty() && !marked(&k), "{body}: {k}");
     }
 }
+
+/// The shaders of the `gpu.pipeline` in `src`.
+fn pipeline_of(src: &str) -> String {
+    let c = kavach_driver::compile(src, "main.kav", Default::default());
+    assert!(!c.has_errors(), "{}", c.render());
+    let mut program = kavach_kir::lower(&c).expect("lowered");
+    crate::attach(&mut program);
+    let mut text = String::new();
+    for f in &program.functions {
+        walk::any_in_block(&f.body, &mut |e| {
+            if let ExprKind::Rt(RtOp::DrawPipeline, args) = &e.kind
+                && let ExprKind::Str(s) = &args[2].kind
+            {
+                text = s.clone();
+            }
+            false
+        });
+    }
+    text
+}
+
+/// The spec's example (15.3): a vertex of two `Float32`s, an instance of
+/// three, a shared value of one word, and `heat` blended to the pixel.
+pub(crate) const SWARM: &str = "use std.gpu
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Dot {
+    x: Float32
+    y: Float32
+    heat: Float32
+}
+
+type Camera {
+    zoom: Float32
+}
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+    heat: Float32
+}
+
+gpu vertex fn place(c: Corner, d: Dot, cam: Camera) -> Lit {
+    Lit(position: ((c.x + d.x) * cam.zoom, (c.y + d.y) * cam.zoom, 0.0, 1.0), heat: d.heat)
+}
+
+gpu fragment fn glow(l: Lit) -> (Float32, Float32, Float32, Float32) {
+    (l.heat, 0.2, 1.0 - l.heat, 1.0)
+}
+
+fn main() {
+    const _ = gpu.pipeline(place, glow)
+}
+";
+
+#[test]
+fn a_pipeline_is_one_module_with_its_layout_first() {
+    let text = pipeline_of(SWARM);
+    assert!(text.starts_with("// draw f f | f f f | 1\n"), "{text}");
+    for part in [
+        "@vertex\nfn vs_main(a: VIn) -> VOut",
+        "@fragment\nfn fs_main(i: VOut)",
+        "@builtin(position) position: vec4<f32>",
+    ] {
+        assert!(text.contains(part), "{part} missing in {text}");
+    }
+}
+
+/// The swarm example's shaders, drawn off-screen: each dot's triangle
+/// takes its color from its `heat`, and what no triangle covers stays
+/// black. Skipped on a machine with no GPU.
+#[test]
+fn a_pipeline_draws_what_its_gpu_fns_say() {
+    if !kavach_runtime_gpu::available() {
+        return;
+    }
+    let n = kavach_runtime_gpu::render::pipeline(&pipeline_of(SWARM)).expect("a layout");
+    let words = |fs: &[f32]| fs.iter().map(|f| f.to_bits()).collect::<Vec<u32>>();
+    let corners = words(&[-0.2, -0.2, 0.2, -0.2, 0.0, 0.2]);
+    // A hot dot in the middle, a cold one up and to the right.
+    let dots = words(&[0.0, 0.0, 1.0, 0.5, 0.5, 0.0]);
+    let camera = words(&[1.0]);
+    let pixels = kavach_runtime_gpu::render::picture(n, [&corners, &dots, &camera], (32, 32))
+        .expect("drawn");
+    let at = |x: usize, y: usize| pixels[y * 32 + x];
+    assert_eq!(at(16, 16), [255, 51, 0, 255], "the hot dot");
+    assert_eq!(at(24, 8), [0, 51, 255, 255], "the cold dot");
+    assert_eq!(at(1, 1), [0, 0, 0, 255], "nothing drawn there");
+}

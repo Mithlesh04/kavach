@@ -106,3 +106,23 @@ pub(crate) fn native(path: &str, args: &[&str]) -> ExitCode {
         }
     }
 }
+
+/// Gives the interpreter the shaders of the program's pipelines (spec
+/// 15.3), which only the WGSL backend can write. Only a program that
+/// makes one pays for lowering it.
+pub(crate) fn give_shaders(c: &kavach_driver::Compiled) {
+    if !c.src.contains("gpu.pipeline") {
+        return;
+    }
+    let Ok(program) = kavach_kir::lower(c) else {
+        return;
+    };
+    let mut shaders = std::collections::HashMap::new();
+    for (key, text) in kavach_backend_wgsl::pipeline_sources(&program) {
+        let defs: Vec<usize> = key.split(' ').filter_map(|d| d.parse().ok()).collect();
+        if let [v, f] = defs[..] {
+            shaders.insert((v, f), text);
+        }
+    }
+    kavach_interp::give_pipelines(shaders);
+}

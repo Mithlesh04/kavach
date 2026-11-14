@@ -13,7 +13,7 @@ Drawing needs shaders (small programs the GPU runs per corner and per pixel), pi
 
 - **Shaders are `gpu fn`s:** `gpu vertex fn` and `gpu fragment fn` (spec 15.3), checked by the compiler as any `gpu fn` is, compiled through the same WGSL backend, and runnable on the CPU.
   - A vertex fn gives the corner's place in its result's field `position` (four `Float32`s). Its other fields go to the fragment fn.
-  - A vertex fn takes the vertex, the instance and the value shared by the draw, in that order. The draw call names `instances:` and `with:`, and the compiler checks the types.
+  - A vertex fn takes the vertex, the instance and the value shared by the draw, in that order. The draw call names `instances:` and `shared:`, and the compiler checks the types.
 - **`std.gpu` is a thin typed layer** (spec 14.24): a screen on a window, frames, clearing, pipelines and draws; next, depth, textures and drawing into a texture. Renderers, scene graphs and game frameworks are packages.
 - **No copy for GPU data:** a list a GPU `map` made and left in GPU memory (decisions 0055 and 0061) is drawn from there, as vertices or instances. A swarm moved by a `map` each frame never leaves the GPU.
 - **Pipelines are built ahead:** `kavach build` compiles each pipeline and keeps it with the program, so no shader compiles mid-game. `kavach run` compiles at the first draw.

@@ -64,6 +64,9 @@ impl FnEmit<'_> {
                 Some(self.ref_binary(*op, l.ty, &a, &b))
             }
             ExprKind::Rt(kavach_kir::RtOp::StrLen, args) => self.str_len(&args[0]),
+            ExprKind::Rt(kavach_kir::RtOp::BytesAt, args) => {
+                self.bytes_at(&args[0], &args[1], e.line)
+            }
             // An item of a list of text, as a text object.
             ExprKind::Index(x, i) if self.text_list(x.ty) => {
                 let (list, owned) = self.borrow(x, crate::heap::plain(i))?;

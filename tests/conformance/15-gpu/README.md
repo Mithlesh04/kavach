@@ -18,3 +18,8 @@ Conformance tests for spec chapter [15. GPU](../../../docs/spec/15-gpu.md). Form
 | 15.2 | [gpu-sums-in-a-loop-run-in-order.kav](gpu-sums-in-a-loop-run-in-order.kav) | A loop's sums the loop doesn't wait for are added in order, each with its checks, before any code after the loop. | panic |
 | 15.2 | [gpu-filter-keeps-the-order.kav](gpu-filter-keeps-the-order.kav) | `filter` of a list a GPU `map` made keeps the items the CPU keeps, in their order. | runs |
 | 15.2 | [gpu-chained-maps-run-as-one.kav](gpu-chained-maps-run-as-one.kav) | `map`s chained in one expression give the results of each `map` in turn, on the GPU as on the CPU, with each lambda's captured values. | runs |
+| 15.3 | [gpu-vertex-and-fragment-fns-run-on-the-cpu.kav](gpu-vertex-and-fragment-fns-run-on-the-cpu.kav) | A gpu vertex fn and a gpu fragment fn are ordinary functions on the CPU too. | runs |
+| 15.3 | [gpu-vertex-fn-gives-a-position.kav](gpu-vertex-fn-gives-a-position.kav) | A gpu vertex fn gives a record with the field `position`, four `Float32`s. | compile error |
+| 15.3 | [gpu-fragment-fn-takes-what-the-vertex-fn-gives.kav](gpu-fragment-fn-takes-what-the-vertex-fn-gives.kav) | `gpu.pipeline`'s fragment fn takes what its vertex fn gives. | compile error |
+| 15.3 | [frame-draw-gives-what-the-vertex-fn-takes.kav](frame-draw-gives-what-the-vertex-fn-takes.kav) | `frame.draw` gives the instances and shared value its pipeline's vertex fn takes: a second parameter is the instance. | compile error |
+| 15.3 | [gpu-pipeline-takes-gpu-fns.kav](gpu-pipeline-takes-gpu-fns.kav) | `gpu.pipeline` takes a gpu vertex fn and a gpu fragment fn, by name. | compile error |

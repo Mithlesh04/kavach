@@ -53,7 +53,7 @@ fn expr_sets(e: &Expr, l: Local) -> bool {
     }
 }
 
-fn any_in_stmt(s: &Stmt, test: &mut impl FnMut(&Expr) -> bool) -> bool {
+pub fn any_in_stmt(s: &Stmt, test: &mut impl FnMut(&Expr) -> bool) -> bool {
     match s {
         Stmt::Let(_, e) | Stmt::Expr(e) | Stmt::Return(Some(e)) => any_expr(e, test),
         Stmt::LetResult { call, .. } => any_expr(call, test),

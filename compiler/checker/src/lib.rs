@@ -30,6 +30,7 @@ mod failures;
 mod fields;
 mod fn_values;
 mod gpu;
+mod gpu_draw;
 mod gpu_fit;
 mod gpu_walk;
 mod infer;
@@ -64,6 +65,7 @@ mod std_writers;
 mod stdlib;
 mod ty;
 mod unwraps;
+mod user_ops;
 
 pub use agent_settings::{AgentSetup, AuditSetup};
 pub use ai_models::AiModel;
@@ -131,6 +133,12 @@ pub struct Checked {
     pub local_types: HashMap<DefId, Ty>,
     /// The record types that implement `Drop` (spec 6.1).
     pub drop_types: HashSet<DefId>,
+    /// Operators on a program's own types (spec 2.16): the method each
+    /// calls, by `(left start, right end)`; `-x` by `x`'s span; `x op= v`
+    /// by `(x start, v end)`.
+    pub user_ops: HashMap<(u32, u32), &'static str>,
+    pub user_negs: HashSet<(u32, u32)>,
+    pub user_assigns: HashMap<(u32, u32), &'static str>,
     /// The variables whose values are or hold a `Drop` value: they live
     /// until the end of their block, so they count as used.
     pub drop_locals: HashSet<DefId>,
@@ -166,6 +174,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     checker.check_file(file);
     checker.check_gpu_fns(file);
     checker.check_capabilities(file);
+    checker.check_operator_methods();
     checker.check_never_runs(file);
     checker.check_always_panics(file);
     checker.check_deprecated(file);
@@ -265,6 +274,9 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
         field_types,
         local_types,
         drop_types,
+        user_ops: std::mem::take(&mut checker.user_ops),
+        user_negs: std::mem::take(&mut checker.user_negs),
+        user_assigns: std::mem::take(&mut checker.user_assigns),
         drop_locals,
         agent_models,
         ask_models,

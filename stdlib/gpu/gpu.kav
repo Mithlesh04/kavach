@@ -39,6 +39,13 @@ pub type Frame: Drop {
         gpu.clear_id(self.id, [Float(r), Float(g), Float(b)])
     }
 
+    /// Draws `vertices`, three to a triangle, through `pipeline`: once for
+    /// each of `instances` when its vertex fn takes an instance, with
+    /// `shared` given to every corner when it takes one (spec 15.3).
+    pub fn draw<V, I, S>(self, pipeline: Pipeline<V, I, S>, vertices: [V], instances: [I] = [], shared: S? = none) uses Window {
+        gpu.draw_id(self.id, pipeline, vertices, instances, shared)
+    }
+
     /// Puts the picture on the screen.
     pub fn show(self) uses Window {
         gpu.show_id(self.id)
@@ -54,4 +61,9 @@ pub fn screen(win: AppWindow) -> Screen ! GpuError uses Window {
     const n = win.number()
     const id = try gpu.screen_id(n)
     Screen(id: id, window: n)
+}
+
+/// What a pipeline's vertex fn doesn't take: an instance, or a value
+/// shared by the draw (spec 15.3).
+pub type NoInput {
 }

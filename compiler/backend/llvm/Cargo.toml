@@ -13,5 +13,8 @@ kavach-runtime-native = { path = "../../../runtime/native" }
 # Links the object file with the runtime library, as for Cranelift.
 kavach-backend-cranelift = { path = "../cranelift" }
 
+[dev-dependencies]
+kavach-driver = { path = "../../driver" }
+
 [lints]
 workspace = true

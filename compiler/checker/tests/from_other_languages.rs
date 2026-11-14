@@ -40,11 +40,16 @@ fn habits_from_other_languages_get_clear_errors() {
         (main("const xs = [1]\nprint(len(xs))"), "3: Kavach has no `len` function: it is a method, so write `xs.len()`"),
         (main("const xs = [1]\nprint(sorted(xs))"), "3: Kavach has no `sorted` function: it is a method, so write `xs.sort()`"),
         (main("print(str(5))"), "2: Kavach has no `str` function: write `String(x)`"),
+        (main("print(Int.max)"), "2: `Int.max` isn't Kavach: a number type has no constants"),
         (main("const xs = [1]\nprint(xs.count())"), "3: `count` takes a test and counts the items it holds for"),
         (main("print(\"ab\".length)"), "2: `String` has no field `length`: Kavach's is the method `len()`"),
         (main("let xs = [1]\nxs.append(2)"), "3: `[Int]` has no method `append`: Kavach's is `push(x)`"),
         (main("print(\"Ab\".to_lowercase())"), "2: `String` has no method `to_lowercase`: Kavach's is `lower()`"),
         (main("const xs = [1]\nfor i in 0..xs.max() ?? 0 {\n}"), "3: `??` binds looser than `..`"),
+        (
+            "fn area(r: Float) -> Float {\n    return r\n}\nfn area(w: Float, h: Float) -> Float {\n    return w * h\n}\nfn main() {\n    print(area(2.0))\n}\n".into(),
+            "4: Kavach has no overloading: a second function can't be named `area`",
+        ),
         (
             "fn one() -> Int {\n    return 1\n}\nfn main() {\n    const t = spawn one()\n    print(t.join())\n}\n".into(),
             "6: `Task<Int>` has no method `join`: Kavach's is `wait()`",

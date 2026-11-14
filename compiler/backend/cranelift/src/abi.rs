@@ -4,7 +4,9 @@
 use cranelift_codegen::ir::{AbiParam, Signature, types};
 use cranelift_module::{FuncId as CFuncId, Linkage, Module};
 use kavach_kir::Type;
-use kavach_runtime_native::{heap, rt, rt_data, rt_errors, rt_maps, rt_numbers, text_items};
+use kavach_runtime_native::{
+    heap, rt, rt_bytes, rt_data, rt_errors, rt_maps, rt_numbers, text_items,
+};
 
 /// The runtime functions native code calls.
 pub(crate) struct Runtime {
@@ -127,6 +129,24 @@ pub(crate) fn runtime_functions() -> Vec<RuntimeFn> {
             rt_data::kv_str_len as *const u8,
             &[I64],
             &[I64],
+        ),
+        (
+            "kv_bytes_data",
+            rt_bytes::kv_bytes_data as *const u8,
+            &[I64],
+            &[I64],
+        ),
+        (
+            "kv_bytes_count",
+            rt_bytes::kv_bytes_count as *const u8,
+            &[I64],
+            &[I64],
+        ),
+        (
+            "kv_bytes_bad_index",
+            rt_bytes::kv_bytes_bad_index as *const u8,
+            &[I64, I64, I32],
+            &[],
         ),
         (
             "kv_text_box",

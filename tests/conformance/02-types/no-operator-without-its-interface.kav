@@ -1,0 +1,11 @@
+// Rule: A program's own type has no operator unless it implements the operator's interface.
+// Spec: 2.16
+// expect compile error
+
+type Point {
+    x: Int
+}
+
+fn main() {
+    print(Point(x: 1) - Point(x: 2))     // error: Point has no `-`
+}

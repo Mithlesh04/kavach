@@ -53,6 +53,8 @@ Hindley–Milner-style inference with unification. A number literal starts as an
 | `src/json.rs` | `Json` (spec 2.12): literals that become one where it is expected, and which types can be encoded |
 | `src/capabilities.rs` | Built-in capabilities: inferring and checking `uses` (spec 8.1) |
 | `src/gpu.rs` | `gpu fn` (spec 15.1): its signature, its number literals, no recursion, and which `map`s may run on the GPU |
+| `src/gpu_draw.rs` | `gpu vertex fn` and `gpu fragment fn`, `gpu.pipeline` typed `Pipeline<V, I, S>`, and `frame.draw`'s arguments (spec 15.3) |
+| `src/user_ops.rs` | Operators for a program's own types through `Add`, `Sub`, `Mul`, `Div`, `Rem`, `Neg` and `Comparable` (spec 2.16) |
 | `src/gpu_walk.rs` | The walk over a `gpu fn`'s body: what it may use, with a message naming anything else |
 | `src/always_panics.rs` | Arithmetic that always panics (spec 1.8): division by a known `0`, `+ - *` of known values that can't fit, an index past a known list's end; `1 / 2` warns |
 | `src/deprecated.rs` | Calls to a deprecated function warn with its message (spec 12.6) |

@@ -158,6 +158,22 @@ pub fn clear(f: i64, r: f64, g: f64, b: f64) {
     drop(pass);
 }
 
+/// Draws through pipeline `pipeline` into frame `f` (spec 15.3): the
+/// vertices, instances and shared value, as 32-bit words.
+pub fn draw(f: i64, pipeline: i64, parts: [&[u32]; 3]) -> Result<(), String> {
+    let mut d = drawing();
+    let Drawing {
+        screens, frames, ..
+    } = &mut *d;
+    let frame = frames.get_mut(&f).ok_or("the frame is gone")?;
+    let format = screens
+        .get(&frame.screen)
+        .ok_or("the screen is closed")?
+        .config
+        .format;
+    crate::render::draw_into(&frame.view, &mut frame.encoder, format, pipeline, parts)
+}
+
 /// Sends what was drawn into frame `f` and puts it on the screen.
 pub fn show(f: i64) {
     let Some(frame) = drawing().frames.remove(&f) else {

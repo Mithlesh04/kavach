@@ -36,6 +36,7 @@ mod lower_convert;
 mod lower_data;
 mod lower_destructure;
 mod lower_dispatch;
+mod lower_draw;
 mod lower_drops;
 mod lower_durable;
 mod lower_enums;
@@ -86,6 +87,7 @@ mod unused;
 mod version;
 pub mod walk;
 mod whole_lines;
+mod written_types;
 
 pub use encode::{decode_shapes, encode_shapes};
 pub use ir::*;

@@ -29,6 +29,24 @@ impl Checker<'_> {
                 Ty::Unit,
             ),
             "show_id" | "drop_frame_id" | "close_id" => (vec![id], Ty::Unit),
+            // A frame's number, a pipeline, its vertices, instances and
+            // shared value (spec 15.3).
+            "draw_id" => {
+                let (v, i, s) = (self.fresh(), self.fresh(), self.fresh());
+                let pipeline = Ty::Builtin("Pipeline", vec![v.clone(), i.clone(), s.clone()]);
+                let list = |t: &Ty| Ty::List(Box::new(t.clone()));
+                let shared = Ty::Optional(Box::new(s));
+                (
+                    vec![
+                        id,
+                        p("pipeline", &pipeline),
+                        p("vertices", &list(&v)),
+                        p("instances", &list(&i)),
+                        p("shared", &shared),
+                    ],
+                    Ty::Unit,
+                )
+            }
             _ => return None,
         })
     }

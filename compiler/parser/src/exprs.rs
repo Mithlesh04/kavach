@@ -77,7 +77,12 @@ impl Parser<'_> {
             let chained = last_prec == Some(prec) && prec == COMPARISON;
             last_prec = Some(prec);
             self.bump();
-            let rhs = self.binary(prec + 1);
+            // `a ?? b ?? c` is `a ?? (b ?? c)` (spec 1.8).
+            let rhs = self.binary(if op == BinaryOp::Default {
+                prec
+            } else {
+                prec + 1
+            });
             // `a < b < c` (spec 1.8): the comparisons so far, one more.
             let kind = match lhs.kind {
                 ExprKind::Binary(first, a, b) if chained => {

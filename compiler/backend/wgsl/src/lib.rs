@@ -18,6 +18,8 @@
 //! A kernel whose every loop surely ends says `// loops end`, and is
 //! compiled without `wgpu`'s counter in each loop (decision 0077).
 
+mod render;
+pub use render::pipeline_sources;
 mod cost;
 mod expr;
 mod filter;
@@ -320,8 +322,19 @@ pub(crate) fn ty_name(program: &Program, t: Type) -> Option<String> {
     if let Some(name) = wgsl_type(t) {
         return Some(name.to_string());
     }
-    struct_fields(program, t)?;
     let Type::Ref(id) = t else { return None };
+    // Fields of the four types, or one level down a vector (a draw's
+    // `position`, spec 15.3); a `map`'s items stay flat (`struct_fields`).
+    let parts: Vec<Type> = match program.shapes.get(id as usize)? {
+        Shape::Tuple(ts) => ts.clone(),
+        Shape::Record { fields, .. } => fields.iter().map(|f| f.ty).collect(),
+        _ => return None,
+    };
+    for p in parts {
+        if wgsl_type(p).is_none() {
+            struct_fields(program, p)?;
+        }
+    }
     Some(format!("S{id}"))
 }
 
@@ -344,6 +357,7 @@ pub(crate) fn struct_fields(program: &Program, t: Type) -> Option<Vec<Type>> {
 /// run it. A `map` whose kernel can't be written keeps an empty text, and
 /// runs on the CPU.
 pub fn attach(program: &mut Program) {
+    render::attach_pipelines(program);
     let mut texts: HashMap<String, String> = HashMap::new();
     for f in &program.functions {
         walk::any_in_block(&f.body, &mut |e| {

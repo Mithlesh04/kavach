@@ -288,6 +288,11 @@ impl Checker<'_> {
             UnaryOp::Deref => self.deref(x),
             UnaryOp::Neg | UnaryOp::BitNot => {
                 let t = self.value(x, None);
+                if op == UnaryOp::Neg
+                    && let Some(out) = self.user_neg(x, &t)
+                {
+                    return out;
+                }
                 if self.require_number(x, &t, op == UnaryOp::BitNot) {
                     t
                 } else {
@@ -335,6 +340,11 @@ impl Checker<'_> {
             }
             Eq | NotEq | Lt | Le | Gt | Ge => {
                 let lt = self.value(l, None);
+                if !matches!(op, Eq | NotEq)
+                    && let Some(t) = self.user_binary(op, l, r, &lt)
+                {
+                    return t;
+                }
                 self.check_expect(r, &lt);
                 self.check_compare(op, l, r, &lt);
                 if !matches!(op, Eq | NotEq) {
@@ -381,6 +391,10 @@ impl Checker<'_> {
                 if let Some(t) = self.ptr_offset(op, &lt, r, l.span) {
                     return t;
                 }
+                // `a + b` on a program's own type (spec 2.16).
+                if let Some(t) = self.user_binary(op, l, r, &lt) {
+                    return t;
+                }
                 if op == Add && matches!(self.inf.resolve(&lt), Ty::Prim(Prim::Bytes)) {
                     let bytes = Ty::Prim(Prim::Bytes);
                     self.check_expect(r, &bytes);
@@ -401,7 +415,7 @@ impl Checker<'_> {
                     self.value(r, None);
                     return Ty::Error;
                 }
-                self.check_expect(r, &lt);
+                self.number_then_own(op, r, &lt);
                 lt
             }
         }

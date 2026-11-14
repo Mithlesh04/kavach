@@ -327,7 +327,13 @@ impl<'a> Interp<'a> {
             let taken = local.and_then(|d| self.frame().vars.remove(&d));
             let receiver = match taken {
                 Some(v) => v,
-                None => self.eval(base)?,
+                // A field's or item's list: its place lets go while it
+                // changes, so it changes in place too (Sakshi's S6).
+                None => {
+                    let v = self.eval(base)?;
+                    self.assign(base, Value::Unit, span)?;
+                    v
+                }
             };
             let changed = self.mutate(receiver, &name.name, args, span)?;
             self.assign(base, changed, span)?;

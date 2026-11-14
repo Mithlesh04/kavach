@@ -1,0 +1,15 @@
+// Rule: Two functions can't share a name: Kavach has no overloading.
+// Spec: 1.4
+// expect compile error
+
+fn area(r: Float) -> Float {
+    return r * r
+}
+
+fn area(w: Float, h: Float) -> Float {     // error: a second function named area
+    return w * h
+}
+
+fn main() {
+    print(area(2.0))
+}

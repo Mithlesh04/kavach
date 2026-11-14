@@ -159,7 +159,7 @@ fn captures_of(closure: i64) -> Vec<u32> {
 }
 
 /// Slot `s` of type `t` as one word for a kernel.
-fn word(s: u64, t: Type) -> u32 {
+pub(crate) fn word(s: u64, t: Type) -> u32 {
     match t {
         Type::F32 => f32_of(s as i64).to_bits(),
         _ => s as u32,
@@ -192,7 +192,12 @@ fn as_bytes_mut(words: &mut [u64]) -> &mut [u8] {
 /// The `n` items of `list`, of type `item`, as a kernel's 32-bit words
 /// (little-endian), given to `f`: a packed list of 32-bit items
 /// (decision 0045) is in that form already, and isn't copied.
-fn with_kernel_bytes<R>(list: i64, item: Type, n: usize, f: impl FnOnce(&[u8]) -> R) -> R {
+pub(crate) fn with_kernel_bytes<R>(
+    list: i64,
+    item: Type,
+    n: usize,
+    f: impl FnOnce(&[u8]) -> R,
+) -> R {
     let ty = obj(list).ty();
     if crate::flat::item_size(ty) == 4 {
         return f(&as_bytes(crate::heap::slots(list))[..n * 4]);

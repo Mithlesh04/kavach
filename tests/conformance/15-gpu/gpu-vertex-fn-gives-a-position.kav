@@ -1,0 +1,16 @@
+// Rule: A gpu vertex fn gives a record with the field position, four Float32s.
+// Spec: 15.3
+// expect compile error
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+gpu vertex fn place(c: Corner) -> Corner {     // error: no position
+    c
+}
+
+fn main() {
+    print(place(Corner(x: 0.0, y: 0.0)).x)
+}

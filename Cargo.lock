@@ -1304,6 +1304,7 @@ name = "kavach-backend-llvm"
 version = "0.1.0"
 dependencies = [
  "kavach-backend-cranelift",
+ "kavach-driver",
  "kavach-kir",
  "kavach-runtime-native",
 ]
@@ -1314,6 +1315,7 @@ version = "0.1.0"
 dependencies = [
  "kavach-driver",
  "kavach-kir",
+ "kavach-runtime-gpu",
 ]
 
 [[package]]

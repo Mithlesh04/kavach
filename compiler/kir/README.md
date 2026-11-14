@@ -18,6 +18,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 |---|---|
 | `src/ir.rs` | The KIR types, including heap shapes (`Shape`) |
 | `src/types.rs` | KIR types for checker and written types; the shape table |
+| `src/written_types.rs` | The KIR type of a type written in the source |
 | `src/lower.rs` | The file, functions, methods, contracts, optional wrapping |
 | `src/lower_stmt.rs` | Statements: `const`, assignment to fields, loops |
 | `src/lower_expr.rs` | Expressions, `if`, `if let`, `??` |
@@ -32,6 +33,8 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/lower_match.rs` | `match` and patterns, including `ok`/`err` |
 | `src/lower_errors.rs` | Calls that can fail, `try`, `catch`, `fail`, `context` |
 | `src/lower_lambda.rs` | Inlined lambdas, list methods that take them, `Shared.update` |
+| `src/lower_concat.rs` | `xs + ys`, `xs += ys` and `xs.pop()` on lists, as pushes and a cut (spec 2.2, 14.2) |
+| `src/lower_draw.rs` | `gpu.pipeline(v, f)` and a frame's draws (spec 15.3) |
 | `src/lower_lambda/scan.rs` | What a lambda's body reads and changes, so a lambda changes only copies |
 | `src/lower_lambda/called.rs` | Lambdas and functions called, not inlined: a named function, and a lambda with a `return` of its own (spec 3.3) |
 | `src/lower_generic.rs` | Generic functions: type arguments and instances |

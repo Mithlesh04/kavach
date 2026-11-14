@@ -26,6 +26,7 @@ It also reads `kavach.toml` (spec 10.4), found in the file's folder or a parent:
 | `src/std_modules.rs` | The standard library modules written in Kavach, and which of them a program uses: those it names with `std.<name>`, by a public type or variant, or through a built-in such as `ask` (decision 0024) |
 | `src/config.rs` | `kavach.toml`: finding and reading it |
 | `src/limits.rs` | File and function length limits, with a suggested split (spec 12.1) |
+| `src/operators.rs` | Operators on a program's own types made into the method calls they stand for, once checked (spec 2.16) |
 | `src/version.rs` | What built a program (spec 10.5): the compiler's version and commit (from `build.rs`), the text each executable carries, and finding it again |
 | `build.rs` | Records the commit the compiler is built from |
 | `src/schema.rs` | The JSON Schema of a type: what `ask<T>` sends the model (spec 8.4) and `json.schema<T>()` gives (2.12), for the interpreter and native code |

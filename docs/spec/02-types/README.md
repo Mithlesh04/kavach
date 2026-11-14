@@ -21,6 +21,7 @@ Each section is a file of its own: new sections go at the end, with the next num
 | 2.13 Bytes | [13-bytes.md](13-bytes.md) |
 | 2.14 Anonymous records | [14-anonymous-records.md](14-anonymous-records.md) |
 | 2.15 Interface values | [15-interface-values.md](15-interface-values.md) |
+| 2.16 Operators for your own types | [16-operators.md](16-operators.md) |
 
 ## Open questions
 
@@ -28,5 +29,6 @@ Each section is a file of its own: new sections go at the end, with the next num
 - **Decoding unions:** the `{"Variant": {…}}` form only, or also a tag field (`"type": "Circle"`) chosen on the union?
 - **`BigInt` and bits:** should `& | ^ << >> ~` work on `BigInt`, as on the other whole numbers? Not yet.
 - **`BigInt` back to `Int`:** comes with the conversions planned for every built-in type (`Int(b)`, failing when it doesn't fit).
+- **A number type's range as constants:** `Int.max` and the like are a compile error today, since `max` is already a method (`a.max(b)`); names such as `Int.largest` and `Int.smallest`, or none, with `checked_add` and the others (5.6) for arithmetic that may not fit.
 
 Decisions are recorded in [0013](../../decisions/0013-core-language-decisions.md) and, for `Json`, [0019](../../decisions/0019-json-values.md).

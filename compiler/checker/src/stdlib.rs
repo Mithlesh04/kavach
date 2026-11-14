@@ -96,6 +96,10 @@ impl Checker<'_> {
         span: Span,
     ) -> Option<Ty> {
         let module = self.std_modules.get(&module_def)?.clone();
+        // `gpu.pipeline(v, f)`: typed by its gpu fns (spec 15.3).
+        if module == "gpu" && name == "pipeline" {
+            return Some(self.pipeline_call(args, span));
+        }
         if self.needs_a_block(&module, name, span) {
             return Some(Ty::Error);
         }

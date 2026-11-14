@@ -8,6 +8,7 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.2 | [text-methods.kav](text-methods.kav) | Text has replace, lines, chars, index_of and slice; positions count characters. | runs |
 | 14.2 | [text-split.kav](text-split.kav) | split returns the parts between separators, empty parts included. | runs |
 | 14.2 | [list-methods.kav](list-methods.kav) | Lists have join, sort, sort_by, reverse, take, skip, find, count, index_of, min and max. | runs |
+| 14.2 | [list-slice-takes-a-range-of-items.kav](list-slice-takes-a-range-of-items.kav) | `xs.slice(start, end)` gives items `start..end`, both clamped to the list, as `String.slice` does. | runs |
 | 14.2 | [chars-join-and-text-contains-a-char.kav](chars-join-and-text-contains-a-char.kav) | A `[Char]` joins into text, and `contains` looks for a `Char` as for a `String`. | runs |
 | 14.2 | [pop-takes-the-last-item.kav](pop-takes-the-last-item.kav) | `xs.pop()` takes out and gives the last item, or `none` for an empty list; a copy made before keeps it. | runs |
 | 14.2 | [pop-on-a-const-list-is-an-error.kav](pop-on-a-const-list-is-an-error.kav) | `xs.pop()` changes `xs`, so `xs` must be a `let`. | compile error |
