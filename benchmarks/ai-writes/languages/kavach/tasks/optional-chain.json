@@ -1,0 +1,19 @@
+{
+ "id": "optional-chain",
+ "given": "type Address {\n    city: String?\n}\n\ntype User {\n    address: Address?\n}",
+ "signature": "fn city(u: User) -> String",
+ "tests": [
+  {
+   "call": "city(User(address: Address(city: \"pune\")))",
+   "prints": "PUNE"
+  },
+  {
+   "call": "city(User(address: none))",
+   "prints": "UNKNOWN"
+  },
+  {
+   "call": "city(User(address: Address(city: none)))",
+   "prints": "UNKNOWN"
+  }
+ ]
+}

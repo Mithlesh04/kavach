@@ -1,0 +1,3 @@
+fn lengths(text: String) -> [Int] {
+    text.split(" ").map(w => w.len())
+}

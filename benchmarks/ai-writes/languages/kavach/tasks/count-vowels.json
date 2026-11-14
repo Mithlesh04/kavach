@@ -1,0 +1,15 @@
+{
+ "id": "count-vowels",
+ "given": "",
+ "signature": "fn count_vowels(text: String) -> Int",
+ "tests": [
+  {
+   "call": "count_vowels(\"Hello World\")",
+   "prints": "3"
+  },
+  {
+   "call": "count_vowels(\"xyz\")",
+   "prints": "0"
+  }
+ ]
+}

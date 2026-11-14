@@ -1,0 +1,15 @@
+{
+ "id": "title-case",
+ "given": "",
+ "signature": "fn title(text: String) -> String",
+ "tests": [
+  {
+   "call": "title(\"hello WORLD\")",
+   "prints": "Hello World"
+  },
+  {
+   "call": "title(\"a\")",
+   "prints": "A"
+  }
+ ]
+}

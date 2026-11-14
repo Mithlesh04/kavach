@@ -1,0 +1,11 @@
+use std.json
+
+type Item {
+    name: String
+    qty: Int
+}
+
+fn total_qty(text: String) -> Int {
+    const items = json.decode<[Item]>(text) catch _ => return -1
+    items.sum(i => i.qty)
+}

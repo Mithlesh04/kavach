@@ -1,0 +1,19 @@
+{
+ "id": "collatz",
+ "given": "",
+ "signature": "fn collatz(n: Int) -> Int",
+ "tests": [
+  {
+   "call": "collatz(1)",
+   "prints": "0"
+  },
+  {
+   "call": "collatz(6)",
+   "prints": "8"
+  },
+  {
+   "call": "collatz(27)",
+   "prints": "111"
+  }
+ ]
+}

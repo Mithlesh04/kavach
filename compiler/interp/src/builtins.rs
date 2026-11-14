@@ -375,7 +375,18 @@ impl<'a> Interp<'a> {
                     )),
                     _ => {
                         let mut values = mapped.into_iter();
-                        let mut total = values.next().unwrap_or(Value::Int(0, Prim::Int));
+                        // An empty sum is the zero of the call's type: `0.0`
+                        // for a `Float` lambda, as native code gives.
+                        let zero = || match self.c.expr_types.get(&(span.start, span.end)) {
+                            Some(kavach_checker::Ty::Prim(Prim::Float)) => Value::Float(0.0),
+                            Some(kavach_checker::Ty::Prim(Prim::Float32)) => Value::Float32(0.0),
+                            Some(kavach_checker::Ty::Prim(Prim::Decimal)) => {
+                                crate::bigint::decimal_value(kavach_runtime_core::AnyDecimal::parse("0").expect("0 is a number"))
+                            }
+                            Some(kavach_checker::Ty::Prim(p)) if p.is_int() => Value::Int(0, *p),
+                            _ => Value::Int(0, Prim::Int),
+                        };
+                        let mut total = values.next().unwrap_or_else(zero);
                         for v in values {
                             total = self.arith(BinaryOp::Add, total, v, span)?;
                         }

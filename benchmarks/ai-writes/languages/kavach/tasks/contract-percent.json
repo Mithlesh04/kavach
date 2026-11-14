@@ -1,0 +1,15 @@
+{
+ "id": "contract-percent",
+ "given": "",
+ "signature": "fn percent(part: Int, whole: Int) -> Int",
+ "tests": [
+  {
+   "call": "percent(1, 3)",
+   "prints": "33"
+  },
+  {
+   "call": "percent(5, 5)",
+   "prints": "100"
+  }
+ ]
+}

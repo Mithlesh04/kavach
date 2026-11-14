@@ -1,0 +1,11 @@
+fn rotate(xs: [Int], k: Int) -> [Int] {
+    if xs.is_empty() {
+        return xs
+    }
+    const s = k % xs.len()
+    let out = xs.skip(s)
+    for x in xs.take(s) {
+        out.push(x)
+    }
+    out
+}

@@ -18,6 +18,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.1, 5.6 | [int-of-nan-panics.kav](int-of-nan-panics.kav) | A float that isn't a number doesn't fit any whole-number type. | panic |
 | 2.1 | [float32-is-single-precision.kav](float32-is-single-precision.kav) | `Float32` rounds to single precision at every step and prints its shortest form. | runs |
 | 2.2 | [collections-change-in-place.kav](collections-change-in-place.kav) | `items[i] = v`, `map[key] = v`, `push` and `remove` change a `let` collection, also inside a field. | runs |
+| 2.2 | [an-empty-sum-is-zero-of-its-type.kav](an-empty-sum-is-zero-of-its-type.kav) | An empty list's `sum` is the zero of the lambda's result type: `0`, or `0.0` for `Float` and `Float32`. | runs |
 | 2.2 | [list-and-map-access.kav](list-and-map-access.kav) | list.get(i) and map[key] return optionals. | runs |
 | 2.2 | [a-list-mapped-into-itself-keeps-its-copies.kav](a-list-mapped-into-itself-keeps-its-copies.kav) | `xs = xs.map(f)` gives `xs` the new items and leaves every copy of the old list as it was. | runs |
 | 2.2 | [maps-keep-insertion-order.kav](maps-keep-insertion-order.kav) | Maps keep insertion order when iterated. | runs |

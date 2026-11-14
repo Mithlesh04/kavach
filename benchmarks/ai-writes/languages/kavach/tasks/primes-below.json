@@ -1,0 +1,15 @@
+{
+ "id": "primes-below",
+ "given": "",
+ "signature": "fn primes_below(n: Int) -> [Int]",
+ "tests": [
+  {
+   "call": "primes_below(20)",
+   "prints": "[2, 3, 5, 7, 11, 13, 17, 19]"
+  },
+  {
+   "call": "primes_below(2)",
+   "prints": "[]"
+  }
+ ]
+}

@@ -1,0 +1,15 @@
+{
+ "id": "merge-sorted",
+ "given": "",
+ "signature": "fn merge(a: [Int], b: [Int]) -> [Int]",
+ "tests": [
+  {
+   "call": "merge([1, 4, 9], [2, 3, 10])",
+   "prints": "[1, 2, 3, 4, 9, 10]"
+  },
+  {
+   "call": "merge([], [1])",
+   "prints": "[1]"
+  }
+ ]
+}

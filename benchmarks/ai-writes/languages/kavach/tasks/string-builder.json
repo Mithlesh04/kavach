@@ -1,0 +1,15 @@
+{
+ "id": "string-builder",
+ "given": "",
+ "signature": "fn csv(n: Int) -> String",
+ "tests": [
+  {
+   "call": "csv(5)",
+   "prints": "1,2,3,4,5"
+  },
+  {
+   "call": "csv(0)",
+   "prints": ""
+  }
+ ]
+}

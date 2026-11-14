@@ -1,0 +1,15 @@
+{
+ "id": "queue-sim",
+ "given": "",
+ "signature": "fn simulate(commands: [Int]) -> [Int]",
+ "tests": [
+  {
+   "call": "simulate([5, 7, 0, 9, 0, 0, 0])",
+   "prints": "[]"
+  },
+  {
+   "call": "simulate([1, 2, 0, 3])",
+   "prints": "[2, 3]"
+  }
+ ]
+}

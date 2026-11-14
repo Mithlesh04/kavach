@@ -1,0 +1,8 @@
+fn swap_ends(inout xs: [Int]) {
+    if xs.len() < 2 {
+        return
+    }
+    const first = xs[0]
+    xs[0] = xs[xs.len() - 1]
+    xs[xs.len() - 1] = first
+}

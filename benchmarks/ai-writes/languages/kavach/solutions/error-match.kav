@@ -1,0 +1,9 @@
+type LoginError = NoSuchUser(name: String) | WrongPassword | Locked(minutes: Int)
+
+fn message(e: LoginError) -> String {
+    match e {
+        LoginError.NoSuchUser(name) => "no user {name}",
+        LoginError.WrongPassword => "wrong password",
+        LoginError.Locked(minutes) => "locked for {minutes} minutes",
+    }
+}

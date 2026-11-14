@@ -1,0 +1,14 @@
+fn rle(text: String) -> String {
+    let out = ""
+    const cs = text.chars()
+    let i = 0
+    while i < cs.len() {
+        let j = i
+        while j < cs.len() and cs[j] == cs[i] {
+            j += 1
+        }
+        out += "{cs[i]}{j - i}"
+        i = j
+    }
+    out
+}

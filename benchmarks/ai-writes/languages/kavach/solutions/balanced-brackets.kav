@@ -1,0 +1,15 @@
+fn balanced(text: String) -> Bool {
+    let stack: [Char] = []
+    for c in text.chars() {
+        if c == '(' or c == '[' or c == '{' {
+            stack.push(c)
+        } else if c == ')' or c == ']' or c == '}' {
+            const want = if c == ')' { '(' } else if c == ']' { '[' } else { '{' }
+            if stack.last() != want {
+                return false
+            }
+            stack = stack.take(stack.len() - 1)
+        }
+    }
+    stack.is_empty()
+}

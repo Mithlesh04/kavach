@@ -1,0 +1,15 @@
+{
+ "id": "hex-color",
+ "given": "",
+ "signature": "fn hex(r: Int, g: Int, b: Int) -> String",
+ "tests": [
+  {
+   "call": "hex(255, 0, 128)",
+   "prints": "#ff0080"
+  },
+  {
+   "call": "hex(0, 0, 0)",
+   "prints": "#000000"
+  }
+ ]
+}

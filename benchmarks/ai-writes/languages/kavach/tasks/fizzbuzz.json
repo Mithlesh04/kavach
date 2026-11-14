@@ -1,0 +1,23 @@
+{
+ "id": "fizzbuzz",
+ "given": "",
+ "signature": "fn fizzbuzz(n: Int) -> String",
+ "tests": [
+  {
+   "call": "fizzbuzz(3)",
+   "prints": "Fizz"
+  },
+  {
+   "call": "fizzbuzz(10)",
+   "prints": "Buzz"
+  },
+  {
+   "call": "fizzbuzz(30)",
+   "prints": "FizzBuzz"
+  },
+  {
+   "call": "fizzbuzz(7)",
+   "prints": "7"
+  }
+ ]
+}

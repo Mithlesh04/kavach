@@ -1,0 +1,11 @@
+{
+ "id": "interface-describe",
+ "given": "interface Named {\n    fn name(self) -> String\n}\n\ntype Dog: Named {\n    fn name(self) -> String {\n        \"dog\"\n    }\n}\n\ntype Cat: Named {\n    fn name(self) -> String {\n        \"cat\"\n    }\n}",
+ "signature": "fn names(xs: [Named]) -> String",
+ "tests": [
+  {
+   "call": "names([Dog(), Cat(), Dog()])",
+   "prints": "dog, cat, dog"
+  }
+ ]
+}

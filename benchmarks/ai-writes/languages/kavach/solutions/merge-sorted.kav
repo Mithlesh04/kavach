@@ -1,0 +1,20 @@
+fn merge(a: [Int], b: [Int]) -> [Int] {
+    let (i, j) = (0, 0)
+    let out: [Int] = []
+    while i < a.len() and j < b.len() {
+        if a[i] <= b[j] {
+            out.push(a[i])
+            i += 1
+        } else {
+            out.push(b[j])
+            j += 1
+        }
+    }
+    for x in a.skip(i) {
+        out.push(x)
+    }
+    for x in b.skip(j) {
+        out.push(x)
+    }
+    out
+}

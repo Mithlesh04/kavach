@@ -1,0 +1,19 @@
+{
+ "id": "factorial",
+ "given": "",
+ "signature": "fn factorial(n: Int) -> Int",
+ "tests": [
+  {
+   "call": "factorial(0)",
+   "prints": "1"
+  },
+  {
+   "call": "factorial(5)",
+   "prints": "120"
+  },
+  {
+   "call": "factorial(20)",
+   "prints": "2432902008176640000"
+  }
+ ]
+}

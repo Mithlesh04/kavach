@@ -1,0 +1,15 @@
+{
+ "id": "union-shape",
+ "given": "type Shape = Circle(radius: Float) | Square(side: Float)",
+ "signature": "fn area(s: Shape) -> Float",
+ "tests": [
+  {
+   "call": "area(Shape.Circle(radius: 2.0))",
+   "prints": "12.56"
+  },
+  {
+   "call": "area(Shape.Square(side: 3.0))",
+   "prints": "9.0"
+  }
+ ]
+}

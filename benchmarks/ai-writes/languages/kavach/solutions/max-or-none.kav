@@ -1,0 +1,3 @@
+fn largest(xs: [Int]) -> Int? {
+    xs.max()
+}

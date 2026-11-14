@@ -1,0 +1,15 @@
+{
+ "id": "second-largest",
+ "given": "",
+ "signature": "fn second_largest(xs: [Int]) -> Int?",
+ "tests": [
+  {
+   "call": "second_largest([4, 9, 9, 2])",
+   "prints": "4"
+  },
+  {
+   "call": "second_largest([5, 5])",
+   "prints": "none"
+  }
+ ]
+}

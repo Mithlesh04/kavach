@@ -1,0 +1,15 @@
+{
+ "id": "safe-divide",
+ "given": "type MathError = DivideByZero",
+ "signature": "fn divide(a: Int, b: Int) -> Int ! MathError",
+ "tests": [
+  {
+   "call": "divide(7, 2) catch _ => -1",
+   "prints": "3"
+  },
+  {
+   "call": "divide(1, 0) catch _ => -1",
+   "prints": "-1"
+  }
+ ]
+}

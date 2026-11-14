@@ -1,0 +1,19 @@
+{
+ "id": "binary-search",
+ "given": "",
+ "signature": "fn find(xs: [Int], target: Int) -> Int?",
+ "tests": [
+  {
+   "call": "find([1, 3, 5, 7, 9], 7)",
+   "prints": "3"
+  },
+  {
+   "call": "find([1, 3, 5], 4)",
+   "prints": "none"
+  },
+  {
+   "call": "find([], 1)",
+   "prints": "none"
+  }
+ ]
+}

@@ -1,0 +1,8 @@
+fn collatz(n: Int) -> Int {
+    let (m, steps) = (n, 0)
+    while m != 1 {
+        m = if m % 2 == 0 { m / 2 } else { 3 * m + 1 }
+        steps += 1
+    }
+    steps
+}

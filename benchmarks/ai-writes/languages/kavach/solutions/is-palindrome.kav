@@ -1,0 +1,4 @@
+fn is_palindrome(text: String) -> Bool {
+    const cs = text.lower().chars()
+    cs == cs.reverse()
+}

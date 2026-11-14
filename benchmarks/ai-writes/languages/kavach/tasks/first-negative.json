@@ -1,0 +1,15 @@
+{
+ "id": "first-negative",
+ "given": "",
+ "signature": "fn first_negative(xs: [Int]) -> Int?",
+ "tests": [
+  {
+   "call": "first_negative([4, -1, -3])",
+   "prints": "1"
+  },
+  {
+   "call": "first_negative([1, 2])",
+   "prints": "none"
+  }
+ ]
+}

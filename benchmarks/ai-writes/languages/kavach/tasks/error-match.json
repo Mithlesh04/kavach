@@ -1,0 +1,19 @@
+{
+ "id": "error-match",
+ "given": "type LoginError = NoSuchUser(name: String) | WrongPassword | Locked(minutes: Int)",
+ "signature": "fn message(e: LoginError) -> String",
+ "tests": [
+  {
+   "call": "message(LoginError.NoSuchUser(name: \"ana\"))",
+   "prints": "no user ana"
+  },
+  {
+   "call": "message(LoginError.Locked(minutes: 5))",
+   "prints": "locked for 5 minutes"
+  },
+  {
+   "call": "message(LoginError.WrongPassword)",
+   "prints": "wrong password"
+  }
+ ]
+}

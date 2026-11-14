@@ -1,0 +1,19 @@
+{
+ "id": "is-sorted",
+ "given": "",
+ "signature": "fn is_sorted(xs: [Int]) -> Bool",
+ "tests": [
+  {
+   "call": "is_sorted([1, 2, 2, 5])",
+   "prints": "true"
+  },
+  {
+   "call": "is_sorted([3, 1])",
+   "prints": "false"
+  },
+  {
+   "call": "is_sorted([])",
+   "prints": "true"
+  }
+ ]
+}

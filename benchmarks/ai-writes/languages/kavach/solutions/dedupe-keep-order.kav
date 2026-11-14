@@ -1,0 +1,11 @@
+fn dedupe(xs: [Int]) -> [Int] {
+    let seen: Set<Int> = Set.of()
+    let out: [Int] = []
+    for x in xs {
+        if not seen.contains(x) {
+            seen.add(x)
+            out.push(x)
+        }
+    }
+    out
+}

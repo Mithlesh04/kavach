@@ -1,0 +1,11 @@
+{
+ "id": "word-lengths",
+ "given": "",
+ "signature": "fn lengths(text: String) -> [Int]",
+ "tests": [
+  {
+   "call": "lengths(\"I am here\")",
+   "prints": "[1, 2, 4]"
+  }
+ ]
+}

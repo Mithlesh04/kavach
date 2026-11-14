@@ -1,0 +1,3 @@
+fn sum_evens(xs: [Int]) -> Int {
+    xs.filter(x => x % 2 == 0).sum(x => x)
+}

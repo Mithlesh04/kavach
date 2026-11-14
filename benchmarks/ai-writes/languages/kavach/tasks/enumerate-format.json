@@ -1,0 +1,11 @@
+{
+ "id": "enumerate-format",
+ "given": "",
+ "signature": "fn numbered(items: [String]) -> String",
+ "tests": [
+  {
+   "call": "numbered([\"a\", \"b\"]).split(\"\\n\")",
+   "prints": "[\"1. a\", \"2. b\"]"
+  }
+ ]
+}

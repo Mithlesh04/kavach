@@ -1,0 +1,23 @@
+{
+ "id": "is-prime",
+ "given": "",
+ "signature": "fn is_prime(n: Int) -> Bool",
+ "tests": [
+  {
+   "call": "is_prime(2)",
+   "prints": "true"
+  },
+  {
+   "call": "is_prime(15)",
+   "prints": "false"
+  },
+  {
+   "call": "is_prime(97)",
+   "prints": "true"
+  },
+  {
+   "call": "is_prime(1)",
+   "prints": "false"
+  }
+ ]
+}

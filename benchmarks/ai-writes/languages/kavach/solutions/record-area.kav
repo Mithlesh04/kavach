@@ -1,0 +1,8 @@
+type Rect {
+    width: Float
+    height: Float
+}
+
+fn total_area(rects: [Rect]) -> Float {
+    rects.sum(r => r.width * r.height)
+}

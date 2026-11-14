@@ -1,0 +1,10 @@
+fn two_sum(xs: [Int], target: Int) -> (Int, Int)? {
+    for i in 0..xs.len() {
+        for j in (i + 1)..xs.len() {
+            if xs[i] + xs[j] == target {
+                return (i, j)
+            }
+        }
+    }
+    none
+}

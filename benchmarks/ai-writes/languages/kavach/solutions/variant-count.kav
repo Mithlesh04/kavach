@@ -1,0 +1,8 @@
+type Event = Click | Key(code: Int) | Scroll(dy: Int)
+
+fn key_count(events: [Event]) -> Int {
+    events.filter(e => match e {
+        Event.Key(_) => true,
+        _ => false,
+    }).len()
+}

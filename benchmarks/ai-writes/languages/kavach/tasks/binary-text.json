@@ -1,0 +1,19 @@
+{
+ "id": "binary-text",
+ "given": "",
+ "signature": "fn binary(n: Int) -> String",
+ "tests": [
+  {
+   "call": "binary(10)",
+   "prints": "1010"
+  },
+  {
+   "call": "binary(0)",
+   "prints": "0"
+  },
+  {
+   "call": "binary(1)",
+   "prints": "1"
+  }
+ ]
+}

@@ -1,0 +1,19 @@
+{
+ "id": "stack-record",
+ "given": "",
+ "signature": "type Stack",
+ "tests": [
+  {
+   "call": "Stack(items: []).push(1).push(2).top()",
+   "prints": "2"
+  },
+  {
+   "call": "Stack(items: []).push(1).push(2).pop().top()",
+   "prints": "1"
+  },
+  {
+   "call": "Stack(items: []).pop().top()",
+   "prints": "none"
+  }
+ ]
+}

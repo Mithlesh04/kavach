@@ -1,0 +1,12 @@
+fn caesar(text: String, k: Int) -> String {
+    let out = ""
+    for c in text.chars() {
+        const n = Int(c)
+        if n >= 97 and n <= 122 {
+            out += "{Char((n - 97 + k) % 26 + 97)}"
+        } else {
+            out += "{c}"
+        }
+    }
+    out
+}

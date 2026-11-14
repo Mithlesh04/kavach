@@ -1,0 +1,19 @@
+{
+ "id": "power-of-two",
+ "given": "",
+ "signature": "fn is_power_of_two(n: Int) -> Bool",
+ "tests": [
+  {
+   "call": "is_power_of_two(64)",
+   "prints": "true"
+  },
+  {
+   "call": "is_power_of_two(6)",
+   "prints": "false"
+  },
+  {
+   "call": "is_power_of_two(0)",
+   "prints": "false"
+  }
+ ]
+}

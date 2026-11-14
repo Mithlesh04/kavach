@@ -1,0 +1,23 @@
+{
+ "id": "triangle-kind",
+ "given": "",
+ "signature": "fn triangle(a: Int, b: Int, c: Int) -> String",
+ "tests": [
+  {
+   "call": "triangle(2, 2, 2)",
+   "prints": "equilateral"
+  },
+  {
+   "call": "triangle(2, 2, 3)",
+   "prints": "isosceles"
+  },
+  {
+   "call": "triangle(3, 4, 5)",
+   "prints": "scalene"
+  },
+  {
+   "call": "triangle(1, 2, 3)",
+   "prints": "invalid"
+  }
+ ]
+}

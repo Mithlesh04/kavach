@@ -1,0 +1,19 @@
+interface Named {
+    fn name(self) -> String
+}
+
+type Dog: Named {
+    fn name(self) -> String {
+        "dog"
+    }
+}
+
+type Cat: Named {
+    fn name(self) -> String {
+        "cat"
+    }
+}
+
+fn names(xs: [Named]) -> String {
+    xs.map(x => x.name()).join(", ")
+}

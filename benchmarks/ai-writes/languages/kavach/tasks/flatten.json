@@ -1,0 +1,11 @@
+{
+ "id": "flatten",
+ "given": "",
+ "signature": "fn flatten(xss: [[Int]]) -> [Int]",
+ "tests": [
+  {
+   "call": "flatten([[1, 2], [], [3]])",
+   "prints": "[1, 2, 3]"
+  }
+ ]
+}

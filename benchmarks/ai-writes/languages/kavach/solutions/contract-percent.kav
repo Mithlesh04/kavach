@@ -1,0 +1,6 @@
+fn percent(part: Int, whole: Int) -> Int
+    require whole > 0
+    require part >= 0 and part <= whole
+{
+    part * 100 / whole
+}

@@ -1,0 +1,11 @@
+type Address {
+    city: String?
+}
+
+type User {
+    address: Address?
+}
+
+fn city(u: User) -> String {
+    (u.address?.city ?? "unknown").upper()
+}

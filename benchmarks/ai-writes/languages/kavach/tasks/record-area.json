@@ -1,0 +1,15 @@
+{
+ "id": "record-area",
+ "given": "type Rect {\n    width: Float\n    height: Float\n}",
+ "signature": "fn total_area(rects: [Rect]) -> Float",
+ "tests": [
+  {
+   "call": "total_area([Rect(width: 2.0, height: 3.0), Rect(width: 1.5, height: 2.0)])",
+   "prints": "9.0"
+  },
+  {
+   "call": "total_area([])",
+   "prints": "0.0"
+  }
+ ]
+}

@@ -1,0 +1,6 @@
+type BadInput = NotANumber(text: String)
+
+fn doubled(text: String) -> Int ! BadInput {
+    const n = Int(text) catch _ => fail BadInput.NotANumber(text: text)
+    n * 2
+}

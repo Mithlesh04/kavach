@@ -1,0 +1,12 @@
+fn triangle(a: Int, b: Int, c: Int) -> String {
+    if a <= 0 or b <= 0 or c <= 0 or a >= b + c or b >= a + c or c >= a + b {
+        return "invalid"
+    }
+    if a == b and b == c {
+        "equilateral"
+    } else if a == b or b == c or a == c {
+        "isosceles"
+    } else {
+        "scalene"
+    }
+}

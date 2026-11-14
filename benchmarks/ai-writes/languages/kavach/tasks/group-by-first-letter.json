@@ -1,0 +1,15 @@
+{
+ "id": "group-by-first-letter",
+ "given": "",
+ "signature": "fn by_letter(words: [String]) -> [String: [String]]",
+ "tests": [
+  {
+   "call": "by_letter([\"apple\", \"bee\", \"ant\"])[\"a\"]",
+   "prints": "[\"apple\", \"ant\"]"
+  },
+  {
+   "call": "by_letter([\"apple\", \"bee\", \"ant\"]).len()",
+   "prints": "2"
+  }
+ ]
+}

@@ -1,0 +1,19 @@
+{
+ "id": "try-chain",
+ "given": "type PortError = Bad(text: String)\n\nfn parse_port(text: String) -> Int ! PortError {\n    Int(text) catch _ => fail PortError.Bad(text: text)\n}",
+ "signature": "fn port_sum(text: String) -> Int ! PortError",
+ "tests": [
+  {
+   "call": "port_sum(\"80:443\") catch _ => -1",
+   "prints": "523"
+  },
+  {
+   "call": "port_sum(\"80:x\") catch _ => -1",
+   "prints": "-1"
+  },
+  {
+   "call": "port_sum(\"80\") catch _ => -1",
+   "prints": "-1"
+  }
+ ]
+}

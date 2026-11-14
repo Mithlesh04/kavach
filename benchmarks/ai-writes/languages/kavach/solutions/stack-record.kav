@@ -1,0 +1,20 @@
+type Stack {
+    items: [Int]
+
+    fn push(self, x: Int) -> Stack {
+        let items = self.items
+        items.push(x)
+        Stack(items: items)
+    }
+
+    fn pop(self) -> Stack {
+        if self.items.is_empty() {
+            return self
+        }
+        Stack(items: self.items.take(self.items.len() - 1))
+    }
+
+    fn top(self) -> Int? {
+        self.items.last()
+    }
+}

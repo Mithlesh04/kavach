@@ -1,0 +1,15 @@
+{
+ "id": "two-sum",
+ "given": "",
+ "signature": "fn two_sum(xs: [Int], target: Int) -> (Int, Int)?",
+ "tests": [
+  {
+   "call": "two_sum([2, 7, 11, 15], 9)",
+   "prints": "(0, 1)"
+  },
+  {
+   "call": "two_sum([1, 2], 7)",
+   "prints": "none"
+  }
+ ]
+}

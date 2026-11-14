@@ -1,0 +1,12 @@
+fn common_prefix(words: [String]) -> String {
+    if words.is_empty() {
+        return ""
+    }
+    let p = words[0]
+    for w in words {
+        while not w.starts_with(p) {
+            p = p.slice(0, p.len() - 1)
+        }
+    }
+    p
+}

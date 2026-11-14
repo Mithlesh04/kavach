@@ -1,0 +1,15 @@
+{
+ "id": "mode",
+ "given": "",
+ "signature": "fn mode(xs: [Int]) -> Int",
+ "tests": [
+  {
+   "call": "mode([1, 3, 3, 2, 2])",
+   "prints": "2"
+  },
+  {
+   "call": "mode([7])",
+   "prints": "7"
+  }
+ ]
+}

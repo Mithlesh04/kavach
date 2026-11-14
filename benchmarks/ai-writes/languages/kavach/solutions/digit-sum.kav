@@ -1,0 +1,8 @@
+fn digit_sum(n: Int) -> Int {
+    let (m, total) = (n, 0)
+    while m > 0 {
+        total += m % 10
+        m /= 10
+    }
+    total
+}

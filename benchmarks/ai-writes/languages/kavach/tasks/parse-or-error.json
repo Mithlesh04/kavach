@@ -1,0 +1,15 @@
+{
+ "id": "parse-or-error",
+ "given": "type BadInput = NotANumber(text: String)",
+ "signature": "fn doubled(text: String) -> Int ! BadInput",
+ "tests": [
+  {
+   "call": "doubled(\"21\") catch _ => -1",
+   "prints": "42"
+  },
+  {
+   "call": "doubled(\"x\") catch e => -1",
+   "prints": "-1"
+  }
+ ]
+}

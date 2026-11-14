@@ -1,0 +1,8 @@
+type MathError = DivideByZero
+
+fn divide(a: Int, b: Int) -> Int ! MathError {
+    if b == 0 {
+        fail MathError.DivideByZero
+    }
+    a / b
+}

@@ -1,0 +1,3 @@
+fn keys_at_least(m: [String: Int], min: Int) -> [String] {
+    m.keys().filter(k => (m.get(k) ?? 0) >= min).sort()
+}

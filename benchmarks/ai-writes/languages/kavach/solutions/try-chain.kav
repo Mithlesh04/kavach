@@ -1,0 +1,13 @@
+type PortError = Bad(text: String)
+
+fn parse_port(text: String) -> Int ! PortError {
+    Int(text) catch _ => fail PortError.Bad(text: text)
+}
+
+fn port_sum(text: String) -> Int ! PortError {
+    const parts = text.split(":")
+    if parts.len() != 2 {
+        fail PortError.Bad(text: text)
+    }
+    (try parse_port(parts[0])) + (try parse_port(parts[1]))
+}

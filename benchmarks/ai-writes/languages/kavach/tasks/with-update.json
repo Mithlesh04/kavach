@@ -1,0 +1,15 @@
+{
+ "id": "with-update",
+ "given": "type Account {\n    owner: String\n    balance: Int\n}",
+ "signature": "fn deposit(a: Account, amount: Int) -> Account",
+ "tests": [
+  {
+   "call": "deposit(Account(owner: \"z\", balance: 10), 5).balance",
+   "prints": "15"
+  },
+  {
+   "call": "deposit(Account(owner: \"z\", balance: 10), 5).owner",
+   "prints": "z"
+  }
+ ]
+}

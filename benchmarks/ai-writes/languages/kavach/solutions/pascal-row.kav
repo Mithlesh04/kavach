@@ -1,0 +1,12 @@
+fn pascal(n: Int) -> [Int] {
+    let row = [1]
+    for _ in 0..n {
+        let next = [1]
+        for i in 1..row.len() {
+            next.push(row[i - 1] + row[i])
+        }
+        next.push(1)
+        row = next
+    }
+    row
+}

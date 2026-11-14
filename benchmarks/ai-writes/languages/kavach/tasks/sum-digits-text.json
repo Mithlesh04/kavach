@@ -1,0 +1,15 @@
+{
+ "id": "sum-digits-text",
+ "given": "",
+ "signature": "fn sum_digits(text: String) -> Int",
+ "tests": [
+  {
+   "call": "sum_digits(\"a1b22c\")",
+   "prints": "5"
+  },
+  {
+   "call": "sum_digits(\"none\")",
+   "prints": "0"
+  }
+ ]
+}

@@ -1,0 +1,15 @@
+fn find(xs: [Int], target: Int) -> Int? {
+    let (lo, hi) = (0, xs.len())
+    while lo < hi {
+        const mid = (lo + hi) / 2
+        if xs[mid] == target {
+            return mid
+        }
+        if xs[mid] < target {
+            lo = mid + 1
+        } else {
+            hi = mid
+        }
+    }
+    none
+}

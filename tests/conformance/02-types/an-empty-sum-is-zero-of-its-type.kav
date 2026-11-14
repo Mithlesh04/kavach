@@ -1,0 +1,21 @@
+// Rule: `xs.sum(f)` of an empty list is the zero of `f`'s result type: `0` for whole numbers, `0.0` for `Float` and `Float32`, `0` for `Decimal`.
+// Spec: 2.2
+// expect output: 0
+// expect output: 0.0
+// expect output: 0.0
+// expect output: 0
+
+type Item {
+    n: Int
+    w: Float
+    w32: Float32
+    price: Decimal
+}
+
+fn main() {
+    const none_yet: [Item] = []
+    print(none_yet.sum(i => i.n))
+    print(none_yet.sum(i => i.w))
+    print(none_yet.sum(i => i.w32))
+    print(none_yet.sum(i => i.price))
+}

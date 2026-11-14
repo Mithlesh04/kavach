@@ -1,0 +1,15 @@
+{
+ "id": "anagrams",
+ "given": "",
+ "signature": "fn anagrams(a: String, b: String) -> Bool",
+ "tests": [
+  {
+   "call": "anagrams(\"Listen\", \"Silent\")",
+   "prints": "true"
+  },
+  {
+   "call": "anagrams(\"ab\", \"abb\")",
+   "prints": "false"
+  }
+ ]
+}

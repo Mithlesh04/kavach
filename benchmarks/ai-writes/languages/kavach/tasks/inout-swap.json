@@ -1,0 +1,11 @@
+{
+ "id": "inout-swap",
+ "given": "",
+ "signature": "fn swap_ends(inout xs: [Int])",
+ "tests": [
+  {
+   "call": "{ let a = [1, 2, 3]\n    swap_ends(a)\n    a }",
+   "prints": "[3, 2, 1]"
+  }
+ ]
+}

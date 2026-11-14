@@ -1,0 +1,8 @@
+type Account {
+    owner: String
+    balance: Int
+}
+
+fn deposit(a: Account, amount: Int) -> Account {
+    a with { balance: a.balance + amount }
+}

@@ -1,0 +1,11 @@
+{
+ "id": "sort-by-length",
+ "given": "",
+ "signature": "fn by_length(words: [String]) -> [String]",
+ "tests": [
+  {
+   "call": "by_length([\"ccc\", \"a\", \"bb\", \"d\"])",
+   "prints": "[\"a\", \"d\", \"bb\", \"ccc\"]"
+  }
+ ]
+}

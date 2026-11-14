@@ -1,0 +1,15 @@
+{
+ "id": "count-chars",
+ "given": "",
+ "signature": "fn count_char(text: String, c: Char) -> Int",
+ "tests": [
+  {
+   "call": "count_char(\"banana\", 'a')",
+   "prints": "3"
+  },
+  {
+   "call": "count_char(\"\", 'x')",
+   "prints": "0"
+  }
+ ]
+}

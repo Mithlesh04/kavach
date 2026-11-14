@@ -1,0 +1,23 @@
+{
+ "id": "balanced-brackets",
+ "given": "",
+ "signature": "fn balanced(text: String) -> Bool",
+ "tests": [
+  {
+   "call": "balanced(\"([]\\{})\")",
+   "prints": "true"
+  },
+  {
+   "call": "balanced(\"(]\")",
+   "prints": "false"
+  },
+  {
+   "call": "balanced(\"((\")",
+   "prints": "false"
+  },
+  {
+   "call": "balanced(\"a(b)c\")",
+   "prints": "true"
+  }
+ ]
+}

@@ -1,0 +1,11 @@
+{
+ "id": "nth-largest-record",
+ "given": "type Player {\n    name: String\n    score: Int\n}",
+ "signature": "fn top(players: [Player], k: Int) -> [String]",
+ "tests": [
+  {
+   "call": "top([Player(name: \"a\", score: 3), Player(name: \"b\", score: 9), Player(name: \"c\", score: 9)], 2)",
+   "prints": "[\"b\", \"c\"]"
+  }
+ ]
+}

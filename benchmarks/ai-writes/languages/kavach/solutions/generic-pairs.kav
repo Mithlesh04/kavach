@@ -1,0 +1,7 @@
+fn pairs<T>(xs: [T]) -> [(T, T)] {
+    let out: [(T, T)] = []
+    for i in 1..xs.len() {
+        out.push((xs[i - 1], xs[i]))
+    }
+    out
+}

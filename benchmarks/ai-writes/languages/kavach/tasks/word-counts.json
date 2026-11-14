@@ -1,0 +1,15 @@
+{
+ "id": "word-counts",
+ "given": "",
+ "signature": "fn word_counts(text: String) -> [String: Int]",
+ "tests": [
+  {
+   "call": "word_counts(\"a b a\")[\"a\"]",
+   "prints": "2"
+  },
+  {
+   "call": "word_counts(\"a b a\")[\"b\"]",
+   "prints": "1"
+  }
+ ]
+}

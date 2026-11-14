@@ -1,0 +1,15 @@
+{
+ "id": "generic-last-or",
+ "given": "",
+ "signature": "fn last_or<T>(xs: [T], fallback: T) -> T",
+ "tests": [
+  {
+   "call": "last_or([1, 2, 3], 0)",
+   "prints": "3"
+  },
+  {
+   "call": "last_or([], \"none\")",
+   "prints": "none"
+  }
+ ]
+}

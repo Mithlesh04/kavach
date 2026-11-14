@@ -1,0 +1,8 @@
+fn is_sorted(xs: [Int]) -> Bool {
+    for i in 1..xs.len() {
+        if xs[i - 1] > xs[i] {
+            return false
+        }
+    }
+    true
+}

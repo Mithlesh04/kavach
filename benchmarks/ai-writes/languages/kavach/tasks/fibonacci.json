@@ -1,0 +1,23 @@
+{
+ "id": "fibonacci",
+ "given": "",
+ "signature": "fn fib(n: Int) -> Int",
+ "tests": [
+  {
+   "call": "fib(0)",
+   "prints": "0"
+  },
+  {
+   "call": "fib(1)",
+   "prints": "1"
+  },
+  {
+   "call": "fib(10)",
+   "prints": "55"
+  },
+  {
+   "call": "fib(50)",
+   "prints": "12586269025"
+  }
+ ]
+}

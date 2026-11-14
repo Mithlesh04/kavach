@@ -1,0 +1,8 @@
+type Player {
+    name: String
+    score: Int
+}
+
+fn top(players: [Player], k: Int) -> [String] {
+    players.sort_by(p => -p.score).take(k).map(p => p.name)
+}

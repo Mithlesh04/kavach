@@ -1,0 +1,19 @@
+{
+ "id": "longest-prefix",
+ "given": "",
+ "signature": "fn common_prefix(words: [String]) -> String",
+ "tests": [
+  {
+   "call": "common_prefix([\"flower\", \"flow\", \"flight\"])",
+   "prints": "fl"
+  },
+  {
+   "call": "common_prefix([\"a\", \"b\"])",
+   "prints": ""
+  },
+  {
+   "call": "common_prefix([])",
+   "prints": ""
+  }
+ ]
+}

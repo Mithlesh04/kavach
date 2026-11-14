@@ -1,0 +1,19 @@
+{
+ "id": "rotate",
+ "given": "",
+ "signature": "fn rotate(xs: [Int], k: Int) -> [Int]",
+ "tests": [
+  {
+   "call": "rotate([1, 2, 3, 4, 5], 2)",
+   "prints": "[3, 4, 5, 1, 2]"
+  },
+  {
+   "call": "rotate([1, 2], 5)",
+   "prints": "[2, 1]"
+  },
+  {
+   "call": "rotate([], 3)",
+   "prints": "[]"
+  }
+ ]
+}

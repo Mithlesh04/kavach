@@ -1,0 +1,11 @@
+fn simulate(commands: [Int]) -> [Int] {
+    let q: [Int] = []
+    for c in commands {
+        if c > 0 {
+            q.push(c)
+        } else if not q.is_empty() {
+            q = q.skip(1)
+        }
+    }
+    q
+}

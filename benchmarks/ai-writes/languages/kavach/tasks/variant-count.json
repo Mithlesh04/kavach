@@ -1,0 +1,11 @@
+{
+ "id": "variant-count",
+ "given": "type Event = Click | Key(code: Int) | Scroll(dy: Int)",
+ "signature": "fn key_count(events: [Event]) -> Int",
+ "tests": [
+  {
+   "call": "key_count([Event.Click, Event.Key(code: 1), Event.Key(code: 2)])",
+   "prints": "2"
+  }
+ ]
+}

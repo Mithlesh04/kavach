@@ -1,0 +1,379 @@
+{
+ "tasks": [
+  {
+   "id": "sum-of-evens",
+   "kind": "basics",
+   "description": "Return the sum of the even numbers in the list."
+  },
+  {
+   "id": "reverse-words",
+   "kind": "basics",
+   "description": "Return the words of the text in reverse order, joined by single spaces. Words are separated by single spaces."
+  },
+  {
+   "id": "is-palindrome",
+   "kind": "basics",
+   "description": "Return true when the text reads the same forwards and backwards, ignoring case."
+  },
+  {
+   "id": "count-vowels",
+   "kind": "basics",
+   "description": "Count the vowels (a, e, i, o, u, either case) in the text."
+  },
+  {
+   "id": "fizzbuzz",
+   "kind": "basics",
+   "description": "Return the FizzBuzz text for n: \"Fizz\" for multiples of 3, \"Buzz\" for multiples of 5, \"FizzBuzz\" for both, else the number."
+  },
+  {
+   "id": "max-or-none",
+   "kind": "basics",
+   "description": "Return the largest number in the list, or none when it is empty."
+  },
+  {
+   "id": "word-counts",
+   "kind": "basics",
+   "description": "Return how many times each word appears in the text (words separated by single spaces), as a map from word to count."
+  },
+  {
+   "id": "parse-or-error",
+   "kind": "basics",
+   "description": "Parse the text as a whole number and return it doubled. When it isn't a number, fail with the error BadInput, defined as `type BadInput = NotANumber(text: String)`."
+  },
+  {
+   "id": "factorial",
+   "kind": "data",
+   "description": "Return n factorial (n is 0 or more, at most 20)."
+  },
+  {
+   "id": "fibonacci",
+   "kind": "data",
+   "description": "Return the nth Fibonacci number, with fib(0) = 0 and fib(1) = 1."
+  },
+  {
+   "id": "sort-by-length",
+   "kind": "data",
+   "description": "Return the words sorted by length, shortest first; words of the same length keep their order."
+  },
+  {
+   "id": "dedupe-keep-order",
+   "kind": "data",
+   "description": "Return the list without repeated numbers, keeping the first time each appears."
+  },
+  {
+   "id": "record-area",
+   "kind": "data",
+   "description": "Given the record `type Rect { width: Float  height: Float }`, return the total area of the rectangles."
+  },
+  {
+   "id": "union-shape",
+   "kind": "data",
+   "description": "Given `type Shape = Circle(radius: Float) | Square(side: Float)`, return the shape's area; use 3.14 for pi."
+  },
+  {
+   "id": "first-negative",
+   "kind": "data",
+   "description": "Return the index of the first negative number in the list, or none when there is none."
+  },
+  {
+   "id": "caesar",
+   "kind": "data",
+   "description": "Shift each lowercase letter a to z forward by k places in the alphabet, wrapping from z to a; other characters stay the same. k is 0 to 25."
+  },
+  {
+   "id": "matrix-transpose",
+   "kind": "data",
+   "description": "Return the transpose of the matrix (a list of rows, all the same length, at least one row)."
+  },
+  {
+   "id": "binary-search",
+   "kind": "data",
+   "description": "The list is sorted ascending. Return the index of target, or none when it isn't there."
+  },
+  {
+   "id": "safe-divide",
+   "kind": "data",
+   "description": "Return a divided by b, or fail with `type MathError = DivideByZero` when b is 0."
+  },
+  {
+   "id": "group-by-first-letter",
+   "kind": "data",
+   "description": "Group the words by their first letter: a map from the letter (as text) to the words starting with it, in their order. No word is empty."
+  },
+  {
+   "id": "running-total",
+   "kind": "data",
+   "description": "Return the running totals of the list: each item is the sum of the items up to and including it."
+  },
+  {
+   "id": "gcd",
+   "kind": "data",
+   "description": "Return the greatest common divisor of two positive whole numbers."
+  },
+  {
+   "id": "title-case",
+   "kind": "data",
+   "description": "Capitalize the first letter of each word (words separated by single spaces) and lowercase the rest."
+  },
+  {
+   "id": "is-prime",
+   "kind": "algorithms",
+   "description": "Return true when n is a prime number."
+  },
+  {
+   "id": "primes-below",
+   "kind": "algorithms",
+   "description": "Return the prime numbers below n, smallest first."
+  },
+  {
+   "id": "digit-sum",
+   "kind": "algorithms",
+   "description": "Return the sum of the decimal digits of n (n is 0 or more)."
+  },
+  {
+   "id": "run-length",
+   "kind": "algorithms",
+   "description": "Run-length encode the text: each run of the same character becomes the character followed by the run's length, as in \"aaab\" to \"a3b1\"."
+  },
+  {
+   "id": "balanced-brackets",
+   "kind": "algorithms",
+   "description": "Return true when every ( [ { in the text is closed by its matching ) ] } in the right order; other characters are ignored."
+  },
+  {
+   "id": "two-sum",
+   "kind": "algorithms",
+   "description": "Return the indices (i, j) with i < j of the first pair, in order of i then j, whose numbers add up to target; none when there is no such pair."
+  },
+  {
+   "id": "anagrams",
+   "kind": "algorithms",
+   "description": "Return true when the two words use the same letters the same number of times, ignoring case."
+  },
+  {
+   "id": "roman",
+   "kind": "algorithms",
+   "description": "Return n (1 to 3999) as a Roman numeral."
+  },
+  {
+   "id": "flatten",
+   "kind": "algorithms",
+   "description": "Flatten the list of lists into one list, in order."
+  },
+  {
+   "id": "chunk",
+   "kind": "algorithms",
+   "description": "Split the list into chunks of size n (n is 1 or more); the last chunk may be shorter."
+  },
+  {
+   "id": "rotate",
+   "kind": "algorithms",
+   "description": "Rotate the list left by k places (k is 0 or more and may be larger than the list)."
+  },
+  {
+   "id": "longest-prefix",
+   "kind": "algorithms",
+   "description": "Return the longest text that every word starts with; empty when there are no words."
+  },
+  {
+   "id": "second-largest",
+   "kind": "algorithms",
+   "description": "Return the second largest distinct number in the list, or none when there isn't one."
+  },
+  {
+   "id": "merge-sorted",
+   "kind": "algorithms",
+   "description": "Merge two lists sorted ascending into one list sorted ascending."
+  },
+  {
+   "id": "edit-distance",
+   "kind": "algorithms",
+   "description": "Return the Levenshtein edit distance between the two texts: the fewest single-character insertions, deletions or substitutions turning one into the other."
+  },
+  {
+   "id": "stack-record",
+   "kind": "algorithms",
+   "description": "Write `type Stack { items: [Int] }` with methods `push(self, x: Int) -> Stack` giving a new stack with x on top, `pop(self) -> Stack` giving one without its top item (the same stack when empty), and `top(self) -> Int?`."
+  },
+  {
+   "id": "count-chars",
+   "kind": "algorithms",
+   "description": "Return how many times the character c appears in the text."
+  },
+  {
+   "id": "median",
+   "kind": "algorithms",
+   "description": "Return the median of a non-empty list of numbers: the middle one when sorted, or the mean of the two middle ones for an even count."
+  },
+  {
+   "id": "pascal-row",
+   "kind": "algorithms",
+   "description": "Return row n of Pascal's triangle, where row 0 is [1]."
+  },
+  {
+   "id": "interval-merge",
+   "kind": "algorithms",
+   "description": "Merge overlapping intervals given as (start, end) pairs, returning them sorted by start. Intervals that touch (one ends where the next starts) merge too."
+  },
+  {
+   "id": "generic-last-or",
+   "kind": "kavach features",
+   "description": "Write a generic function that returns the last item of the list, or `fallback` when the list is empty."
+  },
+  {
+   "id": "generic-pairs",
+   "kind": "kavach features",
+   "description": "Write a generic function that pairs each item with the next one: [a, b, c] gives [(a, b), (b, c)]."
+  },
+  {
+   "id": "interface-describe",
+   "kind": "kavach features",
+   "description": "Given `interface Named { fn name(self) -> String }` and the types `Dog` and `Cat` that implement it (both given), write a function returning the names of a list of named things joined by \", \"."
+  },
+  {
+   "id": "contract-percent",
+   "kind": "kavach features",
+   "description": "Return `part` as a whole-number percentage of `whole`, rounded down. Require that whole is above 0 and part is between 0 and whole, with `require` clauses."
+  },
+  {
+   "id": "error-match",
+   "kind": "kavach features",
+   "description": "Given `type LoginError = NoSuchUser(name: String) | WrongPassword | Locked(minutes: Int)`, return a message for the error: \"no user NAME\", \"wrong password\", or \"locked for N minutes\"."
+  },
+  {
+   "id": "try-chain",
+   "kind": "kavach features",
+   "description": "Given `fn parse_port(text: String) -> Int ! PortError` and `type PortError = Bad(text: String)`, both given, return the sum of the two ports in \"A:B\" text, passing a failure on with `try`. Text without a colon fails with `PortError.Bad(text: text)`."
+  },
+  {
+   "id": "optional-chain",
+   "kind": "kavach features",
+   "description": "Given `type Address { city: String? }` and `type User { address: Address? }`, return the user's city in upper case, or \"UNKNOWN\"."
+  },
+  {
+   "id": "spawn-sum",
+   "kind": "kavach features",
+   "description": "Sum the squares of 1 to n in two tasks run at the same time (one for the first half, one for the rest), then add their results."
+  },
+  {
+   "id": "json-decode",
+   "kind": "kavach features",
+   "description": "Given `type Item { name: String  qty: Int }`, decode the JSON text into a list of items with `json.decode<T>` and return the total quantity, or -1 when the text doesn't decode. `use std.json` is already there."
+  },
+  {
+   "id": "decimal-money",
+   "kind": "kavach features",
+   "description": "Return the total price of the items as an exact `Decimal`: each item is (unit price, quantity)."
+  },
+  {
+   "id": "with-update",
+   "kind": "kavach features",
+   "description": "Given `type Account { owner: String  balance: Int }`, return the account with `amount` added to its balance, using `with`."
+  },
+  {
+   "id": "inout-swap",
+   "kind": "kavach features",
+   "description": "Swap the first and last items of the list in place, using an `inout` parameter; a list of fewer than two items stays the same."
+  },
+  {
+   "id": "map-keys-sorted",
+   "kind": "kavach features",
+   "description": "Return the keys of the map whose value is at least `min`, sorted."
+  },
+  {
+   "id": "enumerate-format",
+   "kind": "kavach features",
+   "description": "Return the lines \"1. first\", \"2. second\", \u2026 for the items, joined with newlines."
+  },
+  {
+   "id": "checked-add",
+   "kind": "kavach features",
+   "description": "Add the two numbers, giving none instead of overflowing."
+  },
+  {
+   "id": "closure-counter",
+   "kind": "kavach features",
+   "description": "Return a function that adds `step` to its argument."
+  },
+  {
+   "id": "variant-count",
+   "kind": "kavach features",
+   "description": "Given `type Event = Click | Key(code: Int) | Scroll(dy: Int)`, return how many of the events are key presses."
+  },
+  {
+   "id": "string-builder",
+   "kind": "kavach features",
+   "description": "Return the numbers from 1 to n joined by commas, using a loop that appends to text."
+  },
+  {
+   "id": "vowel-strip",
+   "kind": "basics",
+   "description": "Return the text with every vowel (a, e, i, o, u, either case) removed."
+  },
+  {
+   "id": "power-of-two",
+   "kind": "basics",
+   "description": "Return true when n is a power of two (1, 2, 4, \u2026)."
+  },
+  {
+   "id": "binary-text",
+   "kind": "basics",
+   "description": "Return n (0 or more) written in binary, with no leading zeros (\"0\" for 0)."
+  },
+  {
+   "id": "mode",
+   "kind": "basics",
+   "description": "Return the number that appears most often in a non-empty list; on a tie, the smallest of them."
+  },
+  {
+   "id": "zip-dict",
+   "kind": "basics",
+   "description": "Build a map from the keys to the values at the same positions; stop at the shorter list."
+  },
+  {
+   "id": "triangle-kind",
+   "kind": "basics",
+   "description": "Given three side lengths, return \"equilateral\", \"isosceles\", \"scalene\", or \"invalid\" when they can't make a triangle (any side 0 or less, or one side at least the sum of the other two)."
+  },
+  {
+   "id": "word-lengths",
+   "kind": "basics",
+   "description": "Return a list of the lengths of the words in the text (separated by single spaces)."
+  },
+  {
+   "id": "collatz",
+   "kind": "basics",
+   "description": "Return how many steps the Collatz sequence takes from n (1 or more) to reach 1: halve an even number, else take 3n + 1."
+  },
+  {
+   "id": "sum-digits-text",
+   "kind": "basics",
+   "description": "Return the sum of the digit characters 0 to 9 found anywhere in the text."
+  },
+  {
+   "id": "nth-largest-record",
+   "kind": "basics",
+   "description": "Given `type Player { name: String  score: Int }`, return the names of the top k players by score, highest first; ties keep their order."
+  },
+  {
+   "id": "clamp-all",
+   "kind": "basics",
+   "description": "Clamp every number in the list to the range lo to hi (lo is at most hi)."
+  },
+  {
+   "id": "is-sorted",
+   "kind": "basics",
+   "description": "Return true when the list is sorted ascending (equal neighbours allowed)."
+  },
+  {
+   "id": "hex-color",
+   "kind": "basics",
+   "description": "Return the color (r, g, b), each 0 to 255, as \"#rrggbb\" in lowercase hexadecimal."
+  },
+  {
+   "id": "queue-sim",
+   "kind": "basics",
+   "description": "Simulate a queue of numbers: for each command, a positive number joins the queue and 0 removes the front (when there is one). Return the queue at the end."
+  }
+ ]
+}

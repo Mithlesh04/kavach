@@ -1,0 +1,15 @@
+{
+ "id": "median",
+ "given": "",
+ "signature": "fn median(xs: [Float]) -> Float",
+ "tests": [
+  {
+   "call": "median([3.0, 1.0, 2.0])",
+   "prints": "2.0"
+  },
+  {
+   "call": "median([4.0, 1.0, 3.0, 2.0])",
+   "prints": "2.5"
+  }
+ ]
+}

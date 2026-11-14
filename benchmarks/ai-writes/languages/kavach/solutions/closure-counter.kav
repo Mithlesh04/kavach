@@ -1,0 +1,3 @@
+fn adder(step: Int) -> fn(Int) -> Int {
+    x => x + step
+}

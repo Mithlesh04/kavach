@@ -1,0 +1,19 @@
+{
+ "id": "edit-distance",
+ "given": "",
+ "signature": "fn distance(a: String, b: String) -> Int",
+ "tests": [
+  {
+   "call": "distance(\"kitten\", \"sitting\")",
+   "prints": "3"
+  },
+  {
+   "call": "distance(\"\", \"abc\")",
+   "prints": "3"
+  },
+  {
+   "call": "distance(\"same\", \"same\")",
+   "prints": "0"
+  }
+ ]
+}

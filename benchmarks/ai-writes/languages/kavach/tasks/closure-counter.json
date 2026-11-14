@@ -1,0 +1,15 @@
+{
+ "id": "closure-counter",
+ "given": "",
+ "signature": "fn adder(step: Int) -> fn(Int) -> Int",
+ "tests": [
+  {
+   "call": "adder(5)(10)",
+   "prints": "15"
+  },
+  {
+   "call": "[1, 2].map(adder(3))",
+   "prints": "[4, 5]"
+  }
+ ]
+}

@@ -1,0 +1,15 @@
+{
+ "id": "generic-pairs",
+ "given": "",
+ "signature": "fn pairs<T>(xs: [T]) -> [(T, T)]",
+ "tests": [
+  {
+   "call": "pairs([1, 2, 3])",
+   "prints": "[(1, 2), (2, 3)]"
+  },
+  {
+   "call": "pairs([\"x\"])",
+   "prints": "[]"
+  }
+ ]
+}

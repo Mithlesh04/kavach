@@ -1,0 +1,7 @@
+fn total(items: [(Decimal, Int)]) -> Decimal {
+    let sum = Decimal(0)
+    for (price, qty) in items {
+        sum += price * Decimal(qty)
+    }
+    sum
+}

@@ -1,0 +1,3 @@
+fn add_or_none(a: Int, b: Int) -> Int? {
+    a.checked_add(b)
+}

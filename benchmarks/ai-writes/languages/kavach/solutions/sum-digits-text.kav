@@ -1,0 +1,9 @@
+fn sum_digits(text: String) -> Int {
+    let total = 0
+    for c in text.chars() {
+        if c >= '0' and c <= '9' {
+            total += Int(c) - 48
+        }
+    }
+    total
+}

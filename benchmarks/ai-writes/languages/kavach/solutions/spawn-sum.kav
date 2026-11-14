@@ -1,0 +1,14 @@
+fn part(from: Int, until: Int) -> Int {
+    let total = 0
+    for k in from..until {
+        total += k * k
+    }
+    total
+}
+
+fn squares(n: Int) -> Int ! Error {
+    const mid = n / 2 + 1
+    const a = spawn part(1, mid)
+    const b = spawn part(mid, n + 1)
+    (try a.wait()) + (try b.wait())
+}

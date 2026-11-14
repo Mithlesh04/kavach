@@ -1,0 +1,15 @@
+{
+ "id": "spawn-sum",
+ "given": "",
+ "signature": "fn squares(n: Int) -> Int ! Error",
+ "tests": [
+  {
+   "call": "squares(10) catch _ => -1",
+   "prints": "385"
+  },
+  {
+   "call": "squares(1) catch _ => -1",
+   "prints": "1"
+  }
+ ]
+}

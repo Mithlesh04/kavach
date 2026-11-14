@@ -1,0 +1,19 @@
+{
+ "id": "interval-merge",
+ "given": "",
+ "signature": "fn merge_intervals(xs: [(Int, Int)]) -> [(Int, Int)]",
+ "tests": [
+  {
+   "call": "merge_intervals([(1, 3), (8, 10), (2, 6)])",
+   "prints": "[(1, 6), (8, 10)]"
+  },
+  {
+   "call": "merge_intervals([(1, 2), (2, 4)])",
+   "prints": "[(1, 4)]"
+  },
+  {
+   "call": "merge_intervals([])",
+   "prints": "[]"
+  }
+ ]
+}

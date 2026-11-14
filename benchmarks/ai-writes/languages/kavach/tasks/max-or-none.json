@@ -1,0 +1,15 @@
+{
+ "id": "max-or-none",
+ "given": "",
+ "signature": "fn largest(xs: [Int]) -> Int?",
+ "tests": [
+  {
+   "call": "largest([3, 9, 2])",
+   "prints": "9"
+  },
+  {
+   "call": "largest([])",
+   "prints": "none"
+  }
+ ]
+}

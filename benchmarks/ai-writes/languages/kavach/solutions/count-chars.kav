@@ -1,0 +1,3 @@
+fn count_char(text: String, c: Char) -> Int {
+    text.chars().filter(x => x == c).len()
+}

@@ -1,0 +1,13 @@
+fn merge_intervals(xs: [(Int, Int)]) -> [(Int, Int)] {
+    let out: [(Int, Int)] = []
+    for (a, b) in xs.sort_by(p => p.0) {
+        if let last = out.last() {
+            if a <= last.1 {
+                out[out.len() - 1] = (last.0, [last.1, b].max() ?? b)
+                continue
+            }
+        }
+        out.push((a, b))
+    }
+    out
+}

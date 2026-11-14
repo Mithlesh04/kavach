@@ -1,0 +1,3 @@
+fn last_or<T>(xs: [T], fallback: T) -> T {
+    xs.last() ?? fallback
+}

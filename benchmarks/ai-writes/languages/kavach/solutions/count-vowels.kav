@@ -1,0 +1,3 @@
+fn count_vowels(text: String) -> Int {
+    text.lower().chars().filter(c => "aeiou".contains("{c}")).len()
+}

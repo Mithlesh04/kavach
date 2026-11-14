@@ -1,0 +1,7 @@
+fn transpose(m: [[Int]]) -> [[Int]] {
+    let out: [[Int]] = []
+    for c in 0..m[0].len() {
+        out.push(m.map(row => row[c]))
+    }
+    out
+}

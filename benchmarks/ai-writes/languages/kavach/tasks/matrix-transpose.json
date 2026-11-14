@@ -1,0 +1,11 @@
+{
+ "id": "matrix-transpose",
+ "given": "",
+ "signature": "fn transpose(m: [[Int]]) -> [[Int]]",
+ "tests": [
+  {
+   "call": "transpose([[1, 2, 3], [4, 5, 6]])",
+   "prints": "[[1, 4], [2, 5], [3, 6]]"
+  }
+ ]
+}

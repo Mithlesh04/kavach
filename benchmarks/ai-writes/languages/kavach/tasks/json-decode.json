@@ -1,0 +1,15 @@
+{
+ "id": "json-decode",
+ "given": "use std.json\n\ntype Item {\n    name: String\n    qty: Int\n}",
+ "signature": "fn total_qty(text: String) -> Int",
+ "tests": [
+  {
+   "call": "total_qty(\"[\\{\\\"name\\\": \\\"a\\\", \\\"qty\\\": 2}, \\{\\\"name\\\": \\\"b\\\", \\\"qty\\\": 5}]\")",
+   "prints": "7"
+  },
+  {
+   "call": "total_qty(\"oops\")",
+   "prints": "-1"
+  }
+ ]
+}

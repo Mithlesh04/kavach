@@ -1,0 +1,19 @@
+{
+ "id": "roman",
+ "given": "",
+ "signature": "fn roman(n: Int) -> String",
+ "tests": [
+  {
+   "call": "roman(1994)",
+   "prints": "MCMXCIV"
+  },
+  {
+   "call": "roman(4)",
+   "prints": "IV"
+  },
+  {
+   "call": "roman(3999)",
+   "prints": "MMMCMXCIX"
+  }
+ ]
+}

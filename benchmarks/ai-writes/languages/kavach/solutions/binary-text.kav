@@ -1,0 +1,11 @@
+fn binary(n: Int) -> String {
+    if n == 0 {
+        return "0"
+    }
+    let (m, out) = (n, "")
+    while m > 0 {
+        out = "{m % 2}" + out
+        m /= 2
+    }
+    out
+}

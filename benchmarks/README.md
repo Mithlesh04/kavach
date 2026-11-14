@@ -43,6 +43,7 @@ Each suite's README gives the compilers and their flags, how many runs there wer
 | [json/](json/README.md) | Writing, parsing, reading and decoding 52 MB of JSON: Kavach against Python |
 | [gpu/](gpu/README.md) | `map` with a `gpu fn` on the GPU, against the CPU and C++ on one core and on all cores |
 | [agents/](agents/README.md) | AI agents: tokens and time for the same tasks and answers, against Python's plain prompts and agentic tool loops |
+| [ai-writes/](ai-writes/README.md) | Can AI models write Kavach? 75 tasks graded by hidden tests, four Claude models, with no help, Kavach's guide, error feedback and Kavach's tools; anyone can run it with their own key |
 | [net/](net/README.md) | How fast a task waiting for the network wakes: TCP round trips between two tasks, against C++ and Python |
 | [mistakes/](mistakes/README.md) | Common mistakes from real code, and which step catches each before a run |
 

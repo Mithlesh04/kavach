@@ -1,0 +1,16 @@
+fn distance(a: String, b: String) -> Int {
+    const (x, y) = (a.chars(), b.chars())
+    let prev: [Int] = []
+    for j in 0..(y.len() + 1) {
+        prev.push(j)
+    }
+    for i in 1..(x.len() + 1) {
+        let row = [i]
+        for j in 1..(y.len() + 1) {
+            const cost = if x[i - 1] == y[j - 1] { 0 } else { 1 }
+            row.push([prev[j] + 1, row[j - 1] + 1, prev[j - 1] + cost].min() ?? 0)
+        }
+        prev = row
+    }
+    prev[y.len()]
+}

@@ -1,0 +1,8 @@
+fn first_negative(xs: [Int]) -> Int? {
+    for (i, x) in xs.enumerate() {
+        if x < 0 {
+            return i
+        }
+    }
+    none
+}

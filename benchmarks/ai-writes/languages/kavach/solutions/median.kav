@@ -1,0 +1,8 @@
+fn median(xs: [Float]) -> Float {
+    const s = xs.sort()
+    const n = s.len()
+    if n % 2 == 1 {
+        return s[n / 2]
+    }
+    (s[n / 2 - 1] + s[n / 2]) / 2.0
+}

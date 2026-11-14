@@ -1,0 +1,14 @@
+fn mode(xs: [Int]) -> Int {
+    let counts: [Int: Int] = [:]
+    for x in xs {
+        counts[x] = (counts.get(x) ?? 0) + 1
+    }
+    let best = xs[0]
+    for (k, n) in counts {
+        const b = counts.get(best) ?? 0
+        if n > b or (n == b and k < best) {
+            best = k
+        }
+    }
+    best
+}

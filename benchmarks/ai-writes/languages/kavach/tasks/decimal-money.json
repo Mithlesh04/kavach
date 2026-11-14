@@ -1,0 +1,11 @@
+{
+ "id": "decimal-money",
+ "given": "",
+ "signature": "fn total(items: [(Decimal, Int)]) -> Decimal",
+ "tests": [
+  {
+   "call": "total([(0.10, 3), (2.50, 2)])",
+   "prints": "5.30"
+  }
+ ]
+}

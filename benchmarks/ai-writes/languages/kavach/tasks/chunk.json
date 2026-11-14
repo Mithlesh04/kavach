@@ -1,0 +1,15 @@
+{
+ "id": "chunk",
+ "given": "",
+ "signature": "fn chunks(xs: [Int], n: Int) -> [[Int]]",
+ "tests": [
+  {
+   "call": "chunks([1, 2, 3, 4, 5], 2)",
+   "prints": "[[1, 2], [3, 4], [5]]"
+  },
+  {
+   "call": "chunks([], 3)",
+   "prints": "[]"
+  }
+ ]
+}

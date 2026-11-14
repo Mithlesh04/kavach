@@ -1,0 +1,12 @@
+fn roman(n: Int) -> String {
+    const values = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+    const marks = ["M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"]
+    let (m, out) = (n, "")
+    for i in 0..values.len() {
+        while m >= values[i] {
+            out += marks[i]
+            m -= values[i]
+        }
+    }
+    out
+}

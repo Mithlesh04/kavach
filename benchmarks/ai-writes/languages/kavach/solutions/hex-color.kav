@@ -1,0 +1,8 @@
+fn hex(r: Int, g: Int, b: Int) -> String {
+    const digits = "0123456789abcdef"
+    let out = "#"
+    for v in [r, g, b] {
+        out += digits.slice(v / 16, v / 16 + 1) + digits.slice(v % 16, v % 16 + 1)
+    }
+    out
+}

@@ -1,0 +1,19 @@
+{
+ "id": "run-length",
+ "given": "",
+ "signature": "fn rle(text: String) -> String",
+ "tests": [
+  {
+   "call": "rle(\"aaab\")",
+   "prints": "a3b1"
+  },
+  {
+   "call": "rle(\"\")",
+   "prints": ""
+  },
+  {
+   "call": "rle(\"abc\")",
+   "prints": "a1b1c1"
+  }
+ ]
+}

@@ -1,0 +1,3 @@
+fn flatten(xss: [[Int]]) -> [Int] {
+    xss.flat_map(xs => xs)
+}

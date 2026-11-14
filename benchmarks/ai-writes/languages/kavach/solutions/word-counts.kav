@@ -1,0 +1,7 @@
+fn word_counts(text: String) -> [String: Int] {
+    let counts: [String: Int] = [:]
+    for w in text.split(" ") {
+        counts[w] = (counts.get(w) ?? 0) + 1
+    }
+    counts
+}

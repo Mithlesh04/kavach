@@ -1,0 +1,4 @@
+fn second_largest(xs: [Int]) -> Int? {
+    const top = xs.max() ?? return none
+    xs.filter(x => x < top).max()
+}

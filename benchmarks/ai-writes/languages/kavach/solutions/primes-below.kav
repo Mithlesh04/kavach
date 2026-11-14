@@ -1,0 +1,9 @@
+fn primes_below(n: Int) -> [Int] {
+    let out: [Int] = []
+    for k in 2..n {
+        if out.all(p => k % p != 0) {
+            out.push(k)
+        }
+    }
+    out
+}

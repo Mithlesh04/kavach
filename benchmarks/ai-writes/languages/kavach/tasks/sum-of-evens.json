@@ -1,0 +1,19 @@
+{
+ "id": "sum-of-evens",
+ "given": "",
+ "signature": "fn sum_evens(xs: [Int]) -> Int",
+ "tests": [
+  {
+   "call": "sum_evens([1, 2, 3, 4])",
+   "prints": "6"
+  },
+  {
+   "call": "sum_evens([])",
+   "prints": "0"
+  },
+  {
+   "call": "sum_evens([-2, 5, 8])",
+   "prints": "6"
+  }
+ ]
+}

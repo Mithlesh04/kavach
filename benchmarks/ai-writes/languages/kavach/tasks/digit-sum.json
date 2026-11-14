@@ -1,0 +1,15 @@
+{
+ "id": "digit-sum",
+ "given": "",
+ "signature": "fn digit_sum(n: Int) -> Int",
+ "tests": [
+  {
+   "call": "digit_sum(1234)",
+   "prints": "10"
+  },
+  {
+   "call": "digit_sum(0)",
+   "prints": "0"
+  }
+ ]
+}

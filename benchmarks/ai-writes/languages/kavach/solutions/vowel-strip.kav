@@ -1,0 +1,9 @@
+fn strip_vowels(text: String) -> String {
+    let out = ""
+    for c in text.chars() {
+        if not "aeiouAEIOU".contains("{c}") {
+            out += "{c}"
+        }
+    }
+    out
+}

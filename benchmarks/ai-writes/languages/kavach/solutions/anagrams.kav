@@ -1,0 +1,3 @@
+fn anagrams(a: String, b: String) -> Bool {
+    a.lower().chars().sort() == b.lower().chars().sort()
+}

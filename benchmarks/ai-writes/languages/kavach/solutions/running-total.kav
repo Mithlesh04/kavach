@@ -1,0 +1,9 @@
+fn running(xs: [Int]) -> [Int] {
+    let total = 0
+    let out: [Int] = []
+    for x in xs {
+        total += x
+        out.push(total)
+    }
+    out
+}

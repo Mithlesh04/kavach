@@ -1,0 +1,15 @@
+{
+ "id": "checked-add",
+ "given": "",
+ "signature": "fn add_or_none(a: Int, b: Int) -> Int?",
+ "tests": [
+  {
+   "call": "add_or_none(1, 2)",
+   "prints": "3"
+  },
+  {
+   "call": "add_or_none(9223372036854775807, 1)",
+   "prints": "none"
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+fn zip_map(keys: [String], values: [Int]) -> [String: Int] {
+    let out: [String: Int] = [:]
+    for i in 0..([keys.len(), values.len()].min() ?? 0) {
+        out[keys[i]] = values[i]
+    }
+    out
+}
