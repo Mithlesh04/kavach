@@ -144,3 +144,14 @@ ScopeTraceparent,
 /// `log.count`, `log.gauge` and `log.histogram` (spec 14.12): kind `a`,
 /// name `b` (owned), value `c` (a `Float`'s bits), kept for the collector.
 OtlpMetric,
+/// `log.name_span(name)` (spec 14.12): the current span takes name `a`
+/// (owned); outside a span, nothing.
+ScopeRename,
+/// `std.fs`'s `FileWriter` (spec 14.3), by the writer's number
+/// (`runtime/native/src/rt_writers.rs`): open path `a` (can fail), write
+/// `Bytes` `b` (can fail), finish with sync flag `b` (can fail), and let
+/// it go.
+FsWriterOpen,
+FsWriterWrite,
+FsWriterFinish,
+FsWriterClose,

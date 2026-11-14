@@ -46,6 +46,7 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_channels.rs` | Channels (spec 9.4), as in the interpreter |
 | `src/rt_bytes.rs` | `Bytes` (spec 2.13): raw data in one buffer |
 | `src/rt_net.rs` | `std.net` (spec 14.10): TCP, with the code in `runtime/core` |
+| `src/rt_writers.rs` | `FileWriter` (spec 14.3): its own entry, by the writer's number |
 | `src/rt_strings.rs` | Text: making it, string interpolation, its length, comparing and `+` (growing text with one holder in place); split from `rt_data.rs`, which re-exports these |
 | `src/rt_scopes.rs` | Each task's scope stack: folders of `uses Fs(…)`, the program of `uses Process(…)`, spans and seeds of blocks given to a call (spec 4.8), swapped as tasks take turns |
 | `src/rt_files.rs` | Files read as a `for` loop goes: `fs.lines`, `fs.chunks` (spec 14.3) |

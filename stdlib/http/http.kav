@@ -143,6 +143,10 @@ pub type ServeLimits {
     /// On a stop signal, how long to finish the requests under way
     /// (spec 5.8): `http.serve` holds the program's stop that long.
     pub drain_timeout: Duration = 10.seconds
+    /// Whether a request's span continues the trace its `traceparent`
+    /// names (spec 14.12); `false`, for a server the internet reaches
+    /// directly, starts a trace of its own for each request.
+    pub follow_trace: Bool = true
 }
 
 /// Why an HTTP request failed: `Status` and `BadJson` come from the

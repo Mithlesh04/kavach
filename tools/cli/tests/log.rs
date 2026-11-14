@@ -319,10 +319,11 @@ fn pay(ok: Bool) -> Int ! Declined {
 
 fn main() {
     log.span(\"checkout\") {
+        log.name_span(\"checkout /cart/\\{id}\")
         print(pay(true) catch _ => 0)
         print(pay(false) catch _ => 0)
     }
-    log.count(\"orders\", 2)
+    log.count(\"orders\", 2, attributes: [\"route\": \"/cart\"])
     log.histogram(\"checkout_ms\", 12.5)
 }
 ";
@@ -349,12 +350,13 @@ fn main() {
         let sent = collector.join().unwrap().join("\n");
         for part in [
             "\"resourceSpans\"",
-            "\"name\":\"checkout\"",
+            "\"name\":\"checkout /cart/{id}\"",
             "\"name\":\"pay\"",
             "\"parentSpanId\"",
             "\"code\":2",
             "\"traceId\"",
             "\"name\":\"orders\",\"sum\"",
+            "\"key\":\"route\",\"value\":{\"stringValue\":\"/cart\"}",
             "\"asDouble\":2",
             "\"name\":\"checkout_ms\",\"histogram\"",
         ] {
@@ -363,6 +365,65 @@ fn main() {
                 "native: {native}: {part} missing in {sent}"
             );
         }
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+}
+
+/// K39: `http.serve`'s span is named by the method only, so a path's ids
+/// and tokens never become span names sent to the collector.
+#[test]
+fn server_spans_are_named_by_method_not_path() {
+    let program = "use std.http
+use std.net
+
+fn hello(r: Request) -> Response {
+    http.text(200, \"hi\")
+}
+
+fn main() ! Error {
+    const listener = try net.listen(\"127.0.0.1:0\")
+    const _server = spawn http.serve(listener, hello)
+    const got = try http.get(\"http://{listener.address()}/users/7/reset/secret-token\")
+    print(got.status)
+}
+";
+    for native in [false, true] {
+        let (url, collector) = fake_collector();
+        let toml = format!(
+            "[package]
+name = \"shop\"
+
+[log.otlp]
+endpoint = \"{url}\"
+"
+        );
+        let dir =
+            std::env::temp_dir().join(format!("kavach-route-{native}-{}", std::process::id()));
+        let _ = std::fs::remove_dir_all(&dir);
+        std::fs::create_dir_all(dir.join("src")).unwrap();
+        std::fs::write(dir.join("kavach.toml"), toml).unwrap();
+        std::fs::write(dir.join("src/main.kav"), program).unwrap();
+        let mut cmd = Command::new(env!("CARGO_BIN_EXE_kavach"));
+        cmd.arg("run");
+        if native {
+            cmd.arg("--native");
+        }
+        let out = cmd.arg(dir.join("src/main.kav")).output().unwrap();
+        assert_eq!(
+            String::from_utf8_lossy(&out.stdout),
+            "200
+",
+            "native: {native}"
+        );
+        let sent = collector.join().unwrap().join(
+            "
+",
+        );
+        assert!(
+            sent.contains("\"name\":\"GET\""),
+            "native: {native}: {sent}"
+        );
+        assert!(!sent.contains("secret-token"), "native: {native}: {sent}");
         std::fs::remove_dir_all(&dir).unwrap();
     }
 }

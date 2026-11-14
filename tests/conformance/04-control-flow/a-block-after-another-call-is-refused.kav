@@ -1,0 +1,14 @@
+// Rule: a block after a call that doesn't take one is a compile error that names the rule.
+// Spec: 4.8
+// expect compile error
+
+fn greet(name: String) -> String {
+    "hi {name}"
+}
+
+fn main() {
+    const text = greet("Asha") {     // error: only `log.span(name)` and `random.seeded(seed)` take a block after them
+        print("x")
+    }
+    print(text)
+}

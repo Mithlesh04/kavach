@@ -56,6 +56,11 @@ impl<'a> Parser<'a> {
         self.pos
     }
 
+    /// The kind of the token before the current one, if any.
+    pub(crate) fn previous(&self) -> Option<&TokenKind> {
+        self.pos.checked_sub(1).map(|i| &self.tokens[i].kind)
+    }
+
     pub(crate) fn span(&self) -> Span {
         self.tokens[self.pos].span
     }

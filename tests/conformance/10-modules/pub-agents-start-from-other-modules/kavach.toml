@@ -1,0 +1,4 @@
+[package]
+name = "pub-agents-start-from-other-modules"
+version = "0.1.0"
+edition = "2026"

@@ -1,9 +1,10 @@
-// Rule: a type's doc comment becomes its schema's `"description"`, and so does a field's, for records and unions alike.
+// Rule: a type's doc comment becomes its schema's `"description"`, and so does a field's, for records and unions alike; a field whose type has one too gets one description, the field's first.
 // Spec: 2.12
 // expect output: "A place on the map."
 // expect output: "How far east, in metres."
 // expect output: "Where a parcel is."
 // expect output: null
+// expect output: "How sure the model is. How sure."
 
 use std.json
 
@@ -21,10 +22,19 @@ type Plain {
     n: Int
 }
 
+/// How sure.
+type Level = Low | High
+
+type Guess {
+    /// How sure the model is.
+    level: Level
+}
+
 fn main() {
     const place = json.schema<Place>()
     print(place.get("description"))
     print(place.get("properties").get("x").get("description"))
     print(json.schema<Stage>().get("description"))
     print(json.schema<Plain>().get("description"))
+    print(json.schema<Guess>().get("properties").get("level").get("description"))
 }

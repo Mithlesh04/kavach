@@ -82,6 +82,22 @@ pub fn span(scopes: &[Scope], name: &str, remote: Option<SpanId>) -> Scope {
     }
 }
 
+/// Renames the innermost span to `name` (`log.name_span`, spec 14.12);
+/// `false` outside a span.
+pub fn rename_span(scopes: &mut [Scope], name: &str) -> bool {
+    match scopes
+        .iter_mut()
+        .rev()
+        .find(|s| matches!(s, Scope::Span { .. }))
+    {
+        Some(Scope::Span { name: old, .. }) => {
+            *old = name.to_string();
+            true
+        }
+        _ => false,
+    }
+}
+
 /// What a task spawned here keeps: all but the seeds, which belong to the
 /// task that runs their block.
 pub fn inherited(scopes: &[Scope]) -> Vec<Scope> {

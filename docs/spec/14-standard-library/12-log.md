@@ -108,7 +108,8 @@ fn checkout(cart: Cart) -> Receipt ! ShopError {
 - Each event written inside a span carries the span's trace and span ids to the collector.
 - A span whose block fails (5.2) is marked as an error. One cut short by a panic is not sent: the panic says what happened.
 - `log.span(name, from: header) { … }` continues the trace that a W3C `traceparent` header names, when the code isn't in a span already. `log.traceparent()` gives the current span's header, or `none` outside a span. Together they carry a trace over any connection: a queue, gRPC metadata, a file.
-- `http.serve` runs each request's handler in a span named by its method and path (`GET /orders`). When the request has a W3C `traceparent` header, the span continues that trace. `http.request` and the other calls send the current span's `traceparent`. So traces join across services with no code (14.11).
+- `http.serve` runs each request's handler in a span named by its method (`GET`). When the request has a W3C `traceparent` header, the span continues that trace. The span's name never holds the path, which can hold ids and tokens (`/users/7/reset/<token>`); code that knows the route names the span with it, `log.name_span("GET /orders/\{id}")`. `http.request` and the other calls send the current span's `traceparent`. So traces join across services with no code (14.11).
+- `log.name_span(name)` renames the current span, once the code knows what it is doing; outside a span it does nothing. A name should be one of a few, such as a route's pattern, not text with ids in it.
 - `log.trace_id()` gives the current trace's id, 32 hexadecimal digits, or `none` outside a span: for an error page or a header in a reply.
 - With `[log.otlp]` set, each span goes to the collector when it ends, batched as events are (`POST <endpoint>/v1/traces`). Without it, spans are sent nowhere.
 
@@ -128,6 +129,7 @@ log.histogram("checkout_ms", Float(elapsed))
 ```
 
 - `name` is plain text; `n` is an `Int`, `value` a `Float`.
+- Each takes `attributes: [String: String]` too, empty unless given: `log.histogram("http.server.request.duration", ms, attributes: ["http.route": "/orders/\{id}", "http.response.status_code": "200"])`. Each name and set of attributes is a series of its own, whatever order the attributes were written in. Give attributes with few values (a route's pattern, a method, a status), never ids: each new value makes a new series to keep and send.
 - Without `[log.otlp]`, metrics are kept nowhere and cost almost nothing.
 - Like events, spans and metrics need no capability.
 

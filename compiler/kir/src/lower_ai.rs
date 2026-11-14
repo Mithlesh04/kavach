@@ -162,10 +162,17 @@ impl<'a> Lowerer<'a> {
         };
         fields.push(("schema".into(), schema));
         fields.push(("wrapped".into(), Tree::Bool(wrapped)));
-        let request = Tree::Object(fields);
+        let request = json::write(&Tree::Object(fields), 0);
+        // The runtime reads it back when `ask` runs; one it couldn't read
+        // would go out with no model and no shape, so it stops the build
+        // here instead (N6).
+        if let Err(e) = json::parse(&request, &json::Limits::default()) {
+            let why = format!("this `ask`'s request can't be built ({e:?}): please report it");
+            return Err(self.unsupported(why, span));
+        }
         let line = self.line(span);
         let text = self.str_type();
-        let request = expr(K::Str(json::write(&request, 0)), text, line);
+        let request = expr(K::Str(request), text, line);
         let templates = self.templates(ret, line, span)?;
         let args = vec![self.local_expr(prompt, line), request, templates];
         Ok(rt(RtOp::AiAsk, args, ret, line))

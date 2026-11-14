@@ -22,6 +22,7 @@ impl Checker<'_> {
                 ],
                 Ty::Unit,
             ),
+            "name_span_id" => (vec![p("name", string.clone())], Ty::Unit),
             // Empty outside a span.
             "trace_id_text" | "traceparent_text" => (vec![], string),
             _ => return None,

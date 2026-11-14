@@ -84,6 +84,12 @@ crate::rt_data::entry!(kv_rt_scopes, |op, a, b, _c, code, _line| {
             push(Scope::Seeded(Arc::new(Mutex::new(g))))
         }
         RtOp::ScopeMark => SCOPES.with(|s| s.borrow().len() as i64),
+        RtOp::ScopeRename => {
+            let name = str_of(a);
+            release(a);
+            SCOPES.with(|s| scope::rename_span(&mut s.borrow_mut(), &name));
+            0
+        }
         _ => {
             // ScopeTraceId, ScopeTraceparent.
             let text = match (current_span(), op) {

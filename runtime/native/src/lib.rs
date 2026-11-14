@@ -79,6 +79,7 @@ mod rt_under_way;
 mod rt_waits;
 mod rt_window;
 mod rt_workers;
+mod rt_writers;
 mod rt_zone;
 mod small_blocks;
 // The entries of the feature groups, for code the JIT compiles.
@@ -105,6 +106,7 @@ pub use rt_serial::kv_rt_serial;
 pub use rt_std::kv_rt_version;
 pub use rt_tasks::kv_rt_tasks;
 pub use rt_window::kv_rt_window;
+pub use rt_writers::kv_rt_writers;
 pub use rt_zone::kv_rt_zone;
 pub use send::kv_rt_weak;
 pub mod rt_text;

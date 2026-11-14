@@ -432,3 +432,56 @@ fn a_token_budget_refuses_asks_past_it() {
         );
     }
 }
+
+/// N6: a union with a doc comment, in a field with one too, gave the
+/// schema two `"description"`s; native code then couldn't read its
+/// request and sent no model and the shape `any`. Both now send the
+/// model, its instructions and one description.
+#[test]
+fn a_documented_union_in_a_documented_field_sends_the_model() {
+    let program = r#"/// How sure.
+pub type Level = Low | High
+
+pub type Guess {
+    pub word: String
+    /// How sure the model is.
+    pub level: Level
+}
+
+fn chosen() -> Model {
+    Model(name: "claude-sonnet-5-5", max_tokens: 2_000, instructions: "Be brief.")
+}
+
+agent Guesser {
+    model chosen()
+    can Ai
+    on guess(question: String) -> Guess ! Error {
+        try ask<Guess>(question)
+    }
+}
+
+fn main() ! Error {
+    const g = try Guesser.start().guess("Name a colour.")
+    print(g.word)
+}
+"#;
+    let mut sent = Vec::new();
+    for native in MODES {
+        let (url, server) = fake_model(vec![r#"{"word":"teal","level":"High"}"#]);
+        let out = run_program(program, Some(&url), Some("sk-fake"), native);
+        sent.push(server.join().unwrap());
+        assert_eq!(out, "teal\n", "native: {native}");
+    }
+    assert_eq!(sent[0], sent[1]);
+    for part in [
+        r#""model":"claude-sonnet-5-5""#,
+        r#""system":"Be brief.""#,
+        "How sure the model is. How sure.",
+    ] {
+        assert!(
+            sent[0][0].contains(part),
+            "{part} missing in {}",
+            sent[0][0]
+        );
+    }
+}

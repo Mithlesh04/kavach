@@ -130,6 +130,12 @@ impl<'a> Interp<'a> {
                 }
                 Value::Unit
             }
+            "name_span_id" => {
+                if let Some(Value::Str(name)) = args.first() {
+                    kavach_runtime_core::fs_scope::rename_span(&mut self.fs_scopes, name);
+                }
+                Value::Unit
+            }
             "trace_id_text" => {
                 self.str_value(&span.map_or(String::new(), |s| format!("{:032x}", s.trace)))
             }

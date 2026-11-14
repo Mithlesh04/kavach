@@ -12,6 +12,7 @@ use crate::heap::{obj, obj_mut, slots};
 use kavach_kir::{RtOp, Type};
 use std::cell::{Cell, RefCell};
 use std::collections::{HashMap, HashSet};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, OnceLock};
 
 crate::rt_data::entry!(kv_rt_drops, |op, a, b, c, code, line| match op {
@@ -33,7 +34,15 @@ fn table() -> std::sync::MutexGuard<'static, HashMap<u32, i64>> {
         .unwrap_or_else(|e| e.into_inner())
 }
 
+/// Bumped each time a type registers its `drop`: a thread's copy of the
+/// types (`KNOWN`) is out of date when it differs.
+static GENERATION: AtomicU64 = AtomicU64::new(0);
+
 thread_local! {
+    /// This thread's copy of the types with a `drop`, and the generation it
+    /// was taken at. Every free asks it, so it is read with no lock: one
+    /// lock on every free kept 8 cores waiting on each other (S3).
+    static KNOWN: RefCell<(u64, HashSet<u32>)> = RefCell::new((u64::MAX, HashSet::new()));
     /// Objects whose last reference went, waiting for their `drop`.
     static PENDING: RefCell<Vec<i64>> = const { RefCell::new(Vec::new()) };
     /// Objects whose `drop` has started: the next release frees them.
@@ -47,6 +56,7 @@ fn register(ty: i64, drop: i64) -> i64 {
     if let Some(old) = table().insert(ty as u32, drop) {
         crate::heap::release(old);
     }
+    GENERATION.fetch_add(1, Ordering::Release);
     crate::rc::set_drop_hook(defer);
     crate::rc::set_drop_runner(|| {
         let _ = run();
@@ -70,7 +80,7 @@ fn defer(p: i64) -> bool {
     let Type::Ref(id) = obj(p).ty() else {
         return false;
     };
-    if !table().contains_key(&id) {
+    if !has_drop(id) {
         return false;
     }
     if DROPPING.with(|d| d.borrow_mut().remove(&p)) {
@@ -79,6 +89,18 @@ fn defer(p: i64) -> bool {
     obj_mut(p).rc = 1;
     PENDING.with(|q| q.borrow_mut().push(p));
     true
+}
+
+/// Whether type number `id` has a `drop`, from this thread's copy.
+fn has_drop(id: u32) -> bool {
+    let now = GENERATION.load(Ordering::Acquire);
+    KNOWN.with(|k| {
+        let mut k = k.borrow_mut();
+        if k.0 != now {
+            *k = (now, table().keys().copied().collect());
+        }
+        k.1.contains(&id)
+    })
 }
 
 /// `DropRun`: runs `drop` for the objects waiting, oldest first; inside

@@ -11,7 +11,7 @@ The standard library, imported as `std.<module>`, e.g. `use std.fs`. Its content
 | `text/` | `std.text` | `text.kav`: padding, words, capitalizing, truncating, blank text | 1 |
 | `math/` | `std.math` | `math.kav`: `gcd`, `lcm`, `factorial`, `is_prime`, `mean` | 1 |
 | `time/` | `std.time`, `std.time.digits` | `digits.kav`: the digits and offsets of times as text; `time.kav`: `Duration` (`5.seconds`), `Date`, `Time`, `DateTime`, `Weekday`; clocks, sleeping and intervals come from the runtime (spec 14.4) | 1 |
-| `fs/` | `std.fs` | `fs.kav`: the `FsError` union file operations fail with (spec 14.3) | 1 |
+| `fs/` | `std.fs` | `fs.kav`: the `FsError` union file operations fail with, `FileInfo`, and `FileWriter`, a file written piece by piece (spec 14.3) | 1 |
 | `io/` | `std.io` | Empty for now (`.gitkeep`): reading lines, hidden input and the terminal checks of `std.io` are built into the runtime (spec 14.6) | 1 |
 | `cli/` | `std.cli` | `cli.kav`: `StopHold` and `cli.on_stop(grace)`, a hold on the program's stop (spec 5.8, [decision 0088](../docs/decisions/0088-finishing-before-a-stop.md)); arguments, `exit` and `parse` are built into the compiler and runtime (spec 14.6) | 2 |
 | `test/` | `std.test` | `test.kav`: `Sample`, for types that make their own generated values, and `Gen`, the seeded choices they make them from (spec 14.7); the numbers come from the runtime | 2 |

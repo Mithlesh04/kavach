@@ -1,0 +1,10 @@
+// Rule: an agent marked `pub` can be started from another module, and its handlers called there.
+// Spec: 10.1
+// expect output: 30
+
+use bots
+
+fn main() {
+    const bot = bots.Picker.start()
+    print(bot.pick([10, 20, 30], 2) catch _ => -1)
+}

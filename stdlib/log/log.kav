@@ -54,21 +54,42 @@ fn write<E: LogEvent>(level: Int, event: E) {
     log_write(level, "{level_name(level)} {event}", event)
 }
 
-/// Adds `n` to the counter `name`, sent as an OpenTelemetry sum.
-pub fn count(name: String, n: Int)
+/// Adds `n` to the counter `name`, sent as an OpenTelemetry sum; each
+/// set of `attributes` is a series of its own.
+pub fn count(name: String, n: Int, attributes: [String: String] = [:])
     require n >= 0
 {
-    log.metric_id(0, name, Float(n))
+    log.metric_id(0, series(name, attributes), Float(n))
 }
 
 /// The latest `value` of `name`, such as a queue's length.
-pub fn gauge(name: String, value: Float) {
-    log.metric_id(1, name, value)
+pub fn gauge(name: String, value: Float, attributes: [String: String] = [:]) {
+    log.metric_id(1, series(name, attributes), value)
 }
 
 /// One more `value` of `name`, whose spread is sent as a histogram.
-pub fn histogram(name: String, value: Float) {
-    log.metric_id(2, name, value)
+pub fn histogram(name: String, value: Float, attributes: [String: String] = [:]) {
+    log.metric_id(2, series(name, attributes), value)
+}
+
+/// A series as the runtime takes it: the name, then each attribute's key
+/// and value, apart by a character no name holds.
+fn series(name: String, attributes: [String: String]) -> String
+    example series("hits", [:]) == "hits"
+    example series("hits", ["route": "/a"]) == "hits\u{1}route\u{1}/a"
+{
+    let out = name
+    for (key, value) in attributes {
+        out += "\u{1}{key}\u{1}{value}"
+    }
+    out
+}
+
+/// Renames the current span, once the code knows what it does (a route's
+/// pattern, `GET /orders/{id}`, never a path with ids in it); outside a
+/// span it does nothing.
+pub fn name_span(name: String) {
+    log.name_span_id(name)
 }
 
 /// The current trace's id, 32 hexadecimal digits; none outside a span.

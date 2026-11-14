@@ -60,6 +60,7 @@ mod std_gpu;
 mod std_log;
 mod std_process;
 mod std_window;
+mod std_writers;
 mod stdlib;
 mod ty;
 mod unwraps;

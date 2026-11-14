@@ -1352,6 +1352,7 @@ version = "0.1.0"
 dependencies = [
  "kavach-ast",
  "kavach-checker",
+ "kavach-lexer",
  "kavach-parser",
  "kavach-resolver",
  "kavach-runtime-core",

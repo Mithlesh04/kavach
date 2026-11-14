@@ -1,0 +1,23 @@
+// Rule: with `ServeLimits(follow_trace: false)`, `http.serve` ignores a request's `traceparent`: each request starts a trace of its own.
+// Spec: 14.11
+// expect output: own trace: true
+
+use std.http
+use std.log
+use std.net
+
+fn whose(r: Request) -> Response {
+    http.text(200, log.trace_id() ?? "none")
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const limits = ServeLimits(follow_trace: false)
+    const _server = spawn http.serve(listener, whose, limits: limits)
+    const url = "http://{listener.address()}/"
+    const seen = log.span("caller") {
+        const got = try http.get(url)
+        (mine: log.trace_id() ?? "", theirs: got.body.text() ?? "")
+    }
+    print("own trace: {seen.theirs.len() == 32 and seen.theirs != seen.mine}")
+}

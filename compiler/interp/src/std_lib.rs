@@ -93,6 +93,7 @@ impl<'a> Interp<'a> {
             "process" => return self.process_call(name, &args, span),
             "gpu" => return self.gpu_call(name, &args),
             "log" => return self.log_call(name, &args),
+            "fs" if name.starts_with("writer_") => return self.writer_call(name, &args),
             "text" if name.starts_with("nf") => return Ok(self.normal_form(name, &text(0))),
             _ => {}
         }

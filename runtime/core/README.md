@@ -12,6 +12,7 @@ Code that both the interpreter and native code use, so the two give exactly the 
 | `src/input.rs` | A line typed without being shown (`io.read_hidden`, spec 14.6, decision 0036) |
 | `src/fs_scope.rs` | What a narrowed `uses` allows while its function runs: folders file access is kept inside (`uses Fs("./data")`, spec 8.1), resolving a path's `..` and links, and the programs that may run (`uses Process("git")`, 14.23); and the spans and seeds of blocks given to a call (4.8): the current span, what a spawned task keeps, ending spans |
 | `src/trace.rs` | Span ids and the W3C `traceparent` header (spec 14.12, decision 0107) |
+| `src/writers.rs` | Files written piece by piece (`fs.create_writer`, spec 14.3): open writers by number, 64 KB gathered at a time, an unfinished file deleted |
 | `src/seeded.rs` | `random.seeded`'s numbers: xoshiro256** seeded through SplitMix64 (spec 14.15) |
 | `src/inbox.rs` | Events a thread of the runtime hears (a child's lines, its end), kept for the task waiting for them, which is woken at the next one |
 | `src/tasks.rs` | The scheduler tasks take turns by (spec 9.7), for the interpreter and native code alike: passing the turn in `src/tasks/turns.rs`, choosing a worker's next task in `src/tasks/pick.rs` (one turn per worker, decision 0049), tasks waiting for sockets in `src/tasks/io.rs` (decision 0046), tests in `src/tasks/tests.rs` |

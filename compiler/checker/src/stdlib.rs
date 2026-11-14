@@ -253,6 +253,7 @@ impl Checker<'_> {
             ("process", _) => self.process_signature(name)?,
             ("gpu", _) => self.draw_signature(name)?,
             ("log", _) => self.log_signature(name)?,
+            ("fs", n) if n.starts_with("writer_") => self.writer_signature(name)?,
             ("clipboard", _) => self.clipboard_signature(name)?,
             ("time", "zone_offset") => (
                 vec![p("name", &string), p("ms", &int)],

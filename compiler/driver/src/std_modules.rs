@@ -6,6 +6,7 @@
 
 use crate::Source;
 use kavach_ast::{ItemKind, TypeBody};
+use kavach_lexer::TokenKind;
 use std::collections::HashSet;
 use std::sync::OnceLock;
 
@@ -244,21 +245,56 @@ fn names() -> &'static Vec<HashSet<String>> {
     })
 }
 
-/// The words of `text`: its identifiers and dotted paths (`std.json`).
-fn words(text: &str, into: &mut HashSet<String>) {
-    let mut word = String::new();
-    for c in text.chars().chain(std::iter::once(' ')) {
-        if c.is_alphanumeric() || c == '_' || (c == '.' && !word.is_empty()) {
-            word.push(c);
-            continue;
+/// The names a program's `text` uses as code: identifiers and dotted
+/// paths, not words in comments or in a string's own text, less the
+/// types, variants and interfaces it declares itself. So `// Event`, or a
+/// program's own `type Event`, brings in no module.
+fn code_words(text: &str, into: &mut HashSet<String>) {
+    let mut used = HashSet::new();
+    let mut path = String::new();
+    let mut after_dot = false;
+    let flush = |path: &mut String, used: &mut HashSet<String>| {
+        if !path.is_empty() {
+            used.extend(path.split('.').map(str::to_string));
+            used.insert(std::mem::take(path));
         }
-        if !word.is_empty() {
-            let w = word.trim_end_matches('.');
-            into.extend(w.split('.').map(str::to_string));
-            into.insert(w.to_string());
-            word.clear();
+    };
+    for t in &kavach_lexer::lex(text).tokens {
+        match t.kind {
+            TokenKind::Ident => {
+                if !(after_dot && !path.is_empty()) {
+                    flush(&mut path, &mut used);
+                } else {
+                    path.push('.');
+                }
+                path.push_str(&text[t.span.start as usize..t.span.end as usize]);
+                after_dot = false;
+            }
+            TokenKind::Dot if !path.is_empty() => after_dot = true,
+            _ => {
+                flush(&mut path, &mut used);
+                after_dot = false;
+            }
         }
     }
+    flush(&mut path, &mut used);
+    for item in kavach_parser::parse(text).file.items {
+        match &item.kind {
+            ItemKind::Type(t) => {
+                used.remove(&t.name.name);
+                if let TypeBody::Union(vs) = &t.body {
+                    for v in vs {
+                        used.remove(&v.name.name);
+                    }
+                }
+            }
+            ItemKind::Interface(i) => {
+                used.remove(&i.name.name);
+            }
+            _ => {}
+        }
+    }
+    into.extend(used);
 }
 
 /// The modules `sources` use, directly or through each other, as sources
@@ -267,7 +303,7 @@ fn words(text: &str, into: &mut HashSet<String>) {
 pub(crate) fn used(sources: &[Source]) -> Vec<Source> {
     let mut seen = HashSet::new();
     for s in sources {
-        words(&s.text, &mut seen);
+        code_words(&s.text, &mut seen);
     }
     // Built-ins whose values are the modules' types: `ask` fails with
     // `AiError`; `5.seconds` and `.timeout(d)` are `Duration`s.
@@ -302,7 +338,7 @@ pub(crate) fn used(sources: &[Source]) -> Vec<Source> {
         // A module brings in only the modules it names (`use std.net`):
         // its own words would match common variant names (`Denied`).
         let mut own = HashSet::new();
-        words(text, &mut own);
+        code_words(text, &mut own);
         // Its durations are `std.time`'s, as a program's are.
         let mut units = kavach_checker::DURATION_UNITS.iter().map(|(u, _)| *u);
         if units.any(|u| own.contains(u)) || own.contains("timeout") {
@@ -374,6 +410,24 @@ mod tests {
             ),
             // Public types and variants are seen everywhere (spec 14).
             ("fn f(e: FsError) {}", vec!["std.fs"]),
+            // Only names used as code count: not a comment, a string's
+            // text, or a type the program declares itself (S3).
+            (
+                "// Event
+print(1)",
+                vec![],
+            ),
+            ("print(\"Event\")", vec![]),
+            (
+                "type Event = Start | Stop
+print(Event.Start)",
+                vec![],
+            ),
+            (
+                "use std.window
+fn f(e: Event) {}",
+                vec!["std.window"],
+            ),
             ("const d = 5.seconds", vec!["std.time.digits", "std.time"]),
             // `Model`'s `timeout` is a `Duration`.
             (

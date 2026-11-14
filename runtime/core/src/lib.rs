@@ -26,6 +26,7 @@ pub mod serial;
 pub mod stop_holds;
 pub mod tasks;
 pub mod trace;
+pub mod writers;
 pub mod zones;
 
 pub use big_decimal::{AnyDecimal, BigDecimal};

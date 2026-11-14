@@ -71,7 +71,7 @@ fn answer(conn: Connection, handler: fn(Request) -> Response, limits: ServeLimit
         }
         match read_request(conn, data, limits, load.stop) {
             Got.Preface(all) if first => {
-                serving.serve(conn, all, handler) catch e => {}
+                serving.serve(conn, all, handler, follow: limits.follow_trace) catch e => {}
                 return finish(conn, load)
             }
             Got.Ready(m, used, all) => {
@@ -210,7 +210,9 @@ fn respond(conn: Connection, m: Message, handler: fn(Request) -> Response, limit
         const request = Request(method: parts.get(0) ?? "", path: parts.get(1) ?? "/", headers: m.headers, body: m.body, stream: body, peer: conn.peer(), client_cert: conn.client_cert())
         // A handler reading its body reads the connection itself.
         // A span a request: its trace continues the caller's (spec 14.12).
-        const answered = log.span("{request.method} {request.path}", from: request.header("traceparent") ?? "") {
+        // Named by the method only: a path can hold ids and tokens.
+        const parent = if limits.follow_trace { request.header("traceparent") ?? "" } else { "" }
+        const answered = log.span(request.method, from: parent) {
             if body == none { run_watched(conn, handler, request) } else { run_alone(handler, request) }
         }
         response = answered.response

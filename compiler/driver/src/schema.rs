@@ -248,7 +248,7 @@ impl<'c> Schemas<'c> {
             if !f.docs.is_empty()
                 && let Tree::Object(parts) = &mut s
             {
-                parts.push(("description".into(), text(&f.docs.join(" "))));
+                add_description(parts, &f.docs.join(" "));
             }
             if f.default.is_none() && !matches!(ty, Ty::Optional(_)) {
                 required.push(text(&name));
@@ -267,4 +267,15 @@ fn closed(properties: Vec<(String, Tree)>, required: Vec<Tree>) -> Tree {
         ("required".into(), Tree::Array(required)),
         ("additionalProperties".into(), Tree::Bool(false)),
     ])
+}
+
+/// Gives `parts` the description `doc`, a field's: before the one its
+/// type already has (a union's doc), in one `description`, since a JSON
+/// object can't name a key twice (N6: native code refused such a schema).
+fn add_description(parts: &mut Vec<(String, Tree)>, doc: &str) {
+    match parts.iter_mut().find(|(k, _)| k == "description") {
+        Some((_, Tree::Text(old))) if old != doc => *old = format!("{doc} {old}"),
+        Some(_) => {}
+        None => parts.push(("description".into(), text(doc))),
+    }
 }

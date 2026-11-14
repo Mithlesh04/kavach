@@ -37,3 +37,36 @@ pub fn info(path: String) -> FileInfo ! FsError uses Fs.read {
     }
     FileInfo(kind: kind, size: n[1], modified_ms: n[2], read_only: n[3] == 1, permissions: n[4])
 }
+
+/// A file being written piece by piece (`fs.create_writer`, spec 14.3).
+/// Let go before `finish`, its file is deleted.
+pub type FileWriter: Drop {
+    id: Int
+
+    /// Adds `data` at the end of the file.
+    pub fn write(self, data: Bytes) ! FsError uses Fs.write {
+        try fs.writer_write_id(self.id, data)
+    }
+
+    /// Adds `text` at the end of the file, as UTF-8.
+    pub fn write_text(self, text: String) ! FsError uses Fs.write {
+        try fs.writer_write_id(self.id, text.bytes())
+    }
+
+    /// Writes what is gathered, closes the file, and gives how many bytes
+    /// it holds; with `sync`, they are on the disk before it returns.
+    pub fn finish(self, sync: Bool = false) -> Int ! FsError uses Fs.write {
+        try fs.writer_finish_id(self.id, sync)
+    }
+
+    fn drop(self) uses Fs.write {
+        fs.writer_close_id(self.id)
+    }
+}
+
+/// A new, empty file at `path` (one there is emptied), written piece by
+/// piece as its data comes.
+pub fn create_writer(path: String) -> FileWriter ! FsError uses Fs.write {
+    const id = try fs.writer_open_id(path)
+    FileWriter(id: id)
+}

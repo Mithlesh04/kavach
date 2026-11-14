@@ -1,0 +1,32 @@
+// Rule: `fs.create_writer(path)` writes a file as its pieces come; `finish` gives the bytes written and closes it, a writer let go unfinished deletes its file, and `write` after `finish` fails.
+// Spec: 14.3
+// expect output: 100005
+// expect output: 100005
+// expect output: Bytes(68692c0102)
+// expect output: false
+// expect output: Failed(path: "kavach-test-pieces.bin", reason: "finished")
+
+use std.fs
+
+fn unfinished(path: String) ! FsError uses Fs {
+    const w = try fs.create_writer(path)
+    try w.write_text("half")
+}
+
+fn main() ! FsError uses Fs, Console {
+    const path = "kavach-test-pieces.bin"
+    const w = try fs.create_writer(path)
+    try w.write_text("hi,")
+    try w.write(Bytes([1, 2]))
+    const piece = "x".repeat(1000).bytes()
+    for _ in 0..100 {
+        try w.write(piece)
+    }
+    print(try w.finish(sync: true))
+    print(try w.finish())
+    print((try fs.read_bytes(path)).slice(0, 5))
+    try fs.remove(path)
+    try unfinished("kavach-test-unfinished.bin")
+    print(fs.exists("kavach-test-unfinished.bin"))
+    w.write(Bytes([9])) catch e => print(e)
+}

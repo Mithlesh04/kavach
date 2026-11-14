@@ -11,6 +11,7 @@ publish = false
 kavach-ast = { path = "../ast" }
 kavach-checker = { path = "../checker" }
 kavach-parser = { path = "../parser" }
+kavach-lexer = { path = "../lexer" }
 kavach-resolver = { path = "../resolver" }
 # Without the default `devices` (clipboard, serial ports, hidden input),
 # so the checker builds for the browser playground (decision 0078).

@@ -47,6 +47,7 @@ Not supported yet: agents, capabilities, `ask` and `unsafe` (Phase 2 and the nat
 | `src/std_crypto.rs` | `std.crypto` (spec 14.19), from `runtime/net` |
 | `src/std_base64.rs` | `std.base64` (spec 14.20), from `runtime/core` |
 | `src/std_compress.rs` | `std.compress` (spec 14.21), from `runtime/core` |
+| `src/std_writers.rs` | `FileWriter` (spec 14.3), on real files or the fake file system of `kavach test` |
 | `src/std_log.rs` | `std.log` (spec 14.12): events, spans and seeds run as blocks given to a call (4.8), metrics, to the collector of `[log.otlp]` |
 | `src/std_gpu.rs` | `std.gpu`'s drawing (spec 14.24), from `runtime/gpu/src/draw.rs` |
 | `src/std_process.rs` | `std.process` (spec 14.23), from `runtime/process`; waiting for a child lets other tasks run |

@@ -40,10 +40,39 @@ struct Metrics {
 
 static METRICS: Mutex<Option<Metrics>> = Mutex::new(None);
 
+/// The series `std.log` names (spec 14.12): the name, then attributes' keys
+/// and values, apart by `\u{1}`; the attributes sorted by key, so their
+/// order in the program doesn't make another series.
+fn series_key(series: &str) -> String {
+    let mut parts = series.split('\u{1}');
+    let name = parts.next().unwrap_or_default();
+    let rest: Vec<&str> = parts.collect();
+    let mut pairs: Vec<(&str, &str)> = rest
+        .as_chunks::<2>()
+        .0
+        .iter()
+        .map(|[k, v]| (*k, *v))
+        .collect();
+    pairs.sort();
+    (pairs.iter()).fold(name.to_string(), |acc, (k, v)| {
+        format!("{acc}\u{1}{k}\u{1}{v}")
+    })
+}
+
+/// A series' name, and its attributes as OTLP writes them.
+fn name_and_attributes(series: &str) -> (&str, Tree) {
+    let mut parts = series.split('\u{1}');
+    let name = parts.next().unwrap_or_default();
+    let rest: Vec<&str> = parts.collect();
+    let attributes = (rest.as_chunks::<2>().0.iter()).map(|[k, v]| crate::otlp::attribute(k, v));
+    (name, Tree::Array(attributes.collect()))
+}
+
 /// Records a value for the collector at `endpoint`: kind 0 adds to a sum,
-/// 1 sets a gauge, 2 adds to a histogram. The first one starts the
-/// sending thread.
+/// 1 sets a gauge, 2 adds to a histogram, of the series `name` (its
+/// attributes after it). The first one starts the sending thread.
 pub fn record(endpoint: &str, service: &str, kind: i64, name: &str, value: f64) {
+    let name = &series_key(name);
     let mut all = METRICS.lock().unwrap_or_else(|e| e.into_inner());
     let m = all.get_or_insert_with(|| {
         std::thread::spawn(|| {
@@ -94,8 +123,9 @@ pub fn send_now() {
     post(&body.0, &body.1);
 }
 
-fn point(m: &Metrics, now: u128, extra: Vec<(String, Tree)>) -> Tree {
+fn point(m: &Metrics, now: u128, attributes: Tree, extra: Vec<(String, Tree)>) -> Tree {
     let mut fields = vec![
+        ("attributes".to_string(), attributes),
         ("startTimeUnixNano".to_string(), text(&m.start.to_string())),
         ("timeUnixNano".to_string(), text(&now.to_string())),
     ];
@@ -115,8 +145,14 @@ fn request(m: &Metrics) -> String {
     let now = now_nanos();
     let cumulative = || ("aggregationTemporality".to_string(), Tree::Int(2));
     let mut metrics = Vec::new();
-    for (name, v) in &m.sums {
-        let p = point(m, now, vec![("asDouble".into(), Tree::Float(*v))]);
+    for (series, v) in &m.sums {
+        let (name, attributes) = name_and_attributes(series);
+        let p = point(
+            m,
+            now,
+            attributes,
+            vec![("asDouble".into(), Tree::Float(*v))],
+        );
         metrics.push(metric(
             name,
             "sum",
@@ -127,8 +163,10 @@ fn request(m: &Metrics) -> String {
             ],
         ));
     }
-    for (name, (v, at)) in &m.gauges {
+    for (series, (v, at)) in &m.gauges {
+        let (name, attributes) = name_and_attributes(series);
         let p = Tree::Object(vec![
+            ("attributes".into(), attributes),
             ("timeUnixNano".into(), text(&at.to_string())),
             ("asDouble".into(), Tree::Float(*v)),
         ]);
@@ -138,10 +176,12 @@ fn request(m: &Metrics) -> String {
             vec![("dataPoints".into(), Tree::Array(vec![p]))],
         ));
     }
-    for (name, h) in &m.histograms {
+    for (series, h) in &m.histograms {
+        let (name, attributes) = name_and_attributes(series);
         let p = point(
             m,
             now,
+            attributes,
             vec![
                 ("count".into(), text(&h.count.to_string())),
                 ("sum".into(), Tree::Float(h.sum)),
@@ -195,6 +235,10 @@ mod tests {
             histograms: BTreeMap::new(),
         };
         m.sums.insert("orders".into(), 3.0);
+        m.sums.insert(
+            series_key("orders\u{1}status\u{1}ok\u{1}method\u{1}GET"),
+            1.0,
+        );
         m.gauges.insert("queue".into(), (7.0, 2));
         let mut h = Histogram::default();
         (h.count, h.sum, h.min, h.max) = (2, 30.0, 10.0, 20.0);
@@ -207,5 +251,12 @@ mod tests {
         assert!(w.contains("\"name\":\"queue\",\"gauge\""), "{w}");
         assert!(w.contains("\"count\":\"2\""), "{w}");
         assert!(w.contains("\"explicitBounds\":[0"), "{w}");
+        // Attributes sorted by key: one series whatever their order.
+        assert_eq!(
+            series_key("a\u{1}y\u{1}2\u{1}x\u{1}1"),
+            series_key("a\u{1}x\u{1}1\u{1}y\u{1}2")
+        );
+        let method = "\"key\":\"method\",\"value\":{\"stringValue\":\"GET\"}";
+        assert!(w.contains(method), "{w}");
     }
 }

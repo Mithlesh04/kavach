@@ -1,0 +1,5 @@
+pub agent Picker {
+    on pick(items: [Int], at: Int) -> Int {
+        items[at]
+    }
+}

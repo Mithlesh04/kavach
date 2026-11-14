@@ -31,6 +31,9 @@ impl RtOp {
                 | RtOp::CompressDecode
                 | RtOp::WindowOpen
                 | RtOp::RunStart
+                | RtOp::FsWriterOpen
+                | RtOp::FsWriterWrite
+                | RtOp::FsWriterFinish
                 | RtOp::DrawScreen
                 | RtOp::DrawFrame
                 | RtOp::ClipReadText
@@ -121,6 +124,8 @@ impl RtOp {
             "kv_rt_window"
         } else if group("Run") {
             "kv_rt_run"
+        } else if group("FsWriter") {
+            "kv_rt_writers"
         } else if matches!(
             self,
             RtOp::ScopeSpan
@@ -128,6 +133,7 @@ impl RtOp {
                 | RtOp::ScopeMark
                 | RtOp::ScopeTraceId
                 | RtOp::ScopeTraceparent
+                | RtOp::ScopeRename
         ) {
             // Spans and seeds (spec 4.8): only programs with them link it.
             "kv_rt_scopes"

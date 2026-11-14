@@ -45,6 +45,7 @@ mod std_log;
 mod std_process;
 mod std_time;
 mod std_window;
+mod std_writers;
 mod stmts;
 mod task_errors;
 mod tasks;

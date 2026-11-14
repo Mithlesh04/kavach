@@ -63,6 +63,7 @@ Hindley–Milner-style inference with unification. A number literal starts as an
 | `src/std_base64.rs` | The signatures of `std.base64` (spec 14.20) |
 | `src/scoped.rs` | Blocks given to a call (spec 4.8): which calls take one, their arguments, and the error for one without its block |
 | `src/std_devices.rs` | The signatures of serial ports' and the clipboard's built-in functions (spec 14.18, 14.17) |
+| `src/std_writers.rs` | The signatures of `FileWriter`'s built-in functions, by the writer's number (spec 14.3) |
 | `src/std_log.rs` | The signatures of `std.log`'s built-in functions: metrics, the trace's id and `traceparent` (spec 14.12) |
 | `src/std_compress.rs` | The signatures of `std.compress`'s built-in functions (spec 14.21) |
 | `src/std_gpu.rs` | The signatures of `std.gpu`'s built-in functions, screens and frames by number (spec 14.24) |

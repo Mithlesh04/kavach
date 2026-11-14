@@ -36,6 +36,14 @@ impl Parser<'_> {
     /// A statement must end at a line break, a `}` or the end of the file.
     pub(crate) fn end_of_stmt(&mut self) {
         if !self.at_end_of_line() {
+            // `greet("Asha") { … }`: a block after a call (spec 4.8).
+            if self.at(&TokenKind::LBrace) && self.previous() == Some(&TokenKind::RParen) {
+                self.error_here(
+                    "only `log.span(name)` and `random.seeded(seed)` take a block after them (spec 4.8): start the block on a new line, or call one of them",
+                );
+                self.recover_line();
+                return;
+            }
             self.error_here("expected the end of the statement: start a new line");
             self.recover_line();
         }

@@ -10,8 +10,9 @@ use kavach_ast as ast;
 use kavach_driver::Compiled;
 use kavach_runtime_core::json::{self, Tree};
 
-/// When the program logs (spec 14.12), `main` first hands the runtime the
-/// `[log]` settings from `kavach.toml`, read now (as for agents, 8.5).
+/// When the program logs, or makes spans or metrics (spec 14.12), `main`
+/// first hands the runtime the `[log]` settings from `kavach.toml`, read
+/// now (as for agents, 8.5), and the collector of `[log.otlp]`.
 pub(crate) fn configure_log(
     c: &Compiled,
     functions: &mut [ir::Function],
@@ -19,7 +20,12 @@ pub(crate) fn configure_log(
     text: Type,
 ) {
     let logs = functions.iter().any(|f| {
-        crate::walk::any_in_block(&f.body, &mut |e| matches!(e.kind, K::Rt(RtOp::LogWrite, _)))
+        crate::walk::any_in_block(&f.body, &mut |e| {
+            matches!(
+                e.kind,
+                K::Rt(RtOp::LogWrite | RtOp::ScopeSpan | RtOp::OtlpMetric, _)
+            )
+        })
     });
     let Some(main) = functions.get_mut(entry as usize).filter(|_| logs) else {
         return;
