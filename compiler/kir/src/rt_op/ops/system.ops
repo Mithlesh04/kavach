@@ -114,3 +114,19 @@ WindowTitle,
 WindowFullscreen,
 WindowLockCursor,
 WindowClose,
+/// `uses Process("git")` (spec 14.23): while the function runs, only
+/// program `a` (owned) may be run; `FsScopeLeave` ends it, as it ends a
+/// folder.
+ScopeProgram,
+/// `std.process` (spec 14.23), by the child's number
+/// (`runtime/native/src/rt_run.rs`): start (the program, its arguments,
+/// the folder then the environment's names and values; can fail), the
+/// next line as its kind and text (waits), the end as code, processor
+/// milliseconds and peak bytes (waits), kill, close, and this program's
+/// peak memory.
+RunStart,
+RunNext,
+RunExit,
+RunKill,
+RunClose,
+RunPeak,

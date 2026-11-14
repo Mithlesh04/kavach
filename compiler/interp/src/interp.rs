@@ -70,8 +70,9 @@ pub(crate) struct Interp<'a> {
     pub(crate) tasks: Option<crate::tasks::Tasks<'a>>,
     pub(crate) task: kavach_runtime_core::tasks::TaskId,
     /// The folders file access is kept inside (`uses Fs("./data")`, spec
-    /// 8.1), resolved: one for each such call running.
-    pub(crate) fs_scopes: Vec<std::path::PathBuf>,
+    /// 8.1), resolved, and the programs that may run (`uses
+    /// Process("git")`, 14.23): one for each such call running.
+    pub(crate) fs_scopes: Vec<kavach_runtime_core::fs_scope::Scope>,
     /// Where `std.test`'s `Gen` choices come from (`test_random`, spec
     /// 14.7): seeded from the test run for each `sample` call.
     pub(crate) gen_rng: crate::testing::values::Rng,
@@ -325,18 +326,19 @@ impl<'a> Interp<'a> {
             spawned: Vec::new(),
             generics,
         });
-        let scoped = f
-            .fs_scope
-            .as_deref()
-            .map(kavach_runtime_core::fs_scope::resolve);
-        let scoped = scoped.map(|s| self.fs_scopes.push(s)).is_some();
+        use kavach_runtime_core::fs_scope::{Scope, resolve};
+        let before = self.fs_scopes.len();
+        if let Some(folder) = f.fs_scope.as_deref() {
+            self.fs_scopes.push(Scope::Folder(resolve(folder)));
+        }
+        if let Some(program) = &f.process_scope {
+            self.fs_scopes.push(Scope::Program(program.clone()));
+        }
         let result = self.call_in_frame(f, args, span);
         let result = self.join_spawned(result, span);
         // Out of the call, a failure is the call's own error.
         self.leaving = false;
-        if scoped {
-            self.fs_scopes.pop();
-        }
+        self.fs_scopes.truncate(before);
         self.frames.pop();
         match result {
             Err(e @ (Flow::Panic(..) | Flow::Exit(_))) => Err(e),

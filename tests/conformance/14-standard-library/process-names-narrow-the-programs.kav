@@ -1,0 +1,23 @@
+// Rule: `uses Process("name")` lets a function run only that program; any other fails with `Denied(program)`, and a missing program with `NotFound(program)`.
+// Spec: 14.23
+// expect output: 0
+// expect output: Denied(program: "cargo")
+// expect output: NotFound(program: "kavach-no-such-program")
+
+use std.process
+
+fn run_code(program: String) -> String ! ProcessError uses Process("git") {
+    const done = try process.run(program, ["--version"])
+    "{done.code}"
+}
+
+fn run_any(program: String) -> String ! ProcessError uses Process {
+    const done = try process.run(program, [])
+    "{done.code}"
+}
+
+fn main() {
+    print(run_code("git") catch e => "{e}")
+    print(run_code("cargo") catch e => "{e}")
+    print(run_any("kavach-no-such-program") catch e => "{e}")
+}

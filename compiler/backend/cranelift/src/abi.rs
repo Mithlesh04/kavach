@@ -76,7 +76,7 @@ pub(crate) type RuntimeFn = (
 /// addresses with the JIT and to declare their signatures.
 pub(crate) fn runtime_functions() -> Vec<RuntimeFn> {
     use types::{F64, I8, I32, I64};
-    vec![
+    let mut fns: Vec<RuntimeFn> = vec![
         (
             "kv_print_str",
             rt::kv_print_str as *const u8,
@@ -271,156 +271,6 @@ pub(crate) fn runtime_functions() -> Vec<RuntimeFn> {
             &[I64],
         ),
         (
-            "kv_rt",
-            rt_data::kv_rt as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_regex",
-            kavach_runtime_native::rt_regex::kv_rt_regex as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_json",
-            kavach_runtime_native::rt_json::kv_rt_json as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_net",
-            kavach_runtime_native::kv_rt_net as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_gpu",
-            kavach_runtime_native::kv_rt_gpu as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_drops",
-            kavach_runtime_native::kv_rt_drops as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_tasks",
-            kavach_runtime_native::kv_rt_tasks as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_agents",
-            kavach_runtime_native::kv_rt_agents as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_journal",
-            kavach_runtime_native::kv_rt_journal as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_otlp",
-            kavach_runtime_native::kv_rt_otlp as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_random",
-            kavach_runtime_native::kv_rt_random as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_zone",
-            kavach_runtime_native::kv_rt_zone as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_clipboard",
-            kavach_runtime_native::kv_rt_clipboard as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_crypto",
-            kavach_runtime_native::kv_rt_crypto as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_base64",
-            kavach_runtime_native::kv_rt_base64 as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_compress",
-            kavach_runtime_native::kv_rt_compress as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_window",
-            kavach_runtime_native::kv_rt_window as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_normalize",
-            kavach_runtime_native::kv_rt_normalize as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_file_info",
-            kavach_runtime_native::kv_rt_file_info as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_version",
-            kavach_runtime_native::kv_rt_version as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_weak",
-            kavach_runtime_native::kv_rt_weak as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_process",
-            kavach_runtime_native::kv_rt_process as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_serial",
-            kavach_runtime_native::kv_rt_serial as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_log",
-            kavach_runtime_native::kv_rt_log as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
-            "kv_rt_ai",
-            kavach_runtime_native::kv_rt_ai as *const u8,
-            &[I64, I64, I64, I64, I64, I32],
-            &[I64],
-        ),
-        (
             "kv_map_new",
             rt_maps::kv_map_new as *const u8,
             &[I64],
@@ -474,7 +324,9 @@ pub(crate) fn runtime_functions() -> Vec<RuntimeFn> {
             &[I64, I64, I32],
             &[I64],
         ),
-    ]
+    ];
+    fns.extend(crate::op_entries::op_entries());
+    fns
 }
 
 /// Declares the runtime functions in `module`.

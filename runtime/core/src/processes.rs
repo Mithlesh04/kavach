@@ -9,7 +9,6 @@
 //! JSON; how a value or an error is written there is each runtime's own.
 //! The parent hands every other line to the program's output, in turn.
 
-use std::collections::VecDeque;
 use std::ffi::OsString;
 use std::io::{BufRead, BufReader, Read, Write};
 use std::process::{Child, Command, Stdio};
@@ -51,21 +50,13 @@ pub enum Event {
     },
 }
 
-/// Wakes the task waiting for the next event, from the reading thread.
-pub type Waker = Box<dyn FnOnce() + Send>;
-
-#[derive(Default)]
-struct Heard {
-    events: VecDeque<Event>,
-    /// How many events came: a task notes it before it looks.
-    count: u64,
-    waiter: Option<Waker>,
-}
+use crate::inbox::Inbox;
+pub use crate::inbox::Waker;
 
 /// A child running one call.
 pub struct Running {
     child: Arc<Mutex<Child>>,
-    heard: Arc<Mutex<Heard>>,
+    heard: Inbox<Event>,
 }
 
 fn lock<T>(m: &Mutex<T>) -> std::sync::MutexGuard<'_, T> {
@@ -101,8 +92,8 @@ pub fn start(command: &[OsString], site: i64, arguments: &str) -> std::io::Resul
     }
     let output = child.stdout.take();
     let child = Arc::new(Mutex::new(child));
-    let heard = Arc::new(Mutex::new(Heard::default()));
-    let (theirs, told) = (Arc::clone(&child), Arc::clone(&heard));
+    let heard = Inbox::default();
+    let (theirs, told) = (Arc::clone(&child), heard.clone());
     std::thread::spawn(move || {
         let mut outcome = None;
         if let Some(output) = output {
@@ -113,7 +104,7 @@ pub fn start(command: &[OsString], site: i64, arguments: &str) -> std::io::Resul
                 let text = text.trim_end_matches(['\n', '\r']);
                 match text.strip_prefix(OUTCOME) {
                     Some(o) => outcome = Some(o.to_string()),
-                    None => tell(&told, Event::Line(text.to_string())),
+                    None => told.tell(Event::Line(text.to_string())),
                 }
                 line.clear();
             }
@@ -128,43 +119,26 @@ pub fn start(command: &[OsString], site: i64, arguments: &str) -> std::io::Resul
             }
             std::thread::sleep(std::time::Duration::from_millis(1));
         };
-        tell(&told, Event::Ended { outcome, code });
+        told.tell(Event::Ended { outcome, code });
     });
     Ok(Running { child, heard })
-}
-
-fn tell(heard: &Mutex<Heard>, event: Event) {
-    let waiter = {
-        let mut h = lock(heard);
-        h.events.push_back(event);
-        h.count += 1;
-        h.waiter.take()
-    };
-    if let Some(wake) = waiter {
-        wake();
-    }
 }
 
 impl Running {
     /// How many events came so far: noted before looking for one.
     pub fn count(&self) -> u64 {
-        lock(&self.heard).count
+        self.heard.count()
     }
 
     /// The next event, if one came.
     pub fn next(&self) -> Option<Event> {
-        lock(&self.heard).events.pop_front()
+        self.heard.next()
     }
 
     /// Calls `wake` at the next event after the count `seen`; `false`
     /// when one came already (then the caller looks again now).
     pub fn on_event(&self, seen: u64, wake: Waker) -> bool {
-        let mut h = lock(&self.heard);
-        if h.count != seen {
-            return false;
-        }
-        h.waiter = Some(wake);
-        true
+        self.heard.on_event(seen, wake)
     }
 
     /// Ends the child at once (`cancel()`, a time limit): it shares

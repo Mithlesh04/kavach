@@ -1,0 +1,125 @@
+// std.process (spec 14.23, decision 0105): other programs, run with no
+// shell, as trees that end together. The runtime starts them and reads
+// their output (`runtime/process`), by the child's number; this file
+// gives children their methods and gathers what `run` prints.
+
+use std.process
+
+/// Why a program couldn't run.
+pub type ProcessError = NotFound(program: String) | Denied(program: String) | Failed(reason: String)
+
+/// A line a program printed, without its line end.
+pub type Output = Out(line: String) | Err(line: String)
+
+/// How a program ended, and what it and the programs it started cost.
+pub type Exit {
+    pub code: Int
+    pub cpu_ms: Int
+    pub peak_bytes: Int
+}
+
+/// A program run to its end: its exit code, what it printed (each line
+/// ending in a line break) and what it cost.
+pub type Finished {
+    pub code: Int
+    pub out: String
+    pub err: String
+    pub cpu_ms: Int
+    pub peak_bytes: Int
+}
+
+/// A running program. Its tree ends when its last holder ends.
+pub type Child: Drop {
+    id: Int
+
+    /// The next line the program printed, waiting for it; none once it
+    /// has ended and every line was read.
+    pub fn next(self) -> Output? uses Process {
+        output_of(process.next_id(self.id))
+    }
+
+    /// Calls `f` with each line as it comes, until `f` gives `false` or
+    /// the program has ended and every line was read.
+    pub fn each(self, f: fn(Output) -> Bool) uses Process {
+        while true {
+            if let out = self.next() {
+                if not f(out) {
+                    return
+                }
+            } else {
+                return
+            }
+        }
+    }
+
+    /// Waits for the program's end, skipping what it still prints.
+    pub fn wait(self) -> Exit uses Process {
+        const n = process.exit_id(self.id)
+        Exit(code: n[0], cpu_ms: n[1], peak_bytes: n[2])
+    }
+
+    /// Ends the program, and every program it started, at once.
+    pub fn kill(self) uses Process {
+        process.kill_id(self.id)
+    }
+
+    fn drop(self) uses Process {
+        process.close_id(self.id)
+    }
+}
+
+/// Starts `program` with `args` in `folder` ("": this program's own),
+/// with `env` added to its environment.
+pub fn start(program: String, args: [String], folder: String = "", env: [String: String] = [:]) -> Child ! ProcessError uses Process {
+    let setup = [folder]
+    for (name, value) in env {
+        setup.push(name)
+        setup.push(value)
+    }
+    const id = try process.start_id(program, args, setup)
+    Child(id: id)
+}
+
+/// Runs `program` to its end.
+pub fn run(program: String, args: [String], folder: String = "", env: [String: String] = [:]) -> Finished ! ProcessError uses Process {
+    const child = try start(program, args, folder: folder, env: env)
+    let out = ""
+    let err = ""
+    let reading = true
+    while reading {
+        if let line = child.next() {
+            match line {
+                Output.Out(text) => {
+                    out += text + "\n"
+                },
+                Output.Err(text) => {
+                    err += text + "\n"
+                },
+            }
+        } else {
+            reading = false
+        }
+    }
+    const e = child.wait()
+    Finished(code: e.code, out: out, err: err, cpu_ms: e.cpu_ms, peak_bytes: e.peak_bytes)
+}
+
+/// The most memory this program has held so far, in bytes.
+pub fn peak_bytes() -> Int {
+    process.peak_bytes_id()
+}
+
+/// A line from the runtime's kind and text; none for nothing.
+fn output_of(got: [String]) -> Output?
+    example output_of(["out", "hi"]) == Output.Out(line: "hi")
+    example output_of(["err", "no"]) == Output.Err(line: "no")
+    example output_of([]) == none
+{
+    if got.len() < 2 {
+        return none
+    }
+    if got[0] == "err" {
+        return Output.Err(line: got[1])
+    }
+    Output.Out(line: got[1])
+}

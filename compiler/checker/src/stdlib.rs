@@ -25,6 +25,7 @@ const MODULES: &[(&str, Option<&str>)] = &[
     ("base64", None),
     ("compress", None),
     ("window", Some("Window")),
+    ("process", Some("Process")),
     ("text", None),
 ];
 
@@ -268,6 +269,7 @@ impl Checker<'_> {
             ("compress", _) => self.compress_signature(name)?,
             // Windows (spec 14.22), behind `Window`, and `Input`.
             ("window", _) => self.window_signature(name)?,
+            ("process", _) => self.process_signature(name)?,
             // The clipboard (spec 14.17), behind `Clipboard`.
             ("clipboard", "read_text") => {
                 let e = self.builtin_ty("ClipboardError");
@@ -426,7 +428,8 @@ impl Checker<'_> {
         // A hold on the program's stop needs nothing (decision 0088), nor
         // does working out a WebSocket handshake (0092).
         let holds = (module == "cli" && name.starts_with("stop_"))
-            || (module == "net" && name.starts_with("websocket_"));
+            || (module == "net" && name.starts_with("websocket_"))
+            || (module == "process" && name == "peak_bytes_id");
         if let Some(cap) = (MODULES.iter())
             .find(|(m, _)| *m == module && !reads_clock && !reads_zone && !holds)
             .and_then(|(_, c)| if answers { Some("Approvals") } else { *c })

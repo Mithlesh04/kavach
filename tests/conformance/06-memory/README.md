@@ -6,6 +6,7 @@ Conformance tests for spec chapter [6. Memory](../../../docs/spec/06-memory.md).
 |---|---|---|---|
 | 6.1 | [lists-are-values.kav](lists-are-values.kav) | Assigning a list never shares it; changing the copy leaves the original alone. | runs |
 | 6.1 | [passing-a-value-copies-it.kav](passing-a-value-copies-it.kav) | Passing a value to a function never shares it. | runs |
+| 6.1 | [text-grows-in-place-copies-stay.kav](text-grows-in-place-copies-stay.kav) | Text with one holder grows in place under `+=`; a copy taken before keeps its old value. | runs |
 | 6.1 | [early-exits-free-values.kav](early-exits-free-values.kav) | Values made for an expression that leaves early (`??`, `try`, `return`, `continue`) are still freed. | runs |
 | 6.2 | [shared-state-is-shared.kav](shared-state-is-shared.kav) | Shared<T> is shared: every copy sees the same value. | runs |
 | 6.2 | [shared-updates-never-lose-one.kav](shared-updates-never-lose-one.kav) | `update` holds the `Shared` value's lock while its function runs, so updates from many tasks never lose one. | runs |

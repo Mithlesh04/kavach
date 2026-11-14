@@ -44,6 +44,7 @@ kavach/
 │   ├── net/                networking, TLS and the model call, shared like core/
 │   ├── gpu/                GPU compute for gpu fn, through wgpu
 │   ├── window/             windows and their input for std.window, through winit
+│   ├── process/            other programs for std.process, as trees (unsafe allowed, decision 0105)
 │   ├── native/             run-time library of native programs
 │   ├── unpack/             packed executables: the format and the C starter
 │   ├── memory/

@@ -87,7 +87,7 @@ struct Context {
     error: i64,
     line: String,
     agents: Vec<crate::rt_agents::Inside>,
-    scopes: Vec<std::path::PathBuf>,
+    scopes: Vec<kavach_runtime_core::fs_scope::Scope>,
     /// The coroutine's yielder, its way back to the host; 0 on the host.
     yielder: usize,
 }

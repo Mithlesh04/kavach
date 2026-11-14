@@ -1,0 +1,30 @@
+// Rule: Text with one holder grows in place under `+=`, and a copy taken before keeps its old value.
+// Spec: 6.1
+// expect output: abc
+// expect output: ab
+// expect output: abab
+// expect output: ["x", "xy"]
+// expect output: 3000
+
+fn main() {
+    let s = "a"
+    s += "b"
+    const before = s
+    s += "c"
+    print(s)
+    print(before)
+    let twice = before
+    twice = twice + twice
+    print(twice)
+    let parts: [String] = []
+    let t = "x"
+    parts.push(t)
+    t += "y"
+    parts.push(t)
+    print(parts)
+    let long = ""
+    for _ in 0..1000 {
+        long += "abc"
+    }
+    print(long.len())
+}

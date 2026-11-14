@@ -27,6 +27,7 @@ impl Parser<'_> {
             errors: None,
             uses: Vec::new(),
             fs_scope: None,
+            process_scope: None,
             requires: Vec::new(),
             ensures: Vec::new(),
             examples: Vec::new(),
@@ -152,15 +153,21 @@ impl Parser<'_> {
         }
     }
 
-    /// `uses Net, Fs.read("./data")` (spec 8.1): capabilities, and the
-    /// folder file access is kept inside.
+    /// `uses Net, Fs.read("./data"), Process("git")` (spec 8.1, 14.23):
+    /// capabilities, the folder file access is kept inside, and the one
+    /// program that may be run.
     fn uses_clause(&mut self, f: &mut FnDecl) {
         loop {
             let path = self.path("a capability");
-            if self.at(&TokenKind::LParen) && path.segments[0].name == "Fs" {
+            let narrowed = match path.segments[0].name.as_str() {
+                "Fs" => Some(("the folder", "`Fs(\"./data\")`")),
+                "Process" => Some(("the program", "`Process(\"git\")`")),
+                _ => None,
+            };
+            if let (true, Some((what, how))) = (self.at(&TokenKind::LParen), narrowed) {
                 self.bump();
                 let start = self.span();
-                let folder = match self.at(&TokenKind::StrStart).then(|| self.string()) {
+                let text = match self.at(&TokenKind::StrStart).then(|| self.string()) {
                     Some(ExprKind::Str(parts)) => match parts.as_slice() {
                         [StrPart::Text(t)] => Some(t.clone()),
                         [] => Some(String::new()),
@@ -168,11 +175,12 @@ impl Parser<'_> {
                     },
                     _ => None,
                 };
-                match folder {
-                    Some(t) => f.fs_scope = Some(t),
-                    None => self.error(start, "write the folder as plain text: `Fs(\"./data\")`"),
+                match (text, path.segments[0].name.as_str()) {
+                    (Some(t), "Fs") => f.fs_scope = Some(t),
+                    (Some(t), _) => f.process_scope = Some(t),
+                    (None, _) => self.error(start, format!("write {what} as plain text: {how}")),
                 }
-                self.expect(&TokenKind::RParen, "`)` after the folder");
+                self.expect(&TokenKind::RParen, &format!("`)` after {what}"));
             }
             f.uses.push(path);
             if !self.eat(&TokenKind::Comma) {

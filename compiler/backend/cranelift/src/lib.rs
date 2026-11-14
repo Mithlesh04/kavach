@@ -18,6 +18,7 @@ mod link;
 pub use link::link_library;
 mod loops;
 mod object;
+mod op_entries;
 mod ops;
 mod places;
 mod pointers;

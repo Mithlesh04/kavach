@@ -1,0 +1,28 @@
+[package]
+name = "kavach-runtime-process"
+description = "Other programs run as trees for std.process (spec 14.23): no shell, output as it comes, ended together"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+kavach-runtime-core = { path = "../core" }
+
+# Each system's own calls, allowed `unsafe` (decision 0105).
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = [
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_System_Diagnostics_ToolHelp",
+    "Win32_System_JobObjects",
+    "Win32_System_ProcessStatus",
+    "Win32_System_Threading",
+] }
+
+[lints]
+workspace = true

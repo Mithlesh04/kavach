@@ -1,0 +1,19 @@
+// Rule: `Bytes.of<T>(n, big_endian: false)` gives the bytes of the number `n` of type `T`, little-endian unless `big_endian: true`; `read` gives the number back.
+// Spec: 2.13
+// expect output: Bytes(00060000c03f)
+// expect output: Bytes(feff)
+// expect output: Bytes(ffffffff)
+// expect output: Bytes(0102030405060708)
+// expect output: Bytes(0000000000000440)
+// expect output: true
+
+fn main() {
+    const packet = Bytes.of<UInt16>(6, big_endian: true) + Bytes.of<Float32>(1.5)
+    print(packet)
+    print(Bytes.of<Int16>(-2))
+    print(Bytes.of<Int32>(-1, true))
+    print(Bytes.of<UInt64>(72623859790382856, big_endian: true))
+    print(Bytes.of<Float>(2.5))
+    const n: Int = -123456789
+    print(Bytes.of<Int>(n, big_endian: true).read<Int>(0, big_endian: true) == n)
+}

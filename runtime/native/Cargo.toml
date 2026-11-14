@@ -16,6 +16,7 @@ crate-type = ["rlib", "staticlib"]
 kavach-runtime-core = { path = "../core" }
 kavach-runtime-net = { path = "../net" }
 kavach-runtime-window = { path = "../window" }
+kavach-runtime-process = { path = "../process" }
 kavach-runtime-gpu = { path = "../gpu" }
 kavach-kir = { path = "../../compiler/kir" }
 # Tasks as stackful coroutines (decision 0048).

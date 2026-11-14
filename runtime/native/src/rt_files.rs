@@ -106,22 +106,24 @@ pub type Shared = Arc<Mutex<Reader>>;
 thread_local! {
     /// The folders file access is kept inside (`uses Fs("./data")`, spec
     /// 8.1), resolved: one for each such call running in this task.
-    static SCOPES: std::cell::RefCell<Vec<std::path::PathBuf>> =
+    static SCOPES: std::cell::RefCell<Vec<kavach_runtime_core::fs_scope::Scope>> =
         const { std::cell::RefCell::new(Vec::new()) };
 }
 
 /// This task's folders, for a task it spawns (which keeps them).
 /// Puts `scopes` in place of this thread's, giving those: tasks switching
 /// on one thread keep their own (`rt_coroutines.rs`).
-pub(crate) fn swap_scopes(scopes: Vec<std::path::PathBuf>) -> Vec<std::path::PathBuf> {
+pub(crate) fn swap_scopes(
+    scopes: Vec<kavach_runtime_core::fs_scope::Scope>,
+) -> Vec<kavach_runtime_core::fs_scope::Scope> {
     SCOPES.with(|s| std::mem::replace(&mut *s.borrow_mut(), scopes))
 }
 
-pub(crate) fn scopes() -> Vec<std::path::PathBuf> {
+pub(crate) fn scopes() -> Vec<kavach_runtime_core::fs_scope::Scope> {
     SCOPES.with(|s| s.borrow().clone())
 }
 
-pub(crate) fn set_scopes(scopes: Vec<std::path::PathBuf>) {
+pub(crate) fn set_scopes(scopes: Vec<kavach_runtime_core::fs_scope::Scope>) {
     SCOPES.with(|s| *s.borrow_mut() = scopes);
 }
 
@@ -227,8 +229,12 @@ pub fn reader_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
     match op {
         RtOp::FsLines => open(a, None, code),
         RtOp::FsChunks => open(a, Some(b), code),
-        RtOp::FsScopeEnter => {
-            let folder = kavach_runtime_core::fs_scope::resolve(&str_of(a));
+        RtOp::FsScopeEnter | RtOp::ScopeProgram => {
+            use kavach_runtime_core::fs_scope::{Scope, resolve};
+            let folder = match op {
+                RtOp::FsScopeEnter => Scope::Folder(resolve(&str_of(a))),
+                _ => Scope::Program(str_of(a)),
+            };
             release(a);
             SCOPES.with(|s| {
                 let mut s = s.borrow_mut();

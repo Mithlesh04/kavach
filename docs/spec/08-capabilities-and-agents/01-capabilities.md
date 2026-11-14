@@ -15,6 +15,7 @@ A capability is permission to affect the outside world. Built-in capabilities:
 | `Serial` | Serial ports (14.18): boards, sensors, modems and other devices on a cable |
 | `Window` | Opening windows and reading their window events (14.22) |
 | `Input` | The keyboard, the mouse and text typed in a program's own windows (14.22) |
+| `Process` | Running other programs (14.23); `Process("name")` only that one |
 | `Approvals` | Answering agents' approval requests in code (14.16). An agent's `can` may never list it (8.3) |
 | `Foreign` | Calling Python or JavaScript code, which Kavach cannot check (10.7) |
 

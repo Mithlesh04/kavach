@@ -29,6 +29,7 @@ Text constants are placed in the module's data, never as addresses from the comp
 | `src/link.rs` | Finding the run-time library and the system linker; linking an executable or a shared library |
 | `src/library.rs` | `build_library` (`kavach build --lib`, decision 0026): an exported C function in front of each export (turning C text into Kavach text and back, errors into numbers), `<package>_free`, `<package>_last_error`, then a shared library |
 | `src/abi.rs` | Machine types, signatures, the runtime functions native code imports |
+| `src/op_entries.rs` | The runtime's op entries (`kv_rt`, `kv_rt_window`, …), which share one signature |
 | `src/codegen.rs` | Functions, statements, control flow, `print`, contracts, text constants |
 | `src/errors.rs` | Calls that can fail, `fail`, and in-place changes to variables |
 | `src/loops.rs` | `for` over ranges and lists |

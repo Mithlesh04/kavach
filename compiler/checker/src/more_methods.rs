@@ -18,13 +18,61 @@ impl Checker<'_> {
         if !args.is_empty() {
             self.error(span, "`as_list` takes no arguments: `b.as_list<Float32>()`");
         }
+        match self.fixed_number(generics, span, "as_list", "b.as_list<Float32>()") {
+            Ty::Error => Ty::Error,
+            item => Ty::Optional(Box::new(Ty::List(Box::new(item)))),
+        }
+    }
+
+    /// `b.read<T>(at, big_endian: false)` (spec 2.13): `T?`.
+    pub(crate) fn bytes_read(
+        &mut self,
+        generics: &[kavach_ast::TypeExpr],
+        args: &[kavach_ast::Arg],
+        span: kavach_ast::Span,
+    ) -> Ty {
+        let item = self.fixed_number(generics, span, "read", "b.read<UInt32>(at)");
+        let params = [
+            ("at".to_string(), Ty::Prim(Prim::Int), false),
+            ("big_endian".to_string(), Ty::Prim(Prim::Bool), true),
+        ];
+        self.args(args, &params, span, "`read`", "argument");
+        match item {
+            Ty::Error => Ty::Error,
+            item => Ty::Optional(Box::new(item)),
+        }
+    }
+
+    /// `Bytes.of<T>(n, big_endian: false)` (spec 2.13): `Bytes`.
+    pub(crate) fn bytes_of(
+        &mut self,
+        generics: &[kavach_ast::TypeExpr],
+        args: &[kavach_ast::Arg],
+        span: kavach_ast::Span,
+    ) -> Ty {
+        let item = self.fixed_number(generics, span, "Bytes.of", "Bytes.of<UInt32>(n)");
+        let params = [
+            ("n".to_string(), item, false),
+            ("big_endian".to_string(), Ty::Prim(Prim::Bool), true),
+        ];
+        self.args(args, &params, span, "`Bytes.of`", "argument");
+        Ty::Prim(Prim::Bytes)
+    }
+
+    /// The one type argument of `as_list`, `read` or `of` (`name`): a
+    /// number of fixed size, or `Ty::Error` after saying why. `how`
+    /// shows a call.
+    fn fixed_number(
+        &mut self,
+        generics: &[kavach_ast::TypeExpr],
+        span: kavach_ast::Span,
+        name: &str,
+        how: &str,
+    ) -> Ty {
         let item = match generics {
             [g] => self.lower(g, None),
             _ => {
-                self.error(
-                    span,
-                    "write the type of the numbers: `b.as_list<Float32>()`",
-                );
+                self.error(span, format!("write the type of the numbers: `{how}`"));
                 return Ty::Error;
             }
         };
@@ -33,11 +81,11 @@ impl Checker<'_> {
         if !fixed && !matches!(item, Ty::Error) {
             self.error(
                 span,
-                "`as_list` reads numbers of a fixed size: `Int8`, `Int16`, `Int32`, `Int`, `UInt8`, `UInt16`, `UInt32`, `UInt64`, `Float32` or `Float`",
+                format!("`{name}` reads numbers of a fixed size: `Int8`, `Int16`, `Int32`, `Int`, `UInt8`, `UInt16`, `UInt32`, `UInt64`, `Float32` or `Float`"),
             );
             return Ty::Error;
         }
-        Ty::Optional(Box::new(Ty::List(Box::new(item))))
+        item
     }
 
     /// More methods of built-in types (spec 14.2).

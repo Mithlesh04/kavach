@@ -130,7 +130,7 @@ The goal is that **every behaviour is checked, with as few hand-written test fil
 ## 8. Code style (once code exists)
 
 - Rust: `rustfmt`, `clippy` with no warnings.
-- `unsafe` Rust is denied workspace-wide. The only exception is `runtime/native`, the run-time library of native programs ([decision 0016](docs/decisions/0016-native-runtime-and-executables.md)), where each use has a `SAFETY:` comment, and one call in `runtime/gpu` that compiles a kernel whose loops surely end ([decision 0077](docs/decisions/0077-kernels-whose-loops-end.md)). Don't add `unsafe` anywhere else without a decision record.
+- `unsafe` Rust is denied workspace-wide. The only exception is `runtime/native`, the run-time library of native programs ([decision 0016](docs/decisions/0016-native-runtime-and-executables.md)), where each use has a `SAFETY:` comment, one call in `runtime/gpu` that compiles a kernel whose loops surely end ([decision 0077](docs/decisions/0077-kernels-whose-loops-end.md)), and `runtime/process`, the system calls that run other programs as trees ([decision 0105](docs/decisions/0105-std-process.md)), each with a `SAFETY:` comment. Don't add `unsafe` anywhere else without a decision record.
 - Kavach: `kavach fmt`.
 - Match the style of the surrounding code: naming, comment density, idioms.
 

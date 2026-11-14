@@ -106,6 +106,15 @@ pub extern "C-unwind" fn kv_cmp(a: i64, b: i64) -> i64 {
 
 #[unsafe(no_mangle)]
 pub extern "C-unwind" fn kv_concat(a: i64, b: i64) -> i64 {
+    // Text with no other holder grows in place (spec 6.1), so `s += part`
+    // in a loop copies each part once, not the whole text each time.
+    if obj(a).rc == 1 && a != b {
+        if let Data::Str(s) = &mut *crate::heap::data(a).borrow_mut() {
+            with_str(b, |more| s.push_str(more));
+        }
+        release(b);
+        return a;
+    }
     let ty = obj(a).ty();
     let joined = str_of(a) + &str_of(b);
     release(a);
@@ -367,12 +376,15 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         | RtOp::BytesCrc32c
         | RtOp::BytesXxhash64
         | RtOp::BytesIndexOf
+        | RtOp::BytesRead
+        | RtOp::BytesOfNumber
         | RtOp::BytesConcat => crate::rt_bytes::bytes_op(op, a, b, c, code, line),
         RtOp::FsLines
         | RtOp::FsChunks
         | RtOp::ReaderNext
         | RtOp::ReaderTryNext
         | RtOp::FsScopeEnter
+        | RtOp::ScopeProgram
         | RtOp::FsScopeLeave => crate::rt_files::reader_op(op, a, b, code, line),
         RtOp::FsReadText
         | RtOp::FsReadBytes

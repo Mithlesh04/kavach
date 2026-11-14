@@ -451,6 +451,9 @@ impl Checker<'_> {
                     Ty::Set(Box::new(self.fresh()))
                 })
             }
+            DefKind::Builtin if type_name == "Bytes" && name.name == "of" => {
+                Some(self.bytes_of(generics, args, span))
+            }
             DefKind::Builtin if type_name == "Float" && name.name == "from_bits" => {
                 Some(self.float_from_bits(args, span))
             }

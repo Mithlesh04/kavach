@@ -110,6 +110,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0102](0102-unicode-normalization.md) | Unicode normal forms in `std.text` (`text.nfc`, `nfd`, `nfkc`, `nfkd`), from `unicode-normalization` | Accepted |
 | [0103](0103-std-compress.md) | `std.compress`: gzip, deflate, zstd, brotli and lz4 through one `encode`/`decode` pair with a `Format` value; decoding stops at `most` (64 MB) | Accepted |
 | [0104](0104-windows-through-winit.md) | `std.window`: windows through `winit`; `Window` and `Input` capabilities; events read with `events()` or `poll()`, and a callback form | Accepted |
+| [0105](0105-std-process.md) | `std.process`: other programs run with no shell, as trees that end together; `Process` and `Process("name")`; our own system calls in `runtime/process`, allowed `unsafe` | Accepted |
 
 ## Open decisions
 

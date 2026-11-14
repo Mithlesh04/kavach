@@ -10,7 +10,8 @@ Code that both the interpreter and native code use, so the two give exactly the 
 | `src/env_file.rs` | Environment variables and `.env` files (spec 10.13, decision 0084): reading a file, and which value wins (`--env`, the real environment, then the file) |
 | `src/json.rs` | JSON text (spec 2.12): a strict parser with limits and line/column errors, and the words decoding uses in its errors (its loop in `src/json/parse.rs`, the pieces of text in `src/json/read.rs`, writer in `src/json/write.rs`, tests in `src/json/tests.rs`); values are made by a `Build`er, a tree or a program's own values, or read piece by piece for decoding (`src/json/pull.rs`) |
 | `src/input.rs` | A line typed without being shown (`io.read_hidden`, spec 14.6, decision 0036) |
-| `src/fs_scope.rs` | Folders file access is kept inside (`uses Fs("./data")`, spec 8.1): resolving a path's `..` and links, and checking it |
+| `src/fs_scope.rs` | What a narrowed `uses` allows while its function runs: folders file access is kept inside (`uses Fs("./data")`, spec 8.1), resolving a path's `..` and links, and the programs that may run (`uses Process("git")`, 14.23) |
+| `src/inbox.rs` | Events a thread of the runtime hears (a child's lines, its end), kept for the task waiting for them, which is woken at the next one |
 | `src/tasks.rs` | The scheduler tasks take turns by (spec 9.7), for the interpreter and native code alike: passing the turn in `src/tasks/turns.rs`, choosing a worker's next task in `src/tasks/pick.rs` (one turn per worker, decision 0049), tasks waiting for sockets in `src/tasks/io.rs` (decision 0046), tests in `src/tasks/tests.rs` |
 | `src/processes.rs` | `spawn process` (spec 9.8, decision 0075): starting the program again to run one call, reading what the child prints, and in the child, which call and its arguments |
 | `src/zones.rs` | Time zones (spec 14.4, decision 0064): a zone's offset from UTC at a moment, through `jiff` |

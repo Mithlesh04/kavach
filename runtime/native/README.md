@@ -64,4 +64,5 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_crypto.rs` | `std.crypto` (spec 14.19): its own entry, so only a program that uses it links `ring` and `argon2` |
 | `src/rt_base64.rs` | `std.base64` (spec 14.20): its own entry |
 | `src/rt_compress.rs` | `std.compress` (spec 14.21): its own entry |
+| `src/rt_run.rs` | `std.process` (spec 14.23): its own entry, by the child's number; waiting lets other tasks run |
 | `src/rt_window.rs` | `std.window` (spec 14.22): its own entry, so only programs with windows link `winit` |

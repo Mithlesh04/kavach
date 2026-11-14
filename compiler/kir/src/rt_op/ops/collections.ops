@@ -95,3 +95,7 @@ WeakShared,
 /// at `p` copied out (spec 6.4).
 PtrBytes,
 PtrReadBytes,
+/// `b.read<T>(at, big_endian)` and `Bytes.of<T>(n, big_endian)` (spec
+/// 2.13): `read`'s result type names `T`; `of` gets the size of `T`.
+BytesRead,
+BytesOfNumber,

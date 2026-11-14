@@ -47,6 +47,7 @@ Not supported yet: agents, capabilities, `ask` and `unsafe` (Phase 2 and the nat
 | `src/std_crypto.rs` | `std.crypto` (spec 14.19), from `runtime/net` |
 | `src/std_base64.rs` | `std.base64` (spec 14.20), from `runtime/core` |
 | `src/std_compress.rs` | `std.compress` (spec 14.21), from `runtime/core` |
+| `src/std_process.rs` | `std.process` (spec 14.23), from `runtime/process`; waiting for a child lets other tasks run |
 | `src/std_window.rs` | `std.window` (spec 14.22), from `runtime/window` |
 | [src/testing/](src/testing/README.md) | Generated tests: values, shrinking, found cases, fix suggestions (spec 11) |
 

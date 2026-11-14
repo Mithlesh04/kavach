@@ -1,0 +1,14 @@
+// Rule: running another program needs the capability `Process`.
+// Spec: 14.23
+// expect compile error
+
+use std.process
+
+pub fn version() -> Int ! ProcessError {
+    const done = try process.run("git", ["--version"])     // error: `version` is `pub`, so it must say what it uses: add `uses Process`
+    done.code
+}
+
+fn main() {
+    print(version() catch _ => -1)
+}

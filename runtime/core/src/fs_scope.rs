@@ -1,5 +1,7 @@
 //! Folders that file access is kept inside (`uses Fs("./data")`, spec
-//! 8.1): one check for the interpreter and native code.
+//! 8.1), and programs that may be run (`uses Process("git")`, 14.23): one
+//! check for the interpreter and native code. Each call of a function so
+//! narrowed adds its [`Scope`] while it runs; a task keeps its spawner's.
 //!
 //! A path is turned into the absolute path it really names: the part that
 //! exists is resolved by the operating system, so `..` and symbolic links
@@ -37,13 +39,35 @@ pub fn resolve(path: &str) -> PathBuf {
     abs
 }
 
-/// Whether `path` is inside every folder of `scopes` (each `resolve`d).
-pub fn inside(scopes: &[PathBuf], path: &str) -> bool {
-    if scopes.is_empty() {
+/// What one narrowed `uses` allows while its function runs.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum Scope {
+    /// `Fs("./data")`, `resolve`d.
+    Folder(PathBuf),
+    /// `Process("git")`, as written.
+    Program(String),
+}
+
+/// Whether `path` is inside every folder of `scopes`.
+pub fn inside(scopes: &[Scope], path: &str) -> bool {
+    let mut folders = scopes.iter().filter_map(|s| match s {
+        Scope::Folder(f) => Some(f),
+        Scope::Program(_) => None,
+    });
+    let Some(first) = folders.next() else {
         return true;
-    }
+    };
     let p = resolve(path);
-    scopes.iter().all(|s| p.starts_with(s))
+    p.starts_with(first) && folders.all(|f| p.starts_with(f))
+}
+
+/// Whether `program` is each program of `scopes`: a name matches only the
+/// same name, a path only the same path (spec 14.23).
+pub fn may_run(scopes: &[Scope], program: &str) -> bool {
+    scopes.iter().all(|s| match s {
+        Scope::Program(p) => p == program,
+        Scope::Folder(_) => true,
+    })
 }
 
 #[cfg(test)]
@@ -55,7 +79,7 @@ mod tests {
         let base = std::env::temp_dir().join(format!("kavach-scope-{}", std::process::id()));
         let data = base.join("data");
         std::fs::create_dir_all(data.join("inner")).unwrap();
-        let scopes = [resolve(data.to_str().unwrap())];
+        let scopes = [Scope::Folder(resolve(data.to_str().unwrap()))];
         let at = |rest: &str| format!("{}/{rest}", data.display());
         assert!(inside(&scopes, &at("a.txt")));
         assert!(inside(&scopes, &at("inner/../b.txt")));
@@ -64,9 +88,26 @@ mod tests {
         assert!(!inside(&scopes, &at("inner/../../x")));
         assert!(!inside(&scopes, &at("new/../../y")));
         // Folders nest: a path must be in all of them.
-        let both = [scopes[0].clone(), resolve(&at("inner"))];
+        let both = [scopes[0].clone(), Scope::Folder(resolve(&at("inner")))];
         assert!(inside(&both, &at("inner/d.txt")));
         assert!(!inside(&both, &at("e.txt")));
+        // A program's name narrows nothing about files.
+        let named = [scopes[0].clone(), Scope::Program("git".into())];
+        assert!(inside(&named, &at("a.txt")));
         std::fs::remove_dir_all(&base).unwrap();
+    }
+
+    #[test]
+    fn programs_nest_and_each_must_match() {
+        let named = |n: &[&str]| {
+            n.iter()
+                .map(|s| Scope::Program(s.to_string()))
+                .collect::<Vec<_>>()
+        };
+        assert!(may_run(&[], "git"));
+        assert!(may_run(&named(&["git"]), "git"));
+        assert!(!may_run(&named(&["git"]), "/usr/bin/git"));
+        assert!(!may_run(&named(&["git", "make"]), "git"));
+        assert!(may_run(&[Scope::Folder(PathBuf::from("/data"))], "git"));
     }
 }

@@ -26,6 +26,8 @@ print(greeting.text() ?? "?")          // hi
 | `b.text()` | `String?`: the bytes as UTF-8 text, or `none` when they aren't valid UTF-8 |
 | `b.to_list()` | `[UInt8]` |
 | `b.as_list<T>()` | `[T]?`: the bytes read as numbers of type `T`, or `none` when their length isn't a whole number of them |
+| `b.read<T>(at, big_endian: false)` | `T?`: the number of type `T` whose bytes start at `at`, or `none` when they don't all fit |
+| `Bytes.of<T>(n, big_endian: false)` | `Bytes`: the bytes of the number `n` of type `T` |
 | `a + b` | `a` followed by `b` |
 | `a == b` | Whether they hold the same bytes |
 
@@ -38,4 +40,15 @@ const data = Bytes([0, 0, 128, 63, 0, 0, 0, 64])
 print(data.as_list<Float32>() ?? [])     // [1.0, 2.0]
 print(data.as_list<Int>() ?? [])         // [4611686019492741120]
 print(data.slice(0, 3).as_list<Int32>()) // none: 3 bytes are no whole `Int32`
+```
+
+`b.read<T>(at)` reads one number where a file format or a network message puts it, and `Bytes.of<T>(n)` gives a number's bytes to build one, joined with `+`. `T` is a number of fixed size, as for `as_list`. The bytes are little-endian unless `big_endian: true`, the order network protocols and some file formats (GDSII, PNG) use. A `read` out of range gives `none`, as `b.get(i)` does; a negative `at` too.
+
+```kavach
+const header = Bytes([0, 6, 0, 2, 0, 0, 0, 1])
+print(header.read<UInt16>(0, big_endian: true) ?? 0)   // 6
+print(header.read<Int32>(4) ?? 0)                    // 16777216
+print(header.read<UInt32>(6))                       // none: 2 bytes are left
+const packet = Bytes.of<UInt16>(6, big_endian: true) + Bytes.of<Float32>(1.5)
+print(packet)                                       // Bytes(00060000c03f)
 ```

@@ -1380,6 +1380,7 @@ dependencies = [
  "kavach-resolver",
  "kavach-runtime-core",
  "kavach-runtime-net",
+ "kavach-runtime-process",
  "kavach-runtime-window",
 ]
 
@@ -1468,6 +1469,7 @@ dependencies = [
  "kavach-runtime-core",
  "kavach-runtime-gpu",
  "kavach-runtime-net",
+ "kavach-runtime-process",
  "kavach-runtime-window",
  "libc",
  "windows-sys 0.61.2",
@@ -1487,6 +1489,15 @@ dependencies = [
  "socket2",
  "webpki-roots 0.26.11",
  "x509-cert",
+]
+
+[[package]]
+name = "kavach-runtime-process"
+version = "0.1.0"
+dependencies = [
+ "kavach-runtime-core",
+ "libc",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]

@@ -1,0 +1,22 @@
+// Rule: `process.run(program, args)` runs a program to its end and gives its exit code, its output and what it cost; each argument goes to it whole, never through a shell.
+// Spec: 14.23
+// expect output: 0
+// expect output: true
+// expect output: true
+// expect output: 129
+// expect output: true
+// expect output: true
+
+use std.process
+
+fn main() ! ProcessError {
+    const done = try process.run("git", ["--version"])
+    print(done.code)
+    print(done.out.starts_with("git version"))
+    print(done.cpu_ms >= 0 and done.peak_bytes >= 0)
+    // One odd argument, not a second command.
+    const odd = try process.run("git", ["--version; echo injected"])
+    print(odd.code)
+    print(odd.err.starts_with("unknown option: --version; echo injected"))
+    print(odd.out.is_empty())
+}

@@ -1,0 +1,27 @@
+// Rule: `b.read<T>(at, big_endian: false)` reads the number whose bytes start at `at`, little-endian unless `big_endian: true`, or gives `none` when they don't all fit.
+// Spec: 2.13
+// expect output: 6
+// expect output: 1536
+// expect output: 16777216
+// expect output: -2
+// expect output: 65534
+// expect output: 1.5
+// expect output: 2.5
+// expect output: none
+// expect output: none
+// expect output: none
+
+fn main() {
+    const header = Bytes([0, 6, 0, 2, 0, 0, 0, 1])
+    print(header.read<UInt16>(0, big_endian: true) ?? 0)
+    print(header.read<UInt16>(0) ?? 0)
+    print(header.read<Int32>(4) ?? 0)
+    const minus = Bytes([254, 255])
+    print(minus.read<Int16>(0) ?? 0)
+    print(minus.read<UInt16>(0) ?? 0)
+    print(Bytes([0, 0, 192, 63]).read<Float32>(0) ?? 0.0)
+    print(Bytes([64, 4, 0, 0, 0, 0, 0, 0]).read<Float>(0, true) ?? 0.0)
+    print(header.read<UInt32>(6))
+    print(header.read<UInt8>(-1))
+    print(header.read<Int>(1))
+}

@@ -111,6 +111,9 @@ impl<'a> Lowerer<'a> {
                 let n = self.expr(&n.value)?;
                 return Ok(ir::Expr { ty, ..n });
             }
+            if id.name == "Bytes" && name.name == "of" {
+                return self.bytes_of(args, ty, line);
+            }
             if id.name == "Float" && name.name == "from_bits" {
                 let bits = self.expr(&args[0].value)?;
                 let kind = K::Rt(RtOp::FloatFromBits, vec![bits]);
@@ -249,6 +252,9 @@ impl<'a> Lowerer<'a> {
                     line,
                 });
             }
+        }
+        if name.name == "read" && matches!(self.shapes.shape(receiver.ty), Some(Shape::Bytes)) {
+            return self.bytes_read(receiver, args, ty, line);
         }
         let is_list = matches!(self.shapes.shape(receiver.ty), Some(Shape::List(_)));
         // A `map` that may run on the GPU (spec 15.2).

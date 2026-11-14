@@ -60,6 +60,7 @@ pub const CAPABILITIES: &[&str] = &[
     "Approvals",
     "Window",
     "Input",
+    "Process",
 ];
 
 /// Prelude functions (spec 10.2), `reveal` (8.7), the `unsafe` memory

@@ -13,6 +13,7 @@ pub mod env_file;
 pub mod file_info;
 pub mod files;
 pub mod fs_scope;
+pub mod inbox;
 pub mod input;
 pub mod journal;
 pub mod json;

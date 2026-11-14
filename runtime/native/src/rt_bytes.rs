@@ -40,6 +40,14 @@ fn bytes_type() -> Type {
 /// The `Bytes` ops (operands owned). `code` is the result type.
 pub fn bytes_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
     let result = type_of(code);
+    if matches!(op, RtOp::BytesOfNumber) {
+        // `a` is the number, `b` the flag, `c` its size: no bytes to let go.
+        let mut out = (a as u64).to_le_bytes()[..c.clamp(1, 8) as usize].to_vec();
+        if b != 0 {
+            out.reverse();
+        }
+        return new_bytes(out, result);
+    }
     let out = match op {
         RtOp::BytesNew => {
             // Straight off the list's own buffer: packed lists
@@ -118,6 +126,13 @@ pub fn bytes_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
         RtOp::BytesToList => {
             let slots = with_bytes(a, |d| d.iter().map(|x| *x as u64).collect());
             alloc_slots(result, 0, slots)
+        }
+        RtOp::BytesRead => {
+            let read = match shape(result) {
+                Shape::Optional(item) => with_bytes(a, |d| read_number(d, b, c != 0, *item)),
+                _ => None,
+            };
+            crate::rt_data::optional(read, code)
         }
         RtOp::BytesAsList => match moved_as_list(a, result) {
             Some(list) => list,
@@ -227,4 +242,28 @@ unsafe fn crc32c_sse(data: &[u8]) -> u32 {
         crc = _mm_crc32_u8(crc, b);
     }
     !crc
+}
+
+/// `b.read<T>(at, big_endian)` (spec 2.13): the slot of the number of
+/// type `item` whose bytes start at `at`, or `None` when they don't all
+/// fit. Signed numbers are sign-extended, as their slots hold them.
+fn read_number(d: &[u8], at: i64, big_endian: bool, item: Type) -> Option<i64> {
+    let size = match kavach_kir::packed_size(item) {
+        0 => 8,
+        n => n,
+    };
+    let at = usize::try_from(at).ok()?;
+    let c = d.get(at..at.checked_add(size)?)?;
+    let mut w = [0; 8];
+    w[..size].copy_from_slice(c);
+    if big_endian {
+        w[..size].reverse();
+    }
+    let bits = u64::from_le_bytes(w);
+    Some(match item {
+        Type::I8 => i64::from(bits as u8 as i8),
+        Type::I16 => i64::from(bits as u16 as i16),
+        Type::I32 => i64::from(bits as u32 as i32),
+        _ => bits as i64,
+    })
 }

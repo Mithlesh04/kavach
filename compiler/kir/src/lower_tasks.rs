@@ -297,24 +297,25 @@ pub(crate) fn join_tasks(functions: &mut Vec<Function>, error_ty: Type) {
     }
 }
 
-/// Wraps each function with `uses Fs("folder")` (spec 8.1) so that file
-/// access is kept inside the folder while it runs, however it returns:
-/// `depth = enter(folder); result = body(params); leave(depth)`.
+/// Wraps each function with `uses Fs("folder")` (spec 8.1) or `uses
+/// Process("name")` (14.23), whose `enter` op is given, so that file
+/// access or the programs run are kept to it while it runs, however it
+/// returns: `depth = enter(folder); result = body(params); leave(depth)`.
 pub(crate) fn scope_files(
     functions: &mut Vec<Function>,
-    scoped: &[(usize, String)],
+    scoped: &[(usize, RtOp, String)],
     error_ty: Type,
     text_ty: Type,
 ) {
-    for (id, folder) in scoped {
+    for (id, enter, text) in scoped {
         let line = functions[*id].line;
-        let folder = at(K::Str(folder.clone()), text_ty, line);
+        let text = at(K::Str(text.clone()), text_ty, line);
         around(
             functions,
             *id,
             error_ty,
-            RtOp::FsScopeEnter,
-            Some(folder),
+            *enter,
+            Some(text),
             RtOp::FsScopeLeave,
         );
     }

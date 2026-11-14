@@ -1,0 +1,7 @@
+// Rule: `b.read<T>(at)` and `Bytes.of<T>(n)` take only a number of fixed size.
+// Spec: 2.13
+// expect compile error
+
+fn main() {
+    print("hi".bytes().read<String>(0))     // error: `read` reads numbers of a fixed size
+}

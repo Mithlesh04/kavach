@@ -96,7 +96,7 @@ fn socket(s: Shared, ty: Type) -> i64 {
 
 /// The texts of a `[String]` (borrowed; two words an item,
 /// `text_items.rs`), or none for 0.
-fn texts_of(list: i64) -> Vec<String> {
+pub(crate) fn texts_of(list: i64) -> Vec<String> {
     if list == 0 {
         return Vec::new();
     }

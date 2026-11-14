@@ -1,0 +1,19 @@
+// Rule: `process.start` gives a running program whose lines come one by one as `Output.Out` or `Output.Err`, then `none`; `wait()` gives its end.
+// Spec: 14.23
+// expect output: err
+// expect output: 129
+// expect output: true
+
+use std.process
+
+fn main() ! ProcessError {
+    const child = try process.start("git", ["--no-such-flag"])
+    if let first = child.next() {
+        print(match first {
+            Output.Out(_) => "out",
+            Output.Err(_) => "err",
+        })
+    }
+    print(child.wait().code)
+    print(process.peak_bytes() > 0)
+}

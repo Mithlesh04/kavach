@@ -41,6 +41,9 @@ impl Checker<'_> {
         if matches!(recv, Ty::Prim(Prim::Bytes)) && name.name == "as_list" {
             return self.bytes_as_list(generics, args, name.span);
         }
+        if matches!(recv, Ty::Prim(Prim::Bytes)) && name.name == "read" {
+            return self.bytes_read(generics, args, name.span);
+        }
         if let Ty::List(item) = &recv {
             let kind = match name.name.as_str() {
                 "map" => Some(crate::gpu::GpuCall::Map),

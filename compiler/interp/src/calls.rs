@@ -262,6 +262,11 @@ impl<'a> Interp<'a> {
                         return self.call_fn(f, None, args, span);
                     }
                 }
+                DefKind::Builtin
+                    if d.name == "Bytes" && name.name == "of" && generics.len() == 1 =>
+                {
+                    return self.bytes_of_number(&generics[0], &args, span);
+                }
                 DefKind::Builtin if d.name == "Float" && name.name == "from_bits" => {
                     let bits = match args.first() {
                         Some((_, Value::Int(n, _))) => *n as u64,
@@ -341,6 +346,9 @@ impl<'a> Interp<'a> {
         }
         if let (Value::Bytes(b), "as_list", [item]) = (&receiver, name.name.as_str(), generics) {
             return self.bytes_as_list(b, item, span);
+        }
+        if let (Value::Bytes(b), "read", [item]) = (&receiver, name.name.as_str(), generics) {
+            return self.bytes_read(b, item, &args, span);
         }
         let args = match (&receiver, name.name.as_str()) {
             (Value::Socket(_), "start_tls" | "accept_tls") => self.tls_args(&name.name, args),

@@ -18,12 +18,16 @@ pub(crate) fn finish(
     roots: &[FuncId],
 ) -> (Vec<Function>, Vec<FuncId>, FuncId, crate::gpu_later::Notes) {
     let error_ty = l.error_type();
-    let scoped: Vec<(usize, String)> = l
-        .fns
-        .iter()
-        .enumerate()
-        .filter_map(|(i, (f, _))| f.and_then(|f| f.fs_scope.clone()).map(|s| (i, s)))
-        .collect();
+    let mut scoped: Vec<(usize, RtOp, String)> = Vec::new();
+    for (i, (f, _)) in l.fns.iter().enumerate() {
+        let Some(f) = f else { continue };
+        if let Some(folder) = &f.fs_scope {
+            scoped.push((i, RtOp::FsScopeEnter, folder.clone()));
+        }
+        if let Some(program) = &f.process_scope {
+            scoped.push((i, RtOp::ScopeProgram, program.clone()));
+        }
+    }
     let text_ty = l.str_type();
     crate::lower_tasks::scope_files(&mut functions, &scoped, error_ty, text_ty);
     crate::lower_tasks::join_tasks(&mut functions, error_ty);

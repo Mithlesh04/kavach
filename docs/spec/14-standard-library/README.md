@@ -28,6 +28,7 @@ Each section is a file of its own: new sections go at the end, with the next num
 | 14.20 std.base64 | [20-base64.md](20-base64.md) |
 | 14.21 std.compress | [21-compress.md](21-compress.md) |
 | 14.22 std.window | [22-window.md](22-window.md) |
+| 14.23 std.process | [23-process.md](23-process.md) |
 
 ## Open questions
 

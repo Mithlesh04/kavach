@@ -116,6 +116,10 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.21 | [compress-levels-outside-the-range-panic.kav](compress-levels-outside-the-range-panic.kav) | A level outside its format's range panics. | panics |
 | 14.22 | [windows-open-or-say-why.kav](windows-open-or-say-why.kav) | `window.open` gives a window to read and change, or `WindowError.Unavailable` where there is no screen; the program goes on either way. | runs |
 | 14.22 | [window-input-needs-input.kav](window-input-needs-input.kav) | Reading a window's keyboard and mouse needs `Input`; `Window` alone opens and changes windows. | compile error |
+| 14.23 | [process-runs-a-program-with-no-shell.kav](process-runs-a-program-with-no-shell.kav) | `process.run` runs a program to its end and gives its code, output and cost; each argument goes to it whole, never through a shell. | runs |
+| 14.23 | [process-output-comes-line-by-line.kav](process-output-comes-line-by-line.kav) | `process.start` gives lines one by one as `Out` or `Err`; `wait()` gives the end. | runs |
+| 14.23 | [process-names-narrow-the-programs.kav](process-names-narrow-the-programs.kav) | `uses Process("name")` runs only that program, others fail with `Denied`; a missing one fails with `NotFound`. | runs |
+| 14.23 | [process-needs-process.kav](process-needs-process.kav) | Running another program needs `Process`. | compile error |
 | 5.8, 14.6 | [cli-on-stop-needs-no-capability.kav](cli-on-stop-needs-no-capability.kav) | `cli.on_stop(grace)` gives a hold that isn't asked until a stop signal comes; taking and letting go of one needs no capability. | runs |
 | 14.12 | [log-events-are-records.kav](log-events-are-records.kav) | A log event is a value of a type that implements `LogEvent`; the console shows its level and its printed form. | runs |
 | 14.12 | [log-hides-secrets.kav](log-hides-secrets.kav) | A secret field of a log event is written as `<secret>`. | runs |

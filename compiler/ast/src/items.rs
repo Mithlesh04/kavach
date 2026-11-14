@@ -62,6 +62,8 @@ pub struct FnDecl {
     pub uses: Vec<Path>,
     /// The folder of `uses Fs("./data")`: file access is kept inside it.
     pub fs_scope: Option<String>,
+    /// The program of `uses Process("git")`: only it may be run (14.23).
+    pub process_scope: Option<String>,
     pub requires: Vec<Expr>,
     pub ensures: Vec<Expr>,
     pub examples: Vec<Example>,
