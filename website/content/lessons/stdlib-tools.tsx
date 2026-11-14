@@ -2,7 +2,6 @@ import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import type { LessonDoc } from "@/lib/chapter";
-import { loadProject } from "@/lib/samples";
 import { Ex, H2, Note, P } from "./parts";
 import { Limits } from "./limits";
 import { ModuleTable } from "./spec-table";
@@ -221,7 +220,7 @@ export const timeDoc: LessonDoc = {
 // ---------- Random Numbers ----------
 
 export const randomDoc: LessonDoc = {
-  lead: "std.random gives random whole numbers, picks and shuffles. Its numbers are safe for passwords and keys; there is no weaker kind to pick by mistake.",
+  lead: "std.random gives random whole numbers, picks and shuffles. Its numbers are safe for passwords and keys, unless a block asks for repeatable ones from a seed.",
   simple: <>Like rolling dice or shuffling a deck of cards, inside the program. The results are hard enough to guess that you can use them for passwords.</>,
   minutes: 3,
   before: ["functions/functions"],
@@ -238,6 +237,24 @@ export const randomDoc: LessonDoc = {
         Every function needs <C>uses Random</C>. Under <C>kavach test</C>, random numbers come from the test
         run&apos;s seed instead, so a failing run can be repeated exactly.
       </Note>
+      <H2>Seeded</H2>
+      <P>
+        <C>random.seeded(seed) {"{ … }"}</C> runs its block with every <C>std.random</C> function drawing from{" "}
+        <C>seed</C> instead of the system. The same seed gives the same numbers, on every machine and in every version
+        of Kavach: for simulations, generated worlds and games whose players must all see the same thing.
+      </P>
+      <Ex name="random/seeded" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>These numbers are not safe for keys, tokens or passwords: anyone who knows the seed knows the numbers.</li>
+        <li><C>uses Random</C> is still needed. Under <C>kavach test</C>, the seed wins over the test run&apos;s.</li>
+        <li>Seeds nest: an inner <C>seeded</C> block draws from its own seed, and the outer one goes on where it left off.</li>
+        <li>The seed belongs to the task running the block. A task spawned inside it draws from the system, since tasks may take turns in different orders on different machines.</li>
+        <li>The numbers come from xoshiro256**, its state made from the seed by SplitMix64, as their published versions make it.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/14-standard-library/15-random.md" label="spec 14.15 · seeded" />
+        <SrcRef file="tests/conformance/14-standard-library/a-seed-gives-the-same-numbers.kav" label="tested" />
+      </div>
       <H2>Limits and sizes</H2>
       <Limits id="random" />
     </>
@@ -337,43 +354,6 @@ export const regexDoc: LessonDoc = {
         make it hang. <C>regex.advanced</C> also allows lookaround and backreferences, and gives up after a fixed
         amount of work.
       </Note>
-    </>
-  ),
-};
-
-// ---------- Logging ----------
-
-const levels = loadProject("logging/levels", ["kavach.toml", "src/main.kav"]);
-
-export const loggingDoc: LessonDoc = {
-  lead: "A log event is a record you define, not a string. log.info, warn, error and debug write it, and the program's owner decides where it goes.",
-  simple: <>A log is like a ship&apos;s logbook: the program writes down what happened as it runs. Each entry is a form with the same boxes every time, so entries are easy to search and count later.</>,
-  minutes: 5,
-  before: ["types/records"],
-  body: (
-    <>
-      <Ex name="agents/sub-log" />
-      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li><C>type OrderPlaced: LogEvent</C> makes the record an event. Only events can be logged: <C>log.info(&quot;order placed&quot;)</C> is a compile error (below).</li>
-        <li>Each event is one line: the level, then the event as it prints. Every entry of a kind has the same fields, so logs can be searched and counted.</li>
-        <li>A <C>secret</C> field is written as <C>&lt;secret&gt;</C>.</li>
-      </ul>
-      <P>Logging plain text out of habit is refused, and the message shows the record to declare:</P>
-      <Ex name="habits/log-text.fails" />
-      <H2>Levels</H2>
-      <ModuleTable file="12-log.md" number="14.12" first="Function" />
-      <P>Events below the lowest level written are left out. <C>kavach.toml</C> sets it; here only warnings and errors are written:</P>
-      <CodeBlock code={levels.files[0].code} file="kavach.toml" lang="toml" />
-      <CodeBlock code={levels.files[1].code} file="src/main.kav" output={levels.output} />
-      <P>The same settings send lines to a file, which starts a new one at a size you choose, or to an OpenTelemetry collector. See <Link href="/docs/tools/settings/">Settings</Link>.</P>
-      <H2>No capability needed</H2>
-      <Ex name="logging/no-uses" />
-      <P>
-        <C>refund</C> is <C>pub</C> and logs, yet has no <C>uses</C>: where events go is the owner&apos;s choice, not
-        the code&apos;s, and the code can&apos;t read them back.
-      </P>
-      <H2>Limits and sizes</H2>
-      <Limits id="logging" />
     </>
   ),
 };

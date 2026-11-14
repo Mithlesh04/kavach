@@ -1,0 +1,20 @@
+use std.http
+use std.log
+use std.net
+
+fn handler(r: Request) -> Response {
+    // The handler runs in a span that continues the caller's trace.
+    http.text(200, log.trace_id() ?? "none")
+}
+
+fn main() ! Error uses Net, Console {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, handler)
+    const url = "http://{listener.address()}/orders"
+
+    log.span("checkout") {
+        const mine = log.trace_id() ?? ""
+        const got = try http.get(url)
+        print("one trace across both: {(got.body.text() ?? "") == mine}")
+    }
+}

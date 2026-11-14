@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { C } from "@/components/inline-code";
+import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
@@ -122,5 +123,40 @@ export const breakDoc: LessonDoc = {
       <C>break</C> inside one can&apos;t leave a loop outside it. When nested loops grow long, moving them into a
       function and using <C>return</C> is often clearer still: the function&apos;s name says what the loops are for.
     </P>
+  ),
+};
+
+// ---------- Blocks Given to a Call ----------
+
+export const blockGivenDoc: LessonDoc = {
+  lead: "A few standard-library calls take a block after them, log.span(\"name\") { … } and random.seeded(seed) { … }, and run it inside something they set up.",
+  simple: <>Some jobs need something set up first and ended after, like switching on a stopwatch before a race and stopping it at the finish. A block given to a call is the race: the call starts the stopwatch, runs the block, and stops it however the block ends.</>,
+  minutes: 3,
+  before: ["basics/break-continue", "errors/try"],
+  body: (
+    <>
+      <Ex name="flow/block-given" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The block is a plain block, not a lambda: <C>fail</C>, <C>try</C>, <C>return</C>, <C>break</C> and <C>continue</C> act as they would without the call.</li>
+        <li>It can change the variables around it: <C>checked += 1</C> counts on the outside.</li>
+        <li>The expression&apos;s value is the block&apos;s value: <C>total</C> gives the sum.</li>
+        <li>What the call set up ends when the block ends, however it ends: by its value, an error, a <C>return</C>, a <C>break</C> or a panic.</li>
+        <li>The block starts on the same line as the call&apos;s <C>)</C>.</li>
+      </ul>
+      <H2>Which calls take one</H2>
+      <P>
+        Only standard-library functions that say so: <C>log.span</C> (see{" "}
+        <Link href="/docs/standard-library/logging/">Logging</Link>) and <C>random.seeded</C> (see{" "}
+        <Link href="/docs/standard-library/random-numbers/">Random Numbers</Link>). One of them without its block is a
+        compile error:
+      </P>
+      <Ex name="flow/block-missing.fails" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/04-control-flow.md" label="spec 4.8" />
+        <SrcRef file="tests/conformance/04-control-flow/a-block-given-to-a-call-is-a-plain-block.kav" label="a plain block, tested" />
+        <SrcRef file="tests/conformance/04-control-flow/only-some-calls-take-a-block.kav" label="only some calls, tested" />
+        <SrcRef file="docs/decisions/0107-traces-and-metrics.md" label="decision 0107" />
+      </div>
+    </>
   ),
 };

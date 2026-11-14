@@ -1,0 +1,32 @@
+use std.log
+
+type CartError = Empty
+
+fn total(prices: [Int]) -> Int ! CartError {
+    log.span("checkout") {
+        if prices.is_empty() {
+            fail CartError.Empty
+        }
+        let sum = 0
+        for p in prices {
+            sum += p
+        }
+        sum
+    }
+}
+
+fn main() {
+    print(total([300, 450]) catch _ => -1)
+    print(total([]) catch _ => -1)
+
+    let checked = 0
+    for size in [5, 8, 12] {
+        log.span("check") {
+            checked += 1
+            if size > 6 {
+                break
+            }
+        }
+    }
+    print(checked)
+}

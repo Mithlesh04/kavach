@@ -1,0 +1,1 @@
+error: `log.span` runs a block: write it after the call, `log.span(name) { … }` (spec 4.8)

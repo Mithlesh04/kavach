@@ -3,7 +3,7 @@
 // the site until it is written.
 
 import type { LessonDoc } from "@/lib/chapter";
-import { breakDoc, whileDoc, whileEndlessDoc, whilePlainDoc } from "./basics-while";
+import { blockGivenDoc, breakDoc, whileDoc, whileEndlessDoc, whilePlainDoc } from "./basics-while";
 import { forDoc, forIndexDoc, forListDoc, forMapDoc, forRangeDoc, forTimesDoc } from "./basics-for";
 import { commentsDoc, debugDoc, outputDoc, printDoc, valuesPrintDoc } from "./basics-output";
 import { blocksDoc, keywordsDoc, mainFunctionDoc, namesDoc, sourceFilesDoc, syntaxDoc } from "./basics-syntax";
@@ -52,6 +52,8 @@ import { base64Doc, cryptoDoc } from "./stdlib-crypto";
 import { compressDoc } from "./stdlib-compress";
 import { windowDoc } from "./stdlib-window";
 import { processDoc } from "./stdlib-process";
+import { loggingDoc } from "./stdlib-log";
+import { gpuScreenDoc } from "./stdlib-gpu";
 import { textCollectionsDoc } from "./stdlib-text";
 import {
   grpcClientStreamDoc, grpcDoc, grpcProtoDoc, grpcServerStreamDoc, grpcTwoWayDoc, socketsDoc, tcpDoc, timeoutsDoc,
@@ -67,7 +69,7 @@ import {
   argumentsDoc, cliDoc, commandsDoc, fileInfoDoc, filesDoc, foldersDoc, readingDoc, writingDoc,
 } from "./stdlib-files";
 import {
-  clipboardDoc, colorsDoc, devicesDoc, loggingDoc, promptsDoc, randomDoc, regexDoc, termDoc, timeDoc,
+  clipboardDoc, colorsDoc, devicesDoc, promptsDoc, randomDoc, regexDoc, termDoc, timeDoc,
 } from "./stdlib-tools";
 import { agentsStdDoc } from "./stdlib-agents";
 import {
@@ -211,6 +213,7 @@ export const lessons: Record<string, LessonDoc> = {
   "basics/while-loop/while": whilePlainDoc,
   "basics/while-loop/endless-loops": whileEndlessDoc,
   "basics/break-continue": breakDoc,
+  "basics/blocks-given-to-a-call": blockGivenDoc,
 
   "functions/functions": functionsDoc,
   "functions/functions/declaring": declaringDoc,
@@ -325,6 +328,7 @@ export const lessons: Record<string, LessonDoc> = {
   "standard-library/compression": compressDoc,
   "standard-library/windows": windowDoc,
   "standard-library/running-programs": processDoc,
+  "standard-library/gpu-screens": gpuScreenDoc,
 
   "standard-library/json": jsonDoc,
   "standard-library/json/json-values": jsonValuesDoc,

@@ -1,0 +1,6 @@
+no trace outside a span
+trace id: 32 hex digits
+traceparent: 55 characters, starts 00-
+a task keeps it: true
+no trace after it
+4bf92f3577b34da6a3ce929d0e0e4736

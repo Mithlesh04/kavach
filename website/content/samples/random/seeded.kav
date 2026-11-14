@@ -1,0 +1,14 @@
+use std.random
+
+fn world(seed: Int) -> [Int] uses Random {
+    random.seeded(seed) {
+        [random.int(0, 100), random.int(0, 100), random.int(0, 100)]
+    }
+}
+
+fn main() uses Random {
+    print(world(7))
+    print(world(7))
+    print(world(8))
+    print(world(7) == world(7))
+}

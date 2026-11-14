@@ -343,7 +343,7 @@ export const recursionDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="compiler/interp/src/stack.rs" line={10} symbol="STACK_USE" />
         <SrcRef file="compiler/interp/src/lib.rs" line={52} symbol="STACK_SIZE" />
-        <SrcRef file="runtime/native/src/lib.rs" line={76} symbol="STACK_SIZE" />
+        <SrcRef file="runtime/native/src/lib.rs" line={119} symbol="STACK_SIZE" />
         <SrcRef file="runtime/native/src/lib_calls.rs" line={21} symbol="LIB_STACK" />
       </div>
     </>

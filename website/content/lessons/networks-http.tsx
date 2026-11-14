@@ -155,6 +155,18 @@ export const httpServeDoc: LessonDoc = {
         <li><C>r.header(name)</C> gives the first value of a name, or <C>none</C>. The name can be in any case.</li>
         <li><C>r.headers_named(name)</C> gives every value of a name, in order.</li>
       </ul>
+      <H2>Traces</H2>
+      <P>
+        <C>http.serve</C> runs each handler in a span named by the request&apos;s method and path (<C>GET /orders</C>).
+        When the request has a W3C <C>traceparent</C> header, the span continues that trace, and{" "}
+        <C>http.request</C> and the other calls send the current span&apos;s. So traces join across services with no
+        code:
+      </P>
+      <Ex name="http/traces" />
+      <P>
+        See <Link href="/docs/standard-library/logging/">Logging</Link> for spans, and for sending them to a collector.{" "}
+        <SrcRef file="tests/conformance/14-standard-library/http-joins-traces.kav" label="tested" />
+      </P>
       <H2>Limits</H2>
       <P>
         A server faces clients that are slow, large or hostile, so <C>http.serve</C> holds each one to{" "}

@@ -1,0 +1,6 @@
+use std.log
+
+fn main() {
+    log.span("checkout")
+    print("done")
+}
