@@ -1,0 +1,18 @@
+use std.regex
+
+fn first_number(r: regex.Regex, text: String) -> String? {
+    if let c = r.captures(text) {
+        return c[1]
+    }
+    none
+}
+
+fn order_pattern() -> regex.Regex ! regex.RegexError {
+    try regex.new(r"order (\d+)")
+}
+
+fn main() uses Console {
+    const r = order_pattern() catch e => panic("{e}")
+    print(first_number(r, "order 4471 shipped") ?? "none")
+    print(first_number(r, "no number here") ?? "none")
+}

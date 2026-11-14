@@ -54,6 +54,13 @@ export const useDoc: LessonDoc = {
       </ul>
       <Ex name="modules/std-runtime-name.fails" />
       <SrcRef file="tests/conformance/14-standard-library/runtime-functions-are-not-named-alone.kav" label="tested" />
+      <H2>A type through its module</H2>
+      <P>
+        Without bringing a type in by name, write it through its module, as you write its functions:{" "}
+        <C>regex.Regex</C>, <C>regex.RegexError</C>, <C>fs.FsError</C>. That works for parameters, results and errors:
+      </P>
+      <Ex name="modules/std-type-path" />
+      <SrcRef file="tests/conformance/10-modules/types-named-through-a-standard-module.kav" label="tested" />
       <H2>Re-exports</H2>
       <P>
         <C>pub use</C> makes the names it brings in part of the module too. So a package can declare each public type

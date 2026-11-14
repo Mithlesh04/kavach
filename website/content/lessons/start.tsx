@@ -120,6 +120,13 @@ export const homeDoc: LessonDoc = {
         <li>Never written a program? Start with <Link href="/docs/start/your-first-program/">Your First Program</Link> and read the pages in order.</li>
         <li>You know another language? Read <Link href="/docs/start/what-kavach-does-for-you/">What Kavach Does for You</Link> and <Link href="/docs/start/classic-mistakes-fixed/">Classic Mistakes, Fixed</Link>, then skim Basics.</li>
         <li>Looking something up? Use search: it knows other languages&apos; words too, so &quot;array&quot; finds lists.</li>
+        <li>
+          Wondering whether something already exists? The Reference lists every{" "}
+          <Link href="/docs/reference/built-in-types/">built-in type</Link>, every{" "}
+          <Link href="/docs/reference/built-in-methods/">built-in method</Link> and every{" "}
+          <Link href="/docs/reference/standard-library/">standard-library module</Link>, with what each is and the
+          file that defines it.
+        </li>
       </ul>
       <H2>Who makes Kavach</H2>
       <P>

@@ -1,0 +1,6 @@
+$ kavach test runs.kav --seed 7
+0 passed, 0 failed
+seed 7
+  dropped a saved case that breaks the invariant `Run: passed == events.is_empty()`: failed([Run(events: [], passed: false)])
+✓ failed  200 cases
+1 functions   1 ✓   0 ✗   0 weakly tested

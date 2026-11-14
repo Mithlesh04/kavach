@@ -220,6 +220,14 @@ export const optionalReadDoc: LessonDoc = {
         with <C>?? panic(&quot;…&quot;)</C>. And on a value the compiler already knows is <C>none</C>,{" "}
         <C>.unwrap()</C> won&apos;t even compile: see <Link href="/docs/errors/kinds-of-errors/">Kinds of Errors</Link>.
       </Note>
+      <H2>Optionals don&apos;t nest</H2>
+      <P>
+        A <C>T??</C> is a <C>T?</C>. So reading an optional field through an optional value gives one <C>none</C>, not
+        two: <C>e?.time</C>, where <C>time</C> is an <C>Int?</C>, is an <C>Int?</C>. It is <C>none</C> when there is
+        no event, and when the event has no time:
+      </P>
+      <Ex name="types/optionals-flat" />
+      <SrcRef file="tests/conformance/02-types/optionals-do-not-nest.kav" label="tested" />
     </>
   ),
 };

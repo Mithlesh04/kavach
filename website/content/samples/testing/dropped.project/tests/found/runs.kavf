@@ -1,0 +1,2 @@
+// Found by `kavach test` (spec 11.4). Generated: commit it, never edit it.
+failed([Run(events: [], passed: false)])

@@ -1,0 +1,10 @@
+use std.window
+
+fn show() ! WindowError uses Console {
+    const win = try window.open("Hello", 640, 480)
+    win.set_title("Hello again")
+}
+
+fn main() uses Console {
+    show() catch e => print("{e}")
+}

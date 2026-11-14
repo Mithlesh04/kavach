@@ -1,0 +1,14 @@
+type Event {
+    name: String
+    time: Int?
+}
+
+fn time_of(e: Event?) -> Int? {
+    e?.time
+}
+
+fn main() uses Console {
+    print(time_of(Event(name: "start", time: 5)) ?? -1)
+    print(time_of(Event(name: "later", time: none)) ?? -1)
+    print(time_of(none) ?? -1)
+}

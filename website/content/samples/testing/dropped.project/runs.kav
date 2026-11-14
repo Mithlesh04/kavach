@@ -1,0 +1,15 @@
+type Run {
+    events: [Int]
+    passed: Bool
+
+    invariant passed == events.is_empty()
+}
+
+fn failed(runs: [Run]) -> Int
+    ensure result == runs.count(r => not r.events.is_empty())
+{
+    runs.count(r => not r.passed)
+}
+
+fn main() {
+}

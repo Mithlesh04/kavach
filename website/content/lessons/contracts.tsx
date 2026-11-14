@@ -12,6 +12,7 @@ import { Cell, ModuleTable } from "./spec-table";
 const beside = loadProjectFiles("testing/beside");
 const missed = loadProjectFiles("testing/missed");
 const kept = loadProject("testing/keep", ["stats.kav", "tests/found/stats.kavf"]);
+const dropped = loadProject("testing/dropped", ["runs.kav", "tests/found/runs.kavf"]);
 
 // ---------- Contracts ----------
 
@@ -176,6 +177,19 @@ export const testingDoc: LessonDoc = {
         <li>A case that still fails stays found, and <C>--keep</C> says why.</li>
       </ul>
       <SrcRef file="tools/cli/tests/keep.rs" label="--keep, tested" />
+      <H2>A case that can&apos;t happen any more</H2>
+      <P>
+        Add an <C>invariant</C> to a type after a case was saved, and the case may hold a value no program can build
+        now. It is no case any more, so the run takes it out of its file and says so:
+      </P>
+      <CodeBlock code={dropped.files[0].code} file="runs.kav" />
+      <CodeBlock code={dropped.files[1].code} file={dropped.files[1].path} lang="text" />
+      <Terminal session={dropped.output ?? ""} />
+      <P>
+        <C>Run(events: [], passed: false)</C> breaks <C>passed == events.is_empty()</C>, so the case was dropped and
+        the run went on with the rest.
+      </P>
+      <SrcRef file="tools/cli/tests/project.rs" line={159} symbol="found_cases_that_break_an_invariant_are_dropped" label="dropped cases, tested" />
       <H2>What you write, what gets tested</H2>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Types and invariants: valid values of every type, edge cases first.</li>

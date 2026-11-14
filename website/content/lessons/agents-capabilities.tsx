@@ -4,6 +4,7 @@ import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
 import { specTables } from "@/lib/spec-tables";
 import { Ex, H2, Note, P, Syntax } from "./parts";
+import { Cell } from "./spec-table";
 
 const SPEC = "08-capabilities-and-agents/01-capabilities.md";
 
@@ -24,7 +25,7 @@ function BuiltIns() {
           {table.rows.map(([cap, allows]) => (
             <tr key={cap} className="border-b border-line">
               <td className="py-2 pr-4"><C>{cap.replace(/`/g, "")}</C></td>
-              <td className="py-2 text-muted">{allows.replace(/\s*\(10\.7\)/, "")}</td>
+              <td className="py-2 text-muted"><Cell text={allows.replace(/\s*\(\d+\.\d+\)/, "")} /></td>
             </tr>
           ))}
         </tbody>

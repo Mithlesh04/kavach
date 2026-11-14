@@ -1,0 +1,10 @@
+use std.window
+
+fn watch(win: AppWindow) uses Window {
+    win.listen_input()
+}
+
+fn main() uses Window, Input {
+    const win = window.open("Keys", 640, 480) catch _ => return
+    watch(win)
+}
