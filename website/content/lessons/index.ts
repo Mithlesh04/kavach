@@ -13,6 +13,7 @@ import { editionsDoc, envDoc, layoutDoc, settingsDoc } from "./tools-settings";
 import { taggedLiteralsDoc } from "./tools-literals";
 import { limitsDoc } from "./limits";
 import { chainsDoc, classesDoc, extendDoc } from "./types-oop";
+import { ownOperatorsDoc } from "./types-operators";
 import { agentModelDoc } from "./agents-model";
 import { agentSettingsDoc } from "./agents-settings";
 import { deprecateDoc } from "./functions-deprecate";
@@ -63,6 +64,7 @@ import {
 import { sortingDoc, sortKeyDoc, sortNumbersDoc, sortTextDoc, sortTwoKeysDoc } from "./collections-sort";
 import { gpuCanDoc, gpuDoc, gpuFnDoc, gpuMapDoc, gpuRecordsDoc, gpuSameDoc, gpuUsesDoc, gpuWhereDoc } from "./speed-gpu";
 import { gpuSumsDoc } from "./gpu-streams";
+import { gpuDrawDoc } from "./speed-gpu-draw";
 import {
   jsonBuildingDoc, jsonDecodingDoc, jsonDoc, jsonNestedDoc, jsonReadingDoc, jsonValuesDoc,
 } from "./stdlib-json";
@@ -273,6 +275,7 @@ export const lessons: Record<string, LessonDoc> = {
   "types/generics": genericsDoc,
   "types/interfaces": interfacesDoc,
   "types/interface-values": interfaceValuesDoc,
+  "types/operators-for-your-types": ownOperatorsDoc,
   "types/classes-and-inheritance": classesDoc,
   "types/writing-types": writingTypesDoc,
 
@@ -353,6 +356,7 @@ export const lessons: Record<string, LessonDoc> = {
   "speed/gpu/cpu-or-gpu": gpuWhereDoc,
   "speed/gpu/can-i-use-it-on-the-gpu": gpuCanDoc,
   "speed/gpu/sums-in-a-loop": gpuSumsDoc,
+  "speed/gpu/drawing-triangles": gpuDrawDoc,
   "speed/gpu/use-cases": gpuUsesDoc,
   "networks/http": httpDoc,
   "networks/http/calling-an-api": httpCallDoc,

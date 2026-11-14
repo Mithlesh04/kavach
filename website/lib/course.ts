@@ -83,6 +83,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Generics", "2.9"],
     ["Interfaces", "2.8"],
     ["Interface Values", "2.15"],
+    ["Operators for Your Types", "2.16"],
     ["Classes and Inheritance", "2.8"],
     ["Writing Types", "2.10"],
   ]],
@@ -178,7 +179,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Byte-packed Lists", "—"],
     ["Fast Sorting", "—"],
     ["As Data Grows", "—"],
-    ["GPU", "15", ["gpu fn", "map on the GPU", "Records and two lists", "Same results as the CPU", "CPU or GPU", "Can I use it on the GPU?", "Sums in a loop", "Use cases"]],
+    ["GPU", "15", ["gpu fn", "map on the GPU", "Records and two lists", "Same results as the CPU", "CPU or GPU", "Can I use it on the GPU?", "Sums in a loop", "Drawing triangles", "Use cases"]],
     ["Native Executables", "—"],
   ]],
   ["other-languages", "Other Languages", "advanced", [

@@ -1,0 +1,4 @@
+fn main() {
+    const biggest = Int.max
+    print(biggest)
+}

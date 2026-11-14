@@ -75,6 +75,12 @@ export const loggingDoc: LessonDoc = {
         Give attributes with few values, such as a route&apos;s pattern, a method or a status, never ids: each new
         value makes a new series to keep and send. Like events, spans and metrics need no capability.
       </P>
+      <P>
+        A histogram&apos;s default buckets are for milliseconds, so put the unit in the name (<C>_ms</C>). For values
+        in another unit, <C>bounds:</C> gives the buckets&apos; upper bounds, in increasing order. A series&apos; first
+        value sets its bounds; later ones keep them:
+      </P>
+      <Ex name="logging/histogram-bounds" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/14-standard-library/${LOG}`} label="spec 14.12 · traces and metrics" />
         <SrcRef file="tests/conformance/14-standard-library/spans-carry-the-trace.kav" label="spans, tested" />

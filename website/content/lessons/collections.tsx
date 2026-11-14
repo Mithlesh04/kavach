@@ -162,6 +162,13 @@ export const pipelineDoc: LessonDoc = {
       <H2>The first items, and the rest</H2>
       <P><C>take(n)</C> gives the first <C>n</C> items, and <C>skip(n)</C> all but them. Asking for more than the list holds gives what there is:</P>
       <Ex name="lists/take-skip" />
+      <P>
+        <C>slice(start, end)</C> gives the items from <C>start</C> up to, not including, <C>end</C>. Both are kept
+        within the list, as with a string&apos;s <C>slice</C>, so an end past the list gives what there is, and an end
+        before the start gives an empty list:
+      </P>
+      <Ex name="lists/slice" />
+      <SrcRef file="tests/conformance/14-standard-library/list-slice-takes-a-range-of-items.kav" label="tested" />
     </>
   ),
 };

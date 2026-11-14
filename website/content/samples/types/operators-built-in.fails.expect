@@ -1,0 +1,1 @@
+error: `Int` keeps its own operators: a built-in type can't implement `Add` (spec 2.16)

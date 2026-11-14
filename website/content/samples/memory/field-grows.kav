@@ -1,0 +1,17 @@
+type Cart {
+    items: [String]
+}
+
+fn main() {
+    let cart = Cart(items: [])
+    const before = cart
+    for name in ["tea", "milk", "bread"] {
+        cart.items.push(name)
+    }
+    print(cart.items)
+    print(before.items)
+
+    let shelves: [[String]] = [[], []]
+    shelves[1].push("jam")
+    print(shelves)
+}

@@ -1,0 +1,1 @@
+error: `place` must give a record with the field `position: (Float32, Float32, Float32, Float32)` and at most 8 more fields, each a `Float32` (spec 15.3)

@@ -1,0 +1,1 @@
+error: `Point` has no `-`: give it one by implementing `Sub` (spec 2.16)

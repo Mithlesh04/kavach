@@ -61,7 +61,7 @@ export const windowDoc: LessonDoc = {
       </Note>
       <H2>Not yet</H2>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>Drawing into a window comes with GPU rendering; gamepads and touch with a later <C>std.input</C>.</li>
+        <li>Gamepads and touch come with a later <C>std.input</C>. Drawing into a window is done with the GPU: see <Link href="/docs/standard-library/gpu-screens/">GPU Screens</Link>.</li>
         <li>On macOS, <C>window.open</C> fails with <C>Unavailable</C> for now: macOS shows windows only from a program&apos;s first thread.</li>
         <li>Generated tests skip functions that use <C>Window</C> or <C>Input</C>: there is no fake screen yet. See <Link href="/docs/errors/testing/">Testing</Link>.</li>
       </ul>

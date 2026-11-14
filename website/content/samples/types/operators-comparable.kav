@@ -1,0 +1,15 @@
+type Money: Add, Comparable {
+    cents: Int
+
+    fn add(self, other: Money) -> Money { Money(cents: self.cents + other.cents) }
+    fn compare(self, other: Money) -> Int { self.cents - other.cents }
+}
+
+fn main() {
+    const budget = Money(cents: 200)
+    const cart = Money(cents: 150) + Money(cents: 99)
+    if cart > budget {
+        print("over budget by {(cart.cents - budget.cents)} cents")
+    }
+    print(Money(cents: 4) >= Money(cents: 4))
+}

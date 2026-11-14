@@ -1,0 +1,8 @@
+fn main() {
+    const from_flag: String? = none
+    const from_file: String? = "dark"
+    print(from_flag ?? from_file ?? "light")
+
+    const saved: String? = none
+    print(from_flag ?? saved ?? "light")
+}

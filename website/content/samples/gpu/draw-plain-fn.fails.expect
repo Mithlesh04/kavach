@@ -1,0 +1,1 @@
+error: `gpu.pipeline` takes a `gpu vertex fn` and a `gpu fragment fn`, by name: `gpu.pipeline(place, glow)` (spec 15.3)

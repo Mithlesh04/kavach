@@ -1,0 +1,1 @@
+error: `Score.add` gives an operator, so it can't use capabilities (`uses`) or fail (`!`): an operator never touches the outside world or fails (spec 2.16)

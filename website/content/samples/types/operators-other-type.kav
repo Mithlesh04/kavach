@@ -1,0 +1,14 @@
+type Meters: Mul<Meters, Area> {
+    m: Float
+
+    fn mul(self, other: Meters) -> Area { Area(sq: self.m * other.m) }
+}
+
+type Area {
+    sq: Float
+}
+
+fn main() {
+    const room = Meters(m: 3.0) * Meters(m: 4.0)
+    print("{room.sq} square meters")
+}

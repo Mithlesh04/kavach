@@ -54,6 +54,19 @@ export const declaringDoc: LessonDoc = {
         A function with no <C>-&gt;</C> gives nothing back: it is called for what it does, here printing. It can be
         written above or below the code that calls it.
       </P>
+      <H2>One function per name</H2>
+      <P>
+        Two functions can&apos;t share a name: Kavach has no overloading. The error says what to do instead:
+      </P>
+      <Ex name="functions/no-overloading.fails" />
+      <P>
+        Give the two different names, or give one function a{" "}
+        <Link href="/docs/functions/named-arguments/default-values/">default argument</Link>, a{" "}
+        <Link href="/docs/types/unions/">union</Link> or a <Link href="/docs/types/generics/">generic type</Link>. Then
+        the name alone says which one a call runs:
+      </P>
+      <Ex name="functions/no-overloading-names" />
+      <SrcRef file="tests/conformance/01-basics/no-overloading.kav" label="tested" />
     </>
   ),
 };

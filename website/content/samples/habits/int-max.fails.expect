@@ -1,0 +1,1 @@
+error: `Int.max` isn't Kavach: a number type has no constants. To add without overflow, `a.checked_add(b)` gives `none` instead (spec 5.6)

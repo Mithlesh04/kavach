@@ -1,0 +1,1 @@
+error: this pipeline's vertex fn takes a `Camera` too: give it as `instances:` (spec 15.3)

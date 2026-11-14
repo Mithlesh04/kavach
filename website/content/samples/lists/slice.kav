@@ -1,0 +1,6 @@
+fn main() {
+    const scores = [10, 20, 30, 40, 50]
+    print(scores.slice(1, 3))
+    print(scores.slice(3, 99))
+    print(scores.slice(4, 2))
+}

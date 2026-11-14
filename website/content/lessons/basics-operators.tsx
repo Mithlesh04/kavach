@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
+import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
@@ -44,6 +45,10 @@ export const operatorsDoc: LessonDoc = {
         operators mix, <Link href="/docs/basics/operators/precedence/">precedence</Link> decides which goes first;
         when in doubt, use brackets.
       </Note>
+      <P>
+        Your own types can have <C>+</C>, <C>-</C>, <C>&lt;</C> and the others too, by implementing an interface:
+        see <Link href="/docs/types/operators-for-your-types/">Operators for Your Types</Link>.
+      </P>
     </>
   ),
 };
@@ -182,6 +187,12 @@ export const precedenceDoc: LessonDoc = {
         <li><C>-2 ** 2</C> is <C>-4</C>, as in mathematics: the power goes before the minus.</li>
         <li><C>2 ** 3 ** 2</C> is <C>2 ** 9</C>: powers go right to left.</li>
       </ul>
+      <P>
+        <C>??</C> goes right to left too: <C>a ?? b ?? c</C> is <C>a ?? (b ?? c)</C>. So <C>b</C> may be an optional
+        as well, and the first value that is there wins, like settings read from a flag, then a file, then a default:
+      </P>
+      <Ex name="operators/default-chain" />
+      <SrcRef file="tests/conformance/01-basics/default-groups-to-the-right.kav" label="tested" />
       <Note><C>kavach fmt</C> never removes parentheses that help a reader.</Note>
     </>
   ),

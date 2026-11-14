@@ -1,0 +1,12 @@
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+gpu vertex fn place(c: Corner) -> Corner {
+    c
+}
+
+fn main() {
+    print(place(Corner(x: 0.0, y: 0.0)).x)
+}

@@ -1,0 +1,7 @@
+type Point {
+    x: Int
+}
+
+fn main() {
+    print(Point(x: 1) - Point(x: 2))
+}

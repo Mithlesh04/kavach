@@ -1,0 +1,33 @@
+use std.window
+use std.gpu
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+    heat: Float32
+}
+
+type Camera {
+    zoom: Float32
+}
+
+gpu vertex fn place(c: Corner, cam: Camera) -> Lit {
+    Lit(position: (c.x * cam.zoom, c.y * cam.zoom, 0.0, 1.0), heat: 1.0)
+}
+
+gpu fragment fn glow(l: Lit) -> (Float32, Float32, Float32, Float32) {
+    (l.heat, 0.0, 0.0, 1.0)
+}
+
+fn main() ! Error uses Window {
+    const win = try window.open("Draw", 64, 64)
+    const screen = try gpu.screen(win)
+    const frame = try screen.frame()
+    const p = gpu.pipeline(place, glow)
+    frame.draw(p, [Corner(x: 0.0, y: 0.0)])
+    frame.show()
+}

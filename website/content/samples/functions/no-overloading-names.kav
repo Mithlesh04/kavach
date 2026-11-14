@@ -1,0 +1,12 @@
+fn square_area(side: Float) -> Float {
+    side * side
+}
+
+fn rect_area(w: Float, h: Float) -> Float {
+    w * h
+}
+
+fn main() {
+    print(square_area(2.0))
+    print(rect_area(2.0, 3.0))
+}

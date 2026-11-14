@@ -1,0 +1,17 @@
+type Vec2: Add, Neg, Mul<Float> {
+    x: Float
+    y: Float
+
+    fn add(self, other: Vec2) -> Vec2 { Vec2(x: self.x + other.x, y: self.y + other.y) }
+    fn neg(self) -> Vec2 { Vec2(x: -self.x, y: -self.y) }
+    fn mul(self, other: Float) -> Vec2 { Vec2(x: self.x * other, y: self.y * other) }
+}
+
+fn main() {
+    const a = Vec2(x: 1.0, y: 2.0)
+    const b = a + a * 2.0
+    print(b)
+    let c = -b
+    c += a
+    print(c)
+}

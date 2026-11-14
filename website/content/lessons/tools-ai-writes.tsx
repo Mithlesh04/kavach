@@ -120,10 +120,20 @@ export const aiWritesDoc: LessonDoc = {
         <P key={p}><Cell text={p} /></P>
       ))}
       <P>
-        Since the run, <C>let mut</C>, where most zero-shot failures stopped, gets a message that says what to
-        write instead:
+        This is the message <C>let mut</C>, where most zero-shot answers stopped, now gets:
       </P>
       <Ex name="habits/let-mut.fails" />
+      <H2>Between the two runs</H2>
+      <P><Cell text={paragraphs(section("Between the two runs"))[0]} /></P>
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        {bullets(section("Between the two runs")).map((b) => (
+          <li key={b}><Cell text={b} /></li>
+        ))}
+      </ul>
+      <ResultTable heading="Between the two runs" />
+      {paragraphs(section("Between the two runs")).slice(1).map((p) => (
+        <P key={p}><Cell text={p} /></P>
+      ))}
       <H2>Tries, cost and time</H2>
       <P><Cell text={paragraphs(section("Repair rounds"))[0]} /></P>
       <ResultTable heading="Repair rounds" />
@@ -132,6 +142,16 @@ export const aiWritesDoc: LessonDoc = {
       <H2>What went wrong</H2>
       <P><Cell text={paragraphs(section("Failure kinds"))[0]} /></P>
       <ResultTable heading="Failure kinds" />
+      <H2>Found while writing the tasks</H2>
+      <P><Cell text={paragraphs(section("Found while writing the tasks"))[0]} /></P>
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        {bullets(section("Found while writing the tasks")).map((b) => (
+          <li key={b}><Cell text={b} /></li>
+        ))}
+      </ul>
+      {paragraphs(section("Found while writing the tasks")).slice(1).map((p) => (
+        <P key={p}><Cell text={p} /></P>
+      ))}
       <Note>
         Each cell was run once, so a small difference between two models may not hold in another run. The tasks,
         prompts and grading are in <C>method.md</C>, linked below.
@@ -156,7 +176,8 @@ export const aiWritesDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={README} label="the benchmark" />
         <SrcRef file="benchmarks/ai-writes/method.md" label="how it works" />
-        <SrcRef file="benchmarks/ai-writes/results/2026-11-14-kavach.json" label="every answer" />
+        <SrcRef file="benchmarks/ai-writes/results/2026-11-15-kavach.json" label="every answer" />
+        <SrcRef file="benchmarks/ai-writes/results/2026-11-14-kavach.json" label="the first run" />
         <SrcRef file="benchmarks/ai-writes/summarize.py" label="summarize.py" />
         <SrcRef file="benchmarks/ai-writes/tasks/tasks.json" label="the tasks" />
       </div>

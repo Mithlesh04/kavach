@@ -1,0 +1,6 @@
+extend Int: Add {
+}
+
+fn main() {
+    print(1 + 2)
+}

@@ -36,6 +36,7 @@ const habits: [habit: string, from: string, ours: string, sample: string][] = [
   ["prices.length", "JavaScript", "prices.len()", "habits/length.fails"],
   ["name.strip()", "Python", "name.trim()", "habits/strip.fails"],
   ["task.join()", "Rust, Python", "task.wait()", "habits/task-join.fails"],
+  ["Int.max", "Java, C#, Rust", "a.checked_add(b)", "habits/int-max.fails"],
 ];
 
 export const classicDoc: LessonDoc = {

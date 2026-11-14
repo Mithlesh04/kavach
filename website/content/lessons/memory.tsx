@@ -115,6 +115,12 @@ export const fastDoc: LessonDoc = {
       </P>
       <Ex name="memory/grows-in-place" />
       <SrcRef file="tests/conformance/06-memory/text-grows-in-place-copies-stay.kav" label="tested" />
+      <P>
+        The same holds for a list in a field or in another list: <C>cart.items.push(x)</C> and{" "}
+        <C>shelves[i].push(x)</C> change it where it is, and a copy taken before keeps its items:
+      </P>
+      <Ex name="memory/field-grows" />
+      <SrcRef file="tests/conformance/06-memory/a-list-in-a-field-grows-in-place.kav" label="tested" />
       <H2>Numbers, text and the rest</H2>
       <P>Not every value is counted. Numbers stay where they are; text, lists and the rest are one object each:</P>
       <Table header={counted().header} rows={counted().rows} wrapFirst />

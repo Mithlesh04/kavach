@@ -1,0 +1,34 @@
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Dot {
+    x: Float32
+    y: Float32
+    heat: Float32
+}
+
+type Camera {
+    zoom: Float32
+}
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+    heat: Float32
+}
+
+gpu vertex fn place(c: Corner, d: Dot, cam: Camera) -> Lit {
+    Lit(position: ((c.x + d.x) * cam.zoom, (c.y + d.y) * cam.zoom, 0.0, 1.0), heat: d.heat)
+}
+
+gpu fragment fn glow(l: Lit) -> (Float32, Float32, Float32, Float32) {
+    (l.heat, 0.2, 1.0 - l.heat, 1.0)
+}
+
+fn main() {
+    // the same fns, called on the CPU: one corner of one dot
+    const lit = place(Corner(x: 0.5, y: 0.5), Dot(x: -0.25, y: 0.0, heat: 0.75), Camera(zoom: 2.0))
+    print(lit.position)
+    print(glow(lit))
+}

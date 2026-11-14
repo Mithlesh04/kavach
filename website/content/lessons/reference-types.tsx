@@ -108,11 +108,18 @@ function groups(): { title: string; entries: Entry[] }[] {
       ],
     },
     {
+      title: "Drawing",
+      entries: [
+        { names: ["Pipeline"], says: givenBy("14-standard-library/24-gpu.md", "gpu.pipeline(vertex_fn, fragment_fn) -> Pipeline<V, I, S>"), number: "14.24", file: "14-standard-library/24-gpu.md" },
+      ],
+    },
+    {
       title: "Interfaces the language relies on",
       entries: [
         { names: ["Display"], says: said("01-basics.md", /(A type can choose its own form by implementing the `Display` interface \(`fn display\(self\) -> String`\)\.)/), number: "1.11", file: "01-basics.md" },
         { names: ["Drop"], says: said(MEMORY, /(Types that hold resources can run cleanup by implementing `Drop`)/), number: "6.1", file: MEMORY },
         { names: ["Comparable"], says: said("02-types/09-generics.md", /(`<T: Comparable>` means "any type `T` that implements the interface `Comparable`"\.)/), number: "2.9", file: "02-types/09-generics.md" },
+        { names: ["Add", "Sub", "Mul", "Div", "Rem", "Neg"], says: said("02-types/16-operators.md", /(A type gets an operator by implementing its built-in interface)/), number: "2.16", file: "02-types/16-operators.md" },
       ],
     },
   ];
