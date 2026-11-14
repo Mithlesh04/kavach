@@ -54,6 +54,7 @@ mod show;
 mod std_base64;
 mod std_compress;
 mod std_crypto;
+mod std_window;
 mod stdlib;
 mod ty;
 mod unwraps;

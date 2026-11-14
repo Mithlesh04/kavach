@@ -114,6 +114,8 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.21 | [compress-gives-back-what-it-took.kav](compress-gives-back-what-it-took.kav) | `compress.decode` gives back what `compress.encode` took, in each of the five formats, smaller when the data repeats; `from_name` reads a header's name. | runs |
 | 14.21 | [compress-decoding-stops-at-most.kav](compress-decoding-stops-at-most.kav) | Decoding stops at `most` bytes with `TooLarge`; data not in the format fails with `Corrupt`. | runs |
 | 14.21 | [compress-levels-outside-the-range-panic.kav](compress-levels-outside-the-range-panic.kav) | A level outside its format's range panics. | panics |
+| 14.22 | [windows-open-or-say-why.kav](windows-open-or-say-why.kav) | `window.open` gives a window to read and change, or `WindowError.Unavailable` where there is no screen; the program goes on either way. | runs |
+| 14.22 | [window-input-needs-input.kav](window-input-needs-input.kav) | Reading a window's keyboard and mouse needs `Input`; `Window` alone opens and changes windows. | compile error |
 | 5.8, 14.6 | [cli-on-stop-needs-no-capability.kav](cli-on-stop-needs-no-capability.kav) | `cli.on_stop(grace)` gives a hold that isn't asked until a stop signal comes; taking and letting go of one needs no capability. | runs |
 | 14.12 | [log-events-are-records.kav](log-events-are-records.kav) | A log event is a value of a type that implements `LogEvent`; the console shows its level and its printed form. | runs |
 | 14.12 | [log-hides-secrets.kav](log-hides-secrets.kav) | A secret field of a log event is written as `<secret>`. | runs |

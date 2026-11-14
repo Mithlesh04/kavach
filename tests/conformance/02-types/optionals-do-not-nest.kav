@@ -1,0 +1,23 @@
+// Rule: optionals don't nest: `?.` to a field that is itself optional gives a `T?`, not a `T??`.
+// Spec: 2.7
+// expect output: 5
+// expect output: -1
+// expect output: -2
+// expect output: c
+
+type Event {
+    time: Int?
+    name: String
+}
+
+fn time_of(e: Event?) -> Int? {
+    e?.time
+}
+
+fn main() uses Console {
+    print(time_of(Event(time: 5, name: "a")) ?? 0)
+    print(time_of(Event(time: none, name: "b")) ?? -1)
+    print(time_of(none) ?? -2)
+    const e: Event? = Event(time: 7, name: "c")
+    print(e?.name ?? "?")
+}

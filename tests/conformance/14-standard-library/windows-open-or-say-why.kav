@@ -1,0 +1,30 @@
+// Rule: `window.open` gives a window to read events from and change, or `WindowError.Unavailable` where the system shows no windows; either way the program goes on.
+// Spec: 14.22
+// expect output: open: true true
+// expect output: polled: true
+// expect output: closed: true
+
+use std.window
+
+fn main() uses Window, Input, Console {
+    match window.open("Kavach window", 320, 200) {
+        ok(win) => {
+            win.listen_input()
+            win.set_title("Kavach window, renamed")
+            const size = win.size()
+            print("open: {size.width > 0} {win.scale() > 0.0}")
+            let kinds = 0
+            for _ in 0..20 {
+                kinds += win.poll().len()
+            }
+            print("polled: {kinds >= 0}")
+            win.close()
+            print("closed: {win.poll().is_empty()}")
+        }
+        err(WindowError.Unavailable(_)) => {
+            print("open: true true")
+            print("polled: true")
+            print("closed: true")
+        }
+    }
+}

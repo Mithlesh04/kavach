@@ -24,6 +24,7 @@ const MODULES: &[(&str, Option<&str>)] = &[
     ("crypto", None),
     ("base64", None),
     ("compress", None),
+    ("window", Some("Window")),
     ("text", None),
 ];
 
@@ -265,6 +266,8 @@ impl Checker<'_> {
             ("base64", _) => self.base64_signature(name)?,
             // std.compress (spec 14.21): no capability.
             ("compress", _) => self.compress_signature(name)?,
+            // Windows (spec 14.22), behind `Window`, and `Input`.
+            ("window", _) => self.window_signature(name)?,
             // The clipboard (spec 14.17), behind `Clipboard`.
             ("clipboard", "read_text") => {
                 let e = self.builtin_ty("ClipboardError");
@@ -430,6 +433,8 @@ impl Checker<'_> {
         {
             // Reading and changing files are granted apart (spec 8.1).
             let cap = match (module.as_str(), name) {
+                // Listening to the keyboard and mouse (spec 14.22).
+                ("window", "listen_id" | "lock_cursor_id") => "Input",
                 (
                     "fs",
                     "read_text" | "read_bytes" | "lines" | "chunks" | "exists" | "list" | "stat",

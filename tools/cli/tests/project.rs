@@ -153,6 +153,62 @@ fn found_cases_go_to_their_modules_file() {
     let _ = std::fs::remove_dir_all(&root);
 }
 
+/// A found case whose value now breaks an invariant (spec 11.4) is taken
+/// out of its file, and the run says so, instead of failing for good.
+#[test]
+fn found_cases_that_break_an_invariant_are_dropped() {
+    let root = std::env::temp_dir().join(format!("kavach-found-inv-{}", std::process::id()));
+    std::fs::create_dir_all(root.join("src")).unwrap();
+    std::fs::create_dir_all(root.join("tests/found")).unwrap();
+    std::fs::write(
+        root.join("kavach.toml"),
+        "[package]
+name = \"runs\"
+",
+    )
+    .unwrap();
+    std::fs::write(
+        root.join("src/lib.kav"),
+        "pub type Run {
+    pub events: [Int]
+    pub passed: Bool
+
+    invariant passed == events.is_empty()
+}
+
+pub fn failed(runs: [Run]) -> Int
+    ensure result == runs.count(r => not r.events.is_empty())
+{
+    runs.count(r => not r.passed)
+}
+",
+    )
+    .unwrap();
+    let found = root.join("tests/found/lib.kavf");
+    let line = "failed([Run(events: [], passed: false)])";
+    std::fs::write(
+        &found,
+        format!(
+            "// Found by `kavach test` (spec 11.4). Generated: commit it, never edit it.
+{line}
+"
+        ),
+    )
+    .unwrap();
+    let test = kavach(&root, &["test", "--seed", "7"]);
+    let out =
+        String::from_utf8_lossy(&test.stdout).to_string() + &String::from_utf8_lossy(&test.stderr);
+    assert!(test.status.success(), "{out}");
+    assert!(
+        out.contains(
+            "dropped a saved case that breaks the invariant `Run: passed == events.is_empty()`"
+        ),
+        "{out}"
+    );
+    assert!(!std::fs::read_to_string(&found).unwrap().contains(line));
+    let _ = std::fs::remove_dir_all(&root);
+}
+
 /// `kavach test` names each module nothing written by a person checks
 /// (spec 11.9): no example, ensure, invariant or test, in it or beside it.
 #[test]

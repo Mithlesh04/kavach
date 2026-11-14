@@ -1,0 +1,15 @@
+[package]
+name = "kavach-runtime-window"
+description = "Windows and their keyboard and mouse input for std.window (spec 14.22), through winit"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+# Windows on Windows, Linux (X11 and Wayland) and macOS (decision 0104).
+winit = "0.30"
+
+[lints]
+workspace = true

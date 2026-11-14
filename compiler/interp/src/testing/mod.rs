@@ -193,9 +193,18 @@ impl<'a> Interp<'a> {
                 .iter()
                 .filter(|l| l.starts_with(&format!("{}(", t.name)))
             {
-                if let Some(args) = self.read_case(t, line)
-                    && let Outcome::Fail(m, at) = self.run_case(t, &args, opts.step_budget)
-                {
+                let Some(args) = self.read_case(t, line) else {
+                    continue;
+                };
+                // A value no program can build now: saved before an
+                // invariant was written (spec 7.3).
+                if let Some(why) = self.broken_in(&args) {
+                    if let Some(f) = &file {
+                        self.drop_case(f, line, &why);
+                    }
+                    continue;
+                }
+                if let Outcome::Fail(m, at) = self.run_case(t, &args, opts.step_budget) {
                     failure = Some((m, at, args));
                     break;
                 }

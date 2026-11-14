@@ -1,0 +1,14 @@
+// Rule: reading a window's keyboard and mouse needs the capability `Input`; `Window` alone opens and changes windows.
+// Spec: 14.22
+// expect compile error
+
+use std.window
+
+pub fn watch_keys(win: AppWindow) uses Window {
+    win.listen_input()      // error: `watch_keys` uses Input (through `listen_input`), but its `uses` clause doesn't list it
+}
+
+fn main() uses Window, Input {
+    const win = window.open("keys", 100, 100) catch _ => return
+    watch_keys(win)
+}

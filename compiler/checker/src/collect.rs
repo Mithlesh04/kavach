@@ -13,7 +13,9 @@ impl Checker<'_> {
         match &t.kind {
             TypeKind::Named { path, args } => {
                 let args: Vec<Ty> = args.iter().map(|a| self.lower(a, self_ty)).collect();
-                let Some(&def) = self.res.uses.get(&path.segments[0].span.start) else {
+                // `regex.Regex`, `fs.FsError`: the type is the last name.
+                let named = path.segments.last().unwrap_or(&path.segments[0]);
+                let Some(&def) = self.res.uses.get(&named.span.start) else {
                     return Ty::Error;
                 };
                 if let Some(t) = self.aliases.get(&def) {

@@ -271,6 +271,52 @@ impl<'a> Interp<'a> {
             .unwrap_or_default()
     }
 
+    /// The first invariant a value in `values` breaks, as `Type: text`: a
+    /// case saved before the invariant was written, whose value no
+    /// program can build now (spec 7.3).
+    pub(super) fn broken_in(&mut self, values: &[Value<'a>]) -> Option<String> {
+        for v in values {
+            let inner: Vec<Value<'a>> = match v {
+                Value::Record { name, fields, .. } => {
+                    if let Some(text) = self.broken_invariants(v).ok()?.first() {
+                        return Some(format!("{name}: {text}"));
+                    }
+                    fields.iter().map(|f| f.value.clone()).collect()
+                }
+                Value::Variant { fields, .. } => fields.iter().map(|f| f.value.clone()).collect(),
+                Value::List(items) => items.to_vec(),
+                Value::Tuple(items) => items.clone(),
+                _ => continue,
+            };
+            if let Some(found) = self.broken_in(&inner) {
+                return Some(found);
+            }
+        }
+        None
+    }
+
+    /// Takes the saved case `line` out of `file`, and says why.
+    pub(super) fn drop_case(&mut self, file: &std::path::Path, line: &str, why: &str) {
+        let Ok(text) = std::fs::read_to_string(file) else {
+            return;
+        };
+        let kept: String = (text.lines())
+            .filter(|l| *l != line)
+            .map(|l| {
+                format!(
+                    "{l}
+"
+                )
+            })
+            .collect();
+        let done = std::fs::write(file, kept).is_ok();
+        self.out.push_str(&format!(
+            "  {} a saved case that breaks the invariant `{why}`: {line}
+",
+            if done { "dropped" } else { "skipped" }
+        ));
+    }
+
     /// Adds each new case to its module's file, and says where.
     pub(super) fn save_found(&mut self, found: &[(PathBuf, String)]) {
         let mut files: Vec<&PathBuf> = found.iter().map(|(f, _)| f).collect();

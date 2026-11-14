@@ -106,6 +106,7 @@ When a run fails, Kavach **shrinks** the input to the smallest one that still fa
   Account.deposit(Account(owner: "a", balance: 0), -1)
   ```
 - Every run replays all found cases first, so a fixed bug stays fixed.
+- A found case whose value breaks a type's `invariant` (7.3), written after the case was saved, can't be built by any program, so it is no case any more: the run takes it out of its file and says so (`dropped a saved case that breaks the invariant …`).
 - `kavach test --keep` turns a found case into an `example` clause on the function, so it becomes visible documentation. It does this once the case passes (after the fix): the example says what the call gives now, `== value` or `fails error`, and the case leaves `tests/found/`. A case that still fails stays found, and `--keep` says why.
 
 ## 11.5 Capabilities are faked automatically

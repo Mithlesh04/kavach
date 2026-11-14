@@ -25,6 +25,9 @@ serial2 = { version = "0.2", optional = true }
 unicode-normalization = "0.1"
 # `std.compress` (decision 0103): gzip and deflate on the pure-Rust
 # backend, brotli, lz4, and zstd through the C libzstd.
+# Searching bytes and text at memory speed (SIMD `memchr` and
+# `memmem`); already in the build through `regex`.
+memchr = "2"
 flate2 = { version = "1", default-features = false, features = ["rust_backend"] }
 brotli = "9"
 lz4_flex = "0.14"

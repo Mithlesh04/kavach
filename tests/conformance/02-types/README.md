@@ -57,6 +57,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.7 | [unwrap-gives-the-value-of-every-kind.kav](unwrap-gives-the-value-of-every-kind.kav) | `.unwrap()`, `is_some()` and `is_none()` work on an optional of every kind of value. | runs |
 | 2.7 | [unwrap-outside-tests-warns.kav](unwrap-outside-tests-warns.kav) | `.unwrap()` outside `test` blocks and `example` clauses gets a warning; `?? panic("…")` says why and gets none. | warning |
 | 2.7 | [unwrap-in-a-test-does-not-warn.kav](unwrap-in-a-test-does-not-warn.kav) | `.unwrap()` in a `test` block or an `example` clause gets no warning. | test pass |
+| 2.7 | [optionals-do-not-nest.kav](optionals-do-not-nest.kav) | Optionals don't nest: `?.` to an optional field gives a `T?`, not a `T??`. | runs |
 | 2.8 | [interfaces-are-explicit.kav](interfaces-are-explicit.kav) | A type implements an interface only when it says so. | compile error |
 | 2.8 | [interfaces-need-every-method.kav](interfaces-need-every-method.kav) | A type that says it implements an interface has each of its methods. | compile error |
 | 2.8, 3.9 | [interface-methods-keep-inout.kav](interface-methods-keep-inout.kav) | An implementing method marks the same parameters `inout`. | compile error |

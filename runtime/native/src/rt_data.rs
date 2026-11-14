@@ -286,7 +286,9 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         RtOp::StrContains | RtOp::StrStartsWith | RtOp::StrEndsWith => {
             let yes = read(a, |s| {
                 read(b, |t| match op {
-                    RtOp::StrContains => s.contains(t),
+                    RtOp::StrContains => {
+                        kavach_runtime_core::files::find_bytes(s.as_bytes(), t.as_bytes()).is_some()
+                    }
                     RtOp::StrStartsWith => s.starts_with(t),
                     _ => s.ends_with(t),
                 })

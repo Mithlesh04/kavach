@@ -253,7 +253,8 @@ impl Lowerer<'_> {
         let span = t.span;
         Ok(match &t.kind {
             TypeKind::Named { path, args } => {
-                let first = &path.segments[0];
+                // `regex.Regex`, `fs.FsError`: the type is the last name.
+                let first = path.segments.last().unwrap_or(&path.segments[0]);
                 let def = self.c.resolution.uses.get(&first.span.start).copied();
                 match def.map(|d| self.c.resolution.defs[d].kind) {
                     Some(DefKind::Builtin) if first.name == "String" => self.str_type(),

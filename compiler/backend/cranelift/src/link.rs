@@ -114,13 +114,15 @@ pub fn link(object: &Path, out: &Path, libs: &[String]) -> Result<(), String> {
 }
 
 /// What the Rust standard library inside the runtime needs on Windows,
-/// and the system's random numbers for TLS (`bcrypt`, `advapi32`).
+/// the system's random numbers for TLS (`bcrypt`, `advapi32`), and the
+/// windows of `std.window` (`user32` to `dwmapi`, decision 0104). A
+/// library a program calls nothing from adds nothing to it.
 ///
 /// The C runtime's start and `vcruntime` are linked in (`libcmt`,
 /// `libvcruntime`), so a program needs no `VCRUNTIME140.dll`, which a
 /// fresh Windows may lack; the Universal CRT (`ucrt`) stays a DLL, as
 /// every Windows from 10 on has it.
-const WINDOWS_LIBS: [&str; 13] = [
+const WINDOWS_LIBS: [&str; 20] = [
     "kernel32.lib",
     "ntdll.lib",
     "userenv.lib",
@@ -134,6 +136,13 @@ const WINDOWS_LIBS: [&str; 13] = [
     "ucrt.lib",
     "bcrypt.lib",
     "advapi32.lib",
+    "user32.lib",
+    "imm32.lib",
+    "ole32.lib",
+    "oleaut32.lib",
+    "uxtheme.lib",
+    "gdi32.lib",
+    "dwmapi.lib",
 ];
 
 /// Links `object` with the runtime library into the shared library

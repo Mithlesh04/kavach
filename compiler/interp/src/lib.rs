@@ -41,6 +41,7 @@ mod std_devices;
 mod std_fs;
 mod std_lib;
 mod std_time;
+mod std_window;
 mod stmts;
 mod task_errors;
 mod tasks;

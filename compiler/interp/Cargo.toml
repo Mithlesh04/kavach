@@ -10,6 +10,7 @@ publish = false
 [dependencies]
 kavach-runtime-core = { path = "../../runtime/core" }
 kavach-runtime-net = { path = "../../runtime/net" }
+kavach-runtime-window = { path = "../../runtime/window" }
 kavach-ast = { path = "../ast" }
 kavach-checker = { path = "../checker" }
 kavach-driver = { path = "../driver" }

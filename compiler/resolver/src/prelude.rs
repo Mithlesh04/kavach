@@ -58,6 +58,8 @@ pub const CAPABILITIES: &[&str] = &[
     "Clipboard",
     "Serial",
     "Approvals",
+    "Window",
+    "Input",
 ];
 
 /// Prelude functions (spec 10.2), `reveal` (8.7), the `unsafe` memory

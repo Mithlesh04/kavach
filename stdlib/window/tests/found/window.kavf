@@ -1,0 +1,2 @@
+// Found by `kavach test` (spec 11.4). Generated: commit it, never edit it.
+event_of(1, 1e300, 0.0, "")

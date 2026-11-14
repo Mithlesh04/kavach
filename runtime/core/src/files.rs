@@ -69,10 +69,11 @@ fn through_temp(target: &std::path::Path, data: &[u8], durable: bool) -> std::io
 /// Where `part` first appears in `data` (`Bytes.index_of`, spec 2.13);
 /// an empty `part` is at 0.
 pub fn find_bytes(data: &[u8], part: &[u8]) -> Option<usize> {
-    if part.is_empty() {
-        return Some(0);
+    match part {
+        [] => Some(0),
+        [one] => memchr::memchr(*one, data),
+        _ => memchr::memmem::find(data, part),
     }
-    data.windows(part.len()).position(|w| w == part)
 }
 
 /// XXH64 with seed 0 (spec 2.13), as its reference implementation

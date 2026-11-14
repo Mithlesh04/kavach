@@ -1,0 +1,39 @@
+// Rule: a type can be written through the standard module that holds it, `regex.Regex`, `fs.FsError` or `wire.Credit`, in parameters, results and errors, as a type of a program's own module is.
+// Spec: 10.2
+// expect output: 12
+// expect output: true
+// expect output: -1
+
+use std.regex
+use std.fs
+use std.http.h2.wire
+
+fn first(r: regex.Regex, text: String) -> String? {
+    if let c = r.captures(text) {
+        return c[1]
+    }
+    none
+}
+
+fn names(folder: String) -> [String] ! fs.FsError {
+    try fs.list(folder)
+}
+
+fn count() -> Int ! Error uses Fs {
+    const n = try names(".")
+    n.len()
+}
+
+fn window(c: Shared<wire.Credit>?) -> Int {
+    if let s = c {
+        return s.get().window
+    }
+    -1
+}
+
+fn main() ! Error uses Console, Fs {
+    const r = regex.new(r"x(\d+)") catch e => panic("{e}")
+    print(first(r, "ax12b") ?? "none")
+    print((try count()) > 0)
+    print(window(none))
+}

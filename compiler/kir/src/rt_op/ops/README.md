@@ -9,7 +9,7 @@ The runtime entry that carries out an op is chosen by its name's first word (`Rt
 | `text.ops` | Text, numbers, regular expressions, panics, `std.base64` and `std.compress` |
 | `collections.ops` | Lists, maps, sets, bytes, `Shared`, raw memory and drops |
 | `json.ops` | `std.json`: building, reading, encoding and decoding |
-| `system.ops` | Files, the console, the command line, time, logs, the clipboard, serial ports, processes and random numbers |
+| `system.ops` | Files, the console, the command line, time, logs, the clipboard, serial ports, windows, processes and random numbers |
 | `net.ops` | `std.net` and `std.crypto` |
 | `tasks.ops` | Tasks and channels |
 | `agents.ops` | Agents, their journals and `ask` |

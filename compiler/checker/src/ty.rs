@@ -144,6 +144,8 @@ pub(crate) fn builtin_name(name: &str) -> &'static str {
         "Clipboard",
         "Serial",
         "Approvals",
+        "Window",
+        "Input",
     ];
     NAMES
         .iter()

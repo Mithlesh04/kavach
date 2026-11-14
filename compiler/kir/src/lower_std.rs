@@ -111,6 +111,16 @@ impl<'a> Lowerer<'a> {
                 let form = self.at(K::Int(i128::from(form)), Type::I64, line);
                 return Ok(self.at(K::Rt(RtOp::NormalizeText, vec![s, form]), ty, line));
             }
+            ("window", "open_id") => RtOp::WindowOpen,
+            ("window", "events_id") => RtOp::WindowEvents,
+            ("window", "texts_id") => RtOp::WindowTexts,
+            ("window", "size_id") => RtOp::WindowSize,
+            ("window", "scale_id") => RtOp::WindowScale,
+            ("window", "listen_id") => RtOp::WindowListen,
+            ("window", "set_title_id") => RtOp::WindowTitle,
+            ("window", "set_fullscreen_id") => RtOp::WindowFullscreen,
+            ("window", "lock_cursor_id") => RtOp::WindowLockCursor,
+            ("window", "close_id") => RtOp::WindowClose,
             ("compress", "encode_bytes") => RtOp::CompressEncode,
             ("compress", "decode_bytes") => RtOp::CompressDecode,
             ("clipboard", "read_text") => RtOp::ClipReadText,

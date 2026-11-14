@@ -12,7 +12,8 @@ The standard library, imported as `std.<module>`, e.g. `use std.fs`. Its content
 | `math/` | `std.math` | `math.kav`: `gcd`, `lcm`, `factorial`, `is_prime`, `mean` | 1 |
 | `time/` | `std.time`, `std.time.digits` | `digits.kav`: the digits and offsets of times as text; `time.kav`: `Duration` (`5.seconds`), `Date`, `Time`, `DateTime`, `Weekday`; clocks, sleeping and intervals come from the runtime (spec 14.4) | 1 |
 | `fs/` | `std.fs` | `fs.kav`: the `FsError` union file operations fail with (spec 14.3) | 1 |
-| `io/` | `std.io` | Files, console, environment | 1 |
+| `io/` | `std.io` | Empty for now (`.gitkeep`): reading lines, hidden input and the terminal checks of `std.io` are built into the runtime (spec 14.6) | 1 |
+| `cli/` | `std.cli` | `cli.kav`: `StopHold` and `cli.on_stop(grace)`, a hold on the program's stop (spec 5.8, [decision 0088](../docs/decisions/0088-finishing-before-a-stop.md)); arguments, `exit` and `parse` are built into the compiler and runtime (spec 14.6) | 2 |
 | `test/` | `std.test` | `test.kav`: `Sample`, for types that make their own generated values, and `Gen`, the seeded choices they make them from (spec 14.7); the numbers come from the runtime | 2 |
 | `json/` | `std.json` | `json.kav`: the `Json` and `JsonError` types and reading a `Json`, written in Kavach; every program has them. Parsing and writing are in the compiler and runtime (spec 2.12) | 1 |
 | `net/` | `std.net` | `net.kav`: the `NetError` union and the `ClientCert` record; TCP, UDP and QUIC come from the runtime (spec 14.10). HTTP is in `http/` | 2 |
@@ -27,6 +28,7 @@ The standard library, imported as `std.<module>`, e.g. `use std.fs`. Its content
 | `crypto/` | `std.crypto` | `crypto.kav`: the `CryptoError` union; hashes, HMAC, passwords (Argon2id), signatures and AES-GCM come from `ring` and `argon2` in the runtime (spec 14.19, [decision 0093](../docs/decisions/0093-std-crypto.md)) | 2 |
 | `base64/` | `std.base64` | `base64.kav`: the `Base64Error` union; encoding and decoding are built into the runtime (`runtime/core/src/base64.rs`, spec 14.20) | 2 |
 | `compress/` | `std.compress` | `compress.kav`: `Format`, its levels and names, `CompressError`, and `encode`/`decode` over the runtime's `encode_bytes`/`decode_bytes` (`runtime/core/src/compress.rs`, spec 14.21) | 2 |
+| `window/` | `std.window` | `window.kav`: `AppWindow` and its methods, `Event`, `WindowError`, over the runtime's windows by number (`runtime/window`, spec 14.22, [decision 0104](../docs/decisions/0104-windows-through-winit.md)) | 2 |
 | `tasks/` | `std.tasks` | `tasks.kav`: `Taken<T>`, what a channel's `take()` gives (spec 9.4, [decision 0097](../docs/decisions/0097-take-gives-taken.md)); every program that uses a channel gets it, and tasks and channels themselves are built in | 2 |
 | `literals/` | `std.literals` | `literals.kav`: `LiteralProblem`, what a tag's checker gives for a tagged literal (spec 10.15, [decision 0100](../docs/decisions/0100-tagged-literals.md)) | 2 |
 | [`grpc/`](grpc/README.md) | `std.grpc`, `std.grpc.frames`, `std.grpc.protobuf` | `grpc.kav`: gRPC clients and servers from Kavach types; `frames.kav`: message prefixes and status trailers; `protobuf.kav`: Protocol Buffers from a type's JSON Schema, written in Kavach on `std.http.h2` (spec 14.14, [decision 0027](../docs/decisions/0027-grpc-as-a-module.md)) | 3 |

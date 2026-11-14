@@ -383,9 +383,28 @@ impl Resolver {
                         if let Some(d) = self.lookup(&first.name) {
                             self.res.uses.insert(first.span.start, d);
                         }
-                        self.member(m, &path.segments[path.segments.len() - 1]);
+                        let last = &path.segments[path.segments.len() - 1];
+                        // A built-in type named through its standard
+                        // module, `regex.Regex`: the module's file
+                        // doesn't declare it, the language does.
+                        if self.member(m, last).is_none()
+                            && let Some(d) = self.lookup(&last.name)
+                            && self.res.defs[d].kind == DefKind::Builtin
+                        {
+                            self.res.uses.insert(last.span.start, d);
+                        }
                     }
-                    None => self.use_type(&path.segments[0]),
+                    None => {
+                        self.use_type(&path.segments[0]);
+                        // `regex.Regex`: a module the runtime provides
+                        // whole, with no file of its own.
+                        if let [_, .., last] = path.segments.as_slice()
+                            && let Some(d) = self.lookup(&last.name)
+                            && self.res.defs[d].kind == DefKind::Builtin
+                        {
+                            self.res.uses.insert(last.span.start, d);
+                        }
+                    }
                 }
                 args.iter().for_each(|a| self.type_expr(a));
             }

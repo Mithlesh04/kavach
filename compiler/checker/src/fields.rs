@@ -99,7 +99,13 @@ impl Checker<'_> {
                 if secret {
                     self.secret.insert((e.span.start, e.span.end));
                 }
-                if wrap { Ty::Optional(Box::new(ty)) } else { ty }
+                // Optionals don't nest (2.7): `e?.time` of a `time: Int?`
+                // is an `Int?`.
+                match self.inf.shallow(&ty) {
+                    Ty::Optional(_) => ty,
+                    _ if wrap => Ty::Optional(Box::new(ty)),
+                    _ => ty,
+                }
             }
             None => {
                 let shown = self.show(&inner);

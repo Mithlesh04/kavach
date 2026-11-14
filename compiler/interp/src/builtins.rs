@@ -392,7 +392,9 @@ impl<'a> Interp<'a> {
             "upper" => self.str_value(&s.to_uppercase()),
             "lower" => self.str_value(&s.to_lowercase()),
             "trim" => self.str_value(s.trim()),
-            "contains" => Value::Bool(s.contains(&text())),
+            "contains" => Value::Bool(
+                kavach_runtime_core::files::find_bytes(s.as_bytes(), text().as_bytes()).is_some(),
+            ),
             "starts_with" => Value::Bool(s.starts_with(&text())),
             "ends_with" => Value::Bool(s.ends_with(&text())),
             "split" => Value::List(Rc::new(

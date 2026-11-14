@@ -1,0 +1,128 @@
+// std.window (spec 14.22, decision 0104): windows and the input that
+// comes to them. The runtime opens them and gathers their events
+// (`runtime/window`), by the window's number; this file gives windows
+// their methods and turns the runtime's numbers into `Event`s.
+
+use std.window
+
+/// Why a window couldn't be opened: the system shows no windows here, as
+/// on a server with no screen.
+pub type WindowError = Unavailable(reason: String)
+
+/// Something that happened to a window. The last six come only after
+/// `listen_input()`.
+pub type Event = Closed | Resized(width: Int, height: Int) | Scaled(factor: Float) | Focused(on: Bool) | Key(key: String, down: Bool) | Text(text: String) | MouseMoved(x: Float, y: Float) | MouseButton(button: Int, down: Bool) | Wheel(x: Float, y: Float) | Motion(x: Float, y: Float)
+
+/// An open window. It closes when its last holder ends, or at `close()`.
+pub type AppWindow: Drop {
+    id: Int
+
+    /// The events that came, waiting for at least one; none once the
+    /// window is closed.
+    pub fn events(self) -> [Event] uses Window {
+        decoded(self.id, window.events_id(self.id, true))
+    }
+
+    /// The events that came, without waiting.
+    pub fn poll(self) -> [Event] uses Window {
+        decoded(self.id, window.events_id(self.id, false))
+    }
+
+    /// Calls `f` with each event as it comes, until `f` gives `false` or
+    /// the window is closed.
+    pub fn run(self, f: fn(Event) -> Bool) uses Window {
+        while true {
+            const got = self.events()
+            if got.is_empty() {
+                return
+            }
+            for e in got {
+                if not f(e) {
+                    return
+                }
+            }
+        }
+    }
+
+    /// From now on, keyboard, mouse and text events come too.
+    pub fn listen_input(self) uses Input {
+        window.listen_id(self.id)
+    }
+
+    /// The inside of the window, in pixels.
+    pub fn size(self) -> (width: Int, height: Int) uses Window {
+        const s = window.size_id(self.id)
+        (width: s[0], height: s[1])
+    }
+
+    /// How many pixels make one point on this screen.
+    pub fn scale(self) -> Float uses Window {
+        window.scale_id(self.id)
+    }
+
+    /// Changes the title.
+    pub fn set_title(self, title: String) uses Window {
+        window.set_title_id(self.id, title)
+    }
+
+    /// Fills the screen the window is on, or leaves it.
+    pub fn set_fullscreen(self, on: Bool) uses Window {
+        window.set_fullscreen_id(self.id, on)
+    }
+
+    /// Hides the pointer and keeps it in the window; `Motion` events
+    /// still come.
+    pub fn lock_cursor(self, on: Bool) uses Input {
+        window.lock_cursor_id(self.id, on)
+    }
+
+    /// Closes the window; closing it again does nothing.
+    pub fn close(self) uses Window {
+        window.close_id(self.id)
+    }
+
+    fn drop(self) uses Window {
+        window.close_id(self.id)
+    }
+}
+
+/// A window of `width` × `height` pixels titled `title`, shown at once.
+pub fn open(title: String, width: Int, height: Int) -> AppWindow ! WindowError uses Window
+    require width >= 1 and height >= 1
+{
+    const id = try window.open_id(title, width, height)
+    AppWindow(id: id)
+}
+
+/// The runtime's events, three numbers each, as `Event`s; texts holds
+/// each one's key or typed text.
+fn decoded(id: Int, numbers: [Float]) -> [Event] uses Window {
+    const texts = window.texts_id(id)
+    let out: [Event] = []
+    for i in 0..texts.len() {
+        const (a, b) = (numbers[i * 3 + 1], numbers[i * 3 + 2])
+        out.push(event_of(Int(numbers[i * 3]), a, b, texts[i]))
+    }
+    out
+}
+
+/// One event from its kind's number (as `Event`'s variants are
+/// numbered), two numbers and a text.
+fn event_of(kind: Int, a: Float, b: Float, text: String) -> Event
+    require a.abs() <= 1e15 and b.abs() <= 1e15
+    example event_of(1, 640.0, 480.0, "") == Event.Resized(width: 640, height: 480)
+    example event_of(4, 1.0, 0.0, "KeyW") == Event.Key(key: "KeyW", down: true)
+{
+    match kind {
+        0 => Event.Closed,
+        1 => Event.Resized(width: Int(a), height: Int(b)),
+        2 => Event.Scaled(factor: a),
+        3 => Event.Focused(on: a > 0.0),
+        4 => Event.Key(key: text, down: a > 0.0),
+        5 => Event.Text(text: text),
+        6 => Event.MouseMoved(x: a, y: b),
+        7 => Event.MouseButton(button: Int(a), down: b > 0.0),
+        8 => Event.Wheel(x: a, y: b),
+        _ => Event.Motion(x: a, y: b),
+    }
+}

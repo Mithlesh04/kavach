@@ -89,6 +89,7 @@ impl<'a> Interp<'a> {
             "crypto" => return self.crypto_call(name, &args, span),
             "base64" => return self.base64_call(name, &args),
             "compress" => return self.compress_call(name, &args),
+            "window" => return self.window_call(name, &args),
             "text" if name.starts_with("nf") => return Ok(self.normal_form(name, &text(0))),
             _ => {}
         }

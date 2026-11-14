@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["compiler/lexer", "compiler/ast", "compiler/parser", "compiler/resolver", "compiler/checker", "compiler/driver", "compiler/interp", "compiler/kir", "compiler/backend/cranelift", "compiler/backend/llvm", "compiler/backend/wgsl", "runtime/core", "runtime/net", "runtime/gpu", "runtime/native", "runtime/unpack", "tools/ai", "tools/fmt", "tools/lsp", "tools/cli", "tools/playground", "tools/speedkit"]
+members = ["compiler/lexer", "compiler/ast", "compiler/parser", "compiler/resolver", "compiler/checker", "compiler/driver", "compiler/interp", "compiler/kir", "compiler/backend/cranelift", "compiler/backend/llvm", "compiler/backend/wgsl", "runtime/core", "runtime/net", "runtime/gpu", "runtime/window", "runtime/native", "runtime/unpack", "tools/ai", "tools/fmt", "tools/lsp", "tools/cli", "tools/playground", "tools/speedkit"]
 
 [workspace.package]
 version = "0.1.0"

@@ -100,3 +100,17 @@ CliVersion,
 /// `fs.symlink(target, link)` (spec 14.3): a symbolic link; can fail
 /// (`runtime/native/src/rt_file_info.rs`).
 FileInfoSymlink,
+/// `std.window` (spec 14.22), by the window's number: open (title,
+/// width, height; can fail), the events as numbers (wait), their texts,
+/// the size, the scale, listening to input, the title, full screen,
+/// locking the pointer, and close (`runtime/native/src/rt_window.rs`).
+WindowOpen,
+WindowEvents,
+WindowTexts,
+WindowSize,
+WindowScale,
+WindowListen,
+WindowTitle,
+WindowFullscreen,
+WindowLockCursor,
+WindowClose,
