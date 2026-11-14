@@ -116,6 +116,14 @@ export const pubDoc: LessonDoc = {
         <li>A method an interface asks for can be called wherever the interface can, <C>pub</C> or not.</li>
       </ul>
       <SrcRef file="tests/conformance/10-modules/private-methods-stay-in-their-package/src/main.kav" label="tested" />
+      <H2>Agents too</H2>
+      <P>
+        An agent is a declaration like any other. Mark it <C>pub</C>, and other modules can start it and call its
+        handlers:
+      </P>
+      <Files name="modules/pub-agent" first={["src/bots.kav", "src/main.kav"]} />
+      <P>Without <C>pub</C>, the agent stays inside its module:</P>
+      <Files name="modules/private-agent.fails" first={["src/bots.kav", "src/main.kav"]} outcome="refused" />
     </>
   ),
 };

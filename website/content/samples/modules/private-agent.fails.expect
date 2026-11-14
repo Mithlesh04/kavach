@@ -1,0 +1,1 @@
+error: `Picker` is private to module `bots`: mark it `pub` there to use it here (spec 10.1)

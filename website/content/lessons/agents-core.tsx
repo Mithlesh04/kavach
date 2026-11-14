@@ -193,6 +193,11 @@ export const declareAgentDoc: LessonDoc = {
         The agent uses a capability, here <C>Email</C>, and gets an implementation of it when it starts (see{" "}
         <Link href="/docs/agents/running-an-agent/">Running an Agent</Link>).
       </P>
+      <P>
+        Like any declaration, an agent is private to its module. Write <C>pub agent</C> and other modules can start it
+        and call its handlers: <C>bots.Picker.start()</C>. See{" "}
+        <Link href="/docs/tools/modules/pub/">Modules › pub</Link>.
+      </P>
     </>
   ),
 };

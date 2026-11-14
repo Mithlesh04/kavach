@@ -1,0 +1,6 @@
+use bots
+
+fn main() {
+    const bot = bots.Picker.start()
+    print(bot.pick([10, 20, 30], 2) catch _ => -1)
+}
