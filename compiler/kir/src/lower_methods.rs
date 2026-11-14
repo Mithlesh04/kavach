@@ -34,6 +34,11 @@ impl<'a> Lowerer<'a> {
                 line,
             });
         }
+        if name.name == "pop"
+            && let Some(popped) = self.list_pop(base, ty, line)?
+        {
+            return Ok(popped);
+        }
         if name.name == "timeout"
             && let Some(timed) = self.timeout(base, args, ty, line)?
         {

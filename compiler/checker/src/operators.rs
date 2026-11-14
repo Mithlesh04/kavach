@@ -26,7 +26,8 @@ impl Checker<'_> {
             Ty::Optional(inner) => *inner,
             other => other,
         };
-        if op == BinaryOp::Add && matches!(t, Ty::Prim(Prim::String | Prim::Bytes)) {
+        // `log += ["step"]`: a list grows by another (spec 2.2).
+        if op == BinaryOp::Add && matches!(t, Ty::Prim(Prim::String | Prim::Bytes) | Ty::List(_)) {
             return;
         }
         let int_only = matches!(

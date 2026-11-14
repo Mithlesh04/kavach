@@ -318,10 +318,6 @@ impl Checker<'_> {
                 Ty::Optional(_) => {
                     ": it may be `none`, so give a default with `?? 0`, or check it with `if let` (spec 2.7)"
                 }
-                // `xs + ys`: lists are joined by pushing into a copy.
-                Ty::List(_) => {
-                    ": `+` doesn't join lists; copy one into a `let` (`let all = xs`) and `push` the other's items in a `for` loop (spec 2.2)"
-                }
                 _ => "",
             };
             self.error(e.span, format!("expected {what}, found `{shown}`{hint}"));
@@ -389,6 +385,11 @@ impl Checker<'_> {
                     let bytes = Ty::Prim(Prim::Bytes);
                     self.check_expect(r, &bytes);
                     return bytes;
+                }
+                // `xs + ys`: a new list (spec 2.2).
+                if op == Add && matches!(self.inf.resolve(&lt), Ty::List(_)) {
+                    self.check_expect(r, &lt);
+                    return lt;
                 }
                 if op == Add && matches!(self.inf.resolve(&lt), Ty::Prim(Prim::String)) {
                     self.check_expect(r, &STRING);

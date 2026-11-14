@@ -2,6 +2,7 @@
 //! file and renders its messages. The CLI, the interpreter and (later) the
 //! language server all use this, so messages look the same everywhere.
 
+mod agent_config;
 mod config;
 pub mod deps;
 mod fetch_checks;
@@ -13,6 +14,7 @@ mod std_modules;
 mod version;
 pub mod workspace;
 
+pub use agent_config::{DEFAULT_MAX_TOKENS, DEFAULT_MODEL, model_settings};
 pub use config::{
     AgentConfig, AgentMode, AiConfig, Config, Level, Limits, TestConfig, relative_path,
 };
@@ -92,118 +94,6 @@ pub struct Compiled {
     pub literal_uses: Vec<kavach_checker::LiteralUse>,
     pub messages: Vec<Message>,
 }
-
-/// The model an `ask` uses when neither it nor its agent names one
-/// (spec 8.4): the smallest current one.
-pub const DEFAULT_MODEL: &str = "claude-haiku-5-5";
-
-/// The most tokens an answer may take when its `Model` doesn't say.
-pub const DEFAULT_MAX_TOKENS: u32 = 4096;
-
-impl Compiled {
-    /// Agent `name`'s settings as a run uses them (spec 8.5, decision
-    /// 0060): its `settings`, with what survives a restart on in a
-    /// project, in `agents/<Name>/` beside `kavach.toml` (or `[agents]
-    /// folder`, or its own `folder`). `fresh` (`kavach test`, a dry run)
-    /// keeps no state and no journal.
-    pub fn agent_config(&self, name: &str, fresh: bool) -> AgentConfig {
-        let program = std::path::Path::new(&self.path);
-        let config = Config::for_file(program).unwrap_or_default();
-        let setup = self.agent_settings.get(name).cloned().unwrap_or_default();
-        // Paths are relative to the folder of `kavach.toml`, or the
-        // program's own without one.
-        let base = (config.root.clone()).unwrap_or_else(|| {
-            program
-                .parent()
-                .map(|p| p.to_path_buf())
-                .unwrap_or_default()
-        });
-        let folder = match (&setup.folder, &config.root) {
-            (Some(f), _) => Some(base.join(f)),
-            (None, Some(root)) => {
-                let all = config.agents.folder.as_deref().unwrap_or("agents");
-                Some(root.join(all).join(name))
-            }
-            (None, None) => None,
-        };
-        let path = |p: std::path::PathBuf| p.to_string_lossy().to_string();
-        let kept = |on: Option<bool>, file: &str| match (fresh, on) {
-            (true, _) | (_, Some(false)) => None,
-            _ => folder.as_ref().map(|f| path(f.join(file))),
-        };
-        let audit = setup.audit.as_ref();
-        AgentConfig {
-            mode: match setup.mode.as_deref() {
-                Some("observe") => AgentMode::Observe,
-                Some("suggest") => AgentMode::Suggest,
-                _ => AgentMode::Enforce,
-            },
-            audit_log: audit.map(|a| match &a.file {
-                Some(f) => path(base.join(f)),
-                None => path(folder.clone().unwrap_or(base.clone()).join("audit.log")),
-            }),
-            state: kept(setup.state, "state.json"),
-            journal: kept(setup.journal, "journal"),
-            audit_format: audit.and_then(|a| a.json.then(|| "json".to_string())),
-            audit_otlp: audit.is_some_and(|a| a.otlp),
-            under_way: setup.under_way.unwrap_or_else(|| "Average".into()),
-        }
-    }
-
-    /// The project's agents folder, where `agents.waiting()` and
-    /// `agents.answer` look (spec 14.16): `agents/` beside `kavach.toml`,
-    /// or `[agents] folder`. `None` outside a project, and when `fresh`.
-    pub fn agents_folder(&self, fresh: bool) -> Option<String> {
-        let config = Config::for_file(std::path::Path::new(&self.path)).unwrap_or_default();
-        let all = config.agents.folder.as_deref().unwrap_or("agents");
-        let root = config.root.filter(|_| !fresh)?;
-        Some(root.join(all).to_string_lossy().to_string())
-    }
-
-    /// The model an `ask` at `call` uses, inside `agent`'s handlers or
-    /// outside any: its own `model:`, else its agent's, else the default
-    /// (spec 8.4, decision 0056).
-    pub fn ask_model(&self, call: (u32, u32), agent: Option<&str>) -> kavach_checker::AiModel {
-        self.ask_models
-            .get(&call)
-            .or_else(|| agent.and_then(|a| self.agent_models.get(a)))
-            .cloned()
-            .unwrap_or(kavach_checker::AiModel {
-                name: DEFAULT_MODEL.to_string(),
-                ..Default::default()
-            })
-    }
-}
-
-/// A model's settings as the runtime takes them (`kavach_runtime_net::ai::
-/// Request::new`): the interpreter and native code send the same request.
-pub fn model_settings(m: &kavach_checker::AiModel) -> kavach_runtime_core::json::Tree {
-    use kavach_runtime_core::json::Tree;
-    let text = |s: &str| Tree::Text(s.to_string());
-    let max_tokens = m.max_tokens.unwrap_or(DEFAULT_MAX_TOKENS);
-    let mut fields = vec![
-        ("model".to_string(), text(&m.name)),
-        ("max_tokens".to_string(), Tree::Int(i64::from(max_tokens))),
-    ];
-    let mut add = |k: &str, v: Option<Tree>| {
-        if let Some(v) = v {
-            fields.push((k.to_string(), v));
-        }
-    };
-    add("effort", m.effort.as_deref().map(text));
-    add("thinking", m.thinking.map(Tree::Bool));
-    add("instructions", m.instructions.as_deref().map(text));
-    let stop = (!m.stop.is_empty()).then(|| Tree::Array(m.stop.iter().map(|s| text(s)).collect()));
-    add("stop", stop);
-    add("timeout_ms", m.timeout_ms.map(|n| Tree::Int(n as i64)));
-    add("retries", m.retries.map(|n| Tree::Int(i64::from(n))));
-    add("api_url", m.api_url.as_deref().map(text));
-    add("api_key_env", m.api_key_env.as_deref().map(text));
-    add("extra", m.extra.as_deref().map(text));
-    Tree::Object(fields)
-}
-
-impl Compiled {}
 
 impl Compiled {
     pub fn has_errors(&self) -> bool {
@@ -352,6 +242,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
         .iter()
         .map(|e| error(&e.message, e.span))
         .collect();
+    let syntax_errors = messages.len();
     messages.extend(resolution.errors.iter().map(|e| error(&e.message, e.span)));
     // A test file with no module beside it (spec 11.8).
     for (f, s) in files.iter().zip(&sources) {
@@ -408,7 +299,6 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
             &options.limits,
         ));
     }
-    messages.sort_by_key(|m| (m.span.start, m.severity == Severity::Warning));
     // The program's files come first, so text the parser can't close in
     // them (a string left open) runs on into the standard library's
     // files: then only the program's own messages are worth showing.
@@ -417,6 +307,15 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
         .zip(&sources)
         .find(|(_, s)| is_builtin(&s.path))
         .map_or(u32::MAX, |(f, _)| f.start);
+    // Syntax errors in the program's own files: only they are shown, as
+    // later checks read code the parser couldn't (spec 13.6).
+    if messages[..syntax_errors]
+        .iter()
+        .any(|m| m.span.start < builtin_start)
+    {
+        messages.truncate(syntax_errors);
+    }
+    messages.sort_by_key(|m| (m.span.start, m.severity == Severity::Warning));
     if messages.iter().any(|m| m.span.start < builtin_start) {
         messages.retain(|m| m.span.start < builtin_start);
     }

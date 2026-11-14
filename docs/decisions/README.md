@@ -113,6 +113,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0105](0105-std-process.md) | `std.process`: other programs run with no shell, as trees that end together; `Process` and `Process("name")`; our own system calls in `runtime/process`, allowed `unsafe` | Accepted |
 | [0106](0106-drawing-on-the-gpu.md) | Drawing on the GPU: shaders as `gpu vertex fn` and `gpu fragment fn`, a thin `std.gpu`, GPU lists drawn with no copy, pipelines built ahead | Accepted |
 | [0107](0107-traces-and-metrics.md) | Traces and metrics in `std.log`: `log.span(name) { … }` blocks, the trace kept per task, `http` joining traces by `traceparent`, `log.count`/`gauge`/`histogram`; blocks given to a call, also for `random.seeded` | Accepted |
+| [0108](0108-no-user-defined-decorators.md) | No user-defined decorators: what they do elsewhere is said in the signature (contracts, `uses`, `example`) or in plain code; a recurring need becomes a checked clause | Accepted |
 
 ## Open decisions
 

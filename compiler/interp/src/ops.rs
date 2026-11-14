@@ -234,6 +234,12 @@ impl<'a> Interp<'a> {
                 }
             }
             (Value::Str(x), Value::Str(y)) if op == Add => Ok(Value::Str(format!("{x}{y}").into())),
+            // `xs + ys` (spec 2.2): a new list; `xs += ys` grows `xs` in
+            // place when nothing else holds it.
+            (Value::List(mut x), Value::List(y)) if op == Add => {
+                std::rc::Rc::make_mut(&mut x).extend(y.iter().cloned());
+                Ok(Value::List(x))
+            }
             (Value::Bytes(x), Value::Bytes(y)) if op == Add => {
                 Ok(Value::Bytes([&x[..], &y[..]].concat().into()))
             }

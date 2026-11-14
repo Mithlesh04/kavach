@@ -1,0 +1,9 @@
+// Rule: `xs.pop()` changes `xs`, so `xs` must be a `let`.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    const fixed = [1, 2]
+    const last = fixed.pop()    // error: fixed is a const
+    print(last)
+}

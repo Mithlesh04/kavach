@@ -8,6 +8,9 @@ ListLast,
 ListContains,
 /// `list[i] = v`; panics when out of range.
 ListSet,
+/// `xs.pop()`'s second half: the list cut to its first `n` items, in
+/// place when nothing else holds it (spec 14.2).
+ListTruncate,
 MapGet,
 MapInsert,
 MapRemove,

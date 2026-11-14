@@ -44,7 +44,6 @@ fn habits_from_other_languages_get_clear_errors() {
         (main("print(\"ab\".length)"), "2: `String` has no field `length`: Kavach's is the method `len()`"),
         (main("let xs = [1]\nxs.append(2)"), "3: `[Int]` has no method `append`: Kavach's is `push(x)`"),
         (main("print(\"Ab\".to_lowercase())"), "2: `String` has no method `to_lowercase`: Kavach's is `lower()`"),
-        (main("let xs = [1]\nprint(xs.pop())"), "3: `[Int]` has no method `pop` yet"),
         (main("const xs = [1]\nfor i in 0..xs.max() ?? 0 {\n}"), "3: `??` binds looser than `..`"),
         (
             "fn one() -> Int {\n    return 1\n}\nfn main() {\n    const t = spawn one()\n    print(t.join())\n}\n".into(),

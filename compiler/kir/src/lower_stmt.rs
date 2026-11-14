@@ -49,6 +49,15 @@ impl<'a> Lowerer<'a> {
                     return Ok(());
                 }
                 let mut value = self.expr(value)?;
+                // `log += ["step"]`: pushes onto the variable (spec 2.2).
+                if *op == ast::AssignOp::Add
+                    && let ExprKind::Name(id) = &target.kind
+                    && let Ok(local) = self.local(id)
+                    && self.is_list_type(self.locals[local as usize])
+                {
+                    out.extend(self.list_extend(local, value, line)?);
+                    return Ok(());
+                }
                 if let Some(bin) = op.binary() {
                     let mut current = self.expr(target)?;
                     if let Some(Shape::Optional(inner)) = self.shapes.shape(current.ty).cloned() {
@@ -62,6 +71,7 @@ impl<'a> Lowerer<'a> {
                     let ty = current.ty;
                     value = match crate::lower_expr::binary_op(bin) {
                         _ if bin == ast::BinaryOp::Pow => self.power(current, value, line),
+                        _ if self.is_list_type(ty) => self.list_concat(current, value, line)?,
                         Some(bin) => ir::Expr {
                             kind: ir::ExprKind::Binary(bin, Box::new(current), Box::new(value)),
                             ty,

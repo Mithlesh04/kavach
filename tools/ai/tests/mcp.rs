@@ -91,3 +91,27 @@ fn runs_the_tools() {
     let (message, failed) = call("kavach_query", json!({"file": errors}));
     assert!(failed && message.contains("missing argument `kind`"));
 }
+
+#[test]
+fn a_run_that_never_ends_is_stopped() {
+    let dir = std::env::temp_dir().join(format!("kavach-mcp-limit-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let file = dir.join("main.kav");
+    std::fs::write(
+        &file,
+        "fn main() {\n    let n = 0\n    while true {\n        n += 1\n    }\n}\n",
+    )
+    .unwrap();
+    let started = std::time::Instant::now();
+    let reply = &exchange(&[json!({"jsonrpc": "2.0", "id": 3, "method": "tools/call",
+        "params": {"name": "kavach_run", "arguments": {"file": file.to_str().unwrap(), "time_limit": 1}}})])
+        [0];
+    let text = reply["result"]["content"][0]["text"].as_str().unwrap();
+    assert!(
+        text.starts_with("stopped: it ran longer than 1 second,")
+            && text.contains("exit code: 124"),
+        "{text}"
+    );
+    assert!(started.elapsed() < std::time::Duration::from_secs(20));
+    let _ = std::fs::remove_dir_all(&dir);
+}

@@ -121,7 +121,9 @@ impl Checker<'_> {
             }
             let changes = matches!(
                 (&recv, name.name.as_str()),
-                (Ty::List(_), "push") | (Ty::Map(..) | Ty::Set(_), "remove") | (Ty::Set(_), "add")
+                (Ty::List(_), "push" | "pop")
+                    | (Ty::Map(..) | Ty::Set(_), "remove")
+                    | (Ty::Set(_), "add")
             );
             if changes {
                 self.require_var(base, &name.name);
@@ -222,10 +224,9 @@ impl Checker<'_> {
             self.error(
                 name.span,
                 match kavach_name(&recv, &name.name) {
-                    _ if matches!(recv, Ty::List(_)) && name.name == "pop" => format!(
-                        "`{shown}` has no method `pop` yet: the last item is `xs.last()`, and `xs = xs.take(xs.len() - 1)` drops it"
-                    ),
-                    Some(k) => format!("`{shown}` has no method `{}`: Kavach's is `{k}`", name.name),
+                    Some(k) => {
+                        format!("`{shown}` has no method `{}`: Kavach's is `{k}`", name.name)
+                    }
                     None => format!("`{shown}` has no method `{}`", name.name),
                 },
             );

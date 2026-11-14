@@ -34,6 +34,9 @@ pub(crate) struct Tasks<'a> {
     /// Every `Shared` made and where, so one a cycle keeps alive to the
     /// end is reported (spec 6.2).
     pub(crate) made: Arc<Mutex<Vec<Baton<MadeShared<'a>>>>>,
+    /// Set from outside to stop the whole program at its next loop round
+    /// or call: a time limit (`kavach mcp`, spec 13.8).
+    pub(crate) stop: Arc<std::sync::atomic::AtomicBool>,
 }
 
 /// A `Shared` value, without keeping it alive, and the offset of the
@@ -50,6 +53,7 @@ impl<'a> Tasks<'a> {
             live: false,
             ended: Arc::default(),
             made: Arc::default(),
+            stop: Arc::default(),
         }
     }
 }
@@ -385,6 +389,9 @@ impl<'a> Interp<'a> {
             return Ok(());
         }
         match &self.tasks {
+            Some(t) if t.stop.load(std::sync::atomic::Ordering::Relaxed) => {
+                Err(Flow::Exit(crate::STOPPED))
+            }
             Some(t)
                 if kavach_runtime_core::tasks::any_stop_now() && t.sched.must_stop(self.task) =>
             {

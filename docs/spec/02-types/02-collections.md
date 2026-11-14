@@ -31,3 +31,12 @@ ages.remove("asha")            // ages is now ["ravi": 27]
 const fixed = [1, 2]
 fixed.push(3)                  // error: `fixed` is a `const`: declare it with `let`
 ```
+
+`xs + ys` is a new list: the items of `xs`, then those of `ys`. Both are lists of the same type, and neither changes. `xs += ys` adds the items of `ys` to the end of `xs`, so like `push` it needs a `let`; when nothing else holds `xs`, it grows in place (6.1), without copying what it holds:
+
+```kavach
+const evens = [2, 4]
+const all = evens + [6, 8]     // [2, 4, 6, 8]; evens is still [2, 4]
+let log = ["start"]
+log += ["step 1", "step 2"]    // log is now ["start", "step 1", "step 2"]
+```

@@ -1,0 +1,24 @@
+// Rule: `xs + ys` is a new list, the items of `xs` then those of `ys`; neither changes.
+// Spec: 2.2
+// expect output: [2, 4, 6, 8]
+// expect output: [2, 4]
+// expect output: ["a", "b", "c"]
+// expect output: 3
+// expect output: [1.5]
+
+type Point {
+    x: Int
+    y: Int
+}
+
+fn main() {
+    const evens = [2, 4]
+    const all = evens + [6, 8]
+    print(all)
+    print(evens)
+    print(["a"] + ["b", "c"])
+    const points = [Point(x: 1, y: 2)] + [Point(x: 3, y: 4), Point(x: 5, y: 6)]
+    print(points.len())
+    const empty: [Float] = []
+    print(empty + [1.5])
+}

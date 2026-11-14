@@ -39,6 +39,7 @@ Lists, in addition to 2.2:
 | `items.take(n)`, `items.skip(n)` | The first `n` items, or all but them |
 | `items.index_of(x)` | The position of the first `x`, or `none` |
 | `items.min()`, `items.max()` | The smallest or largest item, or `none` for an empty list |
+| `items.pop()` | The last item, which it takes out of the list, or `none` for an empty list. It changes the list, so like `push` it needs a `let` (2.2), and it takes the item out in place when nothing else holds the list: `const top = stack.pop() ?? 0` |
 
 Sets keep insertion order (2.2) and hold each value once:
 

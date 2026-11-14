@@ -242,6 +242,11 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
             crate::heap::push_item(q, b as u64);
             q
         }
+        RtOp::ListTruncate => {
+            let q = unique(a);
+            crate::lists::truncate_list(q, b.max(0) as usize);
+            q
+        }
         RtOp::ListGet | RtOp::ListFirst | RtOp::ListLast => {
             let n = len_of(a) as i64;
             let index = match op {

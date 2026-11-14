@@ -1,0 +1,28 @@
+// Rule: `xs += ys` adds the items of `ys` to the end of `xs`; a copy made before doesn't change.
+// Spec: 2.2
+// expect output: ["start", "step 1", "step 2"]
+// expect output: ["start"]
+// expect output: 10000
+// expect output: 9
+
+type Point {
+    x: Int
+    y: Int
+}
+
+fn main() {
+    let log = ["start"]
+    const before = log
+    log += ["step 1", "step 2"]
+    print(log)
+    print(before)
+    let numbers: [Int] = []
+    for i in 0..100 {
+        numbers += [i, i + 1, i + 2, i + 3, i + 4, i + 5, i + 6, i + 7, i + 8, i + 9]
+        numbers += []
+    }
+    print(numbers.len() * 10)
+    let points = [Point(x: 1, y: 2)]
+    points += [Point(x: 4, y: 5)]
+    print(points.sum(p => p.x + p.y) - 3)
+}

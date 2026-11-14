@@ -31,6 +31,7 @@ mod lower_calls;
 mod lower_chain;
 mod lower_cli;
 mod lower_closure;
+mod lower_concat;
 mod lower_convert;
 mod lower_data;
 mod lower_destructure;

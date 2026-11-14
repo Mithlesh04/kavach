@@ -56,6 +56,8 @@ mod value;
 use kavach_driver::Compiled;
 pub use processes::set_restart;
 pub use run::longest_running;
+use std::sync::Arc;
+use std::sync::atomic::AtomicBool;
 pub use testing::{Kept, TestOptions};
 use value::Flow;
 
@@ -95,45 +97,66 @@ pub fn run_dry_with_args(program: &Compiled, args: &[String]) -> Output {
     run_main(program, args, true, false)
 }
 
-fn run_main(program: &Compiled, args: &[String], dry_run: bool, live: bool) -> Output {
-    on_big_stack(program, live, |i| {
-        i.args = args.to_vec();
-        i.dry_run = dry_run;
-        // With `[build] version_flag`, `--version` alone prints what
-        // builds the program, before `main` runs, as native code does
-        // (spec 10.5).
-        let (version, answers) = kavach_driver::program_version(program.path.as_ref());
-        if answers && args == ["--version"] {
-            i.out.push_str(&format!("{version}\n"));
-            return 0;
-        }
-        // A child started by `spawn process` runs only its call (9.8).
-        let result = match kavach_runtime_core::processes::site() {
-            Some(site) => i.run_as_child(site as u32),
-            None => i.run_main(),
-        };
-        let mut exit_code = 0;
-        match result {
-            // `main` is never cancelled.
-            Ok(())
-            | Err(Flow::Return(_) | Flow::Break(_) | Flow::Continue(_) | Flow::Cancelled) => {}
-            Err(Flow::Exit(code)) => exit_code = code,
-            Err(Flow::Fail(e)) => {
-                i.err.push_str(&format!("error: {}\n", e.display()));
-                exit_code = 1;
-            }
-            Err(Flow::Panic(message, span)) => {
-                let (path, line) = i.c.shown_location(span.start);
-                let shown = format!("panic: {message}\n  at {path}:{line}\n");
-                i.err.push_str(&shown);
-                exit_code = 101;
-            }
-        }
-        // The last log events go to the collector, if there is one.
-        // `std.log` events and agents' audit entries still waiting.
-        kavach_runtime_net::otlp::finish();
-        exit_code
+/// The exit code of a run stopped from outside ([`run_stoppable`]), as
+/// the `timeout` command gives.
+pub const STOPPED: i32 = 124;
+
+/// Like [`run`], stopped at its next loop round or call once `stop` is
+/// set, with exit code [`STOPPED`]: for a time limit (`kavach mcp`).
+pub fn run_stoppable(program: &Compiled, stop: Arc<AtomicBool>) -> Output {
+    on_big_stack(program, false, stop, |i| main_of(i, &[], false))
+}
+
+/// Like [`test`], stopped as [`run_stoppable`] is.
+pub fn test_stoppable(program: &Compiled, opts: &TestOptions, stop: Arc<AtomicBool>) -> Output {
+    on_big_stack(program, false, stop, |i| {
+        let failed = i.run_tests(opts.seed) + i.generated_tests(opts);
+        i32::from(failed != 0)
     })
+}
+
+fn run_main(program: &Compiled, args: &[String], dry_run: bool, live: bool) -> Output {
+    on_big_stack(program, live, Arc::default(), |i| main_of(i, args, dry_run))
+}
+
+/// Runs `main` in interpreter `i`: its exit code.
+fn main_of(i: &mut interp::Interp<'_>, args: &[String], dry_run: bool) -> i32 {
+    let program = i.c;
+    i.args = args.to_vec();
+    i.dry_run = dry_run;
+    // With `[build] version_flag`, `--version` alone prints what
+    // builds the program, before `main` runs, as native code does
+    // (spec 10.5).
+    let (version, answers) = kavach_driver::program_version(program.path.as_ref());
+    if answers && args == ["--version"] {
+        i.out.push_str(&format!("{version}\n"));
+        return 0;
+    }
+    // A child started by `spawn process` runs only its call (9.8).
+    let result = match kavach_runtime_core::processes::site() {
+        Some(site) => i.run_as_child(site as u32),
+        None => i.run_main(),
+    };
+    let mut exit_code = 0;
+    match result {
+        // `main` is never cancelled.
+        Ok(()) | Err(Flow::Return(_) | Flow::Break(_) | Flow::Continue(_) | Flow::Cancelled) => {}
+        Err(Flow::Exit(code)) => exit_code = code,
+        Err(Flow::Fail(e)) => {
+            i.err.push_str(&format!("error: {}\n", e.display()));
+            exit_code = 1;
+        }
+        Err(Flow::Panic(message, span)) => {
+            let (path, line) = i.c.shown_location(span.start);
+            let shown = format!("panic: {message}\n  at {path}:{line}\n");
+            i.err.push_str(&shown);
+            exit_code = 101;
+        }
+    }
+    // The last log events go to the collector, if there is one.
+    // `std.log` events and agents' audit entries still waiting.
+    kavach_runtime_net::otlp::finish();
+    exit_code
 }
 
 /// What runs before `kavach run` ends on Ctrl+C or `SIGTERM`: the last
@@ -150,7 +173,7 @@ pub fn check_literals(program: &Compiled) -> Vec<kavach_driver::Message> {
         return Vec::new();
     }
     let found = std::sync::Mutex::new(Vec::new());
-    on_big_stack(program, false, |i| {
+    on_big_stack(program, false, Arc::default(), |i| {
         let problems = i.literal_problems();
         *found.lock().unwrap_or_else(|e| e.into_inner()) = problems;
         0
@@ -161,10 +184,7 @@ pub fn check_literals(program: &Compiled) -> Vec<kavach_driver::Message> {
 /// Runs every `example` and `test` block, then generated tests for every
 /// function (spec 11). Exits with 1 if anything failed.
 pub fn test(program: &Compiled, opts: &TestOptions) -> Output {
-    on_big_stack(program, false, |i| {
-        let failed = i.run_tests(opts.seed) + i.generated_tests(opts);
-        i32::from(failed != 0)
-    })
+    test_stoppable(program, opts, Arc::default())
 }
 
 /// `kavach test --keep` (spec 11.4): the found cases that now pass, as
@@ -185,6 +205,7 @@ pub fn keep(program: &Compiled, opts: &TestOptions) -> Kept {
 fn on_big_stack(
     program: &Compiled,
     live: bool,
+    stop: Arc<AtomicBool>,
     body: impl FnOnce(&mut interp::Interp<'_>) -> i32 + Send,
 ) -> Output {
     let (spawner, jobs) = std::sync::mpsc::channel::<tasks::Job<'_>>();
@@ -198,6 +219,7 @@ fn on_big_stack(
                 let mut shared = tasks::Tasks::new(spawner);
                 shared.live = live;
                 shared.made = for_main;
+                shared.stop = stop;
                 i.tasks = Some(shared.clone());
                 let exit_code = body(&mut i);
                 i.flush();

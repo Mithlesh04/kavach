@@ -1,0 +1,46 @@
+// Rule: `xs.pop()` takes out and gives the last item, or `none` for an empty list; a copy made before keeps it.
+// Spec: 14.2
+// expect output: 3
+// expect output: [1, 2]
+// expect output: [1, 2, 3]
+// expect output: b
+// expect output: none
+// expect output: 2
+// expect output: 1
+// expect output: true
+
+type Point {
+    x: Int
+    y: Int
+}
+
+fn balanced(text: String) -> Bool {
+    let stack: [Char] = []
+    for c in text.chars() {
+        if c == '(' {
+            stack.push(c)
+        } else if c == ')' {
+            if stack.pop() == none {
+                return false
+            }
+        }
+    }
+    return stack.is_empty()
+}
+
+fn main() {
+    let xs = [1, 2, 3]
+    const copy = xs
+    print(xs.pop() ?? 0)
+    print(xs)
+    print(copy)
+    let words = ["a", "b"]
+    print(words.pop() ?? "")
+    let empty: [Int] = []
+    print(empty.pop())
+    let points = [Point(x: 1, y: 1), Point(x: 2, y: 2)]
+    const p = points.pop() ?? Point(x: 0, y: 0)
+    print(p.x)
+    print(points.len())
+    print(balanced("(a(b)c)") and not balanced("(()"))
+}

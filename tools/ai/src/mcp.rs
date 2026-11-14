@@ -4,11 +4,24 @@
 
 use serde_json::{Value, json};
 use std::io::{BufRead, Write};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::mpsc::{self, RecvTimeoutError};
+use std::time::Duration;
 
 /// A tool parameter: name, description, required.
 type Param = (&'static str, &'static str, bool);
 /// A tool: name, description, parameters.
 type Tool = (&'static str, &'static str, &'static [Param]);
+
+/// How long `kavach_run` and `kavach_test` may run, in seconds: a model's
+/// code that never ends must not hold the server (spec 13.8).
+const TIME_LIMIT: Param = (
+    "time_limit",
+    "Seconds before the run is stopped (default 30)",
+    false,
+);
+const DEFAULT_LIMIT: u64 = 30;
 
 const TOOLS: &[Tool] = &[
     (
@@ -41,13 +54,13 @@ const TOOLS: &[Tool] = &[
     ),
     (
         "kavach_run",
-        "Run a .kav file and return its output and exit code.",
-        &[("file", "Path to a .kav file", true)],
+        "Run a .kav file and return its output and exit code. A run longer than `time_limit` seconds (default 30) is stopped, with exit code 124.",
+        &[("file", "Path to a .kav file", true), TIME_LIMIT],
     ),
     (
         "kavach_test",
-        "Run a file's `example` clauses and `test` blocks.",
-        &[("file", "Path to a .kav file", true)],
+        "Run a file's `example` clauses and `test` blocks, stopped as `kavach_run` is.",
+        &[("file", "Path to a .kav file", true), TIME_LIMIT],
     ),
 ];
 
@@ -101,7 +114,7 @@ fn handle(request: &Value) -> Option<Value> {
 fn tool_schema(name: &str, description: &str, params: &[(&str, &str, bool)]) -> Value {
     let properties: serde_json::Map<String, Value> = params
         .iter()
-        .map(|(p, d, _)| (p.to_string(), json!({"type": if *p == "budget" { "integer" } else { "string" }, "description": d})))
+        .map(|(p, d, _)| (p.to_string(), json!({"type": if matches!(*p, "budget" | "time_limit") { "integer" } else { "string" }, "description": d})))
         .collect();
     let required: Vec<&str> = params
         .iter()
@@ -148,13 +161,24 @@ fn call(name: &Value, args: &Value) -> Value {
             }
             "kavach_run" | "kavach_test" => {
                 needs_clean(&c)?;
-                let out = if name == "kavach_run" {
-                    kavach_interp::run(&c)
+                let limit = args["time_limit"].as_u64().unwrap_or(DEFAULT_LIMIT);
+                let (out, stopped) = with_time_limit(limit, |stop| {
+                    if name == "kavach_run" {
+                        kavach_interp::run_stoppable(&c, stop)
+                    } else {
+                        kavach_interp::test_stoppable(&c, &Default::default(), stop)
+                    }
+                });
+                let note = if stopped {
+                    let unit = if limit == 1 { "second" } else { "seconds" };
+                    format!(
+                        "stopped: it ran longer than {limit} {unit}, the limit (`time_limit`)\n"
+                    )
                 } else {
-                    kavach_interp::test(&c, &Default::default())
+                    String::new()
                 };
                 Ok(format!(
-                    "exit code: {}\n--- stdout\n{}--- stderr\n{}",
+                    "{note}exit code: {}\n--- stdout\n{}--- stderr\n{}",
                     out.exit_code, out.stdout, out.stderr
                 ))
             }
@@ -165,4 +189,22 @@ fn call(name: &Value, args: &Value) -> Value {
         Ok(text) => json!({"content": [{"type": "text", "text": text}], "isError": false}),
         Err(text) => json!({"content": [{"type": "text", "text": text}], "isError": true}),
     }
+}
+
+/// Runs `f` with a flag a watchdog sets after `seconds`: its result, and
+/// whether the time ran out.
+fn with_time_limit<T>(seconds: u64, f: impl FnOnce(Arc<AtomicBool>) -> T) -> (T, bool) {
+    let stop = Arc::new(AtomicBool::new(false));
+    let (done, finished) = mpsc::channel::<()>();
+    let flag = Arc::clone(&stop);
+    let watchdog = std::thread::spawn(move || {
+        let waited = finished.recv_timeout(Duration::from_secs(seconds));
+        if let Err(RecvTimeoutError::Timeout) = waited {
+            flag.store(true, Ordering::Relaxed);
+        }
+    });
+    let result = f(Arc::clone(&stop));
+    drop(done);
+    let _ = watchdog.join();
+    (result, stop.load(Ordering::Relaxed))
 }

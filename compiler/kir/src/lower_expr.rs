@@ -138,6 +138,9 @@ impl<'a> Lowerer<'a> {
                 // `T` compared with `T?`: compare as optionals.
                 let r = self.coerce(r, l.ty)?;
                 let l = self.coerce(l, r.ty)?;
+                if *op == BinaryOp::Add && self.is_list_type(l.ty) {
+                    return self.list_concat(l, r, line);
+                }
                 if *op == BinaryOp::Add && matches!(self.shapes.shape(l.ty), Some(Shape::Bytes)) {
                     return Ok(ir::Expr {
                         kind: K::Rt(RtOp::BytesConcat, vec![l, r]),

@@ -105,3 +105,31 @@ pub fn push_item(p: i64, item: u64) {
         with_words(p, |w| crate::flat::unbox_into(item as i64, w));
     }
 }
+
+/// Cuts list `p` (held only by the caller) to its first `n` items,
+/// releasing what the others held: the second half of `xs.pop()`.
+pub fn truncate_list(p: i64, n: usize) {
+    let ty = obj(p).ty();
+    let len = list_mut(p).len;
+    if n >= len {
+        return;
+    }
+    if let size @ 1.. = crate::flat::item_size(ty) {
+        // The buffer stays zero-filled past the last item (`with_packed`).
+        with_packed(p, |_, w| {
+            (n..len).for_each(|i| crate::flat::set_item(w, i, size, 0))
+        });
+        list_mut(p).len = n;
+        return;
+    }
+    let width = crate::flat::width(ty).max(1);
+    let words = crate::heap::slots(p);
+    if crate::flat::is_text(ty) {
+        crate::text_items::release_all(&words[n * width..]);
+    } else if crate::shapes::holds_refs(ty) {
+        for (i, slot) in words.iter().enumerate().skip(n * width) {
+            crate::rc::release_slot(*slot as i64, crate::shapes::slot_type(p, i));
+        }
+    }
+    with_words(p, |w| w.truncate(n * width));
+}

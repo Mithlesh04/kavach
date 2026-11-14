@@ -301,6 +301,22 @@ impl<'a> Interp<'a> {
             self.c.expr_types.get(&(base.span.start, base.span.end)),
             Some(kavach_checker::Ty::Adt(..) | kavach_checker::Ty::Param(_))
         );
+        // `xs.pop()` (spec 14.2): the last item, and the list without it.
+        if name.name == "pop"
+            && matches!(
+                self.c.expr_types.get(&(base.span.start, base.span.end)),
+                Some(kavach_checker::Ty::List(_))
+            )
+        {
+            let Value::List(mut items) = self.eval(base)? else {
+                unreachable!("a list");
+            };
+            // The variable lets go first, so the list shrinks in place.
+            self.assign(base, Value::Unit, span)?;
+            let last = Rc::make_mut(&mut items).pop();
+            self.assign(base, Value::List(items), span)?;
+            return Ok(last.unwrap_or(Value::None));
+        }
         if MUTATING.contains(&name.name.as_str()) && !user_type {
             // A variable's list or map moves out while it changes, so
             // `items.push(x)` doesn't copy the whole list.

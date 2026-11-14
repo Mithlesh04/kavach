@@ -153,7 +153,7 @@ In one-line text, a `{` must close on the same line: `"{"` is a compile error at
 
 | Group | Operators | Notes |
 |---|---|---|
-| Arithmetic | `+ - * / % **` | `Int / Int` is an `Int` (truncated). Overflow is checked (see 5.6). `a ** b` is `a` to the power `b`, both the same number type; for whole numbers it panics when `b` is negative or the result doesn't fit |
+| Arithmetic | `+ - * / % **` | `Int / Int` is an `Int` (truncated). Overflow is checked (see 5.6). `a ** b` is `a` to the power `b`, both the same number type; for whole numbers it panics when `b` is negative or the result doesn't fit. `+` also joins two `String`s, two `Bytes` (2.13), and two lists of the same type (2.2) |
 | Comparison | `== != < <= > >=` | |
 | Logic | `and or not` | Words, not symbols, for readability: `!ready`, `&&` and `\|\|` are compile errors that say which word to write |
 | Bits | `& \| ^ << >> ~` | Integers only. `a << n` panics when the result doesn't fit (5.6); both shifts panic when `n` is negative or not less than the type's width in bits. `>>` keeps the sign |

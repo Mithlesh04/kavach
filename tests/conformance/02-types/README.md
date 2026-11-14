@@ -27,6 +27,9 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.2 | [maps-and-sets-with-room.kav](maps-and-sets-with-room.kav) | `Map.with_capacity(n)` and `Set.with_capacity(n)` make empty collections with room for `n` entries; a hint, not a limit. | runs |
 | 2.2 | [small-signed-lists-keep-their-sign.kav](small-signed-lists-keep-their-sign.kav) | A list of `Int8` holds negative numbers, which print, compare and sort as numbers. | runs |
 | 2.2 | [small-number-lists-keep-every-value.kav](small-number-lists-keep-every-value.kav) | A list of 16- or 32-bit numbers holds every value of its item type, which it gives back, sorts and copies unchanged. | runs |
+| 2.2 | [plus-joins-two-lists.kav](plus-joins-two-lists.kav) | `xs + ys` is a new list, the items of `xs` then those of `ys`; neither changes. | runs |
+| 2.2 | [plus-equals-adds-to-a-list.kav](plus-equals-adds-to-a-list.kav) | `xs += ys` adds the items of `ys` to the end of `xs`; a copy made before doesn't change. | runs |
+| 2.2 | [plus-equals-on-a-const-list-is-an-error.kav](plus-equals-on-a-const-list-is-an-error.kav) | `xs += ys` changes `xs`, so `xs` must be a `let`. | compile error |
 | 2.3 | [tuples.kav](tuples.kav) | Tuples group values and can be destructured. | runs |
 | 2.4 | [record-defaults.kav](record-defaults.kav) | Records are created with named arguments; fields with defaults may be left out. | runs |
 | 2.4 | [record-needs-every-field.kav](record-needs-every-field.kav) | A record field without a default must be given. | compile error |

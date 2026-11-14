@@ -93,6 +93,7 @@ kavach check --format json
 - One line per message, with no source excerpt unless asked for (`--context`).
 - When the compiler knows the fix (a typo, a missing `-> Int`, `const` that should be `let`, a missing `try`), the message includes it as an edit. `kavach fix` applies every safe fix at once.
 - The same messages are shown to people in the friendly form (with the caret under the problem).
+- A file with syntax errors gets only those. The later checks would report on code the parser couldn't read: a string left open turns the lines after it into text, so a name or a function length found there would mislead whoever fixes the first error, person or AI.
 
 ## 13.7 Less to write
 
@@ -101,7 +102,7 @@ The language itself keeps code short without making it cryptic: inferred local t
 ## 13.8 One guide and one server for every AI tool
 
 - **`llms.txt`:** a compact guide to the whole language, generated from this spec, under 4,000 tokens. An assistant reads it once instead of the full spec.
-- **`kavach mcp`:** a Model Context Protocol server exposing `query`, `outline`, `context`, `edit`, `check`, `test` and `run` as tools, so any AI assistant can use them directly. It runs locally; code never leaves the machine.
+- **`kavach mcp`:** a Model Context Protocol server exposing `query`, `outline`, `context`, `edit`, `check`, `test` and `run` as tools, so any AI assistant can use them directly. It runs locally; code never leaves the machine. A `run` or `test` that is still going after 30 seconds, or the call's own `time_limit`, is stopped at its next loop round or call, with exit code 124, and the answer says so: a model's code that never ends must not hold the server.
 
 ## 13.9 Always ready: the index
 
