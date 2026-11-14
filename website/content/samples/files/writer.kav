@@ -1,0 +1,12 @@
+use std.fs
+
+fn main() ! Error {
+    const w = try fs.create_writer("export.csv")
+    try w.write_text("id,total\n")
+    for id in [1, 2, 3] {
+        try w.write_text("{id},{id * 10}\n")
+    }
+    print(try w.finish())
+    print(try fs.read_text("export.csv"))
+    w.write_text("late") catch e => print(e)
+}

@@ -1,0 +1,12 @@
+use std.log
+
+fn main() {
+    const ms = 12.5
+    log.histogram("http.server.request.duration", ms, attributes: [
+        "http.route": "/orders/\{id}",
+        "http.response.status_code": "200",
+    ])
+    log.count("orders_paid", 1, attributes: ["method": "card"])  // one series
+    log.count("orders_paid", 1)                                  // and another
+    print("recorded: sent only when [log.otlp] is set")
+}

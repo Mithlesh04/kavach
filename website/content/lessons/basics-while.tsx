@@ -151,10 +151,13 @@ export const blockGivenDoc: LessonDoc = {
         compile error:
       </P>
       <Ex name="flow/block-missing.fails" />
+      <P>A block after any other call is refused too, and the message names the calls that take one:</P>
+      <Ex name="flow/block-other-call.fails" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/04-control-flow.md" label="spec 4.8" />
         <SrcRef file="tests/conformance/04-control-flow/a-block-given-to-a-call-is-a-plain-block.kav" label="a plain block, tested" />
         <SrcRef file="tests/conformance/04-control-flow/only-some-calls-take-a-block.kav" label="only some calls, tested" />
+        <SrcRef file="tests/conformance/04-control-flow/a-block-after-another-call-is-refused.kav" label="other calls, tested" />
         <SrcRef file="docs/decisions/0107-traces-and-metrics.md" label="decision 0107" />
       </div>
     </>

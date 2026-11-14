@@ -55,7 +55,8 @@ export const loggingDoc: LessonDoc = {
         <li><C>log.traceparent()</C> is the span&apos;s W3C <C>traceparent</C> header, and <C>from:</C> continues the trace one names. Together they carry a trace over any connection: a queue, gRPC metadata, a file.</li>
         <li>A span inside another is its child. A task keeps the trace of the code that spawned it.</li>
         <li>Each event written inside a span carries the span&apos;s trace and span ids. A span whose block fails is marked as an error.</li>
-        <li>HTTP joins traces with no code: <C>http.serve</C> runs each handler in a span that continues the caller&apos;s trace, and <C>http.request</C> sends it. See <Link href="/docs/networks/http/serving/">Serving</Link>.</li>
+        <li>HTTP joins traces with no code: <C>http.serve</C> runs each handler in a span that continues the caller&apos;s trace, and <C>http.request</C> sends it. The span is named by the method (<C>GET</C>), never the path, which can hold ids and tokens. See <Link href="/docs/networks/http/serving/">Serving</Link>.</li>
+        <li><C>log.name_span(name)</C> renames the current span, once the code knows what it is doing; outside a span it does nothing. Give it one of a few names, such as a route&apos;s pattern (<C>{'"GET /orders/\\{id}"'}</C>), not text with ids in it.</li>
         <li>With <C>[log.otlp]</C> set, each span goes to the collector when it ends. Without it, spans are sent nowhere.</li>
       </ul>
       <H2>Metrics</H2>
@@ -65,11 +66,20 @@ export const loggingDoc: LessonDoc = {
       </P>
       <CodeBlock code={specBlockWith(`14-standard-library/${LOG}`, "14.12", "log.count(")} file="from spec 14.12" />
       <ModuleTable file="12-log.md" number="14.12" first="Function" heading="Metrics" />
-      <P>Like events, spans and metrics need no capability.</P>
+      <P>
+        Each also takes <C>attributes</C>, a <C>[String: String]</C> map that is empty unless given. Each name and set
+        of attributes is a series of its own, whatever order the attributes are written in:
+      </P>
+      <Ex name="logging/metric-attributes" />
+      <P>
+        Give attributes with few values, such as a route&apos;s pattern, a method or a status, never ids: each new
+        value makes a new series to keep and send. Like events, spans and metrics need no capability.
+      </P>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/14-standard-library/${LOG}`} label="spec 14.12 · traces and metrics" />
         <SrcRef file="tests/conformance/14-standard-library/spans-carry-the-trace.kav" label="spans, tested" />
         <SrcRef file="tools/cli/tests/log.rs" symbol="spans_and_metrics_go_to_the_collector" line={LOG_TEST_LINE} label="sent to a collector, tested" />
+        <SrcRef file="tools/cli/tests/log.rs" symbol="server_spans_are_named_by_method_not_path" line={375} label="named by method, tested" />
         <SrcRef file="docs/decisions/0107-traces-and-metrics.md" label="decision 0107" />
       </div>
       <H2>Limits and sizes</H2>

@@ -4,13 +4,15 @@ use std.net
 
 fn handler(r: Request) -> Response {
     // The handler runs in a span that continues the caller's trace.
+    // The span is named `GET`; the handler knows its route, so it says it.
+    log.name_span("GET /orders/\{id}")
     http.text(200, log.trace_id() ?? "none")
 }
 
 fn main() ! Error uses Net, Console {
     const listener = try net.listen("127.0.0.1:0")
     const _server = spawn http.serve(listener, handler)
-    const url = "http://{listener.address()}/orders"
+    const url = "http://{listener.address()}/orders/7"
 
     log.span("checkout") {
         const mine = log.trace_id() ?? ""

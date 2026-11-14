@@ -1,0 +1,12 @@
+use std.fs
+
+fn upload(path: String) ! FsError uses Fs {
+    const w = try fs.create_writer(path)
+    try w.write_text("the first half")
+    // returns before finish: the writer is let go
+}
+
+fn main() ! Error {
+    try upload("photo.jpg")
+    print(fs.exists("photo.jpg"))
+}

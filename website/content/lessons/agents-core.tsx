@@ -196,7 +196,8 @@ export const declareAgentDoc: LessonDoc = {
       <P>
         Like any declaration, an agent is private to its module. Write <C>pub agent</C> and other modules can start it
         and call its handlers: <C>bots.Picker.start()</C>. See{" "}
-        <Link href="/docs/tools/modules/pub/">Modules › pub</Link>.
+        <Link href="/docs/tools/modules/pub/">Modules › pub</Link>.{" "}
+        <SrcRef file="tests/conformance/10-modules/pub-agents-start-from-other-modules/src/main.kav" label="tested" />
       </P>
     </>
   ),

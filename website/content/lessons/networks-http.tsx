@@ -157,16 +157,29 @@ export const httpServeDoc: LessonDoc = {
       </ul>
       <H2>Traces</H2>
       <P>
-        <C>http.serve</C> runs each handler in a span named by the request&apos;s method and path (<C>GET /orders</C>).
-        When the request has a W3C <C>traceparent</C> header, the span continues that trace, and{" "}
-        <C>http.request</C> and the other calls send the current span&apos;s. So traces join across services with no
-        code:
+        <C>http.serve</C> runs each handler in a span named by the request&apos;s method (<C>GET</C>), never by its
+        path, which can hold ids and tokens. When the request has a W3C <C>traceparent</C> header, the span continues
+        that trace, and <C>http.request</C> and the other calls send the current span&apos;s. So traces join across
+        services with no code:
       </P>
       <Ex name="http/traces" />
       <P>
-        See <Link href="/docs/standard-library/logging/">Logging</Link> for spans, and for sending them to a collector.{" "}
-        <SrcRef file="tests/conformance/14-standard-library/http-joins-traces.kav" label="tested" />
+        A handler that knows its route names the span with it, with <C>log.name_span</C>. The route&apos;s pattern
+        is one of a few names; the raw path would be a new one for every order. <C>{"\\{"}</C> keeps the brace as
+        text, since <C>{"{"}</C> starts interpolation.
       </P>
+      <P>
+        A server the internet reaches directly sets <C>follow_trace: false</C> in its <C>ServeLimits</C>. Each
+        request then starts a trace of its own, so a client can&apos;t choose trace ids or join its requests to
+        someone else&apos;s trace:
+      </P>
+      <Ex name="http/own-trace" />
+      <P>See <Link href="/docs/standard-library/logging/">Logging</Link> for spans, and for sending them to a collector.</P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/14-standard-library/http-joins-traces.kav" label="joined traces, tested" />
+        <SrcRef file="tests/conformance/14-standard-library/http-servers-can-start-their-own-traces.kav" label="own traces, tested" />
+        <SrcRef file="tools/cli/tests/log.rs" symbol="server_spans_are_named_by_method_not_path" line={375} label="named by method, tested" />
+      </div>
       <H2>Limits</H2>
       <P>
         A server faces clients that are slow, large or hostile, so <C>http.serve</C> holds each one to{" "}

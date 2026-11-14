@@ -1,0 +1,21 @@
+use std.http
+use std.log
+use std.net
+
+fn whose(r: Request) -> Response {
+    http.text(200, log.trace_id() ?? "none")
+}
+
+fn main() ! Error uses Net, Console {
+    const listener = try net.listen("127.0.0.1:0")
+    const limits = ServeLimits(follow_trace: false)
+    const _server = spawn http.serve(listener, whose, limits: limits)
+    const url = "http://{listener.address()}/"
+
+    log.span("caller") {
+        const mine = log.trace_id() ?? ""
+        const got = try http.get(url)
+        const theirs = got.body.text() ?? ""
+        print("a trace of its own: {theirs.len() == 32 and theirs != mine}")
+    }
+}

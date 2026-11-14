@@ -1,0 +1,1 @@
+error: only `log.span(name)` and `random.seeded(seed)` take a block after them (spec 4.8): start the block on a new line, or call one of them

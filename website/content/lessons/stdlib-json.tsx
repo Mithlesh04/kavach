@@ -111,6 +111,8 @@ export const jsonDoc: LessonDoc = {
         <C>&quot;description&quot;</C>, and so does a field&apos;s:
       </P>
       <Ex name="json/schema-docs" />
+      <P>When both a field and its type have one, the field&apos;s comes first in one description, then the type&apos;s:</P>
+      <Ex name="json/schema-docs-both" />
       <H2>A function described</H2>
       <P>
         <C>json.describe(f)</C> describes a function from its signature, when the program is compiled: its name,

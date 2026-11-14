@@ -4,7 +4,7 @@ import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
 import { specBlockWith } from "@/lib/spec-tables";
-import { H2, Note, P } from "./parts";
+import { Ex, H2, Note, P } from "./parts";
 import { ModuleTable } from "./spec-table";
 
 // ---------- GPU Screens ----------
@@ -30,6 +30,11 @@ export const gpuScreenDoc: LessonDoc = {
         <li>Drawing changes the program&apos;s own windows, so it needs <C>Window</C>.</li>
         <li>Where there is no GPU, or the window can&apos;t be drawn into, it fails with <C>GpuError.Unavailable(reason)</C>. So does a frame of a minimized window; the next <C>frame()</C> tries again.</li>
       </ul>
+      <P>
+        A private function may leave its <C>uses</C> out, and the compiler works it out. A <C>pub</C> one must say it, so
+        a function that draws for other modules names <C>Window</C>:
+      </P>
+      <Ex name="gpu/screen-needs-window.fails" />
       <H2>Every function and method</H2>
       <ModuleTable file="24-gpu.md" number="14.24" first="Function or method" />
       <Note>

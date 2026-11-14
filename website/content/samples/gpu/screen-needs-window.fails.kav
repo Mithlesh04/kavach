@@ -1,0 +1,14 @@
+use std.window
+use std.gpu
+
+pub fn paint(win: AppWindow) ! GpuError {
+    const screen = try gpu.screen(win)
+    const frame = try screen.frame()
+    frame.clear(0.1, 0.2, 0.3)
+    frame.show()
+}
+
+fn main() uses Window {
+    const win = window.open("Hello", 640, 480) catch _ => return
+    paint(win) catch _ => {}
+}

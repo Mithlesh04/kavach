@@ -124,6 +124,10 @@ export const pubDoc: LessonDoc = {
       <Files name="modules/pub-agent" first={["src/bots.kav", "src/main.kav"]} />
       <P>Without <C>pub</C>, the agent stays inside its module:</P>
       <Files name="modules/private-agent.fails" first={["src/bots.kav", "src/main.kav"]} outcome="refused" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/10-modules/pub-agents-start-from-other-modules/src/main.kav" label="pub agents, tested" />
+        <SrcRef file="tests/conformance/10-modules/private-agents-stay-private/src/main.kav" label="private agents, tested" />
+      </div>
     </>
   ),
 };

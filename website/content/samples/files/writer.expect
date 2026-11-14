@@ -1,0 +1,7 @@
+24
+id,total
+1,10
+2,20
+3,30
+
+Failed(path: "export.csv", reason: "finished")

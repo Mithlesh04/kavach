@@ -96,6 +96,29 @@ export const writingDoc: LessonDoc = {
         <li><C>write_text</C> replaces the whole file, atomically: a crash leaves the old text or the new, never half.</li>
         <li><C>fs.write_durable</C> also waits until the data is on the disk, so even a power cut keeps it. Databases build on it.</li>
       </ul>
+      <H2>Piece by piece</H2>
+      <P>
+        <C>fs.create_writer(path)</C> gives a <C>FileWriter</C>, which writes a file as its data comes. A large upload
+        or an export is never held in memory whole:
+      </P>
+      <Ex name="files/writer" />
+      <ModuleTable file="03-fs.md" number="14.3" first="Function or method" heading="Writing a file piece by piece" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>After <C>finish</C>, <C>write</C> fails with <C>Failed(path, &quot;finished&quot;)</C>, as the last line shows, and <C>finish</C> gives the same count again.</li>
+        <li>It needs <C>Fs.write</C>, and with <C>uses Fs(&quot;…&quot;)</C> the path must be inside its folders, as for every file operation.</li>
+      </ul>
+      <P>A writer let go before <C>finish</C> closes its file and deletes it, so an upload cut short leaves nothing behind:</P>
+      <Ex name="files/writer-dropped" />
+      <P>
+        Unlike <C>write_text</C>, the file is written in place, not replaced at once: other programs can see it grow.
+        When that matters, write to another name and rename it, as the spec&apos;s example does:
+      </P>
+      <CodeBlock code={specBlockWith("14-standard-library/03-fs.md", "14.3", "fn save(pieces")} file="from spec 14.3" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/14-standard-library/03-fs.md" label="spec 14.3 · piece by piece" />
+        <SrcRef file="tests/conformance/14-standard-library/files-are-written-piece-by-piece.kav" label="tested" />
+        <SrcRef file="stdlib/fs/fs.kav" label="fs.kav" />
+      </div>
     </>
   ),
 };

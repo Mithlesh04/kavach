@@ -1,0 +1,14 @@
+use std.json
+
+/// How sure.
+type Level = Low | High
+
+type Guess {
+    /// How sure the model is.
+    level: Level
+}
+
+fn main() {
+    const level = json.schema<Guess>().get("properties").get("level")
+    print(level.get("description"))
+}

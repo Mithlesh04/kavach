@@ -1,0 +1,10 @@
+fn greet(name: String) -> String {
+    "hi {name}"
+}
+
+fn main() {
+    const text = greet("Asha") {
+        print("x")
+    }
+    print(text)
+}

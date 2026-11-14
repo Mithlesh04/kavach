@@ -1,0 +1,1 @@
+error: `paint` is `pub`, so it must say what it uses: add `uses Window` (through `screen`) (spec 8.1)
