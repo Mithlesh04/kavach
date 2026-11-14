@@ -403,6 +403,24 @@ export const bytesDoc: LessonDoc = {
       </ul>
       <Ex name="bytes/as-list-other-type.fails" />
       <Ex name="bytes/as-list-no-type.fails" />
+      <H2>One number at a place</H2>
+      <P>
+        A file format or a network message puts each number at its own place. <C>b.read&lt;T&gt;(at)</C> reads the
+        one whose bytes start at <C>at</C>, and <C>Bytes.of&lt;T&gt;(n)</C> gives a number&apos;s bytes, to build a
+        message with <C>+</C>:
+      </P>
+      <Ex name="bytes/read-of" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The bytes are little-endian unless <C>big_endian: true</C>, the order network protocols and some file formats use.</li>
+        <li>A <C>read</C> whose bytes don&apos;t all fit gives <C>none</C>, as <C>b.get(i)</C> does past the end. So does a negative <C>at</C>.</li>
+        <li><C>T</C> is a number of fixed size, as for <C>as_list</C>:</li>
+      </ul>
+      <Ex name="bytes/read-other-type.fails" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/02-types/bytes-read-numbers-at-a-place.kav" label="read, tested" />
+        <SrcRef file="tests/conformance/02-types/bytes-of-gives-a-numbers-bytes.kav" label="Bytes.of, tested" />
+        <SrcRef file="tests/conformance/02-types/read-needs-a-fixed-size-number.kav" label="fixed-size numbers, tested" />
+      </div>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/02-types/13-bytes.md" label="spec 2.13 · bytes" />
         <SrcRef file="tests/conformance/02-types/bytes-read-as-numbers.kav" label="reading numbers, tested" />

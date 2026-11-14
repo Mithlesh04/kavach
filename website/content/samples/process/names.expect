@@ -1,0 +1,3 @@
+exit code 0
+Denied(program: "cargo")
+NotFound(program: "no-such-program-here")

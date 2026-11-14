@@ -1,0 +1,16 @@
+use std.process
+
+fn main() ! ProcessError uses Process, Console {
+    const git = try process.start("git", ["--version"])
+    git.each(out => match out {
+        Output.Out(line) => {
+            print("out: starts with git version? {line.starts_with("git version")}")
+            true
+        },
+        Output.Err(line) => {
+            print("err: {line}")
+            true
+        },
+    })
+    print(git.wait().code)
+}

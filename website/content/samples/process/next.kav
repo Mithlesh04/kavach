@@ -1,0 +1,13 @@
+use std.process
+
+fn main() ! ProcessError uses Process, Console {
+    const git = try process.start("git", ["--no-such-flag"])
+    if let first = git.next() {
+        print(match first {
+            Output.Out(line) => "out: {line}",
+            Output.Err(line) => "err: {line}",
+        })
+    }
+    const end = git.wait()
+    print(end.code)
+}

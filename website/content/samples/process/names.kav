@@ -1,0 +1,17 @@
+use std.process
+
+fn version(program: String) -> String ! ProcessError uses Process("git") {
+    const done = try process.run(program, ["--version"])
+    "exit code {done.code}"
+}
+
+fn anything(program: String) -> String ! ProcessError uses Process {
+    const done = try process.run(program, [])
+    "exit code {done.code}"
+}
+
+fn main() uses Process, Console {
+    print(version("git") catch e => "{e}")
+    print(version("cargo") catch e => "{e}")
+    print(anything("no-such-program-here") catch e => "{e}")
+}

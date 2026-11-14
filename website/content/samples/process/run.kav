@@ -1,0 +1,14 @@
+use std.process
+
+fn main() ! ProcessError uses Process, Console {
+    const done = try process.run("git", ["--version"])
+    print(done.code)
+    print(done.out.starts_with("git version"))
+    print(done.cpu_ms >= 0 and done.peak_bytes > 0)
+
+    // One odd argument, never a second command.
+    const odd = try process.run("git", ["--version; echo injected"])
+    print(odd.code)
+    print(odd.err.lines()[0])
+    print(odd.out.is_empty())
+}

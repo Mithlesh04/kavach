@@ -1,0 +1,10 @@
+use std.process
+
+fn main() uses Console {
+    let numbers: [Int] = []
+    for i in 0..1_000_000 {
+        numbers.push(i)
+    }
+    print(numbers.len())
+    print(process.peak_bytes() > 8_000_000)
+}

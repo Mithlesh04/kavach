@@ -51,6 +51,7 @@ import { httpCallDoc, httpDoc, httpJsonDoc, httpServeDoc, httpSessionDoc, httpSo
 import { base64Doc, cryptoDoc } from "./stdlib-crypto";
 import { compressDoc } from "./stdlib-compress";
 import { windowDoc } from "./stdlib-window";
+import { processDoc } from "./stdlib-process";
 import { textCollectionsDoc } from "./stdlib-text";
 import {
   grpcClientStreamDoc, grpcDoc, grpcProtoDoc, grpcServerStreamDoc, grpcTwoWayDoc, socketsDoc, tcpDoc, timeoutsDoc,
@@ -323,6 +324,7 @@ export const lessons: Record<string, LessonDoc> = {
   "standard-library/base64": base64Doc,
   "standard-library/compression": compressDoc,
   "standard-library/windows": windowDoc,
+  "standard-library/running-programs": processDoc,
 
   "standard-library/json": jsonDoc,
   "standard-library/json/json-values": jsonValuesDoc,

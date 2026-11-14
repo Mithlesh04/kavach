@@ -1,0 +1,12 @@
+fn main() uses Console {
+    // A message: its kind in 2 bytes, big-endian, then a 4-byte count.
+    const message = Bytes([0, 6, 0, 0, 1, 0, 0, 0])
+    print(message.read<UInt16>(0, big_endian: true) ?? 0)
+    print(message.read<Int32>(2) ?? 0)
+    print(message.read<UInt32>(6))
+
+    // Build one: each number's bytes, joined with +.
+    const reply = Bytes.of<UInt16>(7, big_endian: true) + Bytes.of<Int32>(65536)
+    print(reply)
+    print(reply.read<Int32>(2) ?? 0)
+}

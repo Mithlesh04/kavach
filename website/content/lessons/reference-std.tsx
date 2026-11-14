@@ -108,6 +108,8 @@ function Declared({ d, module, under, method = false }: { d: Decl; module: strin
   );
 }
 
+const count = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
 /** What one module's files declare, file by file. */
 function Declarations({ m }: { m: StdModule }) {
   const files = m.folders.flatMap(filesOf);
@@ -125,8 +127,8 @@ function Declarations({ m }: { m: StdModule }) {
           <div key={file} className="flex flex-col gap-3">
             <H2>{`${name} · ${file.split("/").pop()}`}</H2>
             <P>
-              <C>{`use ${name}`}</C>: {mine.filter((d) => d.kind !== "fn").length} types and{" "}
-              {mine.filter((d) => d.kind === "fn").length} functions. <SrcRef file={file} label={file} />
+              <C>{`use ${name}`}</C>: {count(mine.filter((d) => d.kind !== "fn").length, "type")} and{" "}
+              {count(mine.filter((d) => d.kind === "fn").length, "function")}. <SrcRef file={file} label={file} />
             </P>
             {mine.map((d) => (
               <Declared key={`${d.name}-${d.line}`} d={d} module={name} />

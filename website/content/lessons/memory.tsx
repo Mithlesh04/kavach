@@ -101,13 +101,20 @@ export const fastDoc: LessonDoc = {
       <ol className="m-0 flex list-decimal flex-col gap-2 pl-5">
         <li><strong className="text-ink">Moved, not copied.</strong> When a value is used for the last time, it is handed over instead of copied.</li>
         <li><strong className="text-ink">Shared and counted.</strong> A large value is shared inside, with a count of who holds it. The compiler removes most count updates while compiling.</li>
-        <li><strong className="text-ink">Copied only on change.</strong> A value is copied only when it is changed while someone else still holds it. If nobody else does, it is changed in place.</li>
+        <li><strong className="text-ink">Copied only on change.</strong> A value is copied only when it is changed while someone else still holds it. If nobody else does, it is changed in place. So <C>text += part</C> or <C>items.push(x)</C> in a loop copies only what is added, not the whole value each time.</li>
       </ol>
       <P>Step through what happens in memory, line by line:</P>
       <MemoryShare />
       <P>Its first lines as a program you can run:</P>
       <Ex name="memory/values" />
       <P>Here <C>b.push(4)</C> is the moment the list is really copied: <C>a</C> still holds the old one.</P>
+      <H2>Growing in a loop</H2>
+      <P>
+        Text built up in a loop has one holder, so each <C>+=</C> adds to it in place. A copy taken before keeps its
+        old value:
+      </P>
+      <Ex name="memory/grows-in-place" />
+      <SrcRef file="tests/conformance/06-memory/text-grows-in-place-copies-stay.kav" label="tested" />
       <H2>Numbers, text and the rest</H2>
       <P>Not every value is counted. Numbers stay where they are; text, lists and the rest are one object each:</P>
       <Table header={counted().header} rows={counted().rows} wrapFirst />

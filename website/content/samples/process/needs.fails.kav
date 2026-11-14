@@ -1,0 +1,10 @@
+use std.process
+
+fn status() -> Int ! ProcessError uses Console {
+    const done = try process.run("git", ["status"])
+    done.code
+}
+
+fn main() uses Console {
+    print(status() catch _ => -1)
+}

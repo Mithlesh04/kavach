@@ -1,0 +1,13 @@
+fn main() uses Console {
+    let report = ""
+    for i in 0..5000 {
+        report += "line {i}\n"
+    }
+    print(report.len())
+
+    let s = "ab"
+    const before = s
+    s += "c"
+    print(s)
+    print(before)
+}
