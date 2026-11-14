@@ -10,8 +10,8 @@ import { smart } from "@/content/smart";
 import { allNodes, findNode, type CourseNode } from "./nav";
 
 // Where the site is served, for canonical links, the sitemap and llms.txt:
-// GitHub Pages by default, or the address another host gives it (README).
-export const SITE_URL = process.env.SITE_URL ?? "https://mithlesh04.github.io/kavach";
+// kavachlang.com by default, or the address another host gives it (README).
+export const SITE_URL = process.env.SITE_URL ?? "https://kavachlang.com";
 
 export function hasContent(key: string): boolean {
   return key in lessons;

@@ -109,20 +109,23 @@ write stay under 500 lines like everywhere else in the repo.
 
 ## Deploying the site
 
-The site is live at https://mithlesh04.github.io/kavach/, on GitHub Pages. No server
+The site is live at https://kavachlang.com/, served by GitHub Pages. No server
 anywhere, so any static host works:
 
 - **Vercel:** import the repository, set *Root Directory* to `website`,
   framework Next.js — it runs `npm run build` and serves `out/`. Set
   `SITE_URL` to the address it serves.
 - **GitHub Pages:** `npm run deploy:pages` (after `npm run check`) builds
-  the site to serve under `/kavach/`, commits `out/` to the `gh-pages`
+  the site to serve at the root of https://kavachlang.com, writes the
+  `CNAME` file that keeps that domain, commits `out/` to the `gh-pages`
   branch and pushes it; CI stays manual-only in this repository. Once, in
   the repository's Settings → Pages, choose "Deploy from a branch",
-  `gh-pages`, `/ (root)`. The site is then at
-  https://mithlesh04.github.io/kavach/. `SITE_BASE_PATH` and `SITE_URL`
-  set the path and address for any other host; the default address is
-  the GitHub Pages one.
+  `gh-pages`, `/ (root)`, and set the custom domain to `kavachlang.com`
+  with HTTPS enforced. The domain's DNS has GitHub Pages' A and AAAA
+  records, and `www` is a CNAME to `mithlesh04.github.io`. The old
+  address, https://mithlesh04.github.io/kavach/, redirects there.
+  `SITE_BASE_PATH` and `SITE_URL` set the path and address for any other
+  host; the default address is https://kavachlang.com.
 - Search queries also match common names from other languages
   (dictionary, array, exception…) through `lib/aliases.ts`.
 
