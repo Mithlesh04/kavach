@@ -83,9 +83,10 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Strings: Length and characters](https://kavachlang.com/docs/basics/strings/length-and-characters/): len() counts the characters of a string; slice() and chars() take it apart.
 - [Strings: Searching](https://kavachlang.com/docs/basics/strings/searching/): contains, starts_with and ends_with answer yes or no; index_of says where; replace swaps parts.
 - [Strings: Splitting](https://kavachlang.com/docs/basics/strings/splitting/): split(sep) cuts a string into a list of strings; lines() cuts it at line breaks.
+- [Strings: Tidying and padding](https://kavachlang.com/docs/basics/strings/tidying-and-padding/): capitalize, title, trim_start, trim_end, truncate and is_blank tidy text; pad_left and pad_right line it up in columns.
 - [Strings: Strings to numbers](https://kavachlang.com/docs/basics/strings/strings-to-numbers/): Int(text) reads a whole string as a number, and can fail; std.text finds numbers inside other text.
 - [Math](https://kavachlang.com/docs/basics/math/): std.math has square roots, powers, rounding, pi and more.
-- [Math: Math functions](https://kavachlang.com/docs/basics/math/math-functions/): sqrt, pow, gcd, lcm, is_prime, factorial, mean, and the constants pi and e.
+- [Math: Math functions](https://kavachlang.com/docs/basics/math/math-functions/): sqrt, pow, sin, cos, atan2, exp, ln, gcd, lcm, is_prime, factorial, mean, and the constants pi and e.
 - [Math: Rounding](https://kavachlang.com/docs/basics/math/rounding/): floor rounds down, ceil rounds up, round rounds to the nearest, halves away from zero.
 - [Math: Exact numbers](https://kavachlang.com/docs/basics/math/exact-numbers/): Numbers written in the code are worked out exactly, so 0.1 + 0.2 == 0.3 is true.
 - [Booleans](https://kavachlang.com/docs/basics/booleans/): A Bool is true or false. Comparisons make them, and and, or, not combine them.
@@ -227,7 +228,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Time](https://kavachlang.com/docs/standard-library/time/): std.time tells the time, measures how long something takes, waits, repeats work at an interval, works with dates and time zones, and reads and writes times as text.
 - [Random Numbers](https://kavachlang.com/docs/standard-library/random-numbers/): std.random gives random whole numbers, picks and shuffles. Its numbers are safe for passwords and keys, unless a block asks for repeatable ones from a seed.
 - [Regex](https://kavachlang.com/docs/standard-library/regex/): A regular expression is a pattern that text can match. regex.new makes one; its methods find, capture, replace and split.
-- [Text and Collections](https://kavachlang.com/docs/standard-library/text-and-collections/): std.text and std.collections hold small helpers for text and lists: padding, words, chunks, pairs, counts. They are written in Kavach itself.
+- [Text and Collections](https://kavachlang.com/docs/standard-library/text-and-collections/): std.text finds numbers in text and writes Unicode one way; std.collections holds small helpers for lists: chunks, pairs, counts. They are written in Kavach itself.
 - [Logging](https://kavachlang.com/docs/standard-library/logging/): A log event is a record you define, not a string. log.info, warn, error and debug write it, and the program's owner decides where it goes.
 - [Agents](https://kavachlang.com/docs/standard-library/agents/): std.agents gives a capability's implementation the key of the call it is running, so a service can drop a repeated call, and lets a program answer agents' approval requests.
 - [Clipboard](https://kavachlang.com/docs/standard-library/clipboard/): std.clipboard reads and writes the system clipboard's text. What a person copied can be private, so it needs the capability Clipboard.
@@ -235,10 +236,13 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Cryptography](https://kavachlang.com/docs/standard-library/cryptography/): std.crypto hashes, signs and seals data, and stores passwords safely. It comes from vetted libraries, and needs no capability.
 - [Base64](https://kavachlang.com/docs/standard-library/base64/): std.base64 writes bytes as text and reads them back, in the standard alphabet or the URL-safe one. Tokens, cookies and email use it.
 - [Compression](https://kavachlang.com/docs/standard-library/compression/): std.compress makes bytes smaller and whole again, in gzip, deflate, zstd, brotli and lz4: the formats web servers, packages and games exchange.
-- [Windows](https://kavachlang.com/docs/standard-library/windows/): std.window opens windows on the screen and reads the keyboard and mouse input that comes to them: the start of games, tools, charts and user interfaces.
+- [Windows](https://kavachlang.com/docs/standard-library/windows/): std.window opens windows on the screen and reads the keyboard, mouse and gamepad input that comes to them: the start of games, tools, charts and user interfaces.
 - [Running Programs](https://kavachlang.com/docs/standard-library/running-programs/): std.process runs other programs: a compiler, a simulator, git, any tool with no library. It needs the capability Process, never goes through a shell, and ends everything a program started when it stops.
 - [GPU Screens](https://kavachlang.com/docs/standard-library/gpu-screens/): std.gpu draws into a window with the GPU: a screen for the window, a frame for each picture, cleared and shown at the screen's rate, with triangles drawn by gpu fns written in Kavach.
-- [The Machine](https://kavachlang.com/docs/standard-library/the-machine/): std.system says what machine the program runs on: its system, processor, memory and GPUs. The basics are free; what could tell one machine from another needs the capability System.
+- [The Machine](https://kavachlang.com/docs/standard-library/the-machine/): std.system says what machine the program runs on: its system, processor, memory, GPUs, drives and devices, and the programs and users on it. The basics are free; what could tell one machine from another needs System, and what is critical needs System.critical.
+- [Gamepads](https://kavachlang.com/docs/standard-library/gamepads/): std.input reads gamepads in one standard layout, whatever pad is plugged in: as state a game loop reads once a frame, or as events in a window's stream. It needs Input, as the keyboard does.
+- [Sound](https://kavachlang.com/docs/standard-library/sound/): std.audio plays sound: effects that start the moment something happens, and music. A sound is data until it plays, so loading or making one needs nothing; playing needs Audio.
+- [Vectors](https://kavachlang.com/docs/standard-library/vectors/): std.vec has the math of games, graphics and simulations: Vec2, Vec3 and Vec4, the 4 × 4 matrix Mat4, and the rotation Quat, over Float or Float32.
 - [JSON](https://kavachlang.com/docs/standard-library/json/): JSON is text that carries data between programs. Kavach reads it straight into your own types, or into a Json value when its shape is known only while the program runs.
 - [JSON: Json values](https://kavachlang.com/docs/standard-library/json/json-values/): A Json value holds JSON whose shape is known only while the program runs. It is a union of six cases, one for each kind of JSON value.
 - [JSON: Reading](https://kavachlang.com/docs/standard-library/json/reading/): json.parse gives a Json value; doc["key"] and doc[i] read into it, and .text(), .int() and the others give the value as an optional.
@@ -367,7 +371,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [GPU: CPU or GPU](https://kavachlang.com/docs/speed/gpu/cpu-or-gpu/): The runtime chooses CPU or GPU for each map. KAVACH_GPU overrides it, to debug or to compare.
 - [GPU: Can I use it on the GPU?](https://kavachlang.com/docs/speed/gpu/can-i-use-it-on-the-gpu/): Pointers, inout, files and recursion stay on the CPU; helpers, loops and pipelines of maps run on the GPU. Every rule is checked when compiling.
 - [GPU: Sums in a loop](https://kavachlang.com/docs/speed/gpu/sums-in-a-loop/): A loop that adds up what the GPU works out doesn't wait for each sum, so the next chunk is read and copied over while the GPU works.
-- [GPU: Drawing triangles](https://kavachlang.com/docs/speed/gpu/drawing-triangles/): A gpu vertex fn places each corner of a triangle, a gpu fragment fn colors each pixel inside it, and gpu.pipeline joins the two for frame.draw.
+- [GPU: Drawing triangles](https://kavachlang.com/docs/speed/gpu/drawing-triangles/): A gpu vertex fn places each corner of a triangle, a gpu fragment fn colors each pixel inside it, and gpu.pipeline joins the two for frame.draw, with depth for 3D and textures for pictures.
 - [GPU: Use cases](https://kavachlang.com/docs/speed/gpu/use-cases/): Work that does the same thing to many items, with enough math in each, is GPU work: images, audio, maps, finance, science and simulation.
 - [Native Executables](https://kavachlang.com/docs/speed/native-executables/): kavach build turns a program into one executable file of native machine code, about half a megabyte, that runs on its own.
 
@@ -420,6 +424,9 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [std.process](https://kavachlang.com/docs/std/std-process/): Every type, method and function of std.process: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 - [std.gpu](https://kavachlang.com/docs/std/std-gpu/): Every type, method and function of std.gpu: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 - [std.system](https://kavachlang.com/docs/std/std-system/): Every type, method and function of std.system: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.input](https://kavachlang.com/docs/std/std-input/): Every type, method and function of std.input: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.audio](https://kavachlang.com/docs/std/std-audio/): Every type, method and function of std.audio: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.vec](https://kavachlang.com/docs/std/std-vec/): Every type, method and function of std.vec: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 - [std.matrix](https://kavachlang.com/docs/std/std-matrix/): Every type, method and function of std.matrix: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 - [std.literals](https://kavachlang.com/docs/std/std-literals/): Every type, method and function of std.literals: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 

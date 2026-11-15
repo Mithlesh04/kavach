@@ -100,9 +100,17 @@
           "patterns": [{ "include": "#escapes" }, { "include": "#interpolation" }]
         },
         {
+          "comment": "Raw text over many lines, `r\"\"\"…\"\"\"` (spec 1.7): no escapes and nothing filled in. It comes before `r\"`, which would end at its second quote. The `r` is colored as Python's grammar colors it",
+          "name": "string.quoted.raw.triple.kavach",
+          "begin": "\\b(r)\"\"\"",
+          "end": "\"\"\"",
+          "beginCaptures": { "1": { "name": "storage.type.string.kavach" } }
+        },
+        {
           "name": "string.quoted.raw.kavach",
-          "begin": "\\br\"",
-          "end": "\""
+          "begin": "\\b(r)\"",
+          "end": "\"",
+          "beginCaptures": { "1": { "name": "storage.type.string.kavach" } }
         },
         {
           "name": "string.quoted.double.kavach",
