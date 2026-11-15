@@ -2,7 +2,7 @@ import Link from "next/link";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { fileTables } from "@/lib/spec-tables";
+import { fileFigure, fileTables } from "@/lib/spec-tables";
 import { Ex, H2, Note, P } from "./parts";
 import { Table } from "./spec-table";
 
@@ -14,6 +14,13 @@ import { Table } from "./spec-table";
 
 const SPEC = "docs/spec/02-types/17-matrices.md";
 const TESTS = "tests/conformance/02-types";
+const BENCH = "benchmarks/math/README.md";
+
+/** The matmul times of the math benchmarks, read from its README. */
+const matmul = () => ({
+  kavach: fileFigure(BENCH, /`matmul`, measured [^:]*: Kavach (\d+ ms)/),
+  cpp: fileFigure(BENCH, /`matmul`, measured [^:]*: Kavach \d+ ms, C\+\+ (\d+ ms)/),
+});
 
 /** The spec's table of ways to make and use a matrix. */
 const written = () => {
@@ -76,6 +83,15 @@ export const matricesDoc: LessonDoc = {
         either way:
       </P>
       <Ex name="matrices/fast" />
+      <P>
+        The exact product is fast too. Multiplying two 1024 × 1024 <C>Float</C> matrices 4 times takes{" "}
+        {matmul().kavach} in Kavach, against {matmul().cpp} for the plain C++ loop on one core, with the same bits.
+      </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file={BENCH} label="math benchmarks" />
+        <SrcRef file="benchmarks/math/kavach/matmul.kav" label="matmul.kav" />
+        <SrcRef file="benchmarks/math/cpp/matmul.cpp" label="matmul.cpp" />
+      </div>
       <H2>@ for your own types</H2>
       <P>
         <C>@</C> comes from the interface <C>MatMul</C>, like the{" "}

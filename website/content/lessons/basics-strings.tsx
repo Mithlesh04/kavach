@@ -59,6 +59,15 @@ export const makeStringsDoc: LessonDoc = {
         <li><C>r&quot;…&quot;</C> is raw: a backslash or a brace is just a character. Handy for Windows paths.</li>
         <li>In a plain string, <C>\t</C> is a tab, <C>\n</C> a new line, <C>\&quot;</C> a quote.</li>
       </ul>
+      <P>
+        Raw text can go over many lines too. <C>r&quot;&quot;&quot; … &quot;&quot;&quot;</C> keeps every backslash
+        and brace, and removes the shared indentation as <C>&quot;&quot;&quot;</C> does. It suits JSON, SQL and
+        regular expressions written out in full:
+      </P>
+      <Ex name="strings/raw-many" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/01-basics/raw-text-over-many-lines.kav" label="raw text over many lines, tested" />
+      </div>
     </>
   ),
 };
@@ -70,6 +79,11 @@ export const interpolationDoc: LessonDoc = {
   body: (
     <>
       <Ex name="text/sub-insert" />
+      <P>
+        Every string fills in its braces by itself, so there is no <C>f&quot;…&quot;</C> as in Python. Writing one is
+        an error that says to drop the <C>f</C>:
+      </P>
+      <Ex name="strings/f-string.fails" />
       <P>The braces can hold a calculation too. To write a brace itself, put a backslash before it:</P>
       <Ex name="values/sub-interp" />
       <P>In text on one line, a <C>{"{"}</C> must close on that line. One left open is an error at the brace, with the fix:</P>

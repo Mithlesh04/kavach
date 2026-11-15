@@ -1,0 +1,1 @@
+error: Kavach has no f-strings: every string fills in `{…}` by itself, so write `"hi {name}"` without the `f` (spec 1.7)

@@ -1,0 +1,8 @@
+use std.system
+
+fn main() uses Console, System {
+    const volumes = system.volumes()
+    print(volumes.len() > 0 and volumes.all(v => v.available <= v.total))
+    print(system.disks().all(d => d.size >= 0))
+    print(system.devices().all(d => d.kind != ""))
+}

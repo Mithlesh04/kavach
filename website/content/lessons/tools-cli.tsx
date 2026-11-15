@@ -5,12 +5,15 @@ import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
-import { fileTables, specBlock } from "@/lib/spec-tables";
+import { fileFigure, fileTables, specBlock } from "@/lib/spec-tables";
 import { H2, Note, P } from "./parts";
 import { Table } from "./spec-table";
 
 // The commands `kavach --help` lists today; spec 10.5 has the rest, which
 // come later.
+/** What the first program `kavach new` writes prints, read from its template. */
+const firstWords = () => fileFigure("tools/cli/src/project.rs", /fn main\(\) \{\\n {4}print\(\\"([^\\]+)\\"\)/);
+
 const today: [cmd: string, does: string][] = [
   ["kavach new my-app", "make a project: kavach.toml, src/main.kav and a .gitignore"],
   ["kavach run [file.kav] [-- args]", "check and run a file, or the project's src/main.kav"],
@@ -89,10 +92,13 @@ export const newDoc: LessonDoc = {
     <>
       <Terminal commands session={"kavach new my-app\ncd my-app\nkavach run"} />
       <P>
-        It writes <C>kavach.toml</C>, a <C>src/main.kav</C> that prints a greeting, and a <C>.gitignore</C> that
-        leaves build output out. The name is lowercase, with <C>-</C> between words. What each file is for:{" "}
-        <Link href="/docs/tools/project-layout/">Project Layout</Link>.
+        It writes <C>kavach.toml</C>, a <C>src/main.kav</C> that prints <C>{firstWords()}</C>, and a{" "}
+        <C>.gitignore</C> that leaves build output out. The name is lowercase, with <C>-</C> between words. What each
+        file is for: <Link href="/docs/tools/project-layout/">Project Layout</Link>.
       </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tools/cli/src/project.rs" symbol="new" label="what kavach new writes" />
+      </div>
     </>
   ),
 };

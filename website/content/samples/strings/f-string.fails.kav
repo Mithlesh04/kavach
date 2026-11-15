@@ -1,0 +1,4 @@
+fn main() {
+    const name = "Ana"
+    print(f"hi {name}")
+}

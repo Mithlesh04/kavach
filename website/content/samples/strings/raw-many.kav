@@ -1,0 +1,8 @@
+fn main() {
+    const body = r"""
+        {"name": "Ana", "path": "C:\new\{x}"}
+        """
+    print(body)
+    const pattern = r"\d+\.\d+"
+    print(pattern)
+}
