@@ -21,6 +21,7 @@ fn lint(file: String) -> Int ! ProcessError uses Process("verilator") {
 | `child.wait() -> Exit` | Waits for the program's end, skipping what it still prints |
 | `child.kill()` | Ends the program, and every program it started, at once |
 | `process.peak_bytes() -> Int` | The most memory this program has held so far, in bytes. Needs no capability |
+| `process.cpu_ms() -> Int` | The processor time this program has spent so far, on all its threads, in milliseconds. Needs no capability |
 
 - `args` is a list, passed as it is, never through a shell: `"; rm -rf /"` is one odd argument, not a command. A program is a name looked up on the system's `PATH` (`"verilator"`), or a path (`"./tools/gen"`).
 - `folder` is the folder the program runs in; `""` is the one this program runs in. `env` adds or changes environment variables for it; it gets this program's others too.

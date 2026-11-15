@@ -1270,6 +1270,7 @@ dependencies = [
  "kavach-ast",
  "kavach-driver",
  "kavach-interp",
+ "kavach-lsp",
  "kavach-parser",
  "kavach-resolver",
  "serde",

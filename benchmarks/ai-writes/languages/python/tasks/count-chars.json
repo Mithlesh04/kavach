@@ -1,0 +1,16 @@
+{
+ "id": "count-chars",
+ "given": "",
+ "signature": "def count_char(text: str, c: str) -> int",
+ "note": "In Python, c is a text of one character.",
+ "tests": [
+  {
+   "call": "count_char(\"banana\", \"a\")",
+   "prints": "3"
+  },
+  {
+   "call": "count_char(\"\", \"x\")",
+   "prints": "0"
+  }
+ ]
+}

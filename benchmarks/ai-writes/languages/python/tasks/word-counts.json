@@ -1,0 +1,15 @@
+{
+ "id": "word-counts",
+ "given": "",
+ "signature": "def word_counts(text: str) -> dict[str, int]",
+ "tests": [
+  {
+   "call": "word_counts(\"a b a\")[\"a\"]",
+   "prints": "2"
+  },
+  {
+   "call": "word_counts(\"a b a\")[\"b\"]",
+   "prints": "1"
+  }
+ ]
+}

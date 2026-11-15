@@ -1,0 +1,16 @@
+{
+ "id": "parse-or-error",
+ "given": "class BadInput(Exception):\n    pass\n\n\nclass NotANumber(BadInput):\n    def __init__(self, text: str):\n        super().__init__(text)\n        self.text = text",
+ "signature": "def doubled(text: str) -> int",
+ "note": "In Python, BadInput is the exception class given, and NotANumber its case: raise NotANumber(text).",
+ "tests": [
+  {
+   "call": "_kv_catch(lambda: doubled(\"21\"), BadInput, -1)",
+   "prints": "42"
+  },
+  {
+   "call": "_kv_catch(lambda: doubled(\"x\"), BadInput, -1)",
+   "prints": "-1"
+  }
+ ]
+}

@@ -5,6 +5,7 @@ One folder per language the benchmark asks models to write. The runner ([../run.
 | Folder | Language |
 |---|---|
 | [kavach/](kavach/README.md) | Kavach |
+| [python/](python/README.md) | Python 3, the reference: the same tasks in a language every model knows well (`zero` and `repair` only) |
 
 A new language is a new folder here with:
 

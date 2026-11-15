@@ -99,13 +99,13 @@ impl<'a> Interp<'a> {
 
     /// Whether generated tests have a fake for capability `c` (11.5): the
     /// console (its output is hidden), `Ai`, files, the network, the
-    /// clock and the environment (`fakes.rs`), `Random` (nothing to fake yet), and the
-    /// program's own.
+    /// clock and the environment (`fakes.rs`), `Random` and `System`
+    /// (nothing to fake: they only read), and the program's own.
     pub(super) fn faked(&self, c: &str) -> bool {
         let name = c.split(['.', '(']).next().unwrap_or(c).trim();
         matches!(
             name,
-            "Console" | "Ai" | "Fs" | "Net" | "Clock" | "Random" | "Clipboard" | "Env"
+            "Console" | "Ai" | "Fs" | "Net" | "Clock" | "Random" | "Clipboard" | "Env" | "System"
         ) || self
             .c
             .resolution

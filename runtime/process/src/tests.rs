@@ -118,3 +118,41 @@ fn the_end_comes_again_after_it_was_taken() {
     assert_eq!(next(id), None);
     assert!(peak_bytes() > 0);
 }
+
+/// The machine's facts are there and agree with each other (spec
+/// 14.25). Only checked, never printed: they describe this machine.
+#[test]
+fn the_machine_says_what_it_is() {
+    use crate::machine::{number, text};
+    assert_eq!(text(0), std::env::consts::OS);
+    assert_eq!(text(2), std::env::consts::ARCH);
+    let (logical, physical) = (number(0), number(1));
+    assert!(logical >= 1 && physical >= 1, "{logical} {physical}");
+    assert!(
+        physical <= logical,
+        "{physical} cores for {logical} threads"
+    );
+    if cfg!(any(target_os = "linux", windows)) {
+        assert!(!text(1).is_empty(), "a version");
+        assert!(!text(5).is_empty(), "a hostname");
+        let (total, available) = (number(2), number(3));
+        assert!(total > 0 && available > 0 && available <= total);
+        assert!(number(5) > 0, "time since the start");
+        if cfg!(target_arch = "x86_64") {
+            assert!(!text(3).is_empty() && !text(4).is_empty(), "the processor");
+        }
+    }
+    assert!(text(99).is_empty() && number(99) == 0, "an unknown fact");
+    // Spinning for a while shows up as processor time.
+    let start = crate::cpu_ms();
+    let until = std::time::Instant::now() + std::time::Duration::from_millis(60);
+    let mut n = 0u64;
+    while std::time::Instant::now() < until {
+        n = std::hint::black_box(n.wrapping_add(1));
+    }
+    assert!(
+        crate::cpu_ms() >= start + 20,
+        "{start} → {}",
+        crate::cpu_ms()
+    );
+}

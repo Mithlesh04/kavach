@@ -1,0 +1,20 @@
+{
+ "id": "optional-chain",
+ "given": "from dataclasses import dataclass\n\n\n@dataclass\nclass Address:\n    city: str | None\n\n\n@dataclass\nclass User:\n    address: Address | None",
+ "signature": "def city(u: User) -> str",
+ "note": "In Python, the types are the classes given.",
+ "tests": [
+  {
+   "call": "city(User(address=Address(city=\"pune\")))",
+   "prints": "PUNE"
+  },
+  {
+   "call": "city(User(address=None))",
+   "prints": "UNKNOWN"
+  },
+  {
+   "call": "city(User(address=Address(city=None)))",
+   "prints": "UNKNOWN"
+  }
+ ]
+}

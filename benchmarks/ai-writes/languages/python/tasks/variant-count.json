@@ -1,0 +1,12 @@
+{
+ "id": "variant-count",
+ "given": "from dataclasses import dataclass\n\n\n@dataclass\nclass Click:\n    pass\n\n\n@dataclass\nclass Key:\n    code: int\n\n\n@dataclass\nclass Scroll:\n    dy: int\n\n\nEvent = Click | Key | Scroll",
+ "signature": "def key_count(events: list[Event]) -> int",
+ "note": "In Python, the types are the classes given.",
+ "tests": [
+  {
+   "call": "key_count([Click(), Key(code=1), Key(code=2)])",
+   "prints": "2"
+  }
+ ]
+}

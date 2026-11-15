@@ -1,0 +1,15 @@
+{
+ "id": "gcd",
+ "given": "",
+ "signature": "def gcd(a: int, b: int) -> int",
+ "tests": [
+  {
+   "call": "gcd(12, 18)",
+   "prints": "6"
+  },
+  {
+   "call": "gcd(17, 5)",
+   "prints": "1"
+  }
+ ]
+}

@@ -1,0 +1,11 @@
+{
+ "id": "clamp-all",
+ "given": "",
+ "signature": "def clamp_all(xs: list[int], lo: int, hi: int) -> list[int]",
+ "tests": [
+  {
+   "call": "clamp_all([-5, 3, 12], 0, 10)",
+   "prints": "[0, 3, 10]"
+  }
+ ]
+}

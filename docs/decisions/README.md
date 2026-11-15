@@ -115,6 +115,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0107](0107-traces-and-metrics.md) | Traces and metrics in `std.log`: `log.span(name) { … }` blocks, the trace kept per task, `http` joining traces by `traceparent`, `log.count`/`gauge`/`histogram`; blocks given to a call, also for `random.seeded` | Accepted |
 | [0108](0108-no-user-defined-decorators.md) | No user-defined decorators: what they do elsewhere is said in the signature (contracts, `uses`, `example`) or in plain code; a recurring need becomes a checked clause | Accepted |
 | [0109](0109-operators-through-interfaces.md) | Operators for a program's own types through built-in interfaces (`Add` … `Neg`, `Comparable`); the other operand the same type or one other per operator; operator methods pure | Accepted |
+| [0110](0110-std-system.md) | `std.system`: the machine's system, cores, memory, processor and GPUs; the basics free, the rest behind a new `System` capability; system calls in `runtime/process`, no new dependency | Accepted |
 
 ## Open decisions
 

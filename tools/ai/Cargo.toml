@@ -11,6 +11,7 @@ publish = false
 kavach-ast = { path = "../../compiler/ast" }
 kavach-driver = { path = "../../compiler/driver" }
 kavach-interp = { path = "../../compiler/interp" }
+kavach-lsp = { path = "../lsp" }
 kavach-resolver = { path = "../../compiler/resolver" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"

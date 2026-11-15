@@ -1,0 +1,16 @@
+{
+ "id": "checked-add",
+ "given": "",
+ "signature": "def add_or_none(a: int, b: int) -> int | None",
+ "note": "In Python, the numbers here are 64-bit signed integers: give None when the sum is below -2**63 or above 2**63 - 1.",
+ "tests": [
+  {
+   "call": "add_or_none(1, 2)",
+   "prints": "3"
+  },
+  {
+   "call": "add_or_none(9223372036854775807, 1)",
+   "prints": "none"
+  }
+ ]
+}

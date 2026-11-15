@@ -1,0 +1,16 @@
+{
+ "id": "json-decode",
+ "given": "import json\nfrom dataclasses import dataclass\n\n\n@dataclass\nclass Item:\n    name: str\n    qty: int",
+ "signature": "def total_qty(text: str) -> int",
+ "note": "In Python, Item is the dataclass given: decode with `json.loads` and make Items from it. `import json` is already there.",
+ "tests": [
+  {
+   "call": "total_qty('[{\"name\": \"a\", \"qty\": 2}, {\"name\": \"b\", \"qty\": 5}]')",
+   "prints": "7"
+  },
+  {
+   "call": "total_qty(\"oops\")",
+   "prints": "-1"
+  }
+ ]
+}

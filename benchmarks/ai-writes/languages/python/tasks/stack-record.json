@@ -1,0 +1,20 @@
+{
+ "id": "stack-record",
+ "given": "",
+ "signature": "class Stack",
+ "note": "In Python, write Stack as a dataclass with the field `items: list[int]`, made as `Stack(items=[])`, and the methods `push(self, x: int) -> Stack`, `pop(self) -> Stack` and `top(self) -> int | None`.",
+ "tests": [
+  {
+   "call": "Stack(items=[]).push(1).push(2).top()",
+   "prints": "2"
+  },
+  {
+   "call": "Stack(items=[]).push(1).push(2).pop().top()",
+   "prints": "1"
+  },
+  {
+   "call": "Stack(items=[]).pop().top()",
+   "prints": "none"
+  }
+ ]
+}

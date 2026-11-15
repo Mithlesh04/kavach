@@ -1,0 +1,16 @@
+{
+ "id": "record-area",
+ "given": "from dataclasses import dataclass\n\n\n@dataclass\nclass Rect:\n    width: float\n    height: float",
+ "signature": "def total_area(rects: list[Rect]) -> float",
+ "note": "In Python, the types are the classes given.",
+ "tests": [
+  {
+   "call": "float(total_area([Rect(width=2.0, height=3.0), Rect(width=1.5, height=2.0)]))",
+   "prints": "9.0"
+  },
+  {
+   "call": "float(total_area([]))",
+   "prints": "0.0"
+  }
+ ]
+}

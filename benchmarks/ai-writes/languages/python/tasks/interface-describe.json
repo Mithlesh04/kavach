@@ -1,0 +1,12 @@
+{
+ "id": "interface-describe",
+ "given": "from abc import ABC, abstractmethod\n\n\nclass Named(ABC):\n    @abstractmethod\n    def name(self) -> str: ...\n\n\nclass Dog(Named):\n    def name(self) -> str:\n        return \"dog\"\n\n\nclass Cat(Named):\n    def name(self) -> str:\n        return \"cat\"",
+ "signature": "def names(xs: list[Named]) -> str",
+ "note": "In Python, the interface Named is the abstract class given, and Dog and Cat implement it.",
+ "tests": [
+  {
+   "call": "names([Dog(), Cat(), Dog()])",
+   "prints": "dog, cat, dog"
+  }
+ ]
+}

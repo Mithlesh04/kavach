@@ -1,0 +1,103 @@
+// std.system (spec 14.25, decision 0110): what machine the program runs
+// on. The runtime reads each fact by its number (`runtime/process`'s
+// `machine.rs`, the GPUs from `runtime/gpu`); this file gives them names.
+// The basics are free; the rest needs `System`.
+
+use std.system
+use std.time
+
+/// The operating system: `"windows"`, `"linux"`, `"macos"` or another
+/// system's name, and its version as the system writes it.
+pub type Os {
+    pub name: String
+    pub version: String
+}
+
+/// How many threads can run at once for this program, and the processor
+/// cores behind them.
+pub type Cores {
+    pub logical: Int
+    pub physical: Int
+}
+
+/// The machine's memory, and how much a program could still take without
+/// the system swapping, in bytes.
+pub type Memory {
+    pub total: Int
+    pub available: Int
+}
+
+/// The processor: its name, its maker and its rated speed; `""` and 0
+/// where the system doesn't say.
+pub type Cpu {
+    pub model: String
+    pub vendor: String
+    pub mhz: Int
+}
+
+/// What kind of GPU it is; `Software` draws on the processor.
+pub type GpuKind = Discrete | Integrated | Virtual | Other | Software
+
+/// One GPU: its name, its maker, its kind, and the interface it is
+/// reached through (`"vulkan"`, `"dx12"`, `"metal"`, `"gl"`).
+pub type GpuInfo {
+    pub name: String
+    pub vendor: String
+    pub kind: GpuKind
+    pub backend: String
+}
+
+/// The operating system and its version.
+pub fn os() -> Os {
+    Os(name: system.basic_text_id(0), version: system.basic_text_id(1))
+}
+
+/// The processor's architecture: `"x86_64"`, `"aarch64"` or another.
+pub fn arch() -> String {
+    system.basic_text_id(2)
+}
+
+/// The threads that can run at once, and the cores behind them.
+pub fn cores() -> Cores {
+    Cores(logical: system.basic_number_id(0), physical: system.basic_number_id(1))
+}
+
+/// The machine's memory and how much is available, in bytes.
+pub fn memory() -> Memory uses System {
+    Memory(total: system.number_id(2), available: system.number_id(3))
+}
+
+/// The processor's name, maker and rated speed in MHz.
+pub fn cpu() -> Cpu uses System {
+    Cpu(model: system.text_id(3), vendor: system.text_id(4), mhz: system.number_id(4))
+}
+
+/// Each GPU the program could use, discrete ones first, then integrated,
+/// the rest last. Listing them opens no GPU.
+pub fn gpus() -> [GpuInfo] uses System {
+    const texts = system.gpus_id()
+    let out: [GpuInfo] = []
+    let i = 0
+    while i + 3 < texts.len() {
+        const kind = match texts[i + 2] {
+            "Discrete" => GpuKind.Discrete,
+            "Integrated" => GpuKind.Integrated,
+            "Virtual" => GpuKind.Virtual,
+            "Software" => GpuKind.Software,
+            _ => GpuKind.Other,
+        }
+        out.push(GpuInfo(name: texts[i], vendor: texts[i + 1], kind: kind, backend: texts[i + 3]))
+        i += 4
+    }
+    out
+}
+
+/// The machine's name on its network.
+pub fn hostname() -> String uses System {
+    system.text_id(5)
+}
+
+/// How long since the machine started.
+pub fn uptime() -> Duration uses System {
+    Duration(ms: system.number_id(5))
+}

@@ -1,0 +1,19 @@
+{
+ "id": "is-palindrome",
+ "given": "",
+ "signature": "def is_palindrome(text: str) -> bool",
+ "tests": [
+  {
+   "call": "is_palindrome(\"Level\")",
+   "prints": "true"
+  },
+  {
+   "call": "is_palindrome(\"abc\")",
+   "prints": "false"
+  },
+  {
+   "call": "is_palindrome(\"\")",
+   "prints": "true"
+  }
+ ]
+}

@@ -1,0 +1,16 @@
+{
+ "id": "with-update",
+ "given": "from dataclasses import dataclass\n\n\n@dataclass\nclass Account:\n    owner: str\n    balance: int",
+ "signature": "def deposit(a: Account, amount: int) -> Account",
+ "note": "In Python, Account is the dataclass given: use `dataclasses.replace` instead of `with`.",
+ "tests": [
+  {
+   "call": "deposit(Account(owner=\"z\", balance=10), 5).balance",
+   "prints": "15"
+  },
+  {
+   "call": "deposit(Account(owner=\"z\", balance=10), 5).owner",
+   "prints": "z"
+  }
+ ]
+}

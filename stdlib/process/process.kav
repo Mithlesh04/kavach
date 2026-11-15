@@ -109,6 +109,12 @@ pub fn peak_bytes() -> Int {
     process.peak_bytes_id()
 }
 
+/// The processor time this program has spent so far, on all its
+/// threads, in milliseconds.
+pub fn cpu_ms() -> Int {
+    process.cpu_ms_id()
+}
+
 /// A line from the runtime's kind and text; none for nothing.
 fn output_of(got: [String]) -> Output?
     example output_of(["out", "hi"]) == Output.Out(line: "hi")

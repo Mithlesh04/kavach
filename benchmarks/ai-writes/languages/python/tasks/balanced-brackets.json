@@ -1,0 +1,23 @@
+{
+ "id": "balanced-brackets",
+ "given": "",
+ "signature": "def balanced(text: str) -> bool",
+ "tests": [
+  {
+   "call": "balanced(\"([]{})\")",
+   "prints": "true"
+  },
+  {
+   "call": "balanced(\"(]\")",
+   "prints": "false"
+  },
+  {
+   "call": "balanced(\"((\")",
+   "prints": "false"
+  },
+  {
+   "call": "balanced(\"a(b)c\")",
+   "prints": "true"
+  }
+ ]
+}

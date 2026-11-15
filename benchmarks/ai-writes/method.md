@@ -54,7 +54,7 @@ A failed try is sorted by what went wrong, in this order:
 | panic | It compiled, and panicked while running |
 | logic | It ran to its end and printed something else |
 
-`kavach check --format json` gives no category with each message yet (spec 13.6 promises a `code`), so the first error's wording is matched ([language.py](languages/kavach/language.py)).
+The first error's wording is matched ([language.py](languages/kavach/language.py)). `kavach check --format json` gives each message a `code` since commit `7fa2110e` (spec 13.6), but the runs before it were sorted by wording, so the wording is still matched to keep runs comparable.
 
 ## Cost and time
 

@@ -1,0 +1,15 @@
+{
+ "id": "generic-last-or",
+ "given": "from typing import TypeVar\n\nT = TypeVar(\"T\")",
+ "signature": "def last_or(xs: list[T], fallback: T) -> T",
+ "tests": [
+  {
+   "call": "last_or([1, 2, 3], 0)",
+   "prints": "3"
+  },
+  {
+   "call": "last_or([], \"none\")",
+   "prints": "none"
+  }
+ ]
+}

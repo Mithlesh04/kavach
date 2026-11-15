@@ -1,0 +1,15 @@
+{
+ "id": "closure-counter",
+ "given": "from collections.abc import Callable",
+ "signature": "def adder(step: int) -> Callable[[int], int]",
+ "tests": [
+  {
+   "call": "adder(5)(10)",
+   "prints": "15"
+  },
+  {
+   "call": "list(map(adder(3), [1, 2]))",
+   "prints": "[4, 5]"
+  }
+ ]
+}

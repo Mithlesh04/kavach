@@ -1,0 +1,20 @@
+{
+ "id": "try-chain",
+ "given": "class PortError(Exception):\n    pass\n\n\nclass Bad(PortError):\n    def __init__(self, text: str):\n        super().__init__(text)\n        self.text = text\n\n\ndef parse_port(text: str) -> int:\n    try:\n        return int(text)\n    except ValueError:\n        raise Bad(text) from None",
+ "signature": "def port_sum(text: str) -> int",
+ "note": "In Python, PortError is the exception class given, and Bad its case: let parse_port's exception pass on, and raise Bad(text) for text without a colon.",
+ "tests": [
+  {
+   "call": "_kv_catch(lambda: port_sum(\"80:443\"), PortError, -1)",
+   "prints": "523"
+  },
+  {
+   "call": "_kv_catch(lambda: port_sum(\"80:x\"), PortError, -1)",
+   "prints": "-1"
+  },
+  {
+   "call": "_kv_catch(lambda: port_sum(\"80\"), PortError, -1)",
+   "prints": "-1"
+  }
+ ]
+}

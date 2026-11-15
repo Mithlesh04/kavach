@@ -1,0 +1,16 @@
+{
+ "id": "union-shape",
+ "given": "from dataclasses import dataclass\n\n\n@dataclass\nclass Circle:\n    radius: float\n\n\n@dataclass\nclass Square:\n    side: float\n\n\nShape = Circle | Square",
+ "signature": "def area(s: Shape) -> float",
+ "note": "In Python, the types are the classes given.",
+ "tests": [
+  {
+   "call": "area(Circle(radius=2.0))",
+   "prints": "12.56"
+  },
+  {
+   "call": "area(Square(side=3.0))",
+   "prints": "9.0"
+  }
+ ]
+}

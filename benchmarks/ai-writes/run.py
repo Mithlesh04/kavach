@@ -109,8 +109,9 @@ def attempt(client, lang, task, model, condition, rounds, table):
     import anthropic  # only for paid runs
 
     system = []
-    if condition != "zero":
-        system = [{"type": "text", "text": f"The {lang.NAME} guide:\n\n{lang.docs()}",
+    guide = lang.docs() if condition != "zero" else ""  # empty: the language has no guide
+    if guide:
+        system = [{"type": "text", "text": f"The {lang.NAME} guide:\n\n{guide}",
                    "cache_control": {"type": "ephemeral"}}]
     ask = lang.ask(task, task["description"])
     server, scratch, tools = None, None, []
@@ -223,6 +224,9 @@ def main():
         sys.exit(0 if check(lang, tasks) else 1)
     models = [MODELS[m] for m in args.models.split(",")]
     conditions = args.conditions.split(",")
+    offered = getattr(lang, "CONDITIONS", None)  # a language may offer only some
+    if offered and any(c not in offered for c in conditions):
+        sys.exit(f"{lang.NAME} offers only the conditions {', '.join(offered)}")
     table = prices()
     if args.estimate:
         estimate(lang, tasks, models, conditions, args.rounds, table)

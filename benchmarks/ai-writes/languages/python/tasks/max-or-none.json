@@ -1,0 +1,15 @@
+{
+ "id": "max-or-none",
+ "given": "",
+ "signature": "def largest(xs: list[int]) -> int | None",
+ "tests": [
+  {
+   "call": "largest([3, 9, 2])",
+   "prints": "9"
+  },
+  {
+   "call": "largest([])",
+   "prints": "none"
+  }
+ ]
+}

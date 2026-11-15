@@ -1,0 +1,11 @@
+{
+ "id": "decimal-money",
+ "given": "from decimal import Decimal",
+ "signature": "def total(items: list[tuple[Decimal, int]]) -> Decimal",
+ "tests": [
+  {
+   "call": "total([(Decimal(\"0.10\"), 3), (Decimal(\"2.50\"), 2)])",
+   "prints": "5.30"
+  }
+ ]
+}

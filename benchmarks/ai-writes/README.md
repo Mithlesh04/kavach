@@ -116,6 +116,7 @@ python run.py --models haiku --conditions zero,docs --budget 2
 python run.py --models sonnet --conditions repair --tasks fizzbuzz,two-sum
 ```
 
+- `--language`: `kavach` (the default) or `python`, the reference ([languages/python/](languages/python/README.md)), which takes part in `zero` and `repair` only.
 - `--models`: any of `haiku`, `sonnet`, `opus`, `fable`.
 - `--conditions`: any of `zero`, `docs`, `repair`, `tools`.
 - `--tasks`: task ids from [tasks/tasks.json](tasks/tasks.json); all of them when left out.

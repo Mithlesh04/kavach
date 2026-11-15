@@ -1,0 +1,15 @@
+{
+ "id": "merge-sorted",
+ "given": "",
+ "signature": "def merge(a: list[int], b: list[int]) -> list[int]",
+ "tests": [
+  {
+   "call": "merge([1, 4, 9], [2, 3, 10])",
+   "prints": "[1, 2, 3, 4, 9, 10]"
+  },
+  {
+   "call": "merge([], [1])",
+   "prints": "[1]"
+  }
+ ]
+}

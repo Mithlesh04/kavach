@@ -85,7 +85,28 @@ impl<'a> Interp<'a> {
                 run::close(id);
                 Value::Unit
             }
+            "cpu_ms_id" => Value::Int(i128::from(run::cpu_ms()), Prim::Int),
             _ => Value::Int(i128::from(run::peak_bytes()), Prim::Int),
+        })
+    }
+
+    /// `std.system`'s built-in functions (spec 14.25): a fact of the
+    /// machine by its number, and the GPUs as four texts each.
+    pub(crate) fn system_call(&mut self, name: &str, args: &[Value<'a>]) -> Eval<'a> {
+        let which = match args.first() {
+            Some(Value::Int(n, _)) => (*n).clamp(i64::MIN as i128, i64::MAX as i128) as i64,
+            _ => -1,
+        };
+        let text = |s: String| Value::Str(Rc::new(s));
+        Ok(match name {
+            "basic_text_id" | "text_id" => text(run::machine::text(which)),
+            "basic_number_id" | "number_id" => {
+                Value::Int(i128::from(run::machine::number(which)), Prim::Int)
+            }
+            _ => {
+                let gpus = kavach_runtime_gpu::adapters().into_iter().flatten();
+                Value::List(Rc::new(gpus.map(text).collect()))
+            }
         })
     }
 

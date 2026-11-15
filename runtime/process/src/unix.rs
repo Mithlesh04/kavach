@@ -73,6 +73,18 @@ fn max_rss(n: libc::c_long) -> i64 {
     }
 }
 
+/// The processor time this program has spent, in milliseconds.
+pub fn cpu_self() -> i64 {
+    // SAFETY: `usage` is a plain C value the call fills.
+    let usage = unsafe {
+        let mut usage: libc::rusage = std::mem::zeroed();
+        libc::getrusage(libc::RUSAGE_SELF, &mut usage);
+        usage
+    };
+    let ms = |t: libc::timeval| t.tv_sec as i64 * 1000 + t.tv_usec as i64 / 1000;
+    ms(usage.ru_utime) + ms(usage.ru_stime)
+}
+
 /// This program's largest resident set so far.
 pub fn peak_self() -> i64 {
     // SAFETY: `usage` is a plain C value the call fills.

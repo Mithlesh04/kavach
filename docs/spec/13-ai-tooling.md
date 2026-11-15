@@ -87,7 +87,7 @@ Every message has a short, machine-readable form:
 
 ```
 kavach check --format json
-{"file":"src/a.kav","line":3,"col":11,"code":"unknown-name","message":"`totl` is not defined","fix":{"replace":"totl","with":"total"}}
+{"file":"src/a.kav","line":3,"col":11,"severity":"error","code":"unknown-name","message":"`totl` is not defined; did you mean `total`?","fix":{"replace":"totl","with":"total","safe":false}}
 ```
 
 - One line per message, with no source excerpt unless asked for (`--context`).
@@ -111,7 +111,7 @@ kavach check --format json
 | `unsafe`, `gpu`, `contract`, `agent-setting`, `literal` | The rules of `unsafe` (6.4), `gpu fn` (15), contracts (7), agents' settings (8.4) and literal checkers (10.15) |
 | `unused`, `style`, `too-long` | Warnings: a name never used, a name in the wrong style (1.5), a file or function over its limit (12.1) |
 | `check` | Any other |
-- When the compiler knows the fix (a typo, a missing `-> Int`, `const` that should be `let`, a missing `try`), the message includes it as an edit. `kavach fix` applies every safe fix at once.
+- When the compiler knows the fix (a typo, a missing `-> Int`, `const` that should be `let`, a missing `try`), the message includes it as an edit: the text to replace, what goes there, and whether it is `safe`. `kavach fix` applies every safe fix at once; a typo's closest name may not be the one meant, so that fix isn't safe.
 - The same messages are shown to people in the friendly form (with the caret under the problem).
 - A file with syntax errors gets only those. The later checks would report on code the parser couldn't read: a string left open turns the lines after it into text, so a name or a function length found there would mislead whoever fixes the first error, person or AI.
 

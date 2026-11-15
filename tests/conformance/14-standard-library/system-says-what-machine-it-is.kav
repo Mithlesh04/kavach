@@ -1,0 +1,32 @@
+// Rule: `std.system` gives the system, architecture and cores with no capability, and the memory, processor, GPUs, hostname and uptime with `System`; `process.cpu_ms()` is free.
+// Spec: 14.25
+// expect output: true true true
+// expect output: true true true true
+// expect output: true
+
+use std.process
+use std.system
+
+/// Free to call: no `uses`.
+fn threads() -> Int {
+    system.cores().logical
+}
+
+fn facts() -> [Bool] uses System {
+    const memory = system.memory()
+    const gpus = system.gpus()
+    [
+        memory.total > 0 and memory.available <= memory.total,
+        system.hostname() != "",
+        system.uptime().ms > 0,
+        gpus.all(g => g.name != ""),
+    ]
+}
+
+fn main() {
+    const os = system.os()
+    const cores = system.cores()
+    print("{os.name == "windows" or os.name == "linux" or os.name == "macos"} {system.arch() != ""} {threads() >= 1 and cores.physical >= 1 and cores.physical <= cores.logical}")
+    print(facts().map(b => "{b}").join(" "))
+    print(process.cpu_ms() >= 0)
+}

@@ -1,0 +1,15 @@
+{
+ "id": "second-largest",
+ "given": "",
+ "signature": "def second_largest(xs: list[int]) -> int | None",
+ "tests": [
+  {
+   "call": "second_largest([4, 9, 9, 2])",
+   "prints": "4"
+  },
+  {
+   "call": "second_largest([5, 5])",
+   "prints": "none"
+  }
+ ]
+}

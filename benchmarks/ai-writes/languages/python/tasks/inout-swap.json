@@ -1,0 +1,12 @@
+{
+ "id": "inout-swap",
+ "given": "",
+ "signature": "def swap_ends(xs: list[int]) -> None",
+ "note": "In Python, change the list given in place, instead of using an `inout` parameter.",
+ "tests": [
+  {
+   "call": "_kv_changed(swap_ends, [1, 2, 3])",
+   "prints": "[3, 2, 1]"
+  }
+ ]
+}

@@ -6,7 +6,9 @@
 //! thread of their own into the child's inbox, line by line; a third
 //! thread waits for the end once both are closed, and adds it last. How a
 //! tree is held, ended and measured is each system's own (`windows.rs`,
-//! `unix.rs`): the only `unsafe` code here.
+//! `unix.rs`). What machine the program runs on is `machine.rs`, with
+//! each system's calls beside it (spec 14.25, decision 0110). Those are
+//! the only `unsafe` code here.
 
 use kavach_runtime_core::inbox::{Inbox, Waker};
 use std::collections::HashMap;
@@ -191,6 +193,13 @@ pub fn close(id: i64) {
 pub fn peak_bytes() -> i64 {
     system::peak_self()
 }
+
+/// The processor time this program has spent, in milliseconds.
+pub fn cpu_ms() -> i64 {
+    machine::cpu_ms()
+}
+
+pub mod machine;
 
 #[cfg(test)]
 mod tests;

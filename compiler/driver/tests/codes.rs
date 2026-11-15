@@ -52,11 +52,23 @@ fn every_expected_error_has_a_known_kind() {
 }
 
 #[test]
+fn another_languages_habit_says_so_even_in_the_parser() {
+    for src in [
+        "fn main() {\n    let mut n = 1\n    print(n)\n}\n",
+        "fn main() {\n    const x = 1;\n    print(x)\n}\n",
+    ] {
+        let c = compile(src, "main.kav", Options::default());
+        assert_eq!(
+            c.messages.first().map(|m| m.code),
+            Some("not-kavach"),
+            "{src}"
+        );
+    }
+}
+
+#[test]
 fn syntax_errors_say_so() {
-    let c = compile(
-        "fn main() {\n    let x = 1;\n}\n",
-        "main.kav",
-        Options::default(),
-    );
+    let src = "fn main() {\n    print(1\n}\n";
+    let c = compile(src, "main.kav", Options::default());
     assert_eq!(c.messages.first().map(|m| m.code), Some("syntax"));
 }

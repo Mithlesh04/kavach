@@ -117,3 +117,60 @@ pub fn available() -> bool {
 pub fn ready() -> bool {
     GPU.get().is_some_and(Option::is_some)
 }
+
+/// Every GPU this machine has (spec 14.25): name, vendor, kind and the
+/// interface it is reached through, discrete ones first, then integrated,
+/// the rest last. Each appears once, through the first interface that
+/// lists it; nothing is opened.
+pub fn adapters() -> Vec<[String; 4]> {
+    let mut found: Vec<(u8, [String; 4])> = Vec::new();
+    for backends in [
+        wgpu::Backends::VULKAN,
+        wgpu::Backends::METAL,
+        wgpu::Backends::DX12,
+        wgpu::Backends::GL,
+    ] {
+        let mut desc = wgpu::InstanceDescriptor::new_without_display_handle();
+        desc.backends = backends;
+        let instance = wgpu::Instance::new(desc);
+        for a in block_on(instance.enumerate_adapters(backends)) {
+            let info = a.get_info();
+            if found.iter().any(|(_, f)| f[0] == info.name) {
+                continue;
+            }
+            let (rank, kind) = match info.device_type {
+                wgpu::DeviceType::DiscreteGpu => (0, "Discrete"),
+                wgpu::DeviceType::IntegratedGpu => (1, "Integrated"),
+                wgpu::DeviceType::VirtualGpu => (2, "Virtual"),
+                wgpu::DeviceType::Other => (3, "Other"),
+                wgpu::DeviceType::Cpu => (4, "Software"),
+            };
+            let vendor = match info.vendor {
+                0x10de => "NVIDIA",
+                0x1002 | 0x1022 => "AMD",
+                0x8086 => "Intel",
+                0x106b => "Apple",
+                0x5143 => "Qualcomm",
+                0x13b5 => "ARM",
+                0x1414 => "Microsoft",
+                _ => "",
+            };
+            let backend = match info.backend {
+                wgpu::Backend::Vulkan => "vulkan",
+                wgpu::Backend::Metal => "metal",
+                wgpu::Backend::Dx12 => "dx12",
+                wgpu::Backend::Gl => "gl",
+                _ => "",
+            };
+            let texts = [
+                info.name.clone(),
+                vendor.into(),
+                kind.into(),
+                backend.into(),
+            ];
+            found.push((rank, texts));
+        }
+    }
+    found.sort_by_key(|(rank, _)| *rank);
+    found.into_iter().map(|(_, texts)| texts).collect()
+}

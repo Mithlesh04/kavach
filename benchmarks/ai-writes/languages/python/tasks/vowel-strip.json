@@ -1,0 +1,11 @@
+{
+ "id": "vowel-strip",
+ "given": "",
+ "signature": "def strip_vowels(text: str) -> str",
+ "tests": [
+  {
+   "call": "strip_vowels(\"Kavach is fast\")",
+   "prints": "Kvch s fst"
+  }
+ ]
+}

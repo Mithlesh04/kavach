@@ -1,0 +1,15 @@
+{
+ "id": "reverse-words",
+ "given": "",
+ "signature": "def reverse_words(text: str) -> str",
+ "tests": [
+  {
+   "call": "reverse_words(\"hello big world\")",
+   "prints": "world big hello"
+  },
+  {
+   "call": "reverse_words(\"one\")",
+   "prints": "one"
+  }
+ ]
+}

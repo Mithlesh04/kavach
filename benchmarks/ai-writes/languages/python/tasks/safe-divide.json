@@ -1,0 +1,16 @@
+{
+ "id": "safe-divide",
+ "given": "class MathError(Exception):\n    pass\n\n\nclass DivideByZero(MathError):\n    pass",
+ "signature": "def divide(a: int, b: int) -> int",
+ "note": "In Python, MathError is the exception class given, and DivideByZero its case: raise DivideByZero().",
+ "tests": [
+  {
+   "call": "_kv_catch(lambda: divide(7, 2), MathError, -1)",
+   "prints": "3"
+  },
+  {
+   "call": "_kv_catch(lambda: divide(1, 0), MathError, -1)",
+   "prints": "-1"
+  }
+ ]
+}

@@ -58,7 +58,7 @@ type Checked = Arc<(Compiled, Option<String>)>;
 
 /// Serves one editor until it sends `exit` or the input ends. Returns
 /// whether the editor asked to shut down first, as the protocol wants.
-pub use fixes::fix_file;
+pub use fixes::{fix_file, fix_of};
 pub use tokens::json_line as tokens_json_line;
 
 pub fn serve(input: impl BufRead, output: impl Write) -> std::io::Result<bool> {

@@ -66,6 +66,10 @@ pub(crate) fn op_entries() -> Vec<RuntimeFn> {
         ),
         ("kv_rt_run", kavach_runtime_native::kv_rt_run as *const u8),
         (
+            "kv_rt_machine",
+            kavach_runtime_native::kv_rt_machine as *const u8,
+        ),
+        (
             "kv_rt_writers",
             kavach_runtime_native::kv_rt_writers as *const u8,
         ),

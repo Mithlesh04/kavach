@@ -22,6 +22,19 @@ pub(crate) struct Edit {
     pub(crate) safe: bool,
 }
 
+/// The fix of message `m`, for `kavach check --format json` (spec 13.6):
+/// the text it replaces, the text it puts there, and whether it is safe,
+/// so `kavach fix` applies it.
+pub fn fix_of(c: &Compiled, m: &kavach_driver::Message) -> Option<(String, String, bool)> {
+    let i = c.files.iter().rposition(|f| f.start <= m.span.start)?;
+    let file = &c.files[i];
+    let end = c.files.get(i + 1).map_or(c.src.len(), |f| f.start as usize);
+    let text = c.src.get(file.start as usize..end)?;
+    let at = (m.span.start - file.start) as usize;
+    let e = fix(c, &file.path, text, &m.text, at)?;
+    Some((text.get(e.from..e.to)?.to_string(), e.text, e.safe))
+}
+
 /// The fix for the message `message` at byte `at` of the file at `path`
 /// (its text `text`), if it has one.
 pub(crate) fn fix(c: &Compiled, path: &str, text: &str, message: &str, at: usize) -> Option<Edit> {

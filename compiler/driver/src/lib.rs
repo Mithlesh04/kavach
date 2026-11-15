@@ -245,7 +245,11 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
     };
     let mut messages: Vec<Message> = (parsed.errors.iter())
         .map(|e| Message {
-            code: "syntax",
+            // A habit from another language keeps its own code.
+            code: match codes::of(&e.message) {
+                "not-kavach" => "not-kavach",
+                _ => "syntax",
+            },
             ..error(&e.message, e.span)
         })
         .collect();

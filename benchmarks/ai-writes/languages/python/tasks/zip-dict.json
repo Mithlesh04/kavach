@@ -1,0 +1,15 @@
+{
+ "id": "zip-dict",
+ "given": "",
+ "signature": "def zip_map(keys: list[str], values: list[int]) -> dict[str, int]",
+ "tests": [
+  {
+   "call": "zip_map([\"a\", \"b\", \"c\"], [1, 2])[\"b\"]",
+   "prints": "2"
+  },
+  {
+   "call": "len(zip_map([\"a\", \"b\", \"c\"], [1, 2]))",
+   "prints": "2"
+  }
+ ]
+}

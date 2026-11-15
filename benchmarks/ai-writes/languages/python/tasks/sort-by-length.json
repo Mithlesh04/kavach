@@ -1,0 +1,11 @@
+{
+ "id": "sort-by-length",
+ "given": "",
+ "signature": "def by_length(words: list[str]) -> list[str]",
+ "tests": [
+  {
+   "call": "by_length([\"ccc\", \"a\", \"bb\", \"d\"])",
+   "prints": "[\"a\", \"d\", \"bb\", \"ccc\"]"
+  }
+ ]
+}

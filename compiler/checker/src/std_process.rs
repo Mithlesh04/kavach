@@ -1,4 +1,5 @@
-//! The signatures of `std.process`'s built-in functions (spec 14.23):
+//! The signatures of `std.process`'s built-in functions (spec 14.23),
+//! and `std.system`'s (14.25):
 //! what `process.run`, `process.start` and the methods of `Child`,
 //! written in Kavach, are built on, by the child's number.
 
@@ -30,7 +31,21 @@ impl Checker<'_> {
             // The code, processor milliseconds and peak bytes.
             "exit_id" => (vec![id], Ty::List(Box::new(int))),
             "kill_id" | "close_id" => (vec![id], Ty::Unit),
-            "peak_bytes_id" => (vec![], int),
+            "peak_bytes_id" | "cpu_ms_id" => (vec![], int),
+            _ => return None,
+        })
+    }
+
+    /// The parameters and result of `system.<name>` (spec 14.25): a fact
+    /// by its number, as text or a number (`basic_` ones free), and the
+    /// GPUs, four texts each.
+    pub(crate) fn system_signature(&mut self, name: &str) -> Option<Signature> {
+        let (int, string) = (Ty::Prim(Prim::Int), Ty::Prim(Prim::String));
+        let which = vec![("which".to_string(), int.clone(), false)];
+        Some(match name {
+            "basic_text_id" | "text_id" => (which, string),
+            "basic_number_id" | "number_id" => (which, int),
+            "gpus_id" => (vec![], Ty::List(Box::new(string))),
             _ => return None,
         })
     }

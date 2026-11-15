@@ -20,6 +20,16 @@ pub fn messages_json(c: &Compiled) -> String {
             m.code,
             quote(&m.text)
         ));
+        // The fix the compiler knows, as an edit (spec 13.6).
+        if let Some((replace, with, safe)) = kavach_lsp::fix_of(c, m) {
+            out.pop();
+            out.pop();
+            out.push_str(&format!(
+                ",\"fix\":{{\"replace\":{},\"with\":{},\"safe\":{safe}}}}}\n",
+                quote(&replace),
+                quote(&with)
+            ));
+        }
     }
     out
 }

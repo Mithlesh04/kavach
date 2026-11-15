@@ -1,0 +1,15 @@
+{
+ "id": "generic-pairs",
+ "given": "from typing import TypeVar\n\nT = TypeVar(\"T\")",
+ "signature": "def pairs(xs: list[T]) -> list[tuple[T, T]]",
+ "tests": [
+  {
+   "call": "pairs([1, 2, 3])",
+   "prints": "[(1, 2), (2, 3)]"
+  },
+  {
+   "call": "pairs([\"x\"])",
+   "prints": "[]"
+  }
+ ]
+}

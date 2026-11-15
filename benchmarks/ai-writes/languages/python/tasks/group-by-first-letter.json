@@ -1,0 +1,15 @@
+{
+ "id": "group-by-first-letter",
+ "given": "",
+ "signature": "def by_letter(words: list[str]) -> dict[str, list[str]]",
+ "tests": [
+  {
+   "call": "by_letter([\"apple\", \"bee\", \"ant\"])[\"a\"]",
+   "prints": "[\"apple\", \"ant\"]"
+  },
+  {
+   "call": "len(by_letter([\"apple\", \"bee\", \"ant\"]))",
+   "prints": "2"
+  }
+ ]
+}

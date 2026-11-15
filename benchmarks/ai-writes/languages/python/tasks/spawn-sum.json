@@ -1,0 +1,16 @@
+{
+ "id": "spawn-sum",
+ "given": "",
+ "signature": "def squares(n: int) -> int",
+ "note": "In Python, run the two halves in two threads.",
+ "tests": [
+  {
+   "call": "_kv_catch(lambda: squares(10), Exception, -1)",
+   "prints": "385"
+  },
+  {
+   "call": "_kv_catch(lambda: squares(1), Exception, -1)",
+   "prints": "1"
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+// Rule: reading the machine's memory, processor, GPUs, hostname or uptime needs `uses System`.
+// Spec: 14.25
+// expect compile error
+
+use std.system
+
+pub fn report() -> String {
+    "{system.memory().total}"     // error: `report` is `pub`, so it must say what it uses: add `uses System`
+}
+
+fn main() {
+    print(system.cores().logical)
+}

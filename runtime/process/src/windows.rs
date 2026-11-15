@@ -151,6 +151,34 @@ pub fn wait(mut child: Child, tree: &Tree) -> Exit {
     }
 }
 
+/// The processor time this program has spent, in milliseconds.
+pub fn cpu_self() -> i64 {
+    use windows_sys::Win32::Foundation::FILETIME;
+    use windows_sys::Win32::System::Threading::GetProcessTimes;
+    let zero = FILETIME {
+        dwLowDateTime: 0,
+        dwHighDateTime: 0,
+    };
+    let (mut created, mut ended, mut kernel, mut user) = (zero, zero, zero, zero);
+    // SAFETY: four plain C values the call fills; the current process's
+    // pseudo-handle needs no closing.
+    let ok = unsafe {
+        GetProcessTimes(
+            GetCurrentProcess(),
+            &mut created,
+            &mut ended,
+            &mut kernel,
+            &mut user,
+        )
+    };
+    if ok == 0 {
+        return 0;
+    }
+    let ticks = |t: FILETIME| (t.dwHighDateTime as i64) << 32 | t.dwLowDateTime as i64;
+    // In ticks of 100 nanoseconds.
+    (ticks(kernel) + ticks(user)) / 10_000
+}
+
 /// This program's largest working set so far.
 pub fn peak_self() -> i64 {
     // SAFETY: the counters are a plain struct whose size is given; the

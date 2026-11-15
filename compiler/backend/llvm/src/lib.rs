@@ -17,6 +17,7 @@ mod heap;
 mod json;
 pub mod library;
 mod lists;
+mod maps;
 mod module;
 mod ops;
 mod pointers;

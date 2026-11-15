@@ -12,7 +12,7 @@ mod device;
 pub mod draw;
 pub mod render;
 use device::{Gpu, gpu};
-pub use device::{available, ready};
+pub use device::{adapters, available, ready};
 
 /// Items per workgroup: the size every kernel declares.
 pub const WORKGROUP: u32 = 256;

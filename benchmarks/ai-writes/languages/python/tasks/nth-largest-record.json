@@ -1,0 +1,12 @@
+{
+ "id": "nth-largest-record",
+ "given": "from dataclasses import dataclass\n\n\n@dataclass\nclass Player:\n    name: str\n    score: int",
+ "signature": "def top(players: list[Player], k: int) -> list[str]",
+ "note": "In Python, the types are the classes given.",
+ "tests": [
+  {
+   "call": "top([Player(name=\"a\", score=3), Player(name=\"b\", score=9), Player(name=\"c\", score=9)], 2)",
+   "prints": "[\"b\", \"c\"]"
+  }
+ ]
+}

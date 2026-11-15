@@ -206,80 +206,10 @@ impl FnEmit<'_> {
                 }
                 Some(map)
             }
-            // `m[k] ?? d` for an integer key and a scalar value: the map is
-            // read in place, without the generic entry's dispatch.
-            ExprKind::Rt(kavach_kir::RtOp::MapGetOr, args)
-                if self.int_keys(args[0].ty) && !e.ty.is_ref() =>
+            ExprKind::Rt(kavach_kir::RtOp::MapGetOr | kavach_kir::RtOp::MapGet, args)
+                if self.reads_map_in_place(e, args) =>
             {
-                let (map, owned) = self.borrow(&args[0], true)?;
-                let (key, fallback) = (self.slot_of(&args[1]), self.slot_of(&args[2]));
-                let args3 = [("i64", map.clone()), ("i64", key), ("i64", fallback)];
-                let slot = self.call_rt("kv_map_get_int", "i64", &args3, false);
-                if owned {
-                    self.release(&map);
-                }
-                Some(self.unpack(&slot, e.ty))
-            }
-            // `m[k] ?? d` for a text key and a plain value: the same, read
-            // in place with the key borrowed.
-            ExprKind::Rt(kavach_kir::RtOp::MapGetOr, args)
-                if self.text_keys_plain(args[0].ty) && !e.ty.is_ref() =>
-            {
-                let (map, owned) = self.borrow(&args[0], true)?;
-                let slot = if let Some((addr, copy)) = self.key_item(&args[1]) {
-                    let fallback = self.slot_of(&args[2]);
-                    let copy = (copy as i64).to_string();
-                    let args4 = [
-                        ("i64", map.clone()),
-                        ("i64", addr),
-                        ("i64", copy),
-                        ("i64", fallback),
-                    ];
-                    self.call_rt("kv_map_get_item_or", "i64", &args4, false)
-                } else {
-                    let (key, key_owned) = self.borrow(&args[1], true)?;
-                    let fallback = self.slot_of(&args[2]);
-                    let args3 = [
-                        ("i64", map.clone()),
-                        ("i64", key.clone()),
-                        ("i64", fallback),
-                    ];
-                    let slot = self.call_rt("kv_map_get_str_or", "i64", &args3, false);
-                    if key_owned {
-                        self.release(&key);
-                    }
-                    slot
-                };
-                if owned {
-                    self.release(&map);
-                }
-                Some(self.unpack(&slot, e.ty))
-            }
-            // `m[k]` for a text key and a value held by reference: the map
-            // is read in place, and a constant key needs no text object.
-            ExprKind::Rt(kavach_kir::RtOp::MapGet, args) if self.text_keys(args[0].ty) => {
-                let (map, owned) = self.borrow(&args[0], true)?;
-                let slot = if let ExprKind::Str(key) = &args[1].kind {
-                    let (ptr, len) = self.m.text(key);
-                    let args3 = [("i64", map.clone()), ("i64", ptr), ("i64", len.to_string())];
-                    self.call_rt("kv_map_get_text", "i64", &args3, false)
-                } else if let Some((addr, copy)) = self.key_item(&args[1]) {
-                    let copy = (copy as i64).to_string();
-                    let args3 = [("i64", map.clone()), ("i64", addr), ("i64", copy)];
-                    self.call_rt("kv_map_get_item", "i64", &args3, false)
-                } else {
-                    let (key, key_owned) = self.borrow(&args[1], true)?;
-                    let args2 = [("i64", map.clone()), ("i64", key.clone())];
-                    let slot = self.call_rt("kv_map_get_str", "i64", &args2, false);
-                    if key_owned {
-                        self.release(&key);
-                    }
-                    slot
-                };
-                if owned {
-                    self.release(&map);
-                }
-                Some(slot)
+                self.map_read(e, args)
             }
             ExprKind::Rt(kavach_kir::RtOp::ListPush, args) if self.flat_width(e.ty) > 0 => {
                 let list = self.slot_of(&args[0]);

@@ -15,6 +15,7 @@ const TABLE: &[(&str, &[&str])] = &[
             "Kavach writes",
             "in Kavach",
             "Kavach's way",
+            "is not Kavach",
             "is gone: write",
         ],
     ),

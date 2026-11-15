@@ -1,0 +1,15 @@
+{
+ "id": "pascal-row",
+ "given": "",
+ "signature": "def pascal(n: int) -> list[int]",
+ "tests": [
+  {
+   "call": "pascal(0)",
+   "prints": "[1]"
+  },
+  {
+   "call": "pascal(4)",
+   "prints": "[1, 4, 6, 4, 1]"
+  }
+ ]
+}

@@ -26,6 +26,7 @@ const MODULES: &[(&str, Option<&str>)] = &[
     ("compress", None),
     ("window", Some("Window")),
     ("process", Some("Process")),
+    ("system", Some("System")),
     ("gpu", Some("Window")),
     ("log", None),
     ("text", None),
@@ -275,6 +276,8 @@ impl Checker<'_> {
             // Windows (spec 14.22), behind `Window`, and `Input`.
             ("window", _) => self.window_signature(name)?,
             ("process", _) => self.process_signature(name)?,
+            // What machine this is (spec 14.25): the basics free.
+            ("system", _) => self.system_signature(name)?,
             ("gpu", _) => self.draw_signature(name)?,
             ("log", _) => self.log_signature(name)?,
             ("fs", n) if n.starts_with("writer_") => self.writer_signature(name)?,
@@ -426,7 +429,8 @@ impl Checker<'_> {
         // does working out a WebSocket handshake (0092).
         let holds = (module == "cli" && name.starts_with("stop_"))
             || (module == "net" && name.starts_with("websocket_"))
-            || (module == "process" && name == "peak_bytes_id");
+            || (module == "process" && matches!(name, "peak_bytes_id" | "cpu_ms_id"))
+            || (module == "system" && name.starts_with("basic_"));
         if let Some(cap) = (MODULES.iter())
             .find(|(m, _)| *m == module && !reads_clock && !reads_zone && !holds)
             .and_then(|(_, c)| if answers { Some("Approvals") } else { *c })

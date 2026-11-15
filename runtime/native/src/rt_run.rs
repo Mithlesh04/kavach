@@ -116,6 +116,7 @@ crate::rt_data::entry!(kv_rt_run, |op, a, b, c, code, line| {
             run::close(a);
             0
         }
+        RtOp::RunCpu => run::cpu_ms(),
         _ => run::peak_bytes(),
     }
 });
