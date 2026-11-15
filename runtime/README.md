@@ -9,6 +9,7 @@ Code that is linked into every Kavach program and runs alongside it. Written in 
 | [gpu/](gpu/README.md) | GPU compute for `gpu fn`, and drawing into windows for `std.gpu`, through `wgpu` (`kavach-runtime-gpu`); apart from `native/` so programs without GPU code don't link it (decision 0044) |
 | [window/](window/README.md) | Windows and their keyboard and mouse input for `std.window` through `winit` (`kavach-runtime-window`); apart from `native/` so programs without windows don't link it (decision 0104) |
 | [process/](process/README.md) | Other programs for `std.process`, run with no shell as trees that end together, through each system's own calls (`kavach-runtime-process`, decision 0105) |
+| [matrix/](matrix/README.md) | The work of `std.matrix`: products in one fixed order, and fast ones through `gemm`, on flat lists of numbers (`kavach-runtime-matrix`, decision 0111) |
 | [native/](native/README.md) | The run-time library of native programs: heap values, printing, panics; linked into executables (`kavach-runtime-native`) |
 | [unpack/](unpack/README.md) | Packed executables: the format and the small C starter that unpacks a program built with `kavach build --compress` (`kavach-runtime-unpack`, decision 0081) |
 | `memory/` | Allocation, reference counting, arenas, cycle detection (debug) |

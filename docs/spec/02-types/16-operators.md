@@ -22,6 +22,7 @@ c += a                         // `c = c + a`
 |---|---|---|
 | `Add`, `Sub`, `Mul`, `Div`, `Rem` | `a + b`, `a - b`, `a * b`, `a / b`, `a % b` | `fn add(self, other: R) -> Out`, and `sub`, `mul`, `div`, `rem` |
 | `Neg` | `-a` | `fn neg(self) -> Out` |
+| `MatMul` | `a @ b` | `fn matmul(self, other: R) -> Out`, the matrix product (2.17) |
 | `Comparable` | `a < b`, `a <= b`, `a > b`, `a >= b` | `fn compare(self, other: Self) -> Int`: below 0 when `self` comes first, 0 when neither does, above 0 when `other` does |
 
 - **The other operand.** `Add` alone takes the same type: `fn add(self, other: Self) -> Self`. `Mul<Float>` takes a `Float` instead, and gives `Self`. `Mul<Meters, Area>` takes `Meters` and gives an `Area`. A type implements each interface once, since its method has one name (no overloading, 1.4): `Vec2` with `Mul<Float>` has `v * 2.0` but not `v * v`.

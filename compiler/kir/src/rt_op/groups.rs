@@ -127,6 +127,8 @@ impl RtOp {
             "kv_rt_run"
         } else if group("Machine") {
             "kv_rt_machine"
+        } else if group("Matrix") {
+            "kv_rt_matrix"
         } else if group("FsWriter") {
             "kv_rt_writers"
         } else if matches!(

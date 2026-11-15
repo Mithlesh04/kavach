@@ -34,6 +34,7 @@ fn binary_op(kind: &TokenKind) -> Option<(BinaryOp, u8)> {
         Star => (BinaryOp::Mul, 11),
         Slash => (BinaryOp::Div, 11),
         Percent => (BinaryOp::Rem, 11),
+        At => (BinaryOp::MatMul, 11),
         _ => return None,
     })
 }

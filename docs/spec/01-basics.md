@@ -154,20 +154,20 @@ In one-line text, a `{` must close on the same line: `"{"` is a compile error at
 
 | Group | Operators | Notes |
 |---|---|---|
-| Arithmetic | `+ - * / % **` | `Int / Int` is an `Int` (truncated). Overflow is checked (see 5.6). `a ** b` is `a` to the power `b`, both the same number type; for whole numbers it panics when `b` is negative or the result doesn't fit. `+` also joins two `String`s, two `Bytes` (2.13), and two lists of the same type (2.2). A program's own types get operators through interfaces (2.16) |
+| Arithmetic | `+ - * / % ** @` | `Int / Int` is an `Int` (truncated). Overflow is checked (see 5.6). `a ** b` is `a` to the power `b`, both the same number type; for whole numbers it panics when `b` is negative or the result doesn't fit. `+` also joins two `String`s, two `Bytes` (2.13), and two lists of the same type (2.2). A program's own types get operators through interfaces (2.16). `a @ b` is the matrix product (2.17), for a type with `MatMul` |
 | Comparison | `== != < <= > >=` | |
 | Logic | `and or not` | Words, not symbols, for readability: `!ready`, `&&` and `\|\|` are compile errors that say which word to write |
 | Bits | `& \| ^ << >> ~` | Integers only. `a << n` panics when the result doesn't fit (5.6); both shifts panic when `n` is negative or not less than the type's width in bits. `>>` keeps the sign |
 | Optional | `??` `?.` | See 2.7 |
 | Range | `..` `..=` | `0..10` excludes 10; `0..=10` includes it |
-| Assignment | `= += -= *= /= %= **= &= \|= ^= <<= >>=` | Assignment is a statement, not an expression. `x op= v` is `x = x op v`, checked as that operator is |
+| Assignment | `= += -= *= /= %= **= @= &= \|= ^= <<= >>=` | Assignment is a statement, not an expression. `x op= v` is `x = x op v`, checked as that operator is |
 
 Precedence, from highest to lowest:
 
 1. `.` `?.` calls, indexing
 2. `**`, right to left: `2 ** 3 ** 2` is `2 ** 9`. It binds tighter than a minus on its left, as in mathematics: `-2 ** 2` is `-(2 ** 2)`, `-4`
 3. `not` `~` unary `-`
-4. `* / %`
+4. `* / % @`
 5. `+ -`
 6. `<< >>`
 7. `&`, then `^`, then `|`

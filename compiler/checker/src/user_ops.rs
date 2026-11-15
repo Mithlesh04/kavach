@@ -1,5 +1,5 @@
 //! Operators for a program's own types (spec 2.16, decision 0109): a type
-//! that implements `Add`, `Sub`, `Mul`, `Div`, `Rem`, `Neg` or
+//! that implements `Add`, `Sub`, `Mul`, `Div`, `Rem`, `Neg`, `MatMul` or
 //! `Comparable` gets the operator, which calls its method. Each use is
 //! noted, and the driver turns it into that method call.
 
@@ -16,6 +16,7 @@ const OPERATORS: &[(&str, &str)] = &[
     ("Div", "div"),
     ("Rem", "rem"),
     ("Neg", "neg"),
+    ("MatMul", "matmul"),
     ("Comparable", "compare"),
 ];
 
@@ -28,6 +29,7 @@ fn method_of(op: BinaryOp) -> Option<&'static str> {
         Mul => "mul",
         Div => "div",
         Rem => "rem",
+        MatMul => "matmul",
         Lt | Le | Gt | Ge => "compare",
         _ => return None,
     })

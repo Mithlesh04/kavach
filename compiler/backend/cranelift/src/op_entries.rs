@@ -70,6 +70,10 @@ pub(crate) fn op_entries() -> Vec<RuntimeFn> {
             kavach_runtime_native::kv_rt_machine as *const u8,
         ),
         (
+            "kv_rt_matrix",
+            kavach_runtime_native::kv_rt_matrix as *const u8,
+        ),
+        (
             "kv_rt_writers",
             kavach_runtime_native::kv_rt_writers as *const u8,
         ),

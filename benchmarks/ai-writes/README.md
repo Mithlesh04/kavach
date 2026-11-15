@@ -80,6 +80,33 @@ The first run (2026-11-14, commit `22a20eb`, 1,200 answers, $24.66, [results/202
 
 The two runs differ in Kavach's guide and messages, not in their settings, and each cell is one run: a model's answers vary from run to run, so a few points either way are within that spread.
 
+## Against Python
+
+The same 75 tasks in Python 3, as a reference ([languages/python/](languages/python/README.md)), run on 2026-11-15 with the same four models, zero-shot and with repair: 600 answers, $2.73, every one in [results/2026-11-15-python.json](results/2026-11-15-python.json). Python has no `llms.txt` or tools of its own here, so it takes part in `zero` and `repair` only.
+
+| Model | Python, zero | Kavach, zero | Kavach, docs | Kavach, repair | Kavach, tools |
+|---|---|---|---|---|---|
+| Claude Haiku 5.5 | 100% (75/75) | 7% (5/75) | 88% (66/75) | 99% (74/75) | 100% (75/75) |
+| Claude Sonnet 5.5 | 100% (75/75) | 4% (3/75) | 88% (66/75) | 99% (74/75) | 100% (75/75) |
+| Claude Opus 5.5 | 100% (75/75) | 5% (4/75) | 93% (70/75) | 100% (75/75) | 100% (75/75) |
+| Claude Fable 5.2 | 100% (75/75) | 8% (6/75) | 97% (73/75) | 100% (75/75) | 100% (75/75) |
+
+Kavach's columns are the second run's ([results/2026-11-15-kavach.json](results/2026-11-15-kavach.json)). With `repair`, Python needed 1.00 to 1.01 tries; Kavach 1.01 to 1.11.
+
+| Model | Python, zero | Kavach, zero | Kavach, docs |
+|---|---|---|---|
+| Claude Haiku 5.5 | $0.01, 2 min | $0.03, 5 min | $0.03, 5 min |
+| Claude Sonnet 5.5 | $0.10, 3 min | $0.43, 6 min | $0.42, 6 min |
+| Claude Opus 5.5 | $0.20, 3 min | $0.82, 7 min | $0.69, 6 min |
+| Claude Fable 5.2 | $1.06, 5 min | $2.97, 13 min | $3.26, 14 min |
+
+What it shows:
+
+- Every model solves every task in Python on its first try. So these tasks measure the language, not the models: what stands between a model and working Kavach is knowing Kavach.
+- With its guide, Kavach comes within 3 to 12 points of Python; with its errors fed back, within 1; with its tools, level.
+- The tasks are too easy to tell the models apart in Python. Harder tasks would show whether the gap grows with difficulty.
+- About 20 Python prompts carry a note that puts a Kavach word in Python's terms (`require` as `assert`, `with` as `dataclasses.replace`); Kavach's prompts don't. A Python name or type error shows only when its line runs, so it counts as a type failure only if a test reaches it.
+
 ## Found while writing the tasks
 
 Writing the reference solutions, and a first small run, turned up idioms that Kavach refused but that a writer used to Python or JavaScript reaches for. Most are fixed:

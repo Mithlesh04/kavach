@@ -161,6 +161,12 @@ pub(crate) fn runtime_functions() -> Vec<RuntimeFn> {
             &[],
         ),
         (
+            "kv_text_from_words",
+            text_items::kv_text_from_words as *const u8,
+            &[I64, I64, I64],
+            &[I64],
+        ),
+        (
             "kv_text_len",
             text_items::kv_text_len as *const u8,
             &[I64],
@@ -170,6 +176,18 @@ pub(crate) fn runtime_functions() -> Vec<RuntimeFn> {
             "kv_map_get_int",
             rt_maps::kv_map_get_int as *const u8,
             &[I64, I64, I64],
+            &[I64],
+        ),
+        (
+            "kv_map_get_str_or",
+            rt_maps::kv_map_get_str_or as *const u8,
+            &[I64, I64, I64],
+            &[I64],
+        ),
+        (
+            "kv_map_get_item_or",
+            rt_maps::kv_map_get_item_or as *const u8,
+            &[I64, I64, I64, I64],
             &[I64],
         ),
         (

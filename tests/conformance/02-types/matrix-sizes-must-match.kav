@@ -1,0 +1,11 @@
+// Rule: a product whose inner sizes differ breaks the `require` of `matmul`.
+// Spec: 2.17
+// expect panic: require self.cols == other.rows
+
+use std.matrix
+
+fn main() {
+    const a = matrix.of([[1, 2, 3]])
+    const b = matrix.of([[1, 2]])
+    print((a @ b).items)
+}

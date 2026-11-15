@@ -1,0 +1,8 @@
+// Rule: `@` is the matrix product: on numbers it is a compile error that says to multiply with `*`.
+// Spec: 2.17
+// expect compile error
+
+fn main() {
+    const area = 3 @ 4     // error: `@` is the matrix product
+    print(area)
+}

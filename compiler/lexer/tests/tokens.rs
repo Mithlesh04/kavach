@@ -206,7 +206,7 @@ fn errors_are_reported_and_lexing_continues() {
         ("const x = 1;", "const x = int:1 ERR"),
         ("/* old */ x", "x"),
         ("a /* one /* two */ still */ b", "a b"),
-        ("a @ b", "a ERR b"),
+        ("a $ b", "a ERR b"),
     ]);
     assert_eq!(
         errors("const x = 1;\n\"open\nx"),

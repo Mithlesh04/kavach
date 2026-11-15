@@ -48,6 +48,7 @@ pub(crate) const TYPES: &[&str] = &[
     "Mul",
     "Div",
     "Rem",
+    "MatMul",
     "Neg",
     "Comparable",
 ];

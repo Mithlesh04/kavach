@@ -328,6 +328,17 @@ pub extern "C-unwind" fn kv_item_take(addr: i64, code: i64) -> i64 {
     with_item(item, |s| new_text(s, crate::rt::type_of(code)))
 }
 
+/// The item of words `low` and `high` as an owned text object of type
+/// `code`: long text is its object, whose reference it takes over.
+#[unsafe(no_mangle)]
+pub extern "C-unwind" fn kv_text_from_words(low: i64, high: i64, code: i64) -> i64 {
+    let item = [low as u64, high as u64];
+    if (item[1] >> 56) as u8 & INLINE == 0 {
+        return low;
+    }
+    with_item(&item, |s| new_text(s, crate::rt::type_of(code)))
+}
+
 fn write_item(addr: i64, item: [u64; 2]) {
     // SAFETY: generated code passes the address of an item: two words in
     // a list of text with room for it, or on the stack.

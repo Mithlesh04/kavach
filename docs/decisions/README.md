@@ -116,6 +116,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0108](0108-no-user-defined-decorators.md) | No user-defined decorators: what they do elsewhere is said in the signature (contracts, `uses`, `example`) or in plain code; a recurring need becomes a checked clause | Accepted |
 | [0109](0109-operators-through-interfaces.md) | Operators for a program's own types through built-in interfaces (`Add` … `Neg`, `Comparable`); the other operand the same type or one other per operator; operator methods pure | Accepted |
 | [0110](0110-std-system.md) | `std.system`: the machine's system, cores, memory, processor and GPUs; the basics free, the rest behind a new `System` capability; system calls in `runtime/process`, no new dependency | Accepted |
+| [0111](0111-matrices.md) | Matrices: `Matrix<T>` written in Kavach over a flat list, `a @ b` through a new `MatMul` operator interface, the same bits by default, `fast: true` through the `gemm` crate | Accepted |
 
 ## Open decisions
 

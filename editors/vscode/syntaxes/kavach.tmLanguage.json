@@ -379,10 +379,10 @@
         { "name": "keyword.operator.range.kavach", "match": "\\.\\.=?" },
         { "name": "keyword.operator.assignment.kavach", "match": "\\*\\*=|<<=|>>=|[&|^]=" },
         { "name": "keyword.operator.comparison.kavach", "match": "==|!=|<=|>=" },
-        { "name": "keyword.operator.assignment.kavach", "match": "[-+*/%]?=" },
+        { "name": "keyword.operator.assignment.kavach", "match": "[-+*/%@]?=" },
         { "name": "keyword.operator.kavach", "match": "\\*\\*" },
         { "name": "keyword.operator.error.kavach", "match": "!" },
-        { "name": "keyword.operator.kavach", "match": "[-+*/%<>&|^~?]" }
+        { "name": "keyword.operator.kavach", "match": "[-+*/%@<>&|^~?]" }
       ]
     }
   }

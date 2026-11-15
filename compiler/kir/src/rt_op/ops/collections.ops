@@ -102,3 +102,15 @@ PtrReadBytes,
 /// 2.13): `read`'s result type names `T`; `of` gets the size of `T`.
 BytesRead,
 BytesOfNumber,
+/// `std.matrix` (spec 2.17, `runtime/native/src/rt_matrix.rs`), on flat
+/// lists of numbers, the result a list of type `code`: the product of `a`
+/// and `b` with the sizes and `fast` in list `c`; `a` and `b` item by item
+/// (`c`: 0 add, 1 subtract, 2 multiply); `a` scaled by `b`; `a` negated;
+/// `a` transposed, and its sums (all, by row, by column), with the sizes in
+/// list `b`.
+MatrixProduct,
+MatrixZip,
+MatrixScale,
+MatrixNegate,
+MatrixTranspose,
+MatrixSums,

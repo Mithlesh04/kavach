@@ -1,0 +1,42 @@
+// Rule: `std.matrix`: `a @ b` is the product, `+ - *` and unary `-` work item by item, with transposes, sums, slices, rows and columns, for floats and whole numbers.
+// Spec: 2.17
+// expect output: [[19.0, 22.0], [43.0, 50.0]]
+// expect output: [[5.0, 12.0], [21.0, 32.0]]
+// expect output: 3.0
+// expect output: [[5.0, 6.0], [7.0, 8.0]]
+// expect output: [-1.0, -2.0, -3.0, -4.0]
+// expect output: [10.0, 20.0, 30.0, 40.0]
+// expect output: 10.0 [3.0, 7.0] [4.0, 6.0]
+// expect output: [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+// expect output: [[14, 32], [32, 77]]
+// expect output: [[2, 3], [5, 6]]
+// expect output: [4, 5, 6] [3, 6]
+// expect output: [[19.0, 22.0], [43.0, 50.0]]
+// expect output: [6.25]
+// expect output: [[0, 0], [7, 0]]
+
+use std.matrix
+
+fn main() {
+    const a = matrix.of([[1.0, 2.0], [3.0, 4.0]])
+    const b = matrix.of([[5.0, 6.0], [7.0, 8.0]])
+    print((a @ b).to_rows())
+    print((a * b).to_rows())
+    print(a.transpose().at(0, 1))
+    print((a + b - a).to_rows())
+    print((-a).items)
+    print(a.scale(10.0).items)
+    print("{a.sum()} {a.sum_rows()} {a.sum_cols()}")
+    const i = matrix.identity(3, 1)
+    print(i.to_rows())
+    const c = matrix.of([[1, 2, 3], [4, 5, 6]])
+    print((c @ c.transpose()).to_rows())
+    print(c.slice(0, 2, 1, 3).to_rows())
+    print("{c.row(1)} {c.col(2)}")
+    print(a.product(b, fast: true).to_rows())
+    const f: Matrix<Float32> = matrix.of([[Float32(1.5), Float32(2.0)]])
+    print((f @ f.transpose()).items)
+    let m = matrix.filled(2, 2, 0)
+    m.items[m.index(1, 0)] = 7
+    print(m.to_rows())
+}

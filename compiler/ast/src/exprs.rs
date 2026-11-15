@@ -51,6 +51,7 @@ pub enum AssignOp {
     Mul,
     Div,
     Rem,
+    MatMul,
     Pow,
     BitAnd,
     BitOr,
@@ -65,6 +66,7 @@ impl AssignOp {
         Some(match self {
             AssignOp::Set => return None,
             AssignOp::Add => BinaryOp::Add,
+            AssignOp::MatMul => BinaryOp::MatMul,
             AssignOp::Sub => BinaryOp::Sub,
             AssignOp::Mul => BinaryOp::Mul,
             AssignOp::Div => BinaryOp::Div,
@@ -236,6 +238,8 @@ pub enum BinaryOp {
     Mul,
     Div,
     Rem,
+    /// `a @ b`, the matrix product (spec 2.17).
+    MatMul,
     /// `a ** b` (spec 1.8).
     Pow,
     Eq,
@@ -266,6 +270,7 @@ impl BinaryOp {
             Mul => "*",
             Div => "/",
             Rem => "%",
+            MatMul => "@",
             Pow => "**",
             Eq => "==",
             NotEq => "!=",

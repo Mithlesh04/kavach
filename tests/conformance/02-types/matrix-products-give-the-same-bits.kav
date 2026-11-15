@@ -1,0 +1,40 @@
+// Rule: `a @ b` adds each item's products in order, a multiply then an add, so it gives the same bits as a loop written by hand; `fast: true` comes close.
+// Spec: 2.17
+// expect output: the same bits: true
+// expect output: fast is close: true
+
+use std.matrix
+
+fn numbers(n: Int, seed: Int) -> [Float] {
+    let out: [Float] = []
+    let x = seed
+    for _ in 0..n {
+        x = (x * 1103515245 + 12345) % 2147483648
+        out.push((Float(x) / 2147483648.0 - 0.5) * 1000.0)
+    }
+    out
+}
+
+fn main() {
+    const (n, m, p) = (23, 37, 19)
+    const a = Matrix(rows: n, cols: m, items: numbers(n * m, 1))
+    const b = Matrix(rows: m, cols: p, items: numbers(m * p, 2))
+    const c = a @ b
+    let same = true
+    for i in 0..n {
+        for j in 0..p {
+            let sum = 0.0
+            for k in 0..m {
+                sum += a.at(i, k) * b.at(k, j)
+            }
+            same = same and sum == c.at(i, j)
+        }
+    }
+    print("the same bits: {same}")
+    const f = a.product(b, fast: true)
+    let close = true
+    for i in 0..n * p {
+        close = close and (f.items[i] - c.items[i]).abs() <= 1e-9 * (1.0 + c.items[i].abs())
+    }
+    print("fast is close: {close}")
+}

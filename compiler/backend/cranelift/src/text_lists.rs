@@ -5,11 +5,20 @@
 //! from the item's tag.
 
 use crate::codegen::FnGen;
+use crate::data::plain;
 use cranelift_codegen::ir::condcodes::IntCC;
 use cranelift_codegen::ir::{InstBuilder, Value, types};
 use kavach_kir::{Expr, ExprKind, RtOp, Type};
 use kavach_runtime_native::heap::{CAP, LEN, PTR, RC};
 use kavach_runtime_native::text_items::{ASCII, INLINE, LEN_MASK, WIDTH};
+
+/// What `list.push(text)` pushes: a text object (consumed), or an item's
+/// two words, with a reference already taken for long text, and the
+/// text's type.
+pub(crate) enum Pushed {
+    Object(Value),
+    Words(Value, Value, Type),
+}
 
 impl FnGen<'_, '_> {
     /// Whether `t` is a list of text.
@@ -75,7 +84,7 @@ impl FnGen<'_, '_> {
     /// `list.push(text)` on a list of text (the text object is consumed):
     /// stored in place when nobody else holds the list and it has room;
     /// otherwise the runtime copies or grows it.
-    pub(crate) fn text_push(&mut self, list: Value, text: Value, ty: Type, line: u32) -> Value {
+    pub(crate) fn text_push(&mut self, list: Value, text: Pushed, ty: Type, line: u32) -> Value {
         let (check_room, fast, rare, merge) = (
             self.b.create_block(),
             self.b.create_block(),
@@ -95,15 +104,126 @@ impl FnGen<'_, '_> {
         self.b.switch_to_block(fast);
         let ptr = self.load(list, PTR);
         let addr = self.text_addr(ptr, len);
-        self.call_rt("kv_text_store", &[addr, text]);
+        match text {
+            Pushed::Object(p) => {
+                self.call_rt("kv_text_store", &[addr, p]);
+            }
+            Pushed::Words(low, high, _) => {
+                self.store(low, addr, 0);
+                self.store(high, addr, 8);
+            }
+        }
         let len = self.b.ins().iadd_imm(len, 1);
         self.store(len, list, LEN);
         self.b.ins().jump(merge, &[list.into()]);
 
         self.b.switch_to_block(rare);
+        let object = match text {
+            Pushed::Object(p) => p,
+            Pushed::Words(low, high, text) => {
+                let code = self.code(text);
+                self.call_rt("kv_text_from_words", &[low, high, code])[0]
+            }
+        };
         let zero = self.int(types::I64, 0);
-        let grown = self.rt_slots(RtOp::ListPush, list, text, zero, ty, line);
+        let grown = self.rt_slots(RtOp::ListPush, list, object, zero, ty, line);
         self.b.ins().jump(merge, &[grown.into()]);
+
+        self.b.switch_to_block(merge);
+        self.b.block_params(merge)[0]
+    }
+
+    /// The item `e` gives when it is an item of a list of text, `xs[i]` or
+    /// a `for` view: its two words, with one more holder for long text, so
+    /// a push copies it with no object made (Sakshi's S7).
+    pub(crate) fn pushed_words(&mut self, e: &Expr) -> Option<(Value, Value)> {
+        let (addr, list) = if self.is_text_view(e) {
+            (self.text_view(e)?, None)
+        } else if let ExprKind::Index(x, i) = &e.kind
+            && self.text_list(x.ty)
+            && plain(i)
+        {
+            let (list, owned) = self.borrow(x, true)?;
+            let view = if owned {
+                (self.load(list, PTR), self.load(list, LEN))
+            } else {
+                self.list_view(x, list)
+            };
+            let index = self.slot_of(i);
+            if owned || !self.known_in_range(x, i) {
+                self.check_index(view, index, e.line);
+            }
+            (self.text_addr(view.0, index), owned.then_some(list))
+        } else {
+            return None;
+        };
+        let (low, high) = (self.load(addr, 0), self.load(addr, 8));
+        let (long_text, done) = (self.b.create_block(), self.b.create_block());
+        let tag = self.b.ins().ushr_imm(high, 56);
+        let inline = self.b.ins().band_imm(tag, INLINE as i64);
+        let long = self.b.ins().icmp_imm(IntCC::Equal, inline, 0);
+        self.b.ins().brif(long, long_text, &[], done, &[]);
+        self.b.switch_to_block(long_text);
+        self.retain(low);
+        self.b.ins().jump(done, &[]);
+        self.b.switch_to_block(done);
+        if let Some(list) = list {
+            self.release(list);
+        }
+        Some((low, high))
+    }
+
+    /// Whether `pushed_words` reads `e` where it is.
+    pub(crate) fn words_source(&self, e: &Expr) -> bool {
+        self.is_text_view(e)
+            || matches!(&e.kind, ExprKind::Index(x, i) if self.text_list(x.ty) && plain(i))
+    }
+
+    /// `list[index] = item`, the item as its two words (`pushed_words`):
+    /// written in place, the old item let go, when nobody else holds the
+    /// list; otherwise the runtime copies it.
+    pub(crate) fn text_set_words(
+        &mut self,
+        list: Value,
+        index: Value,
+        (low, high, text): (Value, Value, Type),
+        ty: Type,
+        line: u32,
+    ) -> Value {
+        let (fast, old_long, store, rare, merge) = (
+            self.b.create_block(),
+            self.b.create_block(),
+            self.b.create_block(),
+            self.b.create_block(),
+            self.b.create_block(),
+        );
+        self.b.append_block_param(merge, types::I64);
+        let rc = self.load(list, RC);
+        let alone = self.b.ins().icmp_imm(IntCC::Equal, rc, 1);
+        self.b.ins().brif(alone, fast, &[], rare, &[]);
+
+        self.b.switch_to_block(fast);
+        let view = (self.load(list, PTR), self.load(list, LEN));
+        self.check_index(view, index, line);
+        let addr = self.text_addr(view.0, index);
+        let (old, old_high) = (self.load(addr, 0), self.load(addr, 8));
+        let tag = self.b.ins().ushr_imm(old_high, 56);
+        let inline = self.b.ins().band_imm(tag, INLINE as i64);
+        let long = self.b.ins().icmp_imm(IntCC::Equal, inline, 0);
+        self.b.ins().brif(long, old_long, &[], store, &[]);
+        self.b.switch_to_block(old_long);
+        self.release(old);
+        self.b.ins().jump(store, &[]);
+        self.b.switch_to_block(store);
+        self.store(low, addr, 0);
+        self.store(high, addr, 8);
+        self.b.ins().jump(merge, &[list.into()]);
+
+        self.b.switch_to_block(rare);
+        let code = self.code(text);
+        let object = self.call_rt("kv_text_from_words", &[low, high, code])[0];
+        let changed = self.rt_slots(RtOp::ListSet, list, index, object, ty, line);
+        self.b.ins().jump(merge, &[changed.into()]);
 
         self.b.switch_to_block(merge);
         self.b.block_params(merge)[0]

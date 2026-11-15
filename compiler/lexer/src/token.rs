@@ -86,11 +86,15 @@ pub enum TokenKind {
     Star,
     Slash,
     Percent,
+    /// `@`, the matrix product (spec 2.17).
+    At,
     PlusEq,
     MinusEq,
     StarEq,
     SlashEq,
     PercentEq,
+    /// `@=` (spec 2.17).
+    AtEq,
     /// `**` and `**=` (spec 1.8).
     StarStar,
     StarStarEq,
@@ -139,6 +143,7 @@ pub(crate) const PUNCTUATION: &[(&str, TokenKind)] = &[
     ("-=", TokenKind::MinusEq),
     ("*=", TokenKind::StarEq),
     ("/=", TokenKind::SlashEq),
+    ("@=", TokenKind::AtEq),
     ("%=", TokenKind::PercentEq),
     ("(", TokenKind::LParen),
     (")", TokenKind::RParen),
@@ -159,6 +164,7 @@ pub(crate) const PUNCTUATION: &[(&str, TokenKind)] = &[
     ("*", TokenKind::Star),
     ("/", TokenKind::Slash),
     ("%", TokenKind::Percent),
+    ("@", TokenKind::At),
     ("&", TokenKind::Amp),
     ("|", TokenKind::Pipe),
     ("^", TokenKind::Caret),
@@ -191,11 +197,13 @@ pub(crate) fn continues_line(kind: &TokenKind) -> bool {
             | Star
             | Slash
             | Percent
+            | At
             | PlusEq
             | MinusEq
             | StarEq
             | SlashEq
             | PercentEq
+            | AtEq
             | StarStar
             | StarStarEq
             | AmpEq

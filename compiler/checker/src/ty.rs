@@ -139,6 +139,7 @@ pub(crate) fn builtin_name(name: &str) -> &'static str {
         "Div",
         "Rem",
         "Neg",
+        "MatMul",
         "Comparable",
         "Console",
         "Fs",

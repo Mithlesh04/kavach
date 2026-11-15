@@ -1,0 +1,23 @@
+// Rule: `a @ b` calls `matmul` on a type that implements `MatMul`, binds as `*` does, and `x @= v` is `x = x @ v`.
+// Spec: 2.16
+// expect output: M2(a: 37, b: 54, c: 81, d: 118)
+// expect output: true
+
+type M2: MatMul {
+    a: Int
+    b: Int
+    c: Int
+    d: Int
+
+    fn matmul(self, o: M2) -> M2 {
+        M2(a: self.a * o.a + self.b * o.c, b: self.a * o.b + self.b * o.d, c: self.c * o.a + self.d * o.c, d: self.c * o.b + self.d * o.d)
+    }
+}
+
+fn main() {
+    const x = M2(a: 1, b: 2, c: 3, d: 4)
+    let y = x @ x
+    y @= x
+    print(y)
+    print(x @ x @ x == y)
+}

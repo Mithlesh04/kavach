@@ -123,20 +123,13 @@ ScopeProgram,
 /// the folder then the environment's names and values; can fail), the
 /// next line as its kind and text (waits), the end as code, processor
 /// milliseconds and peak bytes (waits), kill, close, and this program's
-/// peak memory and processor milliseconds.
+/// peak memory.
 RunStart,
 RunNext,
 RunExit,
 RunKill,
 RunClose,
 RunPeak,
-RunCpu,
-/// `std.system` (spec 14.25, `runtime/native/src/rt_machine.rs`): fact
-/// `a` of the machine as text, then as a number, and the GPUs as four
-/// texts each.
-MachineText,
-MachineNumber,
-MachineGpus,
 /// Blocks given to a call (spec 4.8, decision 0107), kept on the task's
 /// scope stack (`runtime/native/src/rt_scopes.rs`), each giving the depth
 /// `FsScopeLeave` goes back to: a span named `a` (continuing the
@@ -162,3 +155,11 @@ FsWriterOpen,
 FsWriterWrite,
 FsWriterFinish,
 FsWriterClose,
+/// This program's processor milliseconds (`std.process`, spec 14.23).
+RunCpu,
+/// `std.system` (spec 14.25, `runtime/native/src/rt_machine.rs`): fact
+/// `a` of the machine as text, then as a number, and the GPUs as four
+/// texts each.
+MachineText,
+MachineNumber,
+MachineGpus,

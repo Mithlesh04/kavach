@@ -1,0 +1,22 @@
+// Rule: an item of a list of text set from the same list, itself included, short or long, gives the list what a copy would, and a copy made before keeps its items.
+// Spec: 6.1
+// expect output: a long text that does not fit in an item|a long text that does not fit in an item|a long text that does not fit in an item|b
+// expect output: a long text that does not fit in an item|a long text that does not fit in an item|b|b
+// expect output: a long text that does not fit in an item|b|b|b
+
+fn main() {
+    let xs = ["a", "a long text that does not fit in an item", "b", "another long text, also too long"]
+    xs[0] = xs[1]
+    xs[1] = xs[1]
+    xs[3] = xs[2]
+    const copy = xs
+    let out = ["", "", "", ""]
+    for i in 0..xs.len() {
+        out[i] = xs[i]
+    }
+    xs[2] = xs[0]
+    out[1] = copy[3]
+    print(xs.join("|"))
+    print(copy.join("|"))
+    print(out.join("|"))
+}

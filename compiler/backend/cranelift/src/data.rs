@@ -234,6 +234,11 @@ impl FnGen<'_, '_> {
                 }
                 self.unpack(slot, e.ty)
             }
+            ExprKind::Rt(RtOp::MapGetOr, args)
+                if self.text_keys_plain(args[0].ty) && !e.ty.is_ref() =>
+            {
+                self.text_get_or(e, args)?
+            }
             ExprKind::Rt(RtOp::StrLen, args) if self.is_text_view(&args[0]) => {
                 let addr = self.text_view(&args[0])?;
                 self.text_len(addr)
@@ -254,7 +259,12 @@ impl FnGen<'_, '_> {
                 self.list_len(obj, owned)
             }
             ExprKind::Rt(RtOp::ListPush, args) if self.text_list(args[0].ty) => {
-                let (list, item) = (self.slot_of(&args[0]), self.slot_of(&args[1]));
+                use crate::text_lists::Pushed;
+                let list = self.slot_of(&args[0]);
+                let item = match self.pushed_words(&args[1]) {
+                    Some((low, high)) => Pushed::Words(low, high, args[1].ty),
+                    None => Pushed::Object(self.slot_of(&args[1])),
+                };
                 self.text_push(list, item, e.ty, e.line)
             }
             ExprKind::Rt(RtOp::ListPush, args) if self.flat_width(args[0].ty) > 0 => {

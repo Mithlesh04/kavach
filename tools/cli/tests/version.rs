@@ -18,6 +18,20 @@ fn program(dir: &Path, arg: &str) -> String {
     let exe = dir
         .join(".kavach/bin")
         .join(format!("app{}", std::env::consts::EXE_SUFFIX));
+    if !exe.is_file() {
+        // Built again, to show why it wasn't.
+        let out = Command::new(env!("CARGO_BIN_EXE_kavach"))
+            .arg("build")
+            .current_dir(dir)
+            .output()
+            .unwrap();
+        panic!(
+            "`kavach build` made no {}: {}{}",
+            exe.display(),
+            String::from_utf8_lossy(&out.stdout),
+            String::from_utf8_lossy(&out.stderr)
+        );
+    }
     let out = Command::new(exe).arg(arg).output().unwrap();
     String::from_utf8_lossy(&out.stdout).into_owned()
 }

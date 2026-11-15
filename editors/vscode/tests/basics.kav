@@ -108,6 +108,10 @@ print(self.name)
 //        ^^^ keyword.operator.assignment.kavach
 //              ^^ keyword.operator.kavach
 
+    m @= a @ b
+//    ^^ keyword.operator.assignment.kavach
+//         ^ keyword.operator.kavach
+
     const text = try read_file(path) context "loading settings"
 //               ^^^ keyword.control.kavach
 //                                   ^^^^^^^ keyword.control.kavach

@@ -18,6 +18,7 @@ mod library;
 mod link;
 pub use link::link_library;
 mod loops;
+mod maps;
 mod object;
 mod op_entries;
 mod ops;

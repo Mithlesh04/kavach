@@ -1,0 +1,15 @@
+[package]
+name = "kavach-runtime-matrix"
+description = "Matrix kernels for std.matrix (spec 2.17): the product in one fixed order, and the fast one through gemm"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+# The fast product (decision 0111), without its own thread pool.
+gemm = { version = "0.19.0", default-features = false, features = ["std"] }
+
+[lints]
+workspace = true

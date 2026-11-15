@@ -395,6 +395,14 @@ impl Checker<'_> {
                 if let Some(t) = self.user_binary(op, l, r, &lt) {
                     return t;
                 }
+                if op == MatMul {
+                    self.value(r, None);
+                    if !matches!(self.inf.resolve(&lt), Ty::Error) {
+                        let shown = self.show(&lt);
+                        self.error(l.span, format!("`@` is the matrix product, for a `Matrix` (spec 2.17) or a type with `MatMul` (2.16), and this is `{shown}`: multiply numbers with `*`"));
+                    }
+                    return Ty::Error;
+                }
                 if op == Add && matches!(self.inf.resolve(&lt), Ty::Prim(Prim::Bytes)) {
                     let bytes = Ty::Prim(Prim::Bytes);
                     self.check_expect(r, &bytes);

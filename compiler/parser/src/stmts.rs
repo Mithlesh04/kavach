@@ -136,6 +136,7 @@ fn assign_op(kind: &TokenKind) -> Option<AssignOp> {
         TokenKind::StarEq => AssignOp::Mul,
         TokenKind::SlashEq => AssignOp::Div,
         TokenKind::PercentEq => AssignOp::Rem,
+        TokenKind::AtEq => AssignOp::MatMul,
         TokenKind::StarStarEq => AssignOp::Pow,
         TokenKind::AmpEq => AssignOp::BitAnd,
         TokenKind::PipeEq => AssignOp::BitOr,

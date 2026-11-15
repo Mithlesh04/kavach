@@ -89,6 +89,30 @@ impl FnGen<'_, '_> {
                 let changed = self.flat_push(current, item, value.ty, value.line);
                 self.b.def_var(var, changed);
             }
+            // An item of a list of text pushed or set as its two words, with
+            // no object made (Sakshi's S7).
+            ExprKind::Rt(op @ (RtOp::ListPush | RtOp::ListSet), args)
+                if self.text_list(value.ty)
+                    && is_local(&args[0], local)
+                    && args.last().is_some_and(|x| self.words_source(x)) =>
+            {
+                let index = (*op == RtOp::ListSet).then(|| self.slot_of(&args[1]));
+                let item = &args[args.len() - 1];
+                let Some((low, high)) = self.pushed_words(item) else {
+                    return;
+                };
+                let current = self.b.use_var(var);
+                let changed = match index {
+                    Some(i) => {
+                        self.text_set_words(current, i, (low, high, item.ty), value.ty, value.line)
+                    }
+                    None => {
+                        let words = crate::text_lists::Pushed::Words(low, high, item.ty);
+                        self.text_push(current, words, value.ty, value.line)
+                    }
+                };
+                self.b.def_var(var, changed);
+            }
             ExprKind::Rt(op, args) if op.changes_receiver() && is_local(&args[0], local) => {
                 // The other operands first: they may read the local.
                 let mut slots: Vec<Value> = args[1..].iter().map(|x| self.slot_of(x)).collect();
@@ -99,7 +123,8 @@ impl FnGen<'_, '_> {
                 let list = self.is_list(value.ty);
                 let changed = match op {
                     RtOp::ListPush if self.text_list(value.ty) => {
-                        self.text_push(current, slots[0], value.ty, value.line)
+                        let item = crate::text_lists::Pushed::Object(slots[0]);
+                        self.text_push(current, item, value.ty, value.line)
                     }
                     // The runtime replaces an item of a list of text.
                     RtOp::ListSet if self.text_list(value.ty) => {
