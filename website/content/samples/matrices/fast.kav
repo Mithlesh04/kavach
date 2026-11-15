@@ -1,0 +1,8 @@
+use std.matrix
+
+fn main() uses Console {
+    const a = matrix.of([[1, 2, 3], [4, 5, 6]])
+    const b = a.transpose()
+    print((a @ b).to_rows())
+    print(a.product(b, fast: true).to_rows() == (a @ b).to_rows())
+}

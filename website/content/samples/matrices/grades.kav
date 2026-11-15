@@ -1,0 +1,14 @@
+use std.matrix
+
+fn main() uses Console {
+    // One row per student, one column per test.
+    const marks = matrix.of([
+        [80.0, 70.0, 90.0],
+        [60.0, 90.0, 75.0],
+    ])
+    // How much each test counts.
+    const weights = matrix.of([[0.25], [0.25], [0.5]])
+    print((marks @ weights).items)
+    print(marks.sum_cols())
+    print(marks.scale(0.1).row(0))
+}

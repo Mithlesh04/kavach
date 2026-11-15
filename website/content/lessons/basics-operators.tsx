@@ -47,7 +47,8 @@ export const operatorsDoc: LessonDoc = {
       </Note>
       <P>
         Your own types can have <C>+</C>, <C>-</C>, <C>&lt;</C> and the others too, by implementing an interface:
-        see <Link href="/docs/types/operators-for-your-types/">Operators for Your Types</Link>.
+        see <Link href="/docs/types/operators-for-your-types/">Operators for Your Types</Link>. <C>a @ b</C> is the
+        product of two <Link href="/docs/types/matrices/">matrices</Link>.
       </P>
     </>
   ),
@@ -184,6 +185,7 @@ export const precedenceDoc: LessonDoc = {
       <Ex name="operators/precedence" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>2 + 3 * 4</C> is 14: the multiplication goes first.</li>
+        <li><C>@</C>, the <Link href="/docs/types/matrices/">matrix</Link> product, goes with <C>*</C>, <C>/</C> and <C>%</C>: <C>a + b @ c</C> is <C>a + (b @ c)</C>.</li>
         <li><C>-2 ** 2</C> is <C>-4</C>, as in mathematics: the power goes before the minus.</li>
         <li><C>2 ** 3 ** 2</C> is <C>2 ** 9</C>: powers go right to left.</li>
       </ul>

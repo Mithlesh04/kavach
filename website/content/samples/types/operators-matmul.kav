@@ -1,0 +1,26 @@
+/// A 2 x 2 matrix of whole numbers, small enough to be four fields.
+type M2: MatMul {
+    a: Int
+    b: Int
+    c: Int
+    d: Int
+
+    fn matmul(self, o: M2) -> M2 {
+        M2(
+            a: self.a * o.a + self.b * o.c,
+            b: self.a * o.b + self.b * o.d,
+            c: self.c * o.a + self.d * o.c,
+            d: self.c * o.b + self.d * o.d,
+        )
+    }
+}
+
+fn main() uses Console {
+    // Each product moves one step along the Fibonacci numbers.
+    const step = M2(a: 1, b: 1, c: 1, d: 0)
+    let power = step
+    for _ in 1..10 {
+        power @= step
+    }
+    print("the 10th Fibonacci number is {power.b}")
+}

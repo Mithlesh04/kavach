@@ -80,6 +80,13 @@ function PassBars() {
   );
 }
 
+/** Every table under a heading, in order, for a section with more than one. */
+function tablesUnder(heading: string) {
+  const ts = fileTables(README).filter((x) => x.heading === heading);
+  if (!ts.length || ts.some((t) => t.header[0] !== "Model")) throw new Error(`${README}: the ${heading} tables changed shape`);
+  return ts;
+}
+
 function ResultTable({ heading }: { heading: string }) {
   const { header, rows } = result(heading);
   return <Table header={header} rows={rows} />;
@@ -94,7 +101,7 @@ const conditions = () => {
 const intro = () => fileFigure(README, /\n\n(\d+ small programming tasks[^\n]+)\n/);
 
 export const aiWritesDoc: LessonDoc = {
-  lead: "How often Claude models write Kavach that runs right: alone, with the guide for AI tools, with the compiler's errors sent back, and with Kavach's own tools. Measured, failures included.",
+  lead: "How often Claude models write Kavach that runs right: alone, with the guide for AI tools, with the compiler's errors sent back, and with Kavach's own tools, beside the same tasks in Python. Measured, failures included.",
   simple: <>A new language is only useful if AI assistants can write it. So each model was given the same small tasks, and each answer was run and checked. On their own, the models mostly wrote another language by habit; with a short guide and the compiler&apos;s messages, nearly every answer worked.</>,
   minutes: 6,
   before: ["tools/tools-for-ai"],
@@ -134,6 +141,19 @@ export const aiWritesDoc: LessonDoc = {
       {paragraphs(section("Between the two runs")).slice(1).map((p) => (
         <P key={p}><Cell text={p} /></P>
       ))}
+      <H2>Against Python</H2>
+      <P><Cell text={paragraphs(section("Against Python"))[0]} /></P>
+      {tablesUnder("Against Python").map((t, i) => (
+        <div key={t.header.join()} className="flex flex-col gap-3">
+          {i > 0 ? <P><Cell text={paragraphs(section("Against Python"))[1]} /></P> : null}
+          <Table header={t.header} rows={t.rows} />
+        </div>
+      ))}
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        {bullets(section("Against Python")).map((b) => (
+          <li key={b}><Cell text={b} /></li>
+        ))}
+      </ul>
       <H2>Tries, cost and time</H2>
       <P><Cell text={paragraphs(section("Repair rounds"))[0]} /></P>
       <ResultTable heading="Repair rounds" />
@@ -178,6 +198,8 @@ export const aiWritesDoc: LessonDoc = {
         <SrcRef file="benchmarks/ai-writes/method.md" label="how it works" />
         <SrcRef file="benchmarks/ai-writes/results/2026-11-15-kavach.json" label="every answer" />
         <SrcRef file="benchmarks/ai-writes/results/2026-11-14-kavach.json" label="the first run" />
+        <SrcRef file="benchmarks/ai-writes/results/2026-11-15-python.json" label="Python's answers" />
+        <SrcRef file="benchmarks/ai-writes/languages/python/README.md" label="the Python tasks" />
         <SrcRef file="benchmarks/ai-writes/summarize.py" label="summarize.py" />
         <SrcRef file="benchmarks/ai-writes/tasks/tasks.json" label="the tasks" />
       </div>

@@ -58,6 +58,9 @@ export const ownOperatorsDoc: LessonDoc = {
         <C>==</C> and <C>!=</C> are not interfaces: they compare contents for every type. So <C>a == b</C> and{" "}
         <C>compare</C> disagree only if the type&apos;s author makes them.
       </P>
+      <P>
+        <C>MatMul</C> gives <C>@</C>, the matrix product: see <Link href="/docs/types/matrices/">Matrices</Link>.
+      </P>
       <H2>What is refused</H2>
       <P>Your type goes on the left. <C>2.0 * v</C> is an error that says to write <C>v * 2.0</C>:</P>
       <Ex name="types/operators-left.fails" />

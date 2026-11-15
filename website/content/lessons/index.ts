@@ -53,6 +53,7 @@ import { base64Doc, cryptoDoc } from "./stdlib-crypto";
 import { compressDoc } from "./stdlib-compress";
 import { windowDoc } from "./stdlib-window";
 import { processDoc } from "./stdlib-process";
+import { matricesDoc } from "./types-matrices";
 import { systemDoc } from "./stdlib-system";
 import { loggingDoc } from "./stdlib-log";
 import { aiWritesDoc } from "./tools-ai-writes";
@@ -277,6 +278,7 @@ export const lessons: Record<string, LessonDoc> = {
   "types/interfaces": interfacesDoc,
   "types/interface-values": interfaceValuesDoc,
   "types/operators-for-your-types": ownOperatorsDoc,
+  "types/matrices": matricesDoc,
   "types/classes-and-inheritance": classesDoc,
   "types/writing-types": writingTypesDoc,
 

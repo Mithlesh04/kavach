@@ -30,6 +30,7 @@ const ELSEWHERE: Record<string, [string, string]> = {
   "std.tasks": ["09-concurrency.md", "9.4"],
   "std.ai": ["08-capabilities-and-agents/04-typed-ai-calls.md", "8.4"],
   "std.literals": ["10-modules-and-packages/15-tagged-literals.md", "10.15"],
+  "std.matrix": ["02-types/17-matrices.md", "2.17"],
 };
 
 type StdModule = { title: string; key: string; file: string; number: string; folders: string[] };

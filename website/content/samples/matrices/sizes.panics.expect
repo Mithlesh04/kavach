@@ -1,0 +1,1 @@
+panic: contract failed: require self.cols == other.rows

@@ -1,0 +1,7 @@
+use std.matrix
+
+fn main() uses Console {
+    const a = matrix.of([[1, 2, 3]])
+    const b = matrix.of([[1, 2]])
+    print((a @ b).items)
+}

@@ -1,0 +1,11 @@
+use std.matrix
+
+fn main() uses Console {
+    const a = matrix.of([[1.0, 2.0], [3.0, 4.0]])
+    const b = matrix.of([[5.0, 6.0], [7.0, 8.0]])
+    print((a @ b).to_rows())
+    print((a * b).to_rows())
+    print((a + b).items)
+    print(a.transpose().to_rows())
+    print("{a.rows} x {a.cols}, item (1, 0) is {a.at(1, 0)}")
+}
