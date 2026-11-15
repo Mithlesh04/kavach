@@ -11,6 +11,7 @@
 //! on with the value it has.
 
 use crate::expr::Writer;
+use crate::vec::vec_type;
 use crate::{PRELUDE, load, wgsl_type};
 use kavach_kir::{FuncId, Program, Shape, Type};
 
@@ -57,9 +58,11 @@ fn structs(program: &Program, ids: &[u32]) -> Option<String> {
         }
     }
     let mut text = String::new();
+    // `std.vec`'s are WGSL's own types, with nothing to declare.
+    all.retain(|id| vec_type(program, Type::Ref(*id)).is_none());
     for id in all {
         let typed: Vec<String> = (parts(program, Type::Ref(id))?.iter().enumerate())
-            .map(|(k, t)| Some(format!("f{k}: {}", type_name(*t)?)))
+            .map(|(k, t)| Some(format!("f{k}: {}", type_name(program, *t)?)))
             .collect::<Option<_>>()?;
         text.push_str(&format!("struct S{id} {{ {} }}\n", typed.join(", ")));
     }
@@ -76,7 +79,10 @@ fn parts(program: &Program, t: Type) -> Option<Vec<Type>> {
     })
 }
 
-fn type_name(t: Type) -> Option<String> {
+fn type_name(program: &Program, t: Type) -> Option<String> {
+    if let Some(v) = vec_type(program, t) {
+        return Some(v.to_string());
+    }
     match wgsl_type(t) {
         Some(name) => Some(name.to_string()),
         None => match t {
@@ -132,7 +138,7 @@ pub(crate) fn module(
             at += 1;
         }
         header.push(letters.trim_end().to_string());
-        made.push(format!("S{}({})", struct_id(t)?, args.join(", ")));
+        made.push(format!("{}({})", type_name(program, t)?, args.join(", ")));
     }
     while header.len() < 2 {
         header.push(String::new());
@@ -147,7 +153,11 @@ pub(crate) fn module(
         let loads: Vec<String> = (fs.iter().enumerate())
             .map(|(k, (_, t))| load(&format!("shared_words[{k}u]"), *t))
             .collect();
-        made.push(format!("S{}({})", struct_id(shared)?, loads.join(", ")));
+        made.push(format!(
+            "{}({})",
+            type_name(program, shared)?,
+            loads.join(", ")
+        ));
     } else {
         header.push("0".to_string());
     }
@@ -162,7 +172,11 @@ pub(crate) fn module(
     let mut back = Vec::new();
     let mut loc = 0;
     for (k, (_, t)) in corner.iter().enumerate() {
-        if k == pos {
+        if k == pos && vec_type(program, *t).is_some() {
+            // A `Vec4` of `std.vec` is WGSL's `vec4<f32>` already.
+            sets.push(format!("    o.position = r.f{k};"));
+            back.push("i.position".to_string());
+        } else if k == pos {
             let p = format!("r.f{k}");
             sets.push(format!(
                 "    o.position = vec4<f32>({p}.f0, {p}.f1, {p}.f2, {p}.f3);"
@@ -201,12 +215,17 @@ pub(crate) fn module(
         sets.join("\n")
     ));
     module.push_str(&format!(
-        "@fragment\nfn fs_main(i: VOut) -> @location(0) vec4<f32> {{\n    let c = {fname}(S{}({}){});\n    return vec4<f32>(c.f0, c.f1, c.f2, c.f3);\n}}\n",
+        "@fragment\nfn fs_main(i: VOut) -> @location(0) vec4<f32> {{\n    let c = {fname}(S{}({}){});\n    return {};\n}}\n",
         struct_id(vf.ret)?,
         back.join(", "),
         (0..textures.len())
             .map(|k| format!(", ktex{k}"))
-            .collect::<String>()
+            .collect::<String>(),
+        // The color: a `Vec4` already, or four fields.
+        match vec_type(program, ff.ret) {
+            Some(_) => "c".to_string(),
+            None => "vec4<f32>(c.f0, c.f1, c.f2, c.f3)".to_string(),
+        }
     ));
     Some(module)
 }

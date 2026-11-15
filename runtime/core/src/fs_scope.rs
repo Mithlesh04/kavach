@@ -120,7 +120,8 @@ pub fn seeded_bits(scopes: &[Scope]) -> Option<u64> {
 pub fn leave(scopes: &mut Vec<Scope>, depth: usize, error: Option<&str>) -> Vec<Finished> {
     let end_nanos = crate::trace::now_nanos();
     let gone = scopes.split_off(depth.min(scopes.len()));
-    gone.into_iter()
+    let ended: Vec<Finished> = gone
+        .into_iter()
         .rev()
         .filter_map(|s| match s {
             Scope::Span {
@@ -138,7 +139,10 @@ pub fn leave(scopes: &mut Vec<Scope>, depth: usize, error: Option<&str>) -> Vec<
             }),
             _ => None,
         })
-        .collect()
+        .collect();
+    // To the Chrome trace too, when `KAVACH_TRACE` names one (14.12).
+    crate::chrome_trace::write(&ended);
+    ended
 }
 
 /// Whether `path` is inside every folder of `scopes`.

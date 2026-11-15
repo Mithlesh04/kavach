@@ -27,6 +27,8 @@ pub(crate) const MODULES: &[(&str, Option<&str>)] = &[
     ("window", Some("Window")),
     ("input", Some("Input")),
     ("audio", Some("Audio")),
+    ("image", None),
+    ("app", Some("Fs")),
     ("process", Some("Process")),
     ("system", Some("System")),
     ("matrix", None),
@@ -253,7 +255,8 @@ impl Checker<'_> {
                 vec![p("target", &string), p("link", &string)],
                 fs_fails(Ty::Unit),
             ),
-            ("time", "now_ms" | "monotonic_ms") => (vec![], int.clone()),
+            ("time", "now_ms" | "monotonic_ms" | "monotonic_ns") => (vec![], int.clone()),
+            ("time", "sleep_ns") => (vec![p("ns", &int)], Ty::Unit),
             ("time", "sleep_ms" | "freeze") => (vec![p("ms", &int)], Ty::Unit),
             ("agents", "call_key") => (vec![], Ty::Optional(Box::new(string.clone()))),
             // Approvals answered in code (spec 14.16), behind `Approvals`:
@@ -282,6 +285,10 @@ impl Checker<'_> {
             ("input", _) => self.input_signature(name)?,
             // Sound (spec 14.27), behind `Audio`.
             ("audio", _) => self.audio_signature(name)?,
+            // Pictures (spec 14.29): data, no capability.
+            ("image", _) => self.image_signature(name)?,
+            // Folders, crash reports and dialogs (spec 14.30).
+            ("app", _) => self.app_signature(name)?,
             ("process", _) => self.process_signature(name)?,
             // What machine this is (spec 14.25): the basics free.
             ("system", _) => self.system_signature(name)?,
@@ -289,7 +296,9 @@ impl Checker<'_> {
             ("matrix", _) => self.matrix_signature(name, generics, span)?,
             ("gpu", _) => self.draw_signature(name)?,
             ("log", _) => self.log_signature(name)?,
-            ("fs", n) if n.starts_with("writer_") => self.writer_signature(name)?,
+            ("fs", n) if n.starts_with("writer_") || n.starts_with("watch_") => {
+                self.writer_signature(name)?
+            }
             ("clipboard", _) => self.clipboard_signature(name)?,
             ("time", "zone_offset") => (
                 vec![p("name", &string), p("ms", &int)],

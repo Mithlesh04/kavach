@@ -1,0 +1,15 @@
+// Rule: A type given for a `T` with operator bounds must have those operators.
+// Spec: 2.16
+// expect compile error
+
+fn total<T: Add>(items: [T], zero: T) -> T {
+    let sum = zero
+    for x in items {
+        sum = sum + x
+    }
+    sum
+}
+
+fn main() {
+    print(total(["a", "b"], ""))     // error: String doesn't implement Add
+}

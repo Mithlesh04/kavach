@@ -165,6 +165,8 @@ impl Checker<'_> {
                 }
                 "contains" | "starts_with" | "ends_with" => sig(vec![string], boolean),
                 "is_blank" => sig(vec![], boolean),
+                // `Comparable` (spec 2.16): below 0 when `s` comes first.
+                "compare" => sig(vec![string.clone()], int.clone()),
                 "words" => sig(vec![], list(string.clone())),
                 "last_index_of" => sig(vec![string], opt(int)),
                 "count" => sig(vec![string], int),

@@ -23,6 +23,9 @@ Code that both the interpreter and native code use, so the two give exactly the 
 | `src/text_methods.rs` | Text methods the interpreter and native code share: `capitalize`, `title`, `words`, padding, `truncate`, `is_blank`, `last_index_of`, `count`, removing a prefix or suffix (spec 14.2) |
 | `src/regex.rs` | Regular expressions (spec 14.8): a linear-time engine, and an advanced one with a backtracking limit |
 | `src/agents.rs` | The bookkeeping of agents' guards (spec 8.3, 8.5, 8.6): limit totals over rolling windows, asking a person; the audit log in `src/agents/audit.rs`, the state file in `src/agents/state.rs` (tests in `src/agents/tests.rs`) |
+| `src/app.rs` | `std.app`'s folders by each system's rule, and the crash report a panic writes (spec 14.30) |
+| `src/chrome_trace.rs` | Spans written as a Chrome trace when `KAVACH_TRACE` names a file (spec 14.12) |
+| `src/fine_clock.rs` | A nanosecond clock that never jumps, and the spin at the end of a precise wait (spec 14.4) |
 | `src/journal.rs` | The journal of a durable agent (spec 8.5, decision 0025): events, call outcomes and ends as JSON lines, and the events a crash left unfinished |
 | `src/log.rs` | Where `std.log` writes (spec 14.12): the console, and a file set aside when it grows past a size (tests in the file); whether standard output shows colors (`io.colors()`, spec 14.6) |
 | `src/base64.rs` | `std.base64` (spec 14.20): standard and URL-safe base64, decoded strictly |

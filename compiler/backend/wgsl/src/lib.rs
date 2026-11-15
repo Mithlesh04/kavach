@@ -31,6 +31,8 @@ mod tests;
 #[cfg(test)]
 mod tests_draw;
 mod texture;
+mod values;
+mod vec;
 
 use kavach_kir::{Expr, ExprKind, FuncId, Program, RtOp, Shape, Stmt, Type, walk};
 use std::collections::HashMap;
@@ -327,6 +329,10 @@ pub(crate) fn ty_name(program: &Program, t: Type) -> Option<String> {
         return Some(name.to_string());
     }
     let Type::Ref(id) = t else { return None };
+    // `std.vec`'s vectors and matrices are WGSL's own (spec 14.28).
+    if let Some(v) = crate::vec::vec_type(program, t) {
+        return Some(v.to_string());
+    }
     // Fields of the four types, or one level down a vector (a draw's
     // `position`, spec 15.3); a `map`'s items stay flat (`struct_fields`).
     let parts: Vec<Type> = match program.shapes.get(id as usize)? {

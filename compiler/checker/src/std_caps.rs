@@ -12,7 +12,8 @@ impl Checker<'_> {
     pub(crate) fn std_capability(&mut self, module: &str, name: &str, span: Span) {
         // Reading the clock needs no capability (spec 8.1); a contract still
         // may not read it, as its answer would change from run to run.
-        let reads_clock = module == "time" && matches!(name, "now_ms" | "monotonic_ms");
+        let reads_clock =
+            module == "time" && matches!(name, "now_ms" | "monotonic_ms" | "monotonic_ns");
         // Nor does reading a zone's rules, or freezing a test's clock (spec
         // 14.4), which only a `test` block may do.
         let reads_zone = module == "time" && matches!(name, "zone_offset" | "freeze");
@@ -34,6 +35,8 @@ impl Checker<'_> {
             || (module == "net" && name.starts_with("websocket_"))
             || (module == "process" && matches!(name, "peak_bytes_id" | "cpu_ms_id"))
             || (module == "system" && name.starts_with("basic_"))
+            // Letting a watcher go (spec 14.3).
+            || (module == "fs" && name == "watch_close_id")
             // Sounds are data; playing them needs `Audio` (spec 14.27).
             || (module == "audio" && matches!(name, "sound_id" | "decode_id" | "info_id" | "drop_sound_id"));
         if let Some(cap) = (MODULES.iter())
@@ -46,9 +49,13 @@ impl Checker<'_> {
                 ("window", "listen_id" | "lock_cursor_id") => "Input",
                 (
                     "fs",
-                    "read_text" | "read_bytes" | "lines" | "chunks" | "exists" | "list" | "stat",
+                    "read_text" | "read_bytes" | "lines" | "chunks" | "exists" | "list" | "stat"
+                    | "watch_open_id" | "watch_next_id" | "watch_poll_id",
                 ) => "Fs.read",
                 ("fs", _) => "Fs.write",
+                // Folders and crash reports make folders; a dialog is a window (14.30).
+                ("app", "dialog_id") => "Window",
+                ("app", _) => "Fs.write",
                 // Parts `System` doesn't cover (spec 14.25, decision 0112).
                 ("system", "critical_id") => "System.critical.read",
                 ("system", "act_id") => "System.critical.write",

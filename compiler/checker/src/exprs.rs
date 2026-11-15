@@ -317,6 +317,11 @@ impl Checker<'_> {
             Ty::Param(_) => !int_only && self.number_param(t, false),
             _ => false,
         };
+        if !ok && let Ty::Param(_) = self.inf.resolve(t) {
+            let name = self.show(t);
+            self.error(e.span, format!("`{name}` isn't known to be a number: write `{name}: Number` (spec 2.9), or an operator's bound, as `{name}: Add` (spec 2.16)"));
+            return ok;
+        }
         if !ok {
             let shown = self.show(t);
             let what = if int_only { "an integer" } else { "a number" };

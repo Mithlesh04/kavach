@@ -19,7 +19,7 @@ const bright = pixels.map(p => glow(p, 0.5))    // on the GPU for a long list
 A function marked `gpu fn` may run on the GPU, so it uses only what a GPU can do. It **must**:
 
 - take and give only `Float32`, `Int32`, `UInt32` and `Bool` (2.1), and records and tuples of 1 to 8 fields of those types. GPUs compute 32-bit numbers fast; `Float` and `Int` (64 bits) are slow or missing there;
-- use in its body only: `const` and `let` of those types, assignment, `if` and `else`, `while`, `for` over a range (`0..n`), `return`, the operators of 1.8 (`**` on `Float32` only), conversions between those types (`Float32(n)`, `Int32(x)`), the methods `abs`, `min`, `max` and `clamp`, `math.sqrt`, `floor`, `ceil`, `round`, `pow`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `exp` and `ln` (14.5), calls to other `gpu fn`s, and the fields of its records and tuples: reading one (`p.x`, `t.0`), and making a new record or tuple (`Particle(x: x, y: y)`, `(a, b)`).
+- use in its body only: `const` and `let` of those types, assignment, `if` and `else`, `while`, `for` over a range (`0..n`), `return`, the operators of 1.8 (`**` on `Float32` only), conversions between those types (`Float32(n)`, `Int32(x)`), the methods `abs`, `min`, `max` and `clamp`, `math.sqrt`, `floor`, `ceil`, `round`, `pow`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `exp` and `ln` (14.5), `std.vec`'s types of `Float32` with their operators and methods (14.28), calls to other `gpu fn`s, and the fields of its records and tuples: reading one (`p.x`, `t.0`), and making a new record or tuple (`Particle(x: x, y: y)`, `(a, b)`).
 
 A `gpu fn` that gives a record moves a whole item at a time, so a game's frame is one `map` of the list of the last frame (15.2):
 
@@ -162,8 +162,8 @@ frame.draw(dots, square, instances: swarm, shared: Camera(zoom: 1.0))
 ```
 
 - Both follow the rules of a `gpu fn` (15.1), and are ordinary functions on the CPU too.
-- A `gpu vertex fn` takes the vertex, then, if the draw has them, the instance and the value shared by the whole draw, in that order: one, two or three records. It gives a record whose field `position` is four `Float32`s: where the corner lands, from -1 to 1 across the window (x right, y up), then depth and `w`, as GPUs take them. Its other fields, `Float32`s, go to the fragment fn, blended between the triangle's corners.
-- A `gpu fragment fn` takes the vertex fn's result and gives the pixel's color: red, green, blue and opacity, each from 0 to 1.
+- A `gpu vertex fn` takes the vertex, then, if the draw has them, the instance and the value shared by the whole draw, in that order: one, two or three records. It gives a record whose field `position` is four `Float32`s, as a tuple or a `Vec4<Float32>` (14.28): where the corner lands, from -1 to 1 across the window (x right, y up), then depth and `w`, as GPUs take them. Its other fields, `Float32`s, go to the fragment fn, blended between the triangle's corners.
+- A `gpu fragment fn` takes the vertex fn's result and gives the pixel's color: red, green, blue and opacity, each from 0 to 1, as four `Float32`s or a `Vec4<Float32>`.
 - `gpu.pipeline(v, f)` is a compile error unless `v` is a `gpu vertex fn`, `f` a `gpu fragment fn`, and `f` takes what `v` gives. `frame.draw` is a compile error unless its vertices, instances and shared value are what `v` takes.
 - `vertex` and `fragment` are words only between `gpu` and `fn`.
 - A vertex's, instance's or shared value's fields are `Float32`s, `Int32`s or `UInt32`s, 1 to 8 of them.

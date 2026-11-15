@@ -34,6 +34,8 @@ Each section is a file of its own: new sections go at the end, with the next num
 | 14.26 std.input | [26-input.md](26-input.md) |
 | 14.27 std.audio | [27-audio.md](27-audio.md) |
 | 14.28 std.vec | [28-vec.md](28-vec.md) |
+| 14.29 std.image | [29-image.md](29-image.md) |
+| 14.30 std.app | [30-app.md](30-app.md) |
 
 ## Open questions
 

@@ -36,6 +36,7 @@ mod processes;
 mod run;
 mod stack;
 mod std_agents;
+mod std_app;
 mod std_audio;
 mod std_base64;
 mod std_compress;
@@ -43,12 +44,14 @@ mod std_crypto;
 mod std_devices;
 mod std_fs;
 mod std_gpu;
+mod std_image;
 mod std_lib;
 mod std_log;
 mod std_math;
 mod std_matrix;
 mod std_process;
 mod std_time;
+mod std_watch;
 mod std_window;
 mod std_writers;
 mod stmts;
@@ -160,6 +163,8 @@ fn main_of(i: &mut interp::Interp<'_>, args: &[String], dry_run: bool) -> i32 {
             let (path, line) = i.c.shown_location(span.start);
             let shown = format!("panic: {message}\n  at {path}:{line}\n");
             i.err.push_str(&shown);
+            // A report too, when the program asked for them (spec 14.30).
+            kavach_runtime_core::app::report(&message, &format!("{path}:{line}"));
             exit_code = 101;
         }
     }

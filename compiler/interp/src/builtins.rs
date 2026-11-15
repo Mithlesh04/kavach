@@ -430,6 +430,7 @@ impl<'a> Interp<'a> {
                 kavach_runtime_core::files::find_bytes(s.as_bytes(), text().as_bytes()).is_some(),
             ),
             "starts_with" => Value::Bool(s.starts_with(&text())),
+            "compare" => Value::Int(s.cmp(text().as_str()) as i8 as i128, Prim::Int),
             "ends_with" => Value::Bool(s.ends_with(&text())),
             "split" => Value::List(Rc::new(
                 s.split(&text()).map(|p| self.str_value(p)).collect(),

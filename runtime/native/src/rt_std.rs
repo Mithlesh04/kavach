@@ -132,6 +132,8 @@ pub fn std_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
         RtOp::TimeNowMs
             | RtOp::TimeMonotonicMs
             | RtOp::TimeSleepMs
+            | RtOp::TimeMonotonicNs
+            | RtOp::TimeSleepNs
             | RtOp::MathSqrt
             | RtOp::MathPow
             | RtOp::MathFloor
@@ -264,6 +266,14 @@ pub fn std_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
         // In a durable handler, the time its journal has (spec 8.5).
         RtOp::TimeNowMs => journaled("time.now_ms", wall_ms(), line),
         RtOp::TimeMonotonicMs => START.get_or_init(Instant::now).elapsed().as_millis() as i64,
+        RtOp::TimeMonotonicNs => kavach_runtime_core::fine_clock::monotonic_ns(),
+        // Slept to a millisecond before, then spun (spec 14.4).
+        RtOp::TimeSleepNs => {
+            let (sleep, end) = kavach_runtime_core::fine_clock::plan(a);
+            sleep_until(Instant::now() + sleep, line);
+            kavach_runtime_core::fine_clock::spin_until(end);
+            0
+        }
         RtOp::TimeSleepMs => {
             sleep_until(
                 Instant::now() + std::time::Duration::from_millis(a.max(0) as u64),

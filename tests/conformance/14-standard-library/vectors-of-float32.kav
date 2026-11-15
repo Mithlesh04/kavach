@@ -1,0 +1,31 @@
+// Rule: std.vec works the same over Float32: quaternions, matrices, projections and their own functions.
+// Spec: 14.28
+// expect output: true
+// expect output: true
+// expect output: Vec4(x: 1.0, y: 2.0, z: 0.0, w: 1.0)
+// expect output: true
+// expect output: true
+// expect output: true
+// expect output: Vec2(x: 2.0, y: 1.0)
+
+use std.vec
+use std.math
+
+fn main() {
+    const one = Float32(1.0)
+    const zero = Float32(0.0)
+    const up = Vec3(x: zero, y: one, z: zero)
+    const x = Vec3(x: one, y: zero, z: zero)
+    const turn = Quat.around(up, Float32(math.pi / 2.0))
+    print(turn.rotate(x).z.near(-1.0))
+    const m = turn.matrix() @ Vec4(x: one, y: zero, z: zero, w: one)
+    print(m.z.near(-1.0))
+    print(Mat4.identity() @ Vec4(x: one, y: Float32(2.0), z: zero, w: one))
+    const r = Mat4.rotation_z(Float32(math.pi / 2.0)) @ Vec4(x: one, y: zero, z: zero, w: one)
+    print(r.y.near(1.0))
+    const proj = Mat4.perspective(Float32(1.0), one, one, Float32(10.0))
+    const v = proj.product(Mat4.look_at(Vec3(x: zero, y: zero, z: Float32(5.0)), Vec3(x: zero, y: zero, z: zero), up)) @ Vec4(x: zero, y: zero, z: zero, w: one)
+    print((v.z / v.w) > 0.0)
+    print((turn * Quat.identity()).normalized().w.near(0.70710677))
+    print(Vec2(x: one, y: zero).lerp(Vec2(x: Float32(3.0), y: Float32(2.0)), Float32(0.5)))
+}

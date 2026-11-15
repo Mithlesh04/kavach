@@ -76,6 +76,19 @@ pub(crate) fn op_entries() -> Vec<RuntimeFn> {
             "kv_rt_text_methods",
             kavach_runtime_native::kv_rt_text_methods as *const u8,
         ),
+        (
+            "kv_rt_watch",
+            kavach_runtime_native::kv_rt_watch as *const u8,
+        ),
+        (
+            "kv_rt_image",
+            kavach_runtime_native::kv_rt_image as *const u8,
+        ),
+        ("kv_rt_app", kavach_runtime_native::kv_rt_app as *const u8),
+        (
+            "kv_rt_dialog",
+            kavach_runtime_native::kv_rt_dialog as *const u8,
+        ),
         ("kv_rt_run", kavach_runtime_native::kv_rt_run as *const u8),
         (
             "kv_rt_machine",

@@ -75,6 +75,12 @@ impl<'a> Lowerer<'a> {
             body.value = Some(Box::new(self.local_expr(result, line)));
         }
         let name = match &owner {
+            // `std.vec`'s methods say so: on the GPU, the WGSL backend gives
+            // them WGSL's own operations (spec 14.28).
+            Some(Owner::Adt(def)) if self.declared_in_std_vec(*def) => {
+                let ty = &self.c.resolution.defs[*def].name;
+                format!("std.vec {ty}.{}", f.name.name)
+            }
             Some(_) => format!("method {}", f.name.name),
             None => f.name.name.clone(),
         };
@@ -104,5 +110,18 @@ impl<'a> Lowerer<'a> {
             fails: f.errors.is_some(),
             external: None,
         })
+    }
+}
+
+impl Lowerer<'_> {
+    /// Whether type `def` is declared in `std.vec` (spec 14.28).
+    pub(crate) fn declared_in_std_vec(&self, def: kavach_resolver::DefId) -> bool {
+        let Some(span) = self.c.resolution.defs[def].span else {
+            return false;
+        };
+        let file = (self.c.files.iter())
+            .filter(|f| f.start <= span.start)
+            .max_by_key(|f| f.start);
+        file.is_some_and(|f| f.path == "std/vec.kav")
     }
 }

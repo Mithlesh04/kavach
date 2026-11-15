@@ -112,6 +112,7 @@ fn checkout(cart: Cart) -> Receipt ! ShopError {
 - `log.name_span(name)` renames the current span, once the code knows what it is doing; outside a span it does nothing. A name should be one of a few, such as a route's pattern, not text with ids in it.
 - `log.trace_id()` gives the current trace's id, 32 hexadecimal digits, or `none` outside a span: for an error page or a header in a reply.
 - With `[log.otlp]` set, each span goes to the collector when it ends, batched as events are (`POST <endpoint>/v1/traces`). Without it, spans are sent nowhere.
+- With the environment variable `KAVACH_TRACE` set to a file's path (10.11), each span is also written to that file when it ends, as a Chrome trace that Perfetto (ui.perfetto.dev) and `chrome://tracing` show on a timeline, thread by thread. A game that runs each frame as `log.span("frame") { … }` sees its frame times there. Events are added as spans end, so a crash keeps those written.
 
 ## Metrics
 

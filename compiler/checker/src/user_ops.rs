@@ -140,6 +140,12 @@ impl Checker<'_> {
     /// notes the call, and gives the result's type. `None` when `a` is not
     /// a program's own type.
     pub(crate) fn user_binary(&mut self, op: BinaryOp, l: &Expr, r: &Expr, lt: &Ty) -> Option<Ty> {
+        // `a + b` on a `T: Add` (spec 2.16).
+        if let Some(m) = method_of(op)
+            && let Some(t) = self.param_binary(m, l, r, lt)
+        {
+            return Some(t);
+        }
         let Ty::Adt(def, args) = self.inf.resolve(lt) else {
             return None;
         };
@@ -169,6 +175,9 @@ impl Checker<'_> {
 
     /// `-a` with `a` of a program's own type.
     pub(crate) fn user_neg(&mut self, x: &Expr, t: &Ty) -> Option<Ty> {
+        if let Some(t) = self.param_neg(x, t) {
+            return Some(t);
+        }
         let Ty::Adt(def, args) = self.inf.resolve(t) else {
             return None;
         };

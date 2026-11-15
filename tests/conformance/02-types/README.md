@@ -145,3 +145,5 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.16 | [no-operator-without-its-interface.kav](no-operator-without-its-interface.kav) | A program's own type has no operator unless it implements the operator's interface. | compile error |
 | 2.16 | [own-type-goes-on-the-left.kav](own-type-goes-on-the-left.kav) | A program's own type is on the left of its operator: `2.0 * v` is an error. | compile error |
 | 2.16 | [built-in-types-keep-their-operators.kav](built-in-types-keep-their-operators.kav) | A built-in type can't implement an operator interface. | compile error |
+| 2.16 | [operators-in-generic-code.kav](operators-in-generic-code.kav) | A type parameter bounded by an operator interface may use the operator; numbers meet Add, Sub, Mul, Div, Rem, Neg and Comparable, String meets Comparable, and a program's own type its own. | runs |
+| 2.16 | [an-operator-bound-needs-the-operator.kav](an-operator-bound-needs-the-operator.kav) | A type given for a `T` with operator bounds must have those operators. | compile error |

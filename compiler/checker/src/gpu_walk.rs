@@ -268,6 +268,13 @@ impl<'t> Walk<'t> {
             ExprKind::Field { base, name, .. } if METHODS.contains(&name.name.as_str()) => {
                 self.expr(c, base)
             }
+            // `std.vec`'s methods and its types' own functions (spec 14.28):
+            // `a.dot(b)`, `Mat4.identity()`.
+            ExprKind::Field { base, .. } if self.std_vec(c, base) => {
+                if !matches!(base.kind, ExprKind::Name(_)) || self.types.contains_key(&(base.span.start, base.span.end)) {
+                    self.expr(c, base)
+                }
+            }
             // A fragment fn's texture, read (spec 15.3).
             ExprKind::Field { base, name, .. }
                 if name.name == "sample"
@@ -277,6 +284,21 @@ impl<'t> Walk<'t> {
                 e.span,
                 "this call: only other `gpu fn`s, conversions, `abs`, `min`, `max`, `clamp`, and a texture's `sample`",
             ),
+        }
+    }
+}
+
+impl Walk<'_> {
+    /// Whether `base` is a value of one of `std.vec`'s types, or names one.
+    fn std_vec(&self, c: &Checker<'_>, base: &Expr) -> bool {
+        if let Some(Ty::Adt(def, _)) = self.types.get(&(base.span.start, base.span.end)) {
+            return c.std_vec_def(*def);
+        }
+        match &base.kind {
+            ExprKind::Name(id) => {
+                (c.res.uses.get(&id.span.start)).is_some_and(|d| c.std_vec_def(*d))
+            }
+            _ => false,
         }
     }
 }

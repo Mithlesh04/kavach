@@ -1,39 +1,51 @@
-//! `kavach run --watch` (spec 10.5): the program runs, and runs again
-//! when its file changes.
+//! `fs.watch` (spec 14.3): a watched folder tells of a file written into
+//! it, interpreted and in native code, and watching what isn't there
+//! fails. Run in a folder of its own in the system's temporary folder.
 
-use std::io::{BufRead, BufReader};
-use std::process::{Command, Stdio};
-use std::sync::mpsc;
-use std::time::Duration;
+use std::process::Command;
+
+const WATCHED: &str = "use std.fs
+use std.time
+
+fn main() ! Error uses Fs, Clock {
+    const w = try fs.watch(\"data\")
+    try fs.write_text(\"data/level.txt\", \"1\")
+    let seen: [FileChange] = []
+    let rounds = 0
+    while seen.is_empty() and rounds < 300 {
+        seen = w.poll()
+        time.sleep(10.ms)
+        rounds += 1
+    }
+    print(seen.any(c => c.path == \"data/level.txt\"))
+    const missing = fs.watch(\"nothing-here\") catch _ => {
+        print(\"refused\")
+        return
+    }
+    missing.close()
+}
+";
 
 #[test]
-fn a_changed_file_runs_again() {
-    let dir = std::env::temp_dir().join(format!("kavach-watch-{}", std::process::id()));
-    let _ = std::fs::remove_dir_all(&dir);
-    std::fs::create_dir_all(&dir).unwrap();
-    let file = dir.join("app.kav");
-    std::fs::write(&file, "print(\"one\")\n").unwrap();
-    let mut child = Command::new(env!("CARGO_BIN_EXE_kavach"))
-        .args(["run", "--watch", file.to_str().unwrap()])
-        .stdout(Stdio::piped())
-        .stderr(Stdio::null())
-        .spawn()
-        .unwrap();
-    let out = child.stdout.take().unwrap();
-    let (send, lines) = mpsc::channel();
-    std::thread::spawn(move || {
-        for line in BufReader::new(out).lines().map_while(Result::ok) {
-            let _ = send.send(line);
+fn a_watched_folder_tells_of_a_new_file() {
+    for native in [false, true] {
+        let dir =
+            std::env::temp_dir().join(format!("kavach-fswatch-{native}-{}", std::process::id()));
+        std::fs::create_dir_all(dir.join("data")).unwrap();
+        std::fs::write(dir.join("main.kav"), WATCHED).unwrap();
+        let mut cmd = Command::new(env!("CARGO_BIN_EXE_kavach"));
+        cmd.arg("run");
+        if native {
+            cmd.arg("--native");
         }
-    });
-    let wait = Duration::from_secs(60);
-    assert_eq!(lines.recv_timeout(wait).as_deref(), Ok("one"));
-    // Some file systems keep times to the second: a change a moment later
-    // is seen for sure.
-    std::thread::sleep(Duration::from_millis(1100));
-    std::fs::write(&file, "print(\"two\")\n").unwrap();
-    assert_eq!(lines.recv_timeout(wait).as_deref(), Ok("two"));
-    let _ = child.kill();
-    let _ = child.wait();
-    let _ = std::fs::remove_dir_all(&dir);
+        let out = cmd.arg("main.kav").current_dir(&dir).output().unwrap();
+        let _ = std::fs::remove_dir_all(&dir);
+        let text = String::from_utf8_lossy(&out.stdout);
+        assert_eq!(
+            text,
+            "true\nrefused\n",
+            "native: {native}; {}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+    }
 }

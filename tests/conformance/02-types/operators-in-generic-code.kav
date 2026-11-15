@@ -1,0 +1,58 @@
+// Rule: A type parameter bounded by an operator interface may use the operator; numbers meet Add, Sub, Mul, Div, Rem, Neg and Comparable, String meets Comparable, and a program's own type its own.
+// Spec: 2.16
+// expect output: 6
+// expect output: 0.75
+// expect output: Money(cents: 249)
+// expect output: -5
+// expect output: Money(cents: -7)
+// expect output: 9
+// expect output: zebra
+// expect output: Money(cents: 50)
+// expect output: 1.5
+// expect output: -1
+
+type Money: Add, Neg, Comparable {
+    cents: Int
+
+    fn add(self, other: Money) -> Money { Money(cents: self.cents + other.cents) }
+    fn neg(self) -> Money { Money(cents: -self.cents) }
+    fn compare(self, other: Money) -> Int { self.cents - other.cents }
+}
+
+fn total<T: Add>(items: [T], zero: T) -> T {
+    let sum = zero
+    for x in items {
+        sum = sum + x
+    }
+    sum
+}
+
+fn flip<T: Neg>(x: T) -> T {
+    -x
+}
+
+fn largest<T: Comparable>(items: [T]) -> T? {
+    let best = items.get(0)
+    for x in items {
+        if let b = best {
+            if x > b {
+                best = x
+            }
+        }
+    }
+    best
+}
+
+fn main() {
+    print(total([1, 2, 3], 0))
+    const fs: [Float32] = [0.5, 0.25]
+    print(total(fs, Float32(0.0)))
+    print(total([Money(cents: 150), Money(cents: 99)], Money(cents: 0)))
+    print(flip(5))
+    print(flip(Money(cents: 7)))
+    print(largest([3, 9, 2]))
+    print(largest(["pear", "apple", "zebra"]))
+    print(largest([Money(cents: 5), Money(cents: 50)]))
+    print(largest([1.5, 0.5]))
+    print(7.compare(9))
+}

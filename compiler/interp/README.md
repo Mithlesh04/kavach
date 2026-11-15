@@ -55,6 +55,9 @@ Not supported yet: agents, capabilities, `ask` and `unsafe` (Phase 2 and the nat
 | `src/std_process.rs` | `std.process` (spec 14.23), from `runtime/process`; waiting for a child lets other tasks run |
 | `src/std_window.rs` | `std.window` (spec 14.22), from `runtime/window`, and `std.input`'s gamepads (14.26), from `runtime/input` |
 | `src/std_audio.rs` | `std.audio` (spec 14.27), from `runtime/audio`: sounds and voices by number |
+| `src/std_watch.rs` | `std.fs`'s `Watcher` (spec 14.3), from `runtime/watch`; on the fake file system of `kavach test`, no changes |
+| `src/std_image.rs` | `std.image` (spec 14.29), from `runtime/image` |
+| `src/std_app.rs` | `std.app` (spec 14.30): folders, crash reports and dialogs; under `kavach test`, fake folders |
 | `src/std_math.rs` | `std.math`'s functions of floats (spec 14.5): a `Float32` worked out as a `Float` and rounded once |
 | `src/text_methods.rs` | Text methods that came from `std.text`, and those added with them (spec 14.2), from `runtime/core` |
 | [src/testing/](src/testing/README.md) | Generated tests: values, shrinking, found cases, fix suggestions (spec 11) |

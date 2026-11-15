@@ -12,6 +12,10 @@ FsCreateDir,
 TimeNowMs,
 TimeMonotonicMs,
 TimeSleepMs,
+/// `time.monotonic_ns` and `time.sleep_ns(ns)` (spec 14.4): nanoseconds,
+/// and a wait slept to a millisecond before, then spun.
+TimeMonotonicNs,
+TimeSleepNs,
 IoReadLine,
 CliArgs,
 CliExit,
@@ -177,6 +181,29 @@ FsWriterOpen,
 FsWriterWrite,
 FsWriterFinish,
 FsWriterClose,
+/// `fs.watch` (spec 14.3, decision 0116), by the watcher's number: start
+/// watching path `a` (owned; can fail), the next change (waits) and the
+/// changes so far, each as its kind's digit, a space and the path, and
+/// close (`runtime/native/src/rt_watch.rs`).
+FsWatchOpen,
+FsWatchNext,
+FsWatchPoll,
+FsWatchClose,
+/// `std.image` (spec 14.29, decision 0117): decode a file's bytes `a`
+/// (owned; can fail) and keep the picture, its size, its pixels as
+/// `Bytes` (letting it go), and a PNG file of `b` × `c`… (`a` wide, `b`
+/// high, `c` the pixels, owned) (`runtime/native/src/rt_image.rs`).
+ImageDecode,
+ImageSize,
+ImagePixels,
+ImagePng,
+/// `std.app` (spec 14.30, decision 0118): a program's folder (`a` its
+/// kind, `b` its name, owned; can fail), crash reports into folder `a`
+/// (owned; can fail), and a dialog (`a` which, `b` its title and `c` its
+/// text, owned) (`runtime/native/src/rt_app.rs`).
+AppDir,
+AppCrashReports,
+AppDialog,
 /// This program's processor milliseconds (`std.process`, spec 14.23).
 RunCpu,
 /// `std.system` (spec 14.25, `runtime/native/src/rt_machine.rs`): fact

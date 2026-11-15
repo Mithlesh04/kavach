@@ -175,6 +175,12 @@ impl<'a> Lowerer<'a> {
             return Some(Ok(e));
         }
         let numeric = recv.is_int() || recv.is_float() || matches!(shape, Some(Shape::Decimal));
+        // The operator interfaces' methods (spec 2.16).
+        if (numeric || matches!(shape, Some(Shape::Str)))
+            && let Some(e) = self.op_method(name, values.clone(), ty, line)
+        {
+            return Some(Ok(e));
+        }
         if numeric && matches!(name, "abs" | "min" | "max" | "clamp") {
             return Some(Ok(self.number_method(name, values, line)));
         }

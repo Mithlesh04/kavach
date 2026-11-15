@@ -43,8 +43,26 @@ type Money: Add, Comparable {
 print(Money(cents: 150) + Money(cents: 99) > Money(cents: 200))   // true
 ```
 
+**Operators in generic code.** A type parameter with an operator's interface as its bound may use that operator ([decision 0115](../../decisions/0115-generic-math-and-std-vec.md)). The number types meet `Add`, `Sub`, `Mul`, `Div`, `Rem`, `Neg` and `Comparable` as they are, and `String` meets `Comparable`, so one generic function serves numbers and a program's own types:
+
+```kavach
+fn total<T: Add>(items: [T], zero: T) -> T {
+    let sum = zero
+    for x in items {
+        sum = sum + x
+    }
+    sum
+}
+
+total([1, 2, 3], 0)                                  // 6
+total([Money(cents: 150), Money(cents: 99)], Money(cents: 0))   // Money(cents: 249)
+```
+
+- `a + b` on a `T: Add` calls `add`: for a number, its own `+`, so each copy of the function (2.9) runs one instruction; for a program's own type, its method.
+- A number's methods are the operators: `7.add(2)` is `9`, and `7.compare(9)` is `-1`. A float's `compare` gives 0 when neither comes first, as with a `NaN`.
+- A type given for a `T` with operator bounds must have them: `total(["a"], "")` is a compile error, as `String` doesn't meet `Add`.
+
 ## Open questions
 
-- A generic function that asks for an operator, `fn total<T: Add>(items: [T], zero: T) -> T`, with `a + b` on two `T`s calling `add`. Arithmetic on any number type in generic code is `T: Number` (2.9); [decision 0115](../../decisions/0115-generic-math-and-std-vec.md) has the number types meet `Add` and the others too, so one bound serves numbers and a program's own types, which is still to build.
 - `sort()`, `min()` and `max()` of a list of a `Comparable` type, and a `Comparable` type as a map key's order. Until then, `sort_by(m => m.cents)` sorts by a key.
 - Bit operators (`& | ^ << >> ~`) for a program's own types (bit vectors, decision 0041's `BigInt` already has them built in).

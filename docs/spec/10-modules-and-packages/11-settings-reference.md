@@ -48,6 +48,7 @@ For running programs:
 | `KAVACH_AI_URL` | a URL | Where `ask` sends its requests (a test server) | 8.4 |
 | `NO_COLOR` | any text | No colors in what the program prints | 14.12 |
 | `KAVACH_CHECK_LEAKS` | any value | At the end, report heap objects that were never freed | 6.1 |
+| `KAVACH_TRACE` | a file's path | Write every span to that file as a Chrome trace, for Perfetto and `chrome://tracing` | 14.12 |
 | `KAVACH_BACKEND` | `cranelift` | `kavach build` uses Cranelift instead of LLVM | 10.5 |
 | `KAVACH_LLVM_BIN` | a folder | Where LLVM's tools are | 10.5 |
 | `KAVACH_RUNTIME_LIB` | a file's path | Where the runtime library is, for linking | 10.5 |

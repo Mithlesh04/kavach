@@ -43,6 +43,9 @@ pub(crate) fn whole32(t: &Ty) -> bool {
 /// of the four types, or a tuple or record of at most 8 of them, which a
 /// list keeps flat.
 pub(crate) fn gpu_item(c: &Checker<'_>, t: &Ty) -> bool {
+    if gpu_vec(c, t) {
+        return true;
+    }
     let fields: Vec<Ty> = match t {
         Ty::Tuple(ts) => ts.clone(),
         Ty::Anon(fs) => fs.iter().map(|(_, t)| t.clone()).collect(),
@@ -54,7 +57,16 @@ pub(crate) fn gpu_item(c: &Checker<'_>, t: &Ty) -> bool {
         },
         t => return gpu_type(t),
     };
-    (1..=8).contains(&fields.len()) && fields.iter().all(|f| gpu_type(f) || vector(f))
+    (1..=8).contains(&fields.len())
+        && fields
+            .iter()
+            .all(|f| gpu_type(f) || vector(f) || gpu_vec(c, f))
+}
+
+/// A vector, matrix or quaternion of `std.vec` of `Float32`s, which the
+/// GPU holds as its own types (spec 14.28).
+pub(crate) fn gpu_vec(c: &Checker<'_>, t: &Ty) -> bool {
+    matches!(t, Ty::Adt(def, args) if c.std_vec_def(*def) && matches!(args[..], [Ty::Prim(Prim::Float32)]))
 }
 
 /// A tuple of 2 to 4 `Float32`s: a field a GPU holds as one vector, as a

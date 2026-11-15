@@ -70,3 +70,58 @@ pub fn create_writer(path: String) -> FileWriter ! FsError uses Fs.write {
     const id = try fs.writer_open_id(path)
     FileWriter(id: id)
 }
+
+/// What happened to a watched path (spec 14.3).
+pub type ChangeKind = Created | Changed | Removed
+
+/// A change to a watched file or folder: the path, under the watched
+/// path as it was written, and what happened to it.
+pub type FileChange {
+    pub path: String
+    pub kind: ChangeKind
+}
+
+/// A file or folder watched for changes (`fs.watch`, spec 14.3).
+pub type Watcher: Drop {
+    id: Int
+
+    /// The next change, waiting for one; `none` once it is closed.
+    pub fn next(self) -> FileChange? uses Fs.read {
+        const row = fs.watch_next_id(self.id)
+        if row.is_empty() { none } else { change_of(row) }
+    }
+
+    /// The changes since the last call, each path once, without waiting.
+    pub fn poll(self) -> [FileChange] uses Fs.read {
+        fs.watch_poll_id(self.id).map(row => change_of(row))
+    }
+
+    /// Stops watching.
+    pub fn close(self) {
+        fs.watch_close_id(self.id)
+    }
+
+    fn drop(self) {
+        fs.watch_close_id(self.id)
+    }
+}
+
+/// Watches the file at `path`, or the folder and everything in it.
+pub fn watch(path: String) -> Watcher ! FsError uses Fs.read {
+    const id = try fs.watch_open_id(path)
+    Watcher(id: id)
+}
+
+/// A change from the runtime's row: its kind's digit, a space, the path.
+fn change_of(row: String) -> FileChange
+    require row.len() >= 2
+    example change_of("0 a/b.txt") == FileChange(path: "a/b.txt", kind: ChangeKind.Created)
+    example change_of("2 x") == FileChange(path: "x", kind: ChangeKind.Removed)
+{
+    const kind = match row.slice(0, 1) {
+        "0" => ChangeKind.Created,
+        "2" => ChangeKind.Removed,
+        _ => ChangeKind.Changed,
+    }
+    FileChange(path: row.slice(2, row.len()), kind: kind)
+}

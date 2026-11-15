@@ -6,6 +6,8 @@
 | `time.monotonic_ms() -> Int` | Milliseconds from a clock that never goes back; use it to measure durations |
 | `time.sleep_ms(ms)` | Waits `ms` milliseconds |
 | `time.sleep(d)` | Waits for the `Duration` `d` |
+| `time.monotonic_ns() -> Int` | Nanoseconds from an unspecified start, from the clock that never jumps: for timing a frame or a piece of work. Reading it needs no capability, as `monotonic_ms` |
+| `time.sleep_ns(ns)` | Waits `ns` nanoseconds, as precisely as the machine can: the system sleeps until a millisecond before, and the program spins out the rest, for a game's frame pacing |
 | `time.every_ms(ms)` | An interval: a `for` loop over it runs a round every `ms` milliseconds, counting `0, 1, 2, …`, until the loop ends with `break` or `return` |
 | `time.every(d)` | The same, every `Duration` `d` |
 | `time.after(d, f)` | A `Task` (9.1) that waits for `d` and then calls `f`; like any task, it belongs to the function that called `time.after`, and is cancelled when that function returns (9.2) |

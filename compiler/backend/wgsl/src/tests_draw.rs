@@ -178,3 +178,84 @@ fn indices_name_the_vertices_of_each_triangle() {
         "{err}"
     );
 }
+
+/// `std.vec` in a pipeline: a `Vec4` position from a `Mat4`, and a `Vec4`
+/// color, as WGSL's own types and operations (spec 14.28).
+const VEC: &str = "use std.gpu
+use std.vec
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Lit {
+    position: Vec4<Float32>
+    heat: Float32
+}
+
+gpu vertex fn place(c: Corner) -> Lit {
+    const half = Mat4.scaling(Vec3(x: Float32(0.5), y: 0.5, z: 1.0))
+    const p = Vec4(x: c.x, y: c.y, z: Float32(0.0), w: 1.0)
+    Lit(position: half @ p, heat: Vec2(x: c.x, y: c.y).dot(Vec2(x: c.x, y: c.y)))
+}
+
+gpu fragment fn glow(l: Lit) -> Vec4<Float32> {
+    Vec4(x: Float32(1.0), y: 0.0, z: 0.0, w: 1.0) * (l.heat - l.heat + 1.0)
+}
+
+fn main() {
+    const _ = gpu.pipeline(place, glow)
+}
+";
+
+#[test]
+fn std_vec_is_wgsls_own_types_in_a_pipeline() {
+    let text = pipeline_of(VEC);
+    for part in [
+        "vec4<f32>",
+        "mat4x4<f32>",
+        "dot(",
+        "o.position = r.f0;",
+        "return c;",
+    ] {
+        assert!(text.contains(part), "{part} missing in {text}");
+    }
+    let _alone = drawing();
+    if !kavach_runtime_gpu::available() {
+        return;
+    }
+    let n = render::pipeline(&text).expect("a layout");
+    let square = words(&[
+        -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0,
+    ]);
+    let pixels = render::picture(vec![one(n, &square, &[], &[])], (8, 8)).expect("drawn");
+    assert_eq!(
+        pixels[4 * 8 + 4],
+        [255, 0, 0, 255],
+        "the middle, inside the half square"
+    );
+    assert_eq!(pixels[0], [0, 0, 0, 255], "a corner, outside it");
+}
+
+/// A `map` over `Vec3<Float32>`s is a kernel with WGSL's `vec3<f32>`, and
+/// `std.vec`'s methods as WGSL's own (spec 14.28).
+#[test]
+fn a_map_over_vectors_uses_wgsls_vectors() {
+    let k = crate::tests::kernel_of(
+        "use std.vec
+
+gpu fn size(v: Vec3<Float32>) -> Float32 {
+    v.length() + v.dot(Vec3(x: 1.0, y: 0.0, z: 0.0))
+}
+
+fn main() {
+    let vs: [Vec3<Float32>] = [Vec3(x: 3.0, y: 4.0, z: 0.0)]
+    print(vs.map(v => size(v)))
+}
+",
+    );
+    for part in ["vec3<f32>", "length(", "dot("] {
+        assert!(k.contains(part), "{part} missing in {k}");
+    }
+}

@@ -99,6 +99,7 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.14 | [grpc-two-way-streams.kav](grpc-two-way-streams.kav) | `grpc.each_stream` sends every request, then runs its function per message of the answer, failing with `Status` as `call` does. | runs |
 | 14.3 | [durable-writes-force-the-disk.kav](durable-writes-force-the-disk.kav) | `fs.write_durable` replaces the file atomically and forces it to the disk; file scopes hold for it. | runs |
 | 14.3 | [fs-info-and-permissions.kav](fs-info-and-permissions.kav) | `fs.info` gives a path's kind, size and permissions; `set_read_only` and `set_permissions` change them; `copy`, `rename` and `remove_all` move and delete; a mode past `0o7777` fails. | runs |
+| 14.3 | [watching-files-needs-fs-read.kav](watching-files-needs-fs-read.kav) | Watching files needs `Fs.read`. | compile error |
 | 14.10 | [tls-has-no-insecure-switch.kav](tls-has-no-insecure-switch.kav) | TLS verification can't be turned off: there is no argument that skips certificate checks. | compile error |
 | 14.14 | [grpc-calls-from-types.kav](grpc-calls-from-types.kav) | `grpc.call<Req, Res>` calls a method with typed messages; `grpc.serve` answers; a status other than OK fails with `Status`. | runs |
 | 14.11 | [http2-serves-and-fetches.kav](http2-serves-and-fetches.kav) | `http.serve` answers HTTP/2 from a client that starts with its preface; `h2.request` sends a large body with flow control; HTTP/1.1 still works. | runs |
@@ -144,6 +145,9 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.27 | [sounds-are-data-until-played.kav](sounds-are-data-until-played.kav) | Making or reading a sound needs no capability; bytes that aren't a WAV or Ogg Vorbis file are `BadSound`. | runs |
 | 14.27 | [playing-sound-needs-audio.kav](playing-sound-needs-audio.kav) | Playing sound needs `Audio`. | compile error |
 | 14.28 | [vectors-matrices-and-quaternions.kav](vectors-matrices-and-quaternions.kav) | std.vec has vectors, 4 x 4 matrices and quaternions over Float or Float32, with their operators, products and transforms. | runs |
+| 14.28 | [vectors-of-float32.kav](vectors-of-float32.kav) | std.vec works the same over Float32: quaternions, matrices, projections and their own functions. | runs |
+| 14.29 | [images-read-and-write-png.kav](images-read-and-write-png.kav) | An image is its width, height and RGBA pixels; it is written as PNG and read back the same, and bytes that aren't a PNG or JPEG file are BadImage. | runs |
+| 14.30 | [dialogs-need-window.kav](dialogs-need-window.kav) | A dialog is a window the program shows, so it needs `Window`. | compile error |
 | 5.8, 14.6 | [cli-on-stop-needs-no-capability.kav](cli-on-stop-needs-no-capability.kav) | `cli.on_stop(grace)` gives a hold that isn't asked until a stop signal comes; taking and letting go of one needs no capability. | runs |
 | 14.12 | [log-events-are-records.kav](log-events-are-records.kav) | A log event is a value of a type that implements `LogEvent`; the console shows its level and its printed form. | runs |
 | 14.12 | [log-hides-secrets.kav](log-hides-secrets.kav) | A secret field of a log event is written as `<secret>`. | runs |

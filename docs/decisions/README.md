@@ -121,6 +121,9 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0113](0113-gamepads-through-gilrs.md) | Gamepads through `gilrs`, in the standard layout, both as window events and as `input.pads()` state, behind `Input`; `libudev` linked only into Linux programs that read pads | Accepted |
 | [0114](0114-sound-through-cpal.md) | Sound through `cpal`: a runtime mixer first (`audio.play` giving a `Voice`), a checked Kavach callback later; `Audio` to play, `Microphone` to record; WAV and Ogg Vorbis (`lewton`) in std; `libasound` linked only into Linux programs with sound | Accepted |
 | [0115](0115-generic-math-and-std-vec.md) | Generic math through two built-in bounds, `T: Number` and `T: Floating`, compiled once per type; the number types meet the operator interfaces; vectors in `std.vec`, written in Kavach, as WGSL's own types on the GPU | Accepted |
+| [0116](0116-watching-files-through-notify.md) | Watching files and folders through `notify`: `fs.watch(path)` gives a `Watcher` read by `next()` or `poll()`, behind `Fs.read` | Accepted |
+| [0117](0117-images-png-and-jpeg.md) | Images in `std.image`: PNG and JPEG decoded to RGBA pixels through `png` and `jpeg-decoder`, PNG written, no capability | Accepted |
+| [0118](0118-app-folders-crash-reports-and-dialogs.md) | `std.app`: per-user data, config and cache folders by Kavach's own code, crash reports on panic, and dialogs through `rfd` | Accepted |
 
 ## Open decisions
 

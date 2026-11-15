@@ -55,12 +55,12 @@ impl Checker<'_> {
             fs.len() <= 9
                 && fs
                     .iter()
-                    .filter(|(n, t)| n == "position" && four(t))
+                    .filter(|(n, t)| n == "position" && self.four_floats(t))
                     .count()
                     == 1
                 && fs
                     .iter()
-                    .all(|(n, t)| (n == "position" && four(t)) || is_f32(t))
+                    .all(|(n, t)| (n == "position" && self.four_floats(t)) || is_f32(t))
         })
     }
 
@@ -90,7 +90,7 @@ impl Checker<'_> {
             if params.iter().skip(1).any(|t| *t != texture) {
                 self.error(f.name.span, "after what the vertex fn gives, a `gpu fragment fn` takes only `Texture`s (spec 15.3)");
             }
-            if !four(&ret) {
+            if !self.four_floats(&ret) {
                 self.error(f.name.span, format!("`{name}` must give the pixel's color: `(Float32, Float32, Float32, Float32)`, red, green, blue and opacity, each from 0 to 1 (spec 15.3)"));
             }
         }
@@ -177,6 +177,27 @@ impl Checker<'_> {
                 let who = if k == 3 { "fragment" } else { "vertex" };
                 self.error(span, format!("this pipeline's {who} fn takes a `{t}` too: give it as `{name}:` (spec 15.3)"));
             }
+        }
+    }
+}
+
+impl Checker<'_> {
+    /// `std.vec`'s type `t` is (spec 14.28): `Vec4`, `Mat4` and the rest.
+    pub(crate) fn std_vec_def(&self, def: DefId) -> bool {
+        ["Vec2", "Vec3", "Vec4", "Mat4", "Quat"]
+            .iter()
+            .any(|n| self.res.std_type(n) == Some(def))
+    }
+
+    /// Four `Float32`s: a tuple of them, or `std.vec`'s `Vec4<Float32>`, as
+    /// a corner's `position` or a pixel's color (spec 15.3, 14.28).
+    pub(crate) fn four_floats(&self, t: &Ty) -> bool {
+        match t {
+            Ty::Adt(def, args) => {
+                self.res.std_type("Vec4") == Some(*def)
+                    && matches!(args[..], [Ty::Prim(Prim::Float32)])
+            }
+            t => four(t),
         }
     }
 }

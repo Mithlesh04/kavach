@@ -1,0 +1,46 @@
+// std.image (spec 14.29, decision 0117): pictures as values. The runtime
+// decodes PNG and JPEG files to RGBA pixels and writes PNG
+// (`runtime/image`); this file gives them their type.
+
+use std.image
+
+/// Why some bytes aren't a picture.
+pub type ImageError = BadImage(reason: String)
+
+/// A picture: four `UInt8`s a pixel (red, green, blue, opacity), row by
+/// row from the top, as `gpu.texture` takes them.
+pub type Image {
+    pub width: Int
+    pub height: Int
+    pub pixels: [UInt8]
+
+    invariant width >= 1 and width <= 65_535 and height >= 1 and height <= 65_535
+    invariant pixels.len() == width * height * 4
+
+    /// The pixel at `x` (0 left) and `y` (0 top).
+    pub fn pixel(self, x: Int, y: Int) -> (UInt8, UInt8, UInt8, UInt8)
+        require x >= 0 and x < self.width and y >= 0 and y < self.height
+    {
+        const at = (y * self.width + x) * 4
+        (self.pixels[at], self.pixels[at + 1], self.pixels[at + 2], self.pixels[at + 3])
+    }
+}
+
+/// The picture in a PNG or JPEG file's bytes.
+pub fn decode(bytes: Bytes) -> Image ! ImageError {
+    const id = try image.decode_id(bytes)
+    const size = image.size_id(id)
+    Image(width: size[0], height: size[1], pixels: image.pixels_id(id).to_list())
+}
+
+/// A picture of `pixels`, four for each pixel, row by row from the top.
+pub fn new(width: Int, height: Int, pixels: [UInt8]) -> Image
+    require width >= 1 and width <= 65_535 and height >= 1 and height <= 65_535 and pixels.len() == width * height * 4
+{
+    Image(width: width, height: height, pixels: pixels)
+}
+
+/// `img` as a PNG file.
+pub fn png(img: Image) -> Bytes {
+    image.png_id(img.width, img.height, Bytes(img.pixels))
+}

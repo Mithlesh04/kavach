@@ -27,3 +27,4 @@ Conformance tests for spec chapter [15. GPU](../../../docs/spec/15-gpu.md). Form
 | 15.3 | [gpu-fragment-fn-takes-textures-after-its-input.kav](gpu-fragment-fn-takes-textures-after-its-input.kav) | After what the vertex fn gives, a gpu fragment fn takes only `Texture`s. | compile error |
 | 15.3 | [frame-draw-gives-the-textures-its-fragment-fn-reads.kav](frame-draw-gives-the-textures-its-fragment-fn-reads.kav) | `frame.draw` gives the textures its pipeline's fragment fn takes, as `textures:`. | compile error |
 | 15.3 | [gpu-fn-reads-a-texture-only-by-sample.kav](gpu-fn-reads-a-texture-only-by-sample.kav) | `sample` is the one call on a `Texture` a gpu fn can make. | compile error |
+| 15.3, 14.28 | [gpu-fn-uses-std-vec.kav](gpu-fn-uses-std-vec.kav) | A gpu fn may use std.vec's types of Float32, their operators and methods; a vertex fn's position and a fragment fn's color may be a Vec4. | runs |

@@ -46,6 +46,9 @@ kavach/
 │   ├── window/             windows and their input for std.window, through winit
 │   ├── input/              gamepads for std.input, through gilrs
 │   ├── audio/              sound for std.audio, through cpal
+│   ├── watch/              watching files for std.fs, through notify
+│   ├── image/              PNG and JPEG for std.image
+│   ├── dialog/             the system's dialogs for std.app, through rfd
 │   ├── process/            other programs for std.process, as trees (unsafe allowed, decision 0105)
 │   ├── native/             run-time library of native programs
 │   ├── unpack/             packed executables: the format and the C starter

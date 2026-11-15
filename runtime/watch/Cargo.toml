@@ -1,0 +1,15 @@
+[package]
+name = "kavach-runtime-watch"
+description = "Watching files and folders for std.fs (spec 14.3), through notify"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+# Changes to files and folders on Windows, Linux and macOS (decision 0116).
+notify = { version = "8", default-features = false, features = ["macos_fsevent"] }
+
+[lints]
+workspace = true

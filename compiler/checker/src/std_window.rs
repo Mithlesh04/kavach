@@ -99,4 +99,26 @@ impl Checker<'_> {
             _ => return None,
         })
     }
+
+    /// The parameters and result of `image.<name>` (spec 14.29), or `None`.
+    pub(crate) fn image_signature(&mut self, name: &str) -> Option<Signature> {
+        let (int, bytes) = (Ty::Prim(Prim::Int), Ty::Prim(Prim::Bytes));
+        let p = |n: &str, t: &Ty| (n.to_string(), t.clone(), false);
+        Some(match name {
+            "decode_id" => {
+                let error = self.builtin_ty("ImageError");
+                (
+                    vec![p("bytes", &bytes)],
+                    Ty::Result(Box::new(int), Box::new(error)),
+                )
+            }
+            "size_id" => (vec![p("id", &int)], Ty::List(Box::new(int))),
+            "pixels_id" => (vec![p("id", &int)], bytes),
+            "png_id" => (
+                vec![p("width", &int), p("height", &int), p("pixels", &bytes)],
+                bytes,
+            ),
+            _ => return None,
+        })
+    }
 }

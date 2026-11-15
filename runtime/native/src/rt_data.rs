@@ -314,6 +314,8 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         | RtOp::FsCreateDir
         | RtOp::TimeNowMs
         | RtOp::TimeMonotonicMs
+        | RtOp::TimeMonotonicNs
+        | RtOp::TimeSleepNs
         | RtOp::TimeSleepMs
         | RtOp::MathSqrt
         | RtOp::MathPow

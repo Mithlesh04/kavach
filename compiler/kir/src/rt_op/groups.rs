@@ -34,6 +34,10 @@ impl RtOp {
                 | RtOp::FsWriterOpen
                 | RtOp::FsWriterWrite
                 | RtOp::FsWriterFinish
+                | RtOp::FsWatchOpen
+                | RtOp::ImageDecode
+                | RtOp::AppDir
+                | RtOp::AppCrashReports
                 | RtOp::DrawScreen
                 | RtOp::DrawFrame
                 | RtOp::DrawTexture
@@ -138,6 +142,14 @@ impl RtOp {
             "kv_rt_machine"
         } else if group("Matrix") {
             "kv_rt_matrix"
+        } else if group("AppDialog") {
+            "kv_rt_dialog"
+        } else if group("App") {
+            "kv_rt_app"
+        } else if group("Image") {
+            "kv_rt_image"
+        } else if group("FsWatch") {
+            "kv_rt_watch"
         } else if group("FsWriter") {
             "kv_rt_writers"
         } else if matches!(

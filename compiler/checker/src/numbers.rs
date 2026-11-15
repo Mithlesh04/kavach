@@ -11,6 +11,7 @@ use kavach_resolver::DefId;
 impl Checker<'_> {
     /// Notes that type parameter `def` has a number bound, if `g` has one.
     pub(crate) fn note_number_bound(&mut self, g: &GenericParam, def: DefId) {
+        self.note_op_bounds(g, def);
         for b in &g.bounds {
             let TypeKind::Named { path, args } = &b.kind else {
                 continue;
@@ -106,7 +107,7 @@ impl Checker<'_> {
     /// Checks that `t`, given for type parameter `g`, meets `g`'s number
     /// bound; a literal given for a `Floating` one is a `Float` (`half(3)`).
     pub(crate) fn check_number_bound(&mut self, g: DefId, t: &Ty, span: Span) {
-        if self.inf.numbers.contains_key(&g) {
+        if self.inf.numbers.contains_key(&g) || self.param_ops.contains_key(&g) {
             self.number_checks.push((g, t.clone(), span));
         }
     }
@@ -116,6 +117,7 @@ impl Checker<'_> {
     pub(crate) fn check_numbers_later(&mut self) {
         for (g, t, span) in std::mem::take(&mut self.number_checks) {
             self.number_bound_now(g, &t, span);
+            self.op_bounds_now(g, &t, span);
         }
     }
 

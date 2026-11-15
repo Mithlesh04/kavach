@@ -19,6 +19,34 @@ impl<'a> Interp<'a> {
         let order = |a: &Value<'a>, b: &Value<'a>| {
             crate::ops::compare(a, b).unwrap_or(std::cmp::Ordering::Equal)
         };
+        // The operator interfaces' methods (spec 2.16): `a.add(b)` is `a + b`.
+        let number = matches!(
+            recv,
+            Value::Int(..)
+                | Value::Float(_)
+                | Value::Float32(_)
+                | Value::Decimal(_)
+                | Value::BigDecimal(_)
+                | Value::BigInt(_)
+        );
+        use kavach_ast::{BinaryOp, UnaryOp};
+        let op = match name {
+            "add" => Some(BinaryOp::Add),
+            "sub" => Some(BinaryOp::Sub),
+            "mul" => Some(BinaryOp::Mul),
+            "div" => Some(BinaryOp::Div),
+            "rem" => Some(BinaryOp::Rem),
+            _ => None,
+        };
+        match (number, op, name) {
+            (true, Some(op), _) => return self.arith(op, recv.clone(), arg(0), span).map(Some),
+            (true, None, "neg") => return self.unary(UnaryOp::Neg, recv.clone(), span).map(Some),
+            (true, None, "compare") => {
+                let n = order(recv, &arg(0)) as i8;
+                return Ok(Some(Value::Int(i128::from(n), Prim::Int)));
+            }
+            _ => {}
+        }
         Ok(Some(match (recv, name) {
             (Value::Int(n, p), "abs") => {
                 match n.checked_abs().and_then(|a| crate::ops::fits(a, *p)) {

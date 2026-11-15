@@ -4,6 +4,7 @@
 //! WGSL expressions. `None` means KIR used something a kernel can't do.
 
 use crate::ops::{binary, can_stop};
+use crate::values::{field, zero};
 use crate::{ty_name, wgsl_type};
 use kavach_kir::{
     BinOp, Block, Expr, ExprKind as K, FastOp, FuncId, Function, Local, Program, RtOp, Stmt, Type,
@@ -51,17 +52,6 @@ pub(crate) struct Body<'p> {
     temps: Vec<Type>,
     depth: usize,
     pub(crate) texture: Option<u32>,
-}
-
-fn zero(t: Type) -> String {
-    match t {
-        Type::I32 => "i32(0)".into(),
-        Type::U32 => "0u".into(),
-        Type::F32 => "f32(0.0)".into(),
-        // A struct's zero value: every field zero.
-        Type::Ref(id) => format!("S{id}()"),
-        _ => "false".into(),
-    }
 }
 
 impl<'p> Writer<'p> {
@@ -118,10 +108,10 @@ impl<'p> Writer<'p> {
         }
         // The item as one value too, for a use of all of it.
         if let (Some(l), Some((_, fields))) = (whole, &item)
-            && let Type::Ref(id) = f.locals[l as usize]
+            && let Some(made) = ty_name(self.program, f.locals[l as usize])
         {
             let parts: Vec<String> = (0..fields.len()).map(|k| format!("p{l}_{k}")).collect();
-            b.line(&format!("l{l} = S{id}({});", parts.join(", ")));
+            b.line(&format!("l{l} = {made}({});", parts.join(", ")));
         }
         for s in &f.body.stmts {
             b.stmt(self, s)?;
@@ -159,10 +149,16 @@ impl<'p> Writer<'p> {
         Some(name)
     }
 
+    pub(crate) fn program(&self) -> &'p Program {
+        self.program
+    }
+
     /// The WGSL type of `t`, noting a record's or tuple's struct.
     pub(crate) fn name_of(&mut self, t: Type) -> Option<String> {
         let name = ty_name(self.program, t)?;
-        if let Type::Ref(id) = t {
+        if let Type::Ref(id) = t
+            && crate::vec::vec_type(self.program, t).is_none()
+        {
             self.structs.insert(id);
         }
         Some(name)
@@ -196,7 +192,10 @@ impl<'p> Body<'p> {
     /// stopped; gives where it starts, for `drop_halted`.
     fn halted(&mut self) -> usize {
         let at = self.code.len();
-        self.line(&format!("if (halted) {{ return {}; }}", zero(self.f.ret)));
+        self.line(&format!(
+            "if (halted) {{ return {}; }}",
+            zero(self.program, self.f.ret)
+        ));
         at
     }
 
@@ -333,24 +332,23 @@ impl<'p> Body<'p> {
             // A field of a record or tuple value.
             K::GetField(base, k) if ty_name(self.program, base.ty).is_some() => {
                 let b = self.expr(w, base)?;
-                format!("({b}).f{k}")
+                field(self.program, base.ty, &b, *k as i128)
             }
             K::Index(base, k) if ty_name(self.program, base.ty).is_some() => {
                 let K::Int(k) = k.kind else { return None };
                 let b = self.expr(w, base)?;
-                format!("({b}).f{k}")
+                field(self.program, base.ty, &b, k)
             }
             // A record or tuple made of its fields.
             K::Record { variant: 0, fields } | K::Tuple(fields)
                 if ty_name(self.program, t).is_some() =>
             {
-                let Type::Ref(id) = t else { return None };
-                w.name_of(t)?;
+                let made = w.name_of(t)?;
                 let mut vals = Vec::new();
                 for x in fields {
                     vals.push(self.expr(w, x)?);
                 }
-                format!("S{id}({})", vals.join(", "))
+                format!("{made}({})", vals.join(", "))
             }
             K::Unary(op, x) => {
                 let v = self.expr(w, x)?;
@@ -409,6 +407,9 @@ impl<'p> Body<'p> {
             K::Call(_, args) if args.first().is_some_and(|a| self.texture_ty(a.ty)) => {
                 self.sample(w, args, t)?
             }
+            K::Call(fid, args) if crate::vec::vec_op(self.program, *fid, args).is_some() => {
+                self.vec_call(w, *fid, args)?
+            }
             K::Call(fid, args) => {
                 let mut vals = Vec::new();
                 for a in args {
@@ -448,7 +449,7 @@ impl<'p> Body<'p> {
                 if t == Type::Unit {
                     String::new()
                 } else {
-                    zero(t)
+                    zero(self.program, t)
                 }
             }
             _ => return None,
@@ -465,7 +466,7 @@ impl<'p> Body<'p> {
             let v = self.expr(w, v)?;
             match r {
                 Some(r) if v.is_empty() => {
-                    self.line(&format!("{r} = {};", zero(v_type(b))));
+                    self.line(&format!("{r} = {};", zero(self.program, v_type(b))));
                 }
                 Some(r) => self.line(&format!("{r} = {v};")),
                 None if !v.is_empty() && v_type(b) != Type::Unit => self.line(&format!("_ = {v};")),

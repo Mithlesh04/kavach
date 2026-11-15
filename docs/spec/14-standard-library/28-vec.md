@@ -53,9 +53,9 @@ const moved = Mat4.translation(Vec3(x: 1.0, y: 0.0, z: 0.0)) @ Vec4(x: 0.0, y: 0
 
 - The angles are in radians, as `std.math`'s are (14.5).
 - `T` is `Float` or `Float32` (2.9). A literal fills in for either: `Vec2(x: 1.0, y: 2.0)` is a `Vec2<Float>`.
+- In a `gpu fn` (15.1), `Vec2` to `Vec4` and `Mat4` of `Float32` are the GPU's own vector and matrix types, and their operators and methods its own operations. A `Quat` is a record of four parts there. A vertex fn's `position` and a fragment fn's color may be a `Vec4<Float32>` (15.3).
 
 ## Open questions
 
-- In a `gpu fn`, `std.vec`'s types of `Float32` as WGSL's own `vec2<f32>` to `mat4x4<f32>`, and a vertex fn's `position` as a `Vec4` ([decision 0115](../../decisions/0115-generic-math-and-std-vec.md)). Next.
 - `Mat3`, and vectors of whole numbers, for grids.
 - SIMD registers for `Vec4<Float32>` and `Mat4<Float32>` on the CPU.

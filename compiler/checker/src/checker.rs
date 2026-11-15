@@ -109,6 +109,8 @@ pub(crate) struct Checker<'a> {
     /// Types given for number-bounded parameters, checked once every
     /// literal's type is known (spec 2.9).
     pub(crate) number_checks: Vec<(DefId, Ty, Span)>,
+    /// Each type parameter's operator bounds, as their methods (spec 2.16).
+    pub(crate) param_ops: HashMap<DefId, Vec<&'static str>>,
     /// The operators used on a program's own types, by `(left start,
     /// right end)`, with the method each calls; `-x` by `x`'s span; and
     /// `x op= v` by `(x start, v end)`.
@@ -249,6 +251,7 @@ impl<'a> Checker<'a> {
             drop_types: HashSet::new(),
             operators: HashMap::new(),
             number_checks: Vec::new(),
+            param_ops: HashMap::new(),
             user_ops: HashMap::new(),
             user_negs: HashSet::new(),
             user_assigns: HashMap::new(),

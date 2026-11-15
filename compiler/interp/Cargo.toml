@@ -13,6 +13,9 @@ kavach-runtime-net = { path = "../../runtime/net" }
 kavach-runtime-window = { path = "../../runtime/window" }
 kavach-runtime-input = { path = "../../runtime/input" }
 kavach-runtime-audio = { path = "../../runtime/audio" }
+kavach-runtime-watch = { path = "../../runtime/watch" }
+kavach-runtime-image = { path = "../../runtime/image" }
+kavach-runtime-dialog = { path = "../../runtime/dialog" }
 kavach-runtime-process = { path = "../../runtime/process" }
 kavach-runtime-matrix = { path = "../../runtime/matrix" }
 kavach-runtime-gpu = { path = "../../runtime/gpu" }

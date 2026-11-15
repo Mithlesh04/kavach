@@ -1,0 +1,65 @@
+// std.app (spec 14.30, decision 0118): a program's own folders, crash
+// reports, and the system's dialogs. The folders and reports are the
+// runtime's (`runtime/core/src/app.rs`), the dialogs `runtime/dialog`'s.
+
+use std.app
+
+/// Why a folder can't be had or made.
+pub type AppError = Unavailable(reason: String)
+
+/// Where the program called `name` keeps its data, as saves; made if
+/// missing.
+pub fn data_dir(name: String) -> String ! AppError uses Fs.write {
+    try app.dir_id(0, name)
+}
+
+/// Where the program called `name` keeps its settings; made if missing.
+pub fn config_dir(name: String) -> String ! AppError uses Fs.write {
+    try app.dir_id(1, name)
+}
+
+/// Where the program called `name` keeps what it can make again; made if
+/// missing.
+pub fn cache_dir(name: String) -> String ! AppError uses Fs.write {
+    try app.dir_id(2, name)
+}
+
+/// From now on, a panic that ends the program also writes a report into
+/// `folder`, which is made now.
+pub fn crash_reports(folder: String) ! AppError uses Fs.write {
+    try app.crash_id(folder)
+}
+
+/// The file the person chose to open, or `none`.
+pub fn open_file(title: String) -> String? uses Window {
+    chosen(app.dialog_id(0, title, ""))
+}
+
+/// Where the person chose to save, starting from the file name `name`,
+/// or `none`.
+pub fn save_file(title: String, name: String) -> String? uses Window {
+    chosen(app.dialog_id(1, title, name))
+}
+
+/// The folder the person chose, or `none`.
+pub fn pick_folder(title: String) -> String? uses Window {
+    chosen(app.dialog_id(2, title, ""))
+}
+
+/// Shows `text` with an OK button.
+pub fn message(title: String, text: String) uses Window {
+    const _ = app.dialog_id(3, title, text)
+}
+
+/// Asks `text` with Yes and No buttons: whether the person chose Yes.
+pub fn confirm(title: String, text: String) -> Bool uses Window {
+    app.dialog_id(4, title, text) == "yes"
+}
+
+/// A path the dialog gave, or `none` for nothing chosen.
+fn chosen(path: String) -> String?
+    example chosen("") == none
+    example chosen("a.txt") == "a.txt"
+{
+    if path.is_empty() { none } else { path }
+}

@@ -1,0 +1,12 @@
+// Rule: Watching files needs `Fs.read`.
+// Spec: 14.3
+// expect compile error
+
+use std.fs
+
+pub fn watch_levels() -> Watcher ! FsError {
+    try fs.watch("levels")     // error: `watch_levels` is `pub`, so it must say what it uses
+}
+
+fn main() {
+}

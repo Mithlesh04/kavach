@@ -1,0 +1,12 @@
+// Rule: A dialog is a window the program shows, so it needs `Window`.
+// Spec: 14.30
+// expect compile error
+
+use std.app
+
+pub fn pick() -> String? {
+    app.open_file("Load a level")     // error: `pick` is `pub`, so it must say what it uses: add `uses Window`
+}
+
+fn main() {
+}

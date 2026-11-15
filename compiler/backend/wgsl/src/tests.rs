@@ -3,7 +3,7 @@
 use kavach_kir::{ExprKind, RtOp, walk};
 
 /// The kernel text of the `map` in `src` (empty when the CPU runs it).
-fn kernel_of(src: &str) -> String {
+pub(crate) fn kernel_of(src: &str) -> String {
     let c = kavach_driver::compile(src, "main.kav", Default::default());
     let mut program = kavach_kir::lower(&c).expect("lowered");
     crate::attach(&mut program);

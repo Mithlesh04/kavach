@@ -58,6 +58,7 @@ mod lower_lambda;
 mod lower_log;
 mod lower_match;
 mod lower_methods;
+mod lower_ops;
 mod lower_optional;
 mod lower_power;
 mod lower_process;

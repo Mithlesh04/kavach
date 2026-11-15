@@ -34,6 +34,12 @@ fn duration_ms(v: Option<&Value<'_>>) -> u64 {
 
 impl<'a> Interp<'a> {
     pub(crate) fn time_call(&mut self, name: &str, args: Vec<Value<'a>>, span: Span) -> Eval<'a> {
+        // A fake clock counts milliseconds (11.5): nanoseconds go through it.
+        if matches!(name, "monotonic_ns" | "sleep_ns")
+            && (self.frozen.is_some() || self.faking("Clock"))
+        {
+            return self.fake_ns(name, args, span);
+        }
         if let Some(v) = self.frozen_call(name, &args) {
             return Ok(v);
         }
@@ -82,6 +88,20 @@ impl<'a> Interp<'a> {
             ("time", "sleep_ms") => {
                 if let Some(Value::Int(ms, _)) = args.first() {
                     self.sleep_ms((*ms).max(0), span)?;
+                }
+                Value::Unit
+            }
+            ("time", "monotonic_ns") => Value::Int(
+                i128::from(kavach_runtime_core::fine_clock::monotonic_ns()),
+                Prim::Int,
+            ),
+            // Slept to a millisecond before, then spun (spec 14.4).
+            ("time", "sleep_ns") => {
+                if let Some(Value::Int(ns, _)) = args.first() {
+                    let ns = (*ns).clamp(0, i128::from(i64::MAX)) as i64;
+                    let (sleep, end) = kavach_runtime_core::fine_clock::plan(ns);
+                    self.sleep_ms(sleep.as_millis() as i128, span)?;
+                    kavach_runtime_core::fine_clock::spin_until(end);
                 }
                 Value::Unit
             }
@@ -216,5 +236,25 @@ impl<'a> Interp<'a> {
         };
         clock.set((now + slept, mono + slept));
         Some(Value::Unit)
+    }
+}
+
+impl<'a> Interp<'a> {
+    /// `monotonic_ns` and `sleep_ns` on a fake clock, which counts
+    /// milliseconds: the clock's milliseconds as nanoseconds, and a wait
+    /// rounded up to whole milliseconds.
+    fn fake_ns(&mut self, name: &str, args: Vec<Value<'a>>, span: Span) -> Eval<'a> {
+        if name == "monotonic_ns" {
+            return Ok(match self.time_call("monotonic_ms", Vec::new(), span)? {
+                Value::Int(ms, p) => Value::Int(ms.saturating_mul(1_000_000), p),
+                other => other,
+            });
+        }
+        let ns = match args.first() {
+            Some(Value::Int(ns, _)) => (*ns).max(0),
+            _ => 0,
+        };
+        let ms = Value::Int((ns + 999_999) / 1_000_000, Prim::Int);
+        self.time_call("sleep_ms", vec![ms], span)
     }
 }

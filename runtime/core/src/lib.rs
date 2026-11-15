@@ -4,14 +4,17 @@
 //! agents' guards (spec 8.3).
 
 pub mod agents;
+pub mod app;
 pub mod base64;
 mod big_decimal;
+pub mod chrome_trace;
 pub mod clipboard;
 pub mod compress;
 mod decimal;
 pub mod env_file;
 pub mod file_info;
 pub mod files;
+pub mod fine_clock;
 pub mod fs_scope;
 pub mod inbox;
 pub mod input;

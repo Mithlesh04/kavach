@@ -1,0 +1,16 @@
+[package]
+name = "kavach-runtime-image"
+description = "Images for std.image (spec 14.29): PNG and JPEG decoded to RGBA pixels, PNG written"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+# PNG read and written, and JPEG read, in pure Rust (decision 0117).
+png = "0.18"
+jpeg-decoder = { version = "0.3", default-features = false }
+
+[lints]
+workspace = true

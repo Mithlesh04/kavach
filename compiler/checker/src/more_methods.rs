@@ -108,6 +108,10 @@ impl Checker<'_> {
         match recv {
             t if number(t) => match name {
                 "abs" => sig(vec![], t.clone()),
+                // The operator interfaces' methods (spec 2.16): `a.add(b)` is `a + b`.
+                "add" | "sub" | "mul" | "div" | "rem" => sig(vec![t.clone()], t.clone()),
+                "neg" => sig(vec![], t.clone()),
+                "compare" => sig(vec![t.clone()], Ty::Prim(Prim::Int)),
                 "bits" if *t == Ty::Prim(Prim::Float) => sig(vec![], Ty::Prim(Prim::UInt64)),
                 "near" if matches!(t, Ty::Prim(Prim::Float | Prim::Float32)) => {
                     sig(vec![t.clone()], Ty::Prim(Prim::Bool))

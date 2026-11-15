@@ -72,6 +72,17 @@ impl<'a> Interp<'a> {
             && !ts.is_empty()
         {
             self.owner_generics(f, def, &ts, &mut out);
+        } else if let ExprKind::Field { base, .. } = &callee.kind
+            && let ExprKind::Name(id) = &base.kind
+            && let Some(&owner) = self.c.resolution.uses.get(&id.span.start)
+            && let Some(Ty::Adt(def, ts)) =
+                (self.c.expr_types.get(&(call.span.start, call.span.end))).map(|t| self.concrete(t))
+            && def == owner
+            && !ts.is_empty()
+        {
+            // `Mat4.identity()`: a generic type's own function, its type
+            // arguments those of the value it gives.
+            self.owner_generics(f, def, &ts, &mut out);
         }
         if !f.generics.is_empty() || !out.is_empty() {
             self.next_generics = Some(out);

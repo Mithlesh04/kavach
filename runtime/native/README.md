@@ -73,3 +73,6 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_window.rs` | `std.window` (spec 14.22): its own entry, so only programs with windows link `winit` |
 | `src/rt_input.rs` | `std.input` (spec 14.26): its own entry, so only programs that read gamepads link `gilrs` |
 | `src/rt_audio.rs` | `std.audio` (spec 14.27): its own entry, so only programs with sound link `cpal` |
+| `src/rt_watch.rs` | `std.fs`'s `Watcher` (spec 14.3): its own entry, so only programs that watch files link `notify` |
+| `src/rt_image.rs` | `std.image` (spec 14.29): its own entry, so only programs with images link the decoders |
+| `src/rt_app.rs` | `std.app` (spec 14.30): folders and crash reports, and the dialogs in an entry of their own, so only programs with dialogs link `rfd` |

@@ -48,6 +48,7 @@ mod more_methods;
 mod names;
 mod never_runs;
 mod numbers;
+mod op_bounds;
 mod operators;
 mod order;
 mod patterns;

@@ -1,0 +1,16 @@
+[package]
+name = "kavach-runtime-dialog"
+description = "The system's dialogs for std.app (spec 14.30), through rfd"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+# Open, save and folder dialogs and message boxes; on Linux through the
+# desktop's portal, with no GTK (decision 0118).
+rfd = "0.18"
+
+[lints]
+workspace = true

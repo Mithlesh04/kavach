@@ -1,0 +1,22 @@
+// Rule: An image is its width, height and RGBA pixels; it is written as PNG and read back the same, and bytes that aren't a PNG or JPEG file are BadImage.
+// Spec: 14.29
+// expect output: 2 x 1
+// expect output: true
+// expect output: (0, 0, 255, 128)
+// expect output: BadImage(reason: "this is not a PNG or JPEG file")
+
+use std.image
+
+fn main() {
+    const img = image.new(2, 1, [255, 0, 0, 255, 0, 0, 255, 128])
+    const file = image.png(img)
+    const back = image.decode(file) catch _ => img
+    print("{back.width} x {back.height}")
+    print(back == img)
+    print(back.pixel(1, 0))
+    const bad = image.decode(Bytes([1, 2, 3])) catch e => {
+        print(e)
+        return
+    }
+    print(bad.width)
+}
