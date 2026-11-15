@@ -28,10 +28,11 @@ export const gpuDrawDoc: LessonDoc = {
         <li>
           A <C>gpu vertex fn</C> takes the vertex, then the instance and the value shared by the whole draw, if the
           draw has them, in that order. It gives a record whose <C>position</C> is where the corner lands: x and y from
-          -1 to 1 across the window, then depth and <C>w</C>.
+          -1 to 1 across the window, then depth and <C>w</C>, as four <C>Float32</C>s or a{" "}
+          <Link href="/docs/standard-library/vectors/">Vec4&lt;Float32&gt;</Link>.
         </li>
         <li>Its other fields go to the fragment fn, blended between the triangle&apos;s corners.</li>
-        <li>A <C>gpu fragment fn</C> gives the pixel&apos;s color: red, green, blue and opacity, each from 0 to 1.</li>
+        <li>A <C>gpu fragment fn</C> gives the pixel&apos;s color: red, green, blue and opacity, each from 0 to 1, as four <C>Float32</C>s or a <C>Vec4&lt;Float32&gt;</C>.</li>
         <li>
           <C>frame.draw(dots, square, instances: swarm, shared: camera)</C> draws the square once for each dot. A
           draw paints over what the frame already holds.

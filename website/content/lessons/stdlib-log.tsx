@@ -58,6 +58,13 @@ export const loggingDoc: LessonDoc = {
         <li>HTTP joins traces with no code: <C>http.serve</C> runs each handler in a span that continues the caller&apos;s trace, and <C>http.request</C> sends it. The span is named by the method (<C>GET</C>), never the path, which can hold ids and tokens. See <Link href="/docs/networks/http/serving/">Serving</Link>.</li>
         <li><C>log.name_span(name)</C> renames the current span, once the code knows what it is doing; outside a span it does nothing. Give it one of a few names, such as a route&apos;s pattern (<C>{'"GET /orders/\\{id}"'}</C>), not text with ids in it.</li>
         <li>With <C>[log.otlp]</C> set, each span goes to the collector when it ends. Without it, spans are sent nowhere.</li>
+        <li>
+          With the environment variable <C>KAVACH_TRACE</C> set to a file&apos;s path, each span is also written to that
+          file when it ends, as a Chrome trace. Perfetto (ui.perfetto.dev) and <C>chrome://tracing</C> show it on a
+          timeline, thread by thread: a game that runs each frame as <C>log.span(&quot;frame&quot;) {"{ … }"}</C> sees
+          its frame times there. Spans are written as they end, so a crash keeps those already written. See{" "}
+          <Link href="/docs/tools/settings/">Settings</Link>.
+        </li>
       </ul>
       <H2>Metrics</H2>
       <P>
@@ -87,6 +94,7 @@ export const loggingDoc: LessonDoc = {
         <SrcRef file="tools/cli/tests/log.rs" symbol="spans_and_metrics_go_to_the_collector" line={LOG_TEST_LINE} label="sent to a collector, tested" />
         <SrcRef file="tools/cli/tests/log.rs" symbol="server_spans_are_named_by_method_not_path" line={375} label="named by method, tested" />
         <SrcRef file="docs/decisions/0107-traces-and-metrics.md" label="decision 0107" />
+        <SrcRef file="tools/cli/tests/frames.rs" symbol="a_frame_is_timed_and_written_as_a_chrome_trace" label="Chrome trace, tested" />
       </div>
       <H2>Limits and sizes</H2>
       <Limits id="logging" />

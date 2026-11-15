@@ -282,7 +282,9 @@ export const genericsDoc: LessonDoc = {
       <Ex name="types/generics-arity.fails" />
       <H2>Math in generic code</H2>
       <P>
-        A plain <C>T</C> could be text, so <C>+</C> on it is refused. Two built-in bounds say it is a number.{" "}
+        A plain <C>T</C> could be text, so <C>+</C> on it is refused. An operator&apos;s bound, as <C>T: Add</C>, gives
+        one operator (see <Link href="/docs/types/operators-for-your-types/">Operators for Your Types</Link>). Two
+        built-in bounds say it is a number.{" "}
         <C>T: Number</C> is met by every number type; <C>T: Floating</C> only by <C>Float</C> and <C>Float32</C>, and
         lets the code call <C>std.math</C> on a <C>T</C>:
       </P>

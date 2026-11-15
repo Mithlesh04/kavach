@@ -95,7 +95,7 @@ export const aliases: Record<string, string> = {
   "agents/agent-use-cases":
     "examples use cases recipes shopping assistant deploy bot support triage customer service refund budget spending limit",
   "standard-library/json": "parse serialize deserialize api response decode encode marshal schema validation jsonc comments trailing comma config file json5",
-  "standard-library/files": "file io read write disk path filesystem open save load stream lines log csv chunks big file read ahead",
+  "standard-library/files": "file io read write disk path filesystem open save load stream lines log csv chunks big file read ahead watch change notify inotify hot reload",
   "standard-library/time": "clock date datetime calendar timezone time zone tz iana utc offset daylight saving dst sleep timer interval cron duration parse iso 8601 rfc 3339 timestamp from string",
   "standard-library/agents": "idempotency key idempotent call key retry repeat duplicate twice exactly once at least once crash restart stripe approval request answer approve in code chat bot slack web page review queue waiting ApprovalRequest ApprovalError",
   "standard-library/clipboard": "clipboard copy paste pasteboard cut ctrl+c ctrl+v xclip pbcopy",
@@ -103,6 +103,8 @@ export const aliases: Record<string, string> = {
   "standard-library/gamepads": "gamepad controller joystick xbox playstation dualshock switch pro stick trigger button rumble vibration force feedback haptics game input sdl gilrs",
   "standard-library/sound": "audio sound music play effect wav ogg vorbis volume pan loop mixer speaker sample rate tone sine beep sdl openal cpal",
   "standard-library/vectors": "vector vec2 vec3 vec4 matrix mat4 quaternion quat glm linear algebra 3d math transform rotate translate scale camera projection perspective look at dot cross product normalize lerp game engine",
+  "standard-library/images": "image picture photo png jpeg jpg decode encode pixel rgba texture bitmap load save sprite",
+  "standard-library/desktop-apps": "app desktop game save folder appdata application support xdg config cache directory crash report dialog open file save file pick folder message box confirm",
   "tools/editions": "edition version compatibility breaking change backwards compatible upgrade migrate stability 2026",
   "networks/sockets": "socket tcp udp tls ssl quic connection listen accept datagram certificate mtls timeout port",
   "networks/http": "web server client rest api request response endpoint route fetch curl express flask status code",

@@ -1,0 +1,8 @@
+use std.app
+
+pub fn pick_level() -> String? {
+    app.open_file("Load a level")
+}
+
+fn main() {
+}

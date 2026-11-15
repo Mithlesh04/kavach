@@ -82,6 +82,13 @@ export const timeDoc: LessonDoc = {
         <li><C>time.now_ms()</C> is the time of day, in milliseconds since 1970. The clock can be changed, so don&apos;t measure with it.</li>
         <li><C>time.monotonic_ms()</C> never goes back: subtract two readings to measure a duration.</li>
       </ul>
+      <H2>Frame timing</H2>
+      <P>
+        A game times each frame in nanoseconds. <C>time.monotonic_ns()</C> reads the clock that never jumps, and{" "}
+        <C>time.sleep_ns(ns)</C> waits as precisely as the machine can: the system sleeps until a millisecond before,
+        and the program spins out the rest. Neither needs a capability:
+      </P>
+      <Ex name="time/frame-ns" />
       <H2>Every few moments</H2>
       <Ex name="time/every" />
       <P>Each round starts 100 ms after the one before. A round that takes longer makes the next start at once: rounds are never skipped or doubled.</P>

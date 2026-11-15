@@ -58,6 +58,8 @@ import { systemDoc } from "./stdlib-system";
 import { gamepadDoc } from "./stdlib-input";
 import { soundDoc } from "./stdlib-audio";
 import { vecDoc } from "./stdlib-vec";
+import { imageDoc } from "./stdlib-image";
+import { appDoc } from "./stdlib-app";
 import { loggingDoc } from "./stdlib-log";
 import { aiWritesDoc } from "./tools-ai-writes";
 import { gpuScreenDoc } from "./stdlib-gpu";
@@ -75,7 +77,7 @@ import {
 } from "./stdlib-json";
 import { bytesDoc } from "./stdlib-bytes";
 import {
-  argumentsDoc, cliDoc, commandsDoc, fileInfoDoc, filesDoc, foldersDoc, readingDoc, writingDoc,
+  argumentsDoc, cliDoc, commandsDoc, fileInfoDoc, filesDoc, foldersDoc, readingDoc, watchDoc, writingDoc,
 } from "./stdlib-files";
 import {
   clipboardDoc, colorsDoc, devicesDoc, promptsDoc, randomDoc, regexDoc, termDoc, timeDoc,
@@ -321,6 +323,7 @@ export const lessons: Record<string, LessonDoc> = {
   "standard-library/files/writing": writingDoc,
   "standard-library/files/folders": foldersDoc,
   "standard-library/files/details-and-permissions": fileInfoDoc,
+  "standard-library/files/watching-for-changes": watchDoc,
   "standard-library/command-line-programs": cliDoc,
   "standard-library/command-line-programs/arguments": argumentsDoc,
   "standard-library/command-line-programs/commands": commandsDoc,
@@ -345,6 +348,8 @@ export const lessons: Record<string, LessonDoc> = {
   "standard-library/gamepads": gamepadDoc,
   "standard-library/sound": soundDoc,
   "standard-library/vectors": vecDoc,
+  "standard-library/images": imageDoc,
+  "standard-library/desktop-apps": appDoc,
 
   "standard-library/json": jsonDoc,
   "standard-library/json/json-values": jsonValuesDoc,

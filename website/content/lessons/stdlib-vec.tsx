@@ -58,14 +58,24 @@ export const vecDoc: LessonDoc = {
         <Link href="/docs/types/generics/">Generics</Link>. A literal fills in for either type:{" "}
         <C>Vec2(x: 1.0, y: 2.0)</C> is a <C>Vec2&lt;Float&gt;</C>.
       </Note>
-      <H2>Not yet</H2>
-      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>In a <C>gpu fn</C>, these types as the GPU&apos;s own vectors and matrices, and a vertex fn&apos;s <C>position</C> as a <C>Vec4</C>.</li>
-        <li><C>Mat3</C>, and vectors of whole numbers, for grids.</li>
-      </ul>
+      <H2>On the GPU</H2>
+      <P>
+        In a <C>gpu fn</C>, <C>Vec2</C> to <C>Vec4</C> and <C>Mat4</C> of <C>Float32</C> are the GPU&apos;s own
+        vector and matrix types, and their operators and methods its own operations. A <C>Quat</C> is a record of four
+        parts there:
+      </P>
+      <Ex name="vec/gpu-fn" />
+      <P>
+        A vertex fn&apos;s <C>position</C>, and a fragment fn&apos;s color, may be a <C>Vec4&lt;Float32&gt;</C>, so a
+        camera&apos;s <C>Mat4</C> places each corner with one <C>@</C>. See{" "}
+        <Link href="/docs/speed/gpu/drawing-triangles/">Drawing triangles</Link>.
+      </P>
+      <P>Not yet: <C>Mat3</C>, and vectors of whole numbers, for grids.</P>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${FILE}`} label="spec 14.28 · std.vec" />
         <SrcRef file="tests/conformance/14-standard-library/vectors-matrices-and-quaternions.kav" label="tested" />
+        <SrcRef file="tests/conformance/14-standard-library/vectors-of-float32.kav" label="Float32, tested" />
+        <SrcRef file="tests/conformance/15-gpu/gpu-fn-uses-std-vec.kav" label="in gpu fns, tested" />
         <SrcRef file="stdlib/vec/vec.kav" label="vec.kav" />
         <SrcRef file="docs/decisions/0115-generic-math-and-std-vec.md" label="decision 0115" />
       </div>

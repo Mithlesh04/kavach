@@ -61,6 +61,20 @@ export const ownOperatorsDoc: LessonDoc = {
       <P>
         <C>MatMul</C> gives <C>@</C>, the matrix product: see <Link href="/docs/types/matrices/">Matrices</Link>.
       </P>
+      <H2>Operators in generic code</H2>
+      <P>
+        A type parameter with an operator&apos;s interface as its bound may use that operator. The number types meet{" "}
+        <C>Add</C>, <C>Sub</C>, <C>Mul</C>, <C>Div</C>, <C>Rem</C>, <C>Neg</C> and <C>Comparable</C> as they are, and{" "}
+        <C>String</C> meets <C>Comparable</C>. So one generic function serves numbers, text and your own types:
+      </P>
+      <Ex name="types/operators-generic" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>a + b</C> on a <C>T: Add</C> calls <C>add</C>. For a number that is its own <C>+</C>: each copy of the function runs one instruction.</li>
+        <li>A number&apos;s <C>compare</C> is its ordering: <C>7.compare(9)</C> is -1, as 7 comes first.</li>
+        <li>For any number at all, <C>T: Number</C> gives every operator at once: see <Link href="/docs/types/generics/">Generics</Link>.</li>
+      </ul>
+      <P>A type given for such a <C>T</C> must have the operator. <C>String</C> has no <C>Add</C>:</P>
+      <Ex name="types/operator-bound-string.fails" />
       <H2>What is refused</H2>
       <P>Your type goes on the left. <C>2.0 * v</C> is an error that says to write <C>v * 2.0</C>:</P>
       <Ex name="types/operators-left.fails" />
@@ -83,6 +97,7 @@ export const ownOperatorsDoc: LessonDoc = {
         <SrcRef file={`${TESTS}/operators-call-the-types-own-methods.kav`} label="tested" />
         <SrcRef file={`${TESTS}/an-operator-can-give-another-type.kav`} label="another type, tested" />
         <SrcRef file={`${TESTS}/comparable-gives-ordering-operators.kav`} label="Comparable, tested" />
+        <SrcRef file={`${TESTS}/operators-in-generic-code.kav`} label="generic code, tested" />
         <SrcRef file="compiler/checker/src/user_ops.rs" label="user_ops.rs" />
       </div>
     </>

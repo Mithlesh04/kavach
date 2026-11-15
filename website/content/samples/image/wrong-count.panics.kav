@@ -1,0 +1,7 @@
+use std.image
+
+fn main() {
+    // A 2 x 2 picture needs 2 * 2 * 4 = 16 numbers, not 4.
+    const img = image.new(2, 2, [255, 0, 0, 255])
+    print(img.width)
+}

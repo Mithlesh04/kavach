@@ -1,0 +1,8 @@
+use std.fs
+
+pub fn watch_levels() -> Watcher ! FsError {
+    try fs.watch("levels")
+}
+
+fn main() {
+}

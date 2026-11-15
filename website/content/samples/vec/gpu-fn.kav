@@ -1,0 +1,11 @@
+use std.vec
+
+// A gpu fn may use std.vec's Float32 types: here the GPU's own vectors.
+gpu fn size(v: Vec3<Float32>) -> Float32 {
+    v.length() + v.dot(Vec3(x: 1.0, y: 0.0, z: 0.0))
+}
+
+fn main() {
+    const vs: [Vec3<Float32>] = [Vec3(x: 3.0, y: 4.0, z: 0.0), Vec3(x: 0.0, y: 5.0, z: 0.0)]
+    print(vs.map(v => size(v)))
+}

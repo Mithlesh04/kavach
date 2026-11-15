@@ -183,6 +183,37 @@ const args = loadProject("cli/args", ["src/main.kav"]);
 const parsed = loadProject("cli/parse", ["src/main.kav"]);
 const commands = loadProject("cli/commands", ["src/main.kav"]);
 
+export const watchDoc: LessonDoc = {
+  lead: "fs.watch hears when files change: a game reloads its shaders, a tool rebuilds on save. poll() gives the changes without waiting; next() waits for one.",
+  simple: <>Instead of opening a folder again and again to see whether anything is new, you ask to be told. Kavach then gives you each file that was created, changed or removed, as it happens.</>,
+  minutes: 3,
+  body: (
+    <>
+      <P>A game loop asks once a frame what changed. It watches a real folder, so it is shown here, not run:</P>
+      <CodeBlock code={specBlockWith("14-standard-library/03-fs.md", "14.3", "fs.watch(")} file="from spec 14.3" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>fs.watch(path)</C> watches a file, or a folder and everything in it. It fails with <C>NotFound</C> when there is nothing there.</li>
+        <li><C>w.poll()</C> gives the changes since the last call, without waiting; <C>w.next()</C> waits for the next one.</li>
+        <li>A <C>FileChange</C> is the <C>path</C> that changed and its <C>kind</C>: <C>Created</C>, <C>Changed</C> or <C>Removed</C>. A rename is the old path removed and the new one created.</li>
+        <li><C>poll()</C> gives each path once, with the kind of its last change: an editor&apos;s save, written in several steps, is one change.</li>
+        <li><C>w.close()</C> stops watching; a watcher stops anyway when nothing holds it.</li>
+      </ul>
+      <P>Watching reads the file system, so it needs <C>Fs.read</C>, and a <C>pub</C> function says so:</P>
+      <Ex name="files/watch-needs-read.fails" />
+      <P>
+        Under <C>kavach test</C> files are fake, and a watcher of them sees no changes: <C>poll()</C> is empty and{" "}
+        <C>next()</C> gives <C>none</C> at once, so a test never waits.
+      </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/14-standard-library/03-fs.md" label="spec 14.3 · watching" />
+        <SrcRef file="tests/conformance/14-standard-library/watching-files-needs-fs-read.kav" label="Fs.read, tested" />
+        <SrcRef file="tools/cli/tests/watch.rs" label="changes seen, tested" />
+        <SrcRef file="docs/decisions/0116-watching-files-through-notify.md" label="decision 0116" />
+      </div>
+    </>
+  ),
+};
+
 export const cliDoc: LessonDoc = {
   lead: "A command-line program reads the words typed after its name. cli.args gives them as a list; cli.parse turns them into a record.",
   simple: <>When you type <C>greet Asha Pune</C>, the words after the program&apos;s name are its arguments, like instructions written on an order slip. The program reads them to know what to do.</>,

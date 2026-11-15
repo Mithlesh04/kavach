@@ -1,0 +1,1 @@
+panic: contract failed: require width >= 1 and width <= 65_535 and height >= 1 and height <= 65_535 and pixels.len() == width * height * 4

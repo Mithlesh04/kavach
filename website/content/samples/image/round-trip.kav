@@ -1,0 +1,13 @@
+use std.image
+
+fn main() {
+    // Two pixels: red, then half-see-through blue. Four numbers each.
+    const img = image.new(2, 1, [255, 0, 0, 255, 0, 0, 255, 128])
+    const file = image.png(img)
+    print(file.len() > 0)
+    const back = image.decode(file) catch _ => img
+    print("{back.width} x {back.height}")
+    print(back == img)
+    print(back.pixel(0, 0))
+    print(back.pixel(1, 0))
+}

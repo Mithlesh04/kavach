@@ -136,7 +136,7 @@ export const gpuFnDoc: LessonDoc = {
               ["those types, and records and tuples of 1 to 8 of them, as parameters and result", "text, lists, maps, pointers", "each GPU thread holds a few fixed-size numbers; it can't make or grow a value in memory"],
               ["const, let, =, if/else, while, for over 0..n, return", "for over a list, match, try, recursion", "a GPU has no call stack, and nothing a thread could loop over but its own numbers"],
               ["+ - * / % and comparisons; ** on Float32", "print, debug, capabilities (files, network, AI)", "thousands of threads run at once, cut off from the outside world"],
-              ["Float32(n), Int32(x); abs, min, max, clamp; math.sqrt, floor, ceil, round, pow, sin, cos, tan, asin, acos, atan, atan2, exp, ln", "a function that isn't a gpu fn, other std modules", "the compiler can only translate what it has checked follows these rules"],
+              ["Float32(n), Int32(x); abs, min, max, clamp; math.sqrt, floor, ceil, round, pow, sin, cos, tan, asin, acos, atan, atan2, exp, ln; std.vec's Float32 types", "a function that isn't a gpu fn, other std modules", "the compiler can only translate what it has checked follows these rules"],
             ].map(([ok, no, why]) => (
               <tr key={ok} className="border-b border-line align-top">
                 <td className="py-2 pr-4"><C>{ok}</C></td>
