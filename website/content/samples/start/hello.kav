@@ -1,5 +1,5 @@
 fn main() {
-    print("namaste, duniya")
+    print("Hello Kavach")
     const languages = ["Kavach", "Rust", "Python"]
     print(languages.len())
 }
