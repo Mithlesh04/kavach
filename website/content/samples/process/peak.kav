@@ -7,4 +7,5 @@ fn main() uses Console {
     }
     print(numbers.len())
     print(process.peak_bytes() > 8_000_000)
+    print(process.cpu_ms() >= 0)
 }

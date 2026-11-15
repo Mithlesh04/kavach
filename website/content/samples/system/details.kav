@@ -1,0 +1,19 @@
+use std.system
+
+/// Picks where to run a big job: a GPU of its own if there is one.
+fn place() -> String uses System {
+    const gpus = system.gpus()
+    if gpus.any(g => g.kind == GpuKind.Discrete) {
+        "gpu"
+    } else {
+        "cpu"
+    }
+}
+
+fn main() uses Console, System {
+    const memory = system.memory()
+    print(memory.available <= memory.total)
+    const where = place()
+    print(where == "gpu" or where == "cpu")
+    print(system.uptime().ms > 0)
+}

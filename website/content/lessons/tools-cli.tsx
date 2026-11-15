@@ -224,6 +224,12 @@ export const checkDoc: LessonDoc = {
       </P>
       <Terminal session={checkedJson.output ?? ""} />
       <P>
+        When the compiler knows a fix, the line carries it as <C>fix</C>: the text to replace, what goes there, and
+        whether it is <C>safe</C>. <Link href="/docs/tools/the-kavach-command/fix/">kavach fix</Link> applies every safe
+        fix. A typo&apos;s closest name may not be the one you meant, so that fix is not safe.{" "}
+        <SrcRef file="tools/ai/tests/tools.rs" label="tested" />
+      </P>
+      <P>
         Each line&apos;s <C>code</C> says what kind of mistake it is, so a tool can act on the kind without reading the
         wording. The codes stay the same; the wording may change:
       </P>

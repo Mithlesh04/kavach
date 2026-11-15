@@ -53,6 +53,7 @@ import { base64Doc, cryptoDoc } from "./stdlib-crypto";
 import { compressDoc } from "./stdlib-compress";
 import { windowDoc } from "./stdlib-window";
 import { processDoc } from "./stdlib-process";
+import { systemDoc } from "./stdlib-system";
 import { loggingDoc } from "./stdlib-log";
 import { aiWritesDoc } from "./tools-ai-writes";
 import { gpuScreenDoc } from "./stdlib-gpu";
@@ -334,6 +335,7 @@ export const lessons: Record<string, LessonDoc> = {
   "standard-library/windows": windowDoc,
   "standard-library/running-programs": processDoc,
   "standard-library/gpu-screens": gpuScreenDoc,
+  "standard-library/the-machine": systemDoc,
 
   "standard-library/json": jsonDoc,
   "standard-library/json/json-values": jsonValuesDoc,

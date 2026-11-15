@@ -1,0 +1,13 @@
+use std.system
+
+/// How many items each worker takes, so `workers` of them cover them all.
+fn batch_size(items: Int, workers: Int) -> Int {
+    (items + workers - 1) / workers
+}
+
+fn main() uses Console {
+    const workers = system.cores().logical
+    const size = batch_size(10_000, workers)
+    print(size * workers >= 10_000)
+    print(size * (workers - 1) < 10_000)
+}

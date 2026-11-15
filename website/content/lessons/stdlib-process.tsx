@@ -70,8 +70,8 @@ export const processDoc: LessonDoc = {
       <H2>What it cost</H2>
       <P>
         <C>cpu_ms</C> and <C>peak_bytes</C> say how long a program used the processor and the most memory it held, so a
-        tool that runs too long or grows too big can be seen. <C>process.peak_bytes()</C> says the same of your own
-        program, and needs no capability:
+        tool that runs too long or grows too big can be seen. <C>process.peak_bytes()</C> and <C>process.cpu_ms()</C>{" "}
+        say the same of your own program, and need no capability:
       </P>
       <Ex name="process/peak" />
       <H2>Every function, method and type</H2>

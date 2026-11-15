@@ -1,0 +1,9 @@
+use std.system
+
+pub fn memory_gb() -> Int {
+    system.memory().total / 1_000_000_000
+}
+
+fn main() uses Console {
+    print(memory_gb())
+}
