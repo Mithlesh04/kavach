@@ -4,8 +4,10 @@ import { getSingletonHighlighter, type DecorationItem, type ShikiTransformer, ty
 import { CopyButton } from "./copy-button";
 import { FileTabs } from "./file-tabs";
 import { Blades } from "./logo";
+import { NameOrigins } from "./name-origins";
 import type { HoverNote } from "@/lib/chapter";
 import { kavachTheme } from "@/lib/code-theme";
+import { originsIn } from "@/lib/name-origins";
 
 // Names colored by where they come from, as the editor colors them: the
 // compiler's marks for each sample (scripts/build-tokens.mjs), keyed by
@@ -299,6 +301,7 @@ export async function CodeBlock({
           </>
         )}
       </div>
+      {lang === "kavach" ? <NameOrigins origins={originsIn([{ path: file, code }, ...also])} /> : null}
       <figcaption className="sr-only">
         {file ? `${file}${also.length ? ` and ${also.length} more ${also.length === 1 ? "file" : "files"}` : ""}: ` : ""}
         {languageName[lang] ?? lang} code{output !== undefined ? (run ? `, then what ${run} prints` : ", then what running it prints") : ""}
