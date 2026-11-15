@@ -1,0 +1,1 @@
+error: this pipeline's fragment fn takes a `Texture` too: give it as `textures:` (spec 15.3)

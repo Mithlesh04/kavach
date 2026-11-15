@@ -13,9 +13,9 @@ import { Ex, H2, Note, P } from "./parts";
 // CPU instead, and the compile errors are checked.
 
 export const gpuDrawDoc: LessonDoc = {
-  lead: "A gpu vertex fn places each corner of a triangle, a gpu fragment fn colors each pixel inside it, and gpu.pipeline joins the two for frame.draw.",
+  lead: "A gpu vertex fn places each corner of a triangle, a gpu fragment fn colors each pixel inside it, and gpu.pipeline joins the two for frame.draw, with depth for 3D and textures for pictures.",
   simple: <>A picture on a screen is made of many small triangles. For each corner, the GPU asks one function where it goes. For each pixel inside, it asks another what color it is. You write both functions in Kavach, and the GPU runs them for millions of pixels at once.</>,
-  minutes: 6,
+  minutes: 9,
   before: ["speed/gpu/gpu-fn", "standard-library/gpu-screens"],
   body: (
     <>
@@ -49,6 +49,46 @@ export const gpuDrawDoc: LessonDoc = {
         what the GPU would get, in a test or a <C>print</C>, with no window:
       </P>
       <Ex name="gpu/draw-on-cpu" />
+      <H2>Depth: the nearest pixel wins</H2>
+      <P>
+        A pipeline made with <C>depth: true</C> draws a pixel only where it is nearer than what is already there. So a
+        3D scene can be drawn in any order, and a near box still hides the wall behind it. Shown, not run:
+      </P>
+      <CodeBlock code={specBlockWith("15-gpu.md", "15.3", "depth: true")} file="from spec 15.3" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A pixel&apos;s depth is the third part of <C>position</C> divided by the fourth: 0 is nearest, 1 farthest. Only pixels from 0 to 1 are drawn.</li>
+        <li>Each frame keeps one depth for each pixel. They start at 1, the farthest, and <C>frame.clear</C> sets them back to 1.</li>
+        <li>A pipeline without depth, the default, neither looks at the depths nor changes them: it draws over what is there.</li>
+      </ul>
+      <P>
+        <C>depth:</C> is part of the pipeline, which is compiled before it draws. So it is written <C>true</C> or{" "}
+        <C>false</C>, never a value worked out while the program runs:
+      </P>
+      <Ex name="gpu/depth-written.fails" />
+      <H2>Textures: drawing pictures</H2>
+      <P>
+        A <C>gpu fragment fn</C> can read pictures, <C>Texture</C>s, which it takes after its input.{" "}
+        <C>t.sample(u, v)</C> gives the color of texture <C>t</C> at <C>u</C> (0 left, 1 right) and <C>v</C> (0 top, 1
+        bottom). Shown, not run:
+      </P>
+      <CodeBlock code={specBlockWith("15-gpu.md", "15.3", "fn paint(")} file="from spec 15.3" />
+      <P>
+        <C>gpu.texture(width, height, pixels)</C> makes a texture from its pixels, four numbers each: red, green, blue
+        and opacity, row by row from the top. <C>sample</C> works on the CPU too, with the same colors, so this runs
+        with no window:
+      </P>
+      <Ex name="gpu/texture-sample" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A color from <C>sample</C> is blended between the four pixels nearest the spot. A spot past an edge takes the edge&apos;s pixels.</li>
+        <li>A texture&apos;s colors are in sRGB, as image files and screens have them, so a texture drawn as it is shows its own pixels.</li>
+        <li>A texture is 1 to 8192 pixels wide and high. Making one needs a GPU: with none, <C>gpu.texture</C> fails with a <C>GpuError</C>.</li>
+        <li><C>sample</C> is the one call on a <C>Texture</C> a <C>gpu fn</C> can make, and only a <C>gpu fragment fn</C> takes textures.</li>
+      </ul>
+      <P>
+        <C>frame.draw</C> gives one texture for each <C>Texture</C> the fragment fn takes, in order, as{" "}
+        <C>textures:</C>. Leaving it out is a compile error; a list of another length is a panic:
+      </P>
+      <Ex name="gpu/draw-no-textures.fails" />
       <H2>Mistakes caught when compiling</H2>
       <P>
         Every part of a draw is checked before the program runs. A vertex fn must give a <C>position</C>:
@@ -79,6 +119,11 @@ export const gpuDrawDoc: LessonDoc = {
         <SrcRef file="compiler/backend/wgsl/src/tests.rs" symbol="a_pipeline_compiles_before_its_first_draw" line={253} label="compiled before a draw, tested" />
         <SrcRef file="compiler/kir/src/gpu_stay.rs" symbol="a_list_drawn_is_not_fetched" line={381} label="drawn in place, tested" />
         <SrcRef file="docs/decisions/0106-drawing-on-the-gpu.md" label="decision 0106" />
+        <SrcRef file="tests/conformance/15-gpu/gpu-pipeline-depth-is-true-or-false.kav" label="depth, tested" />
+        <SrcRef file="tests/conformance/15-gpu/gpu-fragment-fn-takes-textures-after-its-input.kav" label="textures, tested" />
+        <SrcRef file="tests/conformance/15-gpu/frame-draw-gives-the-textures-its-fragment-fn-reads.kav" label="textures: given, tested" />
+        <SrcRef file="tests/conformance/15-gpu/gpu-fn-reads-a-texture-only-by-sample.kav" label="only sample, tested" />
+        <SrcRef file="tools/cli/tests/textures.rs" symbol="a_texture_samples_on_the_cpu_as_on_the_gpu" label="sampled on the CPU, tested" />
       </div>
     </>
   ),

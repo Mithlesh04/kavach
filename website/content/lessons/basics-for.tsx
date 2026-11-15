@@ -119,6 +119,18 @@ export const forRangeDoc: LessonDoc = {
         Write <C>0..items.len()</C>, or better, <C>for item in items</C>, which can&apos;t go past the end. A loop that
         changes the list, or reads it at another index, gets no warning.
       </P>
+      <H2>A range has list methods</H2>
+      <P>
+        A range reads like the list of its numbers, in order. So the{" "}
+        <Link href="/docs/collections/lists/">list methods</Link> that read a list work on it too, with no list made
+        first. <C>to_list()</C> makes that list when you need one:
+      </P>
+      <Ex name="for/range-methods" />
+      <P>
+        Methods that change a list, such as <C>push</C> and <C>pop</C>, are not a range&apos;s: a range is always the
+        same numbers.
+      </P>
+      <SrcRef file="tests/conformance/02-types/ranges-have-list-methods.kav" label="range methods, tested" />
     </>
   ),
 };

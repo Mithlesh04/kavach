@@ -110,7 +110,8 @@ function groups(): { title: string; entries: Entry[] }[] {
     {
       title: "Drawing",
       entries: [
-        { names: ["Pipeline"], says: givenBy("14-standard-library/24-gpu.md", "gpu.pipeline(vertex_fn, fragment_fn) -> Pipeline<V, I, S>"), number: "14.24", file: "14-standard-library/24-gpu.md" },
+        { names: ["Pipeline"], says: givenBy("14-standard-library/24-gpu.md", "gpu.pipeline(vertex_fn, fragment_fn) -> Pipeline<V, I, S, T>"), number: "14.24", file: "14-standard-library/24-gpu.md" },
+        { names: ["Texture"], says: givenBy("14-standard-library/24-gpu.md", "gpu.texture(width, height, pixels) -> Texture ! GpuError"), number: "14.24", file: "14-standard-library/24-gpu.md" },
       ],
     },
     {

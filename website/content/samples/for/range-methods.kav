@@ -1,0 +1,8 @@
+fn main() {
+    print((1..=4).map(i => i * i))
+    print((0..10).filter(i => i % 2 == 0))
+    print((1..=100).sum(i => i))
+    print((0..10).contains(10))
+    print((3..7).reverse())
+    print((0..5).to_list())
+}

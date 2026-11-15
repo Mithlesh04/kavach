@@ -1,0 +1,9 @@
+use std.gpu
+
+fn main() ! Error {
+    // Two pixels: red, then blue
+    const skin = try gpu.texture(2, 1, [255, 0, 0, 255, 0, 0, 255, 255])
+    print(skin.sample(0.25, 0.5))     // inside the red pixel
+    print(skin.sample(0.5, 0.5))      // halfway: blended
+    print(skin.sample(-3.0, 9.0))     // past the edge: the edge's pixel
+}

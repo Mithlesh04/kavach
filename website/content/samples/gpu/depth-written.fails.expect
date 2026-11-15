@@ -1,0 +1,1 @@
+error: `depth:` is written `true` or `false`: it is part of the pipeline, compiled before it draws (spec 15.3)
