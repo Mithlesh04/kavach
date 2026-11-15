@@ -64,7 +64,20 @@ let changing = 1
 // <--- storage.type.kavach - variable.other.constant.kavach
 
 const path = r"C:\path\{x}"
+//           ^ storage.type.string.kavach
 //                    ^^ string.quoted.raw.kavach - constant.character.escape.kavach
+
+const body = r"""
+//           ^ storage.type.string.kavach
+//            ^^^ string.quoted.raw.triple.kavach - storage.type.string.kavach
+    {"path": "C:\new\{x}"}
+//  ^ string.quoted.raw.triple.kavach - punctuation.definition.template-expression.begin.kavach
+//              ^^ string.quoted.raw.triple.kavach - constant.character.escape.kavach
+//                  ^^ string.quoted.raw.triple.kavach - constant.character.escape.kavach
+    """
+//  ^^^ string.quoted.raw.triple.kavach
+const after = 1
+// <----- storage.type.const.kavach
 
 const big = 1_000_000 + 0xff + 0b1010 + 2.5e-3
 //          ^^^^^^^^^ constant.numeric.integer.kavach
