@@ -116,11 +116,16 @@ export const fastDoc: LessonDoc = {
       <Ex name="memory/grows-in-place" />
       <SrcRef file="tests/conformance/06-memory/text-grows-in-place-copies-stay.kav" label="tested" />
       <P>
-        The same holds for a list in a field or in another list: <C>cart.items.push(x)</C> and{" "}
-        <C>shelves[i].push(x)</C> change it where it is, and a copy taken before keeps its items:
+        The same holds for a list or map in a field or in another list, and through{" "}
+        <Link href="/docs/functions/inout-parameters/">inout</Link>: <C>cart.items.push(x)</C>,{" "}
+        <C>cart.counts[k] = v</C> and <C>shelves[i].push(x)</C> change it where it is. A copy taken before keeps
+        what it had:
       </P>
       <Ex name="memory/field-grows" />
-      <SrcRef file="tests/conformance/06-memory/a-list-in-a-field-grows-in-place.kav" label="tested" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/06-memory/a-list-in-a-field-grows-in-place.kav" label="lists, tested" />
+        <SrcRef file="tests/conformance/06-memory/a-map-in-a-field-changes-in-place.kav" label="maps and inout, tested" />
+      </div>
       <H2>Numbers, text and the rest</H2>
       <P>Not every value is counted. Numbers stay where they are; text, lists and the rest are one object each:</P>
       <Table header={counted().header} rows={counted().rows} wrapFirst />

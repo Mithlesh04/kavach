@@ -37,6 +37,11 @@ export const gpuDrawDoc: LessonDoc = {
           draw paints over what the frame already holds.
         </li>
         <li>A vertex, an instance or a shared value is a record of 1 to 8 fields, each a <C>Float32</C>, <C>Int32</C> or <C>UInt32</C>.</li>
+        <li>
+          A list a GPU <Link href="/docs/speed/gpu/map-on-the-gpu/">map</Link> made, still in GPU memory, is drawn from
+          there with nothing copied, as vertices or instances. A swarm moved by a <C>map</C> each frame is drawn where it
+          is, and never comes back to the CPU.
+        </li>
       </ul>
       <H2>The same fns on the CPU</H2>
       <P>
@@ -70,6 +75,7 @@ export const gpuDrawDoc: LessonDoc = {
         <SrcRef file="docs/spec/14-standard-library/24-gpu.md" label="spec 14.24 · std.gpu" />
         <SrcRef file="tests/conformance/15-gpu/gpu-vertex-and-fragment-fns-run-on-the-cpu.kav" label="on the CPU, tested" />
         <SrcRef file="compiler/backend/wgsl/src/tests.rs" symbol="a_pipeline_draws_what_its_gpu_fns_say" line={230} label="real pixels, tested" />
+        <SrcRef file="compiler/kir/src/gpu_stay.rs" symbol="a_list_drawn_is_not_fetched" line={381} label="drawn in place, tested" />
         <SrcRef file="docs/decisions/0106-drawing-on-the-gpu.md" label="decision 0106" />
       </div>
     </>

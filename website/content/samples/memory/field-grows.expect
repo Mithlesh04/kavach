@@ -1,3 +1,4 @@
-["tea", "milk", "bread"]
+["tea", "milk", "tea"]
+["tea": 2, "milk": 1]
 []
 [[], ["jam"]]

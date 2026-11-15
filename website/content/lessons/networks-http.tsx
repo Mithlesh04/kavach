@@ -248,6 +248,12 @@ export const httpServeDoc: LessonDoc = {
       </P>
       <Ex name="http/file" />
       <P>
+        On a plain connection (not TLS, not HTTP/2) on Linux, the system sends the file straight from the disk to the
+        socket (<C>sendfile</C>), with no copy through the program. Elsewhere it is read and sent piece by piece. The{" "}
+        <C>Response</C> says which file it sends in its <C>file</C> field, which is <C>none</C> for other answers:
+      </P>
+      <Ex name="http/file-field" />
+      <P>
         To send something else as it is read, give a <C>Response</C> a reader from <C>fs.chunks</C> as its{" "}
         <C>stream</C>: <C>Response(status: 200, headers: [], body: Bytes([]), stream: reader)</C>.
       </P>

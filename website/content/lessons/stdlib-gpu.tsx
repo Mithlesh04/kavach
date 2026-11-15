@@ -47,6 +47,7 @@ export const gpuScreenDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>A draw paints over what the frame already holds, blending by opacity.</li>
         <li>A draw without the <C>instances:</C> or <C>shared:</C> value its vertex fn takes is a compile error.</li>
+        <li>A list a GPU <C>map</C> made is drawn from GPU memory, with nothing copied.</li>
         <li>A pipeline is compiled at its first draw.</li>
       </ul>
       <div className="flex flex-wrap gap-2.5">

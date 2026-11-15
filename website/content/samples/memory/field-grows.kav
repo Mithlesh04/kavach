@@ -1,14 +1,21 @@
 type Cart {
     items: [String]
+    counts: [String: Int]
+}
+
+fn add(inout cart: Cart, name: String) {
+    cart.items.push(name)
+    cart.counts[name] = (cart.counts[name] ?? 0) + 1
 }
 
 fn main() {
-    let cart = Cart(items: [])
+    let cart = Cart(items: [], counts: [:])
     const before = cart
-    for name in ["tea", "milk", "bread"] {
-        cart.items.push(name)
+    for name in ["tea", "milk", "tea"] {
+        add(cart, name)
     }
     print(cart.items)
+    print(cart.counts)
     print(before.items)
 
     let shelves: [[String]] = [[], []]
