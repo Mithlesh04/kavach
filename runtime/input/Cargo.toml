@@ -1,0 +1,16 @@
+[package]
+name = "kavach-runtime-input"
+description = "Gamepads for std.input (spec 14.26), through gilrs: their state, their events, rumble"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+# Gamepads on Windows, Linux and macOS, in one standard layout (decision 0113).
+gilrs = "0.11"
+kavach-runtime-window = { path = "../window" }
+
+[lints]
+workspace = true

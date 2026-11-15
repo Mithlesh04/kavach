@@ -31,6 +31,8 @@ Each section is a file of its own: new sections go at the end, with the next num
 | 14.23 std.process | [23-process.md](23-process.md) |
 | 14.24 std.gpu | [24-gpu.md](24-gpu.md) |
 | 14.25 std.system | [25-system.md](25-system.md) |
+| 14.26 std.input | [26-input.md](26-input.md) |
+| 14.27 std.audio | [27-audio.md](27-audio.md) |
 
 ## Open questions
 

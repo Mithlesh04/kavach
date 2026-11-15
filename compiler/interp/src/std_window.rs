@@ -1,5 +1,6 @@
 //! `std.window` in the interpreter (spec 14.22), from
-//! `kavach_runtime_window`, as native code does: windows by number.
+//! `kavach_runtime_window`, as native code does: windows by number; and
+//! `std.input`'s gamepads (spec 14.26), from `kavach_runtime_input`.
 
 use crate::interp::Interp;
 use crate::value::{Eval, Flow, Value};
@@ -67,6 +68,44 @@ impl<'a> Interp<'a> {
             }
             _ => {
                 win::close(n);
+                Value::Unit
+            }
+        })
+    }
+
+    /// `input.pads_id`, `names_id`, `rumble_id` and `start_id`.
+    pub(crate) fn input_call(&mut self, name: &str, args: &[Value<'a>]) -> Eval<'a> {
+        use kavach_runtime_input as input;
+        Ok(match name {
+            "pads_id" => {
+                let numbers = input::pad_numbers();
+                Value::List(Rc::new(numbers.into_iter().map(Value::Float).collect()))
+            }
+            "names_id" => {
+                let names = input::names().iter().map(|t| self.str_value(t)).collect();
+                Value::List(Rc::new(names))
+            }
+            "rumble_id" => {
+                let pad = match args.first() {
+                    Some(Value::Int(n, _)) => *n as i64,
+                    _ => -1,
+                };
+                let part = |k: usize| match args.get(1) {
+                    Some(Value::List(m)) => match m.get(k) {
+                        Some(Value::Float(f)) => *f,
+                        _ => 0.0,
+                    },
+                    _ => 0.0,
+                };
+                let ms = match args.get(2) {
+                    Some(Value::Int(n, _)) => (*n).clamp(0, 60_000) as i64,
+                    _ => 0,
+                };
+                input::rumble_pad(pad, part(0), part(1), ms);
+                Value::Unit
+            }
+            _ => {
+                input::start();
                 Value::Unit
             }
         })

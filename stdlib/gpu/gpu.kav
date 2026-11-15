@@ -42,10 +42,11 @@ pub type Frame: Drop {
 
     /// Draws `vertices`, three to a triangle, through `pipeline`: once for
     /// each of `instances` when its vertex fn takes an instance, with
-    /// `shared` given to every corner when it takes one, and `textures`
-    /// to its fragment fn (spec 15.3).
-    pub fn draw<V, I, S, T>(self, pipeline: Pipeline<V, I, S, T>, vertices: [V], instances: [I] = [], shared: S? = none, textures: [Texture] = []) uses Window {
-        gpu.draw_id(self.id, pipeline, vertices, instances, shared, textures)
+    /// `shared` given to every corner when it takes one, `textures` to its
+    /// fragment fn (spec 15.3), and the vertices by their place in
+    /// `indices` when given, three to a triangle.
+    pub fn draw<V, I, S, T>(self, pipeline: Pipeline<V, I, S, T>, vertices: [V], instances: [I] = [], shared: S? = none, textures: [Texture] = [], indices: [UInt32]? = none) uses Window {
+        gpu.draw_id(self.id, pipeline, vertices, instances, shared, textures, indices)
     }
 
     /// Puts the picture on the screen.

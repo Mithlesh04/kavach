@@ -38,7 +38,7 @@ impl Checker<'_> {
                 )
             }
             // A frame's number, a pipeline, its vertices, instances and
-            // shared value, and the textures (spec 15.3).
+            // shared value, the textures (spec 15.3) and the indices.
             "draw_id" => {
                 let (v, i, s, t) = (self.fresh(), self.fresh(), self.fresh(), self.fresh());
                 let pipeline = Ty::Builtin("Pipeline", vec![v.clone(), i.clone(), s.clone(), t]);
@@ -53,6 +53,10 @@ impl Checker<'_> {
                         p("instances", &list(&i)),
                         p("shared", &shared),
                         p("textures", &list(&texture)),
+                        p(
+                            "indices",
+                            &Ty::Optional(Box::new(list(&Ty::Prim(Prim::UInt32)))),
+                        ),
                     ],
                     Ty::Unit,
                 )

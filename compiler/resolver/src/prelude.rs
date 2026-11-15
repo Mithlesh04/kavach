@@ -93,6 +93,8 @@ pub const CAPABILITIES: &[&str] = &[
     "Input",
     "Process",
     "System",
+    "Audio",
+    "Microphone",
 ];
 
 /// Prelude functions (spec 10.2), `reveal` (8.7), the `unsafe` memory

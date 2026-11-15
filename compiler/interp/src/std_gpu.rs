@@ -141,6 +141,14 @@ impl<'a> Interp<'a> {
                     }
                 }
                 let textures = texture_ids(args.get(5));
+                let indices = match args.get(6) {
+                    Some(Value::List(_)) => {
+                        let mut ix = Vec::new();
+                        words(&args[6], &mut ix);
+                        Some(ix)
+                    }
+                    _ => None,
+                };
                 let made = kavach_runtime_gpu::render::Draw {
                     pipeline: int(1),
                     parts: (
@@ -149,6 +157,7 @@ impl<'a> Interp<'a> {
                         &parts[2],
                     ),
                     textures: &textures,
+                    indices: indices.as_deref(),
                 };
                 if let Err(why) = draw::draw(n, made) {
                     return Err(self.panic(why, span));

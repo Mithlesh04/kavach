@@ -288,5 +288,6 @@ pub(crate) fn one<'a>(
         pipeline: n,
         parts: (Words(vertices), Words(instances), shared),
         textures: &[],
+        indices: None,
     }
 }

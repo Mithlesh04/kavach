@@ -5,7 +5,7 @@ Windows on the screen, and the keyboard and mouse input that comes to them. Game
 Two capabilities (8.1) keep them apart:
 
 - `Window` opens windows, changes them, and reads their window events.
-- `Input` reads the keyboard, the mouse and text typed in them.
+- `Input` reads the keyboard, the mouse and text typed in them, and gamepads (14.26).
 
 A function that only draws needs no `Input`, so it can't read what a person types.
 
@@ -15,7 +15,7 @@ A function that only draws needs no `Input`, so it can't read what a person type
 | `win.events() -> [Event]` | The events that came, waiting for at least one |
 | `win.poll() -> [Event]` | The events that came, without waiting; empty when none did |
 | `win.run(f)` | Calls `f(event)` for each event as it comes, until `f` gives `false` or the window closes |
-| `win.listen_input()` | From now on, keyboard, mouse and text events come too. Needs `Input` |
+| `win.listen_input()` | From now on, keyboard, mouse, text and gamepad events come too. Needs `Input` |
 | `win.size() -> (width: Int, height: Int)` | The inside of the window, in pixels |
 | `win.scale() -> Float` | How many pixels make one point on this screen: `2.0` on most high-DPI screens |
 | `win.set_title(title)` | Changes the title |
@@ -38,8 +38,12 @@ A function that only draws needs no `Input`, so it can't read what a person type
 | `MouseButton(button: Int, down: Bool)` | A button went down or up: 0 left, 1 right, 2 middle, 3 back, 4 forward |
 | `Wheel(x: Float, y: Float)` | The wheel turned, in lines; `y` above 0 is away from the person |
 | `Motion(x: Float, y: Float)` | The mouse moved this much, however the pointer moved or stopped: for a game's camera |
+| `PadConnected(pad: Int, name: String)` | A gamepad is connected, or was when the window began to listen: its number and its name (14.26) |
+| `PadGone(pad: Int)` | The gamepad was disconnected |
+| `PadButton(pad: Int, button: String, down: Bool)` | A button of the standard layout went down or up, named by its place: `South`, `Start`, `DPadUp` (14.26) |
+| `PadAxis(pad: Int, axis: String, value: Float)` | A stick or trigger moved: `LeftX`, `LeftY`, `RightX`, `RightY` from -1 to 1, `LeftTrigger`, `RightTrigger` from 0 to 1 |
 
-The last six come only after `listen_input()`.
+The events from `Key` on come only after `listen_input()`. Gamepad events come to every window that listens to input.
 
 `WindowError` is `Unavailable(reason: String)`: the system shows no windows here, as on a server with no screen.
 

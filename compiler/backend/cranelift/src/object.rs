@@ -40,6 +40,7 @@ pub fn build(program: &Program, out: &Path) -> Result<(), String> {
             .iter()
             .filter_map(|f| f.external.clone())
             .collect();
+        l.extend(kavach_kir::system_libraries(program));
         l.sort();
         l.dedup();
         l

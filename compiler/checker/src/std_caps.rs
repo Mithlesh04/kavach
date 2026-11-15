@@ -33,7 +33,9 @@ impl Checker<'_> {
         let holds = (module == "cli" && name.starts_with("stop_"))
             || (module == "net" && name.starts_with("websocket_"))
             || (module == "process" && matches!(name, "peak_bytes_id" | "cpu_ms_id"))
-            || (module == "system" && name.starts_with("basic_"));
+            || (module == "system" && name.starts_with("basic_"))
+            // Sounds are data; playing them needs `Audio` (spec 14.27).
+            || (module == "audio" && matches!(name, "sound_id" | "decode_id" | "info_id" | "drop_sound_id"));
         if let Some(cap) = (MODULES.iter())
             .find(|(m, _)| *m == module && !reads_clock && !reads_zone && !holds)
             .and_then(|(_, c)| if answers { Some("Approvals") } else { *c })

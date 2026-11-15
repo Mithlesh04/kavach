@@ -125,3 +125,29 @@ pub const CRYPTO: [&str; 18] = [
     "decrypt",
     "sha384",
 ];
+
+/// The system libraries a program links for the runtime parts it uses,
+/// beyond those every program links: on Linux, `libudev` for gamepads
+/// (decision 0113) and `libasound` for sound (decision 0114), named so the
+/// linker takes the file every system with them has, not the development
+/// package's `.so`.
+pub fn system_libraries(program: &Program) -> Vec<String> {
+    if !cfg!(target_os = "linux") {
+        return Vec::new();
+    }
+    let uses = |prefix: &str| {
+        (program.functions.iter()).any(|f| {
+            walk::any_in_block(&f.body, &mut |e| {
+                matches!(&e.kind, ExprKind::Rt(op, _) if format!("{op:?}").starts_with(prefix))
+            })
+        })
+    };
+    let mut libs = Vec::new();
+    if uses("Input") {
+        libs.push(":libudev.so.1".to_string());
+    }
+    if uses("Audio") {
+        libs.push(":libasound.so.2".to_string());
+    }
+    libs
+}

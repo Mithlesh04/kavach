@@ -14,8 +14,10 @@ A capability is permission to affect the outside world. Built-in capabilities:
 | `Clipboard` | Reading and writing the clipboard (14.17): what a person copied is private |
 | `Serial` | Serial ports (14.18): boards, sensors, modems and other devices on a cable |
 | `Window` | Opening windows and reading their window events (14.22) |
-| `Input` | The keyboard, the mouse and text typed in a program's own windows (14.22) |
+| `Input` | The keyboard, the mouse and text typed in a program's own windows (14.22), and gamepads (14.26) |
 | `Process` | Running other programs (14.23); `Process("name")` only that one |
+| `Audio` | Playing sound (14.27) |
+| `Microphone` | Recording sound (14.27, coming): what is said near the machine is private |
 | `System` | Reading what can tell one machine from another: its processor, memory, GPUs, hostname, uptime, disks, devices and the rest of 14.25. Its system, architecture and cores need none |
 | `System.critical` | What is critical to the machine and its people, in two parts: `System.critical.read` reads serial numbers, MAC addresses and the applications installed; `System.critical.write` changes the machine for everyone on it (14.25). Unlike other parts, `uses System` doesn't cover it: it is written by name |
 | `Approvals` | Answering agents' approval requests in code (14.16). An agent's `can` may never list it (8.3) |

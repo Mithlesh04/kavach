@@ -1,0 +1,66 @@
+// std.input (spec 14.26, decision 0113): gamepads, in the standard
+// layout. The runtime watches them on a thread of its own and keeps each
+// pad's state (`runtime/input`); this file turns its numbers into `Pad`s.
+// Their events come in a window's stream (`std.window`'s `Event`).
+
+use std.input
+
+/// A connected gamepad now: its number and name, the buttons held, where
+/// its sticks are (x right, y up, each from -1 to 1), and how far its
+/// triggers are pressed (0 to 1).
+pub type Pad {
+    pub id: Int
+    pub name: String
+    pub buttons: [String]
+    pub left: (x: Float, y: Float)
+    pub right: (x: Float, y: Float)
+    pub left_trigger: Float
+    pub right_trigger: Float
+
+    /// Whether `button` (`South`, `Start`, `DPadUp`, …) is held.
+    pub fn is_down(self, button: String) -> Bool {
+        self.buttons.contains(button)
+    }
+
+    /// Makes the pad vibrate for `millis` milliseconds: its strong (low)
+    /// motor at `strong` and its weak (high) one at `weak`, each 0 to 1.
+    /// Nothing happens for a pad that is gone or can't rumble.
+    pub fn rumble(self, strong: Float, weak: Float, millis: Int) uses Input
+        require strong >= 0.0 and strong <= 1.0 and weak >= 0.0 and weak <= 1.0 and millis >= 0 and millis <= 60_000
+    {
+        input.rumble_id(self.id, [strong, weak], millis)
+    }
+}
+
+/// The buttons of the standard layout, named by their place.
+pub fn buttons() -> [String] {
+    ["South", "East", "North", "West", "LeftBumper", "RightBumper", "LeftTrigger", "RightTrigger", "Select", "Start", "Mode", "LeftStick", "RightStick", "DPadUp", "DPadDown", "DPadLeft", "DPadRight"]
+}
+
+/// The gamepads connected now. The first call starts watching them.
+pub fn pads() -> [Pad] uses Input {
+    const numbers = input.pads_id()
+    const names = input.names_id()
+    let out: [Pad] = []
+    for i in 0..names.len() {
+        out.push(pad_of(numbers.slice(i * 8, i * 8 + 8), names[i]))
+    }
+    out
+}
+
+/// A pad from its eight numbers (its number, the buttons held as bits,
+/// the sticks' x and y, the triggers) and its name.
+fn pad_of(n: [Float], name: String) -> Pad
+    require n.len() == 8 and n[0].abs() < 1e15 and n[1] >= 0.0 and n[1] < 1e9
+    example pad_of([2.0, 5.0, 0.5, -0.5, 0.0, 0.0, 1.0, 0.0], "Pad").buttons == ["South", "North"]
+{
+    const bits = Int(n[1])
+    const all = buttons()
+    let held: [String] = []
+    for k in 0..all.len() {
+        if ((bits >> k) & 1) == 1 {
+            held.push(all[k])
+        }
+    }
+    Pad(id: Int(n[0]), name: name, buttons: held, left: (x: n[2], y: n[3]), right: (x: n[4], y: n[5]), left_trigger: n[6], right_trigger: n[7])
+}

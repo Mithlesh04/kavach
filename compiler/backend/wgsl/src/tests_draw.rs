@@ -1,5 +1,5 @@
-//! Depth and textures (spec 15.3), written and drawn off-screen. The
-//! drawing tests are skipped on a machine with no GPU.
+//! Depth, textures and indices (spec 15.3, 14.24), written and drawn
+//! off-screen. The drawing tests are skipped on a machine with no GPU.
 
 use crate::tests::{drawing, one, pipeline_of};
 use kavach_runtime_gpu::render::{self, Draw, Items::Words};
@@ -128,6 +128,7 @@ fn a_fragment_fn_samples_its_texture() {
         pipeline: n,
         parts: (Words(&square), Words(&[]), &[]),
         textures: &[skin],
+        indices: None,
     };
     let pixels = render::picture(vec![draw], (4, 4)).expect("drawn");
     assert_eq!(pixels[4], [255, 0, 0, 255], "left, the red pixel");
@@ -142,7 +143,38 @@ fn a_fragment_fn_samples_its_texture() {
         pipeline: n,
         parts: (Words(&square), Words(&[]), &[]),
         textures: &[],
+        indices: None,
     };
     assert!(render::picture(vec![none], (4, 4)).is_err());
     texture::drop_texture(skin);
+}
+
+/// A square from four vertices and six indices covers the picture; an
+/// index past the last vertex is refused before anything is drawn.
+#[test]
+fn indices_name_the_vertices_of_each_triangle() {
+    let _alone = drawing();
+    if !kavach_runtime_gpu::available() {
+        return;
+    }
+    let n = render::pipeline(&pipeline_of(DEEP)).expect("a layout");
+    let square = words(&[
+        -1.0, -1.0, 0.5, 1.0, 1.0, -1.0, 0.5, 1.0, 1.0, 1.0, 0.5, 1.0, -1.0, 1.0, 0.5, 1.0,
+    ]);
+    let indexed = |ix: &'static [u32]| Draw {
+        pipeline: n,
+        parts: (Words(&square), Words(&[]), &[]),
+        textures: &[],
+        indices: Some(ix),
+    };
+    let pixels = render::picture(vec![indexed(&[0, 1, 2, 0, 2, 3])], (8, 8)).expect("drawn");
+    assert!(
+        pixels.iter().all(|p| *p == [255, 0, 0, 255]),
+        "every pixel red"
+    );
+    let err = render::picture(vec![indexed(&[0, 1, 4])], (8, 8)).expect_err("refused");
+    assert!(
+        err.contains("index 4 is past the last of the 4 vertices"),
+        "{err}"
+    );
 }

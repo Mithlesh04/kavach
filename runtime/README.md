@@ -8,6 +8,8 @@ Code that is linked into every Kavach program and runs alongside it. Written in 
 | [net/](net/README.md) | Networking for the interpreter and native code: TCP, UDP, TLS clients, the model call of `ask<T>` (`kavach-runtime-net`); apart from `core/` so programs without networking don't link TLS (decision 0024) |
 | [gpu/](gpu/README.md) | GPU compute for `gpu fn`, and drawing into windows for `std.gpu`, through `wgpu` (`kavach-runtime-gpu`); apart from `native/` so programs without GPU code don't link it (decision 0044) |
 | [window/](window/README.md) | Windows and their keyboard and mouse input for `std.window` through `winit` (`kavach-runtime-window`); apart from `native/` so programs without windows don't link it (decision 0104) |
+| [input/](input/README.md) | Gamepads for `std.input` through `gilrs`: their state, events to windows, rumble (`kavach-runtime-input`); apart from `native/` so programs without gamepads don't link it (decision 0113) |
+| [audio/](audio/README.md) | Sound for `std.audio` through `cpal`: a mixer on the device's real-time thread, WAV and Ogg Vorbis (`kavach-runtime-audio`); apart from `native/` so programs without sound don't link it (decision 0114) |
 | [process/](process/README.md) | Other programs for `std.process`, run with no shell as trees that end together, through each system's own calls (`kavach-runtime-process`, decision 0105) |
 | [matrix/](matrix/README.md) | The work of `std.matrix`: products in one fixed order, and fast ones through `gemm`, on flat lists of numbers (`kavach-runtime-matrix`, decision 0111) |
 | [native/](native/README.md) | The run-time library of native programs: heap values, printing, panics; linked into executables (`kavach-runtime-native`) |

@@ -2,7 +2,7 @@
 //! A pipeline is its number: `DrawPipeline` takes the two gpu fns, as
 //! closures, and the WGSL the backend writes for them (`attach` in
 //! `compiler/backend/wgsl`). A draw takes the frame, the pipeline, and its
-//! vertices, instances, shared value and textures as one tuple.
+//! vertices, instances, shared value, textures and indices as one tuple.
 
 use crate::ir::{self, ExprKind as K, Shape, Type};
 use crate::lower::{Lowered, Lowerer};
@@ -47,7 +47,7 @@ impl<'a> Lowerer<'a> {
             values.push(self.at(K::Str(key), text, line));
             return Ok(self.at(K::Rt(RtOp::DrawPipeline, values), Type::I64, line));
         }
-        if values.len() != 6 {
+        if values.len() != 7 {
             return Err(self.unsupported("this draw", span));
         }
         let rest = values.split_off(2);
@@ -117,7 +117,20 @@ impl<'a> Lowerer<'a> {
                 self.at(K::List(Vec::new()), t, line)
             }
         };
-        let rest = vec![vertices, instances, shared, textures];
+        let indices_ty = self.kir_type(
+            &Ty::Optional(Box::new(Ty::List(Box::new(Ty::Prim(
+                kavach_checker::Prim::UInt32,
+            ))))),
+            span,
+        )?;
+        let indices = match named("indices") {
+            Some(a) => {
+                let v = self.expr(&a.value)?;
+                self.coerce(v, indices_ty)?
+            }
+            None => self.at(K::None, indices_ty, line),
+        };
+        let rest = vec![vertices, instances, shared, textures, indices];
         let tuple = self.shapes_intern(Shape::Tuple(rest.iter().map(|v| v.ty).collect()));
         let parts = self.at(K::Tuple(rest), tuple, line);
         Ok(Some(self.at(

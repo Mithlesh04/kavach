@@ -64,6 +64,14 @@ pub(crate) fn op_entries() -> Vec<RuntimeFn> {
             "kv_rt_window",
             kavach_runtime_native::kv_rt_window as *const u8,
         ),
+        (
+            "kv_rt_input",
+            kavach_runtime_native::kv_rt_input as *const u8,
+        ),
+        (
+            "kv_rt_audio",
+            kavach_runtime_native::kv_rt_audio as *const u8,
+        ),
         ("kv_rt_run", kavach_runtime_native::kv_rt_run as *const u8),
         (
             "kv_rt_machine",

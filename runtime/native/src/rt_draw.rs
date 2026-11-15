@@ -78,7 +78,7 @@ crate::rt_data::entry!(kv_rt_draw, |op, a, b, c, _code, line| {
             0
         }
         // `a` is the frame, `b` the pipeline, `c` the tuple of vertices,
-        // instances, shared value and textures.
+        // instances, shared value, textures and indices.
         RtOp::DrawDraw => {
             let parts = slots(c).to_vec();
             // A list a GPU `map` left in GPU memory is drawn from there,
@@ -104,12 +104,15 @@ crate::rt_data::entry!(kv_rt_draw, |op, a, b, c, _code, line| {
             let textures: Vec<i64> = (crate::heap::items_of(parts[3] as i64).iter())
                 .map(|t| slots(*t as i64)[0] as i64)
                 .collect();
+            // The indices, when given: `none` is 0.
+            let indices = (parts[4] != 0).then(|| list_words(parts[4] as i64));
             let drawn = draw::draw(
                 a,
                 render::Draw {
                     pipeline: b,
                     parts: (vertices, instances, &shared),
                     textures: &textures,
+                    indices: indices.as_deref(),
                 },
             );
             release(c);

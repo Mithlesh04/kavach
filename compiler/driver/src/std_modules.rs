@@ -83,6 +83,16 @@ pub(crate) const BUILTIN: &[(&str, &str, &str)] = &[
         include_str!("../../../stdlib/window/window.kav"),
     ),
     (
+        "std/input.kav",
+        "std.input",
+        include_str!("../../../stdlib/input/input.kav"),
+    ),
+    (
+        "std/audio.kav",
+        "std.audio",
+        include_str!("../../../stdlib/audio/audio.kav"),
+    ),
+    (
         "std/process.kav",
         "std.process",
         include_str!("../../../stdlib/process/process.kav"),
@@ -447,7 +457,8 @@ print(Event.Start)",
             (
                 "use std.window
 fn f(e: Event) {}",
-                vec!["std.window"],
+                // Gamepad events come to windows (spec 14.26).
+                vec!["std.window", "std.input"],
             ),
             ("const d = 5.seconds", vec!["std.time.digits", "std.time"]),
             // `Model`'s `timeout` is a `Duration`.

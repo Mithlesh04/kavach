@@ -1,0 +1,17 @@
+[package]
+name = "kavach-runtime-audio"
+description = "Sound for std.audio (spec 14.27), through cpal: a mixer on the real-time thread, WAV and Ogg Vorbis"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+# The speakers and the microphone on Windows, Linux and macOS (decision 0114).
+cpal = "0.18"
+# Ogg Vorbis, in pure Rust (decision 0114).
+lewton = "0.10"
+
+[lints]
+workspace = true

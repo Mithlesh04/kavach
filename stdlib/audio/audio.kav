@@ -1,0 +1,85 @@
+// std.audio (spec 14.27, decision 0114): sound. The runtime keeps the
+// sounds and mixes the voices on the device's real-time thread
+// (`runtime/audio`), by number; this file gives them their methods.
+
+use std.audio
+
+/// Why nothing can play (no sound device, too many voices), or why some
+/// bytes aren't a sound.
+pub type AudioError = Unavailable(reason: String) | BadSound(reason: String)
+
+/// Samples to play: from a WAV or Ogg Vorbis file, or made from numbers.
+/// A sound let go while it plays plays to its end.
+pub type Sound: Drop {
+    id: Int
+    pub rate: Int
+    pub channels: Int
+    pub frames: Int
+
+    invariant rate >= 1000 and rate <= 384_000
+    invariant channels >= 1 and channels <= 2 and frames >= 0
+
+    /// How long it lasts, in seconds.
+    pub fn seconds(self) -> Float {
+        Float(self.frames) / Float(self.rate)
+    }
+
+    fn drop(self) {
+        audio.drop_sound_id(self.id)
+    }
+}
+
+/// A sound playing. Letting it go doesn't stop it.
+pub type Voice {
+    id: Int
+
+    /// Stops it at once; nothing for a voice that has ended.
+    pub fn stop(self) uses Audio {
+        audio.stop_id(self.id)
+    }
+
+    /// Its volume from now on: 0 is silent, 1 the sound as it is.
+    pub fn set_volume(self, volume: Float) uses Audio
+        require volume >= 0.0 and volume <= 4.0
+    {
+        audio.set_id(self.id, [volume], 0)
+    }
+
+    /// Where it is heard from now on: -1 left, 0 the middle, 1 right.
+    pub fn set_pan(self, pan: Float) uses Audio
+        require pan >= -1.0 and pan <= 1.0
+    {
+        audio.set_id(self.id, [pan], 1)
+    }
+
+    /// Whether it still plays: false once it ended or was stopped.
+    pub fn is_playing(self) -> Bool uses Audio {
+        audio.playing_id(self.id)
+    }
+}
+
+/// The sound in the bytes of a WAV or Ogg Vorbis file.
+pub fn decode(bytes: Bytes) -> Sound ! AudioError {
+    const id = try audio.decode_id(bytes)
+    const i = audio.info_id(id)
+    Sound(id: id, rate: i[0], channels: i[1], frames: i[2])
+}
+
+/// A sound of `samples`, each from -1 to 1, at `rate` frames a second;
+/// with two channels, left and right take turns.
+pub fn sound(samples: [Float32], rate: Int, channels: Int) -> Sound
+    require rate >= 1000 and rate <= 384_000 and channels >= 1 and channels <= 2 and samples.len() % channels == 0
+{
+    const id = audio.sound_id(samples, rate, channels)
+    Sound(id: id, rate: rate, channels: channels, frames: samples.len() / channels)
+}
+
+/// Plays `sound` from its start at `volume`, heard from `pan`, over and
+/// over when `looped`. It doesn't wait: the sound plays while the program
+/// goes on.
+pub fn play(sound: Sound, volume: Float = 1.0, pan: Float = 0.0, looped: Bool = false) -> Voice ! AudioError uses Audio
+    require volume >= 0.0 and volume <= 4.0 and pan >= -1.0 and pan <= 1.0
+{
+    const v = try audio.play_id(sound.id, [volume, pan], looped)
+    Voice(id: v)
+}

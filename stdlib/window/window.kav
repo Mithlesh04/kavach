@@ -3,15 +3,16 @@
 // (`runtime/window`), by the window's number; this file gives windows
 // their methods and turns the runtime's numbers into `Event`s.
 
+use std.input
 use std.window
 
 /// Why a window couldn't be opened: the system shows no windows here, as
 /// on a server with no screen.
 pub type WindowError = Unavailable(reason: String)
 
-/// Something that happened to a window. The last six come only after
-/// `listen_input()`.
-pub type Event = Closed | Resized(width: Int, height: Int) | Scaled(factor: Float) | Focused(on: Bool) | Key(key: String, down: Bool) | Text(text: String) | MouseMoved(x: Float, y: Float) | MouseButton(button: Int, down: Bool) | Wheel(x: Float, y: Float) | Motion(x: Float, y: Float)
+/// Something that happened to a window, or to a gamepad (spec 14.26).
+/// From `Key` on, they come only after `listen_input()`.
+pub type Event = Closed | Resized(width: Int, height: Int) | Scaled(factor: Float) | Focused(on: Bool) | Key(key: String, down: Bool) | Text(text: String) | MouseMoved(x: Float, y: Float) | MouseButton(button: Int, down: Bool) | Wheel(x: Float, y: Float) | Motion(x: Float, y: Float) | PadConnected(pad: Int, name: String) | PadGone(pad: Int) | PadButton(pad: Int, button: String, down: Bool) | PadAxis(pad: Int, axis: String, value: Float)
 
 /// An open window. It closes when its last holder ends, or at `close()`.
 pub type AppWindow: Drop {
@@ -44,9 +45,10 @@ pub type AppWindow: Drop {
         }
     }
 
-    /// From now on, keyboard, mouse and text events come too.
+    /// From now on, keyboard, mouse, text and gamepad events come too.
     pub fn listen_input(self) uses Input {
         window.listen_id(self.id)
+        input.start_id()
     }
 
     /// The inside of the window, in pixels.
@@ -117,6 +119,7 @@ fn event_of(kind: Int, a: Float, b: Float, text: String) -> Event
     require a.abs() <= 1e15 and b.abs() <= 1e15
     example event_of(1, 640.0, 480.0, "") == Event.Resized(width: 640, height: 480)
     example event_of(4, 1.0, 0.0, "KeyW") == Event.Key(key: "KeyW", down: true)
+    example event_of(12, 3.0, 1.0, "South") == Event.PadButton(pad: 3, button: "South", down: true)
 {
     match kind {
         0 => Event.Closed,
@@ -128,6 +131,10 @@ fn event_of(kind: Int, a: Float, b: Float, text: String) -> Event
         6 => Event.MouseMoved(x: a, y: b),
         7 => Event.MouseButton(button: Int(a), down: b > 0.0),
         8 => Event.Wheel(x: a, y: b),
-        _ => Event.Motion(x: a, y: b),
+        9 => Event.Motion(x: a, y: b),
+        10 => Event.PadConnected(pad: Int(a), name: text),
+        11 => Event.PadGone(pad: Int(a)),
+        12 => Event.PadButton(pad: Int(a), button: text, down: b > 0.0),
+        _ => Event.PadAxis(pad: Int(a), axis: text, value: b),
     }
 }

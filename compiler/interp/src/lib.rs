@@ -36,6 +36,7 @@ mod processes;
 mod run;
 mod stack;
 mod std_agents;
+mod std_audio;
 mod std_base64;
 mod std_compress;
 mod std_crypto;

@@ -85,6 +85,8 @@ impl<'a> Interp<'a> {
             "base64" => return self.base64_call(name, &args),
             "compress" => return self.compress_call(name, &args),
             "window" => return self.window_call(name, &args),
+            "input" => return self.input_call(name, &args),
+            "audio" => return self.audio_call(name, &args),
             "process" => return self.process_call(name, &args, span),
             "system" => return self.system_call(name, &args),
             "matrix" => return self.matrix_call(name, &args, span),

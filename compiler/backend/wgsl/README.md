@@ -14,4 +14,4 @@ KIR to WGSL: the kernel of each `map` that may run on the GPU (spec [chapter 15]
 | [src/filter.rs](src/filter.rs) | The kernel of `filter`: run once to count each workgroup's kept items, then to write them in order |
 | [src/reduce.rs](src/reduce.rs) | Kernels for `sum`, `min` and `max` of 32-bit whole numbers: one ordered partial per workgroup |
 | [src/tests.rs](src/tests.rs) | Kernels written from whole programs: the work estimate, record items |
-| [src/tests_draw.rs](src/tests_draw.rs) | Depth and textures, written and drawn off-screen (spec 15.3) |
+| [src/tests_draw.rs](src/tests_draw.rs) | Depth, textures and indices, written and drawn off-screen (spec 15.3, 14.24) |

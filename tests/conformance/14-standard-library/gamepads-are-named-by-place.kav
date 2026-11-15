@@ -1,0 +1,15 @@
+// Rule: Gamepad buttons are named by their place in the standard layout, and a machine with no pad reads none, without an error.
+// Spec: 14.26
+// expect output: 17
+// expect output: South East North West
+// expect output: true
+
+use std.input
+
+fn main() uses Input {
+    const all = input.buttons()
+    print(all.len())
+    print("{all[0]} {all[1]} {all[2]} {all[3]}")
+    // However many pads are connected, each has a name and its sticks in range.
+    print(input.pads().all(p => p.left.x >= -1.0 and p.left.x <= 1.0))
+}

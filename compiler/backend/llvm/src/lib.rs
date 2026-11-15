@@ -125,6 +125,7 @@ pub fn c_libraries(program: &Program) -> Vec<String> {
         .iter()
         .filter_map(|f| f.external.clone())
         .collect();
+    libs.extend(kavach_kir::system_libraries(program));
     libs.sort();
     libs.dedup();
     libs

@@ -118,6 +118,9 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0110](0110-std-system.md) | `std.system`: the machine's system, cores, memory, processor and GPUs; the basics free, the rest behind a new `System` capability; system calls in `runtime/process`, no new dependency | Accepted |
 | [0111](0111-matrices.md) | Matrices: `Matrix<T>` written in Kavach over a flat list, `a @ b` through a new `MatMul` operator interface, the same bits by default, `fast: true` through the `gemm` crate | Accepted |
 | [0112](0112-every-detail-of-the-machine.md) | Every detail of the machine in `std.system`, then events, then controls; typed records plus one device list; `System`, and `System.critical.read` and `.write`, which `System` doesn't cover | Accepted |
+| [0113](0113-gamepads-through-gilrs.md) | Gamepads through `gilrs`, in the standard layout, both as window events and as `input.pads()` state, behind `Input`; `libudev` linked only into Linux programs that read pads | Accepted |
+| [0114](0114-sound-through-cpal.md) | Sound through `cpal`: a runtime mixer first (`audio.play` giving a `Voice`), a checked Kavach callback later; `Audio` to play, `Microphone` to record; WAV and Ogg Vorbis (`lewton`) in std; `libasound` linked only into Linux programs with sound | Accepted |
+| [0115](0115-generic-math-and-std-vec.md) | Generic math through two built-in bounds, `T: Number` and `T: Floating`, compiled once per type; the number types meet the operator interfaces; vectors in `std.vec`, written in Kavach, as WGSL's own types on the GPU | Accepted |
 
 ## Open decisions
 

@@ -114,6 +114,28 @@ WindowTitle,
 WindowFullscreen,
 WindowLockCursor,
 WindowClose,
+/// `std.input` (spec 14.26, decision 0113): start watching gamepads, the
+/// pads now as numbers (eight a pad), their names, and rumble (pad `a`;
+/// `b` the list of the two motors' strengths, `c` the milliseconds)
+/// (`runtime/native/src/rt_input.rs`).
+InputStart,
+InputPads,
+InputNames,
+InputRumble,
+/// `std.audio` (spec 14.27, decision 0114): a sound from samples (`a` the
+/// `[Float32]`, `b` the rate, `c` the channels), from a file's bytes (can
+/// fail), its rate, channels and frames, letting it go; playing one (`a`
+/// the sound, `b` the list of volume and pan, `c` looped; can fail),
+/// stopping a voice, setting its volume or pan (`b` a list of one value,
+/// `c` 0 or 1), and whether it plays (`runtime/native/src/rt_audio.rs`).
+AudioSound,
+AudioDecode,
+AudioInfo,
+AudioDropSound,
+AudioPlay,
+AudioStop,
+AudioSet,
+AudioPlaying,
 /// `uses Process("git")` (spec 14.23): while the function runs, only
 /// program `a` (owned) may be run; `FsScopeLeave` ends it, as it ends a
 /// folder.

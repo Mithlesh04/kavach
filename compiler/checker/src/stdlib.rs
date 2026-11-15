@@ -25,6 +25,8 @@ pub(crate) const MODULES: &[(&str, Option<&str>)] = &[
     ("base64", None),
     ("compress", None),
     ("window", Some("Window")),
+    ("input", Some("Input")),
+    ("audio", Some("Audio")),
     ("process", Some("Process")),
     ("system", Some("System")),
     ("matrix", None),
@@ -276,6 +278,10 @@ impl Checker<'_> {
             ("compress", _) => self.compress_signature(name)?,
             // Windows (spec 14.22), behind `Window`, and `Input`.
             ("window", _) => self.window_signature(name)?,
+            // Gamepads (spec 14.26), behind `Input`.
+            ("input", _) => self.input_signature(name)?,
+            // Sound (spec 14.27), behind `Audio`.
+            ("audio", _) => self.audio_signature(name)?,
             ("process", _) => self.process_signature(name)?,
             // What machine this is (spec 14.25): the basics free.
             ("system", _) => self.system_signature(name)?,

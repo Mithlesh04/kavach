@@ -1,0 +1,14 @@
+// Rule: Playing sound needs `Audio`.
+// Spec: 14.27
+// expect compile error
+
+use std.audio
+
+pub fn beep(s: Sound) {
+    const _ = audio.play(s) catch _ => {     // error: `beep` is `pub`, so it must say what it uses: add `uses Audio`
+        return
+    }
+}
+
+fn main() {
+}

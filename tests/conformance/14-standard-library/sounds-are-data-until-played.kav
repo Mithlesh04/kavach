@@ -1,0 +1,18 @@
+// Rule: Making or reading a sound needs no capability; bytes that aren't a WAV or Ogg Vorbis file are `BadSound`.
+// Spec: 14.27
+// expect output: 0.5
+// expect output: 2 2
+// expect output: BadSound(reason: "this is not a WAV or Ogg Vorbis file")
+
+use std.audio
+
+fn main() {
+    const tone = audio.sound([0.0, 0.0, 0.5, -0.5], 4000, 2)
+    print(tone.seconds() * 1000.0)
+    print("{tone.channels} {tone.frames}")
+    const bad = audio.decode(Bytes([1, 2, 3])) catch e => {
+        print(e)
+        return
+    }
+    print(bad.frames)
+}

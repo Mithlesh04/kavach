@@ -29,6 +29,13 @@ pub const MOUSE_MOVED: i64 = 6;
 pub const MOUSE_BUTTON: i64 = 7;
 pub const WHEEL: i64 = 8;
 pub const MOTION: i64 = 9;
+/// Gamepads' events, from `kavach_runtime_input` (spec 14.26): a pad
+/// connected (its number, its name), gone, a button, and a stick or
+/// trigger moved.
+pub const PAD_CONNECTED: i64 = 10;
+pub const PAD_GONE: i64 = 11;
+pub const PAD_BUTTON: i64 = 12;
+pub const PAD_AXIS: i64 = 13;
 
 /// One event: its kind, two numbers, and the text of a key or of typing.
 #[derive(Clone, Debug, PartialEq)]
@@ -380,6 +387,17 @@ pub fn texts(n: i64) -> Vec<String> {
 fn last_texts() -> &'static Mutex<HashMap<i64, Vec<String>>> {
     static LAST: OnceLock<Mutex<HashMap<i64, Vec<String>>>> = OnceLock::new();
     LAST.get_or_init(|| Mutex::new(HashMap::new()))
+}
+
+/// Gives `event`, which no window had (a gamepad's), to every window
+/// that listens to input, waking any that waits.
+pub fn deliver_input(event: Event) {
+    let mut all = hub().inboxes.lock().unwrap_or_else(|e| e.into_inner());
+    for inbox in all.values_mut().filter(|i| i.input) {
+        inbox.events.push_back(event.clone());
+    }
+    drop(all);
+    hub().ready.notify_all();
 }
 
 /// From now on, keyboard, mouse and text events come to window `n` too.

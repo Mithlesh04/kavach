@@ -138,6 +138,10 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.25 | [system-critical-is-not-covered-by-system.kav](system-critical-is-not-covered-by-system.kav) | `uses System` doesn't cover `System.critical.read`. | compile error |
 | 14.25 | [system-programs-ports-and-users.kav](system-programs-ports-and-users.kav) | Programs running, ports with their programs, the user and accounts; ending a program that isn't there is `NotFound`; `net.free_port()` gives a free port. | runs |
 | 14.25 | [tests-cant-change-the-machine.kav](tests-cant-change-the-machine.kav) | While tests run, a `test` block given `System.critical.write` is still refused. | test pass |
+| 14.26 | [gamepads-need-input.kav](gamepads-need-input.kav) | Reading gamepads needs `Input`, as reading the keyboard does. | compile error |
+| 14.26 | [gamepads-are-named-by-place.kav](gamepads-are-named-by-place.kav) | Gamepad buttons are named by their place in the standard layout, and a machine with no pad reads none, without an error. | runs |
+| 14.27 | [sounds-are-data-until-played.kav](sounds-are-data-until-played.kav) | Making or reading a sound needs no capability; bytes that aren't a WAV or Ogg Vorbis file are `BadSound`. | runs |
+| 14.27 | [playing-sound-needs-audio.kav](playing-sound-needs-audio.kav) | Playing sound needs `Audio`. | compile error |
 | 5.8, 14.6 | [cli-on-stop-needs-no-capability.kav](cli-on-stop-needs-no-capability.kav) | `cli.on_stop(grace)` gives a hold that isn't asked until a stop signal comes; taking and letting go of one needs no capability. | runs |
 | 14.12 | [log-events-are-records.kav](log-events-are-records.kav) | A log event is a value of a type that implements `LogEvent`; the console shows its level and its printed form. | runs |
 | 14.12 | [log-hides-secrets.kav](log-hides-secrets.kav) | A secret field of a log event is written as `<secret>`. | runs |

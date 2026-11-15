@@ -253,12 +253,14 @@ pub enum Items<'a> {
 }
 
 /// One draw: through pipeline `pipeline`, its vertices, instances and
-/// shared value (words), and the numbers of the textures its fragment fn
-/// reads (spec 15.3).
+/// shared value (words), the numbers of the textures its fragment fn
+/// reads (spec 15.3), and its indices (spec 14.24).
 pub struct Draw<'a> {
     pub pipeline: i64,
     pub parts: (Items<'a>, Items<'a>, &'a [u32]),
     pub textures: &'a [i64],
+    /// The vertices of each triangle by their place, when given.
+    pub indices: Option<&'a [u32]>,
 }
 
 /// Where a draw goes: the picture, its color format, and its depths, with
@@ -324,6 +326,18 @@ pub(crate) fn draw_into(
     let ib =
         (!layout.instance.is_empty()).then(|| source(&instances, layout.instance.len(), vertex));
     let times = ib.as_ref().map_or(1, |(_, n)| *n);
+    // Every index names a vertex there is (spec 14.24).
+    let indices = match draw.indices {
+        Some(ix) => {
+            if let Some(past) = ix.iter().find(|k| **k >= count) {
+                return Err(format!(
+                    "index {past} is past the last of the {count} vertices"
+                ));
+            }
+            Some((buffer(ix, wgpu::BufferUsages::INDEX), ix.len() as u32))
+        }
+        None => None,
+    };
     let group = m.shared.as_ref().map(|l| {
         let sb = buffer(shared, wgpu::BufferUsages::STORAGE);
         g.device.create_bind_group(&wgpu::BindGroupDescriptor {
@@ -373,7 +387,13 @@ pub(crate) fn draw_into(
     if let Some((ib, _)) = &ib {
         pass.set_vertex_buffer(1, ib.slice(..));
     }
-    pass.draw(0..count, 0..times);
+    match &indices {
+        Some((buffer, n)) => {
+            pass.set_index_buffer(buffer.slice(..), wgpu::IndexFormat::Uint32);
+            pass.draw_indexed(0..*n, 0, 0..times);
+        }
+        None => pass.draw(0..count, 0..times),
+    }
     Ok(())
 }
 

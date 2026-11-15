@@ -37,6 +37,8 @@ impl RtOp {
                 | RtOp::DrawScreen
                 | RtOp::DrawFrame
                 | RtOp::DrawTexture
+                | RtOp::AudioDecode
+                | RtOp::AudioPlay
                 | RtOp::ClipReadText
                 | RtOp::ClipWriteText
                 | RtOp::SerialOpen
@@ -122,6 +124,10 @@ impl RtOp {
             "kv_rt_crypto"
         } else if group("Base64") {
             "kv_rt_base64"
+        } else if group("Input") {
+            "kv_rt_input"
+        } else if group("Audio") {
+            "kv_rt_audio"
         } else if group("Window") {
             "kv_rt_window"
         } else if group("Run") {
