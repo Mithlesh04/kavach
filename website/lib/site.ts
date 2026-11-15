@@ -13,6 +13,10 @@ import { allNodes, findNode, type CourseNode } from "./nav";
 // kavachlang.com by default, or the address another host gives it (README).
 export const SITE_URL = process.env.SITE_URL ?? "https://kavachlang.com";
 
+/** What Kavach is, in one sentence: the words search results and AI tools quote. */
+export const DESCRIPTION =
+  "Kavach is a general-purpose, compiled, statically typed programming language. Every function says what it may touch (files, network, AI, payments), and the compiler checks it.";
+
 export function hasContent(key: string): boolean {
   return key in lessons;
 }

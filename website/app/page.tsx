@@ -8,6 +8,7 @@ import project from "@/data/project.json";
 import { ratioOf, winsAgainstCpp } from "@/components/ratio";
 import { ThemeToggle } from "@/components/theme-toggle";
 import versions from "@/data/versions.json";
+import { DESCRIPTION, SITE_URL } from "@/lib/site";
 
 // The benchmark itself, read from the repository: what runs is what shows.
 const hero = fs.readFileSync(path.join(process.cwd(), "..", "benchmarks", "loops", "kavach", "loop.kav"), "utf8").trimEnd();
@@ -19,8 +20,25 @@ export default async function Home() {
   const dict = ratioOf("lookups", "dict", "kavach", "python");
   const record = winsAgainstCpp();
   const ms = (v: number) => v.toLocaleString("en-US");
+  // What the language is, for search engines: its names, its source, its licenses.
+  const names = ["KavachLang", "Kavach programming language", project.nameHindi];
+  const structured = [
+    { "@context": "https://schema.org", "@type": "WebSite", name: "Kavach", alternateName: names, url: `${SITE_URL}/` },
+    {
+      "@context": "https://schema.org",
+      "@type": "ComputerLanguage",
+      name: "Kavach",
+      alternateName: names,
+      description: DESCRIPTION,
+      url: `${SITE_URL}/`,
+      sameAs: [versions.repo],
+      license: ["https://opensource.org/licenses/MIT", "https://www.apache.org/licenses/LICENSE-2.0"],
+      creator: { "@type": "Person", name: project.lead.name, url: project.lead.url },
+    },
+  ];
   return (
     <div className="flex min-h-screen flex-col">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structured).replace(/</g, "\\u003c") }} />
       <header className="border-b border-line">
         <div className="mx-auto flex min-h-16 w-full max-w-[1200px] min-[1600px]:max-w-[1480px] items-center gap-6 px-8 max-md:gap-4 max-md:px-4 max-sm:gap-3 max-sm:px-3 max-[359px]:gap-2">
           <Link href="/" className="flex shrink-0 items-center gap-2.5 text-[19px] font-extrabold tracking-tight text-ink no-underline max-sm:gap-1.5">
@@ -117,12 +135,13 @@ export default async function Home() {
 
       <section className="mx-auto w-full max-w-[1200px] min-[1600px]:max-w-[1480px] px-8 py-14 max-md:px-4 max-md:py-10">
         <h2 className="m-0 mb-5 text-[28px] font-extrabold tracking-tight">What kind of language is Kavach?</h2>
-        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 max-lg:[&>:last-child]:sm:col-span-2">
+        <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {[
             ["Compiled", "kavach build turns a program into one native executable. No interpreter or virtual machine runs it."],
             ["Quick to try, like a script", "A file can be a single print line, and kavach run starts it at once while you learn."],
             ["Statically typed", "Types are checked before anything runs, and worked out for you: you rarely write them."],
             ["No garbage collector", "Memory is freed the moment nothing uses it, so there are no pauses."],
+            ["Safe for AI agents", "Every function says what it may touch: files, network, AI, payments. The compiler checks it, and an agent's limits and approvals are part of its code."],
             ["Built with Rust", "The compiler and runtime are written in Rust and compile through LLVM. Much of the standard library is written in Kavach itself."],
           ].map(([title, text]) => (
             <div key={title} className="rounded-xl border border-line bg-panel px-5 py-4">
@@ -131,6 +150,11 @@ export default async function Home() {
             </div>
           ))}
         </div>
+        <p className="m-0 mb-4 max-w-[64ch] text-base text-muted">
+          Kavach is a general-purpose language for real programs, open source under the MIT and Apache 2.0 licenses.
+          Its keywords are English. Its name is the Hindi word for armor, <span lang="hi">{project.nameHindi}</span>,
+          and people also search for it as KavachLang.
+        </p>
         <p className="m-0 mb-6 max-w-[64ch] text-base text-muted">
           The course teaches one idea per page, from your first program to the GPU. Every example runs, and every
           claim links to its proof.

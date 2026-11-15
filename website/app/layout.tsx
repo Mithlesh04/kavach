@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { TipLayer } from "@/components/tip-layer";
 import project from "@/data/project.json";
-import { SITE_URL } from "@/lib/site";
+import { DESCRIPTION, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
@@ -10,12 +10,12 @@ const mono = JetBrains_Mono({ variable: "--font-jetbrains", subsets: ["latin"] }
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: { default: "Kavach (कवच)", template: "%s · Kavach" },
+  title: { default: "Kavach (कवच): a compiled programming language, safe for AI agents", template: "%s · Kavach" },
   authors: [{ name: project.lead.name, url: project.lead.url }],
   creator: project.lead.name,
-  description:
-    "A language with safety you can read and speed you can verify. Every claim links to the line of code and the measurement behind it.",
-  openGraph: { type: "website", siteName: "Kavach (कवच)", locale: "en" },
+  description: DESCRIPTION,
+  keywords: ["Kavach", "KavachLang", "Kavach programming language", "programming language", "compiled language", "AI agents", "capabilities"],
+  openGraph: { type: "website", siteName: "Kavach (कवच)", locale: "en", description: DESCRIPTION },
   twitter: { card: "summary_large_image" },
 };
 
