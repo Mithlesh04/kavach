@@ -239,8 +239,8 @@
           }
         },
         {
-          "comment": "An agent's `can`, `limit` and `approve` clauses (spec 8.3; `on` is with the declarations): at the start of a line and followed by a name, so a field, argument or variable called `limit` stays plain",
-          "match": "^\\s*(can|limit|approve)\\s+(?=[\\p{L}_])",
+          "comment": "An agent's `settings`, `can`, `limit` and `approve` clauses (spec 8.3; `on` is with the declarations): at the start of a line and followed by a name, so a field, argument or variable called `limit` or `settings` stays plain",
+          "match": "^\\s*(settings|can|limit|approve)\\s+(?=[\\p{L}_])",
           "captures": {
             "1": { "name": "keyword.other.agent.kavach" }
           }
@@ -291,9 +291,12 @@
           "match": "\\bcontext\\b(?=\\s+r?\")"
         },
         {
-          "comment": "`gpu` is a keyword only before `fn` (spec 15.1)",
-          "name": "storage.modifier.kavach",
-          "match": "\\bgpu\\b(?=\\s+fn\\b)"
+          "comment": "`gpu` is a keyword only before `fn` (spec 15.1), and `vertex` and `fragment` only between `gpu` and `fn` (spec 15.3)",
+          "match": "\\b(gpu)(?:\\s+(vertex|fragment))?(?=\\s+fn\\b)",
+          "captures": {
+            "1": { "name": "storage.modifier.kavach" },
+            "2": { "name": "storage.modifier.kavach" }
+          }
         },
         {
           "comment": "`audited` is a keyword only before `fn` (spec 10.15)",
@@ -376,10 +379,10 @@
         { "name": "keyword.operator.range.kavach", "match": "\\.\\.=?" },
         { "name": "keyword.operator.assignment.kavach", "match": "\\*\\*=|<<=|>>=|[&|^]=" },
         { "name": "keyword.operator.comparison.kavach", "match": "==|!=|<=|>=" },
-        { "name": "keyword.operator.assignment.kavach", "match": "[-+*/%]?=" },
+        { "name": "keyword.operator.assignment.kavach", "match": "[-+*/%@]?=" },
         { "name": "keyword.operator.kavach", "match": "\\*\\*" },
         { "name": "keyword.operator.error.kavach", "match": "!" },
-        { "name": "keyword.operator.kavach", "match": "[-+*/%<>&|^~?]" }
+        { "name": "keyword.operator.kavach", "match": "[-+*/%@<>&|^~?]" }
       ]
     }
   }

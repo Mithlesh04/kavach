@@ -6,7 +6,14 @@
 > and index checked, and faster than C++ in 31 of 36 published,
 > reproducible benchmarks.
 
-The course teaches one idea per page, in 14 parts. A page with several
+Kavach (also searched as KavachLang) is a serious, general-purpose
+language for real programs, not an esoteric or joke language. Its
+keywords are English; its name is the Hindi word for armor (कवच). Every
+function says what it may touch (files, network, AI, payments), and the
+compiler checks it, so AI agents written in it stay within their limits.
+Open source under the MIT and Apache 2.0 licenses.
+
+The course teaches one idea per page, in 16 parts. A page with several
 forms has sub-pages under it. Source references are pinned to the docs
 version's git tag; benchmarks carry one command to reproduce them.
 
@@ -165,6 +172,8 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Generics](https://kavachlang.com/docs/types/generics/): A generic function or type works for any type: fn first<T>(items: [T]) -> T? works on a list of anything.
 - [Interfaces](https://kavachlang.com/docs/types/interfaces/): An interface names methods a type promises to have. A type keeps the promise only when it says so.
 - [Interface Values](https://kavachlang.com/docs/types/interface-values/): An interface is also a type for values: a [Describe] can hold users and rectangles together.
+- [Operators for Your Types](https://kavachlang.com/docs/types/operators-for-your-types/): A type gets +, -, *, /, % and < by implementing Add, Sub, Mul, Div, Rem or Comparable. Then vectors, money and units read like numbers.
+- [Matrices](https://kavachlang.com/docs/types/matrices/): A Matrix<T> is a grid of numbers in std.matrix. a @ b is the matrix product, + - * work item by item, and a product gives the same bits on every machine.
 - [Classes and Inheritance](https://kavachlang.com/docs/types/classes-and-inheritance/): Kavach has no classes and no inheritance. Records, methods, interfaces and composition do the same jobs, with fewer surprises.
 - [Writing Types](https://kavachlang.com/docs/types/writing-types/): Types are written where people read them: parameters, results and record fields. Everywhere else they are worked out.
 
@@ -228,7 +237,8 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Compression](https://kavachlang.com/docs/standard-library/compression/): std.compress makes bytes smaller and whole again, in gzip, deflate, zstd, brotli and lz4: the formats web servers, packages and games exchange.
 - [Windows](https://kavachlang.com/docs/standard-library/windows/): std.window opens windows on the screen and reads the keyboard and mouse input that comes to them: the start of games, tools, charts and user interfaces.
 - [Running Programs](https://kavachlang.com/docs/standard-library/running-programs/): std.process runs other programs: a compiler, a simulator, git, any tool with no library. It needs the capability Process, never goes through a shell, and ends everything a program started when it stops.
-- [GPU Screens](https://kavachlang.com/docs/standard-library/gpu-screens/): std.gpu draws into a window with the GPU: a screen for the window, a frame for each picture, cleared and shown at the screen's rate. Drawing triangles with shaders written in Kavach comes next.
+- [GPU Screens](https://kavachlang.com/docs/standard-library/gpu-screens/): std.gpu draws into a window with the GPU: a screen for the window, a frame for each picture, cleared and shown at the screen's rate, with triangles drawn by gpu fns written in Kavach.
+- [The Machine](https://kavachlang.com/docs/standard-library/the-machine/): std.system says what machine the program runs on: its system, processor, memory and GPUs. The basics are free; what could tell one machine from another needs the capability System.
 - [JSON](https://kavachlang.com/docs/standard-library/json/): JSON is text that carries data between programs. Kavach reads it straight into your own types, or into a Json value when its shape is known only while the program runs.
 - [JSON: Json values](https://kavachlang.com/docs/standard-library/json/json-values/): A Json value holds JSON whose shape is known only while the program runs. It is a union of six cases, one for each kind of JSON value.
 - [JSON: Reading](https://kavachlang.com/docs/standard-library/json/reading/): json.parse gives a Json value; doc["key"] and doc[i] read into it, and .text(), .int() and the others give the value as an optional.
@@ -340,7 +350,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Tools for AI: query](https://kavachlang.com/docs/tools/tools-for-ai/query/): kavach query answers one question exactly: who calls a function, what a type holds, which names match.
 - [Tools for AI: context](https://kavachlang.com/docs/tools/tools-for-ai/context/): kavach context gives a function, then what it uses, within a budget of tokens.
 - [Tools for AI: mcp](https://kavachlang.com/docs/tools/tools-for-ai/mcp/): kavach mcp serves these tools to AI assistants such as Claude Code or Cursor, over the Model Context Protocol.
-- [How Well AI Writes Kavach](https://kavachlang.com/docs/tools/how-well-ai-writes-kavach/): How often Claude models write Kavach that runs right: alone, with the guide for AI tools, with the compiler's errors sent back, and with Kavach's own tools. Measured, failures included.
+- [How Well AI Writes Kavach](https://kavachlang.com/docs/tools/how-well-ai-writes-kavach/): How often Claude models write Kavach that runs right: alone, with the guide for AI tools, with the compiler's errors sent back, and with Kavach's own tools, beside the same tasks in Python. Measured, failures included.
 
 ## Part 12: Speed
 
@@ -357,6 +367,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [GPU: CPU or GPU](https://kavachlang.com/docs/speed/gpu/cpu-or-gpu/): The runtime chooses CPU or GPU for each map. KAVACH_GPU overrides it, to debug or to compare.
 - [GPU: Can I use it on the GPU?](https://kavachlang.com/docs/speed/gpu/can-i-use-it-on-the-gpu/): Pointers, inout, files and recursion stay on the CPU; helpers, loops and pipelines of maps run on the GPU. Every rule is checked when compiling.
 - [GPU: Sums in a loop](https://kavachlang.com/docs/speed/gpu/sums-in-a-loop/): A loop that adds up what the GPU works out doesn't wait for each sum, so the next chunk is read and copied over while the GPU works.
+- [GPU: Drawing triangles](https://kavachlang.com/docs/speed/gpu/drawing-triangles/): A gpu vertex fn places each corner of a triangle, a gpu fragment fn colors each pixel inside it, and gpu.pipeline joins the two for frame.draw.
 - [GPU: Use cases](https://kavachlang.com/docs/speed/gpu/use-cases/): Work that does the same thing to many items, with enough math in each, is GPU work: images, audio, maps, finance, science and simulation.
 - [Native Executables](https://kavachlang.com/docs/speed/native-executables/): kavach build turns a program into one executable file of native machine code, about half a megabyte, that runs on its own.
 
@@ -377,35 +388,40 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Literals](https://kavachlang.com/docs/reference/literals/): How each kind of value is written in code: numbers, text, characters and the rest.
 - [Built-in Types](https://kavachlang.com/docs/reference/built-in-types/): Every type a program can use without use: numbers, text, collections, errors, tasks and channels, shared state, and the interfaces the language relies on. Each with what it is and where it is defined.
 - [Built-in Methods](https://kavachlang.com/docs/reference/built-in-methods/): The methods of numbers, text, lists, sets and maps, which every program has without a use.
-- [Standard Library](https://kavachlang.com/docs/reference/standard-library/): Every standard-library module, with a page each: its types, methods and functions, their definitions and examples, and the files that declare them.
-- [Standard Library: std.fs](https://kavachlang.com/docs/reference/standard-library/std-fs/): Every type, method and function of std.fs: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.time](https://kavachlang.com/docs/reference/standard-library/std-time/): Every type, method and function of std.time: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.math](https://kavachlang.com/docs/reference/standard-library/std-math/): Every type, method and function of std.math: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.io and std.cli](https://kavachlang.com/docs/reference/standard-library/std-io-and-std-cli/): Every type, method and function of std.io and std.cli: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.test](https://kavachlang.com/docs/reference/standard-library/std-test/): Every type, method and function of std.test: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.regex](https://kavachlang.com/docs/reference/standard-library/std-regex/): Every type, method and function of std.regex: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.text and std.collections](https://kavachlang.com/docs/reference/standard-library/std-text-and-std-collections/): Every type, method and function of std.text and std.collections: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.random](https://kavachlang.com/docs/reference/standard-library/std-random/): Every type, method and function of std.random: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.log](https://kavachlang.com/docs/reference/standard-library/std-log/): Every type, method and function of std.log: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.term](https://kavachlang.com/docs/reference/standard-library/std-term/): Every type, method and function of std.term: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.crypto](https://kavachlang.com/docs/reference/standard-library/std-crypto/): Every type, method and function of std.crypto: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.base64](https://kavachlang.com/docs/reference/standard-library/std-base64/): Every type, method and function of std.base64: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.compress](https://kavachlang.com/docs/reference/standard-library/std-compress/): Every type, method and function of std.compress: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.json](https://kavachlang.com/docs/reference/standard-library/std-json/): Every type, method and function of std.json: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.tasks](https://kavachlang.com/docs/reference/standard-library/std-tasks/): Every type, method and function of std.tasks: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.net](https://kavachlang.com/docs/reference/standard-library/std-net/): Every type, method and function of std.net: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.http](https://kavachlang.com/docs/reference/standard-library/std-http/): Every type, method and function of std.http: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.grpc](https://kavachlang.com/docs/reference/standard-library/std-grpc/): Every type, method and function of std.grpc: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.ai](https://kavachlang.com/docs/reference/standard-library/std-ai/): Every type, method and function of std.ai: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.agents](https://kavachlang.com/docs/reference/standard-library/std-agents/): Every type, method and function of std.agents: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.clipboard](https://kavachlang.com/docs/reference/standard-library/std-clipboard/): Every type, method and function of std.clipboard: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.devices](https://kavachlang.com/docs/reference/standard-library/std-devices/): Every type, method and function of std.devices: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.window](https://kavachlang.com/docs/reference/standard-library/std-window/): Every type, method and function of std.window: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.process](https://kavachlang.com/docs/reference/standard-library/std-process/): Every type, method and function of std.process: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.gpu](https://kavachlang.com/docs/reference/standard-library/std-gpu/): Every type, method and function of std.gpu: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
-- [Standard Library: std.literals](https://kavachlang.com/docs/reference/standard-library/std-literals/): Every type, method and function of std.literals: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 - [Commands](https://kavachlang.com/docs/reference/commands/): Every kavach command the spec describes, with what it does.
 - [Compiler Messages](https://kavachlang.com/docs/reference/compiler-messages/): The compiler's errors and warnings, and the panics of a running program, as the samples on this site show them: each with the page that explains it.
+
+## Part 15: Standard Library Reference
+
+- [All Modules](https://kavachlang.com/docs/std/all-modules/): Every standard-library module, with a page each: its types, methods and functions, their definitions and examples, and the files that declare them.
+- [std.fs](https://kavachlang.com/docs/std/std-fs/): Every type, method and function of std.fs: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.time](https://kavachlang.com/docs/std/std-time/): Every type, method and function of std.time: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.math](https://kavachlang.com/docs/std/std-math/): Every type, method and function of std.math: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.io and std.cli](https://kavachlang.com/docs/std/std-io-and-std-cli/): Every type, method and function of std.io and std.cli: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.test](https://kavachlang.com/docs/std/std-test/): Every type, method and function of std.test: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.regex](https://kavachlang.com/docs/std/std-regex/): Every type, method and function of std.regex: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.text and std.collections](https://kavachlang.com/docs/std/std-text-and-std-collections/): Every type, method and function of std.text and std.collections: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.random](https://kavachlang.com/docs/std/std-random/): Every type, method and function of std.random: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.log](https://kavachlang.com/docs/std/std-log/): Every type, method and function of std.log: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.term](https://kavachlang.com/docs/std/std-term/): Every type, method and function of std.term: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.crypto](https://kavachlang.com/docs/std/std-crypto/): Every type, method and function of std.crypto: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.base64](https://kavachlang.com/docs/std/std-base64/): Every type, method and function of std.base64: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.compress](https://kavachlang.com/docs/std/std-compress/): Every type, method and function of std.compress: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.json](https://kavachlang.com/docs/std/std-json/): Every type, method and function of std.json: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.tasks](https://kavachlang.com/docs/std/std-tasks/): Every type, method and function of std.tasks: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.net](https://kavachlang.com/docs/std/std-net/): Every type, method and function of std.net: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.http](https://kavachlang.com/docs/std/std-http/): Every type, method and function of std.http: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.grpc](https://kavachlang.com/docs/std/std-grpc/): Every type, method and function of std.grpc: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.ai](https://kavachlang.com/docs/std/std-ai/): Every type, method and function of std.ai: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.agents](https://kavachlang.com/docs/std/std-agents/): Every type, method and function of std.agents: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.clipboard](https://kavachlang.com/docs/std/std-clipboard/): Every type, method and function of std.clipboard: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.devices](https://kavachlang.com/docs/std/std-devices/): Every type, method and function of std.devices: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.window](https://kavachlang.com/docs/std/std-window/): Every type, method and function of std.window: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.process](https://kavachlang.com/docs/std/std-process/): Every type, method and function of std.process: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.gpu](https://kavachlang.com/docs/std/std-gpu/): Every type, method and function of std.gpu: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.system](https://kavachlang.com/docs/std/std-system/): Every type, method and function of std.system: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.matrix](https://kavachlang.com/docs/std/std-matrix/): Every type, method and function of std.matrix: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.literals](https://kavachlang.com/docs/std/std-literals/): Every type, method and function of std.literals: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 
 ## Benchmarks
 
