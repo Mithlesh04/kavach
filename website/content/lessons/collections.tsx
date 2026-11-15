@@ -237,8 +237,13 @@ export const makeMapDoc: LessonDoc = {
   body: (
     <>
       <Ex name="maps/sub-create" />
-      <P>When you know a map will get many entries, <C>Map.with_capacity(n)</C> makes room for them up front, so filling it never stops to grow:</P>
+      <P>When you know a map will get many entries, <C>Map.with_capacity(n)</C> makes room for them up front, so filling it up to <C>n</C> never stops to make room:</P>
       <Ex name="maps/sub-room" />
+      <P>
+        The number is a hint, not a limit. Here there is room for 3, and the 4th entry still fits: the map makes more
+        room when it needs it. A number below 0 counts as 0.
+      </P>
+      <SrcRef file="tests/conformance/02-types/maps-and-sets-with-room.kav" label="tested" />
     </>
   ),
 };
