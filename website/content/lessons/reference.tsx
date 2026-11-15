@@ -20,7 +20,7 @@ const STDLIB = "14-standard-library";
 /** The course page outside the Reference that teaches spec section `number`, if one is written. */
 export function teacher(number: string): { href: string; title: string } | undefined {
   for (const part of course) {
-    if (part.slug === "reference") continue;
+    if (part.slug === "reference" || part.slug === "std") continue;
     for (const page of part.pages) {
       const key = `${part.slug}/${page.slug}`;
       if (page.spec === number && hasContent(key)) return { href: findNode(key)!.href, title: page.title };

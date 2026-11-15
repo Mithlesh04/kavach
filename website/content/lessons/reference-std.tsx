@@ -13,7 +13,7 @@ import { H2, Note, P } from "./parts";
 import { Learn, Tables } from "./reference";
 import { Cell } from "./spec-table";
 
-// ---------- Reference › Standard Library ----------
+// ---------- Standard Library Reference ----------
 //
 // One page per module: the spec's tables of what it gives, then every
 // public type, method and function its files declare, as `kavach outline`
@@ -45,15 +45,16 @@ const chapterFiles = fs
     return { file: `${CHAPTER}/${f}`, number, title: title.trim() };
   });
 
-const page = course.find((p) => p.slug === "reference")!.pages.find((p) => p.slug === "standard-library")!;
+/** The part's pages after its first, All Modules: one per module. */
+const modulePages = course.find((p) => p.slug === "std")!.pages.slice(1);
 
-/** The modules, in the order lib/course.ts lists them as the Standard Library page's sub-pages. */
-export const stdModules: StdModule[] = page.subs.map((s) => {
+/** The modules, in the order lib/course.ts lists them as the Standard Library Reference's pages. */
+export const stdModules: StdModule[] = modulePages.map((s) => {
   const spec = chapterFiles.find((c) => c.title === s.title);
   const [file, number] = spec ? [spec.file, spec.number] : ELSEWHERE[s.title] ?? [];
   if (!file) throw new Error(`Reference: no spec section is titled ${s.title} (lib/course.ts)`);
   const folders = [...s.title.matchAll(/std\.(\w+)/g)].map((m) => m[1]).filter((f) => filesOf(f).length);
-  return { title: s.title, key: `reference/standard-library/${s.slug}`, file, number, folders };
+  return { title: s.title, key: `std/${s.slug}`, file, number, folders };
 });
 
 // Every module has its page: a spec section or a stdlib folder without one fails the build.

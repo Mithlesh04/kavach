@@ -1,6 +1,7 @@
 import { lessons } from "@/content/lessons";
 import { winsAgainstCpp } from "@/components/ratio";
 import { SITE_URL, visibleNodes } from "@/lib/site";
+import { course } from "@/lib/course";
 
 export const dynamic = "force-static";
 
@@ -18,7 +19,7 @@ export function GET() {
     `> and index checked, and faster than C++ in ${wins} of ${total} published,`,
     "> reproducible benchmarks.",
     "",
-    "The course teaches one idea per page, in 14 parts. A page with several",
+    `The course teaches one idea per page, in ${course.length} parts. A page with several`,
     "forms has sub-pages under it. Source references are pinned to the docs",
     "version's git tag; benchmarks carry one command to reproduce them.",
     "",

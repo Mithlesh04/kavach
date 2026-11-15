@@ -142,7 +142,7 @@ function Types() {
       <P>
         These need no <C>use</C>. Their methods are listed in{" "}
         <Link href="/docs/reference/built-in-methods/">Built-in Methods</Link>, and the types a module adds on its{" "}
-        <Link href="/docs/reference/standard-library/">module&apos;s page</Link>. Each type links to the course page that
+        <Link href="/docs/std/all-modules/">module&apos;s page</Link>. Each type links to the course page that
         teaches it with examples that run.
       </P>
       {all.map((g) => (

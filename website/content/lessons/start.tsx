@@ -124,7 +124,7 @@ export const homeDoc: LessonDoc = {
           Wondering whether something already exists? The Reference lists every{" "}
           <Link href="/docs/reference/built-in-types/">built-in type</Link>, every{" "}
           <Link href="/docs/reference/built-in-methods/">built-in method</Link> and every{" "}
-          <Link href="/docs/reference/standard-library/">standard-library module</Link>, with what each is and the
+          <Link href="/docs/std/all-modules/">standard-library module</Link>, with what each is and the
           file that defines it.
         </li>
       </ul>

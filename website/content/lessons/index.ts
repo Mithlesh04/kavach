@@ -129,7 +129,7 @@ export const lessons: Record<string, LessonDoc> = {
   "reference/literals": literalsRefDoc,
   "reference/built-in-methods": methodsRefDoc,
   "reference/built-in-types": typesRefDoc,
-  "reference/standard-library": stdlibRefDoc,
+  "std/all-modules": stdlibRefDoc,
   ...stdModuleDocs,
   "reference/commands": commandsRefDoc,
   "reference/compiler-messages": messagesRefDoc,
