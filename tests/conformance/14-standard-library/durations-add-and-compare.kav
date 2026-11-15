@@ -1,0 +1,17 @@
+// Rule: `Duration` is `Add`, `Sub`, `Mul<Int>` and `Comparable`: durations add, subtract, scale by a whole number and compare.
+// Spec: 14.4
+// expect output: 2500 57500 67500
+// expect output: true true
+// expect output: true false true
+
+use std.time
+
+fn main() {
+    const limit = 2.seconds + 500.ms
+    let left = 1.minutes - limit
+    const before = left
+    left += 10.seconds
+    print("{limit.ms} {before.ms} {left.ms}")
+    print("{250.ms * 4 == 1.seconds} {(1.seconds - 2.seconds).ms < 0}")
+    print("{limit < 3.seconds} {limit > 3.seconds} {limit >= 2500.ms}")
+}

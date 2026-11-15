@@ -92,7 +92,8 @@ fn hash_into(v: &Value<'_>, h: &mut DefaultHasher) {
             .hash(h),
         Value::Bool(b) => b.hash(h),
         Value::Char(c) => c.hash(h),
-        Value::Str(s) | Value::BuiltinError(s) => s.hash(h),
+        Value::Str(s) => s.as_str().hash(h),
+        Value::BuiltinError(s) => s.hash(h),
         Value::List(items) => items.iter().for_each(|x| hash_into(x, h)),
         Value::Tuple(items) => items.iter().for_each(|x| hash_into(x, h)),
         // Equal maps may hold their entries in another order.

@@ -22,6 +22,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.2 | [list-and-map-access.kav](list-and-map-access.kav) | list.get(i) and map[key] return optionals. | runs |
 | 2.2 | [a-list-mapped-into-itself-keeps-its-copies.kav](a-list-mapped-into-itself-keeps-its-copies.kav) | `xs = xs.map(f)` gives `xs` the new items and leaves every copy of the old list as it was. | runs |
 | 2.2 | [maps-keep-insertion-order.kav](maps-keep-insertion-order.kav) | Maps keep insertion order when iterated. | runs |
+| 2.2 | [map-keys-read-from-lists-of-text.kav](map-keys-read-from-lists-of-text.kav) | A map with text keys finds a key read from a list of text, short or long. | runs |
 | 2.2 | [push-needs-a-var.kav](push-needs-a-var.kav) | Methods that change a collection (`push`, `remove`) need a `let`. | compile error |
 | 2.2 | [lists-hold-any-text.kav](lists-hold-any-text.kav) | A list of text gives back every item as it was put in, short or long, ASCII or not, and copies of the list are independent. | runs |
 | 2.2 | [maps-and-sets-with-room.kav](maps-and-sets-with-room.kav) | `Map.with_capacity(n)` and `Set.with_capacity(n)` make empty collections with room for `n` entries; a hint, not a limit. | runs |

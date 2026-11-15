@@ -1,0 +1,76 @@
+// Rule: `http.serve` answers `HEAD` itself with the status and headers a `GET` would get and no body, and every answer carries one `content-length`, the handler's when it gives one.
+// Spec: 14.11
+// expect output: GET /: 1 content-length 11, body hello world
+// expect output: HEAD /: 1 content-length 11, body none
+// expect output: GET /given: 1 content-length 5, body hello
+// expect output: HEAD /file: 1 content-length 6, body none
+// expect output: h2 HEAD /: 11, body 0
+// expect output: session HEAD then GET: 0 11
+
+use std.fs
+use std.http
+use std.http.h2
+use std.net
+
+fn pages(r: Request) -> Response {
+    if r.path == "/given" {
+        return Response(status: 200, headers: [Header(name: "content-length", value: "5")], body: "hello".bytes())
+    }
+    if r.path == "/file" {
+        return http.file("kavach-head.txt") catch _ => http.text(404, "none")
+    }
+    http.text(200, "hello world")
+}
+
+/// Sends one raw request and says how many `content-length` lines came,
+/// the first one's value, and what followed the head.
+fn ask(address: String, method: String, path: String) -> String ! Error uses Net {
+    const crlf = "\u{D}\n"
+    const conn = try net.connect(address)
+    try conn.write("{method} {path} HTTP/1.1{crlf}host: x{crlf}connection: close{crlf}{crlf}".bytes())
+    let all = Bytes([])
+    while true {
+        all = all + ((try conn.read()) ?? break)
+    }
+    const text = all.text() ?? ""
+    const parts = text.split("{crlf}{crlf}")
+    let count = 0
+    let value = "none"
+    for line in parts[0].split(crlf) {
+        if line.lower().starts_with("content-length:") {
+            count += 1
+            value = line.split(": ")[1]
+        }
+    }
+    const body = if parts.len() > 1 and parts[1] != "" { parts[1] } else { "none" }
+    "{method} {path}: {count} content-length {value}, body {body}"
+}
+
+fn main() ! Error {
+    try fs.write_text("kavach-head.txt", "abcdef")
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, pages)
+    const address = listener.address()
+    print(try ask(address, "GET", "/"))
+    print(try ask(address, "HEAD", "/"))
+    print(try ask(address, "GET", "/given"))
+    print(try ask(address, "HEAD", "/file"))
+    // Over HTTP/2 the headers end the stream.
+    const conn = try net.connect(address)
+    const headers = [
+        Header(name: ":method", value: "HEAD"),
+        Header(name: ":scheme", value: "http"),
+        Header(name: ":authority", value: "localhost"),
+        Header(name: ":path", value: "/"),
+    ]
+    const reply = try h2.request(conn, headers, Bytes([]))
+    conn.close()
+    print("h2 HEAD /: {reply.headers.get("content-length") ?? "?"}, body {reply.body.len()}")
+    // A session reads a `HEAD` answer's head alone, then the next answer.
+    const session = try http.open("http://{address}")
+    const head = try session.request("HEAD", "/")
+    const page = try session.get("/")
+    session.close()
+    print("session HEAD then GET: {head.body.len()} {page.body.len()}")
+    try fs.remove("kavach-head.txt")
+}

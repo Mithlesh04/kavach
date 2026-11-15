@@ -121,6 +121,49 @@ pub(crate) fn get_text(map: i64, key: &str) -> i64 {
     }
 }
 
+/// `map[key] ?? fallback` for a text key (a borrowed text object) and a
+/// plain value, with `map` borrowed: no dispatch, no reference counting.
+#[unsafe(no_mangle)]
+pub extern "C-unwind" fn kv_map_get_str_or(map: i64, key: i64, fallback: i64) -> i64 {
+    crate::heap::with_str(key, |k| get_text_or(map, k, fallback))
+}
+
+/// `map[key] ?? fallback` with the key an item of a list of text at
+/// `addr`, read where it is: a short key never becomes an object. `owned`
+/// says the item is a copy whose long text is let go after.
+#[unsafe(no_mangle)]
+pub extern "C-unwind" fn kv_map_get_item_or(map: i64, addr: i64, owned: i64, fallback: i64) -> i64 {
+    let item = crate::text_items::item_at(addr);
+    let value = crate::text_items::with_item(item, |k| get_text_or(map, k, fallback));
+    if owned != 0 {
+        crate::text_items::release_all(item);
+    }
+    value
+}
+
+/// `map[key]` like `kv_map_get_str`, with the key an item as in
+/// `kv_map_get_item_or`.
+#[unsafe(no_mangle)]
+pub extern "C-unwind" fn kv_map_get_item(map: i64, addr: i64, owned: i64) -> i64 {
+    let item = crate::text_items::item_at(addr);
+    let value = crate::text_items::with_item(item, |k| get_text(map, k));
+    if owned != 0 {
+        crate::text_items::release_all(item);
+    }
+    value
+}
+
+fn get_text_or(map: i64, key: &str, fallback: i64) -> i64 {
+    let hash = text_hash(key);
+    let same = |s: u64| crate::heap::with_str(s as i64, |s| s == key);
+    match &*crate::heap::data(map).borrow() {
+        Data::Map(t) => t
+            .find(hash, same)
+            .map_or(fallback, |e| t.slots[e * 2 + 1] as i64),
+        _ => fallback,
+    }
+}
+
 /// `map[key] = value` (all three owned): what generated code calls.
 #[unsafe(no_mangle)]
 pub extern "C-unwind" fn kv_map_insert(map: i64, key: i64, value: i64) -> i64 {
@@ -142,7 +185,24 @@ fn insert(map: i64, key: i64, value: i64) -> i64 {
         }
         return q;
     }
-    let found = find(q, key, kt);
+    // A text key is hashed once, for the search and the new entry.
+    let text = matches!(shape(kt), Shape::Str);
+    let hash = if text {
+        crate::heap::with_str(key, text_hash)
+    } else {
+        hash_slot(key, kt)
+    };
+    let found = if text {
+        crate::heap::with_str(key, |k| {
+            let same = |s: u64| crate::heap::with_str(s as i64, |s| s == k);
+            match &*crate::heap::data(q).borrow() {
+                Data::Map(t) => t.find(hash, same),
+                _ => None,
+            }
+        })
+    } else {
+        find(q, key, kt)
+    };
     if let Data::Map(table) = &mut *crate::heap::data(q).borrow_mut() {
         match found {
             Some(e) => {
@@ -151,7 +211,7 @@ fn insert(map: i64, key: i64, value: i64) -> i64 {
                 release_slot(key, kt);
             }
             None => {
-                table.push(hash_slot(key, kt), key as u64, value as u64);
+                table.push(hash, key as u64, value as u64);
             }
         }
     }

@@ -1,0 +1,39 @@
+// Rule: a map with text keys finds a key read from a list of text, short (kept in the list's item) or long, as it finds any other text.
+// Spec: 2.2
+// expect output: a: 10 0.5 box 0
+// expect output: a much longer key than fifteen: 1 1.5 box 1
+// expect output: b: 2 2.5 box 2
+// expect output: missing: -1 -1.0 none
+// expect output: another long key, 30+ bytes!!: 4 4.5 box 4
+// expect output: 0: 10 0.5 box 0
+// expect output: 1: 1 1.5 box 1
+// expect output: 2: 2 2.5 box 2
+// expect output: 3: -1 -1.0 none
+// expect output: 4: 4 4.5 box 4
+// expect output: 4
+
+type Box {
+    name: String
+}
+
+fn main() {
+    const keys = ["a", "a much longer key than fifteen", "b", "missing", "another long key, 30+ bytes!!"]
+    let m: [String: Int] = [:]
+    let f: [String: Float] = [:]
+    let r: [String: Box] = [:]
+    for i in 0..keys.len() {
+        if keys[i] != "missing" {
+            m[keys[i]] = i
+            f[keys[i]] = Float(i) + 0.5
+            r[keys[i]] = Box(name: "box {i}")
+        }
+    }
+    m["a"] = 10
+    for k in keys {
+        print("{k}: {m.get(k) ?? -1} {f.get(k) ?? -1.0} {(r[k] ?? Box(name: "none")).name}")
+    }
+    for i in 0..keys.len() {
+        print("{i}: {m.get(keys[i]) ?? -1} {f.get(keys[i]) ?? -1.0} {(r[keys[i]] ?? Box(name: "none")).name}")
+    }
+    print(m.len())
+}

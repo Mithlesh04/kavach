@@ -74,9 +74,10 @@ impl<'a> Interp<'a> {
                 let mut v = self.eval(value)?;
                 if let Some(bin) = op.binary() {
                     let current = self.eval(target)?;
-                    // `xs += ys`: the variable lets go of its list first, so
-                    // the list grows in place, not in a copy (spec 2.2).
-                    if matches!(current, Value::List(_)) {
+                    // `xs += ys` and `s += part`: the variable lets go of its
+                    // list or text first, so it grows in place, not in a
+                    // copy (spec 2.2, 6.1).
+                    if matches!(current, Value::List(_) | Value::Str(_)) {
                         self.assign(target, Value::Unit, s.span)?;
                     }
                     v = self.arith(bin, current, v, s.span)?;

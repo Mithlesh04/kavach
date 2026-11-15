@@ -246,3 +246,21 @@ fn a_pipeline_draws_what_its_gpu_fns_say() {
     assert_eq!(at(24, 8), [0, 51, 255, 255], "the cold dot");
     assert_eq!(at(1, 1), [0, 0, 0, 255], "nothing drawn there");
 }
+
+/// A pipeline made once something has been drawn is compiled at once, not
+/// at its first draw, so a frame never waits for it (decision 0106).
+#[test]
+fn a_pipeline_compiles_before_its_first_draw() {
+    if !kavach_runtime_gpu::available() {
+        return;
+    }
+    use kavach_runtime_gpu::render::{self, Items::Words};
+    let wgsl = pipeline_of(SWARM);
+    let first = render::pipeline(&wgsl).expect("a layout");
+    let words = |fs: &[f32]| fs.iter().map(|f| f.to_bits()).collect::<Vec<u32>>();
+    let corners = words(&[-0.2, -0.2, 0.2, -0.2, 0.0, 0.2]);
+    let (dot, camera) = (words(&[0.0, 0.0, 1.0]), words(&[1.0]));
+    render::picture(first, (Words(&corners), Words(&dot), &camera), (8, 8)).expect("drawn");
+    let second = render::pipeline(&format!("{wgsl}// another\n")).expect("a layout");
+    assert!(render::is_made(second), "compiled when it was made");
+}

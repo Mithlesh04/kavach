@@ -91,6 +91,26 @@ kavach check --format json
 ```
 
 - One line per message, with no source excerpt unless asked for (`--context`).
+- `code` says what kind of mistake it is, so a tool can act on the kind without reading the wording. The codes are stable; the wording may change.
+
+| Code | The message says |
+|---|---|
+| `syntax` | The parser couldn't read the code |
+| `not-kavach` | A habit from another language (`let mut`, `len(xs)`, overloading), with Kavach's way |
+| `unknown-name` | A name that isn't defined, isn't defined yet, or isn't a module |
+| `no-field`, `no-method` | A type has no such field or method |
+| `type-mismatch` | A value of the wrong type, or a type missing what is asked of it |
+| `arguments` | Arguments or fields missing, extra, or not what the function takes |
+| `capability` | A capability used but not listed in `uses`, `can` or `kavach.toml` (8.1) |
+| `can-fail` | An error not handled with `try`, `catch` or `match`, or handled where nothing fails |
+| `cannot-change` | A change to a `const` or to what isn't a variable |
+| `not-covered` | A `match` that misses a case |
+| `private`, `secret` | A private name used outside its module, or a secret value leaving (8.7) |
+| `always-fails` | A call or index that would always fail, found at compile time (7.7) |
+| `operators`, `variant`, `duplicate`, `no-value`, `wrong-place` | An operator's rules (2.16), a variant written without its type, a name declared twice, a value from a function that gives none, something used where it doesn't go |
+| `unsafe`, `gpu`, `contract`, `agent-setting`, `literal` | The rules of `unsafe` (6.4), `gpu fn` (15), contracts (7), agents' settings (8.4) and literal checkers (10.15) |
+| `unused`, `style`, `too-long` | Warnings: a name never used, a name in the wrong style (1.5), a file or function over its limit (12.1) |
+| `check` | Any other |
 - When the compiler knows the fix (a typo, a missing `-> Int`, `const` that should be `let`, a missing `try`), the message includes it as an edit. `kavach fix` applies every safe fix at once.
 - The same messages are shown to people in the friendly form (with the caret under the problem).
 - A file with syntax errors gets only those. The later checks would report on code the parser couldn't read: a string left open turns the lines after it into text, so a name or a function length found there would mislead whoever fixes the first error, person or AI.

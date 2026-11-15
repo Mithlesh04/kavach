@@ -105,6 +105,15 @@ pub fn whole(data: Bytes) -> (message: Message, used: Int)? {
     (message: done, used: head + length)
 }
 
+/// The answer to a `HEAD` request in `data`: its head alone, which has no
+/// body whatever its `content-length` says (spec 14.11), and how many bytes
+/// it took; none until the head has come.
+pub fn whole_head(data: Bytes) -> (message: Message, used: Int)? {
+    const m = parse(data) ?? return none
+    const head = Message(first: m.first, headers: m.headers, body: Bytes([]))
+    (message: head, used: data.len() - m.body.len())
+}
+
 /// A body sent in chunks: its data, and how many bytes of `body` it
 /// took, through the empty line after the trailers; none until all of it
 /// has come, or when the chunks are not well formed.

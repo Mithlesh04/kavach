@@ -1,0 +1,40 @@
+// Rule: `hpack.encode` gives a header the static table holds whole as its index, one whose name it holds as that index and the value, and Huffman-codes text where that is shorter; nothing goes into the dynamic table.
+// Spec: 14.11
+// expect output: 130 134 132 1 140 241 227 194 229 242 58 107 160 171 144 244 255
+// expect output: :authority: www.example.com
+// expect output: 8 headers back, the same: true
+// expect output: dynamic table: 0 entries
+
+use std.http.hpack
+
+fn main() ! Error {
+    // RFC 7541 C.4.1, kept out of the dynamic table: `1` (literal, name
+    // index 1) where the RFC has `65` (literal added to the table).
+    const first = [
+        Header(name: ":method", value: "GET"),
+        Header(name: ":scheme", value: "http"),
+        Header(name: ":path", value: "/"),
+        Header(name: ":authority", value: "www.example.com"),
+    ]
+    const block = hpack.encode(first)
+    print(block.to_list().map(b => "{b}").join(" "))
+    const back = try hpack.decode(block, hpack.new_table(4096))
+    print("{back.headers[3].name}: {back.headers[3].value}")
+    const many = [
+        Header(name: "Content-Type", value: "application/json; charset=utf-8"),
+        Header(name: "x-empty", value: ""),
+        Header(name: "x-name", value: "ü and ✓ and ~|^`"),
+        Header(name: "set-cookie", value: "session=abc123; Path=/; HttpOnly"),
+        Header(name: ":status", value: "200"),
+        Header(name: ":status", value: "418"),
+        Header(name: "x-digits", value: "0123456789"),
+        Header(name: "x-long", value: "a".repeat(300)),
+    ]
+    const again = try hpack.decode(hpack.encode(many), back.table)
+    let same = again.headers.len() == many.len()
+    for i in 0..many.len() {
+        same = same and again.headers[i].name == many[i].name.lower() and again.headers[i].value == many[i].value
+    }
+    print("{again.headers.len()} headers back, the same: {same}")
+    print("dynamic table: {again.table.entries.len()} entries")
+}

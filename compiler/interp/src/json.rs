@@ -71,7 +71,7 @@ impl<'a> Interp<'a> {
                 );
                 let text = match &a[0] {
                     Some(Value::Str(s)) => s.clone(),
-                    _ => Rc::from(""),
+                    _ => Rc::default(),
                 };
                 let d = Limits::default();
                 let limits = Limits {
@@ -189,7 +189,7 @@ impl<'a> Interp<'a> {
             } else {
                 digits
             };
-            Value::Str(Rc::from(digits.as_str()))
+            Value::Str(Rc::new(digits))
         };
         let (name, field) = match &e.kind {
             ExprKind::Int(n) => ("Number", number(&n.to_string(), false)),

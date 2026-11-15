@@ -92,13 +92,14 @@ fn answer(out: Out, conn: Connection, m: H2Message, handler: fn(Request) -> Resp
     if response.take_over != none {
         response = http.text(501, "WebSockets and events need HTTP/1.1")
     }
-    respond(out, m.stream, response) catch _ => {}
+    respond(out, m.stream, response, request.method == "HEAD") catch _ => {}
     slot_back.put(true)
 }
 
 /// Sends `response` on `stream`: its headers, then its body, in frames
-/// that fit the client's credit, and what it streams as it is read.
-fn respond(out: Out, stream: Int, response: Response) ! H2Error uses Net {
+/// that fit the client's credit, and what it streams as it is read; for
+/// `HEAD` (`head_only`), the headers alone, ending the stream (14.11).
+fn respond(out: Out, stream: Int, response: Response, head_only: Bool) ! H2Error uses Net {
     let headers = [Header(name: ":status", value: "{response.status}")]
     for h in response.headers {
         // Headers about the connection don't exist in HTTP/2.
@@ -106,13 +107,21 @@ fn respond(out: Out, stream: Int, response: Response) ! H2Error uses Net {
             headers.push(h)
         }
     }
-    if response.stream == none {
-        headers.push(Header(name: "content-length", value: "{response.body.len()}"))
-    } else if let length = message.first_header(response.headers, "content-length") {
-        headers.push(Header(name: "content-length", value: length))
+    const given = message.first_header(response.headers, "content-length")
+    const plain = response.stream == none
+    let length = given
+    if plain and (not head_only or given == none) {
+        length = "{response.body.len()}"
     }
-    const whole = response.stream == none
+    if let n = length {
+        headers.push(Header(name: "content-length", value: n))
+    }
     const most = out.credit.get().max_frame
+    if head_only {
+        try write(out, wire.block_frames(stream, headers, true, most))
+        return
+    }
+    const whole = plain
     try write(out, wire.block_frames(stream, headers, whole and response.body.is_empty(), most))
     if not response.body.is_empty() {
         try send_data(out, stream, response.body, whole)

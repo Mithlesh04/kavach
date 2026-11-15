@@ -243,6 +243,19 @@ impl FnEmit<'_> {
         }
     }
 
+    /// Whether `t` is a map with text keys and plain values (numbers,
+    /// booleans, characters): `m[k] ?? d` is then read in place.
+    pub(crate) fn text_keys_plain(&self, t: Type) -> bool {
+        let shape = |t: Type| match t {
+            Type::Ref(id) => Some(&self.shapes[id as usize]),
+            _ => None,
+        };
+        match shape(t) {
+            Some(Shape::Map(k, v)) => matches!(shape(*k), Some(Shape::Str)) && !v.is_ref(),
+            _ => false,
+        }
+    }
+
     /// Releases every heap local (the function is returning).
     pub(crate) fn release_locals(&mut self) {
         let refs: Vec<Local> = (0..self.f.locals.len() as Local)

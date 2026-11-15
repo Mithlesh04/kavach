@@ -35,7 +35,7 @@ fn main() ! Error uses Window {
 | `frame.draw(pipeline, vertices, instances: items)` | The same once for each item of `items`, which the vertex fn gets as its second parameter |
 | `frame.draw(pipeline, vertices, instances: items, shared: value)` | The same, `value` given to every vertex as the vertex fn's last parameter |
 | `frame.show()` | Puts the picture on the screen |
-| `gpu.pipeline(vertex_fn, fragment_fn) -> Pipeline<V, I, S>` | A pipeline drawing triangles with a `gpu vertex fn` and a `gpu fragment fn` (15.3). `V`, `I` and `S` are what the vertex fn takes; `NoInput`, an empty record, stands for an instance or shared value it doesn't take |
+| `gpu.pipeline(vertex_fn, fragment_fn) -> Pipeline<V, I, S>` | A pipeline drawing triangles with a `gpu vertex fn` and a `gpu fragment fn` (15.3). `V`, `I` and `S` are what the vertex fn takes; `NoInput`, an empty record, stands for an instance or shared value it doesn't take. It is compiled for the GPU when it is made, or when a screen opens, never in the middle of a frame |
 
 - `GpuError` is `Unavailable(reason: String)`: there is no GPU, or the window can't be drawn into, as on a server with no screen. A frame that can't be had (the window is minimized, or its surface was lost) is `Unavailable` too; the next `frame()` tries again.
 - A frame not shown before its last holder ends is thrown away: nothing reaches the screen.

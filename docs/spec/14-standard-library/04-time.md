@@ -44,6 +44,16 @@ const page = try fetch.wait().timeout(5.seconds)   // 9.6
 
 `n` is any `Int` expression (`retries.seconds`); one too large for the unit overflows like any `Int` arithmetic. Any other name after a whole number is a compile error that lists these units: there is no `2.months` or `1.years`, since months and years have no fixed length. Every program has `Duration`, like `Json`.
 
+Durations add, subtract, scale by a whole number and compare, through the operator interfaces (2.16): `Duration` is `Add`, `Sub`, `Mul<Int>` and `Comparable`. `a - b` is below 0 when `b` is longer. Their `require`s (7) keep each duration, and a product, within ±10^15 ms (about 31,700 years), so they never overflow.
+
+```kavach
+const limit = 2.seconds + 500.ms     // 2500 ms
+let left = 1.minutes - limit         // 57500 ms
+left += 10.seconds
+print(250.ms * 4 == 1.seconds)       // true
+print(limit < 3.seconds)             // true
+```
+
 ## Dates and times of day
 
 Reading the clock (`now_ms`, `monotonic_ms`, `today`, `now`) needs no capability: it changes nothing outside the program, and under `kavach test` the clock is faked (11.5). Waiting (`sleep`, `every`, `after`) needs `Clock` (8.1). A contract may not read the clock, since its answer would change from run to run ([decision 0058](../../decisions/0058-dates-in-std-time.md)).

@@ -47,7 +47,7 @@ impl<'a> Interp<'a> {
         let tree = if name == "decode" {
             let text = match &a[0] {
                 Some(Value::Str(s)) => s.clone(),
-                _ => Rc::from(""),
+                _ => Rc::default(),
             };
             let d = Limits::default();
             let limits = Limits {

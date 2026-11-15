@@ -220,6 +220,41 @@ impl FnEmit<'_> {
                 }
                 Some(self.unpack(&slot, e.ty))
             }
+            // `m[k] ?? d` for a text key and a plain value: the same, read
+            // in place with the key borrowed.
+            ExprKind::Rt(kavach_kir::RtOp::MapGetOr, args)
+                if self.text_keys_plain(args[0].ty) && !e.ty.is_ref() =>
+            {
+                let (map, owned) = self.borrow(&args[0], true)?;
+                let slot = if let Some((addr, copy)) = self.key_item(&args[1]) {
+                    let fallback = self.slot_of(&args[2]);
+                    let copy = (copy as i64).to_string();
+                    let args4 = [
+                        ("i64", map.clone()),
+                        ("i64", addr),
+                        ("i64", copy),
+                        ("i64", fallback),
+                    ];
+                    self.call_rt("kv_map_get_item_or", "i64", &args4, false)
+                } else {
+                    let (key, key_owned) = self.borrow(&args[1], true)?;
+                    let fallback = self.slot_of(&args[2]);
+                    let args3 = [
+                        ("i64", map.clone()),
+                        ("i64", key.clone()),
+                        ("i64", fallback),
+                    ];
+                    let slot = self.call_rt("kv_map_get_str_or", "i64", &args3, false);
+                    if key_owned {
+                        self.release(&key);
+                    }
+                    slot
+                };
+                if owned {
+                    self.release(&map);
+                }
+                Some(self.unpack(&slot, e.ty))
+            }
             // `m[k]` for a text key and a value held by reference: the map
             // is read in place, and a constant key needs no text object.
             ExprKind::Rt(kavach_kir::RtOp::MapGet, args) if self.text_keys(args[0].ty) => {
@@ -228,6 +263,10 @@ impl FnEmit<'_> {
                     let (ptr, len) = self.m.text(key);
                     let args3 = [("i64", map.clone()), ("i64", ptr), ("i64", len.to_string())];
                     self.call_rt("kv_map_get_text", "i64", &args3, false)
+                } else if let Some((addr, copy)) = self.key_item(&args[1]) {
+                    let copy = (copy as i64).to_string();
+                    let args3 = [("i64", map.clone()), ("i64", addr), ("i64", copy)];
+                    self.call_rt("kv_map_get_item", "i64", &args3, false)
                 } else {
                     let (key, key_owned) = self.borrow(&args[1], true)?;
                     let args2 = [("i64", map.clone()), ("i64", key.clone())];

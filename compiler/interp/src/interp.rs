@@ -418,6 +418,6 @@ impl<'a> Interp<'a> {
     }
 
     pub(crate) fn str_value(&self, text: &str) -> Value<'a> {
-        Value::Str(Rc::from(text))
+        Value::Str(Rc::new(text.to_string()))
     }
 }

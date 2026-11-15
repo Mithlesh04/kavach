@@ -1,7 +1,8 @@
 // HPACK (RFC 7541): how HTTP/2 compresses headers, for std.http
 // (decision 0022). Decoding is complete: the static and dynamic tables
-// and Huffman codes. Encoding writes every header as a literal, without
-// indexing or Huffman codes, which RFC 7541 allows.
+// and Huffman codes. Encoding uses the static table and Huffman codes,
+// never the dynamic table, so it keeps no state between blocks, which
+// RFC 7541 allows.
 
 /// One header: its name and value.
 pub type Header {
@@ -66,19 +67,96 @@ pub fn decode(block: Bytes, table: Table) -> Decoded ! HpackError {
     Decoded(headers: headers, table: t)
 }
 
-/// A header block for `headers`: literals, names in lower case.
+/// A header block for `headers`, names in lower case: a header the
+/// static table holds whole is its index; one whose name it holds, that
+/// index and the value; any other, both as text. Text is Huffman-coded
+/// where that is shorter. Nothing goes into the dynamic table.
 pub fn encode(headers: [Header]) -> Bytes {
+    const codes = huffman_codes()
+    const table = static_table()
     let out = Bytes([])
     for h in headers {
-        out = out + Bytes([UInt8(0)]) + text(h.name.lower()) + text(h.value)
+        const name = h.name.lower()
+        let whole = 0
+        let named = 0
+        for i in 0..table.len() {
+            if table[i].name == name {
+                if named == 0 {
+                    named = i + 1
+                }
+                if table[i].value == h.value {
+                    whole = i + 1
+                    break
+                }
+            }
+        }
+        if whole > 0 {
+            out = out + number_bytes(whole, 7, 128)
+        } else if named > 0 {
+            out = out + number_bytes(named, 4, 0) + text(h.value, codes)
+        } else {
+            out = out + Bytes([UInt8(0)]) + text(name, codes) + text(h.value, codes)
+        }
     }
     out
 }
 
-/// `s` as a string literal: its length, then its bytes.
-fn text(s: String) -> Bytes {
-    const b = s.bytes()
-    number_bytes(b.len(), 7, 0) + b
+/// `s` as a string literal: its length, then its bytes, Huffman-coded
+/// (the length's top bit set) when that is shorter.
+fn text(s: String, codes: [Code]) -> Bytes
+    require codes.len() == 257
+{
+    const b = s.bytes().to_list()
+    let bits = 0
+    for x in b {
+        bits += codes[Int(x)].length
+    }
+    if (bits + 7) / 8 >= b.len() {
+        return number_bytes(b.len(), 7, 0) + Bytes(b)
+    }
+    let out: [UInt8] = []
+    let held = 0
+    let waiting = 0
+    for x in b {
+        const c = codes[Int(x)]
+        held = held << c.length | c.bits
+        waiting += c.length
+        while waiting >= 8 {
+            waiting -= 8
+            out.push(UInt8(held >> waiting & 255))
+        }
+        held = held & ((1 << waiting) - 1)
+    }
+    // The last byte is filled with ones, the start of end-of-string.
+    if waiting > 0 {
+        out.push(UInt8((held << (8 - waiting) | (1 << (8 - waiting)) - 1) & 255))
+    }
+    number_bytes(out.len(), 7, 128) + Bytes(out)
+}
+
+/// A symbol's Huffman code: its bits, and how many.
+type Code {
+    bits: Int
+    length: Int
+}
+
+/// Each byte's Huffman code, from the canonical tables `huffman` decodes
+/// with: the codes of one length are consecutive, in symbol order.
+fn huffman_codes() -> [Code] {
+    const order = huffman_order()
+    const first = huffman_first()
+    const count = huffman_count()
+    const offset = huffman_offset()
+    let codes: [Code] = []
+    for _ in 0..257 {
+        codes.push(Code(bits: 0, length: 0))
+    }
+    for length in 0..count.len() {
+        for k in 0..count[length] {
+            codes[order[offset[length] + k]] = Code(bits: first[length] + k, length: length)
+        }
+    }
+    codes
 }
 
 /// `value` with an `n`-bit prefix, after the bits `flags` (RFC 7541 5.1).

@@ -260,6 +260,22 @@ impl FnEmit<'_> {
 }
 
 impl FnEmit<'_> {
+    /// A map key that is an item of a list of text, read where it is so a
+    /// short one never becomes an object: its address, and whether it is
+    /// a copy (`xs[i]`) whose long text must be let go after, rather than
+    /// a `for` variable's view.
+    pub(crate) fn key_item(&mut self, key: &Expr) -> Option<(String, bool)> {
+        if let Some(addr) = self.text_view(key) {
+            return Some((addr, false));
+        }
+        match &key.kind {
+            ExprKind::Index(x, i) if self.text_list(x.ty) => {
+                Some((self.copied_item(x, i, key.line)?, true))
+            }
+            _ => None,
+        }
+    }
+
     /// `x[i]` of a list of text, copied onto the stack as an item: its two
     /// words, with one more holder for long text (whose first word is its
     /// object). Gives the item's address.

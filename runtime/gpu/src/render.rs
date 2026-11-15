@@ -2,7 +2,9 @@
 //! module, written by the compiler (`compiler/backend/wgsl/src/render.rs`),
 //! whose first line gives the buffers' layout: `// draw f f | f f f | 1`,
 //! the vertex's fields, the instance's, and the shared value's words. It
-//! is compiled at its first draw into a frame of each color format.
+//! is compiled ahead, never in the middle of a frame (decision 0106): for
+//! every screen's color format when the screen opens, and when it is made
+//! while a screen is open.
 
 use crate::device::gpu;
 use std::collections::HashMap;
@@ -55,6 +57,8 @@ struct Pipeline {
 
 #[derive(Default)]
 struct Pipelines {
+    /// The color formats of the screens opened so far.
+    formats: Vec<wgpu::TextureFormat>,
     all: HashMap<i64, Pipeline>,
     by_text: HashMap<String, i64>,
 }
@@ -68,7 +72,7 @@ fn pipelines() -> MutexGuard<'static, Pipelines> {
 }
 
 /// The number of the pipeline of module `wgsl`: the same for the same
-/// text. Compiling waits for its first draw.
+/// text. It is compiled now for each screen open.
 pub fn pipeline(wgsl: &str) -> Result<i64, String> {
     let layout = layout(wgsl).ok_or("this pipeline's shaders couldn't be written for the GPU")?;
     let mut p = pipelines();
@@ -85,7 +89,32 @@ pub fn pipeline(wgsl: &str) -> Result<i64, String> {
         },
     );
     p.by_text.insert(wgsl.to_string(), n);
+    let formats = p.formats.clone();
+    drop(p);
+    for format in formats {
+        made(n, format);
+    }
     Ok(n)
+}
+
+/// Compiles every pipeline made so far for a screen of `format`, and
+/// those made later as they come, so frames never wait for a compile.
+pub(crate) fn ready_for(format: wgpu::TextureFormat) {
+    let mut p = pipelines();
+    if p.formats.contains(&format) {
+        return;
+    }
+    p.formats.push(format);
+    let all: Vec<i64> = p.all.keys().copied().collect();
+    drop(p);
+    for n in all {
+        made(n, format);
+    }
+}
+
+/// Whether pipeline `n` is compiled for some screen or picture yet.
+pub fn is_made(n: i64) -> bool {
+    pipelines().all.get(&n).is_some_and(|p| !p.made.is_empty())
 }
 
 /// Pipeline `n` compiled to draw into `format`, and its layout.
@@ -288,6 +317,7 @@ pub fn picture(
     let g = gpu().ok_or("this machine has no GPU")?;
     let (w, h) = (size.0.max(1), size.1.max(1));
     let format = wgpu::TextureFormat::Rgba8Unorm;
+    ready_for(format);
     let texture = g.device.create_texture(&wgpu::TextureDescriptor {
         label: Some("kavach picture"),
         size: wgpu::Extent3d {

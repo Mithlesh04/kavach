@@ -331,7 +331,8 @@ pub type Session {
         }
         let data = Bytes([])
         while true {
-            if let got = message.whole(data) {
+            const done = if method == "HEAD" { message.whole_head(data) } else { message.whole(data) }
+            if let got = done {
                 const parts = got.message.first.split(" ")
                 const status = Int(parts.get(1) ?? "") catch e => {
                     fail HttpError.BadMessage(reason: "no status in `{got.message.first}`")

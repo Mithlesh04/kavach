@@ -227,7 +227,7 @@ fn respond(conn: Connection, m: Message, handler: fn(Request) -> Response, limit
         take.run(conn, extra, limits.max_body_bytes) catch e => {}
         return none
     }
-    try send(conn, answer, keep)
+    try send(conn, answer, keep, head_only: (parts.get(0) ?? "") == "HEAD")
     (keep: keep, extra: extra)
 }
 
@@ -296,31 +296,48 @@ fn busy(limits: ServeLimits) -> Response {
     Response(status: 503, headers: headers, body: r.body)
 }
 
-/// Writes `response` on `conn`, saying whether the connection stays open.
-fn send(conn: Connection, response: Response, keep: Bool) ! NetError uses Net {
+/// Writes `response` on `conn`, saying whether the connection stays open;
+/// for a `HEAD` request (`head_only`), its status and headers alone. The
+/// length is sent once (spec 14.11): a plain body's own; a stream's, or a
+/// `HEAD` answer's, the handler's `content-length`, or for `HEAD` the
+/// body's when there is no stream; never chunked for `HEAD`.
+fn send(conn: Connection, response: Response, keep: Bool, head_only: Bool = false) ! NetError uses Net {
     const crlf = message.crlf()
     let head = "HTTP/1.1 {response.status} {message.reason(response.status)}{crlf}"
     for h in response.headers {
-        head = head + "{h.name}: {h.value}{crlf}"
+        if h.name != "content-length" {
+            head = head + "{h.name}: {h.value}{crlf}"
+        }
+    }
+    const given = message.first_header(response.headers, "content-length")
+    const plain = response.stream == none
+    let length = given
+    if plain and (not head_only or given == none) {
+        length = "{response.body.len()}"
+    }
+    if let n = length {
+        head = head + "content-length: {n}{crlf}"
+    } else if not head_only {
+        head = head + "transfer-encoding: chunked{crlf}"
     }
     const connection = if keep { "keep-alive" } else { "close" }
+    head = head + "connection: {connection}{crlf}{crlf}"
+    if head_only {
+        try conn.write(head.bytes())
+        return
+    }
     const reader = response.stream ?? {
-        head = head + "content-length: {response.body.len()}{crlf}connection: {connection}{crlf}{crlf}"
         try conn.write(head.bytes() + response.body)
         return
     }
     // Sent as it is read: in chunks, unless the handler gave its length.
-    const sized = message.first_header(response.headers, "content-length") != none
-    if not sized {
-        head = head + "transfer-encoding: chunked{crlf}"
-    }
-    head = head + "connection: {connection}{crlf}{crlf}"
+    const sized = length != none
     try conn.write(head.bytes())
     try write_piece(conn, response.body, sized)
     // `http.file`'s file, sent by the system where it can (spec 14.11).
-    const length = Int(message.first_header(response.headers, "content-length") ?? "") catch -1
-    if sized and length >= 0 and response.file != none {
-        if try net.send_file(conn, response.file ?? "", length) {
+    const total = Int(length ?? "") catch -1
+    if sized and total >= 0 and response.file != none {
+        if try net.send_file(conn, response.file ?? "", total) {
             return
         }
     }

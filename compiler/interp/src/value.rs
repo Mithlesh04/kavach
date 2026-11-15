@@ -26,7 +26,7 @@ pub enum Value<'a> {
     BigInt(Rc<kavach_runtime_core::BigInt>),
     Bool(bool),
     Char(char),
-    Str(Rc<str>),
+    Str(Rc<String>),
     /// Raw data (spec 2.13).
     Bytes(Rc<[u8]>),
     /// A file read as a `for` loop goes (spec 14.3).
@@ -187,7 +187,8 @@ impl PartialEq for Value<'_> {
             (Char(a), Char(b)) => a == b,
             // A value shared by both (a copy not yet changed) is equal to
             // itself without looking inside (decision 0039).
-            (Str(a), Str(b)) | (BuiltinError(a), BuiltinError(b)) => Rc::ptr_eq(a, b) || a == b,
+            (Str(a), Str(b)) => Rc::ptr_eq(a, b) || a == b,
+            (BuiltinError(a), BuiltinError(b)) => Rc::ptr_eq(a, b) || a == b,
             (List(a), List(b)) => Rc::ptr_eq(a, b) || a == b,
             (Tuple(a), Tuple(b)) => a == b,
             (Map(a), Map(b)) => Rc::ptr_eq(a, b) || a == b,

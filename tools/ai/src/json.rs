@@ -14,9 +14,10 @@ pub fn messages_json(c: &Compiled) -> String {
             Severity::Warning => "warning",
         };
         out.push_str(&format!(
-            "{{\"file\":{},\"line\":{},\"col\":{col},\"severity\":\"{severity}\",\"message\":{}}}\n",
+            "{{\"file\":{},\"line\":{},\"col\":{col},\"severity\":\"{severity}\",\"code\":\"{}\",\"message\":{}}}\n",
             quote(c.location(m.span.start).0),
             c.location(m.span.start).1,
+            m.code,
             quote(&m.text)
         ));
     }

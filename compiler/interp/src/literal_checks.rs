@@ -36,6 +36,7 @@ impl Interp<'_> {
                     let text = format!("the checker of `{}` stopped: {why} (spec 10.15)", u.tag);
                     out.push(Message {
                         severity: Severity::Error,
+                        code: "literal",
                         text,
                         span: whole,
                     });
@@ -79,6 +80,7 @@ impl Interp<'_> {
                 };
                 out.push(Message {
                     severity,
+                    code: "literal",
                     text: message,
                     span,
                 });

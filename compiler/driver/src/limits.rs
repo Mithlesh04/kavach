@@ -38,6 +38,7 @@ pub(crate) fn check(
                 Level::Warn => Severity::Warning,
                 _ => Severity::Error,
             },
+            code: "too-long",
             text: format!(
                 "{name} has {lines} lines (limit {}){}",
                 limits.file_lines,
@@ -77,6 +78,7 @@ pub(crate) fn check(
             if n > limits.fn_lines {
                 out.push(Message {
                     severity: Severity::Warning,
+                    code: "too-long",
                     text: format!(
                         "`{}` has {n} lines (limit {}): consider moving a part into its own function",
                         f.name.name, limits.fn_lines

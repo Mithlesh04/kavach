@@ -132,7 +132,7 @@ fn messages_are_one_json_line_each() {
     );
     assert_eq!(
         messages_json(&c),
-        "{\"file\":\"a.kav\",\"line\":3,\"col\":11,\"severity\":\"error\",\"message\":\"`totl` is not defined; did you mean `total`?\"}\n"
+        "{\"file\":\"a.kav\",\"line\":3,\"col\":11,\"severity\":\"error\",\"code\":\"unknown-name\",\"message\":\"`totl` is not defined; did you mean `total`?\"}\n"
     );
 }
 

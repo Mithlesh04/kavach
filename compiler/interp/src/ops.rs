@@ -233,7 +233,14 @@ impl<'a> Interp<'a> {
                     _ => Err(self.panic("can't apply this operator to these values", span)),
                 }
             }
-            (Value::Str(x), Value::Str(y)) if op == Add => Ok(Value::Str(format!("{x}{y}").into())),
+            // Text nothing else holds grows in place (`s += part`, spec 6.1).
+            (Value::Str(mut x), Value::Str(y)) if op == Add => {
+                match std::rc::Rc::get_mut(&mut x) {
+                    Some(text) => text.push_str(&y),
+                    None => x = std::rc::Rc::new(format!("{x}{y}")),
+                }
+                Ok(Value::Str(x))
+            }
             // `xs + ys` (spec 2.2): a new list; `xs += ys` grows `xs` in
             // place when nothing else holds it.
             (Value::List(mut x), Value::List(y)) if op == Add => {

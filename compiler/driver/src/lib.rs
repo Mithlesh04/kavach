@@ -3,6 +3,7 @@
 //! language server all use this, so messages look the same everywhere.
 
 mod agent_config;
+pub mod codes;
 mod config;
 pub mod deps;
 mod fetch_checks;
@@ -53,6 +54,8 @@ pub enum Severity {
 #[derive(Clone, Debug)]
 pub struct Message {
     pub severity: Severity,
+    /// Its kind, stable for tools (spec 13.6): `unknown-name`, `syntax`, …
+    pub code: &'static str,
     pub text: String,
     pub span: Span,
 }
@@ -236,13 +239,15 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
 
     let error = |text: &String, span: Span| Message {
         severity: Severity::Error,
+        code: codes::of(text),
         text: text.clone(),
         span,
     };
-    let mut messages: Vec<Message> = parsed
-        .errors
-        .iter()
-        .map(|e| error(&e.message, e.span))
+    let mut messages: Vec<Message> = (parsed.errors.iter())
+        .map(|e| Message {
+            code: "syntax",
+            ..error(&e.message, e.span)
+        })
         .collect();
     let syntax_errors = messages.len();
     messages.extend(resolution.errors.iter().map(|e| error(&e.message, e.span)));
@@ -281,6 +286,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
         .chain(&checked.warnings);
     messages.extend(warnings.map(|w| Message {
         severity: Severity::Warning,
+        code: codes::of(&w.message),
         text: w.message.clone(),
         span: w.span,
     }));

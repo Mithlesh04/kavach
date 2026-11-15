@@ -43,8 +43,14 @@ pub fn screen_on(n: i64, size: (u32, u32)) -> Result<i64, String> {
     if gpu().is_none() {
         return Err("this machine has no GPU".into());
     }
-    kavach_runtime_window::with_window(n, move |window| screen(window, size.0, size.1))
-        .unwrap_or_else(|| Err("the window is closed".into()))
+    let n = kavach_runtime_window::with_window(n, move |window| screen(window, size.0, size.1))
+        .unwrap_or_else(|| Err("the window is closed".into()))?;
+    // Compiled here, on the program's thread, not on the window's.
+    let format = drawing().screens.get(&n).map(|s| s.config.format);
+    if let Some(format) = format {
+        crate::render::ready_for(format);
+    }
+    Ok(n)
 }
 
 /// A screen on `window`, now `width` × `height` pixels: its number, or

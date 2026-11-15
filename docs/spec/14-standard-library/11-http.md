@@ -129,6 +129,18 @@ fn download(r: Request) -> Response uses Fs.read {
 }
 ```
 
+**`HEAD` and the length.** Every answer carries one `content-length` at most. A plain body's is its length; a streamed one's is the handler's `content-length` header, or it comes in chunks without one. `http.serve` answers a `HEAD` request itself: it runs the handler as for `GET` and sends the status and headers alone, never the body, the stream or the file. The length is the handler's `content-length` when it gives one, else the body's when there is no stream, else none; a `HEAD` answer is never chunked. Over HTTP/2 the headers end the stream. So one handler serves both:
+
+```kavach
+fn page(r: Request) -> Response uses Fs.read {
+    // `HEAD /report.pdf` gets the file's `content-type` and
+    // `content-length`, and no bytes of the file.
+    http.file("./files/report.pdf") catch e => http.text(404, "no such file")
+}
+```
+
+A session (`http.open`) reads a `HEAD` answer's head alone, whatever length it names.
+
 **Forms with files.** A `multipart/form-data` body (an HTML form with files) is read a part at a time, each part's data as it comes, so a large upload is never all in memory ([decision 0090](../../decisions/0090-forms-read-part-by-part.md)). `http.form(r) -> Form ! HttpError` opens it, from `r.body` or from `r.read_body()` alike.
 
 | Written | Gives |
@@ -268,7 +280,7 @@ print(reply.headers[":status"])       // 200
 |---|---|
 | `hpack.new_table(limit) -> Table` | An empty table of at most `limit` bytes (HTTP/2 starts with 4096) |
 | `hpack.decode(block, table) -> Decoded ! HpackError` | `Decoded(headers: [Header], table: Table)`; `Malformed(reason)` for a broken block |
-| `hpack.encode(headers) -> Bytes` | A block with each `Header(name:, value:)` as a literal, names in lower case |
+| `hpack.encode(headers) -> Bytes` | A block for each `Header(name:, value:)`, names in lower case: a header the static table holds whole is its index, one whose name it holds is that index and the value, and text is Huffman-coded where that is shorter. It adds nothing to the dynamic table, so it needs no table of its own |
 | `hpack.huffman(data) -> Bytes ! HpackError` | Decodes Huffman-coded text (RFC 7541 appendix B); QPACK uses the same code |
 
 ```kavach

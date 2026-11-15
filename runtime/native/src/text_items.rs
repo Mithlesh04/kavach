@@ -338,7 +338,7 @@ fn write_item(addr: i64, item: [u64; 2]) {
 }
 
 #[allow(unsafe_code)]
-fn item_at<'a>(addr: i64) -> &'a [u64] {
+pub(crate) fn item_at<'a>(addr: i64) -> &'a [u64] {
     // SAFETY: generated code passes the address of a live item of a list
     // of text: two words inside its buffer, which the list keeps alive.
     unsafe { std::slice::from_raw_parts(addr as *const u64, WIDTH) }

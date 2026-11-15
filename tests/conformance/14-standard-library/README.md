@@ -53,6 +53,7 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.4, 8.1 | [reading-the-clock-needs-no-capability.kav](reading-the-clock-needs-no-capability.kav) | Reading the clock needs no capability, even in a `pub` function. | runs |
 | 14.4 | [contracts-cannot-read-the-clock.kav](contracts-cannot-read-the-clock.kav) | A contract may not read the clock. | compile error |
 | 14.4 | [impossible-dates-cannot-be-made.kav](impossible-dates-cannot-be-made.kav) | A `Date` that can't exist breaks its invariant. | panic |
+| 14.4 | [durations-add-and-compare.kav](durations-add-and-compare.kav) | `Duration` is `Add`, `Sub`, `Mul<Int>` and `Comparable`. | runs |
 | 14.8 | [regex-methods.kav](regex-methods.kav) | A Regex finds, captures, replaces and splits text. | runs |
 | 14.8 | [regex-is-linear-time.kav](regex-is-linear-time.kav) | regex.new matches in time that grows with the text only, whatever the pattern. | runs |
 | 14.8 | [lookaround-needs-advanced.kav](lookaround-needs-advanced.kav) | Lookaround and backreferences need regex.advanced. | runs |
@@ -78,6 +79,7 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.10 | [udp-carries-datagrams.kav](udp-carries-datagrams.kav) | `net.bind` makes a UDP socket; `send` and `receive` carry datagrams, with the sender's address. | runs |
 | 14.10 | [net-timeouts-set-deadlines.kav](net-timeouts-set-deadlines.kav) | `.timeout(d)` on a network wait sets its deadline; passing it fails with `NetError.TimedOut`. | runs |
 | 14.11 | [hpack-decodes-rfc-examples.kav](hpack-decodes-rfc-examples.kav) | `std.http.hpack` decodes RFC 7541's examples (Huffman codes, the dynamic table, dropping old entries), and reads back what `encode` writes. | runs |
+| 14.11 | [hpack-encodes-with-huffman-and-the-static-table.kav](hpack-encodes-with-huffman-and-the-static-table.kav) | `hpack.encode` uses static-table indexes and Huffman codes where shorter (RFC 7541 C.4.1's bytes), never the dynamic table. | runs |
 | 14.11 | [qpack-reads-static-and-literal-fields.kav](qpack-reads-static-and-literal-fields.kav) | `std.http.h3` decodes QPACK blocks with static entries, literals and Huffman codes (RFC 9204 B.1), reads back what `encode` writes, and refuses blocks that need a dynamic table. | runs |
 | 14.11 | [http-serves-and-fetches.kav](http-serves-and-fetches.kav) | `std.http` serves from a handler and fetches status, headers and body; other URLs than `http://` and `https://` give `BadUrl`. | runs |
 | 14.11 | [http-servers-keep-connections-open.kav](http-servers-keep-connections-open.kav) | `http.serve` keeps an HTTP/1.1 connection open for the next request, after a chunked body too, and closes it when asked. | runs |
@@ -106,6 +108,7 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.11 | [http-reads-chunked-bodies.kav](http-reads-chunked-bodies.kav) | Requests and responses sent in chunks are read whole; a chunked response cut off fails with `BadMessage`. | runs |
 | 14.11 | [http-serves-many-clients-on-every-core.kav](http-serves-many-clients-on-every-core.kav) | `http.serve` answers each connection in a `spawn cores` task: 8 clients at once get the right answers, and handlers share only a `Shared` count. | runs |
 | 14.11 | [http-headers-keep-repeats.kav](http-headers-keep-repeats.kav) | Headers are a list in the order sent, repeats kept; `header(name)` gives the first, `headers_named(name)` all. | runs |
+| 14.11 | [http-head-sends-headers-only.kav](http-head-sends-headers-only.kav) | `http.serve` answers `HEAD` with a `GET`'s headers and no body, over HTTP/1 and 2; every answer has one `content-length`, the handler's when given. | runs |
 | 14.11 | [http-serve-limits-refuse-what-is-too-much.kav](http-serve-limits-refuse-what-is-too-much.kav) | `http.serve` refuses a body past `max_body_bytes` (413), headers past `max_header_bytes` (431) or too slow (408), answers `expect: 100-continue`, and gives 503 with `retry-after` past `max_in_flight` or `max_connections`. | runs |
 | 14.11 | [http-handlers-stop-when-the-client-leaves.kav](http-handlers-stop-when-the-client-leaves.kav) | A handler's task is cancelled when its client closes the connection; a handler that panics gets 500. | runs |
 | 14.11 | [http-large-bodies-stream.kav](http-large-bodies-stream.kav) | A body past `buffered_body` is read with `read_body` and the connection goes on; a response sends a `fs.chunks` reader as it is read, with its length (`http.file`) or in chunks, over HTTP/1.1 and HTTP/2. | runs |
