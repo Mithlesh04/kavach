@@ -9,7 +9,13 @@ pub(crate) const NARROW: [&str; 2] = ["Fs.read", "Fs.write"];
 /// it was granted (`above`): all of it, a part of it (`Fs.read` of `Fs`),
 /// or nothing.
 pub(crate) fn meet(cap: &str, above: &[String]) -> Vec<String> {
-    let base = cap.split_once('.').map_or(cap, |(b, _)| b);
+    // `System.ids` and the other parts `System` doesn't cover (8.1).
+    let apart = kavach_resolver::APART.contains(&cap);
+    let base = if apart {
+        cap
+    } else {
+        cap.split_once('.').map_or(cap, |(b, _)| b)
+    };
     if above.iter().any(|a| a == cap || a == base) {
         return vec![cap.to_string()];
     }

@@ -163,3 +163,9 @@ RunCpu,
 MachineText,
 MachineNumber,
 MachineGpus,
+/// Every part of the machine (spec 14.25, decision 0112), as rows of
+/// text: of kind `a` (not the applications or the ids), the applications
+/// installed (`System.apps`), and the ids (`System.ids`).
+MachineRows,
+MachineApps,
+MachineIds,

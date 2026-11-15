@@ -38,14 +38,14 @@ A program starts at `fn main()`.
 
 ```kavach
 fn main() {
-    print("Hello, Kavach!")
+    print("Hello, world!")
 }
 ```
 
 For scripts, the entry file may contain top-level statements instead. They become the body of `main`.
 
 ```kavach
-print("Hello, Kavach!")
+print("Hello, world!")
 ```
 
 Only the entry file may contain top-level statements.
@@ -121,6 +121,7 @@ var         while       with
 | String | `"Hello, {name}!"` |
 | Multi-line string | `"""` … `"""` (common leading indentation is removed) |
 | Raw string | `r"C:\path\{not interpolated}"` |
+| Raw multi-line string | `r"""` … `"""`: raw, its indentation removed as in `"""` |
 | Empty optional | `none` |
 
 In a multi-line string, the line break right after the opening `"""` and the one right before the closing `"""` are not part of the string. Then the common leading indentation is removed:
@@ -147,6 +148,18 @@ print("Use \{ and } in templates")
 ```
 
 Escapes: `\n`, `\t`, `\\`, `\"`, `\{`, `\u{1F600}`.
+
+Raw text, `r"…"` and `r"""…"""`, fills nothing in and keeps every backslash: for paths, regular expressions, and JSON or SQL written out over many lines.
+
+```kavach
+const pattern = r"\d+\.\d+"
+const body = r"""
+    {"name": "Ana", "tags": ["a", "b"]}
+    """
+print(body)       // {"name": "Ana", "tags": ["a", "b"]}
+```
+
+Every string fills in `{…}` by itself, so there is no `f"…"` as in Python: `f"hi {name}"` is a compile error that says to drop the `f`.
 
 In one-line text, a `{` must close on the same line: `"{"` is a compile error at the `{`. A `{…}` that holds only text gives a warning, because it is almost always a brace that needed `\{`: `t == "{" or t == "}"` is a single string, the text ` or t == ` inside `{…}`, not two comparisons.
 

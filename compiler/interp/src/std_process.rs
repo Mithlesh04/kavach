@@ -103,6 +103,16 @@ impl<'a> Interp<'a> {
             "basic_number_id" | "number_id" => {
                 Value::Int(i128::from(run::machine::number(which)), Prim::Int)
             }
+            "rows_id" | "apps_id" | "ids_id" => {
+                let rows = match name {
+                    "apps_id" => run::parts::rows(12),
+                    "ids_id" => run::parts::rows(13),
+                    // The applications and ids only through their own calls.
+                    _ if which >= 12 => Vec::new(),
+                    _ => run::parts::rows(which),
+                };
+                Value::List(Rc::new(rows.into_iter().map(text).collect()))
+            }
             _ => {
                 let gpus = kavach_runtime_gpu::adapters().into_iter().flatten();
                 Value::List(Rc::new(gpus.map(text).collect()))

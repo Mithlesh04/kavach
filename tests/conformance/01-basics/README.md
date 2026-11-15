@@ -16,6 +16,8 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.4 | [hiding-let-that-is-never-used-warns.kav](hiding-let-that-is-never-used-warns.kav) | A never-used variable that hides an outer `let` gets a warning that says so. | warning |
 | 1.4 | [let-cannot-be-reassigned.kav](let-cannot-be-reassigned.kav) | A `const` binding cannot be reassigned. | compile error |
 | 1.4 | [let-mut-is-not-kavach.kav](let-mut-is-not-kavach.kav) | `let mut` is a compile error that says to write `let`. | compile error |
+| 1.7 | [raw-text-over-many-lines.kav](raw-text-over-many-lines.kav) | `r"""…"""` is raw text over many lines, its indentation removed. | runs |
+| 1.7 | [f-strings-are-not-kavach.kav](f-strings-are-not-kavach.kav) | `f"…"` is a compile error that says every string fills in `{…}`. | compile error |
 | 1.4 | [locals-only-after-let.kav](locals-only-after-let.kav) | A local variable can be used only after its `const`. | compile error |
 | 1.4 | [no-duplicate-name-in-scope.kav](no-duplicate-name-in-scope.kav) | A name must not be declared twice in the same scope. | compile error |
 | 1.4 | [no-overloading.kav](no-overloading.kav) | Two functions can't share a name: Kavach has no overloading. | compile error |

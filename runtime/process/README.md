@@ -10,6 +10,11 @@ Other programs, run for `std.process` (spec 14.23) with no shell, as trees that 
 | `src/machine_linux.rs` | Linux: the facts from `/proc`, with no `unsafe` |
 | `src/machine_windows.rs` | Windows: the version and processor from the registry, memory, cores, hostname and uptime from system calls |
 | `src/machine_macos.rs` | macOS: the facts from `sysctl` (not yet checked on a Mac) |
+| `src/parts.rs` | Every part of the machine (spec 14.25, [decision 0112](../../docs/decisions/0112-every-detail-of-the-machine.md)): each kind as rows of text |
+| `src/parts_linux.rs`, `src/parts_linux_more.rs` | Linux: the parts from `/sys`, `/proc` and dpkg's list; volume sizes from `statvfs`, addresses from `getifaddrs` |
+| `src/parts_windows.rs`, `src/parts_windows_more.rs`, `src/parts_windows_net.rs` | Windows: the registry, the SMBIOS tables, storage queries, the IP helper, the display configuration, performance counters and SetupAPI |
+| `src/registry.rs` | Reading the Windows registry |
+| `src/smbios.rs` | The SMBIOS tables: memory modules and ids |
 | `src/windows.rs` | Windows: the program starts suspended and joins a job object that ends everything in it; the job's processor time and peak committed memory |
 | `src/unix.rs` | Linux and macOS: a process group ended with `killpg`; `wait4` for the end, processor time and largest resident set |
 | `src/tests.rs` | Output and errors as lines, the folder and environment, killing a tree, a missing program or folder, the end coming again; the machine's facts |

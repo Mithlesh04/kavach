@@ -28,7 +28,7 @@ fn new_projects_run_build_and_check_without_a_file() {
     );
 
     let run = kavach(&root.join("src"), &["run"]);
-    assert_eq!(String::from_utf8_lossy(&run.stdout), "Hello, Kavach!\n");
+    assert_eq!(String::from_utf8_lossy(&run.stdout), "Hello, world!\n");
     assert!(kavach(&root, &["check"]).status.success());
     // Machine-readable checks find the entry file too (spec 13.6).
     for args in [

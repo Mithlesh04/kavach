@@ -134,6 +134,8 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.24 | [screens-draw-or-say-why.kav](screens-draw-or-say-why.kav) | `gpu.screen(win)` draws into a window, its frames cleared and shown, or gives `GpuError.Unavailable` with no GPU or screen; the program goes on either way. | runs |
 | 14.25 | [system-says-what-machine-it-is.kav](system-says-what-machine-it-is.kav) | `system.os()`, `arch()` and `cores()` are free; `memory`, `cpu`, `gpus`, `hostname` and `uptime` need `System`; `process.cpu_ms()` is free. | runs |
 | 14.25 | [system-details-need-the-capability.kav](system-details-need-the-capability.kav) | Reading the machine's details needs `uses System`. | compile error |
+| 14.25 | [system-parts-come-typed.kav](system-parts-come-typed.kav) | Every part of the machine as typed records: volumes, adapters, devices, drivers, disks, memory, displays, sensors, battery, board, BIOS, model; apps and ids with their own capabilities. | runs |
+| 14.25 | [system-ids-are-not-covered-by-system.kav](system-ids-are-not-covered-by-system.kav) | `uses System` doesn't cover `System.ids` or `System.apps`. | compile error |
 | 5.8, 14.6 | [cli-on-stop-needs-no-capability.kav](cli-on-stop-needs-no-capability.kav) | `cli.on_stop(grace)` gives a hold that isn't asked until a stop signal comes; taking and letting go of one needs no capability. | runs |
 | 14.12 | [log-events-are-records.kav](log-events-are-records.kav) | A log event is a value of a type that implements `LogEvent`; the console shows its level and its printed form. | runs |
 | 14.12 | [log-hides-secrets.kav](log-hides-secrets.kav) | A secret field of a log event is written as `<secret>`. | runs |

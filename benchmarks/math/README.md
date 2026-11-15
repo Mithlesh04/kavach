@@ -8,6 +8,7 @@ Arithmetic over large data (to-do item 1: the math target). Each program is smal
 | `dot` | The dot product of two 20-million-float lists, 10 times; the sum's order is fixed, so neither language may widen it |
 | `scale` | Element-wise `y[i] = x[i] * 2.5 + 1.0` over 20 million floats, 10 times: every element stands alone |
 | `roots` | `sqrt` over 20 million floats, 10 times; exactly rounded, so doing several at once is allowed |
+| `matmul` | The product of two 1024 × 1024 float matrices, 4 times (spec 2.17): each item adds its products in order, the C++ loop's order, so both give the same bits |
 
 Run them (Linux or WSL):
 
@@ -27,6 +28,8 @@ Measured 2026-11-09 at commit b65b7ae7 (`kavach --version`; WSL Ubuntu, g++ 13, 
 | `dot` | 184 | 198 | **0.93** | 1.1× faster; a float sum keeps its exact adding order (decision 0031), so it stays on one core |
 
 The ratio in each round: `sum` 0.35, 0.36, 0.37; `scale` 0.40, 0.39, 0.40; `roots` 0.49, 0.43, 0.46; `dot` 0.86, 0.90, 0.93. On 2026-11-02 both sides took longer (C++'s `sum` 601 ms), so compare ratios measured the same day.
+
+`matmul`, measured 2026-11-15 at commit 4ef54c72 (the same machine, best of 9): Kavach 261 ms, C++ 1315 ms, **0.20**, 5× faster with the same bits. Kavach's exact product spreads rows over the cores and keeps a block of the second matrix in each core's cache; C++ is the plain i-k-j loop on one core. `fast: true` (through `gemm`) and NumPy (OpenBLAS) are not in this table yet: NumPy needs `python3-venv` in WSL, a system package.
 
 The target is **20× as fast as C++** (0.05), from SIMD and all cores. Both steps of [decision 0031](../../docs/decisions/0031-loops-on-all-cores.md) landed 2026-11-02: an eligible loop is outlined into a chunk function and fanned out over a kept worker pool, with the plain loop as the serial path — a chunk whose check fails, or a loop too small to pay for threads, re-runs plainly, so results and panics stay exactly the plain loop's (four conformance tests hold it, including an overflow only a serial prefix sees). Floats are never re-ordered, so `dot` waits for an asked-for reordered sum; the rest of the way to 20× is SIMD width. Two steps so far (2026-11-01):
 

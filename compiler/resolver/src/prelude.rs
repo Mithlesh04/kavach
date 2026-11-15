@@ -53,6 +53,18 @@ pub(crate) const TYPES: &[&str] = &[
     "Comparable",
 ];
 
+/// Parts of a built-in capability that the whole doesn't cover: each is
+/// written by its own name (spec 8.1, 14.25, decision 0112).
+pub const APART: &[&str] = &[
+    "System.ids",
+    "System.apps",
+    "System.audio",
+    "System.display",
+    "System.radio",
+    "System.storage",
+    "System.power",
+];
+
 /// Built-in capabilities (spec 8.1).
 pub const CAPABILITIES: &[&str] = &[
     "Console",

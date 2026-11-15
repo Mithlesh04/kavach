@@ -1,0 +1,14 @@
+// Rule: `r"""…"""` is raw text over many lines: nothing is filled in, every backslash stays, and the indentation is removed as in `"""`.
+// Spec: 1.7
+// expect output: {"name": "Ana", "path": "C:\new\{x}"}
+// expect output:   second
+// expect output: 2
+
+fn main() {
+    const body = r"""
+        {"name": "Ana", "path": "C:\new\{x}"}
+          second
+        """
+    print(body)
+    print(body.lines().len())
+}

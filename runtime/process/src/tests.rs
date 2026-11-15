@@ -156,3 +156,30 @@ fn the_machine_says_what_it_is() {
         crate::cpu_ms()
     );
 }
+
+/// Every kind of part comes as whole rows; the parts every machine has
+/// are there. Only checked, never printed: they describe this machine.
+#[test]
+fn every_part_comes_as_whole_rows() {
+    use crate::parts::rows;
+    let widths = [3, 3, 3, 6, 5, 6, 6, 5, 4, 3, 6, 2, 3, 3];
+    for (which, width) in widths.iter().enumerate() {
+        let got = rows(which as i64);
+        assert_eq!(got.len() % width, 0, "kind {which}: {} fields", got.len());
+    }
+    assert!(rows(14).is_empty() && rows(-1).is_empty(), "no such kind");
+    if cfg!(any(target_os = "linux", windows)) {
+        assert!(!rows(5).is_empty(), "a mounted volume");
+        assert!(!rows(6).is_empty(), "a network adapter");
+        assert!(!rows(11).is_empty(), "a driver");
+        // Each volume's available space fits in its total.
+        for v in rows(5).chunks(6) {
+            let (total, available): (u64, u64) = (v[3].parse().unwrap(), v[4].parse().unwrap());
+            assert!(available <= total, "{} of {}", available, total);
+        }
+    }
+    if cfg!(windows) {
+        assert!(!rows(10).is_empty(), "the devices Windows knows");
+        assert!(!rows(4).is_empty(), "a physical drive");
+    }
+}

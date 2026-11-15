@@ -16,7 +16,7 @@ A capability is permission to affect the outside world. Built-in capabilities:
 | `Window` | Opening windows and reading their window events (14.22) |
 | `Input` | The keyboard, the mouse and text typed in a program's own windows (14.22) |
 | `Process` | Running other programs (14.23); `Process("name")` only that one |
-| `System` | Reading what can tell one machine from another: its processor, memory, GPUs, hostname and uptime (14.25). Its system, architecture and cores need none |
+| `System` | Reading what can tell one machine from another: its processor, memory, GPUs, hostname, uptime, disks, devices and the rest of 14.25. Its system, architecture and cores need none. `System.ids` reads serial numbers and MAC addresses, `System.apps` the applications installed; unlike other parts, `uses System` doesn't cover them: they are written by name |
 | `Approvals` | Answering agents' approval requests in code (14.16). An agent's `can` may never list it (8.3) |
 | `Foreign` | Calling Python or JavaScript code, which Kavach cannot check (10.7) |
 

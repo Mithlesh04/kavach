@@ -47,7 +47,14 @@ pub fn product<T: Num>(
     Ok(out)
 }
 
-/// The rows from `first` of the product, in order.
+/// Columns and inner steps in one block: a block of `b` (`K` × `J`
+/// items) stays in the core's cache while every row of the band uses it.
+const J: usize = 512;
+const K: usize = 128;
+
+/// The rows from `first` of the product, in order. The blocks of `k` go
+/// up one after another, so each item still adds its products with `k`
+/// going up from 0.
 fn exact_band<T: Num>(
     a: &[T],
     b: &[T],
@@ -55,12 +62,20 @@ fn exact_band<T: Num>(
     first: usize,
     (m, p): (usize, usize),
 ) -> Result<(), Overflow> {
-    for (r, row) in rows.chunks_mut(p).enumerate() {
-        let i = first + r;
-        for k in 0..m {
-            let x = a[i * m + k];
-            for (c, y) in row.iter_mut().zip(&b[k * p..(k + 1) * p]) {
-                *c = c.add(x.mul(*y).ok_or(Overflow)?).ok_or(Overflow)?;
+    let count = rows.len() / p;
+    for jj in (0..p).step_by(J) {
+        let je = (jj + J).min(p);
+        for kk in (0..m).step_by(K) {
+            let ke = (kk + K).min(m);
+            for r in 0..count {
+                let i = first + r;
+                let row = &mut rows[r * p + jj..r * p + je];
+                for k in kk..ke {
+                    let x = a[i * m + k];
+                    for (c, y) in row.iter_mut().zip(&b[k * p + jj..k * p + je]) {
+                        *c = c.add(x.mul(*y).ok_or(Overflow)?).ok_or(Overflow)?;
+                    }
+                }
             }
         }
     }

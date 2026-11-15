@@ -200,6 +200,10 @@ pub fn cpu_ms() -> i64 {
 }
 
 pub mod machine;
+pub mod parts;
+#[cfg(windows)]
+mod registry;
+mod smbios;
 
 #[cfg(test)]
 mod tests;

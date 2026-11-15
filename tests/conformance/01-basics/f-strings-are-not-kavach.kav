@@ -1,0 +1,8 @@
+// Rule: there is no `f"…"`: every string fills in `{…}` by itself, and `f"…"` is a compile error that says to drop the `f`.
+// Spec: 1.7
+// expect compile error
+
+fn main() {
+    const name = "Ana"
+    print(f"hi {name}")     // error: Kavach has no f-strings
+}

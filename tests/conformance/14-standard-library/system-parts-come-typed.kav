@@ -1,0 +1,33 @@
+// Rule: `std.system` gives every part of the machine as typed records: volumes, network adapters, devices, drivers, disks, memory modules, displays, sensors, the battery, the board, BIOS and model with `System`, the applications with `System.apps`, and the ids with `System.ids`.
+// Spec: 14.25
+// expect output: volumes: true
+// expect output: network: true
+// expect output: lists: true
+// expect output: battery: true
+// expect output: apps and ids: true
+
+use std.system
+
+fn facts() uses System, Console {
+    const volumes = system.volumes()
+    print("volumes: {volumes.len() > 0 and volumes.all(v => v.path != "" and v.available <= v.total)}")
+    print("network: {system.network().len() > 0}")
+    const lists = system.devices().all(d => d.kind != "") and system.drivers().len() > 0 and
+        system.disks().all(d => d.size >= 0) and system.memory_modules().all(m => m.size >= 0) and
+        system.displays().all(d => d.width >= 0) and system.sensors().all(s => s.name != "")
+    const named = system.board().maker.len() >= 0 and system.bios().version.len() >= 0 and system.model().product.len() >= 0
+    print("lists: {lists and named}")
+    const battery = system.battery()
+    print("battery: {battery == none or (battery ?? Battery(percent: 0, charging: false, on_power: false, minutes_left: 0)).percent <= 100}")
+}
+
+fn private() uses System.apps, System.ids, Console {
+    const apps = system.apps()
+    const ids = system.ids()
+    print("apps and ids: {apps.all(a => a.name != "") and ids.macs.all(m => m != "")}")
+}
+
+fn main() {
+    facts()
+    private()
+}

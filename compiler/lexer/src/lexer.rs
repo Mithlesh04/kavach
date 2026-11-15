@@ -10,7 +10,8 @@ pub(crate) enum StrKind {
     Plain,
     Raw,
     Multi,
-    /// `sql"""…"""`: a tagged literal over lines, raw (spec 10.15).
+    /// `r"""…"""`, and `sql"""…"""`, a tagged literal over lines: raw
+    /// (spec 1.7, 10.15).
     RawMulti,
 }
 
@@ -192,7 +193,10 @@ impl<'a> Lexer<'a> {
         let start = self.pos;
         let rest = self.rest();
         let Some(c) = self.peek() else { return };
-        if c == 'r' && rest[1..].starts_with('"') {
+        // `r"""…"""`: raw text over many lines (spec 1.7).
+        if c == 'r' && rest[1..].starts_with("\"\"\"") {
+            self.open_string(StrKind::RawMulti, 4);
+        } else if c == 'r' && rest[1..].starts_with('"') {
             self.open_string(StrKind::Raw, 2);
         } else if is_ident_start(c) {
             self.eat_while(is_ident_continue);

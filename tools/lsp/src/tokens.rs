@@ -228,6 +228,14 @@ impl Marks<'_> {
         }
     }
 
+    /// Whether `base.name` names a union's variant: the name resolves to
+    /// one, or it starts with a capital after a type's name.
+    fn is_variant(&self, base: &Expr, name: &Ident) -> bool {
+        matches!(self.kind(name), Some(DefKind::Variant { .. }))
+            || (name.name.starts_with(char::is_uppercase)
+                && matches!(&base.kind, ExprKind::Name(t) if self.kind(t) == Some(DefKind::Type)))
+    }
+
     /// The kind of definition `id` resolves to.
     fn kind(&self, id: &Ident) -> Option<DefKind> {
         let res = &self.c.resolution;
@@ -269,6 +277,8 @@ impl VisitMut for Marks<'_> {
                             self.mark(m, NAMESPACE, IMPORTED);
                             self.member(name, true);
                         }
+                        // `OrderError.BadQty(…)` makes a variant: not a method.
+                        _ if self.is_variant(base, name) => {}
                         _ => {
                             let own = self
                                 .owner(base)
@@ -313,7 +323,8 @@ mod tests {
         let src = dir.join("src");
         std::fs::create_dir_all(&src).unwrap();
         std::fs::write(dir.join("kavach.toml"), "[package]\nname = \"demo\"\n").unwrap();
-        let main = "use orders\n\nfn main() {\n    const नाम = \"a\"\n    print(नाम.len() + orders.total())\n}\n";
+        // A variant made with its fields is no method: `E.BadQty(…)`.
+        let main = "use orders\n\ntype E = BadQty(item: String)\n\nfn main() {\n    const नाम = \"a\"\n    print(नाम.len() + orders.total())\n    print(E.BadQty(item: \"x\"))\n}\n";
         std::fs::write(src.join("main.kav"), main).unwrap();
         std::fs::write(
             src.join("orders.kav"),
@@ -325,7 +336,7 @@ mod tests {
         let got = json_line(&path(&src.join("main.kav")));
         let broken = json_line(&path(&dir.join("broken.kav")));
         std::fs::remove_dir_all(&dir).unwrap();
-        let tokens = r#""tokens":[[4,14,3,"method",["defaultLibrary"]],[4,22,6,"namespace",["imported"]],[4,29,5,"function",["imported"]]]"#;
+        let tokens = r#""tokens":[[6,14,3,"method",["defaultLibrary"]],[6,22,6,"namespace",["imported"]],[6,29,5,"function",["imported"]]]"#;
         assert!(got.ends_with(&format!("{tokens}}}")), "{got}");
         assert!(broken.contains(r#""error":"#), "{broken}");
     }

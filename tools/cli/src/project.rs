@@ -186,7 +186,7 @@ pub(crate) fn new(name: &str) -> ExitCode {
         ),
         (
             "src/main.kav",
-            "fn main() {\n    print(\"Hello, Kavach!\")\n}\n".to_string(),
+            "fn main() {\n    print(\"Hello, world!\")\n}\n".to_string(),
         ),
         (
             ".gitignore",

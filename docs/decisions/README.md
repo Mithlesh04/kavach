@@ -117,6 +117,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0109](0109-operators-through-interfaces.md) | Operators for a program's own types through built-in interfaces (`Add` … `Neg`, `Comparable`); the other operand the same type or one other per operator; operator methods pure | Accepted |
 | [0110](0110-std-system.md) | `std.system`: the machine's system, cores, memory, processor and GPUs; the basics free, the rest behind a new `System` capability; system calls in `runtime/process`, no new dependency | Accepted |
 | [0111](0111-matrices.md) | Matrices: `Matrix<T>` written in Kavach over a flat list, `a @ b` through a new `MatMul` operator interface, the same bits by default, `fast: true` through the `gemm` crate | Accepted |
+| [0112](0112-every-detail-of-the-machine.md) | Every detail of the machine in `std.system`, then events, then controls; typed records plus one device list; `System`, `System.ids`, `System.apps`, and one capability per kind of control | Accepted |
 
 ## Open decisions
 

@@ -47,6 +47,9 @@ impl Checker<'_> {
                     "read_text" | "read_bytes" | "lines" | "chunks" | "exists" | "list" | "stat",
                 ) => "Fs.read",
                 ("fs", _) => "Fs.write",
+                // Parts `System` doesn't cover (spec 14.25, decision 0112).
+                ("system", "apps_id") => "System.apps",
+                ("system", "ids_id") => "System.ids",
                 _ => cap,
             };
             self.note_cap(cap, span);

@@ -225,9 +225,18 @@ fn a_pipeline_is_one_module_with_its_layout_first() {
 
 /// The swarm example's shaders, drawn off-screen: each dot's triangle
 /// takes its color from its `heat`, and what no triangle covers stays
+
+/// One drawing test at a time: two pictures drawn at once from parallel
+/// tests made the GPU stop under a full test run's load.
+fn drawing() -> std::sync::MutexGuard<'static, ()> {
+    static DRAWING: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    DRAWING.lock().unwrap_or_else(|e| e.into_inner())
+}
+
 /// black. Skipped on a machine with no GPU.
 #[test]
 fn a_pipeline_draws_what_its_gpu_fns_say() {
+    let _alone = drawing();
     if !kavach_runtime_gpu::available() {
         return;
     }
@@ -251,6 +260,7 @@ fn a_pipeline_draws_what_its_gpu_fns_say() {
 /// at its first draw, so a frame never waits for it (decision 0106).
 #[test]
 fn a_pipeline_compiles_before_its_first_draw() {
+    let _alone = drawing();
     if !kavach_runtime_gpu::available() {
         return;
     }

@@ -10,6 +10,7 @@ mod decls;
 mod modules;
 mod naming;
 mod prelude;
+pub use prelude::APART;
 mod resolver;
 mod unused;
 mod walk;

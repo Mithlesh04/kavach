@@ -45,7 +45,9 @@ impl Checker<'_> {
         Some(match name {
             "basic_text_id" | "text_id" => (which, string),
             "basic_number_id" | "number_id" => (which, int),
-            "gpus_id" => (vec![], Ty::List(Box::new(string))),
+            "gpus_id" | "apps_id" | "ids_id" => (vec![], Ty::List(Box::new(string))),
+            // Every part of the machine, by kind: rows of text (14.25).
+            "rows_id" => (which, Ty::List(Box::new(string))),
             _ => return None,
         })
     }

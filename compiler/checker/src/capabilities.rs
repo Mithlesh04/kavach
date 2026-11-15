@@ -56,9 +56,10 @@ const NARROW: [&str; 2] = ["Fs.read", "Fs.write"];
 
 fn covers(declared: &BTreeSet<String>, cap: &str) -> bool {
     declared.contains(cap)
-        || cap
-            .split_once('.')
-            .is_some_and(|(c, _)| declared.contains(c))
+        || (!kavach_resolver::APART.contains(&cap)
+            && cap
+                .split_once('.')
+                .is_some_and(|(c, _)| declared.contains(c)))
 }
 
 impl Checker<'_> {
@@ -305,10 +306,15 @@ impl Checker<'_> {
                 continue;
             };
             for cap in effective.get(d).into_iter().flatten() {
-                // `can = ["Fs"]` covers `Fs.read`; `["Fs.read"]` covers only it.
-                let base = cap.split_once('.').map_or(cap.as_str(), |(c, _)| c);
+                // `can = ["Fs"]` covers `Fs.read`; `["Fs.read"]` covers only
+                // it; `System` doesn't cover `System.ids` (8.1).
+                let apart = kavach_resolver::APART.contains(&cap.as_str());
+                let base = match cap.split_once('.') {
+                    Some((c, _)) if !apart => c,
+                    _ => cap.as_str(),
+                };
                 // A part of a program's own capability counts as all of it.
-                let shown = if NARROW.contains(&cap.as_str()) {
+                let shown = if NARROW.contains(&cap.as_str()) || apart {
                     cap.as_str()
                 } else {
                     base

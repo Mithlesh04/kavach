@@ -101,3 +101,260 @@ pub fn hostname() -> String uses System {
 pub fn uptime() -> Duration uses System {
     Duration(ms: system.number_id(5))
 }
+
+// Every part of the machine (spec 14.25, decision 0112): the runtime
+// gives each kind as rows of text; these functions make them records.
+
+/// The motherboard.
+pub type Board {
+    pub maker: String
+    pub product: String
+    pub version: String
+}
+
+/// The firmware.
+pub type Bios {
+    pub maker: String
+    pub version: String
+    pub date: String
+}
+
+/// The machine itself: its maker, product and family.
+pub type MachineModel {
+    pub maker: String
+    pub product: String
+    pub family: String
+}
+
+/// One memory slot; an empty slot has `size` 0.
+pub type MemoryModule {
+    pub slot: String
+    pub size: Int
+    pub kind: String
+    pub mhz: Int
+    pub maker: String
+    pub part: String
+}
+
+/// What a physical drive is.
+pub type DiskKind = Ssd | Hdd | Usb | Other
+
+/// A physical drive.
+pub type Disk {
+    pub name: String
+    pub model: String
+    pub size: Int
+    pub kind: DiskKind
+    pub removable: Bool
+}
+
+/// A mounted volume; sizes in bytes.
+pub type Volume {
+    pub path: String
+    pub label: String
+    pub file_system: String
+    pub total: Int
+    pub available: Int
+    pub removable: Bool
+}
+
+/// What a network adapter is.
+pub type AdapterKind = Ethernet | WiFi | Bluetooth | Loopback | Other
+
+/// A network adapter and its IP addresses.
+pub type Adapter {
+    pub name: String
+    pub description: String
+    pub kind: AdapterKind
+    pub connected: Bool
+    pub mbps: Int
+    pub addresses: [String]
+}
+
+/// A display connected, and the port it uses.
+pub type Display {
+    pub name: String
+    pub width: Int
+    pub height: Int
+    pub hz: Int
+    pub connection: String
+}
+
+/// The battery; `minutes_left` is -1 while charging or not known.
+pub type Battery {
+    pub percent: Int
+    pub charging: Bool
+    pub on_power: Bool
+    pub minutes_left: Int
+}
+
+/// What a sensor measures: °C, RPM, volts or watts.
+pub type SensorKind = Temperature | Fan | Voltage | Power
+
+/// One sensor's reading.
+pub type Sensor {
+    pub name: String
+    pub kind: SensorKind
+    pub value: Float
+}
+
+/// A device the system knows.
+pub type Device {
+    pub kind: String
+    pub name: String
+    pub maker: String
+    pub driver: String
+    pub driver_version: String
+    pub connected: Bool
+}
+
+/// A driver loaded.
+pub type Driver {
+    pub name: String
+    pub version: String
+}
+
+/// An application installed.
+pub type App {
+    pub name: String
+    pub version: String
+    pub maker: String
+}
+
+/// What names this exact machine.
+pub type Ids {
+    pub system_uuid: String
+    pub board_serial: String
+    pub macs: [String]
+}
+
+/// `texts` cut into rows of `width` fields.
+fn rows(texts: [String], width: Int) -> [[String]]
+    require width > 0
+{
+    let out: [[String]] = []
+    let i = 0
+    while i + width <= texts.len() {
+        out.push(texts.slice(i, i + width))
+        i += width
+    }
+    out
+}
+
+fn number(text: String) -> Int {
+    Int(text) catch _ => 0
+}
+
+fn words(text: String) -> [String] {
+    if text == "" { [] } else { text.split(",") }
+}
+
+/// The motherboard.
+pub fn board() -> Board uses System {
+    const r = rows(system.rows_id(0), 3)
+    if r.is_empty() { Board(maker: "", product: "", version: "") } else { Board(maker: r[0][0], product: r[0][1], version: r[0][2]) }
+}
+
+/// The firmware.
+pub fn bios() -> Bios uses System {
+    const r = rows(system.rows_id(1), 3)
+    if r.is_empty() { Bios(maker: "", version: "", date: "") } else { Bios(maker: r[0][0], version: r[0][1], date: r[0][2]) }
+}
+
+/// The machine itself.
+pub fn model() -> MachineModel uses System {
+    const r = rows(system.rows_id(2), 3)
+    if r.is_empty() { MachineModel(maker: "", product: "", family: "") } else { MachineModel(maker: r[0][0], product: r[0][1], family: r[0][2]) }
+}
+
+/// Each memory slot, filled or empty.
+pub fn memory_modules() -> [MemoryModule] uses System {
+    rows(system.rows_id(3), 6).map(r => MemoryModule(slot: r[0], size: number(r[1]), kind: r[2], mhz: number(r[3]), maker: r[4], part: r[5]))
+}
+
+/// Each physical drive.
+pub fn disks() -> [Disk] uses System {
+    rows(system.rows_id(4), 5).map(r => Disk(
+        name: r[0],
+        model: r[1],
+        size: number(r[2]),
+        kind: match r[3] {
+            "Ssd" => DiskKind.Ssd,
+            "Hdd" => DiskKind.Hdd,
+            "Usb" => DiskKind.Usb,
+            _ => DiskKind.Other,
+        },
+        removable: r[4] == "true",
+    ))
+}
+
+/// Each mounted volume.
+pub fn volumes() -> [Volume] uses System {
+    rows(system.rows_id(5), 6).map(r => Volume(path: r[0], label: r[1], file_system: r[2], total: number(r[3]), available: number(r[4]), removable: r[5] == "true"))
+}
+
+/// Each network adapter.
+pub fn network() -> [Adapter] uses System {
+    rows(system.rows_id(6), 6).map(r => Adapter(
+        name: r[0],
+        description: r[1],
+        kind: match r[2] {
+            "Ethernet" => AdapterKind.Ethernet,
+            "WiFi" => AdapterKind.WiFi,
+            "Bluetooth" => AdapterKind.Bluetooth,
+            "Loopback" => AdapterKind.Loopback,
+            _ => AdapterKind.Other,
+        },
+        connected: r[3] == "true",
+        mbps: number(r[4]),
+        addresses: words(r[5]),
+    ))
+}
+
+/// Each display connected.
+pub fn displays() -> [Display] uses System {
+    rows(system.rows_id(7), 5).map(r => Display(name: r[0], width: number(r[1]), height: number(r[2]), hz: number(r[3]), connection: r[4]))
+}
+
+/// The battery, or none without one.
+pub fn battery() -> Battery? uses System {
+    const r = rows(system.rows_id(8), 4)
+    if r.is_empty() { return none }
+    Battery(percent: number(r[0][0]), charging: r[0][1] == "true", on_power: r[0][2] == "true", minutes_left: number(r[0][3]))
+}
+
+/// Each sensor's reading.
+pub fn sensors() -> [Sensor] uses System {
+    const out: [Sensor] = rows(system.rows_id(9), 3).map(r => Sensor(
+        name: r[0],
+        kind: match r[1] {
+            "Fan" => SensorKind.Fan,
+            "Voltage" => SensorKind.Voltage,
+            "Power" => SensorKind.Power,
+            _ => SensorKind.Temperature,
+        },
+        value: Float(r[2]) catch _ => 0.0,
+    ))
+    out
+}
+
+/// Every device the system knows.
+pub fn devices() -> [Device] uses System {
+    rows(system.rows_id(10), 6).map(r => Device(kind: r[0], name: r[1], maker: r[2], driver: r[3], driver_version: r[4], connected: r[5] == "true"))
+}
+
+/// The drivers loaded.
+pub fn drivers() -> [Driver] uses System {
+    rows(system.rows_id(11), 2).map(r => Driver(name: r[0], version: r[1]))
+}
+
+/// The applications installed.
+pub fn apps() -> [App] uses System.apps {
+    rows(system.apps_id(), 3).map(r => App(name: r[0], version: r[1], maker: r[2]))
+}
+
+/// What names this exact machine.
+pub fn ids() -> Ids uses System.ids {
+    const r = rows(system.ids_id(), 3)
+    if r.is_empty() { Ids(system_uuid: "", board_serial: "", macs: []) } else { Ids(system_uuid: r[0][0], board_serial: r[0][1], macs: words(r[0][2])) }
+}
