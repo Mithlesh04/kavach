@@ -1,0 +1,49 @@
+name: Claim work
+description: Say you are taking an item from the to-do list, so nobody else starts the same thing.
+title: "Claim: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Pick an item from [docs/vision/todo.md](https://github.com/Mithlesh04/kavach/blob/main/docs/vision/todo.md), in its order where you can.
+        Read [AGENTS.md section 11](https://github.com/Mithlesh04/kavach/blob/main/AGENTS.md#11-working-in-parallel) first.
+  - type: input
+    id: item
+    attributes:
+      label: To-do item
+      description: Its name, and the part you take if several people share it.
+      placeholder: "Logging: sinks"
+    validations:
+      required: true
+  - type: dropdown
+    id: role
+    attributes:
+      label: Role
+      options:
+        - The whole item
+        - Lead of a shared item (spec, shared types, main file)
+        - One part of a shared item
+    validations:
+      required: true
+  - type: input
+    id: branch
+    attributes:
+      label: Branch
+      placeholder: logging-sinks
+    validations:
+      required: true
+  - type: textarea
+    id: files
+    attributes:
+      label: Files you will change
+      description: Folders and files you own for this work, and any shared files (AGENTS.md section 11) you need to touch.
+      placeholder: |
+        stdlib/log/sinks.kav
+        tests/conformance/14-standard-library/log-*.kav
+    validations:
+      required: true
+  - type: textarea
+    id: plan
+    attributes:
+      label: Plan
+      description: What you will build, and what you will leave for later.

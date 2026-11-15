@@ -1,0 +1,36 @@
+name: First impression
+description: You read the refund-bot example. Would you try Kavach?
+title: "First impression: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Kavach is still early, so your first reaction is the most useful thing we can get.
+        Please read [examples/05-refund-bot](https://github.com/Mithlesh04/kavach/blob/main/examples/05-refund-bot/src/main.kav) first (about 90 lines).
+  - type: dropdown
+    id: would-try
+    attributes:
+      label: Would you try Kavach for something like this?
+      options:
+        - "Yes"
+        - "Maybe"
+        - "No"
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why?
+      description: What made you say yes, maybe or no?
+    validations:
+      required: true
+  - type: textarea
+    id: confusing
+    attributes:
+      label: What was confusing?
+      description: Any line you had to read twice is a bug in the design.
+  - type: input
+    id: background
+    attributes:
+      label: Languages you use most
+      placeholder: e.g. Python, TypeScript, Go

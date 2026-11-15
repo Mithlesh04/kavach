@@ -37,7 +37,7 @@ Put every change in the right place the first time. Follow these steps **before*
 | A teaching example | `examples/NN-topic/` |
 | A benchmark | `benchmarks/<language-or-topic>/` |
 | A helper script for this repo | `scripts/<verb>-<thing>.sh` **and** `.ps1` |
-| A CI job | `.github/workflows/checks.yml` (manual-only for now; one workflow until it nears the size limit) |
+| A CI job | `.github/workflows/checks.yml` (disabled for now, as Actions minutes are paid; one workflow until it nears the size limit) |
 | An issue form or PR template | `.github/ISSUE_TEMPLATE/`, `.github/pull_request_template.md` |
 | Syntax highlighting for a new keyword | `editors/vscode/syntaxes/kavach.tmLanguage.json` + a line in `editors/vscode/tests/` |
 | A git hook | `scripts/hooks/<hook-name>` (sh; Git for Windows runs it too) |
