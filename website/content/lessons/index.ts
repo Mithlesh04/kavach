@@ -55,6 +55,8 @@ import { windowDoc } from "./stdlib-window";
 import { processDoc } from "./stdlib-process";
 import { matricesDoc } from "./types-matrices";
 import { systemDoc } from "./stdlib-system";
+import { gamepadDoc } from "./stdlib-input";
+import { soundDoc } from "./stdlib-audio";
 import { loggingDoc } from "./stdlib-log";
 import { aiWritesDoc } from "./tools-ai-writes";
 import { gpuScreenDoc } from "./stdlib-gpu";
@@ -338,6 +340,8 @@ export const lessons: Record<string, LessonDoc> = {
   "standard-library/running-programs": processDoc,
   "standard-library/gpu-screens": gpuScreenDoc,
   "standard-library/the-machine": systemDoc,
+  "standard-library/gamepads": gamepadDoc,
+  "standard-library/sound": soundDoc,
 
   "standard-library/json": jsonDoc,
   "standard-library/json/json-values": jsonValuesDoc,

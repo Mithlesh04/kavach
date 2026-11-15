@@ -15,7 +15,7 @@ import { ModuleTable } from "./spec-table";
 const FILE = "14-standard-library/22-window.md";
 
 export const windowDoc: LessonDoc = {
-  lead: "std.window opens windows on the screen and reads the keyboard and mouse input that comes to them: the start of games, tools, charts and user interfaces.",
+  lead: "std.window opens windows on the screen and reads the keyboard, mouse and gamepad input that comes to them: the start of games, tools, charts and user interfaces.",
   simple: <>A window is a frame on the screen that a program owns. Kavach lets a program open one, and hear what a person does in it, like a key press or a mouse click, but only when the program says so.</>,
   minutes: 4,
   before: ["agents/capabilities"],
@@ -31,7 +31,7 @@ export const windowDoc: LessonDoc = {
       <H2>Two capabilities</H2>
       <P>
         <C>Window</C> opens windows, changes them and reads their window events. <C>Input</C> reads the keyboard, the
-        mouse and typed text. So a function that only draws can&apos;t read what a person types:
+        mouse, typed text and gamepads. So a function that only draws can&apos;t read what a person types:
       </P>
       <Ex name="window/input.fails" />
       <P>Opening a window needs <C>Window</C>, like every way to the outside world:</P>
@@ -51,8 +51,9 @@ export const windowDoc: LessonDoc = {
       <ModuleTable file="22-window.md" number="14.22" first="Function or method" />
       <H2>Events</H2>
       <P>
-        <C>Event</C> is a union. The last six variants come only after <C>listen_input()</C>, which needs{" "}
-        <C>Input</C>:
+        <C>Event</C> is a union. The variants from <C>Key</C> on come only after <C>listen_input()</C>, which
+        needs <C>Input</C>. Gamepad events come to every window that listens to input; see{" "}
+        <Link href="/docs/standard-library/gamepads/">Gamepads</Link>:
       </P>
       <ModuleTable file="22-window.md" number="14.22" first="`Event`" />
       <Note>
@@ -61,7 +62,7 @@ export const windowDoc: LessonDoc = {
       </Note>
       <H2>Not yet</H2>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>Gamepads and touch come with a later <C>std.input</C>. Drawing into a window is done with the GPU: see <Link href="/docs/standard-library/gpu-screens/">GPU Screens</Link>.</li>
+        <li>Touch screens and pens. Drawing into a window is done with the GPU: see <Link href="/docs/standard-library/gpu-screens/">GPU Screens</Link>.</li>
         <li>On macOS, <C>window.open</C> fails with <C>Unavailable</C> for now: macOS shows windows only from a program&apos;s first thread.</li>
         <li>Generated tests skip functions that use <C>Window</C> or <C>Input</C>: there is no fake screen yet. See <Link href="/docs/errors/testing/">Testing</Link>.</li>
       </ul>

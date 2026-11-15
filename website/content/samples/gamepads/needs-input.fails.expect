@@ -1,0 +1,1 @@
+error: `count_pads` is `pub`, so it must say what it uses: add `uses Input` (through `pads`) (spec 8.1)

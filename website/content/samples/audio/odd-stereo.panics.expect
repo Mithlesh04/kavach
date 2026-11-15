@@ -1,0 +1,1 @@
+panic: contract failed: require rate >= 1000 and rate <= 384_000 and channels >= 1 and channels <= 2 and samples.len() % channels == 0

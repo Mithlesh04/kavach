@@ -1,0 +1,16 @@
+use std.input
+
+// How fast the ship goes: the right trigger, and East brakes.
+fn speed(pad: Pad) -> Float {
+    if pad.is_down("East") {
+        return 0.0
+    }
+    pad.right_trigger * 10.0
+}
+
+fn main() {
+    const pad = Pad(id: 0, name: "test pad", buttons: ["South"], left: (x: 0.0, y: 0.0), right: (x: 0.0, y: 0.0), left_trigger: 0.0, right_trigger: 0.5)
+    print(speed(pad))
+    const braking = Pad(id: 0, name: "test pad", buttons: ["East"], left: (x: 0.0, y: 0.0), right: (x: 0.0, y: 0.0), left_trigger: 0.0, right_trigger: 1.0)
+    print(speed(braking))
+}

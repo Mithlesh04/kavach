@@ -1,0 +1,10 @@
+use std.audio
+
+pub fn beep(s: Sound) {
+    const _ = audio.play(s) catch _ => {
+        return
+    }
+}
+
+fn main() {
+}

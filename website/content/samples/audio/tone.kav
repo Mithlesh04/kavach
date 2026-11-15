@@ -1,0 +1,19 @@
+use std.audio
+
+// A tone of `hz`, made from numbers: a square wave, up for half of each
+// wave and down for the other half, at a quarter of full volume.
+fn tone(hz: Int, millis: Int) -> Sound {
+    const rate = 8000
+    let samples: [Float32] = []
+    for i in 0..rate * millis / 1000 {
+        const up = (i * hz * 2 / rate) % 2 == 0
+        samples.push(if up { Float32(0.25) } else { Float32(-0.25) })
+    }
+    audio.sound(samples, rate, 1)
+}
+
+fn main() {
+    const beep = tone(440, 250)
+    print("{beep.frames} frames at {beep.rate} a second, {beep.channels} channel")
+    print("{beep.seconds()} seconds")
+}

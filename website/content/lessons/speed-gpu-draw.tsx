@@ -36,6 +36,10 @@ export const gpuDrawDoc: LessonDoc = {
           <C>frame.draw(dots, square, instances: swarm, shared: camera)</C> draws the square once for each dot. A
           draw paints over what the frame already holds.
         </li>
+        <li>
+          Each three vertices make a triangle. <C>indices:</C> names them by their place instead, so triangles share
+          corners: see <Link href="/docs/standard-library/gpu-screens/">GPU Screens</Link>.
+        </li>
         <li>A vertex, an instance or a shared value is a record of 1 to 8 fields, each a <C>Float32</C>, <C>Int32</C> or <C>UInt32</C>.</li>
         <li>
           A list a GPU <Link href="/docs/speed/gpu/map-on-the-gpu/">map</Link> made, still in GPU memory, is drawn from

@@ -100,6 +100,8 @@ export const aliases: Record<string, string> = {
   "standard-library/agents": "idempotency key idempotent call key retry repeat duplicate twice exactly once at least once crash restart stripe approval request answer approve in code chat bot slack web page review queue waiting ApprovalRequest ApprovalError",
   "standard-library/clipboard": "clipboard copy paste pasteboard cut ctrl+c ctrl+v xclip pbcopy",
   "standard-library/devices": "serial port com usb rs-232 uart arduino board sensor modem baud hardware device tty",
+  "standard-library/gamepads": "gamepad controller joystick xbox playstation dualshock switch pro stick trigger button rumble vibration force feedback haptics game input sdl gilrs",
+  "standard-library/sound": "audio sound music play effect wav ogg vorbis volume pan loop mixer speaker sample rate tone sine beep sdl openal cpal",
   "tools/editions": "edition version compatibility breaking change backwards compatible upgrade migrate stability 2026",
   "networks/sockets": "socket tcp udp tls ssl quic connection listen accept datagram certificate mtls timeout port",
   "networks/http": "web server client rest api request response endpoint route fetch curl express flask status code",

@@ -1,0 +1,9 @@
+use std.input
+
+pub fn count_pads() -> Int {
+    input.pads().len()
+}
+
+fn main() {
+    print(count_pads())
+}

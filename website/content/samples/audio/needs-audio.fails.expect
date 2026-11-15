@@ -1,0 +1,1 @@
+error: `beep` is `pub`, so it must say what it uses: add `uses Audio` (through `play`) (spec 8.1)

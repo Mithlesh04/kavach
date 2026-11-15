@@ -46,6 +46,12 @@ export const gpuScreenDoc: LessonDoc = {
       </P>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>A draw paints over what the frame already holds, blending by opacity.</li>
+        <li>
+          Without <C>indices:</C>, each three vertices make a triangle. With <C>indices: corners</C>, a{" "}
+          <C>[UInt32]</C>, each three numbers name a triangle&apos;s vertices by their place in the list. So a corner
+          two triangles share is one vertex: a square is four vertices and six indices, not six vertices.
+        </li>
+        <li>An index past the last vertex is a panic, before anything is drawn.</li>
         <li>A draw without the <C>instances:</C> or <C>shared:</C> value its vertex fn takes is a compile error.</li>
         <li>A list a GPU <C>map</C> made is drawn from GPU memory, with nothing copied.</li>
         <li>A pipeline is compiled for the GPU when it is made, or when a screen opens, never in the middle of a frame.</li>
@@ -54,6 +60,7 @@ export const gpuScreenDoc: LessonDoc = {
         <SrcRef file={`docs/spec/${FILE}`} label="spec 14.24 · std.gpu" />
         <SrcRef file="docs/spec/15-gpu.md" label="spec 15.3 · drawing" />
         <SrcRef file="tests/conformance/14-standard-library/screens-draw-or-say-why.kav" label="screens, tested" />
+        <SrcRef file="compiler/backend/wgsl/src/tests_draw.rs" symbol="indices_name_the_vertices_of_each_triangle" label="indices, tested" />
         <SrcRef file="stdlib/gpu/gpu.kav" label="gpu.kav" />
         <SrcRef file="docs/decisions/0106-drawing-on-the-gpu.md" label="decision 0106" />
       </div>

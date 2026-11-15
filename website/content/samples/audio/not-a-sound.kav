@@ -1,0 +1,10 @@
+use std.audio
+
+fn main() {
+    const bytes = Bytes([1, 2, 3])
+    const sound = audio.decode(bytes) catch e => {
+        print(e)
+        return
+    }
+    print(sound.seconds())
+}
