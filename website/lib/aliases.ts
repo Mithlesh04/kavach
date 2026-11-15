@@ -102,6 +102,7 @@ export const aliases: Record<string, string> = {
   "standard-library/devices": "serial port com usb rs-232 uart arduino board sensor modem baud hardware device tty",
   "standard-library/gamepads": "gamepad controller joystick xbox playstation dualshock switch pro stick trigger button rumble vibration force feedback haptics game input sdl gilrs",
   "standard-library/sound": "audio sound music play effect wav ogg vorbis volume pan loop mixer speaker sample rate tone sine beep sdl openal cpal",
+  "standard-library/vectors": "vector vec2 vec3 vec4 matrix mat4 quaternion quat glm linear algebra 3d math transform rotate translate scale camera projection perspective look at dot cross product normalize lerp game engine",
   "tools/editions": "edition version compatibility breaking change backwards compatible upgrade migrate stability 2026",
   "networks/sockets": "socket tcp udp tls ssl quic connection listen accept datagram certificate mtls timeout port",
   "networks/http": "web server client rest api request response endpoint route fetch curl express flask status code",

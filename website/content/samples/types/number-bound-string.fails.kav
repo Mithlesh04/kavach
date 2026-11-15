@@ -1,0 +1,11 @@
+fn total<T: Number>(items: [T]) -> T {
+    let sum = T(0)
+    for x in items {
+        sum += x
+    }
+    sum
+}
+
+fn main() {
+    print(total(["a", "b"]))
+}

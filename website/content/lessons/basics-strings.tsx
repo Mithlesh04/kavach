@@ -26,7 +26,7 @@ export const stringsDoc: LessonDoc = {
         chained safely, one after another:
       </P>
       <Ex name="text/sub-clean" />
-      <Note>Each form below has its own page: making strings, putting values in, joining, length, searching, splitting, and reading numbers.</Note>
+      <Note>Each form below has its own page: making strings, putting values in, joining, length, searching, splitting, tidying, and reading numbers.</Note>
       <H2>Limits and sizes</H2>
       <Limits id="text" />
     </>
@@ -143,6 +143,13 @@ export const searchDoc: LessonDoc = {
       <Ex name="text/sub-search" />
       <Ex name="strings/index" />
       <P><C>index_of</C> gives <C>none</C> when the part isn&apos;t there, so <C>?? -1</C> picks what to use then.</P>
+      <H2>Counting, the last one, and taking off an end</H2>
+      <Ex name="strings/count" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>count(part)</C> says how many times <C>part</C> is there, not counting overlaps: <C>&quot;banana&quot;</C> holds <C>&quot;ana&quot;</C> once.</li>
+        <li><C>last_index_of(part)</C> is <C>index_of</C> from the end: a file&apos;s name starts after the last <C>/</C>.</li>
+        <li><C>remove_prefix</C> and <C>remove_suffix</C> take a part off only when it is there; otherwise the text stays as it was.</li>
+      </ul>
     </>
   ),
 };
@@ -155,6 +162,37 @@ export const splitDoc: LessonDoc = {
     <>
       <Ex name="text/sub-split" />
       <Ex name="strings/lines" />
+      <H2>Words</H2>
+      <P>
+        <C>words()</C> cuts at every run of spaces, tabs and line breaks, so text typed with extra spaces gives no
+        empty parts. <C>split(&quot; &quot;)</C> keeps an empty part between each two spaces:
+      </P>
+      <Ex name="strings/words" />
+    </>
+  ),
+};
+
+export const tidyDoc: LessonDoc = {
+  lead: "capitalize, title, trim_start, trim_end, truncate and is_blank tidy text; pad_left and pad_right line it up in columns.",
+  simple: <>Like tidying a form before you file it: a capital letter at the start of a name, no stray spaces, a title that fits the box, numbers lined up in a column. Each method gives a new, tidy string.</>,
+  minutes: 3,
+  body: (
+    <>
+      <Ex name="strings/tidy" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>capitalize()</C> puts the first character in upper case and leaves the rest.</li>
+        <li><C>title()</C> does that to each word, and puts the rest of each word in lower case.</li>
+        <li><C>trim_start()</C> and <C>trim_end()</C> take white space off one side; <C>trim()</C> takes it off both.</li>
+        <li><C>truncate(max)</C> keeps at most <C>max</C> characters; <C>is_blank()</C> says whether there is only white space, or nothing.</li>
+      </ul>
+      <H2>Padding</H2>
+      <P>
+        <C>pad_left(width)</C> adds spaces before text until it is <C>width</C> characters long, and{" "}
+        <C>pad_right</C> adds them after. <C>fill:</C> picks another character. A bill in two columns:
+      </P>
+      <Ex name="strings/pad" />
+      <P>Text already that long stays as it was. The width is at most 1,000,000.</P>
+      <SrcRef file="tests/conformance/14-standard-library/text-pads-words-and-capitals.kav" label="tested" />
     </>
   ),
 };

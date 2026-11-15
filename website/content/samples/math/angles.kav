@@ -1,0 +1,12 @@
+use std.math
+
+fn main() {
+    // A point 10 steps away, at 30 degrees: angles are in radians.
+    const angle = 30.0 * math.pi / 180.0
+    print(math.round(10.0 * math.cos(angle) * 1000.0) / 1000.0)
+    print(math.round(10.0 * math.sin(angle) * 1000.0) / 1000.0)
+    // And back: the angle of the point (1, 1), in degrees.
+    print(math.atan2(1.0, 1.0) * 180.0 / math.pi)
+    print(math.ln(math.exp(2.0)))
+    print(math.acos(2.0))
+}

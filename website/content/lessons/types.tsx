@@ -280,9 +280,28 @@ export const genericsDoc: LessonDoc = {
       <Ex name="types/generics-construction" />
       <P>The count must match the type&apos;s parameters:</P>
       <Ex name="types/generics-arity.fails" />
+      <H2>Math in generic code</H2>
+      <P>
+        A plain <C>T</C> could be text, so <C>+</C> on it is refused. Two built-in bounds say it is a number.{" "}
+        <C>T: Number</C> is met by every number type; <C>T: Floating</C> only by <C>Float</C> and <C>Float32</C>, and
+        lets the code call <C>std.math</C> on a <C>T</C>:
+      </P>
+      <Ex name="types/number-bounds" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A number literal in such code is a <C>T</C>, and <C>T(0)</C> turns any number into a <C>T</C>.</li>
+        <li><C>math.sqrt</C> of a <C>Float32</C> gives a <C>Float32</C>, so <C>length</C> gives back the type it was given.</li>
+        <li>Each type gets its own compiled copy, so <C>total</C> of <C>Float32</C>s runs as a loop written for <C>Float32</C> would.</li>
+        <li>The bound is <C>Floating</C>, not <C>Float</C>, as <C>Float</C> is a type.</li>
+      </ul>
+      <P>A number with a fraction is a <C>T</C> only when <C>T</C> is <C>Floating</C>; 0.5 of an <C>Int</C> isn&apos;t one:</P>
+      <Ex name="types/fraction-needs-floating.fails" />
+      <P>And a type that is no number doesn&apos;t meet the bound:</P>
+      <Ex name="types/number-bound-string.fails" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/02-types/09-generics.md" label="spec 2.9 · generics" />
         <SrcRef file="tests/conformance/02-types/generic-type-methods-know-their-type-arguments.kav" label="tested" />
+        <SrcRef file="tests/conformance/02-types/number-bounds-do-arithmetic.kav" label="number bounds, tested" />
+        <SrcRef file="docs/decisions/0115-generic-math-and-std-vec.md" label="decision 0115" />
       </div>
     </>
   ),

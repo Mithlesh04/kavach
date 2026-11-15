@@ -1,0 +1,7 @@
+fn half<T: Number>(x: T) -> T {
+    x * 0.5
+}
+
+fn main() {
+    print(half(3.0))
+}

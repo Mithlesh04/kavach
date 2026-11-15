@@ -57,6 +57,7 @@ import { matricesDoc } from "./types-matrices";
 import { systemDoc } from "./stdlib-system";
 import { gamepadDoc } from "./stdlib-input";
 import { soundDoc } from "./stdlib-audio";
+import { vecDoc } from "./stdlib-vec";
 import { loggingDoc } from "./stdlib-log";
 import { aiWritesDoc } from "./tools-ai-writes";
 import { gpuScreenDoc } from "./stdlib-gpu";
@@ -118,7 +119,7 @@ import { inoutDoc } from "./functions-inout";
 import { errorsIntroDoc, installDoc, programDoc, terminalDoc } from "./start-first-steps";
 import { askNumberDoc, askPasswordDoc, askTextDoc, inputDoc } from "./basics-input";
 import { bigintDoc, boolDoc, charDoc, convertDoc, dataTypesDoc, decimalDoc, floatDoc, intDoc, sizedDoc } from "./basics-types";
-import { interpolationDoc, joinDoc, lengthDoc, makeStringsDoc, searchDoc, splitDoc, stringsDoc, toNumbersDoc } from "./basics-strings";
+import { interpolationDoc, joinDoc, lengthDoc, makeStringsDoc, searchDoc, splitDoc, stringsDoc, tidyDoc, toNumbersDoc } from "./basics-strings";
 import {
   arithmeticDoc, assignmentDoc, booleansDoc, comparisonDoc, exactDoc, logicalDoc, mathDoc, mathFunctionsDoc,
   operatorsDoc, precedenceDoc, roundingDoc,
@@ -196,6 +197,7 @@ export const lessons: Record<string, LessonDoc> = {
   "basics/strings/length-and-characters": lengthDoc,
   "basics/strings/searching": searchDoc,
   "basics/strings/splitting": splitDoc,
+  "basics/strings/tidying-and-padding": tidyDoc,
   "basics/strings/strings-to-numbers": toNumbersDoc,
   "basics/math": mathDoc,
   "basics/math/math-functions": mathFunctionsDoc,
@@ -342,6 +344,7 @@ export const lessons: Record<string, LessonDoc> = {
   "standard-library/the-machine": systemDoc,
   "standard-library/gamepads": gamepadDoc,
   "standard-library/sound": soundDoc,
+  "standard-library/vectors": vecDoc,
 
   "standard-library/json": jsonDoc,
   "standard-library/json/json-values": jsonValuesDoc,

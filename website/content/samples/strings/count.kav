@@ -1,0 +1,9 @@
+fn main() {
+    const path = "src/shop/cart.kav"
+    print(path.count("/"))
+    print(path.last_index_of("/") ?? -1)
+    print(path.remove_suffix(".kav"))
+    print("v1.2".remove_prefix("v"))
+    print("1.2".remove_prefix("v"))
+    print("banana".count("ana"))
+}

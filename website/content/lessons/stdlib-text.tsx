@@ -8,16 +8,17 @@ import { ModuleTable } from "./spec-table";
 // ---------- Text and Collections ----------
 
 export const textCollectionsDoc: LessonDoc = {
-  lead: "std.text and std.collections hold small helpers for text and lists: padding, words, chunks, pairs, counts. They are written in Kavach itself.",
-  simple: <>These are the small tools you would otherwise write again in every program: filling a number with zeros, splitting text into words, counting how often each item appears. They come ready, tested, and written in Kavach.</>,
+  lead: "std.text finds numbers in text and writes Unicode one way; std.collections holds small helpers for lists: chunks, pairs, counts. They are written in Kavach itself.",
+  simple: <>These are the small tools you would otherwise write again in every program: finding the numbers in a line of text, comparing text typed on different machines, counting how often each item appears. They come ready, tested, and written in Kavach.</>,
   minutes: 3,
   before: ["basics/strings", "collections/lists"],
   body: (
     <>
       <H2>Text</H2>
-      <Ex name="text/helpers" />
       <P>
-        To find numbers inside text, see{" "}
+        Padding, words, capitals and the rest are methods of every string, with no <C>use</C>: see{" "}
+        <Link href="/docs/basics/strings/tidying-and-padding/">Tidying and padding</Link>. <C>std.text</C> keeps what
+        is more than one string&apos;s method. To find numbers inside text, see{" "}
         <Link href="/docs/basics/strings/strings-to-numbers/">Strings to numbers</Link>.
       </P>
       <H2>Text that looks the same</H2>

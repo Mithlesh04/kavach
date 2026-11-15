@@ -1,0 +1,7 @@
+fn main() {
+    const items = [("tea", 20), ("samosa", 15), ("lassi", 40)]
+    for (name, price) in items {
+        print("{name.pad_right(10, fill: '.')}{"{price}".pad_left(4)}")
+    }
+    print("7".pad_left(3, '0'))
+}

@@ -1,0 +1,8 @@
+use std.vec
+
+fn main() {
+    // The program picks the number type: Float32, as GPUs use.
+    const a = Vec3(x: Float32(1.0), y: Float32(2.0), z: Float32(2.0))
+    print(a.length())
+    print(a.dot(a))
+}

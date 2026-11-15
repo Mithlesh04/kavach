@@ -136,7 +136,7 @@ export const gpuFnDoc: LessonDoc = {
               ["those types, and records and tuples of 1 to 8 of them, as parameters and result", "text, lists, maps, pointers", "each GPU thread holds a few fixed-size numbers; it can't make or grow a value in memory"],
               ["const, let, =, if/else, while, for over 0..n, return", "for over a list, match, try, recursion", "a GPU has no call stack, and nothing a thread could loop over but its own numbers"],
               ["+ - * / % and comparisons; ** on Float32", "print, debug, capabilities (files, network, AI)", "thousands of threads run at once, cut off from the outside world"],
-              ["Float32(n), Int32(x); abs, min, max, clamp; math.sqrt, floor, ceil, round, pow", "a function that isn't a gpu fn, other std modules", "the compiler can only translate what it has checked follows these rules"],
+              ["Float32(n), Int32(x); abs, min, max, clamp; math.sqrt, floor, ceil, round, pow, sin, cos, tan, asin, acos, atan, atan2, exp, ln", "a function that isn't a gpu fn, other std modules", "the compiler can only translate what it has checked follows these rules"],
             ].map(([ok, no, why]) => (
               <tr key={ok} className="border-b border-line align-top">
                 <td className="py-2 pr-4"><C>{ok}</C></td>
@@ -226,7 +226,7 @@ export const gpuSameDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Whole-number arithmetic is checked on the GPU too: overflow and division by zero panic with the CPU&apos;s message, naming the same line inside the <C>gpu fn</C>. When several items fail, the GPU may report a different one first.</li>
         <li><C>+</C>, <C>-</C> and <C>*</C> on <C>Float32</C> give the same bits, unless the GPU fuses a multiply with an add (one rounding instead of two).</li>
-        <li><C>/</C>, <C>%</C>, <C>**</C>, <C>math.pow</C> and <C>math.sqrt</C> may differ in the last bits, as GPUs are allowed to; <C>floor</C>, <C>ceil</C> and <C>round</C> are exact.</li>
+        <li><C>/</C>, <C>%</C>, <C>**</C>, <C>math.pow</C>, <C>math.sqrt</C> and the angle, <C>exp</C> and <C>ln</C> functions may differ in the last bits, as GPUs are allowed to; <C>floor</C>, <C>ceil</C> and <C>round</C> are exact.</li>
       </ul>
       <H2>When a panic shows</H2>
       <P>

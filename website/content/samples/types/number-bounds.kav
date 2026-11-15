@@ -1,0 +1,21 @@
+use std.math
+
+fn total<T: Number>(items: [T]) -> T {
+    let sum = T(0)
+    for x in items {
+        sum += x
+    }
+    sum
+}
+
+fn length<T: Floating>(x: T, y: T) -> T {
+    math.sqrt(x * x + y * y)
+}
+
+fn main() {
+    print(total([1, 2, 3]))
+    const prices: [Float32] = [0.5, 0.25]
+    print(total(prices))
+    print(length(3.0, 4.0))
+    print(length(Float32(0.3), Float32(0.4)))
+}

@@ -1,0 +1,1 @@
+error: a number with a fraction is a `T` only when `T` is `Floating`: write `T: Floating`, or a whole number (spec 2.9)

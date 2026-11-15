@@ -216,12 +216,24 @@ export const mathDoc: LessonDoc = {
 };
 
 export const mathFunctionsDoc: LessonDoc = {
-  lead: "sqrt, pow, gcd, lcm, is_prime, factorial, mean, and the constants pi and e.",
+  lead: "sqrt, pow, sin, cos, atan2, exp, ln, gcd, lcm, is_prime, factorial, mean, and the constants pi and e.",
   simple: <>These are the buttons of a scientific calculator, ready to use in code. Each one takes numbers and gives back an answer, such as the square root of a number.</>,
   minutes: 2,
   body: (
     <>
       <Ex name="math/functions" />
+      <H2>Angles</H2>
+      <P>
+        <C>sin</C>, <C>cos</C> and <C>tan</C> take an angle in radians: a full turn is <C>2.0 * math.pi</C>, so
+        degrees times <C>math.pi / 180.0</C> are radians. <C>atan2(y, x)</C> goes back, from a point to its angle:
+      </P>
+      <Ex name="math/angles" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>asin</C> and <C>acos</C> of a number past -1 to 1 is <C>NaN</C>: no angle has that sine.</li>
+        <li><C>exp(x)</C> is <C>e</C> to the power <C>x</C>, and <C>ln</C> undoes it.</li>
+        <li>Each works for <C>Float</C> and <C>Float32</C>, and in a <C>gpu fn</C>.</li>
+      </ul>
+      <SrcRef file="tests/conformance/14-standard-library/math-angles-exp-and-ln.kav" label="angles, tested" />
       <ModuleTable file="05-math.md" number="14.5" first="Name" />
     </>
   ),
