@@ -3,6 +3,8 @@
 // reading, writing and datagrams need the operating system, so the
 // runtime provides them.
 
+use std.net
+
 /// Why a network operation failed.
 pub type NetError = Refused(address: String) |
     TimedOut(address: String) |
@@ -21,4 +23,22 @@ pub type ClientCert {
 pub type Datagram {
     pub data: Bytes
     pub from: String
+}
+
+/// A TCP port nothing listens on now, chosen by the system: listened on
+/// for a moment, then let go (spec 14.25). Another program may take it
+/// before this one listens on it.
+pub fn free_port() -> Int ! NetError uses Net {
+    const listener = try net.listen("127.0.0.1:0")
+    const address = listener.address()
+    const parts = address.split(":")
+    Int(parts[parts.len() - 1]) catch _ => 0
+}
+
+/// Whether this program could listen on `port` now.
+pub fn is_free(port: Int) -> Bool uses Net
+    require port >= 0 and port <= 65535
+{
+    const listener = net.listen("127.0.0.1:{port}") catch _ => return false
+    listener.address() != ""
 }

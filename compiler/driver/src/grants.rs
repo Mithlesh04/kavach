@@ -9,17 +9,11 @@ pub(crate) const NARROW: [&str; 2] = ["Fs.read", "Fs.write"];
 /// it was granted (`above`): all of it, a part of it (`Fs.read` of `Fs`),
 /// or nothing.
 pub(crate) fn meet(cap: &str, above: &[String]) -> Vec<String> {
-    // `System.ids` and the other parts `System` doesn't cover (8.1).
-    let apart = kavach_resolver::APART.contains(&cap);
-    let base = if apart {
-        cap
-    } else {
-        cap.split_once('.').map_or(cap, |(b, _)| b)
-    };
-    if above.iter().any(|a| a == cap || a == base) {
+    // `System` doesn't cover `System.critical.read` (8.1).
+    if above.iter().any(|a| kavach_resolver::cap_covers(a, cap)) {
         return vec![cap.to_string()];
     }
-    let part = |a: &&String| a.split_once('.').is_some_and(|(b, _)| b == cap);
+    let part = |a: &&String| kavach_resolver::cap_covers(cap, a);
     above.iter().filter(part).cloned().collect()
 }
 

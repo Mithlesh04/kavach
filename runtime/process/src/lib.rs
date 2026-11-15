@@ -199,11 +199,14 @@ pub fn cpu_ms() -> i64 {
     machine::cpu_ms()
 }
 
+pub mod acts;
 pub mod machine;
 pub mod parts;
 #[cfg(windows)]
 mod registry;
 mod smbios;
 
+#[cfg(test)]
+mod acts_tests;
 #[cfg(test)]
 mod tests;

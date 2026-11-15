@@ -1,0 +1,17 @@
+// Rule: while tests run, nothing changes the machine they run on: a `test` block given `System.critical.write` is still refused, before any system call, and generated tests never call such a function.
+// Spec: 14.25
+// expect test pass
+
+use std.system
+
+test "ending a program is refused" uses System.critical.write {
+    // An id no program has, so nothing could end even without the rule.
+    let refused = false
+    system.terminate(4_000_000_000) catch e => {
+        refused = match e {
+            SystemError.Denied(_) => true,
+            _ => false,
+        }
+    }
+    assert refused
+}

@@ -1,0 +1,307 @@
+//! Programs, ports and users on Windows (spec 14.25, decision 0112): a
+//! Toolhelp snapshot of the processes, the IP helper's tables of
+//! connections with their owners, the process token, and the network
+//! management calls for accounts. Each `unsafe` call has its `SAFETY:`.
+#![allow(unsafe_code)]
+
+use crate::parts::yes;
+use std::collections::HashMap;
+
+fn utf16(b: &[u16]) -> String {
+    String::from_utf16_lossy(&b[..b.iter().position(|c| *c == 0).unwrap_or(b.len())])
+}
+
+/// Each process's id and name.
+fn processes() -> Vec<(u32, String)> {
+    use windows_sys::Win32::Foundation::{CloseHandle, INVALID_HANDLE_VALUE};
+    use windows_sys::Win32::System::Diagnostics::ToolHelp::{
+        CreateToolhelp32Snapshot, PROCESSENTRY32W, Process32FirstW, Process32NextW,
+        TH32CS_SNAPPROCESS,
+    };
+    // SAFETY: a snapshot of the processes, closed below.
+    let snap = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) };
+    if snap == INVALID_HANDLE_VALUE {
+        return Vec::new();
+    }
+    let mut out = Vec::new();
+    // SAFETY: a plain C struct with its size set, as the calls ask.
+    let mut entry: PROCESSENTRY32W = unsafe { std::mem::zeroed() };
+    entry.dwSize = std::mem::size_of::<PROCESSENTRY32W>() as u32;
+    // SAFETY: `snap` is the snapshot above; `entry` is filled each time.
+    let mut more = unsafe { Process32FirstW(snap, &mut entry) } != 0;
+    while more {
+        out.push((entry.th32ProcessID, utf16(&entry.szExeFile)));
+        // SAFETY: as above.
+        more = unsafe { Process32NextW(snap, &mut entry) } != 0;
+    }
+    // SAFETY: the snapshot taken above, closed once.
+    unsafe { CloseHandle(snap) };
+    out
+}
+
+pub fn running() -> Vec<Vec<String>> {
+    use windows_sys::Win32::Foundation::CloseHandle;
+    use windows_sys::Win32::System::ProcessStatus::{
+        GetProcessMemoryInfo, PROCESS_MEMORY_COUNTERS,
+    };
+    use windows_sys::Win32::System::Threading::{
+        OpenProcess, PROCESS_QUERY_LIMITED_INFORMATION, QueryFullProcessImageNameW,
+    };
+    (processes().into_iter())
+        .map(|(pid, name)| {
+            let (mut path, mut memory) = (String::new(), 0u64);
+            // SAFETY: asks only to read the process's details; closed below.
+            let h = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid) };
+            if !h.is_null() {
+                let mut buffer = [0u16; 1024];
+                let mut len = buffer.len() as u32;
+                // SAFETY: `buffer` holds `len` characters.
+                if unsafe { QueryFullProcessImageNameW(h, 0, buffer.as_mut_ptr(), &mut len) } != 0 {
+                    path = String::from_utf16_lossy(&buffer[..(len as usize).min(buffer.len())]);
+                }
+                // SAFETY: a plain C struct whose size is given.
+                let mut counters: PROCESS_MEMORY_COUNTERS = unsafe { std::mem::zeroed() };
+                let size = std::mem::size_of::<PROCESS_MEMORY_COUNTERS>() as u32;
+                // SAFETY: `h` may be read; `counters` is filled.
+                if unsafe { GetProcessMemoryInfo(h, &mut counters, size) } != 0 {
+                    memory = counters.WorkingSetSize as u64;
+                }
+                // SAFETY: the handle opened above, closed once.
+                unsafe { CloseHandle(h) };
+            }
+            vec![pid.to_string(), name, path, memory.to_string()]
+        })
+        .collect()
+}
+
+/// A table of the IP helper, as 32-bit words: its count, then its rows.
+fn table(tcp: bool, family: u32) -> Vec<u32> {
+    use windows_sys::Win32::NetworkManagement::IpHelper::{
+        GetExtendedTcpTable, GetExtendedUdpTable, TCP_TABLE_OWNER_PID_ALL, UDP_TABLE_OWNER_PID,
+    };
+    let mut size = 0u32;
+    let call = |buffer: *mut std::ffi::c_void, size: &mut u32| {
+        // SAFETY: `buffer` is null or has room for `size` bytes.
+        unsafe {
+            if tcp {
+                GetExtendedTcpTable(buffer, size, 0, family, TCP_TABLE_OWNER_PID_ALL, 0)
+            } else {
+                GetExtendedUdpTable(buffer, size, 0, family, UDP_TABLE_OWNER_PID, 0)
+            }
+        }
+    };
+    call(std::ptr::null_mut(), &mut size);
+    let mut words = vec![0u32; (size as usize).div_ceil(4) + 1];
+    let mut room = (words.len() * 4) as u32;
+    if call(words.as_mut_ptr().cast(), &mut room) != 0 {
+        return Vec::new();
+    }
+    words
+}
+
+fn tcp_state(s: u32) -> &'static str {
+    match s {
+        1 => "close",
+        2 => "listen",
+        3 => "syn_sent",
+        4 => "syn_received",
+        5 => "established",
+        6 => "fin_wait1",
+        7 => "fin_wait2",
+        8 => "close_wait",
+        9 => "closing",
+        10 => "last_ack",
+        11 => "time_wait",
+        _ => "",
+    }
+}
+
+/// A port as the tables keep it: in network order, in a 32-bit word.
+fn port(w: u32) -> u16 {
+    u16::from_be(w as u16)
+}
+
+/// Sixteen bytes of an IPv6 address from four words.
+fn v6(w: &[u32]) -> std::net::Ipv6Addr {
+    let mut b = [0u8; 16];
+    for (i, word) in w.iter().take(4).enumerate() {
+        b[i * 4..i * 4 + 4].copy_from_slice(&word.to_le_bytes());
+    }
+    std::net::Ipv6Addr::from(b)
+}
+
+pub fn ports() -> Vec<Vec<String>> {
+    use windows_sys::Win32::Networking::WinSock::{AF_INET, AF_INET6};
+    let names: HashMap<u32, String> = processes().into_iter().collect();
+    let mut out = Vec::new();
+    let mut push = |protocol: &str, ip: String, p: u16, state: &str, pid: u32| {
+        let program = names.get(&pid).cloned().unwrap_or_default();
+        out.push(vec![
+            protocol.to_string(),
+            ip,
+            p.to_string(),
+            state.to_string(),
+            pid.to_string(),
+            program,
+        ]);
+    };
+    // Each table's rows, by their width in words (the `MIB_*_OWNER_PID` rows).
+    for (tcp, family, width) in [
+        (true, AF_INET, 6),
+        (true, AF_INET6, 14),
+        (false, AF_INET, 3),
+        (false, AF_INET6, 7),
+    ] {
+        let t = table(tcp, family as u32);
+        let count = t.first().copied().unwrap_or(0) as usize;
+        for r in (0..count).filter_map(|i| t.get(1 + i * width..1 + (i + 1) * width)) {
+            match (tcp, family == AF_INET) {
+                (true, true) => push(
+                    "tcp",
+                    std::net::Ipv4Addr::from(u32::from_be(r[1])).to_string(),
+                    port(r[2]),
+                    tcp_state(r[0]),
+                    r[5],
+                ),
+                (true, false) => push(
+                    "tcp",
+                    v6(&r[0..4]).to_string(),
+                    port(r[5]),
+                    tcp_state(r[12]),
+                    r[13],
+                ),
+                (false, true) => push(
+                    "udp",
+                    std::net::Ipv4Addr::from(u32::from_be(r[0])).to_string(),
+                    port(r[1]),
+                    "",
+                    r[2],
+                ),
+                (false, false) => push("udp", v6(&r[0..4]).to_string(), port(r[5]), "", r[6]),
+            }
+        }
+    }
+    out
+}
+
+/// Whether this process runs elevated: with administrator rights now.
+fn elevated() -> bool {
+    use windows_sys::Win32::Foundation::CloseHandle;
+    use windows_sys::Win32::Security::{
+        GetTokenInformation, TOKEN_ELEVATION, TOKEN_QUERY, TokenElevation,
+    };
+    use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
+    let mut token = std::ptr::null_mut();
+    // SAFETY: the current process's token, opened to read; closed below.
+    if unsafe { OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &mut token) } == 0 {
+        return false;
+    }
+    let mut e = TOKEN_ELEVATION { TokenIsElevated: 0 };
+    let mut got = 0u32;
+    let size = std::mem::size_of::<TOKEN_ELEVATION>() as u32;
+    // SAFETY: `e` is the struct this class fills, sized above.
+    let ok = unsafe {
+        GetTokenInformation(
+            token,
+            TokenElevation,
+            (&mut e as *mut TOKEN_ELEVATION).cast(),
+            size,
+            &mut got,
+        )
+    } != 0;
+    // SAFETY: the token opened above, closed once.
+    unsafe { CloseHandle(token) };
+    ok && e.TokenIsElevated != 0
+}
+
+pub fn user() -> Vec<Vec<String>> {
+    use windows_sys::Win32::System::WindowsProgramming::GetUserNameW;
+    let mut name = [0u16; 257];
+    let mut len = name.len() as u32;
+    // SAFETY: `name` holds `len` characters.
+    let ok = unsafe { GetUserNameW(name.as_mut_ptr(), &mut len) } != 0;
+    let name = if ok {
+        utf16(&name)
+    } else {
+        std::env::var("USERNAME").unwrap_or_default()
+    };
+    vec![vec![
+        name,
+        std::env::var("USERPROFILE").unwrap_or_default(),
+        yes(elevated()),
+    ]]
+}
+
+/// Zero-ended UTF-16 text at `p`.
+///
+/// # Safety
+/// `p` is null or points at UTF-16 text that ends with a zero.
+unsafe fn text_at(p: *const u16) -> String {
+    if p.is_null() {
+        return String::new();
+    }
+    let mut len = 0;
+    // SAFETY: the text ends with a zero, as the caller promises.
+    unsafe {
+        while *p.add(len) != 0 {
+            len += 1;
+        }
+        String::from_utf16_lossy(std::slice::from_raw_parts(p, len))
+    }
+}
+
+/// Each enabled account's name and full name (`NetUserEnum` at level
+/// 20), and the names of the administrators (level 1).
+pub fn users() -> Vec<Vec<String>> {
+    use windows_sys::Win32::NetworkManagement::NetManagement::{
+        FILTER_NORMAL_ACCOUNT, MAX_PREFERRED_LENGTH, NetApiBufferFree, NetUserEnum,
+        UF_ACCOUNTDISABLE, USER_INFO_1, USER_INFO_20, USER_PRIV_ADMIN,
+    };
+    /// Calls `f` with the `read` entries of `level`, then frees them.
+    fn each<T>(level: u32, mut f: impl FnMut(&T)) {
+        let mut buffer: *mut u8 = std::ptr::null_mut();
+        let (mut read, mut total, mut resume) = (0u32, 0u32, 0u32);
+        // SAFETY: the call allocates `buffer` with `read` entries of
+        // `level`, which `T` is; they are read only before
+        // `NetApiBufferFree` frees it.
+        unsafe {
+            let status = NetUserEnum(
+                std::ptr::null(),
+                level,
+                FILTER_NORMAL_ACCOUNT,
+                &mut buffer,
+                MAX_PREFERRED_LENGTH,
+                &mut read,
+                &mut total,
+                &mut resume,
+            );
+            if status != 0 || buffer.is_null() {
+                return;
+            }
+            std::slice::from_raw_parts(buffer as *const T, read as usize)
+                .iter()
+                .for_each(&mut f);
+            NetApiBufferFree(buffer.cast());
+        }
+    }
+    let mut rows = Vec::new();
+    each::<USER_INFO_20>(20, |u| {
+        if u.usri20_flags & UF_ACCOUNTDISABLE == 0 {
+            // SAFETY: the names are zero-ended text inside the buffer.
+            rows.push(unsafe { (text_at(u.usri20_name), text_at(u.usri20_full_name)) });
+        }
+    });
+    let mut admins = Vec::new();
+    each::<USER_INFO_1>(1, |u| {
+        if u.usri1_priv == USER_PRIV_ADMIN {
+            // SAFETY: as above.
+            admins.push(unsafe { text_at(u.usri1_name) });
+        }
+    });
+    (rows.into_iter())
+        .map(|(name, full)| {
+            let admin = admins.contains(&name);
+            vec![name, full, yes(admin)]
+        })
+        .collect()
+}

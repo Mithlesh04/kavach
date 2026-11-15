@@ -257,6 +257,13 @@ impl<'c> Schemas<'c> {
             {
                 add_description(parts, &f.docs.join(" "));
             }
+            // A `secret` field is taken in but never written out (spec
+            // 2.11): JSON Schema's own word for that.
+            if f.is_secret
+                && let Tree::Object(parts) = &mut s
+            {
+                parts.push(("writeOnly".into(), Tree::Bool(true)));
+            }
             if f.default.is_none() && !matches!(ty, Ty::Optional(_)) {
                 required.push(text(&name));
             }

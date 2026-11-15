@@ -55,11 +55,7 @@ struct FnInfo<'f> {
 const NARROW: [&str; 2] = ["Fs.read", "Fs.write"];
 
 fn covers(declared: &BTreeSet<String>, cap: &str) -> bool {
-    declared.contains(cap)
-        || (!kavach_resolver::APART.contains(&cap)
-            && cap
-                .split_once('.')
-                .is_some_and(|(c, _)| declared.contains(c)))
+    declared.iter().any(|d| kavach_resolver::cap_covers(d, cap))
 }
 
 impl Checker<'_> {
@@ -307,19 +303,19 @@ impl Checker<'_> {
             };
             for cap in effective.get(d).into_iter().flatten() {
                 // `can = ["Fs"]` covers `Fs.read`; `["Fs.read"]` covers only
-                // it; `System` doesn't cover `System.ids` (8.1).
-                let apart = kavach_resolver::APART.contains(&cap.as_str());
-                let base = match cap.split_once('.') {
-                    Some((c, _)) if !apart => c,
-                    _ => cap.as_str(),
-                };
+                // it; `System` doesn't cover `System.critical.read` (8.1).
+                let base = cap.split_once('.').map_or(cap.as_str(), |(c, _)| c);
+                let apart =
+                    (kavach_resolver::APART.iter()).any(|a| kavach_resolver::cap_covers(a, cap));
                 // A part of a program's own capability counts as all of it.
                 let shown = if NARROW.contains(&cap.as_str()) || apart {
                     cap.as_str()
                 } else {
                     base
                 };
-                if granted.iter().any(|g| g == base || g == shown)
+                if granted
+                    .iter()
+                    .any(|g| kavach_resolver::cap_covers(g, cap) || g == shown)
                     || !reported.insert((package, shown.to_string()))
                 {
                     continue;

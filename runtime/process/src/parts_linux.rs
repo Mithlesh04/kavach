@@ -65,6 +65,10 @@ pub fn rows(kind: Kind) -> Vec<Vec<String>> {
         Kind::Devices => devices(),
         Kind::Drivers => drivers(),
         Kind::Apps => apps(),
+        Kind::Running => super::linux_procs::running(),
+        Kind::Ports => super::linux_procs::ports(),
+        Kind::User => super::linux_procs::user(),
+        Kind::Users => super::linux_procs::users(),
         Kind::Ids => {
             let table = std::fs::read("/sys/firmware/dmi/tables/DMI").unwrap_or_default();
             let (mut uuid, serial) = crate::smbios::ids(&table);

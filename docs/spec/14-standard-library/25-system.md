@@ -66,16 +66,49 @@ fn report() uses System {
 | `system.sensors() -> [Sensor]` | Each sensor: `Sensor(name:, kind:, value:)`, `kind` a `SensorKind` (`Temperature` in °C, `Fan` in RPM, `Voltage` in volts, `Power` in watts) | Linux; Windows temperatures |
 | `system.devices() -> [Device]` | Every device the system knows: `Device(kind:, name:, maker:, driver:, driver_version:, connected:)`, `kind` one of `"bluetooth"`, `"network"`, `"audio"`, `"display"`, `"gpu"`, `"keyboard"`, `"mouse"`, `"storage"`, `"usb"`, `"camera"`, `"printer"`, `"processor"`, `"other"` | Windows, Linux |
 | `system.drivers() -> [Driver]` | The drivers loaded: `Driver(name:, version:)` | Windows, Linux |
-| `system.apps() -> [App]` | The applications installed: `App(name:, version:, maker:)`. Needs `System.apps` | Windows, Linux (packages) |
-| `system.ids() -> Ids` | `Ids(system_uuid:, board_serial:, macs:)`: what names this exact machine. Needs `System.ids` | Windows; Linux for root |
+| `system.apps() -> [App]` | The applications installed: `App(name:, version:, maker:)`. Needs `System.critical.read` | Windows, Linux (packages) |
+| `system.ids() -> Ids` | `Ids(system_uuid:, board_serial:, macs:)`: what names this exact machine. Needs `System.critical.read` | Windows; Linux for root |
 
-- Every function here needs `System`, except `apps` and `ids`, which need their own capabilities (8.1). `uses System` doesn't cover them, as it covers no other part of `System`'s: a function that reads ids writes `uses System.ids`. Each is listed apart by `kavach audit`, and an agent gets one only with a person's approval (8.3).
+- Every function here needs `System`, except `apps` and `ids`, which need `System.critical.read` (8.1). `uses System` doesn't cover `System.critical` or its parts, `System.critical.read` and `System.critical.write`: they are written by name, `kavach audit` lists them apart, and an agent gets one only with a person's approval (8.3).
 - The lists are in the system's order. Each call reads the machine again: a pen drive plugged in shows in the next call.
+
+## Programs, ports and users
+
+The programs running, the network ports they hold, and the system's users, for the engineers who look after a machine ([decision 0112](../../decisions/0112-every-detail-of-the-machine.md)). Changing any of them needs `System.critical.write`, and the system's own permission too: a program not run as an administrator, or as root, can end only its own user's programs and can't add or remove users. A change refused fails with `SystemError.Denied`.
+
+```kavach
+fn free_8080() ! SystemError uses System.critical.read, System.critical.write, Console {
+    for p in system.ports().filter(p => p.port == 8080 and p.state == "listen") {
+        print("8080 is held by {p.program} ({p.pid})")
+    }
+    const ended = try system.free_port(8080)
+    print("ended {ended.len()} programs")
+}
+```
+
+| Function | Gives | Needs |
+|---|---|---|
+| `system.running() -> [RunningApp]` | Each program running: `RunningApp(pid:, name:, path:, memory:)`, `memory` its resident bytes; `path` is `""` where the system doesn't show it | `System.critical.read` |
+| `system.ports() -> [PortUse]` | Each port in use: `PortUse(protocol:, address:, port:, state:, pid:, program:)`, `protocol` `"tcp"` or `"udp"`, `state` `"listen"`, `"established"` or another (`""` for UDP) | `System.critical.read` |
+| `system.terminate(pid, force: false) ! SystemError` | Ends program `pid`: asked to stop, or, with `force`, stopped at once (Windows always stops it at once) | `System.critical.write` |
+| `system.free_port(port, force: false) -> [Int] ! SystemError` | Ends every program listening on `port`, and gives their pids | `System.critical.write` |
+| `system.user() -> User` | The user this program runs as: `User(name:, home:, admin:)`, `admin` whether it runs with administrator or root rights now | `System` |
+| `system.users() -> [Account]` | Every account a person logs in with: `Account(name:, full_name:, admin:)` | `System.critical.read` |
+| `system.add_user(name, password, admin: false) ! SystemError` | Makes a user account; `password` may be a secret (8.7) | `System.critical.write` |
+| `system.remove_user(name) ! SystemError` | Deletes a user account and its home folder | `System.critical.write` |
+| `system.lock()` | Locks the session, so another user can log in | `System.critical.write` |
+| `net.free_port() -> Int ! NetError` | A TCP port nothing listens on now, chosen by the system | `Net` |
+| `net.is_free(port) -> Bool` | Whether this program could listen on `port` now | `Net` |
+
+- `SystemError` is `NotFound(what:)`, `Denied(reason:)` or `Failed(reason:)`.
+- A port found free can be taken by another program before this one listens on it: a server that can should listen on port 0 and read the port it got (14.10).
+- Their tests change the machine, so they run only in a throwaway container: the tests in the repository check what is refused without the rights.
 
 ## Open questions
 
+- Running a program as another user (`process.start` with a user and password), and switching the logged-in user without locking first.
 - Stage 2 of decision 0112: events, a device added or removed, a volume mounted, the power changing, as a channel (9.4).
-- Stage 3: controls, each behind its own capability: `System.audio` (volume, the default speaker), `System.display` (brightness), `System.radio` (Wi-Fi and Bluetooth on or off), `System.storage` (ejecting a drive), `System.power` (sleep, shutdown).
+- Stage 3: controls, behind `System.critical.write`: volume and the default speaker, brightness, Wi-Fi and Bluetooth on or off, ejecting a drive, sleep and shutdown.
 - The Wi-Fi networks in range, and each USB port with what is plugged into it.
 - macOS through IOKit: disks, displays, devices and sensors.
 - Each GPU's memory, and the memory a GPU has free.

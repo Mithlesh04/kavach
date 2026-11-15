@@ -103,15 +103,30 @@ impl<'a> Interp<'a> {
             "basic_number_id" | "number_id" => {
                 Value::Int(i128::from(run::machine::number(which)), Prim::Int)
             }
-            "rows_id" | "apps_id" | "ids_id" => {
-                let rows = match name {
-                    "apps_id" => run::parts::rows(12),
-                    "ids_id" => run::parts::rows(13),
-                    // The applications and ids only through their own calls.
-                    _ if which >= 12 => Vec::new(),
-                    _ => run::parts::rows(which),
+            "rows_id" | "critical_id" => {
+                // A critical kind only through its own call.
+                let critical = run::parts::CRITICAL.contains(&which);
+                let rows = if critical == (name == "critical_id") {
+                    run::parts::rows(which)
+                } else {
+                    Vec::new()
                 };
                 Value::List(Rc::new(rows.into_iter().map(text).collect()))
+            }
+            // Tests can't change the machine they run on (spec 14.25).
+            "act_id" if self.no_changes => {
+                text("Denied:a test can't change the machine (spec 14.25)".to_string())
+            }
+            "act_id" => {
+                let words = match args.get(1) {
+                    Some(Value::Str(s)) => s.to_string(),
+                    _ => String::new(),
+                };
+                let number = match args.get(2) {
+                    Some(Value::Int(n, _)) => (*n).clamp(i64::MIN as i128, i64::MAX as i128) as i64,
+                    _ => 0,
+                };
+                text(run::acts::act(which, &words, number))
             }
             _ => {
                 let gpus = kavach_runtime_gpu::adapters().into_iter().flatten();

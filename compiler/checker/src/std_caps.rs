@@ -48,8 +48,8 @@ impl Checker<'_> {
                 ) => "Fs.read",
                 ("fs", _) => "Fs.write",
                 // Parts `System` doesn't cover (spec 14.25, decision 0112).
-                ("system", "apps_id") => "System.apps",
-                ("system", "ids_id") => "System.ids",
+                ("system", "critical_id") => "System.critical.read",
+                ("system", "act_id") => "System.critical.write",
                 _ => cap,
             };
             self.note_cap(cap, span);

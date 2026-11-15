@@ -114,6 +114,9 @@ pub fn run_stoppable(program: &Compiled, stop: Arc<AtomicBool>) -> Output {
 /// Like [`test`], stopped as [`run_stoppable`] is.
 pub fn test_stoppable(program: &Compiled, opts: &TestOptions, stop: Arc<AtomicBool>) -> Output {
     on_big_stack(program, false, stop, |i| {
+        // Tests run on a machine people use: nothing they call may end
+        // its programs, change its users or lock it (spec 14.25).
+        i.no_changes = true;
         let failed = i.run_tests(opts.seed) + i.generated_tests(opts);
         i32::from(failed != 0)
     })
@@ -185,6 +188,12 @@ pub fn check_literals(program: &Compiled) -> Vec<kavach_driver::Message> {
     found.into_inner().unwrap_or_default()
 }
 
+/// From now on, nothing in this process may change the machine: for a
+/// process that only runs tests, as `kavach test` is (spec 14.25).
+pub fn forbid_changes() {
+    kavach_runtime_process::acts::forbid();
+}
+
 /// Runs every `example` and `test` block, then generated tests for every
 /// function (spec 11). Exits with 1 if anything failed.
 pub fn test(program: &Compiled, opts: &TestOptions) -> Output {
@@ -197,7 +206,11 @@ pub fn keep(program: &Compiled, opts: &TestOptions) -> Kept {
     std::thread::scope(|scope| {
         std::thread::Builder::new()
             .stack_size(STACK_SIZE)
-            .spawn_scoped(scope, || interp::Interp::new(program).keep_found(opts))
+            .spawn_scoped(scope, || {
+                let mut i = interp::Interp::new(program);
+                i.no_changes = true;
+                i.keep_found(opts)
+            })
             .expect("start the interpreter thread")
             .join()
             .expect("the interpreter thread finished")

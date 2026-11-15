@@ -4,6 +4,7 @@
 // The basics are free; the rest needs `System`.
 
 use std.system
+use std.system.parts.{Board, Bios, MachineModel, MemoryModule, DiskKind, Disk, Volume, AdapterKind, Adapter, Display, Battery, SensorKind, Sensor, Device, Driver, App, Ids, SystemError, RunningApp, PortUse, User, Account}
 use std.time
 
 /// The operating system: `"windows"`, `"linux"`, `"macos"` or another
@@ -103,130 +104,8 @@ pub fn uptime() -> Duration uses System {
 }
 
 // Every part of the machine (spec 14.25, decision 0112): the runtime
-// gives each kind as rows of text; these functions make them records.
-
-/// The motherboard.
-pub type Board {
-    pub maker: String
-    pub product: String
-    pub version: String
-}
-
-/// The firmware.
-pub type Bios {
-    pub maker: String
-    pub version: String
-    pub date: String
-}
-
-/// The machine itself: its maker, product and family.
-pub type MachineModel {
-    pub maker: String
-    pub product: String
-    pub family: String
-}
-
-/// One memory slot; an empty slot has `size` 0.
-pub type MemoryModule {
-    pub slot: String
-    pub size: Int
-    pub kind: String
-    pub mhz: Int
-    pub maker: String
-    pub part: String
-}
-
-/// What a physical drive is.
-pub type DiskKind = Ssd | Hdd | Usb | Other
-
-/// A physical drive.
-pub type Disk {
-    pub name: String
-    pub model: String
-    pub size: Int
-    pub kind: DiskKind
-    pub removable: Bool
-}
-
-/// A mounted volume; sizes in bytes.
-pub type Volume {
-    pub path: String
-    pub label: String
-    pub file_system: String
-    pub total: Int
-    pub available: Int
-    pub removable: Bool
-}
-
-/// What a network adapter is.
-pub type AdapterKind = Ethernet | WiFi | Bluetooth | Loopback | Other
-
-/// A network adapter and its IP addresses.
-pub type Adapter {
-    pub name: String
-    pub description: String
-    pub kind: AdapterKind
-    pub connected: Bool
-    pub mbps: Int
-    pub addresses: [String]
-}
-
-/// A display connected, and the port it uses.
-pub type Display {
-    pub name: String
-    pub width: Int
-    pub height: Int
-    pub hz: Int
-    pub connection: String
-}
-
-/// The battery; `minutes_left` is -1 while charging or not known.
-pub type Battery {
-    pub percent: Int
-    pub charging: Bool
-    pub on_power: Bool
-    pub minutes_left: Int
-}
-
-/// What a sensor measures: °C, RPM, volts or watts.
-pub type SensorKind = Temperature | Fan | Voltage | Power
-
-/// One sensor's reading.
-pub type Sensor {
-    pub name: String
-    pub kind: SensorKind
-    pub value: Float
-}
-
-/// A device the system knows.
-pub type Device {
-    pub kind: String
-    pub name: String
-    pub maker: String
-    pub driver: String
-    pub driver_version: String
-    pub connected: Bool
-}
-
-/// A driver loaded.
-pub type Driver {
-    pub name: String
-    pub version: String
-}
-
-/// An application installed.
-pub type App {
-    pub name: String
-    pub version: String
-    pub maker: String
-}
-
-/// What names this exact machine.
-pub type Ids {
-    pub system_uuid: String
-    pub board_serial: String
-    pub macs: [String]
-}
+// gives each kind as rows of text; these functions make them records,
+// whose types are in `parts.kav`.
 
 /// `texts` cut into rows of `width` fields.
 fn rows(texts: [String], width: Int) -> [[String]]
@@ -349,12 +228,77 @@ pub fn drivers() -> [Driver] uses System {
 }
 
 /// The applications installed.
-pub fn apps() -> [App] uses System.apps {
-    rows(system.apps_id(), 3).map(r => App(name: r[0], version: r[1], maker: r[2]))
+pub fn apps() -> [App] uses System.critical.read {
+    rows(system.critical_id(12), 3).map(r => App(name: r[0], version: r[1], maker: r[2]))
 }
 
 /// What names this exact machine.
-pub fn ids() -> Ids uses System.ids {
-    const r = rows(system.ids_id(), 3)
+pub fn ids() -> Ids uses System.critical.read {
+    const r = rows(system.critical_id(13), 3)
     if r.is_empty() { Ids(system_uuid: "", board_serial: "", macs: []) } else { Ids(system_uuid: r[0][0], board_serial: r[0][1], macs: words(r[0][2])) }
+}
+
+// Programs, ports and users (spec 14.25).
+
+/// The outcome of an action: done, or the error it says.
+fn done(outcome: String) ! SystemError {
+    if outcome == "" or outcome.starts_with("ended:") {
+        return
+    }
+    const parts = outcome.split(":")
+    const why = outcome.slice(parts[0].len() + 1, outcome.len())
+    match parts[0] {
+        "NotFound" => fail SystemError.NotFound(what: why),
+        "Denied" => fail SystemError.Denied(reason: why),
+        _ => fail SystemError.Failed(reason: why),
+    }
+}
+
+/// Each program running.
+pub fn running() -> [RunningApp] uses System.critical.read {
+    rows(system.critical_id(14), 4).map(r => RunningApp(pid: number(r[0]), name: r[1], path: r[2], memory: number(r[3])))
+}
+
+/// Each port in use, and the program holding it.
+pub fn ports() -> [PortUse] uses System.critical.read {
+    rows(system.critical_id(15), 6).map(r => PortUse(protocol: r[0], address: r[1], port: number(r[2]), state: r[3], pid: number(r[4]), program: r[5]))
+}
+
+/// Ends program `pid`; with `force`, at once.
+pub fn terminate(pid: Int, force: Bool = false) ! SystemError uses System.critical.write {
+    try done(system.act_id(0, if force { "force" } else { "" }, pid))
+}
+
+/// Ends every program listening on `port`, and gives their pids.
+pub fn free_port(port: Int, force: Bool = false) -> [Int] ! SystemError uses System.critical.write {
+    const outcome = system.act_id(1, if force { "force" } else { "" }, port)
+    try done(outcome)
+    words(outcome.slice(6, outcome.len())).map(p => number(p))
+}
+
+/// The user this program runs as.
+pub fn user() -> User uses System {
+    const r = rows(system.rows_id(16), 3)
+    if r.is_empty() { User(name: "", home: "", admin: false) } else { User(name: r[0][0], home: r[0][1], admin: r[0][2] == "true") }
+}
+
+/// Every account a person logs in with.
+pub fn users() -> [Account] uses System.critical.read {
+    rows(system.critical_id(17), 3).map(r => Account(name: r[0], full_name: r[1], admin: r[2] == "true"))
+}
+
+/// Makes a user account; `password` may be a secret.
+pub fn add_user(name: String, password: String, admin: Bool = false) ! SystemError uses System.critical.write {
+    const zero = Char(0)
+    try done(system.act_id(2, "{name}{zero}{password}{zero}{if admin { "admin" } else { "" }}", 0))
+}
+
+/// Deletes a user account and its home folder.
+pub fn remove_user(name: String) ! SystemError uses System.critical.write {
+    try done(system.act_id(3, name, 0))
+}
+
+/// Locks the session, so another user can log in.
+pub fn lock() ! SystemError uses System.critical.write {
+    try done(system.act_id(4, "", 0))
 }

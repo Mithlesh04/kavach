@@ -231,6 +231,8 @@ impl<'a> Interp<'a> {
             in_call: self.in_call,
             totals: None,
             dry_run: self.dry_run,
+            // A task a test spawns can't change the machine either.
+            no_changes: self.no_changes,
             dry_calls: 0,
             log: self.log.clone(),
             methods: self.methods.clone(),

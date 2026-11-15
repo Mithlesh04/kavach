@@ -415,7 +415,12 @@ impl Checker<'_> {
         // so does a TLS private `key` (8.7).
         let secret: Vec<bool> = params
             .iter()
-            .map(|(n, ..)| module == "crypto" || (module == "net" && n == "key"))
+            .map(|(n, ..)| {
+                module == "crypto"
+                    || (module == "net" && n == "key")
+                    // A new user's password (spec 14.25).
+                    || (module == "system" && n == "text")
+            })
             .collect();
         self.args_with(
             args,
@@ -425,11 +430,11 @@ impl Checker<'_> {
             &format!("`{module}.{name}`"),
             "argument",
         );
-        if module == "json"
-            && matches!(name, "of" | "stringify")
-            && let Some(why) = self.not_encodable(&any)
-        {
-            self.error(span, why);
+        if module == "json" && matches!(name, "of" | "stringify") {
+            if let Some(why) = self.not_encodable(&any) {
+                self.error(span, why);
+            }
+            self.json_writes.push((self.current_fn, any.clone(), span));
         }
         if module == "math" && self.inf.resolve(&real) == Ty::Prim(Prim::Decimal) {
             self.error(

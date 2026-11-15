@@ -54,16 +54,27 @@ pub(crate) const TYPES: &[&str] = &[
 ];
 
 /// Parts of a built-in capability that the whole doesn't cover: each is
-/// written by its own name (spec 8.1, 14.25, decision 0112).
-pub const APART: &[&str] = &[
-    "System.ids",
-    "System.apps",
-    "System.audio",
-    "System.display",
-    "System.radio",
-    "System.storage",
-    "System.power",
-];
+/// written by its own name, and covers its own parts (spec 8.1, 14.25,
+/// decision 0112): `System` doesn't cover `System.critical.read`.
+pub const APART: &[&str] = &["System.critical"];
+
+/// Whether capability `granted` covers `cap`: itself or one of its parts
+/// (`Fs` covers `Fs.read`), but never across a part kept apart.
+pub fn cap_covers(granted: &str, cap: &str) -> bool {
+    let mut c = cap;
+    loop {
+        if c == granted {
+            return true;
+        }
+        if APART.contains(&c) {
+            return false;
+        }
+        match c.rsplit_once('.') {
+            Some((whole, _)) => c = whole,
+            None => return false,
+        }
+    }
+}
 
 /// Built-in capabilities (spec 8.1).
 pub const CAPABILITIES: &[&str] = &[
@@ -104,3 +115,24 @@ pub(crate) const FUNCTIONS: &[&str] = &[
 
 /// Functions available only inside an agent's `limit` rules (spec 8.3).
 pub(crate) const LIMIT_FUNCTIONS: &[&str] = &["sum", "count", "tokens"];
+
+#[cfg(test)]
+mod tests {
+    use super::cap_covers;
+
+    #[test]
+    fn a_capability_covers_its_parts_but_not_the_critical_ones() {
+        for (granted, cap, covers) in [
+            ("Fs", "Fs.read", true),
+            ("Fs.read", "Fs", false),
+            ("System", "System", true),
+            ("System", "System.critical.read", false),
+            ("System", "System.critical", false),
+            ("System.critical", "System.critical.write", true),
+            ("System.critical.read", "System.critical.read", true),
+            ("System.critical.read", "System.critical.write", false),
+        ] {
+            assert_eq!(cap_covers(granted, cap), covers, "{granted} covers {cap}");
+        }
+    }
+}

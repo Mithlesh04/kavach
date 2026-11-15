@@ -41,6 +41,8 @@ pub(crate) struct Interp<'a> {
     /// `kavach run --dry-run` (spec 8.5), and how many calls it has
     /// answered (each answer's seed).
     pub(crate) dry_run: bool,
+    /// Running tests: no action may change the machine (spec 14.25).
+    pub(crate) no_changes: bool,
     pub(crate) dry_calls: u64,
     /// `[log]` from `kavach.toml` (spec 14.12), read on the first event.
     pub(crate) log: Option<kavach_runtime_core::log::Settings>,
@@ -136,6 +138,7 @@ impl<'a> Interp<'a> {
             in_call: 0,
             totals: None,
             dry_run: false,
+            no_changes: false,
             dry_calls: 0,
             log: None,
             methods: HashMap::new(),

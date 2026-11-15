@@ -126,6 +126,14 @@ impl Checker<'_> {
             };
             subst.insert(*g, t);
         }
+        if let Some(def) = sig.def.filter(|_| !sig.generics.is_empty()) {
+            let args = sig
+                .generics
+                .iter()
+                .filter_map(|(g, _)| Some((*g, subst.get(g)?.clone())));
+            self.generic_calls
+                .push((self.current_fn, def, args.collect(), span));
+        }
         let params: Vec<_> = sig
             .params
             .iter()

@@ -15,11 +15,11 @@ Every system keeps these in its own place. Windows has the registry, the SMBIOS 
 
 - **Three stages**, each with its spec section: (1) **details**, read-only; (2) **events**, a device added or removed, a volume mounted, the power changing, as a channel (9.4); (3) **controls**, things that change the machine.
 - **Details are typed records** for what people ask about most (memory modules, disks, volumes, network adapters, displays, the battery, sensors, the board, the BIOS, the model), and **one list of every device** the system knows (`system.devices()`: its kind, name, maker, driver and whether it is connected), so a Bluetooth adapter, a speaker, a keyboard or a camera needs no function of its own.
-- **Capabilities** (8.1), each listed apart by `kavach audit` and given to an agent only with a person's approval. Unlike `Fs`, which covers `Fs.read` and `Fs.write`, `uses System` covers none of the parts below: each is written by name, so reading the details never grants reading serial numbers or switching Wi-Fi off. `main` has them all, as it has every capability:
+- **Capabilities** (8.1), each listed apart by `kavach audit` and given to an agent only with a person's approval:
   - `System`: the details, as for `memory` and `cpu` now.
-  - `System.ids`: serial numbers, system UUIDs and MAC addresses, which name one exact machine.
-  - `System.apps`: the applications installed, which say much about the person using the machine (a choice of this record; a maintainer may move it into `System`).
-  - Controls, one capability each, as they change the machine for everyone on it: `System.audio` (volume, default speaker), `System.display` (brightness), `System.radio` (Wi-Fi and Bluetooth on or off), `System.storage` (ejecting a drive), `System.power` (sleep, shutdown).
+  - `System.critical.read`: serial numbers, system UUIDs and MAC addresses, which name one exact machine, and the applications installed, which say much about the person using it.
+  - `System.critical.write`: what changes the machine for everyone on it: stage (3)'s controls.
+  - Both are parts of `System.critical`. Unlike `Fs`, which covers `Fs.read` and `Fs.write`, `uses System` covers neither: each is written by name, so reading the details never grants reading serial numbers or switching Wi-Fi off. `main` has them all, as it has every capability. A maintainer chose the names (2026-11-15), over `System.apps`, `System.ids` and one capability per kind of control.
 - **Nothing fails for want of a detail**: what a system doesn't give is `""`, 0 or an empty list, and each spec row says which systems give it. What needs admin rights (RAM modules on Linux, serial numbers on Linux) says so, and gives nothing without them.
 - **The code lives in `runtime/process`**, beside 0110's facts, one file per area and system.
 

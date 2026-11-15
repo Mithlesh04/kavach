@@ -1,0 +1,13 @@
+// Rule: `uses System` doesn't cover `System.critical.read`: reading serial numbers, MAC addresses or the applications installed is written by name.
+// Spec: 14.25
+// expect compile error
+
+use std.system
+
+pub fn serial() -> String uses System {
+    system.ids().board_serial     // error: uses System.critical.read
+}
+
+fn main() {
+    print(serial())
+}

@@ -1,0 +1,23 @@
+// Rule: a generic method that writes its type parameter as JSON is checked at each call too: a record with a `secret` field there is a compile error.
+// Spec: 2.12
+// expect compile error
+
+use std.json
+
+type Login {
+    user: String
+    secret password: String
+}
+
+type Router {
+    name: String
+
+    fn send<E>(self, e: E) -> String {
+        json.stringify(json.of(e))
+    }
+}
+
+fn main() {
+    const r = Router(name: "r")
+    print(r.send(Login(user: "a", password: "b")))     // error: `send` writes its `E` as JSON
+}

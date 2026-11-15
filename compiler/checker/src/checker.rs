@@ -198,6 +198,10 @@ pub(crate) struct Checker<'a> {
     /// The function whose body is being checked, and what each function
     /// body uses (`capabilities.rs`).
     pub(crate) current_fn: Option<DefId>,
+    /// `json.of(v)` and `json.stringify(v)`: where, and `v`'s type; and each
+    /// call of a generic function with its type arguments (`generic_json.rs`).
+    pub(crate) json_writes: Vec<(Option<DefId>, Ty, Span)>,
+    pub(crate) generic_calls: Vec<crate::generic_json::GenericCall>,
     /// Names brought in by `use std.<module>`, and the module (spec 14).
     pub(crate) std_modules: HashMap<DefId, String>,
     /// What each function uses, once worked out (`capabilities.rs`).
@@ -279,6 +283,8 @@ impl<'a> Checker<'a> {
             updates: HashSet::new(),
             deferred: HashMap::new(),
             current_fn: None,
+            json_writes: Vec::new(),
+            generic_calls: Vec::new(),
             std_modules: HashMap::new(),
             fn_uses: HashMap::new(),
             needs: HashMap::new(),

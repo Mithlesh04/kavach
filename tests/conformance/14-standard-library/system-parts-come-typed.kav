@@ -1,4 +1,4 @@
-// Rule: `std.system` gives every part of the machine as typed records: volumes, network adapters, devices, drivers, disks, memory modules, displays, sensors, the battery, the board, BIOS and model with `System`, the applications with `System.apps`, and the ids with `System.ids`.
+// Rule: `std.system` gives every part of the machine as typed records: volumes, network adapters, devices, drivers, disks, memory modules, displays, sensors, the battery, the board, BIOS and model with `System`, and the applications and ids with `System.critical.read`.
 // Spec: 14.25
 // expect output: volumes: true
 // expect output: network: true
@@ -21,7 +21,7 @@ fn facts() uses System, Console {
     print("battery: {battery == none or (battery ?? Battery(percent: 0, charging: false, on_power: false, minutes_left: 0)).percent <= 100}")
 }
 
-fn private() uses System.apps, System.ids, Console {
+fn private() uses System.critical.read, Console {
     const apps = system.apps()
     const ids = system.ids()
     print("apps and ids: {apps.all(a => a.name != "") and ids.macs.all(m => m != "")}")

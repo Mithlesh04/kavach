@@ -89,7 +89,7 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.11 | [http-json-shares-types.kav](http-json-shares-types.kav) | A server and its client share types through `std.http`'s JSON calls; a status other than 2xx is `Status`, a body of the wrong shape `BadJson`. | runs |
 | 14.2 | [float-bits-round-trip.kav](float-bits-round-trip.kav) | `x.bits()` gives a `Float`'s IEEE 754 bits; `Float.from_bits(n)` gives it back. | runs |
 | 14.14 | [grpc-messages-are-protocol-buffers.kav](grpc-messages-are-protocol-buffers.kav) | `grpc.encode<T>` writes Protocol Buffers with field `n` the type's `n`th field; `grpc.decode<T>` reads them back. | runs |
-| 14.14, 2.11 | [grpc-refuses-secret-fields.kav](grpc-refuses-secret-fields.kav) | A value holding a `secret` field can't become a gRPC message: encoding refuses at run time. | panic |
+| 14.14, 2.11 | [grpc-refuses-secret-fields.kav](grpc-refuses-secret-fields.kav) | A value holding a `secret` field can't become a gRPC message: `grpc.encode<T>` with such a `T` is a compile error. | compile error |
 | 14.14 | [grpc-unions-are-oneof-messages.kav](grpc-unions-are-oneof-messages.kav) | A union field travels as a wrapper message holding a oneof; one that never arrived fails to decode. | runs |
 | 14.14, 2.12 | [grpc-maps-use-entry-messages.kav](grpc-maps-use-entry-messages.kav) | A map field travels as repeated entry messages, and `json.schema` gives maps an open object. | runs |
 | 14.14 | [grpc-streams-deliver-each-message.kav](grpc-streams-deliver-each-message.kav) | `grpc.reply_stream` sends each value as its own message, and `grpc.each` runs its function per message, failing with `Status` as `call` does. | runs |
@@ -134,8 +134,10 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.24 | [screens-draw-or-say-why.kav](screens-draw-or-say-why.kav) | `gpu.screen(win)` draws into a window, its frames cleared and shown, or gives `GpuError.Unavailable` with no GPU or screen; the program goes on either way. | runs |
 | 14.25 | [system-says-what-machine-it-is.kav](system-says-what-machine-it-is.kav) | `system.os()`, `arch()` and `cores()` are free; `memory`, `cpu`, `gpus`, `hostname` and `uptime` need `System`; `process.cpu_ms()` is free. | runs |
 | 14.25 | [system-details-need-the-capability.kav](system-details-need-the-capability.kav) | Reading the machine's details needs `uses System`. | compile error |
-| 14.25 | [system-parts-come-typed.kav](system-parts-come-typed.kav) | Every part of the machine as typed records: volumes, adapters, devices, drivers, disks, memory, displays, sensors, battery, board, BIOS, model; apps and ids with their own capabilities. | runs |
-| 14.25 | [system-ids-are-not-covered-by-system.kav](system-ids-are-not-covered-by-system.kav) | `uses System` doesn't cover `System.ids` or `System.apps`. | compile error |
+| 14.25 | [system-parts-come-typed.kav](system-parts-come-typed.kav) | Every part of the machine as typed records: volumes, adapters, devices, drivers, disks, memory, displays, sensors, battery, board, BIOS, model; apps and ids with `System.critical.read`. | runs |
+| 14.25 | [system-critical-is-not-covered-by-system.kav](system-critical-is-not-covered-by-system.kav) | `uses System` doesn't cover `System.critical.read`. | compile error |
+| 14.25 | [system-programs-ports-and-users.kav](system-programs-ports-and-users.kav) | Programs running, ports with their programs, the user and accounts; ending a program that isn't there is `NotFound`; `net.free_port()` gives a free port. | runs |
+| 14.25 | [tests-cant-change-the-machine.kav](tests-cant-change-the-machine.kav) | While tests run, a `test` block given `System.critical.write` is still refused. | test pass |
 | 5.8, 14.6 | [cli-on-stop-needs-no-capability.kav](cli-on-stop-needs-no-capability.kav) | `cli.on_stop(grace)` gives a hold that isn't asked until a stop signal comes; taking and letting go of one needs no capability. | runs |
 | 14.12 | [log-events-are-records.kav](log-events-are-records.kav) | A log event is a value of a type that implements `LogEvent`; the console shows its level and its printed form. | runs |
 | 14.12 | [log-hides-secrets.kav](log-hides-secrets.kav) | A secret field of a log event is written as `<secret>`. | runs |

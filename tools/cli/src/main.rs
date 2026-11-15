@@ -423,6 +423,8 @@ fn test(path: &str, flags: &[&str]) -> ExitCode {
         }
     }
     opts.found_file = Some(project::found_file(std::path::Path::new(path)));
+    // This process only runs tests: nothing may change the machine.
+    kavach_interp::forbid_changes();
     if keep {
         return keep::keep(path, &opts);
     }

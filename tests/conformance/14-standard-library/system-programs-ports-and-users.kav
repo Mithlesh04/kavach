@@ -1,0 +1,28 @@
+// Rule: `std.system` lists the programs running, the ports in use with the program holding each, the user this program runs as and every account; ending a program that isn't there fails with `NotFound`; `net.free_port()` gives a port nothing listens on.
+// Spec: 14.25
+// expect output: programs: true
+// expect output: user: true
+// expect output: free: true
+// expect output: listed: true
+// expect output: not found: true
+
+use std.net
+use std.system
+
+fn main() ! Error {
+    print("programs: {system.running().any(p => p.pid > 0 and p.name != "")}")
+    const me = system.user()
+    print("user: {me.name != "" and system.users().all(a => a.name != "")}")
+    const port = try net.free_port()
+    print("free: {port > 0 and net.is_free(port)}")
+    const listener = try net.listen("127.0.0.1:{port}")
+    const listed = system.ports().any(p => p.port == port and p.protocol == "tcp" and p.state == "listen")
+    print("listed: {listed and not net.is_free(port) and listener.address() != ""}")
+    print("not found: {not_found()}")
+}
+
+/// Whether ending a program that isn't there fails with `NotFound`.
+fn not_found() -> Bool uses System.critical.write {
+    system.terminate(4_000_000_000) catch e => return e == SystemError.NotFound(what: "program 4000000000")
+    false
+}

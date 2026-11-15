@@ -219,9 +219,5 @@ impl Checker<'_> {
 
 /// Whether `limit` covers `cap`: `Fs` covers `Fs.read`.
 fn covers(limit: &[String], cap: &str) -> bool {
-    limit.iter().any(|l| {
-        l == cap
-            || (!kavach_resolver::APART.contains(&cap)
-                && cap.split_once('.').is_some_and(|(c, _)| c == l))
-    })
+    limit.iter().any(|l| kavach_resolver::cap_covers(l, cap))
 }

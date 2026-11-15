@@ -45,6 +45,11 @@ impl<'a> Interp<'a> {
                 }
                 _ if !f.generics.is_empty() => Some("generic".to_string()),
                 _ if generic_self => Some("its type is generic".to_string()),
+                // Never called: it would change or read the real machine.
+                _ if real.as_deref().is_some_and(critical) => Some(format!(
+                    "uses {}, which generated tests never call (14.25)",
+                    real.unwrap_or_default()
+                )),
                 _ if real.is_some() => Some(format!(
                     "uses {} (no fake for it yet)",
                     real.unwrap_or_default()
@@ -100,8 +105,15 @@ impl<'a> Interp<'a> {
     /// Whether generated tests have a fake for capability `c` (11.5): the
     /// console (its output is hidden), `Ai`, files, the network, the
     /// clock and the environment (`fakes.rs`), `Random` and `System`
-    /// (nothing to fake: they only read), and the program's own.
+    /// (nothing to fake: they only read), and the program's own. Never
+    /// `System.critical` or its parts (spec 14.25): a generated call would
+    /// end real programs, lock the session or change users on the machine
+    /// that runs the tests, so such a function is not called at all.
     pub(super) fn faked(&self, c: &str) -> bool {
+        let whole = c.split('(').next().unwrap_or(c).trim();
+        if critical(whole) {
+            return false;
+        }
         let name = c.split(['.', '(']).next().unwrap_or(c).trim();
         matches!(
             name,
@@ -113,6 +125,12 @@ impl<'a> Interp<'a> {
             .iter()
             .any(|d| d.name == name && d.kind == kavach_resolver::DefKind::Capability)
     }
+}
+
+/// Whether capability `c` is `System.critical` or one of its parts, which
+/// no generated test may use (spec 14.25).
+pub(crate) fn critical(c: &str) -> bool {
+    (kavach_resolver::APART.iter()).any(|a| kavach_resolver::cap_covers(a, c))
 }
 
 /// Whole numbers written in `texts` (the `require`s of a function).
@@ -128,4 +146,24 @@ fn numbers_in<'t>(texts: impl Iterator<Item = &'t str>) -> Vec<i128> {
     out.sort_unstable();
     out.dedup();
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::critical;
+
+    /// Generated tests never call what needs `System.critical` (14.25).
+    #[test]
+    fn critical_capabilities_are_never_faked() {
+        for c in [
+            "System.critical",
+            "System.critical.read",
+            "System.critical.write",
+        ] {
+            assert!(critical(c), "{c}");
+        }
+        for c in ["System", "Fs.read", "Process(\"git\")", "Net"] {
+            assert!(!critical(c), "{c}");
+        }
+    }
 }

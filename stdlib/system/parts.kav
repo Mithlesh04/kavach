@@ -1,0 +1,162 @@
+// std.system.parts (spec 14.25, decision 0112): the records of every
+// part of the machine, of the programs, ports and users, and the error
+// of a change refused. `system.kav`'s functions make them.
+
+/// The motherboard.
+pub type Board {
+    pub maker: String
+    pub product: String
+    pub version: String
+}
+
+/// The firmware.
+pub type Bios {
+    pub maker: String
+    pub version: String
+    pub date: String
+}
+
+/// The machine itself: its maker, product and family.
+pub type MachineModel {
+    pub maker: String
+    pub product: String
+    pub family: String
+}
+
+/// One memory slot; an empty slot has `size` 0.
+pub type MemoryModule {
+    pub slot: String
+    pub size: Int
+    pub kind: String
+    pub mhz: Int
+    pub maker: String
+    pub part: String
+}
+
+/// What a physical drive is.
+pub type DiskKind = Ssd | Hdd | Usb | Other
+
+/// A physical drive.
+pub type Disk {
+    pub name: String
+    pub model: String
+    pub size: Int
+    pub kind: DiskKind
+    pub removable: Bool
+}
+
+/// A mounted volume; sizes in bytes.
+pub type Volume {
+    pub path: String
+    pub label: String
+    pub file_system: String
+    pub total: Int
+    pub available: Int
+    pub removable: Bool
+}
+
+/// What a network adapter is.
+pub type AdapterKind = Ethernet | WiFi | Bluetooth | Loopback | Other
+
+/// A network adapter and its IP addresses.
+pub type Adapter {
+    pub name: String
+    pub description: String
+    pub kind: AdapterKind
+    pub connected: Bool
+    pub mbps: Int
+    pub addresses: [String]
+}
+
+/// A display connected, and the port it uses.
+pub type Display {
+    pub name: String
+    pub width: Int
+    pub height: Int
+    pub hz: Int
+    pub connection: String
+}
+
+/// The battery; `minutes_left` is -1 while charging or not known.
+pub type Battery {
+    pub percent: Int
+    pub charging: Bool
+    pub on_power: Bool
+    pub minutes_left: Int
+}
+
+/// What a sensor measures: °C, RPM, volts or watts.
+pub type SensorKind = Temperature | Fan | Voltage | Power
+
+/// One sensor's reading.
+pub type Sensor {
+    pub name: String
+    pub kind: SensorKind
+    pub value: Float
+}
+
+/// A device the system knows.
+pub type Device {
+    pub kind: String
+    pub name: String
+    pub maker: String
+    pub driver: String
+    pub driver_version: String
+    pub connected: Bool
+}
+
+/// A driver loaded.
+pub type Driver {
+    pub name: String
+    pub version: String
+}
+
+/// An application installed.
+pub type App {
+    pub name: String
+    pub version: String
+    pub maker: String
+}
+
+/// What names this exact machine.
+pub type Ids {
+    pub system_uuid: String
+    pub board_serial: String
+    pub macs: [String]
+}
+
+/// Why a change to the machine wasn't made.
+pub type SystemError = NotFound(what: String) | Denied(reason: String) | Failed(reason: String)
+
+/// A program running; `memory` is its resident bytes.
+pub type RunningApp {
+    pub pid: Int
+    pub name: String
+    pub path: String
+    pub memory: Int
+}
+
+/// A port in use: `"tcp"` or `"udp"`, and the program holding it.
+pub type PortUse {
+    pub protocol: String
+    pub address: String
+    pub port: Int
+    pub state: String
+    pub pid: Int
+    pub program: String
+}
+
+/// The user this program runs as; `admin` while it has administrator or
+/// root rights.
+pub type User {
+    pub name: String
+    pub home: String
+    pub admin: Bool
+}
+
+/// An account a person logs in with.
+pub type Account {
+    pub name: String
+    pub full_name: String
+    pub admin: Bool
+}

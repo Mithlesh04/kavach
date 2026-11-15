@@ -14,7 +14,20 @@ Other programs, run for `std.process` (spec 14.23) with no shell, as trees that 
 | `src/parts_linux.rs`, `src/parts_linux_more.rs` | Linux: the parts from `/sys`, `/proc` and dpkg's list; volume sizes from `statvfs`, addresses from `getifaddrs` |
 | `src/parts_windows.rs`, `src/parts_windows_more.rs`, `src/parts_windows_net.rs` | Windows: the registry, the SMBIOS tables, storage queries, the IP helper, the display configuration, performance counters and SetupAPI |
 | `src/registry.rs` | Reading the Windows registry |
+| `src/parts_linux_procs.rs`, `src/parts_windows_procs.rs` | Programs running, the ports they hold, the user and the accounts |
+| `src/acts.rs`, `src/acts_unix.rs`, `src/acts_windows.rs` | What changes the machine: ending programs, freeing ports, adding and removing users, locking the session |
+| `src/acts_tests.rs` | Those changes, tested so this machine never changes (see below) |
 | `src/smbios.rs` | The SMBIOS tables: memory modules and ids |
 | `src/windows.rs` | Windows: the program starts suspended and joins a job object that ends everything in it; the job's processor time and peak committed memory |
 | `src/unix.rs` | Linux and macOS: a process group ended with `killpg`; `wait4` for the end, processor time and largest resident set |
 | `src/tests.rs` | Output and errors as lines, the folder and environment, killing a tree, a missing program or folder, the end coming again; the machine's facts |
+
+## Testing what changes the machine
+
+`src/acts_tests.rs` ends only programs it started, and checks that adding and removing users is refused without the rights; it never locks the session. A real user is added and removed only where `KAVACH_ISOLATED=1` says the machine is a throwaway container run as root. On Windows with Docker Desktop, after building the Linux tests in WSL (`cargo test -p kavach-runtime-process --no-run`):
+
+```
+docker run --rm --network none -e KAVACH_ISOLATED=1 -v "<linux target>/debug/deps:/t:ro" ubuntu:24.04 /t/kavach_runtime_process-<hash> acts_tests --test-threads=1
+```
+
+The container has no network and is removed when the tests end. Windows has no such container on Windows 11 Home, so adding a Windows user is not yet tested with the rights (spec 14.25).

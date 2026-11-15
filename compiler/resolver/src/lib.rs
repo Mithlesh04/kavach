@@ -10,7 +10,7 @@ mod decls;
 mod modules;
 mod naming;
 mod prelude;
-pub use prelude::APART;
+pub use prelude::{APART, cap_covers};
 mod resolver;
 mod unused;
 mod walk;

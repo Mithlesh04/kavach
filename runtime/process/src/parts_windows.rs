@@ -47,6 +47,10 @@ pub fn rows(kind: Kind) -> Vec<Vec<String>> {
             let (uuid, serial) = crate::smbios::ids(&smbios());
             vec![vec![uuid, serial, super::windows_more::macs().join(",")]]
         }
+        Kind::Running => super::windows_procs::running(),
+        Kind::Ports => super::windows_procs::ports(),
+        Kind::User => super::windows_procs::user(),
+        Kind::Users => super::windows_procs::users(),
         other => super::windows_more::rows(other),
     }
 }

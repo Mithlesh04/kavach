@@ -12,12 +12,18 @@ mod facts;
 #[cfg(target_os = "linux")]
 #[path = "parts_linux_more.rs"]
 mod linux_more;
+#[cfg(target_os = "linux")]
+#[path = "parts_linux_procs.rs"]
+mod linux_procs;
 #[cfg(windows)]
 #[path = "parts_windows_more.rs"]
 mod windows_more;
 #[cfg(windows)]
 #[path = "parts_windows_net.rs"]
 mod windows_net;
+#[cfg(windows)]
+#[path = "parts_windows_procs.rs"]
+mod windows_procs;
 // macOS and the others: nothing yet (spec 14.25's open questions).
 #[cfg(not(any(target_os = "linux", windows)))]
 mod facts {
@@ -57,9 +63,17 @@ pub enum Kind {
     Apps,
     /// System UUID, board serial, MAC addresses (comma between).
     Ids,
+    /// Pid, name, path, resident bytes.
+    Running,
+    /// Protocol, address, port, state, pid, program.
+    Ports,
+    /// Name, home, admin now.
+    User,
+    /// Name, full name, admin.
+    Users,
 }
 
-const KINDS: [(Kind, usize); 14] = [
+const KINDS: [(Kind, usize); 18] = [
     (Kind::Board, 3),
     (Kind::Bios, 3),
     (Kind::Model, 3),
@@ -74,7 +88,14 @@ const KINDS: [(Kind, usize); 14] = [
     (Kind::Drivers, 2),
     (Kind::Apps, 3),
     (Kind::Ids, 3),
+    (Kind::Running, 4),
+    (Kind::Ports, 6),
+    (Kind::User, 3),
+    (Kind::Users, 3),
 ];
+
+/// The kinds only `System.critical.read` may read (spec 14.25).
+pub const CRITICAL: [i64; 5] = [12, 13, 14, 15, 17];
 
 /// Every row of kind number `which`, field after field, each row padded
 /// or cut to its kind's width.

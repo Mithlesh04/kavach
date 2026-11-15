@@ -54,6 +54,24 @@ impl Infer {
         }
     }
 
+    /// The generic parameters in `ty`, all the way down.
+    pub(crate) fn params(&self, ty: &Ty) -> Vec<DefId> {
+        let found = std::cell::RefCell::new(Vec::new());
+        self.collect_params(&self.resolve(ty), &found);
+        found.into_inner()
+    }
+
+    fn collect_params(&self, ty: &Ty, found: &std::cell::RefCell<Vec<DefId>>) {
+        if let Ty::Param(p) = ty {
+            found.borrow_mut().push(*p);
+            return;
+        }
+        self.map(ty, &|t| {
+            self.collect_params(t, found);
+            None
+        });
+    }
+
     /// Applies `f` to the direct children of `ty`.
     fn map(&self, ty: &Ty, f: &dyn Fn(&Ty) -> Option<Ty>) -> Ty {
         let g = |t: &Ty| f(t).unwrap_or_else(|| t.clone());

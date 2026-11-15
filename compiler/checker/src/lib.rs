@@ -29,6 +29,7 @@ mod exprs;
 mod failures;
 mod fields;
 mod fn_values;
+mod generic_json;
 mod gpu;
 mod gpu_draw;
 mod gpu_fit;
@@ -175,6 +176,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     checker.collect_gpu_fns(file);
     checker.check_file(file);
     checker.check_gpu_fns(file);
+    checker.check_generic_json();
     checker.check_capabilities(file);
     checker.check_operator_methods();
     checker.check_never_runs(file);
