@@ -1,0 +1,3 @@
+$ kavach check --format json src/main.kav
+{"file":"src/main.kav","line":3,"col":11,"severity":"error","code":"unknown-name","message":"`totl` is not defined; did you mean `total`?"}
+{"file":"src/main.kav","line":4,"col":24,"severity":"error","code":"type-mismatch","message":"expected `Int`, found `String`"}

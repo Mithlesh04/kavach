@@ -48,7 +48,7 @@ export const gpuScreenDoc: LessonDoc = {
         <li>A draw paints over what the frame already holds, blending by opacity.</li>
         <li>A draw without the <C>instances:</C> or <C>shared:</C> value its vertex fn takes is a compile error.</li>
         <li>A list a GPU <C>map</C> made is drawn from GPU memory, with nothing copied.</li>
-        <li>A pipeline is compiled at its first draw.</li>
+        <li>A pipeline is compiled for the GPU when it is made, or when a screen opens, never in the middle of a frame.</li>
       </ul>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${FILE}`} label="spec 14.24 · std.gpu" />

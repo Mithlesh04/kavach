@@ -94,6 +94,14 @@ export const timeDoc: LessonDoc = {
         a date&apos;s <C>add_months</C>, below. Writing one is refused, with what to write instead:
       </P>
       <Ex name="time/months.fails" />
+      <P>
+        Durations add, subtract, scale by a whole number and compare, like numbers: <C>Duration</C> is <C>Add</C>,{" "}
+        <C>Sub</C>, <C>Mul&lt;Int&gt;</C> and <C>Comparable</C> (see{" "}
+        <Link href="/docs/types/operators-for-your-types/">Operators for Your Types</Link>). A difference is below 0
+        when the second is longer, and every duration stays within about 31,700 years, so none overflows:
+      </P>
+      <Ex name="time/duration-math" />
+      <SrcRef file="tests/conformance/14-standard-library/durations-add-and-compare.kav" label="tested" />
       <H2>Every function</H2>
       <ModuleTable file="04-time.md" number="14.4" first="Function" />
       <Note>

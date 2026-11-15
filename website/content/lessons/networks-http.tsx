@@ -253,6 +253,19 @@ export const httpServeDoc: LessonDoc = {
         <C>Response</C> says which file it sends in its <C>file</C> field, which is <C>none</C> for other answers:
       </P>
       <Ex name="http/file-field" />
+      <H2>HEAD requests</H2>
+      <P>
+        <C>http.serve</C> answers a <C>HEAD</C> request itself: it runs the handler as for <C>GET</C> and sends the
+        status and headers alone, never the body, the stream or the file. So one handler serves both, and a client
+        learns a file&apos;s size without downloading it:
+      </P>
+      <Ex name="http/head" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Every answer carries at most one <C>content-length</C>: a plain body&apos;s own length, or the handler&apos;s header for a stream. A stream without one comes in chunks.</li>
+        <li>A <C>HEAD</C> answer is never chunked. Over HTTP/2, its headers end the stream.</li>
+        <li>A session (<C>http.open</C>) reads a <C>HEAD</C> answer&apos;s head alone, whatever length it names, then the next answer.</li>
+      </ul>
+      <SrcRef file="tests/conformance/14-standard-library/http-head-sends-headers-only.kav" label="tested" />
       <P>
         To send something else as it is read, give a <C>Response</C> a reader from <C>fs.chunks</C> as its{" "}
         <C>stream</C>: <C>Response(status: 200, headers: [], body: Bytes([]), stream: reader)</C>.

@@ -5,8 +5,9 @@ import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
-import { specBlock } from "@/lib/spec-tables";
+import { fileTables, specBlock } from "@/lib/spec-tables";
 import { H2, Note, P } from "./parts";
+import { Table } from "./spec-table";
 
 // The commands `kavach --help` lists today; spec 10.5 has the rest, which
 // come later.
@@ -99,6 +100,14 @@ export const newDoc: LessonDoc = {
 const run = loadProject("tools/run", ["src/main.kav"]);
 const built = loadProject("tools/build", ["src/main.kav"]);
 const checked = loadProject("tools/check", ["src/main.kav"]);
+const checkedJson = loadProject("tools/check-json", ["src/main.kav"]);
+
+/** Spec 13.6's table of message codes. */
+const codes = () => {
+  const t = fileTables("docs/spec/13-ai-tooling.md").find((x) => x.header[0] === "Code");
+  if (!t) throw new Error("docs/spec/13-ai-tooling.md: no Code table");
+  return t;
+};
 const fixed = loadProject("tools/fix", ["src/main.kav"]);
 const fixedErrors = loadProject("tools/fix-errors", ["src/main.kav"]);
 const fixCount = (fixedErrors.output ?? "").split("\n").filter((l) => l.startsWith("src/main.kav: ")).length;
@@ -213,6 +222,13 @@ export const checkDoc: LessonDoc = {
         A file with mistakes lists each one with its line, as on every page of this course. <C>--format json</C> gives one compact line per message, for editors, scripts and AI tools. Every message
         says what to change; see <Link href="/docs/start/reading-errors/">Reading Errors</Link>.
       </P>
+      <Terminal session={checkedJson.output ?? ""} />
+      <P>
+        Each line&apos;s <C>code</C> says what kind of mistake it is, so a tool can act on the kind without reading the
+        wording. The codes stay the same; the wording may change:
+      </P>
+      <Table header={codes().header} rows={codes().rows} />
+      <SrcRef file="compiler/driver/tests/codes.rs" label="codes, tested" />
       <P>
         A file with syntax errors gets only those. A string left open turns the lines after it into text, so later
         checks would only mislead whoever fixes the first error.{" "}

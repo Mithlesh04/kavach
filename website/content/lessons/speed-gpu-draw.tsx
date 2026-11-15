@@ -67,7 +67,8 @@ export const gpuDrawDoc: LessonDoc = {
         any other.
       </Note>
       <P>
-        A pipeline is compiled at its first draw. The window, the screen and the frame are on{" "}
+        A pipeline is compiled for the GPU when it is made, or when a screen opens, never in the middle of a frame.
+        The window, the screen and the frame are on{" "}
         <Link href="/docs/standard-library/gpu-screens/">GPU Screens</Link>.
       </P>
       <div className="flex flex-wrap gap-2.5">
@@ -75,6 +76,7 @@ export const gpuDrawDoc: LessonDoc = {
         <SrcRef file="docs/spec/14-standard-library/24-gpu.md" label="spec 14.24 · std.gpu" />
         <SrcRef file="tests/conformance/15-gpu/gpu-vertex-and-fragment-fns-run-on-the-cpu.kav" label="on the CPU, tested" />
         <SrcRef file="compiler/backend/wgsl/src/tests.rs" symbol="a_pipeline_draws_what_its_gpu_fns_say" line={230} label="real pixels, tested" />
+        <SrcRef file="compiler/backend/wgsl/src/tests.rs" symbol="a_pipeline_compiles_before_its_first_draw" line={253} label="compiled before a draw, tested" />
         <SrcRef file="compiler/kir/src/gpu_stay.rs" symbol="a_list_drawn_is_not_fetched" line={381} label="drawn in place, tested" />
         <SrcRef file="docs/decisions/0106-drawing-on-the-gpu.md" label="decision 0106" />
       </div>

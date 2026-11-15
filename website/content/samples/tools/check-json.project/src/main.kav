@@ -1,0 +1,6 @@
+fn main() {
+    const total = 3
+    print(totl)
+    const count: Int = "three"
+    print(count)
+}
