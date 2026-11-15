@@ -2,9 +2,9 @@ import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { specBlockWith, specTables } from "@/lib/spec-tables";
+import { specBlockWith } from "@/lib/spec-tables";
 import { Ex, H2, Note, P } from "./parts";
-import { ModuleTable, Table } from "./spec-table";
+import { ModuleTable } from "./spec-table";
 
 // ---------- The Machine ----------
 //
@@ -15,21 +15,10 @@ import { ModuleTable, Table } from "./spec-table";
 const FILE = "14-standard-library/25-system.md";
 const TESTS = "tests/conformance/14-standard-library";
 
-/**
- * The spec's table of every part of the machine, without the two rows
- * whose capability is being renamed (apps and ids): they come back when
- * the new name lands.
- */
-const parts = () => {
-  const t = specTables("14-standard-library/25-system.md", "14.25").find((x) => x.heading === "Every part of the machine");
-  if (!t) throw new Error("spec 14.25: no table under Every part of the machine");
-  return { header: t.header, rows: t.rows.filter((r) => !/system\.(apps|ids)\(/.test(r[0])) };
-};
-
 export const systemDoc: LessonDoc = {
-  lead: "std.system says what machine the program runs on: its system, processor, memory and GPUs. The basics are free; what could tell one machine from another needs the capability System.",
+  lead: "std.system says what machine the program runs on: its system, processor, memory, GPUs, drives and devices, and the programs and users on it. The basics are free; what could tell one machine from another needs System, and what is critical needs System.critical.",
   simple: <>Before you split a job between workers, you want to know how many workers the machine has. <C>std.system</C> answers that, and more: how much memory there is, which GPUs, how long the machine has been on. The questions that could identify a machine need your permission first.</>,
-  minutes: 6,
+  minutes: 8,
   before: ["agents/capabilities", "standard-library/running-programs"],
   body: (
     <>
@@ -63,11 +52,44 @@ export const systemDoc: LessonDoc = {
       <Ex name="system/parts" />
       <P>From the spec: free space, the battery and the Bluetooth devices. It prints this machine&apos;s details, so it is shown here, not run:</P>
       <CodeBlock code={specBlockWith(FILE, "14.25", "fn report()")} file="from spec 14.25" />
-      <Table header={parts().header} rows={parts().rows} />
-      <Note>
-        Not on this page yet: the applications installed and the ids that name this exact machine. They need a
-        stronger capability than <C>System</C>.
-      </Note>
+      <ModuleTable file="25-system.md" number="14.25" first="Function" heading="Every part of the machine" />
+      <H2>What is critical needs System.critical</H2>
+      <P>
+        Some things are critical to the machine and the people on it. <C>System.critical.read</C> reads them: the
+        applications installed, the serial numbers and network addresses that name this exact machine, the programs
+        running and the ports they hold. <C>System.critical.write</C> changes the machine for everyone on it.
+      </P>
+      <P>
+        <C>uses System</C> doesn&apos;t cover either. A function writes them by name, <C>kavach audit</C> lists them
+        apart, and an agent gets one only when a person approves:
+      </P>
+      <Ex name="system/critical.fails" />
+      <H2>Programs, ports and users</H2>
+      <P>
+        For the engineers who look after a machine: the programs running, the network ports they hold, and its users.
+        Reading the programs and ports needs <C>System.critical.read</C>; the user this program runs as needs only{" "}
+        <C>System</C>:
+      </P>
+      <Ex name="system/programs" />
+      <P>
+        From the spec: free port 8080 by ending the programs that listen on it. It changes the machine, so it is shown
+        here, never run:
+      </P>
+      <CodeBlock code={specBlockWith(FILE, "14.25", "fn free_8080()")} file="from spec 14.25" />
+      <ModuleTable file="25-system.md" number="14.25" first="Function" heading="Programs, ports and users" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>
+          A change needs the system&apos;s own permission too. A program not run as an administrator, or as root, can end
+          only its own user&apos;s programs, and can&apos;t add or remove users. A change refused fails with{" "}
+          <C>SystemError.Denied</C>.
+        </li>
+        <li><C>SystemError</C> is <C>NotFound(what:)</C>, <C>Denied(reason:)</C> or <C>Failed(reason:)</C>.</li>
+        <li>
+          A port found free can be taken by another program before yours listens on it. A server that can should listen
+          on port 0 and read the port it got.
+        </li>
+        <li>Tests can&apos;t change the machine: a test that calls one of these changes is refused.</li>
+      </ul>
       <H2>A report&apos;s header</H2>
       <P>
         From the spec: the line a bug report or a benchmark starts with. It prints this machine&apos;s details, so it
@@ -77,7 +99,7 @@ export const systemDoc: LessonDoc = {
       <H2>Every function</H2>
       <ModuleTable file="25-system.md" number="14.25" first="Function" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>Nothing here fails: what a system doesn&apos;t say comes back as <C>&quot;&quot;</C> or 0.</li>
+        <li>No read fails: what a system doesn&apos;t say comes back as <C>&quot;&quot;</C> or 0.</li>
         <li>The time your own program has spent on the processor is <C>process.cpu_ms()</C>, on <C>std.process</C>.</li>
       </ul>
       <Note>Not yet: each GPU&apos;s memory, and what changes while the program runs, such as the processor&apos;s current speed.</Note>
@@ -88,6 +110,9 @@ export const systemDoc: LessonDoc = {
         <SrcRef file="stdlib/system/system.kav" label="system.kav" />
         <SrcRef file="docs/decisions/0110-std-system.md" label="decision 0110" />
         <SrcRef file={`${TESTS}/system-parts-come-typed.kav`} label="every part, tested" />
+        <SrcRef file={`${TESTS}/system-critical-is-not-covered-by-system.kav`} label="System.critical, tested" />
+        <SrcRef file={`${TESTS}/system-programs-ports-and-users.kav`} label="programs, ports and users, tested" />
+        <SrcRef file={`${TESTS}/tests-cant-change-the-machine.kav`} label="tests can't change the machine, tested" />
         <SrcRef file="docs/decisions/0112-every-detail-of-the-machine.md" label="decision 0112" />
       </div>
     </>

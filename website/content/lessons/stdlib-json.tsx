@@ -112,6 +112,11 @@ export const jsonDoc: LessonDoc = {
       <Ex name="json/schema-docs" />
       <P>When both a field and its type have one, the field&apos;s comes first in one description, then the type&apos;s:</P>
       <Ex name="json/schema-docs-both" />
+      <P>
+        A <C>secret</C> field is marked <C>&quot;writeOnly&quot;: true</C>, so a library that works from the schema sees
+        that it can&apos;t be written out:
+      </P>
+      <Ex name="json/schema-secret" />
       <H2>A function described</H2>
       <P>
         <C>json.describe(f)</C> describes a function from its signature, when the program is compiled: its name,
@@ -281,6 +286,12 @@ export const jsonBuildingDoc: LessonDoc = {
       </ul>
       <P>A record with a <C>secret</C> field can&apos;t be written as JSON, so a secret can&apos;t leave in an API response by accident:</P>
       <Ex name="json/sub-secret.fails" />
+      <P>
+        Through a generic function too: <C>json.of</C> of a type parameter is checked at each call that gives it a real
+        type. The call that would write the secret is the error, even when it passes through other generic functions:
+      </P>
+      <Ex name="json/sub-secret-generic.fails" />
+      <SrcRef file="tests/conformance/02-types/json-of-a-generic-is-checked-where-it-is-used.kav" label="generic calls, tested" />
     </>
   ),
 };

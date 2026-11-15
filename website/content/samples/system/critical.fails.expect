@@ -1,0 +1,1 @@
+error: `installed` uses System.critical.read (through `apps`), but its `uses` clause doesn't list it: add `System.critical.read` to `uses` (spec 8.1)

@@ -1,0 +1,9 @@
+use std.system
+
+pub fn installed() -> Int uses System {
+    system.apps().len()
+}
+
+fn main() uses Console, System {
+    print(installed() >= 0)
+}
