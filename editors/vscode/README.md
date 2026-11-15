@@ -103,7 +103,7 @@ Colors come from your theme. The grammar only names each token, using the standa
 | `if`, `match`, `for`, `return`, `try`, `catch`, `fail`, `when` | `keyword.control` |
 | A loop's label: `outer` in `outer: for` and `break outer` | `entity.name.label` |
 | `require`, `ensure`, `invariant`, `example`, `fails`, `assert` | `keyword.control.contract` |
-| `can`, `limit`, `approve`, `by`, `per`, `on`, `uses` | `keyword.other.agent` |
+| `model`, `settings`, `can`, `limit`, `approve`, `by`, `per`, `on`, `uses` | `keyword.other.agent` |
 | `Int`, `String`, `Decimal`, `Json`, … | `support.type.primitive` |
 | A unit after a number: `5.seconds`, `250.ms`, `2.minutes`, `1.hours`, `3.days` | `keyword.other.unit` (as CSS's `px`), so it doesn't look like a field |
 | `Console`, `Net`, `Ai`, … (built-in capabilities) | `support.class.capability` |

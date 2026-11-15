@@ -13,6 +13,10 @@ agent RefundBot {
     model careful()
 //  ^^^^^ keyword.other.agent.kavach
 
+    settings AgentSettings(audit: Audit())
+//  ^^^^^^^^ keyword.other.agent.kavach
+//           ^^^^^^^^^^^^^ entity.name.type.kavach
+
     can Ai, Payments.refund, Email.send
 //  ^^^ keyword.other.agent.kavach
 //      ^^ support.class.capability.kavach
@@ -91,6 +95,8 @@ const vertex = 3
 fn pick() -> Verdict ! Error uses Ai {
     let model = quick()
 //      ^^^^^ - keyword.other.agent.kavach
+    const settings = standard()
+//        ^^^^^^^^ - keyword.other.agent.kavach
     try ask<Verdict>("Fine?", model: model)
 //                            ^^^^^ - keyword.other.agent.kavach
 }

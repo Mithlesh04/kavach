@@ -239,8 +239,8 @@
           }
         },
         {
-          "comment": "An agent's `can`, `limit` and `approve` clauses (spec 8.3; `on` is with the declarations): at the start of a line and followed by a name, so a field, argument or variable called `limit` stays plain",
-          "match": "^\\s*(can|limit|approve)\\s+(?=[\\p{L}_])",
+          "comment": "An agent's `settings`, `can`, `limit` and `approve` clauses (spec 8.3; `on` is with the declarations): at the start of a line and followed by a name, so a field, argument or variable called `limit` or `settings` stays plain",
+          "match": "^\\s*(settings|can|limit|approve)\\s+(?=[\\p{L}_])",
           "captures": {
             "1": { "name": "keyword.other.agent.kavach" }
           }
