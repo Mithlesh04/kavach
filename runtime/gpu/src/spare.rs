@@ -6,10 +6,12 @@
 
 use std::sync::Mutex;
 
-/// The usage of every buffer of items or results.
+/// The usage of every buffer of items or results: also as vertices or
+/// instances, so a draw reads a `map`'s results where they are (15.3).
 pub(crate) const RESULTS: wgpu::BufferUsages = wgpu::BufferUsages::STORAGE
     .union(wgpu::BufferUsages::COPY_SRC)
-    .union(wgpu::BufferUsages::COPY_DST);
+    .union(wgpu::BufferUsages::COPY_DST)
+    .union(wgpu::BufferUsages::VERTEX);
 
 /// The spare buffers, the newest last.
 static SPARE: Mutex<Vec<wgpu::Buffer>> = Mutex::new(Vec::new());

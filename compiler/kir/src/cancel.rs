@@ -46,6 +46,7 @@ fn waits(op: RtOp) -> bool {
             | RtOp::NetAccept
             | RtOp::NetRead
             | RtOp::NetWrite
+            | RtOp::NetSendFile
             | RtOp::TaskStopPoint
     )
 }

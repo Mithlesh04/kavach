@@ -197,6 +197,25 @@ pub fn net_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
         RtOp::NetAccept => wait(open, &address, line, (&*s, s.wants_read()), || s.accept())
             .map_or(0, |c| socket(c, ty)),
         RtOp::NetAddress => new_text(&address, type_of(code)),
+        // `http.file`'s file, sent by the system where it can (spec
+        // 14.11): 1 when it was, 0 when the caller must read it itself.
+        RtOp::NetSendFile => {
+            let path = str_of(b);
+            release(b);
+            if !s.can_send_file() || !crate::rt_scopes::allowed(&path) {
+                return 0;
+            }
+            let Ok(file) = std::fs::File::open(&path) else {
+                return 0;
+            };
+            let (len, mut sent) = (c.max(0) as u64, 0);
+            match wait(deadline, &address, line, (&*s, s.wants_write()), || {
+                s.send_file(&file, len, &mut sent)
+            }) {
+                Ok(()) => 1,
+                Err(()) => 0,
+            }
+        }
         // TLS begun on this plain connection (spec 14.10): a new
         // connection, and this one closed.
         RtOp::NetStartTls | RtOp::NetAcceptTls => {

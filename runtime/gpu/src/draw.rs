@@ -160,7 +160,11 @@ pub fn clear(f: i64, r: f64, g: f64, b: f64) {
 
 /// Draws through pipeline `pipeline` into frame `f` (spec 15.3): the
 /// vertices, instances and shared value, as 32-bit words.
-pub fn draw(f: i64, pipeline: i64, parts: [&[u32]; 3]) -> Result<(), String> {
+pub fn draw(
+    f: i64,
+    pipeline: i64,
+    parts: (crate::render::Items<'_>, crate::render::Items<'_>, &[u32]),
+) -> Result<(), String> {
     let mut d = drawing();
     let Drawing {
         screens, frames, ..

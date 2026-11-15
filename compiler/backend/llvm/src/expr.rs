@@ -435,6 +435,9 @@ impl FnEmit<'_> {
             self.store_local(l, &changed);
             return;
         }
+        if self.text_set(l, value) {
+            return;
+        }
         if let ExprKind::Rt(op, args) = &value.kind
             && op.changes_receiver()
             && is_l(&args[0])

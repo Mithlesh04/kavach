@@ -15,6 +15,9 @@ NetConnectTls,
 NetBind,
 NetSend,
 NetReceive,
+/// `net.send_file(conn, path, length)`, for `http.file`: the file sent by
+/// the system (`sendfile` on Linux), whether it was (spec 14.11).
+NetSendFile,
 /// Sets the deadline, in ms, of the network op that comes right after
 /// it (`.timeout(d)`, spec 14.10).
 NetDeadline,

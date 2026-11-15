@@ -10,6 +10,7 @@
 // `HttpError.BadUrl`: a program may have its own.
 
 use std.fs
+use std.http.client
 use std.http.h2
 use std.http.h3
 use std.http.hpack
@@ -100,6 +101,9 @@ pub type Response {
     /// Sent after `body` as it is read (spec 14.11): a reader of
     /// `fs.chunks`.
     pub stream: Chunks? = none
+    /// The file `stream` reads, set by `http.file`: on a plain connection
+    /// on Linux the system sends it straight to the socket (`sendfile`).
+    pub file: String? = none
     /// What runs on the connection after the head: a WebSocket's
     /// session or an event stream's feed (`http.websocket`, `http.events`).
     pub take_over: TakeOver? = none
@@ -166,29 +170,29 @@ pub fn text(status: Int, body: String) -> Response {
 /// A request with any `method`, `headers` and `body`, over HTTP/2 when
 /// the server offers it with TLS, else HTTP/1.1 (spec 14.11).
 pub fn request(method: String, url: String, headers: [Header] = [], body: Bytes = Bytes([])) -> Response ! HttpError uses Net {
-    try call(method, url, headers, body)
+    try client.call(method, url, headers, body)
 }
 
 /// `GET url`.
 pub fn get(url: String) -> Response ! HttpError uses Net {
-    try plain_request("GET", url, Bytes([]), "")
+    try client.plain_request("GET", url, Bytes([]), "")
 }
 
 /// `POST url` with `body`.
 pub fn post(url: String, body: Bytes) -> Response ! HttpError uses Net {
-    try plain_request("POST", url, body, "")
+    try client.plain_request("POST", url, body, "")
 }
 
 /// `GET url`, its JSON body decoded into a `T`.
 pub fn get_json<T>(url: String) -> T ! HttpError uses Net {
-    const r = try plain_request("GET", url, Bytes([]), "")
+    const r = try client.plain_request("GET", url, Bytes([]), "")
     try decoded<T>(r)
 }
 
 /// `POST url` with the JSON `body`, the JSON answer decoded into a `T`.
 pub fn post_json<T>(url: String, body: Json) -> T ! HttpError uses Net {
     const text = json.stringify(body, 0)
-    const r = try plain_request("POST", url, text.bytes(), "application/json")
+    const r = try client.plain_request("POST", url, text.bytes(), "application/json")
     try decoded<T>(r)
 }
 
@@ -202,7 +206,7 @@ pub fn file(path: String) -> Response ! FsError uses Fs.read {
         Header(name: "content-type", value: message.content_type(path)),
         Header(name: "content-length", value: "{info.size}"),
     ]
-    Response(status: 200, headers: headers, body: Bytes([]), stream: reader)
+    Response(status: 200, headers: headers, body: Bytes([]), stream: reader, file: path)
 }
 
 /// What a response that takes over runs on the connection, with what
@@ -257,7 +261,7 @@ fn decoded<T>(r: Response) -> T ! HttpError {
 
 /// `GET url` over HTTP/3 (an `https://` URL).
 pub fn get3(url: String) -> Response ! HttpError uses Net {
-    const target = try split_url(url)
+    const target = try client.split_url(url)
     if not target.secure {
         fail HttpError.BadUrl(url: url)
     }
@@ -316,8 +320,8 @@ pub type Session {
     fn send(self, method: String, path: String, given: [Header], body: Bytes) -> Response ! HttpError uses Net {
         const crlf = message.crlf()
         let head = "{method} {path} HTTP/1.1{crlf}host: {self.host}{crlf}"
-        for h in traced(given) {
-            if not own_header(h.name) {
+        for h in client.traced(given) {
+            if not client.own_header(h.name) {
                 head = head + "{h.name}: {h.value}{crlf}"
             }
         }
@@ -346,7 +350,7 @@ pub type Session {
 
 /// A session with the server of `url`: one connection, kept open.
 pub fn open(url: String) -> Session ! HttpError uses Net {
-    const target = try split_url(url)
+    const target = try client.split_url(url)
     const conn = if target.secure {
         net.connect_tls(target.host, protocols: ["http/1.1"]) catch e => fail HttpError.Network(error: e)
     } else {
@@ -362,138 +366,4 @@ pub fn open(url: String) -> Session ! HttpError uses Net {
 /// tasks are cancelled then, spec 9.2).
 pub fn serve(listener: Listener, handler: fn(Request) -> Response, limits: ServeLimits = ServeLimits()) ! NetError uses Net {
     try server.serve(listener, handler, limits)
-}
-
-/// Where a URL points: its host (with the port), its path, and whether
-/// it is `https://`.
-type Target {
-    host: String
-    path: String
-    secure: Bool
-}
-
-fn split_url(url: String) -> Target ! HttpError {
-    const secure = url.starts_with("https://")
-    if not secure and not url.starts_with("http://") {
-        fail HttpError.BadUrl(url: url)
-    }
-    const rest = url.slice(if secure { 8 } else { 7 }, url.len())
-    const slash = rest.index_of("/") ?? rest.len()
-    let host = rest.slice(0, slash)
-    if host.is_empty() {
-        fail HttpError.BadUrl(url: url)
-    }
-    if not host.contains(":") {
-        host = host + if secure { ":443" } else { ":80" }
-    }
-    const path = if slash < rest.len() { rest.slice(slash, rest.len()) } else { "/" }
-    Target(host: host, path: path, secure: secure)
-}
-
-/// `kind` is the body's `content-type` (none when empty).
-/// `headers`, with the current span's `traceparent` when the code runs in
-/// one and they don't name one already (spec 14.11, 14.12).
-fn traced(headers: [Header]) -> [Header] {
-    const parent = log.traceparent() ?? return headers
-    if headers.any(h => h.name.lower() == "traceparent") {
-        return headers
-    }
-    let all = headers
-    all.push(Header(name: "traceparent", value: parent))
-    all
-}
-
-fn plain_request(method: String, url: String, body: Bytes, kind: String) -> Response ! HttpError uses Net {
-    let headers: [Header] = []
-    if not kind.is_empty() {
-        headers.push(Header(name: "content-type", value: kind))
-    }
-    try call(method, url, headers, body)
-}
-
-/// Whether the client writes header `name` itself.
-fn own_header(name: String) -> Bool {
-    const n = name.lower()
-    n == "host" or n == "content-length" or n == "connection"
-}
-
-/// A request to `url` on a connection of its own.
-fn call(method: String, url: String, given: [Header], body: Bytes) -> Response ! HttpError uses Net {
-    const headers = traced(given)
-    const target = try split_url(url)
-    const name = target.host.slice(0, target.host.index_of(":") ?? target.host.len())
-    const conn = connect(target) catch e => {
-        fail HttpError.Network(error: e)
-    }
-    if conn.protocol() == "h2" {
-        let pseudo = [
-            Header(name: ":method", value: method),
-            Header(name: ":scheme", value: "https"),
-            Header(name: ":authority", value: name),
-            Header(name: ":path", value: target.path),
-        ]
-        for h in headers {
-            if not own_header(h.name) {
-                pseudo.push(Header(name: h.name.lower(), value: h.value))
-            }
-        }
-        const reply = h2.request(conn, pseudo, body) catch e => {
-            conn.close()
-            fail from_h2(e)
-        }
-        conn.close()
-        const status = Int(reply.headers.get(":status") ?? "") catch e => {
-            fail HttpError.BadMessage(reason: "no status in an HTTP/2 response")
-        }
-        return Response(status: status, headers: message.plain(reply.headers), body: reply.body)
-    }
-    let head = "{method} {target.path} HTTP/1.1{message.crlf()}host: {name}{message.crlf()}"
-    for h in headers {
-        if not own_header(h.name) {
-            head = head + "{h.name}: {h.value}{message.crlf()}"
-        }
-    }
-    head = head + "content-length: {body.len()}{message.crlf()}connection: close{message.crlf()}{message.crlf()}"
-    const all = exchange(conn, head.bytes() + body) catch e => {
-        fail HttpError.Network(error: e)
-    }
-    const reply = message.parse(all) ?? fail HttpError.BadMessage(reason: "the response is not HTTP")
-    const parts = reply.first.split(" ")
-    const status = Int(parts.get(1) ?? "") catch e => {
-        fail HttpError.BadMessage(reason: "no status in `{reply.first}`")
-    }
-    const body = if message.chunked(reply.headers) {
-        message.dechunk(reply.body) ?? fail HttpError.BadMessage(reason: "a chunked body is cut off")
-    } else {
-        reply.body
-    }
-    Response(status: status, headers: reply.headers, body: body)
-}
-
-/// A connection to `target`; with TLS, HTTP/2 is offered too.
-fn connect(target: Target) -> Connection ! NetError uses Net {
-    if target.secure {
-        return try net.connect_tls(target.host, protocols: ["h2", "http/1.1"])
-    }
-    try net.connect(target.host)
-}
-
-/// Sends `data` on `conn` and reads everything that comes back.
-fn exchange(conn: Connection, data: Bytes) -> Bytes ! NetError uses Net {
-    try conn.write(data)
-    let all = Bytes([])
-    while true {
-        const piece = (try conn.read()) ?? break
-        all = all + piece
-    }
-    conn.close()
-    all
-}
-
-fn from_h2(e: H2Error) -> HttpError {
-    match e {
-        H2Error.Network(n) => HttpError.Network(error: n),
-        H2Error.Protocol(reason) => HttpError.BadMessage(reason: reason),
-        H2Error.Reset(_, code) => HttpError.BadMessage(reason: "the server reset the stream (code {code})"),
-    }
 }

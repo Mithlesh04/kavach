@@ -34,11 +34,20 @@ impl Checker<'_> {
             }
             // `Int.max`: a number type has no constants (spec 2.1).
             if crate::ty::Prim::from_name(&id.name).is_some() {
-                let range = matches!(name.name.as_str(), "max" | "min" | "MAX" | "MIN" | "max_value" | "min_value");
+                let range = matches!(
+                    name.name.as_str(),
+                    "max" | "min" | "MAX" | "MIN" | "max_value" | "min_value"
+                );
                 let message = if range {
-                    format!("`{}.{}` isn't Kavach: a number type has no constants. To add without overflow, `a.checked_add(b)` gives `none` instead (spec 5.6)", id.name, name.name)
+                    format!(
+                        "`{}.{}` isn't Kavach: a number type has no constants. To add without overflow, `a.checked_add(b)` gives `none` instead (spec 5.6)",
+                        id.name, name.name
+                    )
                 } else {
-                    format!("`{}` has no `{}`: a number type has no constants or fields (spec 2.1)", id.name, name.name)
+                    format!(
+                        "`{}` has no `{}`: a number type has no constants or fields (spec 2.1)",
+                        id.name, name.name
+                    )
                 };
                 self.error(name.span, message);
                 return Ty::Error;

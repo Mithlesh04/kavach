@@ -101,6 +101,8 @@ impl<'a> Interp<'a> {
                 "websocket_accept" => return Ok(self.str_value(&websocket::accept(&address))),
                 "websocket_key" => return Ok(self.str_value(&websocket::key())),
                 "websocket_mask" => return Ok(Value::Bytes(websocket::mask().as_slice().into())),
+                // The interpreter sends `http.file`'s file as it reads it.
+                "send_file" => return Ok(Value::Bool(false)),
                 _ => {}
             }
         }

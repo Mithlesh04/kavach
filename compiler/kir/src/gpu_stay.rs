@@ -33,6 +33,21 @@ pub(crate) fn keep_on_gpu(f: &mut Function) {
     }
     let types = f.locals.clone();
     block(&mut f.body, &set_by_gpu, &HashSet::new(), &types);
+    // A draw reads its vertices and instances where they are, on the GPU
+    // too: a list a `map` left there isn't brought back for it (0106).
+    walk::exprs_mut(&mut f.body, &mut |e| {
+        if let K::Rt(RtOp::DrawDraw, args) = &mut e.kind
+            && let Some(K::Tuple(parts)) = args.get_mut(2).map(|a| &mut a.kind)
+        {
+            for a in parts.iter_mut().take(2) {
+                if let K::Rt(RtOp::GpuFetch, inner) = &mut a.kind
+                    && matches!(inner[0].kind, K::Local(_) | K::Move(_))
+                {
+                    *a = inner.remove(0);
+                }
+            }
+        }
+    });
     // Each such `map` leaves its result on the GPU, and reads its own
     // list without fetching it.
     walk::exprs_mut(&mut f.body, &mut |e| {
@@ -357,6 +372,56 @@ fn main() {
     fn a_map_of_a_value_not_kept_copies_back() {
         let src = "gpu fn step(x: Int32) -> Int32 {\n    x + 1\n}\n\nfn main() {\n    const xs: [Int32] = [1, 2]\n    print(xs.map(step))\n}\n";
         assert_eq!(ops(src, RtOp::GpuMapStay), 0);
+        assert_eq!(ops(src, RtOp::GpuFetch), 0);
+    }
+
+    /// A swarm moved by a GPU `map` each frame is drawn where it is: a list
+    /// passed to `frame.draw` is not brought back (decision 0106).
+    #[test]
+    fn a_list_drawn_is_not_fetched() {
+        let src = "use std.window
+use std.gpu
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Dot {
+    x: Float32
+    y: Float32
+}
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+}
+
+gpu fn step(d: Dot) -> Dot {
+    Dot(x: d.x + 0.01, y: d.y)
+}
+
+gpu vertex fn place(c: Corner, d: Dot) -> Lit {
+    Lit(position: (c.x + d.x, c.y + d.y, 0.0, 1.0))
+}
+
+gpu fragment fn glow(l: Lit) -> (Float32, Float32, Float32, Float32) {
+    (1.0, 1.0, 1.0, 1.0)
+}
+
+fn main() ! Error uses Window {
+    const win = try window.open(\"Swarm\", 64, 64)
+    const screen = try gpu.screen(win)
+    const p = gpu.pipeline(place, glow)
+    const square = [Corner(x: 0.0, y: 0.0), Corner(x: 0.1, y: 0.0), Corner(x: 0.0, y: 0.1)]
+    let swarm = [Dot(x: 0.0, y: 0.0), Dot(x: 0.5, y: 0.5)]
+    for _ in 0..10 {
+        swarm = swarm.map(step)
+        const frame = try screen.frame()
+        frame.draw(p, square, instances: swarm)
+        frame.show()
+    }
+}
+";
         assert_eq!(ops(src, RtOp::GpuFetch), 0);
     }
 }

@@ -185,22 +185,27 @@ fn compile(wgsl: &str, layout: &Layout, format: wgpu::TextureFormat) -> Option<M
     Some(Made { pipeline, shared })
 }
 
-/// Draws `vertices` (32-bit words, the vertex's fields in turn) through
-/// pipeline `n` into `view`, recorded on `encoder`: once for each of
-/// `instances` when the pipeline takes an instance, with `shared` given
-/// to every corner. What is there already stays under it.
+/// A draw's vertices or instances: 32-bit words, the fields in turn, or a
+/// list a GPU `map` left in GPU memory, drawn from there (decision 0106).
+pub enum Items<'a> {
+    Words(&'a [u32]),
+    Kept(&'a crate::Resident),
+}
+
+/// Draws `vertices` through pipeline `n` into `view`, recorded on
+/// `encoder`: once for each of `instances` when the pipeline takes an
+/// instance, with `shared` (words) given to every corner. What is there
+/// already stays under it.
 pub(crate) fn draw_into(
     view: &wgpu::TextureView,
     encoder: &mut wgpu::CommandEncoder,
     format: wgpu::TextureFormat,
     n: i64,
-    parts: [&[u32]; 3],
+    parts: (Items<'_>, Items<'_>, &[u32]),
 ) -> Result<(), String> {
-    let [vertices, instances, shared] = parts;
+    let (vertices, instances, shared) = parts;
     let g = gpu().ok_or("this machine has no GPU")?;
     let (m, layout) = made(n, format).ok_or("this pipeline couldn't be made")?;
-    let width = layout.vertex.len().max(1);
-    let count = (vertices.len() / width) as u32;
     let buffer = |words: &[u32], usage| {
         g.device
             .create_buffer_init(&wgpu::util::BufferInitDescriptor {
@@ -209,12 +214,27 @@ pub(crate) fn draw_into(
                 usage,
             })
     };
-    let vb = buffer(vertices, wgpu::BufferUsages::VERTEX);
-    let ib = (!layout.instance.is_empty()).then(|| buffer(instances, wgpu::BufferUsages::VERTEX));
-    let times = match &ib {
-        Some(_) => (instances.len() / layout.instance.len()) as u32,
-        None => 1,
-    };
+    // Words go over in a buffer of their own; a kept list is drawn where
+    // it is. Either way: the buffer, and how many items it holds.
+    fn source<'b>(
+        items: &Items<'b>,
+        width: usize,
+        make: impl Fn(&[u32]) -> wgpu::Buffer,
+    ) -> (std::borrow::Cow<'b, wgpu::Buffer>, u32) {
+        let width = width.max(1);
+        match *items {
+            Items::Words(w) => (std::borrow::Cow::Owned(make(w)), (w.len() / width) as u32),
+            Items::Kept(r) => {
+                let (b, words) = r.parts();
+                (std::borrow::Cow::Borrowed(b), (words / width) as u32)
+            }
+        }
+    }
+    let vertex = |w: &[u32]| buffer(w, wgpu::BufferUsages::VERTEX);
+    let (vb, count) = source(&vertices, layout.vertex.len(), vertex);
+    let ib =
+        (!layout.instance.is_empty()).then(|| source(&instances, layout.instance.len(), vertex));
+    let times = ib.as_ref().map_or(1, |(_, n)| *n);
     let group = m.shared.as_ref().map(|l| {
         let sb = buffer(shared, wgpu::BufferUsages::STORAGE);
         g.device.create_bind_group(&wgpu::BindGroupDescriptor {
@@ -244,7 +264,7 @@ pub(crate) fn draw_into(
         pass.set_bind_group(0, group, &[]);
     }
     pass.set_vertex_buffer(0, vb.slice(..));
-    if let Some(ib) = &ib {
+    if let Some((ib, _)) = &ib {
         pass.set_vertex_buffer(1, ib.slice(..));
     }
     pass.draw(0..count, 0..times);
@@ -260,7 +280,11 @@ fn bytes_of(words: &[u32]) -> Vec<u8> {
 /// to black, and gives its pixels: red, green, blue and opacity, row by
 /// row from the top. Drawing into a texture, for tests and, later, for
 /// programs (decision 0106).
-pub fn picture(n: i64, parts: [&[u32]; 3], size: (u32, u32)) -> Result<Vec<[u8; 4]>, String> {
+pub fn picture(
+    n: i64,
+    parts: (Items<'_>, Items<'_>, &[u32]),
+    size: (u32, u32),
+) -> Result<Vec<[u8; 4]>, String> {
     let g = gpu().ok_or("this machine has no GPU")?;
     let (w, h) = (size.0.max(1), size.1.max(1));
     let format = wgpu::TextureFormat::Rgba8Unorm;

@@ -40,6 +40,7 @@ fn main() ! Error uses Window {
 - `GpuError` is `Unavailable(reason: String)`: there is no GPU, or the window can't be drawn into, as on a server with no screen. A frame that can't be had (the window is minimized, or its surface was lost) is `Unavailable` too; the next `frame()` tries again.
 - A frame not shown before its last holder ends is thrown away: nothing reaches the screen.
 - The vertices are a list of a record type; each three make a triangle. A draw draws over what the frame already holds, blending by opacity.
+- A list that a GPU `map` made, and that is still in GPU memory (15.2), is drawn from there with nothing copied, as vertices or as instances: a particle swarm moved by a `map` each frame is drawn where it is, and never comes back to the CPU.
 - `frame.draw` without `instances:` or `shared:` that its pipeline's vertex fn takes is a compile error.
 - A pipeline is compiled at its first draw, into frames of each color format.
 - `gpu.screen_id`, `frame_id`, `clear_id`, `show_id` and `close_id` are what these are built on, by number.
@@ -47,7 +48,7 @@ fn main() ! Error uses Window {
 
 ## Open questions
 
-- Drawing a list that a GPU `map` made, still in GPU memory (15.2), with nothing copied, as vertices or instances; and compiling pipelines when the program is built (`kavach build`), kept with it, so no shader compiles while a game runs (decision 0106's next stages).
+- Compiling pipelines when the program is built (`kavach build`), kept with it, so no shader compiles while a game runs (decision 0106's next stage).
 - Depth, textures, samplers, drawing into a texture, and GPU timers: next, in this module.
 - Lines and points as well as triangles, and blending other than drawing over.
 - Choosing the present mode (vsync off, mailbox) and the color format.

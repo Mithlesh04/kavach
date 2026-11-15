@@ -56,6 +56,7 @@ impl<'a> Interp<'a> {
                             if !f.generics.is_empty() {
                                 self.next_generics = Some(self.type_args(f, e, args));
                             }
+                            self.lend_inout(f, args, e.span)?;
                             let v = self.call_fn(f, None, values, e.span)?;
                             self.write_back(args, e.span)?;
                             return Ok(v);
@@ -428,21 +429,4 @@ fn type_name(v: &Value<'_>) -> Option<&'static str> {
         Value::Char(_) => "Char",
         _ => return None,
     })
-}
-
-impl<'a> Interp<'a> {
-    /// After a call that returned: each `inout` parameter's last value
-    /// into the place its argument names (spec 3.9).
-    fn write_back(&mut self, args: &'a [Arg], span: Span) -> Result<(), Flow<'a>> {
-        for (name, at, value) in std::mem::take(&mut self.inout_out) {
-            let named = args
-                .iter()
-                .find(|a| a.name.as_ref().is_some_and(|n| n.name == name));
-            let arg = named.or_else(|| args.iter().filter(|a| a.name.is_none()).nth(at));
-            if let Some(a) = arg {
-                self.assign(&a.value, value, span)?;
-            }
-        }
-        Ok(())
-    }
 }

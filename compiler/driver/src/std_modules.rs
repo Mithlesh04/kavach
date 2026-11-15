@@ -138,6 +138,11 @@ pub(crate) const BUILTIN: &[(&str, &str, &str)] = &[
         include_str!("../../../stdlib/http/message.kav"),
     ),
     (
+        "std/http/client.kav",
+        "std.http.client",
+        include_str!("../../../stdlib/http/client.kav"),
+    ),
+    (
         "std/http/h2/wire.kav",
         "std.http.h2.wire",
         include_str!("../../../stdlib/http/h2wire.kav"),
@@ -401,6 +406,7 @@ mod tests {
                     // http joins traces (spec 14.12).
                     "std.log",
                     "std.http.message",
+                    "std.http.client",
                     "std.http.h2.wire",
                     "std.http.h2.client",
                     "std.http.h2",

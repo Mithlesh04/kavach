@@ -1,0 +1,18 @@
+// Rule: `xs[i] = ys[j]` on lists of text copies the item: a copy of `xs` made before, and `ys`, keep theirs.
+// Spec: 6.1
+// expect output: ["the second long text, longer than an item holds", "x"]
+// expect output: ["the first long text, longer than an item holds", "short"]
+// expect output: ["the second long text, longer than an item holds", "x"]
+
+fn main() {
+    let xs = ["the first long text, longer than an item holds", "short"]
+    const before = xs
+    const ys = ["the second long text, longer than an item holds", "x"]
+    for i in 0..2 {
+        xs[i] = ys[i]
+    }
+    xs[1] = "x"
+    print(xs)
+    print(before)
+    print(ys)
+}

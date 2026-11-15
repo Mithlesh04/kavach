@@ -1,0 +1,27 @@
+// Rule: `r.names[k] = v` changes the map in the field where it is, directly or through `inout`; a copy made before keeps its entries.
+// Spec: 6.1
+// expect output: 3
+// expect output: 0
+// expect output: 2
+
+type R {
+    names: [String: Int]
+}
+
+fn add_name(inout r: R, x: Int) {
+    r.names["k{x}"] = x
+}
+
+fn main() {
+    let r = R(names: [:])
+    const before = r
+    for i in 0..3 {
+        add_name(r, i)
+    }
+    print(r.names.len())
+    print(before.names.len())
+    let q = R(names: [:])
+    q.names["a"] = 1
+    q.names["b"] = 2
+    print(q.names.len())
+}

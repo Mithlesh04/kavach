@@ -14,6 +14,7 @@ mod connect;
 pub mod poller;
 mod quic;
 mod ready;
+mod sendfile;
 mod tls;
 mod upgrade;
 

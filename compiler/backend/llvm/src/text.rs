@@ -152,6 +152,25 @@ impl FnEmit<'_> {
     /// an item on the stack (`kv_item_*`), so short text never becomes an
     /// object; anything else is an owned text object.
     pub(crate) fn pushed_text(&mut self, text: &Expr) -> Pushed {
+        // A short literal is its item already, and an item of another list
+        // of text is copied as it is: neither becomes an object (Sakshi's
+        // S7: 2,000,000 pushes of "" took 166 ms).
+        match &text.kind {
+            ExprKind::Str(s) if s.len() <= SHORT => {
+                let item = self.slot_of_type("[2 x i64]");
+                let addr = self.val(format!("ptrtoint ptr {item} to i64"));
+                for (i, word) in encode(s, Type::I64).iter().enumerate() {
+                    self.store_item_at(&(*word as i64).to_string(), &addr, 8 * i as i32);
+                }
+                return Pushed::Item(addr, Self::code(text.ty));
+            }
+            ExprKind::Index(x, i) if self.text_list(x.ty) => {
+                if let Some(item) = self.copied_item(x, i, text.line) {
+                    return Pushed::Item(item, Self::code(text.ty));
+                }
+            }
+            _ => {}
+        }
         let ExprKind::Format(parts) = &text.kind else {
             return Pushed::Object(self.slot_of(text));
         };
@@ -237,5 +256,119 @@ impl FnEmit<'_> {
         self.br(&done);
         self.start(&done);
         self.val(format!("load i64, ptr {result}"))
+    }
+}
+
+impl FnEmit<'_> {
+    /// `x[i]` of a list of text, copied onto the stack as an item: its two
+    /// words, with one more holder for long text (whose first word is its
+    /// object). Gives the item's address.
+    fn copied_item(&mut self, x: &Expr, i: &Expr, line: u32) -> Option<String> {
+        let (list, owned) = self.borrow(x, crate::heap::plain(i))?;
+        let (ptr, len) = self.view(x, &list, owned);
+        let index = self.expr(i)?;
+        self.check_index(&index, &len, line);
+        let from = self.flat_addr(&ptr, &index, WIDTH);
+        let item = self.slot_of_type("[2 x i64]");
+        let addr = self.val(format!("ptrtoint ptr {item} to i64"));
+        let (first, second) = (self.load_item_at(&from, 0), self.load_item_at(&from, 8));
+        self.store_item_at(&first, &addr, 0);
+        self.store_item_at(&second, &addr, 8);
+        let tag = self.val(format!("lshr i64 {second}, 56"));
+        let inline = self.val(format!("and i64 {tag}, {INLINE}"));
+        let long = self.val(format!("icmp eq i64 {inline}, 0"));
+        let (more, done) = (self.label(), self.label());
+        self.cond_br(&long, &more, &done);
+        self.start(&more);
+        self.retain(&first);
+        self.br(&done);
+        self.start(&done);
+        if owned {
+            self.release(&list);
+        }
+        Some(addr)
+    }
+}
+
+impl FnEmit<'_> {
+    /// `xs[i] = ys[j]` or `xs[i] = "short"` into local list of text `l`
+    /// (`value` is the `ListSet`): the item copied into its place, the old
+    /// one let go, with no object made (Sakshi's S7). Whether it was one.
+    pub(crate) fn text_set(&mut self, l: kavach_kir::Local, value: &Expr) -> bool {
+        let ExprKind::Rt(kavach_kir::RtOp::ListSet, args) = &value.kind else {
+            return false;
+        };
+        let mine = matches!(args[0].kind, ExprKind::Local(x) | ExprKind::Move(x) if x == l);
+        let copied = match &args[2].kind {
+            ExprKind::Str(s) => s.len() <= SHORT,
+            ExprKind::Index(x, _) => self.text_list(x.ty),
+            _ => false,
+        };
+        if !mine || !copied || !self.text_list(value.ty) {
+            return false;
+        }
+        let (ty, line) = (value.ty, value.line);
+        let Some(index) = self.expr(&args[1]) else {
+            return false;
+        };
+        let (item, code) = match self.pushed_text(&args[2]) {
+            Pushed::Item(item, code) => (item, code),
+            // Made an object after all: the runtime stores it.
+            Pushed::Object(p) => {
+                let current = self.load_local(l).expect("a list");
+                let copy = self.rt_op(kavach_kir::RtOp::ListSet, &current, &index, &p, ty, line);
+                self.store_local(l, &copy);
+                return true;
+            }
+        };
+        let current = self.load_local(l).expect("a list");
+        let result = self.slot(Type::I64);
+        let (fast, old_long, store, rare, done) = (
+            self.label(),
+            self.label(),
+            self.label(),
+            self.label(),
+            self.label(),
+        );
+        let rc = self.load_at(&current, RC);
+        let alone = self.val(format!("icmp eq i64 {rc}, 1"));
+        self.cond_br(&alone, &fast, &rare);
+        self.start(&fast);
+        let len = self.load_at(&current, LEN);
+        self.check_index(&index, &len, line);
+        let buffer = self.load_at(&current, PTR);
+        let addr = self.flat_addr(&buffer, &index, WIDTH);
+        let (old, old_tag) = (self.load_item_at(&addr, 0), self.load_item_at(&addr, 8));
+        let tag = self.val(format!("lshr i64 {old_tag}, 56"));
+        let inline = self.val(format!("and i64 {tag}, {INLINE}"));
+        let long = self.val(format!("icmp eq i64 {inline}, 0"));
+        self.cond_br(&long, &old_long, &store);
+        self.start(&old_long);
+        self.release(&old);
+        self.br(&store);
+        self.start(&store);
+        for at in [0, 8] {
+            let word = self.load_item_at(&item, at);
+            self.store_item_at(&word, &addr, at);
+        }
+        self.ins(format!("store i64 {current}, ptr {result}"));
+        self.br(&done);
+        self.start(&rare);
+        let args = [("i64", item), ("i64", code)];
+        let object = self.call_rt("kv_item_take", "i64", &args, false);
+        let copy = self.rt_op(
+            kavach_kir::RtOp::ListSet,
+            &current,
+            &index,
+            &object,
+            ty,
+            line,
+        );
+        self.ins(format!("store i64 {copy}, ptr {result}"));
+        self.br(&done);
+        self.start(&done);
+        let changed = self.val(format!("load i64, ptr {result}"));
+        self.store_local(l, &changed);
+        true
     }
 }

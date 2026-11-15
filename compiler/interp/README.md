@@ -14,6 +14,7 @@ Not supported yet: agents, capabilities, `ask` and `unsafe` (Phase 2 and the nat
 | `src/stmts.rs` | Statements, assignment into fields and lists, pattern matching |
 | `src/drops.rs` | `Drop` (spec 6.1): the identity copies share, and running `drop` at statement boundaries |
 | `src/calls.rs` | Calls: functions, closures, records, variants, methods |
+| `src/inout.rs` | `inout` arguments: lent to a call that can't fail, then written back (spec 3.9) |
 | `src/ops.rs` | Operators, with overflow checks per integer type |
 | `src/builtins.rs` | Prelude functions and methods of built-in types |
 | `src/bytes.rs` | `Bytes` (spec 2.13) |

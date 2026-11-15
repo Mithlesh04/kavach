@@ -30,7 +30,7 @@ Copying everything would be slow, so the compiler avoids it:
 
 1. **Ownership is inferred.** When a value is used for the last time, it is *moved* instead of copied.
 2. **Reference counting under the hood.** Large values are shared internally and counted. The compiler removes most count updates at compile time.
-3. **Copy-on-write, reused in place.** A value is copied only when it is changed *while* someone else still holds it. If nobody else holds it, it is changed in place. So `text += part` or `items.push(x)` in a loop copies only what is added, not the whole value each time. This holds for a list in a field or an item too: `state.items.push(x)` and `rows[i].push(x)` change it where it is.
+3. **Copy-on-write, reused in place.** A value is copied only when it is changed *while* someone else still holds it. If nobody else holds it, it is changed in place. So `text += part` or `items.push(x)` in a loop copies only what is added, not the whole value each time. This holds for a list or map in a field or an item too, and through `inout` (3.9): `state.items.push(x)`, `rows[i].push(x)` and `state.names[k] = v` change it where it is.
 
 You never see any of this. You write simple value code and get performance close to hand-managed memory.
 

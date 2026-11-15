@@ -231,14 +231,16 @@ fn a_pipeline_draws_what_its_gpu_fns_say() {
     if !kavach_runtime_gpu::available() {
         return;
     }
+    use kavach_runtime_gpu::render::Items::Words;
     let n = kavach_runtime_gpu::render::pipeline(&pipeline_of(SWARM)).expect("a layout");
     let words = |fs: &[f32]| fs.iter().map(|f| f.to_bits()).collect::<Vec<u32>>();
     let corners = words(&[-0.2, -0.2, 0.2, -0.2, 0.0, 0.2]);
     // A hot dot in the middle, a cold one up and to the right.
     let dots = words(&[0.0, 0.0, 1.0, 0.5, 0.5, 0.0]);
     let camera = words(&[1.0]);
-    let pixels = kavach_runtime_gpu::render::picture(n, [&corners, &dots, &camera], (32, 32))
-        .expect("drawn");
+    let pixels =
+        kavach_runtime_gpu::render::picture(n, (Words(&corners), Words(&dots), &camera), (32, 32))
+            .expect("drawn");
     let at = |x: usize, y: usize| pixels[y * 32 + x];
     assert_eq!(at(16, 16), [255, 51, 0, 255], "the hot dot");
     assert_eq!(at(24, 8), [0, 51, 255, 255], "the cold dot");

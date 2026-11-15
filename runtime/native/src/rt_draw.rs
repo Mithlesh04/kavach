@@ -7,7 +7,7 @@
 use crate::heap::{release, slots};
 use crate::rt_errors::set_error;
 use kavach_kir::{RtOp, Shape};
-use kavach_runtime_gpu::draw;
+use kavach_runtime_gpu::{draw, render};
 use kavach_runtime_window as win;
 
 /// Leaves `why` as a `GpuError.Unavailable` for `kv_take_error`.
@@ -69,13 +69,28 @@ crate::rt_data::entry!(kv_rt_draw, |op, a, b, c, _code, line| {
         // instances and shared value.
         RtOp::DrawDraw => {
             let parts = slots(c).to_vec();
-            let words = [
-                list_words(parts[0] as i64),
-                list_words(parts[1] as i64),
-                record_words(parts[2] as i64),
+            // A list a GPU `map` left in GPU memory is drawn from there,
+            // with nothing copied (decision 0106); any other, as words.
+            let kept = [
+                crate::rt_gpu::resident(parts[0] as i64),
+                crate::rt_gpu::resident(parts[1] as i64),
             ];
+            let words = |k: usize| match kept[k] {
+                Some(_) => Vec::new(),
+                None => list_words(parts[k] as i64),
+            };
+            let (vw, iw, shared) = (words(0), words(1), record_words(parts[2] as i64));
+            let vertices = match &kept[0] {
+                Some(r) => render::Items::Kept(r),
+                None => render::Items::Words(&vw),
+            };
+            let instances = match &kept[1] {
+                Some(r) => render::Items::Kept(r),
+                None => render::Items::Words(&iw),
+            };
+            let drawn = draw::draw(a, b, (vertices, instances, &shared));
             release(c);
-            if let Err(why) = draw::draw(a, b, [&words[0], &words[1], &words[2]]) {
+            if let Err(why) = drawn {
                 crate::rt::panic_with(&why, line);
             }
             0

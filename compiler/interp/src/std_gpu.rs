@@ -107,7 +107,15 @@ impl<'a> Interp<'a> {
                         words(v, part);
                     }
                 }
-                if let Err(why) = draw::draw(n, int(1), [&parts[0], &parts[1], &parts[2]]) {
+                if let Err(why) = draw::draw(
+                    n,
+                    int(1),
+                    (
+                        kavach_runtime_gpu::render::Items::Words(&parts[0]),
+                        kavach_runtime_gpu::render::Items::Words(&parts[1]),
+                        &parts[2],
+                    ),
+                ) {
                     return Err(self.panic(why, span));
                 }
             }

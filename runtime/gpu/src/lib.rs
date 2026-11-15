@@ -55,6 +55,11 @@ impl Resident {
     pub fn bytes(&self) -> usize {
         4 * self.words
     }
+
+    /// Its buffer and words, for a draw (`render.rs`).
+    pub(crate) fn parts(&self) -> (&wgpu::Buffer, usize) {
+        (&self.buffer, self.words)
+    }
 }
 
 /// The items a `map` reads: 32-bit words (little-endian) to copy over, or

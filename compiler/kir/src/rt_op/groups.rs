@@ -73,6 +73,7 @@ impl RtOp {
                 | RtOp::NetAccept
                 | RtOp::NetRead
                 | RtOp::NetWrite
+                | RtOp::NetSendFile
                 | RtOp::ChanTakeFor
                 | RtOp::ChanPutFor
                 | RtOp::AiAsk

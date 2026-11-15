@@ -133,6 +133,26 @@ impl Checker<'_> {
             ("fs", "exists") => (vec![p("path", &string)], Ty::Prim(Prim::Bool)),
             ("fs", "read_bytes") => (vec![p("path", &string)], fs_fails(Ty::Prim(Prim::Bytes))),
             // A WebSocket handshake's pieces, for `std/http/websocket.kav`.
+            // `http.file`'s file, sent by the system (spec 14.11): for the
+            // standard library, whose `http.file` was allowed to read it.
+            ("net", "send_file") => {
+                let module = &self.res.modules[self.res.module_at(span.start)].name;
+                if !module.starts_with("std.") {
+                    self.error(
+                        span,
+                        "this is for the standard library: use `http.file` (spec 14.11)",
+                    );
+                }
+                let conn = Ty::Builtin("Connection", Vec::new());
+                let fails = Ty::Result(
+                    Box::new(Ty::Prim(Prim::Bool)),
+                    Box::new(self.builtin_ty("NetError")),
+                );
+                (
+                    vec![p("conn", &conn), p("path", &string), p("length", &int)],
+                    fails,
+                )
+            }
             ("net", "websocket_accept" | "websocket_key" | "websocket_mask") => {
                 let module = &self.res.modules[self.res.module_at(span.start)].name;
                 if !module.starts_with("std.") {

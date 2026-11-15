@@ -1,0 +1,24 @@
+// Rule: text pushed from one list into another, short or long, is a copy: changing either list leaves the other as it was.
+// Spec: 6.1
+// expect output: ["a", "a much longer piece of text than fits in an item", ""]
+// expect output: ["a", "a much longer piece of text than fits in an item", "", "z"]
+// expect output: ["b", "a much longer piece of text than fits in an item", ""]
+// expect output: 1000
+
+fn main() {
+    let src = ["a", "a much longer piece of text than fits in an item", ""]
+    let out: [String] = []
+    for i in 0..src.len() {
+        out.push(src[i])
+    }
+    out.push("z")
+    src[0] = "b"
+    print(out.slice(0, 3))
+    print(out)
+    print(src)
+    let many: [String] = []
+    for i in 0..1000 {
+        many.push(src[i % 3])
+    }
+    print(many.len())
+}

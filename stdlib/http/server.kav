@@ -317,6 +317,13 @@ fn send(conn: Connection, response: Response, keep: Bool) ! NetError uses Net {
     head = head + "connection: {connection}{crlf}{crlf}"
     try conn.write(head.bytes())
     try write_piece(conn, response.body, sized)
+    // `http.file`'s file, sent by the system where it can (spec 14.11).
+    const length = Int(message.first_header(response.headers, "content-length") ?? "") catch -1
+    if sized and length >= 0 and response.file != none {
+        if try net.send_file(conn, response.file ?? "", length) {
+            return
+        }
+    }
     for piece in reader {
         try write_piece(conn, piece, sized)
     }

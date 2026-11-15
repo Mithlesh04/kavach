@@ -20,6 +20,7 @@ mod fakes;
 mod files;
 mod generics;
 mod guard;
+mod inout;
 mod interp;
 mod journal;
 mod json;

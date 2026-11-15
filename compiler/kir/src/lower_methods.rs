@@ -39,6 +39,11 @@ impl<'a> Lowerer<'a> {
         {
             return Ok(popped);
         }
+        if name.name == "draw"
+            && let Some(drawn) = self.frame_draw(base, args, ty, line)?
+        {
+            return Ok(drawn);
+        }
         if name.name == "timeout"
             && let Some(timed) = self.timeout(base, args, ty, line)?
         {

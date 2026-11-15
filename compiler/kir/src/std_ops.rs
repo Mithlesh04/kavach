@@ -17,6 +17,7 @@ pub(crate) fn std_op(module: &str, name: &str) -> Option<RtOp> {
         ("net", "connect") => RtOp::NetConnect,
         ("net", "connect_quic") => RtOp::NetConnectQuic,
         ("net", "bind") => RtOp::NetBind,
+        ("net", "send_file") => RtOp::NetSendFile,
         ("fs", "chunks") => RtOp::FsChunks,
         ("fs", "write_bytes") => RtOp::FsWriteBytes,
         ("fs", "write_durable") => RtOp::FsWriteDurable,

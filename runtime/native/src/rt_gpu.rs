@@ -14,7 +14,8 @@ mod kept;
 mod later;
 mod reduce;
 
-use kept::{bring_back, fetch, forget, keep, resident, take_alone};
+pub(crate) use kept::resident;
+use kept::{bring_back, fetch, forget, keep, take_alone};
 
 /// The least work worth sending to an open GPU, in nanoseconds of the
 /// CPU: below it, starting the GPU costs more than it saves.

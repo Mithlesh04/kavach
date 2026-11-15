@@ -167,7 +167,17 @@ impl<'a> Lowerer<'a> {
                     ty,
                     line,
                 };
-                self.assign_path(base, changed)
+                // `r.names[k] = v`: changed where it is (Sakshi's S6).
+                let mut stmts = Vec::new();
+                self.change_in_place(base, changed, &mut stmts)?;
+                Ok(match stmts.len() {
+                    1 => stmts.pop().expect("one statement"),
+                    _ => Stmt::Expr(ir::Expr {
+                        kind: ir::ExprKind::Block(ir::Block { stmts, value: None }),
+                        ty: Type::Unit,
+                        line,
+                    }),
+                })
             }
             _ => Err(self.unsupported("assigning to this", target.span)),
         }

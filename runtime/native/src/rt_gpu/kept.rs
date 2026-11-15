@@ -38,7 +38,7 @@ impl Drop for Resident {
 }
 
 /// `list`'s items in GPU memory, when they are kept there.
-pub(super) fn resident(list: i64) -> Option<kavach_runtime_gpu::Resident> {
+pub(crate) fn resident(list: i64) -> Option<kavach_runtime_gpu::Resident> {
     RESIDENT.with(|r| {
         let r = r.borrow();
         r.0.iter().find(|k| k.list == list).map(|k| k.items.clone())
