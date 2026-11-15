@@ -65,8 +65,20 @@ crate::rt_data::entry!(kv_rt_draw, |op, a, b, c, _code, line| {
                 Err(why) => crate::rt::panic_with(&why, line),
             }
         }
+        // `a` wide, `b` high, the pixels in list `c` (owned).
+        RtOp::DrawTexture => {
+            let pixels = crate::rt_bytes::list_bytes(c);
+            release(c);
+            let fit = |v: i64| u32::try_from(v).unwrap_or(0);
+            kavach_runtime_gpu::texture::texture(fit(a), fit(b), &pixels)
+                .unwrap_or_else(|why| fail(&why))
+        }
+        RtOp::DrawDropTexture => {
+            kavach_runtime_gpu::texture::drop_texture(a);
+            0
+        }
         // `a` is the frame, `b` the pipeline, `c` the tuple of vertices,
-        // instances and shared value.
+        // instances, shared value and textures.
         RtOp::DrawDraw => {
             let parts = slots(c).to_vec();
             // A list a GPU `map` left in GPU memory is drawn from there,
@@ -88,7 +100,18 @@ crate::rt_data::entry!(kv_rt_draw, |op, a, b, c, _code, line| {
                 Some(r) => render::Items::Kept(r),
                 None => render::Items::Words(&iw),
             };
-            let drawn = draw::draw(a, b, (vertices, instances, &shared));
+            // Each texture's number, its first field.
+            let textures: Vec<i64> = (crate::heap::items_of(parts[3] as i64).iter())
+                .map(|t| slots(*t as i64)[0] as i64)
+                .collect();
+            let drawn = draw::draw(
+                a,
+                render::Draw {
+                    pipeline: b,
+                    parts: (vertices, instances, &shared),
+                    textures: &textures,
+                },
+            );
             release(c);
             if let Err(why) = drawn {
                 crate::rt::panic_with(&why, line);

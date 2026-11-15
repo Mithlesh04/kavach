@@ -33,19 +33,24 @@ pub(crate) struct Writer<'p> {
     /// A loop was written that may not end: a `while`, or an inclusive
     /// range, which wraps at the largest number (decision 0077).
     pub(crate) open_loop: bool,
+    /// The shape of `Texture`, which a fragment fn takes (spec 15.3), and
+    /// that of the colors `sample` gives, once one is written.
+    pub(crate) texture: Option<u32>,
+    pub(crate) sampled: Option<u32>,
     names: HashMap<FuncId, String>,
 }
 
 /// One function being written.
-struct Body<'p> {
+pub(crate) struct Body<'p> {
     program: &'p Program,
-    f: &'p Function,
+    pub(crate) f: &'p Function,
     env: Option<Local>,
     /// The item, when it is a tuple or record (`Writer::item`).
     item: Option<Local>,
     code: String,
     temps: Vec<Type>,
     depth: usize,
+    pub(crate) texture: Option<u32>,
 }
 
 fn zero(t: Type) -> String {
@@ -70,6 +75,8 @@ impl<'p> Writer<'p> {
             item: None,
             structs: BTreeSet::new(),
             open_loop: false,
+            texture: None,
+            sampled: None,
             names: HashMap::new(),
         }
     }
@@ -94,6 +101,7 @@ impl<'p> Writer<'p> {
             code: String::new(),
             temps: Vec::new(),
             depth: 1,
+            texture: self.texture,
         };
         let params: Vec<Local> = f
             .params
@@ -102,7 +110,10 @@ impl<'p> Writer<'p> {
             .filter(|p| Some(*p) != env)
             .collect();
         let whole = b.item;
-        for p in params.iter().filter(|p| Some(**p) != whole) {
+        let plain: Vec<Local> = (params.iter().copied())
+            .filter(|p| Some(*p) != whole && !b.is_texture(*p))
+            .collect();
+        for p in plain {
             b.line(&format!("l{p} = p{p};"));
         }
         // The item as one value too, for a use of all of it.
@@ -126,6 +137,7 @@ impl<'p> Writer<'p> {
                         typed.push(format!("p{p}_{k}: {}", wgsl_type(*t)?));
                     }
                 }
+                _ if b.is_texture(*p) => typed.push(format!("p{p}: texture_2d<f32>")),
                 _ => typed.push(format!("p{p}: {}", self.name_of(f.locals[*p as usize])?)),
             }
         }
@@ -172,6 +184,10 @@ impl<'p> Body<'p> {
 
     /// A local's name, if a kernel can hold its type.
     fn local(&self, l: Local) -> Option<String> {
+        // A texture stays the parameter it came in as.
+        if self.is_texture(l) {
+            return Some(format!("p{l}"));
+        }
         ty_name(self.program, *self.f.locals.get(l as usize)?)?;
         Some(format!("l{l}"))
     }
@@ -279,7 +295,7 @@ impl<'p> Body<'p> {
 
     /// `e` as a WGSL expression, after the statements it needs; empty for
     /// one with no value.
-    fn expr(&mut self, w: &mut Writer<'p>, e: &Expr) -> Option<String> {
+    pub(crate) fn expr(&mut self, w: &mut Writer<'p>, e: &Expr) -> Option<String> {
         let t = e.ty;
         Some(match &e.kind {
             K::Int(n) => match t {
@@ -390,6 +406,9 @@ impl<'p> Body<'p> {
                 self.line("}");
                 r
             }
+            K::Call(_, args) if args.first().is_some_and(|a| self.texture_ty(a.ty)) => {
+                self.sample(w, args, t)?
+            }
             K::Call(fid, args) => {
                 let mut vals = Vec::new();
                 for a in args {
@@ -455,42 +474,6 @@ impl<'p> Body<'p> {
         }
         self.depth -= 1;
         Some(())
-    }
-
-    /// `x` converted to `to`, checked as the CPU checks it. A `Float32`
-    /// power arrives as `Float32(Float(a) ** Float(b))` (`lower_power.rs`).
-    fn convert(&mut self, w: &mut Writer<'p>, x: &Expr, to: Type) -> Option<String> {
-        if let (Type::F32, K::Rt(op, args)) = (to, &x.kind) {
-            let name = match op {
-                RtOp::MathPow => "kpow",
-                RtOp::MathSqrt => "sqrt",
-                RtOp::MathFloor => "floor",
-                RtOp::MathCeil => "ceil",
-                RtOp::MathRound => "kround",
-                _ => return None,
-            };
-            let mut vals = Vec::new();
-            for a in args {
-                let K::Convert(inner, _) = &a.kind else {
-                    return None;
-                };
-                if inner.ty != Type::F32 {
-                    return None;
-                }
-                vals.push(self.expr(w, inner)?);
-            }
-            return Some(format!("{name}({})", vals.join(", ")));
-        }
-        let v = self.expr(w, x)?;
-        Some(match (x.ty, to) {
-            (from, to) if from == to => v,
-            (Type::I32 | Type::U32, Type::F32) => format!("f32({v})"),
-            (Type::F32, Type::I32) => format!("f_to_i({v}, {}u)", x.line),
-            (Type::F32, Type::U32) => format!("f_to_u({v}, {}u)", x.line),
-            (Type::I32, Type::U32) => format!("i_to_u({v}, {}u)", x.line),
-            (Type::U32, Type::I32) => format!("u_to_i({v}, {}u)", x.line),
-            _ => return None,
-        })
     }
 }
 

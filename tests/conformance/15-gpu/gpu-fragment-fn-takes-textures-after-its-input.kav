@@ -1,0 +1,17 @@
+// Rule: After what the vertex fn gives, a gpu fragment fn takes only `Texture`s.
+// Spec: 15.3
+// expect compile error
+
+use std.gpu
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+    u: Float32
+}
+
+gpu fragment fn paint(l: Lit, skin: Texture, shade: Float32) -> (Float32, Float32, Float32, Float32) {     // error: a Float32 after the input
+    skin.sample(l.u, shade)
+}
+
+fn main() {
+}

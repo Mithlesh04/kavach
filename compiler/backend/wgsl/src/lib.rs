@@ -19,7 +19,8 @@
 //! compiled without `wgpu`'s counter in each loop (decision 0077).
 
 mod render;
-pub use render::pipeline_sources;
+pub use render::{deep, pipeline_sources};
+mod convert;
 mod cost;
 mod expr;
 mod filter;
@@ -27,6 +28,9 @@ mod ops;
 mod reduce;
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_draw;
+mod texture;
 
 use kavach_kir::{Expr, ExprKind, FuncId, Program, RtOp, Shape, Stmt, Type, walk};
 use std::collections::HashMap;

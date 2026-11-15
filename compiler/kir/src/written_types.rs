@@ -1,5 +1,5 @@
 //! The KIR type of a type written in the source (`Map<K, V>`, `[T]`,
-//! `Pipeline<V, I, S>`, a record's name): what a declaration, a cast or
+//! `Pipeline<V, I, S, T>`, a record's name): what a declaration, a cast or
 //! a type argument says, as `types.rs` does for the checker's types.
 
 use crate::ir::{FieldShape, Shape, Type};

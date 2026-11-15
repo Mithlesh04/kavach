@@ -169,6 +169,47 @@ frame.draw(dots, square, instances: swarm, shared: Camera(zoom: 1.0))
 - A vertex's, instance's or shared value's fields are `Float32`s, `Int32`s or `UInt32`s, 1 to 8 of them.
 - A draw can't stop the program, so in a vertex or fragment fn a whole-number overflow or a division by zero gives a wrong value for that corner or pixel, not a panic (5.6): the GPU has no way to say so in the middle of a frame. On the CPU, the same fn panics as any other.
 
+### Depth
+
+A pipeline made with `depth: true` draws a pixel only where it is nearer than what is already there, so a 3D scene can be drawn in any order:
+
+```kavach
+const solid = gpu.pipeline(place, shade, depth: true)
+frame.clear(0.0, 0.0, 0.0)
+frame.draw(solid, far_wall)
+frame.draw(solid, near_box)
+```
+
+- A pixel's depth is the third part of `position` divided by the fourth: 0 is nearest, 1 farthest. Only pixels from 0 to 1 are drawn.
+- Each frame keeps one depth for each pixel. They start at 1, the farthest, and `frame.clear` sets them back to 1. A pixel drawn with depth keeps its depth there, and a later one is drawn only where its depth is less.
+- A pipeline without depth (the default) neither looks at the depths nor changes them: it draws over what is there, as before.
+- `depth:` is written `true` or `false`: it is part of the pipeline, which is compiled ahead (14.24). Any other value is a compile error.
+
+### Textures
+
+A `gpu fragment fn` can read pictures, `Texture`s, which it takes after its input. `t.sample(u, v)` gives the color of texture `t` at `u` (0 left, 1 right) and `v` (0 top, 1 bottom):
+
+```kavach
+type Spot {
+    position: (Float32, Float32, Float32, Float32)
+    u: Float32
+    v: Float32
+}
+
+gpu fragment fn paint(s: Spot, skin: Texture) -> (Float32, Float32, Float32, Float32) {
+    skin.sample(s.u, s.v)
+}
+
+const tiles = gpu.pipeline(place, paint)
+const skin = try gpu.texture(2, 2, pixels: checkers)
+frame.draw(tiles, square, textures: [skin])
+```
+
+- A color from `sample` is blended between the four pixels nearest the spot, red, green, blue and opacity, each from 0 to 1. A spot past an edge takes the edge's pixels.
+- A texture's colors are in sRGB, as image files and screens have them: a texture sampled and drawn as it is shows its own pixels.
+- `frame.draw` gives one texture for each `Texture` the fragment fn takes, in order, as `textures:`. Leaving `textures:` out when the fragment fn takes one is a compile error; a list of another length is a panic.
+- `sample` is the one call on a `Texture` a `gpu fn` can make, and only a `gpu fragment fn` takes textures. On the CPU, `sample` reads the same pixels and gives the same colors, up to rounding.
+
 ## Open questions
 
 - `sum`, `min` and `max` of `Float32` on the GPU, and `filter` of records and tuples. Decided (Mithlesh, 2026-11-03): a `sum` of floats keeps its adding order ([decision 0031](../decisions/0031-loops-on-all-cores.md)), so on the GPU it runs only when the program asks for a reordered sum. Float `min` and `max` must keep `NaN` last (14.2).

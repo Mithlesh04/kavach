@@ -1,6 +1,6 @@
 # tests/conformance/15-gpu/
 
-Conformance tests for spec chapter [15. GPU](../../../docs/spec/15-gpu.md). Format: [../README.md](../README.md). These lists are short, so they run on the CPU; `tools/cli/tests/gpu.rs` runs `map`s, `filter`, `sum`, `min` and `max` on the GPU (`KAVACH_GPU=on` and `check`).
+Conformance tests for spec chapter [15. GPU](../../../docs/spec/15-gpu.md). Format: [../README.md](../README.md). These lists are short, so they run on the CPU; `tools/cli/tests/textures.rs` samples textures, and `tools/cli/tests/gpu.rs` runs `map`s, `filter`, `sum`, `min` and `max` on the GPU (`KAVACH_GPU=on` and `check`).
 
 | Section | Test | Rule | Result |
 |---|---|---|---|
@@ -23,3 +23,7 @@ Conformance tests for spec chapter [15. GPU](../../../docs/spec/15-gpu.md). Form
 | 15.3 | [gpu-fragment-fn-takes-what-the-vertex-fn-gives.kav](gpu-fragment-fn-takes-what-the-vertex-fn-gives.kav) | `gpu.pipeline`'s fragment fn takes what its vertex fn gives. | compile error |
 | 15.3 | [frame-draw-gives-what-the-vertex-fn-takes.kav](frame-draw-gives-what-the-vertex-fn-takes.kav) | `frame.draw` gives the instances and shared value its pipeline's vertex fn takes: a second parameter is the instance. | compile error |
 | 15.3 | [gpu-pipeline-takes-gpu-fns.kav](gpu-pipeline-takes-gpu-fns.kav) | `gpu.pipeline` takes a gpu vertex fn and a gpu fragment fn, by name. | compile error |
+| 15.3 | [gpu-pipeline-depth-is-true-or-false.kav](gpu-pipeline-depth-is-true-or-false.kav) | `depth:` of `gpu.pipeline` is written `true` or `false`: it is part of the pipeline, compiled before it draws. | compile error |
+| 15.3 | [gpu-fragment-fn-takes-textures-after-its-input.kav](gpu-fragment-fn-takes-textures-after-its-input.kav) | After what the vertex fn gives, a gpu fragment fn takes only `Texture`s. | compile error |
+| 15.3 | [frame-draw-gives-the-textures-its-fragment-fn-reads.kav](frame-draw-gives-the-textures-its-fragment-fn-reads.kav) | `frame.draw` gives the textures its pipeline's fragment fn takes, as `textures:`. | compile error |
+| 15.3 | [gpu-fn-reads-a-texture-only-by-sample.kav](gpu-fn-reads-a-texture-only-by-sample.kav) | `sample` is the one call on a `Texture` a gpu fn can make. | compile error |

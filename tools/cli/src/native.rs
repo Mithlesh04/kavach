@@ -121,7 +121,7 @@ pub(crate) fn give_shaders(c: &kavach_driver::Compiled) {
     for (key, text) in kavach_backend_wgsl::pipeline_sources(&program) {
         let defs: Vec<usize> = key.split(' ').filter_map(|d| d.parse().ok()).collect();
         if let [v, f] = defs[..] {
-            shaders.insert((v, f), text);
+            shaders.insert((v, f, kavach_backend_wgsl::deep(&key)), text);
         }
     }
     kavach_interp::give_pipelines(shaders);

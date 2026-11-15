@@ -49,25 +49,7 @@ pub fn bytes_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
         return new_bytes(out, result);
     }
     let out = match op {
-        RtOp::BytesNew => {
-            // Straight off the list's own buffer: packed lists
-            // (decision 0030) already hold one byte per byte.
-            let data = if crate::flat::packed(crate::heap::obj(a).ty()) {
-                // Whole words at a time: the packed order is the byte
-                // order (little-endian), so this is a straight copy.
-                let words = crate::heap::slots(a);
-                let n = crate::heap::list_len_items_pub(a);
-                let mut data = Vec::with_capacity(n.next_multiple_of(8));
-                for w in &words[..n.div_ceil(8)] {
-                    data.extend_from_slice(&w.to_le_bytes());
-                }
-                data.truncate(n);
-                data
-            } else {
-                crate::heap::slots(a).iter().map(|s| *s as u8).collect()
-            };
-            new_bytes(data, result)
-        }
+        RtOp::BytesNew => new_bytes(list_bytes(a), result),
         RtOp::StrBytes => new_bytes(with_str(a, |s| s.as_bytes().to_vec()), bytes_type()),
         RtOp::BytesAt => {
             let at = with_bytes(a, |d| {
@@ -304,4 +286,23 @@ pub extern "C-unwind" fn kv_bytes_bad_index(i: i64, len: i64, line: i32) {
         &kavach_runtime_core::bytes_index_panic(i128::from(i), n),
         line,
     )
+}
+
+/// The bytes of a `[UInt8]`, straight off the list's own buffer: packed
+/// lists (decision 0030) already hold one byte per byte.
+pub(crate) fn list_bytes(a: i64) -> Vec<u8> {
+    if crate::flat::packed(crate::heap::obj(a).ty()) {
+        // Whole words at a time: the packed order is the byte order
+        // (little-endian), so this is a straight copy.
+        let words = crate::heap::slots(a);
+        let n = crate::heap::list_len_items_pub(a);
+        let mut data = Vec::with_capacity(n.next_multiple_of(8));
+        for w in &words[..n.div_ceil(8)] {
+            data.extend_from_slice(&w.to_le_bytes());
+        }
+        data.truncate(n);
+        data
+    } else {
+        crate::heap::slots(a).iter().map(|s| *s as u8).collect()
+    }
 }

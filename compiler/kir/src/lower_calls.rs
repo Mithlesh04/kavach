@@ -58,6 +58,17 @@ impl<'a> Lowerer<'a> {
                     _ => Err(self.unsupported("calling a function value", e.span)),
                 }
             }
+            // `(0..n).to_list()`: the range, built as a list (spec 2.2).
+            ExprKind::Field { base, name, .. }
+                if name.name == "to_list"
+                    && args.is_empty()
+                    && matches!(
+                        base.kind,
+                        ExprKind::Binary(ast::BinaryOp::Range | ast::BinaryOp::RangeInclusive, ..)
+                    ) =>
+            {
+                self.expr(base)
+            }
             ExprKind::Field {
                 base,
                 name,

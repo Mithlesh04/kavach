@@ -38,6 +38,19 @@ impl Checker<'_> {
         }
         self.check_arena_call(base, name, args);
         let recv = self.inf.resolve(&recv);
+        // A range has the list methods that read it (spec 2.2): it is the
+        // list of its numbers, which lowering builds (`lower_range.rs`).
+        let recv = match recv {
+            Ty::Range(item) if !matches!(name.name.as_str(), "push" | "pop") => {
+                let list = Ty::List(item);
+                self.expr_types.push((base.span, list.clone()));
+                if name.name == "to_list" && args.is_empty() {
+                    return list;
+                }
+                list
+            }
+            r => r,
+        };
         if matches!(recv, Ty::Prim(Prim::Bytes)) && name.name == "as_list" {
             return self.bytes_as_list(generics, args, name.span);
         }

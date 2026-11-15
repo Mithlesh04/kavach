@@ -1,0 +1,34 @@
+// Rule: frame.draw gives the textures its pipeline's fragment fn takes, as `textures:`.
+// Spec: 15.3
+// expect compile error
+
+use std.window
+use std.gpu
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Spot {
+    position: (Float32, Float32, Float32, Float32)
+    u: Float32
+    v: Float32
+}
+
+gpu vertex fn place(c: Corner) -> Spot {
+    Spot(position: (c.x, c.y, 0.0, 1.0), u: c.x, v: c.y)
+}
+
+gpu fragment fn paint(s: Spot, skin: Texture) -> (Float32, Float32, Float32, Float32) {
+    skin.sample(s.u, s.v)
+}
+
+fn main() ! Error uses Window {
+    const win = try window.open("Tiles", 64, 64)
+    const screen = try gpu.screen(win)
+    const frame = try screen.frame()
+    const tiles = gpu.pipeline(place, paint)
+    frame.draw(tiles, [Corner(x: 0.0, y: 0.0)])     // error: the fragment fn reads a texture: no textures:
+    frame.show()
+}

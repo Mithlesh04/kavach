@@ -3,9 +3,10 @@
 //! any gpu fn, and `vs_main` and `fs_main` around them. Its first line
 //! tells the runtime how to lay out the buffers:
 //!
-//! `// draw f f | f f f | 1`: the vertex's fields (`f` a `Float32`, `i`
-//! an `Int32`, `u` a `UInt32`), the instance's, and the shared value's
-//! number of words. A draw can't stop the program, so in these shaders a
+//! `// draw f f | f f f | 1 | 0 | 0`: the vertex's fields (`f` a
+//! `Float32`, `i` an `Int32`, `u` a `UInt32`), the instance's, the shared
+//! value's number of words, whether it has depth, and how many textures
+//! the fragment fn takes. A draw can't stop the program, so in these shaders a
 //! panic only marks itself (`halt` does nothing), and the arithmetic goes
 //! on with the value it has.
 
@@ -86,18 +87,29 @@ fn type_name(t: Type) -> Option<String> {
 }
 
 /// The module of the pipeline of vertex fn `vertex` and fragment fn
-/// `fragment`, each as the function of a closure (its first parameter).
-pub(crate) fn module(program: &Program, vertex: FuncId, fragment: FuncId) -> Option<String> {
+/// `fragment`, each as the function of a closure (its first parameter),
+/// with depth or not.
+pub(crate) fn module(
+    program: &Program,
+    vertex: FuncId,
+    fragment: FuncId,
+    depth: bool,
+) -> Option<String> {
     let (vf, ff) = (
         program.functions.get(vertex as usize)?,
         program.functions.get(fragment as usize)?,
     );
     let (&venv, inputs) = vf.params.split_first()?;
     let &fenv = ff.params.first()?;
+    // The textures, after the fragment fn's input (spec 15.3).
+    let textures: Vec<Type> = (ff.params.iter().skip(2))
+        .map(|p| ff.locals[*p as usize])
+        .collect();
     let inputs: Vec<Type> = inputs.iter().map(|p| vf.locals[*p as usize]).collect();
     let corner = fields(program, vf.ret)?;
     let pos = corner.iter().position(|(n, _)| n == "position")?;
     let mut w = Writer::new(program);
+    w.texture = textures.first().and_then(|t| struct_id(*t));
     let vname = w.function(vertex, Some(venv))?;
     let fname = w.function(fragment, Some(fenv))?;
     let ids: Vec<u32> = w.structs.iter().copied().collect();
@@ -139,6 +151,8 @@ pub(crate) fn module(program: &Program, vertex: FuncId, fragment: FuncId) -> Opt
     } else {
         header.push("0".to_string());
     }
+    header.push(u8::from(depth).to_string());
+    header.push(textures.len().to_string());
     let first = format!("// draw {}\n", header.join(" | "));
 
     // What goes from the vertex fn to the fragment fn: `position`, then
@@ -171,6 +185,9 @@ pub(crate) fn module(program: &Program, vertex: FuncId, fragment: FuncId) -> Opt
     module.push_str("var<private> halted: bool;\nfn halt(code: u32, a: u32, b: u32, line: u32) { halted = true; }\n");
     module.push_str(helpers);
     module.push_str(&structs(program, &ids)?);
+    if !textures.is_empty() {
+        module.push_str(&crate::texture::declarations(textures.len(), w.sampled));
+    }
     module.push_str(&text);
     if !attributes.is_empty() {
         module.push_str(&format!("struct VIn {{ {} }}\n", attributes.join(", ")));
@@ -184,11 +201,20 @@ pub(crate) fn module(program: &Program, vertex: FuncId, fragment: FuncId) -> Opt
         sets.join("\n")
     ));
     module.push_str(&format!(
-        "@fragment\nfn fs_main(i: VOut) -> @location(0) vec4<f32> {{\n    let c = {fname}(S{}({}));\n    return vec4<f32>(c.f0, c.f1, c.f2, c.f3);\n}}\n",
+        "@fragment\nfn fs_main(i: VOut) -> @location(0) vec4<f32> {{\n    let c = {fname}(S{}({}){});\n    return vec4<f32>(c.f0, c.f1, c.f2, c.f3);\n}}\n",
         struct_id(vf.ret)?,
-        back.join(", ")
+        back.join(", "),
+        (0..textures.len())
+            .map(|k| format!(", ktex{k}"))
+            .collect::<String>()
     ));
     Some(module)
+}
+
+/// Whether the key `lower_draw.rs` gives a pipeline, its two fns'
+/// definitions, says it has depth: `12 14 depth`.
+pub fn deep(key: &str) -> bool {
+    key.split(' ').nth(2) == Some("depth")
 }
 
 fn struct_id(t: Type) -> Option<u32> {
@@ -203,12 +229,16 @@ pub(crate) fn attach_pipelines(program: &mut Program) {
     use kavach_kir::ExprKind;
     use kavach_kir::{RtOp, walk};
     let closures = |e: &kavach_kir::Expr| match &e.kind {
-        ExprKind::Rt(RtOp::DrawPipeline, args) => match (&args.first()?.kind, &args.get(1)?.kind) {
-            (ExprKind::Closure { func: v, .. }, ExprKind::Closure { func: f, .. }) => {
-                Some((*v, *f))
+        ExprKind::Rt(RtOp::DrawPipeline, args) => {
+            match (&args.first()?.kind, &args.get(1)?.kind, &args.get(2)?.kind) {
+                (
+                    ExprKind::Closure { func: v, .. },
+                    ExprKind::Closure { func: f, .. },
+                    ExprKind::Str(key),
+                ) => Some((*v, *f, deep(key))),
+                _ => None,
             }
-            _ => None,
-        },
+        }
         _ => None,
     };
     let mut texts = std::collections::HashMap::new();
@@ -217,7 +247,7 @@ pub(crate) fn attach_pipelines(program: &mut Program) {
             if let Some(key) = closures(e) {
                 texts
                     .entry(key)
-                    .or_insert_with(|| module(program, key.0, key.1).unwrap_or_default());
+                    .or_insert_with(|| module(program, key.0, key.1, key.2).unwrap_or_default());
             }
             false
         });
@@ -248,7 +278,7 @@ pub fn pipeline_sources(program: &Program) -> Vec<(String, String)> {
                     ExprKind::Closure { func: g, .. },
                     ExprKind::Str(key),
                 ) = (&args[0].kind, &args[1].kind, &args[2].kind)
-                && let Some(text) = module(program, *v, *g)
+                && let Some(text) = module(program, *v, *g, deep(key))
             {
                 out.push((key.clone(), text));
             }

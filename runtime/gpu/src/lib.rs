@@ -10,7 +10,9 @@ use wgpu::util::DeviceExt;
 
 mod device;
 pub mod draw;
+mod picture;
 pub mod render;
+pub mod texture;
 use device::{Gpu, gpu};
 pub use device::{adapters, available, ready};
 

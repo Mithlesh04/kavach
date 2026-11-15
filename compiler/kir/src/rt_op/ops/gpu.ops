@@ -63,5 +63,9 @@ DrawClose,
 /// `gpu.pipeline(v, f)`: the vertex and fragment fns, and their WGSL.
 DrawPipeline,
 /// A frame's draw: the frame, the pipeline, and (vertices, instances,
-/// shared value).
+/// shared value, textures).
 DrawDraw,
+/// A texture (spec 15.3): `a` wide, `b` high, the pixels in list `c`
+/// (can fail); and letting texture `a` go.
+DrawTexture,
+DrawDropTexture,

@@ -154,7 +154,7 @@ fn only_loops_that_surely_end_are_marked() {
 }
 
 /// The shaders of the `gpu.pipeline` in `src`.
-fn pipeline_of(src: &str) -> String {
+pub(crate) fn pipeline_of(src: &str) -> String {
     let c = kavach_driver::compile(src, "main.kav", Default::default());
     assert!(!c.has_errors(), "{}", c.render());
     let mut program = kavach_kir::lower(&c).expect("lowered");
@@ -213,7 +213,10 @@ fn main() {
 #[test]
 fn a_pipeline_is_one_module_with_its_layout_first() {
     let text = pipeline_of(SWARM);
-    assert!(text.starts_with("// draw f f | f f f | 1\n"), "{text}");
+    assert!(
+        text.starts_with("// draw f f | f f f | 1 | 0 | 0\n"),
+        "{text}"
+    );
     for part in [
         "@vertex\nfn vs_main(a: VIn) -> VOut",
         "@fragment\nfn fs_main(i: VOut)",
@@ -225,7 +228,7 @@ fn a_pipeline_is_one_module_with_its_layout_first() {
 
 /// One drawing test at a time: two pictures drawn at once from parallel
 /// tests made the GPU stop under a full test run's load.
-fn drawing() -> std::sync::MutexGuard<'static, ()> {
+pub(crate) fn drawing() -> std::sync::MutexGuard<'static, ()> {
     static DRAWING: std::sync::Mutex<()> = std::sync::Mutex::new(());
     DRAWING.lock().unwrap_or_else(|e| e.into_inner())
 }
@@ -239,7 +242,6 @@ fn a_pipeline_draws_what_its_gpu_fns_say() {
     if !kavach_runtime_gpu::available() {
         return;
     }
-    use kavach_runtime_gpu::render::Items::Words;
     let n = kavach_runtime_gpu::render::pipeline(&pipeline_of(SWARM)).expect("a layout");
     let words = |fs: &[f32]| fs.iter().map(|f| f.to_bits()).collect::<Vec<u32>>();
     let corners = words(&[-0.2, -0.2, 0.2, -0.2, 0.0, 0.2]);
@@ -247,7 +249,7 @@ fn a_pipeline_draws_what_its_gpu_fns_say() {
     let dots = words(&[0.0, 0.0, 1.0, 0.5, 0.5, 0.0]);
     let camera = words(&[1.0]);
     let pixels =
-        kavach_runtime_gpu::render::picture(n, (Words(&corners), Words(&dots), &camera), (32, 32))
+        kavach_runtime_gpu::render::picture(vec![one(n, &corners, &dots, &camera)], (32, 32))
             .expect("drawn");
     let at = |x: usize, y: usize| pixels[y * 32 + x];
     assert_eq!(at(16, 16), [255, 51, 0, 255], "the hot dot");
@@ -263,13 +265,28 @@ fn a_pipeline_compiles_before_its_first_draw() {
     if !kavach_runtime_gpu::available() {
         return;
     }
-    use kavach_runtime_gpu::render::{self, Items::Words};
+    use kavach_runtime_gpu::render;
     let wgsl = pipeline_of(SWARM);
     let first = render::pipeline(&wgsl).expect("a layout");
     let words = |fs: &[f32]| fs.iter().map(|f| f.to_bits()).collect::<Vec<u32>>();
     let corners = words(&[-0.2, -0.2, 0.2, -0.2, 0.0, 0.2]);
     let (dot, camera) = (words(&[0.0, 0.0, 1.0]), words(&[1.0]));
-    render::picture(first, (Words(&corners), Words(&dot), &camera), (8, 8)).expect("drawn");
+    render::picture(vec![one(first, &corners, &dot, &camera)], (8, 8)).expect("drawn");
     let second = render::pipeline(&format!("{wgsl}// another\n")).expect("a layout");
     assert!(render::is_made(second), "compiled when it was made");
+}
+
+/// A draw through pipeline `n` of words, with no textures.
+pub(crate) fn one<'a>(
+    n: i64,
+    vertices: &'a [u32],
+    instances: &'a [u32],
+    shared: &'a [u32],
+) -> kavach_runtime_gpu::render::Draw<'a> {
+    use kavach_runtime_gpu::render::Items::Words;
+    kavach_runtime_gpu::render::Draw {
+        pipeline: n,
+        parts: (Words(vertices), Words(instances), shared),
+        textures: &[],
+    }
 }

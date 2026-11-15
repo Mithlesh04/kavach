@@ -28,12 +28,21 @@ impl Checker<'_> {
                 vec![id, p("rgb", &Ty::List(Box::new(Ty::Prim(Prim::Float))))],
                 Ty::Unit,
             ),
-            "show_id" | "drop_frame_id" | "close_id" => (vec![id], Ty::Unit),
+            "show_id" | "drop_frame_id" | "close_id" | "drop_texture_id" => (vec![id], Ty::Unit),
+            // A texture's size and its pixels (spec 15.3).
+            "texture_id" => {
+                let bytes = Ty::List(Box::new(Ty::Prim(Prim::UInt8)));
+                (
+                    vec![p("width", &int), p("height", &int), p("pixels", &bytes)],
+                    failing(self),
+                )
+            }
             // A frame's number, a pipeline, its vertices, instances and
-            // shared value (spec 15.3).
+            // shared value, and the textures (spec 15.3).
             "draw_id" => {
-                let (v, i, s) = (self.fresh(), self.fresh(), self.fresh());
-                let pipeline = Ty::Builtin("Pipeline", vec![v.clone(), i.clone(), s.clone()]);
+                let (v, i, s, t) = (self.fresh(), self.fresh(), self.fresh(), self.fresh());
+                let pipeline = Ty::Builtin("Pipeline", vec![v.clone(), i.clone(), s.clone(), t]);
+                let texture = self.builtin_ty("Texture");
                 let list = |t: &Ty| Ty::List(Box::new(t.clone()));
                 let shared = Ty::Optional(Box::new(s));
                 (
@@ -43,6 +52,7 @@ impl Checker<'_> {
                         p("vertices", &list(&v)),
                         p("instances", &list(&i)),
                         p("shared", &shared),
+                        p("textures", &list(&texture)),
                     ],
                     Ty::Unit,
                 )

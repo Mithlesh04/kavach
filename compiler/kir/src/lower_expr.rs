@@ -133,6 +133,12 @@ impl<'a> Lowerer<'a> {
             ExprKind::Binary(op @ (BinaryOp::Add | BinaryOp::Sub), l, r) if self.is_ptr(l) => {
                 return self.ptr_moved(l, r, *op == BinaryOp::Sub, line);
             }
+            // A range a list method reads (spec 2.2).
+            ExprKind::Binary(op @ (BinaryOp::Range | BinaryOp::RangeInclusive), l, r)
+                if self.is_list_type(ty) =>
+            {
+                return self.range_list(l, r, *op == BinaryOp::RangeInclusive, ty, line);
+            }
             ExprKind::Binary(op, l, r) => {
                 let (l, r) = (self.expr(l)?, self.expr(r)?);
                 // `T` compared with `T?`: compare as optionals.

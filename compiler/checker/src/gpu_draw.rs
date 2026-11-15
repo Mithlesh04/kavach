@@ -1,6 +1,7 @@
 //! `gpu vertex fn` and `gpu fragment fn` (spec 15.3): what each takes and
-//! gives; `gpu.pipeline(v, f)`, typed by what `v` takes; and the
-//! arguments of `frame.draw`, which must give what `v` takes.
+//! gives; `gpu.pipeline(v, f)`, typed by what `v` takes and whether `f`
+//! takes textures; and the arguments of `frame.draw`, which must give what
+//! the two take.
 
 use crate::checker::{Checker, Shape};
 use crate::gpu::vector;
@@ -79,11 +80,15 @@ impl Checker<'_> {
                 self.error(f.name.span, format!("`{name}` must give {CORNER}"));
             }
         } else {
-            if params.len() != 1 || !self.corner(&params[0]) {
+            if params.is_empty() || !self.corner(&params[0]) {
                 self.error(
                     f.name.span,
                     format!("a `gpu fragment fn` takes what the vertex fn gives: {CORNER}"),
                 );
+            }
+            let texture = self.builtin_ty("Texture");
+            if params.iter().skip(1).any(|t| *t != texture) {
+                self.error(f.name.span, "after what the vertex fn gives, a `gpu fragment fn` takes only `Texture`s (spec 15.3)");
             }
             if !four(&ret) {
                 self.error(f.name.span, format!("`{name}` must give the pixel's color: `(Float32, Float32, Float32, Float32)`, red, green, blue and opacity, each from 0 to 1 (spec 15.3)"));
@@ -91,11 +96,21 @@ impl Checker<'_> {
         }
     }
 
-    /// `gpu.pipeline(v, f)`: a `Pipeline<V, I, S>`, where `V`, `I` and
-    /// `S` are what `v` takes, `NoInput` for what it doesn't.
-    pub(crate) fn pipeline_call(&mut self, args: &[Arg], span: Span) -> Ty {
-        for a in args {
+    /// `gpu.pipeline(v, f)`: a `Pipeline<V, I, S, T>`, where `V`, `I` and
+    /// `S` are what `v` takes, `NoInput` for what it doesn't, and `T` is
+    /// `Texture` when `f` takes textures. `depth:` is `true` or `false`.
+    pub(crate) fn pipeline_call(&mut self, all: &[Arg], span: Span) -> Ty {
+        for a in all {
             self.value(&a.value, None);
+        }
+        let args: Vec<Arg> = all.iter().filter(|a| a.name.is_none()).cloned().collect();
+        for a in all.iter().filter(|a| a.name.is_some()) {
+            let literal = matches!(a.value.kind, ExprKind::Bool(_));
+            if a.name.as_ref().is_some_and(|n| n.name == "depth") && !literal {
+                self.error(a.value.span, "`depth:` is written `true` or `false`: it is part of the pipeline, compiled before it draws (spec 15.3)");
+            } else if !literal {
+                self.error(a.value.span, "`gpu.pipeline` takes a `gpu vertex fn`, a `gpu fragment fn` and `depth:` (spec 15.3)");
+            }
         }
         let stage = |c: &Self, a: &Arg| match &a.value.kind {
             ExprKind::Name(id) => c
@@ -105,7 +120,7 @@ impl Checker<'_> {
                 .and_then(|d| Some((*d, *c.gpu_stages.get(d)?))),
             _ => None,
         };
-        let found = match args {
+        let found = match &args[..] {
             [v, f] => (stage(self, v), stage(self, f)),
             _ => (None, None),
         };
@@ -128,13 +143,17 @@ impl Checker<'_> {
         }
         self.pipelines.insert((span.start, span.end), (vd, fd));
         let nothing = self.builtin_ty("NoInput");
-        let inputs: Vec<Ty> = (0..3)
+        let mut inputs: Vec<Ty> = (0..3)
             .map(|k| {
                 vs.params
                     .get(k)
                     .map_or(nothing.clone(), |p| self.inf.resolve(&p.ty))
             })
             .collect();
+        inputs.push(match fs.params.len() > 1 {
+            true => self.builtin_ty("Texture"),
+            false => nothing,
+        });
         Ty::Builtin("Pipeline", inputs)
     }
 
@@ -149,13 +168,14 @@ impl Checker<'_> {
             return;
         };
         let nothing = self.builtin_ty("NoInput");
-        for (k, name) in [(1, "instances"), (2, "shared")] {
+        for (k, name) in [(1, "instances"), (2, "shared"), (3, "textures")] {
             let given = args
                 .iter()
                 .any(|a| a.name.as_ref().is_some_and(|n| n.name == name));
             if inputs.get(k).is_some_and(|t| *t != nothing) && !given {
                 let t = self.show(&inputs[k]);
-                self.error(span, format!("this pipeline's vertex fn takes a `{t}` too: give it as `{name}:` (spec 15.3)"));
+                let who = if k == 3 { "fragment" } else { "vertex" };
+                self.error(span, format!("this pipeline's {who} fn takes a `{t}` too: give it as `{name}:` (spec 15.3)"));
             }
         }
     }

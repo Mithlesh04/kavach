@@ -1,12 +1,14 @@
 //! Pipelines and draws (spec 15.3, decision 0106). A pipeline is its WGSL
 //! module, written by the compiler (`compiler/backend/wgsl/src/render.rs`),
-//! whose first line gives the buffers' layout: `// draw f f | f f f | 1`,
-//! the vertex's fields, the instance's, and the shared value's words. It
+//! whose first line gives the buffers' layout: `// draw f f | f f f | 1 |
+//! 0 | 0`, the vertex's fields, the instance's, the shared value's words,
+//! whether it has depth (1) and how many textures its fragment fn takes. It
 //! is compiled ahead, never in the middle of a frame (decision 0106): for
 //! every screen's color format when the screen opens, and when it is made
 //! while a screen is open.
 
 use crate::device::gpu;
+pub use crate::picture::picture;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, MutexGuard, OnceLock};
 use wgpu::util::DeviceExt;
@@ -17,14 +19,20 @@ pub struct Layout {
     pub vertex: Vec<wgpu::VertexFormat>,
     pub instance: Vec<wgpu::VertexFormat>,
     pub shared: usize,
+    /// Whether a pixel is drawn only where it is nearer (spec 15.3).
+    pub depth: bool,
+    /// The textures its fragment fn takes.
+    pub textures: usize,
 }
 
 /// The layout the first line of `wgsl` gives.
 pub fn layout(wgsl: &str) -> Option<Layout> {
     let line = wgsl.lines().next()?.strip_prefix("// draw ")?;
     let parts: Vec<&str> = line.split('|').map(str::trim).collect();
-    let [vertex, instance, shared] = parts[..] else {
-        return None;
+    let (vertex, instance, shared, depth, textures) = match parts[..] {
+        [v, i, s] => (v, i, s, "0", "0"),
+        [v, i, s, d, t] => (v, i, s, d, t),
+        _ => return None,
     };
     let formats = |s: &str| {
         s.split_whitespace()
@@ -40,12 +48,15 @@ pub fn layout(wgsl: &str) -> Option<Layout> {
         vertex: formats(vertex)?,
         instance: formats(instance)?,
         shared: shared.parse().ok()?,
+        depth: depth == "1",
+        textures: textures.parse().ok()?,
     })
 }
 
 struct Made {
     pipeline: wgpu::RenderPipeline,
     shared: Option<wgpu::BindGroupLayout>,
+    textures: Option<wgpu::BindGroupLayout>,
 }
 
 struct Pipeline {
@@ -161,7 +172,16 @@ fn compile(wgsl: &str, layout: &Layout, format: wgpu::TextureFormat) -> Option<M
                 }],
             })
     });
-    let groups: Vec<Option<&wgpu::BindGroupLayout>> = shared.iter().map(Some).collect();
+    let textures = (layout.textures > 0)
+        .then(|| crate::texture::layout(layout.textures))
+        .flatten();
+    let mut groups: Vec<Option<&wgpu::BindGroupLayout>> = vec![shared.as_ref()];
+    if let Some(t) = &textures {
+        groups.push(Some(t));
+    }
+    while groups.last() == Some(&None) {
+        groups.pop();
+    }
     let pipeline_layout = g
         .device
         .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -195,7 +215,14 @@ fn compile(wgsl: &str, layout: &Layout, format: wgpu::TextureFormat) -> Option<M
                 buffers: &buffers,
             },
             primitive: wgpu::PrimitiveState::default(),
-            depth_stencil: None,
+            // Nearer pixels only, each keeping its depth (spec 15.3).
+            depth_stencil: layout.depth.then(|| wgpu::DepthStencilState {
+                format: crate::texture::DEPTH,
+                depth_write_enabled: Some(true),
+                depth_compare: Some(wgpu::CompareFunction::Less),
+                stencil: wgpu::StencilState::default(),
+                bias: wgpu::DepthBiasState::default(),
+            }),
             multisample: wgpu::MultisampleState::default(),
             fragment: Some(wgpu::FragmentState {
                 module: &module,
@@ -211,7 +238,11 @@ fn compile(wgsl: &str, layout: &Layout, format: wgpu::TextureFormat) -> Option<M
             multiview_mask: None,
             cache: None,
         });
-    Some(Made { pipeline, shared })
+    Some(Made {
+        pipeline,
+        shared,
+        textures,
+    })
 }
 
 /// A draw's vertices or instances: 32-bit words, the fields in turn, or a
@@ -221,20 +252,49 @@ pub enum Items<'a> {
     Kept(&'a crate::Resident),
 }
 
-/// Draws `vertices` through pipeline `n` into `view`, recorded on
+/// One draw: through pipeline `pipeline`, its vertices, instances and
+/// shared value (words), and the numbers of the textures its fragment fn
+/// reads (spec 15.3).
+pub struct Draw<'a> {
+    pub pipeline: i64,
+    pub parts: (Items<'a>, Items<'a>, &'a [u32]),
+    pub textures: &'a [i64],
+}
+
+/// Where a draw goes: the picture, its color format, and its depths, with
+/// whether they are still to be set to 1, the farthest.
+pub(crate) struct Target<'a> {
+    pub view: &'a wgpu::TextureView,
+    pub format: wgpu::TextureFormat,
+    pub depth: Option<(&'a wgpu::TextureView, bool)>,
+}
+
+/// Whether pipeline `n` draws with depth, so its target needs depths.
+pub fn has_depth(n: i64) -> bool {
+    pipelines().all.get(&n).is_some_and(|p| p.layout.depth)
+}
+
+/// Draws `vertices` through the pipeline into the target, recorded on
 /// `encoder`: once for each of `instances` when the pipeline takes an
-/// instance, with `shared` (words) given to every corner. What is there
-/// already stays under it.
+/// instance, with `shared` given to every corner. What is there already
+/// stays under it, or, with depth, over it where it is nearer.
 pub(crate) fn draw_into(
-    view: &wgpu::TextureView,
+    target: Target<'_>,
     encoder: &mut wgpu::CommandEncoder,
-    format: wgpu::TextureFormat,
-    n: i64,
-    parts: (Items<'_>, Items<'_>, &[u32]),
+    draw: Draw<'_>,
 ) -> Result<(), String> {
-    let (vertices, instances, shared) = parts;
+    let (vertices, instances, shared) = draw.parts;
     let g = gpu().ok_or("this machine has no GPU")?;
-    let (m, layout) = made(n, format).ok_or("this pipeline couldn't be made")?;
+    let (m, layout) = made(draw.pipeline, target.format).ok_or("this pipeline couldn't be made")?;
+    let textures = match &m.textures {
+        Some(l) => Some(crate::texture::group(l, layout.textures, draw.textures)?),
+        None => None,
+    };
+    let depth = match (layout.depth, target.depth) {
+        (false, _) => None,
+        (true, Some(d)) => Some(d),
+        (true, None) => return Err("this picture has no depths".into()),
+    };
     let buffer = |words: &[u32], usage| {
         g.device
             .create_buffer_init(&wgpu::util::BufferInitDescriptor {
@@ -278,7 +338,7 @@ pub(crate) fn draw_into(
     let mut pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
         label: Some("kavach draw"),
         color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-            view,
+            view: target.view,
             depth_slice: None,
             resolve_target: None,
             ops: wgpu::Operations {
@@ -286,11 +346,28 @@ pub(crate) fn draw_into(
                 store: wgpu::StoreOp::Store,
             },
         })],
+        depth_stencil_attachment: depth.map(|(view, fresh)| {
+            wgpu::RenderPassDepthStencilAttachment {
+                view,
+                depth_ops: Some(wgpu::Operations {
+                    load: if fresh {
+                        wgpu::LoadOp::Clear(1.0)
+                    } else {
+                        wgpu::LoadOp::Load
+                    },
+                    store: wgpu::StoreOp::Store,
+                }),
+                stencil_ops: None,
+            }
+        }),
         ..Default::default()
     });
     pass.set_pipeline(&m.pipeline);
     if let Some(group) = &group {
         pass.set_bind_group(0, group, &[]);
+    }
+    if let Some(group) = &textures {
+        pass.set_bind_group(1, group, &[]);
     }
     pass.set_vertex_buffer(0, vb.slice(..));
     if let Some((ib, _)) = &ib {
@@ -303,94 +380,4 @@ pub(crate) fn draw_into(
 /// Words as bytes, little-endian as GPUs read them.
 fn bytes_of(words: &[u32]) -> Vec<u8> {
     words.iter().flat_map(|w| w.to_le_bytes()).collect()
-}
-
-/// Draws through pipeline `n` into a new picture of `size` pixels, cleared
-/// to black, and gives its pixels: red, green, blue and opacity, row by
-/// row from the top. Drawing into a texture, for tests and, later, for
-/// programs (decision 0106).
-pub fn picture(
-    n: i64,
-    parts: (Items<'_>, Items<'_>, &[u32]),
-    size: (u32, u32),
-) -> Result<Vec<[u8; 4]>, String> {
-    let g = gpu().ok_or("this machine has no GPU")?;
-    let (w, h) = (size.0.max(1), size.1.max(1));
-    let format = wgpu::TextureFormat::Rgba8Unorm;
-    ready_for(format);
-    let texture = g.device.create_texture(&wgpu::TextureDescriptor {
-        label: Some("kavach picture"),
-        size: wgpu::Extent3d {
-            width: w,
-            height: h,
-            depth_or_array_layers: 1,
-        },
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: wgpu::TextureDimension::D2,
-        format,
-        usage: wgpu::TextureUsages::RENDER_ATTACHMENT | wgpu::TextureUsages::COPY_SRC,
-        view_formats: &[],
-    });
-    let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-    let mut encoder = g
-        .device
-        .create_command_encoder(&wgpu::CommandEncoderDescriptor {
-            label: Some("kavach picture"),
-        });
-    drop(encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
-        label: Some("kavach picture"),
-        color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-            view: &view,
-            depth_slice: None,
-            resolve_target: None,
-            ops: wgpu::Operations {
-                load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
-                store: wgpu::StoreOp::Store,
-            },
-        })],
-        ..Default::default()
-    }));
-    draw_into(&view, &mut encoder, format, n, parts)?;
-    // Rows are copied 256 bytes apart.
-    let row = (4 * w).div_ceil(256) * 256;
-    let out = g.device.create_buffer(&wgpu::BufferDescriptor {
-        label: Some("kavach picture"),
-        size: u64::from(row * h),
-        usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::MAP_READ,
-        mapped_at_creation: false,
-    });
-    encoder.copy_texture_to_buffer(
-        texture.as_image_copy(),
-        wgpu::TexelCopyBufferInfo {
-            buffer: &out,
-            layout: wgpu::TexelCopyBufferLayout {
-                offset: 0,
-                bytes_per_row: Some(row),
-                rows_per_image: Some(h),
-            },
-        },
-        wgpu::Extent3d {
-            width: w,
-            height: h,
-            depth_or_array_layers: 1,
-        },
-    );
-    let index = g.queue.submit([encoder.finish()]);
-    g.wait_mapped_for(&out, wgpu::MapMode::Read, Some(index))
-        .map_err(|_| "the GPU stopped")?;
-    let bytes = out
-        .slice(..)
-        .get_mapped_range()
-        .map_err(|e| e.to_string())?
-        .to_vec();
-    out.unmap();
-    let mut pixels = Vec::with_capacity((w * h) as usize);
-    for y in 0..h {
-        for x in 0..w {
-            let at = (y * row + 4 * x) as usize;
-            pixels.push([bytes[at], bytes[at + 1], bytes[at + 2], bytes[at + 3]]);
-        }
-    }
-    Ok(pixels)
 }

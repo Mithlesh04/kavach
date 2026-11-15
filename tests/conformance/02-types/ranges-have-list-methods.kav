@@ -1,0 +1,21 @@
+// Rule: A range has the list methods that read it, giving what the list of its numbers would; to_list() gives that list.
+// Spec: 2.2
+// expect output: [1, 4, 9, 16]
+// expect output: [0, 2, 4, 6, 8]
+// expect output: 5050
+// expect output: false
+// expect output: [0, 1, 2, 3, 4]
+// expect output: [6, 5, 4, 3]
+// expect output: 3
+// expect output: none
+
+fn main() {
+    print((1..=4).map(i => i * i))
+    print((0..10).filter(i => i % 2 == 0))
+    print((1..=100).sum(i => i))
+    print((0..10).contains(10))
+    print((0..5).to_list())
+    print((3..7).reverse())
+    print((1..=6).count(i => i > 3))
+    print((0..0).max())
+}

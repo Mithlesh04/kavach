@@ -271,7 +271,7 @@ impl<'a> Lowerer<'a> {
     }
 
     /// A block that pushes `value` onto the list in local `acc`.
-    fn push_to(&self, acc: Local, value: ir::Expr) -> Block {
+    pub(crate) fn push_to(&self, acc: Local, value: ir::Expr) -> Block {
         let line = value.line;
         let list_ty = self.locals[acc as usize];
         let pushed = ir::Expr {

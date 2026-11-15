@@ -1,0 +1,18 @@
+// Rule: `sample` is the one call on a `Texture` a gpu fn can make.
+// Spec: 15.3
+// expect compile error
+
+use std.gpu
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+    u: Float32
+}
+
+gpu fragment fn paint(l: Lit, skin: Texture) -> (Float32, Float32, Float32, Float32) {
+    const other = skin     // error: a texture is only sampled, not kept
+    other.sample(l.u, 0.5)
+}
+
+fn main() {
+}

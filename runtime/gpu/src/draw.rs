@@ -11,6 +11,8 @@ use std::sync::{Mutex, MutexGuard, OnceLock};
 struct Screen {
     surface: wgpu::Surface<'static>,
     config: wgpu::SurfaceConfiguration,
+    /// Its depths, made at the first draw with depth, and their size.
+    depth: Option<(wgpu::TextureView, (u32, u32))>,
 }
 
 struct Frame {
@@ -18,6 +20,8 @@ struct Frame {
     texture: wgpu::SurfaceTexture,
     view: wgpu::TextureView,
     encoder: wgpu::CommandEncoder,
+    /// Whether its depths are still to be set to 1 (spec 15.3).
+    fresh: bool,
 }
 
 #[derive(Default)]
@@ -91,7 +95,14 @@ fn screen(
     let mut d = drawing();
     d.next += 1;
     let n = d.next;
-    d.screens.insert(n, Screen { surface, config });
+    d.screens.insert(
+        n,
+        Screen {
+            surface,
+            config,
+            depth: None,
+        },
+    );
     Ok(n)
 }
 
@@ -134,6 +145,7 @@ pub fn frame(n: i64, width: u32, height: u32) -> Result<i64, String> {
             texture,
             view,
             encoder,
+            fresh: true,
         },
     );
     Ok(f)
@@ -145,6 +157,7 @@ pub fn clear(f: i64, r: f64, g: f64, b: f64) {
     let Some(frame) = d.frames.get_mut(&f) else {
         return;
     };
+    frame.fresh = true;
     let color = wgpu::Color { r, g, b, a: 1.0 };
     let pass = frame
         .encoder
@@ -164,24 +177,32 @@ pub fn clear(f: i64, r: f64, g: f64, b: f64) {
     drop(pass);
 }
 
-/// Draws through pipeline `pipeline` into frame `f` (spec 15.3): the
-/// vertices, instances and shared value, as 32-bit words.
-pub fn draw(
-    f: i64,
-    pipeline: i64,
-    parts: (crate::render::Items<'_>, crate::render::Items<'_>, &[u32]),
-) -> Result<(), String> {
+/// Makes `draw` into frame `f` (spec 15.3), with the screen's depths
+/// when its pipeline has depth.
+pub fn draw(f: i64, draw: crate::render::Draw<'_>) -> Result<(), String> {
+    let deep = crate::render::has_depth(draw.pipeline);
     let mut d = drawing();
     let Drawing {
         screens, frames, ..
     } = &mut *d;
     let frame = frames.get_mut(&f).ok_or("the frame is gone")?;
-    let format = screens
-        .get(&frame.screen)
-        .ok_or("the screen is closed")?
-        .config
-        .format;
-    crate::render::draw_into(&frame.view, &mut frame.encoder, format, pipeline, parts)
+    let screen = screens
+        .get_mut(&frame.screen)
+        .ok_or("the screen is closed")?;
+    let size = (screen.config.width, screen.config.height);
+    if deep && screen.depth.as_ref().is_none_or(|(_, s)| *s != size) {
+        let view = crate::texture::depth(size.0, size.1).ok_or("this machine has no GPU")?;
+        screen.depth = Some((view, size));
+        frame.fresh = true;
+    }
+    let target = crate::render::Target {
+        view: &frame.view,
+        format: screen.config.format,
+        depth: (screen.depth.as_ref()).map(|(v, _)| (v, frame.fresh)),
+    };
+    crate::render::draw_into(target, &mut frame.encoder, draw)?;
+    frame.fresh &= !deep;
+    Ok(())
 }
 
 /// Sends what was drawn into frame `f` and puts it on the screen.

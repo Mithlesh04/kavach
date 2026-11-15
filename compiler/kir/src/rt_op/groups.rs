@@ -36,6 +36,7 @@ impl RtOp {
                 | RtOp::FsWriterFinish
                 | RtOp::DrawScreen
                 | RtOp::DrawFrame
+                | RtOp::DrawTexture
                 | RtOp::ClipReadText
                 | RtOp::ClipWriteText
                 | RtOp::SerialOpen

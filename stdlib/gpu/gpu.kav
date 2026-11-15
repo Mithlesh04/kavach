@@ -4,6 +4,7 @@
 // frames their methods.
 
 use std.gpu
+use std.math
 use std.window
 
 /// Why there is nothing to draw into: no GPU, a window that can't be
@@ -41,9 +42,10 @@ pub type Frame: Drop {
 
     /// Draws `vertices`, three to a triangle, through `pipeline`: once for
     /// each of `instances` when its vertex fn takes an instance, with
-    /// `shared` given to every corner when it takes one (spec 15.3).
-    pub fn draw<V, I, S>(self, pipeline: Pipeline<V, I, S>, vertices: [V], instances: [I] = [], shared: S? = none) uses Window {
-        gpu.draw_id(self.id, pipeline, vertices, instances, shared)
+    /// `shared` given to every corner when it takes one, and `textures`
+    /// to its fragment fn (spec 15.3).
+    pub fn draw<V, I, S, T>(self, pipeline: Pipeline<V, I, S, T>, vertices: [V], instances: [I] = [], shared: S? = none, textures: [Texture] = []) uses Window {
+        gpu.draw_id(self.id, pipeline, vertices, instances, shared, textures)
     }
 
     /// Puts the picture on the screen.
@@ -66,4 +68,62 @@ pub fn screen(win: AppWindow) -> Screen ! GpuError uses Window {
 /// What a pipeline's vertex fn doesn't take: an instance, or a value
 /// shared by the draw (spec 15.3).
 pub type NoInput {
+}
+
+/// A picture on the GPU for fragment fns to read (spec 15.3). Its pixels
+/// are kept here too, so `sample` gives the same colors on the CPU.
+pub type Texture: Drop {
+    id: Int
+    width: Int
+    height: Int
+    pixels: [UInt8]
+
+    invariant width >= 1 and width <= 8192 and height >= 1 and height <= 8192
+    invariant pixels.len() == width * height * 4
+
+    /// The color at `u` (0 left, 1 right) and `v` (0 top, 1 bottom),
+    /// blended between the four nearest pixels, as the GPU blends them.
+    pub fn sample(self, u: Float32, v: Float32) -> (Float32, Float32, Float32, Float32) {
+        // Pixel centers are at (k + 0.5) / size; past an edge, the edge.
+        const x = (Float(u) * Float(self.width) - 0.5).clamp(-1.0, Float(self.width))
+        const y = (Float(v) * Float(self.height) - 0.5).clamp(-1.0, Float(self.height))
+        const left = math.floor(x)
+        const top = math.floor(y)
+        const (fx, fy) = (x - left, y - top)
+        const (i, j) = (Int(left), Int(top))
+        let parts: [Float32] = []
+        for k in 0..4 {
+            const up = self.part(i, j, k) * (1.0 - fx) + self.part(i + 1, j, k) * fx
+            const down = self.part(i, j + 1, k) * (1.0 - fx) + self.part(i + 1, j + 1, k) * fx
+            parts.push(Float32(up * (1.0 - fy) + down * fy))
+        }
+        (parts[0], parts[1], parts[2], parts[3])
+    }
+
+    /// Part `k` of the pixel at `x`, `y` (the nearest edge pixel when it
+    /// is past one): a color made linear from sRGB, as the GPU reads it,
+    /// or the opacity.
+    fn part(self, x: Int, y: Int, k: Int) -> Float {
+        const at = (y.clamp(0, self.height - 1) * self.width + x.clamp(0, self.width - 1)) * 4 + k
+        const c = Float(self.pixels[at]) / 255.0
+        if k == 3 or c <= 0.04045 {
+            if k == 3 { c } else { c / 12.92 }
+        } else {
+            math.pow((c + 0.055) / 1.055, 2.4)
+        }
+    }
+
+    fn drop(self) uses Window {
+        gpu.drop_texture_id(self.id)
+    }
+}
+
+/// A picture for fragment fns to read (spec 15.3): `pixels` are four for
+/// each pixel (red, green, blue and opacity, in sRGB), row by row from
+/// the top.
+pub fn texture(width: Int, height: Int, pixels: [UInt8]) -> Texture ! GpuError uses Window
+    require width >= 1 and width <= 8192 and height >= 1 and height <= 8192 and pixels.len() == width * height * 4
+{
+    const id = try gpu.texture_id(width, height, pixels)
+    Texture(id: id, width: width, height: height, pixels: pixels)
 }

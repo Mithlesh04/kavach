@@ -76,6 +76,8 @@ pub(crate) fn std_op(module: &str, name: &str) -> Option<RtOp> {
         ("gpu", "show_id") => RtOp::DrawShow,
         ("gpu", "drop_frame_id") => RtOp::DrawDropFrame,
         ("gpu", "close_id") => RtOp::DrawClose,
+        ("gpu", "texture_id") => RtOp::DrawTexture,
+        ("gpu", "drop_texture_id") => RtOp::DrawDropTexture,
         ("log", "metric_id") => RtOp::OtlpMetric,
         ("log", "trace_id_text") => RtOp::ScopeTraceId,
         ("log", "traceparent_text") => RtOp::ScopeTraceparent,

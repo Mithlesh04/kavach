@@ -40,3 +40,13 @@ const all = evens + [6, 8]     // [2, 4, 6, 8]; evens is still [2, 4]
 let log = ["start"]
 log += ["step 1", "step 2"]    // log is now ["start", "step 1", "step 2"]
 ```
+
+A range (`a..b`, `a..=b`, 1.8) has the methods of a list that read it, as the list of its numbers in order would give them: `(1..=3).map(i => i * i)` is `[1, 4, 9]`, and `(0..n).sum(i => i)` adds `0` to `n - 1`. `to_list()` gives that list. Methods that change a list (`push`, `pop`) are not a range's.
+
+```kavach
+const squares = (1..=4).map(i => i * i)         // [1, 4, 9, 16]
+const evens = (0..10).filter(i => i % 2 == 0)   // [0, 2, 4, 6, 8]
+const total = (1..=100).sum(i => i)             // 5050
+const has = (0..10).contains(10)                // false: 10 is past the end
+const digits = (0..10).to_list()                // [0, 1, …, 9]
+```

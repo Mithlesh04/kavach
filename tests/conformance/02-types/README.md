@@ -39,6 +39,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.2 | [plus-joins-two-lists.kav](plus-joins-two-lists.kav) | `xs + ys` is a new list, the items of `xs` then those of `ys`; neither changes. | runs |
 | 2.2 | [plus-equals-adds-to-a-list.kav](plus-equals-adds-to-a-list.kav) | `xs += ys` adds the items of `ys` to the end of `xs`; a copy made before doesn't change. | runs |
 | 2.2 | [plus-equals-on-a-const-list-is-an-error.kav](plus-equals-on-a-const-list-is-an-error.kav) | `xs += ys` changes `xs`, so `xs` must be a `let`. | compile error |
+| 2.2 | [ranges-have-list-methods.kav](ranges-have-list-methods.kav) | A range has the list methods that read it, giving what the list of its numbers would; `to_list()` gives that list. | runs |
 | 2.3 | [tuples.kav](tuples.kav) | Tuples group values and can be destructured. | runs |
 | 2.4 | [record-defaults.kav](record-defaults.kav) | Records are created with named arguments; fields with defaults may be left out. | runs |
 | 2.4 | [record-needs-every-field.kav](record-needs-every-field.kav) | A record field without a default must be given. | compile error |

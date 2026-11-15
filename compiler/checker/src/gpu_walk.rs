@@ -145,6 +145,11 @@ impl<'t> Walk<'t> {
             && !gpu_item(c, t)
             && !matches!(t, Ty::Unit | Ty::Never | Ty::Error | Ty::Range(_))
         {
+            if *t == c.builtin_ty("Texture") {
+                let why = "a `gpu fn` reads a `Texture` only with `t.sample(u, v)` (spec 15.3)";
+                self.errors.push((e.span, why.to_string()));
+                return;
+            }
             let shown = c.show(t);
             self.errors.push((
                 e.span,
@@ -260,9 +265,14 @@ impl<'t> Walk<'t> {
             ExprKind::Field { base, name, .. } if METHODS.contains(&name.name.as_str()) => {
                 self.expr(c, base)
             }
+            // A fragment fn's texture, read (spec 15.3).
+            ExprKind::Field { base, name, .. }
+                if name.name == "sample"
+                    && self.types.get(&(base.span.start, base.span.end))
+                        == Some(&c.builtin_ty("Texture")) => {}
             _ => self.no(
                 e.span,
-                "this call: only other `gpu fn`s, conversions, and `abs`, `min`, `max`, `clamp`",
+                "this call: only other `gpu fn`s, conversions, `abs`, `min`, `max`, `clamp`, and a texture's `sample`",
             ),
         }
     }

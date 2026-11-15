@@ -194,6 +194,17 @@ impl<'a> Interp<'a> {
         args: Vec<Value<'a>>,
         span: Span,
     ) -> Eval<'a> {
+        // A range is the list of its numbers to the list methods (spec 2.2).
+        let recv = match recv {
+            Value::Range(a, b, k) => {
+                let items: Vec<Value<'a>> = (a..b).map(|n| Value::Int(n, k)).collect();
+                if name == "to_list" {
+                    return Ok(Value::List(Rc::new(items)));
+                }
+                Value::List(Rc::new(items))
+            }
+            r => r,
+        };
         // A present optional is the value itself (spec 2.7), so these come
         // first, whatever kind of value it holds: only optionals have them.
         if args.is_empty() && !matches!(recv, Value::None) {

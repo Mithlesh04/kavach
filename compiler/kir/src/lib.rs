@@ -63,6 +63,7 @@ mod lower_power;
 mod lower_process;
 mod lower_ptr;
 mod lower_ptr_syntax;
+mod lower_range;
 mod lower_replay;
 mod lower_schema;
 mod lower_scoped;
