@@ -309,7 +309,11 @@ impl Checker<'_> {
                 vec![p("d", &self.builtin_ty("Duration"))],
                 Ty::Builtin("Ticker", Vec::new()),
             ),
-            ("math", "sqrt" | "floor" | "ceil" | "round") => (vec![p("x", &real)], real.clone()),
+            ("math", "sqrt" | "floor" | "ceil" | "round")
+            | ("math", "sin" | "cos" | "tan" | "asin" | "acos" | "atan" | "exp" | "ln") => {
+                (vec![p("x", &real)], real.clone())
+            }
+            ("math", "atan2") => (vec![p("y", &real), p("x", &real)], real.clone()),
             ("math", "pow") => (vec![p("x", &real), p("y", &real)], real.clone()),
             ("io", "read_line") => (vec![], Ty::Optional(Box::new(string.clone()))),
             ("io", "read_hidden") => (vec![], Ty::Optional(Box::new(string.clone()))),

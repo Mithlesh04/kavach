@@ -45,6 +45,7 @@ mod std_fs;
 mod std_gpu;
 mod std_lib;
 mod std_log;
+mod std_math;
 mod std_matrix;
 mod std_process;
 mod std_time;
@@ -54,6 +55,7 @@ mod stmts;
 mod task_errors;
 mod tasks;
 mod testing;
+mod text_methods;
 mod timeouts;
 mod value;
 

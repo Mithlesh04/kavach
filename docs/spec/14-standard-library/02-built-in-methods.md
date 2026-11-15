@@ -25,6 +25,16 @@ Text (`String`):
 | `s.chars()` | The characters, as `[Char]` |
 | `s.index_of(part)` | The character position of the first `part`, or `none` |
 | `s.slice(start, end)` | Characters `start..end`; positions past the end are clamped |
+| `s.trim_start()`, `s.trim_end()` | `s` without the white space at its start, or at its end, as `trim` takes it off both |
+| `s.last_index_of(part)` | The character position of the last `part`, or `none` |
+| `s.count(part)` | How many times `part` is in `s`, not counting overlaps: `"banana".count("ana")` is `1`. An empty `part` is counted between every two characters and at both ends: `s.len() + 1` |
+| `s.remove_prefix(p)`, `s.remove_suffix(p)` | `s` without `p` at its start, or at its end; `s` itself when it doesn't start or end with `p` |
+| `s.capitalize()` | `s` with its first character in upper case: `"asha".capitalize()` is `"Asha"` |
+| `s.title()` | Each word of `s` with its first character in upper case and the rest in lower case: `"the tALE of two".title()` is `"The Tale Of Two"`. Words are as `words()` finds them, and the spaces between them stay as they were |
+| `s.words()` | The parts of `s` between runs of spaces, tabs and line breaks: `"  to be	or ".words()` is `["to", "be", "or"]` |
+| `s.pad_left(width, fill: ' ')`, `s.pad_right(width, fill: ' ')` | `s` with `fill` (a `Char`) added before it, or after it, until it is `width` characters long: `"7".pad_left(3, '0')` is `"007"`. Text already that long is as it was. `width` is at most 1,000,000 |
+| `s.truncate(max)` | At most `max` characters of `s` |
+| `s.is_blank()` | Whether `s` has only spaces, tabs and line breaks, or nothing |
 
 Lists, in addition to 2.2:
 

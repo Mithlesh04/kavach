@@ -1,0 +1,13 @@
+// Rule: `std.math` has `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `exp` and `ln`, for `Float` and `Float32`.
+// Spec: 14.5
+// expect output: 1.0 1.0 3.141592653589793
+// expect output: 1.0 NaN
+// expect output: 0.47942555
+
+use std.math
+
+fn main() {
+    print("{math.sin(math.pi / 2.0)} {math.cos(0.0)} {math.atan2(1.0, 1.0) * 4.0}")
+    print("{math.ln(math.exp(1.0))} {math.acos(2.0)}")
+    print(math.sin(Float32(0.5)))
+}

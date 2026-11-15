@@ -320,6 +320,15 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         | RtOp::MathFloor
         | RtOp::MathCeil
         | RtOp::MathRound
+        | RtOp::MathSin
+        | RtOp::MathCos
+        | RtOp::MathTan
+        | RtOp::MathAsin
+        | RtOp::MathAcos
+        | RtOp::MathAtan
+        | RtOp::MathAtan2
+        | RtOp::MathExp
+        | RtOp::MathLn
         | RtOp::IoReadLine
         | RtOp::IoReadHidden
         | RtOp::IoIsTerminal

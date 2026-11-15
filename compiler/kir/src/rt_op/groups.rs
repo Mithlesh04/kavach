@@ -128,6 +128,8 @@ impl RtOp {
             "kv_rt_input"
         } else if group("Audio") {
             "kv_rt_audio"
+        } else if group("Text") {
+            "kv_rt_text_methods"
         } else if group("Window") {
             "kv_rt_window"
         } else if group("Run") {

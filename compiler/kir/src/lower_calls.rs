@@ -52,6 +52,18 @@ impl<'a> Lowerer<'a> {
                         self.construct(of, Some(&id.name), args, ty, line, e.span)
                     }
                     DefKind::Builtin => self.builtin_call(&id.name, args, ty, line, e.span),
+                    // `T(x)`: `x` converted to this copy's `T` (spec 2.9).
+                    DefKind::GenericParam => match args {
+                        [a] => {
+                            let v = self.expr(&a.value)?;
+                            Ok(ir::Expr {
+                                kind: K::Convert(Box::new(v), true),
+                                ty,
+                                line,
+                            })
+                        }
+                        _ => Err(self.unsupported("this conversion", e.span)),
+                    },
                     DefKind::Local { .. } | DefKind::Param => {
                         self.call_through(callee, args, e.span)
                     }

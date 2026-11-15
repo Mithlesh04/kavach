@@ -19,7 +19,7 @@ const bright = pixels.map(p => glow(p, 0.5))    // on the GPU for a long list
 A function marked `gpu fn` may run on the GPU, so it uses only what a GPU can do. It **must**:
 
 - take and give only `Float32`, `Int32`, `UInt32` and `Bool` (2.1), and records and tuples of 1 to 8 fields of those types. GPUs compute 32-bit numbers fast; `Float` and `Int` (64 bits) are slow or missing there;
-- use in its body only: `const` and `let` of those types, assignment, `if` and `else`, `while`, `for` over a range (`0..n`), `return`, the operators of 1.8 (`**` on `Float32` only), conversions between those types (`Float32(n)`, `Int32(x)`), the methods `abs`, `min`, `max` and `clamp`, `math.sqrt`, `floor`, `ceil`, `round` and `pow` (14.5), calls to other `gpu fn`s, and the fields of its records and tuples: reading one (`p.x`, `t.0`), and making a new record or tuple (`Particle(x: x, y: y)`, `(a, b)`).
+- use in its body only: `const` and `let` of those types, assignment, `if` and `else`, `while`, `for` over a range (`0..n`), `return`, the operators of 1.8 (`**` on `Float32` only), conversions between those types (`Float32(n)`, `Int32(x)`), the methods `abs`, `min`, `max` and `clamp`, `math.sqrt`, `floor`, `ceil`, `round`, `pow`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `exp` and `ln` (14.5), calls to other `gpu fn`s, and the fields of its records and tuples: reading one (`p.x`, `t.0`), and making a new record or tuple (`Particle(x: x, y: y)`, `(a, b)`).
 
 A `gpu fn` that gives a record moves a whole item at a time, so a game's frame is one `map` of the list of the last frame (15.2):
 
@@ -70,7 +70,7 @@ Otherwise the same `map` runs on the CPU. The code is the same either way, and s
 
 - Whole-number arithmetic is checked on the GPU too: overflow and division by zero panic with the same message as on the CPU, naming the same line inside the `gpu fn`. When several items fail, the GPU may report a different one first.
 - A `map` whose list stays in GPU memory (below) doesn't wait for the GPU to finish, so frames run back to back ([decision 0061](../decisions/0061-gpu-maps-dont-wait.md)). A panic in its `gpu fn` is reported the next time the program reads the list on the CPU, or when another GPU call waits for its own result, or when the program ends, with the message and the `gpu fn`'s line as always; code after the `map` may have run by then.
-- `+`, `-` and `*` on `Float32` give the same bits as on the CPU, unless the GPU fuses a multiply with an add (one rounding instead of two). `/`, `%`, `**`, `math.pow` and `math.sqrt` may differ in the last bits, as WGSL allows; `floor`, `ceil` and `round` are exact.
+- `+`, `-` and `*` on `Float32` give the same bits as on the CPU, unless the GPU fuses a multiply with an add (one rounding instead of two). `/`, `%`, `**`, `math.pow`, `math.sqrt` and the angle, `exp` and `ln` functions may differ in the last bits, as WGSL allows; `floor`, `ceil` and `round` are exact.
 
 A list that a GPU `map` read or made may stay in GPU memory for a while (the runtime decides how long), so a later `map` of it doesn't copy it over again. This is invisible to the program: the runtime holds such a list, so changing it copies it first, as changing any list held twice does (2.2).
 

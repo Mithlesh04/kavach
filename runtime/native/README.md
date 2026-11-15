@@ -25,6 +25,7 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_par.rs` | Loops on all cores (decision 0031): a kept pool of workers runs the chunks of one loop at a time; a loop that finds another running (tasks that each run one) runs alone on its own thread, and the workers stop helping while several run |
 | `src/rt_errors.rs` | `context` and the error of a failed `parse` |
 | `src/rt_text.rs` | More methods of text and lists: `replace`, `sort`, `join`, … (spec 14.2) |
+| `src/rt_text_methods.rs` | Text methods from `runtime/core`: `capitalize`, `title`, `words`, padding and the rest (spec 14.2), an entry of their own |
 | `src/rt_std.rs` | `std.fs` (atomic writes), `std.time`, `std.math`, `std.io`, `std.cli` |
 | `src/rt_memory.rs` | The global allocator: an allocation the system refuses is a panic, `panic: out of memory` with exit code 101 (spec 5.6), not Rust's abort |
 | `src/rt_stop.rs` | Ctrl+C, `SIGTERM` and closing the console (spec 5.8, decision 0063): the end hooks run, then exit code 130 or 143; a second one ends at once |
@@ -70,3 +71,5 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_draw.rs` | `std.gpu`'s drawing (spec 14.24): its own entry, by number |
 | `src/rt_run.rs` | `std.process` (spec 14.23): its own entry, by the child's number; waiting lets other tasks run |
 | `src/rt_window.rs` | `std.window` (spec 14.22): its own entry, so only programs with windows link `winit` |
+| `src/rt_input.rs` | `std.input` (spec 14.26): its own entry, so only programs that read gamepads link `gilrs` |
+| `src/rt_audio.rs` | `std.audio` (spec 14.27): its own entry, so only programs with sound link `cpal` |

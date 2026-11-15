@@ -31,6 +31,7 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.4 | [tests-freeze-the-clock.kav](tests-freeze-the-clock.kav) | A `test` block freezes the clock with `time.freeze`; `sleep` moves it on at once. | kavach test |
 | 14.4 | [freeze-is-only-for-tests.kav](freeze-is-only-for-tests.kav) | `time.freeze` outside a `test` block is a compile error. | compile error |
 | 14.5 | [math-functions.kav](math-functions.kav) | std.math has sqrt, pow, floor, ceil, round, pi and e. | runs |
+| 14.5 | [math-angles-exp-and-ln.kav](math-angles-exp-and-ln.kav) | `std.math` has `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `exp` and `ln`, for `Float` and `Float32`. | runs |
 | 14.6 | [cli-parse-reads-options.kav](cli-parse-reads-options.kav) | cli.parse reads options into a record; fields with defaults are optional. | runs |
 | 14.6 | [cli-parse-reports-missing-options.kav](cli-parse-reports-missing-options.kav) | A field with no default is a required option; cli.parse says which is missing, then the usage. | runs |
 | 14.6 | [cli-parse-reads-a-command.kav](cli-parse-reads-a-command.kav) | cli.parse into a union reads the first argument as the command and the rest as its options. | runs |
@@ -60,7 +61,7 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.8 | [advanced-regex-gives-up.kav](advanced-regex-gives-up.kav) | An advanced pattern that needs too much work on some text panics instead of hanging. | panic |
 | 14.8 | [invalid-patterns-are-errors.kav](invalid-patterns-are-errors.kav) | An invalid pattern is an error value, not a crash. | runs |
 | 14.5 | [math-module.kav](math-module.kav) | `std.math` has the runtime's `sqrt` and `pi` and, written in Kavach, `gcd`, `lcm`, `factorial`, `is_prime` and `mean`. | runs |
-| 14.9 | [text-module.kav](text-module.kav) | `std.text` pads, splits into words, capitalizes, truncates and finds blank text. | runs |
+| 14.2 | [text-pads-words-and-capitals.kav](text-pads-words-and-capitals.kav) | Text pads, splits into words, capitalizes, truncates, finds blank text, trims one side, counts and finds the last part, and removes a prefix or suffix, with methods. | runs |
 | 14.9 | [text-finds-numbers.kav](text-finds-numbers.kav) | `std.text` finds numbers inside other text. | runs |
 | 14.2 | [float-near.kav](float-near.kav) | `x.near(y)` is true for floats equal but for rounding, never for `NaN`. | runs |
 | 14.2 | [sort-puts-nan-last.kav](sort-puts-nan-last.kav) | `NaN` sorts after every number, so a list holding one still sorts. | runs |
@@ -142,6 +143,7 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.26 | [gamepads-are-named-by-place.kav](gamepads-are-named-by-place.kav) | Gamepad buttons are named by their place in the standard layout, and a machine with no pad reads none, without an error. | runs |
 | 14.27 | [sounds-are-data-until-played.kav](sounds-are-data-until-played.kav) | Making or reading a sound needs no capability; bytes that aren't a WAV or Ogg Vorbis file are `BadSound`. | runs |
 | 14.27 | [playing-sound-needs-audio.kav](playing-sound-needs-audio.kav) | Playing sound needs `Audio`. | compile error |
+| 14.28 | [vectors-matrices-and-quaternions.kav](vectors-matrices-and-quaternions.kav) | std.vec has vectors, 4 x 4 matrices and quaternions over Float or Float32, with their operators, products and transforms. | runs |
 | 5.8, 14.6 | [cli-on-stop-needs-no-capability.kav](cli-on-stop-needs-no-capability.kav) | `cli.on_stop(grace)` gives a hold that isn't asked until a stop signal comes; taking and letting go of one needs no capability. | runs |
 | 14.12 | [log-events-are-records.kav](log-events-are-records.kav) | A log event is a value of a type that implements `LogEvent`; the console shows its level and its printed form. | runs |
 | 14.12 | [log-hides-secrets.kav](log-hides-secrets.kav) | A secret field of a log event is written as `<secret>`. | runs |

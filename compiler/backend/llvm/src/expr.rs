@@ -235,13 +235,23 @@ impl FnEmit<'_> {
                 op @ (kavach_kir::RtOp::MathSqrt
                 | kavach_kir::RtOp::MathFloor
                 | kavach_kir::RtOp::MathCeil
-                | kavach_kir::RtOp::MathRound),
+                | kavach_kir::RtOp::MathRound
+                | kavach_kir::RtOp::MathSin
+                | kavach_kir::RtOp::MathCos
+                | kavach_kir::RtOp::MathExp
+                | kavach_kir::RtOp::MathLn),
                 args,
             ) => {
+                // `sin` to `ln` call the same C library as the runtime's
+                // Rust does, so the bits are the same either way.
                 let name = match op {
                     kavach_kir::RtOp::MathSqrt => "llvm.sqrt.f64",
                     kavach_kir::RtOp::MathFloor => "llvm.floor.f64",
                     kavach_kir::RtOp::MathCeil => "llvm.ceil.f64",
+                    kavach_kir::RtOp::MathSin => "llvm.sin.f64",
+                    kavach_kir::RtOp::MathCos => "llvm.cos.f64",
+                    kavach_kir::RtOp::MathExp => "llvm.exp.f64",
+                    kavach_kir::RtOp::MathLn => "llvm.log.f64",
                     _ => "llvm.round.f64",
                 };
                 let x = self.expr(&args[0])?;

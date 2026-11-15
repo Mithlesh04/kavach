@@ -15,6 +15,15 @@ impl<'p> Body<'p> {
                 RtOp::MathFloor => "floor",
                 RtOp::MathCeil => "ceil",
                 RtOp::MathRound => "kround",
+                RtOp::MathSin => "sin",
+                RtOp::MathCos => "cos",
+                RtOp::MathTan => "tan",
+                RtOp::MathAsin => "asin",
+                RtOp::MathAcos => "acos",
+                RtOp::MathAtan => "atan",
+                RtOp::MathAtan2 => "atan2",
+                RtOp::MathExp => "exp",
+                RtOp::MathLn => "log",
                 _ => return None,
             };
             let mut vals = Vec::new();

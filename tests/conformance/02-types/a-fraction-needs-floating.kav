@@ -1,0 +1,11 @@
+// Rule: A literal with a fraction is a `T` only when `T` is `Floating`.
+// Spec: 2.9
+// expect compile error
+
+fn halve<T: Number>(x: T) -> T {
+    x * 0.5     // error: write `T: Floating`
+}
+
+fn main() {
+    print(halve(4))
+}

@@ -85,6 +85,9 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.9, 2.12 | [generic-methods-know-their-type-arguments.kav](generic-methods-know-their-type-arguments.kav) | A generic method runs with the type arguments of its call, written or inferred, as a generic function does. | runs |
 | 2.9, 3.4 | [type-arguments-come-through-function-arguments.kav](type-arguments-come-through-function-arguments.kav) | A type parameter shown only by a function-typed argument is found from that function's type. | runs |
 | 2.9 | [generic-types-have-methods.kav](generic-types-have-methods.kav) | Methods of a generic type work for every type argument. | runs |
+| 2.9 | [number-bounds-do-arithmetic.kav](number-bounds-do-arithmetic.kav) | `T: Number` and `T: Floating` let generic code do arithmetic, use literals and `T(x)`, and call `std.math` on `T`; each type it is used with gets its own copy. | runs |
+| 2.9 | [a-number-bound-takes-only-numbers.kav](a-number-bound-takes-only-numbers.kav) | A type given for a parameter with a number bound must be a number type; for `Floating`, `Float` or `Float32`. | compile error |
+| 2.9 | [a-fraction-needs-floating.kav](a-fraction-needs-floating.kav) | A literal with a fraction is a `T` only when `T` is `Floating`. | compile error |
 | 2.10 | [parameter-types-required.kav](parameter-types-required.kav) | Function parameters must have written types. | compile error |
 | 2.11 | [secret-cannot-be-printed.kav](secret-cannot-be-printed.kav) | A secret value must not flow into print. | compile error |
 | 2.1 | [numbers-read-from-text-at-their-limits.kav](numbers-read-from-text-at-their-limits.kav) | Reading a number from text takes every value its type holds, trims spaces, and gives an error for anything else. | runs |

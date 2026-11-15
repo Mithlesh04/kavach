@@ -137,6 +137,15 @@ pub fn std_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
             | RtOp::MathFloor
             | RtOp::MathCeil
             | RtOp::MathRound
+            | RtOp::MathSin
+            | RtOp::MathCos
+            | RtOp::MathTan
+            | RtOp::MathAsin
+            | RtOp::MathAcos
+            | RtOp::MathAtan
+            | RtOp::MathAtan2
+            | RtOp::MathExp
+            | RtOp::MathLn
             | RtOp::CliArgs
             | RtOp::IoIsTerminal
             | RtOp::IoColors
@@ -267,6 +276,15 @@ pub fn std_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
         RtOp::MathFloor => bits(float(a).floor()),
         RtOp::MathCeil => bits(float(a).ceil()),
         RtOp::MathRound => bits(float(a).round()),
+        RtOp::MathSin => bits(float(a).sin()),
+        RtOp::MathCos => bits(float(a).cos()),
+        RtOp::MathTan => bits(float(a).tan()),
+        RtOp::MathAsin => bits(float(a).asin()),
+        RtOp::MathAcos => bits(float(a).acos()),
+        RtOp::MathAtan => bits(float(a).atan()),
+        RtOp::MathAtan2 => bits(float(a).atan2(float(b))),
+        RtOp::MathExp => bits(float(a).exp()),
+        RtOp::MathLn => bits(float(a).ln()),
         RtOp::IoWrite => {
             let text = str_of(a);
             release(a);

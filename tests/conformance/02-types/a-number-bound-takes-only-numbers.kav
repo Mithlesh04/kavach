@@ -1,0 +1,13 @@
+// Rule: A type given for a parameter with a number bound must be a number type; for `Floating`, `Float` or `Float32`.
+// Spec: 2.9
+// expect compile error
+
+type Point<T: Floating> {
+    x: T
+    y: T
+}
+
+fn main() {
+    const p = Point(x: "a", y: "b")     // error: T is Floating, and this is String
+    print(p.x)
+}

@@ -20,6 +20,7 @@ Code that both the interpreter and native code use, so the two give exactly the 
 | `src/zones.rs` | Time zones (spec 14.4, decision 0064): a zone's offset from UTC at a moment, through `jiff` |
 | `src/clipboard.rs` | The system clipboard (spec 14.17, decision 0066): text, through `arboard` |
 | `src/serial.rs` | Serial ports (spec 14.18, decision 0068): the open ports by number, through `serial2` |
+| `src/text_methods.rs` | Text methods the interpreter and native code share: `capitalize`, `title`, `words`, padding, `truncate`, `is_blank`, `last_index_of`, `count`, removing a prefix or suffix (spec 14.2) |
 | `src/regex.rs` | Regular expressions (spec 14.8): a linear-time engine, and an advanced one with a backtracking limit |
 | `src/agents.rs` | The bookkeeping of agents' guards (spec 8.3, 8.5, 8.6): limit totals over rolling windows, asking a person; the audit log in `src/agents/audit.rs`, the state file in `src/agents/state.rs` (tests in `src/agents/tests.rs`) |
 | `src/journal.rs` | The journal of a durable agent (spec 8.5, decision 0025): events, call outcomes and ends as JSON lines, and the events a crash left unfinished |

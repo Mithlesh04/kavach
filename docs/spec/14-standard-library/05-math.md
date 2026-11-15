@@ -5,6 +5,10 @@
 | `math.pi`, `math.e` | The constants, as `Float` |
 | `math.sqrt(x)`, `math.pow(x, y)` | For `Float` or `Float32`, giving the same type; a `Float32` is worked out as a `Float` and rounded once |
 | `math.floor(x)`, `math.ceil(x)`, `math.round(x)` | The same; `round` rounds halves away from zero |
+| `math.sin(x)`, `math.cos(x)`, `math.tan(x)` | The same, for an angle `x` in radians: `math.sin(math.pi / 2.0)` is `1.0` |
+| `math.asin(x)`, `math.acos(x)`, `math.atan(x)` | The same: the angle, in radians, whose sine, cosine or tangent is `x`; `asin` and `acos` of a number past -1 to 1 is `NaN` |
+| `math.atan2(y, x)` | The same: the angle, in radians from -π to π, of the point `(x, y)` from the x axis, as `atan(y / x)` in the right quarter |
+| `math.exp(x)`, `math.ln(x)` | The same: `e` to the power `x`, and the natural logarithm; `ln` of 0 is minus infinity, of a negative number `NaN` |
 | `math.gcd(a, b)`, `math.lcm(a, b)` | Greatest common divisor and least common multiple of `Int`s |
 | `math.is_prime(n)` | Whether `n` is a prime number |
 | `math.factorial(n)` | `n!` for `0 <= n <= 20` (larger values don't fit in `Int`) |

@@ -71,6 +71,8 @@ pub struct Compiled {
     pub file: File,
     pub resolution: Resolution,
     pub literal_types: HashMap<u32, Prim>,
+    /// Number literals typed by a generic number parameter (spec 2.9).
+    pub param_literals: HashMap<u32, kavach_resolver::DefId>,
     /// Constants typed `BigInt`, as digits, by span (spec 2.1).
     pub big_constants: HashMap<(u32, u32), String>,
     /// Float constants rounded once from their exact value (decision 0043).
@@ -339,6 +341,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
         file: parsed.file,
         resolution,
         literal_types: checked.literal_types,
+        param_literals: checked.param_literals,
         big_constants: checked.big_constants,
         float_constants: checked.float_constants,
         gpu_maps: checked.gpu_maps,

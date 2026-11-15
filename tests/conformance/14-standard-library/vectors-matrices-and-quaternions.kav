@@ -1,0 +1,46 @@
+// Rule: std.vec has vectors, 4 x 4 matrices and quaternions over Float or Float32, with their operators, products and transforms.
+// Spec: 14.28
+// expect output: 5.0
+// expect output: Vec3(x: 0.0, y: 0.0, z: 3.0)
+// expect output: Vec3(x: 0.6, y: 0.8, z: 0.0)
+// expect output: Vec2(x: 2.0, y: 4.0)
+// expect output: Vec4(x: 1.0, y: 2.0, z: 3.0, w: 1.0)
+// expect output: true true
+// expect output: true true
+// expect output: true true
+// expect output: Vec4(x: 3.0, y: 2.0, z: 2.0, w: 1.0)
+// expect output: true true
+// expect output: Vec4(x: 0.0, y: 0.0, z: -5.0, w: 1.0)
+// expect output: true
+
+use std.vec
+use std.math
+
+fn main() {
+    const up = Vec3(x: 0.0, y: 1.0, z: 0.0)
+    const p = Vec3(x: 3.0, y: 4.0, z: 0.0)
+    print(p.length())
+    print(p.cross(up))
+    print(p.normalized())
+    print(Vec2(x: Float32(1.0), y: Float32(2.0)).lerp(Vec2(x: 3.0, y: 6.0), 0.5))
+    const origin = Vec4(x: 0.0, y: 0.0, z: 0.0, w: 1.0)
+    print(Mat4.translation(Vec3(x: 1.0, y: 2.0, z: 3.0)) @ origin)
+    const turn = Quat.around(up, math.pi / 2.0)
+    const x = Vec3(x: 1.0, y: 0.0, z: 0.0)
+    const r = turn.rotate(x)
+    print("{r.x.near(0.0)} {r.z.near(-1.0)}")
+    const m = turn.matrix() @ Vec4(x: 1.0, y: 0.0, z: 0.0, w: 1.0)
+    print("{m.x.near(0.0)} {m.z.near(-1.0)}")
+    const ry = Mat4.rotation_y(math.pi / 2.0) @ Vec4(x: 1.0, y: 0.0, z: 0.0, w: 1.0)
+    print("{ry.x.near(0.0)} {ry.z.near(-1.0)}")
+    const both = Mat4.translation(Vec3(x: 1.0, y: 0.0, z: 0.0)).product(Mat4.scaling(Vec3(x: 2.0, y: 2.0, z: 2.0)))
+    print(both @ Vec4(x: 1.0, y: 1.0, z: 1.0, w: 1.0))
+    const proj = Mat4.perspective(math.pi / 2.0, 1.0, 1.0, 10.0)
+    const near = proj @ Vec4(x: 0.0, y: 0.0, z: -1.0, w: 1.0)
+    const far = proj @ Vec4(x: 0.0, y: 0.0, z: -10.0, w: 1.0)
+    print("{(near.z / near.w).near(0.0)} {(far.z / far.w).near(1.0)}")
+    const view = Mat4.look_at(Vec3(x: 0.0, y: 0.0, z: 5.0), Vec3(x: 0.0, y: 0.0, z: 0.0), up)
+    print(view @ Vec4(x: 0.0, y: 0.0, z: 0.0, w: 1.0))
+    const q = (turn * turn).normalized()
+    print("{q.rotate(x).x.near(-1.0)}")
+}

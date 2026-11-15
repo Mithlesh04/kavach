@@ -51,6 +51,16 @@ impl<'a> Interp<'a> {
             ExprKind::Name(id) => {
                 if let Some(&def) = self.c.resolution.uses.get(&id.span.start) {
                     match self.c.resolution.defs[def].kind {
+                        // `T(x)`: a conversion to the running call's `T` (2.9).
+                        DefKind::GenericParam => {
+                            let t = self.concrete(&kavach_checker::Ty::Param(def));
+                            let (Some((_, v)), kavach_checker::Ty::Prim(p)) =
+                                (values.into_iter().next(), t)
+                            else {
+                                return Err(self.panic("this type isn't known here", e.span));
+                            };
+                            return self.convert(p.name(), v, e.span);
+                        }
                         DefKind::Fn => {
                             let f = self.fns[&def];
                             if !f.generics.is_empty() {

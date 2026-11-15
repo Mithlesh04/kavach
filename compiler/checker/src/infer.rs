@@ -17,6 +17,9 @@ pub(crate) enum VarKind {
 #[derive(Default)]
 pub(crate) struct Infer {
     vars: Vec<(Option<Ty>, VarKind)>,
+    /// The type parameters with a number bound (spec 2.9): `true` for
+    /// `Floating`, `false` for `Number`. A literal may be of their type.
+    pub(crate) numbers: HashMap<DefId, bool>,
 }
 
 impl Infer {
@@ -108,7 +111,7 @@ impl Infer {
                 None => false,
             },
             (Ty::Var(x), t) | (t, Ty::Var(x)) => {
-                if !fits(self.kind(*x), t) || self.occurs(*x, t) {
+                if !self.fits(self.kind(*x), t) || self.occurs(*x, t) {
                     return false;
                 }
                 self.vars[*x as usize].0 = Some(t.clone());
@@ -177,6 +180,18 @@ fn merge(a: VarKind, b: VarKind) -> Option<VarKind> {
         (IntLiteral, IntLiteral) => IntLiteral,
         (FloatLiteral, _) | (_, FloatLiteral) => FloatLiteral,
     })
+}
+
+impl Infer {
+    /// Whether a variable of `kind` may become `ty`: a literal a number
+    /// type, or a type parameter with a number bound (spec 2.9).
+    fn fits(&self, kind: VarKind, ty: &Ty) -> bool {
+        match (kind, ty) {
+            (VarKind::IntLiteral, Ty::Param(p)) => self.numbers.contains_key(p),
+            (VarKind::FloatLiteral, Ty::Param(p)) => self.numbers.get(p) == Some(&true),
+            _ => fits(kind, ty),
+        }
+    }
 }
 
 fn fits(kind: VarKind, ty: &Ty) -> bool {

@@ -83,4 +83,4 @@ win.run(e => match e {
 ## Open questions
 
 - macOS shows windows only from a program's first thread. Until the runtime gives that thread to the event loop, `window.open` there fails with `Unavailable`.
-- Gamepads and touch, with `std.input` (language request 9 (3)). Drawing into a window is `std.gpu` (14.24).
+- Touch screens and pens, with `std.input` (14.26). Drawing into a window is `std.gpu` (14.24).

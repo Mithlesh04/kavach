@@ -44,7 +44,7 @@ impl Checker<'_> {
 
     /// Reports a value without an order where one is needed.
     pub(crate) fn require_order(&mut self, t: &Ty, span: Span, what: &str) {
-        if self.ordered(t) == Some(false) {
+        if self.ordered(t) == Some(false) && !self.number_param(t, false) {
             let shown = self.show(t);
             self.error(
                 span,

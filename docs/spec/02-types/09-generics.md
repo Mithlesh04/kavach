@@ -44,3 +44,32 @@ const c = Box<Shout, Int>(raw: text)        // compile error: `Box` takes 1 type
 ```
 
 Inside the type's methods, and in an `extend<I> Box<I>` block (2.5), `I` is the type the value was made with.
+
+## Number bounds
+
+Two built-in bounds let generic code do arithmetic ([decision 0115](../../decisions/0115-generic-math-and-std-vec.md)):
+
+- `T: Number` is met by every number type: the whole-number types, `Float`, `Float32` and `Decimal`. Code may use `+ - * / %`, unary `-`, the comparisons, number literals, and `T(x)`, which converts any number to `T` as a conversion to a number type does (2.1).
+- `T: Floating` is met by `Float` and `Float32`. It is a `Number`, and code may also call `std.math`'s functions on a `T` (14.5): `math.sqrt(x)` of a `Float32` gives a `Float32`.
+
+```kavach
+fn total<T: Number>(items: [T]) -> T {
+    let sum = T(0)
+    for x in items {
+        sum += x
+    }
+    sum
+}
+
+fn length<T: Floating>(x: T, y: T) -> T {
+    math.sqrt(x * x + y * y)
+}
+
+total([1, 2, 3])                          // 6, an Int
+length(Float32(3.0), Float32(4.0))        // 5.0, a Float32
+```
+
+- A literal in such code is of type `T`: `x * 2` doubles a `T`. A literal with a fraction, as `x * 0.5`, needs `T: Floating`.
+- Each generic function is compiled once for each type it is called with, so `total` of `Float32`s runs as a loop written for `Float32` would.
+- The bound is `Floating`, not `Float`, as `Float` is a type.
+- Whole-number overflow and division by zero panic in generic code as elsewhere (5.6).

@@ -45,6 +45,6 @@ print(Money(cents: 150) + Money(cents: 99) > Money(cents: 200))   // true
 
 ## Open questions
 
-- A generic function that asks for an operator, `fn total<T: Add>(items: [T], zero: T) -> T`, with `a + b` on two `T`s calling `add`; and whether the number types meet `Add` and the others as they are, as the types with an order (1.8) would meet `Comparable`.
+- A generic function that asks for an operator, `fn total<T: Add>(items: [T], zero: T) -> T`, with `a + b` on two `T`s calling `add`. Arithmetic on any number type in generic code is `T: Number` (2.9); [decision 0115](../../decisions/0115-generic-math-and-std-vec.md) has the number types meet `Add` and the others too, so one bound serves numbers and a program's own types, which is still to build.
 - `sort()`, `min()` and `max()` of a list of a `Comparable` type, and a `Comparable` type as a map key's order. Until then, `sort_by(m => m.cents)` sorts by a key.
 - Bit operators (`& | ^ << >> ~`) for a program's own types (bit vectors, decision 0041's `BigInt` already has them built in).

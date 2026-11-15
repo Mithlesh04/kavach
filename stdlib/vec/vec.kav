@@ -1,0 +1,271 @@
+// std.vec (spec 14.28, decision 0115): vectors, 4 × 4 matrices and
+// quaternions over `T: Floating` (spec 2.9), so each is compiled for the
+// `Float32` or `Float` it holds.
+
+use std.math
+
+/// A vector of two parts.
+pub type Vec2<T: Floating>: Add, Sub, Neg, Mul<T>, Div<T> {
+    pub x: T
+    pub y: T
+
+    fn add(self, o: Vec2<T>) -> Vec2<T> { Vec2(x: self.x + o.x, y: self.y + o.y) }
+    fn sub(self, o: Vec2<T>) -> Vec2<T> { Vec2(x: self.x - o.x, y: self.y - o.y) }
+    fn neg(self) -> Vec2<T> { Vec2(x: -self.x, y: -self.y) }
+    fn mul(self, k: T) -> Vec2<T> { Vec2(x: self.x * k, y: self.y * k) }
+    fn div(self, k: T) -> Vec2<T> { Vec2(x: self.x / k, y: self.y / k) }
+
+    /// Each part times the same part of `o`.
+    pub fn scale(self, o: Vec2<T>) -> Vec2<T> { Vec2(x: self.x * o.x, y: self.y * o.y) }
+
+    /// The parts multiplied in pairs and added.
+    pub fn dot(self, o: Vec2<T>) -> T { self.x * o.x + self.y * o.y }
+
+    /// Its length, squared.
+    pub fn length_squared(self) -> T { self.dot(self) }
+
+    /// Its length.
+    pub fn length(self) -> T { math.sqrt(self.dot(self)) }
+
+    /// The same direction with length 1; length 0 stays as it is.
+    pub fn normalized(self) -> Vec2<T> {
+        const n = self.length()
+        if n == 0.0 { self } else { self / n }
+    }
+
+    /// How far `o` is.
+    pub fn distance(self, o: Vec2<T>) -> T { (o - self).length() }
+
+    /// The point `t` of the way to `o`.
+    pub fn lerp(self, o: Vec2<T>, t: T) -> Vec2<T> { self + (o - self) * t }
+}
+
+/// A vector of three parts.
+pub type Vec3<T: Floating>: Add, Sub, Neg, Mul<T>, Div<T> {
+    pub x: T
+    pub y: T
+    pub z: T
+
+    fn add(self, o: Vec3<T>) -> Vec3<T> { Vec3(x: self.x + o.x, y: self.y + o.y, z: self.z + o.z) }
+    fn sub(self, o: Vec3<T>) -> Vec3<T> { Vec3(x: self.x - o.x, y: self.y - o.y, z: self.z - o.z) }
+    fn neg(self) -> Vec3<T> { Vec3(x: -self.x, y: -self.y, z: -self.z) }
+    fn mul(self, k: T) -> Vec3<T> { Vec3(x: self.x * k, y: self.y * k, z: self.z * k) }
+    fn div(self, k: T) -> Vec3<T> { Vec3(x: self.x / k, y: self.y / k, z: self.z / k) }
+
+    /// Each part times the same part of `o`.
+    pub fn scale(self, o: Vec3<T>) -> Vec3<T> { Vec3(x: self.x * o.x, y: self.y * o.y, z: self.z * o.z) }
+
+    /// The parts multiplied in pairs and added.
+    pub fn dot(self, o: Vec3<T>) -> T { self.x * o.x + self.y * o.y + self.z * o.z }
+
+    /// At right angles to both, by the right-hand rule.
+    pub fn cross(self, o: Vec3<T>) -> Vec3<T> {
+        Vec3(x: self.y * o.z - self.z * o.y, y: self.z * o.x - self.x * o.z, z: self.x * o.y - self.y * o.x)
+    }
+
+    /// Its length, squared.
+    pub fn length_squared(self) -> T { self.dot(self) }
+
+    /// Its length.
+    pub fn length(self) -> T { math.sqrt(self.dot(self)) }
+
+    /// The same direction with length 1; length 0 stays as it is.
+    pub fn normalized(self) -> Vec3<T> {
+        const n = self.length()
+        if n == 0.0 { self } else { self / n }
+    }
+
+    /// How far `o` is.
+    pub fn distance(self, o: Vec3<T>) -> T { (o - self).length() }
+
+    /// The point `t` of the way to `o`.
+    pub fn lerp(self, o: Vec3<T>, t: T) -> Vec3<T> { self + (o - self) * t }
+}
+
+/// A vector of four parts.
+pub type Vec4<T: Floating>: Add, Sub, Neg, Mul<T>, Div<T> {
+    pub x: T
+    pub y: T
+    pub z: T
+    pub w: T
+
+    fn add(self, o: Vec4<T>) -> Vec4<T> { Vec4(x: self.x + o.x, y: self.y + o.y, z: self.z + o.z, w: self.w + o.w) }
+    fn sub(self, o: Vec4<T>) -> Vec4<T> { Vec4(x: self.x - o.x, y: self.y - o.y, z: self.z - o.z, w: self.w - o.w) }
+    fn neg(self) -> Vec4<T> { Vec4(x: -self.x, y: -self.y, z: -self.z, w: -self.w) }
+    fn mul(self, k: T) -> Vec4<T> { Vec4(x: self.x * k, y: self.y * k, z: self.z * k, w: self.w * k) }
+    fn div(self, k: T) -> Vec4<T> { Vec4(x: self.x / k, y: self.y / k, z: self.z / k, w: self.w / k) }
+
+    /// Each part times the same part of `o`.
+    pub fn scale(self, o: Vec4<T>) -> Vec4<T> {
+        Vec4(x: self.x * o.x, y: self.y * o.y, z: self.z * o.z, w: self.w * o.w)
+    }
+
+    /// The parts multiplied in pairs and added.
+    pub fn dot(self, o: Vec4<T>) -> T { self.x * o.x + self.y * o.y + self.z * o.z + self.w * o.w }
+
+    /// Its length, squared.
+    pub fn length_squared(self) -> T { self.dot(self) }
+
+    /// Its length.
+    pub fn length(self) -> T { math.sqrt(self.dot(self)) }
+
+    /// The same direction with length 1; length 0 stays as it is.
+    pub fn normalized(self) -> Vec4<T> {
+        const n = self.length()
+        if n == 0.0 { self } else { self / n }
+    }
+
+    /// How far `o` is.
+    pub fn distance(self, o: Vec4<T>) -> T { (o - self).length() }
+
+    /// The point `t` of the way to `o`.
+    pub fn lerp(self, o: Vec4<T>, t: T) -> Vec4<T> { self + (o - self) * t }
+}
+
+/// A 4 × 4 matrix of four columns, as GPUs lay it out.
+pub type Mat4<T: Floating>: MatMul<Vec4<T>, Vec4<T>> {
+    pub c0: Vec4<T>
+    pub c1: Vec4<T>
+    pub c2: Vec4<T>
+    pub c3: Vec4<T>
+
+    /// `m @ v`: the vector transformed by the matrix.
+    fn matmul(self, v: Vec4<T>) -> Vec4<T> {
+        self.c0 * v.x + self.c1 * v.y + self.c2 * v.z + self.c3 * v.w
+    }
+
+    /// The matrix product: `b`, then this one.
+    pub fn product(self, b: Mat4<T>) -> Mat4<T> {
+        Mat4(c0: self @ b.c0, c1: self @ b.c1, c2: self @ b.c2, c3: self @ b.c3)
+    }
+
+    /// Rows and columns swapped.
+    pub fn transposed(self) -> Mat4<T> {
+        Mat4(
+            c0: Vec4(x: self.c0.x, y: self.c1.x, z: self.c2.x, w: self.c3.x),
+            c1: Vec4(x: self.c0.y, y: self.c1.y, z: self.c2.y, w: self.c3.y),
+            c2: Vec4(x: self.c0.z, y: self.c1.z, z: self.c2.z, w: self.c3.z),
+            c3: Vec4(x: self.c0.w, y: self.c1.w, z: self.c2.w, w: self.c3.w),
+        )
+    }
+
+    /// The matrix that changes nothing.
+    pub fn identity() -> Mat4<T> {
+        Mat4.of_rows(1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
+    }
+
+    /// Moving by `v`.
+    pub fn translation(v: Vec3<T>) -> Mat4<T> {
+        Mat4.of_rows(1.0, 0.0, 0.0, v.x, 0.0, 1.0, 0.0, v.y, 0.0, 0.0, 1.0, v.z)
+    }
+
+    /// Each axis scaled by its part of `v`.
+    pub fn scaling(v: Vec3<T>) -> Mat4<T> {
+        Mat4.of_rows(v.x, 0.0, 0.0, 0.0, 0.0, v.y, 0.0, 0.0, 0.0, 0.0, v.z, 0.0)
+    }
+
+    /// Turning by `a` radians around the x axis.
+    pub fn rotation_x(a: T) -> Mat4<T> {
+        const (c, s) = (math.cos(a), math.sin(a))
+        Mat4.of_rows(1.0, 0.0, 0.0, 0.0, 0.0, c, -s, 0.0, 0.0, s, c, 0.0)
+    }
+
+    /// Turning by `a` radians around the y axis.
+    pub fn rotation_y(a: T) -> Mat4<T> {
+        const (c, s) = (math.cos(a), math.sin(a))
+        Mat4.of_rows(c, 0.0, s, 0.0, 0.0, 1.0, 0.0, 0.0, -s, 0.0, c, 0.0)
+    }
+
+    /// Turning by `a` radians around the z axis.
+    pub fn rotation_z(a: T) -> Mat4<T> {
+        const (c, s) = (math.cos(a), math.sin(a))
+        Mat4.of_rows(c, -s, 0.0, 0.0, s, c, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0)
+    }
+
+    /// A perspective projection, depth from 0 (near) to 1 (far), looking
+    /// down -z.
+    pub fn perspective(fov_y: T, aspect: T, near: T, far: T) -> Mat4<T> {
+        const f = 1.0 / math.tan(fov_y / 2.0)
+        const r = far / (near - far)
+        Mat4(
+            c0: Vec4(x: f / aspect, y: 0.0, z: 0.0, w: 0.0),
+            c1: Vec4(x: 0.0, y: f, z: 0.0, w: 0.0),
+            c2: Vec4(x: 0.0, y: 0.0, z: r, w: -1.0),
+            c3: Vec4(x: 0.0, y: 0.0, z: r * near, w: 0.0),
+        )
+    }
+
+    /// A view from `eye` towards `target`, with `up` up.
+    pub fn look_at(eye: Vec3<T>, target: Vec3<T>, up: Vec3<T>) -> Mat4<T> {
+        const f = (target - eye).normalized()
+        const s = f.cross(up).normalized()
+        const u = s.cross(f)
+        Mat4.of_rows(s.x, s.y, s.z, -s.dot(eye), u.x, u.y, u.z, -u.dot(eye), -f.x, -f.y, -f.z, f.dot(eye))
+    }
+
+    /// The matrix with these first three rows, and `0 0 0 1` below them.
+    fn of_rows(a: T, b: T, c: T, d: T, e: T, f: T, g: T, h: T, i: T, j: T, k: T, l: T) -> Mat4<T> {
+        Mat4(
+            c0: Vec4(x: a, y: e, z: i, w: 0.0),
+            c1: Vec4(x: b, y: f, z: j, w: 0.0),
+            c2: Vec4(x: c, y: g, z: k, w: 0.0),
+            c3: Vec4(x: d, y: h, z: l, w: 1.0),
+        )
+    }
+}
+
+/// A rotation, as a quaternion.
+pub type Quat<T: Floating>: Mul {
+    pub x: T
+    pub y: T
+    pub z: T
+    pub w: T
+
+    /// `a * b`: `b`, then `a`.
+    fn mul(self, b: Quat<T>) -> Quat<T> {
+        const a = self
+        Quat(
+            x: a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,
+            y: a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
+            z: a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w,
+            w: a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z,
+        )
+    }
+
+    /// No rotation.
+    pub fn identity() -> Quat<T> { Quat(x: 0.0, y: 0.0, z: 0.0, w: 1.0) }
+
+    /// Turning by `angle` radians around `axis`.
+    pub fn around(axis: Vec3<T>, angle: T) -> Quat<T> {
+        const n = axis.normalized()
+        const s = math.sin(angle / 2.0)
+        Quat(x: n.x * s, y: n.y * s, z: n.z * s, w: math.cos(angle / 2.0))
+    }
+
+    /// `v` turned by this rotation.
+    pub fn rotate(self, v: Vec3<T>) -> Vec3<T> {
+        const u = Vec3(x: self.x, y: self.y, z: self.z)
+        const t = u.cross(v) * 2.0
+        v + t * self.w + u.cross(t)
+    }
+
+    /// Length 1, as rounding can drift it.
+    pub fn normalized(self) -> Quat<T> {
+        const n = math.sqrt(self.x * self.x + self.y * self.y + self.z * self.z + self.w * self.w)
+        if n == 0.0 {
+            self
+        } else {
+            Quat(x: self.x / n, y: self.y / n, z: self.z / n, w: self.w / n)
+        }
+    }
+
+    /// The same rotation as a matrix.
+    pub fn matrix(self) -> Mat4<T> {
+        const (x, y, z, w) = (self.x, self.y, self.z, self.w)
+        Mat4.of_rows(
+            1.0 - 2.0 * (y * y + z * z), 2.0 * (x * y - w * z), 2.0 * (x * z + w * y), 0.0,
+            2.0 * (x * y + w * z), 1.0 - 2.0 * (x * x + z * z), 2.0 * (y * z - w * x), 0.0,
+            2.0 * (x * z - w * y), 2.0 * (y * z + w * x), 1.0 - 2.0 * (x * x + y * y), 0.0,
+        )
+    }
+}

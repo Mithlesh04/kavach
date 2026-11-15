@@ -15,6 +15,10 @@ impl Checker<'_> {
         args: &[Arg],
         expected: Option<&Ty>,
     ) -> Ty {
+        // `T(x)`, with `T` a type parameter with a number bound (spec 2.9).
+        if let Some(t) = self.number_conversion(callee, args) {
+            return t;
+        }
         match &callee.kind {
             ExprKind::Name(id) => {
                 if let Some(&def) = self.res.uses.get(&id.span.start) {
@@ -150,6 +154,7 @@ impl Checker<'_> {
         );
         self.check_inout_args(sig, args);
         for (g, bounds) in &sig.generics {
+            self.check_number_bound(*g, &subst[g], span);
             let ty = self.inf.resolve(&subst[g]);
             let has = match &ty {
                 Ty::Adt(def, _) => self.implements.get(def),
@@ -360,38 +365,11 @@ impl Checker<'_> {
             .collect();
         let secret: Vec<bool> = fields.iter().map(|f| f.secret).collect();
         self.args_with(args, &params, &secret, span, &format!("`{name}`"), "field");
-        instance
-    }
-
-    /// `items.push(x)` changes `items`, so it must be a `const` (spec 2.2).
-    pub(crate) fn require_var(&mut self, base: &Expr, method: &str) {
-        let mut root = base;
-        while let ExprKind::Field { base, .. }
-        | ExprKind::TupleField { base, .. }
-        | ExprKind::Index { base, .. } = &root.kind
-        {
-            root = base;
+        // A type's number bounds (spec 2.9), now its fields are known.
+        for (g, t) in &subst {
+            self.check_number_bound(*g, t, span);
         }
-        let ExprKind::Name(id) = &root.kind else {
-            return;
-        };
-        let kind = self
-            .res
-            .uses
-            .get(&id.span.start)
-            .map(|d| self.res.defs[*d].kind);
-        let what = match kind {
-            Some(DefKind::Local { mutable: false }) => "a `const`",
-            Some(DefKind::Param) => "a parameter",
-            _ => return,
-        };
-        self.error(
-            root.span,
-            format!(
-                "`{method}` changes `{}`, but it is {what}: declare it with `let`",
-                id.name
-            ),
-        );
+        instance
     }
 
     /// `Rect.square(3)`, `Int(text)`, `Payments.refund(…)`, `Bot.start(…)`.

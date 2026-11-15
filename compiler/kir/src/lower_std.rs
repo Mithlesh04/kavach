@@ -169,6 +169,11 @@ impl<'a> Lowerer<'a> {
     ) -> Option<Lowered<ir::Expr>> {
         let recv = values[0].ty;
         let shape = self.shapes.shape(recv).cloned();
+        if matches!(shape, Some(Shape::Str))
+            && let Some(e) = self.text_method(name, values.clone(), ty, line)
+        {
+            return Some(Ok(e));
+        }
         let numeric = recv.is_int() || recv.is_float() || matches!(shape, Some(Shape::Decimal));
         if numeric && matches!(name, "abs" | "min" | "max" | "clamp") {
             return Some(Ok(self.number_method(name, values, line)));

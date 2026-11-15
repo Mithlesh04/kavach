@@ -71,6 +71,7 @@ mod lower_selected;
 mod lower_std;
 mod lower_stmt;
 mod lower_tasks;
+mod lower_text;
 mod lower_tls;
 mod moves;
 mod par;

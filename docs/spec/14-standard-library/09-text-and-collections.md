@@ -4,11 +4,6 @@ Written in Kavach, with contracts and examples like any other code.
 
 | Function | Gives |
 |---|---|
-| `text.pad_left(s, width, fill)`, `text.pad_right(s, width, fill)` | `s` filled with `fill` (a `Char`, default `' '`) up to `width` characters |
-| `text.words(s)` | The words of `s`: the parts between runs of spaces, tabs and line breaks |
-| `text.capitalize(s)` | `s` with its first character in upper case |
-| `text.truncate(s, max)` | At most `max` characters of `s` |
-| `text.is_blank(s)` | Whether `s` has only spaces, tabs and line breaks |
 | `text.find_ints(s)` | Every whole number written inside `s`, in order: `"a12b34"` gives `[12, 34]` |
 | `text.find_int(s)` | The first of them, or `none`: `"sd23"` gives `23` |
 | `text.find_float(s)` | The first number with its fraction, or `none`: `"pi is 3.14!"` gives `3.14` |

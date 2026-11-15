@@ -89,6 +89,7 @@ impl Checker<'_> {
             let Some(&def) = self.decl.get(&g.name.span.start) else {
                 continue;
             };
+            self.note_number_bound(g, def);
             let bounds: Vec<_> = g
                 .bounds
                 .iter()
@@ -281,6 +282,9 @@ impl Checker<'_> {
             .iter()
             .filter_map(|g| self.decl.get(&g.name.span.start).copied())
             .collect();
+        for (g, p) in t.generics.iter().zip(&generics) {
+            self.note_number_bound(g, *p);
+        }
         let self_ty = Ty::Adt(def, generics.iter().map(|g| Ty::Param(*g)).collect());
         // Register the generics first, so fields can be lowered.
         self.types.insert(

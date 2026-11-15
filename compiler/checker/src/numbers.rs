@@ -1,0 +1,136 @@
+//! Number bounds (spec 2.9, decision 0115): `T: Number` and `T: Floating`
+//! let generic code do arithmetic on `T`. A literal may be a `T`
+//! (`infer.rs`), `T(x)` converts a number to `T`, `std.math` takes a
+//! `Floating` `T`, and each call is checked to give a number type.
+
+use crate::checker::Checker;
+use crate::ty::{Prim, Ty};
+use kavach_ast::*;
+use kavach_resolver::DefId;
+
+impl Checker<'_> {
+    /// Notes that type parameter `def` has a number bound, if `g` has one.
+    pub(crate) fn note_number_bound(&mut self, g: &GenericParam, def: DefId) {
+        for b in &g.bounds {
+            let TypeKind::Named { path, args } = &b.kind else {
+                continue;
+            };
+            match path.segments.last().map(|s| s.name.as_str()) {
+                Some("Number") if args.is_empty() && path.segments.len() == 1 => {
+                    self.inf.numbers.entry(def).or_insert(false);
+                }
+                Some("Floating") if args.is_empty() && path.segments.len() == 1 => {
+                    self.inf.numbers.insert(def, true);
+                }
+                _ => {}
+            }
+        }
+    }
+
+    /// Whether `t` is a type parameter with a number bound; with
+    /// `floating`, a `Floating` one.
+    pub(crate) fn number_param(&self, t: &Ty, floating: bool) -> bool {
+        match self.inf.resolve(t) {
+            Ty::Param(p) => self.inf.numbers.get(&p).is_some_and(|f| *f || !floating),
+            _ => false,
+        }
+    }
+
+    /// Whether `t` meets the bound of `param`, a type parameter with a
+    /// number bound; `None` when `param` has none, or `t` isn't known.
+    pub(crate) fn meets_number_bound(&self, param: DefId, t: &Ty) -> Option<bool> {
+        let floating = *self.inf.numbers.get(&param)?;
+        Some(match self.inf.resolve(t) {
+            Ty::Prim(p) if floating => matches!(p, Prim::Float | Prim::Float32),
+            Ty::Prim(p) => p.is_numeric(),
+            Ty::Param(_) => self.number_param(t, floating),
+            Ty::Var(_) | Ty::Error | Ty::Never => return None,
+            _ => false,
+        })
+    }
+
+    /// The message for `t`, which doesn't meet `param`'s number bound.
+    pub(crate) fn not_a_number(&self, param: DefId, t: &Ty) -> String {
+        let (name, shown) = (&self.res.defs[param].name, self.show(t));
+        match self.inf.numbers.get(&param) {
+            Some(true) => format!(
+                "`{name}` is `Floating`, so it is `Float` or `Float32`, and this is `{shown}` (spec 2.9)"
+            ),
+            _ => format!(
+                "`{name}` is a `Number`, so it is a number type, and this is `{shown}` (spec 2.9)"
+            ),
+        }
+    }
+
+    /// `T(x)`, with `T` a type parameter with a number bound: `x` as a `T`.
+    pub(crate) fn number_conversion(&mut self, callee: &Expr, args: &[Arg]) -> Option<Ty> {
+        let ExprKind::Name(id) = &callee.kind else {
+            return None;
+        };
+        let &def = self.res.uses.get(&id.span.start)?;
+        if !self.inf.numbers.contains_key(&def) {
+            return None;
+        }
+        match args {
+            [a] if a.name.is_none() => {
+                let t = self.value(&a.value, None);
+                self.require_number(&a.value, &t, false);
+            }
+            _ => {
+                let what = format!("`{}(x)` takes one number", id.name);
+                self.error(
+                    callee.span,
+                    format!("{what}, which it gives as a `{}` (spec 2.9)", id.name),
+                );
+            }
+        }
+        Some(Ty::Param(def))
+    }
+}
+
+impl Checker<'_> {
+    /// `x * 0.5` with `x` of a `T` that is only a `Number`: says why
+    /// (spec 2.9). Whether it did.
+    pub(crate) fn fraction_for_number(&mut self, lt: &Ty, r: &Expr) -> bool {
+        let fraction = matches!(r.kind, ExprKind::Float(_));
+        if !fraction || !self.number_param(lt, false) || self.number_param(lt, true) {
+            return false;
+        }
+        let name = self.show(lt);
+        self.error(r.span, format!("a number with a fraction is a `{name}` only when `{name}` is `Floating`: write `{name}: Floating`, or a whole number (spec 2.9)"));
+        true
+    }
+}
+
+impl Checker<'_> {
+    /// Checks that `t`, given for type parameter `g`, meets `g`'s number
+    /// bound; a literal given for a `Floating` one is a `Float` (`half(3)`).
+    pub(crate) fn check_number_bound(&mut self, g: DefId, t: &Ty, span: Span) {
+        if self.inf.numbers.contains_key(&g) {
+            self.number_checks.push((g, t.clone(), span));
+        }
+    }
+
+    /// The number bounds noted while checking, now each literal's type is
+    /// known from where it went.
+    pub(crate) fn check_numbers_later(&mut self) {
+        for (g, t, span) in std::mem::take(&mut self.number_checks) {
+            self.number_bound_now(g, &t, span);
+        }
+    }
+
+    fn number_bound_now(&mut self, g: DefId, t: &Ty, span: Span) {
+        let mut ty = self.inf.resolve(t);
+        if let Ty::Var(v) = ty
+            && self.inf.numbers.get(&g) == Some(&true)
+            && self.inf.kind(v) != crate::infer::VarKind::Any
+        {
+            self.inf.unify(&ty, &Ty::Prim(Prim::Float));
+            ty = self.inf.resolve(&ty);
+        }
+        if self.meets_number_bound(g, &ty) == Some(false) {
+            let why = self.not_a_number(g, &ty);
+            self.error(span, why);
+        }
+    }
+}

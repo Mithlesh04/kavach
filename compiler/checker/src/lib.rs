@@ -15,6 +15,7 @@ mod c_functions;
 mod calls;
 mod capabilities;
 mod chains;
+mod changes;
 mod checker;
 mod cli_parse;
 mod collect;
@@ -46,6 +47,7 @@ mod methods;
 mod more_methods;
 mod names;
 mod never_runs;
+mod numbers;
 mod operators;
 mod order;
 mod patterns;
@@ -110,6 +112,9 @@ pub struct Checked {
     /// Context decides it (spec 1.7); without context `1` is an `Int` and
     /// `0.5` a `Float`.
     pub literal_types: HashMap<u32, Prim>,
+    /// The number literals whose type is a type parameter with a number
+    /// bound (spec 2.9), by start offset: their type is the running call's.
+    pub param_literals: HashMap<u32, DefId>,
     /// The exact value, as digits, of each constant whose type is `BigInt`
     /// (spec 2.1), by its span `(start, end)`: worked out here, so code
     /// generation makes the number without doing the arithmetic again.
@@ -175,6 +180,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     checker.check_capability_errors(file);
     checker.collect_gpu_fns(file);
     checker.check_file(file);
+    checker.check_numbers_later();
     checker.check_gpu_fns(file);
     checker.check_generic_json();
     checker.check_capabilities(file);
@@ -185,6 +191,12 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     checker.check_unwraps(file);
     let (agent_models, ask_models) = checker.ai_models(file);
     let agent_settings = checker.agent_settings(file);
+    let param_literals = (checker.literals.iter())
+        .filter_map(|(start, ty)| match checker.inf.resolve(ty) {
+            Ty::Param(p) => Some((*start, p)),
+            _ => None,
+        })
+        .collect();
     let literal_types = checker
         .literals
         .iter()
@@ -270,6 +282,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
         errors,
         warnings: checker.warnings,
         literal_types,
+        param_literals,
         big_constants: checker.big_constants,
         float_constants,
         gpu_maps,

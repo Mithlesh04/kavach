@@ -60,7 +60,7 @@ fn list_of(slots: &[u64], item: Type, code: i64) -> i64 {
 }
 
 /// The text type that a list of text (`code`) holds.
-fn text_item(code: i64) -> Type {
+pub(crate) fn text_item(code: i64) -> Type {
     match shape(type_of(code)) {
         Shape::List(t) | Shape::Optional(t) => *t,
         _ => type_of(code),
@@ -88,7 +88,11 @@ fn split(a: i64, b: i64, code: i64) -> i64 {
 }
 
 /// The words of a list of text holding `parts` (about `n` of them).
-fn text_words<'s>(parts: impl Iterator<Item = &'s str>, n: usize, item: Type) -> Vec<u64> {
+pub(crate) fn text_words<'s>(
+    parts: impl Iterator<Item = &'s str>,
+    n: usize,
+    item: Type,
+) -> Vec<u64> {
     let mut words = Vec::with_capacity(n * crate::text_items::WIDTH);
     for part in parts {
         words.extend_from_slice(&crate::text_items::encode(part, item));

@@ -139,6 +139,7 @@ const TABLE: &[(&str, &[&str])] = &[
             "must be `",
             ", and this is",
             "of a fixed size",
+            "only when `",
         ],
     ),
 ];

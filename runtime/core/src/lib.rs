@@ -25,6 +25,7 @@ pub mod seeded;
 pub mod serial;
 pub mod stop_holds;
 pub mod tasks;
+pub mod text_methods;
 pub mod trace;
 pub mod writers;
 pub mod zones;

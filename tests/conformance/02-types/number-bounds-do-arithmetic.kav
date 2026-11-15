@@ -1,0 +1,41 @@
+// Rule: `T: Number` and `T: Floating` let generic code do arithmetic, use literals and `T(x)`, and call `std.math` on `T`; each type it is used with gets its own copy.
+// Spec: 2.9
+// expect output: 6
+// expect output: 0.75
+// expect output: 0.0
+// expect output: 5.0
+// expect output: 8
+// expect output: 1.5
+
+use std.math
+
+fn total<T: Number>(items: [T]) -> T {
+    let sum = T(0)
+    for x in items {
+        sum += x
+    }
+    sum
+}
+
+fn length<T: Floating>(x: T, y: T) -> T {
+    math.sqrt(x * x + y * y)
+}
+
+fn twice<T: Number>(x: T) -> T {
+    x * 2
+}
+
+fn half<T: Floating>(x: T) -> T {
+    x * 0.5
+}
+
+fn main() {
+    print(total([1, 2, 3]))
+    const quarters: [Float32] = [0.5, 0.25]
+    print(total(quarters))
+    const empty: [Float] = []
+    print(total(empty))
+    print(length(Float32(3.0), Float32(4.0)))
+    print(twice(Int8(4)))
+    print(half(3))
+}

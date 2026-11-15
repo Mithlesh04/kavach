@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 
 /// The standard library modules every program has, as the driver adds
 /// them after the program's own file.
-const BUILTIN: [(&str, &str); 44] = [
+const BUILTIN: [(&str, &str); 45] = [
     ("std.json", include_str!("../../../stdlib/json/json.kav")),
     ("std.text", include_str!("../../../stdlib/text/text.kav")),
     (
@@ -41,6 +41,7 @@ const BUILTIN: [(&str, &str); 44] = [
     ),
     ("std.input", include_str!("../../../stdlib/input/input.kav")),
     ("std.audio", include_str!("../../../stdlib/audio/audio.kav")),
+    ("std.vec", include_str!("../../../stdlib/vec/vec.kav")),
     (
         "std.process",
         include_str!("../../../stdlib/process/process.kav"),

@@ -313,6 +313,8 @@ impl Checker<'_> {
             }
             Ty::Var(v) => !int_only || self.inf.kind(v) != VarKind::FloatLiteral,
             Ty::Error | Ty::Never => true,
+            // A type parameter with a number bound (spec 2.9).
+            Ty::Param(_) => !int_only && self.number_param(t, false),
             _ => false,
         };
         if !ok {
@@ -422,6 +424,9 @@ impl Checker<'_> {
                 if !number || (op == Pow && !self.check_power(l, &lt)) {
                     self.value(r, None);
                     return Ty::Error;
+                }
+                if self.fraction_for_number(&lt, r) {
+                    return lt;
                 }
                 self.number_then_own(op, r, &lt);
                 lt

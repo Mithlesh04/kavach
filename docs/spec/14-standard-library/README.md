@@ -33,6 +33,7 @@ Each section is a file of its own: new sections go at the end, with the next num
 | 14.25 std.system | [25-system.md](25-system.md) |
 | 14.26 std.input | [26-input.md](26-input.md) |
 | 14.27 std.audio | [27-audio.md](27-audio.md) |
+| 14.28 std.vec | [28-vec.md](28-vec.md) |
 
 ## Open questions
 

@@ -51,6 +51,8 @@ pub(crate) const TYPES: &[&str] = &[
     "MatMul",
     "Neg",
     "Comparable",
+    "Number",
+    "Floating",
 ];
 
 /// Parts of a built-in capability that the whole doesn't cover: each is

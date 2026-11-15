@@ -1,0 +1,18 @@
+// Rule: Text pads, splits into words, capitalizes, truncates, finds blank text, trims one side, counts and finds the last part, and removes a prefix or suffix, with methods.
+// Spec: 14.2
+// expect output: 007|ab..|  x
+// expect output: ["to", "be", "or", "not"]
+// expect output: Asha|The Tale Of  Two|Kav|true|false
+// expect output: [x  ]|[  x]
+// expect output: 3 none 1 3 4
+// expect output: 1.2|main|1.2
+
+fn main() {
+    print("{"7".pad_left(3, '0')}|{"ab".pad_right(4, fill: '.')}|{"x".pad_left(3)}")
+    print("  to be\tor\nnot ".words())
+    print("{"asha".capitalize()}|{"the tALE of  two".title()}|{"Kavach".truncate(3)}|{" \t".is_blank()}|{" a ".is_blank()}")
+    print("[{"  x  ".trim_start()}]|[{"  x  ".trim_end()}]")
+    const missing = "abc".last_index_of("x")
+    print("{"a-b-c".last_index_of("-") ?? -1} {missing} {"banana".count("ana")} {"banana".count("a")} {"abc".count("")}")
+    print("{"v1.2".remove_prefix("v")}|{"main.kav".remove_suffix(".kav")}|{"1.2".remove_prefix("v")}")
+}

@@ -26,7 +26,7 @@
 | `std.cli` | Command-line arguments and exit codes (14.6) | `Env` |
 | `std.regex` | Regular expressions (14.8) | none |
 | `std.json` | JSON text to and from `Json` values and typed values ([2.12](../02-types/12-json.md)) | none |
-| `std.text` | Padding, words, capitalizing (14.9) | none |
+| `std.text` | Numbers found in text, Unicode normal forms (14.9) | none |
 | `std.collections` | Chunks, zip, unique items, counting (14.9) | none |
 | `std.test` | `Sample` and `Gen`, for types that make their own generated values (14.7) | none |
 | `std.log` | Log events the program defines (14.12) | none |

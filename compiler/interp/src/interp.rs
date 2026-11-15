@@ -288,6 +288,12 @@ impl<'a> Interp<'a> {
     }
 
     pub(crate) fn literal_type(&self, span: Span) -> Prim {
+        // A literal of a generic number type: the running call's (2.9).
+        if let Some(p) = self.c.param_literals.get(&span.start)
+            && let kavach_checker::Ty::Prim(prim) = self.concrete(&kavach_checker::Ty::Param(*p))
+        {
+            return prim;
+        }
         self.c
             .literal_types
             .get(&span.start)

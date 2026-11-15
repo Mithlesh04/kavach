@@ -39,6 +39,8 @@ Hindley–Milner-style inference with unification. A number literal starts as an
 | `src/exprs.rs` | Expressions: names, operators, lambdas |
 | `src/failures.rs` | `try`, `fail`, `return`, error compatibility, `unsafe` |
 | `src/calls.rs` | Calls, record and variant construction, arguments |
+| `src/changes.rs` | What changes a value in place: `items.push(x)` needs `items` to be a `let` (spec 2.2) |
+| `src/numbers.rs` | Number bounds: `T: Number` and `T: Floating`, `T(x)`, literals of type `T`, and the check that each call and value gives a number type (spec 2.9) |
 | `src/methods.rs` | Method calls: a type's own, built-ins, `.timeout(d)`, and fields holding functions (spec 3.4) |
 | `src/c_functions.rs` | C functions (spec 10.7): the types their signatures may use, and the Kavach functions C calls back |
 | `src/fields.rs` | Fields, indexing, `with`, and arena escapes |
@@ -70,7 +72,7 @@ Hindley–Milner-style inference with unification. A number literal starts as an
 | `src/std_compress.rs` | The signatures of `std.compress`'s built-in functions (spec 14.21) |
 | `src/std_gpu.rs` | The signatures of `std.gpu`'s built-in functions, screens and frames by number (spec 14.24) |
 | `src/std_process.rs` | The signatures of `std.process`'s built-in functions, by the child's number (spec 14.23) |
-| `src/std_window.rs` | The signatures of `std.window`'s built-in functions, by the window's number (spec 14.22) |
+| `src/std_window.rs` | The signatures of `std.window`'s built-in functions, by the window's number (spec 14.22), and of `std.input`'s (14.26) and `std.audio`'s (14.27) |
 | `src/cli_parse.rs` | `cli.parse<T>()` (spec 14.6): a record of options, or a union of commands |
 | `tests/types.rs` | Valid programs pass; each mistake gets its message on the right line |
 | `tests/from_other_languages.rs` | Habits from other languages (`===`, `null`, inheritance, `2nd_place`, …) get one clear error that says what Kavach does instead |

@@ -222,21 +222,23 @@ impl<'a> Interp<'a> {
             }
             // A `Float32` is worked out as a `Float`, then rounded once, as in
             // native code (spec 14.5).
-            ("math", "sqrt" | "floor" | "ceil" | "round" | "pow")
-                if matches!(args.first(), Some(Value::Float32(_))) =>
+            ("math", n)
+                if matches!(args.first(), Some(Value::Float32(_))) && n != "pi" && n != "e" =>
             {
                 let wide = |i: usize| match args.get(i) {
                     Some(Value::Float32(f)) => f64::from(*f),
                     _ => 0.0,
                 };
                 let x = wide(0);
-                Value::Float32(match name {
-                    "sqrt" => x.sqrt(),
-                    "floor" => x.floor(),
-                    "ceil" => x.ceil(),
-                    "round" => x.round(),
-                    _ => x.powf(wide(1)),
-                } as f32)
+                match crate::std_math::float_fn(name, x, wide(1)) {
+                    Some(v) => Value::Float32(v as f32),
+                    None => {
+                        return Err(self.panic(format!("`math.{name}` takes no `Float32`"), span));
+                    }
+                }
+            }
+            ("math", n) if crate::std_math::float_fn(n, 0.0, 0.0).is_some() => {
+                Value::Float(crate::std_math::float_fn(n, float(0), float(1)).unwrap_or(0.0))
             }
             ("math", "sqrt") => Value::Float(float(0).sqrt()),
             ("math", "pow") => Value::Float(float(0).powf(float(1))),

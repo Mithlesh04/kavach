@@ -12,7 +12,10 @@ use std::collections::HashMap;
 const METHODS: [&str; 4] = ["abs", "min", "max", "clamp"];
 
 /// The functions of `std.math` a `gpu fn` may call (spec 15.1).
-const MATH: [&str; 5] = ["sqrt", "floor", "ceil", "round", "pow"];
+const MATH: [&str; 14] = [
+    "sqrt", "floor", "ceil", "round", "pow", "sin", "cos", "tan", "asin", "acos", "atan", "atan2",
+    "exp", "ln",
+];
 
 /// The conversions a `gpu fn` may call.
 const CONVERSIONS: [&str; 4] = ["Float32", "Int32", "UInt32", "Bool"];

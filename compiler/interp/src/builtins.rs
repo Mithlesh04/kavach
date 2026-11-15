@@ -108,7 +108,7 @@ impl<'a> Interp<'a> {
     }
 
     /// `Float(n)`, `Int(x)`, `Decimal(n)`, `String(v)`: explicit conversions (spec 2.1).
-    fn convert(&mut self, name: &str, v: Value<'a>, span: Span) -> Eval<'a> {
+    pub(crate) fn convert(&mut self, name: &str, v: Value<'a>, span: Span) -> Eval<'a> {
         let Some(target) = Prim::from_name(name) else {
             return Ok(Value::Unit);
         };
@@ -250,6 +250,12 @@ impl<'a> Interp<'a> {
             (Value::Channel(c, None), "close") => return self.channel_close(c),
             (Value::Channel(c, Some(_)), "take") => return self.channel_take(c, None, span),
             _ => {}
+        }
+        // Text methods that came from `std.text` (spec 14.2).
+        if let Value::Str(s) = &recv
+            && let Some(v) = self.text_method(&s.clone(), name, &args, span)
+        {
+            return v;
         }
         if let Some(v) = self.more_method(&recv, name, &args, span)? {
             return Ok(v);

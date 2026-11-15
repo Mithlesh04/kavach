@@ -160,8 +160,22 @@ impl Checker<'_> {
             Ty::Prim(Prim::String) => match name {
                 "len" => sig(vec![], int),
                 "is_empty" => sig(vec![], boolean),
-                "upper" | "lower" | "trim" => sig(vec![], string),
+                "upper" | "lower" | "trim" | "trim_start" | "trim_end" | "capitalize" | "title" => {
+                    sig(vec![], string)
+                }
                 "contains" | "starts_with" | "ends_with" => sig(vec![string], boolean),
+                "is_blank" => sig(vec![], boolean),
+                "words" => sig(vec![], list(string.clone())),
+                "last_index_of" => sig(vec![string], opt(int)),
+                "count" => sig(vec![string], int),
+                "remove_prefix" | "remove_suffix" => sig(vec![string.clone()], string),
+                "truncate" => sig(vec![int], string),
+                // `fill` is a `Char`, a space when not given (spec 14.2).
+                "pad_left" | "pad_right" => Some(MethodSig {
+                    params: vec![int],
+                    ret: string,
+                    named: vec![("fill", Ty::Prim(Prim::Char))],
+                }),
                 "split" => sig(vec![string.clone()], list(string)),
                 "repeat" => sig(vec![int], string),
                 "bytes" => sig(vec![], Ty::Prim(Prim::Bytes)),
