@@ -352,8 +352,11 @@ impl Checker<'_> {
                 {
                     return t;
                 }
-                self.check_expect(r, &lt);
-                self.check_compare(op, l, r, &lt);
+                // A view and a `String` compare by their text (spec 2.18).
+                if !self.compare_text(&lt, r) {
+                    self.check_expect(r, &lt);
+                    self.check_compare(op, l, r, &lt);
+                }
                 if !matches!(op, Eq | NotEq) {
                     let what = format!("`{}`", op.as_str());
                     self.require_order(&lt, l.span, &what);

@@ -29,6 +29,7 @@ mod json;
 mod json_decode;
 mod literal_checks;
 mod map;
+mod module_consts;
 mod more_methods;
 mod net;
 mod numbers;
@@ -62,6 +63,7 @@ mod task_errors;
 mod tasks;
 mod testing;
 mod text_methods;
+mod text_views;
 mod timeouts;
 mod value;
 
@@ -174,7 +176,9 @@ fn main_of(i: &mut interp::Interp<'_>, args: &[String], dry_run: bool) -> i32 {
         Ok(()) | Err(Flow::Return(_) | Flow::Break(_) | Flow::Continue(_) | Flow::Cancelled) => {}
         Err(Flow::Exit(code)) => exit_code = code,
         Err(Flow::Fail(e)) => {
-            i.err.push_str(&format!("error: {}\n", e.display()));
+            // A task's panic printed already isn't printed again (9.1).
+            let line = kavach_runtime_core::tasks::main_error_line(&e.display());
+            i.err.push_str(&format!("{line}\n"));
             exit_code = 1;
         }
         Err(Flow::Panic(message, span)) => {

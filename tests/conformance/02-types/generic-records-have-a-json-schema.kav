@@ -1,0 +1,29 @@
+// Rule: Every record has a JSON Schema, a generic one's instance too: `json.schema<Page<Item>>()` describes `items` as a list of `Item`s.
+// Spec: 2.12
+// expect output: {"type":"object","properties":{"items":{"type":"array","items":{"type":"object","properties":{"name":{"type":"string"}},"required":["name"],"additionalProperties":false}},"next":{"anyOf":[{"type":"string"},{"type":"null"}]}},"required":["items"],"additionalProperties":false}
+// expect output: {"type":"object","properties":{"first":{"type":"object","properties":{"left":{"type":"integer"},"right":{"type":"integer"}},"required":["left","right"],"additionalProperties":false}},"required":["first"],"additionalProperties":false}
+
+use std.json
+
+type Item {
+    name: String
+}
+
+type Page<T> {
+    items: [T]
+    next: String? = none
+}
+
+type Pair<T> {
+    left: T
+    right: T
+}
+
+type Holder<T> {
+    first: Pair<T>
+}
+
+fn main() {
+    print(json.schema<Page<Item>>())
+    print(json.schema<Holder<Int>>())
+}

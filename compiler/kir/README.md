@@ -39,6 +39,9 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/lower_draw.rs` | `gpu.pipeline(v, f)` and a frame's draws (spec 15.3) |
 | `src/lower_range.rs` | A range a list method reads, built as the list of its numbers (spec 2.2) |
 | `src/lower_text.rs` | Text methods that are one op each: `capitalize`, `words`, padding and the rest (spec 14.2) |
+| `src/lower_views.rs` | Text views and builders (spec 2.18): text in native code for now; a builder's `push` grows it in place, `insert`, `replace` and `remove` join the parts around the change |
+| `src/lower_ext.rs` | A method's `self` type, and methods added to lists, maps, sets and rings with `extend<T> [T]` (spec 2.5), made once per item type |
+| `src/lower_consts.rs` | Module constants (spec 1.13): a function each, called at each read and all at the program's start |
 | `src/lower_lambda/scan.rs` | What a lambda's body reads and changes, so a lambda changes only copies |
 | `src/lower_lambda/called.rs` | Lambdas and functions called, not inlined: a named function, and a lambda with a `return` of its own (spec 3.3) |
 | `src/lower_generic.rs` | Generic functions: type arguments and instances |
@@ -70,12 +73,13 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/lower_optional.rs` | `a ?? b`: one map lookup when it can be, and `x ?? break` |
 | `src/lower_closure.rs` | Function values: closures, named functions as values, calls through them |
 | `src/lower_process.rs` | `spawn process f(args)` (spec 9.8): a task whose thunk runs the call in a child, and in the child an entry per call, run instead of the program |
-| `src/lower_tasks.rs` | `spawn` as a task body, a thunk and a closure; functions that spawn wait for their tasks (spec 9), and functions with `uses Fs("folder")` keep file access inside it (spec 8.1); `parallel_map` in `src/lower_tasks/parallel_map.rs`, `for v in receive` in `src/lower_tasks/channels.rs` |
+| `src/lower_tasks.rs` | `spawn` as a task body, a thunk and a closure; functions that spawn wait for their tasks (spec 9), and functions with `uses Fs("folder")` keep file access inside it (spec 8.1); `parallel_map` in `src/lower_tasks/parallel_map.rs`, `for v in receive` in `src/lower_tasks/channels.rs`; the task's function in `src/lower_tasks/body.rs`, a spawned call's field-path arguments read before the task in `src/lower_tasks/args.rs` |
 | `src/inline.rs` | Early returns to `if`/`else`; inlining small functions (tests in `src/inline/tests.rs`) |
 | `src/sroa.rs` | Scalar replacement: a record local the function never shares, or a fixed-size list read at constant indexes, becomes one local per field |
 | `src/coalesce.rs` | `a ?? b` moved into the branches of `a`, so no optional is built |
 | `src/counters.rs` | A remainder by a constant of a counted loop's counter (`i % 7`) becomes a counter that wraps, after the loops on all cores are split off |
-| `src/stop_points.rs` | Where a task stopped by `cancel()` or its time limit stops while it only computes (spec 9.6): each function's start and each loop round's, in programs that use either |
+| `src/stop_points.rs` | Where a task stopped by `cancel()` or its time limit stops while it only computes (spec 9.6): each function's start and each loop round's, in programs that use either; never in code that runs on the GPU |
+| `src/loop_lens.rs` | A length a `while` loop never changes (`data.len()` in its condition) read once before the loop |
 | `src/whole_lines.rs` | A printed line comes out whole (spec 9.8): a `print` whose values call anything works them out before it writes |
 | `src/borrows.rs` | A closure's function borrows its closure, and the captures it never changes: which functions and locals, for both backends |
 | `src/cancel.rs` | Cancellation (spec 9.6): after each wait, and each call that can wait, a check that returns when the task is cancelled |

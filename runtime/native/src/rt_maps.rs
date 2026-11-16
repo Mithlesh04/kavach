@@ -3,7 +3,7 @@
 //! A map keeps its entries in a hash table that remembers insertion order
 //! (`table.rs`).
 
-use crate::display::{equal, hash_slot};
+use crate::display::hash_slot;
 use crate::heap::{
     Data, alloc, alloc_slots, items_of, len_of, obj, release, release_slot, retain, shape, slot_at,
     unique,
@@ -62,7 +62,10 @@ pub(crate) fn find(map: i64, key: i64, kt: Type) -> Option<usize> {
         // Floats are compared by value: 0.0 and -0.0 are the same key.
         Data::Map(t) if !int_key(kt) => {
             let hash = hash_slot(key, kt);
-            (t.find(hash, |k| equal(k as i64, key, kt)), false)
+            (
+                t.find(hash, |k| crate::display::same_key(k as i64, key, kt)),
+                false,
+            )
         }
         Data::Map(t) => (t.find_int(key as u64), t.wants_strong()),
         _ => (None, false),
@@ -187,7 +190,8 @@ fn insert(map: i64, key: i64, value: i64, line: i32) -> i64 {
         return q;
     }
     // A text key is hashed once, for the search and the new entry.
-    let text = matches!(shape(kt), Shape::Str);
+    // Only a heap type has a shape: a float key isn't one (spec 2.2).
+    let text = kt.is_ref() && matches!(shape(kt), Shape::Str);
     let hash = if text {
         crate::heap::with_str(key, text_hash)
     } else {

@@ -44,6 +44,8 @@ mod lambdas;
 mod literals;
 mod method_names;
 mod methods;
+mod mismatch;
+mod module_consts;
 mod more_methods;
 mod names;
 mod never_runs;
@@ -69,6 +71,7 @@ mod std_process;
 mod std_window;
 mod std_writers;
 mod stdlib;
+mod text_views;
 mod ty;
 mod unwraps;
 mod user_ops;
@@ -107,6 +110,8 @@ pub struct Options {
 
 #[derive(Clone, Debug)]
 pub struct Checked {
+    /// A script's top-level constants that stay its statements (spec 1.13).
+    pub script_consts: HashSet<DefId>,
     pub errors: Vec<Diagnostic>,
     /// Code that works but is probably not what was meant.
     pub warnings: Vec<Diagnostic>,
@@ -281,6 +286,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     errors.sort_by_key(|e| e.span.start);
     errors.dedup_by_key(|e| e.span.start);
     Checked {
+        script_consts: std::mem::take(&mut checker.script_consts),
         errors,
         warnings: checker.warnings,
         literal_types,

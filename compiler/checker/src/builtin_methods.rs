@@ -11,6 +11,7 @@ impl Checker<'_> {
         self.core_method(recv, name)
             .or_else(|| self.more_methods(recv, name))
             .or_else(|| self.enum_method(recv, name))
+            .or_else(|| self.view_method(recv, name))
     }
 
     /// `x.timeout(d)` (spec 9.6), where `x` is `task.wait()`,

@@ -75,6 +75,12 @@ impl Checker<'_> {
             {
                 return self.convert_text(&arg.value, p);
             }
+            // A view is read as its text, with nothing copied (spec 2.18).
+            (Ty::Builtin("StrView", _), q)
+                if q.is_numeric() || matches!(q, Prim::Bool | Prim::Char) =>
+            {
+                return self.convert_text(&arg.value, p);
+            }
             (Ty::Prim(Prim::Char), q) => whole(q),
             (Ty::Prim(q), Prim::Char) => whole(*q),
             (Ty::Prim(q), to) => q.is_numeric() && to.is_numeric(),

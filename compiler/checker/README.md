@@ -33,6 +33,9 @@ Hindley–Milner-style inference with unification. A number literal starts as an
 | `src/lib.rs` | Public API: `check`, `Options`, `Checked` |
 | `src/ty.rs`, `src/infer.rs` | Types; type variables, unification, substitution |
 | `src/checker.rs` | State, type display, coercion (`T` fits `T?`), mismatch messages |
+| `src/mismatch.rs` | "expected `X`, found `Y`" messages and how a value is described in them |
+| `src/text_views.rs` | `StrView` and `TextBuilder` methods, `s.view()`, and text compared with views (spec 2.18) |
+| `src/module_consts.rs` | Module constants (spec 1.13), checked before the functions that read them |
 | `src/collect.rs` | Written types → checker types; signatures of functions, types and methods |
 | `src/drops.rs` | `Drop` (spec 6.1): which types implement it, which values hold one, and that making one needs what its `drop` uses |
 | `src/items.rs` | Declarations, function bodies, blocks, statements, unused values |

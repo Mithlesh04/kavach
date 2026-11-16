@@ -1,0 +1,57 @@
+// Rule: `extend<T> [T]`, `extend<K, V> [K: V]`, `extend<T> Set<T>` and `extend<T> Ring<T>` add methods for every item type; `T` is the item type of the collection called on, and a range has a list's added methods.
+// Spec: 2.5
+// expect output: 20
+// expect output: none
+// expect output: [(1, 2), (2, 3)]
+// expect output: true
+// expect output: false
+// expect output: 4
+// expect output: 3
+// expect output: 1
+
+extend<T> [T] {
+    fn second(self) -> T? {
+        if self.len() > 1 { self[1] } else { none }
+    }
+
+    fn pairs(self) -> [(T, T)] {
+        let out: [(T, T)] = []
+        for i in 1..self.len() {
+            out.push((self[i - 1], self[i]))
+        }
+        out
+    }
+}
+
+extend<K, V> [K: V] {
+    fn has_all(self, keys: [K]) -> Bool {
+        keys.all((k) => self.contains_key(k))
+    }
+}
+
+extend<T> Set<T> {
+    fn size_twice(self) -> Int {
+        self.len() * 2
+    }
+}
+
+extend<T> Ring<T> {
+    fn newest(self) -> T? {
+        self.last()
+    }
+}
+
+fn main() {
+    print([10, 20, 30].second())
+    print(["a"].second())
+    print([1, 2, 3].pairs())
+    print(["a": 1, "b": 2].has_all(["a", "b"]))
+    print(["a": 1].has_all(["a", "z"]))
+    print(Set.of(1, 2).size_twice())
+    let recent: Ring<Int> = Ring.capacity(2)
+    recent.push(1)
+    recent.push(2)
+    recent.push(3)
+    print(recent.newest())
+    print((0..5).second())
+}

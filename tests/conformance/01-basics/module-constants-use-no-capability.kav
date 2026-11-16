@@ -1,0 +1,11 @@
+// Rule: A module constant is worked out before `main` starts, so it can't use a capability: the error says to use `let` or work it out in `main`.
+// Spec: 1.13
+// expect compile error
+
+use std.fs
+
+const text = fs.read_text("notes.txt") catch ""     // error: a module constant uses no capability
+
+fn main() {
+    print(text.len())
+}

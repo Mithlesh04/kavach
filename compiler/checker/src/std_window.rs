@@ -90,6 +90,14 @@ impl Checker<'_> {
                 ],
                 failing(self),
             ),
+            // A voice the program fills (14.27): its volume and pan; how
+            // many frames it takes now; frames given to it.
+            "voice_id" => (vec![p("settings", &list(&float))], failing(self)),
+            "voice_room_id" => (vec![id.clone()], int.clone()),
+            "voice_feed_id" => (
+                vec![id.clone(), p("samples", &list(&Ty::Prim(Prim::Float32)))],
+                Ty::Unit,
+            ),
             // A file played a piece at a time, as `play_id` plays a sound.
             "stream_id" => (
                 vec![

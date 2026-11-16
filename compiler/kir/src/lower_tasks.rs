@@ -17,8 +17,9 @@ use crate::lower::{Lowered, Lowerer};
 use crate::rt_op::RtOp;
 use crate::walk::any_in_block;
 use kavach_ast as ast;
-use kavach_checker::Ty;
 
+mod args;
+mod body;
 mod channels;
 mod parallel_map;
 
@@ -61,12 +62,34 @@ impl<'a> Lowerer<'a> {
         let Some(Shape::Task(value_ty)) = self.shapes.shape(ty).cloned() else {
             return Err(self.unsupported("this `spawn`", x.span));
         };
-        let (captured, outer, types) = self.captures(x);
+        // Field paths among the call's arguments are read here, so the task
+        // gets their values, not the whole variables (`lower_tasks/args.rs`).
+        let parts = self.task_parts(x);
+        let skip: Vec<(u32, u32)> = parts.iter().map(|p| (p.span.start, p.span.end)).collect();
+        let (captured, mut outer, mut types) = self.captures_skipping(x, &skip);
+        let base = types.len();
+        let mut first = Vec::new();
+        for p in &parts {
+            let v = self.expr(p)?;
+            let held = self.new_local(v.ty);
+            types.push(v.ty);
+            first.push(Stmt::Let(held, v));
+            outer.push(held);
+        }
         let values: Vec<ir::Expr> = outer.iter().map(|l| self.local_expr(*l, line)).collect();
         let env_ty = self.shapes_intern(Shape::Closure(types.clone()));
 
         let saved = self.save_function(value_ty);
-        let body = self.task_body(x, env_ty, value_ty, &captured, &types, line);
+        let held: Vec<((u32, u32), Type)> =
+            skip.iter().copied().zip(types[base..].to_vec()).collect();
+        let body = self.task_body(
+            x,
+            env_ty,
+            value_ty,
+            &captured,
+            (&types[..base], &held),
+            line,
+        );
         self.restore_function(saved);
         let body = self.add_function(body?);
 
@@ -90,54 +113,15 @@ impl<'a> Lowerer<'a> {
             ast::SpawnKind::Process => return self.spawn_process(x, ty, line),
         };
         let args = vec![at(closure, func_ty, line), at(K::Int(how), Type::I64, line)];
-        Ok(at(K::Rt(RtOp::TaskSpawn, args), ty, line))
-    }
-
-    /// The function `x` runs in: `(closure) -> value ! Error`.
-    fn task_body(
-        &mut self,
-        x: &'a ast::Expr,
-        env_ty: Type,
-        value_ty: Type,
-        captured: &[kavach_resolver::DefId],
-        types: &[Type],
-        line: u32,
-    ) -> Lowered<Function> {
-        let (env, mut body) = self.unpack_env(env_ty, captured, types, line);
-        let fails = matches!(
-            self.c.expr_types.get(&(x.span.start, x.span.end)),
-            Some(Ty::Result(..))
-        );
-        match &x.kind {
-            // Code run for what it does: its last line is a statement.
-            ast::ExprKind::Block(b) if value_ty == Type::Unit && !fails => {
-                self.block_into(b, false, &mut body)?;
-            }
-            _ if value_ty == Type::Unit && !fails => self.expr_stmt(x, &mut body.stmts)?,
-            _ => {
-                let value = if fails {
-                    self.try_expr(x, None, line)?
-                } else {
-                    self.expr(x)?
-                };
-                if value_ty == Type::Unit {
-                    body.stmts.push(Stmt::Expr(value));
-                } else {
-                    body.value = Some(Box::new(self.coerce(value, value_ty)?));
-                }
-            }
+        let spawned = at(K::Rt(RtOp::TaskSpawn, args), ty, line);
+        if first.is_empty() {
+            return Ok(spawned);
         }
-        Ok(Function {
-            name: "task".into(),
-            params: vec![env],
-            ret: value_ty,
-            locals: self.locals.clone(),
-            body,
-            line,
-            fails: true,
-            external: None,
-            variadic: false,
-        })
+        let block = Block {
+            stmts: first,
+            value: Some(Box::new(spawned)),
+        };
+        Ok(at(K::Block(block), ty, line))
     }
 
     /// `time.after(d, f)` (spec 14.4): a task, of the caller's, that sleeps

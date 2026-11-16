@@ -7,6 +7,7 @@
 //! resolves those.
 
 mod decls;
+pub use decls::module_const;
 mod modules;
 mod naming;
 mod prelude;
@@ -86,6 +87,9 @@ pub struct Resolution {
     /// the declaration's name, with its right spelling: `kavach fmt`
     /// renames it and its uses.
     pub name_fixes: Vec<(Span, String)>,
+    /// Module constants (spec 1.13): a top-level `const` of one name,
+    /// which every function of its module can read.
+    pub module_consts: std::collections::HashSet<DefId>,
 }
 
 impl Resolution {

@@ -452,6 +452,12 @@ impl Checker<'_> {
                 self.args(args, &params, span, "`capacity`", "argument");
                 Some(made)
             }
+            // `TextBuilder.capacity(n)`: room for `n` bytes (spec 2.18).
+            DefKind::Builtin if type_name == "TextBuilder" && name.name == "capacity" => {
+                let params = [("n".to_string(), Ty::Prim(Prim::Int), false)];
+                self.args(args, &params, span, "`capacity`", "argument");
+                Some(Ty::Builtin("TextBuilder", Vec::new()))
+            }
             DefKind::Builtin if type_name == "Bytes" && name.name == "of" => {
                 Some(self.bytes_of(generics, args, span))
             }

@@ -9,9 +9,15 @@
 | `math.asin(x)`, `math.acos(x)`, `math.atan(x)` | The same: the angle, in radians, whose sine, cosine or tangent is `x`; `asin` and `acos` of a number past -1 to 1 is `NaN` |
 | `math.atan2(y, x)` | The same: the angle, in radians from -π to π, of the point `(x, y)` from the x axis, as `atan(y / x)` in the right quarter |
 | `math.exp(x)`, `math.ln(x)` | The same: `e` to the power `x`, and the natural logarithm; `ln` of 0 is minus infinity, of a negative number `NaN` |
+| `math.log10(x)` | The same: the logarithm to base 10; `log10(1000.0)` is `3.0` |
+| `math.cbrt(x)` | The same: the cube root, of a negative number too: `cbrt(-8.0)` is `-2.0` |
+| `math.hypot(x, y)` | The same: `sqrt(x * x + y * y)`, the length of the vector `(x, y)`, without the squares overflowing or vanishing on the way |
+| `math.remainder(x, y)` | The same: IEEE's remainder, `x - n * y` with `n` the whole number nearest `x / y` (an even one at a tie), so it lies between `-y / 2` and `y / 2`; unlike `%`, which keeps `x`'s sign |
+| `math.erfc(x)` | The same: the complementary error function, `1 - erf(x)`, exact even where `erf(x)` is near 1 |
+| `math.lgamma(x)` | The same: the natural logarithm of the absolute value of the gamma function, so `lgamma(n + 1.0)` is `ln(n!)` without `n!` overflowing |
 | `math.gcd(a, b)`, `math.lcm(a, b)` | Greatest common divisor and least common multiple of `Int`s |
 | `math.is_prime(n)` | Whether `n` is a prime number |
 | `math.factorial(n)` | `n!` for `0 <= n <= 20` (larger values don't fit in `Int`) |
 | `math.mean(xs)` | The average of a `[Float]`, or `none` for an empty list |
 
-`sqrt`, `floor`, `ceil` and `round` are exact. The others (`pow`, `sin` to `atan2`, `exp`, `ln`) are Kavach's own code, the same on every system, interpreted or native, so each gives the same bits everywhere (2.1, [decision 0122](../../decisions/0122-floats-give-the-same-bits-everywhere.md)); each is within one unit in the last place of the exact result.
+`sqrt`, `floor`, `ceil` and `round` are exact. The others (`pow`, `sin` to `atan2`, `exp`, `ln`, `log10` to `lgamma`) are Kavach's own code, the same on every system, interpreted or native, so each gives the same bits everywhere (2.1, [decision 0122](../../decisions/0122-floats-give-the-same-bits-everywhere.md)); each is within one unit in the last place of the exact result.

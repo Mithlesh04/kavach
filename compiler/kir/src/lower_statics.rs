@@ -32,6 +32,13 @@ impl<'a> Lowerer<'a> {
                 .first_arg(args, "`Ptr.from_int()`", span)
                 .map(|n| ir::Expr { ty, ..n }),
             ("Bytes", "of") => self.bytes_of(args, ty, line),
+            // `TextBuilder.capacity(n)` (spec 2.18): empty text, which
+            // grows as it is pushed onto.
+            ("TextBuilder", "capacity") if builtin => Ok(ir::Expr {
+                kind: K::Str(String::new()),
+                ty,
+                line,
+            }),
             ("Float", "from_bits") => self.expr(&args[0].value).map(|bits| ir::Expr {
                 kind: K::Rt(RtOp::FloatFromBits, vec![bits]),
                 ty,

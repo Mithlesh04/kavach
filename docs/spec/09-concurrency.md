@@ -39,7 +39,7 @@ fn main() {
 
 A `spawn` on a line of its own starts a task nobody waits for, as `go f()` does in Go: `spawn serve(app)` is the same as `const _t = spawn serve(app)`. The task is still cancelled when the function that spawned it returns (9.2), and an error in it is still printed. A `Task` kept in a name that is never used gets a warning (1.4); a name starting with `_`, as above, says nobody waits for it on purpose and silences the warning.
 
-A panic (5.6) stops only the task it happens in. It is printed when it happens, `panic: <message>` and its place, and `.wait()` on that task fails with an error whose message is `panicked: <message> at <file>:<line>` ([decision 0065](../decisions/0065-a-panic-stops-only-its-task.md)). A panic in the main task ends the program (5.8). A panic inside the function of a `Shared` value's `update` (6.2) leaves the value as it was, and other tasks can go on using it.
+A panic (5.6) stops only the task it happens in. It is printed when it happens, `panic: <message>` and its place, and `.wait()` on that task fails with an error whose message is `panicked: <message> at <file>:<line>` ([decision 0065](../decisions/0065-a-panic-stops-only-its-task.md)). When that error ends `main`, the program's last line doesn't print it again: it says `error: the panic above ended the program`. A panic in the main task ends the program (5.8). A panic inside the function of a `Shared` value's `update` (6.2) leaves the value as it was, and other tasks can go on using it.
 
 ```kavach
 const task = spawn [1, 2][5]

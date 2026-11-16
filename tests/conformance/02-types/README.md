@@ -50,6 +50,9 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.2 | [plus-equals-adds-to-a-list.kav](plus-equals-adds-to-a-list.kav) | `xs += ys` adds the items of `ys` to the end of `xs`; a copy made before doesn't change. | runs |
 | 2.2 | [plus-equals-on-a-const-list-is-an-error.kav](plus-equals-on-a-const-list-is-an-error.kav) | `xs += ys` changes `xs`, so `xs` must be a `let`. | compile error |
 | 2.2 | [ranges-have-list-methods.kav](ranges-have-list-methods.kav) | A range has the list methods that read it, giving what the list of its numbers would; `to_list()` gives that list. | runs |
+| 2.2 | [a-float-key-has-one-place.kav](a-float-key-has-one-place.kav) | Any value can be a key; 0.0 and -0.0 are one key, and NaN equals NaN as a key or set item |
+| 2.2 | [a-map-slot-takes-a-value-not-an-optional.kav](a-map-slot-takes-a-value-not-an-optional.kav) | `m[k] = v` takes the map's value type: an optional map read must be unwrapped first. | compile error |
+| 2.2 | [enumerate-gives-index-and-item.kav](enumerate-gives-index-and-item.kav) | `xs.enumerate()` gives `(index, item)` pairs, as a value too. | runs |
 | 2.3 | [tuples.kav](tuples.kav) | Tuples group values and can be destructured. | runs |
 | 2.4 | [record-defaults.kav](record-defaults.kav) | Records are created with named arguments; fields with defaults may be left out. | runs |
 | 2.4 | [record-needs-every-field.kav](record-needs-every-field.kav) | A record field without a default must be given. | compile error |
@@ -63,6 +66,9 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.4, 2.9 | [generic-fields-take-defaults.kav](generic-fields-take-defaults.kav) | A field whose type uses the record's type parameter can have a default. | runs |
 | 2.5 | [extend-adds-methods.kav](extend-adds-methods.kav) | `extend` adds methods to an existing type. | runs |
 | 2.5 | [generic-types-are-extended-elsewhere/](generic-types-are-extended-elsewhere/src/main.kav) | `extend<S> Box<S>` adds methods to a generic type from another module, `S` standing for the type's own parameter. | runs |
+| 2.5 | [collections-take-added-methods.kav](collections-take-added-methods.kav) | `extend<T> [T]`, `[K: V]`, `Set<T>` and `Ring<T>` add methods for every item type; a range has a list's. | runs |
+| 2.5 | [collection-extend-names-its-item-types.kav](collection-extend-names-its-item-types.kav) | An extend of a collection names each item type: `extend [Int]` is an error. | compile error |
+| 2.5 | [added-methods-keep-built-in-names.kav](added-methods-keep-built-in-names.kav) | A method added to a collection can't take the name of one it has. | compile error |
 | 2.5 | [methods.kav](methods.kav) | Methods take self; functions without self are called on the type. | runs |
 | 2.9 | [generic-type-methods-know-their-type-arguments.kav](generic-type-methods-know-their-type-arguments.kav) | Inside a generic type's methods, its type parameter is the type the value was made with, so `json.decode<I>` decodes into it. | runs |
 | 2.5, 14.2 | [methods-may-share-collection-names.kav](methods-may-share-collection-names.kav) | A type's own `add`, `push` or `remove` is its method, not the built-in one of lists, maps and sets. | runs |
@@ -82,6 +88,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.7 | [unwrap-outside-tests-warns.kav](unwrap-outside-tests-warns.kav) | `.unwrap()` outside `test` blocks and `example` clauses gets a warning; `?? panic("…")` says why and gets none. | warning |
 | 2.7 | [unwrap-in-a-test-does-not-warn.kav](unwrap-in-a-test-does-not-warn.kav) | `.unwrap()` in a `test` block or an `example` clause gets no warning. | test pass |
 | 2.7 | [optionals-do-not-nest.kav](optionals-do-not-nest.kav) | Optionals don't nest: `?.` to an optional field gives a `T?`, not a `T??`. | runs |
+| 2.7 | [question-dot-calls-methods.kav](question-dot-calls-methods.kav) | `?.` calls methods too, giving `none` when the left side is; a `none` branch makes an `if` optional |
 | 2.8 | [interfaces-are-explicit.kav](interfaces-are-explicit.kav) | A type implements an interface only when it says so. | compile error |
 | 2.8 | [interfaces-need-every-method.kav](interfaces-need-every-method.kav) | A type that says it implements an interface has each of its methods. | compile error |
 | 2.8, 3.9 | [interface-methods-keep-inout.kav](interface-methods-keep-inout.kav) | An implementing method marks the same parameters `inout`. | compile error |
@@ -151,6 +158,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.15 | [built-in-types-as-interface-values.kav](built-in-types-as-interface-values.kav) | A built-in type that implements an interface fits an interface value, a number literal too. | runs |
 | 2.12 | [json-describe-describes-a-function.kav](json-describe-describes-a-function.kav) | `json.describe(f)` gives a function's name, doc comment, parameters, result and error schemas, capabilities and examples. | runs |
 | 2.12 | [json-describe-takes-function-values.kav](json-describe-takes-function-values.kav) | `json.describe(value)` on a function value gives `FnSchema?`: a named function's description, `none` for a lambda. | runs |
+| 2.12 | [generic-records-have-a-json-schema.kav](generic-records-have-a-json-schema.kav) | A generic record's instance has a JSON Schema, with its type arguments in its fields' places. | runs |
 | 2.16 | [operators-call-the-types-own-methods.kav](operators-call-the-types-own-methods.kav) | A type that implements `Add`, `Neg` or `Mul<Float>` gets `+`, unary `-` or `* Float`, which call its methods; `x op= v` is `x = x op v`. | runs |
 | 2.16 | [an-operator-can-give-another-type.kav](an-operator-can-give-another-type.kav) | `Mul<Meters, Area>` takes a `Meters` and gives an `Area`. | runs |
 | 2.16 | [comparable-gives-ordering-operators.kav](comparable-gives-ordering-operators.kav) | A type that implements `Comparable` gets `<`, `<=`, `>` and `>=` from its `compare`. | runs |
@@ -160,3 +168,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.16 | [built-in-types-keep-their-operators.kav](built-in-types-keep-their-operators.kav) | A built-in type can't implement an operator interface. | compile error |
 | 2.16 | [operators-in-generic-code.kav](operators-in-generic-code.kav) | A type parameter bounded by an operator interface may use the operator; numbers meet Add, Sub, Mul, Div, Rem, Neg and Comparable, String meets Comparable, and a program's own type its own. | runs |
 | 2.16 | [an-operator-bound-needs-the-operator.kav](an-operator-bound-needs-the-operator.kav) | A type given for a `T` with operator bounds must have those operators. | compile error |
+| 2.18 | [text-views-read-without-copying.kav](text-views-read-without-copying.kav) | `s.view(…)` gives a `StrView` whose `trim`, `split` and `lines` give views; views compare, order and convert by their text. | runs |
+| 2.18 | [text-builders-change-in-place.kav](text-builders-change-in-place.kav) | A `TextBuilder` changes in place at clamped character positions; a view or copy of it keeps the text it had. | runs |
+| 2.18 | [text-builder-start-after-end-panics.kav](text-builder-start-after-end-panics.kav) | A builder's `remove` or `replace` from a start after its end is a panic. | panic |
+| 2.18 | [text-builder-changes-need-let.kav](text-builder-changes-need-let.kav) | Changing a builder held by a `const` is an error. | compile error |

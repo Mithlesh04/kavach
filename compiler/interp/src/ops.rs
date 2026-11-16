@@ -305,6 +305,18 @@ pub(crate) fn compare(a: &Value<'_>, b: &Value<'_>) -> Option<Ordering> {
             }
             Some(xs.len().cmp(&ys.len()))
         }
+        // Lists and rings item by item, the shorter first when one runs
+        // out; `Bytes` byte by byte (spec 1.8).
+        (Value::List(xs), Value::List(ys)) => {
+            for (x, y) in xs.iter().zip(ys.iter()) {
+                match list_order(x, y) {
+                    Ordering::Equal => {}
+                    other => return Some(other),
+                }
+            }
+            Some(xs.len().cmp(&ys.len()))
+        }
+        (Value::Bytes(x), Value::Bytes(y)) => Some(x.cmp(y)),
         _ => None,
     }
 }

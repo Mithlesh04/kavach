@@ -1,0 +1,14 @@
+// Rule: A module constant that panics while being worked out stops the program before `main` starts.
+// Spec: 1.13
+// expect panic: index 5 is out of range: the list has 3 items
+
+fn pick(i: Int) -> Int {
+    const xs = [1, 2, 3]
+    xs[i]
+}
+
+const bad = pick(5)
+
+fn main() {
+    print("never printed {bad}")
+}

@@ -62,6 +62,21 @@ crate::rt_data::entry!(kv_rt_audio, |op, a, b, c, code, _line| {
             let part = |k: usize| settings.get(k).copied().unwrap_or(0.0);
             audio::play(a, part(0), part(1), c != 0).unwrap_or_else(|why| fail("Unavailable", &why))
         }
+        RtOp::AudioVoice => {
+            let settings = floats(a);
+            let part = |k: usize| settings.get(k).copied().unwrap_or(0.0);
+            audio::voice(part(0), part(1)).unwrap_or_else(|why| fail("Unavailable", &why))
+        }
+        RtOp::AudioVoiceRoom => audio::voice_room(a),
+        RtOp::AudioVoiceFeed => {
+            let samples: Vec<f32> = items_of(b)
+                .iter()
+                .map(|s| f32::from_bits(*s as u32))
+                .collect();
+            release(b);
+            audio::voice_feed(a, &samples);
+            0
+        }
         RtOp::AudioStream => {
             let path = crate::shapes::str_of(a);
             release(a);

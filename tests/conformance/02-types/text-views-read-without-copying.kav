@@ -1,0 +1,28 @@
+// Rule: `s.view()` and `s.view(start, end)` give a `StrView`, whose `trim`, `split` and `lines` give views too; a view compares and orders by its text, with views and `String`s, and converts as text does.
+// Spec: 2.18
+// expect output: id is 42
+// expect output: name is Asha
+// expect output: 5 world
+// expect output: true true false
+// expect output: 2
+// expect output: none
+// expect output: true true true
+// expect output: ["abc", "def"]
+// expect output: 42 0
+
+fn main() {
+    const line = "  id=42, name=Asha  "
+    for f in line.view().trim().split(", ") {
+        const parts = f.split("=")
+        print("{parts[0]} is {parts[1]}")
+    }
+    const v = "hello world".view(6, 99)
+    print("{v.len()} {v}")
+    print("{v == "world"} {v < "zebra"} {v.is_empty()}")
+    print(v.find("rl"))
+    print(v.find("x"))
+    print("{v.starts_with("wo")} {v.ends_with("ld")} {v.contains("orl")}")
+    print("abc\ndef".view().lines())
+    const number = "x=42".view(2, 4)
+    print("{Int(number) catch 0} {Int(v) catch 0}")
+}

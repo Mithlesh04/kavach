@@ -229,7 +229,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
     }
     let src = src.as_str();
     let mut parsed = kavach_parser::parse(src);
-    let resolution = kavach_resolver::resolve_modules(&parsed.file, &modules);
+    let mut resolution = kavach_resolver::resolve_modules(&parsed.file, &modules);
     project::unqualify(&mut parsed.file, &resolution);
     let checker_options = kavach_checker::Options {
         allow_unsafe: options.allow_unsafe,
@@ -237,6 +237,10 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
         granted: options.granted.clone(),
     };
     let mut checked = kavach_checker::check(&parsed.file, &resolution, checker_options);
+    // A script's constants that use a capability are its statements (1.13).
+    resolution
+        .module_consts
+        .retain(|d| !checked.script_consts.contains(d));
     operators::to_method_calls(&mut parsed.file, &mut checked);
 
     let error = |text: &String, span: Span| Message {

@@ -196,3 +196,25 @@ fn fill(mut reader: Reader, path: &str, looped: bool, stream: &Stream, controls:
     }
     stream.ended.store(true, Ordering::Release);
 }
+
+/// The frames a second of a voice the program fills (`audio.voice`).
+pub const VOICE_RATE: u32 = 48_000;
+
+/// How far ahead `fill` keeps a voice: 50 ms of frames.
+pub const AHEAD: usize = VOICE_RATE as usize / 20;
+
+/// A source the program fills itself, a little ahead (`audio.voice`):
+/// half a second of room, never ended until the voice is stopped.
+pub(crate) fn fed() -> Arc<Stream> {
+    Arc::new(Stream {
+        ring: Ring::new(VOICE_RATE as usize),
+        rate: VOICE_RATE,
+        ended: AtomicBool::new(false),
+    })
+}
+
+/// How many frames `source` takes now to be `AHEAD` frames ahead.
+pub(crate) fn room(source: &Stream) -> usize {
+    let queued = (source.ring.capacity() - source.ring.room()) / 2;
+    AHEAD.saturating_sub(queued)
+}

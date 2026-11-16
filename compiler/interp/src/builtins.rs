@@ -16,6 +16,9 @@ impl<'a> Interp<'a> {
             let list = args.into_iter().next().map_or(Value::Unit, |(_, v)| v);
             return Ok(self.bytes_of(list));
         }
+        if name == "TextBuilder" {
+            return Ok(self.text_builder(args.into_iter().map(|(_, v)| v).collect()));
+        }
         // `Error("disk full")`: an error that is only its message (spec 5.5).
         if name == "Error" {
             return Ok(args.into_iter().next().map_or(Value::Unit, |(_, v)| v));
@@ -185,6 +188,8 @@ impl<'a> Interp<'a> {
                 Rc::make_mut(&mut m).remove(&args.next().unwrap_or(Value::Unit));
                 Ok(Value::Map(m))
             }
+            // A `TextBuilder` (spec 2.18).
+            (Value::Str(s), _) => self.builder_change(s, name, args.collect(), span),
             (other, _) => {
                 Err(self.panic(format!("{} has no method `{name}`", other.display()), span))
             }

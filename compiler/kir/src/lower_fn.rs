@@ -21,11 +21,14 @@ impl<'a> Lowerer<'a> {
         };
         self.start_function(ret);
         let mut params = Vec::new();
+        let written_self = self.collection_self(f);
         for p in &f.params {
-            let ty = match (&p.ty, &owner) {
-                (Some(t), _) => self.written_type(t)?,
-                (None, Some(owner)) => self.owner_type(owner, p.name.span)?,
-                (None, None) => return Err(self.unsupported("`self` outside a type", p.name.span)),
+            let ty = match (&p.ty, &owner, written_self) {
+                (Some(t), _, _) | (None, _, Some(t)) => self.written_type(t)?,
+                (None, Some(owner), None) => self.owner_type(owner, p.name.span)?,
+                (None, None, None) => {
+                    return Err(self.unsupported("`self` outside a type", p.name.span));
+                }
             };
             let local = self.new_local(ty);
             if p.ty.is_none() {

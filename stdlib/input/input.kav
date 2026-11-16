@@ -18,7 +18,7 @@ pub type Pad {
     pub right_trigger: Float
     /// How fast the pad turns, in radians a second; `none` with no
     /// gyroscope.
-    pub gyro: (x: Float, y: Float, z: Float)?
+    pub gyro: (x: Float, y: Float, z: Float)? = none
 
     /// Whether `button` (`South`, `Start`, `DPadUp`, …) is held.
     pub fn is_down(self, button: String) -> Bool {

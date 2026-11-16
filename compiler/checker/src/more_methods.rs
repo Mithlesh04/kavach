@@ -113,6 +113,9 @@ impl Checker<'_> {
                 "neg" => sig(vec![], t.clone()),
                 "compare" => sig(vec![t.clone()], Ty::Prim(Prim::Int)),
                 "bits" if *t == Ty::Prim(Prim::Float) => sig(vec![], Ty::Prim(Prim::UInt64)),
+                "fract" if matches!(t, Ty::Prim(Prim::Float | Prim::Float32)) => {
+                    sig(vec![], t.clone())
+                }
                 "near" if matches!(t, Ty::Prim(Prim::Float | Prim::Float32)) => {
                     sig(vec![t.clone()], Ty::Prim(Prim::Bool))
                 }

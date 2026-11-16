@@ -322,11 +322,12 @@ impl Checker<'_> {
                 Ty::Builtin("Ticker", Vec::new()),
             ),
             ("math", "sqrt" | "floor" | "ceil" | "round")
-            | ("math", "sin" | "cos" | "tan" | "asin" | "acos" | "atan" | "exp" | "ln") => {
-                (vec![p("x", &real)], real.clone())
-            }
+            | ("math", "sin" | "cos" | "tan" | "asin" | "acos" | "atan" | "exp" | "ln")
+            | ("math", "log10" | "cbrt" | "erfc" | "lgamma") => (vec![p("x", &real)], real.clone()),
             ("math", "atan2") => (vec![p("y", &real), p("x", &real)], real.clone()),
-            ("math", "pow") => (vec![p("x", &real), p("y", &real)], real.clone()),
+            ("math", "pow" | "hypot" | "remainder") => {
+                (vec![p("x", &real), p("y", &real)], real.clone())
+            }
             ("io", "read_line") => (vec![], Ty::Optional(Box::new(string.clone()))),
             ("io", "read_hidden") => (vec![], Ty::Optional(Box::new(string.clone()))),
             ("io", "is_terminal") => (vec![], Ty::Prim(Prim::Bool)),

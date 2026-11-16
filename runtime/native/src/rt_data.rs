@@ -199,6 +199,8 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         RtOp::StrIsEmpty => flag(read(a, str::is_empty)),
         RtOp::StrUpper => new_str(read(a, str::to_uppercase), result),
         RtOp::StrLower => new_str(read(a, str::to_lowercase), result),
+        // Text with nothing to trim is given back as it is (Sakshi's S8).
+        RtOp::StrTrim if with_str(a, |s| s.trim().len() == s.len()) => a,
         RtOp::StrTrim => new_str(read(a, |s| s.trim().to_string()), result),
         RtOp::StrContains | RtOp::StrStartsWith | RtOp::StrEndsWith => {
             let yes = read(a, |s| {
@@ -330,6 +332,12 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         | RtOp::MathAtan2
         | RtOp::MathExp
         | RtOp::MathLn
+        | RtOp::MathLog10
+        | RtOp::MathCbrt
+        | RtOp::MathHypot
+        | RtOp::MathRemainder
+        | RtOp::MathErfc
+        | RtOp::MathLgamma
         | RtOp::IoReadLine
         | RtOp::IoReadHidden
         | RtOp::IoIsTerminal

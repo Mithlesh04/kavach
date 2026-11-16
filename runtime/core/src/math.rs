@@ -43,6 +43,32 @@ pub fn ln(x: f64) -> f64 {
     libm::log(x)
 }
 
+pub fn log10(x: f64) -> f64 {
+    libm::log10(x)
+}
+
+pub fn cbrt(x: f64) -> f64 {
+    libm::cbrt(x)
+}
+
+pub fn hypot(x: f64, y: f64) -> f64 {
+    libm::hypot(x, y)
+}
+
+/// IEEE's remainder: `x - n * y`, `n` the whole number nearest `x / y`.
+pub fn remainder(x: f64, y: f64) -> f64 {
+    libm::remainder(x, y)
+}
+
+pub fn erfc(x: f64) -> f64 {
+    libm::erfc(x)
+}
+
+/// The natural logarithm of the absolute value of the gamma function.
+pub fn lgamma(x: f64) -> f64 {
+    libm::lgamma(x)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

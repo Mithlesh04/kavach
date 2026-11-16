@@ -1,0 +1,16 @@
+// Rule: A task's panic is printed once: when `main` passes on the error `.wait()` gives for it, the last line says the panic above ended the program, instead of printing it again.
+// Spec: 9.1
+// expect exit: 1
+// expect stderr: panic: index 3 is out of range: the list has 1 item
+// expect stderr:   at a-task-panic-is-printed-once.kav:10
+// expect stderr: error: the panic above ended the program
+
+fn boom() -> Int {
+    const xs = [1]
+    xs[3 - xs.len() * 0]
+}
+
+fn main() ! Error {
+    const t = spawn boom()
+    print(try t.wait())
+}

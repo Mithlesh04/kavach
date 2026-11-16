@@ -264,3 +264,63 @@ pub fn record(seconds: f64) -> Result<i64, String> {
         rate,
     }))
 }
+
+/// Starts a voice the program fills itself (`audio.voice`, spec 14.27),
+/// at `volume` and `pan`: its number, or why nothing can play.
+pub fn voice(volume: f64, pan: f64) -> Result<i64, String> {
+    let out = device::output()?;
+    let controls = Arc::new(Controls::new(1.0, 0.0));
+    controls.set_volume(volume as f32);
+    controls.set_pan(pan as f32);
+    let source = stream::fed();
+    let voice = Voice {
+        sound: Arc::new(SoundData {
+            samples: Vec::new(),
+            channels: 2,
+            rate: source.rate,
+        }),
+        at: 2.0,
+        looped: false,
+        controls: controls.clone(),
+        streaming: Some(mixer::Streaming {
+            source: source.clone(),
+            frames: [(0.0, 0.0); 2],
+        }),
+    };
+    out.add
+        .try_send(voice)
+        .map_err(|_| format!("{} voices are playing already", device::MOST_VOICES))?;
+    let mut s = store();
+    tidy(&mut s);
+    s.next += 1;
+    let v = s.next;
+    s.voices.insert(v, controls);
+    fed_voices().insert(v, source);
+    Ok(v)
+}
+
+fn fed_voices() -> MutexGuard<'static, HashMap<i64, Arc<stream::Stream>>> {
+    static FED: OnceLock<Mutex<HashMap<i64, Arc<stream::Stream>>>> = OnceLock::new();
+    FED.get_or_init(Mutex::default)
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+}
+
+/// How many frames voice `v` takes now to be about 50 ms ahead; none for
+/// a voice that isn't one the program fills, or has stopped.
+pub fn voice_room(v: i64) -> i64 {
+    if !playing(v) {
+        fed_voices().remove(&v);
+        return 0;
+    }
+    fed_voices().get(&v).map_or(0, |s| stream::room(s) as i64)
+}
+
+/// Queues `samples` (left and right in turn) on voice `v`; what doesn't
+/// fit is dropped.
+pub fn voice_feed(v: i64, samples: &[f32]) {
+    if let Some(s) = fed_voices().get(&v) {
+        let whole = samples.len() & !1;
+        s.ring.write(samples[..whole].iter().copied());
+    }
+}

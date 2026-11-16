@@ -1,0 +1,37 @@
+// Rule: A `TextBuilder` changes in place with `push`, `push_char`, `insert`, `replace`, `remove` and `clear`, at character positions clamped to its end; a view or copy of it keeps the text it had.
+// Spec: 2.18
+// expect output: ITEM 1
+// expect output: item 2
+// expect output: item 3
+// expect output: ab aXb Xb 2
+// expect output: ab! true 0
+// expect output: 0
+// expect output: héllo
+
+fn main() {
+    let out = TextBuilder()
+    for n in 1..=3 {
+        out.push("item ")
+        out.push("{n}")
+        out.push_char('\n')
+    }
+    out.replace(0, 4, "ITEM")
+    print(out.to_string().trim_end())
+    let b = TextBuilder("ab")
+    const seen = b.view()
+    b.insert(1, "X")
+    const copy = b
+    b.remove(0, 1)
+    print("{seen} {copy.to_string()} {b.to_string()} {b.len()}")
+    let c = TextBuilder("a".view())
+    c.push("b".view())
+    c.insert(99, "!")
+    const before = c.to_string()
+    c.clear()
+    print("{before} {c.is_empty()} {c.len()}")
+    let d = TextBuilder.capacity(64)
+    print(d.len())
+    d.push("hllo")
+    d.insert(1, "é")
+    print(d.to_string())
+}

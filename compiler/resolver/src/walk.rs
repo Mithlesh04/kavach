@@ -286,6 +286,10 @@ impl Resolver {
     pub(crate) fn pattern(&mut self, p: &Pattern, mutable: bool) {
         match &p.kind {
             PatternKind::Binding(ident) => {
+                // A module constant was defined with its module (1.13).
+                if self.const_spans.contains(&ident.span.start) {
+                    return;
+                }
                 self.check_snake(ident, "variables");
                 self.define(ident, DefKind::Local { mutable });
             }
@@ -373,6 +377,16 @@ impl Resolver {
         ) {
             // A union of other types: `type ProfileError = FileError | ParseError` (spec 5.2).
             self.use_name(first);
+        } else if !first.name.chars().any(char::is_lowercase) && self.suggest(&first.name).is_none()
+        {
+            // `const COUNT = 10`, other languages' constant style: a capital
+            // letter makes a name in a pattern a variant (spec 1.5).
+            let name = &first.name;
+            let value = name.to_lowercase();
+            self.error(
+                first.span,
+                format!("`{name}` is not a variant of any type: a name with a capital letter here is read as a variant; a value's name is snake_case, as `{value}` (spec 1.5)"),
+            );
         } else {
             self.unknown(first, "is not a variant of any type");
         }

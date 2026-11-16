@@ -1,0 +1,8 @@
+// Rule: A builder changes in place, so changing one held by a `const` is an error.
+// Spec: 2.18
+// expect compile error
+
+fn main() {
+    const b = TextBuilder()
+    b.push("x")                  // error: `push` changes `b`, a `const`
+}

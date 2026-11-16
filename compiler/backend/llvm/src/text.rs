@@ -169,6 +169,24 @@ impl FnEmit<'_> {
                     return Pushed::Item(item, Self::code(text.ty));
                 }
             }
+            // `push(if c { "1" } else { "0" })`: two short literals, the
+            // item's words chosen with no object made (Sakshi's S8: 143 ms
+            // for 2,000,000, where a literal took 32).
+            ExprKind::If(cond, yes, no) => {
+                if let (Some(x), Some(y)) = (short_value(yes), short_value(no)) {
+                    let c = self.slot_of(cond);
+                    let c = self.val(format!("icmp ne i64 {c}, 0"));
+                    let item = self.slot_of_type("[2 x i64]");
+                    let addr = self.val(format!("ptrtoint ptr {item} to i64"));
+                    let words = encode(x, Type::I64).into_iter().zip(encode(y, Type::I64));
+                    for (i, (a, b)) in words.enumerate() {
+                        let w =
+                            self.val(format!("select i1 {c}, i64 {}, i64 {}", a as i64, b as i64));
+                        self.store_item_at(&w, &addr, 8 * i as i32);
+                    }
+                    return Pushed::Item(addr, Self::code(text.ty));
+                }
+            }
             _ => {}
         }
         let ExprKind::Format(parts) = &text.kind else {
@@ -386,5 +404,32 @@ impl FnEmit<'_> {
         let changed = self.val(format!("load i64, ptr {result}"));
         self.store_local(l, &changed);
         true
+    }
+}
+
+/// The text of a block that is only a short literal (`else { "0" }` is
+/// a block in a block).
+fn short_value(b: &kavach_kir::Block) -> Option<&str> {
+    if !b.stmts.is_empty() {
+        return None;
+    }
+    match &b.value.as_deref()?.kind {
+        ExprKind::Str(s) if s.len() <= SHORT => Some(s),
+        ExprKind::Block(inner) => short_value(inner),
+        _ => None,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    /// Sakshi's S8 (5): `bits.push(if c { "1" } else { "0" })` made a text
+    /// object each time. The item's words are chosen with a `select`.
+    #[test]
+    fn two_short_literals_are_chosen_without_an_object() {
+        let src = "fn main() {\n    let bits: [String] = []\n    for i in 0..20 {\n        bits.push(if i % 3 == 0 { \"1\" } else { \"0\" })\n    }\n    print(bits.len())\n}\n";
+        let c = kavach_driver::compile(src, "main.kav", Default::default());
+        let program = kavach_kir::lower(&c).expect("lowers");
+        let ir = crate::emit(&program);
+        assert!(ir.contains("select i1"), "{ir}");
     }
 }

@@ -1,0 +1,11 @@
+// Rule: An extend of a list, map, set or ring names each item type: `extend [Int]` is an error.
+// Spec: 2.5
+// expect compile error
+
+extend [Int] {               // error: `extend<T> [T]` names the item type
+    fn total(self) -> Int {
+        0
+    }
+}
+
+fn main() {}

@@ -1,0 +1,17 @@
+// Rule: `std.math` has `log10`, `cbrt`, `hypot`, `remainder`, `erfc` and `lgamma`, for `Float` and `Float32`; `remainder` rounds `x / y` to the nearest whole number, an even one at a tie.
+// Spec: 14.5
+// expect output: 3.0 -2.0 5.0
+// expect output: -1.0 -1.0 1.0
+// expect output: 3.1780538303479458
+// expect output: 1.4142135623730952e300
+// expect output: 3.0
+
+use std.math
+
+fn main() {
+    print("{math.log10(1000.0)} {math.cbrt(-8.0)} {math.hypot(3.0, 4.0)}")
+    print("{math.remainder(7.0, 2.0)} {math.remainder(5.0, 3.0)} {math.erfc(0.0)}")
+    print(math.lgamma(5.0))
+    print(math.hypot(1e300, 1e300))
+    print(math.cbrt(Float32(27.0)))
+}

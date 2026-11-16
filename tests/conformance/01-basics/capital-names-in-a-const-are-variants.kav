@@ -1,0 +1,5 @@
+// Rule: A name with a capital letter in a pattern is a variant, so `const COUNT = 10` is an error that says to name the value in snake_case.
+// Spec: 1.5
+// expect compile error
+
+const COUNT = 1_000_000      // error: `COUNT` is read as a variant; write `count`

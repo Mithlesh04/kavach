@@ -1,0 +1,14 @@
+// Rule: `xs.enumerate()` gives a list of `(index, item)` pairs, used as a value as well as in `for`.
+// Spec: 2.2
+// expect output: [(0, 5), (1, 2)]
+// expect output: [(0, "a"), (1, "bb")]
+// expect output: 1
+
+fn main() {
+    const n = [5, 2]
+    print(n.enumerate())
+    const words = ["a", "bb"].enumerate()
+    print(words)
+    const (i, _) = words[1]
+    print(i)
+}

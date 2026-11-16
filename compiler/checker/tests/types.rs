@@ -98,7 +98,7 @@ fn type_mismatches() {
         (
             "fn main() {\n  const s = Set([1, 2])\n}",
             &[
-                "2: `Set` can't be called like a function: make a set with `Set.of(1, 2, 3)`, or `Set.with_capacity(n)` and `add` (spec 2.2)",
+                "2: `Set` can't be called like a function: make a set with `Set.of(1, 2, 3)`, or `Set.capacity(n)` and `add` (spec 2.2)",
             ],
         ),
         (

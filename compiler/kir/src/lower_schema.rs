@@ -288,8 +288,19 @@ impl<'a> Lowerer<'a> {
                     Shape::Decimal => Some(Ty::Prim(Prim::Decimal)),
                     Shape::List(x) => Some(Ty::List(Box::new(self.checker_ty(*x)?))),
                     Shape::Optional(x) => Some(Ty::Optional(Box::new(self.checker_ty(*x)?))),
+                    Shape::Map(k, v) => Some(Ty::Map(
+                        Box::new(self.checker_ty(*k)?),
+                        Box::new(self.checker_ty(*v)?),
+                    )),
+                    // A generic record's instance keeps its type arguments:
+                    // `Page<Item>`'s fields are described with `T` as `Item`.
                     Shape::Record { .. } | Shape::Union { .. } => {
-                        Some(Ty::Adt(self.shapes.def_of(t)?, Vec::new()))
+                        let args = self.shapes.args_of(t).unwrap_or_default().to_vec();
+                        let args = args
+                            .into_iter()
+                            .map(|a| self.checker_ty(a))
+                            .collect::<Option<Vec<_>>>()?;
+                        Some(Ty::Adt(self.shapes.def_of(t)?, args))
                     }
                     _ => None,
                 };

@@ -202,6 +202,7 @@ pub fn panic_with(message: &str, line: i32) -> ! {
     if crate::rt_task_errors::in_spawned_task() {
         eprintln!("panic: {message}\n  at {path}:{line}");
         let why = format!("panicked: {message} at {path}:{line}");
+        kavach_runtime_core::tasks::panic_shown(&why);
         std::panic::resume_unwind(Box::new(TaskPanic(why)));
     }
     run_at_exit();

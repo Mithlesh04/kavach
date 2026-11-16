@@ -2,7 +2,7 @@
 //! binary precedence table, then unary operators, then calls and fields.
 
 use crate::parser::Parser;
-use kavach_ast::{Arg, BinaryOp, Expr, ExprKind, Span, UnaryOp};
+use kavach_ast::{Arg, BinaryOp, Block, Expr, ExprKind, Ident, Span, Stmt, StmtKind, UnaryOp};
 use kavach_lexer::{Keyword, TokenKind};
 
 const COMPARISON: u8 = 4;
@@ -202,6 +202,7 @@ impl Parser<'_> {
             let kind = match self.kind() {
                 TokenKind::Dot | TokenKind::QuestionDot => {
                     let optional = self.at(&TokenKind::QuestionDot);
+                    let dot = self.span();
                     self.bump();
                     if let (TokenKind::Int(index), false) = (self.kind().clone(), optional) {
                         self.bump();
@@ -211,6 +212,11 @@ impl Parser<'_> {
                         }
                     } else {
                         let name = self.ident("a field or method name after `.`");
+                        // `x?.m(a)` (spec 2.7): `if let v = x { v.m(a) } else { none }`.
+                        if optional && self.at(&TokenKind::LParen) {
+                            expr = self.optional_call(expr, name, dot, start);
+                            continue;
+                        }
                         // `pg.sql"…"` (spec 10.15).
                         match (&expr.kind, optional) {
                             (ExprKind::Name(module), false) if self.tag_follows(name.span) => {
@@ -383,5 +389,78 @@ impl Parser<'_> {
         self.skip_newlines();
         self.expect(&TokenKind::RBrace, "`}` to close `with`");
         fields
+    }
+
+    /// `base?.name(args)` (spec 2.7), the arguments next: written as
+    /// `if let v = base { v.name(args) } else { none }`. The value's name
+    /// (`?`) can't be written, and it and its use take the places of the
+    /// `?` and the `.` of `dot`, which no other name has.
+    fn optional_call(&mut self, base: Expr, name: Ident, dot: Span, start: Span) -> Expr {
+        let at = |k: u32| Span {
+            start: dot.start + k,
+            end: dot.start + k + 1,
+        };
+        let value = |k: u32| Ident {
+            name: "?".into(),
+            span: at(k),
+        };
+        let args = self.args();
+        let end = self.span_from(start);
+        // The call inside gets a place of its own: types are kept by place,
+        // and the call's isn't the whole's, which is optional.
+        let inner = Span {
+            start: name.span.start,
+            end: end.end,
+        };
+        let method = name.span;
+        let receiver = Expr {
+            kind: ExprKind::Name(value(1)),
+            span: at(1),
+        };
+        let call = Expr {
+            kind: ExprKind::Call {
+                callee: Box::new(Expr {
+                    kind: ExprKind::Field {
+                        base: Box::new(receiver),
+                        name,
+                        optional: false,
+                    },
+                    span: method,
+                }),
+                generics: Vec::new(),
+                args,
+            },
+            span: inner,
+        };
+        let then = Block {
+            stmts: vec![Stmt {
+                kind: StmtKind::Expr(call),
+                span: inner,
+            }],
+            span: inner,
+        };
+        let none = Expr {
+            kind: ExprKind::None,
+            span: at(0),
+        };
+        let otherwise = Expr {
+            kind: ExprKind::Block(Block {
+                stmts: vec![Stmt {
+                    kind: StmtKind::Expr(none),
+                    span: at(0),
+                }],
+                span: at(0),
+            }),
+            span: at(0),
+        };
+        Expr {
+            kind: ExprKind::IfLet {
+                name: value(0),
+                value: Box::new(base),
+                then,
+                otherwise: Some(Box::new(otherwise)),
+            },
+            span: end,
+        }
     }
 }

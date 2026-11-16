@@ -1,0 +1,7 @@
+pub const width = 640
+pub const title = "swarm"
+const scale = 3
+
+pub fn scaled() -> Int {
+    width * scale
+}

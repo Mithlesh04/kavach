@@ -149,6 +149,12 @@ pub fn std_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
             | RtOp::MathAtan2
             | RtOp::MathExp
             | RtOp::MathLn
+            | RtOp::MathLog10
+            | RtOp::MathCbrt
+            | RtOp::MathHypot
+            | RtOp::MathRemainder
+            | RtOp::MathErfc
+            | RtOp::MathLgamma
             | RtOp::CliArgs
             | RtOp::IoIsTerminal
             | RtOp::IoColors
@@ -296,6 +302,12 @@ pub fn std_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
         RtOp::MathAtan2 => bits(math::atan2(float(a), float(b))),
         RtOp::MathExp => bits(math::exp(float(a))),
         RtOp::MathLn => bits(math::ln(float(a))),
+        RtOp::MathLog10 => bits(math::log10(float(a))),
+        RtOp::MathCbrt => bits(math::cbrt(float(a))),
+        RtOp::MathHypot => bits(math::hypot(float(a), float(b))),
+        RtOp::MathRemainder => bits(math::remainder(float(a), float(b))),
+        RtOp::MathErfc => bits(math::erfc(float(a))),
+        RtOp::MathLgamma => bits(math::lgamma(float(a))),
         RtOp::IoWrite => {
             let text = str_of(a);
             release(a);

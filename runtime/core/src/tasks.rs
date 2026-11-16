@@ -464,6 +464,7 @@ fn wake(st: &mut State, t: TaskId, wait: u64, by_timer: bool) -> Option<(usize, 
 
 mod io;
 mod pick;
+mod shown;
 mod stop;
 pub use io::{
     interrupt_queue_of, many_workers, set_io_idle, set_many_workers, set_this_worker, this_worker,
@@ -475,3 +476,5 @@ pub use turns::{Host, set_host};
 mod tests;
 mod turns;
 mod wait;
+
+pub use shown::{main_error_line, panic_shown};

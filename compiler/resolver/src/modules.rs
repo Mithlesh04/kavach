@@ -42,6 +42,8 @@ fn item_name(item: &Item) -> Option<&Ident> {
         ItemKind::Capability(c) => Some(&c.name),
         ItemKind::Agent(a) => Some(&a.name),
         ItemKind::Literal(l) => Some(&l.name),
+        // `pub const width = 640`, a module constant (spec 1.13).
+        ItemKind::Stmt(s) => crate::decls::module_const(s),
         _ => None,
     }
 }
@@ -139,8 +141,15 @@ impl Resolver {
                 .collect();
             if m == 0 {
                 self.stmts(&stmts);
-            } else if let Some(s) = stmts.first() {
-                self.error(s.span, "only the entry file (`src/main.kav`) can have statements outside functions (spec 1.3)");
+            } else {
+                // Other files have module constants (1.13), not statements.
+                let (consts, others): (Vec<_>, Vec<_>) = stmts
+                    .into_iter()
+                    .partition(|s| crate::decls::module_const(s).is_some());
+                self.stmts(&consts);
+                if let Some(s) = others.first() {
+                    self.error(s.span, "only the entry file (`src/main.kav`) can have statements outside functions (spec 1.3); other files can have module constants, `const name = …` (1.13)");
+                }
             }
             if m > 0 {
                 for item in items.iter() {

@@ -27,5 +27,5 @@ try fs.write_bytes("copy.png", image.png(img))
 
 ## Open questions
 
-- GIF and WebP, and compressed GPU textures (KTX2, BCn, ASTC): later, each with its own decision. Fonts are `std.font` (14.31).
+- GIF and WebP: later, with their own decision. Compressed GPU textures are `gpu.compressed_texture` (14.24), and fonts `std.font` (14.31).
 - Resizing and other image operations: packages, written in Kavach over `Image`.

@@ -25,3 +25,29 @@ impl Lowerer<'_> {
         at(K::Rt(op, vec![l, r]), ty)
     }
 }
+
+impl Lowerer<'_> {
+    /// `x.fract()` (spec 14.2): `x - floor(x)`, as WGSL's `fract`, worked
+    /// out as a `Float` (exact for a `Float32` too) and given back as `x`'s
+    /// type.
+    pub(crate) fn fract(&mut self, x: ir::Expr, line: u32) -> ir::Expr {
+        let ty = x.ty;
+        let at = |kind, ty| ir::Expr { kind, ty, line };
+        let wide = at(K::Convert(Box::new(x), false), Type::F64);
+        let held = self.new_local(Type::F64);
+        let get = |s: &Self| s.local_expr(held, line);
+        let floor = at(K::Rt(RtOp::MathFloor, vec![get(self)]), Type::F64);
+        let part = at(
+            K::Binary(ir::BinOp::Sub, Box::new(get(self)), Box::new(floor)),
+            Type::F64,
+        );
+        let value = at(K::Convert(Box::new(part), false), ty);
+        at(
+            K::Block(ir::Block {
+                stmts: vec![ir::Stmt::Let(held, wide)],
+                value: Some(Box::new(value)),
+            }),
+            ty,
+        )
+    }
+}

@@ -171,14 +171,34 @@ pub enum Flow<'a> {
 
 pub type Eval<'a> = Result<Value<'a>, Flow<'a>>;
 
+thread_local! {
+    /// Whether `==` is comparing map keys or set items, where NaN equals
+    /// NaN (spec 2.2); elsewhere NaN is equal to nothing, as IEEE has it.
+    static KEYS: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// Whether `a` and `b` are the same key of a map or item of a set (spec
+/// 2.2): equal, with any NaN, however deep, equal to NaN.
+pub(crate) fn same_key<'a>(a: &Value<'a>, b: &Value<'a>) -> bool {
+    let before = KEYS.with(|k| k.replace(true));
+    let same = a == b;
+    KEYS.with(|k| k.set(before));
+    same
+}
+
+/// Two floats equal: by value, NaN equal to NaN only as keys.
+fn same_float(x: f64, y: f64) -> bool {
+    x == y || (x.is_nan() && y.is_nan() && KEYS.with(std::cell::Cell::get))
+}
+
 impl PartialEq for Value<'_> {
     fn eq(&self, other: &Self) -> bool {
         use Value::*;
         match (self, other) {
             (Unit, Unit) | (None, None) => true,
             (Int(a, _), Int(b, _)) => a == b,
-            (Float(a), Float(b)) => a == b,
-            (Float32(a), Float32(b)) => a == b,
+            (Float(a), Float(b)) => same_float(*a, *b),
+            (Float32(a), Float32(b)) => same_float(f64::from(*a), f64::from(*b)),
             (Decimal(a), Decimal(b)) => a == b,
             (BigInt(a), BigInt(b)) => a == b,
             // One form per value, so a big decimal never equals a small one.

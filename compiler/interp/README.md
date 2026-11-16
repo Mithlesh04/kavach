@@ -11,6 +11,8 @@ Not supported yet: agents, capabilities, `ask` and `unsafe` (Phase 2 and the nat
 | `src/lib.rs` | `run` and `test`, run on a thread with a large stack |
 | `src/interp.rs` | State, function calls with `require`/`ensure`, invariants, test mode |
 | `src/eval.rs` | Expressions |
+| `src/module_consts.rs` | Module constants (spec 1.13): each worked out on first read and kept, all before `main` |
+| `src/text_views.rs` | Text views and builders (spec 2.18): a view is its text, a builder text changed in place |
 | `src/stmts.rs` | Statements, assignment into fields and lists, pattern matching |
 | `src/drops.rs` | `Drop` (spec 6.1): the identity copies share, and running `drop` at statement boundaries |
 | `src/calls.rs` | Calls: functions, closures, records, variants, methods |

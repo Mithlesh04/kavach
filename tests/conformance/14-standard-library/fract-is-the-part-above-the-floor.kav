@@ -1,0 +1,10 @@
+// Rule: `x.fract()` on a float is `x - math.floor(x)`, as WGSL's `fract`: never negative, for `Float` and `Float32`.
+// Spec: 14.2
+// expect output: 0.75 0.75 0.0
+// expect output: 0.5
+
+fn main() {
+    print("{2.75.fract()} {(-0.25).fract()} {3.0.fract()}")
+    const h: Float32 = 1.5
+    print(h.fract())
+}

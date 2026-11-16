@@ -358,5 +358,8 @@ pub fn copy(slot: u64, ty: Type) -> u64 {
             *w = copy(*w, slot_type(p, i));
         }
     }
-    new_obj(own, tag, words, Data::Slots) as u64
+    let made = new_obj(own, tag, words, Data::Slots);
+    // A `Drop` value's copies are one value: `drop` runs once (spec 6.1).
+    crate::rt_drops::copied(p, made);
+    made as u64
 }

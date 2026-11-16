@@ -1,0 +1,16 @@
+// Rule: In a script, a top-level `const` that uses a capability is one of the script's statements, run in its place; plain constants stay module constants that functions read.
+// Spec: 1.13, 1.3
+// expect output: 3
+// expect output: missing
+
+use std.fs
+
+const notes = fs.read_text("kavach-no-such-file.txt") catch "missing"
+const limit = 3
+
+fn show() -> String {
+    "{limit}"
+}
+
+print(show())
+print(notes)

@@ -63,7 +63,7 @@ const TABLE: &[(&str, &[&str])] = &[
             "no such",
         ],
     ),
-    ("duplicate", &["already declared"]),
+    ("duplicate", &["already declared", "already has a method"]),
     (
         "variant",
         &["is a variant of", "every variant of", "is for enums"],
@@ -78,6 +78,7 @@ const TABLE: &[(&str, &[&str])] = &[
             "write it after the call",
             "names no loop",
             "re-exports names",
+            "names each item type",
         ],
     ),
     ("no-value", &["returns nothing"]),

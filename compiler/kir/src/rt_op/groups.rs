@@ -38,6 +38,7 @@ impl RtOp {
                 | RtOp::ImageDecode
                 | RtOp::FontMetrics
                 | RtOp::AudioStream
+                | RtOp::AudioVoice
                 | RtOp::CLibraryOpen
                 | RtOp::CLibraryFind
                 | RtOp::AppDir

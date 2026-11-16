@@ -48,3 +48,26 @@ extend<S> App<S> {
     }
 }
 ```
+
+Lists, maps, sets and rings take methods too. Name each item type after `extend`, as `extend<T> [T]`, `extend<K, V> [K: V]`, `extend<T> Set<T>` or `extend<T> Ring<T>`; the methods then work for every item type, and `T` is the item type of the one called on. A range has a list's added methods, as it has a list's own (2.2).
+
+```kavach
+extend<T> [T] {
+    fn second(self) -> T? {
+        if self.len() > 1 { self[1] } else { none }
+    }
+}
+
+extend<K, V> [K: V] {
+    fn has_all(self, keys: [K]) -> Bool {
+        keys.all((k) => self.contains_key(k))
+    }
+}
+
+const s = [10, 20, 30].second()                  // 20
+const ok = ["a": 1, "b": 2].has_all(["a", "z"])  // false
+```
+
+- An item type written out, as `extend [Int]`, is an error: the methods are for every list.
+- A method with the name of one the collection already has (`len`, `push`, …) is an error, so `xs.len()` always means the same.
+- Methods are added, never changed or taken away.

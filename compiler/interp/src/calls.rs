@@ -10,7 +10,17 @@ use std::rc::Rc;
 pub(crate) type Args<'a> = Vec<(Option<&'a str>, Value<'a>)>;
 
 /// Built-in methods that change their receiver, which must be a variable.
-const MUTATING: &[&str] = &["push", "remove", "add"];
+/// Methods that change their receiver in place: a list's, map's, set's,
+/// ring's or `TextBuilder`'s (spec 2.18).
+const MUTATING: &[&str] = &[
+    "push",
+    "remove",
+    "add",
+    "push_char",
+    "insert",
+    "replace",
+    "clear",
+];
 
 impl<'a> Interp<'a> {
     pub(crate) fn call(&mut self, e: &'a Expr, callee: &'a Expr, args: &'a [Arg]) -> Eval<'a> {
@@ -285,6 +295,13 @@ impl<'a> Interp<'a> {
                     };
                     return Ok(Value::Float(f64::from_bits(bits)));
                 }
+                DefKind::Builtin if d.name == "TextBuilder" && name.name == "capacity" => {
+                    let n = match args.first() {
+                        Some((_, Value::Int(n, _))) => *n,
+                        _ => 0,
+                    };
+                    return Ok(self.builder_with_room(n));
+                }
                 DefKind::Builtin if d.name == "Set" && name.name == "of" => {
                     return Ok(self.set_of(args.into_iter().map(|(_, v)| v).collect()));
                 }
@@ -335,7 +352,7 @@ impl<'a> Interp<'a> {
                 kavach_checker::Ty::List(_)
                     | kavach_checker::Ty::Map(..)
                     | kavach_checker::Ty::Set(_)
-                    | kavach_checker::Ty::Builtin("Ring", _)
+                    | kavach_checker::Ty::Builtin("Ring" | "TextBuilder", _)
             )
         );
         if MUTATING.contains(&name.name.as_str()) && !user_type && collection {
@@ -368,6 +385,14 @@ impl<'a> Interp<'a> {
         if let Value::Agent(agent) = &receiver {
             return self.agent_event(agent.clone(), &name.name, args, span);
         }
+        // A range is the list of its numbers to methods added to lists.
+        let receiver = match receiver {
+            Value::Range(a, b, k) if self.ext_methods.contains_key("List") => {
+                let items: Vec<Value<'a>> = (a..b).map(|n| Value::Int(n, k)).collect();
+                Value::List(Rc::new(items.into()))
+            }
+            r => r,
+        };
         let user = match &receiver {
             Value::Record { def, .. } => self.methods.get(def),
             Value::Variant { union, .. } => self.methods.get(union),
@@ -451,6 +476,11 @@ fn type_name(v: &Value<'_>) -> Option<&'static str> {
         Value::Decimal(_) => "Decimal",
         Value::Bool(_) => "Bool",
         Value::Char(_) => "Char",
+        // Methods added with `extend<T> [T]` and the like (spec 2.5).
+        Value::List(items) if items.ring => "Ring",
+        Value::List(_) => "List",
+        Value::Map(_) => "Map",
+        Value::Set(_) => "Set",
         _ => return None,
     })
 }

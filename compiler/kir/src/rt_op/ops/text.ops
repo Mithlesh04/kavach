@@ -37,6 +37,14 @@ MathAtan,
 MathAtan2,
 MathExp,
 MathLn,
+/// `math.log10`, `cbrt`, `hypot`, `remainder`, `erfc` and `lgamma` (spec
+/// 14.5) on `Float`s; `hypot` and `remainder` take `x`, then `y`.
+MathLog10,
+MathCbrt,
+MathHypot,
+MathRemainder,
+MathErfc,
+MathLgamma,
 /// `std.regex` (spec 14.8). Compiling can fail.
 RegexNew,
 RegexAdvanced,

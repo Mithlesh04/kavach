@@ -135,6 +135,7 @@ fn outcome_of(outcome: Option<String>, exit: Option<i32>, code: i64) -> i64 {
     // The call panicked (the child printed it): the task's error, as for
     // any task (spec 9.1).
     if let ("panicked", Tree::Text(why)) = (key.as_str(), &value) {
+        kavach_runtime_core::tasks::panic_shown(why);
         let text = crate::heap::first_of(&kavach_kir::Shape::Str);
         crate::rt_errors::set_error(crate::shapes::new_text(why, text));
         return 0;

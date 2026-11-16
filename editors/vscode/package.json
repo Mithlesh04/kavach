@@ -3,7 +3,7 @@
   "displayName": "Kavach",
   "description": "Kavach for VS Code: syntax highlighting (.kav files and ```kavach blocks in Markdown), errors as you type, hover and go to definition through `kavach lsp`.",
   "version": "0.2.0",
-  "publisher": "kavach",
+  "publisher": "Kavach",
   "license": "Apache-2.0 OR MIT",
   "repository": {
     "type": "git",

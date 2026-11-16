@@ -283,7 +283,12 @@ impl<'a> Lowerer<'a> {
 
     /// Matches written type `written` against actual type `ty`, recording
     /// what each generic parameter stands for.
-    fn infer_args(&self, written: &ast::TypeExpr, ty: Type, out: &mut HashMap<DefId, Type>) {
+    pub(crate) fn infer_args(
+        &self,
+        written: &ast::TypeExpr,
+        ty: Type,
+        out: &mut HashMap<DefId, Type>,
+    ) {
         let shape = self.shapes.shape(ty).cloned();
         match (&written.kind, shape) {
             (TypeKind::Named { path, args }, shape) => {
@@ -298,6 +303,7 @@ impl<'a> Lowerer<'a> {
                     }
                     (DefKind::Builtin, Some(Shape::List(t) | Shape::Shared(t))) => vec![t],
                     (DefKind::Builtin, Some(Shape::Map(k, v))) => vec![k, v],
+                    (DefKind::Builtin, Some(Shape::Set(t))) => vec![t],
                     (DefKind::Type, _) => self.shapes.args_of(ty).unwrap_or_default().to_vec(),
                     _ => return,
                 };

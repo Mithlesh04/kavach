@@ -1,0 +1,11 @@
+// Rule: A method added to a collection can't have the name of one it already has.
+// Spec: 2.5
+// expect compile error
+
+extend<T> [T] {
+    fn len(self) -> Int {      // error: lists already have `len`
+        0
+    }
+}
+
+fn main() {}

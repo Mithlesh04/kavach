@@ -136,6 +136,7 @@ impl<'a> Interp<'a> {
                 self.err
                     .push_str(&format!("panic: {message}\n  at {path}:{line}\n"));
                 let why = format!("panicked: {message} at {path}:{line}");
+                kavach_runtime_core::tasks::panic_shown(&why);
                 let _ = agent.guard.borrow().note(&format!("{name} {why}"));
                 Err(Flow::Fail(Value::BuiltinError(why.into())))
             }

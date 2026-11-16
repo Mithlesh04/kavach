@@ -9,7 +9,7 @@ use kavach_resolver::{DefId, DefKind};
 use std::collections::HashMap;
 
 /// The methods a `gpu fn` may call on its numbers.
-const METHODS: [&str; 4] = ["abs", "min", "max", "clamp"];
+const METHODS: [&str; 5] = ["abs", "min", "max", "clamp", "fract"];
 
 /// The functions of `std.math` a `gpu fn` may call (spec 15.1).
 const MATH: [&str; 14] = [

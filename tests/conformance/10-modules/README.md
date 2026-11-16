@@ -35,3 +35,4 @@ Conformance tests for spec chapter [10. Modules and packages](../../../docs/spec
 | 10.15 | [tagged-literals-are-checked-when-compiled.kav](tagged-literals-are-checked-when-compiled.kav) | The compiler runs a tag's checker on each literal, and each problem is a compile error at its place. | compile error |
 | 10.15 | [tagged-literal-problems-show-on-their-line.kav](tagged-literal-problems-show-on-their-line.kav) | A problem in a tagged literal over lines is shown on its own line and column. | compile error |
 | 10.15 | [a-tag-checker-uses-nothing.kav](a-tag-checker-uses-nothing.kav) | A tag's checker takes the text, gives `[LiteralProblem]`, and has no `!` and no `uses`. | compile error |
+| 10.1, 1.13 | [pub-consts-are-read-from-other-modules/](pub-consts-are-read-from-other-modules/src/main.kav) | A `pub const` is read from other modules; one without `pub` stays in its module. | runs |

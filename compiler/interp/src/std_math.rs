@@ -5,7 +5,7 @@
 
 use kavach_runtime_core::math;
 
-/// `math.name(x)` (or `(x, y)` for `pow` and `atan2`) of `Float`s, or
+/// `math.name(x)` (or `(x, y)` for `pow`, `atan2`, `hypot` and `remainder`) of `Float`s, or
 /// `None` when `name` isn't one of these.
 pub(crate) fn float_fn(name: &str, x: f64, y: f64) -> Option<f64> {
     Some(match name {
@@ -23,6 +23,12 @@ pub(crate) fn float_fn(name: &str, x: f64, y: f64) -> Option<f64> {
         "atan2" => math::atan2(x, y),
         "exp" => math::exp(x),
         "ln" => math::ln(x),
+        "log10" => math::log10(x),
+        "cbrt" => math::cbrt(x),
+        "hypot" => math::hypot(x, y),
+        "remainder" => math::remainder(x, y),
+        "erfc" => math::erfc(x),
+        "lgamma" => math::lgamma(x),
         _ => return None,
     })
 }

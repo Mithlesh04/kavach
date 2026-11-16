@@ -1,7 +1,8 @@
 //! `xs + ys` and `xs += ys` on lists (spec 2.2), as pushes onto a list,
 //! so each backend's kinds of list (flat, text, packed) need nothing new;
-//! and `xs.pop()` (spec 14.2), as its last item and a shorter list; and
-//! a change to a list or map in a field or an item, made in place.
+//! and `xs.pop()` (spec 14.2), as its last item and a shorter list;
+//! `xs.enumerate()` (2.2), as pushes of each index and item; and a change
+//! to a list or map in a field or an item, made in place.
 
 use crate::ir::{self, Block, ExprKind as K, Local, Shape, Stmt, Type};
 use crate::lower::{Lowered, Lowerer};
@@ -202,6 +203,51 @@ impl<'a> Lowerer<'a> {
                 },
             },
         ]
+    }
+
+    /// `xs.enumerate()` (spec 2.2): a new list of `(index, item)` pairs,
+    /// of list type `ty`, pushed while walking `list`.
+    pub(crate) fn enumerated(&mut self, list: ir::Expr, ty: Type, line: u32) -> ir::Expr {
+        let at = |kind, ty| ir::Expr { kind, ty, line };
+        let item_ty = match self.shapes.shape(list.ty) {
+            Some(Shape::List(t)) => *t,
+            _ => Type::I64,
+        };
+        let pair_ty = match self.shapes.shape(ty) {
+            Some(Shape::List(t)) => *t,
+            _ => self.tuple_type(vec![Type::I64, item_ty]),
+        };
+        let src = self.new_local(list.ty);
+        let (item, index, acc) = (
+            self.new_local(item_ty),
+            self.new_local(Type::I64),
+            self.new_local(ty),
+        );
+        let pair = at(
+            K::Tuple(vec![
+                self.local_expr(index, line),
+                self.local_expr(item, line),
+            ]),
+            pair_ty,
+        );
+        let body = self.push_to(acc, pair);
+        let stmts = vec![
+            Stmt::Let(src, list),
+            Stmt::Let(acc, at(K::List(Vec::new()), ty)),
+            Stmt::ForEach {
+                var: item,
+                index,
+                list: src,
+                body,
+            },
+        ];
+        at(
+            K::Block(Block {
+                stmts,
+                value: Some(Box::new(self.local_expr(acc, line))),
+            }),
+            ty,
+        )
     }
 }
 

@@ -1,0 +1,24 @@
+// Rule: `?.` calls a method too: `x?.m(a)` is `none` when `x` is, else the call's result as an optional; and a branch of `none` makes an `if` optional.
+// Spec: 2.7
+// expect output: 3
+// expect output: none
+// expect output: 7
+// expect output: 0
+// expect output: KAVACH
+// expect output: nothing
+// expect output: 5
+
+fn main() {
+    const m: [String: [Int]] = ["a": [1, 2, 3]]
+    print(m["a"]?.len())
+    print(m["z"]?.len())
+    const deep: [String: [String: Int]] = ["a": ["b": 7]]
+    print(deep.get("a")?.get("b"))
+    print(deep.get("x")?.get("b") ?? 0)
+    const word: String? = "kavach"
+    print(word?.upper())
+    const none_word: String? = none
+    print(none_word?.upper() ?? "nothing")
+    const n = if m.len() > 0 { 5 } else { none }
+    print(n ?? 0)
+}

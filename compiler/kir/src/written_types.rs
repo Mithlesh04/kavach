@@ -19,7 +19,12 @@ impl Lowerer<'_> {
                 let first = path.segments.last().unwrap_or(&path.segments[0]);
                 let def = self.c.resolution.uses.get(&first.span.start).copied();
                 match def.map(|d| self.c.resolution.defs[d].kind) {
-                    Some(DefKind::Builtin) if first.name == "String" => self.str_type(),
+                    // Text in native code for now (`lower_views.rs`).
+                    Some(DefKind::Builtin)
+                        if matches!(first.name.as_str(), "String" | "StrView" | "TextBuilder") =>
+                    {
+                        self.str_type()
+                    }
                     Some(DefKind::Builtin) if first.name == "Decimal" => self.decimal_type(),
                     Some(DefKind::Builtin) if first.name == "BigInt" => {
                         self.shapes.intern(Shape::BigInt)

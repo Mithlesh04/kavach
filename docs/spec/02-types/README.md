@@ -23,6 +23,7 @@ Each section is a file of its own: new sections go at the end, with the next num
 | 2.15 Interface values | [15-interface-values.md](15-interface-values.md) |
 | 2.16 Operators for your own types | [16-operators.md](16-operators.md) |
 | 2.17 Matrices | [17-matrices.md](17-matrices.md) |
+| 2.18 Text views and builders | [18-text-views.md](18-text-views.md) |
 
 ## Open questions
 

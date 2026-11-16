@@ -100,10 +100,33 @@ pub(crate) fn text_words<'s>(
     words
 }
 
+/// `s.slice(b, c)` (`s` owned): characters `b..c`, clamped, read in
+/// place, by bytes when the text is ASCII (Sakshi's S8: `slice(0, 1)` of
+/// short text cost a copy of the whole text and a walk of its characters).
+fn slice(a: i64, b: i64, c: i64, code: i64) -> i64 {
+    let (start, end) = (b.max(0) as usize, c.max(0) as usize);
+    let part = with_str(a, |s| {
+        if s.is_ascii() {
+            let (from, to) = (start.min(s.len()), end.min(s.len()));
+            s.get(from..to.max(from)).unwrap_or("").to_string()
+        } else {
+            s.chars()
+                .skip(start)
+                .take(end.saturating_sub(start))
+                .collect()
+        }
+    });
+    release(a);
+    new_str(part, type_of(code))
+}
+
 /// Text methods. `a` is the text (owned), `b` and `c` the arguments.
 pub fn text_op(op: RtOp, a: i64, b: i64, c: i64, code: i64) -> i64 {
     if op == RtOp::StrSplit {
         return split(a, b, code);
+    }
+    if op == RtOp::StrSlice {
+        return slice(a, b, c, code);
     }
     let s = str_of(a);
     release(a);
@@ -130,16 +153,8 @@ pub fn text_op(op: RtOp, a: i64, b: i64, c: i64, code: i64) -> i64 {
             let at = s.find(&part).map(|byte| s[..byte].chars().count() as i64);
             optional(at, code)
         }
-        _ => {
-            // StrSlice: characters `b..c`, clamped.
-            let (start, end) = (b.max(0) as usize, c.max(0) as usize);
-            let part: String = s
-                .chars()
-                .skip(start)
-                .take(end.saturating_sub(start))
-                .collect();
-            new_str(part, type_of(code))
-        }
+        // `StrSlice` went to `slice` above; no other op comes here.
+        _ => unreachable!("text_op is only given the ops above"),
     }
 }
 

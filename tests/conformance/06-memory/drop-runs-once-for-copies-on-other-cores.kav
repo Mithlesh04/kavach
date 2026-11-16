@@ -1,0 +1,57 @@
+// Rule: Copies are the same value, so `drop` runs once, when the last holder ends, also when copies go to tasks on other cores (`spawn cores`) or come out of a `Shared` there.
+// Spec: 6.1
+// expect output: 1600 reads, 5 calls, drops while held: 0
+// expect output: drops after: 2
+
+type Noisy: Drop {
+    drops: Shared<Int>
+
+    fn drop(self) {
+        self.drops.update(x => x + 1)
+    }
+}
+
+type Holder {
+    noisy: Noisy
+}
+
+fn reader(s: Shared<Noisy>, rounds: Int) -> Int {
+    let seen = 0
+    for _ in 0..rounds {
+        const copy = s.get()
+        seen += copy.drops.get() * 0 + 1
+    }
+    seen
+}
+
+fn call(i: Int, handler: fn(Int) -> Int) -> Int {
+    handler(i)
+}
+
+fn hold_and_share(drops: Shared<Int>) {
+    const s = Shared(Noisy(drops: drops))
+    const h = Holder(noisy: Noisy(drops: drops))
+    const handler = (i: Int) => i + h.noisy.drops.get() * 0
+    let tasks: [Task<Int>] = []
+    for _ in 0..8 {
+        tasks.push(spawn cores reader(s, 200))
+    }
+    let calls: [Task<Int>] = []
+    for i in 0..5 {
+        calls.push(spawn cores call(i, handler))
+    }
+    let reads = 0
+    for t in tasks {
+        reads += t.wait() catch 0
+    }
+    for t in calls {
+        const _ = t.wait() catch 0
+    }
+    print("{reads} reads, {calls.len()} calls, drops while held: {drops.get()}")
+}
+
+fn main() {
+    const drops = Shared(0)
+    hold_and_share(drops)
+    print("drops after: {drops.get()}")
+}

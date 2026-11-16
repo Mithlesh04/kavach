@@ -12,11 +12,18 @@ fn number(t: &Ty) -> bool {
 
 /// Values with an order (spec 1.8), for `<`, `sort`, `min`, `max` and
 /// the key of `sort_by`: numbers, text, characters, `Bool` (`false`
-/// first) and tuples of them, item by item.
+/// first), text views and `Bytes`, and tuples, lists and rings of them,
+/// item by item.
 fn orderable(t: &Ty) -> bool {
     number(t)
-        || matches!(t, Ty::Prim(Prim::String | Prim::Char | Prim::Bool))
+        || matches!(
+            t,
+            Ty::Prim(Prim::String | Prim::Char | Prim::Bool | Prim::Bytes)
+        )
+        || matches!(t, Ty::Builtin("StrView", _))
         || matches!(t, Ty::Tuple(items) if items.iter().all(orderable))
+        || matches!(t, Ty::List(item) if orderable(item))
+        || matches!(t, Ty::Builtin("Ring", items) if items.iter().all(orderable))
 }
 
 impl Checker<'_> {
@@ -37,6 +44,7 @@ impl Checker<'_> {
         let unknown = |t: &Ty| matches!(t, Ty::Var(_) | Ty::Error);
         let open = match &t {
             Ty::Tuple(items) => items.iter().any(unknown),
+            Ty::List(item) => unknown(item),
             other => unknown(other),
         };
         (!open).then(|| orderable(&t))

@@ -1,0 +1,13 @@
+// Rule: A script's `const` that uses a capability is made by the script's own code, so a function can't read it.
+// Spec: 1.13
+// expect compile error
+
+use std.fs
+
+const notes = fs.read_text("kavach-no-such-file.txt") catch "missing"
+
+fn show() -> String {
+    notes                        // error: made by the script's code, so a function can't read it
+}
+
+print(show())

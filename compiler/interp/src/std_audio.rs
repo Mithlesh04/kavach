@@ -86,6 +86,19 @@ impl<'a> Interp<'a> {
                 Value::Unit
             }
             "listen_id" => return number(audio::listen(), self, "Unavailable"),
+            "voice_id" => {
+                let s = floats(0);
+                let part = |k: usize| s.get(k).copied().unwrap_or(0.0);
+                return number(audio::voice(part(0), part(1)), self, "Unavailable");
+            }
+            "voice_room_id" => {
+                return Ok(Value::Int(i128::from(audio::voice_room(int(0))), Prim::Int));
+            }
+            "voice_feed_id" => {
+                let samples: Vec<f32> = floats(1).into_iter().map(|f| f as f32).collect();
+                audio::voice_feed(int(0), &samples);
+                return Ok(Value::Unit);
+            }
             "stream_id" => {
                 let path = match args.first() {
                     Some(Value::Str(s)) => s.to_string(),

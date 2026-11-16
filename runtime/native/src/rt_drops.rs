@@ -86,6 +86,11 @@ fn defer(p: i64) -> bool {
     if DROPPING.with(|d| d.borrow_mut().remove(&p)) {
         return false;
     }
+    // A copy made for another core, while other copies still hold the
+    // value: freed now, as `drop` runs once, for the last (spec 6.1).
+    if !leave_copies(p) {
+        return false;
+    }
     obj_mut(p).rc = 1;
     PENDING.with(|q| q.borrow_mut().push(p));
     true
@@ -129,5 +134,57 @@ fn run() -> i64 {
         let f: extern "C-unwind" fn(i64, i64) = unsafe { std::mem::transmute(f) };
         f(closure, p);
         FLOOR.set(floor);
+    }
+}
+
+/// Copies of one `Drop` value made for tasks on other cores (`send.rs`):
+/// each copy's object, and how many of them are still held. Copies are
+/// the same value (spec 6.1), so `drop` runs once, when the last goes.
+static COPIES: OnceLock<Mutex<HashMap<i64, std::sync::Arc<AtomicU64>>>> = OnceLock::new();
+
+/// Whether any `Drop` value was ever copied for another core.
+static ANY_COPIES: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+fn copies() -> std::sync::MutexGuard<'static, HashMap<i64, std::sync::Arc<AtomicU64>>> {
+    COPIES
+        .get_or_init(|| Mutex::new(HashMap::new()))
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+}
+
+/// `to` was made from `from` for another core: when its type has a
+/// `drop`, the two count as holders of one value.
+pub(crate) fn copied(from: i64, to: i64) {
+    let Type::Ref(id) = obj(from).ty() else {
+        return;
+    };
+    if !has_drop(id) {
+        return;
+    }
+    ANY_COPIES.store(true, Ordering::Release);
+    let mut all = copies();
+    let group = match all.get(&from) {
+        Some(g) => {
+            g.fetch_add(1, Ordering::AcqRel);
+            g.clone()
+        }
+        None => {
+            let g = std::sync::Arc::new(AtomicU64::new(2));
+            all.insert(from, g.clone());
+            g
+        }
+    };
+    all.insert(to, group);
+}
+
+/// `p`'s last reference is going: whether it is the last of its copies,
+/// so its `drop` runs. A value never copied is its own last.
+fn leave_copies(p: i64) -> bool {
+    if !ANY_COPIES.load(Ordering::Acquire) {
+        return true;
+    }
+    match copies().remove(&p) {
+        Some(group) => group.fetch_sub(1, Ordering::AcqRel) == 1,
+        None => true,
     }
 }

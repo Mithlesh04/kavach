@@ -164,6 +164,17 @@ impl<'a> Lowerer<'a> {
                 line,
             });
         }
+        // `TextBuilder()`, `TextBuilder(text)` (spec 2.18): text here.
+        if name == "TextBuilder" {
+            return match args.first() {
+                Some(a) => self.expr(&a.value),
+                None => Ok(ir::Expr {
+                    kind: K::Str(String::new()),
+                    ty,
+                    line,
+                }),
+            };
+        }
         let arg = args
             .first()
             .map(|a| &a.value)
@@ -232,6 +243,10 @@ impl<'a> Lowerer<'a> {
             ("push", Some(Ty::List(_) | Ty::Builtin("Ring", _)))
                 | ("remove", Some(Ty::Map(..) | Ty::Set(_)))
                 | ("add", Some(Ty::Set(_)))
+                | (
+                    "push" | "push_char" | "insert" | "replace" | "remove" | "clear",
+                    Some(Ty::Builtin("TextBuilder", _))
+                )
         )
     }
 }

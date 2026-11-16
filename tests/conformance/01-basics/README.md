@@ -26,6 +26,7 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.5 | [types-use-pascal-case.kav](types-use-pascal-case.kav) | Type names must be PascalCase. | compile error |
 | 1.5 | [unicode-names.kav](unicode-names.kav) | Names may use letters from any Unicode script. | runs |
 | 1.5 | [variables-use-snake-case.kav](variables-use-snake-case.kav) | Variable names must be snake_case. | compile error |
+| 1.5 | [capital-names-in-a-const-are-variants.kav](capital-names-in-a-const-are-variants.kav) | A capitalized name in a pattern is a variant: `const COUNT = 10` is an error saying to write `count`. | compile error |
 | 1.7 | [decimal-literal-from-context.kav](decimal-literal-from-context.kav) | A number literal takes its type from context, so a Decimal literal is exact. | runs |
 | 1.7 | [integer-literals.kav](integer-literals.kav) | Integer literals may use `_` separators, hex (0x), octal (0o) and binary (0b). | runs |
 | 1.7 | [multi-line-string.kav](multi-line-string.kav) | A multi-line string drops the line breaks next to its delimiters and the common indentation. | runs |
@@ -68,6 +69,7 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.8 | [index-past-a-known-end-is-an-error.kav](index-past-a-known-end-is-an-error.kav) | An index outside a list whose length is known is a compile error. | compile error |
 | 1.8 | [uneven-whole-literal-division-warns.kav](uneven-whole-literal-division-warns.kav) | `/` between two whole-number literals that don't divide evenly gives a warning. | warning |
 | 1.8 | [logic-is-written-in-words.kav](logic-is-written-in-words.kav) | `!ready` is a compile error that says to write `not`. | compile error |
+| 1.8 | [lists-bytes-and-rings-have-an-order.kav](lists-bytes-and-rings-have-an-order.kav) | Lists, rings and `Bytes` compare item by item, the shorter first when one runs out; lists of lists sort. | runs |
 | 1.9 | [blocks-are-expressions.kav](blocks-are-expressions.kav) | A block has the value of its last expression. | runs |
 | 1.11 | [values-print-like-literals.kav](values-print-like-literals.kav) | print shows values the way they are written in code. | runs |
 | 1.12 | [destructuring-lists.kav](destructuring-lists.kav) | Lists come apart by position: missing items are `none` or their default; `...rest`; `_`. | runs |
@@ -77,3 +79,8 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.12 | [destructuring-needs-the-field.kav](destructuring-needs-the-field.kav) | A record pattern names only fields the record has. | compile error |
 | 1.12, 8.7 | [destructuring-keeps-secrets.kav](destructuring-keeps-secrets.kav) | A name taken from a `secret` field is a secret. | compile error |
 | 1.12 | [list-patterns-are-not-for-match.kav](list-patterns-are-not-for-match.kav) | List and record patterns go in `const` and `let`, not `match`. | compile error |
+| 1.13 | [module-constants-are-read-by-functions.kav](module-constants-are-read-by-functions.kav) | A top-level `const` is a module constant every function of the file reads, worked out before `main`. | runs |
+| 1.13 | [module-constants-use-no-capability.kav](module-constants-use-no-capability.kav) | A module constant can't use a capability. | compile error |
+| 1.13 | [module-constant-panics-before-main.kav](module-constant-panics-before-main.kav) | A module constant that panics stops the program before `main`. | panic |
+| 1.13, 1.3 | [script-constants-may-use-capabilities.kav](script-constants-may-use-capabilities.kav) | A script's `const` that uses a capability is one of its statements; plain constants stay module constants. | runs |
+| 1.13 | [functions-read-no-script-statement.kav](functions-read-no-script-statement.kav) | A function can't read a script's `const` that uses a capability. | compile error |

@@ -45,6 +45,11 @@ impl Ring {
         self.written.store(at, Ordering::Release);
     }
 
+    /// How many samples it holds when full.
+    pub(crate) fn capacity(&self) -> usize {
+        self.samples.len()
+    }
+
     /// How many more samples fit now (the writer's side).
     pub(crate) fn room(&self) -> usize {
         let written = self.written.load(Ordering::Relaxed);

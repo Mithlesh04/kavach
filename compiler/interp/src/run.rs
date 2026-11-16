@@ -29,6 +29,9 @@ type TestCase<'a> = Box<dyn Fn(&mut Interp<'a>) -> Result<bool, Flow<'a>> + 'a>;
 impl<'a> Interp<'a> {
     /// Runs `main`, or the top-level statements (spec 1.3).
     pub(crate) fn run_main(&mut self) -> Result<(), Flow<'a>> {
+        // Module constants first (spec 1.13): a panic in one stops the
+        // program before `main`.
+        self.module_consts_first()?;
         let main = self
             .fns
             .iter()
@@ -42,7 +45,18 @@ impl<'a> Interp<'a> {
         let mut last = None;
         for item in &self.c.file.items {
             if let ItemKind::Stmt(s) = &item.kind {
-                self.stmt(s)?;
+                let constant = kavach_resolver::module_const(s).and_then(|id| {
+                    let d = self
+                        .c
+                        .resolution
+                        .defs
+                        .iter()
+                        .position(|d| d.span == Some(id.span))?;
+                    self.c.resolution.module_consts.contains(&d).then_some(d)
+                });
+                if constant.is_none() {
+                    self.stmt(s)?;
+                }
                 last = Some(s.span);
             }
         }

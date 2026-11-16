@@ -25,6 +25,8 @@ pub(crate) const TYPES: &[&str] = &[
     "Shared",
     "Weak",
     "Ring",
+    "StrView",
+    "TextBuilder",
     "Task",
     "Channel",
     "Sender",

@@ -58,11 +58,13 @@ impl<'a> Interp<'a> {
             "replace" => self.str_value(&s.replace(&text(0), &text(1))),
             "lines" => Value::List(Rc::new(s.lines().map(|l| self.str_value(l)).collect())),
             "chars" => Value::List(Rc::new(s.chars().map(Value::Char).collect())),
-            "index_of" => match s.find(&text(0)) {
+            // `s.view()`: all of it; a view is its text here (spec 2.18).
+            "view" | "to_string" if args.is_empty() => self.str_value(s),
+            "index_of" | "find" => match s.find(&text(0)) {
                 Some(byte) => int(s[..byte].chars().count()),
                 None => Value::None,
             },
-            "slice" => self.str_value(
+            "slice" | "view" => self.str_value(
                 &s.chars()
                     .skip(number(0))
                     .take(number(1).saturating_sub(number(0)))

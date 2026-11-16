@@ -227,6 +227,23 @@ impl Checker<'_> {
         }
     }
 
+    /// The value type of map `m` when `target` is `m[k]`: what an
+    /// assignment there stores, where reading `m[k]` gives an optional.
+    pub(crate) fn map_slot(&self, target: &Expr) -> Option<Ty> {
+        let ExprKind::Index { base, .. } = &target.kind else {
+            return None;
+        };
+        let (_, recorded) = self
+            .expr_types
+            .iter()
+            .rev()
+            .find(|(sp, _)| *sp == base.span)?;
+        match self.inf.resolve(recorded) {
+            Ty::Map(_, v) => Some(*v),
+            _ => None,
+        }
+    }
+
     pub(crate) fn check_arena_store(&mut self, target: &Expr, value: &Expr) {
         let Some(&arena) = self.arenas.last() else {
             return;

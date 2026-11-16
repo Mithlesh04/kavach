@@ -72,7 +72,7 @@ fn messages_point_at_the_problem() {
         ),
         (
             "pub let x = 1",
-            &["1: `pub` only goes before a declaration such as `fn` or `type`"],
+            &["1: `pub` only goes before a declaration such as `fn`, `type` or `const`"],
         ),
         ("}", &["1: unexpected `}`: nothing here to close"]),
         (

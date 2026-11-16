@@ -113,6 +113,9 @@ impl<'a> Lowerer<'a> {
             return fused;
         }
         let receiver = self.expr(base)?;
+        if let Some(m) = self.collection_method(base, &name.name) {
+            return self.collection_method_call(m, receiver, args, ty, line, call);
+        }
         let owner = match (
             self.shapes.def_of(receiver.ty),
             self.shapes.shape(receiver.ty),
@@ -280,6 +283,9 @@ impl<'a> Lowerer<'a> {
         for a in args {
             values.push(self.expr(&a.value)?);
         }
+        if let Some(made) = self.view_method(base, &name.name, &mut values, ty, line)? {
+            return Ok(made);
+        }
         let shape = self.shapes.shape(values[0].ty).cloned();
         let is_int = values[0].ty.is_int();
         // `b.is_empty()` on `Bytes` is `b.len() == 0`.
@@ -322,6 +328,10 @@ impl<'a> Lowerer<'a> {
             (Some(Shape::Str), "starts_with") => RtOp::StrStartsWith,
             (Some(Shape::Str), "ends_with") => RtOp::StrEndsWith,
             (Some(Shape::Str), "repeat") => RtOp::StrRepeat,
+            (Some(Shape::List(_)), "enumerate") if values.len() == 1 => {
+                let list = values.pop().expect("the list");
+                return Ok(self.enumerated(list, ty, line));
+            }
             (Some(Shape::List(_)), "len") => RtOp::ListLen,
             (Some(Shape::List(_)), "is_empty") => RtOp::ListIsEmpty,
             (Some(Shape::List(_)), "is_full") => RtOp::ListIsFull,

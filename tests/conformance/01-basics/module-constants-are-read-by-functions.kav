@@ -1,0 +1,25 @@
+// Rule: A `const` at the top level is a module constant: every function of the file reads it, it can be made from other constants and from functions that use no capability, and it is worked out before `main`.
+// Spec: 1.13
+// expect output: 3 particles at 3.5
+// expect output: [2, 4, 6]
+// expect output: HIHI
+
+const count = 3
+const speed: Float = 2.5
+const doubled = [1, 2, 3].map(x => x * 2)
+const greeting = "hi"
+const twice = greeting + greeting
+
+fn step(x: Float) -> Float {
+    x + speed
+}
+
+fn shout() -> String {
+    twice.upper()
+}
+
+fn main() {
+    print("{count} particles at {step(1.0)}")
+    print(doubled)
+    print(shout())
+}

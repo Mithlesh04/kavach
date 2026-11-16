@@ -23,6 +23,7 @@ pub(crate) const NAMES: &[&str] = &[
     "checked_mul",
     "checked_sub",
     "clamp",
+    "clear",
     "client_cert",
     "close",
     "compare",
@@ -38,8 +39,10 @@ pub(crate) const NAMES: &[&str] = &[
     "find_all",
     "first",
     "flat_map",
+    "fract",
     "get",
     "index_of",
+    "insert",
     "is_blank",
     "is_empty",
     "is_full",
@@ -71,6 +74,7 @@ pub(crate) const NAMES: &[&str] = &[
     "pop",
     "protocol",
     "push",
+    "push_char",
     "put",
     "read",
     "read_stream",
@@ -100,6 +104,7 @@ pub(crate) const NAMES: &[&str] = &[
     "text",
     "title",
     "to_list",
+    "to_string",
     "trim",
     "trim_end",
     "trim_start",
@@ -111,6 +116,7 @@ pub(crate) const NAMES: &[&str] = &[
     "upper",
     "value",
     "values",
+    "view",
     "wait",
     "weak",
     "words",
@@ -157,7 +163,8 @@ mod tests {
         let found = arms(include_str!("builtin_methods.rs"), "builtin_method")
             .into_iter()
             .chain(arms(include_str!("more_methods.rs"), "more_methods"))
-            .chain(arms(include_str!("enums.rs"), "enum_method"));
+            .chain(arms(include_str!("enums.rs"), "enum_method"))
+            .chain(arms(include_str!("text_views.rs"), "view_method"));
         let mut missing: Vec<String> = found.filter(|n| !NAMES.contains(&n.as_str())).collect();
         missing.sort();
         missing.dedup();

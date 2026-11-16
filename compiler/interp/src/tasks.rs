@@ -237,6 +237,8 @@ impl<'a> Interp<'a> {
             log: self.log.clone(),
             methods: self.methods.clone(),
             ext_methods: self.ext_methods.clone(),
+            consts: self.consts.clone(),
+            consts_busy: Default::default(),
             frames: vec![frame],
             result: Vec::new(),
             invariant_fields: Vec::new(),
@@ -325,6 +327,7 @@ impl<'a> Interp<'a> {
                     let quiet = &handle.unread.cancelled;
                     quiet.store(true, std::sync::atomic::Ordering::Relaxed);
                     let why = format!("panicked: {message} at {path}:{line}");
+                    kavach_runtime_core::tasks::panic_shown(&why);
                     Err(Flow::Fail(Value::BuiltinError(why.into())))
                 }
                 other => other,

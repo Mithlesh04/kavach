@@ -23,9 +23,12 @@ fn literal_text(e: &ast::Expr) -> Option<String> {
 }
 
 impl<'a> Lowerer<'a> {
-    /// Whether `e` is text.
+    /// Whether `e` is text: a `String`, or a view of one (spec 2.18).
     pub(crate) fn is_text(&self, e: &ast::Expr) -> bool {
-        self.type_at(e.span) == Some(Ty::Prim(Prim::String))
+        matches!(
+            self.type_at(e.span),
+            Some(Ty::Prim(Prim::String) | Ty::Builtin("StrView", _))
+        )
     }
 
     /// `T(text)` giving `ty`.

@@ -47,3 +47,4 @@ Conformance tests for spec chapter [6. Memory](../../../docs/spec/06-memory.md).
 | 6.1 | [text-items-assigned-between-lists.kav](text-items-assigned-between-lists.kav) | `xs[i] = ys[j]` on lists of text copies the item: a copy of `xs` made before, and `ys`, keep theirs. | runs |
 | 6.1 | [text-items-set-from-their-own-list.kav](text-items-set-from-their-own-list.kav) | An item of a list of text set from the same list, itself included, gives what a copy would; a copy made before keeps its items. | runs |
 | 6.1 | [a-map-in-a-field-changes-in-place.kav](a-map-in-a-field-changes-in-place.kav) | `r.names[k] = v` changes the map in the field where it is, directly or through `inout`; a copy made before keeps its entries. | runs |
+| 6.1 | [drop-runs-once-for-copies-on-other-cores.kav](drop-runs-once-for-copies-on-other-cores.kav) | `drop` runs once, for the last holder, when copies go to tasks on other cores or come out of a `Shared` there. | runs |

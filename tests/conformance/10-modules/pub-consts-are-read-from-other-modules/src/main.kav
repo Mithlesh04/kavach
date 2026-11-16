@@ -1,0 +1,10 @@
+// Rule: A `pub const` is read from other modules, as `module.name` or named in `use`; one without `pub` stays in its module.
+// Spec: 1.13, 10.1
+// expect output: swarm 640 1920
+
+use config
+use config.{title}
+
+fn main() {
+    print("{title} {config.width} {config.scaled()}")
+}

@@ -66,7 +66,11 @@ const sums = collections.zip(xs, ys).map(t => add(t.0, t.1))
 
 3. the work is big enough for the GPU to win, and the machine has a GPU. The runtime decides from the list's length and the work per item, which the compiler estimates from the `gpu fn` (its operations, with a loop counted once per round). While the GPU is still opening, at the program's start, only work that would take the CPU longer than opening it waits for it.
 
-Otherwise the same `map` runs on the CPU. The code is the same either way, and so are the results:
+Otherwise the same `map` runs on the CPU. The code is the same either way, and so are the results.
+
+A lambda that would fit but reads a field of a captured record (`q => step(q, peer.x)`) runs on the CPU too, and the compiler warns, naming the field: copy it into a `const` first (`const px = peer.x`, then `q => step(q, px)`).
+
+The code the GPU runs and the code the CPU runs give the same results:
 
 - Whole-number arithmetic is checked on the GPU too: overflow and division by zero panic with the same message as on the CPU, naming the same line inside the `gpu fn`. When several items fail, the GPU may report a different one first.
 - A `map` whose list stays in GPU memory (below) doesn't wait for the GPU to finish, so frames run back to back ([decision 0061](../decisions/0061-gpu-maps-dont-wait.md)). A panic in its `gpu fn` is reported the next time the program reads the list on the CPU, or when another GPU call waits for its own result, or when the program ends, with the message and the `gpu fn`'s line as always; code after the `map` may have run by then.

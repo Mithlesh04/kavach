@@ -261,7 +261,7 @@ impl Checker<'_> {
                                 }
                             }
                         }
-                        _ => {}
+                        t => self.collect_collection_ext(&t, sigs, &e.methods),
                     }
                 }
                 ItemKind::Fn(f) => {

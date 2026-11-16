@@ -28,6 +28,9 @@ impl<'a> Lowerer<'a> {
         // `return`, `break` or `continue` where a value is expected (a
         // `match` arm that gives one): the jump, in a block whose value
         // is never reached.
+        if let Some(&held) = self.held_parts.get(&(e.span.start, e.span.end)) {
+            return Ok(self.local_expr(held, line));
+        }
         if crate::lower::leaves(e) {
             let mut stmts = Vec::new();
             self.expr_stmt(e, &mut stmts)?;
@@ -341,11 +344,7 @@ impl<'a> Lowerer<'a> {
             None if self.c.resolution.ambiguous.contains_key(&id.span.start) => {
                 self.variant_value(ty, &id.name, Vec::new(), line, id.span)
             }
-            _ => Ok(ir::Expr {
-                kind: K::Local(self.local(id)?),
-                ty,
-                line,
-            }),
+            _ => self.local_or_const(id, ty, line),
         }
     }
 

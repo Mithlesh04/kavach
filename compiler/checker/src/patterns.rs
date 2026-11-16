@@ -366,7 +366,12 @@ impl Checker<'_> {
         for t in types {
             if matches!(self.inf.shallow(&result), Ty::Never) {
                 result = t;
-            } else if !self.coerce(&t, &result) {
+            } else if self.coerce(&t, &result) {
+                continue;
+            } else if let Some(lifted) = self.with_none(&result, &t) {
+                // `none` in one branch makes the whole optional (spec 2.7).
+                result = lifted;
+            } else {
                 let (a, b) = (self.show(&result), self.show(&t));
                 self.error(
                     e.span,
@@ -376,6 +381,19 @@ impl Checker<'_> {
             }
         }
         result
+    }
+
+    /// `result` made optional, when branch type `t` is `none`'s; `None`
+    /// when not.
+    fn with_none(&mut self, result: &Ty, t: &Ty) -> Option<Ty> {
+        let none = matches!(self.inf.shallow(t), Ty::Optional(inner)
+            if matches!(self.inf.shallow(&inner), Ty::Var(_)));
+        let plain = !matches!(self.inf.shallow(result), Ty::Optional(_));
+        if !(none && plain) {
+            return None;
+        }
+        let lifted = Ty::Optional(Box::new(self.inf.resolve(result)));
+        self.coerce(t, &lifted).then_some(lifted)
     }
 
     /// A `match` must cover every possible case (spec 4.3).

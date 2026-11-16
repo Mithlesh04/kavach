@@ -1,0 +1,20 @@
+// Rule: Any value can be a key; for floats, 0.0 and -0.0 are one key, and NaN equals NaN as a key or set item, though `==` keeps NaN equal to nothing.
+// Spec: 2.2
+// expect output: not a number
+// expect output: zero
+// expect output: 2
+// expect output: 2
+// expect output: b
+
+fn main() {
+    let zero = 0.0
+    const nan = zero / zero
+    const seen: [Float: String] = [nan: "not a number", 0.0: "zero"]
+    print(seen[nan] ?? "missing")
+    print(seen[-0.0] ?? "missing")
+    print(Set.of(nan, nan, 0.0, -0.0).len())
+    const pairs: [(Float, Int): Int] = [(nan, 1): 1, (nan, 1): 2]
+    print(pairs[(nan, 1)] ?? 0)
+    const nested: [[Int]: String] = [[1, 2]: "a", [1, 2, 3]: "b"]
+    print(nested[[1, 2, 3]] ?? "missing")
+}

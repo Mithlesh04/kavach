@@ -94,3 +94,18 @@ const kept = Ring.capacity(2, ["a", "b", "c"])   // "b", "c"
 ```
 
 A ring has the methods `push`, `len`, `is_empty`, `is_full`, `first`, `last`, `get`, `contains` and `to_list()`, which gives a list of its items, oldest first, with no limit. A ring prints as that list. `Ring<T>` is a type of its own, not a list: a function that takes a `[T]` is never given a ring, so pushing onto a list never drops an item without saying so. Like a list's limit, a ring's size goes with its copies.
+
+**What can be a key.** Any value can be a map's key or a set's item: numbers, text, tuples, records, unions, and lists, maps and sets too. Kavach's values never change in place (6.1), so a key can't change while it is in a map. Keys are compared by value, as `==` compares (1.8), with two rules for floats, so every float has one place:
+
+- `0.0` and `-0.0` are one key.
+- NaN is one key: NaN equals NaN as a key or a set item, though `==` keeps NaN equal to nothing, as IEEE 754 has it.
+
+```kavach
+let zero = 0.0
+const nan = zero / zero
+const seen: [Float: String] = [nan: "not a number", 0.0: "zero"]
+print(seen[nan] ?? "missing")        // not a number
+print(seen[-0.0] ?? "missing")       // zero
+print(Set.of(nan, nan, 0.0, -0.0).len())   // 2
+const grid: [(Int, Int): String] = [(0, 0): "start"]
+```

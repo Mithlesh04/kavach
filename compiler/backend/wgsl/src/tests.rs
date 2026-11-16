@@ -210,6 +210,32 @@ fn main() {
 }
 ";
 
+/// The game engine session's bug: with a task cancelled anywhere, every
+/// function got a stop point (spec 9.6), the GPU's too, which WGSL can't
+/// write, so the pipeline had no module and panicked when made.
+#[test]
+fn a_cancelled_task_leaves_gpu_functions_alone() {
+    let src = SWARM.replace(
+        "fn main() {
+    const _ = gpu.pipeline(place, glow)
+}",
+        "fn main() {
+    const listening = spawn {}
+    const _ = gpu.pipeline(place, glow)
+    listening.cancel()
+}",
+    );
+    assert!(src.contains("listening.cancel()"));
+    let text = pipeline_of(&src);
+    assert!(
+        text.starts_with(
+            "// draw f f | f f f | 1 | 0 | 0
+"
+        ),
+        "{text}"
+    );
+}
+
 #[test]
 fn a_pipeline_is_one_module_with_its_layout_first() {
     let text = pipeline_of(SWARM);

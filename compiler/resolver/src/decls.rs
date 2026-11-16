@@ -88,7 +88,18 @@ impl Resolver {
                         self.define(name, DefKind::Import);
                     }
                 }
-                ItemKind::Use(_) | ItemKind::Extend(_) | ItemKind::Test(_) | ItemKind::Stmt(_) => {}
+                // `const count = 10` at the top level: a module constant
+                // (spec 1.13), known before the functions that read it.
+                ItemKind::Stmt(s) => {
+                    if let Some(id) = module_const(s) {
+                        self.check_snake(id, "constants");
+                        if let Some(d) = self.define(id, DefKind::Local { mutable: false }) {
+                            self.res.module_consts.insert(d);
+                            self.const_spans.insert(id.span.start);
+                        }
+                    }
+                }
+                ItemKind::Use(_) | ItemKind::Extend(_) | ItemKind::Test(_) => {}
             }
         }
     }
@@ -153,6 +164,9 @@ impl Resolver {
     /// `extend<S> App<S>`: each name stands for the parameter of `App` in
     /// its place (spec 2.5); `finish` makes it that parameter.
     fn extend_generics(&mut self, e: &ExtendDecl) {
+        if let Some(items) = self.collection_target(&e.target) {
+            return self.collection_generics(e, &items);
+        }
         let TypeKind::Named { path, args } = &e.target.kind else {
             return;
         };
@@ -176,6 +190,48 @@ impl Resolver {
                     format!("`{}` isn't one of the type's parameters: write it in the type, as `extend<{0}> App<{0}>` (spec 2.5)", g.name.name),
                 ),
             }
+        }
+    }
+
+    /// The item types written in `target` when it is a list, map, set or
+    /// ring (spec 2.5): `[T]`, `[K: V]`, `Set<T>`, `Ring<T>`.
+    fn collection_target<'t>(&self, target: &'t TypeExpr) -> Option<Vec<&'t TypeExpr>> {
+        match &target.kind {
+            TypeKind::List(t) => Some(vec![t]),
+            TypeKind::Map(k, v) => Some(vec![k, v]),
+            TypeKind::Named { path, args } if path.segments.len() == 1 => {
+                let d = *self.res.uses.get(&path.segments[0].span.start)?;
+                let builtin = self.res.defs[d].kind == DefKind::Builtin;
+                let name = path.segments[0].name.as_str();
+                (builtin && matches!(name, "List" | "Map" | "Set" | "Ring"))
+                    .then(|| args.iter().collect())
+            }
+            _ => None,
+        }
+    }
+
+    /// `extend<T> [T]`: each item type is one of the extend's names, so
+    /// its methods work for every item type; `T` stays the extend's own.
+    fn collection_generics(&mut self, e: &ExtendDecl, items: &[&TypeExpr]) {
+        let bare = |t: &TypeExpr| match &t.kind {
+            TypeKind::Named { path, args } if args.is_empty() && path.segments.len() == 1 => {
+                Some(path.segments[0].name.clone())
+            }
+            _ => None,
+        };
+        let names: Vec<Option<String>> = items.iter().map(|t| bare(t)).collect();
+        let named = |n: &str| e.generics.iter().any(|g| g.name.name == n);
+        let mut seen = HashSet::new();
+        let fits = names.len() == e.generics.len()
+            && names.iter().all(|n| {
+                n.as_deref()
+                    .is_some_and(|n| named(n) && seen.insert(n.to_string()))
+            });
+        if !fits {
+            self.error(
+                e.target.span,
+                "an extend of a list, map, set or ring names each item type, so its methods work for every one: write `extend<T> [T]`, `extend<K, V> [K: V]`, `extend<T> Set<T>` or `extend<T> Ring<T>` (spec 2.5)".to_string(),
+            );
         }
     }
 
@@ -360,5 +416,21 @@ impl Resolver {
                 self.define_quiet(name, DefKind::Builtin);
             }
         }
+    }
+}
+
+/// The name of top-level statement `s` when it makes a module constant
+/// (spec 1.13): `const name = …`, of one name.
+pub fn module_const(s: &Stmt) -> Option<&Ident> {
+    match &s.kind {
+        StmtKind::Let {
+            mutable: false,
+            pattern,
+            ..
+        } => match &pattern.kind {
+            PatternKind::Binding(id) => Some(id),
+            _ => None,
+        },
+        _ => None,
     }
 }

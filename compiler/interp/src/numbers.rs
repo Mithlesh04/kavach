@@ -60,6 +60,9 @@ impl<'a> Interp<'a> {
                 }
             }
             (Value::Float(f), "abs") => Value::Float(f.abs()),
+            // `x - floor(x)`, as WGSL's `fract` (spec 14.2).
+            (Value::Float(f), "fract") => Value::Float(f - f.floor()),
+            (Value::Float32(f), "fract") => Value::Float32(f - f.floor()),
             (Value::Float32(f), "abs") => Value::Float32(f.abs()),
             (Value::Float32(f), "near") => match arg(0) {
                 Value::Float32(g) => Value::Bool(kavach_runtime_core::float32_near(*f, g)),

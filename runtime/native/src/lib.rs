@@ -165,7 +165,9 @@ pub fn run_entry(entry: *const u8, fails: bool) -> i32 {
     // `main`'s error first: an end hook that panics ends the program,
     // and the error would be lost.
     let exit_code = if error != 0 {
-        eprintln!("error: {}", display::show_error(error));
+        // A task's panic printed already isn't printed again (9.1).
+        let text = display::show_error(error);
+        eprintln!("{}", kavach_runtime_core::tasks::main_error_line(&text));
         heap::release(error);
         1
     } else {

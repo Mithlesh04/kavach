@@ -57,6 +57,33 @@ pub type Voice {
     pub fn is_playing(self) -> Bool uses Audio {
         audio.playing_id(self.id)
     }
+
+    /// For a voice from `audio.voice`: makes as many frames as it has
+    /// room for, about 50 ms ahead, each with `next`, from `state`; gives
+    /// the state after them. Called once a frame of the program's loop.
+    pub fn fill<S>(self, state: S, next: fn(S) -> (S, Float32, Float32)) -> S uses Audio {
+        const room = audio.voice_room_id(self.id)
+        let s = state
+        let frames: [Float32] = []
+        for _ in 0..room {
+            const (after, left, right) = next(s)
+            s = after
+            frames.push(left)
+            frames.push(right)
+        }
+        audio.voice_feed_id(self.id, frames)
+        s
+    }
+}
+
+/// A voice the program fills with frames it makes, 48,000 a second, by
+/// calling `fill` once a frame: for synthesizers and sound made as a
+/// game runs. Played at `volume` and heard from `pan`, as `play`.
+pub fn voice(volume: Float = 1.0, pan: Float = 0.0) -> Voice ! AudioError uses Audio
+    require volume >= 0.0 and volume <= 4.0 and pan >= -1.0 and pan <= 1.0
+{
+    const v = try audio.voice_id([volume, pan])
+    Voice(id: v)
 }
 
 /// The sound in the bytes of a WAV or Ogg Vorbis file.

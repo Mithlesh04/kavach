@@ -288,11 +288,14 @@ impl<'a> Interp<'a> {
             return Ok(Value::Unit);
         };
         match res.defs[def].kind {
-            DefKind::Local { .. } | DefKind::Param => self
-                .frames
-                .last()
-                .and_then(|f| f.vars.get(&def).cloned())
-                .ok_or_else(|| self.panic(format!("`{}` has no value yet", id.name), span)),
+            DefKind::Local { .. } | DefKind::Param => {
+                match self.frames.last().and_then(|f| f.vars.get(&def).cloned()) {
+                    Some(v) => Ok(v),
+                    // A module constant (spec 1.13).
+                    None if res.module_consts.contains(&def) => self.module_const(def, span),
+                    None => Err(self.panic(format!("`{}` has no value yet", id.name), span)),
+                }
+            }
             DefKind::Result => Ok(self.result.last().cloned().unwrap_or(Value::Unit)),
             DefKind::Field => Ok(self
                 .invariant_fields

@@ -236,6 +236,8 @@ impl Lowerer<'_> {
                 self.error_type()
             }
             Ty::Builtin("Regex", _) => self.shapes.intern(Shape::Regex),
+            // Text in native code for now (`lower_views.rs`).
+            Ty::Builtin("StrView" | "TextBuilder", _) => self.str_type(),
             Ty::Builtin("Sender" | "Receiver", args) if args.len() == 1 => {
                 let inner = self.kir_type(&args[0], span)?;
                 self.shapes.intern(Shape::Channel(inner))

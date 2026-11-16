@@ -68,13 +68,26 @@ impl<'a> Lowerer<'a> {
     /// order (`self` last, if it uses it): their definitions, locals and
     /// types.
     pub(crate) fn captures(&self, f: &ast::Expr) -> (Vec<DefId>, Vec<Local>, Vec<Type>) {
+        self.captures_skipping(f, &[])
+    }
+
+    /// As `captures`, leaving out the names inside the spans of `skip`.
+    pub(crate) fn captures_skipping(
+        &self,
+        f: &ast::Expr,
+        skip: &[(u32, u32)],
+    ) -> (Vec<DefId>, Vec<Local>, Vec<Type>) {
+        let skipped = |at: u32| skip.iter().any(|&(s, e)| at >= s && at < e);
         let mut used: Vec<(u32, DefId)> = self
             .c
             .resolution
             .uses
             .iter()
             .filter(|(at, d)| {
-                **at >= f.span.start && **at < f.span.end && self.local_ids.contains_key(d)
+                **at >= f.span.start
+                    && **at < f.span.end
+                    && !skipped(**at)
+                    && self.local_ids.contains_key(d)
             })
             .map(|(at, d)| (*at, *d))
             .collect();

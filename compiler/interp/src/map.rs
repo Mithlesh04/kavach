@@ -53,7 +53,7 @@ impl<'a> MapValue<'a> {
             .get(&key_hash(key))?
             .iter()
             .copied()
-            .find(|e| self.entries[*e].0 == *key)
+            .find(|e| crate::value::same_key(&self.entries[*e].0, key))
     }
 
     pub fn get(&self, key: &Value<'a>) -> Option<&Value<'a>> {
@@ -100,9 +100,10 @@ fn key_hash(v: &Value<'_>) -> u64 {
 fn hash_into(v: &Value<'_>, h: &mut DefaultHasher) {
     match v {
         Value::Int(n, _) => n.hash(h),
-        // 0.0 and -0.0 are equal, so they hash the same.
-        Value::Float(f) => (f + 0.0).to_bits().hash(h),
-        Value::Float32(f) => (f + 0.0).to_bits().hash(h),
+        // 0.0 and -0.0 are equal, so they hash the same; and every NaN,
+        // equal as a key (spec 2.2).
+        Value::Float(f) => float_bits(*f).hash(h),
+        Value::Float32(f) => float_bits(f64::from(*f)).hash(h),
         // Equal decimals (1.10 and 1.1) have the same value as a float.
         Value::Decimal(d) => d.to_f64().to_bits().hash(h),
         Value::BigInt(n) => n.hash(h),
@@ -153,5 +154,14 @@ fn hash_into(v: &Value<'_>, h: &mut DefaultHasher) {
         Value::Func(def) => def.hash(h),
         Value::Agent(a) => std::rc::Rc::as_ptr(a).hash(h),
         Value::Unit | Value::None | Value::Closure(_) => 0u8.hash(h),
+    }
+}
+
+/// A float's bits for hashing: one for 0.0 and -0.0, one for every NaN.
+fn float_bits(x: f64) -> u64 {
+    if x.is_nan() {
+        f64::NAN.to_bits()
+    } else {
+        (x + 0.0).to_bits()
     }
 }

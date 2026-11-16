@@ -26,7 +26,12 @@ pub fn add_stop_points(functions: &mut [Function]) {
     {
         return;
     }
-    for f in functions.iter_mut().filter(|f| f.external.is_none()) {
+    // Code that runs on the GPU is never cancelled there, and WGSL has no
+    // stop point to write.
+    let gpu = gpu_functions(functions);
+    for (_, f) in
+        (functions.iter_mut().enumerate()).filter(|(i, f)| f.external.is_none() && !gpu.contains(i))
+    {
         let line = f.line;
         blocks_mut(&mut f.body, &mut |b| {
             for s in &mut b.stmts {
@@ -41,6 +46,60 @@ pub fn add_stop_points(functions: &mut [Function]) {
         });
         f.body.stmts.insert(0, stop_point(line));
     }
+}
+
+/// The functions that run on the GPU: those a GPU `map`, `filter` or
+/// reduction, or a draw pipeline, is given, and the ones they call.
+fn gpu_functions(functions: &[Function]) -> std::collections::HashSet<usize> {
+    let mut found: Vec<usize> = Vec::new();
+    for f in functions {
+        any_in_block(&f.body, &mut |e| {
+            if let ExprKind::Rt(op, args) = &e.kind
+                && on_gpu(*op)
+            {
+                for a in args {
+                    if let ExprKind::Closure { func, .. } = &a.kind {
+                        found.push(*func as usize);
+                    }
+                }
+            }
+            false
+        });
+    }
+    let mut seen = std::collections::HashSet::new();
+    while let Some(i) = found.pop() {
+        if !seen.insert(i) {
+            continue;
+        }
+        if let Some(f) = functions.get(i) {
+            any_in_block(&f.body, &mut |e| {
+                if let ExprKind::Call(callee, _) = &e.kind {
+                    found.push(*callee as usize);
+                }
+                false
+            });
+        }
+    }
+    seen
+}
+
+/// Ops whose closures run on the GPU.
+fn on_gpu(op: RtOp) -> bool {
+    matches!(
+        op,
+        RtOp::GpuMap
+            | RtOp::GpuMapStay
+            | RtOp::GpuFilter
+            | RtOp::GpuFilterStay
+            | RtOp::GpuSum
+            | RtOp::GpuMin
+            | RtOp::GpuMax
+            | RtOp::GpuSumLater
+            | RtOp::GpuMinLater
+            | RtOp::GpuMaxLater
+            | RtOp::GpuWarm
+            | RtOp::DrawPipeline
+    )
 }
 
 fn stop_point(line: u32) -> Stmt {

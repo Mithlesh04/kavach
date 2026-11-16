@@ -207,6 +207,18 @@ impl Checker<'_> {
                 one(self, Some(Ty::List(Box::new(Ty::Prim(Prim::UInt8)))));
                 Ty::Prim(Prim::Bytes)
             }
+            // `TextBuilder()`, `TextBuilder(text)` (spec 2.18).
+            "TextBuilder" => {
+                if !args.is_empty() {
+                    let found = one(self, None);
+                    let found = self.inf.resolve(&found);
+                    let string = Ty::Prim(Prim::String);
+                    if !crate::text_views::is_text(&found) && !self.coerce(&found, &string) {
+                        self.mismatch(&args[0].value, &string, &found);
+                    }
+                }
+                Ty::Builtin("TextBuilder", Vec::new())
+            }
             // `Error("disk full")`: an error that is only a message (spec 5.5).
             "Error" => {
                 one(self, Some(Ty::Prim(Prim::String)));
@@ -221,9 +233,9 @@ impl Checker<'_> {
                     }
                     let how = match name {
                         "Set" => {
-                            ": make a set with `Set.of(1, 2, 3)`, or `Set.with_capacity(n)` and `add`"
+                            ": make a set with `Set.of(1, 2, 3)`, or `Set.capacity(n)` and `add`"
                         }
-                        "Map" => ": make a map with `[\"a\": 1]`, or `Map.with_capacity(n)`",
+                        "Map" => ": make a map with `[\"a\": 1]`, or `Map.capacity(n)`",
                         _ => "",
                     };
                     self.error(

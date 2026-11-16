@@ -50,6 +50,10 @@ pub(crate) struct Interp<'a> {
     /// extended with `extend` by name.
     pub(crate) methods: HashMap<DefId, HashMap<&'a str, &'a FnDecl>>,
     pub(crate) ext_methods: HashMap<String, HashMap<&'a str, &'a FnDecl>>,
+    /// Module constants worked out so far, and those being worked out
+    /// (`module_consts.rs`).
+    pub(crate) consts: HashMap<DefId, Value<'a>>,
+    pub(crate) consts_busy: std::collections::HashSet<DefId>,
     pub(crate) frames: Vec<Frame<'a>>,
     /// `result` while checking `ensure` (spec 7.2).
     pub(crate) result: Vec<Value<'a>>,
@@ -151,6 +155,8 @@ impl<'a> Interp<'a> {
             log: None,
             methods: HashMap::new(),
             ext_methods: HashMap::new(),
+            consts: HashMap::new(),
+            consts_busy: Default::default(),
             frames: vec![Frame {
                 vars: HashMap::new(),
                 self_value: None,
@@ -240,6 +246,19 @@ impl<'a> Interp<'a> {
                     }
                 }
                 ItemKind::Extend(e) => {
+                    // `extend<T> [T]`, `extend<K, V> [K: V]` (spec 2.5).
+                    let collection = match &e.target.kind {
+                        TypeKind::List(_) => Some("List"),
+                        TypeKind::Map(..) => Some("Map"),
+                        _ => None,
+                    };
+                    if let Some(kind) = collection {
+                        self.ext_methods
+                            .entry(kind.to_string())
+                            .or_default()
+                            .extend(fn_items(&e.methods));
+                        continue;
+                    }
                     let TypeKind::Named { path, .. } = &e.target.kind else {
                         continue;
                     };

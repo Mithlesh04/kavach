@@ -124,6 +124,7 @@ impl<'a> Interp<'a> {
         // The call panicked (the child printed it): the task's error, as
         // for any task (spec 9.1).
         if let ("panicked", Tree::Text(why)) = (key.as_str(), &value) {
+            kavach_runtime_core::tasks::panic_shown(why);
             return Err(Flow::Fail(Value::BuiltinError(why.as_str().into())));
         }
         let (ok, error) = match &p.ty {

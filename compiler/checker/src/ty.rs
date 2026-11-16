@@ -115,6 +115,8 @@ pub(crate) fn builtin_name(name: &str) -> &'static str {
         "Shared",
         "Weak",
         "Ring",
+        "StrView",
+        "TextBuilder",
         "Task",
         "Channel",
         "Sender",

@@ -119,8 +119,12 @@ impl Parser<'_> {
             TokenKind::Keyword(Keyword::Use) => ItemKind::Use(self.use_decl()),
             TokenKind::Keyword(Keyword::Test) => ItemKind::Test(self.test_decl()),
             _ => {
-                if is_pub {
-                    self.error_here("`pub` only goes before a declaration such as `fn` or `type`");
+                // `pub const name = …`: a module constant others read (1.13).
+                let constant = self.at_kw(Keyword::Const);
+                if is_pub && !constant {
+                    self.error_here(
+                        "`pub` only goes before a declaration such as `fn`, `type` or `const`",
+                    );
                 }
                 ItemKind::Stmt(self.stmt())
             }

@@ -243,3 +243,46 @@ fn a_file_that_is_not_sound_is_refused_at_once() {
     let missing = crate::stream::start("no-such-file.wav", false, controls.clone());
     assert!(missing.err().is_some_and(|e| e.contains("can't be read")));
 }
+
+/// A voice the program fills (`audio.voice`): room for 50 ms at first,
+/// less once fed, and its frames played as given.
+#[test]
+fn a_fed_voice_plays_what_it_is_given() {
+    use crate::stream::{AHEAD, fed, room};
+    let source = fed();
+    assert_eq!(room(&source), AHEAD);
+    let frames: Vec<f32> = (0..200)
+        .flat_map(|k| [k as f32 / 1000.0, -(k as f32) / 1000.0])
+        .collect();
+    source.ring.write(frames.iter().copied());
+    assert_eq!(room(&source), AHEAD - 200);
+    let controls = Arc::new(Controls::new(1.0, 0.0));
+    let empty = Arc::new(SoundData {
+        samples: Vec::new(),
+        channels: 2,
+        rate: source.rate,
+    });
+    let v = Voice {
+        sound: empty,
+        at: 2.0,
+        looped: false,
+        controls,
+        streaming: Some(crate::mixer::Streaming {
+            source,
+            frames: [(0.0, 0.0); 2],
+        }),
+    };
+    let mut voices = vec![v];
+    let mut out = vec![0.0f32; 2 * 300];
+    mix(
+        &mut out,
+        2,
+        crate::stream::VOICE_RATE,
+        &mut voices,
+        &mut |_| {},
+    );
+    assert_eq!((out[2 * 7], out[2 * 7 + 1]), (0.007, -0.007));
+    // Past what was given, silence; the voice goes on, waiting for more.
+    assert_eq!((out[2 * 250], out[2 * 250 + 1]), (0.0, 0.0));
+    assert_eq!(voices.len(), 1);
+}

@@ -1,0 +1,8 @@
+// Rule: A builder's `replace` or `remove` from a start after its end is a panic (a contract).
+// Spec: 2.18
+// expect panic: contract failed: `remove` starts after its end
+
+fn main() {
+    let b = TextBuilder("hello")
+    b.remove(3, 1)
+}

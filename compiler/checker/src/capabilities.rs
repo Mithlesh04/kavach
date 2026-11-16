@@ -239,6 +239,9 @@ impl Checker<'_> {
             .iter()
             .map(|(d, caps)| (*d, caps.iter().cloned().collect()))
             .collect();
+        // Module constants need no capability, but a script's (spec 1.13).
+        let caps = |d: DefId| needed(d, &effective).first().cloned();
+        self.settle_module_consts(file, &caps);
         let mut errors = Vec::new();
         for (d, info) in &infos {
             let name = &info.decl.name.name;

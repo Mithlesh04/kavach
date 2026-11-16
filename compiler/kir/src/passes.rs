@@ -78,6 +78,7 @@ pub(crate) fn finish(
         crate::unused::drop_unused(f);
         crate::sroa::scalarize(f, &l.shapes.list, &holders);
         crate::coalesce::coalesce(f);
+        crate::loop_lens::hoist_loop_lens(f);
         crate::jam::jam_loops(f);
         crate::fuse::fuse_loops(f, &l.shapes.list);
         crate::version::version_loops(f);

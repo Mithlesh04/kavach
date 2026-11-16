@@ -1,0 +1,9 @@
+// Rule: `m[k] = v` stores a value of the map's value type: a map read, which is optional, must be unwrapped first, as for any other `Int`.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    let ids: [Int: Int] = [:]
+    const names = ["a": 5]
+    ids[1] = names["a"]          // error: expected `Int`, found `Int?`
+}

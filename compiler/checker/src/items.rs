@@ -8,6 +8,7 @@ const BOOL: Ty = Ty::Prim(Prim::Bool);
 
 impl Checker<'_> {
     pub(crate) fn check_file(&mut self, file: &File) {
+        self.check_module_consts(file);
         let mut top_level = Vec::new();
         for item in &file.items {
             match &item.kind {
@@ -54,7 +55,10 @@ impl Checker<'_> {
                     });
                     self.current_test = None;
                 }
-                ItemKind::Stmt(s) => top_level.push(s.clone()),
+                ItemKind::Stmt(s) if self.module_const_def(s).is_none() => {
+                    top_level.push(s.clone())
+                }
+                ItemKind::Stmt(_) => {}
                 ItemKind::Interface(_) | ItemKind::Capability(_) | ItemKind::Use(_) => {}
             }
         }
@@ -299,7 +303,10 @@ impl Checker<'_> {
                 self.check_unsafe_index_target(target);
                 self.check_captured_change(target);
                 if !user {
-                    self.check_expect(value, &t);
+                    // `m[k] = v` stores a value, not the optional a read
+                    // of `m[k]` gives (spec 2.2).
+                    let slot = self.map_slot(target).unwrap_or(t);
+                    self.check_expect(value, &slot);
                 }
                 self.check_arena_store(target, value);
             }

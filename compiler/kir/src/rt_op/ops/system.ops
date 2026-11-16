@@ -258,3 +258,10 @@ AudioStream,
 /// bytes `a` (owned): its number, width and height (can fail)
 /// (`runtime/native/src/rt_draw.rs`).
 DrawCompressed,
+/// A voice the program fills (`audio.voice`, spec 14.27): start one with
+/// volume and pan `a` (owned; can fail), how many frames voice `a` takes
+/// now, and frames `b` (owned, left and right in turn) given to voice `a`
+/// (`runtime/native/src/rt_audio.rs`).
+AudioVoice,
+AudioVoiceRoom,
+AudioVoiceFeed,

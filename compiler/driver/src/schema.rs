@@ -16,7 +16,7 @@ use kavach_runtime_core::json::dates::Kind;
 /// in `{"value": …}`; `None` for a type a schema can't express (a map, a
 /// tuple, a function).
 pub fn ask_schema(c: &Compiled, t: &Ty) -> Option<(Tree, bool)> {
-    let s = Schemas { c };
+    let s = Schemas::new(c);
     let inner = s.schema(t)?;
     // A model answers closed objects only, so maps stay out of `ask`,
     // wherever one hides; and it writes base64 badly, so `Bytes` do too.
@@ -39,7 +39,7 @@ pub fn ask_schema(c: &Compiled, t: &Ty) -> Option<(Tree, bool)> {
 /// The JSON Schema of `t` (`json.schema<T>()`, spec 2.12), or `None`
 /// for a type with none (maps, tuples, functions).
 pub fn json_schema(c: &Compiled, t: &Ty) -> Option<Tree> {
-    Schemas { c }.schema(t)
+    Schemas::new(c).schema(t)
 }
 
 /// The description of the function `arg` names, for `json.describe`
@@ -68,7 +68,7 @@ fn describe(c: &Compiled, def: kavach_resolver::DefId, ty: &Ty, any: bool) -> Op
     let Ty::Fn(params, ret, _) = ty else {
         return None;
     };
-    let schema = |t: &Ty| match (Schemas { c }).schema(t) {
+    let schema = |t: &Ty| match (Schemas::new(c)).schema(t) {
         None if any => Some(Tree::Object(Vec::new())),
         found => found,
     };
@@ -135,9 +135,53 @@ fn kind(k: &str) -> Tree {
 
 struct Schemas<'c> {
     c: &'c Compiled,
+    /// What each type parameter of the generic records being described
+    /// stands for: `T` is `Item` inside `Page<Item>`.
+    args: std::cell::RefCell<std::collections::HashMap<DefId, Ty>>,
 }
 
 impl<'c> Schemas<'c> {
+    fn new(c: &'c Compiled) -> Self {
+        Schemas {
+            c,
+            args: Default::default(),
+        }
+    }
+
+    /// `t` with each type parameter replaced by what it stands for.
+    fn apply(&self, t: &Ty) -> Ty {
+        let one = |t: &Ty| Box::new(self.apply(t));
+        match t {
+            Ty::Param(d) => self.args.borrow().get(d).cloned().unwrap_or(Ty::Param(*d)),
+            Ty::List(x) => Ty::List(one(x)),
+            Ty::Set(x) => Ty::Set(one(x)),
+            Ty::Optional(x) => Ty::Optional(one(x)),
+            Ty::Map(k, v) => Ty::Map(one(k), one(v)),
+            Ty::Tuple(xs) => Ty::Tuple(xs.iter().map(|x| self.apply(x)).collect()),
+            Ty::Adt(d, xs) => Ty::Adt(*d, xs.iter().map(|x| self.apply(x)).collect()),
+            other => other.clone(),
+        }
+    }
+
+    /// Record or union `def` with type arguments `args` (`Page<Item>`).
+    fn instance_schema(&self, def: DefId, args: &[Ty]) -> Option<Tree> {
+        let args: Vec<Ty> = args.iter().map(|a| self.apply(a)).collect();
+        let params: Vec<DefId> = self
+            .decl(def)?
+            .generics
+            .iter()
+            .filter_map(|g| {
+                let defs = &self.c.resolution.defs;
+                defs.iter().position(|d| d.span == Some(g.name.span))
+            })
+            .collect();
+        let saved = self.args.borrow().clone();
+        self.args.borrow_mut().extend(params.into_iter().zip(args));
+        let made = self.type_schema(def);
+        *self.args.borrow_mut() = saved;
+        made
+    }
+
     /// The declaration of record or union `def`.
     fn decl(&self, def: DefId) -> Option<&'c TypeDecl> {
         self.item(def).map(|(_, t)| t)
@@ -176,7 +220,12 @@ impl<'c> Schemas<'c> {
                 ("type".into(), text("object")),
                 ("additionalProperties".into(), self.schema(v)?),
             ]),
-            Ty::Adt(def, _) => self.type_schema(*def)?,
+            Ty::Adt(def, args) => self.instance_schema(*def, args)?,
+            // A generic record's field: what `T` stands for here.
+            Ty::Param(_) => match self.apply(t) {
+                Ty::Param(_) => return None,
+                known => self.schema(&known)?,
+            },
             _ => return None,
         })
     }

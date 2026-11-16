@@ -350,7 +350,7 @@
         },
         {
           "name": "support.type.kavach",
-          "match": "\\b(List|Map|Set|Ring|Shared|Weak|Task|Channel|Sender|Receiver|Duration|Ptr|Error|Self)\\b"
+          "match": "\\b(List|Map|Set|Ring|StrView|TextBuilder|Shared|Weak|Task|Channel|Sender|Receiver|Duration|Ptr|Error|Self)\\b"
         },
         {
           "name": "support.class.capability.kavach",

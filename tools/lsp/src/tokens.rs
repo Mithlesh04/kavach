@@ -305,6 +305,9 @@ impl VisitMut for Marks<'_> {
                 };
                 self.mark(id, ty, IMPORTED);
             }
+            // The program's own function used as a value, `[add, sub]` or
+            // `xs.map(double)`: a function, not a variable.
+            ExprKind::Name(id) if self.kind(id) == Some(DefKind::Fn) => self.mark(id, FUNCTION, 0),
             _ => {}
         }
         walk_expr(self, e);
@@ -324,7 +327,7 @@ mod tests {
         std::fs::create_dir_all(&src).unwrap();
         std::fs::write(dir.join("kavach.toml"), "[package]\nname = \"demo\"\n").unwrap();
         // A variant made with its fields is no method: `E.BadQty(…)`.
-        let main = "use orders\n\ntype E = BadQty(item: String)\n\nfn main() {\n    const नाम = \"a\"\n    print(नाम.len() + orders.total())\n    print(E.BadQty(item: \"x\"))\n}\n";
+        let main = "use orders\n\ntype E = BadQty(item: String)\n\nfn twice(n: Int) -> Int {\n    n * 2\n}\n\nfn main() {\n    const नाम = \"a\"\n    print(नाम.len() + orders.total())\n    print(E.BadQty(item: \"x\"))\n    const f = twice\n    print(f(2))\n}\n";
         std::fs::write(src.join("main.kav"), main).unwrap();
         std::fs::write(
             src.join("orders.kav"),
@@ -336,7 +339,8 @@ mod tests {
         let got = json_line(&path(&src.join("main.kav")));
         let broken = json_line(&path(&dir.join("broken.kav")));
         std::fs::remove_dir_all(&dir).unwrap();
-        let tokens = r#""tokens":[[6,14,3,"method",["defaultLibrary"]],[6,22,6,"namespace",["imported"]],[6,29,5,"function",["imported"]]]"#;
+        // `twice` used as a value is a function too.
+        let tokens = r#""tokens":[[10,14,3,"method",["defaultLibrary"]],[10,22,6,"namespace",["imported"]],[10,29,5,"function",["imported"]],[12,14,5,"function",[]]]"#;
         assert!(got.ends_with(&format!("{tokens}}}")), "{got}");
         assert!(broken.contains(r#""error":"#), "{broken}");
     }

@@ -253,9 +253,19 @@ impl Checker<'_> {
                 .is_some_and(|d| self.gpu_fns.contains(d)),
             ExprKind::Lambda { params, body } if params.len() == 1 => {
                 let param = self.decl.get(&params[0].name.span.start).copied();
-                let mut calls_gpu = false;
-                self.lambda_fits(body, param, &mut captures, &mut calls_gpu)
-                    && (calls_gpu || matches!(kind, GpuCall::Sum | GpuCall::Filter))
+                let (mut calls_gpu, mut fields) = (false, Vec::new());
+                let fits =
+                    self.lambda_fits(body, param, &mut captures, &mut calls_gpu, &mut fields)
+                        && (calls_gpu || matches!(kind, GpuCall::Sum | GpuCall::Filter));
+                // `q => step(q, peer.x)`: on the CPU, and said (spec 15.2).
+                if let (true, Some(&(span, ref shown))) = (fits, fields.first()) {
+                    let base = shown.split('.').next().unwrap_or(shown);
+                    self.warn(
+                        span,
+                        &format!("this runs on the CPU, not the GPU: it reads `{shown}`, a field of the captured record `{base}`, and a GPU `map` takes only captured numbers (spec 15.2); copy it into a `const` first and use that"),
+                    );
+                }
+                fits && fields.is_empty()
             }
             _ => false,
         };
@@ -267,12 +277,15 @@ impl Checker<'_> {
 
     /// Whether lambda body `e` is only `param`, numbers, captured names
     /// and calls to `gpu fn`s, joined by operators.
+    /// `fields` gets each field of a captured record it reads, which
+    /// would fit as a captured number of its own.
     fn lambda_fits(
         &self,
         e: &Expr,
         param: Option<DefId>,
         captures: &mut Vec<DefId>,
         calls_gpu: &mut bool,
+        fields: &mut Vec<(Span, String)>,
     ) -> bool {
         match &e.kind {
             ExprKind::Int(_) | ExprKind::Float(_) | ExprKind::Bool(_) => true,
@@ -290,7 +303,7 @@ impl Checker<'_> {
                 _ => false,
             },
             ExprKind::Unary(UnaryOp::Neg | UnaryOp::Not, x) => {
-                self.lambda_fits(x, param, captures, calls_gpu)
+                self.lambda_fits(x, param, captures, calls_gpu, fields)
             }
             // A field of the item: `p.x`, or `p.0` of a tuple.
             ExprKind::Field {
@@ -298,14 +311,36 @@ impl Checker<'_> {
                 optional: false,
                 ..
             }
-            | ExprKind::TupleField { base, .. } => matches!(&base.kind, ExprKind::Name(id)
-                if param.is_some() && self.res.uses.get(&id.span.start).copied() == param),
+            | ExprKind::TupleField { base, .. } => {
+                let ExprKind::Name(id) = &base.kind else {
+                    return false;
+                };
+                let d = self.res.uses.get(&id.span.start).copied();
+                if param.is_some() && d == param {
+                    return true;
+                }
+                // A field of a captured record: noted, to be warned about.
+                let captured = d.is_some_and(|d| {
+                    matches!(
+                        self.res.defs[d].kind,
+                        DefKind::Local { .. } | DefKind::Param
+                    )
+                });
+                if captured {
+                    let name = match &e.kind {
+                        ExprKind::Field { name, .. } => name.name.clone(),
+                        _ => "…".to_string(),
+                    };
+                    fields.push((e.span, format!("{}.{name}", id.name)));
+                }
+                captured
+            }
             ExprKind::Binary(op, l, r) => {
                 !matches!(
                     op,
                     BinaryOp::Default | BinaryOp::Range | BinaryOp::RangeInclusive
-                ) && self.lambda_fits(l, param, captures, calls_gpu)
-                    && self.lambda_fits(r, param, captures, calls_gpu)
+                ) && self.lambda_fits(l, param, captures, calls_gpu, fields)
+                    && self.lambda_fits(r, param, captures, calls_gpu, fields)
             }
             ExprKind::Call { callee, args, .. } => {
                 let ExprKind::Name(id) = &callee.kind else {
@@ -318,7 +353,8 @@ impl Checker<'_> {
                     .is_some_and(|d| self.gpu_fns.contains(d));
                 *calls_gpu |= gpu;
                 gpu && args.iter().all(|a| {
-                    a.name.is_none() && self.lambda_fits(&a.value, param, captures, calls_gpu)
+                    a.name.is_none()
+                        && self.lambda_fits(&a.value, param, captures, calls_gpu, fields)
                 })
             }
             _ => false,

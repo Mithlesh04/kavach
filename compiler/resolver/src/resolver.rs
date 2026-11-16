@@ -32,6 +32,8 @@ pub(crate) struct Resolver {
     /// `extend<S> App<S>`: each name the extend gives, the type, and the
     /// place of the parameter it names, made the type's own at the end.
     pub(crate) extend_params: Vec<(DefId, DefId, usize)>,
+    /// Where each module constant's name is written (spec 1.13).
+    pub(crate) const_spans: std::collections::HashSet<u32>,
 }
 
 impl Resolver {
@@ -49,6 +51,7 @@ impl Resolver {
             type_ids: HashMap::new(),
             type_params: HashMap::new(),
             extend_params: Vec::new(),
+            const_spans: Default::default(),
         };
         let builtins = prelude::TYPES
             .iter()
@@ -306,7 +309,7 @@ impl Resolver {
     }
 
     /// The visible name closest to `name`, if it is close enough to be a typo.
-    fn suggest(&self, name: &str) -> Option<String> {
+    pub(crate) fn suggest(&self, name: &str) -> Option<String> {
         let candidates = self
             .scopes
             .iter()

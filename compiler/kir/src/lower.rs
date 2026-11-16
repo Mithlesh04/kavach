@@ -3,7 +3,7 @@
 use crate::Unsupported;
 use crate::collect::collect_functions;
 use crate::ir::{self, FuncId, Local, Program, Shape, Stmt, Type};
-use crate::types::{Shapes, prim_type};
+use crate::types::Shapes;
 use kavach_ast::{self as ast, ExprKind, ItemKind, StmtKind, TypeKind};
 use kavach_driver::Compiled;
 use kavach_resolver::{DefId, DefKind};
@@ -52,6 +52,9 @@ pub(crate) struct Lowerer<'a> {
     /// every way out of it.
     pub(crate) ensures: &'a [ast::Expr],
     pub(crate) self_local: Option<Local>,
+    /// Parts of a spawned call worked out before its task, by span
+    /// (`lower_tasks/args.rs`): read from these locals in the task.
+    pub(crate) held_parts: HashMap<(u32, u32), Local>,
     /// The local holding the record whose `invariant` is being lowered.
     pub(crate) invariant_of: Option<(Local, Type)>,
     /// A place is emptied for a moment while its list changes in place:
@@ -65,6 +68,10 @@ pub(crate) struct Lowerer<'a> {
     pub(crate) generic_fns: HashMap<DefId, &'a ast::FnDecl>,
     /// Methods of generic records and unions, by type and name.
     pub(crate) generic_methods: HashMap<(DefId, String), &'a ast::FnDecl>,
+    /// Methods added to lists, maps, sets and rings (`lower_ext.rs`).
+    pub(crate) ext: crate::lower_ext::CollectionMethods<'a>,
+    /// Module constants (`lower_consts.rs`).
+    pub(crate) consts: crate::lower_consts::Consts<'a>,
     /// Instances made so far: (function or owner type, name, type
     /// arguments). Methods have no definition of their own, so the name
     /// tells them apart.
@@ -130,6 +137,7 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
         result: None,
         ensures: &[],
         self_local: None,
+        held_parts: HashMap::new(),
         invariant_of: None,
         emptying: false,
         its: Vec::new(),
@@ -142,6 +150,8 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
         pending_error: None,
         generic_fns: HashMap::new(),
         generic_methods: HashMap::new(),
+        ext: Default::default(),
+        consts: Default::default(),
         instances: HashMap::new(),
         fn_subst: HashMap::new(),
         subst: HashMap::new(),
@@ -177,6 +187,9 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
                 }
             }
             ItemKind::Extend(e) => {
+                if l.add_collection_methods(e) {
+                    continue;
+                }
                 let TypeKind::Named { path, .. } = &e.target.kind else {
                     continue;
                 };
@@ -190,7 +203,8 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
                 };
                 l.add_methods(&e.methods, owner);
             }
-            ItemKind::Stmt(s) => top_level.push(s),
+            ItemKind::Stmt(s) if !l.note_const(s) => top_level.push(s),
+            ItemKind::Stmt(_) => {}
             ItemKind::Use(_) | ItemKind::Interface(_) => {}
             ItemKind::Capability(cap) => {
                 if let Some(&def) = l.decl.get(&cap.name.span.start) {
@@ -243,6 +257,7 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
     };
     // How tasks run, and each `Drop` type's `drop`, first (9.8, 6.1).
     let mut registers = l.program_start()?;
+    registers.extend(l.const_starts()?);
     // A child of `spawn process` runs its call instead (9.8).
     registers.extend(l.process_starts());
     collect_functions(&mut l, &mut functions, &mut failed)?;
@@ -369,27 +384,6 @@ impl<'a> Lowerer<'a> {
         self.result = None;
         self.ensures = &[];
         self.self_local = None;
-    }
-
-    /// The type a method's `self` has.
-    pub(crate) fn owner_type(&mut self, owner: &Owner, span: ast::Span) -> Lowered<Type> {
-        match owner {
-            Owner::Adt(def) => {
-                // In an instance of a generic type's method, `self` has
-                // the instance's type arguments.
-                let args = self
-                    .type_generics(*def)
-                    .iter()
-                    .map(|g| self.subst.get(g).copied())
-                    .collect::<Option<Vec<_>>>()
-                    .ok_or_else(|| self.unsupported("this method", span))?;
-                self.adt_instance(*def, args, span)
-            }
-            Owner::Builtin(name) if name == "String" => Ok(self.str_type()),
-            Owner::Builtin(name) => kavach_checker::Prim::from_name(name)
-                .and_then(prim_type)
-                .ok_or_else(|| self.unsupported(format!("methods on `{name}`"), span)),
-        }
     }
 
     /// The declaration of program function `fid`.

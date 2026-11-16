@@ -32,6 +32,7 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.4 | [freeze-is-only-for-tests.kav](freeze-is-only-for-tests.kav) | `time.freeze` outside a `test` block is a compile error. | compile error |
 | 14.5 | [math-functions.kav](math-functions.kav) | std.math has sqrt, pow, floor, ceil, round, pi and e. | runs |
 | 14.5 | [math-angles-exp-and-ln.kav](math-angles-exp-and-ln.kav) | `std.math` has `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `exp` and `ln`, for `Float` and `Float32`. | runs |
+| 14.5 | [math-roots-logs-and-gamma.kav](math-roots-logs-and-gamma.kav) | `std.math` has `log10`, `cbrt`, `hypot`, `remainder`, `erfc` and `lgamma`; `remainder` rounds to even at a tie. | runs |
 | 14.6 | [cli-parse-reads-options.kav](cli-parse-reads-options.kav) | cli.parse reads options into a record; fields with defaults are optional. | runs |
 | 14.6 | [cli-parse-reports-missing-options.kav](cli-parse-reports-missing-options.kav) | A field with no default is a required option; cli.parse says which is missing, then the usage. | runs |
 | 14.6 | [cli-parse-reads-a-command.kav](cli-parse-reads-a-command.kav) | cli.parse into a union reads the first argument as the command and the rest as its options. | runs |
@@ -89,6 +90,7 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.11, 14.10 | [http-requests-know-who-sent-them.kav](http-requests-know-who-sent-them.kav) | A served `Request` has `peer`, the address of whoever opened the connection, as `conn.peer()` gives it. | runs |
 | 14.11 | [http-json-shares-types.kav](http-json-shares-types.kav) | A server and its client share types through `std.http`'s JSON calls; a status other than 2xx is `Status`, a body of the wrong shape `BadJson`. | runs |
 | 14.2 | [float-bits-round-trip.kav](float-bits-round-trip.kav) | `x.bits()` gives a `Float`'s IEEE 754 bits; `Float.from_bits(n)` gives it back. | runs |
+| 14.2 | [fract-is-the-part-above-the-floor.kav](fract-is-the-part-above-the-floor.kav) | `x.fract()` is `x - math.floor(x)`, never negative, for `Float` and `Float32`. | runs |
 | 14.14 | [grpc-messages-are-protocol-buffers.kav](grpc-messages-are-protocol-buffers.kav) | `grpc.encode<T>` writes Protocol Buffers with field `n` the type's `n`th field; `grpc.decode<T>` reads them back. | runs |
 | 14.14, 2.11 | [grpc-refuses-secret-fields.kav](grpc-refuses-secret-fields.kav) | A value holding a `secret` field can't become a gRPC message: `grpc.encode<T>` with such a `T` is a compile error. | compile error |
 | 14.14 | [grpc-unions-are-oneof-messages.kav](grpc-unions-are-oneof-messages.kav) | A union field travels as a wrapper message holding a oneof; one that never arrived fails to decode. | runs |

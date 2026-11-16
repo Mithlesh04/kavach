@@ -42,7 +42,7 @@ fn main() {
 }
 ```
 
-For scripts, the entry file may contain top-level statements instead. They become the body of `main`.
+For scripts, the entry file may contain top-level statements instead. They become the body of `main`. A top-level `const` is a module constant instead (1.13), in any file, even one with `fn main`; in a script, one that uses a capability stays a statement, as 1.13 shows.
 
 ```kavach
 print("Hello, world!")
@@ -211,14 +211,18 @@ print(["a": 1, "b": 2] == ["b": 2, "a": 1])   // true: order doesn't count
 print([1, 2] == [2, 1])                // false: lists keep order
 ```
 
-**Order** (`<`, `<=`, `>`, `>=`, and `sort`, `sort_by`, `min`, `max` in 14.2) is defined for numbers, text, characters, `Bool` and tuples of them. Other values have no order, and comparing them is a compile error.
+**Order** (`<`, `<=`, `>`, `>=`, and `sort`, `sort_by`, `min`, `max` in 14.2) is defined for numbers, text, characters, `Bool`, and tuples, lists, rings and text views (2.18) of them, and `Bytes`. Other values have no order, and comparing them is a compile error: a set or a map has none (compare `s.sorted()` instead), nor an optional.
 
 - Text compares character by character, by Unicode code point: every capital letter comes before every small one, and letters with accents come after both, so `"Apple" < "apple" < "zebra" < "Éclair"`. It is not dictionary order for any language.
 - `false` comes before `true`.
 - Tuples compare item by item: the first pair that differs decides, so sorting by `(age, name)` sorts by age, then by name among equal ages.
+- Lists, rings and `Bytes` compare the same way, item by item (a byte for `Bytes`); when one runs out first, it is the smaller: `[1, 5] < [2, 3]` and `[1, 2] < [1, 2, 3]`. A list of lists, or of tuples, sorts too. The whole comparison is one `Bool`: it is not item by item as some array libraries are, where `[1, 5] < [2, 3]` would be `[true, false]`.
 
 ```kavach
 print((30, "Asha") < (30, "Ravi"))     // true: equal ages, so the names decide
+print([1, 5] < [2, 3])                 // true: 1 < 2 decides
+print([1, 2] < [1, 2, 3])              // true: the shorter runs out first
+print([[2, 1], [1, 9]].sort())         // [[1, 9], [2, 1]]
 const by_age = people.sort_by(p => (p.age, p.name))
 ```
 
@@ -343,6 +347,56 @@ const [config: [port = 8080]] = settings  // settings: [String: [String: Int]]
 
 - When the part a nested pattern takes apart may be missing (a list item, a map value, a `T?` field), every name inside it is `none` when it is, so their types are optional, unless they have defaults. A part with a default of its own (`[x, y] = [0, 0]`) is never missing.
 - With `let`, the names are variables; with `const`, they never change.
+
+## 1.13 Module constants
+
+A `const` at the top level of a file, outside any function, is a **module constant**: every function in the file can read it. `pub const` lets other modules read it too, as `module.name` or through `use` (10.1).
+
+```kavach
+const count = 1_000_000
+const speed: Float32 = 2.5
+pub const version = "1.4"
+
+fn step(x: Float32) -> Float32 {
+    x + speed
+}
+
+fn main() {
+    print("{count} particles at {step(0.0)}")
+}
+```
+
+- A module constant is worked out once, before `main` starts, in the order the constants are written, the constants of a module a file uses before its own. Its value never changes, as any `const`'s.
+- Its value may use numbers, text, other module constants, and calls of functions, but no capability, and nothing that can fail without `catch` (5.3): it is worked out before `main` has run anything.
+
+**A `const` that uses a capability** means one of two things, by whether the file has `fn main`:
+
+| The file | `const notes = fs.read_text("notes.txt") catch ""` at the top level |
+|---|---|
+| Has `fn main` | An error: a module constant is worked out before `main`, which hasn't run anything yet. Write `let`, or work it out in `main` |
+| Is a script, with no `fn main` (1.3) | One of the script's statements, run in its place, as the script's other lines are. It isn't a module constant: a function can't read it, and the error says to pass it as an argument |
+
+```kavach
+// A script: no `fn main`.
+use std.fs
+
+const notes = fs.read_text("notes.txt") catch "missing"   // a statement of the script
+const limit = 3                                            // a module constant
+
+fn show() -> String {
+    "{limit}"            // fine; reading `notes` here is an error
+}
+
+print(show())
+print(notes)
+```
+
+The difference keeps a script's first line, `const text = try fs.read_text(path)`, as natural as it reads, while a program with `fn main` has one kind of top-level `const` only.
+
+- A `let` at the top level is a statement of `main` (1.3), and so is every other statement there. So is a `const` that names several values at once (`const (a, b) = pair()`).
+- In a native program, a read works the value out again, giving the same value, since nothing it uses can change; the interpreter keeps it. Either way, every constant is worked out once before `main`, so a panic in one comes first.
+- Its name is `snake_case`, as any value's (1.5): `const COUNT = 10` is an error that says so.
+- A panic while working one out stops the program before `main` starts, with the constant's line.
 
 ## Open questions
 

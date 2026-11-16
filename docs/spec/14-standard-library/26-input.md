@@ -38,7 +38,7 @@ A `Pad` is a record:
 | `buttons: [String]` | The buttons held now |
 | `left`, `right: (x: Float, y: Float)` | Where each stick is: `x` from -1 (left) to 1 (right), `y` from -1 (down) to 1 (up) |
 | `left_trigger`, `right_trigger: Float` | How far each trigger is pressed, from 0 to 1 |
-| `gyro: (x: Float, y: Float, z: Float)?` | How fast the pad turns, in radians a second, about its x axis (pitch, its far edge up), y (yaw, turning left) and z (roll, its right side down); `none` for a pad with no gyroscope |
+| `gyro: (x: Float, y: Float, z: Float)?` | How fast the pad turns, in radians a second, about its x axis (pitch, its far edge up), y (yaw, turning left) and z (roll, its right side down); `none` for a pad with no gyroscope, and by default in a `Pad` made by hand |
 
 The buttons are named by their place, not by the letter printed on them, as keys are named by their place (14.22): `South` is A on an Xbox pad and Cross on a PlayStation pad. They are `South`, `East`, `North`, `West`, `LeftBumper`, `RightBumper`, `LeftTrigger`, `RightTrigger`, `Select`, `Start`, `Mode`, `LeftStick` and `RightStick` (the sticks pressed in), `DPadUp`, `DPadDown`, `DPadLeft` and `DPadRight`.
 

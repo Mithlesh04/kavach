@@ -218,11 +218,31 @@ fn fields_text(name: &str, fields: &[FieldShape], items: &[u64]) -> String {
     format!("{name}({})", parts.join(", "))
 }
 
+thread_local! {
+    /// Whether `equal` is comparing map keys or set items, where NaN
+    /// equals NaN (spec 2.2); `==` keeps IEEE's NaN, equal to nothing.
+    static KEYS: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+/// Whether `a` and `b` are the same key of a map or item of a set (spec
+/// 2.2): equal, with any NaN, however deep, equal to NaN.
+pub fn same_key(a: i64, b: i64, ty: Type) -> bool {
+    let before = KEYS.with(|k| k.replace(true));
+    let same = equal(a, b, ty);
+    KEYS.with(|k| k.set(before));
+    same
+}
+
+/// Two floats equal: by value, NaN equal to NaN only as keys.
+fn same_float(x: f64, y: f64) -> bool {
+    x == y || (x.is_nan() && y.is_nan() && KEYS.with(std::cell::Cell::get))
+}
+
 /// Structural equality (spec 1.8), without consuming either value.
 pub fn equal(a: i64, b: i64, ty: Type) -> bool {
     match ty {
-        Type::F64 => f64::from_bits(a as u64) == f64::from_bits(b as u64),
-        Type::F32 => f32_of(a) == f32_of(b),
+        Type::F64 => same_float(f64::from_bits(a as u64), f64::from_bits(b as u64)),
+        Type::F32 => same_float(f64::from(f32_of(a)), f64::from(f32_of(b))),
         Type::Ref(_) => {
             // One value in memory (a copy not yet changed, or a part two
             // values share) is equal to itself: no need to look inside
@@ -340,8 +360,29 @@ fn same_entries(a: i64, b: i64, kt: Type, same: impl Fn(i64, i64) -> bool) -> bo
     }
 }
 
-/// Ordering of text, decimals and tuples (spec 1.8).
+/// Ordering of text, decimals, tuples, lists, rings and `Bytes` (spec 1.8).
 pub fn compare(a: i64, b: i64) -> Ordering {
+    // Lists and rings item by item, the shorter first when one runs out;
+    // `Bytes` byte by byte.
+    match shape(obj(a).ty()) {
+        Shape::List(t) => {
+            let t = *t;
+            return with_items(a, |x| {
+                with_items(b, |y| {
+                    x.iter()
+                        .zip(y)
+                        .map(|(p, q)| crate::rt_text::order(*p as i64, *q as i64, t))
+                        .find(|o| o.is_ne())
+                        .unwrap_or_else(|| x.len().cmp(&y.len()))
+                })
+            });
+        }
+        Shape::Bytes => {
+            use crate::rt_bytes::with_bytes;
+            return with_bytes(a, |x| with_bytes(b, |y| x.cmp(y)));
+        }
+        _ => {}
+    }
     // Tuples order item by item, the first that differs deciding (1.8).
     if let Shape::Tuple(ts) = shape(obj(a).ty()) {
         return with_items(a, |x| {
@@ -376,9 +417,10 @@ pub fn hash_slot(slot: i64, ty: Type) -> u64 {
 
 fn hash_into(slot: i64, ty: Type, h: &mut FastHasher) {
     match ty {
-        // 0.0 and -0.0 are equal, so they hash the same.
-        Type::F64 => (f64::from_bits(slot as u64) + 0.0).to_bits().hash(h),
-        Type::F32 => (f32_of(slot) + 0.0).to_bits().hash(h),
+        // 0.0 and -0.0 are equal, so they hash the same; and every NaN,
+        // equal as a key (spec 2.2).
+        Type::F64 => float_bits(f64::from_bits(slot as u64)).hash(h),
+        Type::F32 => float_bits(f64::from(f32_of(slot))).hash(h),
         Type::Ref(_) if slot == 0 => 0u8.hash(h),
         Type::Ref(_) => match shape(ty) {
             Shape::Iface { .. } => {
@@ -436,5 +478,14 @@ fn hash_into(slot: i64, ty: Type, h: &mut FastHasher) {
             }
         },
         _ => slot.hash(h),
+    }
+}
+
+/// A float's bits for hashing: one for 0.0 and -0.0, one for every NaN.
+fn float_bits(x: f64) -> u64 {
+    if x.is_nan() {
+        f64::NAN.to_bits()
+    } else {
+        (x + 0.0).to_bits()
     }
 }
