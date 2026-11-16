@@ -1,0 +1,18 @@
+use std.vec
+use std.math
+
+fn main() {
+    const s = Mat3.scaling(Vec3(x: 2.0, y: 3.0, z: 4.0))
+    const v = Vec3(x: 1.0, y: 2.0, z: 3.0)
+    print(s @ v)
+    print(s.determinant())
+    const back = s.inverse() ?? Mat3.identity()
+    print(back @ (s @ v))
+    print(Mat3.scaling(Vec3(x: 1.0, y: 0.0, z: 1.0)).inverse() == none)   // flattens space
+
+    const turned = Mat3.rotation_z(math.pi / 2.0) @ Vec3(x: 1.0, y: 0.0, z: 0.0)
+    print(Vec3(x: math.round(turned.x), y: math.round(turned.y), z: math.round(turned.z)))
+
+    const model = Mat4.translation(Vec3(x: 5.0, y: 0.0, z: 0.0)).product(Mat4.scaling(Vec3(x: 2.0, y: 2.0, z: 2.0)))
+    print(model.mat3() @ Vec3(x: 1.0, y: 0.0, z: 0.0))   // scaled, not moved
+}

@@ -71,7 +71,13 @@ function groups(): { title: string; entries: Entry[] }[] {
   const taken = moduleDecls(["stdlib/tasks/tasks.kav"]).find((d) => d.name === "Taken")!;
   return [
     { title: "Numbers, text and values", entries: basics },
-    { title: "Collections", entries: collections },
+    {
+      title: "Collections",
+      entries: [
+        ...collections,
+        { names: ["Ring"], says: said("02-types/02-collections.md", /(`Ring<T>` keeps the last `n` items pushed\. `Ring\.capacity\(n\)` makes an empty one; when it is full, `push` drops the oldest item to make room, where a full list would panic\.)/), number: "2.2", file: "02-types/02-collections.md" },
+      ],
+    },
     {
       title: "Errors",
       entries: [

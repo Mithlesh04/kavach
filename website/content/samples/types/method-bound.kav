@@ -1,0 +1,14 @@
+type Pair<T: Number> {
+    a: T
+    b: T
+
+    fn sum(self) -> T { self.a + self.b }
+    fn mean(self) -> T where T: Floating { (self.a + self.b) / 2.0 }
+}
+
+fn main() {
+    const counts: Pair<Int> = Pair(a: 1, b: 2)
+    print(counts.sum())                  // sum: for every Number
+    print(Pair(a: 1.0, b: 2.0).mean())   // mean: only for Floating
+    print(Pair(a: 1, b: 2).mean())       // no type given: the literals become Floats
+}

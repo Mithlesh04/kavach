@@ -111,7 +111,11 @@ export const ownOperatorsDoc: LessonDoc = {
           Each type a function is called with gets its own compiled copy, so for a number <C>a + b</C> is one machine
           instruction, as if you had written the function for that type.
         </li>
-        <li>A number&apos;s <C>compare</C> is its ordering: <C>7.compare(9)</C> is -1, as 7 comes first (see above).</li>
+        <li>
+          A number&apos;s methods are the operators, so a number meets these bounds: <C>7.add(2)</C>, the last line,
+          is <C>9</C>, the same as <C>7 + 2</C>. Its <C>compare</C> is its ordering: <C>7.compare(9)</C> is -1, as 7
+          comes first (see above).
+        </li>
         <li>For any number at all, <C>T: Number</C> gives every operator at once: see <Link href="/docs/types/generics/">Generics</Link>.</li>
       </ul>
       <P>A type given for such a <C>T</C> must have the operator. <C>String</C> has no <C>Add</C>:</P>

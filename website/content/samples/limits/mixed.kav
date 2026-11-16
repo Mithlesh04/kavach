@@ -1,0 +1,18 @@
+type Reading = Heat(celsius: Float) | Note(text: String)
+
+fn main() {
+    let log: [Reading] = List.capacity(100)
+    log.push(Reading.Heat(celsius: 21.5))
+    log.push(Reading.Note(text: "door opened"))
+    for r in log {
+        match r {
+            Reading.Heat(celsius) => print("heat {celsius}")
+            Reading.Note(text) => print("note {text}")
+        }
+    }
+
+    let groups: [String: [Int]] = Map.capacity(10)
+    groups["small"] = List.capacity(3, [1, 2])     // a map of lists, each with a limit
+    print(groups)
+    print(groups.is_full())
+}

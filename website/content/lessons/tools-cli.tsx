@@ -5,7 +5,7 @@ import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
-import { fileFigure, fileTables, specBlock } from "@/lib/spec-tables";
+import { fileFigure, fileTables, specBlock, specBlockWith } from "@/lib/spec-tables";
 import { H2, Note, P } from "./parts";
 import { Table } from "./spec-table";
 
@@ -192,9 +192,23 @@ export const buildDoc: LessonDoc = {
           message saying so, instead of calling the wrong operations.
         </li>
       </ul>
+      <H2>An icon and a manifest on Windows</H2>
+      <P>
+        On Windows, <C>kavach build</C> gives the executable a manifest: it runs as the user who starts it, with no
+        administrator prompt; it is sharp on high-DPI screens; and it may use paths longer than 260 characters. With{" "}
+        <C>icon</C> under <C>[build]</C>, the executable also has that icon, which Explorer and the taskbar show:
+      </P>
+      <CodeBlock code={specBlockWith("10-modules-and-packages/05-command-line.md", "10.5", "icon = ")} lang="toml" file="kavach.toml, from spec 10.5" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The path is relative to <C>kavach.toml</C>. A file that isn&apos;t a PNG, or one larger than 256 × 256, is an error that says so.</li>
+        <li>Kavach writes the Windows resources itself, so no Windows SDK is needed.</li>
+        <li>Other systems give a program its icon outside the executable, as a <C>.desktop</C> file on Linux or an app bundle on macOS, so there the setting is checked but not used.</li>
+      </ul>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/10-modules-and-packages/05-command-line.md" label="spec 10.5 · a program's version" />
         <SrcRef file="tools/cli/tests/packed.rs" label="packed executables, tested" />
+        <SrcRef file="tools/cli/tests/windows_resources.rs" line={95} symbol="a_built_program_has_its_icon_and_a_manifest" label="icon and manifest, tested" />
+        <SrcRef file="docs/decisions/0120-windows-icon-and-manifest.md" label="decision 0120" />
         <SrcRef file="tools/cli/tests/version.rs" line={26} symbol="a_program_says_what_built_it_and_answers_version_only_when_asked_to" label="its test, in every way of running" />
         <SrcRef file="runtime/native/src/rt_std.rs" line={404} symbol="a_program_for_other_operations_is_stopped_with_a_reason" label="the run-time library's check" />
       </div>

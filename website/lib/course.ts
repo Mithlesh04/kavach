@@ -69,6 +69,8 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Lists", "2.2", ["Making a list", "Reading by index", "Changing items", "Adding and removing", "Sorting", "map, filter, sum"]],
     ["Maps", "2.2", ["Making a map", "Reading a value", "Adding and changing", "Looping over a map"]],
     ["Sets", "2.2", ["Making a set", "Adding and checking"]],
+    ["Collections with a Limit", "2.2"],
+    ["Rings", "2.2"],
     ["Tuples", "2.3"],
     ["Sorting", "14.2", ["Numbers", "Text", "By a key", "Two keys"]],
   ]],

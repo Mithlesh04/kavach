@@ -48,10 +48,20 @@ export const appDoc: LessonDoc = {
       <H2>Crash reports</H2>
       <P>
         After <C>app.crash_reports(folder)</C>, a panic that ends the program also writes a file{" "}
-        <C>crash-&lt;time&gt;.txt</C> into the folder: the message, where it happened, the program, Kavach&apos;s
-        version, the system and the time. A player can send it to you. See{" "}
+        <C>crash-&lt;time&gt;.txt</C> into the folder: the message, where it happened, the functions that were running,
+        the program, Kavach&apos;s version, the system and the time. A player can send it to you. See{" "}
         <Link href="/docs/errors/panics/">Panics</Link>.
       </P>
+      <P>The functions are listed innermost first, each with where it is defined, after the line that panicked:</P>
+      <CodeBlock code={specBlockWith(FILE, "14.30", "in price_of")} lang="text" file="crash-<time>.txt, from spec 14.30" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>
+          A built program finds them by walking its stack, with a table of its functions that <C>kavach build</C>{" "}
+          writes. So they cost nothing until a panic.
+        </li>
+        <li>A function the compiler inlined into its caller has no frame of its own, so it isn&apos;t listed.</li>
+        <li>This holds however the program runs: <C>kavach run</C>, <C>run --native</C> and the built program.</li>
+      </ul>
       <H2>Dialogs</H2>
       <P>
         Each shows the system&apos;s own dialog and waits for the person. A dialog is a window, so it needs{" "}
@@ -64,7 +74,11 @@ export const appDoc: LessonDoc = {
         <li>On a machine with no screen, a dialog gives <C>none</C>, or <C>false</C> for <C>confirm</C>.</li>
         <li>Generated tests skip functions that use <C>Window</C>, dialogs among them.</li>
       </ul>
-      <Note>Not yet: a call stack in crash reports, an icon for Windows executables, and file type filters in <C>open_file</C>.</Note>
+      <Note>
+        An executable&apos;s icon is set in <C>kavach.toml</C>: see{" "}
+        <Link href="/docs/tools/the-kavach-command/build/">kavach build</Link>. Not yet: the line of each call in a crash report, and file
+        type filters in <C>open_file</C>.
+      </Note>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${FILE}`} label="spec 14.30 · std.app" />
         <SrcRef file="tests/conformance/14-standard-library/dialogs-need-window.kav" label="Window, tested" />

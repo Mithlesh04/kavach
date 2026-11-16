@@ -1,0 +1,12 @@
+type Recent {
+    items: [Int]
+    invariant items.len() <= 3
+}
+
+fn main() {
+    let r = Recent(items: [9])
+    for i in 0..3 {
+        r.items.push(i)         // the invariant is checked after each push
+        print(r.items.len())
+    }
+}

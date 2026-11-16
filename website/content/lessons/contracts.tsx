@@ -100,6 +100,12 @@ export const invariantDoc: LessonDoc = {
     <>
       <Ex name="contracts/invariant.panics" />
       <P>The invariant is checked every time an <C>Account</C> is made or changed: the first change is fine, the second would make the balance negative.</P>
+      <P>
+        Growing a list in a field is a change too. The invariant is checked after each <C>push</C>, so the third push
+        here, which makes four items, is stopped:
+      </P>
+      <Ex name="contracts/invariant-push.panics" />
+      <SrcRef file="tests/conformance/07-contracts/invariant-checked-when-a-field-list-grows.kav" label="tested" />
     </>
   ),
 };

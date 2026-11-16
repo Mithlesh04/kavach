@@ -1,0 +1,1 @@
+error: `listen_once` is `pub`, so it must say what it uses: add `uses Microphone` (through `listen`) (spec 8.1)

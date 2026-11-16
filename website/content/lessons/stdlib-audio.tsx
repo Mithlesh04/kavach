@@ -2,21 +2,29 @@ import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { specBlockWith } from "@/lib/spec-tables";
+import { specBlockWith, specTables } from "@/lib/spec-tables";
 import { Ex, H2, Note, P } from "./parts";
-import { ModuleTable } from "./spec-table";
+import { Table } from "./spec-table";
 
 // ---------- Sound ----------
 //
-// Spec 14.27. The site's checks must never make a sound, so playing is
-// shown from the spec; making and reading sounds needs nothing, so those
-// samples run, and the compile errors are checked.
+// Spec 14.27. The site's checks must never make a sound or listen to the
+// room, so playing and recording are shown from the spec; making and
+// reading sounds needs nothing, so those samples run, and the compile
+// errors are checked. Both tables start "Function or method", so each is
+// picked by its place and checked by its first row.
 
 const FILE = "14-standard-library/27-audio.md";
 const TESTS = "tests/conformance/14-standard-library";
 
+function AudioTable({ n, first }: { n: number; first: string }) {
+  const t = specTables(FILE, "14.27")[n];
+  if (!t || !t.rows[0][0].includes(first)) throw new Error(`spec 14.27: table ${n} no longer starts with ${first}`);
+  return <Table header={t.header} rows={t.rows} wrapFirst />;
+}
+
 export const soundDoc: LessonDoc = {
-  lead: "std.audio plays sound: effects that start the moment something happens, and music. A sound is data until it plays, so loading or making one needs nothing; playing needs Audio.",
+  lead: "std.audio plays sound, effects and music, and records what the microphone hears. A sound is data until it plays, so loading or making one needs nothing; playing needs Audio, and recording needs Microphone.",
   simple: <>A sound is a long list of numbers: how far a speaker moves, many thousand times a second. Kavach lets a program read those numbers from a file, or make its own, and play them. The program goes on while the sound plays.</>,
   minutes: 5,
   before: ["agents/capabilities", "standard-library/files"],
@@ -68,13 +76,32 @@ export const soundDoc: LessonDoc = {
         <li>Letting a <C>Voice</C> go doesn&apos;t stop it, so <C>audio.play(boom)</C> alone plays the whole sound.</li>
         <li>Letting a <C>Sound</C> go while it plays plays it to its end.</li>
         <li>Voices add up. Where they add past 1, the sound is held at 1.</li>
-        <li>Generated tests skip functions that use <C>Audio</C>, so a test run plays nothing.</li>
+        <li>Generated tests skip functions that use <C>Audio</C> or <C>Microphone</C>, so a test run plays and records nothing.</li>
       </ul>
+      <H2>Recording</H2>
+      <P>
+        <C>audio.record(seconds)</C> records a clip and waits for it. <C>audio.listen()</C> starts recording and gives
+        a <C>Recording</C> at once; each <C>take()</C> gives what was heard since the one before, so a loop can show a
+        level meter or send the voice on. It records the room, so it is shown here, not run:
+      </P>
+      <CodeBlock code={specBlockWith(FILE, "14.27", "audio.listen(")} file="main.kav, from spec 14.27" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>It records the system&apos;s default microphone, at its own rate and with its first two channels.</li>
+        <li>What it hears is a <C>Sound</C>, like any other: play it, or read its samples.</li>
+        <li>Between takes it keeps up to 60 seconds; past that, what it hears is dropped until the next take.</li>
+        <li><C>rec.stop()</C> stops it, and letting a <C>Recording</C> go stops it too.</li>
+      </ul>
+      <AudioTable n={1} first="audio.listen()" />
+      <P>
+        What is said near the machine is private, so recording is a capability of its own. A <C>pub</C> function that
+        records must say <C>uses Microphone</C>:
+      </P>
+      <Ex name="audio/needs-microphone.fails" />
       <H2>Every function and method</H2>
-      <ModuleTable file="27-audio.md" number="14.27" first="Function or method" />
+      <AudioTable n={0} first="audio.decode" />
       <H2>Not yet</H2>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>Recording, behind the <C>Microphone</C> capability: what is said near the machine is private.</li>
+        <li>Choosing the microphone, and its rate, instead of the system&apos;s default.</li>
         <li>Sounds a Kavach function makes as they play, for synthesizers.</li>
         <li>Streaming long music from a file, choosing the output device, and Opus files.</li>
       </ul>
@@ -82,6 +109,7 @@ export const soundDoc: LessonDoc = {
         <SrcRef file={`docs/spec/${FILE}`} label="spec 14.27 · std.audio" />
         <SrcRef file={`${TESTS}/sounds-are-data-until-played.kav`} label="sounds as data, tested" />
         <SrcRef file={`${TESTS}/playing-sound-needs-audio.kav`} label="Audio, tested" />
+        <SrcRef file={`${TESTS}/recording-needs-microphone.kav`} label="Microphone, tested" />
         <SrcRef file="stdlib/audio/audio.kav" label="audio.kav" />
         <SrcRef file="runtime/audio/src/mixer.rs" label="the mixer" />
         <SrcRef file="docs/decisions/0114-sound-through-cpal.md" label="decision 0114" />

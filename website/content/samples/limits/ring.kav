@@ -1,0 +1,16 @@
+fn main() {
+    let recent: Ring<Float> = Ring.capacity(3)
+    for t in [1.0, 2.0, 3.0, 4.0] {
+        recent.push(t)              // the fourth push drops 1.0
+    }
+    print(recent)
+    print(recent.first() ?? 0.0)    // the oldest
+    print(recent.last() ?? 0.0)     // the newest
+    print(recent.get(1) ?? 0.0)
+    print(recent.is_full())
+
+    const kept = Ring.capacity(2, ["a", "b", "c"])   // keeps the last 2
+    print(kept)
+    const all = recent.to_list()                     // a list, no limit
+    print(all.len())
+}

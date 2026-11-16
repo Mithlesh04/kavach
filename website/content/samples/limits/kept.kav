@@ -1,0 +1,13 @@
+fn main() {
+    let a: [Int] = List.capacity(2, [3])
+    let b = a               // a copy has the limit too
+    b.push(1)
+    print(b.is_full())
+    print(a)
+
+    let sorted = b.sort()   // a new list: no limit
+    sorted.push(9)
+    print(sorted)
+    const joined = b + [5]  // a new list: no limit
+    print(joined.is_full())
+}

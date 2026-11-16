@@ -1,0 +1,8 @@
+fn total(xs: [Int]) -> Int {
+    xs.sum(x => x)
+}
+
+fn main() {
+    const r: Ring<Int> = Ring.capacity(2, [1, 2])
+    print(total(r))
+}

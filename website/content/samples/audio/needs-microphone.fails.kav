@@ -1,0 +1,11 @@
+use std.audio
+
+pub fn listen_once() -> Int {
+    const rec = audio.listen() catch _ => {
+        return 0
+    }
+    rec.take().frames
+}
+
+fn main() {
+}

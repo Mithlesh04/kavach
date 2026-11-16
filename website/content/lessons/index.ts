@@ -105,14 +105,16 @@ import {
   testingDoc,
 } from "./contracts";
 import {
-  anonDoc, declareRecordDoc, declareUnionDoc, defaultsRecordDoc, genericsDoc, interfacesDoc, interfaceValuesDoc,
+  anonDoc, declareRecordDoc, declareUnionDoc, defaultsRecordDoc, interfacesDoc, interfaceValuesDoc,
   matchUnionDoc, methodsDoc, optionalReadDoc, optionalsDoc, optionalWhatDoc, recordsDoc, unionsDoc, withDoc,
   writingTypesDoc,
 } from "./types";
+import { genericsDoc } from "./types-generics";
 import {
   addRemoveDoc, changeListDoc, changeMapDoc, checkSetDoc, listsDoc, makeListDoc, makeMapDoc, makeSetDoc, mapsDoc,
   pipelineDoc, readListDoc, readMapDoc, setsDoc, sortListDoc, tuplesDoc, walkMapDoc,
 } from "./collections";
+import { capacityDoc, ringDoc } from "./collections-limits";
 import {
   declaringDoc, defaultsDoc, dotDoc, fnValuesDoc, functionsDoc, lambdasDoc, namedArgsDoc, namedDoc, parametersDoc,
   recursionDoc, resultsDoc, returningDoc, signatureDoc, writingLambdaDoc,
@@ -259,6 +261,8 @@ export const lessons: Record<string, LessonDoc> = {
   "collections/sets": setsDoc,
   "collections/sets/making-a-set": makeSetDoc,
   "collections/sets/adding-and-checking": checkSetDoc,
+  "collections/collections-with-a-limit": capacityDoc,
+  "collections/rings": ringDoc,
   "collections/tuples": tuplesDoc,
   "collections/sorting": sortingDoc,
   "collections/sorting/numbers": sortNumbersDoc,

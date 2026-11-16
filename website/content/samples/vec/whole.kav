@@ -1,0 +1,11 @@
+use std.vec
+
+fn main() {
+    const cell: Vec2<Int> = Vec2(x: 3, y: 4)
+    print(cell + Vec2(x: 1, y: 0))
+    print(cell * 2)
+    print(cell.dot(Vec2(x: 1, y: -2)))
+    print(cell.length_squared())
+    const cells: [Vec2<Int32>] = [Vec2(x: 1, y: 1), Vec2(x: 2, y: 0)]
+    print(cells.map(c => c + Vec2(x: 1, y: 1)))
+}

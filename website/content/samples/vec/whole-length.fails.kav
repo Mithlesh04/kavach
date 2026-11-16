@@ -1,0 +1,6 @@
+use std.vec
+
+fn main() {
+    const cell: Vec2<Int> = Vec2(x: 3, y: 4)
+    print(cell.length())
+}

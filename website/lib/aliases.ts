@@ -67,6 +67,8 @@ export const aliases: Record<string, string> = {
   "collections/maps": "dictionary dict hashmap hash table object key value lookup unordered_map record store",
   "collections/sorting": "sort order sorted ascending descending alphabetical radix quicksort merge sort stable compare key orderby sort_by case insensitive",
   "collections/sets": "unique distinct duplicates hashset membership contains deduplicate",
+  "collections/collections-with-a-limit": "capacity limit bounded fixed size reserve preallocate is_full full memory with_capacity",
+  "collections/rings": "ring buffer circular buffer ringbuffer deque recent last n history rolling window drop oldest",
   "basics/strings": "string substring concat format trim case uppercase lowercase split join parse search",
   "errors/errors":
     "exception try catch throw panic crash null undefined result option handling failure recover",
