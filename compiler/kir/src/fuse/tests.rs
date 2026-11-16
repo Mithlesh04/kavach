@@ -74,6 +74,7 @@ fn pipeline(sum_body: Stmt, extra: Vec<Stmt>) -> Function {
         line: 1,
         fails: false,
         external: None,
+        variadic: false,
     }
 }
 
@@ -148,6 +149,7 @@ fn a_chain_written_as_one_expression_still_fuses() {
         line: 1,
         fails: false,
         external: None,
+        variadic: false,
     });
     let [Stmt::Let(6, value)] = &f.body.stmts[..] else {
         panic!("one statement");

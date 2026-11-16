@@ -177,6 +177,7 @@ impl<'a> Lowerer<'a> {
             line,
             fails: false,
             external: None,
+            variadic: false,
         })
     }
 
@@ -252,6 +253,7 @@ impl<'a> Lowerer<'a> {
                     line,
                     fails: own.is_some(),
                     external: None,
+                    variadic: false,
                 };
                 self.restore_function(saved);
                 let w = self.add_function(f);

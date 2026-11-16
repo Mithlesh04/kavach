@@ -52,4 +52,6 @@ Exit codes: 0 success, 1 compile errors or an error returned from `main`, 101 a 
 | `tests/workspaces.rs` | A workspace: one lock and `kavach_modules/` at the root, members using each other by path, `check` and `build` per member; a git dependency's `dir`, refused when it leaves the repository (spec 10.14) |
 | `tests/watch.rs` | `kavach run --watch` runs the program again when its file changes (spec 10.5) |
 | `tests/windows_resources.rs` | `kavach build` gives a Windows executable a manifest and the icon `[build] icon` names; an icon that isn't a PNG is refused (spec 10.5) |
+| `tests/fonts.rs` | A font file read, text shaped into placed glyphs and drawn into a distance atlas, interpreted and natively (spec 14.31) |
+| `tests/c_libraries.rs` | A library built with `kavach build --lib` loaded by another program while running (`extern c library`), in memory and built with each backend; on Linux, records by value to a C library compiled with `cc` (spec 10.7) |
 | `tests/online.rs` | Tests that need the internet (`https://`); they run only with `--ignored` |

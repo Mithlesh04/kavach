@@ -12,6 +12,8 @@ Code that is linked into every Kavach program and runs alongside it. Written in 
 | [audio/](audio/README.md) | Sound for `std.audio` through `cpal`: a mixer on the device's real-time thread, WAV and Ogg Vorbis (`kavach-runtime-audio`); apart from `native/` so programs without sound don't link it (decision 0114) |
 | [watch/](watch/README.md) | Watching files and folders for `std.fs` through `notify` (`kavach-runtime-watch`); apart from `native/` so programs that watch nothing don't link it (decision 0116) |
 | [image/](image/README.md) | Images for `std.image`: PNG and JPEG decoded to RGBA, PNG written (`kavach-runtime-image`); apart from `native/` so programs without images don't link it (decision 0117) |
+| [font/](font/README.md) | Fonts for `std.font`: OpenType read and text shaped through `rustybuzz`, glyphs drawn into a distance atlas (`kavach-runtime-font`); apart from `native/` so programs without fonts don't link it (decision 0121) |
+| [tracy/](tracy/README.md) | Spans and GPU work shown live in the Tracy profiler through `tracy-client` (`kavach-runtime-tracy`); linked only with `--tracy` (decision 0123) |
 | [dialog/](dialog/README.md) | The system's dialogs for `std.app` through `rfd` (`kavach-runtime-dialog`); apart from `native/` so programs without dialogs don't link it (decision 0118) |
 | [process/](process/README.md) | Other programs for `std.process`, run with no shell as trees that end together, through each system's own calls (`kavach-runtime-process`, decision 0105) |
 | [matrix/](matrix/README.md) | The work of `std.matrix`: products in one fixed order, and fast ones through `gemm`, on flat lists of numbers (`kavach-runtime-matrix`, decision 0111) |

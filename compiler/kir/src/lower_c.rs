@@ -40,6 +40,7 @@ impl<'a> Lowerer<'a> {
             line: self.line(f.name.span),
             fails: false,
             external: Some(library.to_string()),
+            variadic: f.c_variadic,
         })
     }
 }

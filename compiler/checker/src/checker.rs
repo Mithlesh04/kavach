@@ -85,9 +85,9 @@ pub(crate) struct Checker<'a> {
     /// Declaration span start → definition, for every declared name.
     pub(crate) decl: HashMap<u32, DefId>,
     pub(crate) fns: HashMap<DefId, FnSig>,
-    /// Functions of C libraries (`extern c`, spec 10.7): called only
-    /// inside `unsafe`.
-    pub(crate) c_fns: std::collections::HashSet<DefId>,
+    /// Functions of C libraries (`extern c`, spec 10.7), called only
+    /// inside `unsafe`; for one ending in `...`, its own parameters' count.
+    pub(crate) c_fns: HashMap<DefId, Option<usize>>,
     /// How many `unsafe` blocks the code being checked is inside.
     pub(crate) in_unsafe: u32,
     pub(crate) types: HashMap<DefId, TypeInfo>,

@@ -41,6 +41,7 @@ Text constants are placed in the module's data, never as addresses from the comp
 | `src/inline.rs` | Heap access in generated code: reference counts, items, fields, `push`, in-place changes |
 | `src/jit_unwind.rs` | Unwind tables for code the JIT makes (decision 0065, step 3), registered by the runtime once the code is placed |
 | `src/winx64.rs` | A function's Windows unwind codes, written from Cranelift's description of its prologue, because Cranelift's own encoder puts saved registers in the wrong slots; `src/winx64/tests.rs` undoes them as Windows does |
+| `src/c_calls.rs` | Calls into C beyond Cranelift's plain calls (spec 10.7): through an address, for a library loaded while running; with records by value (`RtOp::CallC`), stack copies and hidden result pointers; and of functions ending in `...`, with a signature for each call, on x86-64 System V a thunk that sets `al` and jumps to the function, on Windows a `double` among the extra arguments in an integer register |
 | `src/places.rs` | Places: values read where they are, without a reference, including a field of the closure a closure's function borrows |
 | `src/alloc.rs` | Small records, tuples and union values taken from the runtime's object pool, without a call |
 | `src/text_lists.rs` | Lists of text: items through the runtime, the length of short ASCII text read from the item's tag |

@@ -1,0 +1,3 @@
+[package]
+name = "c-dots-take-numbers-pointers-and-text"
+unsafe = true

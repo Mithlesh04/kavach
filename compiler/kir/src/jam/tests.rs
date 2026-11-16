@@ -72,6 +72,7 @@ fn matrix(inner: Stmt) -> Function {
         line: 1,
         fails: false,
         external: None,
+        variadic: false,
     }
 }
 

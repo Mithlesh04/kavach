@@ -93,7 +93,12 @@ impl FnEmit<'_> {
                 func,
                 env: Type::Unit,
                 ..
-            } => Some(self.val(format!("ptrtoint ptr @{} to i64", fn_name(*func as usize)))),
+            } => {
+                // A C function by its own name (an argument of `RtOp::CallC`).
+                let f = *func as usize;
+                let name = self.m.c_names[f].clone().unwrap_or_else(|| fn_name(f));
+                Some(self.val(format!("ptrtoint ptr @{name} to i64")))
+            }
             ExprKind::Closure {
                 func,
                 env,

@@ -1,0 +1,11 @@
+// Rule: Only a C function ends its parameters in `...`; a Kavach function takes more values in a list.
+// Spec: 10.7
+// expect compile error
+
+fn total(first: Int, ...) -> Int {      // error: only a C function takes `...`
+    first
+}
+
+fn main() {
+    print(total(1))
+}

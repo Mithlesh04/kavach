@@ -143,7 +143,7 @@ impl Parser<'_> {
     }
 
     /// `{ fn … }` bodies of interfaces, capabilities and `extend`.
-    fn methods(&mut self, body_required: bool) -> Vec<Item> {
+    pub(crate) fn methods(&mut self, body_required: bool) -> Vec<Item> {
         let mut methods = Vec::new();
         self.members(|p| {
             let start = p.span();
@@ -290,6 +290,11 @@ impl Parser<'_> {
         let is_pub = self.eat_kw(Keyword::Pub);
         self.bump(); // `extern`
         let lang = self.ident("a language: `c`");
+        if self.at_word("library") && *self.nth(1) == TokenKind::Ident {
+            let word = self.span();
+            self.bump();
+            return vec![self.loaded_library(start, word, docs, is_pub)];
+        }
         let library = match self.at(&TokenKind::StrStart).then(|| self.string()) {
             Some(ExprKind::Str(parts)) => match parts.as_slice() {
                 [StrPart::Text(t)] => t.clone(),

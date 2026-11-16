@@ -126,6 +126,9 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0118](0118-app-folders-crash-reports-and-dialogs.md) | `std.app`: per-user data, config and cache folders by Kavach's own code, crash reports on panic, and dialogs through `rfd` | Accepted |
 | [0119](0119-bounds-on-one-method.md) | Bounds on one method: `where T: Floating` on a method of a generic type; `std.vec`'s vectors over `T: Number` | Accepted |
 | [0120](0120-windows-icon-and-manifest.md) | An icon and a manifest for Windows executables: a `.res` file Kavach writes itself, the icon from `[build] icon` | Accepted |
+| [0121](0121-fonts-through-rustybuzz.md) | Fonts in `std.font`: loaded by `ttf-parser`, shaped by `rustybuzz`, glyphs drawn into an SDF atlas by Kavach's own code | Accepted |
+| [0122](0122-floats-give-the-same-bits-everywhere.md) | Floats give the same bits everywhere: no fused multiply-adds, and `std.math`'s functions from the pure-Rust `libm` crate on every system | Accepted |
+| [0123](0123-tracy-for-live-profiling.md) | Tracy for live profiling through `tracy-client`, linked only with `--tracy`; the GPU's own time from timestamp queries in the Chrome trace | Accepted |
 
 ## Open decisions
 

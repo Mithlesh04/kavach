@@ -374,5 +374,6 @@ pub(super) fn make_red_chunk(
         line,
         fails: false,
         external: None,
+        variadic: false,
     }
 }

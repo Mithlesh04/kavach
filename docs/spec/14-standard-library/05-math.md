@@ -13,3 +13,5 @@
 | `math.is_prime(n)` | Whether `n` is a prime number |
 | `math.factorial(n)` | `n!` for `0 <= n <= 20` (larger values don't fit in `Int`) |
 | `math.mean(xs)` | The average of a `[Float]`, or `none` for an empty list |
+
+`sqrt`, `floor`, `ceil` and `round` are exact. The others (`pow`, `sin` to `atan2`, `exp`, `ln`) are Kavach's own code, the same on every system, interpreted or native, so each gives the same bits everywhere (2.1, [decision 0122](../../decisions/0122-floats-give-the-same-bits-everywhere.md)); each is within one unit in the last place of the exact result.

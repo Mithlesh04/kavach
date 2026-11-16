@@ -155,6 +155,7 @@ impl<'a> Lowerer<'a> {
             line,
             fails: false,
             external: None,
+            variadic: false,
         };
         self.restore_function(saved);
         if let Some(e) = failed {

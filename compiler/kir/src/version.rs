@@ -271,6 +271,7 @@ fn copy(f: &Function) -> Function {
         line: f.line,
         fails: f.fails,
         external: f.external.clone(),
+        variadic: f.variadic,
     }
 }
 

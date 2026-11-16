@@ -43,6 +43,7 @@ mod std_base64;
 mod std_compress;
 mod std_crypto;
 mod std_devices;
+mod std_font;
 mod std_fs;
 mod std_gpu;
 mod std_image;

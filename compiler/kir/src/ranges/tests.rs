@@ -39,6 +39,7 @@ pub(super) fn function(params: Vec<Local>, locals: usize, stmts: Vec<Stmt>) -> F
         line: 1,
         fails: false,
         external: None,
+        variadic: false,
     }
 }
 

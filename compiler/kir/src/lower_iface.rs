@@ -179,6 +179,7 @@ impl Lowerer<'_> {
             line,
             fails,
             external: None,
+            variadic: false,
         };
         self.restore_function(saved);
         let shim = self.add_function(f);

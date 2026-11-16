@@ -228,3 +228,25 @@ AudioTake,
 AudioStopListening,
 AudioDropRecording,
 AudioRecord,
+/// `std.font` (spec 14.31, decision 0121): a font's metrics from its
+/// file's bytes `a` (owned; can fail), `b` (text, owned) shaped at `c`
+/// pixels (a `Float`'s bits) from font `a`, an atlas of its glyphs kept
+/// by number, that atlas's size and boxes, and its pixels as `Bytes`
+/// (letting it go) (`runtime/native/src/rt_font.rs`).
+FontMetrics,
+FontShape,
+FontAtlas,
+FontAtlasBoxes,
+FontAtlasPixels,
+/// Libraries loaded while running (spec 10.7): load library `a` (text,
+/// owned; can fail), giving its handle; find function `b` (text, owned)
+/// in library `a`, giving its address (can fail); and call the C function
+/// at address `a` with the other operands, which the backends make
+/// themselves (`runtime/native/src/rt_clib.rs`).
+CLibraryOpen,
+CLibraryFind,
+CallAddress,
+/// A call into C with records by value (spec 10.7): operand 0 is the
+/// text `kavach_kir::c_abi::descriptor` makes, operand 1 the function's
+/// address, then the operands it names; the backends make the call.
+CallC,

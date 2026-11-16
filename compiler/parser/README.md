@@ -16,6 +16,7 @@ assert!(parsed.errors.is_empty());
 | `src/items.rs` | Declarations: types, interfaces, `extend`, capabilities, agents (8.3), `use`, `test` |
 | `src/fns.rs` | Functions: signature clauses in their fixed order (spec 3.5), `deprecated` (12.6) |
 | `src/type_decls.rs` | `type` declarations: unions and records with fields, invariants, methods |
+| `src/loaded.rs` | `extern c library Name { … }` (spec 10.7): the block made a type `Name` holding its functions' addresses, with `open` and one method per C function |
 | `src/stmts.rs` | Blocks, `const`/`let`, assignment, `for`, `while`, `assert` |
 | `src/exprs.rs` | Operator precedence (spec 1.8), `try`/`catch`/`fail`, calls, fields, `with` |
 | `src/primary.rs` | Literals, strings, lambdas, lists and maps, `if`, `match` |

@@ -38,6 +38,23 @@ help: run it with `kavach run {path}` (the interpreter) for now",
     ExitCode::from(3)
 }
 
+/// Whether `kavach build --tracy` was asked for.
+static TRACY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// `args` without `--tracy`. With it, `kavach run` starts Tracy's client
+/// now, in this process, and `kavach build` makes a program that does.
+pub(crate) fn take_tracy(mut args: Vec<String>) -> Vec<String> {
+    let Some(at) = args.iter().position(|a| a == "--tracy") else {
+        return args;
+    };
+    args.remove(at);
+    match args.first().map(String::as_str) {
+        Some("run") => kavach_runtime_tracy::start(),
+        _ => TRACY.store(true, std::sync::atomic::Ordering::Relaxed),
+    }
+    args
+}
+
 /// `kavach build`: an executable file, named after the source file and
 /// written to the current folder unless `-o` says otherwise (spec 10.9).
 pub(crate) fn build(
@@ -45,10 +62,11 @@ pub(crate) fn build(
     out: Option<&str>,
     compress: Option<kavach_runtime_unpack::Method>,
 ) -> ExitCode {
-    let program = match lowered(path) {
+    let mut program = match lowered(path) {
         Ok(p) => p,
         Err(code) => return code,
     };
+    program.tracy = TRACY.load(std::sync::atomic::Ordering::Relaxed);
     let out = match out {
         Some(o) => std::path::PathBuf::from(o),
         None => {

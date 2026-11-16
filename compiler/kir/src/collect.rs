@@ -53,6 +53,7 @@ fn stand_in() -> ir::Function {
         line: 0,
         fails: false,
         external: None,
+        variadic: false,
     }
 }
 
@@ -96,6 +97,7 @@ mod tests {
             line: 1,
             fails: false,
             external: None,
+            variadic: false,
         }
     }
 

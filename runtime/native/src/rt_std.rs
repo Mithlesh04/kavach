@@ -7,6 +7,7 @@ use crate::rt::{flush, type_of};
 use crate::rt_data::optional;
 use crate::rt_errors::set_error;
 use kavach_kir::{RtOp, Shape, Type};
+use kavach_runtime_core::math;
 use std::io::IsTerminal;
 use std::sync::OnceLock;
 use std::time::Instant;
@@ -282,19 +283,19 @@ pub fn std_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
             0
         }
         RtOp::MathSqrt => bits(float(a).sqrt()),
-        RtOp::MathPow => bits(float(a).powf(float(b))),
+        RtOp::MathPow => bits(math::pow(float(a), float(b))),
         RtOp::MathFloor => bits(float(a).floor()),
         RtOp::MathCeil => bits(float(a).ceil()),
         RtOp::MathRound => bits(float(a).round()),
-        RtOp::MathSin => bits(float(a).sin()),
-        RtOp::MathCos => bits(float(a).cos()),
-        RtOp::MathTan => bits(float(a).tan()),
-        RtOp::MathAsin => bits(float(a).asin()),
-        RtOp::MathAcos => bits(float(a).acos()),
-        RtOp::MathAtan => bits(float(a).atan()),
-        RtOp::MathAtan2 => bits(float(a).atan2(float(b))),
-        RtOp::MathExp => bits(float(a).exp()),
-        RtOp::MathLn => bits(float(a).ln()),
+        RtOp::MathSin => bits(math::sin(float(a))),
+        RtOp::MathCos => bits(math::cos(float(a))),
+        RtOp::MathTan => bits(math::tan(float(a))),
+        RtOp::MathAsin => bits(math::asin(float(a))),
+        RtOp::MathAcos => bits(math::acos(float(a))),
+        RtOp::MathAtan => bits(math::atan(float(a))),
+        RtOp::MathAtan2 => bits(math::atan2(float(a), float(b))),
+        RtOp::MathExp => bits(math::exp(float(a))),
+        RtOp::MathLn => bits(math::ln(float(a))),
         RtOp::IoWrite => {
             let text = str_of(a);
             release(a);
@@ -394,6 +395,32 @@ pub fn program_version(marked: i64, answers: i64) -> i64 {
         std::process::exit(0)
     }
     0
+}
+
+/// `math.sin` to `math.ln` for LLVM builds, which call these rather than
+/// LLVM's intrinsics, so no machine's C library is used (decision 0122).
+#[unsafe(no_mangle)]
+#[allow(unsafe_code)]
+pub extern "C" fn kv_math_sin(x: f64) -> f64 {
+    math::sin(x)
+}
+
+#[unsafe(no_mangle)]
+#[allow(unsafe_code)]
+pub extern "C" fn kv_math_cos(x: f64) -> f64 {
+    math::cos(x)
+}
+
+#[unsafe(no_mangle)]
+#[allow(unsafe_code)]
+pub extern "C" fn kv_math_exp(x: f64) -> f64 {
+    math::exp(x)
+}
+
+#[unsafe(no_mangle)]
+#[allow(unsafe_code)]
+pub extern "C" fn kv_math_ln(x: f64) -> f64 {
+    math::ln(x)
 }
 
 #[cfg(test)]

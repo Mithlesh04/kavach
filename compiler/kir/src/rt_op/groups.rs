@@ -36,6 +36,9 @@ impl RtOp {
                 | RtOp::FsWriterFinish
                 | RtOp::FsWatchOpen
                 | RtOp::ImageDecode
+                | RtOp::FontMetrics
+                | RtOp::CLibraryOpen
+                | RtOp::CLibraryFind
                 | RtOp::AppDir
                 | RtOp::AppCrashReports
                 | RtOp::DrawScreen
@@ -150,6 +153,10 @@ impl RtOp {
             "kv_rt_app"
         } else if group("Image") {
             "kv_rt_image"
+        } else if group("Font") {
+            "kv_rt_font"
+        } else if group("CLibrary") {
+            "kv_rt_clib"
         } else if group("FsWatch") {
             "kv_rt_watch"
         } else if group("FsWriter") {

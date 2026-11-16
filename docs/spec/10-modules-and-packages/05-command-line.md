@@ -11,6 +11,7 @@
 | `--env-file <path>`, `--env NAME=value`, `--no-env-file` | On `run`, `test` and `build`: which `.env` file and which single variables the program gets (10.13) |
 | `kavach build --lib` | Compile a library into a shared library with a C header, for other languages (10.10) |
 | `kavach build --compress` / `--compress=max` | Write a smaller executable, packed without losing anything; it unpacks itself when it starts (below) |
+| `kavach run --tracy`, `kavach build --tracy` | Run or build the program with Tracy's client, so the Tracy profiler shows its spans, tasks and GPU work live (14.12) |
 | `kavach test` | Run generated and hand-written tests (chapter 11) |
 | `kavach fmt` | Format all code |
 | `kavach add <name> --path <folder>` / `kavach add <name> --git <url> [--tag T \| --branch B \| --rev C] [--unsafe]` | Add a dependency, fetch it, write the capabilities it uses into its `can` and write `kavach.lock` (10.12) |

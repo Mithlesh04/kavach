@@ -242,16 +242,17 @@ impl FnEmit<'_> {
                 | kavach_kir::RtOp::MathLn),
                 args,
             ) => {
-                // `sin` to `ln` call the same C library as the runtime's
-                // Rust does, so the bits are the same either way.
+                // `sin` to `ln` call the runtime's own code, never LLVM's
+                // intrinsics, which use the machine's C library: the same
+                // bits everywhere (decision 0122).
                 let name = match op {
                     kavach_kir::RtOp::MathSqrt => "llvm.sqrt.f64",
                     kavach_kir::RtOp::MathFloor => "llvm.floor.f64",
                     kavach_kir::RtOp::MathCeil => "llvm.ceil.f64",
-                    kavach_kir::RtOp::MathSin => "llvm.sin.f64",
-                    kavach_kir::RtOp::MathCos => "llvm.cos.f64",
-                    kavach_kir::RtOp::MathExp => "llvm.exp.f64",
-                    kavach_kir::RtOp::MathLn => "llvm.log.f64",
+                    kavach_kir::RtOp::MathSin => "kv_math_sin",
+                    kavach_kir::RtOp::MathCos => "kv_math_cos",
+                    kavach_kir::RtOp::MathExp => "kv_math_exp",
+                    kavach_kir::RtOp::MathLn => "kv_math_ln",
                     _ => "llvm.round.f64",
                 };
                 let x = self.expr(&args[0])?;
@@ -259,6 +260,8 @@ impl FnEmit<'_> {
             }
             // Any other built-in method: the runtime's generic entry, with
             // every operand handed over as a slot.
+            ExprKind::Rt(kavach_kir::RtOp::CallAddress, args) => self.call_address(e.ty, args),
+            ExprKind::Rt(kavach_kir::RtOp::CallC, args) => self.call_c(e.ty, args),
             ExprKind::Rt(kavach_kir::RtOp::PtrRead | kavach_kir::RtOp::PtrWrite, args) => {
                 self.ptr_access(e.ty, args)
             }

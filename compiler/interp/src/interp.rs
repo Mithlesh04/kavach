@@ -329,6 +329,16 @@ impl<'a> Interp<'a> {
                 span,
             ));
         }
+        if f.c_loaded.is_some() {
+            self.reached_c = true;
+            return Err(self.panic(
+                format!(
+                    "`{}` is a function of a C library loaded while running: it runs in native code, so run the program with `kavach run --native` or `kavach build` (spec 10.7)",
+                    f.name.name
+                ),
+                span,
+            ));
+        }
         if crate::stack::too_deep() {
             return Err(self.panic(
                 "stack overflow: calls are nested too deeply (spec 3.8)",

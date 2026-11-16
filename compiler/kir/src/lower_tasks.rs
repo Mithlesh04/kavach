@@ -136,6 +136,7 @@ impl<'a> Lowerer<'a> {
             line,
             fails: true,
             external: None,
+            variadic: false,
         })
     }
 
@@ -199,6 +200,7 @@ impl<'a> Lowerer<'a> {
             line,
             fails: true,
             external: None,
+            variadic: false,
         };
         self.restore_function(saved);
         let body = self.add_function(body);
@@ -271,6 +273,7 @@ impl<'a> Lowerer<'a> {
             line,
             fails: false,
             external: None,
+            variadic: false,
         }
     }
 }
@@ -361,6 +364,7 @@ fn around(
         line,
         fails: f.fails,
         external: None,
+        variadic: false,
     };
     let mut locals = param_types.clone();
     let params: Vec<Local> = (0..param_types.len() as Local).collect();

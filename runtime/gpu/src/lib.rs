@@ -148,6 +148,8 @@ impl Gpu {
             timeout: None,
         };
         self.device.poll(wait).map_err(|_| GpuError::Unavailable)?;
+        // The work is done, so its timer's results are in.
+        timers::sent(&self.device, &self.queue, None);
         match *ready.lock().unwrap_or_else(|e| e.into_inner()) {
             Some(true) => Ok(()),
             _ => Err(GpuError::Unavailable),
@@ -240,6 +242,7 @@ impl Gpu {
         });
         let (x, y) = dispatch(n);
         let mut encoder = self.device.create_command_encoder(&Default::default());
+        let timer = timers::start(&self.device, &mut encoder, "gpu map");
         {
             let mut pass = encoder.begin_compute_pass(&Default::default());
             pass.set_pipeline(pipeline);
@@ -250,7 +253,11 @@ impl Gpu {
             encoder.copy_buffer_to_buffer(&output, 0, &staging, 0, out_size);
         }
         encoder.copy_buffer_to_buffer(&stop, 0, &staging, back, 20);
+        if let Some(t) = &timer {
+            timers::stop(&mut encoder, t);
+        }
         let index = self.queue.submit([encoder.finish()]);
+        timers::sent(&self.device, &self.queue, timer);
         Submitted {
             output,
             staging,
@@ -455,6 +462,7 @@ mod late;
 mod later;
 mod pipeline;
 mod spare;
+mod timers;
 mod upload;
 pub use late::{Stop, finish, finish_before, flags_so_far};
 pub use later::{Later, reduce, reduce_later};

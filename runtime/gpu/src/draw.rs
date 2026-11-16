@@ -22,6 +22,8 @@ struct Frame {
     encoder: wgpu::CommandEncoder,
     /// Whether its depths are still to be set to 1 (spec 15.3).
     fresh: bool,
+    /// Its GPU time, when a trace is written (spec 14.12).
+    timer: Option<crate::timers::Timer>,
 }
 
 #[derive(Default)]
@@ -131,11 +133,12 @@ pub fn frame(n: i64, width: u32, height: u32) -> Result<i64, String> {
     let view = texture
         .texture
         .create_view(&wgpu::TextureViewDescriptor::default());
-    let encoder = g
+    let mut encoder = g
         .device
         .create_command_encoder(&wgpu::CommandEncoderDescriptor {
             label: Some("kavach frame"),
         });
+    let timer = crate::timers::start(&g.device, &mut encoder, "gpu frame");
     d.next += 1;
     let f = d.next;
     d.frames.insert(
@@ -146,6 +149,7 @@ pub fn frame(n: i64, width: u32, height: u32) -> Result<i64, String> {
             view,
             encoder,
             fresh: true,
+            timer,
         },
     );
     Ok(f)
@@ -207,11 +211,15 @@ pub fn draw(f: i64, draw: crate::render::Draw<'_>) -> Result<(), String> {
 
 /// Sends what was drawn into frame `f` and puts it on the screen.
 pub fn show(f: i64) {
-    let Some(frame) = drawing().frames.remove(&f) else {
+    let Some(mut frame) = drawing().frames.remove(&f) else {
         return;
     };
     if let Some(g) = gpu() {
+        if let Some(t) = &frame.timer {
+            crate::timers::stop(&mut frame.encoder, t);
+        }
         g.queue.submit([frame.encoder.finish()]);
+        crate::timers::sent(&g.device, &g.queue, frame.timer);
         g.queue.present(frame.texture);
     }
 }

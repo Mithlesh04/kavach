@@ -48,6 +48,8 @@ kavach/
 │   ├── audio/              sound for std.audio, through cpal
 │   ├── watch/              watching files for std.fs, through notify
 │   ├── image/              PNG and JPEG for std.image
+│   ├── font/               fonts for std.font, shaped through rustybuzz
+│   ├── tracy/              spans shown live in Tracy, linked only with --tracy
 │   ├── dialog/             the system's dialogs for std.app, through rfd
 │   ├── process/            other programs for std.process, as trees (unsafe allowed, decision 0105)
 │   ├── native/             run-time library of native programs

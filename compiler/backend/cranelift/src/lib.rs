@@ -7,6 +7,7 @@
 mod abi;
 mod alloc;
 mod bytes;
+mod c_calls;
 mod calls;
 mod codegen;
 mod data;
@@ -143,7 +144,17 @@ pub(crate) fn compile(
         // A C function (spec 10.7): the library's symbol of its name.
         let declared = if f.external.is_some() {
             let sig = crate::abi::c_signature(module, &params, f.ret);
-            module.declare_function(&f.name, Linkage::Import, &sig)
+            let c = module.declare_function(&f.name, Linkage::Import, &sig);
+            if !f.variadic {
+                c
+            } else {
+                c_calls::supported(module)?;
+                Ok(c_calls::callee(
+                    module,
+                    c.map_err(|e| e.to_string())?,
+                    &f.name,
+                )?)
+            }
         } else {
             let sig = signature(module, &params, f.ret, f.fails);
             module.declare_function(&format!("kv_fn_{i}"), Linkage::Local, &sig)
@@ -151,6 +162,9 @@ pub(crate) fn compile(
         funcs.push(declared.map_err(|e| e.to_string())?);
     }
     let fails: Vec<bool> = program.functions.iter().map(|f| f.fails).collect();
+    let variadic: Vec<Option<usize>> = (program.functions.iter())
+        .map(|f| f.variadic.then_some(f.params.len()))
+        .collect();
     let closures = kavach_kir::borrows::closure_functions(&program.functions);
     let mut texts = HashMap::new();
     // The runtime's stack limit. Native code runs on one thread for now;
@@ -196,6 +210,7 @@ pub(crate) fn compile(
             free_at_exit: (i == program.entry as usize).then_some(free_at_exit),
             funcs: &funcs,
             fails: &fails,
+            variadic: &variadic,
             closures: &closures,
             this_fails: f.fails,
             ret: f.ret,

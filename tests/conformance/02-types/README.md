@@ -103,6 +103,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.10 | [parameter-types-required.kav](parameter-types-required.kav) | Function parameters must have written types. | compile error |
 | 2.11 | [secret-cannot-be-printed.kav](secret-cannot-be-printed.kav) | A secret value must not flow into print. | compile error |
 | 2.1 | [numbers-read-from-text-at-their-limits.kav](numbers-read-from-text-at-their-limits.kav) | Reading a number from text takes every value its type holds, trims spaces, and gives an error for anything else. | runs |
+| 2.1 | [floats-give-the-same-bits-everywhere.kav](floats-give-the-same-bits-everywhere.kav) | A multiply and an add are never fused, and `std.math`'s functions are Kavach's own code, so floats give the same bits on every machine |
 | 2.12 | [json-reads-never-panic.kav](json-reads-never-panic.kav) | Reading a `Json` never panics: a missing key or index gives `Null`, and the methods give `none` when the value has another kind. | runs |
 | 2.12 | [json-writes-bytes-as-base64.kav](json-writes-bytes-as-base64.kav) | `Bytes` in JSON are base64 text: written standard and padded, read in either alphabet, padded or not, bare or in a field; other text expects "base64 text"; the schema says so. | runs |
 | 2.12 | [json-reads-find-each-objects-own-field.kav](json-reads-find-each-objects-own-field.kav) | `j["key"]` gives each object's own field, wherever the key is in the object and whatever made it, or `Null` when it has none. | runs |

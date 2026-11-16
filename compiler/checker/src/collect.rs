@@ -152,7 +152,10 @@ impl Checker<'_> {
             .filter_map(|m| match &m.kind {
                 ItemKind::Fn(f) => {
                     self.note_wheres(f, self_ty);
-                    Some((f.name.name.clone(), self.sig_of(f, self_ty)))
+                    self.only_c_takes_more(f);
+                    let sig = self.sig_of(f, self_ty);
+                    self.note_loaded(f, &sig);
+                    Some((f.name.name.clone(), sig))
                 }
                 _ => None,
             })
@@ -266,8 +269,10 @@ impl Checker<'_> {
                         let sig = self.sig_of(f, None);
                         if f.c_library.is_some() {
                             self.check_c_signature(f, &sig);
-                            self.c_fns.insert(def);
+                            let own = f.c_variadic.then_some(f.params.len());
+                            self.c_fns.insert(def, own);
                         }
+                        self.only_c_takes_more(f);
                         self.fns.insert(def, sig);
                     }
                 }

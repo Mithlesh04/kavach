@@ -44,6 +44,9 @@ pub(crate) struct Module {
     /// The C name of each program function that is a C function (spec
     /// 10.7), `None` for the others.
     pub(crate) c_names: Vec<Option<String>>,
+    /// For each C function ending in `...` (spec 10.7), its type as a
+    /// call names it: `i32 (ptr, ...)`'s parameter part, `ptr, ...`.
+    pub(crate) c_variadic: Vec<Option<String>>,
     /// Whether each program function is a closure's, which borrows its
     /// closure (`kavach_kir::borrows`).
     pub(crate) closures: Vec<bool>,
@@ -112,8 +115,15 @@ impl Module {
             &["i64", "i8", "i64", "i64", "i64", "i64", "ptr"],
             false,
         );
+        // `--tracy`: Tracy's client starts first (decision 0123).
+        let tracy = if program.tracy {
+            self.declare("kv_tracy_start", "void", &[], false);
+            "  call void @kv_tracy_start()\n"
+        } else {
+            ""
+        };
         let main = format!(
-            "define i32 @main(i32 %argc, ptr %argv) {{\n  call void @kv_set_functions(i64 {names}, i64 {names_len}, i64 0, i64 0)\n  %code = call i32 @kv_main(i64 ptrtoint (ptr @{entry} to i64), i8 {fails}, i64 {path}, i64 {path_len}, i64 {shapes}, i64 {shapes_len}, ptr @kv_limit_slot)\n  ret i32 %code\n}}\n"
+            "define i32 @main(i32 %argc, ptr %argv) {{\n{tracy}  call void @kv_set_functions(i64 {names}, i64 {names_len}, i64 0, i64 0)\n  %code = call i32 @kv_main(i64 ptrtoint (ptr @{entry} to i64), i8 {fails}, i64 {path}, i64 {path_len}, i64 {shapes}, i64 {shapes_len}, ptr @kv_limit_slot)\n  ret i32 %code\n}}\n"
         );
         self.surround(&format!("{body}{main}"), "thread_local(localexec)")
     }

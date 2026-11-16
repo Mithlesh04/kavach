@@ -61,6 +61,37 @@ pub fn event(span: &Finished, tid: u64) -> String {
     )
 }
 
+/// Whether a trace is being written (`KAVACH_TRACE`).
+pub fn on() -> bool {
+    file().lock().unwrap_or_else(|e| e.into_inner()).is_some()
+}
+
+/// The row the GPU's work is shown on.
+const GPU_ROW: u64 = 1_000_001;
+
+/// The GPU's work `name`, sent at `start_nanos` (the spans' clock) and
+/// taking `dur_nanos` on the GPU, as an event on a row of its own, `GPU`
+/// (spec 14.12).
+pub fn write_gpu(name: &str, start_nanos: u128, dur_nanos: u128) {
+    static NAMED: std::sync::Once = std::sync::Once::new();
+    let mut f = file().lock().unwrap_or_else(|e| e.into_inner());
+    let Some(f) = f.as_mut() else {
+        return;
+    };
+    NAMED.call_once(|| {
+        let row = format!(
+            "{{\"name\":\"thread_name\",\"ph\":\"M\",\"pid\":1,\"tid\":{GPU_ROW},\"args\":{{\"name\":\"GPU\"}}}},\n"
+        );
+        let _ = f.write_all(row.as_bytes());
+    });
+    let (ts, dur) = (start_nanos / 1_000, dur_nanos / 1_000);
+    let event = format!(
+        "{{\"name\":\"{}\",\"ph\":\"X\",\"ts\":{ts},\"dur\":{dur},\"pid\":1,\"tid\":{GPU_ROW}}},\n",
+        escape(name)
+    );
+    let _ = f.write_all(event.as_bytes());
+}
+
 /// Writes `spans` to the trace file, when there is one.
 pub fn write(spans: &[Finished]) {
     if spans.is_empty() {

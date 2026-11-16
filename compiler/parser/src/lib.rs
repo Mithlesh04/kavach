@@ -8,6 +8,7 @@ mod exprs;
 mod fns;
 mod items;
 mod literals;
+mod loaded;
 mod parser;
 mod patterns;
 mod primary;

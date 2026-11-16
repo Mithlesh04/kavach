@@ -254,6 +254,9 @@ pub struct Program {
     /// Lines of loops that wait for the GPU each round, and why, for
     /// `kavach check` (decision 0067).
     pub notes: Vec<(u32, String)>,
+    /// Built with `--tracy`: `main` starts Tracy's client first (spec
+    /// 14.12, decision 0123).
+    pub tracy: bool,
 }
 
 pub struct Function {
@@ -270,6 +273,9 @@ pub struct Function {
     /// A C function (`extern c`, spec 10.7): its library. It has no body
     /// here; native code calls the C symbol `name`.
     pub external: Option<String>,
+    /// A C function that takes more arguments after its own, as `...`
+    /// says (spec 10.7): each call passes them as their types are.
+    pub variadic: bool,
 }
 
 #[derive(Clone, Debug, Default)]

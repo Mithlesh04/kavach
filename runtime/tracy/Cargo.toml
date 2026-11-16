@@ -1,0 +1,17 @@
+[package]
+name = "kavach-runtime-tracy"
+description = "Spans and GPU work shown live in the Tracy profiler (spec 14.12, decision 0123)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+kavach-runtime-core = { path = "../core", default-features = false }
+# Tracy's own client, which streams to the Tracy profiler (decision 0123).
+# Started by hand, so a program that doesn't ask never starts it.
+tracy-client = { version = "0.18", default-features = false, features = ["enable", "manual-lifetime", "only-localhost"] }
+
+[lints]
+workspace = true

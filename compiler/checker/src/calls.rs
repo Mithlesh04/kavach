@@ -24,15 +24,10 @@ impl Checker<'_> {
                 if let Some(&def) = self.res.uses.get(&id.span.start) {
                     match self.res.defs[def].kind {
                         DefKind::Fn => {
-                            if self.c_fns.contains(&def) && self.in_unsafe == 0 {
-                                self.error(
-                                    e.span,
-                                    format!("`{}` is a C function: call it inside `unsafe {{ … }}`, in a safe function around it (spec 10.7)", id.name),
-                                );
-                            }
-                            if self.c_fns.contains(&def) {
-                                self.check_callbacks(def, args);
-                            }
+                            let args = match self.c_fns.contains_key(&def) {
+                                true => self.c_arguments(def, args),
+                                false => args,
+                            };
                             if let Some(sig) = self.fns.get(&def).cloned() {
                                 return self.apply(
                                     &sig,
@@ -119,6 +114,7 @@ impl Checker<'_> {
         span: Span,
         name: &str,
     ) -> Ty {
+        self.c_needs_unsafe(sig, span, name);
         // A `-> secret T` function gives a secret (spec 8.7).
         if sig.ret_secret {
             self.secret.insert((span.start, span.end));

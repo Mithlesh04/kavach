@@ -74,6 +74,8 @@ fn main() -> ExitCode {
     }
     let args = project::expand(args);
     let (args, compress) = pack::take_flag(args);
+    // `--tracy`: live in the Tracy profiler (spec 14.12, decision 0123).
+    let args = native::take_tracy(args);
     // The `.env` file and `--env` values (spec 10.13).
     if let ([command, ..], Some(path)) = (&args[..], args.iter().find(|a| a.ends_with(".kav")))
         && matches!(command.as_str(), "run" | "test" | "build")

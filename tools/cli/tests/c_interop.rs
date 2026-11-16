@@ -309,3 +309,113 @@ none
     let dir = native("bytes", BYTES, expected);
     std::fs::remove_dir_all(&dir).unwrap();
 }
+
+/// A C function ending in `...` (spec 10.7): extra arguments as C
+/// promotes them, ten `double`s so some go on the stack, and text.
+const VARIADIC: &str = "extern c \"c\" {
+    fn snprintf(out: Ptr<UInt8>, size: UInt64, format: String, ...) -> Int32
+}
+
+fn main() {
+    unsafe {
+        const out: Ptr<UInt8> = alloc(200)
+        const small: Int8 = -3
+        const half: Float32 = 0.5
+        const n = snprintf(out, 200, \"%d %lld %.3f %s %d %.1f %u\", Int32(42), 9_000_000_000, 2.5, \"hi\", small, half, UInt32(7))
+        print(\"{n}: {out.text() ?? \"\"}\")
+        const _ = snprintf(out, 200, \"%g %g %g %g %g %g %g %g %g %g %d\", 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.5, Int32(11))
+        print(out.text() ?? \"\")
+        free(out)
+    }
+}
+";
+
+#[test]
+fn c_functions_take_more_after_dots() {
+    let expected = "31: 42 9000000000 2.500 hi -3 0.5 7\n1 2 3 4 5 6 7 8 9 10.5 11\n";
+    let dir = std::env::temp_dir().join(format!("kavach-c-va-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(
+        dir.join("kavach.toml"),
+        "[package]\nname = \"va\"\nunsafe = true\n",
+    )
+    .unwrap();
+    std::fs::write(dir.join("main.kav"), VARIADIC).unwrap();
+    let exe = dir.join(format!("va{}", std::env::consts::EXE_SUFFIX));
+    // Built with LLVM and with Cranelift; and run in memory, except on
+    // Windows, whose C library has `snprintf` only in its headers.
+    let mut outputs = Vec::new();
+    for backend in ["llvm", "cranelift"] {
+        let built = kavach()
+            .env("KAVACH_BACKEND", backend)
+            .args(["build", "main.kav", "-o"])
+            .arg(&exe)
+            .current_dir(&dir)
+            .output()
+            .unwrap();
+        let said = String::from_utf8_lossy(&built.stderr).to_string();
+        assert!(built.status.success(), "{backend}: {said}");
+        outputs.push((backend, Command::new(&exe).output().unwrap()));
+    }
+    if !cfg!(windows) {
+        let jit = kavach()
+            .args(["run", "--native", "main.kav"])
+            .current_dir(&dir)
+            .output();
+        outputs.push(("jit", jit.unwrap()));
+    }
+    let _ = std::fs::remove_dir_all(&dir);
+    for (how, out) in outputs {
+        let said = String::from_utf8_lossy(&out.stderr);
+        assert_eq!(
+            String::from_utf8_lossy(&out.stdout),
+            expected,
+            "{how}: {said}"
+        );
+    }
+}
+
+/// Records by value (spec 10.7), through C's own functions: `div_t` comes
+/// back in a register, `lldiv_t` in two (System V) or through a hidden
+/// pointer (Windows), and a complex number goes in two float registers
+/// (System V) or as the address of a copy (Windows).
+const BY_VALUE: &str = "type IntDiv {
+    quot: Int32
+    rem: Int32
+}
+
+type LongDiv {
+    quot: Int
+    rem: Int
+}
+
+type Complex {
+    re: Float
+    im: Float
+}
+
+extern c \"c\" {
+    fn div(n: Int32, d: Int32) -> IntDiv
+    fn lldiv(n: Int, d: Int) -> LongDiv
+}
+
+extern c \"m\" {
+    fn cabs(z: Complex) -> Float
+}
+
+fn main() {
+    unsafe {
+        const a = div(17, 5)
+        print(\"{a.quot} {a.rem}\")
+        const b = lldiv(9_000_000_000_007, 1000)
+        print(\"{b.quot} {b.rem}\")
+        print(cabs(Complex(re: 3.0, im: 4.0)))
+    }
+}
+";
+
+#[test]
+fn records_go_to_c_by_value() {
+    let dir = native("byval", BY_VALUE, "3 2\n9000000000 7\n5.0\n");
+    std::fs::remove_dir_all(&dir).unwrap();
+}

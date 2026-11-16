@@ -9,7 +9,13 @@ use kavach_ast::{Expr, ExprKind, Span};
 use kavach_resolver::DefKind;
 
 /// The built-in error types, which carry their message across.
-const ERRORS: [&str; 4] = ["Error", "ParseError", "CliError", "RegexError"];
+const ERRORS: [&str; 5] = [
+    "Error",
+    "ParseError",
+    "CliError",
+    "RegexError",
+    "LibraryError",
+];
 
 impl Checker<'_> {
     /// Checks `x` of `spawn process x`, a call whose type is `t`.

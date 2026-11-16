@@ -1,0 +1,16 @@
+[package]
+name = "kavach-runtime-font"
+description = "Fonts for std.font (spec 14.31): OpenType loaded and text shaped through rustybuzz, glyphs drawn into a distance atlas"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish = false
+
+[dependencies]
+# HarfBuzz's shaping in pure Rust, with `ttf-parser` for the font itself
+# (decision 0121).
+rustybuzz = "0.20"
+
+[lints]
+workspace = true

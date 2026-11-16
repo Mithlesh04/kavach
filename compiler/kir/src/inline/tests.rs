@@ -51,6 +51,7 @@ fn fib() -> Function {
         line: 1,
         fails: false,
         external: None,
+        variadic: false,
     }
 }
 
@@ -160,6 +161,7 @@ fn twice_of(arg: Expr) -> Vec<Function> {
         line: 1,
         fails: false,
         external: None,
+        variadic: false,
     };
     let main = Function {
         name: "main".into(),
@@ -173,6 +175,7 @@ fn twice_of(arg: Expr) -> Vec<Function> {
         line: 1,
         fails: false,
         external: None,
+        variadic: false,
     };
     vec![twice, main]
 }
@@ -236,6 +239,7 @@ fn down_and_main() -> Vec<Function> {
         line: 1,
         fails: false,
         external: None,
+        variadic: false,
     };
     let mut down = f("down", vec![0], vec![Type::I64], body);
     crate::unrecurse::unrecurse(0, &mut down);

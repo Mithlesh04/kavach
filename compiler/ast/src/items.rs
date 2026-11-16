@@ -85,12 +85,28 @@ pub struct FnDecl {
     /// The C library of a function declared in `extern c "name" { … }`
     /// (spec 10.7); the parser gives each its own item.
     pub c_library: Option<String>,
+    /// `...` after a C function's parameters: it takes more, as C's
+    /// `printf` does (spec 10.7).
+    pub c_variadic: bool,
+    /// A function of `extern c library Name { … }` (spec 10.7), which
+    /// the program loads while running: `Name.open`, or the block's
+    /// function of this number, a method of the loaded library.
+    pub c_loaded: Option<CLoaded>,
     /// `gpu fn`: may run on the GPU, so uses only what a GPU can (spec 15).
     pub is_gpu: bool,
     /// `gpu vertex fn` or `gpu fragment fn` (spec 15.3).
     pub gpu_stage: GpuStage,
     /// `deprecated "…" fix …` on the line before (spec 12.6).
     pub deprecated: Option<Box<Deprecation>>,
+}
+
+/// What a function of a library loaded while running is (spec 10.7).
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum CLoaded {
+    /// `Name.open(path)`: loads the library and finds its functions.
+    Open,
+    /// The block's function of this number.
+    Function(usize),
 }
 
 /// `deprecated "use refund_order instead" fix refund_order(order)`.

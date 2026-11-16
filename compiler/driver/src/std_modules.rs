@@ -103,6 +103,11 @@ pub(crate) const BUILTIN: &[(&str, &str, &str)] = &[
         include_str!("../../../stdlib/image/image.kav"),
     ),
     (
+        "std/font.kav",
+        "std.font",
+        include_str!("../../../stdlib/font/font.kav"),
+    ),
+    (
         "std/app.kav",
         "std.app",
         include_str!("../../../stdlib/app/app.kav"),

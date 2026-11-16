@@ -62,6 +62,8 @@ fn open() -> Option<Gpu> {
     let descriptor = wgpu::DeviceDescriptor {
         label: Some("kavach"),
         required_limits: limits.clone(),
+        // Timestamps, when a trace is written (spec 14.12).
+        required_features: crate::timers::features(&adapter),
         ..Default::default()
     };
     let (device, queue) = block_on(adapter.request_device(&descriptor)).ok()?;

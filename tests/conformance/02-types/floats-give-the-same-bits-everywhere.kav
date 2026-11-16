@@ -1,0 +1,30 @@
+// Rule: Float results are the same bits on every machine: a multiply and an add are never fused, and std.math's functions are Kavach's own code.
+// Spec: 2.1
+// expect output: 5.720000000000001
+// expect output: -0.8522008497671888
+// expect output: 0.523214785395139
+// expect output: 2.0137527074704766
+// expect output: -0.35667494393873245
+// expect output: 5.760781994950998
+// expect output: -1.628778225606899
+// expect output: 2.992702705980296
+// expect output: 5.7607822
+
+use std.math
+
+fn main() {
+    let a = 1.1
+    let b = 2.2
+    print(a * b + 3.3)
+    // 1e22 needs the full argument reduction some C libraries cut short.
+    let big = 1e22
+    print(math.sin(big))
+    print(math.cos(big))
+    print(math.exp(0.7))
+    print(math.ln(0.7))
+    print(math.pow(1.7, 3.3))
+    print(math.tan(big))
+    print(math.atan2(0.3, -2.0))
+    let x: Float32 = 1.7
+    print(x ** 3.3)
+}

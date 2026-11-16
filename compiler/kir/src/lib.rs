@@ -6,6 +6,7 @@
 //! (decision 0014) still runs such programs.
 
 pub mod borrows;
+pub mod c_abi;
 mod cancel;
 mod coalesce;
 mod collect;
@@ -27,6 +28,7 @@ mod lower_ai;
 mod lower_base64;
 mod lower_bytes;
 mod lower_c;
+mod lower_c_records;
 mod lower_calls;
 mod lower_chain;
 mod lower_cli;
@@ -55,6 +57,7 @@ mod lower_json;
 mod lower_json_checks;
 mod lower_labels;
 mod lower_lambda;
+mod lower_loaded;
 mod lower_log;
 mod lower_match;
 mod lower_methods;
@@ -135,8 +138,15 @@ pub const CRYPTO: [&str; 18] = [
 /// linker takes the file every system with them has, not the development
 /// package's `.so`.
 pub fn system_libraries(program: &Program) -> Vec<String> {
+    // Tracy's client is C++ (decision 0123): its standard library, which
+    // Windows' linker finds by itself.
+    let cxx = match () {
+        _ if !program.tracy || cfg!(windows) => None,
+        _ if cfg!(target_os = "macos") => Some("c++".to_string()),
+        _ => Some("stdc++".to_string()),
+    };
     if !cfg!(target_os = "linux") {
-        return Vec::new();
+        return cxx.into_iter().collect();
     }
     let uses = |prefix: &str| {
         (program.functions.iter()).any(|f| {
@@ -145,7 +155,7 @@ pub fn system_libraries(program: &Program) -> Vec<String> {
             })
         })
     };
-    let mut libs = Vec::new();
+    let mut libs: Vec<String> = cxx.into_iter().collect();
     if uses("Input") {
         libs.push(":libudev.so.1".to_string());
     }

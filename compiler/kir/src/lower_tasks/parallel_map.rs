@@ -89,6 +89,7 @@ impl<'a> Lowerer<'a> {
             line,
             fails: true,
             external: None,
+            variadic: false,
         };
         self.restore_function(saved);
         let body = self.add_function(body);

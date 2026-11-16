@@ -16,4 +16,5 @@ GPU compute for `gpu fn` (spec [chapter 15](../../docs/spec/15-gpu.md), [decisio
 | [src/pipeline.rs](src/pipeline.rs) | Compiling each kernel into a pipeline once; a kernel whose loops surely end goes without `wgpu`'s loop counter ([decision 0077](../../docs/decisions/0077-kernels-whose-loops-end.md)) |
 | [src/spare.rs](src/spare.rs) | Buffers of items and results no list holds any more, reused by the next `map` of the same size |
 | [src/upload.rs](src/upload.rs) | Items of 1 MB or more copied over through two buffers of our own, used in turn: `write_buffer` made a new 64 MB staging buffer every few chunks of a stream, at 100–280 ms each |
+| [src/timers.rs](src/timers.rs) | The GPU's own time for a frame's drawing and each `map`, from timestamp queries, when a trace or Tracy is on (spec 14.12, decision 0123); read back without waiting |
 | [src/tests.rs](src/tests.rs) | A kernel on a real GPU: results, results left there and read back, a stop, big items through the upload buffers (skipped without a GPU) |

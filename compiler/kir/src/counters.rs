@@ -209,6 +209,7 @@ mod tests {
             line: 1,
             fails: false,
             external: None,
+            variadic: false,
         };
         crate::ranges::prove_ranges(&mut f);
         count_remainders(&mut f);

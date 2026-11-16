@@ -17,9 +17,30 @@ impl Parser<'_> {
 
     /// Everything after the name: generics, parameters, clauses and body.
     pub(crate) fn fn_rest(&mut self, name: Ident, body_required: bool) -> FnDecl {
-        let mut f = FnDecl {
-            generics: self.generic_params(),
-            params: self.params(),
+        let generics = self.generic_params();
+        let (params, c_variadic) = self.params();
+        let mut f = self.bare_fn(name);
+        f.generics = generics;
+        f.params = params;
+        f.c_variadic = c_variadic;
+        self.clauses(&mut f);
+        if *self.peek_past_newlines() == TokenKind::LBrace {
+            self.skip_newlines();
+            f.body = Some(self.block());
+        } else if body_required {
+            self.error_here(format!(
+                "expected `{{` to start the body of `{}`",
+                f.name.name
+            ));
+        }
+        f
+    }
+
+    /// A function called `name` with nothing else yet.
+    pub(crate) fn bare_fn(&self, name: Ident) -> FnDecl {
+        FnDecl {
+            generics: Vec::new(),
+            params: Vec::new(),
             where_bounds: Vec::new(),
             name,
             ret: None,
@@ -34,30 +55,30 @@ impl Parser<'_> {
             examples: Vec::new(),
             body: None,
             c_library: None,
+            c_variadic: false,
+            c_loaded: None,
             is_gpu: false,
             gpu_stage: GpuStage::Compute,
             deprecated: None,
-        };
-        self.clauses(&mut f);
-        if *self.peek_past_newlines() == TokenKind::LBrace {
-            self.skip_newlines();
-            f.body = Some(self.block());
-        } else if body_required {
-            self.error_here(format!(
-                "expected `{{` to start the body of `{}`",
-                f.name.name
-            ));
         }
-        f
     }
 
-    fn params(&mut self) -> Vec<Param> {
+    /// The parameters, and whether `...` ends them: more arguments, as a
+    /// C function such as `printf` takes (spec 10.7).
+    fn params(&mut self) -> (Vec<Param>, bool) {
         let mut params = Vec::new();
         if !self.expect(&TokenKind::LParen, "`(` and the parameters") {
-            return params;
+            return (params, false);
         }
+        let mut rest = false;
         while !self.at(&TokenKind::RParen) && !self.at(&TokenKind::Eof) {
-            if self.at_kw(Keyword::SelfValue) {
+            if self.eat(&TokenKind::Ellipsis) {
+                rest = true;
+                if !self.at(&TokenKind::RParen) {
+                    self.error_here("`...` comes after the last parameter");
+                }
+                break;
+            } else if self.at_kw(Keyword::SelfValue) {
                 let span = self.span();
                 self.bump();
                 let name = Ident {
@@ -105,7 +126,7 @@ impl Parser<'_> {
             }
         }
         self.expect(&TokenKind::RParen, "`)` to close the parameters");
-        params
+        (params, rest)
     }
 
     fn clauses(&mut self, f: &mut FnDecl) {

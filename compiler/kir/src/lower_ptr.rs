@@ -44,22 +44,32 @@ impl<'a> Lowerer<'a> {
         if let Some(size) = size_of(t) {
             return Ok((t, size, None));
         }
-        let Some(Shape::Record { fields, .. }) = self.shapes.shape(t) else {
+        let Some(Shape::Record { .. }) = self.shapes.shape(t) else {
             return Err(self.unsupported("a `Ptr` to this type", span));
         };
-        // As C lays out a struct (spec 6.4): each field aligned to its
-        // size, the whole to its largest field.
+        match self.c_layout(t) {
+            Some((size, fields)) => Ok((t, size, Some(fields))),
+            None => Err(self.unsupported("a `Ptr` to a record with this field", span)),
+        }
+    }
+
+    /// Record type `t` laid out as C lays out a struct (spec 6.4): each
+    /// field aligned to its size, the whole to its largest field; its size
+    /// and each field's type and offset. `None` when `t` isn't a record
+    /// of C's types.
+    pub(crate) fn c_layout(&self, t: Type) -> Option<(i128, Vec<(Type, i128)>)> {
+        let Some(Shape::Record { fields, .. }) = self.shapes.shape(t) else {
+            return None;
+        };
         let (mut offset, mut align, mut out) = (0, 1, Vec::new());
         for f in fields {
-            let Some(size) = size_of(f.ty) else {
-                return Err(self.unsupported("a `Ptr` to a record with this field", span));
-            };
+            let size = size_of(f.ty)?;
             offset = (offset + size - 1) / size * size;
             out.push((f.ty, offset));
             offset += size;
             align = align.max(size);
         }
-        Ok((t, (offset + align - 1) / align * align, Some(out)))
+        Some(((offset + align - 1) / align * align, out))
     }
 
     pub(crate) fn type_at(&self, span: ast::Span) -> Option<Ty> {
@@ -251,6 +261,48 @@ impl<'a> Lowerer<'a> {
                 (false, _) => values.push(self.expr(&a.value)?),
             }
         }
+        // After `...`, as C promotes them: small whole numbers to an `int`,
+        // a `Float32` to a `double` (spec 10.7).
+        for a in args.iter().skip(decl.params.len()) {
+            let v = self.expr(&a.value)?;
+            let wide = match v.ty {
+                Type::I8 | Type::I16 | Type::U8 | Type::U16 => Type::I32,
+                Type::F32 => Type::F64,
+                _ => {
+                    values.push(v);
+                    continue;
+                }
+            };
+            values.push(at(K::Convert(Box::new(v), false), wide, line));
+        }
+        let target = K::Closure {
+            func: fid,
+            env: Type::Unit,
+            captures: Vec::new(),
+        };
+        let span = decl.name.span;
+        let values =
+            match self.c_record_call(at(target, Type::I64, line), values, ty, line, span)? {
+                Ok(_) if decl.c_variadic => {
+                    return Err(
+                        self.unsupported("a record by value to a C function with `...`", span)
+                    );
+                }
+                Ok(call) => return Ok(call),
+                Err(values) => values,
+            };
+        Ok(self.c_copied_call(values, ty, line, |args| K::Call(fid, args)))
+    }
+
+    /// A call into C of `values`, made by `call` from them: text and
+    /// `Bytes` go as copies, freed after the call (spec 10.7).
+    pub(crate) fn c_copied_call(
+        &mut self,
+        values: Vec<ir::Expr>,
+        ty: Type,
+        line: u32,
+        call: impl FnOnce(Vec<ir::Expr>) -> K,
+    ) -> ir::Expr {
         let text = self.str_type();
         let copied = |l: &Self, t: Type| {
             if t == text {
@@ -262,7 +314,7 @@ impl<'a> Lowerer<'a> {
             }
         };
         if values.iter().all(|v| copied(self, v.ty).is_none()) {
-            return Ok(at(K::Call(fid, values), ty, line));
+            return at(call(values), ty, line);
         }
         let (mut stmts, mut copies, mut args) = (Vec::new(), Vec::new(), Vec::new());
         for v in values {
@@ -276,12 +328,12 @@ impl<'a> Lowerer<'a> {
             copies.push(copy);
         }
         let result = self.new_local(ty);
-        stmts.push(Stmt::Let(result, at(K::Call(fid, args), ty, line)));
+        stmts.push(Stmt::Let(result, at(call(args), ty, line)));
         for c in copies {
             let free = K::Rt(RtOp::PtrFree, vec![self.local_expr(c, line)]);
             stmts.push(Stmt::Expr(at(free, Type::Unit, line)));
         }
         let value = (ty != Type::Unit).then(|| Box::new(self.local_expr(result, line)));
-        Ok(at(K::Block(Block { stmts, value }), ty, line))
+        at(K::Block(Block { stmts, value }), ty, line)
     }
 }

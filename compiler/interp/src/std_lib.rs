@@ -88,6 +88,7 @@ impl<'a> Interp<'a> {
             "input" => return self.input_call(name, &args),
             "audio" => return self.audio_call(name, &args),
             "image" => return self.image_call(name, &args, span),
+            "font" => return self.font_call(name, &args, span),
             "app" => return self.app_call(name, &args),
             "process" => return self.process_call(name, &args, span),
             "system" => return self.system_call(name, &args),
@@ -244,7 +245,7 @@ impl<'a> Interp<'a> {
                 Value::Float(crate::std_math::float_fn(n, float(0), float(1)).unwrap_or(0.0))
             }
             ("math", "sqrt") => Value::Float(float(0).sqrt()),
-            ("math", "pow") => Value::Float(float(0).powf(float(1))),
+            ("math", "pow") => Value::Float(kavach_runtime_core::math::pow(float(0), float(1))),
             ("math", "floor") => Value::Float(float(0).floor()),
             ("math", "ceil") => Value::Float(float(0).ceil()),
             ("math", "round") => Value::Float(float(0).round()),

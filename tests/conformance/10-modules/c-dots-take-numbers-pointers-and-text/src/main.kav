@@ -1,0 +1,17 @@
+// Rule: After a C function's `...`, an argument is a number, a `Ptr` or a `String`; any other type is a compile error.
+// Spec: 10.7
+// expect compile error
+
+extern c "c" {
+    fn printf(format: String, ...) -> Int32
+}
+
+type Point {
+    x: Int32
+    y: Int32
+}
+
+fn main() {
+    const p = Point(x: 1, y: 2)
+    const _ = unsafe { printf("%d\n", p) }      // error: C's `...` takes numbers, `Ptr`s and `String`s
+}

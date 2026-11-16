@@ -57,5 +57,4 @@ A built program finds them by walking its stack with the system's unwinder and a
 ## Open questions
 
 - The line of each call in the list, which needs line tables (debug info) in built programs.
-- An icon and a manifest for Windows executables, from `kavach.toml` (language request 9 (12)).
 - File type filters in `open_file`.

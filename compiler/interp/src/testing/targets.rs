@@ -40,7 +40,7 @@ impl<'a> Interp<'a> {
             let written = f.uses.iter().map(|u| i.text(u.span).to_string());
             let real = uses.into_iter().chain(written).find(|c| !i.faked(c));
             let why = match gens {
-                _ if f.c_library.is_some() => {
+                _ if f.c_library.is_some() || f.c_loaded.is_some() => {
                     Some("a C function, which runs only in native code (10.7)".to_string())
                 }
                 _ if !f.generics.is_empty() => Some("generic".to_string()),

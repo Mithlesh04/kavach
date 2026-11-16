@@ -1,0 +1,3 @@
+[package]
+name = "only-c-functions-take-dots"
+unsafe = true

@@ -23,6 +23,9 @@ arboard = { version = "3", default-features = false, optional = true }
 serial2 = { version = "0.2", optional = true }
 # Unicode normal forms for `std.text` (decision 0102).
 unicode-normalization = "0.1"
+# `std.math`'s functions, the same code on every system (decision 0122):
+# musl's, in pure Rust, without the machine-specific paths.
+libm = { version = "0.2", default-features = false }
 # `std.compress` (decision 0103): gzip and deflate on the pure-Rust
 # backend, brotli, lz4, and zstd through the C libzstd.
 # Searching bytes and text at memory speed (SIMD `memchr` and

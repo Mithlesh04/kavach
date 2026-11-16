@@ -74,8 +74,10 @@ pub fn current_span(scopes: &[Scope]) -> Option<SpanId> {
 /// (a `traceparent` a request brought) when there is none.
 pub fn span(scopes: &[Scope], name: &str, remote: Option<SpanId>) -> Scope {
     let parent = current_span(scopes).or(remote);
+    let id = crate::trace::child_of(parent);
+    crate::profiler::begin(id.span, name);
     Scope::Span {
-        id: crate::trace::child_of(parent),
+        id,
         parent: parent.map(|p| p.span),
         name: name.to_string(),
         start_nanos: crate::trace::now_nanos(),
@@ -140,8 +142,12 @@ pub fn leave(scopes: &mut Vec<Scope>, depth: usize, error: Option<&str>) -> Vec<
             _ => None,
         })
         .collect();
-    // To the Chrome trace too, when `KAVACH_TRACE` names one (14.12).
+    // To the Chrome trace too, when `KAVACH_TRACE` names one, and to a
+    // live profiler (14.12).
     crate::chrome_trace::write(&ended);
+    for span in &ended {
+        crate::profiler::end(span.id.span);
+    }
     ended
 }
 

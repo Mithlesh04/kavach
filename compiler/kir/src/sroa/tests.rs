@@ -84,6 +84,7 @@ fn unshared_records_become_locals() {
         line: 1,
         fails: false,
         external: None,
+        variadic: false,
     };
     scalarize(&mut f, &shapes, &std::collections::HashSet::new());
     // 3 originals, 2 field locals per record, and a temporary per
@@ -140,6 +141,7 @@ fn a_shared_record_stays_whole() {
         line: 1,
         fails: false,
         external: None,
+        variadic: false,
     };
     scalarize(&mut f, &shapes, &std::collections::HashSet::new());
     assert_eq!(f.locals.len(), 1, "nothing split");
@@ -205,6 +207,7 @@ fn a_fixed_list_read_at_constant_indexes_becomes_locals() {
         line: 1,
         fails: false,
         external: None,
+        variadic: false,
     };
     scalarize(
         &mut f,

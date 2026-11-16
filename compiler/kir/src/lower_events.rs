@@ -80,6 +80,7 @@ impl Lowerer<'_> {
             line,
             fails: true,
             external: None,
+            variadic: false,
         })
     }
 
@@ -145,6 +146,7 @@ impl Lowerer<'_> {
             line,
             fails: false,
             external: None,
+            variadic: false,
         }
     }
 }

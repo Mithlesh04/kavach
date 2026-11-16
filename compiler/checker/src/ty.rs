@@ -126,6 +126,7 @@ pub(crate) fn builtin_name(name: &str) -> &'static str {
         "Error",
         "ParseError",
         "CliError",
+        "LibraryError",
         "Regex",
         "RegexError",
         "Ticker",

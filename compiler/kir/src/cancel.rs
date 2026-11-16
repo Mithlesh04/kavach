@@ -207,6 +207,7 @@ mod tests {
             line: 1,
             fails: false,
             external: None,
+            variadic: false,
         }
     }
 

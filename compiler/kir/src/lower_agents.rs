@@ -470,6 +470,7 @@ impl<'a> Lowerer<'a> {
             line,
             fails: f.errors.is_some(),
             external: None,
+            variadic: false,
         })
     }
 }

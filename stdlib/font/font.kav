@@ -1,0 +1,90 @@
+// std.font (spec 14.31, decision 0121): fonts as values. The runtime
+// reads fonts and shapes text through `rustybuzz`, and draws glyphs as
+// distances into an atlas (`runtime/font`); this file gives them their
+// types.
+
+use std.font
+use std.image
+
+/// Why some bytes aren't a font.
+pub type FontError = BadFont(reason: String)
+
+/// A shaped glyph: its number in the font, and where its origin goes in
+/// pixels from the start of the line, on the baseline, `y` downwards.
+pub type Glyph {
+    pub id: Int
+    pub x: Float
+    pub y: Float
+}
+
+/// Text shaped: its glyphs in the order they are drawn, and its width in
+/// pixels.
+pub type Line {
+    pub glyphs: [Glyph]
+    pub width: Float
+}
+
+/// Where a glyph is in an atlas's image, and where that box goes from the
+/// glyph's origin: `left` pixels to the right, `top` above the baseline.
+pub type GlyphBox {
+    pub x: Int
+    pub y: Int
+    pub width: Int
+    pub height: Int
+    pub left: Int
+    pub top: Int
+}
+
+/// Glyphs drawn as distances into one image, at `size` pixels to the em,
+/// reaching `spread` pixels from each glyph's edge; their boxes by glyph
+/// number.
+pub type Atlas {
+    pub image: Image
+    pub size: Float
+    pub spread: Float
+    pub boxes: [Int: GlyphBox]
+}
+
+/// A font: its file, and its ascent, descent and line gap in ems.
+pub type Font {
+    data: Bytes
+    pub ascent: Float
+    pub descent: Float
+    pub line_gap: Float
+
+    /// `text` shaped at `size` pixels to the em.
+    pub fn shape(self, text: String, size: Float) -> Line
+        require size >= 1.0 and size <= 1_000.0
+    {
+        const parts = font.shape_id(self.data, text, size)
+        let glyphs: [Glyph] = []
+        for i in 0..(parts.len() - 1) / 3 {
+            glyphs.push(Glyph(id: Int(parts[i * 3]), x: parts[i * 3 + 1], y: parts[i * 3 + 2]))
+        }
+        Line(glyphs: glyphs, width: parts[parts.len() - 1])
+    }
+
+    /// Every glyph that shaping `text` uses, drawn as distances at `size`
+    /// pixels to the em.
+    pub fn atlas(self, text: String, size: Float) -> Atlas
+        require size >= 1.0 and size <= 1_000.0
+    {
+        const id = font.atlas_id(self.data, text, size)
+        const parts = font.atlas_boxes_id(id)
+        let boxes: [Int: GlyphBox] = [:]
+        for i in 0..(parts.len() - 2) / 7 {
+            const at = 2 + i * 7
+            boxes[parts[at]] = GlyphBox(
+                x: parts[at + 1], y: parts[at + 2], width: parts[at + 3],
+                height: parts[at + 4], left: parts[at + 5], top: parts[at + 6])
+        }
+        const img = image.new(parts[0], parts[1], font.atlas_pixels_id(id).to_list())
+        Atlas(image: img, size: size, spread: (size / 8.0).max(2.0), boxes: boxes)
+    }
+}
+
+/// The font in an OpenType or TrueType file's bytes.
+pub fn load(bytes: Bytes) -> Font ! FontError {
+    const m = try font.metrics_id(bytes)
+    Font(data: bytes, ascent: m[0], descent: m[1], line_gap: m[2])
+}

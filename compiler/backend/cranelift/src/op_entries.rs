@@ -84,6 +84,8 @@ pub(crate) fn op_entries() -> Vec<RuntimeFn> {
             "kv_rt_image",
             kavach_runtime_native::kv_rt_image as *const u8,
         ),
+        ("kv_rt_font", kavach_runtime_native::kv_rt_font as *const u8),
+        ("kv_rt_clib", kavach_runtime_native::kv_rt_clib as *const u8),
         ("kv_rt_app", kavach_runtime_native::kv_rt_app as *const u8),
         (
             "kv_rt_dialog",

@@ -63,3 +63,12 @@ const n = BigInt(7) ** 30             // BigInt(…) from an Int
 print(d + 1)                          // 1 is a BigInt here
 const x: Int = 2 ** 70                // error: doesn't fit in Int
 ```
+
+**Floats give the same bits everywhere** ([decision 0122](../../decisions/0122-floats-give-the-same-bits-everywhere.md)). A `Float` or `Float32` program gives the same results, to the last bit, on every machine, system and build, interpreted or native. Each `+ - * /` is rounded on its own, as IEEE 754 says: a multiply and an add are never fused into one step, and a sum keeps its order. `std.math`'s functions are Kavach's own code, the same on every system (14.5). So a game's simulation or a test's expected number doesn't change from Windows to Linux. Only the GPU is apart: its own hardware works out `gpu fn`s (chapter 15).
+
+```kavach
+let a = 1.1
+let b = 2.2
+print(a * b + 3.3)        // 5.720000000000001 everywhere: a multiply, then an add
+print(math.sin(1e22))     // -0.8522008497671888 everywhere
+```

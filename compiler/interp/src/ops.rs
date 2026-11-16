@@ -212,7 +212,7 @@ impl<'a> Interp<'a> {
                 Mul => x * y,
                 Div => x / y,
                 // As a `Float`, then rounded once: native code does the same.
-                Pow => f64::from(x).powf(f64::from(y)) as f32,
+                Pow => kavach_runtime_core::math::pow(f64::from(x), f64::from(y)) as f32,
                 _ => x % y,
             })),
             (Value::Float(x), Value::Float(y)) => Ok(Value::Float(match op {
@@ -220,7 +220,7 @@ impl<'a> Interp<'a> {
                 Sub => x - y,
                 Mul => x * y,
                 Div => x / y,
-                Pow => x.powf(y),
+                Pow => kavach_runtime_core::math::pow(x, y),
                 _ => x % y,
             })),
             (Value::BigInt(x), Value::BigInt(y)) => self.big_arith(op, &x, &y, span),

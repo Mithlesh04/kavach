@@ -43,6 +43,23 @@ impl<'a> Lowerer<'a> {
                 line: self.line(r.span),
             });
         }
+        // A function of a library loaded while running (spec 10.7).
+        if let (Some(loaded), Some(Owner::Adt(def))) = (f.c_loaded, &owner) {
+            let made = self.loaded_body(f, loaded, *def, &params, ret)?;
+            body.stmts.extend(made.stmts);
+            body.value = made.value;
+            return Ok(ir::Function {
+                name: format!("method {}", f.name.name),
+                params,
+                ret,
+                locals: self.locals.clone(),
+                body,
+                line: self.line(f.name.span),
+                fails: f.errors.is_some(),
+                external: None,
+                variadic: false,
+            });
+        }
         let Some(ast_body) = &f.body else {
             return Err(self.unsupported("functions without a body", f.name.span));
         };
@@ -109,6 +126,7 @@ impl<'a> Lowerer<'a> {
             line: self.line(f.name.span),
             fails: f.errors.is_some(),
             external: None,
+            variadic: false,
         })
     }
 }

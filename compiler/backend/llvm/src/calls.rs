@@ -53,7 +53,9 @@ impl FnEmit<'_> {
         // out of stack stays a panic (spec 3.8) instead of a loop forever.
         let ret = crate::module::ret_type(ty, self.m.fails[f]);
         let name = self.m.c_names[f].clone().unwrap_or_else(|| fn_name(f));
-        let call = format!("notail call {ret} @{name}({})", list.join(", "));
+        // A C function ending in `...` is called by its whole type.
+        let ty = (self.m.c_variadic[f].as_ref()).map_or(String::new(), |p| format!(" ({p})"));
+        let call = format!("notail call {ret}{ty} @{name}({})", list.join(", "));
         let result = if ret == "void" {
             self.ins(call);
             None
@@ -101,5 +103,88 @@ impl FnEmit<'_> {
             self.release(&f);
         }
         result
+    }
+
+    /// A call of the C function at address `args[0]` with the other
+    /// operands, giving `ty`: a library loaded while running (spec 10.7).
+    pub(crate) fn call_address(&mut self, ty: Type, args: &[Expr]) -> Option<String> {
+        let address = self.expr(&args[0])?;
+        let mut list = Vec::new();
+        for a in &args[1..] {
+            if let Some(v) = self.expr(a) {
+                list.push(format!("{} {v}", llvm_type(a.ty)));
+            }
+        }
+        let target = self.val(format!("inttoptr i64 {address} to ptr"));
+        let ret = crate::module::ret_type(ty, false);
+        let call = format!("call {ret} {target}({})", list.join(", "));
+        if ret == "void" {
+            self.ins(call);
+            None
+        } else {
+            Some(self.val(call))
+        }
+    }
+
+    /// A call into C with records by value (`RtOp::CallC`), as
+    /// `args[0]` says (`kavach_kir::c_abi::descriptor`): `args[1]` is the
+    /// function's address; result parts are stored where `m` points.
+    pub(crate) fn call_c(&mut self, ty: Type, args: &[Expr]) -> Option<String> {
+        let ExprKind::Str(text) = &args[0].kind else {
+            unreachable!("a C call's descriptor is a text constant")
+        };
+        let (result, words) = text.split_once('|').unwrap_or(("v", ""));
+        let address = self.expr(&args[1])?;
+        let target = self.val(format!("inttoptr i64 {address} to ptr"));
+        let (mut list, mut out) = (Vec::new(), None);
+        for (word, a) in words.split(',').filter(|w| !w.is_empty()).zip(&args[2..]) {
+            let v = self.expr(a)?;
+            let size = &word[1..];
+            list.push(match &word[..1] {
+                "m" => {
+                    out = Some(v);
+                    continue;
+                }
+                "i" => format!("i64 {v}"),
+                "f" => format!("double {v}"),
+                kind @ ("s" | "h") => {
+                    let p = self.val(format!("inttoptr i64 {v} to ptr"));
+                    let how = if kind == "s" { "byval" } else { "sret" };
+                    format!("ptr {how}([{size} x i8]) align 8 {p}")
+                }
+                _ => format!("{} {v}", llvm_type(a.ty)),
+            });
+        }
+        let part = |c: char| if c == 'f' { "double" } else { "i64" };
+        let ret = match result {
+            "v" => "void".to_string(),
+            "n" => crate::module::ret_type(ty, false),
+            p if p.len() == 1 => part(p.chars().next().unwrap_or('i')).to_string(),
+            p => format!(
+                "{{ {} }}",
+                p.chars().map(part).collect::<Vec<_>>().join(", ")
+            ),
+        };
+        let call = format!("call {ret} {target}({})", list.join(", "));
+        if ret == "void" {
+            self.ins(call);
+            return None;
+        }
+        let r = self.val(call);
+        let Some(out) = out else {
+            return Some(r);
+        };
+        let one = result.len() == 1;
+        for (k, c) in result.chars().enumerate() {
+            let v = if one {
+                r.clone()
+            } else {
+                self.val(format!("extractvalue {ret} {r}, {k}"))
+            };
+            let at = self.val(format!("add i64 {out}, {}", 8 * k));
+            let p = self.val(format!("inttoptr i64 {at} to ptr"));
+            self.ins(format!("store {} {v}, ptr {p}, align 1", part(c)));
+        }
+        None
     }
 }

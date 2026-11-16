@@ -142,6 +142,7 @@ impl<'a> Lowerer<'a> {
             line,
             fails: false,
             external: None,
+            variadic: false,
         }
     }
 
@@ -224,6 +225,7 @@ impl<'a> Lowerer<'a> {
             line,
             fails: false,
             external: None,
+            variadic: false,
         }
     }
 

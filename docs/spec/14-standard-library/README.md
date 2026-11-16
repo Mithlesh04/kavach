@@ -36,6 +36,7 @@ Each section is a file of its own: new sections go at the end, with the next num
 | 14.28 std.vec | [28-vec.md](28-vec.md) |
 | 14.29 std.image | [29-image.md](29-image.md) |
 | 14.30 std.app | [30-app.md](30-app.md) |
+| 14.31 std.font | [31-font.md](31-font.md) |
 
 ## Open questions
 

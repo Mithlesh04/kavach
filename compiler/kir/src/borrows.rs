@@ -120,6 +120,7 @@ mod tests {
             line: 1,
             fails: false,
             external: None,
+            variadic: false,
         };
         assert_eq!(borrowing_locals(&f), vec![0, 2]);
     }

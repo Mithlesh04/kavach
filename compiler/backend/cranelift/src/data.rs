@@ -279,6 +279,8 @@ impl FnGen<'_, '_> {
             ExprKind::Rt(RtOp::PtrRead | RtOp::PtrWrite, args) => {
                 return self.ptr_access(e.ty, args);
             }
+            ExprKind::Rt(RtOp::CallAddress, args) => return self.call_address(e.ty, args),
+            ExprKind::Rt(RtOp::CallC, args) => return self.call_c(e.ty, args),
             // `math.sqrt`, `floor` and `ceil`: one exactly rounded
             // instruction, not a runtime call. `round` stays a call:
             // Cranelift's `nearest` rounds ties to even, and Kavach

@@ -111,6 +111,14 @@ fn c_main(
     let entry_addr = b.ins().func_addr(types::I64, entry_ref);
     let fails = b.ins().iconst(types::I8, fails as i64);
     let set = module.declare_func_in_func(set_functions, b.func);
+    // `--tracy`: Tracy's client starts first (decision 0123).
+    if program.tracy {
+        let tracy = module
+            .declare_function("kv_tracy_start", Linkage::Import, &module.make_signature())
+            .map_err(|e| e.to_string())?;
+        let tracy = module.declare_func_in_func(tracy, b.func);
+        b.ins().call(tracy, &[]);
+    }
     let text = |id: DataId, len: usize, b: &mut FunctionBuilder| {
         let gv = module.declare_data_in_func(id, b.func);
         let ptr = b.ins().symbol_value(types::I64, gv);

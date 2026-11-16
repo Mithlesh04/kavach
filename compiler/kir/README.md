@@ -17,6 +17,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | File | Job |
 |---|---|
 | `src/ir.rs` | The KIR types, including heap shapes (`Shape`) |
+| `src/c_abi.rs` | How this machine's C passes a `struct` by value (Windows x64, x86-64 System V), and the descriptor the backends follow; `src/c_abi/tests.rs` checks the ABI documents' examples |
 | `src/types.rs` | KIR types for checker and written types; the shape table |
 | `src/written_types.rs` | The KIR type of a type written in the source |
 | `src/lower.rs` | The file, functions, methods, contracts, optional wrapping |
@@ -26,6 +27,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/lower_methods.rs` | Method calls: user methods, through interface values (2.15), and fields holding functions (3.4) |
 | `src/lower_c.rs` | C functions (`extern c`, spec 10.7): a function with no body, called as the C symbol of its name |
 | `src/lower_ptr.rs` | Raw memory (`Ptr<T>`, spec 6.4): `alloc`, `free`, the address of a `read` or `write`, records laid out as C structs, `p.text()`; text copied for a C call, and callbacks as bare addresses (10.7) |
+| `src/lower_c_records.rs` | Records to C and back by value (spec 10.7): copied into C memory and passed as `c_abi.rs` says, through `RtOp::CallC` |
 | `src/lower_schema.rs` | `json.schema<T>()` (spec 2.12): the schema worked out at compile time, built as a constant `Json` |
 | `src/lower_tls.rs` | `net.connect_tls` and `net.listen_tls` (spec 14.10): the arguments in place, in the runtime's three operands |
 | `src/lower_data.rs` | Records, variants, fields, invariants |
@@ -46,6 +48,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/lower_statics.rs` | Calls through a built-in type's name: `Set.of`, `List`/`Map`/`Set.capacity` (spec 2.2), `Ptr.from_int`, `Bytes.of`, `Float.from_bits` |
 | `src/lower_every.rs` | `for tick in time.every_ms(ms)`: a loop whose rounds each wait for their start (spec 14.4) |
 | `src/lower_iface.rs` | Interface values (spec 2.15): a box of the value, its type and one closure per method; calls through the box |
+| `src/lower_loaded.rs` | Libraries loaded while running (spec 10.7): `open`'s body, which loads the library and finds each function, and each C function's, a call through the address it keeps |
 | `src/lower_json.rs` | `Json` literals, `j["key"]`, and `std.json` calls (spec 2.12) |
 | `src/lower_log.rs` | Logging (spec 14.12): each event's lowest level worked out when compiling, the `[log]` settings handed over at the start of `main`, OpenTelemetry export |
 | `src/lower_cli.rs` | `cli.parse<T>()`: defaults and the record, around the runtime's parsing |

@@ -232,7 +232,9 @@ impl Lowerer<'_> {
             }
             // A call that can fail: its success value (spec 5).
             Ty::Result(ok, _) => self.kir_type(ok, span)?,
-            Ty::Builtin("Error" | "ParseError" | "CliError" | "RegexError", _) => self.error_type(),
+            Ty::Builtin("Error" | "ParseError" | "CliError" | "RegexError" | "LibraryError", _) => {
+                self.error_type()
+            }
             Ty::Builtin("Regex", _) => self.shapes.intern(Shape::Regex),
             Ty::Builtin("Sender" | "Receiver", args) if args.len() == 1 => {
                 let inner = self.kir_type(&args[0], span)?;

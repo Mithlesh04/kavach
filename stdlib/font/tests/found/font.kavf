@@ -1,0 +1,2 @@
+// Found by `kavach test` (spec 11.4). Generated: commit it, never edit it.
+Font.atlas(Font(data: Bytes(0d0a0d0a), ascent: 0.0, descent: 0.0, line_gap: 0.0), "", 1.0)

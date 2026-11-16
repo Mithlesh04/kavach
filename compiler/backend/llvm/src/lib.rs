@@ -79,6 +79,7 @@ pub(crate) fn emit_body(program: &Program) -> (module::Module, String) {
         .iter()
         .map(|f| f.external.as_ref().map(|_| f.name.clone()))
         .collect();
+    m.c_variadic = vec![None; program.functions.len()];
     let mut body = String::new();
     for (i, f) in program.functions.iter().enumerate() {
         if f.external.is_some() {
@@ -88,7 +89,11 @@ pub(crate) fn emit_body(program: &Program) -> (module::Module, String) {
                 .iter()
                 .map(|p| c_type(f.locals[*p as usize], false))
                 .collect();
-            let params: Vec<&str> = params.iter().map(String::as_str).collect();
+            let mut params: Vec<&str> = params.iter().map(String::as_str).collect();
+            if f.variadic {
+                params.push("...");
+                m.c_variadic[i] = Some(params.join(", "));
+            }
             m.declare(&f.name, &c_type(f.ret, true), &params, false);
             continue;
         }

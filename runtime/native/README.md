@@ -76,4 +76,7 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_audio.rs` | `std.audio` (spec 14.27): its own entry, so only programs with sound link `cpal` |
 | `src/rt_watch.rs` | `std.fs`'s `Watcher` (spec 14.3): its own entry, so only programs that watch files link `notify` |
 | `src/rt_image.rs` | `std.image` (spec 14.29): its own entry, so only programs with images link the decoders |
+| `src/rt_font.rs` | `std.font` (spec 14.31): its own entry, so only programs with fonts link the shaper |
+| `src/rt_clib.rs` | Libraries loaded while running (spec 10.7): `dlopen` and `dlsym`, or `LoadLibraryW` and `GetProcAddress`; its own entry, so only programs that load libraries link it |
+| `src/rt_tracy.rs` | `kv_tracy_start`, which `main` calls in a program built with `--tracy` (decision 0123), so only such a program links Tracy |
 | `src/rt_app.rs` | `std.app` (spec 14.30): folders and crash reports, and the dialogs in an entry of their own, so only programs with dialogs link `rfd` |

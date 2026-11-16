@@ -28,6 +28,7 @@ pub(crate) const MODULES: &[(&str, Option<&str>)] = &[
     ("input", Some("Input")),
     ("audio", Some("Audio")),
     ("image", None),
+    ("font", None),
     ("app", Some("Fs")),
     ("process", Some("Process")),
     ("system", Some("System")),
@@ -287,6 +288,8 @@ impl Checker<'_> {
             ("audio", _) => self.audio_signature(name)?,
             // Pictures (spec 14.29): data, no capability.
             ("image", _) => self.image_signature(name)?,
+            // Fonts (spec 14.31): data, no capability.
+            ("font", _) => self.font_signature(name)?,
             // Folders, crash reports and dialogs (spec 14.30).
             ("app", _) => self.app_signature(name)?,
             ("process", _) => self.process_signature(name)?,

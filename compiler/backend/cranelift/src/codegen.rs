@@ -30,6 +30,8 @@ pub(crate) struct FnGen<'a, 'b> {
     pub(crate) funcs: &'a [CFuncId],
     /// Whether each program function can fail (returns an error too).
     pub(crate) fails: &'a [bool],
+    /// For each C function ending in `...`, how many parameters it has.
+    pub(crate) variadic: &'a [Option<usize>],
     /// Whether each program function is a closure's, which borrows its
     /// closure (`kavach_kir::borrows`).
     pub(crate) closures: &'a [bool],
@@ -394,8 +396,7 @@ impl FnGen<'_, '_> {
             ExprKind::Call(f, args) => {
                 let (values, made) = self.call_args(*f, args)?;
                 self.check_stack(e.line);
-                let id = self.funcs[*f as usize];
-                let results = self.call(id, &values);
+                let results = self.call_fn(*f, args, &values);
                 if let Some(c) = made {
                     self.release(c);
                 }

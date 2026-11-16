@@ -1,0 +1,3 @@
+[package]
+name = "loaded-library-calls-need-unsafe"
+unsafe = true

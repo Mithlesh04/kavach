@@ -28,6 +28,13 @@ pub(crate) fn audit(path: &str) -> ExitCode {
                 format!("extern c \"{lib}\" fn {}", f.name.name),
             ));
         }
+        // A library loaded while running (spec 10.7).
+        if let ItemKind::Type(t) = &item.kind
+            && let kavach_ast::TypeBody::Record(r) = &t.body
+            && r.fields.first().is_some_and(|f| f.name.name.contains('-'))
+        {
+            lines.push((t.name.span, format!("extern c library {}", t.name.name)));
+        }
     }
     for span in &found.unsafes {
         lines.push((*span, "unsafe block".to_string()));

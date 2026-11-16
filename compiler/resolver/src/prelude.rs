@@ -36,6 +36,7 @@ pub(crate) const TYPES: &[&str] = &[
     "Error",
     "ParseError",
     "CliError",
+    "LibraryError",
     "Regex",
     "RegexError",
     "Lines",

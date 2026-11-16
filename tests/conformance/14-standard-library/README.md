@@ -151,6 +151,7 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.28 | [vectors-of-float32.kav](vectors-of-float32.kav) | std.vec works the same over Float32: quaternions, matrices, projections and their own functions. | runs |
 | 14.29 | [images-read-and-write-png.kav](images-read-and-write-png.kav) | An image is its width, height and RGBA pixels; it is written as PNG and read back the same, and bytes that aren't a PNG or JPEG file are BadImage. | runs |
 | 14.30 | [dialogs-need-window.kav](dialogs-need-window.kav) | A dialog is a window the program shows, so it needs `Window`. | compile error |
+| 14.31 | [bytes-that-are-not-a-font-are-bad-font.kav](bytes-that-are-not-a-font-are-bad-font.kav) | `font.load` reads a font file's bytes, and bytes that aren't a font are `BadFont` |
 | 5.8, 14.6 | [cli-on-stop-needs-no-capability.kav](cli-on-stop-needs-no-capability.kav) | `cli.on_stop(grace)` gives a hold that isn't asked until a stop signal comes; taking and letting go of one needs no capability. | runs |
 | 14.12 | [log-events-are-records.kav](log-events-are-records.kav) | A log event is a value of a type that implements `LogEvent`; the console shows its level and its printed form. | runs |
 | 14.12 | [log-hides-secrets.kav](log-hides-secrets.kav) | A secret field of a log event is written as `<secret>`. | runs |

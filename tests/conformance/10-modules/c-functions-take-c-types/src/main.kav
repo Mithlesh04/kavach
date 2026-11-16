@@ -1,4 +1,4 @@
-// Rule: A C function takes numbers, booleans, `Ptr`s and `String`s, and gives numbers, booleans, `Ptr`s or nothing; any other type is a compile error.
+// Rule: A C function takes numbers, booleans, `Ptr`s, records of those and `String`s, and gives numbers, booleans, `Ptr`s, records of those or nothing; any other type is a compile error.
 // Spec: 10.7
 // expect compile error
 

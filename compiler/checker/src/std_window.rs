@@ -126,4 +126,27 @@ impl Checker<'_> {
             _ => return None,
         })
     }
+
+    /// The parameters and result of `font.<name>` (spec 14.31), or `None`.
+    pub(crate) fn font_signature(&mut self, name: &str) -> Option<Signature> {
+        let (int, float) = (Ty::Prim(Prim::Int), Ty::Prim(Prim::Float));
+        let (bytes, text) = (Ty::Prim(Prim::Bytes), Ty::Prim(Prim::String));
+        let p = |n: &str, t: &Ty| (n.to_string(), t.clone(), false);
+        let drawn = vec![p("data", &bytes), p("text", &text), p("size", &float)];
+        Some(match name {
+            "metrics_id" => {
+                let error = self.builtin_ty("FontError");
+                let floats = Ty::List(Box::new(float));
+                (
+                    vec![p("bytes", &bytes)],
+                    Ty::Result(Box::new(floats), Box::new(error)),
+                )
+            }
+            "shape_id" => (drawn, Ty::List(Box::new(float))),
+            "atlas_id" => (drawn, int),
+            "atlas_boxes_id" => (vec![p("id", &int)], Ty::List(Box::new(int))),
+            "atlas_pixels_id" => (vec![p("id", &int)], bytes),
+            _ => return None,
+        })
+    }
 }

@@ -20,6 +20,8 @@ kavach-runtime-input = { path = "../input" }
 kavach-runtime-audio = { path = "../audio" }
 kavach-runtime-watch = { path = "../watch" }
 kavach-runtime-image = { path = "../image" }
+kavach-runtime-font = { path = "../font" }
+kavach-runtime-tracy = { path = "../tracy" }
 kavach-runtime-dialog = { path = "../dialog" }
 kavach-runtime-process = { path = "../process" }
 kavach-runtime-matrix = { path = "../matrix" }
@@ -33,7 +35,7 @@ corosensei = "0.3"
 libc = "0.2"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61", features = ["Win32_System_Console", "Win32_System_Diagnostics_Debug", "Win32_System_Kernel"] }
+windows-sys = { version = "0.61", features = ["Win32_System_Console", "Win32_System_Diagnostics_Debug", "Win32_System_Kernel", "Win32_System_LibraryLoader", "Win32_Foundation"] }
 
 [lints]
 workspace = true

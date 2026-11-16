@@ -234,6 +234,7 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
                     // Top-level code may use `try` (spec 1.3).
                     fails: true,
                     external: None,
+                    variadic: false,
                 },
             );
             collect_functions(&mut l, &mut functions, &mut failed)?;
@@ -282,6 +283,7 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
         exports: exports.collect(),
         shapes: l.shapes.list,
         notes: notes.into_iter().map(|(l, n)| (l, n.to_string())).collect(),
+        tracy: false,
     })
 }
 

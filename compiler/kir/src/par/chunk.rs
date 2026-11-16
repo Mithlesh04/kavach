@@ -111,6 +111,7 @@ pub(super) fn make_chunk(loop_stmt: &Stmt, plan: &Plan, locals: &[Type], name: &
         line,
         fails: false,
         external: None,
+        variadic: false,
     }
 }
 

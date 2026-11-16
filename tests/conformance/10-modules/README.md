@@ -25,7 +25,10 @@ Conformance tests for spec chapter [10. Modules and packages](../../../docs/spec
 | 10.13 | [env-values-are-secret.kav](env-values-are-secret.kav) | A value read with `env(name)` is a secret: it can't be printed unless revealed. | compile error |
 | 10.13 | [env-fails-when-a-variable-is-not-set.kav](env-fails-when-a-variable-is-not-set.kav) | `env(name)` fails when the variable is not set, and `reveal` lets a value from it be shown. | runs |
 | 10.7 | [c-calls-need-unsafe/](c-calls-need-unsafe/src/main.kav) | A C function is called only inside `unsafe`. | compile error |
-| 10.7 | [c-functions-take-c-types/](c-functions-take-c-types/src/main.kav) | A C function takes numbers, booleans, `Ptr`s and `String`s, and gives numbers, booleans, `Ptr`s or nothing. | compile error |
+| 10.7 | [c-functions-take-c-types/](c-functions-take-c-types/src/main.kav) | A C function takes numbers, booleans, `Ptr`s, records of those and `String`s, and gives numbers, booleans, `Ptr`s, records of those or nothing. | compile error |
+| 10.7 | [c-dots-take-numbers-pointers-and-text/](c-dots-take-numbers-pointers-and-text/src/main.kav) | After a C function's `...`, an argument is a number, a `Ptr` or a `String`. | compile error |
+| 10.7 | [only-c-functions-take-dots/](only-c-functions-take-dots/src/main.kav) | Only a C function ends its parameters in `...`; a Kavach function takes a list. | compile error |
+| 10.7 | [loaded-library-calls-need-unsafe/](loaded-library-calls-need-unsafe/src/main.kav) | A library loaded while running is opened and called inside `unsafe`. | compile error |
 | 10.7 | [c-records-hold-c-types/](c-records-hold-c-types/src/main.kav) | A `Ptr` going to C points to a number, a `Bool`, a `Ptr`, or a record of only those. | compile error |
 | 10.7 | [c-callbacks-are-named-functions/](c-callbacks-are-named-functions/src/main.kav) | A C callback is the name of a Kavach function that can't fail; a lambda or closure is a compile error. | compile error |
 | 10.15 | [tagged-literals-make-their-type.kav](tagged-literals-make-their-type.kav) | `literal sql: Query check f` declares a tag; `sql"…"` is a `Query` holding its raw text, over lines with three quotes. | runs |
