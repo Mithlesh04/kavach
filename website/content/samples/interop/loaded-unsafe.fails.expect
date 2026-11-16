@@ -1,0 +1,1 @@
+error: `add` is a C function: call it inside `unsafe { … }`, in a safe function around it (spec 10.7)

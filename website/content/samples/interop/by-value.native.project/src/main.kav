@@ -1,0 +1,18 @@
+type LongDiv {
+    quot: Int
+    rem: Int
+}
+
+extern c "c" {
+    fn lldiv(n: Int, d: Int) -> LongDiv     // C's lldiv_t lldiv(long long, long long)
+}
+
+fn split(cents: Int) -> (Int, Int) {
+    const d = unsafe { lldiv(cents, 100) }
+    (d.quot, d.rem)
+}
+
+fn main() {
+    const (euros, cents) = split(1234)
+    print("{euros} and {cents} cents")
+}

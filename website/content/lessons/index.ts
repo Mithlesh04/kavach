@@ -32,7 +32,7 @@ import { errorKindsDoc } from "./errors-kinds";
 import { monitorDoc } from "./agents-monitor";
 import { practiceDoc } from "./agents-practice";
 import {
-  auditDoc as kavachAuditDoc, callingCDoc, cCallbacksDoc, cNumbersDoc, cRecordsDoc, cTextDoc, libraryDoc,
+  auditDoc as kavachAuditDoc, callingCDoc, cCallbacksDoc, cDotsDoc, cLoadedDoc, cNumbersDoc, cRecordsDoc, cTextDoc, libraryDoc,
 } from "./other-languages";
 import {
   coresDoc, howFastDoc, nativeDoc, packedDoc, radixDoc, sizesDoc,
@@ -60,6 +60,7 @@ import { soundDoc } from "./stdlib-audio";
 import { vecDoc } from "./stdlib-vec";
 import { imageDoc } from "./stdlib-image";
 import { appDoc } from "./stdlib-app";
+import { fontDoc } from "./stdlib-font";
 import { loggingDoc } from "./stdlib-log";
 import { aiWritesDoc } from "./tools-ai-writes";
 import { gpuScreenDoc } from "./stdlib-gpu";
@@ -354,6 +355,7 @@ export const lessons: Record<string, LessonDoc> = {
   "standard-library/vectors": vecDoc,
   "standard-library/images": imageDoc,
   "standard-library/desktop-apps": appDoc,
+  "standard-library/fonts": fontDoc,
 
   "standard-library/json": jsonDoc,
   "standard-library/json/json-values": jsonValuesDoc,
@@ -411,6 +413,8 @@ export const lessons: Record<string, LessonDoc> = {
   "other-languages/calling-c/text": cTextDoc,
   "other-languages/calling-c/callbacks": cCallbacksDoc,
   "other-languages/calling-c/records": cRecordsDoc,
+  "other-languages/calling-c/more-arguments": cDotsDoc,
+  "other-languages/calling-c/libraries-loaded-while-running": cLoadedDoc,
   "other-languages/a-library-for-any-language": libraryDoc,
   "other-languages/kavach-audit": kavachAuditDoc,
   "agents/capabilities": capabilitiesDoc,

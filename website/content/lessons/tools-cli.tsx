@@ -23,6 +23,7 @@ const today: [cmd: string, does: string][] = [
   ["kavach build [file.kav] [-o out]", "write an executable"],
   ["kavach build --compress [=max]", "write a smaller executable, packed without losing anything; it unpacks itself when it starts"],
   ["kavach build --lib lib.kav", "write a shared library and a C header, for other languages"],
+  ["kavach run --tracy, kavach build --tracy", "run or build with Tracy's client, so the Tracy profiler shows spans, tasks and GPU work live"],
   ["kavach add <name> --path <folder>", "add a dependency from a folder; --git <url> with --tag, --branch or --rev for a repository, --unsafe to allow one that uses unsafe code"],
   ["kavach update", "fetch every git dependency again and rewrite kavach.lock"],
   ["kavach test [file.kav]", "run examples, test blocks and generated tests"],

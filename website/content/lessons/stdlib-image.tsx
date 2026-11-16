@@ -50,7 +50,11 @@ export const imageDoc: LessonDoc = {
       <Ex name="image/wrong-count.panics" />
       <H2>Every function and method</H2>
       <ModuleTable file="29-image.md" number="14.29" first="Function or method" />
-      <P>Not yet: GIF and WebP, compressed GPU textures, fonts, and resizing, which can be packages written over <C>Image</C>.</P>
+      <P>
+        Not yet: GIF and WebP, compressed GPU textures, and resizing, which can be packages written over{" "}
+        <C>Image</C>. Fonts are <Link href="/docs/standard-library/fonts/">std.font</Link>: its atlas is an{" "}
+        <C>Image</C>.
+      </P>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${FILE}`} label="spec 14.29 · std.image" />
         <SrcRef file="tests/conformance/14-standard-library/images-read-and-write-png.kav" label="tested" />

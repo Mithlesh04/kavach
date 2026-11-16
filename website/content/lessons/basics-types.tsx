@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { C } from "@/components/inline-code";
+import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
 import { Ex, H2, Note, P } from "./parts";
 import { Limits } from "./limits";
@@ -173,6 +174,24 @@ export const floatDoc: LessonDoc = {
         <C>UInt64</C>, and <C>Float.from_bits(n)</C> turns them back into the same <C>Float</C>:
       </P>
       <Ex name="datatypes/float-bits" />
+      <H2>The same bits everywhere</H2>
+      <P>
+        A <C>Float</C> or <C>Float32</C> program gives the same results, to the last bit, on every machine, system
+        and build, interpreted or native. So a game&apos;s simulation, or a test&apos;s expected number, doesn&apos;t
+        change from Windows to Linux:
+      </P>
+      <Ex name="math/same-bits" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Each <C>+ - * /</C> is rounded on its own, as IEEE 754 says: a multiply and an add are never fused into one step, and a sum keeps its order. So <C>a * b + 3.3</C> is <C>5.720000000000001</C> everywhere.</li>
+        <li><C>std.math</C>&apos;s functions are Kavach&apos;s own code, the same on every system. <C>math.sin(1e22)</C> needs a careful reduction of its huge argument, which some C libraries cut short.</li>
+        <li>Each is within one unit in the last place of the exact result: <C>math.exp(1.0)</C> is one unit above <C>math.e</C>.</li>
+        <li>Only the GPU is apart: its own hardware works out <C>gpu fn</C>s.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/02-types/01-built-in-types.md" label="spec 2.1 · the same bits" />
+        <SrcRef file="tests/conformance/02-types/floats-give-the-same-bits-everywhere.kav" label="tested" />
+        <SrcRef file="docs/decisions/0122-floats-give-the-same-bits-everywhere.md" label="decision 0122" />
+      </div>
     </>
   ),
 };

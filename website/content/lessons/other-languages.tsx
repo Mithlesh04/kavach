@@ -5,13 +5,16 @@ import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject, loadSample } from "@/lib/samples";
-import { H2, Note, P, Syntax } from "./parts";
+import { specBlockWith } from "@/lib/spec-tables";
+import { Ex, H2, Note, P, Syntax } from "./parts";
 
 const croot = loadProject("interop/croot.native", ["kavach.toml", "src/main.kav"]);
 const numbers = loadProject("interop/numbers.native", ["src/main.kav"]);
 const text = loadProject("interop/text.native", ["src/main.kav"]);
 const callback = loadProject("interop/callback.native", ["src/main.kav"]);
 const records = loadProject("interop/records.native", ["src/main.kav"]);
+const byValue = loadProject("interop/by-value.native", ["src/main.kav"]);
+const loadedUnsafe = loadProject("interop/loaded-unsafe.fails", ["src/main.kav"]);
 const mathlib = loadSample("interop/mathlib.lib");
 const audit = loadProject("agents/audit-cmd", ["src/main.kav"]);
 
@@ -55,6 +58,7 @@ export const callingCDoc: LessonDoc = {
               ["String (a parameter)", "const char*: a copy ending in a zero byte, valid during the call"],
               ["Bytes (a parameter)", "const uint8_t*: a copy of the bytes, valid during the call; another argument says how many"],
               ["Ptr<T>", "T*: a pointer, also to a struct"],
+              ["a record of these types", "a struct, by value, as C passes one (x86-64 for now)"],
               ["fn(…) -> … (a parameter)", "a function pointer, to a named Kavach function"],
               ["no ->", "void"],
             ].map(([k, c]) => (
@@ -134,8 +138,60 @@ export const cRecordsDoc: LessonDoc = {
         <li>Each field sits where C would put it: at the next offset that is a multiple of its size.</li>
         <li><C>ps + 1</C> is the address of the second <C>Point</C>, and <C>*second</C> reads it, as in C.</li>
         <li>A record read back through a <C>Ptr</C> is checked against its <C>invariant</C>s, like a new one.</li>
-        <li>A record never goes to C by value: always through a pointer.</li>
       </ul>
+      <H2>Records by value</H2>
+      <P>
+        A record of C types also goes to C and comes back by value, as a C <C>struct</C> does. C&apos;s{" "}
+        <C>lldiv</C> gives back a <C>struct</C> of two numbers, so it is declared to give a <C>LongDiv</C>:
+      </P>
+      <Native run={byValue} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>It is passed as the system&apos;s C passes a <C>struct</C>: in registers, on the stack, or through a hidden pointer.</li>
+        <li>This works on x86-64 (Windows, Linux, macOS on Intel) for now; elsewhere it is a compile error.</li>
+      </ul>
+      <SrcRef file="tools/cli/tests/c_libraries.rs" line={187} symbol="records_go_to_a_c_library_by_value" label="by value, tested" />
+    </>
+  ),
+};
+
+export const cDotsDoc: LessonDoc = {
+  lead: "A C function whose parameters end in ..., as printf's do, takes more arguments after its own: numbers, Ptrs and Strings.",
+  simple: <>Some C functions, like <C>printf</C>, take as many values as you give them, with a format that says what each one is. Kavach passes them as C expects, but you must make each number the size the format says.</>,
+  minutes: 3,
+  body: (
+    <>
+      <CodeBlock code={specBlockWith("10-modules-and-packages/07-interop.md", "10.7", "snprintf(out")} file="main.kav, from spec 10.7" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Each argument after <C>...</C> goes as its type is, after C&apos;s promotions: <C>Int8</C>, <C>Int16</C>, <C>UInt8</C> and <C>UInt16</C> become a C <C>int</C>, and a <C>Float32</C> a <C>double</C>.</li>
+        <li>A number literal there is an <C>Int</C> (<C>int64_t</C>) or a <C>Float</C> (<C>double</C>). So write <C>Int32(42)</C> where C reads an <C>int</C> (<C>%d</C>), and use <C>%lld</C> for an <C>Int</C>.</li>
+        <li>Only numbers, <C>Ptr</C>s and <C>String</C>s go after <C>...</C>; a record there is a compile error.</li>
+      </ul>
+      <P>A Kavach function has no <C>...</C>: it takes more values in a list.</P>
+      <Ex name="interop/dots-only-c.fails" />
+      <SrcRef file="tests/conformance/10-modules/c-dots-take-numbers-pointers-and-text/src/main.kav" label="what goes after ..., tested" />
+    </>
+  ),
+};
+
+export const cLoadedDoc: LessonDoc = {
+  lead: "extern c library Name { … } declares a library the program loads itself while running, for plugins and libraries that may be missing. Name.open(path) loads it.",
+  simple: <>Most C libraries are joined to the program when it is built. A plugin is different: the program finds it while running, and it may not be there at all. So the program opens it, and is told plainly if it can&apos;t.</>,
+  minutes: 3,
+  body: (
+    <>
+      <CodeBlock code={specBlockWith("10-modules-and-packages/07-interop.md", "10.7", "extern c library")} file="main.kav, from spec 10.7" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The library isn&apos;t linked. <C>Adder</C> is a type, and <C>Adder.open(path)</C> loads the library at <C>path</C>; a file name alone is looked for as the system does.</li>
+        <li>It finds each function of the block in the library, and each is then a method of the value: <C>lib.add(2, 3)</C>.</li>
+        <li>It fails with a <C>LibraryError</C>, whose text says which library couldn&apos;t be loaded and why, or which function it lacks.</li>
+        <li>A loaded library stays loaded until the program ends.</li>
+      </ul>
+      <P>Loading runs the library&apos;s own start-up code, so <C>open</C> and each call go inside <C>unsafe</C>:</P>
+      <CodeBlock code={loadedUnsafe.files[0].code} file="src/main.kav" output={loadedUnsafe.output} outcome="refused" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tools/cli/tests/c_libraries.rs" line={60} symbol="a_program_loads_a_library_while_running" label="tested" />
+        <SrcRef file="tests/conformance/10-modules/loaded-library-calls-need-unsafe/src/main.kav" label="unsafe, tested" />
+      </div>
     </>
   ),
 };

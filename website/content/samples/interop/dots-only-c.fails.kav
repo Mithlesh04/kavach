@@ -1,0 +1,7 @@
+fn total(first: Int, ...) -> Int {
+    first
+}
+
+fn main() {
+    print(total(1))
+}

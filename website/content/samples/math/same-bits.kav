@@ -1,0 +1,10 @@
+use std.math
+
+fn main() {
+    let a = 1.1
+    let b = 2.2
+    print(a * b + 3.3)          // a multiply, then an add: never fused
+    print(math.sin(1e22))
+    print(math.exp(1.0))
+    print(math.e)
+}

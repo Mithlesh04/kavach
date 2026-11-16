@@ -1,0 +1,4 @@
+[package]
+name = "c-by-value"
+version = "0.1.0"
+unsafe = true

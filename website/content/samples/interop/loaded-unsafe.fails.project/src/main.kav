@@ -1,0 +1,8 @@
+extern c library Adder {
+    fn add(a: Int32, b: Int32) -> Int32
+}
+
+fn main() ! LibraryError {
+    const lib = unsafe { try Adder.open("adder") }
+    print(lib.add(2, 3))
+}

@@ -1,0 +1,9 @@
+use std.font
+
+fn main() {
+    const f = font.load(Bytes([1, 2, 3])) catch e => {
+        print(e)
+        return
+    }
+    print(f.ascent)
+}

@@ -65,7 +65,27 @@ export const loggingDoc: LessonDoc = {
           its frame times there. Spans are written as they end, so a crash keeps those already written. See{" "}
           <Link href="/docs/tools/settings/">Settings</Link>.
         </li>
+        <li>
+          The GPU&apos;s work is timed too, when the GPU can time it (timestamp queries): each frame drawn{" "}
+          (<C>gpu frame</C>) and each GPU <C>map</C> (<C>gpu map</C>) is an event on a row of its own, <C>GPU</C>,
+          as long as the GPU worked on it. It starts where the CPU sent the work, since the GPU&apos;s clock isn&apos;t the
+          CPU&apos;s.
+        </li>
+        <li>
+          <C>kavach run --tracy</C> and <C>kavach build --tracy</C> show the same live in the Tracy profiler: each span
+          is a Tracy zone on its thread, and the GPU&apos;s timed work a Tracy GPU context. The program waits for
+          nothing; Tracy&apos;s viewer, on the same machine, connects when it starts. A program built without{" "}
+          <C>--tracy</C> holds none of Tracy.
+        </li>
+        <li>
+          Zones nest on a thread, so when tasks take turns on one thread, a span that ends while another task&apos;s is
+          open shows in Tracy until that one ends. The Chrome trace keeps its exact time.
+        </li>
       </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tools/cli/tests/frames.rs" line={116} symbol="only_a_program_built_with_tracy_holds_it" label="--tracy, tested" />
+        <SrcRef file="docs/decisions/0123-tracy-for-live-profiling.md" label="decision 0123" />
+      </div>
       <H2>Metrics</H2>
       <P>
         Numbers a program counts or measures go to the collector every 10 seconds as OpenTelemetry metrics, when{" "}

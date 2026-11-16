@@ -232,6 +232,11 @@ export const mathFunctionsDoc: LessonDoc = {
         <li><C>asin</C> and <C>acos</C> of a number past -1 to 1 is <C>NaN</C>: no angle has that sine.</li>
         <li><C>exp(x)</C> is <C>e</C> to the power <C>x</C>, and <C>ln</C> undoes it.</li>
         <li>Each works for <C>Float</C> and <C>Float32</C>, and in a <C>gpu fn</C>.</li>
+        <li>
+          <C>sqrt</C>, <C>floor</C>, <C>ceil</C> and <C>round</C> are exact. The others are Kavach&apos;s own code,
+          the same on every system, so each gives the same bits everywhere, within one unit in the last place. See{" "}
+          <Link href="/docs/basics/data-types/float-and-float32/">Float and Float32</Link>.
+        </li>
       </ul>
       <SrcRef file="tests/conformance/14-standard-library/math-angles-exp-and-ln.kav" label="angles, tested" />
       <ModuleTable file="05-math.md" number="14.5" first="Name" />
