@@ -1,0 +1,19 @@
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
+
+fn sub(a: Int, b: Int) -> Int {
+    a - b
+}
+
+fn main() {
+    const ops = ["add": add, "sub": sub, "mul": (a, b) => a * b]
+    for (name, op) in ops {
+        print("{name}: {op(6, 3)}")
+    }
+    const steps = [add, sub]
+    print(steps[0](10, 5))
+    if let f = ops["mul"] {
+        print(f(4, 5))
+    }
+}

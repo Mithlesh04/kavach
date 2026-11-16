@@ -11,10 +11,18 @@ import { originsIn } from "@/lib/name-origins";
 
 // Names colored by where they come from, as the editor colors them: the
 // compiler's marks for each sample (scripts/build-tokens.mjs), keyed by
-// the code shown. They mirror --tok-imported and --tok-builtin.
+// the code shown. They mirror --tok-imported and --tok-builtin; a plain
+// `function` mark, a function's name used as a value (`["add": add]`),
+// takes the theme's function color, as a call's name does.
 type Mark = [line: number, col: number, len: number, type: string, mods: string[]];
 const markColor = ([, , , type, mods]: Mark) =>
-  mods.includes("imported") ? "#c3a6ff" : type === "method" && mods.includes("defaultLibrary") ? "#d7ba7d" : undefined;
+  mods.includes("imported")
+    ? "#c3a6ff"
+    : type === "method" && mods.includes("defaultLibrary")
+      ? "#d7ba7d"
+      : type === "function"
+        ? "#8fc1ea"
+        : undefined;
 
 /** Splits the grammar's tokens where a mark starts or ends, and colors the marked pieces. */
 function markTokens(lines: ThemedToken[][], marks: Mark[]): ThemedToken[][] {

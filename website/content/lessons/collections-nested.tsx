@@ -83,6 +83,29 @@ export const nestedDoc: LessonDoc = {
         gives the default, not a crash:
       </P>
       <Ex name="nested/deep" />
+      <H2>A real shape: records, maps, lists and functions</H2>
+      <P>
+        Real data mixes kinds: a school has a name (text) and its classes (a map). Written as one map, as in JSON or
+        Python, it is refused, as all the values of a map have one type:
+      </P>
+      <Ex name="nested/school-map.fails" />
+      <P>Give each kind of thing its own place instead:</P>
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A <Link href="/docs/types/records/">record</Link> for a thing with fixed fields: a <C>School</C> has a <C>name</C> and <C>rooms</C>.</li>
+        <li>A map for things found by name: rooms by class, marks by subject.</li>
+        <li>A list for things in order: students, and their marks.</li>
+        <li>A <Link href="/docs/functions/functions-as-values/">function as a value</Link> where each entry has its own rule: <C>[String: fn(Int) -&gt; Int]</C> holds each class&apos;s fee rule, a named function or a lambda.</li>
+      </ul>
+      <Ex name="nested/school" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>school.rooms</C> is a record&apos;s field, so reading it never gives an optional. <C>room.marks[&quot;math&quot;]</C> is a map&apos;s, so it does: <C>?? []</C> gives an empty list for a missing subject.</li>
+        <li><C>if let fee = fees[class_name]</C> runs its block only when the class has a fee rule, then <C>fee(…)</C> calls it.</li>
+        <li>A record checks its fields when the program is built: a typo such as <C>room.teachr</C> is a compile error, where a map would give <C>none</C> while running.</li>
+      </ul>
+      <Note>
+        When such data comes from outside as JSON, decode it straight into records like these. See{" "}
+        <Link href="/docs/standard-library/json/decoding-into-a-type/">Decoding into a type</Link>.
+      </Note>
       <H2>Tuples inside and around</H2>
       <P>
         Tuples go in lists, in sets and as map keys, which suits points on a grid. A tuple can hold collections too,
