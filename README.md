@@ -5,7 +5,7 @@
 
 **Status:** pre-alpha, Phase 1. Programs using spec chapters 1–7 can be checked and run with `kavach run` (interpreted), and compiled to native code with `kavach run --native` and `kavach build` for a growing subset. The [language spec](docs/spec/README.md) is the source of truth.
 
-Website: [mithlesh04.github.io/kavach](https://mithlesh04.github.io/kavach/)
+Website: [kavachlang.com](https://kavachlang.com/)
 
 ---
 
@@ -61,7 +61,7 @@ The agent cannot call anything outside `can`. Refunds above 10,000 are blocked, 
 | [tools/](tools/README.md) | `kavach` CLI, formatter, language server, package manager, AI tooling |
 | [interop/](interop/README.md) | Calling C, Python and JavaScript from Kavach |
 | [editors/](editors/README.md) | Editor support: the VS Code extension ([how to install it](editors/vscode/README.md#install)) |
-| [website/](website/README.md) | The official docs site, [mithlesh04.github.io/kavach](https://mithlesh04.github.io/kavach/) ([decision 0033](docs/decisions/0033-docs-site-in-the-repo.md)) |
+| [website/](website/README.md) | The official docs site, [kavachlang.com](https://kavachlang.com/) ([decision 0033](docs/decisions/0033-docs-site-in-the-repo.md)) |
 | [examples/](examples/README.md) | Example programs, in learning order |
 | [tests/](tests/README.md) | Language-level tests (conformance and integration) |
 | [benchmarks/](benchmarks/README.md) | Performance comparisons against other languages |
@@ -80,7 +80,7 @@ The most useful thing you can do is tell us where the design is wrong:
 
 - **[Discussions](https://github.com/Mithlesh04/kavach/discussions)** — the language's open design questions live there; your opinion directly shapes the spec.
 - **[Good first issues](https://github.com/Mithlesh04/kavach/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)** — small, self-contained ways in, from porting a benchmark to reporting your first 15 minutes.
-- **[Playground](https://mithlesh04.github.io/kavach/playground/)** — the real compiler checks your program in the browser, nothing to install.
+- **[Playground](https://kavachlang.com/playground/)** — the real compiler checks your program in the browser, nothing to install.
 
 For code changes, see [CONTRIBUTING.md](CONTRIBUTING.md). Rules for every contributor, including AI assistants and agents, are in [AGENTS.md](AGENTS.md).
 
