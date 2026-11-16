@@ -44,7 +44,7 @@ export const aliases: Record<string, string> = {
   "start/why-kavach": "why another language motivation reason purpose compare python javascript go rust advantages benefits meaning name armour",
   "start/who-kavach-is-for": "who is it for audience use cases why use kavach ai agents backend systems beginners production ready",
   "start/what-you-can-build": "project ideas what can i build examples beginner projects practice exercises portfolio",
-  "start/install": "setup download get started build from source toolchain rustup cargo",
+  "start/install": "setup download get started build from source toolchain rustup cargo system requirements requirements supported platforms operating system windows linux macos arm64 apple silicon x86-64 cmake linker visual studio build tools gcc gpu",
   "start/your-first-program": "first program getting started main entry point hello world print tutorial",
   "basics/variables":
     "variable constant const let var declare assignment type inference integer float boolean string interpolation format immutable mutable naming rules valid name identifier name length snake_case freeze object.freeze frozen unfreeze readonly deep freeze",

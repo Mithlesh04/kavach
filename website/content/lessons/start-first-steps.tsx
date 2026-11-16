@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Terminal } from "@/components/terminal";
 import { C } from "@/components/inline-code";
+import { SrcRef } from "@/components/src-ref";
 import versions from "@/data/versions.json";
 import type { LessonDoc } from "@/lib/chapter";
 import { Ex, H2, Note, P } from "./parts";
@@ -75,6 +76,35 @@ export const terminalDoc: LessonDoc = {
 };
 
 // ---------- Install ----------
+//
+// The requirements: platforms from the roadmap; build tools from
+// rust-toolchain.toml and decisions 0016, 0114 and 0124. A built hello
+// program on Windows was checked to load only Windows' own DLLs.
+
+const requirements: [string, React.ReactNode][] = [
+  [
+    "Use Kavach",
+    <>Windows 10 or 11, or Linux, on a 64-bit Intel or AMD processor (x86-64). WSL works. macOS and ARM processors (Apple silicon, Raspberry Pi) come later, in Phase 3 of the <a href={`${versions.repo}/blob/main/docs/vision/roadmap.md`}>roadmap</a>.</>,
+  ],
+  [
+    "Build Kavach",
+    <><a href="https://rustup.rs">Rust</a>, through rustup: the repository&apos;s <C>rust-toolchain.toml</C> picks the exact version and its <C>llvm-tools</C>, and rustup fetches both on the first build. Also git, and <a href="https://cmake.org/download/">CMake</a>, which builds the gamepad library.</>,
+  ],
+  [
+    "…and a C compiler",
+    <>Rust needs one too. On Windows, the Visual Studio Build Tools with <strong className="text-ink">Desktop development with C++</strong>. On Linux, <C>build-essential</C> (or <C>gcc</C>), <C>pkg-config</C>, and the sound library&apos;s headers: <C>libasound2-dev</C> on Debian and Ubuntu.</>,
+  ],
+  ["kavach run, test, check", <>Nothing more.</>],
+  ["kavach build", <>A linker: the same C compiler tools. Kavach says so if they are missing.</>],
+  [
+    "Run a built program",
+    <>No Kavach: its runtime is inside the executable. On Windows it loads only Windows&apos; own libraries. On Linux, a program that plays sound loads <C>libasound.so.2</C>, which every desktop Linux has.</>,
+  ],
+  [
+    "Use a GPU, windows, sound",
+    <>A GPU with Vulkan or DirectX 12 drivers (NVIDIA, AMD or Intel), a screen (X11 or Wayland on Linux), a sound device. Gamepads need nothing installed.</>,
+  ],
+];
 
 export const installDoc: LessonDoc = {
   lead: "One clone, one build. A single-command installer comes with the first public release.",
@@ -83,11 +113,37 @@ export const installDoc: LessonDoc = {
   before: ["start/the-terminal"],
   body: (
     <>
+      <H2>System requirements</H2>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-[15px]">
+          <thead>
+            <tr className="border-b border-line text-left text-soft">
+              <th className="py-2 pr-4 font-bold">To…</th>
+              <th className="py-2 font-bold">You need</th>
+            </tr>
+          </thead>
+          <tbody>
+            {requirements.map(([what, need]) => (
+              <tr key={what} className="border-b border-line align-top">
+                <td className="py-2 pr-4 whitespace-nowrap">{what}</td>
+                <td className="py-2 text-muted">{need}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <P>
-        Kavach is young and moves fast, so today you build it from source. You need{" "}
-        <a href="https://rustup.rs">Rust</a> (Kavach&apos;s compiler is written in it), git, and{" "}
-        <a href="https://cmake.org/download/">CMake</a>, which builds the gamepad library. Without CMake, the build
-        stops at once and says how to install it on your system. Windows, Linux and WSL all work.
+        Without a GPU, a screen or a sound device, the functions that need one fail with an error your program can
+        handle, such as <C>Unavailable</C>, and a machine with no gamepad has no pads. Nothing crashes.
+      </P>
+      <Note>
+        Only want to try it? The <Link href="/playground/">playground</Link> runs the real compiler in your browser,
+        with nothing to install.
+      </Note>
+      <H2>Build it</H2>
+      <P>
+        Kavach is young and moves fast, so today you build it from source, with the tools above. Without CMake, the
+        build stops at once and says how to install it on your system.
       </P>
       <Terminal commands session={`git clone ${versions.repo}\ncd kavach\ncargo build --release -p kavach-cli`} />
       <P>
@@ -98,6 +154,13 @@ export const installDoc: LessonDoc = {
       <P>
         The VS Code extension in <C>editors/vscode</C> adds colors, errors as you type, and go-to-definition.
       </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="rust-toolchain.toml" label="the Rust version" />
+        <SrcRef file="docs/architecture/windows-setup.md" label="setting up Windows" />
+        <SrcRef file="docs/decisions/0016-native-runtime-and-executables.md" label="decision 0016 · executables and linking" />
+        <SrcRef file="docs/decisions/0114-sound-through-cpal.md" label="decision 0114 · sound on Linux" />
+        <SrcRef file="docs/decisions/0124-gamepads-through-sdl3.md" label="decision 0124 · CMake" />
+      </div>
     </>
   ),
   quiz: [
