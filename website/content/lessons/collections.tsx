@@ -23,7 +23,7 @@ export const listsDoc: LessonDoc = {
         <li><C>fruits[0]</C> is the first item: positions start at 0.</li>
         <li><C>push</C> adds to the end. It changes the list, so the list must be a <C>let</C>.</li>
       </ul>
-      <Note>All the items of a list have the same type. To group values of different types, use a <Link href="/docs/collections/tuples/">tuple</Link> or a <Link href="/docs/types/records/">record</Link>.</Note>
+      <Note>All the items of a list have the same type. To group values of different types, use a <Link href="/docs/collections/tuples/">tuple</Link> or a <Link href="/docs/types/records/">record</Link>. Lists of lists, lists of maps, and items of different kinds through a union are in <Link href="/docs/collections/nested-and-mixed-collections/">Nested and Mixed Collections</Link>.</Note>
     </>
   ),
   tryIt: {
@@ -188,7 +188,7 @@ export const mapsDoc: LessonDoc = {
         <li>Reading a key gives an optional: the key may not be there, so <C>?? 0</C> says what to use then.</li>
         <li>A loop visits the entries in the order they were added, every time.</li>
       </ul>
-      <Note>Other languages call this a dictionary, a hash map or an object.</Note>
+      <Note>Other languages call this a dictionary, a hash map or an object. A value can be a list, a map or a set too: see <Link href="/docs/collections/nested-and-mixed-collections/">Nested and Mixed Collections</Link>.</Note>
     </>
   ),
   tryIt: {

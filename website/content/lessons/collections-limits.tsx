@@ -50,7 +50,8 @@ export const capacityDoc: LessonDoc = {
       <H2>Any kind of item</H2>
       <P>
         The items can be of any type. Items of different kinds go in one collection through a{" "}
-        <Link href="/docs/types/unions/">union</Link>, and an inner collection with a limit keeps its own:
+        <Link href="/docs/types/unions/">union</Link>, and an inner collection with a limit keeps its own. More
+        shapes are in <Link href="/docs/collections/nested-and-mixed-collections/">Nested and Mixed Collections</Link>:
       </P>
       <Ex name="limits/mixed" />
       <Note>

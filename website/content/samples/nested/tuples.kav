@@ -1,0 +1,17 @@
+fn main() {
+    const points: [(Int, Int)] = [(1, 2), (3, 4)]
+    print(points[1].0)
+    for (x, y) in points {
+        print(x + y)
+    }
+
+    const at: [(Int, Int): String] = [(0, 0): "start", (2, 3): "end"]
+    print(at[(2, 3)] ?? "nothing")         // a tuple as a map key
+
+    const visited: Set<(Int, Int)> = Set.of((1, 2), (1, 2), (3, 4))
+    print(visited)                         // a set of tuples: (1, 2) once
+
+    const report: ([String], [String: Int]) = (["a", "b"], ["a": 1, "b": 2])
+    const (names, counts) = report         // a tuple holding a list and a map
+    print("{names.len()} names, {counts["b"] ?? 0} for b")
+}

@@ -1,0 +1,4 @@
+fn main() {
+    const things = [1, "two", 3.0]
+    print(things)
+}

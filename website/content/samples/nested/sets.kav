@@ -1,0 +1,11 @@
+fn main() {
+    const tags: [String: Set<String>] = [
+        "pen": Set.of("blue", "cheap"),
+        "book": Set.of("paper"),
+    ]
+    const pen = tags["pen"] ?? Set.of()
+    print(pen.contains("cheap"))
+
+    const teams: [Set<String>] = [Set.of("asha", "ravi"), Set.of("zoe")]
+    print(teams[0].len())
+}

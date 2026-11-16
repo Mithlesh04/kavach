@@ -72,6 +72,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Collections with a Limit", "2.2"],
     ["Rings", "2.2"],
     ["Tuples", "2.3"],
+    ["Nested and Mixed Collections", "2.2"],
     ["Sorting", "14.2", ["Numbers", "Text", "By a key", "Two keys"]],
   ]],
   ["types", "Your Own Types", "intermediate", [

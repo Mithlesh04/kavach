@@ -116,6 +116,7 @@ import {
   pipelineDoc, readListDoc, readMapDoc, setsDoc, sortListDoc, tuplesDoc, walkMapDoc,
 } from "./collections";
 import { capacityDoc, ringDoc } from "./collections-limits";
+import { nestedDoc } from "./collections-nested";
 import {
   declaringDoc, defaultsDoc, dotDoc, fnValuesDoc, functionsDoc, lambdasDoc, namedArgsDoc, namedDoc, parametersDoc,
   recursionDoc, resultsDoc, returningDoc, signatureDoc, writingLambdaDoc,
@@ -265,6 +266,7 @@ export const lessons: Record<string, LessonDoc> = {
   "collections/collections-with-a-limit": capacityDoc,
   "collections/rings": ringDoc,
   "collections/tuples": tuplesDoc,
+  "collections/nested-and-mixed-collections": nestedDoc,
   "collections/sorting": sortingDoc,
   "collections/sorting/numbers": sortNumbersDoc,
   "collections/sorting/text": sortTextDoc,

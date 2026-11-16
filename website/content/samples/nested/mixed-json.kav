@@ -1,0 +1,12 @@
+fn main() {
+    const order: Json = [
+        "id": 1042,
+        "paid": true,
+        "items": [
+            ["name": "pen", "count": 2],
+            ["name": "book", "count": 1, "gift": true],
+        ],
+        "note": none,
+    ]
+    print(order)
+}

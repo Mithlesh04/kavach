@@ -1,0 +1,7 @@
+fn main() {
+    const grid = [[1, 2], [3, 4]]
+    let copy = grid
+    copy[0][0] = 99            // changes the copy only, at any depth
+    print(grid)
+    print(copy)
+}

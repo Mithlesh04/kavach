@@ -1,0 +1,19 @@
+type Cell = Number(value: Float) | Text(value: String) | Empty
+
+fn main() {
+    const row: [Cell] = [
+        Cell.Number(value: 12.5),
+        Cell.Text(value: "pens"),
+        Cell.Empty,
+    ]
+    for cell in row {
+        match cell {
+            Cell.Number(value) => print("number {value}")
+            Cell.Text(value) => print("text {value}")
+            Cell.Empty => print("empty")
+        }
+    }
+
+    const sheet: [String: [Cell]] = ["A": row, "B": [Cell.Empty]]
+    print((sheet["B"] ?? []).len())
+}

@@ -1,0 +1,4 @@
+fn main() {
+    let groups: [String: [String]] = ["fruit": ["apple"]]
+    groups["fruit"].push("mango")
+}

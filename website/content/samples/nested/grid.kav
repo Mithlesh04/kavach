@@ -1,0 +1,14 @@
+fn main() {
+    let grid: [[Int]] = [
+        [1, 2, 3],
+        [4, 5, 6],
+    ]
+    print(grid[1][2])          // row 1, column 2
+    grid[1][2] = 60            // change one item inside
+    grid[0].push(4)            // grow one inner list
+    grid.push([7, 8])          // add a whole row
+    print(grid)
+    for row in grid {
+        print("{row.len()} items, total {row.sum(n => n)}")
+    }
+}
