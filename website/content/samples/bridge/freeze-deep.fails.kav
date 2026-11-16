@@ -1,0 +1,9 @@
+type Shop {
+    name: String
+    tags: [String]
+}
+
+fn main() {
+    const shop = Shop(name: "pens", tags: ["cheap"])
+    shop.tags.push("new")
+}

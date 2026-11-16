@@ -179,10 +179,28 @@ export const javascriptDoc = bridge({
     ["`orders.reduce((s, o) => s + o.cost(), 0)`", "`orders.sum(o => o.cost())`", "collections/lists/map-filter-sum"],
     ["every number is a float, and `Math.trunc`", "`Int` for whole numbers, whose `/` gives a whole number; `Decimal` for exact amounts", "basics/data-types"],
     ["objects and arrays shared by reference", "values: `b = a` copies", "memory/values-not-references"],
+    ["`Object.freeze(obj)`", "`const obj = …`: nothing in it can change, however deep", "basics/variables/const"],
+    ["unfreezing: `{ ...obj }` or `structuredClone(obj)`", "`let copy = obj`: a copy that can change, with the original as it was", "basics/variables/let"],
     ["`async`, `await` and promises", "`spawn` and `.wait()`, with no `async` and no `await`", "concurrency/tasks"],
     ["`npm` and `package.json`", "`kavach.toml`, and `kavach add`", "tools/packages"],
     ["types only with TypeScript", "every type checked before the program runs", "basics/data-types"],
   ],
+  also: (
+    <>
+      <H2>Freezing</H2>
+      <P>
+        Kavach has no <C>Object.freeze</C>, as <C>const</C> already does it, and more. <C>Object.freeze</C> is
+        shallow: a frozen object&apos;s inner arrays can still change. A <C>const</C> can&apos;t change at any depth,
+        and the compiler says so before the program runs:
+      </P>
+      <Ex name="bridge/freeze-deep.fails" />
+      <P>
+        To change a frozen value, copy it into a <C>let</C>. Values are copies, never shared, so the copy changes and
+        the original stays as it was, with no <C>structuredClone</C>:
+      </P>
+      <Ex name="bridge/unfreeze" />
+    </>
+  ),
 });
 
 export const cppDoc = bridge({

@@ -1,0 +1,1 @@
+error: `push` changes `shop`, but it is a `const`: declare it with `let`
