@@ -115,7 +115,9 @@ export const taskFailsDoc: LessonDoc = {
       </div>
       <Note>
         A panic is not an error, but a panic in a task stops only that task: it is printed when it happens, and{" "}
-        <C>.wait()</C> fails with <C>panicked: &lt;message&gt; at &lt;file&gt;:&lt;line&gt;</C>. See{" "}
+        <C>.wait()</C> fails with <C>panicked: &lt;message&gt; at &lt;file&gt;:&lt;line&gt;</C>. When that error
+        ends <C>main</C>, the last line doesn&apos;t print the panic again: it says{" "}
+        <C>error: the panic above ended the program</C>. See{" "}
         <Link href="/docs/errors/panics/">Panics</Link>.
       </Note>
     </>

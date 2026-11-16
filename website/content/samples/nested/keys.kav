@@ -1,0 +1,13 @@
+fn main() {
+    const grid: [(Int, Int): String] = [(0, 0): "start", (2, 1): "tree"]
+    print(grid[(2, 1)] ?? "grass")
+
+    const seen = Set.of([1, 2], [2, 1], [1, 2])          // lists as set items, by value
+    print(seen.len())
+
+    const by_tags: [[String]: Int] = [["red", "big"]: 3]
+    print(by_tags[["red", "big"]] ?? 0)
+
+    const prices: [Float: String] = [0.0: "free"]
+    print(prices[-0.0] ?? "missing")                    // 0.0 and -0.0 are one key
+}

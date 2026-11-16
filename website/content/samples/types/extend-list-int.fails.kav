@@ -1,0 +1,7 @@
+extend [Int] {
+    fn total(self) -> Int {
+        self.len()
+    }
+}
+
+fn main() {}

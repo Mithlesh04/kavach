@@ -63,6 +63,7 @@ export const gamepadDoc: LessonDoc = {
         <li><C>x</C> is pitch (the far edge up), <C>y</C> yaw (turning left), <C>z</C> roll (the right side down).</li>
         <li>It is state only, with no events, which would come a thousand times a second.</li>
         <li><C>pad.gyro?.y ?? 0.0</C> reads one axis and gives 0 for a pad without one.</li>
+        <li>A <C>Pad</C> made by hand, as in a test, has <C>gyro: none</C> unless it is given one, as <C>old</C> is.</li>
       </ul>
       <H2>Reading pads needs Input</H2>
       <P>

@@ -1,0 +1,10 @@
+fn main() {
+    let a = TextBuilder("tea")
+    let b = a                    // a builder of its own
+    b.push(" and toast")
+    const before = a.view()      // keeps the text it has now
+    a.push(" for two")
+    print(a.to_string())
+    print(b.to_string())
+    print(before)
+}

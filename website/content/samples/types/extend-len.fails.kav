@@ -1,0 +1,7 @@
+extend<T> [T] {
+    fn len(self) -> Int {
+        0
+    }
+}
+
+fn main() {}

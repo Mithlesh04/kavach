@@ -1,0 +1,5 @@
+fn main() {
+    const a = Set.of(1, 2)
+    const b = Set.of(3)
+    print(a < b)
+}

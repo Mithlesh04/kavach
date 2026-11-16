@@ -1,0 +1,12 @@
+const count = 1_000_000
+const speed: Float32 = 2.5
+pub const version = "1.4"
+
+fn step(x: Float32) -> Float32 {
+    x + speed
+}
+
+fn main() {
+    print("{count} particles at {step(0.0)}")
+    print("version {version}")
+}

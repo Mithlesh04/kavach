@@ -123,6 +123,19 @@ export const comparisonDoc: LessonDoc = {
         <C>==</C> looks inside: two lists are equal when their items are, two maps when their entries are, in any
         order.
       </P>
+      <H2>Lists in order</H2>
+      <P>
+        <C>&lt;</C> works on lists, rings and <C>Bytes</C> too. They compare item by item, as text compares letter by
+        letter: the first pair that differs decides, and when one runs out first, it is the smaller. The answer is one{" "}
+        <C>Bool</C>, never a list of them, as in some array libraries:
+      </P>
+      <Ex name="operators/list-order" />
+      <P>
+        So a list of lists, or of tuples, sorts, and has a <C>min</C> and a <C>max</C>. A set or a map has no order
+        (compare <C>s.to_list().sort()</C> instead), nor has an optional:
+      </P>
+      <Ex name="operators/set-order.fails" />
+      <SrcRef file="tests/conformance/01-basics/lists-bytes-and-rings-have-an-order.kav" label="tested" />
       <H2>How comparisons behave</H2>
       <OpTable
         title="Case, text order and other cases worth knowing"
@@ -216,7 +229,7 @@ export const mathDoc: LessonDoc = {
 };
 
 export const mathFunctionsDoc: LessonDoc = {
-  lead: "sqrt, pow, sin, cos, atan2, exp, ln, gcd, lcm, is_prime, factorial, mean, and the constants pi and e.",
+  lead: "sqrt, pow, sin, cos, atan2, exp, ln, log10, cbrt, hypot, gcd, lcm, is_prime, factorial, mean, and the constants pi and e.",
   simple: <>These are the buttons of a scientific calculator, ready to use in code. Each one takes numbers and gives back an answer, such as the square root of a number.</>,
   minutes: 2,
   body: (
@@ -239,6 +252,18 @@ export const mathFunctionsDoc: LessonDoc = {
         </li>
       </ul>
       <SrcRef file="tests/conformance/14-standard-library/math-angles-exp-and-ln.kav" label="angles, tested" />
+      <H2>Roots, logarithms and more</H2>
+      <Ex name="math/more" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>hypot(x, y)</C> is <C>sqrt(x * x + y * y)</C>, without the squares overflowing or vanishing on the way.</li>
+        <li><C>remainder(x, y)</C> is <C>x - n * y</C>, with <C>n</C> the whole number nearest <C>x / y</C>, so it lies between <C>-y / 2</C> and <C>y / 2</C>. <C>%</C> keeps <C>x</C>&apos;s sign instead.</li>
+        <li><C>erfc(x)</C> is <C>1 - erf(x)</C>, exact even where <C>erf(x)</C> is near 1. <C>lgamma(n + 1.0)</C> is <C>ln(n!)</C>, without <C>n!</C> overflowing.</li>
+        <li><C>x.fract()</C> is a method, not in <C>std.math</C>: <C>x - math.floor(x)</C>, as in GPU shaders, on the CPU and in a <C>gpu fn</C> alike.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/14-standard-library/math-roots-logs-and-gamma.kav" label="roots and logs, tested" />
+        <SrcRef file="tests/conformance/14-standard-library/fract-is-the-part-above-the-floor.kav" label="fract, tested" />
+      </div>
       <ModuleTable file="05-math.md" number="14.5" first="Name" />
     </>
   ),

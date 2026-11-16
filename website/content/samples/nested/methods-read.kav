@@ -20,7 +20,7 @@ fn main() {
     print("contains 8: {n.contains(8)}, index_of 2: {n.index_of(2) ?? -1}, count 2s: {n.count(x => x == 2)}")
     print("min {n.min() ?? 0}, max {n.max() ?? 0}, sum {n.sum(x => x)}, find {n.find(x => x > 4) ?? 0}")
     print("map {n.map(x => x * 10)}, filter {n.filter(x => x > 2)}, flat_map {n.flat_map(x => [x, x])}")
-    print("any {n.any(x => x > 7)}, all {n.all(x => x > 0)}")
+    print("any {n.any(x => x > 7)}, all {n.all(x => x > 0)}, enumerate {n.take(2).enumerate()}")
     print("sort {n.sort()}, sort_by {n.sort_by(x => -x)}, reverse {n.reverse()}")
     print("take {n.take(2)}, skip {n.skip(2)}, slice {n.slice(1, 3)}, + {n + [9]}")
     print("join {shelf.names.join(", ")}")

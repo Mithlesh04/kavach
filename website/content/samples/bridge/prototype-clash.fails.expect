@@ -1,0 +1,1 @@
+error: `[T]` already has a method `contains`: give yours another name (spec 2.5)

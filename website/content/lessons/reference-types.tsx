@@ -69,8 +69,16 @@ function groups(): { title: string; entries: Entry[] }[] {
     file: "02-types/02-collections.md",
   }));
   const taken = moduleDecls(["stdlib/tasks/tasks.kav"]).find((d) => d.name === "Taken")!;
+  const VIEWS = "02-types/18-text-views.md";
   return [
-    { title: "Numbers, text and values", entries: basics },
+    {
+      title: "Numbers, text and values",
+      entries: [
+        ...basics,
+        { names: ["StrView"], says: said(VIEWS, /(a `StrView` is part of a string with nothing copied, for parsing)/), number: "2.18", file: VIEWS },
+        { names: ["TextBuilder"], says: said(VIEWS, /(a `TextBuilder` is text being made, changed in place, for building)/), number: "2.18", file: VIEWS },
+      ],
+    },
     {
       title: "Collections",
       entries: [

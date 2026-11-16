@@ -1,0 +1,11 @@
+// JavaScript: Array.prototype.chunks = function (n) { … }
+extend<T> [T] {
+    fn chunks(self, n: Int) -> [[T]] {
+        (0..self.len()).filter(i => i % n == 0).map(i => self.slice(i, i + n))
+    }
+}
+
+fn main() {
+    print([1, 2, 3, 4, 5].chunks(2))
+    print(["tea", "toast", "jam"].chunks(2))
+}

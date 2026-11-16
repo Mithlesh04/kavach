@@ -1,0 +1,16 @@
+type Peer {
+    x: Float32
+    seen: Int
+}
+
+gpu fn step(q: Float32, by: Float32) -> Float32 {
+    q + by
+}
+
+fn main() {
+    const peer = Peer(x: 2.0, seen: 1)
+    const qs: [Float32] = [1.0, 2.0]
+    print(qs.map(q => step(q, peer.x)))   // reads a field of a captured record: runs on the CPU
+    const px = peer.x
+    print(qs.map(q => step(q, px)))       // a plain Float32: can run on the GPU
+}

@@ -1,0 +1,9 @@
+use std.fs
+
+const notes = fs.read_text("shop-notes.txt") catch "missing"
+
+fn show() -> String {
+    notes
+}
+
+print(show())

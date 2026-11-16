@@ -1,0 +1,1 @@
+error: an extend of a list, map, set or ring names each item type, so its methods work for every one: write `extend<T> [T]`, `extend<K, V> [K: V]`, `extend<T> Set<T>` or `extend<T> Ring<T>` (spec 2.5)

@@ -44,8 +44,7 @@ const changeCases: [sample: string, setup: string, step: string][] = [
 
 // Spec 2.2 and 14.2: the methods that change a collection, and those that
 // only read. The samples methods-change and methods-const.fails check the
-// first column; methods-read checks the second, all but `enumerate`, which
-// `kavach run --native` doesn't compile yet (for/index shows it).
+// first column; methods-read checks the second.
 const methodKinds: [type: string, change: React.ReactNode, read: React.ReactNode][] = [
   [
     "List",
@@ -161,6 +160,11 @@ export const nestedDoc: LessonDoc = {
         gives the default, not a crash:
       </P>
       <Ex name="nested/deep" />
+      <P>
+        Or chain the reads with <C>?.</C>, which calls the next method only when there is a value:{" "}
+        <C>deep.get(&quot;a&quot;)?.get(&quot;b&quot;) ?? 0</C>. See{" "}
+        <Link href="/docs/types/optionals/reading-one-safely/">Reading one safely</Link>.
+      </P>
       <H2>A real shape: records, maps, lists and functions</H2>
       <P>
         Real data mixes kinds: a school has a name (text) and its classes (a map). Written as one map, as in JSON or
@@ -192,6 +196,18 @@ export const nestedDoc: LessonDoc = {
       <Ex name="nested/tuples" />
       <H2>Sets inside</H2>
       <Ex name="nested/sets" />
+      <H2>What can be a key</H2>
+      <P>
+        Any value can be a map&apos;s key or a set&apos;s item: numbers, text, tuples, records, unions, and lists, maps
+        and sets too. Values never change in place, so a key can&apos;t change while it is in a map. Keys are compared
+        by value, as <C>==</C> compares:
+      </P>
+      <Ex name="nested/keys" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>0.0</C> and <C>-0.0</C> are one key, so every float has one place.</li>
+        <li>NaN is one key too: NaN equals NaN as a key or a set item, though <C>==</C> keeps NaN equal to nothing.</li>
+      </ul>
+      <SrcRef file="tests/conformance/02-types/a-float-key-has-one-place.kav" label="float keys, tested" />
       <H2>Copies are whole</H2>
       <P>
         A collection is a value. A copy never shares changes with the one it came from, however deep the change. See{" "}
@@ -211,6 +227,11 @@ export const nestedDoc: LessonDoc = {
       </ul>
       <P>With a <C>let</C>, take the list out, change it and put it back. Or do it in one line, with <C>+</C>:</P>
       <Ex name="nested/change-let-put-back" />
+      <P>
+        A value read from one map can&apos;t go straight into another: the read is an optional, and a map&apos;s slot
+        takes a value. Give a default with <C>??</C> first, or use <C>if let</C>:
+      </P>
+      <Ex name="nested/map-slot.fails" />
       <P>Every case, each one a checked sample:</P>
       <ChangeTable />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">

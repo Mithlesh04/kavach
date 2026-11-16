@@ -1,0 +1,7 @@
+use std.fs
+
+const notes = fs.read_text("shop-notes.txt") catch ""
+
+fn main() {
+    print(notes.len())
+}

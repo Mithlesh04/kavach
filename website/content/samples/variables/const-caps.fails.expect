@@ -1,0 +1,1 @@
+error: `COUNT` is not a variant of any type: a name with a capital letter here is read as a variant; a value's name is snake_case, as `count` (spec 1.5)

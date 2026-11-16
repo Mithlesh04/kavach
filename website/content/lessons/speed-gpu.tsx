@@ -182,6 +182,12 @@ export const gpuMapDoc: LessonDoc = {
         The lambda can capture values from outside, such as <C>gain</C>, as long as they are one of the four GPU types.
         The program checks its own results instead of printing a million numbers.
       </P>
+      <P>
+        A lambda that reads a field of a captured record, such as <C>peer.x</C>, runs on the CPU, with the same
+        results, and the compiler warns, naming the field. Copy it into a <C>const</C> first:
+      </P>
+      <Ex name="gpu/captured-field.warns" />
+      <SrcRef file="tests/conformance/15-gpu/gpu-map-reading-a-captured-field-warns.kav" label="tested" />
     </>
   ),
 };

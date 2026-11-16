@@ -1,0 +1,8 @@
+fn main() {
+    print([1, 5] < [2, 3])                 // 1 < 2 decides
+    print([1, 2] < [1, 2, 3])              // the shorter runs out first
+    print([[2, 1], [1, 9]].sort())         // a list of lists sorts
+    print([(2, "b"), (1, "z")].sort())     // so does a list of tuples
+    print(Bytes([1, 2]) < Bytes([1, 3]))   // byte by byte
+    print([[3, 1], [2, 9]].max() ?? [])   // max and min use the order too
+}

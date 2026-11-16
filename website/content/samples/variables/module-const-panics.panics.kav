@@ -1,0 +1,11 @@
+fn pick(i: Int) -> Int {
+    const sizes = [10, 20, 30]
+    sizes[i]
+}
+
+const fourth = pick(3)
+
+fn main() {
+    print("main starts")
+    print(fourth)
+}

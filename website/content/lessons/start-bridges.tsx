@@ -181,6 +181,7 @@ export const javascriptDoc = bridge({
     ["objects and arrays shared by reference", "values: `b = a` copies", "memory/values-not-references"],
     ["`Object.freeze(obj)`", "`const obj = …`: nothing in it can change, however deep", "basics/variables/const"],
     ["unfreezing: `{ ...obj }` or `structuredClone(obj)`", "`let copy = obj`: a copy that can change, with the original as it was", "basics/variables/let"],
+    ["`Array.prototype.chunks = function …`", "`extend<T> [T] { fn chunks(self, …) }`: checked, and never replacing a built-in method", "types/extend"],
     ["`async`, `await` and promises", "`spawn` and `.wait()`, with no `async` and no `await`", "concurrency/tasks"],
     ["`npm` and `package.json`", "`kavach.toml`, and `kavach add`", "tools/packages"],
     ["types only with TypeScript", "every type checked before the program runs", "basics/data-types"],
@@ -199,6 +200,17 @@ export const javascriptDoc = bridge({
         the original stays as it was, with no <C>structuredClone</C>:
       </P>
       <Ex name="bridge/unfreeze" />
+      <H2>Adding methods, like a prototype</H2>
+      <P>
+        Where JavaScript adds a method to <C>Array.prototype</C>, Kavach uses <C>extend</C>. <C>{"extend<T> [T]"}</C>{" "}
+        adds it to lists of every item type, and its types are checked like any function&apos;s:
+      </P>
+      <Ex name="bridge/prototype" />
+      <P>
+        In JavaScript, a method added under a built-in&apos;s name replaces it for every array in the program. In Kavach
+        that is refused, so <C>xs.contains(x)</C> always means the same:
+      </P>
+      <Ex name="bridge/prototype-clash.fails" />
     </>
   ),
 });

@@ -228,6 +228,13 @@ export const optionalReadDoc: LessonDoc = {
       </P>
       <Ex name="types/optionals-flat" />
       <SrcRef file="tests/conformance/02-types/optionals-do-not-nest.kav" label="tested" />
+      <H2>?. calls methods too</H2>
+      <P>
+        <C>x?.m(a)</C> is <C>none</C> when <C>x</C> is, and otherwise <C>x</C>&apos;s value&apos;s <C>m(a)</C>. The
+        arguments aren&apos;t worked out when <C>x</C> is <C>none</C>. A chain reads into nested maps:
+      </P>
+      <Ex name="types/optionals-method" />
+      <SrcRef file="tests/conformance/02-types/question-dot-calls-methods.kav" label="tested" />
     </>
   ),
 };

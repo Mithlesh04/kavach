@@ -3,8 +3,10 @@ import { SrcRef } from "@/components/src-ref";
 import { RaceChart } from "@/components/race-chart";
 import { VerifyBlock } from "@/components/verify-block";
 import type { LessonDoc } from "@/lib/chapter";
+import { specTables } from "@/lib/spec-tables";
 import { Ex, H2, Note, P } from "./parts";
 import { Limits } from "./limits";
+import { Table } from "./spec-table";
 
 // ---------- Strings ----------
 
@@ -206,6 +208,71 @@ export const toNumbersDoc: LessonDoc = {
       <Ex name="types/sub-convert" />
       <P>To find numbers in the middle of text, such as an order number in a message, use <C>std.text</C>:</P>
       <Ex name="text/sub-find" />
+    </>
+  ),
+};
+
+// ---------- Text views and builders ----------
+//
+// Spec 2.18. The two method tables are the spec's own, checked by their
+// first rows, so a change there shows here.
+
+const VIEWS = "02-types/18-text-views.md";
+
+function ViewTable({ n, first }: { n: number; first: string }) {
+  const t = specTables(VIEWS, "2.18")[n];
+  if (!t || !t.rows[0][0].includes(first)) throw new Error(`spec 2.18: table ${n} no longer starts with ${first}`);
+  return <Table header={t.header} rows={t.rows} wrapFirst />;
+}
+
+export const textViewsDoc: LessonDoc = {
+  lead: "A StrView is part of a string with nothing copied, for reading text fast. A TextBuilder is text being made, changed in place.",
+  simple: <>A view is a window onto part of a page: you read through it, and nothing is copied out. A builder is a notepad you keep writing on, instead of copying the whole page out again for every new word.</>,
+  minutes: 5,
+  before: ["basics/strings/splitting"],
+  body: (
+    <>
+      <P>
+        A <C>String</C> never changes, and <C>s.slice(a, b)</C> gives a copy. For most programs that is fast enough.
+        For a parser that reads a big file, or code that builds long text a piece at a time, two built-in types skip
+        the copies.
+      </P>
+      <H2>Views: reading without copying</H2>
+      <P>
+        <C>s.view()</C> is all of <C>s</C>, and <C>s.view(start, end)</C> characters <C>start..end</C> of it. Its{" "}
+        <C>trim</C>, <C>split</C> and <C>lines</C> give views too, so a line is taken apart with no text copied:
+      </P>
+      <Ex name="strings/view" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A view compares with <C>==</C> and <C>&lt;</C> to another view or to a <C>String</C>, by its text, and prints its text.</li>
+        <li><C>Int(v)</C>, <C>Float(v)</C> and the other conversions take a view, so a number is read without copying it out.</li>
+        <li>A view keeps its whole string in memory. <C>v.to_string()</C> copies its text into a string of its own, and lets the big one go.</li>
+      </ul>
+      <ViewTable n={0} first="v.len()" />
+      <H2>Builders: making text in place</H2>
+      <P>
+        <C>TextBuilder()</C> starts empty, <C>TextBuilder(text)</C> starts with <C>text</C>, and{" "}
+        <C>TextBuilder.capacity(n)</C> has room for <C>n</C> bytes before it grows. It changes in place, so it is a{" "}
+        <C>let</C>:
+      </P>
+      <Ex name="strings/builder" />
+      <ViewTable n={1} first="b.push(text)" />
+      <P>A builder in a <C>const</C> can&apos;t change:</P>
+      <Ex name="strings/builder-const.fails" />
+      <P>
+        A builder is a value, like every other. A copy is a builder of its own, and a view of a builder keeps the text
+        it had when it was taken:
+      </P>
+      <Ex name="strings/builder-copy" />
+      <P>A position past the end is clamped, as for <C>slice</C>. A start after its end is a panic:</P>
+      <Ex name="strings/builder-range.panics" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file={`docs/spec/${VIEWS}`} label="spec 2.18 · text views and builders" />
+        <SrcRef file="tests/conformance/02-types/text-views-read-without-copying.kav" label="views, tested" />
+        <SrcRef file="tests/conformance/02-types/text-builders-change-in-place.kav" label="builders, tested" />
+        <SrcRef file="tests/conformance/02-types/text-builder-changes-need-let.kav" label="let, tested" />
+        <SrcRef file="tests/conformance/02-types/text-builder-start-after-end-panics.kav" label="the panic, tested" />
+      </div>
     </>
   ),
 };

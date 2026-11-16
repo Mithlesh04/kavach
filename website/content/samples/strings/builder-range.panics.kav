@@ -1,0 +1,4 @@
+fn main() {
+    let b = TextBuilder("hello")
+    b.remove(4, 2)
+}

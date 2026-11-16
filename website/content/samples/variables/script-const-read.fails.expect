@@ -1,0 +1,1 @@
+error: `notes` is worked out by the script's own code, as it uses a capability or `try`, so a function can't read it (spec 1.13): pass it as an argument

@@ -7,7 +7,7 @@ import { blockGivenDoc, breakDoc, whileDoc, whileEndlessDoc, whilePlainDoc } fro
 import { forDoc, forIndexDoc, forListDoc, forMapDoc, forRangeDoc, forTimesDoc } from "./basics-for";
 import { commentsDoc, debugDoc, outputDoc, printDoc, valuesPrintDoc } from "./basics-output";
 import { blocksDoc, keywordsDoc, mainFunctionDoc, namesDoc, sourceFilesDoc, syntaxDoc } from "./basics-syntax";
-import { changeDoc, constDoc, destructuringDoc, letDoc, variablesDoc } from "./basics-variables";
+import { changeDoc, constDoc, destructuringDoc, letDoc, moduleConstDoc, variablesDoc } from "./basics-variables";
 import { firstProgramDoc, homeDoc, smartDoc } from "./start";
 import { editionsDoc, envDoc, layoutDoc, settingsDoc } from "./tools-settings";
 import { taggedLiteralsDoc } from "./tools-literals";
@@ -125,7 +125,7 @@ import { inoutDoc } from "./functions-inout";
 import { errorsIntroDoc, installDoc, programDoc, terminalDoc } from "./start-first-steps";
 import { askNumberDoc, askPasswordDoc, askTextDoc, inputDoc } from "./basics-input";
 import { bigintDoc, boolDoc, charDoc, convertDoc, dataTypesDoc, decimalDoc, floatDoc, intDoc, sizedDoc } from "./basics-types";
-import { interpolationDoc, joinDoc, lengthDoc, makeStringsDoc, searchDoc, splitDoc, stringsDoc, tidyDoc, toNumbersDoc } from "./basics-strings";
+import { interpolationDoc, joinDoc, lengthDoc, makeStringsDoc, searchDoc, splitDoc, stringsDoc, textViewsDoc, tidyDoc, toNumbersDoc } from "./basics-strings";
 import {
   arithmeticDoc, assignmentDoc, booleansDoc, comparisonDoc, exactDoc, logicalDoc, mathDoc, mathFunctionsDoc,
   operatorsDoc, precedenceDoc, roundingDoc,
@@ -177,6 +177,7 @@ export const lessons: Record<string, LessonDoc> = {
   "basics/variables/let": letDoc,
   "basics/variables/changing-a-value": changeDoc,
   "basics/variables/destructuring": destructuringDoc,
+  "basics/variables/module-constants": moduleConstDoc,
   "basics/user-input": inputDoc,
   "basics/user-input/ask-for-text": askTextDoc,
   "basics/user-input/ask-for-a-number": askNumberDoc,
@@ -205,6 +206,7 @@ export const lessons: Record<string, LessonDoc> = {
   "basics/strings/splitting": splitDoc,
   "basics/strings/tidying-and-padding": tidyDoc,
   "basics/strings/strings-to-numbers": toNumbersDoc,
+  "basics/strings/text-views-and-builders": textViewsDoc,
   "basics/math": mathDoc,
   "basics/math/math-functions": mathFunctionsDoc,
   "basics/math/rounding": roundingDoc,

@@ -1,0 +1,26 @@
+extend<T> [T] {
+    fn second(self) -> T? {
+        if self.len() > 1 { self[1] } else { none }
+    }
+}
+
+extend<K, V> [K: V] {
+    fn has_all(self, keys: [K]) -> Bool {
+        keys.all((k) => self.contains_key(k))
+    }
+}
+
+extend<T> Set<T> {
+    fn has_any(self, items: [T]) -> Bool {
+        items.any((x) => self.contains(x))
+    }
+}
+
+fn main() {
+    print([10, 20, 30].second())                    // works for a list of Int
+    print(["tea", "toast"].second())                // and of String
+    print([7].second() ?? 0)                        // none, so 0
+    print(["a": 1, "b": 2].has_all(["a", "z"]))
+    print(Set.of("red", "blue").has_any(["blue", "green"]))
+    print((1..=5).second())                         // a range has a list's methods
+}

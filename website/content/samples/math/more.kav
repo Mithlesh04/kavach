@@ -1,0 +1,13 @@
+use std.math
+
+fn main() {
+    print(math.log10(1000.0))          // logarithm to base 10
+    print(math.cbrt(-8.0))             // cube root, of a negative number too
+    print(math.hypot(3.0, 4.0))        // the length of (3, 4)
+    print(math.remainder(7.0, 4.0))    // 7 - 2 * 4: 2 is the whole number nearest 7 / 4
+    print(7.0 % 4.0)                   // % keeps 7's sign instead
+    print(math.erfc(0.0))              // 1 - erf(0)
+    print(math.lgamma(5.0))            // ln(4!), which is ln(24)
+    print(2.75.fract())                // the part above the floor
+    print((-0.25).fract())             // the floor is -1, so 0.75
+}

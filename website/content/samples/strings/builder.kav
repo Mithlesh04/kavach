@@ -1,0 +1,12 @@
+fn main() {
+    let out = TextBuilder()
+    for n in 1..=3 {
+        out.push("item ")
+        out.push("{n}")
+        out.push_char('\n')
+    }
+    out.replace(0, 4, "ITEM")              // the first "item" only
+    out.insert(0, "List:\n")
+    print(out.to_string())
+    print(out.len())
+}

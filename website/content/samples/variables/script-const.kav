@@ -1,0 +1,12 @@
+// A script: no `fn main`.
+use std.fs
+
+const notes = fs.read_text("shop-notes.txt") catch "missing"   // a line of the script
+const limit = 3                                                  // a module constant
+
+fn show() -> String {
+    "limit {limit}"
+}
+
+print(show())
+print(notes)

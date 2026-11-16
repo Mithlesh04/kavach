@@ -9,7 +9,7 @@ fn speed(pad: Pad) -> Float {
 }
 
 fn main() {
-    const pad = Pad(id: 0, name: "test pad", buttons: ["South"], left: (x: 0.0, y: 0.0), right: (x: 0.0, y: 0.0), left_trigger: 0.0, right_trigger: 0.5, gyro: none)
+    const pad = Pad(id: 0, name: "test pad", buttons: ["South"], left: (x: 0.0, y: 0.0), right: (x: 0.0, y: 0.0), left_trigger: 0.0, right_trigger: 0.5)
     print(speed(pad))
     const braking = Pad(id: 0, name: "test pad", buttons: ["East"], left: (x: 0.0, y: 0.0), right: (x: 0.0, y: 0.0), left_trigger: 0.0, right_trigger: 1.0, gyro: none)
     print(speed(braking))

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
@@ -182,6 +183,85 @@ export const destructuringDoc: LessonDoc = {
         <li><C>= &quot;8080&quot;</C> is a default, used when the value is missing.</li>
         <li><C>_</C> skips an item you don&apos;t need.</li>
       </ul>
+    </>
+  ),
+};
+
+// ---------- Module constants ----------
+//
+// Spec 1.13. The capability table is the spec's, in plain words; each row
+// has a checked sample below it.
+
+export const moduleConstDoc: LessonDoc = {
+  lead: "A const at the top level of a file, outside any function, is a module constant: every function in the file can read it.",
+  simple: <>A module constant is a value pinned to the wall of the room: every function in the file can see it, and nobody can change it. It is worked out once, before the program starts.</>,
+  minutes: 4,
+  before: ["basics/variables/const"],
+  body: (
+    <>
+      <Ex name="variables/module-const" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>It is worked out once, before <C>main</C> starts, in the order the constants are written. Its value never changes, as any <C>const</C>&apos;s.</li>
+        <li>Its value may use numbers, text, other module constants and calls of functions, but no capability, and nothing that can fail without <C>catch</C>.</li>
+        <li><C>pub const</C> lets other modules read it too: see <Link href="/docs/tools/modules/pub/">pub</Link>.</li>
+        <li>A <C>let</C> at the top level is a line of the program, not a module constant, and so is <C>const (a, b) = pair()</C>.</li>
+      </ul>
+      <H2>A const that uses a capability</H2>
+      <P>
+        Reading a file, the clock or the network needs a <Link href="/docs/agents/capabilities/">capability</Link>. A
+        top-level <C>const</C> that uses one means one of two things, by whether the file has <C>fn main</C>:
+      </P>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-[15px]">
+          <thead>
+            <tr className="border-b border-line text-left text-soft">
+              <th className="py-2 pr-4 font-bold">The file</th>
+              <th className="py-2 font-bold"><C>const notes = fs.read_text(&quot;notes.txt&quot;) catch &quot;&quot;</C> at the top</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr className="border-b border-line align-top">
+              <td className="py-2 pr-4 whitespace-nowrap">Has <C>fn main</C></td>
+              <td className="py-2 text-muted">An error. A module constant is worked out before <C>main</C>, which hasn&apos;t run anything yet. Write <C>let</C>, or work it out in <C>main</C>.</td>
+            </tr>
+            <tr className="border-b border-line align-top">
+              <td className="py-2 pr-4 whitespace-nowrap">Is a script, with no <C>fn main</C></td>
+              <td className="py-2 text-muted">One of the script&apos;s lines, run in its place, like its other lines. It isn&apos;t a module constant, so a function can&apos;t read it.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <P>With <C>fn main</C>, the compiler says what to write instead:</P>
+      <Ex name="variables/module-const-cap.fails" />
+      <P>
+        In a <Link href="/docs/basics/syntax/the-main-function/">script</Link>, the same line is a line of the script,
+        while <C>limit</C>, which uses no capability, stays a module constant that <C>show</C> reads:
+      </P>
+      <Ex name="variables/script-const" />
+      <P>A function that reads the script&apos;s <C>notes</C> is refused. Pass it as an argument instead:</P>
+      <Ex name="variables/script-const-read.fails" />
+      <P>
+        So a script&apos;s first line, <C>const text = try fs.read_text(path)</C>, works as it reads, and a program
+        with <C>fn main</C> has one kind of top-level <C>const</C> only.
+      </P>
+      <H2>Names</H2>
+      <P>
+        A constant is named in <C>snake_case</C>, like any value. Some languages write constants in capitals; in Kavach a
+        name with a capital letter is a <Link href="/docs/types/unions/">variant</Link>, and the message says so:
+      </P>
+      <Ex name="variables/const-caps.fails" />
+      <H2>A panic in one</H2>
+      <P>Every constant is worked out before <C>main</C>, so a panic in one stops the program before <C>main</C> prints anything:</P>
+      <Ex name="variables/module-const-panics.panics" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/01-basics.md" label="spec 1.13 · module constants" />
+        <SrcRef file="tests/conformance/01-basics/module-constants-are-read-by-functions.kav" label="read by functions, tested" />
+        <SrcRef file="tests/conformance/01-basics/module-constants-use-no-capability.kav" label="no capability, tested" />
+        <SrcRef file="tests/conformance/01-basics/script-constants-may-use-capabilities.kav" label="in a script, tested" />
+        <SrcRef file="tests/conformance/01-basics/functions-read-no-script-statement.kav" label="not read by functions, tested" />
+        <SrcRef file="tests/conformance/01-basics/module-constant-panics-before-main.kav" label="a panic first, tested" />
+        <SrcRef file="tests/conformance/01-basics/capital-names-in-a-const-are-variants.kav" label="capitals, tested" />
+      </div>
     </>
   ),
 };

@@ -57,6 +57,19 @@ export const soundDoc: LessonDoc = {
         <C>BadSound</C>, even on a machine with no sound device:
       </P>
       <Ex name="audio/stream-missing" />
+      <H2>Voices you fill</H2>
+      <P>
+        <C>audio.voice()</C> gives a voice whose sound the program makes itself, a frame at a time: a synthesizer, or an
+        engine&apos;s hum that follows its speed. Each frame of the program&apos;s loop, <C>voice.fill(state, next)</C>{" "}
+        calls <C>next</C> for every sound frame the voice has room for, about 50 ms ahead. This plays a tone, so it is
+        shown here, not run:
+      </P>
+      <CodeBlock code={specBlockWith(FILE, "14.27", "audio.voice()")} file="tone.kav, from spec 14.27" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>next</C> takes the state and gives the state after the frame, then its left and right, as <C>Float32</C>s.</li>
+        <li>The state goes from one call to the next, so a function can keep a phase, a filter or an envelope.</li>
+        <li>The voice plays 48,000 frames a second. If the program stops calling <C>fill</C>, it goes quiet when its queue runs out, and starts again when called.</li>
+      </ul>
       <H2>A sound made from numbers</H2>
       <P>
         <C>audio.sound(samples, rate, channels)</C> makes a sound from a list of <C>Float32</C>s, each from -1 to 1.
@@ -114,7 +127,7 @@ export const soundDoc: LessonDoc = {
       <H2>Not yet</H2>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Choosing the microphone, and its rate, instead of the system&apos;s default.</li>
-        <li>Sounds a Kavach function makes as they play, for synthesizers.</li>
+        <li>A voice whose sound a Kavach function makes on the sound device&apos;s own thread, with no time ahead.</li>
         <li>Choosing the output device, and Opus files.</li>
       </ul>
       <div className="flex flex-wrap gap-2.5">

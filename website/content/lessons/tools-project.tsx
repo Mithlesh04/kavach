@@ -95,6 +95,15 @@ export const pubDoc: LessonDoc = {
       </P>
       <Files name="modules/private.fails" outcome="refused" />
       <P>The fix is the one the message gives: a <C>pub fn</C> in <C>billing.invoice</C> that makes an <C>Invoice</C>, as <C>create</C> does.</P>
+      <H2>Constants</H2>
+      <P>
+        A <Link href="/docs/basics/variables/module-constants/">module constant</Link> marked <C>pub</C> is read from
+        other modules as <C>config.width</C>, or named in <C>use</C>. One without <C>pub</C>, as <C>scale</C>, stays
+        in its module:
+      </P>
+      <Files name="modules/pub-const" first={["src/config.kav", "src/main.kav"]} />
+      <P>Files other than the program&apos;s first may hold module constants, but no other lines outside a function.</P>
+      <SrcRef file="tests/conformance/10-modules/pub-consts-are-read-from-other-modules/src/main.kav" label="tested" />
       <H2>An extend in the same package</H2>
       <P>
         An <C>extend</C> of a type in another file of the <strong>same package</strong> counts as the type&apos;s own

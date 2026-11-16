@@ -1,0 +1,4 @@
+fn main() {
+    const b = TextBuilder()
+    b.push("x")
+}
