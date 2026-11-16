@@ -85,6 +85,16 @@ pub fn play(sound: Sound, volume: Float = 1.0, pan: Float = 0.0, looped: Bool = 
     Voice(id: v)
 }
 
+/// Plays the WAV or Ogg Vorbis file at `path` a piece at a time, as
+/// `play` plays a sound: for long music, which `decode` would hold whole
+/// in memory.
+pub fn stream(path: String, volume: Float = 1.0, pan: Float = 0.0, looped: Bool = false) -> Voice ! AudioError uses Audio, Fs.read
+    require volume >= 0.0 and volume <= 4.0 and pan >= -1.0 and pan <= 1.0
+{
+    const v = try audio.stream_id(path, [volume, pan], looped)
+    Voice(id: v)
+}
+
 /// What the microphone hears, from `audio.listen()`. Letting it go stops
 /// it.
 pub type Recording: Drop {

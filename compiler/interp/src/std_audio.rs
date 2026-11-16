@@ -86,6 +86,29 @@ impl<'a> Interp<'a> {
                 Value::Unit
             }
             "listen_id" => return number(audio::listen(), self, "Unavailable"),
+            "stream_id" => {
+                let path = match args.first() {
+                    Some(Value::Str(s)) => s.to_string(),
+                    _ => String::new(),
+                };
+                let s = floats(1);
+                let part = |k: usize| s.get(k).copied().unwrap_or(0.0);
+                let looped = matches!(args.get(2), Some(Value::Bool(true)));
+                let made = if self.faking("Fs") {
+                    Err(Ok("files are fake under `kavach test` (11.5)".to_string()))
+                } else if !kavach_runtime_core::fs_scope::inside(&self.fs_scopes, &path) {
+                    Err(Ok(format!(
+                        "{path} is outside the folders this code may read"
+                    )))
+                } else {
+                    audio::stream(&path, part(0), part(1), looped)
+                };
+                return match made {
+                    Ok(v) => number(Ok(v), self, "Unavailable"),
+                    Err(Ok(why)) => number(Err(why), self, "BadSound"),
+                    Err(Err(why)) => number(Err(why), self, "Unavailable"),
+                };
+            }
             "take_id" => Value::Int(i128::from(audio::take(n)), Prim::Int),
             "stop_listening_id" => {
                 audio::stop_listening(n);

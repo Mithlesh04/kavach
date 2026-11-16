@@ -1,0 +1,14 @@
+// Rule: `audio.stream` plays a file as it reads it, so it needs `Fs.read` as well as `Audio`.
+// Spec: 14.27
+// expect compile error
+
+use std.audio
+
+pub fn music() uses Audio {
+    const _ = audio.stream("theme.ogg", looped: true) catch _ => {     // error: `music` uses Fs.read (through `stream`), but its `uses` clause doesn't list it
+        return
+    }
+}
+
+fn main() {
+}

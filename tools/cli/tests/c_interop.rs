@@ -357,12 +357,19 @@ fn c_functions_take_more_after_dots() {
         assert!(built.status.success(), "{backend}: {said}");
         outputs.push((backend, Command::new(&exe).output().unwrap()));
     }
-    if !cfg!(windows) {
-        let jit = kavach()
-            .args(["run", "--native", "main.kav"])
-            .current_dir(&dir)
-            .output();
-        outputs.push(("jit", jit.unwrap()));
+    let jit = kavach()
+        .args(["run", "--native", "main.kav"])
+        .current_dir(&dir)
+        .output()
+        .unwrap();
+    if cfg!(windows) {
+        // Windows' C library has `snprintf` only in its headers: in memory
+        // it can't be called, and says so instead of crashing.
+        let said = String::from_utf8_lossy(&jit.stderr);
+        assert!(said.contains("`snprintf` can't be called"), "{said}");
+        assert!(said.contains("`kavach build` links it"), "{said}");
+    } else {
+        outputs.push(("jit", jit));
     }
     let _ = std::fs::remove_dir_all(&dir);
     for (how, out) in outputs {

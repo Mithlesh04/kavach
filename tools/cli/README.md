@@ -27,7 +27,7 @@ Exit codes: 0 success, 1 compile errors or an error returned from `main`, 101 a 
 | File | Job |
 |---|---|
 | `src/main.rs` | Commands |
-| `src/watch.rs` | `kavach run --watch`: the program run again on each change of the project's files |
+| `src/watch.rs` | `kavach run --watch`: the program run again on each change of the project's files; and `kavach run --hot`, which has the interpreter swap in changed functions, running again only when more than bodies changed |
 | `src/native.rs` | `kavach build` and `kavach run --native`: native code with LLVM or Cranelift |
 | `src/context.rs` | `kavach query` and `kavach context`, from the program's index |
 | `src/project.rs` | `kavach new`, and finding the project's entry file |
@@ -54,4 +54,5 @@ Exit codes: 0 success, 1 compile errors or an error returned from `main`, 101 a 
 | `tests/windows_resources.rs` | `kavach build` gives a Windows executable a manifest and the icon `[build] icon` names; an icon that isn't a PNG is refused (spec 10.5) |
 | `tests/fonts.rs` | A font file read, text shaped into placed glyphs and drawn into a distance atlas, interpreted and natively (spec 14.31) |
 | `tests/c_libraries.rs` | A library built with `kavach build --lib` loaded by another program while running (`extern c library`), in memory and built with each backend; on Linux, records by value to a C library compiled with `cc` (spec 10.7) |
+| `tests/hot.rs` | `kavach run --hot`: a function changed while the program runs is swapped in keeping its values, and a new type runs it again (spec 10.5) |
 | `tests/online.rs` | Tests that need the internet (`https://`); they run only with `--ignored` |

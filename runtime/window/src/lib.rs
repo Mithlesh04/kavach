@@ -12,7 +12,8 @@ use std::time::Duration;
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalSize;
 use winit::event::{
-    DeviceEvent, DeviceId, ElementState, Ime, MouseButton, MouseScrollDelta, WindowEvent,
+    DeviceEvent, DeviceId, ElementState, Ime, MouseButton, MouseScrollDelta, TouchPhase,
+    WindowEvent,
 };
 use winit::event_loop::{ActiveEventLoop, EventLoop, EventLoopProxy};
 use winit::keyboard::PhysicalKey;
@@ -36,6 +37,9 @@ pub const PAD_CONNECTED: i64 = 10;
 pub const PAD_GONE: i64 = 11;
 pub const PAD_BUTTON: i64 = 12;
 pub const PAD_AXIS: i64 = 13;
+/// A touch: where (`a`, `b`), and in its text its phase, its id and its
+/// pressure, as `Began 3 0.5`.
+pub const TOUCH: i64 = 14;
 
 /// One event: its kind, two numbers, and the text of a key or of typing.
 #[derive(Clone, Debug, PartialEq)]
@@ -314,6 +318,18 @@ fn translate(event: WindowEvent, inbox: &mut Inbox) -> Vec<Event> {
             };
             vec![plain(WHEEL, x, y)]
         }
+        WindowEvent::Touch(t) if input => {
+            let phase = match t.phase {
+                TouchPhase::Started => "Began",
+                TouchPhase::Moved => "Moved",
+                TouchPhase::Ended => "Ended",
+                TouchPhase::Cancelled => "Cancelled",
+            };
+            let pressure = t.force.map_or(1.0, |f| f.normalized());
+            let mut e = plain(TOUCH, t.location.x, t.location.y);
+            e.text = format!("{phase} {} {pressure}", t.id);
+            vec![e]
+        }
         _ => Vec::new(),
     }
 }
@@ -445,40 +461,4 @@ pub fn close(n: i64) {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn input_events_come_only_after_listening() {
-        let mut inbox = Inbox::default();
-        let moved = || WindowEvent::CursorMoved {
-            device_id: DeviceId::dummy(),
-            position: winit::dpi::PhysicalPosition::new(3.0, 4.0),
-        };
-        assert!(translate(moved(), &mut inbox).is_empty());
-        inbox.input = true;
-        assert_eq!(
-            translate(moved(), &mut inbox),
-            vec![plain(MOUSE_MOVED, 3.0, 4.0)]
-        );
-        let resized = WindowEvent::Resized(PhysicalSize::new(640, 480));
-        assert_eq!(
-            translate(resized, &mut inbox),
-            vec![plain(RESIZED, 640.0, 480.0)]
-        );
-        assert_eq!(inbox.size, (640, 480));
-    }
-
-    #[test]
-    fn a_window_opens_or_says_why_not() {
-        // A machine with no screen (a server, CI) has no windows: that is
-        // an answer too, never a hang or a crash.
-        match open("kavach test", 64, 48) {
-            Ok(n) => {
-                assert!(size(n).0 > 0);
-                close(n);
-            }
-            Err(why) => assert!(!why.is_empty()),
-        }
-    }
-}
+mod tests;

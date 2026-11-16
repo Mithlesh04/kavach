@@ -15,6 +15,7 @@ fn voice(samples: Vec<f32>, channels: u16, rate: u32, looped: bool) -> (Voice, A
         at: 0.0,
         looped,
         controls: controls.clone(),
+        streaming: None,
     };
     (v, controls)
 }
@@ -172,4 +173,73 @@ fn a_recording_keeps_the_first_two_channels() {
     assert_eq!(kept, vec![1, 2, 5, 6]);
     let mono: Vec<i32> = crate::input::first_two(&data[..3], 1).collect();
     assert_eq!(mono, vec![1, 2, 3]);
+}
+
+/// A WAV file of 16-bit mono samples, as `audio.stream` reads them.
+fn wav_file(samples: &[i16], rate: u32) -> Vec<u8> {
+    let data: Vec<u8> = samples.iter().flat_map(|s| s.to_le_bytes()).collect();
+    let mut out = b"RIFF".to_vec();
+    out.extend((36 + data.len() as u32).to_le_bytes());
+    out.extend(b"WAVEfmt ");
+    out.extend(16u32.to_le_bytes());
+    out.extend(1u16.to_le_bytes()); // whole numbers
+    out.extend(1u16.to_le_bytes()); // one channel
+    out.extend(rate.to_le_bytes());
+    out.extend((rate * 2).to_le_bytes());
+    out.extend(2u16.to_le_bytes());
+    out.extend(16u16.to_le_bytes());
+    out.extend(b"data");
+    out.extend((data.len() as u32).to_le_bytes());
+    out.extend(data);
+    out
+}
+
+#[test]
+fn a_streamed_file_plays_as_it_is_read_and_ends() {
+    let samples: Vec<i16> = (0..3_000).map(|i| (i * 10) as i16).collect();
+    let path = std::env::temp_dir().join(format!("kavach-stream-{}.wav", std::process::id()));
+    std::fs::write(&path, wav_file(&samples, 48_000)).unwrap();
+    let controls = Arc::new(Controls::new(1.0, 0.0));
+    let source = crate::stream::start(&path.to_string_lossy(), false, controls.clone()).unwrap();
+    // The decoder reads the whole short file soon.
+    let start = std::time::Instant::now();
+    while !source.ended.load(std::sync::atomic::Ordering::Acquire) && start.elapsed().as_secs() < 5
+    {
+        std::thread::sleep(std::time::Duration::from_millis(5));
+    }
+    let _ = std::fs::remove_file(&path);
+    let empty = Arc::new(SoundData {
+        samples: Vec::new(),
+        channels: 2,
+        rate: 48_000,
+    });
+    let v = Voice {
+        sound: empty,
+        at: 2.0,
+        looped: false,
+        controls: controls.clone(),
+        streaming: Some(crate::mixer::Streaming {
+            source,
+            frames: [(0.0, 0.0); 2],
+        }),
+    };
+    let mut voices = vec![v];
+    let mut out = vec![0.0f32; 2 * 1_000];
+    mix(&mut out, 2, 48_000, &mut voices, &mut |_| {});
+    // Mono goes to both sides, frame by frame, as it was written.
+    for k in [0usize, 1, 500, 999] {
+        let want = f32::from(samples[k]) / 32_768.0;
+        assert_eq!((out[2 * k], out[2 * k + 1]), (want, want), "frame {k}");
+    }
+    let mut rest = vec![0.0f32; 2 * 4_000];
+    mix(&mut rest, 2, 48_000, &mut voices, &mut |_| {});
+    assert!(voices.is_empty(), "the stream ended, so its voice did");
+    assert!(controls.done.load(std::sync::atomic::Ordering::Acquire));
+}
+
+#[test]
+fn a_file_that_is_not_sound_is_refused_at_once() {
+    let controls = Arc::new(Controls::new(1.0, 0.0));
+    let missing = crate::stream::start("no-such-file.wav", false, controls.clone());
+    assert!(missing.err().is_some_and(|e| e.contains("can't be read")));
 }

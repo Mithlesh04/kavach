@@ -147,6 +147,8 @@ pub struct Closure<'a> {
     /// its body may name them (`json.schema<T>()`) wherever it is called.
     pub generics: HashMap<DefId, kavach_checker::Ty>,
     pub self_value: Option<Value<'a>>,
+    /// The generation of the program it was made in (`kavach run --hot`).
+    pub generation: usize,
 }
 
 /// Why evaluation stopped early.

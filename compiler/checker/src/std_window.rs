@@ -90,6 +90,15 @@ impl Checker<'_> {
                 ],
                 failing(self),
             ),
+            // A file played a piece at a time, as `play_id` plays a sound.
+            "stream_id" => (
+                vec![
+                    p("path", &Ty::Prim(Prim::String)),
+                    p("settings", &list(&float)),
+                    p("looped", &Ty::Prim(Prim::Bool)),
+                ],
+                failing(self),
+            ),
             // A voice, one value, and which: 0 the volume, 1 the pan.
             "set_id" => (
                 vec![id, p("value", &list(&float)), p("which", &int)],

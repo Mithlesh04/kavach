@@ -1,6 +1,6 @@
 [package]
 name = "kavach-runtime-input"
-description = "Gamepads for std.input (spec 14.26), through gilrs: their state, their events, rumble"
+description = "Gamepads for std.input (spec 14.26), through SDL3: their state and gyroscopes, their events, rumble"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
@@ -8,8 +8,13 @@ repository.workspace = true
 publish = false
 
 [dependencies]
-# Gamepads on Windows, Linux and macOS, in one standard layout (decision 0113).
-gilrs = "0.11"
+# Gamepads and their gyroscopes on Windows, Linux and macOS, through SDL3
+# built from its source and linked in (decision 0124); `build.rs` checks
+# for the CMake that needs.
+sdl3 = { version = "0.22", features = ["build-from-source-static", "hidapi"] }
+# Only the parts pads use: no video, sound, rendering or dialogs, so
+# building SDL needs no X11 or Wayland files.
+sdl3-sys = { version = "0.7", features = ["no-sdl-video", "no-sdl-audio", "no-sdl-gpu", "no-sdl-render", "no-sdl-camera", "no-sdl-dialog", "no-sdl-tray", "no-sdl-power", "sdl-unix-console-build"] }
 kavach-runtime-window = { path = "../window" }
 
 [lints]

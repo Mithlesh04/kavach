@@ -9,7 +9,7 @@ use std.window
 
 /// Why there is nothing to draw into: no GPU, a window that can't be
 /// drawn into, or a frame that can't be had now.
-pub type GpuError = Unavailable(reason: String)
+pub type GpuError = Unavailable(reason: String) | BadTexture(reason: String)
 
 /// What draws into a window.
 pub type Screen: Drop {
@@ -75,16 +75,22 @@ pub type NoInput {
 /// are kept here too, so `sample` gives the same colors on the CPU.
 pub type Texture: Drop {
     id: Int
-    width: Int
-    height: Int
+    pub width: Int
+    pub height: Int
     pixels: [UInt8]
 
+    /// Made from a KTX2 file's compressed blocks, which only the GPU reads:
+    /// it has no pixels here.
+    compressed: Bool = false
+
     invariant width >= 1 and width <= 8192 and height >= 1 and height <= 8192
-    invariant pixels.len() == width * height * 4
+    invariant compressed or pixels.len() == width * height * 4
 
     /// The color at `u` (0 left, 1 right) and `v` (0 top, 1 bottom),
     /// blended between the four nearest pixels, as the GPU blends them.
-    pub fn sample(self, u: Float32, v: Float32) -> (Float32, Float32, Float32, Float32) {
+    pub fn sample(self, u: Float32, v: Float32) -> (Float32, Float32, Float32, Float32)
+        require not self.compressed
+    {
         // Pixel centers are at (k + 0.5) / size; past an edge, the edge.
         const x = (Float(u) * Float(self.width) - 0.5).clamp(-1.0, Float(self.width))
         const y = (Float(v) * Float(self.height) - 0.5).clamp(-1.0, Float(self.height))
@@ -104,7 +110,9 @@ pub type Texture: Drop {
     /// Part `k` of the pixel at `x`, `y` (the nearest edge pixel when it
     /// is past one): a color made linear from sRGB, as the GPU reads it,
     /// or the opacity.
-    fn part(self, x: Int, y: Int, k: Int) -> Float {
+    fn part(self, x: Int, y: Int, k: Int) -> Float
+        require not self.compressed and k >= 0 and k <= 3
+    {
         const at = (y.clamp(0, self.height - 1) * self.width + x.clamp(0, self.width - 1)) * 4 + k
         const c = Float(self.pixels[at]) / 255.0
         if k == 3 or c <= 0.04045 {
@@ -127,4 +135,12 @@ pub fn texture(width: Int, height: Int, pixels: [UInt8]) -> Texture ! GpuError u
 {
     const id = try gpu.texture_id(width, height, pixels)
     Texture(id: id, width: width, height: height, pixels: pixels)
+}
+
+/// A texture of the compressed blocks in a KTX2 file's bytes (BC1 to BC7
+/// on desktops, ASTC 4×4 on phones), given to the GPU as they are. Only
+/// the GPU reads it: `sample` it in a `gpu fragment fn`.
+pub fn compressed_texture(file: Bytes) -> Texture ! GpuError uses Window {
+    const parts = try gpu.compressed_id(file)
+    Texture(id: parts[0], width: parts[1], height: parts[2], pixels: [], compressed: true)
 }

@@ -1,17 +1,18 @@
-//! Gamepads for `std.input` (spec 14.26, decision 0113), through `gilrs`
-//! on a thread of the runtime's own. It keeps each connected pad's state,
-//! which `pads` copies, and gives each change to every window that
-//! listens to input, as an event (`kavach_runtime_window::deliver_input`).
-//! Buttons and axes are named by their place in the standard layout.
+//! Gamepads for `std.input` (spec 14.26, decision 0124), through SDL3 on
+//! a thread of the runtime's own. It keeps each connected pad's state,
+//! gyroscope included, which `pads` copies, and gives each change to every
+//! window that listens to input, as an event
+//! (`kavach_runtime_window::deliver_input`). Buttons and axes are named
+//! by their place in the standard layout.
 //!
-//! A machine where `gilrs` can't start (no udev, as in a container) has
-//! no pads: that is not an error.
+//! A machine where SDL can't start has no pads: that is not an error.
 
-use gilrs::{Axis, Button, EventType, Gilrs};
 use kavach_runtime_window::{self as win, Event};
-use std::collections::BTreeMap;
+use sdl3::gamepad::{Axis, Button, Gamepad};
+use sdl3::sensor::SensorType;
+use std::collections::{BTreeMap, HashMap};
 use std::sync::{Mutex, MutexGuard, OnceLock, mpsc};
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 #[cfg(test)]
 mod tests;
@@ -49,6 +50,9 @@ pub struct Pad {
     pub left: (f64, f64),
     pub right: (f64, f64),
     pub triggers: (f64, f64),
+    /// How fast it turns about x, y and z, in radians a second; `None`
+    /// for a pad with no gyroscope.
+    pub gyro: Option<(f64, f64, f64)>,
 }
 
 /// What happened to a pad, in the standard layout's terms.
@@ -63,22 +67,20 @@ pub(crate) enum Change {
     Axis(&'static str, f64),
 }
 
-/// A button's place in `BUTTONS`.
+/// A button's place in `BUTTONS`; the triggers are axes in SDL.
 pub(crate) fn button(b: Button) -> Option<usize> {
     Some(match b {
         Button::South => 0,
         Button::East => 1,
         Button::North => 2,
         Button::West => 3,
-        Button::LeftTrigger => 4,
-        Button::RightTrigger => 5,
-        Button::LeftTrigger2 => 6,
-        Button::RightTrigger2 => 7,
-        Button::Select => 8,
+        Button::LeftShoulder => 4,
+        Button::RightShoulder => 5,
+        Button::Back => 8,
         Button::Start => 9,
-        Button::Mode => 10,
-        Button::LeftThumb => 11,
-        Button::RightThumb => 12,
+        Button::Guide => 10,
+        Button::LeftStick => 11,
+        Button::RightStick => 12,
         Button::DPadUp => 13,
         Button::DPadDown => 14,
         Button::DPadLeft => 15,
@@ -87,39 +89,32 @@ pub(crate) fn button(b: Button) -> Option<usize> {
     })
 }
 
-/// What a `gilrs` event says, in the standard layout; `None` for what
-/// isn't in it (another axis, an unknown button).
-pub(crate) fn change_of(event: &EventType, name: &str) -> Option<Change> {
-    match *event {
-        EventType::Connected => Some(Change::Connected(name.to_string())),
-        EventType::Disconnected => Some(Change::Gone),
-        EventType::ButtonPressed(b, _) => Some(Change::Button(button(b)?, true)),
-        EventType::ButtonReleased(b, _) => Some(Change::Button(button(b)?, false)),
-        EventType::ButtonChanged(b, v, _) => trigger(b, v),
-        EventType::AxisChanged(a, v, _) => stick(a, v),
-        _ => None,
+/// An axis by name, and where it is: sticks from -1 to 1 with y up, as
+/// spec 14.26 has them (SDL's y is down), triggers from 0 to 1.
+pub(crate) fn axis(a: Axis, raw: i16) -> Change {
+    let v = (f64::from(raw) / 32_767.0).clamp(-1.0, 1.0);
+    match a {
+        Axis::LeftX => Change::Axis("LeftX", v),
+        Axis::LeftY => Change::Axis("LeftY", -v),
+        Axis::RightX => Change::Axis("RightX", v),
+        Axis::RightY => Change::Axis("RightY", -v),
+        Axis::TriggerLeft => Change::Axis("LeftTrigger", v.max(0.0)),
+        Axis::TriggerRight => Change::Axis("RightTrigger", v.max(0.0)),
     }
 }
 
-/// How far a trigger is pressed: a trigger is a button and an axis.
-pub(crate) fn trigger(b: Button, v: f32) -> Option<Change> {
-    match b {
-        Button::LeftTrigger2 => Some(Change::Axis("LeftTrigger", v.into())),
-        Button::RightTrigger2 => Some(Change::Axis("RightTrigger", v.into())),
-        _ => None,
-    }
-}
+/// How far a trigger must be pressed to count as held.
+const HELD: f64 = 0.5;
 
-/// Where a stick is, on one of its axes.
-pub(crate) fn stick(a: Axis, v: f32) -> Option<Change> {
-    let name = match a {
-        Axis::LeftStickX => "LeftX",
-        Axis::LeftStickY => "LeftY",
-        Axis::RightStickX => "RightX",
-        Axis::RightStickY => "RightY",
+/// The button a trigger's axis makes, when moving from `before` to `now`
+/// crosses `HELD`: a trigger is a button and an axis (spec 14.26).
+pub(crate) fn trigger_button(name: &str, before: f64, now: f64) -> Option<Change> {
+    let k = match name {
+        "LeftTrigger" => 6,
+        "RightTrigger" => 7,
         _ => return None,
     };
-    Some(Change::Axis(name, v.into()))
+    ((before >= HELD) != (now >= HELD)).then_some(Change::Button(k, now >= HELD))
 }
 
 /// Applies `change` of pad `id` to `pads`, and gives the event it makes.
@@ -224,80 +219,128 @@ pub fn start() {
     });
 }
 
-/// The gamepad thread: `gilrs`'s events into the shared state and the
-/// windows, and rumbles asked for.
+/// The gamepad thread: SDL's events into the shared state and the
+/// windows, each pad's gyroscope read on each round, and rumbles asked
+/// for.
 fn watch(rumbles: mpsc::Receiver<Rumble>, ready: mpsc::Sender<()>) {
-    let mut gilrs = match Gilrs::new() {
-        Ok(g) => g,
-        Err(gilrs::Error::NotImplemented(g)) => g,
-        Err(_) => {
-            let _ = ready.send(());
-            return;
-        }
+    let started = sdl3::init().and_then(|sdl| Ok((sdl.gamepad()?, sdl.event_pump()?)));
+    let Ok((subsystem, mut pump)) = started else {
+        let _ = ready.send(());
+        return;
     };
-    let first: Vec<(i64, String)> = (gilrs.gamepads())
-        .map(|(id, g)| (usize::from(id) as i64, g.name().to_string()))
-        .collect();
-    for (id, name) in first {
-        let e = apply(&mut lock(&shared().pads), id, Change::Connected(name));
-        win::deliver_input(e);
+    let mut open: HashMap<u32, Gamepad> = HashMap::new();
+    for id in subsystem.gamepads().unwrap_or_default() {
+        connect(&subsystem, &mut open, id);
     }
     let _ = ready.send(());
-    let mut playing: Vec<(gilrs::ff::Effect, Instant)> = Vec::new();
     loop {
         while let Ok(r) = rumbles.try_recv() {
-            if let Some(effect) = rumble(&mut gilrs, &r) {
-                let end = Instant::now() + Duration::from_millis(u64::from(r.ms));
-                playing.push((effect, end));
+            if let Some(pad) = u32::try_from(r.id).ok().and_then(|id| open.get_mut(&id)) {
+                let level = |f: f64| (f.clamp(0.0, 1.0) * f64::from(u16::MAX)) as u16;
+                let _ = pad.set_rumble(level(r.strong), level(r.weak), r.ms);
             }
         }
-        playing.retain(|(_, end)| *end > Instant::now());
-        let Some(ev) = gilrs.next_event_blocking(Some(Duration::from_millis(20))) else {
-            continue;
-        };
-        let name = gilrs.gamepad(ev.id).name().to_string();
-        if let Some(change) = change_of(&ev.event, &name) {
-            let id = usize::from(ev.id) as i64;
-            let e = apply(&mut lock(&shared().pads), id, change);
-            win::deliver_input(e);
+        let first = pump.wait_event_timeout(Duration::from_millis(10));
+        for event in first
+            .into_iter()
+            .chain(pump.poll_iter().collect::<Vec<_>>())
+        {
+            handle(&subsystem, &mut open, event);
         }
+        read_gyros(&open);
     }
 }
 
-/// Plays rumble `r` on its pad, if it is connected and can rumble.
-fn rumble(gilrs: &mut Gilrs, r: &Rumble) -> Option<gilrs::ff::Effect> {
-    use gilrs::ff::{BaseEffect, BaseEffectType, EffectBuilder, Replay, Ticks};
-    let (id, pad) = gilrs
-        .gamepads()
-        .find(|(id, _)| usize::from(*id) as i64 == r.id)?;
-    if !pad.is_ff_supported() {
-        return None;
-    }
-    let scheduling = Replay {
-        play_for: Ticks::from_ms(r.ms),
-        ..Replay::default()
+/// Opens pad `id`, turns its gyroscope on if it has one, and tells of it.
+fn connect(
+    subsystem: &sdl3::GamepadSubsystem,
+    open: &mut HashMap<u32, Gamepad>,
+    id: sdl3::joystick::JoystickId,
+) {
+    let Ok(pad) = subsystem.open(id) else {
+        return;
     };
-    let magnitude = |f: f64| (f.clamp(0.0, 1.0) * f64::from(u16::MAX)) as u16;
-    let effect = EffectBuilder::new()
-        .add_effect(BaseEffect {
-            kind: BaseEffectType::Strong {
-                magnitude: magnitude(r.strong),
-            },
-            scheduling,
-            ..BaseEffect::default()
-        })
-        .add_effect(BaseEffect {
-            kind: BaseEffectType::Weak {
-                magnitude: magnitude(r.weak),
-            },
-            scheduling,
-            ..BaseEffect::default()
-        })
-        .gamepads(&[id])
-        .finish(gilrs)
-        .ok()?;
-    effect.play().ok()?;
-    Some(effect)
+    let _ = pad.sensor_set_enabled(SensorType::Gyroscope, true);
+    let name = pad.name().unwrap_or_else(|| "Gamepad".into());
+    let n = pad.id().map_or(0, |i| i.raw());
+    open.insert(n, pad);
+    let e = apply(
+        &mut lock(&shared().pads),
+        i64::from(n),
+        Change::Connected(name),
+    );
+    win::deliver_input(e);
+}
+
+/// One SDL event: a pad come or gone, a button, an axis.
+fn handle(
+    subsystem: &sdl3::GamepadSubsystem,
+    open: &mut HashMap<u32, Gamepad>,
+    event: sdl3::event::Event,
+) {
+    use sdl3::event::Event as E;
+    let (id, change) = match event {
+        E::GamepadAdded { which, .. } => {
+            if !open.contains_key(&which.raw()) {
+                connect(subsystem, open, which);
+            }
+            return;
+        }
+        E::GamepadRemoved { which, .. } => {
+            open.remove(&which.raw());
+            (which.raw(), Change::Gone)
+        }
+        E::GamepadButtonDown {
+            which, button: b, ..
+        } => match button(b) {
+            Some(k) => (which.raw(), Change::Button(k, true)),
+            None => return,
+        },
+        E::GamepadButtonUp {
+            which, button: b, ..
+        } => match button(b) {
+            Some(k) => (which.raw(), Change::Button(k, false)),
+            None => return,
+        },
+        E::GamepadAxisMotion {
+            which,
+            axis: a,
+            value,
+            ..
+        } => (which.raw(), axis(a, value)),
+        _ => return,
+    };
+    let id = i64::from(id);
+    let mut pads = lock(&shared().pads);
+    if let Change::Axis(name, now) = change {
+        let before = pads.get(&id).map_or(0.0, |p| match name {
+            "LeftTrigger" => p.triggers.0,
+            "RightTrigger" => p.triggers.1,
+            _ => 0.0,
+        });
+        if let Some(held) = trigger_button(name, before, now) {
+            win::deliver_input(apply(&mut pads, id, held));
+        }
+    }
+    let e = apply(&mut pads, id, change);
+    drop(pads);
+    win::deliver_input(e);
+}
+
+/// Each open pad's gyroscope now, into its state.
+fn read_gyros(open: &HashMap<u32, Gamepad>) {
+    let mut pads = lock(&shared().pads);
+    for (id, pad) in open {
+        let mut data = [0.0f32; 3];
+        let gyro = (pad.sensor_enabled(SensorType::Gyroscope)
+            && pad
+                .sensor_get_data(SensorType::Gyroscope, &mut data)
+                .is_ok())
+        .then(|| (f64::from(data[0]), f64::from(data[1]), f64::from(data[2])));
+        if let Some(p) = pads.get_mut(&i64::from(*id)) {
+            p.gyro = gyro;
+        }
+    }
 }
 
 /// The connected pads now, by number.
@@ -306,9 +349,9 @@ pub fn pads() -> Vec<Pad> {
     lock(&shared().pads).values().cloned().collect()
 }
 
-/// `pads`, as `std.input` reads it: eight numbers a pad (its number, the
-/// buttons' bits, the sticks' x and y, the triggers), with the names kept
-/// for `names`.
+/// `pads`, as `std.input` reads it: twelve numbers a pad (its number,
+/// the buttons' bits, the sticks' x and y, the triggers, whether it has a
+/// gyroscope and its three rates), with the names kept for `names`.
 pub fn pad_numbers() -> Vec<f64> {
     let all = pads();
     *lock(&shared().names) = all.iter().map(|p| p.name.clone()).collect();
@@ -323,6 +366,10 @@ pub fn pad_numbers() -> Vec<f64> {
                 p.right.1,
                 p.triggers.0,
                 p.triggers.1,
+                f64::from(u8::from(p.gyro.is_some())),
+                p.gyro.map_or(0.0, |g| g.0),
+                p.gyro.map_or(0.0, |g| g.1),
+                p.gyro.map_or(0.0, |g| g.2),
             ]
         })
         .collect()

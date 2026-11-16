@@ -62,6 +62,23 @@ crate::rt_data::entry!(kv_rt_audio, |op, a, b, c, code, _line| {
             let part = |k: usize| settings.get(k).copied().unwrap_or(0.0);
             audio::play(a, part(0), part(1), c != 0).unwrap_or_else(|why| fail("Unavailable", &why))
         }
+        RtOp::AudioStream => {
+            let path = crate::shapes::str_of(a);
+            release(a);
+            let settings = floats(b);
+            let part = |k: usize| settings.get(k).copied().unwrap_or(0.0);
+            if !crate::rt_scopes::allowed(&path) {
+                return fail(
+                    "BadSound",
+                    &format!("{path} is outside the folders this code may read"),
+                );
+            }
+            match audio::stream(&path, part(0), part(1), c != 0) {
+                Ok(v) => v,
+                Err(Ok(why)) => fail("BadSound", &why),
+                Err(Err(why)) => fail("Unavailable", &why),
+            }
+        }
         RtOp::AudioStop => {
             audio::stop(a);
             0

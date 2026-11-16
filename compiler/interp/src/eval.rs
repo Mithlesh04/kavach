@@ -367,6 +367,7 @@ impl<'a> Interp<'a> {
             captured: frame.vars.clone(),
             generics: frame.generics.clone(),
             self_value: frame.self_value.clone(),
+            generation: self.generation(),
         }))
     }
 

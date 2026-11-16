@@ -75,6 +75,69 @@ pub fn texture(width: u32, height: u32, pixels: &[u8]) -> Result<i64, String> {
     Ok(n)
 }
 
+/// A texture of the compressed blocks in KTX2 file `bytes` (`ktx2.rs`),
+/// uploaded as they are with their mip levels: its number, width and
+/// height; or why not, as `GpuError`'s variant and reason: `BadTexture`
+/// for a file that can't be read, `Unavailable` for a GPU that can't.
+pub fn compressed(bytes: &[u8]) -> Result<(i64, u32, u32), (&'static str, String)> {
+    let t = crate::ktx2::read(bytes).map_err(|why| ("BadTexture", why))?;
+    let g = gpu().ok_or(("Unavailable", "this machine has no GPU".to_string()))?;
+    if !g.device.features().contains(t.format.required_features()) {
+        return Err((
+            "Unavailable",
+            format!(
+                "this GPU can't read {:?} textures: give it BC on a desktop, ASTC on a phone",
+                t.format
+            ),
+        ));
+    }
+    let size = wgpu::Extent3d {
+        width: t.width,
+        height: t.height,
+        depth_or_array_layers: 1,
+    };
+    let texture = g.device.create_texture(&wgpu::TextureDescriptor {
+        label: Some("kavach compressed texture"),
+        size,
+        mip_level_count: t.levels.len() as u32,
+        sample_count: 1,
+        dimension: wgpu::TextureDimension::D2,
+        format: t.format,
+        usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
+        view_formats: &[],
+    });
+    let block = t.format.block_copy_size(None).unwrap_or(16);
+    for (k, level) in t.levels.iter().enumerate() {
+        let blocks = |v: u32| (v >> k).max(1).div_ceil(4);
+        let (bx, by) = (blocks(t.width), blocks(t.height));
+        g.queue.write_texture(
+            wgpu::TexelCopyTextureInfo {
+                texture: &texture,
+                mip_level: k as u32,
+                origin: wgpu::Origin3d::ZERO,
+                aspect: wgpu::TextureAspect::All,
+            },
+            level,
+            wgpu::TexelCopyBufferLayout {
+                offset: 0,
+                bytes_per_row: Some(bx * block),
+                rows_per_image: Some(by),
+            },
+            wgpu::Extent3d {
+                width: bx * 4,
+                height: by * 4,
+                depth_or_array_layers: 1,
+            },
+        );
+    }
+    let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
+    let mut all = textures();
+    all.next += 1;
+    let n = all.next;
+    all.all.insert(n, Arc::new(view));
+    Ok((n, t.width, t.height))
+}
+
 /// Lets texture `n` go. A draw already recorded keeps it until it is sent.
 pub fn drop_texture(n: i64) {
     textures().all.remove(&n);

@@ -458,6 +458,7 @@ pub fn read(items: &Resident, out: &mut [u8]) -> Result<(), GpuError> {
 
 mod filter;
 pub use filter::filter;
+pub mod ktx2;
 mod late;
 mod later;
 mod pipeline;

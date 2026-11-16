@@ -121,3 +121,47 @@ fn open(_: &str) -> Result<usize, String> {
 fn find(_: usize, _: &str) -> Option<usize> {
     None
 }
+
+/// The address of C function `name` in the system's C library, for
+/// `kavach run --native` (spec 10.7). On Windows the program itself,
+/// `ucrtbase.dll` and the older `msvcrt.dll` are looked in: the Universal
+/// C library has much of `printf`'s family only in its headers, and
+/// `msvcrt.dll`, on every Windows, exports most of it. `None` when no
+/// library loaded here has it.
+#[cfg(windows)]
+#[allow(unsafe_code)]
+pub fn system_symbol(name: &str) -> Option<usize> {
+    let c = std::ffi::CString::new(name).ok()?;
+    let found = |module: *mut std::ffi::c_void| {
+        // SAFETY: `module` is null (this program) or a loaded library;
+        // `c` ends in a zero byte. Reads only.
+        unsafe {
+            windows_sys::Win32::System::LibraryLoader::GetProcAddress(
+                module as _,
+                c.as_ptr().cast(),
+            )
+        }
+        .map(|f| f as usize)
+    };
+    if let Some(at) = found(std::ptr::null_mut()) {
+        return Some(at);
+    }
+    ["ucrtbase.dll", "msvcrt.dll"].iter().find_map(|dll| {
+        let handle = open(dll).ok()?;
+        found(handle as *mut _)
+    })
+}
+
+#[cfg(unix)]
+#[allow(unsafe_code)]
+pub fn system_symbol(name: &str) -> Option<usize> {
+    let c = std::ffi::CString::new(name).ok()?;
+    // SAFETY: `c` is a C string; looks in every loaded library, reads only.
+    let at = unsafe { libc::dlsym(libc::RTLD_DEFAULT, c.as_ptr()) };
+    (!at.is_null()).then_some(at as usize)
+}
+
+#[cfg(not(any(unix, windows)))]
+pub fn system_symbol(_: &str) -> Option<usize> {
+    None
+}

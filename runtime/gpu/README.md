@@ -11,6 +11,7 @@ GPU compute for `gpu fn` (spec [chapter 15](../../docs/spec/15-gpu.md), [decisio
 | [src/render.rs](src/render.rs) | Pipelines compiled ahead (when a screen opens, or when made once one is open), with depth or not, and draws from 32-bit words into a frame (spec 15.3) |
 | [src/picture.rs](src/picture.rs) | `picture`: draws into a texture off the screen, read back, for tests (decision 0106) |
 | [src/texture.rs](src/texture.rs) | Textures by number, the one sampler, their bind group, and depth buffers (spec 15.3) |
+| [src/ktx2.rs](src/ktx2.rs) | KTX2 files of compressed blocks (BC1 to BC7, ASTC 4×4) read with no library: the format, the size and each mip level's bytes, which `texture::compressed` uploads as they are (spec 14.24) |
 | [src/filter.rs](src/filter.rs) | `filter`: the kernel's two runs over the same items, and where each workgroup's kept items start |
 | [src/late.rs](src/late.rs) | The stop flags of `map`s that didn't wait for the GPU, read later (decision 0061) |
 | [src/pipeline.rs](src/pipeline.rs) | Compiling each kernel into a pipeline once; a kernel whose loops surely end goes without `wgpu`'s loop counter ([decision 0077](../../docs/decisions/0077-kernels-whose-loops-end.md)) |

@@ -75,6 +75,22 @@ pub struct Voice {
     pub(crate) at: f64,
     pub(crate) looped: bool,
     pub(crate) controls: Arc<Controls>,
+    /// Played from its file a piece at a time instead (`stream.rs`): the
+    /// frames before and after where it is, from `at`'s 0 to 1.
+    pub(crate) streaming: Option<Streaming>,
+}
+
+/// A voice's place in a stream: its source and the two frames around it.
+#[derive(Debug)]
+pub struct Streaming {
+    pub(crate) source: Arc<crate::stream::Stream>,
+    pub(crate) frames: [(f32, f32); 2],
+}
+
+impl std::fmt::Debug for crate::stream::Stream {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Stream({} frames a second)", self.rate)
+    }
 }
 
 /// Mixes `voices` into `out`, `channels` samples a frame at `rate` frames
@@ -110,6 +126,9 @@ fn play_into(out: &mut [f32], channels: usize, rate: u32, v: &mut Voice) -> bool
     if v.controls.stop.load(Ordering::Relaxed) {
         return true;
     }
+    if v.streaming.is_some() {
+        return stream_into(out, channels, rate, v);
+    }
     let frames = v.sound.frames();
     if frames == 0 {
         return true;
@@ -134,6 +153,39 @@ fn play_into(out: &mut [f32], channels: usize, rate: u32, v: &mut Voice) -> bool
         };
         let t = (v.at - k as f64) as f32;
         let (a, b) = (v.sound.frame(k), v.sound.frame(next));
+        let (l, r) = (a.0 + (b.0 - a.0) * t, a.1 + (b.1 - a.1) * t);
+        if channels == 1 {
+            frame[0] += (l * gl + r * gr) / 2.0;
+        } else {
+            frame[0] += l * gl;
+            frame[1] += r * gr;
+        }
+        v.at += step;
+    }
+    false
+}
+
+/// Adds streamed voice `v` into `out`, frame by frame from its ring;
+/// whether it finished. An empty ring that hasn't ended gives silence.
+fn stream_into(out: &mut [f32], channels: usize, rate: u32, v: &mut Voice) -> bool {
+    let (gl, gr) = v.controls.gains();
+    let Some(st) = v.streaming.as_mut() else {
+        return true;
+    };
+    let step = f64::from(st.source.rate) / f64::from(rate.max(1));
+    for frame in out.chunks_mut(channels) {
+        while v.at >= 1.0 {
+            let ring = &st.source.ring;
+            let next = match (ring.pop(), ring.pop()) {
+                (Some(l), Some(r)) => (l, r),
+                _ if st.source.ended.load(Ordering::Acquire) => return true,
+                _ => (0.0, 0.0),
+            };
+            st.frames = [st.frames[1], next];
+            v.at -= 1.0;
+        }
+        let t = v.at as f32;
+        let [a, b] = st.frames;
         let (l, r) = (a.0 + (b.0 - a.0) * t, a.1 + (b.1 - a.1) * t);
         if channels == 1 {
             frame[0] += (l * gl + r * gr) / 2.0;

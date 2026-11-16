@@ -58,6 +58,7 @@ Not supported yet: agents, capabilities, `ask` and `unsafe` (Phase 2 and the nat
 | `src/std_watch.rs` | `std.fs`'s `Watcher` (spec 14.3), from `runtime/watch`; on the fake file system of `kavach test`, no changes |
 | `src/std_image.rs` | `std.image` (spec 14.29), from `runtime/image` |
 | `src/std_font.rs` | `std.font` (spec 14.31), from `runtime/font` |
+| `src/hot.rs` | `kavach run --hot` (spec 10.5): the program's generations, each call and lambda run in its own, calls finding the newest version of a function, and a reload at a call when only bodies changed |
 | `src/std_app.rs` | `std.app` (spec 14.30): folders, crash reports and dialogs; under `kavach test`, fake folders |
 | `src/std_math.rs` | `std.math`'s functions of floats (spec 14.5): a `Float32` worked out as a `Float` and rounded once |
 | `src/text_methods.rs` | Text methods that came from `std.text`, and those added with them (spec 14.2), from `runtime/core` |

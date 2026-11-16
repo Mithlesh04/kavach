@@ -37,6 +37,14 @@ impl Checker<'_> {
                     failing(self),
                 )
             }
+            // A KTX2 file of compressed blocks: its number, width, height.
+            "compressed_id" => (
+                vec![p("file", &Ty::Prim(Prim::Bytes))],
+                Ty::Result(
+                    Box::new(Ty::List(Box::new(int.clone()))),
+                    Box::new(self.builtin_ty("GpuError")),
+                ),
+            ),
             // A frame's number, a pipeline, its vertices, instances and
             // shared value, the textures (spec 15.3) and the indices.
             "draw_id" => {

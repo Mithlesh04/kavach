@@ -99,7 +99,7 @@ pub use rt_ai::kv_rt_ai;
 pub use rt_app::{kv_rt_app, kv_rt_dialog};
 pub use rt_audio::kv_rt_audio;
 pub use rt_base64::kv_rt_base64;
-pub use rt_clib::kv_rt_clib;
+pub use rt_clib::{kv_rt_clib, system_symbol};
 pub use rt_clipboard::kv_rt_clipboard;
 pub use rt_compress::kv_rt_compress;
 pub use rt_crypto::kv_rt_crypto;

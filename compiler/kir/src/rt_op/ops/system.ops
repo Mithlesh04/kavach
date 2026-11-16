@@ -250,3 +250,11 @@ CallAddress,
 /// text `kavach_kir::c_abi::descriptor` makes, operand 1 the function's
 /// address, then the operands it names; the backends make the call.
 CallC,
+/// `audio.stream` (spec 14.27): plays the file at path `a` (owned) a
+/// piece at a time, with `b` its volume and pan (owned) and `c` whether it
+/// loops; its voice's number (can fail) (`runtime/native/src/rt_audio.rs`).
+AudioStream,
+/// `gpu.compressed_texture` (spec 14.24): a texture of the KTX2 file's
+/// bytes `a` (owned): its number, width and height (can fail)
+/// (`runtime/native/src/rt_draw.rs`).
+DrawCompressed,

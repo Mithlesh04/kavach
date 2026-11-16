@@ -1,0 +1,13 @@
+// Rule: `gpu.compressed_texture` reads a KTX2 file of compressed blocks; bytes that aren't one are `BadTexture`, on any machine.
+// Spec: 14.24
+// expect output: BadTexture(reason: "this is not a KTX2 file")
+
+use std.gpu
+
+fn main() uses Window {
+    const t = gpu.compressed_texture(Bytes([1, 2, 3])) catch e => {
+        print(e)
+        return
+    }
+    print(t.width)
+}

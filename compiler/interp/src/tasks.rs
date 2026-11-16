@@ -267,6 +267,8 @@ impl<'a> Interp<'a> {
             drop_floor: 0,
             // A task spawned in a handler makes its calls for the event.
             events: self.events.clone(),
+            // A task runs the code it started with (spec 10.5).
+            hot: None,
         }
     }
 

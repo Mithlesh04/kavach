@@ -37,6 +37,7 @@ impl RtOp {
                 | RtOp::FsWatchOpen
                 | RtOp::ImageDecode
                 | RtOp::FontMetrics
+                | RtOp::AudioStream
                 | RtOp::CLibraryOpen
                 | RtOp::CLibraryFind
                 | RtOp::AppDir
@@ -44,6 +45,7 @@ impl RtOp {
                 | RtOp::DrawScreen
                 | RtOp::DrawFrame
                 | RtOp::DrawTexture
+                | RtOp::DrawCompressed
                 | RtOp::AudioDecode
                 | RtOp::AudioPlay
                 | RtOp::AudioListen

@@ -45,6 +45,25 @@ impl Ring {
         self.written.store(at, Ordering::Release);
     }
 
+    /// How many more samples fit now (the writer's side).
+    pub(crate) fn room(&self) -> usize {
+        let written = self.written.load(Ordering::Relaxed);
+        let read = self.read.load(Ordering::Acquire);
+        self.samples.len() - (written - read)
+    }
+
+    /// The next sample, if one was written: for a reader that must never
+    /// allocate or wait (the mixer, `stream.rs`).
+    pub(crate) fn pop(&self) -> Option<f32> {
+        let read = self.read.load(Ordering::Relaxed);
+        if read >= self.written.load(Ordering::Acquire) {
+            return None;
+        }
+        let s = f32::from_bits(self.samples[read % self.samples.len()].load(Ordering::Relaxed));
+        self.read.store(read + 1, Ordering::Release);
+        Some(s)
+    }
+
     /// Every sample written and not yet read (the program's side).
     pub(crate) fn take(&self) -> Vec<f32> {
         let size = self.samples.len();

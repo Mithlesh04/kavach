@@ -134,6 +134,7 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.11 | [http-joins-traces.kav](http-joins-traces.kav) | `http.request` sends the current span's `traceparent` and `http.serve` continues it, so the handler's trace is the caller's. | runs |
 | 14.11 | [http-servers-can-start-their-own-traces.kav](http-servers-can-start-their-own-traces.kav) | With `ServeLimits(follow_trace: false)`, each request starts a trace of its own instead of the client's. | runs |
 | 14.24 | [screens-draw-or-say-why.kav](screens-draw-or-say-why.kav) | `gpu.screen(win)` draws into a window, its frames cleared and shown, or gives `GpuError.Unavailable` with no GPU or screen; the program goes on either way. | runs |
+| 14.24 | [a-bad-ktx2-file-is-bad-texture.kav](a-bad-ktx2-file-is-bad-texture.kav) | Bytes that aren't a KTX2 file of compressed blocks are `BadTexture`, on any machine |
 | 14.25 | [system-says-what-machine-it-is.kav](system-says-what-machine-it-is.kav) | `system.os()`, `arch()` and `cores()` are free; `memory`, `cpu`, `gpus`, `hostname` and `uptime` need `System`; `process.cpu_ms()` is free. | runs |
 | 14.25 | [system-details-need-the-capability.kav](system-details-need-the-capability.kav) | Reading the machine's details needs `uses System`. | compile error |
 | 14.25 | [system-parts-come-typed.kav](system-parts-come-typed.kav) | Every part of the machine as typed records: volumes, adapters, devices, drivers, disks, memory, displays, sensors, battery, board, BIOS, model; apps and ids with `System.critical.read`. | runs |
@@ -145,6 +146,8 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.27 | [sounds-are-data-until-played.kav](sounds-are-data-until-played.kav) | Making or reading a sound needs no capability; bytes that aren't a WAV or Ogg Vorbis file are `BadSound`. | runs |
 | 14.27 | [playing-sound-needs-audio.kav](playing-sound-needs-audio.kav) | Playing sound needs `Audio`. | compile error |
 | 14.27 | [recording-needs-microphone.kav](recording-needs-microphone.kav) | Recording what the microphone hears needs `Microphone`. | compile error |
+| 14.27 | [streaming-sound-reads-its-file.kav](streaming-sound-reads-its-file.kav) | `audio.stream` reads its file, so it needs `Fs.read` as well as `Audio` |
+| 14.27 | [a-missing-stream-is-bad-sound.kav](a-missing-stream-is-bad-sound.kav) | A file `audio.stream` can't read is `BadSound`, even with no sound device |
 | 14.28 | [vectors-matrices-and-quaternions.kav](vectors-matrices-and-quaternions.kav) | std.vec has vectors, 4 x 4 matrices and quaternions over Float or Float32, with their operators, products and transforms. | runs |
 | 14.28 | [three-by-three-matrices.kav](three-by-three-matrices.kav) | std.vec's `Mat3`: transforms, product, transpose, determinant, an inverse that is `none` when the determinant is 0, and a `Mat4`'s `mat3()`. | runs |
 | 14.28 | [whole-number-vectors.kav](whole-number-vectors.kav) | std.vec's vectors over whole numbers: operators, `dot`, `cross`, `length_squared`. | runs |

@@ -1,6 +1,6 @@
 # 0113. Gamepads through `gilrs`, as events and as state
 
-- **Status:** Accepted
+- **Status:** Replaced by [decision 0124](0124-gamepads-through-sdl3.md) (2026-11-16)
 - **Date:** 2026-11-15
 
 ## Context

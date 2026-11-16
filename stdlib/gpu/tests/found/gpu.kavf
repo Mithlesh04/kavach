@@ -1,0 +1,2 @@
+// Found by `kavach test` (spec 11.4). Generated: commit it, never edit it.
+Texture.part(Texture(id: 0, width: 1, height: 2, pixels: [], compressed: true), 0, 1, 9223372036854775804)

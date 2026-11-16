@@ -149,6 +149,40 @@ fn a_fragment_fn_samples_its_texture() {
     texture::drop_texture(skin);
 }
 
+/// A compressed texture (spec 14.24): one BC1 block of solid green,
+/// uploaded as it is, samples green everywhere. Skipped on a GPU that
+/// can't read BC blocks.
+#[test]
+fn a_compressed_texture_samples_its_blocks() {
+    let _alone = drawing();
+    if !kavach_runtime_gpu::available() {
+        return;
+    }
+    use kavach_runtime_gpu::{ktx2, texture};
+    // Color 0 is pure green (5:6:5 bits), color 1 black, every index 0.
+    let block = vec![0xE0, 0x07, 0, 0, 0, 0, 0, 0];
+    let file = ktx2::file(131, 4, 4, &[block]);
+    let green = match texture::compressed(&file) {
+        Ok((n, 4, 4)) => n,
+        Ok(other) => panic!("a 4 × 4 texture, not {other:?}"),
+        Err(("Unavailable", _)) => return,
+        Err(e) => panic!("{e:?}"),
+    };
+    let n = render::pipeline(&pipeline_of(PAINTED)).expect("a layout");
+    let square = words(&[
+        -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0,
+    ]);
+    let draw = Draw {
+        pipeline: n,
+        parts: (Words(&square), Words(&[]), &[]),
+        textures: &[green],
+        indices: None,
+    };
+    let pixels = render::picture(vec![draw], (4, 4)).expect("drawn");
+    assert!(pixels.iter().all(|p| *p == [0, 255, 0, 255]), "{pixels:?}");
+    texture::drop_texture(green);
+}
+
 /// A square from four vertices and six indices covers the picture; an
 /// index past the last vertex is refused before anything is drawn.
 #[test]

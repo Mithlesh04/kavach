@@ -43,7 +43,7 @@ pub(crate) fn expand(args: Vec<String>) -> Vec<String> {
     // behind it would be the program's argument, so `--dry-run` would run
     // the program for real (spec 8.5).
     let own: &[&str] = match command {
-        "run" => &["--native", "--dry-run", "--tracy"],
+        "run" => &["--native", "--dry-run", "--tracy", "--hot"],
         "build" => &["--lib", "--compress", "--compress=max", "--tracy"],
         "check" => &["--format", "json"],
         _ => &[],

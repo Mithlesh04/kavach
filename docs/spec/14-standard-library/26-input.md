@@ -1,6 +1,6 @@
 # 14.26 std.input
 
-Gamepads, in one standard layout, whatever pad is plugged in ([decision 0113](../../decisions/0113-gamepads-through-gilrs.md)). The keyboard and the mouse come to windows (14.22). Reading gamepads needs `Input` (8.1), as reading the keyboard does.
+Gamepads, in one standard layout, whatever pad is plugged in, with their gyroscopes ([decision 0124](../../decisions/0124-gamepads-through-sdl3.md)). The keyboard and the mouse come to windows (14.22). Reading gamepads needs `Input` (8.1), as reading the keyboard does.
 
 A program sees gamepads two ways:
 
@@ -38,16 +38,17 @@ A `Pad` is a record:
 | `buttons: [String]` | The buttons held now |
 | `left`, `right: (x: Float, y: Float)` | Where each stick is: `x` from -1 (left) to 1 (right), `y` from -1 (down) to 1 (up) |
 | `left_trigger`, `right_trigger: Float` | How far each trigger is pressed, from 0 to 1 |
+| `gyro: (x: Float, y: Float, z: Float)?` | How fast the pad turns, in radians a second, about its x axis (pitch, its far edge up), y (yaw, turning left) and z (roll, its right side down); `none` for a pad with no gyroscope |
 
 The buttons are named by their place, not by the letter printed on them, as keys are named by their place (14.22): `South` is A on an Xbox pad and Cross on a PlayStation pad. They are `South`, `East`, `North`, `West`, `LeftBumper`, `RightBumper`, `LeftTrigger`, `RightTrigger`, `Select`, `Start`, `Mode`, `LeftStick` and `RightStick` (the sticks pressed in), `DPadUp`, `DPadDown`, `DPadLeft` and `DPadRight`.
 
 - A trigger is a button and an axis: `LeftTrigger` is held once it is pressed far enough, and its axis says how far.
 - A small movement around a stick's middle counts as no movement, so a pad left alone reads 0.
+- The gyroscope is state only: it comes as no events, which would arrive a thousand times a second. A game reads it once a frame, multiplied by the frame's time, to turn its camera.
 - A machine where gamepads can't be read (no udev on Linux, as in a container) has no pads: `input.pads()` is empty and no pad events come. That is not an error.
 - Generated tests (11.5) skip functions that use `Input`, as they skip those that use `Window`.
 
 ## Open questions
 
-- Gyroscopes and touchpads, and each pad's battery.
-- Touch screens, and pens.
+- Accelerometers, the touchpads of some pads, and each pad's battery.
 - Mapping a pad the standard layout doesn't know, from the program.

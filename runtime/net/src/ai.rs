@@ -148,15 +148,16 @@ impl Pending {
 pub fn start(req: Request) -> Pending {
     let (send, done) = mpsc::channel();
     let variable = req.api_key_env.clone().unwrap_or(KEY_VARIABLE.to_string());
-    let Ok(key) = std::env::var(&variable) else {
+    // As the program sees variables: `--env`, the environment, then
+    // `[env.vars]` and `.env` (spec 10.13).
+    let get = kavach_runtime_core::env_file::get;
+    let Some(key) = get(&variable) else {
         let _ = send.send(Outcome::NoKey(variable));
         return Pending { done };
     };
     let base = match &req.api_url {
         Some(url) => url.clone(),
-        None => {
-            std::env::var("KAVACH_AI_URL").unwrap_or_else(|_| "https://api.anthropic.com".into())
-        }
+        None => get("KAVACH_AI_URL").unwrap_or_else(|| "https://api.anthropic.com".into()),
     };
     std::thread::spawn(move || {
         let mut outcome = gated(&base, key.trim(), &req);

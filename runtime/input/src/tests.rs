@@ -1,44 +1,47 @@
 //! The standard layout and the state kept from events, with events made
 //! up here: no gamepad needs to be connected.
 
-use crate::{BUTTONS, Change, Pad, apply, button, change_of, stick, trigger};
-use gilrs::{Axis, Button, EventType};
+use crate::{BUTTONS, Change, Pad, apply, axis, button, trigger_button};
+use sdl3::gamepad::{Axis, Button};
 use std::collections::BTreeMap;
 
 #[test]
-fn gilrs_events_are_named_by_place_in_the_standard_layout() {
+fn sdl_events_are_named_by_place_in_the_standard_layout() {
     assert_eq!(button(Button::South), Some(0));
-    assert_eq!(button(Button::LeftTrigger), Some(4), "the left bumper");
-    assert_eq!(button(Button::LeftTrigger2), Some(6), "the left trigger");
+    assert_eq!(button(Button::LeftShoulder), Some(4), "the left bumper");
+    assert_eq!(button(Button::Back), Some(8), "select");
     assert_eq!(button(Button::DPadRight), Some(16));
-    assert_eq!(button(Button::Unknown), None);
+    assert_eq!(button(Button::Misc1), None);
     for b in [
         Button::South,
         Button::Start,
-        Button::RightThumb,
+        Button::RightStick,
         Button::DPadUp,
     ] {
         assert!(BUTTONS[button(b).unwrap_or(0)].len() > 2);
     }
+    // SDL's y is down; the standard layout's is up.
+    assert_eq!(axis(Axis::LeftY, -32_767), Change::Axis("LeftY", 1.0));
     assert_eq!(
-        trigger(Button::RightTrigger2, 0.5),
-        Some(Change::Axis("RightTrigger", 0.5))
-    );
-    assert_eq!(trigger(Button::South, 0.5), None);
-    assert_eq!(
-        stick(Axis::LeftStickY, -1.0),
-        Some(Change::Axis("LeftY", -1.0))
-    );
-    assert_eq!(stick(Axis::LeftZ, 0.3), None);
-    assert_eq!(
-        change_of(&EventType::Connected, "Pad"),
-        Some(Change::Connected("Pad".into()))
+        axis(Axis::RightX, 16_384),
+        Change::Axis("RightX", 16_384.0 / 32_767.0)
     );
     assert_eq!(
-        change_of(&EventType::Disconnected, "Pad"),
-        Some(Change::Gone)
+        axis(Axis::TriggerLeft, 32_767),
+        Change::Axis("LeftTrigger", 1.0)
     );
-    assert_eq!(change_of(&EventType::Dropped, "Pad"), None);
+    assert_eq!(axis(Axis::LeftX, i16::MIN), Change::Axis("LeftX", -1.0));
+    // A trigger is a button too, held from halfway.
+    assert_eq!(
+        trigger_button("LeftTrigger", 0.2, 0.7),
+        Some(Change::Button(6, true))
+    );
+    assert_eq!(
+        trigger_button("RightTrigger", 0.9, 0.1),
+        Some(Change::Button(7, false))
+    );
+    assert_eq!(trigger_button("RightTrigger", 0.6, 0.9), None);
+    assert_eq!(trigger_button("LeftX", 0.0, 1.0), None);
 }
 
 #[test]
@@ -63,6 +66,7 @@ fn a_pads_state_follows_its_events() {
             left: (0.25, 0.0),
             right: (0.0, -1.0),
             triggers: (0.75, 0.0),
+            gyro: None,
         }
     );
     let gone = apply(&mut pads, 3, Change::Gone);

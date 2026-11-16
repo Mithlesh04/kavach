@@ -142,7 +142,7 @@ impl<'a> Interp<'a> {
                     }
                 }
                 self.frames.push(frame);
-                let result = self.eval(c.body);
+                let result = self.in_generation(c.generation, |i| i.eval(c.body));
                 let result = self.join_spawned(result, span);
                 // A lambda's `try` and `fail` are its own (spec 3.3).
                 self.leaving = false;

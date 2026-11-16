@@ -20,6 +20,7 @@ mod fakes;
 mod files;
 mod generics;
 mod guard;
+mod hot;
 mod inout;
 mod interp;
 mod items;
@@ -102,6 +103,21 @@ pub fn run_with_args(program: &Compiled, args: &[String]) -> Output {
 pub fn run_live_with_args(program: &Compiled, args: &[String]) -> Output {
     run_main(program, args, false, true)
 }
+
+/// `kavach run --hot` (spec 10.5): as [`run_live_with_args`], swapping
+/// in changed functions as `reloader` gives them. A change that needs a
+/// restart ends the run with `reloader.restart` set.
+pub fn run_hot(program: &'static Compiled, args: &[String], reloader: Reloader) -> Output {
+    let hot = std::sync::Mutex::new(Some(reloader));
+    on_big_stack(program, true, Arc::default(), move |i| {
+        if let Some(r) = hot.lock().unwrap_or_else(|e| e.into_inner()).take() {
+            i.hot = Some(Box::new(hot::Hot::new(i.c, r)));
+        }
+        main_of(i, args, false)
+    })
+}
+
+pub use hot::Reloader;
 
 /// `kavach run --dry-run` (spec 8.5): capability calls are checked and
 /// logged, but answered with generated values instead of running.

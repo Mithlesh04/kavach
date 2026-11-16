@@ -16,6 +16,9 @@ pub type Pad {
     pub right: (x: Float, y: Float)
     pub left_trigger: Float
     pub right_trigger: Float
+    /// How fast the pad turns, in radians a second; `none` with no
+    /// gyroscope.
+    pub gyro: (x: Float, y: Float, z: Float)?
 
     /// Whether `button` (`South`, `Start`, `DPadUp`, …) is held.
     pub fn is_down(self, button: String) -> Bool {
@@ -43,16 +46,18 @@ pub fn pads() -> [Pad] uses Input {
     const names = input.names_id()
     let out: [Pad] = []
     for i in 0..names.len() {
-        out.push(pad_of(numbers.slice(i * 8, i * 8 + 8), names[i]))
+        out.push(pad_of(numbers.slice(i * 12, i * 12 + 12), names[i]))
     }
     out
 }
 
-/// A pad from its eight numbers (its number, the buttons held as bits,
-/// the sticks' x and y, the triggers) and its name.
+/// A pad from its twelve numbers (its number, the buttons held as bits,
+/// the sticks' x and y, the triggers, whether it has a gyroscope and its
+/// three rates) and its name.
 fn pad_of(n: [Float], name: String) -> Pad
-    require n.len() == 8 and n[0].abs() < 1e15 and n[1] >= 0.0 and n[1] < 1e9
-    example pad_of([2.0, 5.0, 0.5, -0.5, 0.0, 0.0, 1.0, 0.0], "Pad").buttons == ["South", "North"]
+    require n.len() == 12 and n[0].abs() < 1e15 and n[1] >= 0.0 and n[1] < 1e9
+    example pad_of([2.0, 5.0, 0.5, -0.5, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0], "Pad").buttons == ["South", "North"]
+    example pad_of([2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.5, 0.0, -0.5], "Pad").gyro == (x: 0.5, y: 0.0, z: -0.5)
 {
     const bits = Int(n[1])
     const all = buttons()
@@ -62,5 +67,6 @@ fn pad_of(n: [Float], name: String) -> Pad
             held.push(all[k])
         }
     }
-    Pad(id: Int(n[0]), name: name, buttons: held, left: (x: n[2], y: n[3]), right: (x: n[4], y: n[5]), left_trigger: n[6], right_trigger: n[7])
+    const gyro: (x: Float, y: Float, z: Float)? = if n[8] > 0.0 { (x: n[9], y: n[10], z: n[11]) } else { none }
+    Pad(id: Int(n[0]), name: name, buttons: held, left: (x: n[2], y: n[3]), right: (x: n[4], y: n[5]), left_trigger: n[6], right_trigger: n[7], gyro: gyro)
 }

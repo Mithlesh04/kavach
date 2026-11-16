@@ -26,6 +26,10 @@ usage:
   kavach run <file.kav> [args…]   check a file, then run it with these arguments
   kavach run --native <f>   compile it to machine code first (a growing subset)
   kavach run --dry-run <f>  run it without executing capability calls (spec 8.5)
+  kavach run --watch <f>    run it again each time a file of the project changes (spec 10.5)
+  kavach run --hot <f>      swap in changed functions while it runs, keeping its values (spec 10.5)
+  kavach run --tracy <f>    show its spans and GPU work live in the Tracy profiler;
+                            `kavach build --tracy` builds a program that does (spec 14.12)
   kavach build [--compress[=max]] <file.kav> [-o <out>]   write an executable (named after the file), packed smaller if asked
   kavach build --lib <lib.kav> [-o <dir>]   write a shared library and a C header
                             for other languages (spec 10.10)
@@ -113,6 +117,7 @@ fn main() -> ExitCode {
         ["run", "--native", path, rest @ ..] => {
             native::native(path, rest.strip_prefix(&["--"]).unwrap_or(rest))
         }
+        ["run", "--hot", path, rest @ ..] => watch::hot(path, rest),
         ["run", "--dry-run", path, rest @ ..] => {
             let rest = rest.strip_prefix(&["--"]).unwrap_or(rest);
             let args: Vec<String> = rest.iter().map(|a| a.to_string()).collect();

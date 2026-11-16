@@ -6,6 +6,7 @@
 | `kavach run` | Compile quickly and run (a project, or one file: 10.9) |
 | `kavach run --dry-run` | Run without executing capability calls |
 | `kavach run --watch` | Run, and run again each time a `.kav` file or `kavach.toml` of the project changes: the running program is stopped first |
+| `kavach run --hot` | Run, and swap in each function changed in a `.kav` file while the program goes on, keeping its values (below) |
 | `kavach build` | Compile to an executable file (a project, or one file: 10.9) |
 | `kavach build --release` | Optimized build |
 | `--env-file <path>`, `--env NAME=value`, `--no-env-file` | On `run`, `test` and `build`: which `.env` file and which single variables the program gets (10.13) |
@@ -44,6 +45,18 @@ built by kavach 0.1.0 (commit 8f8ae051)
 ```
 
 `kavach run --watch` looks at the project's `src/` folder (or the folder of the one file given) and its `kavach.toml` a few times a second. When one changes, it stops the running program, printing `-- changed: src/orders.kav, running again`, and starts it again; a program that ended waits for the next change. It stops when you press Ctrl+C. It is for working on a program, not for running one in production.
+
+`kavach run --hot` runs the program in the interpreter, and when a `.kav` file changes, checks the program again and swaps in its new functions without stopping it, keeping every value it has: a game keeps its level, its player and its window while you change how it moves. Each call made after the change runs the new code; code already running goes on as it was, so a loop in `main` that calls `update(state)` each frame runs the new `update` from the next frame on.
+
+```
+$ kavach run --hot game.kav
+-- changed: game.kav, functions swapped
+```
+
+- Only function bodies may change. When a type, a function's parameters or result, an agent, a capability, a `use` or the standard modules the program uses change, the values can't be kept: the program stops and runs again from its start, as `--watch` does, printing `-- changed: game.kav, the program's types changed: running again`.
+- A change with errors is shown, and the program goes on with the code it had.
+- Tasks already running go on with their code; tasks started later run the new code.
+- It is for working on a program, and runs it in the interpreter only.
 
 A program built from one file (10.9) has the file's name and no version. With `version_flag = true` under `[build]` in `kavach.toml`, the program answers `--version` itself: run with that one argument, it prints the same two lines and ends with exit code 0, before `main` runs. This holds however it runs: `kavach run -- --version`, `run --native` and the built executable. Without the setting, `--version` is an argument like any other, for the program to read.
 

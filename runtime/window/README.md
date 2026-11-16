@@ -6,3 +6,4 @@ Windows and the keyboard and mouse input that comes to them, for `std.window` (s
 |---|---|
 | `Cargo.toml` | The crate `kavach-runtime-window` and its one dependency, `winit` |
 | `src/lib.rs` | The event loop on a thread of its own, windows by number, each window's inbox of events, and the calls the interpreter and native code make: `open`, `take`, `listen_input`, `deliver_input` (a gamepad's event, from `runtime/input`, to every window that listens to input), `size`, `scale`, `set_title`, `set_fullscreen`, `lock_cursor`, `close`, and `with_window`, which runs code on the event loop's thread with a window, as `std.gpu` needs to make its surface |
+| `src/tests.rs` | Events translated (input only after listening, touches with their phase, id and pressure), and a window opened or refused |

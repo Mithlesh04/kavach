@@ -62,8 +62,12 @@ fn open() -> Option<Gpu> {
     let descriptor = wgpu::DeviceDescriptor {
         label: Some("kavach"),
         required_limits: limits.clone(),
-        // Timestamps, when a trace is written (spec 14.12).
-        required_features: crate::timers::features(&adapter),
+        // Timestamps, when a trace is written (spec 14.12), and the block
+        // formats of compressed textures the GPU reads (spec 14.24).
+        required_features: crate::timers::features(&adapter)
+            | (adapter.features()
+                & (wgpu::Features::TEXTURE_COMPRESSION_BC
+                    | wgpu::Features::TEXTURE_COMPRESSION_ASTC)),
         ..Default::default()
     };
     let (device, queue) = block_on(adapter.request_device(&descriptor)).ok()?;

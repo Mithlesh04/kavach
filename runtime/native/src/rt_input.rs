@@ -1,6 +1,6 @@
 //! `std.input` in native code (spec 14.26, decision 0113), from
 //! `kavach_runtime_input`, as the interpreter does. An entry of its own,
-//! so only a program that reads gamepads links `gilrs` (decision 0024).
+//! so only a program that reads gamepads links SDL3 (decision 0024).
 
 use crate::heap::{alloc_slots, new_str, release, shape, slots};
 use crate::rt::type_of;

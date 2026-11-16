@@ -100,6 +100,35 @@ fn a_call_reaches_the_server_and_reads_the_answer() {
     }
 }
 
+/// A key in a project's `.env` (or `[env.vars]`), not the shell, reaches
+/// the call (spec 10.13).
+#[test]
+fn a_key_from_the_env_file_is_sent() {
+    let (base, server) = fake_server(
+        "HTTP/1.1 200 OK
+content-type: application/json
+connection: close
+
+         {\"content\":[{\"type\":\"text\",\"text\":\"{}\"}],\"stop_reason\":\"end_turn\"}",
+    );
+    let variable = "TEST_AI_KEY_FROM_FILE";
+    kavach_runtime_core::env_file::set(Vec::new(), vec![(variable.into(), "sk-from-file".into())]);
+    let mut req = request();
+    req.api_url = Some(base);
+    req.api_key_env = Some(variable.into());
+    let pending = start(req);
+    let outcome = loop {
+        if let Some(o) = pending.poll() {
+            break o;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(5));
+    };
+    let sent = server.join().unwrap();
+    kavach_runtime_core::env_file::set(Vec::new(), Vec::new());
+    assert!(sent.contains("x-api-key: sk-from-file"), "{sent}");
+    assert!(!matches!(outcome, Outcome::NoKey(_)), "{outcome:?}");
+}
+
 #[test]
 fn a_refusal_gives_its_status_and_message() {
     let (base, server) = fake_server(

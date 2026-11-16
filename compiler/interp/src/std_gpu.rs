@@ -10,6 +10,7 @@ use kavach_resolver::DefId;
 use kavach_runtime_gpu::draw;
 use kavach_runtime_window as win;
 use std::collections::HashMap;
+use std::rc::Rc;
 use std::sync::{Mutex, OnceLock};
 
 /// A pipeline: its vertex and fragment fns, and whether it has depth.
@@ -170,6 +171,28 @@ impl<'a> Interp<'a> {
                 return number(made, self);
             }
             "drop_texture_id" => kavach_runtime_gpu::texture::drop_texture(n),
+            "compressed_id" => {
+                let file = match args.first() {
+                    Some(Value::Bytes(b)) => Rc::clone(b),
+                    _ => Rc::from(&[][..]),
+                };
+                return match kavach_runtime_gpu::texture::compressed(&file) {
+                    Ok((t, w, h)) => {
+                        let parts = [i128::from(t), i128::from(w), i128::from(h)];
+                        let items: Vec<Value<'a>> =
+                            parts.iter().map(|v| Value::Int(*v, Prim::Int)).collect();
+                        Ok(Value::List(Rc::new(items.into())))
+                    }
+                    Err((variant, why)) => {
+                        let reason = self.str_value(&why);
+                        Err(Flow::Fail(self.builtin_variant(
+                            "GpuError",
+                            variant,
+                            vec![("reason", reason)],
+                        )))
+                    }
+                };
+            }
             "show_id" => draw::show(n),
             "drop_frame_id" => draw::drop_frame(n),
             _ => draw::close(n),

@@ -1,0 +1,13 @@
+// Rule: `audio.stream` reads its file before it plays: a file that isn't there is `BadSound`, even with no sound device.
+// Spec: 14.27
+// expect output: true
+
+use std.audio
+
+fn main() uses Audio, Fs.read {
+    const v = audio.stream("no-such-music.ogg") catch e => {
+        print("{e}".starts_with("BadSound"))
+        return
+    }
+    v.stop()
+}

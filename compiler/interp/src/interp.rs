@@ -120,6 +120,8 @@ pub(crate) struct Interp<'a> {
     /// The journaled events (spec 8.5) this task is in, innermost last:
     /// the calls it makes go to the journal under the last one.
     pub(crate) events: Vec<i64>,
+    /// `kavach run --hot`: the program's generations (`hot.rs`).
+    pub(crate) hot: Option<Box<crate::hot::Hot<'a>>>,
 }
 
 impl<'a> Interp<'a> {
@@ -184,13 +186,14 @@ impl<'a> Interp<'a> {
             block_lets: Vec::new(),
             drop_floor: 0,
             events: Vec::new(),
+            hot: None,
         };
         i.collect();
         i.collect_std_modules();
         i
     }
 
-    fn collect(&mut self) {
+    pub(crate) fn collect(&mut self) {
         let fn_items = |methods: &'a [Item]| -> HashMap<&'a str, &'a FnDecl> {
             methods
                 .iter()
@@ -310,7 +313,8 @@ impl<'a> Interp<'a> {
     }
 
     /// Calls a function or method. `args` are (name, value) in call order.
-    pub(crate) fn call_fn(
+    /// `call_fn` (`hot.rs`) calls this, after any swap of functions.
+    pub(crate) fn call_fn_plain(
         &mut self,
         f: &'a FnDecl,
         self_value: Option<Value<'a>>,

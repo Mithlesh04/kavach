@@ -69,10 +69,32 @@ pub fn run_with_args(program: &Program, args: &[String]) -> Result<i32, String> 
 fn run_here(program: &Program) -> Result<i32, String> {
     runtime::start(&program.path, &program.shapes);
     let isa = new_isa(false)?;
+    // Each C function of the system's C library must be found here: one
+    // that isn't is an error, not a crash (spec 10.7).
+    for f in program
+        .functions
+        .iter()
+        .filter(|f| f.external.as_deref().is_some_and(|l| l == "c" || l == "m"))
+    {
+        if kavach_runtime_native::system_symbol(&f.name).is_none() {
+            let why = if cfg!(windows) {
+                "Windows' C library has it only in its headers"
+            } else {
+                "the system's C library has no such function"
+            };
+            return Err(format!(
+                "the C function `{}` can't be called by `kavach run --native` here: {why}. `kavach build` links it (spec 10.7)",
+                f.name
+            ));
+        }
+    }
     let mut builder = JITBuilder::with_isa(isa, default_libcall_names());
     for (name, ptr, _, _) in runtime_functions() {
         builder.symbol(name, ptr);
     }
+    builder.symbol_lookup_fn(Box::new(|name| {
+        kavach_runtime_native::system_symbol(name).map(|at| at as *const u8)
+    }));
     builder.symbol(
         "kv_stack_limit",
         std::ptr::addr_of!(runtime::rt::kv_stack_limit) as *const u8,

@@ -12,13 +12,14 @@ use kavach_runtime_window as win;
 
 /// Leaves `why` as a `GpuError.Unavailable` for `kv_take_error`.
 fn fail(why: &str) -> i64 {
+    fail_as("Unavailable", why)
+}
+
+/// Leaves `why` as a `GpuError` of `variant` for `kv_take_error`.
+fn fail_as(variant: &str, why: &str) -> i64 {
     if let Some(ty) = crate::shapes::find_union("GpuError", "Unavailable") {
         let text = crate::shapes::new_text(why, crate::heap::first_of(&Shape::Str));
-        set_error(crate::rt_json::new_variant(
-            ty,
-            "Unavailable",
-            &[text as u64],
-        ));
+        set_error(crate::rt_json::new_variant(ty, variant, &[text as u64]));
     }
     0
 }
@@ -35,6 +36,18 @@ fn size(n: i64) -> (u32, u32) {
 crate::rt_data::entry!(kv_rt_draw, |op, a, b, c, _code, line| {
     match op {
         RtOp::DrawScreen => draw::screen_on(a, size(a)).unwrap_or_else(|why| fail(&why)),
+        RtOp::DrawCompressed => {
+            let made = crate::rt_bytes::with_bytes(a, kavach_runtime_gpu::texture::compressed);
+            release(a);
+            match made {
+                Ok((n, w, h)) => crate::heap::alloc_slots(
+                    crate::rt::type_of(_code),
+                    0,
+                    vec![n as u64, u64::from(w), u64::from(h)],
+                ),
+                Err((variant, why)) => fail_as(variant, &why),
+            }
+        }
         RtOp::DrawFrame => {
             let (w, h) = size(b);
             draw::frame(a, w, h).unwrap_or_else(|why| fail(&why))

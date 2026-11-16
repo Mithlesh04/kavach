@@ -72,7 +72,7 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_draw.rs` | `std.gpu`'s drawing (spec 14.24): its own entry, by number |
 | `src/rt_run.rs` | `std.process` (spec 14.23): its own entry, by the child's number; waiting lets other tasks run |
 | `src/rt_window.rs` | `std.window` (spec 14.22): its own entry, so only programs with windows link `winit` |
-| `src/rt_input.rs` | `std.input` (spec 14.26): its own entry, so only programs that read gamepads link `gilrs` |
+| `src/rt_input.rs` | `std.input` (spec 14.26): its own entry, so only programs that read gamepads link SDL3 |
 | `src/rt_audio.rs` | `std.audio` (spec 14.27): its own entry, so only programs with sound link `cpal` |
 | `src/rt_watch.rs` | `std.fs`'s `Watcher` (spec 14.3): its own entry, so only programs that watch files link `notify` |
 | `src/rt_image.rs` | `std.image` (spec 14.29): its own entry, so only programs with images link the decoders |

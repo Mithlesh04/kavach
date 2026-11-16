@@ -12,7 +12,7 @@ pub type WindowError = Unavailable(reason: String)
 
 /// Something that happened to a window, or to a gamepad (spec 14.26).
 /// From `Key` on, they come only after `listen_input()`.
-pub type Event = Closed | Resized(width: Int, height: Int) | Scaled(factor: Float) | Focused(on: Bool) | Key(key: String, down: Bool) | Text(text: String) | MouseMoved(x: Float, y: Float) | MouseButton(button: Int, down: Bool) | Wheel(x: Float, y: Float) | Motion(x: Float, y: Float) | PadConnected(pad: Int, name: String) | PadGone(pad: Int) | PadButton(pad: Int, button: String, down: Bool) | PadAxis(pad: Int, axis: String, value: Float)
+pub type Event = Closed | Resized(width: Int, height: Int) | Scaled(factor: Float) | Focused(on: Bool) | Key(key: String, down: Bool) | Text(text: String) | MouseMoved(x: Float, y: Float) | MouseButton(button: Int, down: Bool) | Wheel(x: Float, y: Float) | Motion(x: Float, y: Float) | PadConnected(pad: Int, name: String) | PadGone(pad: Int) | PadButton(pad: Int, button: String, down: Bool) | PadAxis(pad: Int, axis: String, value: Float) | Touch(id: Int, x: Float, y: Float, phase: String, pressure: Float)
 
 /// An open window. It closes when its last holder ends, or at `close()`.
 pub type AppWindow: Drop {
@@ -113,6 +113,17 @@ fn decoded(id: Int, numbers: [Float]) -> [Event] uses Window {
     out
 }
 
+/// A touch at `x`, `y` from its text: its phase, id and pressure, as
+/// `Began 3 0.5`.
+fn touch_of(x: Float, y: Float, text: String) -> Event
+    example touch_of(1.0, 2.0, "Moved 7 0.25") == Event.Touch(id: 7, x: 1.0, y: 2.0, phase: "Moved", pressure: 0.25)
+{
+    const parts = text.split(" ")
+    const id = if parts.len() > 1 { Int(parts[1]) catch _ => 0 } else { 0 }
+    const pressure = if parts.len() > 2 { Float(parts[2]) catch _ => 1.0 } else { 1.0 }
+    Event.Touch(id: id, x: x, y: y, phase: parts.first() ?? "", pressure: pressure)
+}
+
 /// One event from its kind's number (as `Event`'s variants are
 /// numbered), two numbers and a text.
 fn event_of(kind: Int, a: Float, b: Float, text: String) -> Event
@@ -135,6 +146,7 @@ fn event_of(kind: Int, a: Float, b: Float, text: String) -> Event
         10 => Event.PadConnected(pad: Int(a), name: text),
         11 => Event.PadGone(pad: Int(a)),
         12 => Event.PadButton(pad: Int(a), button: text, down: b > 0.0),
-        _ => Event.PadAxis(pad: Int(a), axis: text, value: b),
+        13 => Event.PadAxis(pad: Int(a), axis: text, value: b),
+        _ => touch_of(a, b, text),
     }
 }

@@ -44,7 +44,7 @@ kavach/
 │   ├── net/                networking, TLS and the model call, shared like core/
 │   ├── gpu/                GPU compute for gpu fn, through wgpu
 │   ├── window/             windows and their input for std.window, through winit
-│   ├── input/              gamepads for std.input, through gilrs
+│   ├── input/              gamepads for std.input, through SDL3
 │   ├── audio/              sound for std.audio, through cpal
 │   ├── watch/              watching files for std.fs, through notify
 │   ├── image/              PNG and JPEG for std.image

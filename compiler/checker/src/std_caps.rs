@@ -67,6 +67,10 @@ impl Checker<'_> {
                 _ => cap,
             };
             self.note_cap(cap, span);
+            // A sound played from its file reads the file too (14.27).
+            if (module, name) == ("audio", "stream_id") {
+                self.note_cap("Fs.read", span);
+            }
             if self.in_contract {
                 self.error(span, format!("a contract can't call `{module}.{name}`: it uses {cap}, and contracts must be pure (spec 7.5)"));
             }

@@ -42,6 +42,7 @@ A function that only draws needs no `Input`, so it can't read what a person type
 | `PadGone(pad: Int)` | The gamepad was disconnected |
 | `PadButton(pad: Int, button: String, down: Bool)` | A button of the standard layout went down or up, named by its place: `South`, `Start`, `DPadUp` (14.26) |
 | `PadAxis(pad: Int, axis: String, value: Float)` | A stick or trigger moved: `LeftX`, `LeftY`, `RightX`, `RightY` from -1 to 1, `LeftTrigger`, `RightTrigger` from 0 to 1 |
+| `Touch(id: Int, x: Float, y: Float, phase: String, pressure: Float)` | A finger or pen on a touch screen, in pixels from the window's top left. `phase` is `Began`, `Moved`, `Ended` or `Cancelled` (the system took the touch away); `id` is the same from `Began` to its end, so several fingers are told apart. `pressure` is from 0 to 1, or 1 where the screen doesn't measure it |
 
 The events from `Key` on come only after `listen_input()`. Gamepad events come to every window that listens to input.
 
@@ -83,4 +84,4 @@ win.run(e => match e {
 ## Open questions
 
 - macOS shows windows only from a program's first thread. Until the runtime gives that thread to the event loop, `window.open` there fails with `Unavailable`.
-- Touch screens and pens, with `std.input` (14.26). Drawing into a window is `std.gpu` (14.24).
+- A pen's tilt and its buttons. Drawing into a window is `std.gpu` (14.24).

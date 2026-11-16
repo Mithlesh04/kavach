@@ -65,7 +65,7 @@ fn wav(bytes: &[u8]) -> Result<SoundData, String> {
 }
 
 /// Raw WAV samples as floats from -1 to 1.
-fn samples(body: &[u8], format: u16, bits: u16) -> Option<Vec<f32>> {
+pub(crate) fn samples(body: &[u8], format: u16, bits: u16) -> Option<Vec<f32>> {
     Some(match (format, bits) {
         (1, 8) => body
             .iter()

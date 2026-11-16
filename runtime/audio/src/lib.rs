@@ -8,6 +8,7 @@ mod decode;
 mod device;
 mod input;
 pub mod mixer;
+mod stream;
 #[cfg(test)]
 mod tests;
 
@@ -100,10 +101,67 @@ pub fn play(n: i64, volume: f64, pan: f64, looped: bool) -> Result<i64, String> 
         at: 0.0,
         looped,
         controls: controls.clone(),
+        streaming: None,
     };
     out.add
         .try_send(voice)
         .map_err(|_| format!("{} voices are playing already", device::MOST_VOICES))?;
+    s.next += 1;
+    let v = s.next;
+    s.voices.insert(v, controls);
+    Ok(v)
+}
+
+/// Plays the WAV or Ogg Vorbis file at `path` a piece at a time, as
+/// `play` plays a sound (spec 14.27): the voice's number; or why not, a
+/// file that can't be read first (`Err(Ok(..))`), then no device
+/// (`Err(Err(..))`).
+pub fn stream(
+    path: &str,
+    volume: f64,
+    pan: f64,
+    looped: bool,
+) -> Result<i64, Result<String, String>> {
+    let controls = Arc::new(Controls::new(1.0, 0.0));
+    controls.set_volume(volume as f32);
+    controls.set_pan(pan as f32);
+    let source = stream::start(path, looped, controls.clone()).map_err(Ok)?;
+    let out = match device::output() {
+        Ok(out) => out,
+        Err(why) => {
+            controls
+                .stop
+                .store(true, std::sync::atomic::Ordering::Relaxed);
+            return Err(Err(why));
+        }
+    };
+    let empty = Arc::new(SoundData {
+        samples: Vec::new(),
+        channels: 2,
+        rate: source.rate,
+    });
+    let voice = Voice {
+        sound: empty,
+        // Two frames are taken before the first is heard.
+        at: 2.0,
+        looped,
+        controls: controls.clone(),
+        streaming: Some(mixer::Streaming {
+            source,
+            frames: [(0.0, 0.0); 2],
+        }),
+    };
+    if out.add.try_send(voice).is_err() {
+        controls
+            .stop
+            .store(true, std::sync::atomic::Ordering::Relaxed);
+        return Err(Err(format!(
+            "{} voices are playing already",
+            device::MOST_VOICES
+        )));
+    }
+    let mut s = store();
+    tidy(&mut s);
     s.next += 1;
     let v = s.next;
     s.voices.insert(v, controls);

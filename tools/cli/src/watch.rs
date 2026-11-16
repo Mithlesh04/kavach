@@ -96,3 +96,80 @@ fn add(p: &Path, out: &mut BTreeMap<PathBuf, SystemTime>) {
         out.insert(p.to_path_buf(), t);
     }
 }
+
+/// `kavach run --hot file.kav [args…]` (spec 10.5): runs the program in
+/// the interpreter, and each time a file changes, has it swap in its
+/// changed functions; a change of more than function bodies runs it again
+/// from its start.
+pub(crate) fn hot(path: &str, rest: &[&str]) -> ExitCode {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::{Arc, Mutex};
+    let rest = rest.strip_prefix(&["--"]).unwrap_or(rest);
+    let args: Vec<String> = rest.iter().map(|a| a.to_string()).collect();
+    let looked_at = folders(&[path.to_string()]);
+    let files = Arc::new(Mutex::new(String::new()));
+    loop {
+        let program = match crate::load(path) {
+            Ok(c) => &*Box::leak(Box::new(c)),
+            Err(code) => return code,
+        };
+        let (changed, restart, done) = (
+            Arc::<AtomicBool>::default(),
+            Arc::<AtomicBool>::default(),
+            Arc::<AtomicBool>::default(),
+        );
+        let watched = (
+            changed.clone(),
+            done.clone(),
+            files.clone(),
+            looked_at.clone(),
+        );
+        std::thread::spawn(move || {
+            let (changed, done, files, looked_at): (
+                Arc<AtomicBool>,
+                Arc<AtomicBool>,
+                Arc<Mutex<String>>,
+                Vec<PathBuf>,
+            ) = watched;
+            let mut seen = times(&looked_at);
+            while !done.load(Ordering::Acquire) {
+                std::thread::sleep(Duration::from_millis(300));
+                let now = times(&looked_at);
+                if now != seen {
+                    let names: Vec<String> = (now.iter())
+                        .filter(|(p, t)| seen.get(*p) != Some(t))
+                        .map(|(p, _)| p.to_string_lossy().replace('\\', "/"))
+                        .collect();
+                    *files.lock().unwrap_or_else(|e| e.into_inner()) = names.join(", ");
+                    seen = now;
+                    changed.store(true, Ordering::Release);
+                }
+            }
+        });
+        let (source, named) = (path.to_string(), files.clone());
+        let load = Box::new(move || {
+            let names = named.lock().unwrap_or_else(|e| e.into_inner()).clone();
+            match crate::load(&source) {
+                Ok(c) => Some((&*Box::leak(Box::new(c)), names)),
+                Err(_) => {
+                    eprintln!(
+                        "-- changed: {names}, which has errors: the program goes on as it was"
+                    );
+                    None
+                }
+            }
+        });
+        let reloader = kavach_interp::Reloader {
+            changed,
+            load,
+            restart: restart.clone(),
+        };
+        let output = kavach_interp::run_hot(program, &args, reloader);
+        done.store(true, Ordering::Release);
+        if !restart.load(Ordering::Acquire) {
+            return ExitCode::from(u8::try_from(output.exit_code).unwrap_or(1));
+        }
+        let names = files.lock().unwrap_or_else(|e| e.into_inner()).clone();
+        eprintln!("-- changed: {names}, the program's types changed: running again");
+    }
+}
