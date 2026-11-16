@@ -8,10 +8,13 @@ import project from "@/data/project.json";
 import { ratioOf, winsAgainstCpp } from "@/components/ratio";
 import { ThemeToggle } from "@/components/theme-toggle";
 import versions from "@/data/versions.json";
-import { DESCRIPTION, SITE_URL } from "@/lib/site";
+import { CARD, DESCRIPTION, LOGO, PUBLISHER, SITE_URL } from "@/lib/site";
 
 // The benchmark itself, read from the repository: what runs is what shows.
 const hero = fs.readFileSync(path.join(process.cwd(), "..", "benchmarks", "loops", "kavach", "loop.kav"), "utf8").trimEnd();
+
+// The home page's own address, as every docs page has one.
+export const metadata = { alternates: { canonical: `${SITE_URL}/` } };
 
 export default async function Home() {
   const heroHtml = await codeHtml(hero);
@@ -23,7 +26,8 @@ export default async function Home() {
   // What the language is, for search engines: its names, its source, its licenses.
   const names = ["KavachLang", "Kavach programming language", project.nameHindi];
   const structured = [
-    { "@context": "https://schema.org", "@type": "WebSite", name: "Kavach", alternateName: names, url: `${SITE_URL}/` },
+    { "@context": "https://schema.org", "@type": "WebSite", name: "Kavach", alternateName: names, url: `${SITE_URL}/`, publisher: PUBLISHER },
+    { "@context": "https://schema.org", ...PUBLISHER, sameAs: [versions.repo] },
     {
       "@context": "https://schema.org",
       "@type": "ComputerLanguage",
@@ -32,6 +36,7 @@ export default async function Home() {
       description: DESCRIPTION,
       url: `${SITE_URL}/`,
       sameAs: [versions.repo],
+      image: [`${SITE_URL}${LOGO.path}`, `${SITE_URL}${CARD.path}`],
       license: ["https://opensource.org/licenses/MIT", "https://www.apache.org/licenses/LICENSE-2.0"],
       creator: { "@type": "Person", name: project.lead.name, url: project.lead.url },
     },

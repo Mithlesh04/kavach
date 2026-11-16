@@ -1,13 +1,14 @@
 // The Velocity K: a K whose blades break away from the stem — armor in
 // motion. One source of truth for every size; the blades alone are the
-// small mark (favicon, 16 px file lists). Colors ride the theme tokens.
+// small mark (favicon, 16 px file lists). Colors ride the theme tokens;
+// the PNG images (share card, logo.png) pass a fixed color instead.
 
-export function Logo({ size = 24 }: { size?: number }) {
+export function Logo({ size = 24, color = "var(--accent)" }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true">
-      <rect x="4" y="4" width="5.2" height="24" rx="2" fill="var(--accent)" />
-      <path d="M14 14.6 23.4 4h5.4L18.6 15.2Z" fill="var(--accent)" />
-      <path d="M14 17.4 23.4 28h5.4L18.6 16.8Z" fill="var(--accent)" />
+      <rect x="4" y="4" width="5.2" height="24" rx="2" fill={color} />
+      <path d="M14 14.6 23.4 4h5.4L18.6 15.2Z" fill={color} />
+      <path d="M14 17.4 23.4 28h5.4L18.6 16.8Z" fill={color} />
     </svg>
   );
 }

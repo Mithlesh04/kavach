@@ -5,7 +5,7 @@ import { lessons } from "@/content/lessons";
 import project from "@/data/project.json";
 import { aliases } from "@/lib/aliases";
 import { findNode } from "@/lib/nav";
-import { SITE_URL, neighbors } from "@/lib/site";
+import { CARD, PUBLISHER, SITE_URL, neighbors } from "@/lib/site";
 
 /** One course page or sub-page: a one-idea lesson (decision 0047). */
 export function DocPage({ nodeKey }: { nodeKey: string }) {
@@ -26,6 +26,8 @@ export function DocPage({ nodeKey }: { nodeKey: string }) {
       inLanguage: "en",
       timeRequired: `PT${lesson.minutes}M`,
       author: { "@type": "Person", name: project.lead.name, url: project.lead.url },
+      publisher: PUBLISHER,
+      image: `${SITE_URL}${CARD.path}`,
       isPartOf: { "@type": "Course", name: "The Kavach tutorial", url: `${site}/docs/start/kavach-home/` },
       about: { "@type": "ComputerLanguage", name: "Kavach" },
     },

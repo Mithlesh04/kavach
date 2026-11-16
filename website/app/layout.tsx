@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { TipLayer } from "@/components/tip-layer";
 import project from "@/data/project.json";
-import { DESCRIPTION, SITE_URL } from "@/lib/site";
+import { CARD, DESCRIPTION, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
@@ -15,8 +15,14 @@ export const metadata: Metadata = {
   creator: project.lead.name,
   description: DESCRIPTION,
   keywords: ["Kavach", "KavachLang", "Kavach programming language", "programming language", "compiled language", "AI agents", "capabilities"],
-  openGraph: { type: "website", siteName: "Kavach (कवच)", locale: "en", description: DESCRIPTION },
-  twitter: { card: "summary_large_image" },
+  openGraph: {
+    type: "website",
+    siteName: "Kavach (कवच)",
+    locale: "en",
+    description: DESCRIPTION,
+    images: [{ url: CARD.path, width: CARD.width, height: CARD.height, type: "image/png", alt: CARD.alt }],
+  },
+  twitter: { card: "summary_large_image", images: [{ url: CARD.path, alt: CARD.alt }] },
 };
 
 // Runs before paint so a forced theme never flashes the wrong colors. It

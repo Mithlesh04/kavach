@@ -45,7 +45,7 @@ npm run check      # BEFORE finishing any change: types + lint + static build
 | What a Reference page lists for a type or a std module | nothing here: the spec and `../stdlib/` (the pages are generated); a new module gets a page in the Standard Library Reference part of `lib/course.ts`, and the build fails until it has one |
 | Who makes Kavach (shown in headers, footers, Kavach Home, page metadata) | `data/project.json` |
 | Quiz encouragement lines | `content/feedback.json` |
-| The logo or file icon | `components/logo.tsx` / `app/icon.svg` (one set of paths) |
+| The logo or file icon | `components/logo.tsx` / `app/icon.svg` (one set of paths); the PNGs search engines and link previews read (`app/logo.png/`, `app/share-card.png/`, named in `lib/site.ts`) draw `logo.tsx` |
 | How a widget looks or behaves | its one file in `components/` |
 | Where a sample's names come from (the note under each code window) | nothing: `lib/name-origins.ts` reads it from the code, the compiler's prelude and `data/outlines.json` |
 

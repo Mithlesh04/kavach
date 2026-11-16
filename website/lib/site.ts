@@ -17,6 +17,20 @@ export const SITE_URL = process.env.SITE_URL ?? "https://kavachlang.com";
 export const DESCRIPTION =
   "Kavach is a general-purpose, compiled, statically typed programming language. Every function says what it may touch (files, network, AI, payments), and the compiler checks it.";
 
+/** The share card (app/share-card.png) that link previews show. */
+export const CARD = { path: "/share-card.png", width: 1200, height: 630, alt: "Kavach: safety you can read, speed you can verify" };
+
+/** The large logo (app/logo.png), for search engines, the manifest and AI tools. */
+export const LOGO = { path: "/logo.png", size: 512 };
+
+/** Who publishes the site, with its logo: what search engines read as the site's logo. */
+export const PUBLISHER = {
+  "@type": "Organization",
+  name: "Kavach",
+  url: `${SITE_URL}/`,
+  logo: { "@type": "ImageObject", url: `${SITE_URL}${LOGO.path}`, width: LOGO.size, height: LOGO.size },
+};
+
 export function hasContent(key: string): boolean {
   return key in lessons;
 }

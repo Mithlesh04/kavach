@@ -1,13 +1,15 @@
 import { ImageResponse } from "next/og";
-import { SITE_URL } from "@/lib/site";
+import { Logo } from "@/components/logo";
+import { CARD, SITE_URL } from "@/lib/site";
 
 export const dynamic = "force-static";
-export const alt = "Kavach — safety you can read, speed you can verify";
-export const size = { width: 1200, height: 630 };
-export const contentType = "image/png";
 
-// The share card: rendered once at build time, no runtime anywhere.
-export default function OgImage() {
+// The share card, rendered once at build time, no runtime anywhere. It is
+// a route named share-card.png, not Next's opengraph-image file, so the
+// export writes a real .png file: a static host then serves it as
+// image/png, which link previews and crawlers need (an extensionless
+// file is served as application/octet-stream, and they drop it).
+export function GET() {
   return new ImageResponse(
     (
       <div
@@ -24,11 +26,7 @@ export default function OgImage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
-          <svg width="72" height="72" viewBox="0 0 32 32">
-            <rect x="4" y="4" width="5.2" height="24" rx="2" fill="#E6A23C" />
-            <path d="M14 14.6 23.4 4h5.4L18.6 15.2Z" fill="#E6A23C" />
-            <path d="M14 17.4 23.4 28h5.4L18.6 16.8Z" fill="#E6A23C" />
-          </svg>
+          <Logo size={72} color="#E6A23C" />
           <div style={{ fontSize: 56, fontWeight: 800 }}>Kavach</div>
         </div>
         <div style={{ fontSize: 64, fontWeight: 800, marginTop: 48, lineHeight: 1.15 }}>
@@ -40,6 +38,6 @@ export default function OgImage() {
         </div>
       </div>
     ),
-    size,
+    { width: CARD.width, height: CARD.height },
   );
 }
