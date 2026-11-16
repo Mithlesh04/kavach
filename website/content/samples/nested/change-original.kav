@@ -1,0 +1,7 @@
+fn main() {
+    let a = [2, 4]
+    const b = ["numbers": a]
+    a.push(6)
+    print(a)
+    print(b)
+}

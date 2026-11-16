@@ -1,0 +1,8 @@
+type Box {
+    numbers: [Int]
+}
+
+fn main() {
+    const b = Box(numbers: [2, 4])
+    b.numbers.push(6)
+}

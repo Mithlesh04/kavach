@@ -2,6 +2,7 @@ import Link from "next/link";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
+import { loadSample } from "@/lib/samples";
 import { Ex, H2, Note, P } from "./parts";
 
 // ---------- Nested and mixed collections ----------
@@ -22,6 +23,83 @@ const shapes: [string, string, string][] = [
   ["([String], [String: Int])", "a tuple of a list and a map", "([\"a\"], [\"a\": 1])"],
   ["[Cell]", "a list of a union: items of different kinds", "[Cell.Empty, Cell.Text(value: \"pens\")]"],
 ];
+
+// Each row is a checked sample; its result is read from the sample's
+// .expect, so the table can't say what the compiler doesn't do.
+const changeCases: [sample: string, setup: string, step: string][] = [
+  ["nested/change-const-map.fails", "let a = [2, 4]; const b = [\"numbers\": a]", "b[\"numbers\"].push(6)"],
+  ["nested/inner-push.fails", "a let map of lists", "groups[\"fruit\"].push(\"mango\")"],
+  ["nested/change-let-put-back", "let b = [\"numbers\": a]", "take out, push, put back"],
+  ["nested/change-one-line", "let b = [\"numbers\": [2, 4]]", "b[\"numbers\"] = (b[\"numbers\"] ?? []) + [6]"],
+  ["nested/change-const-put-back.fails", "const b = [\"numbers\": a]", "take out, push, put back"],
+  ["nested/change-original", "let a; const b = [\"numbers\": a]", "a.push(6), then print a and b"],
+  ["nested/change-const-inside-let", "const a; let b = [\"numbers\": a]", "change b's list"],
+  ["nested/change-record", "let b = Box(numbers: a)", "b.numbers.push(6)"],
+  ["nested/change-const-record.fails", "const b = Box(numbers: [2, 4])", "b.numbers.push(6)"],
+  ["nested/change-list", "let b = [a, [8]]", "b[0].push(6)"],
+  ["nested/change-const-list.fails", "const b = [[2, 4], [8]]", "b[0].push(6)"],
+  ["nested/change-copy", "const b; let copy = b", "change copy"],
+  ["nested/change-if-let.fails", "if let nums = b[\"numbers\"]", "nums.push(6)"],
+];
+
+// Spec 2.2 and 14.2: the methods that change a collection, and those that
+// only read. The samples methods-change and methods-const.fails check the
+// first column; methods-read checks the second, all but `enumerate`, which
+// `kavach run --native` doesn't compile yet (for/index shows it).
+const methodKinds: [type: string, change: React.ReactNode, read: React.ReactNode][] = [
+  [
+    "List",
+    <><C>push</C>, <C>pop</C>, <C>items[i] = v</C>, <C>+=</C></>,
+    <><C>len</C>, <C>is_empty</C>, <C>is_full</C>, <C>get</C>, <C>first</C>, <C>last</C>, <C>contains</C>, <C>index_of</C>, <C>count</C>, <C>find</C>, <C>min</C>, <C>max</C>, <C>sum</C>, <C>map</C>, <C>filter</C>, <C>flat_map</C>, <C>any</C>, <C>all</C>, <C>enumerate</C>, <C>sort</C>, <C>sort_by</C>, <C>reverse</C>, <C>take</C>, <C>skip</C>, <C>slice</C>, <C>join</C>, <C>+</C></>,
+  ],
+  [
+    "Map",
+    <><C>m[k] = v</C>, <C>remove</C></>,
+    <><C>m[k]</C>, <C>get</C>, <C>len</C>, <C>is_empty</C>, <C>is_full</C>, <C>contains_key</C>, <C>keys</C>, <C>values</C></>,
+  ],
+  ["Set", <><C>add</C>, <C>remove</C></>, <><C>contains</C>, <C>len</C>, <C>is_empty</C>, <C>is_full</C>, <C>to_list</C></>],
+  [
+    "Ring",
+    <><C>push</C></>,
+    <><C>len</C>, <C>is_empty</C>, <C>is_full</C>, <C>first</C>, <C>last</C>, <C>get</C>, <C>contains</C>, <C>to_list</C></>,
+  ],
+  ["String", <>none: text never changes</>, <>every method, which gives new text</>],
+];
+
+function ChangeTable() {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full border-collapse text-[15px]">
+        <thead>
+          <tr className="border-b border-line text-left text-soft">
+            <th className="py-2 pr-4 font-bold">With</th>
+            <th className="py-2 pr-4 font-bold">Doing</th>
+            <th className="py-2 font-bold">Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          {changeCases.map(([name, setup, step]) => {
+            const out = loadSample(name).output ?? "";
+            const refused = name.endsWith(".fails");
+            const lines = out.split("\n").map((l) => l.replace(/^error: /, ""));
+            return (
+              <tr key={name} className="border-b border-line align-top">
+                <td className="py-2 pr-4"><C>{setup}</C></td>
+                <td className="py-2 pr-4"><C>{step}</C></td>
+                <td className="py-2 text-muted">
+                  <strong className="text-ink">{refused ? "Refused: " : "Works: "}</strong>
+                  {lines.map((l, i) => (
+                    <span key={i}>{i > 0 && ", then "}<C>{l}</C></span>
+                  ))}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
 
 export const nestedDoc: LessonDoc = {
   lead: "Collections can hold collections: lists of lists, maps of lists, lists of maps, sets and tuples inside any of them, at any depth. Items of different types go in one collection through a union, or as Json.",
@@ -120,6 +198,72 @@ export const nestedDoc: LessonDoc = {
         <Link href="/docs/memory/values-not-references/">Values, not References</Link>.
       </P>
       <Ex name="nested/copies" />
+      <H2>Changing what&apos;s inside: let and const</H2>
+      <P>
+        Can a list inside a map be changed? It depends on two things: whether the outer value is a <C>let</C>, and
+        whether reaching the inner value gives an <Link href="/docs/types/optionals/">optional</Link>. This is
+        refused twice over:
+      </P>
+      <Ex name="nested/change-const-map.fails" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>b[&quot;numbers&quot;]</C> is a <C>[Int]?</C>, as the key may be missing, and <C>none</C> has no <C>push</C>. The compiler says this first.</li>
+        <li><C>b</C> is a <C>const</C>, so nothing inside it can change at all, however deep.</li>
+      </ul>
+      <P>With a <C>let</C>, take the list out, change it and put it back. Or do it in one line, with <C>+</C>:</P>
+      <Ex name="nested/change-let-put-back" />
+      <P>Every case, each one a checked sample:</P>
+      <ChangeTable />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A <C>const</C> never changes, at any depth. To change one, copy it into a <C>let</C>: the copy changes, and the original stays as it was.</li>
+        <li>In a <C>let</C>, a list&apos;s item (<C>b[0]</C>) and a record&apos;s field (<C>b.numbers</C>) change in place. A map&apos;s value is an optional: take it out and put it back.</li>
+        <li>Putting <C>a</C> into <C>b</C> puts in a copy. Changing <C>a</C> later leaves <C>b</C> as it was, and changing <C>b</C> leaves <C>a</C>.</li>
+        <li>A name from <C>if let</C> is a <C>const</C>. To change what it holds, copy it into a <C>let</C>, change that, and put it back.</li>
+      </ul>
+      <H2>Which methods change a collection</H2>
+      <P>
+        Only a few methods change the collection they are called on. They need a <C>let</C>, at every depth. Every
+        other method only reads: it works on a <C>const</C> too, and gives a new value.
+      </P>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-[15px]">
+          <thead>
+            <tr className="border-b border-line text-left text-soft">
+              <th className="py-2 pr-4 font-bold">Type</th>
+              <th className="py-2 pr-4 font-bold">Change it (need a let)</th>
+              <th className="py-2 font-bold">Only read (work on a const)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {methodKinds.map(([type, change, read]) => (
+              <tr key={type} className="border-b border-line align-top">
+                <td className="py-2 pr-4 whitespace-nowrap"><C>{type}</C></td>
+                <td className="py-2 pr-4">{change}</td>
+                <td className="py-2 text-muted">{read}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <P>Every reading method, on the fields of a <C>const</C> record. None of them changes it:</P>
+      <Ex name="nested/methods-read" />
+      <P>Every changing method, on the fields of a <C>let</C> record, in place:</P>
+      <Ex name="nested/methods-change" />
+      <P>On a <C>const</C>, the compiler refuses each of these lines, one error for each. The first:</P>
+      <Ex name="nested/methods-const.fails" />
+      <P>
+        Reading through a map&apos;s lookup needs <C>??</C> first, as changing does: the value may be missing.
+      </P>
+      <Ex name="nested/methods-map-read.fails" />
+      <P>
+        <C>sort()</C> and <C>reverse()</C> give a sorted or reversed copy and leave the list as it was. So a line
+        that throws the copy away would look like it sorted the list, and doesn&apos;t: it is refused. Write{" "}
+        <C>numbers = numbers.sort()</C>.
+      </P>
+      <Ex name="nested/methods-sort.fails" />
+      <P>
+        What each method does is in{" "}
+        <Link href="/docs/reference/built-in-methods/">Built-in Methods</Link>.
+      </P>
       <H2>Items of different types</H2>
       <P>All the items of one collection have one type. Mixing types is refused:</P>
       <Ex name="nested/mixed.fails" />

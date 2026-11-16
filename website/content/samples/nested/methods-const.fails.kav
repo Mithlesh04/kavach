@@ -1,0 +1,16 @@
+type Shelf {
+    numbers: [Int]
+    tags: Set<String>
+    ages: [String: Int]
+}
+
+fn main() {
+    const shelf = Shelf(numbers: [5, 2], tags: Set.of("new"), ages: ["asha": 31])
+    shelf.numbers.push(8)
+    shelf.numbers[0] = 50
+    shelf.numbers += [9]
+    const _ = shelf.numbers.pop()
+    shelf.tags.add("cheap")
+    shelf.ages["ravi"] = 27
+    shelf.ages.remove("asha")
+}

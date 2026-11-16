@@ -1,0 +1,4 @@
+fn main() {
+    let numbers = [5, 2, 8]
+    numbers.sort()
+}

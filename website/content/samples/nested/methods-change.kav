@@ -1,0 +1,29 @@
+type Shelf {
+    numbers: [Int]
+    tags: Set<String>
+    ages: [String: Int]
+    recent: Ring<Int>
+}
+
+fn main() {
+    let shelf = Shelf(
+        numbers: [5, 2],
+        tags: Set.of("new"),
+        ages: ["asha": 31],
+        recent: Ring.capacity(2, [1, 2]),
+    )
+    shelf.numbers.push(8)
+    shelf.numbers[0] = 50
+    shelf.numbers += [9, 10]
+    const top = shelf.numbers.pop() ?? 0
+    shelf.tags.add("cheap")
+    shelf.tags.remove("new")
+    shelf.ages["ravi"] = 27
+    shelf.ages.remove("asha")
+    shelf.recent.push(3)
+    print("popped {top}")
+    print(shelf.numbers)
+    print(shelf.tags)
+    print(shelf.ages)
+    print(shelf.recent)
+}

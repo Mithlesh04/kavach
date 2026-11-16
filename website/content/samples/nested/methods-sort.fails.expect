@@ -1,0 +1,1 @@
+error: the result of `sort` is unused: use it, or write `const _ = …` to throw it away

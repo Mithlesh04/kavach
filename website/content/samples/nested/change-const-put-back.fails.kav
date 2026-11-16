@@ -1,0 +1,7 @@
+fn main() {
+    let a = [2, 4]
+    const b = ["numbers": a]
+    let nums = b["numbers"] ?? []
+    nums.push(6)
+    b["numbers"] = nums
+}

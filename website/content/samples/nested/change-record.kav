@@ -1,0 +1,11 @@
+type Box {
+    numbers: [Int]
+}
+
+fn main() {
+    let a = [2, 4]
+    let b = Box(numbers: a)
+    b.numbers.push(6)
+    print(b.numbers)
+    print(a)
+}
