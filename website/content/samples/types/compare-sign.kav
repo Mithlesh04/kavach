@@ -1,0 +1,17 @@
+type Money: Comparable {
+    cents: Int
+
+    fn compare(self, other: Money) -> Int { self.cents - other.cents }
+}
+
+fn main() {
+    // Numbers and text: -1, 0 or 1.
+    print(7.compare(9))
+    print(9.compare(7))
+    print(7.compare(7))
+    print(7.compare(100))
+    print("apple".compare("pear"))
+    // Money's own compare gives the difference: any number, with the right sign.
+    print(Money(cents: 5).compare(Money(cents: 50)))
+    print(Money(cents: 5) < Money(cents: 50))
+}

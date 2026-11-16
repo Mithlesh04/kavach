@@ -1,10 +1,12 @@
-type Money: Add, Comparable {
+type Money: Add, Neg, Comparable {
     cents: Int
 
     fn add(self, other: Money) -> Money { Money(cents: self.cents + other.cents) }
+    fn neg(self) -> Money { Money(cents: -self.cents) }
     fn compare(self, other: Money) -> Int { self.cents - other.cents }
 }
 
+// Adds every item to `zero`: T needs only +.
 fn total<T: Add>(items: [T], zero: T) -> T {
     let sum = zero
     for x in items {
@@ -13,6 +15,12 @@ fn total<T: Add>(items: [T], zero: T) -> T {
     sum
 }
 
+// Turns x negative: T needs only unary -.
+fn flip<T: Neg>(x: T) -> T {
+    -x
+}
+
+// The item that comes last in order, or none for an empty list: T needs only >.
 fn largest<T: Comparable>(items: [T]) -> T? {
     let best = items.get(0)
     for x in items {
@@ -27,9 +35,15 @@ fn largest<T: Comparable>(items: [T]) -> T? {
 
 fn main() {
     print(total([1, 2, 3], 0))
+    const halves: [Float32] = [0.5, 0.25]
+    print(total(halves, Float32(0.0)))
     print(total([Money(cents: 150), Money(cents: 99)], Money(cents: 0)))
+    print(flip(5))
+    print(flip(Money(cents: 7)))
     print(largest([3, 9, 2]))
     print(largest(["pear", "apple", "zebra"]))
     print(largest([Money(cents: 5), Money(cents: 50)]))
-    print(7.compare(9))
+    print(largest([1.5, 0.5]))
+    const none_here: [Int] = []
+    print(largest(none_here))
 }

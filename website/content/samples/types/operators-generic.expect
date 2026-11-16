@@ -1,6 +1,10 @@
 6
+0.75
 Money(cents: 249)
+-5
+Money(cents: -7)
 9
 zebra
 Money(cents: 50)
--1
+1.5
+none

@@ -54,6 +54,27 @@ export const ownOperatorsDoc: LessonDoc = {
         <C>compare</C>: below 0 when <C>self</C> comes first, 0 when neither does, above 0 when the other does:
       </P>
       <Ex name="types/operators-comparable" />
+      <H2>compare gives a sign, not a distance</H2>
+      <P>
+        <C>a.compare(b)</C> answers one question: which comes first? Only the sign of the answer counts, not its size:
+      </P>
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Below 0: <C>a</C> comes first, so <C>a &lt; b</C> is true.</li>
+        <li>0: neither comes first, so <C>a &lt;= b</C> and <C>a &gt;= b</C> are both true.</li>
+        <li>Above 0: <C>b</C> comes first, so <C>a &gt; b</C> is true.</li>
+      </ul>
+      <P>
+        Numbers and text always give -1, 0 or 1. So <C>7.compare(9)</C> is -1, not 7 − 9 = -2, and{" "}
+        <C>7.compare(100)</C> is -1 too: 7 comes first both times. Your own type may give any number with the right
+        sign. <C>Money</C>&apos;s <C>compare</C> gives the difference in cents, -45 here, and <C>&lt;</C> reads only
+        that it is below 0:
+      </P>
+      <Ex name="types/compare-sign" />
+      <P>
+        Text comes first in alphabetical order, character by character: <C>&quot;apple&quot;</C> before{" "}
+        <C>&quot;pear&quot;</C>. A float&apos;s <C>compare</C> gives 0 when neither comes first, as with a{" "}
+        <C>NaN</C>.
+      </P>
       <P>
         <C>==</C> and <C>!=</C> are not interfaces: they compare contents for every type. So <C>a == b</C> and{" "}
         <C>compare</C> disagree only if the type&apos;s author makes them.
@@ -65,12 +86,32 @@ export const ownOperatorsDoc: LessonDoc = {
       <P>
         A type parameter with an operator&apos;s interface as its bound may use that operator. The number types meet{" "}
         <C>Add</C>, <C>Sub</C>, <C>Mul</C>, <C>Div</C>, <C>Rem</C>, <C>Neg</C> and <C>Comparable</C> as they are, and{" "}
-        <C>String</C> meets <C>Comparable</C>. So one generic function serves numbers, text and your own types:
+        <C>String</C> meets <C>Comparable</C>. So one generic function serves numbers, text and your own types.
+        Three functions, each asking for one operator, called with each kind of value:
       </P>
       <Ex name="types/operators-generic" />
+      <P>Each function asks for only the operator it uses:</P>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li><C>a + b</C> on a <C>T: Add</C> calls <C>add</C>. For a number that is its own <C>+</C>: each copy of the function runs one instruction.</li>
-        <li>A number&apos;s <C>compare</C> is its ordering: <C>7.compare(9)</C> is -1, as 7 comes first.</li>
+        <li>
+          <C>total&lt;T: Add&gt;</C> adds every item to <C>zero</C>. It takes <C>zero</C> as a parameter because a
+          plain <C>Add</C> has no way to make a zero: it is <C>0</C> for <C>Int</C>, <C>Float32(0.0)</C> for{" "}
+          <C>Float32</C> and <C>Money(cents: 0)</C> for <C>Money</C>. Numbers add with their own <C>+</C>;{" "}
+          <C>Money</C> adds with its <C>add</C> method.
+        </li>
+        <li>
+          <C>flip&lt;T: Neg&gt;</C> uses unary <C>-</C>: a number turns negative, and <C>Money</C> calls its{" "}
+          <C>neg</C> method.
+        </li>
+        <li>
+          <C>largest&lt;T: Comparable&gt;</C> keeps the item that comes last in order, using <C>&gt;</C>. Numbers
+          compare by size, text in alphabetical order (so <C>&quot;zebra&quot;</C> wins), and <C>Money</C> by its{" "}
+          <C>compare</C> method. An empty list has no largest item, so it gives <C>none</C>.
+        </li>
+        <li>
+          Each type a function is called with gets its own compiled copy, so for a number <C>a + b</C> is one machine
+          instruction, as if you had written the function for that type.
+        </li>
+        <li>A number&apos;s <C>compare</C> is its ordering: <C>7.compare(9)</C> is -1, as 7 comes first (see above).</li>
         <li>For any number at all, <C>T: Number</C> gives every operator at once: see <Link href="/docs/types/generics/">Generics</Link>.</li>
       </ul>
       <P>A type given for such a <C>T</C> must have the operator. <C>String</C> has no <C>Add</C>:</P>
