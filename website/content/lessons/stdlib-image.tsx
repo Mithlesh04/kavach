@@ -51,8 +51,8 @@ export const imageDoc: LessonDoc = {
       <H2>Every function and method</H2>
       <ModuleTable file="29-image.md" number="14.29" first="Function or method" />
       <P>
-        Not yet: GIF and WebP, compressed GPU textures, and resizing, which can be packages written over{" "}
-        <C>Image</C>. Fonts are <Link href="/docs/standard-library/fonts/">std.font</Link>: its atlas is an{" "}
+        Not yet: GIF and WebP, and resizing, which can be packages written over <C>Image</C>. Compressed GPU textures
+        come from KTX2 files: see <Link href="/docs/speed/gpu/drawing-triangles/">Drawing triangles</Link>. Fonts are <Link href="/docs/standard-library/fonts/">std.font</Link>: its atlas is an{" "}
         <C>Image</C>.
       </P>
       <div className="flex flex-wrap gap-2.5">

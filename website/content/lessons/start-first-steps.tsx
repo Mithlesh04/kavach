@@ -85,8 +85,9 @@ export const installDoc: LessonDoc = {
     <>
       <P>
         Kavach is young and moves fast, so today you build it from source. You need{" "}
-        <a href="https://rustup.rs">Rust</a> (Kavach&apos;s compiler is written in it) and git. Windows, Linux and WSL
-        all work.
+        <a href="https://rustup.rs">Rust</a> (Kavach&apos;s compiler is written in it), git, and{" "}
+        <a href="https://cmake.org/download/">CMake</a>, which builds the gamepad library. Without CMake, the build
+        stops at once and says how to install it on your system. Windows, Linux and WSL all work.
       </P>
       <Terminal commands session={`git clone ${versions.repo}\ncd kavach\ncargo build --release -p kavach-cli`} />
       <P>

@@ -94,6 +94,21 @@ export const gpuDrawDoc: LessonDoc = {
         <C>textures:</C>. Leaving it out is a compile error; a list of another length is a panic:
       </P>
       <Ex name="gpu/draw-no-textures.fails" />
+      <H2>Compressed textures</H2>
+      <P>
+        <C>gpu.compressed_texture(file)</C> makes a texture from a KTX2 file&apos;s bytes. The GPU reads its compressed
+        blocks as they are, so it takes 4 to 8 times less of the GPU&apos;s memory than <C>gpu.texture</C>&apos;s
+        pixels: what big game pictures need.
+      </P>
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The blocks are BC1 to BC7, which desktop GPUs read, or ASTC 4×4, which phones read. Width and height are each a multiple of 4.</li>
+        <li>Its mip levels, the smaller copies for far away, come with it.</li>
+        <li>A GPU that can&apos;t read its blocks gives <C>Unavailable</C>.</li>
+        <li>Only the GPU reads it, so <C>sample</C> on the CPU is a panic.</li>
+        <li><C>texture.width</C> and <C>texture.height</C> give any texture&apos;s size in pixels.</li>
+      </ul>
+      <P>Bytes that aren&apos;t a KTX2 file are <C>BadTexture</C>, on any machine:</P>
+      <Ex name="gpu/bad-ktx2" />
       <H2>Mistakes caught when compiling</H2>
       <P>
         Every part of a draw is checked before the program runs. A vertex fn must give a <C>position</C>:
@@ -128,6 +143,7 @@ export const gpuDrawDoc: LessonDoc = {
         <SrcRef file="tests/conformance/15-gpu/gpu-fragment-fn-takes-textures-after-its-input.kav" label="textures, tested" />
         <SrcRef file="tests/conformance/15-gpu/frame-draw-gives-the-textures-its-fragment-fn-reads.kav" label="textures: given, tested" />
         <SrcRef file="tests/conformance/15-gpu/gpu-fn-reads-a-texture-only-by-sample.kav" label="only sample, tested" />
+        <SrcRef file="tests/conformance/14-standard-library/a-bad-ktx2-file-is-bad-texture.kav" label="BadTexture, tested" />
         <SrcRef file="tools/cli/tests/textures.rs" symbol="a_texture_samples_on_the_cpu_as_on_the_gpu" label="sampled on the CPU, tested" />
       </div>
     </>

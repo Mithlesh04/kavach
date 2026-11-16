@@ -1,0 +1,18 @@
+extern c "c" {
+    fn sprintf(out: Ptr<UInt8>, format: String, ...) -> Int32
+}
+
+fn money(cents: Int) -> String {
+    unsafe {
+        const out: Ptr<UInt8> = alloc(32)
+        const _ = sprintf(out, "%lld.%02d", cents / 100, Int32(cents % 100))
+        const text = out.text() ?? ""
+        free(out)
+        text
+    }
+}
+
+fn main() {
+    print(money(1234))
+    print(money(5))
+}

@@ -255,22 +255,23 @@ export const modelDoc: LessonDoc = {
       <H2>Setting the key</H2>
       <P>
         <C>ask</C> needs an Anthropic API key. Kavach reads it when the program runs, from the environment variable{" "}
-        <C>ANTHROPIC_API_KEY</C>. It never goes in the code or in <C>kavach.toml</C>. Set it in the terminal that runs
-        the program:
+        <C>ANTHROPIC_API_KEY</C>. It never goes in the code or in <C>kavach.toml</C>, which are committed. The easiest
+        place is the project&apos;s <C>.env</C> file, beside <C>kavach.toml</C>:
       </P>
+      <CodeBlock code={"ANTHROPIC_API_KEY=sk-ant-..."} file=".env" lang="text" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>kavach new</C> puts <C>.env</C> in <C>.gitignore</C>, so the key stays out of the repository.</li>
+        <li><C>kavach run</C> and <C>kavach test</C> read it. The file&apos;s rules are on <Link href="/docs/tools/environment-variables/">Environment Variables</Link>.</li>
+      </ul>
+      <P>Or set it in the terminal that runs the program. It lasts as long as that terminal:</P>
       <CodeBlock code={"# macOS and Linux (bash, zsh)\nexport ANTHROPIC_API_KEY=sk-ant-...\nkavach run src/main.kav"} file="terminal" lang="sh" />
       <CodeBlock code={"# Windows PowerShell\n$env:ANTHROPIC_API_KEY = \"sk-ant-...\"\nkavach run src/main.kav"} file="terminal" lang="text" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>It lasts as long as that terminal. Put the line in your shell&apos;s profile to have it in every new one.</li>
-        <li>A built program reads it where it runs: the shell, a service manager, or <C>docker run -e ANTHROPIC_API_KEY app</C>.</li>
+        <li>Where both give a key, the terminal&apos;s wins. The order, strongest first: <C>--env</C>, the terminal, <C>[env.vars]</C>, then <C>.env</C>.</li>
+        <li><C>kavach build</C> copies <C>.env</C> beside the executable, key and all, so keep that folder private. Or build with <C>--no-env-file</C> and give the key where the program runs: the shell, a service manager, or <C>docker run -e ANTHROPIC_API_KEY app</C>.</li>
         <li>For a model that uses another account, give it <C>api_key_env: &quot;SUPPORT_KEY&quot;</C> and set <C>SUPPORT_KEY</C> the same way.</li>
         <li><C>kavach run --dry-run</C> calls no model, so it needs no key: check a program that way first.</li>
       </ul>
-      <Note>
-        For now <C>ask</C> reads its key only from the real environment. A key in a{" "}
-        <Link href="/docs/tools/environment-variables/">.env file</Link> reaches <C>env(…)</C> but not <C>ask</C>,
-        which then fails with <C>NoKey</C>.
-      </Note>
       <H2>The key and the address</H2>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>The key is read from <C>ANTHROPIC_API_KEY</C>, or from the variable a <C>Model</C>&apos;s <C>api_key_env</C> names. Without it, <C>ask</C> fails with <C>NoKey</C>, naming the variable.</li>
@@ -287,7 +288,8 @@ export const modelDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/08-capabilities-and-agents/04-typed-ai-calls.md" label="spec 8.4 · ask<T>" />
         <SrcRef file="docs/decisions/0056-the-model-is-chosen-in-code.md" label="decision 0056" />
-        <SrcRef file="runtime/net/src/ai.rs" line={151} label="where the key is read" />
+        <SrcRef file="runtime/net/src/ai.rs" line={153} label="where the key is read" />
+        <SrcRef file="runtime/net/src/ai/tests.rs" line={106} symbol="a_key_from_the_env_file_is_sent" label="a key in .env, tested" />
       </div>
     </>
   ),

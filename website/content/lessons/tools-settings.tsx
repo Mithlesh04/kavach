@@ -169,7 +169,7 @@ export const envDoc: LessonDoc = {
       <Note>
         <C>[env.vars]</C> is committed with <C>kavach.toml</C>, so it is for settings such as a log level, never for
         keys. Keys go in <C>.env</C>, or in the real environment where the program runs. The AI key of{" "}
-        <C>ask</C> is read only from the real environment for now: see{" "}
+        <C>ask</C> is found the same way, <C>.env</C> included: see{" "}
         <Link href="/docs/agents/ask/choosing-the-model/">Choosing the model</Link>.
       </Note>
       <div className="flex flex-wrap gap-2.5">

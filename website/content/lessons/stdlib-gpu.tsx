@@ -28,7 +28,7 @@ export const gpuScreenDoc: LessonDoc = {
         <li><C>screen.frame()</C> gives the next picture, as big as the window is now. It waits for the screen&apos;s next refresh when the last picture isn&apos;t shown yet (vsync), so the loop runs at the screen&apos;s rate.</li>
         <li><C>frame.clear(r, g, b)</C> fills it with one color, each part from 0 to 1, and <C>frame.show()</C> puts it on the screen. A frame never shown is thrown away.</li>
         <li>Drawing changes the program&apos;s own windows, so it needs <C>Window</C>.</li>
-        <li>Where there is no GPU, or the window can&apos;t be drawn into, it fails with <C>GpuError.Unavailable(reason)</C>. So does a frame of a minimized window; the next <C>frame()</C> tries again.</li>
+        <li>Where there is no GPU, or the window can&apos;t be drawn into, it fails with <C>GpuError.Unavailable(reason)</C>. So does a frame of a minimized window; the next <C>frame()</C> tries again. A KTX2 file that can&apos;t be read is <C>GpuError.BadTexture(reason)</C>.</li>
       </ul>
       <P>
         A private function may leave its <C>uses</C> out, and the compiler works it out. A <C>pub</C> one must say it, so

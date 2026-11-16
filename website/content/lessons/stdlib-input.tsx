@@ -52,6 +52,18 @@ export const gamepadDoc: LessonDoc = {
       </P>
       <Ex name="gamepads/made-up-pad" />
       <ModuleTable file="26-input.md" number="14.26" first="Field" />
+      <H2>The gyroscope</H2>
+      <P>
+        Many pads know how fast they turn. <C>pad.gyro</C> gives it in radians a second, or <C>none</C> for a pad with
+        no gyroscope. A game reads it once a frame and multiplies it by the frame&apos;s time, to aim or turn its
+        camera by moving the pad:
+      </P>
+      <Ex name="gamepads/gyro" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>x</C> is pitch (the far edge up), <C>y</C> yaw (turning left), <C>z</C> roll (the right side down).</li>
+        <li>It is state only, with no events, which would come a thousand times a second.</li>
+        <li><C>pad.gyro?.y ?? 0.0</C> reads one axis and gives 0 for a pad without one.</li>
+      </ul>
       <H2>Reading pads needs Input</H2>
       <P>
         A pad is input, like the keyboard. A private function may leave its <C>uses</C> out, and the compiler works it
@@ -73,7 +85,7 @@ export const gamepadDoc: LessonDoc = {
       <ModuleTable file="26-input.md" number="14.26" first="Function or method" />
       <H2>Not yet</H2>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>Gyroscopes, touchpads and a pad&apos;s battery; touch screens and pens.</li>
+        <li>Accelerometers, the touchpads of some pads, and a pad&apos;s battery. Touch screens are <Link href="/docs/standard-library/windows/">window events</Link>.</li>
         <li>Mapping a pad the standard layout doesn&apos;t know, from the program.</li>
         <li>Generated tests skip functions that use <C>Input</C>. See <Link href="/docs/errors/testing/">Testing</Link>.</li>
       </ul>
@@ -83,7 +95,7 @@ export const gamepadDoc: LessonDoc = {
         <SrcRef file={`${TESTS}/gamepads-need-input.kav`} label="Input, tested" />
         <SrcRef file="stdlib/input/input.kav" label="input.kav" />
         <SrcRef file="runtime/input/src/lib.rs" label="runtime/input" />
-        <SrcRef file="docs/decisions/0113-gamepads-through-gilrs.md" label="decision 0113" />
+        <SrcRef file="docs/decisions/0124-gamepads-through-sdl3.md" label="decision 0124" />
       </div>
     </>
   ),

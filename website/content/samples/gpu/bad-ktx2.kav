@@ -1,0 +1,9 @@
+use std.gpu
+
+fn main() uses Window {
+    const t = gpu.compressed_texture(Bytes([1, 2, 3])) catch e => {
+        print(e)
+        return
+    }
+    print("{t.width} × {t.height}")
+}

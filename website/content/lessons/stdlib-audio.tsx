@@ -45,6 +45,18 @@ export const soundDoc: LessonDoc = {
         The runtime mixes every playing sound on the sound device&apos;s own thread. So a slow frame, or a pause in the
         program, never makes the sound click.
       </Note>
+      <H2>Long music: streaming</H2>
+      <P>
+        <C>audio.decode</C> holds the whole sound in memory, which is right for short effects. For long music,{" "}
+        <C>audio.stream(path)</C> plays a WAV or Ogg Vorbis file while reading it a piece at a time. It takes{" "}
+        <C>volume</C>, <C>pan</C> and <C>looped</C> as <C>play</C> does, and gives a <C>Voice</C> the same way. It reads
+        a file, so it needs <C>Fs.read</C> as well as <C>Audio</C>.
+      </P>
+      <P>
+        It opens the file before anything plays, so a file that is missing, or isn&apos;t a sound, is{" "}
+        <C>BadSound</C>, even on a machine with no sound device:
+      </P>
+      <Ex name="audio/stream-missing" />
       <H2>A sound made from numbers</H2>
       <P>
         <C>audio.sound(samples, rate, channels)</C> makes a sound from a list of <C>Float32</C>s, each from -1 to 1.
@@ -103,13 +115,15 @@ export const soundDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Choosing the microphone, and its rate, instead of the system&apos;s default.</li>
         <li>Sounds a Kavach function makes as they play, for synthesizers.</li>
-        <li>Streaming long music from a file, choosing the output device, and Opus files.</li>
+        <li>Choosing the output device, and Opus files.</li>
       </ul>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${FILE}`} label="spec 14.27 · std.audio" />
         <SrcRef file={`${TESTS}/sounds-are-data-until-played.kav`} label="sounds as data, tested" />
         <SrcRef file={`${TESTS}/playing-sound-needs-audio.kav`} label="Audio, tested" />
         <SrcRef file={`${TESTS}/recording-needs-microphone.kav`} label="Microphone, tested" />
+        <SrcRef file={`${TESTS}/streaming-sound-reads-its-file.kav`} label="streaming, tested" />
+        <SrcRef file={`${TESTS}/a-missing-stream-is-bad-sound.kav`} label="a missing stream, tested" />
         <SrcRef file="stdlib/audio/audio.kav" label="audio.kav" />
         <SrcRef file="runtime/audio/src/mixer.rs" label="the mixer" />
         <SrcRef file="docs/decisions/0114-sound-through-cpal.md" label="decision 0114" />

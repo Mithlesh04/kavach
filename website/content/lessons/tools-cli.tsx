@@ -20,6 +20,7 @@ const today: [cmd: string, does: string][] = [
   ["kavach run --dry-run", "run without making any capability call"],
   ["kavach run --native", "compile to machine code first"],
   ["kavach run --watch", "run, and run again each time a .kav file or kavach.toml of the project changes"],
+  ["kavach run --hot", "run, and swap in each function changed in a .kav file while the program goes on, keeping its values"],
   ["kavach build [file.kav] [-o out]", "write an executable"],
   ["kavach build --compress [=max]", "write a smaller executable, packed without losing anything; it unpacks itself when it starts"],
   ["kavach build --lib lib.kav", "write a shared library and a C header, for other languages"],
@@ -79,8 +80,24 @@ export const commandDoc: LessonDoc = {
         <C>-- changed: src/orders.kav, running again</C>, and starts it again. Ctrl+C stops it. It is for working on a
         program, not for running one in production.
       </P>
+      <P>
+        <C>kavach run --hot</C> goes further: when a <C>.kav</C> file changes, it swaps in the new functions without
+        stopping the program, and keeps every value it has. A game keeps its level, its player and its window while you
+        change how it moves:
+      </P>
+      <Terminal session={specBlockWith("10-modules-and-packages/05-command-line.md", "10.5", "kavach run --hot game.kav")} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Each call made after the change runs the new code. A loop in <C>main</C> that calls <C>update(state)</C> each frame runs the new <C>update</C> from the next frame on.</li>
+        <li>Only function bodies may change. A change to a type, a function&apos;s parameters or result, an agent, a capability or a <C>use</C> can&apos;t keep the values, so the program runs again from its start, as with <C>--watch</C>, printing <C>-- changed: game.kav, the program&apos;s types changed: running again</C>.</li>
+        <li>A change with errors is shown, and the program goes on with the code it had.</li>
+        <li>Tasks already running go on with their code; tasks started later run the new code.</li>
+        <li>It runs the program in the interpreter only, and is for working on a program.</li>
+      </ul>
       <Note>Coming later, as spec 10.5 describes: {later.join(", ")}.</Note>
-      <div><SrcRef file="docs/spec/10-modules-and-packages/05-command-line.md" label="spec 10.5 · command line" /></div>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/10-modules-and-packages/05-command-line.md" label="spec 10.5 · command line" />
+        <SrcRef file="tools/cli/tests/hot.rs" label="--hot, tested" />
+      </div>
     </>
   ),
 };

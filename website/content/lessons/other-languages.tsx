@@ -14,6 +14,7 @@ const text = loadProject("interop/text.native", ["src/main.kav"]);
 const callback = loadProject("interop/callback.native", ["src/main.kav"]);
 const records = loadProject("interop/records.native", ["src/main.kav"]);
 const byValue = loadProject("interop/by-value.native", ["src/main.kav"]);
+const money = loadProject("interop/sprintf.native", ["src/main.kav"]);
 const loadedUnsafe = loadProject("interop/loaded-unsafe.fails", ["src/main.kav"]);
 const mathlib = loadSample("interop/mathlib.lib");
 const audit = loadProject("agents/audit-cmd", ["src/main.kav"]);
@@ -160,12 +161,19 @@ export const cDotsDoc: LessonDoc = {
   minutes: 3,
   body: (
     <>
-      <CodeBlock code={specBlockWith("10-modules-and-packages/07-interop.md", "10.7", "snprintf(out")} file="main.kav, from spec 10.7" />
+      <P>C&apos;s <C>sprintf</C> writes cents as money. This ran with <C>kavach run --native</C>:</P>
+      <Native run={money} />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Each argument after <C>...</C> goes as its type is, after C&apos;s promotions: <C>Int8</C>, <C>Int16</C>, <C>UInt8</C> and <C>UInt16</C> become a C <C>int</C>, and a <C>Float32</C> a <C>double</C>.</li>
         <li>A number literal there is an <C>Int</C> (<C>int64_t</C>) or a <C>Float</C> (<C>double</C>). So write <C>Int32(42)</C> where C reads an <C>int</C> (<C>%d</C>), and use <C>%lld</C> for an <C>Int</C>.</li>
         <li>Only numbers, <C>Ptr</C>s and <C>String</C>s go after <C>...</C>; a record there is a compile error.</li>
       </ul>
+      <Note>
+        Spec 10.7&apos;s example uses <C>snprintf</C>, which also takes the buffer&apos;s size. Windows&apos; C library
+        has <C>snprintf</C> only in its headers, so there <C>kavach run --native</C> says it can&apos;t call it, before
+        running. <C>kavach build</C> links it. <C>sprintf</C>, <C>printf</C> and the rest of the family are found in
+        the system&apos;s <C>msvcrt.dll</C>.
+      </Note>
       <P>A Kavach function has no <C>...</C>: it takes more values in a list.</P>
       <Ex name="interop/dots-only-c.fails" />
       <SrcRef file="tests/conformance/10-modules/c-dots-take-numbers-pointers-and-text/src/main.kav" label="what goes after ..., tested" />

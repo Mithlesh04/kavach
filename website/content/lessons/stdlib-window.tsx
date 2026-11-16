@@ -15,7 +15,7 @@ import { ModuleTable } from "./spec-table";
 const FILE = "14-standard-library/22-window.md";
 
 export const windowDoc: LessonDoc = {
-  lead: "std.window opens windows on the screen and reads the keyboard, mouse and gamepad input that comes to them: the start of games, tools, charts and user interfaces.",
+  lead: "std.window opens windows on the screen and reads the keyboard, mouse, touch and gamepad input that comes to them: the start of games, tools, charts and user interfaces.",
   simple: <>A window is a frame on the screen that a program owns. Kavach lets a program open one, and hear what a person does in it, like a key press or a mouse click, but only when the program says so.</>,
   minutes: 4,
   before: ["agents/capabilities"],
@@ -60,9 +60,14 @@ export const windowDoc: LessonDoc = {
         <C>Key</C> names a key&apos;s place, not its letter: <C>KeyW</C> is the same key on every keyboard layout, as a
         game wants. For text a person types, read <C>Text</C>, which follows their layout.
       </Note>
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A <C>Touch</C> is a finger or a pen on a touch screen. Each one keeps its <C>id</C> from <C>Began</C>, through <C>Moved</C>, to <C>Ended</C>, so a program tells two fingers apart.</li>
+        <li><C>Cancelled</C> means the system took the touch away, as for a gesture of its own: undo what the touch started.</li>
+        <li><C>pressure</C> is from 0 to 1. A screen that doesn&apos;t measure it gives 1.</li>
+      </ul>
       <H2>Not yet</H2>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>Touch screens and pens. Drawing into a window is done with the GPU: see <Link href="/docs/standard-library/gpu-screens/">GPU Screens</Link>.</li>
+        <li>A pen&apos;s tilt and its buttons. Drawing into a window is done with the GPU: see <Link href="/docs/standard-library/gpu-screens/">GPU Screens</Link>.</li>
         <li>On macOS, <C>window.open</C> fails with <C>Unavailable</C> for now: macOS shows windows only from a program&apos;s first thread.</li>
         <li>Generated tests skip functions that use <C>Window</C> or <C>Input</C>: there is no fake screen yet. See <Link href="/docs/errors/testing/">Testing</Link>.</li>
       </ul>

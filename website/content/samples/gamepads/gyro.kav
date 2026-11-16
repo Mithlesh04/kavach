@@ -1,0 +1,16 @@
+use std.input
+
+// How far the camera turns this frame: the pad's turning speed, in
+// radians a second, times the frame's time. A pad with no gyroscope
+// turns nothing.
+fn turn(pad: Pad, seconds: Float) -> Float {
+    (pad.gyro?.y ?? 0.0) * seconds
+}
+
+fn main() {
+    const still = (x: 0.0, y: 0.0)
+    const pad = Pad(id: 0, name: "test pad", buttons: [], left: still, right: still, left_trigger: 0.0, right_trigger: 0.0, gyro: (x: 0.0, y: 1.5, z: 0.0))
+    print(turn(pad, 0.02))
+    const old = Pad(id: 1, name: "old pad", buttons: [], left: still, right: still, left_trigger: 0.0, right_trigger: 0.0, gyro: none)
+    print(turn(old, 0.02))
+}

@@ -1,0 +1,12 @@
+use std.audio
+
+fn main() uses Audio, Fs.read {
+    const music = audio.stream("no-such-music.ogg", looped: true) catch e => {
+        match e {
+            AudioError.BadSound(_) => print("BadSound: the file can't be read")
+            AudioError.Unavailable(_) => print("Unavailable: no sound device")
+        }
+        return
+    }
+    music.stop()
+}
