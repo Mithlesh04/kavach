@@ -72,6 +72,7 @@ mod stdlib;
 mod ty;
 mod unwraps;
 mod user_ops;
+mod where_bounds;
 
 pub use agent_settings::{AgentSetup, AuditSetup};
 pub use ai_models::AiModel;

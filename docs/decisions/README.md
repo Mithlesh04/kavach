@@ -124,6 +124,8 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0116](0116-watching-files-through-notify.md) | Watching files and folders through `notify`: `fs.watch(path)` gives a `Watcher` read by `next()` or `poll()`, behind `Fs.read` | Accepted |
 | [0117](0117-images-png-and-jpeg.md) | Images in `std.image`: PNG and JPEG decoded to RGBA pixels through `png` and `jpeg-decoder`, PNG written, no capability | Accepted |
 | [0118](0118-app-folders-crash-reports-and-dialogs.md) | `std.app`: per-user data, config and cache folders by Kavach's own code, crash reports on panic, and dialogs through `rfd` | Accepted |
+| [0119](0119-bounds-on-one-method.md) | Bounds on one method: `where T: Floating` on a method of a generic type; `std.vec`'s vectors over `T: Number` | Accepted |
+| [0120](0120-windows-icon-and-manifest.md) | An icon and a manifest for Windows executables: a `.res` file Kavach writes itself, the icon from `[build] icon` | Accepted |
 
 ## Open decisions
 

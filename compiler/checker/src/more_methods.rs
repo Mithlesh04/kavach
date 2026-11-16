@@ -181,7 +181,7 @@ impl Checker<'_> {
                     "add" | "remove" => sig(vec![t], Ty::Unit),
                     "contains" => sig(vec![t], boolean),
                     "len" => sig(vec![], int),
-                    "is_empty" => sig(vec![], boolean),
+                    "is_empty" | "is_full" => sig(vec![], boolean),
                     "to_list" => sig(vec![], list(t)),
                     _ => None,
                 }

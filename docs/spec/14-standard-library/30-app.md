@@ -24,7 +24,19 @@ fn main() ! Error uses Fs, Window {
 | `app.config_dir(name) -> String ! AppError` | Where it keeps its settings: `%APPDATA%\name`, `$XDG_CONFIG_HOME/name` or `~/.config/name`, `~/Library/Application Support/name` |
 | `app.cache_dir(name) -> String ! AppError` | Where it keeps what it can make again, which the system may clear: `%LOCALAPPDATA%\name\cache`, `$XDG_CACHE_HOME/name` or `~/.cache/name`, `~/Library/Caches/name` |
 
-**Crash reports.** `app.crash_reports(folder) ! AppError` makes the folder, and from then on a panic that ends the program (5.8) also writes a report into it: a file `crash-<time>.txt` with the message, where it happened, the program, Kavach's version, the system and the time. It needs `Fs.write`.
+**Crash reports.** `app.crash_reports(folder) ! AppError` makes the folder, and from then on a panic that ends the program (5.8) also writes a report into it: a file `crash-<time>.txt` with the message, where it happened, the functions that were running, the program, Kavach's version, the system and the time. It needs `Fs.write`.
+
+The functions are listed innermost first, each with where it is defined, after the line that panicked:
+
+```
+panic: index 5 is out of range: the list has 2 items
+  at shop.kav:14
+  in price_of (shop.kav:12)
+  in total (shop.kav:7)
+  in main (shop.kav:2)
+```
+
+A built program finds them by walking its stack with the system's unwinder and a table of its functions that `kavach build` writes ([decision 0118](../../decisions/0118-app-folders-crash-reports-and-dialogs.md)), so they cost nothing until a panic. A function the compiler inlined into its caller has no frame of its own, so it isn't listed.
 
 **Dialogs.** Each shows the system's own dialog and waits for the person. They show a window, so they need `Window`.
 
@@ -44,6 +56,6 @@ fn main() ! Error uses Fs, Window {
 
 ## Open questions
 
-- A call stack in crash reports, once native code can read one.
+- The line of each call in the list, which needs line tables (debug info) in built programs.
 - An icon and a manifest for Windows executables, from `kavach.toml` (language request 9 (12)).
 - File type filters in `open_file`.

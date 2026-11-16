@@ -46,6 +46,15 @@ built by kavach 0.1.0 (commit 8f8ae051)
 
 A program built from one file (10.9) has the file's name and no version. With `version_flag = true` under `[build]` in `kavach.toml`, the program answers `--version` itself: run with that one argument, it prints the same two lines and ends with exit code 0, before `main` runs. This holds however it runs: `kavach run -- --version`, `run --native` and the built executable. Without the setting, `--version` is an argument like any other, for the program to read.
 
+**An icon and a manifest on Windows.** On Windows, `kavach build` gives the executable a manifest: it runs as the user who starts it, with no administrator prompt; it is sharp on high-DPI screens (per-monitor DPI awareness); and it may use paths longer than 260 characters. With `icon = "assets/icon.png"` under `[build]` in `kavach.toml`, the executable also has that icon, which Explorer and the taskbar show:
+
+```toml
+[build]
+icon = "assets/icon.png"      # a PNG of at most 256 × 256 pixels
+```
+
+The path is relative to `kavach.toml`. A file that isn't a PNG, or one larger than 256 × 256, is an error that says so. Kavach writes the Windows resources itself, so no Windows SDK is needed ([decision 0120](../../decisions/0120-windows-icon-and-manifest.md)). Other systems give a program its icon outside the executable (a `.desktop` file on Linux, an app bundle on macOS), so there the setting is checked but not used.
+
 **A packed executable.** `kavach build --compress` writes the program packed, with nothing lost: a little under half its size (deflate), or about a third to two fifths with `--compress=max` (xz). Run, it unpacks itself into a cache folder and runs the unpacked copy, which behaves exactly as the program built without `--compress`: the same output, exit code, arguments and environment, and the same messages for panics and errors. The copy is named by a hash of its contents, so the first start unpacks it (a few milliseconds with `--compress`, tens of milliseconds with `--compress=max`) and later starts run it at once; deleting the cache folder is always safe. The folder is `KAVACH_UNPACKED` when set, else `%LOCALAPPDATA%\Kavach\unpacked` on Windows, `~/Library/Caches/kavach/unpacked` on macOS, and `$XDG_CACHE_HOME/kavach/unpacked` (or `~/.cache/kavach/unpacked`) elsewhere. `kavach version` reads a packed program too.
 
 ```

@@ -259,3 +259,26 @@ fn main() {
         assert!(k.contains(part), "{part} missing in {k}");
     }
 }
+
+/// A `Mat3<Float32>` in a `gpu fn` is WGSL's `mat3x3<f32>`, its `@` and
+/// `determinant` the GPU's own (spec 14.28).
+#[test]
+fn a_mat3_is_wgsls_mat3x3() {
+    let k = crate::tests::kernel_of(
+        "use std.vec
+
+gpu fn turned(v: Vec3<Float32>) -> Float32 {
+    const m = Mat3.scaling(Vec3(x: 2.0, y: 2.0, z: 2.0))
+    (m @ v).length() + m.determinant()
+}
+
+fn main() {
+    let vs: [Vec3<Float32>] = [Vec3(x: 3.0, y: 4.0, z: 0.0)]
+    print(vs.map(v => turned(v)))
+}
+",
+    );
+    for part in ["mat3x3<f32>", "determinant(", "length("] {
+        assert!(k.contains(part), "{part} missing in {k}");
+    }
+}

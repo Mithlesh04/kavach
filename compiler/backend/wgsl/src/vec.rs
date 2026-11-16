@@ -1,6 +1,6 @@
 //! `std.vec`'s types and operations in WGSL (spec 14.28, decision 0115).
 //! A record `Vec2`, `Vec3` or `Vec4` of `Float32` fields `x`, `y`, `z`,
-//! `w`, and a `Mat4` of four such `Vec4` columns, are WGSL's own
+//! `w`, and a `Mat3` or `Mat4` of three `Vec3` or four `Vec4` columns, are WGSL's own
 //! `vec2<f32>` to `mat4x4<f32>`: the same values, so this needs only their
 //! shape. Their fields are read by index, as WGSL reads a vector's parts
 //! and a matrix's columns. `std.vec`'s own methods, which `kavach-kir`
@@ -17,7 +17,7 @@ pub(crate) fn vec_op<'a>(program: &'a Program, fid: u32, args: &[Expr]) -> Optio
     let name = &program.functions.get(fid as usize)?.name;
     let method = name.strip_prefix("std.vec ")?.split_once('.')?.1;
     vec_type(program, args.first()?.ty)?;
-    const OPS: [&str; 15] = [
+    const OPS: [&str; 16] = [
         "add",
         "sub",
         "neg",
@@ -33,6 +33,7 @@ pub(crate) fn vec_op<'a>(program: &'a Program, fid: u32, args: &[Expr]) -> Optio
         "cross",
         "lerp",
         "transposed",
+        "determinant",
     ];
     OPS.contains(&method).then_some(method)
 }
@@ -51,6 +52,13 @@ pub(crate) fn vec_type(program: &Program, t: Type) -> Option<&'static str> {
         ("Vec2", ["x", "y"]) if floats => Some("vec2<f32>"),
         ("Vec3", ["x", "y", "z"]) if floats => Some("vec3<f32>"),
         ("Vec4", ["x", "y", "z", "w"]) if floats => Some("vec4<f32>"),
+        ("Mat3", ["c0", "c1", "c2"])
+            if fields
+                .iter()
+                .all(|f| vec_type(program, f.ty) == Some("vec3<f32>")) =>
+        {
+            Some("mat3x3<f32>")
+        }
         ("Mat4", ["c0", "c1", "c2", "c3"])
             if fields
                 .iter()
@@ -90,6 +98,7 @@ impl<'p> Body<'p> {
             "cross" => format!("cross({}, {})", at(0), at(1)),
             "lerp" => format!("mix({}, {}, {})", at(0), at(1), at(2)),
             "transposed" => format!("transpose({})", at(0)),
+            "determinant" => format!("determinant({})", at(0)),
             _ => return None,
         })
     }

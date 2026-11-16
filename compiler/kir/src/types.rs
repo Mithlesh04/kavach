@@ -163,6 +163,12 @@ impl Lowerer<'_> {
                 let item = self.kir_type(t, span)?;
                 self.shapes.intern(Shape::Set(item))
             }
+            // A ring is a list with a limit that drops its oldest item
+            // when full (spec 2.2): the runtime's ring flag says so.
+            Ty::Builtin("Ring", args) if args.len() == 1 => {
+                let item = self.kir_type(&args[0], span)?;
+                self.list_type(item)
+            }
             Ty::Builtin("Shared" | "Weak", args) if args.len() == 1 => {
                 let inner = self.kir_type(&args[0], span)?;
                 self.shapes.intern(Shape::Shared(inner))

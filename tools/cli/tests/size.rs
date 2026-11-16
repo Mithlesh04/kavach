@@ -15,7 +15,11 @@ use std::process::Command;
 /// Each task's scope stack holding spans and seeds as well as folders
 /// (spec 4.8, decision 0107) added 1.5 KB of task code on Linux: 737 KB.
 /// The spans' and seeds' own code is apart (`kv_rt_scopes`).
-const BUDGET: u64 = 740 * 1024;
+/// Collections with a limit (spec 2.2), checked on every push and insert,
+/// and the table of functions a crash report names (spec 14.30) took it
+/// to 749 KB on Linux (2026-11-16); the stack walker itself is linked only
+/// by a program that turns crash reports on.
+const BUDGET: u64 = 752 * 1024;
 
 #[test]
 fn hello_world_stays_small() {

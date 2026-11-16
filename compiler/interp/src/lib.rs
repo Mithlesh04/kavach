@@ -22,6 +22,7 @@ mod generics;
 mod guard;
 mod inout;
 mod interp;
+mod items;
 mod journal;
 mod json;
 mod json_decode;
@@ -164,7 +165,7 @@ fn main_of(i: &mut interp::Interp<'_>, args: &[String], dry_run: bool) -> i32 {
             let shown = format!("panic: {message}\n  at {path}:{line}\n");
             i.err.push_str(&shown);
             // A report too, when the program asked for them (spec 14.30).
-            kavach_runtime_core::app::report(&message, &format!("{path}:{line}"));
+            kavach_runtime_core::app::report(&message, &format!("{path}:{line}"), &i.panic_trail);
             exit_code = 101;
         }
     }

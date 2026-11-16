@@ -1,0 +1,29 @@
+// Rule: A ring may hold records and text, and may be a field of a record; each push onto a full ring drops the oldest item.
+// Spec: 2.2
+// expect output: 2
+// expect output: 3 c
+// expect output: 4 d
+// expect output: false
+// expect output: true
+
+type Event {
+    id: Int
+    name: String
+}
+
+type Feed {
+    events: Ring<Event>
+}
+
+fn main() {
+    let feed = Feed(events: Ring.capacity(2))
+    for (i, name) in ["a", "b", "c", "d"].enumerate() {
+        feed.events.push(Event(id: i + 1, name: name))
+    }
+    print(feed.events.len())
+    for e in feed.events {
+        print("{e.id} {e.name}")
+    }
+    print(feed.events.contains(Event(id: 1, name: "a")))
+    print(feed.events.contains(Event(id: 4, name: "d")))
+}

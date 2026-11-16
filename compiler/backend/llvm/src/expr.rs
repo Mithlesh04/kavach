@@ -437,6 +437,7 @@ impl FnEmit<'_> {
                         ("i64", current.clone()),
                         ("i64", slots[0].clone()),
                         ("i64", slots[1].clone()),
+                        ("i32", value.line.to_string()),
                     ];
                     self.call_rt("kv_map_insert", "i64", &args, false)
                 }

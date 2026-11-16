@@ -184,7 +184,7 @@ impl Checker<'_> {
 impl Checker<'_> {
     /// `std.vec`'s type `t` is (spec 14.28): `Vec4`, `Mat4` and the rest.
     pub(crate) fn std_vec_def(&self, def: DefId) -> bool {
-        ["Vec2", "Vec3", "Vec4", "Mat4", "Quat"]
+        ["Vec2", "Vec3", "Vec4", "Mat3", "Mat4", "Quat"]
             .iter()
             .any(|n| self.res.std_type(n) == Some(def))
     }

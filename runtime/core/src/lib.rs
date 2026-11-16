@@ -173,6 +173,25 @@ pub fn leak_message(n: usize, place: &str) -> String {
 /// Printed after the leaks, once.
 pub const LEAK_HINT: &str = "  make the link back a `Weak`, so no cycle forms (spec 6.2)";
 
+/// The most entries `capacity(n)` may ask for (spec 2.2): a limit is kept
+/// in 32 bits.
+pub const MAX_CAPACITY: i64 = 4_294_967_294;
+
+/// The panic of adding to a full `what` ("list", "map", "set") made by
+/// `capacity(n)` (spec 2.2).
+pub fn full_panic(what: &str, n: usize) -> String {
+    format!("the {what} is full (capacity {n})")
+}
+
+/// The panic of `capacity(n)` given more first entries than `n`, or a
+/// number above `MAX_CAPACITY` (spec 2.2).
+pub fn capacity_panic(kind: &str, n: i64, first: usize) -> String {
+    if n > MAX_CAPACITY {
+        return format!("capacity {n} is more than {MAX_CAPACITY}");
+    }
+    format!("`{kind}.capacity({n})` was given {first} first entries")
+}
+
 /// The panic of index `i` past the end of a list of `n` items.
 pub fn list_index_panic(i: i128, n: usize) -> String {
     let items = if n == 1 { "item" } else { "items" };

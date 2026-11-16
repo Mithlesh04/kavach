@@ -42,6 +42,7 @@ pub(crate) const NAMES: &[&str] = &[
     "index_of",
     "is_blank",
     "is_empty",
+    "is_full",
     "is_match",
     "is_none",
     "is_some",

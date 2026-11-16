@@ -193,7 +193,7 @@ pub(crate) fn runtime_functions() -> Vec<RuntimeFn> {
         (
             "kv_map_insert",
             rt_maps::kv_map_insert as *const u8,
-            &[I64, I64, I64],
+            &[I64, I64, I64, I32],
             &[I64],
         ),
         (

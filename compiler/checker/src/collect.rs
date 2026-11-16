@@ -150,7 +150,10 @@ impl Checker<'_> {
         methods
             .iter()
             .filter_map(|m| match &m.kind {
-                ItemKind::Fn(f) => Some((f.name.name.clone(), self.sig_of(f, self_ty))),
+                ItemKind::Fn(f) => {
+                    self.note_wheres(f, self_ty);
+                    Some((f.name.name.clone(), self.sig_of(f, self_ty)))
+                }
                 _ => None,
             })
             .collect()

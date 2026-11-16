@@ -114,6 +114,7 @@ pub(crate) fn builtin_name(name: &str) -> &'static str {
     const NAMES: &[&str] = &[
         "Shared",
         "Weak",
+        "Ring",
         "Task",
         "Channel",
         "Sender",

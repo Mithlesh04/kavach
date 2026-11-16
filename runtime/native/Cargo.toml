@@ -33,7 +33,7 @@ corosensei = "0.3"
 libc = "0.2"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61", features = ["Win32_System_Console"] }
+windows-sys = { version = "0.61", features = ["Win32_System_Console", "Win32_System_Diagnostics_Debug", "Win32_System_Kernel"] }
 
 [lints]
 workspace = true

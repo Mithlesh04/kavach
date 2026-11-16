@@ -37,7 +37,7 @@ pub enum Value<'a> {
     FakeConn(crate::fake_net::SharedConn),
     /// Shared until changed (copy-on-write, spec 6.1), so passing a list
     /// around never copies it.
-    List(Rc<Vec<Value<'a>>>),
+    List(Rc<crate::items::Items<'a>>),
     /// Insertion-ordered (spec 2.2).
     /// Shared until changed, like lists.
     Map(Rc<MapValue<'a>>),

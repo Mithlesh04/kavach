@@ -43,7 +43,11 @@ crate::rt_data::entry!(kv_rt_app, |op, a, b, _c, code, _line| {
             }
         }
         _ => match app::crash_reports(&take(a)) {
-            Ok(()) => 0,
+            Ok(()) => {
+                // Only a program that asks for reports links the walker.
+                app::find_running_with(crate::crash_stack::running);
+                0
+            }
             Err(why) => fail(&why),
         },
     }

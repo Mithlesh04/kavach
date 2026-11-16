@@ -294,6 +294,11 @@
           "match": "\\binout\\b(?=\\s+[a-z_])"
         },
         {
+          "comment": "`where` is a keyword only on a method's signature, before a bound such as `T: Floating` (spec 2.9)",
+          "name": "keyword.other.kavach",
+          "match": "\\bwhere\\b(?=\\s+[A-Z]\\w*\\s*:)"
+        },
+        {
           "comment": "`context` is a keyword only after a `try` expression, before its note text (spec 1.6, 5.7); elsewhere it is an ordinary name",
           "name": "keyword.control.kavach",
           "match": "\\bcontext\\b(?=\\s+r?\")"
@@ -345,7 +350,7 @@
         },
         {
           "name": "support.type.kavach",
-          "match": "\\b(List|Map|Set|Shared|Weak|Task|Channel|Sender|Receiver|Duration|Ptr|Error|Self)\\b"
+          "match": "\\b(List|Map|Set|Ring|Shared|Weak|Task|Channel|Sender|Receiver|Duration|Ptr|Error|Self)\\b"
         },
         {
           "name": "support.class.capability.kavach",

@@ -263,6 +263,7 @@ impl<'a> Lowerer<'a> {
             (Some(Shape::Set(_)), "contains") => RtOp::MapContains,
             (Some(Shape::Set(_)), "len") => RtOp::MapLen,
             (Some(Shape::Set(_)), "is_empty") => RtOp::MapIsEmpty,
+            (Some(Shape::Set(_)), "is_full") => RtOp::MapIsFull,
             (Some(Shape::Set(_)), "to_list") => RtOp::MapKeys,
             _ => return None,
         };

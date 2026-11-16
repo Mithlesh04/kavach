@@ -38,8 +38,9 @@ pub enum NotBuilt {
     Failed(String),
 }
 
-/// Compiles `program` and writes the executable `out`.
-pub fn build(program: &Program, out: &Path) -> Result<(), NotBuilt> {
+/// Compiles `program` and writes the executable `out`, with the Windows
+/// icon `icon` (a PNG) when given.
+pub fn build(program: &Program, out: &Path, icon: Option<&[u8]>) -> Result<(), NotBuilt> {
     if let Some(what) = check::unsupported(program) {
         // `KAVACH_LLVM_IR=1` (below) also says why LLVM isn't used.
         if std::env::var_os("KAVACH_LLVM_IR").is_some() {
@@ -57,7 +58,7 @@ pub fn build(program: &Program, out: &Path) -> Result<(), NotBuilt> {
         eprintln!("{ir}");
     }
     let dir = kavach_backend_cranelift::build_folder("kavach-llvm");
-    let built = compile(&bin, &dir, &ir, out, &c_libraries(program));
+    let built = compile(&bin, &dir, &ir, out, &c_libraries(program), icon);
     let _ = std::fs::remove_dir_all(&dir);
     built.map_err(NotBuilt::Failed)
 }
@@ -132,7 +133,14 @@ pub fn c_libraries(program: &Program) -> Vec<String> {
 }
 
 /// Writes `ir` in `dir`, optimizes and compiles it, and links `out`.
-fn compile(bin: &Path, dir: &Path, ir: &str, out: &Path, libs: &[String]) -> Result<(), String> {
+fn compile(
+    bin: &Path,
+    dir: &Path,
+    ir: &str,
+    out: &Path,
+    libs: &[String],
+    icon: Option<&[u8]>,
+) -> Result<(), String> {
     std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
     let (ll, bc) = (dir.join("program.ll"), dir.join("program.bc"));
     let object = dir.join(if cfg!(windows) {
@@ -153,7 +161,7 @@ fn compile(bin: &Path, dir: &Path, ir: &str, out: &Path, libs: &[String]) -> Res
         llc.arg("-relocation-model=pic");
     }
     run(llc.arg(&bc).arg("-o").arg(&object))?;
-    kavach_backend_cranelift::link(&object, out, libs)
+    kavach_backend_cranelift::link(&object, out, libs, icon)
 }
 
 pub(crate) fn run(cmd: &mut Command) -> Result<(), String> {

@@ -75,6 +75,19 @@ crate::rt_data::entry!(kv_rt_audio, |op, a, b, c, code, _line| {
             }
             0
         }
+        RtOp::AudioListen => audio::listen().unwrap_or_else(|why| fail("Unavailable", &why)),
+        RtOp::AudioTake => audio::take(a),
+        RtOp::AudioStopListening => {
+            audio::stop_listening(a);
+            0
+        }
+        RtOp::AudioDropRecording => {
+            audio::drop_recording(a);
+            0
+        }
+        RtOp::AudioRecord => {
+            audio::record(f64::from_bits(a as u64)).unwrap_or_else(|why| fail("Unavailable", &why))
+        }
         _ => i64::from(audio::playing(a)),
     }
 });

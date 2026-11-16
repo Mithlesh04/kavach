@@ -1,11 +1,12 @@
-// std.vec (spec 14.28, decision 0115): vectors, 4 × 4 matrices and
-// quaternions over `T: Floating` (spec 2.9), so each is compiled for the
-// `Float32` or `Float` it holds.
+// std.vec (spec 14.28, decision 0115): vectors over any number type
+// (`T: Number`), their lengths and directions only for `T: Floating`
+// (`where`, spec 2.9); matrices and quaternions over `T: Floating`. Each
+// is compiled for the number type it holds.
 
 use std.math
 
 /// A vector of two parts.
-pub type Vec2<T: Floating>: Add, Sub, Neg, Mul<T>, Div<T> {
+pub type Vec2<T: Number>: Add, Sub, Neg, Mul<T>, Div<T> {
     pub x: T
     pub y: T
 
@@ -25,23 +26,23 @@ pub type Vec2<T: Floating>: Add, Sub, Neg, Mul<T>, Div<T> {
     pub fn length_squared(self) -> T { self.dot(self) }
 
     /// Its length.
-    pub fn length(self) -> T { math.sqrt(self.dot(self)) }
+    pub fn length(self) -> T where T: Floating { math.sqrt(self.dot(self)) }
 
     /// The same direction with length 1; length 0 stays as it is.
-    pub fn normalized(self) -> Vec2<T> {
+    pub fn normalized(self) -> Vec2<T> where T: Floating {
         const n = self.length()
         if n == 0.0 { self } else { self / n }
     }
 
     /// How far `o` is.
-    pub fn distance(self, o: Vec2<T>) -> T { (o - self).length() }
+    pub fn distance(self, o: Vec2<T>) -> T where T: Floating { (o - self).length() }
 
     /// The point `t` of the way to `o`.
-    pub fn lerp(self, o: Vec2<T>, t: T) -> Vec2<T> { self + (o - self) * t }
+    pub fn lerp(self, o: Vec2<T>, t: T) -> Vec2<T> where T: Floating { self + (o - self) * t }
 }
 
 /// A vector of three parts.
-pub type Vec3<T: Floating>: Add, Sub, Neg, Mul<T>, Div<T> {
+pub type Vec3<T: Number>: Add, Sub, Neg, Mul<T>, Div<T> {
     pub x: T
     pub y: T
     pub z: T
@@ -67,23 +68,23 @@ pub type Vec3<T: Floating>: Add, Sub, Neg, Mul<T>, Div<T> {
     pub fn length_squared(self) -> T { self.dot(self) }
 
     /// Its length.
-    pub fn length(self) -> T { math.sqrt(self.dot(self)) }
+    pub fn length(self) -> T where T: Floating { math.sqrt(self.dot(self)) }
 
     /// The same direction with length 1; length 0 stays as it is.
-    pub fn normalized(self) -> Vec3<T> {
+    pub fn normalized(self) -> Vec3<T> where T: Floating {
         const n = self.length()
         if n == 0.0 { self } else { self / n }
     }
 
     /// How far `o` is.
-    pub fn distance(self, o: Vec3<T>) -> T { (o - self).length() }
+    pub fn distance(self, o: Vec3<T>) -> T where T: Floating { (o - self).length() }
 
     /// The point `t` of the way to `o`.
-    pub fn lerp(self, o: Vec3<T>, t: T) -> Vec3<T> { self + (o - self) * t }
+    pub fn lerp(self, o: Vec3<T>, t: T) -> Vec3<T> where T: Floating { self + (o - self) * t }
 }
 
 /// A vector of four parts.
-pub type Vec4<T: Floating>: Add, Sub, Neg, Mul<T>, Div<T> {
+pub type Vec4<T: Number>: Add, Sub, Neg, Mul<T>, Div<T> {
     pub x: T
     pub y: T
     pub z: T
@@ -107,19 +108,19 @@ pub type Vec4<T: Floating>: Add, Sub, Neg, Mul<T>, Div<T> {
     pub fn length_squared(self) -> T { self.dot(self) }
 
     /// Its length.
-    pub fn length(self) -> T { math.sqrt(self.dot(self)) }
+    pub fn length(self) -> T where T: Floating { math.sqrt(self.dot(self)) }
 
     /// The same direction with length 1; length 0 stays as it is.
-    pub fn normalized(self) -> Vec4<T> {
+    pub fn normalized(self) -> Vec4<T> where T: Floating {
         const n = self.length()
         if n == 0.0 { self } else { self / n }
     }
 
     /// How far `o` is.
-    pub fn distance(self, o: Vec4<T>) -> T { (o - self).length() }
+    pub fn distance(self, o: Vec4<T>) -> T where T: Floating { (o - self).length() }
 
     /// The point `t` of the way to `o`.
-    pub fn lerp(self, o: Vec4<T>, t: T) -> Vec4<T> { self + (o - self) * t }
+    pub fn lerp(self, o: Vec4<T>, t: T) -> Vec4<T> where T: Floating { self + (o - self) * t }
 }
 
 /// A 4 × 4 matrix of four columns, as GPUs lay it out.
@@ -146,6 +147,15 @@ pub type Mat4<T: Floating>: MatMul<Vec4<T>, Vec4<T>> {
             c1: Vec4(x: self.c0.y, y: self.c1.y, z: self.c2.y, w: self.c3.y),
             c2: Vec4(x: self.c0.z, y: self.c1.z, z: self.c2.z, w: self.c3.z),
             c3: Vec4(x: self.c0.w, y: self.c1.w, z: self.c2.w, w: self.c3.w),
+        )
+    }
+
+    /// Its first three rows and columns: its turning and scaling.
+    pub fn mat3(self) -> Mat3<T> {
+        Mat3(
+            c0: Vec3(x: self.c0.x, y: self.c0.y, z: self.c0.z),
+            c1: Vec3(x: self.c1.x, y: self.c1.y, z: self.c1.z),
+            c2: Vec3(x: self.c2.x, y: self.c2.y, z: self.c2.z),
         )
     }
 
@@ -210,6 +220,85 @@ pub type Mat4<T: Floating>: MatMul<Vec4<T>, Vec4<T>> {
             c1: Vec4(x: b, y: f, z: j, w: 0.0),
             c2: Vec4(x: c, y: g, z: k, w: 0.0),
             c3: Vec4(x: d, y: h, z: l, w: 1.0),
+        )
+    }
+}
+
+/// A 3 × 3 matrix of three columns: turning and scaling without moving.
+pub type Mat3<T: Floating>: MatMul<Vec3<T>, Vec3<T>> {
+    pub c0: Vec3<T>
+    pub c1: Vec3<T>
+    pub c2: Vec3<T>
+
+    /// `m @ v`: the vector transformed by the matrix.
+    fn matmul(self, v: Vec3<T>) -> Vec3<T> {
+        self.c0 * v.x + self.c1 * v.y + self.c2 * v.z
+    }
+
+    /// The matrix product: `b`, then this one.
+    pub fn product(self, b: Mat3<T>) -> Mat3<T> {
+        Mat3(c0: self @ b.c0, c1: self @ b.c1, c2: self @ b.c2)
+    }
+
+    /// Rows and columns swapped.
+    pub fn transposed(self) -> Mat3<T> {
+        Mat3.of_rows(
+            self.c0.x, self.c0.y, self.c0.z,
+            self.c1.x, self.c1.y, self.c1.z,
+            self.c2.x, self.c2.y, self.c2.z,
+        )
+    }
+
+    /// How much the matrix scales volume: 0 when it flattens space.
+    pub fn determinant(self) -> T {
+        self.c0.dot(self.c1.cross(self.c2))
+    }
+
+    /// The matrix that undoes this one, or `none` when it flattens space.
+    pub fn inverse(self) -> Mat3<T>? {
+        const d = self.determinant()
+        if d == 0.0 {
+            return none
+        }
+        // The rows of the inverse are the columns' cross products.
+        const (r0, r1, r2) = (self.c1.cross(self.c2) / d, self.c2.cross(self.c0) / d, self.c0.cross(self.c1) / d)
+        Mat3.of_rows(r0.x, r0.y, r0.z, r1.x, r1.y, r1.z, r2.x, r2.y, r2.z)
+    }
+
+    /// The matrix that changes nothing.
+    pub fn identity() -> Mat3<T> {
+        Mat3.of_rows(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
+    }
+
+    /// Each axis scaled by its part of `v`.
+    pub fn scaling(v: Vec3<T>) -> Mat3<T> {
+        Mat3.of_rows(v.x, 0.0, 0.0, 0.0, v.y, 0.0, 0.0, 0.0, v.z)
+    }
+
+    /// Turning by `a` radians around the x axis.
+    pub fn rotation_x(a: T) -> Mat3<T> {
+        const (c, s) = (math.cos(a), math.sin(a))
+        Mat3.of_rows(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c)
+    }
+
+    /// Turning by `a` radians around the y axis.
+    pub fn rotation_y(a: T) -> Mat3<T> {
+        const (c, s) = (math.cos(a), math.sin(a))
+        Mat3.of_rows(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c)
+    }
+
+    /// Turning by `a` radians around the z axis.
+    pub fn rotation_z(a: T) -> Mat3<T> {
+        const (c, s) = (math.cos(a), math.sin(a))
+        Mat3.of_rows(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0)
+    }
+
+    /// The matrix with these rows.
+    fn of_rows(a: T, b: T, c: T, d: T, e: T, f: T, g: T, h: T, i: T) -> Mat3<T> {
+        Mat3(
+            c0: Vec3(x: a, y: d, z: g),
+            c1: Vec3(x: b, y: e, z: h),
+            c2: Vec3(x: c, y: f, z: i),
         )
     }
 }

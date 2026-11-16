@@ -88,15 +88,23 @@ fn remove_old(dir: &Path, prefix: &str, age: std::time::Duration) {
     }
 }
 
-pub fn link(object: &Path, out: &Path, libs: &[String]) -> Result<(), String> {
+/// Links `object` with the runtime into the executable `out`. On
+/// Windows it also gets its resources: a manifest, and `icon` (a PNG)
+/// when given (spec 10.5, `resources.rs`).
+pub fn link(object: &Path, out: &Path, libs: &[String], icon: Option<&[u8]>) -> Result<(), String> {
     let libs: Vec<&String> = libs.iter().filter(|l| *l != "c" && *l != "m").collect();
     let lib = runtime_lib()?;
     let mut cmd = linker()?;
     if cfg!(windows) {
+        let res = object.with_extension("res");
+        std::fs::write(&res, crate::resources::resource_file(icon)).map_err(|e| e.to_string())?;
         cmd.arg("/NOLOGO")
             .arg("/SUBSYSTEM:CONSOLE")
+            // The manifest is the one in `res`, not one of the linker's.
+            .arg("/MANIFEST:NO")
             .arg(format!("/OUT:{}", out.display()))
             .arg(object)
+            .arg(&res)
             .arg(&lib)
             .args(WINDOWS_LIBS);
         cmd.args(libs.iter().map(|l| format!("{l}.lib")));

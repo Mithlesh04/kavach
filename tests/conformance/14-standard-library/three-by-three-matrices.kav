@@ -1,0 +1,40 @@
+// Rule: std.vec's `Mat3` turns and scales `Vec3`s, has a product, a transpose, a determinant and an inverse (`none` when the determinant is 0), and a `Mat4`'s `mat3()` is its first three rows and columns.
+// Spec: 14.28
+// expect output: Vec3(x: 2.0, y: 6.0, z: 12.0)
+// expect output: 24.0
+// expect output: Vec3(x: 1.0, y: 2.0, z: 3.0)
+// expect output: true
+// expect output: Vec3(x: 0.0, y: 1.0, z: 0.0)
+// expect output: Vec3(x: 2.0, y: 0.0, z: 0.0)
+// expect output: Vec3(x: 0.5, y: 0.0, z: 0.0)
+// expect output: Mat3(c0: Vec3(x: 1.0, y: 4.0, z: 7.0), c1: Vec3(x: 2.0, y: 5.0, z: 8.0), c2: Vec3(x: 3.0, y: 6.0, z: 9.0))
+
+use std.vec
+use std.math
+
+fn main() {
+    const s = Mat3.scaling(Vec3(x: 2.0, y: 3.0, z: 4.0))
+    const v = Vec3(x: 1.0, y: 2.0, z: 3.0)
+    print(s @ v)
+    print(s.determinant())
+    const back = s.inverse() ?? Mat3.identity()
+    print(back @ (s @ v))
+    print(Mat3.scaling(Vec3(x: 1.0, y: 0.0, z: 1.0)).inverse() == none)
+
+    const turned = Mat3.rotation_z(math.pi / 2.0) @ Vec3(x: 1.0, y: 0.0, z: 0.0)
+    print(Vec3(x: math.round(turned.x), y: math.round(turned.y), z: math.round(turned.z)))
+
+    const model = Mat4.translation(Vec3(x: 5.0, y: 0.0, z: 0.0)).product(Mat4.scaling(Vec3(x: 2.0, y: 2.0, z: 2.0)))
+    const x = Vec3(x: 1.0, y: 0.0, z: 0.0)
+    print(model.mat3() @ x)
+    const undo = model.mat3().inverse() ?? Mat3.identity()
+    const normals = undo.transposed()
+    print(normals @ x)
+
+    const rows = Mat3(
+        c0: Vec3(x: 1.0, y: 2.0, z: 3.0),
+        c1: Vec3(x: 4.0, y: 5.0, z: 6.0),
+        c2: Vec3(x: 7.0, y: 8.0, z: 9.0),
+    )
+    print(rows.transposed())
+}

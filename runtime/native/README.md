@@ -35,6 +35,7 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_serial.rs` | Serial ports (spec 14.18): by number, through `runtime/core`; its own entry, so only programs that use them link `serial2` |
 | `src/rt_tasks.rs` | Tasks (spec 9), taking turns through the scheduler in `runtime/core` |
 | `src/unwind_tables.rs` | Registers the unwind tables of code the JIT made (decision 0065), so a panic stops only its task in `kavach run --native` too |
+| `src/crash_stack.rs` | The functions running at a panic, for crash reports (spec 14.30): the stack walked with the system's unwinder, each frame named from the table a build gives, or LLVM's `prefix` mark before the function |
 | `src/rt_task_errors.rs` | An error nobody reads (spec 9.1): printed when its task is freed, or when the program ends |
 | `src/rt_waits.rs` | Waiting: for a time, a socket or a channel, while other tasks run; refused inside `Shared.update` |
 | `src/rt_coroutines.rs` | Tasks as coroutines on the main thread, with `corosensei` (decision 0048): the context each switch saves and restores |

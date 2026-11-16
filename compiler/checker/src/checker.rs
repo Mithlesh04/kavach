@@ -109,6 +109,12 @@ pub(crate) struct Checker<'a> {
     /// Types given for number-bounded parameters, checked once every
     /// literal's type is known (spec 2.9).
     pub(crate) number_checks: Vec<(DefId, Ty, Span)>,
+    /// Each method's `where` bounds (spec 2.9), by its type and name: the
+    /// type parameter, and whether it must be `Floating`.
+    pub(crate) wheres: HashMap<(DefId, String), Vec<(DefId, bool)>>,
+    /// The `where` bounds of the calls seen, checked once literals'
+    /// types are known: the bound, the type given, the call and method.
+    pub(crate) where_checks: Vec<(DefId, bool, Ty, Span, String)>,
     /// Each type parameter's operator bounds, as their methods (spec 2.16).
     pub(crate) param_ops: HashMap<DefId, Vec<&'static str>>,
     /// The operators used on a program's own types, by `(left start,
@@ -251,6 +257,8 @@ impl<'a> Checker<'a> {
             drop_types: HashSet::new(),
             operators: HashMap::new(),
             number_checks: Vec::new(),
+            wheres: HashMap::new(),
+            where_checks: Vec::new(),
             param_ops: HashMap::new(),
             user_ops: HashMap::new(),
             user_negs: HashSet::new(),

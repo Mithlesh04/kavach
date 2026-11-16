@@ -63,9 +63,11 @@ print(seen.len())                 // 2
 | Method | Gives |
 |---|---|
 | `Set.of(a, b, …)` | A set of the values |
-| `Set.with_capacity(n)`, `Map.with_capacity(n)` | An empty set or map with room for `n` entries (2.2) |
+| `Set.capacity(n)`, `Set.capacity(n, first)` | A set of at most `n` values, maybe with the values of the list `first` (2.2) |
 | `add(x)`, `remove(x)` | Change the set; like `push`, they need a `let` (2.2) |
-| `contains`, `len`, `is_empty` | As their names say |
+| `contains`, `len`, `is_empty`, `is_full` | As their names say; `is_full` for a set made by `Set.capacity(n)` holding `n` values (2.2) |
 | `to_list()` | The values in insertion order |
 
 A `for` loop over a set visits its values in insertion order.
+
+A ring (`Ring<T>`, 2.2) has `push`, `len`, `is_empty`, `is_full`, `first`, `last`, `get`, `contains` and `to_list`, oldest item first; a push onto a full ring drops the oldest.

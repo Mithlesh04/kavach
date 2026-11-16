@@ -1,0 +1,74 @@
+// Rule: A list, map or set with a limit may hold items of different kinds through a union, and other collections with limits of their own; a copy keeps the limit, a new list from `xs + ys` has none.
+// Spec: 2.2
+// expect output: 2
+// expect output: heat 21.5
+// expect output: note door opened
+// expect output: true
+// expect output: ["small": [1, 2, 3]]
+// expect output: true
+// expect output: true
+// expect output: [[1, 2]]
+// expect output: true
+// expect output: false
+// expect output: false
+// expect output: 4
+// expect output: false
+// expect output: 2
+// expect output: true
+// expect output: true
+// expect output: true
+// expect output: ["hall": ["lamps": 2]]
+
+type Reading = Heat(celsius: Float) | Note(text: String)
+type Color = Red | Green | Blue
+
+fn main() {
+    let log: [Reading] = List.capacity(2)
+    log.push(Reading.Heat(celsius: 21.5))
+    log.push(Reading.Note(text: "door opened"))
+    print(log.len())
+    for r in log {
+        match r {
+            Reading.Heat(celsius) => print("heat {celsius}")
+            Reading.Note(text) => print("note {text}")
+        }
+    }
+    print(log.is_full())
+
+    let groups: [String: [Int]] = Map.capacity(1)
+    groups["small"] = List.capacity(3, [1, 2, 3])
+    print(groups)
+    const inner = groups["small"] ?? []
+    print(inner.is_full())
+    print(groups.is_full())
+
+    let grid: [[Int]] = List.capacity(2)
+    grid.push(List.capacity(2, [1]))
+    grid[0].push(2)
+    print(grid)
+    print(grid[0].is_full())
+    print(grid.is_full())
+
+    let copy = log
+    const _ = copy.pop()
+    print(copy.is_full())
+    let all = log + log
+    print(all.len())
+    print(all.is_full())
+
+    let latest: [String: Reading] = Map.capacity(2)
+    latest["kitchen"] = Reading.Heat(celsius: 21.5)
+    latest["door"] = Reading.Note(text: "opened")
+    print(latest.len())
+    print(latest.is_full())
+
+    let colors: Set<Color> = Set.capacity(2, [Color.Red])
+    colors.add(Color.Blue)
+    print(colors.is_full())
+
+    let rooms: [String: [String: Int]] = Map.capacity(2)
+    rooms["hall"] = Map.capacity(1, ["lamps": 2])
+    const hall = rooms["hall"] ?? [:]
+    print(hall.is_full())
+    print(rooms)
+}

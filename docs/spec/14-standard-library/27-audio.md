@@ -2,7 +2,7 @@
 
 Sound: effects that start the moment something happens, and music ([decision 0114](../../decisions/0114-sound-through-cpal.md)). A program loads or makes a `Sound` and plays it. The runtime mixes every playing sound on the sound device's own thread, so a slow frame or a pause in the program never makes the sound click.
 
-Playing sound needs `Audio` (8.1). Reading or making a sound needs nothing: a sound is data until it plays.
+Playing sound needs `Audio` (8.1), and recording what the microphone hears needs `Microphone`. Reading or making a sound needs nothing: a sound is data until it plays.
 
 ```kavach
 use std.audio
@@ -28,15 +28,41 @@ fn main() ! Error uses Audio, Fs.read {
 | `voice.set_volume(volume)`, `voice.set_pan(pan)` | Changes it while it plays |
 | `voice.is_playing() -> Bool` | Whether it still plays: `false` once it ended or was stopped |
 
-- `AudioError` is `Unavailable(reason: String)`, when nothing can play (the machine has no sound device, as a server, or 256 voices play already), or `BadSound(reason: String)`, when the bytes aren't a sound file Kavach reads.
+**Recording.** `audio.listen()` starts recording and gives a `Recording` at once; each `take()` gives what was heard since the one before, so a loop can show a level meter or send the voice on. `audio.record(seconds)` records a clip and waits for it.
+
+```kavach
+use std.audio
+use std.time
+
+fn main() ! Error uses Microphone, Audio {
+    const clip = try audio.record(3.0)          // three seconds
+    const _ = try audio.play(clip)
+    const rec = try audio.listen()
+    for _ in 0..10 {
+        time.sleep(100.ms)
+        const heard = rec.take()                // about 0.1 seconds
+        print(heard.frames)
+    }
+    rec.stop()
+}
+```
+
+| Function or method | Gives |
+|---|---|
+| `audio.listen() -> Recording ! AudioError` | Starts recording what the system's default microphone hears, at its own rate and with its first two channels, and gives at once. Needs `Microphone` |
+| `rec.take() -> Sound` | What it heard since the last take, or since it started, as a sound; an empty one when nothing new. Between takes it keeps up to 60 seconds; past that, what it hears is dropped until the next take. Needs `Microphone`, as `stop` does |
+| `rec.stop()` | Stops recording; a take after it gives what was left. Letting a `Recording` go stops it too |
+| `audio.record(seconds) -> Sound ! AudioError` | Records for `seconds` (more than 0, at most 3,600), waiting meanwhile, and gives the sound. Needs `Microphone` |
+
+- `AudioError` is `Unavailable(reason: String)`, when nothing can play or record (the machine has no sound device or microphone, as a server, or 256 voices play already), or `BadSound(reason: String)`, when the bytes aren't a sound file Kavach reads.
 - A file of more than two channels keeps its first two. A sound at another rate than the device's is played at the device's rate, blended between its frames.
 - Voices add up. Where they add past 1, the sound is held at 1.
 - Letting a `Voice` go doesn't stop it, so `audio.play(boom)` alone plays the whole sound. Letting a `Sound` go while it plays plays it to its end.
-- Generated tests (11.5) skip functions that use `Audio`, so a test run plays nothing.
+- Generated tests (11.5) skip functions that use `Audio` or `Microphone`, so a test run plays and records nothing.
 
 ## Open questions
 
-- Recording, behind `Microphone` (8.1): `audio.record(…)` and a stream of what the microphone hears. Next, in this module.
+- Choosing the microphone, and its rate, instead of the system's default.
 - A voice whose samples a Kavach function makes as it plays, for synthesizers, run on the sound device's thread. The compiler must check that the function never allocates memory, locks or waits ([decision 0114](../../decisions/0114-sound-through-cpal.md)).
 - Streaming long music from a file instead of decoding it whole first, and choosing the output device.
 - Opus, which waits for a decoder that needs no C library.

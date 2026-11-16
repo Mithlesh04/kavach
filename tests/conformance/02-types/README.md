@@ -33,7 +33,17 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.12 | [json-schema-marks-secret-fields.kav](json-schema-marks-secret-fields.kav) | `json.schema<T>()` marks a `secret` field `"writeOnly": true`. | runs |
 | 2.2 | [push-needs-a-var.kav](push-needs-a-var.kav) | Methods that change a collection (`push`, `remove`) need a `let`. | compile error |
 | 2.2 | [lists-hold-any-text.kav](lists-hold-any-text.kav) | A list of text gives back every item as it was put in, short or long, ASCII or not, and copies of the list are independent. | runs |
-| 2.2 | [maps-and-sets-with-room.kav](maps-and-sets-with-room.kav) | `Map.with_capacity(n)` and `Set.with_capacity(n)` make empty collections with room for `n` entries; a hint, not a limit. | runs |
+| 2.2 | [capacity-holds-at-most-n.kav](capacity-holds-at-most-n.kav) | `List.capacity(n)`, `Map.capacity(n)` and `Set.capacity(n)` hold at most `n` entries; `is_full()`; first entries; below 0 counts as 0. | runs |
+| 2.2 | [capacity-full-list-panics.kav](capacity-full-list-panics.kav) | Adding to a full list made by `List.capacity(n)` panics. | panic |
+| 2.2 | [capacity-full-map-panics.kav](capacity-full-map-panics.kav) | A new key in a full map panics; changing a key it holds does not. | panic |
+| 2.2 | [capacity-full-set-panics.kav](capacity-full-set-panics.kav) | A new item in a full set panics; adding one it holds does not. | panic |
+| 2.2 | [capacity-too-many-first-entries-panics.kav](capacity-too-many-first-entries-panics.kav) | `capacity(n, first)` with more first entries than `n` panics. | panic |
+| 2.2 | [capacity-mixed-and-nested.kav](capacity-mixed-and-nested.kav) | Items of different kinds through a union, collections with limits inside others; a copy keeps the limit, `xs + ys` has none. | runs |
+| 2.2 | [capacity-copy-keeps-limit-panics.kav](capacity-copy-keeps-limit-panics.kav) | A copy keeps the limit. | panic |
+| 2.2 | [capacity-kept-by-plus-equals-panics.kav](capacity-kept-by-plus-equals-panics.kav) | `xs += ys` keeps the limit, in a variable or a field. | panic |
+| 2.2 | [ring-keeps-the-last-n.kav](ring-keeps-the-last-n.kav) | `Ring.capacity(n)` keeps the last `n` items pushed, oldest first; first items beyond `n` keep the last `n`. | runs |
+| 2.2 | [ring-holds-records.kav](ring-holds-records.kav) | A ring holds records and text, and may be a record field. | runs |
+| 2.2 | [ring-is-not-a-list.kav](ring-is-not-a-list.kav) | `Ring<T>` is not a list: a function that takes `[T]` is not given one. | compile error |
 | 2.2 | [small-signed-lists-keep-their-sign.kav](small-signed-lists-keep-their-sign.kav) | A list of `Int8` holds negative numbers, which print, compare and sort as numbers. | runs |
 | 2.2 | [small-number-lists-keep-every-value.kav](small-number-lists-keep-every-value.kav) | A list of 16- or 32-bit numbers holds every value of its item type, which it gives back, sorts and copies unchanged. | runs |
 | 2.2 | [plus-joins-two-lists.kav](plus-joins-two-lists.kav) | `xs + ys` is a new list, the items of `xs` then those of `ys`; neither changes. | runs |
@@ -88,6 +98,8 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.9 | [number-bounds-do-arithmetic.kav](number-bounds-do-arithmetic.kav) | `T: Number` and `T: Floating` let generic code do arithmetic, use literals and `T(x)`, and call `std.math` on `T`; each type it is used with gets its own copy. | runs |
 | 2.9 | [a-number-bound-takes-only-numbers.kav](a-number-bound-takes-only-numbers.kav) | A type given for a parameter with a number bound must be a number type; for `Floating`, `Float` or `Float32`. | compile error |
 | 2.9 | [a-fraction-needs-floating.kav](a-fraction-needs-floating.kav) | A literal with a fraction is a `T` only when `T` is `Floating`. | compile error |
+| 2.9 | [a-method-can-add-a-bound.kav](a-method-can-add-a-bound.kav) | A method may add a bound to its type's parameter with `where`; a bare literal becomes a `Float` there. | runs |
+| 2.9 | [a-method-bound-must-be-met.kav](a-method-bound-must-be-met.kav) | Calling a method whose `where` bound isn't met is a compile error. | compile error |
 | 2.10 | [parameter-types-required.kav](parameter-types-required.kav) | Function parameters must have written types. | compile error |
 | 2.11 | [secret-cannot-be-printed.kav](secret-cannot-be-printed.kav) | A secret value must not flow into print. | compile error |
 | 2.1 | [numbers-read-from-text-at-their-limits.kav](numbers-read-from-text-at-their-limits.kav) | Reading a number from text takes every value its type holds, trims spaces, and gives an error for anything else. | runs |

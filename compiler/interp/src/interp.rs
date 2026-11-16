@@ -55,6 +55,12 @@ pub(crate) struct Interp<'a> {
     pub(crate) result: Vec<Value<'a>>,
     /// The record whose `invariant` is being checked (spec 7.3).
     pub(crate) invariant_fields: Vec<Vec<Field<'a>>>,
+    /// A place is emptied for a moment while its list changes in place:
+    /// invariants are checked when the list is put back (spec 7.3).
+    pub(crate) emptying: bool,
+    /// The functions a panic left, innermost first, each `name
+    /// (file:line)`: for a crash report (spec 14.30).
+    pub(crate) panic_trail: Vec<String>,
     pub(crate) out: String,
     pub(crate) err: String,
     /// Loop rounds and calls so far, and the most allowed (generated
@@ -152,6 +158,8 @@ impl<'a> Interp<'a> {
             }],
             result: Vec::new(),
             invariant_fields: Vec::new(),
+            emptying: false,
+            panic_trail: Vec::new(),
             out: String::new(),
             err: String::new(),
             steps: 0,
@@ -349,6 +357,10 @@ impl<'a> Interp<'a> {
         self.leaving = false;
         self.fs_scopes.truncate(before);
         self.frames.pop();
+        if let Err(Flow::Panic(..)) = &result {
+            let (path, line) = self.c.shown_location(f.name.span.start);
+            (self.panic_trail).push(format!("{} ({path}:{line})", f.name.name));
+        }
         match result {
             Err(e @ (Flow::Panic(..) | Flow::Exit(_))) => Err(e),
             // Its parameters end with the call (spec 6.1).

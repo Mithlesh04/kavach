@@ -43,6 +43,10 @@ impl Lowerer<'_> {
                         let (k, v) = (self.written_type(&args[0])?, self.written_type(&args[1])?);
                         self.map_type(k, v)
                     }
+                    Some(DefKind::Builtin) if first.name == "Ring" && args.len() == 1 => {
+                        let item = self.written_type(&args[0])?;
+                        self.list_type(item)
+                    }
                     Some(DefKind::Builtin) if first.name == "Set" && args.len() == 1 => {
                         let item = self.written_type(&args[0])?;
                         self.shapes.intern(Shape::Set(item))

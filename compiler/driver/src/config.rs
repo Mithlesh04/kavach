@@ -246,6 +246,9 @@ pub struct AgentConfig {
 pub struct BuildConfig {
     /// The program answers `--version` itself (spec 10.5).
     pub version_flag: bool,
+    /// A PNG, relative to `kavach.toml`: the Windows executable's icon
+    /// (spec 10.5).
+    pub icon: Option<String>,
     /// `[build.release]` (chapter 7): accepted, not read yet.
     pub release: Option<toml::Value>,
 }

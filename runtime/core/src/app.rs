@@ -63,6 +63,29 @@ fn crash_folder() -> &'static Mutex<Option<PathBuf>> {
     FOLDER.get_or_init(Mutex::default)
 }
 
+/// What finds the functions running at a panic, for its report: native
+/// code's stack walker, given by `crash_reports`' native entry so only a
+/// program that asks for reports links it (decision 0024).
+static RUNNING: OnceLock<fn() -> Vec<String>> = OnceLock::new();
+
+/// Gives the function that finds the functions running (see `RUNNING`).
+pub fn find_running_with(f: fn() -> Vec<String>) {
+    let _ = RUNNING.set(f);
+}
+
+/// The functions running now, innermost first, when crash reports are on
+/// and a finder was given; else none.
+pub fn running() -> Vec<String> {
+    let on = crash_folder()
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+        .is_some();
+    match RUNNING.get() {
+        Some(find) if on => find(),
+        _ => Vec::new(),
+    }
+}
+
 /// From now on, a panic that ends the program writes a report into
 /// `folder`, which is made now.
 pub fn crash_reports(folder: &str) -> Result<(), String> {
@@ -72,10 +95,12 @@ pub fn crash_reports(folder: &str) -> Result<(), String> {
 }
 
 /// Writes the report of a panic ending the program, if crash reports
-/// were asked for: `message`, `place` (`file:line`), the program, Kavach's
-/// version, the system and the time. A report that can't be written is
-/// let go: the panic is reported on the terminal anyway.
-pub fn report(message: &str, place: &str) {
+/// were asked for: `message`, `place` (`file:line`), the functions that
+/// were `running` (innermost first, each `name (file:line)`), the
+/// program, Kavach's version, the system and the time. A report that
+/// can't be written is let go: the panic is reported on the terminal
+/// anyway.
+pub fn report(message: &str, place: &str, running: &[String]) {
     let Some(folder) = crash_folder()
         .lock()
         .unwrap_or_else(|e| e.into_inner())
@@ -86,8 +111,9 @@ pub fn report(message: &str, place: &str) {
     let secs = (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH))
         .map_or(0, |d| d.as_secs());
     let program = std::env::args().next().unwrap_or_default();
+    let calls: String = running.iter().map(|f| format!("  in {f}\n")).collect();
     let text = format!(
-        "panic: {message}\n  at {place}\nprogram: {program}\nkavach: {}\nsystem: {} {}\ntime: {secs} (seconds since 1970, UTC)\n",
+        "panic: {message}\n  at {place}\n{calls}program: {program}\nkavach: {}\nsystem: {} {}\ntime: {secs} (seconds since 1970, UTC)\n",
         env!("CARGO_PKG_VERSION"),
         std::env::consts::OS,
         std::env::consts::ARCH,

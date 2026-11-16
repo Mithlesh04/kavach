@@ -1,0 +1,24 @@
+// Rule: std.vec's vectors hold any number type: whole-number vectors have the operators, `dot`, `cross` and `length_squared`, and a literal vector's type comes from its literals.
+// Spec: 14.28
+// expect output: Vec2(x: 4, y: 2)
+// expect output: -5
+// expect output: Vec2(x: 6, y: 8)
+// expect output: 25
+// expect output: Vec3(x: 2, y: -1, z: 0)
+// expect output: [Vec2(x: 2, y: 2), Vec2(x: 3, y: 1)]
+// expect output: 5.0
+
+use std.vec
+
+fn main() {
+    const a = Vec2(x: 3, y: 4)
+    const b: Vec2<Int> = Vec2(x: 1, y: -2)
+    print(a + b)
+    print(a.dot(b))
+    print(a * 2)
+    print(a.length_squared())
+    print(Vec3(x: 1, y: 2, z: 3).cross(Vec3(x: 0, y: 0, z: 1)))
+    const cells: [Vec2<Int32>] = [Vec2(x: 1, y: 1), Vec2(x: 2, y: 0)]
+    print(cells.map(c => c + Vec2(x: 1, y: 1)))
+    print(Vec2(x: 3.0, y: 4.0).length())
+}

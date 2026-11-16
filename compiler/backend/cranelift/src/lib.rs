@@ -42,6 +42,7 @@ use std::collections::HashMap;
 
 pub use library::build_library;
 pub use link::{build_folder, link};
+pub mod resources;
 pub use object::build;
 
 /// Compiles `program` to machine code and runs it. Returns the exit code:
@@ -94,6 +95,17 @@ fn run_here(program: &Program) -> Result<i32, String> {
     let prepared = jit_unwind::prepare(&mut module, &unwinds)?;
     module.finalize_definitions().map_err(|e| e.to_string())?;
     jit_unwind::register(&module, module.isa(), unwinds, prepared);
+    // Each function's start, name and line, for crash reports (14.30).
+    let starts: Vec<usize> = (0..program.functions.len())
+        .map(|i| match module.get_name(&format!("kv_fn_{i}")) {
+            Some(cranelift_module::FuncOrDataId::Func(f)) => {
+                module.get_finalized_function(f) as usize
+            }
+            _ => 0,
+        })
+        .collect();
+    let names = runtime::crash_stack::names_text(&program.functions);
+    runtime::crash_stack::set_functions(&names, &starts);
     let code = module.get_finalized_function(entry);
     let main = &program.functions[program.entry as usize];
     Ok(runtime::run_entry(code, main.fails))

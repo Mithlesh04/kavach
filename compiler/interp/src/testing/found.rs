@@ -160,7 +160,7 @@ impl<'s> Reader<'s> {
                     }
                     items.push(self.value(item, i)?);
                 }
-                Value::List(Rc::new(items))
+                Value::List(Rc::new(items.into()))
             }
             Gen::Map(k, v) => {
                 let mut map = MapValue::default();

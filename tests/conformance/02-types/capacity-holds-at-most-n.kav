@@ -1,0 +1,49 @@
+// Rule: `List.capacity(n)`, `Map.capacity(n)` and `Set.capacity(n)` hold at most `n` entries; `is_full()` says when they do; a second argument gives the first entries; below 0 counts as 0.
+// Spec: 2.2
+// expect output: [0.5, 1.5, 2.5]
+// expect output: true
+// expect output: ["asha": 32, "ravi": 27]
+// expect output: true
+// expect output: 1
+// expect output: false
+// expect output: true
+// expect output: 2000
+// expect output: 3996001
+// expect output: [1, 2, 3]
+// expect output: true
+
+fn main() {
+    let recent: [Float] = List.capacity(3, [0.5])
+    recent.push(1.5)
+    recent.push(2.5)
+    print(recent)
+    print(recent.is_full())
+
+    let ages: [String: Int] = Map.capacity(2, ["asha": 31])
+    ages["asha"] = 32
+    ages["ravi"] = 27
+    print(ages)
+    print(ages.is_full())
+
+    let seen: Set<Int> = Set.capacity(2, [7, 7])
+    print(seen.len())
+    print(seen.is_full())
+    seen.add(7)
+    seen.add(8)
+    print(seen.is_full())
+
+    let squares: [Int: Int] = Map.capacity(2000)
+    for i in 0..2000 {
+        squares[i] = i * i
+    }
+    print(squares.len())
+    print(squares[1999] ?? 0)
+
+    let small: [Int32] = List.capacity(3)
+    for i in 1..=3 {
+        small.push(Int32(i))
+    }
+    print(small)
+    const nothing: [Int] = List.capacity(-5)
+    print(nothing.is_full())
+}

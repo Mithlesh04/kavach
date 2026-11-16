@@ -97,6 +97,15 @@ impl Module {
         let shapes_text = encode_shapes(&program.shapes);
         let (shapes, shapes_len) = self.text(&shapes_text);
         let fails = program.functions[program.entry as usize].fails as u8;
+        // Each function's name and line, for crash reports (spec 14.30).
+        let names_text = kavach_runtime_native::crash_stack::names_text(&program.functions);
+        let (names, names_len) = self.text(&names_text);
+        self.declare(
+            "kv_set_functions",
+            "void",
+            &["i64", "i64", "i64", "i64"],
+            false,
+        );
         self.declare(
             "kv_main",
             "i32",
@@ -104,7 +113,7 @@ impl Module {
             false,
         );
         let main = format!(
-            "define i32 @main(i32 %argc, ptr %argv) {{\n  %code = call i32 @kv_main(i64 ptrtoint (ptr @{entry} to i64), i8 {fails}, i64 {path}, i64 {path_len}, i64 {shapes}, i64 {shapes_len}, ptr @kv_limit_slot)\n  ret i32 %code\n}}\n"
+            "define i32 @main(i32 %argc, ptr %argv) {{\n  call void @kv_set_functions(i64 {names}, i64 {names_len}, i64 0, i64 0)\n  %code = call i32 @kv_main(i64 ptrtoint (ptr @{entry} to i64), i8 {fails}, i64 {path}, i64 {path_len}, i64 {shapes}, i64 {shapes_len}, ptr @kv_limit_slot)\n  ret i32 %code\n}}\n"
         );
         self.surround(&format!("{body}{main}"), "thread_local(localexec)")
     }

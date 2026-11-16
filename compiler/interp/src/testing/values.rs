@@ -266,7 +266,7 @@ impl<'a> Interp<'a> {
                 if matches!(pick, Pick::Edge(i) if i % 4 == 3) && !items.is_empty() {
                     items[1] = items[0].clone();
                 }
-                Value::List(Rc::new(items))
+                Value::List(Rc::new(items.into()))
             }
             Gen::Map(k, v) => {
                 let len = match pick {

@@ -158,6 +158,7 @@ pub fn unique(p: i64) -> i64 {
     // A packed list's buffer copies as it is (decisions 0030 and 0045).
     if o.kind == LIST && crate::flat::packed(o.ty()) {
         let copy = new_list_raw(o.ty(), o.tag, slots(p).to_vec(), list_mut(p).len);
+        keep_limit(p, copy);
         release(p);
         return copy;
     }
@@ -184,6 +185,19 @@ pub fn unique(p: i64) -> i64 {
         }
     }
     let copy = new_obj(o.ty(), o.tag, copied, data);
+    keep_limit(p, copy);
     release(p);
     copy
+}
+
+/// A copy keeps the limit of what it copies (spec 2.2).
+fn keep_limit(p: i64, copy: i64) {
+    if let Some(n) = crate::heap::limit_of(p) {
+        if obj(p).kind == LIST {
+            crate::lists::room_for_limit(copy, n);
+            crate::heap::set_ring(copy, crate::heap::is_ring(p));
+        } else {
+            crate::heap::set_limit(copy, n);
+        }
+    }
 }

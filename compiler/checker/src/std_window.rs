@@ -95,7 +95,12 @@ impl Checker<'_> {
                 vec![id, p("value", &list(&float)), p("which", &int)],
                 Ty::Unit,
             ),
-            "playing_id" => (vec![id], Ty::Prim(Prim::Bool)),
+            "playing_id" => (vec![id.clone()], Ty::Prim(Prim::Bool)),
+            // The microphone (spec 14.27): a recording by number.
+            "listen_id" => (vec![], failing(self)),
+            "take_id" => (vec![id], int.clone()),
+            "stop_listening_id" | "drop_recording_id" => (vec![id], Ty::Unit),
+            "record_id" => (vec![p("seconds", &float)], failing(self)),
             _ => return None,
         })
     }

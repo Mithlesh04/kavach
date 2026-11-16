@@ -234,7 +234,7 @@ pub fn field(p: i64) -> i64 {
         let mut map = crate::rt_maps::kv_map_new(crate::rt::type_code(t.map));
         for [k, v] in doc.run(w).as_chunks::<2>().0 {
             let key = new_text(doc.str(*k), t.key);
-            map = crate::rt_maps::kv_map_insert(map, key, value(&doc, *v, t.json));
+            map = crate::rt_maps::kv_map_insert(map, key, value(&doc, *v, t.json), 0);
         }
         map
     };

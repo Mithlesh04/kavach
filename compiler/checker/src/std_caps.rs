@@ -38,7 +38,8 @@ impl Checker<'_> {
             // Letting a watcher go (spec 14.3).
             || (module == "fs" && name == "watch_close_id")
             // Sounds are data; playing them needs `Audio` (spec 14.27).
-            || (module == "audio" && matches!(name, "sound_id" | "decode_id" | "info_id" | "drop_sound_id"));
+            || (module == "audio"
+                && matches!(name, "sound_id" | "decode_id" | "info_id" | "drop_sound_id" | "drop_recording_id"));
         if let Some(cap) = (MODULES.iter())
             .find(|(m, _)| *m == module && !reads_clock && !reads_zone && !holds)
             .and_then(|(_, c)| if answers { Some("Approvals") } else { *c })
@@ -56,6 +57,10 @@ impl Checker<'_> {
                 // Folders and crash reports make folders; a dialog is a window (14.30).
                 ("app", "dialog_id") => "Window",
                 ("app", _) => "Fs.write",
+                // Recording what the microphone hears (spec 14.27).
+                ("audio", "listen_id" | "take_id" | "stop_listening_id" | "record_id") => {
+                    "Microphone"
+                }
                 // Parts `System` doesn't cover (spec 14.25, decision 0112).
                 ("system", "critical_id") => "System.critical.read",
                 ("system", "act_id") => "System.critical.write",

@@ -71,9 +71,12 @@ ParFor,
 /// A chunked integer reduction (decision 0031): `kv_par_for_red`,
 /// whose chunks also get a slot number for their partial sums.
 ParForRed,
-/// `Map.with_capacity(n)` and `Set.with_capacity(n)` (spec 2.2): an
-/// empty table with room for `n` entries.
-MapWithCapacity,
+/// `Map.capacity(n, first)` (spec 2.2): a map of at most `a` entries,
+/// `b` its first ones (0: none).
+MapCapacity,
+/// `List.capacity(n, first)` (spec 2.2): a list of at most `a` items,
+/// with room for them all, `b` its first ones (0: none).
+ListCapacity,
 /// `b.xxhash64()` (spec 2.13).
 BytesXxhash64,
 /// A hint that item `b` of list `a` will be read soon (`prefetch.rs`):
@@ -114,3 +117,17 @@ MatrixScale,
 MatrixNegate,
 MatrixTranspose,
 MatrixSums,
+/// `Set.capacity(n, first)` (spec 2.2): a set of at most `a` entries,
+/// the list `b` its first ones (0: none).
+SetCapacity,
+/// `xs.is_full()` (spec 2.2): a list made by `List.capacity(n)` holding
+/// `n` items.
+ListIsFull,
+/// `m.is_full()` for a map or set (spec 2.2).
+MapIsFull,
+/// `xs` for `xs + ys`: the list itself, or a copy without its limit
+/// when it has one, since a new list has none (spec 2.2).
+ListNoLimit,
+/// `Ring.capacity(n, first)` (spec 2.2): a list of at most `a` items that
+/// drops its oldest when full, the list `b` its first ones (0: none).
+RingCapacity,

@@ -47,7 +47,7 @@ impl<'a> Interp<'a> {
                     self.take_part(&it.pattern, None, it.default.as_ref(), out)?;
                 }
                 if let Some(def) = rest.as_ref().and_then(|r| self.decl.get(&r.span.start)) {
-                    out.push((*def, Value::List(Rc::new(Vec::new()))));
+                    out.push((*def, Value::List(Rc::new(Vec::new().into()))));
                 }
             }
             PatternKind::Record(fields) => {

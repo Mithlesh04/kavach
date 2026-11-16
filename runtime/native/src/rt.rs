@@ -207,7 +207,8 @@ pub fn panic_with(message: &str, line: i32) -> ! {
     run_at_exit();
     eprintln!("panic: {message}\n  at {path}:{line}");
     // A report too, when the program asked for them (spec 14.30).
-    kavach_runtime_core::app::report(message, &format!("{path}:{line}"));
+    let running = kavach_runtime_core::app::running();
+    kavach_runtime_core::app::report(message, &format!("{path}:{line}"), &running);
     // A child of `spawn process` (spec 9.8): its parent's task fails with
     // the panic, as any task's does.
     if kavach_runtime_core::processes::site().is_some() {

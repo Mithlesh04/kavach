@@ -30,7 +30,7 @@ impl<'a> Interp<'a> {
                 _ => Vec::new(),
             }
         };
-        let list = |items: Vec<Value<'a>>| Value::List(Rc::new(items));
+        let list = |items: Vec<Value<'a>>| Value::List(Rc::new(items.into()));
         Ok(match name {
             "start_id" => {
                 let program = match args.first() {

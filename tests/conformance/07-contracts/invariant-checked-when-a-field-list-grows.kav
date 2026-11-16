@@ -1,0 +1,18 @@
+// Rule: An invariant is checked when a list in a field grows by `push`, and only on the changed value.
+// Spec: 7.3
+// expect output: 2
+// expect output: 3
+// expect panic: contract failed: invariant items.len() <= 3
+
+type Recent {
+    items: [Int]
+    invariant items.len() <= 3
+}
+
+fn main() {
+    let r = Recent(items: [9])
+    for i in 0..3 {
+        r.items.push(i)
+        print(r.items.len())
+    }
+}

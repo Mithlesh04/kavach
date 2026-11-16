@@ -221,7 +221,7 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
             let built = whole_items(items, *item, path, templates)?;
             let mut set = crate::rt_maps::kv_map_new(type_code(ty));
             for v in built {
-                set = crate::rt_maps::kv_map_insert(set, v as i64, 0);
+                set = crate::rt_maps::kv_map_insert(set, v as i64, 0, 0);
             }
             Ok(set as u64)
         }
@@ -245,7 +245,7 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
             }
             let mut map = crate::rt_maps::kv_map_new(type_code(ty));
             for ((key, _), value) in fields.iter().zip(built) {
-                map = crate::rt_maps::kv_map_insert(map, new_text(key, *k), value as i64);
+                map = crate::rt_maps::kv_map_insert(map, new_text(key, *k), value as i64, 0);
             }
             Ok(map as u64)
         }

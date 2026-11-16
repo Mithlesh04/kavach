@@ -166,14 +166,15 @@ fn get_text_or(map: i64, key: &str, fallback: i64) -> i64 {
 
 /// `map[key] = value` (all three owned): what generated code calls.
 #[unsafe(no_mangle)]
-pub extern "C-unwind" fn kv_map_insert(map: i64, key: i64, value: i64) -> i64 {
-    insert(map, key, value)
+pub extern "C-unwind" fn kv_map_insert(map: i64, key: i64, value: i64, line: i32) -> i64 {
+    insert(map, key, value, line)
 }
 
 /// Sets `key` to `value` in `map` (all three owned); returns the map.
-fn insert(map: i64, key: i64, value: i64) -> i64 {
+fn insert(map: i64, key: i64, value: i64, line: i32) -> i64 {
+    let (kt, vt) = key_value_types(map);
+    crate::capacity::check_insert(map, || find(map, key, kt).is_some(), line);
     let q = unique(map);
-    let (kt, vt) = key_value_types(q);
     if int_key(kt) {
         // One probe finds the key or the place for it.
         let old = match &mut *crate::heap::data(q).borrow_mut() {
@@ -247,7 +248,7 @@ pub fn map_or_shared(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> 
         return crate::send::new_shared(a as u64, type_of(code), line);
     }
     if op == RtOp::MapInsert {
-        return insert(a, b, c);
+        return insert(a, b, c, line);
     }
     // Only a hint, for integer keys (`kir/src/prefetch.rs`).
     if op == RtOp::MapPrefetch {

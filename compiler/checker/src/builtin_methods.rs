@@ -124,6 +124,8 @@ impl Checker<'_> {
                     "len" => sig(vec![], int),
                     "is_empty" => sig(vec![], boolean),
                     "push" => sig(vec![t], Ty::Unit),
+                    // Made with `List.capacity(n)` and holding `n` (spec 2.2).
+                    "is_full" => sig(vec![], boolean),
                     "get" => sig(vec![int], opt(t)),
                     "first" | "last" => sig(vec![], opt(t.clone())),
                     "pop" => sig(vec![], opt(t)),
@@ -151,6 +153,7 @@ impl Checker<'_> {
                     "is_empty" => sig(vec![], boolean),
                     "get" => sig(vec![k], opt(v)),
                     "contains_key" => sig(vec![k.clone()], boolean),
+                    "is_full" => sig(vec![], boolean),
                     "remove" => sig(vec![k], Ty::Unit),
                     "keys" => sig(vec![], list(k)),
                     "values" => sig(vec![], list(v)),
@@ -226,6 +229,20 @@ impl Checker<'_> {
                         sig(vec![f(t.clone(), Ty::Tuple(vec![t, r.clone()]))], r)
                     }
                     "weak" => sig(vec![], Ty::Builtin("Weak", vec![t])),
+                    _ => None,
+                }
+            }
+            // The last `n` items pushed, oldest first (spec 2.2).
+            Ty::Builtin("Ring", args) => {
+                let t = args.first().cloned().unwrap_or(Ty::Error);
+                match name {
+                    "push" => sig(vec![t], Ty::Unit),
+                    "len" => sig(vec![], int),
+                    "is_empty" | "is_full" => sig(vec![], boolean),
+                    "first" | "last" => sig(vec![], opt(t)),
+                    "get" => sig(vec![int], opt(t)),
+                    "contains" => sig(vec![t], boolean),
+                    "to_list" => sig(vec![], list(t)),
                     _ => None,
                 }
             }

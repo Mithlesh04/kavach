@@ -47,7 +47,7 @@ impl<'a> Interp<'a> {
             "size_id" => {
                 let (w, h) = win::size(n);
                 let both = [w, h].map(|v| Value::Int(i128::from(v), Prim::Int));
-                Value::List(Rc::new(both.to_vec()))
+                Value::List(Rc::new(both.to_vec().into()))
             }
             "scale_id" => Value::Float(win::scale(n)),
             "listen_id" => {

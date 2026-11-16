@@ -1,0 +1,13 @@
+// Rule: Adding to a full list made by `List.capacity(n)` panics.
+// Spec: 2.2
+// expect output: 3
+// expect panic: the list is full (capacity 3)
+
+fn main() {
+    let xs: [Int] = List.capacity(3)
+    for i in 0..3 {
+        xs.push(i)
+    }
+    print(xs.len())
+    xs.push(3)
+}

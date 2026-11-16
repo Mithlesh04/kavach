@@ -134,7 +134,10 @@ impl Checker<'_> {
         let outer = self.current_fn;
         self.current_fn = self.decl.get(&f.name.span.start).copied();
         let outer_loops = std::mem::take(&mut self.loops);
+        // A method's `where` bounds hold in its body (spec 2.9).
+        let wheres = self.apply_wheres(f, self_ty.as_ref());
         self.function_body(f, self_ty);
+        self.undo_wheres(wheres);
         self.current_fn = outer;
         self.loops = outer_loops;
     }
@@ -427,6 +430,8 @@ impl Checker<'_> {
     fn item_type(&mut self, t: &Ty, iter: &Expr) -> Ty {
         match self.inf.resolve(t) {
             Ty::List(item) | Ty::Set(item) | Ty::Range(item) => *item,
+            // Oldest first (spec 2.2).
+            Ty::Builtin("Ring", args) => args.first().cloned().unwrap_or(Ty::Error),
             // `for tick in time.every_ms(…)` counts rounds (spec 14.4).
             Ty::Builtin("Ticker", _) => Ty::Prim(Prim::Int),
             // Values taken until the channel is closed and empty (spec 9.4).

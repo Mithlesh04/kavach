@@ -71,7 +71,9 @@ impl<'a> Lowerer<'a> {
                     let ty = current.ty;
                     value = match crate::lower_expr::binary_op(bin) {
                         _ if bin == ast::BinaryOp::Pow => self.power(current, value, line),
-                        _ if self.is_list_type(ty) => self.list_concat(current, value, line)?,
+                        _ if self.is_list_type(ty) => {
+                            self.list_concat(current, value, line, true)?
+                        }
                         Some(bin) => ir::Expr {
                             kind: ir::ExprKind::Binary(bin, Box::new(current), Box::new(value)),
                             ty,

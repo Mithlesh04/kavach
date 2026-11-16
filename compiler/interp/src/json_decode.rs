@@ -248,7 +248,7 @@ impl<'a> Interp<'a> {
                     out.push(self.decode(item, x, &path_item(path, i))?);
                 }
                 if matches!(ty, Ty::List(_)) {
-                    return Ok(Value::List(Rc::new(out)));
+                    return Ok(Value::List(Rc::new(out.into())));
                 }
                 let mut set = MapValue::default();
                 for v in out {

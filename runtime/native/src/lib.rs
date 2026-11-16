@@ -12,6 +12,7 @@
 
 #![allow(unsafe_code)]
 
+mod capacity;
 pub mod display;
 pub mod flat;
 pub mod hashing;
@@ -124,6 +125,7 @@ pub use rt_window::kv_rt_window;
 pub use rt_writers::kv_rt_writers;
 pub use rt_zone::kv_rt_zone;
 pub use send::kv_rt_weak;
+pub mod crash_stack;
 pub mod rt_text;
 mod rt_text_methods;
 mod send;

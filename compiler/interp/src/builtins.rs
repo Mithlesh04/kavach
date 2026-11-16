@@ -166,11 +166,15 @@ impl<'a> Interp<'a> {
         let mut args = args.into_iter().map(|(_, v)| v);
         match (receiver, name) {
             (Value::List(mut items), "push") => {
-                Rc::make_mut(&mut items).extend(args.next());
+                let item = args.next().unwrap_or(Value::Unit);
+                crate::items::push(&mut items, item).map_err(|m| self.panic(m, span))?;
                 Ok(Value::List(items))
             }
             (Value::Set(mut set), "add") => {
-                Rc::make_mut(&mut set).insert(args.next().unwrap_or(Value::Unit), Value::Unit);
+                let item = args.next().unwrap_or(Value::Unit);
+                set.room_for(&item, "set")
+                    .map_err(|m| self.panic(m, span))?;
+                Rc::make_mut(&mut set).insert(item, Value::Unit);
                 Ok(Value::Set(set))
             }
             (Value::Set(mut set), "remove") => {
@@ -199,9 +203,9 @@ impl<'a> Interp<'a> {
             Value::Range(a, b, k) => {
                 let items: Vec<Value<'a>> = (a..b).map(|n| Value::Int(n, k)).collect();
                 if name == "to_list" {
-                    return Ok(Value::List(Rc::new(items)));
+                    return Ok(Value::List(Rc::new(items.into())));
                 }
-                Value::List(Rc::new(items))
+                Value::List(Rc::new(items.into()))
             }
             r => r,
         };
@@ -269,6 +273,7 @@ impl<'a> Interp<'a> {
             (Value::List(items), _) => self.list_method(items, name, arg, span),
             (Value::Map(m), "len") => Ok(int(m.len())),
             (Value::Map(m), "is_empty") => Ok(Value::Bool(m.is_empty())),
+            (Value::Map(m), "is_full") => Ok(Value::Bool(m.is_full())),
             (Value::Map(m), "get") => Ok(m.get(&arg).cloned().unwrap_or(Value::None)),
             (Value::Map(m), "contains_key") => Ok(Value::Bool(m.get(&arg).is_some())),
             (Value::Map(m), "keys") => Ok(Value::List(Rc::new(
@@ -337,7 +342,7 @@ impl<'a> Interp<'a> {
 
     fn list_method(
         &mut self,
-        items: Rc<Vec<Value<'a>>>,
+        items: Rc<crate::items::Items<'a>>,
         name: &str,
         arg: Value<'a>,
         span: Span,
@@ -346,6 +351,9 @@ impl<'a> Interp<'a> {
         Ok(match name {
             "len" => int(items.len()),
             "is_empty" => Value::Bool(items.is_empty()),
+            "is_full" => Value::Bool(items.is_full()),
+            // A ring's items as a list, with no limit (spec 2.2).
+            "to_list" => Value::List(Rc::new(items.to_vec().into())),
             "get" => match arg {
                 Value::Int(i, _) => usize::try_from(i)
                     .ok()
@@ -378,14 +386,14 @@ impl<'a> Interp<'a> {
                             .map(|(v, _)| v.clone())
                             .collect(),
                     )),
-                    "map" => Value::List(Rc::new(mapped)),
+                    "map" => Value::List(Rc::new(mapped.into())),
                     "any" => Value::Bool(mapped.contains(&Value::Bool(true))),
                     "all" => Value::Bool(mapped.iter().all(|v| *v == Value::Bool(true))),
                     "flat_map" => Value::List(Rc::new(
                         mapped
                             .into_iter()
                             .flat_map(|v| match v {
-                                Value::List(xs) => Rc::unwrap_or_clone(xs),
+                                Value::List(xs) => Rc::unwrap_or_clone(xs).into_vec(),
                                 v => vec![v],
                             })
                             .collect(),

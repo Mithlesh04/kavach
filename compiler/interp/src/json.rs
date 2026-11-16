@@ -215,7 +215,7 @@ impl<'a> Interp<'a> {
                 for item in items {
                     out.push(self.json_item(item)?);
                 }
-                ("Array", Value::List(Rc::new(out)))
+                ("Array", Value::List(Rc::new(out.into())))
             }
             ExprKind::Map(pairs) => {
                 let mut map = MapValue::default();

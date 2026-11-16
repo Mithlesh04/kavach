@@ -144,7 +144,10 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.26 | [gamepads-are-named-by-place.kav](gamepads-are-named-by-place.kav) | Gamepad buttons are named by their place in the standard layout, and a machine with no pad reads none, without an error. | runs |
 | 14.27 | [sounds-are-data-until-played.kav](sounds-are-data-until-played.kav) | Making or reading a sound needs no capability; bytes that aren't a WAV or Ogg Vorbis file are `BadSound`. | runs |
 | 14.27 | [playing-sound-needs-audio.kav](playing-sound-needs-audio.kav) | Playing sound needs `Audio`. | compile error |
+| 14.27 | [recording-needs-microphone.kav](recording-needs-microphone.kav) | Recording what the microphone hears needs `Microphone`. | compile error |
 | 14.28 | [vectors-matrices-and-quaternions.kav](vectors-matrices-and-quaternions.kav) | std.vec has vectors, 4 x 4 matrices and quaternions over Float or Float32, with their operators, products and transforms. | runs |
+| 14.28 | [three-by-three-matrices.kav](three-by-three-matrices.kav) | std.vec's `Mat3`: transforms, product, transpose, determinant, an inverse that is `none` when the determinant is 0, and a `Mat4`'s `mat3()`. | runs |
+| 14.28 | [whole-number-vectors.kav](whole-number-vectors.kav) | std.vec's vectors over whole numbers: operators, `dot`, `cross`, `length_squared`. | runs |
 | 14.28 | [vectors-of-float32.kav](vectors-of-float32.kav) | std.vec works the same over Float32: quaternions, matrices, projections and their own functions. | runs |
 | 14.29 | [images-read-and-write-png.kav](images-read-and-write-png.kav) | An image is its width, height and RGBA pixels; it is written as PNG and read back the same, and bytes that aren't a PNG or JPEG file are BadImage. | runs |
 | 14.30 | [dialogs-need-window.kav](dialogs-need-window.kav) | A dialog is a window the program shows, so it needs `Window`. | compile error |

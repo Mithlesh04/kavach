@@ -1,0 +1,22 @@
+// Rule: `xs += ys` on a list made by `List.capacity(n)` keeps its limit, in a variable or a field, so filling it past `n` panics.
+// Spec: 2.2
+// expect output: [1, 2, 3]
+// expect output: false
+// expect output: true
+// expect panic: the list is full (capacity 4)
+
+type Basket {
+    items: [String]
+}
+
+fn main() {
+    let xs: [Int] = List.capacity(4, [1])
+    xs += [2, 3]
+    print(xs)
+    print(xs.is_full())
+    let b = Basket(items: List.capacity(2))
+    b.items.push("apple")
+    b.items += ["pear"]
+    print(b.items.is_full())
+    xs += [4, 5]
+}

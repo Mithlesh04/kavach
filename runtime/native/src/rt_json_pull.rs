@@ -103,7 +103,7 @@ fn read(r: &mut Pull<'_>, ty: Type, templates: i64) -> Read {
             let built = items(r, |_| *item, templates)?;
             let mut set = crate::rt_maps::kv_map_new(type_code(ty));
             for v in built {
-                set = crate::rt_maps::kv_map_insert(set, v as i64, 0);
+                set = crate::rt_maps::kv_map_insert(set, v as i64, 0, 0);
             }
             Ok(set as u64)
         }
@@ -205,7 +205,7 @@ fn map(r: &mut Pull<'_>, ty: Type, k: Type, v: Type, templates: i64) -> Read {
         let Ok(value) = read(r, v, templates) else {
             break;
         };
-        map = crate::rt_maps::kv_map_insert(map, new_text(&key, k), value as i64);
+        map = crate::rt_maps::kv_map_insert(map, new_text(&key, k), value as i64, 0);
     }
     release(map);
     Err(Wrong)

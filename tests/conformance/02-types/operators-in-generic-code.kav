@@ -10,6 +10,7 @@
 // expect output: Money(cents: 50)
 // expect output: 1.5
 // expect output: -1
+// expect output: 9
 
 type Money: Add, Neg, Comparable {
     cents: Int
@@ -55,4 +56,5 @@ fn main() {
     print(largest([Money(cents: 5), Money(cents: 50)]))
     print(largest([1.5, 0.5]))
     print(7.compare(9))
+    print(7.add(2))
 }

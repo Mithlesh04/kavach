@@ -19,7 +19,7 @@ A game or desktop tool needs a place for its saves and settings that is the user
 
 - Saves, settings, crash logs and file pickers work on every system with a few calls.
 - Dialogs need a person at the screen, so tests check that they are typed and lowered, not that they show; generated tests skip them, as all `Window` functions.
-- A crash report holds no stack of calls yet; that waits for a call stack the runtime can read in native code.
+- A crash report lists the functions that were running (added 2026-11-16, a maintainer's choice): `kavach build` writes a table of each function's start, name and place; at a panic the runtime walks the stack with the system's unwinder (`RtlCaptureStackBackTrace` and `RtlLookupFunctionEntry` on Windows, `backtrace` and `_Unwind_FindEnclosingFunction` elsewhere) and names the frames whose function starts it knows. It costs nothing until a panic and needs no new dependency. Frames show where each function is defined, not the line of the call: that needs line tables (debug info), which `kavach build` doesn't write. The interpreter notes each function a panic passes through, for the same list.
 
 ## Alternatives considered
 

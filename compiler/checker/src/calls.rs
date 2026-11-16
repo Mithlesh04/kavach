@@ -424,18 +424,37 @@ impl Checker<'_> {
             DefKind::Agent if name.name == "start" => Some(self.agent_start(def, args, span)),
             DefKind::Import => self.std_call(def, &name.name, generics, args, span),
             DefKind::Builtin if type_name == "Set" && name.name == "of" => Some(self.set_of(args)),
-            // `Map.with_capacity(n)`, `Set.with_capacity(n)` (spec 2.2):
-            // empty, so the types come from where the value goes, as `[:]`.
+            // `List.capacity(n)`, `Map.capacity(n)`, `Set.capacity(n)`, at
+            // most `n` entries, maybe with the first ones (spec 2.2). With
+            // none, the types come from where the value goes, as `[:]`.
             DefKind::Builtin
-                if matches!(type_name.as_str(), "Map" | "Set") && name.name == "with_capacity" =>
+                if matches!(type_name.as_str(), "Map" | "Set" | "List" | "Ring")
+                    && name.name == "capacity" =>
             {
-                let params = [("n".to_string(), Ty::Prim(Prim::Int), false)];
-                self.args(args, &params, span, "`with_capacity`", "argument");
-                Some(if type_name == "Map" {
-                    Ty::Map(Box::new(self.fresh()), Box::new(self.fresh()))
-                } else {
-                    Ty::Set(Box::new(self.fresh()))
-                })
+                let (made, first) = match type_name.as_str() {
+                    "Map" => {
+                        let (k, v) = (Box::new(self.fresh()), Box::new(self.fresh()));
+                        (Ty::Map(k.clone(), v.clone()), Ty::Map(k, v))
+                    }
+                    "Set" => {
+                        let t = Box::new(self.fresh());
+                        (Ty::Set(t.clone()), Ty::List(t))
+                    }
+                    "Ring" => {
+                        let t = self.fresh();
+                        (Ty::Builtin("Ring", vec![t.clone()]), Ty::List(Box::new(t)))
+                    }
+                    _ => {
+                        let t = Box::new(self.fresh());
+                        (Ty::List(t.clone()), Ty::List(t))
+                    }
+                };
+                let params = [
+                    ("n".to_string(), Ty::Prim(Prim::Int), false),
+                    ("first".to_string(), first, true),
+                ];
+                self.args(args, &params, span, "`capacity`", "argument");
+                Some(made)
             }
             DefKind::Builtin if type_name == "Bytes" && name.name == "of" => {
                 Some(self.bytes_of(generics, args, span))

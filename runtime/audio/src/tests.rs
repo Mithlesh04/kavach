@@ -145,3 +145,31 @@ fn an_ogg_vorbis_file_is_read() {
     let peak = s.samples.iter().fold(0.0f32, |m, x| m.max(x.abs()));
     assert!((0.4..0.6).contains(&peak), "about half volume: {peak}");
 }
+
+/// The microphone's ring keeps what fits, drops the rest, and gives
+/// each sample once (made-up samples: no microphone is opened).
+#[test]
+fn a_recording_ring_keeps_what_fits_and_gives_it_once() {
+    let ring = crate::input::Ring::new(4);
+    ring.write([0.1, 0.2, 0.3].into_iter());
+    assert_eq!(ring.take(), vec![0.1, 0.2, 0.3]);
+    assert!(ring.take().is_empty(), "taken once");
+    ring.write([1.0, 2.0, 3.0, 4.0, 5.0].into_iter());
+    assert_eq!(
+        ring.take(),
+        vec![1.0, 2.0, 3.0, 4.0],
+        "the fifth didn't fit"
+    );
+    ring.write([6.0, 7.0].into_iter());
+    assert_eq!(ring.take(), vec![6.0, 7.0], "room again after a take");
+}
+
+/// Of four interleaved channels, the first two are kept.
+#[test]
+fn a_recording_keeps_the_first_two_channels() {
+    let data = [1, 2, 3, 4, 5, 6, 7, 8];
+    let kept: Vec<i32> = crate::input::first_two(&data, 4).collect();
+    assert_eq!(kept, vec![1, 2, 5, 6]);
+    let mono: Vec<i32> = crate::input::first_two(&data[..3], 1).collect();
+    assert_eq!(mono, vec![1, 2, 3]);
+}

@@ -44,7 +44,8 @@ pub fn with_slots<R>(p: i64, f: impl FnOnce(&mut Vec<u64>) -> R) -> R {
 fn with_packed<R>(p: i64, f: impl FnOnce(usize, &mut Vec<u64>) -> R) -> R {
     let size = crate::flat::item_size(obj(p).ty());
     let l = list_mut(p);
-    let cap = l.cap * size / 8;
+    // Exact: `size` divides 8, and a list with a limit has room for it.
+    let cap = crate::flat::words_for(l.cap, size);
     // SAFETY: a packed list's buffer is a `Vec<u64>` taken apart
     // (`new_list_raw`), always zero-filled to its capacity, rebuilt
     // here and taken apart the same way.
@@ -53,6 +54,10 @@ fn with_packed<R>(p: i64, f: impl FnOnce(usize, &mut Vec<u64>) -> R) -> R {
     v.resize(v.capacity(), 0);
     let mut v = std::mem::ManuallyDrop::new(v);
     (l.ptr, l.cap) = (v.as_mut_ptr(), v.capacity() * 8 / size);
+    // The room past a limit's last word is never used (spec 2.2).
+    if let Some(n) = crate::heap::limit_of(p) {
+        l.cap = l.cap.min(n);
+    }
     result
 }
 
@@ -75,6 +80,10 @@ pub fn with_words<R>(p: i64, f: impl FnOnce(&mut Vec<u64>) -> R) -> R {
 /// store them without checks (`stmt.rs` push hoisting).
 #[unsafe(no_mangle)]
 pub extern "C-unwind" fn kv_list_reserve(p: i64, extra: i64) {
+    // Never called for a list with a limit: its pushes are checked.
+    if crate::heap::limit_of(p).is_some() {
+        return;
+    }
     let extra = usize::try_from(extra).unwrap_or(0);
     if let size @ 1.. = crate::flat::item_size(obj(p).ty()) {
         return with_packed(p, |len, w| {
@@ -84,6 +93,56 @@ pub extern "C-unwind" fn kv_list_reserve(p: i64, extra: i64) {
     }
     let width = crate::flat::width(obj(p).ty()).max(1);
     with_words(p, |w| w.reserve(extra * width));
+}
+
+/// List `p` (held only by the caller) with room made for exactly its
+/// limit `n` (spec 2.2), which it then keeps.
+pub fn room_for_limit(p: i64, n: usize) {
+    if let size @ 1.. = crate::flat::item_size(obj(p).ty()) {
+        let len = list_mut(p).len;
+        with_packed(p, |_, w| {
+            let want = crate::flat::words_for(n, size);
+            w.truncate(crate::flat::words_for(len, size));
+            if w.capacity() > want {
+                w.shrink_to(want);
+            } else {
+                w.reserve_exact(want - w.len());
+            }
+        });
+    } else {
+        let want = n * crate::flat::width(obj(p).ty()).max(1);
+        with_words(p, |w| {
+            if w.capacity() > want {
+                w.shrink_to(want);
+            } else {
+                w.reserve_exact(want - w.len());
+            }
+        });
+    }
+    crate::heap::set_limit(p, n);
+}
+
+/// Takes item 0 out of list `p` (held only by the caller), releasing
+/// what it held: room for a full ring's push (spec 2.2).
+pub fn drop_first(p: i64) {
+    let ty = obj(p).ty();
+    if crate::flat::packed(ty) {
+        return with_slots(p, |items| {
+            items.remove(0);
+        });
+    }
+    let width = crate::flat::width(ty).max(1);
+    let words = crate::heap::slots(p);
+    if crate::flat::is_text(ty) {
+        crate::text_items::release_all(&words[..width]);
+    } else if crate::shapes::holds_refs(ty) {
+        for (i, slot) in words.iter().enumerate().take(width) {
+            crate::rc::release_slot(*slot as i64, crate::shapes::slot_type(p, i));
+        }
+    }
+    with_words(p, |w| {
+        w.drain(..width);
+    });
 }
 
 /// Adds `item` (owned) to the end of list `p`.

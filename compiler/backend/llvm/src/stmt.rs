@@ -5,7 +5,7 @@
 use crate::func::FnEmit;
 use crate::module::llvm_type;
 use kavach_kir::{BinOp, Block, Expr, ExprKind, FastOp, Local, PrintPart, Stmt, Type, walk};
-use kavach_runtime_native::heap::{LEN, PTR, RC};
+use kavach_runtime_native::heap::{LEN, LIMIT, PTR, RC};
 
 /// Whether `b` has a loop inside, at any depth.
 fn contains_loop(b: &Block) -> bool {
@@ -165,6 +165,11 @@ impl FnEmit<'_> {
                 let rc = self.load_at(&value, RC);
                 let alone = self.val(format!("icmp eq i64 {rc}, 1"));
                 ok = self.val(format!("and i1 {ok}, {alone}"));
+                // A list with a limit checks each push (spec 2.2).
+                let at = self.addr(&value, LIMIT);
+                let limit = self.val(format!("load i32, ptr {at}"));
+                let none = self.val(format!("icmp eq i32 {limit}, 0"));
+                ok = self.val(format!("and i1 {ok}, {none}"));
             }
         }
         let (fast, slow, done) = (self.label(), self.label(), self.label());

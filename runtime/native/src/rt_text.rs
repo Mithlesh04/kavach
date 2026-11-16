@@ -147,7 +147,10 @@ pub fn text_op(op: RtOp, a: i64, b: i64, c: i64, code: i64) -> i64 {
 pub fn list_op(op: RtOp, a: i64, b: i64, code: i64) -> i64 {
     let item = item_type(a);
     if op == RtOp::ListSort {
-        return sort(a, item);
+        // A sorted copy: a new list, which has no limit (spec 2.2).
+        let sorted = sort(a, item);
+        crate::heap::obj_mut(sorted).limit = 0;
+        return sorted;
     }
     if op == RtOp::ListJoin && crate::flat::is_text(obj(a).ty()) {
         // Read in place, without making an object per item.

@@ -58,7 +58,22 @@ pub(crate) fn build(
             std::path::PathBuf::from(format!("{stem}{}", std::env::consts::EXE_SUFFIX))
         }
     };
-    let built = build_with_best_backend(&program, &out).and_then(|()| env::write_beside(&out));
+    // The Windows icon `[build]` names, checked on every system (10.5).
+    let icon = kavach_driver::program_icon(std::path::Path::new(path)).and_then(|icon| {
+        if let Some(png) = &icon {
+            kavach_backend_cranelift::resources::check_icon(png)?;
+        }
+        Ok(icon)
+    });
+    let icon = match icon {
+        Ok(icon) => icon,
+        Err(e) => {
+            eprintln!("error: {e}");
+            return ExitCode::from(2);
+        }
+    };
+    let built = build_with_best_backend(&program, &out, icon.as_deref())
+        .and_then(|()| env::write_beside(&out));
     let packed = built.and_then(|()| compress.map(|m| pack::pack(&out, m)).transpose());
     match packed {
         Ok(sizes) => {
@@ -80,15 +95,16 @@ pub(crate) fn build(
 pub(crate) fn build_with_best_backend(
     program: &kavach_kir::Program,
     out: &std::path::Path,
+    icon: Option<&[u8]>,
 ) -> Result<(), String> {
     if std::env::var("KAVACH_BACKEND").as_deref() != Ok("cranelift") {
-        match kavach_backend_llvm::build(program, out) {
+        match kavach_backend_llvm::build(program, out, icon) {
             Ok(()) => return Ok(()),
             Err(kavach_backend_llvm::NotBuilt::Failed(e)) => return Err(e),
             Err(kavach_backend_llvm::NotBuilt::Unsupported(_)) => {}
         }
     }
-    kavach_backend_cranelift::build(program, out)
+    kavach_backend_cranelift::build(program, out, icon)
 }
 
 /// `kavach run --native`: KIR → Cranelift → machine code, run in memory.

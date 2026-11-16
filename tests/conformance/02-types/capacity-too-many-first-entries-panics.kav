@@ -1,0 +1,8 @@
+// Rule: `capacity(n, first)` with more first entries than `n` panics.
+// Spec: 2.2
+// expect panic: `List.capacity(2)` was given 3 first entries
+
+fn main() {
+    const xs: [Int] = List.capacity(2, [1, 2, 3])
+    print(xs)
+}

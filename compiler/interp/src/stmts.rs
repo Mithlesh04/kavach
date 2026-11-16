@@ -78,9 +78,24 @@ impl<'a> Interp<'a> {
                     // list or text first, so it grows in place, not in a
                     // copy (spec 2.2, 6.1).
                     if matches!(current, Value::List(_) | Value::Str(_)) {
-                        self.assign(target, Value::Unit, s.span)?;
+                        // No invariant sees the empty place (spec 7.3).
+                        self.emptying = true;
+                        let emptied = self.assign(target, Value::Unit, s.span);
+                        self.emptying = false;
+                        emptied?;
                     }
-                    v = self.arith(bin, current, v, s.span)?;
+                    v = match (current, v) {
+                        // A list with a limit keeps it, and fills up to it
+                        // (spec 2.2).
+                        (Value::List(mut xs), Value::List(ys)) if xs.limit.is_some() => {
+                            for y in ys.iter() {
+                                crate::items::push(&mut xs, y.clone())
+                                    .map_err(|m| self.panic(m, s.span))?;
+                            }
+                            Value::List(xs)
+                        }
+                        (current, v) => self.arith(bin, current, v, s.span)?,
+                    };
                 }
                 self.assign(target, v, s.span)?;
                 Ok(Value::Unit)
@@ -110,7 +125,9 @@ impl<'a> Interp<'a> {
                         reader = Some(r);
                         Box::new(std::iter::repeat(Value::Unit))
                     }
-                    Value::List(items) => Box::new(Rc::unwrap_or_clone(items).into_iter()),
+                    Value::List(items) => {
+                        Box::new(Rc::unwrap_or_clone(items).into_vec().into_iter())
+                    }
                     Value::Range(a, b, k) => Box::new((a..b).map(move |n| Value::Int(n, k))),
                     Value::Ticker(ms) => {
                         let period = std::time::Duration::from_millis(ms);
@@ -397,7 +414,10 @@ fn set<'a>(slot: &mut Value<'a>, steps: &[Step<'a>], value: Value<'a>) -> Result
             }
             item
         }
-        (Step::Index(key), Value::Map(m)) => Some(Rc::make_mut(m).slot(key.clone())),
+        (Step::Index(key), Value::Map(m)) => {
+            m.room_for(key, "map")?;
+            Some(Rc::make_mut(m).slot(key.clone()))
+        }
         (Step::Tuple(i), Value::Tuple(items)) => items.get_mut(*i),
         _ => None,
     };

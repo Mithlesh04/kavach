@@ -191,10 +191,6 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
             }
         }
         RtOp::IntPow => crate::rt::int_pow(a, b, result, line),
-        RtOp::MapWithCapacity => {
-            let table = crate::table::Table::with_room(a.max(0) as usize);
-            crate::heap::alloc(result, crate::heap::Data::Map(Box::new(table)))
-        }
         RtOp::PanicText => {
             let message = with_str(a, str::to_string);
             panic_with(&message, line)
@@ -237,11 +233,14 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
                 flag(n == 0)
             }
         }
-        RtOp::ListPush => {
-            let q = unique(a);
-            crate::heap::push_item(q, b as u64);
-            q
-        }
+        RtOp::ListCapacity
+        | RtOp::MapCapacity
+        | RtOp::SetCapacity
+        | RtOp::ListIsFull
+        | RtOp::MapIsFull
+        | RtOp::ListNoLimit
+        | RtOp::RingCapacity => crate::capacity::capacity_op(op, a, b, code, line),
+        RtOp::ListPush => crate::capacity::push(a, b, line),
         RtOp::ListTruncate => {
             let q = unique(a);
             crate::lists::truncate_list(q, b.max(0) as usize);

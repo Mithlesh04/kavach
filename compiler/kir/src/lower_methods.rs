@@ -94,40 +94,8 @@ impl<'a> Lowerer<'a> {
             if let Some(module) = self.std_modules.get(&def).cloned() {
                 return self.std_call(&module, &name.name, args, ty, line, span);
             }
-            if self.c.resolution.defs[def].kind == DefKind::Builtin
-                && id.name == "Set"
-                && name.name == "of"
-            {
-                return self.set_of(args, ty, line);
-            }
-            if self.c.resolution.defs[def].kind == DefKind::Builtin
-                && matches!(id.name.as_str(), "Map" | "Set")
-                && name.name == "with_capacity"
-            {
-                let n = args
-                    .first()
-                    .ok_or_else(|| self.unsupported("`with_capacity()`", span))?;
-                let n = self.expr(&n.value)?;
-                return Ok(ir::Expr {
-                    kind: K::Rt(RtOp::MapWithCapacity, vec![n]),
-                    ty,
-                    line,
-                });
-            }
-            if id.name == "Ptr" && name.name == "from_int" {
-                let n = args
-                    .first()
-                    .ok_or_else(|| self.unsupported("`Ptr.from_int()`", span))?;
-                let n = self.expr(&n.value)?;
-                return Ok(ir::Expr { ty, ..n });
-            }
-            if id.name == "Bytes" && name.name == "of" {
-                return self.bytes_of(args, ty, line);
-            }
-            if id.name == "Float" && name.name == "from_bits" {
-                let bits = self.expr(&args[0].value)?;
-                let kind = K::Rt(RtOp::FloatFromBits, vec![bits]);
-                return Ok(ir::Expr { kind, ty, line });
+            if let Some(e) = self.builtin_static(def, &id.name, &name.name, args, ty, line, span) {
+                return e;
             }
             // A `Field` is one named in an `invariant` (spec 7.3).
             if !matches!(
@@ -356,6 +324,9 @@ impl<'a> Lowerer<'a> {
             (Some(Shape::Str), "repeat") => RtOp::StrRepeat,
             (Some(Shape::List(_)), "len") => RtOp::ListLen,
             (Some(Shape::List(_)), "is_empty") => RtOp::ListIsEmpty,
+            (Some(Shape::List(_)), "is_full") => RtOp::ListIsFull,
+            // `ring.to_list()` (spec 2.2): a list, without the ring's limit.
+            (Some(Shape::List(_)), "to_list") => RtOp::ListNoLimit,
             (Some(Shape::List(item)), "push") => {
                 let v = values.pop().expect("an item");
                 values.push(self.coerce(v, item)?);
@@ -374,6 +345,7 @@ impl<'a> Lowerer<'a> {
             (Some(Shape::Map(..)), "contains_key") => RtOp::MapContains,
             (Some(Shape::Map(..)), "len") => RtOp::MapLen,
             (Some(Shape::Map(..)), "is_empty") => RtOp::MapIsEmpty,
+            (Some(Shape::Map(..)), "is_full") => RtOp::MapIsFull,
             (Some(Shape::Map(..)), "keys") => RtOp::MapKeys,
             (Some(Shape::Map(..)), "values") => RtOp::MapValues,
             (Some(Shape::Shared(_)), "get") => RtOp::SharedGet,

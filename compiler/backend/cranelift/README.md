@@ -27,6 +27,7 @@ Text constants are placed in the module's data, never as addresses from the comp
 | `src/object.rs` | `build`: the object file and its C `main` |
 | `src/unwind.rs` | The object file's unwind tables: `.eh_frame` on Linux (through `gimli`, [decision 0074](../../../docs/decisions/0074-gimli-for-unwind-tables.md)), `.pdata` and `.xdata` on Windows (decision 0065, step 1) |
 | `src/link.rs` | Finding the run-time library and the system linker; linking an executable or a shared library |
+| `src/resources.rs` | A Windows executable's resources, written as a `.res` file with no SDK: a manifest, and the icon `[build] icon` names (spec 10.5, decision 0120) |
 | `src/library.rs` | `build_library` (`kavach build --lib`, decision 0026): an exported C function in front of each export (turning C text into Kavach text and back, errors into numbers), `<package>_free`, `<package>_last_error`, then a shared library |
 | `src/abi.rs` | Machine types, signatures, the runtime functions native code imports |
 | `src/op_entries.rs` | The runtime's op entries (`kv_rt`, `kv_rt_window`, …), which share one signature |

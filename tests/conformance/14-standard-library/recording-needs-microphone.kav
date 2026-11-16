@@ -1,0 +1,15 @@
+// Rule: Recording what the microphone hears needs `Microphone`.
+// Spec: 14.27
+// expect compile error
+
+use std.audio
+
+pub fn listen_once() -> Int {
+    const rec = audio.listen() catch _ => {     // error: `listen_once` is `pub`, so it must say what it uses: add `uses Microphone`
+        return 0
+    }
+    rec.take().frames
+}
+
+fn main() {
+}

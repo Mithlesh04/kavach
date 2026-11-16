@@ -94,6 +94,7 @@ impl Checker<'_> {
         if let Some((sig, subst)) = found {
             if let Ty::Adt(owner, _) = &recv {
                 self.check_method_access(*owner, &sig, name);
+                self.check_wheres(*owner, &name.name, &subst, e.span);
             }
             let t = self.apply(&sig, subst, generics, args, e.span, &name.name);
             // `frame.draw(p, …)` gives what `p`'s vertex fn takes (15.3).
@@ -142,6 +143,7 @@ impl Checker<'_> {
             let changes = matches!(
                 (&recv, name.name.as_str()),
                 (Ty::List(_), "push" | "pop")
+                    | (Ty::Builtin("Ring", _), "push")
                     | (Ty::Map(..) | Ty::Set(_), "remove")
                     | (Ty::Set(_), "add")
             );

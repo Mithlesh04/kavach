@@ -35,6 +35,7 @@ impl<'a> Interp<'a> {
                 "contains" => Value::Bool(set.get(&arg(0)).is_some()),
                 "len" => int(set.len()),
                 "is_empty" => Value::Bool(set.is_empty()),
+                "is_full" => Value::Bool(set.is_full()),
                 "to_list" => Value::List(Rc::new(
                     set.entries.iter().map(|(k, _)| k.clone()).collect(),
                 )),
@@ -73,14 +74,14 @@ impl<'a> Interp<'a> {
 
     fn more_list(
         &mut self,
-        items: &Rc<Vec<Value<'a>>>,
+        items: &Rc<crate::items::Items<'a>>,
         name: &str,
         args: &[Value<'a>],
         span: Span,
     ) -> Result<Option<Value<'a>>, Flow<'a>> {
         let order = crate::ops::list_order;
         let arg = args.first().cloned().unwrap_or(Value::Unit);
-        let list = |xs: Vec<Value<'a>>| Value::List(Rc::new(xs));
+        let list = |xs: Vec<Value<'a>>| Value::List(Rc::new(xs.into()));
         let count = |v: &Value<'a>| match v {
             Value::Int(n, _) => (*n).max(0) as usize,
             _ => 0,

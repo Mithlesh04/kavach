@@ -60,6 +60,9 @@ pub struct FnDecl {
     pub name: Ident,
     pub generics: Vec<GenericParam>,
     pub params: Vec<Param>,
+    /// `where T: Floating`: a method's bounds on its type's parameters,
+    /// so it is there only for the types that meet them (spec 2.9).
+    pub where_bounds: Vec<GenericParam>,
     /// `-> Type`; `None` means the function returns nothing (spec 3.1).
     pub ret: Option<TypeExpr>,
     /// `-> secret T`: its result is a secret (spec 8.7).

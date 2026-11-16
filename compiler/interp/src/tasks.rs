@@ -240,6 +240,8 @@ impl<'a> Interp<'a> {
             frames: vec![frame],
             result: Vec::new(),
             invariant_fields: Vec::new(),
+            emptying: false,
+            panic_trail: Vec::new(),
             out: String::new(),
             err: String::new(),
             steps: self.steps,

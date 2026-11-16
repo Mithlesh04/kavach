@@ -1,0 +1,11 @@
+// Rule: Adding a new item to a full set made by `Set.capacity(n)` panics; adding one it holds does not.
+// Spec: 2.2
+// expect output: 2
+// expect panic: the set is full (capacity 2)
+
+fn main() {
+    let s: Set<String> = Set.capacity(2, ["x", "y"])
+    s.add("x")
+    print(s.len())
+    s.add("z")
+}

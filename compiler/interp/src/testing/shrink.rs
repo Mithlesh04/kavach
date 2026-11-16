@@ -46,7 +46,7 @@ impl<'a> Interp<'a> {
                 ]
             }
             Value::List(items) if !items.is_empty() => {
-                let list = |xs: Vec<Value<'a>>| Value::List(Rc::new(xs));
+                let list = |xs: Vec<Value<'a>>| Value::List(Rc::new(xs.into()));
                 let mut c = vec![list(Vec::new()), list(items[..items.len() / 2].to_vec())];
                 for i in 0..items.len().min(8) {
                     let mut fewer = items.to_vec();

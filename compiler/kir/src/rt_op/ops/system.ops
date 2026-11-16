@@ -219,3 +219,12 @@ MachineGpus,
 MachineRows,
 MachineCritical,
 MachineAct,
+/// The microphone (spec 14.27): start recording (can fail), what it heard
+/// since the last take as a sound, stop it, let it go (`a` the
+/// recording); and record `a` seconds (a `Float`'s bits; can fail)
+/// (`runtime/native/src/rt_audio.rs`).
+AudioListen,
+AudioTake,
+AudioStopListening,
+AudioDropRecording,
+AudioRecord,

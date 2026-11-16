@@ -288,11 +288,11 @@ impl<'a> Interp<'a> {
                 DefKind::Builtin if d.name == "Set" && name.name == "of" => {
                     return Ok(self.set_of(args.into_iter().map(|(_, v)| v).collect()));
                 }
-                DefKind::Builtin if name.name == "with_capacity" && d.name == "Set" => {
-                    return Ok(self.set_of(Vec::new()));
-                }
-                DefKind::Builtin if name.name == "with_capacity" && d.name == "Map" => {
-                    return Ok(Value::Map(std::rc::Rc::default()));
+                DefKind::Builtin
+                    if name.name == "capacity"
+                        && matches!(d.name.as_str(), "List" | "Map" | "Set" | "Ring") =>
+                {
+                    return self.capacity(&d.name, args, span);
                 }
                 DefKind::Agent if name.name == "start" => {
                     if let Some(decl) = self.agents.get(&def).copied() {
@@ -328,7 +328,17 @@ impl<'a> Interp<'a> {
             self.assign(base, Value::List(items), span)?;
             return Ok(last.unwrap_or(Value::None));
         }
-        if MUTATING.contains(&name.name.as_str()) && !user_type {
+        // Only a list, map or set changes in place: `7.add(2)` is `7 + 2`.
+        let collection = matches!(
+            self.c.expr_types.get(&(base.span.start, base.span.end)),
+            Some(
+                kavach_checker::Ty::List(_)
+                    | kavach_checker::Ty::Map(..)
+                    | kavach_checker::Ty::Set(_)
+                    | kavach_checker::Ty::Builtin("Ring", _)
+            )
+        );
+        if MUTATING.contains(&name.name.as_str()) && !user_type && collection {
             // A variable's list or map moves out while it changes, so
             // `items.push(x)` doesn't copy the whole list.
             let local = match &base.kind {
@@ -342,7 +352,11 @@ impl<'a> Interp<'a> {
                 // changes, so it changes in place too (Sakshi's S6).
                 None => {
                     let v = self.eval(base)?;
-                    self.assign(base, Value::Unit, span)?;
+                    // No invariant sees the empty place (spec 7.3).
+                    self.emptying = true;
+                    let emptied = self.assign(base, Value::Unit, span);
+                    self.emptying = false;
+                    emptied?;
                     v
                 }
             };

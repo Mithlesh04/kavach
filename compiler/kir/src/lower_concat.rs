@@ -16,9 +16,21 @@ impl<'a> Lowerer<'a> {
 
     /// `xs + ys`: a copy of `xs`, with each item of `ys` pushed onto it.
     /// The copy is made by the first push, only when `xs` is still held.
-    pub(crate) fn list_concat(&mut self, l: ir::Expr, r: ir::Expr, line: u32) -> Lowered<ir::Expr> {
+    /// A new list has no limit (spec 2.2); `xs += ys` (`grows`) keeps it.
+    pub(crate) fn list_concat(
+        &mut self,
+        l: ir::Expr,
+        r: ir::Expr,
+        line: u32,
+        grows: bool,
+    ) -> Lowered<ir::Expr> {
         let ty = l.ty;
         let r = self.coerce(r, ty)?;
+        let l = if grows {
+            l
+        } else {
+            self.at(K::Rt(RtOp::ListNoLimit, vec![l]), ty, line)
+        };
         let acc = self.new_local(ty);
         let mut stmts = vec![Stmt::Let(acc, l)];
         stmts.extend(self.push_all(acc, r, line));
@@ -142,7 +154,11 @@ impl<'a> Lowerer<'a> {
             held.push(l);
         }
         let empty = self.at(K::Int(0), self.locals[held[0] as usize], line);
-        out.push(self.assign_path(base, empty)?);
+        // No invariant sees the empty place: the list is put back below.
+        self.emptying = true;
+        let emptied = self.assign_path(base, empty);
+        self.emptying = false;
+        out.push(emptied?);
         let operands = held
             .iter()
             .map(|&l| self.at(K::Move(l), self.locals[l as usize], line))

@@ -54,6 +54,10 @@ pub(crate) struct Lowerer<'a> {
     pub(crate) self_local: Option<Local>,
     /// The local holding the record whose `invariant` is being lowered.
     pub(crate) invariant_of: Option<(Local, Type)>,
+    /// A place is emptied for a moment while its list changes in place:
+    /// its type's invariants are checked when the list is put back, not
+    /// on the empty place (spec 7.3, `lower_concat.rs`).
+    pub(crate) emptying: bool,
     /// The value of each enclosing dot lambda (`.price`), innermost last.
     pub(crate) its: Vec<Local>,
     /// Generic functions, compiled once per set of type arguments
@@ -127,6 +131,7 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
         ensures: &[],
         self_local: None,
         invariant_of: None,
+        emptying: false,
         its: Vec::new(),
         error_views: Vec::new(),
         loop_frames: Vec::new(),

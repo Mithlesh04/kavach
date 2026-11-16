@@ -55,7 +55,7 @@ impl<'a> Interp<'a> {
                 }
             }
         }
-        Ok(Value::List(std::rc::Rc::new(results)))
+        Ok(Value::List(std::rc::Rc::new(results.into())))
     }
 
     /// What task `t`'s ending `e` is for the call: its function's error

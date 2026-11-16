@@ -80,7 +80,7 @@ impl<'a> Interp<'a> {
                 .last()
                 .and_then(|f| f.its.last().cloned())
                 .unwrap_or(Value::Unit)),
-            ExprKind::List(items) => Ok(Value::List(Rc::new(self.eval_all(items)?))),
+            ExprKind::List(items) => Ok(Value::List(Rc::new(self.eval_all(items)?.into()))),
             ExprKind::Tuple(items) => Ok(Value::Tuple(self.eval_all(items)?)),
             ExprKind::Map(entries) => {
                 let mut map = MapValue::default();

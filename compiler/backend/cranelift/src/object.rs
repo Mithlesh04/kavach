@@ -6,13 +6,16 @@ use crate::codegen::place_text;
 use crate::{compile, link, new_isa};
 use cranelift_codegen::ir::{AbiParam, InstBuilder, types};
 use cranelift_frontend::{FunctionBuilder, FunctionBuilderContext};
-use cranelift_module::{DataId, FuncId, Linkage, Module, default_libcall_names};
+use cranelift_module::{
+    DataDescription, DataId, FuncId, FuncOrDataId, Linkage, Module, default_libcall_names,
+};
 use cranelift_object::{ObjectBuilder, ObjectModule};
 use kavach_kir::{Program, encode_shapes};
 use std::path::Path;
 
-/// Compiles `program` and writes the executable `out`.
-pub fn build(program: &Program, out: &Path) -> Result<(), String> {
+/// Compiles `program` and writes the executable `out`, with the Windows
+/// icon `icon` (a PNG) when given.
+pub fn build(program: &Program, out: &Path, icon: Option<&[u8]>) -> Result<(), String> {
     // Executables on Linux and macOS are position-independent.
     let isa = new_isa(!cfg!(windows))?;
     let builder = ObjectBuilder::new(isa.clone(), "kavach_program", default_libcall_names())
@@ -45,7 +48,7 @@ pub fn build(program: &Program, out: &Path) -> Result<(), String> {
         l.dedup();
         l
     };
-    let linked = link::link(&object, out, &libs);
+    let linked = link::link(&object, out, &libs, icon);
     let _ = std::fs::remove_dir_all(&dir);
     linked
 }
@@ -85,6 +88,17 @@ fn c_main(
     let path = place_text(module, &program.path);
     let shapes_text = encode_shapes(&program.shapes);
     let shapes = place_text(module, &shapes_text);
+    // Each function's start, name and line, for crash reports (14.30).
+    let names_text = kavach_runtime_native::crash_stack::names_text(&program.functions);
+    let names = place_text(module, &names_text);
+    let starts = function_table(module, program)?;
+    let mut table_sig = module.make_signature();
+    for _ in 0..4 {
+        table_sig.params.push(AbiParam::new(types::I64));
+    }
+    let set_functions = module
+        .declare_function("kv_set_functions", Linkage::Import, &table_sig)
+        .map_err(|e| e.to_string())?;
 
     let mut ctx = module.make_context();
     ctx.func.signature = sig;
@@ -96,12 +110,17 @@ fn c_main(
     let entry_ref = module.declare_func_in_func(entry, b.func);
     let entry_addr = b.ins().func_addr(types::I64, entry_ref);
     let fails = b.ins().iconst(types::I8, fails as i64);
+    let set = module.declare_func_in_func(set_functions, b.func);
     let text = |id: DataId, len: usize, b: &mut FunctionBuilder| {
         let gv = module.declare_data_in_func(id, b.func);
         let ptr = b.ins().symbol_value(types::I64, gv);
         let len = b.ins().iconst(types::I64, len as i64);
         (ptr, len)
     };
+    let (names_ptr, names_len) = text(names, names_text.len(), &mut b);
+    let (starts_ptr, count) = text(starts, program.functions.len(), &mut b);
+    b.ins()
+        .call(set, &[names_ptr, names_len, starts_ptr, count]);
     let (path_ptr, path_len) = text(path, program.path.len(), &mut b);
     let (shapes_ptr, shapes_len) = text(shapes, shapes_text.len(), &mut b);
     let start = module.declare_func_in_func(kv_main, b.func);
@@ -120,4 +139,24 @@ fn c_main(
     module
         .define_function(main, &mut ctx)
         .map_err(|e| format!("main: {e:?}"))
+}
+
+/// The start of every function, by number, as data (0 for a C function):
+/// what a crash report names frames by (`crash_stack.rs`).
+fn function_table(module: &mut ObjectModule, program: &Program) -> Result<DataId, String> {
+    let id = module
+        .declare_anonymous_data(false, false)
+        .map_err(|e| e.to_string())?;
+    let mut data = DataDescription::new();
+    // Written data, not zeroed: relocations aren't applied in `.bss`.
+    data.define(vec![0u8; program.functions.len().max(1) * 8].into_boxed_slice());
+    data.set_align(8);
+    for i in 0..program.functions.len() {
+        if let Some(FuncOrDataId::Func(f)) = module.get_name(&format!("kv_fn_{i}")) {
+            let r = module.declare_func_in_data(f, &mut data);
+            data.write_function_addr((i * 8) as u32, r);
+        }
+    }
+    module.define_data(id, &data).map_err(|e| e.to_string())?;
+    Ok(id)
 }

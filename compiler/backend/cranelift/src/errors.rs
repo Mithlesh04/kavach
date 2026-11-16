@@ -140,7 +140,8 @@ impl FnGen<'_, '_> {
                         self.list_set(current, slots[0], slots[1], value.ty, value.line)
                     }
                     RtOp::MapInsert if self.is_map(value.ty) => {
-                        self.call_rt("kv_map_insert", &[current, slots[0], slots[1]])[0]
+                        let line = self.i32(value.line as i64);
+                        self.call_rt("kv_map_insert", &[current, slots[0], slots[1], line])[0]
                     }
                     _ => self.rt_slots(*op, current, slots[0], slots[1], value.ty, value.line),
                 };

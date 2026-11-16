@@ -244,6 +244,11 @@ impl<'a> Interp<'a> {
             // `xs + ys` (spec 2.2): a new list; `xs += ys` grows `xs` in
             // place when nothing else holds it.
             (Value::List(mut x), Value::List(y)) if op == Add => {
+                if x.limit.is_some() {
+                    // A new list has no limit (spec 2.2).
+                    let all: Vec<Value<'a>> = x.iter().chain(y.iter()).cloned().collect();
+                    return Ok(Value::List(std::rc::Rc::new(all.into())));
+                }
                 std::rc::Rc::make_mut(&mut x).extend(y.iter().cloned());
                 Ok(Value::List(x))
             }

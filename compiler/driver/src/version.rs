@@ -36,6 +36,23 @@ pub fn program_version(file: &Path) -> (String, bool) {
     (text, config.build.version_flag)
 }
 
+/// The bytes of the icon `[build] icon` names for a program built from
+/// `file` (spec 10.5), if it names one; the path is relative to
+/// `kavach.toml`.
+pub fn program_icon(file: &Path) -> Result<Option<Vec<u8>>, String> {
+    let config = Config::for_file(file)?;
+    let Some(icon) = config.build.icon else {
+        return Ok(None);
+    };
+    let start = file.parent().unwrap_or(Path::new("."));
+    let start = std::fs::canonicalize(start).unwrap_or_else(|_| start.to_path_buf());
+    let dir = start.ancestors().find(|d| d.join("kavach.toml").is_file());
+    let path = dir.unwrap_or(&start).join(&icon);
+    std::fs::read(&path)
+        .map(Some)
+        .map_err(|e| format!("can't read the icon `{icon}` that `[build]` names: {e}"))
+}
+
 /// `text` as an executable carries it, between its marks.
 pub fn marked(text: &str) -> String {
     format!("{START}{text}{END}")

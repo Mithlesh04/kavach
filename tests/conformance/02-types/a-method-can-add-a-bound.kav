@@ -1,0 +1,25 @@
+// Rule: A method of a generic type may add a bound to the type's parameter with `where`; the method is there only for types that meet it, and a literal with no type of its own becomes a `Float` there.
+// Spec: 2.9
+// expect output: 3
+// expect output: 1.5
+// expect output: 1.5
+// expect output: 2.5
+
+use std.math
+
+type Pair<T: Number> {
+    a: T
+    b: T
+
+    fn sum(self) -> T { self.a + self.b }
+    fn mean(self) -> T where T: Floating { (self.a + self.b) / 2.0 }
+    fn spread(self) -> T where T: Floating { math.sqrt(self.mean() * self.mean()) + 1.0 }
+}
+
+fn main() {
+    const counts: Pair<Int> = Pair(a: 1, b: 2)
+    print(counts.sum())
+    print(Pair(a: 1.0, b: 2.0).mean())
+    print(Pair(a: 1, b: 2).mean())
+    print(Pair(a: Float32(1.0), b: Float32(2.0)).spread())
+}

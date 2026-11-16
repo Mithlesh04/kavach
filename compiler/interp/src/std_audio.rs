@@ -56,7 +56,7 @@ impl<'a> Interp<'a> {
             "info_id" => {
                 let (r, c, f) = audio::info(n);
                 let all = [r, c, f].map(|v| Value::Int(i128::from(v), Prim::Int));
-                Value::List(Rc::new(all.to_vec()))
+                Value::List(Rc::new(all.to_vec().into()))
             }
             "drop_sound_id" => {
                 audio::drop_sound(n);
@@ -84,6 +84,23 @@ impl<'a> Interp<'a> {
                     audio::set_pan(n, v);
                 }
                 Value::Unit
+            }
+            "listen_id" => return number(audio::listen(), self, "Unavailable"),
+            "take_id" => Value::Int(i128::from(audio::take(n)), Prim::Int),
+            "stop_listening_id" => {
+                audio::stop_listening(n);
+                Value::Unit
+            }
+            "drop_recording_id" => {
+                audio::drop_recording(n);
+                Value::Unit
+            }
+            "record_id" => {
+                let seconds = match args.first() {
+                    Some(Value::Float(f)) => *f,
+                    _ => 0.0,
+                };
+                return number(audio::record(seconds), self, "Unavailable");
             }
             _ => Value::Bool(audio::playing(n)),
         })

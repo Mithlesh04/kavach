@@ -34,7 +34,7 @@ impl<'a> Interp<'a> {
             "size_id" => {
                 let (w, h) = image::size(int(0));
                 let both = [w, h].map(|v| Value::Int(i128::from(v), Prim::Int));
-                Value::List(Rc::new(both.to_vec()))
+                Value::List(Rc::new(both.to_vec().into()))
             }
             "pixels_id" => Value::Bytes(image::take_pixels(int(0)).into()),
             _ => {

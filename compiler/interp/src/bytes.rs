@@ -26,7 +26,7 @@ impl<'a> Interp<'a> {
     pub(crate) fn bytes_of(&mut self, list: Value<'a>) -> Value<'a> {
         let items = match list {
             Value::List(items) => items,
-            _ => Rc::new(Vec::new()),
+            _ => Rc::default(),
         };
         let b: Vec<u8> = items
             .iter()

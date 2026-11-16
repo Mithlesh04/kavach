@@ -24,6 +24,9 @@ impl<'a> Interp<'a> {
         value: &Value<'a>,
         span: Span,
     ) -> Result<(), Flow<'a>> {
+        if self.emptying {
+            return Ok(());
+        }
         let Value::Record { def, fields, .. } = value else {
             return Ok(());
         };

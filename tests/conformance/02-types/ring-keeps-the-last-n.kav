@@ -1,0 +1,46 @@
+// Rule: `Ring.capacity(n)` keeps the last `n` items pushed, oldest first: a push onto a full ring drops the oldest; first items beyond `n` keep the last `n`.
+// Spec: 2.2
+// expect output: [2.0, 3.0, 4.0]
+// expect output: 2.0
+// expect output: 4.0
+// expect output: true
+// expect output: 3.0
+// expect output: 2.0 3.0 4.0
+// expect output: ["b", "c"]
+// expect output: [false, true, true]
+// expect output: 0
+// expect output: [4.0, 5.0]
+// expect output: [2.0, 3.0, 4.0]
+
+fn main() {
+    let recent: Ring<Float> = Ring.capacity(3)
+    for t in [1.0, 2.0, 3.0, 4.0] {
+        recent.push(t)
+    }
+    print(recent)
+    print(recent.first() ?? 0.0)
+    print(recent.last() ?? 0.0)
+    print(recent.is_full())
+    print(recent.get(1) ?? 0.0)
+    let shown = ""
+    for t in recent {
+        shown += if shown == "" { "{t}" } else { " {t}" }
+    }
+    print(shown)
+
+    let kept = Ring.capacity(2, ["a", "b", "c"])
+    print(kept)
+    let flags: Ring<Bool> = Ring.capacity(3, [true, true])
+    flags.push(false)
+    flags.push(true)
+    flags.push(true)
+    print(flags)
+    let empty: Ring<Int> = Ring.capacity(0)
+    empty.push(1)
+    print(empty.len())
+
+    let copy = recent
+    copy.push(5.0)
+    print(copy.to_list().skip(1))
+    print(recent.to_list())
+}

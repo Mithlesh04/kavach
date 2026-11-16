@@ -121,9 +121,19 @@ impl<'a> FnEmit<'a> {
             self.ins("unreachable".into());
         }
         // Unwind tables, so a panic can unwind through generated frames to
-        // the start of its task (decision 0065).
+        // the start of its task (decision 0065); and before the entry,
+        // Kavach's mark and the function's number, so a crash report can
+        // name the frame without the function's address being taken
+        // (`kavach_runtime_native::crash_stack`).
+        let mark = match name.strip_prefix("kv_fn_").map(str::parse::<u32>) {
+            Some(Ok(n)) => format!(
+                " prefix <{{ i32, i32 }}> <{{ i32 {}, i32 {n} }}>",
+                kavach_runtime_native::crash_stack::MAGIC
+            ),
+            _ => String::new(),
+        };
         format!(
-            "define internal {} @{name}({}) uwtable {{\nentry:\n{}{}}}\n\n",
+            "define internal {} @{name}({}) uwtable{mark} {{\nentry:\n{}{}}}\n\n",
             ret_type(f.ret, f.fails),
             params.join(", "),
             self.slots,

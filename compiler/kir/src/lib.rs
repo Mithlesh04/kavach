@@ -69,6 +69,7 @@ mod lower_replay;
 mod lower_schema;
 mod lower_scoped;
 mod lower_selected;
+mod lower_statics;
 mod lower_std;
 mod lower_stmt;
 mod lower_tasks;

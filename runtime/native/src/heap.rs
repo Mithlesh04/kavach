@@ -59,11 +59,15 @@ pub struct Obj {
     /// The variant of a union value (0 for everything else).
     pub tag: u32,
     pub(crate) kind: u16,
-    /// The number of slots of a fixed object.
+    /// The number of slots of a fixed object; for a list, 1 when it is a
+    /// ring, which drops its oldest item when full (spec 2.2).
     pub(crate) fixed_len: u16,
     /// The object's type: its index in the shape table (see `ty`).
     pub type_id: u32,
-    _pad: u32,
+    /// For a list, map or set made by `capacity(n)` (spec 2.2): `n + 1`;
+    /// 0 when it has no limit. A list's capacity is then never above `n`,
+    /// so generated code that pushes while there is room needs no check.
+    pub(crate) limit: u32,
 }
 
 impl Obj {
@@ -83,11 +87,14 @@ const NOT_REF: u32 = u32::MAX;
 
 /// Where the type id is in the header.
 pub const TYPE_ID: i32 = 16;
+/// Where a list's limit is in the header (`Obj::limit`), a `u32`.
+pub const LIMIT: i32 = 20;
 
 // Generated code relies on these offsets.
 const _: () = assert!(size_of::<Obj>() == FIELDS as usize);
 const _: () = assert!(std::mem::offset_of!(Obj, tag) == TAG as usize);
 const _: () = assert!(std::mem::offset_of!(Obj, kind) == KIND as usize);
+const _: () = assert!(std::mem::offset_of!(Obj, limit) == LIMIT as usize);
 const _: () = assert!(std::mem::offset_of!(Obj, type_id) == TYPE_ID as usize);
 const _: () = assert!(std::mem::offset_of!(ListObj, ptr) == PTR as usize);
 const _: () = assert!(std::mem::offset_of!(ListObj, len) == LEN as usize);
@@ -182,7 +189,7 @@ fn head(ty: Type, tag: u32, kind: u16, fixed_len: u16) -> Obj {
             Type::Ref(id) => id,
             _ => NOT_REF,
         },
-        _pad: 0,
+        limit: 0,
     }
 }
 
@@ -295,6 +302,31 @@ pub(crate) fn obj_mut<'a>(p: i64) -> &'a mut Obj {
     // SAFETY: as for `obj`; native code runs on one thread, and the
     // runtime never keeps another reference to the object while it changes.
     unsafe { &mut *(p as *mut Obj) }
+}
+
+/// The most entries list, map or set `p` may hold (spec 2.2), if any.
+pub fn limit_of(p: i64) -> Option<usize> {
+    obj(p).limit.checked_sub(1).map(|n| n as usize)
+}
+
+/// Whether list `p` is a ring (`Ring<T>`, spec 2.2).
+pub fn is_ring(p: i64) -> bool {
+    let o = obj(p);
+    o.kind == LIST && o.fixed_len == 1
+}
+
+/// Makes list `p` a ring, or a plain list again.
+pub fn set_ring(p: i64, ring: bool) {
+    obj_mut(p).fixed_len = u16::from(ring);
+}
+
+/// Gives `p` the limit `n`; a list's capacity is cut to it.
+pub fn set_limit(p: i64, n: usize) {
+    obj_mut(p).limit = n as u32 + 1;
+    if obj(p).kind == LIST {
+        let l = list_mut(p);
+        l.cap = l.cap.min(n);
+    }
 }
 
 #[allow(unsafe_code)]

@@ -353,7 +353,7 @@ impl<'a> Interp<'a> {
             .zip(names)
             .map(|(v, n)| match v {
                 Some(v) => v,
-                None if *n == "protocols" => Value::List(std::rc::Rc::new(Vec::new())),
+                None if *n == "protocols" => Value::List(std::rc::Rc::new(Vec::new().into())),
                 None => self.str_value(""),
             })
             .collect()

@@ -170,7 +170,7 @@ pub(crate) fn value(t: &Tree, ty: Type) -> i64 {
             };
             let mut map = crate::rt_maps::kv_map_new(crate::rt::type_code(map_ty));
             for (k, v) in fields {
-                map = crate::rt_maps::kv_map_insert(map, new_text(k, key_ty), value(v, ty));
+                map = crate::rt_maps::kv_map_insert(map, new_text(k, key_ty), value(v, ty), 0);
             }
             ("Object", map as u64)
         }

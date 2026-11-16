@@ -86,6 +86,9 @@ impl<'a> Lowerer<'a> {
     /// `value` (a new or changed record), after checking its type's
     /// invariants (spec 7.3): a false one panics with the contract.
     pub(crate) fn with_invariants(&mut self, value: ir::Expr) -> Lowered<ir::Expr> {
+        if self.emptying {
+            return Ok(value);
+        }
         let Some(def) = self.shapes.def_of(value.ty) else {
             return Ok(value);
         };

@@ -73,3 +73,26 @@ length(Float32(3.0), Float32(4.0))        // 5.0, a Float32
 - Each generic function is compiled once for each type it is called with, so `total` of `Float32`s runs as a loop written for `Float32` would.
 - The bound is `Floating`, not `Float`, as `Float` is a type.
 - Whole-number overflow and division by zero panic in generic code as elsewhere (5.6).
+
+## Bounds on one method
+
+A method of a generic type may add a bound to the type's parameter with `where`, after its result type. The method is then there only for the types that meet the bound; the type's other methods are there for all of them. A `where` bound is `Number` or `Floating` ([decision 0119](../../decisions/0119-bounds-on-one-method.md)).
+
+```kavach
+type Pair<T: Number> {
+    a: T
+    b: T
+
+    fn sum(self) -> T { self.a + self.b }
+    fn mean(self) -> T where T: Floating { (self.a + self.b) / 2.0 }
+}
+
+const counts: Pair<Int> = Pair(a: 1, b: 2)
+counts.sum()                        // 3
+Pair(a: 1.0, b: 2.0).mean()         // 1.5
+counts.mean()                       // error: `mean` needs `T: Floating`, and `T` is `Int` here
+```
+
+- In the method's body the parameter has the bound, so a literal with a fraction and `std.math` may be used on a `T`.
+- A literal with no type of its own becomes a `Float` there, as for a function's bound: `Pair(a: 1, b: 2).mean()` is `1.5`.
+- `where` is written on the signature's line, and names the type's own parameters; a function writes its bounds in `<T: …>`. `where` is a word only there: elsewhere it may be a name.

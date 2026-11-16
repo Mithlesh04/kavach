@@ -11,7 +11,7 @@ Small benchmarks of the basics, in Kavach and C++, doing exactly the same work o
 | `matrix` | Nested lists: multiplying two matrices |
 | `records` | 10 million records in a list: create, then read their fields |
 | `maps` | A map with 2 million integer keys: insert, then look every key up |
-| `sizedmaps` | The same, with the map made with room for its 2 million keys (`Map.with_capacity`; C++ `reserve`s the same) |
+| `sizedmaps` | The same, with the map made with room for its 2 million keys (`Map.capacity`; C++ `reserve`s the same) |
 | `text` | Building, splitting and searching large text |
 | `sort` | Sorting a large list |
 | `closures` | Calling function values in a loop |

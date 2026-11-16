@@ -20,6 +20,7 @@ impl Parser<'_> {
         let mut f = FnDecl {
             generics: self.generic_params(),
             params: self.params(),
+            where_bounds: Vec::new(),
             name,
             ret: None,
             ret_secret: false,
@@ -110,6 +111,12 @@ impl Parser<'_> {
     fn clauses(&mut self, f: &mut FnDecl) {
         let mut stage = 0;
         loop {
+            // `where T: Floating`, on the signature's line (spec 2.9).
+            if self.at_word("where") {
+                self.bump();
+                self.where_clause(f);
+                continue;
+            }
             let rank = match self.peek_past_newlines() {
                 TokenKind::Arrow => 0,
                 TokenKind::Bang => 1,
@@ -150,6 +157,25 @@ impl Parser<'_> {
                     });
                     f.examples.push(Example { expr, fails });
                 }
+            }
+        }
+    }
+
+    /// `where T: Floating, U: Number`: bounds a method adds to its type's
+    /// parameters (spec 2.9).
+    fn where_clause(&mut self, f: &mut FnDecl) {
+        loop {
+            let name = self.ident("a type parameter name");
+            let mut bounds = Vec::new();
+            if self.expect(&TokenKind::Colon, "`:` and the bound") {
+                bounds.push(self.type_expr());
+                while self.eat(&TokenKind::Plus) {
+                    bounds.push(self.type_expr());
+                }
+            }
+            f.where_bounds.push(GenericParam { name, bounds });
+            if !self.eat(&TokenKind::Comma) {
+                break;
             }
         }
     }

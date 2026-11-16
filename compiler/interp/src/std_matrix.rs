@@ -56,7 +56,7 @@ fn int<T: TryFrom<i128> + Default>(v: &Value<'_>) -> T {
 impl<'a> Interp<'a> {
     /// `matrix.product_id` and the others, with every argument given.
     pub(crate) fn matrix_call(&mut self, name: &str, args: &[Value<'a>], span: Span) -> Eval<'a> {
-        let empty = Rc::new(Vec::new());
+        let empty: Rc<crate::items::Items<'a>> = Rc::default();
         let list = |i: usize| match args.get(i) {
             Some(Value::List(items)) => items.clone(),
             _ => empty.clone(),
@@ -88,7 +88,7 @@ impl<'a> Interp<'a> {
         };
         // An empty list gives an empty list, whatever its items' type.
         let Some(first) = a.first() else {
-            return Ok(Value::List(Rc::new(Vec::new())));
+            return Ok(Value::List(Rc::new(Vec::new().into())));
         };
         let done = match first {
             Value::Float(_) => work(
@@ -130,7 +130,7 @@ impl<'a> Interp<'a> {
             }
         };
         match done {
-            Ok(items) => Ok(Value::List(Rc::new(items))),
+            Ok(items) => Ok(Value::List(Rc::new(items.into()))),
             Err(Overflow) => Err(self.panic(
                 "integer overflow in a matrix: a result doesn't fit (spec 2.17)",
                 span,

@@ -2,10 +2,11 @@
 //! sounds and voices by number, as the interpreter and native code call
 //! them. The program's side keeps the sounds and each voice's controls;
 //! the mixer (`mixer.rs`) plays on the device's real-time thread
-//! (`device.rs`). Decoding is `decode.rs`.
+//! (`device.rs`). Decoding is `decode.rs`, and the microphone `input.rs`.
 
 mod decode;
 mod device;
+mod input;
 pub mod mixer;
 #[cfg(test)]
 mod tests;
@@ -18,6 +19,7 @@ use std::sync::{Arc, Mutex, MutexGuard, OnceLock};
 struct Store {
     sounds: HashMap<i64, Arc<SoundData>>,
     voices: HashMap<i64, Arc<Controls>>,
+    recordings: HashMap<i64, input::Listening>,
     next: i64,
 }
 
@@ -137,4 +139,70 @@ pub fn set_pan(v: i64, pan: f64) {
 /// Whether voice `v` still plays.
 pub fn playing(v: i64) -> bool {
     controls(v).is_some_and(|c| !c.done.load(std::sync::atomic::Ordering::Acquire))
+}
+
+/// Starts recording from the default microphone: the recording's number,
+/// or why it can't.
+pub fn listen() -> Result<i64, String> {
+    let recording = input::listen()?;
+    let mut s = store();
+    s.next += 1;
+    let n = s.next;
+    s.recordings.insert(n, recording);
+    Ok(n)
+}
+
+/// What recording `n` heard since the last take, as a new sound's number;
+/// an empty sound once the recording is gone.
+pub fn take(n: i64) -> i64 {
+    let (samples, rate, channels) = match store().recordings.get(&n) {
+        Some(r) => (r.ring.take(), r.rate, r.channels),
+        None => (Vec::new(), 48_000, 1),
+    };
+    keep(SoundData {
+        samples,
+        channels,
+        rate,
+    })
+}
+
+/// Stops recording `n`; what it heard stays to be taken.
+pub fn stop_listening(n: i64) {
+    if let Some(r) = store().recordings.get(&n) {
+        r.stop();
+    }
+}
+
+/// Lets recording `n` go, stopping it.
+pub fn drop_recording(n: i64) {
+    if let Some(r) = store().recordings.remove(&n) {
+        r.stop();
+    }
+}
+
+/// Records `seconds` (at most an hour) and gives the sound's number,
+/// taking every second so the ring never fills.
+pub fn record(seconds: f64) -> Result<i64, String> {
+    let seconds = seconds.clamp(0.0, 3600.0);
+    let recording = input::listen()?;
+    let (rate, channels) = (recording.rate, recording.channels);
+    let want = (seconds * f64::from(rate)) as usize * usize::from(channels);
+    let start = std::time::Instant::now();
+    let mut samples = Vec::with_capacity(want);
+    while samples.len() < want {
+        let left = seconds - start.elapsed().as_secs_f64();
+        std::thread::sleep(std::time::Duration::from_secs_f64(left.clamp(0.001, 1.0)));
+        samples.extend(recording.ring.take());
+        if left <= 0.0 && samples.len() < want {
+            // The device gave less than asked for: what it gave.
+            break;
+        }
+    }
+    recording.stop();
+    samples.truncate(want);
+    Ok(keep(SoundData {
+        samples,
+        channels,
+        rate,
+    }))
 }

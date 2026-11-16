@@ -119,6 +119,7 @@ impl Checker<'_> {
             self.number_bound_now(g, &t, span);
             self.op_bounds_now(g, &t, span);
         }
+        self.wheres_now();
     }
 
     fn number_bound_now(&mut self, g: DefId, t: &Ty, span: Span) {

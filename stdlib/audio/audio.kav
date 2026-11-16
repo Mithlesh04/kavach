@@ -1,6 +1,7 @@
-// std.audio (spec 14.27, decision 0114): sound. The runtime keeps the
-// sounds and mixes the voices on the device's real-time thread
-// (`runtime/audio`), by number; this file gives them their methods.
+// std.audio (spec 14.27, decision 0114): sound, and the microphone. The
+// runtime keeps the sounds and recordings and mixes the voices on the
+// device's real-time thread (`runtime/audio`), by number; this file gives
+// them their methods.
 
 use std.audio
 
@@ -82,4 +83,41 @@ pub fn play(sound: Sound, volume: Float = 1.0, pan: Float = 0.0, looped: Bool = 
 {
     const v = try audio.play_id(sound.id, [volume, pan], looped)
     Voice(id: v)
+}
+
+/// What the microphone hears, from `audio.listen()`. Letting it go stops
+/// it.
+pub type Recording: Drop {
+    id: Int
+
+    /// What it heard since the last take, or since it started, as a
+    /// sound; an empty one when nothing new.
+    pub fn take(self) -> Sound uses Microphone {
+        const s = audio.take_id(self.id)
+        const i = audio.info_id(s)
+        Sound(id: s, rate: i[0], channels: i[1], frames: i[2])
+    }
+
+    /// Stops recording; a take after it gives what was left.
+    pub fn stop(self) uses Microphone {
+        audio.stop_listening_id(self.id)
+    }
+
+    fn drop(self) {
+        audio.drop_recording_id(self.id)
+    }
+}
+
+/// Starts recording what the default microphone hears, and gives at once.
+pub fn listen() -> Recording ! AudioError uses Microphone {
+    Recording(id: try audio.listen_id())
+}
+
+/// Records for `seconds`, waiting meanwhile, and gives the sound.
+pub fn record(seconds: Float) -> Sound ! AudioError uses Microphone
+    require seconds > 0.0 and seconds <= 3600.0
+{
+    const id = try audio.record_id(seconds)
+    const i = audio.info_id(id)
+    Sound(id: id, rate: i[0], channels: i[1], frames: i[2])
 }

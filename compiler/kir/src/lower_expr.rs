@@ -145,7 +145,7 @@ impl<'a> Lowerer<'a> {
                 let r = self.coerce(r, l.ty)?;
                 let l = self.coerce(l, r.ty)?;
                 if *op == BinaryOp::Add && self.is_list_type(l.ty) {
-                    return self.list_concat(l, r, line);
+                    return self.list_concat(l, r, line, false);
                 }
                 if *op == BinaryOp::Add && matches!(self.shapes.shape(l.ty), Some(Shape::Bytes)) {
                     return Ok(ir::Expr {

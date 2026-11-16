@@ -98,7 +98,7 @@ Choices this led to:
   | Growing four times at once (below 2^24 positions) | 51 | Up to three times C++'s memory for a map just past a growth |
   | A cheap hash without the factor 2 (keys packed densely) | 49, with the above | Too small to be worth losing the gaps |
 
-  A size the program gives now skips growing: `Map.with_capacity(n)` (spec 2.2, 2026-11-02). With it the `sizedmaps` benchmark is 1.6× C++ given `reserve` (37 ms against 59), and 2× C++ without (37 against 73, the same run's `maps`). Growing in place without rehashing everything at once would only spread the same work out.
+  A size the program gives now skips growing: `Map.capacity(n)` (spec 2.2, 2026-11-02; a limit as well since 2026-11-16). With it the `sizedmaps` benchmark is 1.6× C++ given `reserve` (37 ms against 59), and 2× C++ without (37 against 73, the same run's `maps`). Growing in place without rehashing everything at once would only spread the same work out.
 
   **Doubling in place** (2026-11-09, `runtime/native/src/table/grow.rs`): an integer index that doubles keeps its old buckets, a `realloc` that moves pages without copying, and each key moves at most once, to its old position or that plus the old size. Only a key that would wrap past the end makes it place every key again. The insert phase of `maps`, 15 runs in turns on a loaded WSL: best 63 → 57 ms, median 91 → 83, with the same memory.
 

@@ -43,6 +43,8 @@ impl RtOp {
                 | RtOp::DrawTexture
                 | RtOp::AudioDecode
                 | RtOp::AudioPlay
+                | RtOp::AudioListen
+                | RtOp::AudioRecord
                 | RtOp::ClipReadText
                 | RtOp::ClipWriteText
                 | RtOp::SerialOpen

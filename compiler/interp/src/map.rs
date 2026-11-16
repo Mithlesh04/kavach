@@ -9,6 +9,9 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 pub struct MapValue<'a> {
     pub entries: Vec<(Value<'a>, Value<'a>)>,
     index: HashMap<u64, Vec<usize>>,
+    /// At most this many entries, when made with `Map.capacity(n)` or
+    /// `Set.capacity(n)` (spec 2.2).
+    pub limit: Option<usize>,
 }
 
 /// Maps are equal when they hold the same keys with equal values, in any
@@ -27,6 +30,22 @@ impl<'a> MapValue<'a> {
 
     pub fn is_empty(&self) -> bool {
         self.entries.is_empty()
+    }
+
+    /// Whether the map holds as many entries as its limit allows.
+    pub fn is_full(&self) -> bool {
+        self.limit.is_some_and(|n| self.len() >= n)
+    }
+
+    /// A panic message when `key` is new and the map is full: a key it
+    /// holds already is changed, not added (spec 2.2).
+    pub fn room_for(&self, key: &Value<'a>, what: &str) -> Result<(), String> {
+        match self.limit {
+            Some(n) if self.len() >= n && self.find(key).is_none() => {
+                Err(crate::items::full(what, n))
+            }
+            _ => Ok(()),
+        }
     }
 
     fn find(&self, key: &Value<'a>) -> Option<usize> {
