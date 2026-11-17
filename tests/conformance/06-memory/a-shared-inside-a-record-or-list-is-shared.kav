@@ -1,0 +1,44 @@
+// Rule: a `Shared` kept in a record, a list or a lambda is still the one value: copying the record or list copies the link, not the value, so tasks and lambdas update what everyone sees.
+// Spec: 6.2, 9.5
+// expect output: 3
+// expect output: [0, 2, 0]
+// expect output: 40
+// expect output: 15
+
+type Stats {
+    hits: Shared<Int>
+}
+
+fn main() {
+    const stats = Stats(hits: Shared(0))
+    let copy = stats
+    copy.hits.update(n => n + 1)
+    const t = spawn {
+        stats.hits.update(n => n + 2)
+    }
+    const _ = t.wait() catch _ => 0
+    print(stats.hits.get())
+    const counters = [Shared(0), Shared(0), Shared(0)]
+    let also = counters
+    also[1].update(n => n + 2)
+    print(counters.map(c => c.get()))
+    let tasks: [Task<Int>] = []
+    for _ in 0..4 {
+        tasks.push(spawn thread {
+            for _ in 0..10 {
+                counters[2].update(n => n + 1)
+            }
+            0
+        })
+    }
+    for task in tasks {
+        const _ = task.wait() catch _ => 0
+    }
+    print(also[2].get())
+    const total = Shared(0)
+    const add = k => total.update(n => n + k)
+    for k in 1..=5 {
+        add(k)
+    }
+    print(total.get())
+}

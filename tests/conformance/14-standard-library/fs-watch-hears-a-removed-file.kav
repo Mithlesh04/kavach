@@ -1,0 +1,29 @@
+// Rule: a watcher on a folder hears changes under it: `poll()` gives each changed path once, written under the watched path, with the kind of its last change, so a removed file is `Removed`.
+// Spec: 14.3
+// expect output: true
+// expect output: kavach-t-fs-watch2/a.txt Removed
+// expect output: 0
+
+use std.fs
+use std.time
+
+fn main() ! FsError uses Fs, Console, Clock {
+    const dir = "kavach-t-fs-watch2"
+    try fs.create_dir(dir)
+    const w = try fs.watch(dir)
+    try fs.append_text("{dir}/a.txt", "hello")
+    time.sleep(500.ms)
+    let heard = false
+    for change in w.poll() {
+        heard = heard or change.path == "{dir}/a.txt"
+    }
+    print(heard)
+    try fs.remove("{dir}/a.txt")
+    time.sleep(500.ms)
+    for change in w.poll() {
+        print("{change.path} {change.kind}")
+    }
+    print(w.poll().len())
+    w.close()
+    try fs.remove_all(dir)
+}

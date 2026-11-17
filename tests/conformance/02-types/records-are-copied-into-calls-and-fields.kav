@@ -1,0 +1,34 @@
+// Rule: Records are values: a record passed to a function, or stored in another record, is a copy, so changing it never changes the original.
+// Spec: 2.4
+// expect output: 1
+// expect output: 99
+// expect output: 1
+// expect output: 5
+// expect output: 1 5
+
+type Point {
+    x: Int
+}
+
+type Line {
+    start: Point
+    end: Point
+}
+
+fn moved(p: Point) -> Point {
+    let q = p
+    q.x = 99
+    q
+}
+
+fn main() {
+    const p = Point(x: 1)
+    const q = moved(p)
+    print(p.x)
+    print(q.x)
+    let line = Line(start: p, end: p)
+    line.end.x = 5
+    print(p.x)
+    print(line.end.x)
+    print("{line.start.x} {line.end.x}")
+}

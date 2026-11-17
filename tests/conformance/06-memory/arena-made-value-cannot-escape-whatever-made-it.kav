@@ -1,0 +1,12 @@
+// Rule: A value made in an arena can't be stored outside it however it was made: by a call, not only as a named value.
+// Spec: 6.3
+// expect compile error
+
+fn main() {
+    let kept: [Int] = []
+    arena {
+        const xs = [1, 2, 3]
+        kept = xs.map(n => n * 2)       // error: the new list is made in the arena and can't be kept outside it
+    }
+    print(kept)
+}

@@ -1,0 +1,18 @@
+// Rule: a line a program prints that isn't valid UTF-8 is read with `�` in place of the bytes that aren't.
+// Spec: 14.23
+// expect output: h�i
+// expect output: true
+
+use std.fs
+use std.process
+
+fn main() ! Error uses Fs, Process, Console {
+    const dir = "kavach-t-proc-utf8"
+    try fs.create_dir(dir)
+    // A settings file whose value holds the byte 255, which UTF-8 never uses.
+    try fs.write_bytes("{dir}/odd.cfg", "[a]\n\tb = h".bytes() + Bytes([UInt8(255)]) + "i\n".bytes())
+    const done = try process.run("git", ["config", "--file", "{dir}/odd.cfg", "--get", "a.b"])
+    print(done.out.trim())
+    print(done.out == "h\u{FFFD}i\n")
+    try fs.remove_all(dir)
+}

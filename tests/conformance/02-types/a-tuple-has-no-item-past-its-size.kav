@@ -1,0 +1,8 @@
+// Rule: A tuple's size is fixed by its type: reading an item past it is a compile error.
+// Spec: 2.3
+// expect compile error
+
+fn main() {
+    const pair = (200, "OK")
+    print(pair.2)           // error: a `(Int, String)` has items 0 and 1
+}

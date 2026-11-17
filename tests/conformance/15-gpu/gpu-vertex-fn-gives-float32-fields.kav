@@ -1,0 +1,21 @@
+// Rule: Besides `position`, the fields a `gpu vertex fn` gives to the fragment fn are `Float32`s.
+// Spec: 15.3
+// expect compile error
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+    tile: Int32
+}
+
+gpu vertex fn place(c: Corner) -> Lit {     // error: `tile` is an `Int32`
+    Lit(position: (c.x, c.y, 0.0, 1.0), tile: 3)
+}
+
+fn main() {
+    print(place(Corner(x: 0.0, y: 0.0)))
+}

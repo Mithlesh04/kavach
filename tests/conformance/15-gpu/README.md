@@ -29,3 +29,34 @@ Conformance tests for spec chapter [15. GPU](../../../docs/spec/15-gpu.md). Form
 | 15.3 | [frame-draw-gives-the-textures-its-fragment-fn-reads.kav](frame-draw-gives-the-textures-its-fragment-fn-reads.kav) | `frame.draw` gives the textures its pipeline's fragment fn takes, as `textures:`. | compile error |
 | 15.3 | [gpu-fn-reads-a-texture-only-by-sample.kav](gpu-fn-reads-a-texture-only-by-sample.kav) | `sample` is the one call on a `Texture` a gpu fn can make. | compile error |
 | 15.3, 14.28 | [gpu-fn-uses-std-vec.kav](gpu-fn-uses-std-vec.kav) | A gpu fn may use std.vec's types of Float32, their operators and methods; a vertex fn's position and a fragment fn's color may be a Vec4. | runs |
+| 14.24, 8.1 | [gpu-screen-needs-window.kav](gpu-screen-needs-window.kav) | Drawing changes the program's own windows, so a `pub` function that calls `gpu.screen` must say `uses Window`. | compile error |
+| 14.24 | [gpu-texture-pixels-are-four-per-pixel.kav](gpu-texture-pixels-are-four-per-pixel.kav) | `gpu.texture`'s pixels are four for each pixel: another length than `width * height * 4` is a panic. | panic |
+| 15.1 | [gpu-fn-calls-no-plain-fn.kav](gpu-fn-calls-no-plain-fn.kav) | A `gpu fn` calls only other `gpu fn`s: calling a plain `fn` of the same types is a compile error. | compile error |
+| 15.1, 2.1 | [gpu-fn-converts-and-clamps.kav](gpu-fn-converts-and-clamps.kav) | A `gpu fn` may convert between `Float32`, `Int32` and `UInt32`, and use `abs`, `min`, `max` and `clamp`. | runs |
+| 15.1 | [gpu-fn-gives-only-32-bit-types.kav](gpu-fn-gives-only-32-bit-types.kav) | A `gpu fn` gives only `Float32`, `Int32`, `UInt32` and `Bool`, or records and tuples of them. | compile error |
+| 15.1 | [gpu-fn-has-no-error-type.kav](gpu-fn-has-no-error-type.kav) | A `gpu fn` can't fail: `!` in its signature is a compile error. | compile error |
+| 15.1 | [gpu-fn-has-no-match.kav](gpu-fn-has-no-match.kav) | A `gpu fn`'s body uses only the statements 15.1 lists (`if` and `else`, `while`, `for` over a range, `return`, …): `match` is not one. | compile error |
+| 15.1 | [gpu-fn-locals-are-32-bit.kav](gpu-fn-locals-are-32-bit.kav) | A `gpu fn`'s `const` and `let` hold only the 32-bit types and `Bool`. | compile error |
+| 15.1 | [gpu-fn-makes-no-lists.kav](gpu-fn-makes-no-lists.kav) | A `gpu fn` uses no lists, in its body as in its signature. | compile error |
+| 15.1 | [gpu-fn-power-is-float32-only.kav](gpu-fn-power-is-float32-only.kav) | In a `gpu fn`, `**` works on `Float32` only; on whole numbers it is a compile error. | compile error |
+| 15.1 | [gpu-fn-record-fields-are-32-bit.kav](gpu-fn-record-fields-are-32-bit.kav) | The records a `gpu fn` takes have fields only of `Float32`, `Int32`, `UInt32` and `Bool`. | compile error |
+| 15.1 | [gpu-fn-records-have-at-most-8-fields.kav](gpu-fn-records-have-at-most-8-fields.kav) | A record a `gpu fn` takes or gives has 1 to 8 fields. | compile error |
+| 15.1, 14.5 | [gpu-fn-uses-angles-exp-and-ln.kav](gpu-fn-uses-angles-exp-and-ln.kav) | A `gpu fn` may use `math.sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `exp` and `ln` on `Float32`; they give a `Float32`. | runs |
+| 15.1 | [gpu-fn-uses-no-maps.kav](gpu-fn-uses-no-maps.kav) | A `gpu fn` uses no maps. | compile error |
+| 15.1 | [gpu-fn-uses-no-text.kav](gpu-fn-uses-no-text.kav) | A `gpu fn` uses no text. | compile error |
+| 15.1 | [gpu-fn-uses-while-if-and-return.kav](gpu-fn-uses-while-if-and-return.kav) | A `gpu fn` may use `let`, assignment, `if` and `else`, `while`, `for` over a range and `return`. | runs |
+| 15.1, 15.2 | [gpu-results-match-direct-calls.kav](gpu-results-match-direct-calls.kav) | A `map` gives what calling its `gpu fn` on each item directly gives: the code and the results are the same wherever it runs. | runs |
+| 15.2 | [gpu-chained-map-panic-gives-its-message.kav](gpu-chained-map-panic-gives-its-message.kav) | A panic in the second of two chained `map`s stops the work with that map's message, as on the CPU. | panic |
+| 15.2, 5.6 | [gpu-division-by-zero-panics.kav](gpu-division-by-zero-panics.kav) | Whole-number division by zero in a `gpu fn` that a `map` runs panics, as it does on the CPU. | panic |
+| 15.2, 2.2 | [gpu-mapped-list-changes-by-copy.kav](gpu-mapped-list-changes-by-copy.kav) | A list a GPU `map` made is an ordinary list: changing a second holder of it copies it first. | runs |
+| 15.2 | [gpu-maps-in-a-loop-are-read-after-it.kav](gpu-maps-in-a-loop-are-read-after-it.kav) | A loop of `map`s feeding each result to the next gives, at the first read after the loop, every item as the CPU works it out. | runs |
+| 15.3, 14.24 | [frame-draw-vertices-are-what-the-vertex-fn-takes.kav](frame-draw-vertices-are-what-the-vertex-fn-takes.kav) | `frame.draw`'s vertices are a list of the record its pipeline's vertex fn takes first. | compile error |
+| 15.3 | [gpu-fragment-fn-gives-a-color.kav](gpu-fragment-fn-gives-a-color.kav) | A `gpu fragment fn` gives a color: four `Float32`s, or a `Vec4<Float32>`. | compile error |
+| 15.3 | [gpu-only-fragment-fns-take-textures.kav](gpu-only-fragment-fns-take-textures.kav) | Only a `gpu fragment fn` takes textures: a `gpu vertex fn` taking a `Texture` is a compile error. | compile error |
+| 15.3, 1.6 | [gpu-vertex-and-fragment-are-names-elsewhere.kav](gpu-vertex-and-fragment-are-names-elsewhere.kav) | `vertex` and `fragment` are words only between `gpu` and `fn`; anywhere else they are ordinary names. | runs |
+| 15.3 | [gpu-vertex-fields-are-numbers.kav](gpu-vertex-fields-are-numbers.kav) | A vertex's fields are `Float32`s, `Int32`s or `UInt32`s: a `Bool` field is a compile error. | compile error |
+| 15.3, 15.1 | [gpu-vertex-fn-follows-gpu-fn-rules.kav](gpu-vertex-fn-follows-gpu-fn-rules.kav) | A `gpu vertex fn` follows the rules of a `gpu fn`: it can't print. | compile error |
+| 15.3 | [gpu-vertex-fn-gives-float32-fields.kav](gpu-vertex-fn-gives-float32-fields.kav) | Besides `position`, the fields a `gpu vertex fn` gives to the fragment fn are `Float32`s. | compile error |
+| 15.3, 5.6 | [gpu-vertex-fn-panics-on-the-cpu.kav](gpu-vertex-fn-panics-on-the-cpu.kav) | A `gpu vertex fn` called on the CPU panics on whole-number overflow, as any other function does. | panic |
+| 15.3 | [gpu-vertex-fn-takes-at-most-three-records.kav](gpu-vertex-fn-takes-at-most-three-records.kav) | A `gpu vertex fn` takes one, two or three records: the vertex, the instance and the shared value. | compile error |
+| 15.3 | [gpu-vertex-fn-takes-records.kav](gpu-vertex-fn-takes-records.kav) | What a `gpu vertex fn` takes are records, not bare numbers. | compile error |

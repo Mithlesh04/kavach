@@ -1,0 +1,10 @@
+// Rule: A type argument written at a call fixes the type parameter, so arguments of another type are an error.
+// Spec: 2.9
+// expect compile error
+
+fn first<T>(xs: [T]) -> T? { xs.get(0) }
+
+fn main() {
+    print(first([1, 2]) ?? 0)
+    print(first<String>([1, 2]) ?? "")    // error: `T` is `String`, so `xs` is a `[String]`
+}

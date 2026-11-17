@@ -1,0 +1,18 @@
+// Rule: A generic type's bound must be met by the type it is made with: a record that doesn't implement `Comparable` can't fill `T: Comparable`.
+// Spec: 2.9
+// expect compile error
+
+type Plain {
+    n: Int
+}
+
+type Sorted<T: Comparable> {
+    items: [T]
+}
+
+fn main() {
+    const ok = Sorted(items: [3, 1])
+    print(ok.items.len())
+    const s = Sorted(items: [Plain(n: 1)])      // error: `Plain` doesn't implement `Comparable`
+    print(s.items.len())
+}

@@ -1,0 +1,35 @@
+// Rule: A place inside a `let` at any depth can be given for an `inout` parameter: a field of a list item, an item of an item, an item of a field.
+// Spec: 3.9
+// expect output: 31
+// expect output: [[1, 2], [4, 4]]
+// expect output: [6, 7]
+// expect output: [9]
+
+type User {
+    name: String
+    age: Int
+}
+
+type Order {
+    lines: [Int]
+}
+
+fn bump(inout n: Int) {
+    n += 1
+}
+
+fn main() {
+    let users = [User(name: "Asha", age: 20), User(name: "Ravi", age: 30)]
+    bump(users[1].age)
+    print(users[1].age)
+    let grid = [[1, 2], [3, 4]]
+    bump(grid[1][0])
+    print(grid)
+    let o = Order(lines: [5, 7])
+    bump(o.lines[0])
+    print(o.lines)
+    const before = [9]
+    let after = before
+    bump(after[0])
+    print(before)
+}

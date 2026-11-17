@@ -1,0 +1,16 @@
+// Rule: `json.parse` reads every JSON escape in text, a surrogate pair as one character, and `json.stringify` writes text that reads back the same.
+// Spec: 2.12
+// expect output: true
+// expect output: 1 😀 é
+// expect output: true
+
+use std.json
+
+fn main() ! JsonError {
+    const doc = try json.parse("\"\\u0041\\\"\\\\\\/\\b\\f\\n\\r\\t\\ud83d\\ude00\\u00E9\"")
+    const text = doc.text() ?? ""
+    print(text == "A\"\\/\u{8}\u{C}\n\u{D}\t😀é")
+    const emoji = (try json.parse("\"\\uD83D\\uDE00\"")).text() ?? ""
+    print("{emoji.chars().len()} {emoji} {(try json.parse("\"é\"")).text() ?? ""}")
+    print((try json.parse(json.stringify(doc))).text() == text)
+}

@@ -1,0 +1,14 @@
+// Rule: `chars` gives one `Char` per character as `len` counts them: a combining mark and each part of a joined emoji are characters of their own, and joining them gives the text back.
+// Spec: 14.2
+// expect output: 2 769
+// expect output: 5 5
+// expect output: true true
+
+fn main() {
+    const accented = "e\u{301}"
+    const cs = accented.chars()
+    print("{cs.len()} {Int(cs[1])}")
+    const family = "👨‍👩‍👧"
+    print("{family.len()} {family.chars().len()}")
+    print("{cs.join("") == accented} {family.chars().join("") == family}")
+}

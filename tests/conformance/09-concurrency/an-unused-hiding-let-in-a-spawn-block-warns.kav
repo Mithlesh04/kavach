@@ -1,0 +1,14 @@
+// Rule: a never-used `let` inside a spawn block that hides an outside `let` of the same name gets the hiding warning.
+// Spec: 1.4, 9.5
+// expect warning
+// expect output: 0
+
+fn main() ! Error {
+    let total = 0
+    const t = spawn {
+        let total = total + 1     // warning: makes a new `total`, hiding the one declared outside
+    }
+    try t.wait()
+    print(total)
+    total = 1
+}

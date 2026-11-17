@@ -1,0 +1,11 @@
+// Rule: Two `Regex` values are equal when their patterns are, even when the patterns match the same text.
+// Spec: 14.8
+// expect output: true
+// expect output: false
+
+use std.regex
+
+fn main() ! Error {
+    print(try regex.new(r"\d+") == try regex.new(r"\d+"))
+    print(try regex.new(r"\d+") == try regex.new(r"[0-9]+"))
+}

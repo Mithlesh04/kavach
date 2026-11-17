@@ -1,0 +1,21 @@
+// Rule: `update` gives the new value read under the lock, and `update_with` the result its function gives, so tasks that update one `Shared` each get their own, distinct result.
+// Spec: 6.2, 9.7
+// expect output: [1, 2, 3]
+// expect output: [10, 11, 12]
+// expect output: 3 13
+
+fn main() {
+    const counter = Shared(0)
+    const ids = Shared(10)
+    let counts: [Task<Int>] = []
+    let taken: [Task<Int>] = []
+    for _ in 0..3 {
+        counts.push(spawn counter.update(n => n + 1))
+        taken.push(spawn {
+            ids.update_with(n => (n + 1, n))
+        })
+    }
+    print(counts.map(t => t.wait() catch _ => -1))
+    print(taken.map(t => t.wait() catch _ => -1))
+    print("{counter.get()} {ids.get()}")
+}

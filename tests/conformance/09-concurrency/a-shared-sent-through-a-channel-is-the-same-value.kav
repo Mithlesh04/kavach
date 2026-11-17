@@ -1,0 +1,26 @@
+// Rule: a `Shared` put into a channel is a copy of the link, so the taker updates the value the sender sees.
+// Spec: 9.4, 6.2
+// expect output: 3
+// expect output: [1, 2]
+
+fn main() ! Error {
+    const (send, receive) = Channel<Shared<Int>>(capacity: 1)
+    const (lists, list_in) = Channel<Shared<[Int]>>(capacity: 1)
+    const counter = Shared(1)
+    const items = Shared([1])
+    const worker = spawn {
+        for c in receive {
+            c.update(n => n + 2)
+        }
+        match list_in.take() {
+            Taken.Item(xs) => xs.update(v => v + [2]),
+            Taken.Closed => [0],
+        }
+    }
+    send.put(counter)
+    send.close()
+    lists.put(items)
+    const _ = try worker.wait()
+    print(counter.get())
+    print(items.get())
+}

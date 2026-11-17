@@ -1,0 +1,14 @@
+// Rule: `with` changes fields the record has: naming a field it doesn't have is an error.
+// Spec: 2.4
+// expect compile error
+
+type User {
+    name: String
+    age: Int
+}
+
+fn main() {
+    const asha = User(name: "Asha", age: 31)
+    const other = asha with { height: 160 }      // error: `User` has no field `height`
+    print(other.age)
+}

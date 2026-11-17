@@ -1,0 +1,12 @@
+// Rule: `WindowError` is `Unavailable(reason: String)`: the system shows no windows here.
+// Spec: 14.22
+// expect output: Unavailable(reason: "no screen") no screen
+
+use std.window
+
+fn main() {
+    const e = WindowError.Unavailable(reason: "no screen")
+    match e {
+        WindowError.Unavailable(reason) => print("{e} {reason}"),
+    }
+}

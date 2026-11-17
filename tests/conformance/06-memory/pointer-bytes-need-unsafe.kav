@@ -1,0 +1,10 @@
+// Rule: `p.bytes(n)` copies bytes out of raw memory, so it is allowed only inside `unsafe { … }`.
+// Spec: 6.4
+// expect compile error
+
+fn header_at(p: Ptr<UInt8>) -> Bytes {
+    p.bytes(4)                      // error: raw memory outside unsafe
+}
+
+fn main() {
+}

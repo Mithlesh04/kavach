@@ -1,0 +1,13 @@
+// Rule: `log.histogram`'s `bounds` are its buckets' upper bounds in increasing order (a `require`).
+// Spec: 14.12
+// expect output: measured
+// expect panic
+
+use std.log
+
+fn main() {
+    log.histogram("http.server.request.duration", 0.02, bounds: [0.005, 0.01, 0.025, 0.05])
+    print("measured")
+    log.histogram("http.server.request.duration", 0.02, bounds: [0.05, 0.01])
+    print("not reached")
+}

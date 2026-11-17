@@ -1,0 +1,13 @@
+// Rule: `math.lgamma(x)` is the natural logarithm of the absolute value of the gamma function: `ln(n!)` for big `n`, and defined where gamma is negative.
+// Spec: 14.5
+// expect output: true
+// expect output: true
+// expect output: 0.0 0.0
+
+use std.math
+
+fn main() {
+    print(math.lgamma(1001.0).near(5912.128178488163))    // ln(1000!)
+    print(math.lgamma(-0.5).near(1.265512123484645))      // gamma(-0.5) is -3.5449…
+    print("{math.lgamma(1.0)} {math.lgamma(2.0)}")
+}

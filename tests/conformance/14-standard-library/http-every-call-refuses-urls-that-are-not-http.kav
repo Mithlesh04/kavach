@@ -1,0 +1,33 @@
+// Rule: every HTTP client call takes only `http://` and `https://` URLs; any other URL fails with `BadUrl`, holding it, before anything is sent.
+// Spec: 14.11
+// expect output: post: BadUrl(url: "ftp://localhost/a")
+// expect output: request: BadUrl(url: "localhost:80/a")
+// expect output: get_json: BadUrl(url: "")
+// expect output: post_json: BadUrl(url: "file:///etc/hosts")
+// expect output: open: BadUrl(url: "ws://localhost/")
+
+use std.http
+use std.json
+
+fn main() uses Net, Console {
+    const _a = http.post("ftp://localhost/a", "x".bytes()) catch e => {
+        print("post: {e}")
+        Response(status: 0, headers: [], body: Bytes([]))
+    }
+    const _b = http.request("PUT", "localhost:80/a") catch e => {
+        print("request: {e}")
+        Response(status: 0, headers: [], body: Bytes([]))
+    }
+    const _c = http.get_json<Int>("") catch e => {
+        print("get_json: {e}")
+        0
+    }
+    const _d = http.post_json<Int>("file:///etc/hosts", json.of(1)) catch e => {
+        print("post_json: {e}")
+        0
+    }
+    match http.open("ws://localhost/") {
+        ok(s) => s.close(),
+        err(e) => print("open: {e}"),
+    }
+}

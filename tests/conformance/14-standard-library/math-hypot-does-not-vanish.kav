@@ -1,0 +1,15 @@
+// Rule: `math.hypot(x, y)` is the length of `(x, y)` without the squares vanishing on the way: tiny lengths are not 0.
+// Spec: 14.5
+// expect output: true
+// expect output: 0.0
+// expect output: 5.0
+
+use std.math
+
+fn main() {
+    const tiny = 1e-300
+    const h = math.hypot(tiny, tiny)
+    print(h > 1.41e-300 and h < 1.42e-300)
+    print(math.sqrt(tiny * tiny + tiny * tiny))     // the squares vanish
+    print(math.hypot(-3.0, -4.0))
+}

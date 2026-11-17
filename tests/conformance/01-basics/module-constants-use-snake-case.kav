@@ -1,0 +1,9 @@
+// Rule: A module constant's name is snake_case, as any value's: `maxCount` is an error.
+// Spec: 1.13, 1.5
+// expect compile error
+
+const maxCount = 10                 // error: write `max_count`
+
+fn main() {
+    print(maxCount)
+}

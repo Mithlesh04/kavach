@@ -1,0 +1,17 @@
+// Rule: A whole-number vector's parts overflow as their type does: adding two `Vec2<Int8>`s past 127 panics.
+// Spec: 14.28
+// expect output: Vec2(x: 2, y: 4)
+// expect panic: integer overflow
+
+use std.vec
+
+fn twice(v: Vec2<Int8>) -> Vec2<Int8> {
+    v + v
+}
+
+fn main() {
+    const small: Vec2<Int8> = Vec2(x: 1, y: 2)
+    print(twice(small))
+    const big: Vec2<Int8> = Vec2(x: 100, y: 1)
+    print(twice(big))
+}

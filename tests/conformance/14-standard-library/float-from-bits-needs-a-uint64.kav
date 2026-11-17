@@ -1,0 +1,8 @@
+// Rule: `Float.from_bits(n)` takes a `UInt64`; an `Int` is a compile error, as numbers never convert by themselves.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    const n: Int = 4607182418800017408
+    print(Float.from_bits(n))        // error: `n` is an `Int`, not a `UInt64`
+}

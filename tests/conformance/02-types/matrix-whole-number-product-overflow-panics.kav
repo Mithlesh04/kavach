@@ -1,0 +1,15 @@
+// Rule: a matrix product of whole numbers panics on a sum that doesn't fit, as overflow does anywhere.
+// Spec: 2.17, 5.6
+// expect output: [[50]]
+// expect panic
+
+use std.matrix
+
+fn main() {
+    const five: Int8 = 5
+    const a = matrix.filled(1, 2, five)
+    print((a @ a.transpose()).to_rows())
+    const big: Int8 = 100
+    const b = matrix.filled(1, 2, big)
+    print((b @ b.transpose()).to_rows())
+}

@@ -1,0 +1,11 @@
+// Rule: A top-level `let` is a statement of `main`, not a module constant, so a function can't read it.
+// Spec: 1.13
+// expect compile error
+
+let count = 3
+
+fn show() -> Int {
+    count                           // error: made by the script's code, so a function can't read it
+}
+
+print(show())

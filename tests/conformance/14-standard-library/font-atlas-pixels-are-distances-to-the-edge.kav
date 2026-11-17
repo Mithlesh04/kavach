@@ -1,0 +1,42 @@
+// Rule: Each atlas pixel holds how far it is from the glyph's edge in all four parts: 128 on the edge, up to 255 at `spread` pixels in, down to 0 at `spread` pixels out.
+// Spec: 14.31
+// expect output: [255, 255, 255, 255]
+// expect output: 0
+// expect output: true
+
+use std.base64
+use std.font
+
+/// runtime/font/src/sample.ttf: 1,000 units to the em; glyph 1 is a
+/// square for `A` (700 wide), 2 a space (300), 3 a square with a hole for `B`.
+fn sample() -> Font ! Error {
+    const file = "AAEAAAAHAEAAAgAwY21hcAAAAAAAAAB8AAAAPGdseWYAAAAAAAAAuAAAAFpoZWFkAAAAAA" +
+        "AAARQAAAA2aGhlYQAAAAAAAAFMAAAAJGhtdHgAAAAAAAABcAAAABBsb2NhAAAAAAAAAYAA" +
+        "AAAUbWF4cAAAAAAAAAGUAAAABgAAAAEAAwABAAAADAAEADAAAAAIAAgAAgAAACAAQQBC//" +
+        "8AAAAgAEEAQv///+L/wP/BAAEAAAAAAAAAAAABAGQAAAJYArwAAwAAAQEBAQBkAAAB9AAA" +
+        "AAACvAAA/UQAAgBkAAACWAK8AAMABwAAAQEBAQEBAQEAZAAAAfQAAP6iAMgAAP84AAACvA" +
+        "AA/UQAyAAAASwAAAAAAAEAAAABAAAAAAAAXw889QAAA+gAAAAAAAAAAAAAAAAAAAAAAGQA" +
+        "AAJYArwAAAAIAAIAAQAAAAAAAQAAAyD/OABkArwAZABkAlgAAQAAAAAAAAAAAAAAAAAAAA" +
+        "QB9ABkArwAZAEsAGQCvABkAAAAAAAAAAAAAAAiAAAAIgAAAFoAAFAAAAQAAA=="
+    try font.load(try base64.decode(file))
+}
+
+/// The four parts of the atlas pixel at the point 350 units right of glyph
+/// `id`'s origin and 350 above its baseline: the middle of the square, and
+/// of the hole in `B`, 22.4 pixels each way at size 64.
+fn middle(atlas: Atlas, id: Int) -> [UInt8] {
+    const b = atlas.boxes.get(id) ?? GlyphBox(x: 0, y: 0, width: 0, height: 0, left: 0, top: 0)
+    const col = Int(22.4 - Float(b.left))
+    const row = Int(Float(b.top) - 22.4)
+    const at = ((b.y + row) * atlas.image.width + b.x + col) * 4
+    atlas.image.pixels.slice(at, at + 4)
+}
+
+fn main() ! Error {
+    const atlas = (try sample()).atlas("AB", 64.0)
+    print(middle(atlas, 1))                     // 16 pixels inside A: past `spread`
+    const a = atlas.boxes.get(1) ?? GlyphBox(x: 0, y: 0, width: 0, height: 0, left: 0, top: 0)
+    print(atlas.image.pixels[(a.y * atlas.image.width + a.x) * 4])   // the box's corner, outside
+    const hole = middle(atlas, 3)
+    print(hole[0] < 128 and hole.all(p => p == hole[0]))
+}

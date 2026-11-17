@@ -1,0 +1,36 @@
+// Rule: `Event` is `Closed`, `Resized`, `Scaled`, `Focused`, `Key`, `Text`, `MouseMoved`, `MouseButton`, `Wheel`, `Motion`, `PadConnected`, `PadGone`, `PadButton`, `PadAxis` or `Touch`, with the fields the spec names.
+// Spec: 14.22
+// expect output: Touch(id: 3, x: 1.5, y: 2.5, phase: "Began", pressure: 1.0) 3 Began
+// expect output: PadAxis(pad: 0, axis: "LeftX", value: -1.0) LeftX
+
+use std.window
+
+fn said(e: Event) -> String {
+    match e {
+        Event.Closed => "closed",
+        Event.Resized(width, height) => "{width} {height}",
+        Event.Scaled(factor) => "{factor}",
+        Event.Focused(on) => "{on}",
+        Event.Key(key, down) => "{key} {down}",
+        Event.Text(text) => text,
+        Event.MouseMoved(x, y) => "{x} {y}",
+        Event.MouseButton(button, down) => "{button} {down}",
+        Event.Wheel(x, y) => "{x} {y}",
+        Event.Motion(x, y) => "{x} {y}",
+        Event.PadConnected(pad, name) => "{pad} {name}",
+        Event.PadGone(pad) => "{pad}",
+        Event.PadButton(pad, button, down) => "{pad} {button} {down}",
+        Event.PadAxis(_, axis, _) => axis,
+        Event.Touch(id, _, _, phase, _) => "{id} {phase}",
+    }
+}
+
+fn main() {
+    const events = [
+        Event.Touch(id: 3, x: 1.5, y: 2.5, phase: "Began", pressure: 1.0),
+        Event.PadAxis(pad: 0, axis: "LeftX", value: -1.0),
+    ]
+    for e in events {
+        print("{e} {said(e)}")
+    }
+}

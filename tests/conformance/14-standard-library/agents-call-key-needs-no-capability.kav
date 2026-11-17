@@ -1,0 +1,13 @@
+// Rule: Like reading the clock, `agents.call_key()` needs no capability: a public function that reads it lists no `uses`.
+// Spec: 14.16
+// expect output: fallback
+
+use std.agents
+
+pub fn idempotency_key() -> String {
+    agents.call_key() ?? "fallback"
+}
+
+fn main() {
+    print(idempotency_key())
+}

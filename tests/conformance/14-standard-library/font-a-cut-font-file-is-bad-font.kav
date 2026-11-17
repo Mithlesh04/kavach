@@ -1,0 +1,33 @@
+// Rule: A font file cut short, or no bytes at all, is `FontError.BadFont`.
+// Spec: 14.31
+// Checks: misuse
+// expect output: BadFont
+// expect output: BadFont
+// expect output: a font with ascent 0.8
+
+use std.base64
+use std.font
+
+/// runtime/font/src/sample.ttf, a TrueType font of 412 bytes.
+const sample_file = "AAEAAAAHAEAAAgAwY21hcAAAAAAAAAB8AAAAPGdseWYAAAAAAAAAuAAAAFpoZWFkAAAAAA" +
+    "AAARQAAAA2aGhlYQAAAAAAAAFMAAAAJGhtdHgAAAAAAAABcAAAABBsb2NhAAAAAAAAAYAA" +
+    "AAAUbWF4cAAAAAAAAAGUAAAABgAAAAEAAwABAAAADAAEADAAAAAIAAgAAgAAACAAQQBC//" +
+    "8AAAAgAEEAQv///+L/wP/BAAEAAAAAAAAAAAABAGQAAAJYArwAAwAAAQEBAQBkAAAB9AAA" +
+    "AAACvAAA/UQAAgBkAAACWAK8AAMABwAAAQEBAQEBAQEAZAAAAfQAAP6iAMgAAP84AAACvA" +
+    "AA/UQAyAAAASwAAAAAAAEAAAABAAAAAAAAXw889QAAA+gAAAAAAAAAAAAAAAAAAAAAAGQA" +
+    "AAJYArwAAAAIAAIAAQAAAAAAAQAAAyD/OABkArwAZABkAlgAAQAAAAAAAAAAAAAAAAAAAA" +
+    "QB9ABkArwAZAEsAGQCvABkAAAAAAAAAAAAAAAiAAAAIgAAAFoAAFAAAAQAAA=="
+
+fn bad(bytes: Bytes) -> String {
+    const f = font.load(bytes) catch e => return match e {
+        FontError.BadFont(_) => "BadFont",
+    }
+    "a font with ascent {f.ascent}"
+}
+
+fn main() ! Error {
+    const whole = try base64.decode(sample_file)
+    print(bad(whole.slice(0, 100)))          // cut short
+    print(bad(Bytes([])))                    // empty
+    print(bad(whole))                        // the whole file reads
+}

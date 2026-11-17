@@ -1,0 +1,12 @@
+// Rule: A `gpu fn` uses no maps.
+// Spec: 15.1
+// expect compile error
+
+gpu fn lookup(x: Int32) -> Int32 {
+    const _table: [Int32: Int32] = [1: 10, 2: 20]     // error: a `gpu fn` can't use a map
+    x
+}
+
+fn main() {
+    print(lookup(1))
+}

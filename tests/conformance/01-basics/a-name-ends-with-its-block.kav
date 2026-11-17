@@ -1,0 +1,11 @@
+// Rule: A name declared in a block can't be used after the block: it is not declared there.
+// Spec: 1.4
+// expect compile error
+
+fn main() {
+    if true {
+        const inner = 1
+        print(inner)
+    }
+    print(inner)                    // error: `inner` is not declared here
+}

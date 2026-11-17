@@ -1,0 +1,21 @@
+// Rule: In `sort_by`, a `NaN` key sorts after every number, infinity too, so a list with one still sorts.
+// Spec: 14.2
+// expect output: low zero high top odd
+
+type Reading {
+    name: String
+    value: Float
+}
+
+fn main() {
+    const nan = 0.0 / 0.0
+    const inf = 1.0 / 0.0
+    const readings = [
+        Reading(name: "odd", value: nan),
+        Reading(name: "top", value: inf),
+        Reading(name: "zero", value: 0.0),
+        Reading(name: "high", value: 2.5),
+        Reading(name: "low", value: -1.0),
+    ]
+    print(readings.sort_by(r => r.value).map(r => r.name).join(" "))
+}

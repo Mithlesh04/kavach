@@ -1,0 +1,25 @@
+// Rule: `system.gpus()` lists discrete GPUs first, then integrated ones, the rest last, each with a `GpuKind` of `Discrete`, `Integrated`, `Virtual`, `Other` or `Software`.
+// Spec: 14.25
+// expect output: true
+
+use std.system
+
+/// Where a kind of GPU comes in the list.
+fn rank(kind: GpuKind) -> Int {
+    match kind {
+        GpuKind.Discrete => 0,
+        GpuKind.Integrated => 1,
+        GpuKind.Virtual => 2,
+        GpuKind.Other => 2,
+        GpuKind.Software => 2,
+    }
+}
+
+fn ordered() -> Bool uses System {
+    const ranks = system.gpus().map(g => rank(g.kind))
+    ranks == ranks.sort()
+}
+
+fn main() {
+    print(ordered())
+}

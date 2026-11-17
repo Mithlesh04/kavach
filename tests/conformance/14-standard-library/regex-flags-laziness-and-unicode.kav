@@ -1,0 +1,17 @@
+// Rule: Patterns take the common syntax: `(?i)` ignores case, `*?` and `+?` are lazy, `{2,3}` repeats, and classes such as `\w` cover Unicode letters.
+// Spec: 14.8
+// expect output: true false
+// expect output: <a>
+// expect output: ["aaa", "aaa"]
+// expect output: naïve|café|नमस्ते
+// expect output: ["aa", "aa"]
+
+use std.regex
+
+fn main() ! Error {
+    print("{(try regex.new(r"(?i)kavach")).is_match("KaVaCh")} {(try regex.new("kavach")).is_match("KAVACH")}")
+    print((try regex.new(r"<.+?>")).find("<a><b>") ?? "")
+    print((try regex.new(r"a{2,3}")).find_all("aaaaaaa"))
+    print((try regex.new(r"\w+")).find_all("naïve café, नमस्ते!").join("|"))
+    print((try regex.new("aa")).find_all("aaaaa"))
+}

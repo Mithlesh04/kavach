@@ -1,0 +1,16 @@
+// Rule: `gen.pick(items)` needs at least one item; a `sample` that picks from an empty list fails the test run.
+// Spec: 14.7
+// expect test fail
+
+type Color: Sample {
+    name: String
+
+    fn sample(gen: Gen) -> Color {
+        const names: [String] = []
+        Color(name: gen.pick(names))
+    }
+}
+
+fn shout(c: Color) -> String {
+    c.name.upper()
+}

@@ -1,0 +1,16 @@
+// Rule: A lambda's parameter, or a name declared in its body, may reuse an outside name: inside the lambda it hides the outside one, which stays as it was.
+// Spec: 1.4, 3.3
+// expect output: [2, 4]
+// expect output: [11, 12]
+// expect output: 100 1
+
+fn main() {
+    const x = 100
+    const step = 1
+    print([1, 2].map(x => x * 2))
+    print([1, 2].map(n => {
+        const step = 10
+        n + step
+    }))
+    print("{x} {step}")
+}

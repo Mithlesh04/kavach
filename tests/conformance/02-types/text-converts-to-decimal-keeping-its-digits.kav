@@ -1,0 +1,19 @@
+// Rule: `Decimal(text)` reads the text exactly, keeping its scale; `BigInt(text)` reads a whole number of any size; other text fails.
+// Spec: 2.1, 1.11
+// expect output: 1.50 -0.001 true
+// expect output: -123456789012345678901234567890
+// expect output: 0 0
+
+fn main() {
+    const a = "1.50"
+    const b = " -0.001 "
+    const tenth = "0.1"
+    const fifth = "0.2"
+    const sum = (Decimal(tenth) catch 0) + (Decimal(fifth) catch 0)
+    print("{Decimal(a) catch 0} {Decimal(b) catch 0} {sum == Decimal("0.3")}")
+    const digits = "-123456789012345678901234567890"
+    print(BigInt(digits) catch 0)
+    const bad = "1.5.0"
+    const frac = "2.5"
+    print("{Decimal(bad) catch 0} {BigInt(frac) catch 0}")
+}

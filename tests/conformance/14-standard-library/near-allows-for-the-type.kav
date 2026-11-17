@@ -1,0 +1,17 @@
+// Rule: `x.near(y)` allows one billionth for a `Float` (`1e-12` near zero), and one hundred-thousandth for a `Float32` (`1e-6` near zero).
+// Spec: 14.2
+// expect output: true false
+// expect output: true false
+// expect output: true false
+// expect output: true false
+
+fn main() {
+    let a = 1000.0
+    print("{a.near(1000.0000005)} {a.near(1000.00001)}")
+    let z = 0.0
+    print("{z.near(1e-13)} {z.near(1e-11)}")
+    const b: Float32 = 1.0
+    print("{b.near(Float32(1.000001))} {b.near(Float32(1.0001))}")
+    const c: Float32 = 0.0
+    print("{c.near(Float32(1e-7))} {c.near(Float32(1e-5))}")
+}

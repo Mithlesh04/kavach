@@ -1,0 +1,8 @@
+// Rule: `items.count(f)` takes an `f` that gives a `Bool`; one that gives a number is a compile error.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    const xs = [1, 2, 3]
+    print(xs.count(x => x * 2))        // error: `x * 2` is an `Int`, not a `Bool`
+}

@@ -1,0 +1,12 @@
+// Rule: A task that uses an arena value can't be stored in a variable declared before the arena.
+// Spec: 6.3
+// expect compile error
+
+fn main() ! Error {
+    let t = spawn { 0 }
+    arena {
+        const xs = [1, 2, 3]
+        t = spawn { xs.len() }  // error: the task holds xs, made in the arena, and can't be kept outside it
+    }
+    print(try t.wait())
+}

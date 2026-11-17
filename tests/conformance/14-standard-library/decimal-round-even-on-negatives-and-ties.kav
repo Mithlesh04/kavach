@@ -1,0 +1,20 @@
+// Rule: `d.round_even(places)` rounds a half to the even digit for negative values too, while `round` rounds it away from zero; a `Decimal` with fewer places is given back as it is.
+// Spec: 14.2
+// expect output: -2.34 0.12 0.14
+// expect output: 2 2 -2 -2
+// expect output: 2 3 -2 -3
+// expect output: 2.5 2.5
+
+fn main() {
+    const a: Decimal = -2.345
+    const b: Decimal = 0.125
+    const c: Decimal = 0.135
+    print("{a.round_even(2)} {b.round_even(2)} {c.round_even(2)}")
+    const up: Decimal = 1.5
+    const two: Decimal = 2.5
+    const down: Decimal = -1.5
+    const neg: Decimal = -2.5
+    print("{up.round_even(0)} {two.round_even(0)} {down.round_even(0)} {neg.round_even(0)}")
+    print("{up.round(0)} {two.round(0)} {down.round(0)} {neg.round(0)}")
+    print("{two.round_even(3)} {two.round(1)}")
+}

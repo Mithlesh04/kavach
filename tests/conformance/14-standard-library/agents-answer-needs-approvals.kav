@@ -1,0 +1,13 @@
+// Rule: Answering an approval request in code needs the capability `Approvals`.
+// Spec: 14.16, 8.1
+// expect compile error
+
+use std.agents
+
+pub fn approve(id: String) ! ApprovalError {
+    try agents.answer(id, approved: true, by: "asha")      // error: approve doesn't list Approvals
+}
+
+fn main() ! ApprovalError {
+    try approve("RefundBot-17-2")
+}

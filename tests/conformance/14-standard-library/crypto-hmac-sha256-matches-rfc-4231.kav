@@ -1,0 +1,22 @@
+// Rule: `crypto.hmac_sha256(key, data)` gives the HMAC-SHA-256 values of RFC 4231, short keys and keys longer than a block alike.
+// Spec: 14.19
+// expect output: Bytes(b0344c61d8db38535ca8afceaf0bf12b881dc200c9833da726e9376c2e32cff7)
+// expect output: Bytes(5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843)
+// expect output: Bytes(773ea91e36800e46854db8ebd09181a72959098b3ef8c122d9635514ced565fe)
+// expect output: Bytes(60e431591ee0b67f0d8a26aacbf5b77f8e0bc6213728c5140546040f0ee37f54)
+
+use std.crypto
+
+fn repeat(byte: UInt8, n: Int) -> Bytes {
+    let out: [UInt8] = []
+    for _ in 0..n {
+        out.push(byte)
+    }
+    Bytes(out)
+}
+
+// Test cases 1, 2, 3 and 6 of RFC 4231.
+print(crypto.hmac_sha256(repeat(11, 20), "Hi There".bytes()))
+print(crypto.hmac_sha256("Jefe".bytes(), "what do ya want for nothing?".bytes()))
+print(crypto.hmac_sha256(repeat(170, 20), repeat(221, 50)))
+print(crypto.hmac_sha256(repeat(170, 131), "Test Using Larger Than Block-Size Key - Hash Key First".bytes()))

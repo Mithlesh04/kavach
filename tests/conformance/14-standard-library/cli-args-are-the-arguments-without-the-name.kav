@@ -1,0 +1,13 @@
+// Rule: `cli.args()` gives the program's arguments, in order, without the program's own name.
+// Spec: 14.6
+// args: build --fast 3
+// expect output: ["build", "--fast", "3"]
+// expect output: 3
+
+use std.cli
+
+fn main() uses Env, Console {
+    const args = cli.args()
+    print(args)
+    print(args.len())
+}

@@ -1,0 +1,31 @@
+// Rule: `agents.call_key()` is `none` in a capability call from an agent that keeps no journal, as in a program with no `kavach.toml`, so the code falls back to its own key.
+// Spec: 14.16, 8.5
+// expect output: order-7
+
+use std.agents
+
+type Receipt { id: String }
+type PaymentError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn refund(order_id: Int) -> Receipt ! PaymentError
+}
+
+type Bank: Payments {
+    fn refund(self, order_id: Int) -> Receipt ! PaymentError {
+        Receipt(id: agents.call_key() ?? "order-{order_id}")
+    }
+}
+
+agent RefundBot {
+    can Payments.refund
+
+    on refund(order_id: Int) -> Receipt ! PaymentError {
+        try Payments.refund(order_id)
+    }
+}
+
+fn main() ! Error {
+    const bot = RefundBot.start(Payments: Bank())
+    print((try bot.refund(7)).id)
+}

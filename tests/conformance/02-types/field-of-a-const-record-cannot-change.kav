@@ -1,0 +1,14 @@
+// Rule: Fields are assigned only through a `let`: assigning a field of a `const` record is an error.
+// Spec: 2.4, 1.4
+// expect compile error
+
+type User {
+    name: String
+    age: Int
+}
+
+fn main() {
+    const asha = User(name: "Asha", age: 31)
+    asha.age = 32      // error: `asha` is a const; use `let` or `with`
+    print(asha.age)
+}

@@ -1,0 +1,26 @@
+// Rule: `extend` adds methods to a union, and they work on every variant.
+// Spec: 2.5
+// expect output: 3.0
+// expect output: 6.0
+// expect output: true
+
+type Shape = Circle(radius: Float) | Rect(width: Float, height: Float)
+
+extend Shape {
+    fn area(self) -> Float {
+        match self {
+            Shape.Circle(radius) => 3.0 * radius * radius,
+            Shape.Rect(width, height) => width * height,
+        }
+    }
+
+    fn is_round(self) -> Bool {
+        self.name() == "Circle"
+    }
+}
+
+fn main() {
+    print(Shape.Circle(radius: 1.0).area())
+    print(Shape.Rect(width: 2.0, height: 3.0).area())
+    print(Shape.Circle(radius: 2.0).is_round())
+}

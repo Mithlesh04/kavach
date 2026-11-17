@@ -1,0 +1,36 @@
+// Rule: `conn.read().timeout(d)` fails with `NetError.TimedOut` when nothing comes within `d`, and the connection still works after it.
+// Spec: 14.10, 9.6
+// expect output: read: timed out
+// expect output: then: late
+
+use std.net
+use std.time
+
+fn slow(listener: Listener) ! NetError uses Net, Clock {
+    const conn = try listener.accept()
+    time.sleep(300.ms)
+    try conn.write("late".bytes())
+    while true {
+        const _piece = (try conn.read()) ?? break
+    }
+    conn.close()
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const server = spawn slow(listener)
+    const conn = try net.connect(listener.address())
+    const first = match conn.read().timeout(50.ms) {
+        ok(_) => "data",
+        err(e) => match e {
+            NetError.TimedOut(_) => "timed out",
+            _ => "failed",
+        },
+    }
+    print("read: {first}")
+    const then = (try conn.read().timeout(5.seconds)) ?? Bytes([])
+    print("then: {then.text() ?? "?"}")
+    conn.close()
+    try server.wait()
+    listener.close()
+}

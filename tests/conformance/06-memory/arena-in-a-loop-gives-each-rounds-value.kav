@@ -1,0 +1,25 @@
+// Rule: An arena in a loop starts afresh each round, and each round's block value comes out of it.
+// Spec: 6.3
+// expect output: [0, 3, 6]
+// expect output: [[0], [1, 1], [2, 2, 2]]
+
+fn main() {
+    let totals: [Int] = []
+    let rows: [[Int]] = []
+    for i in 0..3 {
+        const t = arena {
+            const xs = [i, i, i]
+            xs.sum(n => n)
+        }
+        totals.push(t)
+        rows.push(arena {
+            let row: [Int] = []
+            for _ in 0..i + 1 {
+                row.push(i)
+            }
+            row
+        })
+    }
+    print(totals)
+    print(rows)
+}

@@ -1,0 +1,23 @@
+// Rule: A contract can read module constants, as every function in the file can.
+// Spec: 7.1, 7.2, 1.13
+// expect panic: require n <= limit
+// expect output: 10
+
+const limit = 10
+const floor = 0
+
+fn clamp(n: Int) -> Int
+    require n <= limit
+    ensure result >= floor
+{
+    if n < floor { floor } else { n }
+}
+
+fn main() {
+    print(clamp(10))
+    let big = 0
+    for x in [5, 6] {
+        big += x
+    }
+    print(clamp(big))
+}

@@ -1,0 +1,28 @@
+// Rule: A `gpu fn` may use `let`, assignment, `if` and `else`, `while`, `for` over a range and `return`.
+// Spec: 15.1
+// expect output: [0, 7, 16, 111]
+
+gpu fn steps(n: Int32) -> Int32 {
+    if n <= 1 {
+        return 0
+    }
+    let x = n
+    let count = 0
+    while x != 1 {
+        if x % 2 == 0 {
+            x = x / 2
+        } else {
+            x = 3 * x + 1
+        }
+        count += 1
+    }
+    for _ in 0..2 {
+        count = count - 1 + 1
+    }
+    count
+}
+
+fn main() {
+    const ns: [Int32] = [1, 3, 7, 27]
+    print(ns.map(steps))
+}

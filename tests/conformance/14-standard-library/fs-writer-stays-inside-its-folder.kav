@@ -1,0 +1,25 @@
+// Rule: with `uses Fs("folder")`, `fs.create_writer` refuses a path outside the folder with `Denied(path)` and makes no file.
+// Spec: 14.3, 8.1
+// Checks: misuse
+// expect output: Denied(path: "kavach-t-fs-wscope-out.txt")
+// expect output: false
+// expect output: 2
+
+use std.fs
+
+fn export(path: String) -> Int ! FsError uses Fs("./kavach-t-fs-wscope") {
+    const w = try fs.create_writer(path)
+    try w.write_text("ok")
+    try w.finish()
+}
+
+fn main() ! FsError uses Fs, Console {
+    try fs.create_dir("kavach-t-fs-wscope")
+    const _size = export("kavach-t-fs-wscope-out.txt") catch e => {
+        print(e)
+        0
+    }
+    print(fs.exists("kavach-t-fs-wscope-out.txt"))
+    print(try export("kavach-t-fs-wscope/in.txt"))
+    try fs.remove_all("kavach-t-fs-wscope")
+}

@@ -1,0 +1,11 @@
+// Rule: Running out of memory is a panic: `repeat` asking for more than 1 GB of text stops the program with exit code 101.
+// Spec: 5.6, 5.8
+// expect output: before
+// expect panic: out of memory
+
+fn main() {
+    print("before")
+    const copies = 1_000_000_000
+    const text = "ab".repeat(copies)        // 2 GB asked for
+    print(text.len())
+}

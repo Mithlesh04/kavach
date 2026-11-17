@@ -1,0 +1,21 @@
+// Rule: A lambda made inside another lambda copies the values it uses when it is made, from the outer lambda's own copies.
+// Spec: 3.3
+// expect output: 15
+// expect output: 15
+// expect output: 1007
+
+fn main() {
+    let base = 10
+    const make = () => {
+        const inner = (x: Int) => x + base
+        inner
+    }
+    base = 100
+    const f = make()
+    print(f(5))
+    base = 1000
+    print(f(5))
+    const g = (k: Int) => (x: Int) => x + k + base
+    base = 0
+    print(g(2)(5))
+}

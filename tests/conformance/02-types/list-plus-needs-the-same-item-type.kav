@@ -1,0 +1,9 @@
+// Rule: `xs + ys` joins two lists of the same type; lists of different item types are a compile error.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    const numbers = [1, 2]
+    const words = ["a"]
+    print(numbers + words)      // error: `[Int]` and `[String]` are different types
+}

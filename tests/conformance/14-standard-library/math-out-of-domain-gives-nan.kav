@@ -1,0 +1,13 @@
+// Rule: `asin` and `acos` of a number past -1 to 1, and `ln` of a negative number, are `NaN`; `ln` of 0 is minus infinity.
+// Spec: 14.5
+// expect output: NaN NaN NaN
+// expect output: true
+// expect output: 1.5707963267948966
+
+use std.math
+
+fn main() {
+    print("{math.asin(1.5)} {math.acos(-1.0001)} {math.ln(-1.0)}")
+    print(math.ln(0.0) < -1.7976931348623157e308)
+    print(math.asin(1.0))
+}

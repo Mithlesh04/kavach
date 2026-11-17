@@ -1,0 +1,29 @@
+// Rule: Times as text have exactly the digits shown, and a fraction of a second at least one digit; anything else fails with `Invalid`.
+// Spec: 14.4
+// Checks: misuse
+// expect output: Invalid(text: "09:05:30.")
+// expect output: Invalid(text: "09:5")
+// expect output: Invalid(text: "009:05")
+// expect output: Invalid(text: "2026-11-04T9:05:30")
+// expect output: Invalid(text: "2026-11-04T09:05:30.Z")
+// expect output: 09:05:30.100
+
+use std.time
+
+fn main() ! Error {
+    for text in ["09:05:30.", "09:5", "009:05"] {
+        const _t = time.parse_time(text) catch e => {
+            print("{e}")
+            continue
+        }
+    }
+    const _dt = time.parse_datetime("2026-11-04T9:05:30") catch e => {
+        print("{e}")
+        try time.parse_datetime("2026-11-04T09:05:30")
+    }
+    const _m = time.parse_moment("2026-11-04T09:05:30.Z") catch e => {
+        print("{e}")
+        0
+    }
+    print((try time.parse_time("09:05:30.1")).iso())
+}

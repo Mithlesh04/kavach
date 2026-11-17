@@ -1,0 +1,14 @@
+// Rule: `-0.0` is IEEE 754 negative zero, so its `bits` have only the sign bit set, written as a literal or made by negating `0.0`.
+// Spec: 14.2
+// expect output: 0
+// expect output: 9223372036854775808 9223372036854775808
+// expect output: -inf
+
+fn main() {
+    print(0.0.bits())
+    let zero = 0.0
+    const negated = -zero
+    const literal = -0.0
+    print("{negated.bits()} {literal.bits()}")
+    print(1.0 / literal)
+}

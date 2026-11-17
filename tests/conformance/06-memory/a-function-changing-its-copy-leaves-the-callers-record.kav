@@ -1,0 +1,23 @@
+// Rule: A function that copies a record argument into a `let` and changes its nested list and field changes only its copy; the caller's value is unchanged.
+// Spec: 6.1
+// expect output: ["x", "y"] 2
+// expect output: ["x"] 1
+
+type Cart {
+    items: [String]
+    count: Int
+}
+
+fn add(c: Cart, item: String) -> Cart {
+    let copy = c
+    copy.items.push(item)
+    copy.count += 1
+    copy
+}
+
+fn main() {
+    const cart = Cart(items: ["x"], count: 1)
+    const bigger = add(cart, "y")
+    print("{bigger.items} {bigger.count}")
+    print("{cart.items} {cart.count}")
+}

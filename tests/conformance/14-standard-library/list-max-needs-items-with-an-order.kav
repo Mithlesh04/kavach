@@ -1,0 +1,12 @@
+// Rule: `min` and `max` are for lists of values with an order; a list of records has none, so asking for its largest is a compile error.
+// Spec: 14.2
+// expect compile error
+
+type Point {
+    x: Int
+}
+
+fn main() {
+    const points = [Point(x: 2), Point(x: 1)]
+    print(points.max())        // error: `Point` has no order
+}

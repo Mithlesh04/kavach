@@ -1,0 +1,32 @@
+// Rule: A name that starts with a keyword, or holds one, is an ordinary name for `const` and `let`.
+// Spec: 1.5, 1.6
+// expect output: 21
+// expect output: 229
+
+fn main() {
+    const letter = 1
+    let constant = 2
+    const format = 3
+    let iffy = 4
+    const matched = 5
+    let return_value = 6
+    const fn_name = 7
+    let in_count = 8
+    const not_done = 9
+    let true_count = 10
+    const none_left = 11
+    let typed = 12
+    const var_name = 13
+    let try_count = 14
+    const while_ok = 15
+    let spawned = 16
+    const self_test = 17
+    let unsafe_ok = 18
+    const arenas = 19
+    let use_case = 20
+    print(letter + constant + format + iffy + matched + return_value)
+    constant = 2 * constant
+    iffy *= 10
+    return_value = in_count + true_count + typed + try_count + spawned + unsafe_ok + use_case
+    print(constant + iffy + return_value + fn_name + not_done + none_left + var_name + while_ok + self_test + arenas - 4)
+}

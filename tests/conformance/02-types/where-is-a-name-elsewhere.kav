@@ -1,0 +1,22 @@
+// Rule: `where` is a keyword only after a method's result type: elsewhere it may be a name.
+// Spec: 2.9
+// expect output: here 3
+// expect output: 2.0
+
+type Spot {
+    where: String
+}
+
+type Pair<T: Number> {
+    a: T
+    b: T
+
+    fn mean(self) -> T where T: Floating { (self.a + self.b) / 2.0 }
+}
+
+fn main() {
+    const where = 3
+    const s = Spot(where: "here")
+    print("{s.where} {where}")
+    print(Pair(a: 1.0, b: 3.0).mean())
+}

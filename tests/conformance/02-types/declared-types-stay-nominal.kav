@@ -1,0 +1,17 @@
+// Rule: A declared `type` is nominal: an anonymous record of the same shape is not one.
+// Spec: 2.14
+// expect compile error
+
+type Point {
+    x: Int
+    y: Int
+}
+
+fn norm(p: Point) -> Int {
+    p.x * p.x + p.y * p.y
+}
+
+fn main() {
+    print(norm(Point(x: 3, y: 4)))
+    print(norm((x: 3, y: 4)))      // error: an anonymous `(x: Int, y: Int)` is not a `Point`
+}

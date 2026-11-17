@@ -1,0 +1,11 @@
+// Rule: `term.confirm` shows `[y/N]`, or `[Y/n]` when `default` is `true`, and at the end of input gives `default`.
+// Spec: 14.13
+// expect output: Delete 3 files? [y/N] false
+// expect output: Keep going? [Y/n] true
+
+use std.term
+
+fn main() {
+    print(term.confirm("Delete 3 files?", default: false))
+    print(term.confirm("Keep going?", default: true))
+}

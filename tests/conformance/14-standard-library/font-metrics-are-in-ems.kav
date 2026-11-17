@@ -1,0 +1,27 @@
+// Rule: A `Font` has `ascent`, `descent` (negative) and `line_gap` in ems, so lines are `(ascent - descent + line_gap) * size` pixels apart.
+// Spec: 14.31
+// expect output: 0.8 -0.2 0.1
+// expect output: true
+
+use std.base64
+use std.font
+
+/// runtime/font/src/sample.ttf: 1,000 units to the em, ascent 800,
+/// descent -200, line gap 100.
+fn sample() -> Font ! Error {
+    const file = "AAEAAAAHAEAAAgAwY21hcAAAAAAAAAB8AAAAPGdseWYAAAAAAAAAuAAAAFpoZWFkAAAAAA" +
+        "AAARQAAAA2aGhlYQAAAAAAAAFMAAAAJGhtdHgAAAAAAAABcAAAABBsb2NhAAAAAAAAAYAA" +
+        "AAAUbWF4cAAAAAAAAAGUAAAABgAAAAEAAwABAAAADAAEADAAAAAIAAgAAgAAACAAQQBC//" +
+        "8AAAAgAEEAQv///+L/wP/BAAEAAAAAAAAAAAABAGQAAAJYArwAAwAAAQEBAQBkAAAB9AAA" +
+        "AAACvAAA/UQAAgBkAAACWAK8AAMABwAAAQEBAQEBAQEAZAAAAfQAAP6iAMgAAP84AAACvA" +
+        "AA/UQAyAAAASwAAAAAAAEAAAABAAAAAAAAXw889QAAA+gAAAAAAAAAAAAAAAAAAAAAAGQA" +
+        "AAJYArwAAAAIAAIAAQAAAAAAAQAAAyD/OABkArwAZABkAlgAAQAAAAAAAAAAAAAAAAAAAA" +
+        "QB9ABkArwAZAEsAGQCvABkAAAAAAAAAAAAAAAiAAAAIgAAAFoAAFAAAAQAAA=="
+    try font.load(try base64.decode(file))
+}
+
+fn main() ! Error {
+    const f = try sample()
+    print("{f.ascent} {f.descent} {f.line_gap}")
+    print(((f.ascent - f.descent + f.line_gap) * 20.0).near(22.0))
+}

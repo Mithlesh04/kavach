@@ -1,0 +1,13 @@
+// Rule: `std.io` reads and writes the console, so it needs `Console`.
+// Spec: 14.6
+// expect compile error
+
+use std.io
+
+pub fn ask_name() -> String? uses Env {
+    io.write("Your name? ")        // error: `ask_name` uses Console, which its `uses` clause doesn't list
+    io.read_line()
+}
+
+fn main() {
+}

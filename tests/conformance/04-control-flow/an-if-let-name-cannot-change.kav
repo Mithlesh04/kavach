@@ -1,0 +1,11 @@
+// Rule: The name `if let` binds never changes (decision 0034): assigning to it is a compile error.
+// Spec: 4.2
+// expect compile error
+
+fn main() {
+    const found: Int? = 3
+    if let n = found {
+        n += 1          // error: n never changes
+        print(n)
+    }
+}

@@ -1,0 +1,11 @@
+// Rule: `s.count(part)` doesn't count overlaps, and an empty `part` is counted `s.len() + 1` times, once in empty text, characters counted as `len` counts them.
+// Spec: 14.2
+// expect output: 1 0
+// expect output: 2 1
+// expect output: 5 2
+
+fn main() {
+    print("{"".count("")} {"".count("a")}")
+    print("{"aaaa".count("aa")} {"aaa".count("aa")}")
+    print("{"नमनम".count("")} {"👍x👍".count("👍")}")
+}

@@ -1,0 +1,10 @@
+// Rule: Two different sized integers can't be added: there are no implicit number conversions.
+// Spec: 2.1
+// expect compile error
+
+fn main() {
+    const a: Int8 = 1
+    const b: Int16 = 2
+    print(Int16(a) + b)            // fine: converted
+    print(a + b)                   // error: Int8 is not Int16
+}

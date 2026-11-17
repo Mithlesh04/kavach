@@ -1,0 +1,14 @@
+// Rule: `fs.create_writer` changes files, so it needs `Fs.write`: a function with only `Fs.read` can't call it.
+// Spec: 14.3, 8.1
+// expect compile error
+
+use std.fs
+
+fn export(path: String) ! FsError uses Fs.read {
+    const w = try fs.create_writer(path)     // error: `export` uses Fs.write, which its `uses` clause doesn't list
+    try w.write_text("rows")
+    const _size = try w.finish()
+}
+
+fn main() {
+}

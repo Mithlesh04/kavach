@@ -1,0 +1,14 @@
+// Rule: In a function with `->`, `return` must give a value.
+// Spec: 3.1
+// expect compile error
+
+fn label(n: Int) -> Int {
+    if n < 0 {
+        return                 // error: `label` must return an Int
+    }
+    n
+}
+
+fn main() {
+    print(label(1))
+}

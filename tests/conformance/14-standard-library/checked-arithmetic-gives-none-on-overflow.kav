@@ -1,0 +1,14 @@
+// Rule: `checked_sub`, `checked_mul` and `checked_div` give `none` when the result doesn't fit, and the value when it does.
+// Spec: 14.2, 5.6
+// expect output: none none none
+// expect output: 1 6 -4
+// expect output: none 127
+
+fn main() {
+    const min = -9_223_372_036_854_775_807 - 1
+    print("{min.checked_sub(1)} {min.checked_mul(2)} {min.checked_div(-1)}")
+    const three = 3
+    print("{three.checked_sub(2)} {three.checked_mul(2)} {(-9).checked_div(2)}")
+    const top: Int8 = 127
+    print("{top.checked_add(1)} {top.checked_sub(0)}")
+}

@@ -1,0 +1,9 @@
+// Rule: `ages[name] = v` changes the map, so like assignment it needs a `let`.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    const ages = ["asha": 31]
+    ages["ravi"] = 27       // error: `ages` is a `const`
+    print(ages)
+}

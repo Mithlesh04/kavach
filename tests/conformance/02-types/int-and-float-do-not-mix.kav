@@ -1,0 +1,10 @@
+// Rule: An `Int` and a `Float` can't be added: there are no implicit number conversions.
+// Spec: 2.1
+// expect compile error
+
+fn main() {
+    const n: Int = 7
+    const f: Float = 2.5
+    print(Float(n) + f)            // fine: converted
+    print(n + f)                   // error: no implicit number conversions
+}

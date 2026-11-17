@@ -1,0 +1,28 @@
+// Rule: copies of a `Connection` share it: closing one copy closes the connection for every copy.
+// Spec: 14.10, 6.2
+// expect output: write through the other copy: failed
+// expect output: server saw the close: true
+
+use std.net
+
+fn serve(listener: Listener) -> Bool ! NetError uses Net {
+    const conn = try listener.accept()
+    const got = try conn.read().timeout(5.seconds)
+    conn.close()
+    got == none
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const server = spawn serve(listener)
+    const conn = try net.connect(listener.address())
+    const copy = conn
+    copy.close()
+    const wrote = match conn.write("hi".bytes()) {
+        ok(_) => "sent",
+        err(_) => "failed",
+    }
+    print("write through the other copy: {wrote}")
+    print("server saw the close: {server.wait() catch _ => false}")
+    listener.close()
+}

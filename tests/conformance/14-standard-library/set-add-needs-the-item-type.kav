@@ -1,0 +1,9 @@
+// Rule: A set holds values of one type: `add` with a value of another type is a compile error.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    let ids = Set.of(1, 2)
+    ids.add("3")        // error: `"3"` is a `String`, the set holds `Int`
+    print(ids)
+}

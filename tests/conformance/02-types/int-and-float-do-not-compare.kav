@@ -1,0 +1,10 @@
+// Rule: An `Int` and a `Float` can't be compared with `==` or `<` without a conversion.
+// Spec: 2.1, 1.8
+// expect compile error
+
+fn main() {
+    const n: Int = 1
+    const f: Float = 1.0
+    print(Float(n) <= f)           // fine: converted
+    print(n == f)                  // error: no implicit number conversions
+}

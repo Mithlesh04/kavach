@@ -1,0 +1,24 @@
+// Rule: `image.decode` reads JPEG files too, told apart from PNG by their first bytes; a JPEG has no opacity, so its pixels are fully opaque.
+// Spec: 14.29
+// expect output: 8 x 8
+// expect output: (200, 200, 200, 255)
+
+use std.image
+
+fn main() {
+    // An 8×8 grey JPEG, every pixel 200.
+    const file = Bytes([
+        255, 216, 255, 224, 0, 16, 74, 70, 73, 70, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 255, 219, 0, 67,
+        0, 16, 11, 12, 14, 12, 10, 16, 14, 13, 14, 18, 17, 16, 19, 24, 40, 26, 24, 22, 22, 24, 49, 35,
+        37, 29, 40, 58, 51, 61, 60, 57, 51, 56, 55, 64, 72, 92, 78, 64, 68, 87, 69, 55, 56, 80, 109, 81,
+        87, 95, 98, 103, 104, 103, 62, 77, 113, 121, 112, 100, 120, 92, 101, 103, 99, 255, 192, 0, 11, 8, 0, 8,
+        0, 8, 1, 1, 17, 0, 255, 196, 0, 20, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 6, 255, 196, 0, 20, 16, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 255, 218, 0, 8, 1, 1, 0, 0, 63, 0, 72, 255, 217])
+    const img = image.decode(file) catch e => {
+        print(e)
+        return
+    }
+    print("{img.width} x {img.height}")
+    print(img.pixel(3, 5))
+}

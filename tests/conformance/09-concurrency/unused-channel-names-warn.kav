@@ -1,0 +1,19 @@
+// Rule: a channel end that a pattern names but nothing uses, and a `for` name over a channel that the body never reads, get the unused-name warning; `_` names get none.
+// Spec: 1.4, 9.4
+// expect warning
+// expect output: 2 taken
+
+fn main() {
+    const (send, receive) = Channel<Int>(capacity: 2)
+    const (other, unused_end) = Channel<Int>(capacity: 1)    // warning: `unused_end` is never used
+    const (_quiet, _also) = Channel<Int>(capacity: 1)
+    other.close()
+    send.put(1)
+    send.put(2)
+    send.close()
+    let n = 0
+    for v in receive {      // warning: `v` is never used
+        n += 1
+    }
+    print("{n} taken")
+}

@@ -1,0 +1,17 @@
+// Rule: Two functions that call each other without end run out of stack: that is a panic, never memory corruption.
+// Spec: 3.8, 5.6
+// expect output: before
+// expect panic
+
+fn ping(n: Int) -> Int {
+    pong(n + 1)
+}
+
+fn pong(n: Int) -> Int {
+    ping(n + 1)
+}
+
+fn main() {
+    print("before")
+    print(ping(0))
+}

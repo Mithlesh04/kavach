@@ -1,0 +1,39 @@
+// Rule: `net.connect_tls` connects only when the server proves who it is with TLS: a server that answers in plain text fails the call, and so does an `https://` request to it.
+// Spec: 14.10, 14.11
+// expect output: connect_tls: failed
+// expect output: https: Network
+
+use std.http
+use std.net
+
+/// Answers each of `count` connections with plain text, then closes it.
+fn plain(listener: Listener, count: Int) ! NetError uses Net {
+    for _ in 0..count {
+        const conn = try listener.accept()
+        conn.write("HTTP/1.1 200 OK\u{D}\ncontent-length: 2\u{D}\n\u{D}\nhi".bytes()) catch _ => {}
+        conn.close()
+    }
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const server = spawn plain(listener, 2)
+    const tls = match net.connect_tls(listener.address()) {
+        ok(conn) => {
+            conn.close()
+            "connected"
+        }
+        err(_) => "failed",
+    }
+    print("connect_tls: {tls}")
+    const page = match http.get("https://{listener.address()}/") {
+        ok(r) => "{r.status}",
+        err(e) => match e {
+            HttpError.Network(_) => "Network",
+            _ => "{e}",
+        },
+    }
+    print("https: {page}")
+    try server.wait()
+    listener.close()
+}

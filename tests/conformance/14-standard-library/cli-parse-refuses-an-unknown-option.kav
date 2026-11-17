@@ -1,0 +1,21 @@
+// Rule: an option that is no field of the type is a `CliError` naming it, not silently skipped.
+// Spec: 14.6
+// Checks: misuse
+// args: --limt 5
+// expect output: refused: true
+// expect exit: 2
+
+use std.cli
+
+type Args {
+    limit: Int = 10
+}
+
+fn main() {
+    const args = cli.parse<Args>() catch e => {
+        print("refused: {"{e}".contains("--limt")}")
+        cli.exit(2)
+        return
+    }
+    print("limit {args.limit}")
+}

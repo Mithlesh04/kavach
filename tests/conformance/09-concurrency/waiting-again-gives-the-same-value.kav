@@ -1,0 +1,19 @@
+// Rule: a task's value stays in its `Task` and `.wait()` gives the same every time; the caller's copy is its own, so changing it changes neither the task's value nor later waits.
+// Spec: 9.1, 9.5
+// expect output: [1, 2, 3]
+// expect output: [1, 2]
+// expect output: [1, 2]
+
+fn main() ! Error {
+    const t = spawn {
+        let xs = [1]
+        xs.push(2)
+        xs
+    }
+    let mine = try t.wait()
+    mine.push(3)
+    print(mine)
+    print(try t.wait())
+    const tasks = [t]
+    print(try tasks[0].wait())
+}

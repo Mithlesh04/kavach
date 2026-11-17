@@ -1,0 +1,11 @@
+// Rule: The name `if let` binds never changes: assigning to it is a compile error.
+// Spec: 1.4, 4.2
+// expect compile error
+
+fn main() {
+    const present: Int? = 7
+    if let n = present {
+        n = 3                       // error: `n` never changes; copy it into a `let`
+        print(n)
+    }
+}

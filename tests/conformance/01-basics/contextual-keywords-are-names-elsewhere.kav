@@ -1,0 +1,29 @@
+// Rule: Contextual keywords are ordinary names outside their place: `const` and `let` may use them and change them.
+// Spec: 1.6, 1.4
+// expect output: 15
+// expect output: 10
+
+fn main() {
+    let result = 1
+    const fails = 2
+    let fix = 3
+    const context = 4
+    let can = 5
+    const limit = 6
+    let approve = 7
+    const model = 8
+    let on = 9
+    const when = 10
+    let by = 11
+    const per = 12
+    let inout = 13
+    print(result + fails + fix + context - can + limit - approve + model - on + when - by + per - inout + 14)
+    result += 1
+    fix = fix * 2
+    can -= 5
+    approve = 0
+    on = 1
+    by = 2
+    inout = 3
+    print(result + fix + can + approve + on + by + inout + fails + context + limit + model + when + per - 46)
+}

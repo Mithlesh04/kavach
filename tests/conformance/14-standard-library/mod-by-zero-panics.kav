@@ -1,0 +1,11 @@
+// Rule: `x.mod(n)` with `n` of 0 panics, as `%` does.
+// Spec: 14.2
+// expect panic: division by zero
+
+fn wrap(x: Int, n: Int) -> Int {
+    x.mod(n)
+}
+
+fn main() {
+    print(wrap(-7, 0))
+}

@@ -1,0 +1,11 @@
+// Rule: `find_ints` leaves out a number too big for `Int`, either way, but keeps every number that fits, the smallest `Int` too.
+// Spec: 14.9
+// expect output: [-9223372036854775808, 9223372036854775807]
+// expect output: none
+
+use std.text
+
+fn main() {
+    print(text.find_ints("-9223372036854775808, 9223372036854775808, -9223372036854775809, 9223372036854775807"))
+    print(text.find_int("99999999999999999999"))
+}

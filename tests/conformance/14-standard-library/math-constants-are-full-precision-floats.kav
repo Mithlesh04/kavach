@@ -1,0 +1,15 @@
+// Rule: `math.pi` and `math.e` are `Float` constants, the nearest `Float` to each number.
+// Spec: 14.5
+// expect output: 3.141592653589793
+// expect output: 2.718281828459045
+// expect output: 6.283185307179586
+
+use std.math
+
+fn main() {
+    const p: Float = math.pi
+    const e: Float = math.e
+    print(p)
+    print(e)
+    print(2.0 * p)
+}

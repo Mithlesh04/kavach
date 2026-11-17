@@ -1,0 +1,11 @@
+// Rule: Going above `Int16`'s largest value, 32767, panics.
+// Spec: 2.1, 5.6
+// expect panic: integer overflow: 32767 + 1 doesn't fit in Int16
+
+fn more(x: Int16, y: Int16) -> Int16 {
+    x + y
+}
+
+fn main() {
+    print(more(32767, 1))
+}

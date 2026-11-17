@@ -1,0 +1,12 @@
+// Rule: Opening a window needs the capability `Window`.
+// Spec: 14.22, 8.1
+// expect compile error
+
+use std.window
+
+pub fn show() -> AppWindow ! WindowError uses Console {
+    try window.open("Tool", 320, 200)      // error: show doesn't list Window
+}
+
+fn main() {
+}

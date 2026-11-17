@@ -1,0 +1,14 @@
+// Rule: A named function fits a function type only when its parameter and result types are the same.
+// Spec: 3.4
+// expect compile error
+
+fn shout(text: String) -> String {
+    text.upper()
+}
+
+fn main() {
+    const f: fn(String) -> String = shout
+    print(f("a"))
+    const g: fn(Int) -> String = shout     // error: `shout` takes a String, not an Int
+    print(g(1))
+}

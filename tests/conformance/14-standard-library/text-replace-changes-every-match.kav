@@ -1,0 +1,11 @@
+// Rule: `s.replace(old, new)` replaces every `old`, without overlaps, in any script; with no `old` in `s`, it gives `s` as it was.
+// Spec: 14.2
+// expect output: bbbbbb bb
+// expect output: नxनx abc abc
+// expect output: 1
+
+fn main() {
+    print("{"aaa".replace("a", "bb")} {"aaaa".replace("aa", "b")}")
+    print("{"नमनम".replace("म", "x")} {"abc".replace("z", "q")} {"a-b-c".replace("-", "")}")
+    print("e\u{301}".replace("\u{301}", "").len())
+}

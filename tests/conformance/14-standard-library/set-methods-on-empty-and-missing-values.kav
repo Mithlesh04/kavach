@@ -1,0 +1,17 @@
+// Rule: A set has `contains`, `len`, `is_empty` and `to_list`; removing a value that isn't there changes nothing, and an empty set prints as `Set.of()`.
+// Spec: 14.2
+// expect output: Set.of() 0 true
+// expect output: [] false
+// expect output: [2, 1] false
+// expect output: Set.of(2, 1)
+
+fn main() {
+    let s: Set<Int> = Set.of()
+    print("{s} {s.len()} {s.is_empty()}")
+    print("{s.to_list()} {s.contains(1)}")
+    s.add(2)
+    s.add(1)
+    s.remove(5)
+    print("{s.to_list()} {s.is_empty()}")
+    print(s)
+}

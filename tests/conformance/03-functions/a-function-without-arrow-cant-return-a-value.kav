@@ -1,0 +1,14 @@
+// Rule: A function without `->` returns nothing, so its `return` can't give a value.
+// Spec: 3.1
+// expect compile error
+
+fn show(n: Int) {
+    if n < 0 {
+        return n               // error: `show` has no `->`, so it returns nothing
+    }
+    print(n)
+}
+
+fn main() {
+    show(1)
+}

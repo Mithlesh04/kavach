@@ -1,0 +1,10 @@
+// Rule: A `StrView` is its own type: `to_string()` copies its text out when a `String` is needed.
+// Spec: 2.18
+// expect compile error
+
+fn main() {
+    const v = "abc".view(0, 2)
+    const copied: String = v.to_string()   // fine
+    const s: String = v                    // error: expected String, found StrView
+    print("{copied} {s}")
+}

@@ -1,0 +1,19 @@
+// Rule: There is no cast back from an interface value to its concrete type.
+// Spec: 2.15
+// expect compile error
+
+interface Describe {
+    fn describe(self) -> String
+}
+
+type User: Describe {
+    name: String
+
+    fn describe(self) -> String { "User {self.name}" }
+}
+
+fn main() {
+    const d: Describe = User(name: "Asha")
+    const u: User = d      // error: a `Describe` is not a `User`
+    print(u.name)
+}

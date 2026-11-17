@@ -1,0 +1,30 @@
+// Rule: `w.shared()` gives back the very `Shared` the `Weak` points to, wherever the `Weak` is kept, until the block that holds the `Shared` ends; then it gives `none`.
+// Spec: 6.2
+// expect output: 2
+// expect output: 7
+// expect output: inner lives: true
+// expect output: after its block: true
+
+type Link {
+    to: Weak<Int>
+}
+
+fn main() {
+    const count = Shared(1)
+    const link = Link(to: count.weak())
+    let w = link.to
+    if let same = w.shared() {
+        same.update(n => n + 1)
+    }
+    print(count.get())
+    const other = Shared(7)
+    w = other.weak()
+    print(w.shared()?.get() ?? 0)
+    let gone = count.weak()
+    {
+        const inner = Shared(3)
+        gone = inner.weak()
+        print("inner lives: {gone.shared() != none}")
+    }
+    print("after its block: {gone.shared() == none}")
+}

@@ -1,0 +1,10 @@
+// Rule: `pad_left`'s `width` is at most 1,000,000, as `pad_right`'s is; a wider pad panics instead of filling memory.
+// Spec: 14.2
+// expect output: 1000000
+// expect panic
+
+fn main() {
+    print("x".pad_right(1_000_000, '-').len())
+    const width = [1_000_001][0]
+    print("x".pad_left(width, '-').len())
+}

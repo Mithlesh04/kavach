@@ -1,0 +1,12 @@
+// Rule: An arena block may stand as a statement; its last line may be a call that gives nothing, such as `print`.
+// Spec: 6.3
+// expect output: 2
+// expect output: after
+
+fn main() {
+    arena {
+        const xs = [1, 2]
+        print(xs.len())
+    }
+    print("after")
+}

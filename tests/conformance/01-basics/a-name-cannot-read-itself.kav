@@ -1,0 +1,8 @@
+// Rule: A local can be used only after its `const` or `let`, so its own value can't read it.
+// Spec: 1.4
+// expect compile error
+
+fn main() {
+    const count = count + 1         // error: `count` is not declared yet
+    print(count)
+}

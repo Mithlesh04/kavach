@@ -1,0 +1,15 @@
+// Rule: a `spawn process` call can't take a channel end: what it takes is copied out of the program, and a channel can't be.
+// Spec: 9.8
+// expect compile error
+
+fn send_one(to: Sender<Int>) -> Int {
+    to.put(1)
+    1
+}
+
+fn main() {
+    const (send, receive) = Channel<Int>(capacity: 1)
+    const job = spawn process send_one(send)    // error: a channel end can't be copied into another process
+    print(job.wait() catch _ => 0)
+    print(receive.take())
+}

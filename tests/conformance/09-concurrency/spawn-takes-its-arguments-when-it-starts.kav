@@ -1,0 +1,20 @@
+// Rule: `spawn f(x)` copies its arguments when the task is spawned, and a lambda it calls keeps the copies it took when made: later changes by the caller don't reach the task.
+// Spec: 9.5, 3.3
+// expect output: 3
+// expect output: 11
+
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
+
+fn main() ! Error {
+    let x = 1
+    const t = spawn add(x, 2)
+    x = 100
+    print(try t.wait())
+    let k = 10
+    const plus_k = n => n + k
+    k = 0
+    const u = spawn plus_k(1)
+    print(try u.wait())
+}

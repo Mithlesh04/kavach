@@ -1,0 +1,32 @@
+// Rule: An error bound to a name in a handler or a `match` arm can be kept after it, in an outside variable or list: it is a value like any other.
+// Spec: 5.3, 5.4, 6.1
+// expect output: Bad(code: 2)
+// expect output: [Bad(code: 1), Bad(code: 3)]
+
+type Oops = Bad(code: Int)
+
+fn check(x: Int) -> Int ! Oops {
+    if x > 0 {
+        fail Oops.Bad(code: x)
+    }
+    x
+}
+
+fn main() {
+    let last: Oops? = none
+    const _n = check(2) catch e => {
+        last = e
+        0
+    }
+    if let kept = last {
+        print(kept)
+    }
+    let seen: [Oops] = []
+    for x in [1, 0, 3] {
+        match check(x) {
+            ok(_) => {}
+            err(e) => seen.push(e)
+        }
+    }
+    print(seen)
+}

@@ -1,0 +1,18 @@
+// Rule: `compress.level_fits` follows each format's range of levels: gzip and deflate 0 to 9, zstd 1 to 22, brotli 0 to 11, lz4 only 0; `none` always fits.
+// Spec: 14.21
+// expect output: gzip false true true false true
+// expect output: deflate false true true false true
+// expect output: zstd false true true false true
+// expect output: br false true true false true
+// expect output: lz4 false true true false true
+
+use std.compress
+
+fn main() {
+    // For each format: one below its lowest, its lowest, its highest, one above, and none.
+    const edges = [(Format.Gzip, 0, 9), (Format.Deflate, 0, 9), (Format.Zstd, 1, 22), (Format.Brotli, 0, 11), (Format.Lz4, 0, 0)]
+    for (format, low, high) in edges {
+        const fits = [compress.level_fits(format, low - 1), compress.level_fits(format, low), compress.level_fits(format, high), compress.level_fits(format, high + 1), compress.level_fits(format, none)]
+        print("{format.name()} {fits[0]} {fits[1]} {fits[2]} {fits[3]} {fits[4]}")
+    }
+}

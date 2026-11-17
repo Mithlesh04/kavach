@@ -1,0 +1,11 @@
+// Rule: A function that returns a value must write its return type; with no `->` it returns nothing.
+// Spec: 2.10, 3.1
+// expect compile error
+
+fn twice(x: Int) {
+    x * 2                          // error: no `->`, so it returns nothing
+}
+
+fn main() {
+    twice(2)
+}

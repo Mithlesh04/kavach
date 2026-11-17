@@ -1,0 +1,20 @@
+// Rule: A value copied into a tuple, an optional or a union variant is its own: changing the variable later doesn't change them.
+// Spec: 6.1
+// expect output: [1] [1] [1]
+// expect output: [1, 9]
+
+type Box = Full(items: [Int]) | Empty
+
+fn main() {
+    let a = [1]
+    const t = (a, 2)
+    const o: [Int]? = a
+    const b = Box.Full(items: a)
+    a.push(9)
+    const inside = match b {
+        Box.Full(items) => items,
+        Box.Empty => [],
+    }
+    print("{t.0} {o ?? []} {inside}")
+    print(a)
+}

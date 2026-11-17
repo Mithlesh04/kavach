@@ -1,0 +1,12 @@
+// Rule: `std.term` needs `Console`: a function that colors text must list it.
+// Spec: 14.13
+// expect compile error
+
+use std.term
+
+pub fn warning(text: String) -> String uses Fs {
+    term.yellow("warning: ") + text      // error: `warning` uses Console, which its `uses` clause doesn't list
+}
+
+fn main() {
+}

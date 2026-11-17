@@ -1,0 +1,14 @@
+// Rule: A `gpu fn` may convert between `Float32`, `Int32` and `UInt32`, and use `abs`, `min`, `max` and `clamp`.
+// Spec: 15.1, 2.1
+// expect output: [(2, 3.0, 7), (-5, 5.0, 7), (12, 9.0, 9)]
+
+gpu fn mix(x: Float32) -> (Int32, Float32, UInt32) {
+    const whole = Int32(x)                      // cuts off the fraction
+    const size = Float32(whole.abs()).max(3.0).min(9.0)
+    (whole, size, UInt32(whole.clamp(7, 9)))
+}
+
+fn main() {
+    const xs: [Float32] = [2.7, -5.2, 12.5]
+    print(xs.map(mix))
+}

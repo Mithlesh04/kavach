@@ -1,0 +1,17 @@
+// Rule: `cli.parse<T>()` reads the arguments, so it needs `Env`.
+// Spec: 14.6
+// expect compile error
+
+use std.cli
+
+type Args {
+    limit: Int = 10
+}
+
+pub fn limit() -> Int ! CliError uses Console {
+    const args = try cli.parse<Args>()     // error: `limit` uses Env, which its `uses` clause doesn't list
+    args.limit
+}
+
+fn main() {
+}

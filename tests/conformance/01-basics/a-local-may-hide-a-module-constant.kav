@@ -1,0 +1,16 @@
+// Rule: A function's body is an inner scope, so a local may reuse a module constant's name; other functions still read the constant.
+// Spec: 1.13, 1.4
+// expect output: 99
+// expect output: 3
+
+const limit = 3
+
+fn local_limit() -> Int {
+    const limit = 99
+    limit
+}
+
+fn main() {
+    print(local_limit())
+    print(limit)
+}

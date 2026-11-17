@@ -1,0 +1,26 @@
+// Rule: A view keeps its string alive and keeps the text it had: it outlives the function that made the string, and the variable's next value doesn't change it; views can be stored in lists and records.
+// Spec: 2.18
+// expect output: HELLO
+// expect output: abc xyz
+// expect output: ["HELLO", "bc"] HELLO
+
+type Token {
+    text: StrView
+}
+
+fn first_word() -> StrView {
+    const s = "hello world".upper()
+    s.view(0, 5)
+}
+
+fn main() {
+    const w = first_word()
+    print(w)
+    let s = "abc"
+    const v = s.view()
+    s = "xyz"
+    print("{v} {s}")
+    const kept = [w, v.view(1, 3)]
+    const t = Token(text: w)
+    print("{kept} {t.text}")
+}

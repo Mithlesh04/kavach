@@ -1,0 +1,9 @@
+// Rule: An anonymous record's field can't be assigned through a `const`.
+// Spec: 2.14, 1.4
+// expect compile error
+
+fn main() {
+    const p = (x: 1, y: 2)
+    p.x = 5      // error: `p` is a const; declare it with `let`
+    print(p.x)
+}

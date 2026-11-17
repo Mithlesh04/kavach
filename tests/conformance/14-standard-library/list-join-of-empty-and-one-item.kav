@@ -1,0 +1,10 @@
+// Rule: `join` puts `sep` only between items: an empty list gives empty text, one item gives that item, and empty items stay.
+// Spec: 14.2
+// expect output: [] [x] [a, b]
+// expect output: a--b नम
+
+fn main() {
+    const empty: [String] = []
+    print("[{empty.join(", ")}] [{["x"].join(", ")}] [{["a", "b"].join(", ")}]")
+    print("{["a", "", "b"].join("-")} {['न', 'म'].join("")}")
+}

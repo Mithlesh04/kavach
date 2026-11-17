@@ -1,0 +1,13 @@
+// Rule: Only values of types that implement `LogEvent` can be logged: a record that doesn't say `: LogEvent` is refused.
+// Spec: 14.12
+// expect compile error
+
+use std.log
+
+type OrderPlaced {
+    order_id: Int
+}
+
+fn main() {
+    log.info(OrderPlaced(order_id: 7))      // error: OrderPlaced doesn't implement LogEvent
+}

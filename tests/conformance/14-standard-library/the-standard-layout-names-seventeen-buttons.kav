@@ -1,0 +1,9 @@
+// Rule: The standard layout's buttons are, in order, the four face buttons, the bumpers, the triggers, Select, Start, Mode, the sticks pressed in and the four D-pad directions.
+// Spec: 14.26
+// expect output: South East North West LeftBumper RightBumper LeftTrigger RightTrigger Select Start Mode LeftStick RightStick DPadUp DPadDown DPadLeft DPadRight
+
+use std.input
+
+fn main() uses Input {
+    print(input.buttons().join(" "))
+}

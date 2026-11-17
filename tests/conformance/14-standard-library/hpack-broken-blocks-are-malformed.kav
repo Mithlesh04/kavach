@@ -1,0 +1,41 @@
+// Rule: `hpack.decode` fails with `Malformed` on a broken block: index 0, an index past both tables, a literal cut off; `hpack.huffman` fails on padding that isn't the EOS code's first bits (RFC 7541 5.2).
+// Spec: 14.11
+// expect output: index 0: Malformed
+// expect output: index 70 with an empty table: Malformed
+// expect output: a literal cut off: Malformed
+// expect output: padding of zeros: Malformed
+// expect output: good padding: 0
+
+use std.http.hpack
+
+fn kind(e: HpackError) -> String {
+    match e {
+        HpackError.Malformed(_) => "Malformed",
+    }
+}
+
+fn decoded(block: [UInt8]) -> String {
+    match hpack.decode(Bytes(block), hpack.new_table(4096)) {
+        ok(d) => "{d.headers.len()} headers",
+        err(e) => kind(e),
+    }
+}
+
+fn main() {
+    print("index 0: {decoded([0x80])}")
+    // 0xC6 is index 70: the static table has 61 entries, the dynamic none.
+    print("index 70 with an empty table: {decoded([0xC6])}")
+    // A literal with a new name that says 5 bytes and gives 1.
+    print("a literal cut off: {decoded([0x40, 0x05, 0x61])}")
+    // `0` is the 5-bit code 00000; the 3 bits after it must be ones.
+    const zeros = match hpack.huffman(Bytes([0x00])) {
+        ok(b) => b.text() ?? "?",
+        err(e) => kind(e),
+    }
+    print("padding of zeros: {zeros}")
+    const ones = match hpack.huffman(Bytes([0x07])) {
+        ok(b) => b.text() ?? "?",
+        err(e) => kind(e),
+    }
+    print("good padding: {ones}")
+}

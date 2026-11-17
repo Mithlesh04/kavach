@@ -1,0 +1,8 @@
+// Rule: `div_floor` is for whole numbers; on a `Float` it is a compile error.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    const x = 7.5
+    print(x.div_floor(2.0))        // error: `Float` has no `div_floor`
+}

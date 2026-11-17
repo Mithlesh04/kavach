@@ -1,0 +1,33 @@
+// Rule: `grpc.failed(code, message)` ends the call with that gRPC status, and the client's call fails with `Status` holding the same code and message, whatever characters it has.
+// Spec: 14.14
+// expect output: Status(code: 5, message: "no order #7")
+// expect output: Status(code: 7, message: "100% denied: ü")
+// expect output: Status(code: 16, message: "")
+
+use std.grpc
+use std.net
+
+pub type Ask {
+    code: Int
+}
+
+fn refuse(call: GrpcCall) -> GrpcReply {
+    const ask = grpc.read<Ask>(call) catch _ => Ask(code: 13)
+    match ask.code {
+        5 => grpc.failed(5, "no order #7"),
+        7 => grpc.failed(7, "100% denied: ü"),
+        _ => grpc.failed(ask.code, ""),
+    }
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn grpc.serve(listener, refuse)
+    const target = "http://{listener.address()}"
+    for code in [5, 7, 16] {
+        match grpc.call<Ask, Ask>(target, "/test.Refuse/Ask", Ask(code: code)) {
+            ok(a) => print("answered {a.code}"),
+            err(e) => print(e),
+        }
+    }
+}

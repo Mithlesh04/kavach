@@ -1,0 +1,15 @@
+// Rule: `first`, `last` and `get` give an optional: `none` for an empty list, and `get` gives `none` for any index outside the list, below 0 too.
+// Spec: 2.2
+// expect output: none none none
+// expect output: 1 3 2
+// expect output: none none
+// expect output: true
+
+fn main() {
+    const empty: [Int] = []
+    print("{empty.first()} {empty.last()} {empty.get(0)}")
+    const xs = [1, 2, 3]
+    print("{xs.first() ?? 0} {xs.last() ?? 0} {xs.get(1) ?? 0}")
+    print("{xs.get(-1)} {xs.get(3)}")
+    print(empty.is_empty() and not xs.is_empty())
+}

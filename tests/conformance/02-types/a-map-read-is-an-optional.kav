@@ -1,0 +1,9 @@
+// Rule: Reading a map with `ages[key]` gives an optional (`Int?`), never a plain value, even for a key that is there.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    const ages = ["asha": 31]
+    const age: Int = ages["asha"]      // error: `ages["asha"]` is an `Int?`
+    print(age)
+}

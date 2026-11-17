@@ -1,0 +1,45 @@
+// Rule: Arguments of different sizes (Int8, Float32, a big record, Int, Float) arrive in their own parameters whatever the order.
+// Spec: 3.1
+// expect output: -7 0.5 [a 1 2.5 true x 9 -3 0.25] 9000000000 1.25
+// expect output: 1.25 9000000000 [a 1 2.5 true x 9 -3 0.25] 0.5 -7
+// expect output: [a 1 2.5 true x 9 -3 0.25] -7 1.25 0.5 9000000000
+// expect output: 0.5 -7 9000000000 1.25 [a 1 2.5 true x 9 -3 0.25]
+// expect output: -7 -7 0.5 0.5 [a 1 2.5 true x 9 -3 0.25] 255 1.25 9000000000
+// expect output: -6 0.75 [b 2 3.5 false y 10 -2 0.5] 9000000001 2.25
+
+type Big {
+    name: String
+    count: Int
+    price: Float
+    ok: Bool
+    letter: Char
+    tiny: UInt8
+    small: Int16
+    ratio: Float32
+}
+
+fn show(b: Big) -> String {
+    "[{b.name} {b.count} {b.price} {b.ok} {b.letter} {b.tiny} {b.small} {b.ratio}]"
+}
+
+fn a(x: Int8, y: Float32, b: Big, n: Int, f: Float) -> String { "{x} {y} {show(b)} {n} {f}" }
+fn b(f: Float, n: Int, b: Big, y: Float32, x: Int8) -> String { "{f} {n} {show(b)} {y} {x}" }
+fn c(b: Big, x: Int8, f: Float, y: Float32, n: Int) -> String { "{show(b)} {x} {f} {y} {n}" }
+fn d(y: Float32, x: Int8, n: Int, f: Float, b: Big) -> String { "{y} {x} {n} {f} {show(b)}" }
+fn e(x: Int8, x2: Int8, y: Float32, y2: Float32, b: Big, u: UInt8, f: Float, n: Int) -> String {
+    "{x} {x2} {y} {y2} {show(b)} {u} {f} {n}"
+}
+fn step(x: Int8, y: Float32, b: Big, n: Int, f: Float) -> (Int8, Float32, Big, Int, Float) {
+    (x + 1, y + 0.25, b with { name: "b", count: 2, price: 3.5, ok: false, letter: 'y', tiny: 10, small: -2, ratio: 0.5 }, n + 1, f + 1.0)
+}
+
+fn main() {
+    const big = Big(name: "a", count: 1, price: 2.5, ok: true, letter: 'x', tiny: 9, small: -3, ratio: 0.25)
+    print(a(-7, 0.5, big, 9_000_000_000, 1.25))
+    print(b(1.25, 9_000_000_000, big, 0.5, -7))
+    print(c(big, -7, 1.25, 0.5, 9_000_000_000))
+    print(d(0.5, -7, 9_000_000_000, 1.25, big))
+    print(e(-7, -7, 0.5, 0.5, big, 255, 1.25, 9_000_000_000))
+    const (x, y, r, n, f) = step(-7, 0.5, big, 9_000_000_000, 1.25)
+    print(a(x, y, r, n, f))
+}

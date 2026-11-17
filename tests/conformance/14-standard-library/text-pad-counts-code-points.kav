@@ -1,0 +1,12 @@
+// Rule: `pad_left` and `pad_right` count characters as `len` does, so a combining mark is one character, and the fill may be an emoji.
+// Spec: 14.2
+// expect output: 3 true false
+// expect output: 👍👍7 [👍.]
+// expect output: 2
+
+fn main() {
+    const accented = "e\u{301}".pad_left(3, '*')
+    print("{accented.len()} {accented.starts_with("*e")} {accented.starts_with("**")}")
+    print("{"7".pad_left(3, '👍')} [{"👍".pad_right(2, '.')}]")
+    print("e\u{301}".pad_right(2).len())
+}

@@ -1,0 +1,23 @@
+// Rule: A span inside another is its child: it keeps the trace, with a span id of its own; `from:` is ignored when the code is in a span already.
+// Spec: 14.12
+// expect output: same trace: true
+// expect output: own span: true
+// expect output: from ignored: true
+// expect output: back: true
+
+use std.log
+
+fn main() {
+    log.span("request") {
+        const trace = log.trace_id() ?? ""
+        const outer = log.traceparent() ?? ""
+        log.span("query") {
+            print("same trace: {log.trace_id() == trace}")
+            print("own span: {log.traceparent() != outer}")
+        }
+        log.span("call", from: "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01") {
+            print("from ignored: {log.trace_id() == trace}")
+        }
+        print("back: {log.traceparent() == outer}")
+    }
+}

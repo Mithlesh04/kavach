@@ -1,0 +1,16 @@
+// Rule: `voice.fill` queues frames to be heard, so it needs `Audio`.
+// Spec: 14.27
+// expect compile error
+
+use std.audio
+
+fn quiet(n: Int) -> (Int, Float32, Float32) {
+    (n + 1, Float32(0.0), Float32(0.0))
+}
+
+pub fn feed(v: Voice, n: Int) -> Int {
+    v.fill(n, quiet)     // error: `feed` is `pub`, so it must say what it uses: add `uses Audio`
+}
+
+fn main() {
+}

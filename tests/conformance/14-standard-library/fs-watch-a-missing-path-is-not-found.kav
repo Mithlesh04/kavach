@@ -1,0 +1,22 @@
+// Rule: `fs.watch` fails with `NotFound` when nothing is at the path; a new watcher's `poll()` is empty, and after `close()` `next()` gives `none`.
+// Spec: 14.3
+// Checks: misuse
+// expect output: NotFound(path: "kavach-t-fs-watch/nothing")
+// expect output: 0
+// expect output: none
+
+use std.fs
+
+fn main() ! FsError uses Fs, Console {
+    const dir = "kavach-t-fs-watch"
+    try fs.create_dir(dir)
+    const _missing = fs.watch("{dir}/nothing") catch e => {
+        print(e)
+        try fs.watch(dir)
+    }
+    const w = try fs.watch(dir)
+    print(w.poll().len())
+    w.close()
+    print(w.next())
+    try fs.remove_all(dir)
+}

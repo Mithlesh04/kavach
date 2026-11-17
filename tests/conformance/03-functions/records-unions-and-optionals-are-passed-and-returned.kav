@@ -1,0 +1,35 @@
+// Rule: Records, unions with fields, and optionals, of small types too, are passed and returned unchanged; `none` arrives as `none`.
+// Spec: 3.1, 2.4, 2.6, 2.7
+// expect output: User(name: "Asha", age: 32)
+// expect output: Rect(width: 2.0, height: 6.0)
+// expect output: Circle(radius: 1.5)
+// expect output: none -5 none true none x none 0.5
+// expect output: -128 none 7
+
+type User {
+    name: String
+    age: Int
+}
+
+type Shape = Circle(radius: Float) | Rect(width: Float, height: Float)
+
+fn older(u: User) -> User { u with { age: u.age + 1 } }
+fn taller(s: Shape) -> Shape {
+    match s {
+        Shape.Circle(radius) => Shape.Circle(radius: radius),
+        Shape.Rect(width, height) => Shape.Rect(width: width, height: height * 2.0),
+    }
+}
+fn small(x: Int8?) -> Int8? { x }
+fn flag(b: Bool?) -> Bool? { b }
+fn letter(c: Char?) -> Char? { c }
+fn half(f: Float32?) -> Float32? { f }
+fn or_none(n: Int, keep: Bool) -> Int? { if keep { n } else { none } }
+
+fn main() {
+    print(older(User(name: "Asha", age: 31)))
+    print(taller(Shape.Rect(width: 2.0, height: 3.0)))
+    print(taller(Shape.Circle(radius: 1.5)))
+    print("{small(none)} {small(-5)} {flag(none)} {flag(true)} {letter(none)} {letter('x')} {half(none)} {half(0.5)}")
+    print("{small(-128) ?? 0} {or_none(7, false)} {or_none(7, true)}")
+}

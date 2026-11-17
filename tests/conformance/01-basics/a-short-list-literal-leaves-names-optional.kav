@@ -1,0 +1,11 @@
+// Rule: A list literal with fewer items than the pattern has names leaves the names without an item `none`.
+// Spec: 1.12
+// expect output: 1 2 none
+// expect output: 1 2 3
+
+fn main() {
+    const [a, b, c] = [1, 2]
+    print("{a} {b} {c}")
+    const [x, y, z = 3] = [1, 2]
+    print("{x} {y} {z}")
+}

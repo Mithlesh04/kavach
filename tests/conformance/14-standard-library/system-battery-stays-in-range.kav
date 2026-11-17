@@ -1,0 +1,18 @@
+// Rule: `system.battery()` is `none` with no battery, or a `Battery` whose `percent` is 0 to 100 and whose `minutes_left` is -1 while charging or not known.
+// Spec: 14.25
+// expect output: true
+
+use std.system
+
+fn sane() -> Bool uses System {
+    const battery: Battery? = system.battery()
+    if let b = battery {
+        return b.percent >= 0 and b.percent <= 100 and b.minutes_left >= -1 and
+            (not b.charging or b.minutes_left == -1)
+    }
+    true
+}
+
+fn main() {
+    print(sane())
+}

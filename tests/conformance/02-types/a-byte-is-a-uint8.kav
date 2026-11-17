@@ -1,0 +1,10 @@
+// Rule: `b[i]` is a `UInt8`, so using it as an `Int` needs a conversion.
+// Spec: 2.13, 2.1
+// expect compile error
+
+fn main() {
+    const b = "hi".bytes()
+    const fine: Int = Int(b[0])
+    const code: Int = b[0]         // error: no implicit number conversions
+    print(fine + code)
+}

@@ -1,0 +1,19 @@
+// Rule: `index_of` finds the first item equal to `x` by value, as `==` compares: records, tuples, text and lists.
+// Spec: 14.2
+// expect output: 1 1 0 1
+// expect output: none
+
+type Point {
+    x: Int
+    y: Int
+}
+
+fn main() {
+    const points = [Point(x: 1, y: 1), Point(x: 2, y: 2), Point(x: 2, y: 2)]
+    const at_point = points.index_of(Point(x: 2, y: 2)) ?? -1
+    const at_pair = [(1, "a"), (2, "b")].index_of((2, "b")) ?? -1
+    const at_word = ["héllo", "hello"].index_of("héllo") ?? -1
+    const at_list = [[1], [2]].index_of([2]) ?? -1
+    print("{at_point} {at_pair} {at_word} {at_list}")
+    print(points.index_of(Point(x: 1, y: 2)))
+}

@@ -1,0 +1,11 @@
+// Rule: Going above `UInt64`'s largest value panics.
+// Spec: 2.1, 5.6
+// expect panic: integer overflow: 18446744073709551615 * 2 doesn't fit in UInt64
+
+fn times(x: UInt64, y: UInt64) -> UInt64 {
+    x * y
+}
+
+fn main() {
+    print(times(18_446_744_073_709_551_615, 2))
+}

@@ -1,0 +1,11 @@
+// Rule: Going below `Int`'s smallest value panics.
+// Spec: 2.1, 5.6
+// expect panic: integer overflow: -9223372036854775808 - 1 doesn't fit in Int
+
+fn less(x: Int, y: Int) -> Int {
+    x - y
+}
+
+fn main() {
+    print(less(-9_223_372_036_854_775_807 - 1, 1))
+}

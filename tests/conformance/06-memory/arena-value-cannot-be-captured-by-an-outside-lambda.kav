@@ -1,0 +1,12 @@
+// Rule: A lambda that uses an arena value can't be stored in a variable declared before the arena.
+// Spec: 6.3, 3.3
+// expect compile error
+
+fn main() {
+    let f = () => 0
+    arena {
+        const xs = [1, 2, 3]
+        f = () => xs.len()      // error: the lambda holds xs, made in the arena, and can't be kept outside it
+    }
+    print(f())
+}

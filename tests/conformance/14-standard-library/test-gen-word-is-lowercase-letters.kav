@@ -1,0 +1,27 @@
+// Rule: `gen.word()` gives a word of 1 to 8 lowercase letters; `gen.bool()` gives `true` or `false`; `gen.pick` gives one of its items.
+// Spec: 14.7
+// expect test pass
+
+type Tag: Sample {
+    word: String
+    pinned: Bool
+    color: String
+
+    fn sample(gen: Gen) -> Tag {
+        Tag(word: gen.word(), pinned: gen.bool(), color: gen.pick(["red", "green"]))
+    }
+}
+
+fn valid(t: Tag) -> Bool
+    ensure result
+{
+    if t.word.len() < 1 or t.word.len() > 8 {
+        return false
+    }
+    for c in t.word.chars() {
+        if not "abcdefghijklmnopqrstuvwxyz".contains(String(c)) {
+            return false
+        }
+    }
+    t.color == "red" or t.color == "green"
+}

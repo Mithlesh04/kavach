@@ -1,0 +1,22 @@
+// Rule: a channel closed through one copy of its sender is closed for every copy: `try_put` gives `false`, and `put` panics.
+// Spec: 9.4
+// expect output: false
+// expect output: Item(value: 1)
+// expect output: Closed
+// expect panic: closed channel
+
+type Outbox {
+    to: Sender<Int>
+}
+
+fn main() {
+    const (send, receive) = Channel<Int>(capacity: 2)
+    const box = Outbox(to: send)
+    let copy = send
+    box.to.put(1)
+    copy.close()
+    print(send.try_put(2))
+    print(receive.take())
+    print(receive.take())
+    box.to.put(3)
+}

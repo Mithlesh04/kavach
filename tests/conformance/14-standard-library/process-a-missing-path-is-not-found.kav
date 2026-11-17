@@ -1,0 +1,19 @@
+// Rule: a program named by a path where nothing is fails with `NotFound(program)`, from `run` and from `start` alike.
+// Spec: 14.23
+// Checks: misuse
+// expect output: NotFound(program: "./kavach-t-no-such-tool")
+// expect output: NotFound(program: "kavach-t-no-such-tool")
+
+use std.process
+
+fn main() uses Process, Console {
+    const _done = process.run("./kavach-t-no-such-tool", ["--version"]) catch e => {
+        print(e)
+        Finished(code: -1, out: "", err: "", cpu_ms: 0, peak_bytes: 0)
+    }
+    const _child = process.start("kavach-t-no-such-tool", []) catch e => {
+        print(e)
+        return
+    }
+    print("started?")
+}

@@ -1,0 +1,43 @@
+// Rule: A large argument (a list of 1,000,000 items, a 1 MB string) arrives whole, and a change to the callee's copy never reaches the caller's value.
+// Spec: 3.1, 6.1
+// expect output: 1000000 499999500000 999999
+// expect output: 1000001 -1
+// expect output: 1000000 499999500000 999999
+// expect output: 1048576 true
+// expect output: 1048577 !
+// expect output: 1048576 x
+
+fn summary(xs: [Int]) -> String {
+    "{xs.len()} {xs.sum(x => x)} {xs[xs.len() - 1]}"
+}
+
+fn changed(xs: [Int]) -> [Int] {
+    let mine = xs
+    mine.push(-1)
+    mine[0] = 7
+    mine
+}
+
+fn longer(s: String) -> String {
+    s + "!"
+}
+
+fn same(s: String) -> Bool {
+    s.len() == 1_048_576 and s.starts_with("xxxx") and s.ends_with("xxxx")
+}
+
+fn main() {
+    let xs: [Int] = []
+    for i in 0..1_000_000 {
+        xs.push(i)
+    }
+    print(summary(xs))
+    const ys = changed(xs)
+    print("{ys.len()} {ys[ys.len() - 1]}")
+    print(summary(xs))
+    const s = "x".repeat(1_048_576)
+    print("{s.len()} {same(s)}")
+    const t = longer(s)
+    print("{t.len()} {t.slice(t.len() - 1, t.len())}")
+    print("{s.len()} {s.slice(s.len() - 1, s.len())}")
+}

@@ -1,0 +1,14 @@
+// Rule: `math.erfc(x)` is `1 - erf(x)`, exact even where `erf(x)` is near 1, so it does not drop to 0.
+// Spec: 14.5
+// expect output: true
+// expect output: 2.0
+// expect output: true
+
+use std.math
+
+fn main() {
+    const far = math.erfc(10.0)            // about 2.09e-45
+    print(far > 2.08e-45 and far < 2.09e-45)
+    print(math.erfc(-10.0))
+    print(math.erfc(1.0).near(0.1572992070502851))
+}

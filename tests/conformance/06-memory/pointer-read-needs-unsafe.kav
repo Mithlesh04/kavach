@@ -1,0 +1,10 @@
+// Rule: `p.read(i)` reads raw memory, so it is allowed only inside `unsafe { … }`.
+// Spec: 6.4
+// expect compile error
+
+fn second(p: Ptr<Int32>) -> Int32 {
+    p.read(1)                       // error: raw memory outside unsafe
+}
+
+fn main() {
+}

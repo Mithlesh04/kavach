@@ -1,0 +1,8 @@
+// Rule: A negative constant doesn't fit an unsigned type, so writing one there is a compile error.
+// Spec: 2.1
+// expect compile error
+
+fn main() {
+    const count: UInt8 = -1        // error: `-1` doesn't fit in `UInt8`
+    print(count)
+}

@@ -1,0 +1,15 @@
+// Rule: A voice the program fills (`audio.voice`) plays sound, so making one needs `Audio`.
+// Spec: 14.27
+// expect compile error
+
+use std.audio
+
+pub fn synth() -> Bool {
+    const _v = audio.voice() catch _ => {     // error: `synth` is `pub`, so it must say what it uses: add `uses Audio`
+        return false
+    }
+    true
+}
+
+fn main() {
+}

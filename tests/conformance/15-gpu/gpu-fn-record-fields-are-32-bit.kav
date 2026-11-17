@@ -1,0 +1,16 @@
+// Rule: The records a `gpu fn` takes have fields only of `Float32`, `Int32`, `UInt32` and `Bool`.
+// Spec: 15.1
+// expect compile error
+
+type Ball {
+    y: Float
+    vy: Float32
+}
+
+gpu fn fall(b: Ball) -> Float32 {       // error: `Ball.y` is a `Float`, 64 bits
+    b.vy
+}
+
+fn main() {
+    print(fall(Ball(y: 1.0, vy: 0.5)))
+}

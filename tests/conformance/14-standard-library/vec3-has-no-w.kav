@@ -1,0 +1,10 @@
+// Rule: A `Vec3` has parts `x`, `y` and `z` only: reading `w` is a compile error.
+// Spec: 14.28
+// expect compile error
+
+use std.vec
+
+fn main() {
+    const v = Vec3(x: 1.0, y: 2.0, z: 3.0)
+    print(v.w)                          // error: Vec3 has no field `w`
+}

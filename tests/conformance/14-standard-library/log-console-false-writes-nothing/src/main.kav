@@ -1,0 +1,13 @@
+// Rule: With `console = false` in `[log]`, events are not written to standard output.
+// Spec: 14.12
+// expect output: done
+
+use std.log
+
+type Started: LogEvent {}
+
+fn main() {
+    log.info(Started())
+    log.error(Started())
+    print("done")
+}

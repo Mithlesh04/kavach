@@ -1,0 +1,17 @@
+// Rule: `x?.m(a)` works out its arguments only when `x` is not `none`.
+// Spec: 2.7
+// expect output: none
+// expect output: worked out
+// expect output: hi!
+
+fn bang() -> String uses Console {
+    print("worked out")
+    "!"
+}
+
+fn main() {
+    const missing: String? = none
+    print(missing?.replace("x", bang()))
+    const word: String? = "hix"
+    print(word?.replace("x", bang()) ?? "")
+}

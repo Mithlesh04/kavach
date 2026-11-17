@@ -1,0 +1,39 @@
+// Rule: A parameter and a result may have any number type; the value arrives and comes back unchanged, even at the type's limits.
+// Spec: 3.1, 2.1
+// expect output: -128 127 -32768 32767
+// expect output: -2147483648 2147483647
+// expect output: -9223372036854775808 9223372036854775807
+// expect output: 255 65535 4294967295 18446744073709551615
+// expect output: 0.1 -2.5 0.1 -1e300
+// expect output: 12345678901234567890123456789.123456789
+// expect output: -1267650600228229401496703205376
+// expect output: -128 255 -32768 65535 -2147483648 4294967295
+
+fn i8(x: Int8) -> Int8 { x }
+fn i16(x: Int16) -> Int16 { x }
+fn i32(x: Int32) -> Int32 { x }
+fn i64(x: Int) -> Int { x }
+fn u8(x: UInt8) -> UInt8 { x }
+fn u16(x: UInt16) -> UInt16 { x }
+fn u32(x: UInt32) -> UInt32 { x }
+fn u64(x: UInt64) -> UInt64 { x }
+fn f32(x: Float32) -> Float32 { x }
+fn f64(x: Float) -> Float { x }
+fn dec(x: Decimal) -> Decimal { x }
+fn big(x: BigInt) -> BigInt { -x }
+
+// Widening inside the callee shows the sign (or its absence) arrived intact.
+fn wide(a: Int8, b: UInt8, c: Int16, d: UInt16, e: Int32, f: UInt32) -> String {
+    "{Int(a)} {Int(b)} {Int(c)} {Int(d)} {Int(e)} {Int(f)}"
+}
+
+fn main() {
+    print("{i8(-128)} {i8(127)} {i16(-32768)} {i16(32767)}")
+    print("{i32(-2147483648)} {i32(2147483647)}")
+    print("{i64(-9223372036854775807 - 1)} {i64(9223372036854775807)}")
+    print("{u8(255)} {u16(65535)} {u32(4294967295)} {u64(18446744073709551615)}")
+    print("{f32(0.1)} {f32(-2.5)} {f64(0.1)} {f64(-1e300)}")
+    print(dec(12345678901234567890123456789.123456789))
+    print(big(2 ** 100))
+    print(wide(-128, 255, -32768, 65535, -2147483648, 4294967295))
+}

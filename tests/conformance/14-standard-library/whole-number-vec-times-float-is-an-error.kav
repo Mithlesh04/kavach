@@ -1,0 +1,10 @@
+// Rule: A whole-number vector is multiplied by its own number type: `Vec2<Int> * 2.5` is a compile error.
+// Spec: 14.28
+// expect compile error
+
+use std.vec
+
+fn main() {
+    const v: Vec2<Int> = Vec2(x: 1, y: 2)
+    print(v * 2.5)                      // error: `*` on a Vec2<Int> takes an Int
+}

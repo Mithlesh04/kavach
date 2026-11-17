@@ -1,0 +1,9 @@
+// Rule: A `...rest` list a `const` takes is a constant: calling `push` on it is a compile error.
+// Spec: 1.12, 1.4
+// expect compile error
+
+fn main() {
+    const [head, ...rest] = ["asha", "ravi", "mei"]
+    rest.push("li")                 // error: `rest` is a `const`; use `let`
+    print("{head} {rest}")
+}

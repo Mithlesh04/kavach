@@ -1,0 +1,37 @@
+// Rule: a WebSocket message larger than `max_body_bytes` closes the socket (status 1009): the client then receives `none`.
+// Spec: 14.11
+// expect output: small: you said hi
+// expect output: large: closed
+
+use std.http
+use std.net
+
+fn handle(r: Request) -> Response {
+    http.websocket(r, ws => {
+        while true {
+            const message = (try ws.receive()) ?? break
+            match message {
+                WsMessage.Text(text) => try ws.send_text("you said {text}"),
+                WsMessage.Binary(data) => try ws.send_bytes(data),
+            }
+        }
+    })
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, handle, limits: ServeLimits(max_body_bytes: 100))
+    const ws = try http.websocket_connect("ws://{listener.address()}/chat")
+    try ws.send_text("hi")
+    match (try ws.receive()) ?? WsMessage.Text(text: "closed") {
+        WsMessage.Text(text) => print("small: {text}"),
+        WsMessage.Binary(_) => print("small: binary?"),
+    }
+    try ws.send_text("x".repeat(1_000))
+    const large = match ws.receive() {
+        ok(m) => if m == none { "closed" } else { "answered" },
+        err(_) => "failed",
+    }
+    print("large: {large}")
+    ws.close()
+}

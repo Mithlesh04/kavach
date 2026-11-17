@@ -1,0 +1,10 @@
+// Rule: A lambda given where a function type is expected must take as many parameters as that type.
+// Spec: 3.3, 3.4
+// expect compile error
+
+fn main() {
+    const one: fn(Int) -> Int = x => x + 1
+    print(one(1))
+    const two: fn(Int) -> Int = (a, b) => a + b    // error: the type takes 1 value, the lambda 2
+    print(two(1))
+}

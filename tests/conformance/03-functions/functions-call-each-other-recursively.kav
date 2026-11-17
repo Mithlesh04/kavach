@@ -1,0 +1,36 @@
+// Rule: Functions may call each other in a cycle (mutual recursion), with any argument types, declared in any order.
+// Spec: 3.8
+// expect output: true false true
+// expect output: 1 2 1 2 1
+// expect output: 3000
+
+fn is_even(n: Int) -> Bool {
+    if n == 0 { true } else { is_odd(n - 1) }
+}
+
+fn is_odd(n: Int) -> Bool {
+    if n == 0 { false } else { is_even(n - 1) }
+}
+
+fn ping(n: Int8, out: [Int8]) -> [Int8] {
+    if n == 0 { out } else { pong(n - 1, out + [1]) }
+}
+
+fn pong(n: Int8, out: [Int8]) -> [Int8] {
+    if n == 0 { out } else { ping(n - 1, out + [2]) }
+}
+
+fn down_a(n: Int, f: Float32, s: String) -> Int {
+    if n == 0 { s.len() } else { down_b(n - 1, f + 0.5, s) }
+}
+
+fn down_b(n: Int, f: Float32, s: String) -> Int {
+    down_a(n, f - 0.5, s + "x")
+}
+
+fn main() {
+    print("{is_even(1000)} {is_odd(1000)} {is_odd(999)}")
+    const steps = ping(5, [])
+    print("{steps[0]} {steps[1]} {steps[2]} {steps[3]} {steps[4]}")
+    print(down_a(3000, 0.0, ""))
+}

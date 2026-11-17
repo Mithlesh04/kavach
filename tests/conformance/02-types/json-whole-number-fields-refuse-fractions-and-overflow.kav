@@ -1,0 +1,39 @@
+// Rule: An integer field takes only a number written without a fraction or exponent that fits its type; anything else is a problem naming the type, while a `Float` field takes any number.
+// Spec: 2.12
+// Checks: misuse
+// expect output: [0]: a whole number that fits `Int`
+// expect output: [1]: a whole number that fits `Int`
+// expect output: [2]: a whole number that fits `Int`
+// expect output: [0].small: a whole number that fits `UInt8`
+// expect output: [0].tiny: a whole number that fits `Int8`
+// expect output: [3.0, 25.0, -0.5]
+
+use std.json
+
+type Pair {
+    small: UInt8
+    tiny: Int8
+}
+
+fn show(e: JsonError) {
+    match e {
+        JsonError.Invalid(problems) => {
+            for p in problems {
+                print("{p.path}: {p.expected}")
+            }
+        }
+        _ => print("other: {e}"),
+    }
+}
+
+fn main() ! JsonError {
+    const _a = json.decode<[Int]>("[1.0, 1e2, 9223372036854775808, 5]") catch e => {
+        show(e)
+        []
+    }
+    const _b = json.decode<[Pair]>("[\{\"small\": -1, \"tiny\": -129}]") catch e => {
+        show(e)
+        []
+    }
+    print(try json.decode<[Float]>("[3, 2.5e1, -0.5]"))
+}

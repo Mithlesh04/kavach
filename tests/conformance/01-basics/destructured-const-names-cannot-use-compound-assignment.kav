@@ -1,0 +1,14 @@
+// Rule: Names a `const` takes from a record are constants: `+=` on one is a compile error.
+// Spec: 1.12, 1.4
+// expect compile error
+
+type User {
+    name: String
+    age: Int
+}
+
+fn main() {
+    const { name, age: years } = User(name: "Asha", age: 31)
+    years += 1                      // error: `years` is a `const`; use `let`
+    print("{name} {years}")
+}

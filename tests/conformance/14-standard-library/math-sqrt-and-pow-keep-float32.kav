@@ -1,0 +1,18 @@
+// Rule: `math.sqrt` and `math.pow` of a `Float32` give a `Float32`, worked out as a `Float` and rounded once.
+// Spec: 14.5
+// expect output: 1.4142135
+// expect output: 2.828427
+// expect output: 0.1
+// expect output: 1.4142135623730951
+
+use std.math
+
+fn main() {
+    const two: Float32 = 2.0
+    const root: Float32 = math.sqrt(two)
+    print(root)
+    const p: Float32 = math.pow(two, Float32(1.5))
+    print(p)
+    print(math.pow(Float32(10.0), Float32(-1.0)))
+    print(math.sqrt(2.0))
+}

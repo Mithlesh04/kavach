@@ -1,0 +1,19 @@
+// Rule: a variant without fields is a command without options: it parses alone, and an option after it is a `CliError`.
+// Spec: 14.6
+// Checks: misuse
+// args: list --all
+// expect output: refused: true
+// expect exit: 2
+
+use std.cli
+
+type Command = Add(name: String) | List
+
+fn main() {
+    const command = cli.parse<Command>() catch e => {
+        print("refused: {"{e}".contains("--all")}")
+        cli.exit(2)
+        return
+    }
+    print("ran {command}")
+}

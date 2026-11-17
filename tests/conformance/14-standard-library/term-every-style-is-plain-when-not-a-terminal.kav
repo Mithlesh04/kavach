@@ -1,0 +1,19 @@
+// Rule: when output is not a terminal, every color and style function of `std.term` gives its text back unchanged, with no escape codes.
+// Spec: 14.13
+// expect output: black red green yellow blue magenta cyan white gray
+// expect output: bold dim italic underline
+// expect output: true
+
+use std.term
+
+fn main() {
+    print([
+        term.black("black"), term.red("red"), term.green("green"),
+        term.yellow("yellow"), term.blue("blue"), term.magenta("magenta"),
+        term.cyan("cyan"), term.white("white"), term.gray("gray"),
+    ].join(" "))
+    const styled = [term.bold("bold"), term.dim("dim"), term.italic("italic"), term.underline("underline")].join(" ")
+    print(styled)
+    const nested = term.red("a" + term.green("b") + "c")
+    print(nested == "abc" and not styled.contains("\u{1B}"))
+}

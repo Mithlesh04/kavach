@@ -1,0 +1,14 @@
+// Rule: A function with `->` must end with a value, even when an earlier `return` gives one.
+// Spec: 3.1
+// expect compile error
+
+fn sign(n: Int) -> Int {         // error: the last line has no value
+    if n < 0 {
+        return -1
+    }
+    print(n)
+}
+
+fn main() {
+    print(sign(1))
+}

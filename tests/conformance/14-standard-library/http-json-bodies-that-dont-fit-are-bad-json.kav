@@ -1,0 +1,64 @@
+// Rule: a 2xx answer whose body isn't the JSON of a `T` fails `get_json<T>` and `post_json<T>` with `BadJson`, holding the `JsonError` decoding gave.
+// Spec: 14.11, 2.12
+// expect output: not JSON: Syntax
+// expect output: a field of the wrong type: id
+// expect output: a field missing: Invalid(problems: [JsonProblem(path: "", expected: "a field `item`")])
+// expect output: post_json: Syntax
+
+use std.http
+use std.json
+use std.net
+
+pub type Order {
+    id: Int
+    item: String
+}
+
+fn bodies(r: Request) -> Response {
+    const body = match r.path {
+        "/wrong" => "\{\"id\": \"seven\", \"item\": \"pen\"}",
+        "/missing" => "\{\"id\": 7}",
+        _ => "not JSON at all",
+    }
+    http.text(200, body)
+}
+
+fn kind(e: HttpError) -> String {
+    match e {
+        HttpError.BadJson(j) => match j {
+            JsonError.Syntax(_, _, _) => "Syntax",
+            JsonError.Invalid(problems) => problems.map(p => p.path).join(", "),
+            _ => "{j}",
+        },
+        _ => "not BadJson: {e}",
+    }
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, bodies)
+    const base = "http://{listener.address()}"
+    const text = match http.get_json<Order>("{base}/text") {
+        ok(o) => "decoded {o}",
+        err(e) => kind(e),
+    }
+    print("not JSON: {text}")
+    const wrong = match http.get_json<Order>("{base}/wrong") {
+        ok(o) => "decoded {o}",
+        err(e) => kind(e),
+    }
+    print("a field of the wrong type: {wrong}")
+    const missing = match http.get_json<Order>("{base}/missing") {
+        ok(o) => "decoded {o}",
+        err(e) => match e {
+            HttpError.BadJson(j) => "{j}",
+            _ => "not BadJson: {e}",
+        },
+    }
+    print("a field missing: {missing}")
+    const posted = match http.post_json<Order>("{base}/text", json.of(Order(id: 1, item: "ink"))) {
+        ok(o) => "decoded {o}",
+        err(e) => kind(e),
+    }
+    print("post_json: {posted}")
+}

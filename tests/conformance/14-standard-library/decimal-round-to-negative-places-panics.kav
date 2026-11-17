@@ -1,0 +1,14 @@
+// Rule: `d.round(places)` with `places` below 0 panics.
+// Spec: 14.2
+// expect output: 2.35
+// expect panic
+
+fn cut(d: Decimal, places: Int) -> Decimal {
+    d.round(places)
+}
+
+fn main() {
+    const price: Decimal = 2.345
+    print(cut(price, 2))
+    print(cut(price, -1))
+}

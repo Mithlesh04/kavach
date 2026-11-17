@@ -1,0 +1,23 @@
+// Rule: Every byte value comes back from `decode` as `encode` wrote it, in both alphabets, with and without padding; no bytes are the empty text.
+// Spec: 14.20
+// expect output: true true true true
+// expect output: [] 0
+// expect output: /w== _w
+
+use std.base64
+
+fn main() {
+    let list: [UInt8] = []
+    for n in 0..256 {
+        list.push(UInt8(n))
+    }
+    const all = Bytes(list)
+    const a = base64.decode(base64.encode(all)) catch _ => Bytes([])
+    const b = base64.decode(base64.encode(all, pad: false)) catch _ => Bytes([])
+    const c = base64.decode(base64.encode(all, url: true), url: true) catch _ => Bytes([])
+    const d = base64.decode(base64.encode(all, url: true, pad: false), url: true) catch _ => Bytes([])
+    print("{a == all} {b == all} {c == all} {d == all}")
+    const empty = base64.decode("") catch _ => Bytes([1])
+    print("[{base64.encode(Bytes([]))}] {empty.len()}")
+    print("{base64.encode(Bytes([255]))} {base64.encode(Bytes([255]), url: true, pad: false)}")
+}

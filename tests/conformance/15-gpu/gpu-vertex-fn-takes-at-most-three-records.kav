@@ -1,0 +1,21 @@
+// Rule: A `gpu vertex fn` takes one, two or three records: the vertex, the instance and the shared value.
+// Spec: 15.3
+// expect compile error
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+}
+
+gpu vertex fn place(c: Corner, d: Corner, e: Corner, f: Corner) -> Lit {     // error: four records
+    Lit(position: (c.x + d.x + e.x + f.x, c.y, 0.0, 1.0))
+}
+
+fn main() {
+    const c = Corner(x: 0.0, y: 0.0)
+    print(place(c, c, c, c))
+}

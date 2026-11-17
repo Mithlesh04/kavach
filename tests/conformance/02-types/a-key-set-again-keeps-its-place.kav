@@ -1,0 +1,21 @@
+// Rule: Maps and sets keep the order in which items were first added: setting a key again, or adding a value again, does not move it.
+// Spec: 2.2
+// expect output: ["b": 1, "a": 20, "c": 3]
+// expect output: [3, 1, 2]
+// expect output: b a c
+
+fn main() {
+    let m = ["b": 1, "a": 2]
+    m["c"] = 3
+    m["a"] = 20
+    print(m)
+    let s = Set.of(3, 1)
+    s.add(2)
+    s.add(3)
+    print(s.to_list())
+    let names: [String] = []
+    for (k, _) in m {
+        names.push(k)
+    }
+    print(names.join(" "))
+}

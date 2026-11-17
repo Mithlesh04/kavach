@@ -1,0 +1,14 @@
+// Rule: under `kavach test`, a watcher watches the fake file system and sees no changes: `poll()` is empty and `next()` gives `none` at once.
+// Spec: 14.3, 11.5
+// expect test pass
+
+use std.fs
+
+test "a watcher of the fake disk hears nothing" uses Fs with Fs = fake {
+    try fs.write_text("levels/one.txt", "v1")
+    const w = try fs.watch("levels")
+    try fs.write_text("levels/one.txt", "v2")
+    try fs.write_text("levels/two.txt", "new")
+    assert w.poll().len() == 0
+    assert w.next() == none
+}

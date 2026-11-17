@@ -1,0 +1,9 @@
+// Rule: A tuple is taken apart by position, one name for each item: a pattern with more names than the tuple has items is a compile error.
+// Spec: 2.3
+// expect compile error
+
+fn main() {
+    const pair = (200, "OK")
+    const (code, message, extra) = pair     // error: the tuple has two items
+    print(code)
+}

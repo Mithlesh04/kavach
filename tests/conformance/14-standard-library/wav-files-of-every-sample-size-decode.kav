@@ -1,0 +1,40 @@
+// Rule: `audio.decode` reads WAV files of 8, 16, 24 or 32-bit whole-number samples and of 32-bit floats, and gives their rate, channels and frames.
+// Spec: 14.27
+// expect output: 8000 1 4
+// expect output: 11025 2 2
+// expect output: 22050 1 2
+// expect output: 44100 2 1
+// expect output: 48000 1 2
+// expect output: 0.5
+
+use std.audio
+
+fn le(n: Int, size: Int) -> [UInt8] {
+    (0..size).map(i => UInt8((n >> (8 * i)) & 255))
+}
+
+// A WAV file: `kind` 1 is whole numbers, 3 is floats.
+fn wav(kind: Int, bits: Int, channels: Int, rate: Int, data: [UInt8]) -> Bytes {
+    const block = channels * bits / 8
+    const fmt = le(kind, 2) + le(channels, 2) + le(rate, 4) + le(rate * block, 4) + le(block, 2) + le(bits, 2)
+    const body = [87, 65, 86, 69, 102, 109, 116, 32] + le(16, 4) + fmt + [100, 97, 116, 97] + le(data.len(), 4) + data
+    Bytes([82, 73, 70, 70] + le(body.len(), 4) + body)      // "RIFF", then "WAVE", "fmt ", "data"
+}
+
+fn show(bytes: Bytes) {
+    const s = audio.decode(bytes) catch e => {
+        print(e)
+        return
+    }
+    print("{s.rate} {s.channels} {s.frames}")
+}
+
+fn main() {
+    show(wav(1, 8, 1, 8000, [128, 255, 0, 128]))
+    show(wav(1, 16, 2, 11025, [0, 0, 0, 64, 0, 192, 0, 0]))
+    show(wav(1, 24, 1, 22050, [0, 0, 64, 0, 0, 192]))
+    show(wav(1, 32, 2, 44100, [0, 0, 0, 64, 0, 0, 0, 192]))
+    show(wav(3, 32, 1, 48000, [0, 0, 0, 63, 0, 0, 0, 191]))       // 0.5 and -0.5
+    const half = audio.decode(wav(1, 16, 1, 8000, (0..8000).map(_ => UInt8(0)))) catch _ => audio.sound([], 8000, 1)
+    print(half.seconds())
+}

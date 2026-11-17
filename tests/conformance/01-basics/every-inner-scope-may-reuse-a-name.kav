@@ -1,0 +1,48 @@
+// Rule: Every inner scope (a plain block, `if`, `else`, `while`, `for`, a `match` arm, a lambda) may reuse an outer name; the outer name keeps its value after it.
+// Spec: 1.4, 1.9
+// expect output: 30 31 32 33 34 35 36
+// expect output: 1 1
+
+fn main() {
+    let x = 1
+    const a = {
+        const x = 30
+        x
+    }
+    const b = if x > 0 {
+        const x = 31
+        x
+    } else {
+        0
+    }
+    const c = if x < 0 {
+        0
+    } else {
+        const x = 32
+        x
+    }
+    let d = 0
+    while d == 0 {
+        let x = 33
+        d = x
+    }
+    let e = 0
+    for i in 0..1 {
+        const x = 34 + i
+        e = x
+    }
+    const f = match x {
+        1 => {
+            const x = 35
+            x
+        }
+        _ => 0
+    }
+    const g = (n => {
+        const x = 36
+        x + n
+    })(0)
+    print("{a} {b} {c} {d} {e} {f} {g}")
+    const y = x
+    print("{x} {y}")
+}

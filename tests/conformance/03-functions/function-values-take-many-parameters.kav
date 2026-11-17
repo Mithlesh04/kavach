@@ -1,0 +1,140 @@
+// Rule: A function value and a lambda take as many parameters as their type says, with no limit in the spec: 16, 32 and 64 parameters arrive in their own place through a value.
+// Spec: 3.3, 3.4
+// expect output: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+// expect output: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32]
+// expect output: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64]
+// expect output: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+
+fn many32(
+    p1: Int8, p2: Float32, p3: Int, p4: Float,
+    p5: UInt16, p6: Bool, p7: String, p8: Char,
+    p9: Int8, p10: Float32, p11: Int, p12: Float,
+    p13: UInt16, p14: Bool, p15: String, p16: Char,
+    p17: Int8, p18: Float32, p19: Int, p20: Float,
+    p21: UInt16, p22: Bool, p23: String, p24: Char,
+    p25: Int8, p26: Float32, p27: Int, p28: Float,
+    p29: UInt16, p30: Bool, p31: String, p32: Char
+) -> [Int] {
+    [
+        -Int(p1), Int(p2 * 2.0) / 2, p3 - 4_000_000_000_000, Int(p4 * 4.0) / 4,
+        Int(p5) - 60000, if p6 { 6 } else { 0 }, (Int(p7) catch 0), Int(p8) - 64,
+        -Int(p9), Int(p10 * 2.0) / 2, p11 - 4_000_000_000_000, Int(p12 * 4.0) / 4,
+        Int(p13) - 60000, if p14 { 14 } else { 0 }, (Int(p15) catch 0), Int(p16) - 64,
+        -Int(p17), Int(p18 * 2.0) / 2, p19 - 4_000_000_000_000, Int(p20 * 4.0) / 4,
+        Int(p21) - 60000, if p22 { 22 } else { 0 }, (Int(p23) catch 0), Int(p24) - 64,
+        -Int(p25), Int(p26 * 2.0) / 2, p27 - 4_000_000_000_000, Int(p28 * 4.0) / 4,
+        Int(p29) - 60000, if p30 { 30 } else { 0 }, (Int(p31) catch 0), Int(p32) - 64
+    ]
+}
+
+fn many64(
+    p1: Int8, p2: Float32, p3: Int, p4: Float,
+    p5: UInt16, p6: Bool, p7: String, p8: Char,
+    p9: Int8, p10: Float32, p11: Int, p12: Float,
+    p13: UInt16, p14: Bool, p15: String, p16: Char,
+    p17: Int8, p18: Float32, p19: Int, p20: Float,
+    p21: UInt16, p22: Bool, p23: String, p24: Char,
+    p25: Int8, p26: Float32, p27: Int, p28: Float,
+    p29: UInt16, p30: Bool, p31: String, p32: Char,
+    p33: Int8, p34: Float32, p35: Int, p36: Float,
+    p37: UInt16, p38: Bool, p39: String, p40: Char,
+    p41: Int8, p42: Float32, p43: Int, p44: Float,
+    p45: UInt16, p46: Bool, p47: String, p48: Char,
+    p49: Int8, p50: Float32, p51: Int, p52: Float,
+    p53: UInt16, p54: Bool, p55: String, p56: Char,
+    p57: Int8, p58: Float32, p59: Int, p60: Float,
+    p61: UInt16, p62: Bool, p63: String, p64: Char
+) -> [Int] {
+    [
+        -Int(p1), Int(p2 * 2.0) / 2, p3 - 4_000_000_000_000, Int(p4 * 4.0) / 4,
+        Int(p5) - 60000, if p6 { 6 } else { 0 }, (Int(p7) catch 0), Int(p8) - 64,
+        -Int(p9), Int(p10 * 2.0) / 2, p11 - 4_000_000_000_000, Int(p12 * 4.0) / 4,
+        Int(p13) - 60000, if p14 { 14 } else { 0 }, (Int(p15) catch 0), Int(p16) - 64,
+        -Int(p17), Int(p18 * 2.0) / 2, p19 - 4_000_000_000_000, Int(p20 * 4.0) / 4,
+        Int(p21) - 60000, if p22 { 22 } else { 0 }, (Int(p23) catch 0), Int(p24) - 64,
+        -Int(p25), Int(p26 * 2.0) / 2, p27 - 4_000_000_000_000, Int(p28 * 4.0) / 4,
+        Int(p29) - 60000, if p30 { 30 } else { 0 }, (Int(p31) catch 0), Int(p32) - 64,
+        -Int(p33), Int(p34 * 2.0) / 2, p35 - 4_000_000_000_000, Int(p36 * 4.0) / 4,
+        Int(p37) - 60000, if p38 { 38 } else { 0 }, (Int(p39) catch 0), Int(p40) - 64,
+        -Int(p41), Int(p42 * 2.0) / 2, p43 - 4_000_000_000_000, Int(p44 * 4.0) / 4,
+        Int(p45) - 60000, if p46 { 46 } else { 0 }, (Int(p47) catch 0), Int(p48) - 64,
+        -Int(p49), Int(p50 * 2.0) / 2, p51 - 4_000_000_000_000, Int(p52 * 4.0) / 4,
+        Int(p53) - 60000, if p54 { 54 } else { 0 }, (Int(p55) catch 0), Int(p56) - 64,
+        -Int(p57), Int(p58 * 2.0) / 2, p59 - 4_000_000_000_000, Int(p60 * 4.0) / 4,
+        Int(p61) - 60000, if p62 { 62 } else { 0 }, (Int(p63) catch 0), Int(p64) - 64
+    ]
+}
+
+fn call32(f: fn(
+    Int8, Float32, Int, Float,
+    UInt16, Bool, String, Char,
+    Int8, Float32, Int, Float,
+    UInt16, Bool, String, Char,
+    Int8, Float32, Int, Float,
+    UInt16, Bool, String, Char,
+    Int8, Float32, Int, Float,
+    UInt16, Bool, String, Char
+) -> [Int]) -> [Int] {
+    f(
+        -1, 2.5, 4000000000003, 4.25,
+        60005, true, "7", Char(72),
+        -9, 10.5, 4000000000011, 12.25,
+        60013, true, "15", Char(80),
+        -17, 18.5, 4000000000019, 20.25,
+        60021, true, "23", Char(88),
+        -25, 26.5, 4000000000027, 28.25,
+        60029, true, "31", Char(96)
+    )
+}
+
+fn main() {
+    const lam: fn(
+        Int8, Float32, Int, Float,
+        UInt16, Bool, String, Char,
+        Int8, Float32, Int, Float,
+        UInt16, Bool, String, Char
+    ) -> [Int] = (
+        p1, p2, p3, p4,
+        p5, p6, p7, p8,
+        p9, p10, p11, p12,
+        p13, p14, p15, p16
+    ) => [
+        -Int(p1), Int(p2 * 2.0) / 2, p3 - 4_000_000_000_000, Int(p4 * 4.0) / 4,
+        Int(p5) - 60000, if p6 { 6 } else { 0 }, (Int(p7) catch 0), Int(p8) - 64,
+        -Int(p9), Int(p10 * 2.0) / 2, p11 - 4_000_000_000_000, Int(p12 * 4.0) / 4,
+        Int(p13) - 60000, if p14 { 14 } else { 0 }, (Int(p15) catch 0), Int(p16) - 64
+    ]
+    print(lam(
+        -1, 2.5, 4000000000003, 4.25,
+        60005, true, "7", Char(72),
+        -9, 10.5, 4000000000011, 12.25,
+        60013, true, "15", Char(80)
+    ))
+    print(call32(many32))
+    const f64 = many64
+    print(f64(
+        -1, 2.5, 4000000000003, 4.25,
+        60005, true, "7", Char(72),
+        -9, 10.5, 4000000000011, 12.25,
+        60013, true, "15", Char(80),
+        -17, 18.5, 4000000000019, 20.25,
+        60021, true, "23", Char(88),
+        -25, 26.5, 4000000000027, 28.25,
+        60029, true, "31", Char(96),
+        -33, 34.5, 4000000000035, 36.25,
+        60037, true, "39", Char(104),
+        -41, 42.5, 4000000000043, 44.25,
+        60045, true, "47", Char(112),
+        -49, 50.5, 4000000000051, 52.25,
+        60053, true, "55", Char(120),
+        -57, 58.5, 4000000000059, 60.25,
+        60061, true, "63", Char(128)
+    ))
+    const kept = [lam, lam]
+    print(kept[1](
+        -1, 2.5, 4000000000003, 4.25,
+        60005, true, "7", Char(72),
+        -9, 10.5, 4000000000011, 12.25,
+        60013, true, "15", Char(80)
+    ))
+}

@@ -1,0 +1,34 @@
+// Rule: Records are values: a default is made afresh for each record, and a copy from `with` or a function call never shares its lists or maps.
+// Spec: 2.4
+// expect output: 0 0
+// expect output: [1]
+// expect output: [1, 2]
+// expect output: 2
+// expect output: [1]
+
+type Bag {
+    name: String
+    items: [Int] = []
+    tags: [String: Int] = [:]
+}
+
+fn grown(b: Bag) -> Int {
+    let c = b
+    c.items.push(9)
+    c.items.len()
+}
+
+fn main() {
+    let a = Bag(name: "a")
+    a.items.push(1)
+    a.tags["x"] = 1
+    const b = Bag(name: "b")
+    print("{b.items.len()} {b.tags.len()}")
+    const c = a with { name: "c" }
+    let d = c
+    d.items.push(2)
+    print(c.items)
+    print(d.items)
+    print(grown(a))
+    print(a.items)
+}

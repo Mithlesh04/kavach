@@ -1,0 +1,19 @@
+// Rule: A `Char` is written as text of one character, and decoding takes only text of one character.
+// Spec: 2.12
+// expect output: ["a","é"]
+// expect output: ['x', '😀']
+// expect output: problems at [1], [2]
+
+use std.json
+
+fn main() {
+    print(json.of(['a', 'é']))
+    print(json.decode<[Char]>("[\"x\", \"😀\"]") catch _ => [])
+    match json.decode<[Char]>("[\"x\", \"xy\", \"\"]") {
+        ok(v) => print("decoded {v}"),
+        err(e) => match e {
+            JsonError.Invalid(problems) => print("problems at {problems.map(p => p.path).join(", ")}"),
+            _ => print("other: {e}"),
+        },
+    }
+}

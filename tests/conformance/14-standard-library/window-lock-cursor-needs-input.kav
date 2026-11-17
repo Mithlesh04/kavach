@@ -1,0 +1,12 @@
+// Rule: Locking the mouse pointer in a window needs `Input`; `Window` alone doesn't cover it.
+// Spec: 14.22, 8.1
+// expect compile error
+
+use std.window
+
+pub fn aim(win: AppWindow) uses Window {
+    win.lock_cursor(true)      // error: aim doesn't list Input
+}
+
+fn main() {
+}

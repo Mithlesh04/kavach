@@ -1,0 +1,10 @@
+// Rule: Converting text that isn't a literal to a number can fail, so it must be handled with `try`, `catch` or `match`.
+// Spec: 2.1
+// expect compile error
+
+fn main() {
+    const text = "12"
+    let input = text
+    print(Int(input) catch 0)      // fine: handled
+    print(Int(input))              // error: `Int` can fail
+}

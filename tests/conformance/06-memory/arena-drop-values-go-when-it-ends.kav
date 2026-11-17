@@ -1,0 +1,24 @@
+// Rule: Values made in an arena are freed when it ends: `Drop` values made there drop at its end, last made first, before the code after it runs.
+// Spec: 6.3, 6.1
+// expect output: in the arena
+// expect output: released b
+// expect output: released a
+// expect output: after the arena: 2
+
+type Guard: Drop {
+    name: String
+
+    fn drop(self) {
+        print("released {self.name}")
+    }
+}
+
+fn main() {
+    const n = arena {
+        const a = Guard(name: "a")
+        const b = Guard(name: "b")
+        print("in the arena")
+        2
+    }
+    print("after the arena: {n}")
+}

@@ -1,0 +1,19 @@
+// Rule: `fs.info` gives a file's size in bytes and `modified_ms`, a moment (14.4) of its last change.
+// Spec: 14.3, 14.4
+// expect output: File 6
+// expect output: true
+
+use std.fs
+use std.time
+
+fn main() ! FsError uses Fs, Console {
+    const dir = "kavach-t-fs-moment"
+    try fs.create_dir(dir)
+    const before = time.now_ms()
+    try fs.write_bytes("{dir}/a.bin", Bytes([1, 2, 3, 4, 5, 6]))
+    const info = try fs.info("{dir}/a.bin")
+    print("{info.kind} {info.size}")
+    // Within a minute of now: file systems round times to their own steps.
+    print(info.modified_ms > before - 60_000 and info.modified_ms < time.now_ms() + 60_000)
+    try fs.remove_all(dir)
+}

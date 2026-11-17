@@ -1,0 +1,26 @@
+// Rule: `SystemError` is `NotFound(what:)`, `Denied(reason:)` or `Failed(reason:)`.
+// Spec: 14.25
+// expect output: NotFound(what: "program 9") not there
+// expect output: Denied(reason: "not an administrator") refused
+// expect output: Failed(reason: "busy") failed
+
+use std.system
+
+fn said(e: SystemError) -> String {
+    match e {
+        SystemError.NotFound(_) => "not there",
+        SystemError.Denied(_) => "refused",
+        SystemError.Failed(_) => "failed",
+    }
+}
+
+fn main() {
+    const errors = [
+        SystemError.NotFound(what: "program 9"),
+        SystemError.Denied(reason: "not an administrator"),
+        SystemError.Failed(reason: "busy"),
+    ]
+    for e in errors {
+        print("{e} {said(e)}")
+    }
+}

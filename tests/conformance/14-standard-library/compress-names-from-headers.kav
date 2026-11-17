@@ -1,0 +1,16 @@
+// Rule: `compress.from_name` reads the names HTTP headers use, `gzip` or `x-gzip`, `deflate`, `zstd`, `br` and `lz4`, in any case; any other name is `none`.
+// Spec: 14.21
+// expect output: Gzip Gzip Gzip Deflate Zstd Brotli Lz4
+// expect output: none none none
+
+use std.compress
+
+fn main() {
+    const known = ["gzip", "x-gzip", "GZip", "DEFLATE", "zstd", "Br", "LZ4"]
+    let found: [String] = []
+    for name in known {
+        found.push("{compress.from_name(name)}")
+    }
+    print(found.join(" "))
+    print("{compress.from_name("brotli")} {compress.from_name("")} {compress.from_name("identity")}")
+}

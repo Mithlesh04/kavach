@@ -1,0 +1,12 @@
+// Rule: A record field's default must have the field's type.
+// Spec: 2.4
+// expect compile error
+
+type User {
+    name: String
+    age: Int = "zero"      // error: the default is text, and `age` is an Int
+}
+
+fn main() {
+    print(User(name: "Asha").age)
+}

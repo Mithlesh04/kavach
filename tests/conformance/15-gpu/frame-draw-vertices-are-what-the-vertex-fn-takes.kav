@@ -1,0 +1,35 @@
+// Rule: `frame.draw`'s vertices are a list of the record its pipeline's vertex fn takes first.
+// Spec: 15.3, 14.24
+// expect compile error
+
+use std.gpu
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Spot {
+    u: Float32
+    v: Float32
+}
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+}
+
+gpu vertex fn place(c: Corner) -> Lit {
+    Lit(position: (c.x, c.y, 0.0, 1.0))
+}
+
+gpu fragment fn glow(l: Lit) -> (Float32, Float32, Float32, Float32) {
+    (1.0, 0.0, 0.0, 1.0)
+}
+
+fn paint(frame: Frame) uses Window {
+    const p = gpu.pipeline(place, glow)
+    frame.draw(p, [Spot(u: 0.0, v: 0.0)])     // error: the vertices are `Corner`s
+}
+
+fn main() {
+}

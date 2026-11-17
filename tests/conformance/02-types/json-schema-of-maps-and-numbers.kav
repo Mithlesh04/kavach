@@ -1,0 +1,13 @@
+// Rule: In a schema, a map with `String` keys is an object with `additionalProperties`, sized integers are `integer`, `Float` and `Decimal` are `number`, and `Bool` is `boolean`.
+// Spec: 2.12
+// expect output: {"type":"object","additionalProperties":{"type":"number"}}
+// expect output: {"type":"integer"} {"type":"integer"} {"type":"number"} {"type":"boolean"}
+// expect output: {"type":"array","items":{"type":"object","additionalProperties":{"type":"integer"}}}
+
+use std.json
+
+fn main() {
+    print(json.schema<[String: Float]>())
+    print("{json.schema<UInt8>()} {json.schema<Int16>()} {json.schema<Decimal>()} {json.schema<Bool>()}")
+    print(json.schema<[[String: Int]]>())
+}

@@ -1,0 +1,35 @@
+// Rule: `List.capacity(n)`, `Map.capacity(n)` and `Set.capacity(n)` with `n` above 4,294,967,294 (2³² − 2) panic.
+// Spec: 2.2
+// expect output: true
+// expect output: true
+// expect output: true
+// expect output: main goes on
+
+fn list_of(n: Int) -> Int {
+    const xs: [Int] = List.capacity(n)
+    xs.len()
+}
+
+fn map_of(n: Int) -> Int {
+    const m: [String: Int] = Map.capacity(n)
+    m.len()
+}
+
+fn set_of(n: Int) -> Int {
+    const s: Set<Int> = Set.capacity(n)
+    s.len()
+}
+
+fn panicked(t: Task<Int>) -> Bool {
+    match t.wait() {
+        ok(_) => false
+        err(e) => "{e}".starts_with("panicked: ")
+    }
+}
+
+fn main() {
+    print(panicked(spawn list_of(4_294_967_295)))
+    print(panicked(spawn map_of(1 << 60)))
+    print(panicked(spawn set_of(9_223_372_036_854_775_807)))
+    print("main goes on")
+}

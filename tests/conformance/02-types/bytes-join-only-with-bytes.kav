@@ -1,0 +1,9 @@
+// Rule: `a + b` joins two `Bytes`; text must be turned into bytes first.
+// Spec: 2.13
+// expect compile error
+
+fn main() {
+    const head = "a".bytes()
+    print(head + "b".bytes())      // fine
+    print(head + "b")              // error: expected Bytes, found String
+}

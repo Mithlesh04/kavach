@@ -1,0 +1,12 @@
+// Rule: Rumbling a pad that is gone, or can't rumble, does nothing: it is not an error.
+// Spec: 14.26
+// expect output: done
+
+use std.input
+
+fn main() uses Input {
+    const gone = Pad(id: 424_242, name: "Gone", buttons: [], left: (x: 0.0, y: 0.0), right: (x: 0.0, y: 0.0), left_trigger: 0.0, right_trigger: 0.0)
+    gone.rumble(1.0, 0.0, 50)
+    gone.rumble(0.0, 1.0, 0)
+    print("done")
+}

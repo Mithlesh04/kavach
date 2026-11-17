@@ -1,0 +1,9 @@
+// Rule: A name is made of letters, digits and `_`, and must not start with a digit.
+// Spec: 1.5
+// expect compile error
+
+fn main() {
+    const ok_2 = 2
+    const 2nd = 3                   // error: a name must not start with a digit
+    print(ok_2)
+}

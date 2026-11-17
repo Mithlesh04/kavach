@@ -1,0 +1,25 @@
+// Rule: a plain `grpc.call` to a method that answers with a stream gives the stream's first message.
+// Spec: 14.14
+// expect output: Step(name: "packed")
+
+use std.grpc
+use std.net
+
+pub type Watch {
+    id: Int
+}
+
+pub type Step {
+    name: String
+}
+
+fn steps(call: GrpcCall) -> GrpcReply {
+    grpc.reply_stream([Step(name: "packed"), Step(name: "shipped"), Step(name: "delivered")])
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn grpc.serve(listener, steps)
+    const first = try grpc.call<Watch, Step>("http://{listener.address()}", "/shop.Orders/Watch", Watch(id: 7))
+    print(first)
+}

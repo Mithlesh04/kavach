@@ -1,0 +1,24 @@
+// Rule: An event is written in its printed form, so a type that implements `Display` chooses how its line reads.
+// Spec: 14.12, 1.11
+// expect output: WARN retrying, attempt 2 of 5
+// expect output: ERROR Failed(code: 7)
+
+use std.log
+
+type Retrying: LogEvent, Display {
+    attempt: Int
+    limit: Int
+
+    fn display(self) -> String {
+        "retrying, attempt {self.attempt} of {self.limit}"
+    }
+}
+
+type Failed: LogEvent {
+    code: Int
+}
+
+fn main() {
+    log.warn(Retrying(attempt: 2, limit: 5))
+    log.error(Failed(code: 7))
+}

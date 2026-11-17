@@ -1,0 +1,8 @@
+// Rule: A map is read and set with keys of its own key type; a key of another type is a compile error.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    const ages = ["asha": 31]
+    print(ages[1] ?? 0)             // error: the keys are `String`, not `Int`
+}

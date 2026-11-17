@@ -1,0 +1,9 @@
+// Rule: `remove` changes the map it is called on, so it needs a `let`.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    const ages = ["asha": 31, "ravi": 27]
+    ages.remove("asha")     // error: `ages` is a `const`
+    print(ages)
+}

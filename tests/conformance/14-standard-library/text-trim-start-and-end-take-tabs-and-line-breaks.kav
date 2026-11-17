@@ -1,0 +1,10 @@
+// Rule: `trim_start` and `trim_end` take off spaces, tabs and line breaks (Windows `\r\n` too) at one side only, as `trim` does at both.
+// Spec: 14.2
+// expect output: 4 3
+// expect output: [x] [] []
+
+fn main() {
+    const crlf = "\u{D}\n"
+    print("{"\t\n x {crlf}".trim_start().len()} {"\t x{crlf}".trim_end().len()}")
+    print("[{"{crlf} x\t".trim()}] [{" \t ".trim_end()}] [{"".trim_start()}]")
+}

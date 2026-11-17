@@ -1,0 +1,14 @@
+// Rule: A module constant, or an item of one, can't be given for an `inout` parameter: it is a `const`.
+// Spec: 3.9, 1.13
+// expect compile error
+
+const limits = [10, 20]
+
+fn bump(inout n: Int) {
+    n += 1
+}
+
+fn main() {
+    bump(limits[0])                 // error: limits is a const
+    print(limits)
+}

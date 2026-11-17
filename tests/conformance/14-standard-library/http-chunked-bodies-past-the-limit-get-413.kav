@@ -1,0 +1,36 @@
+// Rule: `max_body_bytes` holds a body sent in chunks too: one larger than it is answered 413 and never reaches the handler.
+// Spec: 14.11
+// expect output: HTTP/1.1 413 Content Too Large
+// expect output: handler calls: 0
+
+use std.http
+use std.net
+
+/// Sends `text` and gives everything that comes back until the server closes.
+fn exchange(address: String, text: String) -> String ! NetError uses Net {
+    const conn = try net.connect(address)
+    try conn.write(text.bytes())
+    let all = Bytes([])
+    while true {
+        const piece = conn.read().timeout(5.seconds) catch _ => break
+        all = all + (piece ?? break)
+    }
+    conn.close()
+    all.text() ?? ""
+}
+
+fn main() ! Error {
+    const crlf = "\u{D}\n"
+    const calls = Shared(0)
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, r => {
+        calls.update(c => c + 1)
+        http.text(200, "got {r.body.len()} bytes")
+    }, limits: ServeLimits(max_body_bytes: 10))
+    // One chunk of 0x14 = 20 bytes, then the last chunk.
+    const head = "POST / HTTP/1.1{crlf}transfer-encoding: chunked{crlf}connection: close{crlf}{crlf}"
+    const body = "14{crlf}{"x".repeat(20)}{crlf}0{crlf}{crlf}"
+    const got = try exchange(listener.address(), head + body)
+    print(got.split(crlf)[0])
+    print("handler calls: {calls.get()}")
+}

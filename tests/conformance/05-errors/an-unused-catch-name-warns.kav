@@ -1,0 +1,20 @@
+// Rule: A `catch` name that is never used gets a warning; `_` or a name starting with `_` gets none.
+// Spec: 1.4, 5.3
+// expect warning
+// expect output: 0 0 0
+
+type Oops = Bad(code: Int)
+
+fn check(x: Int) -> Int ! Oops {
+    if x > 0 {
+        fail Oops.Bad(code: x)
+    }
+    x
+}
+
+fn main() {
+    const a = check(1) catch e => 0     // warning: e is never used
+    const b = check(2) catch _ => 0
+    const c = check(3) catch _err => 0
+    print("{a} {b} {c}")
+}

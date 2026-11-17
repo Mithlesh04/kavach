@@ -1,0 +1,24 @@
+// Rule: A local can be used only after its `const` or `let`, so the value that makes a hiding name reads the outer one; changing the outer name inside a scope, without `let`, changes it for good.
+// Spec: 1.4
+// expect output: 11 1
+// expect output: 0
+// expect output: 1
+// expect output: 2
+// expect output: 6
+
+fn main() {
+    const x = 1
+    {
+        const x = x + 10
+        print("{x} {x - 10}")
+    }
+    let total = 0
+    for i in 0..3 {
+        let total = total + i
+        print(total)
+    }
+    for i in 0..4 {
+        total = total + i
+    }
+    print(total)
+}

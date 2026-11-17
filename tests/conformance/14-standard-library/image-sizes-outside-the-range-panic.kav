@@ -1,0 +1,14 @@
+// Rule: `image.new` takes a width and height from 1 to 65,535; a size outside that breaks its contract and panics.
+// Spec: 14.29
+// expect output: 65535 x 1
+// expect panic: contract failed
+
+use std.image
+
+fn main() {
+    const wide = image.new(65_535, 1, (0..65_535 * 4).map(_ => UInt8(0)))
+    print("{wide.width} x {wide.height}")
+    const width = [65_536][0]
+    const too_wide = image.new(width, 1, (0..width * 4).map(_ => UInt8(0)))
+    print(too_wide.width)
+}

@@ -1,0 +1,8 @@
+// Rule: `round(places)` is a `Decimal` method; a `Float` has none, so calling it is a compile error.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    const x = 2.345
+    print(x.round(2))        // error: `Float` has no `round`
+}

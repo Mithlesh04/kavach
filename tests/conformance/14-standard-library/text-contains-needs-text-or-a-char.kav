@@ -1,0 +1,8 @@
+// Rule: `contains` looks for a `String` or a `Char`; a number is a compile error.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    const s = "a1b"
+    print(s.contains(1))        // error: `1` is neither a `String` nor a `Char`
+}

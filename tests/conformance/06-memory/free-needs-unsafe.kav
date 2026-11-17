@@ -1,0 +1,10 @@
+// Rule: `free` gives raw memory back, so it is allowed only inside `unsafe { … }`.
+// Spec: 6.4
+// expect compile error
+
+fn give_back(p: Ptr<Int32>) {
+    free(p)                         // error: raw memory outside unsafe
+}
+
+fn main() {
+}

@@ -1,0 +1,16 @@
+// Rule: The hiding warning covers every kind of never-used variable: a name a pattern takes, and a `const`, that hide an outer `let` get it too.
+// Spec: 1.4, 1.12
+// expect warning
+// expect output: 0 0
+
+fn main() {
+    let total = 0
+    let count = 0
+    {
+        let [total = 0, ...count] = [5, 6]  // warning: makes a new `total` and a new `count`
+    }
+    for i in 0..2 {
+        const total = total + i     // warning: makes a new `total`; write `total = total + i`
+    }
+    print("{total} {count}")
+}

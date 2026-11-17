@@ -1,0 +1,30 @@
+// Rule: `Self` in an interface's method is read as the implementing type.
+// Spec: 2.8
+// expect output: true
+// expect output: false
+// expect output: Point(x: 3, y: 4)
+
+interface Same {
+    fn same(self, other: Self) -> Bool
+    fn copy(self) -> Self
+}
+
+type Point: Same {
+    x: Int
+    y: Int
+
+    fn same(self, other: Point) -> Bool {
+        self.x == other.x and self.y == other.y
+    }
+
+    fn copy(self) -> Point {
+        Point(x: self.x, y: self.y)
+    }
+}
+
+fn main() {
+    const p = Point(x: 3, y: 4)
+    print(p.same(Point(x: 3, y: 4)))
+    print(p.same(Point(x: 0, y: 4)))
+    print(p.copy())
+}

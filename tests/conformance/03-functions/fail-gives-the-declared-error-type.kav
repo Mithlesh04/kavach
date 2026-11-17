@@ -1,0 +1,20 @@
+// Rule: `fail` returns an error of the type the signature lists after `!`; a value of another type is an error.
+// Spec: 5.1
+// expect compile error
+
+type AgeError = Empty | TooLarge(value: Int)
+type NameError = Blank
+
+fn parse_age(text: String) -> Int ! AgeError {
+    if text.is_empty() {
+        fail AgeError.Empty
+    }
+    if text == "-" {
+        fail NameError.Blank       // error: `parse_age` fails with AgeError, not NameError
+    }
+    Int(text) catch _ => fail AgeError.TooLarge(value: 0)
+}
+
+fn main() {
+    print(parse_age("3") catch 0)
+}

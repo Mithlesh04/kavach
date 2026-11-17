@@ -1,0 +1,15 @@
+// Rule: `items[i] = v` changes an item that is there; an index at or past the end panics, it never adds an item.
+// Spec: 2.2
+// expect output: [1, 9]
+// expect panic
+
+fn put(items: [Int], i: Int, v: Int) -> [Int] {
+    let out = items
+    out[i] = v
+    out
+}
+
+fn main() {
+    print(put([1, 2], 1, 9))
+    print(put([1, 2], 2, 9))
+}

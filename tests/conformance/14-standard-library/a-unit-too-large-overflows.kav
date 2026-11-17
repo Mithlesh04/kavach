@@ -1,0 +1,10 @@
+// Rule: A whole number too large for its unit overflows like any `Int` arithmetic, so it panics.
+// Spec: 14.4, 5.6
+// expect output: 86400000
+// expect panic
+
+fn main() {
+    print(1.days.ms)
+    const n = [200_000_000_000_000][0]
+    print(n.days.ms)
+}

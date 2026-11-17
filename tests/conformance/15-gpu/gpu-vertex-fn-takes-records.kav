@@ -1,0 +1,15 @@
+// Rule: What a `gpu vertex fn` takes are records, not bare numbers.
+// Spec: 15.3
+// expect compile error
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+}
+
+gpu vertex fn place(x: Float32) -> Lit {     // error: the vertex is a record
+    Lit(position: (x, 0.0, 0.0, 1.0))
+}
+
+fn main() {
+    print(place(0.5))
+}

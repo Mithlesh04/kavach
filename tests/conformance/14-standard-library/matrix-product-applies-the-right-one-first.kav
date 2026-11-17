@@ -1,0 +1,26 @@
+// Rule: `a.product(b)` applies `b`, then `a`, so `a.product(b) @ v` is `a @ (b @ v)`, for `Mat4` and `Mat3`; the order matters.
+// Spec: 14.28
+// expect output: true
+// expect output: true
+// expect output: true
+// expect output: true
+// expect output: true
+
+use std.vec
+use std.math
+
+fn main() {
+    const turn = Mat4.rotation_z(math.pi / 2.0)
+    const move = Mat4.translation(Vec3(x: 1.0, y: 0.0, z: 0.0))
+    const o = Vec4(x: 0.0, y: 0.0, z: 0.0, w: 1.0)
+    print((turn.product(move) @ o).distance(Vec4(x: 0.0, y: 1.0, z: 0.0, w: 1.0)) < 0.000001)
+    print((move.product(turn) @ o).distance(Vec4(x: 1.0, y: 0.0, z: 0.0, w: 1.0)) < 0.000001)
+    const v = Vec4(x: 1.0, y: 2.0, z: 3.0, w: 1.0)
+    print((turn.product(move) @ v).distance(turn @ (move @ v)) < 0.000001)
+
+    const turn3 = Mat3.rotation_z(math.pi / 2.0)
+    const stretch = Mat3.scaling(Vec3(x: 2.0, y: 1.0, z: 1.0))
+    const x = Vec3(x: 1.0, y: 0.0, z: 0.0)
+    print((turn3.product(stretch) @ x).distance(Vec3(x: 0.0, y: 2.0, z: 0.0)) < 0.000001)
+    print((stretch.product(turn3) @ x).distance(Vec3(x: 0.0, y: 1.0, z: 0.0)) < 0.000001)
+}

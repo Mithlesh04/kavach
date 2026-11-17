@@ -1,0 +1,10 @@
+// Rule: A `Mat4` transforms a `Vec4`: `Mat4 @ Vec3` is a compile error.
+// Spec: 14.28
+// expect compile error
+
+use std.vec
+
+fn main() {
+    const m = Mat4.translation(Vec3(x: 1.0, y: 0.0, z: 0.0))
+    print(m @ Vec3(x: 1.0, y: 2.0, z: 3.0))  // error: `@` on a Mat4 takes a Vec4
+}

@@ -1,0 +1,10 @@
+// Rule: A `Ptr<T>` points at values C passes as they are: `T` is a number, a `Bool`, a `Ptr` or a record of only those, so `Ptr<String>` is a compile error.
+// Spec: 6.4
+// expect compile error
+
+fn first_name(p: Ptr<String>) -> Int {      // error: a String is not a type C passes as it is
+    0
+}
+
+fn main() {
+}

@@ -1,0 +1,27 @@
+// Rule: Sizes from 1 to 1,000 pixels to the em, both ends included, shape and draw.
+// Spec: 14.31
+// expect output: true 700.0
+// expect output: 1.0 1000.0
+
+use std.base64
+use std.font
+
+/// runtime/font/src/sample.ttf: 1,000 units to the em; glyph 1 is a
+/// square for `A` (700 wide), 2 a space (300), 3 a square with a hole for `B`.
+fn sample() -> Font ! Error {
+    const file = "AAEAAAAHAEAAAgAwY21hcAAAAAAAAAB8AAAAPGdseWYAAAAAAAAAuAAAAFpoZWFkAAAAAA" +
+        "AAARQAAAA2aGhlYQAAAAAAAAFMAAAAJGhtdHgAAAAAAAABcAAAABBsb2NhAAAAAAAAAYAA" +
+        "AAAUbWF4cAAAAAAAAAGUAAAABgAAAAEAAwABAAAADAAEADAAAAAIAAgAAgAAACAAQQBC//" +
+        "8AAAAgAEEAQv///+L/wP/BAAEAAAAAAAAAAAABAGQAAAJYArwAAwAAAQEBAQBkAAAB9AAA" +
+        "AAACvAAA/UQAAgBkAAACWAK8AAMABwAAAQEBAQEBAQEAZAAAAfQAAP6iAMgAAP84AAACvA" +
+        "AA/UQAyAAAASwAAAAAAAEAAAABAAAAAAAAXw889QAAA+gAAAAAAAAAAAAAAAAAAAAAAGQA" +
+        "AAJYArwAAAAIAAIAAQAAAAAAAQAAAyD/OABkArwAZABkAlgAAQAAAAAAAAAAAAAAAAAAAA" +
+        "QB9ABkArwAZAEsAGQCvABkAAAAAAAAAAAAAAAiAAAAIgAAAFoAAFAAAAQAAA=="
+    try font.load(try base64.decode(file))
+}
+
+fn main() ! Error {
+    const f = try sample()
+    print("{f.shape("A", 1.0).width.near(0.7)} {f.shape("A", 1_000.0).width}")
+    print("{f.atlas("A", 1.0).size} {f.atlas("A", 1_000.0).size}")
+}

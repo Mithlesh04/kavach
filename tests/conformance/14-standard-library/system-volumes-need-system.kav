@@ -1,0 +1,13 @@
+// Rule: Every part of the machine (volumes, disks, network adapters, displays, battery, sensors, devices, drivers, board, BIOS, model, memory modules) needs `uses System`.
+// Spec: 14.25
+// expect compile error
+
+use std.system
+
+pub fn free_bytes() -> Int {
+    system.volumes().sum(v => v.available)      // error: free_bytes doesn't list System
+}
+
+fn main() {
+    print(free_bytes() >= 0)
+}

@@ -1,0 +1,30 @@
+// Rule: `fs.rename` moves a file or a folder and `fs.copy` copies a file; a file already at `to` is replaced.
+// Spec: 14.3
+// expect output: new
+// expect output: false
+// expect output: new
+// expect output: new
+// expect output: ["moved"]
+// expect output: inside
+
+use std.fs
+
+fn main() ! FsError uses Fs, Console {
+    const dir = "kavach-t-fs-move"
+    try fs.create_dir("{dir}/folder")
+    try fs.write_text("{dir}/a.txt", "new")
+    try fs.write_text("{dir}/b.txt", "old and longer")
+    try fs.rename("{dir}/a.txt", "{dir}/b.txt")
+    print(try fs.read_text("{dir}/b.txt"))
+    print(fs.exists("{dir}/a.txt"))
+    try fs.write_text("{dir}/c.txt", "old and longer")
+    try fs.copy("{dir}/b.txt", "{dir}/c.txt")
+    print(try fs.read_text("{dir}/c.txt"))
+    print(try fs.read_text("{dir}/b.txt"))
+    try fs.write_text("{dir}/folder/x.txt", "inside")
+    try fs.create_dir("{dir}/to")
+    try fs.rename("{dir}/folder", "{dir}/to/moved")
+    print(try fs.list("{dir}/to"))
+    print(try fs.read_text("{dir}/to/moved/x.txt"))
+    try fs.remove_all(dir)
+}

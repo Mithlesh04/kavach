@@ -1,0 +1,13 @@
+// Rule: a `spawn process` call can't take a `Shared` value: what it takes is copied out of the program, and a `Shared` can't be.
+// Spec: 9.8
+// expect compile error
+
+fn bump(counter: Shared<Int>) -> Int {
+    counter.update(n => n + 1)
+}
+
+fn main() {
+    const counter = Shared(0)
+    const job = spawn process bump(counter)     // error: a `Shared` value can't be copied into another process
+    print(job.wait() catch _ => 0)
+}

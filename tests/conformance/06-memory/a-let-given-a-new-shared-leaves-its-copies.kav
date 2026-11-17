@@ -1,0 +1,15 @@
+// Rule: copies of a `Shared` see one value; a `let` given a new `Shared` names the new one, and the copies still share the old.
+// Spec: 6.2, 1.4
+// expect output: 2 2
+// expect output: 10 3
+
+fn main() {
+    let counter = Shared(0)
+    const kept = counter
+    counter.update(n => n + 1)
+    kept.update(n => n + 1)
+    print("{counter.get()} {kept.get()}")
+    counter = Shared(10)
+    kept.update(n => n + 1)
+    print("{counter.get()} {kept.get()}")
+}

@@ -1,0 +1,22 @@
+// Rule: For whole numbers, `x.div_floor(n) * n + x.mod(n)` is `x`, and `x.mod(n)` is 0 or has the sign of `n` and is smaller than `n`, sized types included.
+// Spec: 14.2
+// expect output: true
+// expect output: -4 2 28 4
+
+fn main() {
+    let ok = true
+    for x in -30..=30 {
+        for n in [-7, -3, -2, -1, 1, 2, 3, 7] {
+            const q = x.div_floor(n)
+            const r = x.mod(n)
+            const sign_ok = r == 0 or (r > 0) == (n > 0)
+            if q * n + r != x or not sign_ok or r.abs() >= n.abs() {
+                ok = false
+            }
+        }
+    }
+    print(ok)
+    const s: Int8 = -7
+    const u: UInt8 = 200
+    print("{s.div_floor(2)} {s.mod(3)} {u.div_floor(7)} {u.mod(7)}")
+}

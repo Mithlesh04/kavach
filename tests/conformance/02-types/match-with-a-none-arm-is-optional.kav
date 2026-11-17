@@ -1,0 +1,20 @@
+// Rule: A `match` whose one arm is `none` and the others a `T` gives a `T?`.
+// Spec: 2.7
+// expect output: 1
+// expect output: -1
+
+type Status = Pending | Paid | Refunded
+
+fn rank(s: Status) -> Int? {
+    const r = match s {
+        Status.Pending => 1,
+        Status.Paid => 2,
+        Status.Refunded => none,
+    }
+    r
+}
+
+fn main() {
+    print(rank(Status.Pending) ?? -1)
+    print(rank(Status.Refunded) ?? -1)
+}

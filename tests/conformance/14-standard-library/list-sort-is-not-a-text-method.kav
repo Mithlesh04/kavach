@@ -1,0 +1,8 @@
+// Rule: List methods are not text methods: `sort` on a `String` is a compile error; sort its `chars()`.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    const s = "cab"
+    print(s.sort())        // error: `String` has no `sort`
+}

@@ -1,0 +1,13 @@
+// Rule: A function can't be encoded as JSON: `json.of` of one is a compile error.
+// Spec: 2.12
+// expect compile error
+
+use std.json
+
+fn twice(n: Int) -> Int {
+    n * 2
+}
+
+fn main() {
+    print(json.of(twice))       // error: a function has no JSON form
+}

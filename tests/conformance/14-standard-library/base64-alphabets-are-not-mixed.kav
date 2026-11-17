@@ -1,0 +1,26 @@
+// Rule: Each alphabet refuses the other's characters, and white space or any other character outside it, with `BadCharacter` at its character index.
+// Spec: 14.20
+// Checks: misuse
+// expect output: BadCharacter(at: 0)
+// expect output: BadCharacter(at: 1)
+// expect output: BadCharacter(at: 4)
+// expect output: BadCharacter(at: 2)
+// expect output: BadCharacter(at: 3)
+
+use std.base64
+
+fn report(text: String, url: Bool) {
+    const _b = base64.decode(text, url: url) catch e => {
+        print(e)
+        return
+    }
+    print("accepted {text}")
+}
+
+fn main() {
+    report("-_8A", false)
+    report("A+/8", true)
+    report("Zm9v\nYg==", false)
+    report("Zm Yg==", false)
+    report("Zm9é", false)
+}

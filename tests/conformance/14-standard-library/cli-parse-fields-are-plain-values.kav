@@ -1,0 +1,15 @@
+// Rule: an option field may be `String`, a number, `Bool` or an optional of these; `cli.parse` of a record with a list field is refused.
+// Spec: 14.6
+// Checks: misuse
+// expect compile error
+
+use std.cli
+
+type Args {
+    sizes: [Int] = []
+}
+
+fn main() ! Error {
+    const args = try cli.parse<Args>()     // error: the option `sizes` is a list
+    print(args.sizes)
+}

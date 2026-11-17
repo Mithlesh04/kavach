@@ -1,0 +1,12 @@
+// Rule: Changing a voice while it plays (`set_volume`, `set_pan`, `stop`) needs `Audio`.
+// Spec: 14.27
+// expect compile error
+
+use std.audio
+
+pub fn quieter(v: Voice) {
+    v.set_volume(0.2)     // error: `quieter` is `pub`, so it must say what it uses: add `uses Audio`
+}
+
+fn main() {
+}

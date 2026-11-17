@@ -1,0 +1,12 @@
+// Rule: the HTTP client calls need the `Net` capability, so calling one from a function whose `uses` clause doesn't list it is a compile error.
+// Spec: 14.11, 8.1
+// expect compile error
+
+use std.http
+
+fn fetch(url: String) -> Response ! HttpError uses Console {
+    try http.get(url)    // error: `fetch` uses Net, which its `uses` clause doesn't list
+}
+
+fn main() {
+}

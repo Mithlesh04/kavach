@@ -1,0 +1,26 @@
+// Rule: `--help` makes `cli.parse` give an error whose text is the usage, listing every option with its type and default.
+// Spec: 14.6
+// args: --help
+// expect output: true true true
+// expect output: true true
+// expect output: true true
+
+use std.cli
+
+type Args {
+    input: String
+    max_count: Int = 10
+    verbose: Bool = false
+}
+
+fn main() {
+    const args = cli.parse<Args>() catch e => {
+        const usage = "{e}"
+        print("{usage.contains("--input")} {usage.contains("--max-count")} {usage.contains("--verbose")}")
+        print("{usage.contains("String")} {usage.contains("Int")}")
+        print("{usage.contains("10")} {usage.contains("required")}")
+        cli.exit(0)
+        return
+    }
+    print("parsed: {args.input}")
+}

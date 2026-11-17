@@ -1,0 +1,28 @@
+// Rule: `http.serve` closes a kept-open connection whose client sends no next request within `idle_timeout`.
+// Spec: 14.11
+// expect output: answers: 1
+// expect output: closed while idle: true
+
+use std.http
+use std.net
+
+fn main() ! Error {
+    const crlf = "\u{D}\n"
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, r => http.text(200, "hi"), limits: ServeLimits(idle_timeout: 200.ms))
+    const conn = try net.connect(listener.address())
+    try conn.write("GET / HTTP/1.1{crlf}host: x{crlf}{crlf}".bytes())
+    let all = Bytes([])
+    let closed = false
+    while true {
+        // Far longer than `idle_timeout`, and shorter than the default 5 s.
+        const piece = conn.read().timeout(3.seconds) catch _ => break
+        if piece == none {
+            closed = true
+        }
+        all = all + (piece ?? break)
+    }
+    conn.close()
+    print("answers: {(all.text() ?? "").split(crlf).filter(l => l.starts_with("HTTP/1.1 ")).len()}")
+    print("closed while idle: {closed}")
+}

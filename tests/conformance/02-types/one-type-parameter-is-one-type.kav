@@ -1,0 +1,12 @@
+// Rule: Every use of a type parameter in one call is the same type: `same(1, "one")` finds no `T`.
+// Spec: 2.9
+// expect compile error
+
+fn same<T>(a: T, b: T) -> Bool {
+    a == b
+}
+
+fn main() {
+    print(same(1, 2))
+    print(same(1, "one"))      // error: `T` can't be both `Int` and `String`
+}

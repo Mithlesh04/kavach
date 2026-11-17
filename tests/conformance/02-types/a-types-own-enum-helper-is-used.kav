@@ -1,0 +1,33 @@
+// Rule: A function or method an enum declares itself with a helper's name (`all`, `name`, `parse`, `value`, `from`) is used instead of the built-in one.
+// Spec: 2.6
+// expect output: [High]
+// expect output: level high
+// expect output: Low
+// expect output: 7
+
+type Level = Low = 1 | High = 2
+
+extend Level {
+    fn all() -> [Level] {
+        [Level.High]
+    }
+
+    fn name(self) -> String {
+        if self == Level.High { "level high" } else { "level low" }
+    }
+
+    fn parse(text: String) -> Level? {
+        if text == "lo" { Level.Low } else { none }
+    }
+
+    fn value(self) -> Int {
+        7
+    }
+}
+
+fn main() {
+    print(Level.all())
+    print(Level.High.name())
+    print(Level.parse("lo") ?? Level.High)
+    print(Level.Low.value())
+}

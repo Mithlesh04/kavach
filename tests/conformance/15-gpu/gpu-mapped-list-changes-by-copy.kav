@@ -1,0 +1,18 @@
+// Rule: A list a GPU `map` made is an ordinary list: changing a second holder of it copies it first.
+// Spec: 15.2, 2.2
+// expect output: [2, 4, 6]
+// expect output: [99, 4, 6, 8]
+
+gpu fn twice(n: Int32) -> Int32 {
+    n * 2
+}
+
+fn main() {
+    const xs: [Int32] = [1, 2, 3]
+    const ys = xs.map(twice)
+    let zs = ys
+    zs[0] = 99
+    zs.push(8)
+    print(ys)
+    print(zs)
+}

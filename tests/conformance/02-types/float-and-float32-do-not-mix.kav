@@ -1,0 +1,9 @@
+// Rule: Arithmetic between `Float` and `Float32` is a compile error: no implicit conversions.
+// Spec: 2.1
+// expect compile error
+
+fn main() {
+    let wide: Float = 1.5
+    let narrow: Float32 = 2.5
+    print(wide + narrow)        // error: Float and Float32 do not mix
+}

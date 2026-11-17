@@ -1,0 +1,12 @@
+// Rule: Storing an arena value in a map declared before the arena is a compile error.
+// Spec: 6.3
+// expect compile error
+
+fn main() {
+    let m = ["a": [0]]
+    arena {
+        const xs = [1, 2, 3]
+        m["a"] = xs             // error: xs was made in the arena and can't be kept outside it
+    }
+    print(m)
+}

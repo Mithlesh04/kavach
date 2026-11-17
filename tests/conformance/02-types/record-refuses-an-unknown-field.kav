@@ -1,0 +1,13 @@
+// Rule: A record is made only from its own fields: a named argument the type has no field for is an error.
+// Spec: 2.4
+// expect compile error
+
+type User {
+    name: String
+    age: Int = 0
+}
+
+fn main() {
+    const u = User(name: "Asha", nickname: "A")      // error: `User` has no field `nickname`
+    print(u.name)
+}

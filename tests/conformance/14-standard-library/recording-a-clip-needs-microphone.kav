@@ -1,0 +1,15 @@
+// Rule: `audio.record` records what the microphone hears, so it needs `Microphone`.
+// Spec: 14.27
+// expect compile error
+
+use std.audio
+
+pub fn clip() -> Int {
+    const s = audio.record(1.0) catch _ => {     // error: `clip` is `pub`, so it must say what it uses: add `uses Microphone`
+        return 0
+    }
+    s.frames
+}
+
+fn main() {
+}

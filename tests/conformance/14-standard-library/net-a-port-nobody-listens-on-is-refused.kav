@@ -1,0 +1,21 @@
+// Rule: connecting to an address nobody listens at fails with `NetError.Refused`, naming that address.
+// Spec: 14.10
+// expect output: refused at the address: true
+
+use std.net
+
+fn main() ! Error {
+    // Port 0 picks a free port; closing the listener leaves nobody there.
+    const listener = try net.listen("127.0.0.1:0")
+    const address = listener.address()
+    listener.close()
+    const conn = net.connect(address) catch e => {
+        match e {
+            NetError.Refused(a) => print("refused at the address: {a == address}"),
+            _ => print("not refused"),
+        }
+        return
+    }
+    conn.close()
+    print("connected")
+}

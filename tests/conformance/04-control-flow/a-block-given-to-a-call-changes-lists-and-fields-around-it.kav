@@ -1,0 +1,26 @@
+// Rule: A block given to a call is a plain block, not a lambda: pushing to an outside list, setting a field or a map key changes the variable around it.
+// Spec: 4.8
+// expect output: [1, 2]
+// expect output: 31
+// expect output: 2
+
+use std.log
+
+type User {
+    name: String
+    age: Int
+}
+
+fn main() {
+    let items = [1]
+    let u = User(name: "Asha", age: 30)
+    let seen = ["a": 1]
+    log.span("change") {
+        items.push(2)
+        u.age += 1
+        seen["b"] = 2
+    }
+    print(items)
+    print(u.age)
+    print(seen.len())
+}

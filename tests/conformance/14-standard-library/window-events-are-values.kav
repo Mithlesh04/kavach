@@ -1,0 +1,30 @@
+// Rule: An `Event` is a value of a union, made and matched like any other: a key is named by its place (`KeyW`), mouse buttons are numbered 0 left to 4 forward.
+// Spec: 14.22
+// expect output: Key(key: "KeyW", down: true) forward
+// expect output: Resized(width: 1280, height: 720) 1280 by 720
+// expect output: MouseButton(button: 0, down: false) left
+// expect output: Closed close
+
+use std.window
+
+fn said(e: Event) -> String {
+    match e {
+        Event.Key(key, down) => if down and key == "KeyW" { "forward" } else { "other key" },
+        Event.Resized(w, h) => "{w} by {h}",
+        Event.MouseButton(button, _) => ["left", "right", "middle", "back", "forward"][button],
+        Event.Closed => "close",
+        _ => "other",
+    }
+}
+
+fn main() {
+    const events = [
+        Event.Key(key: "KeyW", down: true),
+        Event.Resized(width: 1280, height: 720),
+        Event.MouseButton(button: 0, down: false),
+        Event.Closed,
+    ]
+    for e in events {
+        print("{e} {said(e)}")
+    }
+}

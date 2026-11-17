@@ -1,0 +1,12 @@
+// Rule: Anonymous record types match only with the same field types.
+// Spec: 2.14
+// expect compile error
+
+fn sum(p: (x: Int, y: Int)) -> Int {
+    p.x + p.y
+}
+
+fn main() {
+    print(sum((x: 1, y: 2)))
+    print(sum((x: 1, y: "two")))      // error: `y` is an Int, not text
+}

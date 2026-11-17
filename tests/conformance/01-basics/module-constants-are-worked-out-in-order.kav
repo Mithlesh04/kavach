@@ -1,0 +1,14 @@
+// Rule: Module constants are worked out before `main`, in the order they are written, so a panic in the first one written comes first.
+// Spec: 1.13
+// expect panic: first constant failed
+
+fn fail_with(text: String) -> Int {
+    panic(text)
+}
+
+const first = fail_with("first constant failed")
+const second = fail_with("second constant failed")
+
+fn main() {
+    print("never printed {first} {second}")
+}

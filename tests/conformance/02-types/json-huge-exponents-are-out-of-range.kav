@@ -1,0 +1,21 @@
+// Rule: A number whose exponent puts it beyond 10^10_000, or below 10^-10_000, is out of range: `decimal()` gives `none`, and a `Decimal` field refuses it.
+// Spec: 2.12
+// Checks: misuse
+// expect output: none none
+// expect output: true true
+// expect output: problem at [0]
+
+use std.json
+
+fn main() ! JsonError {
+    const doc = try json.parse("[1e999999999, 1e-10001, 1e10000, -1e-10000]")
+    print("{doc[0].decimal()} {doc[1].decimal()}")
+    print("{doc[2].decimal() != none} {doc[3].decimal() != none}")
+    match json.decode<[Decimal]>("[1e999999999, 2]") {
+        ok(v) => print("decoded {v}"),
+        err(e) => match e {
+            JsonError.Invalid(problems) => print("problem at {problems[0].path}"),
+            _ => print("other: {e}"),
+        },
+    }
+}

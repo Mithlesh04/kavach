@@ -1,0 +1,12 @@
+// Rule: Anonymous record types match only with the same field names: `(x: 1, z: 2)` is not a `(x: Int, y: Int)`.
+// Spec: 2.14
+// expect compile error
+
+fn sum(p: (x: Int, y: Int)) -> Int {
+    p.x + p.y
+}
+
+fn main() {
+    print(sum((y: 2, x: 1)))
+    print(sum((x: 1, z: 2)))      // error: no field `y`, and `z` is not one of `(x: Int, y: Int)`'s
+}

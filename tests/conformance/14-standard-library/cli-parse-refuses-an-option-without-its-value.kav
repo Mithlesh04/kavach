@@ -1,0 +1,22 @@
+// Rule: an option that needs a value but comes last, with none, is a `CliError` naming it.
+// Spec: 14.6
+// Checks: misuse
+// args: --verbose --limit
+// expect output: refused: true
+// expect exit: 2
+
+use std.cli
+
+type Args {
+    limit: Int = 10
+    verbose: Bool = false
+}
+
+fn main() {
+    const args = cli.parse<Args>() catch e => {
+        print("refused: {"{e}".contains("--limit")}")
+        cli.exit(2)
+        return
+    }
+    print("limit {args.limit} {args.verbose}")
+}

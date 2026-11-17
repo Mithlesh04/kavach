@@ -1,0 +1,10 @@
+// Rule: A name that mixes letters from different scripts (a Latin `a` beside a Cyrillic `а`) gets a warning; a name written fully in one script gets none.
+// Spec: 1.5
+// expect warning
+// expect output: 3 Asha
+
+fn main() {
+    const pаth = 3                  // warning: `pаth` mixes Latin and Cyrillic letters
+    const नाम = "Asha"
+    print("{pаth} {नाम}")
+}

@@ -1,0 +1,13 @@
+// Rule: `image.new` takes exactly `width * height * 4` pixel parts; the wrong number breaks its contract and panics.
+// Spec: 14.29
+// expect output: 1
+// expect panic: contract failed
+
+use std.image
+
+fn main() {
+    print(image.new(1, 1, [9, 9, 9, 255]).width)
+    const short: [UInt8] = [[9, 9, 9]][0]
+    const img = image.new(1, 1, short)       // one part short of a pixel
+    print(img.width)
+}

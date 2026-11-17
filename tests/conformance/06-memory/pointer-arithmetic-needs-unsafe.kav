@@ -1,0 +1,10 @@
+// Rule: `p + n` and `p - n` are raw pointer arithmetic, so they are allowed only inside `unsafe { … }`.
+// Spec: 6.4
+// expect compile error
+
+fn next(p: Ptr<Int32>) -> Ptr<Int32> {
+    p + 1                           // error: pointer arithmetic outside unsafe
+}
+
+fn main() {
+}

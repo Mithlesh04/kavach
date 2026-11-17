@@ -1,0 +1,12 @@
+// Rule: An argument must have its parameter's type; there are no implicit conversions.
+// Spec: 3.1, 2.1
+// expect compile error
+
+fn order(name: String, count: Int = 0) -> String {
+    "{name} {count}"
+}
+
+fn main() {
+    print(order("a"))
+    print(order("a", 3.0))    // error: `count` is an Int, not a Float
+}

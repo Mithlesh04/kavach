@@ -1,0 +1,14 @@
+// Rule: A `Mat4` is four columns `c0` to `c3`, so a translation's move is in `c3`; `transposed()` swaps rows and columns, and twice gives it back.
+// Spec: 14.28
+// expect output: Mat4(c0: Vec4(x: 1.0, y: 0.0, z: 0.0, w: 0.0), c1: Vec4(x: 0.0, y: 1.0, z: 0.0, w: 0.0), c2: Vec4(x: 0.0, y: 0.0, z: 1.0, w: 0.0), c3: Vec4(x: 1.0, y: 2.0, z: 3.0, w: 1.0))
+// expect output: Mat4(c0: Vec4(x: 1.0, y: 0.0, z: 0.0, w: 1.0), c1: Vec4(x: 0.0, y: 1.0, z: 0.0, w: 2.0), c2: Vec4(x: 0.0, y: 0.0, z: 1.0, w: 3.0), c3: Vec4(x: 0.0, y: 0.0, z: 0.0, w: 1.0))
+// expect output: true
+
+use std.vec
+
+fn main() {
+    const m = Mat4.translation(Vec3(x: 1.0, y: 2.0, z: 3.0))
+    print(m)
+    print(m.transposed())
+    print(m.transposed().transposed() == m)
+}

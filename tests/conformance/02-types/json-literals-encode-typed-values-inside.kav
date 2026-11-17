@@ -1,0 +1,23 @@
+// Rule: Inside a `Json` literal, any expression whose type can be encoded is converted, at any depth: records, unions, optionals and lists of them.
+// Spec: 2.12
+// expect output: {"item":{"name":"pen","qty":2},"state":{"Held":{"why":"stock"}},"gift":null,"more":[{"name":"ink","qty":1}],"n":[3,null]}
+
+type Item {
+    name: String
+    qty: Int
+}
+
+type State = Open | Held(why: String)
+
+fn main() {
+    const gift: Item? = none
+    const n: [Int?] = [3, none]
+    const doc: Json = [
+        "item": Item(name: "pen", qty: 2),
+        "state": State.Held(why: "stock"),
+        "gift": gift,
+        "more": [Item(name: "ink", qty: 1)],
+        "n": n,
+    ]
+    print(doc)
+}

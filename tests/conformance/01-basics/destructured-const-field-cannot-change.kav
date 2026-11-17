@@ -1,0 +1,18 @@
+// Rule: A record a `const` takes from a field is a constant: setting one of its fields is a compile error.
+// Spec: 1.12, 1.4
+// expect compile error
+
+type Address {
+    city: String
+}
+
+type User {
+    name: String
+    home: Address
+}
+
+fn main() {
+    const { home } = User(name: "Asha", home: Address(city: "Pune"))
+    home.city = "Delhi"             // error: `home` is a `const`; use `let`
+    print(home)
+}

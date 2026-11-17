@@ -1,0 +1,13 @@
+// Rule: A year before 0 or after 9999 is read as `iso` writes it, with a sign or more digits, as ISO 8601's expanded years are.
+// Spec: 14.4
+// expect output: -0005-01-01 -5
+// expect output: 12345 true
+
+use std.time
+
+fn main() ! Error {
+    const early = try time.parse_date("-0005-01-01")
+    print("{early.iso()} {early.year}")
+    const late = try time.parse_date("12345-06-07")
+    print("{late.year} {late == try time.parse_date("+12345-06-07")}")
+}

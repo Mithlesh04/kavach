@@ -1,0 +1,12 @@
+// Rule: `x.near(y)` is "equal but for rounding": infinity is near the same infinity, but not the other one and not the largest finite numbers.
+// Spec: 14.2
+// expect output: true true
+// expect output: false false false
+
+fn main() {
+    const inf = 1.0 / 0.0
+    const minus = -inf
+    const big = 1e308
+    print("{inf.near(inf)} {minus.near(minus)}")
+    print("{inf.near(minus)} {inf.near(big)} {big.near(inf)}")
+}

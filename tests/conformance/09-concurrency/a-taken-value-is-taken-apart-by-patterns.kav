@@ -1,0 +1,24 @@
+// Rule: a value taken from a channel can be taken apart: a `for` over a channel of tuples names their parts, and a `match` on `Taken.Item` takes the tuple apart.
+// Spec: 9.4, 4.3, 4.4
+// expect output: asha is 31
+// expect output: ravi is 40
+// expect output: 3 and x
+// expect output: Item(value: (4, "y"))
+
+fn main() {
+    const (send, receive) = Channel<(String, Int)>(capacity: 2)
+    send.put(("asha", 31))
+    send.put(("ravi", 40))
+    send.close()
+    for (name, age) in receive {
+        print("{name} is {age}")
+    }
+    const (pairs, pair_in) = Channel<(Int, String)>(capacity: 2)
+    pairs.put((3, "x"))
+    match pair_in.take() {
+        Taken.Item((n, word)) => print("{n} and {word}"),
+        Taken.Closed => print("closed"),
+    }
+    pairs.put((4, "y"))
+    print(pair_in.take())
+}

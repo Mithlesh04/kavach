@@ -1,0 +1,39 @@
+// Rule: copies of a channel end share the channel, wherever they are kept: a `let`, a parameter, a record field, a list, a lambda or a task.
+// Spec: 9.4
+// expect output: [1, 2, 3, 4, 5, 6, 7]
+
+type Outbox {
+    to: Sender<Int>
+}
+
+fn send_two(s: Sender<Int>, first: Int) {
+    s.put(first)
+    s.put(first + 1)
+}
+
+fn drain(r: Receiver<Int>) -> [Int] {
+    let got: [Int] = []
+    for v in r {
+        got.push(v)
+    }
+    got
+}
+
+fn main() {
+    const (send, receive) = Channel<Int>(capacity: 10)
+    let copy = send
+    copy.put(1)
+    send_two(send, 2)
+    const box = Outbox(to: send)
+    box.to.put(4)
+    const ends = [send]
+    ends[0].put(5)
+    const put_one = v => send.put(v)
+    put_one(6)
+    const _t = spawn {
+        copy.put(7)
+        copy.close()
+    }
+    const other = receive
+    print(drain(other))
+}

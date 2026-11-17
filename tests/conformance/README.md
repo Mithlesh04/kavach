@@ -44,6 +44,7 @@ fn main() {
 |---|---|
 | `// Rule: …` | The rule in one plain sentence. Required. |
 | `// Spec: N.N` | The spec section that states the rule. Required. |
+| `// Checks: misuse` | The test checks that wrong use is refused with an error value the program prints, not with a compile error or a panic. Optional; the docs site uses it to list the test as a "refused" case. The runner ignores it. |
 | `// expect output: …` | One line of standard output. Repeat it for each line, in order. Standard output must match these lines exactly. |
 | `// expect exit: N` | The exit code. Default: `0` when the program runs. |
 | `// expect compile error` | Compilation must fail. The line that must be reported ends with `// error: <why>`. The reason is for people; the runner checks only the line. |

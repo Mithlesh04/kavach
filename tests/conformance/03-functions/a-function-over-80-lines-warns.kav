@@ -1,0 +1,185 @@
+// Rule: With no `kavach.toml` setting, `fn_lines` is 80: a longer function gets a warning and still runs, and comment and blank lines count.
+// Spec: 12.1
+// expect warning
+// expect output: 132
+
+// `fits` is 80 lines from `fn` to `}`, so it is within the limit however the
+// braces are counted; `too_long` is 92 lines, well over it.
+
+fn fits() -> Int {
+    let t = 0
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+    // a comment line counts too
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+    // a comment line counts too
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+    // a comment line counts too
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+    // a comment line counts too
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+    // a comment line counts too
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+    // a comment line counts too
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+    // a comment line counts too
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+
+    t += 1
+    t
+}
+
+fn too_long() -> Int {        // warning: longer than 80 lines
+    let t = 0
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+    // a comment line counts too
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+    // a comment line counts too
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+    // a comment line counts too
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+    // a comment line counts too
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+    // a comment line counts too
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+    // a comment line counts too
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+    // a comment line counts too
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+    // a comment line counts too
+    t += 1
+    t += 1
+    t += 1
+    t += 1
+
+    t += 1
+    t += 1
+    t += 1
+    t
+}
+
+fn main() {
+    print(fits() + too_long())
+}

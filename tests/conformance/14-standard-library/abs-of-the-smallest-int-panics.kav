@@ -1,0 +1,14 @@
+// Rule: `abs` of a whole number's smallest value doesn't fit, so it panics.
+// Spec: 14.2
+// expect output: 9223372036854775807 127
+// expect panic
+
+fn size(n: Int) -> Int {
+    n.abs()
+}
+
+fn main() {
+    const small: Int8 = -127
+    print("{size(-9223372036854775807)} {small.abs()}")
+    print(size(-9223372036854775807 - 1))
+}

@@ -1,0 +1,14 @@
+// Rule: Each port in use is `"tcp"` or `"udp"`, with a `state` such as `"listen"` for TCP and `""` for UDP.
+// Spec: 14.25
+// expect output: true
+
+use std.system
+
+fn sane() -> Bool uses System.critical.read {
+    system.ports().all(p =>
+        (p.protocol == "tcp" and p.state != "") or (p.protocol == "udp" and p.state == ""))
+}
+
+fn main() {
+    print(sane())
+}

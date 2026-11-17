@@ -1,0 +1,21 @@
+// Rule: `filter`, `map`, `flat_map`, `any`, `all`, `contains` and `enumerate` read a list without changing it; an empty list gives an empty list, `any` false and `all` true.
+// Spec: 2.2
+// expect output: [2, 4] [2, 4, 6, 8]
+// expect output: [1, 1, 2, 2, 3, 3]
+// expect output: true false true false
+// expect output: true false
+// expect output: [1, 2, 3, 4]
+// expect output: [] [] [] []
+// expect output: false true false
+
+fn main() {
+    const xs = [1, 2, 3, 4]
+    print("{xs.filter(x => x % 2 == 0)} {xs.map(x => x * 2)}")
+    print([1, 2, 3].flat_map(x => [x, x]))
+    print("{xs.any(x => x > 3)} {xs.any(x => x > 4)} {xs.all(x => x > 0)} {xs.all(x => x > 1)}")
+    print("{xs.contains(3)} {xs.contains(5)}")
+    print(xs)
+    const empty: [Int] = []
+    print("{empty.filter(x => x > 0)} {empty.map(x => x * 2)} {empty.flat_map(x => [x])} {empty.enumerate()}")
+    print("{empty.any(x => x > 0)} {empty.all(x => x > 0)} {empty.contains(0)}")
+}

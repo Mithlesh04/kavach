@@ -1,0 +1,8 @@
+// Rule: `Bytes(list)` takes a `[UInt8]`, so a literal item outside 0 to 255 is a compile error.
+// Spec: 2.13, 2.1
+// expect compile error
+
+fn main() {
+    print(Bytes([0, 255]))         // fine
+    print(Bytes([1, 256]))         // error: `256` doesn't fit in `UInt8`
+}

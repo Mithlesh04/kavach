@@ -1,0 +1,17 @@
+// Rule: Recursion through a function value or a lambda that never ends runs out of stack: that is a panic, never memory corruption.
+// Spec: 3.8, 5.6
+// expect output: before
+// expect panic
+
+fn again(f: fn(Int) -> Int, n: Int) -> Int {
+    f(n + 1)
+}
+
+fn deeper(n: Int) -> Int {
+    again(n => deeper(n), n)
+}
+
+fn main() {
+    print("before")
+    print([1, 2].map(deeper))
+}

@@ -1,0 +1,12 @@
+// Rule: Changing a window (its title, full screen, closing it) and reading its events need `Window`; `Input` alone doesn't cover them.
+// Spec: 14.22, 8.1
+// expect compile error
+
+use std.window
+
+pub fn rename(win: AppWindow) uses Input {
+    win.set_title("Renamed")      // error: rename doesn't list Window
+}
+
+fn main() {
+}

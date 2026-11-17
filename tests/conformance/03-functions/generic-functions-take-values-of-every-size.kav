@@ -1,0 +1,39 @@
+// Rule: A generic function is made for each type it is called with, so values of every size pass through a type parameter unchanged: small numbers, big records, tuples, optionals and numbers of any size.
+// Spec: 2.9
+// expect output: -128 0.1 18446744073709551615
+// expect output: 1267650600228229401496703205376 0.000000000000000000000000000001
+// expect output: Big(a: -1, b: 2.5, c: "c", d: [4], e: 'e', f: true)
+// expect output: (-1, 0.5, "x", none) none 7
+// expect output: (-128, Big(a: 1, b: 0.5, c: "", d: [], e: 'z', f: false))
+// expect output: [0.25, 0.25, 0.25]
+
+type Big {
+    a: Int8
+    b: Float
+    c: String
+    d: [Int]
+    e: Char
+    f: Bool
+}
+
+fn pass<T>(x: T) -> T { x }
+fn pair<A, B>(a: A, b: B) -> (A, B) { (a, b) }
+fn three<T>(x: T) -> [T] { [x, x, x] }
+fn or_else<T>(x: T?, other: T) -> T? { if let v = x { v } else { other } }
+
+fn main() {
+    const i8: Int8 = -128
+    const f32: Float32 = 0.1
+    const u64: UInt64 = 18446744073709551615
+    print("{pass(i8)} {pass(f32)} {pass(u64)}")
+    const big: BigInt = 2 ** 100
+    const tiny: Decimal = 0.000000000000000000000000000001
+    print("{pass(big)} {pass(tiny)}")
+    print(pass(Big(a: -1, b: 2.5, c: "c", d: [4], e: 'e', f: true)))
+    const none8: Int8? = none
+    const t: (Int8, Float32, String, Int8?) = (-1, 0.5, "x", none8)
+    print("{pass(t)} {pass(none8)} {or_else(none8, 7)}")
+    print(pair(i8, Big(a: 1, b: 0.5, c: "", d: [], e: 'z', f: false)))
+    const q: Float32 = 0.25
+    print(three(q))
+}

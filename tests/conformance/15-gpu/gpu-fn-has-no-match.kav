@@ -1,0 +1,14 @@
+// Rule: A `gpu fn`'s body uses only the statements 15.1 lists (`if` and `else`, `while`, `for` over a range, `return`, …): `match` is not one.
+// Spec: 15.1
+// expect compile error
+
+gpu fn sign(x: Int32) -> Int32 {
+    match x {                           // error: a `gpu fn` can't use `match`
+        0 => 0,
+        _ => 1,
+    }
+}
+
+fn main() {
+    print(sign(3))
+}

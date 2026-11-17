@@ -1,0 +1,27 @@
+// Rule: A pattern that isn't valid is an error value from `regex.new` and from `regex.advanced` alike, never a crash.
+// Spec: 14.8
+// Checks: misuse
+// expect output: new refused 4
+// expect output: advanced refused 4
+
+use std.regex
+
+fn main() {
+    const bad = [r"(unclosed", r"a{3,1}", r"[z-a]", r"*a"]
+    let new_refused = 0
+    for p in bad {
+        const _n = regex.new(p) catch _ => {
+            new_refused += 1
+            continue
+        }
+    }
+    let advanced_refused = 0
+    for p in bad {
+        const _a = regex.advanced(p) catch _ => {
+            advanced_refused += 1
+            continue
+        }
+    }
+    print("new refused {new_refused}")
+    print("advanced refused {advanced_refused}")
+}

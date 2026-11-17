@@ -1,0 +1,43 @@
+// Rule: an HTTP call to an address nobody listens at fails with `HttpError.Network`, holding the `NetError.Refused` of that address.
+// Spec: 14.11, 14.10
+// expect output: get: refused at the address
+// expect output: post_json: refused at the address
+// expect output: open: refused at the address
+
+use std.http
+use std.json
+use std.net
+
+fn why(e: HttpError, address: String) -> String {
+    match e {
+        HttpError.Network(n) => match n {
+            NetError.Refused(a) => if a == address { "refused at the address" } else { "refused elsewhere" },
+            _ => "another network error",
+        },
+        _ => "not a network error",
+    }
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const address = listener.address()
+    listener.close()
+    const got = match http.get("http://{address}/") {
+        ok(r) => "status {r.status}",
+        err(e) => why(e, address),
+    }
+    print("get: {got}")
+    const posted = match http.post_json<Int>("http://{address}/n", json.of(1)) {
+        ok(n) => "{n}",
+        err(e) => why(e, address),
+    }
+    print("post_json: {posted}")
+    const opened = match http.open("http://{address}") {
+        ok(s) => {
+            s.close()
+            "open"
+        }
+        err(e) => why(e, address),
+    }
+    print("open: {opened}")
+}

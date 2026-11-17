@@ -1,0 +1,27 @@
+// Rule: A `gpu fn` may use `math.sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `exp` and `ln` on `Float32`; they give a `Float32`.
+// Spec: 15.1, 14.5
+// expect output: [(0.0, 1.0, 0.0, 0.0)]
+// expect output: [(1.5707964, 0.0, 0.7853982)]
+// expect output: [(2.7182817, 0.0)]
+
+use std.math
+
+gpu fn angles(x: Float32) -> (Float32, Float32, Float32, Float32) {
+    (math.sin(x), math.cos(x), math.tan(x), math.atan(x))
+}
+
+gpu fn inverses(x: Float32) -> (Float32, Float32, Float32) {
+    (math.asin(x), math.acos(x), math.atan2(x, 1.0))
+}
+
+gpu fn growth(x: Float32) -> (Float32, Float32) {
+    (math.exp(x), math.ln(x))
+}
+
+fn main() {
+    const zero: [Float32] = [0.0]
+    const one: [Float32] = [1.0]
+    print(zero.map(angles))
+    print(one.map(inverses))
+    print(one.map(growth))
+}

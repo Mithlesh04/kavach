@@ -1,0 +1,13 @@
+// Rule: Dividing a whole-number vector by 0 panics, as whole-number division by zero does.
+// Spec: 14.28
+// expect panic: division by zero
+
+use std.vec
+
+fn zero() -> Int {
+    0
+}
+
+fn main() {
+    print(Vec2(x: 1, y: 2) / zero())
+}

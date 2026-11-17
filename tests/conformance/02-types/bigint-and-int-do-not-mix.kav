@@ -1,0 +1,10 @@
+// Rule: A `BigInt` and an `Int` can't be added: the `Int` must be converted with `BigInt(n)`.
+// Spec: 2.1
+// expect compile error
+
+fn main() {
+    const big: BigInt = 1
+    const n: Int = 2
+    print(big + BigInt(n))         // fine: converted
+    print(big + n)                 // error: no implicit number conversions
+}

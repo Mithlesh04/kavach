@@ -1,0 +1,17 @@
+// Rule: Under `kavach test` agents keep nothing, so `agents.waiting()` is empty and `agents.answer` fails with `NotWaiting(id)`.
+// Spec: 14.16
+// expect test pass
+
+use std.agents
+
+test "nothing waits in a test" uses Approvals {
+    assert agents.waiting().is_empty()
+    let missing = ""
+    agents.answer("RefundBot-17-2", approved: true, by: "asha") catch e => {
+        missing = match e {
+            ApprovalError.NotWaiting(id) => id,
+            ApprovalError.Failed(id, _) => "failed {id}",
+        }
+    }
+    assert missing == "RefundBot-17-2"
+}

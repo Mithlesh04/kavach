@@ -1,0 +1,14 @@
+// Rule: `audio.sound` takes a rate from 1,000 to 384,000 frames a second; a rate outside that breaks its contract and panics.
+// Spec: 14.27
+// expect output: 1000 384000
+// expect panic: contract failed
+
+use std.audio
+
+fn main() {
+    const low = audio.sound([0.0], 1000, 1)
+    const high = audio.sound([0.0], 384_000, 1)
+    print("{low.rate} {high.rate}")
+    const rate = [999][0]
+    print(audio.sound([0.0], rate, 1).rate)
+}

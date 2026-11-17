@@ -1,0 +1,22 @@
+// Rule: a task keeps the program names of the function that spawned it, and `start` is checked against them as `run` is.
+// Spec: 14.23, 9.5
+// Checks: misuse
+// expect output: Denied(program: "kavach-t-other-tool")
+// expect output: 0
+
+use std.process
+
+fn launch(program: String) -> String uses Process {
+    const child = process.start(program, ["--version"]) catch e => return "{e}"
+    "{child.wait().code}"
+}
+
+fn in_a_task(program: String) -> String uses Process("git") {
+    const t = spawn launch(program)
+    t.wait() catch e => "{e}"
+}
+
+fn main() uses Process, Console {
+    print(in_a_task("kavach-t-other-tool"))
+    print(in_a_task("git"))
+}

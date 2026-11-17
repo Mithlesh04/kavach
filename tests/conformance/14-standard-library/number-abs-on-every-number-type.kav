@@ -1,0 +1,18 @@
+// Rule: `abs` gives the absolute value for every number type: sized whole numbers, `Float32` and `Decimal`, keeping the type.
+// Spec: 14.2
+// expect output: 300 127 0
+// expect output: 1.5 0.0
+// expect output: 3.25 3.25
+
+fn main() {
+    const i16: Int16 = -300
+    const top: Int8 = 127
+    const zero: UInt8 = 0
+    print("{i16.abs()} {top.abs()} {zero.abs()}")
+    const f: Float32 = -1.5
+    const z = 0.0
+    print("{f.abs()} {z.abs()}")
+    const d: Decimal = -3.25
+    const e: Decimal = 3.25
+    print("{d.abs()} {e.abs()}")
+}

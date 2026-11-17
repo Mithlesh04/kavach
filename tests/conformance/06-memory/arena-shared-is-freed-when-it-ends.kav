@@ -1,0 +1,13 @@
+// Rule: A `Shared` made in an arena is freed when the arena ends: a `Weak` to it, copied out as the block's value, then gives `none`.
+// Spec: 6.3, 6.2
+// expect output: false
+// expect output: true
+
+fn main() {
+    const w = arena {
+        const s = Shared([1, 2, 3])
+        print(s.weak().shared() == none)
+        s.weak()
+    }
+    print(w.shared() == none)
+}

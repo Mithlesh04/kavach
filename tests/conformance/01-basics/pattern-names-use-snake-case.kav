@@ -1,0 +1,12 @@
+// Rule: A name a pattern takes is a variable, so it must be snake_case too.
+// Spec: 1.5, 1.12
+// expect compile error
+
+type User {
+    name: String
+}
+
+fn main() {
+    const { name: userName } = User(name: "Asha")   // error: variables use snake_case: user_name
+    print(userName)
+}

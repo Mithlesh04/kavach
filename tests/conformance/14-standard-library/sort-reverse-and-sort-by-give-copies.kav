@@ -1,0 +1,13 @@
+// Rule: `sort`, `sort_by` and `reverse` give a new list; the list they are called on doesn't change.
+// Spec: 14.2
+// expect output: [1, 2, 3] [3, 2, 1] [2, 1, 3]
+// expect output: [3, 1, 2]
+// expect output: [] []
+
+fn main() {
+    let xs = [3, 1, 2]
+    print("{xs.sort()} {xs.sort_by(x => -x)} {xs.reverse()}")
+    print(xs)
+    const empty: [Int] = []
+    print("{empty.sort()} {empty.reverse()}")
+}

@@ -1,0 +1,9 @@
+use std.log
+
+pub type Charged: LogEvent {
+    pub amount: Int
+}
+
+pub fn charge(amount: Int) {
+    log.debug(Charged(amount: amount))
+}

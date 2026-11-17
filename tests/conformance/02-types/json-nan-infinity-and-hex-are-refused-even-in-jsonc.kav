@@ -1,0 +1,23 @@
+// Rule: `NaN`, `Infinity`, hex numbers and the rest of JSON5 are syntax errors, even with `comments: true`.
+// Spec: 2.12
+// Checks: misuse
+// expect output: 8 of 8 refused as syntax
+
+use std.json
+
+fn main() {
+    const bad = ["[NaN]", "[Infinity]", "[-Infinity]", "[0x1F]", "['a']", "\{a: 1}", "[+1]", "[.5]"]
+    let refused = 0
+    for text in bad {
+        match json.parse(text, comments: true) {
+            ok(_) => print("accepted: {text}"),
+            err(e) => match e {
+                JsonError.Syntax(_, _, _) => {
+                    refused += 1
+                }
+                _ => print("other error for {text}: {e}"),
+            },
+        }
+    }
+    print("{refused} of {bad.len()} refused as syntax")
+}

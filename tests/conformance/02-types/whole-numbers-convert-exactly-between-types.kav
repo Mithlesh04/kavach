@@ -1,0 +1,19 @@
+// Rule: A whole number converts exactly to any whole-number type it fits, `BigInt` included, and back.
+// Spec: 2.1
+// expect output: -5 251 200
+// expect output: 18446744073709551615 18446744073709551616
+// expect output: 9223372036854775807 -9223372036854775808
+// expect output: 65 127
+
+fn main() {
+    const small: Int8 = -5
+    const byte: UInt8 = 251
+    print("{Int(small)} {UInt64(byte)} {Int16(UInt8(200))}")
+    const top: UInt64 = 18446744073709551615
+    print("{BigInt(top)} {BigInt(top) + 1}")
+    const most: Int = 9223372036854775807
+    const least: Int = -9223372036854775808
+    print("{Int(BigInt(most))} {Int(BigInt(least))}")
+    let n = 65
+    print("{UInt8(n)} {Int8(BigInt(127))}")
+}

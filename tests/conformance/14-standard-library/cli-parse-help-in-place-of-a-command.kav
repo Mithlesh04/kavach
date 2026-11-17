@@ -1,0 +1,19 @@
+// Rule: `--help` in place of a command gives an error whose text is the usage of every command with its options.
+// Spec: 14.6
+// args: --help
+// expect output: true true
+// expect output: true true
+
+use std.cli
+
+type Command = AddItem(name: String, count: Int = 1) | Show(limit: Int = 10)
+
+fn main() {
+    const command = cli.parse<Command>() catch e => {
+        const usage = "{e}"
+        print("{usage.contains("add-item")} {usage.contains("show")}")
+        print("{usage.contains("--count")} {usage.contains("--limit")}")
+        return
+    }
+    print("ran {command}")
+}

@@ -1,0 +1,11 @@
+// Rule: A pattern name with a default has the plain type `T`, so a `let` made that way can't be set to `none`.
+// Spec: 1.12
+// expect compile error
+
+fn main() {
+    const limits: [Int] = []
+    let [low = 0, high = 100] = limits
+    high = 50
+    low = none                      // error: `low` is an `Int`, not an `Int?`
+    print("{low} {high}")
+}

@@ -1,0 +1,17 @@
+// Rule: a task that changes an outside `let`, with `+=` or a changing method such as `push`, changes only its own copy; the compiler warns, and the caller's variable stays as it was.
+// Spec: 9.5, 3.3
+// expect warning
+// expect output: task has 1 [0, 1]
+// expect output: main has 0 [0]
+
+fn main() ! Error {
+    let count = 0
+    let log = [0]
+    const t = spawn {
+        count += 1          // warning: `count` is a copy inside this task
+        log.push(1)         // warning: `log` is a copy inside this task
+        print("task has {count} {log}")
+    }
+    try t.wait()
+    print("main has {count} {log}")
+}

@@ -1,0 +1,13 @@
+// Rule: converting a number to a type it doesn't fit panics.
+// Spec: 2.1, 5.6
+// expect output: 100
+// expect panic
+
+fn small(n: Int) -> Int8 {
+    Int8(n)
+}
+
+fn main() {
+    print(small(100))
+    print(small(300))
+}

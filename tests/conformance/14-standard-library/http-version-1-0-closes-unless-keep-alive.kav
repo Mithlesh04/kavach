@@ -1,0 +1,34 @@
+// Rule: `http.serve` closes an HTTP/1.0 connection after its answer unless the request says `connection: keep-alive`, which keeps it open for the next one.
+// Spec: 14.11
+// expect output: plain 1.0: answer /a
+// expect output: keep-alive 1.0: answer /a, answer /b
+
+use std.http
+use std.net
+
+/// Sends `text` and gives the bodies that come back until the server closes.
+fn answers(address: String, text: String) -> String ! NetError uses Net {
+    const conn = try net.connect(address)
+    try conn.write(text.bytes())
+    let all = Bytes([])
+    while true {
+        const piece = conn.read().timeout(5.seconds) catch _ => break
+        all = all + (piece ?? break)
+    }
+    conn.close()
+    const lines = (all.text() ?? "").split("\u{D}\n")
+    lines.filter(l => l.starts_with("answer")).map(l => l.slice(0, 9)).join(", ")
+}
+
+fn main() ! Error {
+    const crlf = "\u{D}\n"
+    const listener = try net.listen("127.0.0.1:0")
+    // Each body ends its line, so it can be told from the next answer.
+    const _server = spawn http.serve(listener, r => http.text(200, "answer {r.path}{crlf}"))
+    const at = listener.address()
+    const a = "GET /a HTTP/1.0{crlf}{crlf}"
+    const b = "GET /b HTTP/1.0{crlf}{crlf}"
+    print("plain 1.0: {try answers(at, a + b)}")
+    const kept = "GET /a HTTP/1.0{crlf}connection: keep-alive{crlf}{crlf}"
+    print("keep-alive 1.0: {try answers(at, kept + b)}")
+}

@@ -1,0 +1,8 @@
+// Rule: `Ptr.from_int(n)` makes a raw address, so it is allowed only inside `unsafe { … }`.
+// Spec: 6.4
+// expect compile error
+
+fn main() {
+    const p: Ptr<UInt8> = Ptr.from_int(-1)      // error: raw address outside unsafe
+    print(p == p)
+}

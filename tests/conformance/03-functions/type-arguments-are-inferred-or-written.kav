@@ -1,0 +1,35 @@
+// Rule: A generic function's type arguments are worked out from its arguments or from where its result goes, or written at the call; a bound is met by each type that implements it.
+// Spec: 2.9
+// expect output: 1 a none
+// expect output: 0 0
+// expect output: (1, "x") ("x", 1)
+// expect output: 5 2.5 Money(cents: 9)
+// expect output: 6 7.5 -6
+
+type Money: Comparable {
+    cents: Int
+
+    fn compare(self, other: Money) -> Int { self.cents - other.cents }
+}
+
+fn first<T>(xs: [T]) -> T? { xs.get(0) }
+fn empty<T>() -> [T] { [] }
+fn swap<A, B>(p: (A, B)) -> (B, A) { (p.1, p.0) }
+fn larger<T: Comparable>(a: T, b: T) -> T { if a > b { a } else { b } }
+fn total<T: Number>(xs: [T]) -> T {
+    let sum = T(0)
+    for x in xs {
+        sum += x
+    }
+    sum
+}
+
+fn main() {
+    print("{first([1, 2]) ?? 0} {first<String>(["a"]) ?? ""} {first<Bool>([])}")
+    const ints: [Int] = empty()
+    print("{ints.len()} {empty<String>().len()}")
+    print("{swap<String, Int>(("x", 1))} {swap((1, "x"))}")
+    print("{larger(5, 3)} {larger(2.5, -1.0)} {larger(Money(cents: 9), Money(cents: 4))}")
+    const small: [Int8] = [-1, -2, -3]
+    print("{total([1, 2, 3])} {total<Float32>([2.5, 5.0])} {total(small)}")
+}

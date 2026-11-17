@@ -1,0 +1,17 @@
+// Rule: A list put into another list, or taken out of one into a `let`, is a copy: changing either side leaves the other alone.
+// Spec: 6.1
+// expect output: [1, 2] [[1, 9]]
+// expect output: [3, 5] [[3, 7], [4]]
+
+fn main() {
+    let a = [1]
+    let rows = [a]
+    a.push(2)
+    rows[0].push(9)
+    print("{a} {rows}")
+    let grid = [[3], [4]]
+    let r = grid[0]
+    r.push(5)
+    grid[0].push(7)
+    print("{r} {grid}")
+}

@@ -1,0 +1,17 @@
+// Rule: A list inside a parameter's field can't be changed either: the parameter never changes, like `const`.
+// Spec: 3.1, 1.4
+// expect compile error
+
+type Order {
+    id: Int
+    lines: [Int]
+}
+
+fn add_line(o: Order) -> Order {
+    o.lines.push(5)     // error: o is a parameter; copy it into a `let` first
+    o
+}
+
+fn main() {
+    print(add_line(Order(id: 1, lines: [])).lines)
+}

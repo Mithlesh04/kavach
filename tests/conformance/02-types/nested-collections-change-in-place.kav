@@ -1,0 +1,19 @@
+// Rule: An item of an item can be changed in place (`grid[0][1] = v`, `grid[1].push(v)`) in a `let`; a copy made before keeps its items.
+// Spec: 2.2
+// expect output: [[1, 9], [3, 4, 5]]
+// expect output: [[1, 2], [3, 4]]
+// expect output: ["a": [1, 2, 7]]
+
+fn main() {
+    let grid = [[1, 2], [3, 4]]
+    const before = grid
+    grid[0][1] = 9
+    grid[1].push(5)
+    print(grid)
+    print(before)
+    let groups: [String: [Int]] = ["a": [1, 2]]
+    let a = groups["a"] ?? []
+    a.push(7)
+    groups["a"] = a
+    print(groups)
+}

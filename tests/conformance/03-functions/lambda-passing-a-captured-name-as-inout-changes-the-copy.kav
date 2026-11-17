@@ -1,0 +1,19 @@
+// Rule: Giving an outside `let` to an `inout` parameter inside a lambda changes only the lambda's copy, for that call; the outside variable stays as it was, and the compiler warns.
+// Spec: 3.3, 3.9
+// expect warning
+// expect output: [1, 1, 1]
+// expect output: 0
+
+fn bump(inout n: Int) {
+    n += 1
+}
+
+fn main() {
+    let count = 0
+    const seen = [7, 8, 9].map(x => {
+        bump(count)     // warning: `count` is a copy inside this lambda
+        count
+    })
+    print(seen)
+    print(count)
+}

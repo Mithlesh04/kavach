@@ -1,0 +1,18 @@
+// Rule: Inside `random.seeded`, every `std.random` function draws from the seed: `float`, `bool`, `pick`, `shuffle` and `bytes` repeat with it as `int` does.
+// Spec: 14.15
+// expect output: true
+// expect output: false
+
+use std.random
+
+fn draw(seed: Int) -> String uses Random {
+    random.seeded(seed) {
+        const items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+        "{random.float()} {random.bool()} {random.pick(items)} {random.shuffle(items)} {random.bytes(16)}"
+    }
+}
+
+fn main() uses Random {
+    print(draw(42) == draw(42))
+    print(draw(42) == draw(43))
+}

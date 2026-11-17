@@ -1,0 +1,9 @@
+// Rule: `pad_left` and `pad_right` count characters, take any `Char` as fill, and leave text that is already `width` long as it was.
+// Spec: 14.2
+// expect output: [hello] [hello] [ab]
+// expect output: [**é] [नक] [क] [é--]
+
+fn main() {
+    print("[{"hello".pad_left(3)}] [{"hello".pad_right(5, '.')}] [{"ab".pad_left(0)}]")
+    print("[{"é".pad_left(3, '*')}] [{"न".pad_right(2, 'क')}] [{"".pad_left(1, 'क')}] [{"é".pad_right(3, fill: '-')}]")
+}

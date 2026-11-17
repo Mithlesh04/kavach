@@ -1,0 +1,20 @@
+// Rule: Spans and metrics need no capability, and without `[log.otlp]` they are sent nowhere: a function that counts, measures and opens spans needs no `uses`, and nothing is written.
+// Spec: 14.12, 8.1
+// expect output: 42
+
+use std.log
+
+pub fn handle(id: Int) -> Int {
+    log.span("handle") {
+        log.name_span("GET /orders/\{id}")
+        log.count("requests", 1, attributes: ["http.route": "/orders/\{id}"])
+        log.gauge("queue_length", 3.0)
+        log.histogram("checkout_ms", 12.5)
+        log.histogram("duration_s", 0.012, attributes: ["method": "GET"], bounds: [0.01, 0.1, 1.0])
+        id * 2
+    }
+}
+
+fn main() {
+    print(handle(21))
+}

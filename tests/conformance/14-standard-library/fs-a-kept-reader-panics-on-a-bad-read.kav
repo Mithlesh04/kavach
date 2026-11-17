@@ -1,0 +1,21 @@
+// Rule: a `Lines` reader kept in a variable and looped over later has no loop header to send an error to, so a failed read is a panic.
+// Spec: 14.3
+// Checks: misuse
+// expect output: line: fine
+// expect panic
+
+use std.fs
+
+fn main() ! FsError uses Fs, Console {
+    const dir = "kavach-t-fs-kept"
+    try fs.create_dir(dir)
+    const path = "{dir}/bad.txt"
+    try fs.write_bytes(path, "fine\n".bytes() + Bytes([UInt8(255), UInt8(10)]))
+    const reader: Lines = try fs.lines(path)
+    // The reader has the file open; the folder can go before the panic.
+    fs.remove_all(dir) catch _ => print("could not clean up")
+    for line in reader {
+        print("line: {line}")
+    }
+    print("never here")
+}

@@ -1,0 +1,10 @@
+// Rule: `Bytes` are immutable: a byte can't be set, even in a `let`.
+// Spec: 2.1, 2.13
+// expect compile error
+
+fn main() {
+    let data = "hi".bytes()
+    data = "ho".bytes()            // fine: a new value
+    data[0] = 72                   // error: Bytes are immutable
+    print(data)
+}

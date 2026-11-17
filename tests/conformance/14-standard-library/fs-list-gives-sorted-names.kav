@@ -1,0 +1,21 @@
+// Rule: `fs.list` gives the names in a folder, files and folders alike, sorted; a missing folder is `NotFound`.
+// Spec: 14.3
+// expect output: ["apple.txt", "beta", "cherry.txt"]
+// expect output: []
+// expect output: NotFound(path: "kavach-t-fs-list/nothing")
+
+use std.fs
+
+fn main() ! FsError uses Fs, Console {
+    const dir = "kavach-t-fs-list"
+    try fs.create_dir("{dir}/beta")
+    try fs.write_text("{dir}/cherry.txt", "c")
+    try fs.write_text("{dir}/apple.txt", "a")
+    print(try fs.list(dir))
+    print(try fs.list("{dir}/beta"))
+    const _none = fs.list("{dir}/nothing") catch e => {
+        print(e)
+        []
+    }
+    try fs.remove_all(dir)
+}

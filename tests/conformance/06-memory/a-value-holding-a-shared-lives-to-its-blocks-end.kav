@@ -1,0 +1,21 @@
+// Rule: A value that holds a `Shared` lives until the end of the block that holds it, after its last use; then the `Shared` is freed.
+// Spec: 6.2
+// expect output: 1
+// expect output: true
+// expect output: true
+
+type Holder {
+    count: Shared<Int>
+}
+
+fn main() {
+    let w = Shared(0).weak()
+    {
+        const h = Holder(count: Shared(1))
+        w = h.count.weak()
+        print(h.count.get())
+        // `h` is not used again, but lives to the end of this block.
+        print(w.shared() != none)
+    }
+    print(w.shared() == none)
+}

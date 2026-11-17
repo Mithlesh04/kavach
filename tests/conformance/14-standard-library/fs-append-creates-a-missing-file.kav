@@ -1,0 +1,19 @@
+// Rule: `fs.append_text` adds to the end of a file, creating it when it is missing.
+// Spec: 14.3
+// expect output: false
+// expect output: first
+// expect output: first, second
+
+use std.fs
+
+fn main() ! FsError uses Fs, Console {
+    const dir = "kavach-t-fs-append"
+    try fs.create_dir(dir)
+    const path = "{dir}/log.txt"
+    print(fs.exists(path))
+    try fs.append_text(path, "first")
+    print(try fs.read_text(path))
+    try fs.append_text(path, ", second")
+    print(try fs.read_text(path))
+    try fs.remove_all(dir)
+}

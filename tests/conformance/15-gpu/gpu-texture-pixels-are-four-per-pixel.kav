@@ -1,0 +1,14 @@
+// Rule: `gpu.texture`'s pixels are four for each pixel: another length than `width * height * 4` is a panic.
+// Spec: 14.24
+// expect panic
+
+use std.gpu
+
+fn main() uses Window {
+    const pixels: [UInt8] = [255, 0, 0, 255, 0, 255, 0, 255]
+    const t = gpu.texture(2, 2, pixels) catch _ => {
+        print("no GPU")
+        return
+    }
+    print(t.width)
+}

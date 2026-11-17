@@ -1,0 +1,13 @@
+// Rule: Each named argument of a record must have its field's type.
+// Spec: 2.4
+// expect compile error
+
+type User {
+    name: String
+    age: Int = 0
+}
+
+fn main() {
+    const u = User(name: "Asha", age: "thirty")      // error: `age` is an Int, not text
+    print(u.age)
+}

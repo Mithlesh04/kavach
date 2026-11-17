@@ -1,0 +1,15 @@
+// Rule: A name declared inside a loop's body belongs to that body: using it after the loop is an unknown name.
+// Spec: 1.4, 4.5
+// expect compile error
+
+fn main() {
+    let i = 0
+    while i < 3 {
+        const last = i
+        i += 1
+        if last == 1 {
+            continue
+        }
+    }
+    print(last)                     // error: last is not declared here
+}

@@ -1,0 +1,11 @@
+// Rule: Function names must be snake_case.
+// Spec: 1.5
+// expect compile error
+
+fn addTwo(x: Int) -> Int {          // error: functions use snake_case: add_two
+    x + 2
+}
+
+fn main() {
+    print(addTwo(1))
+}

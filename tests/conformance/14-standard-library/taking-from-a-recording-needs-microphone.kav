@@ -1,0 +1,12 @@
+// Rule: Taking what a recording heard (`rec.take`) needs `Microphone`, as starting it does.
+// Spec: 14.27
+// expect compile error
+
+use std.audio
+
+pub fn heard(rec: Recording) -> Int {
+    rec.take().frames     // error: `heard` is `pub`, so it must say what it uses: add `uses Microphone`
+}
+
+fn main() {
+}

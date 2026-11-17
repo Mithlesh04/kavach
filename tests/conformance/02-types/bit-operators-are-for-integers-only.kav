@@ -1,0 +1,10 @@
+// Rule: The bit operators work on integers only, so `&` on a `Float` is a compile error.
+// Spec: 2.1, 1.8
+// expect compile error
+
+fn main() {
+    const mask = 0b0110
+    print(0b1010 & mask)           // fine: 2
+    const f = 1.5
+    print(f & 1.0)                 // error: expected an integer, found Float
+}

@@ -1,0 +1,19 @@
+// Rule: Copying a map or a set never shares it: inserting, setting a key or removing on one side leaves the other alone.
+// Spec: 6.1
+// expect output: 1 2
+// expect output: 31 32
+// expect output: 1 0
+
+fn main() {
+    let ages = ["asha": 31]
+    let more = ages
+    more["ravi"] = 27
+    print("{ages.len()} {more.len()}")
+    let changed = ages
+    changed["asha"] = 32
+    print("{ages["asha"] ?? 0} {changed["asha"] ?? 0}")
+    let seen: Set<Int> = Set.capacity(4, [7])
+    let fewer = seen
+    fewer.remove(7)
+    print("{seen.len()} {fewer.len()}")
+}

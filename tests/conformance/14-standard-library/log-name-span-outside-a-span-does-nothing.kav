@@ -1,0 +1,10 @@
+// Rule: Outside a span, `log.name_span(name)` does nothing, and `log.trace_id()` and `log.traceparent()` stay `none`.
+// Spec: 14.12
+// expect output: none none
+
+use std.log
+
+fn main() {
+    log.name_span("GET /orders/\{id}")
+    print("{log.trace_id()} {log.traceparent()}")
+}

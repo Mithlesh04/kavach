@@ -1,0 +1,14 @@
+// Rule: The only way out of an arena is its block's value: `return` of a value made in the arena is a compile error.
+// Spec: 6.3
+// expect compile error
+
+fn first_three(n: Int) -> [Int] {
+    arena {
+        const xs = [n, n, n]
+        return xs               // error: xs was made in the arena and can't leave it except as the block's value
+    }
+}
+
+fn main() {
+    print(first_three(1))
+}

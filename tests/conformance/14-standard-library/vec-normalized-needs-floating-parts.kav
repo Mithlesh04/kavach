@@ -1,0 +1,10 @@
+// Rule: `normalized()` needs a `Float` or `Float32` vector: on a `Vec3<Int>` it is a compile error.
+// Spec: 14.28
+// expect compile error
+
+use std.vec
+
+fn main() {
+    const a: Vec3<Int> = Vec3(x: 0, y: 3, z: 4)
+    print(a.normalized())               // error: `normalized` needs `T: Floating`
+}

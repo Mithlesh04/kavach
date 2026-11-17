@@ -1,0 +1,24 @@
+// Rule: `log.traceparent()` is a W3C `traceparent` header for the current span: `00-`, the trace id `log.trace_id()` gives (32 hexadecimal digits), `-`, the span's id, `-`, flags.
+// Spec: 14.12
+// expect output: true true
+// expect output: true
+
+use std.log
+
+fn is_hex(s: String) -> Bool {
+    for c in s.chars() {
+        if not "0123456789abcdef".contains(String(c)) {
+            return false
+        }
+    }
+    true
+}
+
+fn main() {
+    log.span("request") {
+        const id = log.trace_id() ?? ""
+        const parts = (log.traceparent() ?? "").split("-")
+        print("{parts.len() == 4 and parts[0] == "00"} {parts[1] == id}")
+        print(id.len() == 32 and is_hex(id) and parts[2].len() == 16 and is_hex(parts[2]))
+    }
+}

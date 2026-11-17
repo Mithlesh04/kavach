@@ -1,0 +1,13 @@
+// Rule: Whole-number overflow panics in generic code as it does elsewhere.
+// Spec: 2.9
+// expect output: 254
+// expect panic
+
+fn twice<T: Number>(x: T) -> T {
+    x + x
+}
+
+fn main() {
+    print(twice(UInt8(127)))
+    print(twice(UInt8(200)))
+}

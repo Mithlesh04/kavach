@@ -1,0 +1,18 @@
+// Rule: `log.count(name, n)` adds `n` to a counter, so `n` must be 0 or more (a `require`).
+// Spec: 14.12
+// expect output: counted
+// expect panic
+
+use std.log
+
+fn placed(n: Int) {
+    log.count("orders_placed", n)
+}
+
+fn main() {
+    placed(0)
+    placed(3)
+    print("counted")
+    placed(-1)
+    print("not reached")
+}

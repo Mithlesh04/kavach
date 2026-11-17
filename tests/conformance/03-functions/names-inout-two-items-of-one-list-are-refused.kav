@@ -1,0 +1,15 @@
+// Rule: Two items of one variable can't both be given in a call with `inout`: the variable is given twice.
+// Spec: 3.9
+// expect compile error
+
+fn swap(inout a: Int, inout b: Int) {
+    const t = a
+    a = b
+    b = t
+}
+
+fn main() {
+    let scores = [1, 2]
+    swap(scores[0], scores[1])      // error: scores is given twice, as inout
+    print(scores)
+}

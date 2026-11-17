@@ -1,0 +1,17 @@
+// Rule: A contract comes before the body, so it can't read a `let` or `const` the body declares: that name is unknown there.
+// Spec: 7.2, 1.4
+// expect compile error
+
+fn total(items: [Int]) -> Int
+    ensure result == sum           // error: sum is declared only in the body
+{
+    let sum = 0
+    for x in items {
+        sum += x
+    }
+    sum
+}
+
+fn main() {
+    print(total([1, 2]))
+}

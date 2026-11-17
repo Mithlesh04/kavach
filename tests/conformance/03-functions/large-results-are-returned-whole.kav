@@ -1,0 +1,43 @@
+// Rule: A function can return a large value whole: a record of many fields, a tuple of ten items, or an optional of a small type.
+// Spec: 3.1, 2.3, 2.4, 2.7
+// expect output: Wide(a: 1, b: -2, c: 3.5, d: "four", e: true, f: '6', g: 7, h: 8.5, i: [9], j: ["k": 10], k: 11, l: -12)
+// expect output: (1, -2, 3.5, "four", true, '6', 7, 8.5, [9], 10)
+// expect output: 10 -2
+// expect output: -1 none 255 none true none 0.5
+// expect output: none 4000000000
+
+type Wide {
+    a: Int
+    b: Int8
+    c: Float
+    d: String
+    e: Bool
+    f: Char
+    g: UInt16
+    h: Float32
+    i: [Int]
+    j: [String: Int]
+    k: Int32
+    l: Int
+}
+
+fn wide(n: Int) -> Wide {
+    Wide(a: n, b: -2, c: 3.5, d: "four", e: true, f: '6', g: 7, h: 8.5, i: [9], j: ["k": 10], k: 11, l: -12 * n)
+}
+fn ten(n: Int) -> (Int, Int8, Float, String, Bool, Char, UInt16, Float32, [Int], Int) {
+    (n, -2, 3.5, "four", true, '6', 7, 8.5, [9], 10 * n)
+}
+fn small8(keep: Bool) -> Int8? { if keep { -1 } else { none } }
+fn small_u(keep: Bool) -> UInt8? { if keep { 255 } else { none } }
+fn bit(keep: Bool) -> Bool? { if keep { true } else { none } }
+fn f32(keep: Bool) -> Float32? { if keep { 0.5 } else { none } }
+fn u32(keep: Bool) -> UInt32? { if keep { 4000000000 } else { none } }
+
+fn main() {
+    print(wide(1))
+    const t = ten(1)
+    print(t)
+    print("{t.9} {t.1}")
+    print("{small8(true)} {small8(false)} {small_u(true)} {small_u(false)} {bit(true)} {bit(false)} {f32(true)}")
+    print("{f32(false)} {u32(true)}")
+}

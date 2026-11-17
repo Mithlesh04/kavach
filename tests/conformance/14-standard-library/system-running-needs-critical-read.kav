@@ -1,0 +1,13 @@
+// Rule: Listing the programs running, the ports in use and every account needs `System.critical.read`; `uses System` doesn't cover it.
+// Spec: 14.25, 8.1
+// expect compile error
+
+use std.system
+
+pub fn busy() -> Int uses System {
+    system.running().len()        // error: uses System.critical.read
+}
+
+fn main() {
+    print(busy() >= 0)
+}

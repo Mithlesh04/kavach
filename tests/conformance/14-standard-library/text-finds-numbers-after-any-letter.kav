@@ -1,0 +1,13 @@
+// Rule: A `-` that follows a letter or digit, in any script, is not a sign; `find_ints` and `find_float` read the numbers on each side of it.
+// Spec: 14.9
+// expect output: 3 5
+// expect output: [10, 20] [1, 299]
+// expect output: 3.5 2.5 1.2
+
+use std.text
+
+fn main() {
+    print("{text.find_int("café-3") ?? 0} {text.find_int("क-5") ?? 0}")
+    print("{text.find_ints("pages 10-20")} {text.find_ints("₹1,299")}")
+    print("{text.find_float("item-3.5") ?? 0.0} {text.find_float("é-2.5") ?? 0.0} {text.find_float("v1.2.3") ?? 0.0}")
+}

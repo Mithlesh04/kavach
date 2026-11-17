@@ -1,0 +1,18 @@
+// Rule: Calling a function value that can fail is a call that can fail: without `try`, `catch` or `match` it is an error.
+// Spec: 3.4, 5.2
+// expect compile error
+
+type E = Big(n: Int)
+
+fn check(n: Int) -> Int ! E {
+    if n > 5 {
+        fail E.Big(n: n)
+    }
+    n
+}
+
+fn main() {
+    const f: fn(Int) -> Int ! E = check
+    print(f(1) catch 0)
+    print(f(9))                  // error: `f` can fail with `E`, so the call needs `try` or `catch`
+}

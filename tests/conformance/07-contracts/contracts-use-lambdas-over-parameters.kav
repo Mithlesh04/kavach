@@ -1,0 +1,28 @@
+// Rule: A contract can use collection methods with a lambda or dot shorthand, and the lambda can read the function's parameters and `result`.
+// Spec: 7.5, 3.3
+// expect output: [2, 3]
+// expect panic: ensure
+
+type Item {
+    price: Int
+}
+
+fn above(items: [Item], cut: Int) -> [Int]
+    require items.all(.price >= 0)
+    require items.any(i => i.price > cut)
+    ensure result.all(p => p > cut and items.any(i => i.price == p))
+{
+    if cut > 5 {
+        return [0]
+    }
+    items.filter(i => i.price > cut).map(.price)
+}
+
+fn main() {
+    print(above([Item(price: 1), Item(price: 2), Item(price: 3)], 1))
+    let cut = 0
+    for x in [3, 4] {
+        cut += x
+    }
+    print(above([Item(price: 10)], cut))
+}

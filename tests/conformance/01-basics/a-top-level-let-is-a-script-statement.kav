@@ -1,0 +1,17 @@
+// Rule: In a script, a top-level `let`, and a `const` that names several values at once, are statements of `main`, run in their place; a plain `const` stays a module constant.
+// Spec: 1.13, 1.3
+// expect output: 3
+// expect output: 200 OK 10
+
+const step = 1
+let count = 0
+for _ in 0..3 {
+    count += step
+}
+print(count)
+const (code, message) = (200, "OK")
+print("{code} {message} {limit()}")
+
+fn limit() -> Int {
+    step * 10
+}

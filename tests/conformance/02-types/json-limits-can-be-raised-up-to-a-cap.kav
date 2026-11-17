@@ -1,0 +1,32 @@
+// Rule: A call can raise `max_depth` above 128, but never past 10_000; decoding has the same limits.
+// Spec: 2.12
+// Checks: misuse
+// expect output: 500 deep read
+// expect output: too deep: 10000
+// expect output: decode too deep: 128
+
+use std.json
+
+fn depth_of(e: JsonError) -> String {
+    match e {
+        JsonError.TooDeep(limit) => "too deep: {limit}",
+        _ => "other: {e}",
+    }
+}
+
+fn main() {
+    const deep = "[".repeat(500) + "]".repeat(500)
+    match json.parse(deep, max_depth: 1_000) {
+        ok(_) => print("500 deep read"),
+        err(e) => print(depth_of(e)),
+    }
+    const deeper = "[".repeat(10_050) + "]".repeat(10_050)
+    match json.parse(deeper, max_depth: 1_000_000) {
+        ok(_) => print("read"),
+        err(e) => print(depth_of(e)),
+    }
+    match json.decode<Json>(deep) {
+        ok(_) => print("decoded"),
+        err(e) => print("decode {depth_of(e)}"),
+    }
+}

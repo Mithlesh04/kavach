@@ -1,0 +1,29 @@
+// Rule: A `catch` handler is code of the function, not a lambda: it can change the variables around it, and a change made before it leaves with `continue` stays.
+// Spec: 5.3
+// expect output: 30
+// expect output: 2 [-1, -2]
+
+type Oops = Bad(code: Int)
+
+fn check(x: Int) -> Int ! Oops {
+    if x < 0 {
+        fail Oops.Bad(code: x)
+    }
+    x
+}
+
+fn main() {
+    let total = 0
+    let failures = 0
+    let bad: [Int] = []
+    for x in [10, -1, 20, -2] {
+        const n = check(x) catch _ => {
+            failures += 1
+            bad.push(x)
+            continue
+        }
+        total += n
+    }
+    print(total)
+    print("{failures} {bad}")
+}

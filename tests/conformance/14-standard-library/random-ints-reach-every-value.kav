@@ -1,0 +1,19 @@
+// Rule: `random.int` gives each number of its range, the first included and the end left out, and `random.bool` both values.
+// Spec: 14.15
+// expect output: [-2, -1, 0, 1, 2]
+// expect output: [false, true]
+
+use std.random
+
+fn main() uses Random {
+    random.seeded(2026) {
+        let seen = Set.of(0)
+        let bools = Set.of(false)
+        for _ in 0..2000 {
+            seen.add(random.int(-2, 3))
+            bools.add(random.bool())
+        }
+        print(seen.to_list().sort())
+        print(bools.to_list().sort())
+    }
+}

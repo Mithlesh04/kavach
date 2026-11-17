@@ -1,0 +1,12 @@
+// Rule: A parameter without a default must be given an argument.
+// Spec: 3.2
+// expect compile error
+
+fn order(name: String, count: Int = 0) -> String {
+    "{name} {count}"
+}
+
+fn main() {
+    print(order("a"))
+    print(order(count: 3))    // error: `name` has no default and is not given
+}

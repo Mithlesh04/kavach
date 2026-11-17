@@ -1,0 +1,11 @@
+// Rule: A matrix's `T` is `Float` or `Float32`: a `Mat3` made from a whole-number vector is a compile error.
+// Spec: 14.28
+// expect compile error
+
+use std.vec
+
+fn main() {
+    const v: Vec3<Int> = Vec3(x: 1, y: 2, z: 3)
+    const m = Mat3.scaling(v)           // error: `Mat3` needs `T: Floating`, and `T` is `Int` here
+    print(m)
+}

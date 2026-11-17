@@ -1,0 +1,28 @@
+// Rule: Each sized integer type takes every literal from its smallest to its largest value.
+// Spec: 2.1, 1.7
+// expect output: -128 127 0 255
+// expect output: -32768 32767 0 65535
+// expect output: -2147483648 2147483647 0 4294967295
+// expect output: 0 18446744073709551615 18446744073709551615
+
+fn main() {
+    const a: Int8 = -128
+    const b: Int8 = 127
+    const c: UInt8 = 0
+    const d: UInt8 = 255
+    print("{a} {b} {c} {d}")
+    const e: Int16 = -32768
+    const f: Int16 = 32767
+    const g: UInt16 = 0
+    const h: UInt16 = 65535
+    print("{e} {f} {g} {h}")
+    const i: Int32 = -2147483648
+    const j: Int32 = 2147483647
+    const k: UInt32 = 0
+    const l: UInt32 = 4294967295
+    print("{i} {j} {k} {l}")
+    const m: UInt64 = 0
+    const n: UInt64 = 18446744073709551615
+    const o: UInt64 = 0xffffffffffffffff
+    print("{m} {n} {o}")
+}

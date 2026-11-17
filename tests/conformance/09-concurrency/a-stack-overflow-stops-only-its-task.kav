@@ -1,0 +1,43 @@
+// Rule: Running out of stack in a task is a panic of that task, however the recursion goes: `.wait()` fails with `panicked: …`, and the program goes on.
+// Spec: 3.8, 5.6, 9.1
+// expect output: true
+// expect output: true
+// expect output: true
+// expect output: true
+// expect output: main goes on
+
+fn forever(n: Int) -> Int {
+    forever(n + 1)
+}
+
+fn ping(n: Int) -> Int {
+    pong(n + 1)
+}
+
+fn pong(n: Int) -> Int {
+    ping(n + 1)
+}
+
+fn again(f: fn(Int) -> Int, n: Int) -> Int {
+    f(n + 1)
+}
+
+fn deeper(n: Int) -> Int {
+    again(deeper, n)
+}
+
+fn panicked(t: Task<Int>) -> Bool {
+    match t.wait() {
+        ok(_) => false
+        err(e) => "{e}".starts_with("panicked: ")
+    }
+}
+
+fn main() {
+    print(panicked(spawn forever(0)))
+    print(panicked(spawn ping(0)))
+    print(panicked(spawn deeper(0)))
+    const start = (n: Int) => forever(n)
+    print(panicked(spawn { start(1) }))
+    print("main goes on")
+}

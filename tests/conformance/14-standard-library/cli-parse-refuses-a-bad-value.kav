@@ -1,0 +1,22 @@
+// Rule: an option whose value isn't of the field's type is a `CliError`, and the program does not run on with a made-up value.
+// Spec: 14.6
+// Checks: misuse
+// args: --limit ten
+// expect output: refused: true true
+// expect exit: 2
+
+use std.cli
+
+type Args {
+    limit: Int = 10
+}
+
+fn main() {
+    const args = cli.parse<Args>() catch e => {
+        const text = "{e}"
+        print("refused: {text.contains("--limit")} {text.contains("ten")}")
+        cli.exit(2)
+        return
+    }
+    print("limit {args.limit}")
+}

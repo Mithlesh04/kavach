@@ -1,0 +1,11 @@
+// Rule: An unsigned number can't go below 0: `UInt8` 0 - 1 panics.
+// Spec: 2.1, 5.6
+// expect panic: integer overflow: 0 - 1 doesn't fit in UInt8
+
+fn less(x: UInt8, y: UInt8) -> UInt8 {
+    x - y
+}
+
+fn main() {
+    print(less(0, 1))
+}

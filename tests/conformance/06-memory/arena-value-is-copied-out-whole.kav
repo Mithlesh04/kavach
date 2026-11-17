@@ -1,0 +1,21 @@
+// Rule: An arena block's value may be a record that holds values made in the arena; it is copied out whole, and a copy of it changes on its own.
+// Spec: 6.3, 6.1
+// expect output: Summary(count: 3, words: ["bb", "ccc"])
+// expect output: ["bb", "ccc", "dddd"]
+
+type Summary {
+    count: Int
+    words: [String]
+}
+
+fn main() {
+    const s = arena {
+        const words = "a bb ccc".split(" ")
+        const long = words.filter(w => w.len() > 1)
+        Summary(count: words.len(), words: long)
+    }
+    let more = s.words
+    more.push("dddd")
+    print(s)
+    print(more)
+}

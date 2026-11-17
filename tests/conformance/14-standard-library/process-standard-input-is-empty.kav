@@ -1,0 +1,11 @@
+// Rule: a program run from Kavach reads an empty standard input: one that reads it gets its end at once, and never waits.
+// Spec: 14.23
+// expect output: 0 e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+
+use std.process
+
+fn main() ! ProcessError uses Process, Console {
+    // `--stdin` hashes what standard input holds: here nothing.
+    const done = try process.run("git", ["hash-object", "--stdin"])
+    print("{done.code} {done.out.trim()}")
+}

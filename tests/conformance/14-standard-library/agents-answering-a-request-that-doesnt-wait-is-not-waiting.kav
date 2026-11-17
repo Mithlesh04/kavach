@@ -1,0 +1,20 @@
+// Rule: `agents.answer` fails with `ApprovalError.NotWaiting(id)` when no request `id` waits, approving and denying alike; with no agents folder nothing waits.
+// Spec: 14.16
+// expect output: 0
+// expect output: not waiting: RefundBot-17-2
+// expect output: not waiting: RefundBot-9-1
+
+use std.agents
+
+fn try_answer(id: String, approved: Bool) uses Approvals, Console {
+    agents.answer(id, approved: approved, by: "asha", reason: "checked") catch e => match e {
+        ApprovalError.NotWaiting(missing) => print("not waiting: {missing}"),
+        ApprovalError.Failed(_, reason) => print("failed: {reason}"),
+    }
+}
+
+fn main() {
+    print(agents.waiting().len())
+    try_answer("RefundBot-17-2", true)
+    try_answer("RefundBot-9-1", false)
+}

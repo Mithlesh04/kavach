@@ -1,0 +1,31 @@
+// Rule: over HTTP/2, a handler that panics gets 500 on its stream, and the server goes on answering.
+// Spec: 14.11
+// expect output: /boom: 500
+// expect output: /fine: 200
+
+use std.http
+use std.http.h2
+use std.net
+
+fn handle(r: Request) -> Response {
+    if r.path == "/boom" {
+        panic("the handler broke")
+    }
+    http.text(200, "fine")
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, handle)
+    for path in ["/boom", "/fine"] {
+        const conn = try net.connect(listener.address())
+        const reply = try h2.request(conn, [
+            Header(name: ":method", value: "GET"),
+            Header(name: ":scheme", value: "http"),
+            Header(name: ":authority", value: "localhost"),
+            Header(name: ":path", value: path),
+        ], Bytes([]))
+        conn.close()
+        print("{path}: {reply.headers.get(":status") ?? "?"}")
+    }
+}

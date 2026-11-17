@@ -1,0 +1,22 @@
+// Rule: A lambda's copy of a list, a map or a record is taken when the lambda is made: pushing, inserting or setting a field later doesn't reach it.
+// Spec: 3.3, 6.1
+// expect output: 1 1 30
+// expect output: 3 2 31
+
+type User {
+    name: String
+    age: Int
+}
+
+fn main() {
+    let items = [1]
+    let ages = ["asha": 30]
+    let u = User(name: "Asha", age: 30)
+    const seen = () => "{items.len()} {ages.len()} {u.age}"
+    items.push(2)
+    items.push(3)
+    ages["ravi"] = 41
+    u.age = 31
+    print(seen())
+    print("{items.len()} {ages.len()} {u.age}")
+}

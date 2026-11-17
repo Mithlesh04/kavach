@@ -1,0 +1,18 @@
+// Rule: std.vec's `a.lerp(b, t)` is the point `t` of the way from `a` to `b`: `a` at 0, `b` at 1.
+// Spec: 14.28
+// expect output: Vec3(x: 1.0, y: 2.0, z: 3.0)
+// expect output: Vec3(x: 5.0, y: 6.0, z: 7.0)
+// expect output: Vec3(x: 2.0, y: 3.0, z: 4.0)
+// expect output: Vec4(x: 1.0, y: 0.0, z: -1.0, w: 5.0)
+
+use std.vec
+
+fn main() {
+    const a = Vec3(x: 1.0, y: 2.0, z: 3.0)
+    const b = Vec3(x: 5.0, y: 6.0, z: 7.0)
+    print(a.lerp(b, 0.0))
+    print(a.lerp(b, 1.0))
+    print(a.lerp(b, 0.25))
+    const c = Vec4(x: 0.0, y: 0.0, z: 0.0, w: 4.0)
+    print(c.lerp(Vec4(x: 2.0, y: 0.0, z: -2.0, w: 6.0), 0.5))
+}

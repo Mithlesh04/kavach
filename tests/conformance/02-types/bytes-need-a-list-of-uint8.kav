@@ -1,0 +1,9 @@
+// Rule: `Bytes(list)` takes a `[UInt8]`; a `[Int]` must be converted item by item.
+// Spec: 2.13, 2.1
+// expect compile error
+
+fn main() {
+    const xs: [Int] = [1, 2]
+    print(Bytes(xs.map(x => UInt8(x))))   // fine: converted
+    print(Bytes(xs))                      // error: expected [UInt8], found [Int]
+}

@@ -1,0 +1,19 @@
+// Rule: std.vec's vectors, matrices and quaternions print as records, their parts by the number type's own rules.
+// Spec: 14.28
+// expect output: Vec2(x: 1, y: -2)
+// expect output: Vec4(x: 0.5, y: 1.0, z: 0.0, w: 2.0)
+// expect output: Quat(x: 0.0, y: 0.0, z: 0.0, w: 1.0)
+// expect output: Mat3(c0: Vec3(x: 1.0, y: 0.0, z: 0.0), c1: Vec3(x: 0.0, y: 1.0, z: 0.0), c2: Vec3(x: 0.0, y: 0.0, z: 1.0))
+// expect output: at Vec2(x: 3, y: 4)
+
+use std.vec
+
+fn main() {
+    print(Vec2(x: 1, y: -2))
+    print(Vec4(x: Float32(0.5), y: Float32(1.0), z: Float32(0.0), w: Float32(2.0)))
+    const q: Quat<Float> = Quat.identity()
+    print(q)
+    const m: Mat3<Float> = Mat3.identity()
+    print(m)
+    print("at {Vec2(x: 3, y: 4)}")
+}

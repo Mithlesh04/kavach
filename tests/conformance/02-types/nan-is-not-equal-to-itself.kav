@@ -1,0 +1,14 @@
+// Rule: `NaN` is equal to nothing, itself included, and `-0.0` equals `0.0`; `==` on floats worked out while running warns.
+// Spec: 2.1, 1.8
+// expect warning
+// expect output: false
+// expect output: true
+// expect output: true
+
+fn main() {
+    let zero = 0.0
+    const nan = zero / zero
+    print(nan == nan)            // warning: `==` on floats worked out while running
+    print(nan != nan)            // warning: `!=` on floats worked out while running
+    print(zero * -1.0 == 0.0)
+}

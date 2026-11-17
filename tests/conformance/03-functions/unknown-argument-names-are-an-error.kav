@@ -1,0 +1,12 @@
+// Rule: A named argument must name one of the function's parameters.
+// Spec: 3.2
+// expect compile error
+
+fn order(name: String, count: Int = 0) -> String {
+    "{name} {count}"
+}
+
+fn main() {
+    print(order("a"))
+    print(order("a", amount: 3))    // error: `order` has no parameter `amount`
+}

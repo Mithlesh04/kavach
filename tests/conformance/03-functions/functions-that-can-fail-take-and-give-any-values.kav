@@ -1,0 +1,52 @@
+// Rule: A function that can fail takes and returns values of any size like any other function: its arguments arrive whole, and it gives either its whole value or its error.
+// Spec: 5.1, 5.2, 3.1
+// expect output: Order(id: 7, code: -3, rate: 0.5, note: "ok", items: [1, 2, 3])
+// expect output: TooMany(count: 3, limit: 2)
+// expect output: saved 4
+// expect output: Empty
+// expect output: 6.5 3 ok
+
+type OrderError = Empty | TooMany(count: Int, limit: Int)
+
+type Order {
+    id: Int
+    code: Int8
+    rate: Float32
+    note: String
+    items: [Int]
+}
+
+fn make(id: Int, code: Int8, rate: Float32, note: String, items: [Int], limit: Int) -> Order ! OrderError {
+    if items.is_empty() {
+        fail OrderError.Empty
+    }
+    if items.len() > limit {
+        fail OrderError.TooMany(count: items.len(), limit: limit)
+    }
+    Order(id: id, code: code, rate: rate, note: note, items: items)
+}
+
+fn save(items: [Int]) ! OrderError {
+    if items.is_empty() {
+        fail OrderError.Empty
+    }
+    print("saved {items.len()}")
+}
+
+fn rated(code: Int8, rate: Float32, items: [Int]) -> (Float, Int, String) ! OrderError {
+    const o = try make(1, code, rate, "ok", items, 5)
+    (Float(o.rate) * 2.0 + Float(o.code), o.items.len(), o.note)
+}
+
+fn main() {
+    print(make(7, -3, 0.5, "ok", [1, 2, 3], 5) catch e => panic("{e}"))
+    const too_many = make(7, -3, 0.5, "ok", [1, 2, 3], 2) catch e => match e {
+        OrderError.TooMany(count, limit) => Order(id: count, code: 0, rate: 0.0, note: "{e}", items: [limit]),
+        OrderError.Empty => Order(id: 0, code: 0, rate: 0.0, note: "empty", items: []),
+    }
+    print(too_many.note)
+    save([1, 2, 3, 4]) catch e => print("{e}")
+    save([]) catch e => print("{e}")
+    const (f, n, note) = rated(3, 1.75, [1, 2, 3]) catch _ => (0.0, 0, "failed")
+    print("{f} {n} {note}")
+}

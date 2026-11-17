@@ -1,0 +1,12 @@
+// Rule: `Sample` is an interface with `fn sample(gen: Gen) -> Self`; a type that says it implements `Sample` must have that method.
+// Spec: 14.7, 2.8
+// expect compile error
+
+type Point: Sample {        // error: Point has no `sample`
+    x: Int
+    y: Int
+}
+
+fn main() {
+    print(Point(x: 1, y: 2))
+}

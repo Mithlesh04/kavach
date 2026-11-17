@@ -1,0 +1,19 @@
+// Rule: On an interface value only the interface's methods exist: the concrete type's fields can't be read through it.
+// Spec: 2.15
+// expect compile error
+
+interface Describe {
+    fn describe(self) -> String
+}
+
+type User: Describe {
+    name: String
+
+    fn describe(self) -> String { "User {self.name}" }
+}
+
+fn main() {
+    const d: Describe = User(name: "Asha")
+    print(d.describe())
+    print(d.name)      // error: `Describe` has no field `name`
+}

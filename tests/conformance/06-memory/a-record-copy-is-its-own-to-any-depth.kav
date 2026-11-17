@@ -1,0 +1,34 @@
+// Rule: A record copied into another `let`, out of a list, or into another record's field is its own value, down to the lists and records inside it.
+// Spec: 6.1
+// expect output: 30 ["a"] 41 ["a", "b"]
+// expect output: 30 31
+// expect output: Pune Delhi
+
+type Address {
+    city: String
+}
+
+type User {
+    age: Int
+    tags: [String]
+    home: Address
+}
+
+type Team {
+    lead: User
+}
+
+fn main() {
+    const u = User(age: 30, tags: ["a"], home: Address(city: "Pune"))
+    let v = u
+    v.age = 41
+    v.tags.push("b")
+    print("{u.age} {u.tags} {v.age} {v.tags}")
+    let users = [u]
+    let w = users[0]
+    w.age += 1
+    print("{users[0].age} {w.age}")
+    let team = Team(lead: u)
+    team.lead.home.city = "Delhi"
+    print("{u.home.city} {team.lead.home.city}")
+}

@@ -1,0 +1,42 @@
+// Rule: A method called through an interface value gets its arguments of every size, in order, as a direct call does.
+// Spec: 2.15, 2.8
+// expect output: Sum: -3 0.5 Item(name: "pen", price: 2.5) 9000000000 x
+// expect output: Join: x 9000000000 Item(name: "pen", price: 2.5) 0.5 -3
+// expect output: Sum: -3 0.5 Item(name: "pen", price: 2.5) 9000000000 x
+
+type Item {
+    name: String
+    price: Float
+}
+
+interface Combine {
+    fn combine(self, a: Int8, b: Float32, c: Item, d: Int, e: Char) -> String
+}
+
+type Sum: Combine {
+    label: String
+
+    fn combine(self, a: Int8, b: Float32, c: Item, d: Int, e: Char) -> String {
+        "{self.label}: {a} {b} {c} {d} {e}"
+    }
+}
+
+type Join: Combine {
+    tag: Int8
+
+    fn combine(self, a: Int8, b: Float32, c: Item, d: Int, e: Char) -> String {
+        "Join: {e} {d} {c} {b} {a}"
+    }
+}
+
+fn run(all: [Combine], item: Item) -> [String] {
+    all.map(x => x.combine(-3, 0.5, item, 9_000_000_000, 'x'))
+}
+
+fn main() {
+    const item = Item(name: "pen", price: 2.5)
+    for line in run([Sum(label: "Sum"), Join(tag: 1)], item) {
+        print(line)
+    }
+    print(Sum(label: "Sum").combine(-3, 0.5, item, 9_000_000_000, 'x'))
+}

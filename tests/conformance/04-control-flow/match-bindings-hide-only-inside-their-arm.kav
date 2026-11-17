@@ -1,0 +1,20 @@
+// Rule: A match arm's binding may reuse an outside name: it hides it in that arm's guard and value only; a guard may read outside names too.
+// Spec: 4.3, 1.4
+// expect output: big 50
+// expect output: small 3
+// expect output: limit 10 width 99
+
+type Shape = Square(width: Int) | Dot
+
+fn main() {
+    const width = 99
+    let limit = 10
+    for s in [Shape.Square(width: 50), Shape.Square(width: 3), Shape.Dot] {
+        const text = match s {
+            Shape.Square(width) if width > limit => "big {width}",
+            Shape.Square(width) => "small {width}",
+            Shape.Dot => "limit {limit} width {width}",
+        }
+        print(text)
+    }
+}

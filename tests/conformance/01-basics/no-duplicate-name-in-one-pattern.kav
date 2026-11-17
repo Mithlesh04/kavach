@@ -1,0 +1,8 @@
+// Rule: One pattern must not take the same name twice: it would declare it twice in one scope.
+// Spec: 1.4, 1.12
+// expect compile error
+
+fn main() {
+    const [a, a] = [1, 2]           // error: `a` is already declared in this scope
+    print(a)
+}

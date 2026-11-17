@@ -1,0 +1,16 @@
+// Rule: Ed25519 signatures depend only on the key and the data: signing the same data twice gives the same 64 bytes, other data or another key a different signature.
+// Spec: 14.19
+// expect output: 64 true
+// expect output: false false
+
+use std.crypto
+
+fn main() ! CryptoError {
+    const key = crypto.ed25519_secret()
+    const a = try crypto.ed25519_sign(key, "order 7".bytes())
+    const b = try crypto.ed25519_sign(key, "order 7".bytes())
+    print("{a.len()} {a == b}")
+    const other_data = try crypto.ed25519_sign(key, "order 8".bytes())
+    const other_key = try crypto.ed25519_sign(crypto.ed25519_secret(), "order 7".bytes())
+    print("{a == other_data} {a == other_key}")
+}

@@ -1,0 +1,11 @@
+// Rule: In a `gpu fn`, `**` works on `Float32` only; on whole numbers it is a compile error.
+// Spec: 15.1
+// expect compile error
+
+gpu fn cube(n: Int32) -> Int32 {
+    n ** 3                              // error: `**` on an `Int32` in a `gpu fn`
+}
+
+fn main() {
+    print(cube(2))
+}

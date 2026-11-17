@@ -1,0 +1,28 @@
+// Rule: a body that comes slower than `min_body_rate` bytes a second, after a second's grace, is answered 408 and never reaches the handler.
+// Spec: 14.11
+// expect output: HTTP/1.1 408 Request Timeout
+// expect output: handler calls: 0
+
+use std.http
+use std.net
+
+fn main() ! Error {
+    const crlf = "\u{D}\n"
+    const calls = Shared(0)
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, r => {
+        calls.update(c => c + 1)
+        http.text(200, "got {r.body.len()} bytes")
+    }, limits: ServeLimits(min_body_rate: 1_000))
+    // 10 of the 100 bytes promised, then nothing: about a second allowed.
+    const conn = try net.connect(listener.address())
+    try conn.write("POST / HTTP/1.1{crlf}content-length: 100{crlf}{crlf}{"x".repeat(10)}".bytes())
+    let all = Bytes([])
+    while true {
+        const piece = conn.read().timeout(5.seconds) catch _ => break
+        all = all + (piece ?? break)
+    }
+    conn.close()
+    print((all.text() ?? "").split(crlf)[0])
+    print("handler calls: {calls.get()}")
+}

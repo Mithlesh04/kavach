@@ -1,0 +1,11 @@
+// Rule: Record fields must have written types.
+// Spec: 2.10
+// expect compile error
+
+type User {
+    name                           // error: write the field's type
+}
+
+fn main() {
+    print(User(name: "Asha"))
+}

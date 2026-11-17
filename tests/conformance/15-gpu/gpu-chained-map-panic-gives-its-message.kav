@@ -1,0 +1,17 @@
+// Rule: A panic in the second of two chained `map`s stops the work with that map's message, as on the CPU.
+// Spec: 15.2
+// expect panic: integer overflow: 2147483647 + 1 doesn't fit in Int32
+
+gpu fn larger(x: Int32) -> Int32 {
+    x.max(0)
+}
+
+gpu fn next(x: Int32) -> Int32 {
+    x + 1
+}
+
+fn main() {
+    const xs: [Int32] = [8, -1, 2147483647]
+    print(xs.map(larger).map(next))
+    print("never")
+}

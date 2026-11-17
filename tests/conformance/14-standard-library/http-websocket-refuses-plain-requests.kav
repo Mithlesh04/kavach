@@ -1,0 +1,19 @@
+// Rule: `http.websocket(r, session)` answers 400 to a request that isn't a WebSocket request, and `session` never runs.
+// Spec: 14.11
+// expect output: 400
+// expect output: sessions run: 0
+
+use std.http
+use std.net
+
+fn main() ! Error {
+    const sessions = Shared(0)
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, r => http.websocket(r, ws => {
+        sessions.update(n => n + 1)
+        ws.close()
+    }))
+    const page = try http.get("http://{listener.address()}/chat")
+    print(page.status)
+    print("sessions run: {sessions.get()}")
+}

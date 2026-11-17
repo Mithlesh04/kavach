@@ -1,0 +1,17 @@
+// Rule: For quaternions, `a * b` turns by `b`, then by `a`; the order matters.
+// Spec: 14.28
+// expect output: true
+// expect output: true
+// expect output: true
+
+use std.vec
+use std.math
+
+fn main() {
+    const a = Quat.around(Vec3(x: 0.0, y: 0.0, z: 1.0), math.pi / 2.0)
+    const b = Quat.around(Vec3(x: 1.0, y: 0.0, z: 0.0), math.pi / 2.0)
+    const y = Vec3(x: 0.0, y: 1.0, z: 0.0)
+    print((a * b).rotate(y).distance(a.rotate(b.rotate(y))) < 0.000001)
+    print((a * b).rotate(y).distance(Vec3(x: 0.0, y: 0.0, z: 1.0)) < 0.000001)
+    print((b * a).rotate(y).distance(Vec3(x: -1.0, y: 0.0, z: 0.0)) < 0.000001)
+}

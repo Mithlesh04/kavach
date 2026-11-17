@@ -1,0 +1,23 @@
+// Rule: `base64.decode` reads text with its `=` padding left out, but padding that is there must be right: `=` in the middle or the wrong number of them is `BadPadding`.
+// Spec: 14.20
+// Checks: misuse
+// expect output: f fo foob
+// expect output: BadPadding
+// expect output: BadPadding
+// expect output: BadPadding
+
+use std.base64
+
+fn main() {
+    const f = base64.decode("Zg") catch _ => Bytes([])
+    const fo = base64.decode("Zm8") catch _ => Bytes([])
+    const foob = base64.decode("Zm9vYg", url: true) catch _ => Bytes([])
+    print("{f.text() ?? "?"} {fo.text() ?? "?"} {foob.text() ?? "?"}")
+    for bad in ["Zg=a", "Zm8==", "Zm=8"] {
+        const _b = base64.decode(bad) catch e => {
+            print(e)
+            continue
+        }
+        print("accepted {bad}")
+    }
+}

@@ -1,0 +1,32 @@
+// Rule: `child.next()` gives each line the program printed, without its line end, then `none` once it has ended and every line was read; `each(f)` stops when `f` gives `false`.
+// Spec: 14.23
+// expect output: Out(line: "ce013625030ba8dba906f756967f9e9ca394464a")
+// expect output: Out(line: "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391")
+// expect output: none
+// expect output: 0
+// expect output: each got Out(line: "ce013625030ba8dba906f756967f9e9ca394464a")
+// expect output: 0
+
+use std.fs
+use std.process
+
+fn main() ! Error uses Fs, Process, Console {
+    const dir = "kavach-t-proc-lines"
+    try fs.create_dir(dir)
+    try fs.write_text("{dir}/a.txt", "hello\n")
+    try fs.write_text("{dir}/b.txt", "")
+    const files = ["{dir}/a.txt", "{dir}/b.txt"]
+    const child = try process.start("git", ["hash-object"] + files)
+    print(child.next())
+    print(child.next())
+    print(child.next())
+    print(child.wait().code)
+    const again = try process.start("git", ["hash-object"] + files)
+    // `f` gives `false` at the first line, so the second is never seen.
+    again.each(out => {
+        print("each got {out}")
+        false
+    })
+    print(again.wait().code)
+    try fs.remove_all(dir)
+}

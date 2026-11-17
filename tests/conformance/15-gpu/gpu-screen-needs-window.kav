@@ -1,0 +1,15 @@
+// Rule: Drawing changes the program's own windows, so a `pub` function that calls `gpu.screen` must say `uses Window`.
+// Spec: 14.24, 8.1
+// expect compile error
+
+use std.window
+use std.gpu
+
+pub fn draw(win: AppWindow) ! GpuError {
+    const screen = try gpu.screen(win)     // error: `draw` is `pub`, so it must say it uses `Window`
+    const frame = try screen.frame()
+    frame.show()
+}
+
+fn main() {
+}

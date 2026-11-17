@@ -1,0 +1,21 @@
+// Rule: `--help` after a command gives that command's usage (`usage: tool add-item [options]`), with its own options only.
+// Spec: 14.6
+// args: add-item --help
+// expect output: true
+// expect output: true true
+// expect output: false
+
+use std.cli
+
+type Command = AddItem(name: String, count: Int = 1) | Show(limit: Int = 10)
+
+fn main() {
+    const command = cli.parse<Command>() catch e => {
+        const usage = "{e}"
+        print(usage.contains("add-item [options]"))
+        print("{usage.contains("--name")} {usage.contains("--count")}")
+        print(usage.contains("--limit"))
+        return
+    }
+    print("ran {command}")
+}

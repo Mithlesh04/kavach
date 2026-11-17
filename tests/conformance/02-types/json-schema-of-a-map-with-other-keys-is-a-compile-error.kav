@@ -1,0 +1,13 @@
+// Rule: A map with keys other than `String` has no schema: `json.schema<T>()` of a record holding one is a compile error.
+// Spec: 2.12
+// expect compile error
+
+use std.json
+
+type Scores {
+    by_id: [Int: Float]
+}
+
+fn main() {
+    print(json.schema<Scores>())       // error: a map with `Int` keys has no schema
+}

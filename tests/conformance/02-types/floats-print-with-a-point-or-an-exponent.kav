@@ -1,0 +1,18 @@
+// Rule: a `Float` prints in the shortest form that reads back exactly, always with a `.` or an exponent, from the smallest to the largest.
+// Spec: 1.11
+// expect output: 7.0 0.1 -0.5
+// expect output: 1e21 2e21
+// expect output: 123456.0 1.5e300
+// expect output: 1.7976931348623157e308 5e-324 2.2250738585072014e-308
+
+fn main() {
+    let seven = 7.0
+    let tenth = 0.1
+    print("{seven} {tenth} {-tenth * 5.0}")
+    let big = 1e21
+    print("{big} {big * 2.0}")
+    print("{123456.0} {1.5e300}")
+    let top = 1.7976931348623157e308
+    let tiny = 5e-324
+    print("{top} {tiny} {2.2250738585072014e-308}")
+}

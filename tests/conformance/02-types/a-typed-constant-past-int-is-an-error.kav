@@ -1,0 +1,8 @@
+// Rule: A constant worked out from literals that doesn't fit the type written for it is a compile error, not a `BigInt`.
+// Spec: 2.1
+// expect compile error
+
+fn main() {
+    const x: Int = 2 ** 70         // error: doesn't fit in Int
+    print(x)
+}

@@ -1,0 +1,8 @@
+// Rule: `join` is for lists of `String` or `Char`; a list of numbers is a compile error.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    const xs = [1, 2, 3]
+    print(xs.join(", "))        // error: `join` needs `[String]` or `[Char]`
+}

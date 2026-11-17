@@ -1,0 +1,12 @@
+// Rule: Ending programs, freeing a port, adding or removing users and locking the session need `System.critical.write`; `System.critical.read` doesn't cover it.
+// Spec: 14.25, 8.1
+// expect compile error
+
+use std.system
+
+pub fn end(pid: Int) ! SystemError uses System.critical.read {
+    try system.terminate(pid)     // error: uses System.critical.write
+}
+
+fn main() {
+}

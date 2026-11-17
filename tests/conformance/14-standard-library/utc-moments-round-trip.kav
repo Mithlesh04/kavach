@@ -1,0 +1,17 @@
+// Rule: `time.utc(ms)` gives the `DateTime` a moment is in UTC, with its milliseconds, and `dt.utc_ms()` gives the moment back, before 1970 too.
+// Spec: 14.4
+// expect output: 2026-11-04T09:05:30.250
+// expect output: 0001-01-01T00:00:00
+// expect output: true
+
+use std.time
+
+fn main() {
+    print(time.utc(1_793_783_130_250).iso())
+    print(time.utc(-62_135_596_800_000).iso())
+    let back = true
+    for ms in [0, -1, 1, 1_793_783_130_250, -62_135_596_800_000, 253_402_300_799_999] {
+        back = back and time.utc(ms).utc_ms() == ms
+    }
+    print(back)
+}

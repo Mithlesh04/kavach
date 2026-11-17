@@ -1,0 +1,11 @@
+// Rule: Vectors over different number types cannot be added: `Vec2<Int> + Vec2<Float>` is a compile error.
+// Spec: 14.28
+// expect compile error
+
+use std.vec
+
+fn main() {
+    const a: Vec2<Int> = Vec2(x: 1, y: 2)
+    const b: Vec2<Float> = Vec2(x: 1.0, y: 2.0)
+    print(a + b)                        // error: `+` on a Vec2<Int> takes a Vec2<Int>
+}

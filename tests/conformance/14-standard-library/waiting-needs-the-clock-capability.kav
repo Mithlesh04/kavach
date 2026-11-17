@@ -1,0 +1,13 @@
+// Rule: Waiting (`sleep`, `every`, `after`) needs the `Clock` capability, where reading the clock doesn't.
+// Spec: 14.4, 8.1
+// expect compile error
+
+use std.time
+
+pub fn pause() uses Console {
+    time.sleep_ms(1)                // error: pause doesn't list Clock
+}
+
+fn main() {
+    pause()
+}

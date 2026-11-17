@@ -1,0 +1,17 @@
+// Rule: `Bool(text)` reads `true` or `false`, with spaces around allowed; any other text fails.
+// Spec: 2.1
+// Checks: misuse
+// expect output: true false
+// expect output: failed failed failed failed
+
+fn read(text: String) -> String {
+    match Bool(text) {
+        ok(b) => "{b}",
+        err(_) => "failed",
+    }
+}
+
+fn main() {
+    print("{read("true")} {read(" false\n")}")
+    print("{read("True")} {read("1")} {read("yes")} {read("")}")
+}

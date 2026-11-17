@@ -1,0 +1,46 @@
+// Rule: Decoding is the reverse of encoding: records, unions, optionals, lists, maps, sets, sized numbers, `Char`, `Decimal`, `BigInt` and nesting come back equal.
+// Spec: 2.12
+// expect output: true
+// expect output: true
+// expect output: true
+
+use std.json
+
+type Shape = Dot | Circle(r: Float) | Box(w: Int, h: Int)
+
+type Tag {
+    name: String
+    weight: UInt8
+}
+
+type Drawing {
+    title: String
+    note: String?
+    shapes: [Shape]
+    tags: [String: Tag]
+    ids: Set<Int>
+    grade: Char
+    price: Decimal
+    count: BigInt
+    nested: [[Int?]]
+    best: Tag?
+}
+
+fn main() ! JsonError {
+    const d = Drawing(
+        title: "plan \"A\" é",
+        note: none,
+        shapes: [Shape.Dot, Shape.Circle(r: 1.5), Shape.Box(w: -2, h: 3)],
+        tags: ["b": Tag(name: "x", weight: 255), "a": Tag(name: "y", weight: 0)],
+        ids: Set.of(3, 1, -9_223_372_036_854_775_807),
+        grade: 'Z',
+        price: Decimal("10.250"),
+        count: BigInt("-123456789012345678901234567890"),
+        nested: [[1, none], [], [none]],
+        best: Tag(name: "z", weight: 7),
+    )
+    const text = json.stringify(d)
+    print(try json.decode<Drawing>(text) == d)
+    print(try json.decode_value<Drawing>(json.of(d)) == d)
+    print(try json.decode<Drawing>(json.stringify(d, indent: 2)) == d)
+}

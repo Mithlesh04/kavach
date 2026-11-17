@@ -1,0 +1,14 @@
+// Rule: Dividing a whole-number vector divides each part as whole numbers do: truncated toward zero.
+// Spec: 14.28
+// expect output: Vec2(x: 3, y: -3)
+// expect output: Vec3(x: 3, y: 3, z: 0)
+// expect output: Vec4(x: 2, y: 0, z: -2, w: 1)
+
+use std.vec
+
+fn main() {
+    print(Vec2(x: 7, y: -7) / 2)
+    print(Vec3(x: 9, y: 10, z: -1) / 3)
+    const v: Vec4<Int32> = Vec4(x: 5, y: 1, z: -5, w: 2)
+    print(v / 2)
+}

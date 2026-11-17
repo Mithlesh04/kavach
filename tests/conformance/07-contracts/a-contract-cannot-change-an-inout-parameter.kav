@@ -1,0 +1,14 @@
+// Rule: A contract must not change anything, not even an `inout` parameter that the body may change.
+// Spec: 7.5, 3.9
+// expect compile error
+
+fn take(inout items: [Int]) -> Int
+    require items.pop() != none    // error: a contract can't change items
+{
+    items.len()
+}
+
+fn main() {
+    let xs = [1, 2]
+    print(take(xs))
+}

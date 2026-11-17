@@ -1,0 +1,18 @@
+// Rule: Only a value of a type that implements the interface fits an interface value, even when it has the methods.
+// Spec: 2.15, 2.8
+// expect compile error
+
+interface Describe {
+    fn describe(self) -> String
+}
+
+type Plain {
+    n: Int
+
+    fn describe(self) -> String { "Plain {self.n}" }
+}
+
+fn main() {
+    const d: Describe = Plain(n: 1)      // error: `Plain` does not implement `Describe`
+    print(d.describe())
+}

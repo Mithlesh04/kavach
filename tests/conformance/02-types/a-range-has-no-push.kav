@@ -1,0 +1,9 @@
+// Rule: Methods that change a list (`push`, `pop`) are not a range's.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    let r = 0..3
+    r.push(3)               // error: a range has no `push`
+    print(r.to_list())
+}

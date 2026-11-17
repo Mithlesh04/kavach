@@ -1,0 +1,13 @@
+// Rule: A function value is called with as many arguments as its type has parameters.
+// Spec: 3.4
+// expect compile error
+
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
+
+fn main() {
+    const op: fn(Int, Int) -> Int = add
+    print(op(1, 2))
+    print(op(1))             // error: `op` takes 2 values, not 1
+}

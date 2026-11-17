@@ -1,0 +1,16 @@
+// Rule: `Decimal` arithmetic is exact base 10 while the program runs too: 0.1 + 0.2 is 0.3, unlike `Float`.
+// Spec: 2.1
+// expect output: 0.3 true 0.3
+// expect output: 0.125 -0.1 0.02
+// expect output: true false
+// expect output: 0.30000000000000004
+
+fn main() {
+    let p: Decimal = 0.1
+    print("{p + 0.2} {p + 0.2 == 0.3} {p * 3}")
+    let one: Decimal = 1.0
+    print("{one / 8} {p - 0.2} {p * p * 2}")
+    print("{p < 0.2} {p > 0.2}")
+    let f = 0.1
+    print(f + 0.2)
+}

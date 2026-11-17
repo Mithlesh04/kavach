@@ -1,0 +1,13 @@
+// Rule: `collections.chunks` needs a `size` above 0: its contract says so, and a call that breaks it panics.
+// Spec: 14.9
+// expect panic
+
+use std.collections
+
+fn size_from(n: Int) -> Int {
+    n - 1
+}
+
+fn main() {
+    print(collections.chunks([1, 2, 3], size_from(1)))
+}

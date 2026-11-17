@@ -1,0 +1,11 @@
+// Rule: `capitalize` puts only the first character in upper case and keeps the rest, where `title` lowers the rest of each word; empty and blank text are handled.
+// Spec: 14.2
+// expect output: ASHA|Élan|[]
+// expect output: Asha Rao|[]|[]
+// expect output: true true false
+
+fn main() {
+    print("{"aSHA".capitalize()}|{"élan".capitalize()}|[{"".capitalize()}]")
+    print("{"aSHA rAO".title()}|[{"".title()}]|{"   ".words()}")
+    print("{"".is_blank()} {"\n\t ".is_blank()} {"\u{A0}x".is_blank()}")
+}

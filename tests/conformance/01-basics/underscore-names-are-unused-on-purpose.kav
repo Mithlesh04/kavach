@@ -1,0 +1,30 @@
+// Rule: A name starting with `_` (or `_` alone) is unused on purpose: it gets no warning in any binding place, while a plain unused name beside it does.
+// Spec: 1.4, 1.12
+// expect warning
+// expect output: 3
+// expect output: -1
+
+type AgeError = TooLarge(value: Int)
+
+fn check_age(age: Int) -> Int ! AgeError {
+    if age > 150 {
+        fail AgeError.TooLarge(value: age)
+    }
+    age
+}
+
+fn main() {
+    const _draft = "kept for later"
+    let _spare = 0
+    const [_, _second, ..._rest] = [1, 2, 3, 4]
+    const { name: _name } = (name: "Asha", age: 31)
+    const (_code, _) = (200, "OK")
+    let count = 0
+    for _i in 0..3 {
+        count += 1
+    }
+    print(count)
+    const age = check_age(200) catch _e => -1
+    print(age)
+    const forgotten = 1             // warning: `forgotten` is never used
+}

@@ -1,0 +1,24 @@
+// Rule: Running out of memory in a task is a panic of that task: `.wait()` fails with `panicked: …`, and the program goes on.
+// Spec: 5.6, 9.1
+// expect output: true
+// expect output: true
+// expect output: true
+// expect output: main goes on
+
+fn copies(text: String, n: Int) -> Int {
+    text.repeat(n).len()
+}
+
+fn panicked(t: Task<Int>) -> Bool {
+    match t.wait() {
+        ok(_) => false
+        err(e) => "{e}".starts_with("panicked: ") and "{e}".contains("out of memory")
+    }
+}
+
+fn main() {
+    print(panicked(spawn copies("a", 1_073_741_825)))          // one byte past 1 GB
+    print(panicked(spawn copies("é", 536_870_913)))            // 2 bytes each: past 1 GB
+    print(panicked(spawn copies("abc", 9_223_372_036_854_775_807)))   // the size itself overflows
+    print("main goes on")
+}

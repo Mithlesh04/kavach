@@ -1,0 +1,11 @@
+// Rule: The last expression is the return value, so it must have the declared result type.
+// Spec: 3.1, 2.10
+// expect compile error
+
+fn count(xs: [Int]) -> Int {
+    "{xs.len()}"               // error: `count` returns an Int, not a String
+}
+
+fn main() {
+    print(count([1]))
+}

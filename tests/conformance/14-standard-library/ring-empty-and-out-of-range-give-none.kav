@@ -1,0 +1,11 @@
+// Rule: An empty ring is empty: `first`, `last` and `get` give `none`, `contains` is false and `to_list` is `[]`; `get` past either end gives `none`.
+// Spec: 14.2
+// expect output: true none none none false []
+// expect output: false 5 none none 1
+
+fn main() {
+    let r: Ring<Int> = Ring.capacity(2)
+    print("{r.is_empty()} {r.first()} {r.last()} {r.get(0)} {r.contains(1)} {r.to_list()}")
+    r.push(5)
+    print("{r.is_empty()} {r.get(0) ?? -1} {r.get(1)} {r.get(-1)} {r.len()}")
+}

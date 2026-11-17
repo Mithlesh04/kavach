@@ -1,0 +1,28 @@
+// Rule: std.vec's `+`, `-`, unary `-`, `* k` and `/ k` work on each part, and `+=`, `-=`, `*=` update a `let` vector.
+// Spec: 14.28
+// expect output: Vec3(x: 0.5, y: 1.5, z: -1.0)
+// expect output: Vec3(x: -1.0, y: -2.0, z: -3.0)
+// expect output: Vec3(x: 2.0, y: 4.0, z: 6.0)
+// expect output: Vec3(x: 0.5, y: 1.0, z: 1.5)
+// expect output: Vec4(x: 0.5, y: 1.0, z: 1.5, w: 2.0)
+// expect output: Vec2(x: -1, y: 2)
+// expect output: Vec2(x: 4.0, y: 6.0)
+
+use std.vec
+
+fn main() {
+    const a = Vec3(x: 1.0, y: 2.0, z: 3.0)
+    const b = Vec3(x: 0.5, y: 0.5, z: 4.0)
+    print(a - b)
+    print(-a)
+    print(a * 2.0)
+    print(a / 2.0)
+    const c = Vec4(x: 1.0, y: 2.0, z: 3.0, w: 4.0)
+    print(c + c - c * 1.5)
+    print(-Vec2(x: 1, y: -2))
+    let p = Vec2(x: 1.0, y: 1.0)
+    p += Vec2(x: 2.0, y: 3.0)
+    p -= Vec2(x: 1.0, y: 1.0)
+    p *= 2.0
+    print(p)
+}

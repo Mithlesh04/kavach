@@ -1,0 +1,17 @@
+// Rule: `min` and `max` work on any list of values with an order: text and characters by code point, tuples item by item; an empty list gives `none`.
+// Spec: 14.2
+// expect output: Apple pear
+// expect output: b é
+// expect output: (0, "z") (1, "b")
+// expect output: none
+
+fn main() {
+    const words = ["pear", "fig", "Apple"]
+    print("{words.min() ?? ""} {words.max() ?? ""}")
+    const letters = ['q', 'b', 'é']
+    print("{letters.min() ?? ' '} {letters.max() ?? ' '}")
+    const pairs = [(1, "b"), (1, "a"), (0, "z")]
+    print("{pairs.min() ?? (9, "")} {pairs.max() ?? (9, "")}")
+    const none_here: [String] = []
+    print(none_here.max())
+}

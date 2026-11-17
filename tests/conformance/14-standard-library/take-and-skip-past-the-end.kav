@@ -1,0 +1,10 @@
+// Rule: `take(n)` gives the first `n` items and `skip(n)` all but them; with `n` past the end, `take` gives every item and `skip` none.
+// Spec: 14.2
+// expect output: [1, 2, 3] []
+// expect output: [] [1, 2, 3]
+
+fn main() {
+    const xs = [1, 2, 3]
+    print("{xs.take(5)} {xs.skip(5)}")
+    print("{xs.take(0)} {xs.skip(0)}")
+}

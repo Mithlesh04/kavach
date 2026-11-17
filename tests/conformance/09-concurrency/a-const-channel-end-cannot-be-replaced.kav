@@ -1,0 +1,11 @@
+// Rule: a channel end named with `const` can't be given another end; use `let` for one that changes.
+// Spec: 1.4, 9.4
+// expect compile error
+
+fn main() {
+    const (send, receive) = Channel<Int>(capacity: 1)
+    const (other, _other_in) = Channel<Int>(capacity: 1)
+    send = other            // error: `send` is a const
+    send.put(1)
+    print(receive.take())
+}

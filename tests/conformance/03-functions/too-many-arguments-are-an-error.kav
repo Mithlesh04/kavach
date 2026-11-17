@@ -1,0 +1,12 @@
+// Rule: A call can't give more arguments than the function has parameters.
+// Spec: 3.1
+// expect compile error
+
+fn order(name: String, count: Int = 0) -> String {
+    "{name} {count}"
+}
+
+fn main() {
+    print(order("a"))
+    print(order("a", 3, true))    // error: `order` takes 2 values, not 3
+}

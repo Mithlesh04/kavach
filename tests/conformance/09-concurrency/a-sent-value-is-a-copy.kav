@@ -1,0 +1,39 @@
+// Rule: a value put into a channel is a copy: changing the variable after `put` doesn't change what the receiver takes.
+// Spec: 9.4, 9.5
+// expect output: Item(value: [1, 2])
+// expect output: [9, 2, 3]
+// expect output: Order(id: 1, items: ["tea"])
+// expect output: Order(id: 2, items: ["tea", "cake"])
+// expect output: Item(value: ["a": [1]])
+
+type Order {
+    id: Int
+    items: [String]
+}
+
+fn main() {
+    const (send, receive) = Channel<[Int]>(capacity: 2)
+    let xs = [1, 2]
+    send.put(xs)
+    xs.push(3)
+    xs[0] = 9
+    print(receive.take())
+    print(xs)
+    const (orders, order_in) = Channel<Order>(capacity: 1)
+    let o = Order(id: 1, items: ["tea"])
+    orders.put(o)
+    o.id = 2
+    o.items.push("cake")
+    match order_in.take() {
+        Taken.Item(got) => print(got),
+        Taken.Closed => print("closed"),
+    }
+    print(o)
+    const (maps, map_in) = Channel<[String: [Int]]>(capacity: 1)
+    let m = ["a": [1]]
+    const _t = spawn {
+        maps.put(m)
+    }
+    m["a"] = [5, 6]
+    print(map_in.take())
+}

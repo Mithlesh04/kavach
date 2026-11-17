@@ -1,0 +1,16 @@
+// Rule: A `gpu fragment fn` gives a color: four `Float32`s, or a `Vec4<Float32>`.
+// Spec: 15.3
+// expect compile error
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+    heat: Float32
+}
+
+gpu fragment fn glow(l: Lit) -> (Float32, Float32, Float32) {     // error: three parts, not four
+    (l.heat, 0.2, 1.0)
+}
+
+fn main() {
+    print(glow(Lit(position: (0.0, 0.0, 0.0, 1.0), heat: 0.5)))
+}

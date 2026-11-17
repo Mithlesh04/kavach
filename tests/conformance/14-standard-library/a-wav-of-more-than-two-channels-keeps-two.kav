@@ -1,0 +1,21 @@
+// Rule: A sound file of more than two channels keeps its first two.
+// Spec: 14.27
+// expect output: 2 3
+
+use std.audio
+
+fn le(n: Int, size: Int) -> [UInt8] {
+    (0..size).map(i => UInt8((n >> (8 * i)) & 255))
+}
+
+fn main() {
+    // A 16-bit WAV of 4 channels and 3 frames (24 bytes of samples).
+    const fmt = le(1, 2) + le(4, 2) + le(8000, 4) + le(8000 * 8, 4) + le(8, 2) + le(16, 2)
+    const body = [87, 65, 86, 69, 102, 109, 116, 32] + le(16, 4) + fmt + [100, 97, 116, 97] + le(24, 4) + (0..24).map(_ => UInt8(0))
+    const file = Bytes([82, 73, 70, 70] + le(body.len(), 4) + body)
+    const s = audio.decode(file) catch e => {
+        print(e)
+        return
+    }
+    print("{s.channels} {s.frames}")
+}

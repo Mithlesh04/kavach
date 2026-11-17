@@ -1,0 +1,11 @@
+// Rule: An image is at least one pixel wide and high: `image.new(0, 0, [])` breaks its contract and panics.
+// Spec: 14.29
+// expect panic: contract failed
+
+use std.image
+
+fn main() {
+    const zero = [0][0]
+    const img = image.new(zero, zero, [])
+    print(img.width)
+}

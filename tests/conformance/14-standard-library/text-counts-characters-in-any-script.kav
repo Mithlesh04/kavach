@@ -1,0 +1,13 @@
+// Rule: Text's `len` counts characters, not bytes, and `upper`, `lower`, `starts_with`, `ends_with`, `repeat` and `is_empty` work on text in any script.
+// Spec: 14.2
+// expect output: 6 5 1 0
+// expect output: HÉLLO àb
+// expect output: true true false
+// expect output: नमनम true false
+
+fn main() {
+    print("{"नमस्ते".len()} {"héllo".len()} {"👍".len()} {"".len()}")
+    print("{"héllo".upper()} {"ÀB".lower()}")
+    print("{"नमस्ते".starts_with("नम")} {"héllo".ends_with("llo")} {"héllo".starts_with("e")}")
+    print("{"नम".repeat(2)} {"".is_empty()} {" ".is_empty()}")
+}

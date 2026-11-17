@@ -1,0 +1,12 @@
+// Rule: Writing to, reading from and closing an open serial port need the capability `Serial`, as opening it does.
+// Spec: 14.18, 8.1
+// expect compile error
+
+use std.devices
+
+pub fn ping(port: SerialPort) ! DeviceError uses Console {
+    try port.write("ping\n".bytes())      // error: ping doesn't list Serial
+}
+
+fn main() {
+}

@@ -1,0 +1,28 @@
+// Rule: Seeds nest: an inner `seeded` block draws from its own seed, and the outer one goes on after it where it left off.
+// Spec: 14.15
+// expect output: true
+// expect output: true
+
+use std.random
+
+fn plain() -> [Int] uses Random {
+    random.seeded(1) {
+        [random.int(0, 1_000_000), random.int(0, 1_000_000), random.int(0, 1_000_000)]
+    }
+}
+
+fn with_inner() -> [Int] uses Random {
+    random.seeded(1) {
+        const first = random.int(0, 1_000_000)
+        const inner = random.seeded(2) {
+            [random.int(0, 1_000_000), random.int(0, 1_000_000)]
+        }
+        [first, random.int(0, 1_000_000), random.int(0, 1_000_000), inner[0]]
+    }
+}
+
+fn main() uses Random {
+    const outer = with_inner()
+    print(outer.take(3) == plain())
+    print(outer[3] == random.seeded(2) { random.int(0, 1_000_000) })
+}

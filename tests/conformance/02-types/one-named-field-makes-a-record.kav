@@ -1,0 +1,17 @@
+// Rule: One named field still makes an anonymous record, and a parenthesized expression `(x)` with no field name is just that expression.
+// Spec: 2.14
+// expect output: 5
+// expect output: 6
+// expect output: 7
+
+fn wrap(n: Int) -> (n: Int) {
+    (n: n)
+}
+
+fn main() {
+    const r = (n: 5)
+    print(r.n)
+    const v = (5)
+    print(v + 1)
+    print(wrap(7).n)
+}

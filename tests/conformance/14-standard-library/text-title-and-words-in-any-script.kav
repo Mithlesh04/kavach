@@ -1,0 +1,13 @@
+// Rule: `words` splits at spaces, tabs and line breaks in text of any script, and `title` capitalizes each such word, accented letters too, keeping what is between them.
+// Spec: 14.2
+// expect output: Émile Zola
+// expect output: नमस्ते|दुनिया ["a", "b"] []
+// expect output: A	B 3
+
+fn main() {
+    print("ÉMILE zola".title())
+    const crlf = "\u{D}\n"
+    print("{"नमस्ते  दुनिया".words().join("|")} {"a{crlf}b".words()} {"".words()}")
+    const titled = "a\tb".title()
+    print("{titled} {titled.len()}")
+}

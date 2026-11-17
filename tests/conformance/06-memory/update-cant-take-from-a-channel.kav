@@ -1,0 +1,17 @@
+// Rule: the function given to `update` can't wait on a channel: a `take` in it is a compile error.
+// Spec: 6.2
+// expect compile error
+
+fn main() {
+    const (send, receive) = Channel<Int>(capacity: 1)
+    send.put(1)
+    const total = Shared(0)
+    total.update(n => {
+        const got = receive.take()       // error: `take` waits, and the function given to `update` can't wait
+        match got {
+            Taken.Item(v) => n + v,
+            Taken.Closed => n,
+        }
+    })
+    print(total.get())
+}

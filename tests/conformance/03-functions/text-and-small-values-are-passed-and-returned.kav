@@ -1,0 +1,26 @@
+// Rule: `Bool`, `Char`, `String` and `Bytes` parameters and results keep their values.
+// Spec: 3.1, 2.1
+// expect output: false true
+// expect output: क 😀 b
+// expect output: नमस्ते, Asha!
+// expect output: 
+// expect output: Bytes(00ff7f80)
+// expect output: 4 255
+
+fn flip(b: Bool) -> Bool { not b }
+fn same(c: Char) -> Char { c }
+fn next(c: Char) -> Char { Char(Int(c) + 1) }
+fn greet(name: String, greeting: String) -> String { "{greeting}, {name}!" }
+fn echo(s: String) -> String { s }
+fn keep(b: Bytes) -> Bytes { b }
+fn last(b: Bytes) -> UInt8 { b[1] }
+
+fn main() {
+    print("{flip(true)} {flip(false)}")
+    print("{same('क')} {same('😀')} {next('a')}")
+    print(greet("Asha", "नमस्ते"))
+    print(echo(""))
+    const raw = Bytes([0, 255, 127, 128])
+    print(keep(raw))
+    print("{keep(raw).len()} {last(raw)}")
+}

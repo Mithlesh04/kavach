@@ -1,0 +1,8 @@
+// Rule: The items of a list have one type: items of different kinds need a union, so a list literal that mixes them is a compile error.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    const mixed = [1, "two"]        // error: `[Int]` can't hold a `String`
+    print(mixed)
+}

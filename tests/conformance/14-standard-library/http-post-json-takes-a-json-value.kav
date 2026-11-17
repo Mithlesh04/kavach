@@ -1,0 +1,18 @@
+// Rule: `http.post_json` takes its body as a `Json` value; a typed value goes in through `json.of`, so passing the record itself is a compile error.
+// Spec: 14.11
+// expect compile error
+
+use std.http
+
+pub type Order {
+    id: Int
+    item: String
+}
+
+fn place(url: String) -> Order ! HttpError uses Net {
+    const order = Order(id: 7, item: "pen")
+    try http.post_json<Order>(url, order)    // error: the body is an `Order`, not a `Json` value
+}
+
+fn main() {
+}

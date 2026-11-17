@@ -1,0 +1,11 @@
+// Rule: a negative number doesn't fit an unsigned type, so converting it panics.
+// Spec: 2.1, 5.6
+// expect panic
+
+fn count(n: Int) -> UInt64 {
+    UInt64(n)
+}
+
+fn main() {
+    print(count(-1))
+}

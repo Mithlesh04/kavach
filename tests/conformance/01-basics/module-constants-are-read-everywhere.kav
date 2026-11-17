@@ -1,0 +1,37 @@
+// Rule: A module constant can be read by other constants, by lambdas (in a constant, in a function, in `main`), by a value a `catch` gives, and inside nested scopes.
+// Spec: 1.13
+// expect output: 2 [2, 4, 6] 30
+// expect output: [3, 4] 7
+// expect output: -1 12
+
+type AgeError = TooLarge(value: Int)
+
+fn check_age(age: Int) -> Int ! AgeError {
+    if age > 150 {
+        fail AgeError.TooLarge(value: age)
+    }
+    age
+}
+
+const factor = 2
+const scaled = [1, 2, 3].map(x => x * factor)
+const total = scaled.sum(x => x * factor) + offset()
+const fallback = check_age(200) catch -1
+
+fn offset() -> Int {
+    factor * 3
+}
+
+fn adder() -> fn(Int) -> Int {
+    x => x + factor
+}
+
+fn main() {
+    print("{factor} {scaled} {total}")
+    print("{[1, 2].map(adder())} {[5].map(n => n + factor)[0]}")
+    for _ in 0..1 {
+        if true {
+            print("{fallback} {total - scaled.len() * 6}")
+        }
+    }
+}

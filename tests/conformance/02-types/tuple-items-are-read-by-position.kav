@@ -1,0 +1,15 @@
+// Rule: A tuple's items are read by position, `t.0`, `t.1`, …, each with its own type; tuples are values compared by `==` item by item.
+// Spec: 2.3
+// expect output: 200 OK
+// expect output: 201
+// expect output: true false
+// expect output: [(1, "a"), (2, "b")]
+
+fn main() {
+    const pair = (200, "OK")
+    print("{pair.0} {pair.1}")
+    print(pair.0 + 1)
+    print("{pair == (200, "OK")} {pair != (200, "OK")}")
+    const pairs = [(2, "b"), (1, "a")]
+    print(pairs.sort())
+}

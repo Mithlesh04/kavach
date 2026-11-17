@@ -1,0 +1,30 @@
+// Rule: `Process("name")` grants nest: inside two of them, a program must match both, so a function with `Process("git")` that calls one with `Process("ping")` can run neither, and each call fails with `Denied(program)`.
+// Spec: 14.23
+// Checks: misuse
+// expect output: Denied(program: "ping")
+// expect output: Denied(program: "git")
+// expect output: 0
+
+use std.process
+
+fn pinger(program: String) -> String uses Process("ping") {
+    const done = process.run(program, ["--version"]) catch e => return "{e}"
+    "{done.code}"
+}
+
+fn outer() -> [String] uses Process("git") {
+    [pinger("ping"), pinger("git")]
+}
+
+fn pinger_free(program: String) -> String uses Process {
+    const done = process.run(program, ["--version"]) catch e => return "{e}"
+    "{done.code}"
+}
+
+fn main() uses Process, Console {
+    for line in outer() {
+        print(line)
+    }
+    // Outside both grants, git runs.
+    print(pinger_free("git"))
+}

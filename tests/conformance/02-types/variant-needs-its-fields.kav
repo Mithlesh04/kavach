@@ -1,0 +1,10 @@
+// Rule: A variant field without a default must be given, as a record field must.
+// Spec: 2.6
+// expect compile error
+
+type Shape = Circle(radius: Float) | Dot
+
+fn main() {
+    const s = Shape.Circle()      // error: missing field `radius`
+    print(s)
+}

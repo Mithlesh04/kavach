@@ -1,0 +1,13 @@
+// Rule: A list a `const` takes from a field is a constant: setting an item of it, or of a list inside it, is a compile error.
+// Spec: 1.12, 1.4
+// expect compile error
+
+type Team {
+    rows: [[Int]]
+}
+
+fn main() {
+    const { rows } = Team(rows: [[1, 2], [3]])
+    rows[0][1] = 9                  // error: `rows` is a `const`; use `let`
+    print(rows)
+}

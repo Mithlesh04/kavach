@@ -1,0 +1,16 @@
+// Rule: at the end of standard input, `io.read_line` and `io.read_hidden` give `none`; `io.write` prints without a line end; `io.is_terminal` is `false` under a test runner.
+// Spec: 14.6
+// expect output: name? none
+// expect output: password? none
+// expect output: false
+
+use std.io
+
+fn main() {
+    io.write("name? ")
+    print(io.read_line())
+    io.write("pass")
+    io.write("word? ")
+    print(io.read_hidden())
+    print(io.is_terminal())
+}

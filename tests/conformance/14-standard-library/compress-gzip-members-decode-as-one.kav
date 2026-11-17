@@ -1,0 +1,13 @@
+// Rule: gzip data made of several members one after another decodes as one, as `gunzip` does.
+// Spec: 14.21
+// expect output: Hello, World!
+// expect output: 13
+
+use std.compress
+
+fn main() ! Error {
+    const joined = compress.encode("Hello, ".bytes(), Format.Gzip) + compress.encode("World!".bytes(), Format.Gzip, level: 9)
+    const back = try compress.decode(joined, Format.Gzip)
+    print(back.text() ?? "?")
+    print((try compress.decode(joined, Format.Gzip, most: 13)).len())
+}

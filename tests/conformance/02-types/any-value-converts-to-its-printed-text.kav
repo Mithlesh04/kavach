@@ -1,0 +1,19 @@
+// Rule: `String(value)` gives the value's text, as `print` shows it, for every kind of value.
+// Spec: 2.1, 1.11
+// expect output: [true] [x] [-5] [499.00] [123456789012345678901]
+// expect output: [[1, 2]] [["a"]] [none] [(1, "b")]
+// expect output: [Point(x: 1, y: 2)] [Bytes(6869)]
+
+type Point {
+    x: Int
+    y: Int
+}
+
+fn main() {
+    const small: Int8 = -5
+    const price: Decimal = 499.00
+    print("[{String(true)}] [{String('x')}] [{String(small)}] [{String(price)}] [{String(123456789012345678901)}]")
+    const missing: Int? = none
+    print("[{String([1, 2])}] [{String(["a"])}] [{String(missing)}] [{String((1, "b"))}]")
+    print("[{String(Point(x: 1, y: 2))}] [{String("hi".bytes())}]")
+}

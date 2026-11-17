@@ -1,0 +1,18 @@
+// Rule: `crypto.aes_key()` is 256 bits; `crypto.encrypt` puts a new random nonce before the ciphertext and its tag each time, so the same data sealed twice differs, and both open.
+// Spec: 14.19
+// expect output: 32
+// expect output: 37 false
+// expect output: true true
+
+use std.crypto
+
+fn main() ! CryptoError {
+    const key = crypto.aes_key()
+    print(key.len())
+    const data = "card 4242".bytes()
+    const a = try crypto.encrypt(key, data)
+    const b = try crypto.encrypt(key, data)
+    // A 12-byte nonce, 9 bytes of ciphertext, a 16-byte tag.
+    print("{a.len()} {a == b}")
+    print("{(try crypto.decrypt(key, a)) == data} {(try crypto.decrypt(key, b)) == data}")
+}

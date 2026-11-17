@@ -1,0 +1,10 @@
+// Rule: A vector times a vector is a compile error: `*` takes a number, and `scale` multiplies part by part.
+// Spec: 14.28
+// expect compile error
+
+use std.vec
+
+fn main() {
+    const a = Vec3(x: 1.0, y: 2.0, z: 3.0)
+    print(a * a)                        // error: `*` on a Vec3<Float> takes a Float
+}

@@ -1,0 +1,10 @@
+// Rule: A `String` never changes: it has no methods that change it in place; a `TextBuilder` is for that.
+// Spec: 2.1, 2.18
+// expect compile error
+
+fn main() {
+    let s = "ab"
+    s = s + "c"                    // fine: a new string
+    s.push("d")                    // error: `String` has no method `push`
+    print(s)
+}

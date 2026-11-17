@@ -1,0 +1,27 @@
+// Rule: To change a parameter's value, copy it into a `let`: the copy changes, the caller's value doesn't.
+// Spec: 3.1, 6.1
+// expect output: 15 [1, 2, 3, 0] 31
+// expect output: 10 [1, 2, 3] 30
+
+type User {
+    name: String
+    age: Int
+}
+
+fn change(start: Int, items: [Int], u: User) -> String {
+    let total = start
+    total += 5
+    let list = items
+    list.push(0)
+    let user = u
+    user.age += 1
+    "{total} {list} {user.age}"
+}
+
+fn main() {
+    const start = 10
+    const items = [1, 2, 3]
+    const u = User(name: "Asha", age: 30)
+    print(change(start, items, u))
+    print("{start} {items} {u.age}")
+}

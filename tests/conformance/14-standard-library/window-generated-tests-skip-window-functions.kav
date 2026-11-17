@@ -1,0 +1,18 @@
+// Rule: Generated tests skip functions that use `Window` or `Input`, as there is no fake screen.
+// Spec: 14.22, 14.30, 11.5
+// expect test pass
+
+/// Its promise never holds, so a generated test that ran it would fail;
+/// it opens no window either way.
+fn title_length(title: String) -> Int uses Window
+    ensure result < 0
+{
+    title.len()
+}
+
+/// The same for `Input`.
+fn key_length(key: String) -> Int uses Input
+    ensure result < 0
+{
+    key.len()
+}

@@ -1,0 +1,22 @@
+// Rule: `rotation_x`, `rotation_y` and `rotation_z` of `Mat4` and `Mat3` turn counterclockwise looking down their axis: y to z, z to x, and x to y.
+// Spec: 14.28
+// expect output: true true true
+// expect output: true true true
+
+use std.vec
+use std.math
+
+fn main() {
+    const a = math.pi / 2.0
+    const x = Vec3(x: 1.0, y: 0.0, z: 0.0)
+    const y = Vec3(x: 0.0, y: 1.0, z: 0.0)
+    const z = Vec3(x: 0.0, y: 0.0, z: 1.0)
+    const rx = (Mat4.rotation_x(a) @ Vec4(x: 0.0, y: 1.0, z: 0.0, w: 1.0)).distance(Vec4(x: 0.0, y: 0.0, z: 1.0, w: 1.0)) < 0.000001
+    const ry = (Mat4.rotation_y(a) @ Vec4(x: 0.0, y: 0.0, z: 1.0, w: 1.0)).distance(Vec4(x: 1.0, y: 0.0, z: 0.0, w: 1.0)) < 0.000001
+    const rz = (Mat4.rotation_z(a) @ Vec4(x: 1.0, y: 0.0, z: 0.0, w: 1.0)).distance(Vec4(x: 0.0, y: 1.0, z: 0.0, w: 1.0)) < 0.000001
+    print("{rx} {ry} {rz}")
+    const sx = (Mat3.rotation_x(a) @ y).distance(z) < 0.000001
+    const sy = (Mat3.rotation_y(a) @ z).distance(x) < 0.000001
+    const sz = (Mat3.rotation_z(a) @ x).distance(y) < 0.000001
+    print("{sx} {sy} {sz}")
+}

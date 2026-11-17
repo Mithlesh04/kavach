@@ -1,0 +1,19 @@
+// Rule: `NaN` and the infinities are written as `null`, as JavaScript does, bare, in lists and in record fields.
+// Spec: 2.12
+// expect output: [null,null,null,1.5]
+// expect output: {"x":null,"y":null}
+// expect output: null
+
+use std.json
+
+type Point {
+    x: Float
+    y: Float
+}
+
+fn main() {
+    const inf = 1.0 / 0.0
+    print(json.stringify([inf, -inf, 0.0 / 0.0, 1.5]))
+    print(json.of(Point(x: inf, y: -inf)))
+    print(json.of(inf))
+}

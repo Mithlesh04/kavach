@@ -1,0 +1,25 @@
+// Rule: A `let` declared in a loop's body is made again each round from its first value, whether the last round ended normally, with `continue` or with `break`; outside variables keep their changes.
+// Spec: 1.4, 4.5, 4.6
+// expect output: 0 1
+// expect output: 1 1
+// expect output: 2 1
+// expect output: rounds 3 total 3
+
+fn main() {
+    let i = 0
+    let total = 0
+    while true {
+        let step = 0
+        step += 1
+        total += step
+        print("{i} {step}")
+        i += 1
+        if i < 2 {
+            continue
+        }
+        if i == 3 {
+            break
+        }
+    }
+    print("rounds {i} total {total}")
+}

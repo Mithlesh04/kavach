@@ -1,0 +1,15 @@
+// Rule: `math.factorial(n)` is `n!` for `0 <= n <= 20`; 21! doesn't fit in `Int`, so asking for it panics.
+// Spec: 14.5
+// expect output: 1 2432902008176640000
+// expect panic
+
+use std.math
+
+fn ask(n: Int) -> Int {
+    math.factorial(n)
+}
+
+fn main() {
+    print("{ask(0)} {ask(20)}")
+    print(ask(21))
+}

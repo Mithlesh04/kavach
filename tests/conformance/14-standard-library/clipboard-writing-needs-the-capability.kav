@@ -1,0 +1,12 @@
+// Rule: Writing over the clipboard needs the capability `Clipboard`, as reading it does.
+// Spec: 14.17, 8.1
+// expect compile error
+
+use std.clipboard
+
+pub fn copy(text: String) ! ClipboardError uses Console {
+    try clipboard.write_text(text)     // error: copy doesn't list Clipboard
+}
+
+fn main() {
+}

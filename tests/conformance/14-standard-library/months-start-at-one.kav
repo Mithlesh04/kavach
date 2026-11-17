@@ -1,0 +1,13 @@
+// Rule: Months are 1 to 12, never from 0: a `Date` with month 0 can't exist, so making one breaks its invariant.
+// Spec: 14.4
+// expect output: 2026-01-01
+// expect panic
+
+use std.time
+
+fn main() {
+    print(time.Date(year: 2026, month: 1, day: 1).iso())
+    const month = [0][0]
+    const d = time.Date(year: 2026, month: month, day: 1)
+    print(d.iso())
+}

@@ -1,0 +1,26 @@
+// Rule: A stored lambda that changes its copy of an outside `let` starts each call again from the copy taken when it was made; the compiler warns.
+// Spec: 3.3
+// expect warning
+// expect output: 1
+// expect output: 1
+// expect output: [5, 9]
+// expect output: [5, 9]
+// expect output: 0 [5]
+
+fn main() {
+    let n = 0
+    const next = () => {
+        n += 1          // warning: `n` is a copy inside this lambda
+        n
+    }
+    print(next())
+    print(next())
+    let log = [5]
+    const add = () => {
+        log.push(9)     // warning: `log` is a copy inside this lambda
+        log
+    }
+    print(add())
+    print(add())
+    print("{n} {log}")
+}

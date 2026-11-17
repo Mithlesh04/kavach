@@ -1,0 +1,12 @@
+// Rule: `AppError` is `Unavailable(reason: String)`: the system gives no such folder, or it can't be made.
+// Spec: 14.30
+// expect output: Unavailable(reason: "no home folder") no home folder
+
+use std.app
+
+fn main() {
+    const e = AppError.Unavailable(reason: "no home folder")
+    match e {
+        AppError.Unavailable(reason) => print("{e} {reason}"),
+    }
+}

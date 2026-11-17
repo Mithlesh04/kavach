@@ -1,0 +1,8 @@
+// Rule: A literal text read into a sized number is checked while compiling: `Int8("300")` doesn't fit, so it is a compile error.
+// Spec: 2.1
+// expect compile error
+
+fn main() {
+    print(Int8("100") + 1)         // fine: just 101
+    print(Int8("300"))             // error: `300` is not a valid Int8
+}

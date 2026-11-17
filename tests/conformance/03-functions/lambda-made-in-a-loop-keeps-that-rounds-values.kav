@@ -1,0 +1,19 @@
+// Rule: A lambda made in a loop keeps a copy of the values it uses as they were in that round, the loop variable and a changing `let` alike.
+// Spec: 3.3
+// expect output: [0, 10, 20]
+// expect output: [1, 2, 3]
+// expect output: 3
+
+fn main() {
+    let makers: [fn() -> Int] = []
+    let counters: [fn() -> Int] = []
+    let count = 0
+    for i in 0..3 {
+        count += 1
+        makers.push(() => i * 10)
+        counters.push(() => count)
+    }
+    print(makers.map(f => f()))
+    print(counters.map(f => f()))
+    print(count)
+}

@@ -1,0 +1,15 @@
+// Rule: Opening a serial port that isn't there fails with `DeviceError.NotFound`, holding the path asked for.
+// Spec: 14.18
+// Checks: misuse
+// expect output: NotFound(path: "kavach-no-such-port")
+
+use std.devices
+
+fn main() uses Serial {
+    const port = devices.open_serial("kavach-no-such-port", 9_600) catch e => {
+        print(e)
+        return
+    }
+    port.close()
+    print("opened")
+}

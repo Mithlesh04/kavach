@@ -1,0 +1,19 @@
+// Rule: `gen.int(from, to)` gives an `Int` from `from` to `to`, both included, so generated values meet the `ensure`s that count on it.
+// Spec: 14.7
+// expect test pass
+
+type Roll: Sample {
+    die: Int
+    fixed: Int
+    signed: Int
+
+    fn sample(gen: Gen) -> Roll {
+        Roll(die: gen.int(1, 6), fixed: gen.int(3, 3), signed: gen.int(-5, 5))
+    }
+}
+
+fn check(r: Roll) -> Bool
+    ensure result
+{
+    r.die >= 1 and r.die <= 6 and r.fixed == 3 and r.signed >= -5 and r.signed <= 5
+}

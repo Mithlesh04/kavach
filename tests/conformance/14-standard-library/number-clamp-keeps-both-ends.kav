@@ -1,0 +1,19 @@
+// Rule: `x.clamp(lo, hi)` limits `x` to `lo..=hi`, both ends included, for sized whole numbers and `Decimal` too.
+// Spec: 14.2
+// expect output: 10 100 50
+// expect output: 0 9 5
+// expect output: 0.00 1.00 0.50
+
+fn main() {
+    const low: UInt8 = 3
+    const high: UInt8 = 200
+    const mid: UInt8 = 50
+    print("{low.clamp(10, 100)} {high.clamp(10, 100)} {mid.clamp(10, 100)}")
+    print("{0.clamp(0, 9)} {9.clamp(0, 9)} {7.clamp(5, 5)}")
+    const under: Decimal = -3.25
+    const over: Decimal = 4.5
+    const inside: Decimal = 0.50
+    const lo: Decimal = 0.00
+    const hi: Decimal = 1.00
+    print("{under.clamp(lo, hi)} {over.clamp(lo, hi)} {inside.clamp(lo, hi)}")
+}

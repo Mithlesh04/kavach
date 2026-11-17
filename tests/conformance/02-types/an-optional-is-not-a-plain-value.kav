@@ -1,0 +1,16 @@
+// Rule: A `T?` is not a `T`: passing an optional where a plain value is expected is an error; handle `none` first.
+// Spec: 2.7
+// expect compile error
+
+fn double(n: Int) -> Int {
+    n * 2
+}
+
+fn find(id: Int) -> Int? {
+    if id == 1 { 10 } else { none }
+}
+
+fn main() {
+    print(double(find(1) ?? 0))
+    print(double(find(1)))      // error: `Int?` is not an `Int`
+}

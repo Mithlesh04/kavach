@@ -1,0 +1,15 @@
+// Rule: Putting an arena value into a channel made before the arena is a compile error.
+// Spec: 6.3, 9.4
+// expect compile error
+
+fn main() {
+    const (send, receive) = Channel<[Int]>(capacity: 4)
+    arena {
+        const xs = [1, 2, 3]
+        send.put(xs)            // error: xs was made in the arena and can't be kept outside it
+    }
+    send.close()
+    for v in receive {
+        print(v)
+    }
+}

@@ -1,0 +1,39 @@
+// Rule: the QUIC stream methods `open_stream`, `write_stream` and `read_stream` fail on a TCP connection.
+// Spec: 14.10
+// expect output: open_stream: failed
+// expect output: write_stream: failed
+// expect output: read_stream: failed
+
+use std.net
+
+fn serve(listener: Listener) ! NetError uses Net {
+    const conn = try listener.accept()
+    while true {
+        const _piece = (try conn.read()) ?? break
+    }
+    conn.close()
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const server = spawn serve(listener)
+    const conn = try net.connect(listener.address())
+    const opened = match conn.open_stream(true) {
+        ok(_) => "opened",
+        err(_) => "failed",
+    }
+    print("open_stream: {opened}")
+    const wrote = match conn.write_stream(0, "hi".bytes(), true) {
+        ok(_) => "sent",
+        err(_) => "failed",
+    }
+    print("write_stream: {wrote}")
+    const read = match conn.read_stream(0) {
+        ok(_) => "read",
+        err(_) => "failed",
+    }
+    print("read_stream: {read}")
+    conn.close()
+    try server.wait()
+    listener.close()
+}

@@ -1,0 +1,11 @@
+// Rule: the old prompt names (`term.ask` and the rest) are a compile error that names the new one, so a question at the keyboard is never taken for the AI's `ask`.
+// Spec: 14.13
+// Checks: misuse
+// expect compile error
+
+use std.term
+
+fn main() {
+    const name = term.ask("Your name?") ?? "friend"     // error: renamed to `term.prompt`
+    print(name)
+}

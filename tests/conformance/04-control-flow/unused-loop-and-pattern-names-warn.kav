@@ -1,0 +1,28 @@
+// Rule: A `for` variable, an `if let` name or a name a `match` pattern takes that is never used gets a warning; one starting with `_` gets none.
+// Spec: 1.4, 4.2, 4.3, 4.4
+// expect warning
+// expect output: 2
+// expect output: 1
+// expect output: 2
+// expect output: 1
+
+fn main() {
+    let count = 0
+    for x in [5, 6] {       // warning: x is never used
+        count += 1
+    }
+    for _x in [5, 6] {
+        count += 0
+    }
+    print(count)
+    const found: Int? = 4
+    if let n = found {      // warning: n is never used
+        print(1)
+    }
+    match (1, 2) {
+        (a, b) => print(b)  // warning: a is never used
+    }
+    for (k, v) in ["a": 1] {    // warning: k is never used
+        print(v)
+    }
+}

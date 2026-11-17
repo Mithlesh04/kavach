@@ -1,0 +1,10 @@
+// Rule: A module constant's value never changes: assigning to it in a function is a compile error.
+// Spec: 1.13, 1.4
+// expect compile error
+
+const limit = 3
+
+fn main() {
+    limit = 4                       // error: `limit` is a `const`
+    print(limit)
+}

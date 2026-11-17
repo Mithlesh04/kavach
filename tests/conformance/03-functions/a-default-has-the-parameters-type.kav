@@ -1,0 +1,11 @@
+// Rule: A parameter's default value must have the parameter's type.
+// Spec: 3.2, 2.1
+// expect compile error
+
+fn greet(name: String, times: Int = "twice") -> String {    // error: `times` is an Int, not a String
+    name.repeat(times)
+}
+
+fn main() {
+    print(greet("a", times: 2))
+}

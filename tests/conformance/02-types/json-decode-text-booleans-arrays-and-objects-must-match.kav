@@ -1,0 +1,43 @@
+// Rule: Decoding is strict about values: text, booleans, arrays and objects must match the field's type, and `null` fits only an optional, which it makes `none`.
+// Spec: 2.12
+// Checks: misuse
+// expect output: name: text
+// expect output: tags: an array
+// expect output: home: an object
+// expect output: problems at active, count
+// expect output: none
+
+use std.json
+
+type Home {
+    city: String
+}
+
+type User {
+    name: String
+    active: Bool
+    count: Int
+    tags: [String]
+    home: Home
+    nick: String?
+}
+
+fn main() {
+    const text = "\{\"name\": 5, \"active\": \"true\", \"count\": null, \"tags\": \{\"a\": 1}, \"home\": [\"x\"], \"nick\": null}"
+    match json.decode<User>(text) {
+        ok(_) => print("decoded"),
+        err(e) => match e {
+            JsonError.Invalid(problems) => {
+                for p in problems {
+                    if p.path == "name" or p.path == "tags" or p.path == "home" {
+                        print("{p.path}: {p.expected}")
+                    }
+                }
+                print("problems at {problems[1].path}, {problems[2].path}")
+            }
+            _ => print("other: {e}"),
+        },
+    }
+    const ok_text = "\{\"name\": \"a\", \"active\": true, \"count\": 1, \"tags\": [], \"home\": \{\"city\": \"x\"}, \"nick\": null}"
+    print((json.decode<User>(ok_text) catch _ => User(name: "", active: false, count: 0, tags: [], home: Home(city: ""), nick: "?")).nick)
+}

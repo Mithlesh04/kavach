@@ -1,0 +1,15 @@
+// Rule: A `let` pushed into a list each round of a loop, and changed after, gives a copy as it was at each push.
+// Spec: 6.1
+// expect output: [[0], [0, 1], [0, 1, 2]]
+// expect output: [0, 1, 2]
+
+fn main() {
+    let row: [Int] = []
+    let rows: [[Int]] = []
+    for i in 0..3 {
+        row.push(i)
+        rows.push(row)
+    }
+    print(rows)
+    print(row)
+}

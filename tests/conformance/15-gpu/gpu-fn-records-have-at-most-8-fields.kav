@@ -1,0 +1,23 @@
+// Rule: A record a `gpu fn` takes or gives has 1 to 8 fields.
+// Spec: 15.1
+// expect compile error
+
+type Wide {
+    a: Float32
+    b: Float32
+    c: Float32
+    d: Float32
+    e: Float32
+    f: Float32
+    g: Float32
+    h: Float32
+    i: Float32
+}
+
+gpu fn first(w: Wide) -> Float32 {      // error: `Wide` has 9 fields
+    w.a
+}
+
+fn main() {
+    print(first(Wide(a: 1.0, b: 0.0, c: 0.0, d: 0.0, e: 0.0, f: 0.0, g: 0.0, h: 0.0, i: 0.0)))
+}

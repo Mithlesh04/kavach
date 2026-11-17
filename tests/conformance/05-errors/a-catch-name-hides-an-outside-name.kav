@@ -1,0 +1,19 @@
+// Rule: A `catch` name may reuse an outside name: it hides it inside the handler only, and the outside one is unchanged after it.
+// Spec: 5.3, 1.4
+// expect output: handler Bad(code: 7)
+// expect output: outside 5
+
+type Oops = Bad(code: Int)
+
+fn check(x: Int) -> Int ! Oops {
+    fail Oops.Bad(code: x)
+}
+
+fn main() {
+    const e = 5
+    const n = check(7) catch e => {
+        print("handler {e}")
+        0
+    }
+    print("outside {e + n}")
+}

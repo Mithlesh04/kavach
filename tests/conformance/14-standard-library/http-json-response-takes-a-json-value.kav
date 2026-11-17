@@ -1,0 +1,17 @@
+// Rule: `http.json_response` takes a `Json` value; a typed value goes in through `json.of`, so passing the record itself is a compile error.
+// Spec: 14.11
+// expect compile error
+
+use std.http
+
+pub type Order {
+    id: Int
+    item: String
+}
+
+fn answer(r: Request) -> Response {
+    http.json_response(200, Order(id: 7, item: "pen"))    // error: an `Order`, not a `Json` value
+}
+
+fn main() {
+}

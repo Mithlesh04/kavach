@@ -1,0 +1,16 @@
+// Rule: Local variables and lambda parameters and results need no written types: they are inferred.
+// Spec: 2.10
+// expect output: [2, 4, 6]
+// expect output: ["a!", "b!"]
+// expect output: 2.5
+
+fn apply(f: fn(Float) -> Float, x: Float) -> Float {
+    f(x)
+}
+
+fn main() {
+    const xs = [1, 2, 3]
+    print(xs.map(x => x * 2))
+    print(["a", "b"].map(s => s + "!"))
+    print(apply(x => x / 2.0, 5.0))
+}

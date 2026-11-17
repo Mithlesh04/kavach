@@ -1,0 +1,14 @@
+// Rule: A task spawned inside an arena may use the arena's values.
+// Spec: 6.3
+// expect output: 6
+
+fn main() ! Error {
+    const n = arena {
+        const xs = [1, 2, 3]
+        const t = spawn {
+            xs.sum(n => n)
+        }
+        try t.wait()
+    }
+    print(n)
+}

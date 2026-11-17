@@ -1,0 +1,9 @@
+// Rule: A view can't change the string it is part of: it has no changing methods.
+// Spec: 2.18
+// expect compile error
+
+fn main() {
+    let v = "hello".view()
+    v.push("!")                  // error: a `StrView` can't change its string
+    print(v)
+}

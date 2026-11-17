@@ -1,0 +1,24 @@
+// Rule: A `map` gives what calling its `gpu fn` on each item directly gives: the code and the results are the same wherever it runs.
+// Spec: 15.1, 15.2
+// expect output: true
+// expect output: true
+
+type Body {
+    x: Float32
+    v: Float32
+}
+
+gpu fn move(b: Body) -> Body {
+    Body(x: b.x + b.v * 0.25, v: b.v * 0.5 - 1.0)
+}
+
+gpu fn mix(a: UInt32, b: UInt32) -> UInt32 {
+    a * 3 + b % 7
+}
+
+fn main() {
+    const bodies = [Body(x: 1.0, v: 2.0), Body(x: -3.5, v: 0.125), Body(x: 100.0, v: -7.0)]
+    print(bodies.map(move) == [move(bodies[0]), move(bodies[1]), move(bodies[2])])
+    const us: [UInt32] = [5, 0, 4000000]
+    print(us.map(u => mix(u, 12)) == [mix(5, 12), mix(0, 12), mix(4000000, 12)])
+}

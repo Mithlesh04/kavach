@@ -1,0 +1,21 @@
+// Rule: with no command given, `cli.parse` of a union gives an error whose text is the usage of every command with its options.
+// Spec: 14.6
+// Checks: misuse
+// expect output: true true
+// expect output: true true
+// expect exit: 2
+
+use std.cli
+
+type Command = AddItem(name: String, count: Int = 1) | Show(limit: Int = 10)
+
+fn main() {
+    const command = cli.parse<Command>() catch e => {
+        const usage = "{e}"
+        print("{usage.contains("add-item")} {usage.contains("show")}")
+        print("{usage.contains("--name")} {usage.contains("--limit")}")
+        cli.exit(2)
+        return
+    }
+    print("ran {command}")
+}

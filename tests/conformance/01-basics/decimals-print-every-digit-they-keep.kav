@@ -1,0 +1,20 @@
+// Rule: A `Decimal` prints all its digits, keeping its scale, alone, in text and inside collections and records.
+// Spec: 1.11
+// expect output: 0.10 -2.50 3
+// expect output: [1.50, -0.25] Price(amount: 9.90)
+// expect output: total 12.00
+
+type Price {
+    amount: Decimal
+}
+
+fn main() {
+    const a: Decimal = 0.10
+    const b: Decimal = -2.50
+    const c: Decimal = 3
+    print("{a} {b} {c}")
+    const xs: [Decimal] = [1.50, -0.25]
+    print("{xs} {Price(amount: 9.90)}")
+    const total: Decimal = 12.00
+    print("total " + String(total))
+}

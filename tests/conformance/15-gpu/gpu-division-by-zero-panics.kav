@@ -1,0 +1,12 @@
+// Rule: Whole-number division by zero in a `gpu fn` that a `map` runs panics, as it does on the CPU.
+// Spec: 15.2, 5.6
+// expect panic: division by zero
+
+gpu fn share(total: Int32, ways: Int32) -> Int32 {
+    total / ways
+}
+
+fn main() {
+    const ways: [Int32] = [2, 5, 0, 1]
+    print(ways.map(w => share(100, w)))
+}

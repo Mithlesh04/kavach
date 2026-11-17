@@ -1,0 +1,21 @@
+// Rule: `UInt8`, `UInt16`, `UInt32` and `UInt64` take `+ - * / % **` up to their largest value, and never go below 0.
+// Spec: 2.1, 1.8
+// expect output: 255 3 1 128 none none
+// expect output: 65000 9285 5 65535
+// expect output: 4294967295 429496729 5
+// expect output: 18446744073709551615 6148914691236517205 9223372036854775808 none
+
+fn main() {
+    const a: UInt8 = 200
+    const seven: UInt8 = 7
+    const zero: UInt8 = 0
+    print("{a + 55} {seven / 2} {seven % 2} {UInt8(2) ** 7} {(a + 55).checked_add(1)} {zero.checked_sub(1)}")
+    const b: UInt16 = 1000
+    const c = b * 65
+    print("{c} {c / 7} {c % 7} {c + 535}")
+    const d: UInt32 = 65535
+    const e = d * 65537
+    print("{e} {e / 10} {e % 10}")
+    const f: UInt64 = 18_446_744_073_709_551_615
+    print("{f} {f / 3} {UInt64(2) ** 63} {f.checked_add(1)}")
+}

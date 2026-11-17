@@ -1,0 +1,18 @@
+// Rule: A set holds each value once by value, as `==` compares: equal lists, tuples, records and maps are one item.
+// Spec: 14.2
+// expect output: 1 1 1 1
+// expect output: 2
+
+type Point {
+    x: Int
+    y: Int
+}
+
+fn main() {
+    const lists = Set.of([1, 2], [1, 2])
+    const tuples = Set.of((1, "a"), (1, "a"))
+    const points = Set.of(Point(x: 1, y: 2), Point(x: 1, y: 2))
+    const maps = Set.of(["a": 1, "b": 2], ["b": 2, "a": 1])
+    print("{lists.len()} {tuples.len()} {points.len()} {maps.len()}")
+    print(Set.of([1, 2], [2, 1]).len())
+}

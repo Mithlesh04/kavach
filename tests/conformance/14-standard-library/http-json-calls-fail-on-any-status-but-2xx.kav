@@ -1,0 +1,37 @@
+// Rule: `get_json` and `post_json` decode only a 2xx answer; any other status fails with `Status(code)`, even when its body is the JSON of a `T`.
+// Spec: 14.11
+// expect output: 200: 7
+// expect output: 201: 7
+// expect output: 299: 7
+// expect output: 301: Status(code: 301)
+// expect output: 404: Status(code: 404)
+// expect output: 500: Status(code: 500)
+// expect output: post 503: Status(code: 503)
+
+use std.http
+use std.json
+use std.net
+
+/// Answers `/N` with status N and the JSON `7`.
+fn statuses(r: Request) -> Response {
+    const status = Int(r.path.slice(1, r.path.len())) catch _ => 400
+    http.json_response(status, json.of(7))
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, statuses)
+    const base = "http://{listener.address()}"
+    for status in [200, 201, 299, 301, 404, 500] {
+        const n = match http.get_json<Int>("{base}/{status}") {
+            ok(n) => "{n}",
+            err(e) => "{e}",
+        }
+        print("{status}: {n}")
+    }
+    const posted = match http.post_json<Int>("{base}/503", json.of(1)) {
+        ok(n) => "{n}",
+        err(e) => "{e}",
+    }
+    print("post 503: {posted}")
+}

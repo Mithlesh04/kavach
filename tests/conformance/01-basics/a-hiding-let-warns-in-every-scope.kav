@@ -1,0 +1,29 @@
+// Rule: A never-used variable that hides an outer `let` of the same name gets the hiding warning in any inner scope: `if`, `while`, a plain block and a lambda; one that is used gets none.
+// Spec: 1.4
+// expect warning
+// expect output: 0 0
+// expect output: 5
+
+fn main() {
+    let total = 0
+    let rounds = 0
+    if rounds == 0 {
+        let total = total + 1       // warning: makes a new `total`; write `total = total + 1`
+    }
+    while rounds < 2 {
+        let rounds = rounds + 1     // warning: makes a new `rounds`; write `rounds = rounds + 1`
+        break
+    }
+    {
+        let total = 7               // warning: makes a new `total`; write `total = 7`
+    }
+    const add = (n: Int) => {
+        let total = n               // warning: makes a new `total`
+        n
+    }
+    print("{total} {rounds}")
+    {
+        let total = add(5)
+        print(total)
+    }
+}

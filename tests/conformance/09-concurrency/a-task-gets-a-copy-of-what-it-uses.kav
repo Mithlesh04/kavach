@@ -1,0 +1,19 @@
+// Rule: a task works on its own copy of the outside values it uses, taken when it is spawned: the caller changing a `let` afterwards doesn't change what the task sees, and a `const` is read the same way.
+// Spec: 9.5, 3.3
+// expect output: main changed n to 2
+// expect output: task sees 1 [1, 2] limit 10
+// expect output: task value 13
+
+fn main() ! Error {
+    let n = 1
+    let xs = [1, 2]
+    const limit = 10
+    const t = spawn {
+        print("task sees {n} {xs} limit {limit}")
+        n + xs.len() + limit
+    }
+    n = 2
+    xs.push(3)
+    print("main changed n to {n}")
+    print("task value {try t.wait()}")
+}

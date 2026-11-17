@@ -1,0 +1,25 @@
+// Rule: `Int8`, `Int16`, `Int32` and `Int` take `+ - * / % **`; `/` truncates toward zero, `%` keeps the sign of the left side, and each holds its own range.
+// Spec: 2.1, 1.8
+// expect output: -5 -9 -14 -3 -1 8
+// expect output: -42 -6 -2100 2401
+// expect output: -33333 -1 2147483647
+// expect output: none none none none
+// expect output: -9223372036854775808 9223372036854775807
+
+fn main() {
+    const a: Int8 = -7
+    const b: Int8 = 2
+    print("{a + b} {a - b} {a * b} {a / b} {a % b} {b ** 3}")
+    const x: Int16 = -300
+    const y: Int16 = 7
+    print("{x / y} {x % y} {x * y} {y ** 4}")
+    const p: Int32 = -100000
+    const q: Int32 = 2_000_000_000
+    print("{p / 3} {p % 3} {q + 147_483_647}")
+    const top8: Int8 = 127
+    const low16: Int16 = -32768
+    const top32: Int32 = 2147483647
+    const low = -9_223_372_036_854_775_807 - 1
+    print("{top8.checked_add(1)} {low16.checked_sub(1)} {top32.checked_mul(2)} {low.checked_sub(1)}")
+    print("{low} {9_223_372_036_854_775_807}")
+}

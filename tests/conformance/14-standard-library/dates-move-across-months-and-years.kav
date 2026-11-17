@@ -1,0 +1,19 @@
+// Rule: `add_days` and `add_months` move across months and years, back for a negative `n`, a month too short giving its last day; `days_until` is negative when the other date comes first.
+// Spec: 14.4
+// expect output: 2025-01-01 2024-02-29 2023-12-31
+// expect output: 2025-02-28 2025-02-28 2023-11-30
+// expect output: -307 0
+// expect output: Thursday Tuesday Thursday
+
+use std.time
+
+fn d(year: Int, month: Int, day: Int) -> time.Date {
+    time.Date(year: year, month: month, day: day)
+}
+
+fn main() {
+    print("{d(2024, 12, 31).add_days(1).iso()} {d(2024, 3, 1).add_days(-1).iso()} {d(2024, 1, 1).add_days(-1).iso()}")
+    print("{d(2025, 3, 31).add_months(-1).iso()} {d(2024, 1, 31).add_months(13).iso()} {d(2024, 1, 31).add_months(-2).iso()}")
+    print("{d(2026, 11, 4).days_until(d(2026, 1, 1))} {d(2026, 11, 4).days_until(d(2026, 11, 4))}")
+    print("{d(1970, 1, 1).weekday()} {d(2000, 2, 29).weekday()} {d(1900, 3, 1).weekday()}")
+}

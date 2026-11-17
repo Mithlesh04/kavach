@@ -1,0 +1,20 @@
+// Rule: `cli.parse` reads a field `max_count` as `--max-count`, takes `String`, numbers, `Bool` flags with no value and optionals, and leaves fields not given at their defaults.
+// Spec: 14.6
+// args: --max-count 7 --ratio 2.5 --verbose --name ada
+// expect output: 7 2.5 true ada out.txt none
+
+use std.cli
+
+type Args {
+    max_count: Int = 1
+    ratio: Float = 1.0
+    verbose: Bool = false
+    name: String?
+    output: String = "out.txt"
+    tag: String?
+}
+
+fn main() ! Error {
+    const args = try cli.parse<Args>()
+    print("{args.max_count} {args.ratio} {args.verbose} {args.name} {args.output} {args.tag}")
+}

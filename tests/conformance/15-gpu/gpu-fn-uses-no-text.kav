@@ -1,0 +1,12 @@
+// Rule: A `gpu fn` uses no text.
+// Spec: 15.1
+// expect compile error
+
+gpu fn named(x: Int32) -> Int32 {
+    const _name = "seven"               // error: a `gpu fn` can't use text
+    x
+}
+
+fn main() {
+    print(named(7))
+}

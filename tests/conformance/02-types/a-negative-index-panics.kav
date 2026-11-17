@@ -1,0 +1,14 @@
+// Rule: `items[i]` panics for an index outside the list; a negative index is outside it, not counted from the end.
+// Spec: 2.2
+// expect output: 30
+// expect panic
+
+fn at(items: [Int], i: Int) -> Int {
+    items[i]
+}
+
+fn main() {
+    const xs = [10, 20, 30]
+    print(at(xs, 2))
+    print(at(xs, -1))
+}

@@ -1,0 +1,49 @@
+// Rule: fields added at the end of a record keep older code working: a newer server reads an older request, its missing fields taking their default, `none` or zero value, and an older client reads a newer answer, skipping fields it doesn't know.
+// Spec: 14.14
+// expect output: server read: OrderV2(id: 7, item: "pen", qty: 1, gift: false, note: none, size: 0)
+// expect output: client read: Placed(id: 7, total: 2.5)
+
+use std.grpc
+use std.net
+
+/// What an older client sends.
+pub type Order {
+    id: Int
+    item: String
+}
+
+/// What the newer server reads: `Order` and fields after it.
+pub type OrderV2 {
+    id: Int
+    item: String
+    qty: Int = 1
+    gift: Bool
+    note: String?
+    size: Int
+}
+
+/// What the older client reads.
+pub type Placed {
+    id: Int
+    total: Float
+}
+
+/// What the newer server answers: `Placed` and a field after it.
+pub type PlacedV2 {
+    id: Int
+    total: Float
+    eta: String
+}
+
+fn orders(call: GrpcCall) -> GrpcReply {
+    const order = grpc.read<OrderV2>(call) catch e => return grpc.failed(3, "{e}")
+    print("server read: {order}")
+    grpc.reply(PlacedV2(id: order.id, total: 2.5 * Float(order.qty), eta: "tomorrow"))
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn grpc.serve(listener, orders)
+    const placed = try grpc.call<Order, Placed>("http://{listener.address()}", "/shop.Orders/Place", Order(id: 7, item: "pen"))
+    print("client read: {placed}")
+}

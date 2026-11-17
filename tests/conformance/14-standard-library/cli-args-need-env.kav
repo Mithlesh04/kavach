@@ -1,0 +1,13 @@
+// Rule: `cli.args()` reads the process arguments, so it needs `Env`.
+// Spec: 14.6
+// expect compile error
+
+use std.cli
+
+pub fn first_arg() -> String uses Console {
+    const args = cli.args()        // error: `first_arg` uses Env, which its `uses` clause doesn't list
+    args[0]
+}
+
+fn main() {
+}

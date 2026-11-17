@@ -1,0 +1,57 @@
+// Rule: a Protocol Buffers message that isn't one of a `T` fails with `GrpcError.BadMessage`: a message cut off, a request of another type read by the server, an answer of another type read by the client.
+// Spec: 14.14
+// expect output: cut off: BadMessage
+// expect output: a request of another type: Status(code: 3, message: "BadMessage")
+// expect output: an answer of another type: BadMessage
+
+use std.grpc
+use std.net
+
+pub type Order {
+    id: Int
+    item: String
+}
+
+/// Field 1 is text here, where `Order` has a number.
+pub type Named {
+    name: String
+}
+
+fn kind(e: GrpcError) -> String {
+    match e {
+        GrpcError.BadMessage(_) => "BadMessage",
+        _ => "{e}",
+    }
+}
+
+fn orders(call: GrpcCall) -> GrpcReply {
+    if call.method == "/shop.Orders/Name" {
+        return grpc.reply(Named(name: "pen"))
+    }
+    match grpc.read<Order>(call) {
+        ok(o) => grpc.reply(o),
+        err(e) => grpc.failed(3, kind(e)),
+    }
+}
+
+fn main() ! Error {
+    // 0x08 starts field 1 as a number, and the number never comes.
+    const cut = match grpc.decode<Order>(Bytes([0x08])) {
+        ok(o) => "{o}",
+        err(e) => kind(e),
+    }
+    print("cut off: {cut}")
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn grpc.serve(listener, orders)
+    const target = "http://{listener.address()}"
+    const sent = match grpc.call<Named, Order>(target, "/shop.Orders/Place", Named(name: "pen")) {
+        ok(o) => "{o}",
+        err(e) => "{e}",
+    }
+    print("a request of another type: {sent}")
+    const got = match grpc.call<Order, Order>(target, "/shop.Orders/Name", Order(id: 1, item: "ink")) {
+        ok(o) => "{o}",
+        err(e) => kind(e),
+    }
+    print("an answer of another type: {got}")
+}

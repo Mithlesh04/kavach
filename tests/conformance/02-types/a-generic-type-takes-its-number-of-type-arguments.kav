@@ -1,0 +1,13 @@
+// Rule: A generic type is written with as many type arguments as it has parameters.
+// Spec: 2.9
+// expect compile error
+
+type Box<I> {
+    raw: String
+}
+
+fn main() {
+    const a = Box<Int>(raw: "1")
+    const c = Box<Int, String>(raw: "2")      // error: `Box` takes 1 type argument, not 2
+    print("{a.raw} {c.raw}")
+}

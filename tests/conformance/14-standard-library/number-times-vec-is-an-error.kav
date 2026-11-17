@@ -1,0 +1,10 @@
+// Rule: The vector goes on the left of `*`: `2.0 * v` is a compile error that says to write `v * 2.0`.
+// Spec: 14.28
+// expect compile error
+
+use std.vec
+
+fn main() {
+    const v = Vec2(x: 1.0, y: 2.0)
+    print(2.0 * v)                      // error: write `v * 2.0`
+}

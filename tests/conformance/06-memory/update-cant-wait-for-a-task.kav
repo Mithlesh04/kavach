@@ -1,0 +1,13 @@
+// Rule: the function given to `update` can't wait for a task: a `.wait()` in it is a compile error.
+// Spec: 6.2
+// expect compile error
+
+fn main() {
+    const job = spawn 5
+    const total = Shared(0)
+    total.update(n => {
+        const v = job.wait() catch _ => 0     // error: `.wait()` waits, and the function given to `update` can't wait
+        n + v
+    })
+    print(total.get())
+}

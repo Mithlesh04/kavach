@@ -1,0 +1,15 @@
+// Rule: inside a task too, the function given to `update` can't wait: a channel `put` in it is a compile error.
+// Spec: 6.2, 9.4
+// expect compile error
+
+fn main() {
+    const (send, receive) = Channel<Int>(capacity: 1)
+    const total = Shared(0)
+    const _t = spawn {
+        total.update(n => {
+            send.put(n)             // error: `put` waits, and the function given to `update` can't wait
+            n + 1
+        })
+    }
+    print(receive.take())
+}

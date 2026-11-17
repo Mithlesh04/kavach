@@ -1,0 +1,21 @@
+// Rule: A vertex's fields are `Float32`s, `Int32`s or `UInt32`s: a `Bool` field is a compile error.
+// Spec: 15.3
+// expect compile error
+
+type Corner {
+    x: Float32
+    y: Float32
+    lit: Bool
+}
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+}
+
+gpu vertex fn place(c: Corner) -> Lit {     // error: `Corner.lit` is a `Bool`
+    Lit(position: (c.x, c.y, 0.0, 1.0))
+}
+
+fn main() {
+    print(place(Corner(x: 0.0, y: 0.0, lit: true)))
+}

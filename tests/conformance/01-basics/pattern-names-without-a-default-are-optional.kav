@@ -1,0 +1,10 @@
+// Rule: A name a list pattern takes without a default is `T?`, so it can't be used as a plain `T`.
+// Spec: 1.12
+// expect compile error
+
+fn main() {
+    const scores = [90, 75]
+    const [first, second = 0] = scores
+    print(second + 1)
+    print(first + 1)                // error: `first` is `Int?`
+}

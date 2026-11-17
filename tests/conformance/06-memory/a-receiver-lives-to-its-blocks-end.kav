@@ -1,0 +1,16 @@
+// Rule: A channel's ends live until the end of the block that holds them, as a `Shared` does: a receiver never used again still counts until then.
+// Spec: 6.1, 9.4
+// expect output: true
+// expect output: false
+
+fn sender_only() -> Sender<Int> {
+    const (send, _receive) = Channel<Int>(capacity: 4)
+    send
+}
+
+fn main() {
+    const (send, _receive) = Channel<Int>(capacity: 4)
+    print(send.try_put(1))
+    // The receiver of this one went when `sender_only` returned.
+    print(sender_only().try_put(1))
+}

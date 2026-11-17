@@ -1,0 +1,12 @@
+// Rule: `http.file` reads a file, so it needs `Fs.read`: a handler whose `uses` clause lists only `Net` can't call it.
+// Spec: 14.11, 8.1
+// expect compile error
+
+use std.http
+
+fn download(r: Request) -> Response uses Net {
+    http.file("./report.pdf") catch _ => http.text(404, "no such file")    // error: `download` uses Fs.read, which its `uses` clause doesn't list
+}
+
+fn main() {
+}

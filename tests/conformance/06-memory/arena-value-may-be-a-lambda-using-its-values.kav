@@ -1,0 +1,13 @@
+// Rule: An arena block's value may be a lambda that uses values made in the arena: the lambda, with what it holds, is copied out.
+// Spec: 6.3, 3.3
+// expect output: 3
+// expect output: 6
+
+fn main() {
+    const count_and_sum = arena {
+        const xs = [1, 2, 3]
+        (n: Int) => if n == 0 { xs.len() } else { xs.sum(x => x) }
+    }
+    print(count_and_sum(0))
+    print(count_and_sum(1))
+}

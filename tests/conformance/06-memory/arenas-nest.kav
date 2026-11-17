@@ -1,0 +1,15 @@
+// Rule: An arena may be nested in another: the inner one may use the outer one's values, and its value is copied out into the outer one.
+// Spec: 6.3
+// expect output: 63
+
+fn main() {
+    const r = arena {
+        const xs = [1, 2, 3]
+        const inner = arena {
+            const ys = xs.map(n => n * 10)
+            ys.sum(n => n)
+        }
+        inner + xs.len()
+    }
+    print(r)
+}

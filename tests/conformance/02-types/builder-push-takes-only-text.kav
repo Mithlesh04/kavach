@@ -1,0 +1,10 @@
+// Rule: A builder's `push` adds text (a `String` or a `StrView`); a number must be turned into text first.
+// Spec: 2.18
+// expect compile error
+
+fn main() {
+    let b = TextBuilder()
+    b.push("{42}")                 // fine
+    b.push(42)                     // error: `push` takes a String or a StrView
+    print(b.to_string())
+}

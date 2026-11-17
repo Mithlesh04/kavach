@@ -1,0 +1,18 @@
+// Rule: An image's pixels are four parts each (red, green, blue, opacity), row by row from the top; `img.pixel(x, y)` reads the one at `x` from the left and `y` from the top.
+// Spec: 14.29
+// expect output: (1, 2, 3, 4)
+// expect output: (5, 6, 7, 8)
+// expect output: (9, 10, 11, 12)
+// expect output: (13, 14, 15, 16)
+// expect output: 2 2 16
+
+use std.image
+
+fn main() {
+    const img = image.new(2, 2, (1..=16).map(i => UInt8(i)))
+    print(img.pixel(0, 0))
+    print(img.pixel(1, 0))
+    print(img.pixel(0, 1))
+    print(img.pixel(1, 1))
+    print("{img.width} {img.height} {img.pixels.len()}")
+}

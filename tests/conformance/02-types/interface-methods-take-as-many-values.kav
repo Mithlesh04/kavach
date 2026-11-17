@@ -1,0 +1,20 @@
+// Rule: A method that implements an interface's method takes as many values as the interface's.
+// Spec: 2.8
+// expect compile error
+
+interface Scale {
+    fn scaled(self, by: Int) -> Int
+}
+
+type Size: Scale {      // error: `Size.scaled` takes 2 values, and `Scale.scaled` takes 1
+    n: Int
+
+    fn scaled(self, by: Int, extra: Int) -> Int {
+        self.n * by + extra
+    }
+}
+
+fn main() {
+    const s: Scale = Size(n: 2)
+    print(s.scaled(3))
+}

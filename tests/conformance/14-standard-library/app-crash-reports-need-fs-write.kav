@@ -1,0 +1,12 @@
+// Rule: Turning on crash reports makes their folder and later writes into it, so it needs `Fs.write`.
+// Spec: 14.30, 8.1
+// expect compile error
+
+use std.app
+
+pub fn report_crashes(folder: String) ! AppError uses Console {
+    try app.crash_reports(folder)      // error: report_crashes doesn't list Fs.write
+}
+
+fn main() {
+}

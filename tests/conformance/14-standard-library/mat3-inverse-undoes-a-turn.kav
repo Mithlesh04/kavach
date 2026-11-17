@@ -1,0 +1,25 @@
+// Rule: A `Mat3` turn has determinant 1 and its `inverse()` undoes it; a matrix that flattens space has determinant 0 and no inverse.
+// Spec: 14.28
+// expect output: true
+// expect output: true
+// expect output: true
+// expect output: 0.0
+// expect output: true
+
+use std.vec
+
+fn main() {
+    const turn = Mat3.rotation_x(0.7).product(Mat3.rotation_y(-1.2))
+    print(turn.determinant().near(1.0))
+    const v = Vec3(x: 1.0, y: -2.0, z: 3.0)
+    const back = turn.inverse() ?? Mat3.identity()
+    print((back @ (turn @ v)).distance(v) < 0.000001)
+    print((back @ v).distance(turn.transposed() @ v) < 0.000001)
+    const flat = Mat3(
+        c0: Vec3(x: 1.0, y: 2.0, z: 3.0),
+        c1: Vec3(x: 2.0, y: 4.0, z: 6.0),
+        c2: Vec3(x: 0.0, y: 0.0, z: 1.0),
+    )
+    print(flat.determinant())
+    print(flat.inverse() == none)
+}

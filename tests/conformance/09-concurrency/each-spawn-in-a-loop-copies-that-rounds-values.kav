@@ -1,0 +1,23 @@
+// Rule: a task spawned in a loop copies the values it uses in that round: the loop's name and a `let` the loop goes on changing.
+// Spec: 9.5, 4.4
+// expect output: [0, 10, 20]
+// expect output: [1, 2, 3]
+// expect output: 3
+
+fn main() {
+    let by_round: [Task<Int>] = []
+    let by_count: [Task<Int>] = []
+    let count = 0
+    for i in 0..3 {
+        count += 1
+        by_round.push(spawn {
+            i * 10
+        })
+        by_count.push(spawn {
+            count
+        })
+    }
+    print(by_round.map(t => t.wait() catch _ => -1))
+    print(by_count.map(t => t.wait() catch _ => -1))
+    print(count)
+}

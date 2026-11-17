@@ -1,0 +1,23 @@
+// Rule: By default, parsing an object with more than `max_fields: 100_000` fields is an error, not a memory blow-up; 100_000 fields are read.
+// Spec: 2.12
+// expect output: read
+// expect output: error
+
+use std.json
+
+fn object_of(fields: Int) -> String {
+    let parts: [String] = []
+    for i in 0..fields {
+        parts.push("\"k{i}\": {i}")
+    }
+    "\{" + parts.join(", ") + "}"
+}
+
+fn main() {
+    for fields in [100_000, 100_001] {
+        match json.parse(object_of(fields)) {
+            ok(_) => print("read"),
+            err(_) => print("error"),
+        }
+    }
+}

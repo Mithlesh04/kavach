@@ -1,0 +1,21 @@
+// Rule: Data encoded at any level of its format decodes back the same; gzip's level 0 stores the data without making it smaller.
+// Spec: 14.21
+// expect output: gzip true true
+// expect output: deflate true true
+// expect output: zstd true true
+// expect output: br true true
+// expect output: lz4 true true
+// expect output: stored true
+
+use std.compress
+
+fn main() ! Error {
+    const data = "abcabcabc ".repeat(300).bytes()
+    const edges = [(Format.Gzip, 0, 9), (Format.Deflate, 0, 9), (Format.Zstd, 1, 22), (Format.Brotli, 0, 11), (Format.Lz4, 0, 0)]
+    for (format, low, high) in edges {
+        const at_low = try compress.decode(compress.encode(data, format, level: low), format)
+        const at_high = try compress.decode(compress.encode(data, format, level: high), format)
+        print("{format.name()} {at_low == data} {at_high == data}")
+    }
+    print("stored {compress.encode(data, Format.Gzip, level: 0).len() > data.len()}")
+}

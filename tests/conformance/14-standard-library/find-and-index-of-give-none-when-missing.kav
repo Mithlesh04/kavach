@@ -1,0 +1,13 @@
+// Rule: `find` and `index_of` give `none` when no item matches, and the first match when several do; `count` gives 0 for none.
+// Spec: 14.2
+// expect output: none none 0
+// expect output: 1 7
+// expect output: none none
+
+fn main() {
+    const xs = [5, 7, 9, 7]
+    print("{xs.find(x => x > 10)} {xs.index_of(8)} {xs.count(x => x > 10)}")
+    print("{xs.index_of(7) ?? -1} {xs.find(x => x > 6) ?? 0}")
+    const empty: [Int] = []
+    print("{empty.find(x => x > 0)} {empty.index_of(0)}")
+}

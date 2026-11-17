@@ -1,0 +1,32 @@
+// Rule: on a plain TCP connection `protocol()`, `peer_certificate()` and `client_cert()` are `none`, and a client's `peer()` is the address it connected to.
+// Spec: 14.10
+// expect output: client: none none none
+// expect output: client peer is the listener: true
+// expect output: server: none none none
+
+use std.net
+
+fn details(conn: Connection) -> String uses Net {
+    const protocol = if conn.protocol() == none { "none" } else { "some" }
+    const certificate = if conn.peer_certificate() == none { "none" } else { "some" }
+    const names = if conn.client_cert() == none { "none" } else { "some" }
+    "{protocol} {certificate} {names}"
+}
+
+fn serve(listener: Listener) -> String ! NetError uses Net {
+    const conn = try listener.accept()
+    const seen = details(conn)
+    conn.close()
+    seen
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const server = spawn serve(listener)
+    const conn = try net.connect(listener.address())
+    print("client: {details(conn)}")
+    print("client peer is the listener: {conn.peer() == listener.address()}")
+    print("server: {try server.wait()}")
+    conn.close()
+    listener.close()
+}

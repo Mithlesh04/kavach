@@ -1,0 +1,22 @@
+// Rule: `[log.levels]` sets the lowest level by the module an event type is declared in, or by the event type; the type's setting wins over its module's, which wins over `level`.
+// Spec: 14.12
+// expect output: WARN Started
+// expect output: DEBUG Charged(amount: 5)
+// expect output: ERROR Retrying(attempt: 2)
+
+use std.log
+use billing.{charge}
+
+type Retrying: LogEvent {
+    attempt: Int
+}
+
+type Started: LogEvent {}
+
+fn main() {
+    log.info(Started())
+    log.warn(Started())
+    charge(5)
+    log.warn(Retrying(attempt: 1))
+    log.error(Retrying(attempt: 2))
+}

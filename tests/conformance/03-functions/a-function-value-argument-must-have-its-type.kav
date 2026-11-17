@@ -1,0 +1,10 @@
+// Rule: An argument to a function value must have the type its function type gives that parameter.
+// Spec: 3.4, 2.1
+// expect compile error
+
+fn main() {
+    const scale: fn(Int, Float) -> Float = (n, f) => Float(n) * f
+    print(scale(2, 1.5))
+    const count = [1, 2, 3].len()
+    print(scale(2, count))   // error: the second parameter is a Float, not an Int
+}

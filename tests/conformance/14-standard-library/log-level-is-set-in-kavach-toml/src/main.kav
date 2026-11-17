@@ -1,0 +1,17 @@
+// Rule: `level` in `[log]` of `kavach.toml` sets the lowest level written; events below it are left out.
+// Spec: 14.12
+// expect output: WARN Slow(ms: 900)
+// expect output: ERROR Slow(ms: 5000)
+
+use std.log
+
+type Slow: LogEvent {
+    ms: Int
+}
+
+fn main() {
+    log.debug(Slow(ms: 10))
+    log.info(Slow(ms: 100))
+    log.warn(Slow(ms: 900))
+    log.error(Slow(ms: 5000))
+}

@@ -1,0 +1,13 @@
+// Rule: A block given to a call is a block: a name declared in it can't be used after it.
+// Spec: 4.8, 1.4
+// expect compile error
+
+use std.log
+
+fn main() {
+    const total = log.span("sum") {
+        const part = 2
+        part + 1
+    }
+    print(total + part)             // error: part is not declared here
+}

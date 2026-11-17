@@ -1,0 +1,16 @@
+// Rule: Passing a variable declared before an arena as an `inout` argument, with an arena value to store in it, is a compile error.
+// Spec: 6.3, 3.9
+// expect compile error
+
+fn keep(inout into: [Int], xs: [Int]) {
+    into = xs
+}
+
+fn main() {
+    let kept = [0]
+    arena {
+        const xs = [1, 2, 3]
+        keep(kept, xs)          // error: xs was made in the arena and would be kept outside it
+    }
+    print(kept)
+}

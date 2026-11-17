@@ -1,0 +1,15 @@
+// Rule: `audio.play` takes a volume from 0 to 4; a volume outside that breaks its contract and panics before anything plays.
+// Spec: 14.27
+// expect panic: contract failed
+
+use std.audio
+
+fn main() uses Audio {
+    const silence = audio.sound([], 8000, 1)       // nothing to hear, whatever happens
+    const loud = [5.0][0]
+    const _ = audio.play(silence, volume: loud) catch _ => {
+        print("no sound device")
+        return
+    }
+    print("played")
+}

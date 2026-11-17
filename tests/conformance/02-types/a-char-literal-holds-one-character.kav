@@ -1,0 +1,8 @@
+// Rule: A `Char` literal holds exactly one character; two are text and need double quotes.
+// Spec: 2.1, 1.7
+// expect compile error
+
+fn main() {
+    print('क')                     // fine: one character
+    print('ab')                    // error: a Char holds exactly one character
+}

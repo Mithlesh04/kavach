@@ -1,0 +1,18 @@
+// Rule: Text whose length no encoding gives, such as one character past a group of four, is `BadLength`.
+// Spec: 14.20
+// Checks: misuse
+// expect output: BadLength
+// expect output: BadLength
+// expect output: BadLength
+
+use std.base64
+
+fn main() {
+    for bad in ["Z", "Zm9vY", "Zm9vYmFyY"] {
+        const _b = base64.decode(bad) catch e => {
+            print(e)
+            continue
+        }
+        print("accepted {bad}")
+    }
+}

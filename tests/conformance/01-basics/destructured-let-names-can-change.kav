@@ -1,0 +1,38 @@
+// Rule: With `let`, every name a pattern takes is a variable: a name with a default, a `...rest`, a map name and a nested record can all change, and the value taken apart stays as it was.
+// Spec: 1.12, 6.1
+// expect output: 10 101 [3, 4]
+// expect output: 8081 2
+// expect output: Delhi 2
+// expect output: [1, 2, 3, 4] ["port": 8080] Pune
+
+type Address {
+    city: String
+    tags: [String]
+}
+
+type User {
+    name: String
+    home: Address
+}
+
+fn main() {
+    const limits = [1, 2, 3]
+    let [low = 0, high = 100, ...rest] = limits
+    low = 10
+    high += 99
+    rest[0] = 3
+    rest.push(4)
+    print("{low} {high} {rest}")
+    const settings = ["port": 8080]
+    let [port = 0, retries = 3] = settings
+    port += 1
+    retries -= 1
+    print("{port} {retries}")
+    const u = User(name: "Asha", home: Address(city: "Pune", tags: []))
+    let { home } = u
+    home.city = "Delhi"
+    home.tags.push("a")
+    home.tags.push("b")
+    print("{home.city} {home.tags.len()}")
+    print("{limits + [4]} {settings} {u.home.city}")
+}

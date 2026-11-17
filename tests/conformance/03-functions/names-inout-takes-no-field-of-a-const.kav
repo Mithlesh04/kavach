@@ -1,0 +1,17 @@
+// Rule: A field of a `const` can't be given for an `inout` parameter: only a `let` variable, or a field or item of one, is a place.
+// Spec: 3.9
+// expect compile error
+
+type User {
+    name: String
+    age: Int
+}
+
+fn bump(inout n: Int) {
+    n += 1
+}
+
+fn main() {
+    const u = User(name: "Asha", age: 30)
+    bump(u.age)                     // error: u is a const
+}

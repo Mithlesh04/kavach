@@ -1,0 +1,10 @@
+// Rule: `s.truncate(max)` keeps at most `max` characters as `len` counts them: whole emoji, and a combining mark apart from its letter.
+// Spec: 14.2
+// expect output: 👍👍 2
+// expect output: true []
+
+fn main() {
+    const thumbs = "👍👍👍".truncate(2)
+    print("{thumbs} {thumbs.len()}")
+    print("{"e\u{301}x".truncate(1) == "e"} [{"नमस्ते".truncate(0)}]")
+}

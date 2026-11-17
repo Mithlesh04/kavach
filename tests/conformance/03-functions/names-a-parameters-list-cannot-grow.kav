@@ -1,0 +1,12 @@
+// Rule: A method that changes a value, such as `push`, can't be called on a parameter: parameters never change, like `const`.
+// Spec: 3.1, 1.4
+// expect compile error
+
+fn with_zero(items: [Int]) -> [Int] {
+    items.push(0)       // error: items is a parameter; copy it into a `let` first
+    items
+}
+
+fn main() {
+    print(with_zero([1]))
+}

@@ -1,0 +1,12 @@
+// Rule: A `gpu fn` uses no lists, in its body as in its signature.
+// Spec: 15.1
+// expect compile error
+
+gpu fn spread(x: Float32) -> Float32 {
+    const _xs = [x, x * 2.0]            // error: a `gpu fn` can't make a list
+    x
+}
+
+fn main() {
+    print(spread(1.0))
+}

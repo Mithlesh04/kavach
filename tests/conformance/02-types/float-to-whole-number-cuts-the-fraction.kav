@@ -1,0 +1,13 @@
+// Rule: a float or `Decimal` becomes a whole number by cutting off the fraction, toward zero.
+// Spec: 2.1
+// expect output: 2 -2 255
+// expect output: 9 -9
+
+fn main() {
+    let up = 2.7
+    let down = -2.7
+    let near_top = 255.9
+    print("{Int(up)} {Int(down)} {UInt8(near_top)}")
+    const price: Decimal = 9.99
+    print("{Int(price)} {Int(-price)}")
+}

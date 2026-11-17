@@ -1,0 +1,10 @@
+// Rule: a `Shared` named with `const` can be updated, but the name can't be given another `Shared`.
+// Spec: 6.2, 1.4
+// expect compile error
+
+fn main() {
+    const counter = Shared(0)
+    counter.update(n => n + 1)
+    counter = Shared(5)         // error: `counter` is a const
+    print(counter.get())
+}

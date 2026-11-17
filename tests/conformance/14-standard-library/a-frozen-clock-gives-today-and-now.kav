@@ -1,0 +1,14 @@
+// Rule: On a frozen clock, `time.today()` and `time.now()` give the frozen moment's date and time in UTC, and `sleep` moves them on.
+// Spec: 14.4
+// expect test pass
+
+use std.time
+
+test "today and now follow the frozen clock" {
+    time.freeze(1_767_225_600_000 + 23 * 3_600_000)      // 2026-01-01 23:00 UTC
+    assert time.today().iso() == "2026-01-01"
+    assert time.now().iso() == "2026-01-01T23:00:00"
+    time.sleep(2.hours)
+    assert time.today().iso() == "2026-01-02"
+    assert time.now().iso() == "2026-01-02T01:00:00"
+}

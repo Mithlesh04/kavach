@@ -1,0 +1,14 @@
+// Rule: An anonymous record's fields are assigned through a `let`, like any record's, and a copy made before keeps its value.
+// Spec: 2.14
+// expect output: 5 2
+// expect output: 1 2
+// expect output: true
+
+fn main() {
+    let p = (x: 1, y: 2)
+    const before = p
+    p.x = 5
+    print("{p.x} {p.y}")
+    print("{before.x} {before.y}")
+    print(before == (y: 2, x: 1))
+}

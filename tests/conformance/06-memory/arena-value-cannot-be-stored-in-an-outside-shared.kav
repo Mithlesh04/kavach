@@ -1,0 +1,12 @@
+// Rule: Storing an arena value in a `Shared` declared before the arena is a compile error.
+// Spec: 6.3, 6.2
+// expect compile error
+
+fn main() {
+    const box = Shared([0])
+    arena {
+        const xs = [1, 2, 3]
+        box.update(_ => xs)     // error: xs was made in the arena and can't be kept outside it
+    }
+    print(box.get())
+}

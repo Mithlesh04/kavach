@@ -1,0 +1,9 @@
+// Rule: `items[i] = v` changes the list, so like assignment it needs a `let`.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    const items = [1, 2]
+    items[0] = 5            // error: `items` is a `const`
+    print(items)
+}

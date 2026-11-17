@@ -1,0 +1,21 @@
+// Rule: A name a `let` pattern takes is a value of its own: changing it later doesn't change a copy put in another variable, a list or a lambda before.
+// Spec: 1.12, 6.1, 3.3
+// expect output: [1, 2, 3] [[1, 2]] [1, 2] 2
+// expect output: Pune Delhi
+
+type Address {
+    city: String
+}
+
+fn main() {
+    let [_, ...rest] = [0, 1, 2]
+    const saved = rest
+    const boxes = [rest]
+    const size = () => rest.len()
+    rest.push(3)
+    print("{rest} {boxes} {saved} {size()}")
+    let { home } = (name: "Asha", home: Address(city: "Pune"))
+    const before = home
+    home.city = "Delhi"
+    print("{before.city} {home.city}")
+}

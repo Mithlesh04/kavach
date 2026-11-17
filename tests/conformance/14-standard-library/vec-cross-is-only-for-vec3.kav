@@ -1,0 +1,10 @@
+// Rule: `cross` is only for `Vec3`: on a `Vec2` it is a compile error.
+// Spec: 14.28
+// expect compile error
+
+use std.vec
+
+fn main() {
+    const a = Vec2(x: 1.0, y: 0.0)
+    print(a.cross(Vec2(x: 0.0, y: 1.0)))  // error: Vec2 has no method `cross`
+}

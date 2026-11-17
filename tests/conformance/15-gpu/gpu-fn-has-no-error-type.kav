@@ -1,0 +1,11 @@
+// Rule: A `gpu fn` can't fail: `!` in its signature is a compile error.
+// Spec: 15.1
+// expect compile error
+
+gpu fn safe_div(a: Int32, b: Int32) -> Int32 ! Error {      // error: a `gpu fn` has no error to give back
+    a / b
+}
+
+fn main() {
+    print(safe_div(6, 3) catch _ => 0)
+}

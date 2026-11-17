@@ -1,0 +1,11 @@
+// Rule: `x.div_floor(n)` with `n` of 0 panics, as `/` does.
+// Spec: 14.2
+// expect panic: division by zero
+
+fn halves(x: Int, n: Int) -> Int {
+    x.div_floor(n)
+}
+
+fn main() {
+    print(halves(7, 0))
+}

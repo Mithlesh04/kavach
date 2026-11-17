@@ -1,0 +1,28 @@
+// Rule: Data cut short, or empty, isn't in its format, so decoding it fails with `Corrupt` in every format.
+// Spec: 14.21
+// Checks: misuse
+// expect output: gzip corrupt corrupt
+// expect output: deflate corrupt corrupt
+// expect output: zstd corrupt corrupt
+// expect output: br corrupt corrupt
+// expect output: lz4 corrupt corrupt
+
+use std.compress
+
+/// What decoding `data` in `format` gives: the length, or why it failed.
+fn outcome(data: Bytes, format: Format) -> String {
+    const back = compress.decode(data, format) catch e => match e {
+        CompressError.TooLarge(_) => return "too large",
+        CompressError.Corrupt(_) => return "corrupt",
+    }
+    "decoded {back.len()}"
+}
+
+fn main() {
+    const data = "Hello, World! ".repeat(200).bytes()
+    for format in [Format.Gzip, Format.Deflate, Format.Zstd, Format.Brotli, Format.Lz4] {
+        const packed = compress.encode(data, format)
+        const half = packed.slice(0, packed.len() / 2)
+        print("{format.name()} {outcome(half, format)} {outcome(Bytes([]), format)}")
+    }
+}

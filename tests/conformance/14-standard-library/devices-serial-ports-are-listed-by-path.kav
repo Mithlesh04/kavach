@@ -1,0 +1,14 @@
+// Rule: `devices.serial_ports()` gives the serial ports there are, as a list of their paths (`COM3`, `/dev/ttyUSB0`).
+// Spec: 14.18
+// expect output: true
+
+use std.devices
+
+fn named() -> Bool uses Serial {
+    const paths: [String] = devices.serial_ports()
+    paths.all(p => p != "")
+}
+
+fn main() {
+    print(named())
+}

@@ -1,0 +1,16 @@
+// Rule: `replace` changes only the first match and `replace_all` every one; `$1` inserts a group, and text without a match comes back as it was.
+// Spec: 14.8
+// expect output: a<1> b22 c333
+// expect output: a[1] b[22] c[333]
+// expect output: no digits
+// expect output: Rao, Asha
+
+use std.regex
+
+fn main() ! Error {
+    const digits = try regex.new(r"(\d+)")
+    print(digits.replace("a1 b22 c333", r"<$1>"))
+    print(digits.replace_all("a1 b22 c333", r"[$1]"))
+    print(digits.replace_all("no digits", "#"))
+    print((try regex.new(r"(\w+) (\w+)")).replace("Asha Rao", r"$2, $1"))
+}

@@ -1,0 +1,29 @@
+// Rule: A key that appears twice in one object is an error when decoding too, at any depth, with where it is.
+// Spec: 2.12
+// Checks: misuse
+// expect output: key id twice, at 1:11
+// expect output: key b twice, at 2:16
+
+use std.json
+
+type Order {
+    id: Int
+}
+
+fn show(e: JsonError) {
+    match e {
+        JsonError.DuplicateKey(key, line, column) => print("key {key} twice, at {line}:{column}"),
+        _ => print("other: {e}"),
+    }
+}
+
+fn main() {
+    const _a = json.decode<Order>("\{\"id\": 1, \"id\": 2}") catch e => {
+        show(e)
+        Order(id: 0)
+    }
+    const _b = json.parse("[\n\{\"a\": \{\"b\": 1, \"b\": 1}}]") catch e => {
+        show(e)
+        Json.Null
+    }
+}

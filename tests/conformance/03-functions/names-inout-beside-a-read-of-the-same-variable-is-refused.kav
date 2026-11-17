@@ -1,0 +1,13 @@
+// Rule: A variable given as `inout` can't be named by another argument of the same call, even one that only reads it.
+// Spec: 3.9
+// expect compile error
+
+fn grow(inout items: [Int], by: Int) {
+    items.push(by)
+}
+
+fn main() {
+    let items = [1, 2]
+    grow(items, items.len())        // error: items is given as inout and read again
+    print(items)
+}

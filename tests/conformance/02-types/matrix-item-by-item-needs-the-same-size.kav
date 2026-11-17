@@ -1,0 +1,11 @@
+// Rule: `a + b`, `a - b` and `a * b` of matrices of different sizes break a `require`.
+// Spec: 2.17
+// expect panic: contract failed: require
+
+use std.matrix
+
+fn main() {
+    const a = matrix.of([[1.0, 2.0], [3.0, 4.0]])
+    const b = matrix.of([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+    print((a + b).items)
+}

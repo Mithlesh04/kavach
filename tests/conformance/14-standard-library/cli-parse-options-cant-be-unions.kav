@@ -1,0 +1,15 @@
+// Rule: commands don't nest: a command's option can't be a union, so `cli.parse` of such a type is refused.
+// Spec: 14.6
+// Checks: misuse
+// expect compile error
+
+use std.cli
+
+type Mode = Fast | Slow
+
+type Command = Run(mode: Mode) | Stop
+
+fn main() ! Error {
+    const command = try cli.parse<Command>()     // error: the option `mode` is a union
+    print("{command}")
+}

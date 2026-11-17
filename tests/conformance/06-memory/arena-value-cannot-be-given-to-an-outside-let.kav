@@ -1,0 +1,14 @@
+// Rule: Giving a variable declared before an arena a value made in the arena is a compile error, also in a loop.
+// Spec: 6.3
+// expect compile error
+
+fn main() {
+    let last: [Int] = []
+    for i in 0..3 {
+        arena {
+            const xs = [i, i]
+            last = xs           // error: xs was made in the arena and can't be kept outside it
+        }
+    }
+    print(last)
+}

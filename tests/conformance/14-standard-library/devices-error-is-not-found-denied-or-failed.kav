@@ -1,0 +1,26 @@
+// Rule: `DeviceError` is `NotFound(path)`, `Denied(path)` or `Failed(path, reason)`.
+// Spec: 14.18
+// expect output: NotFound(path: "COM3") COM3
+// expect output: Denied(path: "COM4") COM4
+// expect output: Failed(path: "COM5", reason: "unplugged") COM5
+
+use std.devices
+
+fn path_of(e: DeviceError) -> String {
+    match e {
+        DeviceError.NotFound(path) => path,
+        DeviceError.Denied(path) => path,
+        DeviceError.Failed(path, _) => path,
+    }
+}
+
+fn main() {
+    const errors = [
+        DeviceError.NotFound(path: "COM3"),
+        DeviceError.Denied(path: "COM4"),
+        DeviceError.Failed(path: "COM5", reason: "unplugged"),
+    ]
+    for e in errors {
+        print("{e} {path_of(e)}")
+    }
+}

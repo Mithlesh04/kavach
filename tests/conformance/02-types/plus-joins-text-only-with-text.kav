@@ -1,0 +1,9 @@
+// Rule: `+` joins two `String`s; a number is not turned into text by itself.
+// Spec: 2.1, 1.8
+// expect compile error
+
+fn main() {
+    const n = 3
+    print("items: " + String(n))   // fine: converted
+    print("items: " + n)           // error: expected String, found Int
+}

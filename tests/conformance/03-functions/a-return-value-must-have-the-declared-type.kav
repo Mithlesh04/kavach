@@ -1,0 +1,14 @@
+// Rule: A value given by `return` must have the function's declared result type.
+// Spec: 3.1
+// expect compile error
+
+fn label(n: Int) -> Int {
+    if n < 0 {
+        return "negative"      // error: `label` returns an Int, not a String
+    }
+    n
+}
+
+fn main() {
+    print(label(1))
+}

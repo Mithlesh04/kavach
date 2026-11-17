@@ -1,0 +1,8 @@
+// Rule: Each item of a tuple has its own type: a tuple whose item has another type is a compile error.
+// Spec: 2.3
+// expect compile error
+
+fn main() {
+    const pair: (Int, String) = (200, 404)      // error: item 1 is an `Int`, not a `String`
+    print(pair)
+}

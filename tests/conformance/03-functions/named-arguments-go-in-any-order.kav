@@ -1,0 +1,25 @@
+// Rule: Named arguments may come in any order after the positional ones, and a default in the middle can be skipped by naming a later parameter.
+// Spec: 3.2
+// expect output: a 1 2.5 true
+// expect output: a 1 2.5 true
+// expect output: a 1 2.5 true
+// expect output: a 1 2.5 true
+// expect output: a 0 0.5 true
+// expect output: a 0 9.5 false
+// expect output: a 7 0.5 false
+// expect output: a 7 9.5 true
+
+fn order(name: String, count: Int = 0, price: Float = 0.5, paid: Bool = false) -> String {
+    "{name} {count} {price} {paid}"
+}
+
+fn main() {
+    print(order("a", 1, 2.5, true))
+    print(order(paid: true, price: 2.5, count: 1, name: "a"))
+    print(order("a", price: 2.5, paid: true, count: 1))
+    print(order("a", 1, paid: true, price: 2.5))
+    print(order("a", paid: true))
+    print(order(price: 9.5, name: "a"))
+    print(order("a", 7))
+    print(order("a", paid: true, count: 7, price: 9.5))
+}

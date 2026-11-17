@@ -1,0 +1,8 @@
+// Rule: `...rest` may only be the last name of a list pattern.
+// Spec: 1.12
+// expect compile error
+
+fn main() {
+    const [...rest, last] = [1, 2, 3]   // error: `...rest` must come last
+    print("{rest} {last}")
+}

@@ -1,0 +1,27 @@
+// Rule: `win.run(f)` calls `f(event)` for each event until `f` gives `false`: so `f` takes an `Event` and gives a `Bool`.
+// Spec: 14.22
+// expect output: true false true
+
+use std.window
+
+/// Ends on Escape going down.
+fn going_on(e: Event) -> Bool {
+    match e {
+        Event.Key(key, down) => not (down and key == "Escape"),
+        _ => true,
+    }
+}
+
+/// Never called here, so no window opens.
+pub fn answer(win: AppWindow) uses Window {
+    win.run(going_on)
+}
+
+fn main() {
+    const keys = [
+        Event.Key(key: "KeyA", down: true),
+        Event.Key(key: "Escape", down: true),
+        Event.Key(key: "Escape", down: false),
+    ]
+    print(keys.map(going_on).map(b => "{b}").join(" "))
+}

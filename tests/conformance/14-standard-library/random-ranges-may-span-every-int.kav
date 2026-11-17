@@ -1,0 +1,16 @@
+// Rule: `random.int(from, until)` needs only `until` greater than `from`: a range wider than the largest `Int`, from below 0 to above it, still gives a number in it.
+// Spec: 14.15
+// expect output: true
+
+use std.random
+
+fn main() uses Random {
+    const low = -9_000_000_000_000_000_000
+    const high = 9_000_000_000_000_000_000
+    let inside = true
+    for _ in 0..100 {
+        const n = random.int(low, high)
+        inside = inside and n >= low and n < high
+    }
+    print(inside)
+}

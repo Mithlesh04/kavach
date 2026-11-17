@@ -1,0 +1,17 @@
+// Rule: `std.collections` gives empty results for empty input; `zip` stops at the shorter list, and `chunks` makes one short list for fewer items than `size`.
+// Spec: 14.9
+// expect output: [] [] [] [:] []
+// expect output: [[1, 2, 3]]
+// expect output: []
+// expect output: [[], [1]]
+
+use std.collections
+
+fn main() {
+    const empty: [Int] = []
+    const lists: [[Int]] = []
+    print("{collections.chunks(empty, 2)} {collections.zip(empty, ["a"])} {collections.unique(empty)} {collections.counts(empty)} {collections.flatten(lists)}")
+    print(collections.chunks([1, 2, 3], 10))
+    print(collections.zip(["a"], empty))
+    print(collections.unique([[], [1], []]))
+}

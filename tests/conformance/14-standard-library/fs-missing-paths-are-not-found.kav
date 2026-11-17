@@ -1,0 +1,31 @@
+// Rule: a file operation on a path with nothing there fails with `NotFound(path)`, and `fs.exists` gives `false`.
+// Spec: 14.3
+// Checks: misuse
+// expect output: false
+// expect output: NotFound(path: "kavach-t-missing.txt")
+// expect output: NotFound(path: "kavach-t-missing.txt")
+// expect output: NotFound(path: "kavach-t-missing.txt")
+// expect output: NotFound(path: "kavach-t-missing.txt")
+// expect output: NotFound(path: "kavach-t-missing.txt")
+// expect output: NotFound(path: "kavach-t-missing.txt")
+// expect output: false
+
+use std.fs
+
+fn main() uses Fs, Console {
+    const path = "kavach-t-missing.txt"
+    print(fs.exists(path))
+    const _data = fs.read_bytes(path) catch e => {
+        print(e)
+        Bytes([])
+    }
+    const _info = fs.info(path) catch e => {
+        print(e)
+        FileInfo(kind: FileKind.File, size: 0, modified_ms: 0, read_only: false, permissions: 0)
+    }
+    fs.remove(path) catch e => print(e)
+    fs.copy(path, "kavach-t-copy.txt") catch e => print(e)
+    fs.rename(path, "kavach-t-moved.txt") catch e => print(e)
+    fs.set_read_only(path, true) catch e => print(e)
+    print(fs.exists("kavach-t-copy.txt") or fs.exists("kavach-t-moved.txt"))
+}

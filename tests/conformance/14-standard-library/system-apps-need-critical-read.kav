@@ -1,0 +1,13 @@
+// Rule: Listing the applications installed needs `System.critical.read`; `uses System` doesn't cover it.
+// Spec: 14.25, 8.1
+// expect compile error
+
+use std.system
+
+pub fn installed() -> Int uses System {
+    system.apps().len()           // error: uses System.critical.read
+}
+
+fn main() {
+    print(installed() >= 0)
+}

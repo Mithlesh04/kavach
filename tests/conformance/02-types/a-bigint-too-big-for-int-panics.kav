@@ -1,0 +1,10 @@
+// Rule: Converting a `BigInt` that doesn't fit `Int` panics.
+// Spec: 2.1, 5.6
+// expect output: 1152921504606846976
+// expect panic: doesn't fit in Int
+
+fn main() {
+    const big = BigInt(2) ** 70
+    print(Int(big / BigInt(1024)))      // 2 ** 60 fits
+    print(Int(big))
+}

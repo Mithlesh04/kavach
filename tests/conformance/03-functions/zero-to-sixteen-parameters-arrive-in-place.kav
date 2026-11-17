@@ -1,0 +1,63 @@
+// Rule: The spec sets no limit on how many parameters a function has: 0, 1, 8 and 16 parameters of mixed types each arrive in their own place, passed by position or by name.
+// Spec: 3.1, 3.2
+// expect output: 42
+// expect output: -5
+// expect output: [1, 2, 3, 4, 5, 6, 7, 8]
+// expect output: [1, 2, 3, 4, 5, 6, 7, 8]
+// expect output: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+// expect output: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+
+// Each parameter's value is decoded back to its position, so a value that lands
+// in the wrong place, or arrives changed, shows in the list.
+
+fn none_at_all() -> Int { 42 }
+fn one(x: Int8) -> Int8 { x }
+
+fn eight(
+    p1: Int8, p2: Float32, p3: Int, p4: Float,
+    p5: UInt16, p6: Bool, p7: String, p8: Char
+) -> [Int] {
+    [
+        -Int(p1), Int(p2 * 2.0) / 2, p3 - 4_000_000_000_000, Int(p4 * 4.0) / 4,
+        Int(p5) - 60000, if p6 { 6 } else { 0 }, (Int(p7) catch 0), Int(p8) - 64
+    ]
+}
+
+fn sixteen(
+    p1: Int8, p2: Float32, p3: Int, p4: Float,
+    p5: UInt16, p6: Bool, p7: String, p8: Char,
+    p9: Int8, p10: Float32, p11: Int, p12: Float,
+    p13: UInt16, p14: Bool, p15: String, p16: Char
+) -> [Int] {
+    [
+        -Int(p1), Int(p2 * 2.0) / 2, p3 - 4_000_000_000_000, Int(p4 * 4.0) / 4,
+        Int(p5) - 60000, if p6 { 6 } else { 0 }, (Int(p7) catch 0), Int(p8) - 64,
+        -Int(p9), Int(p10 * 2.0) / 2, p11 - 4_000_000_000_000, Int(p12 * 4.0) / 4,
+        Int(p13) - 60000, if p14 { 14 } else { 0 }, (Int(p15) catch 0), Int(p16) - 64
+    ]
+}
+
+fn main() {
+    print(none_at_all())
+    print(one(-5))
+    print(eight(
+        -1, 2.5, 4000000000003, 4.25,
+        60005, true, "7", Char(72)
+    ))
+    print(eight(
+        p8: Char(72), p7: "7", p6: true, p5: 60005,
+        p4: 4.25, p3: 4000000000003, p2: 2.5, p1: -1
+    ))
+    print(sixteen(
+        -1, 2.5, 4000000000003, 4.25,
+        60005, true, "7", Char(72),
+        -9, 10.5, 4000000000011, 12.25,
+        60013, true, "15", Char(80)
+    ))
+    print(sixteen(
+        p16: Char(80), p15: "15", p14: true, p13: 60013,
+        p12: 12.25, p11: 4000000000011, p10: 10.5, p9: -9,
+        p8: Char(72), p7: "7", p6: true, p5: 60005,
+        p4: 4.25, p3: 4000000000003, p2: 2.5, p1: -1
+    ))
+}

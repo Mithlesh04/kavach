@@ -1,0 +1,20 @@
+// Rule: An `if let` name may reuse an outside name: it hides that name only inside its block, and the outside one is unchanged after it.
+// Spec: 4.2, 1.4
+// expect output: inside 7
+// expect output: outside 1
+// expect output: none here 1
+
+fn main() {
+    const n = 1
+    const present: Int? = 7
+    const missing: Int? = none
+    if let n = present {
+        print("inside {n}")
+    }
+    print("outside {n}")
+    if let n = missing {
+        print("never {n}")
+    } else {
+        print("none here {n}")
+    }
+}

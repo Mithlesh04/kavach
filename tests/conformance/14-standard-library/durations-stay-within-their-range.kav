@@ -1,0 +1,12 @@
+// Rule: `Duration`'s `require`s keep a product within ±10^15 ms, so scaling a duration past that is a contract failure, not an overflow.
+// Spec: 14.4
+// expect output: 1000000000000000
+// expect panic: contract failed
+
+use std.time
+
+fn main() {
+    print((1.seconds * 1_000_000_000_000).ms)
+    const times = [1_000_000_000_001][0]
+    print((1.seconds * times).ms)
+}

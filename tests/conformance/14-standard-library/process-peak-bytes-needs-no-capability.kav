@@ -1,0 +1,13 @@
+// Rule: `process.peak_bytes()` and `process.cpu_ms()` read this program's own costs, so they need no capability.
+// Spec: 14.23
+// expect output: true true
+
+use std.process
+
+pub fn costs() -> String {
+    "{process.peak_bytes() > 0} {process.cpu_ms() >= 0}"
+}
+
+fn main() {
+    print(costs())
+}

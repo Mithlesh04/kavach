@@ -1,0 +1,20 @@
+// Rule: A union is read by variant name; a name the union doesn't have, or a variant with fields given without them, is a problem at its path.
+// Spec: 2.12
+// Checks: misuse
+// expect output: [Cash, Card(last4: "1")]
+// expect output: Invalid at [0], [1]
+
+use std.json
+
+type Payment = Cash | Card(last4: String)
+
+fn main() {
+    print(json.decode<[Payment]>("[\"Cash\", \{\"Card\": \{\"last4\": \"1\"}}]") catch _ => [])
+    match json.decode<[Payment]>("[\"Cheque\", \"Card\", \"Cash\"]") {
+        ok(v) => print("decoded {v}"),
+        err(e) => match e {
+            JsonError.Invalid(problems) => print("Invalid at {problems.map(p => p.path).join(", ")}"),
+            _ => print("other: {e}"),
+        },
+    }
+}

@@ -1,0 +1,18 @@
+// Rule: `compress.encode_bytes` and `decode_bytes` take the format as its number, `Gzip` 0 to `Lz4` 4, with every argument given; what they make, `decode` reads.
+// Spec: 14.21
+// expect output: true true true true true
+
+use std.compress
+
+fn main() ! Error {
+    const data = "numbers underneath ".repeat(50).bytes()
+    const formats = [Format.Gzip, Format.Deflate, Format.Zstd, Format.Brotli, Format.Lz4]
+    let same: [String] = []
+    for n in 0..5 {
+        const packed = compress.encode_bytes(data, n, [6, 6, 3, 5, 0][n])
+        const back = try compress.decode(packed, formats[n])
+        const again = try compress.decode_bytes(packed, n, 64_000_000)
+        same.push("{back == data and again == data}")
+    }
+    print(same.join(" "))
+}

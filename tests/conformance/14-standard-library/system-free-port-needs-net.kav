@@ -1,0 +1,12 @@
+// Rule: `net.free_port()` and `net.is_free(port)` need `Net`.
+// Spec: 14.25
+// expect compile error
+
+use std.net
+
+pub fn spare() -> Int ! NetError {
+    try net.free_port()           // error: spare doesn't list Net
+}
+
+fn main() {
+}

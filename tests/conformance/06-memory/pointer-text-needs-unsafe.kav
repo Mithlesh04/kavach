@@ -1,0 +1,10 @@
+// Rule: `p.text()` copies text out of raw memory, so it is allowed only inside `unsafe { … }`.
+// Spec: 6.4
+// expect compile error
+
+fn name_at(p: Ptr<UInt8>) -> String? {
+    p.text()                        // error: raw memory outside unsafe
+}
+
+fn main() {
+}

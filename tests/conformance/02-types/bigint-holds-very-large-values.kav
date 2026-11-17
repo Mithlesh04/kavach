@@ -1,0 +1,16 @@
+// Rule: `BigInt` never overflows: a product of the largest `Int`s, or `2 ** 200`, keeps every digit; `/` truncates and `%` keeps the left side's sign, as for `Int`.
+// Spec: 2.1
+// expect output: 85070591730234615847396907784232501249
+// expect output: 1606938044258990275541962092341162602522202993782792835301376
+// expect output: 2 true
+// expect output: -3 -1
+
+fn main() {
+    const top = BigInt(9_223_372_036_854_775_807)
+    print(top * top)
+    const big = BigInt(2) ** 200
+    print(big)
+    print("{big / (BigInt(2) ** 199)} {big > top * top}")
+    let seven: BigInt = -7
+    print("{seven / 2} {seven % 3}")
+}

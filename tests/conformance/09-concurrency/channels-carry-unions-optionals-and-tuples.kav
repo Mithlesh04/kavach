@@ -1,0 +1,43 @@
+// Rule: a channel carries values of any type whole: unions with their fields, optionals, tuples, lists of records.
+// Spec: 9.4
+// expect output: Circle(radius: 2)
+// expect output: Square(side: 3)
+// expect output: none
+// expect output: x
+// expect output: (1, "one")
+// expect output: [P(x: 1), P(x: 2)]
+
+type Shape = Circle(radius: Int) | Square(side: Int)
+
+type P {
+    x: Int
+}
+
+fn main() {
+    const (shapes, shape_in) = Channel<Shape>(capacity: 2)
+    shapes.put(Shape.Circle(radius: 2))
+    shapes.put(Shape.Square(side: 3))
+    shapes.close()
+    for s in shape_in {
+        print(s)
+    }
+    const (maybe, maybe_in) = Channel<String?>(capacity: 2)
+    maybe.put(none)
+    maybe.put("x")
+    maybe.close()
+    for v in maybe_in {
+        print(v)
+    }
+    const (pairs, pair_in) = Channel<(Int, String)>(capacity: 1)
+    pairs.put((1, "one"))
+    match pair_in.take() {
+        Taken.Item(pair) => print(pair),
+        Taken.Closed => print("closed"),
+    }
+    const (lists, list_in) = Channel<[P]>(capacity: 1)
+    lists.put([P(x: 1), P(x: 2)])
+    match list_in.take() {
+        Taken.Item(ps) => print(ps),
+        Taken.Closed => print("closed"),
+    }
+}

@@ -1,0 +1,38 @@
+// Rule: a gRPC call to an address nobody listens at fails with `GrpcError.Network`, holding the `NetError.Refused` of that address.
+// Spec: 14.14, 14.10
+// expect output: call: refused at the address
+// expect output: each: refused at the address
+
+use std.grpc
+use std.net
+
+pub type Ping {
+    n: Int
+}
+
+fn why(e: GrpcError, address: String) -> String {
+    match e {
+        GrpcError.Network(n) => match n {
+            NetError.Refused(a) => if a == address { "refused at the address" } else { "refused elsewhere" },
+            _ => "another network error",
+        },
+        _ => "not a network error: {e}",
+    }
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const address = listener.address()
+    listener.close()
+    const target = "http://{address}"
+    const called = match grpc.call<Ping, Ping>(target, "/test.Ping/Ping", Ping(n: 1)) {
+        ok(p) => "answered {p.n}",
+        err(e) => why(e, address),
+    }
+    print("call: {called}")
+    const each = match grpc.each<Ping, Ping>(target, "/test.Ping/Many", Ping(n: 1), p => print(p.n)) {
+        ok(_) => "answered",
+        err(e) => why(e, address),
+    }
+    print("each: {each}")
+}

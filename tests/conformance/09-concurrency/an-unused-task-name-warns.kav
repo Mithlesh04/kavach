@@ -1,0 +1,15 @@
+// Rule: a `Task` kept in a name that is never used gets the unused-name warning; a name starting with `_` says nobody waits on purpose and gets none.
+// Spec: 9.1, 1.4
+// expect warning
+// expect output: done
+
+fn work() -> Int {
+    1
+}
+
+fn main() {
+    const forgotten = spawn work()      // warning: `forgotten` is never used
+    const _on_purpose = spawn work()
+    spawn work()
+    print("done")
+}

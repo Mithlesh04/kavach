@@ -1,0 +1,11 @@
+// Rule: Names taken from a tuple with `const` never change; with `let` they are variables.
+// Spec: 1.12
+// expect compile error
+
+fn main() {
+    let (low, high) = (1, 9)
+    low = 2
+    const (code, message) = (200, "OK")
+    code = 404                      // error: `code` is a `const`
+    print("{low} {high} {code} {message}")
+}

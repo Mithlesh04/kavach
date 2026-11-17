@@ -1,0 +1,26 @@
+// Rule: Recursion without end that passes a large record each call runs out of stack: that is a panic, never memory corruption.
+// Spec: 3.8, 5.6
+// expect output: before
+// expect panic
+
+type Big {
+    a: Int
+    b: Int
+    c: Int
+    d: Int
+    e: Float
+    f: Float
+    g: Float
+    h: Float
+    name: String
+    items: [Int]
+}
+
+fn down(big: Big) -> Int {
+    down(Big(a: big.a + 1, b: big.b, c: big.c, d: big.d, e: big.e, f: big.f, g: big.g, h: big.h, name: big.name, items: big.items))
+}
+
+fn main() {
+    print("before")
+    print(down(Big(a: 0, b: 1, c: 2, d: 3, e: 4.0, f: 5.0, g: 6.0, h: 7.0, name: "big", items: [1, 2, 3])))
+}

@@ -1,0 +1,12 @@
+// Rule: only whole-number division by zero panics; a float divided by zero is an IEEE infinity or `NaN`.
+// Spec: 2.1, 5.6
+// expect output: true true
+// expect output: NaN
+
+fn main() {
+    let zero = 0.0
+    const up = 1.0 / zero
+    const down = -1.0 / zero
+    print("{up > 1.7976931348623157e308} {down < -1.7976931348623157e308}")
+    print(zero / zero)
+}

@@ -1,0 +1,9 @@
+// Rule: Comparing two different number types is a compile error: no implicit conversions.
+// Spec: 2.1
+// expect compile error
+
+fn main() {
+    let size: UInt32 = 5
+    let wanted: Int32 = 5
+    print(size < wanted)        // error: UInt32 and Int32 do not compare
+}

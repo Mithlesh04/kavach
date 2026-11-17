@@ -1,0 +1,15 @@
+// Rule: `vertex` and `fragment` are words only between `gpu` and `fn`; anywhere else they are ordinary names.
+// Spec: 15.3, 1.6
+// expect output: 5
+// expect output: 6
+
+fn fragment(vertex: Int) -> Int {
+    vertex * 2
+}
+
+fn main() {
+    const vertex = 2
+    const fragment_count = 3
+    print(vertex + fragment_count)
+    print(fragment(3))
+}

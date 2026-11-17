@@ -1,0 +1,26 @@
+// Rule: A secret key of the wrong kind or size fails with `CryptoError.BadKey`: an Ed25519 key for P-256 and the other way round, random bytes, or an empty key.
+// Spec: 14.19
+// expect output: bad key, bad key
+// expect output: bad key, bad key
+// expect output: bad key, bad key
+
+use std.crypto
+
+fn kind(e: CryptoError) -> Bytes {
+    match e {
+        CryptoError.BadKey(_) => "bad key".bytes(),
+        CryptoError.Tampered => "tampered".bytes(),
+    }
+}
+
+fn show(a: Bytes, b: Bytes) {
+    print("{a.text() ?? "?"}, {b.text() ?? "?"}")
+}
+
+const ed = crypto.ed25519_secret()
+const p = crypto.p256_secret()
+const data = "order 7".bytes()
+show(crypto.p256_public(ed) catch e => kind(e), crypto.p256_sign(ed, data) catch e => kind(e))
+show(crypto.ed25519_public(p) catch e => kind(e), crypto.ed25519_sign(p, data) catch e => kind(e))
+const junk = crypto.random_bytes(32)
+show(crypto.ed25519_sign(junk, data) catch e => kind(e), crypto.p256_public("".bytes()) catch e => kind(e))

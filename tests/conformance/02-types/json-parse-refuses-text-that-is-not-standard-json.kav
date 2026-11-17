@@ -1,0 +1,25 @@
+// Rule: `json.parse` takes only standard JSON (RFC 8259): anything else is a `Syntax` error, never a value.
+// Spec: 2.12
+// Checks: misuse
+// expect output: 17 of 17 refused as syntax
+// expect output: 5 "x" true null []
+
+use std.json
+
+fn main() ! JsonError {
+    const bad = ["", "   ", "01", "+1", ".5", "1.", "1e", "-", "'a'", "\{a: 1}", "[1] 2", "tru", "\"abc", "[1 2]", "\{\"a\" 1}", "\{\"a\": 1,}", "[1,,2]"]
+    let refused = 0
+    for text in bad {
+        match json.parse(text) {
+            ok(_) => print("accepted: {text}"),
+            err(e) => match e {
+                JsonError.Syntax(_, _, _) => {
+                    refused += 1
+                }
+                _ => print("other error for {text}: {e}"),
+            },
+        }
+    }
+    print("{refused} of {bad.len()} refused as syntax")
+    print("{try json.parse("5")} {try json.parse(" \"x\" ")} {try json.parse("true")} {try json.parse("null")} {try json.parse(" [ ] ")}")
+}

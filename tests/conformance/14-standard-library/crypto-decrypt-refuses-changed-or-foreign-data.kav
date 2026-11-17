@@ -1,0 +1,27 @@
+// Rule: `crypto.decrypt` fails with `Tampered` when the key is another one, or when the nonce, the ciphertext or the tag changed, or the sealed data was cut short.
+// Spec: 14.19
+// expect output: tampered tampered
+// expect output: tampered tampered
+// expect output: tampered
+
+use std.crypto
+
+fn open(key: Bytes, sealed: Bytes) -> String {
+    const data = crypto.decrypt(key, sealed) catch e => match e {
+        CryptoError.Tampered => return "tampered",
+        CryptoError.BadKey(_) => return "bad key",
+    }
+    data.text() ?? "?"
+}
+
+fn flip(b: Bytes, at: Int) -> Bytes {
+    b.slice(0, at) + Bytes([b[at] ^ 1]) + b.slice(at + 1, b.len())
+}
+
+fn main() ! CryptoError {
+    const key = crypto.aes_key()
+    const sealed = try crypto.encrypt(key, "card 4242".bytes())
+    print("{open(crypto.aes_key(), sealed)} {open(key, flip(sealed, 0))}")
+    print("{open(key, flip(sealed, 14))} {open(key, flip(sealed, sealed.len() - 1))}")
+    print(open(key, sealed.slice(0, sealed.len() - 1)))
+}

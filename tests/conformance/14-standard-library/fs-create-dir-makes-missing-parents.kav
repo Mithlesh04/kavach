@@ -1,0 +1,16 @@
+// Rule: `fs.create_dir` creates a folder and every missing parent on the way to it.
+// Spec: 14.3
+// expect output: true
+// expect output: Folder
+// expect output: ["b"]
+
+use std.fs
+
+fn main() ! FsError uses Fs, Console {
+    const dir = "kavach-t-fs-mkdir"
+    try fs.create_dir("{dir}/a/b/c")
+    print(fs.exists("{dir}/a/b/c"))
+    print((try fs.info("{dir}/a/b")).kind)
+    print(try fs.list("{dir}/a"))
+    try fs.remove_all(dir)
+}

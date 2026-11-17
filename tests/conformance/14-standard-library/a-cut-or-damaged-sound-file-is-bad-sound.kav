@@ -1,0 +1,27 @@
+// Rule: A WAV or Ogg Vorbis file that is cut short or damaged isn't a sound Kavach reads, so `audio.decode` gives `BadSound`.
+// Spec: 14.27
+// Checks: misuse
+// expect output: true
+// expect output: true
+// expect output: true
+
+use std.audio
+
+fn le(n: Int, size: Int) -> [UInt8] {
+    (0..size).map(i => UInt8((n >> (8 * i)) & 255))
+}
+
+fn is_bad(bytes: Bytes) -> Bool {
+    const s = audio.decode(bytes) catch e => return "{e}".starts_with("BadSound(")
+    s.frames < 0
+}
+
+fn main() {
+    const fmt = le(1, 2) + le(1, 2) + le(8000, 4) + le(16000, 4) + le(2, 2) + le(16, 2)
+    const body = [87, 65, 86, 69, 102, 109, 116, 32] + le(16, 4) + fmt + [100, 97, 116, 97] + le(4, 4) + [0, 0, 0, 64]
+    const file = Bytes([82, 73, 70, 70] + le(body.len(), 4) + body)
+    print(is_bad(file.slice(0, 20)))                                   // cut inside its header
+    print(is_bad(Bytes([79, 103, 103, 83] + (0..40).map(_ => UInt8(7)))))  // "OggS", then rubbish
+    const whole = audio.decode(file) catch _ => audio.sound([], 8000, 1)
+    print(whole.frames == 2)                                           // the whole file is fine
+}

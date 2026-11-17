@@ -1,0 +1,26 @@
+// Rule: A generic function may call itself, and two generic functions may call each other, with the type arguments of the first call.
+// Spec: 3.8, 2.9
+// expect output: [3, 2, 1] ["c", "b", "a"]
+// expect output: [-1, -2] [0.5]
+
+fn reversed<T>(xs: [T]) -> [T] {
+    if xs.len() <= 1 {
+        return xs
+    }
+    reversed(xs.slice(1, xs.len())) + [xs[0]]
+}
+
+fn evens<T>(xs: [T], at: Int, out: [T]) -> [T] {
+    if at >= xs.len() { out } else { odds(xs, at + 1, out + [xs[at]]) }
+}
+
+fn odds<T>(xs: [T], at: Int, out: [T]) -> [T] {
+    if at >= xs.len() { out } else { evens(xs, at + 1, out) }
+}
+
+fn main() {
+    print("{reversed([1, 2, 3])} {reversed(["a", "b", "c"])}")
+    const small: [Int8] = [-1, 9, -2]
+    const halves: [Float32] = [0.5, 1.5]
+    print("{evens(small, 0, [])} {evens(halves, 0, [])}")
+}

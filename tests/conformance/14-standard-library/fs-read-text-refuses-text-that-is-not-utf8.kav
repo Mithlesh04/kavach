@@ -1,0 +1,21 @@
+// Rule: `fs.read_text` reads only UTF-8: a file with other bytes is an `FsError`, not text with holes; `fs.read_bytes` still reads it.
+// Spec: 14.3
+// Checks: misuse
+// expect output: error
+// expect output: 3
+
+use std.fs
+
+fn main() ! FsError uses Fs, Console {
+    const dir = "kavach-t-fs-utf8"
+    try fs.create_dir(dir)
+    const path = "{dir}/bad.txt"
+    try fs.write_bytes(path, Bytes([104, 255, 105]))
+    const text = fs.read_text(path) catch e => match e {
+        fs.Failed(_, _) => "error",
+        _ => "wrong error: {e}",
+    }
+    print(text)
+    print((try fs.read_bytes(path)).len())
+    try fs.remove_all(dir)
+}

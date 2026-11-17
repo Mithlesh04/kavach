@@ -1,0 +1,12 @@
+// Rule: `int()` reads a `Number` written without a fraction or exponent that fits `Int`, and `bigint()` one of any size; any other number gives `none`.
+// Spec: 2.12
+// expect output: 7 none none -9223372036854775808 none
+// expect output: -123456789012345678901234567890 none none
+
+use std.json
+
+fn main() ! JsonError {
+    const doc = try json.parse("[7, 1.0, 1e2, -9223372036854775808, 9223372036854775808, -123456789012345678901234567890, 1.5]")
+    print("{doc[0].int()} {doc[1].int()} {doc[2].int()} {doc[3].int()} {doc[4].int()}")
+    print("{doc[5].bigint()} {doc[6].bigint()} {doc[2].bigint()}")
+}

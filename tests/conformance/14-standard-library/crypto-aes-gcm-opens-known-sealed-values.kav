@@ -1,0 +1,29 @@
+// Rule: `crypto.decrypt(key, sealed)` opens AES-256-GCM data sealed as the nonce, then the ciphertext and its tag: the GCM test cases 13 and 14 (zero key, zero nonce).
+// Spec: 14.19
+// expect output: Bytes()
+// expect output: Bytes(00000000000000000000000000000000)
+
+use std.crypto
+
+fn unhex(h: String) -> Bytes {
+    const digits = "0123456789abcdef"
+    let out: [UInt8] = []
+    let i = 0
+    while i + 2 <= h.len() {
+        const high = digits.index_of(h.slice(i, i + 1)) ?? 0
+        const low = digits.index_of(h.slice(i + 1, i + 2)) ?? 0
+        out.push(UInt8(high * 16 + low))
+        i += 2
+    }
+    Bytes(out)
+}
+
+fn main() ! CryptoError {
+    const key = unhex("0000000000000000000000000000000000000000000000000000000000000000")
+    const nonce = unhex("000000000000000000000000")
+    // Test case 13: nothing sealed, so only the tag follows the nonce.
+    print(try crypto.decrypt(key, nonce + unhex("530f8afbc74536b9a963b4f1c4cb738b")))
+    // Test case 14: 16 zero bytes.
+    const sealed = nonce + unhex("cea7403d4d606b6e074ec5d3baf39d18") + unhex("d0d1c8a799996bf0265b98b5d48ab919")
+    print(try crypto.decrypt(key, sealed))
+}

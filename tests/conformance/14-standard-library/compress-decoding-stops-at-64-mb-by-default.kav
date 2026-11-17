@@ -1,0 +1,29 @@
+// Rule: Without `most`, decoding stops at 64 MB: a small input that holds more fails with `TooLarge(most: 64000000)` instead of filling memory.
+// Spec: 14.21
+// expect output: true
+// expect output: too large: 64000000
+// expect output: 64000001
+
+use std.compress
+
+fn why(e: CompressError) -> String {
+    match e {
+        CompressError.TooLarge(most) => "too large: {most}",
+        CompressError.Corrupt(_) => "corrupt",
+    }
+}
+
+fn packed(size: Int) -> Bytes {
+    compress.encode("x".repeat(size).bytes(), Format.Zstd)
+}
+
+fn main() {
+    const bomb = packed(64_000_001)
+    print(bomb.len() < 100_000)
+    const _ = compress.decode(bomb, Format.Zstd) catch e => {
+        print(why(e))
+        Bytes([])
+    }
+    const whole = compress.decode(bomb, Format.Zstd, most: 64_000_001) catch _ => Bytes([])
+    print(whole.len())
+}

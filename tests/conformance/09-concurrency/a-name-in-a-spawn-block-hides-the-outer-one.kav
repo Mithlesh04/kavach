@@ -1,0 +1,24 @@
+// Rule: a spawn block is an inner scope: it may declare a name the outside already has, and the outside name stays as it was.
+// Spec: 1.4, 9.5
+// expect output: inner 10 then 11
+// expect output: outer 5
+// expect output: 22
+
+fn main() ! Error {
+    let n = 5
+    const t = spawn {
+        let n = n * 2
+        const first = n
+        n += 1
+        print("inner {first} then {n}")
+        n
+    }
+    const doubled = try t.wait()
+    print("outer {n}")
+    const u = spawn {
+        const doubled = doubled * 2
+        doubled
+    }
+    print(try u.wait())
+    n = 0
+}

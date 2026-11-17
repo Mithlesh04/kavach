@@ -1,0 +1,9 @@
+// Rule: Names a `const` takes from a list are constants: assigning to one is a compile error.
+// Spec: 1.12, 1.4
+// expect compile error
+
+fn main() {
+    const [low = 0, high = 9] = [1, 2]
+    low = 5                         // error: `low` is a `const`; use `let`
+    print("{low} {high}")
+}

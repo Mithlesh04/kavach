@@ -1,0 +1,9 @@
+// Rule: A literal next to a sized number takes that number's type, so it must fit it.
+// Spec: 2.1, 1.7
+// expect compile error
+
+fn main() {
+    const level: UInt8 = 200
+    print(level + 50)              // fine: 50 is a UInt8
+    print(level + 300)             // error: `300` doesn't fit in `UInt8`
+}

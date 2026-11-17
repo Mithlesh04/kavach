@@ -1,0 +1,20 @@
+// Rule: `==` and `!=` compare std.vec's vectors, matrices and quaternions by their parts.
+// Spec: 14.28
+// expect output: true
+// expect output: true
+// expect output: false
+// expect output: true
+// expect output: true
+// expect output: true
+
+use std.vec
+
+fn main() {
+    const a = Vec3(x: 1.0, y: 2.0, z: 3.0)
+    print(a == Vec3(x: 1.0, y: 2.0, z: 3.0))
+    print(a != Vec3(x: 1.0, y: 2.0, z: 4.0))
+    print(Vec2(x: 1, y: 2) == Vec2(x: 2, y: 1))
+    print(Mat3.identity() == Mat3.scaling(Vec3(x: 1.0, y: 1.0, z: 1.0)))
+    print(Mat4.identity() != Mat4.translation(Vec3(x: 1.0, y: 0.0, z: 0.0)))
+    print(Quat.identity() == Quat(x: 0.0, y: 0.0, z: 0.0, w: 1.0))
+}

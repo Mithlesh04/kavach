@@ -1,0 +1,10 @@
+// Rule: A quaternion's `T` is `Float` or `Float32`: a `Quat<Int>` is a compile error.
+// Spec: 14.28
+// expect compile error
+
+use std.vec
+
+fn main() {
+    const q: Quat<Int> = Quat(x: 0, y: 0, z: 0, w: 1)  // error: `Quat` needs `T: Floating`, and `T` is `Int` here
+    print(q)
+}

@@ -1,0 +1,9 @@
+// Rule: Arithmetic is for numbers: a `Char` has no `+`; its code point is `Int(c)`.
+// Spec: 2.1, 1.8
+// expect compile error
+
+fn main() {
+    const c = 'a'
+    print(Char(Int(c) + 1))        // fine: b
+    print(c + 1)                   // error: expected a number, found Char
+}

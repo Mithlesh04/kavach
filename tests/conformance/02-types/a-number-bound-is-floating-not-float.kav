@@ -1,0 +1,11 @@
+// Rule: A bound is an interface: `Float` is a type, so `<T: Float>` is an error, and the bound for floating-point numbers is `Floating`.
+// Spec: 2.9
+// expect compile error
+
+fn same<T: Float>(x: T) -> T {      // error: `Float` is a type; the bound is `Floating`
+    x
+}
+
+fn main() {
+    print(same("text"))
+}

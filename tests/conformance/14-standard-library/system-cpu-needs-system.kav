@@ -1,0 +1,13 @@
+// Rule: Reading the processor's model, maker and speed needs `uses System`.
+// Spec: 14.25
+// expect compile error
+
+use std.system
+
+pub fn maker() -> String uses Console {
+    system.cpu().vendor           // error: maker doesn't list System
+}
+
+fn main() {
+    print(maker() != "")
+}

@@ -1,0 +1,12 @@
+// Rule: The program's data, settings and cache folders are made if missing, so asking for one needs `Fs.write`; `Fs.read` doesn't cover it.
+// Spec: 14.30, 8.1
+// expect compile error
+
+use std.app
+
+pub fn saves() -> String ! AppError uses Fs.read {
+    try app.data_dir("Skyfall")      // error: saves doesn't list Fs.write
+}
+
+fn main() {
+}

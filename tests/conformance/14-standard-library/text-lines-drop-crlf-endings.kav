@@ -1,0 +1,10 @@
+// Rule: `lines` gives the lines without their line endings, a Windows `\r\n` ending included.
+// Spec: 14.2
+// expect output: ["a", "b", "c"]
+// expect output: 1 1
+
+fn main() {
+    const crlf = "\u{D}\n"
+    print("a{crlf}b\nc".lines())
+    print("{"a{crlf}b".lines()[0].len()} {"a{crlf}b".view().lines()[0].len()}")
+}

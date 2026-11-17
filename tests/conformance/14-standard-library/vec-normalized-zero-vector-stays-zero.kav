@@ -1,0 +1,20 @@
+// Rule: std.vec's `normalized()` gives the same direction with length 1, and a vector of length 0 stays as it is.
+// Spec: 14.28
+// expect output: Vec2(x: 0.0, y: 0.0)
+// expect output: Vec3(x: 0.0, y: 0.0, z: 0.0)
+// expect output: Vec4(x: 0.0, y: 0.0, z: 0.0, w: 0.0)
+// expect output: Vec2(x: 0.0, y: -1.0)
+// expect output: Vec4(x: 0.0, y: 0.0, z: 0.6, w: 0.8)
+// expect output: true
+
+use std.vec
+
+fn main() {
+    print(Vec2(x: 0.0, y: 0.0).normalized())
+    print(Vec3(x: 0.0, y: 0.0, z: 0.0).normalized())
+    const zero = Float32(0.0)
+    print(Vec4(x: zero, y: zero, z: zero, w: zero).normalized())
+    print(Vec2(x: 0.0, y: -2.0).normalized())
+    print(Vec4(x: 0.0, y: 0.0, z: 3.0, w: 4.0).normalized())
+    print(Vec3(x: 1.0, y: 2.0, z: 3.0).normalized().length().near(1.0))
+}

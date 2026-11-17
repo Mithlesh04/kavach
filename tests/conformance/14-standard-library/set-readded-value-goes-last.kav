@@ -1,0 +1,13 @@
+// Rule: A set keeps insertion order: adding a value it holds doesn't move it, and a value removed and added again goes last.
+// Spec: 14.2
+// expect output: [1, 2, 3]
+// expect output: [2, 3, 1]
+
+fn main() {
+    let s = Set.of(1, 2, 3)
+    s.add(1)
+    print(s.to_list())
+    s.remove(1)
+    s.add(1)
+    print(s.to_list())
+}

@@ -1,0 +1,26 @@
+// Rule: `time.parse_date` fails with `Invalid(text)` for anything but a date as `iso` writes it: other separators, missing digits, extra text, an impossible day.
+// Spec: 14.4
+// Checks: misuse
+// expect output: 2000-02-29
+// expect output: Invalid(text: "2026-11-4")
+// expect output: Invalid(text: "2026-13-01")
+// expect output: Invalid(text: "2026-00-10")
+// expect output: Invalid(text: "2026/11/04")
+// expect output: Invalid(text: " 2026-11-04")
+// expect output: Invalid(text: "2026-11-04 ")
+// expect output: Invalid(text: "2026-11-04T00:00:00")
+// expect output: Invalid(text: "1900-02-29")
+// expect output: Invalid(text: "")
+
+use std.time
+
+fn main() ! Error {
+    print((try time.parse_date("2000-02-29")).iso())
+    for text in ["2026-11-4", "2026-13-01", "2026-00-10", "2026/11/04", " 2026-11-04", "2026-11-04 ", "2026-11-04T00:00:00", "1900-02-29", ""] {
+        const d = time.parse_date(text) catch e => {
+            print("{e}")
+            continue
+        }
+        print("accepted {d.iso()}")
+    }
+}

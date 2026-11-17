@@ -1,0 +1,13 @@
+// Rule: A function kept in a record field is called with as many arguments as its type has parameters.
+// Spec: 3.4
+// expect compile error
+
+type Handler {
+    on: fn(Int) -> Int
+}
+
+fn main() {
+    const h = Handler(on: x => x + 1)
+    print(h.on(1))
+    print(h.on(1, 2))        // error: `on` takes 1 value, not 2
+}

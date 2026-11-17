@@ -1,0 +1,16 @@
+// Rule: A parameter that isn't `inout` can't be given for an `inout` parameter: it never changes, like a `const`.
+// Spec: 3.9, 3.1
+// expect compile error
+
+fn bump(inout n: Int) {
+    n += 1
+}
+
+fn twice(n: Int) -> Int {
+    bump(n)                         // error: n is a parameter, not a variable
+    n
+}
+
+fn main() {
+    print(twice(1))
+}

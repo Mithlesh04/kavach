@@ -1,0 +1,17 @@
+// Rule: A field of a parameter can't be set: parameters never change, like `const`.
+// Spec: 3.1, 1.4
+// expect compile error
+
+type User {
+    name: String
+    age: Int
+}
+
+fn older(u: User) -> User {
+    u.age = u.age + 1   // error: u is a parameter; copy it into a `let` first
+    u
+}
+
+fn main() {
+    print(older(User(name: "Asha", age: 30)).age)
+}

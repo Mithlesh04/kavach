@@ -1,0 +1,20 @@
+// Rule: `sort_by` keeps items with equal keys in the order they had, in a long list too.
+// Spec: 14.2
+// expect output: true
+// expect output: [0, 3, 6, 9] [1, 4, 7] [2, 5, 8]
+
+fn main() {
+    const xs = (0..1000).to_list()
+    const sorted = xs.sort_by(x => x % 7)
+    let ok = true
+    for i in 1..sorted.len() {
+        const a = sorted[i - 1]
+        const b = sorted[i]
+        if a % 7 == b % 7 and a > b {
+            ok = false
+        }
+    }
+    print(ok)
+    const small = (0..10).to_list().sort_by(x => x % 3)
+    print("{small.take(4)} {small.slice(4, 7)} {small.skip(7)}")
+}

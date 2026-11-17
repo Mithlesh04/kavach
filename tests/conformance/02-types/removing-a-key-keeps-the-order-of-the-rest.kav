@@ -1,0 +1,21 @@
+// Rule: Removing from a map or set leaves the other items in the order they were added, in large ones too.
+// Spec: 2.2
+// expect output: 334 true
+// expect output: [0, 3, 6] [0, 3, 6]
+
+fn main() {
+    let m: [Int: Int] = [:]
+    let s: Set<Int> = Set.of()
+    for i in 0..1000 {
+        m[i] = i
+        s.add(i)
+    }
+    for i in 0..1000 {
+        if i % 3 != 0 {
+            m.remove(i)
+            s.remove(i)
+        }
+    }
+    print("{m.len()} {m.keys() == s.to_list()}")
+    print("{m.keys().take(3)} {s.to_list().take(3)}")
+}

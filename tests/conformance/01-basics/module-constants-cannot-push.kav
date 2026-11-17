@@ -1,0 +1,14 @@
+// Rule: A module constant's value never changes: calling a changing method such as `push` on it is a compile error.
+// Spec: 1.13, 1.4
+// expect compile error
+
+const names = ["asha", "ravi"]
+
+fn add(name: String) {
+    names.push(name)                // error: `names` is a `const`
+}
+
+fn main() {
+    add("mei")
+    print(names)
+}

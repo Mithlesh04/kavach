@@ -1,0 +1,13 @@
+// Rule: `text.nfkd` splits accents off their letters and turns compatibility characters into plain ones; `nfd` leaves those characters as they are.
+// Spec: 14.9
+// expect output: fi 2
+// expect output: true
+// expect output: 2 1
+
+use std.text
+
+fn main() {
+    print("{text.nfkd("\u{FB01}")} {text.nfkd("\u{FB01}").len()}")
+    print(text.nfd("\u{FB01}") == "\u{FB01}")
+    print("{text.nfkd("\u{E9}").len()} {text.nfkc(text.nfkd("\u{E9}")).len()}")
+}

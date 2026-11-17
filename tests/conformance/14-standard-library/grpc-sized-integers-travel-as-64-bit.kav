@@ -1,0 +1,41 @@
+// Rule: in a gRPC message the sized integers travel as `int64`, so a negative `Int32` takes ten bytes, `UInt64` travels as `uint64`, and a list of booleans is packed.
+// Spec: 14.14
+// expect output: [8, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1]
+// expect output: [8, 255, 255, 255, 255, 255, 255, 255, 255, 255, 1]
+// expect output: [8, 200, 1]
+// expect output: [10, 3, 1, 0, 1]
+// expect output: Sized(a: -1, b: 18446744073709551615, c: 200, flags: [true, false, true])
+
+use std.grpc
+
+type Small {
+    a: Int32
+}
+
+type Big {
+    b: UInt64
+}
+
+type Byte {
+    c: UInt8
+}
+
+type Flags {
+    flags: [Bool]
+}
+
+type Sized {
+    a: Int32
+    b: UInt64
+    c: UInt8
+    flags: [Bool]
+}
+
+fn main() {
+    print(grpc.encode(Small(a: -1)).to_list())
+    print(grpc.encode(Big(b: 18446744073709551615)).to_list())
+    print(grpc.encode(Byte(c: 200)).to_list())
+    print(grpc.encode(Flags(flags: [true, false, true])).to_list())
+    const s = Sized(a: -1, b: 18446744073709551615, c: 200, flags: [true, false, true])
+    print(grpc.decode<Sized>(grpc.encode(s)) catch _ => s)
+}

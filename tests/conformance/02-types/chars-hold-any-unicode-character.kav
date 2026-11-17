@@ -1,0 +1,14 @@
+// Rule: A `Char` holds any one Unicode character, written plainly or with `\u{…}`; it converts to and from its code point and orders by it.
+// Spec: 2.1, 1.7, 1.8
+// expect output: क 😀 true
+// expect output: 2325 128512 233
+// expect output: é true true
+
+fn main() {
+    const ka = 'क'
+    const smile = '\u{1F600}'
+    print("{ka} {smile} {smile == '😀'}")
+    print("{Int(ka)} {Int(smile)} {Int('é')}")
+    const code = 233
+    print("{Char(code)} {'Z' < 'a'} {'z' < 'é'}")
+}

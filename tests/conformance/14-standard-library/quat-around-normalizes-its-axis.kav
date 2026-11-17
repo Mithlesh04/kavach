@@ -1,0 +1,20 @@
+// Rule: `Quat.around(axis, angle)` normalizes `axis` first, so any length of axis gives the same turn, and the quaternion has length 1.
+// Spec: 14.28
+// expect output: true
+// expect output: true
+// expect output: true
+// expect output: true
+
+use std.vec
+use std.math
+
+fn main() {
+    const long = Quat.around(Vec3(x: 0.0, y: 5.0, z: 0.0), math.pi / 2.0)
+    const unit = Quat.around(Vec3(x: 0.0, y: 1.0, z: 0.0), math.pi / 2.0)
+    const x = Vec3(x: 1.0, y: 0.0, z: 0.0)
+    print(long.rotate(x).distance(unit.rotate(x)) < 0.000001)
+    print(long.rotate(x).distance(Vec3(x: 0.0, y: 0.0, z: -1.0)) < 0.000001)
+    print(math.sqrt(long.x * long.x + long.y * long.y + long.z * long.z + long.w * long.w).near(1.0))
+    const half = Quat.around(Vec3(x: 3.0, y: 3.0, z: 0.0), math.pi)
+    print(half.rotate(x).distance(Vec3(x: 0.0, y: 1.0, z: 0.0)) < 0.000001)
+}

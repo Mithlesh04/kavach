@@ -1,0 +1,9 @@
+// Rule: A `test` block whose `assert` is false fails the test run.
+// Spec: 11.8, 14.7
+// expect test fail
+
+test "a list of two has three items" {
+    const items = [1, 2]
+    assert items.len() == 2
+    assert items.len() == 3
+}

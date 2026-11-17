@@ -1,0 +1,19 @@
+// Rule: A task spawned inside an arena finishes before the arena ends, so it never sees the arena's values freed.
+// Spec: 6.3, 9.2
+// expect output: spawned
+// expect output: 3
+// expect output: after the arena: 0
+
+fn show(xs: [Int]) {
+    print(xs.len())
+}
+
+fn main() {
+    const n = arena {
+        const xs = [1, 2, 3]
+        spawn show(xs)
+        print("spawned")
+        0
+    }
+    print("after the arena: {n}")
+}

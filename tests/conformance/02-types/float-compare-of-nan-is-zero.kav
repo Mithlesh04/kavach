@@ -1,0 +1,11 @@
+// Rule: a float's `compare` gives below 0, 0 or above 0 by order, and 0 when neither comes first, as with a `NaN`.
+// Spec: 2.16
+// expect output: true true
+// expect output: 0 0 0
+
+fn main() {
+    const nan = 0.0 / 0.0
+    let one = 1.0
+    print("{one.compare(2.5) < 0} {2.5.compare(one) > 0}")
+    print("{one.compare(one)} {nan.compare(one)} {one.compare(nan)}")
+}

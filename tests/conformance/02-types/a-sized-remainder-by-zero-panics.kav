@@ -1,0 +1,13 @@
+// Rule: Whole-number remainder by zero panics for a sized type too, here `UInt8`.
+// Spec: 2.1, 5.6
+// expect output: 1
+// expect panic: division by zero
+
+fn rest(x: UInt8, y: UInt8) -> UInt8 {
+    x % y
+}
+
+fn main() {
+    print(rest(7, 3))
+    print(rest(7, 0))
+}

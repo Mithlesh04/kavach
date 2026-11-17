@@ -1,0 +1,15 @@
+// Rule: A nested arena is an arena too: its values can't be stored in a variable of the arena around it.
+// Spec: 6.3
+// expect compile error
+
+fn main() {
+    const r = arena {
+        let mid: [Int] = []
+        arena {
+            const xs = [1, 2, 3]
+            mid = xs            // error: xs was made in the inner arena and can't be kept outside it
+        }
+        mid
+    }
+    print(r)
+}

@@ -1,0 +1,19 @@
+// Rule: `ClipboardError` is `Empty`, or `Unavailable(reason)` on a machine with no clipboard.
+// Spec: 14.17
+// expect output: Empty: nothing copied
+// expect output: Unavailable(reason: "no desktop"): no clipboard
+
+use std.clipboard
+
+fn said(e: ClipboardError) -> String {
+    match e {
+        ClipboardError.Empty => "nothing copied",
+        ClipboardError.Unavailable(_) => "no clipboard",
+    }
+}
+
+fn main() {
+    for e in [ClipboardError.Empty, ClipboardError.Unavailable(reason: "no desktop")] {
+        print("{e}: {said(e)}")
+    }
+}

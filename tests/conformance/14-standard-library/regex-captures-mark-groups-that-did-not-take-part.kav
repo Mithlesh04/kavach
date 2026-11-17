@@ -1,0 +1,17 @@
+// Rule: `captures` gives `none` for a group that didn't take part, and `named_captures` leaves such a group out; both give `none` without a match.
+// Spec: 14.8
+// expect output: ["b", none, "b"]
+// expect output: none
+// expect output: ["second": "b"]
+// expect output: none
+
+use std.regex
+
+fn main() ! Error {
+    const either = try regex.new(r"(a)|(b)")
+    print(either.captures("xb"))
+    print(either.captures("xyz"))
+    const named = try regex.new(r"(?<first>a)|(?<second>b)")
+    print(named.named_captures("xb"))
+    print(named.named_captures("xyz"))
+}

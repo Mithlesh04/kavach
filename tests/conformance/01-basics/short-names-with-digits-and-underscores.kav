@@ -1,0 +1,18 @@
+// Rule: One-letter names, names with digits after the first character, and names with `_` anywhere are names for `const` and `let`.
+// Spec: 1.5
+// expect output: 21
+// expect output: 32
+
+fn main() {
+    const a = 1
+    let b = 2
+    const x1 = 3
+    let a_1_b = 4
+    const z9z = 5
+    let é = 6
+    print(a + b + x1 + a_1_b + z9z + é)
+    b = 7
+    a_1_b += 1
+    é = é + 5
+    print(a + b + x1 + a_1_b + z9z + é)
+}

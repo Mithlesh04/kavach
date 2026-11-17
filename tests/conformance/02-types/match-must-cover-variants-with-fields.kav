@@ -1,0 +1,16 @@
+// Rule: A `match` on a union must cover every variant, those that carry fields too.
+// Spec: 2.6
+// expect compile error
+
+type Shape = Circle(radius: Float) | Rect(width: Float, height: Float) | Dot
+
+fn area(s: Shape) -> Float {
+    match s {      // error: `Shape.Rect` is not covered
+        Shape.Circle(radius) => 3.0 * radius * radius,
+        Shape.Dot => 0.0,
+    }
+}
+
+fn main() {
+    print(area(Shape.Dot))
+}

@@ -1,0 +1,29 @@
+// Rule: a connection is closed when its last holder lets it go, so one a function opens and doesn't return is closed when the function ends.
+// Spec: 14.10, 6.1
+// expect output: server read: hi
+
+use std.net
+
+fn say_hi(address: String) ! NetError uses Net {
+    const conn = try net.connect(address)
+    try conn.write("hi".bytes())
+}
+
+/// What the client sent before it closed; fails if it stays open.
+fn serve(listener: Listener) -> String ! NetError uses Net {
+    const conn = try listener.accept()
+    let all = Bytes([])
+    while true {
+        all = all + ((try conn.read().timeout(5.seconds)) ?? break)
+    }
+    conn.close()
+    all.text() ?? "?"
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const server = spawn serve(listener)
+    try say_hi(listener.address())
+    print("server read: {server.wait() catch _ => "nothing: still open"}")
+    listener.close()
+}

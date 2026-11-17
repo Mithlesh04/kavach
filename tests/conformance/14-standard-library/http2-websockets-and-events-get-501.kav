@@ -1,0 +1,42 @@
+// Rule: over HTTP/2 neither WebSockets nor server-sent events are offered yet: a WebSocket request a handler accepts with `http.websocket`, or one it answers with `http.events`, gets 501.
+// Spec: 14.11
+// expect output: /chat: 501
+// expect output: /news: 501
+// expect output: /plain: 200
+
+use std.http
+use std.http.h2
+use std.net
+
+fn handle(r: Request) -> Response {
+    match r.path {
+        "/chat" => http.websocket(r, ws => ws.close()),
+        "/news" => http.events(r, out => {
+            try out.send("hi")
+        }),
+        _ => http.text(200, "plain"),
+    }
+}
+
+fn main() ! Error {
+    const listener = try net.listen("127.0.0.1:0")
+    const _server = spawn http.serve(listener, handle)
+    for path in ["/chat", "/news", "/plain"] {
+        const conn = try net.connect(listener.address())
+        let headers = [
+            Header(name: ":method", value: "GET"),
+            Header(name: ":scheme", value: "http"),
+            Header(name: ":authority", value: "localhost"),
+            Header(name: ":path", value: path),
+        ]
+        if path == "/chat" {
+            // What an HTTP/1.1 WebSocket request says (RFC 6455 4.1).
+            headers.push(Header(name: "upgrade", value: "websocket"))
+            headers.push(Header(name: "sec-websocket-key", value: "dGhlIHNhbXBsZSBub25jZQ=="))
+            headers.push(Header(name: "sec-websocket-version", value: "13"))
+        }
+        const reply = try h2.request(conn, headers, Bytes([]))
+        conn.close()
+        print("{path}: {reply.headers.get(":status") ?? "?"}")
+    }
+}

@@ -1,0 +1,12 @@
+// Rule: Making a pad vibrate (`pad.rumble`) needs `Input`, as reading it does.
+// Spec: 14.26
+// expect compile error
+
+use std.input
+
+pub fn buzz(pad: Pad) {
+    pad.rumble(0.5, 0.2, 100)     // error: `buzz` is `pub`, so it must say what it uses: add `uses Input`
+}
+
+fn main() {
+}

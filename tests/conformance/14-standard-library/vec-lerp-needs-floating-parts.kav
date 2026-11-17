@@ -1,0 +1,10 @@
+// Rule: `lerp` needs a `Float` or `Float32` vector: on whole-number vectors it is a compile error.
+// Spec: 14.28
+// expect compile error
+
+use std.vec
+
+fn main() {
+    const a: Vec2<Int> = Vec2(x: 0, y: 0)
+    print(a.lerp(Vec2(x: 4, y: 4), 1))  // error: `lerp` needs `T: Floating`
+}

@@ -1,0 +1,10 @@
+// Rule: `Decimal` is a number type, so it meets `Rem`: `%` works on it, keeping the left side's sign as for other numbers.
+// Spec: 2.16, 1.8
+// expect output: 1.5 -1.5 0.3
+
+fn main() {
+    let a: Decimal = 7.5
+    const two: Decimal = 2
+    const part: Decimal = 0.4
+    print("{a % two} {-a % two} {a % part}")
+}

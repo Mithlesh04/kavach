@@ -1,0 +1,15 @@
+// Rule: `gen.int(from, to)` needs `from` no larger than `to`; a `sample` that asks for an empty range fails the test run.
+// Spec: 14.7
+// expect test fail
+
+type Roll: Sample {
+    die: Int
+
+    fn sample(gen: Gen) -> Roll {
+        Roll(die: gen.int(6, 1))
+    }
+}
+
+fn face(r: Roll) -> Int {
+    r.die
+}

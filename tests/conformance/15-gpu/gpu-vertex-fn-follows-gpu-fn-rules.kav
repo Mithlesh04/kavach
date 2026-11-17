@@ -1,0 +1,21 @@
+// Rule: A `gpu vertex fn` follows the rules of a `gpu fn`: it can't print.
+// Spec: 15.3, 15.1
+// expect compile error
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+}
+
+gpu vertex fn place(c: Corner) -> Lit {
+    print(c.x)                          // error: `print` isn't a `gpu fn`
+    Lit(position: (c.x, c.y, 0.0, 1.0))
+}
+
+fn main() {
+    print(place(Corner(x: 0.0, y: 0.0)))
+}

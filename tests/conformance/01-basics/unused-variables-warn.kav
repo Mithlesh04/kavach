@@ -1,0 +1,26 @@
+// Rule: A `const`, a `let`, a `for` variable or a `catch` name that is never used gets a warning, and the program still runs.
+// Spec: 1.4
+// expect warning
+// expect output: 3
+// expect output: -1
+
+type AgeError = TooLarge(value: Int)
+
+fn check_age(age: Int) -> Int ! AgeError {
+    if age > 150 {
+        fail AgeError.TooLarge(value: age)
+    }
+    age
+}
+
+fn main() {
+    const draft = "unused"          // warning: `draft` is never used
+    let spare = 0                   // warning: `spare` is never used
+    let count = 0
+    for i in 0..3 {                 // warning: `i` is never used
+        count += 1
+    }
+    print(count)
+    const age = check_age(200) catch e => -1     // warning: `e` is never used
+    print(age)
+}

@@ -1,0 +1,12 @@
+// Rule: A parameter can't be changed with a compound assignment such as `+=`: parameters never change, like `const`.
+// Spec: 3.1
+// expect compile error
+
+fn grow(size: Int) -> Int {
+    size += 1           // error: size is a parameter; copy it into a `let` first
+    size
+}
+
+fn main() {
+    print(grow(1))
+}

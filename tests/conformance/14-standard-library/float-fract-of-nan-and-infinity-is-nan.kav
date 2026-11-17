@@ -1,0 +1,11 @@
+// Rule: `x.fract()` is `x - math.floor(x)`, so it is `NaN` for `NaN` and for either infinity, and 0.0 for a whole number.
+// Spec: 14.2
+// expect output: NaN NaN NaN
+// expect output: 0.0 0.0
+
+fn main() {
+    const nan = 0.0 / 0.0
+    const inf = 1.0 / 0.0
+    print("{nan.fract()} {inf.fract()} {(-inf).fract()}")
+    print("{(-3.0).fract()} {1e20.fract()}")
+}

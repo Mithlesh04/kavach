@@ -1,0 +1,17 @@
+// Rule: `crypto.equal(a, b)` is true only when both `Bytes` hold the same bytes: one changed byte, anywhere, or a different length makes it false.
+// Spec: 14.19
+// expect output: true true
+// expect output: false false
+// expect output: false false
+
+use std.crypto
+
+const mac = crypto.hmac_sha256("key".bytes(), "order 7".bytes())
+const same = crypto.hmac_sha256("key".bytes(), "order 7".bytes())
+print("{crypto.equal(mac, same)} {crypto.equal("".bytes(), "".bytes())}")
+// The last byte differs; then the first.
+const last = mac.slice(0, 31) + Bytes([mac[31] ^ 1])
+const first = Bytes([mac[0] ^ 1]) + mac.slice(1, 32)
+print("{crypto.equal(mac, last)} {crypto.equal(mac, first)}")
+// A prefix, and the same bytes with one more.
+print("{crypto.equal(mac, mac.slice(0, 16))} {crypto.equal(mac, mac + Bytes([0]))}")

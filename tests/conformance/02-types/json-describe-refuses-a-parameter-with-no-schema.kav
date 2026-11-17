@@ -1,0 +1,18 @@
+// Rule: `json.describe(f)` of a named function whose parameter type has no schema (a map with other keys) is a compile error.
+// Spec: 2.12
+// expect compile error
+
+use std.json
+
+/// Sums the scores.
+fn total(scores: [Int: Float]) -> Float {
+    let sum = 0.0
+    for (_, v) in scores {
+        sum += v
+    }
+    sum
+}
+
+fn main() {
+    print(json.describe(total).doc)       // error: `scores` has no schema
+}

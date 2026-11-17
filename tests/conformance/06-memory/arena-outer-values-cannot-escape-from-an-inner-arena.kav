@@ -1,0 +1,14 @@
+// Rule: A value made in an outer arena can't be stored, from an inner arena, in a variable declared before the outer one.
+// Spec: 6.3
+// expect compile error
+
+fn main() {
+    let kept: [Int] = []
+    arena {
+        const xs = [1, 2, 3]
+        arena {
+            kept = xs           // error: xs was made in the outer arena and can't be kept outside it
+        }
+    }
+    print(kept)
+}

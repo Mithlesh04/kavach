@@ -1,0 +1,15 @@
+// Rule: `abs` of a sized whole number's smallest value doesn't fit in its type, so it panics, as for `Int`.
+// Spec: 14.2
+// expect output: 127
+// expect panic
+
+fn size(n: Int8) -> Int8 {
+    n.abs()
+}
+
+fn main() {
+    const near: Int8 = -127
+    print(size(near))
+    const small: Int8 = -128
+    print(size(small))
+}

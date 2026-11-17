@@ -1,0 +1,17 @@
+// Rule: The names after `extend<…>` stand for the type's own parameters: a name that isn't one of them is an error.
+// Spec: 2.5
+// expect compile error
+
+type Box<T> {
+    value: T
+}
+
+extend<T, U> Box<T> {      // error: `U` is not one of `Box`'s parameters
+    fn get(self) -> T {
+        self.value
+    }
+}
+
+fn main() {
+    print(Box(value: 1).get())
+}

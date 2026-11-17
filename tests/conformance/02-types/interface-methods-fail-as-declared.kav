@@ -1,0 +1,22 @@
+// Rule: A method that implements an interface's method can fail exactly when the interface's can: one that fails where the interface's can't is an error.
+// Spec: 2.8
+// expect compile error
+
+type ReadError = Empty
+
+interface Source {
+    fn read(self) -> Int
+}
+
+type Dry: Source {      // error: `Dry.read` can fail, and `Source.read` can't
+    n: Int
+
+    fn read(self) -> Int ! ReadError {
+        fail ReadError.Empty
+    }
+}
+
+fn main() {
+    const s: Source = Dry(n: 0)
+    print(s.read())
+}

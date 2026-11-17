@@ -1,0 +1,10 @@
+// Rule: A `Decimal` and a `Float` can't be added: there are no implicit number conversions.
+// Spec: 2.1
+// expect compile error
+
+fn main() {
+    const price: Decimal = 1.25
+    const rate: Float = 0.5
+    print(price * 2)               // fine: 2 is a Decimal here
+    print(price * rate)            // error: no implicit number conversions
+}

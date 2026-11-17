@@ -1,0 +1,18 @@
+// Rule: A module constant's value can't use anything that can fail without `catch`: it is worked out before `main`.
+// Spec: 1.13
+// expect compile error
+
+type AgeError = TooLarge(value: Int)
+
+fn check_age(age: Int) -> Int ! AgeError {
+    if age > 150 {
+        fail AgeError.TooLarge(value: age)
+    }
+    age
+}
+
+const age = try check_age(30)       // error: a module constant can't fail; add `catch`
+
+fn main() {
+    print(age)
+}

@@ -1,0 +1,12 @@
+// Rule: Inside a lambda, a captured `const` still never changes: a changing method on it is a compile error, not a warning about a copy.
+// Spec: 1.4, 3.3
+// expect compile error
+
+fn main() {
+    const xs = [1]
+    const f = () => {
+        xs.push(2)                  // error: xs is a const
+        xs.len()
+    }
+    print(f())
+}

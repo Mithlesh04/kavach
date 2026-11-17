@@ -1,0 +1,14 @@
+// Rule: A name a pattern took can't be declared again by a `let` in the same scope.
+// Spec: 1.4, 1.12
+// expect compile error
+
+type User {
+    name: String
+    age: Int
+}
+
+fn main() {
+    const { name, age } = User(name: "Asha", age: 31)
+    let name = "Ravi"               // error: `name` is already declared in this scope
+    print("{name} {age}")
+}

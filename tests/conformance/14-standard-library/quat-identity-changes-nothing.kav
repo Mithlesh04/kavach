@@ -1,0 +1,16 @@
+// Rule: `Quat.identity()` is no rotation: it leaves vectors as they are, its matrix is `Mat4.identity()`, and multiplying by it changes nothing.
+// Spec: 14.28
+// expect output: Vec3(x: 1.0, y: -2.0, z: 3.0)
+// expect output: true
+// expect output: true
+
+use std.vec
+use std.math
+
+fn main() {
+    const none_turn: Quat<Float> = Quat.identity()
+    print(none_turn.rotate(Vec3(x: 1.0, y: -2.0, z: 3.0)))
+    print(none_turn.matrix() == Mat4.identity())
+    const q = Quat.around(Vec3(x: 0.0, y: 1.0, z: 0.0), math.pi / 3.0)
+    print(q * none_turn == q)
+}

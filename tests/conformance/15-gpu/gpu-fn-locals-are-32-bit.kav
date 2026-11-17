@@ -1,0 +1,12 @@
+// Rule: A `gpu fn`'s `const` and `let` hold only the 32-bit types and `Bool`.
+// Spec: 15.1
+// expect compile error
+
+gpu fn scale(x: Float32) -> Float32 {
+    const k: Float = 0.5                // error: `Float` is 64 bits
+    x * Float32(k)
+}
+
+fn main() {
+    print(scale(2.0))
+}

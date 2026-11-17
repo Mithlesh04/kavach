@@ -1,0 +1,25 @@
+// Rule: A disk's kind is a `DiskKind` (`Ssd`, `Hdd`, `Usb`, `Other`), an adapter's an `AdapterKind` (`Ethernet`, `WiFi`, `Bluetooth`, `Loopback`, `Other`) and a sensor's a `SensorKind` (`Temperature`, `Fan`, `Voltage`, `Power`).
+// Spec: 14.25
+// expect output: true
+
+use std.system
+
+fn disk(k: DiskKind) -> Int {
+    match k { DiskKind.Ssd => 1, DiskKind.Hdd => 2, DiskKind.Usb => 3, DiskKind.Other => 4 }
+}
+
+fn adapter(k: AdapterKind) -> Int {
+    match k {
+        AdapterKind.Ethernet => 1, AdapterKind.WiFi => 2, AdapterKind.Bluetooth => 3,
+        AdapterKind.Loopback => 4, AdapterKind.Other => 5,
+    }
+}
+
+fn sensor(k: SensorKind) -> Int {
+    match k { SensorKind.Temperature => 1, SensorKind.Fan => 2, SensorKind.Voltage => 3, SensorKind.Power => 4 }
+}
+
+fn main() uses System {
+    print(system.disks().all(d => disk(d.kind) > 0) and system.network().all(a => adapter(a.kind) > 0) and
+        system.sensors().all(s => sensor(s.kind) > 0))
+}

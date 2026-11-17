@@ -1,0 +1,13 @@
+// Rule: A file or folder dialog gives `String?`, `none` when the person cancelled, so its answer isn't a `String` until that is handled.
+// Spec: 14.30
+// expect compile error
+
+use std.app
+
+pub fn level() -> String uses Window {
+    const path: String = app.open_file("Load a level")      // error: open_file gives String?, not String
+    path
+}
+
+fn main() {
+}

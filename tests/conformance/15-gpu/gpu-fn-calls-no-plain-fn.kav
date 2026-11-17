@@ -1,0 +1,15 @@
+// Rule: A `gpu fn` calls only other `gpu fn`s: calling a plain `fn` of the same types is a compile error.
+// Spec: 15.1
+// expect compile error
+
+fn half(x: Float32) -> Float32 {
+    x / 2.0
+}
+
+gpu fn quarter(x: Float32) -> Float32 {
+    half(half(x))                       // error: `half` isn't a `gpu fn`
+}
+
+fn main() {
+    print(quarter(8.0))
+}

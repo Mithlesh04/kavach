@@ -1,0 +1,26 @@
+// Rule: A name a pattern takes (from a list, a record, a map, a tuple, a nested pattern, or `...rest`) that is never used gets a warning, while the names used beside it get none.
+// Spec: 1.4, 1.12
+// expect warning
+// expect output: 1 1 Asha 8080 200 Pune
+
+type Address {
+    city: String
+    zip: Int
+}
+
+type User {
+    name: String
+    age: Int
+    home: Address
+}
+
+fn main() {
+    const [first, second] = [1, 2]                  // warning: `second` is never used
+    const [head, ...rest] = [1, 2, 3]               // warning: `rest` is never used
+    const u = User(name: "Asha", age: 31, home: Address(city: "Pune", zip: 411001))
+    const { name, age: years } = u                  // warning: `years` is never used
+    const [port = 0, host = 0] = ["port": 8080]     // warning: `host` is never used
+    const (code, message) = (200, "OK")             // warning: `message` is never used
+    const { home: { city, zip } } = u               // warning: `zip` is never used
+    print("{first} {head} {name} {port} {code} {city}")
+}

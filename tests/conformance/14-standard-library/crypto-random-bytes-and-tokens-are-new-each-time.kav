@@ -1,0 +1,21 @@
+// Rule: `crypto.random_bytes(n)` gives `n` new random bytes; `crypto.token()` gives 32 random bytes as URL-safe base64 text (43 characters of `A–Z a–z 0–9 - _`), new each time.
+// Spec: 14.19
+// expect output: 0 16 64
+// expect output: false
+// expect output: 43 true
+// expect output: false
+
+use std.crypto
+
+print("{crypto.random_bytes(0).len()} {crypto.random_bytes(16).len()} {crypto.random_bytes(64).len()}")
+print(crypto.random_bytes(32) == crypto.random_bytes(32))
+const t = crypto.token()
+const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+let url_safe = true
+for c in t.chars() {
+    if not alphabet.contains(String(c)) {
+        url_safe = false
+    }
+}
+print("{t.len()} {url_safe}")
+print(t == crypto.token())

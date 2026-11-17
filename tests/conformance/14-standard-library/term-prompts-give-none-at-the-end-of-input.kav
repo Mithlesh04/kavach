@@ -1,0 +1,16 @@
+// Rule: at the end of standard input, `term.prompt`, `prompt_int`, `prompt_float` and `prompt_secret` print their question and a space, then give `none`.
+// Spec: 14.13
+// expect output: Name? none
+// expect output: Age? none
+// expect output: Rate? none
+// expect output: Token? true
+
+use std.term
+
+fn main() {
+    print(term.prompt("Name?"))
+    print(term.prompt_int("Age?"))
+    print(term.prompt_float("Rate?"))
+    const token = term.prompt_secret("Token?")
+    print(token == none)
+}

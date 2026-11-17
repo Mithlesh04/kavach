@@ -1,0 +1,23 @@
+// Rule: A `gpu vertex fn` called on the CPU panics on whole-number overflow, as any other function does.
+// Spec: 15.3, 5.6
+// expect output: Lit(position: (0.0, 0.0, 0.0, 1.0), heat: 4.0)
+// expect panic: integer overflow: 2147483647 + 1 doesn't fit in Int32
+
+type Corner {
+    x: Float32
+    n: Int32
+}
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+    heat: Float32
+}
+
+gpu vertex fn place(c: Corner) -> Lit {
+    Lit(position: (c.x, 0.0, 0.0, 1.0), heat: Float32(c.n + 1))
+}
+
+fn main() {
+    print(place(Corner(x: 0.0, n: 3)))
+    print(place(Corner(x: 0.0, n: 2147483647)))
+}

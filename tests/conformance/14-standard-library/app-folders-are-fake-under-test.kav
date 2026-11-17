@@ -1,0 +1,13 @@
+// Rule: Under `kavach test`, with files faked, the program's folders are the paths `/fake/data/name`, `/fake/config/name` and `/fake/cache/name`, and none is made.
+// Spec: 14.30, 11.8
+// expect test pass
+
+use std.app
+use std.fs
+
+test "folders are fake paths" uses Fs.write with Fs = fake {
+    assert (try app.data_dir("Skyfall")) == "/fake/data/Skyfall"
+    assert (try app.config_dir("Skyfall")) == "/fake/config/Skyfall"
+    assert (try app.cache_dir("Skyfall")) == "/fake/cache/Skyfall"
+    assert not fs.exists("/fake/data/Skyfall")
+}

@@ -1,0 +1,15 @@
+// Rule: A field written `nickname: String?` (no `?` after the name, no default) must still be given, perhaps as `none`.
+// Spec: 2.4
+// expect compile error
+
+type User {
+    name: String
+    nickname: String?
+}
+
+fn main() {
+    const given = User(name: "Ravi", nickname: none)
+    print(given.nickname ?? "-")
+    const u = User(name: "Asha")      // error: `nickname` must be given
+    print(u.nickname ?? "-")
+}
