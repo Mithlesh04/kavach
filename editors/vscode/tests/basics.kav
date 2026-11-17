@@ -89,7 +89,14 @@ const mode = 0o644
 //           ^^^^^ constant.numeric.octal.kavach
 
 const letter = 'क'
-//             ^^^ constant.character.kavach
+//             ^^^ string.quoted.single.char.kavach
+
+const tab = '\t'
+//          ^ string.quoted.single.char.kavach
+//           ^^ constant.character.escape.kavach
+
+const end = "line\r\n"
+//               ^^ constant.character.escape.kavach
 
 const ok = true or none
 //         ^^^^ constant.language.kavach

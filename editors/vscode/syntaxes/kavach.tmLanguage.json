@@ -130,7 +130,7 @@
     },
     "escapes": {
       "name": "constant.character.escape.kavach",
-      "match": "\\\\(?:[nt\\\\\"'{]|u\\{[0-9A-Fa-f]{1,6}\\})"
+      "match": "\\\\(?:[nrt\\\\\"'{]|u\\{[0-9A-Fa-f]{1,6}\\})"
     },
     "interpolation": {
       "comment": "The scope names of JavaScript's `${…}`, so every theme colours the braces like keywords and the code inside like code, not like the string around it",
@@ -149,8 +149,10 @@
       "patterns": [{ "include": "#interpolation-braces" }, { "include": "$self" }]
     },
     "chars": {
-      "name": "constant.character.kavach",
-      "match": "'(?:[^'\\\\]|\\\\(?:[nt\\\\\"'{]|u\\{[0-9A-Fa-f]{1,6}\\}))'"
+      "comment": "A character is quoted text, as Rust's grammar scopes it, so every theme colours 'k' like a string, not like a keyword; an escape inside is coloured as in a string",
+      "name": "string.quoted.single.char.kavach",
+      "match": "'(?:[^'\\\\]|(\\\\(?:[nrt\\\\\"'{]|u\\{[0-9A-Fa-f]{1,6}\\})))'",
+      "captures": { "1": { "name": "constant.character.escape.kavach" } }
     },
     "numbers": {
       "patterns": [
