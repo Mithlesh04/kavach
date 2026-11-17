@@ -9,6 +9,7 @@ import { fileFigure, specTables } from "@/lib/spec-tables";
 import { H2, P } from "./parts";
 import { teacher } from "./reference";
 import { Cell } from "./spec-table";
+import { WhatIsTested } from "./tested-table";
 
 // ---------- Reference › Built-in Types ----------
 //
@@ -197,6 +198,7 @@ function Types() {
           </div>
         </div>
       ))}
+      <WhatIsTested number="2.1" />
     </>
   );
 }

@@ -12,6 +12,7 @@ import { fileTables, specTables, type SpecTable } from "@/lib/spec-tables";
 import { H2, Note, P } from "./parts";
 import { Learn, Tables } from "./reference";
 import { Cell } from "./spec-table";
+import { WhatIsTested } from "./tested-table";
 
 // ---------- Standard Library Reference ----------
 //
@@ -161,6 +162,7 @@ function moduleDoc(m: StdModule): LessonDoc {
         {tablesOf(m.file, m.number).length ? <H2>What the spec lists</H2> : null}
         <Tables tables={tablesOf(m.file, m.number)} />
         <Declarations m={m} />
+        <WhatIsTested number={m.number} />
       </>
     ),
   };

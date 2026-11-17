@@ -22,6 +22,7 @@ import { classicDoc } from "./start-classic";
 import { messagesRefDoc } from "./reference-messages";
 import { commandsRefDoc, keywordsRefDoc, literalsRefDoc, methodsRefDoc, operatorsRefDoc } from "./reference";
 import { stdModuleDocs, stdlibRefDoc } from "./reference-std";
+import { testedDocs } from "./reference-tested";
 import { typesRefDoc } from "./reference-types";
 import { bridgeDoc, cppDoc, goDoc, javascriptDoc, pythonDoc, rustDoc } from "./start-bridges";
 import { buildDoc, whoDoc } from "./start-who";
@@ -142,6 +143,7 @@ export const lessons: Record<string, LessonDoc> = {
   "reference/built-in-types": typesRefDoc,
   "std/all-modules": stdlibRefDoc,
   ...stdModuleDocs,
+  ...testedDocs,
   "reference/commands": commandsRefDoc,
   "reference/compiler-messages": messagesRefDoc,
   "start/kavach-home": homeDoc,

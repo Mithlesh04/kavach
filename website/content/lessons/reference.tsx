@@ -8,6 +8,7 @@ import { hasContent } from "@/lib/site";
 import { fileFigure, specBlock, specTables, type SpecTable } from "@/lib/spec-tables";
 import { Note, P } from "./parts";
 import { Cell, Table } from "./spec-table";
+import { WhatIsTested } from "./tested-table";
 
 // ---------- Reference ----------
 //
@@ -109,6 +110,7 @@ export const methodsRefDoc: LessonDoc = {
       <Learn number="14.2" alone />
       <Tables tables={specTables(`${STDLIB}/02-built-in-methods.md`, "14.2")} />
       <SrcRef file={`docs/spec/${STDLIB}/02-built-in-methods.md`} label="spec 14.2 · built-in methods" />
+      <WhatIsTested number="14.2" />
     </>
   ),
 };

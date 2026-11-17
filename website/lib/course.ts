@@ -208,6 +208,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Built-in Methods", "14.2"],
     ["Commands", "10.5"],
     ["Compiler Messages", "13.6"],
+    ["What Is Tested", "—", ["Basics", "Types", "Functions", "Control Flow", "Errors", "Memory", "Contracts", "Capabilities and Agents", "Concurrency", "Modules and Packages", "Testing", "Maintainability at Scale", "Standard Library", "GPU"]],
   ]],
   ["std", "Standard Library Reference", "intermediate", [
     ["All Modules", "—"],
