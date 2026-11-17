@@ -28,7 +28,11 @@ pub fn display(slot: i64, ty: Type, top: bool) -> String {
         Type::Bool => (slot != 0).to_string(),
         Type::Char => {
             let c = char::from_u32(slot as u32).unwrap_or('?');
-            if top { c.to_string() } else { format!("{c:?}") }
+            if top {
+                c.to_string()
+            } else {
+                kavach_runtime_core::quoted(&c.to_string(), '\'')
+            }
         }
         Type::Unit => "()".to_string(),
         Type::Ref(_) => display_ref(slot, ty, top),
@@ -142,7 +146,7 @@ fn display_ref(p: i64, ty: Type, top: bool) -> String {
             let hex: String = b.iter().map(|x| format!("{x:02x}")).collect();
             format!("Bytes({hex})")
         }),
-        Shape::Str => format!("{:?}", str_of(p)),
+        Shape::Str => kavach_runtime_core::quoted(&str_of(p), '"'),
         Shape::List(t) => {
             let items = items_of(p);
             format!("[{}]", join(&items, &vec![*t; items.len()]))
@@ -308,6 +312,8 @@ pub fn equal(a: i64, b: i64, ty: Type) -> bool {
                             .all(|((p, q), f)| equal(*p as i64, *q as i64, f.ty))
                     })
                 }),
+                // A `Json`, maybe read lazily from its text (2.12).
+                Shape::Union { .. } if crate::rt_json::is_json(ty) => crate::rt_json::same(a, b),
                 Shape::Union { variants, .. } => {
                     let (va, vb) = (crate::heap::tag_of(a), crate::heap::tag_of(b));
                     va == vb

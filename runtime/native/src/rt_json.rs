@@ -447,3 +447,27 @@ crate::rt_data::entry!(kv_rt_json, |op, a, b, c, code, line| {
         _ => crate::rt_json_read::read_op(op, a, b, code),
     }
 });
+
+/// Whether `Json` values `a` and `b` hold the same JSON: an object's keys
+/// in any order, numbers by their digits (spec 2.12).
+pub fn same(a: i64, b: i64) -> bool {
+    fn eq(x: &Tree, y: &Tree) -> bool {
+        use kavach_runtime_core::json::digits;
+        match (x, y) {
+            (Tree::Array(xs), Tree::Array(ys)) => {
+                xs.len() == ys.len() && xs.iter().zip(ys).all(|(p, q)| eq(p, q))
+            }
+            (Tree::Object(xs), Tree::Object(ys)) => {
+                xs.len() == ys.len()
+                    && xs
+                        .iter()
+                        .all(|(k, v)| ys.iter().any(|(j, w)| k == j && eq(v, w)))
+            }
+            (Tree::Int(_) | Tree::Float(_) | Tree::Number(_), _) => {
+                digits(x).is_some() && digits(x) == digits(y)
+            }
+            _ => x == y,
+        }
+    }
+    eq(&tree(a), &tree(b))
+}

@@ -24,6 +24,10 @@ const MUTATING: &[&str] = &[
 
 impl<'a> Interp<'a> {
     pub(crate) fn call(&mut self, e: &'a Expr, callee: &'a Expr, args: &'a [Arg]) -> Eval<'a> {
+        // `std.reflect`'s answers, worked out while compiling (14.32).
+        if let Some(answer) = self.reflected(e) {
+            return answer;
+        }
         let mut values: Args<'a> = Vec::new();
         for a in args {
             values.push((

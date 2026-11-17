@@ -107,6 +107,11 @@ pub(crate) struct Checker<'a> {
     /// statements, as they use a capability or `try` (`module_consts.rs`).
     pub(crate) script_candidates: HashSet<DefId>,
     pub(crate) script_consts: HashSet<DefId>,
+    /// `std.reflect`'s answers by call span (`reflect.rs`), and the
+    /// methods `extend` added.
+    pub(crate) reflect_texts: HashMap<(u32, u32), String>,
+    pub(crate) reflect_bools: HashMap<(u32, u32), bool>,
+    pub(crate) extended_methods: HashSet<DefId>,
     pub(crate) implements: HashMap<DefId, HashSet<DefId>>,
     /// The record types that implement `Drop` (`drops.rs`).
     pub(crate) drop_types: HashSet<DefId>,
@@ -116,6 +121,9 @@ pub(crate) struct Checker<'a> {
     /// Types given for number-bounded parameters, checked once every
     /// literal's type is known (spec 2.9).
     pub(crate) number_checks: Vec<(DefId, Ty, Span)>,
+    /// Each type argument of a record made here, to check something
+    /// filled it (2.9).
+    pub(crate) filled_checks: Vec<(DefId, Ty, Span)>,
     /// Each method's `where` bounds (spec 2.9), by its type and name: the
     /// type parameter, and whether it must be `Floating`.
     pub(crate) wheres: HashMap<(DefId, String), Vec<(DefId, bool)>>,
@@ -192,6 +200,8 @@ pub(crate) struct Checker<'a> {
     pub(crate) secret_defs: HashSet<DefId>,
     /// Every number literal and its (possibly still unknown) type.
     pub(crate) literals: Vec<(u32, Ty)>,
+    /// Each float literal's span and text, to check it fits its type.
+    pub(crate) float_texts: Vec<(Span, String)>,
     /// Constants typed `BigInt`, with their digits (`constants.rs`).
     pub(crate) big_constants: HashMap<(u32, u32), String>,
     /// Constants with an operator, exactly, for those that turn out to be
@@ -263,10 +273,14 @@ impl<'a> Checker<'a> {
             ext_targets: HashMap::new(),
             script_candidates: HashSet::new(),
             script_consts: HashSet::new(),
+            reflect_texts: HashMap::new(),
+            reflect_bools: HashMap::new(),
+            extended_methods: HashSet::new(),
             implements: HashMap::new(),
             drop_types: HashSet::new(),
             operators: HashMap::new(),
             number_checks: Vec::new(),
+            filled_checks: Vec::new(),
             wheres: HashMap::new(),
             where_checks: Vec::new(),
             param_ops: HashMap::new(),
@@ -298,6 +312,7 @@ impl<'a> Checker<'a> {
             secret: HashSet::new(),
             secret_defs: HashSet::new(),
             literals: Vec::new(),
+            float_texts: Vec::new(),
             big_constants: HashMap::new(),
             exact_constants: Vec::new(),
             gpu_fns: HashSet::new(),

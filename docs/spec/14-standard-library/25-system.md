@@ -61,7 +61,7 @@ fn report() uses System {
 | `system.disks() -> [Disk]` | Each physical drive: `Disk(name:, model:, size:, kind:, removable:)`, `kind` a `DiskKind` (`Ssd`, `Hdd`, `Usb`, `Other`) | Windows, Linux |
 | `system.volumes() -> [Volume]` | Each mounted volume: `Volume(path:, label:, file_system:, total:, available:, removable:)`, sizes in bytes; a pen drive is a removable volume | Windows, Linux, macOS |
 | `system.network() -> [Adapter]` | Each network adapter: `Adapter(name:, description:, kind:, connected:, mbps:, addresses:)`, `kind` an `AdapterKind` (`Ethernet`, `WiFi`, `Bluetooth`, `Loopback`, `Other`), `addresses` its IP addresses | Windows, Linux |
-| `system.displays() -> [Display]` | Each display connected: `Display(name:, width:, height:, hz:, connection:)`, `connection` the port it uses: `"HDMI"`, `"DisplayPort"`, `"internal"`, `"VGA"`, `"DVI"` or `""` | Windows, Linux |
+| `system.displays() -> [Screen]` | Each display connected: `Screen(name:, width:, height:, hz:, connection:)`, `connection` the port it uses: `"HDMI"`, `"DisplayPort"`, `"internal"`, `"VGA"`, `"DVI"` or `""` | Windows, Linux |
 | `system.battery() -> Battery?` | `Battery(percent:, charging:, on_power:, minutes_left:)`, or `none` with no battery; `minutes_left` is -1 while charging or not known | Windows, Linux, macOS |
 | `system.sensors() -> [Sensor]` | Each sensor: `Sensor(name:, kind:, value:)`, `kind` a `SensorKind` (`Temperature` in °C, `Fan` in RPM, `Voltage` in volts, `Power` in watts) | Linux; Windows temperatures |
 | `system.devices() -> [Device]` | Every device the system knows: `Device(kind:, name:, maker:, driver:, driver_version:, connected:)`, `kind` one of `"bluetooth"`, `"network"`, `"audio"`, `"display"`, `"gpu"`, `"keyboard"`, `"mouse"`, `"storage"`, `"usb"`, `"camera"`, `"printer"`, `"processor"`, `"other"` | Windows, Linux |
@@ -96,11 +96,12 @@ fn free_8080() ! SystemError uses System.critical.read, System.critical.write, C
 | `system.users() -> [Account]` | Every account a person logs in with: `Account(name:, full_name:, admin:)` | `System.critical.read` |
 | `system.add_user(name, password, admin: false) ! SystemError` | Makes a user account; `password` may be a secret (8.7) | `System.critical.write` |
 | `system.remove_user(name) ! SystemError` | Deletes a user account and its home folder | `System.critical.write` |
-| `system.lock()` | Locks the session, so another user can log in | `System.critical.write` |
+| `system.lock() ! SystemError` | Locks the session, so another user can log in | `System.critical.write` |
 | `net.free_port() -> Int ! NetError` | A TCP port nothing listens on now, chosen by the system | `Net` |
 | `net.is_free(port) -> Bool` | Whether this program could listen on `port` now | `Net` |
 
 - `SystemError` is `NotFound(what:)`, `Denied(reason:)` or `Failed(reason:)`.
+- `add_user` fails with `Failed` before changing anything when the name or the password holds a line break or a NUL character, or the name holds `:`: the system's tools read them as the end of the line, so such a password could set another account's.
 - A port found free can be taken by another program before this one listens on it: a server that can should listen on port 0 and read the port it got (14.10).
 - Their tests change the machine, so they run only in a throwaway container: the tests in the repository check what is refused without the rights.
 

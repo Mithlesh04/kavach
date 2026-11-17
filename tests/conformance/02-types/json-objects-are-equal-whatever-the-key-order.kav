@@ -1,0 +1,19 @@
+// Rule: Two `Json` values are equal when they are the same variant with equal contents; objects compare like maps, so key order doesn't count, but array order does.
+// Spec: 2.12, 1.8
+// expect output: true
+// expect output: false false false
+// expect output: true false
+
+use std.json
+
+fn main() ! JsonError {
+    const a = try json.parse("\{\"x\": 1, \"y\": [true, null]}")
+    const b = try json.parse("\{\"y\": [true, null], \"x\": 1}")
+    print(a == b)
+    const c = try json.parse("\{\"y\": [null, true], \"x\": 1}")
+    const d = try json.parse("\{\"x\": 2, \"y\": [true, null]}")
+    const e = try json.parse("\{\"x\": 1}")
+    print("{a == c} {a == d} {a == e}")
+    const made: Json = ["y": [true, none], "x": 1]
+    print("{made == a} {Json.Text(value: "1") == Json.Number(digits: "1")}")
+}

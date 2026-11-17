@@ -110,7 +110,10 @@ impl<'a> Lowerer<'a> {
         };
         let types: Vec<Type> = inout.iter().map(|(i, _)| values[i + offset].ty).collect();
         let tuple = self.inout_tuple(ty, &types);
-        let call = ir::Expr { ty: tuple, ..call };
+        let mut call = ir::Expr { ty: tuple, ..call };
+        if decl.errors.is_none() {
+            self.hand_over_inout(&mut call, &inout, args, offset);
+        }
         let p = Pending {
             inout,
             args,
@@ -267,6 +270,81 @@ impl<'a> Lowerer<'a> {
             kind: K::Index(Box::new(whole), Box::new(at)),
             ty,
             line,
+        }
+    }
+
+    /// An `inout` argument that is a variable, of a call that can't fail:
+    /// the variable is given its new value right after the call, so the
+    /// call takes the value instead of sharing it, and a record changes in
+    /// place there rather than being copied first (Sakshi's S11). Not when
+    /// another argument reads the same variable.
+    fn hand_over_inout(
+        &self,
+        call: &mut ir::Expr,
+        inout: &[(usize, &'a str)],
+        args: &'a [ast::Arg],
+        offset: usize,
+    ) {
+        let (K::Call(_, values) | K::CallValue(_, values)) = &mut call.kind else {
+            return;
+        };
+        let positional: Vec<&ast::Arg> = args.iter().filter(|a| a.name.is_none()).collect();
+        for (pos, name) in inout {
+            let named = args
+                .iter()
+                .find(|a| a.name.as_ref().is_some_and(|n| n.name == *name));
+            let Some(arg) = named.or_else(|| positional.get(*pos).copied()) else {
+                continue;
+            };
+            let ast::ExprKind::Name(id) = &arg.value.kind else {
+                continue;
+            };
+            // A `Drop` value stays with the caller while the call runs, so
+            // its old value drops after it (spec 6.1).
+            let at = (arg.value.span.start, arg.value.span.end);
+            if self
+                .c
+                .expr_types
+                .get(&at)
+                .is_none_or(|t| self.holds_drop(t, 0))
+            {
+                continue;
+            }
+            let Some(&def) = self.c.resolution.uses.get(&id.span.start) else {
+                continue;
+            };
+            let elsewhere = args.iter().any(|other| {
+                !std::ptr::eq(other, arg)
+                    && (self.c.resolution.uses.iter()).any(|(at, d)| {
+                        *d == def && *at >= other.value.span.start && *at < other.value.span.end
+                    })
+            });
+            if let (false, Some(v)) = (elsewhere, values.get_mut(pos + offset))
+                && let K::Local(l) = v.kind
+                && v.ty.is_ref()
+            {
+                v.kind = K::Move(l);
+            }
+        }
+    }
+
+    /// Whether a value of type `t` is or holds a `Drop` value.
+    fn holds_drop(&self, t: &kavach_checker::Ty, depth: u32) -> bool {
+        use kavach_checker::Ty;
+        if depth > 8 {
+            return true;
+        }
+        match t {
+            Ty::Adt(def, args) => {
+                self.c.drop_types.contains(def)
+                    || args.iter().any(|a| self.holds_drop(a, depth + 1))
+                    || (self.c.field_types.iter())
+                        .any(|((d, _), f)| d == def && self.holds_drop(f, depth + 1))
+            }
+            Ty::List(x) | Ty::Set(x) | Ty::Optional(x) => self.holds_drop(x, depth + 1),
+            Ty::Map(k, v) => self.holds_drop(k, depth + 1) || self.holds_drop(v, depth + 1),
+            Ty::Tuple(xs) | Ty::Builtin(_, xs) => xs.iter().any(|x| self.holds_drop(x, depth + 1)),
+            _ => false,
         }
     }
 }

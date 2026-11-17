@@ -13,6 +13,7 @@ mod operators;
 mod project;
 mod schema;
 mod std_modules;
+mod std_table;
 mod version;
 pub mod workspace;
 
@@ -81,6 +82,10 @@ pub struct Compiled {
     pub gpu_maps: std::collections::HashSet<(u32, u32)>,
     /// The type of every checked expression, by span `(start, end)`.
     pub expr_types: HashMap<(u32, u32), Ty>,
+    /// `std.reflect`'s lists as JSON, and `has_member`'s answers, by call
+    /// span (spec 14.32).
+    pub reflect_texts: HashMap<(u32, u32), String>,
+    pub reflect_bools: HashMap<(u32, u32), bool>,
     /// The capabilities each function uses, written or inferred (spec 8.1).
     pub uses: HashMap<kavach_resolver::DefId, Vec<String>>,
     /// The type of each field, by record or variant and field name.
@@ -350,6 +355,8 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
         float_constants: checked.float_constants,
         gpu_maps: checked.gpu_maps,
         expr_types: checked.expr_types,
+        reflect_texts: checked.reflect_texts,
+        reflect_bools: checked.reflect_bools,
         uses: checked.uses,
         field_types: checked.field_types,
         drop_types: checked.drop_types.clone(),

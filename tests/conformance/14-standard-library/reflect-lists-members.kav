@@ -1,0 +1,40 @@
+// Rule: `T.members()` lists a type's fields and methods with their parameters, result and origin (built in, declared, or added by an `extend` and its module); `x.has_member(name)` answers while compiling; `m.members()` lists what a module declares `pub`.
+// Spec: 14.32
+// expect output: shout: Extended(module: "reflect-lists-members")
+// expect output: true true true false
+// expect output: Method first() -> Int? Extended(module: "reflect-lists-members")
+// expect output: Field items() -> [Int] Declared
+// expect output: Method total(a: Int) -> Int Declared
+// expect output: ["factorial", "gcd", "is_prime", "lcm", "mean"]
+
+use std.math
+use std.reflect.{MemberOrigin}
+
+type Box {
+    items: [Int]
+
+    fn total(self, a: Int) -> Int { self.items.len() + a }
+}
+
+extend String {
+    fn shout(self) -> String { self.upper() + "!" }
+}
+
+extend Box {
+    fn first(self) -> Int? { self.items.first() }
+}
+
+fn main() {
+    for m in String.members() {
+        if m.origin != MemberOrigin.BuiltIn {
+            print("{m.name}: {m.origin}")
+        }
+    }
+    const b = Box(items: [1])
+    print("{String.members().len() > 10} {"hi".has_member("shout")} {b.has_member("items")} {"hi".has_member("nope")}")
+    for m in Box.members() {
+        const params = m.params.map(p => "{p.name}: {p.type_name}")
+        print("{m.kind} {m.name}({params.join(", ")}) -> {m.result} {m.origin}")
+    }
+    print(math.members().map(m => m.name))
+}

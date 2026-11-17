@@ -18,8 +18,10 @@ use std::process::Command;
 /// Collections with a limit (spec 2.2), checked on every push and insert,
 /// and the table of functions a crash report names (spec 14.30) took it
 /// to 749 KB on Linux (2026-11-16); the stack walker itself is linked only
-/// by a program that turns crash reports on.
-const BUDGET: u64 = 752 * 1024;
+/// by a program that turns crash reports on. Text inside collections
+/// printed as written, escaping only control and invisible characters
+/// (spec 1.11), replaced Rust's own quoting: 761 KB on Linux (2026-11-17).
+const BUDGET: u64 = 764 * 1024;
 
 #[test]
 fn hello_world_stays_small() {

@@ -56,16 +56,9 @@ pub fn act(which: i64, text: &str, number: i64) -> String {
     outcome(match which {
         0 => system::terminate(number, force).map(|()| String::new()),
         1 => free_port(number, force),
-        2 => {
-            let mut parts = text.split('\0');
-            let (name, password) = (parts.next().unwrap_or(""), parts.next().unwrap_or(""));
-            if name.is_empty() || name.contains(['/', '\\', ':', '\n']) {
-                Err(Refused::Failed(format!("`{name}` can't name a user")))
-            } else {
-                system::add_user(name, password, parts.next() == Some("admin"))
-                    .map(|()| String::new())
-            }
-        }
+        2 => account(text).and_then(|(name, password, admin)| {
+            system::add_user(name, password, admin).map(|()| String::new())
+        }),
         3 => system::remove_user(text).map(|()| String::new()),
         4 => system::lock().map(|()| String::new()),
         _ => Err(Refused::Failed("no such action".into())),
@@ -87,4 +80,46 @@ fn free_port(port: i64, force: bool) -> Result<String, Refused> {
     }
     let list: Vec<String> = pids.iter().map(i64::to_string).collect();
     Ok(format!("ended:{}", list.join(",")))
+}
+
+/// The account `add_user` makes: `name`, `password` and `admin` or `""`,
+/// NUL between them. A NUL inside one would add a part (`"pw\0admin"`
+/// makes an administrator), and a line break ends a line the system's
+/// tools read, so either is refused before anything is done (spec 14.25).
+fn account(text: &str) -> Result<(&str, &str, bool), Refused> {
+    let parts: Vec<&str> = text.split('\0').collect();
+    match parts[..] {
+        [name, _, _] if name.is_empty() || name.contains(['/', '\\', ':', '\n', '\r']) => {
+            Err(Refused::Failed(format!("`{name}` can't name a user")))
+        }
+        [_, password, _] if password.contains(['\n', '\r']) => Err(Refused::Failed(
+            "a password can't hold a line break or a NUL".into(),
+        )),
+        [name, password, admin @ ("" | "admin")] => Ok((name, password, admin == "admin")),
+        _ => Err(Refused::Failed(
+            "a user's name and password can't hold a NUL".into(),
+        )),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn an_account_is_three_parts_with_no_line_breaks() {
+        assert_eq!(account("asha\0pw:1\0"), Ok(("asha", "pw:1", false)));
+        assert_eq!(account("asha\0pw\0admin"), Ok(("asha", "pw", true)));
+        for text in [
+            "probe\0first\nroot:injected\0",
+            "probe\0first\rroot:injected\0",
+            "probe\0pw\0admin\0",
+            "probe\0pw\0yes",
+            "root:x\0pw\0",
+            "a\nroot\0pw\0",
+            "\0pw\0",
+        ] {
+            assert!(matches!(account(text), Err(Refused::Failed(_))), "{text:?}");
+        }
+    }
 }

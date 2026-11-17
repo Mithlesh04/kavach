@@ -21,6 +21,7 @@ mod cli_parse;
 mod collect;
 mod conform;
 mod constants;
+mod construct;
 mod conversions;
 mod deprecated;
 mod destructure;
@@ -56,6 +57,7 @@ mod order;
 mod patterns;
 mod pointers;
 mod processes;
+mod reflect;
 mod scoped;
 mod secrets;
 mod show;
@@ -110,6 +112,10 @@ pub struct Options {
 
 #[derive(Clone, Debug)]
 pub struct Checked {
+    /// `std.reflect`'s lists as JSON, and `has_member`'s answers, by call
+    /// span (spec 14.32).
+    pub reflect_texts: HashMap<(u32, u32), String>,
+    pub reflect_bools: HashMap<(u32, u32), bool>,
     /// A script's top-level constants that stay its statements (spec 1.13).
     pub script_consts: HashSet<DefId>,
     pub errors: Vec<Diagnostic>,
@@ -188,6 +194,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     checker.collect_gpu_fns(file);
     checker.check_file(file);
     checker.check_numbers_later();
+    checker.check_float32_literals();
     checker.check_gpu_fns(file);
     checker.check_generic_json();
     checker.check_capabilities(file);
@@ -287,6 +294,8 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     errors.dedup_by_key(|e| e.span.start);
     Checked {
         script_consts: std::mem::take(&mut checker.script_consts),
+        reflect_texts: std::mem::take(&mut checker.reflect_texts),
+        reflect_bools: std::mem::take(&mut checker.reflect_bools),
         errors,
         warnings: checker.warnings,
         literal_types,

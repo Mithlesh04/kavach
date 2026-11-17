@@ -1,0 +1,8 @@
+// Rule: `has_member` takes the member's name as a text literal, as the answer is worked out while compiling.
+// Spec: 14.32
+// expect compile error
+
+fn main() {
+    const name = "len"
+    print("hi".has_member(name))      // error: takes the name as a text literal
+}

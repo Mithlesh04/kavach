@@ -39,7 +39,8 @@ impl Writer {
 
     fn float(&mut self, f: f64) {
         if f.is_finite() {
-            push_float(&mut self.out, f);
+            // Negative zero is `0.0`, as JavaScript writes it (2.12).
+            push_float(&mut self.out, f + 0.0);
         } else {
             // As JavaScript does: JSON has no NaN or infinity.
             self.out.push_str("null");

@@ -164,6 +164,15 @@ impl AnyDecimal {
         Some(BigDecimal { mantissa: q, scale }.settled())
     }
 
+    /// `self % other`, exact: what is left after taking out whole
+    /// `other`s, with `self`'s sign (spec 1.8). `None` when `other` is 0.
+    pub fn rem(&self, other: &AnyDecimal) -> Option<AnyDecimal> {
+        if self.is_zero_divisor(other) {
+            return None;
+        }
+        Some(self.exact(other, |a, b| a % b))
+    }
+
     fn is_zero_divisor(&self, other: &AnyDecimal) -> bool {
         let _ = self;
         match other {

@@ -77,7 +77,11 @@ impl<'a> Interp<'a> {
             // panics as they do (decision 0051).
             (Value::Int(..), "div_floor" | "mod") => {
                 use kavach_ast::BinaryOp::{Div, Rem};
-                let q = self.arith(Div, recv.clone(), arg(0), span)?;
+                // `mod` needs no quotient: `Int.MIN.mod(-1)` is 0, as `%`.
+                let q = match name {
+                    "div_floor" => self.arith(Div, recv.clone(), arg(0), span)?,
+                    _ => Value::Int(0, Prim::Int),
+                };
                 let r = self.arith(Rem, recv.clone(), arg(0), span)?;
                 let (Value::Int(q, p), Value::Int(r, _), Value::Int(n, _)) = (q, r, arg(0)) else {
                     return Ok(None);
@@ -106,10 +110,30 @@ impl<'a> Interp<'a> {
                 crate::bigint::decimal_value(d.round(places, name == "round_even"))
             }
             (Value::Decimal(d), "abs") => Value::Decimal(if d.mantissa < 0 { d.neg() } else { *d }),
+            (Value::BigInt(n), "abs") if **n < kavach_runtime_core::BigInt::from(0) => {
+                Value::BigInt(std::rc::Rc::new(-(**n).clone()))
+            }
+            (Value::BigInt(_), "abs") => recv.clone(),
             (
-                Value::Int(..) | Value::Float(_) | Value::Float32(_) | Value::Decimal(_),
+                Value::Int(..)
+                | Value::Float(_)
+                | Value::Float32(_)
+                | Value::Decimal(_)
+                | Value::BigInt(_),
                 "min" | "max" | "clamp",
             ) => {
+                // `NaN` in, `NaN` out (14.2).
+                let given = [
+                    Some(recv.clone()),
+                    args.first().cloned(),
+                    args.get(1).cloned(),
+                ];
+                if let Some(nan) = given.into_iter().flatten().find(crate::ops::is_nan) {
+                    return Ok(Some(nan));
+                }
+                if name == "clamp" && order(&arg(0), &arg(1)).is_gt() {
+                    return Err(self.panic("contract failed: `clamp` needs `lo <= hi`", span));
+                }
                 let lower = |a: &Value<'a>, b: &Value<'a>| {
                     if order(a, b).is_le() {
                         a.clone()

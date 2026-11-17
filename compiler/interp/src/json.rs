@@ -377,8 +377,10 @@ pub(crate) fn json_encode(v: &Value<'_>) -> Tree {
     match v {
         Value::Variant { union, .. } if is_json(*union) => json_tree(v),
         Value::Int(n, _) => i64::try_from(*n).map_or(Tree::Number(n.to_string()), Tree::Int),
-        Value::Float(f) => Tree::Float(*f),
-        Value::Float32(f) => Tree::Float(f64::from(*f)),
+        // Negative zero is `0.0`, as JavaScript writes it (2.12); JSON
+        // text read in keeps its own.
+        Value::Float(f) => Tree::Float(*f + 0.0),
+        Value::Float32(f) => Tree::Float(f64::from(*f) + 0.0),
         // With all their digits (decision 0071).
         Value::Decimal(d) => Tree::Number(d.to_string()),
         Value::BigDecimal(d) => Tree::Number(d.to_string()),

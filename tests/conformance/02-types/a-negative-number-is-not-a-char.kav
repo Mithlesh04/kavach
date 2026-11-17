@@ -1,0 +1,13 @@
+// Rule: A negative number isn't a character, so converting it to `Char` panics.
+// Spec: 2.1
+// expect output: क
+// expect panic
+
+fn letter(n: Int) -> Char {
+    Char(n)
+}
+
+fn main() {
+    print(letter(2325))
+    print(letter(-1))
+}

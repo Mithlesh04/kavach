@@ -312,62 +312,6 @@ impl Checker<'_> {
         }
     }
 
-    /// `User(name: …)` or `TooLarge(value: …)`: records and variants are
-    /// created with named arguments (spec 2.4).
-    fn construct(
-        &mut self,
-        def: DefId,
-        variant: Option<DefId>,
-        args: &[Arg],
-        span: Span,
-        name: &str,
-        written: &[kavach_ast::TypeExpr],
-    ) -> Ty {
-        let (instance, subst) = self.written_instance(def, written, span);
-        let fields = match (variant, self.types.get(&def).map(|t| t.shape.clone())) {
-            (Some(v), _) => self.variant_fields(def, v).unwrap_or_default(),
-            (None, Some(Shape::Record(fields))) => fields,
-            (None, Some(Shape::Union(_))) => {
-                self.error(
-                    span,
-                    format!("`{name}` is a union: create one of its variants instead"),
-                );
-                return Ty::Error;
-            }
-            _ => return Ty::Error,
-        };
-        if variant.is_none() {
-            self.note_drop(def, span);
-            self.check_construct_access(def, &fields, span, name);
-        }
-        if args.iter().any(|a| a.name.is_none()) && !fields.is_empty() {
-            let example = fields
-                .iter()
-                .map(|f| format!("{}: …", f.name))
-                .collect::<Vec<_>>()
-                .join(", ");
-            self.error(
-                span,
-                format!("records are created with named arguments: write `{name}({example})`"),
-            );
-            for a in args {
-                self.value(&a.value, None);
-            }
-            return instance;
-        }
-        let params: Vec<_> = fields
-            .iter()
-            .map(|f| (f.name.clone(), self.inf.subst(&f.ty, &subst), f.has_default))
-            .collect();
-        let secret: Vec<bool> = fields.iter().map(|f| f.secret).collect();
-        self.args_with(args, &params, &secret, span, &format!("`{name}`"), "field");
-        // A type's number bounds (spec 2.9), now its fields are known.
-        for (g, t) in &subst {
-            self.check_number_bound(*g, t, span);
-        }
-        instance
-    }
-
     /// `Rect.square(3)`, `Int(text)`, `Payments.refund(…)`, `Bot.start(…)`.
     pub(crate) fn static_call(
         &mut self,
@@ -381,6 +325,9 @@ impl Checker<'_> {
             return None;
         };
         let def = *self.res.uses.get(&id.span.start)?;
+        if let Some(t) = self.reflect_static(def, name, args, span) {
+            return Some(t);
+        }
         let kind = self.res.defs[def].kind;
         let type_name = self.res.defs[def].name.clone();
         match kind {
@@ -403,7 +350,13 @@ impl Checker<'_> {
                             self.note_cap(&format!("{type_name}.{}", name.name), name.span);
                         }
                         let (_, subst) = self.instance(def);
-                        Some(self.apply(&sig, subst, generics, args, span, &name.name))
+                        let own: Vec<(DefId, Ty)> =
+                            subst.iter().map(|(g, t)| (*g, t.clone())).collect();
+                        let ty = self.apply(&sig, subst, generics, args, span, &name.name);
+                        for (g, t) in own {
+                            self.check_number_bound(g, &t, span);
+                        }
+                        Some(ty)
                     }
                     _ => {
                         if let Some(t) = self.enum_call(def, name, args, span) {

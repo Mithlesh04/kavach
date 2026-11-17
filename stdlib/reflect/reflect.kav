@@ -1,0 +1,36 @@
+// std.reflect (spec 14.32): what a type or a module offers. The
+// compiler works each list out while compiling, writes it as JSON, and
+// `T.members()` and `m.members()` read it back here.
+
+use std.json
+
+/// Something a type or a module offers: a method or a field of a type;
+/// a function, a type or a constant of a module.
+pub type Member {
+    pub name: String
+    pub kind: MemberKind
+    /// A method's or function's parameters, without `self`; none for the
+    /// others.
+    pub params: [Param]
+    /// What a method or function gives ("Nothing" when it gives none), a
+    /// field's or constant's type, or a type's own name.
+    pub result: String
+    pub origin: MemberOrigin
+}
+
+pub type MemberKind = Method | Field | Function | Type | Constant
+
+/// A parameter, with its type as written.
+pub type Param {
+    pub name: String
+    pub type_name: String
+}
+
+/// Where a member comes from: Kavach itself, the type's or module's own
+/// declaration, or an `extend` in a module.
+pub type MemberOrigin = BuiltIn | Declared | Extended(module: String)
+
+/// The members in `text`, as the compiler wrote them.
+pub fn members_from(text: String) -> [Member] {
+    json.decode<[Member]>(text) catch _ => []
+}

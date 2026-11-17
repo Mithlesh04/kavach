@@ -59,6 +59,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.4 | [record-needs-named-arguments.kav](record-needs-named-arguments.kav) | Records are created with named arguments, not positional ones. | compile error |
 | 2.4 | [records-are-values.kav](records-are-values.kav) | Changing a field through a var changes only that variable's value. | runs |
 | 2.4 | [lists-of-records-are-values.kav](lists-of-records-are-values.kav) | A list of records holds values: changing a copy, or an item taken out, never changes the original. | runs |
+| 2.4 | [a-record-made-in-a-loop-is-new-each-time.kav](a-record-made-in-a-loop-is-new-each-time.kav) | A record made inside a loop holds that pass's field values, so reading one field gives this pass's value. | runs |
 | 2.4 | [with-makes-a-copy.kav](with-makes-a-copy.kav) | `with` creates a copy with some fields changed. | runs |
 | 2.4 | [record-fields-that-may-be-left-out.kav](record-fields-that-may-be-left-out.kav) | `summary?: String` is short for `summary: String? = none`: a record made or decoded without it holds `none`, and `ask` doesn't require it. | runs |
 | 2.4 | [optional-field-takes-one-question-mark.kav](optional-field-takes-one-question-mark.kav) | A field that may be left out takes its `?` once: `summary?: String?` is an error. | compile error |
@@ -172,3 +173,12 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.18 | [text-builders-change-in-place.kav](text-builders-change-in-place.kav) | A `TextBuilder` changes in place at clamped character positions; a view or copy of it keeps the text it had. | runs |
 | 2.18 | [text-builder-start-after-end-panics.kav](text-builder-start-after-end-panics.kav) | A builder's `remove` or `replace` from a start after its end is a panic. | panic |
 | 2.18 | [text-builder-changes-need-let.kav](text-builder-changes-need-let.kav) | Changing a builder held by a `const` is an error. | compile error |
+| 2.12, 1.8 | [json-objects-are-equal-whatever-the-key-order.kav](json-objects-are-equal-whatever-the-key-order.kav) | Two `Json` values are equal when they are the same variant with equal contents; objects compare like maps, so key order doesn't count, but array order does. | runs |
+| 2.1 | [a-surrogate-is-not-a-char.kav](a-surrogate-is-not-a-char.kav) | a whole number that isn't a character's code point (here a surrogate) panics when converted to `Char`. | panic |
+| 2.1 | [a-negative-number-is-not-a-char.kav](a-negative-number-is-not-a-char.kav) | A negative number isn't a character, so converting it to `Char` panics. | panic |
+| 2.1 | [a-code-point-past-10ffff-is-not-a-char.kav](a-code-point-past-10ffff-is-not-a-char.kav) | A whole number above `0x10FFFF` isn't a character, so converting it to `Char` panics. | panic |
+| 2.1, 1.8, 5.6 | [nan-comparisons-are-false.kav](nan-comparisons-are-false.kav) | an order comparison with `NaN` is false, not a panic: `<`, `<=`, `>` and `>=` on floats never stop the program. | runs |
+| 2.1 | [a-float32-literal-must-fit.kav](a-float32-literal-must-fit.kav) | A number literal must fit its type: `1e300` doesn't fit `Float32`. | compile error |
+| 2.9 | [a-type-argument-nothing-fills-is-an-error.kav](a-type-argument-nothing-fills-is-an-error.kav) | A type argument no field holds and nothing else fixes must be written: `Box(raw: text)` alone is a compile error. | compile error |
+| 1.11 | [a-type-implements-display.kav](a-type-implements-display.kav) | A type may implement the prelude's `Display` interface, even in a program that uses `std.system`, whose screen type has its own name. | runs |
+| 14.2 | [bigint-has-abs-min-max-and-clamp.kav](bigint-has-abs-min-max-and-clamp.kav) | `abs`, `min`, `max` and `clamp` work on `BigInt` as on the other whole numbers. | runs |

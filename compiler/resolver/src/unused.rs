@@ -17,9 +17,11 @@ impl Resolver {
         let used: HashSet<usize> = self.res.uses.values().copied().collect();
         let mut found = Vec::new();
         for (id, d) in self.res.defs.iter().enumerate() {
+            // A `pub const` is for other modules to read (spec 1.13).
             if !matches!(d.kind, DefKind::Local { .. })
                 || d.name.starts_with('_')
                 || used.contains(&id)
+                || self.modules.public.contains(&id)
             {
                 continue;
             }

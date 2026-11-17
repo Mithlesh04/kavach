@@ -35,10 +35,17 @@ pub fn encode(value: Json, schema: Json) -> Bytes ! ProtoError {
 pub fn decode(data: Bytes, schema: Json) -> Json ! ProtoError {
     const found = try fields(data)
     let out: [String: Json] = [:]
+    // A field with a default is not `required`: when it is missing, it is
+    // left out, and decoding the record gives it its default (14.14).
+    const required = (schema.get("required").list() ?? []).map(r => r.text() ?? "")
     let n = 0
     for (name, s) in schema.get("properties").object() ?? [:] {
         n += 1
-        out[name] = try value_of(found.get(n) ?? [], s)
+        const raws = found.get(n) ?? []
+        if raws.is_empty() and not required.contains(name) {
+            continue
+        }
+        out[name] = try value_of(raws, s)
     }
     Json.Object(fields: out)
 }
@@ -111,6 +118,15 @@ fn plain(v: Json, s: Json) -> Bytes ! ProtoError {
     }
     if kind == "boolean" {
         return varint(if v.bool() ?? false { 1 } else { 0 })
+    }
+    if kind == "integer" and unsigned(s) {
+        // A `UInt64` past `Int`'s largest: its 64 bits, as `uint64`.
+        const digits = match v {
+            Json.Number(digits) => digits,
+            _ => "0",
+        }
+        const u = UInt64(digits) catch e => UInt64(0)
+        return varint(signed(u))
     }
     if kind == "integer" {
         return varint(v.int() ?? 0)
@@ -314,6 +330,7 @@ fn value_of(raws: [Raw], s: Json) -> Json ! ProtoError {
 fn one(r: Raw, s: Json) -> Json ! ProtoError {
     const kind = s.get("type").text() ?? ""
     match r {
+        Raw.Varint(value) if kind == "integer" and unsigned(s) => Json.Number(digits: "{value}"),
         Raw.Varint(value) if kind == "integer" => Json.Number(digits: "{signed(value)}"),
         Raw.Varint(value) if kind == "boolean" => Json.Boolean(value: value != 0),
         Raw.Fixed64(value) if kind == "number" => number(value),
@@ -431,4 +448,9 @@ fn number(bits: UInt64) -> Json {
 /// An `int64` read as a varint: above `Int`'s largest, it is negative.
 fn signed(u: UInt64) -> Int {
     if u <= 9_223_372_036_854_775_807 { Int(u) } else { -Int(~u) - 1 }
+}
+
+/// Whether schema `s` is of an unsigned integer, `uint64` on the wire.
+fn unsigned(s: Json) -> Bool {
+    s.get("minimum").int() == 0
 }

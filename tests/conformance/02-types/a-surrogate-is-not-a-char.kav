@@ -1,0 +1,13 @@
+// Rule: a whole number that isn't a character's code point (here a surrogate) panics when converted to `Char`.
+// Spec: 2.1
+// expect output: A
+// expect panic
+
+fn letter(n: Int) -> Char {
+    Char(n)
+}
+
+fn main() {
+    print(letter(65))
+    print(letter(55296))      // 0xD800
+}

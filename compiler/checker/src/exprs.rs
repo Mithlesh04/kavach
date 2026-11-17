@@ -62,6 +62,9 @@ impl Checker<'_> {
                 };
                 let t = self.inf.fresh(kind);
                 self.literals.push((e.span.start, t.clone()));
+                if let ExprKind::Float(text) = &e.kind {
+                    self.float_texts.push((e.span, text.clone()));
+                }
                 t
             }
             ExprKind::Char(_) => Ty::Prim(Prim::Char),

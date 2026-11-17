@@ -206,6 +206,14 @@ impl<'c> Schemas<'c> {
                 ("contentEncoding".into(), text("base64")),
             ]),
             Ty::Prim(Prim::Float | Prim::Float32 | Prim::Decimal) => kind("number"),
+            // An unsigned one can't be negative, which Protocol Buffers
+            // needs to know to read a `UInt64` (14.14).
+            Ty::Prim(Prim::UInt8 | Prim::UInt16 | Prim::UInt32 | Prim::UInt64) => {
+                Tree::Object(vec![
+                    ("type".into(), text("integer")),
+                    ("minimum".into(), Tree::Int(0)),
+                ])
+            }
             Ty::Prim(p) if p.is_int() => kind("integer"),
             Ty::Optional(inner) => Tree::Object(vec![(
                 "anyOf".into(),

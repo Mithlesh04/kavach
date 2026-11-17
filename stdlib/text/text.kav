@@ -13,9 +13,11 @@ fn is_digit(c: Char) -> Bool
 /// Whether `c` is a letter or digit of the Latin alphabet.
 fn is_word(c: Char) -> Bool
     example is_word('Q')
+    example is_word('é')
     example not is_word('-')
 {
-    is_digit(c) or 'a' <= c <= 'z' or 'A' <= c <= 'Z'
+    // A letter of any script counts: `"café-3"` has no number `-3`.
+    is_digit(c) or 'a' <= c <= 'z' or 'A' <= c <= 'Z' or Int(c) > 127
 }
 
 /// The numbers written in `s`, as text: each run of digits, with one

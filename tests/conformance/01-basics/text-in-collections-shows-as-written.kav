@@ -1,0 +1,9 @@
+// Rule: Text inside a collection shows as written, combining marks too; only quotes, backslashes, line breaks, tabs, and control and invisible characters are escaped.
+// Spec: 1.11
+// expect output: ["é", "a\tb\r\n", "x\u{200b}y", "say \"hi\" \\"]
+// expect output: ['k', '\'']
+
+fn main() {
+    print(["e\u{301}", "a\tb\r\n", "x\u{200B}y", "say \"hi\" \\"])
+    print(['k', '\''])
+}

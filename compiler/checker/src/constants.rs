@@ -261,7 +261,12 @@ impl Checker<'_> {
         ) {
             return;
         }
-        if let Some(v) = const_exact(e) {
+        // A zero is left to the float arithmetic, which keeps its sign:
+        // `-0.0` is negative zero, as IEEE 754 says, where the exact
+        // value has no sign (2.1).
+        if let Some(v) = const_exact(e)
+            && v.num != BigInt::ZERO
+        {
             self.exact_constants.push(((e.span.start, e.span.end), v));
         }
     }

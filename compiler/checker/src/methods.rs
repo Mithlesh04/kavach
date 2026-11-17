@@ -119,6 +119,9 @@ impl Checker<'_> {
             }
             return Ty::Prim(Prim::Bool);
         }
+        if let Some(t) = self.reflect_has_member(&recv, name, args, e) {
+            return t;
+        }
         if let Some(t) = self.view_call(&recv, &name.name, args) {
             if matches!(recv, Ty::Builtin("TextBuilder", _)) && name.name != "view" {
                 self.require_var(base, &name.name);

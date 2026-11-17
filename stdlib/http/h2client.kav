@@ -80,7 +80,14 @@ extend H2Client {
     /// `:method`, `:scheme`, `:authority`, `:path`.
     pub fn request(self, headers: [Header], body: Bytes) -> H2Message ! H2Error uses Net {
         const (stream, hear) = try self.send_request(headers, body)
-        try self.answer(stream, hear)
+        // A task cancelled while it waits lets the others go on (K47).
+        const holding = Holding(client: self, stream: stream, sending: none, link: none, done: Shared(false))
+        const m = self.answer(stream, hear) catch e => {
+            const _ = holding.done.update(_ => true)
+            fail e
+        }
+        const _ = holding.done.update(_ => true)
+        m
     }
 
     /// Whether the server said it is going away (GOAWAY), or the
@@ -119,12 +126,15 @@ extend H2Client {
             n.streams[stream] = tell
             n
         })
+        const holding = Holding(client: self, stream: 0, sending: s, link: none, done: Shared(false))
         const sent = self.write_request(s, stream, headers, body) catch e => {
+            const _ = holding.done.update(_ => true)
             self.broken_by(e)
             self.forget(stream)
             self.send_back.put(s)
             fail e
         }
+        const _ = holding.done.update(_ => true)
         self.send_back.put(sent)
         (stream, hear)
     }
@@ -252,13 +262,16 @@ extend H2Client {
             Taken.Item(value) => value,
             Taken.Closed => fail closed(),
         }
+        const holding = Holding(client: self, stream: 0, sending: none, link: l, done: Shared(false))
         const read = wire.step(l) catch e => {
+            const _ = holding.done.update(_ => true)
             self.broken_by(e)
             self.fail_all(e)
             self.read_back.put(l)
             const _ = self.signal_credit.try_put(true)
             fail e
         }
+        const _ = holding.done.update(_ => true)
         let next = read ?? {
             const gone = H2Error.Protocol(reason: "the connection closed")
             const _ = self.leaving.update(_ => true)
@@ -342,3 +355,44 @@ extend H2Client {
 
 /// Whether a task reads the connection now, or waits.
 type Role = Read | Wait
+
+/// Cleanup for a task that ends while it holds part of the connection,
+/// cancelled in a wait (spec 9.6), so no later request waits forever for
+/// it (Rath's K47). The turn it took goes back; a connection left part
+/// way through a frame is given up, `going_away()` saying so, and the
+/// requests still waiting fail; a task only waiting for its answer hands
+/// the reading on.
+type Holding: Drop {
+    client: H2Client
+    /// The stream whose answer the task waits for, or 0.
+    stream: Int
+    sending: Sending?
+    link: Link?
+    /// Set when the task got past the wait: nothing to undo.
+    done: Shared<Bool>
+
+    fn drop(self) {
+        if self.done.get() {
+            return
+        }
+        const c = self.client
+        if let s = self.sending {
+            const _ = c.leaving.update(_ => true)
+            c.send_back.put(s)
+        }
+        if let l = self.link {
+            const _ = c.leaving.update(_ => true)
+            c.fail_all(H2Error.Protocol(reason: "a request on this connection was cancelled while it read, part way through what the server sent: connect again"))
+            const _ = c.waiting.update(w => {
+                let n = w
+                n.reading = false
+                n
+            })
+            c.read_back.put(l)
+            const _ = c.signal_credit.try_put(true)
+        }
+        if self.stream != 0 {
+            c.stop_reading(self.stream)
+        }
+    }
+}

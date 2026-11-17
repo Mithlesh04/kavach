@@ -1,7 +1,7 @@
 //! Lowering the standard library (spec 14): calls to `std` modules, their
 //! constants, more methods of built-in types, and sets.
 
-use crate::ir::{self, BinOp, Block, ExprKind as K, Shape, Stmt, Type, UnOp};
+use crate::ir::{self, Block, ExprKind as K, Shape, Stmt, Type};
 use crate::lower::{Lowered, Lowerer};
 use crate::rt_op::RtOp;
 use kavach_ast::{self as ast, ItemKind};
@@ -174,7 +174,9 @@ impl<'a> Lowerer<'a> {
         {
             return Some(Ok(e));
         }
-        let numeric = recv.is_int() || recv.is_float() || matches!(shape, Some(Shape::Decimal));
+        let numeric = recv.is_int()
+            || recv.is_float()
+            || matches!(shape, Some(Shape::Decimal | Shape::BigInt));
         // The operator interfaces' methods (spec 2.16).
         if (numeric || matches!(shape, Some(Shape::Str)))
             && let Some(e) = self.op_method(name, values.clone(), ty, line)
@@ -276,138 +278,6 @@ impl<'a> Lowerer<'a> {
         Some(Ok(self.at(K::Rt(op, values), ty, line)))
     }
 
-    /// `abs`, `min`, `max` and `clamp`, written with compares, so they are
-    /// as fast as hand-written code.
-    fn number_method(&mut self, name: &str, values: Vec<ir::Expr>, line: u32) -> ir::Expr {
-        let t = values[0].ty;
-        let mut stmts = Vec::new();
-        let locals: Vec<ir::Local> = values
-            .into_iter()
-            .map(|v| {
-                let l = self.new_local(t);
-                stmts.push(Stmt::Let(l, v));
-                l
-            })
-            .collect();
-        let get = |s: &Self, l: ir::Local| s.local_expr(l, line);
-        // `a` when `a op b`, else `b`.
-        let pick = |s: &Self, op: BinOp, a: ir::Local, b: ir::Local| {
-            let cond = s.at(
-                K::Binary(op, Box::new(get(s, a)), Box::new(get(s, b))),
-                Type::Bool,
-                line,
-            );
-            s.at(
-                K::If(Box::new(cond), wrap_value(get(s, a)), wrap_value(get(s, b))),
-                t,
-                line,
-            )
-        };
-        let value = match name {
-            "abs" => {
-                let zero = self.zero_of(t, line);
-                let negated = self.at(K::Unary(UnOp::Neg, Box::new(get(self, locals[0]))), t, line);
-                let cond = self.at(
-                    K::Binary(BinOp::Lt, Box::new(get(self, locals[0])), Box::new(zero)),
-                    Type::Bool,
-                    line,
-                );
-                self.at(
-                    K::If(
-                        Box::new(cond),
-                        wrap_value(negated),
-                        wrap_value(get(self, locals[0])),
-                    ),
-                    t,
-                    line,
-                )
-            }
-            "min" => pick(self, BinOp::Le, locals[0], locals[1]),
-            "max" => pick(self, BinOp::Ge, locals[0], locals[1]),
-            _ => {
-                let up = self.new_local(t);
-                stmts.push(Stmt::Let(up, pick(self, BinOp::Ge, locals[0], locals[1])));
-                pick(self, BinOp::Le, up, locals[2])
-            }
-        };
-        self.at(
-            K::Block(Block {
-                stmts,
-                value: Some(Box::new(value)),
-            }),
-            t,
-            line,
-        )
-    }
-
-    /// `a.div_floor(b)` and `a.mod(b)` (decision 0051), through `/` and
-    /// `%`, so a 0 or an overflow panics as they do: when the remainder
-    /// and `b` differ in sign, the quotient goes one down and the
-    /// remainder takes `b`.
-    fn floor_method(&mut self, name: &str, values: Vec<ir::Expr>, line: u32) -> ir::Expr {
-        let t = values[0].ty;
-        let mut stmts = Vec::new();
-        let mut local = |s: &mut Self, v: ir::Expr| {
-            let l = s.new_local(t);
-            stmts.push(Stmt::Let(l, v));
-            l
-        };
-        let mut values = values.into_iter();
-        let (a, b) = (values.next().expect("a"), values.next().expect("b"));
-        let (a, b) = (local(self, a), local(self, b));
-        let get = |s: &Self, l: ir::Local| s.local_expr(l, line);
-        let bin = |s: &Self, op: BinOp, x: ir::Expr, y: ir::Expr, ty: Type| {
-            s.at(K::Binary(op, Box::new(x), Box::new(y)), ty, line)
-        };
-        let q = bin(self, BinOp::Div, get(self, a), get(self, b), t);
-        let r = bin(self, BinOp::Rem, get(self, a), get(self, b), t);
-        let (q, r) = (local(self, q), local(self, r));
-        let sign = |s: &Self, op: BinOp, l: ir::Local| {
-            bin(s, op, get(s, l), s.zero_of(t, line), Type::Bool)
-        };
-        let both = |s: &Self, x: ir::Expr, y: ir::Expr| {
-            s.at(K::And(Box::new(x), Box::new(y)), Type::Bool, line)
-        };
-        let r_neg_b_pos = both(self, sign(self, BinOp::Lt, r), sign(self, BinOp::Gt, b));
-        let r_pos_b_neg = both(self, sign(self, BinOp::Gt, r), sign(self, BinOp::Lt, b));
-        let differ = self.at(
-            K::Or(Box::new(r_neg_b_pos), Box::new(r_pos_b_neg)),
-            Type::Bool,
-            line,
-        );
-        let (adjusted, plain) = if name == "div_floor" {
-            let one = self.at(K::Int(1), t, line);
-            (bin(self, BinOp::Sub, get(self, q), one, t), get(self, q))
-        } else {
-            (
-                bin(self, BinOp::Add, get(self, r), get(self, b), t),
-                get(self, r),
-            )
-        };
-        let value = self.at(
-            K::If(Box::new(differ), wrap_value(adjusted), wrap_value(plain)),
-            t,
-            line,
-        );
-        self.at(
-            K::Block(Block {
-                stmts,
-                value: Some(Box::new(value)),
-            }),
-            t,
-            line,
-        )
-    }
-
-    pub(crate) fn zero_of(&self, t: Type, line: u32) -> ir::Expr {
-        let kind = match (t, self.shapes.shape(t)) {
-            (Type::F64 | Type::F32, _) => K::Float(0.0),
-            (_, Some(Shape::Decimal)) => K::Decimal("0".into()),
-            _ => K::Int(0),
-        };
-        self.at(kind, t, line)
-    }
-
     /// `items.sort_by(key)`: the keys from an inlined loop, then a stable
     /// sort of the items by them.
     pub(crate) fn sort_by(
@@ -460,7 +330,7 @@ impl<'a> Lowerer<'a> {
     }
 }
 
-fn wrap_value(e: ir::Expr) -> Block {
+pub(crate) fn wrap_value(e: ir::Expr) -> Block {
     Block {
         stmts: Vec::new(),
         value: Some(Box::new(e)),

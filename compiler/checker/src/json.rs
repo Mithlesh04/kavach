@@ -124,4 +124,35 @@ impl Checker<'_> {
             other => Some(format!("`{}` can't be written as JSON", self.show(other))),
         }
     }
+
+    /// Why `t` has no JSON Schema (spec 2.12), looking inside records,
+    /// unions, lists, optionals and maps; `None` when it has one.
+    pub(crate) fn no_schema(&self, t: &Ty) -> Option<String> {
+        self.schema_in(t, &mut Vec::new())
+    }
+
+    fn schema_in(&self, t: &Ty, seen: &mut Vec<DefId>) -> Option<String> {
+        let t = self.inf.resolve(t);
+        match &t {
+            Ty::Prim(_) | Ty::Param(_) | Ty::Error | Ty::Var(_) => None,
+            Ty::List(x) | Ty::Optional(x) => self.schema_in(x, seen),
+            Ty::Map(k, v) if self.inf.resolve(k) == STRING => self.schema_in(v, seen),
+            Ty::Adt(def, _) if seen.contains(def) || self.is_json(&t) => None,
+            Ty::Adt(def, _) => {
+                seen.push(*def);
+                let fields = match self.types.get(def).map(|i| &i.shape) {
+                    Some(Shape::Record(fields)) => fields.clone(),
+                    Some(Shape::Union(variants)) => {
+                        variants.iter().flat_map(|v| v.fields.clone()).collect()
+                    }
+                    _ => return None,
+                };
+                fields.iter().find_map(|f| self.schema_in(&f.ty, seen))
+            }
+            other => Some(format!(
+                "`{}` has no JSON Schema: maps without `String` keys, sets, tuples and functions have none, even inside a record (spec 2.12)",
+                self.show(other)
+            )),
+        }
+    }
 }

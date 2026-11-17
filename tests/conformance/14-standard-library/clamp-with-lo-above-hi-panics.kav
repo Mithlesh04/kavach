@@ -1,0 +1,13 @@
+// Rule: `x.clamp(lo, hi)` with `lo` above `hi` breaks its contract: a panic.
+// Spec: 14.2
+// expect output: 5
+// expect panic
+
+fn limit(x: Int, lo: Int, hi: Int) -> Int {
+    x.clamp(lo, hi)
+}
+
+fn main() {
+    print(limit(7, 0, 5))
+    print(limit(7, 5, 0))
+}

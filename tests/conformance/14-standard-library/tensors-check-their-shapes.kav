@@ -1,0 +1,24 @@
+// Rule: A `Tensor<T>` multiplies with `@` over its last two dimensions, adds item by item, transposes and sums in order, and a shape that doesn't fit is a panic naming both shapes.
+// Spec: 14.33
+// expect output: [2, 3]
+// expect output: [3.0, 3.0, 3.0, 7.0, 7.0, 7.0]
+// expect output: 20.0
+// expect output: [1.0, 3.0, 2.0, 4.0]
+// expect output: 4.0 4 40.0
+// expect output: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
+// expect panic: `@` needs [2, 2]'s last size (2) to match [3, 3]'s next to last (3)
+
+use std.tensor
+
+fn main() {
+    const x = tensor.of_rows([[1.0, 2.0], [3.0, 4.0]])
+    const y = x @ tensor.ones<Float>([2, 3])
+    print(y.shape)
+    print(y.items)
+    print((x + x).sum())
+    print(x.transpose().items)
+    print("{x.reshape([4]).get([3])} {tensor.zeros<Int>([2, 2]).len()} {x.scale(10.0).max() ?? 0.0}")
+    const b = tensor.full([2, 2, 2], 1.0)
+    print((b @ b).items)
+    print((x @ tensor.zeros<Float>([3, 3])).shape)
+}

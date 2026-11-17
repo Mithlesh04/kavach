@@ -81,10 +81,9 @@ pub extern "C-unwind" fn kv_dec_arith(op: i64, a: i64, b: i64, code: i64, line: 
         3 => x
             .div(&y)
             .unwrap_or_else(|| panic_with("division by zero", line)),
-        _ => panic_with(
-            "`%` works on whole numbers and floats, not on `Decimal`",
-            line,
-        ),
+        _ => x
+            .rem(&y)
+            .unwrap_or_else(|| panic_with("division by zero", line)),
     };
     crate::rt_big_decimal::new_decimal(d, code)
 }

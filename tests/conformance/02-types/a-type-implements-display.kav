@@ -1,0 +1,21 @@
+// Rule: A type may implement the prelude's `Display` interface, even in a program that uses `std.system`, whose screen type has its own name.
+// Spec: 1.11, 14.25
+// expect output: P(1, 2)
+// expect output: 0
+
+use std.system
+
+type Point: Display {
+    x: Int
+    y: Int
+
+    fn display(self) -> String {
+        "P({self.x}, {self.y})"
+    }
+}
+
+fn main() {
+    print(Point(x: 1, y: 2).display())
+    const screens: [Screen] = []
+    print(screens.len())
+}

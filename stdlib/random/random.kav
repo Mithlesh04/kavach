@@ -19,10 +19,19 @@ fn bits63() -> Int uses Random
 /// likely.
 pub fn int(from: Int, until: Int) -> Int uses Random
     require until > from
-    require from >= 0 or until <= largest() + from
     ensure result >= from and result < until
 {
-    const span = until - from
+    // A range wider than any `Int`, as `-9e18` to `9e18`: any 64 bits,
+    // kept when in it, as more than half of them are.
+    const span = until.checked_sub(from) ?? {
+        while true {
+            const v = bits63().wrapping_mul(2).wrapping_add(bits63() % 2)
+            if v >= from and v < until {
+                return v
+            }
+        }
+        0
+    }
     // 2^63 values come from `bits63`; keep the largest multiple of `span`
     // of them, so no result comes up more often than another.
     const extra = (largest() % span + 1) % span

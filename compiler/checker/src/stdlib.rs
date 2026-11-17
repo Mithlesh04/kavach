@@ -377,14 +377,8 @@ impl Checker<'_> {
                     self.error(span, "`json.schema` needs a type: `json.schema<Order>()`");
                     return Some(Ty::Error);
                 };
-                let text_keys = |k: &Ty| *k == Ty::Prim(crate::Prim::String);
-                if matches!(&t, Ty::Map(k, _) if !text_keys(k))
-                    || matches!(t, Ty::Tuple(_) | Ty::Fn(..))
-                {
-                    self.error(
-                        span,
-                        "maps without `String` keys, tuples and functions have no JSON Schema (spec 2.12)",
-                    );
+                if let Some(why) = self.no_schema(&t) {
+                    self.error(span, why);
                 }
                 (Vec::new(), json)
             }

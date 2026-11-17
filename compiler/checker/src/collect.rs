@@ -223,6 +223,8 @@ impl Checker<'_> {
                 ItemKind::Extend(e) => {
                     let target = self.lower(&e.target, None);
                     let sigs = self.method_sigs(&e.methods, Some(&target));
+                    self.extended_methods
+                        .extend(sigs.iter().filter_map(|(_, s)| s.def));
                     self.note_private(&e.methods);
                     let owner = match &target {
                         Ty::Adt(def, _) => Some(*def),

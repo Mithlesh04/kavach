@@ -110,6 +110,9 @@ impl<'a> Interp<'a> {
             BinaryOp::Div => x
                 .div(&y)
                 .ok_or_else(|| self.panic("division by zero", span))?,
+            BinaryOp::Rem => x
+                .rem(&y)
+                .ok_or_else(|| self.panic("division by zero", span))?,
             _ => {
                 return Err(self.panic(
                     format!(

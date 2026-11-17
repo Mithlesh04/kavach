@@ -1,0 +1,9 @@
+// Rule: A number literal must fit its type: `1e300` doesn't fit `Float32`.
+// Spec: 2.1
+// expect compile error
+
+fn main() {
+    const small: Float32 = 3.0e38      // fits
+    const huge: Float32 = 1e300        // error: Float32 reaches only about 3.4e38
+    print("{small} {huge}")
+}

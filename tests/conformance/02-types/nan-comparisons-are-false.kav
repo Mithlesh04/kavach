@@ -1,0 +1,12 @@
+// Rule: an order comparison with `NaN` is false, not a panic: `<`, `<=`, `>` and `>=` on floats never stop the program.
+// Spec: 2.1, 1.8, 5.6
+// expect output: false false false false
+// expect output: false false
+
+fn main() {
+    let zero = 0.0
+    const nan = zero / zero
+    const one = 1.0
+    print("{nan < one} {nan <= one} {nan > one} {nan >= one}")
+    print("{one < nan} {nan >= nan}")
+}

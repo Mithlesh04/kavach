@@ -27,9 +27,11 @@ const two = Int("2")                 // a literal is checked while compiling: ju
 |---|---|
 | Any number → any number | Whole numbers convert exactly. A float or `Decimal` becomes a whole number by cutting off the fraction (`Int(2.7)` is `2`). A value that doesn't fit the target panics (`Int8(300)`, 5.6) |
 | Any value → `String` | Its text, as `print` shows it (`String(2.5)` is `"2.5"`) |
-| `String` → a number, `Bool` or `Char` | The text read whole, with spaces around it allowed. It **can fail** with a `ParseError`, so it takes `try` or `catch`. `Int("23sd")` fails, as does `Int("300")` into `Int8`. `Bool` reads `true` or `false`; `Char` reads text of exactly one character |
+| `String` → a number, `Bool` or `Char` | The text read whole, with spaces around it allowed. It **can fail** with a `ParseError`, so it takes `try` or `catch`. `Int("23sd")` fails, as does `Int("300")` into `Int8`. `Bool` reads `true` or `false`; `Char` reads text of exactly one character, trimming nothing: `Char(" ")` is a space, and `Char(" k ")` fails |
 | `Char` → a whole number | The character's Unicode code point: `Int('a')` is `97` |
 | A whole number → `Char` | The character with that code point. One that isn't a character (a negative number, a surrogate, above `0x10FFFF`) panics |
+
+A number literal must fit its type: `const x: Float32 = 1e300` is a compile error, as `Float32` reaches only about `3.4e38`. A value worked out while the program runs that passes a float's largest is `inf`, as IEEE 754 says: `Float32(1e300)` of a `Float` variable is `inf`.
 
 When the text is a literal, the compiler reads it itself: `Int("2")` is the number `2` and can't fail, and `Int("abc")` is a compile error.
 
@@ -43,7 +45,7 @@ const huge: Decimal = 99999999999999999999999999999999999999.99
 print(huge + rate)        // 99999999999999999999999999999999999999.990000000000000000000000000001
 ```
 
-**Constants are exact** ([decision 0043](../../decisions/0043-constants-are-exact.md)): a constant of number literals (`+ - * /`, a minus, and `**` with a whole exponent) is worked out exactly while compiling, then rounded once to its type. Values worked out while the program runs are rounded at each step, as on every machine.
+**Constants are exact** ([decision 0043](../../decisions/0043-constants-are-exact.md)): a constant of number literals (`+ - * /`, a minus, and `**` with a whole exponent) is worked out exactly while compiling, then rounded once to its type. A constant that comes to zero keeps the sign floats give it, so `-0.0` is negative zero (`1.0 / -0.0` is `-inf`). Values worked out while the program runs are rounded at each step, as on every machine.
 
 ```kavach
 print(0.1 + 0.2)             // 0.3: one constant, rounded once

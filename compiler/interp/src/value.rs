@@ -348,13 +348,9 @@ impl Value<'_> {
                 let _ = write!(out, "{b}");
             }
             Value::Char(c) if top => out.push(*c),
-            Value::Char(c) => {
-                let _ = write!(out, "{c:?}");
-            }
+            Value::Char(c) => out.push_str(&kavach_runtime_core::quoted(&c.to_string(), '\'')),
             Value::Str(s) if top => out.push_str(s),
-            Value::Str(s) => {
-                let _ = write!(out, "{s:?}");
-            }
+            Value::Str(s) => out.push_str(&kavach_runtime_core::quoted(s, '"')),
             Value::List(items) => {
                 out.push('[');
                 list(out, items);

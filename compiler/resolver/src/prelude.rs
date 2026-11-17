@@ -2,7 +2,7 @@
 
 /// Built-in types (spec 2.1, 2.2, 6, 9) and the interfaces the language
 /// itself relies on (`Display` 1.11, `Drop` 6.1, `Comparable` 2.9).
-pub(crate) const TYPES: &[&str] = &[
+pub const TYPES: &[&str] = &[
     "Int",
     "Int8",
     "Int16",

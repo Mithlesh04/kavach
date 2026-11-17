@@ -62,6 +62,11 @@ pub fn encode(data: &[u8], format: i64, level: i64) -> Vec<u8> {
 
 /// The bytes `data` holds in `format`: at most `most`.
 pub fn decode(data: &[u8], format: i64, most: usize) -> Result<Vec<u8>, Fail> {
+    // No bytes at all is no stream: every format says so, as gzip and the
+    // others already do (lz4's reader gave nothing back).
+    if data.is_empty() {
+        return Err(Fail::Corrupt("no data: an empty stream".into()));
+    }
     let reader: Box<dyn Read + '_> = match format {
         GZIP => Box::new(flate2::read::MultiGzDecoder::new(data)),
         DEFLATE => Box::new(flate2::read::DeflateDecoder::new(data)),

@@ -45,6 +45,13 @@ impl Pattern {
     /// Compiles `source`, or says what is wrong with it.
     pub fn new(source: &str, advanced: bool) -> Result<Pattern, String> {
         let engine = if advanced {
+            // `fancy_regex` reads `a{3,1}` as text; the linear engine
+            // refuses it, and both engines take the same patterns (14.8).
+            if reversed_count(source) {
+                return Err(format!(
+                    "invalid pattern `{source}`: invalid repetition count range, the start must be <= the end"
+                ));
+            }
             fancy_regex::RegexBuilder::new(source)
                 .backtrack_limit(BACKTRACK_LIMIT)
                 .build()
@@ -170,8 +177,45 @@ impl Pattern {
     }
 }
 
+/// Whether `source` repeats something a number of times whose start is
+/// more than its end, `a{3,1}`, outside a class and not escaped.
+fn reversed_count(source: &str) -> bool {
+    let b = source.as_bytes();
+    let (mut i, mut class) = (0, false);
+    while i < b.len() {
+        match b[i] {
+            b'\\' => i += 1,
+            b'[' => class = true,
+            b']' => class = false,
+            b'{' if !class => {
+                let rest = &source[i + 1..];
+                if let Some(end) = rest.find('}')
+                    && let Some((lo, hi)) = rest[..end].split_once(',')
+                    && let (Ok(lo), Ok(hi)) = (lo.parse::<u64>(), hi.parse::<u64>())
+                    && lo > hi
+                {
+                    return true;
+                }
+            }
+            _ => {}
+        }
+        i += 1;
+    }
+    false
+}
+
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn a_count_whose_start_passes_its_end_is_refused_by_both_engines() {
+        for advanced in [false, true] {
+            assert!(super::Pattern::new("a{3,1}", advanced).is_err());
+            assert!(super::Pattern::new("a{1,3}", advanced).is_ok());
+            assert!(super::Pattern::new("[{3,1}]", advanced).is_ok());
+        }
+        assert!(super::Pattern::new(r"a\{3,1}", true).is_ok());
+    }
+
     use super::Pattern;
 
     #[test]

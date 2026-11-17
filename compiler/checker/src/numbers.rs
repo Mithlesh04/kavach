@@ -6,7 +6,7 @@
 use crate::checker::Checker;
 use crate::ty::{Prim, Ty};
 use kavach_ast::*;
-use kavach_resolver::DefId;
+use kavach_resolver::{DefId, DefKind};
 
 impl Checker<'_> {
     /// Notes that type parameter `def` has a number bound, if `g` has one.
@@ -16,6 +16,7 @@ impl Checker<'_> {
             let TypeKind::Named { path, args } = &b.kind else {
                 continue;
             };
+            self.check_bound_is_interface(path, b.span);
             match path.segments.last().map(|s| s.name.as_str()) {
                 Some("Number") if args.is_empty() && path.segments.len() == 1 => {
                     self.inf.numbers.entry(def).or_insert(false);
@@ -25,6 +26,40 @@ impl Checker<'_> {
                 }
                 _ => {}
             }
+        }
+    }
+
+    /// A bound names an interface (2.9): `<T: Float>` or `<T: User>` names
+    /// a type, which nothing could meet but itself.
+    fn check_bound_is_interface(&mut self, path: &Path, span: Span) {
+        let Some(last) = path.segments.last() else {
+            return;
+        };
+        let Some(&def) = self.res.uses.get(&last.span.start) else {
+            return;
+        };
+        let d = &self.res.defs[def];
+        let builtin_type = d.kind == DefKind::Builtin
+            && (Prim::from_name(&d.name).is_some()
+                || matches!(d.name.as_str(), "List" | "Map" | "Set" | "Ring" | "Json"));
+        if d.kind != DefKind::Type && !builtin_type {
+            return;
+        }
+        let hint = match d.name.as_str() {
+            "Float" | "Float32" => ": for floating-point numbers the bound is `Floating`",
+            n if Prim::from_name(n).is_some() => ": for any number the bound is `Number`",
+            _ => "",
+        };
+        let message = format!(
+            "`{}` is a type, and a bound names an interface{hint} (spec 2.9)",
+            d.name
+        );
+        if !self
+            .errors
+            .iter()
+            .any(|e| e.span == span && e.message == message)
+        {
+            self.error(span, message);
         }
     }
 
@@ -120,6 +155,29 @@ impl Checker<'_> {
             self.op_bounds_now(g, &t, span);
         }
         self.wheres_now();
+        self.filled_now();
+    }
+
+    /// A type argument nothing gave a type: no field holds it, it wasn't
+    /// written, and no use of the value fixed it (2.9).
+    fn filled_now(&mut self) {
+        let mut told = std::collections::HashSet::new();
+        for (g, t, span) in std::mem::take(&mut self.filled_checks) {
+            let Ty::Var(v) = self.inf.resolve(&t) else {
+                continue;
+            };
+            if self.inf.kind(v) != crate::infer::VarKind::Any || !told.insert((span.start, g)) {
+                continue;
+            }
+            let name = self.res.defs[g].name.clone();
+            let owner = (self.res.defs.iter().zip(0..))
+                .find(|(_, d)| self.types.get(d).is_some_and(|t| t.generics.contains(&g)))
+                .map_or(String::new(), |(d, _)| d.name.clone());
+            self.error(
+                span,
+                format!("nothing here says what `{name}` of `{owner}` is: write it, as `{owner}<Int>(…)` (spec 2.9)"),
+            );
+        }
     }
 
     fn number_bound_now(&mut self, g: DefId, t: &Ty, span: Span) {
@@ -134,6 +192,25 @@ impl Checker<'_> {
         if self.meets_number_bound(g, &ty) == Some(false) {
             let why = self.not_a_number(g, &ty);
             self.error(span, why);
+        }
+    }
+}
+
+impl Checker<'_> {
+    /// A float literal that became a `Float32` must fit one (2.1): a
+    /// `1e300` there would be `inf`.
+    pub(crate) fn check_float32_literals(&mut self) {
+        let float32 = Ty::Prim(Prim::Float32);
+        for (span, text) in std::mem::take(&mut self.float_texts) {
+            let ty = self.literals.iter().find(|(s, _)| *s == span.start);
+            let Some((_, ty)) = ty else { continue };
+            let wide: f64 = text.replace('_', "").parse().unwrap_or(0.0);
+            if self.inf.resolve(ty) == float32 && wide.is_finite() && (wide as f32).is_infinite() {
+                self.error(
+                    span,
+                    format!("`{text}` doesn't fit `Float32`, whose largest is about 3.4e38: it would be `inf` (spec 2.1)"),
+                );
+            }
         }
     }
 }

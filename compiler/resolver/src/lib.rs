@@ -18,7 +18,7 @@ mod walk;
 
 use kavach_ast::{File, Span};
 pub use modules::Module;
-pub use prelude::CAPABILITIES;
+pub use prelude::{CAPABILITIES, TYPES as PRELUDE_TYPES};
 use std::collections::HashMap;
 
 /// Index into [`Resolution::defs`].
@@ -90,6 +90,8 @@ pub struct Resolution {
     /// Module constants (spec 1.13): a top-level `const` of one name,
     /// which every function of its module can read.
     pub module_consts: std::collections::HashSet<DefId>,
+    /// The names marked `pub` (spec 10.1), for `m.members()` (14.32).
+    pub public: std::collections::HashSet<DefId>,
 }
 
 impl Resolution {

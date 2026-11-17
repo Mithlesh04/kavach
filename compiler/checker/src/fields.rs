@@ -244,6 +244,22 @@ impl Checker<'_> {
         }
     }
 
+    /// `data[0] = 72`: `Bytes` never change, even in a `let` (spec 2.1).
+    pub(crate) fn check_bytes_unchanged(&mut self, target: &Expr) {
+        let ExprKind::Index { base, .. } = &target.kind else {
+            return;
+        };
+        let recorded = (self.expr_types.iter().rev()).find(|(sp, _)| *sp == base.span);
+        if let Some((_, t)) = recorded
+            && self.inf.resolve(t) == Ty::Prim(crate::ty::Prim::Bytes)
+        {
+            self.error(
+                target.span,
+                "`Bytes` never change: make new bytes instead, such as with `slice` and `+` (spec 2.1)",
+            );
+        }
+    }
+
     pub(crate) fn check_arena_store(&mut self, target: &Expr, value: &Expr) {
         let Some(&arena) = self.arenas.last() else {
             return;

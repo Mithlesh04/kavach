@@ -183,6 +183,15 @@ impl<'t> Walk<'t> {
                 ) {
                     self.no(e.span, &format!("`{}` here", op.as_str()));
                 }
+                let float32 = Ty::Prim(crate::ty::Prim::Float32);
+                if *op == BinaryOp::Pow
+                    && let Some(t) = self.types.get(&(e.span.start, e.span.end))
+                    && *t != float32
+                    && *t != Ty::Error
+                {
+                    let what = format!("`**` on `{}`: only on `Float32`", c.show(t));
+                    self.no(e.span, &what);
+                }
                 self.expr(c, l);
                 self.expr(c, r);
             }

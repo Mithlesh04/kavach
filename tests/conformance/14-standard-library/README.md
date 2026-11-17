@@ -178,3 +178,10 @@ Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-
 | 14.16 | [answering-approvals-needs-approvals.kav](answering-approvals-needs-approvals.kav) | Listing and answering approval requests in code needs the capability `Approvals`. | compile error |
 | 14.17 | [clipboard-needs-the-clipboard-capability.kav](clipboard-needs-the-clipboard-capability.kav) | Reading or writing the clipboard needs the capability `Clipboard`: what a person copied is private. | compile error |
 | 14.18 | [serial-ports-need-the-serial-capability.kav](serial-ports-need-the-serial-capability.kav) | Listing, opening, reading and writing serial ports needs the capability `Serial`. | compile error |
+| 14.32 | [reflect-lists-members.kav](reflect-lists-members.kav) | `T.members()`: fields and methods with parameters, result and origin; `has_member`; `m.members()`. | runs |
+| 14.32 | [has-member-takes-a-literal.kav](has-member-takes-a-literal.kav) | `has_member` takes a text literal. | compile error |
+| 14.11, 9.6 | [a-cancelled-h2-request-never-hangs.kav](a-cancelled-h2-request-never-hangs.kav) | Cancelling a task waiting on an HTTP/2 request never leaves the connection stuck. | runs |
+| 14.33 | [tensors-check-their-shapes.kav](tensors-check-their-shapes.kav) | Tensors: products, item-by-item operations, transposes and sums; a shape that doesn't fit is a panic naming both shapes. | runs |
+| 14.2 | [min-max-and-clamp-give-nan-for-nan.kav](min-max-and-clamp-give-nan-for-nan.kav) | `min`, `max` and `clamp` give `NaN` when any value is `NaN`, on either side. | runs |
+| 14.2 | [clamp-with-lo-above-hi-panics.kav](clamp-with-lo-above-hi-panics.kav) | `x.clamp(lo, hi)` with `lo` above `hi` breaks its contract: a panic. | panic |
+| 14.2 | [mod-of-the-smallest-int-by-minus-one-is-zero.kav](mod-of-the-smallest-int-by-minus-one-is-zero.kav) | `Int.MIN.mod(-1)` is 0, as `Int.MIN % -1` is; `div_floor` of them overflows. | runs |

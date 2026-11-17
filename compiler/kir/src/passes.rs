@@ -76,6 +76,8 @@ pub(crate) fn finish(
         crate::gpu_later::overlap_sums(f, &mut notes);
         crate::devirt::devirt(f);
         crate::unused::drop_unused(f);
+        crate::tuple_lets::split_tuple_lets(f, &l.shapes.list);
+        crate::loop_fields::keep_fields_in_locals(f, &l.shapes.list);
         crate::sroa::scalarize(f, &l.shapes.list, &holders);
         crate::coalesce::coalesce(f);
         crate::loop_lens::hoist_loop_lens(f);

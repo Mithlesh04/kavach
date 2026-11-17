@@ -5,12 +5,12 @@ Numbers (`Int`, the sized integers, `Float`, `Decimal`):
 | Method | Gives |
 |---|---|
 | `x.abs()` | The absolute value; for integers, overflow panics (`Int` smallest value) |
-| `x.min(y)`, `x.max(y)` | The smaller or larger of the two |
-| `x.clamp(lo, hi)` | `x` limited to `lo..=hi` |
+| `x.min(y)`, `x.max(y)` | The smaller or larger of the two; `NaN` when either is `NaN`, as IEEE 754 says |
+| `x.clamp(lo, hi)` | `x` limited to `lo..=hi`; `NaN` when any of them is. `lo` above `hi` breaks its contract: a panic |
 | `checked_add` and the others in 5.6 | `none` on overflow |
-| `x.div_floor(n)`, `x.mod(n)` | For whole numbers: division rounded down, and the remainder that goes with it, which has the sign of `n`: `(-7).div_floor(2)` is `-4`, `(-7).mod(3)` is `2`, where `-7 / 2` is `-3` and `-7 % 3` is `-1` (1.8). `n` of 0 panics, as for `/` ([decision 0051](../../decisions/0051-number-and-text-defaults-keep-their-speed.md)) |
+| `x.div_floor(n)`, `x.mod(n)` | For whole numbers: division rounded down, and the remainder that goes with it, which has the sign of `n`: `(-7).div_floor(2)` is `-4`, `(-7).mod(3)` is `2`, where `-7 / 2` is `-3` and `-7 % 3` is `-1` (1.8). `n` of 0 panics, as for `/`; `Int.MIN.mod(-1)` is 0, as `Int.MIN % -1` is ([decision 0051](../../decisions/0051-number-and-text-defaults-keep-their-speed.md)) |
 | `d.round(places)`, `d.round_even(places)` | For a `Decimal`: rounded to `places` digits after the point. `round` rounds a half away from zero, as `math.round` does (14.5): `2.345.round(2)` is `2.35`, `-2.345.round(2)` is `-2.35`. `round_even` rounds a half to the even digit, the accountants' rule: `2.345.round_even(2)` is `2.34`, `2.355.round_even(2)` is `2.36`. A `Decimal` with fewer places is given back as it is; `places` below 0 panics |
-| `x.near(y)` | For floats: whether `x` and `y` are equal but for rounding: the same, within one billionth of the larger, or within `1e-12` of each other near zero. For `Float32`, with room for single precision: within one hundred-thousandth, or `1e-6` near zero. `NaN` is near nothing |
+| `x.near(y)` | For floats: whether `x` and `y` are equal but for rounding: the same, within one billionth of the larger, or within `1e-12` of each other near zero. For `Float32`, with room for single precision: within one hundred-thousandth, or `1e-6` near zero. `NaN` is near nothing, and an infinity only itself |
 | `x.fract()` | For floats: `x - math.floor(x)`, the part above the whole number at or below `x`, as WGSL's `fract`, on the CPU and in `gpu fn`s alike: `2.75.fract()` is `0.75`, `(-0.25).fract()` is `0.75` |
 | `x.bits()` | For a `Float`: its 64 bits in IEEE 754 form, as a `UInt64`, for binary formats (14.14) |
 | `Float.from_bits(n)` | The `Float` with the IEEE 754 bits `n` (a `UInt64`) |

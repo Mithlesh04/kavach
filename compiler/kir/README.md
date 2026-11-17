@@ -42,9 +42,11 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/lower_views.rs` | Text views and builders (spec 2.18): text in native code for now; a builder's `push` grows it in place, `insert`, `replace` and `remove` join the parts around the change |
 | `src/lower_ext.rs` | A method's `self` type, and methods added to lists, maps, sets and rings with `extend<T> [T]` (spec 2.5), made once per item type |
 | `src/lower_consts.rs` | Module constants (spec 1.13): a function each, called at each read and all at the program's start |
+| `src/lower_reflect.rs` | `std.reflect`'s answers (spec 14.32), worked out while compiling: a `Bool`, or JSON read by `std.reflect`'s own functions |
 | `src/lower_lambda/scan.rs` | What a lambda's body reads and changes, so a lambda changes only copies |
 | `src/lower_lambda/called.rs` | Lambdas and functions called, not inlined: a named function, and a lambda with a `return` of its own (spec 3.3) |
 | `src/lower_generic.rs` | Generic functions: type arguments and instances |
+| `src/lower_numbers.rs` | Methods of numbers: `abs`, `min`, `max`, `clamp`, `div_floor`, `mod` (spec 14.2) |
 | `src/lower_std.rs` | The standard library: `std` modules, more methods, sets (spec 14) |
 | `src/lower_base64.rs` | `std.base64` (spec 14.20): its two ops, flags in place |
 | `src/lower_bytes.rs` | `b.read<T>(at, big_endian)` and `Bytes.of<T>(n, big_endian)` (spec 2.13): their ops, the flag given in place |
@@ -80,6 +82,8 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/counters.rs` | A remainder by a constant of a counted loop's counter (`i % 7`) becomes a counter that wraps, after the loops on all cores are split off |
 | `src/stop_points.rs` | Where a task stopped by `cancel()` or its time limit stops while it only computes (spec 9.6): each function's start and each loop round's, in programs that use either; never in code that runs on the GPU |
 | `src/loop_lens.rs` | A length a `while` loop never changes (`data.len()` in its condition) read once before the loop |
+| `src/tuple_lets.rs` | A tuple made only to be taken apart (an `inout` call's, once inlined) kept as one local per item |
+| `src/loop_fields.rs` | A record's plain fields that a loop only reads and sets, kept in locals while it runs and set back after it |
 | `src/whole_lines.rs` | A printed line comes out whole (spec 9.8): a `print` whose values call anything works them out before it writes |
 | `src/borrows.rs` | A closure's function borrows its closure, and the captures it never changes: which functions and locals, for both backends |
 | `src/cancel.rs` | Cancellation (spec 9.6): after each wait, and each call that can wait, a check that returns when the task is cancelled |

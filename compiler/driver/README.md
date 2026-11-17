@@ -23,7 +23,8 @@ It also reads `kavach.toml` (spec 10.4), found in the file's folder or a parent:
 | `src/workspace.rs` | Workspaces (spec 10.14): the members a root `kavach.toml` lists, and the folder holding a member's `kavach.lock` and `kavach_modules/` |
 | `src/grants.rs` | What a dependency is granted (spec 10.12): whole capabilities or parts such as `Fs.read`, never more than the package above it |
 | `src/fetch_checks.rs` | What a dependency may name: only sources safe to fetch (no options, passwords or unencrypted transports), commits, and folder names every system can make |
-| `src/std_modules.rs` | The standard library modules written in Kavach, and which of them a program uses: those it names with `std.<name>`, by a public type or variant, or through a built-in such as `ask` (decision 0024) |
+| `src/std_modules.rs` | Which standard library modules a program uses: those it names with `std.<name>`, by a public type or variant, or through a built-in such as `ask` (decision 0024) |
+| `src/std_table.rs` | The standard library modules written in Kavach: each one's path, module name and source |
 | `src/config.rs` | `kavach.toml`: finding and reading it |
 | `src/limits.rs` | File and function length limits, with a suggested split (spec 12.1) |
 | `src/operators.rs` | Operators on a program's own types made into the method calls they stand for, once checked (spec 2.16) |

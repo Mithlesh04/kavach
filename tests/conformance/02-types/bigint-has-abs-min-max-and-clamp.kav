@@ -1,0 +1,9 @@
+// Rule: `abs`, `min`, `max` and `clamp` work on `BigInt` as on the other whole numbers.
+// Spec: 14.2, 2.1
+// expect output: 5 -5 3 7 0
+
+fn main() {
+    const a = BigInt(-5)
+    const b = BigInt(3)
+    print("{a.abs()} {a.min(b)} {a.max(b)} {BigInt(9).clamp(b, BigInt(7))} {a.clamp(BigInt(0), b)}")
+}

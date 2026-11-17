@@ -1,0 +1,13 @@
+// Rule: A type argument no field holds and nothing else fixes must be written: `Box(raw: text)` alone is a compile error.
+// Spec: 2.9
+// expect compile error
+
+type Box<I> {
+    raw: String
+}
+
+fn main() {
+    const fine = Box<Int>(raw: "1")
+    const unknown = Box(raw: "2")       // error: nothing says what `I` is
+    print("{fine.raw} {unknown.raw}")
+}

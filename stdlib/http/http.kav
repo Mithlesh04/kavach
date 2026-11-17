@@ -339,10 +339,15 @@ pub type Session {
                 }
                 return Response(status: status, headers: got.message.headers, body: got.message.body)
             }
+            const closed = NetError.Failed(address: self.host, reason: "the server closed the connection")
+            // Windows reports a connection the server closed as aborted
+            // or reset when it is read, where Linux gives its end.
             const piece = self.conn.read() catch e => {
+                if data.is_empty() {
+                    fail HttpError.Network(error: closed)
+                }
                 fail HttpError.Network(error: e)
             }
-            const closed = NetError.Failed(address: self.host, reason: "the server closed the connection")
             data = data + (piece ?? fail HttpError.Network(error: closed))
         }
         fail HttpError.BadMessage(reason: "no response")

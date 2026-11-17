@@ -37,6 +37,8 @@ Each section is a file of its own: new sections go at the end, with the next num
 | 14.29 std.image | [29-image.md](29-image.md) |
 | 14.30 std.app | [30-app.md](30-app.md) |
 | 14.31 std.font | [31-font.md](31-font.md) |
+| 14.32 std.reflect | [32-reflect.md](32-reflect.md) |
+| 14.33 std.tensor | [33-tensor.md](33-tensor.md) |
 
 ## Open questions
 

@@ -1,0 +1,14 @@
+// Rule: `Int.MIN.mod(-1)` is 0, as `Int.MIN % -1` is; `div_floor` of them overflows.
+// Spec: 14.2
+// expect output: 0 0
+// expect panic
+
+fn smallest() -> Int {
+    -9_223_372_036_854_775_807 - 1
+}
+
+fn main() {
+    const m = smallest()
+    print("{m % -1} {m.mod(-1)}")
+    print(m.div_floor(-1))
+}

@@ -150,6 +150,7 @@ impl Lexer<'_> {
         self.pos += c.len_utf8();
         let value = match c {
             'n' => '\n',
+            'r' => '\r',
             't' => '\t',
             '\\' => '\\',
             '"' | '{' if quote == '"' => c,

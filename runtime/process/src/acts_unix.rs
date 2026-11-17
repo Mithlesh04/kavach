@@ -35,7 +35,7 @@ fn root() -> bool {
 
 /// Runs `program` with `args`, giving it `input`; its error text if it fails.
 fn run(program: &str, args: &[&str], input: Option<&str>) -> Result<(), Refused> {
-    let mut child = Command::new(program)
+    let mut child = crate::system::unblocked(&mut Command::new(program))
         .args(args)
         .stdin(if input.is_some() {
             Stdio::piped()
@@ -70,6 +70,8 @@ fn run(program: &str, args: &[&str], input: Option<&str>) -> Result<(), Refused>
 }
 
 pub fn add_user(name: &str, password: &str, admin: bool) -> Result<(), Refused> {
+    // Checked first, so a refused account is never half made.
+    let line = password_line(name, password)?;
     if !root() {
         return Err(Refused::Denied("adding a user needs root".into()));
     }
@@ -85,7 +87,7 @@ pub fn add_user(name: &str, password: &str, admin: bool) -> Result<(), Refused> 
     args.extend(["--", name]);
     run("useradd", &args, None)?;
     if !password.is_empty() {
-        run("chpasswd", &[], Some(&format!("{name}:{password}\n")))?;
+        run("chpasswd", &[], Some(&line))?;
     }
     Ok(())
 }
@@ -99,4 +101,46 @@ pub fn remove_user(name: &str) -> Result<(), Refused> {
 
 pub fn lock() -> Result<(), Refused> {
     run("loginctl", &["lock-session"], None)
+}
+
+/// The `name:password` line `chpasswd` reads (spec 14.25). A line break
+/// or NUL would end the line early, and what follows would set another
+/// account's password (`"x\nroot:new"`); a `:` in the name would move
+/// where the password starts. Both are refused.
+fn password_line(name: &str, password: &str) -> Result<String, Refused> {
+    let breaks = |s: &str| s.contains(['\n', '\r', '\0']);
+    if breaks(name) || name.contains(':') {
+        return Err(Refused::Failed(
+            "a user's name can't hold a line break, a NUL or `:`".into(),
+        ));
+    }
+    if breaks(password) {
+        return Err(Refused::Failed(
+            "a password can't hold a line break or a NUL".into(),
+        ));
+    }
+    Ok(format!("{name}:{password}\n"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_password_line_is_one_line_for_one_user() {
+        let line = password_line("asha", "a:b c");
+        assert_eq!(line.ok().as_deref(), Some("asha:a:b c\n"));
+        for (name, password) in [
+            ("probe", "first\nroot:injected"),
+            ("probe", "first\rroot:injected"),
+            ("probe", "first\0"),
+            ("root:x", "pw"),
+            ("a\nroot", "pw"),
+        ] {
+            assert!(
+                matches!(password_line(name, password), Err(Refused::Failed(_))),
+                "{name:?} {password:?}"
+            );
+        }
+    }
 }

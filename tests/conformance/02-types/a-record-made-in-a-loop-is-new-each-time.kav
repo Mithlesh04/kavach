@@ -1,0 +1,20 @@
+// Rule: a record made inside a loop holds that pass's field values, so reading one field gives this pass's value.
+// Spec: 2.4
+// expect output: 0
+// expect output: ab
+// expect output: 1
+// expect output: abb
+
+type P {
+    a: Int
+    b: Int
+    word: String
+}
+
+fn main() {
+    for n in 0..2 {
+        const p = P(a: n, b: 1, word: "a" + "b".repeat(n + 1))
+        print(p.a)
+        print(p.word)
+    }
+}

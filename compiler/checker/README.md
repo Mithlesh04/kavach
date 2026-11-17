@@ -36,12 +36,14 @@ Hindley–Milner-style inference with unification. A number literal starts as an
 | `src/mismatch.rs` | "expected `X`, found `Y`" messages and how a value is described in them |
 | `src/text_views.rs` | `StrView` and `TextBuilder` methods, `s.view()`, and text compared with views (spec 2.18) |
 | `src/module_consts.rs` | Module constants (spec 1.13), checked before the functions that read them |
+| `src/reflect.rs` | `T.members()`, `m.members()` and `x.has_member(name)` (spec 14.32), worked out while compiling |
 | `src/collect.rs` | Written types → checker types; signatures of functions, types and methods |
 | `src/drops.rs` | `Drop` (spec 6.1): which types implement it, which values hold one, and that making one needs what its `drop` uses |
 | `src/items.rs` | Declarations, function bodies, blocks, statements, unused values |
 | `src/exprs.rs` | Expressions: names, operators, lambdas |
 | `src/failures.rs` | `try`, `fail`, `return`, error compatibility, `unsafe` |
-| `src/calls.rs` | Calls, record and variant construction, arguments |
+| `src/calls.rs` | Calls, static calls, arguments |
+| `src/construct.rs` | Making records and variants: named arguments, type arguments, number bounds (spec 2.4) |
 | `src/changes.rs` | What changes a value in place: `items.push(x)` needs `items` to be a `let` (spec 2.2) |
 | `src/numbers.rs` | Number bounds: `T: Number` and `T: Floating`, `T(x)`, literals of type `T`, and the check that each call and value gives a number type (spec 2.9) |
 | `src/methods.rs` | Method calls: a type's own, built-ins, `.timeout(d)`, and fields holding functions (spec 3.4) |

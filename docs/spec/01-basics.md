@@ -48,7 +48,7 @@ For scripts, the entry file may contain top-level statements instead. They becom
 print("Hello, world!")
 ```
 
-Only the entry file may contain top-level statements.
+Only the entry file may contain top-level statements, and only when it has no `fn main`: there they would never run, so a statement outside `main` in a file with `fn main` is a compile error. Move it into `main`, or make it a `const`.
 
 ## 1.4 Variables
 
@@ -147,7 +147,7 @@ print("Order {order.id} costs {order.amount}")
 print("Use \{ and } in templates")
 ```
 
-Escapes: `\n`, `\t`, `\\`, `\"`, `\{`, `\u{1F600}`.
+Escapes: `\n`, `\r` (a carriage return, as protocols that end lines with `\r\n` need), `\t`, `\\`, `\"`, `\{`, `\u{1F600}`.
 
 Raw text, `r"…"` and `r"""…"""`, fills nothing in and keeps every backslash: for paths, regular expressions, and JSON or SQL written out over many lines.
 
@@ -211,7 +211,7 @@ print(["a": 1, "b": 2] == ["b": 2, "a": 1])   // true: order doesn't count
 print([1, 2] == [2, 1])                // false: lists keep order
 ```
 
-**Order** (`<`, `<=`, `>`, `>=`, and `sort`, `sort_by`, `min`, `max` in 14.2) is defined for numbers, text, characters, `Bool`, and tuples, lists, rings and text views (2.18) of them, and `Bytes`. Other values have no order, and comparing them is a compile error: a set or a map has none (compare `s.sorted()` instead), nor an optional.
+**Order** (`<`, `<=`, `>`, `>=`, and `sort`, `sort_by`, `min`, `max` in 14.2) is defined for numbers, text, characters, `Bool`, and tuples, lists, rings and text views (2.18) of them, and `Bytes`. Other values have no order, and comparing them is a compile error: a set or a map has none (compare `s.to_list().sort()` instead), nor an optional.
 
 - Text compares character by character, by Unicode code point: every capital letter comes before every small one, and letters with accents come after both, so `"Apple" < "apple" < "zebra" < "Éclair"`. It is not dictionary order for any language.
 - `false` comes before `true`.
@@ -301,7 +301,7 @@ const grade = if score >= 90 { "A" } else { "B" }
 | `Float` | Shortest form that reads back exactly, always with a `.` or an exponent: `7.0`, `0.1`, `1e21` |
 | `Decimal` | All its digits, keeping its scale: `499.00` prints `499.00` |
 | `Bool`, `Char` | `true`, `क` |
-| `String` | The text itself; inside a collection or record it is quoted: `"Asha"` |
+| `String` | The text itself; inside a collection or record it is quoted: `"Asha"`. There it shows as written, accents and other combining marks too; only `"`, `\`, line breaks (`\n`, `\r`), tabs (`\t`), and control and invisible characters (`\u{200b}`) are escaped |
 | Optional | The value, or `none` |
 | List, map, tuple | `[1, 2]`, `["asha": 31]`, `(200, "OK")` |
 | Record | `User(name: "Asha", age: 31)` |

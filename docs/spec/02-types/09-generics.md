@@ -41,6 +41,7 @@ type Box<I> {
 const a = Box<Shout>(raw: text)             // written at the construction
 const b: Box<Shout> = Box(raw: text)        // or from the variable's type
 const c = Box<Shout, Int>(raw: text)        // compile error: `Box` takes 1 type argument, not 2
+const d = Box(raw: text)                    // compile error: nothing says what `I` is
 ```
 
 Inside the type's methods, and in an `extend<I> Box<I>` block (2.5), `I` is the type the value was made with.

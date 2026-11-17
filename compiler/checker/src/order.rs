@@ -54,9 +54,15 @@ impl Checker<'_> {
     pub(crate) fn require_order(&mut self, t: &Ty, span: Span, what: &str) {
         if self.ordered(t) == Some(false) && !self.number_param(t, false) {
             let shown = self.show(t);
+            // A set or a map: its items, sorted, have one (spec 1.8).
+            let hint = match self.inf.resolve(t) {
+                Ty::Set(_) => ": compare `s.to_list().sort()` instead",
+                Ty::Map(..) => ": compare `m.keys().sort()`, or its entries, instead",
+                _ => "",
+            };
             self.error(
                 span,
-                format!("{what} needs values with an order (numbers, text, characters, `Bool`, or tuples of them), and `{shown}` has none"),
+                format!("{what} needs values with an order (numbers, text, characters, `Bool`, `Bytes`, text views, or tuples, lists and rings of them), and `{shown}` has none{hint}"),
             );
         }
     }

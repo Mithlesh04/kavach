@@ -139,7 +139,19 @@ impl Resolver {
                     _ => None,
                 })
                 .collect();
-            if m == 0 {
+            let has_main = items
+                .iter()
+                .any(|i| matches!(&i.kind, ItemKind::Fn(f) if f.name.name == "main"));
+            if m == 0 && has_main {
+                // With `fn main`, a statement outside it would never run (1.3).
+                let (consts, others): (Vec<_>, Vec<_>) = stmts
+                    .into_iter()
+                    .partition(|s| crate::decls::module_const(s).is_some());
+                self.stmts(&consts);
+                if let Some(s) = others.first() {
+                    self.error(s.span, "this statement is outside `main`, so it would never run: this file has `fn main` (spec 1.3). Move it into `main`, or make it a `const`");
+                }
+            } else if m == 0 {
                 self.stmts(&stmts);
             } else {
                 // Other files have module constants (1.13), not statements.
@@ -165,6 +177,7 @@ impl Resolver {
             }
         }
         self.warn_unused();
+        self.res.public = self.modules.public.clone();
         self.finish()
     }
 

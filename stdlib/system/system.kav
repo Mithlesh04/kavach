@@ -4,7 +4,7 @@
 // The basics are free; the rest needs `System`.
 
 use std.system
-use std.system.parts.{Board, Bios, MachineModel, MemoryModule, DiskKind, Disk, Volume, AdapterKind, Adapter, Display, Battery, SensorKind, Sensor, Device, Driver, App, Ids, SystemError, RunningApp, PortUse, User, Account}
+use std.system.parts.{Board, Bios, MachineModel, MemoryModule, DiskKind, Disk, Volume, AdapterKind, Adapter, Screen, Battery, SensorKind, Sensor, Device, Driver, App, Ids, SystemError, RunningApp, PortUse, User, Account}
 use std.time
 
 /// The operating system: `"windows"`, `"linux"`, `"macos"` or another
@@ -191,8 +191,8 @@ pub fn network() -> [Adapter] uses System {
 }
 
 /// Each display connected.
-pub fn displays() -> [Display] uses System {
-    rows(system.rows_id(7), 5).map(r => Display(name: r[0], width: number(r[1]), height: number(r[2]), hz: number(r[3]), connection: r[4]))
+pub fn displays() -> [Screen] uses System {
+    rows(system.rows_id(7), 5).map(r => Screen(name: r[0], width: number(r[1]), height: number(r[2]), hz: number(r[3]), connection: r[4]))
 }
 
 /// The battery, or none without one.

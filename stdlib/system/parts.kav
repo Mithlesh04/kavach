@@ -69,7 +69,7 @@ pub type Adapter {
 }
 
 /// A display connected, and the port it uses.
-pub type Display {
+pub type Screen {
     pub name: String
     pub width: Int
     pub height: Int

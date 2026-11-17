@@ -1,0 +1,39 @@
+// Rule: Cancelling a task waiting on an HTTP/2 request never leaves the connection stuck: the next request gets its answer, or fails at once and `going_away()` says the connection must be replaced.
+// Spec: 14.11, 9.6
+// expect output: first: 200
+// expect output: never hangs: true
+// expect output: answered or going away: true
+
+use std.http
+use std.http.h2
+use std.http.h2.{H2Client}
+use std.net
+use std.time
+use std.cli
+
+fn slow(r: Request) -> Response uses Clock {
+    time.sleep_ms(300)
+    http.text(200, "done {r.path}")
+}
+
+fn ask(c: H2Client, address: String, path: String) -> String ! Error uses Net {
+    const headers = [Header(name: ":method", value: "GET"), Header(name: ":scheme", value: "http"), Header(name: ":authority", value: address), Header(name: ":path", value: path)]
+    const reply = try c.request(headers, Bytes([]))
+    reply.headers.get(":status") ?? "?"
+}
+
+fn main() ! Error uses Net, Clock, Console {
+    const listener = try net.listen("127.0.0.1:0")
+    const address = listener.address()
+    const _server = spawn http.serve(listener, slow)
+    const c = try h2.connect(try net.connect(address))
+    print("first: {try ask(c, address, "/one")}")
+    const waiting = spawn ask(c, address, "/cancelled")
+    time.sleep_ms(100)
+    waiting.cancel()
+    const t0 = time.monotonic_ms()
+    const status = ask(c, address, "/after") catch _ => "failed"
+    print("never hangs: {time.monotonic_ms() - t0 < 5000}")
+    print("answered or going away: {status == "200" or c.going_away()}")
+    cli.exit(0)
+}

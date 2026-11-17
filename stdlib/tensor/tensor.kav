@@ -1,0 +1,196 @@
+// std.tensor (spec 14.33, decision 0125): numbers in any number of
+// dimensions, kept in one flat list, the last dimension's items next to
+// each other. Every operation checks its shapes as it runs; every result
+// is the same on every machine. Products go through `std.matrix`.
+
+use std.matrix
+
+/// Numbers in `shape.len()` dimensions: `items` holds them, the last
+/// dimension's next to each other.
+pub type Tensor<T: Number>: Add, Sub, Mul, MatMul {
+    pub shape: [Int]
+    pub items: [T]
+
+    /// How many numbers it holds.
+    pub fn len(self) -> Int {
+        self.items.len()
+    }
+
+    /// How many dimensions it has.
+    pub fn rank(self) -> Int {
+        self.shape.len()
+    }
+
+    /// The number at `at`, one index per dimension.
+    pub fn get(self, at: [Int]) -> T
+        require at.len() == self.shape.len()
+    {
+        let place = 0
+        for (d, i) in at.enumerate() {
+            if i < 0 or i >= self.shape[d] {
+                panic("index {i} is out of range for size {self.shape[d]} of dimension {d}")
+            }
+            place = place * self.shape[d] + i
+        }
+        self.items[place]
+    }
+
+    /// The same numbers in another shape with as many of them.
+    pub fn reshape(self, shape: [Int]) -> Tensor<T> {
+        const wanted = count(shape) ?? -1
+        if wanted != self.items.len() {
+            panic("`reshape` to {shape} needs {wanted} numbers, and this has {self.items.len()}")
+        }
+        Tensor(shape: shape, items: self.items)
+    }
+
+    /// The last two dimensions swapped.
+    pub fn transpose(self) -> Tensor<T>
+        require self.shape.len() >= 2
+    {
+        const (rows, cols) = (self.shape[self.shape.len() - 2], self.shape[self.shape.len() - 1])
+        const plane = rows * cols
+        let out: [T] = []
+        for b in 0..(self.items.len() / plane.max(1)) {
+            for j in 0..cols {
+                for i in 0..rows {
+                    out.push(self.items[b * plane + i * cols + j])
+                }
+            }
+        }
+        let shape = self.shape
+        shape[shape.len() - 2] = cols
+        shape[shape.len() - 1] = rows
+        Tensor(shape: shape, items: out)
+    }
+
+    /// The sum of every number, added in order.
+    pub fn sum(self) -> T {
+        let total = T(0)
+        for x in self.items {
+            total = total + x
+        }
+        total
+    }
+
+    /// The largest number, or `none` when it has none.
+    pub fn max(self) -> T? {
+        if self.items.is_empty() {
+            return none
+        }
+        let top = self.items[0]
+        for x in self.items {
+            if x > top {
+                top = x
+            }
+        }
+        top
+    }
+
+    /// Each number through `f`.
+    pub fn map(self, f: fn(T) -> T) -> Tensor<T> {
+        Tensor(shape: self.shape, items: self.items.map(f))
+    }
+
+    /// Each number times `k`.
+    pub fn scale(self, k: T) -> Tensor<T> {
+        Tensor(shape: self.shape, items: self.items.map(x => x * k))
+    }
+
+    pub fn add(self, other: Tensor<T>) -> Tensor<T> {
+        self.each(other, "+", (a, b) => a + b)
+    }
+
+    pub fn sub(self, other: Tensor<T>) -> Tensor<T> {
+        self.each(other, "-", (a, b) => a - b)
+    }
+
+    pub fn mul(self, other: Tensor<T>) -> Tensor<T> {
+        self.each(other, "*", (a, b) => a * b)
+    }
+
+    /// `a @ b`: the matrix product of the last two dimensions, for each of
+    /// the others, which must match.
+    pub fn matmul(self, other: Tensor<T>) -> Tensor<T> {
+        if self.shape.len() < 2 or other.shape.len() != self.shape.len() {
+            panic("`@` needs two tensors of the same rank, 2 or more: {self.shape} and {other.shape}")
+        }
+        const n = self.shape.len()
+        const (m, k, k2, p) = (self.shape[n - 2], self.shape[n - 1], other.shape[n - 2], other.shape[n - 1])
+        if k != k2 or self.shape.slice(0, n - 2) != other.shape.slice(0, n - 2) {
+            panic("`@` needs {self.shape}'s last size ({k}) to match {other.shape}'s next to last ({k2}), and the sizes before them to be the same")
+        }
+        let out: [T] = []
+        for b in 0..(self.items.len() / (m * k).max(1)) {
+            const left = matrix.Matrix(rows: m, cols: k, items: self.items.slice(b * m * k, (b + 1) * m * k))
+            const right = matrix.Matrix(rows: k, cols: p, items: other.items.slice(b * k * p, (b + 1) * k * p))
+            out += (left @ right).items
+        }
+        let shape = self.shape
+        shape[n - 1] = p
+        Tensor(shape: shape, items: out)
+    }
+
+    /// `a op b` item by item; the shapes must be the same.
+    fn each(self, other: Tensor<T>, op: String, f: fn(T, T) -> T) -> Tensor<T> {
+        if self.shape != other.shape {
+            panic("`{op}` needs tensors of one shape: {self.shape} and {other.shape}")
+        }
+        let out: [T] = []
+        for (i, x) in self.items.enumerate() {
+            out.push(f(x, other.items[i]))
+        }
+        Tensor(shape: self.shape, items: out)
+    }
+}
+
+/// How many numbers a tensor of `shape` holds; `none` for a negative
+/// size, or a count too big for an `Int`.
+fn count(shape: [Int]) -> Int? {
+    let n = 1
+    for s in shape {
+        if s < 0 {
+            return none
+        }
+        n = n.checked_mul(s) ?? return none
+    }
+    n
+}
+
+/// A tensor of `shape`, every number `value`.
+pub fn full<T: Number>(shape: [Int], value: T) -> Tensor<T>
+    require count(shape) != none
+{
+    let items: [T] = []
+    for _ in 0..(count(shape) ?? 0) {
+        items.push(value)
+    }
+    Tensor(shape: shape, items: items)
+}
+
+/// A tensor of `shape`, every number 0.
+pub fn zeros<T: Number>(shape: [Int]) -> Tensor<T> {
+    full(shape, T(0))
+}
+
+/// A tensor of `shape`, every number 1.
+pub fn ones<T: Number>(shape: [Int]) -> Tensor<T> {
+    full(shape, T(1))
+}
+
+/// A tensor of one dimension holding `items`.
+pub fn of<T: Number>(items: [T]) -> Tensor<T> {
+    Tensor(shape: [items.len()], items: items)
+}
+
+/// A tensor of two dimensions from its rows, each as long.
+pub fn of_rows<T: Number>(rows: [[T]]) -> Tensor<T> {
+    let items: [T] = []
+    for r in rows {
+        if r.len() != rows[0].len() {
+            panic("every row needs {rows[0].len()} numbers, and one has {r.len()}")
+        }
+        items += r
+    }
+    Tensor(shape: [rows.len(), if rows.is_empty() { 0 } else { rows[0].len() }], items: items)
+}

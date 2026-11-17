@@ -79,6 +79,7 @@ const TABLE: &[(&str, &[&str])] = &[
             "names no loop",
             "re-exports names",
             "names each item type",
+            "is outside `main`",
         ],
     ),
     ("no-value", &["returns nothing"]),
@@ -121,6 +122,7 @@ const TABLE: &[(&str, &[&str])] = &[
             "missing `",
             "missing field",
             "parameter",
+            "nothing here says what",
         ],
     ),
     (

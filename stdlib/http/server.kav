@@ -175,6 +175,11 @@ fn read_request(conn: Connection, data: Bytes, limits: ServeLimits, stop: StopHo
     const head_bytes = all.len() - head.body.len()
     while true {
         if let got = message.whole(all) {
+            // A chunked body says its size only as it comes, so it can
+            // arrive whole and still be too big.
+            if got.message.body.len() > limits.max_body_bytes {
+                return Got.Refused(status: 413)
+            }
             return Got.Ready(message: got.message, used: got.used, data: all)
         }
         const received = all.len() - head_bytes

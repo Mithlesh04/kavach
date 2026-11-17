@@ -58,6 +58,11 @@ pub fn repeat(s: &str, n: usize) -> Result<String, String> {
         .checked_mul(n)
         .filter(|t| *t <= MAX_REPEAT)
         .ok_or_else(too_big)?;
+    // Empty text repeated is empty, however many times: no loop of `n`
+    // rounds (a trillion took forever).
+    if s.is_empty() {
+        return Ok(String::new());
+    }
     let mut out = String::new();
     out.try_reserve_exact(total).map_err(|_| too_big())?;
     for _ in 0..n {
@@ -132,6 +137,11 @@ pub fn float_near(a: f64, b: f64) -> bool {
     if a == b {
         return true;
     }
+    // An infinity is near only itself: the tolerance of the larger would
+    // be infinite too (14.2).
+    if a.is_infinite() || b.is_infinite() {
+        return false;
+    }
     let gap = (a - b).abs();
     gap <= 1e-12 || gap <= 1e-9 * a.abs().max(b.abs())
 }
@@ -156,6 +166,9 @@ pub fn format_float32(f: f32) -> String {
 pub fn float32_near(a: f32, b: f32) -> bool {
     if a == b {
         return true;
+    }
+    if a.is_infinite() || b.is_infinite() {
+        return false;
     }
     let gap = (a - b).abs();
     gap <= 1e-6 || gap <= 1e-5 * a.abs().max(b.abs())
@@ -206,4 +219,41 @@ pub fn bytes_index_panic(i: i128, n: usize) -> String {
         return format!("index {i} is out of range: there is 1 byte");
     }
     format!("index {i} is out of range: there are {n} bytes")
+}
+
+/// `text` between `quote`s, as a string or character inside a collection
+/// prints (spec 1.11): as written, combining marks too, with only the
+/// quote, `\`, line breaks, tabs and characters that are invisible or
+/// control the terminal escaped.
+pub fn quoted(text: &str, quote: char) -> String {
+    let mut out = String::with_capacity(text.len() + 2);
+    out.push(quote);
+    for c in text.chars() {
+        match c {
+            '\\' => out.push_str("\\\\"),
+            '\n' => out.push_str("\\n"),
+            '\r' => out.push_str("\\r"),
+            '\t' => out.push_str("\\t"),
+            c if c == quote => {
+                out.push('\\');
+                out.push(c);
+            }
+            c if c.is_control() || invisible(c) => {
+                out.push_str(&format!("\\u{{{:x}}}", c as u32));
+            }
+            c => out.push(c),
+        }
+    }
+    out.push(quote);
+    out
+}
+
+/// Whether `c` is a format character that shows nothing: zero-width
+/// spaces and joiners, direction marks, the byte order mark, soft hyphen.
+fn invisible(c: char) -> bool {
+    matches!(
+        c as u32,
+        0xAD | 0x61C | 0x180E | 0x200B..=0x200F | 0x202A..=0x202E | 0x2060..=0x2064
+            | 0x2066..=0x206F | 0xFEFF | 0xFFF9..=0xFFFB | 0xE0001 | 0xE0020..=0xE007F
+    )
 }

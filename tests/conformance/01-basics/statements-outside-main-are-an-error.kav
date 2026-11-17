@@ -1,0 +1,10 @@
+// Rule: In a file with `fn main`, a statement outside `main` is a compile error, as it would never run; a top-level `const` is still a module constant.
+// Spec: 1.3
+// expect compile error
+
+const limit = 3
+print("top")                       // error: outside `main`, in a file with `fn main`
+
+fn main() {
+    print(limit)
+}

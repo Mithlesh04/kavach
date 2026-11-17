@@ -26,9 +26,27 @@ impl Tree {
 
 /// Starts `command` in a process group of its own.
 pub fn spawn(command: &mut Command) -> std::io::Result<(Child, Tree)> {
-    let child = command.process_group(0).spawn()?;
+    let child = unblocked(command.process_group(0)).spawn()?;
     let group = child.id() as libc::pid_t;
     Ok((child, Tree { group }))
+}
+
+/// `command` with no signal blocked in the program it starts. A Kavach
+/// program blocks the stop signals in its threads, to wait for them on
+/// one (spec 5.6), and a started program would keep that mask: `SIGTERM`
+/// and Ctrl+C couldn't end it (14.23).
+pub fn unblocked(command: &mut Command) -> &mut Command {
+    // SAFETY: runs in the new process between `fork` and `exec`, where
+    // only async-signal-safe calls are allowed; `sigemptyset` and
+    // `sigprocmask` are, and touch only the local `set`.
+    unsafe {
+        command.pre_exec(|| {
+            let mut set: libc::sigset_t = std::mem::zeroed();
+            libc::sigemptyset(&mut set);
+            libc::sigprocmask(libc::SIG_SETMASK, &set, std::ptr::null_mut());
+            Ok(())
+        })
+    }
 }
 
 /// Waits for the program's end with `wait4`, which the standard library
@@ -94,4 +112,27 @@ pub fn peak_self() -> i64 {
         usage
     };
     max_rss(usage.ru_maxrss)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::os::unix::process::ExitStatusExt;
+
+    #[test]
+    fn a_started_program_can_be_stopped_though_this_one_blocks_stops() {
+        // SAFETY: blocks `SIGTERM` in this test's thread only, through a
+        // set filled in here.
+        unsafe {
+            let mut set: libc::sigset_t = std::mem::zeroed();
+            libc::sigemptyset(&mut set);
+            libc::sigaddset(&mut set, libc::SIGTERM);
+            libc::pthread_sigmask(libc::SIG_BLOCK, &set, std::ptr::null_mut());
+        }
+        // The shell stops itself: `$$` is its own id.
+        let mut command = Command::new("sh");
+        command.args(["-c", "kill -TERM $$; exit 3"]);
+        let status = unblocked(&mut command).status().unwrap();
+        assert_eq!(status.signal(), Some(libc::SIGTERM));
+    }
 }

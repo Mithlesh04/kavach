@@ -10,254 +10,7 @@ use kavach_lexer::TokenKind;
 use std::collections::HashSet;
 use std::sync::OnceLock;
 
-/// The modules: path, module name and source.
-pub(crate) const BUILTIN: &[(&str, &str, &str)] = &[
-    (
-        "std/json.kav",
-        "std.json",
-        include_str!("../../../stdlib/json/json.kav"),
-    ),
-    (
-        "std/text.kav",
-        "std.text",
-        include_str!("../../../stdlib/text/text.kav"),
-    ),
-    (
-        "std/collections.kav",
-        "std.collections",
-        include_str!("../../../stdlib/collections/collections.kav"),
-    ),
-    (
-        "std/math.kav",
-        "std.math",
-        include_str!("../../../stdlib/math/math.kav"),
-    ),
-    (
-        "std/fs.kav",
-        "std.fs",
-        include_str!("../../../stdlib/fs/fs.kav"),
-    ),
-    (
-        "std/time/digits.kav",
-        "std.time.digits",
-        include_str!("../../../stdlib/time/digits.kav"),
-    ),
-    (
-        "std/time.kav",
-        "std.time",
-        include_str!("../../../stdlib/time/time.kav"),
-    ),
-    (
-        "std/net.kav",
-        "std.net",
-        include_str!("../../../stdlib/net/net.kav"),
-    ),
-    (
-        "std/http.kav",
-        "std.http",
-        include_str!("../../../stdlib/http/http.kav"),
-    ),
-    (
-        "std/cli.kav",
-        "std.cli",
-        include_str!("../../../stdlib/cli/cli.kav"),
-    ),
-    (
-        "std/crypto.kav",
-        "std.crypto",
-        include_str!("../../../stdlib/crypto/crypto.kav"),
-    ),
-    (
-        "std/base64.kav",
-        "std.base64",
-        include_str!("../../../stdlib/base64/base64.kav"),
-    ),
-    (
-        "std/compress.kav",
-        "std.compress",
-        include_str!("../../../stdlib/compress/compress.kav"),
-    ),
-    (
-        "std/window.kav",
-        "std.window",
-        include_str!("../../../stdlib/window/window.kav"),
-    ),
-    (
-        "std/input.kav",
-        "std.input",
-        include_str!("../../../stdlib/input/input.kav"),
-    ),
-    (
-        "std/audio.kav",
-        "std.audio",
-        include_str!("../../../stdlib/audio/audio.kav"),
-    ),
-    (
-        "std/vec.kav",
-        "std.vec",
-        include_str!("../../../stdlib/vec/vec.kav"),
-    ),
-    (
-        "std/image.kav",
-        "std.image",
-        include_str!("../../../stdlib/image/image.kav"),
-    ),
-    (
-        "std/font.kav",
-        "std.font",
-        include_str!("../../../stdlib/font/font.kav"),
-    ),
-    (
-        "std/app.kav",
-        "std.app",
-        include_str!("../../../stdlib/app/app.kav"),
-    ),
-    (
-        "std/process.kav",
-        "std.process",
-        include_str!("../../../stdlib/process/process.kav"),
-    ),
-    (
-        "std/matrix.kav",
-        "std.matrix",
-        include_str!("../../../stdlib/matrix/matrix.kav"),
-    ),
-    (
-        "std/system/parts.kav",
-        "std.system.parts",
-        include_str!("../../../stdlib/system/parts.kav"),
-    ),
-    (
-        "std/system.kav",
-        "std.system",
-        include_str!("../../../stdlib/system/system.kav"),
-    ),
-    (
-        "std/gpu.kav",
-        "std.gpu",
-        include_str!("../../../stdlib/gpu/gpu.kav"),
-    ),
-    (
-        "std/tasks.kav",
-        "std.tasks",
-        include_str!("../../../stdlib/tasks/tasks.kav"),
-    ),
-    (
-        "std/literals.kav",
-        "std.literals",
-        include_str!("../../../stdlib/literals/literals.kav"),
-    ),
-    (
-        "std/http/upgrade.kav",
-        "std.http.upgrade",
-        include_str!("../../../stdlib/http/upgrade.kav"),
-    ),
-    (
-        "std/http/multipart.kav",
-        "std.http.multipart",
-        include_str!("../../../stdlib/http/multipart.kav"),
-    ),
-    (
-        "std/http/server.kav",
-        "std.http.server",
-        include_str!("../../../stdlib/http/server.kav"),
-    ),
-    (
-        "std/http/hpack.kav",
-        "std.http.hpack",
-        include_str!("../../../stdlib/http/hpack.kav"),
-    ),
-    (
-        "std/term.kav",
-        "std.term",
-        include_str!("../../../stdlib/term/term.kav"),
-    ),
-    (
-        "std/log.kav",
-        "std.log",
-        include_str!("../../../stdlib/log/log.kav"),
-    ),
-    (
-        "std/http/message.kav",
-        "std.http.message",
-        include_str!("../../../stdlib/http/message.kav"),
-    ),
-    (
-        "std/http/client.kav",
-        "std.http.client",
-        include_str!("../../../stdlib/http/client.kav"),
-    ),
-    (
-        "std/http/h2/wire.kav",
-        "std.http.h2.wire",
-        include_str!("../../../stdlib/http/h2wire.kav"),
-    ),
-    (
-        "std/http/h2/client.kav",
-        "std.http.h2.client",
-        include_str!("../../../stdlib/http/h2client.kav"),
-    ),
-    (
-        "std/http/h2.kav",
-        "std.http.h2",
-        include_str!("../../../stdlib/http/h2.kav"),
-    ),
-    (
-        "std/http/h2/serving.kav",
-        "std.http.h2.serving",
-        include_str!("../../../stdlib/http/h2serving.kav"),
-    ),
-    (
-        "std/http/h3.kav",
-        "std.http.h3",
-        include_str!("../../../stdlib/http/h3.kav"),
-    ),
-    (
-        "std/ai.kav",
-        "std.ai",
-        include_str!("../../../stdlib/ai/ai.kav"),
-    ),
-    (
-        "std/random.kav",
-        "std.random",
-        include_str!("../../../stdlib/random/random.kav"),
-    ),
-    (
-        "std/clipboard.kav",
-        "std.clipboard",
-        include_str!("../../../stdlib/clipboard/clipboard.kav"),
-    ),
-    (
-        "std/devices.kav",
-        "std.devices",
-        include_str!("../../../stdlib/devices/devices.kav"),
-    ),
-    (
-        "std/agents.kav",
-        "std.agents",
-        include_str!("../../../stdlib/agents/agents.kav"),
-    ),
-    (
-        "std/test.kav",
-        "std.test",
-        include_str!("../../../stdlib/test/test.kav"),
-    ),
-    (
-        "std/grpc/protobuf.kav",
-        "std.grpc.protobuf",
-        include_str!("../../../stdlib/grpc/protobuf.kav"),
-    ),
-    (
-        "std/grpc/frames.kav",
-        "std.grpc.frames",
-        include_str!("../../../stdlib/grpc/frames.kav"),
-    ),
-    (
-        "std/grpc.kav",
-        "std.grpc",
-        include_str!("../../../stdlib/grpc/grpc.kav"),
-    ),
-];
+pub(crate) use crate::std_table::BUILTIN;
 
 /// Whether `path` is one of the standard library's files.
 pub(crate) fn is_builtin(path: &str) -> bool {
@@ -371,6 +124,10 @@ pub(crate) fn used(sources: &[Source]) -> Vec<Source> {
     if seen.contains("Channel") {
         seen.insert("std.tasks".to_string());
     }
+    // `T.members()` gives `std.reflect`'s types (14.32).
+    if seen.contains("members") {
+        seen.insert("std.reflect".to_string());
+    }
     let mut taken = vec![false; BUILTIN.len()];
     for (i, (_, module, _)) in BUILTIN.iter().enumerate() {
         taken[i] = sources.iter().any(|s| s.module == *module);
@@ -422,6 +179,26 @@ mod tests {
             package: String::new(),
         };
         used(&[program]).into_iter().map(|s| s.module).collect()
+    }
+
+    /// Every program sees the standard library's public types (10.2), so
+    /// one named like a prelude type hides it: std.system's `Display`
+    /// once hid the `Display` interface from every program.
+    #[test]
+    fn no_standard_type_takes_a_prelude_name() {
+        for (path, _, text) in BUILTIN {
+            for item in kavach_parser::parse(text).file.items {
+                let name = match &item.kind {
+                    ItemKind::Type(t) => &t.name.name,
+                    ItemKind::Interface(i) => &i.name.name,
+                    _ => continue,
+                };
+                assert!(
+                    !item.is_pub || !kavach_resolver::PRELUDE_TYPES.contains(&name.as_str()),
+                    "{path} declares `{name}`, a prelude name"
+                );
+            }
+        }
     }
 
     #[test]

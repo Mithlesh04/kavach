@@ -41,6 +41,8 @@ The standard library, imported as `std.<module>`, e.g. `use std.fs`. Its content
 | `app/` | `std.app` | `app.kav`: `AppError`, the program's data, config and cache folders, crash reports, and the system's dialogs (`runtime/core/src/app.rs`, `runtime/dialog`, spec 14.30, [decision 0118](../docs/decisions/0118-app-folders-crash-reports-and-dialogs.md)) | 2 |
 | `tasks/` | `std.tasks` | `tasks.kav`: `Taken<T>`, what a channel's `take()` gives (spec 9.4, [decision 0097](../docs/decisions/0097-take-gives-taken.md)); every program that uses a channel gets it, and tasks and channels themselves are built in | 2 |
 | `literals/` | `std.literals` | `literals.kav`: `LiteralProblem`, what a tag's checker gives for a tagged literal (spec 10.15, [decision 0100](../docs/decisions/0100-tagged-literals.md)) | 2 |
+| `reflect/` | `std.reflect` | `reflect.kav`: `Member`, `MemberKind`, `Param`, `MemberOrigin`; `T.members()`, `m.members()` and `x.has_member(name)` are worked out by the compiler (spec 14.32) | 2 |
+| `tensor/` | `std.tensor` | `tensor.kav`: `Tensor<T>`, numbers in any number of dimensions, shapes checked as each operation runs, products through `std.matrix` (spec 14.33, decision 0125) | 2 |
 | [`grpc/`](grpc/README.md) | `std.grpc`, `std.grpc.frames`, `std.grpc.protobuf` | `grpc.kav`: gRPC clients and servers from Kavach types; `frames.kav`: message prefixes and status trailers; `protobuf.kav`: Protocol Buffers from a type's JSON Schema, written in Kavach on `std.http.h2` (spec 14.14, [decision 0027](../docs/decisions/0027-grpc-as-a-module.md)) | 3 |
 
 Rule: the standard library stays **small**. Anything that can live as a package lives as a package.

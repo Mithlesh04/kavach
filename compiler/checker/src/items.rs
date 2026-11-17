@@ -301,6 +301,7 @@ impl Checker<'_> {
                     self.check_compound(bin, target, &t);
                 }
                 self.check_unsafe_index_target(target);
+                self.check_bytes_unchanged(target);
                 self.check_captured_change(target);
                 if !user {
                     // `m[k] = v` stores a value, not the optional a read

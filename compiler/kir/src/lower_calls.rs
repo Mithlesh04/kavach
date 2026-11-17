@@ -17,6 +17,10 @@ impl<'a> Lowerer<'a> {
         args: &'a [ast::Arg],
         ty: Type,
     ) -> Lowered<ir::Expr> {
+        // `std.reflect`'s answers, worked out while compiling (14.32).
+        if let Some(answer) = self.reflected(e, ty) {
+            return answer;
+        }
         if let Some(schema) = self.schema_call(e, callee, ty) {
             return schema;
         }
@@ -221,6 +225,7 @@ impl<'a> Lowerer<'a> {
             _ if name != "String" && (Prim::from_name(name).is_some()) && self.is_text(arg) => {
                 return self.convert_text(arg, ty, line, span);
             }
+            "Char" if self.ty_of(arg)?.is_int() => return self.char_of(arg, ty, line),
             _ if Prim::from_name(name).and_then(prim_type).is_some()
                 || matches!(name, "Decimal" | "BigInt") =>
             {
@@ -259,5 +264,69 @@ pub(crate) fn scalar_name(t: Type) -> &'static str {
         Type::Bool => "Bool",
         Type::Char => "Char",
         t => t.kavach_name(),
+    }
+}
+
+impl<'a> Lowerer<'a> {
+    /// `Char(n)` of a whole number (spec 2.1): a panic unless `n` is a
+    /// character's code point, `0..=0x10FFFF` without the surrogates.
+    fn char_of(&mut self, arg: &'a ast::Expr, ty: Type, line: u32) -> Lowered<ir::Expr> {
+        use crate::ir::{BinOp, Block, Stmt};
+        let n = self.expr(arg)?;
+        let held = self.new_local(Type::I64);
+        let wide = ir::Expr {
+            kind: K::Convert(Box::new(n), false),
+            ty: Type::I64,
+            line,
+        };
+        let at = |kind, ty| ir::Expr { kind, ty, line };
+        let get = |s: &Self| s.local_expr(held, line);
+        let cmp = |s: &Self, op, v: i128| {
+            at(
+                K::Binary(op, Box::new(get(s)), Box::new(at(K::Int(v), Type::I64))),
+                Type::Bool,
+            )
+        };
+        let low = at(
+            K::And(
+                Box::new(cmp(self, BinOp::Ge, 0)),
+                Box::new(cmp(self, BinOp::Lt, 0xD800)),
+            ),
+            Type::Bool,
+        );
+        let high = at(
+            K::And(
+                Box::new(cmp(self, BinOp::Gt, 0xDFFF)),
+                Box::new(cmp(self, BinOp::Le, 0x10FFFF)),
+            ),
+            Type::Bool,
+        );
+        let cond = at(K::Or(Box::new(low), Box::new(high)), Type::Bool);
+        let value = at(K::Convert(Box::new(get(self)), false), ty);
+        // The same words as the interpreter's: `55296 is not a …`.
+        let text = self.str_type();
+        let why = at(
+            K::Format(vec![
+                get(self),
+                at(K::Str(" is not a character's code point".into()), text),
+            ]),
+            text,
+        );
+        let stop = Block {
+            stmts: vec![Stmt::Expr(at(
+                K::Rt(crate::rt_op::RtOp::PanicText, vec![why]),
+                Type::Unit,
+            ))],
+            value: None,
+        };
+        let bad = at(K::Unary(crate::ir::UnOp::Not, Box::new(cond)), Type::Bool);
+        let check = at(K::If(Box::new(bad), stop, Block::default()), Type::Unit);
+        Ok(at(
+            K::Block(Block {
+                stmts: vec![Stmt::Let(held, wide), Stmt::Expr(check)],
+                value: Some(Box::new(value)),
+            }),
+            ty,
+        ))
     }
 }

@@ -1,0 +1,13 @@
+// Rule: A whole number above `0x10FFFF` isn't a character, so converting it to `Char` panics.
+// Spec: 2.1
+// expect output: 1114111
+// expect panic
+
+fn letter(n: Int) -> Char {
+    Char(n)
+}
+
+fn main() {
+    print(Int(letter(0x10FFFF)))   // the last code point is a character
+    print(letter(0x110000))
+}

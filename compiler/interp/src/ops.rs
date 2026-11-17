@@ -125,6 +125,8 @@ impl<'a> Interp<'a> {
         Ok(match op {
             Eq => a == b,
             NotEq => a != b,
+            // `NaN` is in no order: `<` and the others are false (1.8).
+            _ if is_nan(a) || is_nan(b) => false,
             _ => {
                 let ord = compare(a, b)
                     .ok_or_else(|| self.panic("these values can't be compared", span))?;
@@ -318,5 +320,14 @@ pub(crate) fn compare(a: &Value<'_>, b: &Value<'_>) -> Option<Ordering> {
         }
         (Value::Bytes(x), Value::Bytes(y)) => Some(x.cmp(y)),
         _ => None,
+    }
+}
+
+/// Whether `v` is a float that is `NaN`.
+pub(crate) fn is_nan(v: &Value<'_>) -> bool {
+    match v {
+        Value::Float(f) => f.is_nan(),
+        Value::Float32(f) => f.is_nan(),
+        _ => false,
     }
 }
