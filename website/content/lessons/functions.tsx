@@ -134,7 +134,14 @@ export const defaultsDoc: LessonDoc = {
   lead: "A parameter with = value may be left out of a call, and then takes that value.",
   simple: <>A default is the usual choice, filled in for you, like a coffee shop that adds milk unless you ask for it black.</>,
   minutes: 2,
-  body: <Ex name="functions/sub-named" />,
+  body: (
+    <>
+      <Ex name="functions/sub-named" />
+      <P>A default may read the parameters before it. Here a missing height makes a square:</P>
+      <Ex name="functions/default-earlier" />
+      <SrcRef file="tests/conformance/03-functions/a-default-may-read-earlier-parameters.kav" label="tested" />
+    </>
+  ),
 };
 
 // ---------- Using Results ----------

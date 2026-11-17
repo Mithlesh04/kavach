@@ -1,0 +1,11 @@
+fn main() {
+    let xs: [Int] = []
+    for i in 0..200_000 {
+        xs.push(if i == 100_000 or i == 150_000 { 5_000_000_000_000_000_000 } else { 1 })
+    }
+    let total = 0
+    on cores for i in 0..200_000 {
+        total += xs[i] * 1
+    }
+    print(total)
+}

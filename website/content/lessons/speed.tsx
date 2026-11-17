@@ -18,8 +18,8 @@ import { Ex, H2, Note, P } from "./parts";
 const ways: [way: string, saves: string, page: string][] = [
   ["Native machine code", "programs compile to machine code through LLVM or Cranelift, with no interpreter and no virtual machine in between", "/docs/speed/native-executables/"],
   ["No garbage collector", "memory is freed the moment its last use ends, so a program never stops for a collector", "/docs/memory/automatic-memory/"],
-  ["Values never alias", "a list has one owner, so the compiler can keep values in registers and run loops on every core safely", "/docs/memory/values-not-references/"],
-  ["Loops on all cores", "a plain loop is split over every core, with the one-core result exactly", "/docs/speed/loops-on-all-cores/"],
+  ["Values never alias", "a list has one owner, so the compiler can keep values in registers and split loops over the cores safely", "/docs/memory/values-not-references/"],
+  ["Loops on all cores", "on cores before a for splits it over every core, with the one-core result exactly", "/docs/speed/loops-on-all-cores/"],
   ["Packed small numbers", "a list of bytes or Bools takes one byte per item, so eight times as many fit in the fast caches", "/docs/speed/byte-packed-lists/"],
   ["Radix sort", "whole numbers sort in a few passes by digit, not by comparing pairs", "/docs/speed/fast-sorting/"],
   ["Fused pipelines", "a chain of map, filter and sum runs as one loop, with no list built between the steps", "/docs/collections/lists/map-filter-sum/"],
@@ -27,8 +27,8 @@ const ways: [way: string, saves: string, page: string][] = [
 ];
 
 export const howFastDoc: LessonDoc = {
-  lead: "Kavach is fast because it does less work: no interpreter, no garbage collector, no copies it can avoid, and every core when a loop allows it.",
-  simple: <>A fast cook wastes no steps rather than rushing. Kavach is fast the same way: it skips work that isn&apos;t needed, and when a job can be shared, it shares it among all of the computer&apos;s cores, and the result never changes.</>,
+  lead: "Kavach is fast because it does less work: no interpreter, no garbage collector, no copies it can avoid, and every core when you ask for it.",
+  simple: <>A fast cook wastes no steps rather than rushing. Kavach is fast the same way: it skips work that isn&apos;t needed, and when you mark a job that can be shared, it shares it among all of the computer&apos;s cores, and the result never changes.</>,
   minutes: 4,
   body: (
     <>
@@ -51,7 +51,7 @@ export const howFastDoc: LessonDoc = {
         </table>
       </div>
       <P>
-        None of these change what a program prints. A loop on all cores gives the one-core answer, the GPU gives the
+        None of these change what a program prints. An <C>on cores</C> loop gives the one-core answer, the GPU gives the
         CPU&apos;s, and a sum of floats keeps its order: speed never changes a result.
       </P>
       <Note>
@@ -65,26 +65,78 @@ export const howFastDoc: LessonDoc = {
 // ---------- Loops on All Cores ----------
 
 export const coresDoc: LessonDoc = {
-  lead: "You write the plain loop. The compiler proves it can be split, the runtime runs it on every core, and the answer is the one-core answer, exactly.",
-  simple: <>Like splitting a pile of exam papers among several teachers: each marks a part, and the totals are added at the end. Kavach does this for your loop on its own, and only when the answer comes out exactly the same.</>,
-  minutes: 5,
+  lead: "Every loop runs on one core, in order, unless you write on cores before it. Then its rounds run on all the program's cores, and the compiler checks that the answer is the one-core answer, exactly.",
+  simple: <>Like splitting a pile of exam papers among several teachers: each marks a part, and the totals are added at the end. You ask for it with <C>on cores</C>, and Kavach agrees only when the answer comes out exactly the same.</>,
+  minutes: 6,
   before: ["basics/for-loop", "speed/how-kavach-is-fast"],
   body: (
     <>
       <CoresSplit />
-      <H2>Loops that spread out</H2>
-      <P>Ordinary loops, nothing parallel written anywhere. Element-wise work, where each round writes its own item:</P>
+      <P>
+        A plain <C>for</C> runs on one core, in order, as in C, Go, Rust and JavaScript. Write <C>on cores</C>{" "}
+        before it, and its rounds are cut into chunks that run on all the program&apos;s cores at once. Each round
+        here writes its own item, <C>ys[i]</C>:
+      </P>
       <Ex name="speed/sub-elementwise" />
-      <P>A whole-number sum: each core sums its part, and the parts are added at the end, since whole numbers add up the same in any grouping. Overflow is still caught at the plain loop&apos;s round:</P>
+      <P>
+        A round may also add whole numbers into a <C>let</C> with <C>+=</C>. Each core sums its part, and the parts
+        are added at the end, since whole numbers add up the same in any grouping:
+      </P>
       <Ex name="speed/sub-sum" />
-      <P>Even a running total kept under a modulus: the compiler proves it equals the flat sum taken modulo once.</P>
-      <Ex name="speed/sub-chain" />
-      <H2>Loops that stay on one core</H2>
-      <Ex name="speed/sub-serial" />
+      <P>
+        An overflow is still caught at the plain loop&apos;s round. The program stops with the same message the
+        loop gives on one core:
+      </P>
+      <Ex name="speed/cores-overflow.panics" />
+      <H2>What on cores refuses</H2>
+      <P>
+        Only two kinds of change keep the one-core answer: writing the round&apos;s own slot (<C>out[i]</C>, where{" "}
+        <C>i</C> is the loop&apos;s name), and adding whole numbers with <C>+=</C>. Anything else is a compile error
+        that says why. <C>print</C> would show the rounds in a different order on each run:
+      </P>
+      <Ex name="speed/cores-print.fails" />
+      <P>Adding floats in another order changes their last bits, so a float <C>+=</C> is refused, with the fix:</P>
+      <Ex name="speed/cores-float.fails" />
+      <P>Any other change to something every round shares is refused too, even a running total kept under a modulus:</P>
+      <Ex name="speed/cores-chain.fails" />
+      <P>
+        For each of these, keep the plain loop, or collect each round&apos;s value in its own slot and finish the work
+        after the loop. What a round reads is never limited.
+      </P>
+      <H2>How many cores</H2>
+      <P>
+        <C>on cores</C> uses all the cores the program may use. <C>on cores(n)</C> asks for at most <C>n</C>; asking
+        for more than the machine has uses all it may, so the same program runs on any machine:
+      </P>
+      <Ex name="speed/cores-count" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>A sum of floats keeps its order: adding them in another order would change the last digits, so it isn&apos;t split.</li>
-        <li>Rounds that need the round before can&apos;t be split, and neither can a loop that prints.</li>
-        <li>Small loops stay on one core too: splitting them would cost more than it saves.</li>
+        <li>The program&apos;s cap is all the machine&apos;s cores, or fewer: <C>cores = 4</C> under <C>[run]</C> in <C>kavach.toml</C>, or <C>KAVACH_CORES=4</C> when it starts, which wins when both are set. <C>KAVACH_CORES=1</C> keeps every loop on one core.</li>
+        <li>A container or CPU limit counts: under <C>docker --cpus=2</C>, the cap is 2.</li>
+        <li><C>system.cores()</C> reports the cap, so a program that sizes its work by it follows the cap too.</li>
+      </ul>
+      <P>A count of 0 or less is a compile error when it is written as a number:</P>
+      <Ex name="speed/cores-zero.fails" />
+      <P>and a panic when it is worked out while the program runs:</P>
+      <Ex name="speed/cores-zero.panics" />
+      <H2>Leaving early</H2>
+      <P>
+        <C>return</C>, <C>break</C>, <C>continue</C>, <C>fail</C> and <C>?</C> work as on one core: the first round
+        in order that leaves decides, and rounds after it change nothing. Here the first item over 998 is at 999,
+        however the rounds were shared out:
+      </P>
+      <Ex name="speed/cores-early" />
+      <H2>Nested loops</H2>
+      <P>
+        <C>on</C> covers the one loop after it. A loop inside it runs on one core in each round, unless it has its own{" "}
+        <C>on</C>. A label comes first: <C>rows: on cores for …</C>. Here each round builds one row and writes it to its
+        own slot:
+      </P>
+      <Ex name="speed/cores-nested" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A round may write only its own slot, indexed by the loop&apos;s name: <C>grid[row]</C>, not <C>grid[row * w + col]</C>.</li>
+        <li><C>while</C> can&apos;t take <C>on</C>: each round depends on the one before.</li>
+        <li><C>on</C>, <C>cores</C> and <C>threads</C> are ordinary names everywhere else.</li>
+        <li><C>on threads(n) for …</C> is accepted, for rounds that mostly wait, but its rounds still run one after another today.</li>
       </ul>
     </>
   ),
@@ -96,18 +148,31 @@ export const coresDoc: LessonDoc = {
         you would have seen. Whole-number sums also record the highest and lowest each chunk&apos;s total reached, so a
         total that would overflow in the middle, in one-core order, is caught too.
       </P>
+      <P>
+        The race below was measured on 2026-11-09, before loops needed <C>on cores</C> (decision 0126), when this loop
+        was split over the cores by itself.
+      </P>
       <RaceChart suite="loops" id="loop" />
       <VerifyBlock suite="loops" id="loop" />
       <div className="flex flex-wrap gap-2.5">
-        <SrcRef file="docs/decisions/0031-loops-on-all-cores.md" label="decision 0031" />
-        <SrcRef file="tests/conformance/04-control-flow/big-sums-keep-their-panic-round.kav" label="the overflow test" />
+        <SrcRef file="docs/spec/04-control-flow.md" label="spec 4.9 · where a loop runs" />
+        <SrcRef file="docs/decisions/0126-loops-on-one-core-unless-on-cores.md" label="decision 0126" />
+        <SrcRef file="tests/conformance/04-control-flow/on-cores-gives-the-one-core-result.kav" label="the one-core result, tested" />
+        <SrcRef file="tests/conformance/04-control-flow/big-loops-give-plain-results.kav" label="on cores(2), tested" />
       </div>
     </>
   ),
   quiz: [
     {
       type: "choice",
-      prompt: <>A chunk running on another core hits an overflow. What does the program print?</>,
+      prompt: <>A plain <C>for</C> loop, with no <C>on</C> before it, sums a million numbers. Where does it run?</>,
+      options: ["On one core, in order", "On every core", "On the GPU"],
+      answer: 0,
+      explain: "Every loop runs on one core unless on cores says otherwise.",
+    },
+    {
+      type: "choice",
+      prompt: <>A round of an <C>on cores</C> loop hits an overflow. What does the program print?</>,
       options: ["The exact panic the one-core loop gives", "A special parallel-overflow error", "Nothing: the chunk is skipped"],
       answer: 0,
       explain: "The loop runs again on one core and panics at the same round, with the same message.",

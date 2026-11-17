@@ -1,0 +1,8 @@
+fn count(n: Int) -> Int {
+    n + 1
+}
+
+fn main() ! Error {
+    const t = spawn count(4) * 10
+    print(try t.wait())
+}

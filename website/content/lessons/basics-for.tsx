@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { C } from "@/components/inline-code";
-import { RaceChart } from "@/components/race-chart";
 import { SrcRef } from "@/components/src-ref";
-import { VerifyBlock } from "@/components/verify-block";
 import type { LessonDoc } from "@/lib/chapter";
 import { Ex, H2, Note, P, Syntax } from "./parts";
 
@@ -46,23 +44,19 @@ export const forDoc: LessonDoc = {
         forget, and when you need the position as well, <C>enumerate()</C> gives it.
       </P>
       <P>
-        <strong className="text-ink">Big loops run on every core.</strong> The compiler asks of each counted loop:
-        could the rounds run in any order and give the same answer? This one qualifies, because the compiler
-        proves the sum taken <C>% 1_000_007</C> once is the same number:
+        <strong className="text-ink">One core, unless you ask.</strong> Every loop runs on one core, in order, as in
+        C, Go, Rust and JavaScript. Write <C>on cores</C> before a <C>for</C>, and its rounds run on all the
+        program&apos;s cores, with exactly the one-core answer:
       </P>
-      <Ex name="for/modular" />
+      <Ex name="speed/sub-sum" />
       <P>
-        Such a loop is cut into chunks and spread over a pool of worker threads. If any check fails in a chunk,
-        the chunks&apos; work is thrown away and the plain loop runs again on one core, so an overflow stops the
-        program at exactly the round, message and line the simple loop would give.
+        Each round may only write its own slot or add whole numbers with <C>+=</C>; the compiler refuses anything
+        that could change the answer. See <Link href="/docs/speed/loops-on-all-cores/">Loops on All Cores</Link>.
       </P>
       <div className="flex flex-wrap gap-2.5">
-        <SrcRef file="compiler/kir/src/par.rs" line={27} symbol="outline" />
-        <SrcRef file="docs/decisions/0031-loops-on-all-cores.md" label="decision 0031" />
+        <SrcRef file="docs/spec/04-control-flow.md" label="spec 4.9 · where a loop runs" />
+        <SrcRef file="docs/decisions/0126-loops-on-one-core-unless-on-cores.md" label="decision 0126" />
       </div>
-      <P>The same loop with 500 million rounds, whole program:</P>
-      <RaceChart suite="loops" id="loop" />
-      <VerifyBlock suite="loops" id="loop" />
     </>
   ),
   quiz: [
@@ -94,6 +88,19 @@ export const forListDoc: LessonDoc = {
         the square brackets. A loop inside a loop goes through a list of lists:
       </P>
       <Ex name="for/nested" />
+      <H2>The loop&apos;s name can&apos;t change</H2>
+      <P>
+        The name holds this round&apos;s item, and it is a <C>const</C>: assigning to it is a compile error. Work out
+        a new value in a <C>let</C> of its own instead:
+      </P>
+      <Ex name="for/name-is-const.fails" />
+      <H2>The list as it was</H2>
+      <P>
+        A <C>for</C> walks the list as it was when the loop began. Items pushed while it runs are kept, but this loop
+        doesn&apos;t visit them, so it can&apos;t run forever:
+      </P>
+      <Ex name="for/push-while-looping" />
+      <SrcRef file="docs/spec/04-control-flow.md" label="spec 4.4 · for" />
     </>
   ),
 };

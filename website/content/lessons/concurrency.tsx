@@ -45,6 +45,11 @@ export const tasksDoc: LessonDoc = {
         <li>While a task waits, for the network, time or another task, the others run.</li>
         <li>Tasks are light: a server can run one per connection, many at once.</li>
       </ul>
+      <P>
+        <C>spawn</C> takes the call right after it. So <C>spawn count(4) * 10</C> is a task times a number, a compile
+        error. Put the arithmetic inside the call, <C>spawn count(4 * 10)</C>, or multiply what <C>.wait()</C> gives:
+      </P>
+      <Ex name="tasks/spawn-times.fails" />
       <H2>Two things at once</H2>
       <Ex name="tasks/sub-turns" />
       <P>The two sleeps overlap, so the program takes about 200 ms, not 300. Why it prints in exactly this order is on <Link href="/docs/concurrency/taking-turns/">Taking Turns</Link>.</P>
@@ -172,10 +177,11 @@ export const manyDoc: LessonDoc = {
         Each task runs as <C>spawn thread</C> makes it (<Link href="/docs/concurrency/how-tasks-run/">How Tasks Run</Link>),
         so in a release build the items compute on several cores at once. In{" "}
         <Link href="/docs/benchmarks/#tasks">the benchmark</Link>, eight sums of 150 million rounds each take{" "}
-        {kavachMs("parallel")} ms with <C>parallel_map</C> — and {kavachMs("serial")} ms with plain <C>map</C>,
-        because each of these sums is a math loop that already{" "}
-        <Link href="/docs/speed/loops-on-all-cores/">runs on all cores</Link> by itself. <C>parallel_map</C> is for
-        items that can&apos;t spread themselves like that: downloads, files, work of uneven sizes.
+        {kavachMs("parallel")} ms with <C>parallel_map</C> — and {kavachMs("serial")} ms with plain <C>map</C>.
+        That was measured before loops needed <C>on cores</C> (decision 0126), when each of these math loops was
+        split over the cores by itself; today such a loop is written{" "}
+        <Link href="/docs/speed/loops-on-all-cores/"><C>on cores for</C></Link>. <C>parallel_map</C> is for items
+        that can&apos;t spread themselves like that: downloads, files, work of uneven sizes.
       </P>
       <div><SrcRef file="docs/spec/09-concurrency.md" line={66} symbol="Each task runs as `spawn thread` makes it" label="spec 9.3" /></div>
       <H2>When an item fails or panics</H2>
@@ -366,8 +372,8 @@ export const timeoutsDoc: LessonDoc = {
       <Note>
         Only a program that calls <C>cancel()</C> or gives a time limit somewhere gets these checks; others pay
         nothing. A counted loop whose body runs straight through, with no call and no inner loop, gets none: it ends
-        anyway, and it stays a loop the compiler can vectorize or{" "}
-        <Link href="/docs/speed/loops-on-all-cores/">run on all cores</Link>.
+        anyway, and it stays a loop the compiler can vectorize or, with{" "}
+        <Link href="/docs/speed/loops-on-all-cores/"><C>on cores</C></Link>, run on all cores.
       </Note>
       <H2>Cleanup however a task ends</H2>
       <P>

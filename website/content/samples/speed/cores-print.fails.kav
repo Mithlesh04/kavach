@@ -1,0 +1,5 @@
+fn main() {
+    on cores for i in 0..3 {
+        print(i)
+    }
+}

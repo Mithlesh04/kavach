@@ -1,0 +1,14 @@
+fn main() {
+    let out: [Int] = []
+    for _ in 0..8 {
+        out.push(0)
+    }
+    on cores(2) for i in 0..8 {
+        out[i] = i * i
+    }
+    print(out)
+    on cores(64) for i in 0..8 {
+        out[i] = i + 1
+    }
+    print(out)
+}

@@ -1,0 +1,7 @@
+fn main() {
+    let out = [0, 0, 0]
+    on cores(0) for i in 0..3 {
+        out[i] = i * i
+    }
+    print(out)
+}

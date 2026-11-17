@@ -23,8 +23,8 @@ const where: [op: string, runs: string, note: React.ReactNode][] = [
   ["calling a gpu fn directly", "the CPU", <>a <C>gpu fn</C> is also an ordinary function</>],
   ["sum, min, max of Int32 or UInt32", "the GPU, when the list is already in GPU memory", <>only the result comes back; a list on the CPU stays there</>],
   ["filter of a list already in GPU memory", "the GPU, when its items are one of the four number types and its lambda fits a gpu fn", <>the kept items stay there, in their order; not yet for records and tuples</>],
-  ["other filters; sum, min, max of floats", "the CPU, on every core", <>see <Link href="/docs/speed/loops-on-all-cores/">Loops on All Cores</Link></>],
-  ["sort", "the CPU, on every core", <>see <Link href="/docs/speed/fast-sorting/">Fast Sorting</Link></>],
+  ["other filters; sum, min, max of floats", "the CPU, on one core", <>a loop of your own can use every core: see <Link href="/docs/speed/loops-on-all-cores/">Loops on All Cores</Link></>],
+  ["sort", "the CPU; a long list of whole numbers on every core", <>see <Link href="/docs/speed/fast-sorting/">Fast Sorting</Link></>],
 ];
 
 // ---------- GPU ----------
@@ -408,7 +408,7 @@ export const gpuUsesDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><strong className="text-ink">Light work:</strong> adding 1 to each number is faster on the CPU than the trip to the GPU.</li>
         <li><strong className="text-ink">Text, maps and files:</strong> a GPU works on numbers only.</li>
-        <li><strong className="text-ink">Sorting and float totals:</strong> today these run on all CPU cores, which is already fast; see <Link href="/docs/speed/loops-on-all-cores/">Loops on All Cores</Link>. Whole-number <C>sum</C>, <C>min</C> and <C>max</C> of a list already on the GPU run there.</li>
+        <li><strong className="text-ink">Sorting and float totals:</strong> these run on the CPU. A long list of whole numbers sorts on all cores (<Link href="/docs/speed/fast-sorting/">Fast Sorting</Link>), and a loop of your own can use them with <Link href="/docs/speed/loops-on-all-cores/"><C>on cores</C></Link>. Whole-number <C>sum</C>, <C>min</C> and <C>max</C> of a list already on the GPU run there.</li>
       </ul>
       <Note>These lists are short so the output fits on a page; with the same code, long lists run on the GPU.</Note>
     </>

@@ -1,0 +1,1 @@
+error: `total +=` in an `on cores` loop adds in a different order on each run, which changes a float's last bits: add whole numbers, or collect each round's value in its own slot and add them after (spec 4.9)

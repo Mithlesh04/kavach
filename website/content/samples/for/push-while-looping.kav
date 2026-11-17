@@ -1,0 +1,7 @@
+fn main() {
+    let xs = [1, 2]
+    for x in xs {
+        xs.push(x * 10)
+    }
+    print(xs)
+}

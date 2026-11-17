@@ -1,0 +1,12 @@
+fn squares(workers: Int) -> [Int] {
+    let out = [0, 0, 0]
+    on cores(workers) for i in 0..3 {
+        out[i] = i * i
+    }
+    out
+}
+
+fn main() {
+    print(squares(2))
+    print(squares(0))
+}

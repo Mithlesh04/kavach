@@ -194,6 +194,11 @@ export const tidyDoc: LessonDoc = {
       </P>
       <Ex name="strings/pad" />
       <P>Text already that long stays as it was. The width is at most 1,000,000.</P>
+      <P>
+        A negative count or width counts as 0, as it does everywhere a method takes one: <C>repeat</C>,{" "}
+        <C>truncate</C>, <C>pad_left</C>, and a list&apos;s <C>take</C>:
+      </P>
+      <Ex name="strings/negative-counts" />
       <SrcRef file="tests/conformance/14-standard-library/text-pads-words-and-capitals.kav" label="tested" />
     </>
   ),

@@ -253,8 +253,9 @@ export const arenasDoc: LessonDoc = {
       <Ex name="memory/arena-escape.fails" />
       <H2>What may leave</H2>
       <P>
-        Numbers, <C>Bool</C> and <C>Char</C> are copied, so they may leave by any way. Here the longest word&apos;s
-        length and the count go to variables declared before the arena:
+        Numbers, <C>Bool</C> and <C>Char</C> are copied, so they may leave by any way, and so may new text built
+        only from them. Here the longest word&apos;s length goes out, and so does <C>summary</C>, as only{" "}
+        <C>words.len()</C> in it comes from the arena:
       </P>
       <Ex name="memory/arena-numbers" />
       <P>

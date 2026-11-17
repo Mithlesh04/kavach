@@ -89,7 +89,7 @@ const ideas: [level: string, color: string, list: Idea[]][] = [
   ["Expert projects", "text-ch-c", [
     { title: "A refund agent", what: "An AI agent that refunds orders, asks a person above a limit, logs everything and resumes after a crash.", uses: [["Agents", "agents/agents"], ["Capabilities", "agents/capabilities"], ["Durable Agents", "agents/durable-agents"]] },
     { title: "A gRPC service", what: "A typed service other languages call, with streaming and TLS.", uses: [["gRPC", "networks/grpc"], ["Tasks", "concurrency/tasks"]] },
-    { title: "A data cruncher on every core", what: "Sum, filter and sort hundreds of millions of items, spread over all cores.", uses: [["Loops on All Cores", "speed/loops-on-all-cores"], ["Channels", "concurrency/channels"]] },
+    { title: "A data cruncher on every core", what: "Sum, filter and sort hundreds of millions of items, with on cores spreading each loop over all cores.", uses: [["Loops on All Cores", "speed/loops-on-all-cores"], ["Channels", "concurrency/channels"]] },
     { title: "A GPU simulation", what: "Millions of particles stepped on the GPU, results identical to the CPU.", uses: [["GPU", "speed/gpu"], ["Data Types", "basics/data-types"]] },
     { title: "A library for Python", what: "Write the fast part in Kavach and call it from Python, Node.js or Go.", uses: [["A Library for Any Language", "other-languages/a-library-for-any-language"], ["Calling C", "other-languages/calling-c"]] },
   ]],

@@ -221,10 +221,10 @@ export const smart: SmartThing[] = [
   },
   {
     group: "Fast without effort",
-    title: "Big loops use every core",
-    what: <>A loop over a big list is split across all cores when the result is exactly the one-core result, overflow checks included.</>,
+    title: "One word puts a loop on every core",
+    what: <><C>on cores</C> before a <C>for</C> splits it over all cores, and the compiler checks the result is exactly the one-core result, overflow checks included.</>,
     where: "speed/loops-on-all-cores",
-    proof: decision("0031-loops-on-all-cores.md", "decision 0031"),
+    proof: decision("0126-loops-on-one-core-unless-on-cores.md", "decision 0126"),
   },
   {
     group: "Fast without effort",

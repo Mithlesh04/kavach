@@ -1,0 +1,7 @@
+fn main() {
+    let total = 0.0
+    on cores for i in 0..1_000 {
+        total += Float(i) * 0.5
+    }
+    print(total)
+}

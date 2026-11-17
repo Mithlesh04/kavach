@@ -1,0 +1,1 @@
+error: using `Console` in an `on cores` loop would happen in a different order on each run: collect what to show in each round's slot, then show it after the loop, or use `on threads` for waiting work (spec 4.9)

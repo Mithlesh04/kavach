@@ -1,0 +1,1 @@
+error: this changes `total`, which every round shares: a round may write only its own slot of a list (`out[i]`, with the loop's name) or add whole numbers with `+=` (spec 4.9)

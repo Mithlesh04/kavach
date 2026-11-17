@@ -1,0 +1,6 @@
+fn main() {
+    print("ab".repeat(-1).len())
+    print([1, 2, 3].take(-1))
+    print("ab".truncate(-1).len())
+    print("ab".pad_left(-1))
+}

@@ -172,6 +172,21 @@ export const patternsDoc: LessonDoc = {
         <li><C>(0, y)</C> matches a pair whose first item is 0, and names the second <C>y</C>.</li>
         <li>A union variant matches its own case: <Link href="/docs/types/records/">records and unions</Link> show it.</li>
       </ul>
+      <H2>Variants inside variants</H2>
+      <P>
+        A pattern can look inside a variant&apos;s field. Two arms that differ in that field cover the variant when,
+        between them, they cover the field&apos;s type. A <C>match</C> on an optional may list <C>none</C> and the
+        variants of the value inside:
+      </P>
+      <Ex name="match/nested-variants" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>In <C>label</C>, the two <C>Box.Full</C> arms cover every <C>Shape</C>, so with <C>Box.Empty</C> the match covers every <C>Box</C>.</li>
+        <li>In <C>describe</C>, <C>Shape.Circle(radius)</C> matches a present circle, and <C>none</C> a missing one.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/04-control-flow/match-covers-nested-variants.kav" label="nested variants, tested" />
+        <SrcRef file="tests/conformance/04-control-flow/match-on-an-optional-may-list-its-variants.kav" label="optionals, tested" />
+      </div>
     </>
   ),
 };

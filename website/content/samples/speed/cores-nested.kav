@@ -1,0 +1,16 @@
+fn main() {
+    const w = 4
+    const h = 3
+    let grid: [[Int]] = []
+    for _ in 0..h {
+        grid.push([])
+    }
+    rows: on cores for row in 0..h {
+        let line: [Int] = []
+        for col in 0..w {
+            line.push(row * 10 + col)
+        }
+        grid[row] = line
+    }
+    print(grid)
+}

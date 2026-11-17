@@ -1,0 +1,2 @@
+[0, 1, 4]
+panic: a loop runs on at least one core, but the count is 0 (spec 4.9)
