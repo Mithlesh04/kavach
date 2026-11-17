@@ -1,0 +1,5 @@
+Method get -> T
+Field value -> T
+first() -> T?
+push(T) -> Nothing
+get(a: K) -> V?

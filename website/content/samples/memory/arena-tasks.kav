@@ -1,0 +1,15 @@
+use std.time
+
+fn main() {
+    const total = arena {
+        const words = "one two three four".split(" ")
+        const counter = spawn {
+            time.sleep_ms(20)
+            print("task done")
+            words.len()
+        }
+        print("arena body done")
+        counter.wait() catch 0
+    }
+    print(total)
+}

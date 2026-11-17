@@ -135,6 +135,8 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Images", "14.29"],
     ["Desktop Apps", "14.30"],
     ["Fonts", "14.31"],
+    ["Reflection", "14.32"],
+    ["Tensors", "14.33"],
     ["JSON", "2.12", ["Json values", "Reading", "Nested data", "Building", "Decoding into a type"]],
     ["Bytes", "2.13"],
   ]],
@@ -242,6 +244,8 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["std.app", "—"],
     ["std.font", "—"],
     ["std.matrix", "—"],
+    ["std.reflect", "—"],
+    ["std.tensor", "—"],
     ["std.literals", "—"],
   ]],
 ];

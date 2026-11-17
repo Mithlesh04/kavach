@@ -1,0 +1,2 @@
+5
+panic: contract failed: `clamp` needs `lo <= hi`

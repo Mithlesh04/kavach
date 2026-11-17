@@ -1,0 +1,10 @@
+fn take(inout items: [Int]) -> Int
+    require items.pop() != none
+{
+    items.len()
+}
+
+fn main() {
+    let xs = [1, 2, 3]
+    print(take(xs))
+}

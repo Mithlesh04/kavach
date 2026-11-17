@@ -27,6 +27,8 @@ export const genericsDoc: LessonDoc = {
         methods, <C>I</C> is then the type the value was made with:
       </P>
       <Ex name="types/generics-construction" />
+      <P>When nothing says what a type argument is, the compiler asks for it:</P>
+      <Ex name="types/generics-unfixed.fails" />
       <P>The count must match the type&apos;s parameters:</P>
       <Ex name="types/generics-arity.fails" />
       <H2>Math in generic code</H2>
@@ -44,6 +46,8 @@ export const genericsDoc: LessonDoc = {
         <li>Each type gets its own compiled copy, so <C>total</C> of <C>Float32</C>s runs as a loop written for <C>Float32</C> would.</li>
         <li>The bound is <C>Floating</C>, not <C>Float</C>, as <C>Float</C> is a type.</li>
       </ul>
+      <P><C>Float</C> as a bound is a compile error that names the right one:</P>
+      <Ex name="types/float-bound.fails" />
       <P>A number with a fraction is a <C>T</C> only when <C>T</C> is <C>Floating</C>; 0.5 of an <C>Int</C> isn&apos;t one:</P>
       <Ex name="types/fraction-needs-floating.fails" />
       <P>And a type that is no number doesn&apos;t meet the bound:</P>

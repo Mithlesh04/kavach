@@ -1,0 +1,17 @@
+type Cat {
+    pub name: String
+    fn speak(self) -> String { "meow" }
+}
+
+type Rock {
+    pub weight: Int
+}
+
+fn main() {
+    const c = Cat(name: "Tom")
+    const r = Rock(weight: 3)
+    print(c.has_member("speak"))
+    print(r.has_member("speak"))
+    print(r.has_member("weight"))
+    print([1, 2].has_member("len"))
+}

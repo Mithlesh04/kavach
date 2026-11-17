@@ -61,6 +61,8 @@ import { vecDoc } from "./stdlib-vec";
 import { imageDoc } from "./stdlib-image";
 import { appDoc } from "./stdlib-app";
 import { fontDoc } from "./stdlib-font";
+import { reflectDoc } from "./stdlib-reflect";
+import { tensorDoc } from "./stdlib-tensor";
 import { loggingDoc } from "./stdlib-log";
 import { aiWritesDoc } from "./tools-ai-writes";
 import { gpuScreenDoc } from "./stdlib-gpu";
@@ -360,6 +362,8 @@ export const lessons: Record<string, LessonDoc> = {
   "standard-library/images": imageDoc,
   "standard-library/desktop-apps": appDoc,
   "standard-library/fonts": fontDoc,
+  "standard-library/reflection": reflectDoc,
+  "standard-library/tensors": tensorDoc,
 
   "standard-library/json": jsonDoc,
   "standard-library/json/json-values": jsonValuesDoc,

@@ -204,8 +204,9 @@ export const moduleConstDoc: LessonDoc = {
         <li>It is worked out once, before <C>main</C> starts, in the order the constants are written. Its value never changes, as any <C>const</C>&apos;s.</li>
         <li>Its value may use numbers, text, other module constants and calls of functions, but no capability, and nothing that can fail without <C>catch</C>.</li>
         <li><C>pub const</C> lets other modules read it too: see <Link href="/docs/tools/modules/pub/">pub</Link>.</li>
-        <li>A <C>let</C> at the top level is a line of the program, not a module constant, and so is <C>const (a, b) = pair()</C>.</li>
+        <li>Only a <C>const</C> can be at the top level of a file with <C>fn main</C>. Anything else there would never run, so it is a compile error: a <C>let</C>, a call, or <C>const (a, b) = pair()</C>.</li>
       </ul>
+      <Ex name="variables/top-let.fails" />
       <H2>A const that uses a capability</H2>
       <P>
         Reading a file, the clock or the network needs a <Link href="/docs/agents/capabilities/">capability</Link>. A
@@ -222,7 +223,7 @@ export const moduleConstDoc: LessonDoc = {
           <tbody>
             <tr className="border-b border-line align-top">
               <td className="py-2 pr-4 whitespace-nowrap">Has <C>fn main</C></td>
-              <td className="py-2 text-muted">An error. A module constant is worked out before <C>main</C>, which hasn&apos;t run anything yet. Write <C>let</C>, or work it out in <C>main</C>.</td>
+              <td className="py-2 text-muted">An error. A module constant is worked out before <C>main</C>, which hasn&apos;t run anything yet. Work it out in <C>main</C>.</td>
             </tr>
             <tr className="border-b border-line align-top">
               <td className="py-2 pr-4 whitespace-nowrap">Is a script, with no <C>fn main</C></td>
@@ -260,6 +261,7 @@ export const moduleConstDoc: LessonDoc = {
         <SrcRef file="tests/conformance/01-basics/script-constants-may-use-capabilities.kav" label="in a script, tested" />
         <SrcRef file="tests/conformance/01-basics/functions-read-no-script-statement.kav" label="not read by functions, tested" />
         <SrcRef file="tests/conformance/01-basics/module-constant-panics-before-main.kav" label="a panic first, tested" />
+        <SrcRef file="tests/conformance/01-basics/statements-outside-main-are-an-error.kav" label="nothing else outside main, tested" />
         <SrcRef file="tests/conformance/01-basics/capital-names-in-a-const-are-variants.kav" label="capitals, tested" />
       </div>
     </>

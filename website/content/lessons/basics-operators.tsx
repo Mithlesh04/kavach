@@ -264,6 +264,19 @@ export const mathFunctionsDoc: LessonDoc = {
         <SrcRef file="tests/conformance/14-standard-library/math-roots-logs-and-gamma.kav" label="roots and logs, tested" />
         <SrcRef file="tests/conformance/14-standard-library/fract-is-the-part-above-the-floor.kav" label="fract, tested" />
       </div>
+      <H2>Smaller, larger, between</H2>
+      <P>
+        <C>x.min(y)</C>, <C>x.max(y)</C> and <C>x.clamp(lo, hi)</C> are methods of every number, not in{" "}
+        <C>std.math</C>. <C>clamp</C> keeps <C>x</C> between <C>lo</C> and <C>hi</C>, and <C>lo</C> above{" "}
+        <C>hi</C> breaks its contract:
+      </P>
+      <Ex name="math/clamp-order.panics" />
+      <P>With a float, a <C>NaN</C> on either side gives <C>NaN</C>, as IEEE 754 says, so a lost value is never hidden:</P>
+      <Ex name="math/nan-min-max" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/14-standard-library/min-max-and-clamp-give-nan-for-nan.kav" label="NaN, tested" />
+        <SrcRef file="tests/conformance/14-standard-library/clamp-with-lo-above-hi-panics.kav" label="lo above hi, tested" />
+      </div>
       <ModuleTable file="05-math.md" number="14.5" first="Name" />
     </>
   ),

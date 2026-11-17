@@ -1,0 +1,7 @@
+use shop
+
+fn main() {
+    for m in shop.members() {
+        print("{m.kind} {m.name}: {m.result}")
+    }
+}

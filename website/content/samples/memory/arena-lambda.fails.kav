@@ -1,0 +1,8 @@
+fn main() {
+    let check: fn(String) -> Bool = s => false
+    arena {
+        const words = "a b".split(" ")
+        check = s => words.contains(s)
+    }
+    print(check("a"))
+}

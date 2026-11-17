@@ -1,0 +1,13 @@
+fn main() {
+    let longest = 0
+    let count = 0
+    arena {
+        const words = "the quick brown fox".split(" ")
+        for w in words {
+            longest = longest.max(w.len())
+        }
+        count = words.len()
+    }
+    print(longest)
+    print(count)
+}

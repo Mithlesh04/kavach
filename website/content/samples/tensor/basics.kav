@@ -1,0 +1,12 @@
+use std.tensor
+
+fn main() {
+    const x = tensor.of_rows([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+    print(x.shape)
+    print(x.rank())
+    print(x.len())
+    print(x.get([1, 2]))
+    print(x.items)
+    print(x.transpose().shape)
+    print(x.reshape([3, 2]).get([2, 1]))
+}

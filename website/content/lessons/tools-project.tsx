@@ -103,7 +103,14 @@ export const pubDoc: LessonDoc = {
       </P>
       <Files name="modules/pub-const" first={["src/config.kav", "src/main.kav"]} />
       <P>Files other than the program&apos;s first may hold module constants, but no other lines outside a function.</P>
-      <SrcRef file="tests/conformance/10-modules/pub-consts-are-read-from-other-modules/src/main.kav" label="tested" />
+      <P>
+        A <C>pub const</C> that nothing in its own file reads gets no warning, as it is there for other modules. A
+        private one nothing reads gets the unused warning.
+      </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/10-modules/pub-consts-are-read-from-other-modules/src/main.kav" label="tested" />
+        <SrcRef file="tests/conformance/01-basics/pub-constants-are-not-unused.kav" label="no warning, tested" />
+      </div>
       <H2>An extend in the same package</H2>
       <P>
         An <C>extend</C> of a type in another file of the <strong>same package</strong> counts as the type&apos;s own

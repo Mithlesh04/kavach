@@ -16,7 +16,7 @@ const leak = loadProject("memory/leak", ["src/main.kav"]);
 const levels: [string, string, string, string][] = [
   ["1. Automatic", "nothing", "almost all code", "/docs/memory/automatic-memory/"],
   ["2. Shared state", "Shared<T>", "state several parts of a program change", "/docs/memory/shared-state/"],
-  ["3. Arenas", "arena { … }", "many short-lived values in a hot path", "/docs/memory/arenas/"],
+  ["3. Arenas", "arena { … }", "many short-lived values, freed together", "/docs/memory/arenas/"],
   ["4. Unsafe", "unsafe { … }", "raw memory and C", "/docs/memory/unsafe/"],
 ];
 
@@ -239,8 +239,8 @@ export const sharedDoc: LessonDoc = {
 // ---------- Arenas ----------
 
 export const arenasDoc: LessonDoc = {
-  lead: "An arena makes many short-lived values quickly from one block of memory, and frees them all at once at its end.",
-  simple: <>Like paper plates at a big party: you hand out many quickly, then throw them all away together at the end, instead of washing each one.</>,
+  lead: "An arena frees every value made inside it together, when it ends. Only its block's value comes out.",
+  simple: <>Like paper plates at a big party: you hand out many, then throw them all away together at the end, instead of washing each one.</>,
   minutes: 4,
   before: ["memory/automatic-memory"],
   body: (
@@ -251,7 +251,35 @@ export const arenasDoc: LessonDoc = {
         total, comes out. A value made inside can&apos;t be kept outside, and the compiler checks that:
       </P>
       <Ex name="memory/arena-escape.fails" />
-      <Note>Reach for an arena when measuring shows that making and freeing values is the slow part, not by default.</Note>
+      <H2>What may leave</H2>
+      <P>
+        Numbers, <C>Bool</C> and <C>Char</C> are copied, so they may leave by any way. Here the longest word&apos;s
+        length and the count go to variables declared before the arena:
+      </P>
+      <Ex name="memory/arena-numbers" />
+      <P>
+        A value that holds memory and is made from a variable declared in the arena may not: the variable itself, a
+        part of it, a call&apos;s result on it, or a lambda or task that uses it. It can&apos;t be assigned or stored
+        into anything declared before the arena (a variable, a list, a <C>Shared</C>, an <C>inout</C> argument),
+        nor leave with <C>return</C> or <C>fail</C>:
+      </P>
+      <Ex name="memory/arena-return.fails" />
+      <Ex name="memory/arena-lambda.fails" />
+      <P>That holds for every arena the code is in, not only the innermost:</P>
+      <Ex name="memory/arena-nested.fails" />
+      <H2>Tasks in an arena</H2>
+      <P>
+        A task spawned in an arena may use its values. When the arena reaches its end, it waits for every task
+        spawned in it, then frees its values, so a task never sees them freed:
+      </P>
+      <Ex name="memory/arena-tasks" />
+      <P>
+        A function&apos;s leftover tasks are <Link href="/docs/concurrency/tasks-never-leak/">cancelled</Link> when it
+        returns; an arena&apos;s are waited for, as their work is usually what the arena is for.
+      </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/06-memory.md" label="spec 6.3 · arenas" />
+      </div>
     </>
   ),
 };

@@ -24,9 +24,9 @@ export type Decl = {
 const repo = path.join(process.cwd(), "..");
 const all = outlines as Record<string, string>;
 
-/** Each stdlib file's module name, as `use` writes it, from the compiler's own list (compiler/driver/src/std_modules.rs). */
+/** Each stdlib file's module name, as `use` writes it, from the compiler's own list (compiler/driver/src/std_table.rs). */
 const moduleNames: Map<string, string> = (() => {
-  const src = fs.readFileSync(path.join(repo, "compiler", "driver", "src", "std_modules.rs"), "utf8");
+  const src = fs.readFileSync(path.join(repo, "compiler", "driver", "src", "std_table.rs"), "utf8");
   const pairs = [...src.matchAll(/"(std\.[\w.]+)",\s*include_str!\("(?:\.\.\/)+(stdlib\/[\w/]+\.kav)"\)/g)];
   return new Map(pairs.map(([, name, file]) => [file, name]));
 })();
@@ -34,7 +34,7 @@ const moduleNames: Map<string, string> = (() => {
 /** The module a stdlib file is: `stdlib/http/hpack.kav` is `std.http.hpack`. */
 export function moduleNameOf(file: string): string {
   const name = moduleNames.get(file);
-  if (!name) throw new Error(`outline: compiler/driver/src/std_modules.rs names no module for ${file}`);
+  if (!name) throw new Error(`outline: compiler/driver/src/std_table.rs names no module for ${file}`);
   return name;
 }
 

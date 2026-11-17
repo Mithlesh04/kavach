@@ -1,0 +1,3 @@
+Type Item: Item
+Constant tax: Float
+Function total: Float

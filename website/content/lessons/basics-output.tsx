@@ -1,4 +1,5 @@
 import { C } from "@/components/inline-code";
+import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
 import { Ex, H2, Note, P } from "./parts";
 
@@ -60,6 +61,20 @@ export const valuesPrintDoc: LessonDoc = {
         <C>Decimal</C> keeps its digits (<C>499.00</C>). Text inside a list is quoted, so{" "}
         <C>[&quot;a, b&quot;]</C> can&apos;t be mistaken for two items. A record shows its type and fields.
       </P>
+      <P>
+        Quoted text shows as written, accents and every script too. Only what you couldn&apos;t see or tell apart
+        is escaped: a quote, a backslash, a tab, a line break, and invisible characters such as a zero-width space:
+      </P>
+      <Ex name="output/as-written" />
+      <SrcRef file="tests/conformance/01-basics/text-in-collections-shows-as-written.kav" label="as written, tested" />
+      <H2>Your own form</H2>
+      <P>
+        A type chooses how it shows by implementing <C>Display</C>, an interface every file has without{" "}
+        <C>use</C>: one method, <C>fn display(self) -&gt; String</C>. That form is used everywhere the value is shown:{" "}
+        <C>print</C>, <C>{"{…}"}</C> in text, <C>String(v)</C>, and inside lists, maps and other records:
+      </P>
+      <Ex name="output/display" />
+      <SrcRef file="tests/conformance/01-basics/a-type-shows-as-its-display-gives.kav" label="Display everywhere, tested" />
     </>
   ),
 };

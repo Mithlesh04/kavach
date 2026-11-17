@@ -117,6 +117,8 @@ export const jsonDoc: LessonDoc = {
         that it can&apos;t be written out:
       </P>
       <Ex name="json/schema-secret" />
+      <P>An unsigned whole number (<C>UInt8</C> to <C>UInt64</C>) can&apos;t be negative, so its schema says <C>&quot;minimum&quot;: 0</C>:</P>
+      <Ex name="json/schema-unsigned" />
       <H2>A function described</H2>
       <P>
         <C>json.describe(f)</C> describes a function from its signature, when the program is compiled: its name,

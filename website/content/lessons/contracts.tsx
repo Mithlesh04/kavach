@@ -65,6 +65,13 @@ export const requireDoc: LessonDoc = {
         early. The message names the first value that breaks the rule:
       </P>
       <Ex name="contracts/require-loop.fails" />
+      <H2>A contract only reads</H2>
+      <P>
+        A contract checks; it never changes anything. A check that changed what it checks would hide the change, so
+        a call that changes a value, such as <C>pop</C>, is a compile error in <C>require</C>, <C>ensure</C> and{" "}
+        <C>invariant</C>:
+      </P>
+      <Ex name="contracts/pure.fails" />
     </>
   ),
 };

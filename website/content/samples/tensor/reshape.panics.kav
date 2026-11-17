@@ -1,0 +1,6 @@
+use std.tensor
+
+fn main() {
+    const a = tensor.of([1, 2, 3, 4, 5, 6])
+    print(a.reshape([4, 2]).shape)
+}

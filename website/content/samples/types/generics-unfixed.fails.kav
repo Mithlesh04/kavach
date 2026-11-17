@@ -1,0 +1,9 @@
+type Box<I> {
+    pub raw: String
+}
+
+fn main() {
+    const text = "five"
+    const b = Box(raw: text)
+    print(b.raw)
+}

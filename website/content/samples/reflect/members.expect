@@ -1,0 +1,5 @@
+method add(name: String, price: Float) -> Order
+Field id: Int
+Field items: [String]
+Field total: Float
+["id", "items", "total"]

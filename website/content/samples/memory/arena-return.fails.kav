@@ -1,0 +1,10 @@
+fn first_word(text: String) -> String {
+    arena {
+        const words = text.split(" ")
+        return words[0]
+    }
+}
+
+fn main() {
+    print(first_word("hello there"))
+}

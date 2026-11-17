@@ -1,0 +1,20 @@
+use std.reflect.{MemberOrigin}
+
+extend String {
+    fn shout(self) -> String { self.upper() + "!" }
+}
+
+extend Int {
+    fn double(self) -> Int { self * 2 }
+}
+
+fn main() {
+    for m in String.members() {
+        if m.origin != MemberOrigin.BuiltIn {
+            print("String.{m.name}: {m.origin}")
+        }
+    }
+    const added = Int.members().filter(m => m.origin != MemberOrigin.BuiltIn).map(m => m.name)
+    print(added)
+    print(String.members().len() > 20)
+}

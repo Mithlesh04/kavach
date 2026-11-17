@@ -1,0 +1,1 @@
+error: nothing here says what `I` of `Box` is: write it, as `Box<Int>(…)` (spec 2.9)

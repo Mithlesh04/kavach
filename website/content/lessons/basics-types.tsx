@@ -168,6 +168,16 @@ export const floatDoc: LessonDoc = {
         <C>Int</C>. Floats are stored in binary, so most decimals are kept a tiny bit off; for money, use{" "}
         <Link href="/docs/basics/data-types/decimal/">Decimal</Link>.
       </P>
+      <P>
+        A number literal must fit its type. A <C>Float32</C> reaches only about <C>3.4e38</C>, so a bigger literal is
+        a compile error. A value worked out while the program runs that grows past it becomes <C>inf</C> instead:
+      </P>
+      <Ex name="datatypes/float32-fit.fails" />
+      <P>
+        <C>-0.0</C> is negative zero, as IEEE 754 has it. It equals <C>0.0</C>, but dividing by it gives{" "}
+        <C>-inf</C>:
+      </P>
+      <Ex name="datatypes/negative-zero" />
       <H2>Its 64 bits</H2>
       <P>
         Binary formats store a <C>Float</C> as its 64 bits in IEEE 754 form. <C>x.bits()</C> gives them as a{" "}
@@ -190,6 +200,7 @@ export const floatDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/02-types/01-built-in-types.md" label="spec 2.1 · the same bits" />
         <SrcRef file="tests/conformance/02-types/floats-give-the-same-bits-everywhere.kav" label="tested" />
+        <SrcRef file="tests/conformance/02-types/a-float32-literal-must-fit.kav" label="literals fit, tested" />
         <SrcRef file="docs/decisions/0122-floats-give-the-same-bits-everywhere.md" label="decision 0122" />
       </div>
     </>
@@ -264,6 +275,11 @@ export const charDoc: LessonDoc = {
         A <C>Char</C> can be any Unicode character. <C>Int(&apos;a&apos;)</C> gives its code, <C>97</C>, and{" "}
         <C>chars()</C> splits text into its characters.
       </P>
+      <P>
+        <C>Char(text)</C> reads text of exactly one character. It trims nothing, so a space is a <C>Char</C>, and
+        text with more than one character fails:
+      </P>
+      <Ex name="datatypes/char-text" />
     </>
   ),
 };

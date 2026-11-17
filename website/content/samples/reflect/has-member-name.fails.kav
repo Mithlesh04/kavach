@@ -1,0 +1,9 @@
+type Cat {
+    pub name: String
+}
+
+fn main() {
+    const c = Cat(name: "Tom")
+    const wanted = "name"
+    print(c.has_member(wanted))
+}

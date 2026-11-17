@@ -110,6 +110,8 @@ export const aliases: Record<string, string> = {
   "standard-library/vectors": "vector vec2 vec3 vec4 matrix mat4 quaternion quat glm linear algebra 3d math transform rotate translate scale camera projection perspective look at dot cross product normalize lerp game engine",
   "standard-library/images": "image picture photo png jpeg jpg decode encode pixel rgba texture bitmap load save sprite",
   "standard-library/fonts": "font text glyph ttf otf opentype truetype shaping harfbuzz kerning ligature atlas sdf signed distance field render text devanagari hindi arabic typography",
+  "standard-library/reflection": "reflection reflect introspection members methods fields has member has_method respond_to hasattr dir getattr typeof plugin origin extended builtin declared",
+  "standard-library/tensors": "tensor ndarray numpy torch pytorch array dimensions shape reshape transpose matmul matrix product neural network layer relu machine learning ml ai weights batch",
   "standard-library/desktop-apps": "app desktop game save folder appdata application support xdg config cache directory crash report dialog open file save file pick folder message box confirm",
   "tools/editions": "edition version compatibility breaking change backwards compatible upgrade migrate stability 2026",
   "networks/sockets": "socket tcp udp tls ssl quic connection listen accept datagram certificate mtls timeout port",

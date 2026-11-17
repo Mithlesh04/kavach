@@ -60,6 +60,12 @@ export const mainFunctionDoc: LessonDoc = {
       <H2>Scripts</H2>
       <P>For a quick script, leave <C>main</C> out. The lines at the top level become its body:</P>
       <Ex name="start/script" />
+      <P>
+        A file is one or the other. In a file with <C>fn main</C>, a line outside every function would never run, so
+        it is a compile error. Only <Link href="/docs/basics/variables/module-constants/">module constants</Link>{" "}
+        (<C>const</C>), functions and types go there:
+      </P>
+      <Ex name="syntax/top-print.fails" />
     </>
   ),
 };

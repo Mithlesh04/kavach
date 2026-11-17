@@ -1,0 +1,1 @@
+error: `Float` is a type, and a bound names an interface: for floating-point numbers the bound is `Floating` (spec 2.9)

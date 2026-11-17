@@ -1,0 +1,1 @@
+error: `has_member` takes the member's name as a text literal (spec 14.32)

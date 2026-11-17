@@ -1,0 +1,6 @@
+fn main() {
+    const z = -0.0
+    print(z)
+    print(1.0 / z)
+    print(z == 0.0)
+}

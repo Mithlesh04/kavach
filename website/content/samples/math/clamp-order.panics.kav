@@ -1,0 +1,4 @@
+fn main() {
+    print(5.clamp(0, 10))
+    print(15.clamp(10, 0))
+}

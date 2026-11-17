@@ -1,0 +1,1 @@
+error: a contract can't change `items` with `pop`: contracts must be pure, and a check that changes what it checks hides the change (spec 7.5)

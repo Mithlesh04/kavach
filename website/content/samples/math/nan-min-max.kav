@@ -1,0 +1,6 @@
+fn main() {
+    const nan = 0.0 / 0.0
+    print(1.0.max(nan))
+    print(nan.min(1.0))
+    print(2.0.clamp(nan, 3.0))
+}

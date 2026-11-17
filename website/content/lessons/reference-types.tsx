@@ -23,7 +23,7 @@ const repo = path.join(process.cwd(), "..");
 
 /** The prelude's list of type names, in its order. */
 const preludeTypes: string[] = (() => {
-  const list = fileFigure(PRELUDE, /pub\(crate\) const TYPES: &\[&str\] = &\[([\s\S]*?)\];/);
+  const list = fileFigure(PRELUDE, /pub const TYPES: &\[&str\] = &\[([\s\S]*?)\];/);
   return [...list.matchAll(/"(\w+)"/g)].map((m) => m[1]);
 })();
 

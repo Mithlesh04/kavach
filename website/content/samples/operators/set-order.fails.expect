@@ -1,1 +1,1 @@
-error: `<` needs values with an order (numbers, text, characters, `Bool`, or tuples of them), and `Set<Int>` has none
+error: `<` needs values with an order (numbers, text, characters, `Bool`, `Bytes`, text views, or tuples, lists and rings of them), and `Set<Int>` has none: compare `s.to_list().sort()` instead

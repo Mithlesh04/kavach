@@ -1,0 +1,6 @@
+fn main() {
+    for text in [" ", " k ", "k"] {
+        const c = Char(text) catch '?'
+        print("[{c}]")
+    }
+}

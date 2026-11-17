@@ -1,0 +1,4 @@
+fn main() {
+    const x: Float32 = 1e300
+    print(x)
+}

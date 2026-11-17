@@ -1,0 +1,7 @@
+use std.tensor
+
+fn main() {
+    const a = tensor.full([3, 2, 2], 1.0)
+    print((a @ a).shape)
+    print((a @ a).items)
+}

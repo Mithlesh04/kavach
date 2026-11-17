@@ -1,0 +1,1 @@
+error: this statement is outside `main`, so it would never run: this file has `fn main` (spec 1.3). Move it into `main`, or make it a `const`

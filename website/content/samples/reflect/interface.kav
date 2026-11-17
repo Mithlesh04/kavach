@@ -1,0 +1,14 @@
+interface Shape {
+    fn area(self) -> Float
+}
+
+type Square: Shape {
+    pub side: Float
+    fn area(self) -> Float { self.side * self.side }
+}
+
+fn main() {
+    const s: Shape = Square(side: 2.0)
+    print(s.has_member("area"))
+    print(s.has_member("side"))
+}

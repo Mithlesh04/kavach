@@ -1,0 +1,1 @@
+error: `1e300` doesn't fit `Float32`, whose largest is about 3.4e38: it would be `inf` (spec 2.1)

@@ -1,0 +1,1 @@
+error: this value was made inside the `arena` and can't leave it with `return`: give it back as the arena's value instead (spec 6.3)

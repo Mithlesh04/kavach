@@ -1,0 +1,12 @@
+pub const tax = 0.18
+
+pub type Item {
+    pub name: String
+    pub price: Float
+}
+
+pub fn total(items: [Item]) -> Float {
+    items.sum(i => i.price) * (1.0 + tax)
+}
+
+fn helper() -> Int { 1 }

@@ -1,0 +1,24 @@
+use std.reflect.{MemberKind}
+
+type Order {
+    pub id: Int
+    pub items: [String]
+    pub total: Float
+
+    fn add(self, name: String, price: Float) -> Order {
+        Order(id: self.id, items: self.items + [name], total: self.total + price)
+    }
+}
+
+fn main() {
+    for m in Order.members() {
+        if m.kind == MemberKind.Method {
+            const params = m.params.map(p => "{p.name}: {p.type_name}")
+            print("method {m.name}({params.join(", ")}) -> {m.result}")
+        } else {
+            print("{m.kind} {m.name}: {m.result}")
+        }
+    }
+    const fields = Order.members().filter(m => m.kind == MemberKind.Field)
+    print(fields.map(m => m.name))
+}

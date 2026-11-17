@@ -27,7 +27,7 @@ export type Origin = {
 function preludeList(pattern: RegExp): Set<string> {
   return new Set([...fileFigure("compiler/resolver/src/prelude.rs", pattern).matchAll(/"(\w+)"/g)].map((m) => m[1]));
 }
-const BUILT_IN_TYPES = preludeList(/pub\(crate\) const TYPES: &\[&str\] = &\[([\s\S]*?)\];/);
+const BUILT_IN_TYPES = preludeList(/pub const TYPES: &\[&str\] = &\[([\s\S]*?)\];/);
 const CAPABILITIES = preludeList(/pub const CAPABILITIES: &\[&str\] = &\[([\s\S]*?)\];/);
 
 /** Written in Kavach, but taught as built in (Reference › Built-in Types). */

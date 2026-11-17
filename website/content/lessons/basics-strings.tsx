@@ -59,7 +59,7 @@ export const makeStringsDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>&quot;&quot;&quot; … &quot;&quot;&quot;</C> holds several lines. The indentation they share is removed, so the text can sit neatly in your code.</li>
         <li><C>r&quot;…&quot;</C> is raw: a backslash or a brace is just a character. Handy for Windows paths.</li>
-        <li>In a plain string, <C>\t</C> is a tab, <C>\n</C> a new line, <C>\&quot;</C> a quote.</li>
+        <li>In a plain string, <C>\t</C> is a tab, <C>\n</C> a new line, <C>\r</C> a carriage return (as protocols that end lines with <C>\r\n</C> need), <C>\&quot;</C> a quote.</li>
       </ul>
       <P>
         Raw text can go over many lines too. <C>r&quot;&quot;&quot; … &quot;&quot;&quot;</C> keeps every backslash

@@ -1,0 +1,11 @@
+use std.json
+
+type Pixel {
+    pub x: UInt16
+    pub y: UInt16
+    pub level: Int8
+}
+
+fn main() {
+    print(json.schema<Pixel>())
+}
