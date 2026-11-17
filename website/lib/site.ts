@@ -17,6 +17,12 @@ export const SITE_URL = process.env.SITE_URL ?? "https://kavachlang.com";
 export const DESCRIPTION =
   "Kavach is a general-purpose, compiled, statically typed programming language. Every function says what it may touch (files, network, AI, payments), and the compiler checks it.";
 
+/**
+ * The Google Tag Manager container the deployed site loads (app/layout.tsx).
+ * Empty turns it off, as `SITE_GTM_ID=` does for a copy hosted elsewhere.
+ */
+export const GTM_ID = process.env.SITE_GTM_ID ?? "GTM-KTSKHP24";
+
 /** The share card (app/share-card.png) that link previews show. */
 export const CARD = { path: "/share-card.png", width: 1200, height: 630, alt: "Kavach: safety you can read, speed you can verify" };
 

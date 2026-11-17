@@ -67,7 +67,8 @@ npm run check      # BEFORE finishing any change: types + lint + static build
    (name, why, rough size); anything heavy, ask a maintainer first.
    Current extras beyond create-next-app: `shiki` (grammar-true highlighting),
    `@next/mdx` + `@mdx-js/*` (reserved for MDX chapters), `pagefind`
-   (build-time search index; ~3 MB dev-only).
+   (build-time search index; ~3 MB dev-only), `@next/third-parties` (Next's
+   own Google Tag Manager loader, `app/layout.tsx`; ~50 KB).
 5. **One idea per page.** A page teaches one thing; an idea with several
    forms gets sub-pages in `lib/course.ts` (For Loop › Over a range), never
    several ideas on one page. A page lists in the sidebar only once its

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
+import { GoogleTagManager } from "@next/third-parties/google";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { TipLayer } from "@/components/tip-layer";
 import project from "@/data/project.json";
-import { CARD, DESCRIPTION, SITE_URL } from "@/lib/site";
+import { CARD, DESCRIPTION, GTM_ID, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
@@ -25,6 +26,12 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", images: [{ url: CARD.path, alt: CARD.alt }] },
 };
 
+// Google Tag Manager, as Next's guide gives it (@next/third-parties): it
+// sets up `dataLayer` and loads gtm.js after the page is interactive, so it
+// never slows the first paint. Only in built pages, so `next dev` visits
+// aren't counted.
+const tagManager = process.env.NODE_ENV === "production" && GTM_ID !== "";
+
 // Runs before paint so a forced theme never flashes the wrong colors. It
 // must stay a plain inline script: next/script's beforeInteractive only
 // queues it for later. In `next dev`, React warns "Encountered a script
@@ -38,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInit }} />
       </head>
+      {tagManager && <GoogleTagManager gtmId={GTM_ID} />}
       <body className="min-h-full flex flex-col">
         <a
           href="#main"
