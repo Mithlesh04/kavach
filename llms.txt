@@ -57,6 +57,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Variables: let](https://kavachlang.com/docs/basics/variables/let/): let names a variable: a value that can change later.
 - [Variables: Changing a value](https://kavachlang.com/docs/basics/variables/changing-a-value/): Give a let a new value with =, or change it in place with +=, -=, *= and the others.
 - [Variables: Destructuring](https://kavachlang.com/docs/basics/variables/destructuring/): Take a list, a record or a map apart into several names in one line.
+- [Variables: Module constants](https://kavachlang.com/docs/basics/variables/module-constants/): A const at the top level of a file, outside any function, is a module constant: every function in the file can read it.
 - [User Input](https://kavachlang.com/docs/basics/user-input/): term.prompt(question) prints a question and gives back the line the user types.
 - [User Input: Ask for text](https://kavachlang.com/docs/basics/user-input/ask-for-text/): term.prompt gives the line typed, as text, or none when the input has ended.
 - [User Input: Ask for a number](https://kavachlang.com/docs/basics/user-input/ask-for-a-number/): term.prompt_int asks for a whole number, and asks again until it gets one.
@@ -85,8 +86,9 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Strings: Splitting](https://kavachlang.com/docs/basics/strings/splitting/): split(sep) cuts a string into a list of strings; lines() cuts it at line breaks.
 - [Strings: Tidying and padding](https://kavachlang.com/docs/basics/strings/tidying-and-padding/): capitalize, title, trim_start, trim_end, truncate and is_blank tidy text; pad_left and pad_right line it up in columns.
 - [Strings: Strings to numbers](https://kavachlang.com/docs/basics/strings/strings-to-numbers/): Int(text) reads a whole string as a number, and can fail; std.text finds numbers inside other text.
+- [Strings: Text views and builders](https://kavachlang.com/docs/basics/strings/text-views-and-builders/): A StrView is part of a string with nothing copied, for reading text fast. A TextBuilder is text being made, changed in place.
 - [Math](https://kavachlang.com/docs/basics/math/): std.math has square roots, powers, rounding, pi and more.
-- [Math: Math functions](https://kavachlang.com/docs/basics/math/math-functions/): sqrt, pow, sin, cos, atan2, exp, ln, gcd, lcm, is_prime, factorial, mean, and the constants pi and e.
+- [Math: Math functions](https://kavachlang.com/docs/basics/math/math-functions/): sqrt, pow, sin, cos, atan2, exp, ln, log10, cbrt, hypot, gcd, lcm, is_prime, factorial, mean, and the constants pi and e.
 - [Math: Rounding](https://kavachlang.com/docs/basics/math/rounding/): floor rounds down, ceil rounds up, round rounds to the nearest, halves away from zero.
 - [Math: Exact numbers](https://kavachlang.com/docs/basics/math/exact-numbers/): Numbers written in the code are worked out exactly, so 0.1 + 0.2 == 0.3 is true.
 - [Booleans](https://kavachlang.com/docs/basics/booleans/): A Bool is true or false. Comparisons make them, and and, or, not combine them.
@@ -165,7 +167,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Records: Updating with with](https://kavachlang.com/docs/types/records/updating-with-with/): record with { field: value } makes a copy with some fields changed.
 - [Methods](https://kavachlang.com/docs/types/methods/): A method is a function that belongs to a type, written inside it. self is the value it is called on.
 - [Method Chains](https://kavachlang.com/docs/types/method-chains/): Call one method on the result of the last: text.trim().lower(). Each step gives a new value for the next.
-- [Extend](https://kavachlang.com/docs/types/extend/): extend adds methods to a type you didn't write: a built-in type, a union, or a type from another module.
+- [Extend](https://kavachlang.com/docs/types/extend/): extend adds methods to a type you didn't write: a built-in type, a list or map, a union, or a type from another module.
 - [Unions](https://kavachlang.com/docs/types/unions/): A union is a value that is exactly one of several cases: a Shape is a Circle or a Rect.
 - [Unions: Declaring](https://kavachlang.com/docs/types/unions/declaring/): type Name = A | B(field: Type) | … declares a union.
 - [Unions: Matching a union](https://kavachlang.com/docs/types/unions/matching-a-union/): match on a union takes each variant apart, and the compiler checks that none is forgotten.
@@ -212,7 +214,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Automatic Memory: How it stays fast](https://kavachlang.com/docs/memory/automatic-memory/how-it-stays-fast/): Values look copied, but the compiler moves them, shares them and copies only when it must.
 - [Automatic Memory: Freed immediately](https://kavachlang.com/docs/memory/automatic-memory/freed-immediately/): A value is freed when its last use ends: no garbage collector, no pauses. A type can run its own cleanup with Drop.
 - [Shared State](https://kavachlang.com/docs/memory/shared-state/): When several parts of a program must change the same thing, say so with Shared<T>: the one value that is shared.
-- [Arenas](https://kavachlang.com/docs/memory/arenas/): An arena makes many short-lived values quickly from one block of memory, and frees them all at once at its end.
+- [Arenas](https://kavachlang.com/docs/memory/arenas/): An arena frees every value made inside it together, when it ends. Only its block's value comes out.
 - [Unsafe](https://kavachlang.com/docs/memory/unsafe/): unsafe { … } turns off the safety checks for a block, to work with raw memory and C. A package must allow it.
 
 ## Part 7: Standard Library
@@ -250,6 +252,8 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Images](https://kavachlang.com/docs/standard-library/images/): std.image reads PNG and JPEG files into an Image, writes an Image as PNG, and gives its pixels to the GPU as they are. An image is data, so it needs no capability.
 - [Desktop Apps](https://kavachlang.com/docs/standard-library/desktop-apps/): std.app gives a desktop program or game what it needs from the system: its own folders for saves, settings and caches, a crash report when it crashes, and the system's file and message dialogs.
 - [Fonts](https://kavachlang.com/docs/standard-library/fonts/): std.font reads OpenType and TrueType fonts, shapes text into glyphs and their places, and draws glyphs into an atlas the GPU can draw text from at any size. A font is data, so it needs no capability.
+- [Reflection](https://kavachlang.com/docs/standard-library/reflection/): std.reflect tells a program what a type or a module offers: its members, each a field, method, function, type or constant, with its parameters, what it gives, and where it comes from.
+- [Tensors](https://kavachlang.com/docs/standard-library/tensors/): std.tensor gives Tensor<T>: numbers in any number of dimensions, for machine learning and science. Every operation checks its shapes, and every result is the same on every machine.
 - [JSON](https://kavachlang.com/docs/standard-library/json/): JSON is text that carries data between programs. Kavach reads it straight into your own types, or into a Json value when its shape is known only while the program runs.
 - [JSON: Json values](https://kavachlang.com/docs/standard-library/json/json-values/): A Json value holds JSON whose shape is known only while the program runs. It is a union of six cases, one for each kind of JSON value.
 - [JSON: Reading](https://kavachlang.com/docs/standard-library/json/reading/): json.parse gives a Json value; doc["key"] and doc[i] read into it, and .text(), .int() and the others give the value as an optional.
@@ -440,6 +444,8 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [std.app](https://kavachlang.com/docs/std/std-app/): Every type, method and function of std.app: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 - [std.font](https://kavachlang.com/docs/std/std-font/): Every type, method and function of std.font: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 - [std.matrix](https://kavachlang.com/docs/std/std-matrix/): Every type, method and function of std.matrix: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.reflect](https://kavachlang.com/docs/std/std-reflect/): Every type, method and function of std.reflect: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.tensor](https://kavachlang.com/docs/std/std-tensor/): Every type, method and function of std.tensor: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 - [std.literals](https://kavachlang.com/docs/std/std-literals/): Every type, method and function of std.literals: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 
 ## Benchmarks
