@@ -1,7 +1,7 @@
-// Rule: In a schema, a map with `String` keys is an object with `additionalProperties`, sized integers are `integer`, `Float` and `Decimal` are `number`, and `Bool` is `boolean`.
+// Rule: In a schema, a map with `String` keys is an object with `additionalProperties`, sized integers are `integer` (unsigned ones with `"minimum": 0`), `Float` and `Decimal` are `number`, and `Bool` is `boolean`.
 // Spec: 2.12
 // expect output: {"type":"object","additionalProperties":{"type":"number"}}
-// expect output: {"type":"integer"} {"type":"integer"} {"type":"number"} {"type":"boolean"}
+// expect output: {"type":"integer","minimum":0} {"type":"integer"} {"type":"number"} {"type":"boolean"}
 // expect output: {"type":"array","items":{"type":"object","additionalProperties":{"type":"integer"}}}
 
 use std.json
