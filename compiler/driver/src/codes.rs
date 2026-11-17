@@ -31,7 +31,14 @@ const TABLE: &[(&str, &[&str])] = &[
         "secret",
         &["is secret", "`secret`", "secret value", "the secret field"],
     ),
-    ("private", &["is private", "a private field"]),
+    (
+        "private",
+        &[
+            "is private",
+            "a private field",
+            "offers other packages only",
+        ],
+    ),
     (
         "operators",
         &[
@@ -83,6 +90,9 @@ const TABLE: &[(&str, &[&str])] = &[
             "in an `on cores` loop",
             "every round shares",
             "runs on at least one core",
+            "used by no other package",
+            "takes only `out`",
+            "`pub(out)` goes before",
             "made inside the `arena`",
             "is only for",
             "is for `std.",

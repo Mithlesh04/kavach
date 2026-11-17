@@ -68,7 +68,7 @@ const limit: Int = 10  // an explicit type is optional
 - So two functions can't share a name: Kavach has no overloading. Where other languages overload, a function takes a default argument (3.2), a union (2.6) or a generic type (2.9), or the two get different names. The error says so, and calls go to the first function.
 - Every name must be declared. Using an unknown name is a compile error, and the error suggests similar names (`did you mean total?`).
 - Declarations at the top of a module (`fn`, `type`, `interface`, …) can be used anywhere in that module, before or after they appear. Local variables can be used only after their `const` or `let`.
-- A variable that is never used (a `const`, a `let`, a name a pattern takes, `...rest`, a `for` variable, a `catch` name) gets a warning, so code being written still runs. A name starting with `_` (`_draft`, or `_` alone) is unused on purpose and gets none.
+- A variable that is never used (a `const`, a `let`, a name a pattern takes, `...rest`, a `for` variable, a `catch` name) gets a warning, so code being written still runs. A name starting with `_` (`_draft`, or `_` alone) is unused on purpose and gets none. Functions, types and module constants nothing uses get one too (10.1).
 - A never-used variable that hides a `let` of the same name in an outer scope says so, since it is almost always meant to change that one: `let total = total + i` inside a loop makes a new `total`. The warning says to write `total = total + i`.
 - Native code doesn't compute a value nobody reads, when computing it does nothing a program could see: an unused `...rest` makes no list.
 

@@ -55,6 +55,18 @@ fn messages_point_at_the_problem() {
             &["1: `=` sets a variable: to compare, write `==` (spec 4.1)"],
         ),
         (
+            "pub(crate) fn f() {\n}",
+            &[
+                "1: `pub(…)` takes only `out`: `pub(out)` offers a name to other packages (spec 10.1)",
+            ],
+        ),
+        (
+            "pub(out) test \"t\" {\n}",
+            &[
+                "1: `pub(out)` goes before `fn`, `type`, `const`, `interface`, `capability`, `agent`, `literal` or `use` (spec 10.1)",
+            ],
+        ),
+        (
             "0..5..9",
             &["1: ranges can't be chained: use `and` or parentheses"],
         ),

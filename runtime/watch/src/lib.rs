@@ -120,6 +120,9 @@ fn take(w: &mut Watching, event: notify::Result<Event>) {
         return;
     };
     for (kind, path) in changes(&event) {
+        if own_temp(&path) {
+            continue;
+        }
         let shown = shown(&w.given, &w.full, &path);
         w.pending.push_back((kind, shown));
     }
@@ -154,6 +157,17 @@ pub(crate) fn changes(event: &Event) -> Vec<(u8, PathBuf)> {
         EventKind::Access(_) => Vec::new(),
         EventKind::Any | EventKind::Other => each(CHANGED),
     }
+}
+
+/// The hidden file a whole-file write goes through before it is renamed
+/// into place, `.name.kavach-<pid>-<n>.tmp` (`runtime/core/src/files.rs`):
+/// never a change the program sees (spec 14.3).
+pub(crate) fn own_temp(path: &Path) -> bool {
+    let name = path
+        .file_name()
+        .map(|n| n.to_string_lossy())
+        .unwrap_or_default();
+    name.starts_with('.') && name.ends_with(".tmp") && name.contains(".kavach-")
 }
 
 /// `path`, under the watched path as the program wrote it.

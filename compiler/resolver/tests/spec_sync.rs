@@ -159,6 +159,7 @@ fn with_builtins(src: &str) -> (String, Vec<kavach_resolver::Module>) {
             start,
             end: all.len() as u32,
             package: String::new(),
+            library: name != "main",
         });
     }
     (all, modules)

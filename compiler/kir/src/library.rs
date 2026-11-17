@@ -146,7 +146,7 @@ pub fn library(c: &Compiled, package: &str) -> Library {
             continue;
         };
         let in_lib = c.location(item.span.start).0 == c.path;
-        if !item.is_pub || !in_lib || f.c_library.is_some() {
+        if !item.is_out || !in_lib || f.c_library.is_some() {
             continue;
         }
         let c_name = format!("{prefix}_{}", f.name.name);

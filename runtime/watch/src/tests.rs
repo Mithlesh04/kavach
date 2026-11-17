@@ -1,6 +1,6 @@
 //! Watching a folder made for the test, in the system's temporary folder.
 
-use crate::{CHANGED, CREATED, REMOVED, changes, close, poll, shown, watch};
+use crate::{CHANGED, CREATED, REMOVED, changes, close, own_temp, poll, shown, watch};
 use notify::event::{CreateKind, EventKind, ModifyKind, RenameMode};
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
@@ -62,4 +62,34 @@ fn a_watched_folder_tells_of_a_new_file() {
         .expect("the new file");
     assert!(matches!(found.0, CREATED | CHANGED), "{seen:?}");
     assert!(watch("no/such/folder/here").is_err());
+}
+
+#[test]
+fn a_whole_file_write_shows_only_the_file() {
+    // The hidden file `fs.write_text` goes through is never a change.
+    assert!(own_temp(Path::new("data/.level.txt.kavach-40070-0.tmp")));
+    assert!(!own_temp(Path::new("data/level.txt")));
+    assert!(!own_temp(Path::new("data/.hidden.tmp")));
+    let dir = std::env::temp_dir().join(format!("kavach-watch-temp-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).expect("a folder");
+    let n = watch(&dir.to_string_lossy()).expect("watching");
+    let temp = dir.join(".level.txt.kavach-1-0.tmp");
+    std::fs::write(&temp, "1").expect("written");
+    std::fs::rename(&temp, dir.join("level.txt")).expect("renamed");
+    let start = Instant::now();
+    let mut seen: Vec<(u8, String)> = Vec::new();
+    while start.elapsed() < Duration::from_millis(500) {
+        seen.extend(poll(n));
+        std::thread::sleep(Duration::from_millis(20));
+    }
+    close(n);
+    let _ = std::fs::remove_dir_all(&dir);
+    assert!(
+        seen.iter().any(|(_, p)| p.ends_with("level.txt")),
+        "{seen:?}"
+    );
+    assert!(
+        seen.iter().all(|(_, p)| !p.contains(".kavach-")),
+        "{seen:?}"
+    );
 }

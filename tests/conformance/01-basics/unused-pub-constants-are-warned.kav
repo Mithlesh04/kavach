@@ -1,0 +1,11 @@
+// Rule: A module constant nothing reads gets a warning; a `pub` one too when nothing in its package reads it, as an application is used by no other package.
+// Spec: 1.13, 1.4, 10.1
+// expect warning
+// expect output: x
+
+pub const format_version = 1   // warning: `format_version` is `pub`, but nothing in this package uses it
+const hidden = 2               // warning: `hidden` is never used
+
+fn main() {
+    print("x")
+}

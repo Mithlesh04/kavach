@@ -431,7 +431,7 @@ fn semantic_tokens_mark_imported_names_and_built_in_methods() {
     let legend = &sent[0]["result"]["capabilities"]["semanticTokensProvider"]["legend"];
     assert_eq!(
         legend["tokenModifiers"],
-        json!(["imported", "defaultLibrary"])
+        json!(["imported", "defaultLibrary", "offered"])
     );
     let reply = sent.iter().find(|m| m["id"] == 2).unwrap();
     let got = decoded(&reply["result"]["data"]);
@@ -468,4 +468,24 @@ fn a_quick_fix_marks_a_fitting_fn_as_a_gpu_fn() {
     assert_eq!(edit["newText"], "gpu ");
     assert_eq!(edit["range"]["start"], json!({"line": 0, "character": 0}));
     assert_eq!(reply["result"][0]["kind"], "quickfix");
+}
+
+#[test]
+fn semantic_tokens_mark_what_pub_out_offers() {
+    let program = "pub(out) fn area() -> Int {\n    1\n}\n\npub fn side() -> Int {\n    2\n}\n";
+    let (sent, _) = run(&[
+        request(1, "initialize", json!({"capabilities": {}})),
+        open(program),
+        request(
+            2,
+            "textDocument/semanticTokens/full",
+            json!({"textDocument": {"uri": URI}}),
+        ),
+    ]);
+    let reply = sent.iter().find(|m| m["id"] == 2).unwrap();
+    // `area` is offered (4); `side`, plain `pub`, keeps the grammar's colour.
+    assert_eq!(
+        decoded(&reply["result"]["data"]),
+        [(0, 12, 4, "function", 4)]
+    );
 }

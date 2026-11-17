@@ -71,9 +71,7 @@ fn free_port(port: i64, force: bool) -> Result<String, Refused> {
     let holders: Vec<&[String]> = (rows.chunks(6))
         .filter(|r| r[2] == port.to_string() && (r[3] == "listen" || r[0] == "udp"))
         .collect();
-    // A program this user can't see is shown with pid 0: it holds the
-    // port, and this user can't end it (spec 14.25).
-    if holders.iter().any(|r| r[4] == "0") {
+    if holders.iter().any(|r| unseen(r)) {
         return Err(Refused::Denied(format!(
             "port {port} is held by a program this user can't see or end"
         )));
@@ -89,6 +87,13 @@ fn free_port(port: i64, force: bool) -> Result<String, Refused> {
     }
     let list: Vec<String> = pids.iter().map(i64::to_string).collect();
     Ok(format!("ended:{}", list.join(",")))
+}
+
+/// A port's holder this user can't see: it holds the port, and this user
+/// can't end it (spec 14.25). Windows shows it with pid 0, Linux with no
+/// pid at all.
+fn unseen(row: &[String]) -> bool {
+    row[4].is_empty() || row[4] == "0"
 }
 
 /// The account `add_user` makes: `name`, `password` and `admin` or `""`,
@@ -114,6 +119,19 @@ fn account(text: &str) -> Result<(&str, &str, bool), Refused> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_holder_with_no_pid_is_unseen_on_every_system() {
+        let row = |pid: &str| -> Vec<String> {
+            ["tcp", "0.0.0.0", "8081", "listen", pid, ""]
+                .map(String::from)
+                .to_vec()
+        };
+        // Linux leaves the pid empty, Windows writes 0; a seen one has its pid.
+        assert!(unseen(&row("")));
+        assert!(unseen(&row("0")));
+        assert!(!unseen(&row("4242")));
+    }
 
     #[test]
     fn an_account_is_three_parts_with_no_line_breaks() {

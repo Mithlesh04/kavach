@@ -6,10 +6,12 @@
 //! Field and method names (`order.total`) need types, so the type checker
 //! resolves those.
 
+mod assignable;
 mod decls;
 pub use decls::module_const;
 mod modules;
 mod naming;
+mod offered;
 mod prelude;
 pub use prelude::{APART, cap_covers};
 mod resolver;
@@ -139,6 +141,7 @@ pub fn resolve(file: &File) -> Resolution {
         start: 0,
         end: u32::MAX,
         package: String::new(),
+        library: false,
     };
     resolve_modules(file, &[whole])
 }

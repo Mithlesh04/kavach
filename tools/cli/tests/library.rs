@@ -5,12 +5,12 @@
 use std::process::Command;
 
 const LIBRARY: &str = "/// The area of a rectangle.
-pub fn area(width: Float, height: Float) -> Float {
+pub(out) fn area(width: Float, height: Float) -> Float {
     width * height
 }
 
 /// The `n`th Fibonacci number, through a list, printing as it goes.
-pub fn fib(n: Int) -> Int uses Console {
+pub(out) fn fib(n: Int) -> Int uses Console {
     let xs = [0, 1]
     for i in 2..=n {
         xs.push(xs[i - 1] + xs[i - 2])
@@ -19,17 +19,17 @@ pub fn fib(n: Int) -> Int uses Console {
     xs[n]
 }
 
-pub fn is_even(n: Int32) -> Bool {
+pub(out) fn is_even(n: Int32) -> Bool {
     n % 2 == 0
 }
 
-pub fn greet(name: String) -> String {
+pub(out) fn greet(name: String) -> String {
     \"hello {name}, {name.len()} letters\"
 }
 
 pub type AgeError = Negative | TooOld(age: Int)
 
-pub fn check_age(age: Int) -> Int ! AgeError {
+pub(out) fn check_age(age: Int) -> Int ! AgeError {
     if age < 0 {
         fail AgeError.Negative
     }
@@ -39,12 +39,12 @@ pub fn check_age(age: Int) -> Int ! AgeError {
     age
 }
 
-pub fn label(age: Int) -> String ! AgeError {
+pub(out) fn label(age: Int) -> String ! AgeError {
     const a = try check_age(age)
     \"age {a}\"
 }
 
-pub fn total(xs: [Int]) -> Int {
+pub(out) fn total(xs: [Int]) -> Int {
     xs.sum(x => x)
 }
 

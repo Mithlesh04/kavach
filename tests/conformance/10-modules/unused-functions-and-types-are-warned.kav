@@ -1,0 +1,28 @@
+// Rule: a function, type or module constant nothing uses gets a warning, `pub` ones too in an application; `main` and names starting with `_` get none.
+// Spec: 10.1, 1.4
+// expect warning
+// expect output: 6
+
+fn area(w: Int, h: Int) -> Int {
+    w * h
+}
+
+fn spare() -> Int { // warning: `spare` is never used
+    1
+}
+
+pub fn shown() -> Int { // warning: `shown` is `pub`, but nothing in this package uses it
+    2
+}
+
+type Unused { // warning: `Unused` is never used
+    n: Int
+}
+
+fn _draft() -> Int {
+    3
+}
+
+fn main() {
+    print(area(2, 3))
+}

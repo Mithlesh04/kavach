@@ -1,0 +1,10 @@
+// Rule: a package may use only the `pub(out)` names of another; a plain `pub` name of another package is a compile error.
+// Spec: 10.1
+// expect compile error
+
+use shapes
+
+fn main() {
+    print(shapes.area(2, 3))
+    print(shapes.scale(2)) // error: `scale` is `pub` in package `shapes`
+}

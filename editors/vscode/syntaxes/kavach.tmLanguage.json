@@ -176,12 +176,13 @@
       "patterns": [
         {
           "comment": "A tag's declaration, `pub literal sql: Query check check_sql language \"sql\"` (spec 10.15): `literal`, `check` and `language` are keywords only on this line, so names already called `literal` keep their color",
-          "begin": "^\\s*(?:(pub)\\s+)?(literal)\\s+([\\p{L}_][\\p{L}\\p{N}_]*)(?=\\s*:)",
+          "begin": "^\\s*(?:(?:(pub\\s*\\(\\s*out\\s*\\))|(pub))\\s+)?(literal)\\s+([\\p{L}_][\\p{L}\\p{N}_]*)(?=\\s*:)",
           "end": "$",
           "beginCaptures": {
-            "1": { "name": "storage.modifier.kavach" },
-            "2": { "name": "storage.type.kavach" },
-            "3": { "name": "entity.name.function.tag.kavach" }
+            "1": { "name": "storage.modifier.out.kavach" },
+            "2": { "name": "storage.modifier.kavach" },
+            "3": { "name": "storage.type.kavach" },
+            "4": { "name": "entity.name.function.tag.kavach" }
           },
           "patterns": [
             {
@@ -286,6 +287,11 @@
         {
           "name": "storage.type.kavach",
           "match": "\\b(fn|type|interface|extend|agent|capability|let|test)\\b"
+        },
+        {
+          "comment": "`pub(out)`: a name a library offers to other packages (spec 10.1), coloured apart from plain `pub`",
+          "name": "storage.modifier.out.kavach",
+          "match": "\\bpub\\s*\\(\\s*out\\s*\\)"
         },
         {
           "name": "storage.modifier.kavach",

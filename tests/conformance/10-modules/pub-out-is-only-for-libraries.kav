@@ -1,0 +1,11 @@
+// Rule: only a library offers names to other packages: `pub(out)` in an application is a compile error.
+// Spec: 10.1
+// expect compile error
+
+pub(out) fn area(w: Int, h: Int) -> Int { // error: an application is used by no other package
+    w * h
+}
+
+fn main() {
+    print(area(2, 3))
+}

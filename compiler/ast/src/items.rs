@@ -14,6 +14,8 @@ pub struct Item {
     /// `///` doc comments written just before the item.
     pub docs: Vec<String>,
     pub is_pub: bool,
+    /// `pub(out)` (spec 10.1): other packages may use it too.
+    pub is_out: bool,
     pub span: Span,
 }
 

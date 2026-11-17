@@ -39,7 +39,7 @@ pub(crate) fn build_lib(path: &str, dir: Option<&str>) -> ExitCode {
     }
     if lib.exports.is_empty() {
         eprintln!(
-            "error: {path} has no `pub fn` that C can call (spec 10.10): numbers, `Bool` and `Ptr` in and out, and no `!`"
+            "error: {path} has no `pub(out) fn` that C can call (spec 10.10): numbers, `Bool` and `Ptr` in and out, and no `!`"
         );
         return ExitCode::from(1);
     }

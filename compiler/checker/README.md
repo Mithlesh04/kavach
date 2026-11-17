@@ -50,6 +50,8 @@ Hindley–Milner-style inference with unification. A number literal starts as an
 | `src/c_functions.rs` | C functions (spec 10.7): the types their signatures may use, and the Kavach functions C calls back |
 | `src/fields.rs` | Fields, indexing, `with`, and arena escapes |
 | `src/patterns.rs` | Patterns, `if`/`match` branches, match coverage |
+| `src/coverage.rs` | Whether a `match`'s arms cover each variant, nested ones and an optional's too (spec 4.3) |
+| `src/loop_place.rs` | `on cores` and `on threads` loops (spec 4.9): each round writes only its own slot or adds whole numbers, and does no I/O on cores |
 | `src/builtins.rs` | Prelude functions |
 | `src/builtin_methods.rs` | Methods of built-in types, and `x.timeout(d)` |
 | `src/stdlib.rs` | The standard library: `Set`, `use std.<module>` and its functions (spec 14) |

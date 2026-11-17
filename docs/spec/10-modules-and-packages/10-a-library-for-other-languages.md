@@ -4,7 +4,7 @@
 
 ```kavach
 // src/lib.kav of the package `geometry`
-pub fn area(width: Float, height: Float) -> Float {
+pub(out) fn area(width: Float, height: Float) -> Float {
     width * height
 }
 ```
@@ -17,7 +17,7 @@ pub fn area(width: Float, height: Float) -> Float {
 double a = geometry_area(2.0, 3.5);     // 7.0
 ```
 
-- **What is exported.** Every `pub fn` of `src/lib.kav` whose parameters and result are numbers, `Bool`, `Ptr` (10.7) or `String`, under the C name `<package>_<fn>`; a `-` in the package name becomes `_`. Other `pub` functions are listed as not exported, with the reason. They stay usable from Kavach.
+- **What is exported.** Every `pub(out) fn` of `src/lib.kav` whose parameters and result are numbers, `Bool`, `Ptr` (10.7) or `String`, under the C name `<package>_<fn>`; a `-` in the package name becomes `_`. Other `pub(out)` functions are listed as not exported, with the reason. They stay usable from Kavach.
 - **Text.** A `String` parameter is a `const char*`: UTF-8 ending in a zero byte, copied when the call starts; a null pointer or bytes that aren't UTF-8 panic. A `String` result is a new `char*` of the same form, which the caller frees with `<package>_free`, a function every library exports (C's `free` may belong to another C library than the one Kavach's library uses).
 - **Errors.** A function that can fail (`-> T ! E`) returns an `int32_t` instead: 0 when it succeeded, and then its value is written to one more parameter, `T* result` (left out when there is no value; `result` may be null when the caller doesn't need it). When it failed, the number is the error's variant, counting from 1 in the order the union declares them, or 1 for an error that isn't a union. The header names each number, and `<package>_last_error()` gives the error as text, as Kavach prints it (`TooOld(age: 200)`), to free with `<package>_free` (null before any error).
 

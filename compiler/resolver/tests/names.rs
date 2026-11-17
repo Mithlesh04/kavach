@@ -89,6 +89,12 @@ fn errors_explain_the_fix() {
         ),
         ("fn main() {\n  let n = 1\n  n += 2\n}", &[]),
         (
+            "fn main() {\n  for x in [1, 2] {\n    x = x * 2\n  }\n}",
+            &[
+                "3: `x` is a name a `for` or `match` takes, so it can't change: work out the new value in a `let` of its own (spec 4.4)",
+            ],
+        ),
+        (
             "fn f(size: Int) {\n  size = 2\n}",
             &["2: `size` is a parameter, so it can't change: copy it into a `let` first"],
         ),

@@ -83,6 +83,7 @@ impl Parser<'_> {
                 kind: ItemKind::Fn(open),
                 docs: Vec::new(),
                 is_pub: true,
+                is_out: false,
                 span,
             },
         );
@@ -111,6 +112,7 @@ impl Parser<'_> {
             }),
             docs,
             is_pub,
+            is_out: false,
             span: start,
         }
     }

@@ -3,7 +3,8 @@
 //! `use`, and every name used through it or brought in from one, is
 //! `imported`; a call to a built-in method (`xs.push(1)`) is a method that
 //! is `defaultLibrary`, and a method the program defines is a plain one.
-//! Everything else keeps the grammar's colors.
+//! The name a `pub(out)` declaration offers to other packages is
+//! `offered` (spec 10.1). Everything else keeps the grammar's colors.
 
 use crate::position::position;
 use kavach_ast::visit::{VisitMut, walk_expr, walk_file};
@@ -16,7 +17,7 @@ use std::collections::HashSet;
 
 /// The token types and modifiers, in the order the legend lists them.
 pub const TYPES: [&str; 5] = ["namespace", "function", "method", "variable", "type"];
-pub const MODIFIERS: [&str; 2] = ["imported", "defaultLibrary"];
+pub const MODIFIERS: [&str; 3] = ["imported", "defaultLibrary", "offered"];
 
 const NAMESPACE: u32 = 0;
 const FUNCTION: u32 = 1;
@@ -25,6 +26,7 @@ const VARIABLE: u32 = 3;
 const TYPE: u32 = 4;
 const IMPORTED: u32 = 1;
 const LIBRARY: u32 = 2;
+const OFFERED: u32 = 4;
 
 /// The legend sent with the server's capabilities.
 pub fn legend() -> Value {
@@ -77,6 +79,7 @@ pub fn marks(c: &Compiled, path: &str, text: &str) -> Vec<Mark> {
     };
     let mut ast = c.file.clone();
     walk_file(&mut marks, &mut ast);
+    marks.found.extend(offered(c));
     let mut found: Vec<(u32, u32, u32, u32)> = marks
         .found
         .into_iter()
@@ -131,6 +134,21 @@ pub fn json_line(path: &str) -> String {
         }
     };
     line.to_string()
+}
+
+/// The names the program's `pub(out)` declarations offer (spec 10.1).
+fn offered(c: &Compiled) -> Vec<(u32, u32, u32, u32)> {
+    let mark = |id: &Ident, ty| (id.span.start, id.span.end - id.span.start, ty, OFFERED);
+    c.own_items()
+        .iter()
+        .filter(|item| item.is_out)
+        .filter_map(|item| match &item.kind {
+            ItemKind::Fn(f) => Some(mark(&f.name, FUNCTION)),
+            ItemKind::Type(t) => Some(mark(&t.name, TYPE)),
+            ItemKind::Interface(i) => Some(mark(&i.name, TYPE)),
+            _ => None,
+        })
+        .collect()
 }
 
 /// The names `use` gives modules (`use std.math` gives `math`): a `use`

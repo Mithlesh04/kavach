@@ -170,3 +170,16 @@ fn tags() {
     let literal = 3
 //      ^^^^^^^ variable.other.readwrite.kavach
 }
+
+pub(out) fn offered() -> Int {
+// <------- storage.modifier.out.kavach
+//       ^^ storage.type.function.kavach
+    1
+}
+pub fn shared() -> Int {
+// <--- storage.modifier.kavach
+    2
+}
+pub(out) literal sql: Query check check_sql language "sql"
+// <------- storage.modifier.out.kavach
+//       ^^^^^^^ storage.type.kavach

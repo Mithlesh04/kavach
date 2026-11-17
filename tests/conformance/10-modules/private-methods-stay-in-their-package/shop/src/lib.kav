@@ -1,6 +1,6 @@
 use billing
 
-pub type Order {
+pub(out) type Order {
     pub total: Int
 
     /// Callable from anywhere.

@@ -84,7 +84,7 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.13 | [module-constant-panics-before-main.kav](module-constant-panics-before-main.kav) | A module constant that panics stops the program before `main`. | panic |
 | 1.13, 1.3 | [script-constants-may-use-capabilities.kav](script-constants-may-use-capabilities.kav) | A script's `const` that uses a capability is one of its statements; plain constants stay module constants. | runs |
 | 1.13 | [functions-read-no-script-statement.kav](functions-read-no-script-statement.kav) | A function can't read a script's `const` that uses a capability. | compile error |
-| 1.13, 1.4 | [pub-constants-are-not-unused.kav](pub-constants-are-not-unused.kav) | A `pub const` nothing in its file reads gets no warning; a private one does. | runs |
+| 1.13, 1.4, 10.1 | [unused-pub-constants-are-warned.kav](unused-pub-constants-are-warned.kav) | A module constant nothing reads gets a warning, a `pub` one too when nothing in its package reads it. | warning |
 | 1.3 | [statements-outside-main-are-an-error.kav](statements-outside-main-are-an-error.kav) | In a file with `fn main`, a statement outside `main` is a compile error, as it would never run; a top-level `const` is still a module constant. | compile error |
 | 1.11 | [text-in-collections-shows-as-written.kav](text-in-collections-shows-as-written.kav) | Text inside a collection shows as written, combining marks too; only quotes, backslashes, line breaks, tabs, and control and invisible characters are escaped. | runs |
 | 1.7 | [a-carriage-return-escape.kav](a-carriage-return-escape.kav) | `\r` in a string is a carriage return, one character, as protocols ending lines with `\r\n` need. | runs |

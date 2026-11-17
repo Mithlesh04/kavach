@@ -1,0 +1,9 @@
+// The library `shapes`: `area` is offered to other packages, `scale` only to its own modules.
+
+pub(out) fn area(w: Int, h: Int) -> Int {
+    scale(w) * h / 2
+}
+
+pub fn scale(n: Int) -> Int {
+    n * 2
+}

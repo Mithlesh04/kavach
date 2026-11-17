@@ -131,6 +131,7 @@ impl Parser<'_> {
                         kind,
                         docs,
                         is_pub,
+                        is_out: false,
                         span: p.span_from(start),
                     });
                 }

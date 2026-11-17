@@ -56,7 +56,7 @@ fn a_git_dependency_stays_at_its_locked_commit() {
     project(&lib, "money", "");
     fs::write(
         lib.join("src/lib.kav"),
-        "pub fn cents(n: Int) -> Int {\n    n * 100\n}\n",
+        "pub(out) fn cents(n: Int) -> Int {\n    n * 100\n}\n",
     )
     .unwrap();
     git(&lib, &["init", "-q"]);
@@ -96,7 +96,7 @@ fn a_git_dependency_stays_at_its_locked_commit() {
     // The repository moves on; the lock keeps the build where it was.
     fs::write(
         lib.join("src/lib.kav"),
-        "pub fn cents(n: Int) -> Int {\n    n * 1000\n}\n",
+        "pub(out) fn cents(n: Int) -> Int {\n    n * 1000\n}\n",
     )
     .unwrap();
     git(&lib, &["commit", "-qam", "two"]);
@@ -130,7 +130,7 @@ fn a_git_dependency_stays_at_its_locked_commit() {
     // A package that uses `unsafe`, refused until its entry allows it.
     let raw = dir.join("raw");
     project(&raw, "raw", "unsafe = true\n");
-    fs::write(raw.join("src/lib.kav"), "pub fn one() -> Int {\n    1\n}\n").unwrap();
+    fs::write(raw.join("src/lib.kav"), "pub(out) fn one() -> Int {\n    1\n}\n").unwrap();
     let refused = kavach(&app, &["add", "raw", "--path", "../raw"]);
     assert!(!refused.status.success());
     assert!(String::from_utf8_lossy(&refused.stderr).contains("uses `unsafe` code"));

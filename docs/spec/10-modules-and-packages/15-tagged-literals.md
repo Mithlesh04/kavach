@@ -4,12 +4,12 @@ A package can give text a meaning the compiler checks: a **tagged literal**. `sq
 
 ```kavach
 // In package pg:
-pub type Query {
+pub(out) type Query {
     text: String                // not pub: only the literal and pg itself make a Query
 }
 
 /// SQL for PostgreSQL, checked when the program is compiled.
-pub literal sql: Query check check_sql language "sql"
+pub(out) literal sql: Query check check_sql language "sql"
 
 fn check_sql(text: String) -> [LiteralProblem] { … }
 

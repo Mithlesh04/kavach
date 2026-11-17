@@ -209,6 +209,12 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
     let mut modules: Vec<kavach_resolver::Module> = Vec::new();
     // Lines so far, counted file by file: each is counted once.
     let mut lines = 0;
+    // A library (`src/lib.kav`) may offer names with `pub(out)` (10.1);
+    // so may a dependency and the standard library.
+    let own_library = sources.iter().any(|s| {
+        s.package.is_empty()
+            && std::path::Path::new(&s.path).file_name() == Some("lib.kav".as_ref())
+    });
     for s in &sources {
         let start = src.len() as u32;
         files.push(SourceFile {
@@ -231,6 +237,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
                 start,
                 end: src.len() as u32,
                 package: s.package.clone(),
+                library: own_library || !s.package.is_empty() || s.module.starts_with("std."),
             }),
         }
     }

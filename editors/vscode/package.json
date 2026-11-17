@@ -66,6 +66,10 @@
           {
             "scope": "comment.line.documentation.kavach",
             "settings": { "foreground": "#4FA8A8" }
+          },
+          {
+            "scope": "storage.modifier.out.kavach",
+            "settings": { "foreground": "#E5A54B", "fontStyle": "bold" }
           }
         ],
         "[*Light*]": {
@@ -73,6 +77,10 @@
             {
               "scope": "comment.line.documentation.kavach",
               "settings": { "foreground": "#1D7A7A" }
+            },
+            {
+              "scope": "storage.modifier.out.kavach",
+              "settings": { "foreground": "#A0570A", "fontStyle": "bold" }
             }
           ]
         }

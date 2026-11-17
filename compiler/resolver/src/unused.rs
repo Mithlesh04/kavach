@@ -1,7 +1,7 @@
-//! Names declared and never used (spec 1.4): a warning, so code being
-//! written still runs. A name starting with `_` says it is unused on
-//! purpose. Only the program's own modules are looked at, not the
-//! standard library's.
+//! Names declared and never used (spec 1.4, 10.1): a warning, so code
+//! being written still runs. A name starting with `_` says it is unused
+//! on purpose. Only the program's own modules are looked at, not the
+//! standard library's or a dependency's.
 
 use crate::resolver::Resolver;
 use crate::{DefKind, Diagnostic};
@@ -15,30 +15,61 @@ impl Resolver {
             return;
         }
         let used: HashSet<usize> = self.res.uses.values().copied().collect();
+        // Each module's own functions, types and constants (10.1).
+        let top: HashSet<usize> = self
+            .modules
+            .own
+            .iter()
+            .flat_map(|o| o.values().copied())
+            .collect();
+        // An entry file without `main` is a file of functions `kavach
+        // test` checks (spec 11): they are what it is for.
+        let tested = !self.res.modules.first().is_some_and(|m| m.library)
+            && self
+                .modules
+                .own
+                .first()
+                .is_some_and(|o| !o.contains_key("main"));
         let mut found = Vec::new();
         for (id, d) in self.res.defs.iter().enumerate() {
-            // A `pub const` is for other modules to read (spec 1.13).
-            if !matches!(d.kind, DefKind::Local { .. })
+            let declared = matches!(d.kind, DefKind::Fn | DefKind::Type) && top.contains(&id);
+            if !(matches!(d.kind, DefKind::Local { .. }) || declared)
                 || d.name.starts_with('_')
                 || used.contains(&id)
-                || self.modules.public.contains(&id)
+                || self.modules.out.contains(&id)
+                || (d.kind == DefKind::Fn && d.name == "main")
             {
                 continue;
             }
             let Some(span) = d.span else { continue };
-            let module = &self.res.modules[self.res.module_at(span.start)].name;
-            if module.starts_with("std.") {
+            let at = self.res.module_at(span.start);
+            let module = &self.res.modules[at];
+            if module.name.starts_with("std.")
+                || !module.package.is_empty()
+                || (tested && at == 0 && d.kind == DefKind::Fn)
+            {
                 continue;
             }
-            let message = match self.hides.contains_key(&id) {
-                true => format!(
+            let message = if self.modules.public.contains(&id) {
+                // `pub`: used by none of the package's modules.
+                let out = match module.library {
+                    true => ", or make it `pub(out)` if other packages use it",
+                    false => "",
+                };
+                format!(
+                    "`{}` is `pub`, but nothing in this package uses it: remove it{out} (spec 10.1)",
+                    d.name
+                )
+            } else if self.hides.contains_key(&id) {
+                format!(
                     "`{0}` is never used: this makes a new `{0}`, hiding the one declared above. To change that one, write `{0} = …` without `let` (spec 1.4)",
                     d.name
-                ),
-                false => format!(
+                )
+            } else {
+                format!(
                     "`{}` is never used: remove it, or start its name with `_` if that is on purpose",
                     d.name
-                ),
+                )
             };
             found.push(Diagnostic { message, span });
         }

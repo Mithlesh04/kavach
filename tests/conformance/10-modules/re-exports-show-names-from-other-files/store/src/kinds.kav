@@ -1,1 +1,1 @@
-pub type Level = Low | High
+pub(out) type Level = Low | High

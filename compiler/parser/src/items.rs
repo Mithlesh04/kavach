@@ -48,6 +48,7 @@ impl Parser<'_> {
         let docs = self.docs();
         let deprecated = self.deprecation();
         let is_pub = self.eat_kw(Keyword::Pub);
+        let is_out = is_pub && self.pub_out();
         let mut kind = match self.kind() {
             TokenKind::Keyword(Keyword::Fn) => ItemKind::Fn(self.fn_decl(true)),
             // `audited fn` (spec 10.15): a word only before `fn`.
@@ -138,12 +139,47 @@ impl Parser<'_> {
                 ),
             }
         }
+        if is_out && matches!(kind, ItemKind::Extend(_) | ItemKind::Test(_)) {
+            self.error(
+                start,
+                "`pub(out)` goes before `fn`, `type`, `const`, `interface`, `capability`, `agent`, `literal` or `use` (spec 10.1)",
+            );
+        }
         Item {
             kind,
             docs,
             is_pub,
+            is_out,
             span: self.span_from(start),
         }
+    }
+
+    /// `(out)` after `pub` (spec 10.1): the name is offered to other
+    /// packages too.
+    fn pub_out(&mut self) -> bool {
+        if !self.at(&TokenKind::LParen) {
+            return false;
+        }
+        if *self.nth(1) == TokenKind::Ident
+            && self.nth_text(1) == "out"
+            && *self.nth(2) == TokenKind::RParen
+        {
+            self.bump();
+            self.bump();
+            self.bump();
+            return true;
+        }
+        self.error_here(
+            "`pub(…)` takes only `out`: `pub(out)` offers a name to other packages (spec 10.1)",
+        );
+        while !self.at(&TokenKind::RParen)
+            && !self.at(&TokenKind::Newline)
+            && !self.at(&TokenKind::Eof)
+        {
+            self.bump();
+        }
+        self.eat(&TokenKind::RParen);
+        false
     }
 
     /// `{ fn … }` bodies of interfaces, capabilities and `extend`.
@@ -159,6 +195,7 @@ impl Parser<'_> {
                     kind,
                     docs,
                     is_pub,
+                    is_out: false,
                     span: p.span_from(start),
                 });
             } else {

@@ -5,15 +5,15 @@
 
 use std::process::Command;
 
-const LIBRARY: &str = "pub fn fib(n: Int) -> Int {
+const LIBRARY: &str = "pub(out) fn fib(n: Int) -> Int {
     if n < 2 { n } else { fib(n - 1) + fib(n - 2) }
 }
 
-pub fn double(n: Int) -> Int {
+pub(out) fn double(n: Int) -> Int {
     n * 2
 }
 
-pub fn words(n: Int) -> Int {
+pub(out) fn words(n: Int) -> Int {
     let items: [String] = []
     for i in 0..n {
         items.push(\"word {i}\")
@@ -25,7 +25,7 @@ pub fn words(n: Int) -> Int {
     total
 }
 
-pub fn shout(n: Int) -> Int uses Console {
+pub(out) fn shout(n: Int) -> Int uses Console {
     const items = [n, n + 1, n + 2]
     print(\"call {n} says {items}\")
     n

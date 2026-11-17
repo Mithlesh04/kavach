@@ -57,7 +57,7 @@ fn members_share_one_lock_and_run_together() {
     );
     write(
         &repo.join("packages/greet/src/lib.kav"),
-        "pub fn hello(n: String) -> String {\n    \"hello, {n}\"\n}\n",
+        "pub(out) fn hello(n: String) -> String {\n    \"hello, {n}\"\n}\n",
     );
     git(&repo, &["init", "-q"]);
     git(&repo, &["add", "-A"]);
@@ -76,7 +76,7 @@ fn members_share_one_lock_and_run_together() {
     );
     write(
         &ws.join("packages/router/src/lib.kav"),
-        "pub fn route(p: String) -> String\n    example route(\"/a\") == \"route /a\"\n{\n    \"route {p}\"\n}\n",
+        "pub(out) fn route(p: String) -> String\n    example route(\"/a\") == \"route /a\"\n{\n    \"route {p}\"\n}\n",
     );
     let app = ws.join("packages/app");
     write(
@@ -124,7 +124,7 @@ fn members_share_one_lock_and_run_together() {
     // A member that fails makes the whole command fail.
     write(
         &ws.join("packages/router/src/lib.kav"),
-        "pub fn route(p: String) -> String {\n    p + 1\n}\n",
+        "pub(out) fn route(p: String) -> String {\n    p + 1\n}\n",
     );
     let broken = kavach(&ws, &["check"]);
     assert!(!broken.status.success(), "{}", text(&broken));

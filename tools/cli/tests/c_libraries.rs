@@ -5,15 +5,15 @@
 
 use std::process::Command;
 
-const LIBRARY: &str = "pub fn add(a: Int32, b: Int32) -> Int32 {
+const LIBRARY: &str = "pub(out) fn add(a: Int32, b: Int32) -> Int32 {
     a + b
 }
 
-pub fn scale(x: Float, by: Float) -> Float {
+pub(out) fn scale(x: Float, by: Float) -> Float {
     x * by
 }
 
-pub fn greet(name: String) -> String {
+pub(out) fn greet(name: String) -> String {
     \"hello {name}\"
 }
 ";

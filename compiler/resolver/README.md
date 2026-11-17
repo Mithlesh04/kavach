@@ -19,7 +19,10 @@ Field and method names (`order.total`) need types, so the type checker resolves 
 | `src/modules.rs` | Modules (spec 10.1–10.2): a scope per file, `use` between modules, `pub` checks; the built-in types of `std.*` modules (`Json`) visible everywhere |
 | `src/resolver.rs` | Scopes, definitions, lookups, error messages and suggestions |
 | `src/decls.rs` | Pass 1 collects top-level names (usable before they appear); pass 2 resolves each declaration |
-| `src/walk.rs` | Statements, expressions, patterns, types; the assignment check |
+| `src/walk.rs` | Statements, expressions, patterns, types |
+| `src/assignable.rs` | The assignment check: only `let` bindings change, with advice that fits a `const`, a parameter or a loop's name |
+| `src/offered.rs` | `pub(out)` (spec 10.1): an error in an application, and only these names of another package may be used |
+| `src/unused.rs` | Unused warnings (spec 1.4, 10.1): variables, and functions, types and module constants by their `pub` level |
 | `src/naming.rs` | `snake_case`, `PascalCase` and mixed-script checks |
 | `src/prelude.rs` | Built-in names: types, capabilities, prelude functions |
 | `tests/names.rs` | What names refer to, and every error message |

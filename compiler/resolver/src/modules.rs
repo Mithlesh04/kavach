@@ -19,6 +19,10 @@ pub struct Module {
     pub start: u32,
     pub end: u32,
     pub package: String,
+    /// Its package is a library (`src/lib.kav`, a dependency, or the
+    /// standard library), so it may offer names with `pub(out)`
+    /// (spec 10.1).
+    pub library: bool,
 }
 
 /// What resolving needs to know about the modules.
@@ -29,6 +33,11 @@ pub(crate) struct Modules {
     pub(crate) own: Vec<HashMap<String, DefId>>,
     /// Names other modules may use.
     pub(crate) public: HashSet<DefId>,
+    /// Names other packages may use: `pub(out)` (spec 10.1).
+    pub(crate) out: HashSet<DefId>,
+    /// What each module offers other packages, by name: its own
+    /// `pub(out)` names and those its `pub(out) use` re-exports.
+    pub(crate) offered: HashSet<(usize, String)>,
     /// The module whose items are being resolved.
     pub(crate) current: usize,
 }
@@ -76,15 +85,24 @@ impl Resolver {
                     continue;
                 };
                 self.modules.public.insert(def);
+                if item.is_out {
+                    self.modules.out.insert(def);
+                    let name = item_name(item).map(|n| n.name.clone()).unwrap_or_default();
+                    self.modules.offered.insert((scopes.len() - 1, name));
+                }
                 // A public union's variants are public too.
                 if let (ItemKind::Type(t), Some(vs)) = (&item.kind, self.union_variants.get(&def))
                     && matches!(t.body, TypeBody::Union(_))
                 {
                     self.modules.public.extend(vs.values().copied());
+                    if item.is_out {
+                        self.modules.out.extend(vs.values().copied());
+                    }
                 }
             }
         }
         self.modules.own = scopes.clone();
+        self.no_out_in_applications(&ranges);
         self.share_builtin_types(&mut scopes);
         // Re-exports (`pub use client.{Client}`, spec 10.2): their names
         // join their module's own, until nothing changes, as one may
@@ -290,6 +308,10 @@ impl Resolver {
                         let Some(&def) = self.modules.own[from].get(&name.name) else {
                             continue;
                         };
+                        // `pub(out) use` offers a `pub(out)` name on.
+                        if item.is_out && self.modules.out.contains(&def) {
+                            self.modules.offered.insert((m, shown.name.clone()));
+                        }
                         // A name the module has already (its own, or
                         // re-exported before) stays; the placeholder its
                         // `use` made gives way.
@@ -378,6 +400,12 @@ impl Resolver {
             self.error(
                 name.span,
                 format!("`{}` is private to module `{module}`: mark it `pub` there to use it here (spec 10.1)", name.name),
+            );
+        } else if self.other_package(m) && !self.modules.offered.contains(&(m, name.name.clone())) {
+            let package = &self.res.modules[m].package;
+            self.error(
+                name.span,
+                format!("`{}` is `pub` in package `{package}`, which offers other packages only its `pub(out)` names: mark it `pub(out)` there to use it here (spec 10.1)", name.name),
             );
         }
         self.res.uses.insert(name.span.start, def);

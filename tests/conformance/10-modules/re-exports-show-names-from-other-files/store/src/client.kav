@@ -1,7 +1,7 @@
-pub type Client {
+pub(out) type Client {
     pub name: String
 }
 
-pub fn connect(name: String) -> Client {
+pub(out) fn connect(name: String) -> Client {
     Client(name: name)
 }

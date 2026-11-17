@@ -34,6 +34,9 @@ pub(crate) struct Resolver {
     pub(crate) extend_params: Vec<(DefId, DefId, usize)>,
     /// Where each module constant's name is written (spec 1.13).
     pub(crate) const_spans: std::collections::HashSet<u32>,
+    /// Names a `for` or a `match` arm takes (spec 4.4): `const`, but not
+    /// declared with `const`, so changing one gets its own advice.
+    pub(crate) taken: std::collections::HashSet<DefId>,
 }
 
 impl Resolver {
@@ -47,6 +50,7 @@ impl Resolver {
             variants: HashMap::new(),
             union_variants: HashMap::new(),
             capability_params: HashMap::new(),
+            taken: Default::default(),
             modules: Default::default(),
             type_ids: HashMap::new(),
             type_params: HashMap::new(),

@@ -316,6 +316,7 @@ fn functions(c: &Compiled) -> Vec<(&FnDecl, Item, Option<String>)> {
                             kind: ItemKind::Fn(f.clone()),
                             docs: Vec::new(),
                             is_pub: false,
+                            is_out: false,
                             span: handler_span(c, f),
                         };
                         out.push((f, item, Some(a.name.name.clone())));

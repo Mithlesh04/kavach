@@ -170,3 +170,14 @@ fn capabilities_and_agents() {
         ),
     ]);
 }
+
+/// `pub(out)` (spec 10.1): offered to other packages, and `pub` too.
+#[test]
+fn pub_out_marks_what_a_library_offers() {
+    let parsed = kavach_parser::parse("pub(out) fn a() {\n}\npub fn b() {\n}\nfn c() {\n}\n");
+    assert!(parsed.errors.is_empty(), "{:?}", parsed.errors);
+    let marks: Vec<(bool, bool)> = (parsed.file.items.iter())
+        .map(|i| (i.is_pub, i.is_out))
+        .collect();
+    assert_eq!(marks, [(true, true), (true, false), (false, false)]);
+}
