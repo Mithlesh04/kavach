@@ -131,6 +131,9 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0123](0123-tracy-for-live-profiling.md) | Tracy for live profiling through `tracy-client`, linked only with `--tracy`; the GPU's own time from timestamp queries in the Chrome trace | Accepted |
 | [0124](0124-gamepads-through-sdl3.md) | Gamepads and their gyroscopes through SDL3, built from source and linked in; building Kavach needs CMake, and says how to install it | Accepted |
 | [0125](0125-kavach-for-ai-work.md) | Kavach for AI work: checked first, fast where it counts | Accepted |
+| [0126](0126-loops-on-one-core-unless-on-cores.md) | Loops on one core unless `on cores` says otherwise | Accepted |
+| [0127](0127-pub-out-for-what-a-package-offers.md) | `pub(out)` for what a package offers to other packages | Accepted |
+| [0128](0128-arenas-as-regions.md) | Arenas as regions: made fast, freed at once | Accepted |
 
 ## Open decisions
 

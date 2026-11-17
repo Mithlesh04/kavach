@@ -151,22 +151,22 @@ leak: a `Shared` value made at rooms.kav:8 was never freed: a cycle keeps it
 
 ## 6.3 Level 3: arenas
 
-An arena allocates values quickly from one block of memory and frees them all at once at the end:
+An arena is a block whose values can't outlive it: they are freed when it ends, at the latest. Today each is freed as it would be anyway, when its last holder lets go; taking them all from one block of memory, freed at once, is planned for when a benchmark needs it.
 
 ```kavach
 fn parse_all(lines: [String]) -> Summary {
     arena {
         const tokens = lines.flat_map(tokenize)       // thousands of small values
         summarize(tokens)                           // the result is copied out
-    }                                               // everything else is freed here, at once
+    }                                               // everything else is freed here
 }
 ```
 
 - Values created inside an arena **must not escape** it. The compiler checks this.
-- The only way out is the block's value. A value that holds memory and is made from a variable declared in the arena (that variable, a part of it, a call's result on it, a lambda or task using it) can't be kept outside: assigning or storing it into something declared before the arena (a variable, a list, a `Shared`, an `inout` argument), or passing it out with `return` or `fail`, is a compile error. That holds for every arena the code is in, not only the innermost. Numbers, `Bool` and `Char` are copied, so they may leave. Give the value back as part of the block's value instead.
+- The only way out is the block's value. A value that holds memory and is made from a variable declared in the arena (that variable, a part of it, a call's result on it, a lambda or task using it) can't be kept outside. A number, `Bool` or `Char` worked out from one is copied, so it doesn't count: `first = "found {words.len()} words"` may leave, as only `words.len()` comes from the arena. Assigning or storing such a value into something declared before the arena (a variable, a list, a `Shared`, an `inout` argument), or passing it out with `return` or `fail`, is a compile error. That holds for every arena the code is in, not only the innermost. Give the value back as part of the block's value instead.
 - Tasks spawned inside an arena may use its values. When the arena reaches its end, it waits for every task spawned in it to finish, then frees its values, so a task never sees them freed. (A function's own leftover tasks are cancelled when it returns, 9.2; an arena's are waited for, as their work is usually what the arena is for.)
 - The value of the arena block is copied out automatically.
-- Use an arena when a profiler shows allocation is a bottleneck, not by default.
+- Use an arena to make sure a step's values don't outlive it. Once arenas take their values from one block (above), they will also help where a profiler shows allocation is a bottleneck.
 
 ## 6.4 Level 4: unsafe
 

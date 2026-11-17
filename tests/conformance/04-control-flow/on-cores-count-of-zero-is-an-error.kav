@@ -1,0 +1,12 @@
+// Rule: a loop runs on at least one core or thread: a count written as 0
+// or a negative number is a compile error.
+// Spec: 4.9
+// expect compile error
+
+fn main() {
+    let out = [0, 0]
+    on cores(0) for i in 0..2 { // error: a loop runs on at least one core
+        out[i] = i
+    }
+    print(out)
+}

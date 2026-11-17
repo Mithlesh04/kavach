@@ -150,11 +150,15 @@ pub fn walk_stmt<V: VisitMut + ?Sized>(v: &mut V, s: &mut Stmt) {
             v.expr(value);
         }
         StmtKind::For {
+            place,
             pattern,
             iter,
             body,
             ..
         } => {
+            if let Some(n) = place.as_mut().and_then(|p| p.count.as_mut()) {
+                v.expr(n);
+            }
             v.pattern(pattern);
             v.expr(iter);
             walk_block(v, body);

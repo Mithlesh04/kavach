@@ -157,7 +157,15 @@ fn volumes() -> Vec<Vec<String>> {
         let [device, path, fs, ..] = f[..] else {
             continue;
         };
-        if !device.starts_with("/dev/") || out.iter().any(|r: &Vec<String>| r[0] == path) {
+        // Disks, and `/` whatever holds it (an overlay in a container).
+        if !(device.starts_with("/dev/") || path == "/")
+            || out.iter().any(|r: &Vec<String>| r[0] == path)
+        {
+            continue;
+        }
+        // A file bind-mounted on its own (`/etc/hosts` in a container) is
+        // no volume.
+        if !std::path::Path::new(path).is_dir() {
             continue;
         }
         let path = path.replace("\\040", " ");

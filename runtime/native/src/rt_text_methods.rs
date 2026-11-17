@@ -43,16 +43,12 @@ crate::rt_data::entry!(kv_rt_text_methods, |op, a, b, c, code, line| {
         }
         RtOp::TextRemovePrefix => new_str(tm::remove_prefix(&s, &take(b)).to_string(), result),
         RtOp::TextRemoveSuffix => new_str(tm::remove_suffix(&s, &take(b)).to_string(), result),
-        RtOp::TextTruncate => {
-            if b < 0 {
-                crate::rt::panic_with("`truncate` takes a length of 0 or more", line)
-            } else {
-                new_str(tm::truncate(&s, b as usize).to_string(), result)
-            }
-        }
+        // A negative count counts as 0 (spec 14.2).
+        RtOp::TextTruncate => new_str(tm::truncate(&s, b.max(0) as usize).to_string(), result),
         _ => {
             let left = op == RtOp::TextPadLeft;
-            if !(0..=tm::MOST_WIDTH).contains(&b) {
+            let b = b.max(0);
+            if b > tm::MOST_WIDTH {
                 let name = if left { "pad_left" } else { "pad_right" };
                 let why = format!("`{name}` takes a width from 0 to {}", tm::MOST_WIDTH);
                 crate::rt::panic_with(&why, line)

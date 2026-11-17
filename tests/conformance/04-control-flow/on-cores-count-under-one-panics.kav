@@ -1,0 +1,21 @@
+// Rule: a count worked out while running, under 1, is a panic before the
+// loop runs; a count above the cores there are uses them all.
+// Spec: 4.9
+// expect output: 199998
+// expect panic
+
+fn last(n: Int, cores: Int) -> Int {
+    let out: [Int] = []
+    for _ in 0..n {
+        out.push(0)
+    }
+    on cores(cores) for i in 0..n {
+        out[i] = i * 2
+    }
+    out[n - 1]
+}
+
+fn main() {
+    print(last(100_000, 10_000))
+    print(last(10, 0))
+}

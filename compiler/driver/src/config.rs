@@ -296,6 +296,15 @@ impl EnvConfig {
     }
 }
 
+/// `[run]` (spec 4.9): how the program runs.
+#[derive(Clone, Debug, Default, Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct RunConfig {
+    /// The most cores the program uses; `None`: all the machine gives it.
+    /// `KAVACH_CORES` at launch wins.
+    pub cores: Option<u32>,
+}
+
 /// `kavach.toml`: every key and section is listed in spec 10.11, and any
 /// other is an error, so a misspelled setting isn't ignored silently.
 #[derive(Clone, Debug, Default, Deserialize)]
@@ -307,6 +316,7 @@ pub struct Config {
     pub ai: AiConfig,
     pub agents: AgentsSection,
     pub log: LogConfig,
+    pub run: RunConfig,
     /// Sections described where they are used (spec 10.4), accepted but
     /// not read yet.
     pub dependencies: Option<toml::Value>,
@@ -406,6 +416,13 @@ impl Config {
                 if let Some(name) = moved.first() {
                     return Err(format!(
                         "`[agents.{name}]` moved into the code: give agent `{name}` `settings AgentSettings(…)` (spec 8.5, decision 0060). `mode = \"observe\"` is `mode: AgentMode.Observe`; `audit_log`, `audit_format` and `audit_otlp` are `audit: Audit(file: \"…\", format: AuditFormat.JsonLines, otlp: true)`; `state` and `journal` are on by default, in `agents/{name}/`. `kavach.toml` keeps only `[agents] folder`\n  --> {}",
+                        relative_path(&path)
+                    ));
+                }
+                if config.run.cores == Some(0) {
+                    return Err(format!(
+                        "`[run] cores = 0`: a program runs on at least one core: give 1 or more (spec 4.9)
+  --> {}",
                         relative_path(&path)
                     ));
                 }

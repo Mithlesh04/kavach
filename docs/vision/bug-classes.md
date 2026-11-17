@@ -80,7 +80,7 @@ One limit applies to everything below. Language design reliably removes bug clas
 
 Kavach checks *reads* too. A language that only prevented writes would still have allowed Heartbleed and Cloudbleed, two of the costliest incidents. Performance is no longer an excuse: Google's fleet-wide bounds checks cost **0.30% CPU** ([Google](https://security.googleblog.com/2024/11/retrofitting-spatial-safety-to-hundreds.html)).
 
-**Temporal unsafety: use-after-free, double free** (the #2 actively exploited weakness). Safe Kavach has no `free`. Memory is automatic and values are freed at last use. Arena values provably cannot escape their block: trying is a compile error ([spec 6](../spec/06-memory.md)). The class exists only inside `unsafe`.
+**Temporal unsafety: use-after-free, double free** (the #2 actively exploited weakness). Safe Kavach has no `free`. Memory is automatic: a value is freed when its last holder lets go of it. A value made from an arena's own variables can't be kept outside the arena: every way out but the block's value is a compile error ([spec 6](../spec/06-memory.md)). The class exists only inside `unsafe`.
 
 **Type confusion and uninitialized use** (the remaining classes Microsoft's root-cause data names). Kavach has static nominal types and no downcasts anywhere. An interface value deliberately has *no* cast back to its concrete type. A closed set is a union with compiler-enforced exhaustive `match` ([spec 2](../spec/02-types/README.md)). Every variable is initialized at declaration, and even `unsafe` `alloc` zeroes.
 
@@ -116,7 +116,7 @@ Go's remaining holes (bare `f()` dropping the error, `err` shadowing) don't exis
 
 Kavach goes further: `kavach test` runs every caller once per declared error variant of every capability it uses ([spec 11](../spec/11-testing.md)). The "simple testing of error paths" that would have caught 58% of catastrophic failures ([OSDI 2014](https://blog.acolyer.org/2016/10/06/simple-testing-can-prevent-most-critical-failures/)) is generated, not hand-written.
 
-**Data races.** Values are copied into tasks. `Shared<T>` with automatic locking is the *only* shared mutable state, and the compiler rejects racy code ([spec 9](../spec/09-concurrency.md), [spec 6](../spec/06-memory.md)).
+**Data races.** Values are copied into tasks. `Shared<T>` with automatic locking is the *only* shared mutable state, so safe Kavach has no way to write a data race: there is nothing unlocked to share ([spec 9](../spec/09-concurrency.md), [spec 6](../spec/06-memory.md)). Deadlocks and other ordering bugs remain possible.
 
 This is the Rust-grade guarantee, achieved without ownership annotations. It is the design with real-world evidence: Rust's non-blocking concurrency bugs required `unsafe` ([PLDI 2020](https://pldi20.sigplan.org/details/pldi-2020-papers/76/Understanding-Memory-and-Thread-Safety-Practices-and-Issues-in-Real-World-Rust-Progra)).
 
@@ -130,7 +130,7 @@ Deterministic turn-taking ([decision 0020](../decisions/0020-tasks-take-turns.md
 
 **Prototype pollution** (lodash CVE-2019-10744, CVSS 9.1, [Kodem](https://www.kodemsecurity.com/cve-archive/cve-2019-10744)) is structurally impossible. Records are closed nominal types, and no shared mutable prototype exists.
 
-**Resource cleanup**: deterministic `Drop` at last use plus structured tasks is the RAII end of the design ranking. The GC-finalizer end was formally abandoned by Java itself (JEP 421).
+**Resource cleanup**: deterministic `Drop` when a value's last holder ends (spec 6.1), plus structured tasks is the RAII end of the design ranking. The GC-finalizer end was formally abandoned by Java itself (JEP 421).
 
 ## Verdict (b): seven classes partly covered, and one rule each closes the gap
 

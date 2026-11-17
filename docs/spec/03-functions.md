@@ -44,6 +44,8 @@ greet("Asha")                          // "Hello, Asha!"
 greet("Asha", greeting: "Namaste")     // "Namaste, Asha!"
 ```
 
+A default may read the parameters before it: `fn area(w: Int, h: Int = w) -> Int` makes `area(3)` a square.
+
 ## 3.3 Lambdas
 
 ```kavach

@@ -100,12 +100,29 @@ impl<'a> Interp<'a> {
                 self.assign(target, v, s.span)?;
                 Ok(Value::Unit)
             }
+            // `on cores` and `on threads` (spec 4.9) give the one-core
+            // result, so the interpreter runs the rounds in order.
             StmtKind::For {
                 label,
+                place,
                 pattern,
                 iter,
                 body,
             } => {
+                // `cores(n)`, `threads(n)`: worked out first, at least 1.
+                if let Some(p) = place
+                    && let Some(n) = &p.count
+                    && let Value::Int(k, _) = self.eval(n)?
+                    && k < 1
+                {
+                    let what = if p.threads { "thread" } else { "core" };
+                    return Err(self.panic(
+                        format!(
+                            "a loop runs on at least one {what}, but the count is {k} (spec 4.9)"
+                        ),
+                        n.span,
+                    ));
+                }
                 // A range is walked lazily: `0..n` never builds a list.
                 // The rounds of `time.every_ms(ms)` (spec 14.4) each start
                 // `ms` after the one before started, or at once if that

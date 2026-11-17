@@ -19,7 +19,7 @@ pub(crate) fn count() -> usize {
     if !crate::rt::parallel() {
         return 1;
     }
-    std::thread::available_parallelism().map_or(1, |n| n.get())
+    kavach_runtime_core::cores()
 }
 
 /// A task's body, waiting for its worker. Its values were copied for it,

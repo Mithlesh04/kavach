@@ -88,10 +88,42 @@ impl<'a> Lowerer<'a> {
             }
             StmtKind::For {
                 label,
+                place,
                 pattern,
                 iter,
                 body,
-            } => self.labeled_loop(label, out, |l, out| l.for_loop(pattern, iter, body, out))?,
+            } => {
+                // `on cores for …` (spec 4.9): the one kind spread over cores.
+                if place.as_ref().is_some_and(|p| !p.threads) {
+                    let line = self.line(iter.span);
+                    self.on_cores.insert(line);
+                }
+                // `cores(n)`, `threads(n)`: the count, worked out first and
+                // checked; `par.rs` reads it from the check just before the
+                // loop.
+                if let Some(place) = place
+                    && let Some(n) = &place.count
+                {
+                    let n = self.expr(n)?;
+                    let c = self.new_local(Type::I64);
+                    out.push(Stmt::Let(c, n));
+                    let at = |kind| ir::Expr {
+                        kind,
+                        ty: Type::I64,
+                        line,
+                    };
+                    let args = vec![
+                        at(ir::ExprKind::Local(c)),
+                        at(ir::ExprKind::Int(place.threads.into())),
+                    ];
+                    out.push(Stmt::Expr(ir::Expr {
+                        kind: ir::ExprKind::Rt(RtOp::ParCores, args),
+                        ty: Type::Unit,
+                        line,
+                    }));
+                }
+                self.labeled_loop(label, out, |l, out| l.for_loop(pattern, iter, body, out))?
+            }
             StmtKind::While { label, cond, body } => self.labeled_loop(label, out, |l, out| {
                 let cond = l.expr(cond)?;
                 let mut b = ir::Block::default();
@@ -359,6 +391,15 @@ impl<'a> Lowerer<'a> {
     /// An expression used as a statement.
     pub(crate) fn expr_stmt(&mut self, e: &'a ast::Expr, out: &mut Vec<Stmt>) -> Lowered<()> {
         match &e.kind {
+            // `return print(e)` in a function that gives nothing: the call
+            // as a statement, then a plain `return`.
+            ExprKind::Return(Some(v)) if self.ret == Type::Unit && self.ty_of(v)? == Type::Unit => {
+                self.expr_stmt(v, out)?;
+                if self.result.is_some() {
+                    self.ensure_checks(out)?;
+                }
+                out.push(Stmt::Return(None));
+            }
             ExprKind::Return(value) => {
                 let ret = self.ret;
                 let value = value

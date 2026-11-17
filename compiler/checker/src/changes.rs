@@ -8,6 +8,7 @@ use kavach_resolver::DefKind;
 impl Checker<'_> {
     /// `items.push(x)` changes `items`, so it must be a `const` (spec 2.2).
     pub(crate) fn require_var(&mut self, base: &Expr, method: &str) {
+        self.check_round_change(base, method);
         let mut root = base;
         while let ExprKind::Field { base, .. }
         | ExprKind::TupleField { base, .. }
@@ -42,5 +43,37 @@ impl Checker<'_> {
                 id.name
             ),
         );
+    }
+
+    /// `count += 1` (or `log.push(x)`) inside a lambda or `spawn` block,
+    /// where `count` is a variable from outside: only the copy changes
+    /// (spec 3.3).
+    pub(crate) fn check_captured_change(&mut self, target: &Expr) {
+        let Some(&(body, what)) = self.copies.last() else {
+            return;
+        };
+        let mut root = target;
+        while let ExprKind::Field { base, .. }
+        | ExprKind::TupleField { base, .. }
+        | ExprKind::Index { base, .. } = &root.kind
+        {
+            root = base;
+        }
+        let ExprKind::Name(id) = &root.kind else {
+            return;
+        };
+        let Some(&def) = self.res.uses.get(&id.span.start) else {
+            return;
+        };
+        let d = &self.res.defs[def];
+        let outside = matches!(d.kind, kavach_resolver::DefKind::Local { .. })
+            && d.span.is_some_and(|s| s.start < body);
+        if outside {
+            let message = format!(
+                "`{}` is a copy inside this {what}: the change doesn't reach the outside. Give the value back instead, or use `Shared` to share it (spec 3.3)",
+                id.name
+            );
+            self.warn(target.span, &message);
+        }
     }
 }

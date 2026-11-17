@@ -1,0 +1,15 @@
+// Rule: `Ring.capacity(n)` with `n` above 4,294,967,294 is a panic, as for a list.
+// Spec: 2.2
+// expect output: 3
+// expect panic
+
+fn ring_of(n: Int) -> Ring<Int> {
+    Ring.capacity(n)
+}
+
+fn main() {
+    const small = ring_of(3)
+    print(small.len() + 3)
+    const big = ring_of(4_294_967_295)
+    print(big.len())
+}

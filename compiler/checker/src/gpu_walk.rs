@@ -74,6 +74,9 @@ pub(crate) struct Walk<'t> {
     fits: &'t crate::gpu_fit::Fits,
     pub(crate) calls: Vec<DefId>,
     pub(crate) errors: Vec<(Span, String)>,
+    /// The types already said to be wrong for the GPU, in the signature
+    /// or earlier in the body: each is told once.
+    pub(crate) told: Vec<Ty>,
 }
 
 impl<'t> Walk<'t> {
@@ -83,6 +86,7 @@ impl<'t> Walk<'t> {
             fits,
             calls: Vec::new(),
             errors: Vec::new(),
+            told: Vec::new(),
         }
     }
 
@@ -153,6 +157,10 @@ impl<'t> Walk<'t> {
                 self.errors.push((e.span, why.to_string()));
                 return;
             }
+            if self.told.contains(t) {
+                return;
+            }
+            self.told.push(t.clone());
             let shown = c.show(t);
             self.errors.push((
                 e.span,

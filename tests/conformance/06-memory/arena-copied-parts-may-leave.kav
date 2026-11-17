@@ -1,0 +1,12 @@
+// Rule: A number, `Bool` or `Char` worked out from an arena's values is copied, so text built from one may leave the arena.
+// Spec: 6.3
+// expect output: found 4 words
+
+fn main() {
+    let first = ""
+    arena {
+        const words = "the quick brown fox".split(" ")
+        first = "found {words.len()} words"
+    }
+    print(first)
+}

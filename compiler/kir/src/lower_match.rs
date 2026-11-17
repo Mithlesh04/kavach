@@ -307,6 +307,23 @@ impl<'a> Lowerer<'a> {
                 let mut inside = vec![(Step::Unwrap, union_ty)];
                 self.pattern(p, view, &mut inside, union_ty, conds, binds)?;
             }
+            // A variant pattern on an optional matches a present value of
+            // that variant (C9): present, then the variant inside.
+            PatternKind::Variant { .. }
+                if matches!(self.shapes.shape(ty), Some(Shape::Optional(_))) =>
+            {
+                let Some(Shape::Optional(inner)) = self.shapes.shape(ty).cloned() else {
+                    return Err(self.unsupported("this pattern", p.span));
+                };
+                conds.push(ir::Expr {
+                    kind: K::IsSome(Box::new(self.part(tmp, path, line))),
+                    ty: Type::Bool,
+                    line,
+                });
+                path.push((Step::Unwrap, inner));
+                self.pattern(p, tmp, path, inner, conds, binds)?;
+                path.pop();
+            }
             PatternKind::Variant { path: name, fields } => {
                 let variant_name = &name.segments.last().expect("a name").name;
                 let Some(Shape::Union { variants, .. }) = self.shapes.shape(ty).cloned() else {

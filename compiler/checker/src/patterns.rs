@@ -156,6 +156,12 @@ impl Checker<'_> {
     }
 
     fn bind_variant(&mut self, p: &Pattern, path: &Path, fields: Option<&[FieldPattern]>, ty: &Ty) {
+        // A variant of an optional's type matches a present value (C9).
+        let present = match self.inf.resolve(ty) {
+            Ty::Optional(inner) => Some(*inner),
+            _ => None,
+        };
+        let ty = present.as_ref().unwrap_or(ty);
         let last = path.segments.last().unwrap();
         // A bare name is first the matched value's own variant: `Denied`
         // in a match on a `FsError` is `FsError.Denied`, even when another
@@ -413,20 +419,12 @@ impl Checker<'_> {
             );
             return;
         }
-        let named = &self.pattern_variants;
-        let covers = |p: &Pattern, variant: DefId| match &p.kind {
-            PatternKind::Variant { path, fields } => {
-                named.get(&path.segments.last().unwrap().span.start) == Some(&variant)
-                    && fields.iter().flatten().all(|f| irrefutable(&f.pattern))
-            }
-            _ => false,
-        };
         let union_missing = |def: DefId, pats: &[&Pattern]| -> Vec<String> {
             match self.types.get(&def).map(|t| &t.shape) {
                 // Named as a case is written: with the union (decision 0070).
                 Some(Shape::Union(vs)) => vs
                     .iter()
-                    .filter(|v| !pats.iter().any(|p| covers(p, v.def)))
+                    .filter(|v| !self.variant_covered(pats, def, v.def, 0))
                     .map(|v| format!("{}.{}", self.def_name(def), v.name))
                     .collect(),
                 _ => vec!["every other value (add `_ => …`)".to_string()],
@@ -439,9 +437,21 @@ impl Checker<'_> {
                 .filter(|b| !open.iter().any(|p| matches!(&p.kind, PatternKind::Literal(Expr { kind: ExprKind::Bool(v), .. }) if v.to_string() == *b)))
                 .map(String::from)
                 .collect(),
-            Ty::Optional(_) => {
+            // `none` and the present values: a name, or patterns that cover
+            // the inner type, such as each variant of a union (C9).
+            Ty::Optional(inner) => {
                 let has_none = open.iter().any(|p| matches!(p.kind, PatternKind::None));
-                if has_none { vec!["a present value (`value => …`)".to_string()] } else { vec!["none".to_string()] }
+                let present: Vec<&Pattern> = (open.iter().copied())
+                    .filter(|p| !matches!(p.kind, PatternKind::None))
+                    .collect();
+                let mut missing = Vec::new();
+                if !has_none {
+                    missing.push("none".to_string());
+                }
+                if !self.pats_cover(&present, &inner, 0) {
+                    missing.push("a present value (`value => …`)".to_string());
+                }
+                missing
             }
             Ty::Result(_, err) => {
                 let mut missing = Vec::new();
@@ -472,7 +482,7 @@ impl Checker<'_> {
 }
 
 /// A pattern that matches every value.
-fn irrefutable(p: &Pattern) -> bool {
+pub(crate) fn irrefutable(p: &Pattern) -> bool {
     match &p.kind {
         PatternKind::Wildcard | PatternKind::Binding(_) => true,
         PatternKind::Tuple(items) => items.iter().all(irrefutable),

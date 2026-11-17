@@ -20,6 +20,8 @@ fn load_dashboard(user_id: Int) -> Dashboard ! Error uses Net {
 
 Both fetches run at the same time.
 
+`spawn` takes the call right after it, so `spawn count(i) * 10` is `(spawn count(i)) * 10`, a task times a number, and a compile error. Write the arithmetic inside the call (`spawn count(i * 10)`), or multiply what `.wait()` gives.
+
 The spawned code can fail without `try`: its error comes out of `.wait()`, which gives `T ! Error`. Above, a failed `fetch_profile` makes `try profile.wait()` pass the error on. A task's value or error stays in the `Task` until it is read; `.wait()` can be called again and gives the same.
 
 **An error nobody reads is not lost** ([decision 0075](../decisions/0075-cancelling-tasks.md)). An error in a task never stops the program. But when a task that failed is let go of and no `.wait()` read its error, the error is printed to standard error, with where the task was spawned. That happens when the function that spawned it returns (9.2), or, for a `Task` handed out of that function, when the last holder lets it go. The program goes on, and its exit code doesn't change:
@@ -96,7 +98,7 @@ for order in receive {
 |---|---|
 | `send.put(v)` | Adds `v`. When the channel already holds `capacity` values, it waits until one is taken. Putting into a closed channel panics, and so does putting into one whose receivers are all gone: nobody could ever take the value. A `put` waiting for room panics when the last receiver goes. |
 | `send.try_put(v) -> Bool` | Adds `v` if the channel has room and gives `true`; when it is full or closed, or its receivers are all gone, gives `false` at once and `v` is let go. It never waits, so one slow taker can't hold up a task that sends to many. |
-| `send.close()` | No more values will come. Values already in the channel can still be taken. |
+| `send.close()` | No more values will come. Values already in the channel can still be taken. Closing it again does nothing. |
 | `receive.take() -> Taken<T>` | The next value, in the order they were put, as `Taken.Item(value)`. It waits while the channel is empty, and gives `Taken.Closed` once the channel is closed and empty. |
 
 `Taken<T> = Item(value: T) | Closed` keeps a value and the channel's end apart, even when the values are optional: a `Channel<Order?>` can carry `none`, and `none` taken is `Item(value: none)`, not `Closed` ([decision 0097](../decisions/0097-take-gives-taken.md)).

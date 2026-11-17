@@ -16,7 +16,7 @@ level = "error"           # "error" | "warn" | "off"
 ```
 
 - **File limit:** a `.kav` file longer than `file_lines` is a compile error (or a warning with `level = "warn"`).
-- **Function limit:** a function body longer than `fn_lines` is a **warning** by default. Long functions are sometimes clearer than split ones, so the developer decides.
+- **Function limit:** a function longer than `fn_lines`, counted from its `fn` line to its closing `}`, is a **warning** by default. Long functions are sometimes clearer than split ones, so the developer decides.
 - **Every line counts:** code, comments, doc comments and blank lines. A rule that skipped comments would push people to delete useful ones.
 - Generated files (`kavach.lock`, `tests/found/`) and dependencies are never counted.
 

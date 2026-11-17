@@ -18,7 +18,7 @@ Conformance tests for spec chapter [4. Control flow](../../../docs/spec/04-contr
 | 4.4 | [for-over-a-map-a-call-gives.kav](for-over-a-map-a-call-gives.kav) | `for (key, value)` walks a map in insertion order, also when a call gives the map. | runs |
 | 4.4 | [for-over-ranges.kav](for-over-ranges.kav) | `..` excludes the end; `..=` includes it. | runs |
 | 4.4 | [for-underscore-discards.kav](for-underscore-discards.kav) | `for _ in …` discards the value and repeats the body. | runs |
-| 4.4 | [big-loops-give-plain-results.kav](big-loops-give-plain-results.kav) | A loop's results don't depend on how it is run: a loop on all cores stores exactly what the plain loop stores (decision 0031). | runs |
+| 4.9 | [big-loops-give-plain-results.kav](big-loops-give-plain-results.kav) | An `on cores` loop's results don't depend on how it is run: it stores exactly what the plain loop stores (decision 0126). | runs |
 | 4.4 | [big-loops-keep-their-panic-round.kav](big-loops-keep-their-panic-round.kav) | A loop panics at its first failing round, however it is run: a loop on all cores runs again serially to panic there. | panic |
 | 4.4 | [big-sums-give-plain-results.kav](big-sums-give-plain-results.kav) | A sum's result doesn't depend on how the loop is run. | runs |
 | 4.4 | [big-sums-keep-their-panic-round.kav](big-sums-keep-their-panic-round.kav) | A sum panics at its first failing round, however it is run: each chunk's prefix bounds catch a spike its total alone would hide. | panic |
@@ -46,3 +46,11 @@ Conformance tests for spec chapter [4. Control flow](../../../docs/spec/04-contr
 | 4.3, 1.4 | [match-bindings-hide-only-inside-their-arm.kav](match-bindings-hide-only-inside-their-arm.kav) | A match arm's binding may reuse an outside name: it hides it in that arm's guard and value only; a guard may read outside names too. | runs |
 | 4.8 | [a-block-given-to-a-call-changes-lists-and-fields-around-it.kav](a-block-given-to-a-call-changes-lists-and-fields-around-it.kav) | A block given to a call is a plain block, not a lambda: pushing to an outside list, setting a field or a map key changes the variable around it. | runs |
 | 4.8, 1.4 | [a-name-made-in-a-block-given-to-a-call-ends-with-it.kav](a-name-made-in-a-block-given-to-a-call-ends-with-it.kav) | A block given to a call is a block: a name declared in it can't be used after it. | compile error |
+| 4.3 | [match-covers-nested-variants.kav](match-covers-nested-variants.kav) | Arms that differ in one field cover a variant when, between them, they cover that field's type: no catch-all arm is needed. | runs |
+| 4.3 | [match-on-an-optional-may-list-its-variants.kav](match-on-an-optional-may-list-its-variants.kav) | A `match` on an optional may list `none` and the variants of the value inside, which match a present value. | runs |
+| 4.9 | [on-cores-gives-the-one-core-result.kav](on-cores-gives-the-one-core-result.kav) | An `on cores` loop gives the result of the same loop on one core: each round writes its own slot, and whole numbers added with `+=` add up the same in any order. | runs |
+| 4.9 | [on-cores-refuses-print.kav](on-cores-refuses-print.kav) | An `on cores` loop can't print or do other I/O: its order would change from run to run. | compile error |
+| 4.9 | [on-cores-refuses-a-float-sum.kav](on-cores-refuses-a-float-sum.kav) | An `on cores` loop can't add floats into a shared `let`: the adding order would change the last bits. | compile error |
+| 4.9 | [on-cores-refuses-a-shared-change.kav](on-cores-refuses-a-shared-change.kav) | A round of an `on cores` loop may change only its own slot: pushing to a shared list, or setting a shared variable, is a compile error. | compile error |
+| 4.9 | [on-cores-count-under-one-panics.kav](on-cores-count-under-one-panics.kav) | A count worked out while running that is under 1 panics before the loop runs; more cores than there are uses them all. | panic |
+| 4.9 | [on-cores-count-of-zero-is-an-error.kav](on-cores-count-of-zero-is-an-error.kav) | A count written as 0 or a negative number is a compile error: a loop runs on at least one core or thread. | compile error |

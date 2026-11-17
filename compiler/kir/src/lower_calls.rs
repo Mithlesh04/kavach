@@ -134,18 +134,46 @@ impl<'a> Lowerer<'a> {
         span: ast::Span,
     ) -> Lowered<Vec<ir::Expr>> {
         let params: Vec<&ast::Param> = f.params.iter().filter(|p| p.ty.is_some()).collect();
+        let given_at = |i: usize, p: &ast::Param| {
+            (args.iter())
+                .find(|a| a.name.as_ref().is_some_and(|n| n.name == p.name.name))
+                .or_else(|| args.get(i).filter(|a| a.name.is_none()))
+        };
+        // A default may read the parameters before it (spec 3.2): each
+        // value is then kept in a local the default's names stand for.
+        let defaulted = (params.iter().enumerate()).any(|(i, p)| given_at(i, p).is_none());
+        let mut bound = Vec::new();
         let mut values = Vec::new();
         for (i, p) in params.iter().enumerate() {
-            let given = args
-                .iter()
-                .find(|a| a.name.as_ref().is_some_and(|n| n.name == p.name.name))
-                .or_else(|| args.get(i).filter(|a| a.name.is_none()));
-            let value = match (given, &p.default) {
+            let mut value = match (given_at(i, p), &p.default) {
                 (Some(a), _) => self.expr(&a.value)?,
                 (None, Some(d)) => self.expr(d)?,
                 (None, None) => return Err(self.unsupported("this call", span)),
             };
+            if defaulted {
+                let line = value.line;
+                let held = self.new_local(value.ty);
+                let read = self.local_expr(held, line);
+                value = ir::Expr {
+                    ty: value.ty,
+                    line,
+                    kind: K::Block(crate::ir::Block {
+                        stmts: vec![crate::ir::Stmt::Let(held, value)],
+                        value: Some(Box::new(read)),
+                    }),
+                };
+                if let Some(&def) = self.decl.get(&p.name.span.start) {
+                    bound.push((def, self.local_ids.get(&def).copied()));
+                }
+                self.bind(&p.name, held);
+            }
             values.push(value);
+        }
+        for (def, before) in bound {
+            match before {
+                Some(l) => self.local_ids.insert(def, l),
+                None => self.local_ids.remove(&def),
+            };
         }
         Ok(values)
     }

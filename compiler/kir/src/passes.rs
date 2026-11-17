@@ -90,7 +90,7 @@ pub(crate) fn finish(
         crate::exits::keep_before_exits(f);
         crate::moves::mark_moves(f, &holders);
     }
-    let quiet_from = crate::par::outline(&mut functions, &mut l.shapes.list);
+    let quiet_from = crate::par::outline(&mut functions, &mut l.shapes.list, &l.on_cores);
     for f in functions.iter_mut().skip(quiet_from as usize) {
         crate::ranges::prove_ranges(f);
     }

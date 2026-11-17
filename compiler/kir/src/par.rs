@@ -19,6 +19,14 @@ use crate::rt_op::RtOp;
 mod analyze;
 mod chunk;
 mod reduce;
+#[cfg(test)]
+mod tests;
+
+thread_local! {
+    /// The lines of the loops written `on cores`, while `outline` runs.
+    static ON_CORES: std::cell::RefCell<std::collections::HashSet<u32>> =
+        std::cell::RefCell::new(std::collections::HashSet::new());
+}
 
 /// Loops with fewer rounds than this are left as they are; the runtime
 /// checks the real bounds again.
@@ -26,10 +34,16 @@ const MIN_ROUNDS: i128 = 1 << 16;
 
 /// Outlines eligible loops in every function; the functions appended
 /// here (the chunks) are `quiet` from the returned index on.
-pub(crate) fn outline(functions: &mut Vec<Function>, shapes: &mut Vec<Shape>) -> FuncId {
-    if std::env::var_os("KAVACH_SERIAL").is_some() {
+pub(crate) fn outline(
+    functions: &mut Vec<Function>,
+    shapes: &mut Vec<Shape>,
+    on_cores: &std::collections::HashSet<u32>,
+) -> FuncId {
+    // Only loops written `on cores` are spread (spec 4.9, decision 0126).
+    if on_cores.is_empty() {
         return functions.len() as FuncId;
     }
+    ON_CORES.with(|m| *m.borrow_mut() = on_cores.clone());
     let quiet_from = functions.len();
     for f in 0..quiet_from {
         let mut chunks = Vec::new();
@@ -73,6 +87,24 @@ pub(crate) fn outline(functions: &mut Vec<Function>, shapes: &mut Vec<Shape>) ->
         functions.append(&mut chunks);
     }
     quiet_from as FuncId
+}
+
+/// The most cores the loop after `before` may use: the count of its
+/// `cores(n)`, checked just before it (and before the list it walks,
+/// `lower_stmt.rs`), or 0 for all the program may use (spec 4.9).
+fn loop_cores(before: &[Stmt], line: u32) -> Expr {
+    let count = before.iter().rev().take(2).find_map(|s| match s {
+        Stmt::Expr(Expr {
+            kind: ExprKind::Rt(RtOp::ParCores, args),
+            ..
+        }) => Some(args[0].clone()),
+        _ => None,
+    });
+    count.unwrap_or(Expr {
+        kind: ExprKind::Int(0),
+        ty: Type::I64,
+        line,
+    })
 }
 
 /// How many partial-sum slots a reduction keeps: the runtime never
@@ -148,10 +180,13 @@ fn rewrite(
                     body,
                 } = &s
                     && big_enough(start, end)
+                    && ON_CORES.with(|m| m.borrow().contains(&start.line))
                 {
                     if let Some(plan) = eligible(body, *var, fresh, locals) {
                         let chunk = next + chunks.len();
-                        let (flag_stmt, guard) = call_site(&s, &plan, chunk, locals, start, end);
+                        let cores = loop_cores(&b.stmts, start.line);
+                        let (flag_stmt, guard) =
+                            call_site(&s, &plan, chunk, locals, start, end, cores);
                         chunks.push(make_chunk(&s, &plan, locals, name));
                         b.stmts.push(flag_stmt);
                         b.stmts.push(guard);
@@ -160,14 +195,14 @@ fn rewrite(
                     if let Some(plan) = reduction(body, &[*var], locals) {
                         let chunk = next + chunks.len();
                         let slots = scratch_lists(locals, shapes, scratch);
+                        let cores = loop_cores(&b.stmts, start.line);
                         let stmts = red_call_site(
                             &s,
                             &plan,
                             chunk,
                             locals,
                             slots,
-                            start.clone(),
-                            end.clone(),
+                            [start.clone(), end.clone(), cores],
                         );
                         chunks.push(make_red_chunk(
                             &s,
@@ -198,7 +233,16 @@ fn rewrite(
                 for inner in &body.stmts {
                     unshare_stmt(inner, fresh);
                 }
+                // The list walked was just stored, on the loop's own line:
+                // only a loop written `on cores` is spread (spec 4.9).
+                let on_cores = b.stmts.iter().rev().find_map(|s| match s {
+                    Stmt::Let(l, e) if *l == list => Some(e.line),
+                    _ => None,
+                });
+                let on_cores =
+                    on_cores.is_some_and(|line| ON_CORES.with(|m| m.borrow().contains(&line)));
                 let plan = reduction(body, &[var, index], locals).filter(|p| {
+                    on_cores &&
                     // The chunk reads `list[i]`: one more capture seat,
                     // and the items must be plain integers.
                     !p.caps.contains(&list) && p.caps.len() < 3 && locals[var as usize] == Type::I64
@@ -225,7 +269,8 @@ fn rewrite(
                         ty: Type::I64,
                         line,
                     };
-                    let stmts = red_call_site(&s, &plan, chunk, locals, slots, start, end);
+                    let cores = loop_cores(&b.stmts, line);
+                    let stmts = red_call_site(&s, &plan, chunk, locals, slots, [start, end, cores]);
                     chunks.push(make_red_chunk(
                         &s,
                         &plan,

@@ -164,6 +164,11 @@ fn main_of(i: &mut interp::Interp<'_>, args: &[String], dry_run: bool) -> i32 {
     // builds the program, before `main` runs, as native code does
     // (spec 10.5).
     let (version, answers) = kavach_driver::program_version(program.path.as_ref());
+    // `[run] cores` (spec 4.9), before anything asks how many.
+    let config = kavach_driver::Config::for_file(program.path.as_ref());
+    if let Some(n) = config.ok().and_then(|c| c.run.cores) {
+        kavach_runtime_core::set_file_cores(n as usize);
+    }
     if answers && args == ["--version"] {
         i.out.push_str(&format!("{version}\n"));
         return 0;

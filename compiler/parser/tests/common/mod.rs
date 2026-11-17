@@ -126,16 +126,30 @@ pub fn stmt(s: &Stmt) -> String {
         }
         StmtKind::For {
             label,
+            place,
             pattern: p,
             iter,
             body,
-        } => format!(
-            "{}(for {} {} {})",
-            labeled(label),
-            pattern(p),
-            expr(iter),
-            block(body)
-        ),
+        } => {
+            let on = match place {
+                None => String::new(),
+                Some(pl) => {
+                    let what = if pl.threads { "threads" } else { "cores" };
+                    let n = pl
+                        .count
+                        .as_ref()
+                        .map_or(String::new(), |n| format!(" {}", expr(n)));
+                    format!("(on {what}{n}) ")
+                }
+            };
+            format!(
+                "{}{on}(for {} {} {})",
+                labeled(label),
+                pattern(p),
+                expr(iter),
+                block(body)
+            )
+        }
         StmtKind::While { label, cond, body } => {
             format!("{}(while {} {})", labeled(label), expr(cond), block(body))
         }

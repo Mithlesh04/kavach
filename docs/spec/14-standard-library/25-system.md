@@ -23,7 +23,7 @@ fn header() -> String uses System {
 |---|---|---|
 | `system.os() -> Os` | `Os(name:, version:)`: `"windows"`, `"linux"`, `"macos"` or another system's name, and its version as the system writes it (`"10.0.26300"`, `"6.6.87"`) | nothing |
 | `system.arch() -> String` | The processor's architecture: `"x86_64"`, `"aarch64"` or another | nothing |
-| `system.cores() -> Cores` | `Cores(logical:, physical:)`: how many threads can run at once for this program, and the processor cores behind them; `physical` is `logical` where the system doesn't say | nothing |
+| `system.cores() -> Cores` | `Cores(logical:, physical:)`: how many threads can run at once for this program, and the processor cores behind them; `physical` is `logical` where the system doesn't say, and never more than `logical`, so under a container's CPU limit both count what the program may use | nothing |
 | `system.memory() -> Memory` | `Memory(total:, available:)` in bytes: the machine's memory, and how much a program could still take without the system swapping | `System` |
 | `system.cpu() -> Cpu` | `Cpu(model:, vendor:, mhz:)`: the processor's name (`"Intel(R) Core(TM) i7-13700HX"`), its maker (`"GenuineIntel"`, `"AuthenticAMD"`, `"Apple"`) and its rated speed; `""` and 0 where the system doesn't say | `System` |
 | `system.gpus() -> [GpuInfo]` | Each GPU the program could use, discrete ones first, then integrated, the rest last: `GpuInfo(name:, vendor:, kind:, backend:)`, `kind` a `GpuKind` (`Discrete`, `Integrated`, `Virtual`, `Other`, or `Software` for one that draws on the processor), `backend` the API it is reached through (`"vulkan"`, `"dx12"`, `"metal"`, `"gl"`). Listing them opens no GPU | `System` |
@@ -91,7 +91,7 @@ fn free_8080() ! SystemError uses System.critical.read, System.critical.write, C
 | `system.running() -> [RunningApp]` | Each program running: `RunningApp(pid:, name:, path:, memory:)`, `memory` its resident bytes; `path` is `""` where the system doesn't show it | `System.critical.read` |
 | `system.ports() -> [PortUse]` | Each port in use: `PortUse(protocol:, address:, port:, state:, pid:, program:)`, `protocol` `"tcp"` or `"udp"`, `state` `"listen"`, `"established"` or another (`""` for UDP) | `System.critical.read` |
 | `system.terminate(pid, force: false) ! SystemError` | Ends program `pid`: asked to stop, or, with `force`, stopped at once (Windows always stops it at once) | `System.critical.write` |
-| `system.free_port(port, force: false) -> [Int] ! SystemError` | Ends every program listening on `port`, and gives their pids | `System.critical.write` |
+| `system.free_port(port, force: false) -> [Int] ! SystemError` | Ends every program listening on `port`, and gives their pids. A port held by a program this user can't see (another user's, shown in `ports()` with pid 0) is `Denied`; a port nobody holds gives `[]` | `System.critical.write` |
 | `system.user() -> User` | The user this program runs as: `User(name:, home:, admin:)`, `admin` whether it runs with administrator or root rights now | `System` |
 | `system.users() -> [Account]` | Every account a person logs in with: `Account(name:, full_name:, admin:)` | `System.critical.read` |
 | `system.add_user(name, password, admin: false) ! SystemError` | Makes a user account; `password` may be a secret (8.7) | `System.critical.write` |

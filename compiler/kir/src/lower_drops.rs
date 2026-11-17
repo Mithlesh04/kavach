@@ -27,6 +27,17 @@ impl<'a> Lowerer<'a> {
             K::Rt(RtOp::CliVersion, vec![text, flag, ops]),
             Type::Unit,
         ))];
+        // `[run] cores` (spec 4.9), before anything asks how many.
+        if let Some(n) = kavach_driver::Config::for_file(path)
+            .ok()
+            .and_then(|c| c.run.cores)
+        {
+            let n = at(K::Int(n.into()), Type::I64);
+            out.insert(
+                0,
+                Stmt::Expr(at(K::Rt(RtOp::RunCores, vec![n]), Type::Unit)),
+            );
+        }
         if spawns_on_cores(&self.c.file) {
             out.push(Stmt::Expr(ir::Expr {
                 kind: K::Rt(RtOp::TaskParallel, Vec::new()),

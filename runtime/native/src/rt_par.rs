@@ -2,7 +2,7 @@
 //! compiler-made chunk function over `lo..hi` split across threads, and
 //! returns 0 when every chunk ran clean. It returns 1 — "run the plain
 //! loop yourself" — when the loop is small, one core is all there is,
-//! `KAVACH_SERIAL=1` is set, or a chunk's check failed; the caller's
+//! `KAVACH_CORES=1` is set, or a chunk's check failed; the caller's
 //! plain loop then keeps every panic at its exact round and line.
 //!
 //! A chunk function does nothing but arithmetic and loads and stores on
@@ -13,13 +13,16 @@
 use std::sync::atomic::{AtomicBool, AtomicI64, AtomicUsize, Ordering};
 use std::sync::{Condvar, Mutex, OnceLock};
 
+#[cfg(test)]
+mod tests;
+
 /// Fewer rounds than this run serially: waking the pool costs more
 /// than the work.
 const MIN_ROUNDS: i64 = 1 << 16;
 
+/// One core is all the program may use (`KAVACH_CORES=1`, spec 4.9).
 fn serial() -> bool {
-    static SERIAL: OnceLock<bool> = OnceLock::new();
-    *SERIAL.get_or_init(|| std::env::var_os("KAVACH_SERIAL").is_some())
+    kavach_runtime_core::cores() == 1
 }
 
 /// A loop the pool is running: the chunk function, its captures by
@@ -37,6 +40,8 @@ struct Job {
     /// A reduction (decision 0031): the chunk also gets its grab's
     /// slot number, `(a - lo) / step`, always under `SLOTS`.
     red: bool,
+    /// How many workers may join the caller: `cores(n)` less one.
+    helpers: i64,
 }
 
 struct State {
@@ -67,7 +72,7 @@ fn pool() -> &'static Pool {
     static POOL: OnceLock<Pool> = OnceLock::new();
     static START: std::sync::Once = std::sync::Once::new();
     let p = POOL.get_or_init(|| Pool {
-        workers: std::thread::available_parallelism().map_or(1, |p| p.get()),
+        workers: kavach_runtime_core::cores(),
         state: Mutex::new(State {
             job: None,
             stamp: 0,
@@ -100,6 +105,10 @@ fn work() {
                     && let Some(job) = state.job
                 {
                     seen = state.stamp;
+                    // `on cores(n)`: the loop has all the workers it may.
+                    if p.busy.load(Ordering::Acquire) >= job.helpers {
+                        continue;
+                    }
                     // Committed under the lock: once the caller
                     // clears the job, no worker can still join it.
                     p.busy.fetch_add(1, Ordering::AcqRel);
@@ -174,8 +183,21 @@ pub extern "C-unwind" fn kv_par_for(
     f: *const u8,
     caps: *const i64,
     n: i64,
+    cores: i64,
 ) -> i64 {
-    fan_out(lo, hi, f, caps, n, false)
+    fan_out(lo, hi, f, caps, n, cores, false)
+}
+
+/// `on cores(n)`, `on threads(n)` (spec 4.9): a count under 1 panics.
+pub fn check_count(n: i64, threads: bool, line: i32) -> i64 {
+    if n < 1 {
+        let what = if threads { "thread" } else { "core" };
+        crate::rt::panic_with(
+            &format!("a loop runs on at least one {what}, but the count is {n} (spec 4.9)"),
+            line,
+        );
+    }
+    0
 }
 
 /// A reduction: like `kv_par_for`, and each grab's chunk call also gets
@@ -190,6 +212,7 @@ pub extern "C-unwind" fn kv_par_for_red(
     f: *const u8,
     caps: *const i64,
     n: i64,
+    cores: i64,
 ) -> i64 {
     if n < 3 {
         return 1;
@@ -204,15 +227,21 @@ pub extern "C-unwind" fn kv_par_for_red(
         }
         slots[..SLOTS as usize].fill(0);
     }
-    fan_out(lo, hi, f, caps, n, true)
+    fan_out(lo, hi, f, caps, n, cores, true)
 }
 
-fn fan_out(lo: i64, hi: i64, f: *const u8, caps: *const i64, n: i64, red: bool) -> i64 {
+/// Runs the loop on at most `cores` cores (0: all the program may use).
+fn fan_out(lo: i64, hi: i64, f: *const u8, caps: *const i64, n: i64, cores: i64, red: bool) -> i64 {
     if hi.saturating_sub(lo) < MIN_ROUNDS || n > 6 || serial() {
         return 1;
     }
     let p = pool();
-    if p.workers < 2 {
+    // More cores asked than the program may use: all it may (spec 4.9).
+    let workers = match cores {
+        1.. => p.workers.min(cores as usize),
+        _ => p.workers,
+    };
+    if workers < 2 {
         return 1;
     }
     let mut slots = [0i64; 6];
@@ -226,7 +255,7 @@ fn fan_out(lo: i64, hi: i64, f: *const u8, caps: *const i64, n: i64, red: bool) 
         // The other loops' threads are busy: this one runs alone.
         return alone(f, lo, hi, &slots[..n as usize], red);
     }
-    let step = ((hi - lo) / (p.workers as i64 * 4))
+    let step = ((hi - lo) / (workers as i64 * 4))
         .max(4096)
         .max((hi - lo).div_euclid(SLOTS) + 1);
     {
@@ -247,6 +276,7 @@ fn fan_out(lo: i64, hi: i64, f: *const u8, caps: *const i64, n: i64, red: bool) 
             hi,
             step,
             red,
+            helpers: workers as i64 - 1,
         });
         state.stamp += 1;
         p.go.notify_all();
@@ -262,6 +292,7 @@ fn fan_out(lo: i64, hi: i64, f: *const u8, caps: *const i64, n: i64, red: bool) 
             hi,
             step,
             red,
+            helpers: workers as i64 - 1,
         },
         true,
     );

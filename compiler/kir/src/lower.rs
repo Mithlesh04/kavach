@@ -23,6 +23,9 @@ pub(crate) struct Lowerer<'a> {
     pub(crate) c: &'a Compiled,
     pub(crate) decl: HashMap<u32, DefId>,
     pub(crate) fn_ids: HashMap<DefId, FuncId>,
+    /// The lines of `on cores` loops (spec 4.9): only these are spread
+    /// over cores (`par.rs`).
+    pub(crate) on_cores: std::collections::HashSet<u32>,
     /// Each `spawn process` call's entry in a child (`lower_process.rs`).
     pub(crate) process_entries: Vec<FuncId>,
     pub(crate) method_ids: HashMap<(Owner, String), FuncId>,
@@ -128,6 +131,7 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
         c,
         decl,
         fn_ids: HashMap::new(),
+        on_cores: std::collections::HashSet::new(),
         process_entries: Vec::new(),
         method_ids: HashMap::new(),
         iface_shims: HashMap::new(),

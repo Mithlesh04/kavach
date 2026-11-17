@@ -11,7 +11,7 @@ type Pair<T> {
     b: T
 
     fn show(self) -> String where T: Describe {      // error: a `where` bound is `Number` or `Floating`
-        self.a.describe()
+        "a pair"
     }
 }
 

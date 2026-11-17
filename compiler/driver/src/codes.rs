@@ -80,6 +80,9 @@ const TABLE: &[(&str, &[&str])] = &[
     (
         "wrong-place",
         &[
+            "in an `on cores` loop",
+            "every round shares",
+            "runs on at least one core",
             "made inside the `arena`",
             "is only for",
             "is for `std.",

@@ -45,17 +45,11 @@ impl<'a> Interp<'a> {
             "count" => number(tm::count(s, &text(0))),
             "remove_prefix" => self.str_value(tm::remove_prefix(s, &text(0))),
             "remove_suffix" => self.str_value(tm::remove_suffix(s, &text(0))),
-            "truncate" => {
-                if int(0) < 0 {
-                    return Some(Err(
-                        self.panic("`truncate` takes a length of 0 or more", span)
-                    ));
-                }
-                self.str_value(tm::truncate(s, int(0) as usize))
-            }
+            // A negative count counts as 0 (spec 14.2).
+            "truncate" => self.str_value(tm::truncate(s, int(0).max(0) as usize)),
             "pad_left" | "pad_right" => {
-                let width = int(0);
-                if !(0..=i128::from(tm::MOST_WIDTH)).contains(&width) {
+                let width = int(0).max(0);
+                if width > i128::from(tm::MOST_WIDTH) {
                     let why = format!("`{name}` takes a width from 0 to {}", tm::MOST_WIDTH);
                     return Some(Err(self.panic(why, span)));
                 }

@@ -1,0 +1,19 @@
+// Rule: An `on cores` loop gives the result of the same loop on one core: each round writes its own slot, and whole numbers added with `+=` add up the same in any order.
+// Spec: 4.9
+// expect output: 0 2 199998
+// expect output: 4999950000
+
+fn main() {
+    const n = 100_000
+    let doubled: [Int] = []
+    for _ in 0..n {
+        doubled.push(0)
+    }
+    let total = 0
+    rows: on cores for i in 0..n {
+        doubled[i] = i * 2
+        total += i
+    }
+    print("{doubled[0]} {doubled[1]} {doubled[n - 1]}")
+    print(total)
+}

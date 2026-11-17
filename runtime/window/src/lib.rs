@@ -127,7 +127,7 @@ fn event_loop() -> Result<EventLoop<Command>, String> {
             winit::platform::x11::EventLoopBuilderExtX11::with_any_thread(&mut b, true);
             winit::platform::wayland::EventLoopBuilderExtWayland::with_any_thread(&mut b, true);
         }
-        b.build().map_err(|e| e.to_string())
+        b.build().map_err(|e| shown_error(&e))
     }
 }
 
@@ -145,7 +145,7 @@ impl App {
         let attributes = Window::default_attributes()
             .with_title(title)
             .with_inner_size(PhysicalSize::new(w.max(1), h.max(1)));
-        let window = Arc::new(el.create_window(attributes).map_err(|e| e.to_string())?);
+        let window = Arc::new(el.create_window(attributes).map_err(|e| shown_error(&e))?);
         self.next += 1;
         let n = self.next;
         let size = window.inner_size();
@@ -455,10 +455,23 @@ pub fn lock_cursor(n: i64, on: bool) {
     tell(Command::LockCursor(n, on));
 }
 
-/// Closes window `n`; closing it again does nothing.
+/// Closes window `n`; closing it again does nothing. Its state goes at
+/// once, before the event loop closes it, so `size()` right after is
+/// `(0, 0)` and `poll()` gives nothing, in both modes (spec 14.22).
 pub fn close(n: i64) {
+    let gone = hub()
+        .inboxes
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+        .remove(&n);
+    if gone.is_some() {
+        hub().ready.notify_all();
+    }
     tell(Command::Close(n));
 }
 
 #[cfg(test)]
 mod tests;
+
+mod errors;
+use errors::shown_error;

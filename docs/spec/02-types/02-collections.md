@@ -81,7 +81,7 @@ const has = (0..10).contains(10)                // false: 10 is past the end
 const digits = (0..10).to_list()                // [0, 1, …, 9]
 ```
 
-**Rings.** `Ring<T>` keeps the last `n` items pushed. `Ring.capacity(n)` makes an empty one; when it is full, `push` drops the oldest item to make room, where a full list would panic. The items are in the order they were pushed, oldest first: `first()` is the oldest, `last()` the newest, `get(0)` the oldest, and `for` visits them in that order. A second argument gives the first items, as for a list; given more than `n`, the ring keeps the last `n`.
+**Rings.** `Ring<T>` keeps the last `n` items pushed. `Ring.capacity(n)` makes an empty one; when it is full, `push` drops the oldest item to make room, where a full list would panic. The items are in the order they were pushed, oldest first: `first()` is the oldest, `last()` the newest, `get(0)` the oldest, and `for` visits them in that order. A second argument gives the first items, as for a list; given more than `n`, the ring keeps the last `n`. As for a list, a number below 0 counts as 0, and one above 4,294,967,294 is a panic.
 
 ```kavach
 let recent: Ring<Float> = Ring.capacity(3)

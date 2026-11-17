@@ -146,8 +146,10 @@ A **panic** is a bug, not an expected failure. It stops the current task. Panics
 - integer division or remainder by zero
 - `.unwrap()` on `none`
 - running out of stack (very deep recursion, 3.8)
-- running out of memory, such as `"ab".repeat(n)` asking for more than 1 GB of text
+- asking for more memory than Kavach allows in one go, such as `"ab".repeat(n)` asking for more than 1 GB of text, or a list grown past its limit (2.2)
 - an explicit `panic("message")`
+
+**When the machine itself runs out of memory**, which Kavach can't see coming, the whole program ends: native code exits with code 101 and `panic: out of memory (asked for N bytes)`, or the system ends it first (on Linux, code 137). The interpreter, a tool for development, may end without that message. A server that must survive this caps what one request may ask for, as `ServeLimits` does (14.11).
 
 Panics are not caught by normal code. An agent handler that panics is stopped, logged in the audit log, and the agent keeps serving other requests: the send that started it fails with `panicked: <message> at <file>:<line>` (8.8, [decision 0076](../decisions/0076-every-send-to-an-agent-can-fail.md)).
 

@@ -207,3 +207,21 @@ const after = 1
 const one = t == "{" or t == "}"
 //                ^ punctuation.definition.template-expression.begin.kavach
 //                            ^ punctuation.definition.template-expression.end.kavach
+
+fn spread(n: Int) {
+    let out: [Int] = []
+    rows: on cores(2) for i in 0..n {
+//  ^^^^ entity.name.label.kavach
+//        ^^ keyword.other.kavach
+//           ^^^^^ keyword.other.kavach
+//                    ^^^ keyword.control.kavach
+        out[i] = i
+    }
+    on threads for i in 0..n {
+//  ^^ keyword.other.kavach
+//     ^^^^^^^ keyword.other.kavach
+        out[i] = i
+    }
+    const on = 3
+//        ^^ variable.other.readwrite.kavach
+}

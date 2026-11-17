@@ -1,0 +1,14 @@
+// Rule: In a function that gives nothing, a `catch` handler may end it with `return` of a call that gives nothing, such as `print`.
+// Spec: 5.3, 3.1
+// expect output: 7
+// expect output: not a number
+
+fn show(text: String) {
+    const n = Int(text) catch _ => return print("not a number")
+    print(n)
+}
+
+fn main() {
+    show("7")
+    show("seven")
+}

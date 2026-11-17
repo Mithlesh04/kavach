@@ -6,3 +6,8 @@ CFLAGS_x86_64_pc_windows_msvc = "/Gy /Gw"
 # Tracy's client (decision 0123) without call stacks, which Kavach never
 # asks for: on Windows they need `dbghelp`, which may be set up already.
 TRACY_CLIENT_SYS_CXXFLAGS = "-DTRACY_NO_CALLSTACK"
+
+# The LLVM linker that comes with Rust links the workspace's many test
+# binaries faster than Microsoft's.
+[target.x86_64-pc-windows-msvc]
+linker = "rust-lld"

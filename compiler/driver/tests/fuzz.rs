@@ -85,6 +85,17 @@ fn random_text_never_crashes_the_compiler() {
 /// character, a line removed or doubled, or two programs spliced.
 #[test]
 fn mutated_programs_never_crash_the_compiler() {
+    // The compiler recurses over the program, and some conformance tests
+    // nest deeply (300 parentheses): it runs on a stack as deep as the
+    // CLI's, not a test thread's 2 MB.
+    let deep = std::thread::Builder::new().stack_size(256 * 1024 * 1024);
+    deep.spawn(mutated_programs_never_crash_the_compiler_on_a_deep_stack)
+        .unwrap()
+        .join()
+        .unwrap();
+}
+
+fn mutated_programs_never_crash_the_compiler_on_a_deep_stack() {
     let mut sources = Vec::new();
     collect(
         std::path::Path::new("../../tests/conformance"),

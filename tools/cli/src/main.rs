@@ -68,6 +68,20 @@ tools for AI assistants (spec 13), which save reading whole files:
 const COMPILER_STACK: usize = 256 * 1024 * 1024;
 
 fn main() -> ExitCode {
+    // Ctrl+C and SIGTERM end a program as `cli.exit` does (spec 5.8),
+    // caught before any other thread starts, the compiler's own included
+    // (decision 0063): on Unix every thread then has them blocked.
+    let args =
+        env::take_flags(std::env::args().skip(1).collect()).map_or_else(|_| Vec::new(), |(a, _)| a);
+    if args.first().map(String::as_str) == Some("run") {
+        let hooks = match args.get(1).map(String::as_str) {
+            Some("--native") => kavach_runtime_native::end_hooks,
+            _ => kavach_interp::end_hooks,
+        };
+        kavach_runtime_native::rt_stop::catch_stops(hooks);
+        // `spawn process` starts the program again as it was started (9.8).
+        kavach_interp::set_restart(kavach_runtime_core::processes::this_command());
+    }
     let work = std::thread::Builder::new()
         .name("kavach".into())
         .stack_size(COMPILER_STACK)
@@ -103,17 +117,6 @@ fn cli() -> ExitCode {
         && let Err(e) = env::prepare(command, env_flags, path)
     {
         return fail(&e);
-    }
-    // Ctrl+C and SIGTERM end a program as `cli.exit` does (spec 5.8),
-    // caught before any other thread starts (decision 0063).
-    if args.first().map(String::as_str) == Some("run") {
-        let hooks = match args.get(1).map(String::as_str) {
-            Some("--native") => kavach_runtime_native::end_hooks,
-            _ => kavach_interp::end_hooks,
-        };
-        kavach_runtime_native::rt_stop::catch_stops(hooks);
-        // `spawn process` starts the program again as it was started (9.8).
-        kavach_interp::set_restart(kavach_runtime_core::processes::this_command());
     }
     match args
         .iter()

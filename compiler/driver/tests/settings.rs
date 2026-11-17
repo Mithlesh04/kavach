@@ -268,3 +268,18 @@ fn an_unknown_edition_is_an_error() {
     assert!(Config::for_file(&file).is_ok());
     std::fs::remove_dir_all(&dir).unwrap();
 }
+
+/// `[run] cores` (spec 4.9): the program's most cores, at least 1.
+#[test]
+fn run_cores_is_read_and_must_be_one_or_more() {
+    let dir = std::env::temp_dir().join(format!("kavach-run-cores-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let file = dir.join("main.kav");
+    std::fs::write(dir.join("kavach.toml"), "[run]\ncores = 3\n").unwrap();
+    let three = Config::for_file(&file).map(|c| c.run.cores);
+    std::fs::write(dir.join("kavach.toml"), "[run]\ncores = 0\n").unwrap();
+    let zero = Config::for_file(&file).expect_err("0 cores");
+    std::fs::remove_dir_all(&dir).unwrap();
+    assert_eq!(three, Ok(Some(3)));
+    assert!(zero.contains("at least one core"), "{zero}");
+}

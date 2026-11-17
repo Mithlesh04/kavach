@@ -1,0 +1,11 @@
+// Rule: A round of an `on cores` loop may change only its own slot: pushing to a shared list, or setting a shared variable, is a compile error.
+// Spec: 4.9
+// expect compile error
+
+fn main() {
+    let seen: [Int] = []
+    on cores for i in 0..3 {
+        seen.push(i)                // error: changes `seen`, which every round shares
+    }
+    print(seen)
+}

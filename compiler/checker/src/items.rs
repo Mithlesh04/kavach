@@ -179,6 +179,7 @@ impl Checker<'_> {
             if f.ret.is_none() {
                 return c.block_stmt(body, Some(&name));
             }
+            let before = c.errors.len();
             let actual = c.block_value(body, Some(&sig.ret));
             if !f.ret_secret
                 && let Some(StmtKind::Expr(last)) = body.stmts.last().map(|s| &s.kind)
@@ -186,6 +187,16 @@ impl Checker<'_> {
                 c.check_secret_return(last, &name);
             }
             if matches!(c.inf.shallow(&actual), Ty::Unit) && !matches!(sig.ret, Ty::Unit) {
+                // One mistake, one message: this one replaces the last
+                // line's own "this returns nothing".
+                let last = match body.stmts.last().map(|s| &s.kind) {
+                    Some(StmtKind::Expr(e)) => Some(e.span),
+                    _ => None,
+                };
+                let found = c.errors.split_off(before);
+                c.errors.extend(found.into_iter().filter(|e| {
+                    Some(e.span) != last || !e.message.ends_with("but this returns nothing")
+                }));
                 let want = c.show(&sig.ret);
                 c.error(
                     f.name.span,
@@ -301,6 +312,7 @@ impl Checker<'_> {
                     self.check_compound(bin, target, &t);
                 }
                 self.check_unsafe_index_target(target);
+                self.check_round_assign(target, *op);
                 self.check_bytes_unchanged(target);
                 self.check_captured_change(target);
                 if !user {
@@ -313,6 +325,7 @@ impl Checker<'_> {
             }
             StmtKind::For {
                 label,
+                place,
                 pattern,
                 iter,
                 body,
@@ -320,7 +333,10 @@ impl Checker<'_> {
                 let t = self.value(iter, None);
                 let item = self.item_type(&t, iter);
                 self.bind(pattern, &item);
-                self.loop_body(label, body);
+                match place {
+                    Some(p) => self.in_round(p, pattern, body, |c| c.loop_body(label, body)),
+                    None => self.loop_body(label, body),
+                }
             }
             StmtKind::While { label, cond, body } => {
                 self.condition(cond);
@@ -330,38 +346,6 @@ impl Checker<'_> {
                 self.check_expect(e, &BOOL);
             }
             StmtKind::Expr(e) => self.expr_stmt(e),
-        }
-    }
-
-    /// `count += 1` (or `log.push(x)`) inside a lambda or `spawn` block,
-    /// where `count` is a variable from outside: only the copy changes
-    /// (spec 3.3).
-    pub(crate) fn check_captured_change(&mut self, target: &Expr) {
-        let Some(&(body, what)) = self.copies.last() else {
-            return;
-        };
-        let mut root = target;
-        while let ExprKind::Field { base, .. }
-        | ExprKind::TupleField { base, .. }
-        | ExprKind::Index { base, .. } = &root.kind
-        {
-            root = base;
-        }
-        let ExprKind::Name(id) = &root.kind else {
-            return;
-        };
-        let Some(&def) = self.res.uses.get(&id.span.start) else {
-            return;
-        };
-        let d = &self.res.defs[def];
-        let outside = matches!(d.kind, kavach_resolver::DefKind::Local { .. })
-            && d.span.is_some_and(|s| s.start < body);
-        if outside {
-            let message = format!(
-                "`{}` is a copy inside this {what}: the change doesn't reach the outside. Give the value back instead, or use `Shared` to share it (spec 3.3)",
-                id.name
-            );
-            self.warn(target.span, &message);
         }
     }
 

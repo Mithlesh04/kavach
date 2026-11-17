@@ -257,3 +257,30 @@ fn invisible(c: char) -> bool {
             | 0x2066..=0x206F | 0xFEFF | 0xFFF9..=0xFFFB | 0xE0001 | 0xE0020..=0xE007F
     )
 }
+
+/// How many cores this program may use (spec 4.9, decision 0126): the
+/// machine's, as a container or CPU affinity allows, capped by
+/// `KAVACH_CORES` (`[run] cores` in `kavach.toml`); `KAVACH_SERIAL` is
+/// `KAVACH_CORES=1`. At least 1.
+pub fn cores() -> usize {
+    static CORES: std::sync::OnceLock<usize> = std::sync::OnceLock::new();
+    *CORES.get_or_init(|| {
+        let machine = std::thread::available_parallelism().map_or(1, |n| n.get());
+        let asked = std::env::var("KAVACH_CORES")
+            .ok()
+            .and_then(|v| v.trim().parse::<usize>().ok());
+        let asked = asked.or_else(|| std::env::var_os("KAVACH_SERIAL").map(|_| 1));
+        let file = FILE_CORES.load(std::sync::atomic::Ordering::Relaxed);
+        let asked = asked.or((file > 0).then_some(file));
+        asked.map_or(machine, |n| n.clamp(1, machine))
+    })
+}
+
+/// `[run] cores` in `kavach.toml` (spec 4.9), 0 when not set: the
+/// program's start gives it, before anything asks `cores()`.
+static FILE_CORES: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+
+/// Sets `[run] cores`; `KAVACH_CORES` at launch still wins.
+pub fn set_file_cores(n: usize) {
+    FILE_CORES.store(n, std::sync::atomic::Ordering::Relaxed);
+}

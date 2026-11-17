@@ -230,6 +230,19 @@ pub fn end_hooks() {
     rt::run_at_exit();
 }
 
+/// A write to a socket or pipe whose other end closed is an error the
+/// program sees (a `NetError`), not a signal that ends it, as in the
+/// interpreter: the C `main` of a built program skips the start-up of a
+/// Rust program, which ignores `SIGPIPE`.
+fn ignore_broken_pipes() {
+    #[cfg(unix)]
+    // SAFETY: sets `SIGPIPE` to be ignored, before the program's threads
+    // start; no handler of ours runs.
+    unsafe {
+        libc::signal(libc::SIGPIPE, libc::SIG_IGN);
+    }
+}
+
 /// The start of an executable made by `kavach build`: its generated C
 /// `main` calls this with the entry function, the program's file path and
 /// its shape table (as written by `kavach_kir::encode_shapes`).
@@ -248,6 +261,7 @@ pub extern "C-unwind" fn kv_main(
         rt::set_limit_slot(slot);
     }
     rt_stop::catch_stops(end_hooks);
+    ignore_broken_pipes();
     rt_std::set_args(std::env::args().skip(1).collect());
     // Its first `env` reads the `.env` beside it, or the one
     // `KAVACH_ENV_FILE` names (spec 10.13).

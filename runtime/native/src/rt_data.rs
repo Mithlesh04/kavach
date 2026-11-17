@@ -244,6 +244,7 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         | RtOp::ListNoLimit
         | RtOp::RingCapacity => crate::capacity::capacity_op(op, a, b, code, line),
         RtOp::ListPush => crate::capacity::push(a, b, line),
+        RtOp::ParCores => crate::rt_par::check_count(a, b != 0, line),
         RtOp::ListTruncate => {
             let q = unique(a);
             crate::lists::truncate_list(q, b.max(0) as usize);

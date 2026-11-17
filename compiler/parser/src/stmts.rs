@@ -85,6 +85,8 @@ impl Parser<'_> {
                 self.loop_stmt(label)
             }
             TokenKind::Keyword(Keyword::For | Keyword::While) => self.loop_stmt(None),
+            // `on cores for …` (spec 4.9).
+            TokenKind::Ident if self.at_loop_place(0) => self.loop_stmt(None),
             TokenKind::Keyword(Keyword::Assert) => {
                 self.bump();
                 StmtKind::Assert(self.expr())
@@ -148,17 +150,55 @@ fn assign_op(kind: &TokenKind) -> Option<AssignOp> {
 }
 
 impl Parser<'_> {
-    /// Whether a label comes next: a name, `:`, then `for` or `while`.
+    /// Whether a label comes next: a name, `:`, then `for`, `while` or
+    /// `on cores`.
     fn at_loop_label(&self) -> bool {
         *self.nth(1) == TokenKind::Colon
-            && matches!(
+            && (matches!(
                 self.nth(2),
                 TokenKind::Keyword(Keyword::For | Keyword::While)
+            ) || self.at_loop_place(2))
+    }
+
+    /// Whether `on cores` or `on threads` starts `at` tokens on: `on`, then
+    /// `cores` or `threads`, then `for` or `(` (spec 4.9).
+    fn at_loop_place(&self, at: usize) -> bool {
+        let word = |k: usize, w: &str| *self.nth(k) == TokenKind::Ident && self.nth_text(k) == w;
+        word(at, "on")
+            && (word(at + 1, "cores") || word(at + 1, "threads"))
+            && matches!(
+                self.nth(at + 2),
+                TokenKind::Keyword(Keyword::For) | TokenKind::LParen
             )
     }
 
-    /// A `for` or `while` loop, with its label if it has one.
+    /// `on cores`, `on cores(n)` or `on threads(n)` before a `for`.
+    fn loop_place(&mut self) -> Option<kavach_ast::LoopPlace> {
+        if !self.at_loop_place(0) {
+            return None;
+        }
+        let start = self.span();
+        self.bump();
+        let threads = self.text() == "threads";
+        self.bump();
+        let count = self.eat(&TokenKind::LParen).then(|| {
+            let n = self.expr();
+            self.expect(&TokenKind::RParen, "`)`");
+            n
+        });
+        if !self.at_kw(Keyword::For) {
+            self.error_here("`on cores` and `on threads` go right before a `for` (spec 4.9)");
+        }
+        Some(kavach_ast::LoopPlace {
+            threads,
+            count,
+            span: self.span_from(start),
+        })
+    }
+
+    /// A `for` or `while` loop, with its label and place if it has them.
     fn loop_stmt(&mut self, label: Option<Ident>) -> StmtKind {
+        let place = self.loop_place();
         if self.at_kw(Keyword::For) {
             self.bump();
             let pattern = self.pattern();
@@ -167,6 +207,7 @@ impl Parser<'_> {
             let body = self.block();
             return StmtKind::For {
                 label,
+                place,
                 pattern,
                 iter,
                 body,

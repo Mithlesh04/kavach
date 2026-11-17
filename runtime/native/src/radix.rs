@@ -64,7 +64,7 @@ pub fn sort(v: &mut [u64], signed: bool) {
     }
     let workers = match std::env::var_os("KAVACH_SERIAL") {
         Some(_) => 1,
-        None => std::thread::available_parallelism().map_or(1, |p| p.get()),
+        None => kavach_runtime_core::cores(),
     };
     let one = |pair: &mut (&mut [u64], &mut [u64])| {
         let (bucket, scratch) = pair;

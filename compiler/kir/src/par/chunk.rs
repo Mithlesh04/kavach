@@ -8,7 +8,8 @@ use crate::par::analyze::Plan;
 use crate::rt_op::RtOp;
 
 /// The replacement at the call site: `flag = kv_par_for(…)`, then the
-/// plain loop under `if flag != 0`.
+/// plain loop under `if flag != 0`. `cores` is the loop's most cores
+/// (0: all the program may use).
 pub(super) fn call_site(
     loop_stmt: &Stmt,
     plan: &Plan,
@@ -16,6 +17,7 @@ pub(super) fn call_site(
     locals: &mut Vec<Type>,
     start: &Expr,
     end: &Expr,
+    cores: Expr,
 ) -> (Stmt, Stmt) {
     let line = start.line;
     let flag = locals.len() as Local;
@@ -28,6 +30,7 @@ pub(super) fn call_site(
             ty: Type::I64,
             line,
         },
+        cores,
     ];
     for c in &plan.caps {
         args.push(Expr {

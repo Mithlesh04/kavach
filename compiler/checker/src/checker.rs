@@ -164,6 +164,8 @@ pub(crate) struct Checker<'a> {
     pub(crate) its: Vec<Ty>,
     /// Enclosing `arena` blocks (spec 6.3).
     pub(crate) arenas: Vec<Span>,
+    /// The `on cores` and `on threads` loops around the code (spec 4.9).
+    pub(crate) rounds: Vec<crate::loop_place::Round>,
     /// The lambdas and `spawn` blocks being checked, innermost last: where
     /// each body starts, and what it is. Outside variables are copies
     /// inside them (spec 3.3, 9.5).
@@ -302,6 +304,7 @@ impl<'a> Checker<'a> {
             ctx: None,
             its: Vec::new(),
             arenas: Vec::new(),
+            rounds: Vec::new(),
             copies: Vec::new(),
             updating: 0,
             rethrow: None,

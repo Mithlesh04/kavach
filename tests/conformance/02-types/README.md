@@ -347,3 +347,4 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.2 | [capacity-below-zero-holds-nothing.kav](capacity-below-zero-holds-nothing.kav) | A capacity below 0 counts as 0, for maps and sets too: they are full at once, and adding to one panics. | panic |
 | 2.12 | [json-objects-past-max-fields-are-an-error.kav](json-objects-past-max-fields-are-an-error.kav) | By default, parsing an object with more than `max_fields: 100_000` fields is an error, not a memory blow-up; 100_000 fields are read. | runs |
 | 2.12 | [json-text-past-max-bytes-is-an-error.kav](json-text-past-max-bytes-is-an-error.kav) | By default, parsing text longer than `max_bytes: 64_000_000` is an error, `TooLarge`, not a memory blow-up. | runs |
+| 2.2 | [a-ring-past-the-limit-panics.kav](a-ring-past-the-limit-panics.kav) | `Ring.capacity(n)` with `n` above 4,294,967,294 is a panic, as for a list. | panic |

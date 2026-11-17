@@ -1,0 +1,21 @@
+// Rule: A `match` on an optional may list `none` and the variants of the value inside, which match a present value.
+// Spec: 4.3
+// expect output: circle 2
+// expect output: square 3
+// expect output: none
+
+type Shape = Circle(radius: Int) | Square(side: Int)
+
+fn show(s: Shape?) {
+    match s {
+        Shape.Circle(r) => print("circle {r}"),
+        Shape.Square(x) => print("square {x}"),
+        none => print("none"),
+    }
+}
+
+fn main() {
+    show(Shape.Circle(radius: 2))
+    show(Shape.Square(side: 3))
+    show(none)
+}

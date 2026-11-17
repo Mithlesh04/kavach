@@ -228,3 +228,4 @@ The tests are listed in four files, by area:
 | 14.9 | [text-finds-numbers-after-any-letter.kav](text-finds-numbers-after-any-letter.kav) | A `-` that follows a letter or digit, in any script, is not a sign; `find_ints` and `find_float` read the numbers on each side of it. | runs |
 | 14.9 | [text-finds-the-smallest-int.kav](text-finds-the-smallest-int.kav) | `find_ints` leaves out a number too big for `Int`, either way, but keeps every number that fits, the smallest `Int` too. | runs |
 | 14.9 | [text-nfkd-splits-compatibility-characters.kav](text-nfkd-splits-compatibility-characters.kav) | `text.nfkd` splits accents off their letters and turns compatibility characters into plain ones; `nfd` leaves those characters as they are. | runs |
+| 14.2 | [negative-counts-count-as-zero.kav](negative-counts-count-as-zero.kav) | A negative count or width counts as 0: `repeat`, `take`, `skip`, `truncate` and `pad_left` don't panic on one. | runs |

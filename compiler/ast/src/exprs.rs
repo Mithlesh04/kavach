@@ -14,6 +14,17 @@ pub struct Stmt {
     pub span: Span,
 }
 
+/// Where a loop's rounds run (spec 4.9): `on cores`, `on cores(n)` or
+/// `on threads(n)`.
+#[derive(Clone, Debug, PartialEq)]
+pub struct LoopPlace {
+    /// `on threads(n)`, for waiting work; else `on cores`.
+    pub threads: bool,
+    /// The most cores or threads, when written.
+    pub count: Option<Expr>,
+    pub span: Span,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum StmtKind {
     Let {
@@ -27,9 +38,11 @@ pub enum StmtKind {
         op: AssignOp,
         value: Expr,
     },
-    /// With `label`, `outer: for …` (spec 4.6).
+    /// With `label`, `outer: for …` (spec 4.6); with `place`, `on cores
+    /// for …` (spec 4.9).
     For {
         label: Option<Ident>,
+        place: Option<LoopPlace>,
         pattern: Pattern,
         iter: Expr,
         body: Block,

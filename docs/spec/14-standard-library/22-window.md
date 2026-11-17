@@ -16,13 +16,13 @@ A function that only draws needs no `Input`, so it can't read what a person type
 | `win.poll() -> [Event]` | The events that came, without waiting; empty when none did |
 | `win.run(f)` | Calls `f(event)` for each event as it comes, until `f` gives `false` or the window closes |
 | `win.listen_input()` | From now on, keyboard, mouse, text and gamepad events come too. Needs `Input` |
-| `win.size() -> (width: Int, height: Int)` | The inside of the window, in pixels |
+| `win.size() -> (width: Int, height: Int)` | The inside of the window, in pixels; `(0, 0)` once `close()` was called |
 | `win.scale() -> Float` | How many pixels make one point on this screen: `2.0` on most high-DPI screens |
 | `win.set_title(title)` | Changes the title |
 | `win.set_fullscreen(on)` | Fills the screen the window is on, or leaves it |
 | `win.lock_cursor(on)` | Hides the mouse pointer and keeps it in the window, as a game's camera wants; `Motion` events still come. Needs `Input` |
 | `win.number() -> Int` | The window's number, which `std.gpu` (14.24) draws into it by |
-| `win.close()` | Closes the window; a window is closed anyway when its last holder ends |
+| `win.close()` | Closes the window; a window is closed anyway when its last holder ends. After it, the window has no events left to give |
 
 `Event` is a union:
 

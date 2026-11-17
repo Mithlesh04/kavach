@@ -11,6 +11,18 @@ use super::{Num, Overflow};
 /// Products with at least this many multiply-adds use every core.
 const SPREAD: usize = 1 << 20;
 
+/// How many cores the program may use: the same rule as
+/// `kavach_runtime_core::cores` (spec 4.9), kept here as this crate
+/// depends on no other.
+fn cores() -> usize {
+    let machine = std::thread::available_parallelism().map_or(1, |n| n.get());
+    let asked = std::env::var("KAVACH_CORES")
+        .ok()
+        .and_then(|v| v.trim().parse::<usize>().ok());
+    let asked = asked.or_else(|| std::env::var_os("KAVACH_SERIAL").map(|_| 1));
+    asked.map_or(machine, |n| n.clamp(1, machine))
+}
+
 /// `a @ b`: `a` is `n` × `m`, `b` is `m` × `p`, the result `n` × `p`, all
 /// row by row.
 pub fn product<T: Num>(
@@ -23,7 +35,7 @@ pub fn product<T: Num>(
     if out.is_empty() {
         return Ok(out);
     }
-    let cores = std::thread::available_parallelism().map_or(1, |c| c.get());
+    let cores = cores();
     let threads = if n * m * p >= SPREAD { cores.min(n) } else { 1 };
     let band = n.div_ceil(threads);
     let work = |rows: &mut [T], first: usize| {

@@ -22,6 +22,10 @@ pub enum DevError {
 struct Open {
     path: String,
     port: Arc<serial2::SerialPort>,
+    /// On Linux and macOS, a lock on the device file, held while the
+    /// port is open, so a second open of it is `Denied` (spec 14.18), as
+    /// Windows refuses by itself. Root ignores `TIOCEXCL`, not this lock.
+    _held: Option<std::fs::File>,
 }
 
 #[cfg(feature = "devices")]
@@ -63,6 +67,7 @@ pub fn ports() -> Vec<String> {
 pub fn open(path: &str, baud: i64) -> Result<i64, DevError> {
     let baud = u32::try_from(baud)
         .map_err(|_| DevError::Failed(path.into(), format!("{baud} isn't a baud rate")))?;
+    let held = hold(path)?;
     let mut port = serial2::SerialPort::open(path, baud).map_err(|e| error(path, e))?;
     port.set_read_timeout(Duration::from_secs(1))
         .map_err(|e| error(path, e))?;
@@ -74,6 +79,7 @@ pub fn open(path: &str, baud: i64) -> Result<i64, DevError> {
         Open {
             path: path.to_string(),
             port: Arc::new(port),
+            _held: held,
         },
     ));
     Ok(id)
@@ -147,6 +153,28 @@ pub fn write(_id: i64, _data: &[u8]) -> Result<(), DevError> {
 pub fn close(_id: i64) {}
 
 #[cfg(feature = "devices")]
+/// The lock that keeps port `path` to this program while it is open, on
+/// Linux and macOS; `Denied` when another open of it holds it.
+#[cfg(all(feature = "devices", unix))]
+fn hold(path: &str) -> Result<Option<std::fs::File>, DevError> {
+    let file = std::fs::OpenOptions::new()
+        .read(true)
+        .open(path)
+        .map_err(|e| error(path, e))?;
+    match file.try_lock() {
+        Ok(()) => Ok(Some(file)),
+        Err(std::fs::TryLockError::WouldBlock) => Err(DevError::Denied(format!(
+            "{path} is already open, in this program or another"
+        ))),
+        Err(std::fs::TryLockError::Error(e)) => Err(error(path, e)),
+    }
+}
+
+#[cfg(all(feature = "devices", not(unix)))]
+fn hold(_path: &str) -> Result<Option<std::fs::File>, DevError> {
+    Ok(None)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

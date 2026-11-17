@@ -24,6 +24,17 @@ fn kav_files(dir: &Path, out: &mut Vec<PathBuf>) {
 /// compile-error test must be caught by some stage, on its marked line.
 #[test]
 fn conformance_tests_and_examples_check() {
+    // The compiler walks expressions recursively, and spec 1.8 sets no
+    // limit on their depth (a test nests 300 parentheses): it runs on a
+    // stack as deep as the CLI's, not a test thread's 2 MB.
+    let deep = std::thread::Builder::new().stack_size(256 * 1024 * 1024);
+    deep.spawn(conformance_tests_and_examples_check_on_a_deep_stack)
+        .unwrap()
+        .join()
+        .unwrap();
+}
+
+fn conformance_tests_and_examples_check_on_a_deep_stack() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let mut files = Vec::new();
     kav_files(&root.join("tests/conformance"), &mut files);

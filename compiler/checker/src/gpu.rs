@@ -110,6 +110,7 @@ impl Checker<'_> {
             };
             self.gpu_signature(f, def);
             let mut walk = Walk::new(&types, &fits);
+            walk.told = self.gpu_signature_types(def);
             if let Some(body) = &f.body {
                 walk.block(self, body);
             }
@@ -200,6 +201,18 @@ impl Checker<'_> {
                 format!("`{}` gives a `{shown}`, and {WHY}", f.name.name),
             );
         }
+    }
+
+    /// The types in `gpu fn` `def`'s signature that the GPU can't hold,
+    /// already reported there.
+    fn gpu_signature_types(&self, def: DefId) -> Vec<Ty> {
+        let Some(sig) = self.fns.get(&def) else {
+            return Vec::new();
+        };
+        (sig.params.iter().map(|p| self.inf.resolve(&p.ty)))
+            .chain(std::iter::once(self.inf.resolve(&sig.ret)))
+            .filter(|t| !gpu_item(self, t))
+            .collect()
     }
 
     /// A `gpu fn` that reaches itself through calls: GPUs have no stack.

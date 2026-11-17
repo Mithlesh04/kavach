@@ -18,6 +18,7 @@ Every setting a program can have, in one place. A key or section that isn't list
 | `[limits]` | `include` | a list of file patterns | `["**/*.kav"]` | 12.1 |
 | `[limits]` | `exclude` | a list of file patterns | `[]` | 12.1 |
 | `[limits.files]` | a file's path | a whole number: that file's own limit | none | 12.1 |
+| `[run]` | `cores` | a whole number, 1 or more | all the machine gives the program | 4.9: the most cores the program uses; `KAVACH_CORES` wins |
 | `[test]` | `cases` | a whole number | `200` | 11.9 |
 | `[test]` | `deep_cases` | a whole number | `10000` | 11.9 |
 | `[test]` | `time_budget` | a time per call: `"500ms"`, `"1s"`, `"2m"` | `"1s"` | 11.9 |
@@ -54,7 +55,8 @@ For running programs:
 | `KAVACH_LLVM_BIN` | a folder | Where LLVM's tools are | 10.5 |
 | `KAVACH_RUNTIME_LIB` | a file's path | Where the runtime library is, for linking | 10.5 |
 | `KAVACH_UNPACKED` | a folder | Where a program built with `--compress` unpacks itself | 10.5 |
-| `KAVACH_SERIAL` | any value | Loops that would run on all cores run on one | 9.3 |
+| `KAVACH_CORES` | a number | The most cores the program uses: `on cores` loops, `spawn cores` tasks, a big `sort` or matrix product, and `system.cores()`; never more than the machine gives it | 4.9 |
+| `KAVACH_SERIAL` | any value | The same as `KAVACH_CORES=1` | 4.9 |
 | `KAVACH_ENV_FILE` | a file's path | The `.env` file a built program reads, instead of the one beside it | 10.13 |
 | `KAVACH_PROCESS_CALL` | a number | Set by `spawn process` for the program it starts: run only that call; not for setting by hand | 9.8 |
 
@@ -69,7 +71,7 @@ For work on the compiler (they print what a pass did, or turn one off):
 | `KAVACH_SROA_LOG` | Prints each record split |
 | `KAVACH_FUSE_LOG` | Prints each pair of loops fused into one |
 | `KAVACH_FUSE_SKELETON` | Prints `main`'s loops before and after fusing |
-| `KAVACH_PAR_LOG` | Prints each loop spread over all cores |
+| `KAVACH_PAR_LOG` | Prints each `on cores` loop spread over the cores |
 | `KAVACH_UNRECURSE_LOG` | Prints why a recursion did or didn't become a loop |
 | `KAVACH_FUZZ_CASES` | How many cases the fuzz tests try |
 | `KAVACH_ISOLATED` | `1` in a throwaway container: the runtime's tests may then free ports and add and remove users (14.25); they also need Docker's own `/.dockerenv`, so the setting alone changes nothing on a real machine |

@@ -24,6 +24,8 @@ fn main() ! Error uses Fs, Window {
 | `app.config_dir(name) -> String ! AppError` | Where it keeps its settings: `%APPDATA%\name`, `$XDG_CONFIG_HOME/name` or `~/.config/name`, `~/Library/Application Support/name` |
 | `app.cache_dir(name) -> String ! AppError` | Where it keeps what it can make again, which the system may clear: `%LOCALAPPDATA%\name\cache`, `$XDG_CACHE_HOME/name` or `~/.cache/name`, `~/Library/Caches/name` |
 
+The folders are made if missing. On Linux and macOS they are made readable by their user alone (`0700`), as the XDG Base Directory spec asks, so others on the machine can't read a program's saves and settings. A relative `XDG_DATA_HOME`, `XDG_CONFIG_HOME` or `XDG_CACHE_HOME` is ignored, as that spec says.
+
 **Crash reports.** `app.crash_reports(folder) ! AppError` makes the folder, and from then on a panic that ends the program (5.8) also writes a report into it: a file `crash-<time>.txt` with the message, where it happened, the functions that were running, the program, Kavach's version, the system and the time. It needs `Fs.write`.
 
 The functions are listed innermost first, each with where it is defined, after the line that panicked:

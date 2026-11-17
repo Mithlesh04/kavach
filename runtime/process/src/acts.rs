@@ -68,8 +68,17 @@ pub fn act(which: i64, text: &str, number: i64) -> String {
 /// Ends every program listening on `port`; gives their pids.
 fn free_port(port: i64, force: bool) -> Result<String, Refused> {
     let rows = crate::parts::rows(15);
-    let mut pids: Vec<i64> = (rows.chunks(6))
+    let holders: Vec<&[String]> = (rows.chunks(6))
         .filter(|r| r[2] == port.to_string() && (r[3] == "listen" || r[0] == "udp"))
+        .collect();
+    // A program this user can't see is shown with pid 0: it holds the
+    // port, and this user can't end it (spec 14.25).
+    if holders.iter().any(|r| r[4] == "0") {
+        return Err(Refused::Denied(format!(
+            "port {port} is held by a program this user can't see or end"
+        )));
+    }
+    let mut pids: Vec<i64> = (holders.iter())
         .filter_map(|r| r[4].parse().ok())
         .filter(|pid| *pid > 0 && *pid != std::process::id() as i64)
         .collect();

@@ -63,8 +63,10 @@ pub fn text(which: i64) -> String {
 pub fn number(which: i64) -> i64 {
     match which {
         0 => logical(),
+        // Never more than the logical count: under a container's CPU
+        // limit both count what this program may use (spec 14.25).
         1 => match facts::physical_cores() {
-            n if n > 0 => n,
+            n if n > 0 => n.min(logical()),
             _ => logical(),
         },
         2 => facts::memory().0,
@@ -77,7 +79,7 @@ pub fn number(which: i64) -> i64 {
 
 /// How many threads can run at once for this program.
 fn logical() -> i64 {
-    std::thread::available_parallelism().map_or(1, |n| n.get() as i64)
+    kavach_runtime_core::cores() as i64
 }
 
 /// The processor time this program has spent, on all its threads, in

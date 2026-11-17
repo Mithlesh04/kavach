@@ -47,11 +47,15 @@ impl Resolver {
                 self.check_assignable(target);
             }
             StmtKind::For {
+                place,
                 pattern,
                 iter,
                 body,
                 ..
             } => {
+                if let Some(n) = place.as_ref().and_then(|p| p.count.as_ref()) {
+                    self.expr(n);
+                }
                 self.expr(iter);
                 self.push();
                 self.pattern(pattern, false);

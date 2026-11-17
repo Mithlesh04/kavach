@@ -1,0 +1,12 @@
+// Rule: A negative count or width counts as 0: `repeat`, `take`, `skip`, `truncate` and `pad_left` don't panic on one.
+// Spec: 14.2
+// expect output: [] [] [1, 2] [] [ab]
+
+fn below(n: Int) -> Int {
+    0 - n
+}
+
+fn main() {
+    const n = below(1)
+    print("[{"ab".repeat(n)}] {[1, 2].take(n)} {[1, 2].skip(n)} [{"ab".truncate(n)}] [{"ab".pad_left(n)}]")
+}

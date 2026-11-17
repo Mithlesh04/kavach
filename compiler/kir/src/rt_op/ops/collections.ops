@@ -71,6 +71,10 @@ ParFor,
 /// A chunked integer reduction (decision 0031): `kv_par_for_red`,
 /// whose chunks also get a slot number for their partial sums.
 ParForRed,
+/// `on cores(n)` and `on threads(n)` before a loop (spec 4.9): panics
+/// when the count `a` is under 1 (`b` is 1 for threads). `par.rs` passes
+/// the same count to the loop's `kv_par_for`, its most cores.
+ParCores,
 /// `Map.capacity(n, first)` (spec 2.2): a map of at most `a` entries,
 /// `b` its first ones (0: none).
 MapCapacity,

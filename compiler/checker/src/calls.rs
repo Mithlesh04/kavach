@@ -189,6 +189,12 @@ impl Checker<'_> {
         if let Some(def) = sig.def {
             self.note_fn(def, span);
         }
+        if !sig.uses.is_empty() {
+            self.check_round_effect(
+                &format!("`{name}`, which uses {},", sig.uses.join(", ")),
+                span,
+            );
+        }
         if self.in_contract && !sig.uses.is_empty() {
             self.error(span, format!("a contract can't call `{name}`: it uses {}, and contracts must be pure (spec 7.5)", sig.uses.join(", ")));
         }

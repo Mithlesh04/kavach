@@ -33,6 +33,15 @@ fn statements() {
             "(for (tuple i n) (call (. names enumerate)) {(call print n)})",
         ),
         ("while n < 3 {\n  n += 1\n}", "(while (< n 3) {(+= n 1)})"),
+        // Where a loop runs (spec 4.9): a label, then `on`.
+        (
+            "on cores for i in 0..n {\n  out[i] = i\n}",
+            "(on cores) (for i (.. 0 n) {(= (index out i) i)})",
+        ),
+        (
+            "rows: on threads(8) for p in paths {\n  out[0] = p\n}",
+            "rows:(on threads 8) (for p paths {(= (index out 0) p)})",
+        ),
         (
             "assert total(list) == 100",
             "(assert (== (call total list) 100))",

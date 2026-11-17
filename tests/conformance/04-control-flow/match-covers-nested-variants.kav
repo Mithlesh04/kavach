@@ -1,0 +1,22 @@
+// Rule: Arms that differ in one field cover a variant when, between them, they cover that field's type: no catch-all arm is needed.
+// Spec: 4.3
+// expect output: circle 2
+// expect output: square 3
+// expect output: empty
+
+type Shape = Circle(radius: Int) | Square(side: Int)
+type Box = Full(s: Shape) | Empty
+
+fn show(b: Box) {
+    match b {
+        Box.Full(s: Shape.Circle(radius)) => print("circle {radius}"),
+        Box.Full(s: Shape.Square(side)) => print("square {side}"),
+        Box.Empty => print("empty"),
+    }
+}
+
+fn main() {
+    show(Box.Full(s: Shape.Circle(radius: 2)))
+    show(Box.Full(s: Shape.Square(side: 3)))
+    show(Box.Empty)
+}

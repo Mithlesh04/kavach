@@ -32,6 +32,7 @@ pub fn withdraw(account: Account, amount: Decimal) -> Account ! BankError
 
 - `ensure` is checked only when the function succeeds. It does not apply when the function returns an error.
 - Parameters are values (chapter 6), so `account.balance` in an `ensure` is always the balance *before* the call. No special "old value" syntax is needed.
+- An `inout` parameter (3.9) is the exception: the function changes it, so an `ensure` sees its new value, the one the caller gets back.
 
 ## 7.3 invariant: always true for a type
 

@@ -28,6 +28,9 @@ pub fn folder_for(
         ));
     }
     let var = |v: &str| env(v).filter(|s| !s.is_empty()).map(PathBuf::from);
+    // The XDG folders count only when absolute; a relative one is ignored,
+    // as the XDG Base Directory spec says.
+    let xdg = |v: &str| var(v).filter(|p| p.to_string_lossy().starts_with('/'));
     let home = || var("HOME").ok_or("there is no home folder (`HOME` is not set)");
     let base = match (os, kind) {
         ("windows", Kind::Cache) => {
@@ -38,13 +41,13 @@ pub fn folder_for(
         ("windows", _) => var("APPDATA").ok_or("`APPDATA` is not set")?,
         ("macos", Kind::Cache) => home()?.join("Library").join("Caches"),
         ("macos", _) => home()?.join("Library").join("Application Support"),
-        (_, Kind::Data) => var("XDG_DATA_HOME")
+        (_, Kind::Data) => xdg("XDG_DATA_HOME")
             .map_or_else(|| home().map(|h| h.join(".local").join("share")), Ok)?,
         (_, Kind::Config) => {
-            var("XDG_CONFIG_HOME").map_or_else(|| home().map(|h| h.join(".config")), Ok)?
+            xdg("XDG_CONFIG_HOME").map_or_else(|| home().map(|h| h.join(".config")), Ok)?
         }
         (_, Kind::Cache) => {
-            var("XDG_CACHE_HOME").map_or_else(|| home().map(|h| h.join(".cache")), Ok)?
+            xdg("XDG_CACHE_HOME").map_or_else(|| home().map(|h| h.join(".cache")), Ok)?
         }
     };
     Ok(base.join(name))
@@ -55,6 +58,15 @@ pub fn folder_for(
 pub fn folder(kind: Kind, name: &str) -> Result<String, String> {
     let path = folder_for(kind, name, std::env::consts::OS, &|v| std::env::var(v).ok())?;
     std::fs::create_dir_all(&path).map_err(|e| format!("{} can't be made: {e}", path.display()))?;
+    // The program's own folder is its user's alone, as the XDG spec asks
+    // (spec 14.30): others on the machine can't read its saves.
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        let only_owner = std::fs::Permissions::from_mode(0o700);
+        std::fs::set_permissions(&path, only_owner)
+            .map_err(|e| format!("{} can't be kept private: {e}", path.display()))?;
+    }
     Ok(path.to_string_lossy().into_owned())
 }
 
@@ -118,7 +130,23 @@ pub fn report(message: &str, place: &str, running: &[String]) {
         std::env::consts::OS,
         std::env::consts::ARCH,
     );
-    let _ = std::fs::write(folder.join(format!("crash-{secs}.txt")), text);
+    // Two crashes in one second each keep their report: `crash-{secs}.txt`,
+    // then `crash-{secs}-2.txt`, and so on.
+    for k in 1..100 {
+        let name = match k {
+            1 => format!("crash-{secs}.txt"),
+            k => format!("crash-{secs}-{k}.txt"),
+        };
+        let made = std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(folder.join(name));
+        if let Ok(mut file) = made {
+            use std::io::Write;
+            let _ = file.write_all(text.as_bytes());
+            return;
+        }
+    }
 }
 
 #[cfg(test)]
@@ -153,6 +181,10 @@ mod tests {
         );
         assert_eq!(at(Kind::Config, "linux", &linux).unwrap(), "/xc/Sky");
         assert_eq!(at(Kind::Cache, "linux", &linux).unwrap(), "/h/.cache/Sky");
+        // A relative XDG folder is ignored, as the XDG spec says.
+        let relative = env(&[("HOME", "/h"), ("XDG_DATA_HOME", "rel")]);
+        let data = at(Kind::Data, "linux", &relative).unwrap();
+        assert_eq!(data, "/h/.local/share/Sky");
         let mac = env(&[("HOME", "/Users/a")]);
         assert_eq!(
             at(Kind::Data, "macos", &mac).unwrap(),

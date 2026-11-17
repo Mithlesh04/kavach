@@ -57,6 +57,22 @@ Patterns:
 | `_` | Anything |
 | `pattern if condition` | A pattern plus an extra check (a guard) |
 
+Covering every case looks inside nested variants: arms that differ in one field cover the variant when, between them, they cover that field's type. A `match` on an optional may list `none` and the variants of the value inside, which match a present value:
+
+```kavach
+match parcel {                                   // parcel: Box, a `Full(s: Shape)` or `Empty`
+    Box.Full(s: Shape.Circle(radius)) => …,
+    Box.Full(s: Shape.Square(side)) => …,        // with the arm above, covers every `Box.Full`
+    Box.Empty => …,
+}
+
+match found {                                    // found: Shape?
+    Shape.Circle(radius) => …,                   // a present circle
+    Shape.Square(side) => …,
+    none => …,
+}
+```
+
 An arm may leave instead of giving a value: `return`, `fail`, `break` or `continue`. The `match` then has the value of the arm that was taken, and the code after it runs only when one that gives a value was:
 
 ```kavach
@@ -86,6 +102,8 @@ for (index, name) in names.enumerate() {
     print("{index}: {name}")
 }
 ```
+
+The loop's name (`name`, `(index, name)`) is a `const` for each turn: assigning to it is a compile error, as are names taken by a `match` or `catch` arm and a lambda's parameters. A `for` walks the list as it was when the loop began: items pushed while it runs are not visited (`for x in xs { xs.push(x * 10) }` turns `[1, 2]` into `[1, 2, 10, 20]`).
 
 A loop over `0..=xs.len()` that reads `xs[i]` gets a warning: its last turn reads `xs[xs.len()]`, one past the last item, and panics. Write `0..xs.len()`, or `for x in xs`. A loop that changes `xs`, or reads it at another index, gets none.
 
@@ -175,6 +193,28 @@ const total = log.span("checkout") {
 - What the function set up ends when the block ends: by its value, an error, a `return`, a `break` or a panic.
 - The block starts on the same line as the call's `)`.
 - Only the standard library functions that say so take a block. A block after any other call is a compile error, and so is one of these calls without its block.
+
+## 4.9 Where a loop runs
+
+Every loop runs on one core, in order, as in C, Go, Rust and JavaScript. `on` before one `for` says where its rounds run instead ([decision 0126](../decisions/0126-loops-on-one-core-unless-on-cores.md)):
+
+```kavach
+for i in 0..n { out[i] = f(i) }                 // one core, in order
+on cores for i in 0..n { out[i] = f(i) }        // all the program's cores
+on cores(2) for i in 0..n { out[i] = f(i) }     // at most 2 of them
+on threads(8) for i in 0..paths.len() {         // waiting work: up to 8 rounds wait at once
+    sizes[i] = fs.size(paths[i])
+}
+rows: on cores for row in 0..h { … }            // a label comes first
+```
+
+- **`on cores` gives the one-core result.** Each round may write only its own slot of a list (`out[i]`, where `i` is the loop's name) and add whole numbers into a `let` with `+=`. Anything else in its body is a compile error that says why: `print` (its order would change), I/O, other changes outside the round, a float `+=` (the adding order changes the bits). What it reads is unrestricted.
+- **`on threads(n)` is for waiting work:** its rounds may do I/O, in any order between rounds, and each round's result goes to its own slot.
+- **It covers that loop only.** A loop nested inside runs on one core in each round unless it has its own `on`; when both levels do, they share the cores.
+- **Leaving early works as on one core.** `continue`, `break`, labels, `return`, `fail` and `?` are allowed: the first round in order that leaves decides, and rounds after it change nothing.
+- **How many cores:** `cores` is all the program may use (`[run] cores` in `kavach.toml`, or `KAVACH_CORES`, which wins when both are set; all of the machine's by default, never more than a container or CPU affinity allows). `cores(n)` asks for at most `n`; more than exist uses all it may. A count of 0 or less is a compile error when written as a number, a panic when worked out while running. `threads(n)` may exceed the cores, as its rounds mostly wait, up to `[run] threads` (256 by default) in all.
+- `while` can't take `on`: each round depends on the one before. `on`, `cores` and `threads` are names everywhere else.
+- `on` also goes before a value, for library work and the GPU (15.2): `on cores(1) numbers.sort()`, `on gpu(1) particles.map(step)`, `on cpu particles.map(step)`.
 
 ## Open questions
 

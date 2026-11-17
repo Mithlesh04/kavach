@@ -50,15 +50,15 @@ fn set(l: Local, value: Expr, line: u32) -> Stmt {
 /// The call site of a reduction: run the chunks, then combine their
 /// partial sums exactly — a serial prefix that would have left `Int`
 /// anywhere inside a chunk (its stored prefix bounds say) falls back to
-/// the plain loop, which panics at the right round.
+/// the plain loop, which panics at the right round. The bounds are the
+/// loop's start, end and most cores (0: all the program may use).
 pub(super) fn red_call_site(
     loop_stmt: &Stmt,
     plan: &RedPlan,
     chunk: usize,
     locals: &mut Vec<Type>,
     slots: [Local; 3],
-    start: Expr,
-    end: Expr,
+    [start, end, cores]: [Expr; 3],
 ) -> Vec<Stmt> {
     let line = start.line;
     let i64t = Type::I64;
@@ -69,7 +69,7 @@ pub(super) fn red_call_site(
     let (flag, offset, kk) = (new(i64t), new(i64t), new(i64t));
     let (mx, mn, pv) = (new(i64t), new(i64t), new(i64t));
     let list_ty = locals[slots[0] as usize];
-    let mut args = vec![start, end, int(chunk as i128, line)];
+    let mut args = vec![start, end, int(chunk as i128, line), cores];
     for c in &plan.caps {
         args.push(read(*c, locals[*c as usize], line));
     }

@@ -271,7 +271,8 @@ impl FnEmit<'_> {
                 let ExprKind::Int(chunk) = args[2].kind else {
                     unreachable!("the chunk's number is a constant")
                 };
-                let caps = self.slot_array(&args[3..]);
+                let cores = self.expr(&args[3])?;
+                let caps = self.slot_array(&args[4..]);
                 let name = fn_name(chunk as usize);
                 let rt = match op {
                     kavach_kir::RtOp::ParForRed => "kv_par_for_red",
@@ -282,7 +283,8 @@ impl FnEmit<'_> {
                     ("i64", hi),
                     ("ptr", format!("@{name}")),
                     ("ptr", caps),
-                    ("i64", (args.len() - 3).to_string()),
+                    ("i64", (args.len() - 4).to_string()),
+                    ("i64", cores),
                 ];
                 Some(self.call_rt(rt, "i64", &list, false))
             }

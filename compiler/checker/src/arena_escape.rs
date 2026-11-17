@@ -56,38 +56,58 @@ impl Checker<'_> {
     /// Whether `e` holds memory and is made from a variable declared in
     /// `arena`: it names one anywhere inside, lambdas and tasks included.
     fn made_in(&self, e: &Expr, arena: Span) -> bool {
-        let recorded = (self.expr_types.iter().rev()).find(|(sp, _)| *sp == e.span);
-        let plain = match recorded.map(|(_, t)| self.inf.resolve(t)) {
-            Some(Ty::Prim(p)) => {
-                p.is_numeric() && p != Prim::Decimal && p != Prim::BigInt
-                    || matches!(p, Prim::Bool | Prim::Char)
-            }
-            Some(Ty::Unit | Ty::Never | Ty::Error) => true,
-            _ => false,
-        };
-        if plain {
+        if self.copied(e) {
             return false;
         }
         struct Find<'c, 'r> {
             c: &'c Checker<'r>,
             arena: Span,
             found: bool,
+            /// Inside a lambda or task, which keeps what it names.
+            capturing: bool,
         }
         impl kavach_ast::visit::VisitMut for Find<'_, '_> {
             fn expr(&mut self, e: &mut Expr) {
-                if let ExprKind::Name(_) = &e.kind {
-                    self.found |= self.c.declared_in(e, self.arena) == Some(true);
+                // A copied part (`words.len()`) holds nothing of the arena,
+                // unless a lambda or task computes it later from what it
+                // keeps (`() => words.len()` holds `words`).
+                if self.c.copied(e) && !self.capturing {
+                    return;
                 }
+                if let ExprKind::Name(_) = &e.kind {
+                    self.found |=
+                        self.c.declared_in(e, self.arena) == Some(true) && !self.c.copied(e);
+                }
+                let was = self.capturing;
+                self.capturing |= matches!(e.kind, ExprKind::Lambda { .. } | ExprKind::Spawn(..));
                 kavach_ast::visit::walk_expr(self, e);
+                self.capturing = was;
             }
         }
         let mut find = Find {
             c: self,
             arena,
             found: false,
+            capturing: false,
         };
         kavach_ast::visit::VisitMut::expr(&mut find, &mut e.clone());
         find.found
+    }
+}
+
+impl Checker<'_> {
+    /// Whether `e`'s value is copied, holding no memory: a number (not a
+    /// `Decimal` or `BigInt`), a `Bool` or a `Char`.
+    fn copied(&self, e: &Expr) -> bool {
+        let recorded = (self.expr_types.iter().rev()).find(|(sp, _)| *sp == e.span);
+        match recorded.map(|(_, t)| self.inf.resolve(t)) {
+            Some(Ty::Prim(p)) => {
+                p.is_numeric() && p != Prim::Decimal && p != Prim::BigInt
+                    || matches!(p, Prim::Bool | Prim::Char)
+            }
+            Some(Ty::Unit | Ty::Never | Ty::Error) => true,
+            _ => false,
+        }
     }
 }
 

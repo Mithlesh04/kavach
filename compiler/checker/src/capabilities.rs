@@ -60,6 +60,7 @@ fn covers(declared: &BTreeSet<String>, cap: &str) -> bool {
 
 impl Checker<'_> {
     pub(crate) fn note_cap(&mut self, cap: &str, span: Span) {
+        self.check_round_effect(&format!("using `{cap}`"), span);
         self.note(Need::Cap(cap.to_string()), span);
     }
 

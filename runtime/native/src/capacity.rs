@@ -19,7 +19,7 @@ pub fn capacity_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
             full as i64
         }
         RtOp::ListNoLimit => no_limit(a),
-        RtOp::RingCapacity => ring(a, b, code),
+        RtOp::RingCapacity => ring(a, b, code, line),
         _ => {
             if a > MAX_CAPACITY {
                 panic_with(&capacity_panic(kind(op), a, 0), line)
@@ -96,8 +96,12 @@ fn no_limit(list: i64) -> i64 {
 
 /// `Ring.capacity(n, first)`: the last `n` items of `first` (owned; 0
 /// for none), in a list that drops its oldest item when full.
-fn ring(n: i64, first: i64, code: i64) -> i64 {
-    let n = n.clamp(0, MAX_CAPACITY) as usize;
+fn ring(n: i64, first: i64, code: i64, line: i32) -> i64 {
+    // Past the limit is a panic, as for a list (spec 2.2).
+    if n > MAX_CAPACITY {
+        panic_with(&capacity_panic("Ring", n, 0), line)
+    }
+    let n = n.max(0) as usize;
     let mut made = crate::heap::alloc_slots(type_of(code), 0, Vec::new());
     crate::lists::room_for_limit(made, n);
     crate::heap::set_ring(made, true);

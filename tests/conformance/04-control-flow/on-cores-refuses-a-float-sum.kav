@@ -1,0 +1,11 @@
+// Rule: An `on cores` loop can't add floats into a shared `let`: the adding order would change the last bits.
+// Spec: 4.9
+// expect compile error
+
+fn main() {
+    let sum = 0.0
+    on cores for i in 0..3 {
+        sum += Float(i)             // error: a float sum in an `on cores` loop
+    }
+    print(sum)
+}

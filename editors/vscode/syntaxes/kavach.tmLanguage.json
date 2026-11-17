@@ -23,8 +23,8 @@
     "labels": {
       "patterns": [
         {
-          "comment": "A loop's label, `outer: for` (spec 4.6)",
-          "match": "\\b([\\p{L}_][\\p{L}\\p{N}_]*)(:)(?=\\s*(?:for|while)\\b)",
+          "comment": "A loop's label, `outer: for` or `rows: on cores for` (spec 4.6)",
+          "match": "\\b([\\p{L}_][\\p{L}\\p{N}_]*)(:)(?=\\s*(?:for|while|on\\s+(?:cores|threads))\\b)",
           "captures": {
             "1": { "name": "entity.name.label.kavach" }
           }
@@ -210,7 +210,8 @@
           }
         },
         {
-          "match": "\\b(on)\\s+([\\p{L}_][\\p{L}\\p{N}_]*)\\s*(?=\\()",
+          "comment": "An agent's handler, `on message(…)`; not `on cores(2) for`, a loop's place (spec 4.9)",
+          "match": "\\b(on)\\s+(?!(?:cores|threads)\\s*\\([^)]*\\)\\s*for\\b)([\\p{L}_][\\p{L}\\p{N}_]*)\\s*(?=\\()",
           "captures": {
             "1": { "name": "keyword.other.agent.kavach" },
             "2": { "name": "entity.name.function.kavach" }
@@ -317,6 +318,14 @@
           "comment": "`audited` is a keyword only before `fn` (spec 10.15)",
           "name": "storage.modifier.kavach",
           "match": "\\baudited\\b(?=\\s+fn\\b)"
+        },
+        {
+          "comment": "`on cores` and `on threads` before a loop say where its rounds run (spec 4.9); `on` and the place are keywords only there",
+          "match": "\\b(on)\\s+(cores|threads)\\b(?=\\s*(?:\\(|for\\b))",
+          "captures": {
+            "1": { "name": "keyword.other.kavach" },
+            "2": { "name": "keyword.other.kavach" }
+          }
         },
         {
           "comment": "`thread`, `cores` and `process` are keywords only right after `spawn`, before a name or a block (spec 9.8); elsewhere they are ordinary names",

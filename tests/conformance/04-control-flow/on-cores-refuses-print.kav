@@ -1,0 +1,9 @@
+// Rule: An `on cores` loop can't print or do other I/O: its order would change from run to run.
+// Spec: 4.9
+// expect compile error
+
+fn main() {
+    on cores for i in 0..3 {
+        print(i)                    // error: printing in an `on cores` loop
+    }
+}

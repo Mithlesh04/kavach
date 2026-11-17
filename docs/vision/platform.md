@@ -133,7 +133,7 @@ Game studios need every frame on time: a 16 ms budget with no surprise pauses. K
 
 | Need | What Kavach gives |
 |---|---|
-| Steady frame times | No garbage collector; arenas reset every frame (spec 6.3); allocation that is visible in code |
+| Steady frame times | No garbage collector, so no collection pauses: a value is freed when its last holder lets go (spec 6); allocation that is visible in code |
 | Many entities, fast | Data layouts that keep fields of many entities together (struct of arrays), SIMD vector and matrix math in `std` |
 | Graphics, audio, input | GPU rendering through the same layer as GPU compute (`wgpu`); audio and input through capabilities |
 | Multiplayer | UDP and Kavach Link; deterministic simulation (fixed-point math, seeded randomness) for lockstep and rollback netcode |
@@ -162,7 +162,7 @@ Semiconductor companies (chip design, verification, simulation and fab data) wor
 Cloud, networking and DevOps companies run software for years on thousands of machines. What they need, and what Kavach gives:
 
 - **Easy to ship:** one static executable (`kavach build`), fast start, small memory, cross-compiling for every target from one machine, small container images.
-- **Long-running services:** graceful shutdown on OS signals, timeouts everywhere (spec 9.6), no memory growth from leaks (reference counting with no cycles in values, spec 6).
+- **Long-running services:** graceful shutdown on OS signals, timeouts everywhere (spec 9.6), no memory growth from leaks: plain values can't form cycles, and `Shared` values that do are reported at the end of a debug run (spec 6.2).
 - **Observability:** logs as typed records, metrics and traces, exported with OpenTelemetry (see [logging](#logging-and-remote-pipelines)).
 - **Plugins and extensions:** loaded as sandboxed Kavach code, limited by capabilities.
 - **Supply-chain security:** signed packages, a bill of materials for every build, and `kavach audit` listing unsafe code and capability use in every dependency.

@@ -18,6 +18,11 @@ all = { level = "warn", priority = -1 }
 # it is optimized even in development builds of the compiler. Without
 # debug information, the archive every build (and test) links stays
 # small, so linking is quick.
+# Our own crates keep line numbers for panics and backtraces, but not
+# full debug information: builds and the many test binaries link faster.
+[profile.dev]
+debug = "line-tables-only"
+
 [profile.dev.package.kavach-runtime-native]
 opt-level = 3
 debug = false

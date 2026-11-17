@@ -1,0 +1,19 @@
+// Rule: A parameter's default may read the parameters before it, defaults included.
+// Spec: 3.2
+// expect output: 9
+// expect output: 6
+// expect output: 2 3 3
+
+fn area(w: Int, h: Int = w) -> Int {
+    w * h
+}
+
+fn three(a: Int, b: Int = a + 1, c: Int = b) -> String {
+    "{a} {b} {c}"
+}
+
+fn main() {
+    print(area(3))
+    print(area(3, h: 2))
+    print(three(2))
+}

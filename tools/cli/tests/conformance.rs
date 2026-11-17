@@ -43,6 +43,10 @@ fn expectations(src: &str) -> Expect {
     for line in src.lines() {
         if let Some(text) = line.strip_prefix("// expect output: ") {
             e.output.push(text.to_string());
+        } else if line == "// expect output:" {
+            // An empty line of output: `kavach fmt` drops the space after
+            // the colon, as it drops all trailing space.
+            e.output.push(String::new());
         } else if let Some(code) = line.strip_prefix("// expect exit: ") {
             e.exit = code.trim().parse().ok();
         } else if line == "// expect compile error" {
@@ -167,6 +171,17 @@ fn warnings_differ(src: &str, compiled: &kavach_driver::Compiled) -> Option<Stri
 
 #[test]
 fn conformance_tests_pass() {
+    // The compiler walks expressions recursively, and spec 1.8 sets no
+    // limit on their depth (a test nests 300 parentheses): it runs on a
+    // stack as deep as the CLI's, not a test thread's 2 MB.
+    let deep = std::thread::Builder::new().stack_size(256 * 1024 * 1024);
+    deep.spawn(conformance_tests_pass_on_a_deep_stack)
+        .unwrap()
+        .join()
+        .unwrap();
+}
+
+fn conformance_tests_pass_on_a_deep_stack() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let mut files = Vec::new();
     kav_files(&root.join("tests/conformance"), &mut files);
