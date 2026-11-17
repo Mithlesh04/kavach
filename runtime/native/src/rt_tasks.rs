@@ -192,7 +192,7 @@ pub fn task_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
         // Waiting is in `turn` order, and copies share the task's cell.
         RtOp::TaskJoin => {
             MARKS.with(|m| m.borrow_mut().pop());
-            join(a.max(0) as usize, line);
+            join(a.max(0) as usize, b == 0, line);
             0
         }
         RtOp::TaskDone | RtOp::TaskFail => {
@@ -367,7 +367,7 @@ fn run(id: TaskId, closure: i64, task: i64, ahead: bool) {
         }
         // The thunk's body joined its own tasks; nothing is left.
         turn();
-        join(0, 0);
+        join(0, true, 0);
         crate::rt_agents::leave();
         if CANCELLING.replace(false) {
             crate::rt_task_errors::cancelled(task);
@@ -419,7 +419,9 @@ fn let_go_of_finished() {
 /// The tasks this task spawned after the first `mark`: those still
 /// running are cancelled, then each is waited for, in order, and let go
 /// of (spec 9.2).
-fn join(mark: usize, line: i32) {
+/// Waits for the tasks spawned since `mark`; a function's end cancels them
+/// first (9.2), an arena's end (`cancel` false) lets them finish (6.3).
+fn join(mark: usize, cancel: bool, line: i32) {
     let tasks = SPAWNED.with(|s| {
         let mut s = s.borrow_mut();
         let from = mark.min(s.len());
@@ -427,7 +429,7 @@ fn join(mark: usize, line: i32) {
     });
     let s = sched();
     // A task cancelled with `cancel()` stops its tasks at once too.
-    for &task in &tasks {
+    for &task in tasks.iter().filter(|_| cancel) {
         s.cancel_with(ME.get(), task_of(task).0);
     }
     for task in tasks {

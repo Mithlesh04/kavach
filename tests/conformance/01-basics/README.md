@@ -138,3 +138,4 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.13, 1.4 | [module-constants-cannot-be-assigned.kav](module-constants-cannot-be-assigned.kav) | A module constant's value never changes: assigning to it in a function is a compile error. | compile error |
 | 1.13, 1.4 | [module-constants-cannot-push.kav](module-constants-cannot-push.kav) | A module constant's value never changes: calling a changing method such as `push` on it is a compile error. | compile error |
 | 1.13, 1.5 | [module-constants-use-snake-case.kav](module-constants-use-snake-case.kav) | A module constant's name is snake_case, as any value's: `maxCount` is an error. | compile error |
+| 1.11 | [a-type-shows-as-its-display-gives.kav](a-type-shows-as-its-display-gives.kav) | A type implementing `Display` prints as its `display()` gives: with `print`, in interpolation, with `String(v)`, and inside collections and other records. | runs |

@@ -223,8 +223,18 @@ impl Checker<'_> {
                 binding,
                 handler,
             } => self.catch_expr(expr, binding.as_ref(), handler, expected),
-            ExprKind::Fail(x) => self.fail(e, x),
-            ExprKind::Return(value) => self.return_expr(e, value.as_deref()),
+            ExprKind::Fail(x) => {
+                let t = self.fail(e, x);
+                self.check_arena_leave(x, "fail");
+                t
+            }
+            ExprKind::Return(value) => {
+                let t = self.return_expr(e, value.as_deref());
+                if let Some(v) = value {
+                    self.check_arena_leave(v, "return");
+                }
+                t
+            }
             ExprKind::Break(label) => {
                 self.check_jump(label, "break", e.span);
                 Ty::Never

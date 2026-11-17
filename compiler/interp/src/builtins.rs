@@ -63,7 +63,8 @@ impl<'a> Interp<'a> {
             .unwrap_or(Value::Unit);
         match name {
             "print" => {
-                self.out.push_str(&arg.display());
+                let text = self.shown(&arg, true, span)?;
+                self.out.push_str(&text);
                 self.out.push('\n');
                 self.show_live();
                 Ok(Value::Unit)
@@ -116,7 +117,10 @@ impl<'a> Interp<'a> {
             return Ok(Value::Unit);
         };
         let out = match (target, &v) {
-            (Prim::String, v) => Some(self.str_value(&v.display())),
+            (Prim::String, v) => {
+                let text = self.shown(v, true, span)?;
+                Some(self.str_value(&text))
+            }
             (p, Value::Str(s)) => return self.read_text(p, s),
             (Prim::Char, Value::Int(n, _)) => match u32::try_from(*n).ok().and_then(char::from_u32)
             {

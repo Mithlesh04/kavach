@@ -414,6 +414,7 @@ impl<'a> Lowerer<'a> {
             | ExprKind::IfLet { .. }
             | ExprKind::Match { .. }
             | ExprKind::Block(_)
+            | ExprKind::Arena(_)
             | ExprKind::Unsafe(_) => out.push(Stmt::Expr(self.branching(e, false)?)),
             _ => out.push(Stmt::Expr(self.expr(e)?)),
         }

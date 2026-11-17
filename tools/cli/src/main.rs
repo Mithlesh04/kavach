@@ -63,7 +63,24 @@ tools for AI assistants (spec 13), which save reading whole files:
   kavach version <program>                  what built an executable (spec 10.5)
 ";
 
+/// The stack the compiler runs on: it walks expressions recursively, and
+/// spec 1.8 sets no limit on how long or deep one is.
+const COMPILER_STACK: usize = 256 * 1024 * 1024;
+
 fn main() -> ExitCode {
+    let work = std::thread::Builder::new()
+        .name("kavach".into())
+        .stack_size(COMPILER_STACK)
+        .spawn(cli);
+    match work.map(std::thread::JoinHandle::join) {
+        Ok(Ok(code)) => code,
+        // A panic in the compiler has printed its message already.
+        Ok(Err(_)) => ExitCode::from(101),
+        Err(_) => cli(),
+    }
+}
+
+fn cli() -> ExitCode {
     let (args, env_flags) = match env::take_flags(std::env::args().skip(1).collect()) {
         Ok(taken) => taken,
         Err(e) => return fail(&e),

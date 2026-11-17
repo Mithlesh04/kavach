@@ -1,0 +1,14 @@
+/// The shop's tax rate.
+pub const tax = 0.18
+
+pub type Item {
+    pub name: String
+}
+
+pub fn total(price: Int) -> Int {
+    price + markup(price)
+}
+
+fn markup(price: Int) -> Int {
+    price / 10
+}

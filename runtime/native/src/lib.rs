@@ -42,6 +42,7 @@ mod rt_compress;
 mod rt_coroutines;
 mod rt_crypto;
 pub mod rt_data;
+mod rt_display;
 mod rt_draw;
 mod rt_drops;
 pub mod rt_errors;

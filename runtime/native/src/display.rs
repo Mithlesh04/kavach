@@ -35,7 +35,9 @@ pub fn display(slot: i64, ty: Type, top: bool) -> String {
             }
         }
         Type::Unit => "()".to_string(),
-        Type::Ref(_) => display_ref(slot, ty, top),
+        Type::Ref(id) => {
+            crate::rt_display::own_form(slot, id).unwrap_or_else(|| display_ref(slot, ty, top))
+        }
         t if t.is_signed() => slot.to_string(),
         _ => (slot as u64).to_string(),
     }

@@ -259,30 +259,6 @@ impl Checker<'_> {
             );
         }
     }
-
-    pub(crate) fn check_arena_store(&mut self, target: &Expr, value: &Expr) {
-        let Some(&arena) = self.arenas.last() else {
-            return;
-        };
-        let inside = |c: &Self, e: &Expr| -> Option<bool> {
-            let mut root = e;
-            while let ExprKind::Field { base, .. }
-            | ExprKind::Index { base, .. }
-            | ExprKind::TupleField { base, .. } = &root.kind
-            {
-                root = base;
-            }
-            let ExprKind::Name(id) = &root.kind else {
-                return None;
-            };
-            let def = c.res.uses.get(&id.span.start)?;
-            let span = c.res.defs[*def].span?;
-            Some(span.start >= arena.start && span.start < arena.end)
-        };
-        if inside(self, target) == Some(false) && inside(self, value) == Some(true) {
-            self.error(value.span, "this value was made inside the `arena` and can't be stored outside it: return it as the arena's value instead");
-        }
-    }
 }
 
 impl Checker<'_> {

@@ -35,6 +35,9 @@ fn panic_line(stderr: &str) -> Option<(&str, Option<&str>)> {
         .next()
         .filter(|l| l.trim_start().starts_with("at "))
         .and_then(|l| l.rsplit(':').next());
+    // Out of stack, the line is wherever the stack ran out: in a mutual
+    // recursion, either function, as each mode's frames differ in size.
+    let at = at.filter(|_| !first.contains("stack overflow"));
     Some((first, at))
 }
 

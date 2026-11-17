@@ -27,7 +27,15 @@ impl Checker<'_> {
                         Ty::Adt(def, args)
                     }
                     DefKind::GenericParam => Ty::Param(def),
-                    DefKind::Builtin => builtin_type(&d.name, args, self_ty),
+                    DefKind::Builtin => {
+                        let t = builtin_type(&d.name, args, self_ty);
+                        if let Ty::Builtin("Ptr", pointee) = &t
+                            && let Some(p) = pointee.first()
+                        {
+                            self.ptr_checks.push((p.clone(), named.span));
+                        }
+                        t
+                    }
                     _ => Ty::Error,
                 }
             }
@@ -232,6 +240,9 @@ impl Checker<'_> {
                     };
                     let mut interfaces = Vec::new();
                     for t in &e.implements {
+                        if let Some(def) = owner.filter(|_| is_display(t)) {
+                            self.display_types.insert(def);
+                        }
                         if !self.note_operator(owner, t, &target) {
                             interfaces.push(self.lower(t, None));
                         }
@@ -316,6 +327,9 @@ impl Checker<'_> {
                 self.drop_types.insert(def);
                 continue;
             }
+            if is_display(i) {
+                self.display_types.insert(def);
+            }
             if let Ty::Adt(i, args) = self.lower(i, Some(&self_ty)) {
                 self.implements.entry(def).or_default().insert(i);
                 let key = crate::checker::impl_key_adt(def);
@@ -383,4 +397,10 @@ fn builtin_type(name: &str, args: Vec<Ty>, self_ty: Option<&Ty>) -> Ty {
         "Self" => self_ty.cloned().unwrap_or(Ty::Error),
         other => Ty::Builtin(builtin_name(other), args.collect()),
     }
+}
+
+/// Whether `t` names the prelude's `Display` interface (spec 1.11).
+fn is_display(t: &kavach_ast::TypeExpr) -> bool {
+    matches!(&t.kind, kavach_ast::TypeKind::Named { path, .. }
+        if path.segments.len() == 1 && path.segments[0].name == "Display")
 }

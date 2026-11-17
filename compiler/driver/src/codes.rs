@@ -11,6 +11,7 @@ const TABLE: &[(&str, &[&str])] = &[
     (
         "not-kavach",
         &[
+            "is now `",
             "Kavach has no",
             "Kavach writes",
             "in Kavach",
@@ -22,7 +23,7 @@ const TABLE: &[(&str, &[&str])] = &[
     // Found at compile time: a call that always breaks its contract or
     // an index always out of range (spec 7.7).
     ("always-fails", &["always panics", "always breaks"]),
-    ("unsafe", &["`unsafe"]),
+    ("unsafe", &["points at memory C lays out", "`unsafe"]),
     ("gpu", &["`gpu fn`", "(spec 15."]),
     ("contract", &["a contract can't", "contracts must"]),
     ("agent-setting", &["`thinking", "`effort", "`limit Ai`"]),
@@ -63,7 +64,15 @@ const TABLE: &[(&str, &[&str])] = &[
             "no such",
         ],
     ),
-    ("duplicate", &["already declared", "already has a method"]),
+    (
+        "duplicate",
+        &[
+            "is given twice",
+            "have the number",
+            "already declared",
+            "already has a method",
+        ],
+    ),
     (
         "variant",
         &["is a variant of", "every variant of", "is for enums"],
@@ -71,6 +80,7 @@ const TABLE: &[(&str, &[&str])] = &[
     (
         "wrong-place",
         &[
+            "made inside the `arena`",
             "is only for",
             "is for `std.",
             "only the entry file",
@@ -88,6 +98,7 @@ const TABLE: &[(&str, &[&str])] = &[
     (
         "cannot-change",
         &[
+            "never change",
             "is a `const`",
             "can't change",
             "is not a variable",
@@ -128,6 +139,11 @@ const TABLE: &[(&str, &[&str])] = &[
     (
         "type-mismatch",
         &[
+            "might be `none`",
+            "a bound names an interface",
+            "a `where` bound is",
+            "can't match",
+            "options can be",
             "is not ",
             "isn't ",
             " gives ",

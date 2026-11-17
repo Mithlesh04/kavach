@@ -191,6 +191,7 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
             }
         }
         RtOp::IntPow => crate::rt::int_pow(a, b, result, line),
+        RtOp::DisplayRegister => crate::rt_display::register(a, b),
         RtOp::PanicText => {
             let message = with_str(a, str::to_string);
             panic_with(&message, line)

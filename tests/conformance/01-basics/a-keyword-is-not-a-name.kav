@@ -4,5 +4,5 @@
 
 fn main() {
     const match = 1      // error: `match` is a keyword
-    print(match)
+    print(1)
 }

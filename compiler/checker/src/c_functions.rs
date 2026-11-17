@@ -158,6 +158,21 @@ impl Checker<'_> {
 
     /// What a `Ptr` may point to (spec 6.4): a number, a `Bool`, a `Ptr`,
     /// or a record of only those, laid out as a C struct.
+    /// Each `Ptr<T>` written names a type C lays out (spec 6.4).
+    pub(crate) fn check_pointees(&mut self) {
+        let mut told = std::collections::HashSet::new();
+        for (t, span) in std::mem::take(&mut self.ptr_checks) {
+            let known = !matches!(t, Ty::Param(_) | Ty::Var(_) | Ty::Error);
+            if known && !self.c_pointee(&t) && told.insert(span.start) {
+                let shown = self.show(&t);
+                self.error(
+                    span,
+                    format!("a `Ptr` points at memory C lays out: numbers, `Bool`, `Ptr`s or a record of those, not `{shown}` (spec 6.4)"),
+                );
+            }
+        }
+    }
+
     fn c_pointee(&self, t: &Ty) -> bool {
         match t {
             Ty::Builtin("Ptr", _) => true,

@@ -7,6 +7,9 @@ use kavach_resolver::DefId;
 use kavach_runtime_core::Decimal;
 use std::cell::RefCell;
 use std::collections::HashMap;
+/// Texts `display()` gave, by the address of the value they show.
+pub(crate) type Shown = std::collections::HashMap<usize, String>;
+
 use std::fmt::Write;
 use std::rc::Rc;
 
@@ -292,21 +295,39 @@ impl Value<'_> {
     /// `union` gives a union's name.
     pub(crate) fn source_code(&self, union: &dyn Fn(DefId) -> String) -> String {
         let mut out = String::new();
-        self.write_as(&mut out, false, Some(union));
+        self.write_as(&mut out, false, Some(union), None);
         out
     }
 
     fn write(&self, out: &mut String, top: bool) {
-        self.write_as(out, top, None);
+        self.write_as(out, top, None, None);
     }
 
-    fn write_as(&self, out: &mut String, top: bool, union: Option<&dyn Fn(DefId) -> String>) {
+    /// As `display` (`top`) or `display_code`, with the values in `texts`
+    /// (by address) shown as their `display()` gave (spec 1.11).
+    pub(crate) fn write_shown(&self, top: bool, texts: &Shown) -> String {
+        let mut out = String::new();
+        self.write_as(&mut out, top, None, Some(texts));
+        out
+    }
+
+    fn write_as(
+        &self,
+        out: &mut String,
+        top: bool,
+        union: Option<&dyn Fn(DefId) -> String>,
+        shown: Option<&Shown>,
+    ) {
+        if let Some(text) = shown.and_then(|m| m.get(&(std::ptr::from_ref(self) as usize))) {
+            out.push_str(text);
+            return;
+        }
         let list = |out: &mut String, items: &[Value<'_>]| {
             for (i, v) in items.iter().enumerate() {
                 if i > 0 {
                     out.push_str(", ");
                 }
-                v.write_as(out, false, union);
+                v.write_as(out, false, union, shown);
             }
         };
         let fields = |out: &mut String, name: &str, fields: &[Field<'_>]| {
@@ -323,7 +344,7 @@ impl Value<'_> {
                 if f.secret {
                     out.push_str("<secret>");
                 } else {
-                    f.value.write_as(out, false, union);
+                    f.value.write_as(out, false, union, shown);
                 }
             }
             out.push(')');
@@ -373,7 +394,7 @@ impl Value<'_> {
                     if i > 0 {
                         out.push_str(", ");
                     }
-                    k.write_as(out, false, union);
+                    k.write_as(out, false, union, shown);
                 }
                 out.push(')');
             }
@@ -384,9 +405,9 @@ impl Value<'_> {
                     if i > 0 {
                         out.push_str(", ");
                     }
-                    k.write_as(out, false, union);
+                    k.write_as(out, false, union, shown);
                     out.push_str(": ");
-                    v.write_as(out, false, union);
+                    v.write_as(out, false, union, shown);
                 }
                 out.push(']');
             }
@@ -422,13 +443,13 @@ impl Value<'_> {
             Value::Agent(a) => out.push_str(&format!("<agent {}>", a.decl.name.name)),
             Value::Shared(v) => {
                 out.push_str("Shared(");
-                v.borrow().write_as(out, false, union);
+                v.borrow().write_as(out, false, union, shown);
                 out.push(')');
             }
             Value::Weak(w) => {
                 out.push_str("Weak(");
                 match w.upgrade() {
-                    Some(v) => v.borrow().write_as(out, false, union),
+                    Some(v) => v.borrow().write_as(out, false, union, shown),
                     None => out.push_str("none"),
                 }
                 out.push(')');
@@ -439,9 +460,9 @@ impl Value<'_> {
             Value::BuiltinError(e) => out.push_str(e),
             Value::Context(text, inner) => {
                 let _ = write!(out, "{text}: ");
-                inner.write_as(out, true, union);
+                inner.write_as(out, true, union, shown);
             }
-            Value::Ok(v) | Value::Err(v) => v.write_as(out, top, union),
+            Value::Ok(v) | Value::Err(v) => v.write_as(out, top, union, shown),
         }
     }
 }

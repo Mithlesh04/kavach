@@ -9,6 +9,7 @@ mod agent_settings;
 mod agents;
 mod ai_models;
 mod always_panics;
+mod arena_escape;
 mod builtin_methods;
 mod builtins;
 mod c_functions;
@@ -154,6 +155,9 @@ pub struct Checked {
     pub local_types: HashMap<DefId, Ty>,
     /// The record types that implement `Drop` (spec 6.1).
     pub drop_types: HashSet<DefId>,
+    /// The types that implement `Display`, printed by their `display`
+    /// (spec 1.11).
+    pub display_types: HashSet<DefId>,
     /// Operators on a program's own types (spec 2.16): the method each
     /// calls, by `(left start, right end)`; `-x` by `x`'s span; `x op= v`
     /// by `(x start, v end)`.
@@ -194,6 +198,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     checker.collect_gpu_fns(file);
     checker.check_file(file);
     checker.check_numbers_later();
+    checker.check_pointees();
     checker.check_float32_literals();
     checker.check_gpu_fns(file);
     checker.check_generic_json();
@@ -285,6 +290,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
         .map(|(def, ty)| (*def, checker.defaulted(ty)))
         .collect();
     let drop_types = checker.drop_types.clone();
+    let display_types = checker.display_types.clone();
     let drop_locals = (checker.locals.iter())
         .filter(|(_, t)| checker.holds_drop(&checker.defaulted(t)))
         .map(|(d, _)| *d)
@@ -308,6 +314,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
         field_types,
         local_types,
         drop_types,
+        display_types,
         user_ops: std::mem::take(&mut checker.user_ops),
         user_negs: std::mem::take(&mut checker.user_negs),
         user_assigns: std::mem::take(&mut checker.user_assigns),

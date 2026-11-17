@@ -49,7 +49,16 @@ impl<'a> Lowerer<'a> {
                 // 3.3): one it changes is a copy for this call, so the
                 // change never reaches the variable.
                 let mut outside = Vec::new();
-                for def in assigned(body, &self.c.resolution) {
+                let inout = |def| {
+                    let decl = (self.fn_ids.get(&def)).and_then(|&f| self.fns[f as usize].0);
+                    decl.map_or(Vec::new(), |d| {
+                        (Self::inout_params(d).into_iter())
+                            .map(|(i, n)| (i, n.to_string()))
+                            .collect()
+                    })
+                };
+                let changed = assigned(body, &self.c.resolution, &inout);
+                for def in changed {
                     let Some(&l) = self.local_ids.get(&def) else {
                         continue;
                     };

@@ -308,7 +308,7 @@ const grade = if score >= 90 { "A" } else { "B" }
 | Union variant | `Paid`, `TooLarge(value: 200)` |
 | Secret field | `<secret>` |
 
-A type can choose its own form by implementing the `Display` interface (`fn display(self) -> String`).
+A type can choose its own form by implementing the `Display` interface (`fn display(self) -> String`). It shows in that form everywhere a value is shown: `print`, interpolation, `String(v)`, and inside lists, maps, tuples and other records.
 
 ## 1.12 Destructuring
 
@@ -373,7 +373,7 @@ fn main() {
 
 | The file | `const notes = fs.read_text("notes.txt") catch ""` at the top level |
 |---|---|
-| Has `fn main` | An error: a module constant is worked out before `main`, which hasn't run anything yet. Write `let`, or work it out in `main` |
+| Has `fn main` | An error: a module constant is worked out before `main`, which hasn't run anything yet. Work it out in `main` |
 | Is a script, with no `fn main` (1.3) | One of the script's statements, run in its place, as the script's other lines are. It isn't a module constant: a function can't read it, and the error says to pass it as an argument |
 
 ```kavach

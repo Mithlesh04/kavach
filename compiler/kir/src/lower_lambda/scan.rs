@@ -21,13 +21,17 @@ fn root_name(mut e: &ast::Expr) -> Option<&ast::Ident> {
 }
 
 /// The variables `e` changes: `x = …`, `x += …`, `x.f = …` or `x[i] = …`,
-/// and `x.push(…)` and the other changing methods.
+/// `x.push(…)` and the other changing methods, and `f(x)` where `f`'s
+/// parameter is `inout`: `inout(def)` gives a function's `inout`
+/// parameters, by position and name.
 pub(super) fn assigned(
     e: &ast::Expr,
     res: &kavach_resolver::Resolution,
+    inout: &dyn Fn(kavach_resolver::DefId) -> Vec<(usize, String)>,
 ) -> Vec<kavach_resolver::DefId> {
     struct Find<'r> {
         res: &'r kavach_resolver::Resolution,
+        inout: &'r dyn Fn(kavach_resolver::DefId) -> Vec<(usize, String)>,
         found: Vec<kavach_resolver::DefId>,
     }
     impl Find<'_> {
@@ -53,11 +57,30 @@ pub(super) fn assigned(
             {
                 self.note(base);
             }
+            // `bump(count)` with `fn bump(inout n: Int)` (spec 3.9).
+            if let ExprKind::Call { callee, args, .. } = &e.kind
+                && let ExprKind::Name(f) = &callee.kind
+                && let Some(&def) = self.res.uses.get(&f.span.start)
+            {
+                for (pos, name) in (self.inout)(def) {
+                    let given = match args
+                        .iter()
+                        .find(|a| a.name.as_ref().is_some_and(|n| n.name == name))
+                    {
+                        Some(a) => Some(a),
+                        None => args.get(pos).filter(|a| a.name.is_none()),
+                    };
+                    if let Some(a) = given {
+                        self.note(&a.value);
+                    }
+                }
+            }
             kavach_ast::visit::walk_expr(self, e);
         }
     }
     let mut find = Find {
         res,
+        inout,
         found: Vec::new(),
     };
     kavach_ast::visit::VisitMut::expr(&mut find, &mut e.clone());

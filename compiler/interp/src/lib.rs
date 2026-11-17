@@ -4,6 +4,7 @@
 
 mod agents;
 mod ai;
+mod arena;
 mod bigint;
 mod builtins;
 mod bytes;
@@ -38,6 +39,7 @@ mod parallel_map;
 mod processes;
 mod reflect;
 mod run;
+mod shown;
 mod stack;
 mod std_agents;
 mod std_app;

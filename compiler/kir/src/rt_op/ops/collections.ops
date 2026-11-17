@@ -131,3 +131,6 @@ ListNoLimit,
 /// `Ring.capacity(n, first)` (spec 2.2): a list of at most `a` items that
 /// drops its oldest when full, the list `b` its first ones (0: none).
 RingCapacity,
+/// At the start of a program with `Display` types (spec 1.11): type
+/// number `a` shows as closure `b` (its `display`) gives.
+DisplayRegister,

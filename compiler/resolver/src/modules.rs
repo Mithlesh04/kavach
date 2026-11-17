@@ -144,9 +144,7 @@ impl Resolver {
                 .any(|i| matches!(&i.kind, ItemKind::Fn(f) if f.name.name == "main"));
             if m == 0 && has_main {
                 // With `fn main`, a statement outside it would never run (1.3).
-                let (consts, others): (Vec<_>, Vec<_>) = stmts
-                    .into_iter()
-                    .partition(|s| crate::decls::module_const(s).is_some());
+                let (consts, others): (Vec<_>, Vec<_>) = stmts.into_iter().partition(is_const);
                 self.stmts(&consts);
                 if let Some(s) = others.first() {
                     self.error(s.span, "this statement is outside `main`, so it would never run: this file has `fn main` (spec 1.3). Move it into `main`, or make it a `const`");
@@ -155,9 +153,7 @@ impl Resolver {
                 self.stmts(&stmts);
             } else {
                 // Other files have module constants (1.13), not statements.
-                let (consts, others): (Vec<_>, Vec<_>) = stmts
-                    .into_iter()
-                    .partition(|s| crate::decls::module_const(s).is_some());
+                let (consts, others): (Vec<_>, Vec<_>) = stmts.into_iter().partition(is_const);
                 self.stmts(&consts);
                 if let Some(s) = others.first() {
                     self.error(s.span, "only the entry file (`src/main.kav`) can have statements outside functions (spec 1.3); other files can have module constants, `const name = …` (1.13)");
@@ -367,7 +363,9 @@ impl Resolver {
             // A standard library module written in Kavach has only part of
             // the module: the runtime provides the rest (`math.sqrt`), and
             // the type checker knows those names.
-            if module.starts_with("std.") {
+            // `m.members()` (spec 14.32) of a module that declares no
+            // `members` of its own: the checker answers it.
+            if module.starts_with("std.") || name.name == "members" {
                 return None;
             }
             self.error(
@@ -429,5 +427,23 @@ impl Resolver {
                 shown.join(".")
             ),
         );
+    }
+}
+
+/// Whether `s` is a `const`, whatever its name: one named like a variant
+/// (`const COUNT`) is resolved, so it gets its own error (spec 1.5)
+/// rather than one about statements.
+fn is_const(s: &kavach_ast::Stmt) -> bool {
+    use kavach_ast::{PatternKind, StmtKind};
+    match &s.kind {
+        StmtKind::Let {
+            mutable: false,
+            pattern,
+            ..
+        } => matches!(
+            pattern.kind,
+            PatternKind::Binding(_) | PatternKind::Variant { fields: None, .. }
+        ),
+        _ => false,
     }
 }

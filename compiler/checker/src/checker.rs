@@ -115,12 +115,15 @@ pub(crate) struct Checker<'a> {
     pub(crate) implements: HashMap<DefId, HashSet<DefId>>,
     /// The record types that implement `Drop` (`drops.rs`).
     pub(crate) drop_types: HashSet<DefId>,
+    pub(crate) display_types: HashSet<DefId>,
     /// Each type's operators (spec 2.16, `user_ops.rs`): by type and
     /// method, the other operand's type, the result's, and where.
     pub(crate) operators: HashMap<(DefId, &'static str), (Ty, Ty, Span)>,
     /// Types given for number-bounded parameters, checked once every
     /// literal's type is known (spec 2.9).
     pub(crate) number_checks: Vec<(DefId, Ty, Span)>,
+    /// Each `Ptr<T>` written, with where, to check `T` once types are known.
+    pub(crate) ptr_checks: Vec<(Ty, Span)>,
     /// Each type argument of a record made here, to check something
     /// filled it (2.9).
     pub(crate) filled_checks: Vec<(DefId, Ty, Span)>,
@@ -278,8 +281,10 @@ impl<'a> Checker<'a> {
             extended_methods: HashSet::new(),
             implements: HashMap::new(),
             drop_types: HashSet::new(),
+            display_types: HashSet::new(),
             operators: HashMap::new(),
             number_checks: Vec::new(),
+            ptr_checks: Vec::new(),
             filled_checks: Vec::new(),
             wheres: HashMap::new(),
             where_checks: Vec::new(),

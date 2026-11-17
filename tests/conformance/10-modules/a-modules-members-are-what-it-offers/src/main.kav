@@ -1,0 +1,15 @@
+// Rule: `m.members()` of a program's own module lists what it offers to the code that uses it: its `pub` functions, types and constants, sorted by name, not its private ones.
+// Spec: 14.32, 10.1
+// expect output: Type Item: Item
+// expect output: Constant tax: Float
+// expect output: Function total(price: Int): Int
+
+use shop
+
+fn main() {
+    for m in shop.members() {
+        const params = m.params.map(p => "{p.name}: {p.type_name}")
+        const shown = if params.is_empty() { "" } else { "({params.join(", ")})" }
+        print("{m.kind} {m.name}{shown}: {m.result}")
+    }
+}

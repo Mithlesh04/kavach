@@ -3,7 +3,7 @@
 // expect output: false true
 // expect output: क 😀 b
 // expect output: नमस्ते, Asha!
-// expect output: 
+// expect output:
 // expect output: Bytes(00ff7f80)
 // expect output: 4 255
 

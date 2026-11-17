@@ -18,6 +18,13 @@ impl Checker<'_> {
         let ExprKind::Name(id) = &root.kind else {
             return;
         };
+        if self.in_contract {
+            self.error(
+                root.span,
+                format!("a contract can't change `{}` with `{method}`: contracts must be pure, and a check that changes what it checks hides the change (spec 7.5)", id.name),
+            );
+            return;
+        }
         let kind = self
             .res
             .uses

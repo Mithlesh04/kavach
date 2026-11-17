@@ -64,7 +64,10 @@ impl<'a> Interp<'a> {
                 for part in parts {
                     match part {
                         StrPart::Text(t) => s.push_str(t),
-                        StrPart::Expr(x) => s.push_str(&self.eval(x)?.display()),
+                        StrPart::Expr(x) => {
+                            let v = self.eval(x)?;
+                            s.push_str(&self.shown(&v, true, e.span)?);
+                        }
                     }
                 }
                 Ok(Value::Str(Rc::from(s)))
@@ -207,7 +210,8 @@ impl<'a> Interp<'a> {
                 }
             },
             ExprKind::Match { scrutinee, arms } => self.match_expr(scrutinee, arms, e.span),
-            ExprKind::Block(b) | ExprKind::Arena(b) | ExprKind::Unsafe(b) => self.block(b),
+            ExprKind::Arena(b) => self.arena(b, e.span),
+            ExprKind::Block(b) | ExprKind::Unsafe(b) => self.block(b),
             ExprKind::Scoped { call, body } => self.scoped(call, body),
             ExprKind::Lambda { params, body } => Ok(self.closure(
                 params

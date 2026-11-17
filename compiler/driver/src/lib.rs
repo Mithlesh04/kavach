@@ -94,6 +94,8 @@ pub struct Compiled {
     pub local_types: HashMap<kavach_resolver::DefId, Ty>,
     /// The record types that implement `Drop` (spec 6.1).
     pub drop_types: std::collections::HashSet<kavach_resolver::DefId>,
+    /// The types that implement `Display`, shown by their `display` (1.11).
+    pub display_types: std::collections::HashSet<kavach_resolver::DefId>,
     /// Each agent's `model`, by the agent's name (decision 0056).
     pub agent_models: HashMap<String, kavach_checker::AiModel>,
     /// Each `ask`'s own `model:`, by the call's span.
@@ -360,6 +362,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
         uses: checked.uses,
         field_types: checked.field_types,
         drop_types: checked.drop_types.clone(),
+        display_types: checked.display_types.clone(),
         local_types: checked.local_types,
         agent_models: checked.agent_models,
         agent_settings: checked.agent_settings,

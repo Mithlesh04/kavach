@@ -26,11 +26,19 @@ impl Checker<'_> {
                 continue;
             }
             match self.place_root(&a.value) {
-                Ok(def) => roots.push((i, def)),
+                Ok(def) => {
+                    self.check_captured_change(&a.value);
+                    roots.push((i, def));
+                }
                 Err(why) => self.error(
                     a.value.span,
                     format!("`{}` is `inout`, so {why} (spec 3.9)", p.name),
                 ),
+            }
+        }
+        for (i, _) in &roots {
+            for (_, other) in args.iter().enumerate().filter(|(j, _)| j != i) {
+                self.check_arena_inout(&args[*i].value, &other.value);
             }
         }
         for (i, root) in &roots {

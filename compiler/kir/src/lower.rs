@@ -94,6 +94,8 @@ pub(crate) struct Lowerer<'a> {
     /// values go back only when it succeeds (`lower_inout.rs`).
     /// The record types whose `drop` the program registers (`lower_drops.rs`).
     pub(crate) drop_records: Vec<u32>,
+    /// The type numbers whose `display` is registered (1.11).
+    pub(crate) display_records: Vec<u32>,
     pub(crate) inout_pending: Option<crate::lower_inout::Pending<'a>>,
     /// Views of an `Error` being matched as each type its arms name
     /// (`lower_match.rs`): matched local, union, view local, union type.
@@ -162,6 +164,7 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
         dest_finals: HashMap::new(),
         inout_pending: None,
         drop_records: Vec::new(),
+        display_records: Vec::new(),
     };
     l.std_modules = crate::lower_std::std_modules(c, &l.decl);
     let mut top_level = Vec::new();
@@ -263,7 +266,8 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
     collect_functions(&mut l, &mut functions, &mut failed)?;
     // Generic `Drop` types' instances are known now (6.1).
     loop {
-        let more = l.generic_drop_registrations()?;
+        let mut more = l.generic_drop_registrations()?;
+        more.extend(l.generic_display_registrations()?);
         if more.is_empty() {
             break;
         }

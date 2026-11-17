@@ -35,6 +35,7 @@ impl<'a> Lowerer<'a> {
             }));
         }
         out.extend(self.drop_registrations()?);
+        out.extend(self.display_registrations()?);
         Ok(out)
     }
 

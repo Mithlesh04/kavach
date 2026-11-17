@@ -139,6 +139,9 @@ impl VisitMut for Qualified<'_> {
         if let ExprKind::Field { base, name, .. } = &e.kind
             && let ExprKind::Name(id) = &base.kind
             && (self.is_module(id) || self.is_std_member(id, name))
+            // `shop.members()` (spec 14.32), when `shop` declares no
+            // `members`: left for the checker to answer.
+            && (name.name != "members" || self.res.uses.contains_key(&name.span.start))
         {
             e.kind = ExprKind::Name(name.clone());
             return;

@@ -360,7 +360,8 @@ impl<'a> Lowerer<'a> {
         let kind = match &e.kind {
             // `unsafe` (spec 6.4) only lets the checker allow more inside;
             // the code is a block like any other.
-            ExprKind::Block(b) | ExprKind::Arena(b) | ExprKind::Unsafe(b) => {
+            ExprKind::Arena(b) => return self.arena(b, want_value, ty, line),
+            ExprKind::Block(b) | ExprKind::Unsafe(b) => {
                 K::Block(self.branch_block(b, want_value, ty)?)
             }
             ExprKind::If {
