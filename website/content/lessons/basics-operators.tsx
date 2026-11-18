@@ -123,6 +123,26 @@ export const comparisonDoc: LessonDoc = {
         <C>==</C> looks inside: two lists are equal when their items are, two dicts when their entries are, in any
         order.
       </P>
+      <P>
+        <C>let b = a</C> copies nothing yet. Both names use one list in memory until one of them changes it, and
+        only then is it copied (<Link href="/docs/memory/automatic-memory/how-it-stays-fast/">how it stays fast</Link>).
+        While they still share it, <C>a == b</C> is <C>true</C> at once, without looking at a single item:
+      </P>
+      <Ex name="operators/equal-shared" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The first <C>a == b</C> is the quick check: one list, so it is equal to itself.</li>
+        <li><C>b.push(4)</C> gives <C>b</C> its own copy, so <C>a</C> keeps <C>[2, 3]</C>.</li>
+        <li>
+          <C>a == [2, 3]</C> is two lists in two places, so their items are compared. The quick check only saves
+          time: equal contents are always equal, wherever they live.
+        </li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/01-basics.md" label="spec 1.8 · equality" />
+        <SrcRef file="docs/decisions/0039-equality-is-deep-and-fast.md" label="decision 0039" />
+        <SrcRef file="compiler/interp/src/value.rs" line={217} symbol="ptr_eq" label="the quick check, run" />
+        <SrcRef file="runtime/native/src/display.rs" line={257} symbol="if a == b" label="the quick check, native" />
+      </div>
       <H2>Lists in order</H2>
       <P>
         <C>&lt;</C> works on lists, rings and <C>Bytes</C> too. They compare item by item, as text compares letter by

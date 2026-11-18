@@ -108,6 +108,10 @@ export const fastDoc: LessonDoc = {
       <P>Its first lines as a program you can run:</P>
       <Ex name="memory/values" />
       <P>Here <C>b.push(4)</C> is the moment the list is really copied: <C>a</C> still holds the old one.</P>
+      <P>
+        Sharing makes comparing quick too: before the copy, <C>a == b</C> is <C>true</C> without looking at the items
+        (see <Link href="/docs/basics/operators/comparison/#contents-not-places">Comparison</Link>).
+      </P>
       <H2>Growing in a loop</H2>
       <P>
         Text built up in a loop has one holder, so each <C>+=</C> adds to it in place. A copy taken before keeps its

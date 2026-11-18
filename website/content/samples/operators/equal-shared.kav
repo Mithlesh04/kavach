@@ -1,0 +1,10 @@
+fn main() {
+    let a = [2, 3]
+    let b = a
+    print(a == b)
+    b.push(4)
+    print(a)
+    print(b)
+    print(a == b)
+    print(a == [2, 3])
+}
