@@ -53,7 +53,8 @@ export function CoresSplit() {
       </div>
       <StepControls steps={steps} caption={f.caption} />
       <p className="m-0 text-[12.5px] text-soft">
-        Loops too small to gain stay on one core, and so do sums of floats, whose result depends on the order of adding.
+        Loops too small to gain still run on one core. A sum of floats is refused, as its result depends on the order of
+        adding.
       </p>
     </div>
   );
