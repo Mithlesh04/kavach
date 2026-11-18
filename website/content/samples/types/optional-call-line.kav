@@ -1,0 +1,15 @@
+type Logger {
+    name: String
+
+    fn say(self, text: String) {
+        print(`[{self.name}] {text}`)
+    }
+}
+
+fn main() {
+    const on: Logger? = Logger(name: "app")
+    const off: Logger? = none
+    on?.say("hi")
+    off?.say("hi")
+    print("done")
+}

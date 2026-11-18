@@ -1,0 +1,9 @@
+fn main() {
+    let groups = {"small": [1, 2]}
+    for key in ["small", "large"] {
+        if groups.contains_key(key) {
+            groups[key].push(3)
+        }
+    }
+    print(groups)
+}

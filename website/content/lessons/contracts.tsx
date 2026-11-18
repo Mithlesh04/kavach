@@ -306,6 +306,12 @@ export const testBlocksDoc: LessonDoc = {
         <C>assert</C> checks a condition. The report also flags <C>total_paid</C> as weakly tested: it has a story
         but no contract, so only some of its behaviour is checked.
       </P>
+      <P>
+        When an <C>assert</C> on <C>==</C>, <C>!=</C>, <C>&lt;</C>, <C>&gt;</C>, <C>&lt;=</C> or <C>&gt;=</C> fails,
+        it shows both sides, each worked out once, so you see what the code gave without adding a <C>print</C>:
+      </P>
+      <Ex name="testing/assert-sides.test" />
+      <SrcRef file="tests/conformance/11-testing/a-failing-assert-shows-both-sides.kav" label="both sides, tested" />
       <Ex name="testing/sub-random.test" />
       <H2>Tests use nothing unless given</H2>
       <P>

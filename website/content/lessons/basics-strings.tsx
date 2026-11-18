@@ -188,6 +188,22 @@ export const splitDoc: LessonDoc = {
         empty parts. <C>split(&quot; &quot;)</C> keeps an empty part between each two spaces:
       </P>
       <Ex name="strings/words" />
+      <H2>Empty text</H2>
+      <P>
+        Empty text has no lines, and an empty part is found everywhere, at once: <C>contains(&quot;&quot;)</C> is{" "}
+        <C>true</C> and <C>index_of(&quot;&quot;)</C> is <C>0</C>, as in Python and JavaScript:
+      </P>
+      <Ex name="strings/empty" />
+      <P>
+        <C>split(&quot;&quot;)</C> has no separator to cut at, so it stops the program and says to use{" "}
+        <C>chars()</C>, as Python&apos;s <C>split</C> refuses one:
+      </P>
+      <Ex name="strings/split-empty.panics" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/14-standard-library/02-built-in-methods.md" label="spec 14.2 · text methods" />
+        <SrcRef file="tests/conformance/14-standard-library/text-methods-on-empty-text.kav" label="empty text, tested" />
+        <SrcRef file="tests/conformance/14-standard-library/split-on-empty-text-panics.kav" label="split on nothing, tested" />
+      </div>
     </>
   ),
 };

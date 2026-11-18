@@ -1,1 +1,1 @@
-error: this `match` does not cover `FsError.Failed`
+error: this `match` does not cover `FsError.IsFolder`, `FsError.NotEmpty`, `FsError.NotText`, `FsError.Failed`

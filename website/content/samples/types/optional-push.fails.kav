@@ -1,0 +1,4 @@
+fn main() {
+    let groups = {"small": [1, 2]}
+    groups["small"]?.push(3)
+}

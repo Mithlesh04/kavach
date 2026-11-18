@@ -235,6 +235,22 @@ export const optionalReadDoc: LessonDoc = {
       </P>
       <Ex name="types/optionals-method" />
       <SrcRef file="tests/conformance/02-types/question-dot-calls-methods.kav" label="tested" />
+      <P>
+        On a line of its own, <C>x?.m(a)</C> calls <C>m</C> when <C>x</C> holds a value and does nothing when it is{" "}
+        <C>none</C>. Handy for something that may be switched off, such as a logger:
+      </P>
+      <Ex name="types/optional-call-line" />
+      <P>
+        A method that changes its value (<C>push</C>, <C>pop</C>, <C>add</C>, <C>remove</C>) can&apos;t go through{" "}
+        <C>?.</C>. It would change a copy of what is inside, not the value itself, so it is refused:
+      </P>
+      <Ex name="types/optional-push.fails" />
+      <P>Test first, then change the value where it is:</P>
+      <Ex name="types/optional-push-test" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/02-types/an-optional-call-on-its-own-line-runs.kav" label="on its own line, tested" />
+        <SrcRef file="tests/conformance/02-types/an-optional-call-cannot-change-the-value-inside.kav" label="no change through ?., tested" />
+      </div>
     </>
   ),
 };

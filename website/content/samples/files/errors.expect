@@ -1,0 +1,5 @@
+IsFolder(box)
+NotEmpty(box)
+NotText(box/photo.bin)
+NotFound(box/menu.txt)
+3

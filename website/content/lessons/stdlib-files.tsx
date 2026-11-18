@@ -24,10 +24,24 @@ export const filesDoc: LessonDoc = {
       <H2>When it fails</H2>
       <P>
         A file operation can fail: the file isn&apos;t there, or you may not read it. It then gives an{" "}
-        <C>FsError</C>: <C>NotFound(path)</C>, <C>Denied(path)</C> or <C>Failed(path, reason)</C>. Match on it to
-        handle each case:
+        <C>FsError</C>. Match on it to handle each case:
       </P>
       <Ex name="files/sub-missing" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>NotFound(path)</C>: nothing is at <C>path</C>.</li>
+        <li><C>Denied(path)</C>: the program may not do it there.</li>
+        <li><C>IsFolder(path)</C>: <C>path</C> is a folder where a file was wanted, as when reading a folder as text.</li>
+        <li><C>NotEmpty(path)</C>: <C>fs.remove</C> of a folder that still holds something. <C>fs.remove_all</C> removes it all.</li>
+        <li><C>NotText(path)</C>: the file isn&apos;t UTF-8 text, from <C>fs.read_text</C> or <C>fs.lines</C>. <C>fs.read_bytes</C> still reads it.</li>
+        <li><C>Failed(path, reason)</C>: anything else, with the system&apos;s reason.</li>
+      </ul>
+      <P>Each one, made on purpose in a folder of its own:</P>
+      <Ex name="files/errors" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/14-standard-library/03-fs.md" label="spec 14.3 · FsError" />
+        <SrcRef file="tests/conformance/14-standard-library/fs-errors-name-folders.kav" label="folders, tested" />
+        <SrcRef file="tests/conformance/14-standard-library/fs-read-text-refuses-text-that-is-not-utf8.kav" label="not text, tested" />
+      </div>
       <Note>
         Reading or writing files needs the <C>Fs</C> capability. A <C>pub</C> function says so with{" "}
         <C>uses Fs</C>, or only <C>uses Fs.read</C>: see <Link href="/docs/agents/capabilities/narrower-file-access/">Narrower file access</Link>.
@@ -249,7 +263,7 @@ export const argumentsDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>A field <C>limit</C> is the option <C>--limit</C>; an <C>_</C> in a name is written <C>-</C>.</li>
         <li>A field with a default may be left out. One without a default, like <C>input</C>, is required.</li>
-        <li>A <C>Bool</C> is a flag with no value: <C>--verbose</C>.</li>
+        <li>A <C>Bool</C> is a flag with no value: <C>--verbose</C>. The usage shows only its default, <C>(default false)</C>, as it takes no value to give a type for.</li>
         <li><C>--help</C>, or a mistake, gives an error whose text is the usage.</li>
       </ul>
     </>

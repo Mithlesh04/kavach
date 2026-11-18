@@ -1,0 +1,26 @@
+use std.fs
+
+fn kind(e: fs.FsError) -> String {
+    match e {
+        fs.NotFound(path) => `NotFound({path})`
+        fs.Denied(path) => `Denied({path})`
+        fs.IsFolder(path) => `IsFolder({path})`
+        fs.NotEmpty(path) => `NotEmpty({path})`
+        fs.NotText(path) => `NotText({path})`
+        fs.Failed(path, reason) => `Failed({path}: {reason})`
+    }
+}
+
+fn main() ! Error {
+    try fs.create_dir("box")
+    try fs.write_text("box/note.txt", "hi")
+    try fs.write_bytes("box/photo.bin", Bytes([255, 216, 255]))
+
+    print(fs.read_text("box") catch e => kind(e))
+    fs.remove("box") catch e => print(kind(e))
+    print(fs.read_text("box/photo.bin") catch e => kind(e))
+    print(fs.read_text("box/menu.txt") catch e => kind(e))
+
+    print((try fs.read_bytes("box/photo.bin")).len())
+    try fs.remove_all("box")
+}

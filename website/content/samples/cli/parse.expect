@@ -7,9 +7,9 @@ missing --input
 usage: main [options]
   --input <String>         (required)
   --limit <Int>            (default 10)
-  --verbose
+  --verbose                (default false)
 $ kavach run src/main.kav --help
 usage: main [options]
   --input <String>         (required)
   --limit <Int>            (default 10)
-  --verbose
+  --verbose                (default false)

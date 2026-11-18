@@ -1,0 +1,6 @@
+fn main() {
+    print("".lines())
+    print("abc".contains(""))
+    print("abc".index_of("") ?? -1)
+    print("abc".chars())
+}

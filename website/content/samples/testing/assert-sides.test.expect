@@ -1,0 +1,5 @@
+✗ test "the total adds every price"
+    panic: assertion failed: total == 10 (left: 8, right: 10)
+0 passed, 1 failed
+seed 7
+0 functions   0 ✓   0 ✗   0 weakly tested

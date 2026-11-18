@@ -1,1 +1,1 @@
-error: `push` changes `into`, but it is a parameter: declare it with `let`
+error: `push` changes `into`, but it is a parameter: copy it into a `let` first (`let items = into`), or make it `inout` to change the caller's value (spec 3.9)
