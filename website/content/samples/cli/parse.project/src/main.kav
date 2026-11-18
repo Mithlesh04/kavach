@@ -12,5 +12,5 @@ fn main() {
         cli.exit(2)
         return
     }
-    print("reading {args.input}, at most {args.limit} rows, verbose: {args.verbose}")
+    print(`reading {args.input}, at most {args.limit} rows, verbose: {args.verbose}`)
 }

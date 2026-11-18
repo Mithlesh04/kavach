@@ -9,6 +9,8 @@ fn main() ! Error {
     const blob = Blob(name: "hi", data: Bytes([104, 105]))
     print(json.of(blob))
 
-    const back = try json.decode<Blob>("\{\"name\": \"hi\", \"data\": \"aGk\"}")
+    const back = try json.decode<Blob>("""
+        {"name": "hi", "data": "aGk"}
+        """)
     print(back.data)
 }

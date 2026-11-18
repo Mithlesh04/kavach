@@ -6,7 +6,7 @@ capability Deploy {
 
 type Pipeline: Deploy {
     fn release(self, version: String, env: String) ! DeployError {
-        print("released {version} to {env}")
+        print(`released {version} to {env}`)
     }
 }
 
@@ -22,6 +22,6 @@ agent Releaser {
 
 fn main() {
     const bot = Releaser.start(Deploy: Pipeline())
-    bot.ship("2.4.0", "staging") catch e => print("not released: {e}")
-    bot.ship("2.4.0", "production") catch e => print("not released: {e}")
+    bot.ship("2.4.0", "staging") catch e => print(`not released: {e}`)
+    bot.ship("2.4.0", "production") catch e => print(`not released: {e}`)
 }

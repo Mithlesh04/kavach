@@ -6,7 +6,7 @@ capability Payments {
 
 type Bank: Payments {
     fn refund(self, order: Int, amount: Int) ! PayError {
-        print("refunded {amount} on order {order}")
+        print(`refunded {amount} on order {order}`)
     }
 }
 
@@ -26,10 +26,10 @@ fn main() {
     const bot = Refunder.start(Payments: Bank())
     for r in [(order: 1, amount: 200), (order: 2, amount: 900)] {
         bot.refund(r.order, r.amount) catch e => match e {
-            PayError.Denied(reason) => print("order {r.order}: blocked, {reason}"),
-            PayError.Declined => print("order {r.order}: the bank said no"),
-            PayError.Unavailable => print("order {r.order}: try again later"),
-            _ => print("order {r.order}: {e}"),
+            PayError.Denied(reason) => print(`order {r.order}: blocked, {reason}`),
+            PayError.Declined => print(`order {r.order}: the bank said no`),
+            PayError.Unavailable => print(`order {r.order}: try again later`),
+            _ => print(`order {r.order}: {e}`),
         }
     }
 }

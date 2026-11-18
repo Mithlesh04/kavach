@@ -12,7 +12,7 @@ fn place(o: Order) -> String ! ShopError {
     if o.item == "kite" {
         fail ShopError.OutOfStock(item: o.item)
     }
-    "{o.qty} x {o.item}"
+    `{o.qty} x {o.item}`
 }
 
 fn handle<P, R, E>(input: P, handler: fn(P) -> R ! E) -> R ! E {
@@ -22,8 +22,8 @@ fn handle<P, R, E>(input: P, handler: fn(P) -> R ! E) -> R ! E {
 fn main() {
     for o in [Order(item: "pen", qty: 2), Order(item: "kite", qty: 1), Order(item: "cup", qty: 50)] {
         const said = handle(o, place) catch e => match e {
-            ShopError.OutOfStock(item) => "no {item} left",
-            ShopError.TooMany(qty) => "{qty} is too many",
+            ShopError.OutOfStock(item) => `no {item} left`,
+            ShopError.TooMany(qty) => `{qty} is too many`,
         }
         print(said)
     }

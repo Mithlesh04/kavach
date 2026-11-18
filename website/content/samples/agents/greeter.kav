@@ -6,7 +6,7 @@ capability Email {
 
 type Outbox: Email {
     fn send(self, to: String) ! EmailError {
-        print("sent to {to}")
+        print(`sent to {to}`)
     }
 }
 
@@ -24,7 +24,7 @@ agent Greeter {
 
 fn main() {
     const bot = Greeter.start(Email: Outbox())
-    bot.welcome("asha@example.com") catch e => print("refused: {e}")
-    bot.welcome("omar@example.com") catch e => print("refused: {e}")
-    bot.welcome("zoe@example.com") catch e => print("refused: {e}")
+    bot.welcome("asha@example.com") catch e => print(`refused: {e}`)
+    bot.welcome("omar@example.com") catch e => print(`refused: {e}`)
+    bot.welcome("zoe@example.com") catch e => print(`refused: {e}`)
 }

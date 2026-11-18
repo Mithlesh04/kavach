@@ -4,7 +4,7 @@ fn twice(f: fn(Int) -> Int, n: Int) -> Int {
 
 pub fn shout(n: Int) -> Int uses Console {
     const loud = x => {
-        print("got {x}")
+        print(`got {x}`)
         x + 1
     }
     twice(loud, n)

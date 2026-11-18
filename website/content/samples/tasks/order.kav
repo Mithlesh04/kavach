@@ -2,7 +2,7 @@ use std.time
 
 fn fetch(n: Int) -> String uses Clock {
     time.sleep_ms(100 - n * 20)
-    "page {n}"
+    `page {n}`
 }
 
 fn main() {

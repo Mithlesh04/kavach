@@ -208,7 +208,10 @@ export const nestedDoc: LessonDoc = {
         <li><C>0.0</C> and <C>-0.0</C> are one key, so every float has one place.</li>
         <li>NaN is one key too: NaN equals NaN as a key or a set item, though <C>==</C> keeps NaN equal to nothing.</li>
       </ul>
-      <SrcRef file="tests/conformance/02-types/a-float-key-has-one-place.kav" label="float keys, tested" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/02-types/a-list-key-goes-in-two-pairs-of-brackets.kav" label="list keys, tested" />
+        <SrcRef file="tests/conformance/02-types/a-float-key-has-one-place.kav" label="float keys, tested" />
+      </div>
       <H2>Copies are whole</H2>
       <P>
         A collection is a value. A copy never shares changes with the one it came from, however deep the change. See{" "}

@@ -2,7 +2,7 @@ use shop
 
 fn main() {
     for m in shop.members() {
-        print("{m.kind} {m.name}: {m.result}")
+        print(`{m.kind} {m.name}: {m.result}`)
     }
     print(shop.total([shop.Item(name: "pen", price: 50.0)]))
 }

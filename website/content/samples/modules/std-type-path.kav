@@ -8,11 +8,11 @@ fn first_number(r: regex.Regex, text: String) -> String? {
 }
 
 fn order_pattern() -> regex.Regex ! regex.RegexError {
-    try regex.new(r"order (\d+)")
+    try regex.new("order (\d+)")
 }
 
 fn main() uses Console {
-    const r = order_pattern() catch e => panic("{e}")
+    const r = order_pattern() catch e => panic(`{e}`)
     print(first_number(r, "order 4471 shipped") ?? "none")
     print(first_number(r, "no number here") ?? "none")
 }

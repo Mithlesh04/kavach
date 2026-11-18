@@ -6,10 +6,10 @@ type User {
 
 fn main() {
     const asha = User(name: "Asha", age: 31)
-    print("{asha.name}, {asha.age}, {asha.city}")
+    print(`{asha.name}, {asha.age}, {asha.city}`)
     const older = asha with { age: 32 }
-    print("{asha.age} -> {older.age}")
+    print(`{asha.age} -> {older.age}`)
     let copy = asha
     copy.city = "Delhi"
-    print("{asha.city} / {copy.city}")
+    print(`{asha.city} / {copy.city}`)
 }

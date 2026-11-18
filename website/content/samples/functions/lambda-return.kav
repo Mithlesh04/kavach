@@ -7,7 +7,7 @@ fn main() {
         if p == 0 {
             return "free"
         }
-        "paid {p}"
+        `paid {p}`
     })
     print(labels)
     print("main goes on")

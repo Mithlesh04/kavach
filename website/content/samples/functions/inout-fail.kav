@@ -7,8 +7,8 @@ fn withdraw(inout balance: Int, amount: Int) ! String {
 
 fn main() {
     let balance = 50
-    withdraw(balance, 30) catch e => print("failed: {e}")
+    withdraw(balance, 30) catch e => print(`failed: {e}`)
     print(balance)
-    withdraw(balance, 100) catch e => print("failed: {e}")
+    withdraw(balance, 100) catch e => print(`failed: {e}`)
     print(balance)
 }

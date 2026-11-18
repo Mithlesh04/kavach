@@ -2,7 +2,7 @@ type Note: Drop {
     name: String
 
     fn drop(self) uses Console {
-        print("freed {self.name}")
+        print(`freed {self.name}`)
     }
 }
 
@@ -15,7 +15,7 @@ fn find(name: String) -> Note? {
 
 fn main() {
     if let n = find("receipt") {
-        print("found {n.name}")
+        print(`found {n.name}`)
     }
     print("after the if let")
 }

@@ -6,7 +6,7 @@ capability Email {
 
 type Outbox: Email {
     fn send(self, to: String, text: String) ! EmailError {
-        print("to {to}: {text}")
+        print(`to {to}: {text}`)
     }
 }
 
@@ -14,11 +14,11 @@ agent Concierge {
     can Email.send
 
     on welcome(name: String, email: String) ! EmailError {
-        try Email.send(email, "Welcome, {name}!")
+        try Email.send(email, `Welcome, {name}!`)
     }
 
     on shipped(order: Int, email: String) ! EmailError {
-        try Email.send(email, "Order {order} is on its way.")
+        try Email.send(email, `Order {order} is on its way.`)
     }
 }
 

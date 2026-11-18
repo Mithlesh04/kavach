@@ -21,7 +21,7 @@ fn main() {
     shelf.ages["ravi"] = 27
     shelf.ages.remove("asha")
     shelf.recent.push(3)
-    print("popped {top}")
+    print(`popped {top}`)
     print(shelf.numbers)
     print(shelf.tags)
     print(shelf.ages)

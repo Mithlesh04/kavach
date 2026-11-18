@@ -11,7 +11,7 @@ extend Int {
 fn main() {
     for m in String.members() {
         if m.origin != MemberOrigin.BuiltIn {
-            print("String.{m.name}: {m.origin}")
+            print(`String.{m.name}: {m.origin}`)
         }
     }
     const added = Int.members().filter(m => m.origin != MemberOrigin.BuiltIn).map(m => m.name)

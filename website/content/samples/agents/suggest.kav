@@ -26,8 +26,8 @@ agent Refunder {
 
 fn main() ! Error {
     const bot = Refunder.start(Payments: Bank())
-    bot.refund(1, 400) catch e => print("refused: {e}")
-    bot.refund(2, 900) catch e => print("refused: {e}")
+    bot.refund(1, 400) catch e => print(`refused: {e}`)
+    bot.refund(2, 900) catch e => print(`refused: {e}`)
     for line in try fs.lines("audit.log") {
         print(line.split("Z ").last() ?? line)
     }

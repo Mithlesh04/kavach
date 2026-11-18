@@ -5,7 +5,7 @@ type Email: Sample {
     fn sample(gen: Gen) -> Email
         ensure result.value.ends_with(".com") or result.value.ends_with(".in")
     {
-        Email(value: "{gen.word()}@{gen.pick(["example.com", "test.in"])}")
+        Email(value: `{gen.word()}@{gen.pick(["example.com", "test.in"])}`)
     }
 }
 

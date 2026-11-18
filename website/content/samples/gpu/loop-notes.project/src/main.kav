@@ -48,5 +48,5 @@ fn main() ! Error {
     for xs in rounds {
         print(xs.map(step))
     }
-    print("{quiet} {kept} {a} {b} {c} {d}")
+    print(`{quiet} {kept} {a} {b} {c} {d}`)
 }

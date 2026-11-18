@@ -8,8 +8,10 @@ type Item {
 }
 
 fn main() {
-    const items = json.decode<[Item]>("[\{\"name\": \"pen\", \"qty\": 2}, \{\"name\": \"cup\", \"qty\": 0}]") catch e => {
-        print("rejected: {e}")
+    const items = json.decode<[Item]>("""
+        [{"name": "pen", "qty": 2}, {"name": "cup", "qty": 0}]
+        """) catch e => {
+        print(`rejected: {e}`)
         []
     }
     print(items.len())

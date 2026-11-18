@@ -3,7 +3,7 @@ fn save(report: String) -> Int ! Error {
 }
 
 fn greet(name: String) uses Console {
-    print("hello, {name}")
+    print(`hello, {name}`)
 }
 
 fn main() uses Console {

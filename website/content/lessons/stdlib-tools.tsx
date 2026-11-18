@@ -353,13 +353,13 @@ export const regexDoc: LessonDoc = {
     <>
       <Ex name="regex/match" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>Write patterns as raw strings, <C>r&quot;…&quot;</C>, so <C>\d</C> needs no extra backslash.</li>
+        <li>Write patterns in plain quotes: text in quotes is exactly what is written, so <C>\d</C> needs no extra backslash.</li>
         <li><C>(?&lt;year&gt;…)</C> is a named group; <C>named_captures</C> gives each one by name.</li>
       </ul>
       <H2>Find, split, replace</H2>
       <Ex name="regex/find" />
       <Ex name="regex/replace" />
-      <P>In the replacement, <C>${"{year}"}</C> and <C>$1</C> insert a group: a raw string keeps <C>{"{…}"}</C> from being read as interpolation.</P>
+      <P>In the replacement, <C>${"{year}"}</C> and <C>$1</C> insert a group: in quotes, <C>{"{…}"}</C> is these characters, not a value filled in.</P>
       <H2>A pattern that is wrong</H2>
       <Ex name="regex/bad" />
       <H2>Every method</H2>

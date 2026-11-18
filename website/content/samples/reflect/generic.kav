@@ -5,12 +5,12 @@ type Box<T> {
 
 fn main() {
     for m in Box.members() {
-        print("{m.kind} {m.name} -> {m.result}")
+        print(`{m.kind} {m.name} -> {m.result}`)
     }
     for m in List.members().filter(m => m.name == "first" or m.name == "push") {
-        print("{m.name}({m.params.map(p => p.type_name).join(", ")}) -> {m.result}")
+        print(`{m.name}({m.params.map(p => p.type_name).join(", ")}) -> {m.result}`)
     }
     for m in Dict.members().filter(m => m.name == "get") {
-        print("{m.name}({m.params.map(p => "{p.name}: {p.type_name}").join(", ")}) -> {m.result}")
+        print(`{m.name}({m.params.map(p => `{p.name}: {p.type_name}`).join(", ")}) -> {m.result}`)
     }
 }

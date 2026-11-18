@@ -5,5 +5,5 @@ fn status() -> (Int, String) {
 fn main() {
     const pair = status()
     const (code, message) = pair
-    print("{code} {message}")
+    print(`{code} {message}`)
 }

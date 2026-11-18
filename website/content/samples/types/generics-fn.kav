@@ -11,5 +11,5 @@ fn main() {
     print(first([3, 1, 2]) ?? 0)
     print(first(["x", "y"]) ?? "")
     const p = Pair(left: "age", right: 31)
-    print("{p.left}: {p.right}")
+    print(`{p.left}: {p.right}`)
 }

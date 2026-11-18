@@ -3,7 +3,7 @@ fn main() {
     if stock == 0 {
         print("Sold out")
     } else if stock < 5 {
-        print("Only {stock} left")
+        print(`Only {stock} left`)
     } else {
         print("In stock")
     }

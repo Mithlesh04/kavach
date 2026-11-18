@@ -2,9 +2,9 @@ use std.crypto
 
 fn open(key: Bytes, sealed: Bytes) {
     match crypto.decrypt(key, sealed) {
-        ok(data) => print("opened: {data.text() ?? ""}")
+        ok(data) => print(`opened: {data.text() ?? ""}`)
         err(CryptoError.Tampered) => print("refused: changed, or another key")
-        err(CryptoError.BadKey(reason)) => print("bad key: {reason}")
+        err(CryptoError.BadKey(reason)) => print(`bad key: {reason}`)
     }
 }
 

@@ -46,7 +46,7 @@ export const askDoc: LessonDoc = {
   before: ["agents/agents", "types/records"],
   body: (
     <>
-      <Syntax code={"const answer = try ask<Type>(\"the prompt, with {values}\")"} />
+      <Syntax code={"const answer = try ask<Type>(`the prompt, with {values}`)"} />
       <Ex
         name="agents/sub-ask.dry"
         notes={[

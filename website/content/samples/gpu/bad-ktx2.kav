@@ -5,5 +5,5 @@ fn main() uses Window {
         print(e)
         return
     }
-    print("{t.width} × {t.height}")
+    print(`{t.width} × {t.height}`)
 }

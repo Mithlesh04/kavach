@@ -20,7 +20,7 @@ fn both() -> Int ! Error uses Clock, Console {
 
 fn main() {
     const _ = both() catch e => {
-        print("both failed: {e}")
+        print(`both failed: {e}`)
         0
     }
     print("main goes on; the slow part never printed")

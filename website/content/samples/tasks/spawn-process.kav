@@ -4,7 +4,7 @@ type Page {
 }
 
 fn count(pages: [Page]) -> Int {
-    print("counting {pages.len()} pages")
+    print(`counting {pages.len()} pages`)
     let total = 0
     for page in pages {
         total += page.words
@@ -25,7 +25,7 @@ fn main() ! Error {
     const pages = [Page(title: "Home", words: 120), Page(title: "About", words: 80)]
     const job = spawn process count(pages)
     print("started")
-    print("total {try job.wait()} words")
+    print(`total {try job.wait()} words`)
 
     const stuck = spawn process convert("report.doc") within 200.ms
     const _pdf = stuck.wait() catch e => {

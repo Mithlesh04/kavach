@@ -9,6 +9,6 @@ fn main() {
             }
             total += qty
         }
-        print("order total {total}")
+        print(`order total {total}`)
     }
 }

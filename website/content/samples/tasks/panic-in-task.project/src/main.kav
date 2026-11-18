@@ -6,8 +6,8 @@ fn main() {
     const t = spawn third([1, 2])
     print("main waits")
     match t.wait() {
-        ok(n) => print("third: {n}")
-        err(e) => print("{e}")
+        ok(n) => print(`third: {n}`)
+        err(e) => print(`{e}`)
     }
     print("main goes on")
 }

@@ -6,12 +6,12 @@ type Pool {
     /// Runs `work` with a connection, given back even when `work` fails.
     fn using<T>(self, work: fn(Int) -> T ! DbError) -> T ! DbError {
         const conn = self.next.update(n => n + 1)
-        print("took connection {conn}")
+        print(`took connection {conn}`)
         const out = work(conn) catch e => {
-            print("gave {conn} back")
+            print(`gave {conn} back`)
             fail e
         }
-        print("gave {conn} back")
+        print(`gave {conn} back`)
         out
     }
 }

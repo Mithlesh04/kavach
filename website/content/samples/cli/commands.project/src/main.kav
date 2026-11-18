@@ -9,7 +9,7 @@ fn main() {
         return
     }
     match command {
-        Command.AddItem(name, count) => print("add {count} {name}"),
-        Command.Show(limit) => print("show {limit} items"),
+        Command.AddItem(name, count) => print(`add {count} {name}`),
+        Command.Show(limit) => print(`show {limit} items`),
     }
 }

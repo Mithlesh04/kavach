@@ -1,5 +1,5 @@
 pub(out) fn greet(name: String) -> String {
-    "hello, {name}"
+    `hello, {name}`
 }
 
 fn main() {

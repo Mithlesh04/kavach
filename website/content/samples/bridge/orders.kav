@@ -25,12 +25,12 @@ fn main() {
 
     const sum = total(orders) catch _ => 0
     const off = codes["SPRING"] ?? 0
-    print("total {sum}, with {off}% off {sum * (100 - off) / 100}")
-    print("WINTER gives {codes["WINTER"] ?? 0}%")
+    print(`total {sum}, with {off}% off {sum * (100 - off) / 100}`)
+    print(`WINTER gives {codes["WINTER"] ?? 0}%`)
 
     const broken = [Order(item: "kite", qty: 0, cents: 500)]
     match total(broken) {
-        ok(t) => print("total {t}"),
-        err(OrderError.BadQty(item)) => print("refused: no quantity for {item}"),
+        ok(t) => print(`total {t}`),
+        err(OrderError.BadQty(item)) => print(`refused: no quantity for {item}`),
     }
 }

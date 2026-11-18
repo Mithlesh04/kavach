@@ -1,0 +1,3 @@
+warning: `{name}` in quotes is these characters: to fill in `name`, write the text in backticks, `` `…{name}…` `` (spec 1.7)
+Hello, {name}
+Hello, Asha

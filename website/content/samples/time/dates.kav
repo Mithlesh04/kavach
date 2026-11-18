@@ -13,7 +13,7 @@ fn main() ! Error {
     const day = try time.parse_date("2026-11-04")
     print(day.weekday())
     const bad = time.parse_date("2026-02-30") catch e => {
-        print("refused: {e}")
+        print(`refused: {e}`)
         return
     }
     print(bad.iso())

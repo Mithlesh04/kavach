@@ -8,5 +8,5 @@ fn main() ! FsError uses Fs, Console {
     print(try fs.list("reports/2026"))
 
     try fs.remove_all("reports")
-    print("still there: {fs.exists("reports")}")
+    print(`still there: {fs.exists("reports")}`)
 }

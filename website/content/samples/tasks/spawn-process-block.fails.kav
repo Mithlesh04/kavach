@@ -3,5 +3,5 @@ fn main() ! Error {
         print("in a block")
         1
     }
-    print("{try job.wait()}")
+    print(`{try job.wait()}`)
 }

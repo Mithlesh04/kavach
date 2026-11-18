@@ -35,7 +35,7 @@ fn main() ! Error {
     }
     print("started")
     for line in try fs.lines("agents/Bot/set-aside") {
-        print("set-aside: {line}")
+        print(`set-aside: {line}`)
     }
     for line in try fs.lines("agents/Bot/audit.log") {
         print(line.split("Z ").last() ?? line)

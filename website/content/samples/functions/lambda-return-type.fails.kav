@@ -3,7 +3,7 @@ fn main() {
         if p == 0 {
             return 0
         }
-        "paid {p}"
+        `paid {p}`
     }
     print(label(5))
 }

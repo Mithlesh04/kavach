@@ -9,7 +9,7 @@ capability Payments {
 
 type Bank: Payments {
     fn refund(self, order: Int, amount: Int) ! PayError {
-        print("refunded {amount} on order {order}")
+        print(`refunded {amount} on order {order}`)
     }
 }
 
@@ -25,7 +25,7 @@ agent Refunder {
 
 fn review(person: String) ! ApprovalError uses Approvals, Console {
     for r in agents.waiting() {
-        print("{r.id}: {r.call}, by {r.by} when {r.why}")
+        print(`{r.id}: {r.call}, by {r.by} when {r.why}`)
         try agents.answer(r.id, approved: true, by: person)
     }
 }
@@ -33,10 +33,10 @@ fn review(person: String) ! ApprovalError uses Approvals, Console {
 fn main() ! Error uses Approvals, Clock, Console {
     const bot = Refunder.start(Payments: Bank())
     const waits = spawn {
-        bot.refund(1, 900) catch e => print("refused: {e}")
+        bot.refund(1, 900) catch e => print(`refused: {e}`)
     }
     time.sleep(1.seconds)
     try review("asha")
     try waits.wait()
-    agents.answer("Refunder-1-1", approved: true, by: "asha") catch e => print("again: {e}")
+    agents.answer("Refunder-1-1", approved: true, by: "asha") catch e => print(`again: {e}`)
 }

@@ -3,6 +3,6 @@ use std.math
 fn main() {
     print(math.members().map(m => m.name))
     for m in math.members() {
-        print("{m.kind} {m.name} -> {m.result}")
+        print(`{m.kind} {m.name} -> {m.result}`)
     }
 }

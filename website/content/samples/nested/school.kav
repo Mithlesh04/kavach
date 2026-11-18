@@ -46,15 +46,15 @@ fn main() {
     print(school.name)
     for (class_name, room) in school.rooms {
         const math = average(room.marks["math"] ?? [])
-        print("{class_name}: {room.teacher}, {room.students.len()} students, math {math}")
+        print(`{class_name}: {room.teacher}, {room.students.len()} students, math {math}`)
         if let fee = fees[class_name] {
-            print("  fees: {fee(room.students.len())}")
+            print(`  fees: {fee(room.students.len())}`)
         }
     }
 
     // Reach deep: a class, then a subject, then one student's mark.
     if let room = school.rooms["3rd"] {
         const art = room.marks["art"] ?? []
-        print("Ravi's art mark: {art.get(1) ?? 0}")
+        print(`Ravi's art mark: {art.get(1) ?? 0}`)
     }
 }

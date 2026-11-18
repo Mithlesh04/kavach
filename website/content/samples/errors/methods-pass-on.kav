@@ -17,7 +17,7 @@ fn main() {
     print(total(["pen", "cup"]) catch _ => 0)
     const stopped = total(["pen", "kite", "cup"]) catch e => match e {
         PriceError.Unknown(item) => {
-            print("no price for {item}")
+            print(`no price for {item}`)
             0
         },
     }

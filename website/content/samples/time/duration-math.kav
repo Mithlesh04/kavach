@@ -4,7 +4,7 @@ fn main() {
     const limit = 2.seconds + 500.ms
     let left = 1.minutes - limit
     left += 10.seconds
-    print("{limit.ms} ms, {left.ms} ms left")
+    print(`{limit.ms} ms, {left.ms} ms left`)
     print(250.ms * 4 == 1.seconds)
     if limit < 3.seconds {
         print("under the limit")

@@ -4,7 +4,7 @@ fn main() {
     send.close()
     for _ in 1..=2 {
         match receive.take() {
-            Taken.Item(text) => print("took {text}"),
+            Taken.Item(text) => print(`took {text}`),
             Taken.Closed => print("closed: nothing more will come"),
         }
     }

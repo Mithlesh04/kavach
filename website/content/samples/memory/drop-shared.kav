@@ -2,13 +2,13 @@ type Note: Drop {
     name: String
 
     fn drop(self) uses Console {
-        print("freed {self.name}")
+        print(`freed {self.name}`)
     }
 }
 
 fn show(s: Shared<Note>) {
     const t = s                 // one more holder of the same cell
-    print("show sees {t.get().name}")
+    print(`show sees {t.get().name}`)
 }
 
 fn main() {

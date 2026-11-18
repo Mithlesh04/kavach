@@ -7,6 +7,6 @@ fn step(x: Float32) -> Float32 {
 }
 
 fn main() {
-    print("{count} particles at {step(0.0)}")
-    print("version {version}")
+    print(`{count} particles at {step(0.0)}`)
+    print(`version {version}`)
 }

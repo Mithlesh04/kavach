@@ -24,7 +24,7 @@ export const agentsStdDoc: LessonDoc = {
         A call that a crash cut off runs again after the restart, so it may run twice. A service that is told the key
         can drop the repeat, as Stripe and other payment APIs do with an <C>Idempotency-Key</C> header:
       </P>
-      <CodeBlock code={'use std.agents\n\ntype Bank: Payments {\n    fn refund(self, order_id: Int) -> Receipt ! PaymentError {\n        // The bank keeps the keys it has seen and drops a second refund.\n        const key = agents.call_key() ?? "order-{order_id}"\n        try self.api.refund(order_id, key)\n    }\n}'} file="an implementation, from spec 14.16" />
+      <CodeBlock code={'use std.agents\n\ntype Bank: Payments {\n    fn refund(self, order_id: Int) -> Receipt ! PaymentError {\n        // The bank keeps the keys it has seen and drops a second refund.\n        const key = agents.call_key() ?? `order-{order_id}`\n        try self.api.refund(order_id, key)\n    }\n}'} file="an implementation, from spec 14.16" />
       <P>
         Like reading the clock, <C>call_key</C> needs no capability. A whole run, crash and all, is on{" "}
         <Link href="/docs/agents/durable-agents/">Durable Agents</Link>.

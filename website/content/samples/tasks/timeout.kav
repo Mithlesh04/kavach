@@ -8,7 +8,7 @@ fn slow_answer() -> Int uses Clock {
 fn main() {
     const t = spawn slow_answer()
     const answer = t.wait().timeout(100.ms) catch e => {
-        print("gave up: {e}")
+        print(`gave up: {e}`)
         0
     }
     print(answer)

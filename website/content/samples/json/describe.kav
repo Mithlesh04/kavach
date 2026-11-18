@@ -13,7 +13,7 @@ fn place(o: NewOrder) -> Int ! ShopError uses Console {
     if o.qty > 10 {
         fail ShopError.TooMany(qty: o.qty)
     }
-    print("placing {o.item}")
+    print(`placing {o.item}`)
     1
 }
 

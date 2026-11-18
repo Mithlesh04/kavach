@@ -87,7 +87,7 @@ export const durableDoc: LessonDoc = {
         </li>
         <li>Inside a capability&apos;s own code, the clock isn&apos;t journaled: the call&apos;s result is.</li>
       </ul>
-      <Syntax code={'on remind(order_id: Int) ! Error {\n    try Email.send("Your order {order_id} ships soon.")\n    time.sleep(1.days)            // a crash an hour in: after the restart, 23 hours more\n    try Email.send("Your order {order_id} has shipped.")\n}'} />
+      <Syntax code={'on remind(order_id: Int) ! Error {\n    try Email.send(`Your order {order_id} ships soon.`)\n    time.sleep(1.days)            // a crash an hour in: after the restart, 23 hours more\n    try Email.send(`Your order {order_id} has shipped.`)\n}'} />
       <H2>Each call has a key</H2>
       <P>
         A call the crash cut off runs again, so a service may see it twice. Each call in a handler has a key, the same

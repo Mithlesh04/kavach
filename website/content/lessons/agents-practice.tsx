@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
-import { C } from "@/components/inline-code";
+import { C, withCode } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import { agentCases, agentCrash, agentFile, agentOrders, agentRunCommand, agentWays, pythonFunction, type Case, type Way } from "@/lib/agent-bench";
@@ -21,7 +21,7 @@ const heaviest = (c: Case) => c.ways.filter((w) => !isKavach(w)).sort((a, b) => 
 const times = (n: number) => (n >= 10 ? Math.round(n) : Math.round(n * 10) / 10);
 const fmt = (n: number) => n.toLocaleString("en-US");
 /** README text with its `code` spans shown as code. */
-const code = (text: string) => text.split("`").map((part, i) => (i % 2 ? <C key={i}>{part}</C> : part));
+const code = (text: string) => withCode(text);
 
 /** The Kavach code shown under a case, and what to look for in it. The large case has its own, longer story below. */
 const caseCode: Record<string, { file: string; about: React.ReactNode }> = {

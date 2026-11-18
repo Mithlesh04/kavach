@@ -1,5 +1,5 @@
 fn greet(name: String) -> String {
-    "hi {name}"
+    `hi {name}`
 }
 
 fn main() {

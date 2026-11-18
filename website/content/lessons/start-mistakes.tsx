@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
-import { C } from "@/components/inline-code";
+import { C, withCode } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
 import { mistakes, mistakeSteps, type Mistake } from "@/lib/mistakes";
@@ -10,7 +10,7 @@ import { H2, P } from "./parts";
 // and the site check runs each case again with `kavach check`.
 
 /** README text with its `code` spans shown as code. */
-const code = (text: string) => text.split("`").map((part, i) => (i % 2 ? <C key={i}>{part}</C> : part));
+const code = (text: string) => withCode(text);
 
 const stepColor: Record<string, string> = {
   "compile error": "bg-bad-bg text-bad",

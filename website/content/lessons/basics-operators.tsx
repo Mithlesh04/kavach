@@ -150,7 +150,7 @@ export const comparisonDoc: LessonDoc = {
           ["<", "Digits in text", "Text compares character by character, so \"10\" comes before \"9\"", '"10" < "9"'],
           ["<", "Numbers by value", "Numbers compare as numbers", "10 < 9"],
           ["<", "Characters", "One character against another, by its code", "'a' < 'b'"],
-          ["==", "Same look, different text", "é as one character and as e plus an accent are different text: text is not normalized", '"\\u{e9}" == "e\\u{301}"'],
+          ["==", "Same look, different text", "é as one character and as e plus an accent are different text: text is not normalized", '`\\u{e9}` == `e\\u{301}`'],
           ["==", "Missing values", "none equals none", "missing == none"],
           ["==", "Records", "Equal when all their fields are equal", 'User(name: "Asha") == User(name: "Asha")'],
         ]}

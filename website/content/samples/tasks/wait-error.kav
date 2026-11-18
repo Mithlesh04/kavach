@@ -7,7 +7,7 @@ fn main() {
     const bad = spawn parse_age("thirty")
     print(good.wait() catch _ => -1)
     print(bad.wait() catch e => {
-        print("the task failed: {e}")
+        print(`the task failed: {e}`)
         -1
     })
 }

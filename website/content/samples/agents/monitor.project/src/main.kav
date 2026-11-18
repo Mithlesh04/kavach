@@ -32,7 +32,7 @@ agent Refunder {
 
     on refund(order: Int, amount: Int) ! PayError {
         Payments.refund(order, amount) catch e => {
-            log.warn(RefundBlocked(order: order, reason: "{e}"))
+            log.warn(RefundBlocked(order: order, reason: `{e}`))
             fail e
         }
         log.info(RefundIssued(order: order, amount: amount))

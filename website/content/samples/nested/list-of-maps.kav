@@ -5,6 +5,6 @@ fn main() {
     ]
     print(people[1]["city"] ?? "unknown")
     for person in people {
-        print("{person["name"] ?? "?"} lives in {person["city"] ?? "?"}")
+        print(`{person["name"] ?? "?"} lives in {person["city"] ?? "?"}`)
     }
 }

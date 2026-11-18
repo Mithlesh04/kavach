@@ -25,8 +25,8 @@ fn main() uses Console, Clock {
         time.sleep(1.hours)
     }
     const _ = ready.take()
-    print("free seats: {free.get()}")
+    print(`free seats: {free.get()}`)
     guest.cancel()
     guest.wait() catch _ => {}
-    print("free seats: {free.get()}")
+    print(`free seats: {free.get()}`)
 }

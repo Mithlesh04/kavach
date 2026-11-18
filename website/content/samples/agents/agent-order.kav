@@ -6,7 +6,7 @@ capability Payments {
 
 type Bank: Payments {
     fn refund(self, order: Int, amount: Int) ! PayError {
-        print("refunded {amount} on order {order}")
+        print(`refunded {amount} on order {order}`)
     }
 }
 
@@ -26,6 +26,6 @@ agent Refunder {
 
 fn main() {
     const bot = Refunder.start(Payments: Bank())
-    bot.refund(1, 50) catch e => print("refused: {e}")
-    bot.refund(2, 900) catch e => print("refused: {e}")
+    bot.refund(1, 50) catch e => print(`refused: {e}`)
+    bot.refund(2, 900) catch e => print(`refused: {e}`)
 }

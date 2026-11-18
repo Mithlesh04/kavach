@@ -3,7 +3,7 @@ use std.log
 fn main() {
     const ms = 12.5
     log.histogram("checkout.duration_ms", ms, attributes: {
-        "http.route": "/orders/\{id}",
+        "http.route": `/orders/\{id}`,
         "http.response.status_code": "200",
     })
     log.count("orders_paid", 1, attributes: {"method": "card"})  // one series

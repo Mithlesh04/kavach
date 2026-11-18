@@ -2,7 +2,7 @@ agent Counter {
     can Ai
 
     on tick(n: Int) {
-        print("tick {n}")
+        print(`tick {n}`)
     }
 }
 

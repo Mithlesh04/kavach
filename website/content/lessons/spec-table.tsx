@@ -1,11 +1,10 @@
-import { C } from "@/components/inline-code";
+import { withCode } from "@/components/inline-code";
 import { specTables } from "@/lib/spec-tables";
 
 /** A spec table cell: `code` in backticks becomes code; outside code, ** bold marks are dropped and a [link](url) keeps its text. */
 export function Cell({ text }: { text: string }) {
-  const parts = text.split("`");
   const plain = (p: string) => p.replace(/\*\*/g, "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1");
-  return <>{parts.map((p, i) => (i % 2 ? <C key={i}>{p}</C> : plain(p)))}</>;
+  return <>{withCode(text, plain)}</>;
 }
 
 export function Table({ header, rows, wrapFirst = false }: { header: string[]; rows: string[][]; wrapFirst?: boolean }) {

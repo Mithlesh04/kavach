@@ -8,5 +8,5 @@ pub fn with_tax(cents: Int) -> Int
 
 /// A short label for an order.
 pub fn label(id: Int) -> String {
-    "order {id}"
+    `order {id}`
 }

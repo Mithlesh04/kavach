@@ -17,8 +17,8 @@ export const outputDoc: LessonDoc = {
       </P>
       <Ex name="output/print" />
       <Note>
-        Text goes between double quotes: <C>&quot;Hello&quot;</C>. To put a value inside text, write it in
-        braces: <C>&quot;Total: {"{total}"}&quot;</C>. The Strings page covers this in full.
+        Text goes between double quotes: <C>&quot;Hello&quot;</C>. To put a value inside text, write the text in
+        backticks and the value in braces: <C>{"`Total: {total}`"}</C>. The Strings page covers this in full.
       </Note>
     </>
   ),

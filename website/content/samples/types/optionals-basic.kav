@@ -12,6 +12,6 @@ fn main() {
     print(found?.name ?? "guest")
     print(missing?.name ?? "guest")
     if let u = find_user(7) {
-        print("Found {u.name}")
+        print(`Found {u.name}`)
     }
 }

@@ -6,7 +6,7 @@ fn main() {
     print(ages["asha"] ?? 0)   // 31 — missing key → your fallback
 
     for (name, age) in ages {     // insertion order, always
-        print("{name} is {age}")
+        print(`{name} is {age}`)
     }
 
     ages.remove("omar")

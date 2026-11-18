@@ -5,7 +5,7 @@ fn total(prices: [Int]) -> Int {
 }
 
 pub fn save_total(prices: [Int]) ! FsError uses Fs.write {
-    try fs.write_text("total.txt", "{total(prices)}")
+    try fs.write_text("total.txt", `{total(prices)}`)
 }
 
 fn main() ! Error {

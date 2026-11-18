@@ -2,7 +2,7 @@ type Celsius: Display {
     pub degrees: Float
 
     fn display(self) -> String {
-        "{self.degrees}°C"
+        `{self.degrees}°C`
     }
 }
 
@@ -14,7 +14,7 @@ type Reading {
 fn main() {
     const today = Celsius(degrees: 31.5)
     print(today)
-    print("Today: {today}")
+    print(`Today: {today}`)
     print(String(today).len())
     print([Celsius(degrees: 18.0), Celsius(degrees: -2.5)])
     print({"Pune": today})

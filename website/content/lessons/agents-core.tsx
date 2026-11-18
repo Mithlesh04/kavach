@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
-import { C } from "@/components/inline-code";
+import { C, withCode } from "@/components/inline-code";
 import { RollingWindow } from "@/components/rolling-window";
 import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
@@ -16,7 +16,7 @@ const AI_TESTS = "tools/cli/tests/ai.rs";
 const handlerPanic = loadProject("agents/handler-panic", ["src/main.kav"]);
 
 /** A spec cell with its `code` spans shown as code. */
-const cell = (text: string) => text.split("`").map((part, i) => (i % 2 ? <C key={i}>{part}</C> : part));
+const cell = (text: string) => withCode(text);
 
 /** Spec 8.3's table of limit rules, as the spec writes it. */
 function LimitRules() {

@@ -6,7 +6,7 @@ fn main() {
         for w in words {
             longest = longest.max(w.len())
         }
-        summary = "found {words.len()} words"
+        summary = `found {words.len()} words`
     }
     print(longest)
     print(summary)

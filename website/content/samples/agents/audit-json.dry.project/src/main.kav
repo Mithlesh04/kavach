@@ -13,7 +13,7 @@ capability Payments {
 
 type Bank: Payments {
     fn refund(self, order: Int, amount: Int) ! PayError {
-        print("refunded {amount} on order {order}")
+        print(`refunded {amount} on order {order}`)
     }
 }
 
@@ -27,7 +27,7 @@ agent Support {
     }
 
     on handle(order: Int, amount: Int, note: String) ! Error {
-        const v = try ask<Verdict>("Is this a complaint? {note}")
+        const v = try ask<Verdict>(`Is this a complaint? {note}`)
         if v.complaint {
             try Payments.refund(order, amount)
         }
@@ -37,9 +37,9 @@ agent Support {
 fn main() ! Error {
     const bot = Support.start(Payments: Bank())
     try bot.handle(7, 40, "My order never came.")
-    bot.handle(8, 900, "It broke on day one.") catch e => print("refused: {e}")
+    bot.handle(8, 900, "It broke on day one.") catch e => print(`refused: {e}`)
     for line in try fs.lines("agents/Support/audit.log") {
         // The time changes every run, so it is cut out here.
-        print("{line.slice(0, 9)}…{line.slice(29, line.len())}")
+        print(`{line.slice(0, 9)}…{line.slice(29, line.len())}`)
     }
 }

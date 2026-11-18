@@ -6,7 +6,7 @@ fn main() {
             print("four")
         }
         if counts[i] % 2 == 1 {
-            print("{counts[i]} is odd")
+            print(`{counts[i]} is odd`)
         }
     }
 }

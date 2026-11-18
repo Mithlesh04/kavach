@@ -1,5 +1,5 @@
 pub fn price_with_tax(price: Decimal) -> Decimal {
-    debug("working out tax on {price}")
+    debug(`working out tax on {price}`)
     price * 1.18
 }
 

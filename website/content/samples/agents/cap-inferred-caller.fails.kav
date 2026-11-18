@@ -1,9 +1,9 @@
 fn shout(message: String) {
-    print("{message}!")
+    print(`{message}!`)
 }
 
 pub fn greet(name: String) {
-    shout("Namaste, {name}")
+    shout(`Namaste, {name}`)
 }
 
 fn main() {

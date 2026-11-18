@@ -10,7 +10,7 @@ fn main() {
     const total = Shared(10)
     const t = spawn cores add_bonus(total)
     t.wait() catch _ => {}
-    print("total {total.get()}")
+    print(`total {total.get()}`)
     total.update(n => n + 1)
-    print("total {total.get()}")
+    print(`total {total.get()}`)
 }

@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
-import { C } from "@/components/inline-code";
+import { C, withCode } from "@/components/inline-code";
 import { typeFields } from "@/lib/ai-model";
 
 /** Doc text with its `code` spans shown as code. */
-const code = (text: string) => text.split("`").map((part, i) => (i % 2 ? <C key={i}>{part}</C> : part));
+const code = (text: string) => withCode(text);
 
 /**
  * Every field of a std.ai record, as the library declares it: its type, its

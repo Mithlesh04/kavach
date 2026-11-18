@@ -1,1 +1,1 @@
-error: expected `fn(Int, Int) -> Int`, found `fn(String) -> String`
+error: expected `fn(Int, Int) -> Int`, found `fn(String) -> String`: a dict holds one type of value, so functions of different types go in a record, or in a dict of a union of their shapes (spec 3.4)

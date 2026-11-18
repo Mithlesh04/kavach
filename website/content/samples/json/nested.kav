@@ -1,7 +1,7 @@
 use std.json
 
 fn main() ! Error {
-    const text = """
+    const text = `
         \{
             "order": \{
                 "id": 7,
@@ -12,7 +12,7 @@ fn main() ! Error {
                 ]
             }
         }
-        """
+        `
     const doc = try json.parse(text)
     const order = doc["order"]
     print(order["customer"]["name"].text() ?? "")
@@ -21,6 +21,6 @@ fn main() ! Error {
     for item in order["items"].list() ?? [] {
         total += item["price"].int() ?? 0
     }
-    print("{order["items"].len()} items, {total} in all")
+    print(`{order["items"].len()} items, {total} in all`)
     print(order["customer"]["phone"]["mobile"].text() ?? "no phone")
 }

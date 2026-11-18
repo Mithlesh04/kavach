@@ -10,5 +10,5 @@ type Area {
 
 fn main() {
     const room = Meters(m: 3.0) * Meters(m: 4.0)
-    print("{room.sq} square meters")
+    print(`{room.sq} square meters`)
 }

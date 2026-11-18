@@ -3,16 +3,16 @@ type Box = Full(s: Shape) | Empty
 
 fn label(b: Box) -> String {
     match b {
-        Box.Full(s: Shape.Circle(radius)) => "a circle of radius {radius}",
-        Box.Full(s: Shape.Square(side)) => "a square of side {side}",
+        Box.Full(s: Shape.Circle(radius)) => `a circle of radius {radius}`,
+        Box.Full(s: Shape.Square(side)) => `a square of side {side}`,
         Box.Empty => "nothing",
     }
 }
 
 fn describe(found: Shape?) -> String {
     match found {
-        Shape.Circle(radius) => "circle {radius}",
-        Shape.Square(side) => "square {side}",
+        Shape.Circle(radius) => `circle {radius}`,
+        Shape.Square(side) => `square {side}`,
         none => "not found",
     }
 }

@@ -1,8 +1,8 @@
 fn main() {
     print("asha".capitalize())
     print("the tALE of two".title())
-    print("[{"  menu  ".trim_start()}]")
-    print("[{"  menu  ".trim_end()}]")
+    print(`[{"  menu  ".trim_start()}]`)
+    print(`[{"  menu  ".trim_end()}]`)
     print("A very long title".truncate(6))
-    print(" \t\n".is_blank())
+    print(` \t\n`.is_blank())
 }

@@ -9,7 +9,7 @@ fn main() {
     const budget = Money(cents: 200)
     const cart = Money(cents: 150) + Money(cents: 99)
     if cart > budget {
-        print("over budget by {(cart.cents - budget.cents)} cents")
+        print(`over budget by {(cart.cents - budget.cents)} cents`)
     }
     print(Money(cents: 4) >= Money(cents: 4))
 }

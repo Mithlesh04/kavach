@@ -2,5 +2,5 @@ use orders.{with_tax, label}
 use billing.invoice
 
 fn main() {
-    print("{label(7)}: {with_tax(1_000)}, {invoice.number(7)}")
+    print(`{label(7)}: {with_tax(1_000)}, {invoice.number(7)}`)
 }

@@ -15,7 +15,7 @@ capability Desk {
 
 type TestDesk: Desk {
     fn assign(self, team: Team, summary: String) ! DeskError {
-        print("assigned to {team}")
+        print(`assigned to {team}`)
     }
 }
 
@@ -31,12 +31,12 @@ agent Support {
     }
 
     on message(text: String) ! Error {
-        const t = try ask<Triage>("Which team should answer this message? {text}")
+        const t = try ask<Triage>(`Which team should answer this message? {text}`)
         try Desk.assign(t.team, t.summary)
     }
 }
 
 fn main() {
     const bot = Support.start(Desk: TestDesk())
-    bot.message("I was charged twice this month") catch e => print("failed: {e}")
+    bot.message("I was charged twice this month") catch e => print(`failed: {e}`)
 }

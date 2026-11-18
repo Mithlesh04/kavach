@@ -3,7 +3,7 @@ fn main() {
     const fields = line.view().trim().split(", ")     // [StrView]: no text copied
     for f in fields {
         const parts = f.split("=")
-        print("{parts[0]} is {parts[1]}")
+        print(`{parts[0]} is {parts[1]}`)
     }
     const id = Int(fields[0].view(3, 5)) catch 0      // a number read from a view
     print(id + 1)

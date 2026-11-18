@@ -1,7 +1,7 @@
 type Retry = (times: Int, wait_ms: Int)
 
 fn describe(r: Retry) -> String {
-    "{r.times} tries, {r.wait_ms} ms apart"
+    `{r.times} tries, {r.wait_ms} ms apart`
 }
 
 fn main() {

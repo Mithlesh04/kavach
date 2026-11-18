@@ -2,7 +2,7 @@ type Lock: Drop {
     name: String
 
     fn drop(self) uses Console {
-        print("unlocked {self.name}")
+        print(`unlocked {self.name}`)
     }
 }
 

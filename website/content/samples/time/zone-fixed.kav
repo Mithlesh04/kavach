@@ -12,7 +12,7 @@ fn main() ! Error {
 
     for name in ["+24:00", "+5:30"] {
         const _zone = time.zone(name) catch e => {
-            print("refused: {e}")
+            print(`refused: {e}`)
             continue
         }
     }

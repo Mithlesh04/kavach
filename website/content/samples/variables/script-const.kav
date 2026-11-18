@@ -5,7 +5,7 @@ const notes = fs.read_text("shop-notes.txt") catch "missing"   // a line of the 
 const limit = 3                                                  // a module constant
 
 fn show() -> String {
-    "limit {limit}"
+    `limit {limit}`
 }
 
 print(show())

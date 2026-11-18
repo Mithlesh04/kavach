@@ -6,7 +6,7 @@ fn refund(price: Int, share: Share) -> String {
         Share.Half => price / 2,
         Share.Escalate => return "escalate",    // leaves the function
     }
-    "refund {amount}"
+    `refund {amount}`
 }
 
 fn main() {

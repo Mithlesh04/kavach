@@ -6,7 +6,7 @@ capability Store {
 
 type TestStore: Store {
     fn buy(self, item: String, price: Int) ! StoreError {
-        print("bought {item} for {price}")
+        print(`bought {item} for {price}`)
     }
 }
 
@@ -27,6 +27,6 @@ agent Shopper {
 fn main() {
     const bot = Shopper.start(Store: TestStore())
     for r in [(item: "rice", price: 900), (item: "laptop", price: 45_000), (item: "pan", price: 1_500), (item: "tea", price: 800)] {
-        bot.order(r.item, r.price) catch e => print("not bought {r.item}: {e}")
+        bot.order(r.item, r.price) catch e => print(`not bought {r.item}: {e}`)
     }
 }

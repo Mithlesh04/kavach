@@ -6,7 +6,9 @@ type User {
 }
 
 fn main() ! Error {
-    const text = "\{\"name\": \"Asha\", \"nickname\": null}"
+    const text = """
+        {"name": "Asha", "nickname": null}
+        """
     const doc = try json.parse(text)
     print(doc["nickname"].is_null())
     print(doc["missing"].is_null())

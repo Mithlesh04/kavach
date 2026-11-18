@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { CodeBlock } from "@/components/code-block";
-import { C } from "@/components/inline-code";
+import { C, withCode } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import { rustConst } from "@/lib/rust-tests";
 import { specTables } from "@/lib/spec-tables";
@@ -14,7 +14,7 @@ import { Ex, H2, Note, P } from "./parts";
 
 const TEST = "tools/cli/tests/token_budget.rs";
 const TEST_FN = "each_way_of_counting_asks_under_way_keeps_its_promise";
-const code = (text: string) => text.split("`").map((part, i) => (i % 2 ? <C key={i}>{part}</C> : part));
+const code = (text: string) => withCode(text);
 
 function fromTest() {
   const text = fs.readFileSync(path.join(process.cwd(), "..", TEST), "utf8").replace(/\r\n/g, "\n");

@@ -6,7 +6,7 @@ fn main() {
     while not hold.asked() and rounds < 3 {
         rounds += 1
     }
-    print("asked: {hold.asked()}, rounds: {rounds}")
+    print(`asked: {hold.asked()}, rounds: {rounds}`)
     print("saving progress")
     hold.done()
 }

@@ -4,5 +4,5 @@ fn main() {
     let a = bank.open("Asha")
     bank.deposit(a, 5)
     bank.deposit(a, 20)
-    print("{a.owner}: {a.balance}, from {a.history.len()} deposits")
+    print(`{a.owner}: {a.balance}, from {a.history.len()} deposits`)
 }

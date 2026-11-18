@@ -7,14 +7,14 @@ capability Payments {
 
 type TestBank: Payments {
     fn refund(self, order: Int, amount: Int) ! PayError {
-        print("refunded {amount} on order {order}")
+        print(`refunded {amount} on order {order}`)
     }
 
     fn charge(self, order: Int, amount: Int) ! PayError {
         if amount > 1_000 {
             fail PayError.Declined
         }
-        print("charged {amount} on order {order}")
+        print(`charged {amount} on order {order}`)
     }
 }
 
@@ -32,7 +32,7 @@ agent Shop {
 
 fn main() {
     const shop = Shop.start(Payments: TestBank())
-    shop.buy(1, 300) catch e => print("failed: {e}")
-    shop.buy(2, 5_000) catch e => print("failed: {e}")
-    shop.cancel(1, 300) catch e => print("failed: {e}")
+    shop.buy(1, 300) catch e => print(`failed: {e}`)
+    shop.buy(2, 5_000) catch e => print(`failed: {e}`)
+    shop.cancel(1, 300) catch e => print(`failed: {e}`)
 }

@@ -9,6 +9,6 @@ fn main() {
     for _ in 0..1_000 {
         rolls.push(roll())
     }
-    print("every roll from 1 to 6: {rolls.all(r => 1 <= r <= 6)}")
-    print("all six faces came up: {[1, 2, 3, 4, 5, 6].all(face => rolls.contains(face))}")
+    print(`every roll from 1 to 6: {rolls.all(r => 1 <= r <= 6)}`)
+    print(`all six faces came up: {[1, 2, 3, 4, 5, 6].all(face => rolls.contains(face))}`)
 }

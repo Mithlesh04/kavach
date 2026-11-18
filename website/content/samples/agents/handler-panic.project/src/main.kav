@@ -11,12 +11,12 @@ agent Picker {
 fn main() ! Error {
     const bot = Picker.start()
     const first = bot.pick([1, 2], 5) catch e => {
-        print("{e}")
+        print(`{e}`)
         0
     }
-    print("first: {first}")
+    print(`first: {first}`)
     const next = try bot.pick([1, 2], 1)
-    print("next: {next}")
+    print(`next: {next}`)
     for line in try fs.lines("agents/Picker/audit.log") {
         print(line.split("Z ").last() ?? line)
     }

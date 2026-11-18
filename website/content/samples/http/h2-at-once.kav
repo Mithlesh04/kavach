@@ -11,7 +11,7 @@ fn show(c: H2Client, path: String) ! H2Error uses Net, Console {
         Header(name: ":authority", value: "localhost"),
         Header(name: ":path", value: path),
     ], Bytes([]))
-    print("got {path}: {reply.body.text() ?? "?"}")
+    print(`got {path}: {reply.body.text() ?? "?"}`)
 }
 
 fn main() ! Error uses Clock {
@@ -20,7 +20,7 @@ fn main() ! Error uses Clock {
         if r.path == "/report" {
             time.sleep(300.ms)      // a slow request
         }
-        print("answered {r.path}")
+        print(`answered {r.path}`)
         http.text(200, "done")
     })
     const c = try h2.connect(try net.connect(listener.address()))

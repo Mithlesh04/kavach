@@ -15,11 +15,11 @@ fn report(orders: [Order]) -> String { … }
 fn main() { … }
 outline: 229 of 508 characters (45%)
 $ kavach query callers total_paid src/main.kav
-src/main.kav:21  in report: "paid: {total_paid(orders)}"
+src/main.kav:21  in report: `paid: {total_paid(orders)}`
 $ kavach context report src/main.kav --budget 300
 // context for `report` in src/main.kav (~61 tokens)
 fn report(orders: [Order]) -> String {
-    "paid: {total_paid(orders)}"
+    `paid: {total_paid(orders)}`
 }
 
 // used by `report`:

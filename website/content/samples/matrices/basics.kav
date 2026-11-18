@@ -7,5 +7,5 @@ fn main() uses Console {
     print((a * b).to_rows())
     print((a + b).items)
     print(a.transpose().to_rows())
-    print("{a.rows} x {a.cols}, item (1, 0) is {a.at(1, 0)}")
+    print(`{a.rows} x {a.cols}, item (1, 0) is {a.at(1, 0)}`)
 }

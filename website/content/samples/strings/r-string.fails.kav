@@ -1,0 +1,4 @@
+fn main() {
+    const pattern = r"\d+"
+    print(pattern)
+}

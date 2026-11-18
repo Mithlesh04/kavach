@@ -38,12 +38,12 @@ agent Trainee {
 }
 
 fn main() ! Error {
-    Refunder.start(Payments: Bank()).refund(1, 900) catch e => print("Refunder: {e}")
-    Trainee.start(Payments: Bank()).refund(2, 900) catch e => print("Trainee: {e}")
+    Refunder.start(Payments: Bank()).refund(1, 900) catch e => print(`Refunder: {e}`)
+    Trainee.start(Payments: Bank()).refund(2, 900) catch e => print(`Trainee: {e}`)
     for name in ["Refunder", "Trainee"] {
-        for line in try fs.lines("agents/{name}/audit.log") {
+        for line in try fs.lines(`agents/{name}/audit.log`) {
             if line.trim().starts_with("verdict:") {
-                print("{name} {line.trim()}")
+                print(`{name} {line.trim()}`)
             }
         }
     }

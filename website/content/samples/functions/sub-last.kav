@@ -1,5 +1,5 @@
 fn greet(name: String) -> String {
-    "namaste, {name}"
+    `namaste, {name}`
 }
 
 fn add(a: Int, b: Int) -> Int {

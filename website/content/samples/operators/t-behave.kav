@@ -11,7 +11,7 @@ fn main() {
     print("10" < "9")
     print(10 < 9)
     print('a' < 'b')
-    print("\u{e9}" == "e\u{301}")
+    print(`\u{e9}` == `e\u{301}`)
     print(missing == none)
     print(User(name: "Asha") == User(name: "Asha"))
 }

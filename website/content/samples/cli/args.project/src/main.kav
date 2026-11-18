@@ -2,7 +2,7 @@ use std.cli
 
 fn main() {
     const args = cli.args()
-    print("{args.len()} arguments: {args}")
+    print(`{args.len()} arguments: {args}`)
     const name = args.first() ?? "friend"
-    print("Namaste, {name}!")
+    print(`Namaste, {name}!`)
 }

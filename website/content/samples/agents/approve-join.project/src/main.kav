@@ -11,7 +11,7 @@ capability Payments {
 
 type Bank: Payments {
     fn refund(self, order: Int, amount: Int) ! PayError {
-        print("refunded {amount} on order {order}")
+        print(`refunded {amount} on order {order}`)
     }
 }
 
@@ -30,7 +30,7 @@ fn main() ! Error {
     const bot = Refunder.start(Payments: Bank())
     print("started")
     const waits = spawn {
-        bot.refund(1, 900) catch e => print("refused: {e}")
+        bot.refund(1, 900) catch e => print(`refused: {e}`)
     }
     if cli.args().contains("send") {
         time.sleep(2.seconds)
@@ -39,7 +39,7 @@ fn main() ! Error {
     }
     time.sleep(1.seconds)
     for r in agents.waiting() {
-        print("waiting: {r.id}")
+        print(`waiting: {r.id}`)
         try agents.answer(r.id, approved: true, by: "asha")
     }
     try waits.wait()

@@ -11,7 +11,7 @@ import { Table } from "./spec-table";
 // ---------- Strings ----------
 
 export const stringsDoc: LessonDoc = {
-  lead: "A String is text: letters, digits, spaces, any script. Write it in double quotes.",
+  lead: "A String is text: letters, digits, spaces, any script. Write it in double quotes, or in backticks to fill in values.",
   simple: <>A string is any piece of text: a name, a message, a sentence in any language. Once made, it never changes; tidying it, such as turning it into capitals, gives you a new string.</>,
   minutes: 4,
   before: ["basics/variables"],
@@ -19,7 +19,8 @@ export const stringsDoc: LessonDoc = {
     <>
       <Ex name="strings/overview" />
       <P>
-        Braces inside text put a value in: <C>&quot;Hello, {"{name}"}!&quot;</C>. Methods do the rest:{" "}
+        Text in backticks is a template, and braces in it put a value in: <C>{"`Hello, {name}!`"}</C>. Methods do the
+        rest:{" "}
         <C>len()</C> counts characters, <C>upper()</C> gives capitals.
       </P>
       <H2>Strings never change</H2>
@@ -50,54 +51,71 @@ export const stringsDoc: LessonDoc = {
 };
 
 export const makeStringsDoc: LessonDoc = {
-  lead: "Plain strings, multi-line strings in triple quotes, and raw strings that take every character as written.",
-  simple: <>Most text fits in plain quotes. A long note over several lines goes in triple quotes, and text such as a Windows folder path, where every backslash must stay exactly as typed, goes in a raw string.</>,
+  lead: "Text in quotes is exactly what is written. Triple quotes hold several lines, or quotes inside. Backticks make a template.",
+  simple: <>Text in quotes is taken exactly as you type it, backslashes and braces too, so a folder path or a pattern needs nothing special. A long note over several lines goes in triple quotes. When you want values filled in, or a tab or a new line, use backticks.</>,
   minutes: 3,
   body: (
     <>
       <Ex name="strings/make" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li><C>&quot;&quot;&quot; … &quot;&quot;&quot;</C> holds several lines. The indentation they share is removed, so the text can sit neatly in your code.</li>
-        <li><C>r&quot;…&quot;</C> is raw: a backslash or a brace is just a character. Handy for Windows paths.</li>
-        <li>In a plain string, <C>\t</C> is a tab, <C>\n</C> a new line, <C>\r</C> a carriage return (as protocols that end lines with <C>\r\n</C> need), <C>\&quot;</C> a quote.</li>
+        <li><C>&quot;…&quot;</C> has no escapes and fills nothing in: a backslash and a brace are characters like any other.</li>
+        <li><C>&quot;&quot;&quot; … &quot;&quot;&quot;</C> holds several lines, or text with a <C>&quot;</C> in it. The indentation the lines share is removed, so the text can sit neatly in your code.</li>
+        <li>In a template, in backticks, <C>\t</C> is a tab, <C>\n</C> a new line, <C>\r</C> a carriage return (as protocols that end lines with <C>\r\n</C> need), <C>{"\\`"}</C> a backtick and <C>{"\\{"}</C> a brace.</li>
       </ul>
-      <P>
-        Raw text can go over many lines too. <C>r&quot;&quot;&quot; … &quot;&quot;&quot;</C> keeps every backslash
-        and brace, and removes the shared indentation as <C>&quot;&quot;&quot;</C> does. It suits JSON, SQL and
-        regular expressions written out in full:
-      </P>
+      <P>So JSON, SQL and regular expressions go in quotes as they are, with nothing to escape:</P>
       <Ex name="strings/raw-many" />
+      <P>
+        A string in quotes that looks as if it wanted a template gets a warning that says to use backticks: braces
+        around a name in scope, or a <C>\n</C> or <C>\t</C> that isn&apos;t part of a Windows path:
+      </P>
+      <Ex name="strings/looks-like-template.warns" />
+      <P>
+        There is no <C>r&quot;…&quot;</C>: text in quotes is raw already, and the message says to drop the <C>r</C>:
+      </P>
+      <Ex name="strings/r-string.fails" />
       <div className="flex flex-wrap gap-2.5">
-        <SrcRef file="tests/conformance/01-basics/raw-text-over-many-lines.kav" label="raw text over many lines, tested" />
+        <SrcRef file="docs/spec/01-basics.md" label="spec 1.7 · plain strings and templates" />
+        <SrcRef file="docs/decisions/0131-plain-strings-and-backtick-templates.md" label="decision 0131" />
+        <SrcRef file="tests/conformance/01-basics/a-quoted-string-is-plain.kav" label="plain, tested" />
+        <SrcRef file="tests/conformance/01-basics/quoted-text-over-many-lines-is-plain.kav" label="over many lines, tested" />
+        <SrcRef file="tests/conformance/01-basics/a-quoted-string-that-looks-like-a-template-warns.kav" label="the warning, tested" />
+        <SrcRef file="tests/conformance/01-basics/r-strings-are-not-kavach.kav" label="no r, tested" />
       </div>
     </>
   ),
 };
 
 export const interpolationDoc: LessonDoc = {
-  lead: "Write any expression in braces inside a string, and its value is put in its place.",
-  simple: <>Like a form letter with blanks: the braces mark each blank, and when the text is made, each blank is filled with a value, such as a name or a total.</>,
+  lead: "Write text in backticks, a template, and any expression in braces inside it is put in its place.",
+  simple: <>Like a form letter with blanks: the braces mark each blank, and when the text is made, each blank is filled with a value, such as a name or a total. The backticks say the text has blanks.</>,
   minutes: 2,
   body: (
     <>
       <Ex name="text/sub-insert" />
       <P>
-        Every string fills in its braces by itself, so there is no <C>f&quot;…&quot;</C> as in Python. Writing one is
-        an error that says to drop the <C>f</C>:
+        Backticks are the only way to fill in values: there is no <C>f&quot;…&quot;</C> as in Python. Writing one is
+        an error that says to use backticks:
       </P>
       <Ex name="strings/f-string.fails" />
-      <P>The braces can hold a calculation too. To write a brace itself, put a backslash before it:</P>
+      <P>The braces can hold a calculation too. To write a brace itself in a template, put a backslash before it:</P>
       <Ex name="values/sub-interp" />
-      <P>In text on one line, a <C>{"{"}</C> must close on that line. One left open is an error at the brace, with the fix:</P>
+      <P>
+        A template may go over several lines when its text starts on the line after the backtick. As with{" "}
+        <C>&quot;&quot;&quot;</C>, the indentation the lines share is removed:
+      </P>
+      <Ex name="strings/template-lines" />
+      <P>In a template, a <C>{"{"}</C> must close on its own line. One left open is an error at the brace:</P>
       <Ex name="strings/brace-open.fails" />
       <P>
         A <C>{"{…}"}</C> that holds only text gives a warning, because it is almost always a brace that needed{" "}
-        <C>{"\\{"}</C>. Here the second line is one string, with the text <C> or t == </C> inside its braces, not two
-        comparisons:
+        <C>{"\\{"}</C>. Here the first template runs on to the last backtick, with the template{" "}
+        <C>{"` or t == `"}</C> inside its braces, not two comparisons:
       </P>
       <Ex name="strings/brace-text.warns" />
       <div className="flex flex-wrap gap-2.5">
-        <SrcRef file="tests/conformance/01-basics/interpolation-closes-on-its-line.kav" label="tested" />
+        <SrcRef file="tests/conformance/01-basics/string-interpolation.kav" label="templates, tested" />
+        <SrcRef file="tests/conformance/01-basics/a-template-spans-lines.kav" label="over lines, tested" />
+        <SrcRef file="tests/conformance/01-basics/interpolation-closes-on-its-line.kav" label="closes on its line, tested" />
         <SrcRef file="tests/conformance/01-basics/interpolation-of-only-text-warns.kav" label="the warning, tested" />
       </div>
     </>

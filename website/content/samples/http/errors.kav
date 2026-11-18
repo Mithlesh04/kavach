@@ -5,15 +5,15 @@ fn main() {
     for url in ["http://127.0.0.1:1/", "ftp://example.com/file"] {
         const page = http.get(url) catch e => match e {
             HttpError.BadUrl(u) => {
-                print("not an http address: {u}")
+                print(`not an http address: {u}`)
                 return
             }
             HttpError.Network(cause) => {
-                print("couldn't connect: {cause}")
+                print(`couldn't connect: {cause}`)
                 continue
             }
             _ => {
-                print("failed: {e}")
+                print(`failed: {e}`)
                 continue
             }
         }

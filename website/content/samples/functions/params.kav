@@ -1,5 +1,5 @@
 fn welcome(name: String, city: String) {
-    print("Welcome, {name}, from {city}")
+    print(`Welcome, {name}, from {city}`)
 }
 
 fn main() {

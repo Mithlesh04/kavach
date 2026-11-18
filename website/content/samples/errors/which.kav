@@ -6,9 +6,9 @@ fn load(path: String) -> String ! FsError {
 
 fn main() {
     const text = load("settings.toml") catch e => match e {
-        FsError.NotFound(path) => "no {path} yet: using the defaults",
-        FsError.Denied(path) => "not allowed to read {path}",
-        FsError.Failed(path, reason) => "{path} is broken: {reason}",
+        FsError.NotFound(path) => `no {path} yet: using the defaults`,
+        FsError.Denied(path) => `not allowed to read {path}`,
+        FsError.Failed(path, reason) => `{path} is broken: {reason}`,
     }
     print(text)
 }

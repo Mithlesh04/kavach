@@ -1,5 +1,5 @@
 fn main() {
-    const line = "  red\tgreen\n blue  "
+    const line = `  red\tgreen\n blue  `
     print(line.words())
     print(line.split(" ").len())
 }

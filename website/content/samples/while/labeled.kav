@@ -5,10 +5,10 @@ fn main() {
     outer: for r in 0..grid.len() {
         for c in 0..grid[r].len() {
             if grid[r][c] == target {
-                found = "row {r}, column {c}"
+                found = `row {r}, column {c}`
                 break outer
             }
         }
     }
-    print("{target} is at {found}")
+    print(`{target} is at {found}`)
 }

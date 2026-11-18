@@ -19,9 +19,9 @@ agent Reviewer {
     can Ai, Console
 
     on check(text: String) ! Error {
-        const deep = try ask<Verdict>("Is this clause risky? {text}")
-        const fast = try ask<Verdict>("Is this a greeting? {text}", model: quick())
-        print("risky: {deep.risky}, greeting: {fast.risky}")
+        const deep = try ask<Verdict>(`Is this clause risky? {text}`)
+        const fast = try ask<Verdict>(`Is this a greeting? {text}`, model: quick())
+        print(`risky: {deep.risky}, greeting: {fast.risky}`)
     }
 }
 

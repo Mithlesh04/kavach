@@ -14,5 +14,5 @@ fn split(cents: Int) -> (Int, Int) {
 
 fn main() {
     const (euros, cents) = split(1234)
-    print("{euros} and {cents} cents")
+    print(`{euros} and {cents} cents`)
 }

@@ -6,7 +6,7 @@ fn load(path: String) -> String ! Error {
 
 fn main() {
     const text = load("app.toml") catch e => match e {
-        NotFound(p) => "no {p}",
+        NotFound(p) => `no {p}`,
         _ => "something else",
     }
     print(text)

@@ -12,5 +12,5 @@ fn main() {
         print(e)
         0
     }
-    print("best: {best}")
+    print(`best: {best}`)
 }

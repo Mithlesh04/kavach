@@ -13,5 +13,5 @@ fn main() {
 
     const report: ([String], {String: Int}) = (["a", "b"], {"a": 1, "b": 2})
     const (names, counts) = report         // a tuple holding a list and a dict
-    print("{names.len()} names, {counts["b"] ?? 0} for b")
+    print(`{names.len()} names, {counts["b"] ?? 0} for b`)
 }

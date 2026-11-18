@@ -2,7 +2,7 @@ type Note: Drop {
     name: String
 
     fn drop(self) uses Console {
-        print("freed {self.name}")
+        print(`freed {self.name}`)
     }
 }
 
@@ -13,6 +13,6 @@ fn outer(n: Note) -> fn() -> fn() -> String {
 fn main() {
     const make = outer(Note(name: "deep"))
     const inner = make()
-    print("inner says {inner()}")
+    print(`inner says {inner()}`)
     print("end of main")
 }

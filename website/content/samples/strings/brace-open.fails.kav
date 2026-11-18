@@ -1,4 +1,4 @@
 fn main() {
-    const open = "{"
-    print("a brace: {open}")
+    const open = `a brace: {`
+    print(open)
 }

@@ -12,6 +12,6 @@ fn main() {
 
     groups["nuts"] = ["almond", "cashew"]  // a new key with a new list
     for (name, items) in groups {
-        print("{name}: {items.len()}")
+        print(`{name}: {items.len()}`)
     }
 }

@@ -6,5 +6,5 @@ fn show() ! WindowError uses Console {
 }
 
 fn main() uses Console {
-    show() catch e => print("{e}")
+    show() catch e => print(`{e}`)
 }

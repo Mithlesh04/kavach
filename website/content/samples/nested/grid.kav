@@ -9,6 +9,6 @@ fn main() {
     grid.push([7, 8])          // add a whole row
     print(grid)
     for row in grid {
-        print("{row.len()} items, total {row.sum(n => n)}")
+        print(`{row.len()} items, total {row.sum(n => n)}`)
     }
 }

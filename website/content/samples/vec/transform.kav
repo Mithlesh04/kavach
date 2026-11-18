@@ -9,7 +9,7 @@ fn main() {
     // A quarter turn around the y axis takes x to -z.
     const turn = Quat.around(Vec3(x: 0.0, y: 1.0, z: 0.0), math.pi / 2.0)
     const r = turn.rotate(Vec3(x: 1.0, y: 0.0, z: 0.0))
-    print("{r.x.near(0.0)} {r.z.near(-1.0)}")
+    print(`{r.x.near(0.0)} {r.z.near(-1.0)}`)
     // A camera at z = 5 looking at the origin sees it 5 ahead, at z = -5.
     const view = Mat4.look_at(Vec3(x: 0.0, y: 0.0, z: 5.0), Vec3(x: 0.0, y: 0.0, z: 0.0), Vec3(x: 0.0, y: 1.0, z: 0.0))
     print(view @ Vec4(x: 0.0, y: 0.0, z: 0.0, w: 1.0))

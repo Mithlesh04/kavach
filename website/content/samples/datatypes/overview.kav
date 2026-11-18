@@ -5,5 +5,5 @@ fn main() {
     const name = "Asha"
     const initial = 'A'
     const member = true
-    print("{name} ({initial}), {age}, {height} m, pays {price}, member: {member}")
+    print(`{name} ({initial}), {age}, {height} m, pays {price}, member: {member}`)
 }

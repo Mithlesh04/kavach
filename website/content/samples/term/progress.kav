@@ -7,5 +7,5 @@ fn main() {
         bar = bar.step(1)
     }
     bar.done()
-    print("copied {files.len()} files")
+    print(`copied {files.len()} files`)
 }

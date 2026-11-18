@@ -16,7 +16,7 @@ fn unpaid() -> [Order] {
 
 fn summary(handler: fn() -> [Order]) -> String {
     if let d = json.describe(handler) {
-        return "{d.name}: {d.doc}"
+        return `{d.name}: {d.doc}`
     }
     "no description"
 }

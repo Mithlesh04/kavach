@@ -1,1 +1,1 @@
-error: `T` is a `Number`, so it is a number type, and this is `String` (spec 2.9)
+error: `T` must be a number type (`T: Number`), and this is `String` (spec 2.9)

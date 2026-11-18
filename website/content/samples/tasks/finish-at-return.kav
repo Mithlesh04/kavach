@@ -4,7 +4,7 @@ fn start() {
         for i in 0..1_000_000 {
             total += i % 7
         }
-        print("sum: {total}")
+        print(`sum: {total}`)
     }
     print("start returns")
 }

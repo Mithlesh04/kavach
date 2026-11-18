@@ -15,7 +15,11 @@ type Box<I> {
 }
 
 fn main() ! Error {
-    const a = Box<Shout>(raw: "\{\"text\":\"hi\"}")
-    const b: Box<Shout> = Box(raw: "\{\"text\":\"there\"}")
-    print("{(try a.get()).text} {(try b.get()).text}")
+    const a = Box<Shout>(raw: """
+        {"text":"hi"}
+        """)
+    const b: Box<Shout> = Box(raw: """
+        {"text":"there"}
+        """)
+    print(`{(try a.get()).text} {(try b.get()).text}`)
 }

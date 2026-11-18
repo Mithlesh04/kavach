@@ -4,6 +4,6 @@ fn min_max(xs: [Int]) -> (Int, Int) {
 
 fn main() {
     const (low, high) = min_max([4, 9, 2, 7])
-    print("from {low} to {high}")
+    print(`from {low} to {high}`)
     print(min_max([5]))
 }

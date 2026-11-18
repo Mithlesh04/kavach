@@ -1,0 +1,5 @@
+fn main() {
+    const name = "Asha"
+    print("Hello, {name}")
+    print(`Hello, {name}`)
+}

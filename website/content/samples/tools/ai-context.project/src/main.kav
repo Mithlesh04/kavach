@@ -18,7 +18,7 @@ fn total_paid(orders: [Order]) -> Decimal
 }
 
 fn report(orders: [Order]) -> String {
-    "paid: {total_paid(orders)}"
+    `paid: {total_paid(orders)}`
 }
 
 fn main() {

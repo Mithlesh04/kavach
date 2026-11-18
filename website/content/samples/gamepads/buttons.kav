@@ -2,6 +2,6 @@ use std.input
 
 fn main() {
     const all = input.buttons()
-    print("{all.len()} buttons")
+    print(`{all.len()} buttons`)
     print(all.join(" "))
 }

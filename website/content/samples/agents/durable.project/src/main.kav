@@ -14,8 +14,8 @@ capability Email {
 
 type Shop: Payments {
     fn refund(self, order_id: Int) -> Receipt ! PaymentError uses Console {
-        print("[pay] refund {order_id}")
-        Receipt(id: "r{order_id}")
+        print(`[pay] refund {order_id}`)
+        Receipt(id: `r{order_id}`)
     }
 }
 
@@ -26,7 +26,7 @@ type Mail: Email {
         if self.power_cut {
             cli.exit(3)
         }
-        print("[email] {to}")
+        print(`[email] {to}`)
     }
 }
 
@@ -35,7 +35,7 @@ agent Bot {
 
     on request(order_id: Int) -> String ! Error {
         const r = try Payments.refund(order_id)
-        try Email.send("order {order_id}: {r.id}")
+        try Email.send(`order {order_id}: {r.id}`)
         r.id
     }
 }

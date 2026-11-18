@@ -1,0 +1,9 @@
+fn main() {
+    const name = "Asha"
+    const total = 1250
+    const receipt = `
+        Thank you, {name}.
+          Total: {total} rupees
+        `
+    print(receipt)
+}

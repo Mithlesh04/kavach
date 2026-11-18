@@ -12,6 +12,6 @@ fn main() {
     ]
     const sorted = people.sort_by(.name).sort_by(.city)
     for p in sorted {
-        print("{p.city}: {p.name}")
+        print(`{p.city}: {p.name}`)
     }
 }

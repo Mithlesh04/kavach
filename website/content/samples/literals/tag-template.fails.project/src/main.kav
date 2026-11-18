@@ -1,0 +1,8 @@
+use pg
+use pg.{sql}
+
+fn main() {
+    const owner = "asha"
+    const recent = sql`select id, item from orders where owner = {owner}`
+    print(pg.text_of(recent))
+}

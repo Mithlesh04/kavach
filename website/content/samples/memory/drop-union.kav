@@ -3,7 +3,7 @@ type Seat: Drop = Booked(name: String) | Empty
 extend Seat {
     fn drop(self) uses Console {
         match self {
-            Seat.Booked(name) => print("released the seat of {name}"),
+            Seat.Booked(name) => print(`released the seat of {name}`),
             Seat.Empty => print("nothing to release"),
         }
     }

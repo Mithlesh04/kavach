@@ -59,11 +59,17 @@ export const taggedLiteralsDoc: LessonDoc = {
       </div>
       <H2>The text is raw</H2>
       <P>
-        Inside a tagged literal, <C>\</C> and <C>{"{"}</C> are characters like any other: no escapes and no
-        interpolation, so values can&apos;t be pasted into it. Values go in separately, as <C>$1</C> does in SQL.
-        Three quotes let a literal span lines, as other text does:
+        As in any text in quotes, <C>\</C> and <C>{"{"}</C> are characters like any other inside a tagged literal:
+        no escapes and nothing filled in, so values can&apos;t be pasted into it. Values go in separately, as{" "}
+        <C>$1</C> does in SQL. Three quotes let a literal span lines, as other text does:
       </P>
       <Ex name="literals/raw" />
+      <P>
+        A tag before a template in backticks, with values filled in as parameters, isn&apos;t built yet. Writing one
+        is an error that says to write the text in quotes:
+      </P>
+      <Files name="literals/tag-template.fails" first={["src/main.kav"]} outcome="refused" />
+      <SrcRef file="tests/conformance/10-modules/a-tag-before-a-template-is-not-built-yet.kav" label="not built yet, tested" />
       <SrcRef file="tests/conformance/10-modules/tagged-literals-make-their-type.kav" label="tested" />
       <H2>Text known only when the program runs</H2>
       <P>

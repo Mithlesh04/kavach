@@ -14,7 +14,7 @@ type Query {
     }
 
     fn sql(self) -> String {
-        "SELECT * FROM {self.table} WHERE {self.filters.join(" AND ")} LIMIT {self.limit}"
+        `SELECT * FROM {self.table} WHERE {self.filters.join(" AND ")} LIMIT {self.limit}`
     }
 }
 

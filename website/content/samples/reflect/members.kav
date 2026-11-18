@@ -13,10 +13,10 @@ type Order {
 fn main() {
     for m in Order.members() {
         if m.kind == MemberKind.Method {
-            const params = m.params.map(p => "{p.name}: {p.type_name}")
-            print("method {m.name}({params.join(", ")}) -> {m.result}")
+            const params = m.params.map(p => `{p.name}: {p.type_name}`)
+            print(`method {m.name}({params.join(", ")}) -> {m.result}`)
         } else {
-            print("{m.kind} {m.name}: {m.result}")
+            print(`{m.kind} {m.name}: {m.result}`)
         }
     }
     const fields = Order.members().filter(m => m.kind == MemberKind.Field)

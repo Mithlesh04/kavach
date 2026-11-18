@@ -3,5 +3,5 @@ pub(out) fn add(a: Int, b: Int) -> Int {
 }
 
 pub(out) fn greet(name: String) -> String {
-    "hello, {name}"
+    `hello, {name}`
 }

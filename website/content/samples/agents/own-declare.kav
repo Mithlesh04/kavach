@@ -5,5 +5,5 @@ capability Payments {
 }
 
 fn main() {
-    Payments.refund(7, 499) catch e => print("refused: {e}")
+    Payments.refund(7, 499) catch e => print(`refused: {e}`)
 }

@@ -9,7 +9,7 @@ capability Payments {
 
 type Bank: Payments {
     fn refund(self, order: Int, amount: Int) ! PayError {
-        print("refunded {amount} on order {order}")
+        print(`refunded {amount} on order {order}`)
     }
 }
 
@@ -27,7 +27,7 @@ fn main() ! Error uses Clock, Console, Env {
     const bot = Refunder.start(Payments: Bank())
     if cli.args().contains("send") {
         const _waits = spawn {
-            bot.refund(1, 900) catch e => print("refused: {e}")
+            bot.refund(1, 900) catch e => print(`refused: {e}`)
         }
         time.sleep(2.seconds)
         print("the program ends while the refund waits")

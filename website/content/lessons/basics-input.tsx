@@ -38,7 +38,7 @@ export const inputDoc: LessonDoc = {
   ),
   tryIt: {
     task: <>Ask for the user&apos;s city and print &quot;Welcome to &lt;city&gt;&quot;, with &quot;your city&quot; when nothing is typed.</>,
-    answer: <P><C>const city = term.prompt(&quot;Your city?&quot;) ?? &quot;your city&quot;</C>, then <C>print(&quot;Welcome to {"{city}"}&quot;)</C>.</P>,
+    answer: <P><C>const city = term.prompt(&quot;Your city?&quot;) ?? &quot;your city&quot;</C>, then <C>{"print(`Welcome to {city}`)"}</C>.</P>,
   },
 };
 

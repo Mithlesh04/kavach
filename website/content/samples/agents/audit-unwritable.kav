@@ -21,10 +21,10 @@ agent Bot {
 
 fn main() ! Error {
     const bot = Bot.start(Payments: Till())
-    print("paid {try bot.charge(1)}")
+    print(`paid {try bot.charge(1)}`)
     const second = bot.charge(2) catch e => {
         print(e)
         return
     }
-    print("paid {second}")
+    print(`paid {second}`)
 }

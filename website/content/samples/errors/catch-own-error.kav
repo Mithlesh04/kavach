@@ -16,11 +16,11 @@ fn lookup(id: Int) -> String ! LookupError {
 }
 
 fn find(text: String) -> String ! ParseError {
-    lookup(try parse(text)) catch e => "nothing: {e}"
+    lookup(try parse(text)) catch e => `nothing: {e}`
 }
 
 fn main() {
     for text in ["7", "8", "x"] {
-        print(find(text) catch e => "find failed: {e}")
+        print(find(text) catch e => `find failed: {e}`)
     }
 }

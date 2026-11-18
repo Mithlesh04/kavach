@@ -9,13 +9,13 @@ type Order {
 
 fn orders(r: Request) -> Response {
     const wanted = http.read_json<Order>(r) catch _ => return http.text(400, "not an order")
-    http.json_response(200, json.of(Order(id: wanted.id, item: "{wanted.item}, packed")))
+    http.json_response(200, json.of(Order(id: wanted.id, item: `{wanted.item}, packed`)))
 }
 
 fn main() ! Error {
     const listener = try net.listen("127.0.0.1:0")
     const _server = spawn http.serve(listener, orders)
-    const url = "http://{listener.address()}/orders"
+    const url = `http://{listener.address()}/orders`
     const packed = try http.post_json<Order>(url, json.of(Order(id: 7, item: "pen")))
     print(packed.item)
 }

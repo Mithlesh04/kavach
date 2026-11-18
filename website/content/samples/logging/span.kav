@@ -4,11 +4,11 @@ fn main() ! Error {
     print(log.trace_id() ?? "no trace outside a span")
     log.span("request") {
         const id = log.trace_id() ?? ""
-        print("trace id: {id.len()} hex digits")
+        print(`trace id: {id.len()} hex digits`)
         const header = log.traceparent() ?? ""
-        print("traceparent: {header.len()} characters, starts {header.slice(0, 3)}")
+        print(`traceparent: {header.len()} characters, starts {header.slice(0, 3)}`)
         const task = spawn log.trace_id()
-        print("a task keeps it: {(try task.wait()) == id}")
+        print(`a task keeps it: {(try task.wait()) == id}`)
     }
     print(log.trace_id() ?? "no trace after it")
 

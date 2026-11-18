@@ -13,10 +13,10 @@ fn parse_age(text: String) -> Int ! AgeError {
 
 fn report(input: String) {
     match parse_age(input) {
-        ok(age) => print("Age is {age}")
+        ok(age) => print(`Age is {age}`)
         err(AgeError.Empty) => print("Please enter an age")
-        err(AgeError.NotANumber(text)) => print("'{text}' is not a number")
-        err(AgeError.TooLarge(value)) => print("{value} is too large")
+        err(AgeError.NotANumber(text)) => print(`'{text}' is not a number`)
+        err(AgeError.TooLarge(value)) => print(`{value} is too large`)
     }
 }
 

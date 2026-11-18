@@ -4,7 +4,7 @@ fn minmax(xs: [Int]) -> (lo: Int, hi: Int) {
 
 fn main() {
     const r = minmax([3, 1, 4])
-    print("lo {r.lo}, hi {r.hi}")
+    print(`lo {r.lo}, hi {r.hi}`)
     const retry = (times: 3, wait_ms: 200)
     print(retry.times)
 }

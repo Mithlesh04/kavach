@@ -1,6 +1,6 @@
 fn half(n: Int) -> Int ! String {
     if n % 2 != 0 {
-        fail "odd: {n}"
+        fail `odd: {n}`
     }
     n / 2
 }

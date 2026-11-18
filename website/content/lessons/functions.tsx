@@ -296,6 +296,11 @@ export const fnValuesDoc: LessonDoc = {
         shape of function, keep a dict of it, and <C>match</C> to call each the right way:
       </P>
       <Ex name="functions/mixed-union" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/03-functions.md" label="spec 3.4 · functions of different types together" />
+        <SrcRef file="tests/conformance/03-functions/functions-of-different-types-go-in-a-record-or-a-union.kav" label="record or union, tested" />
+        <SrcRef file="tests/conformance/03-functions/a-dict-of-functions-has-one-type.kav" label="one type, tested" />
+      </div>
       <H2>Functions that can fail</H2>
       <P>
         A function type says what its functions can fail with, and what they may use, in the order of a signature:{" "}

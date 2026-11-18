@@ -4,5 +4,5 @@ fn main() {
 }
 
 fn greet(name: String) {
-    print("Hello, {name}")
+    print(`Hello, {name}`)
 }

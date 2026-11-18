@@ -10,6 +10,6 @@ fn main() {
             in_order = false
         }
     }
-    print("{sorted.len()} numbers, in order: {in_order}")
-    print("smallest {sorted[0]}, largest {sorted[sorted.len() - 1]}")
+    print(`{sorted.len()} numbers, in order: {in_order}`)
+    print(`smallest {sorted[0]}, largest {sorted[sorted.len() - 1]}`)
 }

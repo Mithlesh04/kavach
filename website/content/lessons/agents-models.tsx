@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { C } from "@/components/inline-code";
+import { withCode } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import { agentAttacks, agentFaults, agentModels, type ModelBlock } from "@/lib/agent-bench";
 import { H2, P } from "./parts";
@@ -11,7 +11,7 @@ import { H2, P } from "./parts";
 /** README text with its `code` spans shown as code and its **bold** start shown bold. */
 function code(text: string) {
   const bold = text.match(/^\*\*(.+?)\*\*(.*)$/);
-  const spans = (t: string) => t.split("`").map((part, i) => (i % 2 ? <C key={i}>{part}</C> : part));
+  const spans = (t: string) => withCode(t);
   return bold ? <><strong className="text-ink">{spans(bold[1])}</strong>{spans(bold[2])}</> : spans(text);
 }
 

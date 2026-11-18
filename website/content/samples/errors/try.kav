@@ -16,7 +16,7 @@ fn total_age(a: String, b: String) -> Int ! AgeError {
 fn main() {
     print(total_age("31", "27") catch -1)
     const bad = total_age("31", "x") catch e => {
-        print("failed: {e}")
+        print(`failed: {e}`)
         -1
     }
     print(bad)

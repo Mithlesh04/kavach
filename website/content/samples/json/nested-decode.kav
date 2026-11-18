@@ -17,10 +17,10 @@ type Order {
 }
 
 fn main() ! Error {
-    const text = """
+    const text = `
         \{ "id": 7, "customer": \{ "name": "Asha", "city": "Pune" },
           "items": [ \{ "name": "pen", "price": 20 }, \{ "name": "ink", "price": 45 } ] }
-        """
+        `
     const order = try json.decode<Order>(text)
     print(order.customer.city)
     print(order.items.map(i => i.name))

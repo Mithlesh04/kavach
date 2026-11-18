@@ -24,8 +24,8 @@ fn main() ! Error {
         }
     }
     members = members.filter(m => m.try_put("news 1"))
-    print("bob got {try bob.wait()}")
+    print(`bob got {try bob.wait()}`)
     members = members.filter(m => m.try_put("news 2"))   // bob left: his channel takes nothing
-    print("{members.len()} member left")
-    print("ann got {try ann.wait()}")
+    print(`{members.len()} member left`)
+    print(`ann got {try ann.wait()}`)
 }

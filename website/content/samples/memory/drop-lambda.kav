@@ -2,7 +2,7 @@ type Note: Drop {
     name: String
 
     fn drop(self) uses Console {
-        print("freed {self.name}")
+        print(`freed {self.name}`)
     }
 }
 
@@ -12,6 +12,6 @@ fn later(n: Note) -> fn() -> String {
 
 fn main() {
     const get = later(Note(name: "captured"))
-    print("lambda says {get()}")
+    print(`lambda says {get()}`)
     print("end of main")
 }

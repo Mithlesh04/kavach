@@ -8,8 +8,8 @@ fn main() {
     ]
     for cell in row {
         match cell {
-            Cell.Number(value) => print("number {value}")
-            Cell.Text(value) => print("text {value}")
+            Cell.Number(value) => print(`number {value}`)
+            Cell.Text(value) => print(`text {value}`)
             Cell.Empty => print("empty")
         }
     }

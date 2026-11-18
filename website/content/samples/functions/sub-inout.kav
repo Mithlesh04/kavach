@@ -15,5 +15,5 @@ fn main() {
     let x = 1
     let y = 2
     swap(x, y)
-    print("{count} {x} {y}")
+    print(`{count} {x} {y}`)
 }

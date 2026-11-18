@@ -2,7 +2,7 @@ type Note: Drop {
     name: String
 
     fn drop(self) uses Console {
-        print("freed {self.name}")
+        print(`freed {self.name}`)
     }
 }
 
@@ -14,5 +14,5 @@ fn renew(inout n: Note) {
 fn main() {
     let n = Note(name: "first")
     renew(n)
-    print("back in main: {n.name}")
+    print(`back in main: {n.name}`)
 }

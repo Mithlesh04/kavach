@@ -7,7 +7,7 @@ fn load_rows() -> [Row] {
 }
 
 fn send(total: Int) {
-    print("sent {total}")
+    print(`sent {total}`)
 }
 
 fn report() {

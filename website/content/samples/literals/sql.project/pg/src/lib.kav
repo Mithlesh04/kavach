@@ -15,7 +15,7 @@ fn check_sql(text: String) -> [LiteralProblem] {
             at: text.index_of(first) ?? 0,
             length: first.len(),
             message: "a query starts with select, insert, update or delete",
-            hint: "is `{first}` misspelled?",
+            hint: `is \`{first}\` misspelled?`,
         ))
     }
     const star = text.index_of("select *") ?? -1

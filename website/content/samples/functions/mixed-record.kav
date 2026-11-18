@@ -4,7 +4,7 @@ type Ops {
 }
 
 fn main() {
-    const ops = Ops(add: (a, b) => a + b, greet: name => "Hello {name}")
+    const ops = Ops(add: (a, b) => a + b, greet: name => `Hello {name}`)
     print(ops.add(2, 3))
     print(ops.greet("Asha"))
 }

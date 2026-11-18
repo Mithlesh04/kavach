@@ -1,6 +1,6 @@
 fn check(age: Int) -> Int ! Error {
     if age < 0 {
-        fail Error("age can't be negative: {age}")
+        fail Error(`age can't be negative: {age}`)
     }
     age
 }
@@ -8,5 +8,5 @@ fn check(age: Int) -> Int ! Error {
 fn main() ! Error {
     const a = try check(31)
     const b = try check(27)
-    print("together {a + b}")
+    print(`together {a + b}`)
 }

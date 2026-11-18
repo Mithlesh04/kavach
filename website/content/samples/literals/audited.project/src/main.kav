@@ -4,6 +4,6 @@ fn main() {
     const recent = sql"select id from orders where owner = $1"
     print(text_of(recent))
     const table = "orders_2026"
-    const copy = unchecked("select id from {table}")
+    const copy = unchecked(`select id from {table}`)
     print(text_of(copy))
 }

@@ -10,6 +10,6 @@ extend Wallet {
     }
 
     pub fn summary(self) -> String {
-        "{self.payments} payments, {self.balance} in total"
+        `{self.payments} payments, {self.balance} in total`
     }
 }
