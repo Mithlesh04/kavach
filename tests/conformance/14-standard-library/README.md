@@ -120,7 +120,8 @@ The tests are listed in four files, by area:
 | 14.3, 14.4 | [fs-info-gives-size-and-a-recent-moment.kav](fs-info-gives-size-and-a-recent-moment.kav) | `fs.info` gives a file's size in bytes and `modified_ms`, a moment (14.4) of its last change. | runs |
 | 14.3 | [fs-list-gives-sorted-names.kav](fs-list-gives-sorted-names.kav) | `fs.list` gives the names in a folder, files and folders alike, sorted; a missing folder is `NotFound`. | runs |
 | 14.3 | [fs-missing-paths-are-not-found.kav](fs-missing-paths-are-not-found.kav) | a file operation on a path with nothing there fails with `NotFound(path)`, and `fs.exists` gives `false`. | runs |
-| 14.3 | [fs-read-text-refuses-text-that-is-not-utf8.kav](fs-read-text-refuses-text-that-is-not-utf8.kav) | `fs.read_text` reads only UTF-8: a file with other bytes is an `FsError`, not text with holes; `fs.read_bytes` still reads it. | runs |
+| 14.3 | [fs-read-text-refuses-text-that-is-not-utf8.kav](fs-read-text-refuses-text-that-is-not-utf8.kav) | `fs.read_text` reads only UTF-8: a file with other bytes is `FsError.NotText`, not text with holes; `fs.read_bytes` still reads it. | runs |
+| 14.3 | [fs-errors-name-folders.kav](fs-errors-name-folders.kav) | Reading a folder as a file is `FsError.IsFolder`; removing a folder that isn't empty is `FsError.NotEmpty`. | runs |
 | 14.3, 8.1 | [fs-reading-needs-only-fs-read.kav](fs-reading-needs-only-fs-read.kav) | reading calls (`read_text`, `read_bytes`, `lines`, `chunks`, `exists`, `list`, `info`, `watch`) need only `Fs.read`. | runs |
 | 14.3 | [fs-remove-refuses-a-folder-with-files.kav](fs-remove-refuses-a-folder-with-files.kav) | `fs.remove` deletes a file or an empty folder; a folder with files in it is an `FsError` and stays, and a missing path is `NotFound`. | runs |
 | 14.3 | [fs-rename-and-copy-replace-the-target.kav](fs-rename-and-copy-replace-the-target.kav) | `fs.rename` moves a file or a folder and `fs.copy` copies a file; a file already at `to` is replaced. | runs |
@@ -196,6 +197,7 @@ The tests are listed in four files, by area:
 | 14.6 | [cli-parse-help-after-a-command-shows-its-usage.kav](cli-parse-help-after-a-command-shows-its-usage.kav) | `--help` after a command gives that command's usage (`usage: tool add-item [options]`), with its own options only. | runs |
 | 14.6 | [cli-parse-help-in-place-of-a-command.kav](cli-parse-help-in-place-of-a-command.kav) | `--help` in place of a command gives an error whose text is the usage of every command with its options. | runs |
 | 14.6 | [cli-parse-help-lists-every-option.kav](cli-parse-help-lists-every-option.kav) | `--help` makes `cli.parse` give an error whose text is the usage, listing every option with its type and default. | runs |
+| 14.6 | [cli-parse-help-shows-a-flags-default.kav](cli-parse-help-shows-a-flags-default.kav) | In the usage, a `Bool` flag shows its default, not its type: `(default false)` when none is written. | runs |
 | 14.6 | [cli-parse-needs-env.kav](cli-parse-needs-env.kav) | `cli.parse<T>()` reads the arguments, so it needs `Env`. | compile error |
 | 14.6 | [cli-parse-options-cant-be-unions.kav](cli-parse-options-cant-be-unions.kav) | commands don't nest: a command's option can't be a union, so `cli.parse` of such a type is refused. | compile error |
 | 14.6 | [cli-parse-reads-every-field-kind.kav](cli-parse-reads-every-field-kind.kav) | `cli.parse` reads a field `max_count` as `--max-count`, takes `String`, numbers, `Bool` flags with no value and optionals, and leaves fields not given at their defaults. | runs |
@@ -229,3 +231,5 @@ The tests are listed in four files, by area:
 | 14.9 | [text-finds-the-smallest-int.kav](text-finds-the-smallest-int.kav) | `find_ints` leaves out a number too big for `Int`, either way, but keeps every number that fits, the smallest `Int` too. | runs |
 | 14.9 | [text-nfkd-splits-compatibility-characters.kav](text-nfkd-splits-compatibility-characters.kav) | `text.nfkd` splits accents off their letters and turns compatibility characters into plain ones; `nfd` leaves those characters as they are. | runs |
 | 14.2 | [negative-counts-count-as-zero.kav](negative-counts-count-as-zero.kav) | A negative count or width counts as 0: `repeat`, `take`, `skip`, `truncate` and `pad_left` don't panic on one. | runs |
+| 14.2 | [text-methods-on-empty-text.kav](text-methods-on-empty-text.kav) | `"".lines()` is `[]`; an empty part is found at once: `contains("")` is true, `index_of("")` is 0. | runs |
+| 14.2 | [split-on-empty-text-panics.kav](split-on-empty-text-panics.kav) | `s.split("")` panics and says to use `chars()`. | panic |

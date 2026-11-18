@@ -1,9 +1,9 @@
 // Rule: A read that fails during a loop over `fs.lines` (here, a line that isn't UTF-8) goes to the `try` or `catch` of the loop's header: `try` returns the error, `catch` runs its handler.
 // Spec: 14.3
 // expect output: line: fine
-// expect output: try gave: Failed(path: "kavach-test-bad-lines.txt", reason: "not UTF-8")
+// expect output: try gave: NotText(path: "kavach-test-bad-lines.txt")
 // expect output: line: fine
-// expect output: catch got: Failed(path: "kavach-test-bad-lines.txt", reason: "not UTF-8")
+// expect output: catch got: NotText(path: "kavach-test-bad-lines.txt")
 // expect output: done
 
 use std.fs

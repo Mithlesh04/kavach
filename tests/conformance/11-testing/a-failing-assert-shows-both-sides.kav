@@ -1,0 +1,13 @@
+// Rule: A failing `assert` on a comparison (`==`, `!=`, `<`, `>`, `<=`, `>=`) shows the values of both sides.
+// Spec: 11.8
+// expect panic: assertion failed: total == 10 (left: 9, right: 10)
+
+fn main() {
+    const prices = [4, 5]
+    let total = 0
+    for p in prices {
+        total += p
+    }
+    assert total > 0
+    assert total == 10
+}

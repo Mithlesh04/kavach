@@ -124,6 +124,8 @@ const TABLE: &[(&str, &[&str])] = &[
             "is not a variable",
             "is not `inout`",
             "must be able to change",
+            "would change a copy",
+            "but it is a parameter",
         ],
     ),
     (

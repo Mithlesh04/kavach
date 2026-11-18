@@ -449,9 +449,13 @@ impl<'a> Interp<'a> {
             "starts_with" => Value::Bool(s.starts_with(&text())),
             "compare" => Value::Int(s.cmp(text().as_str()) as i8 as i128, Prim::Int),
             "ends_with" => Value::Bool(s.ends_with(&text())),
-            "split" => Value::List(Rc::new(
-                s.split(&text()).map(|p| self.str_value(p)).collect(),
-            )),
+            "split" => {
+                let sep = text();
+                if sep.is_empty() {
+                    return Err(self.panic("`split(\"\")` has no separator to split at: use `chars()` for the characters (spec 14.2)", span));
+                }
+                Value::List(Rc::new(s.split(&sep).map(|p| self.str_value(p)).collect()))
+            }
             "repeat" => match arg {
                 Value::Int(n, _) => {
                     let n = usize::try_from(*n).unwrap_or(0);

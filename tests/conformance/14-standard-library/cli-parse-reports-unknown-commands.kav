@@ -5,7 +5,7 @@
 // expect output: usage: cli-parse-reports-unknown-commands <command> [options]
 // expect output:   add
 // expect output:     --name <String>        (required)
-// expect output:     --force
+// expect output:     --force                (default false)
 // expect output:   list
 // expect exit: 2
 

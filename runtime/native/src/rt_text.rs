@@ -67,6 +67,17 @@ pub(crate) fn text_item(code: i64) -> Type {
     }
 }
 
+/// `text.split(sep)`, which panics on an empty `sep` (spec 14.2).
+pub fn split_checked(a: i64, b: i64, code: i64, line: i32) -> i64 {
+    if with_str(b, str::is_empty) {
+        crate::rt::panic_with(
+            "`split(\"\")` has no separator to split at: use `chars()` for the characters (spec 14.2)",
+            line,
+        );
+    }
+    split(a, b, code)
+}
+
 /// `text.split(sep)` (both owned): the text is read in place, and a
 /// one-byte separator is found with a byte search. Short parts go
 /// straight into the list's items (`text_items.rs`), with no objects.

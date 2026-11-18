@@ -37,12 +37,9 @@ pub(crate) fn fail(_what: &str, path: &str, e: std::io::Error) -> i64 {
         return 0;
     };
     let text = |s: &str| crate::shapes::new_text(s, str_type()) as u64;
-    let error = match e.kind() {
-        std::io::ErrorKind::NotFound => crate::rt_json::new_variant(ty, "NotFound", &[text(path)]),
-        std::io::ErrorKind::PermissionDenied => {
-            crate::rt_json::new_variant(ty, "Denied", &[text(path)])
-        }
-        _ => crate::rt_json::new_variant(ty, "Failed", &[text(path), text(&e.to_string())]),
+    let error = match kavach_runtime_core::files::error_variant(path, &e) {
+        "Failed" => crate::rt_json::new_variant(ty, "Failed", &[text(path), text(&e.to_string())]),
+        variant => crate::rt_json::new_variant(ty, variant, &[text(path)]),
     };
     set_error(error);
     0

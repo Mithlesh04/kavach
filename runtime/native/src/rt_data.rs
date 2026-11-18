@@ -275,12 +275,10 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         | RtOp::CheckedMul
         | RtOp::CheckedDiv => crate::rt_numbers::int_method(op, a, b, code),
         RtOp::ListSet => crate::rt_maps::list_set(a, b, c, line),
-        RtOp::StrReplace
-        | RtOp::StrLines
-        | RtOp::StrSplit
-        | RtOp::StrChars
-        | RtOp::StrIndexOf
-        | RtOp::StrSlice => crate::rt_text::text_op(op, a, b, c, code),
+        RtOp::StrSplit => crate::rt_text::split_checked(a, b, code, line),
+        RtOp::StrReplace | RtOp::StrLines | RtOp::StrChars | RtOp::StrIndexOf | RtOp::StrSlice => {
+            crate::rt_text::text_op(op, a, b, c, code)
+        }
         RtOp::ListJoin
         | RtOp::ListSort
         | RtOp::ListSortBy

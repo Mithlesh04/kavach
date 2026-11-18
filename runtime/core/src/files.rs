@@ -183,6 +183,23 @@ pub fn crc32c(data: &[u8]) -> u32 {
     !crc
 }
 
+/// The `FsError` variant a failed file operation on `path` is (spec
+/// 14.3): `NotFound`, `Denied`, `IsFolder`, `NotEmpty`, `NotText`, or
+/// `Failed` with the reason.
+pub fn error_variant(path: &str, e: &std::io::Error) -> &'static str {
+    use std::io::ErrorKind as K;
+    match e.kind() {
+        K::NotFound => "NotFound",
+        K::IsADirectory => "IsFolder",
+        K::DirectoryNotEmpty => "NotEmpty",
+        K::InvalidData => "NotText",
+        // Windows opens a folder as a file with "access denied".
+        K::PermissionDenied if std::path::Path::new(path).is_dir() => "IsFolder",
+        K::PermissionDenied => "Denied",
+        _ => "Failed",
+    }
+}
+
 #[cfg(test)]
 mod tests {
     /// Paths in messages read as people write them: no `\\?\`.

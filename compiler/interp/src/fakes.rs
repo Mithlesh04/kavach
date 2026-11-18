@@ -161,7 +161,12 @@ impl<'a> Interp<'a> {
                     "read_bytes" => Value::Bytes(data.into()),
                     "read_text" => match String::from_utf8(data) {
                         Ok(s) => self.str_value(&s),
-                        Err(_) => return fail(self, std::io::Error::other("not UTF-8")),
+                        Err(_) => {
+                            return fail(
+                                self,
+                                std::io::Error::new(std::io::ErrorKind::InvalidData, "not UTF-8"),
+                            );
+                        }
                     },
                     _ => {
                         let chunk = match args.get(1) {

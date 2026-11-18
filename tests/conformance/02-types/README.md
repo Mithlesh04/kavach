@@ -357,3 +357,5 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.2 | [a-changing-method-on-a-missing-dict-key-panics.kav](a-changing-method-on-a-missing-dict-key-panics.kav) | A changing method on a missing key panics, naming the key. | panic |
 | 2.2 | [adding-into-a-missing-dict-key-panics.kav](adding-into-a-missing-dict-key-panics.kav) | `d[k] += v` with the key missing panics, naming the key, the same in every mode. | panic |
 | 2.2 | [reading-a-dict-entry-gives-an-optional.kav](reading-a-dict-entry-gives-an-optional.kav) | A method that only reads a dict entry is an error that says to write `d[k]?.len()` or `(d[k] ?? default).len()`. | compile error |
+| 2.7 | [an-optional-call-on-its-own-line-runs.kav](an-optional-call-on-its-own-line-runs.kav) | `x?.m()` on its own line calls `m` when `x` holds a value, and does nothing for `none`. | runs |
+| 2.7, 2.2 | [an-optional-call-cannot-change-the-value-inside.kav](an-optional-call-cannot-change-the-value-inside.kav) | A changing method through `?.` is an error: it would change a copy; test first and change the value itself. | compile error |

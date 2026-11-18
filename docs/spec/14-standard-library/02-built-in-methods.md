@@ -19,12 +19,13 @@ Text (`String`):
 
 | Method | Gives |
 |---|---|
-| `len`, `is_empty`, `upper`, `lower`, `trim`, `starts_with`, `ends_with`, `repeat`, `split` | As their names say; `len` counts characters |
-| `s.contains(part)` | Whether `part` is in `s`; `part` is a `String` or a `Char`: `"aeiou".contains(c)` |
+| `len`, `is_empty`, `upper`, `lower`, `trim`, `starts_with`, `ends_with`, `repeat` | As their names say; `len` counts characters |
+| `s.split(sep)` | The parts of `s` between each `sep`: `"a,b".split(",")` is `["a", "b"]`. An empty `sep` is a panic that says to use `chars()`, as Python's `split` refuses one |
+| `s.contains(part)` | Whether `part` is in `s`; `part` is a `String` or a `Char`: `"aeiou".contains(c)`. An empty `part` is in every text: `"abc".contains("")` is `true` |
 | `s.replace(old, new)` | `s` with every `old` replaced |
-| `s.lines()` | The lines, without line endings |
+| `s.lines()` | The lines, without line endings; `"".lines()` is `[]`, as Python's `splitlines` and Rust's `lines` give |
 | `s.chars()` | The characters, as `[Char]` |
-| `s.index_of(part)` | The character position of the first `part`, or `none` |
+| `s.index_of(part)` | The character position of the first `part`, or `none`; an empty `part` is found at once, at `0` |
 | `s.slice(start, end)` | Characters `start..end`; positions past the end are clamped |
 | `s.trim_start()`, `s.trim_end()` | `s` without the white space at its start, or at its end, as `trim` takes it off both |
 | `s.last_index_of(part)` | The character position of the last `part`, or `none` |

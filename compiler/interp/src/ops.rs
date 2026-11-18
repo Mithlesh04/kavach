@@ -2,7 +2,7 @@
 
 use crate::interp::Interp;
 use crate::value::{Eval, Value};
-use kavach_ast::{BinaryOp, Expr, Span, UnaryOp};
+use kavach_ast::{BinaryOp, Expr, ExprKind, Span, UnaryOp};
 use kavach_checker::Prim;
 use std::cmp::Ordering;
 
@@ -114,7 +114,7 @@ impl<'a> Interp<'a> {
     }
 
     /// Whether `a op b` holds, for a comparison `op`.
-    fn compared(
+    pub(crate) fn compared(
         &self,
         op: BinaryOp,
         a: &Value<'a>,
@@ -329,5 +329,30 @@ pub(crate) fn is_nan(v: &Value<'_>) -> bool {
         Value::Float(f) => f.is_nan(),
         Value::Float32(f) => f.is_nan(),
         _ => false,
+    }
+}
+
+impl<'a> Interp<'a> {
+    /// `assert` (spec 11.8): a failing comparison shows both sides, as
+    /// `assertion failed: total == 10 (left: 9, right: 10)`, each worked
+    /// out once; other conditions show only their text.
+    pub(crate) fn assert_stmt(&mut self, e: &'a Expr) -> Eval<'a> {
+        use BinaryOp::*;
+        let text = self.text(e.span);
+        if let ExprKind::Binary(op @ (Eq | NotEq | Lt | Le | Gt | Ge), l, r) = &e.kind {
+            let (a, b) = (self.eval(l)?, self.eval(r)?);
+            if self.compared(*op, &a, &b, e.span)? {
+                return Ok(Value::Unit);
+            }
+            let (a, b) = (a.display(), b.display());
+            return Err(self.panic(
+                format!("assertion failed: {text} (left: {a}, right: {b})"),
+                e.span,
+            ));
+        }
+        match self.eval(e)? {
+            Value::Bool(true) => Ok(Value::Unit),
+            _ => Err(self.panic(format!("assertion failed: {text}"), e.span)),
+        }
     }
 }

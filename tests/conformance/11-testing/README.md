@@ -23,5 +23,6 @@ Conformance tests for spec chapter [11. Testing](../../../docs/spec/11-testing.m
 | 11.5 | [clipboard-fake-starts-empty.kav](clipboard-fake-starts-empty.kav) | In a generated test, the clipboard is a fake in memory: it starts empty, and what is written is read back. | tests pass |
 | 11.5 | [clock-fake-moves-with-after.kav](clock-fake-moves-with-after.kav) | In a generated test, `time.after` moves the clock forward at once, as `sleep` does. | tests pass |
 | 11.8 | [tests-use-nothing-unless-given.kav](tests-use-nothing-unless-given.kav) | A `test` block runs with no capabilities unless given some: the file system, the network or the environment need `uses`. | compile error |
+| 11.8 | [a-failing-assert-shows-both-sides.kav](a-failing-assert-shows-both-sides.kav) | A failing `assert` on a comparison shows both sides: `assertion failed: total == 10 (left: 9, right: 10)`. | panic |
 | 11.8, 11.5 | [a-test-may-ask-for-the-fake-disk.kav](a-test-may-ask-for-the-fake-disk.kav) | `test … uses Fs with Fs = fake` gets an empty file system in memory; nothing it writes reaches the disk. | tests pass |
 | 11.8, 9.2 | [a-test-cancels-the-tasks-it-leaves.kav](a-test-cancels-the-tasks-it-leaves.kav) | A `test` block cancels the tasks it spawned and left running when it ends. | tests pass |

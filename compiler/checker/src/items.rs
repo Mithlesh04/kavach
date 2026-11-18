@@ -401,6 +401,11 @@ impl Checker<'_> {
 
     /// An expression on its own line: its value must not be thrown away (spec 3.7).
     pub(crate) fn expr_stmt(&mut self, e: &Expr) {
+        // `x?.m()` on its own line: the parser's `none` for when `x` is
+        // `none` (one character wide, at the `?`), not one written.
+        if matches!(e.kind, ExprKind::None) && e.span.end == e.span.start + 1 {
+            return;
+        }
         if is_statement_like(e) {
             self.statement_like(e);
             return;

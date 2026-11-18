@@ -1,0 +1,31 @@
+// Rule: In the usage `--help` gives, a `Bool` flag shows its default, not its type: `(default false)` when none is written.
+// Spec: 14.6
+// args: --help
+// expect output: --verbose (default false)
+// expect output: --color (default true)
+// expect output: --quiet (default false)
+// expect output: false
+
+use std.cli
+
+type Args {
+    verbose: Bool = false
+    color: Bool = true
+    quiet: Bool
+}
+
+fn main() {
+    const args = cli.parse<Args>() catch e => {
+        const usage = `{e}`
+        for name in ["--verbose", "--color", "--quiet"] {
+            for line in usage.lines() {
+                if line.words().first() == name {
+                    print(line.words().join(" "))
+                }
+            }
+        }
+        print(usage.contains("<Bool>"))
+        return
+    }
+    print(args.verbose)
+}

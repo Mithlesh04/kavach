@@ -1,0 +1,16 @@
+// Rule: Reading a folder as a file is `FsError.IsFolder`, and removing a folder that still holds something is `FsError.NotEmpty`, so code can match them.
+// Spec: 14.3
+// expect output: IsFolder(path: "kavach-t-fs-folders")
+// expect output: NotEmpty(path: "kavach-t-fs-folders")
+
+use std.fs
+
+fn main() ! FsError uses Fs, Console {
+    const dir = "kavach-t-fs-folders"
+    try fs.create_dir(dir)
+    try fs.write_text(`{dir}/a.txt`, "x")
+    const read = fs.read_text(dir) catch e => `{e}`
+    print(read)
+    fs.remove(dir) catch e => print(e)
+    try fs.remove_all(dir)
+}

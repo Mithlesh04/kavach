@@ -90,7 +90,7 @@ impl Checker<'_> {
                 "is a `const`, so it can't change: declare it with `let`"
             }
             Some(kavach_resolver::DefKind::Param) => {
-                "is a parameter, so it can't change: copy it into a `let` first"
+                "is a parameter, so it can't change: copy it into a `let` first, or make it `inout` to change the caller's value (spec 3.9)"
             }
             _ => return,
         };

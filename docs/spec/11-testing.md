@@ -218,7 +218,7 @@ src/
 └── orders.test.kav      // test "total_paid counts only paid orders" { … }
 ```
 - A `test` block is a function of its own for its tasks: those it spawned and left running are cancelled when it ends (9.2), so a server it started doesn't keep the run going.
-- `assert` shows both sides of a failed comparison.
+- `assert` shows both sides of a failed comparison (`==`, `!=`, `<`, `>`, `<=`, `>=`), each worked out once: `assertion failed: total == 10 (left: 9, right: 10)`. Other conditions show their text.
 - Tests run with no capabilities unless given some: `test "fetch" uses Net { … }`. Reaching a capability without it, directly or through a function, is a compile error. The console, the clock and random numbers are always there: a test run captures the output, can freeze the clock (14.4) and seeds the numbers.
 - A test can provide its own capability implementations: `test "refund flow" with Payments = FakePayments() { … }`.
 - A test given `Fs`, `Net`, `Env` or `Clock` reaches the real one. To get the automatic fake of 11.5 instead, write `with Fs = fake`: an empty file system in memory, never full, so nothing the test writes reaches the disk; `with Net = fake`, `with Env = fake` and `with Clock = fake` likewise.

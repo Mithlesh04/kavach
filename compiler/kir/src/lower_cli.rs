@@ -77,11 +77,12 @@ impl<'a> Lowerer<'a> {
                 } else {
                     format!("{name} <{}>", self.text(f.ty.span).trim_end_matches('?'))
                 };
+                // A flag shows its default, not its type (spec 14.6).
                 let note = match (&f.default, &f.ty.kind) {
-                    (Some(d), _) if !is_flag(&f.ty) => format!("(default {})", self.text(d.span)),
+                    (Some(d), _) => format!("(default {})", self.text(d.span)),
+                    (None, _) if is_flag(&f.ty) => "(default false)".into(),
                     (None, TypeKind::Optional(_)) => "(optional)".into(),
-                    (None, _) if !is_flag(&f.ty) => "(required)".into(),
-                    _ => String::new(),
+                    (None, _) => "(required)".into(),
                 };
                 format!("{:indent$}{shown:<width$} {note}", "")
                     .trim_end()

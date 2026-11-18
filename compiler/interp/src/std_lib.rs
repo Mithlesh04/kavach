@@ -20,15 +20,12 @@ impl<'a> Interp<'a> {
     /// A failed file operation as an `FsError` from `std.fs` (spec 14.3).
     pub(crate) fn fs_error(&self, path: &str, e: std::io::Error) -> Flow<'a> {
         let at = ("path", self.str_value(path));
-        let error = match e.kind() {
-            std::io::ErrorKind::NotFound => self.builtin_variant("FsError", "NotFound", vec![at]),
-            std::io::ErrorKind::PermissionDenied => {
-                self.builtin_variant("FsError", "Denied", vec![at])
-            }
-            _ => {
+        let error = match kavach_runtime_core::files::error_variant(path, &e) {
+            "Failed" => {
                 let reason = ("reason", self.str_value(&e.to_string()));
                 self.builtin_variant("FsError", "Failed", vec![at, reason])
             }
+            variant => self.builtin_variant("FsError", variant, vec![at]),
         };
         Flow::Fail(error)
     }

@@ -36,7 +36,7 @@ fn main() {
 
 - A field `name` is the option `--name` (an `_` in the name is written `-`).
 - Fields may be `String`, numbers, `Bool` (a flag with no value) or optionals of these. A field without a default and not optional is required.
-- `--help` gives an error whose text is the usage, listing every option with its type and default.
+- `--help` gives an error whose text is the usage, listing every option with its type and default. A `Bool` flag shows only its default, `--verbose  (default false)`: it takes no value, so it has no type to write.
 
 ### Commands
 

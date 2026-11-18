@@ -1,0 +1,7 @@
+// Rule: `s.split("")` has no separator to split at, so it panics and says to use `chars()`.
+// Spec: 14.2
+// expect panic: `split("")` has no separator to split at: use `chars()` for the characters (spec 14.2)
+
+fn main() {
+    print("abc".split(""))
+}

@@ -48,11 +48,12 @@ fn option_lines(i: &Interp<'_>, fields: &[FieldDecl], indent: usize) -> Vec<Stri
             } else {
                 format!("{name} <{}>", i.text(f.ty.span).trim_end_matches('?'))
             };
+            // A flag shows its default, not its type (spec 14.6).
             let note = match (&f.default, &f.ty.kind) {
-                (Some(d), _) if !is_flag(&f.ty) => format!("(default {})", i.text(d.span)),
+                (Some(d), _) => format!("(default {})", i.text(d.span)),
+                (None, _) if is_flag(&f.ty) => "(default false)".into(),
                 (None, TypeKind::Optional(_)) => "(optional)".into(),
-                (None, _) if !is_flag(&f.ty) => "(required)".into(),
-                _ => String::new(),
+                (None, _) => "(required)".into(),
             };
             format!("{:indent$}{shown:<width$} {note}", "")
                 .trim_end()

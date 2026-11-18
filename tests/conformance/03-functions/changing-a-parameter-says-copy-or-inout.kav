@@ -1,0 +1,12 @@
+// Rule: A parameter is the caller's value given as a copy, so a changing method on it is a compile error that says to copy it into a `let` first or make the parameter `inout`.
+// Spec: 3.9, 6.1
+// expect compile error
+
+fn add(item: Int, into: [Int]) -> [Int] {
+    into.push(item)            // error: copy it into a `let` first, or make it `inout`
+    into
+}
+
+fn main() {
+    print(add(1, []))
+}

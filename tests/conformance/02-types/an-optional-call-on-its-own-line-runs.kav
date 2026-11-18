@@ -1,0 +1,18 @@
+// Rule: `x?.m()` on its own line calls `m` when `x` holds a value and does nothing when it is `none`, even when `m` gives nothing back.
+// Spec: 2.7
+// expect output: app: hi
+
+type Log {
+    name: String
+
+    fn say(self, text: String) {
+        print(`{self.name}: {text}`)
+    }
+}
+
+fn main() {
+    const l: Log? = Log(name: "app")
+    l?.say("hi")
+    const missing: Log? = none
+    missing?.say("never")
+}

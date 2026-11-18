@@ -32,18 +32,26 @@ impl Checker<'_> {
             .uses
             .get(&id.span.start)
             .map(|d| self.res.defs[*d].kind);
-        let what = match kind {
-            Some(DefKind::Local { mutable: false }) => "a `const`",
-            Some(DefKind::Param) => "a parameter",
+        // `x?.push(6)`: the method runs on `?`, a copy of what is inside.
+        if id.name == "?" {
+            self.error(
+                root.span,
+                format!("`?.{method}(…)` would change a copy of the value inside, not the value itself (spec 2.7): to change it only when it is there, test first, as `if d.contains_key(k) {{ d[k].{method}(…) }}` for a dict entry"),
+            );
+            return;
+        }
+        let name = &id.name;
+        let message = match kind {
+            Some(DefKind::Local { mutable: false }) => {
+                format!("`{method}` changes `{name}`, but it is a `const`: declare it with `let`")
+            }
+            // A parameter is the caller's value, given as a copy (6.1).
+            Some(DefKind::Param) => format!(
+                "`{method}` changes `{name}`, but it is a parameter: copy it into a `let` first (`let items = {name}`), or make it `inout` to change the caller's value (spec 3.9)"
+            ),
             _ => return,
         };
-        self.error(
-            root.span,
-            format!(
-                "`{method}` changes `{}`, but it is {what}: declare it with `let`",
-                id.name
-            ),
-        );
+        self.error(root.span, message);
     }
 
     /// `count += 1` (or `log.push(x)`) inside a lambda or `spawn` block,

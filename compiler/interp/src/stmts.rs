@@ -240,10 +240,7 @@ impl<'a> Interp<'a> {
                 }
                 Ok(Value::Unit)
             }
-            StmtKind::Assert(e) => match self.eval(e)? {
-                Value::Bool(true) => Ok(Value::Unit),
-                _ => Err(self.panic(format!("assertion failed: {}", self.text(e.span)), e.span)),
-            },
+            StmtKind::Assert(e) => self.assert_stmt(e),
         }
     }
 

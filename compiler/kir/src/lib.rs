@@ -29,6 +29,7 @@ mod lower;
 mod lower_agents;
 mod lower_ai;
 mod lower_arena;
+mod lower_assert;
 mod lower_base64;
 mod lower_bytes;
 mod lower_bytes_text;

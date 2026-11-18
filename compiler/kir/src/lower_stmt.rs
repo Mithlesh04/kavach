@@ -144,14 +144,7 @@ impl<'a> Lowerer<'a> {
                 out.push(Stmt::While { cond, body: b });
                 Ok(())
             })?,
-            StmtKind::Assert(e) => {
-                let cond = self.expr(e)?;
-                out.push(Stmt::Check {
-                    cond,
-                    message: format!("assertion failed: {}", self.text(e.span)),
-                    line: self.line(e.span),
-                });
-            }
+            StmtKind::Assert(e) => self.assert_stmt(e, out)?,
             StmtKind::Expr(e) => self.expr_stmt(e, out)?,
         }
         Ok(())

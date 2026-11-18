@@ -6,7 +6,7 @@
 use std.fs
 
 /// Why a file operation failed.
-pub type FsError = NotFound(path: String) | Denied(path: String) | Failed(path: String, reason: String)
+pub type FsError = NotFound(path: String) | Denied(path: String) | IsFolder(path: String) | NotEmpty(path: String) | NotText(path: String) | Failed(path: String, reason: String)
 
 /// What kind of thing a path names.
 pub type FileKind = File | Folder | Link

@@ -1,0 +1,9 @@
+// Rule: `?.` calls a method on a copy of the value inside, so a changing method through it (`d[k]?.push(x)`) is a compile error that says to test first and change the value itself.
+// Spec: 2.7, 2.2
+// expect compile error
+
+fn main() {
+    let b = {"numbers": [2, 4]}
+    b["numbers"]?.push(6)          // error: would change a copy of the value inside
+    print(b)
+}
