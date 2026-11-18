@@ -228,7 +228,9 @@ fn errors_are_reported_and_lexing_continues() {
     );
     assert_eq!(
         errors("`{x"),
-        ["1: this `{` inside a string is never closed with `}`"]
+        [
+            r"1: this `{` is never closed: write `\{` for a brace in a template, or write the text in quotes (spec 1.7)"
+        ]
     );
     assert_eq!(
         errors(r#"r"\d""#),

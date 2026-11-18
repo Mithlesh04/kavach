@@ -68,7 +68,7 @@ Conformance tests for std.net (14.10), std.http (14.11) and std.grpc (14.14). Pa
 | 14.11 | [http2-websockets-and-events-get-501.kav](http2-websockets-and-events-get-501.kav) | over HTTP/2 neither WebSockets nor server-sent events are offered yet: a WebSocket request a handler accepts with `http.websocket`, or one it answers with `http.events`, gets 501. | runs |
 | 14.11, 9.6 | [a-cancelled-h2-request-never-hangs.kav](a-cancelled-h2-request-never-hangs.kav) | Cancelling a task waiting on an HTTP/2 request never leaves the connection stuck. | runs |
 | 14.14 | [grpc-messages-are-protocol-buffers.kav](grpc-messages-are-protocol-buffers.kav) | `grpc.encode<T>` writes Protocol Buffers with field `n` the type's `n`th field; `grpc.decode<T>` reads them back. | runs |
-| 14.14, 2.11 | [grpc-refuses-secret-fields.kav](grpc-refuses-secret-fields.kav) | A value holding a `secret` field can't become a gRPC message: `grpc.encode<T>` with such a `T` is a compile error. | compile error |
+| 14.14, 8.7 | [grpc-hides-secret-fields.kav](grpc-hides-secret-fields.kav) | `grpc.encode<T>` writes a `secret` field as `"<secret>"`, never its value. | runs |
 | 14.14 | [grpc-unions-are-oneof-messages.kav](grpc-unions-are-oneof-messages.kav) | A union field travels as a wrapper message holding a oneof; one that never arrived fails to decode. | runs |
 | 14.14, 2.12 | [grpc-maps-use-entry-messages.kav](grpc-maps-use-entry-messages.kav) | A map field travels as repeated entry messages, and `json.schema` gives maps an open object. | runs |
 | 14.14 | [grpc-streams-deliver-each-message.kav](grpc-streams-deliver-each-message.kav) | `grpc.reply_stream` sends each value as its own message, and `grpc.each` runs its function per message, failing with `Status` as `call` does. | runs |

@@ -203,6 +203,10 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
         }
         (Shape::BigInt, Tree::Int(n)) => exact_number(&n.to_string(), ty)
             .ok_or_else(|| (path.to_string(), expected::WHOLE.to_string())),
+        // Written as text, as `big_as_text` writes it (decision 0132).
+        (Shape::Decimal | Shape::BigInt, Tree::Text(text)) if json::is_number(text) => {
+            exact_number(text, ty).ok_or_else(|| (path.to_string(), wanted(ty).to_string()))
+        }
         (Shape::Decimal, _) => wrong(expected::NUMBER),
         (Shape::BigInt, _) => wrong(expected::WHOLE),
         (Shape::Optional(_), Tree::Null) => Ok(0),
@@ -232,6 +236,19 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
         (Shape::Tuple(ts), _) => wrong(&expected::items(ts.len())),
         (Shape::List(_) | Shape::Set(_), _) => wrong(expected::ARRAY),
         (Shape::Map(k, v), Tree::Object(fields)) => {
+            // A key is text, read back as the key type (decision 0132).
+            let text_keys = k.is_ref() && matches!(shape(*k), Shape::Str);
+            let key_types = vec![*k; fields.len()];
+            let mut key_slots = Vec::with_capacity(fields.len());
+            if !text_keys {
+                for (key, _) in fields {
+                    let tree = json::key_tree(key, key_kind(*k));
+                    match decode(&tree, *k, &path_field(path, key), templates) {
+                        Ok(slot) => key_slots.push(slot),
+                        Err(e) => return Err(drop_all(key_slots, &key_types, e)),
+                    }
+                }
+            }
             let types = vec![*v; fields.len()];
             let values: Vec<Tree> = fields.iter().map(|(_, v)| v.clone()).collect();
             let keys: Vec<String> = fields.iter().map(|(k, _)| path_field(path, k)).collect();
@@ -240,12 +257,18 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
                 match decode(value, types[i], at, templates).map_err(stop_at) {
                     Ok(slot) => built.push(slot),
                     Err(None) => built.push(0),
-                    Err(Some(e)) => return Err(drop_all(built, &types, e)),
+                    Err(Some(e)) => {
+                        return Err(drop_all(key_slots, &key_types, drop_all(built, &types, e)));
+                    }
                 }
             }
             let mut map = crate::rt_maps::kv_map_new(type_code(ty));
-            for ((key, _), value) in fields.iter().zip(built) {
-                map = crate::rt_maps::kv_map_insert(map, new_text(key, *k), value as i64, 0);
+            for (i, ((key, _), value)) in fields.iter().zip(built).enumerate() {
+                let key = match text_keys {
+                    true => new_text(key, *k),
+                    false => key_slots[i] as i64,
+                };
+                map = crate::rt_maps::kv_map_insert(map, key, value as i64, 0);
             }
             Ok(map as u64)
         }
@@ -368,6 +391,24 @@ fn decode_all(
         }
     }
     Ok(built)
+}
+
+/// What a dict's key type reads from its JSON text (decision 0132).
+pub(crate) fn key_kind(ty: Type) -> json::KeyKind {
+    match ty {
+        Type::Char => json::KeyKind::Text,
+        t if !t.is_ref() => json::KeyKind::Scalar,
+        t => match shape(t) {
+            Shape::Str => json::KeyKind::Text,
+            Shape::Decimal | Shape::BigInt => json::KeyKind::Scalar,
+            _ => json::KeyKind::Other,
+        },
+    }
+}
+
+/// Drops a key decoded before its value failed.
+pub(crate) fn release_key(slot: i64, ty: Type) {
+    release_slot(slot, ty);
 }
 
 fn drop_all(built: Vec<u64>, types: &[Type], e: Failed) -> Failed {

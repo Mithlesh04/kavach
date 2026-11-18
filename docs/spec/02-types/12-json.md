@@ -32,9 +32,9 @@ for item in doc["items"].list() ?? [] {
 |---|---|
 | `text()` | `String?`: the text of a `Text` |
 | `int()` | `Int?`: a `Number` written without a fraction or exponent that fits `Int` |
-| `bigint()` | `BigInt?`: a `Number` written without a fraction or exponent, of any size |
+| `bigint()` | `BigInt?`: a `Number` written without a fraction or exponent, of any size, or a `Text` holding one (as `big_as_text` writes it) |
 | `float()` | `Float?`: a `Number`, as the nearest `Float`; `none` past `Float`'s range |
-| `decimal()` | `Decimal?`: a `Number`, exactly |
+| `decimal()` | `Decimal?`: a `Number`, exactly, or a `Text` holding one |
 | `bool()` | `Bool?`: the value of a `Boolean` |
 | `list()` | `[Json]?`: the items of an `Array` |
 | `object()` | `{String: Json}?`: the fields of an `Object` |
@@ -43,19 +43,19 @@ for item in doc["items"].list() ?? [] {
 
 ### Building
 
-Where a `Json` is expected, literals become `Json` values: numbers, text, `true`, `false`, `none` (which becomes `Null`), lists and dicts with text keys, at any depth. Inside such a literal, any other expression whose type can be encoded (below) is converted too:
+Where a `Json` is expected, literals become `Json` values: numbers, text, `true`, `false`, `none` (which becomes `Null`), lists and dicts with text keys, at any depth. Inside such a literal, any other expression is converted too, as `json.of` converts it (below):
 
 ```kavach
-const order: Json = [
+const order: Json = {
     "id": 1042,
     "customer": user.name,
     "items": ["pen", "ink"],
     "paid": true,
     "note": none,
-]
+}
 ```
 
-`json.of(value)` converts any value that can be encoded. A `Json` is a value like any other (chapter 6): copies never share changes, and it is freed as soon as nothing holds it. It prints as compact JSON text. Two `Json` values are equal when they are the same variant with equal contents; objects compare like dicts, so the order of keys doesn't count (1.8).
+`json.of(value)` converts any value (below). A `Json` is a value like any other (chapter 6): copies never share changes, and it is freed as soon as nothing holds it. It prints as compact JSON text. Two `Json` values are equal when they are the same variant with equal contents; objects compare like dicts, so the order of keys doesn't count (1.8).
 
 ### std.json
 
@@ -66,14 +66,33 @@ const order: Json = [
 | `json.decode<T>(text) ! JsonError` | A `T` read straight from `text`, with no `Json` in between |
 | `json.decode_value<T>(j) ! JsonError` | A `T` read from the `Json` value `j` |
 | `json.decode<T>(text, unknown: JsonUnknown.Ignore)` | The same, skipping fields `T` doesn't have (`decode_value` takes it too) |
-| `json.of(value)` | `value` as a `Json` |
-| `json.stringify(value, indent: 0)` | JSON text for a `Json` or any value that can be encoded; `indent` above 0 puts each field on its own line |
+| `json.of(value, big_as_text: false)` | `value` as a `Json`; `big_as_text: true` writes each `BigInt` and `Decimal` as text |
+| `json.stringify(value, indent: 0, big_as_text: false)` | JSON text for any value; `indent` above 0 puts each field on its own line |
 | `json.schema<T>()` | The [JSON Schema](https://json-schema.org) of `T` as a `Json`: what `ask<T>` sends a model (8.4), for modules that work from a type's shape (14.14). A `secret` field (2.11) is marked `"writeOnly": true`, so a library sees that it can't be written out |
 | `json.describe(f) -> FnSchema` | The function `f` described: its name, doc comment, parameters with their schemas, the schemas of its result and error, the capabilities it `uses`, and its `example` clauses as text |
 
-**Encoding** works on types the compiler can see through: numbers (sized integers too), `Bool`, `String`, `Char` (text of one character), `Decimal` and `BigInt` (as numbers with all their digits), `Bytes` (as base64 text, below), lists, sets and tuples (arrays), dicts with `String` keys (objects), records (objects with the fields in declared order), optionals (`none` is `null`), unions (a variant without fields is its name as text; one with fields is `{"Variant": {fields}}`), `std.time`'s `Date`, `Time` and `DateTime` (below) and `Json` itself. Anything else is a compile error: functions, dicts with other keys, and records with `secret` fields (2.11), so a secret can't leak into JSON by accident. In a generic function, `json.of(e)` of a type parameter is checked where the parameter gets a real type: the call `respond(error)` is the compile error when `error`'s type can't be written, and so is each call through other generic functions that pass the parameter on. `NaN` and infinities are written as `null`, and a negative zero `Float` as `0.0`, as JavaScript does; JSON text read in and written back keeps its own `-0.0`.
+**Encoding** works on every value ([decision 0132](../../decisions/0132-json-for-every-value.md)):
 
-**Decoding** is the reverse, and strict about values: an integer field takes only a number written without a fraction or exponent that fits its type, and a `BigInt` field one of any size; a `Float` field takes any number, as the nearest `Float`; a `Decimal` field takes any number exactly; text, booleans, arrays and objects must match. A number that doesn't fit its field is a `Mismatch`, as any other value that doesn't fit is. A missing field takes its default or `none` if it has one, otherwise decoding fails. A field the type doesn't have is a problem too, at its path, expecting "no field of this name", as the type's schema says (`additionalProperties: false`), so a misspelled or smuggled field is caught ([decision 0096](../../decisions/0096-unknown-fields-are-refused.md)). To read another service's answers, which may gain fields, write `unknown: JsonUnknown.Ignore`: such fields are then skipped. `std.http`'s client does this for the responses it decodes (14.11).
+- Numbers (sized integers too), `Bool`, `String`, and `Char` (text of one character). `Decimal` and `BigInt` are numbers with all their digits; `big_as_text: true` writes them as text instead, for readers such as JavaScript that round numbers past 2^53. `NaN` and infinities are written as `null`, and a negative zero `Float` as `0.0`, as JavaScript does; JSON text read in and written back keeps its own `-0.0`.
+- Lists, sets and tuples are arrays. Records are objects, with the fields in declared order. Dicts are objects, with their keys as text (below).
+- An optional is its value, or `null` for `none`. A union variant without fields is its name as text; one with fields is `{"Variant": {fields}}`.
+- `Bytes` is base64 text, and `std.time`'s `Date`, `Time` and `DateTime` are ISO 8601 text (both below). `Json` is itself.
+- `Shared(x)` is `x`. A `Weak` is its value while it lives, and `null` once it was freed.
+- A `secret` field (2.11) is written `"<secret>"`, as `print` shows it (1.11), so a secret never reaches JSON.
+- Values with no JSON meaning, such as functions, `Task`, `Channel`, files and sockets, are written as their printed form, `"<function>"`. This goes one way: `json.decode` of a type that holds one is a compile error.
+
+**Keys.** A JSON key is text, so each dict key is written as text: a `String` as itself; numbers, `Bool`, `Char` and `BigInt` as their text; a union variant without fields as its name; and any other key (a list, tuple, record, dict or set) as its own compact JSON, as text. Decoding reads each key back as the dict's key type says, and a key that doesn't read as one is a `Mismatch` at its path.
+
+```kavach
+print(json.of({1: "x", 2: "y"}))          // {"1":"x","2":"y"}
+print(json.of({[2, 3, 4]: "name"}))       // {"[2,3,4]":"name"}
+print(json.of({true: 1, false: 0}))       // {"true":1,"false":0}
+const back = try json.decode<{Int: String}>(`\{"1": "x"}`)
+print(back[1])                            // x
+```
+
+
+**Decoding** is the reverse, and strict about values: an integer field takes only a number written without a fraction or exponent that fits its type, and a `BigInt` field one of any size, or one written as text; a `Float` field takes any number, as the nearest `Float`; a `Decimal` field takes any number exactly, or one written as text; text, booleans, arrays and objects must match. A number that doesn't fit its field is a `Mismatch`, as any other value that doesn't fit is. A missing field takes its default or `none` if it has one, otherwise decoding fails. A field the type doesn't have is a problem too, at its path, expecting "no field of this name", as the type's schema says (`additionalProperties: false`), so a misspelled or smuggled field is caught ([decision 0096](../../decisions/0096-unknown-fields-are-refused.md)). To read another service's answers, which may gain fields, write `unknown: JsonUnknown.Ignore`: such fields are then skipped. `std.http`'s client does this for the responses it decodes (14.11). In a generic function, `json.decode<T>` of a type parameter is checked where the parameter gets a real type: the call `load<Step>(text)` is the compile error when `Step` holds a function, and so is each call through other generic functions that pass the parameter on.
 
 **`Bytes` in JSON** is base64 text, as Protocol Buffers' JSON and OpenAPI write bytes. Encoding writes the standard alphabet with padding; decoding reads the standard alphabet or the URL-safe one (`-` and `_`), with or without padding, and other text is a `Mismatch` expecting "base64 text". It holds for a bare value as for a field, in lists, dicts and optionals too. Its schema is `{"type": "string", "contentEncoding": "base64"}`. `ask<T>` (8.4) still refuses `Bytes`: models write base64 badly.
 

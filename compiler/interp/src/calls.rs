@@ -428,6 +428,13 @@ impl<'a> Interp<'a> {
         }
         let args = match (&receiver, name.name.as_str()) {
             (Value::Socket(_), "start_tls" | "accept_tls") => self.tls_args(&name.name, args),
+            // `b.text(start, end)`, by position or by name (spec 2.13).
+            (Value::Bytes(_), "text") if !args.is_empty() => {
+                let int = |n: i128| Value::Int(n, kavach_checker::Prim::Int);
+                let mut a = crate::json::arrange(args, &["start", "end"]).into_iter();
+                let start = a.next().flatten().unwrap_or(int(0));
+                vec![start, a.next().flatten().unwrap_or(int(i128::MAX))]
+            }
             _ => args.into_iter().map(|(_, v)| v).collect(),
         };
         self.builtin_method(receiver, &name.name, args, span)

@@ -138,3 +138,6 @@ RingCapacity,
 /// At the start of a program with `Display` types (spec 1.11): type
 /// number `a` shows as closure `b` (its `display`) gives.
 DisplayRegister,
+/// `b.text(start, end)` and `b.slice(start, end).text()` on `Bytes`
+/// (spec 2.13): the range `b..c`, clamped, as text, copied once.
+BytesTextRange,

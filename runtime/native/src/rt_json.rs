@@ -68,35 +68,35 @@ pub(crate) fn date_value(ty: Type, kind: Kind, n: &[i64]) -> u64 {
 
 /// `json.parse(text, limits)` (owned; `limits` is a list of the three
 /// limits) gives a `Json` of type `code`, or 0 with the error set.
-/// `json.of(value)` and `json.stringify(value, indent)` get the value in
-/// a one-item tuple, whose type says how to encode it; they give a `Json`
-/// or text of type `code`.
-pub fn json_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
+/// `json.of(value, big_as_text)` and `json.stringify(value, indent,
+/// big_as_text)` get the value in a one-item tuple, whose type says how to
+/// encode it; they give a `Json` or text of type `code` (decision 0132).
+pub fn json_op(op: RtOp, a: i64, b: i64, c: i64, code: i64) -> i64 {
     if matches!(op, RtOp::JsonOf | RtOp::JsonStringify) {
         let item = match shape(obj(a).ty()) {
             Shape::Tuple(ts) => ts[0],
             _ => Type::Unit,
         };
-        // The static check covers written types; this covers values
-        // reached through generics, such as `std.grpc`'s (spec 2.11).
-        if may_hold_secret(item, &mut Vec::new())
-            && let Some((holder, field)) = find_secret(slots(a)[0] as i64, item)
-        {
-            crate::rt::panic_with(
-                &format!(
-                    "`{holder}.{field}` is `secret`, so it can't be encoded as JSON; use `reveal(…)` on a copy if you really mean to (spec 2.11)"
-                ),
-                line,
-            );
-        }
+        let (indent, big) = match op {
+            RtOp::JsonStringify => (usize::try_from(b).unwrap_or(0), c),
+            _ => (0, b),
+        };
+        let o = crate::rt_json_write::Encode {
+            hide_secrets: true,
+            big_as_text: big != 0,
+        };
+        let text = crate::rt_json_write::text_of(slots(a)[0] as i64, item, indent, o);
+        release(a);
         if op == RtOp::JsonStringify {
-            let indent = usize::try_from(b).unwrap_or(0);
-            let text = crate::rt_json_write::text_of(slots(a)[0] as i64, item, indent);
-            release(a);
             return crate::shapes::new_str(text, type_of(code));
         }
-        let t = encode(slots(a)[0] as i64, item);
-        release(a);
+        let all = Limits {
+            max_depth: usize::MAX,
+            max_bytes: usize::MAX,
+            max_fields: usize::MAX,
+            comments: false,
+        };
+        let t = json::parse(&text, &all).unwrap_or(Tree::Null);
         return value(&t, type_of(code));
     }
     let d = Limits::default();
@@ -178,71 +178,8 @@ pub(crate) fn value(t: &Tree, ty: Type) -> i64 {
     new_variant(ty, name, &[slot])
 }
 
-/// Any value `slot` (borrowed) of type `ty` as JSON (spec 2.12): what
-/// `json.of` gives. A `Json` stays as it is.
-/// Whether a value of type `ty` can hold a `secret` field, seen from its
-/// type alone: most can't, and then the value needn't be walked.
-fn may_hold_secret(ty: Type, seen: &mut Vec<Type>) -> bool {
-    if !ty.is_ref() || seen.contains(&ty) {
-        return false;
-    }
-    seen.push(ty);
-    let any = |fields: &[kavach_kir::FieldShape], seen: &mut Vec<Type>| {
-        fields
-            .iter()
-            .any(|f| f.secret || may_hold_secret(f.ty, seen))
-    };
-    match shape(ty) {
-        Shape::Optional(t) | Shape::List(t) | Shape::Set(t) | Shape::Shared(t) => {
-            may_hold_secret(*t, seen)
-        }
-        Shape::Map(k, v) => may_hold_secret(*k, seen) || may_hold_secret(*v, seen),
-        Shape::Tuple(ts) => ts.iter().any(|t| may_hold_secret(*t, seen)),
-        Shape::Record { fields, .. } => any(fields, seen),
-        Shape::Union { variants, .. } => variants.iter().any(|v| any(&v.fields, seen)),
-        _ => false,
-    }
-}
-
-/// A `secret` field anywhere inside the value: who holds it and its name.
-fn find_secret(slot: i64, ty: Type) -> Option<(String, String)> {
-    if !ty.is_ref() || slot == 0 {
-        return None;
-    }
-    let p = slot;
-    let in_fields = |name: &str, fields: &[kavach_kir::FieldShape], items: &[u64]| {
-        fields.iter().zip(items).find_map(|(f, s)| {
-            if f.secret {
-                Some((name.to_string(), f.name.clone()))
-            } else {
-                find_secret(*s as i64, f.ty)
-            }
-        })
-    };
-    match shape(ty) {
-        Shape::Optional(inner) if inner.is_ref() => find_secret(p, *inner),
-        Shape::Optional(inner) => find_secret(crate::display::boxed(p), *inner),
-        Shape::Record { name, fields, .. } => in_fields(name, fields, &items_of(p)),
-        Shape::Union { variants, .. } => {
-            let v = &variants[crate::heap::tag_of(p) as usize];
-            in_fields(&v.name, &v.fields, &items_of(p))
-        }
-        Shape::List(t) | Shape::Set(t) => {
-            items_of(p).iter().find_map(|s| find_secret(*s as i64, *t))
-        }
-        Shape::Map(k, v) => items_of(p)
-            .chunks(2)
-            .find_map(|c| find_secret(c[0] as i64, *k).or_else(|| find_secret(c[1] as i64, *v))),
-        Shape::Tuple(ts) => items_of(p)
-            .iter()
-            .zip(ts.iter())
-            .find_map(|(s, t)| find_secret(*s as i64, *t)),
-        Shape::Shared(_) if crate::send::is_weak(p) => None,
-        Shape::Shared(t) => find_secret(slots(p)[0] as i64, *t),
-        _ => None,
-    }
-}
-
+/// Any value `slot` (borrowed) of type `ty` as JSON, whole: secrets kept,
+/// as the agent journal and other processes hold values (8.5, 9.8).
 pub(crate) fn encode(slot: i64, ty: Type) -> Tree {
     let object = |names: Vec<&str>, types: Vec<Type>, p: i64| {
         let items = items_of(p);
@@ -304,14 +241,15 @@ pub(crate) fn encode(slot: i64, ty: Type) -> Tree {
                     .collect(),
             )
         }
-        Shape::Map(_, v) => {
+        Shape::Map(k, v) => {
             let items = items_of(p);
+            let whole = crate::rt_json_write::Encode::default();
             Tree::Object(
                 items
                     .chunks(2)
                     .map(|e| {
                         (
-                            with_str(e[0] as i64, str::to_string),
+                            crate::rt_json_write::key_text(e[0] as i64, *k, whole),
                             encode(e[1] as i64, *v),
                         )
                     })
@@ -437,12 +375,12 @@ pub(crate) fn error(e: Error) -> i64 {
 }
 
 // The group's runtime entry (`RtOp::entry`, decision 0024).
-crate::rt_data::entry!(kv_rt_json, |op, a, b, c, code, line| {
+crate::rt_data::entry!(kv_rt_json, |op, a, b, c, code, _line| {
     match op {
         RtOp::JsonDecode | RtOp::JsonDecodeValue => {
             crate::rt_json_decode::decode_op(op, a, b, c, code)
         }
-        RtOp::JsonParse | RtOp::JsonStringify | RtOp::JsonOf => json_op(op, a, b, code, line),
+        RtOp::JsonParse | RtOp::JsonStringify | RtOp::JsonOf => json_op(op, a, b, c, code),
         RtOp::JsonCheckRegister => crate::rt_json_checks::register(a, b, c),
         _ => crate::rt_json_read::read_op(op, a, b, code),
     }

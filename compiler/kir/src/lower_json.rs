@@ -377,14 +377,26 @@ impl<'a> Lowerer<'a> {
                 Some(a) => self.expr(&a.value)?,
                 None => return Err(self.unsupported("`json.of()`", span)),
             };
-            return Ok(self.encoded(value, ty));
+            let mut of = self.encoded(value, ty);
+            // `big_as_text: true` as 1, the second operand (decision 0132).
+            let big = args.iter().enumerate().find(|(i, a)| match &a.name {
+                Some(n) => n.name == "big_as_text",
+                None => *i == 1,
+            });
+            if let Some((_, a)) = big {
+                let flag = self.flag(&a.value, line)?;
+                if let K::Rt(_, operands) = &mut of.kind {
+                    operands.push(flag);
+                }
+            }
+            return Ok(of);
         }
         let (op, params): (RtOp, &[&str]) = match name {
             "parse" => (
                 RtOp::JsonParse,
                 &["text", "max_depth", "max_bytes", "max_fields", "comments"],
             ),
-            "stringify" => (RtOp::JsonStringify, &["value", "indent"]),
+            "stringify" => (RtOp::JsonStringify, &["value", "indent", "big_as_text"]),
             _ => return Err(self.unsupported(format!("`json.{name}`"), span)),
         };
         // The arguments in parameter order: positional, then named.
@@ -430,7 +442,26 @@ impl<'a> Lowerer<'a> {
         } else {
             first
         };
-        let values = vec![first, last];
+        let mut values = vec![first, last];
+        if let Some(big) = given
+            .get(2)
+            .copied()
+            .flatten()
+            .filter(|_| op == RtOp::JsonStringify)
+        {
+            values.push(self.flag(big, line)?);
+        }
         Ok(at(K::Rt(op, values), ty))
+    }
+
+    /// A `Bool` argument as 1 or 0, for an op's operand.
+    fn flag(&mut self, e: &'a ast::Expr, line: u32) -> Lowered<ir::Expr> {
+        let at = |kind, ty| ir::Expr { kind, ty, line };
+        let one = |n: i128| ir::Block {
+            stmts: Vec::new(),
+            value: Some(Box::new(at(K::Int(n), Type::I64))),
+        };
+        let c = self.expr(e)?;
+        Ok(at(K::If(Box::new(c), one(1), one(0)), Type::I64))
     }
 }

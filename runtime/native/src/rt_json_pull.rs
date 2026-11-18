@@ -75,6 +75,14 @@ fn read(r: &mut Pull<'_>, ty: Type, templates: i64) -> Read {
             let s = r.text().map_err(|_| Wrong)?;
             Ok(new_text(&s, ty) as u64)
         }
+        // Written as text, as `big_as_text` writes it (decision 0132).
+        Shape::Decimal | Shape::BigInt if r.peek() == Some(b'"') => {
+            let text = r.text().map_err(|_| Wrong)?;
+            match kavach_runtime_core::json::is_number(&text) {
+                true => crate::rt_json_decode::exact_number(&text, ty).ok_or(Wrong),
+                false => Err(Wrong),
+            }
+        }
         // Exactly, from the digits (decision 0071); the 128-bit form first.
         Shape::Decimal => {
             let (text, _) = number(r)?;
@@ -196,16 +204,30 @@ fn map(r: &mut Pull<'_>, ty: Type, k: Type, v: Type, templates: i64) -> Read {
     r.object().map_err(|_| Wrong)?;
     let mut keys = Keys::default();
     let mut map = crate::rt_maps::kv_map_new(type_code(ty));
+    let text_keys = k.is_ref() && matches!(shape(k), Shape::Str);
     loop {
         let key = match r.field(&mut keys) {
             Ok(Some(key)) => key,
             Ok(None) => return Ok(map as u64),
             Err(_) => break,
         };
+        // A key is text, read back as the key type (decision 0132).
+        let key = match text_keys {
+            true => new_text(&key, k),
+            false => {
+                let tree =
+                    kavach_runtime_core::json::key_tree(&key, crate::rt_json_decode::key_kind(k));
+                match crate::rt_json_decode::decode(&tree, k, "", templates) {
+                    Ok(slot) => slot as i64,
+                    Err(_) => break,
+                }
+            }
+        };
         let Ok(value) = read(r, v, templates) else {
+            crate::rt_json_decode::release_key(key, k);
             break;
         };
-        map = crate::rt_maps::kv_map_insert(map, new_text(&key, k), value as i64, 0);
+        map = crate::rt_maps::kv_map_insert(map, key, value as i64, 0);
     }
     release(map);
     Err(Wrong)

@@ -260,6 +260,37 @@ pub fn parse(text: &str, limits: &Limits) -> Result<Tree, Error> {
     parse_with(text, limits, &mut TreeBuild)
 }
 
+/// What a dict's key type reads from its JSON text (decision 0132).
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum KeyKind {
+    /// `String` and `Char`: the text itself.
+    Text,
+    /// Numbers and `Bool`: the text as a number, `true` or `false`.
+    Scalar,
+    /// Any other key: its compact JSON, or a variant's name.
+    Other,
+}
+
+/// A dict key, which JSON holds as text, as the tree its key type reads
+/// (decision 0132): `"7"` is the number 7 for an `Int` key, and
+/// `"[2,3,4]"` the array for a list key.
+pub fn key_tree(key: &str, kind: KeyKind) -> Tree {
+    let text = || Tree::Text(key.to_string());
+    match kind {
+        KeyKind::Text => text(),
+        KeyKind::Scalar => match key {
+            "true" => Tree::Bool(true),
+            "false" => Tree::Bool(false),
+            _ if is_number(key) => Tree::Number(key.to_string()),
+            _ => text(),
+        },
+        KeyKind::Other => match parse(key, &Limits::default()) {
+            Ok(t @ (Tree::Array(_) | Tree::Object(_))) => t,
+            _ => text(),
+        },
+    }
+}
+
 pub mod dates;
 mod parse;
 pub use parse::parse_with;

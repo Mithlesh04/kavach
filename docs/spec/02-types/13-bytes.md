@@ -24,6 +24,7 @@ print(greeting.text() ?? "?")          // hi
 | `b.crc32c()` | The CRC32C checksum (Castagnoli, as iSCSI, ext4 and gRPC use), an `Int` in `0..2^32`; the processor computes it where it can |
 | `b.xxhash64()` | The XXH64 hash (seed 0), a `UInt64`: a fast check that data didn't change by accident, as storage engines use it; not for passwords or signatures |
 | `b.text()` | `String?`: the bytes as UTF-8 text, or `none` when they aren't valid UTF-8 |
+| `b.text(start, end)` | `String?`: the bytes `start..end` as UTF-8 text, positions clamped as `slice` clamps them, or `none` when they aren't valid UTF-8; the text is copied once, with no `Bytes` in between. `b.slice(start, end).text()` does the same |
 | `b.to_list()` | `[UInt8]` |
 | `b.as_list<T>()` | `[T]?`: the bytes read as numbers of type `T`, or `none` when their length isn't a whole number of them |
 | `b.read<T>(at, big_endian: false)` | `T?`: the number of type `T` whose bytes start at `at`, or `none` when they don't all fit |

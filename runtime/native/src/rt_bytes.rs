@@ -81,13 +81,22 @@ pub fn bytes_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             });
             new_bytes(data, result)
         }
-        RtOp::BytesText => {
-            let text = with_bytes(a, |d| std::str::from_utf8(d).ok().map(str::to_string));
-            match (text, shape(result)) {
-                (Some(t), Shape::Optional(inner)) => crate::shapes::new_text(&t, *inner),
+        RtOp::BytesTextRange => with_bytes(a, |d| {
+            let clamp = |n: i64| n.clamp(0, d.len() as i64) as usize;
+            let (start, end) = (clamp(b), clamp(c));
+            match (
+                std::str::from_utf8(&d[start..end.max(start)]),
+                shape(result),
+            ) {
+                (Ok(t), Shape::Optional(inner)) => crate::shapes::new_text(t, *inner),
                 _ => 0,
             }
-        }
+        }),
+        // Copied once, straight from the bytes.
+        RtOp::BytesText => with_bytes(a, |d| match (std::str::from_utf8(d), shape(result)) {
+            (Ok(t), Shape::Optional(inner)) => crate::shapes::new_text(t, *inner),
+            _ => 0,
+        }),
         RtOp::BytesCrc32c => {
             let crc = with_bytes(a, crc32c_fast);
             crate::heap::release(a);

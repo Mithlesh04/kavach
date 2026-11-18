@@ -1,0 +1,29 @@
+// Rule: `json.decode<T>` of a type parameter is checked where the parameter gets a real type: a generic call that would read a function from JSON is a compile error, through other generic functions too.
+// Spec: 2.12
+// expect compile error
+
+use std.json
+
+type Step {
+    name: String
+    run: fn(Int) -> Int
+}
+
+type Plain {
+    name: String
+}
+
+fn read<T>(text: String) -> T ! Error {
+    try json.decode<T>(text)
+}
+
+fn load<T>(text: String) -> T ! Error {
+    try read<T>(text)
+}
+
+fn main() ! Error {
+    const p = try load<Plain>(`\{"name": "a"}`)
+    print(p.name)
+    const s = try load<Step>(`\{"name": "b", "run": "<function>"}`)     // error: `load` reads its `T` from JSON
+    print(s.name)
+}

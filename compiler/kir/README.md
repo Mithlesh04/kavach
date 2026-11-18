@@ -50,6 +50,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/lower_std.rs` | The standard library: `std` modules, more methods, sets (spec 14) |
 | `src/lower_base64.rs` | `std.base64` (spec 14.20): its two ops, flags in place |
 | `src/lower_bytes.rs` | `b.read<T>(at, big_endian)` and `Bytes.of<T>(n, big_endian)` (spec 2.13): their ops, the flag given in place |
+| `src/lower_bytes_text.rs` | `b.text(start, end)` and `b.slice(start, end).text()` (spec 2.13): one op, the text copied once |
 | `src/lower_statics.rs` | Calls through a built-in type's name: `Set.of`, `List`/`Map`/`Set.capacity` (spec 2.2), `Ptr.from_int`, `Bytes.of`, `Float.from_bits` |
 | `src/lower_every.rs` | `for tick in time.every_ms(ms)`: a loop whose rounds each wait for their start (spec 14.4) |
 | `src/lower_iface.rs` | Interface values (spec 2.15): a box of the value, its type and one closure per method; calls through the box |

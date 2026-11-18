@@ -1,0 +1,23 @@
+// Rule: a generic method that reads its type parameter from JSON is checked at each call too: a type holding a function there is a compile error.
+// Spec: 2.12
+// expect compile error
+
+use std.json
+
+type Step {
+    run: fn(Int) -> Int
+}
+
+type Reader {
+    name: String
+
+    fn read<T>(self, text: String) -> T ! Error {
+        try json.decode<T>(text)
+    }
+}
+
+fn main() ! Error {
+    const r = Reader(name: "r")
+    const s = try r.read<Step>(`\{"run": "<function>"}`)     // error: `read` reads its `T` from JSON
+    print(s)
+}

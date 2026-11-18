@@ -1,5 +1,6 @@
 //! `Json` in the checker (spec 2.12): literals that become a `Json` where
-//! one is expected, and which types can be encoded as JSON.
+//! one is expected, and which types can be read back from JSON. Every
+//! value can be written as JSON (decision 0132).
 
 use crate::checker::{Checker, Shape};
 use crate::ty::{Prim, Ty};
@@ -58,48 +59,32 @@ impl Checker<'_> {
     }
 
     /// An item or field value inside a `Json` literal: another literal,
-    /// or any value whose type can be encoded.
+    /// or any value, which `json.of` converts (decision 0132).
     fn json_item(&mut self, e: &Expr, json: &Ty) {
         if json_literal_kind(e) {
             self.infer(e, Some(json));
             return;
         }
-        let t = self.value(e, None);
-        if !self.is_json(&t)
-            && let Some(why) = self.not_encodable(&t)
-        {
-            self.error(e.span, why);
-        }
+        self.value(e, None);
     }
 
-    /// Why values of type `t` can't be encoded as JSON, or `None` when
-    /// they can (spec 2.12).
-    pub(crate) fn not_encodable(&self, t: &Ty) -> Option<String> {
-        self.encodable_in(t, &mut Vec::new(), false)
-    }
-
-    /// Why values of type `t` can't be decoded from JSON, or `None`: the
-    /// same types as encoding, and records with `secret` fields too.
+    /// Why values of type `t` can't be read from JSON, or `None` when they
+    /// can (spec 2.12): a function, task, channel, file or socket is
+    /// written as its printed form, one way only (decision 0132).
     pub(crate) fn not_decodable(&self, t: &Ty) -> Option<String> {
-        self.encodable_in(t, &mut Vec::new(), true)
-            .map(|why| why.replace("written as JSON", "read from JSON"))
+        self.decodable_in(t, &mut Vec::new())
     }
 
-    fn encodable_in(&self, t: &Ty, seen: &mut Vec<DefId>, decoding: bool) -> Option<String> {
+    fn decodable_in(&self, t: &Ty, seen: &mut Vec<DefId>) -> Option<String> {
         let t = self.inf.resolve(t);
         match &t {
             Ty::Prim(_) | Ty::Param(_) | Ty::Error | Ty::Var(_) => None,
-            Ty::List(x) | Ty::Set(x) | Ty::Optional(x) => self.encodable_in(x, seen, decoding),
-            Ty::Tuple(ts) => ts.iter().find_map(|t| self.encodable_in(t, seen, decoding)),
-            Ty::Map(k, v) => {
-                if self.inf.resolve(k) != STRING {
-                    let shown = self.show(&t);
-                    return Some(format!(
-                        "`{shown}` can't be written as JSON: only dicts with `String` keys become objects"
-                    ));
-                }
-                self.encodable_in(v, seen, decoding)
-            }
+            Ty::List(x) | Ty::Set(x) | Ty::Optional(x) => self.decodable_in(x, seen),
+            Ty::Tuple(ts) => ts.iter().find_map(|t| self.decodable_in(t, seen)),
+            // Keys are JSON text, read back as the key type (decision 0132).
+            Ty::Map(k, v) => self
+                .decodable_in(k, seen)
+                .or_else(|| self.decodable_in(v, seen)),
             Ty::Adt(def, _) if seen.contains(def) || self.is_json(&t) => None,
             Ty::Adt(def, _) => {
                 seen.push(*def);
@@ -109,19 +94,14 @@ impl Checker<'_> {
                     Some(Shape::Union(variants)) => {
                         variants.iter().flat_map(|v| v.fields.clone()).collect()
                     }
-                    _ => return Some(format!("`{name}` can't be written as JSON")),
+                    _ => return Some(format!("`{name}` can't be read from JSON (spec 2.12)")),
                 };
-                if let Some(f) = fields.iter().find(|f| f.secret && !decoding) {
-                    return Some(format!(
-                        "`{name}` has the secret field `{}`, so it can't be written as JSON (spec 2.11)",
-                        f.name
-                    ));
-                }
-                fields
-                    .iter()
-                    .find_map(|f| self.encodable_in(&f.ty, seen, decoding))
+                fields.iter().find_map(|f| self.decodable_in(&f.ty, seen))
             }
-            other => Some(format!("`{}` can't be written as JSON", self.show(other))),
+            other => Some(format!(
+                "`{}` can't be read from JSON: it is written as its printed form, one way only (spec 2.12)",
+                self.show(other)
+            )),
         }
     }
 

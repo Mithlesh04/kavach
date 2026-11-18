@@ -1,8 +1,8 @@
-//! `json.stringify` in native code (spec 2.12): any value straight to JSON
-//! text, with no `Tree` in between. It writes exactly what
-//! `kavach_runtime_core::json::write` writes for the tree `rt_json::encode`
-//! makes, which `json.of` still uses; the conformance tests run both against
-//! the interpreter.
+//! `json.stringify` and `json.of` in native code (spec 2.12, decision
+//! 0132): any value straight to JSON text, with no `Tree` in between.
+//! Every value has a form: dict keys as text, a `secret` field as
+//! `"<secret>"`, and a function, task or channel as its printed form. The
+//! conformance tests run it against the interpreter.
 
 use crate::display::{boxed, f32_of};
 use crate::flat;
@@ -13,19 +13,50 @@ use kavach_kir::{FieldShape, Shape, Type};
 use kavach_runtime_core::json::{self, write_int, write_text};
 use kavach_runtime_core::{AnyDecimal, push_float};
 
+/// How a value is written: `json.of` and `json.stringify` hide secrets,
+/// and may write `BigInt` and `Decimal` as text (decision 0132).
+#[derive(Clone, Copy, Default)]
+pub(crate) struct Encode {
+    pub(crate) hide_secrets: bool,
+    pub(crate) big_as_text: bool,
+}
+
 /// JSON text for `slot` (borrowed) of type `ty`, indented as `json::write`.
-pub(crate) fn text_of(slot: i64, ty: Type, indent: usize) -> String {
+pub(crate) fn text_of(slot: i64, ty: Type, indent: usize, o: Encode) -> String {
     let mut w = Writer {
         out: String::new(),
         indent,
+        o,
     };
     w.value(slot, ty, 0);
     w.out
 }
 
+/// A dict key as JSON text (decision 0132): text as itself, numbers,
+/// `Bool`, `Char` and a variant without fields as they print, any other
+/// key as its own compact JSON.
+pub(crate) fn key_text(slot: i64, ty: Type, o: Encode) -> String {
+    if !ty.is_ref() {
+        return crate::display::display(slot, ty, true);
+    }
+    match shape(ty) {
+        Shape::Str => with_str(slot, str::to_string),
+        Shape::Decimal | Shape::BigInt => crate::display::display(slot, ty, true),
+        Shape::Union { variants, .. } if !crate::rt_json::is_json(ty) => {
+            let v = &variants[tag_of(innermost(slot)) as usize];
+            match v.fields.is_empty() {
+                true => v.name.clone(),
+                false => text_of(slot, ty, 0, o),
+            }
+        }
+        _ => text_of(slot, ty, 0, o),
+    }
+}
+
 struct Writer {
     out: String,
     indent: usize,
+    o: Encode,
 }
 
 impl Writer {
@@ -92,6 +123,10 @@ impl Writer {
     fn fields(&mut self, fields: &[FieldShape], items: &[u64], level: usize) {
         self.object(fields.len().min(items.len()), level, |w, i| {
             w.key(&fields[i].name);
+            // As `print` shows it (decision 0132).
+            if fields[i].secret && w.o.hide_secrets {
+                return w.out.push_str("\"<secret>\"");
+            }
             w.value(items[i] as i64, fields[i].ty, level + 1);
         });
     }
@@ -135,10 +170,15 @@ impl Writer {
     }
 
     /// A map's entries, keys and values in turn.
-    fn entries(&mut self, p: i64, value: Type, level: usize) {
+    fn entries(&mut self, p: i64, key: Type, value: Type, level: usize) {
         let items = crate::shapes::items_of(p);
         self.object(items.len() / 2, level, |w, i| {
-            with_str(items[i * 2] as i64, |k| w.key(k));
+            if key.is_ref() && matches!(shape(key), Shape::Str) {
+                with_str(items[i * 2] as i64, |k| w.key(k));
+            } else {
+                let k = key_text(items[i * 2] as i64, key, w.o);
+                w.key(&k);
+            }
             w.value(items[i * 2 + 1] as i64, value, level + 1);
         });
     }
@@ -234,12 +274,12 @@ impl Writer {
                 write_text(&mut self.out, &text);
             }
             // With all their digits (decision 0071).
-            Shape::Decimal => match any_decimal_of(p) {
-                AnyDecimal::Small(d) => self.out.push_str(&d.to_string()),
-                AnyDecimal::Big(b) => self.out.push_str(&b.to_string()),
-            },
+            Shape::Decimal => self.big(match any_decimal_of(p) {
+                AnyDecimal::Small(d) => d.to_string(),
+                AnyDecimal::Big(b) => b.to_string(),
+            }),
             Shape::BigInt => match crate::rt_bigint::big_of(p) {
-                Some(n) => self.out.push_str(&n.to_string()),
+                Some(n) => self.big(n.to_string()),
                 None => self.out.push_str("null"),
             },
             Shape::List(item) => self.list(p, ty, *item, level),
@@ -255,7 +295,7 @@ impl Writer {
                     w.value(items[i] as i64, ts[i], level + 1);
                 });
             }
-            Shape::Map(_, v) => self.entries(p, *v, level),
+            Shape::Map(k, v) => self.entries(p, *k, *v, level),
             // `std.time`'s types as ISO 8601 text (spec 2.12).
             Shape::Record { fields, .. } => match crate::rt_json::date_text(ty, slots(p)) {
                 Some(text) => write_text(&mut self.out, &text),
@@ -273,7 +313,31 @@ impl Writer {
                     w.fields(&variant.fields, slots(inner), level + 1);
                 });
             }
-            _ => self.out.push_str("null"),
+            // `Shared(x)` is `x`; a `Weak` its value, or `null` once freed.
+            Shape::Shared(t) if crate::send::is_weak(p) => {
+                let t = *t;
+                let wrote = crate::send::with_weak_value(p, |v| self.value(v as i64, t, level));
+                if wrote.is_none() {
+                    self.out.push_str("null");
+                }
+            }
+            Shape::Shared(t) => {
+                let t = *t;
+                let wrote = crate::send::with_shared_value(p, |v| self.value(v as i64, t, level));
+                if wrote.is_none() {
+                    self.out.push_str("null");
+                }
+            }
+            // No JSON meaning: the printed form, one way only (0132).
+            _ => write_text(&mut self.out, &crate::display::display(p, ty, true)),
+        }
+    }
+
+    /// A `BigInt`'s or `Decimal`'s digits: a number, or text when asked.
+    fn big(&mut self, digits: String) {
+        match self.o.big_as_text {
+            true => write_text(&mut self.out, &digits),
+            false => self.out.push_str(&digits),
         }
     }
 }

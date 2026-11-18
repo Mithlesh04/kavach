@@ -4,6 +4,8 @@
 
 use crate::calls::Args;
 use crate::interp::Interp;
+use crate::json_encode::{Encode, encode};
+pub(crate) use crate::json_encode::{json_encode, json_tree};
 use crate::map::MapValue;
 use crate::value::{Eval, Field, Flow, Value};
 use kavach_ast::{Expr, ExprKind, Span, StrPart};
@@ -46,6 +48,15 @@ pub(crate) fn arrange<'a>(args: Args<'a>, names: &[&str]) -> Vec<Option<Value<'a
     out
 }
 
+/// How `json.of` and `json.stringify` write: secrets hidden, and big
+/// numbers as text when `big_as_text` is true (decision 0132).
+fn written(big_as_text: &Option<Value<'_>>) -> Encode {
+    Encode {
+        hide_secrets: true,
+        big_as_text: matches!(big_as_text, Some(Value::Bool(true))),
+    }
+}
+
 pub(crate) fn int_or(v: &Option<Value<'_>>, default: usize) -> usize {
     match v {
         Some(Value::Int(n, _)) => usize::try_from(*n).unwrap_or(0),
@@ -86,11 +97,9 @@ impl<'a> Interp<'a> {
                 }
             }
             "of" => {
-                let a = arrange(args, &["value"]);
-                if let Some(v) = &a[0] {
-                    self.refuse_secret(v, span)?;
-                }
-                Ok(self.json_value(a[0].as_ref().map_or(Tree::Null, json_encode)))
+                let a = arrange(args, &["value", "big_as_text"]);
+                let o = written(&a[1]);
+                Ok(self.json_value(a[0].as_ref().map_or(Tree::Null, |v| encode(v, o))))
             }
             // The type's shape (spec 2.12); inside a generic function,
             // `T` is the running call's.
@@ -145,28 +154,12 @@ impl<'a> Interp<'a> {
                 self.call_fn(reader, None, vec![(None, description)], span)
             }
             "stringify" => {
-                let a = arrange(args, &["value", "indent"]);
-                if let Some(v) = &a[0] {
-                    self.refuse_secret(v, span)?;
-                }
-                let tree = a[0].as_ref().map_or(Tree::Null, json_encode);
+                let a = arrange(args, &["value", "indent", "big_as_text"]);
+                let o = written(&a[2]);
+                let tree = a[0].as_ref().map_or(Tree::Null, |v| encode(v, o));
                 Ok(self.str_value(&json::write(&tree, int_or(&a[1], 0))))
             }
             _ => Err(self.panic(format!("std.json has no function `{name}`"), span)),
-        }
-    }
-
-    /// Refuses to encode a value holding a `secret` field (spec 2.11):
-    /// the static check covers written types, this covers generic ones.
-    fn refuse_secret(&self, v: &Value<'a>, span: Span) -> Result<(), Flow<'a>> {
-        match find_secret(v) {
-            Some((holder, field)) => Err(self.panic(
-                format!(
-                    "`{holder}.{field}` is `secret`, so it can't be encoded as JSON; use `reveal(…)` on a copy if you really mean to (spec 2.11)"
-                ),
-                span,
-            )),
-            None => Ok(()),
         }
     }
 
@@ -237,13 +230,13 @@ impl<'a> Interp<'a> {
     }
 
     /// An item or field inside a `Json` literal: another literal, or any
-    /// value that can be encoded.
+    /// value, written as `json.of` writes it (secrets hidden, 0132).
     fn json_item(&mut self, e: &'a Expr) -> Eval<'a> {
         if kavach_checker::json_literal_kind(e) {
             return self.json_literal(e);
         }
         let v = self.eval(e)?;
-        Ok(self.json_value(json_encode(&v)))
+        Ok(self.json_value(encode(&v, written(&None))))
     }
 
     /// `j["key"]` and `j[i]`: the `get` and `at` methods of `Json`
@@ -339,117 +332,5 @@ impl<'a> Interp<'a> {
             ),
         };
         self.builtin_variant("JsonError", name, fields)
-    }
-}
-
-/// Any value as JSON (spec 2.12): what `json.of` gives. A `Json` value
-/// stays as it is.
-/// A `secret` field anywhere inside `v`: who holds it and its name.
-pub(crate) fn find_secret(v: &Value<'_>) -> Option<(String, String)> {
-    match v {
-        Value::Record { name, fields, .. } | Value::Variant { name, fields, .. } => {
-            fields.iter().find_map(|f| {
-                if f.secret {
-                    Some((name.to_string(), f.name.to_string()))
-                } else {
-                    find_secret(&f.value)
-                }
-            })
-        }
-        Value::List(items) => items.iter().find_map(find_secret),
-        Value::Tuple(items) => items.iter().find_map(find_secret),
-        Value::Set(set) => set.entries.iter().find_map(|(k, _)| find_secret(k)),
-        Value::Map(map) => map.entries.iter().find_map(|(_, v)| find_secret(v)),
-        Value::Shared(inner) => find_secret(&inner.borrow()),
-        _ => None,
-    }
-}
-
-pub(crate) fn json_encode(v: &Value<'_>) -> Tree {
-    let object = |fields: &[Field<'_>]| {
-        Tree::Object(
-            fields
-                .iter()
-                .map(|f| (f.name.to_string(), json_encode(&f.value)))
-                .collect(),
-        )
-    };
-    match v {
-        Value::Variant { union, .. } if is_json(*union) => json_tree(v),
-        Value::Int(n, _) => i64::try_from(*n).map_or(Tree::Number(n.to_string()), Tree::Int),
-        // Negative zero is `0.0`, as JavaScript writes it (2.12); JSON
-        // text read in keeps its own.
-        Value::Float(f) => Tree::Float(*f + 0.0),
-        Value::Float32(f) => Tree::Float(f64::from(*f) + 0.0),
-        // With all their digits (decision 0071).
-        Value::Decimal(d) => Tree::Number(d.to_string()),
-        Value::BigDecimal(d) => Tree::Number(d.to_string()),
-        Value::BigInt(n) => Tree::Number(n.to_string()),
-        Value::Bool(b) => Tree::Bool(*b),
-        Value::Char(c) => Tree::Text(c.to_string()),
-        Value::Str(s) => Tree::Text(s.to_string()),
-        // Base64 text (spec 2.12).
-        Value::Bytes(b) => Tree::Text(kavach_runtime_core::base64::to_json(b)),
-        Value::List(items) => Tree::Array(items.iter().map(json_encode).collect()),
-        Value::Tuple(items) => Tree::Array(items.iter().map(json_encode).collect()),
-        Value::Set(set) => Tree::Array(set.entries.iter().map(|(k, _)| json_encode(k)).collect()),
-        Value::Map(map) => Tree::Object(
-            map.entries
-                .iter()
-                .map(|(k, v)| (k.display(), json_encode(v)))
-                .collect(),
-        ),
-        Value::Record { name, fields, .. } => match date_numbers(name, fields) {
-            Some((kind, n)) => Tree::Text(json::dates::write(kind, &n)),
-            None => object(fields),
-        },
-        Value::Variant { name, fields, .. } if fields.is_empty() => Tree::Text(name.to_string()),
-        Value::Variant { name, fields, .. } => {
-            Tree::Object(vec![(name.to_string(), object(fields))])
-        }
-        _ => Tree::Null,
-    }
-}
-
-/// A `std.time` `Date`, `Time` or `DateTime` (spec 2.12): which, and its
-/// numbers in order, for its ISO 8601 text.
-fn date_numbers(name: &str, fields: &[Field<'_>]) -> Option<(json::dates::Kind, Vec<i64>)> {
-    let kind = json::dates::Kind::of(name, fields.iter().map(|f| &*f.name))?;
-    let mut n = Vec::new();
-    for f in fields {
-        match &f.value {
-            Value::Int(v, _) => n.push(i64::try_from(*v).ok()?),
-            Value::Record { name, fields, .. } => n.extend(date_numbers(name, fields)?.1),
-            _ => return None,
-        }
-    }
-    Some((kind, n))
-}
-
-/// A `Json` value as a tree for the writer.
-pub(crate) fn json_tree(v: &Value<'_>) -> Tree {
-    let Value::Variant { name, fields, .. } = v else {
-        return Tree::Null;
-    };
-    let field = fields.first().map(|f| &f.value);
-    match (&**name, field) {
-        ("Boolean", Some(Value::Bool(b))) => Tree::Bool(*b),
-        // Digits that aren't a JSON number are written `null`, as `NaN` is.
-        ("Number", Some(Value::Str(s))) if json::is_number(s) => Tree::Number(s.to_string()),
-        ("Text", Some(Value::Str(s))) => Tree::Text(s.to_string()),
-        ("Array", Some(Value::List(items))) => Tree::Array(items.iter().map(json_tree).collect()),
-        ("Object", Some(Value::Map(map))) => Tree::Object(
-            map.entries
-                .iter()
-                .map(|(k, v)| {
-                    let key = match k {
-                        Value::Str(s) => s.to_string(),
-                        _ => String::new(),
-                    };
-                    (key, json_tree(v))
-                })
-                .collect(),
-        ),
-        _ => Tree::Null,
     }
 }

@@ -95,7 +95,7 @@ impl<'a> Lexer<'a> {
             self.error(
                 at,
                 at + 1,
-                "this `{` inside a string is never closed with `}`",
+                "this `{` is never closed: write `\\{` for a brace in a template, or write the text in quotes (spec 1.7)",
             );
         }
         let end = self.src.len();

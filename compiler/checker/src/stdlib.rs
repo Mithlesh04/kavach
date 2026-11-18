@@ -368,10 +368,20 @@ impl Checker<'_> {
                 Ty::Result(Box::new(json), Box::new(self.builtin_ty("JsonError"))),
             ),
             ("json", "stringify") => (
-                vec![p("value", &any), with_default("indent", &int)],
+                vec![
+                    p("value", &any),
+                    with_default("indent", &int),
+                    with_default("big_as_text", &Ty::Prim(crate::Prim::Bool)),
+                ],
                 string.clone(),
             ),
-            ("json", "of") => (vec![p("value", &any)], json),
+            ("json", "of") => (
+                vec![
+                    p("value", &any),
+                    with_default("big_as_text", &Ty::Prim(crate::Prim::Bool)),
+                ],
+                json,
+            ),
             ("json", "schema") => {
                 let Some(t) = generics.first().map(|g| self.lower(g, None)) else {
                     self.error(span, "`json.schema` needs a type: `json.schema<Order>()`");
@@ -394,6 +404,7 @@ impl Checker<'_> {
                 if let Some(why) = self.not_decodable(&t) {
                     self.error(span, why);
                 }
+                self.json_reads.push((self.current_fn, t.clone(), span));
                 let unknown = self.builtin_ty("JsonUnknown");
                 let params = if name == "decode" {
                     vec![
@@ -447,12 +458,6 @@ impl Checker<'_> {
             &format!("`{module}.{name}`"),
             "argument",
         );
-        if module == "json" && matches!(name, "of" | "stringify") {
-            if let Some(why) = self.not_encodable(&any) {
-                self.error(span, why);
-            }
-            self.json_writes.push((self.current_fn, any.clone(), span));
-        }
         if module == "math" && self.inf.resolve(&real) == Ty::Prim(Prim::Decimal) {
             self.error(
                 span,

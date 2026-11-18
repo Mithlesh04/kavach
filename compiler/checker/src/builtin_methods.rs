@@ -197,7 +197,12 @@ impl Checker<'_> {
                     "get" => sig(vec![int], opt(byte)),
                     "slice" => sig(vec![int.clone(), int.clone()], bytes.clone()),
                     "index_of" => sig(vec![bytes], opt(int)),
-                    "text" => sig(vec![], opt(string)),
+                    // `b.text(start, end)`: one copy of a range (2.13).
+                    "text" => Some(MethodSig {
+                        params: vec![],
+                        ret: opt(string),
+                        named: vec![("start", int.clone()), ("end", int.clone())],
+                    }),
                     "to_list" => sig(vec![], list(byte)),
                     "crc32c" => sig(vec![], int),
                     "xxhash64" => sig(vec![], Ty::Prim(Prim::UInt64)),

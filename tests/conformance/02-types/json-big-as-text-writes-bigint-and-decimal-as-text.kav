@@ -1,0 +1,26 @@
+// Rule: `BigInt` and `Decimal` are written as exact numbers; `big_as_text: true` writes them as text, and decoding, `.bigint()` and `.decimal()` read both forms.
+// Spec: 2.12
+// expect output: {"id":123456789012345678901234567890,"price":0.10}
+// expect output: {"id":"123456789012345678901234567890","price":"0.10"}
+// expect output: 123456789012345678901234567891
+// expect output: 0.10
+// expect output: 123456789012345678901234567890
+
+use std.json
+
+type Order {
+    id: BigInt
+    price: Decimal
+}
+
+fn main() ! Error {
+    const o = Order(id: BigInt("123456789012345678901234567890"), price: Decimal("0.10"))
+    print(json.stringify(o))
+    const text = json.stringify(o, big_as_text: true)
+    print(text)
+    const back = try json.decode<Order>(text)
+    print(back.id + BigInt(1))
+    print(back.price)
+    const j = json.of(o, big_as_text: true)
+    print(j["id"].bigint() ?? BigInt(0))
+}

@@ -49,7 +49,7 @@ impl Checker<'_> {
         for a in args {
             let why = self
                 .type_at(a.value.span)
-                .and_then(|t| self.not_encodable(&t));
+                .and_then(|t| self.not_decodable(&t));
             if let Some(why) = why {
                 self.error(
                     a.value.span,

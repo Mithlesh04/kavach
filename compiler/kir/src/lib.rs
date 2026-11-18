@@ -30,6 +30,7 @@ mod lower_ai;
 mod lower_arena;
 mod lower_base64;
 mod lower_bytes;
+mod lower_bytes_text;
 mod lower_c;
 mod lower_c_records;
 mod lower_calls;

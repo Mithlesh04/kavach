@@ -291,6 +291,7 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         | RtOp::BytesGet
         | RtOp::BytesSlice
         | RtOp::BytesText
+        | RtOp::BytesTextRange
         | RtOp::BytesToList
         | RtOp::BytesAsList
         | RtOp::BytesCrc32c

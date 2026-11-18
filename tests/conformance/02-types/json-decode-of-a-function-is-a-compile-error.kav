@@ -1,0 +1,15 @@
+// Rule: A function is written as its printed form one way only: `json.decode` of a type that holds one is a compile error.
+// Spec: 2.12
+// expect compile error
+
+use std.json
+
+type Step {
+    name: String
+    run: fn(Int) -> Int
+}
+
+fn main() ! Error {
+    const s = try json.decode<Step>(`\{"name": "double", "run": "<function>"}`)     // error: a function can't be read from JSON
+    print(s.name)
+}

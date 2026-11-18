@@ -1,0 +1,41 @@
+// Rule: A dict's keys are written as JSON text: numbers, `Bool` and `Char` as their text, a variant without fields as its name, any other key as its own compact JSON; `json.decode` reads each back as the key type says.
+// Spec: 2.12
+// expect output: {"by_id":{"1":2.5,"7":4.0}}
+// expect output: {"true":1,"false":0}
+// expect output: {"Red":1,"Green":2}
+// expect output: {"[2,3,4]":"name"}
+// expect output: {"{\"x\":1,\"y\":2}":"p"}
+// expect output: 4.0
+// expect output: {[2, 3, 4]: "name"}
+// expect output: {P(x: 1, y: 2): "p"}
+// expect output: {Red: 1, Green: 2}
+
+use std.json
+
+type Scores {
+    by_id: {Int: Float}
+}
+
+type Color = Red | Green
+
+type P {
+    x: Int
+    y: Int
+}
+
+fn main() ! Error {
+    const s = Scores(by_id: {1: 2.5, 7: 4.0})
+    print(json.stringify(s))
+    print(json.of({true: 1, false: 0}))
+    const colors = {[Color.Red]: 1, [Color.Green]: 2}
+    print(json.of(colors))
+    const lists = {[[2, 3, 4]]: "name"}
+    print(json.of(lists))
+    const points = {[P(x: 1, y: 2)]: "p"}
+    print(json.of(points))
+    const back = try json.decode<Scores>(json.stringify(s))
+    print(back.by_id[7])
+    print(try json.decode<{[Int]: String}>(json.stringify(lists)))
+    print(try json.decode<{P: String}>(json.stringify(points)))
+    print(try json.decode<{Color: Int}>(json.stringify(colors)))
+}

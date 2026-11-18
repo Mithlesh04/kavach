@@ -142,10 +142,19 @@ impl<'a> Interp<'a> {
                 let (start, end) = (clamp(int(0)), clamp(int(1)));
                 Value::Bytes(b[start..end.max(start)].into())
             }
-            "text" => match std::str::from_utf8(b) {
-                Ok(s) => self.str_value(s),
-                Err(_) => Value::None,
-            },
+            // `b.text(start, end)`: a range, clamped as `slice` (2.13).
+            "text" => {
+                let clamp = |n: i128| n.clamp(0, b.len() as i128) as usize;
+                let start = clamp(int(0));
+                let end = match args.len() {
+                    0 | 1 => b.len(),
+                    _ => clamp(int(1)),
+                };
+                match std::str::from_utf8(&b[start..end.max(start)]) {
+                    Ok(s) => self.str_value(s),
+                    Err(_) => Value::None,
+                }
+            }
             "to_list" => Value::List(Rc::new(b.iter().map(|x| byte(*x)).collect())),
             "crc32c" => Value::Int(kavach_runtime_core::files::crc32c(b) as i128, Prim::Int),
             "xxhash64" => Value::Int(

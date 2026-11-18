@@ -73,10 +73,16 @@ extend Json {
         }
     }
 
-    /// A `Number` written without a fraction or exponent, of any size.
+    /// A `Number` written without a fraction or exponent, of any size, or
+    /// a `Text` holding one.
     pub fn bigint(self) -> BigInt? {
         match self {
             Json.Number(digits) => match BigInt(digits) {
+                ok(n) => n,
+                err(_) => none,
+            },
+            // As `big_as_text: true` writes it (decision 0132).
+            Json.Text(value) => match BigInt(value) {
                 ok(n) => n,
                 err(_) => none,
             },
@@ -95,10 +101,14 @@ extend Json {
         }
     }
 
-    /// A `Number`, exactly.
+    /// A `Number`, exactly, or a `Text` holding one.
     pub fn decimal(self) -> Decimal? {
         match self {
             Json.Number(digits) if exponent_fits(digits) => match Decimal(digits) {
+                ok(d) => d,
+                err(_) => none,
+            },
+            Json.Text(value) if exponent_fits(value) => match Decimal(value) {
                 ok(d) => d,
                 err(_) => none,
             },

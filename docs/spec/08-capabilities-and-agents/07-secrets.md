@@ -13,7 +13,7 @@ const prompt = `Card ends with {customer.card_number}`   // compile error E0302
 
 A secret can only be passed to code that is allowed to receive it: a parameter or field that is itself marked `secret`, such as `StripePayments.api_key`. To deliberately reveal one, write `reveal(value)`. This is visible in code review and listed by `kavach audit`.
 
-Encoding is covered too: `json.of` and `json.stringify` on a record with a `secret` field are a compile error (2.12), and when the value only becomes known through a generic function — `grpc.encode<T>` builds JSON before its Protocol Buffers — encoding **panics at run time** instead of writing the secret out. The agent journal (8.5) is the one deliberate exception: it holds secrets as state, not as a log.
+Encoding is covered too: `json.of` and `json.stringify` write a `secret` field as `"<secret>"`, as `print` does (2.12, [decision 0132](../../decisions/0132-json-for-every-value.md)), and so does `grpc.encode<T>`, which builds JSON before its Protocol Buffers. The secret's value never leaves this way; to send it, pass it to a `secret` parameter or `reveal` it. The agent journal (8.5) is the one deliberate exception: it holds secrets as state, not as a log.
 
 ```kavach
 fn charge(secret card: String, amount: Decimal) -> Receipt ! PaymentError uses Net { … }

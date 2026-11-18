@@ -112,6 +112,11 @@ impl<'a> Lowerer<'a> {
         if let Some(fused) = self.fused_gpu_maps(base, name, args, ty, span) {
             return fused;
         }
+        if name.name == "text"
+            && let Some(text) = self.bytes_text(base, args, ty, line)?
+        {
+            return Ok(text);
+        }
         let receiver = self.expr(base)?;
         if let Some(m) = self.collection_method(base, &name.name) {
             return self.collection_method_call(m, receiver, args, ty, line, call);

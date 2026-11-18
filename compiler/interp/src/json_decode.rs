@@ -214,6 +214,11 @@ impl<'a> Interp<'a> {
                     None => wrong(expected::NUMBER),
                 }
             }
+            // A `Decimal` or `BigInt` written as text, as `big_as_text`
+            // writes it (decision 0132).
+            (Ty::Prim(Prim::Decimal | Prim::BigInt), Tree::Text(text)) if json::is_number(text) => {
+                self.decode(&Tree::Number(text.clone()), ty, path)
+            }
             (Ty::Prim(Prim::Float | Prim::Float32 | Prim::Decimal), _) => wrong(expected::NUMBER),
             // Any whole number, of any size.
             (Ty::Prim(Prim::BigInt), Tree::Int(n)) => Ok(Value::BigInt(Rc::new(
@@ -265,11 +270,19 @@ impl<'a> Interp<'a> {
             }
             (Ty::Tuple(ts), _) => wrong(&expected::items(ts.len())),
             (Ty::List(_) | Ty::Set(_), _) => wrong(expected::ARRAY),
-            (Ty::Map(_, v), Tree::Object(fields)) => {
+            (Ty::Map(key, v), Tree::Object(fields)) => {
                 let mut map = MapValue::default();
                 for (k, value) in fields {
-                    let value = self.decode(value, v, &path_field(path, k))?;
-                    map.insert(self.str_value(k), value);
+                    let at = path_field(path, k);
+                    // A key is text, read back as the key type (0132).
+                    let kind = match &**key {
+                        Ty::Prim(Prim::String | Prim::Char) => json::KeyKind::Text,
+                        Ty::Prim(_) => json::KeyKind::Scalar,
+                        _ => json::KeyKind::Other,
+                    };
+                    let key = self.decode(&json::key_tree(k, kind), key, &at)?;
+                    let value = self.decode(value, v, &at)?;
+                    map.insert(key, value);
                 }
                 Ok(Value::Map(Rc::new(map)))
             }

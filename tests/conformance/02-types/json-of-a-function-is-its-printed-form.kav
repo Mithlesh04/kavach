@@ -1,0 +1,20 @@
+// Rule: A value with no JSON meaning, such as a function, is written as its printed form, one way only.
+// Spec: 2.12
+// expect output: "<function>"
+// expect output: {"name":"double","run":"<function>"}
+
+use std.json
+
+fn twice(n: Int) -> Int {
+    n * 2
+}
+
+type Step {
+    name: String
+    run: fn(Int) -> Int
+}
+
+fn main() {
+    print(json.of(twice))
+    print(json.stringify(Step(name: "double", run: twice)))
+}
