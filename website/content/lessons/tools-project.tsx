@@ -27,6 +27,7 @@ export const modulesDoc: LessonDoc = {
         <li><C>src/billing/invoice.kav</C> is the module <C>billing.invoice</C>: the path is the name, so you always know which file a name comes from.</li>
         <li><C>use billing.invoice</C> brings it in; then <C>invoice.create(…)</C> calls its <C>pub</C> function.</li>
         <li>Everything is private until marked <C>pub</C>, fields included.</li>
+        <li><C>pub</C> shares a name with the package&apos;s other modules; <C>pub(out)</C> offers it to other packages too. See <Link href="/docs/tools/modules/pub/">pub</Link>.</li>
       </ul>
       <Note>
         Private by default means you can change a module&apos;s inside freely: nothing outside can depend on what it
@@ -64,13 +65,14 @@ export const useDoc: LessonDoc = {
       <SrcRef file="tests/conformance/10-modules/types-named-through-a-standard-module.kav" label="tested" />
       <H2>Re-exports</H2>
       <P>
-        <C>pub use</C> makes the names it brings in part of the module too. So a package can declare each public type
-        in a file of its own and show them all from its root:
+        <C>pub use</C> makes the names it brings in part of the module too, for the package&apos;s other modules;{" "}
+        <C>pub(out) use</C> offers them to other packages as well. So a package can declare each public type in a
+        file of its own and show them all from its root:
       </P>
       <Files name="modules/re-export" first={["shop/src/lib.kav", "shop/src/orders.kav", "src/main.kav"]} />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>A re-exported name is the same declaration, not a copy: <C>shop.Order</C> and <C>shop.orders.Order</C> are one type.</li>
-        <li>Each name must be <C>pub</C> where it is declared, and a re-exported name can be re-exported again.</li>
+        <li>Each name must be <C>pub</C> where it is declared (<C>pub(out)</C> for <C>pub(out) use</C>), and a re-exported name can be re-exported again.</li>
         <li>Only names are re-exported, not a whole module:</li>
       </ul>
       <Ex name="modules/re-export-module.fails" />
@@ -84,7 +86,7 @@ export const useDoc: LessonDoc = {
 };
 
 export const pubDoc: LessonDoc = {
-  lead: "pub makes a type, a function or a field visible to other modules. Without it, only the module itself sees it.",
+  lead: "pub makes a type, a function or a field visible to the package's other modules, and pub(out) to other packages too. Without either, only the module itself sees it.",
   simple: <><C>pub</C> is like a shop window: what is in it, everyone outside can see and use. What isn&apos;t stays in the back room, where only the shop itself can touch it, so the shop stays in charge of it.</>,
   minutes: 3,
   body: (
@@ -103,13 +105,39 @@ export const pubDoc: LessonDoc = {
       </P>
       <Files name="modules/pub-const" first={["src/config.kav", "src/main.kav"]} />
       <P>Files other than the program&apos;s first may hold module constants, but no other lines outside a function.</P>
+      <SrcRef file="tests/conformance/10-modules/pub-consts-are-read-from-other-modules/src/main.kav" label="tested" />
+      <H2>Offered to other packages: pub(out)</H2>
       <P>
-        A <C>pub const</C> that nothing in its own file reads gets no warning, as it is there for other modules. A
-        private one nothing reads gets the unused warning.
+        <C>pub</C> shares a name with the other modules of its own package. <C>pub(out)</C> offers it to other
+        packages too: it marks what a library offers. Here <C>geometry</C> offers <C>area</C>, and keeps{" "}
+        <C>scale</C> for itself:
       </P>
+      <Files name="projects/pub-only.fails" first={["geometry/src/lib.kav", "src/main.kav"]} outcome="refused" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>pub(out)</C> goes before <C>fn</C>, <C>type</C>, <C>const</C>, <C>interface</C>, <C>capability</C>, <C>agent</C>, <C>literal</C> and <C>use</C>.</li>
+        <li>The <C>pub</C> methods of a <C>pub(out)</C> type are offered too. Fields stay <C>pub</C> or private.</li>
+        <li>The standard library offers all its <C>pub</C> names.</li>
+        <li>Only a library (<C>src/lib.kav</C> and its modules) may write it. No other package uses an application, so there it is a compile error:</li>
+      </ul>
+      <Ex name="modules/pub-out-app.fails" />
+      <H2>Unused names</H2>
+      <P>
+        A function, type or module constant that nothing uses gets a warning, as an unused variable does. The program
+        still runs:
+      </P>
+      <Ex name="modules/unused.warns" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A private name is unused when nothing in its module uses it; a <C>pub</C> one when nothing in its package does. In a library the warning adds &quot;or make it <C>pub(out)</C> if other packages use it&quot;.</li>
+        <li>A <C>pub(out)</C> name is never unused: it is there for other packages.</li>
+        <li><C>main</C> and names that start with <C>_</C> get no warning, nor do the functions of an application&apos;s first file when it has no <C>main</C>: they are there to be tested.</li>
+      </ul>
       <div className="flex flex-wrap gap-2.5">
-        <SrcRef file="tests/conformance/10-modules/pub-consts-are-read-from-other-modules/src/main.kav" label="tested" />
-        <SrcRef file="tests/conformance/01-basics/pub-constants-are-not-unused.kav" label="no warning, tested" />
+        <SrcRef file="docs/spec/10-modules-and-packages/01-modules.md" label="spec 10.1 · modules" />
+        <SrcRef file="docs/decisions/0127-pub-out-for-what-a-package-offers.md" label="decision 0127" />
+        <SrcRef file="tests/conformance/10-modules/pub-out-is-only-for-libraries.kav" label="libraries only, tested" />
+        <SrcRef file="tests/conformance/10-modules/other-packages-use-only-pub-out-names/src/main.kav" label="pub(out) names only, tested" />
+        <SrcRef file="tests/conformance/10-modules/unused-functions-and-types-are-warned.kav" label="unused, tested" />
+        <SrcRef file="tests/conformance/01-basics/unused-pub-constants-are-warned.kav" label="unused pub const, tested" />
       </div>
       <H2>An extend in the same package</H2>
       <P>
@@ -210,7 +238,7 @@ export const packagesDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>The name in <C>[dependencies]</C> is the module name: <C>use geometry</C> is the package&apos;s <C>src/lib.kav</C>, and <C>use geometry.shapes</C> would be its <C>src/shapes.kav</C>.</li>
         <li>Inside the package&apos;s own project, its <C>[package] name</C> names its modules the same way, so <C>shapes.kav</C> reaches the root&apos;s types with <C>{"use geometry.{Shape}"}</C> whichever project is built. <C>lib</C> names no module.</li>
-        <li>Only its <C>pub</C> items can be used, as with <Link href="/docs/tools/modules/">any module</Link>.</li>
+        <li>Only the names it marks <C>pub(out)</C> can be used: <C>pub</C> alone is for its own modules. See <Link href="/docs/tools/modules/pub/">pub</Link>.</li>
         <li>From a git repository: <C>{"money = { git = \"https://…\", tag = \"v1.0.0\" }"}</C>, or <C>branch</C> or <C>rev</C> instead of <C>tag</C>. <C>kavach add geometry --path ../geometry</C> and <C>kavach add money --git &lt;url&gt;</C> write these lines for you.</li>
         <li>A fetched repository lands in <C>kavach_modules/money/</C> in your project, as npm keeps <C>node_modules/</C>. Never commit that folder — <C>kavach new</C> puts it in <C>.gitignore</C>. A path dependency is read where it is, not copied.</li>
         <li><C>kavach.lock</C> records the exact commit of each git dependency. Commit it: every build then uses the same code, and the lock is enough to fetch <C>kavach_modules/</C> again. <C>kavach update</C> fetches again and rewrites it.</li>

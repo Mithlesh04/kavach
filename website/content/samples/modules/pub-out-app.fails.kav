@@ -1,0 +1,7 @@
+pub(out) fn greet(name: String) -> String {
+    "hello, {name}"
+}
+
+fn main() {
+    print(greet("Asha"))
+}

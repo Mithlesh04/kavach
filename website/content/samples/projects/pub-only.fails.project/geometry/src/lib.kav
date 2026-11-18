@@ -1,0 +1,9 @@
+/// The area of a `w` by `h` rectangle, in square metres.
+pub(out) fn area(w: Float, h: Float) -> Float {
+    scale(w) * scale(h)
+}
+
+/// Centimetres to metres: for this package's modules only.
+pub fn scale(cm: Float) -> Float {
+    cm / 100.0
+}

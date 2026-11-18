@@ -83,7 +83,7 @@ export const reflectDoc: LessonDoc = {
       <Ex name="reflect/module" />
       <P>
         Your own modules work the same way. Here <C>src/shop.kav</C> declares a constant, a type and two functions;
-        <C>helper</C> isn&apos;t <C>pub</C>, so the module doesn&apos;t offer it:
+        <C>with_tax</C> isn&apos;t <C>pub</C>, so the module doesn&apos;t offer it:
       </P>
       <Files name="reflect/own-module" first={["src/shop.kav", "src/main.kav"]} />
       <H2>The types</H2>

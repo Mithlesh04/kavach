@@ -22,7 +22,7 @@ export const taggedLiteralsDoc: LessonDoc = {
   body: (
     <>
       <P>A package declares a tag with <C>literal</C>: its name, the type a literal of it makes, and the function that checks its text.</P>
-      <Syntax code={'pub literal name: T check f language "x"'} />
+      <Syntax code={'pub(out) literal name: T check f language "x"'} />
       <P>
         Here the package <C>pg</C> declares <C>sql</C>. A <C>Query</C>&apos;s text isn&apos;t <C>pub</C>, so outside{" "}
         <C>pg</C> a <C>Query</C> comes only from a <C>sql&quot;…&quot;</C> literal:

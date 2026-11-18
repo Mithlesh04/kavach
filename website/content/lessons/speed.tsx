@@ -84,6 +84,15 @@ export const coresDoc: LessonDoc = {
       </P>
       <Ex name="speed/sub-sum" />
       <P>
+        <C>total = total + n</C> is the same as <C>total += n</C>. A sum kept modulo a number written in the code
+        works too, as whole numbers give the same remainder in any grouping:
+      </P>
+      <Ex name="speed/cores-modulo" />
+      <P>
+        Native code spreads that one over the cores only where the compiler proves no part is negative; elsewhere it
+        runs in order. The answer is the same either way.
+      </P>
+      <P>
         An overflow is still caught at the plain loop&apos;s round. The program stops with the same message the
         loop gives on one core:
       </P>
@@ -91,14 +100,17 @@ export const coresDoc: LessonDoc = {
       <H2>What on cores refuses</H2>
       <P>
         Only two kinds of change keep the one-core answer: writing the round&apos;s own slot (<C>out[i]</C>, where{" "}
-        <C>i</C> is the loop&apos;s name), and adding whole numbers with <C>+=</C>. Anything else is a compile error
+        <C>i</C> is the loop&apos;s name), and adding whole numbers into a <C>let</C>. Anything else is a compile error
         that says why. <C>print</C> would show the rounds in a different order on each run:
       </P>
       <Ex name="speed/cores-print.fails" />
       <P>Adding floats in another order changes their last bits, so a float <C>+=</C> is refused, with the fix:</P>
       <Ex name="speed/cores-float.fails" />
-      <P>Any other change to something every round shares is refused too, even a running total kept under a modulus:</P>
-      <Ex name="speed/cores-chain.fails" />
+      <P>
+        Any other change to something every round shares is refused too. Here the last multiple of 7 depends on which
+        round runs last:
+      </P>
+      <Ex name="speed/cores-shared.fails" />
       <P>
         For each of these, keep the plain loop, or collect each round&apos;s value in its own slot and finish the work
         after the loop. What a round reads is never limited.
@@ -150,7 +162,8 @@ export const coresDoc: LessonDoc = {
       </P>
       <P>
         The race below was measured on 2026-11-09, before loops needed <C>on cores</C> (decision 0126), when this loop
-        was split over the cores by itself.
+        was split over the cores by itself. The program below now says <C>on cores</C>; new numbers come with the next
+        measurement.
       </P>
       <RaceChart suite="loops" id="loop" />
       <VerifyBlock suite="loops" id="loop" />
@@ -158,6 +171,7 @@ export const coresDoc: LessonDoc = {
         <SrcRef file="docs/spec/04-control-flow.md" label="spec 4.9 · where a loop runs" />
         <SrcRef file="docs/decisions/0126-loops-on-one-core-unless-on-cores.md" label="decision 0126" />
         <SrcRef file="tests/conformance/04-control-flow/on-cores-gives-the-one-core-result.kav" label="the one-core result, tested" />
+        <SrcRef file="tests/conformance/04-control-flow/on-cores-keeps-a-sum-modulo-a-number.kav" label="a sum modulo a number, tested" />
         <SrcRef file="tests/conformance/04-control-flow/big-loops-give-plain-results.kav" label="on cores(2), tested" />
       </div>
     </>

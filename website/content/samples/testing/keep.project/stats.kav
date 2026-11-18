@@ -10,6 +10,3 @@ fn average(xs: [Int]) -> Int
     }
     total / xs.len()
 }
-
-fn main() {
-}

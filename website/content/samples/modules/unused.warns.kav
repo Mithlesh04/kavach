@@ -1,0 +1,21 @@
+type Draft {
+    text: String
+}
+
+const limit = 10
+
+fn shout(text: String) -> String {
+    text.upper()
+}
+
+pub fn banner() -> String {
+    "shop"
+}
+
+fn _later() -> Int {
+    0
+}
+
+fn main() {
+    print("ready")
+}

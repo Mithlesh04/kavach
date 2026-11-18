@@ -1,6 +1,6 @@
 use pricing
 
-pub type Order {
+pub(out) type Order {
     pub total: Int
 
     /// What the customer pays.

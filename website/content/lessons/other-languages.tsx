@@ -217,7 +217,7 @@ export const libraryDoc: LessonDoc = {
       <P><C>kavach build --lib mathlib.kav</C> writes the library and this header, word for word:</P>
       <CodeBlock code={mathlib.output ?? ""} file="out/mathlib.h" lang="c" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>Each <C>pub</C> function becomes a C function, named after the library: <C>mathlib_add</C>. What isn&apos;t <C>pub</C> stays inside.</li>
+        <li>Each <C>pub(out)</C> function, the ones a library offers, becomes a C function named after the library: <C>mathlib_add</C>. What isn&apos;t <C>pub(out)</C> stays inside.</li>
         <li>Any language that can call C can call it: Python&apos;s <C>ctypes</C>, Node-API, JNI, cgo, P/Invoke.</li>
         <li>Text the library gives back is freed with <C>mathlib_free</C>; an error&apos;s reason comes from <C>mathlib_last_error</C>.</li>
       </ul>

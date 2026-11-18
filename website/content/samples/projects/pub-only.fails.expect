@@ -1,0 +1,1 @@
+error: `scale` is `pub` in package `geometry`, which offers other packages only its `pub(out)` names: mark it `pub(out)` there to use it here (spec 10.1)

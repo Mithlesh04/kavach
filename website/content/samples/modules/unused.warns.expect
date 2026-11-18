@@ -1,0 +1,5 @@
+warning: `Draft` is never used: remove it, or start its name with `_` if that is on purpose
+warning: `limit` is never used: remove it, or start its name with `_` if that is on purpose
+warning: `shout` is never used: remove it, or start its name with `_` if that is on purpose
+warning: `banner` is `pub`, but nothing in this package uses it: remove it (spec 10.1)
+ready

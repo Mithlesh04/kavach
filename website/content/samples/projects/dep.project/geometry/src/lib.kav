@@ -1,4 +1,4 @@
 /// The area of a `w` by `h` rectangle.
-pub fn area(w: Float, h: Float) -> Float {
+pub(out) fn area(w: Float, h: Float) -> Float {
     w * h
 }

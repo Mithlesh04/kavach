@@ -1,8 +1,8 @@
-pub type Order {
+pub(out) type Order {
     pub item: String
     pub qty: Int
 }
 
-pub fn place(item: String, qty: Int) -> Order {
+pub(out) fn place(item: String, qty: Int) -> Order {
     Order(item: item, qty: qty)
 }

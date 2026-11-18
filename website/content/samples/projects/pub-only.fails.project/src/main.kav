@@ -1,0 +1,6 @@
+use geometry
+
+fn main() {
+    print(geometry.area(200.0, 350.0))
+    print(geometry.scale(50.0))
+}

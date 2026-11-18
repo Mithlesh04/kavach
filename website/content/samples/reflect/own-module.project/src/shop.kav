@@ -6,7 +6,9 @@ pub type Item {
 }
 
 pub fn total(items: [Item]) -> Float {
-    items.sum(i => i.price) * (1.0 + tax)
+    with_tax(items.sum(i => i.price))
 }
 
-fn helper() -> Int { 1 }
+fn with_tax(amount: Float) -> Float {
+    amount * (1.0 + tax)
+}

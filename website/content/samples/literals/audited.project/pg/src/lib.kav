@@ -1,11 +1,11 @@
 /// A query for PostgreSQL. Its text isn't `pub`, so outside this
 /// package a `Query` comes only from a `sql"…"` literal.
-pub type Query {
+pub(out) type Query {
     text: String
 }
 
 /// SQL, checked when the program is compiled.
-pub literal sql: Query check check_sql language "sql"
+pub(out) literal sql: Query check check_sql language "sql"
 
 fn check_sql(text: String) -> [LiteralProblem] {
     let problems: [LiteralProblem] = []
@@ -31,12 +31,12 @@ fn check_sql(text: String) -> [LiteralProblem] {
 }
 
 /// The query's text, as the database will get it.
-pub fn text_of(q: Query) -> String {
+pub(out) fn text_of(q: Query) -> String {
     q.text
 }
 
 /// A query from text known only when the program runs, such as a
 /// migration read from a file. `kavach audit` lists each call.
-pub audited fn unchecked(text: String) -> Query {
+pub(out) audited fn unchecked(text: String) -> Query {
     Query(text: text)
 }

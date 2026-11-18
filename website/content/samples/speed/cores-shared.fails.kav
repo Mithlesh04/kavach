@@ -1,0 +1,9 @@
+fn main() {
+    let last = 0
+    on cores for i in 0..1_000 {
+        if i % 7 == 0 {
+            last = i
+        }
+    }
+    print(last)
+}

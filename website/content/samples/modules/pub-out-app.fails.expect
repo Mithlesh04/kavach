@@ -1,0 +1,1 @@
+error: `pub(out)` offers a name to other packages, but an application is used by no other package: write `pub` (spec 10.1)

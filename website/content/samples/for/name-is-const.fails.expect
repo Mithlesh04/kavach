@@ -1,1 +1,1 @@
-error: `x` is a `const`, so it can't change: declare it with `let`
+error: `x` is a name a `for` or `match` takes, so it can't change: work out the new value in a `let` of its own (spec 4.4)

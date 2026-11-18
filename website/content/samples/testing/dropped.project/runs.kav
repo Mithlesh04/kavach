@@ -10,6 +10,3 @@ fn failed(runs: [Run]) -> Int
 {
     runs.count(r => not r.passed)
 }
-
-fn main() {
-}
