@@ -155,6 +155,11 @@ impl Module {
         // threads at once. The runtime sets it through `kv_limit_slot`.
         let _ = writeln!(out, "@kv_tls_limit = internal {tls} global i64 0\n");
         out.push_str("define internal ptr @kv_limit_slot() {\n  ret ptr @kv_tls_limit\n}\n");
+        // The `inout` values a call leaves for its caller (`inout.rs`).
+        let _ = writeln!(
+            out,
+            "@kv_tls_inout = internal {tls} global [8 x i64] zeroinitializer\n"
+        );
         for (n, bytes) in self.texts.iter().enumerate() {
             let _ = writeln!(
                 out,

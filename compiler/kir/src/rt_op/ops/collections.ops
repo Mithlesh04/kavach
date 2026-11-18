@@ -141,3 +141,8 @@ DisplayRegister,
 /// `b.text(start, end)` and `b.slice(start, end).text()` on `Bytes`
 /// (spec 2.13): the range `b..c`, clamped, as text, copied once.
 BytesTextRange,
+/// A function with `inout` parameters leaves value `b` in slot `a` of
+/// its thread; its caller takes it back from slot `a` right after the
+/// call (`compiler/kir/src/inout_stash.rs`, Sakshi's S11).
+InoutStash,
+InoutTake,

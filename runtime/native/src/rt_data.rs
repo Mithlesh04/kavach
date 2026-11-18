@@ -192,6 +192,12 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         }
         RtOp::IntPow => crate::rt::int_pow(a, b, result, line),
         RtOp::DisplayRegister => crate::rt_display::register(a, b),
+        // `inout` values handed back past a call (`kir/src/inout_stash.rs`).
+        RtOp::InoutStash => {
+            INOUT.with(|s| s[a as usize % INOUT_SLOTS].set(b));
+            0
+        }
+        RtOp::InoutTake => INOUT.with(|s| s[a as usize % INOUT_SLOTS].replace(0)),
         RtOp::PanicText => {
             let message = with_str(a, str::to_string);
             panic_with(&message, line)
@@ -432,3 +438,10 @@ macro_rules! entry {
     };
 }
 pub(crate) use entry;
+
+const INOUT_SLOTS: usize = 8;
+
+thread_local! {
+    /// The `inout` values a call leaves for its caller (S11).
+    static INOUT: [std::cell::Cell<i64>; INOUT_SLOTS] = Default::default();
+}

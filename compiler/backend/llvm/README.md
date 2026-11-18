@@ -16,6 +16,7 @@ The generated code calls the same runtime functions and reads the same object la
 | `src/func.rs` | One function: stack slots, blocks, runtime calls, the stack check, returns |
 | `src/expr.rs` | Expressions |
 | `src/json.rs` | Reading a `Json` with a constant key: `j["key"]` and `j["key"].int() ?? 0`, read in place (decision 0082) |
+| `src/inout.rs` | The `inout` values a call leaves for its caller: a store into and a load from the thread's `@kv_tls_inout` slots, no runtime call (S11) |
 | `src/calls.rs` | Calls of program functions and through function values: a closure's function borrows its closure (`kavach_kir::borrows`) |
 | `src/stmt.rs` | Statements and loops (with one bounds check per loop where it can) |
 | `src/stmt/raw.rs` | Which loop bodies allow raw stores and hoisted pushes: the only-use analyses and the straight-line rule |

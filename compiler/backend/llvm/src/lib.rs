@@ -14,6 +14,7 @@ mod data;
 mod expr;
 mod func;
 mod heap;
+mod inout;
 mod json;
 pub mod library;
 mod lists;

@@ -84,6 +84,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/stop_points.rs` | Where a task stopped by `cancel()` or its time limit stops while it only computes (spec 9.6): each function's start and each loop round's, in programs that use either; never in code that runs on the GPU |
 | `src/loop_lens.rs` | A length a `while` loop never changes (`data.len()` in its condition) read once before the loop |
 | `src/tuple_lets.rs` | A tuple made only to be taken apart (an `inout` call's, once inlined) kept as one local per item |
+| `src/inout_stash.rs` | A function with `inout` parameters and a result besides, called directly, gives its value alone and leaves the `inout` values in thread slots for its caller, so no tuple is made (S11) |
 | `src/loop_fields.rs` | A record's plain fields that a loop only reads and sets, kept in locals while it runs and set back after it |
 | `src/whole_lines.rs` | A printed line comes out whole (spec 9.8): a `print` whose values call anything works them out before it writes |
 | `src/borrows.rs` | A closure's function borrows its closure, and the captures it never changes: which functions and locals, for both backends |

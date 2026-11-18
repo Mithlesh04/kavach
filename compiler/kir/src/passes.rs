@@ -36,6 +36,19 @@ pub(crate) fn finish(
         crate::unrecurse::unrecurse(i as crate::ir::FuncId, f);
     }
     crate::inline::inline_calls(&mut functions, &l.shapes.list);
+    // Functions with `inout` parameters that can't fail, and how many.
+    let inout = (l.fns.iter().enumerate())
+        .filter_map(|(i, (f, _))| {
+            let f = (*f)?;
+            let n = Lowerer::inout_params(f).len();
+            (n > 0 && f.errors.is_none()).then_some((i as FuncId, n))
+        })
+        .collect();
+    // A `drop` could run between the stash and the take, and call another
+    // such function (`inout_stash.rs`).
+    if l.drop_records.is_empty() {
+        crate::inout_stash::stash_inout_tuples(&mut functions, &l.shapes.list, roots, &inout);
+    }
     let roots = crate::prune::keep_reachable(&mut functions, roots);
     // Before the passes that would free a `Drop` value at its last use.
     // A `Weak` can tell when its `Shared` is freed, so in a program that
