@@ -382,7 +382,7 @@ print(total(items))
     /// program took minutes.
     #[test]
     fn map_keys_are_indexed() {
-        let src = "let m: [Int: Int] = {:}\nfor i in 0..50000 {\n    m[i] = i\n}\nlet total = 0\nfor i in 0..50000 {\n    total += m[i] ?? 0\n}\nprint(total)\n";
+        let src = "let m: {Int: Int} = {:}\nfor i in 0..50000 {\n    m[i] = i\n}\nlet total = 0\nfor i in 0..50000 {\n    total += m[i] ?? 0\n}\nprint(total)\n";
         let compiled = kavach_driver::compile(src, "map.kav", Default::default());
         let start = Instant::now();
         let output = super::run(&compiled);

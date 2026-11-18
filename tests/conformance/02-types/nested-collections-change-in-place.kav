@@ -11,7 +11,7 @@ fn main() {
     grid[1].push(5)
     print(grid)
     print(before)
-    let groups: [String: [Int]] = {"a": [1, 2]}
+    let groups: {String: [Int]} = {"a": [1, 2]}
     let a = groups["a"] ?? []
     a.push(7)
     groups["a"] = a

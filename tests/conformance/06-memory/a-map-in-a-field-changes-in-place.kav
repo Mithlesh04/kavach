@@ -5,7 +5,7 @@
 // expect output: 2
 
 type R {
-    names: [String: Int]
+    names: {String: Int}
 }
 
 fn add_name(inout r: R, x: Int) {

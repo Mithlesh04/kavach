@@ -349,7 +349,7 @@ mod tests {
     fn a_recurrence_map_key_is_prefetched() {
         let (found, body) = prefetches(
             "fn main() {
-    let m: [Int: Int] = {:}
+    let m: {Int: Int} = {:}
     for i in 0..1000 {
         m[i] = i
     }

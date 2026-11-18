@@ -6,7 +6,7 @@
 // expect panic
 
 fn main() {
-    let m: [String: Int] = Map.capacity(-7)
+    let m: {String: Int} = Dict.capacity(-7)
     let s: Set<Int> = Set.capacity(-1)
     print(m.is_full())
     print(s.is_full())

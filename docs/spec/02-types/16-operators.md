@@ -64,5 +64,5 @@ total([Money(cents: 150), Money(cents: 99)], Money(cents: 0))   // Money(cents: 
 
 ## Open questions
 
-- `sort()`, `min()` and `max()` of a list of a `Comparable` type, and a `Comparable` type as a map key's order. Until then, `sort_by(m => m.cents)` sorts by a key.
+- `sort()`, `min()` and `max()` of a list of a `Comparable` type, and a `Comparable` type as a dict key's order. Until then, `sort_by(m => m.cents)` sorts by a key.
 - Bit operators (`& | ^ << >> ~`) for a program's own types (bit vectors, decision 0041's `BigInt` already has them built in).

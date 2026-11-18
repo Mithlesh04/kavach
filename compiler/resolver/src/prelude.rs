@@ -20,7 +20,7 @@ pub const TYPES: &[&str] = &[
     "String",
     "Bytes",
     "List",
-    "Map",
+    "Dict",
     "Set",
     "Shared",
     "Weak",

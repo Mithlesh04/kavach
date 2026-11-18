@@ -11,7 +11,7 @@ pub type Json = Null |
     Number(digits: String) |
     Text(value: String) |
     Array(items: [Json]) |
-    Object(fields: [String: Json])
+    Object(fields: {String: Json})
 
 /// Why JSON text could not be read (spec 2.12).
 pub type JsonError = Syntax(line: Int, column: Int, message: String) |
@@ -123,7 +123,7 @@ extend Json {
     }
 
     /// The fields of an `Object`.
-    pub fn object(self) -> [String: Json]? {
+    pub fn object(self) -> {String: Json}? {
         match self {
             Json.Object(fields) => fields,
             _ => none,

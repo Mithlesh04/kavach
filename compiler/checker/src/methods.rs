@@ -315,7 +315,7 @@ pub(crate) fn kavach_name(recv: &Ty, name: &str) -> Option<&'static str> {
 pub(crate) fn collection_kind(t: &Ty) -> Option<&'static str> {
     match t {
         Ty::List(_) => Some("List"),
-        Ty::Map(..) => Some("Map"),
+        Ty::Map(..) => Some("Dict"),
         Ty::Set(_) => Some("Set"),
         Ty::Builtin("Ring", _) => Some("Ring"),
         _ => None,

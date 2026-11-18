@@ -54,7 +54,7 @@ let a = 0.1
 print(a + 0.2)               // 0.30000000000000004: worked out at run time
 ```
 
-**`BigInt`** holds a whole number of any size ([decision 0041](../../decisions/0041-bigint-is-built-in.md)). It takes `+ - * / % **`, comparisons and `==`, works as a map key, and prints as its digits. `BigInt(n)` makes one from any whole number, and a literal takes the type its place expects.
+**`BigInt`** holds a whole number of any size ([decision 0041](../../decisions/0041-bigint-is-built-in.md)). It takes `+ - * / % **`, comparisons and `==`, works as a dict key, and prints as its digits. `BigInt(n)` makes one from any whole number, and a literal takes the type its place expects.
 
 A constant that doesn't fit `Int` is a `BigInt` when no type is written: a whole-number literal, or `+ - * / % **` and a minus on literals. The compiler works out its exact value. Where a type is written, a constant that doesn't fit it is a compile error. Values worked out while the program runs keep their type, so `Int` arithmetic still panics on overflow (5.6).
 

@@ -1,5 +1,5 @@
-fn by_letter(words: [String]) -> [String: [String]] {
-    let out: [String: [String]] = {:}
+fn by_letter(words: [String]) -> {String: [String]} {
+    let out: {String: [String]} = {:}
     for w in words {
         const k = w.slice(0, 1)
         let list = out.get(k) ?? []

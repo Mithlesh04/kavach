@@ -44,7 +44,7 @@ impl Lowerer<'_> {
                         let item = self.written_type(&args[0])?;
                         self.list_type(item)
                     }
-                    Some(DefKind::Builtin) if first.name == "Map" && args.len() == 2 => {
+                    Some(DefKind::Builtin) if first.name == "Dict" && args.len() == 2 => {
                         let (k, v) = (self.written_type(&args[0])?, self.written_type(&args[1])?);
                         self.map_type(k, v)
                     }

@@ -39,7 +39,9 @@ fn main() ! CryptoError {
     const key = crypto.aes_key()
     const sealed = try crypto.encrypt(key, "card 4242".bytes())
     print((try crypto.decrypt(key, sealed)).text() ?? "")
-    const changed = sealed.slice(0, 20) + "x".bytes() + sealed.slice(21, sealed.len())
+    // A byte that surely differs: "x" unless the byte there already is one.
+    const other = if sealed[20] == 120 { "y" } else { "x" }
+    const changed = sealed.slice(0, 20) + other.bytes() + sealed.slice(21, sealed.len())
     const opened = crypto.decrypt(key, changed) catch e => match e {
         CryptoError.Tampered => "tampered".bytes(),
         CryptoError.BadKey(_) => "bad key".bytes(),

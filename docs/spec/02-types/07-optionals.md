@@ -16,10 +16,10 @@ if let u = find_user(7) {
 - A `T` can be used wherever a `T?` is expected.
 - `none` is the missing value.
 - Optionals don't nest: a `T??` is a `T?`. So `e?.time`, where the field is `time: Int?`, is an `Int?`, `none` when `e` is `none` or its `time` is.
-- `?.` calls a method too: `x?.m(a)` is `none` when `x` is, else `x`'s value's `m(a)`, as an optional. It is `if let v = x { v.m(a) } else { none }`, so the arguments aren't worked out when `x` is `none`. A chain reads into nested maps:
+- `?.` calls a method too: `x?.m(a)` is `none` when `x` is, else `x`'s value's `m(a)`, as an optional. It is `if let v = x { v.m(a) } else { none }`, so the arguments aren't worked out when `x` is `none`. A chain reads into nested dicts:
 
 ```kavach
-const deep: [String: [String: Int]] = {"a": {"b": 7}}
+const deep: {String: {String: Int}} = {"a": {"b": 7}}
 print(deep.get("a")?.get("b"))          // 7
 print(deep.get("x")?.get("b") ?? 0)     // 0
 const word: String? = none

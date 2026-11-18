@@ -8,10 +8,27 @@ impl Parser<'_> {
     pub(crate) fn type_expr(&mut self) -> TypeExpr {
         let start = self.span();
         let kind = match self.kind() {
+            // `{String: Int}`, a dict (spec 2.2, decision 0130).
+            TokenKind::LBrace => {
+                self.bump();
+                let key = Box::new(self.type_expr());
+                self.expect(
+                    &TokenKind::Colon,
+                    "`:` between the key's and the value's types",
+                );
+                let value = Box::new(self.type_expr());
+                self.expect(&TokenKind::RBrace, "`}`");
+                TypeKind::Map(key, value)
+            }
             TokenKind::LBracket => {
+                let open = self.span();
                 self.bump();
                 let item = Box::new(self.type_expr());
                 let kind = if self.eat(&TokenKind::Colon) {
+                    self.error(
+                        open,
+                        "a dict's type is written with braces: `{String: Int}` (spec 2.2)",
+                    );
                     TypeKind::Map(item, Box::new(self.type_expr()))
                 } else {
                     TypeKind::List(item)

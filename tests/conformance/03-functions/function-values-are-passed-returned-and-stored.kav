@@ -38,7 +38,7 @@ fn run_all(steps: [fn(Int) -> Int], start: Int) -> Int {
 fn main() {
     const add3 = adder(3)
     print("{add3(4)} {adder(10)(3)} {twice(adder(10))(3)}")
-    const ops: [String: fn(Int, Int) -> Int] = {"add": (a, b) => a + b, "sub": (a, b) => a - b}
+    const ops: {String: fn(Int, Int) -> Int} = {"add": (a, b) => a + b, "sub": (a, b) => a - b}
     print("{(ops["add"] ?? ((a, b) => 0))(4, 6)} {(ops["sub"] ?? ((a, b) => 0))(1, 4)} {run_all([adder(1), x => x * 3, adder(-3)], 4)}")
     const m: fn(Int8, Float32, String) -> Float = mix
     print("{m(-1, 1.25, "ab")} {m(1, -1.25, "ab")}")

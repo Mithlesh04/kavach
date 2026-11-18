@@ -9,7 +9,7 @@
 
 type Stock {
     name: String
-    counts: [String: Int]
+    counts: {String: Int}
 }
 
 type Node = Leaf(value: Int) | Branch(inner: Node, depth: Int)

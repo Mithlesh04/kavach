@@ -9,10 +9,10 @@
 // expect output: 5
 
 fn main() {
-    const m: [String: [Int]] = {"a": [1, 2, 3]}
+    const m: {String: [Int]} = {"a": [1, 2, 3]}
     print(m["a"]?.len())
     print(m["z"]?.len())
-    const deep: [String: [String: Int]] = {"a": {"b": 7}}
+    const deep: {String: {String: Int}} = {"a": {"b": 7}}
     print(deep.get("a")?.get("b"))
     print(deep.get("x")?.get("b") ?? 0)
     const word: String? = "kavach"

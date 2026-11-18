@@ -9,7 +9,7 @@
 // expect output: [(1, "a"), (2, "b")]
 
 fn backwards(xs: [Int]) -> [Int] { [xs[2], xs[1], xs[0]] }
-fn with_c(m: [String: Int]) -> [String: Int] {
+fn with_c(m: {String: Int}) -> {String: Int} {
     let out = m
     out["c"] = 3
     out
@@ -25,7 +25,7 @@ fn swap5(t: (Int, String, Float, Char, Bool)) -> (Int, String, Float, Char, Bool
 fn bounds(xs: [Int]) -> (lo: Int, hi: Int, n: Int) {
     (lo: xs.min() ?? 0, hi: xs.max() ?? 0, n: xs.len())
 }
-fn nest(a: [Int], b: [Int]) -> [[String: [Int]]] { [{"x": a}, {"y": b}] }
+fn nest(a: [Int], b: [Int]) -> [{String: [Int]}] { [{"x": a}, {"y": b}] }
 fn pairs(ns: [Int], ws: [String]) -> [(Int, String)] { [(ns[0], ws[0]), (ns[1], ws[1])] }
 
 fn main() {

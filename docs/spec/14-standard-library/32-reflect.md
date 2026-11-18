@@ -31,7 +31,7 @@ fn main() {
 
 | Call | Gives |
 |---|---|
-| `T.members() -> [Member]` | Every field and method of type `T`: built in, declared in its body, or added by an `extend`, sorted by name. `T` is a type's name: `String`, `Int`, `Order`, and `List`, `Map`, `Set` and `Ring` for collections |
+| `T.members() -> [Member]` | Every field and method of type `T`: built in, declared in its body, or added by an `extend`, sorted by name. `T` is a type's name: `String`, `Int`, `Order`, and `List`, `Dict`, `Set` and `Ring` for collections |
 | `m.members() -> [Member]` | What module `m` offers to the code that uses it: its `pub` functions, types and constants, sorted by name |
 | `x.has_member(name) -> Bool` | Whether `x`'s type has a field or method `name`; `name` is a text literal. For an interface value (2.15), whether the interface has it |
 
@@ -57,7 +57,7 @@ pub type MemberOrigin = BuiltIn | Declared | Extended(module: String)
 ```
 
 - Types are written as in code: `[Int]`, `String?`, `fn(Int) -> Bool`. A built-in method's parameters are named `a`, `b`, … in order, as the compiler knows only their types.
-- A generic type's members show its parameters' names: `Box<T>`'s `get` gives `T`. For a collection, `T` is the item type, and `K`, `V` a map's key and value.
+- A generic type's members show its parameters' names: `Box<T>`'s `get` gives `T`. For a collection, `T` is the item type, and `K`, `V` a dict's key and value.
 - Members that aren't `pub` are listed only inside their own package (10.1), where they can be used.
 - A module's members are those it declares `pub` (10.1). For a standard library module, those are the parts written in Kavach: `math.members()` lists `gcd` but not yet `sin`, which the compiler provides.
 

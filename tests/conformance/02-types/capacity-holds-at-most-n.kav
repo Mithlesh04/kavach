@@ -1,4 +1,4 @@
-// Rule: `List.capacity(n)`, `Map.capacity(n)` and `Set.capacity(n)` hold at most `n` entries; `is_full()` says when they do; a second argument gives the first entries; below 0 counts as 0.
+// Rule: `List.capacity(n)`, `Dict.capacity(n)` and `Set.capacity(n)` hold at most `n` entries; `is_full()` says when they do; a second argument gives the first entries; below 0 counts as 0.
 // Spec: 2.2
 // expect output: [0.5, 1.5, 2.5]
 // expect output: true
@@ -19,7 +19,7 @@ fn main() {
     print(recent)
     print(recent.is_full())
 
-    let ages: [String: Int] = Map.capacity(2, {"asha": 31})
+    let ages: {String: Int} = Dict.capacity(2, {"asha": 31})
     ages["asha"] = 32
     ages["ravi"] = 27
     print(ages)
@@ -32,7 +32,7 @@ fn main() {
     seen.add(8)
     print(seen.is_full())
 
-    let squares: [Int: Int] = Map.capacity(2000)
+    let squares: {Int: Int} = Dict.capacity(2000)
     for i in 0..2000 {
         squares[i] = i * i
     }

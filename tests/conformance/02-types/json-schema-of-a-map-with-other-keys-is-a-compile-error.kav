@@ -5,7 +5,7 @@
 use std.json
 
 type Scores {
-    by_id: [Int: Float]
+    by_id: {Int: Float}
 }
 
 fn main() {

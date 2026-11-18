@@ -1,7 +1,7 @@
 // Single reads from a large map: 20 million lookups at keys a Lehmer
 // generator picks, over 2 million entries.
 fn main() {
-    let m: [Int: Int] = {:}
+    let m: {Int: Int} = {:}
     for i in 0..2_000_000 {
         m[i] = i * 2 + 1
     }

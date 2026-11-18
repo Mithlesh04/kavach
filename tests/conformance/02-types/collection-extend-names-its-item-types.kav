@@ -1,4 +1,4 @@
-// Rule: An extend of a list, map, set or ring names each item type: `extend [Int]` is an error.
+// Rule: An extend of a list, dict, set or ring names each item type: `extend [Int]` is an error.
 // Spec: 2.5
 // expect compile error
 

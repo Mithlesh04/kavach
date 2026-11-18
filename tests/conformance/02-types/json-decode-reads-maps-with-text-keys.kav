@@ -7,11 +7,11 @@ use std.json
 
 type Rates {
     base: String
-    rates: [String: Float]
+    rates: {String: Float}
 }
 
 fn main() ! JsonError {
-    print(try json.decode<[String: Float]>("\{\"b\": 1.5, \"a\": 2}"))
+    print(try json.decode<{String: Float}>("\{\"b\": 1.5, \"a\": 2}"))
     const r = try json.decode<Rates>("\{\"base\": \"USD\", \"rates\": \{\"USD\": 1, \"EUR\": 0.9}}")
     print("EUR {r.rates["EUR"] ?? 0.0}, keys {r.rates.keys()}")
 }

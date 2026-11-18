@@ -9,12 +9,12 @@ use std.json
 
 type Counts {
     name: String
-    by_day: [String: Int]
+    by_day: {String: Int}
 }
 
 fn main() {
     print(json.schema<Counts>().get("properties").get("by_day"))
-    let m: [String: Int] = {:}
+    let m: {String: Int} = {:}
     m["mon"] = 3
     m["tue"] = 5
     const c = Counts(name: "hits", by_day: m)

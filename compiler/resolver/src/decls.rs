@@ -203,7 +203,7 @@ impl Resolver {
                 let d = *self.res.uses.get(&path.segments[0].span.start)?;
                 let builtin = self.res.defs[d].kind == DefKind::Builtin;
                 let name = path.segments[0].name.as_str();
-                (builtin && matches!(name, "List" | "Map" | "Set" | "Ring"))
+                (builtin && matches!(name, "List" | "Dict" | "Set" | "Ring"))
                     .then(|| args.iter().collect())
             }
             _ => None,
@@ -230,7 +230,7 @@ impl Resolver {
         if !fits {
             self.error(
                 e.target.span,
-                "an extend of a list, map, set or ring names each item type, so its methods work for every one: write `extend<T> [T]`, `extend<K, V> [K: V]`, `extend<T> Set<T>` or `extend<T> Ring<T>` (spec 2.5)".to_string(),
+                "an extend of a list, dict, set or ring names each item type, so its methods work for every one: write `extend<T> [T]`, `extend<K, V> {K: V}`, `extend<T> Set<T>` or `extend<T> Ring<T>` (spec 2.5)".to_string(),
             );
         }
     }

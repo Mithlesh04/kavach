@@ -311,7 +311,7 @@ impl<'a> Interp<'a> {
                 }
                 DefKind::Builtin
                     if name.name == "capacity"
-                        && matches!(d.name.as_str(), "List" | "Map" | "Set" | "Ring") =>
+                        && matches!(d.name.as_str(), "List" | "Dict" | "Set" | "Ring") =>
                 {
                     return self.capacity(&d.name, args, span);
                 }
@@ -483,7 +483,7 @@ fn type_name(v: &Value<'_>) -> Option<&'static str> {
         // Methods added with `extend<T> [T]` and the like (spec 2.5).
         Value::List(items) if items.ring => "Ring",
         Value::List(_) => "List",
-        Value::Map(_) => "Map",
+        Value::Map(_) => "Dict",
         Value::Set(_) => "Set",
         _ => return None,
     })

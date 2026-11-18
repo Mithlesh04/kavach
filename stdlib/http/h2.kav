@@ -70,7 +70,7 @@ pub type Pulled {
     pub link: Link
     pub data: Bytes
     pub ended: Bool
-    pub trailers: [String: String]
+    pub trailers: {String: String}
 }
 
 /// The next piece of the answer on stream 1: waits until bytes arrive
@@ -136,7 +136,7 @@ pub fn next(link: Link) -> Next ! H2Error uses Net {
 }
 
 /// What happened on a server's connection, in the order it happened.
-pub type H2Event = StreamOpened(stream: Int, headers: [String: String]) |
+pub type H2Event = StreamOpened(stream: Int, headers: {String: String}) |
     StreamData(stream: Int, data: Bytes) |
     StreamEnded(stream: Int) |
     ClientDone

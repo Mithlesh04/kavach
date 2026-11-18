@@ -77,7 +77,7 @@ impl Checker<'_> {
             _ if nested => self.take_apart(pat, &ty, missing && default.is_none(), 0),
             _ => self.error(
                 pat.span,
-                "a part is taken by a name, `_`, or a list, map or record pattern (spec 1.12)",
+                "a part is taken by a name, `_`, or a list, dict or record pattern (spec 1.12)",
             ),
         }
     }
@@ -105,7 +105,7 @@ impl Checker<'_> {
                     MapKey::Name(n) => n.span,
                     MapKey::Literal(e) => e.span,
                 };
-                self.error(at, "a key goes in a map pattern, and this is a list");
+                self.error(at, "a key goes in a dict pattern, and this is a list");
             }
             self.take_part(
                 &it.pattern,
@@ -134,7 +134,7 @@ impl Checker<'_> {
         missing: bool,
     ) {
         if let Some(r) = rest {
-            self.error(r.span, "a map pattern has no `...rest` (spec 1.12)");
+            self.error(r.span, "a dict pattern has no `...rest` (spec 1.12)");
         }
         let _ = missing; // Every value of a map may be missing anyway.
         for it in items {
@@ -150,7 +150,7 @@ impl Checker<'_> {
                 None => {
                     self.error(
                         it.pattern.span,
-                        "this part of a map pattern needs its key: `\"home\": [city]` (spec 1.12)",
+                        "this part of a dict pattern needs its key: `\"home\": [city]` (spec 1.12)",
                     );
                     continue;
                 }

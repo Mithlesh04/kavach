@@ -36,13 +36,13 @@ type Sending {
     conn: Connection
     next: Int
     sent: Int
-    sent_on: [Int: Int]
+    sent_on: {Int: Int}
 }
 
 /// Whether a task reads now, and the streams whose answers are awaited.
 type Waiting {
     reading: Bool
-    streams: [Int: Sender<Got>]
+    streams: {Int: Sender<Got>}
 }
 
 /// What a waiting task is told: its answer, that it reads now, or why

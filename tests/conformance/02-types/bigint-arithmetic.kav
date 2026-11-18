@@ -20,7 +20,7 @@ fn main() {
     print(f)
     print(f % 1000007)
     print(-f < f)
-    let counts: [BigInt: Int] = {:}
+    let counts: {BigInt: Int} = {:}
     counts[f] = 1
     counts[factorial(30)] = 2
     print(counts.len())

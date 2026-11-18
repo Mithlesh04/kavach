@@ -22,7 +22,7 @@ type Entry {
 }
 
 type Cache {
-    map: Shared<[String: Entry]>
+    map: Shared<{String: Entry}>
 
     fn get(self, k: String) -> Guard? {
         self.map.get().get(k)?.g

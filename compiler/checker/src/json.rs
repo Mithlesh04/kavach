@@ -95,7 +95,7 @@ impl Checker<'_> {
                 if self.inf.resolve(k) != STRING {
                     let shown = self.show(&t);
                     return Some(format!(
-                        "`{shown}` can't be written as JSON: only maps with `String` keys become objects"
+                        "`{shown}` can't be written as JSON: only dicts with `String` keys become objects"
                     ));
                 }
                 self.encodable_in(v, seen, decoding)
@@ -150,7 +150,7 @@ impl Checker<'_> {
                 fields.iter().find_map(|f| self.schema_in(&f.ty, seen))
             }
             other => Some(format!(
-                "`{}` has no JSON Schema: maps without `String` keys, sets, tuples and functions have none, even inside a record (spec 2.12)",
+                "`{}` has no JSON Schema: dicts without `String` keys, sets, tuples and functions have none, even inside a record (spec 2.12)",
                 self.show(other)
             )),
         }

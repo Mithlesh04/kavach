@@ -63,7 +63,7 @@ pub fn parse(data: Bytes) -> Message? {
 }
 
 /// HTTP/2 headers without the pseudo-headers (`:status`, `:path`, …).
-pub fn plain(headers: [String: String]) -> [Header] {
+pub fn plain(headers: {String: String}) -> [Header] {
     let out: [Header] = []
     for (name, value) in headers {
         if not name.starts_with(":") {

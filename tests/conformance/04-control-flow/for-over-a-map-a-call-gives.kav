@@ -5,7 +5,7 @@
 // expect output: 6
 
 type Cache {
-    map: Shared<[String: Int]>
+    map: Shared<{String: Int}>
 
     fn total(self) -> Int {
         let sum = 0

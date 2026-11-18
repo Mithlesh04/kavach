@@ -18,9 +18,9 @@ type Box {
 
 fn main() {
     const keys = ["a", "a much longer key than fifteen", "b", "missing", "another long key, 30+ bytes!!"]
-    let m: [String: Int] = {:}
-    let f: [String: Float] = {:}
-    let r: [String: Box] = {:}
+    let m: {String: Int} = {:}
+    let f: {String: Float} = {:}
+    let r: {String: Box} = {:}
     for i in 0..keys.len() {
         if keys[i] != "missing" {
             m[keys[i]] = i

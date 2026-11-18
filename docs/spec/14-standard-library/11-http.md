@@ -220,7 +220,7 @@ A body's size comes from `content-length`, or the body comes in chunks (`transfe
 
 `http.serve` answers HTTP/2 too, from a client that starts with the HTTP/2 preface without TLS ("prior knowledge", as services calling each other do). It answers that connection's requests at once, as they arrive: each stream's `handler` runs in a task of its own, so one slow handler holds up no other, and each response is sent when it is ready. At most 100 streams are answered at once on a connection, which the server tells the client (`SETTINGS_MAX_CONCURRENT_STREAMS`); a handler that panics gets 500. The program sees the same `Request` and `Response` either way.
 
-`std.http.h2` has the parts, for programs that speak HTTP/2 themselves (gRPC, for one). A message is `H2Message(stream: Int, headers: [String: String], body: Bytes)`, with the pseudo-headers (`:method`, `:path`, `:status`, …) among its headers. Flow control is handled: a large body waits for the other side's window. Server push is never used, and stream priorities are ignored.
+`std.http.h2` has the parts, for programs that speak HTTP/2 themselves (gRPC, for one). A message is `H2Message(stream: Int, headers: {String: String}, body: Bytes)`, with the pseudo-headers (`:method`, `:path`, `:status`, …) among its headers. Flow control is handled: a large body waits for the other side's window. Server push is never used, and stream priorities are ignored.
 
 | Function | Gives |
 |---|---|
@@ -253,7 +253,7 @@ print(reply.headers[":status"])       // 200
 
 HTTP/3 (RFC 9114) runs over QUIC (14.10). `http.get3(url)` sends `GET url` over HTTP/3 (`https://` only) and gives the same `Response` and `HttpError` as `http.get`. `http.get` itself stays on TCP; choosing HTTP/3 on its own, when a server announces it (`alt-svc: h3=":443"`), comes later.
 
-`std.http.h3` has the parts, for programs that speak HTTP/3 themselves. A message is `H3Message(headers: [String: String], body: Bytes)`, with the pseudo-headers among its headers. Headers are compressed with QPACK (RFC 9204) using its static table and literals only: Kavach announces a dynamic table of size 0, so a server never refers to one.
+`std.http.h3` has the parts, for programs that speak HTTP/3 themselves. A message is `H3Message(headers: {String: String}, body: Bytes)`, with the pseudo-headers among its headers. Headers are compressed with QPACK (RFC 9204) using its static table and literals only: Kavach announces a dynamic table of size 0, so a server never refers to one.
 
 | Function | Gives |
 |---|---|

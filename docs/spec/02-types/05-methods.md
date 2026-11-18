@@ -49,7 +49,7 @@ extend<S> App<S> {
 }
 ```
 
-Lists, maps, sets and rings take methods too. Name each item type after `extend`, as `extend<T> [T]`, `extend<K, V> [K: V]`, `extend<T> Set<T>` or `extend<T> Ring<T>`; the methods then work for every item type, and `T` is the item type of the one called on. A range has a list's added methods, as it has a list's own (2.2).
+Lists, dicts, sets and rings take methods too. Name each item type after `extend`, as `extend<T> [T]`, `extend<K, V> {K: V}`, `extend<T> Set<T>` or `extend<T> Ring<T>`; the methods then work for every item type, and `T` is the item type of the one called on. A range has a list's added methods, as it has a list's own (2.2).
 
 ```kavach
 extend<T> [T] {
@@ -58,7 +58,7 @@ extend<T> [T] {
     }
 }
 
-extend<K, V> [K: V] {
+extend<K, V> {K: V} {
     fn has_all(self, keys: [K]) -> Bool {
         keys.all((k) => self.contains_key(k))
     }

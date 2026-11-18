@@ -47,7 +47,7 @@ impl<'a> Lowerer<'a> {
     pub(crate) fn add_collection_methods(&mut self, e: &'a ast::ExtendDecl) -> bool {
         let kind = match &e.target.kind {
             TypeKind::List(_) => "List",
-            TypeKind::Map(..) => "Map",
+            TypeKind::Map(..) => "Dict",
             TypeKind::Named { path, .. } if path.segments.len() == 1 => {
                 let first = &path.segments[0];
                 let res = &self.c.resolution;
@@ -57,7 +57,7 @@ impl<'a> Lowerer<'a> {
                     .is_some_and(|d| res.defs[*d].kind == DefKind::Builtin);
                 match first.name.as_str() {
                     "List" if builtin => "List",
-                    "Map" if builtin => "Map",
+                    "Dict" if builtin => "Dict",
                     "Set" if builtin => "Set",
                     "Ring" if builtin => "Ring",
                     _ => return false,
@@ -87,7 +87,7 @@ impl<'a> Lowerer<'a> {
     ) -> Option<(&'a ast::ExtendDecl, &'a ast::FnDecl)> {
         let kind = match self.c.expr_types.get(&(base.span.start, base.span.end))? {
             Ty::List(_) => "List",
-            Ty::Map(..) => "Map",
+            Ty::Map(..) => "Dict",
             Ty::Set(_) => "Set",
             Ty::Builtin("Ring", _) => "Ring",
             _ => return None,

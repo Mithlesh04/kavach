@@ -249,7 +249,7 @@ impl Parser<'_> {
         let open = self.span();
         self.bump();
         if self.at(&TokenKind::Colon) && *self.nth(1) == TokenKind::RBracket {
-            self.error(open, "an empty map is written `{:}` (spec 2.2)");
+            self.error(open, "an empty dict is written `{:}` (spec 2.2)");
             self.bump();
             self.bump();
             return ExprKind::Map(Vec::new());
@@ -261,7 +261,7 @@ impl Parser<'_> {
         let kind = if self.eat(&TokenKind::Colon) {
             self.error(
                 open,
-                "a map is written with braces: `{\"asha\": 31}` (spec 2.2)",
+                "a dict is written with braces: `{\"asha\": 31}` (spec 2.2)",
             );
             let mut entries = vec![(first, self.expr())];
             while self.eat(&TokenKind::Comma) && !self.at(&TokenKind::RBracket) {

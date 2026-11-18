@@ -41,7 +41,7 @@ for _ in 0..300 {
 
 Inside a `gpu fn`, a number with no other type is an `Int32` or a `Float32`, not an `Int` or a `Float`: `for _ in 0..100` counts in `Int32`, and `const k = 0.5` is a `Float32`.
 
-Anything else (lists, text, maps, `print`, capabilities, a function that isn't a `gpu fn`, recursion) is a compile error that names what isn't allowed. So a `gpu fn` never fails on the GPU in a way it couldn't on the CPU. It can't fail on purpose either: `!` in its signature, and `try`, `catch` and `fail` in its body, are compile errors, since the GPU has no error to give back; it checks values with `if` and gives a result for every item.
+Anything else (lists, text, dicts, `print`, capabilities, a function that isn't a `gpu fn`, recursion) is a compile error that names what isn't allowed. So a `gpu fn` never fails on the GPU in a way it couldn't on the CPU. It can't fail on purpose either: `!` in its signature, and `try`, `catch` and `fail` in its body, are compile errors, since the GPU has no error to give back; it checks values with `if` and gives a result for every item.
 
 A `gpu fn` gives its result back: `inout` parameters (3.9) are a compile error, with a message showing the function that returns the new value instead (`gpu fn bump(x: Float32) -> Float32`). This holds for a `gpu fn` called from another too, so every `gpu fn` follows one rule.
 

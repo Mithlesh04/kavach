@@ -240,7 +240,7 @@ fn ok_headers() -> [Header] {
 /// messages are answered as they arrive, other calls once they end.
 fn answer_all(conn: Connection, handler: fn(GrpcCall) -> GrpcReply, talks: [String]) ! H2Error uses Net {
     let link = try h2.accept(conn, Bytes([]))
-    let calls: [Int: Calling] = {:}
+    let calls: {Int: Calling} = {:}
     let serving = true
     while serving {
         const w = try h2.watch(link)

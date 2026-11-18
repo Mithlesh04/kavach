@@ -3,7 +3,7 @@
 // expect compile error
 
 fn main() {
-    let ids: [Int: Int] = {:}
+    let ids: {Int: Int} = {:}
     const names = {"a": 5}
     ids[1] = names["a"]          // error: expected `Int`, found `Int?`
 }

@@ -29,7 +29,7 @@ fn main() {
         Taken.Closed => print("closed"),
     }
     print(o)
-    const (maps, map_in) = Channel<[String: [Int]]>(capacity: 1)
+    const (maps, map_in) = Channel<{String: [Int]}>(capacity: 1)
     let m = {"a": [1]}
     const _t = spawn {
         maps.put(m)

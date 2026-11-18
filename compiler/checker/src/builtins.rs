@@ -235,7 +235,7 @@ impl Checker<'_> {
                         "Set" => {
                             ": make a set with `Set.of(1, 2, 3)`, or `Set.capacity(n)` and `add`"
                         }
-                        "Map" => ": make a map with `{\"a\": 1}`, or `Map.capacity(n)`",
+                        "Dict" => ": make a dict with `{\"a\": 1}`, or `Dict.capacity(n)`",
                         _ => "",
                     };
                     self.error(

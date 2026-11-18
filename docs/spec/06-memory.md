@@ -39,7 +39,7 @@ What is counted, as the compiler does it today (a program can't tell the differe
 | Values | Where they live |
 |---|---|
 | Numbers, `Bool`, `Char` | In place: in a variable, or inside the value that holds them. Never counted, never freed on their own |
-| Text, `Bytes`, `Decimal`, `BigInt`, lists, maps, sets, records, tuples, unions, optionals of these, functions, interface values, `Shared`, tasks, channels, errors | One object each, which counts its holders and is freed when the count reaches zero |
+| Text, `Bytes`, `Decimal`, `BigInt`, lists, dicts, sets, records, tuples, unions, optionals of these, functions, interface values, `Shared`, tasks, channels, errors | One object each, which counts its holders and is freed when the count reaches zero |
 
 A holder is anything that keeps a value: a variable, a list or record it is inside, a lambda that uses it (3.3), a task. A record a function never shares may never become an object at all: its fields stay in place, like numbers.
 

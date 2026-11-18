@@ -8,10 +8,10 @@ type Json = Null |
     Number(digits: String) |
     Text(value: String) |
     Array(items: [Json]) |
-    Object(fields: [String: Json])
+    Object(fields: {String: Json})
 ```
 
-A `Number` keeps the digits it was written with, exactly (`"12345678901234567890"`, `"0.1"`, `"-2.5e10"`), so no number is changed by reading it and writing it out again ([decision 0071](../../decisions/0071-json-numbers-keep-their-digits.md)). The methods below read it as the number type a program needs. Objects keep their keys in order, like maps (2.2).
+A `Number` keeps the digits it was written with, exactly (`"12345678901234567890"`, `"0.1"`, `"-2.5e10"`), so no number is changed by reading it and writing it out again ([decision 0071](../../decisions/0071-json-numbers-keep-their-digits.md)). The methods below read it as the number type a program needs. Objects keep their keys in order, like dicts (2.2).
 
 ### Reading
 
@@ -37,13 +37,13 @@ for item in doc["items"].list() ?? [] {
 | `decimal()` | `Decimal?`: a `Number`, exactly |
 | `bool()` | `Bool?`: the value of a `Boolean` |
 | `list()` | `[Json]?`: the items of an `Array` |
-| `object()` | `[String: Json]?`: the fields of an `Object` |
+| `object()` | `{String: Json}?`: the fields of an `Object` |
 | `is_null()` | `Bool`: whether it is `Null` |
 | `len()` | `Int`: the items of an `Array` or fields of an `Object`, otherwise 0 |
 
 ### Building
 
-Where a `Json` is expected, literals become `Json` values: numbers, text, `true`, `false`, `none` (which becomes `Null`), lists and maps with text keys, at any depth. Inside such a literal, any other expression whose type can be encoded (below) is converted too:
+Where a `Json` is expected, literals become `Json` values: numbers, text, `true`, `false`, `none` (which becomes `Null`), lists and dicts with text keys, at any depth. Inside such a literal, any other expression whose type can be encoded (below) is converted too:
 
 ```kavach
 const order: Json = [
@@ -55,7 +55,7 @@ const order: Json = [
 ]
 ```
 
-`json.of(value)` converts any value that can be encoded. A `Json` is a value like any other (chapter 6): copies never share changes, and it is freed as soon as nothing holds it. It prints as compact JSON text. Two `Json` values are equal when they are the same variant with equal contents; objects compare like maps, so the order of keys doesn't count (1.8).
+`json.of(value)` converts any value that can be encoded. A `Json` is a value like any other (chapter 6): copies never share changes, and it is freed as soon as nothing holds it. It prints as compact JSON text. Two `Json` values are equal when they are the same variant with equal contents; objects compare like dicts, so the order of keys doesn't count (1.8).
 
 ### std.json
 
@@ -71,11 +71,11 @@ const order: Json = [
 | `json.schema<T>()` | The [JSON Schema](https://json-schema.org) of `T` as a `Json`: what `ask<T>` sends a model (8.4), for modules that work from a type's shape (14.14). A `secret` field (2.11) is marked `"writeOnly": true`, so a library sees that it can't be written out |
 | `json.describe(f) -> FnSchema` | The function `f` described: its name, doc comment, parameters with their schemas, the schemas of its result and error, the capabilities it `uses`, and its `example` clauses as text |
 
-**Encoding** works on types the compiler can see through: numbers (sized integers too), `Bool`, `String`, `Char` (text of one character), `Decimal` and `BigInt` (as numbers with all their digits), `Bytes` (as base64 text, below), lists, sets and tuples (arrays), maps with `String` keys (objects), records (objects with the fields in declared order), optionals (`none` is `null`), unions (a variant without fields is its name as text; one with fields is `{"Variant": {fields}}`), `std.time`'s `Date`, `Time` and `DateTime` (below) and `Json` itself. Anything else is a compile error: functions, maps with other keys, and records with `secret` fields (2.11), so a secret can't leak into JSON by accident. In a generic function, `json.of(e)` of a type parameter is checked where the parameter gets a real type: the call `respond(error)` is the compile error when `error`'s type can't be written, and so is each call through other generic functions that pass the parameter on. `NaN` and infinities are written as `null`, and a negative zero `Float` as `0.0`, as JavaScript does; JSON text read in and written back keeps its own `-0.0`.
+**Encoding** works on types the compiler can see through: numbers (sized integers too), `Bool`, `String`, `Char` (text of one character), `Decimal` and `BigInt` (as numbers with all their digits), `Bytes` (as base64 text, below), lists, sets and tuples (arrays), dicts with `String` keys (objects), records (objects with the fields in declared order), optionals (`none` is `null`), unions (a variant without fields is its name as text; one with fields is `{"Variant": {fields}}`), `std.time`'s `Date`, `Time` and `DateTime` (below) and `Json` itself. Anything else is a compile error: functions, dicts with other keys, and records with `secret` fields (2.11), so a secret can't leak into JSON by accident. In a generic function, `json.of(e)` of a type parameter is checked where the parameter gets a real type: the call `respond(error)` is the compile error when `error`'s type can't be written, and so is each call through other generic functions that pass the parameter on. `NaN` and infinities are written as `null`, and a negative zero `Float` as `0.0`, as JavaScript does; JSON text read in and written back keeps its own `-0.0`.
 
 **Decoding** is the reverse, and strict about values: an integer field takes only a number written without a fraction or exponent that fits its type, and a `BigInt` field one of any size; a `Float` field takes any number, as the nearest `Float`; a `Decimal` field takes any number exactly; text, booleans, arrays and objects must match. A number that doesn't fit its field is a `Mismatch`, as any other value that doesn't fit is. A missing field takes its default or `none` if it has one, otherwise decoding fails. A field the type doesn't have is a problem too, at its path, expecting "no field of this name", as the type's schema says (`additionalProperties: false`), so a misspelled or smuggled field is caught ([decision 0096](../../decisions/0096-unknown-fields-are-refused.md)). To read another service's answers, which may gain fields, write `unknown: JsonUnknown.Ignore`: such fields are then skipped. `std.http`'s client does this for the responses it decodes (14.11).
 
-**`Bytes` in JSON** is base64 text, as Protocol Buffers' JSON and OpenAPI write bytes. Encoding writes the standard alphabet with padding; decoding reads the standard alphabet or the URL-safe one (`-` and `_`), with or without padding, and other text is a `Mismatch` expecting "base64 text". It holds for a bare value as for a field, in lists, maps and optionals too. Its schema is `{"type": "string", "contentEncoding": "base64"}`. `ask<T>` (8.4) still refuses `Bytes`: models write base64 badly.
+**`Bytes` in JSON** is base64 text, as Protocol Buffers' JSON and OpenAPI write bytes. Encoding writes the standard alphabet with padding; decoding reads the standard alphabet or the URL-safe one (`-` and `_`), with or without padding, and other text is a `Mismatch` expecting "base64 text". It holds for a bare value as for a field, in lists, dicts and optionals too. Its schema is `{"type": "string", "contentEncoding": "base64"}`. `ask<T>` (8.4) still refuses `Bytes`: models write base64 badly.
 
 ```kavach
 print(json.of(Bytes([104, 105])))                    // "aGk="
@@ -107,7 +107,7 @@ const a = json.decode<Order>(text)                               // Invalid: `no
 const b = json.decode<Order>(text, unknown: JsonUnknown.Ignore)  // `note` is skipped
 ```
 
-**A type's schema** is a `Json` value a program can read: a record is `{"type": "object", "properties": {...}, "required": [...]}` with its fields in the order they are declared, `Int` and the sized integers are `{"type": "integer"}`, with `"minimum": 0` for the unsigned ones (`UInt8` to `UInt64`), `Float` and `Decimal` `{"type": "number"}`, `Bool` `{"type": "boolean"}`, `String` `{"type": "string"}`, a list `{"type": "array", "items": ...}`, an optional `{"anyOf": [..., {"type": "null"}]}`, a union `{"anyOf": [...]}` of its variants as JSON writes them, and a map with `String` keys `{"type": "object", "additionalProperties": ...}`. A type's doc comment (`///`) becomes its schema's `"description"`, and so does a field's. When both a field and its type have one, the field's comes first in one `"description"`, then the type's: `"How sure the model is. How sure."`. A type with no schema (maps with other keys, sets, tuples, functions) is a compile error, and so is a record or union holding one, however deep. `ask<T>` (8.4) still refuses maps: a model answers closed objects only.
+**A type's schema** is a `Json` value a program can read: a record is `{"type": "object", "properties": {...}, "required": [...]}` with its fields in the order they are declared, `Int` and the sized integers are `{"type": "integer"}`, with `"minimum": 0` for the unsigned ones (`UInt8` to `UInt64`), `Float` and `Decimal` `{"type": "number"}`, `Bool` `{"type": "boolean"}`, `String` `{"type": "string"}`, a list `{"type": "array", "items": ...}`, an optional `{"anyOf": [..., {"type": "null"}]}`, a union `{"anyOf": [...]}` of its variants as JSON writes them, and a dict with `String` keys `{"type": "object", "additionalProperties": ...}`. A type's doc comment (`///`) becomes its schema's `"description"`, and so does a field's. When both a field and its type have one, the field's comes first in one `"description"`, then the type's: `"How sure the model is. How sure."`. A type with no schema (dicts with other keys, sets, tuples, functions) is a compile error, and so is a record or union holding one, however deep. `ask<T>` (8.4) still refuses dicts: a model answers closed objects only.
 
 ```kavach
 type Point {
@@ -131,7 +131,7 @@ print(json.schema<Place>().get("description"))   // "A place on the map."
 ```kavach
 type Rates {
     base: String
-    rates: [String: Float]
+    rates: {String: Float}
 }
 
 const r = try json.decode<Rates>(body)
@@ -172,7 +172,7 @@ print(d.capabilities)            // ["Db"]
 print(json.describe(price).examples)   // ["price(3) == 30"]
 ```
 
-A parameter, result or error whose type has no schema (a function, a map with other keys) is a compile error, as for `json.schema<T>()`.
+A parameter, result or error whose type has no schema (a function, a dict with other keys) is a compile error, as for `json.schema<T>()`.
 
 **A function value described.** Given a function value instead of a name, such as a parameter or an item of a list of handlers, `json.describe(value)` gives `FnSchema?`: the description of the named function the value is, or `none` for a lambda (and for a generic function, which has no one description). It works inside a generic function too, with the types it was called with. A parameter, result or error with no schema (a function, a record holding one, the built-in `Error`) is `{}`, any value, there, so every named function can be described. A framework that is handed its routes as values can describe each one.
 

@@ -18,7 +18,7 @@
 
 | Module | What it has | Capability |
 |---|---|---|
-| prelude | Methods of numbers, text, lists, maps and sets (14.2) | none |
+| prelude | Methods of numbers, text, lists, dicts and sets (14.2) | none |
 | `std.fs` | Files and folders (14.3) | `Fs` |
 | `std.time` | Clocks, waiting, dates and times of day (14.4) | `Clock` to wait; reading the time needs none |
 | `std.math` | Math functions and constants (14.5) | none |

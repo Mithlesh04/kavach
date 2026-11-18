@@ -42,7 +42,7 @@ pub type Atlas {
     pub image: Image
     pub size: Float
     pub spread: Float
-    pub boxes: [Int: GlyphBox]
+    pub boxes: {Int: GlyphBox}
 }
 
 /// A font: its file, and its ascent, descent and line gap in ems.
@@ -71,7 +71,7 @@ pub type Font {
     {
         const id = font.atlas_id(self.data, text, size)
         const parts = font.atlas_boxes_id(id)
-        let boxes: [Int: GlyphBox] = {:}
+        let boxes: {Int: GlyphBox} = {:}
         for i in 0..(parts.len() - 2) / 7 {
             const at = 2 + i * 7
             boxes[parts[at]] = GlyphBox(

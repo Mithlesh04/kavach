@@ -383,11 +383,11 @@ impl Checker<'_> {
             // most `n` entries, maybe with the first ones (spec 2.2). With
             // none, the types come from where the value goes, as `{:}`.
             DefKind::Builtin
-                if matches!(type_name.as_str(), "Map" | "Set" | "List" | "Ring")
+                if matches!(type_name.as_str(), "Dict" | "Set" | "List" | "Ring")
                     && name.name == "capacity" =>
             {
                 let (made, first) = match type_name.as_str() {
-                    "Map" => {
+                    "Dict" => {
                         let (k, v) = (Box::new(self.fresh()), Box::new(self.fresh()));
                         (Ty::Map(k.clone(), v.clone()), Ty::Map(k, v))
                     }

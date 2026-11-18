@@ -11,7 +11,7 @@
 
 fn main() {
     let ages = {"ravi": 27, "asha": 31}
-    const empty: [String: Int] = {:}
+    const empty: {String: Int} = {:}
     print("{ages.len()} {ages.is_empty()} {empty.is_empty()}")
     print("{ages.get("ravi") ?? 0} {ages.get("meera")}")
     print("{ages.contains_key("asha")} {ages.contains_key("Asha")}")

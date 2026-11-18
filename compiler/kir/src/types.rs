@@ -253,7 +253,7 @@ impl Lowerer<'_> {
             Ty::Builtin("Ptr" | "Pipeline", _) => Type::I64,
             _ => {
                 return Err(
-                    self.unsupported("maps, generic types, functions and errors as values", span)
+                    self.unsupported("dicts, generic types, functions and errors as values", span)
                 );
             }
         })

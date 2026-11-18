@@ -138,7 +138,7 @@ impl Checker<'_> {
         Some(match self.res.defs[def].name.as_str() {
             "List" => Ty::List(item()),
             "Set" => Ty::Set(item()),
-            "Map" => Ty::Map(
+            "Dict" => Ty::Map(
                 Box::new(Ty::Builtin("K", Vec::new())),
                 Box::new(Ty::Builtin("V", Vec::new())),
             ),

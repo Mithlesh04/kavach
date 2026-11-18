@@ -15,7 +15,7 @@ pub type H2Error = Network(error: NetError) |
 /// the pseudo-headers such as `:status`, and the body.
 pub type H2Message {
     pub stream: Int
-    pub headers: [String: String]
+    pub headers: {String: String}
     pub body: Bytes
 }
 
@@ -29,21 +29,21 @@ pub type Link {
     /// How much this side may still send: on the connection, and per
     /// stream (`initial` for a stream not listed).
     pub window: Int
-    pub windows: [Int: Int]
+    pub windows: {Int: Int}
     pub initial: Int
     /// The largest frame the other side takes.
     pub max_frame: Int
     /// Messages being received, then complete ones, in order.
-    pub partial: [Int: Partial]
+    pub partial: {Int: Partial}
     pub done: [H2Message]
     /// Streams the other side reset, with the reason's code.
-    pub resets: [Int: Int]
+    pub resets: {Int: Int}
     /// The stream a header block goes on with, or 0.
     pub continuing: Int
     /// The other side is going away (GOAWAY).
     pub leaving: Bool
     /// Streams `watch` has reported open and not yet ended.
-    pub announced: [Int: Bool]
+    pub announced: {Int: Bool}
 }
 
 /// One frame (RFC 9113 4.1).
@@ -56,7 +56,7 @@ pub type Frame {
 
 /// A message being received.
 pub type Partial {
-    pub headers: [String: String]
+    pub headers: {String: String}
     pub body: Bytes
     /// A header block waiting for its CONTINUATION frames.
     pub block: Bytes
@@ -71,10 +71,10 @@ pub type Partial {
 /// sends needs from the task that reads.
 pub type Credit {
     pub window: Int
-    pub windows: [Int: Int]
+    pub windows: {Int: Int}
     pub initial: Int
     pub max_frame: Int
-    pub resets: [Int: Int]
+    pub resets: {Int: Int}
 }
 
 /// The credit the reading side `l` has seen.

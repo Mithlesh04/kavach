@@ -1,4 +1,4 @@
-// Rule: `List.capacity(n)`, `Map.capacity(n)` and `Set.capacity(n)` with `n` above 4,294,967,294 (2³² − 2) panic.
+// Rule: `List.capacity(n)`, `Dict.capacity(n)` and `Set.capacity(n)` with `n` above 4,294,967,294 (2³² − 2) panic.
 // Spec: 2.2
 // expect output: true
 // expect output: true
@@ -11,7 +11,7 @@ fn list_of(n: Int) -> Int {
 }
 
 fn map_of(n: Int) -> Int {
-    const m: [String: Int] = Map.capacity(n)
+    const m: {String: Int} = Dict.capacity(n)
     m.len()
 }
 

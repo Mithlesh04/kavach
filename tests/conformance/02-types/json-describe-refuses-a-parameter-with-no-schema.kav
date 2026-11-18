@@ -5,7 +5,7 @@
 use std.json
 
 /// Sums the scores.
-fn total(scores: [Int: Float]) -> Float {
+fn total(scores: {Int: Float}) -> Float {
     let sum = 0.0
     for (_, v) in scores {
         sum += v

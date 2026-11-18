@@ -13,7 +13,7 @@ pub type H3Error = Network(error: NetError) | Protocol(reason: String)
 /// A response: headers, names in lower case and with `:status`, and the
 /// body.
 pub type H3Message {
-    pub headers: [String: String]
+    pub headers: {String: String}
     pub body: Bytes
 }
 
@@ -63,7 +63,7 @@ fn frame(kind: Int, payload: Bytes) -> Bytes
 /// 1xx ones) and the DATA. Other frame types are skipped, as RFC 9114
 /// 9 asks.
 fn response(data: Bytes) -> H3Message ! H3Error {
-    let headers: [String: String] = {:}
+    let headers: {String: String} = {:}
     let body = Bytes([])
     let final = false
     let i = 0

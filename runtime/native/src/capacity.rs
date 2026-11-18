@@ -50,7 +50,7 @@ pub fn capacity_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
 fn kind(op: RtOp) -> &'static str {
     match op {
         RtOp::ListCapacity => "List",
-        RtOp::MapCapacity => "Map",
+        RtOp::MapCapacity => "Dict",
         _ => "Set",
     }
 }

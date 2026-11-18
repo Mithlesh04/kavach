@@ -20,7 +20,7 @@ pub fn status_trailers(code: Int, message: String) -> [Header] {
 }
 
 /// Fails with the server's status unless it is OK.
-pub fn check_status(trailers: [String: String]) ! GrpcError {
+pub fn check_status(trailers: {String: String}) ! GrpcError {
     const status = trailers.get("grpc-status") ?? fail GrpcError.Protocol(reason: "no grpc-status in the answer")
     const code = Int(status) catch e => fail GrpcError.Protocol(reason: "grpc-status `{status}`")
     if code != 0 {

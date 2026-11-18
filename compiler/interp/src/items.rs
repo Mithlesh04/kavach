@@ -118,7 +118,7 @@ impl<'a> Interp<'a> {
             return Ok(Value::List(ring));
         }
         let (made, len) = match (kind, first) {
-            ("Map", first) => {
+            ("Dict", first) => {
                 let mut m = match first {
                     Some(Value::Map(m)) => Rc::unwrap_or_clone(m),
                     _ => MapValue::default(),

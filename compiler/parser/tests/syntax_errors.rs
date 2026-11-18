@@ -56,11 +56,15 @@ fn messages_point_at_the_problem() {
         ),
         (
             "const m = [\"a\": 1]",
-            &["1: a map is written with braces: `{\"asha\": 31}` (spec 2.2)"],
+            &["1: a dict is written with braces: `{\"asha\": 31}` (spec 2.2)"],
         ),
         (
             "const m = [:]",
-            &["1: an empty map is written `{:}` (spec 2.2)"],
+            &["1: an empty dict is written `{:}` (spec 2.2)"],
+        ),
+        (
+            "const m: [String: Int] = {:}",
+            &["1: a dict's type is written with braces: `{String: Int}` (spec 2.2)"],
         ),
         (
             "pub(crate) fn f() {\n}",

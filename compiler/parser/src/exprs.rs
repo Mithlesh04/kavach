@@ -319,7 +319,8 @@ impl Parser<'_> {
                 Lt => depth += 1,
                 Gt => depth -= 1,
                 Shr => depth -= 2,
-                Ident | Comma | Dot | Question | LBracket | RBracket | Colon | Arrow => {}
+                Ident | Comma | Dot | Question | LBracket | RBracket | LBrace | RBrace | Colon
+                | Arrow => {}
                 Keyword(self::Keyword::Fn) | LParen | RParen if depth > 0 => {}
                 _ => return false,
             }

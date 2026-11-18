@@ -19,7 +19,8 @@ assert!(parsed.errors.is_empty());
 | `src/loaded.rs` | `extern c library Name { … }` (spec 10.7): the block made a type `Name` holding its functions' addresses, with `open` and one method per C function |
 | `src/stmts.rs` | Blocks, `const`/`let`, assignment, `for`, `while`, `assert` |
 | `src/exprs.rs` | Operator precedence (spec 1.8), `try`/`catch`/`fail`, calls, fields, `with` |
-| `src/primary.rs` | Literals, strings, lambdas, lists and maps, `if`, `match` |
+| `src/primary.rs` | Literals, strings, lambdas, lists, `if`, `match` |
+| `src/maps.rs` | Dict literals with braces, `{"a": 1}`, `{name: x}`, `{[key]: x}`, `{:}`, told apart from blocks (decisions 0129, 0130) |
 | `src/patterns.rs` | Patterns (spec 4.3) |
 | `src/types.rs` | Types and generic parameters |
 | `tests/expressions.rs`, `tests/declarations.rs` | Source → expected tree, printed as S-expressions |

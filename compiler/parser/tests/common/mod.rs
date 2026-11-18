@@ -64,7 +64,7 @@ pub fn ty(t: &TypeExpr) -> String {
         TypeKind::Named { path: p, args } if args.is_empty() => path(p),
         TypeKind::Named { path: p, args } => format!("{}<{}>", path(p), list(args, ty)),
         TypeKind::List(i) => format!("[{}]", ty(i)),
-        TypeKind::Map(k, v) => format!("[{}: {}]", ty(k), ty(v)),
+        TypeKind::Map(k, v) => format!("{{{}: {}}}", ty(k), ty(v)),
         TypeKind::Optional(i) => format!("{}?", ty(i)),
         TypeKind::Tuple(ts) => format!("({})", list(ts, ty)),
         TypeKind::AnonRecord(fs) => format!(

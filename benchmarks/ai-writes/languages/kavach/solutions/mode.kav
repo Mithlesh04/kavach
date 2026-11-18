@@ -1,5 +1,5 @@
 fn mode(xs: [Int]) -> Int {
-    let counts: [Int: Int] = {:}
+    let counts: {Int: Int} = {:}
     for x in xs {
         counts[x] = (counts.get(x) ?? 0) + 1
     }

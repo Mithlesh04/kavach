@@ -17,7 +17,7 @@ type Drawing {
     title: String
     note: String?
     shapes: [Shape]
-    tags: [String: Tag]
+    tags: {String: Tag}
     ids: Set<Int>
     grade: Char
     price: Decimal

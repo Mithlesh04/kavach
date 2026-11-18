@@ -201,7 +201,7 @@ print(-2 ** 2)                         // -4
 
 When in doubt, use parentheses. `kavach fmt` never removes parentheses that help readability.
 
-**Equality** (`==`, `!=`) compares contents, at every depth: two lists are equal when they hold equal items in the same order, two records when their fields are equal, two maps and two sets when they hold the same keys (with equal values), **in any order**. Shared values are equal at once: a copy not yet changed (spec 6.1) is not looked inside ([decision 0039](../decisions/0039-equality-is-deep-and-fast.md)).
+**Equality** (`==`, `!=`) compares contents, at every depth: two lists are equal when they hold equal items in the same order, two records when their fields are equal, two dicts and two sets when they hold the same keys (with equal values), **in any order**. Shared values are equal at once: a copy not yet changed (spec 6.1) is not looked inside ([decision 0039](../decisions/0039-equality-is-deep-and-fast.md)).
 
 ```kavach
 const a = {"x": [1, 2], "y": [3]}
@@ -211,7 +211,7 @@ print({"a": 1, "b": 2} == {"b": 2, "a": 1})   // true: order doesn't count
 print([1, 2] == [2, 1])                // false: lists keep order
 ```
 
-**Order** (`<`, `<=`, `>`, `>=`, and `sort`, `sort_by`, `min`, `max` in 14.2) is defined for numbers, text, characters, `Bool`, and tuples, lists, rings and text views (2.18) of them, and `Bytes`. Other values have no order, and comparing them is a compile error: a set or a map has none (compare `s.to_list().sort()` instead), nor an optional.
+**Order** (`<`, `<=`, `>`, `>=`, and `sort`, `sort_by`, `min`, `max` in 14.2) is defined for numbers, text, characters, `Bool`, and tuples, lists, rings and text views (2.18) of them, and `Bytes`. Other values have no order, and comparing them is a compile error: a set or a dict has none (compare `s.to_list().sort()` instead), nor an optional.
 
 - Text compares character by character, by Unicode code point: every capital letter comes before every small one, and letters with accents come after both, so `"Apple" < "apple" < "zebra" < "Éclair"`. It is not dictionary order for any language.
 - `false` comes before `true`.
@@ -308,7 +308,7 @@ const grade = if score >= 90 { "A" } else { "B" }
 | Union variant | `Paid`, `TooLarge(value: 200)` |
 | Secret field | `<secret>` |
 
-A type can choose its own form by implementing the `Display` interface (`fn display(self) -> String`). It shows in that form everywhere a value is shown: `print`, interpolation, `String(v)`, and inside lists, maps, tuples and other records.
+A type can choose its own form by implementing the `Display` interface (`fn display(self) -> String`). It shows in that form everywhere a value is shown: `print`, interpolation, `String(v)`, and inside lists, dicts, tuples and other records.
 
 ## 1.12 Destructuring
 
@@ -329,23 +329,23 @@ const { city = "unknown" } = address      // city is `String?` in the record: St
 - `...rest` (last only) gets the items after the others, as a list: empty when there are none.
 - When the value is a list literal with an item for every name (`[2, 3]`), no name can be missing, so the names have the items' own types.
 - **A record** is taken apart by field name; `age: years` names the variable differently. A field the record doesn't have is a compile error. A default fills a field of type `T?` when it is `none`, giving a `T`.
-- **A map** is taken apart by key, its pattern written like a map literal: `"asha": a` reads key `"asha"` into `a`; a bare name is the key spelled like it (`port` reads `"port"`), as in JavaScript's `{ port }`. A key may be missing, so a name is `V?`, or `V` with a default. A bare name or `name: …` is a text key; other keys are written as literals (`7: seven`).
+- **A dict** is taken apart by key, its pattern written like a dict literal: `"asha": a` reads key `"asha"` into `a`; a bare name is the key spelled like it (`port` reads `"port"`), as in JavaScript's `{ port }`. A key may be missing, so a name is `V?`, or `V` with a default. A bare name or `name: …` is a text key; other keys are written as literals (`7: seven`).
 
 ```kavach
 const ["asha": a, "ravi": r] = ages       // a: Int?, r: Int?
 const [host: server, port = 8080] = settings   // server: String?, port: Int
 ```
 
-- Patterns nest: an item, a map value or a field can be taken apart in turn, by a list, map or record pattern in its place.
+- Patterns nest: an item, a dict value or a field can be taken apart in turn, by a list, dict or record pattern in its place.
 
 ```kavach
 const [first, [x, y]] = pairs             // pairs: [[Int]]; x and y are Int?
 const [_, [low = 0, high = 0]] = pairs    // low and high are Int
 const { home: { city } } = user           // home: Address, so city: String
-const [config: [port = 8080]] = settings  // settings: [String: [String: Int]]
+const [config: [port = 8080]] = settings  // settings: {String: {String: Int}}
 ```
 
-- When the part a nested pattern takes apart may be missing (a list item, a map value, a `T?` field), every name inside it is `none` when it is, so their types are optional, unless they have defaults. A part with a default of its own (`[x, y] = [0, 0]`) is never missing.
+- When the part a nested pattern takes apart may be missing (a list item, a dict value, a `T?` field), every name inside it is `none` when it is, so their types are optional, unless they have defaults. A part with a default of its own (`[x, y] = [0, 0]`) is never missing.
 - With `let`, the names are variables; with `const`, they never change.
 
 ## 1.13 Module constants

@@ -391,7 +391,7 @@ fn builtin_type(name: &str, args: Vec<Ty>, self_ty: Option<&Ty>) -> Ty {
     match name {
         "List" => Ty::List(next()),
         "Set" => Ty::Set(next()),
-        "Map" => {
+        "Dict" => {
             let k = next();
             Ty::Map(k, next())
         }

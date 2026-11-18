@@ -21,8 +21,8 @@ type Order {
 }
 
 type Db {
-    orders: [String: Order]
-    warranty_months: [String: Int]
+    orders: {String: Order}
+    warranty_months: {String: Int}
 }
 
 type Action = Replace | Refund | Wait | Decline | Escalate

@@ -16,7 +16,7 @@ type Wide {
     g: UInt16
     h: Float32
     i: [Int]
-    j: [String: Int]
+    j: {String: Int}
     k: Int32
     l: Int
 }

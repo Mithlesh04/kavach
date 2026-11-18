@@ -119,7 +119,7 @@ impl<'a> Interp<'a> {
                         ("Bool", []) => Gen::Bool,
                         ("Char", []) => Gen::Char,
                         ("List", [t]) => Gen::List(Box::new(self.gen_of(t)?)),
-                        ("Map", [k, v]) => {
+                        ("Dict", [k, v]) => {
                             Gen::Map(Box::new(self.gen_of(k)?), Box::new(self.gen_of(v)?))
                         }
                         (name, []) => match Prim::from_name(name)? {

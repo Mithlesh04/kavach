@@ -53,7 +53,7 @@ impl<'a> Interp<'a> {
                     DefKind::GenericParam => self.frames.last()?.generics.get(&def)?.clone(),
                     DefKind::Builtin => match (first.name.as_str(), args.as_slice()) {
                         ("List", [item]) => Ty::List(Box::new(self.ty_of(item)?)),
-                        ("Map", [k, v]) => {
+                        ("Dict", [k, v]) => {
                             Ty::Map(Box::new(self.ty_of(k)?), Box::new(self.ty_of(v)?))
                         }
                         (name, _) => Ty::Prim(Prim::from_name(name)?),

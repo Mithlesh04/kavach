@@ -1,4 +1,4 @@
-// Rule: `extend<T> [T]`, `extend<K, V> [K: V]`, `extend<T> Set<T>` and `extend<T> Ring<T>` add methods for every item type; `T` is the item type of the collection called on, and a range has a list's added methods.
+// Rule: `extend<T> [T]`, `extend<K, V> {K: V}`, `extend<T> Set<T>` and `extend<T> Ring<T>` add methods for every item type; `T` is the item type of the collection called on, and a range has a list's added methods.
 // Spec: 2.5
 // expect output: 20
 // expect output: none
@@ -23,7 +23,7 @@ extend<T> [T] {
     }
 }
 
-extend<K, V> [K: V] {
+extend<K, V> {K: V} {
     fn has_all(self, keys: [K]) -> Bool {
         keys.all((k) => self.contains_key(k))
     }

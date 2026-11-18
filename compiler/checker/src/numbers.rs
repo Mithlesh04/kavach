@@ -41,7 +41,7 @@ impl Checker<'_> {
         let d = &self.res.defs[def];
         let builtin_type = d.kind == DefKind::Builtin
             && (Prim::from_name(&d.name).is_some()
-                || matches!(d.name.as_str(), "List" | "Map" | "Set" | "Ring" | "Json"));
+                || matches!(d.name.as_str(), "List" | "Dict" | "Set" | "Ring" | "Json"));
         if d.kind != DefKind::Type && !builtin_type {
             return;
         }

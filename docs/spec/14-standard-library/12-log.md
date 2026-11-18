@@ -131,7 +131,7 @@ log.histogram("checkout_ms", Float(elapsed))
 ```
 
 - `name` is plain text; `n` is an `Int`, `value` a `Float`.
-- Each takes `attributes: [String: String]` too, empty unless given: `log.histogram("checkout.duration_ms", ms, attributes: {"http.route": "/orders/\{id}", "http.response.status_code": "200"})`. Each name and set of attributes is a series of its own, whatever order the attributes were written in. Give attributes with few values (a route's pattern, a method, a status), never ids: each new value makes a new series to keep and send. Put the unit in the name (`_ms`): the buckets above are for milliseconds, and OpenTelemetry's own `http.server.request.duration` is in seconds.
+- Each takes `attributes: {String: String}` too, empty unless given: `log.histogram("checkout.duration_ms", ms, attributes: {"http.route": "/orders/\{id}", "http.response.status_code": "200"})`. Each name and set of attributes is a series of its own, whatever order the attributes were written in. Give attributes with few values (a route's pattern, a method, a status), never ids: each new value makes a new series to keep and send. Put the unit in the name (`_ms`): the buckets above are for milliseconds, and OpenTelemetry's own `http.server.request.duration` is in seconds.
 - `log.histogram` takes `bounds: [Float]` too, its buckets' upper bounds in increasing order (a `require`), for values in other units: `log.histogram("http.server.request.duration", seconds, bounds: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0])`. A series' first value sets its bounds; later ones keep them.
 - Without `[log.otlp]`, metrics are kept nowhere and cost almost nothing.
 - Like events, spans and metrics need no capability.

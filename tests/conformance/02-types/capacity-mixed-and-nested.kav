@@ -35,7 +35,7 @@ fn main() {
     }
     print(log.is_full())
 
-    let groups: [String: [Int]] = Map.capacity(1)
+    let groups: {String: [Int]} = Dict.capacity(1)
     groups["small"] = List.capacity(3, [1, 2, 3])
     print(groups)
     const inner = groups["small"] ?? []
@@ -56,7 +56,7 @@ fn main() {
     print(all.len())
     print(all.is_full())
 
-    let latest: [String: Reading] = Map.capacity(2)
+    let latest: {String: Reading} = Dict.capacity(2)
     latest["kitchen"] = Reading.Heat(celsius: 21.5)
     latest["door"] = Reading.Note(text: "opened")
     print(latest.len())
@@ -66,8 +66,8 @@ fn main() {
     colors.add(Color.Blue)
     print(colors.is_full())
 
-    let rooms: [String: [String: Int]] = Map.capacity(2)
-    rooms["hall"] = Map.capacity(1, {"lamps": 2})
+    let rooms: {String: {String: Int}} = Dict.capacity(2)
+    rooms["hall"] = Dict.capacity(1, {"lamps": 2})
     const hall = rooms["hall"] ?? {:}
     print(hall.is_full())
     print(rooms)

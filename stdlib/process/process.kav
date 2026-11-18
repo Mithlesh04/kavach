@@ -70,7 +70,7 @@ pub type Child: Drop {
 
 /// Starts `program` with `args` in `folder` ("": this program's own),
 /// with `env` added to its environment.
-pub fn start(program: String, args: [String], folder: String = "", env: [String: String] = {:}) -> Child ! ProcessError uses Process {
+pub fn start(program: String, args: [String], folder: String = "", env: {String: String} = {:}) -> Child ! ProcessError uses Process {
     let setup = [folder]
     for (name, value) in env {
         setup.push(name)
@@ -81,7 +81,7 @@ pub fn start(program: String, args: [String], folder: String = "", env: [String:
 }
 
 /// Runs `program` to its end.
-pub fn run(program: String, args: [String], folder: String = "", env: [String: String] = {:}) -> Finished ! ProcessError uses Process {
+pub fn run(program: String, args: [String], folder: String = "", env: {String: String} = {:}) -> Finished ! ProcessError uses Process {
     const child = try start(program, args, folder: folder, env: env)
     let out = ""
     let err = ""

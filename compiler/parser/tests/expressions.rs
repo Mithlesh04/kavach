@@ -41,6 +41,11 @@ fn literals_and_collections() {
             "(map ((str \"asha\") 31) ((str \"ravi\") 27))",
         ),
         ("{:}", "(map )"),
+        // A dict's type in type arguments (decision 0130).
+        (
+            "json.decode<{String: [Int]}>(text)",
+            "(call (. json decode)<{String: [Int]}> text)",
+        ),
         // A plain name is that text; a key in brackets is a value (0129).
         (
             "{name: 1, [key]: 2, 3: 4}",

@@ -61,7 +61,7 @@ Every type gets a generator automatically. No code is needed.
 |---|---|
 | `Int`, `Decimal` | `0`, `1`, `-1`, smallest, largest, values next to every number in a `require` |
 | `String` | `""`, one character, whitespace, non-Latin text (`"नमस्ते"`), very long |
-| `[T]`, `Map`, `Set` | empty, one item, many items, duplicates |
+| `[T]`, `Dict`, `Set` | empty, one item, many items, duplicates |
 | `T?` | `none` and a value |
 | Unions | every variant |
 | Records | generated fields; values that break an `invariant` are never produced |

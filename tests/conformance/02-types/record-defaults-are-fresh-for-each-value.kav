@@ -9,7 +9,7 @@
 type Bag {
     name: String
     items: [Int] = []
-    tags: [String: Int] = {:}
+    tags: {String: Int} = {:}
 }
 
 fn grown(b: Bag) -> Int {

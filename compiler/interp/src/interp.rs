@@ -249,7 +249,7 @@ impl<'a> Interp<'a> {
                     // `extend<T> [T]`, `extend<K, V> [K: V]` (spec 2.5).
                     let collection = match &e.target.kind {
                         TypeKind::List(_) => Some("List"),
-                        TypeKind::Map(..) => Some("Map"),
+                        TypeKind::Map(..) => Some("Dict"),
                         _ => None,
                     };
                     if let Some(kind) = collection {

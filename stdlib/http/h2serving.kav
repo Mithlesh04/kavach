@@ -28,7 +28,7 @@ type Out {
 type Sending {
     conn: Connection
     sent: Int
-    sent_on: [Int: Int]
+    sent_on: {Int: Int}
 }
 
 /// Serves the HTTP/2 connection `conn`, which began with `data`, until
