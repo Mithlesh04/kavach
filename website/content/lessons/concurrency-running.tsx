@@ -42,7 +42,16 @@ export const turnsDoc: LessonDoc = {
         <li><C>spawn</C> makes the new task ready; the task that spawned it keeps running.</li>
         <li>A task runs until it waits. Then the task that became ready first runs.</li>
         <li>When no task is ready, the program waits for the earliest of them.</li>
+        <li>
+          A sleep counts from when its task became ready, not from when the machine got round to running it. A task
+          that waited for its turn has that wait taken off its next sleep, so a busy machine can&apos;t change the order.
+        </li>
       </ul>
+      <P>
+        A machine that stalls can&apos;t be written in Kavach, so this rule is tested in the runtime&apos;s own Rust
+        tests, where a turn can be made to start late:
+      </P>
+      <SrcRef file="runtime/core/src/tasks/tests.rs" line={266} symbol="a_late_turn_does_not_reorder_sleepers" label="a late turn, tested" />
       <Note>
         Why it matters: a bug in a program with threads often shows up once in a hundred runs. With fixed turns, the
         same program does the same thing every time, so a bug that happens once happens every time, and can be found.
