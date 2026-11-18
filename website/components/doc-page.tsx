@@ -25,7 +25,7 @@ export function DocPage({ nodeKey }: { nodeKey: string }) {
       url: `${site}${node.href}`,
       inLanguage: "en",
       timeRequired: `PT${lesson.minutes}M`,
-      author: { "@type": "Person", name: project.lead.name, url: project.lead.url },
+      author: { "@type": "Person", name: project.lead.name, url: project.lead.url, sameAs: [project.lead.linkedin] },
       publisher: PUBLISHER,
       image: `${SITE_URL}${CARD.path}`,
       isPartOf: { "@type": "Course", name: "The Kavach tutorial", url: `${site}/docs/start/kavach-home/` },

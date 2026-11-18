@@ -38,7 +38,7 @@ export default async function Home() {
       sameAs: [versions.repo],
       image: [`${SITE_URL}${LOGO.path}`, `${SITE_URL}${CARD.path}`],
       license: ["https://opensource.org/licenses/MIT", "https://www.apache.org/licenses/LICENSE-2.0"],
-      creator: { "@type": "Person", name: project.lead.name, url: project.lead.url },
+      creator: { "@type": "Person", name: project.lead.name, url: project.lead.url, sameAs: [project.lead.linkedin] },
     },
   ];
   return (

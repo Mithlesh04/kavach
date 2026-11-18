@@ -131,7 +131,8 @@ export const homeDoc: LessonDoc = {
       <H2>Who makes Kavach</H2>
       <P>
         Kavach (<span lang="hi">{project.nameHindi}</span>) is created and led by{" "}
-        <a href={project.lead.url}>{project.lead.name}</a>, who also writes this course. It is open source: the
+        <a href={project.lead.url}>{project.lead.name}</a> (<a href={project.lead.linkedin}>LinkedIn</a>), who also
+        writes this course. It is open source: the
         language, its compiler and this site live in <a href={versions.repo}>one repository</a>, and every page links
         to the code and measurements behind it.
       </P>

@@ -13,8 +13,8 @@ export function SiteFooter({ width = "max-w-[1200px]" }: { width?: string }) {
           Created and led by{" "}
           <a href={project.lead.url} className="font-semibold">
             {project.lead.name}
-          </a>
-          , who writes this course
+          </a>{" "}
+          (<a href={project.lead.linkedin}>LinkedIn</a>), who writes this course
         </span>
         <span className="flex-1" />
         <a href={versions.repo}>GitHub</a>
