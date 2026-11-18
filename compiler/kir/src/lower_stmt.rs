@@ -101,12 +101,14 @@ impl<'a> Lowerer<'a> {
                 // `cores(n)`, `threads(n)`: the count, worked out first and
                 // checked; `par.rs` reads it from the check just before the
                 // loop.
+                let mut count = None;
                 if let Some(place) = place
                     && let Some(n) = &place.count
                 {
                     let n = self.expr(n)?;
                     let c = self.new_local(Type::I64);
                     out.push(Stmt::Let(c, n));
+                    count = Some(c);
                     let at = |kind| ir::Expr {
                         kind,
                         ty: Type::I64,
@@ -122,7 +124,11 @@ impl<'a> Lowerer<'a> {
                         line,
                     }));
                 }
-                self.labeled_loop(label, out, |l, out| l.for_loop(pattern, iter, body, out))?
+                // `on threads`: each round a task (`lower_threads.rs`).
+                let threads = place.as_ref().is_some_and(|p| p.threads);
+                if !(threads && self.threads_loop(count, pattern, iter, body, out)?) {
+                    self.labeled_loop(label, out, |l, out| l.for_loop(pattern, iter, body, out))?
+                }
             }
             StmtKind::While { label, cond, body } => self.labeled_loop(label, out, |l, out| {
                 let cond = l.expr(cond)?;

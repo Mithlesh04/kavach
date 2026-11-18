@@ -1,0 +1,31 @@
+// Rule: `on threads(n)` runs its rounds at the same time, each a task of its own: a round that waits less finishes first, while slot writes and whole-number sums are applied in round order, giving the one-core result.
+// Spec: 4.9
+// expect output: round 1 done
+// expect output: round 3 done
+// expect output: round 2 done
+// expect output: round 0 done
+// expect output: [600, 200, 400, 300] 750 1
+// expect output: [0, 1, 2, 3]
+
+use std.time
+
+fn main() {
+    const waits = [300, 100, 200, 150]
+    let out = [0, 0, 0, 0]
+    let total = 0
+    let m = 0
+    on threads(4) for i in 0..4 {
+        time.sleep_ms(waits[i])
+        print(`round {i} done`)
+        out[i] = waits[i] * 2
+        total += waits[i]
+        m = (m + waits[i]) % 7
+    }
+    print(`{out} {total} {m}`)
+    let index = [9, 9, 9, 9]
+    on threads(2) for (i, w) in waits.enumerate() {
+        time.sleep_ms(w / 10)
+        index[i] = i
+    }
+    print(index)
+}

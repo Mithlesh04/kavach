@@ -107,6 +107,8 @@ pub(crate) enum Work<'a> {
     Replay(crate::journal::Replayed<'a>),
     /// `spawn process f(args)` (spec 9.8): the call, run in a child.
     Process(crate::processes::Process),
+    /// A round of an `on threads` loop, then what it reads back (4.9).
+    Round(&'a kavach_ast::Block, &'a [Expr]),
 }
 
 /// A time limit on a wait (`.timeout(d)`, spec 9.6): when it ends, and
@@ -286,6 +288,7 @@ impl<'a> Interp<'a> {
             // moves on at once (spec 11.5).
             Work::Replay(r) => self.replay(r),
             Work::Process(p) => self.run_process(p),
+            Work::Round(body, reads) => self.run_round(body, reads),
             Work::After(ms, f, span) => {
                 let wait = std::time::Duration::from_millis(ms);
                 self.journaled_sleep(Instant::now() + wait, span)?;

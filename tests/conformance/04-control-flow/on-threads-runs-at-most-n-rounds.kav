@@ -1,0 +1,21 @@
+// Rule: `on threads(n)` runs at most `n` rounds at once: before round `i` starts, round `i - n` is waited for, so with `threads(1)` each round ends before the next begins, however long it waits.
+// Spec: 4.9
+// expect output: round 0 done
+// expect output: round 1 done
+// expect output: round 2 done
+// expect output: [3, 1, 2]
+
+use std.time
+
+fn main() {
+    const waits = [300, 100, 200]
+    let order: [Int] = [0, 0, 0]
+    let seen = 0
+    on threads(1) for i in 0..3 {
+        time.sleep_ms(waits[i])
+        print(`round {i} done`)
+        order[i] = waits[i] / 100
+        seen += 1
+    }
+    print(order)
+}

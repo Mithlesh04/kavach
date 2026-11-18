@@ -110,18 +110,19 @@ impl<'a> Interp<'a> {
                 body,
             } => {
                 // `cores(n)`, `threads(n)`: worked out first, at least 1.
+                let mut count = 0;
                 if let Some(p) = place
                     && let Some(n) = &p.count
                     && let Value::Int(k, _) = self.eval(n)?
-                    && k < 1
                 {
-                    let what = if p.threads { "thread" } else { "core" };
-                    return Err(self.panic(
-                        format!(
-                            "a loop runs on at least one {what}, but the count is {k} (spec 4.9)"
-                        ),
-                        n.span,
-                    ));
+                    if k < 1 {
+                        let what = if p.threads { "thread" } else { "core" };
+                        return Err(self.panic(
+                            format!("a loop runs on at least one {what}, but the count is {k} (spec 4.9)"),
+                            n.span,
+                        ));
+                    }
+                    count = usize::try_from(k).unwrap_or(usize::MAX);
                 }
                 // A range is walked lazily: `0..n` never builds a list.
                 // The rounds of `time.every_ms(ms)` (spec 14.4) each start
@@ -130,7 +131,24 @@ impl<'a> Interp<'a> {
                 let mut ticker = None;
                 let mut receiver = None;
                 let mut reader = None;
-                let items: Box<dyn Iterator<Item = Value<'a>>> = match self.eval(iter)? {
+                let looped = self.eval(iter)?;
+                // `on threads`: each round a task (`on_threads.rs`).
+                if place.as_ref().is_some_and(|p| p.threads)
+                    && crate::on_threads::as_tasks(pattern, iter)
+                    && (matches!(looped, Value::List(_))
+                        || matches!(looped, Value::Range(..))
+                            && matches!(iter.kind, ExprKind::Binary(..)))
+                {
+                    let items = match &looped {
+                        Value::List(items) => items.iter().cloned().collect(),
+                        Value::Range(a, b, k) => (*a..*b).map(|n| Value::Int(n, *k)).collect(),
+                        _ => Vec::new(),
+                    };
+                    if let Some(done) = self.on_threads(count, pattern, items, body, s.span)? {
+                        return Ok(done);
+                    }
+                }
+                let items: Box<dyn Iterator<Item = Value<'a>>> = match looped {
                     // Values taken until the channel is closed and empty
                     // (spec 9.4).
                     Value::Channel(c, Some(_)) => {

@@ -1,0 +1,21 @@
+// Rule: an `on threads` loop whose body can leave early (`break`, `return`, `fail`, `try`) runs its rounds one after another, so the first round in order that leaves decides.
+// Spec: 4.9
+// expect output: round 0
+// expect output: round 1
+// expect output: [1, 1, 0]
+
+use std.time
+
+fn main() {
+    const waits = [200, 50, 10]
+    let hit = [0, 0, 0]
+    on threads(3) for i in 0..3 {
+        time.sleep_ms(waits[i])
+        print(`round {i}`)
+        hit[i] = 1
+        if i == 1 {
+            break
+        }
+    }
+    print(hit)
+}

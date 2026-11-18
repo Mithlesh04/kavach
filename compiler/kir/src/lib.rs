@@ -87,6 +87,7 @@ mod lower_std;
 mod lower_stmt;
 mod lower_tasks;
 mod lower_text;
+mod lower_threads;
 mod lower_tls;
 mod lower_views;
 mod moves;

@@ -35,6 +35,7 @@ mod module_consts;
 mod more_methods;
 mod net;
 mod numbers;
+mod on_threads;
 mod ops;
 mod parallel_map;
 mod processes;

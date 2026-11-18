@@ -29,6 +29,7 @@ Not supported yet: agents, capabilities, `ask` and `unsafe` (Phase 2 and the nat
 | `src/tasks.rs` | Tasks (spec 9): each on its own thread, taking turns through the scheduler in `runtime/core` |
 | `src/task_errors.rs` | An error nobody reads (spec 9.1): printed when the last holder of its task lets it go |
 | `src/parallel_map.rs` | `items.parallel_map(f, max: m)` (spec 9.3): a task for each item, the first error in order ends the call |
+| `src/on_threads.rs` | `on threads(n) for …` (spec 4.9): each round a task, at most `n` at once, its slot writes and sums applied in round order |
 | `src/timeouts.rs` | `x.timeout(d)` (spec 9.6): a wait or a network call for at most `d`; `spawn … within d` |
 | `src/processes.rs` | `spawn process f(args)` (spec 9.8): the call run in a child started with the command `kavach run` gives, its lines printed in turn; in the child, running only that call |
 | `src/channels.rs` | Channels (spec 9.4): `put` waits while full, `take` while empty |
