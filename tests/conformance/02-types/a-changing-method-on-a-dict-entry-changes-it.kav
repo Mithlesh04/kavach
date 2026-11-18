@@ -1,0 +1,18 @@
+// Rule: A changing method on a dict entry (`push`, `pop`, `add`, `remove`) changes the value under that key in place, as `d[k] += …` does; the dict holds its own copy, so the variable it came from doesn't change.
+// Spec: 2.2, 6.1
+// expect output: {"numbers": [2, 4, 6]} [2, 4]
+// expect output: 6 {"numbers": [2, 4]}
+// expect output: {"tags": Set.of("y", "z")}
+
+fn main() {
+    let a = [2, 4]
+    let b = {"numbers": a}
+    b["numbers"].push(6)
+    print(`{b} {a}`)
+    const last = b["numbers"].pop()
+    print(`{last} {b}`)
+    let s = {"tags": Set.of("x", "y")}
+    s["tags"].add("z")
+    s["tags"].remove("x")
+    print(s)
+}

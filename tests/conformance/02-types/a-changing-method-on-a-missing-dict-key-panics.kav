@@ -1,0 +1,9 @@
+// Rule: A changing method on a dict entry whose key is missing panics, naming the key, as an index out of range does for a list.
+// Spec: 2.2
+// expect panic: the dict has no key `other`
+
+fn main() {
+    let b = {"numbers": [2, 4]}
+    b["other"].push(6)
+    print(b)
+}

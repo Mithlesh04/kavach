@@ -68,6 +68,16 @@ const fixed = [1, 2]
 fixed.push(3)                  // error: `fixed` is a `const`: declare it with `let`
 ```
 
+A changing method (`push`, `pop`, `add`, `remove`) also works on an item or a dict entry, and changes it where it is, so `rows[i].push(x)` and `groups["small"].push(x)` change the list inside. On a dict entry it means what `groups["small"] += [x]` means, and a missing key panics, naming it, as an index out of range does for a list. Any other use of `groups["small"]` reads it, and a read is an optional (`none` when the key is missing), so a method that only reads goes through `?.` or `??`:
+
+```kavach
+let groups = {"small": [1, 2]}
+groups["small"].push(3)                  // {"small": [1, 2, 3]}
+groups["large"].push(9)                  // panic: the dict has no key `large`
+print(groups["small"]?.len())            // 3
+print((groups["large"] ?? []).len())     // 0
+```
+
 `xs + ys` is a new list: the items of `xs`, then those of `ys`. Both are lists of the same type, and neither changes. `xs += ys` adds the items of `ys` to the end of `xs`, so like `push` it needs a `let`; when nothing else holds `xs`, it grows in place (6.1), without copying what it holds:
 
 ```kavach

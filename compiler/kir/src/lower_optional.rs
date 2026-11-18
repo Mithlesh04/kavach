@@ -154,3 +154,74 @@ impl Lowerer<'_> {
         })
     }
 }
+
+impl Lowerer<'_> {
+    /// `get`, a `MapGet` of type `ty`: as it is when `ty` is an optional
+    /// (`map[key]`, spec 2.2); else the value under the key, for a change
+    /// to it (`d[k].push(x)`, `d[k] += [x]`), and a missing key panics,
+    /// naming it.
+    pub(crate) fn dict_entry(&mut self, get: ir::Expr) -> ir::Expr {
+        let (ty, line) = (get.ty, get.line);
+        let at = |kind, ty| ir::Expr { kind, ty, line };
+        let is_optional = matches!(self.shapes.shape(ty), Some(Shape::Optional(_)));
+        let K::Rt(RtOp::MapGet, mut args) = get.kind else {
+            return get;
+        };
+        if is_optional || args.len() != 2 {
+            return at(K::Rt(RtOp::MapGet, args), ty);
+        }
+        let key = args.pop().expect("a key");
+        let map = args.pop().expect("a map");
+        let opt = self.optional_type(ty);
+        let (k, v) = (self.new_local(key.ty), self.new_local(opt));
+        let text = self.str_type();
+        let message = at(
+            K::Format(vec![
+                at(K::Str("the dict has no key `".into()), text),
+                self.local_expr(k, line),
+                at(K::Str("`".into()), text),
+            ]),
+            text,
+        );
+        let missing = at(
+            K::Unary(
+                ir::UnOp::Not,
+                Box::new(at(
+                    K::IsSome(Box::new(self.local_expr(v, line))),
+                    Type::Bool,
+                )),
+            ),
+            Type::Bool,
+        );
+        let panic = Stmt::Expr(at(K::Rt(RtOp::PanicText, vec![message]), Type::Unit));
+        let value = at(K::Unwrap(Box::new(self.local_expr(v, line))), ty);
+        let check = at(
+            K::If(
+                Box::new(missing),
+                Block {
+                    stmts: vec![panic],
+                    value: None,
+                },
+                Block::default(),
+            ),
+            Type::Unit,
+        );
+        at(
+            K::Block(Block {
+                stmts: vec![
+                    Stmt::Let(k, key),
+                    Stmt::Let(
+                        v,
+                        at(
+                            K::Rt(RtOp::MapGet, vec![map, self.local_expr(k, line)]),
+                            opt,
+                        ),
+                    ),
+                    Stmt::Expr(check),
+                ],
+                value: Some(Box::new(value)),
+            }),
+            ty,
+        )
+    }
+}

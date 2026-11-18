@@ -5,6 +5,8 @@ Conformance tests for spec chapter [6. Memory](../../../docs/spec/06-memory.md).
 | Spec | Test | Rule | Expects |
 |---|---|---|---|
 | 6.1 | [lists-are-values.kav](lists-are-values.kav) | Assigning a list never shares it; changing the copy leaves the original alone. | runs |
+| 6.1 | [rows-made-from-one-list-are-separate.kav](rows-made-from-one-list-are-separate.kav) | A list built from the same list three times holds three separate rows: setting an item of one row changes only that row. | runs |
+| 6.1 | [a-dict-keeps-the-value-it-was-given.kav](a-dict-keeps-the-value-it-was-given.kav) | A dict holds the value it was given: changing the variable afterwards leaves the dict alone, and the other way round. | runs |
 | 6.1 | [passing-a-value-copies-it.kav](passing-a-value-copies-it.kav) | Passing a value to a function never shares it. | runs |
 | 6.1 | [text-grows-in-place-copies-stay.kav](text-grows-in-place-copies-stay.kav) | Text with one holder grows in place under `+=`; a copy taken before keeps its old value. | runs |
 | 6.1 | [early-exits-free-values.kav](early-exits-free-values.kav) | Values made for an expression that leaves early (`??`, `try`, `return`, `continue`) are still freed. | runs |
@@ -59,6 +61,7 @@ Conformance tests for spec chapter [6. Memory](../../../docs/spec/06-memory.md).
 | 6.2, 1.4 | [a-const-shared-cannot-be-replaced.kav](a-const-shared-cannot-be-replaced.kav) | a `Shared` named with `const` can be updated, but the name can't be given another `Shared`. | compile error |
 | 6.2, 1.4 | [a-let-given-a-new-shared-leaves-its-copies.kav](a-let-given-a-new-shared-leaves-its-copies.kav) | copies of a `Shared` see one value; a `let` given a new `Shared` names the new one, and the copies still share the old. | runs |
 | 6.2, 9.5 | [a-shared-inside-a-record-or-list-is-shared.kav](a-shared-inside-a-record-or-list-is-shared.kav) | a `Shared` kept in a record, a list or a lambda is still the one value: copying the record or list copies the link, not the value, so tasks and lambdas update what everyone sees. | runs |
+| 6.1, 6.2 | [a-shared-inside-a-dict-is-shared.kav](a-shared-inside-a-dict-is-shared.kav) | A `Shared` put in a dict is the same value: a change through the variable shows through the dict. | runs |
 | 6.2 | [a-value-holding-a-shared-lives-to-its-blocks-end.kav](a-value-holding-a-shared-lives-to-its-blocks-end.kav) | A value that holds a `Shared` lives until the end of the block that holds it, after its last use; then the `Shared` is freed. | runs |
 | 6.2 | [a-weak-back-link-leaks-nothing.kav](a-weak-back-link-leaks-nothing.kav) | Cycles form only through `Shared`: a back-link made a `Weak` forms none, so nothing is reported as leaked when the program ends. | runs |
 | 6.2 | [a-weak-gives-back-the-same-shared.kav](a-weak-gives-back-the-same-shared.kav) | `w.shared()` gives back the very `Shared` the `Weak` points to, wherever the `Weak` is kept, until the block that holds the `Shared` ends; then it gives `none`. | runs |

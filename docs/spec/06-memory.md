@@ -24,6 +24,54 @@ b.push(4)
 
 This removes a whole class of bugs ("who else changed my list?") and makes concurrency safe (chapter 9).
 
+**Coming from JavaScript, Python, Java or C#.** There, a list or object is a reference: `b = a` gives the same object a second name, so changing `b` changes `a`. In Kavach, `b` gets its own value:
+
+| You write | JavaScript, Python | Kavach |
+|---|---|---|
+| `let b = a`, then `b.push(4)` | `a` changes too | only `b` changes |
+| `const d = {"numbers": a}`, then `a.push(4)` | `d` sees the change | `d` keeps what it was given |
+| `let grid = [row, row, row]`, then `grid[0][0] = 5` | every row changes: they are one list | only the first row changes |
+| a function pushes onto the list it was given | the caller's list changes | a compile error, unless the parameter is `inout` (3.9), which the function's signature shows |
+| two threads change the same list | a data race, unless a lock is used | each task has its own copy (9.5); only `Shared` is shared, and `update` takes its lock |
+
+The bugs this rules out are real and common. The official guides of those languages warn about each one:
+
+- A "copy" that isn't one: changing `y` after `y = x` changes `x` too ([Python FAQ](https://docs.python.org/3/faq/programming.html#why-did-changing-list-y-also-change-list-x)).
+- Rows that are one list: `[[None] * 2] * 3` makes three references to one row, so setting one item sets it in every row ([Python FAQ](https://docs.python.org/3/faq/programming.html#how-do-i-create-a-multidimensional-list)).
+- A default value shared by every call: `def f(a, L=[])` keeps adding to the same list, call after call ([Python tutorial](https://docs.python.org/3/tutorial/controlflow.html#default-argument-values)). In Kavach a function can't change a value it was given, so this can't happen.
+- Shallow copies: spread, `slice()` and `Object.assign()` copy the outer object only, so a change to a nested object shows in both ([MDN](https://developer.mozilla.org/en-US/docs/Glossary/Shallow_copy)). React asks programs to treat state as read-only for this reason, because a changed object it isn't told about isn't shown ([react.dev](https://react.dev/learn/updating-objects-in-state)).
+- Data races: two threads change the same value at once. In one case the Go team describes, a buffer shared by mistake silently corrupted data, with no error and no panic ([Go blog](https://go.dev/blog/race-detector)).
+
+**Why Kavach chose values.** A value changes only through the name that holds it, so code can be read one function at a time, by people and by AI tools alike. Tasks on many cores can't race on data they don't share. The cost is small: nothing is copied until something changes (next section). Swift chose the same for its arrays, dictionaries and strings, for the same reasons ([Swift.org](https://www.swift.org/documentation/articles/value-and-reference-types.html)).
+
+**When you want the sharing on purpose,** say so; each case has its own way:
+
+| You want | Write |
+|---|---|
+| two names for one list | `const a = Shared([2, 3])` and `const b = a`: copying a `Shared` copies the handle, not the list. Change it with `b.update(list => list + [4])`; `a.get()` then gives `[2, 3, 4]` (6.2) |
+| a dict entry that follows a variable | put the `Shared` in the dict: `const nums = Shared([2, 4])`, `const d = {"numbers": nums}`; after `nums.update(l => l + [6])`, `d["numbers"]?.get()` gives `[2, 4, 6]` |
+| a function that changes the caller's list | an `inout` parameter (3.9): `fn add(inout xs: [Int]) { xs.push(1) }`, then `add(a)` changes `a` |
+| rows that are one row | a list of the same `Shared`: `const row = Shared([0, 0])`, `const grid = [row, row, row]`; a change through `grid[0]` shows through `grid[2]` |
+| tasks or threads changing one value | a `Shared`, whose `update` takes its lock, so no change is lost (6.2, 9.5) |
+| a changed copy | nothing to write: `let b = a` already is one |
+
+```kavach
+const a = Shared([2, 3])
+const b = a                       // the same list, seen from two names
+b.update(list => list + [4])
+print(a.get())                    // [2, 3, 4]
+```
+
+**Changing what a value holds.** A change goes through the name that holds the whole value, which must be a `let`:
+
+| You write | What happens |
+|---|---|
+| `rows[i].push(x)` | changes the list at index `i` (an index out of range panics) |
+| `order.lines.push(x)` | changes the record's field |
+| `ages[name].push(x)`, `ages[name] += [x]` or `ages[name] = v` | changes or sets the value under that key; a missing key panics for `push` and `+=`, naming it (2.2) |
+| `ages[name].len()` | a compile error: reading a dict gives an optional (`none` when the key is missing, 2.2), so the error says to write `ages[name]?.len()` or `(ages[name] ?? []).len()` |
+| `let copy = ages[name] ?? []`, then `copy.push(x)` | changes only `copy`: the dict keeps its own list |
+
 ### How it stays fast
 
 Copying everything would be slow, so the compiler avoids it:

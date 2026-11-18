@@ -74,6 +74,7 @@ impl<'a> Interp<'a> {
                 let mut v = self.eval(value)?;
                 if let Some(bin) = op.binary() {
                     let current = self.eval(target)?;
+                    self.require_entry(target, &current)?;
                     // `xs += ys` and `s += part`: the variable lets go of its
                     // list or text first, so it grows in place, not in a
                     // copy (spec 2.2, 6.1).

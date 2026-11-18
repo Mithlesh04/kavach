@@ -1,0 +1,13 @@
+// Rule: A dict holds the value it was given: changing the variable it came from afterwards leaves the dict alone, and changing the dict's value leaves the variable alone.
+// Spec: 6.1
+// expect output: [2, 4, 6] {"numbers": [2, 4]}
+// expect output: [2, 4, 6] {"numbers": [2, 4, 8]}
+
+fn main() {
+    let a = [2, 4]
+    let d = {"numbers": a}
+    a.push(6)
+    print(`{a} {d}`)
+    d["numbers"] += [8]
+    print(`{a} {d}`)
+}

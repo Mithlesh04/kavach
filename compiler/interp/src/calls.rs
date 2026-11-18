@@ -373,6 +373,7 @@ impl<'a> Interp<'a> {
                 // changes, so it changes in place too (Sakshi's S6).
                 None => {
                     let v = self.eval(base)?;
+                    self.require_entry(base, &v)?;
                     // No invariant sees the empty place (spec 7.3).
                     self.emptying = true;
                     let emptied = self.assign(base, Value::Unit, span);

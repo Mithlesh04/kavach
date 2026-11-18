@@ -52,6 +52,23 @@ impl Checker<'_> {
             }
             r => r,
         };
+        // `d[k].push(x)`: a changing method on a dict entry changes the
+        // value under the key, as `d[k] += [x]` does (spec 2.2); a missing
+        // key panics. Its receiver is the value, not the optional read.
+        let recv = match (&recv, &base.kind) {
+            (Ty::Optional(inner), ExprKind::Index { base: dict, .. })
+                if changes_in_place(inner, &name.name)
+                    && matches!(
+                        self.type_at(dict.span).map(|t| self.inf.resolve(&t)),
+                        Some(Ty::Map(..))
+                    ) =>
+            {
+                let inner = (**inner).clone();
+                self.expr_types.push((base.span, inner.clone()));
+                inner
+            }
+            _ => recv,
+        };
         if matches!(recv, Ty::Prim(Prim::Bytes)) && name.name == "as_list" {
             return self.bytes_as_list(generics, args, name.span);
         }
@@ -150,18 +167,7 @@ impl Checker<'_> {
             ) {
                 self.note_cap("Net", e.span);
             }
-            let changes = matches!(
-                (&recv, name.name.as_str()),
-                (Ty::List(_), "push" | "pop")
-                    | (Ty::Builtin("Ring", _), "push")
-                    | (
-                        Ty::Builtin("TextBuilder", _),
-                        "push" | "push_char" | "insert" | "replace" | "remove" | "clear"
-                    )
-                    | (Ty::Map(..) | Ty::Set(_), "remove")
-                    | (Ty::Set(_), "add")
-            );
-            if changes {
+            if changes_in_place(&recv, &name.name) {
                 self.require_var(base, &name.name);
                 self.check_captured_change(base);
             }
@@ -257,17 +263,57 @@ impl Checker<'_> {
         }
         if !matches!(recv, Ty::Error | Ty::Var(_)) {
             let shown = self.show(&recv);
+            let hint = self.dict_read_hint(base, &recv, &name.name, args.len());
             self.error(
                 name.span,
                 match kavach_name(&recv, &name.name) {
                     Some(k) => {
                         format!("`{shown}` has no method `{}`: Kavach's is `{k}`", name.name)
                     }
-                    None => format!("`{shown}` has no method `{}`", name.name),
+                    None => match hint {
+                        Some(hint) => format!("`{shown}` has no method `{}`: {hint}", name.name),
+                        None => format!("`{shown}` has no method `{}`", name.name),
+                    },
                 },
             );
         }
         Ty::Error
+    }
+
+    /// `b["numbers"].len()`: a dict read is an optional, `none` when the key
+    /// is missing (spec 2.2); say how to read through it. A changing
+    /// method works on the entry itself (`method_call`).
+    fn dict_read_hint(&mut self, base: &Expr, recv: &Ty, method: &str, n: usize) -> Option<String> {
+        let ExprKind::Index { base: dict, index } = &base.kind else {
+            return None;
+        };
+        let Ty::Optional(inner) = recv else {
+            return None;
+        };
+        let is_dict = matches!(
+            self.type_at(dict.span).map(|t| self.inf.resolve(&t)),
+            Some(Ty::Map(..))
+        );
+        if !is_dict || self.builtin_method(inner, method).is_none() {
+            return None;
+        }
+        let key = match &index.kind {
+            ExprKind::Str(parts) => match &parts[..] {
+                [StrPart::Text(t)] => format!("\"{t}\""),
+                _ => return None,
+            },
+            ExprKind::Int(i) => i.to_string(),
+            ExprKind::Name(id) => id.name.clone(),
+            _ => return None,
+        };
+        let read = match &dict.kind {
+            ExprKind::Name(id) => format!("{}[{key}]", id.name),
+            _ => return None,
+        };
+        let args = if n == 0 { "" } else { "…" };
+        Some(format!(
+            "reading a dict gives an optional, `none` when the key is missing (spec 2.2): write `{read}?.{method}({args})`, or `({read} ?? default).{method}({args})`"
+        ))
     }
 }
 
@@ -392,4 +438,20 @@ impl Checker<'_> {
                 .insert(name, sig);
         }
     }
+}
+
+/// Whether method `name` changes a receiver of type `recv` in place, so
+/// the receiver must be a `let` (spec 2.2).
+fn changes_in_place(recv: &Ty, name: &str) -> bool {
+    matches!(
+        (recv, name),
+        (Ty::List(_), "push" | "pop")
+            | (Ty::Builtin("Ring", _), "push")
+            | (
+                Ty::Builtin("TextBuilder", _),
+                "push" | "push_char" | "insert" | "replace" | "remove" | "clear"
+            )
+            | (Ty::Map(..) | Ty::Set(_), "remove")
+            | (Ty::Set(_), "add")
+    )
 }

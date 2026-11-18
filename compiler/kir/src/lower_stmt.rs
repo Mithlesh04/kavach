@@ -61,11 +61,18 @@ impl<'a> Lowerer<'a> {
                 if let Some(bin) = op.binary() {
                     let mut current = self.expr(target)?;
                     if let Some(Shape::Optional(inner)) = self.shapes.shape(current.ty).cloned() {
-                        // `ages[name] += 1` changes the value under that key.
-                        current = ir::Expr {
-                            kind: ir::ExprKind::Unwrap(Box::new(current)),
-                            ty: inner,
-                            line,
+                        // `ages[name] += 1` changes the value under that key;
+                        // a missing key panics, naming it.
+                        current = match current.kind {
+                            ir::ExprKind::Rt(RtOp::MapGet, _) => self.dict_entry(ir::Expr {
+                                ty: inner,
+                                ..current
+                            }),
+                            _ => ir::Expr {
+                                kind: ir::ExprKind::Unwrap(Box::new(current)),
+                                ty: inner,
+                                line,
+                            },
                         };
                     }
                     let ty = current.ty;

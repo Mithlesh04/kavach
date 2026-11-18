@@ -217,10 +217,16 @@ impl<'a> Lowerer<'a> {
                 match self.shapes.shape(base.ty).cloned() {
                     Some(Shape::List(_)) => K::Index(Box::new(base), Box::new(self.expr(index)?)),
                     Some(Shape::Bytes) => K::Rt(RtOp::BytesAt, vec![base, self.expr(index)?]),
-                    // `map[key]` is an optional (spec 2.2).
+                    // `map[key]` is an optional (spec 2.2), or the value
+                    // a changing method works on (`lower_optional.rs`).
                     Some(Shape::Map(k, _)) => {
                         let key = self.expr(index)?;
-                        K::Rt(RtOp::MapGet, vec![base, self.coerce(key, k)?])
+                        let get = K::Rt(RtOp::MapGet, vec![base, self.coerce(key, k)?]);
+                        return Ok(self.dict_entry(ir::Expr {
+                            kind: get,
+                            ty,
+                            line,
+                        }));
                     }
                     // `j["key"]` and `j[i]` on a `Json` (spec 2.12).
                     Some(Shape::Union { .. }) => self.json_index(base, index, e.span)?,

@@ -1,0 +1,10 @@
+// Rule: To have a dict entry follow a variable, put a `Shared` in the dict: copying a `Shared` copies the handle, so a change through the variable shows through the dict.
+// Spec: 6.1, 6.2
+// expect output: [2, 4, 6]
+
+fn main() {
+    const nums = Shared([2, 4])
+    const d = {"numbers": nums}
+    nums.update(l => l + [6])
+    print(d["numbers"]?.get())
+}

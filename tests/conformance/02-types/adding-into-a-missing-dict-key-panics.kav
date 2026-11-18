@@ -1,0 +1,9 @@
+// Rule: `d[k] += v` with the key missing panics, naming the key, the same in every mode.
+// Spec: 2.2
+// expect panic: the dict has no key `other`
+
+fn main() {
+    let b = {"numbers": [2, 4]}
+    b["other"] += [6]
+    print(b)
+}

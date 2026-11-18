@@ -165,3 +165,27 @@ fn float_bits(x: f64) -> u64 {
         (x + 0.0).to_bits()
     }
 }
+
+impl<'a> crate::interp::Interp<'a> {
+    /// `d[k] += …` and `d[k].push(x)` change the value under a key that
+    /// must be there (spec 2.2): `got`, `place`'s value, is `none` only when
+    /// it isn't, and that panics, naming the key.
+    pub(crate) fn require_entry(
+        &mut self,
+        place: &'a kavach_ast::Expr,
+        got: &Value<'a>,
+    ) -> Result<(), crate::value::Flow<'a>> {
+        let kavach_ast::ExprKind::Index { base, index } = &place.kind else {
+            return Ok(());
+        };
+        let dict = matches!(
+            self.c.expr_types.get(&(base.span.start, base.span.end)),
+            Some(kavach_checker::Ty::Map(..))
+        );
+        if !dict || !matches!(got, Value::None) {
+            return Ok(());
+        }
+        let key = self.eval(index)?.display();
+        Err(self.panic(format!("the dict has no key `{key}`"), place.span))
+    }
+}

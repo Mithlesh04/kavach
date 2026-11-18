@@ -1,0 +1,8 @@
+// Rule: Reading a dict entry gives an optional, `none` when the key is missing, so a method that only reads (`len`) is a compile error that says to write `d[k]?.len()` or `(d[k] ?? default).len()`.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    let b = {"numbers": [2, 4]}
+    print(b["numbers"].len())       // error: write `b["numbers"]?.len()`
+}
