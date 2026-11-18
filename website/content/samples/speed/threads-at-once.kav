@@ -1,0 +1,17 @@
+use std.time
+
+/// Stands in for a slow call over the network.
+fn fetch(page: Int, ms: Int) -> Int {
+    time.sleep_ms(ms)
+    print(`page {page} came back`)
+    page * 10
+}
+
+fn main() {
+    const waits = [300, 100, 200]
+    let sizes = [0, 0, 0]
+    on threads(3) for i in 0..3 {
+        sizes[i] = fetch(i, waits[i])
+    }
+    print(sizes)
+}

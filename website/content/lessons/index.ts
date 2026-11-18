@@ -28,6 +28,7 @@ import { bridgeDoc, cppDoc, goDoc, javascriptDoc, pythonDoc, rustDoc } from "./s
 import { buildDoc, whoDoc } from "./start-who";
 import { whyDoc } from "./start-why";
 import { arenasDoc, automaticDoc, fastDoc, sharedDoc, unsafeDoc, valuesDoc } from "./memory";
+import { fromJsPythonDoc } from "./memory-from";
 import { freedDoc } from "./memory-freed";
 import { errorKindsDoc } from "./errors-kinds";
 import { monitorDoc } from "./agents-monitor";
@@ -324,6 +325,7 @@ export const lessons: Record<string, LessonDoc> = {
   "errors/testing/fakes": fakesDoc,
 
   "memory/values-not-references": valuesDoc,
+  "memory/values-not-references/coming-from-javascript-and-python": fromJsPythonDoc,
   "memory/automatic-memory": automaticDoc,
   "memory/automatic-memory/how-it-stays-fast": fastDoc,
   "memory/automatic-memory/freed-immediately": freedDoc,

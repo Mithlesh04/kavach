@@ -1,0 +1,6 @@
+fn main() {
+    const row = [0, 0]
+    let grid = [row, row, row]
+    grid[0][0] = 5
+    print(grid)
+}

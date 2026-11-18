@@ -5,10 +5,7 @@ fn main() {
     }
     print(groups["fruit"] ?? [])          // a dict gives an optional
 
-    // To change an inner list: take it out, change it, put it back.
-    let fruit = groups["fruit"] ?? []
-    fruit.push("mango")
-    groups["fruit"] = fruit
+    groups["fruit"].push("mango")          // changes the list in the dict
 
     groups["nuts"] = ["almond", "cashew"]  // a new key with a new list
     for (name, items) in groups {

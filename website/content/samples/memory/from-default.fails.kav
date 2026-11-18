@@ -1,0 +1,8 @@
+fn add(item: Int, into: [Int] = []) -> [Int] {
+    into.push(item)
+    into
+}
+
+fn main() {
+    print(add(1))
+}

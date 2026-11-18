@@ -27,6 +27,7 @@ export const aliases: Record<string, string> = {
   "errors/kinds-of-errors": "error types kinds of errors compile error warning runtime error exception panic crash bug parse error file not found network error",
   "errors/panics": "panic crash abort fatal error division by zero index out of range overflow exit code panic in a task unwinding thread panic",
   "memory/values-not-references": "value semantics copy reference aliasing mutable shared pointer",
+  "memory/values-not-references/coming-from-javascript-and-python": "javascript python java c# reference b = a same object alias shallow copy spread deep copy default argument mutable default list of lists react state",
   "memory/automatic-memory": "memory management garbage collector gc reference counting arc rc ownership borrow copy on write malloc free",
   "memory/automatic-memory/freed-immediately": "delete del free a variable null undefined dispose destructor drop raii release memory early unset",
   "memory/shared-state": "weak reference weak pointer cycle leak memory leak reference cycle back link parent pointer KAVACH_CHECK_LEAKS shared mutable state mutex lock arc rc",

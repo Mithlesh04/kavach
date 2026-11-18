@@ -1,0 +1,7 @@
+fn main() {
+    let groups = {"small": [1, 2]}
+    groups["small"].push(3)
+    print(groups)
+    print(groups["small"]?.len())
+    print((groups["large"] ?? []).len())
+}

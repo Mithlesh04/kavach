@@ -1,0 +1,6 @@
+fn main() {
+    const row = Shared([0, 0])
+    const grid = [row, row, row]
+    grid[0].update(r => [5, r[1]])
+    print(grid[2].get())
+}

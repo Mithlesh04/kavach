@@ -37,7 +37,8 @@ export const valuesDoc: LessonDoc = {
       <Ex name="memory/values-fn" />
       <Note>
         In Python, Java or JavaScript, <C>b = a</C> makes two names for one list, and a change through one shows up
-        in the other. That &quot;who else changed my list?&quot; bug can&apos;t happen here.
+        in the other. That &quot;who else changed my list?&quot; bug can&apos;t happen here. Each case, side by side:{" "}
+        <Link href="/docs/memory/values-not-references/coming-from-javascript-and-python/">coming from JavaScript and Python</Link>.
       </Note>
       <H2>Four levels of control</H2>
       <div className="overflow-x-auto">

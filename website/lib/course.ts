@@ -104,7 +104,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Testing", "11", ["Tests from types", "Your own values", "test blocks", "Fakes"]],
   ]],
   ["memory", "Memory", "advanced", [
-    ["Values, Not References", "6.1"],
+    ["Values, Not References", "6.1", ["Coming from JavaScript and Python"]],
     ["Automatic Memory", "6.1", ["How it stays fast", "Freed immediately"]],
     ["Shared State", "6.2"],
     ["Arenas", "6.3"],

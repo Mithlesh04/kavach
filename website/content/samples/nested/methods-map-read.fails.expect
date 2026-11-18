@@ -1,1 +1,1 @@
-error: `[Int]?` has no method `len`
+error: `[Int]?` has no method `len`: reading a dict gives an optional, `none` when the key is missing (spec 2.2): write `b["numbers"]?.len()`, or `(b["numbers"] ?? default).len()`

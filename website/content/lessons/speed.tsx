@@ -153,8 +153,32 @@ export const coresDoc: LessonDoc = {
         <li>A round may write only its own slot, indexed by the loop&apos;s name: <C>grid[row]</C>, not <C>grid[row * w + col]</C>.</li>
         <li><C>while</C> can&apos;t take <C>on</C>: each round depends on the one before.</li>
         <li><C>on</C>, <C>cores</C> and <C>threads</C> are ordinary names everywhere else.</li>
-        <li><C>on threads(n) for …</C> is accepted, for rounds that mostly wait, but its rounds still run one after another today.</li>
       </ul>
+      <H2>Rounds that wait: on threads</H2>
+      <P>
+        <C>on cores</C> is for rounds that compute. For rounds that mostly wait, on the network, a disk or a timer,
+        write <C>on threads(n)</C>. Its rounds run at the same time, at most <C>n</C> at once, and may do I/O and print:
+      </P>
+      <Ex name="speed/threads-at-once" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The three waits overlap, so the loop takes about as long as the longest, not their sum.</li>
+        <li>What rounds print comes in the order of their turns: the round that waits least prints first.</li>
+        <li>
+          The result is still the one-core result. Each round gets copies of what it reads, and its slot writes and
+          whole-number sums are applied in round order, so <C>sizes</C> is <C>[0, 10, 20]</C> on every run.
+        </li>
+        <li>
+          Each round is a task of its own, as <C>spawn thread</C> makes it. Before round <C>i</C> starts, round{" "}
+          <C>i - n</C> is waited for, as <C>parallel_map</C> does, so <C>threads(1)</C> runs one round at a time.
+        </li>
+        <li>A loop whose body can leave early (<C>break</C>, <C>return</C>, <C>fail</C>, <C>?</C>) runs its rounds one after another, so the first round in order that leaves decides.</li>
+        <li><C>threads(n)</C> may be more than the cores, as its rounds mostly wait, up to <C>[run] threads</C> (256 by default) in all.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/04-control-flow/on-threads-rounds-run-at-once.kav" label="at once, tested" />
+        <SrcRef file="tests/conformance/04-control-flow/on-threads-runs-at-most-n-rounds.kav" label="at most n, tested" />
+        <SrcRef file="tests/conformance/04-control-flow/on-threads-leaving-early-runs-in-order.kav" label="leaving early, tested" />
+      </div>
     </>
   ),
   deeper: (

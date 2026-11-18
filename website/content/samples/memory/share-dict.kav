@@ -1,0 +1,6 @@
+fn main() {
+    const nums = Shared([2, 4])
+    const d = {"numbers": nums}
+    nums.update(list => list + [6])
+    print(d["numbers"]?.get())
+}

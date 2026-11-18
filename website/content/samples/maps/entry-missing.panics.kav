@@ -1,0 +1,5 @@
+fn main() {
+    let groups = {"small": [1, 2]}
+    groups["large"].push(9)
+    print(groups)
+}

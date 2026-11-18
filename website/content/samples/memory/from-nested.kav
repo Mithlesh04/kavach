@@ -1,0 +1,11 @@
+type Order {
+    lines: [String]
+}
+
+fn main() {
+    const order = Order(lines: ["pen"])
+    let copy = order
+    copy.lines.push("ink")
+    print(order.lines)
+    print(copy.lines)
+}

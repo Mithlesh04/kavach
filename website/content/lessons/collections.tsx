@@ -269,15 +269,52 @@ export const makeMapDoc: LessonDoc = {
 export const readMapDoc: LessonDoc = {
   lead: "dict[key] gives an optional: the value, or none when the key isn't there.",
   simple: <>Like asking at a cloakroom for a coat by its ticket number: you may get the coat, or be told there is none for that ticket. So you also say what to use when nothing is there.</>,
-  minutes: 2,
-  body: <Ex name="maps/sub-read" />,
+  minutes: 3,
+  body: (
+    <>
+      <Ex name="maps/sub-read" />
+      <P>
+        Because a read is an optional, a method that only reads, such as <C>len</C>, can&apos;t be called on it
+        straight away. The error says what to write instead:
+      </P>
+      <Ex name="maps/entry-len.fails" />
+      <P>
+        <C>groups[&quot;small&quot;]?.len()</C> gives the length, or <C>none</C> when the key is missing;{" "}
+        <C>(groups[&quot;small&quot;] ?? []).len()</C> counts a missing key as an empty list.
+      </P>
+      <SrcRef file="tests/conformance/02-types/reading-a-dict-entry-gives-an-optional.kav" label="tested" />
+    </>
+  ),
 };
 
 export const changeMapDoc: LessonDoc = {
   lead: "dict[key] = value adds a key or changes its value; remove(key) takes it out.",
   simple: <>Like a notice board with name tags: pin a note under a new name, swap the note under a name that is already there, or take a name and its note down.</>,
-  minutes: 2,
-  body: <Ex name="maps/sub-change" />,
+  minutes: 3,
+  body: (
+    <>
+      <Ex name="maps/sub-change" />
+      <H2>Changing the value under a key</H2>
+      <P>
+        When the value is a list or a set, <C>push</C>, <C>pop</C>, <C>add</C> and <C>remove</C> change it where it
+        is, inside the dict. <C>groups[&quot;small&quot;].push(3)</C> means the same as{" "}
+        <C>groups[&quot;small&quot;] += [3]</C>:
+      </P>
+      <Ex name="maps/entry-push" />
+      <P>A key that isn&apos;t there stops the program and names the key, as an index past the end of a list does:</P>
+      <Ex name="maps/entry-missing.panics" />
+      <P>
+        The dict holds its own copy. Changing the list inside it leaves the variable it came from alone (see{" "}
+        <Link href="/docs/memory/values-not-references/coming-from-javascript-and-python/">coming from JavaScript and Python</Link>).
+      </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/02-types/02-collections.md" label="spec 2.2 · changing methods" />
+        <SrcRef file="tests/conformance/02-types/a-changing-method-on-a-dict-entry-changes-it.kav" label="changes it, tested" />
+        <SrcRef file="tests/conformance/02-types/a-changing-method-on-a-missing-dict-key-panics.kav" label="missing key, tested" />
+        <SrcRef file="tests/conformance/02-types/adding-into-a-missing-dict-key-panics.kav" label="+= on a missing key, tested" />
+      </div>
+    </>
+  ),
 };
 
 export const walkMapDoc: LessonDoc = {

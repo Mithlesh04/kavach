@@ -1,0 +1,4 @@
+fn main() {
+    const groups = {"small": [1, 2]}
+    print(groups["small"].len())
+}

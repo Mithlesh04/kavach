@@ -28,7 +28,7 @@ const shapes: [string, string, string][] = [
 // .expect, so the table can't say what the compiler doesn't do.
 const changeCases: [sample: string, setup: string, step: string][] = [
   ["nested/change-const-map.fails", "let a = [2, 4]; const b = {\"numbers\": a}", "b[\"numbers\"].push(6)"],
-  ["nested/inner-push.fails", "a let dict of lists", "groups[\"fruit\"].push(\"mango\")"],
+  ["nested/inner-push", "a let dict of lists", "groups[\"fruit\"].push(\"mango\")"],
   ["nested/change-let-put-back", "let b = {\"numbers\": a}", "take out, push, put back"],
   ["nested/change-one-line", "let b = {\"numbers\": [2, 4]}", "b[\"numbers\"] = (b[\"numbers\"] ?? []) + [6]"],
   ["nested/change-const-put-back.fails", "const b = {\"numbers\": a}", "take out, push, put back"],
@@ -141,12 +141,15 @@ export const nestedDoc: LessonDoc = {
       </div>
       <H2>Dicts of lists</H2>
       <P>
-        A dict gives an <Link href="/docs/types/optionals/">optional</Link>, as the key may be missing, so{" "}
-        <C>?? []</C> gives an empty list then. To change an inner list, take it out, change it and put it back:
+        Reading a dict gives an <Link href="/docs/types/optionals/">optional</Link>, as the key may be missing, so{" "}
+        <C>?? []</C> gives an empty list then. To change an inner list, call <C>push</C> on it where it is:
       </P>
       <Ex name="nested/map-of-lists" />
-      <P>Calling <C>push</C> straight on the lookup is refused, as it may be <C>none</C>:</P>
-      <Ex name="nested/inner-push.fails" />
+      <P>
+        <C>groups[&quot;fruit&quot;].push(&quot;mango&quot;)</C> means <C>groups[&quot;fruit&quot;] += [&quot;mango&quot;]</C>.
+        A key that isn&apos;t there stops the program and names the key, as an index past the end of a list does
+        (<Link href="/docs/collections/dicts/adding-and-changing/#changing-the-value-under-a-key">changing the value under a key</Link>).
+      </P>
       <H2>Lists of maps</H2>
       <Ex name="nested/list-of-maps" />
       <Note>
@@ -221,15 +224,12 @@ export const nestedDoc: LessonDoc = {
       <H2>Changing what&apos;s inside: let and const</H2>
       <P>
         Can a list inside a dict be changed? It depends on two things: whether the outer value is a <C>let</C>, and
-        whether reaching the inner value gives an <Link href="/docs/types/optionals/">optional</Link>. This is
-        refused twice over:
+        whether reaching the inner value gives an <Link href="/docs/types/optionals/">optional</Link>.{" "}
+        <C>b[&quot;numbers&quot;].push(6)</C> changes the list in the dict, so <C>b</C> must be a <C>let</C>. A{" "}
+        <C>const</C> never changes, however deep:
       </P>
       <Ex name="nested/change-const-map.fails" />
-      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li><C>b[&quot;numbers&quot;]</C> is a <C>[Int]?</C>, as the key may be missing, and <C>none</C> has no <C>push</C>. The compiler says this first.</li>
-        <li><C>b</C> is a <C>const</C>, so nothing inside it can change at all, however deep.</li>
-      </ul>
-      <P>With a <C>let</C>, take the list out, change it and put it back. Or do it in one line, with <C>+</C>:</P>
+      <P>The list can also be taken out, changed and put back, or changed in one line with <C>+</C>:</P>
       <Ex name="nested/change-let-put-back" />
       <P>
         A value read from one dict can&apos;t go straight into another: the read is an optional, and a dict&apos;s slot
@@ -240,7 +240,7 @@ export const nestedDoc: LessonDoc = {
       <ChangeTable />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>A <C>const</C> never changes, at any depth. To change one, copy it into a <C>let</C>: the copy changes, and the original stays as it was.</li>
-        <li>In a <C>let</C>, a list&apos;s item (<C>b[0]</C>) and a record&apos;s field (<C>b.numbers</C>) change in place. A dict&apos;s value is an optional: take it out and put it back.</li>
+        <li>In a <C>let</C>, a list&apos;s item (<C>b[0]</C>) and a record&apos;s field (<C>b.numbers</C>) change in place. A dict&apos;s value changes in place too, with <C>push</C>, <C>pop</C>, <C>add</C>, <C>remove</C> or <C>+=</C>; a missing key stops the program. Reading it gives an optional.</li>
         <li>Putting <C>a</C> into <C>b</C> puts in a copy. Changing <C>a</C> later leaves <C>b</C> as it was, and changing <C>b</C> leaves <C>a</C>.</li>
         <li>A name from <C>if let</C> is a <C>const</C>. To change what it holds, copy it into a <C>let</C>, change that, and put it back.</li>
       </ul>
@@ -276,7 +276,8 @@ export const nestedDoc: LessonDoc = {
       <P>On a <C>const</C>, the compiler refuses each of these lines, one error for each. The first:</P>
       <Ex name="nested/methods-const.fails" />
       <P>
-        Reading through a dict&apos;s lookup needs <C>??</C> first, as changing does: the value may be missing.
+        Reading through a dict&apos;s lookup needs <C>?.</C> or <C>??</C> first, as the value may be missing. The
+        error says so:
       </P>
       <Ex name="nested/methods-map-read.fails" />
       <P>
