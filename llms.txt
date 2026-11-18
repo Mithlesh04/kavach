@@ -56,7 +56,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Variables: const](https://kavachlang.com/docs/basics/variables/const/): const names a value that never changes after it is made.
 - [Variables: let](https://kavachlang.com/docs/basics/variables/let/): let names a variable: a value that can change later.
 - [Variables: Changing a value](https://kavachlang.com/docs/basics/variables/changing-a-value/): Give a let a new value with =, or change it in place with +=, -=, *= and the others.
-- [Variables: Destructuring](https://kavachlang.com/docs/basics/variables/destructuring/): Take a list, a record or a map apart into several names in one line.
+- [Variables: Destructuring](https://kavachlang.com/docs/basics/variables/destructuring/): Take a list, a record or a dict apart into several names in one line.
 - [Variables: Module constants](https://kavachlang.com/docs/basics/variables/module-constants/): A const at the top level of a file, outside any function, is a module constant: every function in the file can read it.
 - [User Input](https://kavachlang.com/docs/basics/user-input/): term.prompt(question) prints a question and gives back the line the user types.
 - [User Input: Ask for text](https://kavachlang.com/docs/basics/user-input/ask-for-text/): term.prompt gives the line typed, as text, or none when the input has ended.
@@ -77,9 +77,9 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Operators: Comparison](https://kavachlang.com/docs/basics/operators/comparison/): == != < <= > >= compare two values and give a Bool. They chain, and == compares contents.
 - [Operators: Logical](https://kavachlang.com/docs/basics/operators/logical/): and is true when both sides are; or when either is; not turns true to false.
 - [Operators: Precedence](https://kavachlang.com/docs/basics/operators/precedence/): * and / come before + and -, as in school. When in doubt, use parentheses.
-- [Strings](https://kavachlang.com/docs/basics/strings/): A String is text: letters, digits, spaces, any script. Write it in double quotes.
-- [Strings: Making strings](https://kavachlang.com/docs/basics/strings/making-strings/): Plain strings, multi-line strings in triple quotes, and raw strings that take every character as written.
-- [Strings: Interpolation](https://kavachlang.com/docs/basics/strings/interpolation/): Write any expression in braces inside a string, and its value is put in its place.
+- [Strings](https://kavachlang.com/docs/basics/strings/): A String is text: letters, digits, spaces, any script. Write it in double quotes, or in backticks to fill in values.
+- [Strings: Making strings](https://kavachlang.com/docs/basics/strings/making-strings/): Text in quotes is exactly what is written. Triple quotes hold several lines, or quotes inside. Backticks make a template.
+- [Strings: Interpolation](https://kavachlang.com/docs/basics/strings/interpolation/): Write text in backticks, a template, and any expression in braces inside it is put in its place.
 - [Strings: Joining](https://kavachlang.com/docs/basics/strings/joining/): + joins two strings; join() puts a list of strings together; repeat() repeats one.
 - [Strings: Length and characters](https://kavachlang.com/docs/basics/strings/length-and-characters/): len() counts the characters of a string; slice() and chars() take it apart.
 - [Strings: Searching](https://kavachlang.com/docs/basics/strings/searching/): contains, starts_with and ends_with answer yes or no; index_of says where; replace swaps parts.
@@ -101,10 +101,10 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Match: Matching values](https://kavachlang.com/docs/basics/match/matching-values/): Match exact values: numbers, text, true and false.
 - [Match: Patterns](https://kavachlang.com/docs/basics/match/patterns/): Patterns can be ranges, tuples, union variants, none, or _ for anything.
 - [Match: Guards](https://kavachlang.com/docs/basics/match/guards/): A guard, pattern if condition, adds a check to a pattern.
-- [For Loop](https://kavachlang.com/docs/basics/for-loop/): A for loop runs a block of code once for each item: each item of a list, each number of a range, each entry of a map.
+- [For Loop](https://kavachlang.com/docs/basics/for-loop/): A for loop runs a block of code once for each item: each item of a list, each number of a range, each entry of a dict.
 - [For Loop: Over a list](https://kavachlang.com/docs/basics/for-loop/over-a-list/): Loop over a list: the block runs once per item, in order, and the name you choose holds the item.
 - [For Loop: Over a range](https://kavachlang.com/docs/basics/for-loop/over-a-range/): Loop over a range of numbers: .. leaves the end out, ..= puts it in.
-- [For Loop: Over a map](https://kavachlang.com/docs/basics/for-loop/over-a-map/): Loop over a map: each round gives a key and its value together.
+- [For Loop: Over a map](https://kavachlang.com/docs/basics/for-loop/over-a-map/): Loop over a dict: each round gives a key and its value together.
 - [For Loop: With an index](https://kavachlang.com/docs/basics/for-loop/with-an-index/): When you need each item's position too, loop over list.enumerate().
 - [For Loop: Repeat n times](https://kavachlang.com/docs/basics/for-loop/repeat-n-times/): To repeat a block a number of times without using the number, name it _.
 - [While Loop](https://kavachlang.com/docs/basics/while-loop/): A while loop repeats a block as long as its condition is true.
@@ -141,18 +141,18 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Lists: Adding and removing](https://kavachlang.com/docs/collections/lists/adding-and-removing/): push adds an item to the end and pop takes the last one off; + joins two lists; filter keeps only the items you want.
 - [Lists: Sorting](https://kavachlang.com/docs/collections/lists/sorting/): sort() gives a sorted copy; sort_by sorts by a key; reverse() turns a list around.
 - [Lists: map, filter, sum](https://kavachlang.com/docs/collections/lists/map-filter-sum/): map changes every item, filter keeps some, sum adds them up, and count, any, all and find ask questions.
-- [Maps](https://kavachlang.com/docs/collections/maps/): A map stores values under keys: ["asha": 31] keeps 31 under the key "asha".
-- [Maps: Making a map](https://kavachlang.com/docs/collections/maps/making-a-map/): Write key: value pairs in square brackets, or start empty with [:] and a type.
-- [Maps: Reading a value](https://kavachlang.com/docs/collections/maps/reading-a-value/): map[key] gives an optional: the value, or none when the key isn't there.
-- [Maps: Adding and changing](https://kavachlang.com/docs/collections/maps/adding-and-changing/): map[key] = value adds a key or changes its value; remove(key) takes it out.
-- [Maps: Looping over a map](https://kavachlang.com/docs/collections/maps/looping-over-a-map/): Loop over (key, value) pairs, or over keys() or values() alone.
+- [Dicts](https://kavachlang.com/docs/collections/dicts/): A dict stores values under keys: {"asha": 31} keeps 31 under the key "asha".
+- [Dicts: Making a dict](https://kavachlang.com/docs/collections/dicts/making-a-dict/): Write key: value pairs in braces, or start empty with {:} and a type.
+- [Dicts: Reading a value](https://kavachlang.com/docs/collections/dicts/reading-a-value/): dict[key] gives an optional: the value, or none when the key isn't there.
+- [Dicts: Adding and changing](https://kavachlang.com/docs/collections/dicts/adding-and-changing/): dict[key] = value adds a key or changes its value; remove(key) takes it out.
+- [Dicts: Looping over a dict](https://kavachlang.com/docs/collections/dicts/looping-over-a-dict/): Loop over (key, value) pairs, or over keys() or values() alone.
 - [Sets](https://kavachlang.com/docs/collections/sets/): A set holds each value once. Adding a value it already has changes nothing.
 - [Sets: Making a set](https://kavachlang.com/docs/collections/sets/making-a-set/): Set.of(…) makes a set; add and remove change it, so it must be a let.
 - [Sets: Adding and checking](https://kavachlang.com/docs/collections/sets/adding-and-checking/): contains asks whether a value is in the set; a loop visits the values in insertion order.
-- [Collections with a Limit](https://kavachlang.com/docs/collections/collections-with-a-limit/): List.capacity(n), Map.capacity(n) and Set.capacity(n) make a collection that holds at most n entries. Room for all n is made at once, and adding to a full one is a panic.
+- [Collections with a Limit](https://kavachlang.com/docs/collections/collections-with-a-limit/): List.capacity(n), Dict.capacity(n) and Set.capacity(n) make a collection that holds at most n entries. Room for all n is made at once, and adding to a full one is a panic.
 - [Rings](https://kavachlang.com/docs/collections/rings/): A Ring<T> keeps the last n items pushed. When it is full, push drops the oldest item to make room.
 - [Tuples](https://kavachlang.com/docs/collections/tuples/): A tuple groups a few values, of any types, in brackets: (200, "OK").
-- [Nested and Mixed Collections](https://kavachlang.com/docs/collections/nested-and-mixed-collections/): Collections can hold collections: lists of lists, maps of lists, lists of maps, sets and tuples inside any of them, at any depth. Items of different types go in one collection through a union, or as Json.
+- [Nested and Mixed Collections](https://kavachlang.com/docs/collections/nested-and-mixed-collections/): Collections can hold collections: lists of lists, dicts of lists, lists of dicts, sets and tuples inside any of them, at any depth. Items of different types go in one collection through a union, or as Json.
 - [Sorting](https://kavachlang.com/docs/collections/sorting/): list.sort() gives a sorted copy of a list of numbers, text, characters, Bools or tuples. sort_by(key) sorts anything else, by a key you choose.
 - [Sorting: Numbers](https://kavachlang.com/docs/collections/sorting/numbers/): Numbers sort smallest first, exactly: NaN goes last, and Decimal and BigInt sort by their full value.
 - [Sorting: Text](https://kavachlang.com/docs/collections/sorting/text/): Text sorts by Unicode code point, character by character: the same on every machine, whatever its language settings.
@@ -167,7 +167,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Records: Updating with with](https://kavachlang.com/docs/types/records/updating-with-with/): record with { field: value } makes a copy with some fields changed.
 - [Methods](https://kavachlang.com/docs/types/methods/): A method is a function that belongs to a type, written inside it. self is the value it is called on.
 - [Method Chains](https://kavachlang.com/docs/types/method-chains/): Call one method on the result of the last: text.trim().lower(). Each step gives a new value for the next.
-- [Extend](https://kavachlang.com/docs/types/extend/): extend adds methods to a type you didn't write: a built-in type, a list or map, a union, or a type from another module.
+- [Extend](https://kavachlang.com/docs/types/extend/): extend adds methods to a type you didn't write: a built-in type, a list or dict, a union, or a type from another module.
 - [Unions](https://kavachlang.com/docs/types/unions/): A union is a value that is exactly one of several cases: a Shape is a Circle or a Rect.
 - [Unions: Declaring](https://kavachlang.com/docs/types/unions/declaring/): type Name = A | B(field: Type) | … declares a union.
 - [Unions: Matching a union](https://kavachlang.com/docs/types/unions/matching-a-union/): match on a union takes each variant apart, and the compiler checks that none is forgotten.
@@ -341,7 +341,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 
 - [Modules](https://kavachlang.com/docs/tools/modules/): One file is one module, a folder groups modules, and nothing leaves a module unless it is marked pub.
 - [Modules: use](https://kavachlang.com/docs/tools/modules/use/): use brings in a module, the standard library or a dependency; use a.b.{X, y} brings names in directly.
-- [Modules: pub](https://kavachlang.com/docs/tools/modules/pub/): pub makes a type, a function or a field visible to other modules. Without it, only the module itself sees it.
+- [Modules: pub](https://kavachlang.com/docs/tools/modules/pub/): pub makes a type, a function or a field visible to the package's other modules, and pub(out) to other packages too. Without either, only the module itself sees it.
 - [Packages](https://kavachlang.com/docs/tools/packages/): A package is a library another project uses: name it in [dependencies], from a folder or a git repository, and use it like any module.
 - [Workspaces](https://kavachlang.com/docs/tools/workspaces/): A workspace is several packages in one repository, checked, tested and built together, with one lock for all of them.
 - [Tagged Literals](https://kavachlang.com/docs/tools/tagged-literals/): A package can give text a meaning the compiler checks: sql"…" is a Query, and a misspelled keyword in it is a compile error, not a failure in production.
@@ -369,8 +369,8 @@ version's git tag; benchmarks carry one command to reproduce them.
 
 ## Part 12: Speed
 
-- [How Kavach Is Fast](https://kavachlang.com/docs/speed/how-kavach-is-fast/): Kavach is fast because it does less work: no interpreter, no garbage collector, no copies it can avoid, and every core when a loop allows it.
-- [Loops on All Cores](https://kavachlang.com/docs/speed/loops-on-all-cores/): You write the plain loop. The compiler proves it can be split, the runtime runs it on every core, and the answer is the one-core answer, exactly.
+- [How Kavach Is Fast](https://kavachlang.com/docs/speed/how-kavach-is-fast/): Kavach is fast because it does less work: no interpreter, no garbage collector, no copies it can avoid, and every core when you ask for it.
+- [Loops on All Cores](https://kavachlang.com/docs/speed/loops-on-all-cores/): Every loop runs on one core, in order, unless you write on cores before it. Then its rounds run on all the program's cores, and the compiler checks that the answer is the one-core answer, exactly.
 - [Byte-packed Lists](https://kavachlang.com/docs/speed/byte-packed-lists/): A list of bytes stores bytes: [UInt8], [Int8] and [Bool] take one byte per item, so binary work runs at cache speed.
 - [Fast Sorting](https://kavachlang.com/docs/speed/fast-sorting/): Long lists of whole numbers sort with a radix sort, a few passes by digit instead of comparing pairs, with buckets on every core.
 - [As Data Grows](https://kavachlang.com/docs/speed/as-data-grows/): Speed at one size can mislead. The same reads and sorts at four sizes, from data that fits in the fastest cache to data that only fits in memory.
@@ -404,9 +404,24 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Operators](https://kavachlang.com/docs/reference/operators/): Every operator, by group, as the spec lists them.
 - [Literals](https://kavachlang.com/docs/reference/literals/): How each kind of value is written in code: numbers, text, characters and the rest.
 - [Built-in Types](https://kavachlang.com/docs/reference/built-in-types/): Every type a program can use without use: numbers, text, collections, errors, tasks and channels, shared state, and the interfaces the language relies on. Each with what it is and where it is defined.
-- [Built-in Methods](https://kavachlang.com/docs/reference/built-in-methods/): The methods of numbers, text, lists, sets and maps, which every program has without a use.
+- [Built-in Methods](https://kavachlang.com/docs/reference/built-in-methods/): The methods of numbers, text, lists, sets and dicts, which every program has without a use.
 - [Commands](https://kavachlang.com/docs/reference/commands/): Every kavach command the spec describes, with what it does.
 - [Compiler Messages](https://kavachlang.com/docs/reference/compiler-messages/): The compiler's errors and warnings, and the panics of a running program, as the samples on this site show them: each with the page that explains it.
+- [What Is Tested](https://kavachlang.com/docs/reference/what-is-tested/): Every rule the conformance tests check, by spec chapter: what works, and what wrong use is refused.
+- [What Is Tested: Basics](https://kavachlang.com/docs/reference/what-is-tested/basics/): The conformance tests of spec chapter 1, Basics, by section.
+- [What Is Tested: Types](https://kavachlang.com/docs/reference/what-is-tested/types/): The conformance tests of spec chapter 2, Types, by section.
+- [What Is Tested: Functions](https://kavachlang.com/docs/reference/what-is-tested/functions/): The conformance tests of spec chapter 3, Functions, by section.
+- [What Is Tested: Control Flow](https://kavachlang.com/docs/reference/what-is-tested/control-flow/): The conformance tests of spec chapter 4, Control Flow, by section.
+- [What Is Tested: Errors](https://kavachlang.com/docs/reference/what-is-tested/errors/): The conformance tests of spec chapter 5, Errors, by section.
+- [What Is Tested: Memory](https://kavachlang.com/docs/reference/what-is-tested/memory/): The conformance tests of spec chapter 6, Memory, by section.
+- [What Is Tested: Contracts](https://kavachlang.com/docs/reference/what-is-tested/contracts/): The conformance tests of spec chapter 7, Contracts, by section.
+- [What Is Tested: Capabilities and Agents](https://kavachlang.com/docs/reference/what-is-tested/capabilities-and-agents/): The conformance tests of spec chapter 8, Capabilities and Agents, by section.
+- [What Is Tested: Concurrency](https://kavachlang.com/docs/reference/what-is-tested/concurrency/): The conformance tests of spec chapter 9, Concurrency, by section.
+- [What Is Tested: Modules and Packages](https://kavachlang.com/docs/reference/what-is-tested/modules-and-packages/): The conformance tests of spec chapter 10, Modules and Packages, by section.
+- [What Is Tested: Testing](https://kavachlang.com/docs/reference/what-is-tested/testing/): The conformance tests of spec chapter 11, Testing, by section.
+- [What Is Tested: Maintainability at Scale](https://kavachlang.com/docs/reference/what-is-tested/maintainability-at-scale/): The conformance tests of spec chapter 12, Maintainability at Scale, by section.
+- [What Is Tested: Standard Library](https://kavachlang.com/docs/reference/what-is-tested/standard-library/): The conformance tests of spec chapter 14, Standard Library, by section.
+- [What Is Tested: GPU](https://kavachlang.com/docs/reference/what-is-tested/gpu/): The conformance tests of spec chapter 15, GPU, by section.
 
 ## Part 15: Standard Library Reference
 
