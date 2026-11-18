@@ -128,6 +128,7 @@ export const coresDoc: LessonDoc = {
       <Ex name="speed/cores-count" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>The program&apos;s cap is all the machine&apos;s cores, or fewer: <C>cores = 4</C> under <C>[run]</C> in <C>kavach.toml</C>, or <C>KAVACH_CORES=4</C> when it starts, which wins when both are set. <C>KAVACH_CORES=1</C> keeps every loop on one core.</li>
+        <li>Asking for more cores than the machine has uses all it has. With <C>KAVACH_PAR_LOG</C> set, the program says so when it starts, for example <C>kavach: 11 cores asked for, and this machine has 10: using 10</C>.</li>
         <li>A container or CPU limit counts: under <C>docker --cpus=2</C>, the cap is 2.</li>
         <li><C>system.cores()</C> reports the cap, so a program that sizes its work by it follows the cap too.</li>
       </ul>
@@ -172,9 +173,16 @@ export const coresDoc: LessonDoc = {
           <C>i - n</C> is waited for, as <C>parallel_map</C> does, so <C>threads(1)</C> runs one round at a time.
         </li>
         <li>A loop whose body can leave early (<C>break</C>, <C>return</C>, <C>fail</C>, <C>?</C>) runs its rounds one after another, so the first round in order that leaves decides.</li>
-        <li><C>threads(n)</C> may be more than the cores, as its rounds mostly wait, up to <C>[run] threads</C> (256 by default) in all.</li>
+        <li><C>threads(n)</C> may be more than the cores, as its rounds mostly wait.</li>
+        <li>
+          The whole program runs at most <C>[run] threads</C> rounds at once (256 by default), across all its{" "}
+          <C>on threads</C> loops. At the cap, a loop waits for its own oldest round before starting another. A loop
+          with no round running still starts one, so nested loops can&apos;t wait for each other forever. With{" "}
+          <C>threads = 1</C>, each round ends before the next begins, whatever <C>threads(n)</C> asks.
+        </li>
       </ul>
       <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/04-control-flow/run-threads-caps-on-threads-rounds/src/main.kav" label="[run] threads, tested" />
         <SrcRef file="tests/conformance/04-control-flow/on-threads-rounds-run-at-once.kav" label="at once, tested" />
         <SrcRef file="tests/conformance/04-control-flow/on-threads-runs-at-most-n-rounds.kav" label="at most n, tested" />
         <SrcRef file="tests/conformance/04-control-flow/on-threads-leaving-early-runs-in-order.kav" label="leaving early, tested" />

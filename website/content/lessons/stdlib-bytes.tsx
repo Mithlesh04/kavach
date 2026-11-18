@@ -71,6 +71,20 @@ export const bytesDoc: LessonDoc = {
         <li><C>T</C> is a number of fixed size, as for <C>as_list</C>:</li>
       </ul>
       <Ex name="bytes/read-other-type.fails" />
+      <H2>A whole list as bytes</H2>
+      <P>
+        <C>Bytes.of_list&lt;T&gt;(xs)</C> is the reverse of <C>as_list</C>: every number in the list as bytes, in
+        order, to write to a file or send. It copies them all at once, instead of joining a <C>Bytes.of</C> for each
+        number:
+      </P>
+      <Ex name="bytes/of-list" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Each number&apos;s bytes are as <C>Bytes.of&lt;T&gt;</C> gives them, little-endian unless <C>big_endian: true</C>.</li>
+        <li><C>as_list&lt;T&gt;</C> reads them back, so the round trip gives the same list.</li>
+        <li><C>T</C> is a number of fixed size, and must be written:</li>
+      </ul>
+      <Ex name="bytes/of-list-no-type.fails" />
+      <SrcRef file="tests/conformance/02-types/bytes-of-list-gives-a-lists-bytes.kav" label="Bytes.of_list, tested" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="tests/conformance/02-types/bytes-read-numbers-at-a-place.kav" label="read, tested" />
         <SrcRef file="tests/conformance/02-types/bytes-of-gives-a-numbers-bytes.kav" label="Bytes.of, tested" />

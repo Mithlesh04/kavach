@@ -1,0 +1,14 @@
+fn main() {
+    const big = 4_611_686_018_427_387_904   // 2 to the power 62
+    for i in 1..4 {
+        print(big.checked_mul(i) ?? -1)
+    }
+    const low = -9_223_372_036_854_775_807  // one above the smallest Int
+    for i in 1..3 {
+        if let v = low.checked_sub(i) {
+            print(v)
+        } else {
+            print("too small")
+        }
+    }
+}

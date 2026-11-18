@@ -1,0 +1,6 @@
+fn main() {
+    const data = Bytes.of_list<Float32>([1.0, 2.0])
+    print(data)
+    print(data.as_list<Float32>() ?? [])
+    print(Bytes.of_list<UInt16>([1, 2], big_endian: true))
+}

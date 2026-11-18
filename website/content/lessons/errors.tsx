@@ -257,6 +257,17 @@ export const panicsWhatDoc: LessonDoc = {
         where that is what you mean:
       </P>
       <Ex name="errors/checked" />
+      <P>
+        There are also <C>checked_sub</C>, <C>checked_mul</C> and <C>checked_div</C>. Ask the result at once, with{" "}
+        <C>??</C> or <C>if let</C>, and a built program makes no optional in between, so a check in a hot loop costs
+        little more than plain arithmetic:
+      </P>
+      <Ex name="errors/checked-each-round" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/05-errors.md" label="spec 5.6 · overflow" />
+        <SrcRef file="tests/conformance/05-errors/checked-results-are-asked-each-round.kav" label="asked each round, tested" />
+        <SrcRef file="compiler/kir/src/checked_fits.rs" label="the pass that drops the optional" />
+      </div>
     </>
   ),
 };
