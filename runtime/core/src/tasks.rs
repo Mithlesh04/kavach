@@ -39,7 +39,7 @@ use std::cmp::Reverse;
 use std::collections::{BinaryHeap, VecDeque};
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, Condvar, Mutex, MutexGuard};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 pub type TaskId = usize;
 
@@ -184,6 +184,11 @@ struct Task {
     waiters: Vec<(TaskId, u64)>,
     /// The task's thread, once it has waited for its turn.
     thread: Option<std::thread::Thread>,
+    /// When it last became ready (a timer's own time, for a sleep), and
+    /// how long it then waited for its turn: a sleep counts from when it
+    /// became ready, so a busy machine can't change the order (spec 9.7).
+    ready_at: Option<Instant>,
+    late: Duration,
 }
 
 impl Scheduler {
@@ -295,6 +300,7 @@ impl Scheduler {
             self.give_turn(&mut st, id);
         } else {
             st.ready.push_back(id);
+            st.tasks[slot].ready_at = Some(Instant::now());
             sleep = std::mem::take(&mut st.sleeping);
         }
         drop(st);
@@ -456,6 +462,7 @@ fn wake(st: &mut State, t: TaskId, wait: u64, by_timer: bool) -> Option<(usize, 
     if task.waiting && task.wait == wait {
         task.waiting = false;
         task.timer_fired = by_timer;
+        task.ready_at = Some(Instant::now());
         st.ready.push_back(t);
         return Some((st.worker, std::mem::take(&mut st.sleeping)));
     }

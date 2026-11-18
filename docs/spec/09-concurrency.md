@@ -234,6 +234,7 @@ Tasks take turns in an order the language defines, so a program prints the same 
 - `spawn` makes the new task ready. The task that spawned it keeps running.
 - A task runs until it **waits**: for another task (`.wait()`, or a function that spawned tasks returning, 9.2), for time (`time.sleep_ms`, a round of `time.every_ms`), and later for channels and I/O. Then the task that became ready first runs.
 - A waiting task becomes ready when what it waits for happens. When no task is ready, the program waits for the earliest of them.
+- A sleep counts from when its task became ready, not from when the machine got round to running it: a sleeping task becomes ready at its time, and a task that waited for its turn has that wait taken off its next sleep. So a busy machine can't change the order.
 
 ```kavach
 use std.time

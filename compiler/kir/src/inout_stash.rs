@@ -11,14 +11,14 @@
 //! Only for a function called directly: one whose address is taken (a
 //! function value, an interface method) keeps its tuple, as do the
 //! program's roots and functions with float items, which the runtime's
-//! slots don't carry. Nothing runs between the stash and the take but
-//! the callee's locals being freed, so a program with `Drop` types, whose
-//! `drop` could call such a function, keeps its tuples (`passes.rs`).
+//! slots don't carry. Between the stash and the take only waiting `drop`s
+//! can run (`drop_scopes.rs`), so a function a `drop` method could reach
+//! keeps its tuple too.
 
 use crate::ir::*;
 use crate::rt_op::RtOp;
 use crate::walk::{any_in_block, blocks_mut, exprs_mut};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 /// The most `inout` values a function leaves in slots.
 const SLOTS: usize = 8;
@@ -39,6 +39,7 @@ pub fn stash_inout_tuples(
             )
         })
     };
+    let from_drops = reached_by_drops(functions);
     // Each function changed: its tuple's items and how many lead with
     // the function's own value (0 or 1).
     let mut changed: HashMap<FuncId, (Vec<Type>, usize)> = HashMap::new();
@@ -52,7 +53,16 @@ pub fn stash_inout_tuples(
         };
         let floats = items.iter().any(|t| matches!(t, Type::F64 | Type::F32));
         let lead = items.len().wrapping_sub(n);
-        if f.fails || floats || n > SLOTS || lead > 1 || roots.contains(&id) || taken(id, functions)
+        // A `drop` waiting to run between the stash and the take could
+        // call it again and overwrite the slots.
+        let dropped = from_drops.as_ref().is_none_or(|r| r.contains(&id));
+        if f.fails
+            || floats
+            || n > SLOTS
+            || lead > 1
+            || roots.contains(&id)
+            || taken(id, functions)
+            || dropped
         {
             continue;
         }
@@ -64,6 +74,45 @@ pub fn stash_inout_tuples(
     for f in functions.iter_mut() {
         take_back(f, &changed);
     }
+}
+
+/// The functions a `drop` method (registered with `DropRegister`) may
+/// call, itself included; `None` when one calls a function value, which
+/// could be any function.
+fn reached_by_drops(functions: &[Function]) -> Option<HashSet<FuncId>> {
+    let mut todo: Vec<FuncId> = Vec::new();
+    for f in functions {
+        any_in_block(&f.body, &mut |e| {
+            if let ExprKind::Rt(RtOp::DropRegister, args) = &e.kind
+                && let Some(ExprKind::Closure { func, .. }) = args.get(1).map(|a| &a.kind)
+            {
+                todo.push(*func);
+            }
+            false
+        });
+    }
+    let mut seen = HashSet::new();
+    while let Some(id) = todo.pop() {
+        if !seen.insert(id) {
+            continue;
+        }
+        let Some(f) = functions.get(id as usize) else {
+            continue;
+        };
+        let mut indirect = false;
+        any_in_block(&f.body, &mut |e| {
+            match &e.kind {
+                ExprKind::Call(c, _) | ExprKind::Closure { func: c, .. } => todo.push(*c),
+                ExprKind::CallValue(..) => indirect = true,
+                _ => {}
+            }
+            false
+        });
+        if indirect {
+            return None;
+        }
+    }
+    Some(seen)
 }
 
 /// Function `f` returns its value alone, after putting each `inout` value
@@ -270,89 +319,4 @@ fn take_back(f: &mut Function, changed: &HashMap<FuncId, (Vec<Type>, usize)>) {
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::ir::{ExprKind, Shape, Type};
-    use crate::rt_op::RtOp;
-
-    /// A function too big to inline, with an `inout` parameter and a
-    /// result besides, gives its value alone and builds no tuple (S11).
-    #[test]
-    fn a_result_besides_an_inout_comes_back_with_no_tuple() {
-        let src = "type R {
-    count: Int
-    seen: [Int]
-}
-
-fn step(inout r: R, n: Int) -> Bool {
-    r.count += 1
-    if n == 40 {
-        r.seen.push(0)
-    }
-    if n == 41 {
-        r.seen.push(1)
-    }
-    if n == 42 {
-        r.seen.push(2)
-    }
-    if n == 43 {
-        r.seen.push(3)
-    }
-    if n == 44 {
-        r.seen.push(4)
-    }
-    if n == 45 {
-        r.seen.push(5)
-    }
-    if n == 46 {
-        r.seen.push(6)
-    }
-    if n == 47 {
-        r.seen.push(7)
-    }
-    if n == 48 {
-        r.seen.push(8)
-    }
-    if n == 49 {
-        r.seen.push(9)
-    }
-    if n == 50 {
-        r.seen.push(10)
-    }
-    if n == 51 {
-        r.seen.push(11)
-    }
-    n % 2 == 0
-}
-
-fn main() {
-    let r = R(count: 0, seen: [])
-    let even = 0
-    for i in 0..10 {
-        if step(r, i) {
-            even += 1
-        }
-    }
-    print(`{r.count} {even}`)
-}
-";
-        let c = kavach_driver::compile(src, "t.kav", Default::default());
-        let program = crate::lower(&c).expect("lowers");
-        let mut stashed = false;
-        for f in &program.functions {
-            let tuples =
-                crate::walk::any_in_block(&f.body, &mut |e| matches!(e.kind, ExprKind::Tuple(_)));
-            assert!(!tuples, "{}: {:#?}", f.name, f.body);
-            if let Type::Ref(id) = f.ret {
-                assert!(
-                    !matches!(program.shapes[id as usize], Shape::Tuple(_)),
-                    "{}",
-                    f.name
-                );
-            }
-            stashed |= crate::walk::any_in_block(&f.body, &mut |e| {
-                matches!(e.kind, ExprKind::Rt(RtOp::InoutStash, _))
-            });
-        }
-        assert!(stashed, "the call was inlined: make `step` bigger");
-    }
-}
+mod tests;

@@ -259,3 +259,37 @@ fn cancel_now_stops_a_task_that_never_waits() {
     s.end(0);
     handle.join().unwrap();
 }
+
+/// Spec 9.7: a sleep counts from when its task became ready, so a task
+/// whose thread was slow to get its turn still wakes in program order.
+#[test]
+fn a_late_turn_does_not_reorder_sleepers() {
+    let s = Scheduler::new();
+    let log: Log = Arc::default();
+    let l = Arc::clone(&log);
+    let (a, ha) = start(&s, move |s, me| {
+        s.sleep_until(me, Instant::now() + Duration::from_millis(200))
+            .unwrap();
+        note(&l, "slow");
+    });
+    // `fast` is ready now, but its thread only starts 150 ms later: the
+    // stall a busy machine makes.
+    let fast = s.add();
+    let s2 = Arc::clone(&s);
+    let l = Arc::clone(&log);
+    let hb = std::thread::spawn(move || {
+        std::thread::sleep(Duration::from_millis(150));
+        if s2.begin(fast).is_ok() {
+            s2.sleep_until(fast, Instant::now() + Duration::from_millis(100))
+                .unwrap();
+            note(&l, "fast");
+        }
+        s2.end(fast);
+    });
+    s.wait_for(0, a).unwrap();
+    s.wait_for(0, fast).unwrap();
+    s.end(0);
+    ha.join().unwrap();
+    hb.join().unwrap();
+    assert_eq!(*log.lock().unwrap(), ["fast", "slow"]);
+}

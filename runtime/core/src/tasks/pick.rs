@@ -45,8 +45,11 @@ impl Scheduler {
                     break;
                 }
                 st.timers.pop();
-                // A shard's timers are its own tasks'.
-                wake(&mut st, t, wait, true);
+                // A shard's timers are its own tasks'. A sleeper became
+                // ready at its time, however late this looks (spec 9.7).
+                if wake(&mut st, t, wait, true).is_some() {
+                    st.tasks[t & super::SLOT_MASK].ready_at = Some(at);
+                }
             }
             if let Some(t) = st.ready.pop_front() {
                 return (st, Some(t));

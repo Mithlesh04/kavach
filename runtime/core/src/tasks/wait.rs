@@ -4,7 +4,7 @@
 use super::{SLOT_MASK, Scheduler, State, Stop, TaskId, wake, worker};
 use std::cmp::Reverse;
 use std::sync::MutexGuard;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 impl Scheduler {
     /// Task `me` waits until task `other` has ended.
@@ -23,12 +23,23 @@ impl Scheduler {
         self.wait(me, Some(other), None, false)
     }
 
-    /// Task `me` waits until `at`.
+    /// Task `me` waits until `at`, counted from when it became ready: the
+    /// time it then waited for its turn comes off, so tasks wake in the
+    /// order the program gives them, however busy the machine (spec 9.7).
     pub fn sleep_until(&self, me: TaskId, at: Instant) -> Result<(), Stop> {
+        let at = self.counted_from_ready(me, at);
         self.wait(me, None, Some(at), true).or_else(|s| match s {
             Stop::TimedOut => Ok(()),
             other => Err(other),
         })
+    }
+
+    /// `at`, less the time task `me` was ready before its turn began, once
+    /// a turn: the first sleep of a turn counts from when it became ready.
+    pub(super) fn counted_from_ready(&self, me: TaskId, at: Instant) -> Instant {
+        let late = (self.lock_of(me).tasks.get_mut(me & SLOT_MASK))
+            .map_or(Duration::ZERO, |t| std::mem::take(&mut t.late));
+        at.checked_sub(late).unwrap_or(at)
     }
 
     /// Task `me` waits until another task calls `unpark(me)`: for room

@@ -93,6 +93,11 @@ impl Scheduler {
             }
             st = self.lock(worker);
         }
+        // How long it was ready before it ran, its thread's wake-up
+        // included: a sleep in this turn doesn't count it (spec 9.7).
+        if let Some(t) = st.tasks.get_mut(me & SLOT_MASK) {
+            t.late = t.ready_at.take().map_or(Duration::ZERO, |r| r.elapsed());
+        }
         st
     }
 
