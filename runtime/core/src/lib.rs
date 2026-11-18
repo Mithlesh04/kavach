@@ -280,6 +280,25 @@ pub fn cores() -> usize {
 /// program's start gives it, before anything asks `cores()`.
 static FILE_CORES: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
 
+/// `[run] gpu = "cpu"` in `kavach.toml` (spec 15.2), set at the start.
+static FILE_GPU_CPU: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Sets `[run] gpu = "cpu"`; `KAVACH_GPU` at launch still wins.
+pub fn set_file_gpu_cpu() {
+    FILE_GPU_CPU.store(true, std::sync::atomic::Ordering::Relaxed);
+}
+
+/// Where a `map` with a `gpu fn` runs (spec 15.2): `KAVACH_GPU` (`cpu`
+/// is `off`), else `off` with `[run] gpu = "cpu"`, else `""`, the usual.
+pub fn gpu_mode() -> String {
+    match std::env::var("KAVACH_GPU") {
+        Ok(m) if m == "cpu" => "off".into(),
+        Ok(m) => m,
+        Err(_) if FILE_GPU_CPU.load(std::sync::atomic::Ordering::Relaxed) => "off".into(),
+        Err(_) => String::new(),
+    }
+}
+
 /// Sets `[run] cores`; `KAVACH_CORES` at launch still wins.
 pub fn set_file_cores(n: usize) {
     FILE_CORES.store(n, std::sync::atomic::Ordering::Relaxed);

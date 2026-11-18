@@ -166,8 +166,12 @@ fn main_of(i: &mut interp::Interp<'_>, args: &[String], dry_run: bool) -> i32 {
     let (version, answers) = kavach_driver::program_version(program.path.as_ref());
     // `[run] cores` (spec 4.9), before anything asks how many.
     let config = kavach_driver::Config::for_file(program.path.as_ref());
-    if let Some(n) = config.ok().and_then(|c| c.run.cores) {
+    let run = config.map(|c| c.run).unwrap_or_default();
+    if let Some(n) = run.cores {
         kavach_runtime_core::set_file_cores(n as usize);
+    }
+    if run.on_cpu() {
+        kavach_runtime_core::set_file_gpu_cpu();
     }
     if answers && args == ["--version"] {
         i.out.push_str(&format!("{version}\n"));

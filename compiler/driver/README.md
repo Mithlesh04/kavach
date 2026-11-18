@@ -26,6 +26,7 @@ It also reads `kavach.toml` (spec 10.4), found in the file's folder or a parent:
 | `src/std_modules.rs` | Which standard library modules a program uses: those it names with `std.<name>`, by a public type or variant, or through a built-in such as `ask` (decision 0024) |
 | `src/std_table.rs` | The standard library modules written in Kavach: each one's path, module name and source |
 | `src/config.rs` | `kavach.toml`: finding and reading it |
+| `src/run_config.rs` | `[run]`: the program's most cores and whether its GPU maps stay on the CPU (spec 4.9, 15.2) |
 | `src/limits.rs` | File and function length limits, with a suggested split (spec 12.1) |
 | `src/operators.rs` | Operators on a program's own types made into the method calls they stand for, once checked (spec 2.16) |
 | `src/version.rs` | What built a program (spec 10.5): the compiler's version and commit (from `build.rs`), the text each executable carries, and finding it again |

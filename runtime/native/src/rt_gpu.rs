@@ -124,7 +124,7 @@ fn check(list: i64, line: i32) -> i64 {
 fn warm(kernels: i64) -> i64 {
     let text = with_str(kernels, str::to_string);
     release(kernels);
-    if std::env::var("KAVACH_GPU").as_deref() == Ok("off") {
+    if kavach_runtime_core::gpu_mode() == "off" {
         return 0;
     }
     std::thread::spawn(move || {
@@ -226,7 +226,7 @@ fn map(list: i64, closure: i64, text: i64, code: i64, line: i32, stay: bool) -> 
     let kernel = with_str(text, str::to_string);
     release(text);
     let n = crate::heap::list_len_items_pub(list);
-    let mode = std::env::var("KAVACH_GPU").unwrap_or_default();
+    let mode = kavach_runtime_core::gpu_mode();
     let checking = mode == "check";
     let wanted = mode == "on" || checking || (mode != "off" && worth_it(&kernel, n));
     // An empty list has nothing to send: a GPU buffer can't be empty.

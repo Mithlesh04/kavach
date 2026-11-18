@@ -118,7 +118,12 @@ crate::rt_data::entry!(kv_rt_run, |op, a, b, c, code, line| {
         }
         RtOp::RunCpu => run::cpu_ms(),
         RtOp::RunCores => {
-            kavach_runtime_core::set_file_cores(a as usize);
+            if a > 0 {
+                kavach_runtime_core::set_file_cores(a as usize);
+            }
+            if b != 0 {
+                kavach_runtime_core::set_file_gpu_cpu();
+            }
             0
         }
         _ => run::peak_bytes(),

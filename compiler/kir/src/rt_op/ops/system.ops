@@ -206,8 +206,9 @@ AppCrashReports,
 AppDialog,
 /// This program's processor milliseconds (`std.process`, spec 14.23).
 RunCpu,
-/// At the start of `main`: `[run] cores` from `kavach.toml` (spec 4.9),
-/// `a`, which `KAVACH_CORES` at launch overrides.
+/// At the start of `main`: `[run]` from `kavach.toml`: `cores` (spec
+/// 4.9) as `a`, 0 when not set, and `b` 1 for `gpu = "cpu"` (15.2); the
+/// environment at launch wins.
 RunCores,
 /// `std.system` (spec 14.25, `runtime/native/src/rt_machine.rs`): fact
 /// `a` of the machine as text, then as a number, and the GPUs as four

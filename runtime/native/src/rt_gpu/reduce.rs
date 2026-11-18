@@ -45,7 +45,7 @@ pub(super) fn plan(op: RtOp, list: i64, closure: i64, text: i64) -> Plan {
     let kernel = with_str(text, str::to_string);
     release(text);
     let n = crate::heap::list_len_items_pub(list);
-    let mode = std::env::var("KAVACH_GPU").unwrap_or_default();
+    let mode = kavach_runtime_core::gpu_mode();
     let on_gpu = resident(list);
     let wanted = !kernel.is_empty()
         && n > 0

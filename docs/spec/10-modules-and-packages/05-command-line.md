@@ -27,6 +27,7 @@
 | `kavach --version` | Print the compiler's version and the commit it was built from: `kavach 0.1.0 (commit 8f8ae051)` |
 | `kavach version <program>` | Print what built an executable: its package's name and version, and the compiler's version and commit (below) |
 | `kavach lsp` | Language server for editors, on stdin and stdout: errors as you type, with the same messages as `kavach check`; the type of what is under the cursor (hover); where a name is declared (go to definition); and the names in scope, or after a `.` the fields and methods of the value (completion) |
+| `kavach <command> --help` | Print that command's usage (`-h` too); `kavach --help` prints them all |
 
 Not built yet: `api check`, `repl` and `eval` (Phase 3 tools, [roadmap](../../vision/roadmap.md)), and `build --release`: `kavach build` already optimizes. Until then they print the command list. `kavach fix` works on the files and folders it is given (`kavach fix src`); with none, it doesn't yet fix the whole project, and edition upgrades wait for a second edition (10.8).
 

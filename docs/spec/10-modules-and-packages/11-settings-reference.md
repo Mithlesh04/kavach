@@ -19,6 +19,7 @@ Every setting a program can have, in one place. A key or section that isn't list
 | `[limits]` | `exclude` | a list of file patterns | `[]` | 12.1 |
 | `[limits.files]` | a file's path | a whole number: that file's own limit | none | 12.1 |
 | `[run]` | `cores` | a whole number, 1 or more | all the machine gives the program | 4.9: the most cores the program uses; `KAVACH_CORES` wins |
+| `[run]` | `gpu` | `"cpu"`, `"auto"` | `"auto"` | 15.2: `"cpu"` keeps every `map` with a `gpu fn` on the CPU; `KAVACH_GPU` wins |
 | `[test]` | `cases` | a whole number | `200` | 11.9 |
 | `[test]` | `deep_cases` | a whole number | `10000` | 11.9 |
 | `[test]` | `time_budget` | a time per call: `"500ms"`, `"1s"`, `"2m"` | `"1s"` | 11.9 |
@@ -45,7 +46,7 @@ For running programs:
 
 | Variable | Values | What it does | Spec |
 |---|---|---|---|
-| `KAVACH_GPU` | `off`, `on`, `check` | Where `map` with a `gpu fn` runs | 15.2 |
+| `KAVACH_GPU` | `off` (or `cpu`), `on`, `check` | Where `map` with a `gpu fn` runs | 15.2 |
 | `ANTHROPIC_API_KEY` | a key | The key `ask` uses; never in `kavach.toml` | 8.4 |
 | `KAVACH_AI_URL` | a URL | Where `ask` sends its requests (a test server) | 8.4 |
 | `NO_COLOR` | any text | No colors in what the program prints | 14.12 |

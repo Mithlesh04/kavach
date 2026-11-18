@@ -25,7 +25,7 @@ impl Checker<'_> {
     pub(crate) fn in_round(
         &mut self,
         place: &LoopPlace,
-        pattern: &Pattern,
+        (pattern, iter): (&Pattern, &Expr),
         body: &Block,
         f: impl FnOnce(&mut Self),
     ) {
@@ -39,10 +39,24 @@ impl Checker<'_> {
                 );
             }
         }
-        let name = match &pattern.kind {
-            PatternKind::Binding(id) => self.decl.get(&id.span.start).copied(),
+        // The round's slot: the loop's name, or the index of
+        // `for (i, x) in xs.enumerate()`.
+        let slot = match (&pattern.kind, &iter.kind) {
+            (PatternKind::Binding(id), _) => Some(id),
+            (PatternKind::Tuple(ps), ExprKind::Call { callee, args, .. }) if args.is_empty() => {
+                match (&ps[..], &callee.kind) {
+                    ([first, _], ExprKind::Field { name, .. }) if name.name == "enumerate" => {
+                        match &first.kind {
+                            PatternKind::Binding(id) => Some(id),
+                            _ => None,
+                        }
+                    }
+                    _ => None,
+                }
+            }
             _ => None,
         };
+        let name = slot.and_then(|id| self.decl.get(&id.span.start).copied());
         self.rounds.push(Round {
             body: body.span,
             name,

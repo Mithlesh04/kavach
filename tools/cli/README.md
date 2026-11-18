@@ -27,6 +27,7 @@ Exit codes: 0 success, 1 compile errors or an error returned from `main`, 101 a 
 | File | Job |
 |---|---|
 | `src/main.rs` | Commands |
+| `src/help.rs` | The command list, and each command's own lines for `kavach <command> --help` (spec 10.5) |
 | `src/watch.rs` | `kavach run --watch`: the program run again on each change of the project's files; and `kavach run --hot`, which has the interpreter swap in changed functions, running again only when more than bodies changed |
 | `src/native.rs` | `kavach build` and `kavach run --native`: native code with LLVM or Cranelift |
 | `src/context.rs` | `kavach query` and `kavach context`, from the program's index |

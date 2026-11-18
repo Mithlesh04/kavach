@@ -27,15 +27,16 @@ impl<'a> Lowerer<'a> {
             K::Rt(RtOp::CliVersion, vec![text, flag, ops]),
             Type::Unit,
         ))];
-        // `[run] cores` (spec 4.9), before anything asks how many.
-        if let Some(n) = kavach_driver::Config::for_file(path)
-            .ok()
-            .and_then(|c| c.run.cores)
-        {
-            let n = at(K::Int(n.into()), Type::I64);
+        // `[run] cores` (spec 4.9) and `gpu` (15.2), before anything asks.
+        let run = kavach_driver::Config::for_file(path)
+            .map(|c| c.run)
+            .unwrap_or_default();
+        if run.cores.is_some() || run.on_cpu() {
+            let n = at(K::Int(run.cores.unwrap_or(0).into()), Type::I64);
+            let cpu = at(K::Int(run.on_cpu().into()), Type::I64);
             out.insert(
                 0,
-                Stmt::Expr(at(K::Rt(RtOp::RunCores, vec![n]), Type::Unit)),
+                Stmt::Expr(at(K::Rt(RtOp::RunCores, vec![n, cpu]), Type::Unit)),
             );
         }
         if spawns_on_cores(&self.c.file) {

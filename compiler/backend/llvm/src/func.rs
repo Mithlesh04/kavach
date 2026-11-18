@@ -124,10 +124,12 @@ impl<'a> FnEmit<'a> {
         // the start of its task (decision 0065); and before the entry,
         // Kavach's mark and the function's number, so a crash report can
         // name the frame without the function's address being taken
-        // (`kavach_runtime_native::crash_stack`).
+        // (`kavach_runtime_native::crash_stack`). Sixteen bytes, eight of
+        // them zero, so the entry stays on a 16-byte boundary: with eight,
+        // every call landed mid-line, and `fib` was 16% slower.
         let mark = match name.strip_prefix("kv_fn_").map(str::parse::<u32>) {
             Some(Ok(n)) => format!(
-                " prefix <{{ i32, i32 }}> <{{ i32 {}, i32 {n} }}>",
+                " prefix <{{ i32, i32, i32, i32 }}> <{{ i32 0, i32 0, i32 {}, i32 {n} }}>",
                 kavach_runtime_native::crash_stack::MAGIC
             ),
             _ => String::new(),

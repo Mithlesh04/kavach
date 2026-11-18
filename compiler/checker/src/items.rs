@@ -335,7 +335,9 @@ impl Checker<'_> {
                 let item = self.item_type(&t, iter);
                 self.bind(pattern, &item);
                 match place {
-                    Some(p) => self.in_round(p, pattern, body, |c| c.loop_body(label, body)),
+                    Some(p) => {
+                        self.in_round(p, (pattern, iter), body, |c| c.loop_body(label, body))
+                    }
                     None => self.loop_body(label, body),
                 }
             }

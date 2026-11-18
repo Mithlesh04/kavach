@@ -1,0 +1,12 @@
+// Rule: in `on cores for (i, x) in xs.enumerate()`, a round may write its own slot `out[i]`, as with a range loop's name, and gives the one-core result.
+// Spec: 4.9
+// expect output: [0, 12, 26, 42]
+
+fn main() {
+    const xs = [10, 11, 12, 13]
+    let out: [Int] = [0, 0, 0, 0]
+    on cores for (i, x) in xs.enumerate() {
+        out[i] = i * x + i
+    }
+    print(out)
+}

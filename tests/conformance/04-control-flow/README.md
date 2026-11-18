@@ -52,6 +52,7 @@ Conformance tests for spec chapter [4. Control flow](../../../docs/spec/04-contr
 | 4.9 | [on-cores-refuses-print.kav](on-cores-refuses-print.kav) | An `on cores` loop can't print or do other I/O: its order would change from run to run. | compile error |
 | 4.9 | [on-cores-refuses-a-float-sum.kav](on-cores-refuses-a-float-sum.kav) | An `on cores` loop can't add floats into a shared `let`: the adding order would change the last bits. | compile error |
 | 4.9 | [on-cores-refuses-a-shared-change.kav](on-cores-refuses-a-shared-change.kav) | A round of an `on cores` loop may change only its own slot: pushing to a shared list, or setting a shared variable, is a compile error. | compile error |
+| 4.9 | [on-cores-writes-the-enumerate-index-slot.kav](on-cores-writes-the-enumerate-index-slot.kav) | In `on cores for (i, x) in xs.enumerate()`, a round may write its own slot `out[i]` and gives the one-core result. | runs |
 | 4.9 | [on-cores-keeps-a-sum-modulo-a-number.kav](on-cores-keeps-a-sum-modulo-a-number.kav) | An `on cores` loop may keep a whole-number sum modulo a number written in the code, and gives the one-core result. | runs |
 | 4.9 | [on-cores-count-under-one-panics.kav](on-cores-count-under-one-panics.kav) | A count worked out while running that is under 1 panics before the loop runs; more cores than there are uses them all. | panic |
 | 4.9 | [on-cores-count-of-zero-is-an-error.kav](on-cores-count-of-zero-is-an-error.kav) | A count written as 0 or a negative number is a compile error: a loop runs on at least one core or thread. | compile error |

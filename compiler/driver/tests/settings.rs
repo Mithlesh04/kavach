@@ -283,3 +283,18 @@ fn run_cores_is_read_and_must_be_one_or_more() {
     assert_eq!(three, Ok(Some(3)));
     assert!(zero.contains("at least one core"), "{zero}");
 }
+
+/// `[run] gpu` (spec 15.2): `"cpu"` or `"auto"`, nothing else.
+#[test]
+fn run_gpu_is_cpu_or_auto() {
+    let dir = std::env::temp_dir().join(format!("kavach-run-gpu-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let file = dir.join("main.kav");
+    std::fs::write(dir.join("kavach.toml"), "[run]\ngpu = \"cpu\"\n").unwrap();
+    let cpu = Config::for_file(&file).map(|c| c.run.on_cpu());
+    std::fs::write(dir.join("kavach.toml"), "[run]\ngpu = \"fast\"\n").unwrap();
+    let wrong = Config::for_file(&file).expect_err("not a choice");
+    std::fs::remove_dir_all(&dir).unwrap();
+    assert_eq!(cpu, Ok(true));
+    assert!(wrong.contains("write \"cpu\""), "{wrong}");
+}
