@@ -1,0 +1,14 @@
+use std.json
+
+fn twice(n: Int) -> Int {
+    n * 2
+}
+
+type Step {
+    name: String
+    run: fn(Int) -> Int
+}
+
+fn main() {
+    print(json.stringify(Step(name: "double", run: twice)))
+}

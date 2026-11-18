@@ -1,0 +1,13 @@
+use std.json
+
+type Color = Red | Green
+
+fn main() ! Error {
+    const stock = {1042: 3, 7: 12}
+    const text = json.stringify(stock)
+    print(text)
+    print(json.of({[Color.Red]: 1, [Color.Green]: 2}))
+    print(json.of({[["red", "big"]]: 3}))
+    const back = try json.decode<{Int: Int}>(text)
+    print(back[1042])
+}

@@ -1,0 +1,11 @@
+use std.json
+
+type Step {
+    name: String
+    run: fn(Int) -> Int
+}
+
+fn main() ! Error {
+    const s = try json.decode<Step>(`\{"name": "double", "run": "<function>"}`)
+    print(s.name)
+}

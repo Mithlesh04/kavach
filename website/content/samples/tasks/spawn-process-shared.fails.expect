@@ -1,1 +1,1 @@
-error: `Shared<Int>` can't be written as JSON, so it can't go to another process (spec 9.8)
+error: `Shared<Int>` can't be read from JSON: it is written as its printed form, one way only (spec 2.12), so it can't go to another process (spec 9.8)

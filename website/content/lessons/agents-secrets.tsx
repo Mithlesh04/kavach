@@ -23,7 +23,7 @@ export const secretsDoc: LessonDoc = {
         <li><C>print</C>, <C>debug</C> or text with <C>{"{…}"}</C> in it,</li>
         <li>a prompt for <C>ask</C>, where it would leave for the model&apos;s provider,</li>
         <li>an error message, the audit log or any log,</li>
-        <li>JSON: <C>json.stringify</C> of a record with a secret field is refused.</li>
+        <li>JSON: <C>json.stringify</C> writes a secret field as <C>&quot;&lt;secret&gt;&quot;</C>, its value never.</li>
       </ul>
       <P>Into a prompt, refused before the program runs:</P>
       <Ex name="agents/sub-secret.fails" />
@@ -56,7 +56,8 @@ export const secretFieldsDoc: LessonDoc = {
     <>
       <Ex name="agents/sub-log" />
       <P>The rest of the record is logged as usual, so the entry is still useful. Only the card is hidden.</P>
-      <Ex name="json/sub-secret.fails" />
+      <P>JSON hides it the same way:</P>
+      <Ex name="json/sub-secret" />
     </>
   ),
 };

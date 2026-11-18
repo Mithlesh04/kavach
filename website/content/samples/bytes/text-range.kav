@@ -1,0 +1,8 @@
+fn main() {
+    const line = "GET /orders/1042 HTTP/1.1".bytes()
+    print(line.text(0, 3) ?? "?")
+    print(line.text(4, 16) ?? "?")
+    print(line.text(start: 17, end: 100) ?? "?")
+    const broken = Bytes([104, 255, 105])
+    print(broken.text(0, 3))
+}

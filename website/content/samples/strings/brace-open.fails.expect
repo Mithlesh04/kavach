@@ -1,1 +1,1 @@
-error: this `{` inside a string is never closed with `}`
+error: this `{` is never closed: write `\{` for a brace in a template, or write the text in quotes (spec 1.7)

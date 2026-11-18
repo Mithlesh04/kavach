@@ -149,13 +149,13 @@ export const howTasksRunDoc: LessonDoc = {
       <P>It takes a call of a function, not a block:</P>
       <Ex name="tasks/spawn-process-block.fails" />
       <P>
-        The arguments and the result go between the processes as JSON, so each must have a JSON form. A{" "}
-        <C>Shared</C> value, a channel, a task, a function or an agent has none, and the compiler says which one:
+        The arguments and the result go between the processes as JSON, so each must be read back from it on the
+        other side. A <C>Shared</C> value, a channel, a task, a function or an agent can&apos;t be, and the compiler
+        says which one:
       </P>
       <Ex name="tasks/spawn-process-shared.fails" />
       <Note>
-        Refused for now: a generic function, and <C>Bytes</C> going in or out, since <C>Bytes</C> has no JSON form
-        yet. In the interpreter, <C>spawn process</C> works under <C>kavach run</C>; a tool that runs the interpreter
+        Refused for now: a generic function. <C>Bytes</C> go in and out as base64 text. In the interpreter, <C>spawn process</C> works under <C>kavach run</C>; a tool that runs the interpreter
         inside itself stops with a panic that says to use <C>kavach run</C>.
       </Note>
       <P>How tasks run is chosen in the code, not in <C>kavach.toml</C>. The old <C>tasks =</C> setting says where it went:</P>

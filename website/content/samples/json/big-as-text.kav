@@ -1,0 +1,15 @@
+use std.json
+
+type Order {
+    id: BigInt
+    price: Decimal
+}
+
+fn main() ! Error {
+    const o = Order(id: BigInt("123456789012345678901234567890"), price: Decimal("0.10"))
+    print(json.stringify(o))
+    const text = json.stringify(o, big_as_text: true)
+    print(text)
+    const back = try json.decode<Order>(text)
+    print(back.id + BigInt(1))
+}

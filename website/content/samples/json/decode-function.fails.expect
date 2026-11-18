@@ -1,0 +1,1 @@
+error: `fn(Int) -> Int` can't be read from JSON: it is written as its printed form, one way only (spec 2.12)

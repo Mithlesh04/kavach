@@ -270,7 +270,7 @@ export const jsonNestedDoc: LessonDoc = {
 
 export const jsonBuildingDoc: LessonDoc = {
   lead: "Where a Json is expected, ordinary literals become JSON; json.stringify writes any value as JSON text.",
-  simple: <>Building JSON is filling in the shared form from your own values, ready to send to another program. Kavach writes it for you, and refuses to write a record that holds a secret.</>,
+  simple: <>Building JSON is filling in the shared form from your own values, ready to send to another program. Kavach writes any value for you, and blacks out each secret field as <C>&lt;secret&gt;</C>.</>,
   minutes: 4,
   body: (
     <>
@@ -284,16 +284,58 @@ export const jsonBuildingDoc: LessonDoc = {
         <li>A <C>Char</C> is text of one character; an optional that is <C>none</C> is <C>null</C>.</li>
         <li>A union case without fields is its name; one with fields is an object holding them, under its name.</li>
         <li>A <C>Date</C>, <C>Time</C> or <C>DateTime</C> is ISO 8601 text, a <C>DateTime</C> in UTC: see <Link href="/docs/standard-library/json/decoding-into-a-type/#dates-and-times">Dates and times</Link>.</li>
-        <li>Functions, and dicts whose keys aren&apos;t <C>String</C>, can&apos;t be written: that is a compile error.</li>
+        <li><C>Shared(x)</C> is written as <C>x</C>. A <C>Weak</C> is its value while it lives, and <C>null</C> once it was freed.</li>
       </ul>
-      <P>A record with a <C>secret</C> field can&apos;t be written as JSON, so a secret can&apos;t leave in an API response by accident:</P>
-      <Ex name="json/sub-secret.fails" />
+      <P>Every value can be written; none is a compile error.</P>
+      <H2>Dict keys</H2>
       <P>
-        Through a generic function too: <C>json.of</C> of a type parameter is checked at each call that gives it a real
-        type. The call that would write the secret is the error, even when it passes through other generic functions:
+        A JSON key is always text, so each dict key is written as text. Numbers, <C>Bool</C>, <C>Char</C> and{" "}
+        <C>BigInt</C> are their text, and a union case without fields is its name. Any other key, such as a list, is its
+        own compact JSON, as text:
       </P>
-      <Ex name="json/sub-secret-generic.fails" />
-      <SrcRef file="tests/conformance/02-types/json-of-a-generic-is-checked-where-it-is-used.kav" label="generic calls, tested" />
+      <Ex name="json/keys" />
+      <P>Decoding reads each key back as the dict&apos;s key type says. A key that doesn&apos;t read as one is a problem at its path.</P>
+      <SrcRef file="tests/conformance/02-types/json-keys-are-written-as-text.kav" label="keys, tested" />
+      <H2>Big numbers as text</H2>
+      <P>
+        A <C>BigInt</C> or <C>Decimal</C> is a number with all its digits. Some readers, such as JavaScript, round
+        numbers past 2^53. For them, write <C>big_as_text: true</C>, to <C>json.stringify</C> or <C>json.of</C>:
+      </P>
+      <Ex name="json/big-as-text" />
+      <P>Decoding, <C>.bigint()</C> and <C>.decimal()</C> read both forms, so the program reads back what it wrote either way.</P>
+      <SrcRef file="tests/conformance/02-types/json-big-as-text-writes-bigint-and-decimal-as-text.kav" label="big as text, tested" />
+      <H2>Secrets</H2>
+      <P>
+        A <C>secret</C> field is written <C>&quot;&lt;secret&gt;&quot;</C>, as <C>print</C> shows it, so a secret
+        can&apos;t leave in an API response by accident. <C>grpc.encode</C> writes it the same way:
+      </P>
+      <Ex name="json/sub-secret" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/02-types/json-secret-fields-are-written-hidden.kav" label="secret fields, tested" />
+        <SrcRef file="tests/conformance/02-types/json-stringify-hides-secret-fields-in-lists.kav" label="in lists, tested" />
+        <SrcRef file="tests/conformance/02-types/json-literals-hide-secret-fields.kav" label="in Json literals, tested" />
+        <SrcRef file="tests/conformance/14-standard-library/grpc-hides-secret-fields.kav" label="gRPC, tested" />
+      </div>
+      <H2>Functions, one way only</H2>
+      <P>
+        A value with no JSON meaning, such as a function, a <C>Task</C>, a <C>Channel</C>, a file or a socket, is
+        written as its printed form:
+      </P>
+      <Ex name="json/function" />
+      <P>This goes one way. Text can&apos;t become a function, so decoding a type that holds one is a compile error:</P>
+      <Ex name="json/decode-function.fails" />
+      <P>
+        Through a generic function too: <C>json.decode&lt;T&gt;</C> of a type parameter is checked at each call that
+        gives it a real type. The call that would read a function is the error, even when it passes through other
+        generic functions:
+      </P>
+      <Ex name="json/decode-generic.fails" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/02-types/json-of-a-function-is-its-printed-form.kav" label="printed form, tested" />
+        <SrcRef file="tests/conformance/02-types/json-decode-of-a-function-is-a-compile-error.kav" label="decoding, tested" />
+        <SrcRef file="tests/conformance/02-types/json-decode-of-a-generic-is-checked-where-it-is-used.kav" label="generic calls, tested" />
+        <SrcRef file="docs/decisions/0132-json-for-every-value.md" label="decision 0132" />
+      </div>
     </>
   ),
 };

@@ -30,7 +30,7 @@ const answers: [problem: string, elsewhere: string, kavach: React.ReactNode, pag
   [
     "Can a card number leak into a log or a prompt?",
     "Code review, and tools that find the leak afterwards.",
-    <>A <C>secret</C> value that reaches a log, a prompt or JSON doesn&apos;t compile.</>,
+    <>A <C>secret</C> value in a prompt doesn&apos;t compile; logs and JSON show it as <C>&lt;secret&gt;</C>.</>,
     "/docs/agents/secrets/",
   ],
   [

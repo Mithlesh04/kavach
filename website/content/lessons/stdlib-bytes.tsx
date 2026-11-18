@@ -81,6 +81,18 @@ export const bytesDoc: LessonDoc = {
         <SrcRef file="tests/conformance/02-types/bytes-read-as-numbers.kav" label="reading numbers, tested" />
         <SrcRef file="tests/conformance/02-types/as-list-needs-a-fixed-size-number.kav" label="only fixed-size numbers, tested" />
       </div>
+      <H2>Text from part of the bytes</H2>
+      <P>
+        A line read from a file or a network often holds words at known places. <C>b.text(start, end)</C> gives the
+        bytes from <C>start</C> up to <C>end</C> as text, copied once, with no <C>Bytes</C> in between:
+      </P>
+      <Ex name="bytes/text-range" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Places past the end are clamped, as <C>slice</C> clamps them: <C>end: 100</C> stops at the last byte.</li>
+        <li>Bytes that aren&apos;t valid UTF-8 give <C>none</C>, as <C>b.text()</C> does.</li>
+        <li><C>b.slice(start, end).text()</C> does the same, also copying the text once.</li>
+      </ul>
+      <SrcRef file="tests/conformance/02-types/bytes-text-of-a-range.kav" label="text of a range, tested" />
       <H2>In JSON</H2>
       <P>
         JSON has no bytes, so <C>Bytes</C> is written as base64 text, as Protocol Buffers&apos; JSON and OpenAPI write

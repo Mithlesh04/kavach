@@ -1,0 +1,22 @@
+use std.json
+
+type Step {
+    name: String
+    run: fn(Int) -> Int
+}
+
+type Plain {
+    name: String
+}
+
+/// Reads any value from the body of a request.
+fn read<T>(body: String) -> T ! Error {
+    try json.decode<T>(body)
+}
+
+fn main() ! Error {
+    const p = try read<Plain>(`\{"name": "a"}`)
+    print(p.name)
+    const s = try read<Step>(`\{"name": "b", "run": "<function>"}`)
+    print(s.name)
+}
