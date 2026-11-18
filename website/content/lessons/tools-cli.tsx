@@ -42,9 +42,11 @@ const today: [cmd: string, does: string][] = [
   ["kavach mcp, kavach lsp", "serve the tools to AI assistants, and errors as you type to editors"],
   ["kavach --version", "print the compiler's version and the commit it was built from"],
   ["kavach version <program>", "print what built an executable: its package's name and version, and the compiler's version and commit"],
+  ["kavach <command> --help", "print that command's usage (-h too); kavach --help prints every command's"],
 ];
 
 const later = ["kavach repl and kavach eval", "kavach api check", "kavach build --release"];
+const help = loadProject("tools/help", ["src/main.kav"]);
 
 // ---------- The kavach Command ----------
 
@@ -74,6 +76,8 @@ export const commandDoc: LessonDoc = {
         </table>
       </div>
       <P>Inside a project, <C>run</C>, <C>build</C>, <C>test</C> and <C>check</C> need no file name: they use <C>src/main.kav</C>.</P>
+      <P>Forgot a command&apos;s options? Add <C>--help</C> to it:</P>
+      <Terminal session={help.output ?? ""} />
       <P>
         <C>kavach run --watch</C> looks at the project&apos;s <C>src/</C> folder (or the folder of the one file given)
         and its <C>kavach.toml</C>. When one changes, it stops the running program, prints{" "}

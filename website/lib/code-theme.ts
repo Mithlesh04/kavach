@@ -22,6 +22,8 @@ export const kavachTheme = {
     { scope: ["punctuation.definition.template-expression"], settings: { foreground: "#e6a23c" } },
     { scope: ["meta.embedded"], settings: { foreground: "#e7e0d4" } },
     { scope: ["constant.character.escape"], settings: { foreground: "#d9a0c7" } },
+    // `on cores` and `on threads` move a loop's rounds onto other cores: coral, apart from other keywords, as in the editor.
+    { scope: ["keyword.other.place"], settings: { foreground: "#ff8a65", fontStyle: "bold" } },
     { scope: ["invalid"], settings: { foreground: "#f08a8a" } },
   ],
 };

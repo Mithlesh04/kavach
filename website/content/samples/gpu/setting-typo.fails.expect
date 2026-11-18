@@ -1,0 +1,1 @@
+error: `[run] gpu = "fast"`: write "cpu" to keep every GPU `map` on the CPU, or "auto" (spec 15.2)

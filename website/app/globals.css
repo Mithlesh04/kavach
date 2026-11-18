@@ -55,6 +55,7 @@
   --tok-doc: #4fa8a8;
   --tok-imported: #c3a6ff;
   --tok-builtin: #d7ba7d;
+  --tok-place: #ff8a65;
   /* terminal windows: dark in both themes, like code; the bar's three
      dots are the familiar close / minimize / zoom colors */
   --term-bg: #100e0c;

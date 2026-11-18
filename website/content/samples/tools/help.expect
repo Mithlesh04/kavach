@@ -1,0 +1,4 @@
+$ kavach build --help
+  kavach build [--compress[=max]] <file.kav> [-o <out>]   write an executable (named after the file), packed smaller if asked
+  kavach build --lib <lib.kav> [-o <dir>]   write a shared library and a C header
+                            for other languages (spec 10.10)

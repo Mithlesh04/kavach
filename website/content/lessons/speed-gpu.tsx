@@ -10,7 +10,7 @@ import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
 import { FramesFindings, FramesTable } from "./gpu-frames";
 import { Streams } from "./gpu-streams";
-import { Ex, H2, Note, P, Syntax } from "./parts";
+import { Ex, Files, H2, Note, P, Syntax } from "./parts";
 import { Limits } from "./limits";
 
 const late = loadProject("gpu/late", ["src/main.kav"]);
@@ -272,7 +272,7 @@ export const gpuWhereDoc: LessonDoc = {
           <tbody>
             {[
               ["(not set)", "the runtime decides from the list's length and the work per item"],
-              ["off", "everything on the CPU: use a debugger, or measure the CPU"],
+              ["off or cpu", "everything on the CPU: use a debugger, or measure the CPU"],
               ["on", "the GPU for a list of any length"],
               ["check", "runs both, and panics at the first item whose results differ (floats compared with near)"],
             ].map(([v, d]) => (
@@ -288,6 +288,19 @@ export const gpuWhereDoc: LessonDoc = {
         The runtime estimates each <C>gpu fn</C>&apos;s work from its operations, with a loop counted once per round. A
         machine with no GPU runs everything on the CPU, with the same code and the same results.
       </P>
+      <H2>Keep a program on the CPU</H2>
+      <P>
+        For a machine whose GPU the program shouldn&apos;t use, write <C>gpu = &quot;cpu&quot;</C> under{" "}
+        <C>[run]</C> in <C>kavach.toml</C>. Every <C>map</C> with a <C>gpu fn</C> then runs on the CPU, with the same
+        results. <C>KAVACH_GPU</C> set when the program starts wins over it:
+      </P>
+      <Files name="gpu/on-cpu" first={["kavach.toml", "src/main.kav"]} />
+      <P>The setting takes <C>&quot;cpu&quot;</C> or <C>&quot;auto&quot;</C>, the default. Anything else is refused, with both:</P>
+      <Files name="gpu/setting-typo.fails" first={["kavach.toml"]} outcome="refused" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/15-gpu.md" label="spec 15.2 · where it runs" />
+        <SrcRef file="docs/spec/10-modules-and-packages/11-settings-reference.md" label="spec 10.11 · settings" />
+      </div>
     </>
   ),
 };

@@ -79,6 +79,10 @@ export const coresDoc: LessonDoc = {
       </P>
       <Ex name="speed/sub-elementwise" />
       <P>
+        In <C>for (i, x) in xs.enumerate()</C>, the index <C>i</C> names the round&apos;s own slot in the same way:
+      </P>
+      <Ex name="speed/cores-enumerate" />
+      <P>
         A round may also add whole numbers into a <C>let</C> with <C>+=</C>. Each core sums its part, and the parts
         are added at the end, since whole numbers add up the same in any grouping:
       </P>
@@ -100,7 +104,8 @@ export const coresDoc: LessonDoc = {
       <H2>What on cores refuses</H2>
       <P>
         Only two kinds of change keep the one-core answer: writing the round&apos;s own slot (<C>out[i]</C>, where{" "}
-        <C>i</C> is the loop&apos;s name), and adding whole numbers into a <C>let</C>. Anything else is a compile error
+        <C>i</C> is the loop&apos;s name or its <C>enumerate()</C> index), and adding whole numbers into a <C>let</C>.
+        Anything else is a compile error
         that says why. <C>print</C> would show the rounds in a different order on each run:
       </P>
       <Ex name="speed/cores-print.fails" />
@@ -172,6 +177,7 @@ export const coresDoc: LessonDoc = {
         <SrcRef file="docs/decisions/0126-loops-on-one-core-unless-on-cores.md" label="decision 0126" />
         <SrcRef file="tests/conformance/04-control-flow/on-cores-gives-the-one-core-result.kav" label="the one-core result, tested" />
         <SrcRef file="tests/conformance/04-control-flow/on-cores-keeps-a-sum-modulo-a-number.kav" label="a sum modulo a number, tested" />
+        <SrcRef file="tests/conformance/04-control-flow/on-cores-writes-the-enumerate-index-slot.kav" label="the enumerate index, tested" />
         <SrcRef file="tests/conformance/04-control-flow/big-loops-give-plain-results.kav" label="on cores(2), tested" />
       </div>
     </>

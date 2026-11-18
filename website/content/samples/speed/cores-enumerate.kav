@@ -1,0 +1,8 @@
+fn main() {
+    const prices = [120, 80, 45, 300]
+    let with_tax = [0, 0, 0, 0]
+    on cores for (i, p) in prices.enumerate() {
+        with_tax[i] = p + p * 18 / 100
+    }
+    print(with_tax)
+}
