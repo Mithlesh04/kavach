@@ -9,6 +9,6 @@ fn main() {
         send.put(1)
     }
     for n in receive {
-        print("took {n}")
+        print(`took {n}`)
     }
 }

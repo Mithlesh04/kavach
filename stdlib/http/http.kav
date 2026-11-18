@@ -204,7 +204,7 @@ pub fn file(path: String) -> Response ! FsError uses Fs.read {
     const reader = try fs.chunks(path, 65_536)
     const headers = [
         Header(name: "content-type", value: message.content_type(path)),
-        Header(name: "content-length", value: "{info.size}"),
+        Header(name: "content-length", value: `{info.size}`),
     ]
     Response(status: 200, headers: headers, body: Bytes([]), stream: reader, file: path)
 }
@@ -319,13 +319,13 @@ pub type Session {
     /// Sends a request and reads its response, which must say its length.
     fn send(self, method: String, path: String, given: [Header], body: Bytes) -> Response ! HttpError uses Net {
         const crlf = message.crlf()
-        let head = "{method} {path} HTTP/1.1{crlf}host: {self.host}{crlf}"
+        let head = `{method} {path} HTTP/1.1{crlf}host: {self.host}{crlf}`
         for h in client.traced(given) {
             if not client.own_header(h.name) {
-                head = head + "{h.name}: {h.value}{crlf}"
+                head = head + `{h.name}: {h.value}{crlf}`
             }
         }
-        head = head + "content-length: {body.len()}{crlf}{crlf}"
+        head = head + `content-length: {body.len()}{crlf}{crlf}`
         self.conn.write(head.bytes() + body) catch e => {
             fail HttpError.Network(error: e)
         }
@@ -335,7 +335,7 @@ pub type Session {
             if let got = done {
                 const parts = got.message.first.split(" ")
                 const status = Int(parts.get(1) ?? "") catch e => {
-                    fail HttpError.BadMessage(reason: "no status in `{got.message.first}`")
+                    fail HttpError.BadMessage(reason: `no status in \`{got.message.first}\``)
                 }
                 return Response(status: status, headers: got.message.headers, body: got.message.body)
             }

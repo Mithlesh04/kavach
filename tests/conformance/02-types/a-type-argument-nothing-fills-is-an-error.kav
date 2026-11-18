@@ -9,5 +9,5 @@ type Box<I> {
 fn main() {
     const fine = Box<Int>(raw: "1")
     const unknown = Box(raw: "2")       // error: nothing says what `I` is
-    print("{fine.raw} {unknown.raw}")
+    print(`{fine.raw} {unknown.raw}`)
 }

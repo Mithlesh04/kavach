@@ -10,7 +10,7 @@ test "nothing waits in a test" uses Approvals {
     agents.answer("RefundBot-17-2", approved: true, by: "asha") catch e => {
         missing = match e {
             ApprovalError.NotWaiting(id) => id,
-            ApprovalError.Failed(id, _) => "failed {id}",
+            ApprovalError.Failed(id, _) => `failed {id}`,
         }
     }
     assert missing == "RefundBot-17-2"

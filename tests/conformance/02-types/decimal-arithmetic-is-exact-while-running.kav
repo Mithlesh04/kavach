@@ -7,10 +7,10 @@
 
 fn main() {
     let p: Decimal = 0.1
-    print("{p + 0.2} {p + 0.2 == 0.3} {p * 3}")
+    print(`{p + 0.2} {p + 0.2 == 0.3} {p * 3}`)
     let one: Decimal = 1.0
-    print("{one / 8} {p - 0.2} {p * p * 2}")
-    print("{p < 0.2} {p > 0.2}")
+    print(`{one / 8} {p - 0.2} {p * p * 2}`)
+    print(`{p < 0.2} {p > 0.2}`)
     let f = 0.1
     print(f + 0.2)
 }

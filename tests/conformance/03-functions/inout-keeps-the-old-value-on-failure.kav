@@ -25,16 +25,16 @@ fn add(inout names: [String], name: String) ! String {
 fn twice() -> Int ! String {
     let t = 1
     const a = try take(t, 4)
-    print("{a} {t}")
+    print(`{a} {t}`)
     t
 }
 
 fn main() {
     let t = 5
     const b = take(t, 3) catch 0
-    print("{b} {t}")
+    print(`{b} {t}`)
     const c = take(t, 3) catch -1
-    print("{c} {t}")
+    print(`{c} {t}`)
     let names = ["a"]
     add(names, "") catch e => print(e)
     print(names.len())

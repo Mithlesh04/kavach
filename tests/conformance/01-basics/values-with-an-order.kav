@@ -22,6 +22,6 @@ fn main() {
         Person(name: "Meera", age: 30, vip: true),
         Person(name: "Dev", age: 25, vip: false),
     ]
-    print(people.sort_by(p => (p.age, p.name)).map(p => "{p.age} {p.name}").join(", "))
+    print(people.sort_by(p => (p.age, p.name)).map(p => `{p.age} {p.name}`).join(", "))
     print(people.sort_by(.vip).map(p => p.name).join(" "))
 }

@@ -17,7 +17,7 @@ fn slow() -> Int {
 fn main() ! Error {
     const t = spawn slow()
     const first = t.wait().timeout(50.ms) catch e => {
-        print("gave up: {e}")
+        print(`gave up: {e}`)
         -1
     }
     print(first)

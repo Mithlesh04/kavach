@@ -10,7 +10,7 @@ type Command = AddItem(name: String, count: Int = 1) | Show(limit: Int = 10)
 fn main() ! Error {
     const command = try cli.parse<Command>()
     match command {
-        Command.AddItem(name, count) => print("add {name} x{count}")
-        Command.Show(limit) => print("show {limit}")
+        Command.AddItem(name, count) => print(`add {name} x{count}`)
+        Command.Show(limit) => print(`show {limit}`)
     }
 }

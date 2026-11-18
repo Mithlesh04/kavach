@@ -1,8 +1,8 @@
-// Rule: `\r` in a string is a carriage return, one character, as protocols ending lines with `\r\n` need.
+// Rule: `\r` in a template is a carriage return, one character, as protocols ending lines with `\r\n` need.
 // Spec: 1.7
 // expect output: 4 13
 
 fn main() {
-    const line = "ok\r\n"
-    print("{line.len()} {Int(line.chars()[2])}")
+    const line = `ok\r\n`
+    print(`{line.len()} {Int(line.chars()[2])}`)
 }

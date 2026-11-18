@@ -20,5 +20,5 @@ fn main() ! Error uses Fs {
         const xs = chunk.as_list<Int32>() ?? []
         total += Int(xs.map(x => work(x)).sum(x => x))
     }
-    print("sum {total}, {time.monotonic_ms() - t0} ms")
+    print(`sum {total}, {time.monotonic_ms() - t0} ms`)
 }

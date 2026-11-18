@@ -29,8 +29,8 @@ fn down_b(n: Int, f: Float32, s: String) -> Int {
 }
 
 fn main() {
-    print("{is_even(1000)} {is_odd(1000)} {is_odd(999)}")
+    print(`{is_even(1000)} {is_odd(1000)} {is_odd(999)}`)
     const steps = ping(5, [])
-    print("{steps[0]} {steps[1]} {steps[2]} {steps[3]} {steps[4]}")
+    print(`{steps[0]} {steps[1]} {steps[2]} {steps[3]} {steps[4]}`)
     print(down_a(3000, 0.0, ""))
 }

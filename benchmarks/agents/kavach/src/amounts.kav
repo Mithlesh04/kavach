@@ -29,7 +29,7 @@ pub capability Till {
 
 type Drawer: Till {
     fn refund(self, order_id: Int, amount: Int) -> Paid ! PayError {
-        Paid(id: "r{order_id}")
+        Paid(id: `r{order_id}`)
     }
 }
 
@@ -47,21 +47,21 @@ agent Cashier {
 
     on request(r: Request) -> String ! Error {
         const d = try ask<Refund>(
-            "{policy()}\n\nOrder {r.id}: {r.price} USD, delivered {r.days} days ago. " +
-            "The customer's note: {r.note}\nHow much should we refund?"
+            `{policy()}\n\nOrder {r.id}: {r.price} USD, delivered {r.days} days ago. ` +
+            `The customer's note: {r.note}\nHow much should we refund?`
         )
         const amount = match d.share {
             Share.Full => r.price,
             Share.Half => r.price / 2,
             Share.Nothing => 0,
-            Share.Escalate => return "{r.id} escalate",
+            Share.Escalate => return `{r.id} escalate`,
         }
         if amount > 0 {
             const _p = Till.refund(r.id, amount) catch _ => {
-                return "{r.id} escalate"
+                return `{r.id} escalate`
             }
         }
-        "{r.id} refund {amount}"
+        `{r.id} refund {amount}`
     }
 }
 
@@ -70,7 +70,7 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Till.refu
     const desk = Cashier.start(Till: Drawer())
     if not together {
         for r in requests {
-            print(desk.request(r) catch e => "error {e}")
+            print(desk.request(r) catch e => `error {e}`)
         }
         return
     }
@@ -79,6 +79,6 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Till.refu
         asked.push(spawn desk.request(r))
     }
     for a in asked {
-        print(a.wait() catch e => "error {e}")
+        print(a.wait() catch e => `error {e}`)
     }
 }

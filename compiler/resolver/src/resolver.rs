@@ -37,6 +37,8 @@ pub(crate) struct Resolver {
     pub(crate) extend_params: Vec<(DefId, DefId, usize)>,
     /// Where each module constant's name is written (spec 1.13).
     pub(crate) const_spans: std::collections::HashSet<u32>,
+    /// Where each untagged string in quotes starts (spec 1.7).
+    pub(crate) plain_strings: Vec<u32>,
     /// Names a `for` or a `match` arm takes (spec 4.4): `const`, but not
     /// declared with `const`, so changing one gets its own advice.
     pub(crate) taken: std::collections::HashSet<DefId>,
@@ -60,6 +62,7 @@ impl Resolver {
             type_params: HashMap::new(),
             extend_params: Vec::new(),
             const_spans: Default::default(),
+            plain_strings: Vec::new(),
         };
         let builtins = prelude::TYPES
             .iter()

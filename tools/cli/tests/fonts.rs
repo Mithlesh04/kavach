@@ -10,16 +10,16 @@ use std.fs
 
 fn main() ! Error uses Fs {
     const f = try font.load(try fs.read_bytes(\"sample.ttf\"))
-    print(\"{f.ascent} {f.descent} {f.line_gap}\")
+    print(`{f.ascent} {f.descent} {f.line_gap}`)
     const line = f.shape(\"AB A\", 100.0)
     for g in line.glyphs {
-        print(\"{g.id} {g.x} {g.y}\")
+        print(`{g.id} {g.x} {g.y}`)
     }
     print(line.width)
     const atlas = f.atlas(\"A BA\", 64.0)
-    print(\"{atlas.image.width} {atlas.image.height} {atlas.spread}\")
+    print(`{atlas.image.width} {atlas.image.height} {atlas.spread}`)
     for (id, b) in atlas.boxes {
-        print(\"{id}: {b.x} {b.y} {b.width} {b.height} {b.left} {b.top}\")
+        print(`{id}: {b.x} {b.y} {b.width} {b.height} {b.left} {b.top}`)
         // Deep inside the square, and in the hole of `B`.
         print(atlas.image.pixel(b.x + 24, b.y + 30))
     }

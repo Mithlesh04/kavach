@@ -8,8 +8,8 @@ fn main() {
     const kept = counter
     counter.update(n => n + 1)
     kept.update(n => n + 1)
-    print("{counter.get()} {kept.get()}")
+    print(`{counter.get()} {kept.get()}`)
     counter = Shared(10)
     kept.update(n => n + 1)
-    print("{counter.get()} {kept.get()}")
+    print(`{counter.get()} {kept.get()}`)
 }

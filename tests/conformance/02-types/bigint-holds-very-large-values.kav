@@ -10,7 +10,7 @@ fn main() {
     print(top * top)
     const big = BigInt(2) ** 200
     print(big)
-    print("{big / (BigInt(2) ** 199)} {big > top * top}")
+    print(`{big / (BigInt(2) ** 199)} {big > top * top}`)
     let seven: BigInt = -7
-    print("{seven / 2} {seven % 3}")
+    print(`{seven / 2} {seven % 3}`)
 }

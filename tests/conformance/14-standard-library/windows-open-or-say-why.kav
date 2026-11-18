@@ -12,14 +12,14 @@ fn main() uses Window, Input, Console {
             win.listen_input()
             win.set_title("Kavach window, renamed")
             const size = win.size()
-            print("open: {size.width > 0} {win.scale() > 0.0}")
+            print(`open: {size.width > 0} {win.scale() > 0.0}`)
             let kinds = 0
             for _ in 0..20 {
                 kinds += win.poll().len()
             }
-            print("polled: {kinds >= 0}")
+            print(`polled: {kinds >= 0}`)
             win.close()
-            print("closed: {win.poll().is_empty()}")
+            print(`closed: {win.poll().is_empty()}`)
         }
         err(WindowError.Unavailable(_)) => {
             print("open: true true")

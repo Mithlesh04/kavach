@@ -25,10 +25,10 @@ fn kind(j: Json) -> String {
 }
 
 fn main() ! Error {
-    const doc = try json.parse("[\{\"name\": \"Ada\", \"age\": 36, \"x\": 1.5, \"ok\": true, \"n\": null, \"tags\": [1, 2, 3]}, []]")
+    const doc = try json.parse(`[\{"name": "Ada", "age": 36, "x": 1.5, "ok": true, "n": null, "tags": [1, 2, 3]}, []]`)
     const first = doc[0]
-    print("{doc.len()} {first["name"].text() ?? "?"} {first["age"].int() ?? 0} {first["x"].float() ?? 0.0} {first["ok"].bool() ?? false} {first["n"].is_null()} {first["tags"].len()} {doc[1].len()}")
-    print("{kind(first["missing"])} {kind(doc[5])} {kind(doc[-1])} {kind(first["name"]["deeper"])}")
+    print(`{doc.len()} {first["name"].text() ?? "?"} {first["age"].int() ?? 0} {first["x"].float() ?? 0.0} {first["ok"].bool() ?? false} {first["n"].is_null()} {first["tags"].len()} {doc[1].len()}`)
+    print(`{kind(first["missing"])} {kind(doc[5])} {kind(doc[-1])} {kind(first["name"]["deeper"])}`)
     const missing = [
         if first["age"].text() == none { "none" } else { "text" },
         if first["name"].int() == none { "none" } else { "int" },
@@ -37,19 +37,19 @@ fn main() ! Error {
     ]
     print(missing.join(" "))
 
-    const nums = try json.parse("\{\"i\": 7, \"f\": 2.5, \"big\": 99999999999999999999}")
-    print("{nums["i"].int() ?? -1} {nums["f"].float() ?? -1.0} {nums["big"].int() ?? -1}")
+    const nums = try json.parse(`\{"i": 7, "f": 2.5, "big": 99999999999999999999}`)
+    print(`{nums["i"].int() ?? -1} {nums["f"].float() ?? -1.0} {nums["big"].int() ?? -1}`)
 
-    const escaped = try json.parse("[\"a \\\"quoted\\\" \\u00e9\"]")
+    const escaped = try json.parse(`["a \\"quoted\\" \\u00e9"]`)
     print(escaped[0].text() ?? "?")
 
     const made: Json = {"name": "Ada", "tags": ["x", "y"], "n": 36}
-    const parsed = try json.parse("\{\"name\": \"Ada\", \"tags\": [\"x\", \"y\"], \"n\": 36}")
-    print("{parsed == made} {parsed["tags"] == made["tags"]} {parsed == doc}")
+    const parsed = try json.parse(`\{"name": "Ada", "tags": ["x", "y"], "n": 36}`)
+    print(`{parsed == made} {parsed["tags"] == made["tags"]} {parsed == doc}`)
     print(json.stringify(parsed))
 
     match parsed {
-        Json.Object(fields) => print("{fields.len()} fields, {(fields["tags"] ?? Json.Null).len()} tags"),
+        Json.Object(fields) => print(`{fields.len()} fields, {(fields["tags"] ?? Json.Null).len()} tags`),
         _ => print("not an object"),
     }
     let tags: [String] = []
@@ -59,5 +59,5 @@ fn main() ! Error {
     print(tags.join(","))
 
     const t = spawn (parsed["n"].int() ?? 0)
-    print("{try t.wait()} from a task")
+    print(`{try t.wait()} from a task`)
 }

@@ -51,9 +51,9 @@ Time is replayed too ([decision 0062](../../decisions/0062-crashes-restarts-and-
 
 ```kavach
 on remind(order_id: Int) ! Error {
-    try Email.send("Your order {order_id} ships soon.")
+    try Email.send(`Your order {order_id} ships soon.`)
     time.sleep(1.days)            // a crash an hour in: after the restart, 23 hours more
-    try Email.send("Your order {order_id} has shipped.")
+    try Email.send(`Your order {order_id} has shipped.`)
 }
 ```
 

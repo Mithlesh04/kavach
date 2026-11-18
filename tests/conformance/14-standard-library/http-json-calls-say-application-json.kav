@@ -15,13 +15,13 @@ pub type Order {
 
 /// Answers with what the request said, and its body back as JSON.
 fn echo(r: Request) -> Response {
-    const seen = "{r.header("content-type") ?? "none"} {r.body.text() ?? "?"}"
+    const seen = `{r.header("content-type") ?? "none"} {r.body.text() ?? "?"}`
     const order = http.read_json<Order>(r) catch _ => Order(id: 0, item: seen)
     if order.id == 0 {
         return http.text(400, seen)
     }
     if r.path == "/echo" {
-        print("server saw: {seen}")
+        print(`server saw: {seen}`)
     }
     http.json_response(200, json.of(order))
 }
@@ -29,11 +29,11 @@ fn echo(r: Request) -> Response {
 fn main() ! Error {
     const listener = try net.listen("127.0.0.1:0")
     const _server = spawn http.serve(listener, echo)
-    const base = "http://{listener.address()}"
+    const base = `http://{listener.address()}`
     const order = Order(id: 7, item: "pen")
-    const back = try http.post_json<Order>("{base}/echo", json.of(order))
+    const back = try http.post_json<Order>(`{base}/echo`, json.of(order))
     const body = json.stringify(json.of(order), 0)
-    const r = try http.request("POST", "{base}/again", headers: [Header(name: "content-type", value: "application/json")], body: body.bytes())
-    print("client saw: {r.header("content-type") ?? "none"} {r.body.text() ?? "?"}")
-    print("decoded: {back}")
+    const r = try http.request("POST", `{base}/again`, headers: [Header(name: "content-type", value: "application/json")], body: body.bytes())
+    print(`client saw: {r.header("content-type") ?? "none"} {r.body.text() ?? "?"}`)
+    print(`decoded: {back}`)
 }

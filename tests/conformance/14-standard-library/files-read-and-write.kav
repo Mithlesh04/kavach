@@ -11,9 +11,9 @@ use std.fs
 fn main() ! Error {
     const folder = "kavach-conformance-fs"
     try fs.create_dir(folder)
-    const path = "{folder}/notes.txt"
-    try fs.write_text(path, "one\n")
-    try fs.append_text(path, "two\n")
+    const path = `{folder}/notes.txt`
+    try fs.write_text(path, `one\n`)
+    try fs.append_text(path, `two\n`)
     print(fs.exists(path))
     for line in (try fs.read_text(path)).lines() {
         print(line)

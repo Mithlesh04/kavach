@@ -9,7 +9,7 @@ const PROGRAM: &str = "use std.term
 
 fn main() {
     const name = term.prompt(\"Name?\") ?? \"nobody\"
-    print(\"hi {name}\")
+    print(`hi {name}`)
     print(term.confirm(\"Sure?\", default: false))
     print(term.confirm(\"Really?\", default: true))
     print(term.choose(\"Color?\", [\"red\", \"green\"]) ?? -1)

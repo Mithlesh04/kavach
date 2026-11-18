@@ -6,5 +6,5 @@ use config
 use config.{title}
 
 fn main() {
-    print("{title} {config.width} {config.scaled()}")
+    print(`{title} {config.width} {config.scaled()}`)
 }

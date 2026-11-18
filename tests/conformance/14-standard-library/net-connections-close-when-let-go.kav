@@ -24,6 +24,6 @@ fn main() ! Error {
     const listener = try net.listen("127.0.0.1:0")
     const server = spawn serve(listener)
     try say_hi(listener.address())
-    print("server read: {server.wait() catch _ => "nothing: still open"}")
+    print(`server read: {server.wait() catch _ => "nothing: still open"}`)
     listener.close()
 }

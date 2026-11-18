@@ -10,14 +10,14 @@ use std.io
 /// style again, so the rest of `s` keeps it.
 fn paint(s: String, open: Int, close: Int, on: Bool) -> String
     example paint("hi", 31, 39, false) == "hi"
-    example paint("hi", 31, 39, true) == "\u{1B}[31mhi\u{1B}[39m"
-    example paint("a\u{1B}[39mb", 31, 39, true) == "\u{1B}[31ma\u{1B}[39m\u{1B}[31mb\u{1B}[39m"
+    example paint("hi", 31, 39, true) == `\u{1B}[31mhi\u{1B}[39m`
+    example paint(`a\u{1B}[39mb`, 31, 39, true) == `\u{1B}[31ma\u{1B}[39m\u{1B}[31mb\u{1B}[39m`
 {
     if not on {
         return s
     }
-    const start = "\u{1B}[{open}m"
-    const end = "\u{1B}[{close}m"
+    const start = `\u{1B}[{open}m`
+    const end = `\u{1B}[{close}m`
     start + s.replace(end, end + start) + end
 }
 
@@ -116,7 +116,7 @@ pub type Progress {
     pub fn done(self) uses Console {
         const _full = draw(Progress(total: self.total, steps: self.total, shown: self.shown))
         if io.is_terminal() {
-            io.write("\n")
+            io.write(`\n`)
         }
     }
 }
@@ -148,9 +148,9 @@ fn bar_text(done: Int, total: Int, width: Int) -> String
 {
     const percent = percent_of(done, total)
     const filled = width * percent / 100
-    const shown = "{percent}%"
+    const shown = `{percent}%`
     const pad = " ".repeat(5 - shown.len())
-    "[" + "#".repeat(filled) + "-".repeat(width - filled) + "]" + pad + shown + "  {done}/{total}"
+    "[" + "#".repeat(filled) + "-".repeat(width - filled) + "]" + pad + shown + `  {done}/{total}`
 }
 
 /// Draws `bar` on its line again, when its percentage changed and output
@@ -161,7 +161,7 @@ fn draw(bar: Progress) -> Progress uses Console {
         return bar
     }
     if io.is_terminal() {
-        io.write("\u{D}" + bar_text(bar.steps, bar.total, 20))
+        io.write(`\u{D}` + bar_text(bar.steps, bar.total, 20))
     }
     Progress(total: bar.total, steps: bar.steps, shown: percent)
 }
@@ -241,7 +241,7 @@ fn yes_no(answer: String) -> Bool?
 /// `default`.
 pub fn confirm(question: String, default: Bool) -> Bool uses Console {
     const hint = if default { "[Y/n]" } else { "[y/N]" }
-    yes_no(prompt("{question} {hint}") ?? "") ?? default
+    yes_no(prompt(`{question} {hint}`) ?? "") ?? default
 }
 
 /// Prints `question` and `options`, numbered from 1, and gives the index
@@ -249,9 +249,9 @@ pub fn confirm(question: String, default: Bool) -> Bool uses Console {
 pub fn choose(question: String, options: [String]) -> Int? uses Console {
     print(question)
     for i in 0..options.len() {
-        print("  {i + 1}. {options[i]}")
+        print(`  {i + 1}. {options[i]}`)
     }
-    const answer = prompt("Choose 1-{options.len()}:") ?? return none
+    const answer = prompt(`Choose 1-{options.len()}:`) ?? return none
     const n = Int(answer.trim()) catch e => {
         return none
     }

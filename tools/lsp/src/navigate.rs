@@ -100,7 +100,7 @@ pub fn show(c: &Compiled, ty: &Ty) -> String {
         Ty::Error => "?".to_string(),
         Ty::List(t) => format!("[{}]", show(c, t)),
         Ty::Set(t) => format!("Set<{}>", show(c, t)),
-        Ty::Map(k, v) => format!("[{}: {}]", show(c, k), show(c, v)),
+        Ty::Map(k, v) => format!("{{{}: {}}}", show(c, k), show(c, v)),
         Ty::Optional(t) => format!("{}?", show(c, t)),
         Ty::Range(t) => format!("Range<{}>", show(c, t)),
         Ty::Tuple(ts) => format!("({})", list(ts)),

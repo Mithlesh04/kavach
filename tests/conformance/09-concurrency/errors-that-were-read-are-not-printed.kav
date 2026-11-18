@@ -10,7 +10,7 @@ fn risky() -> Int ! Error {
 fn main() {
     const task = spawn risky()
     const _n = task.wait() catch e => {
-        print("caught: {e}")
+        print(`caught: {e}`)
         0
     }
 }

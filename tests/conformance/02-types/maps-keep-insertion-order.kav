@@ -7,6 +7,6 @@
 fn main() {
     const ages = {"ravi": 27, "asha": 31, "meera": 40}
     for (name, age) in ages {
-        print("{name} {age}")
+        print(`{name} {age}`)
     }
 }

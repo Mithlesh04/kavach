@@ -1,0 +1,8 @@
+// Rule: a dict's functions all have one type: mixing `fn(Int, Int) -> Int` and `fn(String) -> String` is a compile error that says to use a record or a dict of a union.
+// Spec: 3.4
+// expect compile error
+
+fn main() {
+    const ops = {"add": (a: Int, b: Int) => a + b, "greet": (name: String) => "Hello " + name} // error: a dict holds one type of value
+    print(ops.len())
+}

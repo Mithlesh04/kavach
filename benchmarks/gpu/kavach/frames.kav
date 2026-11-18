@@ -40,6 +40,6 @@ fn main() {
     }
     const last = ps[999999]
     const t1 = time.monotonic_ms()
-    print("300 frames in {t1 - t0} ms")
-    print("{last.x} {last.y}")
+    print(`300 frames in {t1 - t0} ms`)
+    print(`{last.x} {last.y}`)
 }

@@ -6,6 +6,6 @@
 use std.regex
 
 fn main() ! Error {
-    print(try regex.new(r"\d+") == try regex.new(r"\d+"))
-    print(try regex.new(r"\d+") == try regex.new(r"[0-9]+"))
+    print(try regex.new("\d+") == try regex.new("\d+"))
+    print(try regex.new("\d+") == try regex.new("[0-9]+"))
 }

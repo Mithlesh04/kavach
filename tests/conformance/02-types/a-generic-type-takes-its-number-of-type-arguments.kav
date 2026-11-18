@@ -9,5 +9,5 @@ type Box<I> {
 fn main() {
     const a = Box<Int>(raw: "1")
     const c = Box<Int, String>(raw: "2")      // error: `Box` takes 1 type argument, not 2
-    print("{a.raw} {c.raw}")
+    print(`{a.raw} {c.raw}`)
 }

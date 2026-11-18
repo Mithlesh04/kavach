@@ -16,23 +16,23 @@ fn show(e: JsonError) {
     match e {
         JsonError.Invalid(problems) => {
             for p in problems {
-                print("{p.path}: {p.expected}")
+                print(`{p.path}: {p.expected}`)
             }
         }
-        _ => print("{e}"),
+        _ => print(`{e}`),
     }
 }
 
 fn main() {
-    const _dates = json.decode<[Date]>("[\"2024-01-02\", \"infinity\"]") catch e => {
+    const _dates = json.decode<[Date]>(`["2024-01-02", "infinity"]`) catch e => {
         show(e)
         []
     }
-    const _points = json.decode<[Pt]>("[\{\"x\": 1, \"y\": 2}, 5]") catch e => {
+    const _points = json.decode<[Pt]>(`[\{"x": 1, "y": 2}, 5]`) catch e => {
         show(e)
         []
     }
-    const _wrong = json.decode<[Pt]>("[\{\"x\": 1, \"y\": 2}, \{\"x\": \"no\", \"y\": 2}]") catch e => {
+    const _wrong = json.decode<[Pt]>(`[\{"x": 1, "y": 2}, \{"x": "no", "y": 2}]`) catch e => {
         show(e)
         []
     }

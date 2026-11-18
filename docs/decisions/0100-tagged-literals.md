@@ -11,7 +11,7 @@ A package that speaks another language, such as SQL for PostgreSQL and SQLite, c
 
 - A package declares `pub literal name: T check f language "x"`: `T` a record whose first field holds the text, `f(text) -> [LiteralProblem]` a pure function, `language` optional (spec 10.15).
 - The compiler runs `f` on each literal through the interpreter and reports each `LiteralProblem` at its column; a checker that panics or runs past a second is a compile error naming the tag.
-- The text is raw: no escapes, no interpolation; `"""…"""` for lines.
+- The text is raw: no escapes, no interpolation (since [decision 0131](0131-plain-strings-and-backtick-templates.md) every string in quotes is); `"""…"""` for lines.
 - Outside the package, a `T` comes only from a literal; a function making one from run-time text is `audited fn`, listed by `kavach audit`.
 - Generated tests make no `T` from made-up text; a function taking one is tested through its examples and `test` blocks.
 

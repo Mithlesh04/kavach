@@ -3,7 +3,7 @@
 // expect output: hello Asha
 
 fn greet(name: String) {
-    print("hello {name}")
+    print(`hello {name}`)
 }
 
 fn main() {

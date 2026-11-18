@@ -3,7 +3,7 @@
 // expect compile error
 
 fn order(name: String, count: Int = 0) -> String {
-    "{name} {count}"
+    `{name} {count}`
 }
 
 fn main() {

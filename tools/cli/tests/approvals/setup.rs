@@ -16,7 +16,7 @@ capability Payments {
 
 type Till: Payments {
     fn pay(self, amount: Int) -> Int ! PayError uses Console {
-        print(\"[pay] {amount}\")
+        print(`[pay] {amount}`)
         amount
     }
 }
@@ -47,7 +47,7 @@ pub fn main() ! Error uses Console, Env, Clock {
     if cli.args().contains(\"exit\") {
         const _w = spawn {
             bot.request(50) catch e => {
-                print(\"refused: {e}\")
+                print(`refused: {e}`)
                 0
             }
         }
@@ -56,22 +56,22 @@ pub fn main() ! Error uses Console, Env, Clock {
     }
     if cli.args().contains(\"boom\") {
         const paid = bot.boom(50) catch e => {
-            print(\"failed: {e}\")
+            print(`failed: {e}`)
             return
         }
-        print(\"paid {paid}\")
+        print(`paid {paid}`)
     }
     if cli.args().contains(\"twice\") {
         const a = spawn bot.request(50)
         const b = spawn bot.request(50)
-        print(\"paid {(try a.wait()) + (try b.wait())}\")
+        print(`paid {(try a.wait()) + (try b.wait())}`)
     }
     if cli.args().contains(\"send\") {
         const paid = bot.request(50) catch e => {
-            print(\"refused: {e}\")
+            print(`refused: {e}`)
             return
         }
-        print(\"paid {paid}\")
+        print(`paid {paid}`)
     }
     print(\"done\")
 }

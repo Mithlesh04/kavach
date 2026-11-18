@@ -9,7 +9,7 @@ use std.time
 
 fn report(name: String, ms: Int) -> String {
     time.sleep_ms(ms)
-    print("{name} done")
+    print(`{name} done`)
     name
 }
 
@@ -27,6 +27,6 @@ fn main() ! Error {
     }
     const slow = spawn thread report("slow", 300)  // far apart, so a busy machine keeps the order
     const fast = spawn report("fast", 20)
-    print("both started, total {total}")
-    print("{try slow.wait()} and {try fast.wait()} are back")
+    print(`both started, total {total}`)
+    print(`{try slow.wait()} and {try fast.wait()} are back`)
 }

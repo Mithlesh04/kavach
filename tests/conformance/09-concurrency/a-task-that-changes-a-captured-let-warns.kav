@@ -10,8 +10,8 @@ fn main() ! Error {
     const t = spawn {
         count += 1          // warning: `count` is a copy inside this task
         log.push(1)         // warning: `log` is a copy inside this task
-        print("task has {count} {log}")
+        print(`task has {count} {log}`)
     }
     try t.wait()
-    print("main has {count} {log}")
+    print(`main has {count} {log}`)
 }

@@ -14,5 +14,5 @@ fn main() {
     print(img.pixel(1, 0))
     print(img.pixel(0, 1))
     print(img.pixel(1, 1))
-    print("{img.width} {img.height} {img.pixels.len()}")
+    print(`{img.width} {img.height} {img.pixels.len()}`)
 }

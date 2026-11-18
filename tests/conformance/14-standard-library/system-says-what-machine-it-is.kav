@@ -26,7 +26,7 @@ fn facts() -> [Bool] uses System {
 fn main() {
     const os = system.os()
     const cores = system.cores()
-    print("{os.name == "windows" or os.name == "linux" or os.name == "macos"} {system.arch() != ""} {threads() >= 1 and cores.physical >= 1 and cores.physical <= cores.logical}")
-    print(facts().map(b => "{b}").join(" "))
+    print(`{os.name == "windows" or os.name == "linux" or os.name == "macos"} {system.arch() != ""} {threads() >= 1 and cores.physical >= 1 and cores.physical <= cores.logical}`)
+    print(facts().map(b => `{b}`).join(" "))
     print(process.cpu_ms() >= 0)
 }

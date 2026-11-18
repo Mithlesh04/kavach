@@ -7,9 +7,9 @@
 fn main() {
     let zero = 0.0
     const minus = zero * -1.0
-    print("{minus} {minus * -1.0}")
-    print("{1.0 / minus < -1.7976931348623157e308} {1.0 / zero > 1.7976931348623157e308}")
+    print(`{minus} {minus * -1.0}`)
+    print(`{1.0 / minus < -1.7976931348623157e308} {1.0 / zero > 1.7976931348623157e308}`)
     let big: Float32 = 3.0e38
     const over = big * 10.0
-    print("{over > big} {-over < -big}")
+    print(`{over > big} {-over < -big}`)
 }

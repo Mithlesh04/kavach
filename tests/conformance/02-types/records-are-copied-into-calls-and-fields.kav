@@ -30,5 +30,5 @@ fn main() {
     line.end.x = 5
     print(p.x)
     print(line.end.x)
-    print("{line.start.x} {line.end.x}")
+    print(`{line.start.x} {line.end.x}`)
 }

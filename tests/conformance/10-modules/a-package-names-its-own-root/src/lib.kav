@@ -7,5 +7,5 @@ pub type Part {
 
 /// The label of `p`, twice.
 pub fn both(p: Part) -> String {
-    "{parts.label(p)}, {parts.label(p)}"
+    `{parts.label(p)}, {parts.label(p)}`
 }

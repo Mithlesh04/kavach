@@ -10,17 +10,17 @@ use std.json
 
 fn main() {
     match json.parse("[1, 2, 3]", max_bytes: 4) {
-        ok(v) => print("read {v}"),
+        ok(v) => print(`read {v}`),
         err(e) => match e {
-            JsonError.TooLarge(limit) => print("too large: {limit}"),
-            _ => print("other: {e}"),
+            JsonError.TooLarge(limit) => print(`too large: {limit}`),
+            _ => print(`other: {e}`),
         },
     }
     print(json.parse("[1]", max_bytes: 4) catch _ => Json.Null)
-    const three = "\{\"a\": 1, \"b\": 2, \"c\": 3}"
+    const three = `\{"a": 1, "b": 2, "c": 3}`
     match json.parse(three, max_fields: 2) {
-        ok(v) => print("read {v}"),
+        ok(v) => print(`read {v}`),
         err(_) => print("refused 3 fields"),
     }
-    print(json.parse("\{\"a\": 1, \"b\": 2}", max_fields: 2) catch _ => Json.Null)
+    print(json.parse(`\{"a": 1, "b": 2}`, max_fields: 2) catch _ => Json.Null)
 }

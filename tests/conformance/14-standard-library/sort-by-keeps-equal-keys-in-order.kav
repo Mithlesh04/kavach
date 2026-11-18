@@ -16,5 +16,5 @@ fn main() {
     }
     print(ok)
     const small = (0..10).to_list().sort_by(x => x % 3)
-    print("{small.take(4)} {small.slice(4, 7)} {small.skip(7)}")
+    print(`{small.take(4)} {small.slice(4, 7)} {small.skip(7)}`)
 }

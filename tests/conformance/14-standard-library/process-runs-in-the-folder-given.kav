@@ -9,9 +9,9 @@ use std.process
 fn main() ! Error uses Fs, Process, Console {
     const dir = "kavach-t-proc-folder"
     try fs.create_dir(dir)
-    try fs.write_text("{dir}/a.txt", "hello\n")
+    try fs.write_text(`{dir}/a.txt`, `hello\n`)
     const inside = try process.run("git", ["hash-object", "a.txt"], folder: dir)
-    print("{inside.code} {inside.out.trim()}")
+    print(`{inside.code} {inside.out.trim()}`)
     // From this program's own folder there is no `a.txt`.
     const here = try process.run("git", ["hash-object", "a.txt"], folder: "")
     print(here.code)

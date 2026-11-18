@@ -7,9 +7,9 @@ use std.clipboard
 fn copy_back(text: String) -> String uses Clipboard
     ensure result == text
 {
-    const before = clipboard.read_text() catch e => "{e}"
+    const before = clipboard.read_text() catch e => `{e}`
     if before != "Empty" {
-        return "not empty: {before}"
+        return `not empty: {before}`
     }
     clipboard.write_text(text) catch _ => return "not written"
     clipboard.read_text() catch _ => "not read"

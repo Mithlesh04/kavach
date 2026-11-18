@@ -11,19 +11,19 @@ use std.fs
 
 fn main() ! FsError uses Fs, Console {
     const dir = "kavach-t-fs-folder"
-    try fs.create_dir("{dir}/sub")
-    try fs.write_text("{dir}/file.txt", "x")
-    const text = fs.read_text("{dir}/sub") catch _ => "read refused"
+    try fs.create_dir(`{dir}/sub`)
+    try fs.write_text(`{dir}/file.txt`, "x")
+    const text = fs.read_text(`{dir}/sub`) catch _ => "read refused"
     print(text)
-    fs.write_text("{dir}/sub", "over") catch _ => print("write refused")
-    const _data = fs.read_bytes("{dir}/sub") catch _ => {
+    fs.write_text(`{dir}/sub`, "over") catch _ => print("write refused")
+    const _data = fs.read_bytes(`{dir}/sub`) catch _ => {
         print("bytes refused")
         Bytes([])
     }
-    const _names = fs.list("{dir}/file.txt") catch _ => {
+    const _names = fs.list(`{dir}/file.txt`) catch _ => {
         print("list refused")
         []
     }
-    print((try fs.info("{dir}/sub")).kind)
+    print((try fs.info(`{dir}/sub`)).kind)
     try fs.remove_all(dir)
 }

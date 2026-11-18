@@ -14,7 +14,7 @@ capability Payments {
 
 type FakePayments: Payments {
     fn refund(self, order_id: Int, amount: Int) -> Receipt ! PaymentError {
-        Receipt(id: "r{order_id}")
+        Receipt(id: `r{order_id}`)
     }
 }
 
@@ -49,16 +49,16 @@ fn main() {
     const k = Keeper.start(Payments: FakePayments())
     for (id, amount) in [(1, 50), (2, 150)] {
         const r = w.refund(id, amount) catch e => {
-            print("{id}: {e}")
+            print(`{id}: {e}`)
             continue
         }
-        print("{id}: {r.id}")
+        print(`{id}: {r.id}`)
     }
     for (id, amount) in [(1, 50), (2, 150)] {
         const r = k.refund(id, amount) catch e => {
-            print("{id}: {e}")
+            print(`{id}: {e}`)
             continue
         }
-        print("{id}: {r.id}")
+        print(`{id}: {r.id}`)
     }
 }

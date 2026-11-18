@@ -6,8 +6,8 @@
 // expect output: नमनम true false
 
 fn main() {
-    print("{"नमस्ते".len()} {"héllo".len()} {"👍".len()} {"".len()}")
-    print("{"héllo".upper()} {"ÀB".lower()}")
-    print("{"नमस्ते".starts_with("नम")} {"héllo".ends_with("llo")} {"héllo".starts_with("e")}")
-    print("{"नम".repeat(2)} {"".is_empty()} {" ".is_empty()}")
+    print(`{"नमस्ते".len()} {"héllo".len()} {"👍".len()} {"".len()}`)
+    print(`{"héllo".upper()} {"ÀB".lower()}`)
+    print(`{"नमस्ते".starts_with("नम")} {"héllo".ends_with("llo")} {"héllo".starts_with("e")}`)
+    print(`{"नम".repeat(2)} {"".is_empty()} {" ".is_empty()}`)
 }

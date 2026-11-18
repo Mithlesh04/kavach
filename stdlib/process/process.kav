@@ -90,10 +90,10 @@ pub fn run(program: String, args: [String], folder: String = "", env: {String: S
         if let line = child.next() {
             match line {
                 Output.Out(text) => {
-                    out += text + "\n"
+                    out += text + `\n`
                 },
                 Output.Err(text) => {
-                    err += text + "\n"
+                    err += text + `\n`
                 },
             }
         } else {

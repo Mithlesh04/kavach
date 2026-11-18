@@ -8,7 +8,7 @@ type Guard: Drop {
     n: Int
 
     fn drop(self) {
-        print("drop {self.n}")
+        print(`drop {self.n}`)
     }
 }
 

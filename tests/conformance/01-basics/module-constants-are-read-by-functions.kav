@@ -19,7 +19,7 @@ fn shout() -> String {
 }
 
 fn main() {
-    print("{count} particles at {step(1.0)}")
+    print(`{count} particles at {step(1.0)}`)
     print(doubled)
     print(shout())
 }

@@ -8,8 +8,8 @@
 use std.process
 
 fn pinger(program: String) -> String uses Process("ping") {
-    const done = process.run(program, ["--version"]) catch e => return "{e}"
-    "{done.code}"
+    const done = process.run(program, ["--version"]) catch e => return `{e}`
+    `{done.code}`
 }
 
 fn outer() -> [String] uses Process("git") {
@@ -17,8 +17,8 @@ fn outer() -> [String] uses Process("git") {
 }
 
 fn pinger_free(program: String) -> String uses Process {
-    const done = process.run(program, ["--version"]) catch e => return "{e}"
-    "{done.code}"
+    const done = process.run(program, ["--version"]) catch e => return `{e}`
+    `{done.code}`
 }
 
 fn main() uses Process, Console {

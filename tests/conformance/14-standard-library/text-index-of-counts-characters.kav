@@ -5,9 +5,9 @@
 
 fn main() {
     const after_emoji = "👍a".index_of("a") ?? -1
-    const after_mark = "e\u{301}x".index_of("x") ?? -1
+    const after_mark = `e\u{301}x`.index_of("x") ?? -1
     const last_a = "a👍a".last_index_of("a") ?? -1
     const last_emoji = "👍👍".last_index_of("👍") ?? -1
-    print("{after_emoji} {after_mark} {last_a} {last_emoji}")
-    print("{"".index_of("a")} {"".last_index_of("a")}")
+    print(`{after_emoji} {after_mark} {last_a} {last_emoji}`)
+    print(`{"".index_of("a")} {"".last_index_of("a")}`)
 }

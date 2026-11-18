@@ -8,6 +8,6 @@ use std.time
 
 fn main() {
     print(time.zone_offset("Asia/Kolkata", 0) ?? 1)
-    print("{time.zone_offset("America/New_York", 1_782_907_200_000) ?? 1} {time.zone_offset("America/New_York", 1_767_268_800_000) ?? 1}")
-    print("{time.zone_offset("+05:30", 0)} {time.zone_offset("Mars/Olympus", 0)}")
+    print(`{time.zone_offset("America/New_York", 1_782_907_200_000) ?? 1} {time.zone_offset("America/New_York", 1_767_268_800_000) ?? 1}`)
+    print(`{time.zone_offset("+05:30", 0)} {time.zone_offset("Mars/Olympus", 0)}`)
 }

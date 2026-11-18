@@ -6,6 +6,6 @@
 fn main() {
     const nan = 0.0 / 0.0
     let one = 1.0
-    print("{one.compare(2.5) < 0} {2.5.compare(one) > 0}")
-    print("{one.compare(one)} {nan.compare(one)} {one.compare(nan)}")
+    print(`{one.compare(2.5) < 0} {2.5.compare(one) > 0}`)
+    print(`{one.compare(one)} {nan.compare(one)} {one.compare(nan)}`)
 }

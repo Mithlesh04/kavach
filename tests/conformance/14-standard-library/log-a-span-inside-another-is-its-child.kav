@@ -12,12 +12,12 @@ fn main() {
         const trace = log.trace_id() ?? ""
         const outer = log.traceparent() ?? ""
         log.span("query") {
-            print("same trace: {log.trace_id() == trace}")
-            print("own span: {log.traceparent() != outer}")
+            print(`same trace: {log.trace_id() == trace}`)
+            print(`own span: {log.traceparent() != outer}`)
         }
         log.span("call", from: "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01") {
-            print("from ignored: {log.trace_id() == trace}")
+            print(`from ignored: {log.trace_id() == trace}`)
         }
-        print("back: {log.traceparent() == outer}")
+        print(`back: {log.traceparent() == outer}`)
     }
 }

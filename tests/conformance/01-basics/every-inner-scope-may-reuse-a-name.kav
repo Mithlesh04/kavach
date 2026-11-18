@@ -42,7 +42,7 @@ fn main() {
         const x = 36
         x + n
     })(0)
-    print("{a} {b} {c} {d} {e} {f} {g}")
+    print(`{a} {b} {c} {d} {e} {f} {g}`)
     const y = x
-    print("{x} {y}")
+    print(`{x} {y}`)
 }

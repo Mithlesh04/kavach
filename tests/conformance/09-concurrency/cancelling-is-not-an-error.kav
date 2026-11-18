@@ -13,7 +13,7 @@ fn nap() -> Int ! Error {
 fn run() {
     const _t = spawn {
         const n = nap() catch _ => -1
-        print("caught {n}")
+        print(`caught {n}`)
     }
     print("returning")
 }

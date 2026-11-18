@@ -22,7 +22,7 @@ fn bad(bytes: Bytes) -> String {
     const f = font.load(bytes) catch e => return match e {
         FontError.BadFont(_) => "BadFont",
     }
-    "a font with ascent {f.ascent}"
+    `a font with ascent {f.ascent}`
 }
 
 fn main() ! Error {

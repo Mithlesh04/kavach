@@ -37,14 +37,14 @@ fn run_all(steps: [fn(Int) -> Int], start: Int) -> Int {
 
 fn main() {
     const add3 = adder(3)
-    print("{add3(4)} {adder(10)(3)} {twice(adder(10))(3)}")
+    print(`{add3(4)} {adder(10)(3)} {twice(adder(10))(3)}`)
     const ops: {String: fn(Int, Int) -> Int} = {"add": (a, b) => a + b, "sub": (a, b) => a - b}
-    print("{(ops["add"] ?? ((a, b) => 0))(4, 6)} {(ops["sub"] ?? ((a, b) => 0))(1, 4)} {run_all([adder(1), x => x * 3, adder(-3)], 4)}")
+    print(`{(ops["add"] ?? ((a, b) => 0))(4, 6)} {(ops["sub"] ?? ((a, b) => 0))(1, 4)} {run_all([adder(1), x => x * 3, adder(-3)], 4)}`)
     const m: fn(Int8, Float32, String) -> Float = mix
-    print("{m(-1, 1.25, "ab")} {m(1, -1.25, "ab")}")
+    print(`{m(-1, 1.25, "ab")} {m(1, -1.25, "ab")}`)
     const p = Pipeline(name: "p", step: adder(5))
     const h = Holder(inner: p with { step: twice(p.step) })
-    print("{h.inner.step(5)} {Holder(inner: p).inner.step(110)}")
+    print(`{h.inner.step(5)} {Holder(inner: p).inner.step(110)}`)
     const steps = [adder(1), adder(2)]
     print(steps[1](steps[0](18)))
 }

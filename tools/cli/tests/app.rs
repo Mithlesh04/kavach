@@ -21,7 +21,7 @@ fn fall(n: Int) -> Int {
 fn main() ! Error uses Fs {
     const data = try app.data_dir(\"Skyfall\")
     const cache = try app.cache_dir(\"Skyfall\")
-    print(\"{fs.exists(data)} {fs.exists(cache)}\")
+    print(`{fs.exists(data)} {fs.exists(cache)}`)
     print(data.ends_with(\"Skyfall\"))
     const bad = app.config_dir(\"a/b\") catch _ => \"refused\"
     print(bad)

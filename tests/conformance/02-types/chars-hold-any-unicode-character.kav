@@ -7,8 +7,8 @@
 fn main() {
     const ka = 'क'
     const smile = '\u{1F600}'
-    print("{ka} {smile} {smile == '😀'}")
-    print("{Int(ka)} {Int(smile)} {Int('é')}")
+    print(`{ka} {smile} {smile == '😀'}`)
+    print(`{Int(ka)} {Int(smile)} {Int('é')}`)
     const code = 233
-    print("{Char(code)} {'Z' < 'a'} {'z' < 'é'}")
+    print(`{Char(code)} {'Z' < 'a'} {'z' < 'é'}`)
 }

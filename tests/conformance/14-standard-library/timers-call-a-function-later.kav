@@ -16,7 +16,7 @@ fn main() ! Error {
     })
     print("scheduled")
     print(try later.wait())
-    print("waited: {time.monotonic_ms() - start >= 50}")
+    print(`waited: {time.monotonic_ms() - start >= 50}`)
     const _never = time.after(10.seconds, () => print("never"))
     print("leaving")
 }

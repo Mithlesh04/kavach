@@ -11,7 +11,7 @@ capability Email {
 
 type ConsoleEmail: Email {
     fn send(self, to: String, body: String) ! EmailError uses Console {
-        print("sent to {to}: {body}")
+        print(`sent to {to}: {body}`)
     }
 }
 

@@ -7,7 +7,7 @@ fn stock_text(stock: Int) -> String {
     if stock == 0 {
         "Sold out"
     } else if stock < 5 {
-        "Only {stock} left"
+        `Only {stock} left`
     } else {
         "In stock"
     }

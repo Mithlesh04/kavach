@@ -45,21 +45,21 @@ fn main() ! Error uses Fs {
         const xs = chunk.as_list<Int32>() ?? []
         total += xs.len()
         pieces += 1
-        print("{xs[0]} {xs[xs.len() - 1]}")
+        print(`{xs[0]} {xs[xs.len() - 1]}`)
     }
-    print("{pieces} pieces, {total} numbers")
+    print(`{pieces} pieces, {total} numbers`)
 
     // The chunk is read again after: it must still hold its bytes.
     for chunk in try fs.chunks(path, size) {
         const xs = chunk.as_list<Int32>() ?? []
-        print("{xs.len()} {chunk.len()} {chunk[1]}")
+        print(`{xs.len()} {chunk.len()} {chunk[1]}`)
     }
 
     // Other item sizes, and a length that is no whole number of items.
     for chunk in try fs.chunks(path, size) {
         const wide = chunk.as_list<Int>()
         const short = chunk.as_list<Int16>()
-        print("{(wide ?? []).len()} {(short ?? []).len()}")
+        print(`{(wide ?? []).len()} {(short ?? []).len()}`)
     }
     for chunk in try fs.chunks(path, size + 1) {
         const whole = chunk.as_list<Int32>()

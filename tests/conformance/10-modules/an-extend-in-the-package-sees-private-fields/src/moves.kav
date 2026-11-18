@@ -10,6 +10,6 @@ extend Account {
     }
 
     pub fn summary(self) -> String {
-        "{self.deposits} deposits, {self.balance}"
+        `{self.deposits} deposits, {self.balance}`
     }
 }

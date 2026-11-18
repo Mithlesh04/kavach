@@ -9,11 +9,11 @@ fn main() ! Error {
     let xs = [1, 2]
     const limit = 10
     const t = spawn {
-        print("task sees {n} {xs} limit {limit}")
+        print(`task sees {n} {xs} limit {limit}`)
         n + xs.len() + limit
     }
     n = 2
     xs.push(3)
-    print("main changed n to {n}")
-    print("task value {try t.wait()}")
+    print(`main changed n to {n}`)
+    print(`task value {try t.wait()}`)
 }

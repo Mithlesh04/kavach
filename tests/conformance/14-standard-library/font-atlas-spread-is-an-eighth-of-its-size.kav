@@ -26,6 +26,6 @@ fn main() ! Error {
     const f = try sample()
     for size in [64.0, 48.0, 8.0, 1.0] {
         const atlas = f.atlas("A", size)
-        print("{atlas.size} {atlas.spread}")
+        print(`{atlas.size} {atlas.spread}`)
     }
 }

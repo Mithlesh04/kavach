@@ -20,13 +20,13 @@ fn lookup(id: Int) -> String ! LookupError {
     if id > 5 {
         fail LookupError.Missing(id: id)
     }
-    "item {id}"
+    `item {id}`
 }
 
 // A `fail` in an argument's handler.
 fn find(text: String) -> String ! AppError {
     lookup(parse(text) catch e => fail AppError.Parse(e: e)) catch e => {
-        return "looked up nothing: {e}"
+        return `looked up nothing: {e}`
     }
 }
 
@@ -37,13 +37,13 @@ fn parsed(text: String) -> Int ! AppError {
 // A `try` in an argument.
 fn find_again(text: String) -> String ! AppError {
     lookup(try parsed(text)) catch e => {
-        return "looked up nothing: {e}"
+        return `looked up nothing: {e}`
     }
 }
 
 fn main() {
-    print(find("x") catch e => "find failed: {e}")
-    print(find("7") catch e => "find failed: {e}")
-    print(find_again("x") catch e => "find failed: {e}")
-    print(find_again("7") catch e => "find failed: {e}")
+    print(find("x") catch e => `find failed: {e}`)
+    print(find("7") catch e => `find failed: {e}`)
+    print(find_again("x") catch e => `find failed: {e}`)
+    print(find_again("7") catch e => `find failed: {e}`)
 }

@@ -64,7 +64,7 @@ fn valid_programs_have_no_errors() {
             &[],
         ),
         (
-            "fn main() {\n  for (i, name) in [\"a\"].enumerate() {\n    print(\"{i} {name}\")\n  }\n}",
+            "fn main() {\n  for (i, name) in [\"a\"].enumerate() {\n    print(`{i} {name}`)\n  }\n}",
             &[],
         ),
     ]);
@@ -224,7 +224,7 @@ fn errors_must_be_handled() {
         ),
         (
             format!(
-                "{defs}fn main() {{\n  const x = risky(1) catch 0\n  const y = risky(2) catch e => {{\n    print(\"{{e}}\")\n    1\n  }}\n}}"
+                "{defs}fn main() {{\n  const x = risky(1) catch 0\n  const y = risky(2) catch e => {{\n    print(`{{e}}`)\n    1\n  }}\n}}"
             ),
             vec![],
         ),

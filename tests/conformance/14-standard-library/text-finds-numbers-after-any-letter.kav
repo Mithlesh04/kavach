@@ -7,7 +7,7 @@
 use std.text
 
 fn main() {
-    print("{text.find_int("café-3") ?? 0} {text.find_int("क-5") ?? 0}")
-    print("{text.find_ints("pages 10-20")} {text.find_ints("₹1,299")}")
-    print("{text.find_float("item-3.5") ?? 0.0} {text.find_float("é-2.5") ?? 0.0} {text.find_float("v1.2.3") ?? 0.0}")
+    print(`{text.find_int("café-3") ?? 0} {text.find_int("क-5") ?? 0}`)
+    print(`{text.find_ints("pages 10-20")} {text.find_ints("₹1,299")}`)
+    print(`{text.find_float("item-3.5") ?? 0.0} {text.find_float("é-2.5") ?? 0.0} {text.find_float("v1.2.3") ?? 0.0}`)
 }

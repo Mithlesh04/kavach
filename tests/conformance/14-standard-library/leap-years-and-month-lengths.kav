@@ -6,6 +6,6 @@
 use std.time
 
 fn main() {
-    print("{time.is_leap_year(2000)} {time.is_leap_year(2024)} {time.is_leap_year(2100)} {time.is_leap_year(2023)} {time.is_leap_year(1600)}")
-    print("{time.days_in_month(2024, 2)} {time.days_in_month(2023, 2)} {time.days_in_month(1900, 2)} {time.days_in_month(2000, 2)} {time.days_in_month(2026, 4)} {time.days_in_month(2026, 12)}")
+    print(`{time.is_leap_year(2000)} {time.is_leap_year(2024)} {time.is_leap_year(2100)} {time.is_leap_year(2023)} {time.is_leap_year(1600)}`)
+    print(`{time.days_in_month(2024, 2)} {time.days_in_month(2023, 2)} {time.days_in_month(1900, 2)} {time.days_in_month(2000, 2)} {time.days_in_month(2026, 4)} {time.days_in_month(2026, 12)}`)
 }

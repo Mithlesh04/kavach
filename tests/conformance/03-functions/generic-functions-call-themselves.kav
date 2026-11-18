@@ -19,8 +19,8 @@ fn odds<T>(xs: [T], at: Int, out: [T]) -> [T] {
 }
 
 fn main() {
-    print("{reversed([1, 2, 3])} {reversed(["a", "b", "c"])}")
+    print(`{reversed([1, 2, 3])} {reversed(["a", "b", "c"])}`)
     const small: [Int8] = [-1, 9, -2]
     const halves: [Float32] = [0.5, 1.5]
-    print("{evens(small, 0, [])} {evens(halves, 0, [])}")
+    print(`{evens(small, 0, [])} {evens(halves, 0, [])}`)
 }

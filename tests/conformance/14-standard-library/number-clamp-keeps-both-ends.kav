@@ -8,12 +8,12 @@ fn main() {
     const low: UInt8 = 3
     const high: UInt8 = 200
     const mid: UInt8 = 50
-    print("{low.clamp(10, 100)} {high.clamp(10, 100)} {mid.clamp(10, 100)}")
-    print("{0.clamp(0, 9)} {9.clamp(0, 9)} {7.clamp(5, 5)}")
+    print(`{low.clamp(10, 100)} {high.clamp(10, 100)} {mid.clamp(10, 100)}`)
+    print(`{0.clamp(0, 9)} {9.clamp(0, 9)} {7.clamp(5, 5)}`)
     const under: Decimal = -3.25
     const over: Decimal = 4.5
     const inside: Decimal = 0.50
     const lo: Decimal = 0.00
     const hi: Decimal = 1.00
-    print("{under.clamp(lo, hi)} {over.clamp(lo, hi)} {inside.clamp(lo, hi)}")
+    print(`{under.clamp(lo, hi)} {over.clamp(lo, hi)} {inside.clamp(lo, hi)}`)
 }

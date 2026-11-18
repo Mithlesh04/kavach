@@ -9,7 +9,7 @@
 
 fn main() {
     print("hello world".replace("o", "0"))
-    print("a\nb".lines())
+    print(`a\nb`.lines())
     print("नम".chars())
     print("नमस्ते".index_of("म") ?? 0)
     print("abc".index_of("z"))

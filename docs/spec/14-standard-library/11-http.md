@@ -19,7 +19,7 @@ fn login(r: Request) -> Response {
     Response(status: 200, headers: [
         Header(name: "set-cookie", value: "session=abc; HttpOnly"),
         Header(name: "set-cookie", value: "theme=dark"),
-    ], body: "hello, {client}".bytes())
+    ], body: `hello, {client}`.bytes())
 }
 ```
 
@@ -45,7 +45,7 @@ use std.http
 use std.net
 
 fn hello(r: Request) -> Response {
-    http.text(200, "hello from {r.path}")
+    http.text(200, `hello from {r.path}`)
 }
 
 fn main() ! Error {
@@ -70,7 +70,7 @@ pub type Order {
 
 fn orders(r: Request) -> Response {
     const wanted = http.read_json<Order>(r) catch e => return http.text(400, "not an order")
-    http.json_response(200, json.of(Order(id: wanted.id, item: "{wanted.item}, packed")))
+    http.json_response(200, json.of(Order(id: wanted.id, item: `{wanted.item}, packed`)))
 }
 
 fn main() ! Error {
@@ -121,7 +121,7 @@ fn upload(r: Request) -> Response uses Net {
         const piece = r.read_body() catch e => return http.text(400, "upload cut off")
         total += (piece ?? break).len()
     }
-    http.text(200, "got {total} bytes")
+    http.text(200, `got {total} bytes`)
 }
 
 fn download(r: Request) -> Response uses Fs.read {
@@ -159,14 +159,14 @@ fn upload(r: Request) -> Response ! HttpError uses Net, Console {
     while true {
         const part = (try form.next()) ?? break
         if part.filename == none {
-            print("{part.name} = {try part.text()}")
+            print(`{part.name} = {try part.text()}`)
             continue
         }
         while true {
             received += ((try part.read()) ?? break).len()
         }
     }
-    http.text(200, "received {received} bytes")
+    http.text(200, `received {received} bytes`)
 }
 ```
 
@@ -195,7 +195,7 @@ fn chat(r: Request) -> Response {
         while true {
             const message = (try ws.receive()) ?? break
             match message {
-                WsMessage.Text(text) => try ws.send_text("you said {text}"),
+                WsMessage.Text(text) => try ws.send_text(`you said {text}`),
                 WsMessage.Binary(data) => try ws.send_bytes(data),
             }
         }
@@ -203,7 +203,7 @@ fn chat(r: Request) -> Response {
 }
 ```
 
-**Traces.** `http.serve` runs each handler in a span named by the request's method (`GET`; a router names it with its route, `log.name_span("GET /orders/\{id}")`, never the raw path), continuing the trace of the request's W3C `traceparent` header when it has one; `http.request` and the other calls send the current span's `traceparent` (14.12, [decision 0107](../../decisions/0107-traces-and-metrics.md)). A server the internet reaches directly sets `follow_trace: false` in its `ServeLimits`: each request then starts a trace of its own, so a client can't choose trace ids or join its requests to someone else's trace, as OpenTelemetry advises at a trust boundary.
+**Traces.** `http.serve` runs each handler in a span named by the request's method (`GET`; a router names it with its route, `log.name_span("GET /orders/{id}")`, never the raw path), continuing the trace of the request's W3C `traceparent` header when it has one; `http.request` and the other calls send the current span's `traceparent` (14.12, [decision 0107](../../decisions/0107-traces-and-metrics.md)). A server the internet reaches directly sets `follow_trace: false` in its `ServeLimits`: each request then starts a trace of its own, so a client can't choose trace ids or join its requests to someone else's trace, as OpenTelemetry advises at a trust boundary.
 
 **Stopping.** `http.serve` holds the program's stop (`cli.on_stop`, 5.8) for `drain_timeout`. On Ctrl+C or `SIGTERM` (how Docker and Kubernetes stop a container), it answers new connections with 503, closes those waiting for their next request, finishes the requests under way, and then lets go, so the program ends without cutting a response off. A second signal ends it at once.
 

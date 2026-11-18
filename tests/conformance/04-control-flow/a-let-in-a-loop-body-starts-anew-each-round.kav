@@ -12,7 +12,7 @@ fn main() {
         let step = 0
         step += 1
         total += step
-        print("{i} {step}")
+        print(`{i} {step}`)
         i += 1
         if i < 2 {
             continue
@@ -21,5 +21,5 @@ fn main() {
             break
         }
     }
-    print("rounds {i} total {total}")
+    print(`rounds {i} total {total}`)
 }

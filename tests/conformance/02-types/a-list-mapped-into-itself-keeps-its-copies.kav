@@ -20,9 +20,9 @@ fn main() {
     let a = [1, 2, 3]
     const b = a
     a = a.map(n => n * 2)
-    print("{a} {b}")
+    print(`{a} {b}`)
     let words = ["a", "bb"]
-    words = words.map(w => "{w}!")
+    words = words.map(w => `{w}!`)
     print(words)
     let n = [1, 2, 3]
     n = n.map(v => v + n.len())
@@ -34,12 +34,12 @@ fn main() {
     for _ in 0..5 {
         big = big.map(v => v + 1)
     }
-    print("{big[0]} {big[999]}")
+    print(`{big[0]} {big[999]}`)
     let ps = [P(x: 1, y: 2), P(x: 3, y: 4)]
     const keep = ps
     ps = ps.map(p => P(x: p.y, y: p.x + 10))
     ps = ps.map(p => P(x: p.x * 2, y: p.y))
-    print("{ps} {keep}")
+    print(`{ps} {keep}`)
     let one = [P(x: 1, y: 3)]
     one = one.map(swap)
     print(one[0])

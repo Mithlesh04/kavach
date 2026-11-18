@@ -22,6 +22,6 @@ fn main() {
     match double_age(200) {
         ok(value) => print(value)
         err(AgeError.Empty) => print("empty")
-        err(AgeError.TooLarge(value)) => print("too large: {value}")
+        err(AgeError.TooLarge(value)) => print(`too large: {value}`)
     }
 }

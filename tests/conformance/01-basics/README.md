@@ -16,8 +16,8 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.4 | [hiding-let-that-is-never-used-warns.kav](hiding-let-that-is-never-used-warns.kav) | A never-used variable that hides an outer `let` gets a warning that says so. | warning |
 | 1.4 | [let-cannot-be-reassigned.kav](let-cannot-be-reassigned.kav) | A `const` binding cannot be reassigned. | compile error |
 | 1.4 | [let-mut-is-not-kavach.kav](let-mut-is-not-kavach.kav) | `let mut` is a compile error that says to write `let`. | compile error |
-| 1.7 | [raw-text-over-many-lines.kav](raw-text-over-many-lines.kav) | `r"""…"""` is raw text over many lines, its indentation removed. | runs |
-| 1.7 | [f-strings-are-not-kavach.kav](f-strings-are-not-kavach.kav) | `f"…"` is a compile error that says every string fills in `{…}`. | compile error |
+| 1.7 | [quoted-text-over-many-lines-is-plain.kav](quoted-text-over-many-lines-is-plain.kav) | `"""…"""` is text over many lines exactly as written, its indentation removed. | runs |
+| 1.7 | [f-strings-are-not-kavach.kav](f-strings-are-not-kavach.kav) | `f"…"` is a compile error that says a template is written in backticks. | compile error |
 | 1.4 | [locals-only-after-let.kav](locals-only-after-let.kav) | A local variable can be used only after its `const`. | compile error |
 | 1.4 | [no-duplicate-name-in-scope.kav](no-duplicate-name-in-scope.kav) | A name must not be declared twice in the same scope. | compile error |
 | 1.4 | [no-overloading.kav](no-overloading.kav) | Two functions can't share a name: Kavach has no overloading. | compile error |
@@ -30,11 +30,14 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.7 | [decimal-literal-from-context.kav](decimal-literal-from-context.kav) | A number literal takes its type from context, so a Decimal literal is exact. | runs |
 | 1.7 | [integer-literals.kav](integer-literals.kav) | Integer literals may use `_` separators, hex (0x), octal (0o) and binary (0b). | runs |
 | 1.7 | [multi-line-string.kav](multi-line-string.kav) | A multi-line string drops the line breaks next to its delimiters and the common indentation. | runs |
-| 1.7 | [raw-string.kav](raw-string.kav) | A raw string has no escapes and no interpolation. | runs |
-| 1.7 | [string-escapes.kav](string-escapes.kav) | Strings support the escapes \" \\ and \u{…}. | runs |
-| 1.7 | [string-interpolation.kav](string-interpolation.kav) | Any expression inside {} in a string is inserted; \{ is a literal brace. | runs |
-| 1.7 | [interpolation-closes-on-its-line.kav](interpolation-closes-on-its-line.kav) | In one-line text, a `{` must close on its line: `"{"` is one error at the `{`. | compile error |
-| 1.7 | [interpolation-of-only-text-warns.kav](interpolation-of-only-text-warns.kav) | A `{…}` holding only text warns: `t == "{" or t == "}"` is a single string. | warning |
+| 1.7 | [a-quoted-string-is-plain.kav](a-quoted-string-is-plain.kav) | A string in quotes has no escapes and fills nothing in. | runs |
+| 1.7 | [a-quoted-string-that-looks-like-a-template-warns.kav](a-quoted-string-that-looks-like-a-template-warns.kav) | `"Hello, {name}"` with `name` in scope, or `"a\nb"`, warns to use backticks; a path or a pattern doesn't. | warning |
+| 1.7 | [r-strings-are-not-kavach.kav](r-strings-are-not-kavach.kav) | `r"…"` is a compile error that says to drop the `r`. | compile error |
+| 1.7 | [a-template-spans-lines.kav](a-template-spans-lines.kav) | A template whose text starts on the next line spans lines, its indentation removed. | runs |
+| 1.7 | [string-escapes.kav](string-escapes.kav) | Templates read the escapes \` \\ \{ and \u{…}; a `"` needs none. | runs |
+| 1.7 | [string-interpolation.kav](string-interpolation.kav) | Any expression inside {} in a template is inserted; \{ is a literal brace. | runs |
+| 1.7 | [interpolation-closes-on-its-line.kav](interpolation-closes-on-its-line.kav) | In a one-line template, a `{` must close on its line: `` `{` `` is one error at the `{`. | compile error |
+| 1.7 | [interpolation-of-only-text-warns.kav](interpolation-of-only-text-warns.kav) | A `{…}` holding only text warns: `` t == `{" or t == "}` `` is a single template. | warning |
 | 1.7 | [negative-literals-reach-the-minimum.kav](negative-literals-reach-the-minimum.kav) | A minus before a whole-number literal belongs to it: `-128` is an `Int8`. | runs |
 | 1.8 | [assignment-is-a-statement.kav](assignment-is-a-statement.kav) | Assignment is a statement, not an expression. | compile error |
 | 1.8 | [integer-division-truncates.kav](integer-division-truncates.kav) | Int / Int is an Int, truncated. | runs |
@@ -87,7 +90,7 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.13, 1.4, 10.1 | [unused-pub-constants-are-warned.kav](unused-pub-constants-are-warned.kav) | A module constant nothing reads gets a warning, a `pub` one too when nothing in its package reads it. | warning |
 | 1.3 | [statements-outside-main-are-an-error.kav](statements-outside-main-are-an-error.kav) | In a file with `fn main`, a statement outside `main` is a compile error, as it would never run; a top-level `const` is still a module constant. | compile error |
 | 1.11 | [text-in-collections-shows-as-written.kav](text-in-collections-shows-as-written.kav) | Text inside a collection shows as written, combining marks too; only quotes, backslashes, line breaks, tabs, and control and invisible characters are escaped. | runs |
-| 1.7 | [a-carriage-return-escape.kav](a-carriage-return-escape.kav) | `\r` in a string is a carriage return, one character, as protocols ending lines with `\r\n` need. | runs |
+| 1.7 | [a-carriage-return-escape.kav](a-carriage-return-escape.kav) | `\r` in a template is a carriage return, one character, as protocols ending lines with `\r\n` need. | runs |
 | 1.8 | [sets-and-maps-have-no-order.kav](sets-and-maps-have-no-order.kav) | A set or a map has no order, so comparing two with `<` is a compile error. | compile error |
 | 1.11 | [collections-print-like-literals.kav](collections-print-like-literals.kav) | Collections print as they are written: text items quoted, nested items in their own form, an empty list `[]`, an empty map `[:]`. | runs |
 | 1.11 | [decimals-print-every-digit-they-keep.kav](decimals-print-every-digit-they-keep.kav) | A `Decimal` prints all its digits, keeping its scale, alone, in text and inside collections and records. | runs |

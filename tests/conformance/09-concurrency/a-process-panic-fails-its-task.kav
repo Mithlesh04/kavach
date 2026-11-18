@@ -13,8 +13,8 @@ fn boom(n: Int) -> Int {
 fn main() {
     const t = spawn process boom(7)
     const shown = match t.wait() {
-        ok(n) => "{n}"
-        err(e) => "{e}"
+        ok(n) => `{n}`
+        err(e) => `{e}`
     }
     print(shown.starts_with("panicked: index 7 is out of range: the list has 3 items at "))
     print("main goes on")

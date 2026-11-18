@@ -36,14 +36,14 @@ pub type PlacedV2 {
 }
 
 fn orders(call: GrpcCall) -> GrpcReply {
-    const order = grpc.read<OrderV2>(call) catch e => return grpc.failed(3, "{e}")
-    print("server read: {order}")
+    const order = grpc.read<OrderV2>(call) catch e => return grpc.failed(3, `{e}`)
+    print(`server read: {order}`)
     grpc.reply(PlacedV2(id: order.id, total: 2.5 * Float(order.qty), eta: "tomorrow"))
 }
 
 fn main() ! Error {
     const listener = try net.listen("127.0.0.1:0")
     const _server = spawn grpc.serve(listener, orders)
-    const placed = try grpc.call<Order, Placed>("http://{listener.address()}", "/shop.Orders/Place", Order(id: 7, item: "pen"))
-    print("client read: {placed}")
+    const placed = try grpc.call<Order, Placed>(`http://{listener.address()}`, "/shop.Orders/Place", Order(id: 7, item: "pen"))
+    print(`client read: {placed}`)
 }

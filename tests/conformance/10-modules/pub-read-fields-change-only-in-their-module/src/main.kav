@@ -11,7 +11,7 @@ fn bump(inout n: Int) {
 fn main() {
     let a = bank.open("Asha")
     bank.deposit(a, 5)
-    print("{a.owner} {a.balance} {a.history.len()}")
+    print(`{a.owner} {a.balance} {a.history.len()}`)
     a.owner = "Ravi"
     a.balance = 100                                  // error: only module `bank` changes `balance`
     a.balance += 1                                   // error: only module `bank` changes `balance`
@@ -19,5 +19,5 @@ fn main() {
     bump(a.balance)                                  // error: an `inout` argument changes it
     const b = a with { balance: 7 }                  // error: `with` sets it
     const c = bank.Account(balance: 1, history: [], owner: "x") // error: only `bank` makes an `Account`
-    print("{b.owner} {c.owner}")
+    print(`{b.owner} {c.owner}`)
 }

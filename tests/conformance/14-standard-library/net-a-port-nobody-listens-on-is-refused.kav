@@ -11,7 +11,7 @@ fn main() ! Error {
     listener.close()
     const conn = net.connect(address) catch e => {
         match e {
-            NetError.Refused(a) => print("refused at the address: {a == address}"),
+            NetError.Refused(a) => print(`refused at the address: {a == address}`),
             _ => print("not refused"),
         }
         return

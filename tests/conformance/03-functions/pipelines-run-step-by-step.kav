@@ -11,11 +11,11 @@
 fn main() {
     const items = [1, 2, 3]
     const doubled = items.map(x => {
-        print("map {x}")
+        print(`map {x}`)
         x * 2
     })
     const kept = doubled.filter(x => {
-        print("keep {x}")
+        print(`keep {x}`)
         x > 2
     })
     print(kept.sum(x => x))

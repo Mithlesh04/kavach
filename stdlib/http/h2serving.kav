@@ -100,7 +100,7 @@ fn answer(out: Out, conn: Connection, m: H2Message, handler: fn(Request) -> Resp
 /// that fit the client's credit, and what it streams as it is read; for
 /// `HEAD` (`head_only`), the headers alone, ending the stream (14.11).
 fn respond(out: Out, stream: Int, response: Response, head_only: Bool) ! H2Error uses Net {
-    let headers = [Header(name: ":status", value: "{response.status}")]
+    let headers = [Header(name: ":status", value: `{response.status}`)]
     for h in response.headers {
         // Headers about the connection don't exist in HTTP/2.
         if not ["connection", "keep-alive", "transfer-encoding", "upgrade", "content-length"].contains(h.name) {
@@ -111,7 +111,7 @@ fn respond(out: Out, stream: Int, response: Response, head_only: Bool) ! H2Error
     const plain = response.stream == none
     let length = given
     if plain and (not head_only or given == none) {
-        length = "{response.body.len()}"
+        length = `{response.body.len()}`
     }
     if let n = length {
         headers.push(Header(name: "content-length", value: n))

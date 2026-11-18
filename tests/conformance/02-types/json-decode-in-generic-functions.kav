@@ -16,11 +16,11 @@ fn read<T>(text: String) -> T ! JsonError {
 }
 
 fn main() {
-    const p = read<Point>("\{\"x\": 1, \"y\": 2}") catch _ => Point(x: 0, y: 0)
+    const p = read<Point>(`\{"x": 1, "y": 2}`) catch _ => Point(x: 0, y: 0)
     print(p.y)
     const xs: [Int] = read("[3, 4]") catch _ => []
     print(xs)
-    const _bad = read<Point>("\{\"x\": 1, \"y\": true}") catch e => {
+    const _bad = read<Point>(`\{"x": 1, "y": true}`) catch e => {
         print(e)
         return
     }

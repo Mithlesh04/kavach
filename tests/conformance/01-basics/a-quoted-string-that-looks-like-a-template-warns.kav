@@ -1,0 +1,15 @@
+// Rule: A string in quotes that looks like it wanted a template, `"Hello, {name}"` with `name` in scope or `"a\nb"`, gets a warning that says to write it in backticks; braces or backslashes meant as text get none.
+// Spec: 1.7
+// expect warning
+// expect output: Hello, {name}
+// expect output: a\nb
+// expect output: {id} C:\new\{name} \d+
+// expect output: Asha
+
+fn main() {
+    const name = "Asha"
+    print("Hello, {name}")              // warning: write the text in backticks
+    print("a\nb")                       // warning: a backslash in quotes is a backslash
+    print("{id} C:\new\{name} \d+")     // no warning: `id` isn't a name here, a path, a pattern
+    print(name)
+}

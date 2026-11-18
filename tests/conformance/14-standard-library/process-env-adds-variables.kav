@@ -9,7 +9,7 @@ fn main() ! ProcessError uses Process, Console {
     // Git reads extra settings from GIT_CONFIG_COUNT, _KEY_n and _VALUE_n.
     const vars = {"GIT_CONFIG_COUNT": "1", "GIT_CONFIG_KEY_0": "kavachtest.value", "GIT_CONFIG_VALUE_0": "from kavach"}
     const given = try process.run("git", ["config", "--get", "kavachtest.value"], env: vars)
-    print("{given.code} [{given.out.trim()}]")
+    print(`{given.code} [{given.out.trim()}]`)
     const without = try process.run("git", ["config", "--get", "kavachtest.value"])
-    print("{without.code} [{without.out.trim()}]")
+    print(`{without.code} [{without.out.trim()}]`)
 }

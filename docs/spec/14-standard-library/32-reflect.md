@@ -17,11 +17,11 @@ extend String {
 
 fn main() {
     for m in Order.members() {
-        print("{m.kind} {m.name}: {m.result}")   // Field id: Int, Field total: Float
+        print(`{m.kind} {m.name}: {m.result}`)   // Field id: Int, Field total: Float
     }
     for m in String.members() {
         if m.origin != MemberOrigin.BuiltIn {
-            print("{m.name}: {m.origin}")         // shout: Extended(module: "main")
+            print(`{m.name}: {m.origin}`)         // shout: Extended(module: "main")
         }
     }
     print("hi".has_member("shout"))               // true

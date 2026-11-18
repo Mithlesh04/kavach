@@ -120,7 +120,7 @@ Each row is one improvement, with the ratio (Kavach ÷ C++) after it. Lower is b
 | 35 | 2026-10-31 | LLVM backend: text, interpolation, `==`/`+`/ordering on heap values, and lists of text (`w.len()` read from the item's tag) | | | | | | | | | | **0.80** |
 | 36 | 2026-10-31 | Unroll and jam: a loop that sums an inner loop computes 8 cells at once, sharing each row lookup, after one check that covers all their indexes; otherwise the plain loop runs | | | | **0.93** | | | | | | |
 | 37 | 2026-10-31 | Maps with integer keys: `m[k] = v` probes once, and the table keeps no hashes (cheaper to compute again) | | | | | | **0.48** | | | | |
-| 38 | 2026-10-31 | `list.push("word{i}")` on a list of text builds the text right in a 16-byte item on the stack: no text object for short text | | | | | | | | | | **0.62** |
+| 38 | 2026-10-31 | ``list.push(`word{i}`)`` on a list of text builds the text right in a 16-byte item on the stack: no text object for short text | | | | | | | | | | **0.62** |
 | 39 | 2026-10-31 | List pipelines fused: `map`, then `filter`, then `sum` run as one loop and build no lists in between; if a check fails, the code as written runs instead, so panics stay where the program says | | | | | | | | **0.26** | | |
 | 40 | 2026-10-31 | Unroll and jam: the check before the loop proves every index of the 8 cells, so the inner loop reads without checks and LLVM turns it into vector instructions | | | | **0.56** | | | | | | |
 

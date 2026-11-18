@@ -21,19 +21,19 @@ type User {
 fn main() {
     const pairs = [[1, 2], [3]]
     const [first, [x, y]] = pairs
-    print("{first} {x} {y}")
+    print(`{first} {x} {y}`)
     const [_, [a, b], [c, d]] = pairs
-    print("{a} {b} {c} {d}")
+    print(`{a} {b} {c} {d}`)
     const [_, _, [low = 0, high = 9]] = pairs
-    print("{low} {high}")
+    print(`{low} {high}`)
     const [_, _, [p, q] = [7, 8]] = pairs
-    print("{p} {q}")
+    print(`{p} {q}`)
 
     const u = User(name: "Asha", home: Address(city: "Pune", zip: none), work: none)
     const { home: { city, zip = 0 }, work: { city: office } } = u
-    print("{city} {zip} {office}")
+    print(`{city} {zip} {office}`)
 
     const settings = {"db": {"port": 5432}, "cache": {"port": 6379, "size": 64}}
     const [db: [port, size = 1], queue: [port: qport]] = settings
-    print("{port} {size} {qport}")
+    print(`{port} {size} {qport}`)
 }

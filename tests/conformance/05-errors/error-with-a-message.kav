@@ -6,7 +6,7 @@
 
 fn check(age: Int) -> Int ! Error {
     if age < 0 {
-        fail Error("age can't be negative: {age}")
+        fail Error(`age can't be negative: {age}`)
     }
     age
 }
@@ -14,8 +14,8 @@ fn check(age: Int) -> Int ! Error {
 fn main() ! Error {
     print(check(5) catch _ => -1)
     const r = check(-2) catch e => {
-        print("failed: {e}")
+        print(`failed: {e}`)
         0
     }
-    fail Error("stopped: {r} left")
+    fail Error(`stopped: {r} left`)
 }

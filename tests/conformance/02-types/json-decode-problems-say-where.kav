@@ -20,7 +20,7 @@ fn explain(e: JsonError) {
     match e {
         JsonError.Invalid(problems) => {
             for p in problems {
-                print("{p.path}: {p.expected}")
+                print(`{p.path}: {p.expected}`)
             }
         }
         _ => print("other"),
@@ -28,11 +28,11 @@ fn explain(e: JsonError) {
 }
 
 fn main() {
-    match json.decode<Order>("\{\"id\": 1, \"lines\": [\{\"price\": \"two\"}]}") {
+    match json.decode<Order>(`\{"id": 1, "lines": [\{"price": "two"}]}`) {
         ok(_) => print("ok"),
         err(e) => explain(e),
     }
-    match json.decode<Order>("\{\"id\": 1.5, \"lines\": []}") {
+    match json.decode<Order>(`\{"id": 1.5, "lines": []}`) {
         ok(_) => print("ok"),
         err(e) => explain(e),
     }
@@ -40,7 +40,7 @@ fn main() {
         ok(_) => print("ok"),
         err(e) => explain(e),
     }
-    match json.decode<Order>("\{\"lines\": []}") {
+    match json.decode<Order>(`\{"lines": []}`) {
         ok(_) => print("ok"),
         err(e) => explain(e),
     }

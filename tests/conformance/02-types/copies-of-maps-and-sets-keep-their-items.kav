@@ -9,14 +9,14 @@ fn main() {
     let n = m
     n["k"] = [9]
     n["j"] = [3]
-    print("{m} {n}")
+    print(`{m} {n}`)
     let s = Set.of(1)
     let t = s
     t.add(2)
     s.remove(1)
-    print("{s} {t}")
+    print(`{s} {t}`)
     let rows = [{"a": 1}, {"a": 2}]
     const before = rows
     rows[0]["a"] = 5
-    print("{rows} {before}")
+    print(`{rows} {before}`)
 }

@@ -10,9 +10,9 @@ use std.json
 fn explain(text: String) {
     const doc = json.parse(text) catch e => {
         match e {
-            JsonError.TooDeep(limit) => print("too deep: {limit}"),
-            JsonError.DuplicateKey(key, line, column) => print("key {key} twice, at {line}:{column}"),
-            JsonError.Syntax(line, column, message) => print("syntax at {line}:{column}: {message}"),
+            JsonError.TooDeep(limit) => print(`too deep: {limit}`),
+            JsonError.DuplicateKey(key, line, column) => print(`key {key} twice, at {line}:{column}`),
+            JsonError.Syntax(line, column, message) => print(`syntax at {line}:{column}: {message}`),
             _ => print("other"),
         }
         Json.Null
@@ -24,7 +24,7 @@ fn explain(text: String) {
 
 fn main() {
     explain("[".repeat(500))
-    explain("\{\"a\": 1, \"a\": 2}")
+    explain(`\{"a": 1, "a": 2}`)
     explain("[99999999999999999999]")
     explain("[1,]")
 }

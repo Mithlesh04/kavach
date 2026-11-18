@@ -12,7 +12,7 @@ fn le(n: Int, size: Int) -> [UInt8] {
 }
 
 fn is_bad(bytes: Bytes) -> Bool {
-    const s = audio.decode(bytes) catch e => return "{e}".starts_with("BadSound(")
+    const s = audio.decode(bytes) catch e => return `{e}`.starts_with("BadSound(")
     s.frames < 0
 }
 

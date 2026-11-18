@@ -27,9 +27,9 @@ fn main() ! Error {
             _ => "failed",
         },
     }
-    print("read: {first}")
+    print(`read: {first}`)
     const then = (try conn.read().timeout(5.seconds)) ?? Bytes([])
-    print("then: {then.text() ?? "?"}")
+    print(`then: {then.text() ?? "?"}`)
     conn.close()
     try server.wait()
     listener.close()

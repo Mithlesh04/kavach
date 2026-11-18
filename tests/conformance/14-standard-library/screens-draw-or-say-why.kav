@@ -23,5 +23,5 @@ fn main() uses Window {
         ok(win) => draw(win) catch _ => true,
         err(WindowError.Unavailable(_)) => true,
     }
-    print("shown: {shown}")
+    print(`shown: {shown}`)
 }

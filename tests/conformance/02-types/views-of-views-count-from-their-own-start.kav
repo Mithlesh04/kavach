@@ -7,11 +7,11 @@
 
 fn main() {
     const v = "hello world".view(6, 11)
-    print("{v.view(1, 3)} {v.view(3, 99)} [{v.view(7, 9)}]")
+    print(`{v.view(1, 3)} {v.view(3, 99)} [{v.view(7, 9)}]`)
     const padded = "  x  ".view()
-    print("[{padded.trim_start()}] [{padded.trim_end()}] {padded.trim()}")
+    print(`[{padded.trim_start()}] [{padded.trim_end()}] {padded.trim()}`)
     const part = "नमस्ते".view(2, 4)
-    print("{part} {part.len()}")
+    print(`{part} {part.len()}`)
     const kept: String = v.to_string()
-    print("{kept.upper()} {Float("x=2.5".view(2, 5)) catch 0.0}")
+    print(`{kept.upper()} {Float("x=2.5".view(2, 5)) catch 0.0}`)
 }

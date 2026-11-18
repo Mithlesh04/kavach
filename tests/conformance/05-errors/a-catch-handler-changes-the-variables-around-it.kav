@@ -25,5 +25,5 @@ fn main() {
         total += n
     }
     print(total)
-    print("{failures} {bad}")
+    print(`{failures} {bad}`)
 }

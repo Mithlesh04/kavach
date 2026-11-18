@@ -44,17 +44,17 @@ agent Dispatch {
     approve Carrier.reroute when cost > 300 by "dispatcher" within 1.seconds
 
     on exception(s: Shipment) -> String ! Error {
-        const p = try ask<Plan>("{policy()}\n\nShipment {s.id}: {s.note}")
+        const p = try ask<Plan>(`{policy()}\n\nShipment {s.id}: {s.note}`)
         match p.action {
             Action.Reroute => {
                 const _r = Carrier.reroute(s.id, s.reroute_cost) catch _ => {
-                    return "{s.id} escalate"
+                    return `{s.id} escalate`
                 }
-                "{s.id} reroute"
+                `{s.id} reroute`
             },
-            Action.Refund => "{s.id} refund",
-            Action.Wait => "{s.id} wait",
-            Action.Escalate => "{s.id} escalate",
+            Action.Refund => `{s.id} refund`,
+            Action.Wait => `{s.id} wait`,
+            Action.Escalate => `{s.id} escalate`,
         }
     }
 }
@@ -64,7 +64,7 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Carrier.r
     const desk = Dispatch.start(Carrier: Fleet())
     if not together {
         for s in shipments {
-            print(desk.exception(s) catch e => "error {e}")
+            print(desk.exception(s) catch e => `error {e}`)
         }
         return
     }
@@ -73,6 +73,6 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Carrier.r
         asked.push(spawn desk.exception(s))
     }
     for a in asked {
-        print(a.wait() catch e => "error {e}")
+        print(a.wait() catch e => `error {e}`)
     }
 }

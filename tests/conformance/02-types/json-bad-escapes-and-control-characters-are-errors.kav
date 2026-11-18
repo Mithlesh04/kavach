@@ -7,20 +7,20 @@ use std.json
 
 fn main() {
     const bad = [
-        "\"\\x41\"", "\"\\u12\"", "\"\\uZZZZ\"", "\"a\nb\"", "\"tab\there\"",
-        "\"\\ud800\"", "\"\\udc00\"", "\"\\ud800\\u0041\"",
+        `"\\x41"`, `"\\u12"`, `"\\uZZZZ"`, `"a\nb"`, `"tab\there"`,
+        `"\\ud800"`, `"\\udc00"`, `"\\ud800\\u0041"`,
     ]
     let refused = 0
     for text in bad {
         match json.parse(text) {
-            ok(v) => print("accepted: {v}"),
+            ok(v) => print(`accepted: {v}`),
             err(e) => match e {
                 JsonError.Syntax(_, _, _) => {
                     refused += 1
                 }
-                _ => print("other error: {e}"),
+                _ => print(`other error: {e}`),
             },
         }
     }
-    print("{refused} of {bad.len()} refused as syntax")
+    print(`{refused} of {bad.len()} refused as syntax`)
 }

@@ -23,12 +23,12 @@ fn main() {
     let v = u
     v.age = 41
     v.tags.push("b")
-    print("{u.age} {u.tags} {v.age} {v.tags}")
+    print(`{u.age} {u.tags} {v.age} {v.tags}`)
     let users = [u]
     let w = users[0]
     w.age += 1
-    print("{users[0].age} {w.age}")
+    print(`{users[0].age} {w.age}`)
     let team = Team(lead: u)
     team.lead.home.city = "Delhi"
-    print("{u.home.city} {team.lead.home.city}")
+    print(`{u.home.city} {team.lead.home.city}`)
 }

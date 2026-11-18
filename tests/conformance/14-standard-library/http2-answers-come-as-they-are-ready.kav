@@ -41,7 +41,7 @@ fn main() ! Error uses Clock {
     try fast.wait()
     try slow.wait()
     const got = order.get()
-    print("{got[0]} first")
-    print("{got[1]} later")
+    print(`{got[0]} first`)
+    print(`{got[1]} later`)
     c.close()
 }

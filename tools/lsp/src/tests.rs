@@ -349,7 +349,7 @@ fn definition_reaches_another_file_of_the_project() {
     );
 }
 
-const ORDERS: &str = "type Order {\n    id: Int\n    paid: Bool\n\n    fn label(self) -> String {\n        \"order {self.id}\"\n    }\n}\n\nfn double(n: Int) -> Int {\n    n * 2\n}\n\nfn main() {\n    const order = Order(id: 1, paid: true)\n    let total = double(21)\n    print(do)\n}\n";
+const ORDERS: &str = "type Order {\n    id: Int\n    paid: Bool\n\n    fn label(self) -> String {\n        `order {self.id}`\n    }\n}\n\nfn double(n: Int) -> Int {\n    n * 2\n}\n\nfn main() {\n    const order = Order(id: 1, paid: true)\n    let total = double(21)\n    print(do)\n}\n";
 
 /// The labels a completion answered with.
 fn labels(sent: &[Value], id: u64) -> Vec<String> {

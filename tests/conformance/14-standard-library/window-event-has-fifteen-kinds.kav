@@ -8,20 +8,20 @@ use std.window
 fn said(e: Event) -> String {
     match e {
         Event.Closed => "closed",
-        Event.Resized(width, height) => "{width} {height}",
-        Event.Scaled(factor) => "{factor}",
-        Event.Focused(on) => "{on}",
-        Event.Key(key, down) => "{key} {down}",
+        Event.Resized(width, height) => `{width} {height}`,
+        Event.Scaled(factor) => `{factor}`,
+        Event.Focused(on) => `{on}`,
+        Event.Key(key, down) => `{key} {down}`,
         Event.Text(text) => text,
-        Event.MouseMoved(x, y) => "{x} {y}",
-        Event.MouseButton(button, down) => "{button} {down}",
-        Event.Wheel(x, y) => "{x} {y}",
-        Event.Motion(x, y) => "{x} {y}",
-        Event.PadConnected(pad, name) => "{pad} {name}",
-        Event.PadGone(pad) => "{pad}",
-        Event.PadButton(pad, button, down) => "{pad} {button} {down}",
+        Event.MouseMoved(x, y) => `{x} {y}`,
+        Event.MouseButton(button, down) => `{button} {down}`,
+        Event.Wheel(x, y) => `{x} {y}`,
+        Event.Motion(x, y) => `{x} {y}`,
+        Event.PadConnected(pad, name) => `{pad} {name}`,
+        Event.PadGone(pad) => `{pad}`,
+        Event.PadButton(pad, button, down) => `{pad} {button} {down}`,
         Event.PadAxis(_, axis, _) => axis,
-        Event.Touch(id, _, _, phase, _) => "{id} {phase}",
+        Event.Touch(id, _, _, phase, _) => `{id} {phase}`,
     }
 }
 
@@ -31,6 +31,6 @@ fn main() {
         Event.PadAxis(pad: 0, axis: "LeftX", value: -1.0),
     ]
     for e in events {
-        print("{e} {said(e)}")
+        print(`{e} {said(e)}`)
     }
 }

@@ -15,5 +15,5 @@ fn main() {
         print("spawned")
         0
     }
-    print("after the arena: {n}")
+    print(`after the arena: {n}`)
 }

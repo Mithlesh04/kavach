@@ -7,7 +7,7 @@ fn main() {
     let up = 2.7
     let down = -2.7
     let near_top = 255.9
-    print("{Int(up)} {Int(down)} {UInt8(near_top)}")
+    print(`{Int(up)} {Int(down)} {UInt8(near_top)}`)
     const price: Decimal = 9.99
-    print("{Int(price)} {Int(-price)}")
+    print(`{Int(price)} {Int(-price)}`)
 }

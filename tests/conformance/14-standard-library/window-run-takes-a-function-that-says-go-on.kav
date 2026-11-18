@@ -23,5 +23,5 @@ fn main() {
         Event.Key(key: "Escape", down: true),
         Event.Key(key: "Escape", down: false),
     ]
-    print(keys.map(going_on).map(b => "{b}").join(" "))
+    print(keys.map(going_on).map(b => `{b}`).join(" "))
 }

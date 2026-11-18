@@ -93,20 +93,20 @@ pub fn call(method: String, url: String, given: [Header], body: Bytes) -> Respon
         }
         return Response(status: status, headers: message.plain(reply.headers), body: reply.body)
     }
-    let head = "{method} {target.path} HTTP/1.1{message.crlf()}host: {name}{message.crlf()}"
+    let head = `{method} {target.path} HTTP/1.1{message.crlf()}host: {name}{message.crlf()}`
     for h in headers {
         if not own_header(h.name) {
-            head = head + "{h.name}: {h.value}{message.crlf()}"
+            head = head + `{h.name}: {h.value}{message.crlf()}`
         }
     }
-    head = head + "content-length: {body.len()}{message.crlf()}connection: close{message.crlf()}{message.crlf()}"
+    head = head + `content-length: {body.len()}{message.crlf()}connection: close{message.crlf()}{message.crlf()}`
     const all = exchange(conn, head.bytes() + body) catch e => {
         fail HttpError.Network(error: e)
     }
     const reply = message.parse(all) ?? fail HttpError.BadMessage(reason: "the response is not HTTP")
     const parts = reply.first.split(" ")
     const status = Int(parts.get(1) ?? "") catch e => {
-        fail HttpError.BadMessage(reason: "no status in `{reply.first}`")
+        fail HttpError.BadMessage(reason: `no status in \`{reply.first}\``)
     }
     const body = if message.chunked(reply.headers) {
         message.dechunk(reply.body) ?? fail HttpError.BadMessage(reason: "a chunked body is cut off")
@@ -140,6 +140,6 @@ pub fn from_h2(e: H2Error) -> HttpError {
     match e {
         H2Error.Network(n) => HttpError.Network(error: n),
         H2Error.Protocol(reason) => HttpError.BadMessage(reason: reason),
-        H2Error.Reset(_, code) => HttpError.BadMessage(reason: "the server reset the stream (code {code})"),
+        H2Error.Reset(_, code) => HttpError.BadMessage(reason: `the server reset the stream (code {code})`),
     }
 }

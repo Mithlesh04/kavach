@@ -20,8 +20,8 @@ let count = 0
 count += 1
 const price: Decimal = 499.00       // exact; literals take their type from context
 const big = 1_000_000 + 0xff + 0b1010
-print("Hi {name}, {count + 1}")   // {expr} interpolation; \{ for a literal brace
-const raw = r"C:\path"
+print(`Hi {name}, {count + 1}\n`) // backticks fill in {expr} and read \n \t \{ \`
+const path = "C:\new\{x}"           // quotes: exactly what is written; no r"…" or f"…"
 const ok = not false and (1 < 2 or false)
 const label = user?.name ?? "guest" // ?. reads through optionals, ?? gives a default
 ```
@@ -48,10 +48,10 @@ interface Describe {
 }
 
 extend Order: Describe {
-    fn describe(self) -> String { "Order {self.id}" }
+    fn describe(self) -> String { `Order {self.id}` }
 }
 ```
-Create records with named arguments: `Order(id: 1, amount: 10, card: "x")`. Copy with changes: `order with { status: Status.Paid }`. Collections: `[Int]`, `[String: Int]` (insertion-ordered), `Set<T>`, tuples `(Int, String)`. Generics: `fn first<T>(items: [T]) -> T?`. Operators for your own types: `type Vec2: Add, Mul<Float>` with `fn add(self, other: Vec2) -> Vec2`, `fn mul(self, other: Float) -> Vec2` (also `Sub`, `Div`, `Rem`, `Neg`, and `Comparable` with `fn compare(self, other: Self) -> Int` for `<`); no overloading.
+Create records with named arguments: `Order(id: 1, amount: 10, card: "x")`. Copy with changes: `order with { status: Status.Paid }`. Collections: `[Int]`, `{String: Int}` (insertion-ordered dicts), `Set<T>`, tuples `(Int, String)`. Generics: `fn first<T>(items: [T]) -> T?`. Operators for your own types: `type Vec2: Add, Mul<Float>` with `fn add(self, other: Vec2) -> Vec2`, `fn mul(self, other: Float) -> Vec2` (also `Sub`, `Div`, `Rem`, `Neg`, and `Comparable` with `fn compare(self, other: Self) -> Int` for `<`); no overloading.
 
 ## Functions
 ```kavach
@@ -76,9 +76,9 @@ if let user = find(7) {
     print(user.name)
 }
 const text = match shape {
-    Shape.Circle(radius) => "circle {radius}"
+    Shape.Circle(radius) => `circle {radius}`
     Shape.Rect(width, height) if width == height => "square"
-    Shape.Rect(width: w, height: _) => "rect {w}"
+    Shape.Rect(width: w, height: _) => `rect {w}`
 }
 for i in 0..10 {
     print(i)
@@ -96,7 +96,7 @@ while attempts < 3 {
 ```kavach
 const age = parse_age(input) catch 0
 const next = parse_age(input) catch e => {
-    print("bad: {e}")
+    print(`bad: {e}`)
     0
 }
 const n = try parse_age(input) context "reading the age"
@@ -123,7 +123,7 @@ agent RefundBot {
     approve Payments.refund when amount > 5_000 by "finance"
 
     on request(order: Order) ! Error {
-        const decision = try ask<RefundDecision>("Refund order {order.id}?")
+        const decision = try ask<RefundDecision>(`Refund order {order.id}?`)
         if decision.approve {
             const receipt = try Payments.refund(order.id, order.amount)
         }

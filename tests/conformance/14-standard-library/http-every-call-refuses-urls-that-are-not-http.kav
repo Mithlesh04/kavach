@@ -11,23 +11,23 @@ use std.json
 
 fn main() uses Net, Console {
     const _a = http.post("ftp://localhost/a", "x".bytes()) catch e => {
-        print("post: {e}")
+        print(`post: {e}`)
         Response(status: 0, headers: [], body: Bytes([]))
     }
     const _b = http.request("PUT", "localhost:80/a") catch e => {
-        print("request: {e}")
+        print(`request: {e}`)
         Response(status: 0, headers: [], body: Bytes([]))
     }
     const _c = http.get_json<Int>("") catch e => {
-        print("get_json: {e}")
+        print(`get_json: {e}`)
         0
     }
     const _d = http.post_json<Int>("file:///etc/hosts", json.of(1)) catch e => {
-        print("post_json: {e}")
+        print(`post_json: {e}`)
         0
     }
     match http.open("ws://localhost/") {
         ok(s) => s.close(),
-        err(e) => print("open: {e}"),
+        err(e) => print(`open: {e}`),
     }
 }

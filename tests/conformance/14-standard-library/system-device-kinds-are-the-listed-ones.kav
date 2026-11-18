@@ -8,7 +8,7 @@ use std.system
 fn main() uses System {
     const kinds = ["bluetooth", "network", "audio", "display", "gpu", "keyboard", "mouse",
         "storage", "usb", "camera", "printer", "processor", "other"]
-    print("devices: {system.devices().all(d => kinds.contains(d.kind))}")
+    print(`devices: {system.devices().all(d => kinds.contains(d.kind))}`)
     const ports = ["HDMI", "DisplayPort", "internal", "VGA", "DVI", ""]
-    print("displays: {system.displays().all(d => ports.contains(d.connection) and d.hz >= 0)}")
+    print(`displays: {system.displays().all(d => ports.contains(d.connection) and d.hz >= 0)}`)
 }

@@ -7,9 +7,9 @@
 
 fn main() {
     const n: Int? = 5
-    print("{n.unwrap()} {n.is_some()} {n.is_none()}")
+    print(`{n.unwrap()} {n.is_some()} {n.is_none()}`)
     const s: String? = "hi"
-    print("{s.unwrap()} {s.is_some()}")
+    print(`{s.unwrap()} {s.is_some()}`)
     const xs: [Int]? = [1, 2]
     print(xs.unwrap().len())
     const f: Float? = 1.5

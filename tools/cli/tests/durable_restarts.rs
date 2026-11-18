@@ -69,7 +69,7 @@ fn main() ! Error {
     const bot = Picker.start()
     if cli.args().contains(\"send\") {
         const got = bot.pick([1, 2], 5) catch e => {
-            print(\"failed: {e}\")
+            print(`failed: {e}`)
             return
         }
         print(got)

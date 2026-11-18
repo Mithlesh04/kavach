@@ -1,4 +1,4 @@
 /// Prints a greeting: it uses the terminal.
 pub(out) fn greet(name: String) uses Console {
-    print("hello, {name}")
+    print(`hello, {name}`)
 }

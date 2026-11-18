@@ -8,12 +8,12 @@ type Box<T>: Drop {
     item: T
 
     fn drop(self) {
-        print("dropped a box of {self.item}")
+        print(`dropped a box of {self.item}`)
     }
 }
 
 fn main() {
     const number = Box(item: 3)
     const text = Box(item: "text")
-    print("{number.item} {text.item}")
+    print(`{number.item} {text.item}`)
 }

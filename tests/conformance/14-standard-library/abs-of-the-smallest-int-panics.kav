@@ -9,6 +9,6 @@ fn size(n: Int) -> Int {
 
 fn main() {
     const small: Int8 = -127
-    print("{size(-9223372036854775807)} {small.abs()}")
+    print(`{size(-9223372036854775807)} {small.abs()}`)
     print(size(-9223372036854775807 - 1))
 }

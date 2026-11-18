@@ -9,12 +9,12 @@ fn main() {
     const present: Int? = 7
     const missing: Int? = none
     if let n = present {
-        print("inside {n}")
+        print(`inside {n}`)
     }
-    print("outside {n}")
+    print(`outside {n}`)
     if let n = missing {
-        print("never {n}")
+        print(`never {n}`)
     } else {
-        print("none here {n}")
+        print(`none here {n}`)
     }
 }

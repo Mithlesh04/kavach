@@ -6,7 +6,7 @@
 use std.fs
 
 fn look(dir: String) -> String ! FsError uses Fs.read {
-    const path = "{dir}/a.txt"
+    const path = `{dir}/a.txt`
     const info = try fs.info(path)
     let lines = 0
     for _ in try fs.lines(path) {
@@ -17,14 +17,14 @@ fn look(dir: String) -> String ! FsError uses Fs.read {
         pieces += 1
     }
     const w = try fs.watch(dir)
-    const first = "{fs.exists(path)} {(try fs.read_text(path)).len()} {info.kind}"
-    "{first}\n{lines} {pieces} {(try fs.list(dir)).len()} {w.poll()} {(try fs.read_bytes(path)).len() - 2}"
+    const first = `{fs.exists(path)} {(try fs.read_text(path)).len()} {info.kind}`
+    `{first}\n{lines} {pieces} {(try fs.list(dir)).len()} {w.poll()} {(try fs.read_bytes(path)).len() - 2}`
 }
 
 fn main() ! FsError uses Fs, Console {
     const dir = "kavach-t-fs-readonly-cap"
     try fs.create_dir(dir)
-    try fs.write_text("{dir}/a.txt", "hi")
+    try fs.write_text(`{dir}/a.txt`, "hi")
     print(try look(dir))
     try fs.remove_all(dir)
 }

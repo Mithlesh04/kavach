@@ -11,12 +11,12 @@ fn main() {
     send.put(("ravi", 40))
     send.close()
     for (name, age) in receive {
-        print("{name} is {age}")
+        print(`{name} is {age}`)
     }
     const (pairs, pair_in) = Channel<(Int, String)>(capacity: 2)
     pairs.put((3, "x"))
     match pair_in.take() {
-        Taken.Item((n, word)) => print("{n} and {word}"),
+        Taken.Item((n, word)) => print(`{n} and {word}`),
         Taken.Closed => print("closed"),
     }
     pairs.put((4, "y"))

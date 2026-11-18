@@ -13,7 +13,7 @@ use std.cli
 
 fn slow(r: Request) -> Response uses Clock {
     time.sleep_ms(300)
-    http.text(200, "done {r.path}")
+    http.text(200, `done {r.path}`)
 }
 
 fn ask(c: H2Client, address: String, path: String) -> String ! Error uses Net {
@@ -27,13 +27,13 @@ fn main() ! Error uses Net, Clock, Console {
     const address = listener.address()
     const _server = spawn http.serve(listener, slow)
     const c = try h2.connect(try net.connect(address))
-    print("first: {try ask(c, address, "/one")}")
+    print(`first: {try ask(c, address, "/one")}`)
     const waiting = spawn ask(c, address, "/cancelled")
     time.sleep_ms(100)
     waiting.cancel()
     const t0 = time.monotonic_ms()
     const status = ask(c, address, "/after") catch _ => "failed"
-    print("never hangs: {time.monotonic_ms() - t0 < 5000}")
-    print("answered or going away: {status == "200" or c.going_away()}")
+    print(`never hangs: {time.monotonic_ms() - t0 < 5000}`)
+    print(`answered or going away: {status == "200" or c.going_away()}`)
     cli.exit(0)
 }

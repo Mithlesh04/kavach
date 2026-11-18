@@ -30,12 +30,12 @@ fn main() {
     ]
 
     for order in orders {
-        print("#{order.id} {order.customer}: {label(order.status)}")
+        print(`#{order.id} {order.customer}: {label(order.status)}`)
     }
 
-    print("Total paid: {total_paid(orders)}")
+    print(`Total paid: {total_paid(orders)}`)
 
     // Records are values: `with` makes an updated copy.
     const refunded = orders[0] with { status: Status.Refunded }
-    print("Order {refunded.id} is now {label(refunded.status)}")
+    print(`Order {refunded.id} is now {label(refunded.status)}`)
 }

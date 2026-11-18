@@ -263,7 +263,7 @@ fn string(data: Bytes, at: Int) -> Text ! HpackError {
 /// table, newest first.
 fn entry(t: Table, index: Int) -> Header ! HpackError {
     if index < 1 or index - 61 > t.entries.len() {
-        fail HpackError.Malformed(reason: "no header at index {index}")
+        fail HpackError.Malformed(reason: `no header at index {index}`)
     }
     if index <= 61 {
         return static_table()[index - 1]

@@ -7,16 +7,16 @@ use std.http
 use std.net
 
 fn main() ! Error {
-    const crlf = "\u{D}\n"
+    const crlf = `\u{D}\n`
     const calls = Shared(0)
     const listener = try net.listen("127.0.0.1:0")
     const _server = spawn http.serve(listener, r => {
         calls.update(c => c + 1)
-        http.text(200, "got {r.body.len()} bytes")
+        http.text(200, `got {r.body.len()} bytes`)
     }, limits: ServeLimits(min_body_rate: 1_000))
     // 10 of the 100 bytes promised, then nothing: about a second allowed.
     const conn = try net.connect(listener.address())
-    try conn.write("POST / HTTP/1.1{crlf}content-length: 100{crlf}{crlf}{"x".repeat(10)}".bytes())
+    try conn.write(`POST / HTTP/1.1{crlf}content-length: 100{crlf}{crlf}{"x".repeat(10)}`.bytes())
     let all = Bytes([])
     while true {
         const piece = conn.read().timeout(5.seconds) catch _ => break
@@ -24,5 +24,5 @@ fn main() ! Error {
     }
     conn.close()
     print((all.text() ?? "").split(crlf)[0])
-    print("handler calls: {calls.get()}")
+    print(`handler calls: {calls.get()}`)
 }

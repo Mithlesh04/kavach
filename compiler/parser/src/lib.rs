@@ -43,7 +43,8 @@ pub fn parse(src: &str) -> Parsed {
         })
         .collect();
     let mut parser = parser::Parser::new(src, lexed.tokens);
-    let file = parser.file();
+    let mut file = parser.file();
+    file.plain_strings = lexed.plain;
     // A lexer error (such as an unmatched `]`) often makes the parser stumble
     // at the same spot; keep only the lexer's clearer message.
     let lexer_starts: Vec<u32> = errors.iter().map(|e| e.span.start).collect();

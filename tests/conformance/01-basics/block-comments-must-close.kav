@@ -5,4 +5,4 @@
 fn main() {
     print(1)
 }
-/* never closed   // error: the comment has no `*/`
+/* never closed   // error: the comment has no end

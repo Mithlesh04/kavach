@@ -7,7 +7,7 @@
 
 use std.crypto
 
-print("{crypto.random_bytes(0).len()} {crypto.random_bytes(16).len()} {crypto.random_bytes(64).len()}")
+print(`{crypto.random_bytes(0).len()} {crypto.random_bytes(16).len()} {crypto.random_bytes(64).len()}`)
 print(crypto.random_bytes(32) == crypto.random_bytes(32))
 const t = crypto.token()
 const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
@@ -17,5 +17,5 @@ for c in t.chars() {
         url_safe = false
     }
 }
-print("{t.len()} {url_safe}")
+print(`{t.len()} {url_safe}`)
 print(t == crypto.token())

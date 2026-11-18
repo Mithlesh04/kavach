@@ -11,7 +11,7 @@ use std.http.h3
 
 fn show(headers: [Header]) {
     for h in headers {
-        print("{h.name}: {h.value}")
+        print(`{h.name}: {h.value}`)
     }
 }
 
@@ -31,7 +31,7 @@ fn main() ! Error {
     ])))
     // Required Insert Count 1: entries this side never has.
     const refused = h3.decode(Bytes([2, 0, 128])) catch e => {
-        print("refused: {e}")
+        print(`refused: {e}`)
         return
     }
     show(refused)

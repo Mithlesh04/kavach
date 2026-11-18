@@ -52,6 +52,6 @@ fn main() ! Error uses Ai, Console, Env, Fs, Payments.refund, Payouts.pay, Ops.r
         "warranty" => try warranty.run(args[1], args[2], args.len() < 4),
         // `crash <data> <bank url> <start|resume>` (crash_run.py)
         "crash" => try crash.run(args[1], args[2], args[3]),
-        other => print("no case {other}"),
+        other => print(`no case {other}`),
     }
 }

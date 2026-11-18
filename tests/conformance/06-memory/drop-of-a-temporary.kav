@@ -11,7 +11,7 @@ type Guard: Drop {
     name: String
 
     fn drop(self) {
-        print("released {self.name}")
+        print(`released {self.name}`)
     }
 }
 
@@ -20,5 +20,5 @@ fn main() {
     print("next")
     let g = Guard(name: "one")
     g = Guard(name: "two")
-    print("holding {g.name}")
+    print(`holding {g.name}`)
 }

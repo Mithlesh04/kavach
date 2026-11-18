@@ -19,10 +19,10 @@ fn show(e: JsonError) {
     match e {
         JsonError.Invalid(problems) => {
             for p in problems {
-                print("{p.path}: {p.expected}")
+                print(`{p.path}: {p.expected}`)
             }
         }
-        _ => print("other: {e}"),
+        _ => print(`other: {e}`),
     }
 }
 
@@ -31,7 +31,7 @@ fn main() ! JsonError {
         show(e)
         []
     }
-    const _b = json.decode<[Pair]>("[\{\"small\": -1, \"tiny\": -129}]") catch e => {
+    const _b = json.decode<[Pair]>(`[\{"small": -1, "tiny": -129}]`) catch e => {
         show(e)
         []
     }

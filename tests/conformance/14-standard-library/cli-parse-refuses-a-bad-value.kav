@@ -13,10 +13,10 @@ type Args {
 
 fn main() {
     const args = cli.parse<Args>() catch e => {
-        const text = "{e}"
-        print("refused: {text.contains("--limit")} {text.contains("ten")}")
+        const text = `{e}`
+        print(`refused: {text.contains("--limit")} {text.contains("ten")}`)
         cli.exit(2)
         return
     }
-    print("limit {args.limit}")
+    print(`limit {args.limit}`)
 }

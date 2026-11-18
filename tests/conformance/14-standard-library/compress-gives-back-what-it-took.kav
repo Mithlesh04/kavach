@@ -15,7 +15,7 @@ fn main() ! Error uses Console {
     for format in [Format.Gzip, Format.Deflate, Format.Zstd, Format.Brotli, Format.Lz4] {
         const packed = compress.encode(data, format)
         const back = try compress.decode(packed, format)
-        print("{format.name()} {back == data} {packed.len() < data.len() / 10}")
+        print(`{format.name()} {back == data} {packed.len() < data.len() / 10}`)
     }
     print(compress.from_name(" BR ") ?? Format.Gzip)
     print(compress.from_name("compress"))

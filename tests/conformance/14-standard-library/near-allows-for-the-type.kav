@@ -7,11 +7,11 @@
 
 fn main() {
     let a = 1000.0
-    print("{a.near(1000.0000005)} {a.near(1000.00001)}")
+    print(`{a.near(1000.0000005)} {a.near(1000.00001)}`)
     let z = 0.0
-    print("{z.near(1e-13)} {z.near(1e-11)}")
+    print(`{z.near(1e-13)} {z.near(1e-11)}`)
     const b: Float32 = 1.0
-    print("{b.near(Float32(1.000001))} {b.near(Float32(1.0001))}")
+    print(`{b.near(Float32(1.000001))} {b.near(Float32(1.0001))}`)
     const c: Float32 = 0.0
-    print("{c.near(Float32(1e-7))} {c.near(Float32(1e-5))}")
+    print(`{c.near(Float32(1e-7))} {c.near(Float32(1e-5))}`)
 }

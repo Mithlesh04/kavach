@@ -23,10 +23,10 @@ fn refuse(call: GrpcCall) -> GrpcReply {
 fn main() ! Error {
     const listener = try net.listen("127.0.0.1:0")
     const _server = spawn grpc.serve(listener, refuse)
-    const target = "http://{listener.address()}"
+    const target = `http://{listener.address()}`
     for code in [5, 7, 16] {
         match grpc.call<Ask, Ask>(target, "/test.Refuse/Ask", Ask(code: code)) {
-            ok(a) => print("answered {a.code}"),
+            ok(a) => print(`answered {a.code}`),
             err(e) => print(e),
         }
     }

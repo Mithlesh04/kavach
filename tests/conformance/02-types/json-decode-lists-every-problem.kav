@@ -13,14 +13,14 @@ type Item {
 }
 
 fn main() {
-    const text = "[\{\"name\": 5, \"qty\": 1}, \{\"qty\": 2}, \{\"name\": \"cup\", \"qty\": \"x\"}]"
+    const text = `[\{"name": 5, "qty": 1}, \{"qty": 2}, \{"name": "cup", "qty": "x"}]`
     match json.decode<[Item]>(text) {
         ok(_) => print("decoded"),
         err(e) => match e {
             JsonError.Invalid(problems) => {
-                print("{problems.len()} problems")
+                print(`{problems.len()} problems`)
                 for p in problems {
-                    print("{p.path}: {p.expected}")
+                    print(`{p.path}: {p.expected}`)
                 }
             }
             _ => print("other"),

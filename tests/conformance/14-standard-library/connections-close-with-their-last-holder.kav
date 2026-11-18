@@ -12,7 +12,7 @@ fn serve(listener: Listener) -> String ! NetError uses Net {
         if let p = piece {
             got = got + (p.text() ?? "?")
         } else {
-            return "{got}, then the end"
+            return `{got}, then the end`
         }
     }
     got

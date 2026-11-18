@@ -5,8 +5,8 @@
 // expect output: true
 
 fn main() {
-    print("{1.0.bits()} {(-2.0).bits()} {0.1.bits()}")
-    print("{Float.from_bits(4591870180066957722)} {Float.from_bits((-2.0).bits())}")
+    print(`{1.0.bits()} {(-2.0).bits()} {0.1.bits()}`)
+    print(`{Float.from_bits(4591870180066957722)} {Float.from_bits((-2.0).bits())}`)
     const x = 123.456
     print(Float.from_bits(x.bits()) == x)
 }

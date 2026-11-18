@@ -9,17 +9,17 @@
 fn main() {
     const a: Int8 = -7
     const b: Int8 = 2
-    print("{a + b} {a - b} {a * b} {a / b} {a % b} {b ** 3}")
+    print(`{a + b} {a - b} {a * b} {a / b} {a % b} {b ** 3}`)
     const x: Int16 = -300
     const y: Int16 = 7
-    print("{x / y} {x % y} {x * y} {y ** 4}")
+    print(`{x / y} {x % y} {x * y} {y ** 4}`)
     const p: Int32 = -100000
     const q: Int32 = 2_000_000_000
-    print("{p / 3} {p % 3} {q + 147_483_647}")
+    print(`{p / 3} {p % 3} {q + 147_483_647}`)
     const top8: Int8 = 127
     const low16: Int16 = -32768
     const top32: Int32 = 2147483647
     const low = -9_223_372_036_854_775_807 - 1
-    print("{top8.checked_add(1)} {low16.checked_sub(1)} {top32.checked_mul(2)} {low.checked_sub(1)}")
-    print("{low} {9_223_372_036_854_775_807}")
+    print(`{top8.checked_add(1)} {low16.checked_sub(1)} {top32.checked_mul(2)} {low.checked_sub(1)}`)
+    print(`{low} {9_223_372_036_854_775_807}`)
 }

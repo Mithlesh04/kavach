@@ -6,8 +6,8 @@
 
 fn main() {
     const b = "hello".bytes()
-    print("{b.get(0)} {b.get(4)} {b.get(5)} {b.get(-1)}")
-    print("{b.slice(1, 99)} {b.slice(7, 9)} {Bytes([])}")
+    print(`{b.get(0)} {b.get(4)} {b.get(5)} {b.get(-1)}`)
+    print(`{b.slice(1, 99)} {b.slice(7, 9)} {Bytes([])}`)
     const none_left = b.slice(5, 5)
-    print("{none_left.len()} {none_left == Bytes([])}")
+    print(`{none_left.len()} {none_left == Bytes([])}`)
 }

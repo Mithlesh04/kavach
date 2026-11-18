@@ -23,14 +23,14 @@ type Order {
 }
 
 fn show(order: Order) {
-    print("{order.id} {order.customer} {order.lines.len()} lines, note {order.note ?? "-"}, paid {order.paid}")
+    print(`{order.id} {order.customer} {order.lines.len()} lines, note {order.note ?? "-"}, paid {order.paid}`)
     for l in order.lines {
-        print("{l.product} x{l.qty}")
+        print(`{l.product} x{l.qty}`)
     }
 }
 
 fn main() ! JsonError {
-    show(try json.decode<Order>("\{\"id\": 7, \"customer\": \"Asha\", \"lines\": [\{\"product\": \"pen\"}, \{\"product\": \"ink\", \"qty\": 3}], \"paid\": \{\"Card\": \{\"last4\": \"4242\"}}}"))
-    const doc = try json.parse("\{\"id\": 8, \"customer\": \"Ravi\", \"lines\": [], \"note\": \"gift\", \"paid\": \"Cash\"}")
+    show(try json.decode<Order>(`\{"id": 7, "customer": "Asha", "lines": [\{"product": "pen"}, \{"product": "ink", "qty": 3}], "paid": \{"Card": \{"last4": "4242"}}}`))
+    const doc = try json.parse(`\{"id": 8, "customer": "Ravi", "lines": [], "note": "gift", "paid": "Cash"}`)
     show(try json.decode_value<Order>(doc))
 }

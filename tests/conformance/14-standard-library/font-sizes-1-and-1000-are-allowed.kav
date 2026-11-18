@@ -22,6 +22,6 @@ fn sample() -> Font ! Error {
 
 fn main() ! Error {
     const f = try sample()
-    print("{f.shape("A", 1.0).width.near(0.7)} {f.shape("A", 1_000.0).width}")
-    print("{f.atlas("A", 1.0).size} {f.atlas("A", 1_000.0).size}")
+    print(`{f.shape("A", 1.0).width.near(0.7)} {f.shape("A", 1_000.0).width}`)
+    print(`{f.atlas("A", 1.0).size} {f.atlas("A", 1_000.0).size}`)
 }

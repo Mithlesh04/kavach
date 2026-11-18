@@ -8,11 +8,11 @@ use std.http
 use std.net
 
 fn ask(address: String, client: Int) -> Int ! HttpError uses Net {
-    const session = try http.open("http://{address}")
+    const session = try http.open(`http://{address}`)
     let right = 0
     for n in 0..10 {
-        const r = try session.get("/{client}/{n}")
-        if r.body.text() == "/{client}/{n} squared is {n * n}" {
+        const r = try session.get(`/{client}/{n}`)
+        if r.body.text() == `/{client}/{n} squared is {n * n}` {
             right += 1
         }
     }
@@ -27,7 +27,7 @@ fn main() ! Error {
     const _server = spawn http.serve(listener, r => {
         count.update(c => c + 1)
         const n = Int(r.path.split("/")[2]) catch _ => 0
-        http.text(200, "{r.path} squared is {n * n}")
+        http.text(200, `{r.path} squared is {n * n}`)
     })
     let clients = []
     for client in 0..8 {
@@ -37,7 +37,7 @@ fn main() ! Error {
     for c in clients {
         right += try c.wait()
     }
-    print("answers: {8 * 10}")
-    print("right: {right}")
-    print("counted: {count.get()}")
+    print(`answers: {8 * 10}`)
+    print(`right: {right}`)
+    print(`counted: {count.get()}`)
 }

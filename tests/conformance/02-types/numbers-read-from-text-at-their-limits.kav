@@ -18,29 +18,29 @@
 
 fn show_u64(text: String) {
     match UInt64(text) {
-        ok(n) => print("ok {n}"),
-        err(e) => print("err {e}"),
+        ok(n) => print(`ok {n}`),
+        err(e) => print(`err {e}`),
     }
 }
 
 fn show_int(text: String) {
     match Int(text) {
-        ok(n) => print("ok {n}"),
-        err(e) => print("err {e}"),
+        ok(n) => print(`ok {n}`),
+        err(e) => print(`err {e}`),
     }
 }
 
 fn show_u8(text: String) {
     match UInt8(text) {
-        ok(n) => print("ok {n}"),
-        err(e) => print("err {e}"),
+        ok(n) => print(`ok {n}`),
+        err(e) => print(`err {e}`),
     }
 }
 
 fn show_float(text: String) {
     match Float(text) {
-        ok(n) => print("ok {n}"),
-        err(e) => print("err {e}"),
+        ok(n) => print(`ok {n}`),
+        err(e) => print(`err {e}`),
     }
 }
 

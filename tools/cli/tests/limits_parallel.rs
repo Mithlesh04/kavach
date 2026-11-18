@@ -46,7 +46,7 @@ fn main() ! Error uses Console, Payments.refund {
             paid += 1
         }
     }
-    print(\"paid {paid}\")
+    print(`paid {paid}`)
 }
 ";
 

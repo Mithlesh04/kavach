@@ -25,5 +25,5 @@ fn main() ! Error {
         back += ((try conn.read()) ?? Bytes([])).len()
     }
     conn.close()
-    print("{try server.wait()} trips, {back} bytes back")
+    print(`{try server.wait()} trips, {back} bytes back`)
 }

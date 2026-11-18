@@ -14,7 +14,7 @@ pub(out) fn scale(x: Float, by: Float) -> Float {
 }
 
 pub(out) fn greet(name: String) -> String {
-    \"hello {name}\"
+    `hello {name}`
 }
 ";
 
@@ -42,7 +42,7 @@ fn main() ! LibraryError {
     }
     unsafe {
         const no = Missing.open(path) catch e => {
-            print(\"{e}\".replace(path, \"adder\"))
+            print(`{e}`.replace(path, \"adder\"))
             return
         }
         print(no.adder_add(1, 1))
@@ -174,11 +174,11 @@ fn main() ! LibraryError {
         const lib = try Shapes.open(\"LIBRARY\")
         print(lib.big_sum(Big(a: 1, b: 20, c: 300)))
         const m = lib.mixed_twice(Mixed(n: 21, x: 1.25))
-        print(\"{m.n} {m.x}\")
+        print(`{m.n} {m.x}`)
         const s = lib.small_next(Small(x: 0.5, y: 1.5, k: 7))
-        print(\"{s.x} {s.y} {s.k}\")
+        print(`{s.x} {s.y} {s.k}`)
         const b = lib.big_make(40)
-        print(\"{b.a} {b.b} {b.c}\")
+        print(`{b.a} {b.b} {b.c}`)
     }
 }
 ";

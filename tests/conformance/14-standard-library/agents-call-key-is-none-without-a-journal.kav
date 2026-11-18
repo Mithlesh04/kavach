@@ -13,7 +13,7 @@ capability Payments {
 
 type Bank: Payments {
     fn refund(self, order_id: Int) -> Receipt ! PaymentError {
-        Receipt(id: agents.call_key() ?? "order-{order_id}")
+        Receipt(id: agents.call_key() ?? `order-{order_id}`)
     }
 }
 

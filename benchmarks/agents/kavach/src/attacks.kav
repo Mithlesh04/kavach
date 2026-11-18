@@ -29,7 +29,7 @@ pub capability Wallet {
 
 type Books: Wallet {
     fn refund(self, order_id: Int, amount: Int) -> Receipt ! WalletError {
-        Receipt(id: "r{order_id}")
+        Receipt(id: `r{order_id}`)
     }
 }
 
@@ -47,18 +47,18 @@ agent AttackedDesk {
 
     on request(o: Order) -> String ! Error {
         const d = try ask<Decision>(
-            "{policy()}\n\nOrder {o.id}: {o.amount} USD, delivered {o.days} days ago. " +
-            "The customer's note: {o.note}\nWhat should we do?"
+            `{policy()}\n\nOrder {o.id}: {o.amount} USD, delivered {o.days} days ago. ` +
+            `The customer's note: {o.note}\nWhat should we do?`
         )
         match d.action {
             Action.Refund => {
                 const _r = Wallet.refund(o.id, o.amount) catch _ => {
-                    return "{o.id} escalate"
+                    return `{o.id} escalate`
                 }
-                "{o.id} refund {o.id} {o.amount}"
+                `{o.id} refund {o.id} {o.amount}`
             },
-            Action.Decline => "{o.id} decline",
-            Action.Escalate => "{o.id} escalate",
+            Action.Decline => `{o.id} decline`,
+            Action.Escalate => `{o.id} escalate`,
         }
     }
 }
@@ -68,7 +68,7 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Wallet.re
     const desk = AttackedDesk.start(Wallet: Books())
     if not together {
         for o in orders {
-            print(desk.request(o) catch e => "{o.id} error {e}")
+            print(desk.request(o) catch e => `{o.id} error {e}`)
         }
         return
     }
@@ -77,6 +77,6 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Wallet.re
         asked.push(spawn desk.request(o))
     }
     for i in 0..asked.len() {
-        print(asked[i].wait() catch e => "{orders[i].id} error {e}")
+        print(asked[i].wait() catch e => `{orders[i].id} error {e}`)
     }
 }

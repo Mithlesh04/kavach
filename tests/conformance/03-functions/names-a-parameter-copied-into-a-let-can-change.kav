@@ -15,7 +15,7 @@ fn change(start: Int, items: [Int], u: User) -> String {
     list.push(0)
     let user = u
     user.age += 1
-    "{total} {list} {user.age}"
+    `{total} {list} {user.age}`
 }
 
 fn main() {
@@ -23,5 +23,5 @@ fn main() {
     const items = [1, 2, 3]
     const u = User(name: "Asha", age: 30)
     print(change(start, items, u))
-    print("{start} {items} {u.age}")
+    print(`{start} {items} {u.age}`)
 }

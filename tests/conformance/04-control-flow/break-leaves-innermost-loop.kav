@@ -9,7 +9,7 @@ fn main() {
             if inner == 1 {
                 break
             }
-            print("{outer} {inner}")
+            print(`{outer} {inner}`)
         }
     }
 }

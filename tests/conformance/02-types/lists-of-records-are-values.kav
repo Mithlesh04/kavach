@@ -51,7 +51,7 @@ fn main() {
     print(points == [Point(x: 0, y: 0), Point(x: 1, y: 1), Point(x: 2, y: 2)])
     const mixed = [Mixed(a: 1.5, b: true, c: 'z')]
     for m in mixed {
-        print("{m.a} {m.b} {m.c}")
+        print(`{m.a} {m.b} {m.c}`)
     }
     print([(1, 2), (3, 4)][1])
 }

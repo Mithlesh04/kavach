@@ -16,6 +16,6 @@ fn main() {
             s.remove(i)
         }
     }
-    print("{m.len()} {m.keys() == s.to_list()}")
-    print("{m.keys().take(3)} {s.to_list().take(3)}")
+    print(`{m.len()} {m.keys() == s.to_list()}`)
+    print(`{m.keys().take(3)} {s.to_list().take(3)}`)
 }

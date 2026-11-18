@@ -10,15 +10,15 @@ use std.net
 use std.system
 
 fn main() ! Error {
-    print("programs: {system.running().any(p => p.pid > 0 and p.name != "")}")
+    print(`programs: {system.running().any(p => p.pid > 0 and p.name != "")}`)
     const me = system.user()
-    print("user: {me.name != "" and system.users().all(a => a.name != "")}")
+    print(`user: {me.name != "" and system.users().all(a => a.name != "")}`)
     const port = try net.free_port()
-    print("free: {port > 0 and net.is_free(port)}")
-    const listener = try net.listen("127.0.0.1:{port}")
+    print(`free: {port > 0 and net.is_free(port)}`)
+    const listener = try net.listen(`127.0.0.1:{port}`)
     const listed = system.ports().any(p => p.port == port and p.protocol == "tcp" and p.state == "listen")
-    print("listed: {listed and not net.is_free(port) and listener.address() != ""}")
-    print("not found: {not_found()}")
+    print(`listed: {listed and not net.is_free(port) and listener.address() != ""}`)
+    print(`not found: {not_found()}`)
 }
 
 /// Whether ending a program that isn't there fails with `NotFound`.

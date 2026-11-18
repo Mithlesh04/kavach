@@ -33,13 +33,13 @@ fn read<T>(v: Json) -> T ! JsonError {
 }
 
 fn main() {
-    const v = json.parse("\{\"n\": 42}") catch _ => {
+    const v = json.parse(`\{"n": 42}`) catch _ => {
         return
     }
-    print("function: {read<Row>(v) catch _ => Row(n: -1)}")
-    print("method: {Box(v: v).get<Row>() catch _ => Row(n: -2)}")
+    print(`function: {read<Row>(v) catch _ => Row(n: -1)}`)
+    print(`method: {Box(v: v).get<Row>() catch _ => Row(n: -2)}`)
     const r: Row = Box(v: v).get() catch _ => Row(n: -3)
-    print("inferred: {r}")
+    print(`inferred: {r}`)
     const check = Box(v: v).checker<Row>()
-    print("lambda: {check("\{\"n\": 5}")} {check("[]")}")
+    print(`lambda: {check(`\{"n": 5}`)} {check("[]")}`)
 }

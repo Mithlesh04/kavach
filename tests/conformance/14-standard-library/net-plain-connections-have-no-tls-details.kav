@@ -10,7 +10,7 @@ fn details(conn: Connection) -> String uses Net {
     const protocol = if conn.protocol() == none { "none" } else { "some" }
     const certificate = if conn.peer_certificate() == none { "none" } else { "some" }
     const names = if conn.client_cert() == none { "none" } else { "some" }
-    "{protocol} {certificate} {names}"
+    `{protocol} {certificate} {names}`
 }
 
 fn serve(listener: Listener) -> String ! NetError uses Net {
@@ -24,9 +24,9 @@ fn main() ! Error {
     const listener = try net.listen("127.0.0.1:0")
     const server = spawn serve(listener)
     const conn = try net.connect(listener.address())
-    print("client: {details(conn)}")
-    print("client peer is the listener: {conn.peer() == listener.address()}")
-    print("server: {try server.wait()}")
+    print(`client: {details(conn)}`)
+    print(`client peer is the listener: {conn.peer() == listener.address()}`)
+    print(`server: {try server.wait()}`)
     conn.close()
     listener.close()
 }

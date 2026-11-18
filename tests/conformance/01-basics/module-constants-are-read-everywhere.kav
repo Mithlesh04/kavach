@@ -27,11 +27,11 @@ fn adder() -> fn(Int) -> Int {
 }
 
 fn main() {
-    print("{factor} {scaled} {total}")
-    print("{[1, 2].map(adder())} {[5].map(n => n + factor)[0]}")
+    print(`{factor} {scaled} {total}`)
+    print(`{[1, 2].map(adder())} {[5].map(n => n + factor)[0]}`)
     for _ in 0..1 {
         if true {
-            print("{fallback} {total - scaled.len() * 6}")
+            print(`{fallback} {total - scaled.len() * 6}`)
         }
     }
 }

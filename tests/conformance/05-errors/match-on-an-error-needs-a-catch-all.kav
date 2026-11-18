@@ -4,9 +4,9 @@
 
 fn describe(e: Error) -> String {
     match e {       // error: a `match` on an `Error` needs a `_ => …` arm
-        FsError.NotFound(path) => "missing {path}",
-        FsError.Denied(path) => "denied {path}",
-        FsError.Failed(path, reason) => "failed {path}: {reason}",
+        FsError.NotFound(path) => `missing {path}`,
+        FsError.Denied(path) => `denied {path}`,
+        FsError.Failed(path, reason) => `failed {path}: {reason}`,
     }
 }
 

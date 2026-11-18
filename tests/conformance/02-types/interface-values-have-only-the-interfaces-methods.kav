@@ -9,7 +9,7 @@ interface Describe {
 type User: Describe {
     name: String
 
-    fn describe(self) -> String { "User {self.name}" }
+    fn describe(self) -> String { `User {self.name}` }
 }
 
 fn main() {

@@ -6,8 +6,8 @@
 
 fn main() {
     print("ÉMILE zola".title())
-    const crlf = "\u{D}\n"
-    print("{"नमस्ते  दुनिया".words().join("|")} {"a{crlf}b".words()} {"".words()}")
-    const titled = "a\tb".title()
-    print("{titled} {titled.len()}")
+    const crlf = `\u{D}\n`
+    print(`{"नमस्ते  दुनिया".words().join("|")} {`a{crlf}b`.words()} {"".words()}`)
+    const titled = `a\tb`.title()
+    print(`{titled} {titled.len()}`)
 }

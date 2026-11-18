@@ -25,11 +25,11 @@ fn total<T: Number>(xs: [T]) -> T {
 }
 
 fn main() {
-    print("{first([1, 2]) ?? 0} {first<String>(["a"]) ?? ""} {first<Bool>([])}")
+    print(`{first([1, 2]) ?? 0} {first<String>(["a"]) ?? ""} {first<Bool>([])}`)
     const ints: [Int] = empty()
-    print("{ints.len()} {empty<String>().len()}")
-    print("{swap<String, Int>(("x", 1))} {swap((1, "x"))}")
-    print("{larger(5, 3)} {larger(2.5, -1.0)} {larger(Money(cents: 9), Money(cents: 4))}")
+    print(`{ints.len()} {empty<String>().len()}`)
+    print(`{swap<String, Int>(("x", 1))} {swap((1, "x"))}`)
+    print(`{larger(5, 3)} {larger(2.5, -1.0)} {larger(Money(cents: 9), Money(cents: 4))}`)
     const small: [Int8] = [-1, -2, -3]
-    print("{total([1, 2, 3])} {total<Float32>([2.5, 5.0])} {total(small)}")
+    print(`{total([1, 2, 3])} {total<Float32>([2.5, 5.0])} {total(small)}`)
 }

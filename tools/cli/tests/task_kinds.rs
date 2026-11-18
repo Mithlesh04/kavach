@@ -10,7 +10,7 @@ const PROGRAM: &str = "use std.time
 
 fn report(name: String, ms: Int) -> String {
     time.sleep_ms(ms)
-    print(\"{name} done\")
+    print(`{name} done`)
     name
 }
 
@@ -28,8 +28,8 @@ fn main() ! Error {
     }
     const slow = spawn SLOW report(\"slow\", 60)
     const fast = spawn FAST report(\"fast\", 20)
-    print(\"both started, total {total}\")
-    print(\"{try slow.wait()} and {try fast.wait()} are back\")
+    print(`both started, total {total}`)
+    print(`{try slow.wait()} and {try fast.wait()} are back`)
 }
 ";
 

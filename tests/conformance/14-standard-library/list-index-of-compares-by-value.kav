@@ -14,6 +14,6 @@ fn main() {
     const at_pair = [(1, "a"), (2, "b")].index_of((2, "b")) ?? -1
     const at_word = ["héllo", "hello"].index_of("héllo") ?? -1
     const at_list = [[1], [2]].index_of([2]) ?? -1
-    print("{at_point} {at_pair} {at_word} {at_list}")
+    print(`{at_point} {at_pair} {at_word} {at_list}`)
     print(points.index_of(Point(x: 1, y: 2)))
 }

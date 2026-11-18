@@ -9,6 +9,6 @@ fn main() {
     let zero = 0.0
     const negated = -zero
     const literal = -0.0
-    print("{negated.bits()} {literal.bits()}")
+    print(`{negated.bits()} {literal.bits()}`)
     print(1.0 / literal)
 }

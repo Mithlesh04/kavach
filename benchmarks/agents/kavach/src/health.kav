@@ -22,7 +22,7 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs {
     const notes = try json.decode<[Note]>(try fs.read_text(path))
     if not together {
         for n in notes {
-            print(read(n) catch e => "error {e}")
+            print(read(n) catch e => `error {e}`)
         }
         return
     }
@@ -31,18 +31,18 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs {
         asked.push(spawn read(n))
     }
     for a in asked {
-        print(a.wait() catch e => "error {e}")
+        print(a.wait() catch e => `error {e}`)
     }
 }
 
 fn read(n: Note) -> String ! Error uses Ai {
     const meds = try ask<[Medication]>(
         "List the medicines this clinical note says the patient takes now, with the dose " +
-        "and how often. Leave out medicines stopped, declined or used only as needed. Note: {n.text}"
+        `and how often. Leave out medicines stopped, declined or used only as needed. Note: {n.text}`
     )
     if meds.is_empty() {
-        return "{n.id} none"
+        return `{n.id} none`
     }
-    const each = meds.map(m => "{m.name} {m.dose_mg}x{m.times_per_day}").sort()
-    "{n.id} {each.join(", ")}"
+    const each = meds.map(m => `{m.name} {m.dose_mg}x{m.times_per_day}`).sort()
+    `{n.id} {each.join(", ")}`
 }

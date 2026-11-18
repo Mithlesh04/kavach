@@ -7,5 +7,5 @@ use std.process
 fn main() ! ProcessError uses Process, Console {
     // `--stdin` hashes what standard input holds: here nothing.
     const done = try process.run("git", ["hash-object", "--stdin"])
-    print("{done.code} {done.out.trim()}")
+    print(`{done.code} {done.out.trim()}`)
 }

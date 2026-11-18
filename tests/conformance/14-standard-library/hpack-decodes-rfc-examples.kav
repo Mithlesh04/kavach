@@ -14,7 +14,7 @@ use std.http.hpack
 
 fn last(d: Decoded) {
     const h = d.headers[d.headers.len() - 1]
-    print("{h.name}: {h.value}")
+    print(`{h.name}: {h.value}`)
 }
 
 fn main() ! Error {
@@ -33,7 +33,7 @@ fn main() ! Error {
         168, 73, 233, 91, 184, 232, 180, 191
     ]), r2.table)
     last(r3)
-    print("{r3.table.entries.len()} entries, {r3.table.size} bytes")
+    print(`{r3.table.entries.len()} entries, {r3.table.size} bytes`)
     // C.6: responses in a 256-byte table; the second one drops the oldest entry.
     const s1 = try hpack.decode(Bytes([
         72, 130, 100, 2, 88, 133, 174, 195, 119, 26, 75, 97, 150, 208, 122, 190,
@@ -43,13 +43,13 @@ fn main() ! Error {
     ]), hpack.new_table(256))
     last(s1)
     const s2 = try hpack.decode(Bytes([72, 131, 100, 14, 255, 193, 192, 191]), s1.table)
-    print("{s2.headers[0].name}: {s2.headers[0].value}")
-    print("{s2.table.entries.len()} entries, {s2.table.size} bytes")
+    print(`{s2.headers[0].name}: {s2.headers[0].value}`)
+    print(`{s2.table.entries.len()} entries, {s2.table.size} bytes`)
     const block = hpack.encode([
         Header(name: "Content-Type", value: "text/plain"),
         Header(name: "x-name", value: "ü"),
     ])
     const back = try hpack.decode(block, hpack.new_table(4096))
-    print("{back.headers[0].name}: {back.headers[0].value}")
+    print(`{back.headers[0].name}: {back.headers[0].value}`)
     last(back)
 }

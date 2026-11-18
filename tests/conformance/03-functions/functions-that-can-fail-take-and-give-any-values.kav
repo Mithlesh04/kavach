@@ -30,7 +30,7 @@ fn save(items: [Int]) ! OrderError {
     if items.is_empty() {
         fail OrderError.Empty
     }
-    print("saved {items.len()}")
+    print(`saved {items.len()}`)
 }
 
 fn rated(code: Int8, rate: Float32, items: [Int]) -> (Float, Int, String) ! OrderError {
@@ -39,14 +39,14 @@ fn rated(code: Int8, rate: Float32, items: [Int]) -> (Float, Int, String) ! Orde
 }
 
 fn main() {
-    print(make(7, -3, 0.5, "ok", [1, 2, 3], 5) catch e => panic("{e}"))
+    print(make(7, -3, 0.5, "ok", [1, 2, 3], 5) catch e => panic(`{e}`))
     const too_many = make(7, -3, 0.5, "ok", [1, 2, 3], 2) catch e => match e {
-        OrderError.TooMany(count, limit) => Order(id: count, code: 0, rate: 0.0, note: "{e}", items: [limit]),
+        OrderError.TooMany(count, limit) => Order(id: count, code: 0, rate: 0.0, note: `{e}`, items: [limit]),
         OrderError.Empty => Order(id: 0, code: 0, rate: 0.0, note: "empty", items: []),
     }
     print(too_many.note)
-    save([1, 2, 3, 4]) catch e => print("{e}")
-    save([]) catch e => print("{e}")
+    save([1, 2, 3, 4]) catch e => print(`{e}`)
+    save([]) catch e => print(`{e}`)
     const (f, n, note) = rated(3, 1.75, [1, 2, 3]) catch _ => (0.0, 0, "failed")
-    print("{f} {n} {note}")
+    print(`{f} {n} {note}`)
 }

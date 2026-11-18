@@ -20,7 +20,7 @@ type Step: Counter {
     }
 
     fn grow(self, inout names: [String]) ! String {
-        names.push("s{self.size}")
+        names.push(`s{self.size}`)
         if names.len() > 2 {
             fail "full"
         }
@@ -31,9 +31,9 @@ fn main() {
     const c: Counter = Step(size: 3)
     let n = 1
     const big = c.bump(n, 2)
-    print("{big} {n}")
+    print(`{big} {n}`)
     const now = c.bump(n, 1)
-    print("{now} {n}")
+    print(`{now} {n}`)
     let names = ["a"]
     c.grow(names) catch e => print(e)
     print(names.len())

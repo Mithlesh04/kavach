@@ -15,5 +15,5 @@ fn main() {
     print(q)
     const m: Mat3<Float> = Mat3.identity()
     print(m)
-    print("at {Vec2(x: 3, y: 4)}")
+    print(`at {Vec2(x: 3, y: 4)}`)
 }

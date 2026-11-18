@@ -8,7 +8,7 @@
 use std.image
 
 fn is_bad(bytes: Bytes) -> Bool {
-    const img = image.decode(bytes) catch e => return "{e}".starts_with("BadImage(")
+    const img = image.decode(bytes) catch e => return `{e}`.starts_with("BadImage(")
     img.width < 0
 }
 

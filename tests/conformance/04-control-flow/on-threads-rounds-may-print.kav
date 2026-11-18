@@ -6,7 +6,7 @@
 fn main() {
     let out: [Int] = [0]
     on threads(4) for i in 0..1 {
-        print("fetching {i}")
+        print(`fetching {i}`)
         out[i] = (i + 1) * 10
     }
     print(out)

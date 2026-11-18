@@ -17,6 +17,6 @@ type Pair<T: Number> {
 fn main() {
     const where = 3
     const s = Spot(where: "here")
-    print("{s.where} {where}")
+    print(`{s.where} {where}`)
     print(Pair(a: 1.0, b: 3.0).mean())
 }

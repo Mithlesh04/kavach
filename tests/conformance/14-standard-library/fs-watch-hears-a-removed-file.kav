@@ -11,17 +11,17 @@ fn main() ! FsError uses Fs, Console, Clock {
     const dir = "kavach-t-fs-watch2"
     try fs.create_dir(dir)
     const w = try fs.watch(dir)
-    try fs.append_text("{dir}/a.txt", "hello")
+    try fs.append_text(`{dir}/a.txt`, "hello")
     time.sleep(500.ms)
     let heard = false
     for change in w.poll() {
-        heard = heard or change.path == "{dir}/a.txt"
+        heard = heard or change.path == `{dir}/a.txt`
     }
     print(heard)
-    try fs.remove("{dir}/a.txt")
+    try fs.remove(`{dir}/a.txt`)
     time.sleep(500.ms)
     for change in w.poll() {
-        print("{change.path} {change.kind}")
+        print(`{change.path} {change.kind}`)
     }
     print(w.poll().len())
     w.close()

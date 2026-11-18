@@ -31,7 +31,7 @@ fn main() {
     print(h.retries)
     print(h.on(100))
     const r = minmax([3, 1, 4, 1, 5])
-    print("{r.lo}..{r.hi}")
+    print(`{r.lo}..{r.hi}`)
     print(run((on: add_tax), 50))
     print((hi: 9, lo: 2) == (lo: 2, hi: 9))
 }

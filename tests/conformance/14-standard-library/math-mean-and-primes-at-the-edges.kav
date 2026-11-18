@@ -7,6 +7,6 @@ use std.math
 
 fn main() {
     const empty: [Float] = []
-    print("{math.mean(empty)} {math.mean([2.5])}")
-    print("{math.is_prime(0)} {math.is_prime(1)} {math.is_prime(-7)} {math.is_prime(2)}")
+    print(`{math.mean(empty)} {math.mean([2.5])}`)
+    print(`{math.is_prime(0)} {math.is_prime(1)} {math.is_prime(-7)} {math.is_prime(2)}`)
 }

@@ -37,7 +37,7 @@ fn main() {
     print(wide(1))
     const t = ten(1)
     print(t)
-    print("{t.9} {t.1}")
-    print("{small8(true)} {small8(false)} {small_u(true)} {small_u(false)} {bit(true)} {bit(false)} {f32(true)}")
-    print("{f32(false)} {u32(true)}")
+    print(`{t.9} {t.1}`)
+    print(`{small8(true)} {small8(false)} {small_u(true)} {small_u(false)} {bit(true)} {bit(false)} {f32(true)}`)
+    print(`{f32(false)} {u32(true)}`)
 }

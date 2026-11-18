@@ -7,13 +7,13 @@
 use std.json
 
 fn main() ! JsonError {
-    const a = try json.parse("\{\"x\": 1, \"y\": [true, null]}")
-    const b = try json.parse("\{\"y\": [true, null], \"x\": 1}")
+    const a = try json.parse(`\{"x": 1, "y": [true, null]}`)
+    const b = try json.parse(`\{"y": [true, null], "x": 1}`)
     print(a == b)
-    const c = try json.parse("\{\"y\": [null, true], \"x\": 1}")
-    const d = try json.parse("\{\"x\": 2, \"y\": [true, null]}")
-    const e = try json.parse("\{\"x\": 1}")
-    print("{a == c} {a == d} {a == e}")
+    const c = try json.parse(`\{"y": [null, true], "x": 1}`)
+    const d = try json.parse(`\{"x": 2, "y": [true, null]}`)
+    const e = try json.parse(`\{"x": 1}`)
+    print(`{a == c} {a == d} {a == e}`)
     const made: Json = {"y": [true, none], "x": 1}
-    print("{made == a} {Json.Text(value: "1") == Json.Number(digits: "1")}")
+    print(`{made == a} {Json.Text(value: "1") == Json.Number(digits: "1")}`)
 }

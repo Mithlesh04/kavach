@@ -13,9 +13,9 @@ type Args {
 
 fn main() {
     const args = cli.parse<Args>() catch e => {
-        print("refused: {"{e}".contains("--limt")}")
+        print(`refused: {`{e}`.contains("--limt")}`)
         cli.exit(2)
         return
     }
-    print("limit {args.limit}")
+    print(`limit {args.limit}`)
 }

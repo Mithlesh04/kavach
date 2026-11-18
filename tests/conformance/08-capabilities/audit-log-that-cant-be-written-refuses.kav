@@ -28,9 +28,9 @@ agent Bot {
 
 fn main() ! Error {
     const bot = Bot.start(Payments: Till())
-    print("paid {try bot.charge(1)}")
+    print(`paid {try bot.charge(1)}`)
     const _second = bot.charge(2) catch e => {
-        print("refused: {"{e}".contains("the audit log can't be written")}")
+        print(`refused: {`{e}`.contains("the audit log can't be written")}`)
         return
     }
     print("not refused")

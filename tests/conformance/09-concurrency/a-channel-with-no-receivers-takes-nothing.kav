@@ -10,8 +10,8 @@ fn member(joins: Sender<Sender<String>>, name: String) -> Int uses Console {
     const (send, receive) = Channel<String>(capacity: 4)
     joins.put(send)
     match receive.take() {
-        Taken.Item(m) => print("{name} got {m}"),
-        Taken.Closed => print("{name}: closed"),
+        Taken.Item(m) => print(`{name} got {m}`),
+        Taken.Closed => print(`{name}: closed`),
     }
     1
 }

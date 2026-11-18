@@ -25,6 +25,6 @@ fn main() {
     const second = xs.map(p => glow(p, gain + 0.5))
     const seventh = second[7]
     const t2 = time.monotonic_ms()
-    print("first map {t1 - t0} ms, second map {t2 - t1} ms")
-    print("{last} {seventh}")
+    print(`first map {t1 - t0} ms, second map {t2 - t1} ms`)
+    print(`{last} {seventh}`)
 }

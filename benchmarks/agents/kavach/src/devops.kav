@@ -30,10 +30,10 @@ pub capability Ops {
 
 type Cluster: Ops {
     fn restart(self, service: String, env: String) -> Done ! OpsError {
-        Done(what: "restarted {service}")
+        Done(what: `restarted {service}`)
     }
     fn scale(self, service: String, env: String) -> Done ! OpsError {
-        Done(what: "scaled {service}")
+        Done(what: `scaled {service}`)
     }
 }
 
@@ -48,22 +48,22 @@ agent OnCall {
     approve Ops.restart when env == "production" by "oncall" within 1.seconds
 
     on alert(a: Alert) -> String ! Error {
-        const d = try ask<Decision>("{runbook()}\n\nService {a.service} in {a.env}: {a.alert}")
+        const d = try ask<Decision>(`{runbook()}\n\nService {a.service} in {a.env}: {a.alert}`)
         match d.action {
             Action.Restart => {
                 const _done = Ops.restart(a.service, a.env) catch _ => {
-                    return "{a.id} page"
+                    return `{a.id} page`
                 }
-                "{a.id} restart"
+                `{a.id} restart`
             },
             Action.Scale => {
                 const _done = Ops.scale(a.service, a.env) catch _ => {
-                    return "{a.id} page"
+                    return `{a.id} page`
                 }
-                "{a.id} scale"
+                `{a.id} scale`
             },
-            Action.Page => "{a.id} page",
-            Action.Ignore => "{a.id} ignore",
+            Action.Page => `{a.id} page`,
+            Action.Ignore => `{a.id} ignore`,
         }
     }
 }
@@ -73,7 +73,7 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Ops.resta
     const oncall = OnCall.start(Ops: Cluster())
     if not together {
         for a in alerts {
-            print(oncall.alert(a) catch e => "error {e}")
+            print(oncall.alert(a) catch e => `error {e}`)
         }
         return
     }
@@ -82,6 +82,6 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Ops.resta
         asked.push(spawn oncall.alert(a))
     }
     for a in asked {
-        print(a.wait() catch e => "error {e}")
+        print(a.wait() catch e => `error {e}`)
     }
 }

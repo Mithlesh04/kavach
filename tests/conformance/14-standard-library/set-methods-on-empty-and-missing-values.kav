@@ -7,11 +7,11 @@
 
 fn main() {
     let s: Set<Int> = Set.of()
-    print("{s} {s.len()} {s.is_empty()}")
-    print("{s.to_list()} {s.contains(1)}")
+    print(`{s} {s.len()} {s.is_empty()}`)
+    print(`{s.to_list()} {s.contains(1)}`)
     s.add(2)
     s.add(1)
     s.remove(5)
-    print("{s.to_list()} {s.is_empty()}")
+    print(`{s.to_list()} {s.is_empty()}`)
     print(s)
 }

@@ -9,7 +9,7 @@ use std.gpu
 
 const sans = try font.load(try fs.read_bytes("NotoSans.ttf"))
 const line = sans.shape("Hello, नमस्ते", 32.0)
-print("{line.glyphs.len()} glyphs, {line.width} pixels wide")
+print(`{line.glyphs.len()} glyphs, {line.width} pixels wide`)
 const atlas = sans.atlas("Hello, नमस्ते", 48.0)
 const letters = try gpu.texture(atlas.image.width, atlas.image.height, atlas.image.pixels)
 ```

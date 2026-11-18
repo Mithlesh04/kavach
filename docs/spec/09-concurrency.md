@@ -46,7 +46,7 @@ A panic (5.6) stops only the task it happens in. It is printed when it happens, 
 ```kavach
 const task = spawn [1, 2][5]
 const n = task.wait() catch e => {
-    print("{e}")   // panicked: index 5 is out of range: the list has 2 items at main.kav:1
+    print(`{e}`)   // panicked: index 5 is out of range: the list has 2 items at main.kav:1
     0
 }
 ```
@@ -202,7 +202,7 @@ use std.time
 fn watch() {
     const ticker = spawn {
         for tick in time.every_ms(100) {
-            print("tick {tick}")
+            print(`tick {tick}`)
         }
     }
     time.sleep_ms(350)
@@ -240,7 +240,7 @@ use std.time
 
 fn report(name: String, ms: Int) -> String {
     time.sleep_ms(ms)
-    print("{name} done")
+    print(`{name} done`)
     name
 }
 
@@ -248,7 +248,7 @@ fn main() ! Error {
     const slow = spawn report("slow", 200)
     const fast = spawn report("fast", 100)
     print("both started")
-    print("{try slow.wait()} and {try fast.wait()} are back")
+    print(`{try slow.wait()} and {try fast.wait()} are back`)
 }
 // both started
 // fast done

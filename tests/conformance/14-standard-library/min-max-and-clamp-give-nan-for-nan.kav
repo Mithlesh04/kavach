@@ -6,7 +6,7 @@
 
 fn main() {
     const nan = 0.0 / 0.0
-    print("{nan.min(1.0)} {1.0.min(nan)} {nan.max(1.0)} {1.0.max(nan)}")
-    print("{nan.clamp(0.0, 1.0)} {0.5.clamp(nan, 1.0)}")
-    print("{1.0.min(2.0)} {1.0.max(2.0)}")
+    print(`{nan.min(1.0)} {1.0.min(nan)} {nan.max(1.0)} {1.0.max(nan)}`)
+    print(`{nan.clamp(0.0, 1.0)} {0.5.clamp(nan, 1.0)}`)
+    print(`{1.0.min(2.0)} {1.0.max(2.0)}`)
 }

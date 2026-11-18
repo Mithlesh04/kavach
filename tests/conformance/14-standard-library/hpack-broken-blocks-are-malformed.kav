@@ -16,26 +16,26 @@ fn kind(e: HpackError) -> String {
 
 fn decoded(block: [UInt8]) -> String {
     match hpack.decode(Bytes(block), hpack.new_table(4096)) {
-        ok(d) => "{d.headers.len()} headers",
+        ok(d) => `{d.headers.len()} headers`,
         err(e) => kind(e),
     }
 }
 
 fn main() {
-    print("index 0: {decoded([0x80])}")
+    print(`index 0: {decoded([0x80])}`)
     // 0xC6 is index 70: the static table has 61 entries, the dynamic none.
-    print("index 70 with an empty table: {decoded([0xC6])}")
+    print(`index 70 with an empty table: {decoded([0xC6])}`)
     // A literal with a new name that says 5 bytes and gives 1.
-    print("a literal cut off: {decoded([0x40, 0x05, 0x61])}")
+    print(`a literal cut off: {decoded([0x40, 0x05, 0x61])}`)
     // `0` is the 5-bit code 00000; the 3 bits after it must be ones.
     const zeros = match hpack.huffman(Bytes([0x00])) {
         ok(b) => b.text() ?? "?",
         err(e) => kind(e),
     }
-    print("padding of zeros: {zeros}")
+    print(`padding of zeros: {zeros}`)
     const ones = match hpack.huffman(Bytes([0x07])) {
         ok(b) => b.text() ?? "?",
         err(e) => kind(e),
     }
-    print("good padding: {ones}")
+    print(`good padding: {ones}`)
 }

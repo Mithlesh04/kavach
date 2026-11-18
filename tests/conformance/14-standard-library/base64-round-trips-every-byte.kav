@@ -16,8 +16,8 @@ fn main() {
     const b = base64.decode(base64.encode(all, pad: false)) catch _ => Bytes([])
     const c = base64.decode(base64.encode(all, url: true), url: true) catch _ => Bytes([])
     const d = base64.decode(base64.encode(all, url: true, pad: false), url: true) catch _ => Bytes([])
-    print("{a == all} {b == all} {c == all} {d == all}")
+    print(`{a == all} {b == all} {c == all} {d == all}`)
     const empty = base64.decode("") catch _ => Bytes([1])
-    print("[{base64.encode(Bytes([]))}] {empty.len()}")
-    print("{base64.encode(Bytes([255]))} {base64.encode(Bytes([255]), url: true, pad: false)}")
+    print(`[{base64.encode(Bytes([]))}] {empty.len()}`)
+    print(`{base64.encode(Bytes([255]))} {base64.encode(Bytes([255]), url: true, pad: false)}`)
 }

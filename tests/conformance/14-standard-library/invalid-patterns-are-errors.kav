@@ -6,7 +6,7 @@ use std.regex
 
 fn main() {
     const _r = regex.new("(unclosed") catch e => {
-        print("{e}".slice(0, 15))
+        print(`{e}`.slice(0, 15))
         return
     }
 }

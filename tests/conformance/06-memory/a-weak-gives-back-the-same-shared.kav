@@ -24,7 +24,7 @@ fn main() {
     {
         const inner = Shared(3)
         gone = inner.weak()
-        print("inner lives: {gone.shared() != none}")
+        print(`inner lives: {gone.shared() != none}`)
     }
-    print("after its block: {gone.shared() == none}")
+    print(`after its block: {gone.shared() == none}`)
 }

@@ -10,7 +10,7 @@ use std.net
 fn plain(listener: Listener, count: Int) ! NetError uses Net {
     for _ in 0..count {
         const conn = try listener.accept()
-        conn.write("HTTP/1.1 200 OK\u{D}\ncontent-length: 2\u{D}\n\u{D}\nhi".bytes()) catch _ => {}
+        conn.write(`HTTP/1.1 200 OK\u{D}\ncontent-length: 2\u{D}\n\u{D}\nhi`.bytes()) catch _ => {}
         conn.close()
     }
 }
@@ -25,15 +25,15 @@ fn main() ! Error {
         }
         err(_) => "failed",
     }
-    print("connect_tls: {tls}")
-    const page = match http.get("https://{listener.address()}/") {
-        ok(r) => "{r.status}",
+    print(`connect_tls: {tls}`)
+    const page = match http.get(`https://{listener.address()}/`) {
+        ok(r) => `{r.status}`,
         err(e) => match e {
             HttpError.Network(_) => "Network",
-            _ => "{e}",
+            _ => `{e}`,
         },
     }
-    print("https: {page}")
+    print(`https: {page}`)
     try server.wait()
     listener.close()
 }

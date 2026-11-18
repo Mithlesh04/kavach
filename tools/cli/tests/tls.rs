@@ -19,11 +19,11 @@ fn serve(listener: Listener) ! NetError uses Net {
         const got = try conn.read()
         // Whose certificate it was (decision 0099).
         const who = if let c = conn.client_cert() {
-            \"{c.common_name} {c.dns} {c.uris}\"
+            `{c.common_name} {c.dns} {c.uris}`
         } else {
             \"nobody\"
         }
-        try conn.write(\"hello, {text_of(got)} from {who}\".bytes())
+        try conn.write(`hello, {text_of(got)} from {who}`.bytes())
         conn.close()
     }
 }
@@ -35,7 +35,7 @@ fn upgrade_one(listener: Listener, cert: String, secret key: String) ! NetError 
     try plain.write(\"S\".bytes())
     const conn = try plain.accept_tls(cert, key)
     const got = try conn.read()
-    try conn.write(\"over tls: {text_of(got)}\".bytes())
+    try conn.write(`over tls: {text_of(got)}`.bytes())
     conn.close()
 }
 
@@ -45,9 +45,9 @@ fn text_of(data: Bytes?) -> String {
 
 fn main() ! Error {
     const dir = cli.args()[0]
-    const ca = try fs.read_text(\"{dir}/ca.pem\")
-    const cert = try fs.read_text(\"{dir}/server.pem\")
-    const key = try fs.read_text(\"{dir}/server.key\")
+    const ca = try fs.read_text(`{dir}/ca.pem`)
+    const cert = try fs.read_text(`{dir}/server.pem`)
+    const key = try fs.read_text(`{dir}/server.key`)
     const listener = try net.listen_tls(\"127.0.0.1:0\", cert, key, protocols: [\"kv\"], clients: ca)
     const server = spawn serve(listener)
     const address = listener.address()
@@ -55,8 +55,8 @@ fn main() ! Error {
     const silent = try net.connect(address)
 
     // A client the server trusts, which trusts the server.
-    const mine = try fs.read_text(\"{dir}/client.pem\")
-    const my_key = try fs.read_text(\"{dir}/client.key\")
+    const mine = try fs.read_text(`{dir}/client.pem`)
+    const my_key = try fs.read_text(`{dir}/client.key`)
     const conn = try net.connect_tls(address, [\"kv\"], roots: ca, cert: mine, key: my_key)
     try conn.write(\"client\".bytes())
     const answer = try conn.read()

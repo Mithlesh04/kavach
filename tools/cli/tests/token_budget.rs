@@ -95,7 +95,7 @@ fn main() ! Error uses Ai, Console {
             answered += 1
         }
     }
-    print(\"answered {answered}\")
+    print(`answered {answered}`)
 }
 ";
 

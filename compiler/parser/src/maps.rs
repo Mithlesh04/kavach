@@ -1,7 +1,7 @@
-//! Map literals, written with braces (spec 2.2, decision 0129):
+//! Dict literals, written with braces (spec 2.2, decision 0129):
 //! `{"asha": 31}`, `{name: "Asha"}` (a plain name is that text),
-//! `{[key]: 1}` (the value of `key`), and `{:}`, the empty map. Where a
-//! value is expected, `{` starts a map when one of those follows it;
+//! `{[key]: 1}` (the value of `key`), and `{:}`, the empty dict. Where a
+//! value is expected, `{` starts a dict when one of those follows it;
 //! otherwise it starts a block.
 
 use crate::parser::Parser;
@@ -77,7 +77,7 @@ impl Parser<'_> {
         if self.at(&TokenKind::Colon) {
             self.bump();
             self.skip_newlines();
-            self.expect(&TokenKind::RBrace, "`}` after `{:`, the empty map");
+            self.expect(&TokenKind::RBrace, "`}` after `{:`, the empty dict");
             return ExprKind::Map(Vec::new());
         }
         let mut entries = Vec::new();
@@ -96,8 +96,21 @@ impl Parser<'_> {
             }
         }
         self.skip_newlines();
-        self.expect(&TokenKind::RBrace, "`}` to close the map");
+        self.expect(&TokenKind::RBrace, "`}` to close the dict");
         ExprKind::Map(entries)
+    }
+
+    /// Skips to the `]` that closes the computed key, past nested ones.
+    fn skip_to_bracket(&mut self) {
+        let mut depth = 0;
+        while !self.at(&TokenKind::Eof) && !(depth == 0 && self.at(&TokenKind::RBracket)) {
+            if self.at(&TokenKind::LBracket) {
+                depth += 1;
+            } else if self.at(&TokenKind::RBracket) {
+                depth -= 1;
+            }
+            self.bump();
+        }
     }
 
     /// A key: a plain name is that text, `[expr]` is the value of `expr`,
@@ -112,6 +125,11 @@ impl Parser<'_> {
         }
         if self.eat(&TokenKind::LBracket) {
             let key = self.expr();
+            if self.at(&TokenKind::Comma) {
+                // `{["red", "big"]: 3}`: brackets hold one expression (2.2).
+                self.error_here("a key in brackets is the value of one expression: a list as a key goes in a second pair of brackets, `{[[\"red\", \"big\"]]: 3}` (spec 2.2)");
+                self.skip_to_bracket();
+            }
             self.expect(&TokenKind::RBracket, "`]` after a computed key");
             return key;
         }

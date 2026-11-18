@@ -9,7 +9,7 @@ const notes = fs.read_text("kavach-no-such-file.txt") catch "missing"
 const limit = 3
 
 fn show() -> String {
-    "{limit}"
+    `{limit}`
 }
 
 print(show())

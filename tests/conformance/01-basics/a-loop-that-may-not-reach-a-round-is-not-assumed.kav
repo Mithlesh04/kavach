@@ -40,5 +40,5 @@ fn main() {
         empty += 1
         print(sizes[i])
     }
-    print("{seen} {empty}")
+    print(`{seen} {empty}`)
 }

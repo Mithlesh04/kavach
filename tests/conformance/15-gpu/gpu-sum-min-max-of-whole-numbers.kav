@@ -11,10 +11,10 @@ gpu fn step(x: Int32) -> Int32 {
 fn main() {
     let xs: [Int32] = [1, 2, 3, 4, 5, 6]
     xs = xs.map(step)
-    print("{xs.sum(x => x)} {xs.min()} {xs.max()}")
+    print(`{xs.sum(x => x)} {xs.min()} {xs.max()}`)
     let us: [UInt32] = [10, 20]
     let empty: [UInt32] = []
-    print("{us.sum(u => u)} {empty.min()}")
+    print(`{us.sum(u => u)} {empty.min()}`)
     let big: [Int32] = [2147483647, 1, -1]
     print(big.sum(x => x))
 }

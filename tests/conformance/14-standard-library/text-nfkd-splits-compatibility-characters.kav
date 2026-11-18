@@ -7,7 +7,7 @@
 use std.text
 
 fn main() {
-    print("{text.nfkd("\u{FB01}")} {text.nfkd("\u{FB01}").len()}")
-    print(text.nfd("\u{FB01}") == "\u{FB01}")
-    print("{text.nfkd("\u{E9}").len()} {text.nfkc(text.nfkd("\u{E9}")).len()}")
+    print(`{text.nfkd(`\u{FB01}`)} {text.nfkd(`\u{FB01}`).len()}`)
+    print(text.nfd(`\u{FB01}`) == `\u{FB01}`)
+    print(`{text.nfkd(`\u{E9}`).len()} {text.nfkc(text.nfkd(`\u{E9}`)).len()}`)
 }

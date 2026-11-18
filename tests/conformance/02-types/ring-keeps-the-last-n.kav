@@ -24,7 +24,7 @@ fn main() {
     print(recent.get(1) ?? 0.0)
     let shown = ""
     for t in recent {
-        shown += if shown == "" { "{t}" } else { " {t}" }
+        shown += if shown == "" { `{t}` } else { ` {t}` }
     }
     print(shown)
 

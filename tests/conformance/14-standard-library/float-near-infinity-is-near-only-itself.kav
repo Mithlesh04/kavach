@@ -7,6 +7,6 @@ fn main() {
     const inf = 1.0 / 0.0
     const minus = -inf
     const big = 1e308
-    print("{inf.near(inf)} {minus.near(minus)}")
-    print("{inf.near(minus)} {inf.near(big)} {big.near(inf)}")
+    print(`{inf.near(inf)} {minus.near(minus)}`)
+    print(`{inf.near(minus)} {inf.near(big)} {big.near(inf)}`)
 }

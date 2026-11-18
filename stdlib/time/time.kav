@@ -119,7 +119,7 @@ pub type Date {
     pub fn iso(self) -> String
         example Date(year: 2026, month: 11, day: 4).iso() == "2026-11-04"
     {
-        "{digits.padded(self.year, 4)}-{digits.padded(self.month, 2)}-{digits.padded(self.day, 2)}"
+        `{digits.padded(self.year, 4)}-{digits.padded(self.month, 2)}-{digits.padded(self.day, 2)}`
     }
 }
 
@@ -140,11 +140,11 @@ pub type Time {
         example Time(hour: 9, minute: 5, second: 30, ms: 0).iso() == "09:05:30"
         example Time(hour: 23, minute: 0, second: 0, ms: 250).iso() == "23:00:00.250"
     {
-        const base = "{digits.padded(self.hour, 2)}:{digits.padded(self.minute, 2)}:{digits.padded(self.second, 2)}"
+        const base = `{digits.padded(self.hour, 2)}:{digits.padded(self.minute, 2)}:{digits.padded(self.second, 2)}`
         if self.ms == 0 {
             return base
         }
-        "{base}.{digits.padded(self.ms, 3)}"
+        `{base}.{digits.padded(self.ms, 3)}`
     }
 }
 
@@ -159,7 +159,7 @@ pub type DateTime {
     pub fn iso(self) -> String
         example utc(1_762_247_130_000).iso() == "2025-11-04T09:05:30"
     {
-        "{self.date.iso()}T{self.time.iso()}"
+        `{self.date.iso()}T{self.time.iso()}`
     }
 
     /// The moment this is in UTC, in milliseconds since 1970-01-01 UTC.
@@ -216,7 +216,7 @@ pub type Zone {
         example Zone(name: "-08:00").iso(0) == "1969-12-31T16:00:00-08:00"
         example Zone(name: "UTC").iso(0) == "1970-01-01T00:00:00Z"
     {
-        "{self.at(ms).iso()}{digits.offset_text(self.offset_seconds(ms))}"
+        `{self.at(ms).iso()}{digits.offset_text(self.offset_seconds(ms))}`
     }
 
     /// Which moments the clocks in the zone show `dt`.
@@ -447,7 +447,7 @@ fn time_of(text: String) -> Time? {
         return none
     }
     const _all_digits = digits.read(fraction, fraction.len()) ?? return none
-    const ms = digits.read("{fraction}00".slice(0, 3), 3) ?? return none
+    const ms = digits.read(`{fraction}00`.slice(0, 3), 3) ?? return none
     Time(hour: hour, minute: minute, second: second, ms: ms)
 }
 

@@ -7,7 +7,7 @@ use boxes.{Box}
 
 fn main() {
     const b = Box(state: "s", n: 1).bumped()
-    print("{b.n} {b.state_of()}")
+    print(`{b.n} {b.state_of()}`)
     const c = Box(state: 7, n: 0).bumped().bumped()
-    print("{c.n} {c.state_of() + 1}")
+    print(`{c.n} {c.state_of() + 1}`)
 }

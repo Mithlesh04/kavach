@@ -49,8 +49,8 @@ type Command = AddItem(name: String, count: Int = 1) | Show(limit: Int = 10)
 
 fn main() ! Error {
     match try cli.parse<Command>() {      // tool add-item --name milk
-        Command.AddItem(name, count) => print("add {count} {name}")
-        Command.Show(limit) => print("show {limit}")
+        Command.AddItem(name, count) => print(`add {count} {name}`)
+        Command.Show(limit) => print(`show {limit}`)
     }
 }
 ```

@@ -14,13 +14,13 @@ fn report(text: String, url: Bool) {
         print(e)
         return
     }
-    print("accepted {text}")
+    print(`accepted {text}`)
 }
 
 fn main() {
     report("-_8A", false)
     report("A+/8", true)
-    report("Zm9v\nYg==", false)
+    report(`Zm9v\nYg==`, false)
     report("Zm Yg==", false)
     report("Zm9é", false)
 }

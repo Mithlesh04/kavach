@@ -10,17 +10,17 @@
 
 fn main() {
     const (probe, probe_in) = Channel<Int>(capacity: 1)
-    print("{probe.try_put(0)} {probe.try_put(0)}")
+    print(`{probe.try_put(0)} {probe.try_put(0)}`)
     const _ = probe_in.take()
     const (send, receive) = Channel<Int>(capacity: 1)
     const _producer = spawn {
         for i in 1..=3 {
             send.put(i)
-            print("put {i}")
+            print(`put {i}`)
         }
         send.close()
     }
     for n in receive {
-        print("took {n}")
+        print(`took {n}`)
     }
 }

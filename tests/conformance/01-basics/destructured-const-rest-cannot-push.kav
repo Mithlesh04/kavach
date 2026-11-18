@@ -5,5 +5,5 @@
 fn main() {
     const [head, ...rest] = ["asha", "ravi", "mei"]
     rest.push("li")                 // error: `rest` is a `const`; use `let`
-    print("{head} {rest}")
+    print(`{head} {rest}`)
 }

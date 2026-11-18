@@ -11,6 +11,6 @@ fn main() {
         print(name)
     }
     for (index, name) in names.enumerate() {
-        print("{index}: {name}")
+        print(`{index}: {name}`)
     }
 }

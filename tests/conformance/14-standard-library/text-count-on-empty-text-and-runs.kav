@@ -5,7 +5,7 @@
 // expect output: 5 2
 
 fn main() {
-    print("{"".count("")} {"".count("a")}")
-    print("{"aaaa".count("aa")} {"aaa".count("aa")}")
-    print("{"नमनम".count("")} {"👍x👍".count("👍")}")
+    print(`{"".count("")} {"".count("a")}`)
+    print(`{"aaaa".count("aa")} {"aaa".count("aa")}`)
+    print(`{"नमनम".count("")} {"👍x👍".count("👍")}`)
 }

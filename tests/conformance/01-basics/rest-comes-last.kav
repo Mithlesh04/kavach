@@ -4,5 +4,5 @@
 
 fn main() {
     const [...rest, last] = [1, 2, 3]   // error: `...rest` must come last
-    print("{rest} {last}")
+    print(`{rest} {last}`)
 }

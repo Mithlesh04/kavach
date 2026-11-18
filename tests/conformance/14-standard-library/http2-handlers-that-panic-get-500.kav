@@ -26,6 +26,6 @@ fn main() ! Error {
             Header(name: ":path", value: path),
         ], Bytes([]))
         conn.close()
-        print("{path}: {reply.headers.get(":status") ?? "?"}")
+        print(`{path}: {reply.headers.get(":status") ?? "?"}`)
     }
 }

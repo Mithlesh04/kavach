@@ -51,7 +51,7 @@ pub fn head_end(data: Bytes) -> Int? {
 pub fn parse(data: Bytes) -> Message? {
     const end = head_end(data) ?? return none
     const head = data.slice(0, end).text() ?? return none
-    const lines = head.split("\u{D}\n")
+    const lines = head.split(`\u{D}\n`)
     let headers: [Header] = []
     for line in lines.skip(1) {
         const colon = line.index_of(":") ?? continue
@@ -178,7 +178,7 @@ fn line_end(data: Bytes, from: Int) -> Int?
 
 /// A line end in HTTP.
 pub fn crlf() -> String {
-    "\u{D}\n"
+    `\u{D}\n`
 }
 
 /// The reason phrase that goes with `status` in a status line.

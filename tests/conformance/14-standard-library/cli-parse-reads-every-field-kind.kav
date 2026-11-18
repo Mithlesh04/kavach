@@ -16,5 +16,5 @@ type Args {
 
 fn main() ! Error {
     const args = try cli.parse<Args>()
-    print("{args.max_count} {args.ratio} {args.verbose} {args.name} {args.output} {args.tag}")
+    print(`{args.max_count} {args.ratio} {args.verbose} {args.name} {args.output} {args.tag}`)
 }

@@ -4,6 +4,6 @@
 // expect output: ['k', '\'']
 
 fn main() {
-    print(["e\u{301}", "a\tb\r\n", "x\u{200B}y", "say \"hi\" \\"])
+    print([`e\u{301}`, `a\tb\r\n`, `x\u{200B}y`, `say "hi" \\`])
     print(['k', '\''])
 }

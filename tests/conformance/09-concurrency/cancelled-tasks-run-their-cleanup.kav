@@ -29,8 +29,8 @@ fn main() uses Console, Clock {
         time.sleep(1.hours)
     }
     const _ = ran.take()
-    print("free: {pool.get()}")
+    print(`free: {pool.get()}`)
     worker.cancel()
     worker.wait() catch _ => {}
-    print("free: {pool.get()}")
+    print(`free: {pool.get()}`)
 }

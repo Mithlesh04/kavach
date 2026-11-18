@@ -25,15 +25,15 @@ fn pages(r: Request) -> Response {
 /// Sends one raw request and says how many `content-length` lines came,
 /// the first one's value, and what followed the head.
 fn ask(address: String, method: String, path: String) -> String ! Error uses Net {
-    const crlf = "\u{D}\n"
+    const crlf = `\u{D}\n`
     const conn = try net.connect(address)
-    try conn.write("{method} {path} HTTP/1.1{crlf}host: x{crlf}connection: close{crlf}{crlf}".bytes())
+    try conn.write(`{method} {path} HTTP/1.1{crlf}host: x{crlf}connection: close{crlf}{crlf}`.bytes())
     let all = Bytes([])
     while true {
         all = all + ((try conn.read()) ?? break)
     }
     const text = all.text() ?? ""
-    const parts = text.split("{crlf}{crlf}")
+    const parts = text.split(`{crlf}{crlf}`)
     let count = 0
     let value = "none"
     for line in parts[0].split(crlf) {
@@ -43,7 +43,7 @@ fn ask(address: String, method: String, path: String) -> String ! Error uses Net
         }
     }
     const body = if parts.len() > 1 and parts[1] != "" { parts[1] } else { "none" }
-    "{method} {path}: {count} content-length {value}, body {body}"
+    `{method} {path}: {count} content-length {value}, body {body}`
 }
 
 fn main() ! Error {
@@ -65,12 +65,12 @@ fn main() ! Error {
     ]
     const reply = try h2.request(conn, headers, Bytes([]))
     conn.close()
-    print("h2 HEAD /: {reply.headers.get("content-length") ?? "?"}, body {reply.body.len()}")
+    print(`h2 HEAD /: {reply.headers.get("content-length") ?? "?"}, body {reply.body.len()}`)
     // A session reads a `HEAD` answer's head alone, then the next answer.
-    const session = try http.open("http://{address}")
+    const session = try http.open(`http://{address}`)
     const head = try session.request("HEAD", "/")
     const page = try session.get("/")
     session.close()
-    print("session HEAD then GET: {head.body.len()} {page.body.len()}")
+    print(`session HEAD then GET: {head.body.len()} {page.body.len()}`)
     try fs.remove("kavach-head.txt")
 }

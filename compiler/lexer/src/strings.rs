@@ -1,5 +1,6 @@
-//! String literals: plain `"…"`, raw `r"…"` and multi-line `"""…"""`, with
-//! `{…}` interpolation (spec 1.7).
+//! String literals (spec 1.7, decision 0131): `"…"` and `"""…"""` are
+//! exactly what is written; a template in backticks fills in `{…}` and
+//! reads escapes, and spans lines when its text starts on the next line.
 //!
 //! A string becomes StrStart, Text and interpolation tokens, then StrEnd.
 //! While an interpolation is open, the main loop reads its tokens; the `}`
@@ -31,6 +32,10 @@ struct LineStart {
 impl Lexer<'_> {
     pub(crate) fn open_string(&mut self, kind: StrKind, delimiter_len: usize) {
         let start = self.pos;
+        let tagged = matches!(self.tokens.last(), Some(t) if t.kind == TokenKind::Ident && t.span.end as usize == start);
+        if kind.is_raw() && !tagged {
+            self.plain.push(start as u32);
+        }
         self.pos += delimiter_len;
         self.push(TokenKind::StrStart, start);
         self.in_string = Some(kind);
@@ -77,16 +82,21 @@ impl Lexer<'_> {
                         self.in_string = None;
                         return;
                     }
-                    return self.unterminated(
-                        kind,
-                        "text can't continue on the next line: close it with `\"`, or use `\"\"\"` for multi-line text",
-                    );
+                    let message = match kind {
+                        StrKind::Template => {
+                            "a template on one line can't continue on the next: start its text on the line after the backtick to span lines"
+                        }
+                        _ => {
+                            "text can't continue on the next line: close it with `\"`, or use `\"\"\"` for multi-line text"
+                        }
+                    };
+                    return self.unterminated(kind, message);
                 }
-                Some('"') if !multi || rest.starts_with("\"\"\"") => {
+                _ if rest.starts_with(kind.closer()) => {
                     return self.close_string(kind, &mut text, text_start);
                 }
                 Some('\\') if !kind.is_raw() => {
-                    if let Some(c) = self.escape('"') {
+                    if let Some(c) = self.escape('`') {
                         text.push(c);
                     }
                     self.mark_content(kind);
@@ -139,7 +149,8 @@ impl Lexer<'_> {
         let blank = rest.is_empty()
             || rest.starts_with('\n')
             || rest.starts_with("\r\n")
-            || rest.starts_with("\"\"\"");
+            || rest.starts_with("\"\"\"")
+            || rest.starts_with('`');
         let token = self.tokens.len();
         let m = self.multi();
         m.lines.push(LineStart {
@@ -170,7 +181,7 @@ impl Lexer<'_> {
         }
         self.flush(text, text_start);
         let start = self.pos;
-        self.pos += if kind.is_multi() { 3 } else { 1 };
+        self.pos += kind.closer().len();
         self.push(TokenKind::StrEnd, start);
         self.in_string = None;
         if kind.is_multi() {

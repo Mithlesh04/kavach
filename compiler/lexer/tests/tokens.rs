@@ -71,32 +71,29 @@ fn strings() {
     check_all(&[
         ("\"hello\"", "\"< text:\"hello\" >\""),
         ("\"\"", "\"< >\""),
+        // Text in quotes is exactly what is written (decision 0131).
+        (r#""C:\path\{x} \n""#, r#""< text:"C:\\path\\{x} \\n" >""#),
+        // A template reads escapes.
         (
-            "\"say \\\"hi\\\" \\\\ \\u{0915}\"",
-            "\"< text:\"say \\\"hi\\\" \\\\ क\" >\"",
+            r#"`say "hi" \` \\ \u{0915}`"#,
+            r#""< text:"say \"hi\" ` \\ क" >""#,
         ),
-        (
-            "\"Use \\{ and } here\"",
-            "\"< text:\"Use { and } here\" >\"",
-        ),
-        ("r\"C:\\path\\{x}\"", "\"< text:\"C:\\\\path\\\\{x}\" >\""),
+        (r#"`Use \{ and } here`"#, r#""< text:"Use { and } here" >""#),
     ]);
 }
 
 #[test]
 fn interpolation() {
-    // 1.7
+    // 1.7: only a template fills in `{…}`.
     check_all(&[
+        (r#"`Hi {name}!`"#, r#""< text:"Hi " ${ name }$ text:"!" >""#),
+        (r#""Hi {name}!""#, r#""< text:"Hi {name}!" >""#),
+        ("`{a + b}`", r#""< ${ a + b }$ >""#),
         (
-            "\"Hi {name}!\"",
-            "\"< text:\"Hi \" ${ name }$ text:\"!\" >\"",
+            "`{f(`in {x}`, \"{y}\")}`",
+            r#""< ${ f ( "< text:"in " ${ x }$ >" , "< text:"{y}" >" ) }$ >""#,
         ),
-        ("\"{a + b}\"", "\"< ${ a + b }$ >\""),
-        (
-            "\"{f(\"in {x}\")}\"",
-            "\"< ${ f ( \"< text:\"in \" ${ x }$ >\" ) }$ >\"",
-        ),
-        ("\"{ {a} }\"", "\"< ${ { a } }$ >\""),
+        ("`{ {a} }`", r#""< ${ { a } }$ >""#),
     ]);
 }
 
@@ -111,12 +108,15 @@ fn multi_line_strings() {
         ("\"\"\"\n  a\n\n  b\n  \"\"\"", "\"< text:\"a\\n\\nb\" >\""),
         (
             "\"\"\"\n  Hi {name},\n    bye\n  \"\"\"",
+            "\"< text:\"Hi {name},\\n  bye\" >\"",
+        ),
+        // A template whose text starts on the next line spans lines.
+        (
+            "`\n  Hi {name},\n    bye\n  `",
             "\"< text:\"Hi \" ${ name }$ text:\",\\n  bye\" >\"",
         ),
-        (
-            "\"\"\"\n  {x}\n  y\n  \"\"\"",
-            "\"< ${ x }$ text:\"\\ny\" >\"",
-        ),
+        ("`\n  {x}\n  y\n  `", "\"< ${ x }$ text:\"\\ny\" >\""),
+        ("`\n  last`", "\"< text:\"last\" >\""),
         ("\"\"\"\n  last\"\"\"", "\"< text:\"last\" >\""),
         ("\"\"\"\n\"\"\"", "\"< >\""),
         (
@@ -220,14 +220,25 @@ fn errors_are_reported_and_lexing_continues() {
         errors("x\n/* a /* b */\n\"open\nx"),
         ["2: this `/*` comment is never closed with `*/`"]
     );
-    assert_eq!(errors("\"bad \\q\""), ["1: unknown escape `\\q`"]);
+    assert_eq!(errors(r"`bad \q`"), [r"1: unknown escape `\q`"]);
+    assert_eq!(errors(r#""bad \q""#), [] as [&str; 0]);
     assert_eq!(
-        errors("\"\\u{110000}\""),
+        errors(r"`\u{110000}`"),
         ["1: U+110000 is not a valid Unicode character"]
     );
     assert_eq!(
-        errors("\"{x"),
+        errors("`{x"),
         ["1: this `{` inside a string is never closed with `}`"]
+    );
+    assert_eq!(
+        errors(r#"r"\d""#),
+        ["1: a string in quotes is exactly what is written already: drop the `r` (spec 1.7)"]
+    );
+    assert_eq!(
+        errors("sql`x`"),
+        [
+            "1: a tag before a template, with parameters, isn't built yet: write the text in quotes (spec 10.15)"
+        ]
     );
     assert_eq!(errors("\"\"\"\n  open"), ["2: this text is never closed"]);
 }

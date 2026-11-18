@@ -7,7 +7,7 @@ use std.time
 
 fn main() ! Error {
     const early = try time.parse_date("-0005-01-01")
-    print("{early.iso()} {early.year}")
+    print(`{early.iso()} {early.year}`)
     const late = try time.parse_date("12345-06-07")
-    print("{late.year} {late == try time.parse_date("+12345-06-07")}")
+    print(`{late.year} {late == try time.parse_date("+12345-06-07")}`)
 }

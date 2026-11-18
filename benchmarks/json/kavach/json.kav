@@ -20,10 +20,10 @@ type Order {
 fn order(i: Int) -> Order {
     let items: [Item] = []
     for k in 0..1 + i % 4 {
-        items.push(Item(sku: "SKU-{(i + k) % 97}", qty: 1 + k, price: Float(i % 1000) / 4.0))
+        items.push(Item(sku: `SKU-{(i + k) % 97}`, qty: 1 + k, price: Float(i % 1000) / 4.0))
     }
     const note: String? = if i % 5 == 0 { "leave at the door" } else { none }
-    Order(id: i, customer: "customer {i % 1000}", paid: i % 3 == 0, note: note, items: items)
+    Order(id: i, customer: `customer {i % 1000}`, paid: i % 3 == 0, note: note, items: items)
 }
 
 fn main() ! JsonError {
@@ -49,9 +49,9 @@ fn main() ! JsonError {
     const decoded = try json.decode<[Order]>(text)
     const t4 = time.monotonic_ms()
 
-    print("{text.len() / 1_000_000} MB, {qty} items, total {total}, {decoded.len()} decoded")
-    print("stringify {t1 - t0} ms")
-    print("parse {t2 - t1} ms")
-    print("read {t3 - t2} ms")
-    print("decode {t4 - t3} ms")
+    print(`{text.len() / 1_000_000} MB, {qty} items, total {total}, {decoded.len()} decoded`)
+    print(`stringify {t1 - t0} ms`)
+    print(`parse {t2 - t1} ms`)
+    print(`read {t3 - t2} ms`)
+    print(`decode {t4 - t3} ms`)
 }

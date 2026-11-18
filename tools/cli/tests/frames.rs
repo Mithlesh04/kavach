@@ -70,7 +70,7 @@ fn main() {
     }
     const k: Float32 = 0.5
     const ys = xs.map(x => step(x, k))
-    print(\"{ys[0]} {ys[999]}\")
+    print(`{ys[0]} {ys[999]}`)
 }
 ";
 

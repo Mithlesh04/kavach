@@ -9,7 +9,7 @@ type Guard: Drop {
     name: String
 
     fn drop(self) {
-        print("released {self.name}")
+        print(`released {self.name}`)
     }
 }
 
@@ -20,5 +20,5 @@ fn main() {
         print("in the arena")
         2
     }
-    print("after the arena: {n}")
+    print(`after the arena: {n}`)
 }

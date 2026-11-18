@@ -9,7 +9,7 @@ interface Describe {
 type Plain {
     n: Int
 
-    fn describe(self) -> String { "Plain {self.n}" }
+    fn describe(self) -> String { `Plain {self.n}` }
 }
 
 fn main() {

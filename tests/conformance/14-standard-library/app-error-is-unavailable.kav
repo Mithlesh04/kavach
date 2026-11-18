@@ -7,6 +7,6 @@ use std.app
 fn main() {
     const e = AppError.Unavailable(reason: "no home folder")
     match e {
-        AppError.Unavailable(reason) => print("{e} {reason}"),
+        AppError.Unavailable(reason) => print(`{e} {reason}`),
     }
 }

@@ -24,5 +24,5 @@ fn main() uses Console, Clock {
     worker.cancel()
     // Nothing else runs meanwhile: only the cancelled task can drop it.
     const got = returned.take().timeout(2.seconds) catch _ => Taken.Closed
-    print("slot given back: {got == Taken.Item(value: true)}")
+    print(`slot given back: {got == Taken.Item(value: true)}`)
 }

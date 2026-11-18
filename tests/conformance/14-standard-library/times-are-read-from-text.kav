@@ -23,18 +23,18 @@ fn main() ! Error {
     print((try time.parse_datetime("2026-11-04T09:05:30")).iso())
     for text in ["9:05", "24:00", "23:59:60", "09:05.5", "09:05:30.1234567890"] {
         const _t = time.parse_time(text) catch e => {
-            print("{e}")
+            print(`{e}`)
             continue
         }
     }
     for text in ["2026-11-04T09:05:30Z", "2026-11-04T09:05:30+05:30"] {
         const _t = time.parse_datetime(text) catch e => {
-            print("{e}")
+            print(`{e}`)
             continue
         }
     }
     const _d = time.parse_date("2026-+1-04") catch e => {
-        print("{e}")
+        print(`{e}`)
         return
     }
 }

@@ -5,7 +5,7 @@
 
 fn main() {
     const [a, b, c] = [1, 2]
-    print("{a} {b} {c}")
+    print(`{a} {b} {c}`)
     const [x, y, z = 3] = [1, 2]
-    print("{x} {y} {z}")
+    print(`{x} {y} {z}`)
 }

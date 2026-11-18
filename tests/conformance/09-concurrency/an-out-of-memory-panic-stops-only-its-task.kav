@@ -12,7 +12,7 @@ fn copies(text: String, n: Int) -> Int {
 fn panicked(t: Task<Int>) -> Bool {
     match t.wait() {
         ok(_) => false
-        err(e) => "{e}".starts_with("panicked: ") and "{e}".contains("out of memory")
+        err(e) => `{e}`.starts_with("panicked: ") and `{e}`.contains("out of memory")
     }
 }
 

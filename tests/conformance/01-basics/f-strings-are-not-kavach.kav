@@ -1,4 +1,4 @@
-// Rule: there is no `f"…"`: every string fills in `{…}` by itself, and `f"…"` is a compile error that says to drop the `f`.
+// Rule: there is no `f"…"`: a template that fills in `{…}` is written in backticks, and `f"…"` is a compile error that says so.
 // Spec: 1.7
 // expect compile error
 

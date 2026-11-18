@@ -10,5 +10,5 @@ type User {
 fn main() {
     const { name, age } = User(name: "Asha", age: 31)
     let name = "Ravi"               // error: `name` is already declared in this scope
-    print("{name} {age}")
+    print(`{name} {age}`)
 }

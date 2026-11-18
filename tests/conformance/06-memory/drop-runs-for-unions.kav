@@ -9,7 +9,7 @@ type Lock: Drop = Held(name: String) | Free
 extend Lock {
     fn drop(self) {
         match self {
-            Lock.Held(name) => print("unlocked {name}"),
+            Lock.Held(name) => print(`unlocked {name}`),
             Lock.Free => print("nothing to unlock"),
         }
     }

@@ -49,5 +49,5 @@ fn main() {
         const text = "a" + "b"
         (text: text, size: text.len())
     }
-    print("{made.text} {made.size}")
+    print(`{made.text} {made.size}`)
 }

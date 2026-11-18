@@ -7,21 +7,33 @@ use crate::{LexError, Lexed};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum StrKind {
-    Plain,
+    /// A template in backticks on one line: fills in `{…}`, reads escapes
+    /// (spec 1.7, decision 0131).
+    Template,
+    /// `"…"`, and `sql"…"`: exactly what is written.
     Raw,
-    Multi,
-    /// `r"""…"""`, and `sql"""…"""`, a tagged literal over lines: raw
-    /// (spec 1.7, 10.15).
+    /// A template whose text starts on the line after its backtick.
+    TemplateMulti,
+    /// `"""…"""`, and `sql"""…"""`, over lines: exactly what is written.
     RawMulti,
 }
 
 impl StrKind {
     pub(crate) fn is_multi(self) -> bool {
-        matches!(self, StrKind::Multi | StrKind::RawMulti)
+        matches!(self, StrKind::TemplateMulti | StrKind::RawMulti)
     }
 
     pub(crate) fn is_raw(self) -> bool {
         matches!(self, StrKind::Raw | StrKind::RawMulti)
+    }
+
+    /// The character that closes it after its text.
+    pub(crate) fn closer(self) -> &'static str {
+        match self {
+            StrKind::Template | StrKind::TemplateMulti => "`",
+            StrKind::Raw => "\"",
+            StrKind::RawMulti => "\"\"\"",
+        }
     }
 }
 
@@ -45,6 +57,8 @@ pub(crate) struct Lexer<'a> {
     pub(crate) in_string: Option<StrKind>,
     /// Indentation bookkeeping for each open multi-line string.
     pub(crate) multiline: Vec<MultiLine>,
+    /// Where each untagged string in quotes starts (see [`Lexed::plain`]).
+    pub(crate) plain: Vec<u32>,
 }
 
 impl<'a> Lexer<'a> {
@@ -57,6 +71,7 @@ impl<'a> Lexer<'a> {
             delims: Vec::new(),
             in_string: None,
             multiline: Vec::new(),
+            plain: Vec::new(),
         }
     }
 
@@ -91,6 +106,7 @@ impl<'a> Lexer<'a> {
         Lexed {
             tokens: self.tokens,
             errors: self.errors,
+            plain: self.plain,
         }
     }
 
@@ -193,11 +209,31 @@ impl<'a> Lexer<'a> {
         let start = self.pos;
         let rest = self.rest();
         let Some(c) = self.peek() else { return };
-        // `r"""…"""`: raw text over many lines (spec 1.7).
-        if c == 'r' && rest[1..].starts_with("\"\"\"") {
-            self.open_string(StrKind::RawMulti, 4);
-        } else if c == 'r' && rest[1..].starts_with('"') {
-            self.open_string(StrKind::Raw, 2);
+        // `r"…"`: a quoted string is raw already (spec 1.7, decision 0131).
+        if c == 'r' && rest[1..].starts_with('"') {
+            self.error(
+                start,
+                start + 1,
+                "a string in quotes is exactly what is written already: drop the `r` (spec 1.7)",
+            );
+            self.pos += 1;
+            let kind = if self.rest().starts_with("\"\"\"") {
+                StrKind::RawMulti
+            } else {
+                StrKind::Raw
+            };
+            self.open_string(kind, if kind == StrKind::RawMulti { 3 } else { 1 });
+        } else if c == '`' {
+            // A template; one whose text starts on the next line spans lines.
+            let next_line = rest[1..]
+                .trim_start_matches([' ', '\t', '\r'])
+                .starts_with('\n');
+            let kind = if next_line {
+                StrKind::TemplateMulti
+            } else {
+                StrKind::Template
+            };
+            self.open_string(kind, 1);
         } else if is_ident_start(c) {
             self.eat_while(is_ident_continue);
             let kind = match Keyword::lookup(&self.src[start..self.pos]) {
@@ -214,14 +250,17 @@ impl<'a> Lexer<'a> {
                     self.open_string(StrKind::RawMulti, 3);
                 } else if rest.starts_with('"') {
                     self.open_string(StrKind::Raw, 1);
+                } else if rest.starts_with('`') {
+                    let at = self.pos;
+                    self.error(at, at + 1, "a tag before a template, with parameters, isn't built yet: write the text in quotes (spec 10.15)");
                 }
             }
         } else if c.is_ascii_digit() {
             self.number();
         } else if rest.starts_with("\"\"\"") {
-            self.open_string(StrKind::Multi, 3);
+            self.open_string(StrKind::RawMulti, 3);
         } else if c == '"' {
-            self.open_string(StrKind::Plain, 1);
+            self.open_string(StrKind::Raw, 1);
         } else if c == '\'' {
             self.char_literal();
         } else if rest.starts_with("///") {
@@ -341,7 +380,7 @@ impl<'a> Lexer<'a> {
             self.error(
                 at,
                 at + 1,
-                "this `{` is never closed: write `\\{` for a brace in text (spec 1.7)",
+                "this `{` is never closed: write `\\{` for a brace in a template, or write the text in quotes (spec 1.7)",
             );
             self.push(TokenKind::InterpEnd, self.pos);
             self.push(TokenKind::StrEnd, self.pos);

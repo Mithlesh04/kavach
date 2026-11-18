@@ -131,7 +131,7 @@ fn plain(v: Json, s: Json) -> Bytes ! ProtoError {
     if kind == "integer" {
         return varint(v.int() ?? 0)
     }
-    fail ProtoError.Unsupported(reason: "a `{kind}` can't be packed")
+    fail ProtoError.Unsupported(reason: `a \`{kind}\` can't be packed`)
 }
 
 /// Whether a list of `s` goes packed (numbers and booleans).
@@ -330,8 +330,8 @@ fn value_of(raws: [Raw], s: Json) -> Json ! ProtoError {
 fn one(r: Raw, s: Json) -> Json ! ProtoError {
     const kind = s.get("type").text() ?? ""
     match r {
-        Raw.Varint(value) if kind == "integer" and unsigned(s) => Json.Number(digits: "{value}"),
-        Raw.Varint(value) if kind == "integer" => Json.Number(digits: "{signed(value)}"),
+        Raw.Varint(value) if kind == "integer" and unsigned(s) => Json.Number(digits: `{value}`),
+        Raw.Varint(value) if kind == "integer" => Json.Number(digits: `{signed(value)}`),
         Raw.Varint(value) if kind == "boolean" => Json.Boolean(value: value != 0),
         Raw.Fixed64(value) if kind == "number" => number(value),
         Raw.Chunk(data) if kind == "string" => {
@@ -339,7 +339,7 @@ fn one(r: Raw, s: Json) -> Json ! ProtoError {
             Json.Text(value: text)
         }
         Raw.Chunk(data) if kind == "object" => try decode(data, s),
-        _ => fail ProtoError.Malformed(reason: "a field of the wrong kind for `{kind}`")
+        _ => fail ProtoError.Malformed(reason: `a field of the wrong kind for \`{kind}\``)
     }
 }
 
@@ -368,7 +368,7 @@ fn union_bytes(v: Json, opts: [Json]) -> Bytes ! ProtoError {
             }
         }
         if k == 0 {
-            fail ProtoError.Unsupported(reason: "no variant `{name}`")
+            fail ProtoError.Unsupported(reason: `no variant \`{name}\``)
         }
         return chunk(k, Bytes([]))
     }
@@ -381,7 +381,7 @@ fn union_bytes(v: Json, opts: [Json]) -> Bytes ! ProtoError {
                 }
             }
         }
-        fail ProtoError.Unsupported(reason: "no variant `{name}`")
+        fail ProtoError.Unsupported(reason: `no variant \`{name}\``)
     }
     fail ProtoError.Unsupported(reason: "an empty union value")
 }

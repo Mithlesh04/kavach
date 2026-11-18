@@ -10,7 +10,7 @@ fn main() {
     const i = matrix.identity(2, 1.0)
     print(i.to_rows())
     const h = matrix.filled(2, 3, 0.5)
-    print("{h.rows} {h.cols} {h.items}")
+    print(`{h.rows} {h.cols} {h.items}`)
     const a = matrix.of([[1.0, 2.0], [3.0, 4.0]])
     print((a @ i).to_rows())
 }

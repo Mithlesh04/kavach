@@ -10,8 +10,8 @@ type Outcome = Done | Error(reason: String)
 
 fn show(v: View) -> String {
     match v {
-        View.List(items) => "list of {items.len()}",
-        View.Single(item) => "single {item}",
+        View.List(items) => `list of {items.len()}`,
+        View.Single(item) => `single {item}`,
     }
 }
 
@@ -22,6 +22,6 @@ fn main() {
     const o = Outcome.Error(reason: "disk full")
     match o {
         Outcome.Done => print("done"),
-        Outcome.Error(reason) => print("failed: {reason}"),
+        Outcome.Error(reason) => print(`failed: {reason}`),
     }
 }

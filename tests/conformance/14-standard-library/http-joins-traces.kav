@@ -14,13 +14,13 @@ fn whose(r: Request) -> Response {
 fn main() ! Error {
     const listener = try net.listen("127.0.0.1:0")
     const _server = spawn http.serve(listener, whose)
-    const url = "http://{listener.address()}/"
+    const url = `http://{listener.address()}/`
     const mine = log.span("caller") {
         const got = try http.get(url)
         (mine: log.trace_id() ?? "", theirs: got.body.text() ?? "")
     }
-    print("same trace: {mine.mine == mine.theirs}")
+    print(`same trace: {mine.mine == mine.theirs}`)
     const alone = try http.get(url)
     const theirs = alone.body.text() ?? ""
-    print("own trace: {theirs.len() == 32 and theirs != mine.mine}")
+    print(`own trace: {theirs.len() == 32 and theirs != mine.mine}`)
 }

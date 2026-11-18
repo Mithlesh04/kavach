@@ -42,7 +42,7 @@ pub type Gen {
         const letters = "abcdefghijklmnopqrstuvwxyz".chars()
         let out = ""
         for _ in 1..=self.int(1, 8) {
-            out = "{out}{self.pick(letters)}"
+            out = `{out}{self.pick(letters)}`
         }
         out
     }

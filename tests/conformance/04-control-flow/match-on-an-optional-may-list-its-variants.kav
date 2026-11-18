@@ -8,8 +8,8 @@ type Shape = Circle(radius: Int) | Square(side: Int)
 
 fn show(s: Shape?) {
     match s {
-        Shape.Circle(r) => print("circle {r}"),
-        Shape.Square(x) => print("square {x}"),
+        Shape.Circle(r) => print(`circle {r}`),
+        Shape.Square(x) => print(`square {x}`),
         none => print("none"),
     }
 }

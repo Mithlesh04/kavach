@@ -76,7 +76,7 @@ type Email: Sample {
     invariant value.contains("@")
 
     fn sample(gen: Gen) -> Email {
-        Email(value: "{gen.word()}@{gen.pick(["example.com", "test.in"])}")
+        Email(value: `{gen.word()}@{gen.pick(["example.com", "test.in"])}`)
     }
 }
 ```

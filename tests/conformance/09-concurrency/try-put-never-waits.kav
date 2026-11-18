@@ -9,10 +9,10 @@ fn main() {
     const a = send.try_put(1)
     const b = send.try_put(2)
     const c = send.try_put(3)
-    print("{a} {b} {c}")
+    print(`{a} {b} {c}`)
     const x = receive.take()
     const y = receive.take()
-    print("{x} {y}")
+    print(`{x} {y}`)
     send.close()
     print(send.try_put(4))
 }

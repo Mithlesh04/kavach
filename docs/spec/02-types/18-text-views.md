@@ -7,13 +7,13 @@ const line = "  id=42, name=Asha  "
 const fields = line.view().trim().split(", ")     // [StrView]: no text copied
 for f in fields {
     const parts = f.split("=")
-    print("{parts[0]} is {parts[1]}")              // id is 42, name is Asha
+    print(`{parts[0]} is {parts[1]}`)              // id is 42, name is Asha
 }
 
 let out = TextBuilder()
 for n in 1..=3 {
     out.push("item ")
-    out.push("{n}")
+    out.push(`{n}`)
     out.push_char('\n')
 }
 out.replace(0, 4, "ITEM")                          // the first "item" only
@@ -33,7 +33,7 @@ const text = out.to_string()                       // "ITEM 1\nitem 2\nitem 3\n"
 | `v.starts_with(text)`, `v.ends_with(text)`, `v.contains(text)` | As their names say |
 | `v.to_string() -> String` | Its text, copied: a string of its own |
 
-- A view compares with `==` and `<` to another view or to a `String`, by its text; `"{v}"` and `print` show its text.
+- A view compares with `==` and `<` to another view or to a `String`, by its text; `` `{v}` `` and `print` show its text.
 - `Int(v)`, `Float(v)` and the other conversions from text (2.1) take a view too, so a number is read without copying it out.
 - A view is a value: it can be stored, put in a list and given to a task. It holds its whole string, so a small view of a big text keeps the big text in memory; `to_string()` lets it go.
 

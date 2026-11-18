@@ -27,10 +27,10 @@ fn take(busy: Bool) -> Client ! String {
 
 fn try_take(busy: Bool) -> Bool uses Console {
     const extra = take(busy) catch e => {
-        print("busy: {e}")
+        print(`busy: {e}`)
         return true
     }
-    print("gave {extra.name}")
+    print(`gave {extra.name}`)
     false
 }
 

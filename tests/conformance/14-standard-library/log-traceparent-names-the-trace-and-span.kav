@@ -18,7 +18,7 @@ fn main() {
     log.span("request") {
         const id = log.trace_id() ?? ""
         const parts = (log.traceparent() ?? "").split("-")
-        print("{parts.len() == 4 and parts[0] == "00"} {parts[1] == id}")
+        print(`{parts.len() == 4 and parts[0] == "00"} {parts[1] == id}`)
         print(id.len() == 32 and is_hex(id) and parts[2].len() == 16 and is_hex(parts[2]))
     }
 }

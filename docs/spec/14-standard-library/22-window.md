@@ -60,7 +60,7 @@ fn main() ! WindowError uses Window, Input, Console {
             match e {
                 Event.Closed => running = false,
                 Event.Key(key, down) => if down and key == "Escape" { running = false },
-                Event.Resized(w, h) => print("now {w} × {h}"),
+                Event.Resized(w, h) => print(`now {w} × {h}`),
                 _ => {}
             }
         }

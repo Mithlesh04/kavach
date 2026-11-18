@@ -10,7 +10,7 @@ use std.window
 fn said(e: Event) -> String {
     match e {
         Event.Key(key, down) => if down and key == "KeyW" { "forward" } else { "other key" },
-        Event.Resized(w, h) => "{w} by {h}",
+        Event.Resized(w, h) => `{w} by {h}`,
         Event.MouseButton(button, _) => ["left", "right", "middle", "back", "forward"][button],
         Event.Closed => "close",
         _ => "other",
@@ -25,6 +25,6 @@ fn main() {
         Event.Closed,
     ]
     for e in events {
-        print("{e} {said(e)}")
+        print(`{e} {said(e)}`)
     }
 }

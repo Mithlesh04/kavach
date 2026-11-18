@@ -8,9 +8,9 @@
 use std.regex
 
 fn main() ! Error {
-    const digits = try regex.new(r"(\d+)")
-    print(digits.replace("a1 b22 c333", r"<$1>"))
-    print(digits.replace_all("a1 b22 c333", r"[$1]"))
+    const digits = try regex.new("(\d+)")
+    print(digits.replace("a1 b22 c333", "<$1>"))
+    print(digits.replace_all("a1 b22 c333", "[$1]"))
     print(digits.replace_all("no digits", "#"))
-    print((try regex.new(r"(\w+) (\w+)")).replace("Asha Rao", r"$2, $1"))
+    print((try regex.new("(\w+) (\w+)")).replace("Asha Rao", "$2, $1"))
 }

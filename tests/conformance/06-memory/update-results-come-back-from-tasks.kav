@@ -17,5 +17,5 @@ fn main() {
     }
     print(counts.map(t => t.wait() catch _ => -1))
     print(taken.map(t => t.wait() catch _ => -1))
-    print("{counter.get()} {ids.get()}")
+    print(`{counter.get()} {ids.get()}`)
 }

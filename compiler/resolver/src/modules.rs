@@ -70,6 +70,7 @@ impl Resolver {
             .collect();
         self.modules.names = modules.iter().map(|m| m.name.clone()).collect();
         self.res.modules = modules.to_vec();
+        self.plain_strings = file.plain_strings.clone();
         // 1. Every module's own names, so any module can use any other.
         let mut scopes = Vec::new();
         for items in &ranges {

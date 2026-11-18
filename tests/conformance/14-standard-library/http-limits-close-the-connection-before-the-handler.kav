@@ -22,19 +22,19 @@ fn exchange(address: String, text: String) -> String ! NetError uses Net {
 }
 
 fn main() ! Error {
-    const crlf = "\u{D}\n"
+    const crlf = `\u{D}\n`
     const calls = Shared(0)
     const listener = try net.listen("127.0.0.1:0")
     const _server = spawn http.serve(listener, r => {
         calls.update(c => c + 1)
-        http.text(200, "answered {r.path}")
+        http.text(200, `answered {r.path}`)
     }, limits: ServeLimits(max_body_bytes: 10))
-    const big = "POST /big HTTP/1.1{crlf}content-length: 50{crlf}{crlf}"
-    const next = "GET /next HTTP/1.1{crlf}connection: close{crlf}{crlf}"
+    const big = `POST /big HTTP/1.1{crlf}content-length: 50{crlf}{crlf}`
+    const next = `GET /next HTTP/1.1{crlf}connection: close{crlf}{crlf}`
     const got = try exchange(listener.address(), big + next)
     print(got.split(crlf)[0])
-    print("answers: {got.split(crlf).filter(l => l.starts_with("HTTP/1.1 ")).len()}")
-    print("handler calls: {calls.get()}")
-    const _small = try http.get("http://{listener.address()}/small")
-    print("after a good request: {calls.get()}")
+    print(`answers: {got.split(crlf).filter(l => l.starts_with("HTTP/1.1 ")).len()}`)
+    print(`handler calls: {calls.get()}`)
+    const _small = try http.get(`http://{listener.address()}/small`)
+    print(`after a good request: {calls.get()}`)
 }

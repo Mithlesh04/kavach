@@ -20,7 +20,7 @@ fn main() ! Error uses Serial, Console {
         print(path)
     }
     const board = try devices.open_serial("/dev/ttyUSB0", 115_200)
-    try board.write("ping\n".bytes())
+    try board.write(`ping\n`.bytes())
     const answer = try board.read(64)
     print(answer.text() ?? "?")
 }

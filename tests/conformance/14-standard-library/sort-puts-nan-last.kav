@@ -7,5 +7,5 @@ fn main() {
     const nan = 0.0 / 0.0
     const xs = [3.0, nan, 1.0, -2.0, 0.5]
     print(xs.sort())
-    print("{xs.min() ?? 0.0} {xs.max() ?? 0.0}")
+    print(`{xs.min() ?? 0.0} {xs.max() ?? 0.0}`)
 }

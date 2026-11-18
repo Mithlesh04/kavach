@@ -39,7 +39,7 @@ pub capability Payouts {
 
 type Bank: Payouts {
     fn pay(self, claim_id: Int, amount: Int) -> Receipt ! PayoutError {
-        Receipt(id: "p{claim_id}")
+        Receipt(id: `p{claim_id}`)
     }
 }
 
@@ -60,7 +60,7 @@ agent IntakeDesk {
     model quick()
     can Ai
     on read(c: Claim) -> Intake ! Error {
-        try ask<Intake>("{policy()}\n\nClaim {c.id}, {c.amount} USD: {c.text}")
+        try ask<Intake>(`{policy()}\n\nClaim {c.id}, {c.amount} USD: {c.text}`)
     }
 }
 
@@ -68,7 +68,7 @@ agent FraudCheck {
     model quick()
     can Ai
     on read(c: Claim) -> Fraud ! Error {
-        try ask<Fraud>("Does this insurance claim look fraudulent? Claim {c.id}, {c.amount} USD: {c.text}")
+        try ask<Fraud>(`Does this insurance claim look fraudulent? Claim {c.id}, {c.amount} USD: {c.text}`)
     }
 }
 
@@ -77,7 +77,7 @@ agent Adjuster {
     can Ai, Payouts.pay
     approve Payouts.pay when amount > 2_000 by "senior" within 1.seconds
     on decide(c: Claim) -> String ! Error {
-        const p = try ask<Payout>("{policy()}\n\nThe claim is covered and its documents are in order. Should we pay it? Claim {c.id}, {c.amount} USD: {c.text}")
+        const p = try ask<Payout>(`{policy()}\n\nThe claim is covered and its documents are in order. Should we pay it? Claim {c.id}, {c.amount} USD: {c.text}`)
         if not p.pay {
             return "deny"
         }
@@ -92,13 +92,13 @@ agent Adjuster {
 fn handle(c: Claim, intake: IntakeDesk, fraud: FraudCheck, adjuster: Adjuster) -> String ! Error uses Ai, Payouts.pay {
     const i = try intake.read(c)
     if not i.covered {
-        return "{c.id} deny"
+        return `{c.id} deny`
     }
     const f = try fraud.read(c)
     if f.suspicious or i.missing_documents {
-        return "{c.id} review"
+        return `{c.id} review`
     }
-    "{c.id} {try adjuster.decide(c)}"
+    `{c.id} {try adjuster.decide(c)}`
 }
 
 pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Payouts.pay {
@@ -108,7 +108,7 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Payouts.p
     const adjuster = Adjuster.start(Payouts: Bank())
     if not together {
         for c in claims {
-            print(handle(c, intake, fraud, adjuster) catch e => "error {e}")
+            print(handle(c, intake, fraud, adjuster) catch e => `error {e}`)
         }
         return
     }
@@ -117,6 +117,6 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Payouts.p
         asked.push(spawn handle(c, intake, fraud, adjuster))
     }
     for a in asked {
-        print(a.wait() catch e => "error {e}")
+        print(a.wait() catch e => `error {e}`)
     }
 }

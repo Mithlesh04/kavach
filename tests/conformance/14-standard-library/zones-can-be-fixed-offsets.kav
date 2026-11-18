@@ -18,7 +18,7 @@ fn main() ! Error {
     print(west.moment(west.at(0)))
     for name in ["+24:00", "+5:30"] {
         const _z = time.zone(name) catch e => {
-            print("{e}")
+            print(`{e}`)
             continue
         }
     }

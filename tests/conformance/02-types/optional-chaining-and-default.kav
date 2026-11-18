@@ -16,6 +16,6 @@ fn main() {
     print(find(1)?.name ?? "guest")
     print(find(2)?.name ?? "guest")
     if let u = find(1) {
-        print("found {u.name}")
+        print(`found {u.name}`)
     }
 }

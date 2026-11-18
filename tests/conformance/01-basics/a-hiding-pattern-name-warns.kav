@@ -12,5 +12,5 @@ fn main() {
     for i in 0..2 {
         const total = total + i     // warning: makes a new `total`; write `total = total + i`
     }
-    print("{total} {count}")
+    print(`{total} {count}`)
 }

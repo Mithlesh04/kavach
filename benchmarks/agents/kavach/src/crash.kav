@@ -37,9 +37,9 @@ pub type Teller: Bank {
     url: String
 
     fn refund(self, order_id: Int, amount: Int) -> Receipt ! BankError uses Net {
-        const key = agents.call_key() ?? "order-{order_id}"
-        const r = http.post("{self.url}/refund?order={order_id}&amount={amount}&key={key}", Bytes([])) catch e => {
-            fail BankError.Down(reason: "{e}")
+        const key = agents.call_key() ?? `order-{order_id}`
+        const r = http.post(`{self.url}/refund?order={order_id}&amount={amount}&key={key}`, Bytes([])) catch e => {
+            fail BankError.Down(reason: `{e}`)
         }
         if r.status != 200 {
             fail BankError.Declined
@@ -66,8 +66,8 @@ pub agent Refunder {
         let paid = 0
         for o in orders {
             const d = try ask<Decision>(
-                "{policy()}\n\nOrder {o.id}: {o.amount} USD, delivered {o.days} days ago. " +
-                "The customer's note: {o.note}\nWhat should we do?"
+                `{policy()}\n\nOrder {o.id}: {o.amount} USD, delivered {o.days} days ago. ` +
+                `The customer's note: {o.note}\nWhat should we do?`
             )
             if d.action == Action.Refund {
                 const _r = Bank.refund(o.id, o.amount) catch _ => {
@@ -89,5 +89,5 @@ pub fn run(path: String, bank: String, mode: String) ! Error uses Ai, Console, F
         return
     }
     const orders = try json.decode<[Order]>(try fs.read_text(path))
-    print("paid {try desk.batch(orders)}")
+    print(`paid {try desk.batch(orders)}`)
 }

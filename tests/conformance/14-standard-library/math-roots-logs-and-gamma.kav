@@ -9,8 +9,8 @@
 use std.math
 
 fn main() {
-    print("{math.log10(1000.0)} {math.cbrt(-8.0)} {math.hypot(3.0, 4.0)}")
-    print("{math.remainder(7.0, 2.0)} {math.remainder(5.0, 3.0)} {math.erfc(0.0)}")
+    print(`{math.log10(1000.0)} {math.cbrt(-8.0)} {math.hypot(3.0, 4.0)}`)
+    print(`{math.remainder(7.0, 2.0)} {math.remainder(5.0, 3.0)} {math.erfc(0.0)}`)
     print(math.lgamma(5.0))
     print(math.hypot(1e300, 1e300))
     print(math.cbrt(Float32(27.0)))

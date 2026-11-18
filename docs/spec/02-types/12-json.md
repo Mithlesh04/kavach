@@ -82,7 +82,7 @@ print(json.of(Bytes([104, 105])))                    // "aGk="
 type Blob {
     data: Bytes
 }
-const b = try json.decode<Blob>("\{\"data\": \"aGk\"}")   // URL-safe or unpadded reads too
+const b = try json.decode<Blob>(`\{"data": "aGk"}`)   // URL-safe or unpadded reads too
 print(b.data)                                        // Bytes(6869)
 ```
 
@@ -97,12 +97,12 @@ type Booking {
     made: DateTime
 }
 
-const b = try json.decode<Booking>("\{\"day\": \"2024-01-02\", \"made\": \"2024-01-01T02:00:00+05:30\"}")
+const b = try json.decode<Booking>(`\{"day": "2024-01-02", "made": "2024-01-01T02:00:00+05:30"}`)
 print(json.stringify(b))   // {"day":"2024-01-02","made":"2023-12-31T20:30:00Z"}
 ```
 
 ```kavach
-const text = "\{\"id\": 1, \"note\": \"x\"}"
+const text = `\{"id": 1, "note": "x"}`
 const a = json.decode<Order>(text)                               // Invalid: `note` is no field of `Order`
 const b = json.decode<Order>(text, unknown: JsonUnknown.Ignore)  // `note` is skipped
 ```
@@ -196,10 +196,10 @@ print(summary(() => []))            // no description
 ```kavach
 const big = try json.parse(body, max_depth: 1_000)
 
-const doc = try json.parse("{\"id\": 12345678901234567890, \"price\": 0.1}")
+const doc = try json.parse(`{\`id": 12345678901234567890, "price": 0.1}`)
 print(doc["id"].bigint())       // 12345678901234567890
 print(doc["id"].int())          // none: too big for Int
-print(doc["price"].decimal())   // 0.1, exactly
+print(doc["price"].decimal())   // 0.1, exactly}`
 ```
 
 A `JsonError` says what went wrong and where:
@@ -229,17 +229,17 @@ type Item {
     invariant qty > 0
 }
 
-const text = "[\{\"name\": 5, \"qty\": 1}, \{\"qty\": 2}]"
+const text = `[\{"name": 5, "qty": 1}, \{"qty": 2}]`
 const items = json.decode<[Item]>(text) catch e => match e {
     JsonError.Invalid(problems) => {
         for p in problems {
-            print("{p.path}: {p.expected}")      // [0].name: text
+            print(`{p.path}: {p.expected}`)      // [0].name: text
         }                                        // [1]: a field `name`
         []
     }
     _ => [],
 }
-const none_left = json.decode<[Item]>("[\{\"name\": \"pen\", \"qty\": 0}]") catch e => {
+const none_left = json.decode<[Item]>(`[\{"name": "pen", "qty": 0}]`) catch e => {
     print(e)    // Invalid(problems: [JsonProblem(path: "[0]", expected: "invariant `qty > 0`")])
     []
 }

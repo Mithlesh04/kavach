@@ -29,7 +29,7 @@ fn deeper(n: Int) -> Int {
 fn panicked(t: Task<Int>) -> Bool {
     match t.wait() {
         ok(_) => false
-        err(e) => "{e}".starts_with("panicked: ")
+        err(e) => `{e}`.starts_with("panicked: ")
     }
 }
 

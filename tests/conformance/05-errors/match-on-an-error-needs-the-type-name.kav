@@ -4,7 +4,7 @@
 
 fn describe(e: Error) -> String {
     match e {
-        NotFound(path) => "missing {path}",       // error: an `Error` can hold any error type
+        NotFound(path) => `missing {path}`,       // error: an `Error` can hold any error type
         _ => "other",
     }
 }

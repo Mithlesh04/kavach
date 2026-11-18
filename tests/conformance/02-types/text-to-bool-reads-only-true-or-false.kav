@@ -6,12 +6,12 @@
 
 fn read(text: String) -> String {
     match Bool(text) {
-        ok(b) => "{b}",
+        ok(b) => `{b}`,
         err(_) => "failed",
     }
 }
 
 fn main() {
-    print("{read("true")} {read(" false\n")}")
-    print("{read("True")} {read("1")} {read("yes")} {read("")}")
+    print(`{read("true")} {read(` false\n`)}`)
+    print(`{read("True")} {read("1")} {read("yes")} {read("")}`)
 }

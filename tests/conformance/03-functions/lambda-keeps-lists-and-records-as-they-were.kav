@@ -12,11 +12,11 @@ fn main() {
     let items = [1]
     let ages = {"asha": 30}
     let u = User(name: "Asha", age: 30)
-    const seen = () => "{items.len()} {ages.len()} {u.age}"
+    const seen = () => `{items.len()} {ages.len()} {u.age}`
     items.push(2)
     items.push(3)
     ages["ravi"] = 41
     u.age = 31
     print(seen())
-    print("{items.len()} {ages.len()} {u.age}")
+    print(`{items.len()} {ages.len()} {u.age}`)
 }

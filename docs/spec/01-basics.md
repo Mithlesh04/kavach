@@ -118,10 +118,9 @@ var         while       with
 | Float | `3.14`, `1e9`, `2.5e-3` |
 | Bool | `true`, `false` |
 | Char | `'a'`, `'क'`, `'\n'` |
-| String | `"Hello, {name}!"` |
+| String | `"C:\temp\{name}"`: exactly what is written |
 | Multi-line string | `"""` … `"""` (common leading indentation is removed) |
-| Raw string | `r"C:\path\{not interpolated}"` |
-| Raw multi-line string | `r"""` … `"""`: raw, its indentation removed as in `"""` |
+| Template | `` `Hello, {name}!` ``: fills in `{…}` and reads escapes |
 | Empty optional | `none` |
 
 In a multi-line string, the line break right after the opening `"""` and the one right before the closing `"""` are not part of the string. Then the common leading indentation is removed:
@@ -131,37 +130,38 @@ const text = """
     first
       second
     """
-// text is "first\n  second"
+// text is the two lines "first" and "  second"
 ```
 
 Number literals take their type from context. `const price: Decimal = 499.99` is an exact decimal, not a float. Without context, integers are `Int` and decimals are `Float`.
 
 A minus written before a whole-number literal belongs to it, so the smallest value of each type can be written: `const low: Int8 = -128`, though `128` alone doesn't fit `Int8`, and `-9223372036854775808` is the smallest `Int`.
 
-### String interpolation
+### Plain strings and templates
 
-Any expression inside `{}` in a string is inserted into it. Write `\{` for a literal brace.
-
-```kavach
-print("Order {order.id} costs {order.amount}")
-print("Use \{ and } in templates")
-```
-
-Escapes: `\n`, `\r` (a carriage return, as protocols that end lines with `\r\n` need), `\t`, `\\`, `\"`, `\{`, `\u{1F600}`.
-
-Raw text, `r"…"` and `r"""…"""`, fills nothing in and keeps every backslash: for paths, regular expressions, and JSON or SQL written out over many lines.
+Text in quotes is exactly what is written: no escapes, and nothing filled in ([decision 0131](../decisions/0131-plain-strings-and-backtick-templates.md)). Paths, regular expressions and JSON need nothing special. A `"` inside one goes in `"""…"""`.
 
 ```kavach
-const pattern = r"\d+\.\d+"
-const body = r"""
+const path = "C:\temp\{name}"          // these characters, backslashes and braces too
+const pattern = "\d+\.\d+"
+const body = """
     {"name": "Ana", "tags": ["a", "b"]}
     """
-print(body)       // {"name": "Ana", "tags": ["a", "b"]}
 ```
 
-Every string fills in `{…}` by itself, so there is no `f"…"` as in Python: `f"hi {name}"` is a compile error that says to drop the `f`.
+Text in backticks is a **template**: any expression inside `{}` is filled in, and escapes are read.
 
-In one-line text, a `{` must close on the same line: `"{"` is a compile error at the `{`. A `{…}` that holds only text gives a warning, because it is almost always a brace that needed `\{`: `t == "{" or t == "}"` is a single string, the text ` or t == ` inside `{…}`, not two comparisons.
+```kavach
+print(`Order {order.id} costs {order.amount}`)
+print(`first\nsecond\ttab \u{1F600}`)
+print(`a literal \{ brace and a \` backtick`)
+```
+
+- Escapes in a template: `\n`, `\r` (a carriage return, as protocols that end lines with `\r\n` need), `\t`, `\\`, `` \` ``, `\{`, `\u{1F600}`. A `Char` reads the same escapes: `'\n'`.
+- A template may span lines: as in `"""…"""`, the line break after the opening backtick and the one before the closing backtick are left out, and the common leading indentation is removed.
+- In a template, a `{` must close on its own line.
+- A string in quotes that looks like it wanted a template gets a warning that says to write it in backticks: `"Hello, {name}"` when `name` is a name in scope there, and `"a\nb"` when every backslash is `\n`, `\t` or `\r` and the text isn't a Windows path; `"…"` holding braces or backslashes meant as text needs nothing.
+- `r"…"` and Python's `f"…"` are compile errors that say what to write: a quoted string is raw already, and a template is written in backticks.
 
 ## 1.8 Operators
 
@@ -362,7 +362,7 @@ fn step(x: Float32) -> Float32 {
 }
 
 fn main() {
-    print("{count} particles at {step(0.0)}")
+    print(`{count} particles at {step(0.0)}`)
 }
 ```
 
@@ -384,7 +384,7 @@ const notes = fs.read_text("notes.txt") catch "missing"   // a statement of the 
 const limit = 3                                            // a module constant
 
 fn show() -> String {
-    "{limit}"            // fine; reading `notes` here is an error
+    `{limit}`            // fine; reading `notes` here is an error
 }
 
 print(show())

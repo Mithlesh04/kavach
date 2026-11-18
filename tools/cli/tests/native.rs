@@ -228,7 +228,7 @@ fn last_use_moves_instead_of_copying() {
     let dir = std::env::temp_dir().join(format!("kavach-moves-{}", std::process::id()));
     fs::create_dir_all(&dir).unwrap();
     let path = dir.join("moves.kav");
-    let src = "fn add_one(items: [Int]) -> [Int] {\n    let copy = items\n    copy.push(1)\n    copy\n}\n\nlet xs = []\nfor _ in 0..100000 {\n    xs = add_one(xs)\n}\nprint(xs.len())\nconst original = [7]\nconst bigger = add_one(original)\nprint(\"{original.len()} {bigger.len()}\")\n";
+    let src = "fn add_one(items: [Int]) -> [Int] {\n    let copy = items\n    copy.push(1)\n    copy\n}\n\nlet xs = []\nfor _ in 0..100000 {\n    xs = add_one(xs)\n}\nprint(xs.len())\nconst original = [7]\nconst bigger = add_one(original)\nprint(`{original.len()} {bigger.len()}`)\n";
     fs::write(&path, src).unwrap();
     let start = std::time::Instant::now();
     let out = Command::new(env!("CARGO_BIN_EXE_kavach"))

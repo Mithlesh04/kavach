@@ -9,8 +9,8 @@ type Box = Full(s: Shape) | Empty
 
 fn show(b: Box) {
     match b {
-        Box.Full(s: Shape.Circle(radius)) => print("circle {radius}"),
-        Box.Full(s: Shape.Square(side)) => print("square {side}"),
+        Box.Full(s: Shape.Circle(radius)) => print(`circle {radius}`),
+        Box.Full(s: Shape.Square(side)) => print(`square {side}`),
         Box.Empty => print("empty"),
     }
 }

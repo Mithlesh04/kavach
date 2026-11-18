@@ -15,7 +15,7 @@ capability Payments {
 
 type FakePayments: Payments {
     fn refund(self, order_id: Int, amount: Int) -> Receipt ! PaymentError {
-        Receipt(id: "r{order_id}")
+        Receipt(id: `r{order_id}`)
     }
 }
 
@@ -35,20 +35,20 @@ agent Bot {
 fn show(bot: Bot, order_id: Int, amount: Int) {
     const r = bot.refund(order_id, amount) catch e => match e {
         PaymentError.Denied(reason) => {
-            print("{order_id}: denied, {reason}")
+            print(`{order_id}: denied, {reason}`)
             return
         }
         PaymentError.Declined => {
-            print("{order_id}: declined")
+            print(`{order_id}: declined`)
             return
         }
         // A send can also fail with its handler's panic (decision 0076).
         _ => {
-            print("{order_id}: {e}")
+            print(`{order_id}: {e}`)
             return
         }
     }
-    print("{order_id}: refunded {r.id}")
+    print(`{order_id}: refunded {r.id}`)
 }
 
 fn main() {

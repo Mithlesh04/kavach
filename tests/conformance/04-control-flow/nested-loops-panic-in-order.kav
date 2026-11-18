@@ -22,6 +22,6 @@ fn main() {
         for k in 0..3 {
             cell += rows[k][j]
         }
-        print("{j} {cell}")
+        print(`{j} {cell}`)
     }
 }

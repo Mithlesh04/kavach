@@ -35,6 +35,6 @@ fn main() {
             print(e)
             continue
         }
-        print("refunded {r.amount}")
+        print(`refunded {r.amount}`)
     }
 }

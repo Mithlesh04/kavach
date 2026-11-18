@@ -163,7 +163,7 @@ fn read_request(conn: Connection, data: Bytes, limits: ServeLimits, stop: StopHo
     }
     // The client waits for a go-ahead before sending the body.
     if (message.first_header(head.headers, "expect") ?? "").lower() == "100-continue" {
-        conn.write("HTTP/1.1 100 Continue{message.crlf()}{message.crlf()}".bytes()) catch e => {
+        conn.write(`HTTP/1.1 100 Continue{message.crlf()}{message.crlf()}`.bytes()) catch e => {
             return Got.Closed
         }
     }
@@ -297,7 +297,7 @@ fn refuse(conn: Connection, status: Int, limits: ServeLimits) ! NetError uses Ne
 fn busy(limits: ServeLimits) -> Response {
     const r = http.text(503, "the server is busy: try again soon")
     let headers = r.headers
-    headers.push(Header(name: "retry-after", value: "{limits.retry_after}"))
+    headers.push(Header(name: "retry-after", value: `{limits.retry_after}`))
     Response(status: 503, headers: headers, body: r.body)
 }
 
@@ -308,25 +308,25 @@ fn busy(limits: ServeLimits) -> Response {
 /// body's when there is no stream; never chunked for `HEAD`.
 fn send(conn: Connection, response: Response, keep: Bool, head_only: Bool = false) ! NetError uses Net {
     const crlf = message.crlf()
-    let head = "HTTP/1.1 {response.status} {message.reason(response.status)}{crlf}"
+    let head = `HTTP/1.1 {response.status} {message.reason(response.status)}{crlf}`
     for h in response.headers {
         if h.name != "content-length" {
-            head = head + "{h.name}: {h.value}{crlf}"
+            head = head + `{h.name}: {h.value}{crlf}`
         }
     }
     const given = message.first_header(response.headers, "content-length")
     const plain = response.stream == none
     let length = given
     if plain and (not head_only or given == none) {
-        length = "{response.body.len()}"
+        length = `{response.body.len()}`
     }
     if let n = length {
-        head = head + "content-length: {n}{crlf}"
+        head = head + `content-length: {n}{crlf}`
     } else if not head_only {
-        head = head + "transfer-encoding: chunked{crlf}"
+        head = head + `transfer-encoding: chunked{crlf}`
     }
     const connection = if keep { "keep-alive" } else { "close" }
-    head = head + "connection: {connection}{crlf}{crlf}"
+    head = head + `connection: {connection}{crlf}{crlf}`
     if head_only {
         try conn.write(head.bytes())
         return
@@ -350,16 +350,16 @@ fn send(conn: Connection, response: Response, keep: Bool, head_only: Bool = fals
         try write_piece(conn, piece, sized)
     }
     if not sized {
-        try conn.write("0{crlf}{crlf}".bytes())
+        try conn.write(`0{crlf}{crlf}`.bytes())
     }
 }
 
 /// The head of `response` alone, for one that takes over.
 fn send_head(conn: Connection, response: Response) ! NetError uses Net {
     const crlf = message.crlf()
-    let head = "HTTP/1.1 {response.status} {message.reason(response.status)}{crlf}"
+    let head = `HTTP/1.1 {response.status} {message.reason(response.status)}{crlf}`
     for h in response.headers {
-        head = head + "{h.name}: {h.value}{crlf}"
+        head = head + `{h.name}: {h.value}{crlf}`
     }
     try conn.write((head + crlf).bytes())
 }
@@ -374,5 +374,5 @@ fn write_piece(conn: Connection, piece: Bytes, sized: Bool) ! NetError uses Net 
         return
     }
     const crlf = message.crlf()
-    try conn.write("{message.hex(piece.len())}{crlf}".bytes() + piece + crlf.bytes())
+    try conn.write(`{message.hex(piece.len())}{crlf}`.bytes() + piece + crlf.bytes())
 }

@@ -239,7 +239,7 @@ fn the_report_names_modules_nothing_checks() {
     );
     write(
         "src/billing/invoice.kav",
-        "pub fn label(n: Int) -> String {\n    \"n{n}\"\n}\n",
+        "pub fn label(n: Int) -> String {\n    `n{n}`\n}\n",
     );
     let report = || {
         let out = kavach(&root, &["test", "--seed", "7"]);
@@ -272,7 +272,7 @@ fn a_stuck_test_is_named_and_stopped() {
     std::fs::write(root.join("kavach.toml"), toml).unwrap();
     std::fs::write(
         root.join("src/main.kav"),
-        "use std.net\n\nfn main() {\n    print(\"hi\")\n}\n\ntest \"waits for a client\" uses Net {\n    const listener = net.listen(\"127.0.0.1:0\") catch e => panic(\"{e}\")\n    const _conn = listener.accept() catch e => panic(\"{e}\")\n}\n",
+        "use std.net\n\nfn main() {\n    print(\"hi\")\n}\n\ntest \"waits for a client\" uses Net {\n    const listener = net.listen(\"127.0.0.1:0\") catch e => panic(`{e}`)\n    const _conn = listener.accept() catch e => panic(`{e}`)\n}\n",
     )
     .unwrap();
     let started = std::time::Instant::now();

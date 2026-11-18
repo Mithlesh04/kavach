@@ -36,8 +36,8 @@ fn main() {
         big.push(i)
     }
     const (len, sum, seen) = walk(big, 1000, 0)
-    print("{len} {sum} {seen}")
+    print(`{len} {sum} {seen}`)
     const built = grow([], 1000)
-    print("{built.len()} {built[0]}")
-    print("{big.len()} {changes_its_copy(big, 500)}")
+    print(`{built.len()} {built[0]}`)
+    print(`{big.len()} {changes_its_copy(big, 500)}`)
 }

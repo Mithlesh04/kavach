@@ -4,6 +4,6 @@
 // expect output: [Kavach] [नम] []
 
 fn main() {
-    print("[{"abc".slice(1, 99)}] [{"abc".slice(5, 9)}] [{"नमस्ते".slice(4, 100)}]")
-    print("[{"Kavach".truncate(99)}] [{"नमस्ते".truncate(2)}] [{"".truncate(0)}]")
+    print(`[{"abc".slice(1, 99)}] [{"abc".slice(5, 9)}] [{"नमस्ते".slice(4, 100)}]`)
+    print(`[{"Kavach".truncate(99)}] [{"नमस्ते".truncate(2)}] [{"".truncate(0)}]`)
 }

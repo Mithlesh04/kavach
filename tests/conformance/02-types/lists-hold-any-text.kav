@@ -16,7 +16,7 @@
 fn main() {
     let words: [String] = []
     for i in 0..2 {
-        words.push("w{i}")
+        words.push(`w{i}`)
     }
     words.push("this text is much longer than fifteen bytes")
     words.push("ünï")

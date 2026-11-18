@@ -224,15 +224,22 @@ fn levels(stack: &[(bool, usize)]) -> i64 {
     lines.len() as i64
 }
 
-/// The byte ranges of multi-line strings (`"""` or `r"""` … `"""`).
+/// The byte ranges of multi-line strings: `"""` … `"""`, and templates
+/// whose text starts on the line after the backtick (spec 1.7).
 fn multi_line_strings(src: &str, tokens: &[&Token]) -> Vec<(usize, usize)> {
     let mut out = Vec::new();
     let mut open: Vec<(usize, bool)> = Vec::new();
     for t in tokens {
         let (a, b) = (t.span.start as usize, t.span.end as usize);
         match t.kind {
-            // `"""` and raw `r"""` (spec 1.7).
-            T::StrStart => open.push((a, src[a..b].trim_start_matches('r').starts_with("\"\"\""))),
+            T::StrStart => {
+                let opener = src[a..b].trim_start_matches('r');
+                let next_line = src[b..]
+                    .trim_start_matches([' ', '\t', '\r'])
+                    .starts_with('\n');
+                let multi = opener.starts_with("\"\"\"") || (opener == "`" && next_line);
+                open.push((a, multi));
+            }
             T::StrEnd => {
                 if let Some((start, true)) = open.pop() {
                     out.push((start, b));

@@ -36,9 +36,9 @@ pub fn encode<T>(value: T) -> Bytes {
 /// A Protocol Buffers message decoded into a `T`.
 pub fn decode<T>(data: Bytes) -> T ! GrpcError {
     const tree = protobuf.decode(data, json.schema<T>()) catch e => {
-        fail GrpcError.BadMessage(reason: "{e}")
+        fail GrpcError.BadMessage(reason: `{e}`)
     }
-    json.decode_value<T>(tree) catch e => fail GrpcError.BadMessage(reason: "{e}")
+    json.decode_value<T>(tree) catch e => fail GrpcError.BadMessage(reason: `{e}`)
 }
 
 /// A call's message decoded into a `T`.
@@ -147,7 +147,7 @@ type Opening {
 fn opening(target: String, method: String) -> Opening ! GrpcError uses Net {
     const secure = target.starts_with("https://")
     if not secure and not target.starts_with("http://") {
-        fail GrpcError.Protocol(reason: "a target starts with `http://` or `https://`: {target}")
+        fail GrpcError.Protocol(reason: `a target starts with \`http://\` or \`https://\`: {target}`)
     }
     const host = target.slice(if secure { 8 } else { 7 }, target.len())
     const conn = if secure {

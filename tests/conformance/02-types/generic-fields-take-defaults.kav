@@ -17,5 +17,5 @@ fn main() {
     const c: Cart<Int> = Cart(owner: "asha")
     print(c.items.len())
     const d = Cart(owner: "ravi", items: [Item(name: "pen", size: 3)])
-    print("{d.items.len()} {d.items[0].name}")
+    print(`{d.items.len()} {d.items[0].name}`)
 }

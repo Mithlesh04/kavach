@@ -47,7 +47,7 @@ agent RefundBot {
 //     ^^^^^^^ entity.name.function.kavach
 //                             ^^^^^ support.type.kavach
 
-        const decision = try ask<RefundDecision>("Refund {order.id}?")
+        const decision = try ask<RefundDecision>(`Refund {order.id}?`)
 //                       ^^^ keyword.control.kavach
 //                           ^^^ support.function.builtin.kavach
 //                               ^^^^^^^^^^^^^^ entity.name.type.kavach
@@ -112,7 +112,7 @@ type Query {
     }
 
     fn show(self) -> String {
-        "LIMIT {self.limit}"
+        `LIMIT {self.limit}`
 //                   ^^^^^ - keyword.other.agent.kavach
     }
 }
@@ -165,8 +165,8 @@ fn tags() {
         select id
 //      ^^^^^^^^^ string.quoted.triple.tagged.kavach
         """
-    const raw = r"C:\tmp"
-//              ^^^^^^^^^ string.quoted.raw.kavach
+    const plain = "C:\tmp"
+//                ^^^^^^^^ string.quoted.double.kavach - constant.character.escape.kavach
     let literal = 3
 //      ^^^^^^^ variable.other.readwrite.kavach
 }

@@ -8,10 +8,10 @@
 use std.regex
 
 fn main() ! Error {
-    const either = try regex.new(r"(a)|(b)")
+    const either = try regex.new("(a)|(b)")
     print(either.captures("xb"))
     print(either.captures("xyz"))
-    const named = try regex.new(r"(?<first>a)|(?<second>b)")
+    const named = try regex.new("(?<first>a)|(?<second>b)")
     print(named.named_captures("xb"))
     print(named.named_captures("xyz"))
 }

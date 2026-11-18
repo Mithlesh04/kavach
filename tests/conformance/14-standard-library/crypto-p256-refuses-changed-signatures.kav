@@ -13,8 +13,8 @@ fn main() ! CryptoError {
     const sig = try crypto.p256_sign(key, data)
     print(crypto.p256_verify(public, data, sig))
     const changed = sig.slice(0, 5) + Bytes([sig[5] ^ 1]) + sig.slice(6, sig.len())
-    print("{crypto.p256_verify(public, "order 8".bytes(), sig)} {crypto.p256_verify(public, data, changed)}")
+    print(`{crypto.p256_verify(public, "order 8".bytes(), sig)} {crypto.p256_verify(public, data, changed)}`)
     const other = try crypto.p256_public(crypto.p256_secret())
     const ed_sig = try crypto.ed25519_sign(crypto.ed25519_secret(), data)
-    print("{crypto.p256_verify(other, data, sig)} {crypto.p256_verify(public, data, ed_sig)}")
+    print(`{crypto.p256_verify(other, data, sig)} {crypto.p256_verify(public, data, ed_sig)}`)
 }

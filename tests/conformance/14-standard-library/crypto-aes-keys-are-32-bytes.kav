@@ -18,12 +18,12 @@ fn seal(key: Bytes) -> String {
         CryptoError.Tampered => return "tampered",
         CryptoError.BadKey(_) => return "bad key",
     }
-    "sealed {sealed.len()} bytes"
+    `sealed {sealed.len()} bytes`
 }
 
 fn main() ! CryptoError {
     const sealed = try crypto.encrypt(crypto.aes_key(), "card 4242".bytes())
     // An AES-128 key, and one byte too many.
-    print("{open(crypto.random_bytes(16), sealed)} {open(crypto.random_bytes(33), sealed)}")
-    print("{seal("".bytes())} {seal(crypto.random_bytes(24))}")
+    print(`{open(crypto.random_bytes(16), sealed)} {open(crypto.random_bytes(33), sealed)}`)
+    print(`{seal("".bytes())} {seal(crypto.random_bytes(24))}`)
 }

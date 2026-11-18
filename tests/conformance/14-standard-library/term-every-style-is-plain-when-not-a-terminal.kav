@@ -15,5 +15,5 @@ fn main() {
     const styled = [term.bold("bold"), term.dim("dim"), term.italic("italic"), term.underline("underline")].join(" ")
     print(styled)
     const nested = term.red("a" + term.green("b") + "c")
-    print(nested == "abc" and not styled.contains("\u{1B}"))
+    print(nested == "abc" and not styled.contains(`\u{1B}`))
 }

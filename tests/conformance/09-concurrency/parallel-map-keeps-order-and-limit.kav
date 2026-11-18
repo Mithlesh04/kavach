@@ -17,9 +17,9 @@
 use std.time
 
 fn slow_square(n: Int) -> Int {
-    print("start {n}")
+    print(`start {n}`)
     time.sleep_ms(n * 100)
-    print("end {n}")
+    print(`end {n}`)
     n * n
 }
 
@@ -31,6 +31,6 @@ fn main() {
     // 100 + 300 + 500 ms. All five at once would finish in about 500 ms,
     // so the elapsed time proves the limit; load only raises it. Events
     // are 100 ms apart, so a busy machine doesn't swap printed lines.
-    print("throttled: {time.monotonic_ms() - start >= 850}")
-    print([7, 8].parallel_map(n => "#{n}"))
+    print(`throttled: {time.monotonic_ms() - start >= 850}`)
+    print([7, 8].parallel_map(n => `#{n}`))
 }

@@ -48,5 +48,5 @@ fn main() ! Error {
     for c in clients {
         back += try c.wait()
     }
-    print("{try server.wait()} trips, {back} bytes back")
+    print(`{try server.wait()} trips, {back} bytes back`)
 }

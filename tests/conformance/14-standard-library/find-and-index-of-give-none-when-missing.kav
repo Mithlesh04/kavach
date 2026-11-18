@@ -6,8 +6,8 @@
 
 fn main() {
     const xs = [5, 7, 9, 7]
-    print("{xs.find(x => x > 10)} {xs.index_of(8)} {xs.count(x => x > 10)}")
-    print("{xs.index_of(7) ?? -1} {xs.find(x => x > 6) ?? 0}")
+    print(`{xs.find(x => x > 10)} {xs.index_of(8)} {xs.count(x => x > 10)}`)
+    print(`{xs.index_of(7) ?? -1} {xs.find(x => x > 6) ?? 0}`)
     const empty: [Int] = []
-    print("{empty.find(x => x > 0)} {empty.index_of(0)}")
+    print(`{empty.find(x => x > 0)} {empty.index_of(0)}`)
 }

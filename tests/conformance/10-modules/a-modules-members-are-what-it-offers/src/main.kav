@@ -8,8 +8,8 @@ use shop
 
 fn main() {
     for m in shop.members() {
-        const params = m.params.map(p => "{p.name}: {p.type_name}")
-        const shown = if params.is_empty() { "" } else { "({params.join(", ")})" }
-        print("{m.kind} {m.name}{shown}: {m.result}")
+        const params = m.params.map(p => `{p.name}: {p.type_name}`)
+        const shown = if params.is_empty() { "" } else { `({params.join(", ")})` }
+        print(`{m.kind} {m.name}{shown}: {m.result}`)
     }
 }

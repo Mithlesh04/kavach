@@ -9,8 +9,8 @@ use std.json
 
 fn depth_of(e: JsonError) -> String {
     match e {
-        JsonError.TooDeep(limit) => "too deep: {limit}",
-        _ => "other: {e}",
+        JsonError.TooDeep(limit) => `too deep: {limit}`,
+        _ => `other: {e}`,
     }
 }
 
@@ -27,6 +27,6 @@ fn main() {
     }
     match json.decode<Json>(deep) {
         ok(_) => print("decoded"),
-        err(e) => print("decode {depth_of(e)}"),
+        err(e) => print(`decode {depth_of(e)}`),
     }
 }

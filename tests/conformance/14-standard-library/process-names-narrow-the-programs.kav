@@ -8,16 +8,16 @@ use std.process
 
 fn run_code(program: String) -> String ! ProcessError uses Process("git") {
     const done = try process.run(program, ["--version"])
-    "{done.code}"
+    `{done.code}`
 }
 
 fn run_any(program: String) -> String ! ProcessError uses Process {
     const done = try process.run(program, [])
-    "{done.code}"
+    `{done.code}`
 }
 
 fn main() {
-    print(run_code("git") catch e => "{e}")
-    print(run_code("cargo") catch e => "{e}")
-    print(run_any("kavach-no-such-program") catch e => "{e}")
+    print(run_code("git") catch e => `{e}`)
+    print(run_code("cargo") catch e => `{e}`)
+    print(run_any("kavach-no-such-program") catch e => `{e}`)
 }

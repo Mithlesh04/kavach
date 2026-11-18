@@ -21,6 +21,6 @@ fn main() {
         DeviceError.Failed(path: "COM5", reason: "unplugged"),
     ]
     for e in errors {
-        print("{e} {path_of(e)}")
+        print(`{e} {path_of(e)}`)
     }
 }

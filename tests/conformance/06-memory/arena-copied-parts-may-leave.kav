@@ -6,7 +6,7 @@ fn main() {
     let first = ""
     arena {
         const words = "the quick brown fox".split(" ")
-        first = "found {words.len()} words"
+        first = `found {words.len()} words`
     }
     print(first)
 }

@@ -10,7 +10,7 @@ capability Email {
 
 fn main() {
     Email.send("asha") catch e => match e {
-        EmailError.Denied(reason) => print("denied: {reason}"),
+        EmailError.Denied(reason) => print(`denied: {reason}`),
         EmailError.NotSent => print("not sent"),
     }
 }

@@ -76,6 +76,7 @@ impl Resolver {
         match &e.kind {
             ExprKind::Name(ident) => self.use_name(ident),
             ExprKind::Str(parts) => {
+                self.plain_string_hint(e.span, parts);
                 for part in parts {
                     if let StrPart::Expr(x) = part {
                         self.expr(x);
@@ -98,10 +99,10 @@ impl Resolver {
             }
             // `sql"…"` or `pg.sql"…"` (spec 10.15).
             ExprKind::Tagged { tag, .. } => match tag.segments.as_slice() {
-                // Python's `f"hi {name}"`: every Kavach string fills in.
+                // Python's `f"hi {name}"`: a template is written in backticks.
                 [name] if name.name == "f" && self.lookup("f").is_none() => self.error(
                     name.span,
-                    "Kavach has no f-strings: every string fills in `{…}` by itself, so write `\"hi {name}\"` without the `f` (spec 1.7)",
+                    "Kavach has no f-strings: a template that fills in `{…}` is written in backticks, `` `hi {name}` `` (spec 1.7)",
                 ),
                 [name] => self.use_name(name),
                 [module, name] => {

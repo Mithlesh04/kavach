@@ -11,5 +11,5 @@ type Command = Run(mode: Mode) | Stop
 
 fn main() ! Error {
     const command = try cli.parse<Command>()     // error: the option `mode` is a union
-    print("{command}")
+    print(`{command}`)
 }

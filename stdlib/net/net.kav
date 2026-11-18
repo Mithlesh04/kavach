@@ -39,6 +39,6 @@ pub fn free_port() -> Int ! NetError uses Net {
 pub fn is_free(port: Int) -> Bool uses Net
     require port >= 0 and port <= 65535
 {
-    const listener = net.listen("127.0.0.1:{port}") catch _ => return false
+    const listener = net.listen(`127.0.0.1:{port}`) catch _ => return false
     listener.address() != ""
 }

@@ -3,7 +3,7 @@
 // expect compile error
 
 fn greet(name: String, greeting: String = "Hello") -> String {
-    "{greeting}, {name}!"
+    `{greeting}, {name}!`
 }
 
 fn main() {

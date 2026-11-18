@@ -7,6 +7,6 @@ use std.window
 fn main() {
     const e = WindowError.Unavailable(reason: "no screen")
     match e {
-        WindowError.Unavailable(reason) => print("{e} {reason}"),
+        WindowError.Unavailable(reason) => print(`{e} {reason}`),
     }
 }

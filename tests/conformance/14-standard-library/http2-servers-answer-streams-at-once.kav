@@ -20,7 +20,7 @@ fn handler(arrived: Shared<Int>) -> fn(Request) -> Response {
             time.sleep(10.ms)
             waited += 1
         }
-        http.text(200, "{r.path} saw {arrived.get()}")
+        http.text(200, `{r.path} saw {arrived.get()}`)
     }
 }
 

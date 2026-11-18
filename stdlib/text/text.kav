@@ -51,7 +51,7 @@ fn number_texts(s: String, fraction: Bool) -> [String]
         }
         let text = ""
         for k in start..i {
-            text = text + "{cs[k]}"
+            text = text + `{cs[k]}`
         }
         out.push(text)
     }

@@ -41,7 +41,7 @@ const answer = compress.encode(page, format, level: 4)
 // A request body, refused when it expands past 1 MB.
 const sent = compress.decode(r.body, Format.Gzip, most: 1_000_000) catch e => match e {
     CompressError.TooLarge(_) => return http.text(413, "too large"),
-    CompressError.Corrupt(why) => return http.text(400, "not gzip: {why}"),
+    CompressError.Corrupt(why) => return http.text(400, `not gzip: {why}`),
 }
 ```
 

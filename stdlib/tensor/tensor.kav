@@ -28,7 +28,7 @@ pub type Tensor<T: Number>: Add, Sub, Mul, MatMul {
         let place = 0
         for (d, i) in at.enumerate() {
             if i < 0 or i >= self.shape[d] {
-                panic("index {i} is out of range for size {self.shape[d]} of dimension {d}")
+                panic(`index {i} is out of range for size {self.shape[d]} of dimension {d}`)
             }
             place = place * self.shape[d] + i
         }
@@ -39,7 +39,7 @@ pub type Tensor<T: Number>: Add, Sub, Mul, MatMul {
     pub fn reshape(self, shape: [Int]) -> Tensor<T> {
         const wanted = count(shape) ?? -1
         if wanted != self.items.len() {
-            panic("`reshape` to {shape} needs {wanted} numbers, and this has {self.items.len()}")
+            panic(`\`reshape\` to {shape} needs {wanted} numbers, and this has {self.items.len()}`)
         }
         Tensor(shape: shape, items: self.items)
     }
@@ -113,12 +113,12 @@ pub type Tensor<T: Number>: Add, Sub, Mul, MatMul {
     /// the others, which must match.
     pub fn matmul(self, other: Tensor<T>) -> Tensor<T> {
         if self.shape.len() < 2 or other.shape.len() != self.shape.len() {
-            panic("`@` needs two tensors of the same rank, 2 or more: {self.shape} and {other.shape}")
+            panic(`\`@\` needs two tensors of the same rank, 2 or more: {self.shape} and {other.shape}`)
         }
         const n = self.shape.len()
         const (m, k, k2, p) = (self.shape[n - 2], self.shape[n - 1], other.shape[n - 2], other.shape[n - 1])
         if k != k2 or self.shape.slice(0, n - 2) != other.shape.slice(0, n - 2) {
-            panic("`@` needs {self.shape}'s last size ({k}) to match {other.shape}'s next to last ({k2}), and the sizes before them to be the same")
+            panic(`\`@\` needs {self.shape}'s last size ({k}) to match {other.shape}'s next to last ({k2}), and the sizes before them to be the same`)
         }
         let out: [T] = []
         for b in 0..(self.items.len() / (m * k).max(1)) {
@@ -134,7 +134,7 @@ pub type Tensor<T: Number>: Add, Sub, Mul, MatMul {
     /// `a op b` item by item; the shapes must be the same.
     fn each(self, other: Tensor<T>, op: String, f: fn(T, T) -> T) -> Tensor<T> {
         if self.shape != other.shape {
-            panic("`{op}` needs tensors of one shape: {self.shape} and {other.shape}")
+            panic(`\`{op}\` needs tensors of one shape: {self.shape} and {other.shape}`)
         }
         let out: [T] = []
         for (i, x) in self.items.enumerate() {
@@ -188,7 +188,7 @@ pub fn of_rows<T: Number>(rows: [[T]]) -> Tensor<T> {
     let items: [T] = []
     for r in rows {
         if r.len() != rows[0].len() {
-            panic("every row needs {rows[0].len()} numbers, and one has {r.len()}")
+            panic(`every row needs {rows[0].len()} numbers, and one has {r.len()}`)
         }
         items += r
     }

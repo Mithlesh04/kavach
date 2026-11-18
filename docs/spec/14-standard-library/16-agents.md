@@ -14,7 +14,7 @@ use std.agents
 type Bank: Payments {
     fn refund(self, order_id: Int) -> Receipt ! PaymentError {
         // The bank keeps the keys it has seen and drops a second refund.
-        const key = agents.call_key() ?? "order-{order_id}"
+        const key = agents.call_key() ?? `order-{order_id}`
         try self.api.refund(order_id, key)
     }
 }
@@ -31,7 +31,7 @@ use std.agents
 
 fn review(person: String) ! ApprovalError uses Approvals, Console {
     for r in agents.waiting() {
-        print("{r.id}: {r.call}, for {r.by} until {r.until}")
+        print(`{r.id}: {r.call}, for {r.by} until {r.until}`)
     }
     try agents.answer("RefundBot-17-2", approved: true, by: person)
 }

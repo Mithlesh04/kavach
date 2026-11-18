@@ -34,7 +34,7 @@ fn total(sources: [Source]) -> Int ! ReadError {
     let sum = 0
     for s in sources {
         sum += s.read() catch e => {
-            print("skipped: {e}")
+            print(`skipped: {e}`)
             0
         }
     }

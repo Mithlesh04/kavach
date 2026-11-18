@@ -12,7 +12,7 @@ fn read_db() -> String ! Error uses Env {
     try env("DB")
 }
 
-print("db is {try read_db()}")      // printed the password, with no `reveal`
+print(`db is {try read_db()}`)      // printed the password, with no `reveal`
 ```
 
 Rath, a web framework written in Kavach, found this (2026-11-12) while writing a settings loader. Every `get_api_key()` helper had the same hole. A maintainer chose (2026-11-12), from the options put to them, the rule below.

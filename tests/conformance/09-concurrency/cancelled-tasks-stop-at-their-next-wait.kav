@@ -11,7 +11,7 @@ fn watch() {
     const (send, receive) = Channel<Int>(capacity: 1)
     const _ticker = spawn {
         for tick in time.every_ms(100) {
-            print("tick {tick}")
+            print(`tick {tick}`)
             if tick == 2 {
                 send.put(tick)
             }

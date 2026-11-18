@@ -15,7 +15,7 @@ fn first_error(src: &str) -> String {
 /// program that only uses `std.fs` is told `FsError.NotFound`.
 #[test]
 fn a_bare_variant_is_named_from_the_modules_used() {
-    let src = "use std.fs\n\nfn load(path: String) -> String ! Error {\n    try fs.read_text(path)\n}\n\nfn main() {\n    const text = load(\"app.toml\") catch e => match e {\n        NotFound(p) => \"no {p}\",\n        _ => \"something else\",\n    }\n    print(text)\n}\n";
+    let src = "use std.fs\n\nfn load(path: String) -> String ! Error {\n    try fs.read_text(path)\n}\n\nfn main() {\n    const text = load(\"app.toml\") catch e => match e {\n        NotFound(p) => `no {p}`,\n        _ => \"something else\",\n    }\n    print(text)\n}\n";
     assert_eq!(
         first_error(src),
         "an `Error` can hold any error type: write `FsError.NotFound`"

@@ -29,8 +29,8 @@ fn main() {
     print(log.len())
     for r in log {
         match r {
-            Reading.Heat(celsius) => print("heat {celsius}")
-            Reading.Note(text) => print("note {text}")
+            Reading.Heat(celsius) => print(`heat {celsius}`)
+            Reading.Note(text) => print(`note {text}`)
         }
     }
     print(log.is_full())

@@ -15,7 +15,7 @@ fn main() ! Error {
     for (format, low, high) in edges {
         const at_low = try compress.decode(compress.encode(data, format, level: low), format)
         const at_high = try compress.decode(compress.encode(data, format, level: high), format)
-        print("{format.name()} {at_low == data} {at_high == data}")
+        print(`{format.name()} {at_low == data} {at_high == data}`)
     }
-    print("stored {compress.encode(data, Format.Gzip, level: 0).len() > data.len()}")
+    print(`stored {compress.encode(data, Format.Gzip, level: 0).len() > data.len()}`)
 }

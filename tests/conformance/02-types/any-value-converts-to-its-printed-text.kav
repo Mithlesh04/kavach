@@ -12,8 +12,8 @@ type Point {
 fn main() {
     const small: Int8 = -5
     const price: Decimal = 499.00
-    print("[{String(true)}] [{String('x')}] [{String(small)}] [{String(price)}] [{String(123456789012345678901)}]")
+    print(`[{String(true)}] [{String('x')}] [{String(small)}] [{String(price)}] [{String(123456789012345678901)}]`)
     const missing: Int? = none
-    print("[{String([1, 2])}] [{String(["a"])}] [{String(missing)}] [{String((1, "b"))}]")
-    print("[{String(Point(x: 1, y: 2))}] [{String("hi".bytes())}]")
+    print(`[{String([1, 2])}] [{String(["a"])}] [{String(missing)}] [{String((1, "b"))}]`)
+    print(`[{String(Point(x: 1, y: 2))}] [{String("hi".bytes())}]`)
 }

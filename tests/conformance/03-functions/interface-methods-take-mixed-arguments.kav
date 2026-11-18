@@ -17,7 +17,7 @@ type Sum: Combine {
     label: String
 
     fn combine(self, a: Int8, b: Float32, c: Item, d: Int, e: Char) -> String {
-        "{self.label}: {a} {b} {c} {d} {e}"
+        `{self.label}: {a} {b} {c} {d} {e}`
     }
 }
 
@@ -25,7 +25,7 @@ type Join: Combine {
     tag: Int8
 
     fn combine(self, a: Int8, b: Float32, c: Item, d: Int, e: Char) -> String {
-        "Join: {e} {d} {c} {b} {a}"
+        `Join: {e} {d} {c} {b} {a}`
     }
 }
 

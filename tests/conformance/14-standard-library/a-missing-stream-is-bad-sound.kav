@@ -6,7 +6,7 @@ use std.audio
 
 fn main() uses Audio, Fs.read {
     const v = audio.stream("no-such-music.ogg") catch e => {
-        print("{e}".starts_with("BadSound"))
+        print(`{e}`.starts_with("BadSound"))
         return
     }
     v.stop()

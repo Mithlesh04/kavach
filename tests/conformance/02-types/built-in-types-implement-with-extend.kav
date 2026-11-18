@@ -7,7 +7,7 @@ interface Describe {
 }
 
 extend Int: Describe {
-    fn describe(self) -> String { "number {self}" }
+    fn describe(self) -> String { `number {self}` }
 }
 
 fn show<T: Describe>(item: T) -> String {

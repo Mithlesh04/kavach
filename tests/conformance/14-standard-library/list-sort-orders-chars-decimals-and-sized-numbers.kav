@@ -7,8 +7,8 @@
 fn main() {
     print(['b', 'A', 'é', 'a'].sort())
     const inf = 1.0 / 0.0
-    print("{[3, -10, 0].sort()} {[inf, -inf, 0.0].sort()}")
+    print(`{[3, -10, 0].sort()} {[inf, -inf, 0.0].sort()}`)
     const small: [Int8] = [127, -128, 0]
     const money: [Decimal] = [2.50, -1.5, 0.25]
-    print("{small.sort()} {money.sort()}")
+    print(`{small.sort()} {money.sort()}`)
 }

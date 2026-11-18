@@ -8,18 +8,18 @@
 use std.fs
 
 fn move_out() -> String uses Fs("./kavach-scope-move") {
-    fs.rename("kavach-scope-move/a.txt", "kavach-scope-out.txt") catch e => return "{e}"
+    fs.rename("kavach-scope-move/a.txt", "kavach-scope-out.txt") catch e => return `{e}`
     "moved"
 }
 
 fn copy_out() -> String uses Fs("./kavach-scope-move") {
-    fs.copy("kavach-scope-move/a.txt", "kavach-scope-out.txt") catch e => return "{e}"
+    fs.copy("kavach-scope-move/a.txt", "kavach-scope-out.txt") catch e => return `{e}`
     "copied"
 }
 
 /// A link inside the folder to a file outside it would let reads out.
 fn link_out() -> String uses Fs("./kavach-scope-move") {
-    fs.symlink("kavach-scope-out.txt", "kavach-scope-move/link.txt") catch e => return "{e}"
+    fs.symlink("kavach-scope-out.txt", "kavach-scope-move/link.txt") catch e => return `{e}`
     "linked"
 }
 

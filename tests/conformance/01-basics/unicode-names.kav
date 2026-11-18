@@ -4,5 +4,5 @@
 
 fn main() {
     const नाम = "Asha"
-    print("नमस्ते, {नाम}")
+    print(`नमस्ते, {नाम}`)
 }

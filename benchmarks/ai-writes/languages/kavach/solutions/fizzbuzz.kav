@@ -6,6 +6,6 @@ fn fizzbuzz(n: Int) -> String {
     } else if n % 5 == 0 {
         "Buzz"
     } else {
-        "{n}"
+        `{n}`
     }
 }

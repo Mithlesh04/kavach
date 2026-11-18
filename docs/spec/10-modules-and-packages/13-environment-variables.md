@@ -7,7 +7,7 @@ fn main() ! Error uses Env, Console {
     const key = try env("STRIPE_KEY")          // a secret String
     print(key)                                 // compile error: a secret
     const port = try Int(reveal(try env("PORT")))  // allowed
-    print("listening on {port}")
+    print(`listening on {port}`)
 }
 ```
 

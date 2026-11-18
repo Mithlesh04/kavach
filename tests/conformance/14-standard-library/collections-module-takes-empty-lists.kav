@@ -10,7 +10,7 @@ use std.collections
 fn main() {
     const empty: [Int] = []
     const lists: [[Int]] = []
-    print("{collections.chunks(empty, 2)} {collections.zip(empty, ["a"])} {collections.unique(empty)} {collections.counts(empty)} {collections.flatten(lists)}")
+    print(`{collections.chunks(empty, 2)} {collections.zip(empty, ["a"])} {collections.unique(empty)} {collections.counts(empty)} {collections.flatten(lists)}`)
     print(collections.chunks([1, 2, 3], 10))
     print(collections.zip(["a"], empty))
     print(collections.unique([[], [1], []]))

@@ -85,7 +85,7 @@ const PROGRAM: &str = "type RefundDecision {
 
 fn main() {
     const d = ask<RefundDecision>(\"Refund order 7?\") catch e => {
-        print(\"failed: {e}\")
+        print(`failed: {e}`)
         return
     }
     print(d.approve)
@@ -231,7 +231,7 @@ agent Bot {
     }
 
     on check(n: Int) -> Check ! Error {
-        try ask<Check>(\"Is {n} prime?\")
+        try ask<Check>(`Is {n} prime?`)
     }
 }
 
@@ -239,10 +239,10 @@ fn main() {
     const bot = Bot.start()
     for n in [7, 8] {
         const c = bot.check(n) catch e => {
-            print(\"{n}: {e}\")
+            print(`{n}: {e}`)
             continue
         }
-        print(\"{n}: {c.prime}\")
+        print(`{n}: {c.prime}`)
     }
 }
 ";
@@ -297,7 +297,7 @@ fn careful() -> Model {
         stop: [\"END\"],
         timeout: 30.seconds,
         retries: 2,
-        extra: \"\\{\\\"metadata\\\": \\{\\\"user_id\\\": \\\"shop-7\\\"}}\",
+        extra: `\\{\"metadata\": \\{\"user_id\": \"shop-7\"}}`,
     )
 }
 
@@ -411,7 +411,7 @@ fn main() ! Error uses Ai, Console {
     const b = Bot.start()
     for _ in 0..3 {
         const ok = b.check() catch e => {
-            print(\"refused: {e}\")
+            print(`refused: {e}`)
             continue
         }
         print(ok)

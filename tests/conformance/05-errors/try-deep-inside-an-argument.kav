@@ -45,7 +45,7 @@ fn read(path: String) -> Int ! Error uses Fs {
 }
 
 fn main() uses Console, Fs {
-    print("{named(1) catch _ => -1} {named(5) catch _ => -1}")
-    print("{by_value(1, check) catch _ => -1} {by_value(5, check) catch _ => -1}")
+    print(`{named(1) catch _ => -1} {named(5) catch _ => -1}`)
+    print(`{by_value(1, check) catch _ => -1} {by_value(5, check) catch _ => -1}`)
     print(read("no-such-folder/no-such-file.txt") catch _ => -1)
 }

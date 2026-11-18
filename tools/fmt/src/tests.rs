@@ -128,8 +128,8 @@ fn collect(dir: &std::path::Path, out: &mut Vec<std::path::PathBuf>) {
 /// methods (through the values they are read from).
 #[test]
 fn names_are_fixed_with_their_uses() {
-    let src = "type order_status = Open | Closed\n\ntype Order {\n    orderId: Int\n    status: order_status\n\n    fn isOpen(self) -> Bool {\n        self.orderId > 0\n    }\n}\n\nfn makeOrder(orderId: Int) -> Order {\n    Order(orderId: orderId, status: Open)\n}\n\nfn main() {\n    const firstOrder = makeOrder(orderId: 7)\n    const copy = firstOrder with { orderId: 8 }\n    print(\"{copy.orderId} {firstOrder.isOpen()}\")\n}\n";
-    let want = "type OrderStatus = Open | Closed\n\ntype Order {\n    order_id: Int\n    status: OrderStatus\n\n    fn is_open(self) -> Bool {\n        self.order_id > 0\n    }\n}\n\nfn make_order(order_id: Int) -> Order {\n    Order(order_id: order_id, status: Open)\n}\n\nfn main() {\n    const first_order = make_order(order_id: 7)\n    const copy = first_order with { order_id: 8 }\n    print(\"{copy.order_id} {first_order.is_open()}\")\n}\n";
+    let src = "type order_status = Open | Closed\n\ntype Order {\n    orderId: Int\n    status: order_status\n\n    fn isOpen(self) -> Bool {\n        self.orderId > 0\n    }\n}\n\nfn makeOrder(orderId: Int) -> Order {\n    Order(orderId: orderId, status: Open)\n}\n\nfn main() {\n    const firstOrder = makeOrder(orderId: 7)\n    const copy = firstOrder with { orderId: 8 }\n    print(`{copy.orderId} {firstOrder.isOpen()}`)\n}\n";
+    let want = "type OrderStatus = Open | Closed\n\ntype Order {\n    order_id: Int\n    status: OrderStatus\n\n    fn is_open(self) -> Bool {\n        self.order_id > 0\n    }\n}\n\nfn make_order(order_id: Int) -> Order {\n    Order(order_id: order_id, status: Open)\n}\n\nfn main() {\n    const first_order = make_order(order_id: 7)\n    const copy = first_order with { order_id: 8 }\n    print(`{copy.order_id} {first_order.is_open()}`)\n}\n";
     let (out, left) = super::fix_names(src, "t.kav");
     assert_eq!(out, want);
     assert!(left.is_empty(), "{left:?}");

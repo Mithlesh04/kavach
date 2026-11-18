@@ -5,6 +5,6 @@
 
 fn main() {
     const thumbs = "👍👍👍".truncate(2)
-    print("{thumbs} {thumbs.len()}")
-    print("{"e\u{301}x".truncate(1) == "e"} [{"नमस्ते".truncate(0)}]")
+    print(`{thumbs} {thumbs.len()}`)
+    print(`{`e\u{301}x`.truncate(1) == "e"} [{"नमस्ते".truncate(0)}]`)
 }

@@ -12,8 +12,8 @@ fn check(x: Int) -> Int ! Oops {
 fn main() {
     const e = 5
     const n = check(7) catch e => {
-        print("handler {e}")
+        print(`handler {e}`)
         0
     }
-    print("outside {e + n}")
+    print(`outside {e + n}`)
 }

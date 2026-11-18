@@ -10,5 +10,5 @@ fn pick(i: Int) -> Int {
 const bad = pick(5)
 
 fn main() {
-    print("never printed {bad}")
+    print(`never printed {bad}`)
 }

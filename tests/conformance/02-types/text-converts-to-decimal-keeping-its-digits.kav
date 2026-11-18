@@ -10,10 +10,10 @@ fn main() {
     const tenth = "0.1"
     const fifth = "0.2"
     const sum = (Decimal(tenth) catch 0) + (Decimal(fifth) catch 0)
-    print("{Decimal(a) catch 0} {Decimal(b) catch 0} {sum == Decimal("0.3")}")
+    print(`{Decimal(a) catch 0} {Decimal(b) catch 0} {sum == Decimal("0.3")}`)
     const digits = "-123456789012345678901234567890"
     print(BigInt(digits) catch 0)
     const bad = "1.5.0"
     const frac = "2.5"
-    print("{Decimal(bad) catch 0} {BigInt(frac) catch 0}")
+    print(`{Decimal(bad) catch 0} {BigInt(frac) catch 0}`)
 }

@@ -10,11 +10,11 @@ fn main() ! Error {
         let n = n * 2
         const first = n
         n += 1
-        print("inner {first} then {n}")
+        print(`inner {first} then {n}`)
         n
     }
     const doubled = try t.wait()
-    print("outer {n}")
+    print(`outer {n}`)
     const u = spawn {
         const doubled = doubled * 2
         doubled

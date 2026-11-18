@@ -13,6 +13,6 @@ pub fn take_and_let_go() -> Bool {
 }
 
 fn main() {
-    print("asked: {take_and_let_go()}")
+    print(`asked: {take_and_let_go()}`)
     print("let go")
 }

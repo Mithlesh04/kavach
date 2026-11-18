@@ -30,6 +30,6 @@ fn main() {
     print(older(User(name: "Asha", age: 31)))
     print(taller(Shape.Rect(width: 2.0, height: 3.0)))
     print(taller(Shape.Circle(radius: 1.5)))
-    print("{small(none)} {small(-5)} {flag(none)} {flag(true)} {letter(none)} {letter('x')} {half(none)} {half(0.5)}")
-    print("{small(-128) ?? 0} {or_none(7, false)} {or_none(7, true)}")
+    print(`{small(none)} {small(-5)} {flag(none)} {flag(true)} {letter(none)} {letter('x')} {half(none)} {half(0.5)}`)
+    print(`{small(-128) ?? 0} {or_none(7, false)} {or_none(7, true)}`)
 }

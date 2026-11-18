@@ -26,7 +26,7 @@ fn main() {
     const stopped = [1, 9, 3].map(x => try price(x)) catch e => match e {
         E.Big(n) => [-n],
     }
-    print("stopped at {-stopped[0]}")
+    print(`stopped at {-stopped[0]}`)
     print([1, 2].filter(x => try price(x) < 20) catch _ => [])
     print([1, 7].sum(x => try price(x)) catch _ => 0)
     print([1, 2, 3].sum(x => price(x) catch _ => 0))
@@ -35,11 +35,11 @@ fn main() {
     const s = Shared(1)
     const first = s.update(x => try price(x)) catch _ => -1
     const second = s.update(x => try price(x)) catch _ => -1
-    print("{first} {second} {s.get()}")
+    print(`{first} {second} {s.get()}`)
     const t = Shared(1)
     const old = t.update_with(x => (try price(x), x)) catch _ => -1
     const kept = t.update_with(x => (try price(x), x)) catch _ => -1
-    print("{old} {kept} {t.get()}")
+    print(`{old} {kept} {t.get()}`)
     print([1, 2].parallel_map(x => try price(x)) catch _ => [])
     print([1, 9, 7].parallel_map(x => try price(x)) catch e => match e {
         E.Big(n) => [-n],

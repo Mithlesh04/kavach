@@ -11,9 +11,9 @@ type Command = Add(name: String) | List
 
 fn main() {
     const command = cli.parse<Command>() catch e => {
-        print("refused: {"{e}".contains("--all")}")
+        print(`refused: {`{e}`.contains("--all")}`)
         cli.exit(2)
         return
     }
-    print("ran {command}")
+    print(`ran {command}`)
 }

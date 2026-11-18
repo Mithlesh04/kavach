@@ -9,7 +9,7 @@ type R {
 }
 
 fn add_name(inout r: R, x: Int) {
-    r.names["k{x}"] = x
+    r.names[`k{x}`] = x
 }
 
 fn main() {

@@ -28,10 +28,10 @@ fn main() {
     const account = Account(owner: "Asha", balance: 1_000)
 
     const after = withdraw(account, 250) catch e => {
-        print("withdraw failed: {e}")
+        print(`withdraw failed: {e}`)
         account
     }
-    print("{after.owner} now has {after.balance}")
+    print(`{after.owner} now has {after.balance}`)
 
     // Uncommenting the next line stops the program with:
     //   contract failed: require amount > 0

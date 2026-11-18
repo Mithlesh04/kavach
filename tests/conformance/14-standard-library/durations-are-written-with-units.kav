@@ -23,9 +23,9 @@ fn main() {
     print(d)
     const start = time.monotonic_ms()
     time.sleep(20.ms)
-    print("slept: {time.monotonic_ms() - start >= 20}")
+    print(`slept: {time.monotonic_ms() - start >= 20}`)
     for round in time.every(10.ms) {
-        print("round {round}")
+        print(`round {round}`)
         if round == 1 {
             break
         }

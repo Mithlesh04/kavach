@@ -11,7 +11,7 @@ capability Payments {
 
 fn settle(order_id: Int, amount: Int) -> String uses Payments.refund {
     const r = Payments.refund(order_id, amount) catch e => {
-        return "not refunded: {e}"
+        return `not refunded: {e}`
     }
-    "refunded {r.id}"
+    `refunded {r.id}`
 }

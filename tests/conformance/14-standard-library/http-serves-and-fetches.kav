@@ -11,25 +11,25 @@ use std.net
 
 fn hello(r: Request) -> Response {
     if r.path == "/hello" {
-        http.text(200, "hello, {r.method} with {r.body.len()} bytes")
+        http.text(200, `hello, {r.method} with {r.body.len()} bytes`)
     } else {
-        http.text(404, "no page {r.path}")
+        http.text(404, `no page {r.path}`)
     }
 }
 
 fn main() ! Error {
     const listener = try net.listen("127.0.0.1:0")
     const _server = spawn http.serve(listener, hello)
-    const base = "http://{listener.address()}"
-    const a = try http.get("{base}/hello")
-    print("{a.status} {a.body.text() ?? "?"}")
+    const base = `http://{listener.address()}`
+    const a = try http.get(`{base}/hello`)
+    print(`{a.status} {a.body.text() ?? "?"}`)
     print(a.header("content-type") ?? "-")
-    const b = try http.post("{base}/hello", "abc".bytes())
-    print("{b.status} {b.body.text() ?? "?"}")
-    const c = try http.get("{base}/nothing")
-    print("{c.status} {c.body.text() ?? "?"}")
+    const b = try http.post(`{base}/hello`, "abc".bytes())
+    print(`{b.status} {b.body.text() ?? "?"}`)
+    const c = try http.get(`{base}/nothing`)
+    print(`{c.status} {c.body.text() ?? "?"}`)
     const _bad = http.get("ftp://example.com") catch e => {
-        print("can't: {e}")
+        print(`can't: {e}`)
         return
     }
 }

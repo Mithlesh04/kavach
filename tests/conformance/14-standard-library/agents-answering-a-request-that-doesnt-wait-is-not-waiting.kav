@@ -8,8 +8,8 @@ use std.agents
 
 fn try_answer(id: String, approved: Bool) uses Approvals, Console {
     agents.answer(id, approved: approved, by: "asha", reason: "checked") catch e => match e {
-        ApprovalError.NotWaiting(missing) => print("not waiting: {missing}"),
-        ApprovalError.Failed(_, reason) => print("failed: {reason}"),
+        ApprovalError.NotWaiting(missing) => print(`not waiting: {missing}`),
+        ApprovalError.Failed(_, reason) => print(`failed: {reason}`),
     }
 }
 

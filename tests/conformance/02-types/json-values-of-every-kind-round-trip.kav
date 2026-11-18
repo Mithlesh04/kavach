@@ -28,7 +28,7 @@ type Drawing {
 
 fn main() ! JsonError {
     const d = Drawing(
-        title: "plan \"A\" é",
+        title: `plan "A" é`,
         note: none,
         shapes: [Shape.Dot, Shape.Circle(r: 1.5), Shape.Box(w: -2, h: 3)],
         tags: {"b": Tag(name: "x", weight: 255), "a": Tag(name: "y", weight: 0)},

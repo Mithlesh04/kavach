@@ -15,11 +15,11 @@ agent Counter {
 fn main() {
     const bot = Counter.start()
     const shown = match bot.pick([1, 2], 5) {
-        ok(n) => "{n}"
-        err(e) => "{e}"
+        ok(n) => `{n}`
+        err(e) => `{e}`
     }
     print(shown.starts_with("panicked: index 5 is out of range: the list has 2 items at "))
     print(shown.ends_with("a-handler-that-panics-fails-its-send.kav:11"))
     const next = bot.pick([1, 2], 1) catch _ => 0
-    print("next {next}")
+    print(`next {next}`)
 }

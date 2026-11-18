@@ -10,7 +10,7 @@ type RefundDecision {
     reason: String
 }
 
-const decision = try ask<RefundDecision>("Should we refund order {order.id}?")
+const decision = try ask<RefundDecision>(`Should we refund order {order.id}?`)
 ```
 
 - Requires the `Ai` capability.
@@ -50,7 +50,7 @@ fn careful() -> Model {
   - `effort` is how hard the model works on an answer, and how many tokens it spends: the provider's main control of quality against cost. Without it, the model's own default.
   - `temperature` is gone: current models take only their own, and newer API versions refuse it on every model. A `Model` that sets it is a compile error that says to use `effort`.
   - `api_url` and `api_key_env` send one model's calls elsewhere, to another account, a proxy or a gateway that speaks Anthropic's Messages API. Other providers' own APIs (Amazon Bedrock, Google Vertex AI) are an open question.
-  - `extra` is added to each request as it is, for a provider setting Kavach doesn't name yet: `extra: "\{\"metadata\": \{\"user_id\": \"shop-7\"}}"` (`\{` is a brace, not interpolation, 1.7). The compiler checks that it is a JSON object.
+  - `extra` is added to each request as it is, for a provider setting Kavach doesn't name yet: `extra: """{"metadata": {"user_id": "shop-7"}}"""` written over lines, or `` extra: `\{"metadata": \{"user_id": "shop-7"}}` `` (`\{` is a brace in a template, 1.7). The compiler checks that it is a JSON object.
 
   An agent's `model` (8.3) sets it for its handlers, and a call's `model:` sets it for that call: `ask<T>(prompt, model: quick())`. The call's wins over the agent's. The compiler works the value out when it builds the program, so it is a `Model(…)` written with plain values, a `const` set to one, or a call of a function with no parameters that gives one; anything else is a compile error that says so.
 

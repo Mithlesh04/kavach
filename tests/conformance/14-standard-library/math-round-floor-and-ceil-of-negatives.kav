@@ -8,8 +8,8 @@ use std.math
 
 fn main() {
     let x = -2.5
-    print("{math.floor(x)} {math.ceil(x)} {math.round(x)}")
+    print(`{math.floor(x)} {math.ceil(x)} {math.round(x)}`)
     // The Float just below 0.5 rounds down: adding 0.5 and taking the floor would give 1.0.
-    print("{math.round(0.5)} {math.round(-0.5)} {math.round(0.49999999999999994)}")
-    print("{math.round(4503599627370497.0)} {math.round(Float32(-1.5))}")
+    print(`{math.round(0.5)} {math.round(-0.5)} {math.round(0.49999999999999994)}`)
+    print(`{math.round(4503599627370497.0)} {math.round(Float32(-1.5))}`)
 }

@@ -136,6 +136,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0128](0128-arenas-as-regions.md) | Arenas as regions: made fast, freed at once | Accepted |
 | [0129](0129-maps-written-with-braces.md) | Maps written with braces | Accepted |
 | [0130](0130-map-renamed-dict.md) | `Map` renamed `Dict` | Accepted |
+| [0131](0131-plain-strings-and-backtick-templates.md) | Plain strings in quotes, templates in backticks | Accepted |
 
 ## Open decisions
 

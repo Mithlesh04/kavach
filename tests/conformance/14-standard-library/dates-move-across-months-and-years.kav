@@ -12,8 +12,8 @@ fn d(year: Int, month: Int, day: Int) -> time.Date {
 }
 
 fn main() {
-    print("{d(2024, 12, 31).add_days(1).iso()} {d(2024, 3, 1).add_days(-1).iso()} {d(2024, 1, 1).add_days(-1).iso()}")
-    print("{d(2025, 3, 31).add_months(-1).iso()} {d(2024, 1, 31).add_months(13).iso()} {d(2024, 1, 31).add_months(-2).iso()}")
-    print("{d(2026, 11, 4).days_until(d(2026, 1, 1))} {d(2026, 11, 4).days_until(d(2026, 11, 4))}")
-    print("{d(1970, 1, 1).weekday()} {d(2000, 2, 29).weekday()} {d(1900, 3, 1).weekday()}")
+    print(`{d(2024, 12, 31).add_days(1).iso()} {d(2024, 3, 1).add_days(-1).iso()} {d(2024, 1, 1).add_days(-1).iso()}`)
+    print(`{d(2025, 3, 31).add_months(-1).iso()} {d(2024, 1, 31).add_months(13).iso()} {d(2024, 1, 31).add_months(-2).iso()}`)
+    print(`{d(2026, 11, 4).days_until(d(2026, 1, 1))} {d(2026, 11, 4).days_until(d(2026, 11, 4))}`)
+    print(`{d(1970, 1, 1).weekday()} {d(2000, 2, 29).weekday()} {d(1900, 3, 1).weekday()}`)
 }

@@ -20,6 +20,6 @@ fn main() {
     print(time.parse_date("2026-11-04") catch _ => due)
     match time.parse_date("2026-02-30") {
         ok(d) => print(d.iso()),
-        err(DateError.Invalid(text)) => print("invalid {text}"),
+        err(DateError.Invalid(text)) => print(`invalid {text}`),
     }
 }

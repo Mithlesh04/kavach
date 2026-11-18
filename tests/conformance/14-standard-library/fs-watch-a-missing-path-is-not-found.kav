@@ -10,7 +10,7 @@ use std.fs
 fn main() ! FsError uses Fs, Console {
     const dir = "kavach-t-fs-watch"
     try fs.create_dir(dir)
-    const _missing = fs.watch("{dir}/nothing") catch e => {
+    const _missing = fs.watch(`{dir}/nothing`) catch e => {
         print(e)
         try fs.watch(dir)
     }

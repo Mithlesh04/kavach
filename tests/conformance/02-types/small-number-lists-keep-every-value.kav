@@ -39,8 +39,8 @@ fn main() {
     for i in 0..1000 {
         big.push(Int32(i - 500))
     }
-    print("{big[0]} {big[999]} {big.sort()[0]}")
+    print(`{big[0]} {big[999]} {big.sort()[0]}`)
     const copy = big
     big[0] = 1
-    print("{copy[0]} {big[0]} {copy == big}")
+    print(`{copy[0]} {big[0]} {copy == big}`)
 }

@@ -5,6 +5,6 @@
 use std.json
 
 fn main() ! JsonError {
-    const doc = try json.parse("[[1, 2, 3], \{\"a\": 1, \"b\": [9]}, \"abc\", 42, true, null]")
-    print("{doc[0].len()} {doc[1].len()} {doc[2].len()} {doc[3].len()} {doc[4].len()} {doc[5].len()} {doc[9].len()}")
+    const doc = try json.parse(`[[1, 2, 3], \{"a": 1, "b": [9]}, "abc", 42, true, null]`)
+    print(`{doc[0].len()} {doc[1].len()} {doc[2].len()} {doc[3].len()} {doc[4].len()} {doc[5].len()} {doc[9].len()}`)
 }

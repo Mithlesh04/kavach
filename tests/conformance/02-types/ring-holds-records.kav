@@ -22,7 +22,7 @@ fn main() {
     }
     print(feed.events.len())
     for e in feed.events {
-        print("{e.id} {e.name}")
+        print(`{e.id} {e.name}`)
     }
     print(feed.events.contains(Event(id: 1, name: "a")))
     print(feed.events.contains(Event(id: 4, name: "d")))

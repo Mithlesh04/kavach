@@ -8,5 +8,5 @@ fn below(n: Int) -> Int {
 
 fn main() {
     const n = below(1)
-    print("[{"ab".repeat(n)}] {[1, 2].take(n)} {[1, 2].skip(n)} [{"ab".truncate(n)}] [{"ab".pad_left(n)}]")
+    print(`[{"ab".repeat(n)}] {[1, 2].take(n)} {[1, 2].skip(n)} [{"ab".truncate(n)}] [{"ab".pad_left(n)}]`)
 }

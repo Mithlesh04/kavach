@@ -13,6 +13,6 @@ fn main() ! CryptoError {
     const a = try crypto.encrypt(key, data)
     const b = try crypto.encrypt(key, data)
     // A 12-byte nonce, 9 bytes of ciphertext, a 16-byte tag.
-    print("{a.len()} {a == b}")
-    print("{(try crypto.decrypt(key, a)) == data} {(try crypto.decrypt(key, b)) == data}")
+    print(`{a.len()} {a == b}`)
+    print(`{(try crypto.decrypt(key, a)) == data} {(try crypto.decrypt(key, b)) == data}`)
 }

@@ -11,8 +11,8 @@ type Event {
 }
 
 fn main() ! JsonError {
-    const a = try json.decode<Event>("\{\"id\": 7, \"data\": \{\"tags\": [\"a\", \"b\"], \"n\": null}}")
-    print("{a.id} {a.data}")
-    const b = try json.decode<Event>("\{\"id\": 8, \"data\": null}")
-    print("{b.id} {b.data}")
+    const a = try json.decode<Event>(`\{"id": 7, "data": \{"tags": ["a", "b"], "n": null}}`)
+    print(`{a.id} {a.data}`)
+    const b = try json.decode<Event>(`\{"id": 8, "data": null}`)
+    print(`{b.id} {b.data}`)
 }

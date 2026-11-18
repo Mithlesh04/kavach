@@ -10,5 +10,5 @@ type User {
 fn main() {
     const { name, age: years } = User(name: "Asha", age: 31)
     years += 1                      // error: `years` is a `const`; use `let`
-    print("{name} {years}")
+    print(`{name} {years}`)
 }

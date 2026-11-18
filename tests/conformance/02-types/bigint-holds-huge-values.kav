@@ -10,7 +10,7 @@ fn main() {
     const huge = two ** 200
     print(huge)
     const half = two ** 199
-    print("{huge / half} {huge % half} {huge > half * BigInt(1)}")
-    print("{-9223372036854775809} {2 ** 64 - 1}")
+    print(`{huge / half} {huge % half} {huge > half * BigInt(1)}`)
+    print(`{-9223372036854775809} {2 ** 64 - 1}`)
     print(1 - huge)
 }

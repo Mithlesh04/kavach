@@ -15,7 +15,7 @@ fn refund(price: Int, share: Share) -> String {
         Share.Nothing => 0,
         Share.Escalate => return "escalate",
     }
-    "refund {amount}"
+    `refund {amount}`
 }
 
 fn sum_until_big(xs: [Int]) -> Int {

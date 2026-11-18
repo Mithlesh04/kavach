@@ -8,11 +8,11 @@ fn main() {
     const i16: Int16 = -300
     const top: Int8 = 127
     const zero: UInt8 = 0
-    print("{i16.abs()} {top.abs()} {zero.abs()}")
+    print(`{i16.abs()} {top.abs()} {zero.abs()}`)
     const f: Float32 = -1.5
     const z = 0.0
-    print("{f.abs()} {z.abs()}")
+    print(`{f.abs()} {z.abs()}`)
     const d: Decimal = -3.25
     const e: Decimal = 3.25
-    print("{d.abs()} {e.abs()}")
+    print(`{d.abs()} {e.abs()}`)
 }

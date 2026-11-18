@@ -16,5 +16,5 @@ fn main() {
     const a = check(1) catch e => 0     // warning: e is never used
     const b = check(2) catch _ => 0
     const c = check(3) catch _err => 0
-    print("{a} {b} {c}")
+    print(`{a} {b} {c}`)
 }

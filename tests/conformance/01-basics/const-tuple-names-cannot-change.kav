@@ -7,5 +7,5 @@ fn main() {
     low = 2
     const (code, message) = (200, "OK")
     code = 404                      // error: `code` is a `const`
-    print("{low} {high} {code} {message}")
+    print(`{low} {high} {code} {message}`)
 }

@@ -16,8 +16,8 @@ The value is already there. `try` keeps the original error inside the `Error`, a
 ```kavach
 const settings = load(path) catch e => match e {
     FsError.NotFound(path) => defaults(),
-    JsonError.Syntax(line, column, message) => panic("{path}:{line}: {message}"),
-    _ => panic("can't load {path}: {e}"),
+    JsonError.Syntax(line, column, message) => panic(`{path}:{line}: {message}`),
+    _ => panic(`can't load {path}: {e}`),
 }
 ```
 

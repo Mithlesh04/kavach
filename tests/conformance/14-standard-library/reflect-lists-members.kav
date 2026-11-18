@@ -27,14 +27,14 @@ extend Box {
 fn main() {
     for m in String.members() {
         if m.origin != MemberOrigin.BuiltIn {
-            print("{m.name}: {m.origin}")
+            print(`{m.name}: {m.origin}`)
         }
     }
     const b = Box(items: [1])
-    print("{String.members().len() > 10} {"hi".has_member("shout")} {b.has_member("items")} {"hi".has_member("nope")}")
+    print(`{String.members().len() > 10} {"hi".has_member("shout")} {b.has_member("items")} {"hi".has_member("nope")}`)
     for m in Box.members() {
-        const params = m.params.map(p => "{p.name}: {p.type_name}")
-        print("{m.kind} {m.name}({params.join(", ")}) -> {m.result} {m.origin}")
+        const params = m.params.map(p => `{p.name}: {p.type_name}`)
+        print(`{m.kind} {m.name}({params.join(", ")}) -> {m.result} {m.origin}`)
     }
     print(math.members().map(m => m.name))
 }

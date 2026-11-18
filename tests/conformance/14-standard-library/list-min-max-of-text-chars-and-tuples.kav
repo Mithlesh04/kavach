@@ -7,11 +7,11 @@
 
 fn main() {
     const words = ["pear", "fig", "Apple"]
-    print("{words.min() ?? ""} {words.max() ?? ""}")
+    print(`{words.min() ?? ""} {words.max() ?? ""}`)
     const letters = ['q', 'b', 'é']
-    print("{letters.min() ?? ' '} {letters.max() ?? ' '}")
+    print(`{letters.min() ?? ' '} {letters.max() ?? ' '}`)
     const pairs = [(1, "b"), (1, "a"), (0, "z")]
-    print("{pairs.min() ?? (9, "")} {pairs.max() ?? (9, "")}")
+    print(`{pairs.min() ?? (9, "")} {pairs.max() ?? (9, "")}`)
     const none_here: [String] = []
     print(none_here.max())
 }

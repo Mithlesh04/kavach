@@ -80,7 +80,7 @@ fn sync(order: Order) ! SyncError uses Net, Payments    // network and payments
 
 ```kavach
 fn load_report(name: String) -> String ! FsError uses Fs.read("./reports") {
-    try fs.read_text("./reports/{name}.txt")
+    try fs.read_text(`./reports/{name}.txt`)
 }
 
 const report = load_report("../secrets") catch e => ""   // Denied: outside ./reports

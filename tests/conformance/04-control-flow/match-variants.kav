@@ -9,10 +9,10 @@ type Shape = Circle(radius: Int) | Rect(width: Int, height: Int)
 
 fn name(shape: Shape) -> String {
     match shape {
-        Shape.Circle(radius) => "circle {radius}"
+        Shape.Circle(radius) => `circle {radius}`
         Shape.Rect(width: w, height: _) if w > 10 => "wide"
-        Shape.Rect(width, height) if width == height => "square {width}"
-        Shape.Rect(width, height) => "rect {width}x{height}"
+        Shape.Rect(width, height) if width == height => `square {width}`
+        Shape.Rect(width, height) => `rect {width}x{height}`
     }
 }
 

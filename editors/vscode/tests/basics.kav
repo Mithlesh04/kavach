@@ -34,7 +34,7 @@ pub fn withdraw(account: Account, amount: Decimal) -> Account ! BankError
 //          ^^^^^^^^ entity.name.function.call.kavach
 //                                  ^^^^^^ string.quoted.double.kavach
 
-const greeting = "Hello, {user.name}! \{literal}"
+const greeting = `Hello, {user.name}! \{literal}`
 // <----- storage.type.const.kavach
 //                       ^ punctuation.definition.template-expression.begin.kavach
 //                        ^^^^ meta.embedded.line.kavach
@@ -42,20 +42,24 @@ const greeting = "Hello, {user.name}! \{literal}"
 //                             ^^^^ variable.other.property.kavach
 //                                    ^^ constant.character.escape.kavach
 
-print("{price + order.total} and {Json.Null}")
+print(`{price + order.total} and {Json.Null}`)
 //     ^ punctuation.definition.template-expression.begin.kavach
 //      ^^^^^ variable.other.readwrite.kavach
 //            ^ keyword.operator.kavach
 //              ^^^^^ variable.other.readwrite.kavach
 //                    ^^^^^ variable.other.property.kavach
 //                         ^ punctuation.definition.template-expression.end.kavach
-//                          ^^^^^ string.quoted.double.kavach - meta.embedded.line.kavach
+//                          ^^^^^ string.template.kavach - meta.embedded.line.kavach
 //                                ^^^^ support.type.primitive.kavach
 
-print("{Point(x: 1).x} done")
+print(`{Point(x: 1).x} done`)
 //            ^ variable.other.readwrite.kavach
 //                   ^ punctuation.definition.template-expression.end.kavach
-//                     ^^^^ string.quoted.double.kavach
+//                     ^^^^ string.template.kavach
+
+const tick = `a \` b`
+//              ^^ constant.character.escape.kavach
+//                  ^ string.template.kavach
 
 var old = 1
 // <--- invalid.illegal.var.kavach
@@ -63,19 +67,19 @@ var old = 1
 let changing = 1
 // <--- storage.type.kavach - variable.other.constant.kavach
 
-const path = r"C:\path\{x}"
-//           ^ storage.type.string.kavach
-//                    ^^ string.quoted.raw.kavach - constant.character.escape.kavach
+const path = "C:\path\{x}"
+//           ^ string.quoted.double.kavach
+//                   ^^ string.quoted.double.kavach - constant.character.escape.kavach
+//                     ^^^ string.quoted.double.kavach - meta.template.expression.kavach
 
-const body = r"""
-//           ^ storage.type.string.kavach
-//            ^^^ string.quoted.raw.triple.kavach - storage.type.string.kavach
+const body = """
+//           ^^^ string.quoted.triple.kavach
     {"path": "C:\new\{x}"}
-//  ^ string.quoted.raw.triple.kavach - punctuation.definition.template-expression.begin.kavach
-//              ^^ string.quoted.raw.triple.kavach - constant.character.escape.kavach
-//                  ^^ string.quoted.raw.triple.kavach - constant.character.escape.kavach
+//  ^ string.quoted.triple.kavach - punctuation.definition.template-expression.begin.kavach
+//              ^^ string.quoted.triple.kavach - constant.character.escape.kavach
+//                  ^^ string.quoted.triple.kavach - constant.character.escape.kavach
     """
-//  ^^^ string.quoted.raw.triple.kavach
+//  ^^^ string.quoted.triple.kavach
 const after = 1
 // <----- storage.type.const.kavach
 
@@ -95,7 +99,7 @@ const tab = '\t'
 //          ^ string.quoted.single.char.kavach
 //           ^^ constant.character.escape.kavach
 
-const end = "line\r\n"
+const end = `line\r\n`
 //               ^^ constant.character.escape.kavach
 
 const ok = true or none
@@ -199,12 +203,12 @@ fn mean(self) -> T where T: Floating { self.a }
 //                 ^^^^^ keyword.other.kavach
 const fewer = count < limit and limit > (count)
 //            ^^^^^ variable.other.readwrite.kavach
-const open = "{"
+const open = `{`
 //            ^ invalid.illegal.unclosed-brace.kavach
-//             ^ string.quoted.double.kavach - meta.template.expression.kavach
+//             ^ string.template.kavach - meta.template.expression.kavach
 const after = 1
 //    ^^^^^ variable.other.readwrite.kavach
-const one = t == "{" or t == "}"
+const one = t == `{" or t == "}`
 //                ^ punctuation.definition.template-expression.begin.kavach
 //                            ^ punctuation.definition.template-expression.end.kavach
 
@@ -225,3 +229,4 @@ fn spread(n: Int) {
     const on = 3
 //        ^^ variable.other.readwrite.kavach
 }
+`}`

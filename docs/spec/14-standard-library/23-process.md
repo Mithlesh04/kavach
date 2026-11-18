@@ -55,7 +55,7 @@ fn simulate(top: String) -> Exit ! ProcessError uses Process("vsim"), Console {
             true
         },
         Output.Err(line) => {
-            print("! {line}")
+            print(`! {line}`)
             true
         },
     })

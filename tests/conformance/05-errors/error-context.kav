@@ -14,7 +14,7 @@ fn load() -> Int ! SetupError {
 
 fn main() {
     const _n = load() catch e => {
-        print("{e}")
+        print(`{e}`)
         0
     }
 }

@@ -16,7 +16,7 @@
 use std.time
 
 for tick in time.every_ms(1_000) {
-    print("tick {tick}")
+    print(`tick {tick}`)
     if tick == 4 {
         break
     }
@@ -159,7 +159,7 @@ print(try time.parse_time("09:05"))
 const wall = try time.parse_datetime("2026-11-04T09:05:30")
 print(wall.iso())                            // 2026-11-04T09:05:30
 const none_of_it = time.parse_moment("2026-11-04T09:05:30") catch e => {
-    print("{e}")                             // Invalid(text: "2026-11-04T09:05:30")
+    print(`{e}`)                             // Invalid(text: "2026-11-04T09:05:30")
     return
 }
 ```

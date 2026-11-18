@@ -101,7 +101,7 @@ fn a_server_answers_the_request_under_way_before_it_stops() {
     let dir = folder("drain");
     let ready = dir.join("ready");
     let src = format!(
-        "use std.fs\nuse std.http\nuse std.net\nuse std.time\n\nfn main() ! Error {{\n    const listener = try net.listen(\"127.0.0.1:0\")\n    const slow = (r: Request) => {{\n        time.sleep(600.ms)\n        http.text(200, \"finished {{r.path}}\")\n    }}\n    try fs.write_text(\"{}\", listener.address())\n    try http.serve(listener, slow)\n}}\n",
+        "use std.fs\nuse std.http\nuse std.net\nuse std.time\n\nfn main() ! Error {{\n    const listener = try net.listen(\"127.0.0.1:0\")\n    const slow = (r: Request) => {{\n        time.sleep(600.ms)\n        http.text(200, `finished {{r.path}}`)\n    }}\n    try fs.write_text(\"{}\", listener.address())\n    try http.serve(listener, slow)\n}}\n",
         ready.display()
     );
     let file = dir.join("main.kav");

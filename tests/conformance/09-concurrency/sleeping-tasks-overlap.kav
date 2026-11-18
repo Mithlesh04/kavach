@@ -9,7 +9,7 @@ use std.time
 
 fn report(name: String, ms: Int) -> String {
     time.sleep_ms(ms)
-    print("{name} done")
+    print(`{name} done`)
     name
 }
 
@@ -18,5 +18,5 @@ fn main() ! Error {
     const slow = spawn report("slow", 400)
     const fast = spawn report("fast", 200)
     print("both started")
-    print("{try slow.wait()} and {try fast.wait()} are back")
+    print(`{try slow.wait()} and {try fast.wait()} are back`)
 }

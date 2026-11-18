@@ -10,13 +10,13 @@ use std.fs
 
 fn main() ! FsError uses Fs, Console {
     const dir = "kavach-t-fs-remove"
-    try fs.create_dir("{dir}/full")
-    try fs.write_text("{dir}/full/a.txt", "a")
-    fs.remove("{dir}/full") catch _ => print("refused")
-    print(fs.exists("{dir}/full/a.txt"))
-    fs.remove("{dir}/gone.txt") catch e => print(e)
-    try fs.remove("{dir}/full/a.txt")
-    try fs.remove("{dir}/full")
+    try fs.create_dir(`{dir}/full`)
+    try fs.write_text(`{dir}/full/a.txt`, "a")
+    fs.remove(`{dir}/full`) catch _ => print("refused")
+    print(fs.exists(`{dir}/full/a.txt`))
+    fs.remove(`{dir}/gone.txt`) catch e => print(e)
+    try fs.remove(`{dir}/full/a.txt`)
+    try fs.remove(`{dir}/full`)
     try fs.remove(dir)
     print(fs.exists(dir))
 }

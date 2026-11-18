@@ -15,6 +15,6 @@ fn main() {
         Box.Full(items) => items,
         Box.Empty => [],
     }
-    print("{t.0} {o ?? []} {inside}")
+    print(`{t.0} {o ?? []} {inside}`)
     print(a)
 }

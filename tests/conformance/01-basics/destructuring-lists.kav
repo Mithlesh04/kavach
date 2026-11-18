@@ -10,17 +10,17 @@
 fn main() {
     const scores = [90, 75]
     const [first, second, third] = scores
-    print("{first} {second} {third}")
+    print(`{first} {second} {third}`)
     const [low = 0, high = 100, extra = -1] = scores
-    print("{low} {high} {extra}")
+    print(`{low} {high} {extra}`)
     const names = ["asha", "ravi", "mei"]
     const [head, ...rest] = names
-    print("{head} {rest}")
+    print(`{head} {rest}`)
     const [_, second_name] = names
     print(second_name)
     const [two, three] = [2, 3]
     print(two + three)              // plain Ints: the literal has both items
     const empty: [Int] = []
     const [a, ...b] = empty
-    print("{a} {b}")
+    print(`{a} {b}`)
 }

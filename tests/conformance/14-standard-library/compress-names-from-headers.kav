@@ -9,8 +9,8 @@ fn main() {
     const known = ["gzip", "x-gzip", "GZip", "DEFLATE", "zstd", "Br", "LZ4"]
     let found: [String] = []
     for name in known {
-        found.push("{compress.from_name(name)}")
+        found.push(`{compress.from_name(name)}`)
     }
     print(found.join(" "))
-    print("{compress.from_name("brotli")} {compress.from_name("")} {compress.from_name("identity")}")
+    print(`{compress.from_name("brotli")} {compress.from_name("")} {compress.from_name("identity")}`)
 }

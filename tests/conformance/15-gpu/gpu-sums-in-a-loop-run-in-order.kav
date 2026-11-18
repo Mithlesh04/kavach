@@ -19,11 +19,11 @@ fn main() {
         const biggest = xs.map(step).max() ?? 0
         highest = highest.max(Int(biggest))
     }
-    print("{total} {lowest} {highest}")
+    print(`{total} {lowest} {highest}`)
     print("done")
     let narrow: Int32 = 2147483647
     for xs in rounds {
         narrow += xs.map(x => x * 0 + 1).sum(x => x)
     }
-    print("never: {narrow}")
+    print(`never: {narrow}`)
 }

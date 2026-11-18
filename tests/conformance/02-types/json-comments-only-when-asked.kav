@@ -6,12 +6,12 @@
 use std.json
 
 fn main() ! Error {
-    const text = "// the server\n\{\n  \"port\": 8080, /* default */\n  \"hosts\": [\"a\", \"b\",],\n}"
+    const text = `// the server\n\{\n  "port": 8080, /* default */\n  "hosts": ["a", "b",],\n}`
     const settings = try json.parse(text, comments: true)
     print(json.stringify(settings))
     const _ = json.parse(text) catch e => {
         match e {
-            JsonError.Syntax(_, _, message) => print("refused: {message}"),
+            JsonError.Syntax(_, _, message) => print(`refused: {message}`),
             _ => print("other"),
         }
         Json.Null

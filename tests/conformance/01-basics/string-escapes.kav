@@ -1,11 +1,11 @@
-// Rule: Strings support the escapes \" \\ and \u{…}.
+// Rule: Templates read the escapes \` \\ \{ and \u{…}; a `"` needs none.
 // Spec: 1.7
-// expect output: say "hi"
+// expect output: say "hi" and `tick` {
 // expect output: a\b
 // expect output: क
 
 fn main() {
-    print("say \"hi\"")
-    print("a\\b")
-    print("\u{0915}")
+    print(`say "hi" and \`tick\` \{`)
+    print(`a\\b`)
+    print(`\u{0915}`)
 }

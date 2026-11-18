@@ -22,5 +22,5 @@ fn main() {
     }
     print(add())
     print(add())
-    print("{n} {log}")
+    print(`{n} {log}`)
 }

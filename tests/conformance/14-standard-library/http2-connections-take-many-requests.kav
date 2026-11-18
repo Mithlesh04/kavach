@@ -14,7 +14,7 @@ use std.http.h2
 use std.net
 
 fn hello(r: Request) -> Response {
-    http.text(200, "{r.method} {r.path}|{r.peer}")
+    http.text(200, `{r.method} {r.path}|{r.peer}`)
 }
 
 fn ask(c: H2Client, path: String) -> String ! H2Error uses Net {
@@ -43,8 +43,8 @@ fn main() ! Error {
         print(parts[0])
         same = same and parts[1] == first
     }
-    print("one connection: {same}")
-    print("going away: {c.going_away()}")
+    print(`one connection: {same}`)
+    print(`going away: {c.going_away()}`)
     c.close()
-    print(ask(c, "/late") catch e => "{e}")
+    print(ask(c, "/late") catch e => `{e}`)
 }

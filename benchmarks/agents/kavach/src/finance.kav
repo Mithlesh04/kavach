@@ -30,7 +30,7 @@ pub capability Cards {
 
 type Network: Cards {
     fn release(self, id: Int, amount: Int) -> Released ! CardError {
-        Released(reference: "p{id}")
+        Released(reference: `p{id}`)
     }
 }
 
@@ -48,17 +48,17 @@ agent FraudDesk {
 
     on flagged(p: Payment) -> String ! Error {
         const r = try ask<Review>(
-            "{policy()}\n\nPayment {p.id}: {p.amount} USD at {p.merchant}. {p.note}"
+            `{policy()}\n\nPayment {p.id}: {p.amount} USD at {p.merchant}. {p.note}`
         )
         match r.action {
             Action.Release => {
                 const _r = Cards.release(p.id, p.amount) catch _ => {
-                    return "{p.id} hold"
+                    return `{p.id} hold`
                 }
-                "{p.id} release"
+                `{p.id} release`
             },
-            Action.Block => "{p.id} block",
-            Action.Hold => "{p.id} hold",
+            Action.Block => `{p.id} block`,
+            Action.Hold => `{p.id} hold`,
         }
     }
 }
@@ -68,7 +68,7 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Cards.rel
     const desk = FraudDesk.start(Cards: Network())
     if not together {
         for p in payments {
-            print(desk.flagged(p) catch e => "error {e}")
+            print(desk.flagged(p) catch e => `error {e}`)
         }
         return
     }
@@ -77,6 +77,6 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Cards.rel
         asked.push(spawn desk.flagged(p))
     }
     for a in asked {
-        print(a.wait() catch e => "error {e}")
+        print(a.wait() catch e => `error {e}`)
     }
 }

@@ -6,6 +6,6 @@ use std.process
 
 /// A program that doesn't exist: if a generated test ran this, it would panic.
 pub fn must_not_run(flag: String) -> Int uses Process {
-    const done = process.run("kavach-t-no-such-tool", [flag]) catch e => panic("a generated test ran it: {e}")
+    const done = process.run("kavach-t-no-such-tool", [flag]) catch e => panic(`a generated test ran it: {e}`)
     done.code
 }

@@ -8,7 +8,7 @@ use std.math
 
 fn main() {
     const pi = math.pi
-    print("{math.atan2(1.0, 1.0).near(pi / 4.0)} {math.atan2(1.0, -1.0).near(3.0 * pi / 4.0)}")
-    print("{math.atan2(-1.0, -1.0).near(-3.0 * pi / 4.0)} {math.atan2(-1.0, 1.0).near(-pi / 4.0)}")
+    print(`{math.atan2(1.0, 1.0).near(pi / 4.0)} {math.atan2(1.0, -1.0).near(3.0 * pi / 4.0)}`)
+    print(`{math.atan2(-1.0, -1.0).near(-3.0 * pi / 4.0)} {math.atan2(-1.0, 1.0).near(-pi / 4.0)}`)
     print(math.atan2(0.0, -1.0).near(pi))
 }

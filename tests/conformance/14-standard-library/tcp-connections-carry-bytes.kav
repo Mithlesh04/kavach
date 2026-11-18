@@ -24,5 +24,5 @@ fn main() ! Error {
     const reply = (try conn.read()) ?? Bytes([])
     print(reply.text() ?? "?")
     conn.close()
-    print("server read {try server.wait()} bytes")
+    print(`server read {try server.wait()} bytes`)
 }

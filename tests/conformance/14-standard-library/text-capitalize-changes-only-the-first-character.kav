@@ -5,7 +5,7 @@
 // expect output: true true false
 
 fn main() {
-    print("{"aSHA".capitalize()}|{"élan".capitalize()}|[{"".capitalize()}]")
-    print("{"aSHA rAO".title()}|[{"".title()}]|{"   ".words()}")
-    print("{"".is_blank()} {"\n\t ".is_blank()} {"\u{A0}x".is_blank()}")
+    print(`{"aSHA".capitalize()}|{"élan".capitalize()}|[{"".capitalize()}]`)
+    print(`{"aSHA rAO".title()}|[{"".title()}]|{"   ".words()}`)
+    print(`{"".is_blank()} {`\n\t `.is_blank()} {`\u{A0}x`.is_blank()}`)
 }

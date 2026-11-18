@@ -7,7 +7,7 @@
 use std.math
 
 fn main() {
-    print("{math.sin(math.pi / 2.0)} {math.cos(0.0)} {math.atan2(1.0, 1.0) * 4.0}")
-    print("{math.ln(math.exp(1.0))} {math.acos(2.0)}")
+    print(`{math.sin(math.pi / 2.0)} {math.cos(0.0)} {math.atan2(1.0, 1.0) * 4.0}`)
+    print(`{math.ln(math.exp(1.0))} {math.acos(2.0)}`)
     print(math.sin(Float32(0.5)))
 }

@@ -16,18 +16,18 @@ interface Describe {
 type Square: Describe {
     side: Int
 
-    fn describe(self) -> String { "Square {self.side}" }
+    fn describe(self) -> String { `Square {self.side}` }
 }
 
 type Name: Describe {
     text: String
 
-    fn describe(self) -> String { "Name {self.text}" }
+    fn describe(self) -> String { `Name {self.text}` }
 }
 
 fn pass<T>(x: T) -> T { x }
 fn first<T>(xs: [T]) -> T? { xs.get(0) }
-fn both(a: Describe, b: Describe) -> String { "{a.describe()} | {b.describe()}" }
+fn both(a: Describe, b: Describe) -> String { `{a.describe()} | {b.describe()}` }
 fn id_of(j: Json) -> Json { j }
 fn twice(v: Vec3<Float>) -> Vec3<Float> { v * 2.0 }
 fn add(a: Vec2<Int>, b: Vec2<Int>) -> Vec2<Int> { a + b }
@@ -36,14 +36,14 @@ fn same(m: Matrix<Int8>) -> Matrix<Int8> { m }
 
 fn main() {
     const empty: [Int] = []
-    print("{pass(7)} {pass("a")} {pass(true)} {first(empty)}")
+    print(`{pass(7)} {pass("a")} {pass(true)} {first(empty)}`)
     print(both(Square(side: 3), Name(text: "Asha")))
     const j: Json = {"id": 1, "tags": ["x"]}
     const back = id_of(j)
-    print("{back} {back["id"].int() ?? 0}")
-    print("{twice(Vec3(x: 1.0, y: 2.0, z: 3.0))} {add(Vec2(x: 1, y: 2), Vec2(x: 3, y: 4))}")
+    print(`{back} {back["id"].int() ?? 0}`)
+    print(`{twice(Vec3(x: 1.0, y: 2.0, z: 3.0))} {add(Vec2(x: 1, y: 2), Vec2(x: 3, y: 4))}`)
     const a = matrix.of([[1.0, 2.0], [3.0, 4.0]])
     const b = matrix.of([[5.0, 6.0], [7.0, 8.0]])
     const small: [[Int8]] = [[1, 2], [3, 4]]
-    print("{times(a, b).to_rows()} {same(matrix.of(small)).to_rows()}")
+    print(`{times(a, b).to_rows()} {same(matrix.of(small)).to_rows()}`)
 }

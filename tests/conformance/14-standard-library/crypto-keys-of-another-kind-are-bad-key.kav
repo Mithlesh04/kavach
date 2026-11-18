@@ -14,7 +14,7 @@ fn kind(e: CryptoError) -> Bytes {
 }
 
 fn show(a: Bytes, b: Bytes) {
-    print("{a.text() ?? "?"}, {b.text() ?? "?"}")
+    print(`{a.text() ?? "?"}, {b.text() ?? "?"}`)
 }
 
 const ed = crypto.ed25519_secret()

@@ -7,13 +7,13 @@
 use std.process
 
 fn launch(program: String) -> String uses Process {
-    const child = process.start(program, ["--version"]) catch e => return "{e}"
-    "{child.wait().code}"
+    const child = process.start(program, ["--version"]) catch e => return `{e}`
+    `{child.wait().code}`
 }
 
 fn in_a_task(program: String) -> String uses Process("git") {
     const t = spawn launch(program)
-    t.wait() catch e => "{e}"
+    t.wait() catch e => `{e}`
 }
 
 fn main() uses Process, Console {

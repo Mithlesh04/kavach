@@ -10,7 +10,7 @@ type Point: Display {
     y: Int
 
     fn display(self) -> String {
-        "P({self.x}, {self.y})"
+        `P({self.x}, {self.y})`
     }
 }
 

@@ -14,7 +14,7 @@ fn main() ! Error {
     try keep("./kavach-durable-scope/state.txt", "v1")
     try keep("./kavach-durable-scope/state.txt", "v2")
     print(try fs.read_text("./kavach-durable-scope/state.txt"))
-    keep("../kavach-durable-outside.txt", "x") catch e => print("ok: {e}")
+    keep("../kavach-durable-outside.txt", "x") catch e => print(`ok: {e}`)
     try fs.remove("./kavach-durable-scope/state.txt")
     try fs.remove("./kavach-durable-scope")
 }

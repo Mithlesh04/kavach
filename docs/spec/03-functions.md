@@ -37,7 +37,7 @@ Any parameter can be passed by name. Positional arguments come first.
 
 ```kavach
 fn greet(name: String, greeting: String = "Hello") -> String {
-    "{greeting}, {name}!"
+    `{greeting}, {name}!`
 }
 
 greet("Asha")                          // "Hello, Asha!"
@@ -153,6 +153,36 @@ const order = route(new_order, create) catch e => match e {
 ```
 
 A record field holding a function is called like a method: with `type Handler { on: fn(Int) -> Int }`, both `h.on(x)` and `(h.on)(x)` call the field's function. A method of the same name on the type wins over the field.
+
+**Functions of different types together.** A dict holds one type of value, so `{"add": (a: Int, b: Int) => a + b, "greet": (name: String) => "Hello " + name}` is a compile error that says where such functions go:
+
+- When the names are fixed, put the functions in a **record**: each field keeps its own function type, so each call is checked.
+- When the names come from data (routes, commands), use a **dict of a union** of their shapes, and `match` to call each in its own way.
+
+```kavach
+type Ops {
+    add: fn(Int, Int) -> Int
+    greet: fn(String) -> String
+}
+
+const ops = Ops(add: (a, b) => a + b, greet: name => "Hello " + name)
+print(ops.add(2, 3))          // 5
+print(ops.greet("Asha"))      // Hello Asha
+
+type Op = Binary(f: fn(Int, Int) -> Int) | Unary(f: fn(String) -> String)
+
+const table: {String: Op} = {
+    "add": Op.Binary(f: (a, b) => a + b),
+    "greet": Op.Unary(f: name => "Hello " + name),
+}
+for (name, op) in table {
+    const shown = match op {
+        Op.Binary(f) => `{f(10, 4)}`,
+        Op.Unary(f) => f("Ravi"),
+    }
+    print(`{name}: {shown}`)  // add: 14, then greet: Hello Ravi
+}
+```
 
 ## 3.5 The full signature
 

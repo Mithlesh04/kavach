@@ -62,14 +62,14 @@ agent RefundBot {
         // Writing {order.card_last4} in this prompt would be a compile error:
         // secret values can't flow into prompts or logs.
         const decision = try ask<RefundDecision>(
-            "A customer asked for a refund of {order.amount} on order {order.id}. " +
-            "Their note: {order.note}. Should we refund?"
+            `A customer asked for a refund of {order.amount} on order {order.id}. ` +
+            `Their note: {order.note}. Should we refund?`
         )
         if not decision.approve {
             return
         }
         const receipt = try Payments.refund(order.id, order.amount)
-        try Email.send(order.customer_email, "Your refund of {order.amount} is on its way (receipt {receipt.id}).")
+        try Email.send(order.customer_email, `Your refund of {order.amount} is on its way (receipt {receipt.id}).`)
     }
 }
 
@@ -78,13 +78,13 @@ agent RefundBot {
 
 type FakePayments: Payments {
     fn refund(self, order_id: Int, amount: Decimal) -> Receipt ! PaymentError {
-        Receipt(id: "fake-{order_id}")
+        Receipt(id: `fake-{order_id}`)
     }
 }
 
 type ConsoleEmail: Email {
     fn send(self, to: String, body: String) ! EmailError uses Console {
-        print("[email to {to}] {body}")
+        print(`[email to {to}] {body}`)
     }
 }
 

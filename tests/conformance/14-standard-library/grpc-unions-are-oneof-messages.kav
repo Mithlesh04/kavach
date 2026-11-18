@@ -24,5 +24,5 @@ fn main() {
     print(back_a == a and back_b == b)
     // Only field 1 (`id`): the union never arrived, so decoding fails.
     const bare = grpc.decode<Order>(Bytes([8, 9])) catch _ => Order(id: 0, status: Status.Refused)
-    print("missing status: {bare.id == 0}")
+    print(`missing status: {bare.id == 0}`)
 }

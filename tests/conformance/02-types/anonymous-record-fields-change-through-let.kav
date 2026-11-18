@@ -8,7 +8,7 @@ fn main() {
     let p = (x: 1, y: 2)
     const before = p
     p.x = 5
-    print("{p.x} {p.y}")
-    print("{before.x} {before.y}")
+    print(`{p.x} {p.y}`)
+    print(`{before.x} {before.y}`)
     print(before == (y: 2, x: 1))
 }

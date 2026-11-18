@@ -221,3 +221,16 @@ impl Checker<'_> {
 fn covers(limit: &[String], cap: &str) -> bool {
     limit.iter().any(|l| kavach_resolver::cap_covers(l, cap))
 }
+
+impl Checker<'_> {
+    /// A dict literal whose function values differ in type: says where such
+    /// functions go (spec 3.4), after the mismatch reported since `before`.
+    pub(crate) fn dict_of_functions_hint(&mut self, before: usize, at: Span) {
+        if let Some(e) = self.errors[before..].iter_mut().find(|e| e.span == at)
+            && e.message.starts_with("expected `fn(")
+            && e.message.contains("found `fn(")
+        {
+            e.message.push_str(": a dict holds one type of value, so functions of different types go in a record, or in a dict of a union of their shapes (spec 3.4)");
+        }
+    }
+}

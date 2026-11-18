@@ -7,10 +7,10 @@ fn main() {
     const present: Int? = 7
     const missing: Int? = none
     if let n = present {
-        print("found {n}")
+        print(`found {n}`)
     }
     if let n = missing {
-        print("found {n}")
+        print(`found {n}`)
     } else {
         print("no value")
     }

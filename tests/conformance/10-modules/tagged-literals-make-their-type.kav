@@ -1,4 +1,4 @@
-// Rule: `literal sql: Query check f` declares a tag; `sql"…"` is a `Query` holding its text, written raw (no escapes, no interpolation), over lines with three quotes.
+// Rule: `literal sql: Query check f` declares a tag; `sql"…"` is a `Query` holding its text exactly as written, as any text in quotes (1.7), over lines with three quotes.
 // Spec: 10.15
 // expect output: select id from orders where note = '{raw}' and path = 'C:\tmp'
 // expect output: select id

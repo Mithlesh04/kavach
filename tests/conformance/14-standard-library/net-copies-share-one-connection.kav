@@ -22,7 +22,7 @@ fn main() ! Error {
         ok(_) => "sent",
         err(_) => "failed",
     }
-    print("write through the other copy: {wrote}")
-    print("server saw the close: {server.wait() catch _ => false}")
+    print(`write through the other copy: {wrote}`)
+    print(`server saw the close: {server.wait() catch _ => false}`)
     listener.close()
 }

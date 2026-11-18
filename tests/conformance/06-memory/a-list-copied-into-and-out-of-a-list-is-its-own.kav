@@ -8,10 +8,10 @@ fn main() {
     let rows = [a]
     a.push(2)
     rows[0].push(9)
-    print("{a} {rows}")
+    print(`{a} {rows}`)
     let grid = [[3], [4]]
     let r = grid[0]
     r.push(5)
     grid[0].push(7)
-    print("{r} {grid}")
+    print(`{r} {grid}`)
 }

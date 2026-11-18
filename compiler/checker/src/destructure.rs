@@ -163,7 +163,7 @@ impl Checker<'_> {
     fn text_key(&mut self, k: &Ty, span: Span) {
         if !self.inf.unify(k, &Ty::Prim(crate::ty::Prim::String)) {
             let shown = self.show(k);
-            self.error(span, format!("a name as a key is text, and this map's keys are `{shown}`: write the key, `7: name` (spec 1.12)"));
+            self.error(span, format!("a name as a key is text, and this dict's keys are `{shown}`: write the key, `7: name` (spec 1.12)"));
         }
     }
 

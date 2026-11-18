@@ -10,6 +10,6 @@ fn ask(n: Int) -> Int {
 }
 
 fn main() {
-    print("{ask(0)} {ask(20)}")
+    print(`{ask(0)} {ask(20)}`)
     print(ask(21))
 }

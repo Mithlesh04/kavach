@@ -4,7 +4,7 @@ fn csv(n: Int) -> String {
         if i > 1 {
             out += ","
         }
-        out += "{i}"
+        out += `{i}`
     }
     out
 }

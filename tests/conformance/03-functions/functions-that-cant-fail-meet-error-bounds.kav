@@ -17,8 +17,8 @@ type NotFound: Status {
 }
 
 fn run<E: Status>(h: fn(Int) -> Int ! E, n: Int) -> String {
-    const v = h(n) catch e => return "failed {e.status()}"
-    "ok {v}"
+    const v = h(n) catch e => return `failed {e.status()}`
+    `ok {v}`
 }
 
 fn double(n: Int) -> Int {

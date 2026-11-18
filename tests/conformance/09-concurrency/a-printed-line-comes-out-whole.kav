@@ -4,11 +4,11 @@
 // expect output: result 6
 
 fn work(n: Int) -> Int {
-    print("in the task: {n}")
+    print(`in the task: {n}`)
     n * 2
 }
 
 fn main() ! Error {
     const a = spawn work(3)
-    print("result {try a.wait()}")
+    print(`result {try a.wait()}`)
 }

@@ -8,12 +8,12 @@ use std.json
 
 fn main() {
     print(json.of(['a', 'é']))
-    print(json.decode<[Char]>("[\"x\", \"😀\"]") catch _ => [])
-    match json.decode<[Char]>("[\"x\", \"xy\", \"\"]") {
-        ok(v) => print("decoded {v}"),
+    print(json.decode<[Char]>(`["x", "😀"]`) catch _ => [])
+    match json.decode<[Char]>(`["x", "xy", ""]`) {
+        ok(v) => print(`decoded {v}`),
         err(e) => match e {
-            JsonError.Invalid(problems) => print("problems at {problems.map(p => p.path).join(", ")}"),
-            _ => print("other: {e}"),
+            JsonError.Invalid(problems) => print(`problems at {problems.map(p => p.path).join(", ")}`),
+            _ => print(`other: {e}`),
         },
     }
 }

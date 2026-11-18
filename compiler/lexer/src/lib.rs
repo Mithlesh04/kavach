@@ -25,6 +25,9 @@ pub struct LexError {
 pub struct Lexed {
     pub tokens: Vec<Token>,
     pub errors: Vec<LexError>,
+    /// Where each untagged string in quotes starts, in order, so a later
+    /// stage can warn when one looks like it wanted a template (spec 1.7).
+    pub plain: Vec<u32>,
 }
 
 /// Splits `src` into tokens.

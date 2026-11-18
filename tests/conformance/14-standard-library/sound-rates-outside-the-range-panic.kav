@@ -8,7 +8,7 @@ use std.audio
 fn main() {
     const low = audio.sound([0.0], 1000, 1)
     const high = audio.sound([0.0], 384_000, 1)
-    print("{low.rate} {high.rate}")
+    print(`{low.rate} {high.rate}`)
     const rate = [999][0]
     print(audio.sound([0.0], rate, 1).rate)
 }

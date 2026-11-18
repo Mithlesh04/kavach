@@ -16,10 +16,10 @@ fn serve(l: Listener) -> String ! NetError uses Net {
 }
 
 fn main() uses Net, Console {
-    const l = net.listen("127.0.0.1:0") catch e => panic("{e}")
+    const l = net.listen("127.0.0.1:0") catch e => panic(`{e}`)
     const server = spawn serve(l)
-    const plain = net.connect(l.address()) catch e => panic("{e}")
-    print("server: {server.wait() catch _ => "failed"}")
+    const plain = net.connect(l.address()) catch e => panic(`{e}`)
+    print(`server: {server.wait() catch _ => "failed"}`)
     const client = match plain.start_tls("localhost") {
         ok(conn) => {
             conn.close()
@@ -27,6 +27,6 @@ fn main() uses Net, Console {
         }
         err(_) => "no TLS",
     }
-    print("client: {client}")
+    print(`client: {client}`)
     l.close()
 }

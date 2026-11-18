@@ -30,11 +30,11 @@ fn main() {
             same = same and sum == c.at(i, j)
         }
     }
-    print("the same bits: {same}")
+    print(`the same bits: {same}`)
     const f = a.product(b, fast: true)
     let close = true
     for i in 0..n * p {
         close = close and (f.items[i] - c.items[i]).abs() <= 1e-9 * (1.0 + c.items[i].abs())
     }
-    print("fast is close: {close}")
+    print(`fast is close: {close}`)
 }

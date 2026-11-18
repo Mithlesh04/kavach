@@ -22,7 +22,7 @@ fn main() ! Error uses Fs {
         pieces += 1
         back = back + piece
     }
-    print("{pieces} pieces")
+    print(`{pieces} pieces`)
     print(back == data)
 
     // Stopping early lets the file go.

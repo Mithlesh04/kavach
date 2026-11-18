@@ -2,5 +2,5 @@ use kit.{Part}
 
 /// What a part's box says.
 pub fn label(p: Part) -> String {
-    "{p.name} x{p.count}"
+    `{p.name} x{p.count}`
 }

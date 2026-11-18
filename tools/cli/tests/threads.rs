@@ -16,7 +16,7 @@ pub(out) fn double(n: Int) -> Int {
 pub(out) fn words(n: Int) -> Int {
     let items: [String] = []
     for i in 0..n {
-        items.push(\"word {i}\")
+        items.push(`word {i}`)
     }
     let total = 0
     for w in items {
@@ -27,7 +27,7 @@ pub(out) fn words(n: Int) -> Int {
 
 pub(out) fn shout(n: Int) -> Int uses Console {
     const items = [n, n + 1, n + 2]
-    print(\"call {n} says {items}\")
+    print(`call {n} says {items}`)
     n
 }
 ";

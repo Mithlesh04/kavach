@@ -13,7 +13,7 @@ fn main() ! Error {
         sessions.update(n => n + 1)
         ws.close()
     }))
-    const page = try http.get("http://{listener.address()}/chat")
+    const page = try http.get(`http://{listener.address()}/chat`)
     print(page.status)
-    print("sessions run: {sessions.get()}")
+    print(`sessions run: {sessions.get()}`)
 }

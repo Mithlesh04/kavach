@@ -13,9 +13,9 @@ use std.process
 fn main() ! Error uses Fs, Process, Console {
     const dir = "kavach-t-proc-lines"
     try fs.create_dir(dir)
-    try fs.write_text("{dir}/a.txt", "hello\n")
-    try fs.write_text("{dir}/b.txt", "")
-    const files = ["{dir}/a.txt", "{dir}/b.txt"]
+    try fs.write_text(`{dir}/a.txt`, `hello\n`)
+    try fs.write_text(`{dir}/b.txt`, "")
+    const files = [`{dir}/a.txt`, `{dir}/b.txt`]
     const child = try process.start("git", ["hash-object"] + files)
     print(child.next())
     print(child.next())
@@ -24,7 +24,7 @@ fn main() ! Error uses Fs, Process, Console {
     const again = try process.start("git", ["hash-object"] + files)
     // `f` gives `false` at the first line, so the second is never seen.
     again.each(out => {
-        print("each got {out}")
+        print(`each got {out}`)
         false
     })
     print(again.wait().code)

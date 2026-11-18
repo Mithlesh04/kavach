@@ -17,5 +17,5 @@ fn main() {
         print(e)
         return
     }
-    print("{s.channels} {s.frames}")
+    print(`{s.channels} {s.frames}`)
 }

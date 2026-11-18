@@ -28,14 +28,14 @@ pub fn pure_check(a: Bytes, b: Bytes) -> Bool {
 fn main() ! CryptoError {
     print(hex(crypto.sha256("abc".bytes())))
     const stored = crypto.hash_password("correct horse")
-    print("{crypto.check_password("correct horse", stored)} {crypto.check_password("wrong", stored)}")
+    print(`{crypto.check_password("correct horse", stored)} {crypto.check_password("wrong", stored)}`)
     const signing = crypto.ed25519_secret()
     const signature = try crypto.ed25519_sign(signing, "order 7".bytes())
     const public = try crypto.ed25519_public(signing)
-    print("{crypto.ed25519_verify(public, "order 7".bytes(), signature)} {crypto.ed25519_verify(public, "order 8".bytes(), signature)}")
+    print(`{crypto.ed25519_verify(public, "order 7".bytes(), signature)} {crypto.ed25519_verify(public, "order 8".bytes(), signature)}`)
     const p = crypto.p256_secret()
     const p_signature = try crypto.p256_sign(p, "order 7".bytes())
-    print("{crypto.p256_verify(try crypto.p256_public(p), "order 7".bytes(), p_signature)} {pure_check("a".bytes(), "b".bytes())}")
+    print(`{crypto.p256_verify(try crypto.p256_public(p), "order 7".bytes(), p_signature)} {pure_check("a".bytes(), "b".bytes())}`)
     const key = crypto.aes_key()
     const sealed = try crypto.encrypt(key, "card 4242".bytes())
     print((try crypto.decrypt(key, sealed)).text() ?? "")
@@ -52,5 +52,5 @@ fn main() ! CryptoError {
         CryptoError.BadKey(_) => "bad key".bytes(),
     }
     print(short.text() ?? "")
-    print("{crypto.token().len()} {crypto.random_bytes(16).len() == 16}")
+    print(`{crypto.token().len()} {crypto.random_bytes(16).len() == 16}`)
 }

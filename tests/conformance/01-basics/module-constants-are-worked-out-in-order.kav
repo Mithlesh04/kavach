@@ -10,5 +10,5 @@ const first = fail_with("first constant failed")
 const second = fail_with("second constant failed")
 
 fn main() {
-    print("never printed {first} {second}")
+    print(`never printed {first} {second}`)
 }

@@ -30,7 +30,10 @@ impl Parser<'_> {
                 self.bump();
             }
         }
-        File { items }
+        File {
+            items,
+            plain_strings: Vec::new(),
+        }
     }
 
     pub(crate) fn docs(&mut self) -> Vec<String> {

@@ -22,17 +22,17 @@ fn main() ! Error {
         ok(_) => "opened",
         err(_) => "failed",
     }
-    print("open_stream: {opened}")
+    print(`open_stream: {opened}`)
     const wrote = match conn.write_stream(0, "hi".bytes(), true) {
         ok(_) => "sent",
         err(_) => "failed",
     }
-    print("write_stream: {wrote}")
+    print(`write_stream: {wrote}`)
     const read = match conn.read_stream(0) {
         ok(_) => "read",
         err(_) => "failed",
     }
-    print("read_stream: {read}")
+    print(`read_stream: {read}`)
     conn.close()
     try server.wait()
     listener.close()

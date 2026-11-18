@@ -47,11 +47,11 @@ fn hold_and_share(drops: Shared<Int>) {
     for t in calls {
         const _ = t.wait() catch 0
     }
-    print("{reads} reads, {calls.len()} calls, drops while held: {drops.get()}")
+    print(`{reads} reads, {calls.len()} calls, drops while held: {drops.get()}`)
 }
 
 fn main() {
     const drops = Shared(0)
     hold_and_share(drops)
-    print("drops after: {drops.get()}")
+    print(`drops after: {drops.get()}`)
 }

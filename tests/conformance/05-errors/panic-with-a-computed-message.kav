@@ -4,9 +4,9 @@
 // expect panic: bad count 3 of 2
 
 fn check(count: Int, limit: Int) {
-    print("checking {count}")
+    print(`checking {count}`)
     if count > limit {
-        panic("bad count {count} of {limit}")
+        panic(`bad count {count} of {limit}`)
     }
 }
 

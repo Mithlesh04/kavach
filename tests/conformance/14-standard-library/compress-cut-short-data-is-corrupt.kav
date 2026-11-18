@@ -15,7 +15,7 @@ fn outcome(data: Bytes, format: Format) -> String {
         CompressError.TooLarge(_) => return "too large",
         CompressError.Corrupt(_) => return "corrupt",
     }
-    "decoded {back.len()}"
+    `decoded {back.len()}`
 }
 
 fn main() {
@@ -23,6 +23,6 @@ fn main() {
     for format in [Format.Gzip, Format.Deflate, Format.Zstd, Format.Brotli, Format.Lz4] {
         const packed = compress.encode(data, format)
         const half = packed.slice(0, packed.len() / 2)
-        print("{format.name()} {outcome(half, format)} {outcome(Bytes([]), format)}")
+        print(`{format.name()} {outcome(half, format)} {outcome(Bytes([]), format)}`)
     }
 }

@@ -8,13 +8,13 @@
 use std.fs
 
 fn load(name: String) -> String ! FsError uses Fs.read("./kavach-scope-reports") {
-    try fs.read_text("./kavach-scope-reports/{name}.txt")
+    try fs.read_text(`./kavach-scope-reports/{name}.txt`)
 }
 
 fn save(name: String, text: String) -> String ! Error uses Fs("./kavach-scope-reports") {
-    try fs.write_text("kavach-scope-reports/{name}.txt", text)
+    try fs.write_text(`kavach-scope-reports/{name}.txt`, text)
     const peek = spawn fs.read_text("kavach-scope-secret.txt")
-    const seen = peek.wait() catch e => "task: {e}"
+    const seen = peek.wait() catch e => `task: {e}`
     seen
 }
 
@@ -23,7 +23,7 @@ fn main() ! Error {
     try fs.write_text("kavach-scope-secret.txt", "s3cret")
     print(try save("q1", "fine"))
     print(try load("q1"))
-    const bad = load("../kavach-scope-secret") catch e => "{e}"
+    const bad = load("../kavach-scope-secret") catch e => `{e}`
     print(bad)
     print(fs.exists("kavach-scope-secret.txt"))
     try fs.remove("kavach-scope-reports/q1.txt")

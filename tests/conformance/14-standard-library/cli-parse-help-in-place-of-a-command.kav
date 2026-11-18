@@ -10,10 +10,10 @@ type Command = AddItem(name: String, count: Int = 1) | Show(limit: Int = 10)
 
 fn main() {
     const command = cli.parse<Command>() catch e => {
-        const usage = "{e}"
-        print("{usage.contains("add-item")} {usage.contains("show")}")
-        print("{usage.contains("--count")} {usage.contains("--limit")}")
+        const usage = `{e}`
+        print(`{usage.contains("add-item")} {usage.contains("show")}`)
+        print(`{usage.contains("--count")} {usage.contains("--limit")}`)
         return
     }
-    print("ran {command}")
+    print(`ran {command}`)
 }

@@ -9,11 +9,11 @@
 use std.text
 
 fn main() {
-    const composed = "\u{E9}"            // é as one code point
-    const decomposed = "e\u{301}"        // e and a combining accent
+    const composed = `\u{E9}`            // é as one code point
+    const decomposed = `e\u{301}`        // e and a combining accent
     print(composed == decomposed)
     print(text.nfc(decomposed) == composed)
-    print("{text.nfc(decomposed).len()} {text.nfd(composed).len()}")
-    print("{text.nfkc("\u{FB01}le")} {text.nfkc("\u{FF11}\u{FF12}")}")
-    print(text.nfc("\u{FB01}le"))
+    print(`{text.nfc(decomposed).len()} {text.nfd(composed).len()}`)
+    print(`{text.nfkc(`\u{FB01}le`)} {text.nfkc(`\u{FF11}\u{FF12}`)}`)
+    print(text.nfc(`\u{FB01}le`))
 }

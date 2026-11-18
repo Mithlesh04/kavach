@@ -10,19 +10,19 @@ fn main() {
     const b: Int8 = 127
     const c: UInt8 = 0
     const d: UInt8 = 255
-    print("{a} {b} {c} {d}")
+    print(`{a} {b} {c} {d}`)
     const e: Int16 = -32768
     const f: Int16 = 32767
     const g: UInt16 = 0
     const h: UInt16 = 65535
-    print("{e} {f} {g} {h}")
+    print(`{e} {f} {g} {h}`)
     const i: Int32 = -2147483648
     const j: Int32 = 2147483647
     const k: UInt32 = 0
     const l: UInt32 = 4294967295
-    print("{i} {j} {k} {l}")
+    print(`{i} {j} {k} {l}`)
     const m: UInt64 = 0
     const n: UInt64 = 18446744073709551615
     const o: UInt64 = 0xffffffffffffffff
-    print("{m} {n} {o}")
+    print(`{m} {n} {o}`)
 }

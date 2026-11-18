@@ -7,10 +7,10 @@ use std.json
 fn main() {
     const text = " ".repeat(64_000_000) + "1"
     match json.parse(text) {
-        ok(doc) => print("read {doc}"),
+        ok(doc) => print(`read {doc}`),
         err(e) => match e {
-            JsonError.TooLarge(limit) => print("too large: {limit}"),
-            _ => print("other: {e}"),
+            JsonError.TooLarge(limit) => print(`too large: {limit}`),
+            _ => print(`other: {e}`),
         }
     }
 }

@@ -20,8 +20,8 @@ capability Email {
 
 type Shop: Payments {
     fn refund(self, order_id: Int) -> Receipt ! PaymentError uses Console {
-        print(\"[pay] refund {order_id}\")
-        Receipt(id: \"r{order_id}\")
+        print(`[pay] refund {order_id}`)
+        Receipt(id: `r{order_id}`)
     }
 }
 
@@ -32,7 +32,7 @@ type Mail: Email {
         if self.crash {
             cli.exit(3)            // the program stops half way
         }
-        print(\"[email] {to}\")
+        print(`[email] {to}`)
     }
 }
 
@@ -41,7 +41,7 @@ agent Bot {
 
     on request(order_id: Int) -> String ! Error {
         const r = try Payments.refund(order_id)
-        try Email.send(\"order {order_id}: {r.id}\")
+        try Email.send(`order {order_id}: {r.id}`)
         r.id
     }
 }
@@ -267,7 +267,7 @@ capability Email {
 
 type Shop: Payments {
     fn refund(self, order_id: Int) ! PaymentError uses Console {
-        print(\"[pay] {agents.call_key()}\")
+        print(`[pay] {agents.call_key()}`)
     }
 }
 
@@ -275,7 +275,7 @@ type Mail: Email {
     crash: Bool
 
     fn send(self, to: String) ! EmailError uses Console, Env {
-        print(\"[email] {agents.call_key()}\")
+        print(`[email] {agents.call_key()}`)
         if self.crash {
             cli.exit(3)
         }
@@ -287,14 +287,14 @@ agent Bot {
 
     on request(order_id: Int) ! Error {
         try Payments.refund(order_id)
-        try Email.send(\"order {order_id}\")
+        try Email.send(`order {order_id}`)
     }
 }
 
 fn main() ! Error {
     const crash = cli.args().contains(\"crash\")
     const bot = Bot.start(Payments: Shop(), Email: Mail(crash: crash))
-    print(\"outside: {agents.call_key()}\")
+    print(`outside: {agents.call_key()}`)
     if crash {
         try bot.request(7)
     }

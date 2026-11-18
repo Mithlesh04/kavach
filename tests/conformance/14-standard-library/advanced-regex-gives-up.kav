@@ -5,6 +5,6 @@
 use std.regex
 
 fn main() ! Error {
-    const slow = try regex.advanced(r"^(?:a|a)*(?!a)c")
+    const slow = try regex.advanced("^(?:a|a)*(?!a)c")
     print(slow.is_match("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa!"))
 }

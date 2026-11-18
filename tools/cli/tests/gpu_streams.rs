@@ -78,7 +78,7 @@ fn main() {
         kept += Int(s)
         unsigned += us.map(half).sum(u => u) % 1000
     }
-    print(\"{total} {widest} {lowest} {kept} {unsigned}\")
+    print(`{total} {widest} {lowest} {kept} {unsigned}`)
 }
 ";
 
@@ -183,7 +183,7 @@ fn add_up(limit: Int) -> Int ! Error {
         }
         total += Int(xs.map(step).sum(x => x))
         if round == limit {
-            fail Error(\"stopped at {round}\")
+            fail Error(`stopped at {round}`)
         }
     }
     total
@@ -237,7 +237,7 @@ fn add_up(base: Int32) -> Int {
 fn main() {
     const a = spawn add_up(0)
     const b = spawn add_up(1000)
-    print(\"{a.wait() catch e => 0} {b.wait() catch e => 0}\")
+    print(`{a.wait() catch e => 0} {b.wait() catch e => 0}`)
 }
 ";
 

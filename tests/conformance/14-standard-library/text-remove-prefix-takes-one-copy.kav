@@ -5,7 +5,7 @@
 // expect output: स्ते
 
 fn main() {
-    print("{"aaa".remove_prefix("a")} {"aaa".remove_suffix("a")}")
-    print("{"x".remove_prefix("xy")}|[{"abc".remove_suffix("abc")}]|{"abc".remove_prefix("")}|{"abc".remove_suffix("")}")
+    print(`{"aaa".remove_prefix("a")} {"aaa".remove_suffix("a")}`)
+    print(`{"x".remove_prefix("xy")}|[{"abc".remove_suffix("abc")}]|{"abc".remove_prefix("")}|{"abc".remove_suffix("")}`)
     print("नमस्ते".remove_prefix("नम"))
 }

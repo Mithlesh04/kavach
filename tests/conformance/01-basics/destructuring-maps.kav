@@ -7,11 +7,11 @@
 fn main() {
     const ages = {"asha": 31, "ravi": 40}
     const ["asha": a, "mei": m] = ages
-    print("{a} {m}")
+    print(`{a} {m}`)
     const settings = {"host": "example.com", "mode": "fast"}
     const [host: server, port = "8080", mode] = settings
-    print("{server} {port} {mode}")
+    print(`{server} {port} {mode}`)
     const codes = {200: "OK", 404: "Not Found"}
     const [404: missing, 500: broken = "?"] = codes
-    print("{missing} {broken}")
+    print(`{missing} {broken}`)
 }

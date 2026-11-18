@@ -14,6 +14,6 @@ fn said(e: ClipboardError) -> String {
 
 fn main() {
     for e in [ClipboardError.Empty, ClipboardError.Unavailable(reason: "no desktop")] {
-        print("{e}: {said(e)}")
+        print(`{e}: {said(e)}`)
     }
 }

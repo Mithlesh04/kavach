@@ -6,7 +6,7 @@ type Note: Drop {
     text: String
 
     fn drop(self) uses Console {
-        print("dropping {self.text}")
+        print(`dropping {self.text}`)
     }
 }
 

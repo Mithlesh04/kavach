@@ -10,7 +10,7 @@ fn risky() -> Int ! Error {
 }
 
 fn worker(name: String) uses Console {
-    print("{name} runs")
+    print(`{name} runs`)
 }
 
 fn main() uses Console {

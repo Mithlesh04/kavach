@@ -10,7 +10,7 @@ fn honest(path: String) -> Bool uses Net
     ensure result
 {
     const conn = net.connect("kavach.invalid:80") catch e => return not failed(e)
-    const request = "GET /{path} HTTP/1.1\u{D}\nhost: kavach.invalid\u{D}\n\u{D}\n"
+    const request = `GET /{path} HTTP/1.1\u{D}\nhost: kavach.invalid\u{D}\n\u{D}\n`
     conn.write(request.bytes()) catch _ => return false
     const answer = conn.read() catch _ => return false
     const bytes = answer ?? return false

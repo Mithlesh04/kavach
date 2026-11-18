@@ -17,5 +17,5 @@ fn main() {
     const parallel = seeds.parallel_map(s => work(s))
     const t2 = time.monotonic_ms()
     print(one_by_one == parallel)
-    print("one by one {t1 - t0} ms, parallel_map {t2 - t1} ms")
+    print(`one by one {t1 - t0} ms, parallel_map {t2 - t1} ms`)
 }

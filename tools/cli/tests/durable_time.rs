@@ -71,7 +71,7 @@ type Mail: Email {
         if self.crash {
             cli.exit(3)
         }
-        print(\"[email] {to}\")
+        print(`[email] {to}`)
     }
 }
 
@@ -81,7 +81,7 @@ agent Bot {
     on remind() ! Error uses Clock {
         const t = time.now_ms()
         time.sleep(2.seconds)
-        try Email.send(\"at {t}\")
+        try Email.send(`at {t}`)
     }
 }
 
@@ -150,7 +150,7 @@ type Mail: Email {
         if self.crash and to == \"tick 2\" {
             cli.exit(3)
         }
-        print(\"[email] {to}\")
+        print(`[email] {to}`)
     }
 }
 
@@ -162,7 +162,7 @@ agent Bot {
             if tick == 3 {
                 break
             }
-            try Email.send(\"tick {tick}\")
+            try Email.send(`tick {tick}`)
         }
     }
 }
@@ -221,7 +221,7 @@ capability Email {
 
 type Mail: Email {
     fn send(self, to: String) ! EmailError uses Console {
-        print(\"[email] {to}\")
+        print(`[email] {to}`)
     }
 }
 
@@ -231,7 +231,7 @@ agent Bot {
     on wait() ! Error uses Clock {
         const (_send, receive) = Channel<Int>(capacity: 1)
         const got = receive.take().timeout(6.seconds) catch _ => Taken.Closed
-        try Email.send(\"got {got}\")
+        try Email.send(`got {got}`)
     }
 }
 

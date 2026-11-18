@@ -59,7 +59,7 @@ long:   [pointer to a text object | 0]
 - `split` and `lines` write short parts straight into the items: splitting a text into a million words makes no objects.
 - `join` copies each short item's 16 bytes at once and moves past its length.
 - `w.len()` on a `for` variable that is only asked its length reads the tag: no object, no call, for ASCII text.
-- `words.push("w{i}")` builds the text in a 16-byte item on the stack (`kv_item_*`) and copies the two words into the list: no object for short text. The LLVM backend does this; Cranelift still builds a text object first.
+- ``words.push(`w{i}`)`` builds the text in a 16-byte item on the stack (`kv_item_*`) and copies the two words into the list: no object for short text. The LLVM backend does this; Cranelift still builds a text object first.
 - Reading an item as a whole value (`words[i]`, or a `for` variable used another way) boxes it into a text object; a long item's object is just retained.
 
 The code is in [runtime/native/src/text_items.rs](../../runtime/native/src/text_items.rs) and [compiler/backend/cranelift/src/text_lists.rs](../../compiler/backend/cranelift/src/text_lists.rs).

@@ -60,8 +60,10 @@ fn literals_and_collections() {
 #[test]
 fn strings_with_interpolation() {
     check_all(&[
-        ("\"Hi {user.name}!\"", "(str \"Hi \" (. user name) \"!\")"),
-        ("\"{a + b}\"", "(str (+ a b))"),
+        ("`Hi {user.name}!`", "(str \"Hi \" (. user name) \"!\")"),
+        ("`{a + b}`", "(str (+ a b))"),
+        // Text in quotes fills nothing in (decision 0131).
+        ("\"Hi {user.name}!\"", "(str \"Hi {user.name}!\")"),
     ]);
 }
 

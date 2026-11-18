@@ -8,7 +8,7 @@ use std.fs
 use std.gpu
 
 const img = try image.decode(try fs.read_bytes("grass.png"))
-print("{img.width} × {img.height}")
+print(`{img.width} × {img.height}`)
 const grass = try gpu.texture(img.width, img.height, img.pixels)
 try fs.write_bytes("copy.png", image.png(img))
 ```

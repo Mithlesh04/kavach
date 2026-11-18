@@ -42,13 +42,13 @@ fn main() {
     let x = 1
     let y = 2
     swap(x, y)
-    print("{x} {y}")
+    print(`{x} {y}`)
     let list: [Int] = []
     fill(list, to: 3)
     print(list)
     let u = User(name: "Asha", age: 30)
     const now = birthday(u)
-    print("{now} {u.age}")
+    print(`{now} {u.age}`)
     bump(u.age)
     print(u.age)
     let scores = [10, 20]
@@ -56,5 +56,5 @@ fn main() {
     print(scores)
     const copy = scores
     bump(scores[0])
-    print("{scores} {copy}")
+    print(`{scores} {copy}`)
 }

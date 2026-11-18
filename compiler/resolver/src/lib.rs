@@ -12,6 +12,7 @@ pub use decls::module_const;
 mod modules;
 mod naming;
 mod offered;
+mod plain_strings;
 mod prelude;
 pub use prelude::{APART, cap_covers};
 mod resolver;

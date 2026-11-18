@@ -11,9 +11,9 @@ fn main() {
     let limit = 10
     for s in [Shape.Square(width: 50), Shape.Square(width: 3), Shape.Dot] {
         const text = match s {
-            Shape.Square(width) if width > limit => "big {width}",
-            Shape.Square(width) => "small {width}",
-            Shape.Dot => "limit {limit} width {width}",
+            Shape.Square(width) if width > limit => `big {width}`,
+            Shape.Square(width) => `small {width}`,
+            Shape.Dot => `limit {limit} width {width}`,
         }
         print(text)
     }

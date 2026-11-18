@@ -12,5 +12,5 @@ fn main() {
         const step = 10
         n + step
     }))
-    print("{x} {step}")
+    print(`{x} {step}`)
 }

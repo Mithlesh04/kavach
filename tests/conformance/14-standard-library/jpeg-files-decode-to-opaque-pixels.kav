@@ -19,6 +19,6 @@ fn main() {
         print(e)
         return
     }
-    print("{img.width} x {img.height}")
+    print(`{img.width} x {img.height}`)
     print(img.pixel(3, 5))
 }

@@ -7,8 +7,8 @@ fn main() {
     const nan = 0.0 / 0.0
     const inf = 1.0 / 0.0
     const one = 1.0
-    print("{nan.near(0.0)} {one.near(nan)} {inf.near(nan)} {nan.near(inf)}")
+    print(`{nan.near(0.0)} {one.near(nan)} {inf.near(nan)} {nan.near(inf)}`)
     const n32: Float32 = Float32(nan)
     const z32: Float32 = 0.0
-    print("{n32.near(z32)} {z32.near(n32)}")
+    print(`{n32.near(z32)} {z32.near(n32)}`)
 }

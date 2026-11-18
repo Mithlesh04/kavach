@@ -7,12 +7,12 @@
 
 fn main() {
     const n: Int = 7
-    print("{Float(n)} {Float32(n)} {Decimal(n)}")
+    print(`{Float(n)} {Float32(n)} {Decimal(n)}`)
     const price: Decimal = 499.00
     let half = 2.5
-    print("{Float(price)} {Decimal(half)}")
+    print(`{Float(price)} {Decimal(half)}`)
     const q: Float32 = 0.5
     const r: Decimal = 0.75
-    print("{Float(q)} {Float32(r)}")
+    print(`{Float(q)} {Float32(r)}`)
     print(Decimal(Float(price)) == price)
 }

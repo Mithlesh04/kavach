@@ -15,12 +15,12 @@ type Args {
 
 fn main() {
     const args = cli.parse<Args>() catch e => {
-        const usage = "{e}"
-        print("{usage.contains("--input")} {usage.contains("--max-count")} {usage.contains("--verbose")}")
-        print("{usage.contains("String")} {usage.contains("Int")}")
-        print("{usage.contains("10")} {usage.contains("required")}")
+        const usage = `{e}`
+        print(`{usage.contains("--input")} {usage.contains("--max-count")} {usage.contains("--verbose")}`)
+        print(`{usage.contains("String")} {usage.contains("Int")}`)
+        print(`{usage.contains("10")} {usage.contains("required")}`)
         cli.exit(0)
         return
     }
-    print("parsed: {args.input}")
+    print(`parsed: {args.input}`)
 }

@@ -6,9 +6,9 @@
 
 fn main() {
     const inf = 1.0 / 0.0
-    print("{inf.bits()} {(-inf).bits()}")
-    print("{Float.from_bits(9218868437227405312)} {Float.from_bits(18442240474082181120)}")
+    print(`{inf.bits()} {(-inf).bits()}`)
+    print(`{Float.from_bits(9218868437227405312)} {Float.from_bits(18442240474082181120)}`)
     const nan = 0.0 / 0.0
     const back = Float.from_bits(nan.bits())
-    print("{back} {back == back}")
+    print(`{back} {back == back}`)
 }

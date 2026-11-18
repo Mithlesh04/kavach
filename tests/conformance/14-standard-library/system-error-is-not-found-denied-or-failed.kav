@@ -21,6 +21,6 @@ fn main() {
         SystemError.Failed(reason: "busy"),
     ]
     for e in errors {
-        print("{e} {said(e)}")
+        print(`{e} {said(e)}`)
     }
 }

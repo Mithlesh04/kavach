@@ -14,7 +14,7 @@ capability Payments {
 
 type FakePayments: Payments {
     fn refund(self, order_id: Int, amount: Int) -> Receipt ! PaymentError {
-        Receipt(id: \"r{order_id}\")
+        Receipt(id: `r{order_id}`)
     }
 }
 
@@ -34,10 +34,10 @@ fn main() {
     const bot = Bot.start(Payments: FakePayments())
     for (id, amount) in [(1, 50), (2, 150)] {
         const r = bot.refund(id, amount) catch e => {
-            print(\"{id}: {e}\")
+            print(`{id}: {e}`)
             continue
         }
-        print(\"{id}: {r.id}\")
+        print(`{id}: {r.id}`)
     }
 }
 ";
@@ -146,8 +146,8 @@ capability Payments {
 
 type LoudPayments: Payments {
     fn refund(self, order_id: Int, amount: Int) -> Receipt ! PaymentError uses Console {
-        print(\"real refund {order_id}\")
-        Receipt(id: \"r{order_id}\")
+        print(`real refund {order_id}`)
+        Receipt(id: `r{order_id}`)
     }
 }
 
@@ -155,7 +155,7 @@ agent Bot {
     can Ai, Payments.refund
 
     on refund(order_id: Int, amount: Int) ! Error {
-        const d = try ask<Decision>(\"Refund {order_id}?\")
+        const d = try ask<Decision>(`Refund {order_id}?`)
         if d.refund {
             const _r = try Payments.refund(order_id, amount)
         }
@@ -278,7 +278,7 @@ capability Payments {
 
 type FakePayments: Payments {
     fn refund(self, order_id: Int, amount: Int) -> Receipt ! PaymentError {
-        Receipt(id: \"r{order_id}\")
+        Receipt(id: `r{order_id}`)
     }
 }
 
@@ -401,8 +401,8 @@ fn the_audit_log_can_be_json_lines() {
 fn a_dry_run_says_which_calls_are_refused() {
     let src = DRY
         .replace("    can Ai, Payments.refund\n", "    can Ai, Payments.refund\n\n    limit Payments.refund {\n        amount <= 100\n    }\n")
-        .replace("        const d = try ask<Decision>(\"Refund {order_id}?\")\n        if d.refund {\n            const _r = try Payments.refund(order_id, amount)\n        }", "        const _r = try Payments.refund(order_id, amount)")
-        .replace("try bot.refund(7, 50)", "bot.refund(7, 500) catch e => print(\"{e}\")");
+        .replace("        const d = try ask<Decision>(`Refund {order_id}?`)\n        if d.refund {\n            const _r = try Payments.refund(order_id, amount)\n        }", "        const _r = try Payments.refund(order_id, amount)")
+        .replace("try bot.refund(7, 50)", "bot.refund(7, 500) catch e => print(`{e}`)");
     let dir =
         std::env::temp_dir().join(format!("kavach-agents-dry-refused-{}", std::process::id()));
     std::fs::create_dir_all(&dir).unwrap();

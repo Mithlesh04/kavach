@@ -9,7 +9,7 @@ fn area(w: Int, h: Int = w) -> Int {
 }
 
 fn three(a: Int, b: Int = a + 1, c: Int = b) -> String {
-    "{a} {b} {c}"
+    `{a} {b} {c}`
 }
 
 fn main() {

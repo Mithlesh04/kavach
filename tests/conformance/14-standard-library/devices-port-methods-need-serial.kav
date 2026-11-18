@@ -5,7 +5,7 @@
 use std.devices
 
 pub fn ping(port: SerialPort) ! DeviceError uses Console {
-    try port.write("ping\n".bytes())      // error: ping doesn't list Serial
+    try port.write(`ping\n`.bytes())      // error: ping doesn't list Serial
 }
 
 fn main() {

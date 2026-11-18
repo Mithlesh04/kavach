@@ -44,15 +44,15 @@ fn main() {
             yes += 1
         }
     }
-    print("{yes} of {all}")
+    print(`{yes} of {all}`)
     let text = ""
     for c in char_in {
-        text += "{c}"
+        text += `{c}`
     }
     print(text)
     let n = 0
     for _ in point_in {
         n += 1
     }
-    print("{n} points")
+    print(`{n} points`)
 }

@@ -7,9 +7,9 @@
 
 fn main() {
     const pair = (200, "OK")
-    print("{pair.0} {pair.1}")
+    print(`{pair.0} {pair.1}`)
     print(pair.0 + 1)
-    print("{pair == (200, "OK")} {pair != (200, "OK")}")
+    print(`{pair == (200, "OK")} {pair != (200, "OK")}`)
     const pairs = [(2, "b"), (1, "a")]
     print(pairs.sort())
 }

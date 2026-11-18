@@ -22,5 +22,5 @@ fn main() {
     const [port = 0, host = 0] = {"port": 8080}     // warning: `host` is never used
     const (code, message) = (200, "OK")             // warning: `message` is never used
     const { home: { city, zip } } = u               // warning: `zip` is never used
-    print("{first} {head} {name} {port} {code} {city}")
+    print(`{first} {head} {name} {port} {code} {city}`)
 }

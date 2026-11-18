@@ -237,7 +237,7 @@ capability Payments {
 
 type Books: Payments {
     fn refund(self, order_id: Int, amount: Int) -> Receipt ! PaymentError {
-        Receipt(id: \"r{order_id}\")
+        Receipt(id: `r{order_id}`)
     }
 }
 
@@ -319,7 +319,7 @@ fn pay(ok: Bool) -> Int ! Declined {
 
 fn main() {
     log.span(\"checkout\") {
-        log.name_span(\"checkout /cart/\\{id}\")
+        log.name_span(`checkout /cart/\\{id}`)
         print(pay(true) catch _ => 0)
         print(pay(false) catch _ => 0)
     }
@@ -385,7 +385,7 @@ fn hello(r: Request) -> Response {
 fn main() ! Error {
     const listener = try net.listen(\"127.0.0.1:0\")
     const _server = spawn http.serve(listener, hello)
-    const got = try http.get(\"http://{listener.address()}/users/7/reset/secret-token\")
+    const got = try http.get(`http://{listener.address()}/users/7/reset/secret-token`)
     print(got.status)
 }
 ";

@@ -1,0 +1,14 @@
+// Rule: A template whose text starts on the line after its backtick spans lines: the line breaks next to the backticks and the common indentation are dropped, as in `"""`.
+// Spec: 1.7
+// expect output: Dear Asha,
+// expect output:   your order 7 is on its way.
+
+fn main() {
+    const name = "Asha"
+    const id = 7
+    const letter = `
+        Dear {name},
+          your order {id} is on its way.
+        `
+    print(letter)
+}

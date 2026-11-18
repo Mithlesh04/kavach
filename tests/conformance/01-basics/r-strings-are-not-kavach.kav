@@ -1,0 +1,7 @@
+// Rule: there is no `r"…"`: a string in quotes is exactly what is written already, and `r"…"` is a compile error that says to drop the `r`.
+// Spec: 1.7
+// expect compile error
+
+fn main() {
+    print(r"\d+")     // error: drop the `r`
+}

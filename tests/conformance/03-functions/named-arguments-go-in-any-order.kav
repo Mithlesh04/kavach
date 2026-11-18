@@ -10,7 +10,7 @@
 // expect output: a 7 9.5 true
 
 fn order(name: String, count: Int = 0, price: Float = 0.5, paid: Bool = false) -> String {
-    "{name} {count} {price} {paid}"
+    `{name} {count} {price} {paid}`
 }
 
 fn main() {

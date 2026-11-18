@@ -34,26 +34,26 @@ fn checked(n: Int) -> Int ! Error {
 
 /// Takes a context.
 fn handle(n: Int, ctx: Ctx) -> Int ! Error {
-    ctx.log("{n}")
+    ctx.log(`{n}`)
 }
 
 fn name_of(f: fn(Int) -> Int) -> String {
     if let d = json.describe(f) {
-        return "{d.name}: {d.doc}"
+        return `{d.name}: {d.doc}`
     }
     "a lambda"
 }
 
 fn failing(f: fn(Int) -> Int ! Error) -> String {
     if let d = json.describe(f) {
-        return "{d.name}: {d.doc}"
+        return `{d.name}: {d.doc}`
     }
     "none"
 }
 
 fn route<P, R, E>(f: fn(P, Ctx) -> R ! E) -> String {
     if let d = json.describe(f) {
-        return "{d.name}: {d.doc} {d.params[1].schema}"
+        return `{d.name}: {d.doc} {d.params[1].schema}`
     }
     "none"
 }

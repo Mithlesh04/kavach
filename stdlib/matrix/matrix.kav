@@ -146,7 +146,7 @@ pub fn of<T: Number>(rows: [[T]]) -> Matrix<T> {
     let items: [T] = []
     for r in rows {
         if r.len() != cols {
-            panic("the rows of a matrix must be as long: one has {r.len()} items, the first {cols} (spec 2.17)")
+            panic(`the rows of a matrix must be as long: one has {r.len()} items, the first {cols} (spec 2.17)`)
         }
         items += r
     }

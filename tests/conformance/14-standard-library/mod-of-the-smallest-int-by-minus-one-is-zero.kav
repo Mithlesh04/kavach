@@ -9,6 +9,6 @@ fn smallest() -> Int {
 
 fn main() {
     const m = smallest()
-    print("{m % -1} {m.mod(-1)}")
+    print(`{m % -1} {m.mod(-1)}`)
     print(m.div_floor(-1))
 }

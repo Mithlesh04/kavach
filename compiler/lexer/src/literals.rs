@@ -130,8 +130,8 @@ impl Lexer<'_> {
         );
     }
 
-    /// Reads an escape starting at `\`. `quote` is `"` in strings and `'` in
-    /// characters, which decides whether `\"`, `\{` or `\'` is allowed.
+    /// Reads an escape starting at `\`. `quote` is a backtick in templates and
+    /// `'` in characters, which decides whether `` \` ``, `\{` or `\'` is allowed.
     /// Reports an error and returns `None` for an invalid escape.
     pub(crate) fn escape(&mut self, quote: char) -> Option<char> {
         let start = self.pos;
@@ -153,7 +153,7 @@ impl Lexer<'_> {
             'r' => '\r',
             't' => '\t',
             '\\' => '\\',
-            '"' | '{' if quote == '"' => c,
+            '`' | '{' if quote == '`' => c,
             '\'' if quote == '\'' => c,
             'u' => return self.unicode_escape(start),
             _ => {

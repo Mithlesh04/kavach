@@ -19,7 +19,7 @@ fn main() {
     more.close()
     let seen = ""
     for v in taken {
-        seen += "{v} "
+        seen += `{v} `
     }
-    print("{seen}done")
+    print(`{seen}done`)
 }

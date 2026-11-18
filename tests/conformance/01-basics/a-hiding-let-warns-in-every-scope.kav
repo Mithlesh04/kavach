@@ -21,7 +21,7 @@ fn main() {
         let total = n               // warning: makes a new `total`
         n
     }
-    print("{total} {rounds}")
+    print(`{total} {rounds}`)
     {
         let total = add(5)
         print(total)

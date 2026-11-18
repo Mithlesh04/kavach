@@ -9,8 +9,8 @@ fn main() ! CryptoError {
     const key = crypto.ed25519_secret()
     const a = try crypto.ed25519_sign(key, "order 7".bytes())
     const b = try crypto.ed25519_sign(key, "order 7".bytes())
-    print("{a.len()} {a == b}")
+    print(`{a.len()} {a == b}`)
     const other_data = try crypto.ed25519_sign(key, "order 8".bytes())
     const other_key = try crypto.ed25519_sign(crypto.ed25519_secret(), "order 7".bytes())
-    print("{a == other_data} {a == other_key}")
+    print(`{a == other_data} {a == other_key}`)
 }

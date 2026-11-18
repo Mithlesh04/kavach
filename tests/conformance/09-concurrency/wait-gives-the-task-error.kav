@@ -20,7 +20,7 @@ fn main() ! Error {
     const b = spawn half(3)
     print(try a.wait())
     const r = b.wait() catch _ => -1
-    print("odd: {r}")
+    print(`odd: {r}`)
     const c = spawn {
         print("in c")
         try half(10) + 1

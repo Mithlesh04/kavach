@@ -31,7 +31,7 @@ fn main() ! Int {
     print(half(3) catch e => e * 100)
     print(quarter(8) catch _ => -1)
     print(quarter(6) catch e => e)
-    check(2.5) catch e => print("float error {e}")
+    check(2.5) catch e => print(`float error {e}`)
     const last = try quarter(12)
     print(last)
     const _never = try half(7)

@@ -7,6 +7,6 @@ fn main() {
     let zero = 0.0
     const nan = zero / zero
     const one = 1.0
-    print("{nan < one} {nan <= one} {nan > one} {nan >= one}")
-    print("{one < nan} {nan >= nan}")
+    print(`{nan < one} {nan <= one} {nan > one} {nan >= one}`)
+    print(`{one < nan} {nan >= nan}`)
 }

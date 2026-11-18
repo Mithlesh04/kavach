@@ -116,7 +116,7 @@ Writing the reference solutions, and a first small run, turned up idioms that Ka
 - `0..xs.min() ?? 0`: the message now says to put the `??` in parentheses.
 - `stack.pop()`: lists now have `pop` (spec 14.2).
 - `len(xs)`, Python's way: the message now says to write `xs.len()`.
-- Still as they were: `c.code()` (a `Char`'s code point is `Int(c)`, spec 2.1), and `"([]{})"`, where `{` starts interpolation, so a literal brace is written `\{`.
+- Still as they were: `c.code()` (a `Char`'s code point is `Int(c)`, spec 2.1), and `"([]{})"`, where `{` started interpolation then, so a literal brace was written `\{` (since [decision 0131](../../docs/decisions/0131-plain-strings-and-backtick-templates.md) a string in quotes is plain).
 
 It also found a bug, fixed since: the interpreter gave `0`, not `0.0`, for the `sum` of an empty list with a `Float` lambda.
 

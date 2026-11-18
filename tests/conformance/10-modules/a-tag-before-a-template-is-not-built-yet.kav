@@ -1,0 +1,19 @@
+// Rule: A tag in front of a template, `` sql`…{x}…` ``, isn't built yet: it is a compile error that says to write the text in quotes.
+// Spec: 10.15
+// expect compile error
+
+pub type Query {
+    text: String
+}
+
+pub literal sql: Query check check_sql
+
+fn check_sql(text: String) -> [LiteralProblem] {
+    []
+}
+
+fn main() {
+    const owner = "asha"
+    const q = sql`select id from orders where owner = {owner}`     // error: isn't built yet
+    print(q.text)
+}

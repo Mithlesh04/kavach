@@ -21,7 +21,7 @@ fn flip(b: Bytes, at: Int) -> Bytes {
 fn main() ! CryptoError {
     const key = crypto.aes_key()
     const sealed = try crypto.encrypt(key, "card 4242".bytes())
-    print("{open(crypto.aes_key(), sealed)} {open(key, flip(sealed, 0))}")
-    print("{open(key, flip(sealed, 14))} {open(key, flip(sealed, sealed.len() - 1))}")
+    print(`{open(crypto.aes_key(), sealed)} {open(key, flip(sealed, 0))}`)
+    print(`{open(key, flip(sealed, 14))} {open(key, flip(sealed, sealed.len() - 1))}`)
     print(open(key, sealed.slice(0, sealed.len() - 1)))
 }

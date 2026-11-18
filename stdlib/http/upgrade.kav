@@ -59,7 +59,7 @@ pub type WebSocket {
             if message.len() > self.most {
                 self.send(8, close_code(1009)) catch e => {}
                 self.conn.close()
-                fail broken("a message larger than {self.most} bytes")
+                fail broken(`a message larger than {self.most} bytes`)
             }
             if frame.fin and kind != 0 {
                 if kind == 2 {
@@ -154,7 +154,7 @@ pub type WebSocket {
             at = 10
         }
         if length > self.most {
-            fail broken("a frame larger than {self.most} bytes")
+            fail broken(`a frame larger than {self.most} bytes`)
         }
         const key_at = at
         if masked_frame {
@@ -228,7 +228,7 @@ fn close_code(code: Int) -> Bytes
 }
 
 fn broken(why: String) -> NetError {
-    NetError.Failed(address: "", reason: "websocket: {why}")
+    NetError.Failed(address: "", reason: `websocket: {why}`)
 }
 
 /// The server-sent events of a response (`text/event-stream`).
@@ -240,15 +240,15 @@ pub type EventStream {
     pub fn send(self, data: String, event: String = "", id: String = "") ! NetError uses Net {
         let text = ""
         if not event.is_empty() {
-            text = text + "event: {event}\n"
+            text = text + `event: {event}\n`
         }
         if not id.is_empty() {
-            text = text + "id: {id}\n"
+            text = text + `id: {id}\n`
         }
-        for line in data.split("\n") {
-            text = text + "data: {line}\n"
+        for line in data.split(`\n`) {
+            text = text + `data: {line}\n`
         }
-        try self.conn.write((text + "\n").bytes())
+        try self.conn.write((text + `\n`).bytes())
     }
 }
 
@@ -305,7 +305,7 @@ pub fn connect(url: String) -> WebSocket ! HttpError uses Net {
     }
     const key = net.websocket_key()
     const crlf = message.crlf()
-    const head = "GET {path} HTTP/1.1{crlf}host: {name}{crlf}upgrade: websocket{crlf}connection: Upgrade{crlf}sec-websocket-key: {key}{crlf}sec-websocket-version: 13{crlf}{crlf}"
+    const head = `GET {path} HTTP/1.1{crlf}host: {name}{crlf}upgrade: websocket{crlf}connection: Upgrade{crlf}sec-websocket-key: {key}{crlf}sec-websocket-version: 13{crlf}{crlf}`
     conn.write(head.bytes()) catch e => fail HttpError.Network(error: e)
     let all = Bytes([])
     while message.head_end(all) == none {
@@ -317,7 +317,7 @@ pub fn connect(url: String) -> WebSocket ! HttpError uses Net {
     const accepted = message.first_header(reply.headers, "sec-websocket-accept") ?? ""
     if status != "101" or accepted != net.websocket_accept(key) {
         conn.close()
-        fail HttpError.BadMessage(reason: "the server didn't accept the WebSocket ({reply.first})")
+        fail HttpError.BadMessage(reason: `the server didn't accept the WebSocket ({reply.first})`)
     }
     client_end(conn, reply.body, 10_000_000)
 }

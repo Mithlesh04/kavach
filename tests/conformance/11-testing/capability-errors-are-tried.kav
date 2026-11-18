@@ -11,7 +11,7 @@ capability Payments {
 
 fn settle(order_id: Int, amount: Int) -> String uses Payments.refund {
     const r = Payments.refund(order_id, amount) catch e => {
-        panic("the refund failed: {e}")   // found: the fake answers with an error
+        panic(`the refund failed: {e}`)   // found: the fake answers with an error
     }
-    "refunded {r.id}"
+    `refunded {r.id}`
 }

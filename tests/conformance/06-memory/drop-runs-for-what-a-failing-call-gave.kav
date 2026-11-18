@@ -12,7 +12,7 @@ type Guard: Drop {
     n: Int
 
     fn drop(self) uses Console {
-        print("drop {self.n}")
+        print(`drop {self.n}`)
     }
 }
 
@@ -49,8 +49,8 @@ fn fetch(c: Cache, k: String, i: Int) -> Guard ! String {
 fn main() uses Console {
     const c = Cache(map: Shared({:}))
     for i in 0..4 {
-        const g = fetch(c, "k{i % 2}", i) catch e => panic(e)
-        print("using {g.n}")
+        const g = fetch(c, `k{i % 2}`, i) catch e => panic(e)
+        print(`using {g.n}`)
     }
     print("end")
 }

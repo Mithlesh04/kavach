@@ -27,7 +27,7 @@ fn tried(ok: Bool) -> String ! Oops {
 fn counted(xs: [Int?]) -> Int {
     let total = 0
     for x in xs {
-        const s = "n".repeat(2) + "{x ?? continue}"
+        const s = "n".repeat(2) + `{x ?? continue}`
         total += s.len()
     }
     total

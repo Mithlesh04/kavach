@@ -32,10 +32,10 @@ fn main() {
     print(backwards([1, 2, 3]))
     print(with_c({"b": 2, "a": 1}))
     const s = grow(Set.of("a", "b"))
-    print("{s.contains("c")} {s.contains("d")} {s.len()}")
+    print(`{s.contains("c")} {s.contains("d")} {s.len()}`)
     print(swap5((1, "one", 1.5, 'a', true)))
     const r = bounds([4, 1, 5])
-    print("{r.lo} {r.hi} {r.n}")
+    print(`{r.lo} {r.hi} {r.n}`)
     print(nest([1, 2], [3, 4, 5]))
     print(pairs([1, 2], ["a", "b"]))
 }

@@ -8,11 +8,11 @@ const ANSWERS: &str = "use std.agents
 fn main() ! Error uses Approvals, Console {
     const found = agents.waiting()
     for r in found {
-        print(\"{r.id} {r.agent_name} {r.call} by {r.by} when {r.why}\")
+        print(`{r.id} {r.agent_name} {r.call} by {r.by} when {r.why}`)
     }
     try agents.answer(found[0].id, approved: true, by: \"asha\")
     agents.answer(found[0].id, approved: false, by: \"ravi\") catch e => {
-        print(\"again: {e}\")
+        print(`again: {e}`)
     }
 }
 ";

@@ -8,7 +8,7 @@ Fields marked `secret` (2.11) are tracked by the compiler wherever their value g
 - the audit log or any log
 
 ```kavach
-const prompt = "Card ends with {customer.card_number}"   // compile error E0302
+const prompt = `Card ends with {customer.card_number}`   // compile error E0302
 ```
 
 A secret can only be passed to code that is allowed to receive it: a parameter or field that is itself marked `secret`, such as `StripePayments.api_key`. To deliberately reveal one, write `reveal(value)`. This is visible in code review and listed by `kavach audit`.
@@ -41,8 +41,8 @@ fn leak() -> String ! Error uses Env {
 
 fn main() ! Error uses Env {
     const url = try database_url()       // a secret
-    print("using {url}")                 // compile error: `url` is secret
-    print("using {reveal(url)}")         // allowed, and visible in review
+    print(`using {url}`)                 // compile error: `url` is secret
+    print(`using {reveal(url)}`)         // allowed, and visible in review
 }
 ```
 

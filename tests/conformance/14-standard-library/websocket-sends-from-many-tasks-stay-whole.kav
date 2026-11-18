@@ -27,7 +27,7 @@ fn handle(r: Request) -> Response {
 fn main() ! Error uses Clock {
     const listener = try net.listen("127.0.0.1:0")
     const _server = spawn http.serve(listener, handle)
-    const ws = try http.websocket_connect("ws://{listener.address()}/many")
+    const ws = try http.websocket_connect(`ws://{listener.address()}/many`)
     // Read late, so the sends fill the connection and must wait.
     time.sleep(300.ms)
     let seen: [String] = []
@@ -37,7 +37,7 @@ fn main() ! Error uses Clock {
                 const text = data.text() ?? ""
                 const first = text.slice(0, 1)
                 const whole = text == first.repeat(text.len())
-                seen.push(if whole { "{text.len()} bytes of {first}" } else { "mixed" })
+                seen.push(if whole { `{text.len()} bytes of {first}` } else { "mixed" })
             }
             WsMessage.Text(text) => seen.push(text),
         }

@@ -27,7 +27,7 @@ fn main() {
     given += 10
     let waited: Int8 = 50
     const copy = () => waited
-    print("{tested} {looped} {branched} {given} {copy()}")
+    print(`{tested} {looped} {branched} {given} {copy()}`)
     let steps = 0
     while steps < 3 {
         steps += 1

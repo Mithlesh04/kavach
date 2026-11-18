@@ -14,7 +14,7 @@ fn main() {
             }
             names.update(xs => {
                 let ys = xs
-                ys.push("task {i}")
+                ys.push(`task {i}`)
                 ys
             })
             i

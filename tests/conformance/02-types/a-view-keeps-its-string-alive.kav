@@ -19,8 +19,8 @@ fn main() {
     let s = "abc"
     const v = s.view()
     s = "xyz"
-    print("{v} {s}")
+    print(`{v} {s}`)
     const kept = [w, v.view(1, 3)]
     const t = Token(text: w)
-    print("{kept} {t.text}")
+    print(`{kept} {t.text}`)
 }

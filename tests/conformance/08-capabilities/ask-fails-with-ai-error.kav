@@ -7,13 +7,13 @@ type Verdict {
 }
 
 fn review(text: String) -> Bool ! AiError uses Ai {
-    const v = try ask<Verdict>("Is this fine? {text}")
+    const v = try ask<Verdict>(`Is this fine? {text}`)
     v.ok
 }
 
 fn describe(e: AiError) -> String {
     match e {
-        AiError.NoKey(variable: v) => "no key in {v}",
+        AiError.NoKey(variable: v) => `no key in {v}`,
         _ => "another AI error",
     }
 }

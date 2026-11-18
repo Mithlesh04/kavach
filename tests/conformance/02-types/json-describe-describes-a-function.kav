@@ -20,7 +20,7 @@ type ApiError = OutOfStock(item: String) | Bad(reason: String)
 
 /// Makes an order.
 fn create(o: Order) -> Int ! ApiError uses Fs.read {
-    if fs.exists("stock-{o.item}") {
+    if fs.exists(`stock-{o.item}`) {
         fail ApiError.OutOfStock(item: o.item)
     }
     o.qty
@@ -36,12 +36,12 @@ fn quiet() {}
 
 fn main() {
     const d = json.describe(create)
-    print("{d.name}: {d.doc}")
-    print("{d.params[0].name} {d.params[0].schema.get("required")}")
+    print(`{d.name}: {d.doc}`)
+    print(`{d.params[0].name} {d.params[0].schema.get("required")}`)
     print(d.result)
     print(d.error.get("anyOf").len())
     print(d.capabilities)
     print(json.describe(twice).examples)
     const q = json.describe(quiet)
-    print("{q.result} {q.error}")
+    print(`{q.result} {q.error}`)
 }

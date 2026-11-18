@@ -20,18 +20,18 @@ type Order {
 }
 
 fn main() {
-    const broken = "\{\"id\": 1, \"items\": [\{\"name\": \"a\", \"qty\": 2}, \{\"name\": \"b\", \"qty\": -1}], \"gift\": \{\"name\": \"g\", \"qty\": 0}}"
+    const broken = `\{"id": 1, "items": [\{"name": "a", "qty": 2}, \{"name": "b", "qty": -1}], "gift": \{"name": "g", "qty": 0}}`
     match json.decode<Order>(broken) {
         ok(_) => print("decoded"),
         err(e) => match e {
             JsonError.Invalid(problems) => {
                 for p in problems {
-                    print("{p.path}: {p.expected}")
+                    print(`{p.path}: {p.expected}`)
                 }
             }
             _ => print("other"),
         },
     }
-    const fine = json.decode<Order>("\{\"id\": 7, \"items\": [\{\"name\": \"a\", \"qty\": 2}]}") catch _ => Order(id: 0, items: [], gift: none)
-    print("decoded {fine.id}")
+    const fine = json.decode<Order>(`\{"id": 7, "items": [\{"name": "a", "qty": 2}]}`) catch _ => Order(id: 0, items: [], gift: none)
+    print(`decoded {fine.id}`)
 }

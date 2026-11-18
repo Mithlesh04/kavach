@@ -19,16 +19,16 @@ fn main() {
     const _producer = spawn {
         for i in 1..=5 {
             send.put(i * 10)
-            print("put {i * 10}")
+            print(`put {i * 10}`)
         }
         send.close()
         print("closed")
     }
     let total = 0
     for n in receive {
-        print("took {n}")
+        print(`took {n}`)
         total += n
     }
-    print("total {total}")
+    print(`total {total}`)
     print(receive.take())
 }

@@ -10,7 +10,7 @@ fn main() {
     const x = 1
     {
         const x = x + 10
-        print("{x} {x - 10}")
+        print(`{x} {x - 10}`)
     }
     let total = 0
     for i in 0..3 {

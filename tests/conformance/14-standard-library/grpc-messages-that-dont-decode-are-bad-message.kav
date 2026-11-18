@@ -20,7 +20,7 @@ pub type Named {
 fn kind(e: GrpcError) -> String {
     match e {
         GrpcError.BadMessage(_) => "BadMessage",
-        _ => "{e}",
+        _ => `{e}`,
     }
 }
 
@@ -37,21 +37,21 @@ fn orders(call: GrpcCall) -> GrpcReply {
 fn main() ! Error {
     // 0x08 starts field 1 as a number, and the number never comes.
     const cut = match grpc.decode<Order>(Bytes([0x08])) {
-        ok(o) => "{o}",
+        ok(o) => `{o}`,
         err(e) => kind(e),
     }
-    print("cut off: {cut}")
+    print(`cut off: {cut}`)
     const listener = try net.listen("127.0.0.1:0")
     const _server = spawn grpc.serve(listener, orders)
-    const target = "http://{listener.address()}"
+    const target = `http://{listener.address()}`
     const sent = match grpc.call<Named, Order>(target, "/shop.Orders/Place", Named(name: "pen")) {
-        ok(o) => "{o}",
-        err(e) => "{e}",
+        ok(o) => `{o}`,
+        err(e) => `{e}`,
     }
-    print("a request of another type: {sent}")
+    print(`a request of another type: {sent}`)
     const got = match grpc.call<Order, Order>(target, "/shop.Orders/Name", Order(id: 1, item: "ink")) {
-        ok(o) => "{o}",
+        ok(o) => `{o}`,
         err(e) => kind(e),
     }
-    print("an answer of another type: {got}")
+    print(`an answer of another type: {got}`)
 }

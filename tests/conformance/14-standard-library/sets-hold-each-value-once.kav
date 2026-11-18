@@ -12,7 +12,7 @@ fn main() {
     names.add("meera")
     print(names)
     names.remove("ravi")
-    print("{names.len()} {names.contains("asha")} {names.contains("ravi")}")
+    print(`{names.len()} {names.contains("asha")} {names.contains("ravi")}`)
     for n in names {
         print(n)
     }

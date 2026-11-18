@@ -7,6 +7,6 @@ fn main() {
     let zero = 0.0
     const up = 1.0 / zero
     const down = -1.0 / zero
-    print("{up > 1.7976931348623157e308} {down < -1.7976931348623157e308}")
+    print(`{up > 1.7976931348623157e308} {down < -1.7976931348623157e308}`)
     print(zero / zero)
 }

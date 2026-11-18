@@ -1,0 +1,7 @@
+// Rule: A string in quotes is exactly what is written: no escapes, and nothing filled in.
+// Spec: 1.7
+// expect output: C:\path\{not filled in} \d+\.\d+ \n
+
+fn main() {
+    print("C:\path\{not filled in} \d+\.\d+ \n")
+}

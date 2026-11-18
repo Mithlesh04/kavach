@@ -9,9 +9,9 @@
 use std.regex
 
 fn main() ! Error {
-    print("{(try regex.new(r"(?i)kavach")).is_match("KaVaCh")} {(try regex.new("kavach")).is_match("KAVACH")}")
-    print((try regex.new(r"<.+?>")).find("<a><b>") ?? "")
-    print((try regex.new(r"a{2,3}")).find_all("aaaaaaa"))
-    print((try regex.new(r"\w+")).find_all("naïve café, नमस्ते!").join("|"))
+    print(`{(try regex.new("(?i)kavach")).is_match("KaVaCh")} {(try regex.new("kavach")).is_match("KAVACH")}`)
+    print((try regex.new("<.+?>")).find("<a><b>") ?? "")
+    print((try regex.new("a{2,3}")).find_all("aaaaaaa"))
+    print((try regex.new("\w+")).find_all("naïve café, नमस्ते!").join("|"))
     print((try regex.new("aa")).find_all("aaaaa"))
 }

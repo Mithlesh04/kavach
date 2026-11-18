@@ -90,10 +90,10 @@ impl Checker<'_> {
         let (name, shown) = (&self.res.defs[param].name, self.show(t));
         match self.inf.numbers.get(&param) {
             Some(true) => format!(
-                "`{name}` is `Floating`, so it is `Float` or `Float32`, and this is `{shown}` (spec 2.9)"
+                "`{name}` must be `Float` or `Float32` (`{name}: Floating`), and this is `{shown}` (spec 2.9)"
             ),
             _ => format!(
-                "`{name}` is a `Number`, so it is a number type, and this is `{shown}` (spec 2.9)"
+                "`{name}` must be a number type (`{name}: Number`), and this is `{shown}` (spec 2.9)"
             ),
         }
     }

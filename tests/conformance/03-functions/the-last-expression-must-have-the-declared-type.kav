@@ -3,7 +3,7 @@
 // expect compile error
 
 fn count(xs: [Int]) -> Int {
-    "{xs.len()}"               // error: `count` returns an Int, not a String
+    `{xs.len()}`               // error: `count` returns an Int, not a String
 }
 
 fn main() {

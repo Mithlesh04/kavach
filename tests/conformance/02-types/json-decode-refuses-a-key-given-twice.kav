@@ -12,17 +12,17 @@ type Order {
 
 fn show(e: JsonError) {
     match e {
-        JsonError.DuplicateKey(key, line, column) => print("key {key} twice, at {line}:{column}"),
-        _ => print("other: {e}"),
+        JsonError.DuplicateKey(key, line, column) => print(`key {key} twice, at {line}:{column}`),
+        _ => print(`other: {e}`),
     }
 }
 
 fn main() {
-    const _a = json.decode<Order>("\{\"id\": 1, \"id\": 2}") catch e => {
+    const _a = json.decode<Order>(`\{"id": 1, "id": 2}`) catch e => {
         show(e)
         Order(id: 0)
     }
-    const _b = json.parse("[\n\{\"a\": \{\"b\": 1, \"b\": 1}}]") catch e => {
+    const _b = json.parse(`[\n\{"a": \{"b": 1, "b": 1}}]`) catch e => {
         show(e)
         Json.Null
     }

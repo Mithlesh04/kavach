@@ -16,7 +16,7 @@ type Order {
 }
 
 fn main() ! Error {
-    const text = "\{\"id\": 12345678901234567890, \"price\": 0.1, \"huge\": 1e400, \"zero\": -0}"
+    const text = `\{"id": 12345678901234567890, "price": 0.1, "huge": 1e400, "zero": -0}`
     const doc = try json.parse(text)
     print(json.stringify(doc))
     print(doc["id"].bigint())
@@ -24,6 +24,6 @@ fn main() ! Error {
     print(doc["price"].decimal())
     print(doc["huge"].float())
     const order = try json.decode<Order>(text, unknown: JsonUnknown.Ignore)
-    print("{order.id} costs {order.price}")
+    print(`{order.id} costs {order.price}`)
     print(json.stringify(json.of(order)))
 }

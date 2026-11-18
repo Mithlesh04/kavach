@@ -72,16 +72,16 @@ impl Checker<'_> {
             ExprKind::Str(parts) => {
                 for part in parts {
                     if let StrPart::Expr(x) = part {
-                        // `"{"` and `"}"` read as one string holding
-                        // another: say what was meant (spec 1.7).
-                        // A `{` the line ends before closing (`"{"`)
+                        // `` `{" or "}` `` reads as one template holding a
+                        // string: say what was meant (spec 1.7).
+                        // A `{` the line ends before closing (`` `{` ``)
                         // already has its error: both strings end there.
                         if x.span.end != e.span.end
                             && matches!(&x.kind, ExprKind::Str(inner) if inner.iter().all(|p| matches!(p, StrPart::Text(_))))
                         {
                             self.warn(
                                 x.span,
-                                "this `{…}` holds only text, so the string goes on past it: write `\\{` for a brace, or the text itself (spec 1.7)",
+                                "this `{…}` holds only text, so the template goes on past it: write `\\{` for a brace, or the text in quotes (spec 1.7)",
                             );
                         }
                         self.value(x, None);
@@ -130,7 +130,9 @@ impl Checker<'_> {
                 let (k, v) = (self.fresh(), self.fresh());
                 for (key, value) in entries {
                     self.check_expect(key, &k);
+                    let before = self.errors.len();
                     self.check_expect(value, &v);
+                    self.dict_of_functions_hint(before, value.span);
                 }
                 Ty::Map(Box::new(k), Box::new(v))
             }

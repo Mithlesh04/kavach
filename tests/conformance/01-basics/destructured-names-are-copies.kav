@@ -13,9 +13,9 @@ fn main() {
     const boxes = [rest]
     const size = () => rest.len()
     rest.push(3)
-    print("{rest} {boxes} {saved} {size()}")
+    print(`{rest} {boxes} {saved} {size()}`)
     let { home } = (name: "Asha", home: Address(city: "Pune"))
     const before = home
     home.city = "Delhi"
-    print("{before.city} {home.city}")
+    print(`{before.city} {home.city}`)
 }

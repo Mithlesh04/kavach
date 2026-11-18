@@ -10,11 +10,11 @@ interface Describe {
 type User: Describe {
     name: String
 
-    fn describe(self) -> String { "User {self.name}" }
+    fn describe(self) -> String { `User {self.name}` }
 }
 
 extend Rect: Describe {
-    fn describe(self) -> String { "Rect {self.width}x{self.height}" }
+    fn describe(self) -> String { `Rect {self.width}x{self.height}` }
 }
 ```
 

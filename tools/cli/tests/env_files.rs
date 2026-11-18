@@ -36,7 +36,7 @@ fn programs_read_the_dot_env_file() {
     .unwrap();
     fs::write(
         dir.join("src/main.kav"),
-        "fn main() uses Env, Console {\n    const g = reveal(env(\"GREETING\") catch \"unset\")\n    const p = reveal(env(\"PORT\") catch \"unset\")\n    const m = reveal(env(\"MODE\") catch \"unset\")\n    print(\"{g} {p} {m}\")\n}\n",
+        "fn main() uses Env, Console {\n    const g = reveal(env(\"GREETING\") catch \"unset\")\n    const p = reveal(env(\"PORT\") catch \"unset\")\n    const m = reveal(env(\"MODE\") catch \"unset\")\n    print(`{g} {p} {m}`)\n}\n",
     )
     .unwrap();
     fs::write(
@@ -112,7 +112,7 @@ fn values_in_kavach_toml_become_text() {
     };
     fs::write(
         dir.join("src/main.kav"),
-        "fn main() ! Error uses Env, Console {\n    const port = try Int(reveal(try env(\"PORT\")))\n    const ratio = reveal(try env(\"RATIO\"))\n    const debug = try Bool(reveal(try env(\"DEBUG\")))\n    const when = reveal(try env(\"WHEN\"))\n    const hosts = reveal(try env(\"HOSTS\")).split(\",\")\n    print(\"{port + 1} {ratio} {debug} {when} {hosts.len()}\")\n}\n",
+        "fn main() ! Error uses Env, Console {\n    const port = try Int(reveal(try env(\"PORT\")))\n    const ratio = reveal(try env(\"RATIO\"))\n    const debug = try Bool(reveal(try env(\"DEBUG\")))\n    const when = reveal(try env(\"WHEN\"))\n    const hosts = reveal(try env(\"HOSTS\")).split(\",\")\n    print(`{port + 1} {ratio} {debug} {when} {hosts.len()}`)\n}\n",
     )
     .unwrap();
     toml("PORT = 8080\nRATIO = 1.5\nDEBUG = true\nWHEN = 2026-11-12\nHOSTS = \"a,b,c\"\n");

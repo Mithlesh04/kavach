@@ -23,6 +23,6 @@ type Box<T> {
 fn main() {
     const b = Box(value: 3)
     print(b.get())
-    print(b.map_to(x => "#{x}").get())
+    print(b.map_to(x => `#{x}`).get())
     print(Box.make("hi").get())
 }

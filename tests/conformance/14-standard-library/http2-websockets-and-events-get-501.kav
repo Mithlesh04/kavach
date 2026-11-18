@@ -37,6 +37,6 @@ fn main() ! Error {
         }
         const reply = try h2.request(conn, headers, Bytes([]))
         conn.close()
-        print("{path}: {reply.headers.get(":status") ?? "?"}")
+        print(`{path}: {reply.headers.get(":status") ?? "?"}`)
     }
 }

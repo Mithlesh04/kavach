@@ -11,7 +11,7 @@ use std.http.hpack
 use std.net
 
 fn hello(r: Request) -> Response {
-    http.text(200, "{r.method} {r.path}: {r.body.len()} bytes")
+    http.text(200, `{r.method} {r.path}: {r.body.len()} bytes`)
 }
 
 fn main() ! Error {
@@ -33,6 +33,6 @@ fn main() ! Error {
     print(reply.headers.get(":status") ?? "?")
     print(reply.headers.get("content-type") ?? "?")
     print(reply.body.text() ?? "?")
-    const page = try http.get("http://{listener.address()}/old")
+    const page = try http.get(`http://{listener.address()}/old`)
     print(page.body.text() ?? "?")
 }

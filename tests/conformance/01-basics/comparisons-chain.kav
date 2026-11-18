@@ -11,7 +11,7 @@
 // expect output: true
 
 fn seen(n: Int) -> Int {
-    print("seen {n}")
+    print(`seen {n}`)
     n
 }
 

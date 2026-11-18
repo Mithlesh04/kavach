@@ -15,7 +15,7 @@ type Five: Getter<Int> {
     }
 
     fn put(self, value: Int) -> String {
-        "put {value}"
+        `put {value}`
     }
 }
 
@@ -27,7 +27,7 @@ type Word: Getter<String> {
     }
 
     fn put(self, value: String) -> String {
-        "put '{value}'"
+        `put '{value}'`
     }
 }
 

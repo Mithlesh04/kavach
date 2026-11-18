@@ -16,8 +16,8 @@ fn main() ! Base64Error {
     const data = "order 7".bytes()
     const rs256 = crypto.rsa_verify(n, e, data, try base64.decode(pkcs1))
     const ps256 = crypto.rsa_verify(n, e, data, try base64.decode(pss_sig), pss: true)
-    print("{rs256} {ps256}")
+    print(`{rs256} {ps256}`)
     const changed = crypto.rsa_verify(n, e, "order 8".bytes(), try base64.decode(pkcs1))
     const wrong_kind = crypto.rsa_verify(n, e, data, try base64.decode(pkcs1), pss: true)
-    print("{changed} {wrong_kind}")
+    print(`{changed} {wrong_kind}`)
 }

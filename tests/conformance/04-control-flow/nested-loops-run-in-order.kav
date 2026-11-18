@@ -29,7 +29,7 @@ fn main() {
         for k in 0..5 {
             cell += weights[k] * rows[k][j]
         }
-        print("{j} {cell}")
+        print(`{j} {cell}`)
         total += cell
     }
     print(total)

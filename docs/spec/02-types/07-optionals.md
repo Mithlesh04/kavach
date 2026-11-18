@@ -9,7 +9,7 @@ const user = find_user(7)                      // User?
 const name = user?.name ?? "guest"             // ?. reads through, ?? gives a default
 
 if let u = find_user(7) {
-    print("Found {u.name}")                  // u is a User here, not a User?
+    print(`Found {u.name}`)                  // u is a User here, not a User?
 }
 ```
 

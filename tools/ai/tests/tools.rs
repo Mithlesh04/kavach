@@ -36,7 +36,7 @@ fn pay(order: Order) -> Order ! ShopError uses Payments {
 }
 
 fn report(orders: [Order]) -> String {
-    "paid: {total_paid(orders)}"
+    `paid: {total_paid(orders)}`
 }
 "#;
 
@@ -95,7 +95,7 @@ fn queries_answer_exactly() {
     let ask = |kind: &str, name: &str| query(&c, kind, name).unwrap();
     assert_eq!(
         ask("callers", "total_paid"),
-        "shop.kav:17  in total_paid: example total_paid([]) == 0\nshop.kav:34  in report: \"paid: {total_paid(orders)}\"\n"
+        "shop.kav:17  in total_paid: example total_paid([]) == 0\nshop.kav:34  in report: `paid: {total_paid(orders)}`\n"
     );
     assert_eq!(
         ask("uses", "Payments"),
@@ -126,7 +126,7 @@ fn queries_answer_exactly() {
 #[test]
 fn messages_are_one_json_line_each() {
     let c = compile(
-        "fn main() {\n  const total = 1\n  print(\"{totl}\")\n}",
+        "fn main() {\n  const total = 1\n  print(`{totl}`)\n}",
         "a.kav",
         Options::default(),
     );
@@ -166,7 +166,7 @@ fn context_gives_the_code_and_what_it_uses() {
 fn uses_counts_capabilities_inferred_and_main() {
     // `main` may use anything, but `query uses` still lists what it does:
     // here `Console`, through `greet` (spec 13.2).
-    let src = "fn greet(name: String) {\n    print(\"hi {name}\")\n}\n\nfn main() {\n    greet(\"Asha\")\n}\n";
+    let src = "fn greet(name: String) {\n    print(`hi {name}`)\n}\n\nfn main() {\n    greet(\"Asha\")\n}\n";
     let c = compile(src, "main.kav", Options::default());
     assert!(!c.has_errors(), "{}", c.render());
     let answer = query(&Index::build(&c, "main.kav"), "uses", "Console").unwrap();

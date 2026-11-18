@@ -25,7 +25,7 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs {
     const tickets = try json.decode<[Ticket]>(try fs.read_text(path))
     if not together {
         for t in tickets {
-            print(sort(t) catch e => "error {e}")
+            print(sort(t) catch e => `error {e}`)
         }
         return
     }
@@ -34,11 +34,11 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs {
         asked.push(spawn sort(t))
     }
     for a in asked {
-        print(a.wait() catch e => "error {e}")
+        print(a.wait() catch e => `error {e}`)
     }
 }
 
 fn sort(t: Ticket) -> String ! Error uses Ai {
-    const r = try ask<Triage>("Triage this support ticket: {t.text}")
-    "{t.id} {r.kind} {r.needs_person}"
+    const r = try ask<Triage>(`Triage this support ticket: {t.text}`)
+    `{t.id} {r.kind} {r.needs_person}`
 }

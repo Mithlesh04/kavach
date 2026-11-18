@@ -15,5 +15,5 @@ fn main() {
     for v in receive {      // warning: `v` is never used
         n += 1
     }
-    print("{n} taken")
+    print(`{n} taken`)
 }

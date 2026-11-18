@@ -5,8 +5,8 @@
 // expect output: 2
 
 fn main() {
-    const accented = "e\u{301}".pad_left(3, '*')
-    print("{accented.len()} {accented.starts_with("*e")} {accented.starts_with("**")}")
-    print("{"7".pad_left(3, '👍')} [{"👍".pad_right(2, '.')}]")
-    print("e\u{301}".pad_right(2).len())
+    const accented = `e\u{301}`.pad_left(3, '*')
+    print(`{accented.len()} {accented.starts_with("*e")} {accented.starts_with("**")}`)
+    print(`{"7".pad_left(3, '👍')} [{"👍".pad_right(2, '.')}]`)
+    print(`e\u{301}`.pad_right(2).len())
 }

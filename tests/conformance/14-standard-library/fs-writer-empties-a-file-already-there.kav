@@ -8,7 +8,7 @@ use std.fs
 fn main() ! FsError uses Fs, Console {
     const dir = "kavach-t-fs-writer"
     try fs.create_dir(dir)
-    const path = "{dir}/out.txt"
+    const path = `{dir}/out.txt`
     try fs.write_text(path, "an old text that is longer")
     const w = try fs.create_writer(path)
     try w.write_text("new")

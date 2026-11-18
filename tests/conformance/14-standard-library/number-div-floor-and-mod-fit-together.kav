@@ -18,5 +18,5 @@ fn main() {
     print(ok)
     const s: Int8 = -7
     const u: UInt8 = 200
-    print("{s.div_floor(2)} {s.mod(3)} {u.div_floor(7)} {u.mod(7)}")
+    print(`{s.div_floor(2)} {s.mod(3)} {u.div_floor(7)} {u.mod(7)}`)
 }

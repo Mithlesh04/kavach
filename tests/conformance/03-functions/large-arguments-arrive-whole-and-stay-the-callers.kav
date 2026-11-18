@@ -8,7 +8,7 @@
 // expect output: 1048576 x
 
 fn summary(xs: [Int]) -> String {
-    "{xs.len()} {xs.sum(x => x)} {xs[xs.len() - 1]}"
+    `{xs.len()} {xs.sum(x => x)} {xs[xs.len() - 1]}`
 }
 
 fn changed(xs: [Int]) -> [Int] {
@@ -33,11 +33,11 @@ fn main() {
     }
     print(summary(xs))
     const ys = changed(xs)
-    print("{ys.len()} {ys[ys.len() - 1]}")
+    print(`{ys.len()} {ys[ys.len() - 1]}`)
     print(summary(xs))
     const s = "x".repeat(1_048_576)
-    print("{s.len()} {same(s)}")
+    print(`{s.len()} {same(s)}`)
     const t = longer(s)
-    print("{t.len()} {t.slice(t.len() - 1, t.len())}")
-    print("{s.len()} {s.slice(s.len() - 1, s.len())}")
+    print(`{t.len()} {t.slice(t.len() - 1, t.len())}`)
+    print(`{s.len()} {s.slice(s.len() - 1, s.len())}`)
 }

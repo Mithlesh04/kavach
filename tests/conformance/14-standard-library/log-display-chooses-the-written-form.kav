@@ -10,7 +10,7 @@ type Retrying: LogEvent, Display {
     limit: Int
 
     fn display(self) -> String {
-        "retrying, attempt {self.attempt} of {self.limit}"
+        `retrying, attempt {self.attempt} of {self.limit}`
     }
 }
 

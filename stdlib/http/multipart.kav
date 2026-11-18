@@ -52,13 +52,13 @@ pub type Form {
             return none
         }
         self.held.update(_ => h.slice(d + 2, h.len()))
-        const end = try self.find("\u{D}\n\u{D}\n".bytes(), most_head())
+        const end = try self.find(`\u{D}\n\u{D}\n`.bytes(), most_head())
         const all = self.held.get()
         const head = all.slice(0, end).text() ?? fail bad("a part's headers aren't text")
         self.held.update(_ => all.slice(end + 4, all.len()))
         self.in_part.update(_ => true)
         let headers: [Header] = []
-        for line in head.split("\u{D}\n") {
+        for line in head.split(`\u{D}\n`) {
             const colon = line.index_of(":") ?? continue
             headers.push(Header(name: line.slice(0, colon).trim().lower(), value: line.slice(colon + 1, line.len()).trim()))
         }
@@ -176,9 +176,9 @@ pub fn open(r: Request) -> Form ! HttpError {
     const boundary = param(kind, "boundary") ?? fail bad("the form has no boundary")
     Form(
         request: r,
-        delimiter: "\u{D}\n--{boundary}".bytes(),
+        delimiter: `\u{D}\n--{boundary}`.bytes(),
         // The first boundary comes without a line end before it.
-        held: Shared("\u{D}\n".bytes()),
+        held: Shared(`\u{D}\n`.bytes()),
         taken: Shared(false),
         in_part: Shared(false),
         ended: Shared(false),
@@ -192,7 +192,7 @@ fn param(header: String, key: String) -> String? {
         const eq = pair.index_of("=") ?? continue
         if pair.slice(0, eq).trim().lower() == key {
             const value = pair.slice(eq + 1, pair.len()).trim()
-            const quoted = value.len() >= 2 and value.starts_with("\"") and value.ends_with("\"")
+            const quoted = value.len() >= 2 and value.starts_with(`"`) and value.ends_with(`"`)
             return if quoted { value.slice(1, value.len() - 1) } else { value }
         }
     }
@@ -200,5 +200,5 @@ fn param(header: String, key: String) -> String? {
 }
 
 fn bad(reason: String) -> HttpError {
-    HttpError.BadMessage(reason: "form: {reason}")
+    HttpError.BadMessage(reason: `form: {reason}`)
 }

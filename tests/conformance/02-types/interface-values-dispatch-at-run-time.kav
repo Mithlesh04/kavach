@@ -16,7 +16,7 @@ type User: Describe {
     name: String
 
     fn describe(self) -> String {
-        "User {self.name}"
+        `User {self.name}`
     }
 }
 
@@ -25,7 +25,7 @@ type Rect: Describe {
     height: Int
 
     fn describe(self) -> String {
-        "Rect {self.width}x{self.height}"
+        `Rect {self.width}x{self.height}`
     }
 }
 

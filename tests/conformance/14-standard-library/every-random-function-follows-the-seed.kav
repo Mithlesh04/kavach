@@ -8,7 +8,7 @@ use std.random
 fn draw(seed: Int) -> String uses Random {
     random.seeded(seed) {
         const items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-        "{random.float()} {random.bool()} {random.pick(items)} {random.shuffle(items)} {random.bytes(16)}"
+        `{random.float()} {random.bool()} {random.pick(items)} {random.shuffle(items)} {random.bytes(16)}`
     }
 }
 

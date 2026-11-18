@@ -15,7 +15,7 @@ pub(out) fn fib(n: Int) -> Int uses Console {
     for i in 2..=n {
         xs.push(xs[i - 1] + xs[i - 2])
     }
-    print(\"fib({n}) from Kavach\")
+    print(`fib({n}) from Kavach`)
     xs[n]
 }
 
@@ -24,7 +24,7 @@ pub(out) fn is_even(n: Int32) -> Bool {
 }
 
 pub(out) fn greet(name: String) -> String {
-    \"hello {name}, {name.len()} letters\"
+    `hello {name}, {name.len()} letters`
 }
 
 pub type AgeError = Negative | TooOld(age: Int)
@@ -41,7 +41,7 @@ pub(out) fn check_age(age: Int) -> Int ! AgeError {
 
 pub(out) fn label(age: Int) -> String ! AgeError {
     const a = try check_age(age)
-    \"age {a}\"
+    `age {a}`
 }
 
 pub(out) fn total(xs: [Int]) -> Int {

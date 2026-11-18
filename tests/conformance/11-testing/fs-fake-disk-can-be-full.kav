@@ -6,7 +6,7 @@ use std.fs
 
 // Assumes every save works: a full disk makes it panic.
 fn save(name: String) -> Int uses Fs {
-    fs.write_text("notes/{name}.txt", name) catch _ => {
+    fs.write_text(`notes/{name}.txt`, name) catch _ => {
         panic("lost the note")
     }
     1

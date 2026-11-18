@@ -10,7 +10,7 @@ A condition written with `=` (`if x = 4`) is a compile error that says to write 
 if stock == 0 {
     print("Sold out")
 } else if stock < 5 {
-    print("Only {stock} left")
+    print(`Only {stock} left`)
 } else {
     print("In stock")
 }
@@ -36,9 +36,9 @@ if let user = find_user(id) {
 
 ```kavach
 const text = match shape {
-    Shape.Circle(radius) => "circle of radius {radius}"
-    Shape.Rect(width, height) if width == height => "square of side {width}"
-    Shape.Rect(width, height) => "{width} by {height} rectangle"
+    Shape.Circle(radius) => `circle of radius {radius}`
+    Shape.Rect(width, height) if width == height => `square of side {width}`
+    Shape.Rect(width, height) => `{width} by {height} rectangle`
 }
 ```
 
@@ -95,11 +95,11 @@ for i in 0..10 {
 }
 
 for (name, age) in ages {      // in insertion order (2.2)
-    print("{name} is {age}")
+    print(`{name} is {age}`)
 }
 
 for (index, name) in names.enumerate() {
-    print("{index}: {name}")
+    print(`{index}: {name}`)
 }
 ```
 

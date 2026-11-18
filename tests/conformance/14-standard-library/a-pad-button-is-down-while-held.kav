@@ -7,6 +7,6 @@ use std.input
 
 fn main() {
     const pad = Pad(id: 1, name: "Pad", buttons: ["South", "LeftTrigger"], left: (x: 0.0, y: 0.0), right: (x: 0.0, y: 0.0), left_trigger: 0.75, right_trigger: 0.0)
-    print("{pad.is_down("South")} {pad.is_down("East")}")
-    print("{pad.is_down("LeftTrigger")} {pad.left_trigger}")
+    print(`{pad.is_down("South")} {pad.is_down("East")}`)
+    print(`{pad.is_down("LeftTrigger")} {pad.left_trigger}`)
 }

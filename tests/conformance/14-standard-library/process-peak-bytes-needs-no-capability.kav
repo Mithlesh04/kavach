@@ -5,7 +5,7 @@
 use std.process
 
 pub fn costs() -> String {
-    "{process.peak_bytes() > 0} {process.cpu_ms() >= 0}"
+    `{process.peak_bytes() > 0} {process.cpu_ms() >= 0}`
 }
 
 fn main() {

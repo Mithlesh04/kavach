@@ -6,6 +6,9 @@ use crate::{Block, Expr, Ident, Path, Span, Stmt, TypeExpr};
 #[derive(Clone, Debug, PartialEq)]
 pub struct File {
     pub items: Vec<Item>,
+    /// Where each untagged string in quotes starts, in order: the resolver
+    /// warns when one looks like it wanted a template (spec 1.7).
+    pub plain_strings: Vec<u32>,
 }
 
 #[derive(Clone, Debug, PartialEq)]

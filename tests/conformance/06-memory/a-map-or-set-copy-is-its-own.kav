@@ -8,12 +8,12 @@ fn main() {
     let ages = {"asha": 31}
     let more = ages
     more["ravi"] = 27
-    print("{ages.len()} {more.len()}")
+    print(`{ages.len()} {more.len()}`)
     let changed = ages
     changed["asha"] = 32
-    print("{ages["asha"] ?? 0} {changed["asha"] ?? 0}")
+    print(`{ages["asha"] ?? 0} {changed["asha"] ?? 0}`)
     let seen: Set<Int> = Set.capacity(4, [7])
     let fewer = seen
     fewer.remove(7)
-    print("{seen.len()} {fewer.len()}")
+    print(`{seen.len()} {fewer.len()}`)
 }

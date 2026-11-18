@@ -15,7 +15,7 @@ fn why(e: NetError) -> String {
 
 fn quiet(sock: UdpSocket) -> String ! NetError uses Net {
     const d = try sock.receive().timeout(50.ms)
-    "got {d.data.len()} bytes"
+    `got {d.data.len()} bytes`
 }
 
 fn lonely(listener: Listener) -> String ! NetError uses Net {
@@ -32,10 +32,10 @@ fn answer(sock: UdpSocket) ! NetError uses Net {
 fn main() ! Error {
     const sock = try net.bind("127.0.0.1:0")
     const received = quiet(sock) catch e => why(e)
-    print("receive: {received}")
+    print(`receive: {received}`)
     const listener = try net.listen("127.0.0.1:0")
     const accepted = lonely(listener) catch e => why(e)
-    print("accept: {accepted}")
+    print(`accept: {accepted}`)
     const task = spawn answer(sock)
     const client = try net.bind("127.0.0.1:0")
     try client.send("ping".bytes(), sock.address())

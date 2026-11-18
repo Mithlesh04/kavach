@@ -15,11 +15,11 @@ fn create(o: Order) -> String ! ApiError {
     if o.qty > 5 {
         fail ApiError.OutOfStock(item: o.item)
     }
-    "made {o.qty} {o.item}"
+    `made {o.qty} {o.item}`
 }
 
 fn always(o: Order) -> String {
-    "made {o.qty} {o.item}"
+    `made {o.qty} {o.item}`
 }
 
 fn route<P, R, E>(input: P, handler: fn(P) -> R ! E) -> R ! E {
@@ -29,8 +29,8 @@ fn route<P, R, E>(input: P, handler: fn(P) -> R ! E) -> R ! E {
 fn main() {
     print(route(Order(item: "pen", qty: 2), create) catch _ => "failed")
     const stocked = route(Order(item: "pen", qty: 9), create) catch e => match e {
-        ApiError.OutOfStock(item) => "out of {item}",
-        ApiError.Bad(reason) => "bad: {reason}",
+        ApiError.OutOfStock(item) => `out of {item}`,
+        ApiError.Bad(reason) => `bad: {reason}`,
     }
     print(stocked)
     print(route(Order(item: "cup", qty: 1), always))

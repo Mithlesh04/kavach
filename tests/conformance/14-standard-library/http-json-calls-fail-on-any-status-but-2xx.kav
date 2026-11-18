@@ -21,17 +21,17 @@ fn statuses(r: Request) -> Response {
 fn main() ! Error {
     const listener = try net.listen("127.0.0.1:0")
     const _server = spawn http.serve(listener, statuses)
-    const base = "http://{listener.address()}"
+    const base = `http://{listener.address()}`
     for status in [200, 201, 299, 301, 404, 500] {
-        const n = match http.get_json<Int>("{base}/{status}") {
-            ok(n) => "{n}",
-            err(e) => "{e}",
+        const n = match http.get_json<Int>(`{base}/{status}`) {
+            ok(n) => `{n}`,
+            err(e) => `{e}`,
         }
-        print("{status}: {n}")
+        print(`{status}: {n}`)
     }
-    const posted = match http.post_json<Int>("{base}/503", json.of(1)) {
-        ok(n) => "{n}",
-        err(e) => "{e}",
+    const posted = match http.post_json<Int>(`{base}/503`, json.of(1)) {
+        ok(n) => `{n}`,
+        err(e) => `{e}`,
     }
-    print("post 503: {posted}")
+    print(`post 503: {posted}`)
 }

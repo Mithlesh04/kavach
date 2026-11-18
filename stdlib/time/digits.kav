@@ -9,12 +9,12 @@ pub fn padded(n: Int, width: Int) -> String
     example padded(2026, 4) == "2026"
     example padded(-5, 3) == "-005"
 {
-    const digits = "{n.abs()}"
+    const digits = `{n.abs()}`
     const zeros = "0".repeat((width - digits.len()).max(0))
     if n < 0 {
-        return "-{zeros}{digits}"
+        return `-{zeros}{digits}`
     }
-    "{zeros}{digits}"
+    `{zeros}{digits}`
 }
 
 /// The whole number `text` writes in exactly `width` digits, with no sign
@@ -79,9 +79,9 @@ pub fn offset_text(seconds: Int) -> String
     }
     const size = seconds.abs()
     const sign = if seconds < 0 { "-" } else { "+" }
-    const base = "{sign}{padded(size / 3_600, 2)}:{padded(size / 60 % 60, 2)}"
+    const base = `{sign}{padded(size / 3_600, 2)}:{padded(size / 60 % 60, 2)}`
     if size % 60 == 0 {
         return base
     }
-    "{base}:{padded(size % 60, 2)}"
+    `{base}:{padded(size % 60, 2)}`
 }

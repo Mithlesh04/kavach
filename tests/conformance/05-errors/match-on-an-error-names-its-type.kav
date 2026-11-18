@@ -12,7 +12,7 @@ use std.json
 type InboxError = Denied(path: String) | Full
 
 fn read(p: String) -> String ! Error uses Fs {
-    try fs.read_text(p) context "reading {p}"
+    try fs.read_text(p) context `reading {p}`
 }
 
 fn parse() -> Json ! Error {
@@ -25,11 +25,11 @@ fn inbox() ! Error {
 
 fn describe(e: Error) -> String {
     match e {
-        FsError.NotFound(path) => "missing {path}",
-        FsError.Denied(path) => "fs denied {path}",
-        JsonError.Syntax(line, column: _, message: _) => "line {line}: broken",
+        FsError.NotFound(path) => `missing {path}`,
+        FsError.Denied(path) => `fs denied {path}`,
+        JsonError.Syntax(line, column: _, message: _) => `line {line}: broken`,
         InboxError.Denied(path: _) => "inbox denied",
-        _ => "other: {e}",
+        _ => `other: {e}`,
     }
 }
 
@@ -43,7 +43,7 @@ fn main() uses Fs {
     print(describe(Error("disk full")))
     print(match read("gone.txt") {
         ok(text) => text,
-        err(FsError.NotFound(path)) => "err arm: missing {path}",
+        err(FsError.NotFound(path)) => `err arm: missing {path}`,
         err(_) => "other",
     })
 }

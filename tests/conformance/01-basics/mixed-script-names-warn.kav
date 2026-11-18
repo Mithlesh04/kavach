@@ -6,5 +6,5 @@
 fn main() {
     const pаth = 3                  // warning: `pаth` mixes Latin and Cyrillic letters
     const नाम = "Asha"
-    print("{pаth} {नाम}")
+    print(`{pаth} {नाम}`)
 }

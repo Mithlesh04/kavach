@@ -13,6 +13,6 @@ fn main() {
             print(e)
             continue
         }
-        print("accepted {bad}")
+        print(`accepted {bad}`)
     }
 }

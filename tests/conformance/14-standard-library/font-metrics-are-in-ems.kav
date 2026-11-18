@@ -22,6 +22,6 @@ fn sample() -> Font ! Error {
 
 fn main() ! Error {
     const f = try sample()
-    print("{f.ascent} {f.descent} {f.line_gap}")
+    print(`{f.ascent} {f.descent} {f.line_gap}`)
     print(((f.ascent - f.descent + f.line_gap) * 20.0).near(22.0))
 }

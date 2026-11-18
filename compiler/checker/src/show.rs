@@ -28,7 +28,7 @@ impl Checker<'_> {
             Ty::Error => "?".to_string(),
             Ty::List(t) => format!("[{}]", self.show(&t)),
             Ty::Set(t) => format!("Set<{}>", self.show(&t)),
-            Ty::Map(k, v) => format!("[{}: {}]", self.show(&k), self.show(&v)),
+            Ty::Map(k, v) => format!("{{{}: {}}}", self.show(&k), self.show(&v)),
             Ty::Optional(t) => format!("{}?", self.show(&t)),
             Ty::Range(t) => format!("Range<{}>", self.show(&t)),
             Ty::Tuple(ts) => format!("({})", list(&ts)),

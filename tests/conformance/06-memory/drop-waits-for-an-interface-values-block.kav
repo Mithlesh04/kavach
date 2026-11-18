@@ -16,12 +16,12 @@ type Note: Drop, Named {
     }
 
     fn drop(self) uses Console {
-        print("freed {self.text}")
+        print(`freed {self.text}`)
     }
 }
 
 fn main() {
     const n: Named = Note(text: "boxed")
-    print("named {n.name()}")
+    print(`named {n.name()}`)
     print("end of main")
 }

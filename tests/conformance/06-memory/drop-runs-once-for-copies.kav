@@ -11,7 +11,7 @@ type Guard: Drop {
     name: String
 
     fn drop(self) {
-        print("released {self.name}")
+        print(`released {self.name}`)
     }
 }
 
@@ -24,12 +24,12 @@ fn make() -> Guard {
 fn copies() {
     const a = Guard(name: "x")
     let b = a
-    print("copied {b.name}")
+    print(`copied {b.name}`)
     b.name = "y"
 }
 
 fn main() {
     const m = make()
-    print("got {m.name}")
+    print(`got {m.name}`)
     copies()
 }

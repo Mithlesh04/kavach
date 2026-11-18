@@ -23,7 +23,7 @@ fn main() {
     const s = json.schema<Order>()
     const props = s.get("properties").object() ?? {:}
     print(json.of(props.keys()))
-    print("{props["id"] ?? Json.Null} {props["item"] ?? Json.Null} {props["tags"] ?? Json.Null}")
+    print(`{props["id"] ?? Json.Null} {props["item"] ?? Json.Null} {props["tags"] ?? Json.Null}`)
     print(props["note"] ?? Json.Null)
     print(s.get("required"))
     print(shape<[Bool]>())

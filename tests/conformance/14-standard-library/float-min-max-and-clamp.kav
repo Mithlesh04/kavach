@@ -5,9 +5,9 @@
 // expect output: -128 100
 
 fn main() {
-    print("{2.5.min(-1.0)} {(-0.5).max(0.25)}")
-    print("{7.5.clamp(0.0, 5.0)} {(-3.0).clamp(0.0, 5.0)} {2.5.clamp(0.0, 5.0)}")
+    print(`{2.5.min(-1.0)} {(-0.5).max(0.25)}`)
+    print(`{7.5.clamp(0.0, 5.0)} {(-3.0).clamp(0.0, 5.0)} {2.5.clamp(0.0, 5.0)}`)
     const lo: Int8 = -128
     const hi: Int8 = 100
-    print("{lo.min(hi)} {lo.max(hi)}")
+    print(`{lo.min(hi)} {lo.max(hi)}`)
 }

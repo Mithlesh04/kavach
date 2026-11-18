@@ -5,7 +5,7 @@
 // expect output: 1
 
 fn main() {
-    print("{"aaa".replace("a", "bb")} {"aaaa".replace("aa", "b")}")
-    print("{"नमनम".replace("म", "x")} {"abc".replace("z", "q")} {"a-b-c".replace("-", "")}")
-    print("e\u{301}".replace("\u{301}", "").len())
+    print(`{"aaa".replace("a", "bb")} {"aaaa".replace("aa", "b")}`)
+    print(`{"नमनम".replace("म", "x")} {"abc".replace("z", "q")} {"a-b-c".replace("-", "")}`)
+    print(`e\u{301}`.replace(`\u{301}`, "").len())
 }

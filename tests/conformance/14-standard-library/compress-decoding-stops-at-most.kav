@@ -9,7 +9,7 @@ use std.compress
 /// Why decoding failed.
 fn why(e: CompressError) -> String {
     match e {
-        CompressError.TooLarge(most) => "too large: {most}",
+        CompressError.TooLarge(most) => `too large: {most}`,
         CompressError.Corrupt(_) => "corrupt",
     }
 }

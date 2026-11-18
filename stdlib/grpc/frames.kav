@@ -16,13 +16,13 @@ pub fn status_trailers(code: Int, message: String) -> [Header] {
     if code == 0 {
         return [Header(name: "grpc-status", value: "0")]
     }
-    [Header(name: "grpc-status", value: "{code}"), Header(name: "grpc-message", value: message)]
+    [Header(name: "grpc-status", value: `{code}`), Header(name: "grpc-message", value: message)]
 }
 
 /// Fails with the server's status unless it is OK.
 pub fn check_status(trailers: {String: String}) ! GrpcError {
     const status = trailers.get("grpc-status") ?? fail GrpcError.Protocol(reason: "no grpc-status in the answer")
-    const code = Int(status) catch e => fail GrpcError.Protocol(reason: "grpc-status `{status}`")
+    const code = Int(status) catch e => fail GrpcError.Protocol(reason: `grpc-status \`{status}\``)
     if code != 0 {
         fail GrpcError.Status(code: code, message: trailers.get("grpc-message") ?? "")
     }
@@ -90,6 +90,6 @@ pub fn from_h2(e: H2Error) -> GrpcError {
     match e {
         H2Error.Network(n) => GrpcError.Network(error: n),
         H2Error.Protocol(reason) => GrpcError.Protocol(reason: reason),
-        H2Error.Reset(_, code) => GrpcError.Protocol(reason: "the server reset the stream (code {code})"),
+        H2Error.Reset(_, code) => GrpcError.Protocol(reason: `the server reset the stream (code {code})`),
     }
 }

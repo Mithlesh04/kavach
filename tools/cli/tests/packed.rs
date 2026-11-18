@@ -8,7 +8,7 @@
 use std::path::Path;
 use std::process::{Command, Output};
 
-const PROGRAM: &str = "use std.cli\n\nfn main() {\n    print(\"hello\")\n    for a in cli.args() {\n        print(\"arg {a}\")\n    }\n    if cli.args().len() > 1 {\n        panic(\"asked to stop\")\n    }\n}\n";
+const PROGRAM: &str = "use std.cli\n\nfn main() {\n    print(\"hello\")\n    for a in cli.args() {\n        print(`arg {a}`)\n    }\n    if cli.args().len() > 1 {\n        panic(\"asked to stop\")\n    }\n}\n";
 
 fn kavach(dir: &Path, args: &[&str]) -> Output {
     let out = Command::new(env!("CARGO_BIN_EXE_kavach"))

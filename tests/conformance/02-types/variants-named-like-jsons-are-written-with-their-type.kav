@@ -7,8 +7,8 @@ type Token = Number(value: Int) | Text(value: String)
 
 fn show(t: Token) -> String {
     match t {
-        Token.Number(n) => "token {n}",
-        Token.Text(s) => "token {s}",
+        Token.Number(n) => `token {n}`,
+        Token.Text(s) => `token {s}`,
     }
 }
 

@@ -12,7 +12,7 @@ type Lease: Drop {
 }
 
 fn finish(when: String) uses Console {
-    print("finished {when}")
+    print(`finished {when}`)
 }
 
 fn answer(given: Int?, n: Int) ! String uses Console {
@@ -21,7 +21,7 @@ fn answer(given: Int?, n: Int) ! String uses Console {
         0 => return finish("in a match"),
         _ => {}
     }
-    finish("at the end {got}")
+    finish(`at the end {got}`)
 }
 
 fn main() ! String uses Console {

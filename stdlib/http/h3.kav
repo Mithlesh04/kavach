@@ -289,7 +289,7 @@ fn string(data: Bytes, at: Int, n: Int) -> Text ! H3Error
 /// Entry `index` of QPACK's static table (RFC 9204 appendix A).
 fn static_entry(index: Int) -> Header ! H3Error {
     const table = static_table()
-    table.get(index) ?? fail H3Error.Protocol(reason: "no header at index {index}")
+    table.get(index) ?? fail H3Error.Protocol(reason: `no header at index {index}`)
 }
 
 fn h(name: String, value: String) -> Header {

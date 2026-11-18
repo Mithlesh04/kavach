@@ -1,0 +1,30 @@
+// Rule: a dict holds one type of value; functions of different types go in a record, each field with its own type, or in a dict of a union of their shapes.
+// Spec: 3.4
+// expect output: 5
+// expect output: Hello Asha
+// expect output: add: 14
+// expect output: greet: Hello Ravi
+
+type Ops {
+    add: fn(Int, Int) -> Int
+    greet: fn(String) -> String
+}
+
+type Op = Binary(f: fn(Int, Int) -> Int) | Unary(f: fn(String) -> String)
+
+fn main() {
+    const ops = Ops(add: (a, b) => a + b, greet: name => "Hello " + name)
+    print(ops.add(2, 3))
+    print(ops.greet("Asha"))
+    const table: {String: Op} = {
+        "add": Op.Binary(f: (a, b) => a + b),
+        "greet": Op.Unary(f: name => "Hello " + name),
+    }
+    for (name, op) in table {
+        const shown = match op {
+            Op.Binary(f) => `{f(10, 4)}`,
+            Op.Unary(f) => f("Ravi"),
+        }
+        print(`{name}: {shown}`)
+    }
+}

@@ -8,9 +8,9 @@ use std.json
 fn object_of(fields: Int) -> String {
     let parts: [String] = []
     for i in 0..fields {
-        parts.push("\"k{i}\": {i}")
+        parts.push(`"k{i}": {i}`)
     }
-    "\{" + parts.join(", ") + "}"
+    "{" + parts.join(", ") + "}"
 }
 
 fn main() {

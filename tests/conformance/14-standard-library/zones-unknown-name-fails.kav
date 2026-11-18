@@ -7,7 +7,7 @@ use std.time
 
 fn main() {
     const z = time.zone("Mars/Olympus") catch e => {
-        print("{e}")
+        print(`{e}`)
         print(time.zone_offset("Mars/Olympus", 0))
         return
     }

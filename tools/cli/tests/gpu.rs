@@ -27,9 +27,9 @@ fn main() {
     }
     const k: Float32 = 0.5
     const ys = xs.map(x => step(x, k))
-    print(\"{ys[0]} {ys[999]} {ys.len()}\")
+    print(`{ys[0]} {ys[999]} {ys.len()}`)
     const ms = ns.map(n => mix(n, 3))
-    print(\"{ms[49]} {ms[10]}\")
+    print(`{ms[49]} {ms[10]}`)
 }
 ";
 
@@ -62,9 +62,9 @@ fn main() {
         a.push(Int32(i))
     }
     const moved = ps.map(p => step(p.x, p.v, p.alive))
-    print(\"{moved[0]} {moved[1]} {moved[999]}\")
+    print(`{moved[0]} {moved[1]} {moved[999]}`)
     const m = collections.zip(a, a.reverse()).map(t => madd(t.0, t.1))
-    print(\"{m[0]} {m[999]} {m.len()}\")
+    print(`{m[0]} {m[999]} {m.len()}`)
 }
 ";
 
@@ -147,7 +147,7 @@ fn main() {
     }
     let w = v
     w[1] = -1
-    print(\"{w.map(twice)} {v.map(twice)}\")
+    print(`{w.map(twice)} {v.map(twice)}`)
 }
 ";
 
@@ -178,7 +178,7 @@ fn main() {
     for i in 0..xs.len() {
         sum += Int(xs[i])
     }
-    print(\"{sum} {total(xs)} {xs[299]}\")
+    print(`{sum} {total(xs)} {xs[299]}`)
     const a = xs.map(step)
     const b = a.map(step)
     const c = b.map(step)
@@ -191,7 +191,7 @@ fn main() {
     print(first(1))
     let sorted = f
     sorted[0] = 0
-    print(\"{sorted[0]} {f[0] == sorted[0]}\")
+    print(`{sorted[0]} {f[0] == sorted[0]}`)
 }
 ";
 
@@ -214,11 +214,11 @@ fn main() {
     }
     xs = xs.map(step)
     us = us.map(half)
-    print(\"{xs.sum(x => x)} {xs.sum(x => step(x))} {xs.min()} {xs.max()}\")
-    print(\"{us.sum(u => u)} {us.min()} {us.max()}\")
+    print(`{xs.sum(x => x)} {xs.sum(x => step(x))} {xs.min()} {xs.max()}`)
+    print(`{us.sum(u => u)} {us.min()} {us.max()}`)
     let empty: [Int32] = []
     empty = empty.map(step)
-    print(\"{empty.sum(x => x)} {empty.min()}\")
+    print(`{empty.sum(x => x)} {empty.min()}`)
 }
 ";
 
@@ -251,7 +251,7 @@ fn main() {
     }
     xs = xs.map(step)
     let ys = xs.filter(x => x > 400)
-    print(\"{ys.len()} {ys[0]} {ys[ys.len() - 1]} {ys.take(4)}\")
+    print(`{ys.len()} {ys[0]} {ys[ys.len() - 1]} {ys.take(4)}`)
     ys = ys.map(step)
     print(ys.sum(y => y))
     let nothing = xs.filter(x => x > 1000)

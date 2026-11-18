@@ -6,18 +6,18 @@
 use std.json
 
 fn main() {
-    const bad = ["[NaN]", "[Infinity]", "[-Infinity]", "[0x1F]", "['a']", "\{a: 1}", "[+1]", "[.5]"]
+    const bad = ["[NaN]", "[Infinity]", "[-Infinity]", "[0x1F]", "['a']", "{a: 1}", "[+1]", "[.5]"]
     let refused = 0
     for text in bad {
         match json.parse(text, comments: true) {
-            ok(_) => print("accepted: {text}"),
+            ok(_) => print(`accepted: {text}`),
             err(e) => match e {
                 JsonError.Syntax(_, _, _) => {
                     refused += 1
                 }
-                _ => print("other error for {text}: {e}"),
+                _ => print(`other error for {text}: {e}`),
             },
         }
     }
-    print("{refused} of {bad.len()} refused as syntax")
+    print(`{refused} of {bad.len()} refused as syntax`)
 }

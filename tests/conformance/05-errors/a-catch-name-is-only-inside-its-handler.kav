@@ -13,8 +13,8 @@ fn check(x: Int) -> Int ! Oops {
 
 fn main() {
     const n = check(3) catch e => {
-        print("failed: {e}")
+        print(`failed: {e}`)
         0
     }
-    print("{n} {e}")                // error: e is not declared here
+    print(`{n} {e}`)                // error: e is not declared here
 }

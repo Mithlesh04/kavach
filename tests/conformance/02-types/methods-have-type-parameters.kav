@@ -21,5 +21,5 @@ fn main() {
     print(p.pick([10, 20, 30]))
     print(p.pick(["x", "y"]))
     const (n, s) = p.both(1, "one")
-    print("{n} {s}")
+    print(`{n} {s}`)
 }

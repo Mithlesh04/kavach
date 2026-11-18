@@ -12,7 +12,7 @@ type Point: Display {
     y: Int
 
     fn display(self) -> String {
-        "({self.x}, {self.y})"
+        `({self.x}, {self.y})`
     }
 }
 
@@ -29,7 +29,7 @@ fn main() {
     const a = Point(x: 1, y: 2)
     const b = Point(x: 3, y: 4)
     print(a)
-    print("at {a}")
+    print(`at {a}`)
     print(String(b))
     print([a, b])
     print(Segment(from: a, to: b))

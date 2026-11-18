@@ -5,10 +5,10 @@
 // expect output: true true
 
 fn main() {
-    const accented = "e\u{301}"
+    const accented = `e\u{301}`
     const cs = accented.chars()
-    print("{cs.len()} {Int(cs[1])}")
+    print(`{cs.len()} {Int(cs[1])}`)
     const family = "👨‍👩‍👧"
-    print("{family.len()} {family.chars().len()}")
-    print("{cs.join("") == accented} {family.chars().join("") == family}")
+    print(`{family.len()} {family.chars().len()}`)
+    print(`{cs.join("") == accented} {family.chars().join("") == family}`)
 }

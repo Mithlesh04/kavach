@@ -26,7 +26,7 @@ fn show(bytes: Bytes) {
         print(e)
         return
     }
-    print("{s.rate} {s.channels} {s.frames}")
+    print(`{s.rate} {s.channels} {s.frames}`)
 }
 
 fn main() {

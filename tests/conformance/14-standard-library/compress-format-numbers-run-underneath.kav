@@ -12,7 +12,7 @@ fn main() ! Error {
         const packed = compress.encode_bytes(data, n, [6, 6, 3, 5, 0][n])
         const back = try compress.decode(packed, formats[n])
         const again = try compress.decode_bytes(packed, n, 64_000_000)
-        same.push("{back == data and again == data}")
+        same.push(`{back == data and again == data}`)
     }
     print(same.join(" "))
 }

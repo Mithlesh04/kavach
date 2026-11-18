@@ -22,7 +22,7 @@ type FakePayments: Payments {
         if order_id == 3 {
             fail PaymentError.Declined
         }
-        Receipt(id: \"r{order_id}\")
+        Receipt(id: `r{order_id}`)
     }
 }
 
@@ -54,10 +54,10 @@ agent Bot {
 
 fn show(bot: Bot, order_id: Int, amount: Decimal) {
     const r = bot.refund(order_id, amount) catch e => {
-        print(\"{order_id}: {e}\")
+        print(`{order_id}: {e}`)
         return
     }
-    print(\"{order_id}: {r.id}\")
+    print(`{order_id}: {r.id}`)
 }
 
 fn main() {

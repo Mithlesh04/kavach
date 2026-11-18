@@ -8,7 +8,7 @@ use std.audio
 fn main() {
     const mono = audio.sound([0.25, -0.25], 8000, 1)
     const stereo = audio.sound([0.25, -0.25], 8000, 2)
-    print("{mono.channels} {stereo.channels}")
+    print(`{mono.channels} {stereo.channels}`)
     const three = [3][0]
     print(audio.sound([0.0, 0.0, 0.0], 8000, three).channels)
 }

@@ -51,7 +51,7 @@ fn level_name(level: Int) -> String
 /// console unless it says otherwise), unless below the lowest level for
 /// the event's type (the runtime knows it from `event`).
 fn write<E: LogEvent>(level: Int, event: E) {
-    log_write(level, "{level_name(level)} {event}", event)
+    log_write(level, `{level_name(level)} {event}`, event)
 }
 
 /// Adds `n` to the counter `name`, sent as an OpenTelemetry sum; each
@@ -74,7 +74,7 @@ pub fn histogram(name: String, value: Float, attributes: {String: String} = {:},
 {
     let id = series(name, attributes)
     if not bounds.is_empty() {
-        id += "\u{2}" + bounds.map(b => String(b)).join(",")
+        id += `\u{2}` + bounds.map(b => String(b)).join(",")
     }
     log.metric_id(2, id, value)
 }
@@ -83,11 +83,11 @@ pub fn histogram(name: String, value: Float, attributes: {String: String} = {:},
 /// and value, apart by a character no name holds.
 fn series(name: String, attributes: {String: String}) -> String
     example series("hits", {:}) == "hits"
-    example series("hits", {"route": "/a"}) == "hits\u{1}route\u{1}/a"
+    example series("hits", {"route": "/a"}) == `hits\u{1}route\u{1}/a`
 {
     let out = name
     for (key, value) in attributes {
-        out += "\u{1}{key}\u{1}{value}"
+        out += `\u{1}{key}\u{1}{value}`
     }
     out
 }

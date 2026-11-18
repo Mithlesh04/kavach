@@ -7,7 +7,7 @@ use store
 use store.{Level}
 
 fn describe(c: store.Client) -> String {
-    "connected to {c.name}"
+    `connected to {c.name}`
 }
 
 fn main() {

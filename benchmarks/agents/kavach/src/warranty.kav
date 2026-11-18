@@ -60,7 +60,7 @@ type Archive: Records {
 
 type Workshop: Service {
     fn replace(self, order: String, price: Int) -> Done ! ServiceError {
-        Done(id: "x{order}")
+        Done(id: `x{order}`)
     }
 }
 
@@ -78,20 +78,20 @@ agent Desk {
         const o = try Records.order(t.order)
         const months = try Records.warranty_months(o.product)
         const plan = try ask<Plan>(
-            "{policy()}\n\nOrder {t.order}: {o.product}, {o.price} USD, status {o.status}, " +
-            "delivered {o.days} days ago, warranty {months} months.\nThe customer writes: {t.message}"
+            `{policy()}\n\nOrder {t.order}: {o.product}, {o.price} USD, status {o.status}, ` +
+            `delivered {o.days} days ago, warranty {months} months.\nThe customer writes: {t.message}`
         )
         match plan.action {
             Action.Replace => {
                 const _d = Service.replace(t.order, o.price) catch _ => {
-                    return "{t.id} escalate"
+                    return `{t.id} escalate`
                 }
-                "{t.id} replace"
+                `{t.id} replace`
             },
-            Action.Refund => "{t.id} refund",
-            Action.Wait => "{t.id} wait",
-            Action.Decline => "{t.id} decline",
-            Action.Escalate => "{t.id} escalate",
+            Action.Refund => `{t.id} refund`,
+            Action.Wait => `{t.id} wait`,
+            Action.Decline => `{t.id} decline`,
+            Action.Escalate => `{t.id} escalate`,
         }
     }
 }
@@ -102,7 +102,7 @@ pub fn run(path: String, db_path: String, together: Bool) ! Error uses Ai, Conso
     const desk = Desk.start(Records: Archive(db: db), Service: Workshop())
     if not together {
         for t in tickets {
-            print(desk.ticket(t) catch e => "error {e}")
+            print(desk.ticket(t) catch e => `error {e}`)
         }
         return
     }
@@ -111,6 +111,6 @@ pub fn run(path: String, db_path: String, together: Bool) ! Error uses Ai, Conso
         asked.push(spawn desk.ticket(t))
     }
     for a in asked {
-        print(a.wait() catch e => "error {e}")
+        print(a.wait() catch e => `error {e}`)
     }
 }

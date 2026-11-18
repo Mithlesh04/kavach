@@ -15,7 +15,7 @@ fn header() -> String uses System {
     const os = system.os()
     const cpu = system.cpu()
     const memory = system.memory()
-    "{os.name} {os.version} on {system.arch()}, {cpu.model}, {memory.total / 1_000_000_000} GB"
+    `{os.name} {os.version} on {system.arch()}, {cpu.model}, {memory.total / 1_000_000_000} GB`
 }
 ```
 
@@ -41,13 +41,13 @@ Each part an engineer may need, read without admin rights where the system allow
 ```kavach
 fn report() uses System {
     for v in system.volumes() {
-        print("{v.path}: {v.available / 1_000_000_000} of {v.total / 1_000_000_000} GB free{if v.removable { ", removable" } else { "" }}")
+        print(`{v.path}: {v.available / 1_000_000_000} of {v.total / 1_000_000_000} GB free{if v.removable { ", removable" } else { "" }}`)
     }
     if let b = system.battery() {
-        print("battery {b.percent}%, {if b.charging { "charging" } else { "on battery" }}")
+        print(`battery {b.percent}%, {if b.charging { "charging" } else { "on battery" }}`)
     }
     for d in system.devices().filter(d => d.kind == "bluetooth") {
-        print("{d.name} ({d.maker})")
+        print(`{d.name} ({d.maker})`)
     }
 }
 ```
@@ -79,10 +79,10 @@ The programs running, the network ports they hold, and the system's users, for t
 ```kavach
 fn free_8080() ! SystemError uses System.critical.read, System.critical.write, Console {
     for p in system.ports().filter(p => p.port == 8080 and p.state == "listen") {
-        print("8080 is held by {p.program} ({p.pid})")
+        print(`8080 is held by {p.program} ({p.pid})`)
     }
     const ended = try system.free_port(8080)
-    print("ended {ended.len()} programs")
+    print(`ended {ended.len()} programs`)
 }
 ```
 

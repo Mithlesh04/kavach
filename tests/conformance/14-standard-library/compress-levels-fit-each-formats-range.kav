@@ -13,6 +13,6 @@ fn main() {
     const edges = [(Format.Gzip, 0, 9), (Format.Deflate, 0, 9), (Format.Zstd, 1, 22), (Format.Brotli, 0, 11), (Format.Lz4, 0, 0)]
     for (format, low, high) in edges {
         const fits = [compress.level_fits(format, low - 1), compress.level_fits(format, low), compress.level_fits(format, high), compress.level_fits(format, high + 1), compress.level_fits(format, none)]
-        print("{format.name()} {fits[0]} {fits[1]} {fits[2]} {fits[3]} {fits[4]}")
+        print(`{format.name()} {fits[0]} {fits[1]} {fits[2]} {fits[3]} {fits[4]}`)
     }
 }

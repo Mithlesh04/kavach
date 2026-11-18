@@ -1,0 +1,8 @@
+// Rule: A key in brackets is the value of the one expression inside, so a list as a key goes in a second pair: `{[["red", "big"]]: 3}`; `{["red", "big"]: 3}` is a compile error that says so.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    const sizes = {["red", "big"]: 3}      // error: a list as a key goes in a second pair of brackets
+    print(sizes)
+}

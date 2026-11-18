@@ -10,7 +10,7 @@ fn main() ! Error uses Fs, Window {
     const saves = try app.data_dir("Skyfall")
     try app.crash_reports(saves + "/crashes")
     const file = app.open_file("Load a level") ?? ""
-    if not file.is_empty() and app.confirm("Load", "Load {file}?") {
+    if not file.is_empty() and app.confirm("Load", `Load {file}?`) {
         try fs.copy(file, saves + "/level.txt")
     }
 }

@@ -47,7 +47,7 @@ fn main() {
     unsafe {
         const bytes: Ptr<UInt8> = alloc(4)
         const _ = memset(bytes, 7, 3)
-        print(\"{bytes.read(0)} {bytes.read(2)} {bytes.read(3)}\")
+        print(`{bytes.read(0)} {bytes.read(2)} {bytes.read(3)}`)
         free(bytes)
         const xs: Ptr<Int> = alloc(3)
         xs.write(1, -5)
@@ -60,7 +60,7 @@ fn main() {
         free(fs)
         const bs: Ptr<Bool> = alloc(2)
         bs.write(1, true)
-        print(\"{bs.read(0)} {bs.read(1)}\")
+        print(`{bs.read(0)} {bs.read(1)}`)
         free(bs)
         const hs: Ptr<Int16> = alloc(2)
         hs.write(1, -300)
@@ -88,7 +88,7 @@ fn main() {
         xs.write(3, 0)
         xs.write(4, 99)
         qsort(xs, 5, 4, by_value)
-        print(\"{xs.read(0)} {xs.read(1)} {xs.read(2)} {xs.read(3)} {xs.read(4)}\")
+        print(`{xs.read(0)} {xs.read(1)} {xs.read(2)} {xs.read(3)} {xs.read(4)}`)
         free(xs)
     }
 }
@@ -131,15 +131,15 @@ fn main() {
         ps.write(1, Point(x: -1, y: 10))
         ps.write(2, Point(x: 3, y: 30))
         qsort(ps, 3, 8, by_x)
-        print(\"{ps.read(0).y} {ps.read(1).y} {ps.read(2).y}\")
+        print(`{ps.read(0).y} {ps.read(1).y} {ps.read(2).y}`)
         free(ps)
         const m: Ptr<Mixed> = alloc(1)
         m.write(0, Mixed(a: 7, b: 1234, c: true, d: -2))
         const bytes: Ptr<UInt8> = alloc(24)
         const _ = memcpy(bytes, m, 24)
-        print(\"{bytes.read(0)} {bytes.read(8)} {bytes.read(9)} {bytes.read(16)} {bytes.read(18)} {bytes.read(19)}\")
+        print(`{bytes.read(0)} {bytes.read(8)} {bytes.read(9)} {bytes.read(16)} {bytes.read(18)} {bytes.read(19)}`)
         const back = m.read(0)
-        print(\"{back.a} {back.b} {back.c} {back.d}\")
+        print(`{back.a} {back.b} {back.c} {back.d}`)
         free(bytes)
         free(m)
         const zero: Ptr<Positive> = alloc(1)
@@ -322,7 +322,7 @@ fn main() {
         const small: Int8 = -3
         const half: Float32 = 0.5
         const n = snprintf(out, 200, \"%d %lld %.3f %s %d %.1f %u\", Int32(42), 9_000_000_000, 2.5, \"hi\", small, half, UInt32(7))
-        print(\"{n}: {out.text() ?? \"\"}\")
+        print(`{n}: {out.text() ?? \"\"}`)
         const _ = snprintf(out, 200, \"%g %g %g %g %g %g %g %g %g %g %d\", 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.5, Int32(11))
         print(out.text() ?? \"\")
         free(out)
@@ -413,9 +413,9 @@ extern c \"m\" {
 fn main() {
     unsafe {
         const a = div(17, 5)
-        print(\"{a.quot} {a.rem}\")
+        print(`{a.quot} {a.rem}`)
         const b = lldiv(9_000_000_000_007, 1000)
-        print(\"{b.quot} {b.rem}\")
+        print(`{b.quot} {b.rem}`)
         print(cabs(Complex(re: 3.0, im: 4.0)))
     }
 }

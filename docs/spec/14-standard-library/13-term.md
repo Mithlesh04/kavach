@@ -79,7 +79,7 @@ connect(token.text)                 // `fn connect(secret token: String)`
 ```kavach
 const name = term.ask("Your name?") ?? "friend"
 const age = term.ask_int("Your age?") ?? 0
-if term.confirm("Delete {count} files?", default: false) {
+if term.confirm(`Delete {count} files?`, default: false) {
     remove_all()
 }
 ```

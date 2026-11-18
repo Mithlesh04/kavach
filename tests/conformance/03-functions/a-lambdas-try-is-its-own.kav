@@ -23,6 +23,6 @@ fn main() {
     const big = tenfold(8) catch e => match e {
         E.Big(n) => -n,
     }
-    print("too big: {-big}")
+    print(`too big: {-big}`)
     print(apply(x => try check(x), 4) catch _ => 0)
 }

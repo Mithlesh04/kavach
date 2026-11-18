@@ -5,6 +5,6 @@
 use std.log
 
 fn main() {
-    log.name_span("GET /orders/\{id}")
-    print("{log.trace_id()} {log.traceparent()}")
+    log.name_span(`GET /orders/\{id}`)
+    print(`{log.trace_id()} {log.traceparent()}`)
 }

@@ -8,6 +8,6 @@ use std.json
 
 fn main() {
     print(json.schema<{String: Float}>())
-    print("{json.schema<UInt8>()} {json.schema<Int16>()} {json.schema<Decimal>()} {json.schema<Bool>()}")
+    print(`{json.schema<UInt8>()} {json.schema<Int16>()} {json.schema<Decimal>()} {json.schema<Bool>()}`)
     print(json.schema<[{String: Int}]>())
 }

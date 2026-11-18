@@ -4,7 +4,7 @@ fn binary(n: Int) -> String {
     }
     let (m, out) = (n, "")
     while m > 0 {
-        out = "{m % 2}" + out
+        out = `{m % 2}` + out
         m /= 2
     }
     out

@@ -5,5 +5,5 @@
 fn main() {
     const a = BigInt(-5)
     const b = BigInt(3)
-    print("{a.abs()} {a.min(b)} {a.max(b)} {BigInt(9).clamp(b, BigInt(7))} {a.clamp(BigInt(0), b)}")
+    print(`{a.abs()} {a.min(b)} {a.max(b)} {BigInt(9).clamp(b, BigInt(7))} {a.clamp(BigInt(0), b)}`)
 }

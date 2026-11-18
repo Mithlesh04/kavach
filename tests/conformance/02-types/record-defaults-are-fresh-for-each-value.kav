@@ -23,7 +23,7 @@ fn main() {
     a.items.push(1)
     a.tags["x"] = 1
     const b = Bag(name: "b")
-    print("{b.items.len()} {b.tags.len()}")
+    print(`{b.items.len()} {b.tags.len()}`)
     const c = a with { name: "c" }
     let d = c
     d.items.push(2)

@@ -18,5 +18,5 @@ fn main() {
     const t = spawn cores bump(counter)
     t.wait() catch _ => {}
     counter.update(n => n + 1)
-    print("counter {counter.get()}")
+    print(`counter {counter.get()}`)
 }

@@ -28,7 +28,7 @@ pub capability Payments {
 
 type Books: Payments {
     fn refund(self, order_id: Int, amount: Int) -> Receipt ! PaymentError {
-        Receipt(id: "r{order_id}")
+        Receipt(id: `r{order_id}`)
     }
 }
 
@@ -46,18 +46,18 @@ agent RefundDesk {
 
     on request(o: Order) -> String ! Error {
         const d = try ask<Decision>(
-            "{policy()}\n\nOrder {o.id}: {o.amount} USD, delivered {o.days} days ago. " +
-            "The customer's note: {o.note}\nWhat should we do?"
+            `{policy()}\n\nOrder {o.id}: {o.amount} USD, delivered {o.days} days ago. ` +
+            `The customer's note: {o.note}\nWhat should we do?`
         )
         match d.action {
             Action.Refund => {
                 const _r = Payments.refund(o.id, o.amount) catch _ => {
-                    return "{o.id} escalate"
+                    return `{o.id} escalate`
                 }
-                "{o.id} refund"
+                `{o.id} refund`
             },
-            Action.Decline => "{o.id} decline",
-            Action.Escalate => "{o.id} escalate",
+            Action.Decline => `{o.id} decline`,
+            Action.Escalate => `{o.id} escalate`,
         }
     }
 }
@@ -67,7 +67,7 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Payments.
     const desk = RefundDesk.start(Payments: Books())
     if not together {
         for o in orders {
-            print(desk.request(o) catch e => "error {e}")
+            print(desk.request(o) catch e => `error {e}`)
         }
         return
     }
@@ -76,6 +76,6 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Payments.
         asked.push(spawn desk.request(o))
     }
     for a in asked {
-        print(a.wait() catch e => "error {e}")
+        print(a.wait() catch e => `error {e}`)
     }
 }

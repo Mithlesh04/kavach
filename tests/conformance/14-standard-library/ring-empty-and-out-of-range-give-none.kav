@@ -5,7 +5,7 @@
 
 fn main() {
     let r: Ring<Int> = Ring.capacity(2)
-    print("{r.is_empty()} {r.first()} {r.last()} {r.get(0)} {r.contains(1)} {r.to_list()}")
+    print(`{r.is_empty()} {r.first()} {r.last()} {r.get(0)} {r.contains(1)} {r.to_list()}`)
     r.push(5)
-    print("{r.is_empty()} {r.get(0) ?? -1} {r.get(1)} {r.get(-1)} {r.len()}")
+    print(`{r.is_empty()} {r.get(0) ?? -1} {r.get(1)} {r.get(-1)} {r.len()}`)
 }

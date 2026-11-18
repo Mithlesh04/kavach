@@ -10,17 +10,17 @@
 fn flip(b: Bool) -> Bool { not b }
 fn same(c: Char) -> Char { c }
 fn next(c: Char) -> Char { Char(Int(c) + 1) }
-fn greet(name: String, greeting: String) -> String { "{greeting}, {name}!" }
+fn greet(name: String, greeting: String) -> String { `{greeting}, {name}!` }
 fn echo(s: String) -> String { s }
 fn keep(b: Bytes) -> Bytes { b }
 fn last(b: Bytes) -> UInt8 { b[1] }
 
 fn main() {
-    print("{flip(true)} {flip(false)}")
-    print("{same('क')} {same('😀')} {next('a')}")
+    print(`{flip(true)} {flip(false)}`)
+    print(`{same('क')} {same('😀')} {next('a')}`)
     print(greet("Asha", "नमस्ते"))
     print(echo(""))
     const raw = Bytes([0, 255, 127, 128])
     print(keep(raw))
-    print("{keep(raw).len()} {last(raw)}")
+    print(`{keep(raw).len()} {last(raw)}`)
 }

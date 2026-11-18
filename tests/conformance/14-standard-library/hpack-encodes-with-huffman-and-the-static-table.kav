@@ -17,9 +17,9 @@ fn main() ! Error {
         Header(name: ":authority", value: "www.example.com"),
     ]
     const block = hpack.encode(first)
-    print(block.to_list().map(b => "{b}").join(" "))
+    print(block.to_list().map(b => `{b}`).join(" "))
     const back = try hpack.decode(block, hpack.new_table(4096))
-    print("{back.headers[3].name}: {back.headers[3].value}")
+    print(`{back.headers[3].name}: {back.headers[3].value}`)
     const many = [
         Header(name: "Content-Type", value: "application/json; charset=utf-8"),
         Header(name: "x-empty", value: ""),
@@ -35,6 +35,6 @@ fn main() ! Error {
     for i in 0..many.len() {
         same = same and again.headers[i].name == many[i].name.lower() and again.headers[i].value == many[i].value
     }
-    print("{again.headers.len()} headers back, the same: {same}")
-    print("dynamic table: {again.table.entries.len()} entries")
+    print(`{again.headers.len()} headers back, the same: {same}`)
+    print(`dynamic table: {again.table.entries.len()} entries`)
 }

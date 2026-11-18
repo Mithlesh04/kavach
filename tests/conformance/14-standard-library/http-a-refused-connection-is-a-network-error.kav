@@ -22,22 +22,22 @@ fn main() ! Error {
     const listener = try net.listen("127.0.0.1:0")
     const address = listener.address()
     listener.close()
-    const got = match http.get("http://{address}/") {
-        ok(r) => "status {r.status}",
+    const got = match http.get(`http://{address}/`) {
+        ok(r) => `status {r.status}`,
         err(e) => why(e, address),
     }
-    print("get: {got}")
-    const posted = match http.post_json<Int>("http://{address}/n", json.of(1)) {
-        ok(n) => "{n}",
+    print(`get: {got}`)
+    const posted = match http.post_json<Int>(`http://{address}/n`, json.of(1)) {
+        ok(n) => `{n}`,
         err(e) => why(e, address),
     }
-    print("post_json: {posted}")
-    const opened = match http.open("http://{address}") {
+    print(`post_json: {posted}`)
+    const opened = match http.open(`http://{address}`) {
         ok(s) => {
             s.close()
             "open"
         }
         err(e) => why(e, address),
     }
-    print("open: {opened}")
+    print(`open: {opened}`)
 }

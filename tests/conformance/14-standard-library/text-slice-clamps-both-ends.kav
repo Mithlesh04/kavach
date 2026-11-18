@@ -4,6 +4,6 @@
 // expect output: [a👍] [e]
 
 fn main() {
-    print("[{"abc".slice(-2, 2)}] [{"abc".slice(2, 1)}] [{"".slice(0, 5)}]")
-    print("[{"👍a👍".slice(1, 3)}] [{"e\u{301}x".slice(0, 1)}]")
+    print(`[{"abc".slice(-2, 2)}] [{"abc".slice(2, 1)}] [{"".slice(0, 5)}]`)
+    print(`[{"👍a👍".slice(1, 3)}] [{`e\u{301}x`.slice(0, 1)}]`)
 }

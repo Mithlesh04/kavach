@@ -25,15 +25,15 @@ fn main() {
         if keys[i] != "missing" {
             m[keys[i]] = i
             f[keys[i]] = Float(i) + 0.5
-            r[keys[i]] = Box(name: "box {i}")
+            r[keys[i]] = Box(name: `box {i}`)
         }
     }
     m["a"] = 10
     for k in keys {
-        print("{k}: {m.get(k) ?? -1} {f.get(k) ?? -1.0} {(r[k] ?? Box(name: "none")).name}")
+        print(`{k}: {m.get(k) ?? -1} {f.get(k) ?? -1.0} {(r[k] ?? Box(name: "none")).name}`)
     }
     for i in 0..keys.len() {
-        print("{i}: {m.get(keys[i]) ?? -1} {f.get(keys[i]) ?? -1.0} {(r[keys[i]] ?? Box(name: "none")).name}")
+        print(`{i}: {m.get(keys[i]) ?? -1} {f.get(keys[i]) ?? -1.0} {(r[keys[i]] ?? Box(name: "none")).name}`)
     }
     print(m.len())
 }

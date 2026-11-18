@@ -5,6 +5,6 @@
 
 fn main() {
     const empty: [String] = []
-    print("[{empty.join(", ")}] [{["x"].join(", ")}] [{["a", "b"].join(", ")}]")
-    print("{["a", "", "b"].join("-")} {['न', 'म'].join("")}")
+    print(`[{empty.join(", ")}] [{["x"].join(", ")}] [{["a", "b"].join(", ")}]`)
+    print(`{["a", "", "b"].join("-")} {['न', 'म'].join("")}`)
 }

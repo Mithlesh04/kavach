@@ -440,7 +440,7 @@ impl Checker<'_> {
                 let shown = self.show(&other);
                 self.error(
                     iter.span,
-                    format!("can't loop over `{shown}`: `for` needs a list, set, map or range"),
+                    format!("can't loop over `{shown}`: `for` needs a list, set, dict or range"),
                 );
                 Ty::Error
             }

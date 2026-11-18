@@ -7,7 +7,7 @@
 use std.regex
 
 fn main() {
-    const bad = [r"(unclosed", r"a{3,1}", r"[z-a]", r"*a"]
+    const bad = ["(unclosed", "a{3,1}", "[z-a]", "*a"]
     let new_refused = 0
     for p in bad {
         const _n = regex.new(p) catch _ => {
@@ -22,6 +22,6 @@ fn main() {
             continue
         }
     }
-    print("new refused {new_refused}")
-    print("advanced refused {advanced_refused}")
+    print(`new refused {new_refused}`)
+    print(`advanced refused {advanced_refused}`)
 }

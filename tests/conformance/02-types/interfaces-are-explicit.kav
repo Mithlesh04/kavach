@@ -8,7 +8,7 @@ interface Describe {
 
 type User {
     name: String
-    fn describe(self) -> String { "User {self.name}" }
+    fn describe(self) -> String { `User {self.name}` }
 }
 
 fn show<T: Describe>(item: T) -> String {

@@ -290,7 +290,7 @@ pub fn users() -> [Account] uses System.critical.read {
 /// Makes a user account; `password` may be a secret.
 pub fn add_user(name: String, password: String, admin: Bool = false) ! SystemError uses System.critical.write {
     const zero = Char(0)
-    try done(system.act_id(2, "{name}{zero}{password}{zero}{if admin { "admin" } else { "" }}", 0))
+    try done(system.act_id(2, `{name}{zero}{password}{zero}{if admin { "admin" } else { "" }}`, 0))
 }
 
 /// Deletes a user account and its home folder.

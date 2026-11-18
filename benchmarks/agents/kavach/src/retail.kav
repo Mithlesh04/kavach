@@ -35,7 +35,7 @@ pub capability Stock {
 
 type Supplier: Stock {
     fn order(self, product: Int, units: Int, cost: Int) -> Ordered ! SupplyError {
-        Ordered(number: "o{product}")
+        Ordered(number: `o{product}`)
     }
 }
 
@@ -56,20 +56,20 @@ agent Buyer {
 
     on review(p: Product) -> String ! Error {
         const plan = try ask<Plan>(
-            "{policy()}\n\nProduct {p.id}, {p.product}: {p.stock} in stock, sells {p.daily} a day, " +
-            "{p.lead_days} days to deliver, costs {p.unit_cost} a unit. {p.note}"
+            `{policy()}\n\nProduct {p.id}, {p.product}: {p.stock} in stock, sells {p.daily} a day, ` +
+            `{p.lead_days} days to deliver, costs {p.unit_cost} a unit. {p.note}`
         )
         match plan.action {
             Action.Reorder => {
                 const n = units(p)
                 const _o = Stock.order(p.id, n, n * p.unit_cost) catch _ => {
-                    return "{p.id} escalate"
+                    return `{p.id} escalate`
                 }
-                "{p.id} reorder {n}"
+                `{p.id} reorder {n}`
             },
-            Action.Hold => "{p.id} hold",
-            Action.Markdown => "{p.id} markdown",
-            Action.Escalate => "{p.id} escalate",
+            Action.Hold => `{p.id} hold`,
+            Action.Markdown => `{p.id} markdown`,
+            Action.Escalate => `{p.id} escalate`,
         }
     }
 }
@@ -79,7 +79,7 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Stock.ord
     const desk = Buyer.start(Stock: Supplier())
     if not together {
         for p in products {
-            print(desk.review(p) catch e => "error {e}")
+            print(desk.review(p) catch e => `error {e}`)
         }
         return
     }
@@ -88,6 +88,6 @@ pub fn run(path: String, together: Bool) ! Error uses Ai, Console, Fs, Stock.ord
         asked.push(spawn desk.review(p))
     }
     for a in asked {
-        print(a.wait() catch e => "error {e}")
+        print(a.wait() catch e => `error {e}`)
     }
 }

@@ -14,10 +14,10 @@ fn sum_to(n: Int) -> Int {
 
 fn main() {
     const _long = spawn {
-        print("long: {sum_to(1_000_000)}")
+        print(`long: {sum_to(1_000_000)}`)
     }
     const _short = spawn {
-        print("short: {sum_to(10) / 2}")
+        print(`short: {sum_to(10) / 2}`)
     }
     print("done")
 }

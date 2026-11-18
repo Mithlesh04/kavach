@@ -9,7 +9,7 @@ use std.input
 fn main() uses Input {
     const all = input.buttons()
     print(all.len())
-    print("{all[0]} {all[1]} {all[2]} {all[3]}")
+    print(`{all[0]} {all[1]} {all[2]} {all[3]}`)
     // However many pads are connected, each has a name and its sticks in range.
     print(input.pads().all(p => p.left.x >= -1.0 and p.left.x <= 1.0))
 }

@@ -15,7 +15,7 @@ type Stock {
 type Node = Leaf(value: Int) | Branch(inner: Node, depth: Int)
 
 fn total(s: Stock) -> String {
-    "{s.counts.len()} {s.counts.values().sum(x => x)} {s.counts.get("k9999") ?? -1}"
+    `{s.counts.len()} {s.counts.values().sum(x => x)} {s.counts.get("k9999") ?? -1}`
 }
 
 fn restocked(s: Stock) -> Stock {
@@ -52,18 +52,18 @@ fn wrap(levels: Int, leaf: Int) -> Node {
 fn main() {
     let s = Stock(name: "shop", counts: {:})
     for i in 0..10_000 {
-        s.counts["k{i}"] = i
+        s.counts[`k{i}`] = i
     }
     print(total(s))
     const r = restocked(s)
-    print("{r.counts.len()} {r.counts["new"] ?? 0} {r.counts.get("k9999")}")
-    print("{s.counts.len()} {s.counts.values().sum(x => x)} {s.counts.get("new")}")
+    print(`{r.counts.len()} {r.counts["new"] ?? 0} {r.counts.get("k9999")}`)
+    print(`{s.counts.len()} {s.counts.values().sum(x => x)} {s.counts.get("new")}`)
     const deep = wrap(200, 7)
     const (d, v) = deepest(deep)
-    print("{d} {v}")
+    print(`{d} {v}`)
     const deeper = Node.Branch(inner: relabel(deep, 8), depth: 201)
     const (d2, v2) = deepest(deeper)
-    print("{d2} {v2}")
+    print(`{d2} {v2}`)
     const (d3, v3) = deepest(deep)
-    print("{d3} {v3}")
+    print(`{d3} {v3}`)
 }

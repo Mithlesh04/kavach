@@ -11,24 +11,24 @@ use std.time
 fn main() ! Error {
     const listener = try net.listen("127.0.0.1:0")
     const _server = spawn http.serve(listener, r => http.text(200, "hi"), limits: ServeLimits(idle_timeout: 100.ms))
-    const url = "http://{listener.address()}"
+    const url = `http://{listener.address()}`
     const session = try http.open(url)
-    print("first: {(try session.get("/")).status}")
+    print(`first: {(try session.get("/")).status}`)
     // Longer than `idle_timeout`: the server closes the connection.
     time.sleep(600.ms)
     const then = match session.get("/") {
-        ok(r) => "{r.status}",
+        ok(r) => `{r.status}`,
         err(e) => match e {
             HttpError.Network(n) => match n {
                 NetError.Failed(_, reason) => reason,
-                _ => "{n}",
+                _ => `{n}`,
             },
-            _ => "{e}",
+            _ => `{e}`,
         },
     }
-    print("then: {then}")
+    print(`then: {then}`)
     session.close()
     const fresh = try http.open(url)
-    print("a new session: {(try fresh.get("/")).status}")
+    print(`a new session: {(try fresh.get("/")).status}`)
     fresh.close()
 }

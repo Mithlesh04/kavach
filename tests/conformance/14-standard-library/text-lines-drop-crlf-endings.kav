@@ -4,7 +4,7 @@
 // expect output: 1 1
 
 fn main() {
-    const crlf = "\u{D}\n"
-    print("a{crlf}b\nc".lines())
-    print("{"a{crlf}b".lines()[0].len()} {"a{crlf}b".view().lines()[0].len()}")
+    const crlf = `\u{D}\n`
+    print(`a{crlf}b\nc`.lines())
+    print(`{`a{crlf}b`.lines()[0].len()} {`a{crlf}b`.view().lines()[0].len()}`)
 }

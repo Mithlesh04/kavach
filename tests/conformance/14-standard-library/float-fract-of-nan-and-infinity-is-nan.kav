@@ -6,6 +6,6 @@
 fn main() {
     const nan = 0.0 / 0.0
     const inf = 1.0 / 0.0
-    print("{nan.fract()} {inf.fract()} {(-inf).fract()}")
-    print("{(-3.0).fract()} {1e20.fract()}")
+    print(`{nan.fract()} {inf.fract()} {(-inf).fract()}`)
+    print(`{(-3.0).fract()} {1e20.fract()}`)
 }

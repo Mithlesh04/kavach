@@ -17,5 +17,5 @@ fn main() {
     print(first([3, 4]) ?? 0)
     print(first(["a", "b"]) ?? "none")
     const p = Pair(left: 1, right: "one")
-    print("{p.left} {p.right}")
+    print(`{p.left} {p.right}`)
 }

@@ -7,9 +7,9 @@ use std.fs
 
 /// Whether the link was made; `false` where links aren't allowed.
 fn link(dir: String) -> Bool uses Fs {
-    fs.symlink("target.txt", "{dir}/link.txt") catch e => match e {
+    fs.symlink("target.txt", `{dir}/link.txt`) catch e => match e {
         fs.Denied(_) => return false,
-        _ => panic("unexpected: {e}"),
+        _ => panic(`unexpected: {e}`),
     }
     true
 }
@@ -17,14 +17,14 @@ fn link(dir: String) -> Bool uses Fs {
 fn main() ! FsError uses Fs, Console {
     const dir = "kavach-t-fs-link"
     try fs.create_dir(dir)
-    try fs.write_text("{dir}/target.txt", "through the link")
+    try fs.write_text(`{dir}/target.txt`, "through the link")
     if link(dir) {
-        print((try fs.info("{dir}/link.txt")).kind == FileKind.Link)
-        print((try fs.read_text("{dir}/link.txt")) == "through the link")
+        print((try fs.info(`{dir}/link.txt`)).kind == FileKind.Link)
+        print((try fs.read_text(`{dir}/link.txt`)) == "through the link")
     } else {
         // Windows without Developer Mode: refused, and no link is left.
         print(true)
-        print(not fs.exists("{dir}/link.txt"))
+        print(not fs.exists(`{dir}/link.txt`))
     }
     try fs.remove_all(dir)
 }

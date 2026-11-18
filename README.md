@@ -39,10 +39,10 @@ agent RefundBot {
     approve Payments.refund when amount > 5_000 by "finance"
 
     on request(order: Order) ! Error {
-        const decision = try ask<RefundDecision>("Should we refund order {order.id}? Note: {order.note}")
+        const decision = try ask<RefundDecision>(`Should we refund order {order.id}? Note: {order.note}`)
         if decision.approve {
             const receipt = try Payments.refund(order.id, order.amount)
-            try Email.send(order.customer_email, "Refund {receipt.id} is on its way.")
+            try Email.send(order.customer_email, `Refund {receipt.id} is on its way.`)
         }
     }
 }

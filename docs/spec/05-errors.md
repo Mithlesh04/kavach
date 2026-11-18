@@ -56,7 +56,7 @@ const total = orders.sum(o => price(o) catch _ => 0.0)  // handled inside: can't
 const age = parse_age(input) catch 0                    // use a default
 
 const age = parse_age(input) catch e => {               // run code with the error
-    print("Bad input: {e}")
+    print(`Bad input: {e}`)
     0
 }
 ```
@@ -68,7 +68,7 @@ A call's `catch` handles that call's own error, never one raised while its argum
 ```kavach
 fn find(text: String) -> String ! AppError {
     lookup(try parse(text)) catch e => {     // `e` is a `LookupError`: a bad `text` leaves `find`
-        return "nothing: {e}"
+        return `nothing: {e}`
     }
 }
 ```
@@ -86,10 +86,10 @@ for line in lines {
 
 ```kavach
 match parse_age(input) {
-    ok(age) => print("Age is {age}")
+    ok(age) => print(`Age is {age}`)
     err(AgeError.Empty) => print("Please enter an age")
-    err(AgeError.NotANumber(text)) => print("'{text}' is not a number")
-    err(AgeError.TooLarge(value)) => print("{value} is too large")
+    err(AgeError.NotANumber(text)) => print(`'{text}' is not a number`)
+    err(AgeError.TooLarge(value)) => print(`{value} is too large`)
 }
 ```
 
@@ -101,7 +101,7 @@ For scripts and application code that just wants to stop on any error, `! Error`
 fn main() ! Error {
     const config = try load_config("app.toml")
     const users = try fetch_users(config.api_url)
-    print("Loaded {users.len()} users")
+    print(`Loaded {users.len()} users`)
 }
 ```
 
@@ -112,7 +112,7 @@ When a script has no error type of its own to give, `Error(message)` makes an er
 ```kavach
 fn check(age: Int) -> Int ! Error {
     if age < 0 {
-        fail Error("age can't be negative: {age}")
+        fail Error(`age can't be negative: {age}`)
     }
     age
 }
@@ -125,8 +125,8 @@ An `Error` keeps the error it holds, and a `match` can ask which one it is: name
 ```kavach
 const settings = load(path) catch e => match e {
     FsError.NotFound(path) => defaults(),
-    JsonError.Syntax(line, column, message) => panic("{path}:{line}: {message}"),
-    _ => panic("can't load {path}: {e}"),
+    JsonError.Syntax(line, column, message) => panic(`{path}:{line}: {message}`),
+    _ => panic(`can't load {path}: {e}`),
 }
 ```
 

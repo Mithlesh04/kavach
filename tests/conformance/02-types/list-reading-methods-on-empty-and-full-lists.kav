@@ -10,12 +10,12 @@
 
 fn main() {
     const xs = [1, 2, 3, 4]
-    print("{xs.filter(x => x % 2 == 0)} {xs.map(x => x * 2)}")
+    print(`{xs.filter(x => x % 2 == 0)} {xs.map(x => x * 2)}`)
     print([1, 2, 3].flat_map(x => [x, x]))
-    print("{xs.any(x => x > 3)} {xs.any(x => x > 4)} {xs.all(x => x > 0)} {xs.all(x => x > 1)}")
-    print("{xs.contains(3)} {xs.contains(5)}")
+    print(`{xs.any(x => x > 3)} {xs.any(x => x > 4)} {xs.all(x => x > 0)} {xs.all(x => x > 1)}`)
+    print(`{xs.contains(3)} {xs.contains(5)}`)
     print(xs)
     const empty: [Int] = []
-    print("{empty.filter(x => x > 0)} {empty.map(x => x * 2)} {empty.flat_map(x => [x])} {empty.enumerate()}")
-    print("{empty.any(x => x > 0)} {empty.all(x => x > 0)} {empty.contains(0)}")
+    print(`{empty.filter(x => x > 0)} {empty.map(x => x * 2)} {empty.flat_map(x => [x])} {empty.enumerate()}`)
+    print(`{empty.any(x => x > 0)} {empty.all(x => x > 0)} {empty.contains(0)}`)
 }

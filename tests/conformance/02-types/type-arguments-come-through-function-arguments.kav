@@ -19,11 +19,11 @@ fn wrap<T>(f: fn(T) -> String) -> fn(String) -> Bool {
 }
 
 fn show(p: P) -> String {
-    "n={p.n}"
+    `n={p.n}`
 }
 
 fn main() {
     const h = wrap(show)
-    print(h("\{\"n\": 4}"))
+    print(h(`\{"n": 4}`))
     print(h("[]"))
 }

@@ -22,17 +22,17 @@ fn main() {
     high += 99
     rest[0] = 3
     rest.push(4)
-    print("{low} {high} {rest}")
+    print(`{low} {high} {rest}`)
     const settings = {"port": 8080}
     let [port = 0, retries = 3] = settings
     port += 1
     retries -= 1
-    print("{port} {retries}")
+    print(`{port} {retries}`)
     const u = User(name: "Asha", home: Address(city: "Pune", tags: []))
     let { home } = u
     home.city = "Delhi"
     home.tags.push("a")
     home.tags.push("b")
-    print("{home.city} {home.tags.len()}")
-    print("{limits + [4]} {settings} {u.home.city}")
+    print(`{home.city} {home.tags.len()}`)
+    print(`{limits + [4]} {settings} {u.home.city}`)
 }

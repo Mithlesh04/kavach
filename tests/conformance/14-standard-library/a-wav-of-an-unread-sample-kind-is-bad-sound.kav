@@ -14,7 +14,7 @@ fn main() {
     const fmt = le(2, 2) + le(1, 2) + le(8000, 4) + le(4000, 4) + le(1, 2) + le(4, 2)
     const body = [87, 65, 86, 69, 102, 109, 116, 32] + le(16, 4) + fmt + [100, 97, 116, 97] + le(4, 4) + [1, 2, 3, 4]
     const s = audio.decode(Bytes([82, 73, 70, 70] + le(body.len(), 4) + body)) catch e => {
-        print("{e}".starts_with("BadSound("))
+        print(`{e}`.starts_with("BadSound("))
         return
     }
     print(s.frames)

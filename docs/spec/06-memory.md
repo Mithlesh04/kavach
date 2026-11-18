@@ -66,7 +66,7 @@ type Guard: Drop {
     name: String
 
     fn drop(self) uses Console {
-        print("released {self.name}")
+        print(`released {self.name}`)
     }
 }
 

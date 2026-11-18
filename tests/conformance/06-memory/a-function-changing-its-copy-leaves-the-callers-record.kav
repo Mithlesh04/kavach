@@ -18,6 +18,6 @@ fn add(c: Cart, item: String) -> Cart {
 fn main() {
     const cart = Cart(items: ["x"], count: 1)
     const bigger = add(cart, "y")
-    print("{bigger.items} {bigger.count}")
-    print("{cart.items} {cart.count}")
+    print(`{bigger.items} {bigger.count}`)
+    print(`{cart.items} {cart.count}`)
 }

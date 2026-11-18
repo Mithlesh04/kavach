@@ -2,7 +2,7 @@
 fn main() {
     let parts: [String] = []
     for i in 0..1_000_000 {
-        parts.push("word{i % 50}")
+        parts.push(`word{i % 50}`)
     }
     const text = parts.join(" ")
     const words = text.split(" ")

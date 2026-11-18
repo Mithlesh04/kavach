@@ -8,9 +8,9 @@ use std.fs
 
 fn main() ! FsError uses Fs, Console {
     const dir = "kavach-t-fs-mkdir"
-    try fs.create_dir("{dir}/a/b/c")
-    print(fs.exists("{dir}/a/b/c"))
-    print((try fs.info("{dir}/a/b")).kind)
-    print(try fs.list("{dir}/a"))
+    try fs.create_dir(`{dir}/a/b/c`)
+    print(fs.exists(`{dir}/a/b/c`))
+    print((try fs.info(`{dir}/a/b`)).kind)
+    print(try fs.list(`{dir}/a`))
     try fs.remove_all(dir)
 }

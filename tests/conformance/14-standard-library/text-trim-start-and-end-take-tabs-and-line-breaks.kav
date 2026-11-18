@@ -4,7 +4,7 @@
 // expect output: [x] [] []
 
 fn main() {
-    const crlf = "\u{D}\n"
-    print("{"\t\n x {crlf}".trim_start().len()} {"\t x{crlf}".trim_end().len()}")
-    print("[{"{crlf} x\t".trim()}] [{" \t ".trim_end()}] [{"".trim_start()}]")
+    const crlf = `\u{D}\n`
+    print(`{`\t\n x {crlf}`.trim_start().len()} {`\t x{crlf}`.trim_end().len()}`)
+    print(`[{`{crlf} x\t`.trim()}] [{` \t `.trim_end()}] [{"".trim_start()}]`)
 }

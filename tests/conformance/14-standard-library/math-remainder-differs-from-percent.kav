@@ -8,9 +8,9 @@ use std.math
 
 fn main() {
     let x = -5.0
-    print("{math.remainder(x, 3.0)} {x % 3.0}")
+    print(`{math.remainder(x, 3.0)} {x % 3.0}`)
     let y = 5.0
-    print("{math.remainder(y, -3.0)} {y % -3.0}")
+    print(`{math.remainder(y, -3.0)} {y % -3.0}`)
     // 6 / 4 = 1.5 rounds to 2 and 2 / 4 = 0.5 rounds to 0: the even ones.
-    print("{math.remainder(6.0, 4.0)} {math.remainder(2.0, 4.0)}")
+    print(`{math.remainder(6.0, 4.0)} {math.remainder(2.0, 4.0)}`)
 }

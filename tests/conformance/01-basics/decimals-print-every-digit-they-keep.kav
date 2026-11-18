@@ -12,9 +12,9 @@ fn main() {
     const a: Decimal = 0.10
     const b: Decimal = -2.50
     const c: Decimal = 3
-    print("{a} {b} {c}")
+    print(`{a} {b} {c}`)
     const xs: [Decimal] = [1.50, -0.25]
-    print("{xs} {Price(amount: 9.90)}")
+    print(`{xs} {Price(amount: 9.90)}`)
     const total: Decimal = 12.00
     print("total " + String(total))
 }
