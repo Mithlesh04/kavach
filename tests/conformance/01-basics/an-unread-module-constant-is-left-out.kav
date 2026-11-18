@@ -1,0 +1,15 @@
+// Rule: a module constant nothing reads is left out: it isn't worked out before `main`, so its panic never happens; one the program reads is worked out first.
+// Spec: 1.13
+// expect warning
+// expect output: 3
+
+fn pick(i: Int) -> Int {
+    [1, 2][i]
+}
+
+const unused = pick(5) // warning: `unused` is never used
+const used = pick(1) + 1
+
+fn main() {
+    print(used)
+}

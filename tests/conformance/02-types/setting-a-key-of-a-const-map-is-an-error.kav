@@ -3,7 +3,7 @@
 // expect compile error
 
 fn main() {
-    const ages = ["asha": 31]
+    const ages = {"asha": 31}
     ages["ravi"] = 27       // error: `ages` is a `const`
     print(ages)
 }

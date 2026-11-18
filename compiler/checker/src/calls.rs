@@ -381,7 +381,7 @@ impl Checker<'_> {
             DefKind::Builtin if type_name == "Set" && name.name == "of" => Some(self.set_of(args)),
             // `List.capacity(n)`, `Map.capacity(n)`, `Set.capacity(n)`, at
             // most `n` entries, maybe with the first ones (spec 2.2). With
-            // none, the types come from where the value goes, as `[:]`.
+            // none, the types come from where the value goes, as `{:}`.
             DefKind::Builtin
                 if matches!(type_name.as_str(), "Map" | "Set" | "List" | "Ring")
                     && name.name == "capacity" =>

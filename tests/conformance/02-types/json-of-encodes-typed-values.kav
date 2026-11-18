@@ -22,6 +22,6 @@ type Pet {
 fn main() {
     print(json.of(Item(name: "ink", price: 2.0, tags: ["blue"])))
     print(json.of([Status.Open, Status.Closed(reason: "done")]))
-    const pets = ["rex": Pet(name: "rex")]
-    print(json.of(["pets": pets]))
+    const pets = {"rex": Pet(name: "rex")}
+    print(json.of({"pets": pets}))
 }

@@ -104,7 +104,7 @@ fn main() {
     print(json.stringify((1, "x", true, 'c')))
     print(json.stringify(pairs))
     print(json.stringify(Set.of(3, 1, 2)))
-    print(json.stringify(["b": 1, "a": 2]))
+    print(json.stringify({"b": 1, "a": 2}))
     print(json.stringify(Named(name: "n", size: none, tags: [])))
     print(json.stringify(Named(name: "n", size: 4, tags: ["t"])))
     print(json.stringify(Empty()))
@@ -116,10 +116,10 @@ fn main() {
     const none_value: Int? = none
     const some_value: Int? = 5
     print(json.stringify([none_value, some_value]))
-    const doc: Json = ["a": [1, 2.50, "x", true, none], "e": [], "o": [:], "big": 12345678901234567890]
+    const doc: Json = {"a": [1, 2.50, "x", true, none], "e": [], "o": {:}, "big": 12345678901234567890}
     print(json.stringify(doc))
     print(json.stringify(doc, indent: 2))
     print(json.stringify(points, indent: 1))
     print(json.stringify([Status.Closed(reason: "x", code: 7)], indent: 2))
-    print(json.stringify((["k": [1]], Empty(), nothing), indent: 3))
+    print(json.stringify(({"k": [1]}, Empty(), nothing), indent: 3))
 }

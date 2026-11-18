@@ -1,24 +1,24 @@
-// Rule: Collections print as they are written: text items quoted, nested items in their own form, an empty list `[]`, an empty map `[:]`.
+// Rule: Collections print as they are written: text items quoted, nested items in their own form, an empty list `[]`, an empty map `{:}` (decision 0129).
 // Spec: 1.11
 // expect output: []
-// expect output: [:]
+// expect output: {:}
 // expect output: [["a", "b"], []]
-// expect output: ["x": [1, 2], "y": []]
+// expect output: {"x": [1, 2], "y": []}
 // expect output: [(1, "one"), (2, "two")]
-// expect output: ("a", [1.5], ["k": true])
+// expect output: ("a", [1.5], {"k": true})
 // expect output: [none, 2]
 
 fn main() {
     const empty: [Int] = []
-    const no_map: [String: Int] = [:]
+    const no_map: [String: Int] = {:}
     print(empty)
     print(no_map)
     const nested: [[String]] = [["a", "b"], []]
     print(nested)
-    const m: [String: [Int]] = ["x": [1, 2], "y": []]
+    const m: [String: [Int]] = {"x": [1, 2], "y": []}
     print(m)
     print([(1, "one"), (2, "two")])
-    print(("a", [1.5], ["k": true]))
+    print(("a", [1.5], {"k": true}))
     const maybe: [Int?] = [none, 2]
     print(maybe)
 }

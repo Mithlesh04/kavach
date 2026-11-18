@@ -17,7 +17,7 @@ type Cache {
 }
 
 fn main() {
-    const cache = Cache(map: Shared(["a": 1, "bb": 2]))
+    const cache = Cache(map: Shared({"a": 1, "bb": 2}))
     for (key, value) in cache.map.get() {
         print("{key} = {value}")
     }

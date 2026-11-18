@@ -1,7 +1,8 @@
 //! Module constants in native code (spec 1.13): each becomes a function
 //! that works its value out, made when first read. A read calls it, and
-//! the program's start calls them all, in the order they are written, so
-//! a panic in one comes before `main`. A constant needs no capability and
+//! the program's start calls those something reads, in the order they are
+//! written, so a panic in one comes before `main`; one nothing reads is
+//! left out. A constant needs no capability and
 //! can't fail, so each call gives the same value; LLVM folds the small
 //! ones into the code that reads them. (Keeping a big one made once per
 //! thread is noted for later in the to-do.)
@@ -94,10 +95,16 @@ impl<'a> Lowerer<'a> {
         Ok(f)
     }
 
-    /// Calls of every module constant's function, in the order they are
-    /// written, for the program's start.
+    /// Calls of every module constant's function that something reads, in
+    /// the order they are written, for the program's start.
     pub(crate) fn const_starts(&mut self) -> Lowered<Vec<Stmt>> {
-        let mut defs: Vec<DefId> = self.consts.values.keys().copied().collect();
+        // Only the constants something reads: one nothing reads is left
+        // out, with no work at start (spec 1.13).
+        let read: std::collections::HashSet<DefId> =
+            self.c.resolution.uses.values().copied().collect();
+        let mut defs: Vec<DefId> = (self.consts.values.keys().copied())
+            .filter(|d| read.contains(d))
+            .collect();
         defs.sort_by_key(|d| self.c.resolution.defs[*d].span.map(|s| s.start));
         let mut out = Vec::new();
         for d in defs {

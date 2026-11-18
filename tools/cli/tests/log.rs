@@ -323,7 +323,7 @@ fn main() {
         print(pay(true) catch _ => 0)
         print(pay(false) catch _ => 0)
     }
-    log.count(\"orders\", 2, attributes: [\"route\": \"/cart\"])
+    log.count(\"orders\", 2, attributes: {\"route\": \"/cart\"})
     log.histogram(\"checkout_ms\", 12.5)
     log.histogram(\"wait_s\", 0.2, bounds: [0.1, 0.5])
 }

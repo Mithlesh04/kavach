@@ -14,8 +14,8 @@ fn lint(file: String) -> Int ! ProcessError uses Process("verilator") {
 
 | Function or method | Gives |
 |---|---|
-| `process.run(program, args, folder: "", env: [:]) -> Finished ! ProcessError` | Runs `program` to its end and gives its exit code, what it printed and what it cost |
-| `process.start(program, args, folder: "", env: [:]) -> Child ! ProcessError` | Starts `program` and gives it back running, to read its output as it comes |
+| `process.run(program, args, folder: "", env: {:}) -> Finished ! ProcessError` | Runs `program` to its end and gives its exit code, what it printed and what it cost |
+| `process.start(program, args, folder: "", env: {:}) -> Child ! ProcessError` | Starts `program` and gives it back running, to read its output as it comes |
 | `child.next() -> Output?` | The next line the program printed, waiting for it; `none` once it has ended and every line was read |
 | `child.each(f)` | Calls `f(output)` with each line as it comes, until `f` gives `false` or the program has ended and every line was read |
 | `child.wait() -> Exit` | Waits for the program's end, skipping what it still prints |

@@ -9,6 +9,7 @@ mod fns;
 mod items;
 mod literals;
 mod loaded;
+mod maps;
 mod parser;
 mod patterns;
 mod primary;

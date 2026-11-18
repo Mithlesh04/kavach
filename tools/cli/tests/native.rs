@@ -206,7 +206,7 @@ fn big_collections_are_not_copied() {
     let dir = std::env::temp_dir().join(format!("kavach-big-{}", std::process::id()));
     fs::create_dir_all(&dir).unwrap();
     let path = dir.join("big.kav");
-    let src = "let m: [Int: Int] = [:]\nlet items = []\nfor i in 0..200000 {\n    m[i] = i\n    items.push(i)\n}\nlet total = 0\nfor i in 0..200000 {\n    total += (m[i] ?? 0) + items[i]\n}\nprint(total)\n";
+    let src = "let m: [Int: Int] = {:}\nlet items = []\nfor i in 0..200000 {\n    m[i] = i\n    items.push(i)\n}\nlet total = 0\nfor i in 0..200000 {\n    total += (m[i] ?? 0) + items[i]\n}\nprint(total)\n";
     fs::write(&path, src).unwrap();
     let start = std::time::Instant::now();
     let out = Command::new(env!("CARGO_BIN_EXE_kavach"))

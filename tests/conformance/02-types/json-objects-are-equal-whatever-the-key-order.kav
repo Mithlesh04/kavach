@@ -14,6 +14,6 @@ fn main() ! JsonError {
     const d = try json.parse("\{\"x\": 2, \"y\": [true, null]}")
     const e = try json.parse("\{\"x\": 1}")
     print("{a == c} {a == d} {a == e}")
-    const made: Json = ["y": [true, none], "x": 1]
+    const made: Json = {"y": [true, none], "x": 1}
     print("{made == a} {Json.Text(value: "1") == Json.Number(digits: "1")}")
 }

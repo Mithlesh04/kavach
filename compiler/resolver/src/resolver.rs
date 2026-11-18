@@ -18,6 +18,9 @@ pub(crate) struct Resolver {
     /// Names declared by `const`/`const` later in each open block, to explain
     /// "used before its `const`" instead of just "not defined".
     later: Vec<Vec<String>>,
+    /// The names the entry file's top-level `let`s declare: variables of
+    /// `main`, which functions can't read (spec 1.13).
+    pub(crate) top_lets: std::collections::HashSet<String>,
     /// Every variant name and the variants that have it.
     pub(crate) variants: HashMap<String, Vec<DefId>>,
     /// The variants of each union type, by name.
@@ -47,6 +50,7 @@ impl Resolver {
             scopes: vec![HashMap::new()],
             hides: HashMap::new(),
             later: Vec::new(),
+            top_lets: Default::default(),
             variants: HashMap::new(),
             union_variants: HashMap::new(),
             capability_params: HashMap::new(),
@@ -257,6 +261,12 @@ impl Resolver {
             )
         } else if self.later.iter().any(|names| names.contains(name)) {
             format!("`{name}` is used before its `let`: move the declaration above this line")
+        } else if name == "_" {
+            "`_` throws a value away, so it can't be read: give the value a name, such as `_t` (spec 1.4)".to_string()
+        } else if self.top_lets.contains(name) {
+            format!(
+                "`{name}` is a `let` of the program's top-level code, a variable of `main` that functions can't read: make it a `const`, or pass it as an argument (spec 1.13)"
+            )
         } else {
             match self.suggest(name) {
                 Some(s) => format!("`{name}` {what}; did you mean `{s}`?"),

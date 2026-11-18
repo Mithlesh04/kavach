@@ -3,7 +3,7 @@
 // expect output: [[1, 2], [3, 4], [5]]
 // expect output: [(1, "a"), (2, "b")]
 // expect output: [3, 1, 2]
-// expect output: ["a": 2, "b": 1]
+// expect output: {"a": 2, "b": 1}
 // expect output: [1, 2, 3]
 
 use std.collections

@@ -14,7 +14,7 @@ const email = try regex.new(r"^[\w.+-]+@[\w-]+\.[\w.]+$")
 print(email.is_match("asha@example.com"))      // true
 
 const date = try regex.new(r"(?<year>\d{4})-(?<month>\d{2})")
-const parts = date.named_captures("due 2026-10") ?? [:]
+const parts = date.named_captures("due 2026-10") ?? {:}
 print(parts["year"] ?? "")                      // 2026
 ```
 

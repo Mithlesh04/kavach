@@ -4,7 +4,7 @@
 // expect output: 2026-10
 // expect output: ["2026-10", "2027-01"]
 // expect output: ["2026-10", "2026", "10"]
-// expect output: ["year": "2026", "month": "10"]
+// expect output: {"year": "2026", "month": "10"}
 // expect output: 10/2026 and 01/2027
 // expect output: ["a", "b", "c"]
 // expect output: Regex("\\d+")
@@ -18,7 +18,7 @@ fn main() ! Error {
     print(date.find("due 2026-10, then 2027-01") ?? "none")
     print(date.find_all("due 2026-10, then 2027-01"))
     print(date.captures("2026-10"))
-    print(date.named_captures("2026-10") ?? [:])
+    print(date.named_captures("2026-10") ?? {:})
     print(date.replace_all("2026-10 and 2027-01", r"${month}/$year"))
     print((try regex.new(r"\s*,\s*")).split("a , b,c"))
     print(try regex.new(r"\d+"))

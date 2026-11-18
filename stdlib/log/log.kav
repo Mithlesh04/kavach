@@ -56,20 +56,20 @@ fn write<E: LogEvent>(level: Int, event: E) {
 
 /// Adds `n` to the counter `name`, sent as an OpenTelemetry sum; each
 /// set of `attributes` is a series of its own.
-pub fn count(name: String, n: Int, attributes: [String: String] = [:])
+pub fn count(name: String, n: Int, attributes: [String: String] = {:})
     require n >= 0
 {
     log.metric_id(0, series(name, attributes), Float(n))
 }
 
 /// The latest `value` of `name`, such as a queue's length.
-pub fn gauge(name: String, value: Float, attributes: [String: String] = [:]) {
+pub fn gauge(name: String, value: Float, attributes: [String: String] = {:}) {
     log.metric_id(1, series(name, attributes), value)
 }
 
 /// One more `value` of `name`, whose spread is sent as a histogram:
 /// with OpenTelemetry's default bounds, or the series' first `bounds`.
-pub fn histogram(name: String, value: Float, attributes: [String: String] = [:], bounds: [Float] = [])
+pub fn histogram(name: String, value: Float, attributes: [String: String] = {:}, bounds: [Float] = [])
     require bounds.sort() == bounds
 {
     let id = series(name, attributes)
@@ -82,8 +82,8 @@ pub fn histogram(name: String, value: Float, attributes: [String: String] = [:],
 /// A series as the runtime takes it: the name, then each attribute's key
 /// and value, apart by a character no name holds.
 fn series(name: String, attributes: [String: String]) -> String
-    example series("hits", [:]) == "hits"
-    example series("hits", ["route": "/a"]) == "hits\u{1}route\u{1}/a"
+    example series("hits", {:}) == "hits"
+    example series("hits", {"route": "/a"}) == "hits\u{1}route\u{1}/a"
 {
     let out = name
     for (key, value) in attributes {

@@ -33,7 +33,7 @@ fn main() {
     const { home: { city, zip = 0 }, work: { city: office } } = u
     print("{city} {zip} {office}")
 
-    const settings = ["db": ["port": 5432], "cache": ["port": 6379, "size": 64]]
+    const settings = {"db": {"port": 5432}, "cache": {"port": 6379, "size": 64}}
     const [db: [port, size = 1], queue: [port: qport]] = settings
     print("{port} {size} {qport}")
 }

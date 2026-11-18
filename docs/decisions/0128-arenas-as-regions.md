@@ -1,6 +1,6 @@
 # 0128. Arenas as regions: made fast, freed at once
 
-- **Status:** Accepted
+- **Status:** Accepted; the region is not built (see Outcome)
 - **Date:** 2026-11-18
 
 ## Context
@@ -38,3 +38,7 @@ fn parse_all(lines: [String]) -> Summary {
 - **Keep `arena` as the escape check only:** honest, but the name promises speed it doesn't give.
 - **Remove `arena` until the allocator exists:** nothing to migrate (no users yet), but the escape check, already built, would go with it.
 - **Arena allocation only for values made in the block's own code:** simpler, but `tokenize` and the other functions an arena calls are where most values are made.
+
+## Outcome
+
+The proof came first (2026-11-18, [benchmarks/arenas](../../benchmarks/arenas/README.md)): Kavach's plain `{ }` already beat C++ with `std::pmr::monotonic_buffer_resource` (`tokens` 353 ms against 725, `frames` 44 against 151), and most of `tokens`' time was scanning and copying, not allocating, so a 2× gain over `{ }` was unlikely. As point 6 provides, a maintainer chose again on 2026-11-18: `arena` stays as it was, the escape check and the wait for its tasks, with no region. A program whose profile shows allocation as the bottleneck reopens it.

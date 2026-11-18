@@ -164,9 +164,10 @@ impl<'s> Reader<'s> {
             }
             Gen::Map(k, v) => {
                 let mut map = MapValue::default();
-                if !self.eat("[:]") {
-                    self.expect("[")?;
-                    while !self.eat("]") {
+                // As a map prints (decision 0129).
+                if !self.eat("{:}") {
+                    self.expect("{")?;
+                    while !self.eat("}") {
                         if !map.is_empty() {
                             self.expect(", ")?;
                         }

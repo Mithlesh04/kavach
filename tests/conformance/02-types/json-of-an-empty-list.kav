@@ -7,5 +7,5 @@ use std.json
 
 fn main() {
     print(json.stringify(json.of([])))
-    print(json.stringify(json.of(["tags": []])))
+    print(json.stringify(json.of({"tags": []})))
 }

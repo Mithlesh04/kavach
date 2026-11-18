@@ -27,6 +27,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.17 | [matmul-is-not-for-numbers.kav](matmul-is-not-for-numbers.kav) | `@` on numbers is a compile error that says to use `*`. | compile error |
 | 2.17 | [matrices-multiply-and-work-item-by-item.kav](matrices-multiply-and-work-item-by-item.kav) | `a @ b`, `+ - *` and `-` item by item, transposes, sums, slices, rows and columns, for floats and whole numbers. | runs |
 | 2.17 | [matrix-products-give-the-same-bits.kav](matrix-products-give-the-same-bits.kav) | `a @ b` gives the bits of a loop written by hand; `fast: true` comes close. | runs |
+| 2.17, 2.9 | [matrix-holds-only-numbers.kav](matrix-holds-only-numbers.kav) | A `Matrix<T>` holds numbers: a matrix of text is a compile error. | compile error |
 | 2.17 | [matrix-sizes-must-match.kav](matrix-sizes-must-match.kav) | A product whose inner sizes differ breaks `matmul`'s `require`. | panic |
 | 2.12 | [json-of-a-generic-is-checked-where-it-is-used.kav](json-of-a-generic-is-checked-where-it-is-used.kav) | `json.of` of a type parameter is a compile error at the generic call that gives it a record with a `secret` field. | compile error |
 | 2.12 | [json-of-a-generic-method-is-checked-where-it-is-used.kav](json-of-a-generic-method-is-checked-where-it-is-used.kav) | A generic method writing its type parameter as JSON is checked at each call. | compile error |

@@ -398,9 +398,10 @@ impl Value<'_> {
                 }
                 out.push(')');
             }
-            Value::Map(m) if m.is_empty() => out.push_str("[:]"),
+            // As a map is written (spec 2.2, decision 0129).
+            Value::Map(m) if m.is_empty() => out.push_str("{:}"),
             Value::Map(m) => {
-                out.push('[');
+                out.push('{');
                 for (i, (k, v)) in m.entries.iter().enumerate() {
                     if i > 0 {
                         out.push_str(", ");
@@ -409,7 +410,7 @@ impl Value<'_> {
                     out.push_str(": ");
                     v.write_as(out, false, union, shown);
                 }
-                out.push(']');
+                out.push('}');
             }
             Value::Tuple(items) => {
                 out.push('(');

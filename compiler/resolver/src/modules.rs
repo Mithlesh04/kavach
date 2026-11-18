@@ -139,6 +139,19 @@ impl Resolver {
                 }
             }
         }
+        // The entry file's top-level `let`s, named when a function reads one.
+        for item in ranges.first().copied().unwrap_or_default() {
+            if let ItemKind::Stmt(s) = &item.kind
+                && let kavach_ast::StmtKind::Let {
+                    mutable: true,
+                    pattern,
+                    ..
+                } = &s.kind
+                && let kavach_ast::PatternKind::Binding(id) = &pattern.kind
+            {
+                self.top_lets.insert(id.name.clone());
+            }
+        }
         // 3. Every item, in its own module's scope.
         for (m, items) in ranges.iter().enumerate() {
             self.modules.current = m;

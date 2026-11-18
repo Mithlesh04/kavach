@@ -7,7 +7,7 @@
 fn main() {
     const names = ["Asha", "Ravi"]
     print(names.get(5) ?? "none")
-    const ages = ["asha": 31]
+    const ages = {"asha": 31}
     print(ages["asha"] ?? 0)
     print(ages["ravi"] ?? 0)
 }

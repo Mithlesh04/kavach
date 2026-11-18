@@ -1,11 +1,11 @@
 // Rule: A copy of a map or set is a value of its own: changing one, or a collection held inside it, leaves the other as it was.
 // Spec: 2.2
-// expect output: ["k": [1]] ["k": [9], "j": [3]]
+// expect output: {"k": [1]} {"k": [9], "j": [3]}
 // expect output: Set.of() Set.of(1, 2)
-// expect output: [["a": 5], ["a": 2]] [["a": 1], ["a": 2]]
+// expect output: [{"a": 5}, {"a": 2}] [{"a": 1}, {"a": 2}]
 
 fn main() {
-    let m = ["k": [1]]
+    let m = {"k": [1]}
     let n = m
     n["k"] = [9]
     n["j"] = [3]
@@ -15,7 +15,7 @@ fn main() {
     t.add(2)
     s.remove(1)
     print("{s} {t}")
-    let rows = [["a": 1], ["a": 2]]
+    let rows = [{"a": 1}, {"a": 2}]
     const before = rows
     rows[0]["a"] = 5
     print("{rows} {before}")

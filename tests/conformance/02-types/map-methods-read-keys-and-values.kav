@@ -5,13 +5,13 @@
 // expect output: true false
 // expect output: ["ravi", "asha"]
 // expect output: [27, 31]
-// expect output: ["ravi": 27, "asha": 31]
-// expect output: [:] 0
+// expect output: {"ravi": 27, "asha": 31}
+// expect output: {:} 0
 // expect output: true
 
 fn main() {
-    let ages = ["ravi": 27, "asha": 31]
-    const empty: [String: Int] = [:]
+    let ages = {"ravi": 27, "asha": 31}
+    const empty: [String: Int] = {:}
     print("{ages.len()} {ages.is_empty()} {empty.is_empty()}")
     print("{ages.get("ravi") ?? 0} {ages.get("meera")}")
     print("{ages.contains_key("asha")} {ages.contains_key("Asha")}")

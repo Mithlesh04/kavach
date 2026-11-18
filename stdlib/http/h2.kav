@@ -88,7 +88,7 @@ pub fn pull(link: Link) -> Pulled ! H2Error uses Net {
                 let drained = p
                 drained.body = Bytes([])
                 l.partial[1] = drained
-                return Pulled(link: l, data: p.body, ended: false, trailers: [:])
+                return Pulled(link: l, data: p.body, ended: false, trailers: {:})
             }
         }
         if let code = l.resets.get(1) {

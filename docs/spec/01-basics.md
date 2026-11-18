@@ -68,7 +68,7 @@ const limit: Int = 10  // an explicit type is optional
 - So two functions can't share a name: Kavach has no overloading. Where other languages overload, a function takes a default argument (3.2), a union (2.6) or a generic type (2.9), or the two get different names. The error says so, and calls go to the first function.
 - Every name must be declared. Using an unknown name is a compile error, and the error suggests similar names (`did you mean total?`).
 - Declarations at the top of a module (`fn`, `type`, `interface`, …) can be used anywhere in that module, before or after they appear. Local variables can be used only after their `const` or `let`.
-- A variable that is never used (a `const`, a `let`, a name a pattern takes, `...rest`, a `for` variable, a `catch` name) gets a warning, so code being written still runs. A name starting with `_` (`_draft`, or `_` alone) is unused on purpose and gets none. Functions, types and module constants nothing uses get one too (10.1).
+- A variable that is never used (a `const`, a `let`, a name a pattern takes, `...rest`, a `for` variable, a `catch` name) gets a warning, so code being written still runs. A name starting with `_` (`_draft`, or `_` alone) is unused on purpose and gets none. Functions, types and module constants nothing uses get one too (10.1). `_` alone is not a name: it throws the value away, so it may be written any number of times and is never read; reading it (`print(_)`) is a compile error that says to give the value a name, such as `_t`.
 - A never-used variable that hides a `let` of the same name in an outer scope says so, since it is almost always meant to change that one: `let total = total + i` inside a loop makes a new `total`. The warning says to write `total = total + i`.
 - Native code doesn't compute a value nobody reads, when computing it does nothing a program could see: an unused `...rest` makes no list.
 
@@ -204,10 +204,10 @@ When in doubt, use parentheses. `kavach fmt` never removes parentheses that help
 **Equality** (`==`, `!=`) compares contents, at every depth: two lists are equal when they hold equal items in the same order, two records when their fields are equal, two maps and two sets when they hold the same keys (with equal values), **in any order**. Shared values are equal at once: a copy not yet changed (spec 6.1) is not looked inside ([decision 0039](../decisions/0039-equality-is-deep-and-fast.md)).
 
 ```kavach
-const a = ["x": [1, 2], "y": [3]]
+const a = {"x": [1, 2], "y": [3]}
 const b = a
 print(a == b)                          // true, in one step: b is a's copy
-print(["a": 1, "b": 2] == ["b": 2, "a": 1])   // true: order doesn't count
+print({"a": 1, "b": 2} == {"b": 2, "a": 1})   // true: order doesn't count
 print([1, 2] == [2, 1])                // false: lists keep order
 ```
 
@@ -303,7 +303,7 @@ const grade = if score >= 90 { "A" } else { "B" }
 | `Bool`, `Char` | `true`, `क` |
 | `String` | The text itself; inside a collection or record it is quoted: `"Asha"`. There it shows as written, accents and other combining marks too; only `"`, `\`, line breaks (`\n`, `\r`), tabs (`\t`), and control and invisible characters (`\u{200b}`) are escaped |
 | Optional | The value, or `none` |
-| List, map, tuple | `[1, 2]`, `["asha": 31]`, `(200, "OK")` |
+| List, map, tuple | `[1, 2]`, `{"asha": 31}`, `(200, "OK")` |
 | Record | `User(name: "Asha", age: 31)` |
 | Union variant | `Paid`, `TooLarge(value: 200)` |
 | Secret field | `<secret>` |
@@ -366,7 +366,7 @@ fn main() {
 }
 ```
 
-- A module constant is worked out once, before `main` starts, in the order the constants are written, the constants of a module a file uses before its own. Its value never changes, as any `const`'s.
+- A module constant the program reads is worked out once, before `main` starts, in the order the constants are written, the constants of a module a file uses before its own. Its value never changes, as any `const`'s. One that nothing reads is left out: no code and no work at start, so a panic in it never happens (and it is warned as unused, 1.4).
 - Its value may use numbers, text, other module constants, and calls of functions, but no capability, and nothing that can fail without `catch` (5.3): it is worked out before `main` has run anything.
 
 **A `const` that uses a capability** means one of two things, by whether the file has `fn main`:
@@ -393,8 +393,8 @@ print(notes)
 
 The difference keeps a script's first line, `const text = try fs.read_text(path)`, as natural as it reads, while a program with `fn main` has one kind of top-level `const` only.
 
-- A `let` at the top level is a statement of `main` (1.3), and so is every other statement there. So is a `const` that names several values at once (`const (a, b) = pair()`).
-- In a native program, a read works the value out again, giving the same value, since nothing it uses can change; the interpreter keeps it. Either way, every constant is worked out once before `main`, so a panic in one comes first.
+- A `let` at the top level is a statement of `main` (1.3), and so is every other statement there. A function can't read it, as it is a variable of `main`: the error says so, and to make it a `const` or pass it as an argument. So is a `const` that names several values at once (`const (a, b) = pair()`).
+- In a native program, a read works the value out again, giving the same value, since nothing it uses can change; the interpreter keeps it. Either way, every constant the program reads is worked out once before `main`, so a panic in one comes first.
 - Its name is `snake_case`, as any value's (1.5): `const COUNT = 10` is an error that says so.
 - A panic while working one out stops the program before `main` starts, with the constant's line.
 

@@ -20,10 +20,10 @@ type Read {
 
 /// `value` (as `json.of` gives it) as a message with `schema`'s fields.
 pub fn encode(value: Json, schema: Json) -> Bytes ! ProtoError {
-    const fields = value.object() ?? [:]
+    const fields = value.object() ?? {:}
     let out = Bytes([])
     let n = 0
-    for (name, s) in schema.get("properties").object() ?? [:] {
+    for (name, s) in schema.get("properties").object() ?? {:} {
         n += 1
         out = out + (try field(n, fields.get(name) ?? Json.Null, s))
     }
@@ -34,12 +34,12 @@ pub fn encode(value: Json, schema: Json) -> Bytes ! ProtoError {
 /// that isn't there is `null`, or its type's zero value.
 pub fn decode(data: Bytes, schema: Json) -> Json ! ProtoError {
     const found = try fields(data)
-    let out: [String: Json] = [:]
+    let out: [String: Json] = {:}
     // A field with a default is not `required`: when it is missing, it is
     // left out, and decoding the record gives it its default (14.14).
     const required = (schema.get("required").list() ?? []).map(r => r.text() ?? "")
     let n = 0
-    for (name, s) in schema.get("properties").object() ?? [:] {
+    for (name, s) in schema.get("properties").object() ?? {:} {
         n += 1
         const raws = found.get(n) ?? []
         if raws.is_empty() and not required.contains(name) {
@@ -79,7 +79,7 @@ fn field(n: Int, v: Json, s: Json) -> Bytes ! ProtoError {
             // field 1 and the value as field 2.
             const vs = s.get("additionalProperties")
             let out = Bytes([])
-            for (name, item) in v.object() ?? [:] {
+            for (name, item) in v.object() ?? {:} {
                 out = out + chunk(n, chunk(1, name.bytes()) + (try field(2, item, vs)))
             }
             return out
@@ -215,7 +215,7 @@ fn read_fixed(data: Bytes, at: Int, n: Int) -> UInt64 ! ProtoError
 
 /// The fields of message `data`, by number, in the order they came.
 fn fields(data: Bytes) -> [Int: [Raw]] ! ProtoError {
-    let out: [Int: [Raw]] = [:]
+    let out: [Int: [Raw]] = {:}
     let at = 0
     while at < data.len() {
         const k = try read_varint(data, at)
@@ -302,7 +302,7 @@ fn value_of(raws: [Raw], s: Json) -> Json ! ProtoError {
         }
     }
     if kind == "object" and s.get("properties").is_null() {
-        let out: [String: Json] = [:]
+        let out: [String: Json] = {:}
         const vs = s.get("additionalProperties")
         for r in raws {
             match r {
@@ -375,7 +375,7 @@ fn union_bytes(v: Json, opts: [Json]) -> Bytes ! ProtoError {
     const obj = v.object() ?? fail ProtoError.Unsupported(reason: "not a union value")
     for (name, inner) in obj {
         for (i, o) in fielded(opts).enumerate() {
-            for (vname, vs) in o.get("properties").object() ?? [:] {
+            for (vname, vs) in o.get("properties").object() ?? {:} {
                 if vname == name {
                     return chunk(plains.len() + i + 1, try encode(inner, vs))
                 }
@@ -403,11 +403,11 @@ fn union_value(data: Bytes, opts: [Json]) -> Json ! ProtoError {
         return Json.Text(value: plains[k - 1])
     }
     const o = fielded(opts)[k - plains.len() - 1]
-    for (vname, vs) in o.get("properties").object() ?? [:] {
+    for (vname, vs) in o.get("properties").object() ?? {:} {
         const raw = (found.get(k) ?? [])[0]
         return match raw {
             Raw.Chunk(data) => {
-                let out: [String: Json] = [:]
+                let out: [String: Json] = {:}
                 out[vname] = try decode(data, vs)
                 Json.Object(fields: out)
             }

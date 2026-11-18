@@ -55,6 +55,14 @@ fn messages_point_at_the_problem() {
             &["1: `=` sets a variable: to compare, write `==` (spec 4.1)"],
         ),
         (
+            "const m = [\"a\": 1]",
+            &["1: a map is written with braces: `{\"asha\": 31}` (spec 2.2)"],
+        ),
+        (
+            "const m = [:]",
+            &["1: an empty map is written `{:}` (spec 2.2)"],
+        ),
+        (
             "pub(crate) fn f() {\n}",
             &[
                 "1: `pub(…)` takes only `out`: `pub(out)` offers a name to other packages (spec 10.1)",

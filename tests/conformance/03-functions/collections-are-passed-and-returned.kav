@@ -1,11 +1,11 @@
 // Rule: Lists, maps, sets, tuples, tuples with named fields and nested collections are passed and returned as whole values.
 // Spec: 3.1, 2.2, 2.3, 2.14
 // expect output: [3, 2, 1]
-// expect output: ["b": 2, "a": 1, "c": 3]
+// expect output: {"b": 2, "a": 1, "c": 3}
 // expect output: true false 3
 // expect output: (2, "two", 2.5, 'z', false)
 // expect output: 1 5 3
-// expect output: [["x": [1, 2]], ["y": [3, 4, 5]]]
+// expect output: [{"x": [1, 2]}, {"y": [3, 4, 5]}]
 // expect output: [(1, "a"), (2, "b")]
 
 fn backwards(xs: [Int]) -> [Int] { [xs[2], xs[1], xs[0]] }
@@ -25,12 +25,12 @@ fn swap5(t: (Int, String, Float, Char, Bool)) -> (Int, String, Float, Char, Bool
 fn bounds(xs: [Int]) -> (lo: Int, hi: Int, n: Int) {
     (lo: xs.min() ?? 0, hi: xs.max() ?? 0, n: xs.len())
 }
-fn nest(a: [Int], b: [Int]) -> [[String: [Int]]] { [["x": a], ["y": b]] }
+fn nest(a: [Int], b: [Int]) -> [[String: [Int]]] { [{"x": a}, {"y": b}] }
 fn pairs(ns: [Int], ws: [String]) -> [(Int, String)] { [(ns[0], ws[0]), (ns[1], ws[1])] }
 
 fn main() {
     print(backwards([1, 2, 3]))
-    print(with_c(["b": 2, "a": 1]))
+    print(with_c({"b": 2, "a": 1}))
     const s = grow(Set.of("a", "b"))
     print("{s.contains("c")} {s.contains("d")} {s.len()}")
     print(swap5((1, "one", 1.5, 'a', true)))

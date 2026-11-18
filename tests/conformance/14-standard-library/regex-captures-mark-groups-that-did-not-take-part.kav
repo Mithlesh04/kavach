@@ -2,7 +2,7 @@
 // Spec: 14.8
 // expect output: ["b", none, "b"]
 // expect output: none
-// expect output: ["second": "b"]
+// expect output: {"second": "b"}
 // expect output: none
 
 use std.regex

@@ -1,6 +1,6 @@
 // Rule: A map with `String` keys decodes from an object, keeping its keys in order, bare or as a field.
 // Spec: 2.12
-// expect output: ["b": 1.5, "a": 2.0]
+// expect output: {"b": 1.5, "a": 2.0}
 // expect output: EUR 0.9, keys ["USD", "EUR"]
 
 use std.json

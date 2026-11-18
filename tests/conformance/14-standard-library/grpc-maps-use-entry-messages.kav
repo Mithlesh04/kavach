@@ -14,12 +14,12 @@ type Counts {
 
 fn main() {
     print(json.schema<Counts>().get("properties").get("by_day"))
-    let m: [String: Int] = [:]
+    let m: [String: Int] = {:}
     m["mon"] = 3
     m["tue"] = 5
     const c = Counts(name: "hits", by_day: m)
     const wire = grpc.encode<Counts>(c)
     print(wire.to_list())
-    const back = grpc.decode<Counts>(wire) catch _ => Counts(name: "", by_day: [:])
+    const back = grpc.decode<Counts>(wire) catch _ => Counts(name: "", by_day: {:})
     print(back == c)
 }

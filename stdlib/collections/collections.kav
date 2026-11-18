@@ -52,9 +52,9 @@ pub fn unique<T>(items: [T]) -> [T]
 
 /// How many times each item appears, in the order first seen.
 pub fn counts<T>(items: [T]) -> [T: Int]
-    example counts(["a", "b", "a"]) == ["a": 2, "b": 1]
+    example counts(["a", "b", "a"]) == {"a": 2, "b": 1}
 {
-    let out: [T: Int] = [:]
+    let out: [T: Int] = {:}
     for item in items {
         out[item] = (out[item] ?? 0) + 1
     }

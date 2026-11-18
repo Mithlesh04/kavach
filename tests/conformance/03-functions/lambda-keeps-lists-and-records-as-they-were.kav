@@ -10,7 +10,7 @@ type User {
 
 fn main() {
     let items = [1]
-    let ages = ["asha": 30]
+    let ages = {"asha": 30}
     let u = User(name: "Asha", age: 30)
     const seen = () => "{items.len()} {ages.len()} {u.age}"
     items.push(2)

@@ -394,3 +394,5 @@ fn publish(uri: &str, diagnostics: Vec<Value>) -> Value {
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod token_tests;

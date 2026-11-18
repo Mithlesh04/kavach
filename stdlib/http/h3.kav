@@ -63,7 +63,7 @@ fn frame(kind: Int, payload: Bytes) -> Bytes
 /// 1xx ones) and the DATA. Other frame types are skipped, as RFC 9114
 /// 9 asks.
 fn response(data: Bytes) -> H3Message ! H3Error {
-    let headers: [String: String] = [:]
+    let headers: [String: String] = {:}
     let body = Bytes([])
     let final = false
     let i = 0
@@ -76,7 +76,7 @@ fn response(data: Bytes) -> H3Message ! H3Error {
         }
         const payload = data.slice(size.next, end)
         if kind.value == 1 and not final {
-            headers = [:]
+            headers = {:}
             for h in try decode(payload) {
                 headers[h.name] = h.value
             }

@@ -89,6 +89,18 @@ fn errors_explain_the_fix() {
         ),
         ("fn main() {\n  let n = 1\n  n += 2\n}", &[]),
         (
+            "let total = 5\nfn show() {\n  print(total)\n}\nshow()",
+            &[
+                "3: `total` is a `let` of the program's top-level code, a variable of `main` that functions can't read: make it a `const`, or pass it as an argument (spec 1.13)",
+            ],
+        ),
+        (
+            "fn main() {\n  const (_, b) = (1, 2)\n  print(_)\n  print(b)\n}",
+            &[
+                "3: `_` throws a value away, so it can't be read: give the value a name, such as `_t` (spec 1.4)",
+            ],
+        ),
+        (
             "fn main() {\n  for x in [1, 2] {\n    x = x * 2\n  }\n}",
             &[
                 "3: `x` is a name a `for` or `match` takes, so it can't change: work out the new value in a `let` of its own (spec 4.4)",

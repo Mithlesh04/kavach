@@ -3,7 +3,7 @@
 // expect compile error
 
 fn main() {
-    let m = ["a": [0]]
+    let m = {"a": [0]}
     arena {
         const xs = [1, 2, 3]
         m["a"] = xs             // error: xs was made in the arena and can't be kept outside it

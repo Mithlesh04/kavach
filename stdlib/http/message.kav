@@ -202,7 +202,7 @@ pub fn reason(status: Int) -> String {
 
 /// The `content-type` of a file named `path`, from its extension.
 pub fn content_type(path: String) -> String {
-    const types = [
+    const types = {
         "html": "text/html; charset=utf-8",
         "htm": "text/html; charset=utf-8",
         "css": "text/css; charset=utf-8",
@@ -222,7 +222,7 @@ pub fn content_type(path: String) -> String {
         "wasm": "application/wasm",
         "mp4": "video/mp4",
         "woff2": "font/woff2",
-    ]
+    }
     const parts = path.split(".")
     if parts.len() < 2 {
         return "application/octet-stream"

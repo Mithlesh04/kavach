@@ -60,6 +60,7 @@ impl Parser<'_> {
             TokenKind::LParen if !self.in_guard && self.paren_is_lambda() => self.lambda(),
             TokenKind::LParen => return self.paren_or_tuple(),
             TokenKind::LBracket => self.list_or_map(),
+            TokenKind::LBrace if self.at_map() => self.map_literal(),
             TokenKind::LBrace => ExprKind::Block(self.block()),
             TokenKind::Keyword(Keyword::If) => self.if_expr(),
             TokenKind::Keyword(Keyword::Match) => self.match_expr(),
@@ -242,10 +243,13 @@ impl Parser<'_> {
         matches!(self.kind(), TokenKind::Ident) && *self.nth(1) == TokenKind::Colon
     }
 
-    /// `[1, 2]`, `["a": 1]`, `[]` and `[:]` (spec 2.2).
+    /// `[1, 2]` and `[]` (spec 2.2); a map written `["a": 1]` or `[:]` is
+    /// read too, with an error that says to write braces (decision 0129).
     fn list_or_map(&mut self) -> ExprKind {
+        let open = self.span();
         self.bump();
         if self.at(&TokenKind::Colon) && *self.nth(1) == TokenKind::RBracket {
+            self.error(open, "an empty map is written `{:}` (spec 2.2)");
             self.bump();
             self.bump();
             return ExprKind::Map(Vec::new());
@@ -255,6 +259,10 @@ impl Parser<'_> {
         }
         let first = self.expr();
         let kind = if self.eat(&TokenKind::Colon) {
+            self.error(
+                open,
+                "a map is written with braces: `{\"asha\": 31}` (spec 2.2)",
+            );
             let mut entries = vec![(first, self.expr())];
             while self.eat(&TokenKind::Comma) && !self.at(&TokenKind::RBracket) {
                 let key = self.expr();

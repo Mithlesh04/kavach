@@ -19,7 +19,7 @@ fn main() {
     print(quick.summary ?? "no summary")
     const full = Triage(urgent: false, summary: "printer jam")
     print(full.summary ?? "no summary")
-    const answer: Json = ["urgent": true]
+    const answer: Json = {"urgent": true}
     const read = json.decode_value<Triage>(answer) catch _ => full
     print(read.summary ?? "no summary")
     print(json.stringify(json.schema<Triage>()["required"]))

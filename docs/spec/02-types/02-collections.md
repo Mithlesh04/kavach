@@ -3,7 +3,7 @@
 Type | Shorthand | Literal |
 |---|---|---|
 | `List<T>` | `[T]` | `[1, 2, 3]` |
-| `Map<K, V>` | `[K: V]` | `["asha": 31, "ravi": 27]`, empty: `[:]` |
+| `Map<K, V>` | `[K: V]` | `{"asha": 31, "ravi": 27}`, empty: `{:}` |
 | `Set<T>` | – | `Set.of(1, 2, 3)` |
 
 ```kavach
@@ -11,9 +11,15 @@ const names = ["Asha", "Ravi"]
 const first = names[0]           // panics if out of range
 const maybe = names.get(5)       // returns String? (none if out of range)
 
-const ages = ["asha": 31]
+const ages = {"asha": 31}
 const age = ages["asha"]         // returns Int? (maps always return optionals)
+
+const user = {name: "Asha", city: "Pune"}    // keys written as names are text: "name", "city"
+const key = "role"
+const roles = {[key]: "admin"}               // a key in brackets is the value of what is inside
 ```
+
+**Map literals** are written with braces ([decision 0129](../../decisions/0129-maps-written-with-braces.md)): `{key: value, …}`, and an empty map `{:}`. A key written as a plain name is that text; a key in brackets, `{[key]: 1}`, is the value of what is inside; other keys are values (`{"first name": 1}`, `{1: "one"}`). `["a": 1]` and `[:]` are compile errors that say to write braces. `{` after `if`, `fn`, `for`, `=>` and the like still starts a block, and `{}` is an empty block.
 
 `List.capacity(n)`, `Map.capacity(n)` and `Set.capacity(n)` make an empty list, map or set that holds **at most `n` entries**. Room for all `n` is made at once, so filling it never stops to make room, and it never grows past `n`: adding an entry to a full one is a panic. `is_full()` says whether it is full, so a program can check first. A number below 0 counts as 0; one above 4,294,967,294 (2³² − 2) is a panic.
 
@@ -26,7 +32,7 @@ recent.push(2.5)
 print(recent.is_full())                          // true
 recent.push(3.5)                                 // panic: the list is full (capacity 3)
 
-let ages: [String: Int] = Map.capacity(2, ["asha": 31])
+let ages: [String: Int] = Map.capacity(2, {"asha": 31})
 ages["asha"] = 32              // changes a key: not adding, so no panic
 ages["ravi"] = 27              // now full
 let seen: Set<Int> = Set.capacity(2, [7, 7])     // one entry: 7
@@ -54,9 +60,9 @@ Methods of lists: `len`, `is_empty`, `is_full`, `get`, `first`, `last`, `contain
 There is one way to set an item: `items[i] = v` changes an item of a list, and `ages[name] = v` adds or changes a key. `push` and `remove` change the collection they are called on, so like assignment they need a `let`:
 
 ```kavach
-let ages = ["asha": 31]
+let ages = {"asha": 31}
 ages["ravi"] = 27              // adds "ravi"
-ages.remove("asha")            // ages is now ["ravi": 27]
+ages.remove("asha")            // ages is now {"ravi": 27}
 
 const fixed = [1, 2]
 fixed.push(3)                  // error: `fixed` is a `const`: declare it with `let`

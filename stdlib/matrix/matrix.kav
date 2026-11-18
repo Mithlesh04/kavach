@@ -5,7 +5,7 @@
 use std.matrix
 
 /// A grid of numbers, `rows` × `cols`, its items row by row.
-pub type Matrix<T>: Add, Sub, Mul, Neg, MatMul {
+pub type Matrix<T: Number>: Add, Sub, Mul, Neg, MatMul {
     pub rows: Int
     pub cols: Int
     pub items: [T]
@@ -141,7 +141,7 @@ pub type Matrix<T>: Add, Sub, Mul, Neg, MatMul {
 }
 
 /// The matrix with these rows, which must all be as long.
-pub fn of<T>(rows: [[T]]) -> Matrix<T> {
+pub fn of<T: Number>(rows: [[T]]) -> Matrix<T> {
     const cols = if rows.is_empty() { 0 } else { rows[0].len() }
     let items: [T] = []
     for r in rows {
@@ -154,7 +154,7 @@ pub fn of<T>(rows: [[T]]) -> Matrix<T> {
 }
 
 /// A `rows` × `cols` matrix with every item `value`.
-pub fn filled<T>(rows: Int, cols: Int, value: T) -> Matrix<T>
+pub fn filled<T: Number>(rows: Int, cols: Int, value: T) -> Matrix<T>
     require rows >= 0 and cols >= 0
 {
     let items: [T] = []
@@ -165,7 +165,7 @@ pub fn filled<T>(rows: Int, cols: Int, value: T) -> Matrix<T>
 }
 
 /// `n` × `n`, `one` on the diagonal and zeros elsewhere.
-pub fn identity<T>(n: Int, one: T) -> Matrix<T>
+pub fn identity<T: Number>(n: Int, one: T) -> Matrix<T>
     require n >= 0
 {
     const zero = matrix.zip_id<T>([one], [one], 1)[0]

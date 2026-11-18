@@ -9,6 +9,6 @@ type Scores {
 }
 
 fn main() {
-    const s = Scores(by_id: [1: 2.5])
+    const s = Scores(by_id: {1: 2.5})
     print(json.stringify(s))       // error: a map with `Int` keys has no JSON form
 }

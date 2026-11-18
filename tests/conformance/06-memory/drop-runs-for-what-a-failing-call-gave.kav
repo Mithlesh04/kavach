@@ -47,7 +47,7 @@ fn fetch(c: Cache, k: String, i: Int) -> Guard ! String {
 }
 
 fn main() uses Console {
-    const c = Cache(map: Shared([:]))
+    const c = Cache(map: Shared({:}))
     for i in 0..4 {
         const g = fetch(c, "k{i % 2}", i) catch e => panic(e)
         print("using {g.n}")

@@ -30,7 +30,7 @@ print(a.transpose().at(0, 1)) // 3.0
 | `m.sum() -> T`, `m.sum_rows() -> [T]`, `m.sum_cols() -> [T]` | The sum of every item, of each row, of each column |
 | `m.slice(row_start, row_end, col_start, col_end)` | The rows and columns from each start up to, not including, each end, as a new matrix |
 
-- `T` is a number type: `Float`, `Float32` or a whole-number type (2.1).
+- `T` is a number type: `Float`, `Float32` or a whole-number type (2.1). `Matrix<T: Number>` says so (2.9), so a matrix of anything else is a compile error: `matrix.of([["a"]])` is refused.
 - A size that doesn't fit breaks a `require` (7): `a + b` of different sizes, `a @ b` when `a.cols != b.rows` or `a` has no columns, an index out of range. Rows of different lengths in `matrix.of` panic, saying both lengths.
 - Whole numbers overflow as they do anywhere (5.6): `@` panics on a sum that doesn't fit.
 
@@ -41,6 +41,5 @@ print(a.transpose().at(0, 1)) // 3.0
 ## Open questions
 
 - Products on the GPU for large matrices (15.2), choosing the device by size as GPU `map` does, the data staying on the GPU between products.
-- A matrix of a type that isn't a number is not yet a compile error; its first arithmetic or product panics. A compile error needs bounds on generics (2.9).
 - Views that share their rows with the matrix they came from, instead of copies (`slice`, `transpose`), and the layout choice of to-do item 14.
 - More than two dimensions (tensors).

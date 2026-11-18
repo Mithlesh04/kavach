@@ -54,7 +54,7 @@ pub fn connect(conn: Connection) -> H2Client ! H2Error uses Net {
     try wire.client_hello(conn)
     const link = wire.start(conn, Bytes([]))
     const (send_back, send_turn) = Channel<Sending>(capacity: 1)
-    send_back.put(Sending(conn: conn, next: 1, sent: 0, sent_on: [:]))
+    send_back.put(Sending(conn: conn, next: 1, sent: 0, sent_on: {:}))
     const (read_back, read_turn) = Channel<Link>(capacity: 1)
     read_back.put(link)
     const (signal_credit, credit_signal) = Channel<Bool>(capacity: 1)
@@ -66,7 +66,7 @@ pub fn connect(conn: Connection) -> H2Client ! H2Error uses Net {
         credit: Shared(wire.credit_of(link)),
         credit_signal: credit_signal,
         signal_credit: signal_credit,
-        waiting: Shared(Waiting(reading: false, streams: [:])),
+        waiting: Shared(Waiting(reading: false, streams: {:})),
         leaving: Shared(false),
     )
 }
@@ -300,7 +300,7 @@ extend H2Client {
                 self.tell(s, Got.Failed(error: H2Error.Reset(stream: s, code: code)))
             }
         }
-        next.resets = [:]
+        next.resets = {:}
         if next.leaving {
             // Streams the server never started won't be answered.
             const gone = H2Error.Protocol(reason: "the server went away")

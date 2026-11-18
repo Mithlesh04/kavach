@@ -19,7 +19,7 @@ if let u = find_user(7) {
 - `?.` calls a method too: `x?.m(a)` is `none` when `x` is, else `x`'s value's `m(a)`, as an optional. It is `if let v = x { v.m(a) } else { none }`, so the arguments aren't worked out when `x` is `none`. A chain reads into nested maps:
 
 ```kavach
-const deep: [String: [String: Int]] = ["a": ["b": 7]]
+const deep: [String: [String: Int]] = {"a": {"b": 7}}
 print(deep.get("a")?.get("b"))          // 7
 print(deep.get("x")?.get("b") ?? 0)     // 0
 const word: String? = none

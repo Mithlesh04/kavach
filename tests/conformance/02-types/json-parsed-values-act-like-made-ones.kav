@@ -43,7 +43,7 @@ fn main() ! Error {
     const escaped = try json.parse("[\"a \\\"quoted\\\" \\u00e9\"]")
     print(escaped[0].text() ?? "?")
 
-    const made: Json = ["name": "Ada", "tags": ["x", "y"], "n": 36]
+    const made: Json = {"name": "Ada", "tags": ["x", "y"], "n": 36}
     const parsed = try json.parse("\{\"name\": \"Ada\", \"tags\": [\"x\", \"y\"], \"n\": 36}")
     print("{parsed == made} {parsed["tags"] == made["tags"]} {parsed == doc}")
     print(json.stringify(parsed))

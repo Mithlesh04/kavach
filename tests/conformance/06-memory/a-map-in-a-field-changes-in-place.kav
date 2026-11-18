@@ -13,14 +13,14 @@ fn add_name(inout r: R, x: Int) {
 }
 
 fn main() {
-    let r = R(names: [:])
+    let r = R(names: {:})
     const before = r
     for i in 0..3 {
         add_name(r, i)
     }
     print(r.names.len())
     print(before.names.len())
-    let q = R(names: [:])
+    let q = R(names: {:})
     q.names["a"] = 1
     q.names["b"] = 2
     print(q.names.len())

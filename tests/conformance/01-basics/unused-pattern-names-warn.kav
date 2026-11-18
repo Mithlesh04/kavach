@@ -19,7 +19,7 @@ fn main() {
     const [head, ...rest] = [1, 2, 3]               // warning: `rest` is never used
     const u = User(name: "Asha", age: 31, home: Address(city: "Pune", zip: 411001))
     const { name, age: years } = u                  // warning: `years` is never used
-    const [port = 0, host = 0] = ["port": 8080]     // warning: `host` is never used
+    const [port = 0, host = 0] = {"port": 8080}     // warning: `host` is never used
     const (code, message) = (200, "OK")             // warning: `message` is never used
     const { home: { city, zip } } = u               // warning: `zip` is never used
     print("{first} {head} {name} {port} {code} {city}")

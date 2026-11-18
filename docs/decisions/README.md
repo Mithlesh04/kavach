@@ -134,6 +134,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0126](0126-loops-on-one-core-unless-on-cores.md) | Loops on one core unless `on cores` says otherwise | Accepted |
 | [0127](0127-pub-out-for-what-a-package-offers.md) | `pub(out)` for what a package offers to other packages | Accepted |
 | [0128](0128-arenas-as-regions.md) | Arenas as regions: made fast, freed at once | Accepted |
+| [0129](0129-maps-written-with-braces.md) | Maps written with braces | Accepted |
 
 ## Open decisions
 

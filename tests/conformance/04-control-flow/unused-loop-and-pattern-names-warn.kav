@@ -22,7 +22,7 @@ fn main() {
     match (1, 2) {
         (a, b) => print(b)  // warning: a is never used
     }
-    for (k, v) in ["a": 1] {    // warning: k is never used
+    for (k, v) in {"a": 1} {    // warning: k is never used
         print(v)
     }
 }

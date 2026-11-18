@@ -65,7 +65,7 @@ extend<K, V> [K: V] {
 }
 
 const s = [10, 20, 30].second()                  // 20
-const ok = ["a": 1, "b": 2].has_all(["a", "z"])  // false
+const ok = {"a": 1, "b": 2}.has_all(["a", "z"])  // false
 ```
 
 - An item type written out, as `extend [Int]`, is an error: the methods are for every list.

@@ -4,7 +4,7 @@
 // expect output: [9, 2, 3]
 // expect output: Order(id: 1, items: ["tea"])
 // expect output: Order(id: 2, items: ["tea", "cake"])
-// expect output: Item(value: ["a": [1]])
+// expect output: Item(value: {"a": [1]})
 
 type Order {
     id: Int
@@ -30,7 +30,7 @@ fn main() {
     }
     print(o)
     const (maps, map_in) = Channel<[String: [Int]]>(capacity: 1)
-    let m = ["a": [1]]
+    let m = {"a": [1]}
     const _t = spawn {
         maps.put(m)
     }

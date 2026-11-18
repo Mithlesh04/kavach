@@ -3,7 +3,7 @@
 // expect output: 10 101 [3, 4]
 // expect output: 8081 2
 // expect output: Delhi 2
-// expect output: [1, 2, 3, 4] ["port": 8080] Pune
+// expect output: [1, 2, 3, 4] {"port": 8080} Pune
 
 type Address {
     city: String
@@ -23,7 +23,7 @@ fn main() {
     rest[0] = 3
     rest.push(4)
     print("{low} {high} {rest}")
-    const settings = ["port": 8080]
+    const settings = {"port": 8080}
     let [port = 0, retries = 3] = settings
     port += 1
     retries -= 1

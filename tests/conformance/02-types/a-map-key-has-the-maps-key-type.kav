@@ -3,6 +3,6 @@
 // expect compile error
 
 fn main() {
-    const ages = ["asha": 31]
+    const ages = {"asha": 31}
     print(ages[1] ?? 0)             // error: the keys are `String`, not `Int`
 }

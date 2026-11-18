@@ -5,7 +5,7 @@
 // expect output: 1 0
 
 fn main() {
-    let ages = ["asha": 31]
+    let ages = {"asha": 31}
     let more = ages
     more["ravi"] = 27
     print("{ages.len()} {more.len()}")

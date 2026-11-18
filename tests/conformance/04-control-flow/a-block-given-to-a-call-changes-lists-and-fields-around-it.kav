@@ -14,7 +14,7 @@ type User {
 fn main() {
     let items = [1]
     let u = User(name: "Asha", age: 30)
-    let seen = ["a": 1]
+    let seen = {"a": 1}
     log.span("change") {
         items.push(2)
         u.age += 1

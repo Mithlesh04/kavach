@@ -156,8 +156,9 @@ fn display_ref(p: i64, ty: Type, top: bool) -> String {
         Shape::Tuple(ts) => format!("({})", join(&items_of(p), ts)),
         Shape::Map(k, v) => {
             let items = items_of(p);
+            // As a map is written (spec 2.2, decision 0129).
             if items.is_empty() {
-                return "[:]".to_string();
+                return "{:}".to_string();
             }
             let pairs: Vec<String> = items
                 .chunks(2)
@@ -166,7 +167,7 @@ fn display_ref(p: i64, ty: Type, top: bool) -> String {
                     format!("{key}: {}", display(e[1] as i64, *v, false))
                 })
                 .collect();
-            format!("[{}]", pairs.join(", "))
+            format!("{{{}}}", pairs.join(", "))
         }
         Shape::Shared(t) if crate::send::is_weak(p) => {
             let shown = crate::send::with_weak_value(p, |v| display(v as i64, *t, false));

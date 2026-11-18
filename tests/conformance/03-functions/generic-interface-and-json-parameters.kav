@@ -38,7 +38,7 @@ fn main() {
     const empty: [Int] = []
     print("{pass(7)} {pass("a")} {pass(true)} {first(empty)}")
     print(both(Square(side: 3), Name(text: "Asha")))
-    const j: Json = ["id": 1, "tags": ["x"]]
+    const j: Json = {"id": 1, "tags": ["x"]}
     const back = id_of(j)
     print("{back} {back["id"].int() ?? 0}")
     print("{twice(Vec3(x: 1.0, y: 2.0, z: 3.0))} {add(Vec2(x: 1, y: 2), Vec2(x: 3, y: 4))}")

@@ -36,7 +36,7 @@ type Sending {
 pub fn serve(conn: Connection, data: Bytes, handler: fn(Request) -> Response, follow: Bool = true) ! H2Error uses Net {
     let link = try h2.accept(conn, data)
     const (send_back, send_turn) = Channel<Sending>(capacity: 1)
-    send_back.put(Sending(conn: conn, sent: 0, sent_on: [:]))
+    send_back.put(Sending(conn: conn, sent: 0, sent_on: {:}))
     const (signal_credit, credit_signal) = Channel<Bool>(capacity: 1)
     const out = Out(
         send_turn: send_turn,

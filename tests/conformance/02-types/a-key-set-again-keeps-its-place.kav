@@ -1,11 +1,11 @@
 // Rule: Maps and sets keep the order in which items were first added: setting a key again, or adding a value again, does not move it.
 // Spec: 2.2
-// expect output: ["b": 1, "a": 20, "c": 3]
+// expect output: {"b": 1, "a": 20, "c": 3}
 // expect output: [3, 1, 2]
 // expect output: b a c
 
 fn main() {
-    let m = ["b": 1, "a": 2]
+    let m = {"b": 1, "a": 2}
     m["c"] = 3
     m["a"] = 20
     print(m)

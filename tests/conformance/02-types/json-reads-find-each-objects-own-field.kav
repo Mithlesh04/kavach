@@ -23,7 +23,7 @@ fn main() ! Error {
     // Another text: its keys are its own.
     const b = try json.parse("[\{\"qty\": 10}, \{\"qty\": 10}, \{\"note\": \"y\", \"qty\": 10}]")
     // Objects the program builds.
-    const c: Json = [["qty": 4], ["sku": "e", "qty": 5]]
+    const c: Json = [{"qty": 4}, {"sku": "e", "qty": 5}]
     for doc in [a, b, a, c] {
         let sum = 0
         for o in doc.list() ?? [] {

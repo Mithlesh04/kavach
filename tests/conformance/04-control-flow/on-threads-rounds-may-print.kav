@@ -1,0 +1,13 @@
+// Rule: an `on threads` loop is for waiting work: its rounds may print and do other I/O, which an `on cores` loop refuses; each round still writes only its own slot.
+// Spec: 4.9
+// expect output: fetching 0
+// expect output: [10]
+
+fn main() {
+    let out: [Int] = [0]
+    on threads(4) for i in 0..1 {
+        print("fetching {i}")
+        out[i] = (i + 1) * 10
+    }
+    print(out)
+}

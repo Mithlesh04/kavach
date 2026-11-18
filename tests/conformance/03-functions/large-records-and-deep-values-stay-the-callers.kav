@@ -50,7 +50,7 @@ fn wrap(levels: Int, leaf: Int) -> Node {
 }
 
 fn main() {
-    let s = Stock(name: "shop", counts: [:])
+    let s = Stock(name: "shop", counts: {:})
     for i in 0..10_000 {
         s.counts["k{i}"] = i
     }

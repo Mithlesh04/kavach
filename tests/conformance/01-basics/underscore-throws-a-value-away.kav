@@ -1,0 +1,10 @@
+// Rule: `_` alone is not a name: it throws a value away, may be written any number of times, and reading it is a compile error.
+// Spec: 1.4
+// expect compile error
+
+fn main() {
+    const (_, b) = (1, 2)
+    const (_, c) = (3, 4)
+    print(b + c)
+    print(_) // error: `_` throws a value away, so it can't be read
+}

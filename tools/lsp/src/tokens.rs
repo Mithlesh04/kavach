@@ -262,9 +262,11 @@ impl Marks<'_> {
 
     /// A name used through a module: a type when it starts with a capital.
     fn member(&mut self, name: &Ident, called: bool) {
-        let ty = match (called, name.name.starts_with(char::is_uppercase)) {
-            (true, _) => FUNCTION,
-            (false, true) => TYPE,
+        // A capital letter first: `matrix.Matrix(…)` makes a record, a
+        // type called as a function.
+        let ty = match (name.name.starts_with(char::is_uppercase), called) {
+            (true, _) => TYPE,
+            (false, true) => FUNCTION,
             (false, false) => VARIABLE,
         };
         self.mark(name, ty, IMPORTED);

@@ -69,6 +69,8 @@ const TABLE: &[(&str, &[&str])] = &[
         &[
             "is not defined",
             "not defined yet",
+            "throws a value away",
+            "that functions can't read",
             "is used before its",
             "can't be named alone",
             "is not a standard library module",

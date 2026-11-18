@@ -1,6 +1,6 @@
 // Rule: A function can return a large value whole: a record of many fields, a tuple of ten items, or an optional of a small type.
 // Spec: 3.1, 2.3, 2.4, 2.7
-// expect output: Wide(a: 1, b: -2, c: 3.5, d: "four", e: true, f: '6', g: 7, h: 8.5, i: [9], j: ["k": 10], k: 11, l: -12)
+// expect output: Wide(a: 1, b: -2, c: 3.5, d: "four", e: true, f: '6', g: 7, h: 8.5, i: [9], j: {"k": 10}, k: 11, l: -12)
 // expect output: (1, -2, 3.5, "four", true, '6', 7, 8.5, [9], 10)
 // expect output: 10 -2
 // expect output: -1 none 255 none true none 0.5
@@ -22,7 +22,7 @@ type Wide {
 }
 
 fn wide(n: Int) -> Wide {
-    Wide(a: n, b: -2, c: 3.5, d: "four", e: true, f: '6', g: 7, h: 8.5, i: [9], j: ["k": 10], k: 11, l: -12 * n)
+    Wide(a: n, b: -2, c: 3.5, d: "four", e: true, f: '6', g: 7, h: 8.5, i: [9], j: {"k": 10}, k: 11, l: -12 * n)
 }
 fn ten(n: Int) -> (Int, Int8, Float, String, Bool, Char, UInt16, Float32, [Int], Int) {
     (n, -2, 3.5, "four", true, '6', 7, 8.5, [9], 10 * n)

@@ -43,9 +43,14 @@ impl<'a> Interp<'a> {
         Ok(v)
     }
 
-    /// Works out every module constant, in the order they are written.
+    /// Works out every module constant something reads, in the order they
+    /// are written; one nothing reads is left out (spec 1.13).
     pub(crate) fn module_consts_first(&mut self) -> Result<(), crate::value::Flow<'a>> {
-        let mut defs: Vec<DefId> = self.c.resolution.module_consts.iter().copied().collect();
+        let read: std::collections::HashSet<DefId> =
+            self.c.resolution.uses.values().copied().collect();
+        let mut defs: Vec<DefId> = (self.c.resolution.module_consts.iter().copied())
+            .filter(|d| read.contains(d))
+            .collect();
         defs.sort_by_key(|d| self.c.resolution.defs[*d].span.map(|s| s.start));
         for d in defs {
             let span = self.c.resolution.defs[d]

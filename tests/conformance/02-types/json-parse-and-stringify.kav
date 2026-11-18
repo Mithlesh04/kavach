@@ -11,7 +11,7 @@ use std.json
 fn main() ! JsonError {
     const doc = try json.parse(" \{ \"a\": [1, 2.5, \"x\"], \"b\": null } ")
     print(json.stringify(doc))
-    print(json.stringify(["a": 1], indent: 2))
+    print(json.stringify({"a": 1}, indent: 2))
     match doc["a"][0] {
         Json.Number(digits) => print("number {digits}"),
         _ => print("something else"),

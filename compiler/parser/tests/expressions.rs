@@ -37,10 +37,15 @@ fn literals_and_collections() {
         ("[1, 2, 3]", "(list 1 2 3)"),
         ("[]", "(list )"),
         (
-            "[\"asha\": 31, \"ravi\": 27]",
+            "{\"asha\": 31, \"ravi\": 27}",
             "(map ((str \"asha\") 31) ((str \"ravi\") 27))",
         ),
-        ("[:]", "(map )"),
+        ("{:}", "(map )"),
+        // A plain name is that text; a key in brackets is a value (0129).
+        (
+            "{name: 1, [key]: 2, 3: 4}",
+            "(map ((str \"name\") 1) (key 2) (3 4))",
+        ),
         ("(200, \"OK\")", "(tuple 200 (str \"OK\"))"),
         ("(x)", "x"),
         ("'क'\ntrue\nnone\nself\n2.5", "'क'\ntrue\nnone\nself\n2.5"),

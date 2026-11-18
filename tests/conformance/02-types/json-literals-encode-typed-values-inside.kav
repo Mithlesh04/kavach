@@ -12,12 +12,12 @@ type State = Open | Held(why: String)
 fn main() {
     const gift: Item? = none
     const n: [Int?] = [3, none]
-    const doc: Json = [
+    const doc: Json = {
         "item": Item(name: "pen", qty: 2),
         "state": State.Held(why: "stock"),
         "gift": gift,
         "more": [Item(name: "ink", qty: 1)],
         "n": n,
-    ]
+    }
     print(doc)
 }

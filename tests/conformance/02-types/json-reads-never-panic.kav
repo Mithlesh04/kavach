@@ -8,7 +8,7 @@
 // expect output: 2
 
 fn main() {
-    const doc: Json = ["user": ["name": "Asha", "age": 31], "tags": ["a", "b"]]
+    const doc: Json = {"user": {"name": "Asha", "age": 31}, "tags": ["a", "b"]}
     print(doc["user"]["name"].text() ?? "guest")
     print(doc["user"]["email"]["domain"].text() ?? "guest")
     print(doc["tags"][9])
