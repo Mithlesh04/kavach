@@ -71,6 +71,12 @@ export const matricesDoc: LessonDoc = {
         <C>@</C> is only the matrix product. Two numbers are multiplied with <C>*</C>, and the compiler says so:
       </P>
       <Ex name="matrices/numbers.fails" />
+      <P>
+        The type is <C>{"Matrix<T: Number>"}</C>: its items are numbers, so a matrix of anything else is a compile
+        error:
+      </P>
+      <Ex name="matrices/text.fails" />
+      <SrcRef file="tests/conformance/02-types/matrix-holds-only-numbers.kav" label="numbers only, tested" />
       <H2>The same bits everywhere</H2>
       <P>
         Each item of <C>a @ b</C> adds its products in one fixed order, a multiply and then an add each time. So a{" "}
@@ -101,7 +107,7 @@ export const matricesDoc: LessonDoc = {
       <Ex name="types/operators-matmul" />
       <Note>
         Not yet: products on the GPU, views that share items with the matrix they came from instead of copies, and more
-        than two dimensions. A matrix of something that isn&apos;t a number compiles today, and panics at its first sum.
+        than two dimensions.
       </Note>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={SPEC} label="spec 2.17 · matrices" />

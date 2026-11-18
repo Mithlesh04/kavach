@@ -1,0 +1,10 @@
+type Ops {
+    add: fn(Int, Int) -> Int
+    greet: fn(String) -> String
+}
+
+fn main() {
+    const ops = Ops(add: (a, b) => a + b, greet: name => "Hello {name}")
+    print(ops.add(2, 3))
+    print(ops.greet("Asha"))
+}

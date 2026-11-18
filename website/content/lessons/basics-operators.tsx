@@ -120,7 +120,7 @@ export const comparisonDoc: LessonDoc = {
       </ul>
       <H2>Contents, not places</H2>
       <P>
-        <C>==</C> looks inside: two lists are equal when their items are, two maps when their entries are, in any
+        <C>==</C> looks inside: two lists are equal when their items are, two dicts when their entries are, in any
         order.
       </P>
       <H2>Lists in order</H2>
@@ -131,7 +131,7 @@ export const comparisonDoc: LessonDoc = {
       </P>
       <Ex name="operators/list-order" />
       <P>
-        So a list of lists, or of tuples, sorts, and has a <C>min</C> and a <C>max</C>. A set or a map has no order
+        So a list of lists, or of tuples, sorts, and has a <C>min</C> and a <C>max</C>. A set or a dict has no order
         (compare <C>s.to_list().sort()</C> instead), nor has an optional:
       </P>
       <Ex name="operators/set-order.fails" />

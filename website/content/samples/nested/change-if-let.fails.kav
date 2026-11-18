@@ -1,5 +1,5 @@
 fn main() {
-    let b = ["numbers": [2, 4]]
+    let b = {"numbers": [2, 4]}
     if let nums = b["numbers"] {
         nums.push(6)
     }

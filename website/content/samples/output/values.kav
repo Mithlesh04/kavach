@@ -10,7 +10,7 @@ fn main() {
     print(price)
     print('क')
     print(["asha", "ravi"])
-    print(["asha": 31])
+    print({"asha": 31})
     print((200, "OK"))
     print(nickname)
     print(User(name: "Asha", age: 31))

@@ -1,5 +1,5 @@
 fn main() {
-    let ages = ["asha": 31]
+    let ages = {"asha": 31}
     ages["omar"] = 27
     ages["asha"] = 32
     ages.remove("omar")

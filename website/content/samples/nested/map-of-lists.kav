@@ -1,9 +1,9 @@
 fn main() {
-    let groups: [String: [String]] = [
+    let groups: {String: [String]} = {
         "fruit": ["apple"],
         "veg": [],
-    ]
-    print(groups["fruit"] ?? [])          // a map gives an optional
+    }
+    print(groups["fruit"] ?? [])          // a dict gives an optional
 
     // To change an inner list: take it out, change it, put it back.
     let fruit = groups["fruit"] ?? []

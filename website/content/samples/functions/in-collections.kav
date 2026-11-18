@@ -7,7 +7,7 @@ fn sub(a: Int, b: Int) -> Int {
 }
 
 fn main() {
-    const ops = ["add": add, "sub": sub, "mul": (a, b) => a * b]
+    const ops = {"add": add, "sub": sub, "mul": (a, b) => a * b}
     for (name, op) in ops {
         print("{name}: {op(6, 3)}")
     }

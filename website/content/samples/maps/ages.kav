@@ -1,5 +1,5 @@
 fn main() {
-    let ages: [String: Int] = [:]
+    let ages: {String: Int} = {:}
     ages["asha"] = 31
     ages["omar"] = 27
 

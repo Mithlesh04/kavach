@@ -5,13 +5,13 @@ fn main() {
         print(x + y)
     }
 
-    const at: [(Int, Int): String] = [(0, 0): "start", (2, 3): "end"]
-    print(at[(2, 3)] ?? "nothing")         // a tuple as a map key
+    const at: {(Int, Int): String} = {(0, 0): "start", (2, 3): "end"}
+    print(at[(2, 3)] ?? "nothing")         // a tuple as a dict key
 
     const visited: Set<(Int, Int)> = Set.of((1, 2), (1, 2), (3, 4))
     print(visited)                         // a set of tuples: (1, 2) once
 
-    const report: ([String], [String: Int]) = (["a", "b"], ["a": 1, "b": 2])
-    const (names, counts) = report         // a tuple holding a list and a map
+    const report: ([String], {String: Int}) = (["a", "b"], {"a": 1, "b": 2})
+    const (names, counts) = report         // a tuple holding a list and a dict
     print("{names.len()} names, {counts["b"] ?? 0} for b")
 }

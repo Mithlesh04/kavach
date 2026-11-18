@@ -26,7 +26,7 @@ const single: [string, string, string, string][] = [
 
 const built: [string, string, string][] = [
   ["[T]", "a list of T", "/docs/collections/lists/"],
-  ["[K: V]", "a map from keys K to values V", "/docs/collections/maps/"],
+  ["{K: V}", "a dict from keys K to values V", "/docs/collections/dicts/"],
   ["Set<T>", "each T once", "/docs/collections/sets/"],
   ["(A, B)", "a tuple: a few values together", "/docs/collections/tuples/"],
   ["T?", "a T, or none", "/docs/types/optionals/"],

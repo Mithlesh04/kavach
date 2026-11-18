@@ -39,7 +39,7 @@ export const fontDoc: LessonDoc = {
       <H2>The atlas</H2>
       <P>
         An <C>Atlas</C> is an <C>image</C> (an <Link href="/docs/standard-library/images/">Image</Link>), its{" "}
-        <C>size</C> and <C>spread</C>, and <C>boxes</C>, a map from glyph number to <C>GlyphBox</C>: where the
+        <C>size</C> and <C>spread</C>, and <C>boxes</C>, a dict from glyph number to <C>GlyphBox</C>: where the
         glyph is in the image (<C>x</C>, <C>y</C>, <C>width</C>, <C>height</C>), and where the box goes from the
         glyph&apos;s origin (<C>left</C>, <C>top</C>). A glyph with nothing to draw, as a space, has no box.
       </P>

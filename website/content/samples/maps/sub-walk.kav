@@ -1,5 +1,5 @@
 fn main() {
-    const ages = ["asha": 31, "omar": 27]
+    const ages = {"asha": 31, "omar": 27}
     for (name, age) in ages {
         print("{name} is {age}")
     }

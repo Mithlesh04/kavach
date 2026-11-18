@@ -1,5 +1,5 @@
 fn main() {
-    const deep: [String: [String: Int]] = ["a": ["b": 7]]
+    const deep: {String: {String: Int}} = {"a": {"b": 7}}
     print(deep.get("a")?.get("b"))          // 7
     print(deep.get("x")?.get("b") ?? 0)     // 0: no "x", so none
     const word: String? = none

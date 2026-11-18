@@ -20,7 +20,7 @@ fn total(orders: [Order]) -> Int ! OrderError {
 }
 
 fn main() {
-    const codes = ["SPRING": 10, "VIP": 25]
+    const codes = {"SPRING": 10, "VIP": 25}
     const orders = [Order(item: "pen", qty: 3, cents: 150), Order(item: "cup", qty: 1, cents: 900)]
 
     const sum = total(orders) catch _ => 0

@@ -17,6 +17,6 @@ fn main() {
     print("Today: {today}")
     print(String(today).len())
     print([Celsius(degrees: 18.0), Celsius(degrees: -2.5)])
-    print(["Pune": today])
+    print({"Pune": today})
     print(Reading(city: "Pune", temp: today))
 }

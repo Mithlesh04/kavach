@@ -23,7 +23,7 @@ export const listsDoc: LessonDoc = {
         <li><C>fruits[0]</C> is the first item: positions start at 0.</li>
         <li><C>push</C> adds to the end. It changes the list, so the list must be a <C>let</C>.</li>
       </ul>
-      <Note>All the items of a list have the same type. To group values of different types, use a <Link href="/docs/collections/tuples/">tuple</Link> or a <Link href="/docs/types/records/">record</Link>. Lists of lists, lists of maps, and items of different kinds through a union are in <Link href="/docs/collections/nested-and-mixed-collections/">Nested and Mixed Collections</Link>.</Note>
+      <Note>All the items of a list have the same type. To group values of different types, use a <Link href="/docs/collections/tuples/">tuple</Link> or a <Link href="/docs/types/records/">record</Link>. Lists of lists, lists of dicts, and items of different kinds through a union are in <Link href="/docs/collections/nested-and-mixed-collections/">Nested and Mixed Collections</Link>.</Note>
     </>
   ),
   tryIt: {
@@ -173,30 +173,51 @@ export const pipelineDoc: LessonDoc = {
   ),
 };
 
-// ---------- Maps ----------
+// ---------- Dicts ----------
 
 export const mapsDoc: LessonDoc = {
-  lead: "A map stores values under keys: [\"asha\": 31] keeps 31 under the key \"asha\".",
-  simple: <>A map is like a row of labelled lockers: each label, the key, opens one locker with a value inside. You find things by their label, not by their position.</>,
+  lead: "A dict stores values under keys: {\"asha\": 31} keeps 31 under the key \"asha\".",
+  simple: <>A dict, short for dictionary, is like a row of labelled lockers: each label, the key, opens one locker with a value inside. You find things by their label, not by their position.</>,
   minutes: 5,
   before: ["collections/lists", "basics/if-let"],
   body: (
     <>
       <Ex name="maps/ages" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li><C>[String: Int]</C> is a map from text keys to whole-number values; <C>[:]</C> is an empty one.</li>
+        <li><C>{"{String: Int}"}</C> is a dict from text keys to whole-number values, the type <C>{"Dict<String, Int>"}</C>; <C>{"{:}"}</C> is an empty one.</li>
         <li>Reading a key gives an optional: the key may not be there, so <C>?? 0</C> says what to use then.</li>
         <li>A loop visits the entries in the order they were added, every time.</li>
       </ul>
-      <Note>Other languages call this a dictionary, a hash map or an object. A value can be a list, a map or a set too: see <Link href="/docs/collections/nested-and-mixed-collections/">Nested and Mixed Collections</Link>.</Note>
+      <H2>Keys</H2>
+      <P>
+        A key written as a plain name is that text, as in JavaScript: <C>{"{name: \"Asha\"}"}</C> has the key{" "}
+        <C>&quot;name&quot;</C>. For the value of a variable, put it in brackets. Other keys are written as values:
+        text in quotes, numbers, <C>true</C> and <C>false</C>:
+      </P>
+      <Ex name="maps/keys" />
+      <P>
+        <C>{"{}"}</C> is an empty block, not a dict, so an empty dict is <C>{"{:}"}</C>. Brackets, as Swift writes a
+        dict, are refused with the fix:
+      </P>
+      <Ex name="maps/brackets.fails" />
+      <P>
+        A dict holds one type of value. For functions of different types, see{" "}
+        <Link href="/docs/functions/functions-as-values/">Functions as Values</Link>.
+      </P>
+      <Note>Other languages call this a map, a dictionary, a hash map or an object. A value can be a list, a dict or a set too: see <Link href="/docs/collections/nested-and-mixed-collections/">Nested and Mixed Collections</Link>.</Note>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/02-types/02-collections.md" label="spec 2.2 · collections" />
+        <SrcRef file="docs/decisions/0129-maps-written-with-braces.md" label="decision 0129 · braces" />
+        <SrcRef file="docs/decisions/0130-map-renamed-dict.md" label="decision 0130 · Dict" />
+      </div>
     </>
   ),
   tryIt: {
     task: <>Count how many times each word appears in <C>[&quot;a&quot;, &quot;b&quot;, &quot;a&quot;]</C>.</>,
     answer: (
       <P>
-        Start with <C>let counts: [String: Int] = [:]</C>; for each word, <C>counts[w] = (counts[w] ?? 0) + 1</C>.
-        It ends as <C>[&quot;a&quot;: 2, &quot;b&quot;: 1]</C>.
+        Start with <C>{"let counts: {String: Int} = {:}"}</C>; for each word, <C>counts[w] = (counts[w] ?? 0) + 1</C>.
+        It ends as <C>{"{\"a\": 2, \"b\": 1}"}</C>.
       </P>
     ),
   },
@@ -231,14 +252,14 @@ export const mapsDoc: LessonDoc = {
 };
 
 export const makeMapDoc: LessonDoc = {
-  lead: "Write key: value pairs in square brackets, or start empty with [:] and a type.",
-  simple: <>Write the labels and their values out in full, or start with an empty map and fill it later. An empty map must say what kind of labels and values it will hold.</>,
+  lead: "Write key: value pairs in braces, or start empty with {:} and a type.",
+  simple: <>Write the labels and their values out in full, or start with an empty dict and fill it later. An empty dict must say what kind of labels and values it will hold.</>,
   minutes: 2,
   body: (
     <>
       <Ex name="maps/sub-create" />
       <P>
-        When a map should never hold more than <C>n</C> entries, <C>Map.capacity(n)</C> makes room for all of them
+        When a dict should never hold more than <C>n</C> entries, <C>Dict.capacity(n)</C> makes room for all of them
         at once. See <Link href="/docs/collections/collections-with-a-limit/">Collections with a Limit</Link>.
       </P>
     </>
@@ -246,14 +267,14 @@ export const makeMapDoc: LessonDoc = {
 };
 
 export const readMapDoc: LessonDoc = {
-  lead: "map[key] gives an optional: the value, or none when the key isn't there.",
+  lead: "dict[key] gives an optional: the value, or none when the key isn't there.",
   simple: <>Like asking at a cloakroom for a coat by its ticket number: you may get the coat, or be told there is none for that ticket. So you also say what to use when nothing is there.</>,
   minutes: 2,
   body: <Ex name="maps/sub-read" />,
 };
 
 export const changeMapDoc: LessonDoc = {
-  lead: "map[key] = value adds a key or changes its value; remove(key) takes it out.",
+  lead: "dict[key] = value adds a key or changes its value; remove(key) takes it out.",
   simple: <>Like a notice board with name tags: pin a note under a new name, swap the note under a name that is already there, or take a name and its note down.</>,
   minutes: 2,
   body: <Ex name="maps/sub-change" />,
@@ -261,7 +282,7 @@ export const changeMapDoc: LessonDoc = {
 
 export const walkMapDoc: LessonDoc = {
   lead: "Loop over (key, value) pairs, or over keys() or values() alone.",
-  simple: <>Going through a map is like reading a notebook of names and numbers from the first page to the last, in the order they were written: take each name with its number, or only the names, or only the numbers.</>,
+  simple: <>Going through a dict is like reading a notebook of names and numbers from the first page to the last, in the order they were written: take each name with its number, or only the names, or only the numbers.</>,
   minutes: 2,
   body: <Ex name="maps/sub-walk" />,
 };

@@ -10,7 +10,7 @@ type Example {
     letter: Char
     text: String
     list: [Int]
-    map: [String: Int]
+    map: {String: Int}
     missing: String?
     pending: Status
     paid: Status
@@ -25,7 +25,7 @@ fn main() {
         letter: 'k',
         text: "Asha",
         list: [1, 2],
-        map: ["a": 1],
+        map: {"a": 1},
         missing: none,
         pending: Status.Pending,
         paid: Status.Paid(amount: 5.00),

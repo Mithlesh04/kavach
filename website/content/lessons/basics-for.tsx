@@ -7,7 +7,7 @@ import { Ex, H2, Note, P, Syntax } from "./parts";
 // ---------- For Loop ----------
 
 export const forDoc: LessonDoc = {
-  lead: "A for loop runs a block of code once for each item: each item of a list, each number of a range, each entry of a map.",
+  lead: "A for loop runs a block of code once for each item: each item of a list, each number of a range, each entry of a dict.",
   simple: <>A for loop is like a teacher calling the register: go down the list of names, one by one, and do the same thing for each. You don&apos;t keep count yourself; the list says when you are done.</>,
   minutes: 5,
   before: ["basics/variables", "basics/operators"],
@@ -143,8 +143,8 @@ export const forRangeDoc: LessonDoc = {
 };
 
 export const forMapDoc: LessonDoc = {
-  lead: "Loop over a map: each round gives a key and its value together.",
-  simple: <>A map is like a notebook of names and phone numbers, written down as you meet people. Looping over it gives you each name together with its number, one entry at a time, in the order they were written.</>,
+  lead: "Loop over a dict: each round gives a key and its value together.",
+  simple: <>A dict is like a notebook of names and phone numbers, written down as you meet people. Looping over it gives you each name together with its number, one entry at a time, in the order they were written.</>,
   minutes: 3,
   body: (
     <>

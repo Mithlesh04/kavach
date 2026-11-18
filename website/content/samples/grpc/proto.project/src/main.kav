@@ -6,7 +6,7 @@ type Order {
     qty: Int = 1
     status: Status
     tags: [String]
-    notes: [String: String]
+    notes: {String: String}
 }
 
 fn main() {

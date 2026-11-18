@@ -1,0 +1,6 @@
+use std.matrix
+
+fn main() uses Console {
+    const names = matrix.of([["a", "b"], ["c", "d"]])
+    print(names.rows)
+}

@@ -1,0 +1,18 @@
+type Op = Binary(f: fn(Int, Int) -> Int) | Unary(f: fn(String) -> String)
+
+fn run(name: String, op: Op) -> String {
+    match op {
+        Op.Binary(f) => "{name}: {f(6, 8)}",
+        Op.Unary(f) => "{name}: {f("Ravi")}",
+    }
+}
+
+fn main() {
+    const table: {String: Op} = {
+        "add": Op.Binary(f: (a, b) => a + b),
+        "greet": Op.Unary(f: name => "Hello {name}"),
+    }
+    for (name, op) in table {
+        print(run(name, op))
+    }
+}

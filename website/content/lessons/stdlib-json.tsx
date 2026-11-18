@@ -37,7 +37,7 @@ const kinds: [json: string, example: string, jsonCase: string, read: string, dec
   ["a number", "42, 2.5, 1e3", "Number(digits)", "int(), float(), decimal(), bigint()", "Int, Float, Decimal, BigInt, or a sized integer"],
   ["a string", "\"Asha\"", "Text(value)", "text()", "String (Char for one character)"],
   ["an array", "[1, 2]", "Array(items)", "list()", "a list, set or tuple"],
-  ["an object", "{\"id\": 7}", "Object(fields)", "object()", "a record, or a map with String keys"],
+  ["an object", "{\"id\": 7}", "Object(fields)", "object()", "a record, or a dict with String keys"],
 ];
 
 export const jsonDoc: LessonDoc = {
@@ -201,7 +201,7 @@ export const jsonValuesDoc: LessonDoc = {
     <>
       <Syntax
         code={
-          "type Json = Null |\n    Boolean(value: Bool) |\n    Number(digits: String) |\n    Text(value: String) |\n    Array(items: [Json]) |\n    Object(fields: [String: Json])"
+          "type Json = Null |\n    Boolean(value: Bool) |\n    Number(digits: String) |\n    Text(value: String) |\n    Array(items: [Json]) |\n    Object(fields: {String: Json})"
         }
       />
       <P>Being a union, <C>match</C> sees every case:</P>
@@ -284,7 +284,7 @@ export const jsonBuildingDoc: LessonDoc = {
         <li>A <C>Char</C> is text of one character; an optional that is <C>none</C> is <C>null</C>.</li>
         <li>A union case without fields is its name; one with fields is an object holding them, under its name.</li>
         <li>A <C>Date</C>, <C>Time</C> or <C>DateTime</C> is ISO 8601 text, a <C>DateTime</C> in UTC: see <Link href="/docs/standard-library/json/decoding-into-a-type/#dates-and-times">Dates and times</Link>.</li>
-        <li>Functions, and maps whose keys aren&apos;t <C>String</C>, can&apos;t be written: that is a compile error.</li>
+        <li>Functions, and dicts whose keys aren&apos;t <C>String</C>, can&apos;t be written: that is a compile error.</li>
       </ul>
       <P>A record with a <C>secret</C> field can&apos;t be written as JSON, so a secret can&apos;t leave in an API response by accident:</P>
       <Ex name="json/sub-secret.fails" />

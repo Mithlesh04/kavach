@@ -69,8 +69,8 @@ export const reflectDoc: LessonDoc = {
       <H2>Generic types and collections</H2>
       <P>
         A generic type&apos;s members show its type parameters by name: <C>Box&lt;T&gt;</C>&apos;s <C>get</C> gives{" "}
-        <C>T</C>. For the collections, write <C>List</C>, <C>Map</C>, <C>Set</C> or <C>Ring</C>: <C>T</C> is the
-        item type, and <C>K</C> and <C>V</C> a map&apos;s key and value. The compiler knows a built-in method&apos;s
+        <C>T</C>. For the collections, write <C>List</C>, <C>Dict</C>, <C>Set</C> or <C>Ring</C>: <C>T</C> is the
+        item type, and <C>K</C> and <C>V</C> a dict&apos;s key and value. The compiler knows a built-in method&apos;s
         parameter types but not their names, so they are named <C>a</C>, <C>b</C> and on:
       </P>
       <Ex name="reflect/generic" />

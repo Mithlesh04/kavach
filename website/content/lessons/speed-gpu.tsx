@@ -133,7 +133,7 @@ export const gpuFnDoc: LessonDoc = {
           <tbody>
             {[
               ["Float32, Int32, UInt32, Bool", "Float, Int and other 64-bit types", "GPUs compute 32-bit numbers fast: consumer NVIDIA GPUs run 64-bit floats at 1/64 of the speed, and WebGPU's shading language has none"],
-              ["those types, and records and tuples of 1 to 8 of them, as parameters and result", "text, lists, maps, pointers", "each GPU thread holds a few fixed-size numbers; it can't make or grow a value in memory"],
+              ["those types, and records and tuples of 1 to 8 of them, as parameters and result", "text, lists, dicts, pointers", "each GPU thread holds a few fixed-size numbers; it can't make or grow a value in memory"],
               ["const, let, =, if/else, while, for over 0..n, return", "for over a list, match, try, recursion", "a GPU has no call stack, and nothing a thread could loop over but its own numbers"],
               ["+ - * / % and comparisons; ** on Float32", "print, debug, capabilities (files, network, AI)", "thousands of threads run at once, cut off from the outside world"],
               ["Float32(n), Int32(x); abs, min, max, clamp; math.sqrt, floor, ceil, round, pow, sin, cos, tan, asin, acos, atan, atan2, exp, ln; std.vec's Float32 types", "a function that isn't a gpu fn, other std modules", "the compiler can only translate what it has checked follows these rules"],
@@ -318,7 +318,7 @@ const canUse: [what: string, ok: boolean, instead: React.ReactNode][] = [
   ["Pointers (Ptr)", false, <>Pass the numbers themselves; <C>map</C> hands each item over for you.</>],
   ["inout parameters", false, <>Give the new value back as the result, and <C>map</C> collects the results. This holds for a <C>gpu fn</C> called from another too: one rule for every <C>gpu fn</C>.</>],
   ["Files, network, print, AI", false, <>Read the file before the <C>map</C> and write the results after it: a GPU can&apos;t reach the outside world.</>],
-  ["Text, lists or maps inside a gpu fn", false, <>The list is what <C>map</C> goes over; inside, work on one item&apos;s numbers.</>],
+  ["Text, lists or dicts inside a gpu fn", false, <>The list is what <C>map</C> goes over; inside, work on one item&apos;s numbers.</>],
   ["Recursion", false, <>Use a <C>while</C> loop: a GPU has no call stack.</>],
   ["try, catch, fail, or ! in the signature", false, <>Check values with <C>if</C> and give a result for every item: on the GPU there is no error to give back.</>],
   ["Lambdas inside a gpu fn", false, <>Write another <C>gpu fn</C> and call it.</>],
@@ -420,7 +420,7 @@ export const gpuUsesDoc: LessonDoc = {
       <H2>When not to use the GPU</H2>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><strong className="text-ink">Light work:</strong> adding 1 to each number is faster on the CPU than the trip to the GPU.</li>
-        <li><strong className="text-ink">Text, maps and files:</strong> a GPU works on numbers only.</li>
+        <li><strong className="text-ink">Text, dicts and files:</strong> a GPU works on numbers only.</li>
         <li><strong className="text-ink">Sorting and float totals:</strong> these run on the CPU. A long list of whole numbers sorts on all cores (<Link href="/docs/speed/fast-sorting/">Fast Sorting</Link>), and a loop of your own can use them with <Link href="/docs/speed/loops-on-all-cores/"><C>on cores</C></Link>. Whole-number <C>sum</C>, <C>min</C> and <C>max</C> of a list already on the GPU run there.</li>
       </ul>
       <Note>These lists are short so the output fits on a page; with the same code, long lists run on the GPU.</Note>

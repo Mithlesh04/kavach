@@ -2,7 +2,7 @@ type Shelf {
     numbers: [Int]
     names: [String]
     tags: Set<String>
-    ages: [String: Int]
+    ages: {String: Int}
     recent: Ring<Int>
 }
 
@@ -11,7 +11,7 @@ fn main() {
         numbers: [5, 2, 8, 2],
         names: ["pen", "ink"],
         tags: Set.of("new", "cheap"),
-        ages: ["asha": 31, "ravi": 27],
+        ages: {"asha": 31, "ravi": 27},
         recent: Ring.capacity(3, [1, 2, 3, 4]),
     )
     const n = shelf.numbers
@@ -26,8 +26,8 @@ fn main() {
     print("join {shelf.names.join(", ")}")
     print("still {shelf.numbers}")
     print("set: {shelf.tags.contains("new")} {shelf.tags.len()} {shelf.tags.is_empty()} {shelf.tags.is_full()} {shelf.tags.to_list()}")
-    print("map: {shelf.ages["asha"] ?? 0} {shelf.ages.get("ravi") ?? 0} {shelf.ages.len()} {shelf.ages.is_empty()} {shelf.ages.is_full()}")
-    print("map: {shelf.ages.contains_key("asha")} {shelf.ages.keys()} {shelf.ages.values()}")
+    print("dict: {shelf.ages["asha"] ?? 0} {shelf.ages.get("ravi") ?? 0} {shelf.ages.len()} {shelf.ages.is_empty()} {shelf.ages.is_full()}")
+    print("dict: {shelf.ages.contains_key("asha")} {shelf.ages.keys()} {shelf.ages.values()}")
     const r = shelf.recent
     print("ring: {r.len()} {r.is_empty()} {r.is_full()} {r.first() ?? 0} {r.last() ?? 0} {r.get(0) ?? 0} {r.contains(4)} {r.to_list()}")
 }

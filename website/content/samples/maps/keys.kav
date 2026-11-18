@@ -1,0 +1,11 @@
+fn main() {
+    const user = {name: "Asha", city: "Pune"}
+    print(user["name"] ?? "?")
+
+    const field = "role"
+    const roles = {[field]: "admin"}
+    print(roles)
+
+    const counts = {1: "one", 2: "two"}
+    print(counts[2] ?? "?")
+}

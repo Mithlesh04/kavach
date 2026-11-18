@@ -94,7 +94,7 @@ export const loggingDoc: LessonDoc = {
       <CodeBlock code={specBlockWith(`14-standard-library/${LOG}`, "14.12", "log.count(")} file="from spec 14.12" />
       <ModuleTable file="12-log.md" number="14.12" first="Function" heading="Metrics" />
       <P>
-        Each also takes <C>attributes</C>, a <C>[String: String]</C> map that is empty unless given. Each name and set
+        Each also takes <C>attributes</C>, a <C>{"{String: String}"}</C> dict that is empty unless given. Each name and set
         of attributes is a series of its own, whatever order the attributes are written in:
       </P>
       <Ex name="logging/metric-attributes" />

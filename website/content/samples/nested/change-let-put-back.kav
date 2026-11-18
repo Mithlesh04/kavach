@@ -1,6 +1,6 @@
 fn main() {
     let a = [2, 4]
-    let b = ["numbers": a]
+    let b = {"numbers": a}
     let nums = b["numbers"] ?? []
     nums.push(6)
     b["numbers"] = nums

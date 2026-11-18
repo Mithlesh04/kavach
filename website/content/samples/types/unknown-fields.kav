@@ -7,7 +7,7 @@ fn main() ! Error {
     print(doc["age"].int() ?? 0)
     print(doc["extra"]["vip"].bool() ?? false)
     print(doc["missing"]["deeper"].text() ?? "not there")
-    for (key, value) in doc.object() ?? [:] {
+    for (key, value) in doc.object() ?? {:} {
         print("{key}: {value}")
     }
 }

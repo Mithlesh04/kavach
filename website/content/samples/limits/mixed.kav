@@ -11,8 +11,8 @@ fn main() {
         }
     }
 
-    let groups: [String: [Int]] = Map.capacity(10)
-    groups["small"] = List.capacity(3, [1, 2])     // a map of lists, each with a limit
+    let groups: {String: [Int]} = Dict.capacity(10)
+    groups["small"] = List.capacity(3, [1, 2])     // a dict of lists, each with a limit
     print(groups)
     print(groups.is_full())
 }

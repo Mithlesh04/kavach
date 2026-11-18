@@ -13,27 +13,27 @@ import { Ex, H2, Note, P } from "./parts";
 
 const shapes: [string, string, string][] = [
   ["[[Int]]", "a list of lists", "[[1, 2], [3]]"],
-  ["[String: [String]]", "a map of lists", "[\"fruit\": [\"apple\"]]"],
-  ["[[String: String]]", "a list of maps", "[[\"name\": \"Asha\"]]"],
-  ["[String: [String: [Int]]]", "a map of maps of lists", "[\"pens\": [\"blue\": [10]]]"],
-  ["[String: Set<String>]", "a map of sets", "[\"pen\": Set.of(\"blue\")]"],
+  ["{String: [String]}", "a dict of lists", "{\"fruit\": [\"apple\"]}"],
+  ["[{String: String}]", "a list of dicts", "[{\"name\": \"Asha\"}]"],
+  ["{String: {String: [Int]}}", "a dict of dicts of lists", "{\"pens\": {\"blue\": [10]}}"],
+  ["{String: Set<String>}", "a dict of sets", "{\"pen\": Set.of(\"blue\")}"],
   ["[(Int, Int)]", "a list of tuples", "[(1, 2), (3, 4)]"],
-  ["[(Int, Int): String]", "a map with tuple keys", "[(0, 0): \"start\"]"],
+  ["{(Int, Int): String}", "a dict with tuple keys", "{(0, 0): \"start\"}"],
   ["Set<(Int, Int)>", "a set of tuples", "Set.of((1, 2))"],
-  ["([String], [String: Int])", "a tuple of a list and a map", "([\"a\"], [\"a\": 1])"],
+  ["([String], {String: Int})", "a tuple of a list and a dict", "([\"a\"], {\"a\": 1})"],
   ["[Cell]", "a list of a union: items of different kinds", "[Cell.Empty, Cell.Text(value: \"pens\")]"],
 ];
 
 // Each row is a checked sample; its result is read from the sample's
 // .expect, so the table can't say what the compiler doesn't do.
 const changeCases: [sample: string, setup: string, step: string][] = [
-  ["nested/change-const-map.fails", "let a = [2, 4]; const b = [\"numbers\": a]", "b[\"numbers\"].push(6)"],
-  ["nested/inner-push.fails", "a let map of lists", "groups[\"fruit\"].push(\"mango\")"],
-  ["nested/change-let-put-back", "let b = [\"numbers\": a]", "take out, push, put back"],
-  ["nested/change-one-line", "let b = [\"numbers\": [2, 4]]", "b[\"numbers\"] = (b[\"numbers\"] ?? []) + [6]"],
-  ["nested/change-const-put-back.fails", "const b = [\"numbers\": a]", "take out, push, put back"],
-  ["nested/change-original", "let a; const b = [\"numbers\": a]", "a.push(6), then print a and b"],
-  ["nested/change-const-inside-let", "const a; let b = [\"numbers\": a]", "change b's list"],
+  ["nested/change-const-map.fails", "let a = [2, 4]; const b = {\"numbers\": a}", "b[\"numbers\"].push(6)"],
+  ["nested/inner-push.fails", "a let dict of lists", "groups[\"fruit\"].push(\"mango\")"],
+  ["nested/change-let-put-back", "let b = {\"numbers\": a}", "take out, push, put back"],
+  ["nested/change-one-line", "let b = {\"numbers\": [2, 4]}", "b[\"numbers\"] = (b[\"numbers\"] ?? []) + [6]"],
+  ["nested/change-const-put-back.fails", "const b = {\"numbers\": a}", "take out, push, put back"],
+  ["nested/change-original", "let a; const b = {\"numbers\": a}", "a.push(6), then print a and b"],
+  ["nested/change-const-inside-let", "const a; let b = {\"numbers\": a}", "change b's list"],
   ["nested/change-record", "let b = Box(numbers: a)", "b.numbers.push(6)"],
   ["nested/change-const-record.fails", "const b = Box(numbers: [2, 4])", "b.numbers.push(6)"],
   ["nested/change-list", "let b = [a, [8]]", "b[0].push(6)"],
@@ -52,7 +52,7 @@ const methodKinds: [type: string, change: React.ReactNode, read: React.ReactNode
     <><C>len</C>, <C>is_empty</C>, <C>is_full</C>, <C>get</C>, <C>first</C>, <C>last</C>, <C>contains</C>, <C>index_of</C>, <C>count</C>, <C>find</C>, <C>min</C>, <C>max</C>, <C>sum</C>, <C>map</C>, <C>filter</C>, <C>flat_map</C>, <C>any</C>, <C>all</C>, <C>enumerate</C>, <C>sort</C>, <C>sort_by</C>, <C>reverse</C>, <C>take</C>, <C>skip</C>, <C>slice</C>, <C>join</C>, <C>+</C></>,
   ],
   [
-    "Map",
+    "Dict",
     <><C>m[k] = v</C>, <C>remove</C></>,
     <><C>m[k]</C>, <C>get</C>, <C>len</C>, <C>is_empty</C>, <C>is_full</C>, <C>contains_key</C>, <C>keys</C>, <C>values</C></>,
   ],
@@ -101,10 +101,10 @@ function ChangeTable() {
 }
 
 export const nestedDoc: LessonDoc = {
-  lead: "Collections can hold collections: lists of lists, maps of lists, lists of maps, sets and tuples inside any of them, at any depth. Items of different types go in one collection through a union, or as Json.",
+  lead: "Collections can hold collections: lists of lists, dicts of lists, lists of dicts, sets and tuples inside any of them, at any depth. Items of different types go in one collection through a union, or as Json.",
   simple: <>Like boxes inside boxes: a shelf of trays, each tray holding pens. Each box holds one kind of thing, and a box can hold other boxes. To keep different kinds in one box, give them one shared label first: a union.</>,
   minutes: 8,
-  before: ["collections/lists", "collections/maps", "collections/sets", "collections/tuples"],
+  before: ["collections/lists", "collections/dicts", "collections/sets", "collections/tuples"],
   body: (
     <>
       <P>A list of lists is a grid. Read an item with two indexes, and change one in place:</P>
@@ -139,9 +139,9 @@ export const nestedDoc: LessonDoc = {
           </tbody>
         </table>
       </div>
-      <H2>Maps of lists</H2>
+      <H2>Dicts of lists</H2>
       <P>
-        A map gives an <Link href="/docs/types/optionals/">optional</Link>, as the key may be missing, so{" "}
+        A dict gives an <Link href="/docs/types/optionals/">optional</Link>, as the key may be missing, so{" "}
         <C>?? []</C> gives an empty list then. To change an inner list, take it out, change it and put it back:
       </P>
       <Ex name="nested/map-of-lists" />
@@ -150,7 +150,7 @@ export const nestedDoc: LessonDoc = {
       <H2>Lists of maps</H2>
       <Ex name="nested/list-of-maps" />
       <Note>
-        When every map has the same keys, as here, a <Link href="/docs/types/records/">record</Link> is better:{" "}
+        When every dict has the same keys, as here, a <Link href="/docs/types/records/">record</Link> is better:{" "}
         <C>Person(name: &quot;Asha&quot;, city: &quot;Pune&quot;)</C>. Its fields are checked when the program is
         built, and reading one never gives an optional.
       </Note>
@@ -165,24 +165,24 @@ export const nestedDoc: LessonDoc = {
         <C>deep.get(&quot;a&quot;)?.get(&quot;b&quot;) ?? 0</C>. See{" "}
         <Link href="/docs/types/optionals/reading-one-safely/">Reading one safely</Link>.
       </P>
-      <H2>A real shape: records, maps, lists and functions</H2>
+      <H2>A real shape: records, dicts, lists and functions</H2>
       <P>
-        Real data mixes kinds: a school has a name (text) and its classes (a map). Written as one map, as in JSON or
-        Python, it is refused, as all the values of a map have one type:
+        Real data mixes kinds: a school has a name (text) and its classes (a dict). Written as one dict, as in JSON or
+        Python, it is refused, as all the values of a dict have one type:
       </P>
       <Ex name="nested/school-map.fails" />
       <P>Give each kind of thing its own place instead:</P>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>A <Link href="/docs/types/records/">record</Link> for a thing with fixed fields: a <C>School</C> has a <C>name</C> and <C>rooms</C>.</li>
-        <li>A map for things found by name: rooms by class, marks by subject.</li>
+        <li>A dict for things found by name: rooms by class, marks by subject.</li>
         <li>A list for things in order: students, and their marks.</li>
-        <li>A <Link href="/docs/functions/functions-as-values/">function as a value</Link> where each entry has its own rule: <C>[String: fn(Int) -&gt; Int]</C> holds each class&apos;s fee rule, a named function or a lambda.</li>
+        <li>A <Link href="/docs/functions/functions-as-values/">function as a value</Link> where each entry has its own rule: <C>{"{String: fn(Int) -> Int}"}</C> holds each class&apos;s fee rule, a named function or a lambda.</li>
       </ul>
       <Ex name="nested/school" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li><C>school.rooms</C> is a record&apos;s field, so reading it never gives an optional. <C>room.marks[&quot;math&quot;]</C> is a map&apos;s, so it does: <C>?? []</C> gives an empty list for a missing subject.</li>
+        <li><C>school.rooms</C> is a record&apos;s field, so reading it never gives an optional. <C>room.marks[&quot;math&quot;]</C> is a dict&apos;s, so it does: <C>?? []</C> gives an empty list for a missing subject.</li>
         <li><C>if let fee = fees[class_name]</C> runs its block only when the class has a fee rule, then <C>fee(…)</C> calls it.</li>
-        <li>A record checks its fields when the program is built: a typo such as <C>room.teachr</C> is a compile error, where a map would give <C>none</C> while running.</li>
+        <li>A record checks its fields when the program is built: a typo such as <C>room.teachr</C> is a compile error, where a dict would give <C>none</C> while running.</li>
       </ul>
       <Note>
         When such data comes from outside as JSON, decode it straight into records like these. See{" "}
@@ -190,7 +190,7 @@ export const nestedDoc: LessonDoc = {
       </Note>
       <H2>Tuples inside and around</H2>
       <P>
-        Tuples go in lists, in sets and as map keys, which suits points on a grid. A tuple can hold collections too,
+        Tuples go in lists, in sets and as dict keys, which suits points on a grid. A tuple can hold collections too,
         and <C>const (a, b) = …</C> takes it apart:
       </P>
       <Ex name="nested/tuples" />
@@ -198,12 +198,13 @@ export const nestedDoc: LessonDoc = {
       <Ex name="nested/sets" />
       <H2>What can be a key</H2>
       <P>
-        Any value can be a map&apos;s key or a set&apos;s item: numbers, text, tuples, records, unions, and lists, maps
-        and sets too. Values never change in place, so a key can&apos;t change while it is in a map. Keys are compared
+        Any value can be a dict&apos;s key or a set&apos;s item: numbers, text, tuples, records, unions, and lists, dicts
+        and sets too. Values never change in place, so a key can&apos;t change while it is in a dict. Keys are compared
         by value, as <C>==</C> compares:
       </P>
       <Ex name="nested/keys" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A key in brackets is the value of what is inside, so a list key is written in a second pair: <C>{"{[[\"red\", \"big\"]]: 3}"}</C>.</li>
         <li><C>0.0</C> and <C>-0.0</C> are one key, so every float has one place.</li>
         <li>NaN is one key too: NaN equals NaN as a key or a set item, though <C>==</C> keeps NaN equal to nothing.</li>
       </ul>
@@ -216,7 +217,7 @@ export const nestedDoc: LessonDoc = {
       <Ex name="nested/copies" />
       <H2>Changing what&apos;s inside: let and const</H2>
       <P>
-        Can a list inside a map be changed? It depends on two things: whether the outer value is a <C>let</C>, and
+        Can a list inside a dict be changed? It depends on two things: whether the outer value is a <C>let</C>, and
         whether reaching the inner value gives an <Link href="/docs/types/optionals/">optional</Link>. This is
         refused twice over:
       </P>
@@ -228,7 +229,7 @@ export const nestedDoc: LessonDoc = {
       <P>With a <C>let</C>, take the list out, change it and put it back. Or do it in one line, with <C>+</C>:</P>
       <Ex name="nested/change-let-put-back" />
       <P>
-        A value read from one map can&apos;t go straight into another: the read is an optional, and a map&apos;s slot
+        A value read from one dict can&apos;t go straight into another: the read is an optional, and a dict&apos;s slot
         takes a value. Give a default with <C>??</C> first, or use <C>if let</C>:
       </P>
       <Ex name="nested/map-slot.fails" />
@@ -236,7 +237,7 @@ export const nestedDoc: LessonDoc = {
       <ChangeTable />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>A <C>const</C> never changes, at any depth. To change one, copy it into a <C>let</C>: the copy changes, and the original stays as it was.</li>
-        <li>In a <C>let</C>, a list&apos;s item (<C>b[0]</C>) and a record&apos;s field (<C>b.numbers</C>) change in place. A map&apos;s value is an optional: take it out and put it back.</li>
+        <li>In a <C>let</C>, a list&apos;s item (<C>b[0]</C>) and a record&apos;s field (<C>b.numbers</C>) change in place. A dict&apos;s value is an optional: take it out and put it back.</li>
         <li>Putting <C>a</C> into <C>b</C> puts in a copy. Changing <C>a</C> later leaves <C>b</C> as it was, and changing <C>b</C> leaves <C>a</C>.</li>
         <li>A name from <C>if let</C> is a <C>const</C>. To change what it holds, copy it into a <C>let</C>, change that, and put it back.</li>
       </ul>
@@ -272,7 +273,7 @@ export const nestedDoc: LessonDoc = {
       <P>On a <C>const</C>, the compiler refuses each of these lines, one error for each. The first:</P>
       <Ex name="nested/methods-const.fails" />
       <P>
-        Reading through a map&apos;s lookup needs <C>??</C> first, as changing does: the value may be missing.
+        Reading through a dict&apos;s lookup needs <C>??</C> first, as changing does: the value may be missing.
       </P>
       <Ex name="nested/methods-map-read.fails" />
       <P>
@@ -296,7 +297,7 @@ export const nestedDoc: LessonDoc = {
       <P>
         For data whose shape is only known when the program runs, such as a web service&apos;s answer, use{" "}
         <C>Json</C>. Where a <C>Json</C> is expected, a literal can mix numbers, text, <C>true</C>,{" "}
-        <C>none</C>, lists and maps at any depth. See{" "}
+        <C>none</C>, lists and dicts at any depth. See{" "}
         <Link href="/docs/standard-library/json/json-values/">JSON values</Link>.
       </P>
       <Ex name="nested/mixed-json" />

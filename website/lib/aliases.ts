@@ -64,7 +64,7 @@ export const aliases: Record<string, string> = {
   "standard-library/json/json-values": "dynamic type any unknown type duck typing schemaless untyped object dict mixed int float parse api response bigint decimal exact digits big number precision 0.1 lossless",
   "standard-library/bytes": "bytes byte array buffer binary blob raw data utf-8 encoding as_list read numbers float32 little endian decode",
   "collections/lists": "array vector arraylist slice append index element push pop collection sequence",
-  "collections/maps": "dictionary dict hashmap hash table object key value lookup unordered_map record store",
+  "collections/dicts": "map dictionary dict hashmap hash table object key value lookup unordered_map record store",
   "collections/sorting": "sort order sorted ascending descending alphabetical radix quicksort merge sort stable compare key orderby sort_by case insensitive",
   "collections/sets": "unique distinct duplicates hashset membership contains deduplicate",
   "collections/collections-with-a-limit": "capacity limit bounded fixed size reserve preallocate is_full full memory with_capacity",

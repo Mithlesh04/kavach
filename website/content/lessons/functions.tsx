@@ -267,20 +267,35 @@ export const fnValuesDoc: LessonDoc = {
       </P>
       <H2>Functions in a collection</H2>
       <P>
-        A function goes in a list or a map like any value. A map from names to functions picks what to do by a name,
+        A function goes in a list or a dict like any value. A dict from names to functions picks what to do by a name,
         as for commands or a calculator&apos;s keys:
       </P>
       <Ex name="functions/in-collections" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li><C>[&quot;add&quot;: add]</C> stores the function <C>add</C> itself, not a call: no brackets after its name.</li>
-        <li>Named functions and lambdas mix, when they take and give the same types. Here the map is a <C>[String: fn(Int, Int) -&gt; Int]</C>, worked out from its values.</li>
+        <li><C>{"{\"add\": add}"}</C> stores the function <C>add</C> itself, not a call: no brackets after its name.</li>
+        <li>Named functions and lambdas mix, when they take and give the same types. Here the dict is a <C>{"{String: fn(Int, Int) -> Int}"}</C>, worked out from its values.</li>
         <li><C>steps[0](10, 5)</C> takes the first function from the list and calls it.</li>
-        <li>A map gives an optional, as the name may be missing, so <C>if let f = ops[&quot;mul&quot;]</C> calls it only when it is there.</li>
+        <li>A dict gives an optional, as the name may be missing, so <C>if let f = ops[&quot;mul&quot;]</C> calls it only when it is there.</li>
       </ul>
       <P>
-        Functions can sit deeper too, next to records, maps and lists: see{" "}
+        Functions can sit deeper too, next to records, dicts and lists: see{" "}
         <Link href="/docs/collections/nested-and-mixed-collections/">Nested and Mixed Collections</Link>.
       </P>
+      <H2>Functions of different types together</H2>
+      <P>
+        A dict holds one type of value, so functions that take or give different types can&apos;t share one:
+      </P>
+      <Ex name="functions/mixed-dict.fails" />
+      <P>
+        When the names are fixed, put the functions in a <Link href="/docs/types/records/">record</Link>. Each field
+        has its own function type, and a call reads like a method:
+      </P>
+      <Ex name="functions/mixed-record" />
+      <P>
+        When the names come from data, make a <Link href="/docs/types/unions/">union</Link> with one variant per
+        shape of function, keep a dict of it, and <C>match</C> to call each the right way:
+      </P>
+      <Ex name="functions/mixed-union" />
       <H2>Functions that can fail</H2>
       <P>
         A function type says what its functions can fail with, and what they may use, in the order of a signature:{" "}

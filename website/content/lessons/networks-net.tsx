@@ -219,7 +219,7 @@ export const grpcProtoDoc: LessonDoc = {
       <CodeBlock code={proto.files[0].code} file="src/main.kav" />
       <Terminal session={proto.output ?? ""} />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>A union becomes a message with a <C>oneof</C>; a list is <C>repeated</C>; a map with text keys is a <C>map</C>.</li>
+        <li>A union becomes a message with a <C>oneof</C>; a list is <C>repeated</C>; a dict with text keys is a <C>map</C>.</li>
         <li>Add new fields at the end of a record: older clients keep working. Reordering fields breaks them.</li>
       </ul>
     </>

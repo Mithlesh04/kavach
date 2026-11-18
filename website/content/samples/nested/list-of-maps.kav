@@ -1,7 +1,7 @@
 fn main() {
-    const people: [[String: String]] = [
-        ["name": "Asha", "city": "Pune"],
-        ["name": "Ravi", "city": "Goa"],
+    const people: [{String: String}] = [
+        {"name": "Asha", "city": "Pune"},
+        {"name": "Ravi", "city": "Goa"},
     ]
     print(people[1]["city"] ?? "unknown")
     for person in people {

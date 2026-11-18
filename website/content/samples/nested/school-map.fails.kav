@@ -1,7 +1,7 @@
 fn main() {
-    const school = [
+    const school = {
         "name": "Sunrise School",
-        "classes": ["3rd": ["Asha", "Ravi"]],
-    ]
+        "classes": {"3rd": ["Asha", "Ravi"]},
+    }
     print(school)
 }

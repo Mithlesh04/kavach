@@ -1,5 +1,5 @@
 fn main() {
-    const prices = ["pen": 150, "book": 900]    // frozen: it never changes
+    const prices = {"pen": 150, "book": 900}    // frozen: it never changes
     let sale = prices                           // a copy that can change
     sale["pen"] = 120
     sale["mug"] = 300

@@ -231,7 +231,7 @@ export const testingDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Numbers: <C>0</C>, <C>1</C>, <C>-1</C>, the smallest and largest, and the values next to every number in a <C>require</C>.</li>
         <li>Text: empty, one character, spaces, non-Latin text, very long.</li>
-        <li>Lists, maps and sets: empty, one item, many, duplicates.</li>
+        <li>Lists, dicts and sets: empty, one item, many, duplicates.</li>
         <li>Unions: every variant. Records: generated fields that never break an <C>invariant</C>.</li>
       </ul>
       <P>

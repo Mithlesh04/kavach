@@ -1,5 +1,5 @@
 fn main() {
     print(["café", "naïve", "e\u{301}", "नमस्ते"])
     print(["tab\there", "line\nbreak", "quote \"x\"", "zero\u{200b}width"])
-    print(["city": "São Paulo"])
+    print({"city": "São Paulo"})
 }

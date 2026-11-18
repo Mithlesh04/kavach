@@ -12,18 +12,18 @@ import { Ex, H2, Note, P } from "./parts";
 const TESTS = "tests/conformance/02-types";
 
 export const capacityDoc: LessonDoc = {
-  lead: "List.capacity(n), Map.capacity(n) and Set.capacity(n) make a collection that holds at most n entries. Room for all n is made at once, and adding to a full one is a panic.",
+  lead: "List.capacity(n), Dict.capacity(n) and Set.capacity(n) make a collection that holds at most n entries. Room for all n is made at once, and adding to a full one is a panic.",
   simple: <>Like a parking lot with 3 spaces: the spaces are there from the start, and a fourth car can&apos;t get in. A program that knows how many things it keeps says so, and the collection never grows past it.</>,
   minutes: 5,
-  before: ["collections/lists", "collections/maps", "collections/sets"],
+  before: ["collections/lists", "collections/dicts", "collections/sets"],
   body: (
     <>
       <Ex name="limits/capacity" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>The first argument is the limit. Room for all of it is made at once, so filling it never stops to make room.</li>
-        <li>The second argument, if given, is the first entries: a list for <C>List.capacity</C> and <C>Set.capacity</C>, a map for <C>Map.capacity</C>.</li>
+        <li>The second argument, if given, is the first entries: a list for <C>List.capacity</C> and <C>Set.capacity</C>, a dict for <C>Dict.capacity</C>.</li>
         <li><C>is_full()</C> says whether it holds as many entries as its limit.</li>
-        <li>Changing a key that is already in a map, or adding a value a set already has, adds nothing, so it never panics.</li>
+        <li>Changing a key that is already in a dict, or adding a value a set already has, adds nothing, so it never panics.</li>
         <li>A limit below 0 counts as 0. One above 4,294,967,294 (2³² − 2), or more first entries than the limit, is a panic.</li>
       </ul>
       <H2>Adding to a full one</H2>

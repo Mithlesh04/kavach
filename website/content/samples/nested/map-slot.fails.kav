@@ -1,5 +1,5 @@
 fn main() {
-    let ids: [String: Int] = [:]
-    const names = ["a": 5]
+    let ids: {String: Int} = {:}
+    const names = {"a": 5}
     ids["a"] = names["a"]
 }

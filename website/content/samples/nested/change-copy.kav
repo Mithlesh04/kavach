@@ -1,5 +1,5 @@
 fn main() {
-    const b = ["numbers": [2, 4]]
+    const b = {"numbers": [2, 4]}
     let copy = b
     copy["numbers"] = [1]
     print(b)

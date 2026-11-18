@@ -45,7 +45,7 @@ export const chainsDoc: LessonDoc = {
 // ---------- Extend ----------
 
 export const extendDoc: LessonDoc = {
-  lead: "extend adds methods to a type you didn't write: a built-in type, a list or map, a union, or a type from another module.",
+  lead: "extend adds methods to a type you didn't write: a built-in type, a list or dict, a union, or a type from another module.",
   simple: <>Like adding new buttons to a machine you bought, without opening it up: <C>extend</C> gives a type new actions, even a type you didn&apos;t make. It adds actions only, never new data.</>,
   minutes: 4,
   before: ["types/methods"],
@@ -68,10 +68,10 @@ export const extendDoc: LessonDoc = {
         <li>A name after <C>extend</C> that isn&apos;t one of the type&apos;s parameters is an error.</li>
       </ul>
       <SrcRef file="tests/conformance/02-types/generic-types-are-extended-elsewhere/src/main.kav" label="tested" />
-      <H2>Lists, maps, sets and rings</H2>
+      <H2>Lists, dicts, sets and rings</H2>
       <P>
         Collections take methods too. Name each item type after <C>extend</C>: <C>{"extend<T> [T]"}</C>,{" "}
-        <C>{"extend<K, V> [K: V]"}</C>, <C>{"extend<T> Set<T>"}</C> or <C>{"extend<T> Ring<T>"}</C>. The methods then
+        <C>{"extend<K, V> {K: V}"}</C>, <C>{"extend<T> Set<T>"}</C> or <C>{"extend<T> Ring<T>"}</C>. The methods then
         work for every item type, and <C>T</C> is the item type of the one called on:
       </P>
       <Ex name="types/extend-collections" />

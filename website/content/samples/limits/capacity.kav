@@ -5,7 +5,7 @@ fn main() {
     print(recent)
     print(recent.is_full())
 
-    let ages: [String: Int] = Map.capacity(2, ["asha": 31])
+    let ages: {String: Int} = Dict.capacity(2, {"asha": 31})
     ages["asha"] = 32       // changes a key: not adding
     ages["ravi"] = 27       // now full
     print(ages)

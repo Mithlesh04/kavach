@@ -1,6 +1,6 @@
 fn main() {
     const a = [2, 4]
-    let b = ["numbers": a]
+    let b = {"numbers": a}
     b["numbers"] = (b["numbers"] ?? []) + [6]
     print(b)
     print(a)

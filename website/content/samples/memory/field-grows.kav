@@ -1,6 +1,6 @@
 type Cart {
     items: [String]
-    counts: [String: Int]
+    counts: {String: Int}
 }
 
 fn add(inout cart: Cart, name: String) {
@@ -9,7 +9,7 @@ fn add(inout cart: Cart, name: String) {
 }
 
 fn main() {
-    let cart = Cart(items: [], counts: [:])
+    let cart = Cart(items: [], counts: {:})
     const before = cart
     for name in ["tea", "milk", "tea"] {
         add(cart, name)

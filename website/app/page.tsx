@@ -125,7 +125,7 @@ export default async function Home() {
         <div className="mx-auto grid w-full max-w-[1200px] min-[1600px]:max-w-[1480px] grid-cols-3 gap-7 px-8 py-9 max-md:grid-cols-1 max-md:gap-5 max-md:px-4">
           {[
             [`${sort.shown}×`, "vs C++", "sorting 5 million integers: the buckets sort on every core"],
-            [`${dict.shown}×`, "vs Python", "random reads from a 2-million-entry map: one cache miss per lookup"],
+            [`${dict.shown}×`, "vs Python", "random reads from a 2-million-entry dict: one cache miss per lookup"],
             ["100%", "checked", "every integer operation and list index is checked at these speeds"],
           ].map(([big, small, text]) => (
             <div key={big}>

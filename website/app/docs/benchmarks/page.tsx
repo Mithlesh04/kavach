@@ -17,7 +17,7 @@ const order: [suite: string, explained: string, href: string][] = [
   ["math", "Loops on all cores", "/docs/speed/loops-on-all-cores/"],
   ["chains", "Method chains", "/docs/types/method-chains/"],
   ["everyday", "Functions as values", "/docs/functions/functions-as-values/"],
-  ["lookups", "Maps", "/docs/collections/maps/"],
+  ["lookups", "Dicts", "/docs/collections/dicts/"],
   ["sizes", "As data grows", "/docs/speed/as-data-grows/"],
   ["json", "JSON", "/docs/standard-library/json/"],
   ["bytes", "Byte-packed lists", "/docs/speed/byte-packed-lists/"],

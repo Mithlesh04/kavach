@@ -1,13 +1,13 @@
 fn main() {
-    const shop: [String: [String: [Int]]] = [
-        "pens": ["blue": [10, 12], "red": [9]],
-        "books": [:],
-    ]
+    const shop: {String: {String: [Int]}} = {
+        "pens": {"blue": [10, 12], "red": [9]},
+        "books": {:},
+    }
     // Go down one level at a time; ?? gives a default when a key is missing.
-    const pens = shop["pens"] ?? [:]
+    const pens = shop["pens"] ?? {:}
     const blue = pens["blue"] ?? []
     print(blue)
-    const green = (shop["pens"] ?? [:])["green"] ?? []
+    const green = (shop["pens"] ?? {:})["green"] ?? []
     print(green.is_empty())
     print(shop)
 }

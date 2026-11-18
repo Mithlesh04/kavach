@@ -90,6 +90,12 @@ export const variablesDoc: LessonDoc = {
         a loop counter you don&apos;t need.
       </P>
       <Ex name="variables/underscore.warns" />
+      <P>
+        <C>_</C> alone is not a name, so it may be written many times and is never read. Reading it is a compile error
+        that says to give the value a name:
+      </P>
+      <Ex name="variables/underscore-read.fails" />
+      <SrcRef file="tests/conformance/01-basics/underscore-throws-a-value-away.kav" label="_ alone, tested" />
     </>
   ),
   tryIt: {
@@ -170,7 +176,7 @@ export const changeDoc: LessonDoc = {
 };
 
 export const destructuringDoc: LessonDoc = {
-  lead: "Take a list, a record or a map apart into several names in one line.",
+  lead: "Take a list, a record or a dict apart into several names in one line.",
   simple: <>Like unpacking a bag onto a table, one line takes a value apart and gives each piece its own name, so you don&apos;t have to pick out the pieces one by one.</>,
   minutes: 5,
   body: (
@@ -202,6 +208,7 @@ export const moduleConstDoc: LessonDoc = {
       <Ex name="variables/module-const" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>It is worked out once, before <C>main</C> starts, in the order the constants are written. Its value never changes, as any <C>const</C>&apos;s.</li>
+        <li>One that nothing reads is left out: no work when the program starts, and a panic in it never happens. It gets the unused warning.</li>
         <li>Its value may use numbers, text, other module constants and calls of functions, but no capability, and nothing that can fail without <C>catch</C>.</li>
         <li><C>pub const</C> lets other modules read it too: see <Link href="/docs/tools/modules/pub/">pub</Link>.</li>
         <li>Only a <C>const</C> can be at the top level of a file with <C>fn main</C>. Anything else there would never run, so it is a compile error: a <C>let</C>, a call, or <C>const (a, b) = pair()</C>.</li>
@@ -252,7 +259,7 @@ export const moduleConstDoc: LessonDoc = {
       </P>
       <Ex name="variables/const-caps.fails" />
       <H2>A panic in one</H2>
-      <P>Every constant is worked out before <C>main</C>, so a panic in one stops the program before <C>main</C> prints anything:</P>
+      <P>Every constant the program reads is worked out before <C>main</C>, so a panic in one stops the program before <C>main</C> prints anything:</P>
       <Ex name="variables/module-const-panics.panics" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/01-basics.md" label="spec 1.13 · module constants" />

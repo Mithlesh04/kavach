@@ -11,7 +11,7 @@ fn main() {
     print(deep)
     print(other)
 
-    let shop: [String: [String]] = [:]
+    let shop: {String: [String]} = {:}
     shop["fruit"] = ["apple", "pear"]
     shop["veg"] = ["leek"]
     let copy = shop

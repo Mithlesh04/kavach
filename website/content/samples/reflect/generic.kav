@@ -10,7 +10,7 @@ fn main() {
     for m in List.members().filter(m => m.name == "first" or m.name == "push") {
         print("{m.name}({m.params.map(p => p.type_name).join(", ")}) -> {m.result}")
     }
-    for m in Map.members().filter(m => m.name == "get") {
+    for m in Dict.members().filter(m => m.name == "get") {
         print("{m.name}({m.params.map(p => "{p.name}: {p.type_name}").join(", ")}) -> {m.result}")
     }
 }

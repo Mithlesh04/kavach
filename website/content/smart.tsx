@@ -37,7 +37,7 @@ export const smart: SmartThing[] = [
   {
     group: "Fewer mistakes",
     title: "== compares contents",
-    what: <>Two lists are equal when their items are; two maps when their entries are, in any order. A copy that was never changed is equal in one step, without looking inside.</>,
+    what: <>Two lists are equal when their items are; two dicts when their entries are, in any order. A copy that was never changed is equal in one step, without looking inside.</>,
     where: "basics/operators/comparison",
     proof: decision("0039-equality-is-deep-and-fast.md", "decision 0039"),
   },
@@ -57,8 +57,8 @@ export const smart: SmartThing[] = [
   },
   {
     group: "Fewer mistakes",
-    title: "Maps and sets keep their order",
-    what: <>Looping over a map visits entries in the order they were added, so a program prints the same thing every run, and tests stay repeatable.</>,
+    title: "Dicts and sets keep their order",
+    what: <>Looping over a dict visits entries in the order they were added, so a program prints the same thing every run, and tests stay repeatable.</>,
     where: "basics/for-loop/over-a-map",
     proof: spec("02-types/02-collections.md", "spec 2.2"),
   },
@@ -264,7 +264,7 @@ export const smart: SmartThing[] = [
   {
     group: "Fast without effort",
     title: "Random reads are fetched ahead",
-    what: <>In a loop reading a big list or map at computed places, the next reads are requested from memory early.</>,
+    what: <>In a loop reading a big list or dict at computed places, the next reads are requested from memory early.</>,
     where: "speed/as-data-grows",
     proof: { file: "compiler/kir/src/prefetch.rs", label: "prefetch.rs" },
   },
@@ -334,9 +334,9 @@ export const smart: SmartThing[] = [
   },
   {
     group: "Safe by default",
-    title: "Maps can't be attacked through their keys",
-    what: <>Map hashing is seeded fresh for every run, so nobody can send keys built to make your maps slow.</>,
-    where: "collections/maps",
+    title: "Dicts can't be attacked through their keys",
+    what: <>Dict hashing is seeded fresh for every run, so nobody can send keys built to make your dicts slow.</>,
+    where: "collections/dicts",
     proof: { file: "docs/architecture/hash-maps.md", label: "hash-maps.md" },
   },
   {

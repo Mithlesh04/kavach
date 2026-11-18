@@ -103,7 +103,7 @@ export const literalsRefDoc: LessonDoc = {
 };
 
 export const methodsRefDoc: LessonDoc = {
-  lead: "The methods of numbers, text, lists, sets and maps, which every program has without a use.",
+  lead: "The methods of numbers, text, lists, sets and dicts, which every program has without a use.",
   minutes: 4,
   body: (
     <>

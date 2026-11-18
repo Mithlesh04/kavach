@@ -1,16 +1,16 @@
-// Records for things with fixed fields, maps for things found by name,
+// Records for things with fixed fields, dicts for things found by name,
 // lists for things in order, and functions where each entry has its
 // own rule.
 
 type Room {
     teacher: String
     students: [String]
-    marks: [String: [Int]]          // each subject's marks, in student order
+    marks: {String: [Int]}          // each subject's marks, in student order
 }
 
 type School {
     name: String
-    rooms: [String: Room]           // by class: "3rd", "4th", …
+    rooms: {String: Room}           // by class: "3rd", "4th", …
 }
 
 fn primary_fee(students: Int) -> Int {
@@ -27,21 +27,21 @@ fn average(marks: [Int]) -> Float {
 fn main() {
     const school = School(
         name: "Sunrise School",
-        rooms: [
+        rooms: {
             "3rd": Room(
                 teacher: "Mrs. Rao",
                 students: ["Asha", "Ravi"],
-                marks: ["math": [78, 92], "art": [88, 70]],
+                marks: {"math": [78, 92], "art": [88, 70]},
             ),
-            "4th": Room(teacher: "Mr. Das", students: ["Zoe", "Kabir"], marks: ["math": [65, 81]]),
-        ],
+            "4th": Room(teacher: "Mr. Das", students: ["Zoe", "Kabir"], marks: {"math": [65, 81]}),
+        },
     )
 
     // Each class's fee rule: a named function, or a lambda written here.
-    const fees: [String: fn(Int) -> Int] = [
+    const fees: {String: fn(Int) -> Int} = {
         "3rd": primary_fee,
         "4th": n => n * 1500 + 2000,
-    ]
+    }
 
     print(school.name)
     for (class_name, room) in school.rooms {

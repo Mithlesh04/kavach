@@ -1,7 +1,7 @@
 type Shelf {
     numbers: [Int]
     tags: Set<String>
-    ages: [String: Int]
+    ages: {String: Int}
     recent: Ring<Int>
 }
 
@@ -9,7 +9,7 @@ fn main() {
     let shelf = Shelf(
         numbers: [5, 2],
         tags: Set.of("new"),
-        ages: ["asha": 31],
+        ages: {"asha": 31},
         recent: Ring.capacity(2, [1, 2]),
     )
     shelf.numbers.push(8)

@@ -88,7 +88,7 @@ export const bytesDoc: LessonDoc = {
       </P>
       <Ex name="json/bytes-base64" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>It holds for a bare value as for a field, and in lists, maps and optionals.</li>
+        <li>It holds for a bare value as for a field, and in lists, dicts and optionals.</li>
         <li>Text that isn&apos;t base64 is a <C>Mismatch</C> error.</li>
         <li>A <C>spawn process</C> passes <C>Bytes</C> this way too.</li>
         <li><C>ask&lt;T&gt;</C> still refuses <C>Bytes</C>: models write base64 badly.</li>

@@ -1,0 +1,4 @@
+fn main() {
+    const ops = {"add": (a: Int, b: Int) => a + b, "greet": (name: String) => "Hello {name}"}
+    print(ops.len())
+}

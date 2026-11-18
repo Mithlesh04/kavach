@@ -9,6 +9,6 @@ take [5, 2], skip [8, 2], slice [2, 8], + [5, 2, 8, 2, 9]
 join pen, ink
 still [5, 2, 8, 2]
 set: true 2 false false ["new", "cheap"]
-map: 31 27 2 false false
-map: true ["asha", "ravi"] [31, 27]
+dict: 31 27 2 false false
+dict: true ["asha", "ravi"] [31, 27]
 ring: 3 false true 2 4 2 true [2, 3, 4]

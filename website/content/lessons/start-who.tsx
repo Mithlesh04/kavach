@@ -77,11 +77,11 @@ const ideas: [level: string, color: string, list: Idea[]][] = [
   ["Your first projects", "text-ok", [
     { title: "Tip splitter", what: "Ask for the bill and the number of people, print each share to the paisa.", uses: [["User Input", "basics/user-input"], ["Decimal", "basics/data-types/decimal"]] },
     { title: "Number guessing game", what: "The program picks a number; the player guesses until right, with \"higher\" and \"lower\" hints.", uses: [["While Loop", "basics/while-loop"], ["If...Else", "basics/if-else"], ["Random Numbers", "standard-library/random-numbers"]] },
-    { title: "Word counter", what: "Count every word of a text and print the ten most common.", uses: [["Maps", "collections/maps"], ["Strings", "basics/strings"], ["Sorting", "collections/lists/sorting"]] },
+    { title: "Word counter", what: "Count every word of a text and print the ten most common.", uses: [["Dicts", "collections/dicts"], ["Strings", "basics/strings"], ["Sorting", "collections/lists/sorting"]] },
     { title: "Quiz in the terminal", what: "Questions in a list of records, answers checked, a score at the end.", uses: [["Records", "types/records"], ["For Loop", "basics/for-loop"], ["User Input", "basics/user-input"]] },
   ]],
   ["Growing programs", "text-accent-text", [
-    { title: "Expense report", what: "Read a JSON file of expenses, group them by month, print a colored table.", uses: [["JSON", "standard-library/json"], ["Files", "standard-library/files"], ["Maps", "collections/maps"]] },
+    { title: "Expense report", what: "Read a JSON file of expenses, group them by month, print a colored table.", uses: [["JSON", "standard-library/json"], ["Files", "standard-library/files"], ["Dicts", "collections/dicts"]] },
     { title: "To-do list that remembers", what: "Add, finish and list tasks; save them to a file between runs.", uses: [["Files", "standard-library/files"], ["Errors", "errors/errors"], ["Modules", "tools/modules"]] },
     { title: "Weather in your terminal", what: "Call a public JSON weather API and print today's forecast.", uses: [["HTTP", "networks/http"], ["JSON", "standard-library/json"], ["Optionals", "types/optionals"]] },
     { title: "A small JSON API", what: "Serve your own data over HTTP, with types that check every request.", uses: [["HTTP", "networks/http"], ["Records", "types/records"], ["Testing", "errors/testing"]] },

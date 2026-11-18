@@ -14,7 +14,7 @@ fn main() {
     const { name, age: years, city = "unknown" } = u
     print("{name}, {years}, {city}")
 
-    const settings = ["host": "example.com"]
+    const settings = {"host": "example.com"}
     const [host, port = "8080"] = settings
     print("{host}:{port}")
 

@@ -71,7 +71,7 @@ export const valuesPrintDoc: LessonDoc = {
       <P>
         A type chooses how it shows by implementing <C>Display</C>, an interface every file has without{" "}
         <C>use</C>: one method, <C>fn display(self) -&gt; String</C>. That form is used everywhere the value is shown:{" "}
-        <C>print</C>, <C>{"{…}"}</C> in text, <C>String(v)</C>, and inside lists, maps and other records:
+        <C>print</C>, <C>{"{…}"}</C> in text, <C>String(v)</C>, and inside lists, dicts and other records:
       </P>
       <Ex name="output/display" />
       <SrcRef file="tests/conformance/01-basics/a-type-shows-as-its-display-gives.kav" label="Display everywhere, tested" />
