@@ -443,9 +443,12 @@ impl FnGen<'_, '_> {
                 None
             }
             // Decision 0031: Cranelift always takes the plain loop.
-            ExprKind::Rt(kavach_kir::RtOp::ParFor | kavach_kir::RtOp::ParForRed, _) => {
-                Some(self.b.ins().iconst(types::I64, 1))
-            }
+            ExprKind::Rt(
+                kavach_kir::RtOp::ParFor
+                | kavach_kir::RtOp::ParForRed
+                | kavach_kir::RtOp::ParForRows,
+                _,
+            ) => Some(self.b.ins().iconst(types::I64, 1)),
             ExprKind::Convert(x, checked) => {
                 let v = self.expr(x)?;
                 Some(self.convert(v, x.ty, e.ty, *checked, e.line))

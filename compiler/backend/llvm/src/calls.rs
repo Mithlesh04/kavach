@@ -187,4 +187,43 @@ impl FnEmit<'_> {
         }
         None
     }
+
+    /// A loop on all cores (decision 0031): `kv_par_for`, the reduction's
+    /// `kv_par_for_red` or the grid rows' `kv_par_for_rows`, with the
+    /// chunk function's address; the runtime gives 1 for "run the plain
+    /// loop yourself".
+    pub(crate) fn par_for(&mut self, op: kavach_kir::RtOp, args: &[Expr]) -> Option<String> {
+        let lo = self.expr(&args[0])?;
+        let hi = self.expr(&args[1])?;
+        let ExprKind::Int(chunk) = args[2].kind else {
+            unreachable!("the chunk's number is a constant")
+        };
+        let cores = self.expr(&args[3])?;
+        // Rows: their width comes next, then the captures.
+        let rows = op == kavach_kir::RtOp::ParForRows;
+        let width = match rows {
+            true => Some(self.expr(&args[4])?),
+            false => None,
+        };
+        let first_cap = if rows { 5 } else { 4 };
+        let caps = self.slot_array(&args[first_cap..]);
+        let name = fn_name(chunk as usize);
+        let rt = match op {
+            kavach_kir::RtOp::ParForRed => "kv_par_for_red",
+            kavach_kir::RtOp::ParForRows => "kv_par_for_rows",
+            _ => "kv_par_for",
+        };
+        let mut list = vec![
+            ("i64", lo),
+            ("i64", hi),
+            ("ptr", format!("@{name}")),
+            ("ptr", caps),
+            ("i64", (args.len() - first_cap).to_string()),
+            ("i64", cores),
+        ];
+        if let Some(w) = width {
+            list.push(("i64", w));
+        }
+        Some(self.call_rt(rt, "i64", &list, false))
+    }
 }

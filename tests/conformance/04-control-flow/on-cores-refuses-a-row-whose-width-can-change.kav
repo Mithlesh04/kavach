@@ -1,0 +1,15 @@
+// Rule: A row written in an `on cores` round needs a width that can't change (a number written in the code, a `const` or a parameter): with a `let`, rows could overlap.
+// Spec: 4.9
+// expect compile error
+
+fn main() {
+    let w = 2
+    let grid = [0, 0, 0, 0]
+    on cores for i in 0..2 {
+        for j in 0..w {
+            grid[i * w + j] = 1    // error: `w` is a `let`
+        }
+    }
+    w = 3
+    print(grid)
+}

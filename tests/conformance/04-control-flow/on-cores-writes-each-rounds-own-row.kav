@@ -1,0 +1,29 @@
+// Rule: An `on cores` round may write its own row of a grid kept in one list, `grid[i * w + j]` in `for j in 0..w` with a `w` that can't change, the parts in any order; the result is the one-core result.
+// Spec: 4.9
+// expect output: [0, 1, 2, 1, 2, 3, 2, 3, 4]
+// expect output: [0, 10, 20, 1, 11, 21]
+
+fn shade(w: Int, h: Int) -> [Int] {
+    let grid: [Int] = List.capacity(w * h)
+    for _ in 0..w * h {
+        grid.push(0)
+    }
+    on cores for row in 0..h {
+        for col in 0..w {
+            grid[row * w + col] = row + col
+        }
+    }
+    return grid
+}
+
+fn main() {
+    print(shade(3, 3))
+    const cols = 3
+    let t = [0, 0, 0, 0, 0, 0]
+    on cores for r in 0..2 {
+        for c in 0..cols {
+            t[c + cols * r] = c * 10 + r
+        }
+    }
+    print(t)
+}

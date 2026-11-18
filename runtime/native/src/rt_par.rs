@@ -185,7 +185,22 @@ pub extern "C-unwind" fn kv_par_for(
     n: i64,
     cores: i64,
 ) -> i64 {
-    fan_out(lo, hi, f, caps, n, cores, false)
+    fan_out(lo, hi, f, caps, n, cores, false, 1)
+}
+
+/// A loop over a grid's rows (`ParForRows`): like `kv_par_for`, with each
+/// round a row of `width` items, so few long rows are spread too.
+#[unsafe(no_mangle)]
+pub extern "C-unwind" fn kv_par_for_rows(
+    lo: i64,
+    hi: i64,
+    f: *const u8,
+    caps: *const i64,
+    n: i64,
+    cores: i64,
+    width: i64,
+) -> i64 {
+    fan_out(lo, hi, f, caps, n, cores, false, width.max(1))
 }
 
 /// `on cores(n)`, `on threads(n)` (spec 4.9): a count under 1 panics.
@@ -227,12 +242,23 @@ pub extern "C-unwind" fn kv_par_for_red(
         }
         slots[..SLOTS as usize].fill(0);
     }
-    fan_out(lo, hi, f, caps, n, cores, true)
+    fan_out(lo, hi, f, caps, n, cores, true, 1)
 }
 
 /// Runs the loop on at most `cores` cores (0: all the program may use).
-fn fan_out(lo: i64, hi: i64, f: *const u8, caps: *const i64, n: i64, cores: i64, red: bool) -> i64 {
-    if hi.saturating_sub(lo) < MIN_ROUNDS || n > 6 || serial() {
+/// Each round does `weight` rounds' work: a grid's row.
+#[expect(clippy::too_many_arguments, reason = "the generated code's calls")]
+fn fan_out(
+    lo: i64,
+    hi: i64,
+    f: *const u8,
+    caps: *const i64,
+    n: i64,
+    cores: i64,
+    red: bool,
+    weight: i64,
+) -> i64 {
+    if hi.saturating_sub(lo).saturating_mul(weight) < MIN_ROUNDS || n > 6 || serial() {
         return 1;
     }
     let p = pool();
@@ -256,7 +282,7 @@ fn fan_out(lo: i64, hi: i64, f: *const u8, caps: *const i64, n: i64, cores: i64,
         return alone(f, lo, hi, &slots[..n as usize], red);
     }
     let step = ((hi - lo) / (workers as i64 * 4))
-        .max(4096)
+        .max(4096 / weight)
         .max((hi - lo).div_euclid(SLOTS) + 1);
     {
         let mut state = p.state.lock().unwrap();

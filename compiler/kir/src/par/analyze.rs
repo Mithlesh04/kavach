@@ -1,9 +1,11 @@
 //! Which loops may go on all cores (decision 0031), and what they
 //! capture: the analysis behind `par.rs`. A loop qualifies when its
 //! body only does arithmetic, reads lists it doesn't write, and stores
-//! `out[i]` into lists the function made and still owns alone.
+//! `out[i]` into lists the function made and still owns alone, or a
+//! grid's rows, `out[i * w + j]` in an inner `for j in 0..w`.
 
 use crate::ir::{BinOp, Block, Expr, ExprKind, FastOp, Local, Stmt, Type};
+use crate::par::rows::{row_loop, same_width, stores};
 use crate::rt_op::RtOp;
 
 /// `kv_par_for` passes captures as plain `i64` arguments.
@@ -142,6 +144,8 @@ fn parts_of(e: &Expr) -> Vec<&Expr> {
 /// `i64` slots — integers and lists), in first-use order.
 pub(super) struct Plan {
     pub(super) caps: Vec<Local>,
+    /// The rows' width, when the loop writes a grid's rows.
+    pub(super) width: Option<Expr>,
 }
 
 /// Whether this loop body does nothing but arithmetic, reads of lists it
@@ -154,15 +158,10 @@ pub(super) fn eligible(body: &Block, var: Local, fresh: &[Local], locals: &[Type
     let mut outs = Vec::new();
     let mut temps = vec![var];
     let mut caps = Vec::new();
-    // First find the written lists: reads of them are races.
-    for s in &body.stmts {
-        if let Stmt::Expr(e) = s
-            && let ExprKind::Assign(out, v) = &e.kind
-            && let ExprKind::Rt(RtOp::ListSet, _) = &v.kind
-        {
-            outs.push(*out);
-        }
-    }
+    // First find the written lists, at any depth: reads of them are races.
+    stores(body, &mut outs);
+    let mut width: Option<Expr> = None;
+    let mut slots = false;
     for s in &body.stmts {
         match s {
             Stmt::Let(l, e) => {
@@ -171,35 +170,90 @@ pub(super) fn eligible(body: &Block, var: Local, fresh: &[Local], locals: &[Type
                 }
                 temps.push(*l);
             }
-            Stmt::Expr(e) => {
-                let ExprKind::Assign(out, v) = &e.kind else {
-                    return None;
+            // The row loops `version.rs` made two of, for an `if`.
+            Stmt::Expr(e) if matches!(e.kind, ExprKind::If(..)) => {
+                let ExprKind::If(cond, a, b) = &e.kind else {
+                    unreachable!("matched above")
                 };
-                let ExprKind::Rt(RtOp::ListSet, args) = &v.kind else {
-                    return None;
-                };
-                if !fresh.contains(out)
-                    || !matches!(&args[0].kind, ExprKind::Move(m) | ExprKind::Local(m) if m == out)
-                    || !matches!(&args[1].kind, ExprKind::Local(i) if *i == var)
-                    || args[2].ty.is_ref()
-                    || !value_ok(&args[2], &temps, &outs, fresh, locals, &mut caps)
-                {
+                if !value_ok(cond, &temps, &outs, fresh, locals, &mut caps) {
                     return None;
                 }
-                capture(*out, locals, &mut caps)?;
+                for branch in [a, b] {
+                    if branch.value.is_some() {
+                        return None;
+                    }
+                    for s in &branch.stmts {
+                        match s {
+                            Stmt::Let(l, e) => {
+                                if e.ty.is_ref()
+                                    || !value_ok(e, &temps, &outs, fresh, locals, &mut caps)
+                                {
+                                    return None;
+                                }
+                                temps.push(*l);
+                            }
+                            Stmt::ForRange { .. } => {
+                                let w =
+                                    row_loop(s, var, &mut temps, &outs, fresh, locals, &mut caps)?;
+                                width = Some(same_width(width.take(), w)?);
+                            }
+                            _ => return None,
+                        }
+                    }
+                }
+            }
+            Stmt::Expr(e) => {
+                let is_slot = |i: &Expr| matches!(i.kind, ExprKind::Local(i) if i == var);
+                store_ok(e, is_slot, (&temps, &outs, fresh, locals), &mut caps)?;
+                slots = true;
+            }
+            // `for j in 0..w` writing rows, with one `w`.
+            Stmt::ForRange { .. } => {
+                let w = row_loop(s, var, &mut temps, &outs, fresh, locals, &mut caps)?;
+                width = Some(same_width(width.take(), w)?);
             }
             _ => return None,
         }
     }
-    if outs.is_empty() || caps.len() > MAX_CAPS {
+    // A list written as slots and as rows could be reached twice.
+    if outs.is_empty() || caps.len() > MAX_CAPS || (slots && width.is_some()) {
         return None;
     }
-    Some(Plan { caps })
+    Some(Plan { caps, width })
+}
+
+/// The lists a body reads but doesn't write, the fresh lists, the
+/// function's locals and the temporaries so far.
+pub(super) type Seen<'x> = (&'x [Local], &'x [Local], &'x [Local], &'x [Type]);
+
+/// Whether `e` is `out = out.set(index, value)` into a fresh list, with
+/// `index` as `at` wants it and `value` plain arithmetic.
+pub(super) fn store_ok(
+    e: &Expr,
+    at: impl Fn(&Expr) -> bool,
+    (temps, outs, fresh, locals): Seen<'_>,
+    caps: &mut Vec<Local>,
+) -> Option<()> {
+    let ExprKind::Assign(out, v) = &e.kind else {
+        return None;
+    };
+    let ExprKind::Rt(RtOp::ListSet, args) = &v.kind else {
+        return None;
+    };
+    if !fresh.contains(out)
+        || !matches!(&args[0].kind, ExprKind::Move(m) | ExprKind::Local(m) if m == out)
+        || !at(&args[1])
+        || args[2].ty.is_ref()
+        || !value_ok(&args[2], temps, outs, fresh, locals, caps)
+    {
+        return None;
+    }
+    capture(*out, locals, caps)
 }
 
 /// Whether `e` is pure arithmetic over the loop's locals, captures and
 /// list reads, free of anything that panics inside the runtime.
-fn value_ok(
+pub(super) fn value_ok(
     e: &Expr,
     temps: &[Local],
     outs: &[Local],
@@ -226,7 +280,10 @@ fn value_ok(
             let _ = fresh;
             capture(list, locals, caps).is_some() && value_ok(i, temps, outs, fresh, locals, caps)
         }
-        ExprKind::Binary(_, a, b) | ExprKind::Fast(_, a, b) => {
+        ExprKind::Binary(_, a, b)
+        | ExprKind::Fast(_, a, b)
+        | ExprKind::And(a, b)
+        | ExprKind::Or(a, b) => {
             value_ok(a, temps, outs, fresh, locals, caps)
                 && value_ok(b, temps, outs, fresh, locals, caps)
         }
@@ -244,7 +301,7 @@ fn value_ok(
 
 /// Adds `l` to the captures (once). Captures travel as plain `i64`
 /// arguments, so only integer and reference slots qualify.
-fn capture(l: Local, locals: &[Type], caps: &mut Vec<Local>) -> Option<()> {
+pub(super) fn capture(l: Local, locals: &[Type], caps: &mut Vec<Local>) -> Option<()> {
     if !matches!(locals[l as usize], Type::I64 | Type::Ref(_)) {
         return None;
     }

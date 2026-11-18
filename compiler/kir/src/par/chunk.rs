@@ -32,6 +32,14 @@ pub(super) fn call_site(
         },
         cores,
     ];
+    // A grid's rows: their width next, for the runtime's sizes.
+    let op = match &plan.width {
+        Some(w) => {
+            args.push(w.clone());
+            RtOp::ParForRows
+        }
+        None => RtOp::ParFor,
+    };
     for c in &plan.caps {
         args.push(Expr {
             kind: ExprKind::Local(*c),
@@ -40,7 +48,7 @@ pub(super) fn call_site(
         });
     }
     let call = Expr {
-        kind: ExprKind::Rt(RtOp::ParFor, args),
+        kind: ExprKind::Rt(op, args),
         ty: Type::I64,
         line,
     };
@@ -133,8 +141,33 @@ fn remap_block(
                 map.push((*l, new));
                 *l = new;
             }
+            // Row loops `version.rs` made two of.
+            Stmt::Expr(e) if matches!(e.kind, ExprKind::If(..)) => {
+                let ExprKind::If(cond, a, b) = &mut e.kind else {
+                    unreachable!("matched above")
+                };
+                remap_expr(cond, map);
+                remap_block(a, map, chunk_locals, locals);
+                remap_block(b, map, chunk_locals, locals);
+            }
             Stmt::Expr(e) => remap_expr(e, map),
-            _ => unreachable!("eligible bodies hold only lets and stores"),
+            // A grid's row loop.
+            Stmt::ForRange {
+                var,
+                start,
+                end,
+                body,
+                ..
+            } => {
+                remap_expr(start, map);
+                remap_expr(end, map);
+                let new = chunk_locals.len() as Local;
+                chunk_locals.push(locals[*var as usize]);
+                map.push((*var, new));
+                *var = new;
+                remap_block(body, map, chunk_locals, locals);
+            }
+            _ => unreachable!("eligible bodies hold only lets, stores and a row loop"),
         }
     }
 }
@@ -165,7 +198,9 @@ fn for_parts(e: &mut Expr, mut f: impl FnMut(&mut Expr)) {
         ExprKind::Binary(_, a, b)
         | ExprKind::Fast(_, a, b)
         | ExprKind::Index(a, b)
-        | ExprKind::InRange(a, b) => {
+        | ExprKind::InRange(a, b)
+        | ExprKind::And(a, b)
+        | ExprKind::Or(a, b) => {
             f(a);
             f(b);
         }

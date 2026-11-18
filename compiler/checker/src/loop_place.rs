@@ -1,12 +1,13 @@
 //! `on cores` and `on threads` before a `for` (spec 4.9): where a loop's
 //! rounds run. An `on cores` loop must give the one-core result, so each
-//! round may write only its own slot (`out[i]`) or add whole numbers into
-//! an outside `let`, and may do no I/O; `on threads` allows I/O.
+//! round may write only its own slot (`out[i]`) or row (`grid[i * w + j]`
+//! in `for j in 0..w`) or add whole numbers into an outside `let`, and
+//! may do no I/O; `on threads` allows I/O.
 
 use crate::checker::Checker;
 use crate::ty::{Prim, Ty};
 use kavach_ast::*;
-use kavach_resolver::DefId;
+use kavach_resolver::{DefId, DefKind};
 
 /// A loop with a place, while its body is checked.
 #[derive(Clone)]
@@ -17,6 +18,20 @@ pub(crate) struct Round {
     pub(crate) name: Option<DefId>,
     /// `on threads`: I/O is allowed.
     pub(crate) threads: bool,
+    /// The `for j in 0..w` loops inside an `on cores` round, with a `w`
+    /// that can't change: each its name and `w`.
+    pub(crate) rows: Vec<(DefId, Width)>,
+    /// The lists the round writes, each with its row width (`None`: its
+    /// own slot), so a list written both ways is refused.
+    pub(crate) written: Vec<(DefId, Option<Width>)>,
+}
+
+/// A row's width: a whole number written in the code, or a `const` or
+/// parameter.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Width {
+    Int(u64),
+    Name(DefId),
 }
 
 impl Checker<'_> {
@@ -61,9 +76,71 @@ impl Checker<'_> {
             body: body.span,
             name,
             threads: place.threads,
+            rows: Vec::new(),
+            written: Vec::new(),
         });
         f(self);
         self.rounds.pop();
+    }
+
+    /// A plain `for` inside an `on cores` round: while `f` checks its
+    /// body, `for j in 0..w` with a `w` that can't change gives rows.
+    pub(crate) fn in_row(&mut self, pattern: &Pattern, iter: &Expr, f: impl FnOnce(&mut Self)) {
+        let row = match (&pattern.kind, &iter.kind) {
+            (PatternKind::Binding(j), ExprKind::Binary(BinaryOp::Range, lo, w))
+                if matches!(lo.kind, ExprKind::Int(0)) =>
+            {
+                self.decl.get(&j.span.start).copied().zip(self.width(w))
+            }
+            _ => None,
+        };
+        let round = self.rounds.last_mut().filter(|r| !r.threads);
+        let Some((row, round)) = row.zip(round) else {
+            return f(self);
+        };
+        round.rows.push(row);
+        f(self);
+        if let Some(r) = self.rounds.last_mut() {
+            r.rows.pop();
+        }
+    }
+
+    /// `w` as a row's width: a whole number written in the code, or a
+    /// name that can't change.
+    fn width(&self, w: &Expr) -> Option<Width> {
+        match &w.kind {
+            ExprKind::Int(n) => Some(Width::Int(*n)),
+            ExprKind::Name(id) => {
+                let def = *self.res.uses.get(&id.span.start)?;
+                matches!(
+                    self.res.defs[def].kind,
+                    DefKind::Param | DefKind::Local { mutable: false }
+                )
+                .then_some(Width::Name(def))
+            }
+            _ => None,
+        }
+    }
+
+    /// `grid[i * w + j]` in a round: its width when `index` is the round's
+    /// name times a row's width plus that row's name, in any order.
+    fn row_write(&self, round: &Round, index: &Expr) -> Option<Width> {
+        let ExprKind::Binary(BinaryOp::Add, a, b) = &index.kind else {
+            return None;
+        };
+        let name = |e: &Expr| match &e.kind {
+            ExprKind::Name(id) => self.res.uses.get(&id.span.start).copied(),
+            _ => None,
+        };
+        [(a, b), (b, a)].into_iter().find_map(|(product, j)| {
+            let ExprKind::Binary(BinaryOp::Mul, x, y) = &product.kind else {
+                return None;
+            };
+            let j = name(j)?;
+            let (_, width) = round.rows.iter().find(|(row, _)| *row == j)?;
+            let fits = |i: &Expr, w: &Expr| name(i) == round.name && self.width(w) == Some(*width);
+            (fits(x, y) || fits(y, x)).then_some(*width)
+        })
     }
 
     /// Whether `e`'s root variable was declared before the innermost
@@ -91,14 +168,17 @@ impl Checker<'_> {
         let Some((round, name)) = self.outside_round(target) else {
             return;
         };
-        // `out[i] = …`: the round's own slot.
+        // `out[i] = …`: the round's own slot; `grid[i * w + j]`: its row.
         if let ExprKind::Index { base, index } = &target.kind
-            && matches!(base.kind, ExprKind::Name(_))
-            && let ExprKind::Name(i) = &index.kind
+            && let ExprKind::Name(list) = &base.kind
             && round.name.is_some()
-            && self.res.uses.get(&i.span.start).copied() == round.name
         {
-            return;
+            let slot = matches!(&index.kind, ExprKind::Name(i)
+                if self.res.uses.get(&i.span.start).copied() == round.name);
+            let row = self.row_write(&round, index);
+            if slot || row.is_some() {
+                return self.written_as(list, row);
+            }
         }
         // `total += n` on a whole number: the same sum in any order.
         let recorded = (self.expr_types.iter().rev()).find(|(sp, _)| *sp == target.span);
@@ -121,7 +201,26 @@ impl Checker<'_> {
             self.error(target.span, format!("`{name} +=` in an `on cores` loop adds in a different order on each run, which changes a float's last bits: add whole numbers, or collect each round's value in its own slot and add them after (spec 4.9)"));
             return;
         }
-        self.error(target.span, format!("this changes `{name}`, which every round shares: a round may write only its own slot of a list (`out[i]`, with the loop's name) or add whole numbers into a `let` (`total += n`, `total = (total + n) % m`) (spec 4.9)"));
+        self.error(target.span, format!("this changes `{name}`, which every round shares: a round may write only its own slot of a list (`out[i]`, with the loop's name), its own row (`grid[i * w + j]` in `for j in 0..w`), or add whole numbers into a `let` (`total += n`, `total = (total + n) % m`) (spec 4.9)"));
+    }
+
+    /// Notes that the round writes `list` as its slot (`row` `None`) or
+    /// row: a list written two ways is refused.
+    fn written_as(&mut self, list: &Ident, row: Option<Width>) {
+        let Some(def) = self.res.uses.get(&list.span.start).copied() else {
+            return;
+        };
+        let Some(round) = self.rounds.last_mut() else {
+            return;
+        };
+        match round.written.iter().find(|(d, _)| *d == def) {
+            Some((_, before)) if *before != row => {
+                let name = &list.name;
+                self.error(list.span, format!("`{name}` is written two ways in an `on cores` loop, so two rounds could reach the same item: write each round's own slot (`{name}[i]`) or its own row (`{name}[i * w + j]`), one of them, with one `w` (spec 4.9)"));
+            }
+            Some(_) => {}
+            None => round.written.push((def, row)),
+        }
     }
 
     /// `xs.push(…)` and the other changing methods in a round.

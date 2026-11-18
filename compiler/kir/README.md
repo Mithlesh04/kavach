@@ -103,7 +103,8 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/moves.rs` | Moves at a variable's last use (a liveness pass) |
 | `src/par.rs` | Loops written `on cores` (decisions 0031, 0126): finds the eligible ones, with their `cores(n)`, also inside `if`s and inlined function bodies, and outlines each into a chunk function the runtime fans out (`kv_par_for`), the loop as written behind it |
 | `src/par/analyze.rs` | Which loops are eligible: the body does arithmetic, reads lists and writes lists this function made and never shared; or it is a sum (`acc += v`, or `acc = (acc + v) % m` with `v` never negative) |
-| `src/par/chunk.rs` | A plain loop's chunk function and call site |
+| `src/par/chunk.rs` | A plain loop's chunk function and call site; a grid's rows go to `kv_par_for_rows` with their width |
+| `src/par/rows.rs` | A grid's rows: `out[i * w + j]` in an inner `for j in 0..w`, also as the two copies `version.rs` makes under an `if` |
 | `src/par/reduce.rs` | A sum's chunk function and call site: partial sums per slot, with prefix bounds so an overflow still panics at its round |
 | `src/prune.rs` | Only functions reachable from the entry are kept (decision 0024) |
 | `src/unrecurse.rs` | Adding self-recursion as a bounded accumulator loop, the code as written as its fallback |

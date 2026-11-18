@@ -208,7 +208,24 @@ on threads(8) for i in 0..paths.len() {         // waiting work: up to 8 rounds 
 rows: on cores for row in 0..h { … }            // a label comes first
 ```
 
-- **`on cores` gives the one-core result.** Each round may write only its own slot of a list (`out[i]`, where `i` is the loop's name, or the index in `for (i, x) in xs.enumerate()`) and add whole numbers into a `let`: `total += n`, `total = total + n`, or a sum kept modulo a number written in the code, `total = (total + n) % 1_000_000_007` (native code spreads that one only where it proves no part is negative, so the order can't change it). Anything else in its body is a compile error that says why: `print` (its order would change), I/O, other changes outside the round, a float `+=` (the adding order changes the bits). What it reads is unrestricted.
+- **`on cores` gives the one-core result.** Each round may write only its own slot of a list (`out[i]`, where `i` is the loop's name, or the index in `for (i, x) in xs.enumerate()`), its own row of a grid kept in one list (`grid[i * w + j]`, the parts in any order, inside `for j in 0..w`, where `w` is a whole number written in the code, a `const` or a parameter, so it can't change), and add whole numbers into a `let`: `total += n`, `total = total + n`, or a sum kept modulo a number written in the code, `total = (total + n) % 1_000_000_007` (native code spreads that one only where it proves no part is negative, so the order can't change it). Anything else in its body is a compile error that says why: `print` (its order would change), I/O, other changes outside the round, a float `+=` (the adding order changes the bits). What it reads is unrestricted.
+
+```kavach
+fn shade(w: Int, h: Int) -> [Int] {
+    let grid: [Int] = List.capacity(w * h)
+    for _ in 0..w * h {
+        grid.push(0)
+    }
+    on cores for row in 0..h {
+        for col in 0..w {
+            grid[row * w + col] = row + col      // row `row` is this round's alone
+        }
+    }
+    return grid
+}
+```
+
+A list is written one way in a loop: its own slots or its rows, with one `w`. Written both ways, two rounds could reach the same item, so it is a compile error.
 - **`on threads(n)` is for waiting work:** its rounds run at the same time, each in a task of its own as `spawn thread` makes it (9.8), at most `n` at once; before round `i` starts, round `i - n` is waited for, as `parallel_map` does (9.3). A round may do I/O, and what rounds print or write happens in the order of their turns (9.7). It follows the same rules as `on cores` for what it changes: each round gets copies of the values it reads (9.5), and its slot writes and whole-number sums are applied when it is waited for, in round order, so the loop's result is the one-core result. A loop whose body leaves early (`break`, `return`, `fail`, `?`) runs its rounds one after another.
 - **It covers that loop only.** A loop nested inside runs on one core in each round unless it has its own `on`; when both levels do, they share the cores.
 - **Leaving early works as on one core.** `continue`, `break`, labels, `return`, `fail` and `?` are allowed: the first round in order that leaves decides, and rounds after it change nothing.

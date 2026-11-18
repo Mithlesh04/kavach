@@ -2,7 +2,7 @@
 //! `Unit`. A value made in branches (`if`, `and`, `or`) goes through a
 //! stack slot, which LLVM turns into a register.
 
-use crate::func::{FnEmit, fn_name};
+use crate::func::FnEmit;
 use kavach_kir::{Block, Expr, ExprKind, Type};
 
 impl FnEmit<'_> {
@@ -294,29 +294,12 @@ impl FnEmit<'_> {
             ExprKind::Rt(kavach_kir::RtOp::PtrRead | kavach_kir::RtOp::PtrWrite, args) => {
                 self.ptr_access(e.ty, args)
             }
-            ExprKind::Rt(op @ (kavach_kir::RtOp::ParFor | kavach_kir::RtOp::ParForRed), args) => {
-                let lo = self.expr(&args[0])?;
-                let hi = self.expr(&args[1])?;
-                let ExprKind::Int(chunk) = args[2].kind else {
-                    unreachable!("the chunk's number is a constant")
-                };
-                let cores = self.expr(&args[3])?;
-                let caps = self.slot_array(&args[4..]);
-                let name = fn_name(chunk as usize);
-                let rt = match op {
-                    kavach_kir::RtOp::ParForRed => "kv_par_for_red",
-                    _ => "kv_par_for",
-                };
-                let list = [
-                    ("i64", lo),
-                    ("i64", hi),
-                    ("ptr", format!("@{name}")),
-                    ("ptr", caps),
-                    ("i64", (args.len() - 4).to_string()),
-                    ("i64", cores),
-                ];
-                Some(self.call_rt(rt, "i64", &list, false))
-            }
+            ExprKind::Rt(
+                op @ (kavach_kir::RtOp::ParFor
+                | kavach_kir::RtOp::ParForRed
+                | kavach_kir::RtOp::ParForRows),
+                args,
+            ) => self.par_for(*op, args),
             ExprKind::Rt(op, args) => {
                 let mut slots: Vec<String> = args.iter().map(|a| self.slot_of(a)).collect();
                 slots.resize(3, "0".into());

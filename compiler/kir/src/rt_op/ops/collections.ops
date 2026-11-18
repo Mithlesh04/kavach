@@ -71,6 +71,10 @@ ParFor,
 /// A chunked integer reduction (decision 0031): `kv_par_for_red`,
 /// whose chunks also get a slot number for their partial sums.
 ParForRed,
+/// A chunked loop over a grid's rows (spec 4.9): `kv_par_for_rows`, as
+/// `ParFor`, with each row's width after the cores, so a loop of few long
+/// rows is spread too.
+ParForRows,
 /// `on cores(n)` and `on threads(n)` before a loop (spec 4.9): panics
 /// when the count `a` is under 1 (`b` is 1 for threads). `par.rs` passes
 /// the same count to the loop's `kv_par_for`, its most cores.

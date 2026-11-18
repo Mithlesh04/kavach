@@ -1,0 +1,15 @@
+// Rule: In an `on cores` loop a list is written one way, as each round's own slot or its own row with one `w`: written both ways, two rounds could reach the same item.
+// Spec: 4.9
+// expect compile error
+
+fn main() {
+    const w = 2
+    let grid = [0, 0, 0, 0]
+    on cores for i in 0..2 {
+        grid[i] = 1
+        for j in 0..w {
+            grid[i * w + j] = 2    // error: `grid` is written two ways
+        }
+    }
+    print(grid)
+}

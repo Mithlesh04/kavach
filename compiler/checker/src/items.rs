@@ -338,7 +338,7 @@ impl Checker<'_> {
                     Some(p) => {
                         self.in_round(p, (pattern, iter), body, |c| c.loop_body(label, body))
                     }
-                    None => self.loop_body(label, body),
+                    None => self.in_row(pattern, iter, |c| c.loop_body(label, body)),
                 }
             }
             StmtKind::While { label, cond, body } => {

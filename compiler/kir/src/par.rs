@@ -19,6 +19,7 @@ use crate::rt_op::RtOp;
 mod analyze;
 mod chunk;
 mod reduce;
+mod rows;
 #[cfg(test)]
 mod tests;
 
@@ -158,7 +159,15 @@ fn rewrite(
     for mut s in stmts {
         match &mut s {
             Stmt::Let(l, e) => {
-                if matches!(e.kind, ExprKind::List(_)) && e.ty.is_ref() {
+                // A list literal, or `List.capacity(n)` with no first items.
+                let made = match &e.kind {
+                    ExprKind::List(_) => true,
+                    ExprKind::Rt(RtOp::ListCapacity, args) => {
+                        matches!(args.get(1).map(|a| &a.kind), Some(ExprKind::Int(0)))
+                    }
+                    _ => false,
+                };
+                if made && e.ty.is_ref() {
                     fresh.push(*l);
                 } else {
                     nested(e, locals, name, fresh, next, chunks, shapes, scratch);
@@ -179,7 +188,7 @@ fn rewrite(
                     inclusive: false,
                     body,
                 } = &s
-                    && big_enough(start, end)
+                    && (big_enough(start, end) || rows_big_enough(start, end, body))
                     && ON_CORES.with(|m| m.borrow().contains(&start.line))
                 {
                     if let Some(plan) = eligible(body, *var, fresh, locals) {
@@ -331,6 +340,29 @@ fn nested(
             rewrite(b, locals, name, &mut inside, next, chunks, shapes, scratch);
         }
     });
+}
+
+/// A loop of rows (`for j in 0..w` inside) with enough items in all to be
+/// worth chunking; a width not written in the code is checked when it runs.
+fn rows_big_enough(start: &Expr, end: &Expr, body: &Block) -> bool {
+    let width = body.stmts.iter().find_map(|s| match s {
+        Stmt::ForRange { end, .. } => Some(end),
+        Stmt::Expr(Expr {
+            kind: ExprKind::If(_, a, _),
+            ..
+        }) => a.stmts.iter().find_map(|s| match s {
+            Stmt::ForRange { end, .. } => Some(end),
+            _ => None,
+        }),
+        _ => None,
+    });
+    match (width.map(|w| &w.kind), &start.kind, &end.kind) {
+        (Some(ExprKind::Int(w)), ExprKind::Int(a), ExprKind::Int(b)) => {
+            (b - a).saturating_mul(*w) >= MIN_ROUNDS
+        }
+        (Some(_), _, _) => true,
+        (None, _, _) => false,
+    }
 }
 
 /// Both bounds constant and far enough apart to be worth chunking?

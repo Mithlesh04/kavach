@@ -62,3 +62,43 @@ fn a_walk_over_a_list_is_spread_only_when_written_on_cores() {
         assert_eq!(functions.len(), 1 + chunks);
     }
 }
+
+/// Whether lowering `src` spreads a loop over a grid's rows.
+fn spreads_rows(src: &str) -> bool {
+    let c = kavach_driver::compile(src, "t.kav", Default::default());
+    let p = crate::lower(&c).expect("lowers");
+    p.functions.iter().any(|f| {
+        crate::walk::any_in_block(&f.body, &mut |e| {
+            matches!(e.kind, ExprKind::Rt(crate::rt_op::RtOp::ParForRows, _))
+        })
+    })
+}
+
+/// `grid[row * w + col]` in `on cores for row` goes on all cores, the
+/// rows counted by their items; a loop not written `on cores` doesn't.
+#[test]
+fn a_grids_rows_are_spread_when_written_on_cores() {
+    let src = |place: &str, w: &str| {
+        format!(
+            "fn shade(w: Int, h: Int) -> [Int] {{
+    let grid: [Int] = List.capacity(w * h)
+    for _ in 0..w * h {{
+        grid.push(0)
+    }}
+    {place}for row in 0..h {{
+        for col in 0..{w} {{
+            grid[row * {w} + col] = row + col
+        }}
+    }}
+    return grid
+}}
+
+fn main() {{
+    print(shade(300, 300).len())
+}}
+"
+        )
+    };
+    assert!(spreads_rows(&src("on cores ", "w")));
+    assert!(!spreads_rows(&src("", "w")));
+}

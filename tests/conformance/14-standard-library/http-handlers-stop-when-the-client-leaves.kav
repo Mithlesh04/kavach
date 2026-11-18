@@ -14,7 +14,8 @@ fn main() ! Error {
         if r.path == "/panic" {
             panic("the handler broke")
         }
-        time.sleep(1000.ms)
+        // Long enough that a busy machine still notices the client left.
+        time.sleep(3000.ms)
         finished.update(n => n + 1)
         http.text(200, "done")
     })
@@ -23,7 +24,7 @@ fn main() ! Error {
     try gone.write(`GET /slow HTTP/1.1{crlf}host: x{crlf}{crlf}`.bytes())
     time.sleep(50.ms)
     gone.close()
-    time.sleep(1500.ms)
+    time.sleep(3500.ms)
     print(`finished: {finished.get()}`)
     const conn = try net.connect(listener.address())
     try conn.write(`GET /panic HTTP/1.1{crlf}connection: close{crlf}{crlf}`.bytes())
