@@ -331,11 +331,11 @@
           "match": "\\baudited\\b(?=\\s+fn\\b)"
         },
         {
-          "comment": "`on cores` and `on threads` before a loop say where its rounds run (spec 4.9); `on` and the place are keywords only there",
+          "comment": "`on cores` and `on threads` before a loop say where its rounds run (spec 4.9); `on` and the place are keywords only there, with a scope of their own so they are coloured apart from other keywords",
           "match": "\\b(on)\\s+(cores|threads)\\b(?=\\s*(?:\\(|for\\b))",
           "captures": {
-            "1": { "name": "keyword.other.kavach" },
-            "2": { "name": "keyword.other.kavach" }
+            "1": { "name": "keyword.other.place.kavach" },
+            "2": { "name": "keyword.other.place.kavach" }
           }
         },
         {

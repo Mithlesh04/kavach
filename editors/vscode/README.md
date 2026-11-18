@@ -102,6 +102,7 @@ Colors come from your theme. The grammar only names each token, using the standa
 | `pub`, `secret`, `extern`, `deprecated` | `storage.modifier` |
 | `if`, `match`, `for`, `return`, `try`, `catch`, `fail`, `when` | `keyword.control` |
 | A loop's label: `outer` in `outer: for` and `break outer` | `entity.name.label` |
+| `on cores` and `on threads` before a loop: where its rounds run | `keyword.other.place`, so they stand apart from other keywords |
 | `require`, `ensure`, `invariant`, `example`, `fails`, `assert` | `keyword.control.contract` |
 | `model`, `settings`, `can`, `limit`, `approve`, `by`, `per`, `on`, `uses` | `keyword.other.agent` |
 | `Int`, `String`, `Decimal`, `Json`, … | `support.type.primitive` |
@@ -118,7 +119,13 @@ Colors come from your theme. The grammar only names each token, using the standa
 | `// note` and `/* note */` | `comment.line.double-slash`, `comment.block` |
 | `/// doc comment` | `comment.line.documentation` |
 
-One color is the extension's own, because themes paint every comment alike: doc comments are teal (`#4FA8A8`, and `#1D7A7A` in light themes), next to your theme's plain comments. A `///` is more than a note: on a field of a type given to `ask`, the model reads it (spec 8.4). Change it with `editor.tokenColorCustomizations` in your settings.
+A few colors are the extension's own, as a theme would paint these like their neighbours:
+
+- Doc comments are teal (`#4FA8A8`, and `#1D7A7A` in light themes), next to your theme's plain comments. A `///` is more than a note: on a field of a type given to `ask`, the model reads it (spec 8.4).
+- `pub(out)`, what a library offers other packages, is bold amber (`#E5A54B`, light `#A0570A`).
+- `on cores` and `on threads`, which move a loop's rounds onto other cores or threads, are bold coral (`#FF8A65`, light `#C2410C`).
+
+Change them with `editor.tokenColorCustomizations` in your settings.
 
 ## Where a name comes from
 

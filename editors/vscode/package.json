@@ -70,6 +70,10 @@
           {
             "scope": "storage.modifier.out.kavach",
             "settings": { "foreground": "#E5A54B", "fontStyle": "bold" }
+          },
+          {
+            "scope": "keyword.other.place.kavach",
+            "settings": { "foreground": "#FF8A65", "fontStyle": "bold" }
           }
         ],
         "[*Light*]": {
@@ -81,6 +85,10 @@
             {
               "scope": "storage.modifier.out.kavach",
               "settings": { "foreground": "#A0570A", "fontStyle": "bold" }
+            },
+            {
+              "scope": "keyword.other.place.kavach",
+              "settings": { "foreground": "#C2410C", "fontStyle": "bold" }
             }
           ]
         }

@@ -212,14 +212,14 @@ fn spread(n: Int) {
     let out: [Int] = []
     rows: on cores(2) for i in 0..n {
 //  ^^^^ entity.name.label.kavach
-//        ^^ keyword.other.kavach
-//           ^^^^^ keyword.other.kavach
+//        ^^ keyword.other.place.kavach
+//           ^^^^^ keyword.other.place.kavach
 //                    ^^^ keyword.control.kavach
         out[i] = i
     }
     on threads for i in 0..n {
-//  ^^ keyword.other.kavach
-//     ^^^^^^^ keyword.other.kavach
+//  ^^ keyword.other.place.kavach
+//     ^^^^^^^ keyword.other.place.kavach
         out[i] = i
     }
     const on = 3
