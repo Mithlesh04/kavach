@@ -97,6 +97,21 @@ export const pubDoc: LessonDoc = {
       </P>
       <Files name="modules/private.fails" outcome="refused" />
       <P>The fix is the one the message gives: a <C>pub fn</C> in <C>billing.invoice</C> that makes an <C>Invoice</C>, as <C>create</C> does.</P>
+      <H2>Fields others only read: pub(read)</H2>
+      <P>
+        <C>pub(read)</C> before a field lets other modules read it, while only the module that declares its type
+        changes it. So that module keeps the type&apos;s rules: here only <C>bank</C> changes a balance, and always
+        records the deposit with it:
+      </P>
+      <Files name="modules/pub-read" first={["src/bank.kav", "src/main.kav"]} />
+      <P>Another module that changes the field is refused:</P>
+      <Files name="modules/pub-read.fails" first={["src/main.kav"]} outcome="refused" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Changing it in place (<C>a.history.push(x)</C>), passing it to an <C>inout</C> parameter and setting it with <C>with</C> are refused the same way.</li>
+        <li>A record with a <C>pub(read)</C> field is made only in its own module, as with a private field: other modules call a <C>pub fn</C> such as <C>open</C>.</li>
+        <li>The type&apos;s own module, and an <C>extend</C> of the type in its package, use the field as any other.</li>
+      </ul>
+      <SrcRef file="tests/conformance/10-modules/pub-read-fields-change-only-in-their-module/src/main.kav" label="pub(read), tested" />
       <H2>Constants</H2>
       <P>
         A <Link href="/docs/basics/variables/module-constants/">module constant</Link> marked <C>pub</C> is read from

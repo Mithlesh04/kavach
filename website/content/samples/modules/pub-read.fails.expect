@@ -1,0 +1,1 @@
+error: `balance` is `pub(read)`: other modules read it, but only the module that declares its type changes it, so it can't be assigned here (spec 10.1)

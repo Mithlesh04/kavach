@@ -1,0 +1,14 @@
+pub type Account {
+    pub(read) balance: Int
+    pub(read) history: [Int]
+    pub owner: String
+}
+
+pub fn open(owner: String) -> Account {
+    Account(balance: 0, history: [], owner: owner)
+}
+
+pub fn deposit(inout a: Account, n: Int) {
+    a.balance += n
+    a.history.push(n)
+}

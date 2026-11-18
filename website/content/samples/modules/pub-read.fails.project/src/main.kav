@@ -1,0 +1,7 @@
+use bank
+
+fn main() {
+    let a = bank.open("Asha")
+    a.balance = 1_000_000
+    print(a.balance)
+}
