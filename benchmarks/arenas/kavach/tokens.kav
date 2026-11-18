@@ -1,0 +1,23 @@
+// Many small values made together and dropped together: 100,000 lines
+// split into words (1.1 million of them), ten times over.
+fn letters(lines: [String]) -> Int {
+    let n = 0
+    for line in lines {
+        for word in line.split(" ") {
+            n += word.len()
+        }
+    }
+    n
+}
+
+fn main() {
+    let lines: [String] = []
+    for i in 0..100_000 {
+        lines.push("let x{i} = y{i} + {i % 97} * ( z - {i % 7} )")
+    }
+    let total = 0
+    for _ in 0..10 {
+        total += letters(lines)
+    }
+    print(total)
+}

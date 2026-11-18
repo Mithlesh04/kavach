@@ -15,6 +15,8 @@ pub(crate) struct FieldInfo {
     pub(crate) has_default: bool,
     pub(crate) secret: bool,
     pub(crate) is_pub: bool,
+    /// `pub(read)` (spec 10.1): read anywhere, changed only in its module.
+    pub(crate) read_only: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -166,6 +168,8 @@ pub(crate) struct Checker<'a> {
     pub(crate) arenas: Vec<Span>,
     /// The `on cores` and `on threads` loops around the code (spec 4.9).
     pub(crate) rounds: Vec<crate::loop_place::Round>,
+    /// Where a `pub(read)` field is named outside its type's module.
+    pub(crate) read_only_uses: std::collections::HashSet<u32>,
     /// The lambdas and `spawn` blocks being checked, innermost last: where
     /// each body starts, and what it is. Outside variables are copies
     /// inside them (spec 3.3, 9.5).
@@ -305,6 +309,7 @@ impl<'a> Checker<'a> {
             its: Vec::new(),
             arenas: Vec::new(),
             rounds: Vec::new(),
+            read_only_uses: Default::default(),
             copies: Vec::new(),
             updating: 0,
             rethrow: None,

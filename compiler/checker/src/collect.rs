@@ -376,6 +376,7 @@ impl Checker<'_> {
                 has_default: f.default.is_some(),
                 secret: f.is_secret,
                 is_pub: f.is_pub,
+                read_only: f.is_read,
             })
             .collect()
     }

@@ -44,7 +44,7 @@ impl Parser<'_> {
         let mut fields = Vec::new();
         if self.eat(&TokenKind::LParen) {
             while !self.at(&TokenKind::RParen) && !self.at(&TokenKind::Eof) {
-                fields.push(self.field(Vec::new(), false, false));
+                fields.push(self.field(Vec::new(), (false, false), false));
                 if !self.eat(&TokenKind::Comma) {
                     break;
                 }
@@ -70,7 +70,12 @@ impl Parser<'_> {
         }
     }
 
-    fn field(&mut self, docs: Vec<String>, is_pub: bool, is_secret: bool) -> Field {
+    fn field(
+        &mut self,
+        docs: Vec<String>,
+        (is_pub, is_read): (bool, bool),
+        is_secret: bool,
+    ) -> Field {
         let name = self.ident("a field name");
         // `summary?: String`: may be left out, so `String? = none` (2.4).
         let may_skip = self.eat(&TokenKind::Question);
@@ -108,6 +113,7 @@ impl Parser<'_> {
             ty,
             default,
             is_pub,
+            is_read,
             is_secret,
             docs,
         }
@@ -123,6 +129,7 @@ impl Parser<'_> {
             let start = p.span();
             let docs = p.docs();
             let is_pub = p.eat_kw(Keyword::Pub);
+            let is_read = is_pub && p.pub_read();
             let is_secret = p.eat_kw(Keyword::Secret);
             match p.kind() {
                 TokenKind::Keyword(Keyword::Fn) => {
@@ -139,7 +146,9 @@ impl Parser<'_> {
                     p.bump();
                     body.invariants.push(p.expr());
                 }
-                TokenKind::Ident => body.fields.push(p.field(docs, is_pub, is_secret)),
+                TokenKind::Ident => body
+                    .fields
+                    .push(p.field(docs, (is_pub, is_read), is_secret)),
                 _ => {
                     let at = p.position();
                     let keyword = match p.token_at(at) {

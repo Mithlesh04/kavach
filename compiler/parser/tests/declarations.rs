@@ -181,3 +181,19 @@ fn pub_out_marks_what_a_library_offers() {
         .collect();
     assert_eq!(marks, [(true, true), (true, false), (false, false)]);
 }
+
+/// `pub(read)` before a field (spec 10.1): read by other modules too.
+#[test]
+fn pub_read_marks_a_field_others_only_read() {
+    let parsed =
+        kavach_parser::parse("type A {\n    pub(read) n: Int\n    pub m: Int\n    k: Int\n}\n");
+    assert!(parsed.errors.is_empty(), "{:?}", parsed.errors);
+    let kavach_ast::ItemKind::Type(t) = &parsed.file.items[0].kind else {
+        panic!("a type");
+    };
+    let kavach_ast::TypeBody::Record(r) = &t.body else {
+        panic!("a record");
+    };
+    let marks: Vec<(bool, bool)> = r.fields.iter().map(|f| (f.is_pub, f.is_read)).collect();
+    assert_eq!(marks, [(true, true), (true, false), (false, false)]);
+}

@@ -200,6 +200,7 @@ impl Checker<'_> {
             match infos.iter().find(|f| f.name == name.name) {
                 Some(f) => {
                     self.check_field_access(def, f, name);
+                    self.check_read_only_name(name, "set with `with`");
                     let ft = self.inf.subst(&f.ty, &subst);
                     self.check_expect(value, &ft);
                 }
@@ -314,10 +315,15 @@ impl Checker<'_> {
         let Some(decl) = self.res.defs[def].span else {
             return;
         };
-        if f.is_pub
-            || self.res.module_at(decl.start) == self.res.module_at(name.span.start)
+        if self.res.module_at(decl.start) == self.res.module_at(name.span.start)
             || self.extends_own(def, name.span)
         {
+            return;
+        }
+        if f.is_pub {
+            if f.read_only {
+                self.read_only_uses.insert(name.span.start);
+            }
             return;
         }
         let module = &self.res.modules[self.res.module_at(decl.start)].name;
@@ -391,7 +397,7 @@ impl Checker<'_> {
         let Some(decl) = self.res.defs[def].span else {
             return;
         };
-        let Some(private) = fields.iter().find(|f| !f.is_pub) else {
+        let Some(private) = fields.iter().find(|f| !f.is_pub || f.read_only) else {
             return;
         };
         if self.res.module_at(decl.start) == self.res.module_at(span.start)
@@ -403,7 +409,8 @@ impl Checker<'_> {
         self.error(
             span,
             format!(
-                "`{name}` has a private field (`{}`), so only module `{module}` can create one: add a `pub fn` there that makes it (spec 10.1)",
+                "`{name}` has a {} field (`{}`), so only module `{module}` can create one: add a `pub fn` there that makes it (spec 10.1)",
+                if private.is_pub { "`pub(read)`" } else { "private" },
                 private.name
             ),
         );

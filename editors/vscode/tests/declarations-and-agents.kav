@@ -183,3 +183,8 @@ pub fn shared() -> Int {
 pub(out) literal sql: Query check check_sql language "sql"
 // <------- storage.modifier.out.kavach
 //       ^^^^^^^ storage.type.kavach
+
+type Account {
+    pub(read) balance: Int
+//  ^^^^^^^^^ storage.modifier.kavach
+}

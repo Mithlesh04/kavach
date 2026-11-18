@@ -9,6 +9,7 @@ impl Checker<'_> {
     /// `items.push(x)` changes `items`, so it must be a `const` (spec 2.2).
     pub(crate) fn require_var(&mut self, base: &Expr, method: &str) {
         self.check_round_change(base, method);
+        self.check_read_only_target(base, &format!("changed with `{method}`"));
         let mut root = base;
         while let ExprKind::Field { base, .. }
         | ExprKind::TupleField { base, .. }

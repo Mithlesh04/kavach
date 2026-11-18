@@ -51,6 +51,7 @@ Hindley–Milner-style inference with unification. A number literal starts as an
 | `src/fields.rs` | Fields, indexing, `with`, and arena escapes |
 | `src/patterns.rs` | Patterns, `if`/`match` branches, match coverage |
 | `src/coverage.rs` | Whether a `match`'s arms cover each variant, nested ones and an optional's too (spec 4.3) |
+| `src/read_only.rs` | `pub(read)` fields (spec 10.1): changing one outside its type's module is refused |
 | `src/loop_place.rs` | `on cores` and `on threads` loops (spec 4.9): each round writes only its own slot or adds whole numbers, and does no I/O on cores |
 | `src/builtins.rs` | Prelude functions |
 | `src/builtin_methods.rs` | Methods of built-in types, and `x.timeout(d)` |

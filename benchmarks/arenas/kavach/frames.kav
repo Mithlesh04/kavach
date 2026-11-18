@@ -1,0 +1,30 @@
+// A temporary list each frame: 100 frames, each collecting the hits of
+// 100,000 particles into a list of records, adding them up, then dropping it.
+type Hit {
+    a: Int
+    b: Int
+    d: Float
+}
+
+fn main() {
+    let xs: [Float] = []
+    for i in 0..100_000 {
+        xs.push(Float(i % 1000) * 0.5)
+    }
+    let total = 0.0
+    for frame in 0..100 {
+        let hits: [Hit] = []
+        for i in 0..100_000 {
+            const d = xs[i] - Float(frame)
+            if d > 0.0 and d < 200.0 {
+                hits.push(Hit(a: i, b: frame, d: d))
+            }
+        }
+        let s = 0.0
+        for h in hits {
+            s += h.d
+        }
+        total += s
+    }
+    print(total)
+}

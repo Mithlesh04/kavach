@@ -1,0 +1,23 @@
+// Rule: a `pub(read)` field is read by other modules, but only the module that declares its type changes it: assigning, changing in place, passing `inout`, `with` and making the record elsewhere are compile errors; other fields are unaffected.
+// Spec: 10.1
+// expect compile error
+
+use bank
+
+fn bump(inout n: Int) {
+    n += 1
+}
+
+fn main() {
+    let a = bank.open("Asha")
+    bank.deposit(a, 5)
+    print("{a.owner} {a.balance} {a.history.len()}")
+    a.owner = "Ravi"
+    a.balance = 100                                  // error: only module `bank` changes `balance`
+    a.balance += 1                                   // error: only module `bank` changes `balance`
+    a.history.push(3)                                // error: only module `bank` changes `history`
+    bump(a.balance)                                  // error: an `inout` argument changes it
+    const b = a with { balance: 7 }                  // error: `with` sets it
+    const c = bank.Account(balance: 1, history: [], owner: "x") // error: only `bank` makes an `Account`
+    print("{b.owner} {c.owner}")
+}

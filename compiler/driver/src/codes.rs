@@ -39,6 +39,9 @@ const TABLE: &[(&str, &[&str])] = &[
             "offers other packages only",
             "may use only `pub(out)` names",
             "shares it only inside that package",
+            "is `pub(read)`",
+            "has a `pub(read)` field",
+            "goes before a record's field",
         ],
     ),
     (

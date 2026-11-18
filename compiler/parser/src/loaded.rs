@@ -95,6 +95,7 @@ impl Parser<'_> {
             },
             default: None,
             is_pub: false,
+            is_read: false,
             is_secret: false,
             docs: Vec::new(),
         };

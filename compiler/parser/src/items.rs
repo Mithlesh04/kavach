@@ -154,6 +154,22 @@ impl Parser<'_> {
         }
     }
 
+    /// `(read)` after `pub` before a field (spec 10.1): other modules read
+    /// it, only its type's module changes it.
+    pub(crate) fn pub_read(&mut self) -> bool {
+        if self.at(&TokenKind::LParen)
+            && *self.nth(1) == TokenKind::Ident
+            && self.nth_text(1) == "read"
+            && *self.nth(2) == TokenKind::RParen
+        {
+            self.bump();
+            self.bump();
+            self.bump();
+            return true;
+        }
+        false
+    }
+
     /// `(out)` after `pub` (spec 10.1): the name is offered to other
     /// packages too.
     fn pub_out(&mut self) -> bool {
@@ -169,9 +185,13 @@ impl Parser<'_> {
             self.bump();
             return true;
         }
-        self.error_here(
-            "`pub(…)` takes only `out`: `pub(out)` offers a name to other packages (spec 10.1)",
-        );
+        let message = match self.nth_text(1) {
+            "read" => "`pub(read)` goes before a record's field (spec 10.1)",
+            _ => {
+                "`pub(…)` takes only `out`: `pub(out)` offers a name to other packages (spec 10.1)"
+            }
+        };
+        self.error_here(message);
         while !self.at(&TokenKind::RParen)
             && !self.at(&TokenKind::Newline)
             && !self.at(&TokenKind::Eof)

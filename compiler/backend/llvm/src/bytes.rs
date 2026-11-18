@@ -50,7 +50,7 @@ mod tests {
         assert!(ir.contains("call i64 @kv_bytes_data("), "{ir}");
         assert!(
             ir.contains(
-                "declare i64 @kv_bytes_data(i64) memory(read) nounwind willreturn speculatable"
+                "declare i64 @kv_bytes_data(i64) memory(none) nounwind willreturn speculatable"
             ),
             "{ir}"
         );

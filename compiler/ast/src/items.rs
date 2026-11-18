@@ -179,6 +179,9 @@ pub struct Field {
     pub ty: TypeExpr,
     pub default: Option<Expr>,
     pub is_pub: bool,
+    /// `pub(read)` (spec 10.1): other modules read it, only its type's
+    /// module changes it.
+    pub is_read: bool,
     pub is_secret: bool,
     pub docs: Vec<String>,
 }

@@ -59,13 +59,16 @@ impl Module {
     /// Declares a function the code calls (runtime or intrinsic). Runtime
     /// functions that panic never return, which LLVM may rely on.
     pub(crate) fn declare(&mut self, name: &str, ret: &str, params: &[&str], never_returns: bool) {
-        // Runtime functions that only read (`kv_bytes_data`): LLVM may
-        // read them once before a loop. Speculatable, as the code passes
-        // them only a `Bytes` it holds, so calling one early is safe.
+        // `kv_bytes_data` and `kv_bytes_count` give what a `Bytes` holds,
+        // which never changes while it is held (a change copies it, spec
+        // 2.13): so they depend on their argument alone, and LLVM reads
+        // them once before a loop even when the loop calls the runtime
+        // (Sakshi's S11 probe: 5 ns a byte). Speculatable, as the code
+        // passes them only a `Bytes` it holds.
         let attrs = match (never_returns, name) {
             (true, _) => " noreturn cold",
             (_, "kv_bytes_data" | "kv_bytes_count") => {
-                " memory(read) nounwind willreturn speculatable"
+                " memory(none) nounwind willreturn speculatable"
             }
             _ => "",
         };

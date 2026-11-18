@@ -46,6 +46,7 @@ Each suite's README gives the compilers and their flags, how many runs there wer
 | [ai-writes/](ai-writes/README.md) | Can AI models write Kavach? 75 tasks graded by hidden tests, four Claude models, with no help, Kavach's guide, error feedback and Kavach's tools; anyone can run it with their own key |
 | [net/](net/README.md) | How fast a task waiting for the network wakes: TCP round trips between two tasks, against C++ and Python |
 | [mistakes/](mistakes/README.md) | Common mistakes from real code, and which step catches each before a run |
+| [arenas/](arenas/README.md) | Many small values made and dropped together, as `arena { }` would hold them: Kavach's plain block against C++ and C++ with `std::pmr` |
 
 ## Planned subfolders
 

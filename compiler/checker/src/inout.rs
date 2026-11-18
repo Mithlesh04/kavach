@@ -28,6 +28,7 @@ impl Checker<'_> {
             match self.place_root(&a.value) {
                 Ok(def) => {
                     self.check_captured_change(&a.value);
+                    self.check_read_only_target(&a.value, "passed to an `inout` parameter");
                     roots.push((i, def));
                 }
                 Err(why) => self.error(

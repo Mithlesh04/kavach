@@ -294,6 +294,11 @@
           "match": "\\bpub\\s*\\(\\s*out\\s*\\)"
         },
         {
+          "comment": "`pub(read)` before a field: other modules read it, only its type's module changes it (spec 10.1)",
+          "name": "storage.modifier.kavach",
+          "match": "\\bpub\\s*\\(\\s*read\\s*\\)"
+        },
+        {
           "name": "storage.modifier.kavach",
           "match": "\\b(pub|secret|extern|deprecated)\\b"
         },
