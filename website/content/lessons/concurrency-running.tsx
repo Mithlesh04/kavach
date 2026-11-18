@@ -6,6 +6,7 @@ import type { LessonDoc } from "@/lib/chapter";
 import { loadProject, loadSample } from "@/lib/samples";
 import { fileFigure, fileTables, specBlock, specTables } from "@/lib/spec-tables";
 import { Ex, H2, Note, P, Syntax } from "./parts";
+import { turnSleeps } from "./concurrency";
 import { Table } from "./spec-table";
 
 const SPEC = "docs/spec/09-concurrency.md";
@@ -36,7 +37,7 @@ export const turnsDoc: LessonDoc = {
     <>
       <CodeBlock code={turns.code} file="turns.kav" output={turns.output} />
       <P>Step through it:</P>
-      <TaskTurns output={(turns.output ?? "").split("\n")} />
+      <TaskTurns output={(turns.output ?? "").split("\n")} {...turnSleeps(turns.code)} />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>spawn</C> makes the new task ready; the task that spawned it keeps running.</li>
         <li>A task runs until it waits. Then the task that became ready first runs.</li>

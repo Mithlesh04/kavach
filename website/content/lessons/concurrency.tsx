@@ -16,6 +16,17 @@ const watchMs = (() => {
   return ms;
 })();
 
+/** How long slow and fast sleep in tasks/sub-turns, read from the sample. */
+export function turnSleeps(code: string) {
+  const ms = (name: string) => {
+    const found = code.match(new RegExp(`report\\("${name}", (\\d+)\\)`))?.[1];
+    if (!found) throw new Error(`tasks/sub-turns: no report("${name}", …) to name`);
+    return Number(found);
+  };
+  return { slow: ms("slow"), fast: ms("fast") };
+}
+const sleeps = turnSleeps(loadSample("tasks/sub-turns").code);
+
 const SPEC = "docs/spec/09-concurrency.md";
 const unread = loadProject("tasks/unread-error", ["src/main.kav"]);
 const alone = loadProject("tasks/spawn-alone", ["src/main.kav"]);
@@ -52,7 +63,7 @@ export const tasksDoc: LessonDoc = {
       <Ex name="tasks/spawn-times.fails" />
       <H2>Two things at once</H2>
       <Ex name="tasks/sub-turns" />
-      <P>The two sleeps overlap, so the program takes about 200 ms, not 300. Why it prints in exactly this order is on <Link href="/docs/concurrency/taking-turns/">Taking Turns</Link>.</P>
+      <P>The two sleeps overlap, so the program takes about {sleeps.slow} ms, not {sleeps.slow + sleeps.fast}. Why it prints in exactly this order is on <Link href="/docs/concurrency/taking-turns/">Taking Turns</Link>.</P>
     </>
   ),
   tryIt: {

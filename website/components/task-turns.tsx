@@ -5,15 +5,18 @@ import { StepControls, useSteps } from "./step-player";
 type Lane = "main" | "slow" | "fast";
 type State = "runs" | "waits" | "ready" | "done" | "";
 
-// The turns of tasks/sub-turns, as spec 9.7 defines them. `printed` counts
-// how many of the sample's checked output lines exist at that moment.
-const FRAMES: { at: string; lanes: Record<Lane, State>; printed: number; caption: string }[] = [
+type Frame = { at: string; lanes: Record<Lane, State>; printed: number; caption: string };
+
+// The turns of tasks/sub-turns, as spec 9.7 defines them, for the sleeps the
+// sample gives slow and fast. `printed` counts how many of the sample's
+// checked output lines exist at that moment.
+const frames = (slow: number, fast: number): Frame[] => [
   { at: "0 ms", lanes: { main: "runs", slow: "", fast: "" }, printed: 0, caption: "main runs. spawn starts a task and makes it ready; the task that spawned it keeps running." },
   { at: "0 ms", lanes: { main: "runs", slow: "ready", fast: "ready" }, printed: 1, caption: "Both tasks are ready, but main still has the turn, so it prints first." },
-  { at: "0 ms", lanes: { main: "waits", slow: "waits", fast: "waits" }, printed: 1, caption: "main waits for slow. A waiting task gives up its turn: slow runs and starts sleeping 200 ms, then fast starts sleeping 100 ms. The sleeps overlap." },
-  { at: "100 ms", lanes: { main: "waits", slow: "waits", fast: "done" }, printed: 2, caption: "fast's sleep ends first, so fast is ready first: it prints and ends." },
-  { at: "200 ms", lanes: { main: "waits", slow: "done", fast: "done" }, printed: 3, caption: "slow wakes, prints and ends, which is what main waited for." },
-  { at: "200 ms", lanes: { main: "runs", slow: "done", fast: "done" }, printed: 4, caption: "main runs again. Both results are there: about 200 ms in all, not 300, and the same order on every run." },
+  { at: "0 ms", lanes: { main: "waits", slow: "waits", fast: "waits" }, printed: 1, caption: `main waits for slow. A waiting task gives up its turn: slow runs and starts sleeping ${slow} ms, then fast starts sleeping ${fast} ms. The sleeps overlap.` },
+  { at: `${fast} ms`, lanes: { main: "waits", slow: "waits", fast: "done" }, printed: 2, caption: "fast's sleep ends first, so fast is ready first: it prints and ends." },
+  { at: `${slow} ms`, lanes: { main: "waits", slow: "done", fast: "done" }, printed: 3, caption: "slow wakes, prints and ends, which is what main waited for." },
+  { at: `${slow} ms`, lanes: { main: "runs", slow: "done", fast: "done" }, printed: 4, caption: `main runs again. Both results are there: about ${slow} ms in all, not ${slow + fast}, and the same order on every run.` },
 ];
 
 const style: Record<State, string> = {
@@ -25,9 +28,10 @@ const style: Record<State, string> = {
 };
 
 /** Tasks taking turns (spec 9.7), step by step, beside what the program printed. */
-export function TaskTurns({ output }: { output: string[] }) {
-  const steps = useSteps(FRAMES.length, 1900);
-  const f = FRAMES[steps.frame];
+export function TaskTurns({ output, slow, fast }: { output: string[]; slow: number; fast: number }) {
+  const all = frames(slow, fast);
+  const steps = useSteps(all.length, 1900);
+  const f = all[steps.frame];
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-line bg-panel px-5 py-5" role="group" aria-label="Tasks taking turns, step by step">
       <div className="grid gap-4 sm:grid-cols-[1fr_1fr]">
