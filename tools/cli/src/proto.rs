@@ -9,7 +9,18 @@ use std::fmt::Write;
 use std::process::ExitCode;
 
 pub(crate) fn proto(path: &str) -> ExitCode {
-    let c = match crate::load(path) {
+    // The types are what `proto` reads: not unused, whatever `main` does.
+    let read = crate::read_as(path, false).map(|mut c| {
+        let types: Vec<u32> = (c.own_items().iter())
+            .filter_map(|i| match &i.kind {
+                ItemKind::Type(t) => Some(t.name.span.start),
+                _ => None,
+            })
+            .collect();
+        (c.messages).retain(|m| !(m.code == "unused" && types.contains(&m.span.start)));
+        c
+    });
+    let c = match read.and_then(crate::shown) {
         Ok(c) => c,
         Err(code) => return code,
     };

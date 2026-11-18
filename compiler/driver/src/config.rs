@@ -465,6 +465,7 @@ impl Config {
             granted,
             limits,
             log_otlp,
+            library: false,
         }
     }
 }

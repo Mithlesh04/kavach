@@ -253,6 +253,11 @@ fn match_must_cover_every_case() {
             "type S = A | B\nfn f(s: S) -> Int {\n  match s {\n    S.A => 1\n    S.B if false => 2\n  }\n}",
             &["3: this `match` does not cover `S.B`"],
         ),
+        (
+            // The missing case is named down to the inner variant (C9).
+            "type Shape = Circle(r: Int) | Square(x: Int)\ntype Box = Empty | Full(s: Shape)\nfn f(b: Box) -> Int {\n  match b {\n    Box.Empty => 0\n    Box.Full(s: Shape.Circle(r)) => r\n  }\n}",
+            &["4: this `match` does not cover `Box.Full(s: Shape.Square(..))`"],
+        ),
     ]);
 }
 

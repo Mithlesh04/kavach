@@ -34,6 +34,13 @@ fn table() -> std::sync::MutexGuard<'static, HashMap<u32, i64>> {
         .unwrap_or_else(|e| e.into_inner())
 }
 
+/// How many objects wait for their `drop`, on every thread: generated
+/// code calls `DropRun` only when this isn't 0, so a statement boundary
+/// costs a load, not a call (Sakshi's S11).
+#[unsafe(no_mangle)]
+#[allow(non_upper_case_globals)]
+pub static kv_drops_waiting: AtomicU64 = AtomicU64::new(0);
+
 /// Bumped each time a type registers its `drop`: a thread's copy of the
 /// types (`KNOWN`) is out of date when it differs.
 static GENERATION: AtomicU64 = AtomicU64::new(0);
@@ -93,6 +100,7 @@ fn defer(p: i64) -> bool {
     }
     obj_mut(p).rc = 1;
     PENDING.with(|q| q.borrow_mut().push(p));
+    kv_drops_waiting.fetch_add(1, Ordering::Relaxed);
     true
 }
 
@@ -118,6 +126,7 @@ fn run() -> i64 {
             (q.len() > floor).then(|| q.remove(floor))
         });
         let Some(p) = next else { return 0 };
+        kv_drops_waiting.fetch_sub(1, Ordering::Relaxed);
         let Type::Ref(id) = obj(p).ty() else { continue };
         let Some(closure) = table().get(&id).copied() else {
             continue;

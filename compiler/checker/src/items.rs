@@ -312,7 +312,7 @@ impl Checker<'_> {
                     self.check_compound(bin, target, &t);
                 }
                 self.check_unsafe_index_target(target);
-                self.check_round_assign(target, *op);
+                self.check_round_assign(target, *op, value);
                 self.check_bytes_unchanged(target);
                 self.check_captured_change(target);
                 if !user {

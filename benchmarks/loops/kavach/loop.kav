@@ -1,7 +1,7 @@
-// A tight `for` loop over integers: 500 million rounds.
+// A tight `for` loop over integers: 500 million rounds, on all cores.
 fn main() {
     let total = 0
-    for i in 0..500_000_000 {
+    on cores for i in 0..500_000_000 {
         total = (total + i * 7 % 13) % 1_000_000_007
     }
     print(total)

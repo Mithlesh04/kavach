@@ -116,7 +116,7 @@ impl<'a> Lowerer<'a> {
             ret
         } else {
             let types: Vec<Type> = inout.iter().map(|l| self.locals[*l as usize]).collect();
-            let tuple = self.inout_tuple(ret, &types);
+            let tuple = self.inout_tuple(ret, &types, f.errors.is_some());
             self.give_inout_back(&mut body, &inout, ret, tuple, line);
             tuple
         };

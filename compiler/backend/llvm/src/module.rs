@@ -145,7 +145,7 @@ impl Module {
             "x86_64-unknown-linux-gnu"
         };
         let _ = writeln!(out, "target triple = \"{triple}\"\n");
-        for global in ["kv_pool", "kv_live", "kv_free_at_exit"] {
+        for global in ["kv_pool", "kv_live", "kv_free_at_exit", "kv_drops_waiting"] {
             let _ = writeln!(out, "@{global} = external global i64");
         }
         // Each thread's stack limit (`func.rs`): tasks run on several

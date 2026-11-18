@@ -237,7 +237,7 @@ impl Lowerer<'_> {
             let ret = if inout.is_empty() {
                 ret
             } else {
-                self.inout_tuple(ret, &inout)
+                self.inout_tuple(ret, &inout, f.errors.is_some())
             };
             let fty = self.shapes.intern(Shape::Func(params, ret, None));
             methods.push((f.name.name.clone(), fty));

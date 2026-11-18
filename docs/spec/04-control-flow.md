@@ -208,7 +208,7 @@ on threads(8) for i in 0..paths.len() {         // waiting work: up to 8 rounds 
 rows: on cores for row in 0..h { … }            // a label comes first
 ```
 
-- **`on cores` gives the one-core result.** Each round may write only its own slot of a list (`out[i]`, where `i` is the loop's name) and add whole numbers into a `let` with `+=`. Anything else in its body is a compile error that says why: `print` (its order would change), I/O, other changes outside the round, a float `+=` (the adding order changes the bits). What it reads is unrestricted.
+- **`on cores` gives the one-core result.** Each round may write only its own slot of a list (`out[i]`, where `i` is the loop's name) and add whole numbers into a `let`: `total += n`, `total = total + n`, or a sum kept modulo a number written in the code, `total = (total + n) % 1_000_000_007` (native code spreads that one only where it proves no part is negative, so the order can't change it). Anything else in its body is a compile error that says why: `print` (its order would change), I/O, other changes outside the round, a float `+=` (the adding order changes the bits). What it reads is unrestricted.
 - **`on threads(n)` is for waiting work:** its rounds may do I/O, in any order between rounds, and each round's result goes to its own slot.
 - **It covers that loop only.** A loop nested inside runs on one core in each round unless it has its own `on`; when both levels do, they share the cores.
 - **Leaving early works as on one core.** `continue`, `break`, labels, `return`, `fail` and `?` are allowed: the first round in order that leaves decides, and rounds after it change nothing.

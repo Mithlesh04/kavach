@@ -37,6 +37,8 @@ const TABLE: &[(&str, &[&str])] = &[
             "is private",
             "a private field",
             "offers other packages only",
+            "may use only `pub(out)` names",
+            "shares it only inside that package",
         ],
     ),
     (

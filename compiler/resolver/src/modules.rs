@@ -402,11 +402,8 @@ impl Resolver {
                 format!("`{}` is private to module `{module}`: mark it `pub` there to use it here (spec 10.1)", name.name),
             );
         } else if self.other_package(m) && !self.modules.offered.contains(&(m, name.name.clone())) {
-            let package = &self.res.modules[m].package;
-            self.error(
-                name.span,
-                format!("`{}` is `pub` in package `{package}`, which offers other packages only its `pub(out)` names: mark it `pub(out)` there to use it here (spec 10.1)", name.name),
-            );
+            let message = self.not_offered(m, def, &name.name);
+            self.error(name.span, message);
         }
         self.res.uses.insert(name.span.start, def);
         Some(def)

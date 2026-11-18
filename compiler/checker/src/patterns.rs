@@ -425,7 +425,7 @@ impl Checker<'_> {
                 Some(Shape::Union(vs)) => vs
                     .iter()
                     .filter(|v| !self.variant_covered(pats, def, v.def, 0))
-                    .map(|v| format!("{}.{}", self.def_name(def), v.name))
+                    .flat_map(|v| self.missing_in(pats, def, v.def, 0))
                     .collect(),
                 _ => vec!["every other value (add `_ => …`)".to_string()],
             }

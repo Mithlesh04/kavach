@@ -2,7 +2,9 @@
 //! and copied back out. A function with `inout` parameters returns a
 //! tuple, its own value first (when it has one), then each `inout`
 //! parameter's last value; the caller stores those into the places its
-//! arguments named. No pointer to a local is ever made.
+//! arguments named. No pointer to a local is ever made. A function that
+//! gives nothing, can't fail and has one `inout` parameter returns that
+//! value itself, with no tuple to make on the heap (Sakshi's S11).
 
 use crate::ir::{self, Block, ExprKind as K, FuncId, Local, Shape, Stmt, Type};
 use crate::lower::{Lowered, Lowerer};
@@ -32,8 +34,12 @@ impl<'a> Lowerer<'a> {
     }
 
     /// The tuple a function returning `ret` with `inout` parameters of
-    /// types `params` gives back.
-    pub(crate) fn inout_tuple(&mut self, ret: Type, params: &[Type]) -> Type {
+    /// types `params` gives back; the one parameter's own type when it
+    /// gives nothing else and can't fail (`fails`).
+    pub(crate) fn inout_tuple(&mut self, ret: Type, params: &[Type], fails: bool) -> Type {
+        if let ([only], Type::Unit, false) = (params, ret, fails) {
+            return *only;
+        }
         let mut items: Vec<Type> = Vec::new();
         if ret != Type::Unit {
             items.push(ret);
@@ -53,7 +59,11 @@ impl<'a> Lowerer<'a> {
         tuple: Type,
         line: u32,
     ) {
+        let bare = matches!(locals, [only] if self.locals[*only as usize] == tuple);
         let pack = |l: &Self, value: Option<ir::Expr>| {
+            if bare {
+                return l.local_expr(locals[0], line);
+            }
             let mut items: Vec<ir::Expr> = value.into_iter().collect();
             items.extend(locals.iter().map(|x| l.local_expr(*x, line)));
             ir::Expr {
@@ -109,7 +119,7 @@ impl<'a> Lowerer<'a> {
             return Ok(call);
         };
         let types: Vec<Type> = inout.iter().map(|(i, _)| values[i + offset].ty).collect();
-        let tuple = self.inout_tuple(ty, &types);
+        let tuple = self.inout_tuple(ty, &types, decl.errors.is_some());
         let mut call = ir::Expr { ty: tuple, ..call };
         if decl.errors.is_none() {
             self.hand_over_inout(&mut call, &inout, args, offset);
@@ -157,7 +167,11 @@ impl<'a> Lowerer<'a> {
             let Some(arg) = named.or_else(positional) else {
                 continue;
             };
-            let part = self.tuple_item(held, tuple, first + k, p.types[k], line);
+            let part = match tuple == p.types[k] {
+                // The one `inout` value itself, given back with no tuple.
+                true => self.local_expr(held, line),
+                false => self.tuple_item(held, tuple, first + k, p.types[k], line),
+            };
             stmts.push(self.assign_path(&arg.value, part)?);
         }
         Ok(stmts)
@@ -345,6 +359,32 @@ impl<'a> Lowerer<'a> {
             Ty::Map(k, v) => self.holds_drop(k, depth + 1) || self.holds_drop(v, depth + 1),
             Ty::Tuple(xs) | Ty::Builtin(_, xs) => xs.iter().any(|x| self.holds_drop(x, depth + 1)),
             _ => false,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::ir::{ExprKind, Shape, Type};
+
+    /// A function that gives nothing, can't fail and has one `inout`
+    /// parameter returns that value itself: no tuple is made (S11).
+    #[test]
+    fn a_lone_inout_comes_back_with_no_tuple() {
+        let src = "type R {\n    count: Int\n    seen: [Int]\n}\n\nfn walk(inout r: R, n: Int) {\n    if n > 0 {\n        r.count += 1\n        r.seen.push(n)\n        walk(r, n - 1)\n    }\n}\n\nfn main() {\n    let r = R(count: 0, seen: [])\n    walk(r, 3)\n    print(r.count)\n}\n";
+        let c = kavach_driver::compile(src, "t.kav", Default::default());
+        let program = crate::lower(&c).expect("lowers");
+        for f in &program.functions {
+            let tuples =
+                crate::walk::any_in_block(&f.body, &mut |e| matches!(e.kind, ExprKind::Tuple(_)));
+            assert!(!tuples, "{}: {:#?}", f.name, f.body);
+            if let Type::Ref(id) = f.ret {
+                assert!(
+                    !matches!(program.shapes[id as usize], Shape::Tuple(_)),
+                    "{}",
+                    f.name
+                );
+            }
         }
     }
 }

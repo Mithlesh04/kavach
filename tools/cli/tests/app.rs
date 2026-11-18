@@ -10,11 +10,12 @@ use std::process::Command;
 const PROGRAM: &str = "use std.app
 use std.fs
 
-fn fall(n: Int) {
+fn fall(n: Int) -> Int {
     if n == 0 {
         panic(\"boom\")
     }
-    fall(n - 1)
+    const below = fall(n - 1)
+    below * below + n
 }
 
 fn main() ! Error uses Fs {
@@ -25,7 +26,7 @@ fn main() ! Error uses Fs {
     const bad = app.config_dir(\"a/b\") catch _ => \"refused\"
     print(bad)
     try app.crash_reports(\"crashes\")
-    fall(2)
+    print(fall(40))
 }
 ";
 
@@ -101,7 +102,9 @@ fn folders_are_made_and_a_panic_writes_a_report() {
             reports[0]
         );
         // The functions running, innermost first (spec 14.30): `fall`
-        // calls itself, so no compiler inlines it.
+        // uses what it calls itself for twice, so no compiler turns it
+        // into a loop, and 40 calls deep, more than LLVM inlines (a
+        // function inlined into its caller isn't listed).
         let calls: Vec<&str> = reports[0]
             .lines()
             .filter(|l| l.starts_with("  in "))
@@ -114,7 +117,7 @@ fn folders_are_made_and_a_panic_writes_a_report() {
         );
         assert_eq!(
             calls.last(),
-            Some(&"  in main (main.kav:11)"),
+            Some(&"  in main (main.kav:12)"),
             "{mode:?}: {}",
             reports[0]
         );

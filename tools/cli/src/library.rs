@@ -19,7 +19,8 @@ fn file_name(name: &str) -> String {
 /// Builds the library whose own file is `path` into the folder `dir`
 /// (the current folder without `-o`).
 pub(crate) fn build_lib(path: &str, dir: Option<&str>) -> ExitCode {
-    let compiled = match crate::load(path) {
+    // A file given to `--lib` is a library: it offers `pub(out)` names.
+    let compiled = match crate::read_as(path, true).and_then(crate::shown) {
         Ok(c) => c,
         Err(code) => return code,
     };

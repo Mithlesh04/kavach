@@ -44,6 +44,9 @@ pub struct Options {
     /// Whether `kavach.toml` has a `[log.otlp]` collector (14.12), which an
     /// agent's `Audit(otlp: true)` needs (spec 8.6).
     pub log_otlp: bool,
+    /// Compiled as a library, as `kavach build --lib` does (spec 10.10):
+    /// it may offer names with `pub(out)` even outside `src/lib.kav`.
+    pub library: bool,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -211,10 +214,11 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
     let mut lines = 0;
     // A library (`src/lib.kav`) may offer names with `pub(out)` (10.1);
     // so may a dependency and the standard library.
-    let own_library = sources.iter().any(|s| {
-        s.package.is_empty()
-            && std::path::Path::new(&s.path).file_name() == Some("lib.kav".as_ref())
-    });
+    let own_library = options.library
+        || sources.iter().any(|s| {
+            s.package.is_empty()
+                && std::path::Path::new(&s.path).file_name() == Some("lib.kav".as_ref())
+        });
     for s in &sources {
         let start = src.len() as u32;
         files.push(SourceFile {

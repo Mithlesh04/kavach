@@ -1,11 +1,11 @@
-// A growing list: push 20 million numbers, then add them up.
+// A growing list: push 20 million numbers, then add them up on all cores.
 fn main() {
     let items = []
     for i in 0..20_000_000 {
         items.push(i % 1000)
     }
     let total = 0
-    for x in items {
+    on cores for x in items {
         total += x
     }
     print(total)

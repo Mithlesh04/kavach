@@ -20,6 +20,10 @@ type Order {
     status: Status
 }
 
+type Receipt {
+    total: Int
+}
+
 fn main() {
     print(Order(id: 1, tags: [], note: none, status: Status.Pending).id)
 }
@@ -33,6 +37,9 @@ fn main() {
         .unwrap();
     let _ = fs::remove_dir_all(&dir);
     assert!(out.status.success());
+    // A type only the `.proto` uses isn't unused (spec 10.1).
+    let said = String::from_utf8_lossy(&out.stderr);
+    assert!(!said.contains("never used"), "{said}");
     let text = String::from_utf8_lossy(&out.stdout).into_owned();
     for needle in [
         "syntax = \"proto3\";",
@@ -48,6 +55,7 @@ fn main() {
         "message Pending {}",
         "double amount = 1;",
         "string by = 2;",
+        "message Receipt {",
     ] {
         assert!(text.contains(needle), "missing {needle:?} in:\n{text}");
     }

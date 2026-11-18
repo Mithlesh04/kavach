@@ -1,0 +1,17 @@
+// Rule: an `on cores` loop may keep a whole-number sum modulo a number written in the code, `total = (total + n) % m`, and gives the one-core result.
+// Spec: 4.9
+// expect output: 1199992
+// expect output: 45
+
+fn main() {
+    let total = 0
+    on cores for i in 0..200_000 {
+        total = (total + i * 7 % 13) % 1_000_000_007
+    }
+    print(total)
+    let s = 0
+    on cores for i in 0..10 {
+        s = s + i
+    }
+    print(s)
+}

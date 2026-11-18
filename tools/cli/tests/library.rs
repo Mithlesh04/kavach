@@ -151,3 +151,27 @@ fn other_languages_call_a_kavach_library() {
     );
     std::fs::remove_dir_all(&dir).unwrap();
 }
+
+/// A single file given to `--lib` is a library: it may offer `pub(out)`
+/// functions (spec 10.10).
+#[test]
+fn a_single_file_given_to_lib_offers_its_functions() {
+    let dir = std::env::temp_dir().join(format!("kavach-lib-file-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    let file = "pub(out) fn add(a: Int, b: Int) -> Int {\n    a + b\n}\n";
+    std::fs::write(dir.join("mathlib.kav"), file).unwrap();
+    let built = Command::new(env!("CARGO_BIN_EXE_kavach"))
+        .args(["build", "--lib", "mathlib.kav"])
+        .current_dir(&dir)
+        .output()
+        .unwrap();
+    let said = String::from_utf8_lossy(&built.stderr).into_owned();
+    let header = std::fs::read_to_string(dir.join("mathlib.h")).unwrap_or_default();
+    let _ = std::fs::remove_dir_all(&dir);
+    assert!(built.status.success(), "{said}");
+    assert!(
+        header.contains("int64_t mathlib_add(int64_t a, int64_t b);"),
+        "{header}"
+    );
+}

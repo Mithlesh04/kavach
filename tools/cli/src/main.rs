@@ -320,12 +320,18 @@ fn kav_files(path: &std::path::Path, out: &mut Vec<String>) {
 }
 
 fn read(path: &str) -> Result<Compiled, ExitCode> {
+    read_as(path, false)
+}
+
+/// `path` compiled, as a library when `library` (spec 10.10).
+pub(crate) fn read_as(path: &str, library: bool) -> Result<Compiled, ExitCode> {
     let src = std::fs::read_to_string(path).map_err(|e| {
         eprintln!("error: can't read {path}: {e}");
         ExitCode::from(2)
     })?;
     deps::fetch_for(path)?;
-    let options = config(path)?.options_for(std::path::Path::new(path));
+    let mut options = config(path)?.options_for(std::path::Path::new(path));
+    options.library = library;
     // In a project, every file of `src/` is compiled with it (spec 10.1).
     let mut compiled = match kavach_driver::project_sources(std::path::Path::new(path)) {
         Some(sources) => kavach_driver::compile_sources(sources, options),
@@ -363,7 +369,11 @@ fn gpu_notes(c: &Compiled) {
 
 /// Reads and checks `path`, printing any messages. Fails on compile errors.
 pub(crate) fn load(path: &str) -> Result<Compiled, ExitCode> {
-    let compiled = read(path)?;
+    shown(read(path)?)
+}
+
+/// `compiled`'s messages printed; it, unless one is an error.
+pub(crate) fn shown(compiled: Compiled) -> Result<Compiled, ExitCode> {
     eprint!("{}", compiled.render());
     if compiled.has_errors() {
         return Err(ExitCode::from(1));

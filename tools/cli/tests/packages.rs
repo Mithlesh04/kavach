@@ -130,7 +130,11 @@ fn a_git_dependency_stays_at_its_locked_commit() {
     // A package that uses `unsafe`, refused until its entry allows it.
     let raw = dir.join("raw");
     project(&raw, "raw", "unsafe = true\n");
-    fs::write(raw.join("src/lib.kav"), "pub(out) fn one() -> Int {\n    1\n}\n").unwrap();
+    fs::write(
+        raw.join("src/lib.kav"),
+        "pub(out) fn one() -> Int {\n    1\n}\n",
+    )
+    .unwrap();
     let refused = kavach(&app, &["add", "raw", "--path", "../raw"]);
     assert!(!refused.status.success());
     assert!(String::from_utf8_lossy(&refused.stderr).contains("uses `unsafe` code"));

@@ -260,6 +260,20 @@ impl FnEmit<'_> {
             }
             // Any other built-in method: the runtime's generic entry, with
             // every operand handed over as a slot.
+            // Waiting `drop`s (spec 6.1) are run at statement boundaries:
+            // the runtime is called only when some value waits for one.
+            ExprKind::Rt(kavach_kir::RtOp::DropRun, _) => {
+                let n =
+                    self.val("load atomic i64, ptr @kv_drops_waiting monotonic, align 8".into());
+                let some = self.val(format!("icmp ne i64 {n}, 0"));
+                let (run, done) = (self.label(), self.label());
+                self.cond_br(&some, &run, &done);
+                self.start(&run);
+                self.rt_op(kavach_kir::RtOp::DropRun, "0", "0", "0", Type::Unit, e.line);
+                self.br(&done);
+                self.start(&done);
+                None
+            }
             ExprKind::Rt(kavach_kir::RtOp::CallAddress, args) => self.call_address(e.ty, args),
             ExprKind::Rt(kavach_kir::RtOp::CallC, args) => self.call_c(e.ty, args),
             ExprKind::Rt(kavach_kir::RtOp::PtrRead | kavach_kir::RtOp::PtrWrite, args) => {

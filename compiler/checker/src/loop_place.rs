@@ -73,7 +73,7 @@ impl Checker<'_> {
     }
 
     /// `target op= value` in a round: its own slot, or whole numbers added.
-    pub(crate) fn check_round_assign(&mut self, target: &Expr, op: AssignOp) {
+    pub(crate) fn check_round_assign(&mut self, target: &Expr, op: AssignOp, value: &Expr) {
         let Some((round, name)) = self.outside_round(target) else {
             return;
         };
@@ -94,6 +94,12 @@ impl Checker<'_> {
             Ty::Var(v) => self.inf.kind(v) == crate::infer::VarKind::IntLiteral,
             _ => false,
         });
+        // `total = total + n` and `total = (total + n) % m`: a sum, or a
+        // sum kept modulo a number, which native code spreads only where
+        // it proves the order can't change it.
+        if op == AssignOp::Set && whole && is_sum_of(target, value) {
+            return;
+        }
         if op == AssignOp::Add && matches!(target.kind, ExprKind::Name(_)) {
             if whole {
                 return;
@@ -101,7 +107,7 @@ impl Checker<'_> {
             self.error(target.span, format!("`{name} +=` in an `on cores` loop adds in a different order on each run, which changes a float's last bits: add whole numbers, or collect each round's value in its own slot and add them after (spec 4.9)"));
             return;
         }
-        self.error(target.span, format!("this changes `{name}`, which every round shares: a round may write only its own slot of a list (`out[i]`, with the loop's name) or add whole numbers with `+=` (spec 4.9)"));
+        self.error(target.span, format!("this changes `{name}`, which every round shares: a round may write only its own slot of a list (`out[i]`, with the loop's name) or add whole numbers into a `let` (`total += n`, `total = (total + n) % m`) (spec 4.9)"));
     }
 
     /// `xs.push(…)` and the other changing methods in a round.
@@ -117,4 +123,20 @@ impl Checker<'_> {
             self.error(span, format!("{what} in an `on cores` loop would happen in a different order on each run: collect what to show in each round's slot, then show it after the loop, or use `on threads` for waiting work (spec 4.9)"));
         }
     }
+}
+
+/// `value` is `target + …` or `(target + …) % m`, with `m` a whole number
+/// above 0 written in the code.
+fn is_sum_of(target: &Expr, value: &Expr) -> bool {
+    let ExprKind::Name(t) = &target.kind else {
+        return false;
+    };
+    let sum = match &value.kind {
+        ExprKind::Binary(BinaryOp::Rem, sum, m) if matches!(m.kind, ExprKind::Int(n) if n > 0) => {
+            sum
+        }
+        _ => value,
+    };
+    matches!(&sum.kind, ExprKind::Binary(BinaryOp::Add, left, _)
+        if matches!(&left.kind, ExprKind::Name(l) if l.name == t.name))
 }
