@@ -25,7 +25,13 @@ impl FnEmit<'_> {
     }
 
     /// `llvm.<kind>.with.overflow` on `a` and `b`: the result and the flag.
-    fn with_overflow(&mut self, kind: &str, ty: Type, a: &str, b: &str) -> (String, String) {
+    pub(crate) fn with_overflow(
+        &mut self,
+        kind: &str,
+        ty: Type,
+        a: &str,
+        b: &str,
+    ) -> (String, String) {
         let t = llvm_type(ty);
         let name = format!("llvm.{kind}.with.overflow.{t}");
         let pair = format!("{{{t}, i1}}");

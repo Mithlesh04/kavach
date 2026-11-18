@@ -1,8 +1,9 @@
-//! `b.read<T>(at, big_endian)` and `Bytes.of<T>(n, big_endian)` (spec
-//! 2.13), each an op of the bytes entry (`runtime/native/src/rt_bytes.rs`).
-//! `read`'s result type names `T`; `of` passes the size of `T`.
+//! `b.read<T>(at, big_endian)`, `Bytes.of<T>(n, big_endian)` and
+//! `Bytes.of_list<T>(xs, big_endian)` (spec 2.13), each an op of the bytes
+//! entry (`runtime/native/src/rt_bytes.rs`). `read`'s result type names
+//! `T`; `of` and `of_list` pass the size of `T`.
 
-use crate::ir::{self, ExprKind as K, Type};
+use crate::ir::{self, ExprKind as K, Shape, Type};
 use crate::lower::{Lowered, Lowerer};
 use crate::rt_op::RtOp;
 use kavach_ast as ast;
@@ -28,14 +29,25 @@ impl<'a> Lowerer<'a> {
         line: u32,
     ) -> Lowered<ir::Expr> {
         let [n, big] = self.number_args(args, "n", line)?;
-        let size = match n.ty {
-            Type::I8 | Type::U8 => 1,
-            Type::I16 | Type::U16 => 2,
-            Type::I32 | Type::U32 | Type::F32 => 4,
-            _ => 8,
-        };
-        let size = self.at(K::Int(size), Type::I64, line);
+        let size = self.at(K::Int(size_of(n.ty)), Type::I64, line);
         Ok(self.at(K::Rt(RtOp::BytesOfNumber, vec![n, big, size]), ty, line))
+    }
+
+    /// `Bytes.of_list<T>(xs, big_endian: false)`: `xs`, the flag and the
+    /// size of `T`.
+    pub(crate) fn bytes_of_list(
+        &mut self,
+        args: &'a [ast::Arg],
+        ty: Type,
+        line: u32,
+    ) -> Lowered<ir::Expr> {
+        let [xs, big] = self.number_args(args, "xs", line)?;
+        let item = match self.shapes.shape(xs.ty) {
+            Some(Shape::List(t)) => *t,
+            _ => Type::I64,
+        };
+        let size = self.at(K::Int(size_of(item)), Type::I64, line);
+        Ok(self.at(K::Rt(RtOp::BytesOfList, vec![xs, big, size]), ty, line))
     }
 
     /// The two arguments, `first` and `big_endian` (`false` when not
@@ -66,5 +78,15 @@ impl<'a> Lowerer<'a> {
             None => self.at(K::Bool(false), Type::Bool, line),
         };
         Ok([value, big])
+    }
+}
+
+/// How many bytes a number of type `t` takes.
+fn size_of(t: Type) -> i128 {
+    match t {
+        Type::I8 | Type::U8 => 1,
+        Type::I16 | Type::U16 => 2,
+        Type::I32 | Type::U32 | Type::F32 => 4,
+        _ => 8,
     }
 }

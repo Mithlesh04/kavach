@@ -1,0 +1,15 @@
+// Rule: `[run] threads` caps the `on threads` rounds running at once in the whole program: with `threads = 1`, each round ends before the next begins, whatever `threads(n)` asks.
+// Spec: 4.9, 10.11
+// expect output: round 0 done
+// expect output: round 1 done
+// expect output: round 2 done
+
+use std.time
+
+fn main() {
+    const waits = [300, 100, 200]
+    on threads(8) for i in 0..3 {
+        time.sleep_ms(waits[i])
+        print(`round {i} done`)
+    }
+}

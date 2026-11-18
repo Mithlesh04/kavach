@@ -109,6 +109,9 @@ PtrReadBytes,
 /// 2.13): `read`'s result type names `T`; `of` gets the size of `T`.
 BytesRead,
 BytesOfNumber,
+/// `Bytes.of_list<T>(xs, big_endian)` (spec 2.13): the list `a` (owned),
+/// the flag `b` and the size of `T` `c`.
+BytesOfList,
 /// `std.matrix` (spec 2.17, `runtime/native/src/rt_matrix.rs`), on flat
 /// lists of numbers, the result a list of type `code`: the product of `a`
 /// and `b` with the sizes and `fast` in list `c`; `a` and `b` item by item

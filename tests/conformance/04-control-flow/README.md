@@ -56,6 +56,7 @@ Conformance tests for spec chapter [4. Control flow](../../../docs/spec/04-contr
 | 4.9 | [on-threads-rounds-run-at-once.kav](on-threads-rounds-run-at-once.kav) | `on threads(n)` rounds run at the same time as tasks: a round that waits less finishes first, while slots and sums are applied in round order. | runs |
 | 4.9 | [on-threads-runs-at-most-n-rounds.kav](on-threads-runs-at-most-n-rounds.kav) | At most `n` rounds run at once: with `threads(1)` each ends before the next begins. | runs |
 | 4.9 | [on-threads-leaving-early-runs-in-order.kav](on-threads-leaving-early-runs-in-order.kav) | A body that can leave early runs its rounds one after another. | runs |
+| 4.9, 10.11 | [run-threads-caps-on-threads-rounds/](run-threads-caps-on-threads-rounds/src/main.kav) | `[run] threads = 1` caps the rounds running in the whole program: each ends before the next begins, whatever `threads(n)` asks. | runs |
 | 4.9 | [on-cores-writes-the-enumerate-index-slot.kav](on-cores-writes-the-enumerate-index-slot.kav) | In `on cores for (i, x) in xs.enumerate()`, a round may write its own slot `out[i]` and gives the one-core result. | runs |
 | 4.9 | [on-cores-keeps-a-sum-modulo-a-number.kav](on-cores-keeps-a-sum-modulo-a-number.kav) | An `on cores` loop may keep a whole-number sum modulo a number written in the code, and gives the one-core result. | runs |
 | 4.9 | [on-cores-count-under-one-panics.kav](on-cores-count-under-one-panics.kav) | A count worked out while running that is under 1 panics before the loop runs; more cores than there are uses them all. | panic |

@@ -1,0 +1,18 @@
+// Rule: `x.checked_mul(y) ?? d` and `if let v = x.checked_sub(y)` give the result each time it fits and the fallback each time it doesn't.
+// Spec: 5.6
+// expect output: 4611686018427387904 -9223372036854775808
+// expect output: -1 too small
+// expect output: -1 too small
+
+fn main() {
+    const big = 4_611_686_018_427_387_904
+    const low = -9_223_372_036_854_775_807
+    for i in 1..4 {
+        const m = big.checked_mul(i) ?? -1
+        if let s = low.checked_sub(i) {
+            print(`{m} {s}`)
+        } else {
+            print(`{m} too small`)
+        }
+    }
+}

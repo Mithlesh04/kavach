@@ -18,6 +18,7 @@ Conformance tests for spec chapter [5. Errors](../../../docs/spec/05-errors.md).
 | 5.5 | [match-on-an-error-needs-the-type-name.kav](match-on-an-error-needs-the-type-name.kav) | A variant pattern on an `Error` names its type: `NotFound(path)` alone is an error, since an `Error` belongs to no single type. | compile error |
 | 5.5 | [match-on-an-error-needs-a-catch-all.kav](match-on-an-error-needs-a-catch-all.kav) | A `match` on an `Error` must have a `_` arm, since an `Error` can hold any type. | compile error |
 | 5.6 | [checked-add.kav](checked-add.kav) | checked_add returns none on overflow. | runs |
+| 5.6 | [checked-results-are-asked-each-round.kav](checked-results-are-asked-each-round.kav) | `x.checked_mul(y) ?? d` and `if let v = x.checked_sub(y)` give the result each time it fits and the fallback each time it doesn't. | runs |
 | 5.6 | [division-by-zero-panics.kav](division-by-zero-panics.kav) | Integer division by zero panics. | panic |
 | 5.6 | [explicit-panic.kav](explicit-panic.kav) | panic("message") stops the task with that message. | panic |
 | 5.6 | [index-out-of-range-panics.kav](index-out-of-range-panics.kav) | An out-of-range index panics. | panic |

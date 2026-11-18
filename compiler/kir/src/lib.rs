@@ -8,6 +8,7 @@
 pub mod borrows;
 pub mod c_abi;
 mod cancel;
+mod checked_fits;
 mod coalesce;
 mod collect;
 mod counters;
@@ -80,6 +81,7 @@ mod lower_ptr_syntax;
 mod lower_range;
 mod lower_reflect;
 mod lower_replay;
+mod lower_round;
 mod lower_schema;
 mod lower_scoped;
 mod lower_selected;

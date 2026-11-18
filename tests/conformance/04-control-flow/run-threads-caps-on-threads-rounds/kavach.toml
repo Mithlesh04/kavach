@@ -1,0 +1,7 @@
+[package]
+name = "run-threads-caps-on-threads-rounds"
+version = "0.1.0"
+edition = "2026"
+
+[run]
+threads = 1

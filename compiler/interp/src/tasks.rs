@@ -37,6 +37,10 @@ pub(crate) struct Tasks<'a> {
     /// Set from outside to stop the whole program at its next loop round
     /// or call: a time limit (`kavach mcp`, spec 13.8).
     pub(crate) stop: Arc<std::sync::atomic::AtomicBool>,
+    /// The `on threads` rounds running in this run (spec 4.9).
+    pub(crate) rounds: Arc<kavach_runtime_core::RoundCount>,
+    /// What each `on threads` loop writes, worked out once a run.
+    pub(crate) loops: crate::on_threads::Loops,
 }
 
 /// A `Shared` value, without keeping it alive, and the offset of the
@@ -54,6 +58,8 @@ impl<'a> Tasks<'a> {
             ended: Arc::default(),
             made: Arc::default(),
             stop: Arc::default(),
+            rounds: Arc::default(),
+            loops: Arc::default(),
         }
     }
 }

@@ -148,6 +148,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.13 | [bytes-index-of-finds-a-part.kav](bytes-index-of-finds-a-part.kav) | `b.index_of(part)` gives where `part` first appears in `b`, or `none`; an empty `part` is at 0. | runs |
 | 2.13 | [bytes-read-numbers-at-a-place.kav](bytes-read-numbers-at-a-place.kav) | `b.read<T>(at, big_endian: false)` reads the number whose bytes start at `at`, in either order, or gives `none` when they don't all fit. | runs |
 | 2.13 | [bytes-of-gives-a-numbers-bytes.kav](bytes-of-gives-a-numbers-bytes.kav) | `Bytes.of<T>(n, big_endian: false)` gives a number's bytes, in either order. | runs |
+| 2.13 | [bytes-of-list-gives-a-lists-bytes.kav](bytes-of-list-gives-a-lists-bytes.kav) | `Bytes.of_list<T>(xs, big_endian: false)` gives the bytes of every number in a list, in order, each as `Bytes.of` gives it; `as_list` reads them back. | runs |
 | 2.13 | [read-needs-a-fixed-size-number.kav](read-needs-a-fixed-size-number.kav) | `b.read<T>(at)` and `Bytes.of<T>(n)` take only a number of fixed size. | compile error |
 | 2.12, 2.6 | [variants-named-like-jsons-are-written-with-their-type.kav](variants-named-like-jsons-are-written-with-their-type.kav) | A program's variant named like one of `Json`'s: each is written with its own union's name. | runs |
 | 2.14 | [anonymous-records-need-no-type.kav](anonymous-records-need-no-type.kav) | A record value or type is written inline with no declaration; matching is structural, and `type X = (…)` aliases the shape. | runs |

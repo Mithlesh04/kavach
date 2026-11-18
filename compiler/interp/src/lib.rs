@@ -43,6 +43,7 @@ mod reflect;
 mod run;
 mod shown;
 mod stack;
+mod statics;
 mod std_agents;
 mod std_app;
 mod std_audio;
@@ -174,6 +175,9 @@ fn main_of(i: &mut interp::Interp<'_>, args: &[String], dry_run: bool) -> i32 {
     }
     if run.on_cpu() {
         kavach_runtime_core::set_file_gpu_cpu();
+    }
+    if let (Some(n), Some(tasks)) = (run.threads, &i.tasks) {
+        tasks.rounds.set_most(n as usize);
     }
     if answers && args == ["--version"] {
         i.out.push_str(&format!("{version}\n"));

@@ -124,6 +124,14 @@ crate::rt_data::entry!(kv_rt_run, |op, a, b, c, code, line| {
             if b != 0 {
                 kavach_runtime_core::set_file_gpu_cpu();
             }
+            if c > 0 {
+                kavach_runtime_core::PROGRAM_ROUNDS.set_most(c as usize);
+            }
+            0
+        }
+        RtOp::RunRoundsFull => i64::from(kavach_runtime_core::PROGRAM_ROUNDS.full()),
+        RtOp::RunRoundsAdd => {
+            kavach_runtime_core::PROGRAM_ROUNDS.add(a);
             0
         }
         _ => run::peak_bytes(),

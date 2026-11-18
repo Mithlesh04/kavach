@@ -246,7 +246,7 @@ impl<'a> Interp<'a> {
         base: &'a Expr,
         name: &'a Ident,
         generics: &'a [kavach_ast::TypeExpr],
-        args: Args<'a>,
+        mut args: Args<'a>,
     ) -> Eval<'a> {
         let span = call.span;
         if name.name == "timeout"
@@ -287,33 +287,11 @@ impl<'a> Interp<'a> {
                         return self.call_fn(f, None, args, span);
                     }
                 }
-                DefKind::Builtin
-                    if d.name == "Bytes" && name.name == "of" && generics.len() == 1 =>
-                {
-                    return self.bytes_of_number(&generics[0], &args, span);
-                }
-                DefKind::Builtin if d.name == "Float" && name.name == "from_bits" => {
-                    let bits = match args.first() {
-                        Some((_, Value::Int(n, _))) => *n as u64,
-                        _ => 0,
-                    };
-                    return Ok(Value::Float(f64::from_bits(bits)));
-                }
-                DefKind::Builtin if d.name == "TextBuilder" && name.name == "capacity" => {
-                    let n = match args.first() {
-                        Some((_, Value::Int(n, _))) => *n,
-                        _ => 0,
-                    };
-                    return Ok(self.builder_with_room(n));
-                }
-                DefKind::Builtin if d.name == "Set" && name.name == "of" => {
-                    return Ok(self.set_of(args.into_iter().map(|(_, v)| v).collect()));
-                }
-                DefKind::Builtin
-                    if name.name == "capacity"
-                        && matches!(d.name.as_str(), "List" | "Dict" | "Set" | "Ring") =>
-                {
-                    return self.capacity(&d.name, args, span);
+                DefKind::Builtin => {
+                    match self.builtin_static(&d.name, &name.name, generics, args, span) {
+                        Ok(r) => return r,
+                        Err(given) => args = given,
+                    }
                 }
                 DefKind::Agent if name.name == "start" => {
                     if let Some(decl) = self.agents.get(&def).copied() {

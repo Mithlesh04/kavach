@@ -94,16 +94,29 @@ impl<'a> Interp<'a> {
         span: Span,
     ) -> Eval<'a> {
         let prim = self.fixed_number(item, span)?;
-        let bits = match args.first().map(|(_, v)| v) {
-            Some(Value::Int(n, _)) => *n as u64,
-            Some(Value::Float32(f)) => u64::from(f.to_bits()),
-            Some(Value::Float(f)) if prim == Prim::Float32 => u64::from((*f as f32).to_bits()),
-            Some(Value::Float(f)) => f.to_bits(),
-            _ => 0,
-        };
-        let mut out = bits.to_le_bytes()[..size_of(prim)].to_vec();
-        if big_endian(args) {
-            out.reverse();
+        let mut out = Vec::new();
+        if let Some((_, v)) = args.first() {
+            push_number(&mut out, prim, v, big_endian(args));
+        }
+        Ok(Value::Bytes(out.into()))
+    }
+
+    /// `Bytes.of_list<T>(xs, big_endian: false)` (spec 2.13): each
+    /// number's bytes, as `Bytes.of` gives them, in order.
+    pub(crate) fn bytes_of_list(
+        &mut self,
+        item: &kavach_ast::TypeExpr,
+        args: &crate::calls::Args<'a>,
+        span: Span,
+    ) -> Eval<'a> {
+        let prim = self.fixed_number(item, span)?;
+        let big = big_endian(args);
+        let mut out = Vec::new();
+        if let Some((_, Value::List(items))) = args.first() {
+            out.reserve(items.len() * size_of(prim));
+            for v in items.iter() {
+                push_number(&mut out, prim, v, big);
+            }
         }
         Ok(Value::Bytes(out.into()))
     }
@@ -184,6 +197,22 @@ fn size_of(prim: Prim) -> usize {
         Prim::Int16 | Prim::UInt16 => 2,
         Prim::Int32 | Prim::UInt32 | Prim::Float32 => 4,
         _ => 8,
+    }
+}
+
+/// The bytes of number `v` of type `prim` onto `out`, in either order.
+fn push_number(out: &mut Vec<u8>, prim: Prim, v: &Value<'_>, big_endian: bool) {
+    let bits = match v {
+        Value::Int(n, _) => *n as u64,
+        Value::Float32(f) => u64::from(f.to_bits()),
+        Value::Float(f) if prim == Prim::Float32 => u64::from((*f as f32).to_bits()),
+        Value::Float(f) => f.to_bits(),
+        _ => 0,
+    };
+    let at = out.len();
+    out.extend_from_slice(&bits.to_le_bytes()[..size_of(prim)]);
+    if big_endian {
+        out[at..].reverse();
     }
 }
 

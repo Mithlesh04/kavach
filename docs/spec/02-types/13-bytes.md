@@ -29,6 +29,7 @@ print(greeting.text() ?? "?")          // hi
 | `b.as_list<T>()` | `[T]?`: the bytes read as numbers of type `T`, or `none` when their length isn't a whole number of them |
 | `b.read<T>(at, big_endian: false)` | `T?`: the number of type `T` whose bytes start at `at`, or `none` when they don't all fit |
 | `Bytes.of<T>(n, big_endian: false)` | `Bytes`: the bytes of the number `n` of type `T` |
+| `Bytes.of_list<T>(xs, big_endian: false)` | `Bytes`: the bytes of every number in the list `xs` of type `[T]`, in order, copied at once |
 | `a + b` | `a` followed by `b` |
 | `a == b` | Whether they hold the same bytes |
 
@@ -52,4 +53,13 @@ print(header.read<Int32>(4) ?? 0)                    // 16777216
 print(header.read<UInt32>(6))                       // none: 2 bytes are left
 const packet = Bytes.of<UInt16>(6, big_endian: true) + Bytes.of<Float32>(1.5)
 print(packet)                                       // Bytes(00060000c03f)
+```
+
+`Bytes.of_list<T>(xs)` is the reverse of `as_list`: a whole list of numbers as bytes, to write to a file or send, copied at once instead of a `Bytes.of` a number. Each number's bytes are as `Bytes.of<T>` gives them, little-endian unless `big_endian: true`. `as_list` reads them back.
+
+```kavach
+const data = Bytes.of_list<Float32>([1.0, 2.0])
+print(data)                                          // Bytes(0000803f00000040)
+print(data.as_list<Float32>() ?? [])                 // [1.0, 2.0]
+print(Bytes.of_list<UInt16>([1, 2], big_endian: true)) // Bytes(00010002)
 ```

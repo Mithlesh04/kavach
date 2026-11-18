@@ -4,6 +4,8 @@
 //! the same output, exit with the same code, and panic with the same
 //! message at the same line.
 
+mod common;
+
 use kavach_driver::{Options, compile};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -158,22 +160,32 @@ fn native_code_matches_the_interpreter() {
     let next = std::sync::atomic::AtomicUsize::new(0);
     let results = std::sync::Mutex::new(Vec::new());
     let workers = std::thread::available_parallelism().map_or(4, |n| n.get());
-    std::thread::scope(|scope| {
-        for _ in 0..workers {
-            std::thread::Builder::new()
-                .stack_size(256 * 1024 * 1024)
-                .spawn_scoped(scope, || {
-                    loop {
-                        let n = next.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-                        let Some(path) = files.get(n) else {
-                            break;
-                        };
-                        let checked = check(n, path, &root, &out_dir);
-                        results.lock().unwrap().push((n, checked));
-                    }
-                })
-                .unwrap();
-        }
+    let running = common::Running::new(workers);
+    // The watch ends once every worker has, or one panicked.
+    std::thread::scope(|outer| {
+        outer.spawn(|| running.watch());
+        let _finishing = running.finishing();
+        std::thread::scope(|scope| {
+            for w in 0..workers {
+                let (next, results, running) = (&next, &results, &running);
+                let (files, root, out_dir) = (&files, &root, &out_dir);
+                std::thread::Builder::new()
+                    .stack_size(256 * 1024 * 1024)
+                    .spawn_scoped(scope, move || {
+                        loop {
+                            let n = next.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                            let Some(path) = files.get(n) else {
+                                break;
+                            };
+                            running.set(w, Some(path.display().to_string()));
+                            let checked = check(n, path, root, out_dir);
+                            running.set(w, None);
+                            results.lock().unwrap().push((n, checked));
+                        }
+                    })
+                    .unwrap();
+            }
+        });
     });
     let mut results = results.into_inner().unwrap();
     results.sort_by_key(|(n, _)| *n);

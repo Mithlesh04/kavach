@@ -31,12 +31,13 @@ impl<'a> Lowerer<'a> {
         let run = kavach_driver::Config::for_file(path)
             .map(|c| c.run)
             .unwrap_or_default();
-        if run.cores.is_some() || run.on_cpu() {
+        if run.cores.is_some() || run.on_cpu() || run.threads.is_some() {
             let n = at(K::Int(run.cores.unwrap_or(0).into()), Type::I64);
             let cpu = at(K::Int(run.on_cpu().into()), Type::I64);
+            let threads = at(K::Int(run.threads.unwrap_or(0).into()), Type::I64);
             out.insert(
                 0,
-                Stmt::Expr(at(K::Rt(RtOp::RunCores, vec![n, cpu]), Type::Unit)),
+                Stmt::Expr(at(K::Rt(RtOp::RunCores, vec![n, cpu, threads]), Type::Unit)),
             );
         }
         if spawns_on_cores(&self.c.file) {

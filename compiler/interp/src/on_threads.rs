@@ -9,24 +9,30 @@ use crate::tasks::{TaskHandle, Work};
 use crate::value::{Eval, Flow, Value};
 use kavach_ast::rounds::{RoundWrites, round_writes};
 use kavach_ast::{BinaryOp, Block, Expr, ExprKind, Pattern, PatternKind, Span};
-use std::cell::RefCell;
 use std::collections::HashMap;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 /// A loop's writes, worked out once per loop: the slot targets, then the
 /// sums', which a round reads back at its end.
-struct Rounds {
+pub(crate) struct Rounds {
     writes: RoundWrites,
     reads: Vec<Expr>,
 }
 
-thread_local! {
-    static ROUNDS: RefCell<HashMap<(u32, u32), &'static Rounds>> = RefCell::default();
-}
+/// Each loop's `Rounds` in a run, by the address of its body: one run's,
+/// as tests run many programs in one process, where two loops can have
+/// the same place in different files.
+pub(crate) type Loops = Arc<Mutex<HashMap<usize, &'static Rounds>>>;
 
-fn rounds_of(body: &Block, pattern: &Pattern) -> &'static Rounds {
-    let key = (body.span.start, body.span.end);
-    if let Some(r) = ROUNDS.with(|m| m.borrow().get(&key).copied()) {
+fn rounds_of(loops: Option<&Loops>, body: &Block, pattern: &Pattern) -> &'static Rounds {
+    let key = body as *const Block as usize;
+    let known = |l: &Loops| {
+        l.lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .get(&key)
+            .copied()
+    };
+    if let Some(r) = loops.and_then(known) {
         return r;
     }
     // The round's slot: the loop's name, or the index of `(i, x)`.
@@ -44,7 +50,9 @@ fn rounds_of(body: &Block, pattern: &Pattern) -> &'static Rounds {
         .collect();
     // Kept for the program's run: one per loop in the source.
     let r: &'static Rounds = Box::leak(Box::new(Rounds { writes, reads }));
-    ROUNDS.with(|m| m.borrow_mut().insert(key, r));
+    if let Some(l) = loops {
+        l.lock().unwrap_or_else(|e| e.into_inner()).insert(key, r);
+    }
     r
 }
 
@@ -60,14 +68,19 @@ impl<'a> Interp<'a> {
         body: &'a Block,
         span: Span,
     ) -> Result<Option<Value<'a>>, Flow<'a>> {
-        let rounds = rounds_of(body, pattern);
+        let rounds = rounds_of(self.tasks.as_ref().map(|t| &t.loops), body, pattern);
         if rounds.writes.leaves {
             return Ok(None);
         }
         let mut started: Vec<(Arc<TaskHandle<'a>>, Value<'a>)> = Vec::new();
         let mut applied = 0;
+        let all_rounds = self.tasks.as_ref().map(|t| Arc::clone(&t.rounds));
+        let full = || all_rounds.as_ref().is_some_and(|r| r.full());
         for item in items {
-            if n > 0 && started.len() - applied >= n {
+            // At most `n` at once, and `[run] threads` in all the
+            // program's loops; one with none running starts one (4.9).
+            let running = started.len() - applied;
+            if (n > 0 && running >= n) || (running > 0 && full()) {
                 self.apply_round(rounds, pattern, &started[applied], span, &started)?;
                 applied += 1;
             }
@@ -82,6 +95,9 @@ impl<'a> Interp<'a> {
             let task = self.spawn_work(Work::Round(body, &rounds.reads), span)?;
             for (s, v) in rounds.writes.sums.iter().zip(saved) {
                 self.assign(&s.target, v, span)?;
+            }
+            if let Some(r) = &all_rounds {
+                r.add(1);
             }
             match task {
                 Value::Task(t) => started.push((t, item)),
@@ -113,7 +129,11 @@ impl<'a> Interp<'a> {
         span: Span,
         all: &[(Arc<TaskHandle<'a>>, Value<'a>)],
     ) -> Result<(), Flow<'a>> {
-        let values = match self.wait_task(task, None, span) {
+        let waited = self.wait_task(task, None, span);
+        if let Some(t) = &self.tasks {
+            t.rounds.add(-1);
+        }
+        let values = match waited {
             Ok(Value::Tuple(values)) => values,
             Ok(_) => Vec::new(),
             Err(e) => {

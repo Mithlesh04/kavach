@@ -420,6 +420,9 @@ impl Checker<'_> {
             DefKind::Builtin if type_name == "Bytes" && name.name == "of" => {
                 Some(self.bytes_of(generics, args, span))
             }
+            DefKind::Builtin if type_name == "Bytes" && name.name == "of_list" => {
+                Some(self.bytes_of_list(generics, args, span))
+            }
             DefKind::Builtin if type_name == "Float" && name.name == "from_bits" => {
                 Some(self.float_from_bits(args, span))
             }

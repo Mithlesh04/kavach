@@ -19,6 +19,7 @@ Every setting a program can have, in one place. A key or section that isn't list
 | `[limits]` | `exclude` | a list of file patterns | `[]` | 12.1 |
 | `[limits.files]` | a file's path | a whole number: that file's own limit | none | 12.1 |
 | `[run]` | `cores` | a whole number, 1 or more | all the machine gives the program | 4.9: the most cores the program uses; `KAVACH_CORES` wins |
+| `[run]` | `threads` | a whole number, 1 or more | `256` | 4.9: the most `on threads` rounds running at once in the whole program |
 | `[run]` | `gpu` | `"cpu"`, `"auto"` | `"auto"` | 15.2: `"cpu"` keeps every `map` with a `gpu fn` on the CPU; `KAVACH_GPU` wins |
 | `[test]` | `cases` | a whole number | `200` | 11.9 |
 | `[test]` | `deep_cases` | a whole number | `10000` | 11.9 |
@@ -72,7 +73,7 @@ For work on the compiler (they print what a pass did, or turn one off):
 | `KAVACH_SROA_LOG` | Prints each record split |
 | `KAVACH_FUSE_LOG` | Prints each pair of loops fused into one |
 | `KAVACH_FUSE_SKELETON` | Prints `main`'s loops before and after fusing |
-| `KAVACH_PAR_LOG` | Prints each `on cores` loop spread over the cores |
+| `KAVACH_PAR_LOG` | Prints each `on cores` loop spread over the cores, when building; when running, a note when `[run] cores` or `KAVACH_CORES` asks for more cores than the machine has |
 | `KAVACH_UNRECURSE_LOG` | Prints why a recursion did or didn't become a loop |
 | `KAVACH_FUZZ_CASES` | How many cases the fuzz tests try |
 | `KAVACH_ISOLATED` | `1` in a throwaway container: the runtime's tests may then free ports and add and remove users (14.25); they also need Docker's own `/.dockerenv`, so the setting alone changes nothing on a real machine |

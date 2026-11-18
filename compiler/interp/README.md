@@ -36,6 +36,7 @@ Not supported yet: agents, capabilities, `ask` and `unsafe` (Phase 2 and the nat
 | `src/value.rs` | Run-time values and how they print |
 | `src/map.rs` | Maps (and sets): insertion order plus a hash index |
 | `src/stack.rs` | How deep calls may go: the stack in use, measured, before a call is a stack overflow (spec 3.8) |
+| `src/statics.rs` | Functions of built-in types called on the type's name: `Bytes.of`, `Bytes.of_list`, `Float.from_bits`, `TextBuilder.capacity`, `Set.of`, `capacity` |
 | `src/std_lib.rs` | The standard library's `std` modules (spec 14) |
 | `src/more_methods.rs` | More methods of built-in types: of text, lists, regular expressions and sets (spec 14.2) |
 | `src/std_agents.rs` | Approval requests answered in code: `agents.waiting` and `answer` (spec 14.16) |

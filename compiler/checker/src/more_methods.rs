@@ -59,6 +59,23 @@ impl Checker<'_> {
         Ty::Prim(Prim::Bytes)
     }
 
+    /// `Bytes.of_list<T>(xs, big_endian: false)` (spec 2.13): `Bytes`.
+    pub(crate) fn bytes_of_list(
+        &mut self,
+        generics: &[kavach_ast::TypeExpr],
+        args: &[kavach_ast::Arg],
+        span: kavach_ast::Span,
+    ) -> Ty {
+        let how = "Bytes.of_list<Int>(xs)";
+        let item = self.fixed_number(generics, span, "Bytes.of_list", how);
+        let params = [
+            ("xs".to_string(), Ty::List(Box::new(item)), false),
+            ("big_endian".to_string(), Ty::Prim(Prim::Bool), true),
+        ];
+        self.args(args, &params, span, "`Bytes.of_list`", "argument");
+        Ty::Prim(Prim::Bytes)
+    }
+
     /// The one type argument of `as_list`, `read` or `of` (`name`): a
     /// number of fixed size, or `Ty::Error` after saying why. `how`
     /// shows a call.

@@ -15,6 +15,9 @@ CheckedAdd,
 CheckedSub,
 CheckedMul,
 CheckedDiv,
+/// Whether `a` and `b` (`Int`s) added (`c` 0), subtracted (1) or
+/// multiplied (2) fit in an `Int` (`compiler/kir/src/checked_fits.rs`).
+CheckedFits,
 /// More methods of text and lists (spec 14.2).
 StrReplace,
 StrLines,

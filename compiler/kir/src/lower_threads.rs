@@ -5,7 +5,7 @@
 //! sums, which are applied when it is waited for, in round order. The
 //! interpreter does the same (`compiler/interp/src/on_threads.rs`).
 
-use crate::ir::{self, Block, ExprKind as K, Function, Local, Shape, Stmt, Type};
+use crate::ir::{self, Block, ExprKind as K, Local, Shape, Stmt, Type};
 use crate::lower::{Lowered, Lowerer};
 use crate::rt_op::RtOp;
 use kavach_ast::rounds::{RoundWrites, round_writes};
@@ -153,6 +153,7 @@ impl<'a> Lowerer<'a> {
             slot_id,
             (tasks, tasks_ty, slots, slots_ty, applied),
             (task_ty, value_ty, slot_now),
+            &round.written,
             line,
         )?;
         let mut each = Vec::new();
@@ -167,37 +168,64 @@ impl<'a> Lowerer<'a> {
             );
             each.push(Stmt::Let(l, read));
         }
-        // At most `n` rounds at once: before this one, the oldest waited
-        // for and applied.
-        if let Some(n) = count {
-            let running = at(
-                K::Binary(
-                    ir::BinOp::Sub,
+        // At most `n` rounds at once, and at most `[run] threads` in all
+        // the program's loops: before this one, the oldest waited for and
+        // applied. A loop with none running starts one anyway (spec 4.9).
+        let running = at(
+            K::Binary(
+                ir::BinOp::Sub,
+                Box::new(at(
+                    K::Rt(RtOp::ListLen, vec![self.local_expr(tasks, line)]),
+                    Type::I64,
+                    line,
+                )),
+                Box::new(self.local_expr(applied, line)),
+            ),
+            Type::I64,
+            line,
+        );
+        let (held, held_ty) = (self.new_local(Type::I64), Type::I64);
+        each.push(Stmt::Let(held, running));
+        let all_full = at(
+            K::And(
+                Box::new(at(
+                    K::Binary(
+                        ir::BinOp::Gt,
+                        Box::new(self.local_expr(held, line)),
+                        Box::new(int(0)),
+                    ),
+                    Type::Bool,
+                    line,
+                )),
+                Box::new(at(K::Rt(RtOp::RunRoundsFull, Vec::new()), Type::Bool, line)),
+            ),
+            Type::Bool,
+            line,
+        );
+        let full = match count {
+            Some(n) => at(
+                K::Or(
                     Box::new(at(
-                        K::Rt(RtOp::ListLen, vec![self.local_expr(tasks, line)]),
-                        Type::I64,
+                        K::Binary(
+                            ir::BinOp::Ge,
+                            Box::new(at(K::Local(held), held_ty, line)),
+                            Box::new(self.local_expr(n, line)),
+                        ),
+                        Type::Bool,
                         line,
                     )),
-                    Box::new(self.local_expr(applied, line)),
-                ),
-                Type::I64,
-                line,
-            );
-            let full = at(
-                K::Binary(
-                    ir::BinOp::Ge,
-                    Box::new(running),
-                    Box::new(self.local_expr(n, line)),
+                    Box::new(all_full),
                 ),
                 Type::Bool,
                 line,
-            );
-            each.push(Stmt::Expr(at(
-                K::If(Box::new(full), apply.clone(), Block::default()),
-                Type::Unit,
-                line,
-            )));
-        }
+            ),
+            None => all_full,
+        };
+        each.push(Stmt::Expr(at(
+            K::If(Box::new(full), apply.clone(), Block::default()),
+            Type::Unit,
+            line,
+        )));
         // Each round's sums start at 0 (`round_task`), the loop's after.
         let mut saved = Vec::new();
         for s in &writes.sums {
@@ -210,6 +238,11 @@ impl<'a> Lowerer<'a> {
         }
         let spawned = self.spawn_round(&round, line);
         each.push(push(tasks, tasks_ty, spawned, line));
+        each.push(Stmt::Expr(at(
+            K::Rt(RtOp::RunRoundsAdd, vec![int(1)]),
+            Type::Unit,
+            line,
+        )));
         for (s, keep) in saved {
             let v = self.local_expr(keep, line);
             each.push(self.assign_path(&s.target, v)?);
@@ -259,231 +292,4 @@ fn push(list: Local, ty: Type, v: ir::Expr, line: u32) -> Stmt {
         line,
     );
     Stmt::Expr(at(K::Assign(list, Box::new(pushed)), Type::Unit, line))
-}
-
-pub(crate) struct Round {
-    pub(crate) task_ty: Type,
-    pub(crate) value_ty: Type,
-    thunk: ir::FuncId,
-    env_ty: Type,
-    captures: Vec<ir::Expr>,
-}
-
-impl<'a> Lowerer<'a> {
-    /// The task a round runs: the body, then its slot values and sums.
-    fn round_task(
-        &mut self,
-        body: &'a ast::Block,
-        writes: &'a RoundWrites,
-        line: u32,
-    ) -> Lowered<Round> {
-        let span = ast::Expr {
-            kind: ExprKind::None,
-            span: body.span,
-        };
-        let (captured, outer, types) = self.captures_skipping(&span, &[]);
-        let captures: Vec<ir::Expr> = outer.iter().map(|l| self.local_expr(*l, line)).collect();
-        let env_ty = self.shapes_intern(Shape::Closure(types.clone()));
-        // The value's type: the targets' types, read in the outer function.
-        let reads: Vec<&ast::Expr> = (writes.slots.iter())
-            .chain(writes.sums.iter().map(|s| &s.target))
-            .collect();
-        let mut read_types = Vec::new();
-        for r in &reads {
-            match self.c.expr_types.get(&(r.span.start, r.span.end)) {
-                Some(t) => read_types.push(self.kir_type(&t.clone(), r.span)?),
-                None => return Err(self.unsupported("this `on threads` loop", r.span)),
-            }
-        }
-        let value_ty = self.shapes_intern(Shape::Tuple(read_types));
-        let saved = self.save_function(value_ty);
-        let lowered = (|| -> Lowered<Function> {
-            let (env, mut b) = self.unpack_env(env_ty, &captured, &types, line);
-            // In a loop of one round, so `continue` ends the round.
-            let once = self.new_local(Type::I64);
-            let mut inner = Block::default();
-            self.block_into(body, false, &mut inner)?;
-            b.stmts.push(Stmt::ForRange {
-                var: once,
-                start: at(K::Int(0), Type::I64, line),
-                end: at(K::Int(1), Type::I64, line),
-                inclusive: false,
-                body: inner,
-            });
-            let mut values = Vec::new();
-            for r in &reads {
-                values.push(self.expr(r)?);
-            }
-            b.value = Some(Box::new(at(K::Tuple(values), value_ty, line)));
-            Ok(Function {
-                name: "on threads round".into(),
-                params: vec![env],
-                ret: value_ty,
-                locals: self.locals.clone(),
-                body: b,
-                line,
-                fails: true,
-                external: None,
-                variadic: false,
-            })
-        })();
-        self.restore_function(saved);
-        let body_fn = self.add_function(lowered?);
-        let saved = self.save_function(Type::Unit);
-        let error_ty = self.error_type();
-        let thunk = self.task_thunk(body_fn, env_ty, value_ty, error_ty, line);
-        self.restore_function(saved);
-        let thunk = self.add_function(thunk);
-        let task_ty = self.shapes_intern(Shape::Task(value_ty));
-        Ok(Round {
-            task_ty,
-            value_ty,
-            thunk,
-            env_ty,
-            captures,
-        })
-    }
-
-    fn spawn_round(&mut self, round: &Round, line: u32) -> ir::Expr {
-        let func_ty = self.shapes_intern(Shape::Func(Vec::new(), Type::Unit, None));
-        let closure = K::Closure {
-            func: round.thunk,
-            env: round.env_ty,
-            captures: round.captures.clone(),
-        };
-        // A thread (kind 1), as `spawn thread` and `parallel_map` make.
-        let thread = at(K::Int(1), Type::I64, line);
-        at(
-            K::Rt(RtOp::TaskSpawn, vec![at(closure, func_ty, line), thread]),
-            round.task_ty,
-            line,
-        )
-    }
-
-    /// Waits for round `applied` and applies it: its slot values into the
-    /// lists at its slot, its sums added in. A round's panic is a panic
-    /// here, as `parallel_map`'s is (9.3).
-    fn apply_round(
-        &mut self,
-        writes: &'a RoundWrites,
-        slot_id: Option<&'a ast::Ident>,
-        (tasks, _, slots, _, applied): (Local, Type, Local, Type, Local),
-        (task_ty, value_ty, slot_now): (Type, Type, Local),
-        line: u32,
-    ) -> Lowered<Block> {
-        let error_ty = self.error_type();
-        let (value, error) = (self.new_local(value_ty), self.new_local(error_ty));
-        let nth = |l: Local, item: Type, this: &Self| {
-            at(
-                K::Index(
-                    Box::new(this.local_expr(l, line)),
-                    Box::new(this.local_expr(applied, line)),
-                ),
-                item,
-                line,
-            )
-        };
-        let mut stmts = vec![Stmt::LetResult {
-            value,
-            error,
-            call: at(
-                K::Rt(RtOp::TaskWait, vec![nth(tasks, task_ty, self)]),
-                value_ty,
-                line,
-            ),
-        }];
-        let text = self.str_type();
-        let message = at(
-            K::Format(vec![
-                at(K::Str("a round of `on threads` ".into()), text, line),
-                self.local_expr(error, line),
-            ]),
-            text,
-            line,
-        );
-        stmts.push(Stmt::Expr(at(
-            K::If(
-                Box::new(self.failed(error, line)),
-                Block {
-                    stmts: vec![Stmt::Expr(at(
-                        K::Rt(RtOp::PanicText, vec![message]),
-                        Type::Unit,
-                        line,
-                    ))],
-                    value: None,
-                },
-                Block::default(),
-            ),
-            Type::Unit,
-            line,
-        )));
-        let Some(Shape::Tuple(items)) = self.shapes.shape(value_ty).cloned() else {
-            return Err(self.unsupported("this `on threads` loop", writes_span(writes)));
-        };
-        // The slot's name stands for the applied round's slot meanwhile.
-        if let Some(id) = slot_id {
-            stmts.push(Stmt::Let(slot_now, nth(slots, Type::I64, self)));
-            let restore = self.bound(id)?;
-            let slot_ty = self.locals[restore as usize];
-            let typed = self.new_local(slot_ty);
-            let v = self.coerce(self.local_expr(slot_now, line), slot_ty)?;
-            stmts.push(Stmt::Let(typed, v));
-            self.bind(id, typed);
-            for (j, target) in writes.slots.iter().enumerate() {
-                let v = self.tuple_item(value, value_ty, j, items[j], line);
-                stmts.push(self.assign_path(target, v)?);
-            }
-            self.bind(id, restore);
-        }
-        for (n, s) in writes.sums.iter().enumerate() {
-            let j = writes.slots.len() + n;
-            let part = self.tuple_item(value, value_ty, j, items[j], line);
-            let total = self.expr(&s.target)?;
-            let ty = total.ty;
-            let mut sum = at(
-                K::Binary(ir::BinOp::Add, Box::new(total), Box::new(part)),
-                ty,
-                line,
-            );
-            if let Some(m) = s.modulo {
-                let m = self.coerce(at(K::Int(i128::from(m)), Type::I64, line), ty)?;
-                sum = at(
-                    K::Binary(ir::BinOp::Rem, Box::new(sum), Box::new(m)),
-                    ty,
-                    line,
-                );
-            }
-            stmts.push(self.assign_path(&s.target, sum)?);
-        }
-        let next = at(
-            K::Binary(
-                ir::BinOp::Add,
-                Box::new(self.local_expr(applied, line)),
-                Box::new(at(K::Int(1), Type::I64, line)),
-            ),
-            Type::I64,
-            line,
-        );
-        stmts.push(Stmt::Expr(at(
-            K::Assign(applied, Box::new(next)),
-            Type::Unit,
-            line,
-        )));
-        Ok(Block { stmts, value: None })
-    }
-}
-
-fn writes_span(w: &RoundWrites) -> ast::Span {
-    (w.slots.first())
-        .or(w.sums.first().map(|s| &s.target))
-        .map_or(ast::Span::new(0, 0), |e| e.span)
-}
-
-impl Lowerer<'_> {
-    /// The local a pattern's name was bound to (`bind`).
-    fn bound(&self, id: &ast::Ident) -> Lowered<Local> {
-        (self.decl.get(&id.span.start))
-            .and_then(|d| self.local_ids.get(d).copied())
-            .ok_or_else(|| self.unsupported(format!("the name `{}`", id.name), id.span))
-    }
 }

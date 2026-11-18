@@ -48,6 +48,11 @@ pub fn bytes_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
         }
         return new_bytes(out, result);
     }
+    if matches!(op, RtOp::BytesOfList) {
+        let out = numbers_as_bytes(a, b != 0, c.clamp(1, 8) as usize);
+        release(a);
+        return new_bytes(out, result);
+    }
     let out = match op {
         RtOp::BytesNew => new_bytes(list_bytes(a), result),
         RtOp::StrBytes => new_bytes(with_str(a, |s| s.as_bytes().to_vec()), bytes_type()),
@@ -299,6 +304,29 @@ pub extern "C-unwind" fn kv_bytes_bad_index(i: i64, len: i64, line: i32) {
 
 /// The bytes of a `[UInt8]`, straight off the list's own buffer: packed
 /// lists (decision 0030) already hold one byte per byte.
+/// The numbers of list `a`, each `size` bytes, little-endian unless
+/// `big`: a packed list's words copied as they are, as its order is the
+/// byte order.
+fn numbers_as_bytes(a: i64, big: bool, size: usize) -> Vec<u8> {
+    let n = crate::heap::list_len_items_pub(a);
+    let words = crate::heap::slots(a);
+    let mut data = if crate::flat::packed(crate::heap::obj(a).ty()) {
+        words_as_bytes(words)[..n * size].to_vec()
+    } else {
+        let mut data = Vec::with_capacity(n * size);
+        for w in &words[..n] {
+            data.extend_from_slice(&w.to_le_bytes()[..size]);
+        }
+        data
+    };
+    if big && size > 1 {
+        for item in data.chunks_exact_mut(size) {
+            item.reverse();
+        }
+    }
+    data
+}
+
 pub(crate) fn list_bytes(a: i64) -> Vec<u8> {
     if crate::flat::packed(crate::heap::obj(a).ty()) {
         // Whole words at a time: the packed order is the byte order

@@ -175,6 +175,18 @@ impl FnEmit<'_> {
                 self.prefetch(&args[0], &args[1]);
                 None
             }
+            // Whether a `checked_*` result fits (`checked_fits.rs`): one
+            // instruction and its overflow flag.
+            ExprKind::Rt(kavach_kir::RtOp::CheckedFits, args) if args[0].ty == Type::I64 => {
+                let (a, b) = (self.expr(&args[0])?, self.expr(&args[1])?);
+                let kind = match args[2].kind {
+                    ExprKind::Int(0) => "sadd",
+                    ExprKind::Int(1) => "ssub",
+                    _ => "smul",
+                };
+                let (_, overflow) = self.with_overflow(kind, Type::I64, &a, &b);
+                Some(self.val(format!("xor i1 {overflow}, true")))
+            }
             // Wrapping arithmetic (`a.wrapping_add(b)`, spec 5.6): one
             // instruction, no overflow check.
             ExprKind::Rt(

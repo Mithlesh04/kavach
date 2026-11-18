@@ -32,6 +32,7 @@ impl<'a> Lowerer<'a> {
                 .first_arg(args, "`Ptr.from_int()`", span)
                 .map(|n| ir::Expr { ty, ..n }),
             ("Bytes", "of") => self.bytes_of(args, ty, line),
+            ("Bytes", "of_list") => self.bytes_of_list(args, ty, line),
             // `TextBuilder.capacity(n)` (spec 2.18): empty text, which
             // grows as it is pushed onto.
             ("TextBuilder", "capacity") if builtin => Ok(ir::Expr {

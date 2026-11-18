@@ -2,6 +2,8 @@
 //! tests every conformance file and compares the result with its header.
 //! Also runs the examples, which must succeed.
 
+mod common;
+
 use kavach_driver::{Options, compile};
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -186,13 +188,19 @@ fn conformance_tests_pass_on_a_deep_stack() {
     let mut files = Vec::new();
     kav_files(&root.join("tests/conformance"), &mut files);
     assert!(files.len() > 100, "found only {} tests", files.len());
-    let failures: Vec<String> = files
-        .iter()
-        .filter_map(|f| {
-            check_file(f)
-                .map(|why| format!("{}: {why}", f.strip_prefix(&root).unwrap_or(f).display()))
-        })
-        .collect();
+    let running = common::Running::new(1);
+    let failures: Vec<String> = std::thread::scope(|scope| {
+        scope.spawn(|| running.watch());
+        let _finishing = running.finishing();
+        files
+            .iter()
+            .filter_map(|f| {
+                let name = f.strip_prefix(&root).unwrap_or(f).display().to_string();
+                running.set(0, Some(name.clone()));
+                check_file(f).map(|why| format!("{name}: {why}"))
+            })
+            .collect()
+    });
     assert!(
         failures.is_empty(),
         "{} of {} conformance tests failed:\n{}",

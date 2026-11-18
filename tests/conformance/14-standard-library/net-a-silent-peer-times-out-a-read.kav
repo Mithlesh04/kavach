@@ -6,9 +6,11 @@
 use std.net
 use std.time
 
-fn slow(listener: Listener) ! NetError uses Net, Clock {
+// Answers only once the client says "go", which it does after its read
+// timed out, so no machine is too slow for the timeout to come first.
+fn slow(listener: Listener) ! NetError uses Net {
     const conn = try listener.accept()
-    time.sleep(300.ms)
+    const _go = try conn.read()
     try conn.write("late".bytes())
     while true {
         const _piece = (try conn.read()) ?? break
@@ -28,6 +30,7 @@ fn main() ! Error {
         },
     }
     print(`read: {first}`)
+    try conn.write("go".bytes())
     const then = (try conn.read().timeout(5.seconds)) ?? Bytes([])
     print(`then: {then.text() ?? "?"}`)
     conn.close()

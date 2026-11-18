@@ -207,8 +207,8 @@ AppDialog,
 /// This program's processor milliseconds (`std.process`, spec 14.23).
 RunCpu,
 /// At the start of `main`: `[run]` from `kavach.toml`: `cores` (spec
-/// 4.9) as `a`, 0 when not set, and `b` 1 for `gpu = "cpu"` (15.2); the
-/// environment at launch wins.
+/// 4.9) as `a`, 0 when not set, `b` 1 for `gpu = "cpu"` (15.2), and
+/// `threads` (4.9) as `c`, 0 when not set; the environment at launch wins.
 RunCores,
 /// `std.system` (spec 14.25, `runtime/native/src/rt_machine.rs`): fact
 /// `a` of the machine as text, then as a number, and the GPUs as four
@@ -269,3 +269,8 @@ DrawCompressed,
 AudioVoice,
 AudioVoiceRoom,
 AudioVoiceFeed,
+/// `on threads` rounds in all the program's loops (spec 4.9, `[run]
+/// threads`): whether as many run as allowed; and one more started (`a`
+/// 1) or waited for (`a` -1).
+RunRoundsFull,
+RunRoundsAdd,

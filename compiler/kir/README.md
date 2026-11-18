@@ -51,6 +51,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/lower_base64.rs` | `std.base64` (spec 14.20): its two ops, flags in place |
 | `src/lower_bytes.rs` | `b.read<T>(at, big_endian)` and `Bytes.of<T>(n, big_endian)` (spec 2.13): their ops, the flag given in place |
 | `src/lower_bytes_text.rs` | `b.text(start, end)` and `b.slice(start, end).text()` (spec 2.13): one op, the text copied once |
+| `src/lower_assert.rs` | `assert` (spec 11.8): a failing comparison shows both sides, each worked out once |
 | `src/lower_statics.rs` | Calls through a built-in type's name: `Set.of`, `List`/`Map`/`Set.capacity` (spec 2.2), `Ptr.from_int`, `Bytes.of`, `Float.from_bits` |
 | `src/lower_every.rs` | `for tick in time.every_ms(ms)`: a loop whose rounds each wait for their start (spec 14.4) |
 | `src/lower_iface.rs` | Interface values (spec 2.15): a box of the value, its type and one closure per method; calls through the box |
@@ -78,6 +79,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/lower_process.rs` | `spawn process f(args)` (spec 9.8): a task whose thunk runs the call in a child, and in the child an entry per call, run instead of the program |
 | `src/lower_tasks.rs` | `spawn` as a task body, a thunk and a closure; functions that spawn wait for their tasks (spec 9), and functions with `uses Fs("folder")` keep file access inside it (spec 8.1); `parallel_map` in `src/lower_tasks/parallel_map.rs`, `for v in receive` in `src/lower_tasks/channels.rs`; the task's function in `src/lower_tasks/body.rs`, a spawned call's field-path arguments read before the task in `src/lower_tasks/args.rs` |
 | `src/lower_threads.rs` | `on threads(n) for …` (spec 4.9): each round a `spawn thread` task, at most `n` at once, its slot writes and sums applied in round order |
+| `src/lower_round.rs` | The task one round of an `on threads` loop runs, and what the loop does with it when it is waited for |
 | `src/inline.rs` | Early returns to `if`/`else`; inlining small functions (tests in `src/inline/tests.rs`) |
 | `src/sroa.rs` | Scalar replacement: a record local the function never shares, or a fixed-size list read at constant indexes, becomes one local per field |
 | `src/coalesce.rs` | `a ?? b` moved into the branches of `a`, so no optional is built |
@@ -85,6 +87,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/stop_points.rs` | Where a task stopped by `cancel()` or its time limit stops while it only computes (spec 9.6): each function's start and each loop round's, in programs that use either; never in code that runs on the GPU |
 | `src/loop_lens.rs` | A length a `while` loop never changes (`data.len()` in its condition) read once before the loop |
 | `src/tuple_lets.rs` | A tuple made only to be taken apart (an `inout` call's, once inlined) kept as one local per item |
+| `src/checked_fits.rs` | A `checked_*` result on `Int`s that is only asked whether it is there and unwrapped makes no optional: whether it fits is one instruction, and the value the plain operation (S14) |
 | `src/inout_stash.rs` | A function with `inout` parameters and a result besides, called directly, gives its value alone and leaves the `inout` values in thread slots for its caller, so no tuple is made (S11) |
 | `src/loop_fields.rs` | A record's plain fields that a loop only reads and sets, kept in locals while it runs and set back after it |
 | `src/whole_lines.rs` | A printed line comes out whole (spec 9.8): a `print` whose values call anything works them out before it writes |

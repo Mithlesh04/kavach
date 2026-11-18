@@ -81,6 +81,7 @@ pub(crate) fn finish(
     crate::cancel::cancel_checks(&mut functions);
     let mut notes = crate::gpu_later::Notes::new();
     for f in &mut functions {
+        crate::checked_fits::checked_fits(f, &l.shapes.list);
         crate::gpu_stay::keep_on_gpu(f);
         crate::gpu_later::overlap_sums(f, &mut notes);
         crate::devirt::devirt(f);

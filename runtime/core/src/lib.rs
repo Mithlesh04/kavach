@@ -272,7 +272,20 @@ pub fn cores() -> usize {
         let asked = asked.or_else(|| std::env::var_os("KAVACH_SERIAL").map(|_| 1));
         let file = FILE_CORES.load(std::sync::atomic::Ordering::Relaxed);
         let asked = asked.or((file > 0).then_some(file));
+        if let Some(note) = asked.and_then(|n| cap_note(n, machine))
+            && std::env::var_os("KAVACH_PAR_LOG").is_some()
+        {
+            eprintln!("{note}");
+        }
         asked.map_or(machine, |n| n.clamp(1, machine))
+    })
+}
+
+/// What `KAVACH_PAR_LOG` prints when more cores are asked for than the
+/// machine has (decision 0126), or `None`.
+pub fn cap_note(asked: usize, machine: usize) -> Option<String> {
+    (asked > machine).then(|| {
+        format!("kavach: {asked} cores asked for, and this machine has {machine}: using {machine}")
     })
 }
 
@@ -299,7 +312,70 @@ pub fn gpu_mode() -> String {
     }
 }
 
+/// The `on threads` rounds running now in all of a program's loops, and
+/// the most `[run] threads` lets run at once (spec 4.9), 256 when not
+/// set. A native program has one (`PROGRAM_ROUNDS`); the interpreter one
+/// a run, as tests run many programs in one process.
+pub struct RoundCount {
+    most: std::sync::atomic::AtomicUsize,
+    running: std::sync::atomic::AtomicUsize,
+}
+
+impl Default for RoundCount {
+    fn default() -> Self {
+        RoundCount::new()
+    }
+}
+
+impl RoundCount {
+    pub const fn new() -> Self {
+        RoundCount {
+            most: std::sync::atomic::AtomicUsize::new(256),
+            running: std::sync::atomic::AtomicUsize::new(0),
+        }
+    }
+
+    /// Sets `[run] threads`.
+    pub fn set_most(&self, n: usize) {
+        self.most
+            .store(n.max(1), std::sync::atomic::Ordering::Relaxed);
+    }
+
+    /// Whether as many rounds run as `[run] threads` allows.
+    pub fn full(&self) -> bool {
+        use std::sync::atomic::Ordering::Relaxed;
+        self.running.load(Relaxed) >= self.most.load(Relaxed)
+    }
+
+    /// A round started (`1`) or was waited for (`-1`).
+    pub fn add(&self, delta: i64) {
+        use std::sync::atomic::Ordering::Relaxed;
+        match delta {
+            1 => self.running.fetch_add(1, Relaxed),
+            _ => self.running.fetch_sub(1, Relaxed),
+        };
+    }
+}
+
+/// A native program's rounds.
+pub static PROGRAM_ROUNDS: RoundCount = RoundCount::new();
+
 /// Sets `[run] cores`; `KAVACH_CORES` at launch still wins.
 pub fn set_file_cores(n: usize) {
     FILE_CORES.store(n, std::sync::atomic::Ordering::Relaxed);
+}
+
+#[cfg(test)]
+mod tests {
+    /// More cores asked for than the machine has gives a note; as many
+    /// or fewer, none (decision 0126).
+    #[test]
+    fn a_cap_above_the_machine_is_noted() {
+        assert_eq!(
+            super::cap_note(11, 10).as_deref(),
+            Some("kavach: 11 cores asked for, and this machine has 10: using 10")
+        );
+        assert_eq!(super::cap_note(10, 10), None);
+        assert_eq!(super::cap_note(1, 10), None);
+    }
 }

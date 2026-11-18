@@ -274,6 +274,7 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         | RtOp::CheckedSub
         | RtOp::CheckedMul
         | RtOp::CheckedDiv => crate::rt_numbers::int_method(op, a, b, code),
+        RtOp::CheckedFits => i64::from(crate::rt_numbers::fits(a, b, c)),
         RtOp::ListSet => crate::rt_maps::list_set(a, b, c, line),
         RtOp::StrSplit => crate::rt_text::split_checked(a, b, code, line),
         RtOp::StrReplace | RtOp::StrLines | RtOp::StrChars | RtOp::StrIndexOf | RtOp::StrSlice => {
@@ -303,6 +304,7 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         | RtOp::BytesIndexOf
         | RtOp::BytesRead
         | RtOp::BytesOfNumber
+        | RtOp::BytesOfList
         | RtOp::BytesConcat => crate::rt_bytes::bytes_op(op, a, b, c, code, line),
         RtOp::FsLines | RtOp::FsChunks | RtOp::ReaderNext | RtOp::ReaderTryNext => {
             crate::rt_files::reader_op(op, a, b, code, line)
