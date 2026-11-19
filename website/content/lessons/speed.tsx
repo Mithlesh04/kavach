@@ -103,8 +103,9 @@ export const coresDoc: LessonDoc = {
       <Ex name="speed/cores-overflow.panics" />
       <H2>What on cores refuses</H2>
       <P>
-        Only two kinds of change keep the one-core answer: writing the round&apos;s own slot (<C>out[i]</C>, where{" "}
-        <C>i</C> is the loop&apos;s name or its <C>enumerate()</C> index), and adding whole numbers into a <C>let</C>.
+        Only three kinds of change keep the one-core answer: writing the round&apos;s own slot (<C>out[i]</C>, where{" "}
+        <C>i</C> is the loop&apos;s name or its <C>enumerate()</C> index), writing its own row of a grid kept in one
+        list (<Link href="#a-grid-kept-in-one-list">below</Link>), and adding whole numbers into a <C>let</C>.
         Anything else is a compile error
         that says why. <C>print</C> would show the rounds in a different order on each run:
       </P>
@@ -151,10 +152,37 @@ export const coresDoc: LessonDoc = {
       </P>
       <Ex name="speed/cores-nested" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>A round may write only its own slot, indexed by the loop&apos;s name: <C>grid[row]</C>, not <C>grid[row * w + col]</C>.</li>
         <li><C>while</C> can&apos;t take <C>on</C>: each round depends on the one before.</li>
         <li><C>on</C>, <C>cores</C> and <C>threads</C> are ordinary names everywhere else.</li>
       </ul>
+      <H2>A grid kept in one list</H2>
+      <P>
+        Images and matrices are often one long list, row after row. A round may write its own row of it,{" "}
+        <C>grid[row * w + col]</C> inside <C>for col in 0..w</C>, where <C>row</C> is the loop&apos;s name:
+      </P>
+      <Ex name="speed/cores-rows" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The parts may come in any order: <C>grid[col + w * row]</C> is the same row.</li>
+        <li>
+          <C>w</C> must be unable to change: a number written in the code, a <C>const</C> or a parameter. With a{" "}
+          <C>let</C>, rows could overlap, so it is refused:
+        </li>
+      </ul>
+      <Ex name="speed/cores-row-width.fails" />
+      <P>
+        A list is written one way in a loop: its own slots, or its rows with one <C>w</C>. Written both ways, two rounds
+        could reach the same item, so that is a compile error too:
+      </P>
+      <Ex name="speed/cores-two-ways.fails" />
+      <P>
+        A built program spreads the rows over the cores by how many items they hold, so even a few long rows are
+        shared out.
+      </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/04-control-flow/on-cores-writes-each-rounds-own-row.kav" label="own row, tested" />
+        <SrcRef file="tests/conformance/04-control-flow/on-cores-refuses-a-list-written-two-ways.kav" label="two ways, tested" />
+        <SrcRef file="tests/conformance/04-control-flow/on-cores-refuses-a-row-whose-width-can-change.kav" label="a width that can change, tested" />
+      </div>
       <H2>Rounds that wait: on threads</H2>
       <P>
         <C>on cores</C> is for rounds that compute. For rounds that mostly wait, on the network, a disk or a timer,

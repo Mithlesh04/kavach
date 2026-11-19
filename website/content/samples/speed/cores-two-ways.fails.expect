@@ -1,0 +1,1 @@
+error: `grid` is written two ways in an `on cores` loop, so two rounds could reach the same item: write each round's own slot (`grid[i]`) or its own row (`grid[i * w + j]`), one of them, with one `w` (spec 4.9)

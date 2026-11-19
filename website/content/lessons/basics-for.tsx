@@ -50,7 +50,7 @@ export const forDoc: LessonDoc = {
       </P>
       <Ex name="speed/sub-sum" />
       <P>
-        Each round may only write its own slot or add whole numbers into a <C>let</C>; the compiler refuses anything
+        Each round may only write its own slot or row, or add whole numbers into a <C>let</C>; the compiler refuses anything
         that could change the answer. See <Link href="/docs/speed/loops-on-all-cores/">Loops on All Cores</Link>.
       </P>
       <div className="flex flex-wrap gap-2.5">

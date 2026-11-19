@@ -1,0 +1,1 @@
+error: this changes `grid`, which every round shares: a round may write only its own slot of a list (`out[i]`, with the loop's name), its own row (`grid[i * w + j]` in `for j in 0..w`), or add whole numbers into a `let` (`total += n`, `total = (total + n) % m`) (spec 4.9)

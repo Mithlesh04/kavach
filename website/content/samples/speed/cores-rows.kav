@@ -1,0 +1,16 @@
+fn shade(w: Int, h: Int) -> [Int] {
+    let grid: [Int] = List.capacity(w * h)
+    for _ in 0..w * h {
+        grid.push(0)
+    }
+    on cores for row in 0..h {
+        for col in 0..w {
+            grid[row * w + col] = row + col   // row `row` is this round's alone
+        }
+    }
+    return grid
+}
+
+fn main() {
+    print(shade(3, 3))
+}
