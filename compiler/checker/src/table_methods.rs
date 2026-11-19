@@ -47,7 +47,7 @@ pub(crate) fn now_a_method(module: &str, name: &str) -> Option<String> {
         _ => return None,
     };
     Some(format!(
-        "`{module}.{name}` is gone: it is a list method now, `{method}` (spec 14.2, decision 0135)"
+        "`{module}.{name}` is gone: write the list method `{method}` (spec 14.2, decision 0135)"
     ))
 }
 
@@ -76,7 +76,7 @@ impl Checker<'_> {
             self.value(&a.value, None);
         }
         let shown = self.show(recv);
-        self.error(name.span, format!("`{shown}`'s `join` joins text: a join on a key is `inner_join(other, key, other_key, row)`, or `left_join` to keep the items that match nothing (spec 14.2)"));
+        self.error(name.span, format!("`{shown}`'s `join` joins text: Kavach writes a join on a key as `inner_join(other, key, other_key, row)`, or `left_join` to keep the items that match nothing (spec 14.2)"));
         Some(Ty::Error)
     }
 

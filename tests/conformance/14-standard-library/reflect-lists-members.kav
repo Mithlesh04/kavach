@@ -5,7 +5,7 @@
 // expect output: Method first() -> Int? Extended(module: "reflect-lists-members")
 // expect output: Field items() -> [Int] Declared
 // expect output: Method total(a: Int) -> Int Declared
-// expect output: ["factorial", "gcd", "is_prime", "lcm", "mean"]
+// expect output: ["factorial", "gcd", "is_prime", "lcm"]
 
 use std.math
 use std.reflect.{MemberOrigin}

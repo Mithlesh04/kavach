@@ -5,5 +5,5 @@
 use std.math
 
 fn main() {
-    print(math.mean([1.0, 2.0]))     // error: it is a list method now, `xs.mean(x => x)`
+    print(math.mean([1.0, 2.0]))     // error: write the list method `xs.mean(x => x)`
 }
