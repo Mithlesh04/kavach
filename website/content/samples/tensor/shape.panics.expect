@@ -1,1 +1,1 @@
-panic: `+` needs tensors of one shape: [2, 2] and [3]
+panic: `+` can't broadcast [2, 3] with [2]: sizes 3 and 2 don't fit, and neither is 1

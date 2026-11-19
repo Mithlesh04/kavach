@@ -16,7 +16,7 @@ npm run check      # BEFORE finishing any change: types + lint + static build
 |---|---|
 | `app/` | The shell: home page, docs layout, the chapter route, the playground |
 | `components/` | Every shared widget (tabs, race chart, quiz, code block, …) |
-| `content/lessons/` | The one-idea pages ([decision 0047](../docs/decisions/0047-docs-one-idea-per-page.md)) + their registry (`index.ts`) |
+| `content/lessons/` | The one-idea pages ([decision 0047](../docs/decisions/0047-docs-one-idea-per-page.md)) + their registry (`index.ts`, with the Standard Library's pages in `index-stdlib.ts`) |
 | `content/smart.tsx` | What Kavach does for you: each smart thing, the page that teaches it, its proof |
 | `content/samples/` | Every code sample + its `.expect`, checked against the real `kavach` |
 | `content/feedback.json` | The quiz cheer/nudge pools |

@@ -1,0 +1,1 @@
+error: `Vec2` has `*` for a `Vec2` or a `Float` on the right, and this is a `Int` (spec 2.16)

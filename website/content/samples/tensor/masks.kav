@@ -1,0 +1,14 @@
+use std.tensor
+
+fn main() {
+    const t = tensor.of([3.0, -1.0, 4.0, -1.5])
+    print((t > 0.0).items)                          // a mask
+    print(t[t > 0.0].items)                         // the numbers where it is true
+    print(tensor.where(t < 0.0, 0.0, t).items)      // 0.0 where negative, else t's
+    print(t.eq(4.0).items)
+    print(t.count(x => x < 0.0))
+    let u = t
+    u[u < 0.0] = 0.0                                // sets those numbers
+    print(u.items)
+    print(t == u)                                   // `==` compares whole tensors
+}

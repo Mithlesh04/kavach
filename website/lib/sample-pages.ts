@@ -5,7 +5,7 @@ import path from "node:path";
 // at build time, so a list of samples (the compiler's messages in the
 // Reference) can link each one to the page that explains it. Lessons
 // can't be imported here (the Reference is a lesson), so their source is
-// read as text: content/lessons/index.ts maps course keys to lesson
+// read as text: content/lessons/index.ts (and index-*.ts) map course keys to lesson
 // constants, and each lesson file's top-level declarations hold sample
 // names as string literals, directly or through other declarations.
 
@@ -39,7 +39,12 @@ function declarations(text: string): Map<string, string> {
 /** Sample name → every course key whose page shows it. */
 export function samplePages(): Map<string, string[]> {
   const known = new Set(sampleNames());
-  const index = fs.readFileSync(path.join(lessonsDir, "index.ts"), "utf8");
+  // index.ts and the files it spreads in, as index-stdlib.ts.
+  const index = fs
+    .readdirSync(lessonsDir)
+    .filter((f) => /^index(-[\w-]+)?\.ts$/.test(f))
+    .map((f) => fs.readFileSync(path.join(lessonsDir, f), "utf8"))
+    .join("\n");
   const fileOf = new Map<string, string>();
   for (const [, names, file] of index.matchAll(/import \{([^}]+)\} from "\.\/([\w-]+)"/g)) {
     for (const n of names.split(",").map((s) => s.trim()).filter(Boolean)) fileOf.set(n, file);

@@ -1,0 +1,1 @@
+error: `Tensor<Float>` goes on the left of `*`: write `x * n`, not `n * x` (spec 2.16)

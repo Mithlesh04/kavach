@@ -1,0 +1,1 @@
+error: `Money` has both `Comparable` and `Compare`, so `<` would have two meanings: keep one (spec 2.16)

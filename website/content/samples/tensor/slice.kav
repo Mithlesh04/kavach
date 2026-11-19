@@ -1,0 +1,10 @@
+use std.tensor
+
+fn main() {
+    const t = tensor.arange(0, 6).reshape([2, 3])   // [[0, 1, 2], [3, 4, 5]]
+    print(t[:, #1].items)        // the last column
+    print(t[0, :].shape)         // a number drops its dimension
+    print(t[0:1, ::2].shape)     // a slice keeps it
+    print(t[1:].to_rows())       // the dimensions after the key are taken whole
+    print(t[1, ::-1].items)
+}

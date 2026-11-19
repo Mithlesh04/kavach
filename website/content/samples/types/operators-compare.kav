@@ -1,0 +1,20 @@
+type Flags {
+    lo: Bool
+    hi: Bool
+}
+
+type Range: Compare<Float, Flags> {
+    lo: Float
+    hi: Float
+
+    fn lt(self, other: Float) -> Flags { Flags(lo: self.lo < other, hi: self.hi < other) }
+    fn le(self, other: Float) -> Flags { Flags(lo: self.lo <= other, hi: self.hi <= other) }
+    fn gt(self, other: Float) -> Flags { Flags(lo: self.lo > other, hi: self.hi > other) }
+    fn ge(self, other: Float) -> Flags { Flags(lo: self.lo >= other, hi: self.hi >= other) }
+}
+
+fn main() {
+    const r = Range(lo: 1.0, hi: 5.0)
+    print(r < 2.0)      // r.lt(2.0): a Flags, not a Bool
+    print(r > 2.0)
+}

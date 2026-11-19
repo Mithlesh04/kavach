@@ -106,8 +106,9 @@ export const matricesDoc: LessonDoc = {
       </P>
       <Ex name="types/operators-matmul" />
       <Note>
-        Not yet: products on the GPU, views that share items with the matrix they came from instead of copies, and more
-        than two dimensions.
+        Not yet: products on the GPU, and views that share items with the matrix they came from instead of copies.
+        For more than two dimensions, broadcasting, reductions along an axis and masks, use a{" "}
+        <Link href="/docs/standard-library/tensors/">tensor</Link>.
       </Note>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={SPEC} label="spec 2.17 · matrices" />

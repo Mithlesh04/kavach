@@ -53,11 +53,12 @@ export const genericsDoc: LessonDoc = {
       </P>
       <Ex name="types/number-bounds" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>A number literal in such code is a <C>T</C>, and <C>T(0)</C> turns any number into a <C>T</C>.</li>
+        <li>A number literal in such code is a <C>T</C>, and <C>T(0)</C> turns any number into a <C>T</C>. The other way, <C>Float(x)</C> turns a <C>T</C> into a <C>Float</C>, as <C>average</C> does below.</li>
         <li><C>math.sqrt</C> of a <C>Float32</C> gives a <C>Float32</C>, so <C>length</C> gives back the type it was given.</li>
         <li>Each type gets its own compiled copy, so <C>total</C> of <C>Float32</C>s runs as a loop written for <C>Float32</C> would.</li>
         <li>The bound is <C>Floating</C>, not <C>Float</C>, as <C>Float</C> is a type.</li>
       </ul>
+      <Ex name="types/number-to-float" />
       <P><C>Float</C> as a bound is a compile error that names the right one:</P>
       <Ex name="types/float-bound.fails" />
       <P>A number with a fraction is a <C>T</C> only when <C>T</C> is <C>Floating</C>; 0.5 of an <C>Int</C> isn&apos;t one:</P>

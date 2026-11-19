@@ -1,0 +1,10 @@
+use std.tensor
+
+fn main() {
+    const t = tensor.of([3.0, 1.0, 2.0, 1.0])
+    print(t.sort().items)
+    print(t.argsort().items)
+    print(t.unique().items)
+    print(t.percentile(50.0) ?? 0.0)
+    print(tensor.of_rows([[3, 2], [1, 4]]).sort(axis: 0).to_rows())
+}

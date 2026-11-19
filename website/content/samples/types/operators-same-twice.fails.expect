@@ -1,0 +1,1 @@
+error: `Meters` implements `Add` twice for a `Meters` on the right: each implementation takes another type (spec 2.16)

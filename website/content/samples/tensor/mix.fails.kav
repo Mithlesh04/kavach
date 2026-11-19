@@ -1,0 +1,6 @@
+use std.tensor
+
+fn main() {
+    const counts = tensor.of<Int>([1, 2])
+    print((counts / 2.0).items)
+}

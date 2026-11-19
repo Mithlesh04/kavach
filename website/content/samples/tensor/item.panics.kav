@@ -1,0 +1,5 @@
+use std.tensor
+
+fn main() {
+    print(tensor.of([1, 2]).item())
+}

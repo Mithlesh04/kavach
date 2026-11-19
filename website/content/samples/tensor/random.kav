@@ -1,0 +1,21 @@
+use std.random
+use std.tensor
+
+fn main() {
+    let a = tensor.zeros<Float>([1])
+    let b = tensor.zeros<Float>([1])
+    random.seeded(7) {
+        a = tensor.random<Float>([50])
+    }
+    random.seeded(7) {
+        b = tensor.random<Float>([50])
+    }
+    print(a == b)                                  // one seed, the same numbers
+    print(a.all(x => x >= 0.0 and x < 1.0))
+    random.seeded(3) {
+        const noise = tensor.normal<Float32>([2, 3], mean: 0.0, std: 0.1)
+        const dice = tensor.random_int([10], 1, 7)
+        print(noise.shape)
+        print(dice.all(x => x >= 1 and x <= 6))
+    }
+}

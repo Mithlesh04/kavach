@@ -1,0 +1,10 @@
+type Meters: Add, Add<Meters> {
+    n: Float
+
+    fn add(self, other: Meters) -> Meters { Meters(n: self.n + other.n) }
+    fn add(self, other: Meters) -> Meters { Meters(n: self.n + other.n) }
+}
+
+fn main() {
+    print((Meters(n: 1.0) + Meters(n: 2.0)).n)
+}

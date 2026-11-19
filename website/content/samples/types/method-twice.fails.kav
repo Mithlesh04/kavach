@@ -1,0 +1,10 @@
+type Box {
+    n: Int
+
+    fn size(self) -> Int { self.n }
+    fn size(self) -> Int { self.n * 2 }
+}
+
+fn main() {
+    print(Box(n: 1).size())
+}

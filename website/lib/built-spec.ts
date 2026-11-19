@@ -47,7 +47,6 @@ const PINNED: Record<string, { at: string; built: string[] }> = Object.fromEntri
       ["02-types/17-matrices.md", []], // says Matrix is gone; it still works until Tensor lands
       ["14-standard-library/05-math.md", []], // math.mean still works
       ["14-standard-library/09-text-and-collections.md", [SLICING]], // collections.unique and counts still work
-      ["14-standard-library/33-tensor.md", []], // rows rewritten with Tensor<T, dims: n>
     ] as [string, string[]][]
   ).map(([f, built]) => [`docs/spec/${f}`, { at: BEFORE_DESIGNS, built }]),
 );

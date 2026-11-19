@@ -23,6 +23,7 @@ import { messagesRefDoc } from "./reference-messages";
 import { commandsRefDoc, keywordsRefDoc, literalsRefDoc, methodsRefDoc, operatorsRefDoc } from "./reference";
 import { stdModuleDocs, stdlibRefDoc } from "./reference-std";
 import { testedDocs } from "./reference-tested";
+import { stdlibLessons } from "./index-stdlib";
 import { typesRefDoc } from "./reference-types";
 import { bridgeDoc, cppDoc, goDoc, javascriptDoc, pythonDoc, rustDoc } from "./start-bridges";
 import { buildDoc, whoDoc } from "./start-who";
@@ -51,24 +52,8 @@ import {
 } from "./concurrency";
 import { howTasksRunDoc, turnsDoc } from "./concurrency-running";
 import { httpCallDoc, httpDoc, httpJsonDoc, httpServeDoc, httpSessionDoc, httpSocketsDoc } from "./networks-http";
-import { base64Doc, cryptoDoc } from "./stdlib-crypto";
-import { compressDoc } from "./stdlib-compress";
-import { windowDoc } from "./stdlib-window";
-import { processDoc } from "./stdlib-process";
 import { matricesDoc } from "./types-matrices";
-import { systemDoc } from "./stdlib-system";
-import { gamepadDoc } from "./stdlib-input";
-import { soundDoc } from "./stdlib-audio";
-import { vecDoc } from "./stdlib-vec";
-import { imageDoc } from "./stdlib-image";
-import { appDoc } from "./stdlib-app";
-import { fontDoc } from "./stdlib-font";
-import { reflectDoc } from "./stdlib-reflect";
-import { tensorDoc } from "./stdlib-tensor";
-import { loggingDoc } from "./stdlib-log";
 import { aiWritesDoc } from "./tools-ai-writes";
-import { gpuScreenDoc } from "./stdlib-gpu";
-import { textCollectionsDoc } from "./stdlib-text";
 import {
   grpcClientStreamDoc, grpcDoc, grpcProtoDoc, grpcServerStreamDoc, grpcTwoWayDoc, socketsDoc, tcpDoc, timeoutsDoc,
   tlsDoc, udpDoc,
@@ -77,17 +62,6 @@ import { sortingDoc, sortKeyDoc, sortNumbersDoc, sortTextDoc, sortTwoKeysDoc } f
 import { gpuCanDoc, gpuDoc, gpuFnDoc, gpuMapDoc, gpuRecordsDoc, gpuSameDoc, gpuUsesDoc, gpuWhereDoc } from "./speed-gpu";
 import { gpuSumsDoc } from "./gpu-streams";
 import { gpuDrawDoc } from "./speed-gpu-draw";
-import {
-  jsonBuildingDoc, jsonDecodingDoc, jsonDoc, jsonNestedDoc, jsonReadingDoc, jsonValuesDoc,
-} from "./stdlib-json";
-import { bytesDoc } from "./stdlib-bytes";
-import {
-  argumentsDoc, cliDoc, commandsDoc, fileInfoDoc, filesDoc, foldersDoc, readingDoc, watchDoc, writingDoc,
-} from "./stdlib-files";
-import {
-  clipboardDoc, colorsDoc, devicesDoc, promptsDoc, randomDoc, regexDoc, termDoc, timeDoc,
-} from "./stdlib-tools";
-import { agentsStdDoc } from "./stdlib-agents";
 import {
   capabilitiesDoc, declareCapDoc, fsNarrowDoc, implementCapDoc, ownCapsDoc, pureDoc, refusedCapDoc, usesDoc,
 } from "./agents-capabilities";
@@ -335,49 +309,8 @@ export const lessons: Record<string, LessonDoc> = {
   "memory/arenas": arenasDoc,
   "memory/unsafe": unsafeDoc,
 
-  "standard-library/files": filesDoc,
-  "standard-library/files/reading": readingDoc,
-  "standard-library/files/writing": writingDoc,
-  "standard-library/files/folders": foldersDoc,
-  "standard-library/files/details-and-permissions": fileInfoDoc,
-  "standard-library/files/watching-for-changes": watchDoc,
-  "standard-library/command-line-programs": cliDoc,
-  "standard-library/command-line-programs/arguments": argumentsDoc,
-  "standard-library/command-line-programs/commands": commandsDoc,
-  "standard-library/the-terminal": termDoc,
-  "standard-library/the-terminal/colors-and-styles": colorsDoc,
-  "standard-library/the-terminal/prompts": promptsDoc,
-  "standard-library/time": timeDoc,
-  "standard-library/random-numbers": randomDoc,
-  "standard-library/regex": regexDoc,
-  "standard-library/text-and-collections": textCollectionsDoc,
-  "standard-library/logging": loggingDoc,
-  "standard-library/agents": agentsStdDoc,
-  "standard-library/clipboard": clipboardDoc,
-  "standard-library/devices": devicesDoc,
-  "standard-library/cryptography": cryptoDoc,
-  "standard-library/base64": base64Doc,
-  "standard-library/compression": compressDoc,
-  "standard-library/windows": windowDoc,
-  "standard-library/running-programs": processDoc,
-  "standard-library/gpu-screens": gpuScreenDoc,
-  "standard-library/the-machine": systemDoc,
-  "standard-library/gamepads": gamepadDoc,
-  "standard-library/sound": soundDoc,
-  "standard-library/vectors": vecDoc,
-  "standard-library/images": imageDoc,
-  "standard-library/desktop-apps": appDoc,
-  "standard-library/fonts": fontDoc,
-  "standard-library/reflection": reflectDoc,
-  "standard-library/tensors": tensorDoc,
+  ...stdlibLessons,
 
-  "standard-library/json": jsonDoc,
-  "standard-library/json/json-values": jsonValuesDoc,
-  "standard-library/json/nested-data": jsonNestedDoc,
-  "standard-library/json/reading": jsonReadingDoc,
-  "standard-library/json/building": jsonBuildingDoc,
-  "standard-library/json/decoding-into-a-type": jsonDecodingDoc,
-  "standard-library/bytes": bytesDoc,
   "speed/how-kavach-is-fast": howFastDoc,
   "speed/loops-on-all-cores": coresDoc,
   "speed/byte-packed-lists": packedDoc,

@@ -1,0 +1,15 @@
+use std.tensor
+
+fn main() {
+    const m = tensor.of_rows([[1.0, 5.0, 2.0], [4.0, 3.0, 6.0]])
+    print(m.sum())                    // every number
+    print(m.sum(axis: 0).items)       // each column
+    print(m.sum(axis: 1).items)       // each row
+    print(m.max(axis: 1).items)
+    print(m.argmax(axis: 1).items)
+    print(m.mean() ?? 0.0)
+    print(m.mean(axis: 0).items)
+    print(m.std() ?? 0.0)
+    print(m.var(correction: 0) ?? 0.0)
+    print(m.cumsum().to_rows())
+}

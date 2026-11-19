@@ -3,7 +3,7 @@ use std.tensor
 fn main() {
     const a = tensor.of([1.0, 2.0])
     let b = a
-    b = b.scale(2.0)
+    b[0] = 9.0              // changes b only
     print(a.items)
     print(b.items)
 }

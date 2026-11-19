@@ -1,0 +1,1 @@
+error: the method `size` of `Box` is written twice: only an operator's or indexing method may be, once for each type it takes (spec 2.16)

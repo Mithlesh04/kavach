@@ -1,0 +1,2 @@
+Flags(lo: true, hi: false)
+Flags(lo: false, hi: true)

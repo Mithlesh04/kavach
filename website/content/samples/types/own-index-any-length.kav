@@ -1,0 +1,14 @@
+// Shows what the compiler gives `index` for each place between the commas.
+type Probe: Index<[Part], [(Int?, Bool, Bool)]> {
+    name: String
+
+    fn index(self, key: [Part]) -> [(Int?, Bool, Bool)] {
+        key.map(p => (p.start, p.start_from_end, p.single))
+    }
+}
+
+fn main() {
+    const p = Probe(name: "probe")
+    print(p[1, #2])         // (start, start_from_end, single) for each place
+    print(p[4, 5, 6].len()) // any number of places
+}

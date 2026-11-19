@@ -5,9 +5,6 @@ fn main() {
     print(tensor.ones<Int>([2, 2]).items)
     print(tensor.full([2], 7.5).items)
     print(tensor.of([1, 2, 3]).shape)
-    const counts = tensor.of_rows([[1, 2], [3, 4]])
-    print((counts @ counts).items)
-    print(counts.scale(3).sum())
-    const f32 = tensor.ones<Float32>([2, 2])
-    print((f32 + f32).items)
+    print(tensor.eye<Int>(2).to_rows())
+    print(tensor.full([], 2.5).shape)     // one number, no dimensions
 }

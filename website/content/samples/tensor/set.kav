@@ -1,0 +1,7 @@
+use std.tensor
+
+fn main() {
+    let t = tensor.arange(0, 6).reshape([2, 3])
+    t[1, #2] = 9
+    print(t.to_rows())
+}

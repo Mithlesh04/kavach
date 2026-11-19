@@ -138,6 +138,11 @@ export const slicingDoc: LessonDoc = {
       <Ex name="slicing/nested" />
       <P>A list has one dimension, so one pair of brackets takes one part:</P>
       <Ex name="slicing/nested.fails" />
+      <P>
+        A tensor has as many dimensions as its shape, and takes one part for each, separated by commas, as NumPy
+        writes them: <C>t[1, 2]</C>, <C>t[:, #1]</C>. See{" "}
+        <Link href="/docs/standard-library/tensors/indexing/">Tensors: Indexing</Link>.
+      </P>
       <P>A dict has keys, not places, so it has no slices:</P>
       <Ex name="slicing/dict.fails" />
 

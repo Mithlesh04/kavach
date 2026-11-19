@@ -1,0 +1,2 @@
+[0, 0]
+panic: `max` along axis 1 of [2, 0] has no numbers to work on

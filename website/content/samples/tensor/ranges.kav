@@ -1,0 +1,8 @@
+use std.tensor
+
+fn main() {
+    print(tensor.arange(0, 10, 3).items)          // start, end, step
+    print(tensor.arange(0, 3).items)              // the step is 1
+    print(tensor.arange(1.0, 0.0, -0.25).items)   // counting down
+    print(tensor.linspace(0.0, 1.0, 5).items)     // 5 numbers, both ends included
+}

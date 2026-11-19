@@ -1,0 +1,5 @@
+use std.tensor
+
+fn main() {
+    print(tensor.arange(0, 5).split(2).len())
+}

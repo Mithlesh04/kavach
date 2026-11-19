@@ -29,9 +29,9 @@ const indexing = () => {
 };
 
 export const ownOperatorsDoc: LessonDoc = {
-  lead: "A type gets +, -, *, /, % and < by implementing Add, Sub, Mul, Div, Rem or Comparable. Then vectors, money and units read like numbers.",
+  lead: "A type gets +, -, *, /, %, ** and < by implementing Add, Sub, Mul, Div, Rem, Pow or Comparable. Then vectors, money and units read like numbers.",
   simple: <>Numbers can be added with <C>+</C>. Your own type can be too, once it says how: you write an <C>add</C> method, and <C>a + b</C> calls it. Nothing happens by magic, and a type without the method has no <C>+</C>.</>,
-  minutes: 6,
+  minutes: 9,
   before: ["types/interfaces", "basics/operators"],
   body: (
     <>
@@ -50,11 +50,25 @@ export const ownOperatorsDoc: LessonDoc = {
         and gives an <C>Area</C>:
       </P>
       <Ex name="types/operators-other-type" />
+      <H2>One operator, several right operands</H2>
       <P>
-        A type implements each interface once, since its method has one name and Kavach has{" "}
-        <Link href="/docs/functions/functions/declaring/">no overloading</Link>. So <C>Vec2</C> with{" "}
-        <C>Mul&lt;Float&gt;</C> has <C>v * 2.0</C> but not <C>v * v</C>.
+        A type may implement an operator&apos;s interface more than once, each time for another type on the right:{" "}
+        <C>Mul&lt;Vec2&gt;</C> and <C>Mul&lt;Float&gt;</C>. The right operand&apos;s type picks the method, while
+        compiling:
       </P>
+      <Ex name="types/operators-twice" />
+      <P>A right operand that none of them takes is refused, naming the ones there are:</P>
+      <Ex name="types/operators-twice-int.fails" />
+      <P>
+        The methods share their name, <C>mul</C>. This is the one place a name may be written twice in a type: Kavach
+        has <Link href="/docs/functions/functions/declaring/">no overloading</Link> anywhere else. Two for the same
+        right operand are a compile error, and so is any other method written twice:
+      </P>
+      <Ex name="types/operators-same-twice.fails" />
+      <Ex name="types/method-twice.fails" />
+      <H2>The power operator</H2>
+      <P><C>Pow</C> gives <C>**</C>, and <C>**=</C> with it:</P>
+      <Ex name="types/operators-pow" />
       <H2>Ordering with Comparable</H2>
       <P>
         <C>Comparable</C> gives <C>&lt;</C>, <C>&lt;=</C>, <C>&gt;</C> and <C>&gt;=</C> from one method,{" "}
@@ -86,8 +100,21 @@ export const ownOperatorsDoc: LessonDoc = {
         <C>==</C> and <C>!=</C> are not interfaces: they compare contents for every type. So <C>a == b</C> and{" "}
         <C>compare</C> disagree only if the type&apos;s author makes them.
       </P>
+      <H2>Comparisons that give something else: Compare</H2>
       <P>
-        <C>MatMul</C> gives <C>@</C>, the matrix product: see <Link href="/docs/types/matrices/">Matrices</Link>.
+        <C>Compare&lt;R, Out&gt;</C> gives each of <C>&lt; &lt;= &gt; &gt;=</C> its own method, <C>lt</C>,{" "}
+        <C>le</C>, <C>gt</C> and <C>ge</C>, with a right operand of type <C>R</C> and a result of any type{" "}
+        <C>Out</C>. A tensor&apos;s <C>t &gt; 0.5</C> gives a <Link href="/docs/standard-library/tensors/masks/">mask</Link> this way:
+      </P>
+      <Ex name="types/operators-compare" />
+      <P>
+        A type implements <C>Comparable</C>, for an order, or <C>Compare</C>, not both, as <C>&lt;</C> would have two
+        meanings. <C>Compare</C> may be implemented several times, once for each right operand:
+      </P>
+      <Ex name="types/compare-and-comparable.fails" />
+      <P>
+        <C>MatMul</C> gives <C>@</C>, the matrix product: see{" "}
+        <Link href="/docs/standard-library/tensors/">Tensors</Link> and <Link href="/docs/types/matrices/">Matrices</Link>.
       </P>
       <H2>Operators in generic code</H2>
       <P>
@@ -158,6 +185,19 @@ export const ownOperatorsDoc: LessonDoc = {
         <C>Index&lt;(Int, Int), Out&gt;</C>. When every part is a slice, <C>g[0:2, 1:]</C> is{" "}
         <C>g.slice((first, second))</C>, two <C>Part</C>s, for <C>Slice&lt;(Part, Part)&gt;</C>.
       </P>
+      <P>
+        A type with any number of dimensions, as a <Link href="/docs/standard-library/tensors/indexing/">tensor</Link>,
+        takes a <strong>key of any length</strong>: a list of <C>Part</C>s, through <C>Index&lt;[Part], Out&gt;</C>,{" "}
+        <C>IndexSet&lt;[Part], Value&gt;</C> and <C>Slice&lt;[Part]&gt;</C>. Each place between the commas is one{" "}
+        <C>Part</C>: a number <C>i</C> is <C>Part(start: i, single: true)</C>, and <C>#k</C> has{" "}
+        <C>start_from_end</C> set, so it counts from the end of its own dimension. A key of numbers only calls{" "}
+        <C>index</C>; a key with a slice calls <C>slice</C>:
+      </P>
+      <Ex name="types/own-index-any-length" />
+      <P>
+        A type may implement <C>Index</C> once for each type of key, and the key&apos;s type picks the method while
+        compiling: a tensor has one <C>index</C> for a list of <C>Part</C>s and one for a mask.
+      </P>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/decisions/0134-slicing-and-indexing.md" label="decision 0134" />
         <SrcRef file="stdlib/collections/collections.kav" line={78} symbol="type Part" />
@@ -167,6 +207,7 @@ export const ownOperatorsDoc: LessonDoc = {
         <SrcRef file={`${TESTS}/part-bounds-are-plain-numbers.kav`} label="bounds, tested" />
         <SrcRef file={`${TESTS}/hash-on-an-own-type-needs-len.kav`} label="# needs len, tested" />
         <SrcRef file={`${TESTS}/an-index-method-is-pure.kav`} label="pure, tested" />
+        <SrcRef file={`${TESTS}/a-key-of-any-length.kav`} label="a key of any length, tested" />
       </div>
       <H2>What is refused</H2>
       <P>Your type goes on the left. <C>2.0 * v</C> is an error that says to write <C>v * 2.0</C>:</P>
@@ -191,6 +232,10 @@ export const ownOperatorsDoc: LessonDoc = {
         <SrcRef file={`${TESTS}/an-operator-can-give-another-type.kav`} label="another type, tested" />
         <SrcRef file={`${TESTS}/comparable-gives-ordering-operators.kav`} label="Comparable, tested" />
         <SrcRef file={`${TESTS}/operators-in-generic-code.kav`} label="generic code, tested" />
+        <SrcRef file={`${TESTS}/an-operator-implemented-twice.kav`} label="several right operands, tested" />
+        <SrcRef file={`${TESTS}/pow-gives-the-power-operator.kav`} label="Pow, tested" />
+        <SrcRef file={`${TESTS}/compare-gives-comparisons-any-result.kav`} label="Compare, tested" />
+        <SrcRef file={`${TESTS}/comparable-and-compare-is-an-error.kav`} label="not both, tested" />
         <SrcRef file="compiler/checker/src/user_ops.rs" label="user_ops.rs" />
       </div>
     </>

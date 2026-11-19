@@ -1,0 +1,12 @@
+use std.tensor
+
+fn main() {
+    const a = tensor.of([1, 2])
+    print(tensor.concatenate([a, a]).items)
+    print(tensor.stack([a, a]).to_rows())
+    print(tensor.stack([a, a], axis: 1).to_rows())
+    const m = tensor.of_rows([[1, 2], [3, 4]])
+    print(tensor.concatenate([m, tensor.full([2, 1], 9)], axis: 1).to_rows())
+    print(tensor.arange(0, 6).split(3).map(p => p.items))
+    print(tensor.arange(0, 6).split_at([1, 4]).map(p => p.items))
+}

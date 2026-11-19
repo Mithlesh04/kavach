@@ -1,0 +1,7 @@
+use std.tensor
+
+fn main() {
+    const t = tensor.zeros<Int>([2, 3])
+    const j = 3
+    print(t[0, j])
+}

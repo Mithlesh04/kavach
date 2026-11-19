@@ -1,0 +1,12 @@
+type Cell: Pow<Float> {
+    v: Float
+
+    fn pow(self, other: Float) -> Cell { Cell(v: self.v ** other) }
+}
+
+fn main() {
+    let c = Cell(v: 3.0)
+    print(c ** 2.0)     // c.pow(2.0)
+    c **= 3.0           // c = c ** 3.0
+    print(c)
+}

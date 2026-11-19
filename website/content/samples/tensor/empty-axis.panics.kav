@@ -1,0 +1,7 @@
+use std.tensor
+
+fn main() {
+    const t = tensor.zeros<Int>([2, 0])
+    print(t.sum(axis: 1).items)
+    print(t.max(axis: 1).items)
+}

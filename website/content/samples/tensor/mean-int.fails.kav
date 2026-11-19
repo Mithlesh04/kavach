@@ -1,0 +1,6 @@
+use std.tensor
+
+fn main() {
+    const t = tensor.of<Int>([1, 2, 3])
+    print(t.mean())
+}

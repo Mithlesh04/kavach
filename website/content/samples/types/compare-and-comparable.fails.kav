@@ -1,0 +1,13 @@
+type Money: Comparable, Compare<Int, Bool> {
+    cents: Int
+
+    fn compare(self, other: Money) -> Int { self.cents - other.cents }
+    fn lt(self, other: Int) -> Bool { self.cents < other }
+    fn le(self, other: Int) -> Bool { self.cents <= other }
+    fn gt(self, other: Int) -> Bool { self.cents > other }
+    fn ge(self, other: Int) -> Bool { self.cents >= other }
+}
+
+fn main() {
+    print(Money(cents: 1).cents)
+}

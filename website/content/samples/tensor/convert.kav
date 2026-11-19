@@ -1,0 +1,7 @@
+use std.tensor
+
+fn main() {
+    const counts = tensor.of([1, 2, 3])
+    print((Tensor<Float>(counts) / 2.0).items)    // each number converted
+    print(Tensor<Int>(tensor.of([1.5, 2.25])).items)
+}

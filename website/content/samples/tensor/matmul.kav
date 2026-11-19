@@ -1,0 +1,12 @@
+use std.tensor
+
+fn main() {
+    const x = tensor.of_rows([[1.0, 2.0], [3.0, 4.0]])   // [2, 2]
+    const w = tensor.ones<Float>([2, 3])                 // [2, 3]
+    const y = x @ w                                      // [2, 3]
+    print(y.shape)
+    print(y.to_rows())
+    let z = x
+    z @= x
+    print(z.to_rows())
+}

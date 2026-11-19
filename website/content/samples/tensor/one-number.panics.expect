@@ -1,0 +1,1 @@
+panic: `t[…]` of numbers needs one for each of the 2 dimensions of [2, 3], and has 1: a slice, as `t[i, :]`, takes the rest

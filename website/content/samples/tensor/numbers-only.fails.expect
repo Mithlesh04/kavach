@@ -1,1 +1,1 @@
-error: `T` must be a number type (`T: Number`), and this is `String` (spec 2.9)
+error: a tensor holds numbers or `Bool`s, so `Tensor<String>` is not a type: its item type is a number type (`T: Number`) or `Bool` (spec 14.33)
