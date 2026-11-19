@@ -210,6 +210,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 ## Part 6: Memory
 
 - [Values, Not References](https://kavachlang.com/docs/memory/values-not-references/): Every value in Kavach is a value: assigning or passing it never makes two names share it.
+- [Values, Not References: Coming from JavaScript and Python](https://kavachlang.com/docs/memory/values-not-references/coming-from-javascript-and-python/): In JavaScript and Python, b = a gives one list two names. In Kavach, b gets its own value. Here is each case side by side.
 - [Automatic Memory](https://kavachlang.com/docs/memory/automatic-memory/): You never allocate or free memory yourself, and there is no garbage collector that pauses your program.
 - [Automatic Memory: How it stays fast](https://kavachlang.com/docs/memory/automatic-memory/how-it-stays-fast/): Values look copied, but the compiler moves them, shares them and copies only when it must.
 - [Automatic Memory: Freed immediately](https://kavachlang.com/docs/memory/automatic-memory/freed-immediately/): A value is freed when its last use ends: no garbage collector, no pauses. A type can run its own cleanup with Drop.

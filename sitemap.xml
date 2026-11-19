@@ -697,6 +697,10 @@
 <priority>0.8</priority>
 </url>
 <url>
+<loc>https://kavachlang.com/docs/memory/values-not-references/coming-from-javascript-and-python/</loc>
+<priority>0.6</priority>
+</url>
+<url>
 <loc>https://kavachlang.com/docs/memory/automatic-memory/</loc>
 <priority>0.8</priority>
 </url>
