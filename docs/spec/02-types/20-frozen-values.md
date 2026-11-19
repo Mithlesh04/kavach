@@ -79,7 +79,7 @@ print(total(order))                     // 10
 keep(order)                             // compile error: `keep` gives `o` back, so a frozen `Order` can't go there: pass `order.unfreeze()`, or write `o: Frozen<Order>`
 ```
 
-Anywhere else, such as a `let` or a field written as `T`, a frozen value is a compile error that says to call `unfreeze()`. Where a type is left to be worked out, as in `let copy = order` or a generic `fn first<T>(items: [T]) -> T?` given a frozen list's items, the type worked out is the frozen one, so nothing is lost.
+Anywhere else, such as a `let` or a field written as `T`, a frozen value is a compile error that says to call `unfreeze()`. Where a type is left to be worked out, as in `let copy = order`, or `fn same<T>(x: T) -> T` given a frozen value, the type worked out is the frozen one, so nothing is lost.
 
 ## Sealed with a key
 
