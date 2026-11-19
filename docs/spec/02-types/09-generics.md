@@ -97,3 +97,106 @@ counts.mean()                       // error: `mean` needs `T: Floating`, and `T
 - In the method's body the parameter has the bound, so a literal with a fraction and `std.math` may be used on a `T`.
 - A literal with no type of its own becomes a `Float` there, as for a function's bound: `Pair(a: 1, b: 2).mean()` is `1.5`.
 - `where` is written on the signature's line, and names the type's own parameters; a function writes its bounds in `<T: …>`. `where` is a word only there: elsewhere it may be a name.
+
+## Numbers in types
+
+A generic type may take numbers as well as types ([decision 0137](../../decisions/0137-numbers-in-types.md)). One rule says how: **types are positional, numbers are named**, as named arguments are in a call (3.2). The types come first, in order; then each number, with its name, in any order.
+
+```kavach
+type Grid<T, width: Int, height: Int> {
+    rows: [[T]<len: width>]<len: height>
+
+    fn at(self, x: Int, y: Int) -> T { self.rows[y][x] }
+    fn cells(self) -> Int { width * height }
+}
+
+const g = Grid<Float, width: 2, height: 3>(rows: [[0.0, 1.0], [2.0, 3.0], [4.0, 5.0]])
+print(g.cells())                                   // 6
+const h: Grid<Float, height: 3, width: 2> = g      // the same type: the names count, not the order
+const w = Grid<Float, 2, 3>(rows: g.rows)          // compile error: write `width: 2, height: 3`
+```
+
+- A number parameter is declared after the type parameters, as `name: Int`, and named in lower case, as a value is. A type argument never has a name; a number argument always has one. Either written the other way is a compile error that shows the right form.
+- A number argument is a whole-number literal, a constant worked out while compiling (2.1), or a number parameter of the code around it. A number known only while the program runs is a compile error: a limit known only then is given as `List.capacity(n)` does (2.2).
+- Inside the type, its methods and its `extend` blocks, a number parameter is a constant `Int`: `width * height` above.
+- Every number parameter is given where the type is written, unless it has a default, as a function's parameter may: `type Buffer<T, size: Int = 64>`. A missing one is a compile error naming it. As for type arguments, the numbers may come from the variable's type: `const g: Grid<Float, width: 2, height: 3> = Grid(rows: …)`.
+- The same type with other numbers is another type. A `Grid<Float, width: 2, height: 3>` given where a `Grid<Float, width: 3, height: 2>` is expected is a compile error naming both.
+- A type is compiled once for each set of numbers it is used with, as for each type (above). The numbers are not stored in each value.
+
+**Functions with number parameters.** A function or method declares them the same way. They are worked out from the arguments, as type arguments are; when they can't be, write them at the call.
+
+```kavach
+fn dot<n: Int>(a: [Float]<len: n>, b: [Float]<len: n>) -> Float {
+    let sum = 0.0
+    for i in 0..n {
+        sum += a[i] * b[i]
+    }
+    sum
+}
+
+fn zeros<n: Int>() -> [Float]<len: n> { … }
+
+const u: [Float]<len: 3> = [1.0, 2.0, 3.0]
+dot(u, [4.0, 5.0, 6.0])         // 32.0, with `n` 3
+dot(u, [4.0, 5.0])              // compile error: `n` is 3 for `a` and 2 for `b`
+const z = zeros<n: 4>()         // [0.0, 0.0, 0.0, 0.0]
+```
+
+**Built-in types with numbers.** Each is specified where its type is:
+
+| Written | Means | Spec |
+|---|---|---|
+| `Int<bits: 24>`, `UInt<bits: 12>` | A whole number of exactly 24 bits, signed; of 12 bits, not signed | [2.1](01-built-in-types.md) |
+| `Int<range: 1..=65535>` | A whole number always from 1 to 65,535 | [2.1](01-built-in-types.md) |
+| `Decimal<digits: 10, places: 2>` | At most 10 digits, 2 of them after the point | [2.1](01-built-in-types.md) |
+| `[Float]<len: 3>`, `List<Float, len: 3>` | A list of exactly 3 items | [2.2](02-collections.md) |
+| `[Float]<max: 16>`, `List<Float, max: 16>` | A list of at most 16 items | [2.2](02-collections.md) |
+| `{String: Int}<max: 100>`, `Dict<String, Int, max: 100>` | A dict of at most 100 keys | [2.2](02-collections.md) |
+| `Set<Int, max: 10>`, `Ring<Float, max: 100>` | A set of at most 10 values; a ring of the last 100 pushed | [2.2](02-collections.md) |
+| `Bytes<len: 32>` | Exactly 32 bytes, as `crypto.sha256` gives | [2.13](13-bytes.md) |
+| `Tensor<Float, dims: 2>`, `Tensor<Float, shape: [3, 4]>` | Exactly two dimensions; exactly 3 × 4 | [14.33](../14-standard-library/33-tensor.md) |
+| `Simd<Float32, lanes: 8>` | 8 `Float32`s worked on at once | Comes with to-do item 14 |
+
+A built-in type's numbers may be left out: `Int` is `Int<bits: 64>`, `[Int]` has no limit, and `Tensor<Float>` has any number of dimensions.
+
+**`<…>` belongs to the type just before it.** A collection's own numbers come right after it, and an item type's after the item type:
+
+```kavach
+const a: {String: [Int]<max: 5>} = {"small": [1, 2]}    // a dict of lists of at most 5
+const b: {String: Int<bits: 8>} = {"x": 100}            // a dict of 8-bit numbers
+const c: [[Float]<len: 3>]<max: 100> = []               // at most 100 lists of 3
+const d: [Int, max: 2] = []                             // compile error: write `[Int]<max: 2>`
+```
+
+**What is checked when.** The compiler checks every number it can see. The rest is checked when the program runs.
+
+| While compiling | While running |
+|---|---|
+| A number argument's name and value, and a missing one | A sum or product of `bits` or `range` numbers that doesn't fit: a panic, as overflow is (5.6) |
+| A literal that doesn't fit: `4096` as a `UInt<bits: 12>`, 3 items into `[Int]<max: 2>`, `1.234` with `places: 2` | A `push` past `max`: a panic; `is_full()` checks first (2.2) |
+| A type given for the same type with other numbers | A `try` into a type with numbers (below) |
+| An index written as a number past a `len`: `v[3]` of a `[Float]<len: 3>` | An index worked out while running, as for any list |
+| `a @ b` of two tensors whose shapes are in their types | Tensor shapes the types leave out (14.33) |
+
+**Into a type with numbers.** A value whose type has the numbers may be given where the type without them is expected: a `Bytes<len: 32>` where `Bytes` is, a `Tensor<Float, shape: [3, 4]>` where `Tensor<Float, dims: 2>` is. The other way takes `try` or `catch`: the type with its numbers, called with the value, fails with a `SizeError` when the value doesn't fit, as `try Int(text)` fails with a `ParseError` (2.1) and `try Dump(...)` with an `InvariantError` (7.3). Without `try` or `catch` it is a compile error, unless the value is a literal, which is checked while compiling.
+
+```kavach
+fn pair(xs: [Int]) -> [Int]<max: 2> ! SizeError {
+    try List<Int, max: 2>(xs)
+}
+
+const p = List<Int, max: 2>([1, 2, 3].map(x => x * 2)) catch e => {
+    print(e)              // a list of 3 items doesn't fit `List<Int, max: 2>`
+    []
+}
+```
+
+Number conversions are as before: `UInt<bits: 12>(x)` and `Int<range: 1..=65535>(x)` panic when `x` doesn't fit, as `Int8(300)` does (2.1).
+
+## Open questions
+
+- **Arithmetic in number arguments:** `[T]<len: n + 1>`, `Grid<T, width: w * 2, height: h>`. Not yet; Rust has not made it stable either.
+- **Other kinds of number parameters** for a program's own types: a list of numbers (a shape, as `Tensor`'s), a `Bool`, a range. Today a program's own number parameters are `Int`s, and the checker knows `std.tensor`'s shape rules itself (14.33).
+- **A number left open:** `Tensor<Float32, shape: [_, 768]>`, or a program's own type with a number left out to mean "any, checked while running", as `Tensor<Float>` has. A function's number parameter covers most uses today: `fn embed<b: Int>(x: Tensor<Float32, shape: [b, 768]>)`.
+- **A name for a type with numbers:** `type Port = Int<range: 1..=65535>` as an alias. Aliases exist only for anonymous records (2.14).
+- **`SizeError`:** an error of its own, as written here, or one shared by every failed conversion.

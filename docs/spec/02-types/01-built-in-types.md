@@ -3,10 +3,10 @@
 | Type | Meaning |
 |---|---|
 | `Int` | 64-bit signed integer |
-| `Int8`, `Int16`, `Int32`, `UInt8`, `UInt16`, `UInt32`, `UInt64` | Sized integers |
+| `Int8`, `Int16`, `Int32`, `UInt8`, `UInt16`, `UInt32`, `UInt64` | Sized integers; any other width is `Int<bits: n>` or `UInt<bits: n>`, and a range is `Int<range: a..=b>` (below) |
 | `Float` | 64-bit floating point |
 | `Float32` | 32-bit floating point: rounded to single precision at every step, and printed as the shortest text that reads back as the same `Float32` (`0.1`). What GPUs compute fastest (chapter 15) |
-| `Decimal` | Exact base-10 number, with as many digits as it needs. Use it for money |
+| `Decimal` | Exact base-10 number, with as many digits as it needs. Use it for money; `Decimal<digits: 10, places: 2>` fixes the places (below) |
 | `BigInt` | A whole number of any size. Slower than `Int`: use it when values may not fit in 64 bits |
 | `Bool` | `true` or `false` |
 | `Char` | One Unicode character |
@@ -66,7 +66,7 @@ print(d + 1)                          // 1 is a BigInt here
 const x: Int = 2 ** 70                // error: doesn't fit in Int
 ```
 
-**Floats give the same bits everywhere** ([decision 0122](../../decisions/0122-floats-give-the-same-bits-everywhere.md)). A `Float` or `Float32` program gives the same results, to the last bit, on every machine, system and build, interpreted or native. Each `+ - * /` is rounded on its own, as IEEE 754 says: a multiply and an add are never fused into one step, and a sum keeps its order. `std.math`'s functions are Kavach's own code, the same on every system (14.5). So a game's simulation or a test's expected number doesn't change from Windows to Linux. Only the GPU is apart: its own hardware works out `gpu fn`s (chapter 15).
+**Floats give the same bits everywhere** ([decision 0122](../../decisions/0122-floats-give-the-same-bits-everywhere.md)). A `Float` or `Float32` program gives the same results, to the last bit, on every machine, system and build, interpreted or native. Each `+ - * /` is rounded on its own, as IEEE 754 says: a multiply and an add are never fused into one step, and a sum written with `+` keeps its order. A list's `sum` and `mean` of floats are exact, rounded once (14.2), so they give the same bits in any order. `std.math`'s functions are Kavach's own code, the same on every system (14.5). So a game's simulation or a test's expected number doesn't change from Windows to Linux. Only the GPU is apart: its own hardware works out `gpu fn`s (chapter 15).
 
 ```kavach
 let a = 1.1
@@ -74,3 +74,48 @@ let b = 2.2
 print(a * b + 3.3)        // 5.720000000000001 everywhere: a multiply, then an add
 print(math.sin(1e22))     // -0.8522008497671888 everywhere
 ```
+
+**Any width: `Int<bits: n>` and `UInt<bits: n>`** ([decision 0137](../../decisions/0137-numbers-in-types.md), 2.9). A whole number of exactly `n` bits, signed or not, for hardware registers, chip design and file formats. `n` is from 1 to 65,535, as in Zig. The sized names are short spellings of these: `Int8` is `Int<bits: 8>`, `UInt64` is `UInt<bits: 64>`, and `Int` is `Int<bits: 64>`. `UInt` is always written with its bits.
+
+```kavach
+const addr: UInt<bits: 12> = 4095          // the largest 12-bit number
+const temp: Int<bits: 24> = -8_388_608     // the smallest 24-bit number
+const over: UInt<bits: 12> = 4096          // compile error: 4096 doesn't fit in 12 bits
+let pc: UInt<bits: 12> = 4090
+pc = pc.wrapping_add(10)                   // 4: wraps at 12 bits, as a register does
+const wide: UInt<bits: 128> = 2 ** 100     // fits: 128 bits are enough
+```
+
+- `+ - * / %`, the comparisons and the bit operators work as on the other whole numbers (1.8). Both sides have the same type, and a result that doesn't fit panics (5.6). `wrapping_add` and `checked_add` (5.6) work at the type's width; `~` flips its `n` bits.
+- `UInt<bits: 12>(x)` converts, and panics when `x` doesn't fit, as `Int8(300)` does.
+- A value is kept in the smallest of 1, 2, 4 or 8 bytes that holds it; a wider one in whole 8-byte words.
+
+**A range: `Int<range: a..=b>`.** A whole number that is always in the range: an `Int` whose smallest and largest are `a` and `b`. Both ends are known while compiling; `a..b` leaves `b` out, as a range does (1.8). An empty range is a compile error.
+
+```kavach
+const port: Int<range: 1..=65535> = 8080
+const none_yet: Int<range: 1..=65535> = 0       // compile error: 0 is not in 1..=65535
+
+fn next(p: Int<range: 1..=65535>) -> Int<range: 1..=65535> {
+    p + 1                                        // panics when p is 65535
+}
+
+fn port_of(n: Int) -> Int<range: 1..=65535> {
+    Int<range: 1..=65535>(n)                     // panics when n is out of the range
+}
+```
+
+- Arithmetic of two values of one range type gives that type; a result out of the range panics, as overflow does (5.6), and `checked_add` gives `none`. Wrapping has no meaning for a range: `wrapping_add` on one is a compile error.
+- Two ranges are two types, and a range is not a `bits` type: `Int<range: 0..=255>` is not `UInt8`. `Int(port)` always converts back.
+
+**Fixed places: `Decimal<digits: 10, places: 2>`.** At most 10 digits in all, 2 of them after the point, as SQL's `NUMERIC(10, 2)`: from −99,999,999.99 to 99,999,999.99. `places` is from 0 to `digits`. A plain `Decimal` keeps any number of digits, as above.
+
+```kavach
+const price: Decimal<digits: 10, places: 2> = 19.99
+const tax = price * 0.18                                // 3.5982, rounded to 2 places: 3.60
+const bad: Decimal<digits: 10, places: 2> = 1.234       // compile error: 3 places, the type has 2
+```
+
+- A literal with more places or digits than the type has is a compile error: it is never rounded without a word.
+- Arithmetic gives the same type. A result with more places is rounded to `places`, a half away from zero, as `d.round(places)` does (14.2). A result with more digits before the point than `digits - places` panics, as overflow does (5.6).
+- `Decimal<digits: 10, places: 2>(x)` converts, rounding the same way, and panics when `x` doesn't fit.

@@ -114,9 +114,9 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0106](0106-drawing-on-the-gpu.md) | Drawing on the GPU: shaders as `gpu vertex fn` and `gpu fragment fn`, a thin `std.gpu`, GPU lists drawn with no copy, pipelines built ahead | Accepted |
 | [0107](0107-traces-and-metrics.md) | Traces and metrics in `std.log`: `log.span(name) { … }` blocks, the trace kept per task, `http` joining traces by `traceparent`, `log.count`/`gauge`/`histogram`; blocks given to a call, also for `random.seeded` | Accepted |
 | [0108](0108-no-user-defined-decorators.md) | No user-defined decorators: what they do elsewhere is said in the signature (contracts, `uses`, `example`) or in plain code; a recurring need becomes a checked clause | Accepted |
-| [0109](0109-operators-through-interfaces.md) | Operators for a program's own types through built-in interfaces (`Add` … `Neg`, `Comparable`); the other operand the same type or one other per operator; operator methods pure | Accepted |
+| [0109](0109-operators-through-interfaces.md) | Operators for a program's own types through built-in interfaces (`Add` … `Neg`, `Comparable`); the other operand the same type or one other per operator; operator methods pure | Accepted (one other operand per operator: replaced by [0136](0136-tensor-the-one-array-type.md)) |
 | [0110](0110-std-system.md) | `std.system`: the machine's system, cores, memory, processor and GPUs; the basics free, the rest behind a new `System` capability; system calls in `runtime/process`, no new dependency | Accepted |
-| [0111](0111-matrices.md) | Matrices: `Matrix<T>` written in Kavach over a flat list, `a @ b` through a new `MatMul` operator interface, the same bits by default, `fast: true` through the `gemm` crate | Accepted |
+| [0111](0111-matrices.md) | Matrices: `Matrix<T>` written in Kavach over a flat list, `a @ b` through a new `MatMul` operator interface, the same bits by default, `fast: true` through the `gemm` crate | Accepted (`Matrix<T>`: replaced by [0136](0136-tensor-the-one-array-type.md)) |
 | [0112](0112-every-detail-of-the-machine.md) | Every detail of the machine in `std.system`, then events, then controls; typed records plus one device list; `System`, and `System.critical.read` and `.write`, which `System` doesn't cover | Accepted |
 | [0113](0113-gamepads-through-gilrs.md) | Gamepads through `gilrs`, in the standard layout, both as window events and as `input.pads()` state, behind `Input`; `libudev` linked only into Linux programs that read pads | Replaced by [0124](0124-gamepads-through-sdl3.md) |
 | [0114](0114-sound-through-cpal.md) | Sound through `cpal`: a runtime mixer first (`audio.play` giving a `Voice`), a checked Kavach callback later; `Audio` to play, `Microphone` to record; WAV and Ogg Vorbis (`lewton`) in std; `libasound` linked only into Linux programs with sound | Accepted |
@@ -139,6 +139,9 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0131](0131-plain-strings-and-backtick-templates.md) | Plain strings in quotes, templates in backticks | Accepted |
 | [0132](0132-json-for-every-value.md) | JSON for every value and key | Accepted |
 | [0133](0133-license-headers.md) | A short license header in every source file | Accepted |
+| [0135](0135-tables-and-grouping.md) | Tables and grouping, for researchers | Accepted |
+| [0136](0136-tensor-the-one-array-type.md) | `Tensor` is the one array type, like NumPy's `ndarray`; `Matrix` goes (a 2-D tensor, `Tensor<T, dims: 2>`, does its job); NumPy's methods in six steps, the same bits on CPU and GPU | Accepted |
+| [0137](0137-numbers-in-types.md) | Numbers in types: types positional, numbers named (`List<Int, max: 2>`, `Int<bits: 24>`, `Tensor<Float, dims: 2>`) | Accepted |
 
 ## Open decisions
 

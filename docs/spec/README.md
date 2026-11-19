@@ -21,8 +21,8 @@ This specification is the source of truth for the language. If the compiler and 
 | 11 | [Testing](11-testing.md) | Tests generated from types, contracts and `example`; capability fakes; agent exploration; crash fixes |
 | 12 | [Maintainability at scale](12-maintainability.md) | File and function limits, workspaces, architecture rules, API checks, deprecation |
 | 13 | {Tooling for AI: fewer tokens}(13-ai-tooling.md) | `query`, `outline`, `context`, edit by name, errors with fixes, MCP server, token benchmark |
-| 14 | [Standard library](14-standard-library/README.md) | Methods of built-in types, `std.fs`, `std.time`, `std.math`, `std.io`, `std.cli` |
-| 15 | [GPU](15-gpu.md) | `gpu fn`, `map` on the GPU, same results as the CPU, drawing with `gpu vertex fn` and `gpu fragment fn` |
+| 14 | [Standard library](14-standard-library/README.md) | Methods of built-in types, `std.fs`, `std.time`, `std.math`, `std.io`, `std.cli`, `std.tensor` (arrays and matrices), `std.table` |
+| 15 | [GPU](15-gpu.md) | `gpu fn`, `map` on the GPU, same results as the CPU, drawing with `gpu vertex fn` and `gpu fragment fn`, grouping and tables |
 
 ## Conventions in this spec
 

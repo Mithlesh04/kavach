@@ -10,9 +10,9 @@ Written in Kavach, with contracts and examples like any other code.
 | `text.nfc(s)`, `text.nfd(s)`, `text.nfkc(s)`, `text.nfkd(s)` | `s` in a Unicode normal form (UAX #15), so texts written with different code points compare equal: `nfc` joins a letter and its accent into one code point, `nfd` splits them, and the `k` forms also turn compatibility characters into plain ones (`ﬁ` into `fi`, full-width `１` into `1`). The runtime gives these four ([decision 0102](../../decisions/0102-unicode-normalization.md)); the rest of `std.text` is written in Kavach |
 | `collections.chunks(items, size)` | The items in lists of `size` (the last may be shorter) |
 | `collections.zip(a, b)` | Pairs of items at the same position, as long as the shorter list |
-| `collections.unique(items)` | Each item once, in the order first seen |
-| `collections.counts(items)` | How many times each item appears, in the order first seen |
 | `collections.flatten(lists)` | The items of all the lists, in order |
+
+Each item once, and how many times each item appears, are list methods (14.2): `items.unique()` and `items.count_by(x => x)`. `collections.unique` and `collections.counts` are compile errors that name them ([decision 0135](../../decisions/0135-tables-and-grouping.md)).
 
 **Finding numbers in text.** `Int(s)` reads the whole text strictly and fails on anything else (2.1). The `find_` functions look for numbers *inside* other text instead, by these rules, so the result never depends on guesswork:
 

@@ -89,3 +89,101 @@ print(sizes.filter(w => w.contains("p"))) // Set.of("pear", "apple")
 Each job has one method. Names other languages use for the same job are compile errors that name Kavach's: `some` names `any(test)`, `every` names `all(test)`, `includes` names `contains(x)`, and `each` and `forEach` name `for_each(f)`. Method names are `snake_case`, as all names of values are (1.5): `findIndex` and `indexOf` name `find_index(test)` and `index_of(x)`. `find_index` finds the first match, as `index_of` finds the first `x`, so `find_first_index` names `find_index(test)` too.
 
 A ring (`Ring<T>`, 2.2) has `push`, `len`, `is_empty`, `is_full`, `first`, `last`, `get`, `contains` and `to_list`, oldest item first; a push onto a full ring drops the oldest.
+
+### Grouping and statistics
+
+A list of records works like a table. It can be grouped, counted and summed per key, summarized, and joined with another list on a key, as pandas, polars and R's dplyr do ([decision 0135](../../decisions/0135-tables-and-grouping.md)). Every key and every column is a lambda, so the compiler checks it: a misspelled field is a compile error, not a wrong answer. `std.table` (14.34) has the same methods for big data kept in columns.
+
+```kavach
+type Sale {
+    region: String
+    month: Int
+    amount: Float
+}
+
+const sales = [
+    Sale(region: "north", month: 1, amount: 120.0),
+    Sale(region: "south", month: 1, amount: 80.0),
+    Sale(region: "north", month: 2, amount: 100.0),
+]
+
+print(sales.count_by(.region))                                   // {"north": 2, "south": 1}
+print(sales.group_by(.region).map_values(g => g.sum(.amount)))  // {"north": 220.0, "south": 80.0}
+print(sales.mean(.amount) ?? 0.0)                                // 100.0
+print(sales.max_by(.amount)?.month ?? 0)                         // 1
+print(sales.map(s => (region: s.region, amount: s.amount)))      // two columns picked out
+```
+
+Lists:
+
+| Method | Gives |
+|---|---|
+| `items.group_by(key) -> {K: [T]}` | The items for each `key(item)`: keys in the order first seen, items in their order. `sales.group_by(.region)` |
+| `items.count_by(key) -> {K: Int}` | How many items have each key, in the order first seen: `words.count_by(w => w)` |
+| `items.unique() -> [T]` | Each item once, in the order first seen: `[3, 1, 3].unique()` is `[3, 1]` |
+| `items.unique_by(key) -> [T]` | The first item with each key, in order: `sales.unique_by(.region)` is one sale for each region |
+| `items.min_by(f) -> T?`, `items.max_by(f) -> T?` | The item whose `f(item)` is smallest, or largest; the first one on a tie, and `none` for an empty list: `sales.min_by(.amount)` |
+| `items.mean(f) -> Float?` | The average of `f(item)`, or `none` for an empty list: `sales.mean(.amount)` |
+| `items.median(f) -> Float?` | The middle `f(item)` in sorted order; halfway between the two middle ones for an even count; `none` for an empty list |
+| `items.var(f, correction: 1) -> Float?`, `items.std(f, correction: 1) -> Float?` | The variance of `f(item)`, divided by the count minus `correction`, and its square root, the standard deviation. The default, 1, gives the sample form, as pandas and R do; `correction: 0` gives the population form, as NumPy does. `none` when the count is not above `correction` |
+| `items.describe(f) -> Summary?` | A summary of `f(item)`: `count`, `mean`, `std`, `min`, `q1`, `median`, `q3`, `max`; `none` for an empty list |
+| `items.inner_join(other, key, other_key, row) -> [S]` | `row(a, b)` for each item `a` and item `b` of `other` with `key(a) == other_key(b)` |
+| `items.left_join(other, key, other_key, row) -> [S]` | The same, and `row(a, none)` for each item `a` that matches nothing; `row` takes a `U?` |
+| `items.pivot(row_key, column_key, cell) -> {R: {C: V}}` | For each `row_key(item)`, and in it each `column_key(item)`, `cell` of the list of items with both keys |
+
+Dicts:
+
+| Method | Gives |
+|---|---|
+| `d.map_values(f) -> {K: U}` | The same keys, in their order, each value through `f`: `{"a": [1, 2]}.map_values(g => g.len())` is `{"a": 2}` |
+| `d.to_list() -> [(K, V)]` | The keys and values as pairs, in insertion order, so the list's methods apply: `counts.to_list().sort_by(p => -p.1)` |
+
+**Keys.** A key is any value, compared as a dict compares its keys (2.2): `0.0` and `-0.0` are one key, and NaN is one key. A tuple groups by several keys at once: `sales.group_by(s => (s.region, s.month))`.
+
+**Numbers.** `mean`, `median`, `var`, `std` and `describe` take a lambda that gives any number type (`Number`, 2.9), as `sum` does. Sums and means are exact, so they give the same bits in any order: on one core, on all cores and on the GPU (15.5):
+
+- `mean` and `median` give a `Float` for whole numbers and `Float`, a `Float32` for `Float32`, and a `Decimal` for `Decimal`. `var`, `std` and `describe` give `Float`s for every number type.
+- `sum(f)` of floats (`Float` or `Float32`) is the exact sum of the values, rounded once to the lambda's type ([decision 0135](../../decisions/0135-tables-and-grouping.md)). So `[1e20, 1.0, -1e20].sum(x => x)` is `1.0`, where adding in order gives `0.0`. A NaN, or infinities of both signs, give NaN; an infinity gives that infinity; an exact sum past the type's largest value gives an infinity. A sum of zeros is `-0.0` only when every value is `-0.0`, as IEEE 754 says.
+- `mean` adds exactly too, with no overflow, and divides the exact sum by the count, rounding once: the result is the number nearest the true mean, for whole numbers, `Decimal`s and floats alike.
+- `var` works out the mean first. Each squared difference from it is a float, and they are added exactly, as `sum` adds.
+- `median` and `describe` sort as `sort` does: NaN after every number. A NaN makes `mean`, `var` and `std` NaN, as IEEE 754 does. Nothing is skipped without saying: to leave values out, `filter` them first.
+- The quartiles `q1` and `q3`, and the median, are at 0.25, 0.5 and 0.75 of the way through the sorted values: the value at position `p × (count − 1)`, or the point that far between its two neighbors, as pandas, NumPy and R do by default.
+
+`describe` gives an anonymous record (2.14), called `Summary` on this page. `std` is `none` for a single value:
+
+```kavach
+type Summary = (count: Int, mean: Float, std: Float?, min: Float, q1: Float, median: Float, q3: Float, max: Float)
+
+const s = [2.0, 4.0, 4.0, 5.0].describe(x => x)
+print(s?.median ?? 0.0)          // 4.0
+print(s?.q1 ?? 0.0)              // 3.5: position 0.75, three quarters of the way from 2.0 to 4.0
+```
+
+**Joins.** `inner_join` and `left_join` give the joined rows in the order of `items`; an item's matches come in the order of `other`. Two items of `other` with one key give two rows, as SQL does. A join builds a dict of `other` by its key, so its time grows with the two lengths and the result, not their product. The keys are of one type. A right join is a left join written the other way round: `users.left_join(orders, .id, .user_id, row)`.
+
+```kavach
+type User {
+    id: Int
+    name: String
+}
+
+type Order {
+    user_id: Int
+    total: Float
+}
+
+const named = orders.inner_join(users, .user_id, .id, (o, u) => (name: u.name, total: o.total))
+const listed = orders.left_join(users, .user_id, .id, (o, u) => (name: u?.name ?? "unknown", total: o.total))
+```
+
+**Pivots.** `pivot` means `group_by(row_key).map_values(g => g.group_by(column_key).map_values(cell))`. Each row's dict holds only the cells that have items, so a missing cell is read with `??`:
+
+```kavach
+const by_month = sales.pivot(.region, .month, g => g.sum(.amount))
+print((by_month["north"] ?? {:})[2] ?? 0.0)     // 100.0
+print((by_month["south"] ?? {:})[2] ?? 0.0)     // 0.0: no sale there
+```
+
+**One name for each job.** Picking columns out is `map` to an anonymous record (2.14), as the first example does; there is no `select`. A sum per key is `group_by(key).map_values(g => g.sum(f))`. Names other tools use are compile errors that name Kavach's: `sum_by` names that form and `sum(f)`, `value_counts` names `count_by`, `distinct` and `drop_duplicates` name `unique` and `unique_by`, `merge` and a `join` given lambdas name `inner_join`, `select` names `map`, and `average` and `avg` name `mean`. A range has them too, as it has every method that reads a list (2.2).
+
+These replace `collections.unique(items)` and `collections.counts(items)` (14.9), now `items.unique()` and `items.count_by(x => x)`, and `math.mean(xs)` (14.5), now `xs.mean(x => x)`.

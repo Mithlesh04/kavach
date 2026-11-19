@@ -151,7 +151,7 @@ Semiconductor companies (chip design, verification, simulation and fab data) wor
 | Math throughput | SIMD (AVX2, AVX-512, NEON) and all cores for loops over big data, with results identical to the plain loop (to-do item 1); GPU offload (GPU compute) |
 | Accurate floating point | Every operation correctly rounded as IEEE 754 requires, and never reordered behind the program's back (no "fast math" unless asked); compensated sums (Kahan, Neumaier) and exact dot products in `std.math`; `Float128` or double-double for more digits; explicit rounding modes; interval arithmetic that bounds the error; exact `Decimal` (spec 2.1) where base 10 matters |
 | Repeatable results | Deterministic reductions: a floating-point sum gives the same bits on every run and machine unless the program asks for a reordered, faster one |
-| Numbers chip work needs | 128-bit and arbitrary-precision integers (`BigInt`), fixed-point, complex numbers, intervals; linear algebra, sparse matrices and FFT in packages |
+| Numbers chip work needs | 128-bit and arbitrary-precision integers (`BigInt`), fixed-point, complex numbers, intervals; dense linear algebra and the FFT in `std.tensor` (spec 14.33), sparse matrices in packages |
 | Huge graphs | Compact graph storage for netlists and timing graphs; bit-parallel logic simulation |
 | Long jobs on many machines | Checkpoint and restart (durable execution, Phase 2), work split across a cluster over Kavach Link |
 | Existing tools | Calling C, C++ and Python (NumPy) libraries; reading design formats (Verilog, LEF/DEF, GDSII/OASIS) through packages; TCL-style scripting replaced by typed Kavach scripts |

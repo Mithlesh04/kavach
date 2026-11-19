@@ -92,7 +92,7 @@ for _ in 0..100 {
 print(xs[7])                    // the one copy back
 ```
 
-`sum`, `min` and `max` of `Int32` or `UInt32` items can end such a pipeline on the GPU: when the list is in GPU memory, they run there, and only the result comes back. They give exactly what the CPU gives. A sum adds in another order on the GPU, but every partial sum is checked. If any running sum, as the CPU adds the items in order, leaves the type, the CPU adds the list again in order, so the panic names the same item and line. A list on the CPU stays there: copying it over would cost more than the CPU's pass.
+`sum`, `min` and `max` of `Int32` or `UInt32` items, and `sum` of `Float32` items, can end such a pipeline on the GPU: when the list is in GPU memory, they run there, and only the result comes back. They give exactly what the CPU gives. A sum of `Float32`s is exact and rounded once (14.2), so the GPU's order of adding can't change its bits. A whole-number sum adds in another order on the GPU, but every partial sum is checked. If any running sum, as the CPU adds the items in order, leaves the type, the CPU adds the list again in order, so the panic names the same item and line. A list on the CPU stays there: copying it over would cost more than the CPU's pass.
 
 ```kavach
 for _ in 0..100 {
@@ -214,7 +214,29 @@ frame.draw(tiles, square, textures: [skin])
 - `frame.draw` gives one texture for each `Texture` the fragment fn takes, in order, as `textures:`. Leaving `textures:` out when the fragment fn takes one is a compile error; a list of another length is a panic.
 - `sample` is the one call on a `Texture` a `gpu fn` can make, and only a `gpu fragment fn` takes textures. On the CPU, `sample` reads the same pixels and gives the same colors, up to rounding.
 
+## 15.5 Grouping and tables on the GPU
+
+The methods that group, count, summarize and join a list (14.2) run on the GPU too, and so do a table's (14.34) ([decision 0135](../decisions/0135-tables-and-grouping.md)). They follow the rules of 15.2: the items are of the four types, or records and tuples of them; every lambda fits a `gpu fn`; and the work is big enough. Otherwise they run on the CPU. Either way the results are the same, in the same order.
+
+```kavach
+type Hit {
+    sensor: UInt32
+    energy: Int32
+}
+
+const per_sensor = hits.count_by(.sensor)                                      // on the GPU
+const energy = hits.group_by(.sensor).map_values(g => g.sum(.energy))          // one pass: no groups made
+const strongest = hits.max_by(.energy)
+```
+
+- **Grouping.** `count_by`, `unique` and `unique_by` run on the GPU, with keys of the four types or tuples of them; `Float32` keys follow the rules of 2.2 (`0.0` and `-0.0` one key, NaN one key). The keys come back in the order first seen, as on the CPU.
+- **A reduction per key.** `group_by(key).map_values(g => …)`, where the lambda is `g.len()`, `g.sum(f)`, `g.count(test)`, `g.min_by(f)` or `g.max_by(f)`, runs as one pass, as chained `map`s do (15.2): the groups are never made. A whole-number sum is checked as `sum` is in 15.2: if a running sum would leave its type as the CPU adds the group in order, the CPU adds that group again, so the panic names the same item and line.
+- **Sums and means.** `sum` and `mean` of `Int32`, `UInt32` and `Float32` run on the GPU, per key too: the exact sum is the same in any order (14.2), and the one rounded division is done on the CPU. `var` and `std` add their squared differences exactly too.
+- **Order.** `min_by`, `max_by`, `median`, the quartiles of `describe`, and `sort_by` sort or compare on the GPU, which is exact, so they pick the same items as the CPU; ties go to the first item, as on the CPU.
+- **Joins.** `inner_join` and `left_join` with keys of the four types match on the GPU. The `row` lambda runs on the GPU when it fits a `gpu fn`, and on the CPU otherwise. The rows come in the CPU's order: that of `items`, then that of `other`.
+- A result stays in GPU memory until the CPU reads it, as a `map`'s does ([decision 0055](../decisions/0055-gpu-results-stay-until-read.md)). `KAVACH_GPU=check` (15.2) runs both and compares them.
+
 ## Open questions
 
-- `sum`, `min` and `max` of `Float32` on the GPU, and `filter` of records and tuples. Decided (Mithlesh, 2026-11-03): a `sum` of floats keeps its adding order ([decision 0031](../decisions/0031-loops-on-all-cores.md)), so on the GPU it runs only when the program asks for a reordered sum. Float `min` and `max` must keep `NaN` last (14.2).
+- `min` and `max` of `Float32` on the GPU, and `filter` of records and tuples. Float `min` and `max` must keep `NaN` last (14.2). Float sums are decided: exact and rounded once, in any order ([decision 0135](../decisions/0135-tables-and-grouping.md), which replaces [decision 0031](../decisions/0031-loops-on-all-cores.md)'s in-order float sums for lists).
 - A `Gpu` capability for code that chooses the device or keeps GPU memory, as the platform plan describes.

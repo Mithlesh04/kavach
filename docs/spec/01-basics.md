@@ -167,7 +167,7 @@ print(`a literal \{ brace and a \` backtick`)
 
 | Group | Operators | Notes |
 |---|---|---|
-| Arithmetic | `+ - * / % ** @` | `Int / Int` is an `Int` (truncated). Overflow is checked (see 5.6). `a ** b` is `a` to the power `b`, both the same number type; for whole numbers it panics when `b` is negative or the result doesn't fit. `+` also joins two `String`s, two `Bytes` (2.13), and two lists of the same type (2.2). A program's own types get operators through interfaces (2.16). `a @ b` is the matrix product (2.17), for a type with `MatMul` |
+| Arithmetic | `+ - * / % ** @` | `Int / Int` is an `Int` (truncated). Overflow is checked (see 5.6). `a ** b` is `a` to the power `b`, both the same number type; for whole numbers it panics when `b` is negative or the result doesn't fit. `+` also joins two `String`s, two `Bytes` (2.13), and two lists of the same type (2.2). A program's own types get operators through interfaces (2.16). `a @ b` is the matrix product (14.33), for a type with `MatMul` |
 | Comparison | `== != < <= > >=` | |
 | Logic | `and or not` | Words, not symbols, for readability: `!ready`, `&&` and `\|\|` are compile errors that say which word to write |
 | Bits | `& \| ^ << >> ~` | Integers only. `a << n` panics when the result doesn't fit (5.6); both shifts panic when `n` is negative or not less than the type's width in bits. `>>` keeps the sign |

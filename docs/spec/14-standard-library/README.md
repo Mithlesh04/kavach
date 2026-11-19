@@ -38,7 +38,8 @@ Each section is a file of its own: new sections go at the end, with the next num
 | 14.30 std.app | [30-app.md](30-app.md) |
 | 14.31 std.font | [31-font.md](31-font.md) |
 | 14.32 std.reflect | [32-reflect.md](32-reflect.md) |
-| 14.33 std.tensor | [33-tensor.md](33-tensor.md) |
+| 14.33 std.tensor: Kavach's one array type, as NumPy's | [33-tensor.md](33-tensor.md) |
+| 14.34 std.table | [34-table.md](34-table.md) |
 
 ## Open questions
 
@@ -50,3 +51,6 @@ Each section is a file of its own: new sections go at the end, with the next num
 - `std.term` (14.13): turning colors on with a setting even when output is not a terminal.
 - `std.term`: background colors and colors by number (256 colors, RGB).
 - `std.term`: colors in the old Windows console (conhost without virtual terminal mode).
+- Grouping and statistics (14.2): percentiles other than the quartiles. `xs.percentile(f, p)` (0 to 100), as to-do 28 plans for tensors, or `quantile(f, q)` (0 to 1), as pandas names it; one name for lists, tables and tensors.
+- 14.2: `xs.sum()`, `xs.mean()` and the others with no lambda, for a list of numbers, in place of `xs.mean(x => x)`.
+- 14.2: methods on dicts beyond `map_values` and `to_list` (`filter` by key or value, `sort_by` of the entries).

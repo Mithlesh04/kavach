@@ -15,6 +15,7 @@ print(greeting.text() ?? "?")          // hi
 |---|---|
 | `s.bytes()` | The text `s` as UTF-8 `Bytes` |
 | `Bytes(list)` | `Bytes` from a `[UInt8]` |
+| `Bytes<len: 32>` | The type of exactly 32 bytes (below) |
 | `b.len()` | `Int`: how many bytes |
 | `b.is_empty()` | `Bool`: whether there are none |
 | `b[i]` | `UInt8`: byte `i`; panics when `i` is out of range |
@@ -63,3 +64,23 @@ print(data)                                          // Bytes(0000803f00000040)
 print(data.as_list<Float32>() ?? [])                 // [1.0, 2.0]
 print(Bytes.of_list<UInt16>([1, 2], big_endian: true)) // Bytes(00010002)
 ```
+
+**A fixed length: `Bytes<len: n>`** ([decision 0137](../../decisions/0137-numbers-in-types.md), 2.9). `Bytes<len: 32>` is exactly 32 bytes: a hash, a key, a field of a file format. `crypto.sha256` gives one (14.19). An index written as a number is checked while compiling.
+
+```kavach
+use std.crypto
+
+fn key_of(text: String) -> Bytes<len: 32> {
+    crypto.sha256(text.bytes())
+}
+
+const k = key_of("asha")
+print(k[31])                     // the last byte
+print(k[32])                     // compile error: index 32 is past `Bytes<len: 32>`
+const plain: Bytes = k           // a fixed length may go where any length may
+const back = Bytes<len: 32>(plain) catch e => k   // `SizeError` when `plain` isn't 32 bytes
+```
+
+- A plain `Bytes` becomes a `Bytes<len: n>` only through `try` or `catch`, which fails with a `SizeError` when the length is another (2.9).
+- `Bytes([…])` of a list literal of `n` numbers is a `Bytes<len: n>`.
+- `a + b` and the methods that make new bytes give a plain `Bytes`.

@@ -21,15 +21,35 @@ c += a                         // `c = c + a`
 | Interface | Operator | The method |
 |---|---|---|
 | `Add`, `Sub`, `Mul`, `Div`, `Rem` | `a + b`, `a - b`, `a * b`, `a / b`, `a % b` | `fn add(self, other: R) -> Out`, and `sub`, `mul`, `div`, `rem` |
+| `Pow` | `a ** b` | `fn pow(self, other: R) -> Out` |
 | `Neg` | `-a` | `fn neg(self) -> Out` |
-| `MatMul` | `a @ b` | `fn matmul(self, other: R) -> Out`, the matrix product (2.17) |
+| `MatMul` | `a @ b` | `fn matmul(self, other: R) -> Out`, the matrix product (14.33) |
 | `Comparable` | `a < b`, `a <= b`, `a > b`, `a >= b` | `fn compare(self, other: Self) -> Int`: below 0 when `self` comes first, 0 when neither does, above 0 when `other` does |
+| `Compare<R, Out>` | `a < b`, `a <= b`, `a > b`, `a >= b` | `fn lt(self, other: R) -> Out`, and `le`, `gt`, `ge`: each comparison on its own, giving any type, such as a mask of `Bool`s (14.33) |
 
-- **The other operand.** `Add` alone takes the same type: `fn add(self, other: Self) -> Self`. `Mul<Float>` takes a `Float` instead, and gives `Self`. `Mul<Meters, Area>` takes `Meters` and gives an `Area`. A type implements each interface once, since its method has one name (no overloading, 1.4): `Vec2` with `Mul<Float>` has `v * 2.0` but not `v * v`.
+- **The other operand.** `Add` alone takes the same type: `fn add(self, other: Self) -> Self`. `Mul<Float>` takes a `Float` instead, and gives `Self`. `Mul<Meters, Area>` takes `Meters` and gives an `Area`.
+- **One interface, several right operands.** A type may implement an operator's interface more than once, each time for another type on the right: `Mul<Vec2>` and `Mul<Float>`. The right operand's type chooses the method, while compiling. The methods share their name, `mul`; this is the one place a name may be written twice in a type (no overloading elsewhere, 1.4). Two for the same right operand are a compile error.
+
+  ```kavach
+  type Vec2: Mul<Vec2>, Mul<Float> {
+      x: Float
+      y: Float
+
+      fn mul(self, other: Vec2) -> Vec2 { Vec2(x: self.x * other.x, y: self.y * other.y) }
+      fn mul(self, other: Float) -> Vec2 { Vec2(x: self.x * other, y: self.y * other) }
+  }
+
+  const v = Vec2(x: 1.0, y: 2.0)
+  v * v          // Vec2(x: 1.0, y: 4.0)
+  v * 3.0        // Vec2(x: 3.0, y: 6.0)
+  v * 3          // error: `Vec2` has `*` for a `Vec2` or a `Float` on the right, and this is an `Int`
+  ```
+
 - **Your type on the left.** `a * 2.0` calls `a.mul(2.0)`; `2.0 * a` is a compile error that says to write `a * 2.0`.
 - **`x op= v`** is `x = x op v`, as for numbers (1.8), so `c += a` needs `Add` and a `let`.
 - **Operator methods are pure:** no `uses` (8.1) and no `!` (5). `a + b` never touches the outside world and never fails, except by a panic, as `Int` overflow does. A method with either is a compile error.
 - **`==` and `!=` are not interfaces.** They compare contents for every type (1.8), so `a == b` and `compare` can disagree only if the type's author makes them.
+- **`Comparable` or `Compare`.** `Comparable` gives an order; `Compare` gives each of `< <= > >=` its own method and result, as a tensor's item-by-item comparisons do (`t > 0.5` is a mask, 14.33). A type implements one of the two; both is a compile error, as `<` would have two meanings. `Compare` may be implemented several times, as above.
 - Built-in types keep their own operators; `extend Int: Add` is a compile error.
 
 ```kavach
@@ -65,4 +85,5 @@ total([Money(cents: 150), Money(cents: 99)], Money(cents: 0))   // Money(cents: 
 ## Open questions
 
 - `sort()`, `min()` and `max()` of a list of a `Comparable` type, and a `Comparable` type as a dict key's order. Until then, `sort_by(m => m.cents)` sorts by a key.
+- Whether the number types meet `Pow`, so generic code may use `**` on a `T: Pow`.
 - Bit operators (`& | ^ << >> ~`) for a program's own types (bit vectors, decision 0041's `BigInt` already has them built in).
