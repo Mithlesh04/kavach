@@ -1,0 +1,1 @@
+error: a number in a type has a name, as a named argument has: write `width: 2, height: 1` (spec 2.9)

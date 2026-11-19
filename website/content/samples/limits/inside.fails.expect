@@ -1,0 +1,1 @@
+error: a list's numbers go after its type: write `[Int]<max: 2>` (spec 2.2)

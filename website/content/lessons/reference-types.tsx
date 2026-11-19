@@ -84,7 +84,7 @@ function groups(): { title: string; entries: Entry[] }[] {
       title: "Collections",
       entries: [
         ...collections,
-        { names: ["Ring"], says: said("02-types/02-collections.md", /(`Ring<T>` keeps the last `n` items pushed\. `Ring\.capacity\(n\)` makes an empty one; when it is full, `push` drops the oldest item to make room, where a full list would panic\.)/), number: "2.2", file: "02-types/02-collections.md" },
+        { names: ["Ring"], says: said("02-types/02-collections.md", /(`Ring<T, max: n>` keeps the last `n` items pushed\. `Ring<T, max: n>\(\)`, or `Ring\(\)` where the variable's type says it, makes an empty one; when it is full, `push` drops the oldest item to make room, where a full list would panic\.)/), number: "2.2", file: "02-types/02-collections.md" },
       ],
     },
     {
@@ -92,6 +92,7 @@ function groups(): { title: string; entries: Entry[] }[] {
       entries: [
         { names: ["Error"], says: said("05-errors.md", /(For scripts and application code that just wants to stop on any error, `! Error` accepts every error type)/), number: "5.5", file: "05-errors.md" },
         { names: ["ParseError"], says: said("02-types/01-built-in-types.md", /(It \*\*can fail\*\* with a `ParseError`, so it takes `try` or `catch`\. `Int\("23sd"\)` fails, as does `Int\("300"\)` into `Int8`\.)/), number: "2.1", file: "02-types/01-built-in-types.md" },
+        { names: ["SizeError"], says: said("02-types/02-collections.md", /(The type with its limit, called with the collection, fails with a `SizeError` when it has too many entries \(for `len`, not exactly that many\), as `try Int\(text\)` fails \(2\.1\)\.)/).replace(" (2.1)", ""), number: "2.2", file: "02-types/02-collections.md" },
         { names: ["InvariantError"], says: said("07-contracts.md", /(`try T\(\.\.\.\)` and `T\(\.\.\.\) catch e => \.\.\.` make the value, and when an invariant doesn't hold they fail with an `InvariantError` instead of panicking\.)/), number: "7.3", file: "07-contracts.md" },
         { names: ["LibraryError"], says: said("10-modules-and-packages/07-interop.md", /(or it fails with a `LibraryError`, whose text says which library couldn't be loaded, and why, or which function it lacks\.)/), number: "10.7", file: "10-modules-and-packages/07-interop.md" },
         { names: ["JsonError"], says: json.find((d) => d.name === "JsonError")!.doc, number: "2.12", file: "02-types/12-json.md", defined: fromStd("JsonError") },

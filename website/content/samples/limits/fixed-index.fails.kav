@@ -1,0 +1,4 @@
+fn main() {
+    const v: [Float]<len: 3> = [1.0, 2.0, 3.0]
+    print(v[3])
+}

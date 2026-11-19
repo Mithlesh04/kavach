@@ -1,5 +1,5 @@
 fn main() {
-    let queue: [String] = List.capacity(2)
+    let queue: [String]<max: 2> = []
     for name in ["asha", "ravi", "mira"] {
         if queue.is_full() {
             print(`no room for {name}`)

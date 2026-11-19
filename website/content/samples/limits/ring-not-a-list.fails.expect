@@ -1,1 +1,1 @@
-error: expected `[Int]`, found `Ring<Int>`
+error: expected `[Int]`, found `Ring<Int, max: 2>`

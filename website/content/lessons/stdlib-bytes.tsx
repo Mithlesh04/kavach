@@ -107,6 +107,28 @@ export const bytesDoc: LessonDoc = {
         <li><C>b[start:end].text()</C> does the same, also copying the text once.</li>
       </ul>
       <SrcRef file="tests/conformance/02-types/bytes-text-of-a-range.kav" label="text of a range, tested" />
+      <H2>A fixed length</H2>
+      <P>
+        <C>Bytes&lt;len: 32&gt;</C> is exactly 32 bytes: a hash, a key, a field of a file format.{" "}
+        <C>crypto.sha256</C> gives one, so a function can say in its type that it returns a digest:
+      </P>
+      <Ex name="bytes/fixed" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A <C>Bytes&lt;len: n&gt;</C> may go wherever <C>Bytes</C> may.</li>
+        <li>Plain <C>Bytes</C> become a <C>Bytes&lt;len: n&gt;</C> only through <C>try</C> or <C>catch</C>, which fails with a <C>SizeError</C> when the length is another.</li>
+        <li><C>a + b</C> and the methods that make new bytes give plain <C>Bytes</C>.</li>
+        <li>The number in the type works as for lists: see <Link href="/docs/types/generics/">Generics</Link>.</li>
+      </ul>
+      <P>An index written as a number is checked while compiling:</P>
+      <Ex name="bytes/fixed-index.fails" />
+      <P><C>Bytes([…])</C> of a list literal of <C>n</C> numbers is a <C>Bytes&lt;len: n&gt;</C>, so it doesn&apos;t fit another length:</P>
+      <Ex name="bytes/fixed-literal.fails" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/decisions/0137-numbers-in-types.md" label="decision 0137" />
+        <SrcRef file="tests/conformance/02-types/fixed-bytes-fit-where-bytes-are-expected.kav" label="fixed length, tested" />
+        <SrcRef file="tests/conformance/02-types/fixed-bytes-index-past-the-end-is-an-error.kav" label="index, tested" />
+        <SrcRef file="tests/conformance/02-types/bytes-of-a-list-literal-have-its-length.kav" label="literals, tested" />
+      </div>
       <H2>In JSON</H2>
       <P>
         JSON has no bytes, so <C>Bytes</C> is written as base64 text, as Protocol Buffers&apos; JSON and OpenAPI write

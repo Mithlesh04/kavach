@@ -1,0 +1,10 @@
+fn main() {
+    let out = Bytes([1])                     // a `Bytes`: it may grow
+    out = out + Bytes([2, 3])
+    print(out)
+    const key = Bytes([1, 2])                // a `Bytes<len: 2>`
+    let kept: Bytes<len: 2> = Bytes([3, 4])  // the written type keeps it
+    print(key)
+    print(kept)
+    print(Bytes([2]) < Bytes([1, 9]))        // compares two `Bytes`
+}

@@ -1,5 +1,5 @@
 fn main() {
-    let recent: Ring<Float> = Ring.capacity(3)
+    let recent: Ring<Float, max: 3> = Ring()
     for t in [1.0, 2.0, 3.0, 4.0] {
         recent.push(t)              // the fourth push drops 1.0
     }
@@ -9,8 +9,8 @@ fn main() {
     print(recent.get(1) ?? 0.0)
     print(recent.is_full())
 
-    const kept = Ring.capacity(2, ["a", "b", "c"])   // keeps the last 2
+    const kept = Ring<String, max: 2>(["a", "b", "c"])   // keeps the last 2
     print(kept)
-    const all = recent.to_list()                     // a list, no limit
+    const all = recent.to_list()                         // a list, no limit
     print(all.len())
 }

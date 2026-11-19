@@ -1,5 +1,5 @@
 fn main() {
-    let a: [Int32] = List.capacity(2, [1])
+    let a: [Int32]<max: 2> = [1]
     let b = a
     b.push(2)
     print(b)

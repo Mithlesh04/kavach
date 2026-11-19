@@ -39,6 +39,7 @@ export const cryptoDoc: LessonDoc = {
       <Ex name="crypto/hashes" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>Bytes</C> prints in hexadecimal, so the SHA-256 digest of <C>abc</C> is shown as it is usually written.</li>
+        <li>A digest has its length in its type: <C>sha256</C> gives a <C>Bytes&lt;len: 32&gt;</C>, which goes wherever <C>Bytes</C> may. See <Link href="/docs/standard-library/bytes/">Bytes</Link>.</li>
         <li><C>hmac_sha256</C> proves a message came from someone who knows the key, as payment webhooks do.</li>
         <li>Compare secrets with <C>crypto.equal</C>, not <C>==</C>: it takes the same time wherever they differ, so a secret can&apos;t be guessed a byte at a time from how long the answer takes.</li>
         <li><C>token()</C> gives 32 random bytes as 43 letters of URL-safe text: a session id or a reset link.</li>

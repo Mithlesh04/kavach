@@ -1,17 +1,17 @@
 fn main() {
-    let recent: [Float] = List.capacity(3, [0.5])   // 0.5, and room for 2 more
+    let recent: [Float]<max: 3> = [0.5]     // 0.5, and room for 2 more
     recent.push(1.5)
     recent.push(2.5)
     print(recent)
     print(recent.is_full())
 
-    let ages: {String: Int} = Dict.capacity(2, {"asha": 31})
+    let ages: {String: Int}<max: 2> = {"asha": 31}
     ages["asha"] = 32       // changes a key: not adding
     ages["ravi"] = 27       // now full
     print(ages)
     print(ages.is_full())
 
-    let seen: Set<Int> = Set.capacity(2, [7, 7])     // one entry: 7
+    let seen: Set<Int, max: 2> = Set.of(7, 7)   // one entry: 7
     print(seen.len())
     seen.add(7)             // already there: not adding
     print(seen.is_full())

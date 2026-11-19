@@ -1,0 +1,6 @@
+use std.crypto
+
+fn main() {
+    const k = crypto.sha256("asha".bytes())
+    print(k[32])
+}

@@ -1,0 +1,12 @@
+type Buffer<T, size: Int = 64> {
+    items: [T]
+
+    fn room(self) -> Int { size - self.items.len() }
+}
+
+fn main() {
+    const b: Buffer<Int> = Buffer(items: [1])        // size is 64
+    print(b.room())
+    const small = Buffer<Int, size: 8>(items: [1])
+    print(small.room())
+}

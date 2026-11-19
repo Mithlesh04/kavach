@@ -1,7 +1,7 @@
 type Reading = Heat(celsius: Float) | Note(text: String)
 
 fn main() {
-    let log: [Reading] = List.capacity(100)
+    let log: [Reading]<max: 100> = []
     log.push(Reading.Heat(celsius: 21.5))
     log.push(Reading.Note(text: "door opened"))
     for r in log {
@@ -11,8 +11,8 @@ fn main() {
         }
     }
 
-    let groups: {String: [Int]} = Dict.capacity(10)
-    groups["small"] = List.capacity(3, [1, 2])     // a dict of lists, each with a limit
+    let groups: {String: [Int]<max: 3>}<max: 10> = {:}
+    groups["small"] = [1, 2]     // a dict of at most 10 lists, each of at most 3
     print(groups)
     print(groups.is_full())
 }

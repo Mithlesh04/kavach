@@ -1,0 +1,19 @@
+fn dot<n: Int>(a: [Float]<len: n>, b: [Float]<len: n>) -> Float {
+    let sum = 0.0
+    for i in 0..n {
+        sum += a[i] * b[i]
+    }
+    sum
+}
+
+fn zeros<n: Int>() -> [Float]<len: n> {
+    List<Float, len: n>.filled(0.0)
+}
+
+fn main() {
+    const u: [Float]<len: 3> = [1.0, 2.0, 3.0]
+    print(dot(u, [4.0, 5.0, 6.0]))     // n is 3
+    const z: [Float]<len: 2> = zeros()  // n comes from the type wanted
+    print(z)
+    print(zeros<n: 4>())               // or is written at the call
+}

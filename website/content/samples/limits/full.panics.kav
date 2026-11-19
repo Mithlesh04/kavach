@@ -1,5 +1,5 @@
 fn main() {
-    let recent: [Int] = List.capacity(3)
+    let recent: [Int]<max: 3> = []
     for i in 0..3 {
         recent.push(i)
     }

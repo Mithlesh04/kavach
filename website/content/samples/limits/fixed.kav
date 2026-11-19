@@ -1,0 +1,6 @@
+fn main() {
+    let v: [Float]<len: 3> = [1.0, 2.0, 3.0]
+    v[0] = 0.5            // an item may be set in place
+    print(v)
+    print(List<String, len: 2>.filled("-"))
+}

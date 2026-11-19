@@ -1,0 +1,1 @@
+error: the limit is known while compiling: write it in the type, `List<max: 5>`, and make the value as a literal (spec 2.2)

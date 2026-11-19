@@ -1,5 +1,5 @@
 fn main() {
-    let a: [Int] = List.capacity(2, [3])
+    let a: [Int]<max: 2> = [3]
     let b = a               // a copy has the limit too
     b.push(1)
     print(b.is_full())

@@ -278,8 +278,8 @@ export const makeMapDoc: LessonDoc = {
     <>
       <Ex name="maps/sub-create" />
       <P>
-        When a dict should never hold more than <C>n</C> entries, <C>Dict.capacity(n)</C> makes room for all of them
-        at once. See <Link href="/docs/collections/collections-with-a-limit/">Collections with a Limit</Link>.
+        When a dict should never hold more than <C>n</C> entries, say so in its type: <C>{"{String: Int}<max: 100>"}</C>{" "}
+        makes room for all of them at once. See <Link href="/docs/collections/collections-with-a-limit/">Collections with a Limit</Link>.
       </P>
     </>
   ),

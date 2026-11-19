@@ -1,0 +1,4 @@
+fn main() {
+    const two: Bytes<len: 2> = Bytes([1, 2, 3])
+    print(two)
+}

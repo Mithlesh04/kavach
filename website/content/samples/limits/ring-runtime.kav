@@ -1,0 +1,11 @@
+fn last_few(n: Int, readings: [Float]) -> Ring<Float> {
+    let r: Ring<Float> = Ring.capacity(n)   // n is known only while running
+    for x in readings {
+        r.push(x)
+    }
+    r
+}
+
+fn main() {
+    print(last_few(2, [1.0, 2.0, 3.0]))
+}

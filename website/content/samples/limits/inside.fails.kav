@@ -1,0 +1,4 @@
+fn main() {
+    const xs: [Int, max: 2] = []
+    print(xs)
+}

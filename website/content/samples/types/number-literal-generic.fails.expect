@@ -1,0 +1,1 @@
+error: `n` is known only for each call, so a literal can't be checked against `[Int]<len: n>`: make the list with `List<T, len: n>.filled(v)`, or with `try` (spec 2.9)

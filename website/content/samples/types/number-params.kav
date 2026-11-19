@@ -1,0 +1,14 @@
+type Grid<T, width: Int, height: Int> {
+    rows: [[T]<len: width>]<len: height>
+
+    fn at(self, x: Int, y: Int) -> T { self.rows[y][x] }
+    fn cells(self) -> Int { width * height }      // a number parameter is a constant `Int`
+}
+
+fn main() {
+    const g = Grid<Float, width: 2, height: 3>(rows: [[0.0, 1.0], [2.0, 3.0], [4.0, 5.0]])
+    print(g.cells())
+    print(g.at(1, 2))
+    const h: Grid<Float, height: 3, width: 2> = g   // the names go in any order
+    print(h.cells())
+}

@@ -1,0 +1,8 @@
+fn main() {
+    let a: List<max: 2> = []    // the item type comes from the push below
+    a.push(1)
+    print(a)
+    let names: Dict<max: 5> = {:}
+    names["asha"] = true
+    print(names)
+}

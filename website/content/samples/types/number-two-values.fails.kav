@@ -1,0 +1,8 @@
+fn dot<n: Int>(a: [Float]<len: n>, b: [Float]<len: n>) -> Float {
+    a[0] * b[0]
+}
+
+fn main() {
+    const u: [Float]<len: 3> = [1.0, 2.0, 3.0]
+    print(dot(u, [4.0, 5.0]))
+}

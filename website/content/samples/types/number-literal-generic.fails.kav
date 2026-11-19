@@ -1,0 +1,7 @@
+fn ones<n: Int>() -> [Int]<len: n> {
+    [1, 1]
+}
+
+fn main() {
+    print(ones<n: 2>())
+}

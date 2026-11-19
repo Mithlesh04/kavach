@@ -1,0 +1,4 @@
+fn main() {
+    let r: [Int] = List.capacity(5)
+    print(r)
+}

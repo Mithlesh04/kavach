@@ -1,0 +1,10 @@
+fn grow(xs: [Float]) -> [Float] {
+    let more = xs
+    more.push(9.0)           // a plain list here
+    more
+}
+
+fn main() {
+    const z = List<Float, len: 3>.filled(0.0)
+    print(grow(z).len())
+}

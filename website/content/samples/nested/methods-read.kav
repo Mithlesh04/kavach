@@ -3,7 +3,7 @@ type Shelf {
     names: [String]
     tags: Set<String>
     ages: {String: Int}
-    recent: Ring<Int>
+    recent: Ring<Int, max: 3>
 }
 
 fn main() {
@@ -12,7 +12,7 @@ fn main() {
         names: ["pen", "ink"],
         tags: Set.of("new", "cheap"),
         ages: {"asha": 31, "ravi": 27},
-        recent: Ring.capacity(3, [1, 2, 3, 4]),
+        recent: Ring<Int, max: 3>([1, 2, 3, 4]),
     )
     const n = shelf.numbers
     print(`len {n.len()}, is_empty {n.is_empty()}, is_full {n.is_full()}`)

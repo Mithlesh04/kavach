@@ -1,0 +1,13 @@
+fn pair(xs: [Int]) -> [Int]<max: 2> ! SizeError {
+    try List<Int, max: 2>(xs)        // fails when xs has more than 2 items
+}
+
+fn main() {
+    const ok = pair([1]) catch _ => []
+    print(ok)
+    const big = pair([1, 2, 3]) catch e => {
+        print(e)
+        []
+    }
+    print(big)
+}

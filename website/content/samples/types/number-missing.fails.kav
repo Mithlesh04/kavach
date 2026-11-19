@@ -1,0 +1,8 @@
+type Grid<T, width: Int, height: Int> {
+    rows: [[T]<len: width>]<len: height>
+}
+
+fn main() {
+    const g: Grid<Float, width: 2> = Grid(rows: [[0.0, 1.0]])
+    print(g.rows)
+}

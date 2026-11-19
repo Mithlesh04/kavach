@@ -1,0 +1,1 @@
+error: a number in a type is a whole-number literal, a constant, or a number parameter: a number known only while running goes in `List.capacity(n)` (spec 2.9)

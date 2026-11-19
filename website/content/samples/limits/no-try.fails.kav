@@ -1,0 +1,7 @@
+fn pair(xs: [Int]) -> [Int]<max: 2> {
+    List<Int, max: 2>(xs)
+}
+
+fn main() {
+    print(pair([1]))
+}
