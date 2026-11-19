@@ -1,0 +1,13 @@
+// Rule: `t.split(count)` cuts `count` equal parts along an axis, and `t.split_at(points)` cuts before each point.
+// Spec: 14.33
+// expect output: [2, 3]
+// expect output: [[0], [1, 2, 3], [4, 5]]
+// expect output: [[0, 1], [3, 4]]
+
+use std.tensor
+
+fn main() {
+    print(tensor.arange(0, 6).split(3)[1].items)
+    print(tensor.arange(0, 6).split_at([1, 4]).map(p => p.items))
+    print(tensor.arange(0, 6).reshape([2, 3]).split_at([2], axis: 1)[0].to_rows())
+}

@@ -1,0 +1,11 @@
+// Rule: NumPy's names for a tensor's methods are compile errors that name Kavach's: `t.rank()` names `t.dims()`.
+// Spec: 14.33
+// expect compile error
+
+use std.tensor
+
+fn main() {
+    const t = tensor.zeros<Int>([2, 3])
+    print(t.dims())
+    print(t.rank())   // error: Kavach's is `dims()`
+}

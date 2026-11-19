@@ -1,0 +1,12 @@
+// Rule: `t.cumsum()` gives the running sums along the last axis, or along `axis:`, the shape kept.
+// Spec: 14.33
+// expect output: [[1.0, 6.0, 8.0], [4.0, 7.0, 13.0]]
+// expect output: [[1, 5, 2], [5, 8, 8]]
+
+use std.tensor
+
+fn main() {
+    const m = tensor.of_rows([[1.0, 5.0, 2.0], [4.0, 3.0, 6.0]])
+    print(m.cumsum().to_rows())
+    print(tensor.of_rows([[1, 5, 2], [4, 3, 6]]).cumsum(axis: 0).to_rows())
+}

@@ -50,6 +50,7 @@ mod instances;
 mod items;
 mod json;
 mod lambdas;
+mod list_keys;
 mod literals;
 mod loop_place;
 mod method_names;
@@ -61,6 +62,7 @@ mod names;
 mod never_runs;
 mod numbers;
 mod op_bounds;
+mod op_impls;
 mod operators;
 mod order;
 mod patterns;
@@ -85,6 +87,7 @@ mod std_gpu;
 mod std_log;
 mod std_matrix;
 mod std_process;
+mod std_tensor;
 mod std_window;
 mod std_writers;
 mod stdlib;
@@ -187,6 +190,14 @@ pub struct Checked {
     /// `(base start, index end)`: `"index"`, `"index#"`, `"slice"` or
     /// `"set"` (`user_index.rs`).
     pub user_index: HashMap<(u32, u32), &'static str>,
+    /// The method written more than once that an operator, index or call
+    /// chose (`op_impls.rs`): by the operator's or index's key, or by a
+    /// method call's name.
+    pub chosen: HashMap<(u32, u32), String>,
+    /// `Tensor<U>(t)` calls, and the numbers given where a tensor is asked
+    /// for, with the tensor type each becomes (spec 14.33).
+    pub tensor_casts: HashSet<(u32, u32)>,
+    pub as_tensors: HashMap<(u32, u32), Ty>,
     /// The variables whose values are or hold a `Drop` value: they live
     /// until the end of their block, so they count as used.
     pub drop_locals: HashSet<DefId>,
@@ -223,6 +234,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     checker.collect_gpu_fns(file);
     checker.check_file(file);
     checker.check_numbers_later();
+    checker.check_tensor_items();
     checker.check_pointees();
     checker.check_float32_literals();
     checker.check_gpu_fns(file);
@@ -322,6 +334,9 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
         .filter(|(_, t)| checker.holds_drop(&checker.defaulted(t)))
         .map(|(d, _)| *d)
         .collect();
+    let as_tensors = (checker.as_tensors.iter())
+        .map(|(span, t)| (*span, checker.defaulted(t)))
+        .collect();
     let mut errors = checker.errors;
     errors.sort_by_key(|e| e.span.start);
     errors.dedup_by_key(|e| e.span.start);
@@ -347,6 +362,9 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
         user_negs: std::mem::take(&mut checker.user_negs),
         user_assigns: std::mem::take(&mut checker.user_assigns),
         user_index: std::mem::take(&mut checker.user_index),
+        chosen: std::mem::take(&mut checker.chosen),
+        tensor_casts: std::mem::take(&mut checker.tensor_casts),
+        as_tensors,
         drop_locals,
         agent_models,
         ask_models,

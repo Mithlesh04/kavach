@@ -1,0 +1,16 @@
+// Rule: `t.percentile(q)` is the `q`th percentile by linear interpolation between the two nearest numbers, as NumPy's default; along `axis:` a tensor.
+// Spec: 14.33
+// expect output: 1.5
+// expect output: 3.0 1.0
+// expect output: [2.5, 3.5]
+// expect output: true
+
+use std.tensor
+
+fn main() {
+    const t = tensor.of([3.0, 1.0, 2.0, 1.0])
+    print(t.percentile(50.0) ?? 0.0)
+    print(`{t.percentile(100.0) ?? 0.0} {t.percentile(0.0) ?? 0.0}`)
+    print(tensor.of_rows([[1.0, 2.0], [4.0, 5.0]]).percentile(50.0, axis: 0).items)
+    print(tensor.zeros<Float>([0]).percentile(50.0) == none)
+}

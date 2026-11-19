@@ -1,0 +1,6 @@
+// Found by `kavach test` (spec 11.4). Generated: commit it, never edit it.
+add(Sum(limbs: [], nan: false, up: false, down: false, zeros_negative: false, count: 0), 0.5)
+carried([-1, -9223372036854775808])
+bit([], 0)
+two_to(-1075)
+rounded(Sum(limbs: [0, 0, 0, 322577813733376], nan: false, up: false, down: false, zeros_negative: false, count: 0), 112659, 373645)

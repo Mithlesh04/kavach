@@ -1,0 +1,11 @@
+// Rule: `tensor.eye<T>(n)` is `n` × `n`, 1 on the diagonal and 0 elsewhere.
+// Spec: 14.33
+// expect output: [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+// expect output: [2, 2]
+
+use std.tensor
+
+fn main() {
+    print(tensor.eye<Float>(3).to_rows())
+    print(tensor.eye<Int>(2).shape)
+}

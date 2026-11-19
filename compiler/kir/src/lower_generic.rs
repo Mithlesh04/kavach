@@ -25,7 +25,6 @@ impl<'a> Lowerer<'a> {
     ) -> Lowered<ir::Expr> {
         let span = e.span;
         let f = self.generic_fns[&def];
-        let values = self.argument_values(f, args, span)?;
         // The type arguments written at the call (`read<Point>(…)`), then
         // the ones the argument and result types show.
         let mut subst = HashMap::new();
@@ -40,6 +39,22 @@ impl<'a> Lowerer<'a> {
             }
         }
         self.call_numbers(span, &mut subst)?;
+        // What the given arguments and the result show, for the defaults.
+        let mut known = subst.clone();
+        for (i, p) in f.params.iter().filter(|p| p.ty.is_some()).enumerate() {
+            let given = (args.iter())
+                .find(|a| a.name.as_ref().is_some_and(|n| n.name == p.name.name))
+                .or_else(|| args.get(i).filter(|a| a.name.is_none()));
+            if let (Some(a), Some(written)) = (given, &p.ty)
+                && let Ok(t) = self.ty_of(&a.value)
+            {
+                self.infer_args(written, t, &mut known);
+            }
+        }
+        if let Some(ret) = &f.ret {
+            self.infer_args(ret, ty, &mut known);
+        }
+        let values = self.argument_values(f, args, span, &known)?;
         let params = f.params.iter().filter_map(|p| p.ty.as_ref());
         for (value, written) in values.iter().zip(params.clone()) {
             self.infer_args(written, value.ty, &mut subst);
@@ -201,7 +216,7 @@ impl<'a> Lowerer<'a> {
             }
         }
         self.call_numbers(span, &mut subst)?;
-        let values = self.argument_values(f, args, span)?;
+        let values = self.argument_values(f, args, span, &subst)?;
         let params = f.params.iter().filter_map(|p| p.ty.as_ref());
         for (value, written) in values.iter().zip(params.clone()) {
             self.infer_args(written, value.ty, &mut subst);

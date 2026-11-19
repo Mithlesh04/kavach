@@ -1,0 +1,10 @@
+// Rule: `mean`, `var`, `std` and `percentile` need `T: Floating`: on a tensor of whole numbers they are a compile error naming the bound.
+// Spec: 14.33
+// expect compile error
+
+use std.tensor
+
+fn main() {
+    const t = tensor.of<Int>([1, 2, 3])
+    print(t.mean())   // error: `mean` needs `T: Floating`
+}

@@ -20,8 +20,8 @@ fn main() {
 }
 ```
 
-- *Not built yet:* `T` is a number type (`Float`, `Float32`, a whole-number type or `Decimal`, 2.1) or `Bool`. A tensor of `Bool` is a **mask** (below). A tensor of any other type is a compile error.
-- *Not built yet:* Arithmetic needs `T: Number`; `mean`, `std`, `var`, `percentile`, linear algebra and the FFT need `T: Floating` (2.9). A method used on another `T` is a compile error that names the bound.
+- `T` is a number type (`Float`, `Float32`, a whole-number type or `Decimal`, 2.1) or `Bool`. A tensor of `Bool` is a **mask** (below). A tensor of any other type is a compile error.
+- Arithmetic needs `T: Number`; `mean`, `std`, `var`, `percentile`, linear algebra and the FFT need `T: Floating` (2.9). A method used on another `T` is a compile error that names the bound.
 - A tensor is a value, as a list is (6.1): a copy shares its numbers until one of them changes.
 - The numbers are kept in one flat list, `t.items`, the last dimension's next to each other (row by row for a matrix).
 
@@ -33,12 +33,12 @@ fn main() {
 | `tensor.of_rows(rows: [[T]]) -> Tensor<T, dims: 2>` | A matrix from its rows; rows of different lengths are a panic naming both lengths |
 | `tensor.full(shape: [Int], value: T) -> Tensor<T>` | Every number `value` |
 | `tensor.zeros<T>(shape: [Int])`, `tensor.ones<T>(shape: [Int])` | Every number 0, or 1 |
-| `tensor.eye<T: Number>(n: Int) -> Tensor<T, dims: 2>` | `n` × `n`, 1 on the diagonal and 0 elsewhere (not built yet) |
-| `tensor.arange<T: Number>(start: T, end: T, step: T = T(1)) -> Tensor<T, dims: 1>` | `start + i * step` for `i` from 0 up, while below `end` (above it for a negative `step`), as `start..end` counts (not built yet) |
-| `tensor.linspace<T: Floating>(start: T, end: T, count: Int) -> Tensor<T, dims: 1>` | `count` numbers from `start` to `end`, both included, evenly spaced (not built yet) |
-| `tensor.random<T: Floating>(shape: [Int]) -> Tensor<T> uses Random` | Each number from 0 up to, not including, 1, as `random.float()` (14.15) (not built yet) |
-| `tensor.normal<T: Floating>(shape: [Int], mean: T = 0.0, std: T = 1.0) -> Tensor<T> uses Random` | Numbers from the normal distribution with this mean and standard deviation (not built yet) |
-| `tensor.random_int(shape: [Int], from: Int, until: Int) -> Tensor<Int> uses Random` | Each a whole number from `from` up to, not including, `until`, as `random.int` (not built yet) |
+| `tensor.eye<T: Number>(n: Int) -> Tensor<T, dims: 2>` | `n` × `n`, 1 on the diagonal and 0 elsewhere |
+| `tensor.arange<T: Number>(start: T, end: T, step: T = T(1)) -> Tensor<T, dims: 1>` | `start + i * step` for `i` from 0 up, while below `end` (above it for a negative `step`), as `start..end` counts |
+| `tensor.linspace<T: Floating>(start: T, end: T, count: Int) -> Tensor<T, dims: 1>` | `count` numbers from `start` to `end`, both included, evenly spaced |
+| `tensor.random<T: Floating>(shape: [Int]) -> Tensor<T> uses Random` | Each number from 0 up to, not including, 1, as `random.float()` (14.15) |
+| `tensor.normal<T: Floating>(shape: [Int], mean: T = 0.0, std: T = 1.0) -> Tensor<T> uses Random` | Numbers from the normal distribution with this mean and standard deviation |
+| `tensor.random_int(shape: [Int], from: Int, until: Int) -> Tensor<Int> uses Random` | Each a whole number from `from` up to, not including, `until`, as `random.int`; at most 65,536 numbers at a time, as `random.bytes(n)` (14.15) |
 
 ```kavach
 print(tensor.arange(0, 10, 3).items)          // [0, 3, 6, 9]
@@ -51,26 +51,27 @@ random.seeded(7) {
 ```
 
 - A shape's sizes are 0 or more; a negative one is a panic naming the shape. `tensor.full([], 2.5)` has shape `[]`: one number and no dimensions.
-- *Not built yet:* `arange`'s `step` of 0 is a panic. Each number is worked out as `start + i * step`, not by adding `step` again and again, so no rounding builds up.
-- *Not built yet:* `linspace`'s number `i` is `start + T(i) * ((end - start) / T(count - 1))`, and the last is exactly `end`. A `count` of 1 gives `[start]`, of 0 an empty tensor; a negative one is a panic.
-- *Not built yet:* Random tensors draw their numbers in order, through `std.random` (14.15). So `random.seeded(s) { … }` gives the same tensor on every machine and device, and under `kavach test` the `Random` fake gives repeatable ones (11.5). A `Float32` from `random` is never 1.0. `normal` uses the Box–Muller method, with `std.math`'s functions, which give the same bits everywhere (decision 0122).
+- `arange`'s `step` of 0 is a panic. Each number is worked out as `start + i * step`, not by adding `step` again and again, so no rounding builds up.
+- `linspace`'s number `i` is `start + T(i) * ((end - start) / T(count - 1))`, and the last is exactly `end`. A `count` of 1 gives `[start]`, of 0 an empty tensor; a negative one is a panic.
+- Random tensors draw their numbers in order, through `std.random` (14.15). So `random.seeded(s) { … }` gives the same tensor on every machine and device, and under `kavach test` the `Random` fake gives repeatable ones (11.5). A `Float32` from `random` is never 1.0: a number that rounds up to 1.0 is drawn again. `normal` uses the Box–Muller method, with `std.math`'s functions, which give the same bits everywhere (decision 0122). It draws two numbers for each two it gives: `u = 1.0 - random.float()` and `v = random.float()` give `sqrt(-2 ln u) cos(2πv)`, then `sqrt(-2 ln u) sin(2πv)`, worked out as `Float`s; each `z` becomes `mean + std * T(z)`. For an odd count the last sine is not used.
 
 ## Shape, items and indexing
 
 | Written | Gives |
 |---|---|
 | `t.shape -> [Int]`, `t.items -> [T]` | Its sizes, and its numbers, the last dimension's next to each other |
-| `t.len() -> Int`, `t.dims() -> Int` | How many numbers it holds, and how many dimensions: `t.shape.len()` (not built yet) |
-| `t.item() -> T` | The one number of a tensor that holds exactly one, of any shape; any other count is a panic naming the shape (not built yet) |
-| `t[i, j, …] -> T` | The number at one index per dimension, each counted from 0; `#k` counts from the end (2.19). An index out of range is a panic naming it and the shape (not built yet) |
-| `t[0:2, :, #1]` | A slice, as a new tensor: a slice keeps its dimension, a number drops it, as in NumPy. Fewer parts than dimensions take the rest whole; more is a panic naming both (not built yet) |
-| `t[i, j] = v`, `t[0:2, :] = u` | Changes those numbers; `t` must be a `let` (2.19). `u` is broadcast to the slice's shape (below) (not built yet) |
-| `t.get(at: [Int]) -> T?` | The number at `at`, or `none` when an index is out of range, as a list's `get` (not built yet) |
+| `t.len() -> Int`, `t.dims() -> Int` | How many numbers it holds, and how many dimensions: `t.shape.len()` |
+| `t.item() -> T` | The one number of a tensor that holds exactly one, of any shape; any other count is a panic naming the shape |
+| `t[i, j, …] -> T` | The number at one index per dimension, each counted from 0; `#k` counts from the end (2.19). An index out of range is a panic naming it and the shape. It needs one number for each dimension: `t[1]` of a matrix is a panic that says to write `t[1, :]` |
+| `t[0:2, :, #1]` | A slice, as a new tensor: a slice keeps its dimension, a number drops it, as in NumPy. Fewer parts than dimensions take the rest whole; more is a panic naming both |
+| `t[i, j] = v` | Changes that number; `t` must be a `let` (2.19) |
+| `t[0:2, :] = u` | Changes those numbers; `u` is broadcast to the slice's shape (below) (not built yet) |
+| `t.get(at: [Int]) -> T?` | The number at `at`, or `none` when an index is out of range, as a list's `get` |
 | `t.reshape(shape: [Int]) -> Tensor<T>` | The same numbers in another shape with as many; another count is a panic naming both shapes |
 | `t.transpose() -> Tensor<T>` | The last two dimensions swapped; for a tensor of fewer than two, a compile error when its dimensions are known (below) and a panic otherwise |
 | `t.map(f: fn(T) -> U) -> Tensor<U>` | Each number through `f`, the shape kept |
-| `t.to_rows() -> [[T]]` | The rows of a matrix (a tensor of two dimensions) (not built yet) |
-| `Tensor<U>(t)` | Each number converted to `U`, as `U(x)` converts one (2.1): `Tensor<Float>(counts)` (not built yet) |
+| `t.to_rows() -> [[T]]` | The rows of a matrix (a tensor of two dimensions) |
+| `Tensor<U>(t)` | Each number converted to `U`, as `U(x)` converts one (2.1): `Tensor<Float>(counts)` |
 
 ```kavach
 const t = tensor.arange(0, 6, 1).reshape([2, 3])   // [[0, 1, 2], [3, 4, 5]]
@@ -79,6 +80,9 @@ print(t[:, #1].items)         // [2, 5]: the last column
 print(t[0:1, ::2].shape)      // [1, 2]
 print(t.transpose().shape)    // [3, 2]
 ```
+
+- A tensor is indexed with a key of any length, a list of `Part`s (2.16): each place between the commas is a number, `#k` or a slice, and `#k` counts from the end of its own dimension.
+- A number given as an argument where a `Tensor<T>` is asked for is a tensor of shape `[]` holding it, as NumPy takes a number for an array: `tensor.where(t < 0.0, 0.0, t)`, `t.eq(4.0)`.
 
 ## The number of dimensions in the type
 
@@ -118,8 +122,6 @@ row_sums(tensor.of([1.0, 2.0]))   // error: `row_sums` takes a `Tensor<Float, di
 
 ## Item by item, and broadcasting
 
-*Not built yet.*
-
 | Written | Gives |
 |---|---|
 | `a + b`, `a - b`, `a * b`, `a / b`, `a % b`, `a ** b` | Item by item, after broadcasting `a` and `b` to one shape |
@@ -149,12 +151,11 @@ print((m ** 2.0).sum())                                        // 91.0
 - Both operands have one item type: a `Tensor<Int>` and a `Tensor<Float>` don't mix, as `Int` and `Float` don't (1.8). Convert one first: `Tensor<Float>(counts) / total`.
 - `Tensor<T>` implements each operator twice (2.16): once for a tensor on the right (`Add<Tensor<T>>`) and once for a number (`Add<T>`). So `m + u` and `m + 1.0` are both `+`.
 - The number goes on the right, as for any operator of a program's own type (2.16): `m * 2.0`. `2.0 * m` is a compile error that says to write `m * 2.0`.
-- Each item works as its numbers would alone (1.8, 5.6). For whole numbers, `/` cuts off the fraction; division by zero, a negative power and overflow panic, naming the item's place: `overflow in \`*\` at [1, 2]`.
+- Each item works as its numbers would alone (1.8, 5.6). For whole numbers, `/` cuts off the fraction; division by zero, a negative power and overflow panic.
+- *Not built yet:* That panic names the item's place: `overflow in \`*\` at [1, 2]`.
 - `t += x` and the other `op=` forms are `t = t op x`, so `t` must be a `let`.
 
 ## Comparisons, masks and `where`
-
-*Not built yet.*
 
 A comparison item by item gives a mask, a `Tensor<Bool>` of the broadcast shape. A mask picks numbers out, or chooses between two tensors. `< <= > >=` come through the `Compare` interface (2.16), for a tensor or a number on the right.
 
@@ -162,7 +163,7 @@ A comparison item by item gives a mask, a `Tensor<Bool>` of the broadcast shape.
 |---|---|
 | `a < b`, `a <= b`, `a > b`, `a >= b` | A mask: the comparison item by item; `b` is a tensor or a number (`t > 0.5`) |
 | `a.eq(b)`, `a.ne(b)` | A mask: equal, or not equal, item by item |
-| `m & n`, `m \| n`, `~m` | Masks combined item by item: both, either, not |
+| `m & n`, `m \| n`, `~m` | Masks combined item by item: both, either, not (not built yet) |
 | `t[mask] -> Tensor<T, dims: 1>` | The numbers where `mask` is `true`, in order; `mask` has `t`'s shape |
 | `t[mask] = x` | Sets those numbers to `x`; `t` must be a `let` |
 | `tensor.where(mask, a, b) -> Tensor<T>` | `a`'s number where `mask` is `true`, else `b`'s; all three broadcast to one shape; `a` and `b` are tensors or numbers |
@@ -184,8 +185,6 @@ u[u < 0.0] = 0.0                                  // u is [3.0, 0.0, 4.0, 0.0]
 
 ## Reductions by axis
 
-*Not built yet.*
-
 A reduction works on every number, or along one dimension, its **axis**, counted from 0. With `axis:`, the result has that dimension taken out: the sum of each column of a matrix is `m.sum(axis: 0)`, and of each row `m.sum(axis: 1)`.
 
 | Written | Gives |
@@ -196,7 +195,7 @@ A reduction works on every number, or along one dimension, its **axis**, counted
 | `t.mean()`, `t.var(correction: Int = 1)`, `t.std(correction: Int = 1)` | The mean, variance and standard deviation: `T?`, `none` when there are no more numbers than `correction` (for `mean`, no numbers). The variance divides by `len - correction`: by the count minus 1, as for lists; `correction: 0` is NumPy's form |
 | `t.sum(axis: Int)`, and `prod`, `min`, `max`, `mean`, `var`, `std` | The same along one axis, as a tensor with that dimension taken out |
 | `t.argmin(axis: Int)`, `t.argmax(axis: Int)` | The index along the axis of the first smallest or largest: a `Tensor<Int>` |
-| `t.cumsum(axis: Int = self.dims() - 1)` | The running sums along the axis: the shape kept |
+| `t.cumsum(axis: Int? = none)` | The running sums along the axis, the last one for `none`: the shape kept |
 
 ```kavach
 const m = tensor.of_rows([[1.0, 5.0, 2.0], [4.0, 3.0, 6.0]])
@@ -212,17 +211,18 @@ print(m.std() ?? 0.0)             // 1.8708286933869707
 - `prod` multiplies in order, from index 0 up.
 - A reduction along an axis of size 0 is a panic naming the shape for `min`, `max`, `argmin`, `argmax` and `mean`, and so is `var` or `std` along an axis no longer than `correction`; `sum` gives 0 and `prod` 1 there.
 - `NaN` comes after every number, as in a list's `min`, `max` and `sort` (14.2): `max` and `argmax` find a `NaN` if there is one; `min` and `argmin` find one only when every number is `NaN`.
-- Whole numbers overflow as anywhere (5.6): `sum` and `prod` panic on a result that doesn't fit, naming the axis.
-- An axis is from 0 up to `t.dims()`, not including it. Another one is a compile error when the number of dimensions is known, and a panic naming it otherwise. A written negative axis is a compile error, as `xs[-1]` is (2.19).
+- Whole numbers overflow as anywhere (5.6): `sum` and `prod` panic on a result that doesn't fit.
+- *Not built yet:* That panic names the axis.
+- An axis is from 0 up to `t.dims()`, not including it. Another one is a panic naming it. A written negative axis is a compile error, as `xs[-1]` is (2.19).
+- *Not built yet:* An axis out of range is a compile error when the number of dimensions is known.
+- `t.sum()` gives a `T` and `t.sum(axis: 0)` a tensor: `std.tensor` writes each reduction twice, once with `axis:`, and the call chooses by whether `axis:` is given. Only the standard library writes a method twice this way (2.16).
 
 ## Sorting, joining and splitting
 
-*Not built yet.*
-
 | Written | Gives |
 |---|---|
-| `t.sort(axis: Int = self.dims() - 1)` | The numbers sorted along the axis, smallest first; `NaN` last (14.2) |
-| `t.argsort(axis: Int = self.dims() - 1) -> Tensor<Int>` | The indexes that would sort it; equal numbers keep their order |
+| `t.sort(axis: Int? = none)` | The numbers sorted along the axis, the last one for `none`, smallest first; `NaN` last (14.2) |
+| `t.argsort(axis: Int? = none) -> Tensor<Int>` | The indexes that would sort it; equal numbers keep their order |
 | `t.unique() -> Tensor<T, dims: 1>` | Every number once, sorted; all `NaN`s count as one, last |
 | `t.percentile(q: Float)`, `t.percentile(q: Float, axis: Int)` | The `q`th percentile, `q` from 0 to 100, by linear interpolation between the two nearest numbers, as NumPy's default: `T?`, or a tensor along an axis |
 | `tensor.concatenate(parts: [Tensor<T>], axis: Int = 0)` | The parts one after another along the axis; their other sizes must match |
@@ -325,8 +325,6 @@ Tensors run on the GPU as lists do (chapter 15), with no code changed.
 
 ## NumPy's names
 
-*Not built yet.*
-
 Each job has one name (14.2). Where NumPy's name differs, it is a compile error that names Kavach's:
 
 | NumPy | Kavach |
@@ -338,14 +336,18 @@ Each job has one name (14.2). Where NumPy's name differs, it is a compile error 
 | `t.T` | `t.transpose()` |
 | `a.dot(b)` | `a @ b` |
 | `t.tolist()` | `t.items`, or `t.to_rows()` for a matrix |
-| `tensor.concat`, `tensor.cat` | `tensor.concatenate` |
-| `tensor.identity` | `tensor.eye` |
+| `tensor.concat`, `tensor.cat` | `tensor.concatenate` (not built yet) |
+| `tensor.identity` | `tensor.eye` (not built yet) |
 | `t.scale(k)` | `t * k` |
-| `a.product(b, fast: true)` | `a.matmul(b, fast: true)` |
+| `a.product(b, fast: true)` | `a.matmul(b, fast: true)` (not built yet) |
 
-`use std.matrix` and the type `Matrix<T>`, which this module replaces (2.17), are compile errors that name `std.tensor` and `Tensor<T, dims: 2>`.
+*Not built yet:* `use std.matrix` and the type `Matrix<T>`, which this module replaces (2.17), are compile errors that name `std.tensor` and `Tensor<T, dims: 2>`.
 
-**Dimensions and shapes in the type** ([decision 0137](../../decisions/0137-numbers-in-types.md), 2.9). `Tensor<Float>` has any number of dimensions; `Tensor<Float, dims: 2>` has exactly two; `Tensor<Float, shape: [3, 4]>` has exactly that shape, so two dimensions as well. What a type says is checked while compiling; what it leaves out is checked when the program runs, as above.
+## Dimensions and shapes in the type
+
+*Not built yet.*
+
+From [decision 0137](../../decisions/0137-numbers-in-types.md), 2.9). `Tensor<Float>` has any number of dimensions; `Tensor<Float, dims: 2>` has exactly two; `Tensor<Float, shape: [3, 4]>` has exactly that shape, so two dimensions as well. What a type says is checked while compiling; what it leaves out is checked when the program runs, as above.
 
 ```kavach
 const x: Tensor<Float, shape: [2, 2]> = tensor.of_rows([[1.0, 2.0], [3.0, 4.0]])
@@ -368,8 +370,9 @@ fn embed<b: Int>(x: Tensor<Float32, shape: [b, 768]>) -> Tensor<Float32, shape: 
 ## Open questions
 
 - **`&`, `|` and `~` on masks** need bit operators for a program's own types (2.16, Open questions). Until then `tensor.where` and `map` do their job.
-- **Indexing with a mask, and with keys of any length.** `t[mask]`, `t[i, j, k]` and `t[0:2, :, #1]` on a tensor written in Kavach need `Index` and `Slice` (2.16, 2.19) to take a key of any length and a mask.
-- **One method, two result types.** `t.sum()` gives a `T`, and `t.sum(axis: 0)` a tensor. How a signature says this is open: the checker may know `std.tensor`'s reductions, or the no-axis form may give a tensor of shape `[]`, as PyTorch does, read with `item()`.
+- **`t[i]` of a tensor of more than one dimension.** NumPy gives row `i`. Here a key of numbers only gives a `T`, so it needs one number for each dimension, and `t[i, :]` gives the row. Once `dims:` is in the type (to-do 29), `t[i]` of a matrix could give the row.
+- **`random_int`'s limit.** `tensor.random_int` makes at most 65,536 numbers at a time, as `random.bytes(n)` does, so the tests `kavach test` makes for it end within their budget (11.9). NumPy has no such limit; lifting it needs a way to bound generated shapes, or the work moved into the runtime.
+- **Choices made where this page said nothing, closest to NumPy, for review:** `normal`'s order of draws (above); a `Float32` draw of 1.0 drawn again; `percentile` of numbers with a `NaN` is `NaN`, as NumPy's; `percentile` interpolates as NumPy's `_lerp`, from the upper number when the fraction is 0.5 or more; `split_at` panics on points outside `0` to the size; and `cumsum`, `sort` and `argsort` take `axis: Int? = none`, `none` meaning the last axis, as a default can't name `self`.
 - **How `dims:` rules are written.** `@` and `sum(axis:)` work out the result's `dims` from the operands'. This needs arithmetic on numbers in types (`dims: n - 1`) or rules the checker knows for `std.tensor` (to-do 29).
 - **Passing a plain `Tensor<T>` where `dims: 2` is asked for.** Written here as `try Tensor<T, dims: 2>(t)`, as to-do 29 does for limited lists; it could instead be checked as the program runs, with no `try`.
 - **Exact routines on every GPU.** Some GPUs fuse a multiply with an add (15.2). Whether every vendor can be made not to, or such GPUs fall back to the CPU for floats, needs testing on real hardware.

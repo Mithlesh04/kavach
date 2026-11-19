@@ -1,0 +1,9 @@
+// Found by `kavach test` (spec 11.4). Generated: commit it, never edit it.
+sized([-1])
+strides([-1, -9223372036854775808])
+broadcast([0], [-1], "")
+places([-1, -9223372036854775808], [])
+position(Part(start: none, end: 0, step: none, start_from_end: false, end_from_end: false, single: false), 0, 0, [])
+picked([], [Part(start: none, end: 0, step: none, start_from_end: false, end_from_end: false, single: false)])
+axis_of(0, -9223372036854775808, "")
+without([], 9223372036854775807)

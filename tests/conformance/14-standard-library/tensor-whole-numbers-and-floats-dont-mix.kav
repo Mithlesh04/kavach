@@ -1,0 +1,10 @@
+// Rule: Both operands have one item type: a `Tensor<Int>` and a `Tensor<Float>` don't mix.
+// Spec: 14.33
+// expect compile error
+
+use std.tensor
+
+fn main() {
+    const counts = tensor.of<Int>([1, 2])
+    print((counts / 2.0).items)   // error: `Tensor<Int>` has `/` for a `Tensor<Int>` or an `Int`
+}

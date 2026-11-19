@@ -1,0 +1,10 @@
+// Rule: A key of numbers only needs one for each dimension: `t[1]` of a matrix is a panic that names `t[i, :]`.
+// Spec: 14.33
+// expect panic: a slice, as `t[i, :]`, takes the rest
+
+use std.tensor
+
+fn main() {
+    const t = tensor.zeros<Int>([2, 3])
+    print(t[1])
+}

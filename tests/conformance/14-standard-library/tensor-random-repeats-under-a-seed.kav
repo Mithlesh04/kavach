@@ -1,0 +1,30 @@
+// Rule: Random tensors draw through `std.random`, so one seed gives the same numbers; `random` gives numbers from 0 up to 1, `random_int` whole numbers in its range.
+// Spec: 14.33
+// expect output: true true true
+// expect output: true true
+// expect output: [2, 3]
+
+use std.random
+use std.tensor
+
+fn main() {
+    let a = tensor.zeros<Float>([1])
+    let b = tensor.zeros<Float>([1])
+    let n = tensor.zeros<Float32>([1])
+    let m = tensor.zeros<Float32>([1])
+    let i = tensor.zeros<Int>([1])
+    let j = tensor.zeros<Int>([1])
+    random.seeded(7) {
+        a = tensor.random<Float>([50])
+        n = tensor.normal<Float32>([2, 3])
+        i = tensor.random_int([40], 3, 6)
+    }
+    random.seeded(7) {
+        b = tensor.random<Float>([50])
+        m = tensor.normal<Float32>([2, 3])
+        j = tensor.random_int([40], 3, 6)
+    }
+    print(`{a == b} {n == m} {i == j}`)
+    print(`{a.all(x => x >= 0.0 and x < 1.0)} {i.all(x => x >= 3 and x < 6)}`)
+    print(n.shape)
+}

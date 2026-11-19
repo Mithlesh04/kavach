@@ -1,0 +1,9 @@
+// Rule: A `q` outside 0 to 100 is a panic naming it.
+// Spec: 14.33
+// expect panic: `percentile` needs `q` from 0 to 100, and has 101.0
+
+use std.tensor
+
+fn main() {
+    print(tensor.of([1.0, 2.0]).percentile(101.0) ?? 0.0)
+}

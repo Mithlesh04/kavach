@@ -61,6 +61,7 @@ const TABLE: &[(&str, &[&str])] = &[
             "goes on the left of",
             "gives an operator",
             "give it one by implementing",
+            "would have two meanings",
         ],
     ),
     (

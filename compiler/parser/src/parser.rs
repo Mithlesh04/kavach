@@ -210,6 +210,20 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// A method's name, where `var`, a word kept only to catch another
+    /// language's `var x = …`, is a name too: `t.var()` (spec 14.33).
+    pub(crate) fn method_ident(&mut self, what: &str) -> Ident {
+        if self.at_kw(Keyword::Var) {
+            let span = self.span();
+            self.bump();
+            return Ident {
+                name: "var".to_string(),
+                span,
+            };
+        }
+        self.ident(what)
+    }
+
     /// `a.b.c`
     pub(crate) fn path(&mut self, what: &str) -> Path {
         let start = self.span();

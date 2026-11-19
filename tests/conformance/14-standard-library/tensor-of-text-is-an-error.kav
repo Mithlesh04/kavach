@@ -1,0 +1,12 @@
+// Rule: A tensor holds numbers or `Bool`s: a tensor of any other type is a compile error.
+// Spec: 14.33
+// expect compile error
+
+use std.tensor
+
+fn main() {
+    const masks = tensor.of([true, false])
+    print(masks.items)
+    const names = tensor.of(["a", "b"])   // error: a tensor holds numbers or `Bool`s
+    print(names.len())
+}

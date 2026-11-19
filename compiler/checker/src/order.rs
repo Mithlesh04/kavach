@@ -45,6 +45,10 @@ impl Checker<'_> {
     /// Whether values of `t` have an order; `None` while `t` isn't known.
     pub(crate) fn ordered(&self, t: &Ty) -> Option<bool> {
         let t = self.inf.resolve(t);
+        // A `T: Number` has the order of numbers (spec 2.9).
+        if self.number_param(&t, false) {
+            return Some(true);
+        }
         let unknown = |t: &Ty| matches!(t, Ty::Var(_) | Ty::Error);
         let open = match &t {
             Ty::Tuple(items) => items.iter().any(unknown),

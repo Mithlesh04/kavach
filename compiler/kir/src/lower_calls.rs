@@ -11,7 +11,8 @@ use crate::rt_op::RtOp;
 use crate::types::prim_type;
 use kavach_ast::{self as ast, ExprKind, StrPart};
 use kavach_checker::{Prim, Ty};
-use kavach_resolver::DefKind;
+use kavach_resolver::{DefId, DefKind};
+use std::collections::HashMap;
 
 impl<'a> Lowerer<'a> {
     pub(crate) fn call(
@@ -120,7 +121,7 @@ impl<'a> Lowerer<'a> {
         args: &'a [ast::Arg],
         span: ast::Span,
     ) -> Lowered<Vec<ir::Expr>> {
-        let values = self.argument_values(f, args, span)?;
+        let values = self.argument_values(f, args, span, &HashMap::new())?;
         let params = f.params.iter().filter_map(|p| p.ty.as_ref());
         let mut out = Vec::new();
         for (value, ty) in values.into_iter().zip(params) {
@@ -130,12 +131,15 @@ impl<'a> Lowerer<'a> {
         Ok(out)
     }
 
-    /// Arguments in parameter order: positional, named, then defaults.
+    /// Arguments in parameter order: positional, named, then defaults. A
+    /// default is lowered with the callee's type arguments `callee` known
+    /// so far: `mean: T = 0.0` is a `Float32` for a `Float32` `T`.
     pub(crate) fn argument_values(
         &mut self,
         f: &'a ast::FnDecl,
         args: &'a [ast::Arg],
         span: ast::Span,
+        callee: &HashMap<DefId, Type>,
     ) -> Lowered<Vec<ir::Expr>> {
         let params: Vec<&ast::Param> = f.params.iter().filter(|p| p.ty.is_some()).collect();
         let given_at = |i: usize, p: &ast::Param| {
@@ -151,7 +155,13 @@ impl<'a> Lowerer<'a> {
         for (i, p) in params.iter().enumerate() {
             let mut value = match (given_at(i, p), &p.default) {
                 (Some(a), _) => self.expr(&a.value)?,
-                (None, Some(d)) => self.expr(d)?,
+                (None, Some(d)) => {
+                    let outer = self.subst.clone();
+                    self.subst.extend(callee.iter().map(|(k, v)| (*k, *v)));
+                    let value = self.expr(d);
+                    self.subst = outer;
+                    value?
+                }
                 (None, None) => return Err(self.unsupported("this call", span)),
             };
             if defaulted {

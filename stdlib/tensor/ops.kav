@@ -1,0 +1,149 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
+// std.tensor.ops (spec 14.33, decision 0136): a tensor's operators, item
+// by item after broadcasting (NumPy's rules), each implemented twice: for
+// a tensor on the right and for a number (spec 2.16). Comparisons give a
+// mask, a `Tensor<Bool>`. Products go through `std.matrix`.
+
+use std.matrix
+use std.tensor.shapes
+
+extend<T> Tensor<T>: Add<Tensor<T>>, Add<T>, Sub<Tensor<T>>, Sub<T>, Mul<Tensor<T>>, Mul<T>, Div<Tensor<T>>, Div<T>, Rem<Tensor<T>>, Rem<T>, Pow<Tensor<T>>, Pow<T>, Neg, MatMul, Compare<Tensor<T>, Tensor<Bool>>, Compare<T, Tensor<Bool>> {
+    pub fn add(self, other: Tensor<T>) -> Tensor<T> where T: Number {
+        each(self, other, "+", (a, b) => a + b)
+    }
+
+    pub fn add(self, other: T) -> Tensor<T> where T: Number {
+        self.map(x => x + other)
+    }
+
+    pub fn sub(self, other: Tensor<T>) -> Tensor<T> where T: Number {
+        each(self, other, "-", (a, b) => a - b)
+    }
+
+    pub fn sub(self, other: T) -> Tensor<T> where T: Number {
+        self.map(x => x - other)
+    }
+
+    pub fn mul(self, other: Tensor<T>) -> Tensor<T> where T: Number {
+        each(self, other, "*", (a, b) => a * b)
+    }
+
+    pub fn mul(self, other: T) -> Tensor<T> where T: Number {
+        self.map(x => x * other)
+    }
+
+    pub fn div(self, other: Tensor<T>) -> Tensor<T> where T: Number {
+        each(self, other, "/", (a, b) => a / b)
+    }
+
+    pub fn div(self, other: T) -> Tensor<T> where T: Number {
+        self.map(x => x / other)
+    }
+
+    pub fn rem(self, other: Tensor<T>) -> Tensor<T> where T: Number {
+        each(self, other, "%", (a, b) => a % b)
+    }
+
+    pub fn rem(self, other: T) -> Tensor<T> where T: Number {
+        self.map(x => x % other)
+    }
+
+    pub fn pow(self, other: Tensor<T>) -> Tensor<T> where T: Number {
+        each(self, other, "**", (a, b) => a ** b)
+    }
+
+    pub fn pow(self, other: T) -> Tensor<T> where T: Number {
+        self.map(x => x ** other)
+    }
+
+    pub fn neg(self) -> Tensor<T> where T: Number {
+        self.map(x => -x)
+    }
+
+    pub fn lt(self, other: Tensor<T>) -> Tensor<Bool> where T: Number {
+        each(self, other, "<", (a, b) => a < b)
+    }
+
+    pub fn lt(self, other: T) -> Tensor<Bool> where T: Number {
+        self.map(x => x < other)
+    }
+
+    pub fn le(self, other: Tensor<T>) -> Tensor<Bool> where T: Number {
+        each(self, other, "<=", (a, b) => a <= b)
+    }
+
+    pub fn le(self, other: T) -> Tensor<Bool> where T: Number {
+        self.map(x => x <= other)
+    }
+
+    pub fn gt(self, other: Tensor<T>) -> Tensor<Bool> where T: Number {
+        each(self, other, ">", (a, b) => a > b)
+    }
+
+    pub fn gt(self, other: T) -> Tensor<Bool> where T: Number {
+        self.map(x => x > other)
+    }
+
+    pub fn ge(self, other: Tensor<T>) -> Tensor<Bool> where T: Number {
+        each(self, other, ">=", (a, b) => a >= b)
+    }
+
+    pub fn ge(self, other: T) -> Tensor<Bool> where T: Number {
+        self.map(x => x >= other)
+    }
+
+    /// A mask: whether each number equals `other`'s, after broadcasting.
+    pub fn eq(self, other: Tensor<T>) -> Tensor<Bool> {
+        each(self, other, "eq", (a, b) => a == b)
+    }
+
+    /// A mask: whether each number differs from `other`'s.
+    pub fn ne(self, other: Tensor<T>) -> Tensor<Bool> {
+        each(self, other, "ne", (a, b) => a != b)
+    }
+
+    /// Each number limited to `lo..=hi`, as a number's `clamp`.
+    pub fn clamp(self, lo: T, hi: T) -> Tensor<T> where T: Number {
+        if lo > hi {
+            panic(`\`clamp\` needs \`lo\` at most \`hi\`, and has {lo} and {hi}`)
+        }
+        self.map(x => if lo != lo { lo } else if hi != hi { hi } else if x < lo { lo } else if x > hi { hi } else { x })
+    }
+
+    /// `a @ b`: the matrix product of the last two dimensions, for each of
+    /// the others, which must match.
+    pub fn matmul(self, other: Tensor<T>) -> Tensor<T> where T: Number {
+        if self.shape.len() < 2 or other.shape.len() != self.shape.len() {
+            panic(`\`@\` needs two tensors of the same number of dimensions, 2 or more: {self.shape} and {other.shape}`)
+        }
+        const n = self.shape.len()
+        const (m, k, k2, p) = (self.shape[n - 2], self.shape[n - 1], other.shape[n - 2], other.shape[n - 1])
+        if k != k2 or self.shape[:n - 2] != other.shape[:n - 2] {
+            panic(`\`@\` needs {self.shape}'s last size ({k}) to match {other.shape}'s next to last ({k2}), and the sizes before them to be the same`)
+        }
+        let out: [T] = []
+        for b in 0..(self.items.len() / (m * k).max(1)) {
+            const left = matrix.Matrix(rows: m, cols: k, items: self.items[b * m * k:(b + 1) * m * k])
+            const right = matrix.Matrix(rows: k, cols: p, items: other.items[b * k * p:(b + 1) * k * p])
+            out += (left @ right).items
+        }
+        let shape = self.shape
+        shape[n - 1] = p
+        Tensor(shape: shape, items: out)
+    }
+}
+
+/// `f(x, y)` for each pair of numbers of `a` and `b`, broadcast to one
+/// shape; `op` names the operator in a panic.
+fn each<T, U>(a: Tensor<T>, b: Tensor<T>, op: String, f: fn(T, T) -> U) -> Tensor<U> {
+    const out = shapes.broadcast(a.shape, b.shape) ?? panic(shapes.no_broadcast(a.shape, b.shape, op))
+    const (xa, xb) = (shapes.spread(a.shape, a.items, out), shapes.spread(b.shape, b.items, out))
+    let items: [U] = []
+    for i in 0..xa.len() {
+        items.push(f(xa[i], xb[i]))
+    }
+    Tensor(shape: out, items: items)
+}

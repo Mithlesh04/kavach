@@ -1,0 +1,15 @@
+// Rule: `t.len()` counts the numbers, `t.dims()` the dimensions, and `t.item()` gives the one number of a tensor that holds one.
+// Spec: 14.33
+// expect output: 6 2
+// expect output: 2.5 0
+// expect output: 7
+
+use std.tensor
+
+fn main() {
+    const t = tensor.zeros<Int>([2, 3])
+    print(`{t.len()} {t.dims()}`)
+    const one = tensor.full([], 2.5)
+    print(`{one.item()} {one.dims()}`)
+    print(tensor.of([7]).reshape([1, 1]).item())
+}

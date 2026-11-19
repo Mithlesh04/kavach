@@ -1,0 +1,15 @@
+// Rule: `< <= > >=` compare item by item, with a tensor or a number on the right, and give a mask, a `Tensor<Bool>`; `==` compares whole tensors.
+// Spec: 14.33
+// expect output: [false, true, true]
+// expect output: [true, false, false]
+// expect output: true false
+
+use std.tensor
+
+fn main() {
+    const t = tensor.of([0.25, 0.5, 0.75])
+    const mask: Tensor<Bool> = t >= 0.5
+    print(mask.items)
+    print((t < tensor.of([0.5, 0.5, 0.5])).items)
+    print(`{t == tensor.of([0.25, 0.5, 0.75])} {t != t}`)
+}

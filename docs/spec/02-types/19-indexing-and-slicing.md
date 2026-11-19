@@ -20,7 +20,7 @@ print("kavach"[0:3])    // kav
 | `String` | `Char`, counted in characters, as `len` counts | `String` |
 | `Bytes` (2.13) | `UInt8` | `Bytes` |
 | `StrView` (2.18) | `Char` | `StrView`: a view of the same string |
-| `Tensor<T>` (14.33) | one number per dimension | below (not built yet) |
+| `Tensor<T>` (14.33) | one number per dimension | below |
 | A dict `{K: V}` | `d[key]`: `V?` (2.2) | a compile error: a dict has keys, not positions |
 | A program's own type | through `Index` (2.16) | through `Slice` (2.16) |
 
@@ -118,7 +118,7 @@ xs[0:2] = [6]                   // panic: the slice has 2 items, but 1 was given
 
 A value with many dimensions takes one part for each, separated by commas, as NumPy writes them. A number picks one place, and that dimension is gone from the result; a slice keeps the dimension.
 
-*Not built yet:* tensors (14.33) take one part per dimension:
+Tensors (14.33) take one part per dimension:
 
 ```kavach
 use std.tensor
@@ -132,11 +132,11 @@ print(t[0:2, 1:].to_rows())     // [[2, 3], [5, 6]]
 
 | Written on a `Tensor<T>` | Gives |
 |---|---|
-| `t[i, j, …]`, a number for every dimension | `T`: that number (not built yet) |
-| any part a slice | `Tensor<T>`: a new tensor, without the dimensions a number picked (not built yet) |
+| `t[i, j, …]`, a number for every dimension | `T`: that number |
+| any part a slice | `Tensor<T>`: a new tensor, without the dimensions a number picked |
 
 - Each part follows the rules above: numbers out of range panic, slices are clamped, and `#k` counts from the end of its own dimension.
-- A program's own type gets a tuple key (2.16).
+- A program's own type gets a tuple key, or a list of `Part`s for any number of dimensions (2.16).
 - **Nested lists chain:** a list of lists is a list, one dimension at a time. `rows[1][2]` is item 2 of row 1, and `rows[1:3][0]` is row 1. `rows[1, 2]` on a list is a compile error that names `rows[1][2]`.
 
 ## On the GPU

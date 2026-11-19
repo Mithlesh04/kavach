@@ -1,0 +1,18 @@
+// Rule: A key with a slice gives a new tensor: a slice keeps its dimension, a number drops it, and the dimensions after the key are taken whole.
+// Spec: 14.33
+// expect output: [2, 5]
+// expect output: [1, 2]
+// expect output: [[3, 4, 5]]
+// expect output: [3]
+// expect output: [5, 4, 3]
+
+use std.tensor
+
+fn main() {
+    const t = tensor.arange(0, 6).reshape([2, 3])
+    print(t[:, #1].items)
+    print(t[0:1, ::2].shape)
+    print(t[1:].to_rows())
+    print(t[0, :].shape)
+    print(t[1, ::-1].items)
+}

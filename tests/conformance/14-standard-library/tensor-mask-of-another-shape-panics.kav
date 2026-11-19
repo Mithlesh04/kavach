@@ -1,0 +1,10 @@
+// Rule: A mask has the shape of the tensor it picks from; another shape is a panic naming both.
+// Spec: 14.33
+// expect panic: a mask needs the shape of the tensor it picks from: [2] and [3]
+
+use std.tensor
+
+fn main() {
+    const t = tensor.of([1, 2, 3])
+    print(t[tensor.of([true, false])].items)
+}

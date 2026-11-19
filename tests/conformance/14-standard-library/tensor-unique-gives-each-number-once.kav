@@ -1,0 +1,12 @@
+// Rule: `t.unique()` gives every number once, sorted, all `NaN`s as one, last.
+// Spec: 14.33
+// expect output: [1.0, 2.0, 3.0]
+// expect output: [1.0, NaN]
+
+use std.tensor
+
+fn main() {
+    print(tensor.of_rows([[3.0, 1.0], [2.0, 1.0]]).unique().items)
+    const nan = 0.0 / 0.0
+    print(tensor.of([nan, 1.0, nan]).unique().items)
+}

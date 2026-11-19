@@ -7,8 +7,12 @@
 //! (`compiler/checker/src/user_index.rs`): `x[k]` is `x.index(k)`,
 //! `x[#k]` is `x.index(x.len() - k)`, `x[a:b:step]` is
 //! `x.slice(Part(start: a, end: b, step: step))`, and `x[k] = v` is
-//! `x = x.index_set(k, v)`. So the interpreter and native code run them
-//! as any method call. The nodes made here get their types too.
+//! `x = x.index_set(k, v)`. A type with a key of any length gets a list
+//! of `Part`s: `t[1, #1]` is `t.index([Part(start: 1, single: true),
+//! Part(start: 1, start_from_end: true, single: true)])`. A method
+//! written more than once is called by the name the checker chose. So
+//! the interpreter and native code run them as any method call. The
+//! nodes made here get their types too.
 
 use kavach_ast::visit::{VisitMut, walk_expr, walk_stmt};
 use kavach_ast::*;
@@ -86,6 +90,81 @@ impl Calls<'_> {
         }
     }
 
+    /// The list of `Part`s a key of any length becomes: one for each place
+    /// (`compiler/checker/src/list_keys.rs`). It has the span the checker
+    /// gave its type.
+    fn list_of(&mut self, index: Expr) -> Expr {
+        let span = match index.kind {
+            ExprKind::Dims(_) => index.span,
+            _ => Span::new(index.span.start as usize, index.span.start as usize),
+        };
+        let places = match index.kind {
+            ExprKind::Dims(parts) => parts,
+            kind => vec![Expr {
+                kind,
+                span: index.span,
+            }],
+        };
+        let items = places.into_iter().map(|p| self.place(p)).collect();
+        Expr {
+            kind: ExprKind::List(items),
+            span,
+        }
+    }
+
+    /// One place of a key of any length: a slice's `Part`, or a number's,
+    /// with `single: true`. A number's `Part` call has its span the other
+    /// way round, and its `true` one past it, as no other node has them.
+    fn place(&mut self, p: Expr) -> Expr {
+        if matches!(p.kind, ExprKind::Part { .. }) {
+            return self.part(p);
+        }
+        let (s, e) = (p.span.start as usize, p.span.end as usize);
+        let bool_at = |c: &mut Self, span: Span| {
+            c.made.insert(key(span), Ty::Prim(Prim::Bool));
+            Expr {
+                kind: ExprKind::Bool(true),
+                span,
+            }
+        };
+        let mut args = Vec::new();
+        match p.kind {
+            ExprKind::FromEnd(k) => {
+                args.push(named("start", *k));
+                let yes = bool_at(self, p.span);
+                args.push(named("start_from_end", yes));
+            }
+            kind => args.push(named("start", Expr { kind, span: p.span })),
+        }
+        let yes = bool_at(self, Span::new(e + 1, s));
+        args.push(named("single", yes));
+        let call = Span::new(e, s);
+        if let Some(def) = self.part {
+            self.uses.push((e as u32, def));
+            self.made.insert(key(call), Ty::Adt(def, Vec::new()));
+        }
+        let callee = Expr {
+            kind: ExprKind::Name(Ident {
+                name: "Part".to_string(),
+                span: Span::new(e, e),
+            }),
+            span: Span::new(e, e),
+        };
+        Expr {
+            kind: ExprKind::Call {
+                callee: Box::new(callee),
+                generics: Vec::new(),
+                args,
+            },
+            span: call,
+        }
+    }
+
+    /// The method a use calls: the one the checker chose, or `method`.
+    fn name_at(&self, at: (u32, u32), method: &'static str) -> String {
+        (self.checked.chosen.get(&at).cloned()).unwrap_or_else(|| method.to_string())
+    }
+
     /// `Part(start: a, end: b, step: s)`, with `start_from_end: true` for
     /// an end written `#k`. The call has the slice's span, whose type the
     /// checker gave; the name starts where the slice ends, at `,` or `]`,
@@ -142,12 +221,9 @@ impl VisitMut for Calls<'_> {
         let ExprKind::Index { base, index } = &e.kind else {
             return;
         };
-        let note = match self
-            .checked
-            .user_index
-            .get(&(base.span.start, index.span.end))
-        {
-            Some(&n @ ("index" | "index#" | "slice")) => n,
+        let at = (base.span.start, index.span.end);
+        let note = match self.checked.user_index.get(&at) {
+            Some(&n @ ("index" | "index#" | "slice" | "index[]" | "slice[]")) => n,
             _ => return,
         };
         let span = e.span;
@@ -174,9 +250,18 @@ impl VisitMut for Calls<'_> {
                     kind,
                     span: index.span,
                 };
-                let method = if note == "slice" { "slice" } else { "index" };
-                let k = self.key_of(index);
-                method_call(*base, method, vec![k], span)
+                let method = if note.starts_with("slice") {
+                    "slice"
+                } else {
+                    "index"
+                };
+                let method = self.name_at(at, method);
+                let k = if note.ends_with("[]") {
+                    self.list_of(index)
+                } else {
+                    self.key_of(index)
+                };
+                method_call(*base, &method, vec![k], span)
             }
         };
     }
@@ -189,14 +274,12 @@ impl VisitMut for Calls<'_> {
         let ExprKind::Index { base, index } = &target.kind else {
             return;
         };
-        if self
-            .checked
-            .user_index
-            .get(&(base.span.start, index.span.end))
-            != Some(&"set")
-        {
-            return;
-        }
+        let at = (base.span.start, index.span.end);
+        let listed = match self.checked.user_index.get(&at) {
+            Some(&"set") => false,
+            Some(&"set[]") => true,
+            _ => return,
+        };
         // `x[k] = v` is `x = x.index_set(k, v)`.
         let span = Span::new(target.span.start as usize, value.span.end as usize);
         if let Some(t) = self
@@ -223,8 +306,13 @@ impl VisitMut for Calls<'_> {
                 span,
             },
         );
-        let k = self.key_of(*index);
-        *value = method_call((*base).clone(), "index_set", vec![k, v], span);
+        let k = if listed {
+            self.list_of(*index)
+        } else {
+            self.key_of(*index)
+        };
+        let method = self.name_at(at, "index_set");
+        *value = method_call((*base).clone(), &method, vec![k, v], span);
         *target = *base;
         *op = AssignOp::Set;
     }

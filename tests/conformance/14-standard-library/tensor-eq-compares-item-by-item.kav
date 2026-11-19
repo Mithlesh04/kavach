@@ -1,0 +1,15 @@
+// Rule: `t.eq(u)` and `t.ne(u)` compare item by item, giving a mask; a `NaN` equals nothing.
+// Spec: 14.33
+// expect output: [false, false, true, false]
+// expect output: [true, false]
+// expect output: [false, true]
+
+use std.tensor
+
+fn main() {
+    const t = tensor.of([3.0, -1.0, 4.0, -1.5])
+    print(t.eq(4.0).items)
+    const n = tensor.of([0.0 / 0.0, 1.0])
+    print(n.ne(n).items)
+    print(n.eq(n).items)
+}

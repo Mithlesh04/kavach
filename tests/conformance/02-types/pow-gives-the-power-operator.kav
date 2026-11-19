@@ -1,0 +1,17 @@
+// Rule: A type that implements `Pow` gets `**`, which calls its `pow`.
+// Spec: 2.16
+// expect output: Cell(v: 9.0)
+// expect output: Cell(v: 27.0)
+
+type Cell: Pow<Float> {
+    v: Float
+
+    fn pow(self, other: Float) -> Cell { Cell(v: self.v ** other) }
+}
+
+fn main() {
+    let c = Cell(v: 3.0)
+    print(c ** 2.0)
+    c **= 3.0
+    print(c)
+}

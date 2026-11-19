@@ -50,7 +50,7 @@ Inside the type's methods, and in an `extend<I> Box<I>` block (2.5), `I` is the 
 
 Two built-in bounds let generic code do arithmetic ([decision 0115](../../decisions/0115-generic-math-and-std-vec.md)):
 
-- `T: Number` is met by every number type: the whole-number types, `Float`, `Float32` and `Decimal`. Code may use `+ - * / %`, unary `-`, the comparisons, number literals, and `T(x)`, which converts any number to `T` as a conversion to a number type does (2.1).
+- `T: Number` is met by every number type: the whole-number types, `Float`, `Float32` and `Decimal`. Code may use `+ - * / %`, unary `-`, the comparisons, number literals, and `T(x)`, which converts any number to `T` as a conversion to a number type does (2.1). The other way, `Float(x)` of a `T` converts it to that number type.
 - `T: Floating` is met by `Float` and `Float32`. It is a `Number`, and code may also call `std.math`'s functions on a `T` (14.5): `math.sqrt(x)` of a `Float32` gives a `Float32`.
 
 ```kavach

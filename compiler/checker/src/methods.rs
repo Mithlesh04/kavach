@@ -93,12 +93,18 @@ impl Checker<'_> {
             }
         }
         let found = match &recv {
-            Ty::Adt(def, targs) => self
-                .methods
-                .get(def)
-                .and_then(|m| m.get(&name.name))
-                .cloned()
-                .map(|s| (s, self.subst_of(*def, targs))),
+            Ty::Adt(def, targs) => {
+                // A method written more than once (`op_impls.rs`).
+                self.check_written_axis(*def, args);
+                let chosen = self.call_variant(*def, &name.name, args);
+                if let Some(v) = &chosen {
+                    self.chosen
+                        .insert((name.span.start, name.span.end), v.clone());
+                }
+                let n = chosen.as_deref().unwrap_or(&name.name);
+                (self.methods.get(def).and_then(|m| m.get(n)).cloned())
+                    .map(|s| (s, self.subst_of(*def, targs)))
+            }
             Ty::Param(p) => {
                 let bounds = self.bounds.get(p).cloned().unwrap_or_default();
                 bounds
@@ -117,7 +123,9 @@ impl Checker<'_> {
         if let Some((sig, subst)) = found {
             if let Ty::Adt(owner, _) = &recv {
                 self.check_method_access(*owner, &sig, name);
-                self.check_wheres(*owner, &name.name, &subst, e.span);
+                let n = (self.chosen.get(&(name.span.start, name.span.end)).cloned())
+                    .unwrap_or_else(|| name.name.clone());
+                self.check_wheres(*owner, &n, &subst, e.span);
             }
             let t = self.apply(&sig, subst, generics, args, e.span, &name.name);
             // `frame.draw(p, …)` gives what `p`'s vertex fn takes (15.3).
@@ -275,7 +283,7 @@ impl Checker<'_> {
             let hint = self.dict_read_hint(base, &recv, &name.name, args.len());
             self.error(
                 name.span,
-                match kavach_name(&recv, &name.name) {
+                match kavach_name(&recv, &name.name).or(self.numpy_name(&recv, &name.name)) {
                     Some(k) => {
                         format!("`{shown}` has no method `{}`: Kavach's is `{k}`", name.name)
                     }

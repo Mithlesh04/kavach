@@ -1,0 +1,17 @@
+// Rule: A right operand of a type none of the implementations takes is a compile error.
+// Spec: 2.16
+// expect compile error
+
+type Vec2: Mul<Vec2>, Mul<Float> {
+    x: Float
+    y: Float
+
+    fn mul(self, other: Vec2) -> Vec2 { Vec2(x: self.x * other.x, y: self.y * other.y) }
+    fn mul(self, other: Float) -> Vec2 { Vec2(x: self.x * other, y: self.y * other) }
+}
+
+fn main() {
+    const v = Vec2(x: 1.0, y: 2.0)
+    const n: Int = 3
+    print(v * n)   // error: `Vec2` has `*` for a `Vec2` or a `Float` on the right
+}

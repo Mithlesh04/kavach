@@ -17,7 +17,7 @@ fn main() {
     print(y.items)
     print((x + x).sum())
     print(x.transpose().items)
-    print(`{x.reshape([4]).get([3])} {tensor.zeros<Int>([2, 2]).len()} {x.scale(10.0).max() ?? 0.0}`)
+    print(`{x.reshape([4]).get([3]) ?? 0.0} {tensor.zeros<Int>([2, 2]).len()} {(x * 10.0).max() ?? 0.0}`)
     const b = tensor.full([2, 2, 2], 1.0)
     print((b @ b).items)
     print((x @ tensor.zeros<Float>([3, 3])).shape)

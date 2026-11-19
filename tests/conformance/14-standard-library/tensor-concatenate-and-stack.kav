@@ -1,0 +1,17 @@
+// Rule: `tensor.concatenate` puts tensors one after another along an axis; `tensor.stack` puts tensors of one shape along a new axis.
+// Spec: 14.33
+// expect output: [1, 2, 1, 2]
+// expect output: [2, 2]
+// expect output: [[1, 1], [2, 2]]
+// expect output: [[1, 2, 9], [3, 4, 9]]
+
+use std.tensor
+
+fn main() {
+    const a = tensor.of([1, 2])
+    print(tensor.concatenate([a, a]).items)
+    print(tensor.stack([a, a]).shape)
+    print(tensor.stack([a, a], axis: 1).to_rows())
+    const m = tensor.of_rows([[1, 2], [3, 4]])
+    print(tensor.concatenate([m, tensor.full([2, 1], 9)], axis: 1).to_rows())
+}

@@ -1,0 +1,11 @@
+// Rule: `t.clamp(lo, hi)` limits each number to `lo..=hi`, as a number's `clamp`.
+// Spec: 14.33
+// expect output: [0.0, 0.5, 1.0]
+// expect output: [1, 2, 2]
+
+use std.tensor
+
+fn main() {
+    print(tensor.of([-2.0, 0.5, 3.0]).clamp(0.0, 1.0).items)
+    print(tensor.of([0, 2, 9]).clamp(1, 2).items)
+}

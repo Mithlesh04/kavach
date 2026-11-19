@@ -1,0 +1,14 @@
+// Rule: Only an operator's or indexing method may be written twice in a type; any other name written twice is a compile error.
+// Spec: 2.16
+// expect compile error
+
+type Box {
+    n: Int
+
+    fn size(self) -> Int { self.n }
+    fn size(self) -> Int { self.n * 2 }   // error: `size` is written twice
+}
+
+fn main() {
+    print(Box(n: 1).size())
+}

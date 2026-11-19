@@ -1,0 +1,10 @@
+// Rule: `t.any(test)`, `t.all(test)` and `t.count(test)` work on the numbers as a list's do.
+// Spec: 14.33
+// expect output: true false 2
+
+use std.tensor
+
+fn main() {
+    const t = tensor.of([3.0, -1.0, 4.0, -1.5])
+    print(`{t.any(x => x > 3.5)} {t.all(x => x > 0.0)} {t.count(x => x < 0.0)}`)
+}

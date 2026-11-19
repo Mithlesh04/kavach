@@ -130,3 +130,50 @@ Conformance tests for std.clipboard (14.17), std.devices (14.18), std.window (14
 | 14.31 | [font-shape-size-below-1-panics.kav](font-shape-size-below-1-panics.kav) | Shaping at a size outside 1 to 1,000 pixels to the em is a panic (a contract). | panic |
 | 14.31 | [font-sizes-1-and-1000-are-allowed.kav](font-sizes-1-and-1000-are-allowed.kav) | Sizes from 1 to 1,000 pixels to the em, both ends included, shape and draw. | runs |
 | 14.33 | [tensors-check-their-shapes.kav](tensors-check-their-shapes.kav) | Tensors: products, item-by-item operations, transposes and sums; a shape that doesn't fit is a panic naming both shapes. | runs |
+| 14.33 | [tensor-arange-counts-by-its-step.kav](tensor-arange-counts-by-its-step.kav) | `tensor.arange(start, end, step)` holds `start + i * step` while below `end`, or above it for a negative step. | runs |
+| 14.33 | [tensor-arange-step-of-zero-panics.kav](tensor-arange-step-of-zero-panics.kav) | `tensor.arange` with a step of 0 is a panic. | panic |
+| 14.33 | [tensor-linspace-ends-exactly-at-end.kav](tensor-linspace-ends-exactly-at-end.kav) | `tensor.linspace(start, end, count)` spaces `count` numbers evenly, the last exactly `end`; a count of 1 gives `[start]` and 0 none. | runs |
+| 14.33 | [tensor-eye-has-ones-on-the-diagonal.kav](tensor-eye-has-ones-on-the-diagonal.kav) | `tensor.eye<T>(n)` is `n` × `n`, 1 on the diagonal and 0 elsewhere. | runs |
+| 14.33 | [tensor-random-repeats-under-a-seed.kav](tensor-random-repeats-under-a-seed.kav) | Random tensors draw through `std.random`, so one seed gives the same numbers; `random` gives numbers from 0 up to 1, `random_int` whole numbers in its range. | runs |
+| 14.33 | [tensor-len-dims-and-item.kav](tensor-len-dims-and-item.kav) | `t.len()` counts the numbers, `t.dims()` the dimensions, and `t.item()` gives the one number of a tensor that holds one. | runs |
+| 14.33 | [tensor-item-of-many-numbers-panics.kav](tensor-item-of-many-numbers-panics.kav) | `t.item()` of a tensor that doesn't hold exactly one number is a panic naming its shape. | panic |
+| 14.33 | [tensor-index-takes-a-number-per-dimension.kav](tensor-index-takes-a-number-per-dimension.kav) | `t[i, j]` gives the number at one index per dimension; `#k` counts from the end of its own dimension. | runs |
+| 14.33 | [tensor-index-out-of-range-panics.kav](tensor-index-out-of-range-panics.kav) | An index out of range of its dimension is a panic naming it and the shape. | panic |
+| 14.33 | [tensor-index-needs-a-number-per-dimension.kav](tensor-index-needs-a-number-per-dimension.kav) | A key of numbers only needs one for each dimension: `t[1]` of a matrix is a panic that names `t[i, :]`. | panic |
+| 14.33 | [tensor-slice-keeps-its-dimensions.kav](tensor-slice-keeps-its-dimensions.kav) | A key with a slice gives a new tensor: a slice keeps its dimension, a number drops it, and the dimensions after the key are taken whole. | runs |
+| 14.33 | [tensor-index-set-changes-one-number.kav](tensor-index-set-changes-one-number.kav) | `t[i, j] = v` changes one number of a `let` tensor. | runs |
+| 14.33 | [tensor-get-gives-none-out-of-range.kav](tensor-get-gives-none-out-of-range.kav) | `t.get(at)` gives the number at `at`, or `none` when an index is out of range or the count is wrong. | runs |
+| 14.33 | [tensor-conversion-converts-each-number.kav](tensor-conversion-converts-each-number.kav) | `Tensor<U>(t)` converts each number to `U`, as `U(x)` converts one. | runs |
+| 14.33 | [tensor-of-text-is-an-error.kav](tensor-of-text-is-an-error.kav) | A tensor holds numbers or `Bool`s: a tensor of any other type is a compile error. | compile error |
+| 14.33 | [tensor-mean-needs-floating.kav](tensor-mean-needs-floating.kav) | `mean`, `var`, `std` and `percentile` need `T: Floating`: on a tensor of whole numbers they are a compile error naming the bound. | compile error |
+| 14.33 | [tensor-arithmetic-needs-numbers.kav](tensor-arithmetic-needs-numbers.kav) | Arithmetic needs `T: Number`: adding two masks is a compile error naming the bound. | compile error |
+| 14.33 | [tensor-broadcasting-follows-numpy.kav](tensor-broadcasting-follows-numpy.kav) | Item-by-item operators broadcast two shapes as NumPy does: lined up from the right, a size of 1 used for every place of the other. | runs |
+| 14.33 | [tensor-shapes-that-dont-broadcast-panic.kav](tensor-shapes-that-dont-broadcast-panic.kav) | Shapes that don't broadcast are a panic naming both. | panic |
+| 14.33 | [tensor-number-on-the-right.kav](tensor-number-on-the-right.kav) | Each operator takes a tensor or a number on the right, a number used for every item: `/`, `%`, `**` and `-t` too. | runs |
+| 14.33 | [tensor-number-on-the-left-is-an-error.kav](tensor-number-on-the-left-is-an-error.kav) | The number goes on the right of a tensor's operator: `2.0 * m` is a compile error. | compile error |
+| 14.33 | [tensor-whole-numbers-and-floats-dont-mix.kav](tensor-whole-numbers-and-floats-dont-mix.kav) | Both operands have one item type: a `Tensor<Int>` and a `Tensor<Float>` don't mix. | compile error |
+| 14.33 | [tensor-clamp-limits-each-number.kav](tensor-clamp-limits-each-number.kav) | `t.clamp(lo, hi)` limits each number to `lo..=hi`; NumPy's `clip` is a compile error that names it. | compile error |
+| 14.33 | [tensor-clamp-gives-each-number-limited.kav](tensor-clamp-gives-each-number-limited.kav) | `t.clamp(lo, hi)` limits each number to `lo..=hi`, as a number's `clamp`. | runs |
+| 14.33 | [tensor-comparison-gives-a-mask.kav](tensor-comparison-gives-a-mask.kav) | `< <= > >=` compare item by item, with a tensor or a number on the right, and give a mask, a `Tensor<Bool>`; `==` compares whole tensors. | runs |
+| 14.33 | [tensor-eq-compares-item-by-item.kav](tensor-eq-compares-item-by-item.kav) | `t.eq(u)` and `t.ne(u)` compare item by item, giving a mask; a `NaN` equals nothing. | runs |
+| 14.33 | [tensor-mask-picks-numbers.kav](tensor-mask-picks-numbers.kav) | `t[mask]` gives the numbers where the mask is `true`, in order, and `t[mask] = x` sets them. | runs |
+| 14.33 | [tensor-mask-of-another-shape-panics.kav](tensor-mask-of-another-shape-panics.kav) | A mask has the shape of the tensor it picks from; another shape is a panic naming both. | panic |
+| 14.33 | [tensor-where-chooses-item-by-item.kav](tensor-where-chooses-item-by-item.kav) | `tensor.where(mask, a, b)` takes `a`'s number where the mask is `true`, else `b`'s, all broadcast to one shape; a number counts as a tensor of shape `[]`. | runs |
+| 14.33 | [tensor-any-all-and-count.kav](tensor-any-all-and-count.kav) | `t.any(test)`, `t.all(test)` and `t.count(test)` work on the numbers as a list's do. | runs |
+| 14.33 | [tensor-sum-along-an-axis.kav](tensor-sum-along-an-axis.kav) | A reduction with `axis:` works along that dimension and takes it out; without it, it gives one number. | runs |
+| 14.33 | [tensor-float-sum-is-exact.kav](tensor-float-sum-is-exact.kav) | A float sum is the exact sum, rounded once, so no order changes it. | runs |
+| 14.33 | [tensor-min-max-and-their-places.kav](tensor-min-max-and-their-places.kav) | `min`, `max`, `argmin` and `argmax` find the first smallest or largest; `NaN` comes after every number, and no numbers give `none`. | runs |
+| 14.33 | [tensor-mean-var-and-std.kav](tensor-mean-var-and-std.kav) | `mean` divides the exact sum by the count; `var` and `std` divide by the count minus `correction`, 1 unless given. | runs |
+| 14.33 | [tensor-cumsum-runs-along-the-last-axis.kav](tensor-cumsum-runs-along-the-last-axis.kav) | `t.cumsum()` gives the running sums along the last axis, or along `axis:`, the shape kept. | runs |
+| 14.33 | [tensor-reduction-of-an-empty-axis-panics.kav](tensor-reduction-of-an-empty-axis-panics.kav) | `min`, `max`, `argmin`, `argmax` and `mean` along an axis of size 0 are a panic naming the shape; `sum` gives 0 there. | panic |
+| 14.33 | [tensor-axis-out-of-range-panics.kav](tensor-axis-out-of-range-panics.kav) | An axis is from 0 up to `t.dims()`, not including it; another is a panic naming it. | panic |
+| 14.33 | [tensor-written-negative-axis-is-an-error.kav](tensor-written-negative-axis-is-an-error.kav) | A written negative axis is a compile error, as `xs[-1]` is. | compile error |
+| 14.33 | [tensor-sort-and-argsort.kav](tensor-sort-and-argsort.kav) | `t.sort()` sorts along the last axis, or `axis:`, `NaN` last; `t.argsort()` gives the indexes that would sort it, equal numbers keeping their order. | runs |
+| 14.33 | [tensor-unique-gives-each-number-once.kav](tensor-unique-gives-each-number-once.kav) | `t.unique()` gives every number once, sorted, all `NaN`s as one, last. | runs |
+| 14.33 | [tensor-percentile-interpolates.kav](tensor-percentile-interpolates.kav) | `t.percentile(q)` is the `q`th percentile by linear interpolation between the two nearest numbers, as NumPy's default; along `axis:` a tensor. | runs |
+| 14.33 | [tensor-percentile-outside-0-to-100-panics.kav](tensor-percentile-outside-0-to-100-panics.kav) | A `q` outside 0 to 100 is a panic naming it. | panic |
+| 14.33 | [tensor-concatenate-and-stack.kav](tensor-concatenate-and-stack.kav) | `tensor.concatenate` puts tensors one after another along an axis; `tensor.stack` puts tensors of one shape along a new axis. | runs |
+| 14.33 | [tensor-joining-other-sizes-panics.kav](tensor-joining-other-sizes-panics.kav) | `concatenate` needs the other sizes to match; another is a panic naming both shapes. | panic |
+| 14.33 | [tensor-split-cuts-equal-parts.kav](tensor-split-cuts-equal-parts.kav) | `t.split(count)` cuts `count` equal parts along an axis, and `t.split_at(points)` cuts before each point. | runs |
+| 14.33 | [tensor-split-that-doesnt-divide-panics.kav](tensor-split-that-doesnt-divide-panics.kav) | `t.split(count)` of a size that `count` doesn't divide is a panic naming both. | panic |
+| 14.33 | [tensor-numpy-names-are-errors.kav](tensor-numpy-names-are-errors.kav) | NumPy's names for a tensor's methods are compile errors that name Kavach's: `t.rank()` names `t.dims()`. | compile error |

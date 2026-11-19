@@ -1,0 +1,15 @@
+// Rule: Item-by-item operators broadcast two shapes as NumPy does: lined up from the right, a size of 1 used for every place of the other.
+// Spec: 14.33
+// expect output: [[11.0, 22.0, 33.0], [14.0, 25.0, 36.0]]
+// expect output: [[1.0, 2.0, 3.0], [8.0, 10.0, 12.0]]
+// expect output: [[2.0, 3.0], [3.0, 4.0]]
+
+use std.tensor
+
+fn main() {
+    const m = tensor.of_rows([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]])
+    print((m + tensor.of([10.0, 20.0, 30.0])).to_rows())
+    const col = tensor.of([1.0, 2.0]).reshape([2, 1])
+    print((m * col).to_rows())
+    print((col + tensor.of([1.0, 2.0])).to_rows())
+}

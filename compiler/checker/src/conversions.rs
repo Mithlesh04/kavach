@@ -88,6 +88,8 @@ impl Checker<'_> {
             (Ty::Prim(Prim::Char), q) => whole(q),
             (Ty::Prim(q), Prim::Char) => whole(*q),
             (Ty::Prim(q), to) => q.is_numeric() && to.is_numeric(),
+            // A `T: Number` converts to any number type (spec 2.9).
+            (Ty::Param(_), to) => to.is_numeric() && self.number_param(&from, false),
             (Ty::Var(_) | Ty::Error | Ty::Never, _) => true,
             _ => false,
         };

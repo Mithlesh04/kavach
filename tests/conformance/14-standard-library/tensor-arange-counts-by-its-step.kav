@@ -1,0 +1,15 @@
+// Rule: `tensor.arange(start, end, step)` holds `start + i * step` while below `end`, or above it for a negative step.
+// Spec: 14.33
+// expect output: [0, 3, 6, 9]
+// expect output: [1.0, 0.75, 0.5, 0.25]
+// expect output: [0, 1, 2]
+// expect output: [0.0, 0.1, 0.2, 0.30000000000000004]
+
+use std.tensor
+
+fn main() {
+    print(tensor.arange(0, 10, 3).items)
+    print(tensor.arange(1.0, 0.0, -0.25).items)
+    print(tensor.arange(0, 3).items)
+    print(tensor.arange(0.0, 0.35, 0.1).items)
+}

@@ -15,7 +15,7 @@ const CLAUSES: [&str; 6] = ["->", "!", "uses", "require", "ensure", "example"];
 impl Parser<'_> {
     pub(crate) fn fn_decl(&mut self, body_required: bool) -> FnDecl {
         self.bump();
-        let name = self.ident("a function name");
+        let name = self.method_ident("a function name");
         self.fn_rest(name, body_required)
     }
 

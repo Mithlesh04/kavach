@@ -1,0 +1,20 @@
+// Rule: `mean` divides the exact sum by the count; `var` and `std` divide by the count minus `correction`, 1 unless given.
+// Spec: 14.33
+// expect output: 3.5
+// expect output: [2.5, 4.0, 4.0]
+// expect output: 1.8708286933869707
+// expect output: 2.9166666666666665
+// expect output: [4.5, 2.0, 8.0]
+// expect output: true
+
+use std.tensor
+
+fn main() {
+    const m = tensor.of_rows([[1.0, 5.0, 2.0], [4.0, 3.0, 6.0]])
+    print(m.mean() ?? 0.0)
+    print(m.mean(axis: 0).items)
+    print(m.std() ?? 0.0)
+    print(m.var(correction: 0) ?? 0.0)
+    print(m.var(axis: 0).items)
+    print(tensor.of([1.0]).var() == none)
+}

@@ -1,0 +1,19 @@
+// Rule: `min`, `max`, `argmin` and `argmax` find the first smallest or largest; `NaN` comes after every number, and no numbers give `none`.
+// Spec: 14.33
+// expect output: [5.0, 6.0]
+// expect output: [1, 2]
+// expect output: 1.0 6.0 0 5
+// expect output: NaN 1.0 1
+// expect output: true
+
+use std.tensor
+
+fn main() {
+    const m = tensor.of_rows([[1.0, 5.0, 2.0], [4.0, 3.0, 6.0]])
+    print(m.max(axis: 1).items)
+    print(m.argmax(axis: 1).items)
+    print(`{m.min() ?? 0.0} {m.max() ?? 0.0} {m.argmin() ?? -1} {m.argmax() ?? -1}`)
+    const n = tensor.of([2.0, 0.0 / 0.0, 1.0])
+    print(`{n.max() ?? 0.0} {n.min() ?? 0.0} {n.argmax() ?? -1}`)
+    print(tensor.zeros<Int>([0]).max() == none)
+}

@@ -1,0 +1,16 @@
+// Rule: `t.sort()` sorts along the last axis, or `axis:`, `NaN` last; `t.argsort()` gives the indexes that would sort it, equal numbers keeping their order.
+// Spec: 14.33
+// expect output: [1.0, 1.0, 2.0, 3.0]
+// expect output: [1, 3, 2, 0]
+// expect output: [[1, 0], [0, 1]]
+// expect output: [1.0, 2.0, NaN]
+
+use std.tensor
+
+fn main() {
+    const t = tensor.of([3.0, 1.0, 2.0, 1.0])
+    print(t.sort().items)
+    print(t.argsort().items)
+    print(tensor.of_rows([[3, 2], [1, 4]]).argsort(axis: 0).to_rows())
+    print(tensor.of([2.0, 0.0 / 0.0, 1.0]).sort().items)
+}

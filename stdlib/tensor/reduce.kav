@@ -1,0 +1,212 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
+// std.tensor.reduce (spec 14.33, decisions 0135 and 0136): reductions of
+// every number, or along one axis. Each method is written twice: without
+// `axis:` it gives one number, and with it a tensor with that dimension
+// taken out, each number worked out by the same function from one lane.
+// A float sum is exact, rounded once (`exact.kav`).
+
+use std.math
+use std.tensor.exact
+use std.tensor.shapes
+
+extend<T> Tensor<T> {
+    /// The sum of every number: exact for floats, in order otherwise.
+    pub fn sum(self) -> T where T: Number {
+        total(self.items)
+    }
+
+    pub fn sum(self, axis: Int) -> Tensor<T> where T: Number {
+        lanes_to(self, axis, "sum", false, xs => total(xs))
+    }
+
+    /// The product of every number, in order from index 0 up.
+    pub fn prod(self) -> T where T: Number {
+        product(self.items)
+    }
+
+    pub fn prod(self, axis: Int) -> Tensor<T> where T: Number {
+        lanes_to(self, axis, "prod", false, xs => product(xs))
+    }
+
+    /// The smallest number, or `none` for no numbers; `NaN` only when
+    /// every number is.
+    pub fn min(self) -> T? where T: Number {
+        self.items[smallest(self.items) ?? return none]
+    }
+
+    pub fn min(self, axis: Int) -> Tensor<T> where T: Number {
+        lanes_to(self, axis, "min", true, xs => xs[smallest(xs) ?? 0])
+    }
+
+    /// The largest number, or `none` for no numbers; `NaN` if there is one.
+    pub fn max(self) -> T? where T: Number {
+        self.items[largest(self.items) ?? return none]
+    }
+
+    pub fn max(self, axis: Int) -> Tensor<T> where T: Number {
+        lanes_to(self, axis, "max", true, xs => xs[largest(xs) ?? 0])
+    }
+
+    /// The place in `items` of the first smallest number.
+    pub fn argmin(self) -> Int? where T: Number {
+        smallest(self.items)
+    }
+
+    pub fn argmin(self, axis: Int) -> Tensor<Int> where T: Number {
+        lanes_to(self, axis, "argmin", true, xs => smallest(xs) ?? 0)
+    }
+
+    /// The place in `items` of the first largest number.
+    pub fn argmax(self) -> Int? where T: Number {
+        largest(self.items)
+    }
+
+    pub fn argmax(self, axis: Int) -> Tensor<Int> where T: Number {
+        lanes_to(self, axis, "argmax", true, xs => largest(xs) ?? 0)
+    }
+
+    /// The exact sum divided by the count, rounded once; `none` for no
+    /// numbers.
+    pub fn mean(self) -> T? where T: Floating {
+        average(self.items)
+    }
+
+    pub fn mean(self, axis: Int) -> Tensor<T> where T: Floating {
+        lanes_to(self, axis, "mean", true, xs => average(xs) ?? T(0))
+    }
+
+    /// The variance: the squared distances from the mean, summed exactly
+    /// and divided by `len - correction`; `none` when there are no more
+    /// numbers than `correction`.
+    pub fn var(self, correction: Int = 1) -> T? where T: Floating {
+        variance(self.items, correction)
+    }
+
+    pub fn var(self, axis: Int, correction: Int = 1) -> Tensor<T> where T: Floating {
+        spread(self, axis, correction, "var", xs => variance(xs, correction) ?? T(0))
+    }
+
+    /// The standard deviation, the square root of the variance.
+    pub fn std(self, correction: Int = 1) -> T? where T: Floating {
+        math.sqrt(variance(self.items, correction) ?? return none)
+    }
+
+    pub fn std(self, axis: Int, correction: Int = 1) -> Tensor<T> where T: Floating {
+        spread(self, axis, correction, "std", xs => math.sqrt(variance(xs, correction) ?? T(0)))
+    }
+
+    /// The running sums along `axis`, the last when it isn't given; each
+    /// exact, rounded once, for floats.
+    pub fn cumsum(self, axis: Int? = none) -> Tensor<T> where T: Number {
+        const a = shapes.axis_in(self, axis, "cumsum")
+        const runs = shapes.lanes(self.shape, self.items, a).map(xs => running(xs))
+        Tensor(shape: self.shape, items: shapes.from_lanes(self.shape, runs, a))
+    }
+}
+
+/// The sum of `xs`: exact, rounded once, for floats; in order for other
+/// numbers, so whole numbers overflow as `+` does.
+fn total<T: Number>(xs: [T]) -> T {
+    if exact.floating<T>() {
+        return exact.sum(xs, 1)
+    }
+    let s = T(0)
+    for x in xs {
+        s = s + x
+    }
+    s
+}
+
+fn running<T: Number>(xs: [T]) -> [T] {
+    if exact.floating<T>() {
+        return exact.running(xs)
+    }
+    let s = T(0)
+    let out: [T] = []
+    for x in xs {
+        s = s + x
+        out.push(s)
+    }
+    out
+}
+
+fn product<T: Number>(xs: [T]) -> T {
+    let p = T(1)
+    for x in xs {
+        p = p * x
+    }
+    p
+}
+
+/// The place of the first smallest number, `NaN` counting only when every
+/// number is one; `none` for no numbers.
+fn smallest<T: Number>(xs: [T]) -> Int? {
+    let at: Int? = none
+    for (i, x) in xs.enumerate() {
+        if let j = at {
+            const best = xs[j]
+            if x < best or (best != best and x == x) {
+                at = i
+            }
+        } else {
+            at = i
+        }
+    }
+    at
+}
+
+/// The place of the first largest number, the first `NaN` if there is
+/// one; `none` for no numbers.
+fn largest<T: Number>(xs: [T]) -> Int? {
+    let at: Int? = none
+    for (i, x) in xs.enumerate() {
+        if let j = at {
+            const best = xs[j]
+            if best == best and (x > best or x != x) {
+                at = i
+            }
+        } else {
+            at = i
+        }
+    }
+    at
+}
+
+fn average<T: Number>(xs: [T]) -> T? {
+    if xs.is_empty() {
+        return none
+    }
+    exact.sum(xs, xs.len())
+}
+
+fn variance<T: Number>(xs: [T], correction: Int) -> T? {
+    if xs.len() <= correction {
+        return none
+    }
+    const m = exact.sum(xs, xs.len())
+    exact.sum(xs.map(x => (x - m) * (x - m)), xs.len() - correction)
+}
+
+/// `f` of each lane along `axis`, as a tensor with that dimension taken
+/// out. With `needs_some`, a lane of no numbers is a panic naming the shape.
+fn lanes_to<T, U>(t: Tensor<T>, axis: Int, what: String, needs_some: Bool, f: fn([T]) -> U) -> Tensor<U> {
+    const a = shapes.axis_in(t, axis, what)
+    if needs_some and t.shape[a] == 0 {
+        panic(`\`{what}\` along axis {a} of {t.shape} has no numbers to work on`)
+    }
+    const out = shapes.lanes(t.shape, t.items, a).map(f)
+    Tensor(shape: shapes.without(t.shape, a), items: out)
+}
+
+/// `var` or `std` along `axis`: each lane needs more numbers than
+/// `correction`.
+fn spread<T, U>(t: Tensor<T>, axis: Int, correction: Int, what: String, f: fn([T]) -> U) -> Tensor<U> {
+    const a = shapes.axis_in(t, axis, what)
+    if t.shape[a] <= correction {
+        panic(`\`{what}\` along axis {a} of {t.shape} needs more than {correction} numbers in each lane`)
+    }
+    lanes_to(t, a, what, false, f)
+}

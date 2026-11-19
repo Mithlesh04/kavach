@@ -1,0 +1,10 @@
+// Rule: `tensor.arange` with a step of 0 is a panic.
+// Spec: 14.33
+// expect panic: the step of `arange` can't be 0
+
+use std.tensor
+
+fn main() {
+    const step = 0
+    print(tensor.arange(0, 10, step).items)
+}

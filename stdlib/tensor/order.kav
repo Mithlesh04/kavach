@@ -1,0 +1,160 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
+// std.tensor.order (spec 14.33, decision 0136): sorting along an axis,
+// percentiles, and joining and splitting tensors. Sorts are stable, with
+// `NaN` after every number, as a list's are (14.2).
+
+use std.collections.{Part}
+use std.math
+use std.tensor.shapes
+
+extend<T> Tensor<T> {
+    /// The numbers sorted along `axis`, the last when it isn't given.
+    pub fn sort(self, axis: Int? = none) -> Tensor<T> where T: Number {
+        const a = shapes.axis_in(self, axis, "sort")
+        const sorted = shapes.lanes(self.shape, self.items, a).map(xs => xs.sort())
+        Tensor(shape: self.shape, items: shapes.from_lanes(self.shape, sorted, a))
+    }
+
+    /// The indexes along `axis` that would sort it; equal numbers keep
+    /// their order.
+    pub fn argsort(self, axis: Int? = none) -> Tensor<Int> where T: Number {
+        const a = shapes.axis_in(self, axis, "argsort")
+        const ranks = shapes.lanes(self.shape, self.items, a).map(xs => (0..xs.len()).to_list().sort_by(i => xs[i]))
+        Tensor(shape: self.shape, items: shapes.from_lanes(self.shape, ranks, a))
+    }
+
+    /// Every number once, sorted; all `NaN`s count as one, last.
+    pub fn unique(self) -> Tensor<T> where T: Number {
+        let out: [T] = []
+        for x in self.items.sort() {
+            if out.is_empty() {
+                out.push(x)
+                continue
+            }
+            const last = out[#1]
+            if x != last and (x == x or last == last) {
+                out.push(x)
+            }
+        }
+        Tensor(shape: [out.len()], items: out)
+    }
+
+    /// The `q`th percentile, by linear interpolation between the two
+    /// nearest numbers, as NumPy's default; `none` for no numbers.
+    pub fn percentile(self, q: Float) -> T? where T: Floating {
+        if self.items.is_empty() {
+            return none
+        }
+        at_percent(self.items, q)
+    }
+
+    pub fn percentile(self, q: Float, axis: Int) -> Tensor<T> where T: Floating {
+        const a = shapes.axis_in(self, axis, "percentile")
+        if self.shape[a] == 0 {
+            panic(`\`percentile\` along axis {a} of {self.shape} has no numbers to work on`)
+        }
+        const out = shapes.lanes(self.shape, self.items, a).map(xs => at_percent(xs, q))
+        Tensor(shape: shapes.without(self.shape, a), items: out)
+    }
+
+    /// `count` equal parts along `axis`.
+    pub fn split(self, count: Int, axis: Int = 0) -> [Tensor<T>] {
+        const a = shapes.axis_in(self, axis, "split")
+        const size = self.shape[a]
+        if count <= 0 or size % count != 0 {
+            panic(`\`split\` can't cut size {size} of axis {a} of {self.shape} into {count} equal parts`)
+        }
+        let points: [Int] = []
+        for i in 1..count {
+            points.push(i * (size / count))
+        }
+        self.split_at(points, a)
+    }
+
+    /// The parts cut before each of `points`, which must go up, along
+    /// `axis`.
+    pub fn split_at(self, points: [Int], axis: Int = 0) -> [Tensor<T>] {
+        const a = shapes.axis_in(self, axis, "split_at")
+        const ends = [0] + points + [self.shape[a]]
+        let parts: [Tensor<T>] = []
+        for i in 0..ends.len() - 1 {
+            if ends[i] > ends[i + 1] or ends[i] < 0 {
+                panic(`\`split_at\` needs points that go up, from 0 to {self.shape[a]}, and has {points}`)
+            }
+            let key: [Part] = []
+            for _ in 0..a {
+                key.push(Part())
+            }
+            key.push(Part(start: ends[i], end: ends[i + 1]))
+            const (places, kept) = shapes.picked(self.shape, self.items, key)
+            parts.push(Tensor(shape: kept, items: places.map(p => self.items[p])))
+        }
+        parts
+    }
+}
+
+/// The `q`th percentile of `xs`, some numbers: NumPy's linear method.
+fn at_percent<T: Floating>(xs: [T], q: Float) -> T {
+    if not (q >= 0.0 and q <= 100.0) {
+        panic(`\`percentile\` needs \`q\` from 0 to 100, and has {q}`)
+    }
+    const sorted = xs.sort()
+    if sorted[#1] != sorted[#1] {
+        return sorted[#1]
+    }
+    const p = q / 100.0 * Float(sorted.len() - 1)
+    const lo = Int(math.floor(p))
+    const hi = (lo + 1).min(sorted.len() - 1)
+    const (a, b, f) = (sorted[lo], sorted[hi], T(p - math.floor(p)))
+    const diff = b - a
+    if f >= T(0.5) { b - diff * (T(1) - f) } else { a + diff * f }
+}
+
+/// `parts` one after another along `axis`; their other sizes must match.
+pub fn concatenate<T>(parts: [Tensor<T>], axis: Int) -> Tensor<T> {
+    if parts.is_empty() {
+        panic("`concatenate` of no tensors has no shape to give")
+    }
+    const first = parts[0].shape
+    const dims = first.len()
+    const a = shapes.axis_of(axis, dims) ?? panic(shapes.no_axis(axis, dims, "concatenate"))
+    let size = 0
+    for p in parts {
+        if p.shape.len() != first.len() or shapes.without(p.shape, a) != shapes.without(first, a) {
+            panic(`\`concatenate\` along axis {a} needs the other sizes to match: {first} and {p.shape}`)
+        }
+        size += p.shape[a]
+    }
+    const inner = shapes.sized(first[a + 1:])
+    let items: [T] = []
+    for o in 0..shapes.sized(first[:a]) {
+        for p in parts {
+            const block = p.shape[a] * inner
+            items += p.items[o * block:(o + 1) * block]
+        }
+    }
+    let shape = first
+    shape[a] = size
+    Tensor(shape: shape, items: items)
+}
+
+/// `parts`, all of one shape, along a new axis `axis`.
+pub fn stack<T>(parts: [Tensor<T>], axis: Int) -> Tensor<T> {
+    if parts.is_empty() {
+        panic("`stack` of no tensors has no shape to give")
+    }
+    const first = parts[0].shape
+    const dims = first.len() + 1
+    const a = shapes.axis_of(axis, dims) ?? panic(shapes.no_axis(axis, dims, "stack"))
+    let raised: [Tensor<T>] = []
+    for p in parts {
+        if p.shape != first {
+            panic(`\`stack\` needs tensors of one shape: {first} and {p.shape}`)
+        }
+        raised.push(Tensor(shape: first[:a] + [1] + first[a:], items: p.items))
+    }
+    concatenate(raised, a)
+}

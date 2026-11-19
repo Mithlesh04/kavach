@@ -22,6 +22,8 @@ mod run_config;
 mod schema;
 mod std_modules;
 mod std_table;
+mod tensors;
+mod variants;
 mod version;
 pub mod workspace;
 
@@ -260,7 +262,12 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
     }
     let src = src.as_str();
     let mut parsed = kavach_parser::parse(src);
+    let in_std = |at: u32| {
+        (modules.iter()).any(|m| m.name.starts_with("std.") && m.start <= at && at < m.end)
+    };
+    let twice = variants::name_variants(&mut parsed.file, in_std);
     let mut resolution = kavach_resolver::resolve_modules(&parsed.file, &modules);
+    resolution.errors.extend(twice);
     project::unqualify(&mut parsed.file, &resolution);
     let checker_options = kavach_checker::Options {
         allow_unsafe: options.allow_unsafe,
@@ -274,6 +281,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
         .retain(|d| !checked.script_consts.contains(d));
     operators::to_method_calls(&mut parsed.file, &mut checked);
     indexing::to_method_calls(&mut parsed.file, &mut checked, &mut resolution);
+    tensors::to_calls(&mut parsed.file, &mut checked, &mut resolution);
 
     let error = |text: &String, span: Span| Message {
         severity: Severity::Error,

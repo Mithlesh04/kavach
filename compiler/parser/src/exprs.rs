@@ -216,7 +216,7 @@ impl Parser<'_> {
                             index,
                         }
                     } else {
-                        let name = self.ident("a field or method name after `.`");
+                        let name = self.method_ident("a field or method name after `.`");
                         // `x?.m(a)` (spec 2.7): `if let v = x { v.m(a) } else { none }`.
                         if optional && self.at(&TokenKind::LParen) {
                             expr = self.optional_call(expr, name, dot, start);

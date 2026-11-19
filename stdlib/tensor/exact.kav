@@ -1,0 +1,224 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
+// std.tensor.exact (spec 14.33, decision 0135): sums of floats that are
+// exact, rounded once. Every finite `Float` is a whole number of 2^-1074;
+// each is added into a wide fixed-point number, kept as 32-bit limbs in
+// `Int`s, with 64 more bits below for a division. No order of adding
+// changes the result, so it has the same bits everywhere.
+
+/// The limbs: 2^-1138 up to past 2^1100, room for any sum of `Float`s.
+fn limb_count() -> Int {
+    72
+}
+
+/// 2^32, the size of one limb.
+fn limb() -> Int {
+    4_294_967_296
+}
+
+/// Whether `T` is a float type, `Float` or `Float32`: its division keeps
+/// fractions, and it can't hold 2^53 + 1.
+pub fn floating<T: Number>() -> Bool
+    example floating<Float32>()
+    example not floating<Int>()
+    example not floating<Decimal>()
+{
+    T(1) / T(2) != T(0) and T(9_007_199_254_740_993) - T(9_007_199_254_740_992) != T(1)
+}
+
+/// A sum being worked out: the limbs, and what the special values seen
+/// so far make the result.
+type Sum {
+    limbs: [Int]
+    nan: Bool = false
+    up: Bool = false
+    down: Bool = false
+    zeros_negative: Bool = true
+    count: Int = 0
+}
+
+/// Whether `limbs` can be worked on with no overflow: as many as a sum
+/// has, none far past 32 bits.
+fn fits(limbs: [Int]) -> Bool {
+    limbs.len() == limb_count() and limbs.all(v => v > -(1 << 61) and v < (1 << 61))
+}
+
+fn start() -> Sum
+    ensure fits(result.limbs)
+{
+    let limbs: [Int] = []
+    for _ in 0..limb_count() {
+        limbs.push(0)
+    }
+    Sum(limbs: limbs)
+}
+
+/// `s` with `x` added, exactly.
+fn add(s: Sum, x: Float) -> Sum
+    require fits(s.limbs) and s.count < (1 << 61)
+{
+    let out = s
+    out.count += 1
+    if x != x {
+        out.nan = true
+        return out
+    }
+    if x == Float.from_bits(UInt64(2047) << 52) {
+        out.up = true
+        return out
+    }
+    if x == -Float.from_bits(UInt64(2047) << 52) {
+        out.down = true
+        return out
+    }
+    const b = x.bits()
+    const negative = b >> 63 == UInt64(1)
+    const e = Int((b >> 52) & UInt64(2047))
+    let m = Int(b & UInt64(4_503_599_627_370_495))
+    if e == 0 and m == 0 {
+        out.zeros_negative = out.zeros_negative and negative
+        return out
+    }
+    out.zeros_negative = false
+    let at = 64
+    if e > 0 {
+        m += 4_503_599_627_370_496
+        at += e - 1
+    }
+    const sh = at % 32
+    const low = (m % (1 << (32 - sh))) << sh
+    const rest = m >> (32 - sh)
+    const i = at / 32
+    const parts = [low, rest % limb(), rest / limb()]
+    for (k, v) in parts.enumerate() {
+        out.limbs[i + k] = if negative { out.limbs[i + k] - v } else { out.limbs[i + k] + v }
+    }
+    if out.count % 1_000_000 == 0 {
+        out.limbs = carried(out.limbs)
+    }
+    out
+}
+
+/// The limbs with every carry passed up, each from 0 up to 2^32, but the
+/// last, which keeps the sign.
+fn carried(limbs: [Int]) -> [Int]
+    require fits(limbs)
+{
+    let out = limbs
+    for i in 0..out.len() - 1 {
+        const c = out[i].div_floor(limb())
+        out[i] -= c * limb()
+        out[i + 1] += c
+    }
+    out
+}
+
+/// Bit `n` of the limbs.
+fn bit(limbs: [Int], n: Int) -> Int
+    require n < limbs.len() * 32
+{
+    if n < 0 {
+        return 0
+    }
+    (limbs[n / 32] >> (n % 32)) & 1
+}
+
+/// 2^k as a `Float`, for `k` from -1074 to 1023.
+fn two_to(k: Int) -> Float
+    require k >= -1074 and k <= 1023
+    example two_to(1) == 2.0
+{
+    if k >= -1022 {
+        Float.from_bits(UInt64(k + 1023) << UInt64(52))
+    } else {
+        Float.from_bits(UInt64(1) << UInt64(k + 1074))
+    }
+}
+
+/// The sum `s` divided by `by`, rounded once to a float of `bits` bits
+/// of precision, as a `Float`: exact for a `Float32` too.
+fn rounded(s: Sum, by: Int, bits: Int) -> Float
+    require fits(s.limbs) and by > 0 and by < (1 << 31)
+    require bits == 24 or bits == 53
+{
+    const inf = Float.from_bits(UInt64(2047) << 52)
+    if s.nan or (s.up and s.down) {
+        return Float.from_bits(UInt64(4095) << 51)
+    }
+    if s.up {
+        return inf
+    }
+    if s.down {
+        return -inf
+    }
+    let limbs = carried(s.limbs)
+    const negative = limbs[limbs.len() - 1] < 0
+    if negative {
+        limbs = carried(limbs.map(v => -v))
+    }
+    // Long division by `by`, from the top limb down.
+    let rest = 0
+    for i in (0..limbs.len()).to_list()[::-1] {
+        const now = rest * limb() + limbs[i]
+        limbs[i] = now / by
+        rest = now % by
+    }
+    let t = limbs.len() - 1
+    while t >= 0 and limbs[t] == 0 {
+        t -= 1
+    }
+    let top = t * 32 + 31
+    while top >= 0 and bit(limbs, top) == 0 {
+        top -= 1
+    }
+    if top < 0 {
+        return if s.zeros_negative and s.count > 0 { -0.0 } else { 0.0 }
+    }
+    // The lowest bit kept: `bits` below the top, but not below the
+    // smallest the type has (2^-1074, or 2^-149 for a `Float32`).
+    const least = if bits == 24 { 1074 - 149 + 64 } else { 64 }
+    const low = (top - bits + 1).max(least)
+    let mant = 0
+    for n in (low..=top).to_list()[::-1] {
+        mant = mant * 2 + bit(limbs, n)
+    }
+    const below = (low - 1).max(0)
+    let sticky = rest != 0 or limbs[below / 32] % (1 << (below % 32)) != 0
+    for i in 0..below / 32 {
+        sticky = sticky or limbs[i] != 0
+    }
+    if bit(limbs, low - 1) == 1 and (sticky or mant % 2 == 1) {
+        mant += 1
+    }
+    const k = low - 1138
+    let value = if k > 1023 { Float(mant) * two_to(1023) * two_to(k - 1023) } else { Float(mant) * two_to(k) }
+    if negative { -value } else { value }
+}
+
+/// The exact sum of `xs`, divided by `by`, rounded once to `T`, a float
+/// type (`floating<T>()`).
+pub fn sum<T: Number>(xs: [T], by: Int) -> T
+    require by > 0
+    example sum([1e20, 1.0, -1e20], 1) == 1.0
+    example sum([1.0, 2.0], 2) == 1.5
+{
+    let s = start()
+    for x in xs {
+        s = add(s, Float(x))
+    }
+    T(rounded(s, by, if T(16_777_217) == T(16_777_216) { 24 } else { 53 }))
+}
+
+/// The exact running sums of `xs`, each rounded once to `T`.
+pub fn running<T: Number>(xs: [T]) -> [T] {
+    const bits = if T(16_777_217) == T(16_777_216) { 24 } else { 53 }
+    let s = start()
+    let out: [T] = []
+    for x in xs {
+        s = add(s, Float(x))
+        out.push(T(rounded(s, 1, bits)))
+    }
+    out
+}

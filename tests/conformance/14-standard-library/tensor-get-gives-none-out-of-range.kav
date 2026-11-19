@@ -1,0 +1,12 @@
+// Rule: `t.get(at)` gives the number at `at`, or `none` when an index is out of range or the count is wrong.
+// Spec: 14.33
+// expect output: 5
+// expect output: true true true
+
+use std.tensor
+
+fn main() {
+    const t = tensor.arange(0, 6).reshape([2, 3])
+    print(t.get([1, 2]) ?? -1)
+    print(`{t.get([2, 0]) == none} {t.get([0, -1]) == none} {t.get([0]) == none}`)
+}

@@ -1,0 +1,11 @@
+// Rule: `t.clamp(lo, hi)` limits each number to `lo..=hi`; NumPy's `clip` is a compile error that names it.
+// Spec: 14.33
+// expect compile error
+
+use std.tensor
+
+fn main() {
+    const t = tensor.of([-2.0, 0.5, 3.0])
+    print(t.clamp(0.0, 1.0).items)
+    print(t.clip(0.0, 1.0).items)   // error: Kavach's is `clamp(lo, hi)`
+}

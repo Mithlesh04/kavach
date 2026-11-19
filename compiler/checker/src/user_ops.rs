@@ -3,9 +3,10 @@
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
 //! Operators for a program's own types (spec 2.16, decision 0109): a type
-//! that implements `Add`, `Sub`, `Mul`, `Div`, `Rem`, `Neg`, `MatMul` or
-//! `Comparable` gets the operator, which calls its method. Each use is
-//! noted, and the driver turns it into that method call.
+//! that implements `Add`, `Sub`, `Mul`, `Div`, `Rem`, `Pow`, `Neg`,
+//! `MatMul`, `Comparable` or `Compare` gets the operator, which calls its
+//! method. Each use is noted, and the driver turns it into that method
+//! call. An interface implemented more than once is `op_impls.rs`'s.
 
 use crate::checker::Checker;
 use crate::ty::{Prim, Ty};
@@ -19,10 +20,26 @@ const OPERATORS: &[(&str, &str)] = &[
     ("Mul", "mul"),
     ("Div", "div"),
     ("Rem", "rem"),
+    ("Pow", "pow"),
     ("Neg", "neg"),
     ("MatMul", "matmul"),
     ("Comparable", "compare"),
+    ("Compare", "lt"),
+    ("Compare", "le"),
+    ("Compare", "gt"),
+    ("Compare", "ge"),
 ];
+
+/// The method of `Compare` (spec 2.16) for a comparison.
+fn compare_method(op: BinaryOp) -> Option<&'static str> {
+    Some(match op {
+        BinaryOp::Lt => "lt",
+        BinaryOp::Le => "le",
+        BinaryOp::Gt => "gt",
+        BinaryOp::Ge => "ge",
+        _ => return None,
+    })
+}
 
 /// The method an operator calls on a program's own type.
 fn method_of(op: BinaryOp) -> Option<&'static str> {
@@ -33,6 +50,7 @@ fn method_of(op: BinaryOp) -> Option<&'static str> {
         Mul => "mul",
         Div => "div",
         Rem => "rem",
+        Pow => "pow",
         MatMul => "matmul",
         Lt | Le | Gt | Ge => "compare",
         _ => return None,
@@ -75,6 +93,16 @@ impl Checker<'_> {
             return true;
         };
         let given: Vec<Ty> = args.iter().map(|a| self.lower(a, Some(self_ty))).collect();
+        if iface == "Compare" {
+            let [other, out] = given.as_slice() else {
+                self.error(i.span, "`Compare` is written `Compare<Other, Result>`: `Compare<Float, Bool>` (spec 2.16)");
+                return true;
+            };
+            for m in ["lt", "le", "gt", "ge"] {
+                self.note_impl(def, m, (other.clone(), out.clone(), i.span));
+            }
+            return true;
+        }
         let me = self_ty.clone();
         let (other, out) = match (method, given.as_slice()) {
             ("neg", []) => (Ty::Unit, me),
@@ -90,30 +118,36 @@ impl Checker<'_> {
                 return true;
             }
         };
-        self.operators.insert((def, method), (other, out, i.span));
+        self.note_impl(def, method, (other, out, i.span));
         true
     }
 
     /// Each operator method is there, with the operator's types, pure and
     /// unable to fail (spec 2.16).
     pub(crate) fn check_operator_methods(&mut self) {
-        let mut wanted: Vec<_> = self
-            .operators
-            .iter()
-            .filter(|((_, m), _)| !interface_of(m).is_empty())
-            .map(|(k, v)| (*k, v.clone()))
+        let mut wanted: Vec<_> = (self.operators.keys())
+            .filter(|(_, m)| !interface_of(m).is_empty())
+            .copied()
             .collect();
-        wanted.sort_by_key(|((def, m), _)| (*def, *m));
-        for ((def, method), (other, out, span)) in wanted {
+        wanted.sort();
+        let wanted: Vec<_> = (wanted.into_iter())
+            .flat_map(|(def, m)| self.impls(def, m).into_iter().map(move |i| (def, m, i)))
+            .collect();
+        let mut both = Vec::new();
+        for (def, method, (other, out, span)) in wanted {
             let ty = self.res.defs[def].name.clone();
             let iface = interface_of(method);
+            if method == "lt" && self.operators.contains_key(&(def, "compare")) {
+                both.push((def, span));
+            }
             let (shown_other, shown_out) = (self.show(&other), self.show(&out));
             let want = if method == "neg" {
                 format!("fn neg(self) -> {shown_out}")
             } else {
                 format!("fn {method}(self, other: {shown_other}) -> {shown_out}")
             };
-            let Some(sig) = self.methods.get(&def).and_then(|m| m.get(method)).cloned() else {
+            let name = self.variant_for(def, method, &other);
+            let Some(sig) = self.methods.get(&def).and_then(|m| m.get(&name)).cloned() else {
                 self.error(
                     span,
                     format!("`{ty}` says it implements `{iface}`, so it needs the method `{want}`"),
@@ -142,6 +176,17 @@ impl Checker<'_> {
                 self.error(span, format!("`{ty}.{method}` gives an operator, so it can't use capabilities (`uses`) or fail (`!`): an operator never touches the outside world or fails (spec 2.16)"));
             }
         }
+        for (def, span) in both {
+            let ty = self.res.defs[def].name.clone();
+            self.error(span, format!("`{ty}` has both `Comparable` and `Compare`, so `<` would have two meanings: keep one (spec 2.16)"));
+        }
+        let mut more: Vec<_> = self.more_impls.keys().copied().collect();
+        more.sort();
+        for (def, m) in more {
+            if !matches!(m, "le" | "gt" | "ge") {
+                self.check_impls_differ(def, m, interface_of(m), "on the right");
+            }
+        }
     }
 
     /// `a + b` (or `a < b`) with `a` of a program's own type: checks `b`,
@@ -157,8 +202,15 @@ impl Checker<'_> {
         let Ty::Adt(def, args) = self.inf.resolve(lt) else {
             return None;
         };
-        let method = method_of(op)?;
-        let Some((other, out, _)) = self.operators.get(&(def, method)).cloned() else {
+        let mut method = method_of(op)?;
+        if let Some(m) = compare_method(op)
+            && !self.operators.contains_key(&(def, "compare"))
+            && self.operators.contains_key(&(def, m))
+        {
+            method = m;
+        }
+        let impls = self.impls(def, method);
+        let Some((other, out, _)) = impls.first().cloned() else {
             let (ty, iface) = (self.show(lt), interface_of(method));
             self.error(
                 l.span,
@@ -171,9 +223,29 @@ impl Checker<'_> {
             return Some(Ty::Error);
         };
         let subst = self.subst_of(def, &args);
-        let (other, out) = (self.inf.subst(&other, &subst), self.inf.subst(&out, &subst));
-        self.check_expect(r, &other);
-        self.user_ops.insert((l.span.start, r.span.end), method);
+        let key = (l.span.start, r.span.end);
+        let out = if impls.len() == 1 {
+            let other = self.inf.subst(&other, &subst);
+            self.check_expect(r, &other);
+            self.inf.subst(&out, &subst)
+        } else {
+            let got = self.value(r, None);
+            let Some(i) = self.choose_impl(&impls, &subst, &got) else {
+                let (ty, shown) = (self.show(lt), self.show(&got));
+                let takes = self.shown_impls(&impls, &subst);
+                self.error(r.span, format!("`{ty}` has `{}` for {takes} on the right, and this is a `{shown}` (spec 2.16)", op.as_str()));
+                return Some(Ty::Error);
+            };
+            let (o, out, _) = &impls[i];
+            let name = self.variant_for(def, method, o);
+            if name != method {
+                self.chosen.insert(key, name);
+            }
+            self.inf.subst(out, &subst)
+        };
+        let name = (self.chosen.get(&key).cloned()).unwrap_or_else(|| method.to_string());
+        self.check_wheres(def, &name, &subst, l.span);
+        self.user_ops.insert(key, method);
         Some(if method == "compare" {
             Ty::Prim(Prim::Bool)
         } else {
@@ -236,7 +308,10 @@ impl Checker<'_> {
             return;
         }
         let own = match (self.inf.resolve(&rt), method_of(op)) {
-            (Ty::Adt(def, _), Some(m)) => self.operators.contains_key(&(def, m)),
+            (Ty::Adt(def, _), Some(m)) => {
+                self.operators.contains_key(&(def, m))
+                    || compare_method(op).is_some_and(|c| self.operators.contains_key(&(def, c)))
+            }
             _ => false,
         };
         if own {

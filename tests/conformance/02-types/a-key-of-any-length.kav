@@ -1,0 +1,32 @@
+// Rule: A type indexed with a list of `Part`s takes a key of any length: each place one `Part`, a number with `single: true` and `#k` counted from its own dimension's end; numbers only call `index`, a slice `slice`.
+// Spec: 2.16
+// expect output: [(1, false, true), (2, true, true)]
+// expect output: 3
+// expect output: [(0, false, false), (none, false, false), (5, false, true)]
+// expect output: [(4, false, true), (5, false, true)] 9
+
+type Probe: Index<[Part], [(Int?, Bool, Bool)]>, Slice<[Part]>, IndexSet<[Part], Int> {
+    seen: [(Int?, Bool, Bool)]
+    set: Int = 0
+
+    fn index(self, key: [Part]) -> [(Int?, Bool, Bool)] {
+        key.map(p => (p.start, p.start_from_end, p.single))
+    }
+
+    fn slice(self, part: [Part]) -> Probe {
+        Probe(seen: part.map(p => (p.start, p.start_from_end, p.single)))
+    }
+
+    fn index_set(self, key: [Part], value: Int) -> Probe {
+        Probe(seen: key.map(p => (p.start, p.start_from_end, p.single)), set: value)
+    }
+}
+
+fn main() {
+    let p = Probe(seen: [])
+    print(p[1, #2])
+    print(p[3][0].0 ?? -1)
+    print(p[0:2, :, 5].seen)
+    p[4, 5] = 9
+    print(`{p.seen} {p.set}`)
+}

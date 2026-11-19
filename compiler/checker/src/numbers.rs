@@ -151,7 +151,14 @@ impl Checker<'_> {
     /// bound; a literal given for a `Floating` one is a `Float` (`half(3)`).
     pub(crate) fn check_number_bound(&mut self, g: DefId, t: &Ty, span: Span) {
         if self.inf.numbers.contains_key(&g) || self.param_ops.contains_key(&g) {
-            self.number_checks.push((g, t.clone(), span));
+            // A type parameter has the bounds it has here, as in a method
+            // with `where` (`where_bounds.rs`), so it is checked now.
+            if matches!(self.inf.resolve(t), Ty::Param(_)) {
+                self.number_bound_now(g, t, span);
+                self.op_bounds_now(g, t, span);
+            } else {
+                self.number_checks.push((g, t.clone(), span));
+            }
         }
     }
 

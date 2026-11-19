@@ -1,0 +1,13 @@
+// Rule: `tensor.where(mask, a, b)` takes `a`'s number where the mask is `true`, else `b`'s, all broadcast to one shape; a number counts as a tensor of shape `[]`.
+// Spec: 14.33
+// expect output: [3.0, 0.0, 4.0, 0.0]
+// expect output: [[1, 9], [9, 1]]
+
+use std.tensor
+
+fn main() {
+    const t = tensor.of([3.0, -1.0, 4.0, -1.5])
+    print(tensor.where(t < 0.0, 0.0, t).items)
+    const diagonal = tensor.eye<Int>(2) > 0
+    print(tensor.where(diagonal, 1, 9).to_rows())
+}

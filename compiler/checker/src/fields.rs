@@ -133,7 +133,8 @@ impl Checker<'_> {
             }
             None => {
                 let shown = self.show(&inner);
-                let message = match crate::methods::kavach_name(&inner, &name.name) {
+                let numpy = self.numpy_name(&inner, &name.name);
+                let message = match crate::methods::kavach_name(&inner, &name.name).or(numpy) {
                     Some(k) => format!(
                         "`{shown}` has no field `{}`: Kavach's is the method `{k}`",
                         name.name

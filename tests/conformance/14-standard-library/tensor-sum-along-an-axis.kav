@@ -1,0 +1,19 @@
+// Rule: A reduction with `axis:` works along that dimension and takes it out; without it, it gives one number.
+// Spec: 14.33
+// expect output: [5.0, 8.0, 8.0]
+// expect output: [8.0, 13.0]
+// expect output: 21.0
+// expect output: [4, 15, 12]
+// expect output: 720
+
+use std.tensor
+
+fn main() {
+    const m = tensor.of_rows([[1.0, 5.0, 2.0], [4.0, 3.0, 6.0]])
+    print(m.sum(axis: 0).items)
+    print(m.sum(axis: 1).items)
+    print(m.sum())
+    const n = tensor.of_rows([[1, 5, 2], [4, 3, 6]])
+    print(n.prod(axis: 0).items)
+    print(n.prod())
+}

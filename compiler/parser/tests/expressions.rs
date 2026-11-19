@@ -187,3 +187,11 @@ fn errors_and_effects() {
         ("arena { 1 }", "(arena {1})"),
     ]);
 }
+
+#[test]
+fn var_is_a_method_name_after_a_dot() {
+    check_all(&[
+        ("t.var()", "(call (. t var))"),
+        ("t.var(correction: 0)", "(call (. t var) correction:0)"),
+    ]);
+}

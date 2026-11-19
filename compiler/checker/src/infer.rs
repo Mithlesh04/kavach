@@ -18,7 +18,7 @@ pub(crate) enum VarKind {
     FloatLiteral,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub(crate) struct Infer {
     vars: Vec<(Option<Ty>, VarKind)>,
     /// The type parameters with a number bound (spec 2.9): `true` for

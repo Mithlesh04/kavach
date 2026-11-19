@@ -1,0 +1,16 @@
+// Rule: `t[mask]` gives the numbers where the mask is `true`, in order, and `t[mask] = x` sets them.
+// Spec: 14.33
+// expect output: [3.0, 4.0]
+// expect output: [3.0, 0.0, 4.0, 0.0]
+// expect output: [3.0, -1.0, 4.0, -1.5]
+
+use std.tensor
+
+fn main() {
+    const t = tensor.of([3.0, -1.0, 4.0, -1.5])
+    print(t[t > 0.0].items)
+    let u = t
+    u[u < 0.0] = 0.0
+    print(u.items)
+    print(t.items)
+}

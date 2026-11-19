@@ -53,6 +53,13 @@ fn key(span: Span) -> (u32, u32) {
 impl VisitMut for Calls<'_> {
     fn expr(&mut self, e: &mut Expr) {
         walk_expr(self, e);
+        // A method written more than once: the one the checker chose.
+        if let ExprKind::Call { callee, .. } = &mut e.kind
+            && let ExprKind::Field { name, .. } = &mut callee.kind
+            && let Some(chosen) = self.checked.chosen.get(&key(name.span))
+        {
+            name.name.clone_from(chosen);
+        }
         let span = e.span;
         let kind = std::mem::replace(&mut e.kind, ExprKind::None);
         e.kind = match kind {
@@ -73,7 +80,11 @@ impl VisitMut for Calls<'_> {
                         let call = method_call(*l, "compare", vec![*r], inner);
                         ExprKind::Binary(op, Box::new(call), Box::new(zero))
                     }
-                    Some(method) => method_call(*l, method, vec![*r], span).kind,
+                    Some(method) => {
+                        let at = (l.span.start, r.span.end);
+                        let name = self.checked.chosen.get(&at).map_or(*method, |n| n.as_str());
+                        method_call(*l, name, vec![*r], span).kind
+                    }
                     None => ExprKind::Binary(op, l, r),
                 }
             }
@@ -105,6 +116,7 @@ impl VisitMut for Calls<'_> {
                 span,
             },
         );
+        let method = self.checked.chosen.get(&at).map_or(*method, |n| n.as_str());
         *value = method_call(target.clone(), method, vec![v], span);
         *op = AssignOp::Set;
     }
@@ -116,6 +128,7 @@ pub(crate) fn to_method_calls(file: &mut File, checked: &mut Checked) {
     if checked.user_ops.is_empty()
         && checked.user_negs.is_empty()
         && checked.user_assigns.is_empty()
+        && checked.chosen.is_empty()
     {
         return;
     }

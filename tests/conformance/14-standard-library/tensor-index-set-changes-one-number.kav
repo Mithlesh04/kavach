@@ -1,0 +1,14 @@
+// Rule: `t[i, j] = v` changes one number of a `let` tensor.
+// Spec: 14.33
+// expect output: [[0, 1, 2], [3, 9, 5]]
+// expect output: [0, 1, 2, 3, 4, 5]
+
+use std.tensor
+
+fn main() {
+    const before = tensor.arange(0, 6).reshape([2, 3])
+    let t = before
+    t[1, #2] = 9
+    print(t.to_rows())
+    print(before.items)
+}

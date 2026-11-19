@@ -121,7 +121,7 @@ impl<'a> Lowerer<'a> {
                 }
             }
         }
-        let values = self.argument_values(f, args, span)?;
+        let values = self.argument_values(f, args, span, &subst)?;
         let params = f.params.iter().filter_map(|p| p.ty.as_ref());
         for (value, written) in values.iter().zip(params.clone()) {
             self.infer_args(written, value.ty, &mut subst);

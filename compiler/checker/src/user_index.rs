@@ -73,20 +73,31 @@ impl Checker<'_> {
                 return Some(true);
             }
         };
-        self.operators
-            .insert((def, method), (pair.0, pair.1, i.span));
+        self.note_impl(def, method, (pair.0, pair.1, i.span));
         Some(true)
     }
 
     /// Each indexing method is there, with the interface's types, pure
     /// and unable to fail (spec 2.16).
     pub(crate) fn check_indexer_methods(&mut self) {
-        let mut wanted: Vec<_> = (self.operators.iter())
-            .filter(|((_, m), _)| INDEXERS.iter().any(|(_, x)| x == m))
-            .map(|(k, v)| (*k, v.clone()))
+        let mut wanted: Vec<_> = (self.operators.keys())
+            .filter(|(_, m)| INDEXERS.iter().any(|(_, x)| x == m))
+            .copied()
             .collect();
-        wanted.sort_by_key(|((def, m), _)| (*def, *m));
-        for ((def, method), (key, out, span)) in wanted {
+        wanted.sort();
+        for &(def, m) in &wanted {
+            if self.impls(def, m).len() > 1 {
+                let iface = INDEXERS
+                    .iter()
+                    .find(|(_, x)| *x == m)
+                    .map_or("", |(i, _)| i);
+                self.check_impls_differ(def, m, iface, "key");
+            }
+        }
+        let wanted: Vec<_> = (wanted.into_iter())
+            .flat_map(|(def, m)| self.impls(def, m).into_iter().map(move |i| (def, m, i)))
+            .collect();
+        for (def, method, (key, out, span)) in wanted {
             let ty = self.res.defs[def].name.clone();
             let (k, o) = (self.show(&key), self.show(&out));
             let want = match method {
@@ -98,7 +109,8 @@ impl Checker<'_> {
                 .iter()
                 .find(|(_, m)| *m == method)
                 .map_or("", |(i, _)| i);
-            let Some(sig) = self.methods.get(&def).and_then(|m| m.get(method)).cloned() else {
+            let name = self.variant_for(def, method, &key);
+            let Some(sig) = self.methods.get(&def).and_then(|m| m.get(&name)).cloned() else {
                 self.error(
                     span,
                     format!("`{ty}` says it implements `{iface}`, so it needs the method `{want}`"),
@@ -145,16 +157,28 @@ impl Checker<'_> {
     /// `base[index]` on a program's own type, `t`: its type, or `None`
     /// when `t` has none of the interfaces.
     pub(crate) fn own_index(&mut self, base: &Expr, t: &Ty, index: &Expr) -> Option<Ty> {
-        let Ty::Adt(def, _) = t else {
+        let Ty::Adt(def, targs) = t else {
             return None;
         };
         let def = *def;
+        let subst = self.subst_of(def, targs);
         let index_of = self.operators.get(&(def, "index")).cloned();
         let slice_of = self.operators.get(&(def, "slice")).cloned();
         let set_of = self.operators.get(&(def, "index_set")).cloned();
         if index_of.is_none() && slice_of.is_none() && set_of.is_none() {
             return None;
         }
+        // A key of any length, or more than one `Index` (`list_keys.rs`).
+        if self.has_many_keys(def)
+            && let Some(ty) = self.many_index(def, &subst, base, index)
+        {
+            return Some(ty);
+        }
+        let sub = |c: &Self, x: Option<(Ty, Ty, Span)>| {
+            x.map(|(k, o, s)| (c.inf.subst(&k, &subst), c.inf.subst(&o, &subst), s))
+        };
+        let (index_of, slice_of, set_of) =
+            (sub(self, index_of), sub(self, slice_of), sub(self, set_of));
         let key = at(base, index);
         let all_slices = match &index.kind {
             ExprKind::Part { .. } => true,
@@ -262,9 +286,19 @@ impl Checker<'_> {
         let Some(note) = self.user_index.get(&key).copied() else {
             return false;
         };
-        let Some(def) = self.def_of_base(base) else {
+        let Some((def, targs)) = self.def_of_base(base) else {
             return false;
         };
+        let subst = self.subst_of(def, &targs);
+        if self.has_many_keys(def) && matches!(note, "index" | "index[]") {
+            if op != AssignOp::Set {
+                self.error(target.span, "`x[k] op= v` is not for a program's own type: write `x[k] = x[k] op v` (spec 2.16)");
+                return true;
+            }
+            if self.many_index_set(def, &subst, target, value).is_some() {
+                return true;
+            }
+        }
         let Some((set_key, want, _)) = self.operators.get(&(def, "index_set")).cloned() else {
             self.error(
                 target.span,
@@ -276,6 +310,10 @@ impl Checker<'_> {
             self.error(target.span, "`IndexSet` sets one key: a slice or `#k` of a program's own type can't be set (spec 2.16)");
             return true;
         }
+        let (set_key, want) = (
+            self.inf.subst(&set_key, &subst),
+            self.inf.subst(&want, &subst),
+        );
         if let Some(got) = self.type_at(index.span) {
             self.key_fits(index, &got, &set_key);
         }
@@ -288,10 +326,10 @@ impl Checker<'_> {
         true
     }
 
-    fn def_of_base(&self, base: &Expr) -> Option<DefId> {
+    fn def_of_base(&self, base: &Expr) -> Option<(DefId, Vec<Ty>)> {
         let found = self.expr_types.iter().rev().find(|(s, _)| *s == base.span);
         match found.map(|(_, t)| self.inf.resolve(t)) {
-            Some(Ty::Adt(def, _)) => Some(def),
+            Some(Ty::Adt(def, args)) => Some((def, args)),
             _ => None,
         }
     }

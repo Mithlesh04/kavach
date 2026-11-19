@@ -109,6 +109,31 @@ pub(crate) const BUILTIN: &[(&str, &str, &str)] = &[
         include_str!("../../../stdlib/reflect/reflect.kav"),
     ),
     (
+        "std/tensor/shapes.kav",
+        "std.tensor.shapes",
+        include_str!("../../../stdlib/tensor/shapes.kav"),
+    ),
+    (
+        "std/tensor/exact.kav",
+        "std.tensor.exact",
+        include_str!("../../../stdlib/tensor/exact.kav"),
+    ),
+    (
+        "std/tensor/ops.kav",
+        "std.tensor.ops",
+        include_str!("../../../stdlib/tensor/ops.kav"),
+    ),
+    (
+        "std/tensor/reduce.kav",
+        "std.tensor.reduce",
+        include_str!("../../../stdlib/tensor/reduce.kav"),
+    ),
+    (
+        "std/tensor/order.kav",
+        "std.tensor.order",
+        include_str!("../../../stdlib/tensor/order.kav"),
+    ),
+    (
         "std/tensor.kav",
         "std.tensor",
         include_str!("../../../stdlib/tensor/tensor.kav"),

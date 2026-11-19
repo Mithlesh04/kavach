@@ -74,13 +74,15 @@ pub fn flatten<T>(lists: [[T]]) -> [T]
 
 /// A slice as written between `[ ]`, which a type's own `slice` method
 /// is given (spec 2.16): each part, `none` when it isn't written, and
-/// whether an end was written with `#`, counted from the end.
+/// whether an end was written with `#`, counted from the end. In a key
+/// of any length, `single` marks a place written as one number.
 pub type Part {
     pub start?: Int
     pub end?: Int
     pub step?: Int
     pub start_from_end: Bool = false
     pub end_from_end: Bool = false
+    pub single: Bool = false
 
     /// `start`, `end` and `step` as plain numbers for `len` items, as
     /// Python's `slice.indices` gives them: `#k` is `len - k`, the

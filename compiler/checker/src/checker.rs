@@ -129,6 +129,16 @@ pub(crate) struct Checker<'a> {
     /// Each type's operators (spec 2.16, `user_ops.rs`): by type and
     /// method, the other operand's type, the result's, and where.
     pub(crate) operators: HashMap<(DefId, &'static str), (Ty, Ty, Span)>,
+    /// A type's second and later implementations of one operator or
+    /// indexing interface, for other right operands or keys (`op_impls.rs`).
+    pub(crate) more_impls: HashMap<(DefId, &'static str), Vec<crate::op_impls::Impl>>,
+    /// The method each operator, index or call chose among methods written
+    /// more than once (`op_impls.rs`): by the use's key, or a call's name.
+    pub(crate) chosen: HashMap<(u32, u32), String>,
+    /// `Tensor<U>(t)` calls, and numbers given as tensors, by span
+    /// (`std_tensor.rs`).
+    pub(crate) tensor_casts: HashSet<(u32, u32)>,
+    pub(crate) as_tensors: HashMap<(u32, u32), Ty>,
     /// Types given for number-bounded parameters, checked once every
     /// literal's type is known (spec 2.9).
     pub(crate) number_checks: Vec<(DefId, Ty, Span)>,
@@ -305,6 +315,10 @@ impl<'a> Checker<'a> {
             drop_types: HashSet::new(),
             display_types: HashSet::new(),
             operators: HashMap::new(),
+            more_impls: HashMap::new(),
+            chosen: HashMap::new(),
+            tensor_casts: HashSet::new(),
+            as_tensors: HashMap::new(),
             number_checks: Vec::new(),
             ptr_checks: Vec::new(),
             filled_checks: Vec::new(),

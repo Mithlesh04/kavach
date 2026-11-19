@@ -1,0 +1,10 @@
+// Rule: An axis is from 0 up to `t.dims()`, not including it; another is a panic naming it.
+// Spec: 14.33
+// expect panic: `sum` has no axis 2: a tensor of 2 dimensions has axes 0 to 1
+
+use std.tensor
+
+fn main() {
+    const axis = 2
+    print(tensor.zeros<Int>([2, 3]).sum(axis: axis).items)
+}

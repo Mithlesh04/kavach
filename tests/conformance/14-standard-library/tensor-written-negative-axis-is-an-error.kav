@@ -1,0 +1,10 @@
+// Rule: A written negative axis is a compile error, as `xs[-1]` is.
+// Spec: 14.33
+// expect compile error
+
+use std.tensor
+
+fn main() {
+    const t = tensor.zeros<Int>([2, 3])
+    print(t.sum(axis: -1).items)   // error: axes count from 0
+}

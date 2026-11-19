@@ -1,0 +1,10 @@
+// Rule: Arithmetic needs `T: Number`: adding two masks is a compile error naming the bound.
+// Spec: 14.33
+// expect compile error
+
+use std.tensor
+
+fn main() {
+    const m = tensor.of([true, false])
+    print((m + m).items)   // error: `add` needs `T: Number`
+}

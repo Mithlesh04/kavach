@@ -1,0 +1,285 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
+// std.tensor.shapes (spec 14.33): the work on shapes that `std.tensor`
+// shares: counting, broadcasting, keys, and the lanes along an axis.
+// A tensor's numbers are one flat list, the last dimension's next to
+// each other, so each helper works on a shape and positions in that list.
+
+use std.collections.{Part}
+use std.tensor.{Tensor}
+
+/// How many numbers a tensor of `shape` holds; `none` for a negative
+/// size, or a count too big for an `Int`.
+pub fn count(shape: [Int]) -> Int?
+    example count([2, 3]) == 6
+    example count([]) == 1
+    example count([2, -1]) == none
+{
+    let n = 1
+    for s in shape {
+        if s < 0 {
+            return none
+        }
+        n = n.checked_mul(s) ?? return none
+    }
+    n
+}
+
+/// How many numbers a tensor of `shape`, a good one, holds.
+pub fn sized(shape: [Int]) -> Int
+    require count(shape) != none
+    example sized([2, 3]) == 6
+{
+    count(shape) ?? 0
+}
+
+/// Why `shape` is no tensor's: a panic's message.
+pub fn bad_shape(shape: [Int]) -> String {
+    `a shape's sizes are 0 or more, and {shape} has a negative one or holds too many`
+}
+
+/// How far apart in the flat list two places are, one apart along each
+/// dimension.
+pub fn strides(shape: [Int]) -> [Int]
+    require count(shape) != none
+    example strides([2, 3, 4]) == [12, 4, 1]
+{
+    let out: [Int] = []
+    let step = 1
+    for d in (0..shape.len()).to_list()[::-1] {
+        out.push(step)
+        step *= shape[d]
+    }
+    out[::-1]
+}
+
+/// The shape that `a` and `b` broadcast to (NumPy's rules), or `none`
+/// when they don't fit.
+pub fn broadcast(a: [Int], b: [Int]) -> [Int]?
+    example broadcast([2, 3], [3]) == [2, 3]
+    example broadcast([2, 1], [1, 4]) == [2, 4]
+    example broadcast([2, 3], [2]) == none
+{
+    const n = a.len().max(b.len())
+    let out: [Int] = []
+    for d in 0..n {
+        const x = if d < n - a.len() { 1 } else { a[d - (n - a.len())] }
+        const y = if d < n - b.len() { 1 } else { b[d - (n - b.len())] }
+        if x != y and x != 1 and y != 1 {
+            return none
+        }
+        out.push(if x == 1 { y } else { x })
+    }
+    out
+}
+
+/// Why `a` and `b` don't broadcast, for `op`: a panic's message naming
+/// both and the first sizes that don't fit.
+pub fn no_broadcast(a: [Int], b: [Int], op: String) -> String {
+    const n = a.len().max(b.len())
+    for d in 0..n {
+        const x = if d < n - a.len() { 1 } else { a[d - (n - a.len())] }
+        const y = if d < n - b.len() { 1 } else { b[d - (n - b.len())] }
+        if x != y and x != 1 and y != 1 {
+            return `\`{op}\` can't broadcast {a} with {b}: sizes {x} and {y} don't fit, and neither is 1`
+        }
+    }
+    `\`{op}\` can broadcast {a} with {b}`
+}
+
+/// The numbers `items` of a tensor of shape `s`, broadcast to shape
+/// `out`, in order: a size of 1 is used again for every place of the
+/// larger size.
+pub fn spread<T>(s: [Int], items: [T], out: [Int]) -> [T]
+    require count(s) == items.len() and count(out) != none
+    require broadcast(s, out) == out and s.len() <= out.len()
+    example spread([3], [1, 2, 3], [2, 3]) == [1, 2, 3, 1, 2, 3]
+    example spread([2, 1], [1, 2], [2, 2]) == [1, 1, 2, 2]
+{
+    const total = sized(out)
+    if s == out {
+        return items
+    }
+    const pad = out.len() - s.len()
+    const own = strides(s)
+    let steps: [Int] = []
+    for d in 0..out.len() {
+        steps.push(if d < pad or s[d - pad] == 1 { 0 } else { own[d - pad] })
+    }
+    let result: [T] = []
+    let at: [Int] = []
+    for _ in out {
+        at.push(0)
+    }
+    let pos = 0
+    for _ in 0..total {
+        result.push(items[pos])
+        let d = out.len() - 1
+        while d >= 0 {
+            at[d] += 1
+            pos += steps[d]
+            if at[d] < out[d] {
+                break
+            }
+            pos -= steps[d] * at[d]
+            at[d] = 0
+            d -= 1
+        }
+    }
+    result
+}
+
+/// The place one number of a key names in a dimension of size `size`:
+/// `#k` counts from its end. `none` when it is out of range.
+fn position(p: Part, size: Int) -> Int? {
+    const k = p.start ?? 0
+    const at = if p.start_from_end { size.checked_sub(k) ?? -1 } else { k }
+    if at < 0 or at >= size { none } else { at }
+}
+
+/// Why `key` picks nothing from a tensor of `shape`: a panic's message
+/// naming the index and the shape; empty when it picks something.
+pub fn bad_key(shape: [Int], key: [Part]) -> String {
+    if key.len() > shape.len() {
+        return `{key.len()} indexes for {shape}, which has {shape.len()} dimensions`
+    }
+    for (d, p) in key.enumerate() {
+        if p.single and position(p, shape[d]) == none {
+            const k = p.start ?? 0
+            const shown = if p.start_from_end { `#{k}` } else { `{k}` }
+            return `index {shown} is out of range for dimension {d} of {shape}, of size {shape[d]}`
+        }
+        if not p.single and p.step == 0 {
+            return "the step of a slice can't be 0"
+        }
+    }
+    ""
+}
+
+/// What a key of any length (spec 2.16) picks from `items`, the numbers
+/// of a tensor of `shape`: the positions in `items`, in order, and the
+/// shape of the result. A number drops its dimension; a slice keeps it;
+/// the dimensions after the key are taken whole.
+pub fn picked<T>(shape: [Int], items: [T], key: [Part]) -> ([Int], [Int])
+    require count(shape) == items.len()
+    require bad_key(shape, key) == ""
+{
+    const step = strides(shape)
+    let positions = [0]
+    let kept: [Int] = []
+    for d in 0..shape.len() {
+        let along: [Int] = []
+        if d >= key.len() {
+            along = (0..shape[d]).to_list()
+            kept.push(shape[d])
+        } else if key[d].single {
+            along = [position(key[d], shape[d]) ?? 0]
+        } else {
+            const (start, end, by) = key[d].bounds(shape[d])
+            let i = start
+            while (by > 0 and i < end) or (by < 0 and i > end) {
+                along.push(i)
+                i += by
+            }
+            kept.push(along.len())
+        }
+        let next: [Int] = []
+        for p in positions {
+            for i in along {
+                next.push(p + i * step[d])
+            }
+        }
+        positions = next
+    }
+    (positions, kept)
+}
+
+/// The flat position of one place `at`, one index per dimension; `none`
+/// when an index is out of range or the count is wrong.
+pub fn flat(shape: [Int], at: [Int]) -> Int?
+    require count(shape) != none
+    example flat([2, 3], [1, 2]) == 5
+    example flat([2, 3], [2, 0]) == none
+{
+    if at.len() != shape.len() {
+        return none
+    }
+    let place = 0
+    for (d, i) in at.enumerate() {
+        if i < 0 or i >= shape[d] {
+            return none
+        }
+        place = place * shape[d] + i
+    }
+    place
+}
+
+/// `axis`, or `none` when a tensor of `dims` dimensions has no such axis.
+pub fn axis_of(axis: Int, dims: Int) -> Int?
+    example axis_of(1, 2) == 1
+    example axis_of(2, 2) == none
+{
+    if axis < 0 or axis >= dims { none } else { axis }
+}
+
+/// The axis `what` works along in `t`: `axis`, or the last for `none`;
+/// one out of range is a panic naming it.
+pub fn axis_in<T>(t: Tensor<T>, axis: Int?, what: String) -> Int {
+    const a = axis ?? t.shape.len() - 1
+    axis_of(a, t.shape.len()) ?? panic(no_axis(a, t.shape.len(), what))
+}
+
+/// Why `what` can't work along `axis`: a panic's message naming it.
+pub fn no_axis(axis: Int, dims: Int, what: String) -> String {
+    `\`{what}\` has no axis {axis}: a tensor of {dims} dimensions has axes 0 to {dims.checked_sub(1) ?? 0}`
+}
+
+/// `shape` without dimension `axis`.
+pub fn without(shape: [Int], axis: Int) -> [Int]
+    require axis >= 0 and axis < shape.len()
+    example without([2, 3, 4], 1) == [2, 4]
+{
+    shape[:axis] + shape[axis + 1:]
+}
+
+/// The numbers along `axis`, one list for each place of the other
+/// dimensions, in the order of `without(shape, axis)`.
+pub fn lanes<T>(shape: [Int], items: [T], axis: Int) -> [[T]]
+    example lanes([2, 3], [1, 2, 3, 4, 5, 6], 0) == [[1, 4], [2, 5], [3, 6]]
+    example lanes([2, 3], [1, 2, 3, 4, 5, 6], 1) == [[1, 2, 3], [4, 5, 6]]
+{
+    const size = shape[axis]
+    const inner = sized(shape[axis + 1:])
+    const outer = sized(shape[:axis])
+    let out: [[T]] = []
+    for o in 0..outer {
+        for i in 0..inner {
+            let lane: [T] = []
+            for k in 0..size {
+                lane.push(items[(o * size + k) * inner + i])
+            }
+            out.push(lane)
+        }
+    }
+    out
+}
+
+/// The flat list of a tensor of `shape` whose lanes along `axis` are
+/// `parts`, as `lanes` gives them.
+pub fn from_lanes<T>(shape: [Int], parts: [[T]], axis: Int) -> [T]
+    example from_lanes([2, 3], [[1, 4], [2, 5], [3, 6]], 0) == [1, 2, 3, 4, 5, 6]
+{
+    const size = shape[axis]
+    const inner = sized(shape[axis + 1:])
+    let out: [T] = []
+    for o in 0..sized(shape[:axis]) {
+        for k in 0..size {
+            for i in 0..inner {
+                out.push(parts[o * inner + i][k])
+            }
+        }
+    }
+    out
+}

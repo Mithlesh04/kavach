@@ -1,0 +1,14 @@
+// Rule: Two implementations of one operator for the same right operand are a compile error.
+// Spec: 2.16
+// expect compile error
+
+type Meters: Add, Add<Meters> {   // error: implements `Add` twice for a `Meters`
+    n: Float
+
+    fn add(self, other: Meters) -> Meters { Meters(n: self.n + other.n) }
+    fn add(self, other: Meters) -> Meters { Meters(n: self.n + other.n) }
+}
+
+fn main() {
+    print((Meters(n: 1.0) + Meters(n: 2.0)).n)
+}

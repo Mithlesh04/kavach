@@ -1,0 +1,9 @@
+// Rule: `t.split(count)` of a size that `count` doesn't divide is a panic naming both.
+// Spec: 14.33
+// expect panic: `split` can't cut size 5 of axis 0 of [5] into 2 equal parts
+
+use std.tensor
+
+fn main() {
+    print(tensor.arange(0, 5).split(2).len())
+}

@@ -44,6 +44,9 @@ impl Checker<'_> {
                             }
                         }
                         DefKind::Type => {
+                            if let Some(t) = self.tensor_conversion(def, generics, args, e.span) {
+                                return t;
+                            }
                             return self.construct(def, None, args, e.span, &id.name, generics);
                         }
                         DefKind::Variant { of } => {
@@ -322,7 +325,7 @@ impl Checker<'_> {
             let actual = self.value(&a.value, Some(want));
             self.rethrow = passing.take();
             self.fitting = Some(self.made(&a.value));
-            let fits = self.coerce(&actual, want);
+            let fits = self.coerce(&actual, want) || self.number_as_tensor(&a.value, &actual, want);
             self.fitting = None;
             if !fits {
                 self.mismatch(&a.value, want, &actual);
