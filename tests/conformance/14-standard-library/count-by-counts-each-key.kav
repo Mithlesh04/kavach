@@ -1,0 +1,8 @@
+// Rule: `count_by(key)` gives how many items have each key, in the order first seen.
+// Spec: 14.2
+// expect output: {"to": 2, "be": 2, "or": 1, "not": 1}
+
+fn main() {
+    const words = "to be or not to be".split(" ")
+    print(words.count_by(w => w))
+}

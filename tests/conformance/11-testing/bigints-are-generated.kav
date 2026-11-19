@@ -1,0 +1,9 @@
+// Rule: functions that take a `BigInt` get generated `BigInt` arguments, which compare with other `BigInt`s like any.
+// Spec: 11.2, 2.1
+// expect test pass
+
+fn sign(n: BigInt) -> Int
+    ensure result >= -1 and result <= 1
+{
+    if n < BigInt(0) { -1 } else if n > BigInt(0) { 1 } else { 0 }
+}

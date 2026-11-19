@@ -1,0 +1,8 @@
+// Rule: `sum_by` on a list is a compile error that names `group_by(key).map_values(g => g.sum(f))` and `sum(f)`.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    const xs = [1, 2, 3]
+    print(xs.sum_by(x => x % 2, x => x))     // error: Kavach's is `group_by(key).map_values(g => g.sum(f))` for a sum per key, or `sum(f)`
+}

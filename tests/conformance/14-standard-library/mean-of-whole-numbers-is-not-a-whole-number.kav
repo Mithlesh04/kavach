@@ -1,0 +1,8 @@
+// Rule: the mean of whole numbers is a `Float`, so giving it an `Int` is a compile error.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    const m: Int? = [1, 2].mean(x => x)       // error: the mean of whole numbers is a `Float?`
+    print(m ?? 0)
+}

@@ -73,6 +73,41 @@ The tests are listed in four files, by area:
 | 14.2 | [float-fract-of-nan-and-infinity-is-nan.kav](float-fract-of-nan-and-infinity-is-nan.kav) | `x.fract()` is `x - math.floor(x)`, so it is `NaN` for `NaN` and for either infinity, and 0.0 for a whole number. | runs |
 | 14.2 | [float-from-bits-needs-a-uint64.kav](float-from-bits-needs-a-uint64.kav) | `Float.from_bits(n)` takes a `UInt64`; an `Int` is a compile error, as numbers never convert by themselves. | compile error |
 | 14.2 | [float-near-infinity-is-near-only-itself.kav](float-near-infinity-is-near-only-itself.kav) | `x.near(y)` is "equal but for rounding": infinity is near the same infinity, but not the other one and not the largest finite numbers. | runs |
+| 14.2 | [group-by-keeps-the-order-first-seen.kav](group-by-keeps-the-order-first-seen.kav) | `group_by(key)` gives the items for each key: keys in the order first seen, items in their order. | runs |
+| 14.2 | [count-by-counts-each-key.kav](count-by-counts-each-key.kav) | `count_by(key)` gives how many items have each key, in the order first seen. | runs |
+| 14.2 | [sum-per-key-is-group-by-and-map-values.kav](sum-per-key-is-group-by-and-map-values.kav) | a sum per key is `group_by(key).map_values(g => g.sum(f))`. | runs |
+| 14.2 | [group-by-keys-compare-as-dict-keys.kav](group-by-keys-compare-as-dict-keys.kav) | grouping keys are compared as a dict compares its keys: `0.0` and `-0.0` are one key, and a tuple groups by several keys at once. | runs |
+| 14.2 | [grouping-keys-are-checked.kav](grouping-keys-are-checked.kav) | every key and column is a lambda, so a misspelled field is a compile error. | compile error |
+| 14.2 | [dict-map-values-keeps-the-keys.kav](dict-map-values-keeps-the-keys.kav) | `d.map_values(f)` gives the same keys, in their order, each value through `f`. | runs |
+| 14.2 | [dict-to-list-gives-the-pairs-in-order.kav](dict-to-list-gives-the-pairs-in-order.kav) | `d.to_list()` gives the keys and values as pairs, in insertion order, so the list's methods apply. | runs |
+| 14.2 | [unique-keeps-the-first-of-each.kav](unique-keeps-the-first-of-each.kav) | `unique()` gives each item once, and `unique_by(key)` the first item with each key, in the order first seen. | runs |
+| 14.2 | [min-by-and-max-by-give-the-first-on-a-tie.kav](min-by-and-max-by-give-the-first-on-a-tie.kav) | `min_by(f)` and `max_by(f)` give the item whose `f(item)` is smallest or largest, the first one on a tie, and `none` for an empty list. | runs |
+| 14.2 | [min-by-needs-an-ordered-key.kav](min-by-needs-an-ordered-key.kav) | `min_by`'s key must have an order, as `sort_by`'s must: a record key is a compile error. | compile error |
+| 14.2 | [max-by-puts-nan-last.kav](max-by-puts-nan-last.kav) | `min_by` and `max_by` order keys as `sort` does, `NaN` after every number. | runs |
+| 14.2 | [mean-of-whole-numbers-is-a-float.kav](mean-of-whole-numbers-is-a-float.kav) | `mean(f)` gives the average of `f(item)` as a `Float` for whole numbers and `Float`, and `none` for an empty list. | runs |
+| 14.2 | [mean-keeps-float32-and-decimal.kav](mean-keeps-float32-and-decimal.kav) | `mean` and `median` give a `Float32` for `Float32` and a `Decimal` for `Decimal`. | runs |
+| 14.2 | [mean-of-whole-numbers-is-not-a-whole-number.kav](mean-of-whole-numbers-is-not-a-whole-number.kav) | the mean of whole numbers is a `Float`, so giving it an `Int` is a compile error. | compile error |
+| 14.2 | [mean-adds-exactly.kav](mean-adds-exactly.kav) | `mean` adds exactly, with no overflow, and rounds once: the result is the number nearest the true mean. | runs |
+| 14.2 | [median-is-halfway-for-an-even-count.kav](median-is-halfway-for-an-even-count.kav) | `median(f)` is the middle value in sorted order, halfway between the two middle ones for an even count, and `none` for an empty list. | runs |
+| 14.2 | [var-and-std-divide-by-count-minus-one.kav](var-and-std-divide-by-count-minus-one.kav) | `var(f)` and `std(f)` divide by the count minus 1 unless `correction:` says otherwise; `correction: 0` gives the population form. | runs |
+| 14.2 | [var-needs-more-items-than-correction.kav](var-needs-more-items-than-correction.kav) | `var` and `std` are `none` when the count is not above `correction`. | runs |
+| 14.2 | [describe-gives-a-summary.kav](describe-gives-a-summary.kav) | `describe(f)` gives the count, mean, standard deviation, smallest value, quartiles and largest value, quartiles at 0.25, 0.5 and 0.75 of the way through the sorted values. | runs |
+| 14.2 | [statistics-never-skip-nan.kav](statistics-never-skip-nan.kav) | a `NaN` makes `mean`, `var` and `std` `NaN`, and `median` sorts it after every number: nothing is skipped. | runs |
+| 14.2 | [inner-join-gives-every-matching-pair.kav](inner-join-gives-every-matching-pair.kav) | `inner_join(other, key, other_key, row)` gives `row(a, b)` for every pair with equal keys, in the order of the items, and a match's in the order of `other`. | runs |
+| 14.2 | [left-join-keeps-items-that-match-nothing.kav](left-join-keeps-items-that-match-nothing.kav) | `left_join` gives what `inner_join` gives, and `row(a, none)` for each item `a` that matches nothing. | runs |
+| 14.2 | [join-keys-are-of-one-type.kav](join-keys-are-of-one-type.kav) | a join's two keys are of one type: an `Int` key and a `String` key are a compile error. | compile error |
+| 14.2 | [pivot-groups-by-two-keys.kav](pivot-groups-by-two-keys.kav) | `pivot(row_key, column_key, cell)` gives, for each row key and in it each column key, `cell` of the items with both; a missing cell is read with `??`. | runs |
+| 14.2 | [columns-are-picked-out-with-map.kav](columns-are-picked-out-with-map.kav) | picking columns out of a list of records is `map` to an anonymous record. | runs |
+| 14.2 | [a-range-groups-and-averages.kav](a-range-groups-and-averages.kav) | a range has the grouping and statistics methods, as it has every method that reads a list. | runs |
+| 14.2 | [sum-by-names-group-by-and-sum.kav](sum-by-names-group-by-and-sum.kav) | `sum_by` on a list is a compile error that names `group_by(key).map_values(g => g.sum(f))` and `sum(f)`. | compile error |
+| 14.2 | [value-counts-names-count-by.kav](value-counts-names-count-by.kav) | `value_counts` on a list is a compile error that names `count_by(key)`. | compile error |
+| 14.2 | [distinct-names-unique.kav](distinct-names-unique.kav) | `distinct` and `drop_duplicates` on a list are compile errors that name `unique()` and `unique_by(key)`. | compile error |
+| 14.2 | [merge-names-inner-join.kav](merge-names-inner-join.kav) | `merge` on a list is a compile error that names `inner_join` and `left_join`. | compile error |
+| 14.2 | [join-given-lambdas-names-inner-join.kav](join-given-lambdas-names-inner-join.kav) | `join` given lambdas joins no text: it is a compile error that names `inner_join`. | compile error |
+| 14.2 | [select-names-map.kav](select-names-map.kav) | `select` on a list is a compile error that names `map` to an anonymous record. | compile error |
+| 14.2 | [average-names-mean.kav](average-names-mean.kav) | `average` and `avg` on a list are compile errors that name `mean(f)`. | compile error |
+| 14.5 | [math-mean-is-a-list-method.kav](math-mean-is-a-list-method.kav) | `math.mean(xs)` is a compile error that names the list method `xs.mean(x => x)`. | compile error |
+| 14.9 | [collections-unique-and-counts-are-list-methods.kav](collections-unique-and-counts-are-list-methods.kav) | `collections.unique(items)` and `collections.counts(items)` are compile errors that name the list methods `items.unique()` and `items.count_by(x => x)`. | compile error |
 | 14.2 | [float-near-nan-is-near-nothing.kav](float-near-nan-is-near-nothing.kav) | `NaN` is near nothing: not a number, not infinity, not zero, from either side, for `Float32` too. | runs |
 | 14.2 | [list-count-needs-a-bool-test.kav](list-count-needs-a-bool-test.kav) | `items.count(f)` takes an `f` that gives a `Bool`; one that gives a number is a compile error. | compile error |
 | 14.2 | [list-index-of-compares-by-value.kav](list-index-of-compares-by-value.kav) | `index_of` finds the first item equal to `x` by value, as `==` compares: records, tuples, text and lists. | runs |
@@ -176,14 +211,14 @@ The tests are listed in four files, by area:
 | 14.5 | [math-functions.kav](math-functions.kav) | std.math has sqrt, pow, floor, ceil, round, pi and e. | runs |
 | 14.5 | [math-angles-exp-and-ln.kav](math-angles-exp-and-ln.kav) | `std.math` has `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `exp` and `ln`, for `Float` and `Float32`. | runs |
 | 14.5 | [math-roots-logs-and-gamma.kav](math-roots-logs-and-gamma.kav) | `std.math` has `log10`, `cbrt`, `hypot`, `remainder`, `erfc` and `lgamma`; `remainder` rounds to even at a tie. | runs |
-| 14.5 | [math-module.kav](math-module.kav) | `std.math` has the runtime's `sqrt` and `pi` and, written in Kavach, `gcd`, `lcm`, `factorial`, `is_prime` and `mean`. | runs |
+| 14.5 | [math-module.kav](math-module.kav) | `std.math` has the runtime's `sqrt` and `pi` and, written in Kavach, `gcd`, `lcm`, `factorial` and `is_prime`. | runs |
 | 14.5 | [math-atan2-covers-every-quarter.kav](math-atan2-covers-every-quarter.kav) | `math.atan2(y, x)` is the angle of the point `(x, y)`, from -π to π, in each of the four quarters. | runs |
 | 14.5 | [math-constants-are-full-precision-floats.kav](math-constants-are-full-precision-floats.kav) | `math.pi` and `math.e` are `Float` constants, the nearest `Float` to each number. | runs |
 | 14.5 | [math-erfc-is-exact-far-out.kav](math-erfc-is-exact-far-out.kav) | `math.erfc(x)` is `1 - erf(x)`, exact even where `erf(x)` is near 1, so it does not drop to 0. | runs |
 | 14.5 | [math-factorial-stops-at-20.kav](math-factorial-stops-at-20.kav) | `math.factorial(n)` is `n!` for `0 <= n <= 20`; 21! doesn't fit in `Int`, so asking for it panics. | panic |
 | 14.5 | [math-hypot-does-not-vanish.kav](math-hypot-does-not-vanish.kav) | `math.hypot(x, y)` is the length of `(x, y)` without the squares vanishing on the way: tiny lengths are not 0. | runs |
 | 14.5 | [math-lgamma-of-big-and-negative-numbers.kav](math-lgamma-of-big-and-negative-numbers.kav) | `math.lgamma(x)` is the natural logarithm of the absolute value of the gamma function: `ln(n!)` for big `n`, and defined where gamma is negative. | runs |
-| 14.5 | [math-mean-and-primes-at-the-edges.kav](math-mean-and-primes-at-the-edges.kav) | `math.mean` of an empty list is `none`; `math.is_prime` is false for 0, 1 and negative numbers. | runs |
+| 14.5 | [math-is-prime-at-the-edges.kav](math-is-prime-at-the-edges.kav) | `math.is_prime` is false for 0, 1 and negative numbers. | runs |
 | 14.5 | [math-out-of-domain-gives-nan.kav](math-out-of-domain-gives-nan.kav) | `asin` and `acos` of a number past -1 to 1, and `ln` of a negative number, are `NaN`; `ln` of 0 is minus infinity. | runs |
 | 14.5 | [math-remainder-differs-from-percent.kav](math-remainder-differs-from-percent.kav) | `math.remainder(x, y)` is `x - n * y` with `n` the whole number nearest `x / y`, an even one at a tie; `%` keeps `x`'s sign. | runs |
 | 14.5 | [math-round-floor-and-ceil-of-negatives.kav](math-round-floor-and-ceil-of-negatives.kav) | `floor` rounds down, `ceil` up, and `round` to the nearest, a half away from zero; all three are exact. | runs |
@@ -230,7 +265,7 @@ The tests are listed in four files, by area:
 | 14.8 | [regex-replace-changes-only-the-first-match.kav](regex-replace-changes-only-the-first-match.kav) | `replace` changes only the first match and `replace_all` every one; `$1` inserts a group, and text without a match comes back as it was. | runs |
 | 14.8 | [regexes-are-equal-when-their-patterns-are.kav](regexes-are-equal-when-their-patterns-are.kav) | Two `Regex` values are equal when their patterns are, even when the patterns match the same text. | runs |
 | 14.9 | [text-finds-numbers.kav](text-finds-numbers.kav) | `std.text` finds numbers inside other text. | runs |
-| 14.9 | [collections-module.kav](collections-module.kav) | `std.collections` makes chunks, zips two lists, keeps each item once, counts items and flattens lists. | runs |
+| 14.9 | [collections-module.kav](collections-module.kav) | `std.collections` makes chunks, zips two lists and flattens lists. | runs |
 | 14.9 | [text-normal-forms.kav](text-normal-forms.kav) | `text.nfc`, `nfd`, `nfkc` and `nfkd` give a text in a Unicode normal form. | runs |
 | 14.9 | [chunks-of-size-zero-panics.kav](chunks-of-size-zero-panics.kav) | `collections.chunks` needs a `size` above 0: its contract says so, and a call that breaks it panics. | panic |
 | 14.9 | [collections-module-takes-empty-lists.kav](collections-module-takes-empty-lists.kav) | `std.collections` gives empty results for empty input; `zip` stops at the shorter list, and `chunks` makes one short list for fewer items than `size`. | runs |

@@ -13,7 +13,7 @@ Written in Kavach, with contracts and examples like any other code.
 | `collections.flatten(lists)` | The items of all the lists, in order |
 | `Part`, `part.bounds(len)` | A slice as written, which a type's own `slice` method is given, and its plain numbers for `len` items (2.16) |
 
-*Not built yet:* Each item once, and how many times each item appears, are list methods (14.2): `items.unique()` and `items.count_by(x => x)`. `collections.unique` and `collections.counts` are compile errors that name them ([decision 0135](../../decisions/0135-tables-and-grouping.md)).
+Each item once, and how many times each item appears, are list methods (14.2): `items.unique()` and `items.count_by(x => x)`. `collections.unique` and `collections.counts` are compile errors that name them ([decision 0135](../../decisions/0135-tables-and-grouping.md)).
 
 **Finding numbers in text.** `Int(s)` reads the whole text strictly and fails on anything else (2.1). The `find_` functions look for numbers *inside* other text instead, by these rules, so the result never depends on guesswork:
 

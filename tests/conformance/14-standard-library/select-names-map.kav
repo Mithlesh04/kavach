@@ -1,0 +1,13 @@
+// Rule: `select` on a list is a compile error that names `map` to an anonymous record.
+// Spec: 14.2
+// expect compile error
+
+type Sale {
+    region: String
+    amount: Float
+}
+
+fn main() {
+    const sales = [Sale(region: "north", amount: 1.0)]
+    print(sales.select(.region))     // error: Kavach's is `map(x => (a: x.a, b: x.b))`
+}

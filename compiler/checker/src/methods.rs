@@ -136,6 +136,7 @@ impl Checker<'_> {
                 self.check_wheres(*owner, &n, &subst, e.span);
             }
             let t = self.apply(&sig, subst, generics, args, e.span, &name.name);
+            self.settle_stats(&name.name, &sig, args, &t);
             // `frame.draw(p, …)` gives what `p`'s vertex fn takes (15.3).
             if name.name == "draw"
                 && matches!(&recv, Ty::Adt(d, _) if self.res.defs[*d].name == "Frame")
@@ -162,6 +163,9 @@ impl Checker<'_> {
         }
         // `xs.slice(1, 3)`, `xs.take(n)`…: gone, for the slice (spec 2.19).
         if let Some(t) = self.removed_for_slice(&recv, base, name, args) {
+            return t;
+        }
+        if let Some(t) = self.join_given_lambdas(&recv, name, args) {
             return t;
         }
         if let Some(t) = self.view_call(&recv, &name.name, args) {
@@ -197,7 +201,9 @@ impl Checker<'_> {
                 self.check_captured_change(base);
             }
             let key = match (&recv, name.name.as_str(), m.params.first()) {
-                (Ty::List(_), "sort_by", Some(Ty::Fn(_, key, _))) => Some((**key).clone()),
+                (Ty::List(_), "sort_by" | "min_by" | "max_by", Some(Ty::Fn(_, key, _))) => {
+                    Some((**key).clone())
+                }
                 _ => None,
             };
             // `prices.sum()`: say what the call takes.
@@ -237,7 +243,8 @@ impl Checker<'_> {
             // `people.sort_by(p => (p.age, p.name))`: the key must have an
             // order (spec 14.2).
             if let (Some(key), Some(arg)) = (key, args.first()) {
-                self.require_order(&key, arg.value.span, "`sort_by`'s key");
+                let what = format!("`{}`'s key", name.name);
+                self.require_order(&key, arg.value.span, &what);
             }
             return ret;
         }
@@ -291,7 +298,9 @@ impl Checker<'_> {
             let hint = self.dict_read_hint(base, &recv, &name.name, args.len());
             self.error(
                 name.span,
-                match kavach_name(&recv, &name.name).or(self.numpy_name(&recv, &name.name)) {
+                match (kavach_name(&recv, &name.name).or(self.numpy_name(&recv, &name.name)))
+                    .or(crate::table_methods::table_name(&recv, &name.name))
+                {
                     Some(k) => {
                         format!("`{shown}` has no method `{}`: Kavach's is `{k}`", name.name)
                     }
@@ -459,6 +468,9 @@ impl Checker<'_> {
                         self.show(target)
                     ),
                 );
+                continue;
+            }
+            if self.added_twice(kind, &name, &sig, target) {
                 continue;
             }
             self.ext_targets

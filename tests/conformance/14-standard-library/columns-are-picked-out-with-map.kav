@@ -1,0 +1,14 @@
+// Rule: picking columns out of a list of records is `map` to an anonymous record.
+// Spec: 14.2
+// expect output: [(amount: 120.0, region: "north"), (amount: 80.0, region: "south")]
+
+type Sale {
+    region: String
+    month: Int
+    amount: Float
+}
+
+fn main() {
+    const sales = [Sale(region: "north", month: 1, amount: 120.0), Sale(region: "south", month: 1, amount: 80.0)]
+    print(sales.map(s => (region: s.region, amount: s.amount)))
+}

@@ -1,0 +1,10 @@
+// Rule: `d.to_list()` gives the keys and values as pairs, in insertion order, so the list's methods apply.
+// Spec: 14.2
+// expect output: [("b", 2), ("a", 1)]
+// expect output: [("c", 3), ("b", 2)]
+
+fn main() {
+    print({"b": 2, "a": 1}.to_list())
+    const counts = {"a": 1, "c": 3, "b": 2}
+    print(counts.to_list().sort_by(p => -p.1)[:2])
+}

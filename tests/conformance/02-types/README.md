@@ -103,6 +103,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.5 | [collections-take-added-methods.kav](collections-take-added-methods.kav) | `extend<T> [T]`, `[K: V]`, `Set<T>` and `Ring<T>` add methods for every item type; a range has a list's. | runs |
 | 2.5 | [collection-extend-names-its-item-types.kav](collection-extend-names-its-item-types.kav) | An extend of a collection names each item type: `extend [Int]` is an error. | compile error |
 | 2.5 | [added-methods-keep-built-in-names.kav](added-methods-keep-built-in-names.kav) | A method added to a collection can't take the name of one it has. | compile error |
+| 2.5 | [added-methods-keep-grouping-names.kav](added-methods-keep-grouping-names.kav) | A method added to a list can't take the name of a grouping or statistics method (14.2), as it can't take `len`. | compile error |
 | 2.5 | [methods.kav](methods.kav) | Methods take self; functions without self are called on the type. | runs |
 | 2.9 | [generic-type-methods-know-their-type-arguments.kav](generic-type-methods-know-their-type-arguments.kav) | Inside a generic type's methods, its type parameter is the type the value was made with, so `json.decode<I>` decodes into it. | runs |
 | 2.5, 14.2 | [methods-may-share-collection-names.kav](methods-may-share-collection-names.kav) | A type's own `add`, `push` or `remove` is its method, not the built-in one of lists, maps and sets. | runs |

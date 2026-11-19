@@ -1,0 +1,20 @@
+// Rule: `group_by(key)` gives the items for each key: keys in the order first seen, items in their order.
+// Spec: 14.2
+// expect output: {"north": [120.0, 100.0], "south": [80.0]}
+// expect output: {:}
+
+type Sale {
+    region: String
+    amount: Float
+}
+
+fn main() {
+    const sales = [
+        Sale(region: "north", amount: 120.0),
+        Sale(region: "south", amount: 80.0),
+        Sale(region: "north", amount: 100.0),
+    ]
+    print(sales.group_by(.region).map_values(g => g.map(s => s.amount)))
+    const none_yet: [Sale] = []
+    print(none_yet.group_by(.region))
+}

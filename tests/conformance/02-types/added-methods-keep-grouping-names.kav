@@ -1,0 +1,13 @@
+// Rule: a method added to a list can't take the name of a grouping or statistics method (14.2), as it can't take `len`.
+// Spec: 2.5
+// expect compile error
+
+extend<T> [T] {
+    fn mean(self) -> Int {      // error: `[T]` already has a method `mean`
+        self.len()
+    }
+}
+
+fn main() {
+    print([1, 2].mean(x => x) ?? 0.0)
+}

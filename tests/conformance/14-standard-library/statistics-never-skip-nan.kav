@@ -1,0 +1,9 @@
+// Rule: a `NaN` makes `mean`, `var` and `std` `NaN`, and `median` sorts it after every number: nothing is skipped.
+// Spec: 14.2
+// expect output: NaN NaN 3.0
+
+fn main() {
+    const nan = 0.0 / 0.0
+    const xs = [1.0, nan, 3.0]
+    print(`{xs.mean(x => x) ?? 0.0} {xs.std(x => x) ?? 0.0} {xs.median(x => x) ?? 0.0}`)
+}

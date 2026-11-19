@@ -1,0 +1,9 @@
+// Rule: `var` and `std` are `none` when the count is not above `correction`.
+// Spec: 14.2
+// expect output: none none
+// expect output: 0.0
+
+fn main() {
+    print(`{[5.0].var(x => x)} {[5.0, 6.0].std(x => x, correction: 2)}`)
+    print([5.0].var(x => x, correction: 0) ?? 1.0)
+}

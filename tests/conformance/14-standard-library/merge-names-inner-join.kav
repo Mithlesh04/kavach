@@ -1,0 +1,7 @@
+// Rule: `merge` on a list is a compile error that names `inner_join` and `left_join`.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    print([1, 2].merge([2, 3]))     // error: Kavach's is `inner_join(other, key, other_key, row)`
+}

@@ -1,0 +1,19 @@
+// Rule: `left_join` gives what `inner_join` gives, and `row(a, none)` for each item `a` that matches nothing.
+// Spec: 14.2
+// expect output: [(name: "ravi", total: 5.0), (name: "unknown", total: 7.0)]
+
+type User {
+    id: Int
+    name: String
+}
+
+type Order {
+    user_id: Int
+    total: Float
+}
+
+fn main() {
+    const users = [User(id: 2, name: "ravi")]
+    const orders = [Order(user_id: 2, total: 5.0), Order(user_id: 3, total: 7.0)]
+    print(orders.left_join(users, .user_id, .id, (o, u) => (name: u?.name ?? "unknown", total: o.total)))
+}

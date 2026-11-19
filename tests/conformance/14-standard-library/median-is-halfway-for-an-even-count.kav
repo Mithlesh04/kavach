@@ -1,0 +1,10 @@
+// Rule: `median(f)` is the middle value in sorted order, halfway between the two middle ones for an even count, and `none` for an empty list.
+// Spec: 14.2
+// expect output: 2.0 2.5
+// expect output: none
+
+fn main() {
+    print(`{[3, 1, 2].median(x => x) ?? 0.0} {[4, 1, 3, 2].median(x => x) ?? 0.0}`)
+    const empty: [Float] = []
+    print(empty.median(x => x))
+}

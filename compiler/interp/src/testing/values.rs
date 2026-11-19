@@ -175,7 +175,11 @@ impl<'a> Interp<'a> {
                         _ => rng.range(lo, hi),
                     },
                 };
-                Value::Int(n, *p)
+                // A `BigInt` is a value of its own, as its literals are.
+                match p {
+                    Prim::BigInt => Value::BigInt(Rc::new(n.into())),
+                    p => Value::Int(n, *p),
+                }
             }
             Gen::Float => {
                 const EDGES: [f64; 6] = [0.0, 1.0, -1.0, 0.5, 1e300, -1e-300];

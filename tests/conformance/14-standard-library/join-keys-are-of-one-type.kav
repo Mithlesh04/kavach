@@ -1,0 +1,12 @@
+// Rule: a join's two keys are of one type: an `Int` key and a `String` key are a compile error.
+// Spec: 14.2
+// expect compile error
+
+type User {
+    name: String
+}
+
+fn main() {
+    const users = [User(name: "asha")]
+    print([1, 2].inner_join(users, x => x, u => u.name, (x, u) => x).len())       // error: the keys differ in type
+}

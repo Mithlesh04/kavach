@@ -1,0 +1,19 @@
+// Rule: `inner_join(other, key, other_key, row)` gives `row(a, b)` for every pair with equal keys, in the order of the items, and a match's in the order of `other`.
+// Spec: 14.2
+// expect output: [(name: "ravi", total: 5.0), (name: "asha", total: 2.5), (name: "ash", total: 2.5)]
+
+type User {
+    id: Int
+    name: String
+}
+
+type Order {
+    user_id: Int
+    total: Float
+}
+
+fn main() {
+    const users = [User(id: 1, name: "asha"), User(id: 2, name: "ravi"), User(id: 1, name: "ash")]
+    const orders = [Order(user_id: 2, total: 5.0), Order(user_id: 3, total: 7.0), Order(user_id: 1, total: 2.5)]
+    print(orders.inner_join(users, .user_id, .id, (o, u) => (name: u.name, total: o.total)))
+}

@@ -1,0 +1,8 @@
+// Rule: `join` given lambdas joins no text: it is a compile error that names `inner_join`.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    const a = ["x", "y"]
+    print(a.join(["y"], s => s, s => s, (p, q) => p + q))     // error: a join on a key is `inner_join(other, key, other_key, row)`
+}

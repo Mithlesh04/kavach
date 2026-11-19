@@ -90,8 +90,6 @@ A ring (`Ring<T>`, 2.2) has `push`, `len`, `is_empty`, `is_full`, `first`, `last
 
 ### Grouping and statistics
 
-*Not built yet.*
-
 A list of records works like a table. It can be grouped, counted and summed per key, summarized, and joined with another list on a key, as pandas, polars and R's dplyr do ([decision 0135](../../decisions/0135-tables-and-grouping.md)). Every key and every column is a lambda, so the compiler checks it: a misspelled field is a compile error, not a wrong answer. `std.table` (14.34) has the same methods for big data kept in columns.
 
 ```kavach
@@ -143,7 +141,7 @@ Dicts:
 **Numbers.** `mean`, `median`, `var`, `std` and `describe` take a lambda that gives any number type (`Number`, 2.9), as `sum` does. Sums and means are exact, so they give the same bits in any order: on one core, on all cores and on the GPU (15.5):
 
 - `mean` and `median` give a `Float` for whole numbers and `Float`, a `Float32` for `Float32`, and a `Decimal` for `Decimal`. `var`, `std` and `describe` give `Float`s for every number type.
-- `sum(f)` of floats (`Float` or `Float32`) is the exact sum of the values, rounded once to the lambda's type ([decision 0135](../../decisions/0135-tables-and-grouping.md)). So `[1e20, 1.0, -1e20].sum(x => x)` is `1.0`, where adding in order gives `0.0`. A NaN, or infinities of both signs, give NaN; an infinity gives that infinity; an exact sum past the type's largest value gives an infinity. A sum of zeros is `-0.0` only when every value is `-0.0`, as IEEE 754 says.
+- *Not built yet:* `sum(f)` of floats (`Float` or `Float32`) is the exact sum of the values, rounded once to the lambda's type ([decision 0135](../../decisions/0135-tables-and-grouping.md)). So `[1e20, 1.0, -1e20].sum(x => x)` is `1.0`, where adding in order gives `0.0`. A NaN, or infinities of both signs, give NaN; an infinity gives that infinity; an exact sum past the type's largest value gives an infinity. A sum of zeros is `-0.0` only when every value is `-0.0`, as IEEE 754 says.
 - `mean` adds exactly too, with no overflow, and divides the exact sum by the count, rounding once: the result is the number nearest the true mean, for whole numbers, `Decimal`s and floats alike.
 - `var` works out the mean first. Each squared difference from it is a float, and they are added exactly, as `sum` adds.
 - `median` and `describe` sort as `sort` does: NaN after every number. A NaN makes `mean`, `var` and `std` NaN, as IEEE 754 does. Nothing is skipped without saying: to leave values out, `filter` them first.

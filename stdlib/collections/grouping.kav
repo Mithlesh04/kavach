@@ -1,0 +1,139 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
+// std.collections.grouping (spec 14.2, decision 0135): a list of records
+// worked on as a table: grouped, counted, made unique, joined and
+// pivoted, by keys that are lambdas, so the compiler checks every one;
+// and the dict methods that turn the groups into results. The compiler
+// adds this module to a program that calls one of its methods.
+
+extend<T> [T] {
+    /// The items for each `key(item)`: keys in the order first seen,
+    /// items in their order.
+    pub fn group_by<K>(self, key: fn(T) -> K) -> {K: [T]}
+        example [1, 2, 3, 4, 5].group_by(x => x % 2) == {1: [1, 3, 5], 0: [2, 4]}
+        example [""].group_by(s => s.len()) == {0: [""]}
+    {
+        let out: {K: [T]} = {:}
+        for item in self {
+            const k = key(item)
+            if out.contains_key(k) {
+                out[k].push(item)
+            } else {
+                out[k] = [item]
+            }
+        }
+        out
+    }
+
+    /// How many items have each key, in the order first seen.
+    pub fn count_by<K>(self, key: fn(T) -> K) -> {K: Int}
+        example ["a", "b", "a"].count_by(w => w) == {"a": 2, "b": 1}
+    {
+        let out: {K: Int} = {:}
+        for item in self {
+            const k = key(item)
+            out[k] = (out[k] ?? 0) + 1
+        }
+        out
+    }
+
+    /// Each item once, in the order first seen.
+    pub fn unique(self) -> [T]
+        example [3, 1, 3, 2, 1].unique() == [3, 1, 2]
+    {
+        let seen: Set<T> = Set.of()
+        let out: [T] = []
+        for item in self {
+            if not seen.contains(item) {
+                seen.add(item)
+                out.push(item)
+            }
+        }
+        out
+    }
+
+    /// The first item with each key, in order.
+    pub fn unique_by<K>(self, key: fn(T) -> K) -> [T]
+        example ["ab", "c", "de", "f"].unique_by(s => s.len()) == ["ab", "c"]
+    {
+        let seen: Set<K> = Set.of()
+        let out: [T] = []
+        for item in self {
+            const k = key(item)
+            if not seen.contains(k) {
+                seen.add(k)
+                out.push(item)
+            }
+        }
+        out
+    }
+
+    /// `row(a, b)` for each item `a`, and each item `b` of `other` with
+    /// `key(a) == other_key(b)`: in the order of the items, and a match's
+    /// in the order of `other`.
+    pub fn inner_join<U, K, S>(self, other: [U], key: fn(T) -> K, other_key: fn(U) -> K, row: fn(T, U) -> S) -> [S]
+        example [1, 2, 3].inner_join([30, 10, 11], x => x, y => y / 10, (x, y) => x + y) == [11, 12, 33]
+    {
+        const by = other.group_by(other_key)
+        let out: [S] = []
+        for a in self {
+            for b in by[key(a)] ?? [] {
+                out.push(row(a, b))
+            }
+        }
+        out
+    }
+
+    /// The same as `inner_join`, and `row(a, none)` for each item `a`
+    /// that matches nothing.
+    pub fn left_join<U, K, S>(self, other: [U], key: fn(T) -> K, other_key: fn(U) -> K, row: fn(T, U?) -> S) -> [S]
+        example [1, 2].left_join([10], x => x, y => y / 10, (x, y) => x + (y ?? 0)) == [11, 2]
+    {
+        const by = other.group_by(other_key)
+        let out: [S] = []
+        for a in self {
+            const found = by[key(a)] ?? []
+            if found.is_empty() {
+                out.push(row(a, none))
+            }
+            for b in found {
+                out.push(row(a, b))
+            }
+        }
+        out
+    }
+
+    /// For each `row_key(item)`, and in it each `column_key(item)`, `cell`
+    /// of the items with both keys: two `group_by`s.
+    pub fn pivot<R, C, V>(self, row_key: fn(T) -> R, column_key: fn(T) -> C, cell: fn([T]) -> V) -> {R: {C: V}}
+        example [1, 2, 3, 4].pivot(x => x % 2, x => x > 2, g => g.len()) == {1: {false: 1, true: 1}, 0: {false: 1, true: 1}}
+    {
+        self.group_by(row_key).map_values(g => g.group_by(column_key).map_values(cell))
+    }
+}
+
+extend<K, V> {K: V} {
+    /// The same keys, in their order, each value through `f`.
+    pub fn map_values<U>(self, f: fn(V) -> U) -> {K: U}
+        example {"a": [1, 2], "b": []}.map_values(g => g.len()) == {"a": 2, "b": 0}
+    {
+        let out: {K: U} = {:}
+        for (k, v) in self {
+            out[k] = f(v)
+        }
+        out
+    }
+
+    /// The keys and values as pairs, in insertion order.
+    pub fn to_list(self) -> [(K, V)]
+        example {"b": 2, "a": 1}.to_list() == [("b", 2), ("a", 1)]
+    {
+        let out: [(K, V)] = []
+        for (k, v) in self {
+            out.push((k, v))
+        }
+        out
+    }
+}

@@ -1,0 +1,9 @@
+// Rule: `min_by` and `max_by` order keys as `sort` does, `NaN` after every number.
+// Spec: 14.2
+// expect output: 1.0 NaN
+
+fn main() {
+    const nan = 0.0 / 0.0
+    const xs = [2.0, nan, 1.0]
+    print(`{xs.min_by(x => x) ?? 0.0} {xs.max_by(x => x) ?? 0.0}`)
+}

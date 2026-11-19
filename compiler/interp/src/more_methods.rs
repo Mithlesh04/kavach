@@ -135,6 +135,22 @@ impl<'a> Interp<'a> {
                 keyed.sort_by(|a, b| order(&a.0, &b.0));
                 list(keyed.into_iter().map(|(_, x)| x).collect())
             }
+            // The first item of the smallest key, or of the largest, in
+            // the order `sort_by` uses (spec 14.2).
+            "min_by" | "max_by" => {
+                let mut best: Option<(Value<'a>, Value<'a>)> = None;
+                for x in items.iter() {
+                    let k = self.call_value(arg.clone(), vec![x.clone()], span)?;
+                    let better = best.as_ref().is_none_or(|(b, _)| match name {
+                        "min_by" => order(&k, b).is_lt(),
+                        _ => order(&k, b).is_gt(),
+                    });
+                    if better {
+                        best = Some((k, x.clone()));
+                    }
+                }
+                best.map_or(Value::None, |(_, x)| x)
+            }
             "find" | "count" => {
                 let mut found = Vec::new();
                 for x in items.iter() {

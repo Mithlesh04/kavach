@@ -1,0 +1,9 @@
+// Rule: a range has the grouping and statistics methods, as it has every method that reads a list.
+// Spec: 14.2
+// expect output: {1: 3, 0: 2}
+// expect output: 3.0 5
+
+fn main() {
+    print((1..6).count_by(x => x % 2))
+    print(`{(1..6).mean(x => x) ?? 0.0} {(1..6).max_by(x => x) ?? 0}`)
+}

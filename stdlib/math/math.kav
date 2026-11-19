@@ -54,17 +54,6 @@ pub fn factorial(n: Int) -> Int
     out
 }
 
-/// The average of the numbers, or `none` for an empty list.
-pub fn mean(xs: [Float]) -> Float?
-    example mean([1.0, 2.0, 6.0]) == 3.0
-    example mean([]) == none
-{
-    if xs.is_empty() {
-        return none
-    }
-    xs.sum(x => x) / Float(xs.len())
-}
-
 /// `a * b % m` without overflow: doubling and adding (`m` < 2^63).
 fn mul_mod(a: UInt64, b: UInt64, m: UInt64) -> UInt64
     require m > 0

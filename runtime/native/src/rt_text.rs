@@ -215,6 +215,29 @@ pub fn list_op(op: RtOp, a: i64, b: i64, code: i64) -> i64 {
             let sorted: Vec<u64> = index.iter().map(|i| slots[*i]).collect();
             list_of(&sorted, item, code)
         }
+        RtOp::ListMinBy | RtOp::ListMaxBy => {
+            // `b` holds the keys: the first item of the smallest or
+            // largest key, in the order `sort_by` uses.
+            let keys = items_of(b);
+            let key_ty = item_type(b);
+            let pick = (0..slots.len().min(keys.len())).reduce(|best, i| {
+                let o = order(keys[i] as i64, keys[best] as i64, key_ty);
+                let better = if op == RtOp::ListMinBy {
+                    o.is_lt()
+                } else {
+                    o.is_gt()
+                };
+                if better { i } else { best }
+            });
+            release(b);
+            let pick = pick.map(|i| {
+                if item.is_ref() {
+                    retain(slots[i] as i64);
+                }
+                slots[i] as i64
+            });
+            optional(pick, code)
+        }
         RtOp::ListSkip => {
             let n = (b.max(0) as usize).min(slots.len());
             list_of(&slots[n..], item, code)

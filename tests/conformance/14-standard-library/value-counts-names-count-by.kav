@@ -1,0 +1,7 @@
+// Rule: `value_counts` on a list is a compile error that names `count_by(key)`.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    print(["a", "b", "a"].value_counts())     // error: Kavach's is `count_by(key)`
+}

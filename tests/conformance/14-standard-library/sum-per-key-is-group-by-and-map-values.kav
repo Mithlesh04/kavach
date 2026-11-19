@@ -1,0 +1,13 @@
+// Rule: a sum per key is `group_by(key).map_values(g => g.sum(f))`.
+// Spec: 14.2
+// expect output: {"north": 220.0, "south": 80.0}
+
+type Sale {
+    region: String
+    amount: Float
+}
+
+fn main() {
+    const sales = [Sale(region: "north", amount: 120.0), Sale(region: "south", amount: 80.0), Sale(region: "north", amount: 100.0)]
+    print(sales.group_by(.region).map_values(g => g.sum(.amount)))
+}

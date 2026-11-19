@@ -251,9 +251,11 @@ impl<'a> Lowerer<'a> {
     }
 
     /// `items.sort_by(key)`: the keys from an inlined loop, then a stable
-    /// sort of the items by them.
+    /// sort of the items by them. `min_by` and `max_by` (`op`) pick an
+    /// item by the keys the same way (spec 14.2).
     pub(crate) fn sort_by(
         &mut self,
+        op: RtOp,
         list: ir::Expr,
         f: &'a ast::Expr,
         ty: Type,
@@ -262,7 +264,7 @@ impl<'a> Lowerer<'a> {
         let line = self.line(span);
         let key = match self.c.expr_types.get(&(f.span.start, f.span.end)) {
             Some(Ty::Fn(_, k, _)) => self.kir_type(&k.clone(), span)?,
-            _ => return Err(self.unsupported("`sort_by` here", span)),
+            _ => return Err(self.unsupported("a key here", span)),
         };
         let keys_ty = self.list_type(key);
         let tmp = self.new_local(list.ty);
@@ -271,7 +273,7 @@ impl<'a> Lowerer<'a> {
         let held = self.new_local(keys_ty);
         let mut sorted = self.at(
             K::Rt(
-                RtOp::ListSortBy,
+                op,
                 vec![self.local_expr(tmp, line), self.local_expr(held, line)],
             ),
             ty,
@@ -280,7 +282,10 @@ impl<'a> Lowerer<'a> {
         // A key that fails ends the loop early, with fewer keys than
         // items: the call fails then (spec 5.2), and nothing is sorted.
         if let Some(error) = self.pending_error {
-            let unsorted = self.local_expr(tmp, line);
+            let unsorted = match op {
+                RtOp::ListSortBy => self.local_expr(tmp, line),
+                _ => self.at(K::None, ty, line),
+            };
             sorted = self.at(
                 K::If(
                     Box::new(self.failed(error, line)),
@@ -299,6 +304,16 @@ impl<'a> Lowerer<'a> {
             ty,
             line,
         ))
+    }
+}
+
+/// The op of a list method that works by keys from a lambda (spec 14.2).
+pub(crate) fn by_keys(method: &str) -> Option<RtOp> {
+    match method {
+        "sort_by" => Some(RtOp::ListSortBy),
+        "min_by" => Some(RtOp::ListMinBy),
+        "max_by" => Some(RtOp::ListMaxBy),
+        _ => None,
     }
 }
 

@@ -1,0 +1,21 @@
+// Rule: `pivot(row_key, column_key, cell)` gives, for each row key and in it each column key, `cell` of the items with both; a missing cell is read with `??`.
+// Spec: 14.2
+// expect output: {"north": {1: 120.0, 2: 100.0}, "south": {1: 80.0}}
+// expect output: 100.0 0.0
+
+type Sale {
+    region: String
+    month: Int
+    amount: Float
+}
+
+fn main() {
+    const sales = [
+        Sale(region: "north", month: 1, amount: 120.0),
+        Sale(region: "south", month: 1, amount: 80.0),
+        Sale(region: "north", month: 2, amount: 100.0),
+    ]
+    const by_month = sales.pivot(.region, .month, g => g.sum(.amount))
+    print(by_month)
+    print(`{(by_month["north"] ?? {:})[2] ?? 0.0} {(by_month["south"] ?? {:})[2] ?? 0.0}`)
+}

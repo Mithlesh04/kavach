@@ -1,0 +1,12 @@
+// Rule: every key and column is a lambda, so a misspelled field is a compile error.
+// Spec: 14.2
+// expect compile error
+
+type Sale {
+    region: String
+}
+
+fn main() {
+    const sales = [Sale(region: "north")]
+    print(sales.count_by(.regoin))       // error: `Sale` has no field `regoin`
+}

@@ -1,0 +1,10 @@
+// Rule: `mean` adds exactly, with no overflow, and rounds once: the result is the number nearest the true mean.
+// Spec: 14.2
+// expect output: 0.3333333333333333
+// expect output: 9.223372036854776e18
+
+fn main() {
+    print([1e20, 1.0, -1e20].mean(x => x) ?? 0.0)
+    const big = 9_223_372_036_854_775_807
+    print([big, big, big].mean(x => x) ?? 0.0)
+}

@@ -174,6 +174,11 @@ impl Checker<'_> {
                         let key = self.fresh();
                         sig(vec![f(t.clone(), key)], list(t))
                     }
+                    // The item of the smallest or largest key (spec 14.2).
+                    "min_by" | "max_by" => {
+                        let key = self.fresh();
+                        sig(vec![f(t.clone(), key)], opt(t))
+                    }
                     "find" => sig(vec![f(t.clone(), boolean)], opt(t)),
                     "count" => sig(vec![f(t, boolean)], int),
                     "index_of" => sig(vec![t], opt(int)),

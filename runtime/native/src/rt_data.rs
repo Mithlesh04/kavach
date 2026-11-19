@@ -297,7 +297,9 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         | RtOp::ListSkip
         | RtOp::ListIndexOf
         | RtOp::ListMin
-        | RtOp::ListMax => crate::rt_text::list_op(op, a, b, code),
+        | RtOp::ListMax
+        | RtOp::ListMinBy
+        | RtOp::ListMaxBy => crate::rt_text::list_op(op, a, b, code),
         RtOp::BytesNew
         | RtOp::StrBytes
         | RtOp::BytesAt

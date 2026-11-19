@@ -1,0 +1,9 @@
+// Rule: `collections.unique(items)` and `collections.counts(items)` are compile errors that name the list methods `items.unique()` and `items.count_by(x => x)`.
+// Spec: 14.9
+// expect compile error
+
+use std.collections
+
+fn main() {
+    print(collections.counts(["a", "a"]))     // error: it is a list method now, `items.count_by(x => x)`
+}

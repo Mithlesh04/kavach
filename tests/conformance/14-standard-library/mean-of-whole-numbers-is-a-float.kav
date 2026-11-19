@@ -1,0 +1,16 @@
+// Rule: `mean(f)` gives the average of `f(item)` as a `Float` for whole numbers and `Float`, and `none` for an empty list.
+// Spec: 14.2
+// expect output: 2.5 100.0
+// expect output: none
+
+type Sale {
+    amount: Float
+}
+
+fn main() {
+    const m: Float = [1, 2, 3, 4].mean(x => x) ?? 0.0
+    const sales = [Sale(amount: 120.0), Sale(amount: 80.0), Sale(amount: 100.0)]
+    print(`{m} {sales.mean(.amount) ?? 0.0}`)
+    const empty: [Int] = []
+    print(empty.mean(x => x))
+}

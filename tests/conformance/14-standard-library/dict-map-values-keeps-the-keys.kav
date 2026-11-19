@@ -1,0 +1,8 @@
+// Rule: `d.map_values(f)` gives the same keys, in their order, each value through `f`.
+// Spec: 14.2
+// expect output: {"b": 2, "a": 0}
+
+fn main() {
+    const groups: {String: [Int]} = {"b": [1, 2], "a": []}
+    print(groups.map_values(g => g.len()))
+}

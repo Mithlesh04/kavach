@@ -282,8 +282,8 @@ impl<'a> Lowerer<'a> {
         if let (true, "parallel_map") = (is_list, name.name.as_str()) {
             return self.parallel_map(receiver, args, ty, span);
         }
-        if let ([f], true, "sort_by") = (args, is_list, name.name.as_str()) {
-            return self.sort_by(receiver, &f.value, ty, span);
+        if let ([f], true, Some(op)) = (args, is_list, crate::lower_std::by_keys(&name.name)) {
+            return self.sort_by(op, receiver, &f.value, ty, span);
         }
         if let (Some(Shape::Shared(_)), "update" | "update_with", [f]) =
             (self.shapes.shape(receiver.ty), name.name.as_str(), args)

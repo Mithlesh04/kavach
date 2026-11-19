@@ -1,0 +1,7 @@
+// Rule: `average` and `avg` on a list are compile errors that name `mean(f)`.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    print([1.0, 2.0].avg(x => x))     // error: Kavach's is `mean(f)`
+}

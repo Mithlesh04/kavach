@@ -432,11 +432,15 @@ impl Checker<'_> {
                     }
                     _ => None,
                 };
+                // Now list methods (decision 0135).
+                let gone = crate::table_methods::now_a_method(&module, name);
                 let message = match renamed {
                     Some(new) => format!(
                         "`term.{name}` is now `term.{new}`: `ask` is the AI's call (decision 0053)"
                     ),
-                    None => format!("`std.{module}` has no function `{name}` (spec 14)"),
+                    None => gone.unwrap_or_else(|| {
+                        format!("`std.{module}` has no function `{name}` (spec 14)")
+                    }),
                 };
                 self.error(span, message);
                 return Some(Ty::Error);

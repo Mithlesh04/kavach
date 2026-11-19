@@ -1,0 +1,7 @@
+// Rule: `distinct` and `drop_duplicates` on a list are compile errors that name `unique()` and `unique_by(key)`.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    print([1, 1, 2].distinct())     // error: Kavach's is `unique()` or `unique_by(key)`
+}

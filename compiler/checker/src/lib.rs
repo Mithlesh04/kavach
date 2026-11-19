@@ -92,6 +92,7 @@ mod std_tensor;
 mod std_window;
 mod std_writers;
 mod stdlib;
+mod table_methods;
 mod text_views;
 mod ty;
 mod unwraps;

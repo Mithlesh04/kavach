@@ -1,0 +1,18 @@
+// Rule: `min_by(f)` and `max_by(f)` give the item whose `f(item)` is smallest or largest, the first one on a tie, and `none` for an empty list.
+// Spec: 14.2
+// expect output: c b
+// expect output: (1, "b")
+// expect output: none
+
+type Score {
+    name: String
+    points: Int
+}
+
+fn main() {
+    const scores = [Score(name: "a", points: 3), Score(name: "b", points: 7), Score(name: "c", points: 1), Score(name: "d", points: 7), Score(name: "e", points: 1)]
+    print(`{scores.min_by(.points)?.name ?? ""} {scores.max_by(.points)?.name ?? ""}`)
+    print([(2, "a"), (1, "b"), (1, "c")].min_by(p => p))
+    const empty: [Int] = []
+    print(empty.max_by(x => x))
+}

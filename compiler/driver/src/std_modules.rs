@@ -104,6 +104,48 @@ fn code_words(text: &str, into: &mut HashSet<String>) {
     into.extend(used);
 }
 
+/// The list and dict methods of spec 14.2 written in Kavach, by module.
+const TABLE_METHODS: [(&str, &[&str]); 2] = [
+    (
+        "std.collections.grouping",
+        &[
+            "group_by",
+            "count_by",
+            "unique",
+            "unique_by",
+            "inner_join",
+            "left_join",
+            "pivot",
+            "map_values",
+            "to_list",
+        ],
+    ),
+    (
+        "std.collections.stats",
+        &["mean", "median", "var", "std", "describe"],
+    ),
+];
+
+/// The modules of the methods `text` calls: `.mean(` brings in
+/// `std.collections.stats`.
+fn table_methods(text: &str, into: &mut HashSet<String>) {
+    let tokens = kavach_lexer::lex(text).tokens;
+    for w in tokens.windows(3) {
+        let called = matches!(w[0].kind, TokenKind::Dot | TokenKind::QuestionDot)
+            && matches!(w[1].kind, TokenKind::Ident)
+            && matches!(w[2].kind, TokenKind::LParen);
+        if !called {
+            continue;
+        }
+        let name = &text[w[1].span.start as usize..w[1].span.end as usize];
+        for (module, methods) in TABLE_METHODS {
+            if methods.contains(&name) {
+                into.insert(module.to_string());
+            }
+        }
+    }
+}
+
 /// The modules `sources` use, directly or through each other, as sources
 /// to add after them. A file given as the program that is itself a
 /// standard library module counts as that module.
@@ -131,6 +173,10 @@ pub(crate) fn used(sources: &[Source]) -> Vec<Source> {
     // `T.members()` gives `std.reflect`'s types (14.32).
     if seen.contains("members") {
         seen.insert("std.reflect".to_string());
+    }
+    // Grouping and statistics are list methods written in Kavach (14.2).
+    for s in sources {
+        table_methods(&s.text, &mut seen);
     }
     let mut taken = vec![false; BUILTIN.len()];
     for (i, (_, module, _)) in BUILTIN.iter().enumerate() {

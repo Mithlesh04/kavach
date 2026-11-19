@@ -1,0 +1,177 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
+// std.collections.stats (spec 14.2, decision 0135): the statistics of a
+// list, of the number a lambda gives for each item. Sums are exact and
+// rounded once (`std.tensor.exact`), so they give the same bits in any
+// order. The compiler adds this module to a program that calls one of
+// its methods, and gives `mean` and `median` their result type `M`: a
+// `Float` for whole numbers and `Float`, a `Float32` for `Float32`, and a
+// `Decimal` for `Decimal`.
+
+use std.math
+use std.tensor.exact
+
+extend<T> [T] {
+    /// The exact sum of `f(item)` divided by the count, rounded once;
+    /// `none` for an empty list.
+    pub fn mean<N: Number, M: Number>(self, f: fn(T) -> N) -> M?
+        example [1, 2, 4].mean(x => x) == 7.0 / 3.0
+        example [1e20, 1.0, -1e20].mean(x => x) == 1.0 / 3.0
+    {
+        if self.is_empty() {
+            return none
+        }
+        const xs = self.map(f)
+        if exact.floating<N>() {
+            return M(exact.sum(xs, xs.len()))
+        }
+        if decimal<N>() {
+            let s = N(0)
+            for x in xs {
+                s += x
+            }
+            return M(s / N(xs.len()))
+        }
+        M(ratio(whole_sum(xs), xs.len()))
+    }
+
+    /// The middle `f(item)` in sorted order, halfway between the two
+    /// middle ones for an even count; `none` for an empty list.
+    pub fn median<N: Number, M: Number>(self, f: fn(T) -> N) -> M?
+        example [3, 1, 2].median(x => x) == 2.0
+        example [4, 1, 3, 2].median(x => x) == 2.5
+    {
+        if self.is_empty() {
+            return none
+        }
+        quarter<N, M>(self.map(f).sort(), 2)
+    }
+
+    /// The variance of `f(item)`: the squared differences from the mean,
+    /// added exactly and divided by the count minus `correction`; `none`
+    /// when the count is not above `correction`.
+    pub fn var<N: Number>(self, f: fn(T) -> N, correction: Int = 1) -> Float?
+        example [2.0, 4.0, 4.0, 5.0].var(x => x) == 4.75 / 3.0
+        example [2.0, 4.0, 4.0, 5.0].var(x => x, correction: 0) == 1.1875
+        example [1].var(x => x) == none
+    {
+        if self.len() <= correction {
+            return none
+        }
+        const xs = self.map(f)
+        const m = float_mean(xs)
+        exact.sum(xs.map(x => (Float(x) - m) * (Float(x) - m)), xs.len() - correction)
+    }
+
+    /// The standard deviation: the square root of the variance.
+    pub fn std<N: Number>(self, f: fn(T) -> N, correction: Int = 1) -> Float?
+        example [1, 3].std(x => x) == math.sqrt(2.0)
+    {
+        math.sqrt(self.var(f, correction: correction) ?? return none)
+    }
+
+    /// The count, mean, standard deviation, smallest value, quartiles and
+    /// largest value of `f(item)`, as `Float`s; `none` for an empty list.
+    pub fn describe<N: Number>(self, f: fn(T) -> N) -> (count: Int, mean: Float, std: Float?, min: Float, q1: Float, median: Float, q3: Float, max: Float)?
+        example ([2.0, 4.0, 4.0, 5.0].describe(x => x)?.q1 ?? 0.0) == 3.5
+        example ([7].describe(x => x)?.std ?? 1.0) == 1.0
+    {
+        if self.is_empty() {
+            return none
+        }
+        const xs = self.map(f).sort()
+        (
+            count: xs.len(),
+            mean: float_mean(xs),
+            std: self.std(f),
+            min: Float(xs[0]),
+            q1: quarter<N, Float>(xs, 1),
+            median: quarter<N, Float>(xs, 2),
+            q3: quarter<N, Float>(xs, 3),
+            max: Float(xs[#1]),
+        )
+    }
+}
+
+/// Whether `N` is `Decimal`: a number type whose division keeps
+/// fractions, but not a float.
+fn decimal<N: Number>() -> Bool
+    example decimal<Decimal>()
+    example not decimal<Float>()
+    example not decimal<Int>()
+{
+    not exact.floating<N>() and N(1) / N(2) != N(0)
+}
+
+/// `total / count`, for a whole number `total`, rounded once.
+fn ratio(total: BigInt, count: Int) -> Float
+    require count > 0 and count < (1 << 31)
+    example ratio(BigInt(7), 2) == 3.5
+    example ratio(BigInt(-1), 3) == -1.0 / 3.0
+    example ratio(BigInt(0), 1) == 0.0
+{
+    // The exact sum of its 32-bit pieces, each a `Float` with no rounding.
+    const sign = if total < BigInt(0) { -1.0 } else { 1.0 }
+    let rest = if total < BigInt(0) { -total } else { total }
+    let parts = [0.0]
+    let scale = 1.0
+    while rest > BigInt(0) {
+        parts.push(sign * Float(rest % BigInt(4_294_967_296)) * scale)
+        rest = rest / BigInt(4_294_967_296)
+        scale = scale * 4_294_967_296.0
+    }
+    exact.sum(parts, count)
+}
+
+/// The sum of whole numbers `xs`, with no overflow.
+fn whole_sum<N: Number>(xs: [N]) -> BigInt {
+    let s = BigInt(0)
+    for x in xs {
+        s += BigInt(x)
+    }
+    s
+}
+
+/// The mean of `xs` as a `Float`, for `var` and `describe`.
+fn float_mean<N: Number>(xs: [N]) -> Float
+    require not xs.is_empty()
+{
+    if exact.floating<N>() {
+        return exact.sum(xs.map(x => Float(x)), xs.len())
+    }
+    if decimal<N>() {
+        let s = N(0)
+        for x in xs {
+            s += x
+        }
+        return Float(s / N(xs.len()))
+    }
+    ratio(whole_sum(xs), xs.len())
+}
+
+/// The value at `q` quarters of the way through `sorted`: at position
+/// `q × (count − 1) / 4`, or the point that far between its two
+/// neighbours, worked out exactly and rounded once to `M`.
+fn quarter<N: Number, M: Number>(sorted: [N], q: Int) -> M
+    require not sorted.is_empty() and q >= 0 and q <= 4
+{
+    const at = q * (sorted.len() - 1)
+    const (a, j) = (sorted[at / 4], at % 4)
+    if j == 0 {
+        return M(a)
+    }
+    const b = sorted[at / 4 + 1]
+    if exact.floating<N>() {
+        let parts: [M] = []
+        for i in 0..4 {
+            parts.push(if i < j { M(b) } else { M(a) })
+        }
+        return exact.sum(parts, 4)
+    }
+    if decimal<N>() {
+        return M((N(4 - j) * a + N(j) * b) / N(4))
+    }
+    M(ratio(BigInt(a) * BigInt(4 - j) + BigInt(b) * BigInt(j), 4))
+}

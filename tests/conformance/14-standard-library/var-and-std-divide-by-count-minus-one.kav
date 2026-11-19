@@ -1,0 +1,10 @@
+// Rule: `var(f)` and `std(f)` divide by the count minus 1 unless `correction:` says otherwise; `correction: 0` gives the population form.
+// Spec: 14.2
+// expect output: 1.5833333333333333 1.1875
+// expect output: 1.4142135623730951 1.0
+
+fn main() {
+    const xs = [2.0, 4.0, 4.0, 5.0]
+    print(`{xs.var(x => x) ?? 0.0} {xs.var(x => x, correction: 0) ?? 0.0}`)
+    print(`{[1, 3].std(x => x) ?? 0.0} {[1, 3].std(x => x, correction: 0) ?? 0.0}`)
+}
