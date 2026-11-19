@@ -133,6 +133,9 @@ impl Checker<'_> {
                     "contains" => sig(vec![t], boolean),
                     "filter" => sig(vec![f(t.clone(), boolean)], list(t)),
                     "any" | "all" => sig(vec![f(t, boolean.clone())], boolean),
+                    // Runs `f` on every item, in order, for what it does.
+                    "for_each" => sig(vec![f(t, u)], Ty::Unit),
+                    "find_index" | "find_last_index" => sig(vec![f(t, boolean)], opt(int)),
                     "map" => sig(vec![f(t, u.clone())], list(u)),
                     "flat_map" => sig(vec![f(t, list(u.clone()))], list(u)),
                     "sum" => sig(vec![f(t, u.clone())], u),

@@ -1,0 +1,8 @@
+// Rule: `some` on a list is a compile error that names Kavach's `any(test)`.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    const xs = [1, 2, 3]
+    print(xs.some(x => x > 2))     // error: Kavach's is `any(test)`
+}

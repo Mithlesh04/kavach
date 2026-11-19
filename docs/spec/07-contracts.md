@@ -47,6 +47,28 @@ type Account {
 
 An invariant is checked whenever a value of the type is created or changed. An `Account` with a negative balance cannot exist.
 
+An invariant that walks a collection (`times.all(…)`, `sum`, `count`, `contains` and other methods that read every item) costs a walk on each change. A change to such a value inside a loop is a warning: the loop would walk the collection each round, which grows with the square of its size. Build the collection first, then make the value once.
+
+```kavach
+type Track {
+    times: [Int]
+
+    invariant times.all(t => t >= 0)
+}
+
+fn fill(n: Int) -> Track {
+    let track = Track(times: [])
+    for i in 0..n {
+        track.times.push(i)              // warning: walks `times` each round
+    }
+    let times: [Int] = []
+    for i in 0..n {
+        times.push(i)
+    }
+    return Track(times: times)           // checked once
+}
+```
+
 ## 7.4 How contracts are checked
 
 | Build | Checked |

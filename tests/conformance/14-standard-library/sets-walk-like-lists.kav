@@ -1,0 +1,21 @@
+// Rule: A set has `any`, `all`, `count`, `sum` and `find`, as a list does, over its values in insertion order, whatever they hold: numbers, text, tuples, lists.
+// Spec: 14.2, 2.2
+// expect output: true true 13 3
+// expect output: 4 none
+// expect output: true true 12 4.0
+// expect output: 2 true 3
+// expect output: 0 false true none
+
+fn main() {
+    const nums = Set.of(3, 1, 4, 1, 5)
+    print(`{nums.any(n => n > 4)} {nums.all(n => n > 0)} {nums.sum(n => n)} {nums.count(n => n != 4)}`)
+    print(`{nums.find(n => n > 3)} {nums.find(n => n > 9)}`)
+    const words = Set.of("pear", "fig", "apple", "fig")
+    const prices = Set.of(1.5, 2.25, 0.25)
+    print(`{words.any(w => w.starts_with("a"))} {words.all(w => w.len() >= 3)} {words.sum(w => w.len())} {prices.sum(p => p)}`)
+    const pairs = Set.of((1, "a"), (2, "b"), (1, "a"))
+    const rows = Set.of([1, 2], [3], [1, 2])
+    print(`{pairs.len()} {pairs.any(p => p.1 == "b")} {rows.sum(r => r.len())}`)
+    const none_yet: Set<Int> = Set.of()
+    print(`{none_yet.sum(n => n)} {none_yet.any(n => n > 0)} {none_yet.all(n => n > 0)} {none_yet.find(n => n > 0)}`)
+}

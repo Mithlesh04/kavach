@@ -267,6 +267,11 @@ impl<'a> Lowerer<'a> {
         if let ([f], true) = (args, is_list && LIST_LOOPS.contains(&name.name.as_str())) {
             return self.list_loop(&name.name, receiver, &f.value, ty, span);
         }
+        if let ([f], Some(Shape::Set(item))) = (args, self.shapes.shape(receiver.ty).cloned())
+            && crate::lower_set_loops::SET_LOOPS.contains(&name.name.as_str())
+        {
+            return self.set_loop(&name.name, receiver, item, &f.value, ty, span);
+        }
         if let (true, "parallel_map") = (is_list, name.name.as_str()) {
             return self.parallel_map(receiver, args, ty, span);
         }

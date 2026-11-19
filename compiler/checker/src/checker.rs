@@ -96,6 +96,8 @@ pub(crate) struct Checker<'a> {
     /// `type Handler = (on: fn(Int) -> Int)`: the anonymous type each
     /// alias stands for (spec 2.14).
     pub(crate) aliases: HashMap<DefId, Ty>,
+    /// Records whose invariant walks a collection (spec 7.3).
+    pub(crate) costly_invariants: std::collections::HashSet<DefId>,
     /// Methods of records, unions, interfaces, capabilities and agents.
     pub(crate) methods: HashMap<DefId, HashMap<String, FnSig>>,
     /// Methods of records, unions and `extend`s not marked `pub` (10.1).
@@ -276,6 +278,7 @@ impl<'a> Checker<'a> {
             in_unsafe: 0,
             types: HashMap::new(),
             aliases: HashMap::new(),
+            costly_invariants: Default::default(),
             methods: HashMap::new(),
             private_methods: HashSet::new(),
             ext_methods: HashMap::new(),

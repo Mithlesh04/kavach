@@ -89,7 +89,7 @@ fn check(n: usize, path: &Path, root: &Path, out_dir: &Path) -> Checked {
     }
     let mut mismatches = Vec::new();
     let args = test_args(&src);
-    let expected = interpret(&compiled, path, &src, &args);
+    let expected = common::interpret(&compiled, path, &src, &args);
     let jit = Command::new(env!("CARGO_BIN_EXE_kavach"))
         .env("KAVACH_CHECK_LEAKS", "1")
         .args(["run", "--native"])
@@ -446,30 +446,5 @@ fn main() ! Error uses Serial, Console {
             "pong\n",
             "native {native}: {said}"
         );
-    }
-}
-
-/// The interpreter's run of the test file at `path`. A program that starts
-/// itself again (`spawn process`, spec 9.8) runs through `kavach run`:
-/// run inside this test, it would have only the test to start again.
-fn interpret(
-    compiled: &kavach_driver::Compiled,
-    path: &Path,
-    src: &str,
-    args: &[String],
-) -> kavach_interp::Output {
-    if !src.contains("spawn process") {
-        return kavach_interp::run_with_args(compiled, args);
-    }
-    let out = std::process::Command::new(env!("CARGO_BIN_EXE_kavach"))
-        .arg("run")
-        .arg(path)
-        .args(args)
-        .output()
-        .unwrap();
-    kavach_interp::Output {
-        stdout: String::from_utf8_lossy(&out.stdout).into(),
-        stderr: String::from_utf8_lossy(&out.stderr).into(),
-        exit_code: out.status.code().unwrap_or(-1),
     }
 }

@@ -197,7 +197,17 @@ impl Checker<'_> {
             }
             Ty::Set(t) => {
                 let t = (**t).clone();
+                let u = self.fresh();
+                let set = |t: Ty| Ty::Set(Box::new(t));
                 match name {
+                    // Walked in insertion order, as a list is (spec 2.2).
+                    "any" | "all" => sig(vec![f(t, boolean.clone())], boolean),
+                    "for_each" => sig(vec![f(t, u)], Ty::Unit),
+                    "count" => sig(vec![f(t, boolean)], int),
+                    "sum" => sig(vec![f(t, u.clone())], u),
+                    "find" => sig(vec![f(t.clone(), boolean)], opt(t)),
+                    "filter" => sig(vec![f(t.clone(), boolean)], set(t)),
+                    "map" => sig(vec![f(t, u.clone())], set(u)),
                     "add" | "remove" => sig(vec![t], Ty::Unit),
                     "contains" => sig(vec![t], boolean),
                     "len" => sig(vec![], int),

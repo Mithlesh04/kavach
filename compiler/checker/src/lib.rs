@@ -24,6 +24,7 @@ mod conform;
 mod constants;
 mod construct;
 mod conversions;
+mod costly_invariants;
 mod coverage;
 mod deprecated;
 mod destructure;

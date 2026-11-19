@@ -1,5 +1,6 @@
-//! What several test targets share: a watch that names a program still
-//! running after a minute, so a run that hangs says where.
+//! What several test targets share: the interpreter's run of a test
+//! program, and a watch that names a program still running after a
+//! minute, so a run that hangs says where.
 
 use std::io::Write;
 use std::sync::Mutex;
@@ -60,5 +61,32 @@ pub struct Finishing<'a>(&'a Running);
 impl Drop for Finishing<'_> {
     fn drop(&mut self) {
         self.0.done.store(true, Ordering::Relaxed);
+    }
+}
+
+/// The interpreter's run of the test program at `path`. A program that
+/// starts itself again (`spawn process`, spec 9.8) or reads standard
+/// input runs through `kavach run`: inside this test, it would have only
+/// the test to start again, and would read the test's own input, which
+/// may never end; a child's input is closed, so a read gets `none`.
+pub fn interpret(
+    compiled: &kavach_driver::Compiled,
+    path: &std::path::Path,
+    src: &str,
+    args: &[String],
+) -> kavach_interp::Output {
+    if !src.contains("spawn process") && !src.contains("io.read") {
+        return kavach_interp::run_with_args(compiled, args);
+    }
+    let out = std::process::Command::new(env!("CARGO_BIN_EXE_kavach"))
+        .arg("run")
+        .arg(path)
+        .args(args)
+        .output()
+        .unwrap();
+    kavach_interp::Output {
+        stdout: String::from_utf8_lossy(&out.stdout).into(),
+        stderr: String::from_utf8_lossy(&out.stderr).into(),
+        exit_code: out.status.code().unwrap_or(-1),
     }
 }

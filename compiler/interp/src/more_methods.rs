@@ -32,6 +32,23 @@ impl<'a> Interp<'a> {
             (Value::Regex(r), _) => return self.regex_method(r, name, args, span).map(Some),
             (Value::List(items), _) => return self.more_list(items, name, args, span),
             (Value::Set(set), _) => match name {
+                // A set walks as the list of its items, in insertion order;
+                // `map` and `filter` give a set (spec 2.2).
+                "any" | "all" | "sum" | "count" | "find" | "map" | "filter" | "for_each" => {
+                    let items = set.entries.iter().map(|(k, _)| k.clone()).collect();
+                    let walked = self.builtin_method(
+                        Value::List(Rc::new(items)),
+                        name,
+                        args.to_vec(),
+                        span,
+                    )?;
+                    match (name, walked) {
+                        ("map" | "filter", Value::List(xs)) => {
+                            self.set_of(Rc::unwrap_or_clone(xs).into_vec())
+                        }
+                        (_, v) => v,
+                    }
+                }
                 "contains" => Value::Bool(set.get(&arg(0)).is_some()),
                 "len" => int(set.len()),
                 "is_empty" => Value::Bool(set.is_empty()),
@@ -89,6 +106,25 @@ impl<'a> Interp<'a> {
             _ => 0,
         };
         Ok(Some(match name {
+            // `f` on every item, in order, for what it does (spec 14.2).
+            "for_each" => {
+                for item in items.iter() {
+                    self.call_value(arg.clone(), vec![item.clone()], span)?;
+                }
+                Value::Unit
+            }
+            // The first item `f` passes, or the last; every item is visited.
+            "find_index" | "find_last_index" => {
+                let mut found = None;
+                for (i, item) in items.iter().enumerate() {
+                    let passed = self.call_value(arg.clone(), vec![item.clone()], span)?;
+                    if passed == Value::Bool(true) && (found.is_none() || name == "find_last_index")
+                    {
+                        found = Some(i);
+                    }
+                }
+                found.map_or(Value::None, int)
+            }
             "join" => {
                 let parts: Vec<String> = items.iter().map(|v| v.display()).collect();
                 self.str_value(&parts.join(&arg.display()))

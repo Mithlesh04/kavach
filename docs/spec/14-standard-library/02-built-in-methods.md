@@ -47,6 +47,8 @@ Lists, in addition to 2.2:
 | `items.sort_by(key)` | A copy sorted by `key(item)`, which must have an order (1.8); equal keys keep their order. A tuple sorts by several keys: `people.sort_by(p => (p.age, p.name))` |
 | `items.reverse()` | A reversed copy |
 | `items.find(f)` | The first item where `f` is true, or `none` |
+| `items.find_index(f)`, `items.find_last_index(f)` | The position of the first item where `f` is true, or of the last, or `none` |
+| `items.for_each(f)` | Calls `f` on every item, in order, for what it does; gives nothing: `names.for_each(n => print(n))` |
 | `items.count(f)` | How many items `f` is true for |
 | `items.take(n)`, `items.skip(n)` | The first `n` items, or all but them |
 | `items.slice(start, end)` | Items `start..end`, both clamped to the list, as `String`'s `slice` |
@@ -71,7 +73,19 @@ print(seen.len())                 // 2
 | `add(x)`, `remove(x)` | Change the set; like `push`, they need a `let` (2.2) |
 | `contains`, `len`, `is_empty`, `is_full` | As their names say; `is_full` for a set made by `Set.capacity(n)` holding `n` values (2.2) |
 | `to_list()` | The values in insertion order |
+| `any(test)`, `all(test)`, `count(test)`, `sum(f)`, `find(test)`, `for_each(f)` | As for a list, over the values in insertion order: `find` gives the first that passes, or `none` |
+| `map(f)`, `filter(test)` | A new set: the results, or the values that pass, in insertion order; equal results are kept once |
 
 A `for` loop over a set visits its values in insertion order.
+
+```kavach
+const sizes = Set.of("pear", "fig", "apple")
+print(sizes.all(w => w.len() >= 3))       // true
+print(sizes.sum(w => w.len()))            // 12
+print(sizes.map(w => w.len() % 2))        // Set.of(0, 1): equal results kept once
+print(sizes.filter(w => w.contains("p"))) // Set.of("pear", "apple")
+```
+
+Each job has one method. Names other languages use for the same job are compile errors that name Kavach's: `some` names `any(test)`, `every` names `all(test)`, `includes` names `contains(x)`, and `each` and `forEach` name `for_each(f)`. Method names are `snake_case`, as all names of values are (1.5): `findIndex` and `indexOf` name `find_index(test)` and `index_of(x)`.
 
 A ring (`Ring<T>`, 2.2) has `push`, `len`, `is_empty`, `is_full`, `first`, `last`, `get`, `contains` and `to_list`, oldest item first; a push onto a full ring drops the oldest.

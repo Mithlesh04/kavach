@@ -1,0 +1,8 @@
+// Rule: `each` (and `forEach`) on a list is a compile error that names Kavach's `for_each(f)`: each job has one method.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    const xs = [1, 2, 3]
+    xs.each(x => print(x))     // error: Kavach's is `for_each(f)`
+}

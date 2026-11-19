@@ -28,6 +28,14 @@ The tests are listed in four files, by area:
 | 14.2 | [pop-takes-the-last-item.kav](pop-takes-the-last-item.kav) | `xs.pop()` takes out and gives the last item, or `none` for an empty list; a copy made before keeps it. | runs |
 | 14.2 | [pop-on-a-const-list-is-an-error.kav](pop-on-a-const-list-is-an-error.kav) | `xs.pop()` changes `xs`, so `xs` must be a `let`. | compile error |
 | 14.2 | [sets-hold-each-value-once.kav](sets-hold-each-value-once.kav) | A set holds each value once and keeps insertion order. | runs |
+| 14.2, 2.2 | [sets-walk-like-lists.kav](sets-walk-like-lists.kav) | A set has `any`, `all`, `count`, `sum` and `find` over its values in insertion order, whatever they hold. | runs |
+| 14.2, 2.2 | [set-map-and-filter-give-sets.kav](set-map-and-filter-give-sets.kav) | A set's `map` and `filter` give a new set in insertion order, equal results kept once, on sets of any values and inside lists and records. | runs |
+| 14.2 | [other-languages-method-names-say-kavachs.kav](other-languages-method-names-say-kavachs.kav) | `some` on a list is a compile error that names `any(test)`. | compile error |
+| 14.2 | [every-on-a-set-names-all.kav](every-on-a-set-names-all.kav) | `every` on a set is a compile error that names `all(test)`. | compile error |
+| 14.2 | [each-names-for-each.kav](each-names-for-each.kav) | `each` on a list is a compile error that names `for_each(f)`. | compile error |
+| 14.2 | [includes-names-contains.kav](includes-names-contains.kav) | `includes` is a compile error that names `contains(x)`. | compile error |
+| 14.2, 1.5 | [camel-case-method-names-name-snake-case.kav](camel-case-method-names-name-snake-case.kav) | A camelCase method name is a compile error that names Kavach's `snake_case` method. | compile error |
+| 14.2 | [lists-and-sets-walk-with-for-each-and-find-index.kav](lists-and-sets-walk-with-for-each-and-find-index.kav) | `for_each`, `find_index` and `find_last_index` on lists of any values, and `for_each` on sets. | runs |
 | 14.2 | [set-changes-need-a-var.kav](set-changes-need-a-var.kav) | Changing a set with `add` or `remove` needs a `let`. | compile error |
 | 14.2 | [text-pads-words-and-capitals.kav](text-pads-words-and-capitals.kav) | Text pads, splits into words, capitalizes, truncates, finds blank text, trims one side, counts and finds the last part, and removes a prefix or suffix, with methods. | runs |
 | 14.2 | [float-near.kav](float-near.kav) | `x.near(y)` is true for floats equal but for rounding, never for `NaN`. | runs |

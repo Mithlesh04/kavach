@@ -298,6 +298,11 @@ impl Checker<'_> {
         let Some(&def) = self.decl.get(&t.name.span.start) else {
             return;
         };
+        if let TypeBody::Record(r) = &t.body
+            && r.invariants.iter().any(crate::costly_invariants::walks)
+        {
+            self.costly_invariants.insert(def);
+        }
         let generics: Vec<_> = t
             .generics
             .iter()

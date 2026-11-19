@@ -10,6 +10,7 @@ Conformance tests for spec chapter [7. Contracts](../../../docs/spec/07-contract
 | 7.2, 7.4 | [ensure-failure-panics.kav](ensure-failure-panics.kav) | A false `ensure` is a panic that shows the contract. | panic |
 | 7.3, 7.4 | [invariant-checked-on-change.kav](invariant-checked-on-change.kav) | An invariant is checked when a value is changed. | panic |
 | 7.3 | [invariant-checked-when-a-field-list-grows.kav](invariant-checked-when-a-field-list-grows.kav) | An invariant is checked when a list in a field grows by `push`, and only on the changed value. | panic |
+| 7.3 | [a-costly-invariant-changed-in-a-loop-warns.kav](a-costly-invariant-changed-in-a-loop-warns.kav) | A change inside a loop to a value whose invariant walks a collection is a warning; outside a loop, or with an invariant that walks nothing, none. | runs |
 | 7.3, 7.4 | [invariant-checked-on-create.kav](invariant-checked-on-create.kav) | An invariant is checked when a value is created. | panic |
 | 7.3 | [invariants-call-methods-on-fields.kav](invariants-call-methods-on-fields.kav) | An invariant may call methods on the fields it names, in native code as in the interpreter. | panic |
 | 7.5 | [contracts-must-be-pure.kav](contracts-must-be-pure.kav) | A contract must not use any capability. | compile error |

@@ -338,6 +338,7 @@ pub(crate) fn kavach_name(recv: &Ty, name: &str) -> Option<&'static str> {
     let text = matches!(recv, Ty::Prim(Prim::String));
     let list = matches!(recv, Ty::List(_));
     let sized = text || list || matches!(recv, Ty::Map(..) | Ty::Set(_));
+    let walks = list || matches!(recv, Ty::Set(_));
     Some(match name {
         "length" | "size" | "count" | "len" if sized => "len()",
         "append" | "push_back" | "add" if list => "push(x)",
@@ -346,7 +347,13 @@ pub(crate) fn kavach_name(recv: &Ty, name: &str) -> Option<&'static str> {
         "strip" if text => "trim()",
         "startswith" | "startsWith" if text => "starts_with(part)",
         "endswith" | "endsWith" if text => "ends_with(part)",
-        "includes" if text || list => "contains(x)",
+        "some" if walks => "any(test)",
+        "every" if walks => "all(test)",
+        "includes" if text || walks => "contains(x)",
+        "each" | "forEach" | "foreach" if walks => "for_each(f)",
+        "findIndex" | "findindex" if list => "find_index(test)",
+        "findLastIndex" if list => "find_last_index(test)",
+        "indexOf" if list => "index_of(x)",
         "find" | "indexOf" if text => "index_of(part)",
         "indexOf" if list => "index_of(x)",
         "reversed" if list => "reverse()",

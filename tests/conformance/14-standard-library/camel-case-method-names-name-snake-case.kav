@@ -1,0 +1,7 @@
+// Rule: a method name written in camelCase, as other languages write it, is a compile error that names Kavach's `snake_case` method.
+// Spec: 14.2, 1.5
+// expect compile error
+
+fn main() {
+    print([4, 7].findIndex(x => x == 7))     // error: Kavach's is `find_index(test)`
+}

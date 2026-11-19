@@ -1,0 +1,7 @@
+// Rule: `includes` on a list, set or text is a compile error that names Kavach's `contains(x)`.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    print(["a", "b"].includes("a"))     // error: Kavach's is `contains(x)`
+}

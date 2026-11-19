@@ -1,0 +1,7 @@
+// Rule: `every` on a set is a compile error that names Kavach's `all(test)`.
+// Spec: 14.2
+// expect compile error
+
+fn main() {
+    print(Set.of(1, 2).every(x => x > 0))   // error: Kavach's is `all(test)`
+}

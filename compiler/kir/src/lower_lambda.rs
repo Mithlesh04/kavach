@@ -9,13 +9,24 @@ use crate::rt_op::RtOp;
 use kavach_ast::{self as ast, ExprKind};
 use kavach_checker::Ty;
 
+mod bodies;
 mod called;
 mod scan;
 use scan::{assigned, mentions};
 
 /// List methods that take a lambda and become a loop.
-pub(crate) const LIST_LOOPS: [&str; 8] = [
-    "filter", "map", "flat_map", "any", "all", "sum", "find", "count",
+pub(crate) const LIST_LOOPS: [&str; 11] = [
+    "filter",
+    "map",
+    "flat_map",
+    "any",
+    "all",
+    "sum",
+    "find",
+    "count",
+    "for_each",
+    "find_index",
+    "find_last_index",
 ];
 
 impl<'a> Lowerer<'a> {
@@ -72,7 +83,7 @@ impl<'a> Lowerer<'a> {
                     self.local_ids.insert(def, copy);
                     outside.push((def, l));
                 }
-                let body = self.expr(body);
+                let body = self.lambda_body(body, line);
                 for (def, l) in outside {
                     self.local_ids.insert(def, l);
                 }
@@ -149,7 +160,8 @@ impl<'a> Lowerer<'a> {
         );
         let start = match method {
             "filter" | "map" | "flat_map" => K::List(Vec::new()),
-            "find" => K::None,
+            "find" | "find_index" | "find_last_index" => K::None,
+            "for_each" => K::Block(Block::default()),
             "any" => K::Bool(false),
             "all" => K::Bool(true),
             _ if ty.is_float() => K::Float(0.0),
@@ -210,6 +222,25 @@ impl<'a> Lowerer<'a> {
                     Type::Unit,
                 )
             }
+            "for_each" => value,
+            "find_index" | "find_last_index" => {
+                // The first match's index, or the last's; every item is
+                // still visited.
+                let cond = match method {
+                    "find_index" => {
+                        let acc_now = Box::new(self.local_expr(acc, line));
+                        let present = at(K::IsSome(acc_now), Type::Bool);
+                        let first = at(K::Unary(UnOp::Not, Box::new(present)), Type::Bool);
+                        at(K::And(Box::new(value), Box::new(first)), Type::Bool)
+                    }
+                    _ => value,
+                };
+                let found = self.coerce(self.local_expr(index, line), ty)?;
+                at(
+                    K::If(Box::new(cond), self.assign(acc, found), Block::default()),
+                    Type::Unit,
+                )
+            }
             "sum" => {
                 let total = self.local_expr(acc, line);
                 let added = at(K::Binary(BinOp::Add, Box::new(total), Box::new(value)), ty);
@@ -235,35 +266,6 @@ impl<'a> Lowerer<'a> {
             }),
             ty,
         ))
-    }
-
-    /// `flat_map`: pushes every item of the inner list `value` onto `acc`.
-    fn flat_push(&mut self, acc: Local, value: ir::Expr, line: u32) -> Lowered<ir::Expr> {
-        let Some(Shape::List(inner_item)) = self.shapes.shape(value.ty).cloned() else {
-            return Err(crate::Unsupported {
-                feature: "`flat_map` with a lambda that doesn't give a list".into(),
-                line,
-            });
-        };
-        let (inner, var, index) = (
-            self.new_local(value.ty),
-            self.new_local(inner_item),
-            self.new_local(Type::I64),
-        );
-        let walk = Stmt::ForEach {
-            var,
-            index,
-            list: inner,
-            body: self.push_to(acc, self.local_expr(var, line)),
-        };
-        Ok(ir::Expr {
-            kind: K::Block(Block {
-                stmts: vec![Stmt::Let(inner, value), walk],
-                value: None,
-            }),
-            ty: Type::Unit,
-            line,
-        })
     }
 
     /// A block that sets local `acc` to `value`.

@@ -1,0 +1,47 @@
+// Rule: `for_each(f)` calls `f` on every item in order and gives nothing; `find_index` and `find_last_index` give the position of the first or last item that passes, or `none`; on lists of any values, and `for_each` on sets.
+// Spec: 14.2
+// expect output: 4
+// expect output: 7
+// expect output: n=1
+// expect output: n=7
+// expect output: 1 3 none
+// expect output: FIG
+// expect output: PEAR
+// expect output: 1 2
+// expect output: tag a
+// expect output: tag b
+// expect output: pen: 1.5
+// expect output: ink: 4.0
+// expect output: 1
+// expect output: 2 1
+// expect output: Asha
+// expect output: none
+
+type Item {
+    name: String
+    price: Float
+}
+
+fn show(n: Int) {
+    print(`n={n}`)
+}
+
+fn main() {
+    [4, 7].for_each(x => print(x))
+    [1, 7].for_each(show)
+    const xs = [4, 7, 1, 7, 9]
+    print(`{xs.find_index(x => x == 7)} {xs.find_last_index(x => x == 7)} {xs.find_index(x => x > 100)}`)
+    const words = ["fig", "pear", "plum"]
+    words.take(2).for_each(w => print(w.upper()))
+    print(`{words.find_index(w => w.starts_with("p"))} {words.find_last_index(w => w.starts_with("p"))}`)
+    Set.of("a", "b", "a").for_each(t => print(`tag {t}`))
+    const items = [Item(name: "pen", price: 1.5), Item(name: "ink", price: 4.0)]
+    items.for_each(i => print(`{i.name}: {i.price}`))
+    print(items.find_last_index(i => i.price > 1.0))
+    const rows = [[1, 2], [3], []]
+    print(`{rows.find_index(r => r.is_empty())} {rows.find_last_index(r => r.len() > 0)}`)
+    [{"name": "Asha"}].for_each(p => print(p["name"] ?? "?"))
+    const empty: [Int] = []
+    empty.for_each(x => print(x))
+    print(empty.find_index(x => x > 0))
+}

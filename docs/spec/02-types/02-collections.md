@@ -55,7 +55,7 @@ The limit belongs to the value: a copy has it too (`let b = a`), and so does the
 
 Dicts and sets keep **insertion order**: iterating visits items in the order they were first added, so output and tests are always repeatable.
 
-Methods of lists: `len`, `is_empty`, `is_full`, `get`, `first`, `last`, `contains`, `enumerate`, `push`, and `filter`, `map`, `flat_map`, `any`, `all`, `sum` with a lambda (an empty list's `sum` is the zero of the lambda's result: `0`, or `0.0` for a `Float`). Methods of dicts: `len`, `is_empty`, `is_full`, `get`, `contains_key`, `keys`, `values`, `remove`. More methods, and sets, are in [14.2](../14-standard-library/02-built-in-methods.md#142-methods-of-built-in-types).
+Methods of lists: `len`, `is_empty`, `is_full`, `get`, `first`, `last`, `contains`, `enumerate`, `push`, and `filter`, `map`, `flat_map`, `any`, `all`, `sum` with a lambda (an empty list's `sum` is the zero of the lambda's result: `0`, or `0.0` for a `Float`). Methods of dicts: `len`, `is_empty`, `is_full`, `get`, `contains_key`, `keys`, `values`, `remove`. Sets have `any`, `all`, `count`, `sum`, `find`, `for_each`, `map` and `filter` too, over their values in insertion order. More methods, and sets', are in [14.2](../14-standard-library/02-built-in-methods.md#142-methods-of-built-in-types).
 
 There is one way to set an item: `items[i] = v` changes an item of a list, and `ages[name] = v` adds or changes a key. `push` and `remove` change the collection they are called on, so like assignment they need a `let`:
 
