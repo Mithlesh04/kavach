@@ -1,7 +1,9 @@
 import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
+import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
+import { loadProject } from "@/lib/samples";
 import { specBlockWith } from "@/lib/spec-tables";
 import { Ex, H2, Note, P } from "./parts";
 import { ModuleTable } from "./spec-table";
@@ -14,6 +16,7 @@ import { ModuleTable } from "./spec-table";
 
 const FILE = "14-standard-library/25-system.md";
 const TESTS = "tests/conformance/14-standard-library";
+const fakeGpus = loadProject("system/fake-gpus", ["src/main.kav"]);
 
 export const systemDoc: LessonDoc = {
   lead: "std.system says what machine the program runs on: its system, processor, memory, GPUs, drives and devices, and the programs and users on it. The basics are free; what could tell one machine from another needs System, and what is critical needs System.critical.",
@@ -43,6 +46,25 @@ export const systemDoc: LessonDoc = {
       </ul>
       <P>A <C>pub</C> function that reads them without saying so doesn&apos;t compile:</P>
       <Ex name="system/needs.fails" />
+      <H2>Testing GPU code with a fake GPU list</H2>
+      <P>
+        Code that picks a GPU should be tested with GPUs the test machine doesn&apos;t have. The setting{" "}
+        <C>KAVACH_FAKE_GPUS</C> replaces the list <C>system.gpus()</C> gives with one of its own, ranked the same way:
+        discrete first, then integrated, the rest last.
+      </P>
+      <CodeBlock code={fakeGpus.files[0].code} file="src/main.kav" />
+      <Terminal session={fakeGpus.output ?? ""} />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Each entry is <C>name:vendor:kind:backend</C>, and entries are separated by <C>;</C>. A name may have spaces: quote the whole value in a shell, <C>KAVACH_FAKE_GPUS=&quot;AMD Radeon RX 7900:0x1002:discrete:vulkan&quot;</C>.</li>
+        <li>The vendor is written as a PCI vendor ID, such as <C>0x10de</C>, and read back as the maker&apos;s name: NVIDIA, AMD, Intel, Apple, Qualcomm, ARM or Microsoft. An ID it doesn&apos;t know reads as <C>&quot;&quot;</C>.</li>
+        <li>The Intel GPU was listed first, but the discrete AMD one comes first in the list.</li>
+        <li>It changes only the list. The GPU that runs <C>map</C> is still the machine&apos;s.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file={`docs/spec/${FILE}`} label="spec 14.25" />
+        <SrcRef file="tools/cli/tests/fake_gpus.rs" symbol="a_fake_gpu_list_is_ranked_like_the_machines" label="tested" />
+        <SrcRef file="runtime/gpu/src/listing.rs" line={59} symbol="fn vendor" label="vendor names, defined here" />
+      </div>
       <H2>Every part of the machine</H2>
       <P>
         Drives, volumes, network adapters, displays, the battery, sensors and every device the system knows come as

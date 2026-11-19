@@ -1,0 +1,10 @@
+$ KAVACH_FAKE_GPUS=Intel-UHD-770:0x8086:integrated:dx12;AMD-Radeon-RX-7900:0x1002:discrete:vulkan kavach run src/main.kav
+2 GPUs
+AMD-Radeon-RX-7900, made by AMD, through vulkan
+Intel-UHD-770, made by Intel, through dx12
+the first is discrete: use it for the heavy work
+$ KAVACH_FAKE_GPUS=Intel-UHD-770:0x8086:integrated:dx12;AMD-Radeon-RX-7900:0x1002:discrete:vulkan kavach run --native src/main.kav
+2 GPUs
+AMD-Radeon-RX-7900, made by AMD, through vulkan
+Intel-UHD-770, made by Intel, through dx12
+the first is discrete: use it for the heavy work

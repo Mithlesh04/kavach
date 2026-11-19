@@ -1,0 +1,12 @@
+use std.system
+
+fn main() uses Console, System {
+    const gpus = system.gpus()
+    print(`{gpus.len()} GPUs`)
+    for g in gpus {
+        print(`{g.name}, made by {g.vendor}, through {g.backend}`)
+    }
+    if gpus.len() > 0 and gpus[0].kind == GpuKind.Discrete {
+        print("the first is discrete: use it for the heavy work")
+    }
+}

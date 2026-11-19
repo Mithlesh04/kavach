@@ -1,0 +1,2 @@
+KAVACH_FAKE_GPUS=Intel-UHD-770:0x8086:integrated:dx12;AMD-Radeon-RX-7900:0x1002:discrete:vulkan run src/main.kav
+KAVACH_FAKE_GPUS=Intel-UHD-770:0x8086:integrated:dx12;AMD-Radeon-RX-7900:0x1002:discrete:vulkan run --native src/main.kav

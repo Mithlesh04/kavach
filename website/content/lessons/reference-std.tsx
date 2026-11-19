@@ -58,8 +58,18 @@ export const stdModules: StdModule[] = modulePages.map((s) => {
   return { title: s.title, key: `std/${s.slug}`, file, number, folders };
 });
 
+/**
+ * Modules the spec designs that have no code yet: no page until they land.
+ * Each fails the build once its stdlib folder exists, so it gets its page then.
+ */
+const DESIGNED: Record<string, string> = { "std.table": "table" };
+for (const [title, folder] of Object.entries(DESIGNED)) {
+  if (fs.existsSync(path.join(process.cwd(), "..", "stdlib", folder))) throw new Error(`Reference: ${title} has code now (stdlib/${folder}/): give it a page and take it out of DESIGNED`);
+}
+
 // Every module has its page: a spec section or a stdlib folder without one fails the build.
 for (const c of chapterFiles) {
+  if (c.title in DESIGNED) continue;
   if (!stdModules.some((m) => m.title === c.title)) throw new Error(`Reference: spec ${c.number} ${c.title} has no page in lib/course.ts`);
 }
 for (const f of stdlibFolders()) {

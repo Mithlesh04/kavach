@@ -1,5 +1,7 @@
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { builtOnly } from "./built-spec";
 
 // Reference pages read the spec itself, at build time, instead of a typed
 // copy that could drift: the tables and code blocks of one spec section.
@@ -7,11 +9,17 @@ import path from "node:path";
 // held to the code by tests (spec 10.11's settings, by
 // compiler/driver/tests/settings.rs).
 
+/** A file of the repository; a spec file without what it marks as not built yet (lib/built-spec.ts). */
+function readRepo(rel: string): string {
+  const text = fs.readFileSync(path.join(process.cwd(), "..", rel), "utf8").replace(/\r\n/g, "\n");
+  return rel.startsWith("docs/spec/") ? builtOnly(text) : text;
+}
+
 /** `caption`: the line just before the table when it ends with ":", as "Text (`String`):" does in 14.2. */
 export type SpecTable = { heading: string; header: string[]; rows: string[][]; caption?: string };
 
 function section(file: string, number: string): string {
-  const text = fs.readFileSync(path.join(process.cwd(), "..", "docs", "spec", file), "utf8").replace(/\r\n/g, "\n");
+  const text = readRepo(`docs/spec/${file}`);
   if (text.startsWith(`# ${number} `)) return text; // a chapter split into files: one file per section
   const start = text.indexOf(`\n## ${number} `);
   if (start < 0) throw new Error(`spec ${file}: no section ${number}`);
@@ -55,12 +63,29 @@ function tablesIn(text: string, where: string): SpecTable[] {
 export const specTables = (file: string, number: string): SpecTable[] => tablesIn(section(file, number), `spec ${file} ${number}`);
 
 /** Every Markdown table in a file of the repository (a decision record, a README). */
-export const fileTables = (rel: string): SpecTable[] =>
-  tablesIn(fs.readFileSync(path.join(process.cwd(), "..", rel), "utf8").replace(/\r\n/g, "\n"), rel);
+export const fileTables = (rel: string): SpecTable[] => tablesIn(readRepo(rel), rel);
+
+/**
+ * Every Markdown table in a file as it was at `commit`: for a page whose
+ * spec text was replaced by a design that isn't built yet, while the old
+ * feature still works.
+ */
+export const fileTablesAt = (commit: string, rel: string): SpecTable[] => tablesIn(readAt(commit, rel), `${rel} at ${commit}`);
+
+/** A file of the repository as it was at `commit`. */
+const readAt = (commit: string, rel: string): string =>
+  execFileSync("git", ["show", `${commit}:${rel}`], { cwd: path.join(process.cwd(), ".."), encoding: "utf8" }).replace(/\r\n/g, "\n");
+
+/** As fileFigure, from the file as it was at `commit`: a sentence a design not built yet has rewritten. */
+export function fileFigureAt(commit: string, rel: string, pattern: RegExp): string {
+  const found = readAt(commit, rel).match(pattern);
+  if (!found) throw new Error(`${rel} at ${commit}: nothing matches ${pattern}`);
+  return found[1];
+}
 
 /** The first capture of `pattern` in a file of the repository: a figure the file gives in a sentence, not a table. */
 export function fileFigure(rel: string, pattern: RegExp): string {
-  const found = fs.readFileSync(path.join(process.cwd(), "..", rel), "utf8").match(pattern);
+  const found = readRepo(rel).match(pattern);
   if (!found) throw new Error(`${rel}: nothing matches ${pattern}`);
   return found[1];
 }

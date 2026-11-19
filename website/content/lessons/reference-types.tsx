@@ -5,7 +5,7 @@ import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
 import { moduleDecls } from "@/lib/outline";
-import { fileFigure, specTables } from "@/lib/spec-tables";
+import { fileFigure, fileFigureAt, specTables } from "@/lib/spec-tables";
 import { H2, P } from "./parts";
 import { teacher } from "./reference";
 import { Cell } from "./spec-table";
@@ -39,6 +39,12 @@ type Entry = { names: string[]; says: string; number: string; file: string; defi
 
 /** A spec sentence: the first capture of `pattern` in a spec file. */
 const said = (file: string, pattern: RegExp) => fileFigure(`docs/spec/${file}`, pattern);
+
+/**
+ * A spec sentence as it was at 81e236e3: decision 0137 (numbers in types,
+ * `Ring<T, max: n>`) rewrote it, and isn't built yet. Back to `said` when it lands.
+ */
+const saidBefore = (file: string, pattern: RegExp) => fileFigureAt("81e236e3", `docs/spec/${file}`, pattern);
 
 /** A row of a spec table whose function gives the type: "`net.bind(address) -> UdpSocket ! NetError`: A UDP socket at `address`". */
 function givenBy(file: string, signature: string): string {
@@ -84,7 +90,7 @@ function groups(): { title: string; entries: Entry[] }[] {
       title: "Collections",
       entries: [
         ...collections,
-        { names: ["Ring"], says: said("02-types/02-collections.md", /(`Ring<T>` keeps the last `n` items pushed\. `Ring\.capacity\(n\)` makes an empty one; when it is full, `push` drops the oldest item to make room, where a full list would panic\.)/), number: "2.2", file: "02-types/02-collections.md" },
+        { names: ["Ring"], says: saidBefore("02-types/02-collections.md", /(`Ring<T>` keeps the last `n` items pushed\. `Ring\.capacity\(n\)` makes an empty one; when it is full, `push` drops the oldest item to make room, where a full list would panic\.)/), number: "2.2", file: "02-types/02-collections.md" },
       ],
     },
     {
