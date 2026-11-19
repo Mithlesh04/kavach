@@ -274,7 +274,7 @@ print(tensor.of([3.0, 4.0]).norm())   // 5.0
 
 - Two matrices, `[n, k]` and `[k, m]`, give `[n, m]`. The inner sizes must match.
 - *Not built yet:* A 1-D `a` is a row and a 1-D `b` a column; that dimension is taken out of the result. So a vector and a matrix give a vector, and two vectors of one length give their dot product, a tensor of shape `[]` (`(u @ v).item()`).
-- *Not built yet:* With more than two dimensions, the last two are the matrices, and the others are a batch, broadcast as above: `[8, 2, 3] @ [3, 4]` is `[8, 2, 4]`.
+- With more than two dimensions, the last two are the matrices, and the others are a batch: `[3, 2, 2] @ [3, 2, 2]` is `[3, 2, 2]`, one product for each of the 3. *Not built yet:* batches of different shapes, broadcast as above: `[8, 2, 3] @ [3, 4]` is `[8, 2, 4]`.
 - `@=` is `a = a @ b`.
 
 **The same bits, or `fast`.** By default each number of `a @ b` adds its products in one order, `k` from 0 up, a multiply then an add, never fused (decision 0111). The work is still spread over the cores and the vector units, and a 2-D block of `Float` or `Float32` runs the exact kernel of `runtime/matrix`. `a.matmul(b, fast: true)` may add in another order and fuse multiplies with adds, through `gemm`, for the full speed of the machine; a float result may then differ in its last bits between machines. For whole numbers both give the same result, and overflow panics.

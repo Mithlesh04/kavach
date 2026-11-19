@@ -233,7 +233,14 @@ impl Checker<'_> {
             let Some(i) = self.choose_impl(&impls, &subst, &got) else {
                 let (ty, shown) = (self.show(lt), self.show(&got));
                 let takes = self.shown_impls(&impls, &subst);
-                self.error(r.span, format!("`{ty}` has `{}` for {takes} on the right, and this is a `{shown}` (spec 2.16)", op.as_str()));
+                self.error(
+                    r.span,
+                    format!(
+                        "`{ty}` has `{}` for {takes} on the right, and this is {} (spec 2.16)",
+                        op.as_str(),
+                        crate::op_impls::a_shown(&shown)
+                    ),
+                );
                 return Some(Ty::Error);
             };
             let (o, out, _) = &impls[i];

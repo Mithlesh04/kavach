@@ -25,6 +25,7 @@ mod gpu_later;
 mod gpu_stay;
 mod inline;
 mod inout_stash;
+mod invariant_checks;
 mod ir;
 mod jam;
 mod library;

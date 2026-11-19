@@ -57,7 +57,13 @@ impl Checker<'_> {
             Ty::Error => return Some(Ty::Error),
             other => {
                 let shown = self.show(&other);
-                self.error(a.value.span, format!("`Tensor<U>(t)` converts a tensor's numbers, and this is a `{shown}` (spec 14.33)"));
+                self.error(
+                    a.value.span,
+                    format!(
+                        "`Tensor<U>(t)` converts a tensor's numbers, and this is {} (spec 14.33)",
+                        crate::op_impls::a_shown(&shown)
+                    ),
+                );
                 return Some(Ty::Error);
             }
         };

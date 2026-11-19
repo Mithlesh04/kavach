@@ -1,0 +1,38 @@
+// Rule: An invariant is checked after a change to a field of a variable, of an `inout` parameter or of a record inside another, whichever field changes.
+// Spec: 7.3
+// expect output: 4 3 true
+// expect output: 5
+// expect panic: contract failed: invariant at >= 0 and at <= limit
+
+type Reader {
+    line: Int
+    at: Int
+    limit: Int
+    flag: Bool
+
+    invariant line >= 1
+    invariant at >= 0 and at <= limit
+}
+
+type Holder {
+    reader: Reader
+    invariant reader.line < 100
+}
+
+fn step(inout r: Reader) {
+    r.flag = not r.flag
+    r.at = r.at + 1
+    r.line = r.line + 1
+}
+
+fn main() {
+    let r = Reader(line: 1, at: 0, limit: 5, flag: false)
+    for _ in 0..3 {
+        step(r)
+    }
+    print(`{r.line} {r.at} {r.flag}`)
+    let h = Holder(reader: r)
+    h.reader.at = 5
+    print(h.reader.at)
+    h.reader.limit = 4
+}

@@ -197,10 +197,10 @@ pub const LEAK_HINT: &str = "  make the link back a `Weak`, so no cycle forms (s
 /// in 32 bits.
 pub const MAX_CAPACITY: i64 = 4_294_967_294;
 
-/// The panic of adding to a full `what` ("list", "map", "set") made by
-/// `capacity(n)` (spec 2.2).
+/// The panic of adding to a full `what` ("list", "map", "set") whose
+/// limit is in its type or made by `capacity(n)` (spec 2.2).
 pub fn full_panic(what: &str, n: usize) -> String {
-    format!("the {what} is full (capacity {n})")
+    format!("the {what} is full (max {n})")
 }
 
 /// The panic of `capacity(n)` given more first entries than `n`, or a

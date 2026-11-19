@@ -5,5 +5,5 @@
 fn main() {
     const v: [Float]<len: 3> = [1.0, 2.0, 3.0]
     print(v[2])
-    print(v[3])              // error: index 3 is past a list of 3
+    print(v[3])              // error: index 3 is past `List<Float, len: 3>`
 }

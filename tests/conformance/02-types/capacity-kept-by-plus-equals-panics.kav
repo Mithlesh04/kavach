@@ -3,7 +3,7 @@
 // expect output: [1, 2, 3]
 // expect output: false
 // expect output: true
-// expect panic: the list is full (capacity 4)
+// expect panic: the list is full (max 4)
 
 type Basket {
     items: [String]

@@ -189,10 +189,14 @@ impl Checker<'_> {
             && k >= len
         {
             let shown = self.show(&t);
+            let spec = match self.inf.resolve_keep(&t) {
+                Ty::Sized(b, ..) if matches!(*b, Ty::Prim(Prim::Bytes)) => "2.13",
+                _ => "2.2",
+            };
             self.error(
                 index.span,
                 format!(
-                    "index {k} is past `{shown}`: its indexes are 0 to {} (spec 2.2)",
+                    "index {k} is past `{shown}`: its indexes are 0 to {} (spec {spec})",
                     len - 1
                 ),
             );

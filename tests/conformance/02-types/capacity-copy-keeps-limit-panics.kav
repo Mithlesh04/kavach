@@ -2,7 +2,7 @@
 // Spec: 2.2
 // expect output: [1, 2]
 // expect output: [1]
-// expect panic: the list is full (capacity 2)
+// expect panic: the list is full (max 2)
 
 fn main() {
     let n = 2

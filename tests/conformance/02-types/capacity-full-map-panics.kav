@@ -1,7 +1,7 @@
 // Rule: Adding a new key to a full map made by `Dict.capacity(n)` panics; changing a key it holds does not.
 // Spec: 2.2
 // expect output: {"a": 3}
-// expect panic: the map is full (capacity 1)
+// expect panic: the map is full (max 1)
 
 fn main() {
     let n = 1

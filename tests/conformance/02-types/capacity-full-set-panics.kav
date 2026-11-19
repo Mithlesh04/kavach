@@ -1,7 +1,7 @@
 // Rule: Adding a new item to a full set made by `Set.capacity(n)` panics; adding one it holds does not.
 // Spec: 2.2
 // expect output: 2
-// expect panic: the set is full (capacity 2)
+// expect panic: the set is full (max 2)
 
 fn main() {
     let n = 2

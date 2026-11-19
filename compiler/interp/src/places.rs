@@ -75,3 +75,27 @@ pub(crate) fn set<'a>(
         None => Err("can't assign here".to_string()),
     }
 }
+
+/// The value `steps` lead to inside `slot`, if there is one: a record's
+/// field, a list's item (`#k` too), a dict's value or a tuple's part.
+pub(crate) fn get<'v, 'a>(slot: &'v Value<'a>, steps: &[Step<'a>]) -> Option<&'v Value<'a>> {
+    let Some((step, rest)) = steps.split_first() else {
+        return Some(slot);
+    };
+    let next = match (step, slot) {
+        (Step::Field(name), Value::Record { fields, .. }) => {
+            fields.iter().find(|f| *f.name == **name).map(|f| &f.value)
+        }
+        (Step::Index(Value::Int(i, _)), Value::List(items)) => {
+            usize::try_from(*i).ok().and_then(|i| items.get(i))
+        }
+        (Step::FromEnd(k), Value::List(items)) => {
+            let at = kavach_runtime_core::slices::from_end(items.len(), *k);
+            usize::try_from(at).ok().and_then(|i| items.get(i))
+        }
+        (Step::Index(key), Value::Map(m)) => m.get(key),
+        (Step::Tuple(i), Value::Tuple(items)) => items.get(*i),
+        _ => None,
+    }?;
+    get(next, rest)
+}

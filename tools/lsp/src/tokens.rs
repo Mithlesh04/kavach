@@ -220,6 +220,16 @@ impl Marks<'_> {
     }
 
     fn mark_at(&mut self, at: u32, name: &str, ty: u32, modifiers: u32) {
+        // A method an operator or index calls (`a @ b`, `m[0, 1]`) has its
+        // name's span at the operator: nothing there to mark.
+        if !self
+            .c
+            .src
+            .get(at as usize..)
+            .is_some_and(|t| t.starts_with(name))
+        {
+            return;
+        }
         // Counted in UTF-16, as the protocol and JavaScript count them.
         let len = name.encode_utf16().count() as u32;
         self.found.push((at, len, ty, modifiers));

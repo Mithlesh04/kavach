@@ -111,7 +111,7 @@ impl Checker<'_> {
     /// The types `impls` take, for a message: "a `Vec2` or a `Float`".
     pub(crate) fn shown_impls(&self, impls: &[Impl], subst: &HashMap<DefId, Ty>) -> String {
         let shown: Vec<String> = (impls.iter())
-            .map(|(o, ..)| format!("a `{}`", self.show(&self.inf.subst(o, subst))))
+            .map(|(o, ..)| a_shown(&self.show(&self.inf.subst(o, subst))))
             .collect();
         match shown.split_last() {
             Some((last, [])) => last.clone(),
@@ -168,4 +168,11 @@ impl Checker<'_> {
                     .all(|(i, p)| p.has_default || i < given || named.contains(&p.name.as_str()))
         })
     }
+}
+
+/// `` a `Float` `` or `` an `Int` ``: a type's name in a message, with its
+/// article.
+pub(crate) fn a_shown(shown: &str) -> String {
+    let an = shown.starts_with(['A', 'E', 'I', 'O', 'a', 'e', 'i', 'o']);
+    format!("{} `{shown}`", if an { "an" } else { "a" })
 }

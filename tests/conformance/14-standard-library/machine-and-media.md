@@ -161,6 +161,7 @@ Conformance tests for std.clipboard (14.17), std.devices (14.18), std.window (14
 | 14.33 | [tensor-where-chooses-item-by-item.kav](tensor-where-chooses-item-by-item.kav) | `tensor.where(mask, a, b)` takes `a`'s number where the mask is `true`, else `b`'s, all broadcast to one shape; a number counts as a tensor of shape `[]`. | runs |
 | 14.33 | [tensor-any-all-and-count.kav](tensor-any-all-and-count.kav) | `t.any(test)`, `t.all(test)` and `t.count(test)` work on the numbers as a list's do. | runs |
 | 14.33 | [tensor-sum-along-an-axis.kav](tensor-sum-along-an-axis.kav) | A reduction with `axis:` works along that dimension and takes it out; without it, it gives one number. | runs |
+| 14.33 | [tensor-matmul-of-equal-batches.kav](tensor-matmul-of-equal-batches.kav) | `a @ b` of tensors with more than two dimensions and the same batch takes one product for each matrix of the batch. | runs |
 | 14.33 | [tensor-float-sum-is-exact.kav](tensor-float-sum-is-exact.kav) | A float sum is the exact sum, rounded once, so no order changes it. | runs |
 | 14.33 | [tensor-min-max-and-their-places.kav](tensor-min-max-and-their-places.kav) | `min`, `max`, `argmin` and `argmax` find the first smallest or largest; `NaN` comes after every number, and no numbers give `none`. | runs |
 | 14.33 | [tensor-mean-var-and-std.kav](tensor-mean-var-and-std.kav) | `mean` divides the exact sum by the count; `var` and `std` divide by the count minus `correction`, 1 unless given. | runs |

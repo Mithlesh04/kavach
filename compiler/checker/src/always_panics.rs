@@ -17,7 +17,7 @@
 
 use crate::checker::Checker;
 use crate::constants::fits;
-use crate::ty::{Prim, Ty};
+use crate::ty::{Prim, SizeKind, Ty};
 use kavach_ast::visit::{VisitMut, walk_expr, walk_item, walk_stmt};
 use kavach_ast::*;
 use kavach_resolver::{DefId, DefKind};
@@ -290,6 +290,13 @@ impl Known<'_, '_> {
         // `xs[-1]` is an error of its own, naming `xs[#1]` (spec 2.19).
         if let ExprKind::Unary(UnaryOp::Neg, x) = &index.kind
             && matches!(x.kind, ExprKind::Int(_))
+        {
+            return;
+        }
+        // A list whose length is in its type gets that type's message
+        // (`size_checks.rs`, spec 2.2).
+        if let Some(t) = self.checker.type_at(base.span)
+            && let Ty::Sized(_, SizeKind::Len, _) = self.checker.inf.shallow_keep(&t)
         {
             return;
         }

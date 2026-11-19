@@ -21,3 +21,15 @@ fn a_type_made_through_its_module_is_a_type() {
     assert_eq!(at(3, 21), Some(4), "{marks:?}");
     assert_eq!(at(4, 17), Some(1), "{marks:?}");
 }
+
+/// `a @ b` and `m[0, 1]` call a method whose name isn't written: nothing is
+/// marked at the operator or the bracket (the docs session's report).
+#[test]
+fn an_operator_is_not_marked_as_its_method() {
+    let text = "use std.tensor\n\nfn main() {\n    const m = tensor.of_rows([[1.0, 2.0], [3.0, 4.0]])\n    print((m @ m + m)[0, 1])\n}\n";
+    let c = kavach_driver::compile(text, "main.kav", Default::default());
+    let marks = crate::tokens::marks(&c, "main.kav", text);
+    // Line 4 holds only `print`, `m` and operators: no method is marked.
+    let methods: Vec<_> = marks.iter().filter(|m| m.0 == 4 && m.3 == 2).collect();
+    assert!(methods.is_empty(), "{marks:?}");
+}

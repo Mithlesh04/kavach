@@ -62,7 +62,7 @@ const three: [Int]<max: 2> = [1, 2, 3]      // compile error: 3 items, and the t
 let v: [Float]<len: 3> = [1.0, 2.0, 3.0]
 v[0] = 0.5
 v.push(4.0)              // compile error: a `[Float]<len: 3>` always holds 3 items
-print(v[3])              // compile error: index 3 is past a list of 3
+print(v[3])              // compile error: index 3 is past `List<Float, len: 3>`
 ```
 
 `List<T, len: n>.filled(v)` makes a list of fixed length: exactly `n` items, each `v`. It never fails, so it needs no `try`, and `n` may be a number parameter (2.9). It is written with `List<…>`: `[T]` in code is a list literal.

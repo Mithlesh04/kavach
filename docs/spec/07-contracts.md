@@ -45,7 +45,7 @@ type Account {
 }
 ```
 
-An invariant is checked whenever a value of the type is created or changed. An `Account` with a negative balance cannot exist.
+An invariant is checked whenever a value of the type is created or changed. An `Account` with a negative balance cannot exist. A change to one field checks again only the invariants that name that field (or `self`): the others still hold, as they did before the change.
 
 An invariant that walks a collection (`times.all(…)`, `sum`, `count`, `contains` and other methods that read every item) costs a walk on each change. A change to such a value inside a loop is a warning: the loop would walk the collection each round, which grows with the square of its size. Build the collection first, then make the value once.
 

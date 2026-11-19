@@ -282,10 +282,19 @@ impl<'a> Interp<'a> {
         };
         let mut slot = self.frame().vars.remove(&def).unwrap_or(Value::Unit);
         let result = set(&mut slot, &steps, value);
-        let checked = match &result {
-            Ok(()) => self.check_invariants(&slot, span),
-            Err(_) => Ok(()),
-        };
+        // Each record on the path holds the changed value: its invariants
+        // are checked, the innermost first (spec 7.3).
+        let mut checked = Ok(());
+        if result.is_ok() {
+            for k in (0..steps.len().max(1)).rev() {
+                if let Some(inner) = crate::places::get(&slot, &steps[..k])
+                    && let Err(e) = self.check_invariants(inner, span)
+                {
+                    checked = Err(e);
+                    break;
+                }
+            }
+        }
         self.frame().vars.insert(def, slot);
         result.map_err(|m| self.panic(m, span))?;
         checked

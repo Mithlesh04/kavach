@@ -185,7 +185,10 @@ impl<'a> Lowerer<'a> {
                     ty,
                     line,
                 };
-                let changed = self.with_invariants(changed)?;
+                if let Some(local) = self.plain_local(base) {
+                    return self.store_then_check(base, local, changed, &name.name);
+                }
+                let changed = self.with_invariants_on(changed, Some(&name.name))?;
                 self.assign_path(base, changed)
             }
             // `*p = v` and `p[i] = v` (spec 6.4).

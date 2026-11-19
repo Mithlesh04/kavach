@@ -1,7 +1,7 @@
 // Rule: Adding to a full list made by `List.capacity(n)` panics.
 // Spec: 2.2
 // expect output: 3
-// expect panic: the list is full (capacity 3)
+// expect panic: the list is full (max 3)
 
 fn main() {
     let n = 3

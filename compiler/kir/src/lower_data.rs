@@ -141,52 +141,7 @@ impl<'a> Lowerer<'a> {
     /// `value` (a new or changed record), after checking its type's
     /// invariants (spec 7.3): a false one panics with the contract.
     pub(crate) fn with_invariants(&mut self, value: ir::Expr) -> Lowered<ir::Expr> {
-        if self.emptying {
-            return Ok(value);
-        }
-        let Some(def) = self.shapes.def_of(value.ty) else {
-            return Ok(value);
-        };
-        let decl_span = self.c.resolution.defs[def].span;
-        let invariants: &'a [ast::Expr] =
-            match self.c.file.items.iter().find_map(|item| match &item.kind {
-                ItemKind::Type(t) if Some(t.name.span) == decl_span => Some(&t.body),
-                _ => None,
-            }) {
-                Some(TypeBody::Record(r)) => &r.invariants,
-                _ => return Ok(value),
-            };
-        if invariants.is_empty() {
-            return Ok(value);
-        }
-        let (ty, line) = (value.ty, value.line);
-        let tmp = self.new_local(ty);
-        let mut stmts = vec![Stmt::Let(tmp, value)];
-        let outer = self.invariant_of.replace((tmp, ty));
-        for inv in invariants {
-            let cond = self.expr(inv);
-            let cond = match cond {
-                Ok(c) => c,
-                Err(e) => {
-                    self.invariant_of = outer;
-                    return Err(e);
-                }
-            };
-            stmts.push(Stmt::Check {
-                cond,
-                message: format!("contract failed: invariant {}", self.text(inv.span)),
-                line,
-            });
-        }
-        self.invariant_of = outer;
-        Ok(ir::Expr {
-            kind: K::Block(Block {
-                stmts,
-                value: Some(Box::new(self.local_expr(tmp, line))),
-            }),
-            ty,
-            line,
-        })
+        self.with_invariants_on(value, None)
     }
     /// A variant of the union type `ty`, by name.
     pub(crate) fn variant_value(
