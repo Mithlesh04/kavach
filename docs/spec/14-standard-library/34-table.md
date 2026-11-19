@@ -1,5 +1,7 @@
 # 14.34 std.table
 
+*Not built yet.*
+
 A `Table<R>` holds rows of the record type `R`, kept as columns: each field's values side by side. It is for big data read from CSV or JSON, as pandas, polars and R's data frames are ([decision 0135](../../decisions/0135-tables-and-grouping.md)). It has the same methods as a list of records (14.2), so code moves from a list to a table with no change. Its columns are the fields of `R`, so the compiler checks every column a program names.
 
 ```kavach

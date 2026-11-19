@@ -100,6 +100,8 @@ counts.mean()                       // error: `mean` needs `T: Floating`, and `T
 
 ## Numbers in types
 
+*Not built yet.*
+
 A generic type may take numbers as well as types ([decision 0137](../../decisions/0137-numbers-in-types.md)). One rule says how: **types are positional, numbers are named**, as named arguments are in a call (3.2). The types come first, in order; then each number, with its name, in any order.
 
 ```kavach

@@ -21,14 +21,14 @@ c += a                         // `c = c + a`
 | Interface | Operator | The method |
 |---|---|---|
 | `Add`, `Sub`, `Mul`, `Div`, `Rem` | `a + b`, `a - b`, `a * b`, `a / b`, `a % b` | `fn add(self, other: R) -> Out`, and `sub`, `mul`, `div`, `rem` |
-| `Pow` | `a ** b` | `fn pow(self, other: R) -> Out` |
+| `Pow` | `a ** b` | `fn pow(self, other: R) -> Out` (not built yet) |
 | `Neg` | `-a` | `fn neg(self) -> Out` |
 | `MatMul` | `a @ b` | `fn matmul(self, other: R) -> Out`, the matrix product (14.33) |
 | `Comparable` | `a < b`, `a <= b`, `a > b`, `a >= b` | `fn compare(self, other: Self) -> Int`: below 0 when `self` comes first, 0 when neither does, above 0 when `other` does |
-| `Compare<R, Out>` | `a < b`, `a <= b`, `a > b`, `a >= b` | `fn lt(self, other: R) -> Out`, and `le`, `gt`, `ge`: each comparison on its own, giving any type, such as a mask of `Bool`s (14.33) |
+| `Compare<R, Out>` | `a < b`, `a <= b`, `a > b`, `a >= b` | `fn lt(self, other: R) -> Out`, and `le`, `gt`, `ge`: each comparison on its own, giving any type, such as a mask of `Bool`s (14.33) (not built yet) |
 
 - **The other operand.** `Add` alone takes the same type: `fn add(self, other: Self) -> Self`. `Mul<Float>` takes a `Float` instead, and gives `Self`. `Mul<Meters, Area>` takes `Meters` and gives an `Area`.
-- **One interface, several right operands.** A type may implement an operator's interface more than once, each time for another type on the right: `Mul<Vec2>` and `Mul<Float>`. The right operand's type chooses the method, while compiling. The methods share their name, `mul`; this is the one place a name may be written twice in a type (no overloading elsewhere, 1.4). Two for the same right operand are a compile error.
+- *Not built yet:* **One interface, several right operands.** A type may implement an operator's interface more than once, each time for another type on the right: `Mul<Vec2>` and `Mul<Float>`. The right operand's type chooses the method, while compiling. The methods share their name, `mul`; this is the one place a name may be written twice in a type (no overloading elsewhere, 1.4). Two for the same right operand are a compile error.
 
   ```kavach
   type Vec2: Mul<Vec2>, Mul<Float> {
@@ -49,7 +49,7 @@ c += a                         // `c = c + a`
 - **`x op= v`** is `x = x op v`, as for numbers (1.8), so `c += a` needs `Add` and a `let`.
 - **Operator methods are pure:** no `uses` (8.1) and no `!` (5). `a + b` never touches the outside world and never fails, except by a panic, as `Int` overflow does. A method with either is a compile error.
 - **`==` and `!=` are not interfaces.** They compare contents for every type (1.8), so `a == b` and `compare` can disagree only if the type's author makes them.
-- **`Comparable` or `Compare`.** `Comparable` gives an order; `Compare` gives each of `< <= > >=` its own method and result, as a tensor's item-by-item comparisons do (`t > 0.5` is a mask, 14.33). A type implements one of the two; both is a compile error, as `<` would have two meanings. `Compare` may be implemented several times, as above.
+- *Not built yet:* **`Comparable` or `Compare`.** `Comparable` gives an order; `Compare` gives each of `< <= > >=` its own method and result, as a tensor's item-by-item comparisons do (`t > 0.5` is a mask, 14.33). A type implements one of the two; both is a compile error, as `<` would have two meanings. `Compare` may be implemented several times, as above.
 - Built-in types keep their own operators; `extend Int: Add` is a compile error.
 
 ```kavach

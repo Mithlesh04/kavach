@@ -21,17 +21,17 @@ const roles = {[key]: "admin"}               // a key in brackets is the value o
 
 **Dicts** are written with braces ([decision 0129](../../decisions/0129-maps-written-with-braces.md), [decision 0130](../../decisions/0130-map-renamed-dict.md)): a value `{key: value, …}`, an empty one `{:}`, and the type `{K: V}` (`Dict<K, V>`); `[K: V]` is a compile error that says to write braces. A key written as a plain name is that text; a key in brackets, `{[key]: 1}`, is the value of what is inside; other keys are values (`{"first name": 1}`, `{1: "one"}`). `["a": 1]` and `[:]` are compile errors that say to write braces. `{` after `if`, `fn`, `for`, `=>` and the like still starts a block, and `{}` is an empty block.
 
-**Limits in the type** ([decision 0137](../../decisions/0137-numbers-in-types.md), 2.9). A list, dict, set or ring may say in its type how many entries it holds **at most**, with `max`. A list may instead say how many it holds **exactly**, with `len`. The number goes in `<…>` right after the collection's type, in either spelling:
+*Not built yet:* **Limits in the type** ([decision 0137](../../decisions/0137-numbers-in-types.md), 2.9). A list, dict, set or ring may say in its type how many entries it holds **at most**, with `max`. A list may instead say how many it holds **exactly**, with `len`. The number goes in `<…>` right after the collection's type, in either spelling:
 
 | Written | Holds |
 |---|---|
-| `[Int]<max: 2>`, `List<Int, max: 2>` | At most 2 items |
-| `[Float]<len: 3>`, `List<Float, len: 3>` | Exactly 3 items |
-| `{String: Int}<max: 100>`, `Dict<String, Int, max: 100>` | At most 100 keys |
-| `Set<Int, max: 10>` | At most 10 values |
-| `Ring<Float, max: 100>` | The last 100 items pushed (below) |
+| `[Int]<max: 2>`, `List<Int, max: 2>` | At most 2 items (not built yet) |
+| `[Float]<len: 3>`, `List<Float, len: 3>` | Exactly 3 items (not built yet) |
+| `{String: Int}<max: 100>`, `Dict<String, Int, max: 100>` | At most 100 keys (not built yet) |
+| `Set<Int, max: 10>` | At most 10 values (not built yet) |
+| `Ring<Float, max: 100>` | The last 100 items pushed (below) (not built yet) |
 
-`<…>` belongs to the type just before it: `{String: [Int]<max: 5>}` is a dict of lists of at most 5 items each, with no limit on its keys, and `{String: Int<bits: 8>}` is a dict of 8-bit numbers (2.1). `[Int, max: 2]` and `[Float, len: 3]` are compile errors that show `[Int]<max: 2>` and `[Float]<len: 3>`: they read as lists of two items.
+*Not built yet:* `<…>` belongs to the type just before it: `{String: [Int]<max: 5>}` is a dict of lists of at most 5 items each, with no limit on its keys, and `{String: Int<bits: 8>}` is a dict of 8-bit numbers (2.1). `[Int, max: 2]` and `[Float, len: 3]` are compile errors that show `[Int]<max: 2>` and `[Float]<len: 3>`: they read as lists of two items.
 
 ```kavach
 let recent: [Float]<max: 3> = [0.5]        // 0.5, and room for 2 more
@@ -50,11 +50,11 @@ const three: [Int]<max: 2> = [1, 2, 3]      // compile error: 3 items, and the t
 ```
 
 - Room for all the entries is made at once, so filling never stops to make room. Adding an entry to a full one is a panic; `is_full()` says whether it is full, so a program can check first.
-- A literal with more entries than the limit is a compile error. Set values or dict keys known while compiling that are equal count once, as `Set.of(7, 7)` above.
-- The item types may be left out and are inferred, as for `let a = []`: `List<max: 2>`, `Dict<max: 100>`, `Set<max: 10>`.
-- A limit is from 0 to 4,294,967,294 (2³² − 2); another is a compile error.
+- *Not built yet:* A literal with more entries than the limit is a compile error. Set values or dict keys known while compiling that are equal count once, as `Set.of(7, 7)` above.
+- *Not built yet:* The item types may be left out and are inferred, as for `let a = []`: `List<max: 2>`, `Dict<max: 100>`, `Set<max: 10>`.
+- *Not built yet:* A limit is from 0 to 4,294,967,294 (2³² − 2); another is a compile error.
 
-**A list of fixed length**, `[Float]<len: 3>`, holds exactly 3 items, always. An item may be set in place; `push`, `pop`, `remove` and `+=` are compile errors. An index written as a number is checked while compiling.
+*Not built yet:* **A list of fixed length**, `[Float]<len: 3>`, holds exactly 3 items, always. An item may be set in place; `push`, `pop`, `remove` and `+=` are compile errors. An index written as a number is checked while compiling.
 
 ```kavach
 let v: [Float]<len: 3> = [1.0, 2.0, 3.0]
@@ -63,7 +63,7 @@ v.push(4.0)              // compile error: a `[Float]<len: 3>` always holds 3 it
 print(v[3])              // compile error: index 3 is past a list of 3
 ```
 
-**Making a plain collection limited.** Only `try` (or `catch`) does it. The type with its limit, called with the collection, fails with a `SizeError` when it has too many entries (for `len`, not exactly that many), as `try Int(text)` fails (2.1). Without `try` or `catch` it is a compile error, unless the collection is a literal. The other way needs nothing: a limited collection may be given where a plain one is expected, and it keeps its limit, as one made by `capacity` does (below).
+*Not built yet:* **Making a plain collection limited.** Only `try` (or `catch`) does it. The type with its limit, called with the collection, fails with a `SizeError` when it has too many entries (for `len`, not exactly that many), as `try Int(text)` fails (2.1). Without `try` or `catch` it is a compile error, unless the collection is a literal. The other way needs nothing: a limited collection may be given where a plain one is expected, and it keeps its limit, as one made by `capacity` does (below).
 
 ```kavach
 fn pair(xs: [Int]) -> [Int]<max: 2> ! SizeError {
@@ -140,7 +140,7 @@ const has = (0..10).contains(10)                // false: 10 is past the end
 const digits = (0..10).to_list()                // [0, 1, …, 9]
 ```
 
-**Rings.** `Ring<T, max: n>` keeps the last `n` items pushed. `Ring<T, max: n>()`, or `Ring()` where the variable's type says it, makes an empty one; when it is full, `push` drops the oldest item to make room, where a full list would panic. The items are in the order they were pushed, oldest first: `first()` is the oldest, `last()` the newest, `get(0)` the oldest, and `for` visits them in that order. A list given, as in `Ring<T, max: n>(items)` or `Ring.capacity(n, items)`, makes the first items; given more than `n`, the ring keeps the last `n`, so making a ring never fails. `Ring.capacity(n)` makes a `Ring<T>` whose size is known only while running, as for a list.
+*Not built yet:* **Rings.** `Ring<T, max: n>` keeps the last `n` items pushed. `Ring<T, max: n>()`, or `Ring()` where the variable's type says it, makes an empty one; when it is full, `push` drops the oldest item to make room, where a full list would panic. The items are in the order they were pushed, oldest first: `first()` is the oldest, `last()` the newest, `get(0)` the oldest, and `for` visits them in that order. A list given, as in `Ring<T, max: n>(items)` or `Ring.capacity(n, items)`, makes the first items; given more than `n`, the ring keeps the last `n`, so making a ring never fails. `Ring.capacity(n)` makes a `Ring<T>` whose size is known only while running, as for a list.
 
 ```kavach
 let recent: Ring<Float, max: 3> = Ring()

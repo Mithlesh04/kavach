@@ -92,6 +92,8 @@ A ring (`Ring<T>`, 2.2) has `push`, `len`, `is_empty`, `is_full`, `first`, `last
 
 ### Grouping and statistics
 
+*Not built yet.*
+
 A list of records works like a table. It can be grouped, counted and summed per key, summarized, and joined with another list on a key, as pandas, polars and R's dplyr do ([decision 0135](../../decisions/0135-tables-and-grouping.md)). Every key and every column is a lambda, so the compiler checks it: a misspelled field is a compile error, not a wrong answer. `std.table` (14.34) has the same methods for big data kept in columns.
 
 ```kavach

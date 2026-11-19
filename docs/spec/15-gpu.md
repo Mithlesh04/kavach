@@ -216,6 +216,8 @@ frame.draw(tiles, square, textures: [skin])
 
 ## 15.5 Grouping and tables on the GPU
 
+*Not built yet.*
+
 The methods that group, count, summarize and join a list (14.2) run on the GPU too, and so do a table's (14.34) ([decision 0135](../decisions/0135-tables-and-grouping.md)). They follow the rules of 15.2: the items are of the four types, or records and tuples of them; every lambda fits a `gpu fn`; and the work is big enough. Otherwise they run on the CPU. Either way the results are the same, in the same order.
 
 ```kavach

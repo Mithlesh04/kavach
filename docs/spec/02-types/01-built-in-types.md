@@ -75,7 +75,7 @@ print(a * b + 3.3)        // 5.720000000000001 everywhere: a multiply, then an a
 print(math.sin(1e22))     // -0.8522008497671888 everywhere
 ```
 
-**Any width: `Int<bits: n>` and `UInt<bits: n>`** ([decision 0137](../../decisions/0137-numbers-in-types.md), 2.9). A whole number of exactly `n` bits, signed or not, for hardware registers, chip design and file formats. `n` is from 1 to 65,535, as in Zig. The sized names are short spellings of these: `Int8` is `Int<bits: 8>`, `UInt64` is `UInt<bits: 64>`, and `Int` is `Int<bits: 64>`. `UInt` is always written with its bits.
+*Not built yet:* **Any width: `Int<bits: n>` and `UInt<bits: n>`** ([decision 0137](../../decisions/0137-numbers-in-types.md), 2.9). A whole number of exactly `n` bits, signed or not, for hardware registers, chip design and file formats. `n` is from 1 to 65,535, as in Zig. The sized names are short spellings of these: `Int8` is `Int<bits: 8>`, `UInt64` is `UInt<bits: 64>`, and `Int` is `Int<bits: 64>`. `UInt` is always written with its bits.
 
 ```kavach
 const addr: UInt<bits: 12> = 4095          // the largest 12-bit number
@@ -86,11 +86,11 @@ pc = pc.wrapping_add(10)                   // 4: wraps at 12 bits, as a register
 const wide: UInt<bits: 128> = 2 ** 100     // fits: 128 bits are enough
 ```
 
-- `+ - * / %`, the comparisons and the bit operators work as on the other whole numbers (1.8). Both sides have the same type, and a result that doesn't fit panics (5.6). `wrapping_add` and `checked_add` (5.6) work at the type's width; `~` flips its `n` bits.
-- `UInt<bits: 12>(x)` converts, and panics when `x` doesn't fit, as `Int8(300)` does.
-- A value is kept in the smallest of 1, 2, 4 or 8 bytes that holds it; a wider one in whole 8-byte words.
+- *Not built yet:* `+ - * / %`, the comparisons and the bit operators work as on the other whole numbers (1.8). Both sides have the same type, and a result that doesn't fit panics (5.6). `wrapping_add` and `checked_add` (5.6) work at the type's width; `~` flips its `n` bits.
+- *Not built yet:* `UInt<bits: 12>(x)` converts, and panics when `x` doesn't fit, as `Int8(300)` does.
+- *Not built yet:* A value is kept in the smallest of 1, 2, 4 or 8 bytes that holds it; a wider one in whole 8-byte words.
 
-**A range: `Int<range: a..=b>`.** A whole number that is always in the range: an `Int` whose smallest and largest are `a` and `b`. Both ends are known while compiling; `a..b` leaves `b` out, as a range does (1.8). An empty range is a compile error.
+*Not built yet:* **A range: `Int<range: a..=b>`.** A whole number that is always in the range: an `Int` whose smallest and largest are `a` and `b`. Both ends are known while compiling; `a..b` leaves `b` out, as a range does (1.8). An empty range is a compile error.
 
 ```kavach
 const port: Int<range: 1..=65535> = 8080
@@ -105,10 +105,10 @@ fn port_of(n: Int) -> Int<range: 1..=65535> {
 }
 ```
 
-- Arithmetic of two values of one range type gives that type; a result out of the range panics, as overflow does (5.6), and `checked_add` gives `none`. Wrapping has no meaning for a range: `wrapping_add` on one is a compile error.
-- Two ranges are two types, and a range is not a `bits` type: `Int<range: 0..=255>` is not `UInt8`. `Int(port)` always converts back.
+- *Not built yet:* Arithmetic of two values of one range type gives that type; a result out of the range panics, as overflow does (5.6), and `checked_add` gives `none`. Wrapping has no meaning for a range: `wrapping_add` on one is a compile error.
+- *Not built yet:* Two ranges are two types, and a range is not a `bits` type: `Int<range: 0..=255>` is not `UInt8`. `Int(port)` always converts back.
 
-**Fixed places: `Decimal<digits: 10, places: 2>`.** At most 10 digits in all, 2 of them after the point, as SQL's `NUMERIC(10, 2)`: from −99,999,999.99 to 99,999,999.99. `places` is from 0 to `digits`. A plain `Decimal` keeps any number of digits, as above.
+*Not built yet:* **Fixed places: `Decimal<digits: 10, places: 2>`.** At most 10 digits in all, 2 of them after the point, as SQL's `NUMERIC(10, 2)`: from −99,999,999.99 to 99,999,999.99. `places` is from 0 to `digits`. A plain `Decimal` keeps any number of digits, as above.
 
 ```kavach
 const price: Decimal<digits: 10, places: 2> = 19.99
@@ -116,6 +116,6 @@ const tax = price * 0.18                                // 3.5982, rounded to 2 
 const bad: Decimal<digits: 10, places: 2> = 1.234       // compile error: 3 places, the type has 2
 ```
 
-- A literal with more places or digits than the type has is a compile error: it is never rounded without a word.
-- Arithmetic gives the same type. A result with more places is rounded to `places`, a half away from zero, as `d.round(places)` does (14.2). A result with more digits before the point than `digits - places` panics, as overflow does (5.6).
-- `Decimal<digits: 10, places: 2>(x)` converts, rounding the same way, and panics when `x` doesn't fit.
+- *Not built yet:* A literal with more places or digits than the type has is a compile error: it is never rounded without a word.
+- *Not built yet:* Arithmetic gives the same type. A result with more places is rounded to `places`, a half away from zero, as `d.round(places)` does (14.2). A result with more digits before the point than `digits - places` panics, as overflow does (5.6).
+- *Not built yet:* `Decimal<digits: 10, places: 2>(x)` converts, rounding the same way, and panics when `x` doesn't fit.
