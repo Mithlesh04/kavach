@@ -1,0 +1,33 @@
+// Rule: A `try` in a spawned call's argument passes the error on from the spawning function, before any task starts.
+// Spec: 9.1
+// expect output: spawned
+// expect output: the task runs
+// expect output: 8
+// expect output: negative
+// expect output: -1
+
+fn checked(n: Int) -> Int ! Error {
+    if n < 0 {
+        fail Error("negative")
+    }
+    n
+}
+
+fn double(n: Int) -> Int {
+    print("the task runs")
+    n * 2
+}
+
+fn start(n: Int) -> Int ! Error {
+    const t = spawn double(try checked(n))
+    print("spawned")
+    t.wait() catch 0
+}
+
+fn main() {
+    print(start(4) catch -1)
+    print(start(-4) catch e => {
+        print(`{e}`)
+        -1
+    })
+}

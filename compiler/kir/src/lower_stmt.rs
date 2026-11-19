@@ -441,8 +441,12 @@ impl<'a> Lowerer<'a> {
                     .first()
                     .map(|a| &a.value)
                     .ok_or_else(|| self.unsupported("`print` without an argument", e.span))?;
+                // A text worked out before its task started is printed whole.
+                let held = self
+                    .held_parts
+                    .contains_key(&(arg.span.start, arg.span.end));
                 let parts = match &arg.kind {
-                    ExprKind::Str(parts) => parts
+                    ExprKind::Str(parts) if !held => parts
                         .iter()
                         .map(|p| match p {
                             ast::StrPart::Text(t) => Ok(PrintPart::Text(t.clone())),

@@ -106,10 +106,15 @@ pub(crate) fn leaked_shared(made: &Mutex<Vec<Baton<MadeShared<'_>>>>) -> Vec<u32
         .collect()
 }
 
-/// What a task runs: `spawn x`, or a function value on one item
-/// (`parallel_map`, spec 9.3).
+/// The parts of a spawned call worked out before its task starts, by
+/// span (spec 9.1).
+pub(crate) type Held<'a> = Vec<((u32, u32), Value<'a>)>;
+
+/// What a task runs: `spawn x`, with the parts of its call worked out
+/// before (spec 9.1), or a function value on one item (`parallel_map`,
+/// spec 9.3).
 pub(crate) enum Work<'a> {
-    Expr(&'a Expr),
+    Expr(&'a Expr, Held<'a>),
     Call(Value<'a>, Value<'a>, Span),
     /// `time.after(d, f)` (spec 14.4): `f` after `d` milliseconds.
     After(u64, Value<'a>, Span),
@@ -160,9 +165,51 @@ pub(crate) fn copy_flow<'a>(f: &Flow<'a>) -> Flow<'a> {
 }
 
 impl<'a> Interp<'a> {
-    /// `spawn x` (spec 9.1): a new task that will evaluate `x`.
+    /// `spawn x` (spec 9.1): a new task that will evaluate `x`, once the
+    /// parts of its call are worked out here.
     pub(crate) fn spawn(&mut self, x: &'a Expr) -> Eval<'a> {
-        self.spawn_work(Work::Expr(x), x.span)
+        let held = self.spawn_parts(x)?;
+        self.spawn_work(Work::Expr(x, held), x.span)
+    }
+
+    /// The parts of spawned call `x` that are worked out before its task
+    /// starts (spec 9.1, found by the checker), in the order they are
+    /// written: the value a method is called on, then the arguments.
+    fn spawn_parts(&mut self, x: &'a Expr) -> Result<Held<'a>, Flow<'a>> {
+        let kavach_ast::ExprKind::Call { callee, args, .. } = &x.kind else {
+            return Ok(Vec::new());
+        };
+        let receiver = match &callee.kind {
+            kavach_ast::ExprKind::Field { base, .. } => Some(&**base),
+            _ => None,
+        };
+        // A part of this task's own spawned call, not yet used, is no part
+        // of this one.
+        let outer = std::mem::take(&mut self.held);
+        let mut held = Vec::new();
+        let mut found = Ok(());
+        for p in receiver.into_iter().chain(args.iter().map(|a| &a.value)) {
+            let span = (p.span.start, p.span.end);
+            if !self.c.spawn_parts.contains(&span) {
+                continue;
+            }
+            match self.eval(p) {
+                Ok(v) => held.push((span, v)),
+                Err(f) => {
+                    found = Err(f);
+                    break;
+                }
+            }
+        }
+        self.held = outer;
+        found.map(|()| held)
+    }
+
+    /// A part of a spawned call worked out before its task started.
+    pub(crate) fn take_held(&mut self, e: &Expr) -> Option<Value<'a>> {
+        let span = (e.span.start, e.span.end);
+        let i = self.held.iter().position(|(s, _)| *s == span)?;
+        Some(self.held.swap_remove(i).1)
     }
 
     /// A new task that will run `work`.
@@ -284,16 +331,22 @@ impl<'a> Interp<'a> {
             events: self.events.clone(),
             // A task runs the code it started with (spec 10.5).
             hot: None,
+            held: Vec::new(),
         }
     }
 
     /// Runs task `x` on this (new) thread, when its turn comes.
     fn run_work(&mut self, work: Work<'a>) -> Eval<'a> {
         match work {
-            Work::Expr(x) => match self.eval(x) {
-                Err(Flow::Return(v)) => Ok(v),
-                other => other,
-            },
+            Work::Expr(x, held) => {
+                let outer = std::mem::replace(&mut self.held, held);
+                let result = self.eval(x);
+                self.held = outer;
+                match result {
+                    Err(Flow::Return(v)) => Ok(v),
+                    other => other,
+                }
+            }
             Work::Call(f, item, span) => self.call_value(f, vec![item], span),
             // A wait like `sleep`'s: under `kavach test` the fake clock
             // moves on at once (spec 11.5).

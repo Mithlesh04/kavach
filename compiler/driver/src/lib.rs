@@ -90,6 +90,9 @@ pub struct Compiled {
     pub float_constants: HashMap<(u32, u32), f64>,
     /// The `map` calls that may run on the GPU (spec 15.2), by span.
     pub gpu_maps: std::collections::HashSet<(u32, u32)>,
+    /// The parts of spawned calls worked out before their tasks start
+    /// (spec 9.1), by span.
+    pub spawn_parts: std::collections::HashSet<(u32, u32)>,
     /// The type of every checked expression, by span `(start, end)`.
     pub expr_types: HashMap<(u32, u32), Ty>,
     /// `std.reflect`'s lists as JSON, and `has_member`'s answers, by call
@@ -374,6 +377,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
         big_constants: checked.big_constants,
         float_constants: checked.float_constants,
         gpu_maps: checked.gpu_maps,
+        spawn_parts: checked.spawn_parts,
         expr_types: checked.expr_types,
         reflect_texts: checked.reflect_texts,
         reflect_bools: checked.reflect_bools,

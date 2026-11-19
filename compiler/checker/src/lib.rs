@@ -70,6 +70,7 @@ mod reflect;
 mod scoped;
 mod secrets;
 mod show;
+mod spawn_parts;
 mod std_base64;
 mod std_caps;
 mod std_compress;
@@ -146,6 +147,9 @@ pub struct Checked {
     pub float_constants: HashMap<(u32, u32), f64>,
     /// The `map` calls that may run on the GPU (spec 15.2), by span.
     pub gpu_maps: HashSet<(u32, u32)>,
+    /// The parts of spawned calls worked out before their tasks start
+    /// (spec 9.1), by span.
+    pub spawn_parts: HashSet<(u32, u32)>,
     /// The type of every checked expression, by its span `(start, end)`.
     /// Code generation reads these. Number literals without context are
     /// `Int` or `Float` here too. A function's name where it is declared
@@ -317,6 +321,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
         big_constants: checker.big_constants,
         float_constants,
         gpu_maps,
+        spawn_parts: std::mem::take(&mut checker.spawns.parts),
         expr_types,
         uses: checker.fn_uses,
         field_types,

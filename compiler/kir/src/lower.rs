@@ -63,8 +63,9 @@ pub(crate) struct Lowerer<'a> {
     pub(crate) ensures: &'a [ast::Expr],
     pub(crate) self_local: Option<Local>,
     /// Parts of a spawned call worked out before its task, by span
-    /// (`lower_tasks/args.rs`): read from these locals in the task.
-    pub(crate) held_parts: HashMap<(u32, u32), Local>,
+    /// (`lower_tasks/args.rs`): read from these locals in the task, and
+    /// whether the task's code read each.
+    pub(crate) held_parts: HashMap<(u32, u32), (Local, bool)>,
     /// The local holding the record whose `invariant` is being lowered.
     pub(crate) invariant_of: Option<(Local, Type)>,
     /// A place is emptied for a moment while its list changes in place:

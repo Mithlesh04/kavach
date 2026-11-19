@@ -22,6 +22,36 @@ Both fetches run at the same time.
 
 `spawn` takes the call right after it, so `spawn count(i) * 10` is `(spawn count(i)) * 10`, a task times a number, and a compile error. Write the arithmetic inside the call (`spawn count(i * 10)`), or multiply what `.wait()` gives.
 
+**The call's arguments are worked out at the spawn**, as Go's `go f(x)` does. In `spawn f(a, b)` and `spawn x.m(a, b)`, the spawning code works out the arguments `a` and `b`, and the value `x` the method is called on, in the order they are written. Then the new task makes the call with those values. So a task gets only what its call is given: `spawn cores total(xs.slice(0, 1000))` copies a thousand items into the task, not all of `xs`.
+
+```kavach
+fn total(xs: [Int]) -> Int {
+    xs.sum(x => x)
+}
+
+fn show(xs: [Int], i: Int) {
+    const t = spawn total(xs.slice(0, i))   // the task gets i items, not all of `xs`
+    print(t.wait() catch 0)
+    const _u = spawn total([xs[i]])         // i = 3: panics here, in `show`, not in the task
+}
+
+fn main() {
+    show([1, 2, 3], 3)      // prints 6, then panics: index 3 is out of range
+}
+```
+
+What is worked out at the spawn is part of the spawning code:
+
+- A panic in it happens there, at the spawn's line, and no task starts.
+- A `try` in an argument passes the error on from the spawning function, as anywhere else in it. An error of the call itself comes out of `.wait()`.
+- `within d` (9.6): `d` is worked out at the spawn too, after the arguments.
+
+Everything else runs in the task: the call itself (its default arguments and its body), and a spawned expression that is not a call, such as a block. To work an argument out inside the task, spawn a block: `spawn { total(xs.slice(0, 1000)) }`. Three kinds of call or part are worked out in the task as well:
+
+- A call through `?.` (2.7), all of it: its arguments are worked out only when there is a value.
+- A wait with a time limit, `w.timeout(d)` (9.6), all of it: it is one wait.
+- An `inout` argument (3.9), and the list, dict or set a changing method such as `push` is called on (2.2): these are places, not values, and the task changes its own copy of them.
+
 The spawned code can fail without `try`: its error comes out of `.wait()`, which gives `T ! Error`. Above, a failed `fetch_profile` makes `try profile.wait()` pass the error on. A task's value or error stays in the `Task` until it is read; `.wait()` can be called again and gives the same.
 
 **An error nobody reads is not lost** ([decision 0075](../decisions/0075-cancelling-tasks.md)). An error in a task never stops the program. But when a task that failed is let go of and no `.wait()` read its error, the error is printed to standard error, with where the task was spawned. That happens when the function that spawned it returns (9.2), or, for a `Task` handed out of that function, when the last holder lets it go. The program goes on, and its exit code doesn't change:
@@ -44,7 +74,7 @@ A `spawn` on a line of its own starts a task nobody waits for, as `go f()` does 
 A panic (5.6) stops only the task it happens in. It is printed when it happens, `panic: <message>` and its place, and `.wait()` on that task fails with an error whose message is `panicked: <message> at <file>:<line>` ([decision 0065](../decisions/0065-a-panic-stops-only-its-task.md)). When that error ends `main`, the program's last line doesn't print it again: it says `error: the panic above ended the program`. A panic in the main task ends the program (5.8). A panic inside the function of a `Shared` value's `update` (6.2) leaves the value as it was, and other tasks can go on using it.
 
 ```kavach
-const task = spawn [1, 2][5]
+const task = spawn [1, 2][5]        // not a call: it all runs in the task
 const n = task.wait() catch e => {
     print(`{e}`)   // panicked: index 5 is out of range: the list has 2 items at main.kav:1
     0
@@ -279,6 +309,7 @@ spawn cores render(frame)     // on any core of the machine
 | `spawn process` | An operating-system process of its own, running the program's code; the call's arguments and its result are copied in and out | Code Kavach can't check, such as a C or Python library that may hang: `cancel()` ends the process at once |
 
 - `spawn`, `spawn thread` and `spawn cores` take the same things: a call or a block, and the task is a `Task<T>` either way.
+- Every kind works out a call's arguments at the spawn (9.1). `spawn process` then copies them into the new process.
 - `thread`, `cores` and `process` are words only right after `spawn`; anywhere else they are names like any other.
 - `spawn process` takes a call of a function, not a block. Its arguments and its result must be values that can be copied out of the program: no `Shared` values, channels, tasks, functions or agents; the compiler says which one can't. What the task prints goes to the program's output, in turn like any task's. Cancelling it ends the process at once: it shares nothing, so nothing is left half-changed ([decision 0075](../decisions/0075-cancelling-tasks.md)). The function's error comes out of `.wait()`, as any task's does, and so does a panic in it, as `panicked: <message> at <file>:<line>` (9.1). Starting a process takes milliseconds, so it is for long or risky work. A thread is never ended this way: one stopped in the middle of anything can leave what it shares half-changed.
 - Every kind takes turns as 9.7 says, so whichever is chosen, a program prints the same: only its speed changes. A `spawn cores` task keeps a looser order, the one of [decision 0049](../decisions/0049-tasks-on-all-cores-keep-the-programs-order.md): its own lines come out in the order it prints them, whole, and a line printed before a task sends a value, spawns a task or ends comes before what the receiver prints after that. Channels and `Shared` values work across cores: a value going through either is copied for the task that gets it, and `update` holds its value's lock (6.2).
@@ -291,3 +322,4 @@ spawn cores render(frame)     // on any core of the machine
 - `spawn process` of a generic function: refused for now, since the arguments and the result go between the processes as JSON. (`Bytes` go as base64 text, 2.12.)
 - A time limit on any call that waits inside (`download(url).timeout(5.seconds)`): cancel the call's work when the time passes, like a task's.
 - Closing a channel when its last `Sender` is gone, instead of with `close()`: when that happens differs between the interpreter and native code, which frees a variable after its last use.
+- A spawned call whose function is worked out from an expression, as `spawn handler_for(kind)(job)`: today `handler_for(kind)` is worked out in the task (9.1 names only the arguments and the value before the dot). Go works the function out at the spawn too.

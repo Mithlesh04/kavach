@@ -1,0 +1,29 @@
+// Rule: A spawned call through `?.` runs whole in the task: its arguments are worked out there, and only when there is a value.
+// Spec: 9.1, 2.7
+// expect output: spawned
+// expect output: working out 2
+// expect output: 3
+// expect output: none
+
+type Counter {
+    n: Int
+
+    fn plus(self, k: Int) -> Int {
+        self.n + k
+    }
+}
+
+fn noted(n: Int) -> Int {
+    print(`working out {n}`)
+    n
+}
+
+fn main() {
+    const some: Counter? = Counter(n: 1)
+    const nothing: Counter? = none
+    const a = spawn some?.plus(noted(2))
+    const b = spawn nothing?.plus(noted(5))
+    print("spawned")
+    print(a.wait() catch none)
+    print(b.wait() catch none)
+}

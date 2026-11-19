@@ -32,7 +32,9 @@ impl<'a> Lowerer<'a> {
         // `return`, `break` or `continue` where a value is expected (a
         // `match` arm that gives one): the jump, in a block whose value
         // is never reached.
-        if let Some(&held) = self.held_parts.get(&(e.span.start, e.span.end)) {
+        if let Some((held, used)) = self.held_parts.get_mut(&(e.span.start, e.span.end)) {
+            *used = true;
+            let held = *held;
             return Ok(self.local_expr(held, line));
         }
         if crate::lower_body::leaves(e) {

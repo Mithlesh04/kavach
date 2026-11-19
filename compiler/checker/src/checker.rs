@@ -182,6 +182,8 @@ pub(crate) struct Checker<'a> {
     /// each body starts, and what it is. Outside variables are copies
     /// inside them (spec 3.3, 9.5).
     pub(crate) copies: Vec<(u32, &'static str)>,
+    /// The parts of spawned calls worked out at the spawn (spec 9.1).
+    pub(crate) spawns: crate::spawn_parts::SpawnParts,
     /// How deep the checker is inside the function given to `update`,
     /// which may not wait (spec 6.2).
     pub(crate) updating: u32,
@@ -321,6 +323,7 @@ impl<'a> Checker<'a> {
             rounds: Vec::new(),
             read_only_uses: Default::default(),
             copies: Vec::new(),
+            spawns: Default::default(),
             updating: 0,
             rethrow: None,
             lambda_failed: false,

@@ -15,6 +15,11 @@ use std::rc::Rc;
 
 impl<'a> Interp<'a> {
     pub(crate) fn eval(&mut self, e: &'a Expr) -> Eval<'a> {
+        if !self.held.is_empty()
+            && let Some(v) = self.take_held(e)
+        {
+            return Ok(v);
+        }
         if kavach_checker::json_literal_kind(e) && self.is_json_typed(e) {
             return self.json_literal(e);
         }

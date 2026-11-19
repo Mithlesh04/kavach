@@ -29,6 +29,8 @@ impl Checker<'_> {
             if !p.inout {
                 continue;
             }
+            let span = (a.value.span.start, a.value.span.end);
+            self.spawns.inout_args.insert(span);
             match self.place_root(&a.value) {
                 Ok(def) => {
                     self.check_captured_change(&a.value);

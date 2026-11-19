@@ -142,6 +142,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0135](0135-tables-and-grouping.md) | Tables and grouping, for researchers | Accepted |
 | [0136](0136-tensor-the-one-array-type.md) | `Tensor` is the one array type, like NumPy's `ndarray`; `Matrix` goes (a 2-D tensor, `Tensor<T, dims: 2>`, does its job); NumPy's methods in six steps, the same bits on CPU and GPU | Accepted |
 | [0137](0137-numbers-in-types.md) | Numbers in types: types positional, numbers named (`List<Int, max: 2>`, `Int<bits: 24>`, `Tensor<Float, dims: 2>`) | Accepted |
+| [0138](0138-spawn-arguments-first.md) | A spawned call's arguments are worked out at the spawn, as Go's `go f(x)` | Accepted |
 
 ## Open decisions
 

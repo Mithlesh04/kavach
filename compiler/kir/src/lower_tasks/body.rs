@@ -33,13 +33,19 @@ impl<'a> Lowerer<'a> {
             let slot = (types.len() + i) as u32 + 1;
             let read = K::GetField(Box::new(self.local_expr(env, line)), slot);
             body.stmts.push(Stmt::Let(local, at(read, *t, line)));
-            self.held_parts.insert(*span, local);
+            self.held_parts.insert(*span, (local, false));
         }
         let lowered = self.task_body_value(x, value_ty, body, line);
+        let mut all_read = true;
         for (span, _) in held {
-            self.held_parts.remove(span);
+            all_read &= self.held_parts.remove(span).is_some_and(|(_, used)| used);
         }
         let body = lowered?;
+        // A part the task's code worked out again, not from its local,
+        // would run twice: a call lowered here in a way not yet known.
+        if !all_read {
+            return Err(self.unsupported("this spawned call's arguments", x.span));
+        }
         Ok(Function {
             name: "task".into(),
             params: vec![env],

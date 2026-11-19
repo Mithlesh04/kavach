@@ -133,6 +133,9 @@ pub(crate) struct Interp<'a> {
     pub(crate) events: Vec<i64>,
     /// `kavach run --hot`: the program's generations (`hot.rs`).
     pub(crate) hot: Option<Box<crate::hot::Hot<'a>>>,
+    /// A spawned call's parts worked out before its task started (spec
+    /// 9.1), by span: `eval` gives each once instead of working it out.
+    pub(crate) held: crate::tasks::Held<'a>,
 }
 
 impl<'a> Interp<'a> {
@@ -201,6 +204,7 @@ impl<'a> Interp<'a> {
             drop_floor: 0,
             events: Vec::new(),
             hot: None,
+            held: Vec::new(),
         };
         i.collect();
         i.collect_std_modules();

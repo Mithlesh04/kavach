@@ -66,8 +66,11 @@ impl<'a> Lowerer<'a> {
         let Some(Shape::Task(value_ty)) = self.shapes.shape(ty).cloned() else {
             return Err(self.unsupported("this `spawn`", x.span));
         };
-        // Field paths among the call's arguments are read here, so the task
-        // gets their values, not the whole variables (`lower_tasks/args.rs`).
+        if kind == ast::SpawnKind::Process {
+            return self.spawn_process(x, ty, line);
+        }
+        // The call's arguments are worked out here, so the task gets their
+        // values, not the variables they came from (`lower_tasks/args.rs`).
         let parts = self.task_parts(x);
         let skip: Vec<(u32, u32)> = parts.iter().map(|p| (p.span.start, p.span.end)).collect();
         let (captured, mut outer, mut types) = self.captures_skipping(x, &skip);
@@ -114,7 +117,7 @@ impl<'a> Lowerer<'a> {
             ast::SpawnKind::Coroutine => 0,
             ast::SpawnKind::Thread => 1,
             ast::SpawnKind::Cores => 2,
-            ast::SpawnKind::Process => return self.spawn_process(x, ty, line),
+            ast::SpawnKind::Process => unreachable!("lowered above"),
         };
         let args = vec![at(closure, func_ty, line), at(K::Int(how), Type::I64, line)];
         let spawned = at(K::Rt(RtOp::TaskSpawn, args), ty, line);

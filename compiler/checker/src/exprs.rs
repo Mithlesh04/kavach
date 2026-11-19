@@ -263,6 +263,8 @@ impl Checker<'_> {
                 self.copies.pop();
                 if *kind == kavach_ast::SpawnKind::Process {
                     self.check_process_call(x, &t);
+                } else {
+                    self.note_spawn_parts(x);
                 }
                 let t = match t {
                     Ty::Result(ok, _) => *ok,
