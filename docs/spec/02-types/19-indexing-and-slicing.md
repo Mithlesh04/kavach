@@ -20,7 +20,7 @@ print("kavach"[0:3])    // kav
 | `String` | `Char`, counted in characters, as `len` counts | `String` |
 | `Bytes` (2.13) | `UInt8` | `Bytes` |
 | `StrView` (2.18) | `Char` | `StrView`: a view of the same string |
-| `Tensor<T>` (14.33) | one number per dimension | below |
+| `Tensor<T>` (14.33) | one number per dimension | below (not built yet) |
 | A dict `{K: V}` | `d[key]`: `V?` (2.2) | a compile error: a dict has keys, not positions |
 | A program's own type | through `Index` (2.16) | through `Slice` (2.16) |
 
@@ -161,7 +161,7 @@ A slice is written only with brackets. Each method below did a slice's job, so i
 
 - A negative `n` is clamped, as in any slice: `xs[:n]` with `n` of -1 is `[]`, as `take(-1)` was.
 - A program's own type may still have a method named `slice`: it is the method of `Slice` (2.16).
-- `Matrix` goes, with its `slice`, `at`, `row` and `col` (2.17, decision 0136): a tensor's slices do their jobs.
+- *Not built yet:* `Matrix` goes, with its `slice`, `at`, `row` and `col` (2.17, decision 0136): a tensor's slices do their jobs.
 
 ## Open questions
 

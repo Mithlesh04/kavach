@@ -111,7 +111,7 @@ What it shows:
 
 Writing the reference solutions, and a first small run, turned up idioms that Kavach refused but that a writer used to Python or JavaScript reaches for. Most are fixed:
 
-- `chars().reverse().join("")`: `[Char]` now joins (spec 14.2).
+- `chars()[::-1].join("")` (written `chars().reverse()` then): `[Char]` now joins (spec 14.2).
 - `"aeiou".contains(c)` with `c: Char`: `contains` now takes a `Char` too.
 - `0..xs.min() ?? 0`: the message now says to put the `??` in parentheses.
 - `stack.pop()`: lists now have `pop` (spec 14.2).
