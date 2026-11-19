@@ -49,6 +49,7 @@ For running programs:
 | Variable | Values | What it does | Spec |
 |---|---|---|---|
 | `KAVACH_GPU` | `off` (or `cpu`), `on`, `check` | Where `map` with a `gpu fn` runs | 15.2 |
+| `KAVACH_FAKE_GPUS` | entries `name:vendor:kind:backend` split by `;`, the vendor a PCI ID (`0x1002`) | For tests: `system.gpus()` lists these instead of the machine's GPUs; an entry that doesn't read so is left out | 14.25 |
 | `ANTHROPIC_API_KEY` | a key | The key `ask` uses; never in `kavach.toml` | 8.4 |
 | `KAVACH_AI_URL` | a URL | Where `ask` sends its requests (a test server) | 8.4 |
 | `NO_COLOR` | any text | No colors in what the program prints | 14.12 |

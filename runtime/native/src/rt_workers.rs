@@ -7,8 +7,8 @@
 //! the main task's thread does (`rt_coroutines.rs`), and a shard of the
 //! scheduler for each worker (`kavach_runtime_core::tasks`).
 //!
-//! A new task goes to the next worker in turn, when its values can be
-//! copied there; its body waits in that worker's inbox until the worker
+//! A new task goes to the next worker in turn, with a copy of its
+//! values; its body waits in that worker's inbox until the worker
 //! makes it a coroutine. Each worker runs a placeholder task that waits forever, so
 //! the worker always has a task to run its coroutines from.
 

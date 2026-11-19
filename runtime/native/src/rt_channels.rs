@@ -201,12 +201,9 @@ fn wake(many: bool, (task, wait): Waiter) {
 /// A value going into a channel: with several workers, the task taking it
 /// may run on another thread, so it gets a copy that shares no object
 /// with the sender (`send.rs`).
-fn sent(value: i64, item: Type, many: bool, line: i32) -> u64 {
+fn sent(value: i64, item: Type, many: bool) -> u64 {
     if !many || !item.is_ref() {
         return value as u64;
-    }
-    if !crate::send::copyable(value as u64, item) {
-        panic_with("this value can't go to a task on another core", line);
     }
     let copy = crate::send::copy(value as u64, item);
     release_slot(value, item);
@@ -232,7 +229,7 @@ pub fn chan_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             put(a, b, crate::rt_tasks::limit(c, line), line);
             0
         }
-        RtOp::ChanTryPut => i64::from(try_put(a, b, line)),
+        RtOp::ChanTryPut => i64::from(try_put(a, b)),
         RtOp::ChanTakeFor => take(a, code, crate::rt_tasks::limit(b, line), line),
         RtOp::ChanTakeValue => {
             let v = next(a, None, line);
@@ -292,10 +289,10 @@ fn new(capacity: i64, code: i64, line: i32) -> i64 {
 /// `put` (the value owned): waits while the channel is full.
 /// `send.try_put(v)` (spec 9.4): `value` goes in only when the channel is
 /// open and has room; never waits. Whether it went in.
-fn try_put(chan: i64, value: i64, line: i32) -> bool {
+fn try_put(chan: i64, value: i64) -> bool {
     let item = item_type(chan);
     let many = many_workers();
-    let value = sent(value, item, many, line);
+    let value = sent(value, item, many);
     let (done, taker, putter) = with(chan, |c| {
         let mut st = c.lock();
         let gone = c.receivers.load(Ordering::Acquire) == 0;
@@ -320,7 +317,7 @@ fn try_put(chan: i64, value: i64, line: i32) -> bool {
 fn put(chan: i64, value: i64, limit: crate::rt_tasks::Limit, line: i32) {
     let item = item_type(chan);
     let many = many_workers();
-    let value = sent(value, item, many, line);
+    let value = sent(value, item, many);
     loop {
         let me = waiter(many);
         // Room: the value goes in, and the first taker waiting wakes.

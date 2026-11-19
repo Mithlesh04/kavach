@@ -14,8 +14,11 @@
 //! what the cell holds, waits for the turn too. Compiled regular
 //! expressions are shared as they are: nothing in them changes.
 
-use crate::heap::{Data, alloc, data, has_data, new_obj, obj, release_slot, slot_type, slots};
-use crate::shapes::shape;
+use crate::heap::{
+    Data, FIXED, alloc, alloc_fixed, data, has_data, new_obj, obj, release_slot, slot_type, slots,
+    slots_mut,
+};
+use crate::shapes::{holds_refs, shape};
 use crate::text_items::{INLINE, WIDTH};
 use kavach_kir::{Shape, Type};
 use std::cell::Cell;
@@ -295,34 +298,9 @@ pub fn free_cell(p: i64) {
         _ => {}
     }
 }
-/// Whether `slot`, of type `ty`, can be copied.
-pub fn copyable(slot: u64, ty: Type) -> bool {
-    if !ty.is_ref() || slot == 0 {
-        return true;
-    }
-    let p = slot as i64;
-    // The object's own type: an error knows its type.
-    let own = obj(p).ty();
-    if has_data(p) {
-        return match &*data(p).borrow() {
-            Data::Map(t) => {
-                let held = t.slots.iter().enumerate();
-                held.clone().all(|(i, s)| copyable(*s, slot_type(p, i)))
-            }
-            Data::Context(c) => copyable(c.1, own),
-            _ => true,
-        };
-    }
-    // Text items and numbers hold nothing that can't be copied.
-    if crate::flat::is_text(own) || crate::flat::width(own) > 0 {
-        return true;
-    }
-    let held = slots(p).iter().enumerate();
-    held.clone().all(|(i, s)| copyable(*s, slot_type(p, i)))
-}
-
-/// A copy of `slot` (of type `ty`, `copyable`) that shares no object
-/// with it, owned by the caller.
+/// A copy of `slot` (of type `ty`) that shares no object with it, owned
+/// by the caller. Every value can be copied: a cell is shared through its
+/// atomic count, a regular expression as it is (see the top of this file).
 pub fn copy(slot: u64, ty: Type) -> u64 {
     if !ty.is_ref() || slot == 0 {
         return slot;
@@ -345,6 +323,18 @@ pub fn copy(slot: u64, ty: Type) -> u64 {
         }
         return new_obj(own, tag, Vec::new(), d) as u64;
     }
+    if obj(p).kind == FIXED {
+        // A record, tuple or union value: made with its slots in place,
+        // with no list of words in between.
+        let made = alloc_fixed(own, tag, slots(p).len());
+        let words = slots_mut(made);
+        words.copy_from_slice(slots(p));
+        if holds_refs(own) {
+            copy_held(p, own, tag, words);
+        }
+        crate::rt_drops::copied(p, made);
+        return made as u64;
+    }
     let mut words = slots(p).to_vec();
     if crate::flat::packed(own) {
         // Packed numbers: the words carry no references.
@@ -357,13 +347,41 @@ pub fn copy(slot: u64, ty: Type) -> u64 {
                 item[0] = copy(item[0], own);
             }
         }
-    } else if crate::flat::width(own) == 0 {
-        for (i, w) in words.iter_mut().enumerate() {
-            *w = copy(*w, slot_type(p, i));
-        }
+    } else if holds_refs(own) {
+        // Numbers, and flat lists of them, are copied with the words.
+        copy_held(p, own, tag, &mut words);
     }
     let made = new_obj(own, tag, words, Data::Slots);
     // A `Drop` value's copies are one value: `drop` runs once (spec 6.1).
     crate::rt_drops::copied(p, made);
     made as u64
 }
+
+/// Replaces each object in `words`, the slots of object `p` (of type `own`
+/// and variant `tag`), with a copy. The slots' types are looked up once
+/// for the object, not once a slot: a list of a million records asks for
+/// its item type once.
+fn copy_held(p: i64, own: Type, tag: u32, words: &mut [u64]) {
+    match shape(own) {
+        // Not flat (`holds_refs`): one item a word.
+        Shape::List(t) => words.iter_mut().for_each(|w| *w = copy(*w, *t)),
+        Shape::Record { fields, .. } => {
+            for (w, f) in words.iter_mut().zip(fields) {
+                *w = copy(*w, f.ty);
+            }
+        }
+        Shape::Union { variants, .. } => {
+            for (w, f) in words.iter_mut().zip(&variants[tag as usize].fields) {
+                *w = copy(*w, f.ty);
+            }
+        }
+        _ => {
+            for (i, w) in words.iter_mut().enumerate() {
+                *w = copy(*w, slot_type(p, i));
+            }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests;

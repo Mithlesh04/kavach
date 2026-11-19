@@ -168,6 +168,10 @@ fn copies() -> std::sync::MutexGuard<'static, HashMap<i64, std::sync::Arc<Atomic
 /// `to` was made from `from` for another core: when its type has a
 /// `drop`, the two count as holders of one value.
 pub(crate) fn copied(from: i64, to: i64) {
+    // No type has a `drop` yet: nothing to ask for each object copied.
+    if GENERATION.load(Ordering::Acquire) == 0 {
+        return;
+    }
     let Type::Ref(id) = obj(from).ty() else {
         return;
     };

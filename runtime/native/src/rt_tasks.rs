@@ -15,8 +15,8 @@
 //! atomics; the stack limit is set again whenever a task's turn comes.
 //!
 //! Off the main thread, in a program built by `kavach build`
-//! (`rt::parallel`), a new task whose values can be copied (`send.rs`)
-//! runs ahead: its thread starts computing at once, on its own copies,
+//! (`rt::parallel`), a new task gets a copy of its values (`send.rs`)
+//! and runs ahead: its thread starts computing at once, on its copies,
 //! and waits for its turn only before its first effect another task
 //! could see (`turn`): printing, a panic, files, channels, spawning,
 //! waiting, ending.
@@ -245,19 +245,18 @@ pub(crate) fn task_id(task: i64) -> TaskId {
 
 fn spawn(closure: i64, kind: i64, code: i64, line: i32) -> i64 {
     let s = sched();
-    let copyable = crate::send::copyable(closure as u64, crate::heap::obj(closure).ty());
     // A coroutine when it can be one: on the host, unless it asked for a
     // thread of its own.
     let host = kind != THREAD && crate::rt_coroutines::on_host();
     // `spawn cores`, with a worker per core (decision 0049): the next
-    // worker in turn, when the task's values can be copied there.
-    let away = (kind == CORES && s.workers() > 1 && copyable && host)
+    // worker in turn.
+    let away = (kind == CORES && s.workers() > 1 && host)
         .then(|| crate::rt_workers::place(s.workers()))
         .filter(|w| *w != s.worker_of(ME.get()));
     // A task that runs ahead gets its own copy of everything its closure
     // holds, so the two threads share no object, as does a task on
     // another worker. On the host, a task is a coroutine instead.
-    let ahead = away.is_none() && crate::rt::parallel() && !host && copyable;
+    let ahead = away.is_none() && crate::rt::parallel() && !host;
     let closure = if ahead || away.is_some() {
         let copied = crate::send::copy(closure as u64, crate::heap::obj(closure).ty());
         release(closure);

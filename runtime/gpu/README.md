@@ -7,6 +7,7 @@ GPU compute for `gpu fn` (spec [chapter 15](../../docs/spec/15-gpu.md), [decisio
 | [src/lib.rs](src/lib.rs) | Caching pipelines, running a `map` in chunks the device can hold, leaving results in GPU memory, `read` |
 | [src/later.rs](src/later.rs) | `reduce`: a `sum`, `min` or `max` in the GPU's queue, whose partials are read when they are needed |
 | [src/device.rs](src/device.rs) | Opening the program's one device, Vulkan first, keeping its instance and adapter for surfaces |
+| [src/listing.rs](src/listing.rs) | Listing every GPU for `system.gpus()` (spec 14.25), best kind first, without opening one; vendors by PCI ID; `KAVACH_FAKE_GPUS` in its place for tests |
 | [src/draw.rs](src/draw.rs) | Drawing into windows for `std.gpu` (spec 14.24, decision 0106): a screen is a surface made on the window's own thread, sized at each frame; frames cleared and shown, by number |
 | [src/render.rs](src/render.rs) | Pipelines compiled ahead (when a screen opens, or when made once one is open), with depth or not, and draws from 32-bit words into a frame (spec 15.3) |
 | [src/picture.rs](src/picture.rs) | `picture`: draws into a texture off the screen, read back, for tests (decision 0106) |

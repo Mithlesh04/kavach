@@ -32,6 +32,7 @@ fn header() -> String uses System {
 
 - Nothing here fails: what a system doesn't say comes back as `""` or 0.
 - `system.gpus()` gives no memory size: the GPU interfaces Kavach uses don't report it.
+- For tests, `KAVACH_FAKE_GPUS` replaces the machine's GPUs in `system.gpus()` with a list of its own, ranked the same way: `KAVACH_FAKE_GPUS="AMD Radeon RX 7900:0x1002:discrete:vulkan;Intel UHD 770:0x8086:integrated:dx12"` lists those two, AMD's first. Each entry is `name:vendor:kind:backend`, the vendor a PCI vendor ID. It changes only the list: the GPU that runs `map` is still the machine's.
 - The program's own processor time is `process.cpu_ms()` (14.23), beside `process.peak_bytes()`.
 
 ## Every part of the machine
