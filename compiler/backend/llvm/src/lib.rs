@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The LLVM backend (decision 0018): KIR → LLVM IR text → `opt -O3` →
 //! `llc` → object file → linked with the runtime library like the
 //! Cranelift backend's output (decision 0016).

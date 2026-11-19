@@ -1,4 +1,8 @@
 #!/bin/sh
+# Copyright (c) 2026 Mithlesh and the Kavach contributors
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 # Git commit-msg hook: enforces the commit rules in AGENTS.md (section 10).
 #   - subject: required, at most 60 characters, no trailing period
 #   - blank line between subject and body; body at most 8 lines of at most 72 characters

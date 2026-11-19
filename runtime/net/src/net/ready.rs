@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A socket as something a task waits for (`poller::Ready`): its events
 //! on its worker's queue, counted for what a wait wants, reading or
 //! writing, so a read isn't woken over and over because the socket can

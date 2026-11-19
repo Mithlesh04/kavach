@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Fonts (spec 14.31): a font file read, text shaped into placed glyphs
 //! and drawn into a distance atlas, the same interpreted and in native
 //! code. The font is `runtime/font/src/sample.ttf`, made by our own code:

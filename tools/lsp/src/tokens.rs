@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Semantic tokens (to-do item 5): marks the grammar alone can't give, so
 //! a reader sees at once where a name comes from. A module brought in with
 //! `use`, and every name used through it or brought in from one, is

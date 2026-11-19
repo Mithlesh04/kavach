@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A program pays only for what it uses (decision 0024): "hello world"
 //! links none of the runtime's features (TLS, regular expressions, JSON,
 //! tasks, agents), so it stays small.

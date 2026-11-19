@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Whether a plain `fn` could be a `gpu fn` (spec 15.1), for the message
 //! when a `gpu fn` calls one: mark it `gpu fn`, or what stops it.
 

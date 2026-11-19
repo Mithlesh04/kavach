@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Run-time functions for errors as values (spec 5): `context`, and the
 //! error a failed built-in call (`parse`) leaves behind.
 

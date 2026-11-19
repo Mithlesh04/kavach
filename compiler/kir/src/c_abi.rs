@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! How C passes a record by value, on the machine the program is built
 //! for (spec 10.7): the rules of Windows x64 and of x86-64 System V
 //! (Linux, macOS on Intel). The lowering copies the record into C memory

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Reading the pieces of JSON text (spec 2.12): spaces, strings with
 //! their escapes, numbers and words, and where in the text an error is.
 

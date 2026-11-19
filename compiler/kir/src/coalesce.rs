@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `a ?? b` through branches. After inlining, `a` is often a block or an
 //! `if` whose branches end in `Some(x)` or `none`, as in
 //! `j.int() ?? 0`, where `int()` is `match self { Integer(v) => v, _ =>

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Tests that need the internet, or change the machine's clipboard, so
 //! they don't run by default: run them with
 //! `cargo test -p kavach-cli --test online -- --ignored`.

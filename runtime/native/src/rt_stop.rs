@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Ctrl+C, `SIGTERM` and closing the console (spec 5.8, decisions 0062
 //! and 0063): the program ends as `cli.exit` does, with its end hooks
 //! run and its output flushed, and exit code 130 (`SIGINT`), 143

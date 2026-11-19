@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Number and character literals, and the escapes shared with strings (spec 1.7).
 
 use crate::lexer::{Lexer, is_ident_continue};

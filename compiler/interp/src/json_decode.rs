@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `json.decode<T>` and `json.decode_value<T>` (spec 2.12): JSON into a
 //! typed value, strict about kinds, with defaults and `none` for missing
 //! fields. Native code decodes the same way (`rt_json_decode.rs`), with the

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Operators and conversions with the run-time checks of spec 5.6, as in
 //! the Cranelift backend (`cranelift/src/ops.rs`): integer overflow and
 //! division by zero call the same runtime functions, so panics read the

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // JSON-RPC with `kavach lsp` over its standard input and output, as the
 // Language Server Protocol frames it (a `Content-Length` header, then the
 // JSON). Plain Node, no packages and nothing from VS Code, so a test can

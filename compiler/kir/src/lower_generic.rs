@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Generic functions (spec 2.9), compiled once per set of type arguments
 //! (monomorphization): `first([3, 4])` and `first(["a"])` call two
 //! functions, one for `Int` and one for `String`. Each copy is as fast as

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Waiting in native code (spec 9): for a time, for something outside the
 //! program (a socket), or to be unparked (a channel), while other tasks
 //! run; and what a wait that ended early means for the task (`resumed`).

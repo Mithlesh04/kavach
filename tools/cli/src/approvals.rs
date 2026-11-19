@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `kavach approvals`, `kavach approve` and `kavach deny` (spec 8.3,
 //! 10.5, decision 0072): the requests a project's agents wait on, and a
 //! person's answer to one. The answer goes into the agent's folder, where

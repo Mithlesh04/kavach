@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The Kavach lexer: turns source text into tokens (spec chapter 1).
 //!
 //! [`lex`] never fails. It returns every token it could read plus a list of

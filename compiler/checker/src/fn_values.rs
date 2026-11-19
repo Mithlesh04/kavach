@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Function values that can fail (spec 3.4, 5.2, decision 0085): a
 //! function's errors are part of its type, and a built-in method given a
 //! function that can fail passes its error on.

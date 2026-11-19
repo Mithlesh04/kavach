@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The interpreter's state, and function calls with contracts. The two
 //! ways to run a file, `main` and tests, are in `run.rs`.
 

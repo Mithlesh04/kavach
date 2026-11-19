@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `Drop` in native code (spec 6.1). A value that is, or holds, a value
 //! of a type that implements `Drop` lives until the end of the block that
 //! holds it, not only to its last use. This pass ends such variables

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `json.schema<T>()` (spec 2.12) in native code. The schema is worked out
 //! when the program is compiled, from the same rules the interpreter uses
 //! when it runs (`kavach_driver::json_schema`), and built as a constant

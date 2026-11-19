@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.font (spec 14.31, decision 0121): fonts as values. The runtime
 // reads fonts and shapes text through `rustybuzz`, and draws glyphs as
 // distances into an atlas (`runtime/font`); this file gives them their

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Approvals across a restart (spec 8.3, 8.6, decision 0072): an answer
 //! given while the program was down, events cut short, joined and equal
 //! events run again.

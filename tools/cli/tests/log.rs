@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.log` with a `[log]` section in `kavach.toml` (spec 14.12): the
 //! level, a file instead of the console, and files set aside when full,
 //! the same in the interpreter and native code.

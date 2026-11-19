@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A list's buffer: changing it as a `Vec`, and adding to it. A list
 //! keeps its buffer as a `Vec<u64>` taken apart (`heap::ListObj`), with
 //! its length and capacity counted in items; a flat list's items are

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `m[k] ?? d` for a map with text keys and plain values, read in place
 //! as the LLVM backend does (`compiler/backend/llvm/src/maps.rs`): a key
 //! that is an item of a list of text is read where it is, so a short one

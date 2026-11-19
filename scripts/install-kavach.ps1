@@ -1,3 +1,7 @@
+# Copyright (c) 2026 Mithlesh and the Kavach contributors
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 # Installs Kavach on Windows (decision 0080): downloads the newest
 # release archive (or takes one with `-From <file>`), unpacks it to
 # %LOCALAPPDATA%\Kavach, and puts its bin\ on the user's PATH. Then

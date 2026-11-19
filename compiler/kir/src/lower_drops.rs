@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `Drop` (spec 6.1): at its start, a program registers each type's
 //! `drop` with the runtime (`DropRegister`), which runs it when a value's
 //! last holder ends (`runtime/native/src/rt_drops.rs`). `drop_scopes.rs`

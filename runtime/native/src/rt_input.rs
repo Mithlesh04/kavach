@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.input` in native code (spec 14.26, decision 0113), from
 //! `kavach_runtime_input`, as the interpreter does. An entry of its own,
 //! so only a program that reads gamepads links SDL3 (decision 0024).

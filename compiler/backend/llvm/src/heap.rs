@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Heap values in generated code, as in the Cranelift backend
 //! (`cranelift/src/inline.rs`): the same object layout, the same
 //! reference counting, so both backends behave the same.

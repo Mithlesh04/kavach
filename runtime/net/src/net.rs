@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! TCP (spec 14.10), the same for the interpreter and native code. Each
 //! operation is tried without blocking. When it can't go on yet, the
 //! caller waits through the scheduler, so other tasks run (spec 9.7) and

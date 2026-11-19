@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! What machine the program runs on (spec 14.25, decision 0110): the
 //! numbers and text `std.system` is built on, by a fixed number for each
 //! fact. Nothing fails: what a system doesn't say is `""` or 0. Each

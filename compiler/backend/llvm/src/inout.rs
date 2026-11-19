@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `RtOp::InoutStash` and `RtOp::InoutTake` (`kavach_kir`'s
 //! `inout_stash.rs`): a function with `inout` parameters leaves their
 //! values in its thread's `@kv_tls_inout` slots, and the caller takes them

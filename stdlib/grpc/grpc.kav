@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.grpc (spec 14.14, decision 0027): gRPC clients and servers from
 // Kavach types, written in Kavach on std.http.h2. A call is an HTTP/2
 // POST to `/<service>/<method>` with `content-type: application/grpc`;

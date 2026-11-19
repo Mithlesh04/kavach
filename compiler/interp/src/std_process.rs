@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.process` in the interpreter (spec 14.23), from
 //! `kavach_runtime_process`, as native code does: children by number.
 //! Waiting for a child lets other tasks take their turns (9.7).

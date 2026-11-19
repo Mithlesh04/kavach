@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Reads and writes through a `Ptr` (spec 6.4): one load or store at the
 //! address KIR worked out (`compiler/kir/src/lower_ptr.rs`), with no
 //! checks, as in C. A `Bool` is a byte in memory, as C's `bool` is.

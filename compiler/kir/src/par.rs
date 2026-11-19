@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Loops on all cores (decision 0031): an eligible counted loop is
 //! outlined into a chunk function the runtime fans out over threads
 //! (`kv_par_for`). Eligible means the body only does arithmetic, reads

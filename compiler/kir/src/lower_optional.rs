@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `a ?? b` (spec 2.7): the value inside an optional, or `b`. A map read
 //! with a scalar value and a simple fallback becomes one runtime lookup
 //! (`MapGetOr`); `x ?? break` leaves instead of giving a value.
@@ -23,7 +27,7 @@ impl<'a> Lowerer<'a> {
         };
         // `x ?? break`: the `none` branch leaves (`return`, `break`,
         // `continue`) instead of giving a value.
-        if crate::lower::leaves(r) {
+        if crate::lower_body::leaves(r) {
             let mut leave = Block::default();
             self.expr_stmt(r, &mut leave.stmts)?;
             return self.unwrap_or(value, inner, leave, ty, line);

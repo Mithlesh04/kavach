@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Names declared and never used (spec 1.4, 10.1): a warning, so code
 //! being written still runs. A name starting with `_` says it is unused
 //! on purpose. Only the program's own modules are looked at, not the

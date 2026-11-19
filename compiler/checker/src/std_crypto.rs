@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The signatures of `std.crypto` (spec 14.19, decision 0093): hashes,
 //! passwords, signatures and encryption, none needing a capability.
 

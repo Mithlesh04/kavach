@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.image` in native code (spec 14.29, decision 0117), from
 //! `kavach_runtime_image`, as the interpreter does. An entry of its own,
 //! so only a program with images links the decoders (decision 0024).

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Moving values at their last use (spec 6.1). A heap value read from a
 //! variable is normally shared: the variable keeps it, so a later change
 //! must copy it. When the variable is never read again, the read becomes

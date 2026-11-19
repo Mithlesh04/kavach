@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.fs`'s `FileWriter` in native code (spec 14.3), from
 //! `kavach_runtime_core::writers`, by the writer's number, as the
 //! interpreter does (`compiler/interp/src/std_writers.rs`). A path is

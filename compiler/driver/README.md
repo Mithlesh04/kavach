@@ -19,7 +19,9 @@ It also reads `kavach.toml` (spec 10.4), found in the file's folder or a parent:
 | `src/lib.rs` | `compile`, `compile_sources`, `Options`, `Compiled` (tree, resolution, literal types, file table, messages), `render`; adds the standard library modules the program uses after its own files, and shows only syntax errors when there are any (spec 13.6) |
 | `src/agent_config.rs` | Agents' and `ask` calls' settings as a run uses them: `agent_config`, `agents_folder`, `ask_model`, the default model (spec 8.4, 8.5) |
 | `src/project.rs` | Projects: every file of `src/`, parsed as one source; `orders.total` rewritten to the name it links to |
-| `src/deps.rs` | Dependencies (spec 10.12): `[dependencies]` by path or git, fetching into `kavach_modules/`, `kavach.lock`, and each dependency's files as modules of its package |
+| `src/deps.rs` | Dependencies (spec 10.12): `[dependencies]` by path or git, and each dependency's files as modules of its package |
+| `src/git_fetch.rs` | A git dependency's commit, fetched into `kavach_modules/` (spec 10.12) |
+| `src/lock_file.rs` | Reading and writing `kavach.lock` (spec 10.12) |
 | `src/workspace.rs` | Workspaces (spec 10.14): the members a root `kavach.toml` lists, and the folder holding a member's `kavach.lock` and `kavach_modules/` |
 | `src/grants.rs` | What a dependency is granted (spec 10.12): whole capabilities or parts such as `Fs.read`, never more than the package above it |
 | `src/fetch_checks.rs` | What a dependency may name: only sources safe to fetch (no options, passwords or unencrypted transports), commits, and folder names every system can make |

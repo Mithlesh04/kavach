@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Lowering one function (split from `lower.rs`): its parameters, with
 //! `self` and the types of a generic instance, its body, and the checks
 //! its contracts make.

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `fs.watch` (spec 14.3): a watched folder tells of a file written into
 //! it, interpreted and in native code, and watching what isn't there
 //! fails. Run in a folder of its own in the system's temporary folder.

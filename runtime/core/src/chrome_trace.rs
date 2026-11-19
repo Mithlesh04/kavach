@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Spans written as a Chrome trace (spec 14.12): with `KAVACH_TRACE` set
 //! to a file's path, every span that ends is written there as a complete
 //! event, which Perfetto (ui.perfetto.dev) and `chrome://tracing` show on a

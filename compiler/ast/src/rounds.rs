@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! What the rounds of an `on threads` loop change outside themselves
 //! (spec 4.9): each writes its own slot of some lists (`out[i] = …`) and
 //! adds into some whole-number `let`s (`total += n`). The checker allows

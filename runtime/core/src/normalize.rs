@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Unicode normal forms (UAX #15) for `std.text` (spec 14.9, decision
 //! 0102): `text.nfc`, `nfd`, `nfkc` and `nfkd`, the same in the
 //! interpreter and in native code.

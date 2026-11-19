@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Frame timing (spec 14.4, 14.12): `time.monotonic_ns` and a precise
 //! `time.sleep_ns`, and spans written as a Chrome trace with
 //! `KAVACH_TRACE`, interpreted and in native code. Run in a folder of its

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The operator interfaces' methods on numbers and text (spec 2.16): a
 //! generic `T: Add`'s `a + b` is `a.add(b)`, which for a number is its own
 //! `+`, so each copy of the function runs it as one instruction.

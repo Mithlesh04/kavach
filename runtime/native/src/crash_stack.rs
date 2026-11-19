@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The functions running at a panic, for crash reports (spec 14.30,
 //! decision 0118). The stack is walked with the system's own unwinder, and
 //! each frame's function is found from its exact start, which the unwind

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The GPU's own time for its work (spec 14.12): with `KAVACH_TRACE` on
 //! and a GPU that has timestamp queries, a frame's drawing and each GPU
 //! `map` write the GPU's clock before and after the work, and the time

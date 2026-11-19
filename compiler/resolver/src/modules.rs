@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Modules (spec 10.1, 10.2): one file is one module. Each module has its
 //! own top-level scope; `use` brings names in from other modules, and only
 //! `pub` names can be used from outside.

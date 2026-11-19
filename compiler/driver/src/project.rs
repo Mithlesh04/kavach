@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Projects with several files (spec 10.1–10.3). All files are parsed as
 //! one source, so every later stage keeps working on one tree; the file
 //! table maps positions back to files, and `orders.total` is rewritten

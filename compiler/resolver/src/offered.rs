@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `pub(out)` (spec 10.1, decision 0127): the names a library offers to
 //! other packages. Only a library may write it, and another package may
 //! use only those names; the standard library offers all its `pub` ones.

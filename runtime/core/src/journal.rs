@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The journal of a durable agent (spec 8.5, decision 0025): each event
 //! with its arguments, each capability call's outcome, and each event's
 //! end, as JSON lines. When the agent starts, the events that never ended

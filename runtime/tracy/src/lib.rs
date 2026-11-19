@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Spans and the GPU's work shown live in the Tracy profiler (spec 14.12,
 //! decision 0123), through `tracy-client`'s safe calls. `start` turns the
 //! client on and gives `kavach_runtime_core::profiler` its hooks; only

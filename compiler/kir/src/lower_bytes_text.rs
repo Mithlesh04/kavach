@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `b.text(start, end)` and `b.slice(start, end).text()` on `Bytes`
 //! (spec 2.13): the range's text, copied once, with no `Bytes` made in
 //! between (Sakshi's S12: three small texts a line in a VCD header).

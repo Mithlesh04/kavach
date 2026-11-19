@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The hoisting half of fusing: a chain written as one expression
 //! is pulled apart into the statement sequence the pairwise fusing
 //! in `fuse.rs` matches, one stage per `let`.

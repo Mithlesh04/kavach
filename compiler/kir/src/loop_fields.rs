@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A record's plain fields that a loop only reads and sets, kept in locals
 //! while it runs: `r.line += 1` in a loop over a function's `inout r`
 //! read and wrote the record on the heap each round, where a local stays

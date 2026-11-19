@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Lists in generated code: bounds checks, the buffers of lists a loop
 //! holds steady, reading and writing items (one byte per byte for the
 //! one-byte types, decision 0030), pushes, and prefetching an item a loop

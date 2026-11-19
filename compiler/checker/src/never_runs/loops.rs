@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A `while` loop that never ends (spec 4.7): its condition reads only
 //! variables (no calls, which could see the world change), the loop
 //! changes none of them, and nothing in it leaves it. `while true` says

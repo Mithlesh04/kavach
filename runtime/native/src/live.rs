@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Counting live objects, for the leak check (`KAVACH_CHECK_LEAKS`):
 //! every object made and not yet freed.
 

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Value ranges of integer locals, and the checks they make unnecessary.
 //! Spec 5.6 still holds: a check is removed only when it can never fail.
 //!

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Tagged literals checked while the program is compiled (spec 10.15):
 //! each tag's checker runs on each literal's text, and what it finds
 //! becomes a compile error or warning at its place in the literal.

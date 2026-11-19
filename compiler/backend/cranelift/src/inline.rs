@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Heap access written straight into the generated code, without calling
 //! the runtime: reference counts, list length, reading items and fields,
 //! and pushing onto an unshared list with room left. The runtime is called

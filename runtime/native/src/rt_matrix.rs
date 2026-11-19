@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.matrix` in native code (spec 2.17, decision 0111): the lists'
 //! items read as the numbers they are, the work done by
 //! `kavach_runtime_matrix`, and the result made a list of type `code`. The

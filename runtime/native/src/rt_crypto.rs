@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.crypto` in native code (spec 14.19, decision 0093), from
 //! `kavach_runtime_net::crypto`, as the interpreter does. An entry of its
 //! own, so only a program that uses it links `ring`'s and `argon2`'s code

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Reading JSON text piece by piece, in the order a decoder asks for the
 //! pieces: `json.decode<T>` reads text straight into values of `T` with
 //! no tree in between. It accepts exactly what `parse` accepts, with the

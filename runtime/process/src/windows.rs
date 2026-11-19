@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A program's tree on Windows (decision 0105): a job object that ends
 //! everything in it when it closes. The program starts suspended and
 //! joins the job before it runs, so nothing it starts can leave. The job

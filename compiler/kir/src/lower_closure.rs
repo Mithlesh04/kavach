@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Functions as values (spec 3.3, 3.4): lambdas that are stored, passed
 //! or returned, and named functions used as values.
 //!

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Images for `std.image` (spec 14.29, decision 0117): PNG and JPEG files
 //! decoded to RGBA pixels, 8 bits a part, row by row from the top, and
 //! PNG written. A decoded image is kept by number until `std.image` has

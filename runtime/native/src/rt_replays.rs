@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Events run again after a restart, in native code (spec 8.3, decision
 //! 0072), as the interpreter runs them: each in a task, which `start`
 //! waits for until it ends or waits for a person. One that waits goes

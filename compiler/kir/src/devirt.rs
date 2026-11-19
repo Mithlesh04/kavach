@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Devirtualizing calls through stored function values (spec 3.4): when
 //! a local is stored exactly once, from a record literal whose field `i`
 //! is a closure of a known function, `h.on(x)` — a `CallValue` of

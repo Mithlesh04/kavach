@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.http (spec 14.11): HTTP/1.1 and HTTP/2 clients and servers,
 // written in Kavach on top of std.net. A client's HTTP/1.1 connection
 // carries one request and its response (`connection: close`), and a

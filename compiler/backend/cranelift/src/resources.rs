@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The resources of a Windows executable (spec 10.5, decision 0120): a
 //! manifest always, and the program's icon when `kavach.toml` names one,
 //! written as a `.res` file for `link.exe`, with no Windows SDK.

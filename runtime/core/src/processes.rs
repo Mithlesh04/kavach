@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `spawn process f(args)` (spec 9.8, decision 0075): the program starts
 //! itself again, and the copy runs only that call. Both runtimes use this
 //! file: the parent starts the child and reads what it prints, and the

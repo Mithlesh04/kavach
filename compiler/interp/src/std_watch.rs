@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.fs`'s `Watcher` in the interpreter (spec 14.3), from
 //! `kavach_runtime_watch`, by the watcher's number, as native code does.
 //! A path is checked against `uses Fs("…")` when its watcher starts.

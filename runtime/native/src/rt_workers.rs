@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Tasks on all cores (decision 0049), with `tasks = "parallel"` in
 //! `kavach.toml`: a worker thread per core, each hosting coroutines as
 //! the main task's thread does (`rt_coroutines.rs`), and a shard of the

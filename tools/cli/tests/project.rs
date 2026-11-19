@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Projects (spec 10.3, 10.5): `kavach new`, then `run`, `build` and
 //! `check` with no file, from the project folder or below it.
 

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.log` in the interpreter (spec 14.12): events written where
 //! `[log]` in `kavach.toml` says, spans run as blocks given to a call
 //! (4.8), seeded random numbers (14.15), and metrics, all sent to the

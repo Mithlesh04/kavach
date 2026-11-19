@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Semantic tokens of names reached through a module (`tokens.rs`).
 
 /// `matrix.Matrix(…)` makes a record: its name is a type, not a function,

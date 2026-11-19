@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Compiling a kernel into a pipeline, once per kernel text (spec 15.2).
 //! A kernel whose loops surely end goes without `wgpu`'s counter in each
 //! loop (decision 0077).

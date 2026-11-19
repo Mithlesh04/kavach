@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `flat_map`'s inner loop and a lambda's body of statements (spec 2.2,
 //! 3.3), for `lower_lambda.rs`.
 

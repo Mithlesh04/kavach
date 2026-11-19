@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.json (spec 2.12): the `Json` and `JsonError` types, and reading a
 // `Json` value, written in Kavach. Every program has them (spec 2.1).
 // Variants are written `Json.Text`: a program may have its own `Text`.

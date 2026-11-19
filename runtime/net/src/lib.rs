@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Networking for every way of running Kavach: TCP and UDP (spec 14.10),
 //! TLS clients (decision 0021), the model call behind `ask<T>` (spec
 //! 8.4) and the OpenTelemetry export of log events (14.12). A crate of its own, apart from `kavach-runtime-core`, so the

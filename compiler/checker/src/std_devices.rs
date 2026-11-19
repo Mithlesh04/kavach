@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The signatures of the built-in functions of `std.devices`' serial
 //! ports (spec 14.18), by the port's number, and of `std.clipboard`
 //! (14.17).

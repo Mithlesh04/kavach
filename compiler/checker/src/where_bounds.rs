@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `where T: Floating` on a method (spec 2.9): a bound the method adds to
 //! its type's parameter. In the method's body the parameter has it; a
 //! call is allowed only when the type given for the parameter meets it.

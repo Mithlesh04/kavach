@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Destructuring in `const` and `let` (spec 1.12): lists by position,
 //! maps by key, records by field, patterns nested in each other. A part
 //! that may be missing is read as an optional; a default fills it. A

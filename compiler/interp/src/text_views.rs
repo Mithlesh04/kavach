@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Text views and builders (spec 2.18). Here a `StrView` is its text, a
 //! `Value::Str` sharing its string's `Rc`, and a `TextBuilder` is a
 //! `Value::Str` changed in place while nothing else holds it, copied

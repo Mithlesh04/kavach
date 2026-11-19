@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Unwind tables in the object files `kavach build` writes (decision
 //! 0065, step 1; decision 0074): what the system needs to walk back
 //! through compiled Kavach code when a panic unwinds to the start of its

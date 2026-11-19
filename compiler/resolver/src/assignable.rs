@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Which assignment targets may change (spec 1.4, 2.4, 3.1, 4.4): only
 //! `let` bindings, with advice that fits what was named.
 

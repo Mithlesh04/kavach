@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.system` in native code (spec 14.25, decision 0110): the machine's
 //! facts from `kavach_runtime_process::machine`, and its GPUs from
 //! `kavach_runtime_gpu`, as the interpreter gives them

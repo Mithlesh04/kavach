@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! JSON text (spec 2.12): one parser and one writer for the interpreter
 //! and native code, so both read and write exactly the same.
 //!

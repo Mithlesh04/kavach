@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! What changes the machine (spec 14.25, decision 0112): ending programs,
 //! freeing ports, adding and removing users, locking the session. Each
 //! needs `System.critical.write` in the program, and the system's own

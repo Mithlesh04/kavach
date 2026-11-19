@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A grid's rows on all cores (spec 4.9): `out[i * w + j]` in an inner
 //! `for j in 0..w`, which `analyze.rs` lets a loop's rounds write, as each
 //! round's row is its own.

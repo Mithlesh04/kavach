@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.text (spec 14.9): numbers found in text, written in Kavach, and
 // Unicode normal forms. Padding, words, capitalizing and the like are
 // methods of `String` (spec 14.2).

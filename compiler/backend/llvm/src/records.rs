@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Records and tuples, and flat lists of them
 //! (`docs/architecture/flat-lists.md`), as in the Cranelift backend
 //! (`cranelift/src/flat.rs`): a record is a fixed object with its fields

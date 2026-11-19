@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A file sent by the system (spec 14.11): on Linux, `std::io::copy`
 //! from a file to a TCP socket is the kernel's `sendfile`, so the bytes go
 //! from the page cache to the socket with no copy through the program.

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The signatures of `std.process`'s built-in functions (spec 14.23),
 //! and `std.system`'s (14.25):
 //! what `process.run`, `process.start` and the methods of `Child`,

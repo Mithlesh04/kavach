@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.tensor (spec 14.33, decision 0125): numbers in any number of
 // dimensions, kept in one flat list, the last dimension's items next to
 // each other. Every operation checks its shapes as it runs; every result

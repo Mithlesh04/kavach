@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Shared helpers: show tokens as short text so tests read like the source.
 // Each test file uses a different subset of these helpers.
 #![allow(dead_code)]

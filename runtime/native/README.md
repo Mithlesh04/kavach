@@ -65,7 +65,8 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_cli.rs` | `cli.parse<T>()`: reading and converting the arguments |
 | `src/rt_maps.rs` | Map and set operations, `Shared`, `list[i] = v` |
 | `src/rt_maps/known_keys.rs` | `map["key"]` for a constant key: each key's hash and entry kept by its address, and the key object held once found twice, so a JSON object's key is found by comparing addresses |
-| `src/display.rs` | Printing (spec 1.11), equality and ordering of heap values |
+| `src/display.rs` | Printing (spec 1.11) |
+| `src/equality.rs` | Equality (spec 1.8), ordering and hashing of values; map keys and set items where NaN equals NaN (spec 2.2) |
 | `src/rt_crypto.rs` | `std.crypto` (spec 14.19): its own entry, so only a program that uses it links `ring` and `argon2` |
 | `src/rt_base64.rs` | `std.base64` (spec 14.20): its own entry |
 | `src/rt_compress.rs` | `std.compress` (spec 14.21): its own entry |

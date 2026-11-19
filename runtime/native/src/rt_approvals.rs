@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Approval requests answered in code in native programs (spec 14.16,
 //! decision 0072), from `kavach_runtime_core::agents`, as the interpreter
 //! does: found and answered in the project's agents folder, which the

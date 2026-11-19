@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Durable agents in native code (spec 8.5, decision 0025): the journal
 //! (`kavach_runtime_core::journal`, the interpreter's too) of each started
 //! agent that has one, the events it left unfinished, and values to and

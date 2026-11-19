@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! How `tokens` counts the `ask`s still waiting for their answer (spec
 //! 8.3): at the average size of the answered ones (the default), at the
 //! most each can take, or not at all. Each call's entry in a rule's

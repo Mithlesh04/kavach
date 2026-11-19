@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Reading a `Json` with a constant key (decision 0082): `j["key"]` and
 //! `j["key"].int() ?? fallback` (or `.float()`) call the runtime with the
 //! key's bytes, so no text object is made for the key, and the number is

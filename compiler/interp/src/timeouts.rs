@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `x.timeout(d)` (spec 9.6): a wait, or a network call, for at most `d`.
 //! In a durable handler the limit's end is journaled (decision 0062).
 //! And `spawn x within d`: a task that stops once `d` has passed.

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Tasks waiting for sockets (decision 0046): a task waits with
 //! `wait_io`, and whichever thread waits on the system's readiness queue
 //! wakes it (`wake_wait`). When no task is ready but some wait for a

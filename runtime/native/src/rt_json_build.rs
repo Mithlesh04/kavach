@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Parsing JSON onto a tape (decision 0032): the parser
 //! (`kavach_runtime_core::json::parse_with`) hands each value to this
 //! builder, which writes it as one word (`rt_json_tape.rs`) and each

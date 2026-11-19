@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Lowering errors as values (spec 5): calls that can fail, `try`,
 //! `catch`, `fail` and `context`.
 //!
@@ -250,7 +254,7 @@ impl<'a> Lowerer<'a> {
         }
         // `catch e => return x` (or `break`, `continue`): the error branch
         // leaves instead of giving a value, as `x ?? return y` does.
-        if o.ok == Type::Unit || crate::lower::leaves(handler) {
+        if o.ok == Type::Unit || crate::lower_body::leaves(handler) {
             self.expr_stmt(handler, &mut on_error.stmts)?;
         } else if matches!(handler.kind, ast::ExprKind::Fail(_)) {
             // `catch e => fail …` leaves the function too: no value.

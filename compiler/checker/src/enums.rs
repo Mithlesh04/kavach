@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Enums (spec 2.6): a union whose variants carry no fields. Every union
 //! value has `name()`; an enum has `Type.all()` and `Type.parse(text)`,
 //! and, when its variants have numbers (`NotFound = 404`), `value()` and

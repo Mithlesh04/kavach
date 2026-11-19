@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Native code (spec 10.5, 10.9): `kavach build` makes an executable
 //! with LLVM when it can, Cranelift otherwise, and `kavach run --native`
 //! runs the program in memory.

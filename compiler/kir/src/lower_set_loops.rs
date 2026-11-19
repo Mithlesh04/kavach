@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A set's `any`, `all`, `sum`, `count`, `find`, `map` and `filter`
 //! (spec 2.2): the list loop over its items, in insertion order
 //! (`lower_lambda.rs`); `map` and `filter` put the list made into a set.

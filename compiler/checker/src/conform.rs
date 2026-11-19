@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A type that says it implements an interface keeps the promise (spec
 //! 2.8): it has each of the interface's methods, taking as many values,
 //! with the same `inout` parameters (3.9), failing exactly when the

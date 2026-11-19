@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.math`'s functions of floats (spec 14.5), as native code works them
 //! out: a `Float32` is widened to a `Float`, worked out, and rounded once.
 //! The inexact ones are `kavach_runtime_core::math`'s, the same bits on

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A `gpu fn` that calls a plain `fn` says whether that function fits the
 //! GPU's rules, or what keeps it off (spec 15.1).
 

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Calls into C that Cranelift's plain calls don't cover (spec 10.7):
 //! through an address, for a library loaded while running, and of
 //! functions that end in `...`, which Cranelift has no notion of.

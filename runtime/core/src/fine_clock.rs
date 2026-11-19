@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Time finer than a millisecond (spec 14.4): a nanosecond clock that
 //! never jumps, and the last stretch of a precise wait. Systems wake a
 //! sleeping thread only so finely (about a millisecond on Windows), so a

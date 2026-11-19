@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.gpu (spec 14.24, decision 0106): drawing with the GPU in a window.
 // The runtime makes a surface on the window and the frames drawn into it
 // (`runtime/gpu/src/draw.rs`), by number; this file gives screens and

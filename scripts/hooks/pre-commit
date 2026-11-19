@@ -1,4 +1,8 @@
 #!/bin/sh
+# Copyright (c) 2026 Mithlesh and the Kavach contributors
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 # Enforces AGENTS.md section 11 for parallel work: a commit made in a git
 # worktree (a parallel session) may only change the paths its claim allows.
 # Claims are files written by the coordinator in the main checkout:

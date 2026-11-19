@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // Drives the real `kavach lsp` through client/rpc.js, as the extension
 // does: an error comes back as a diagnostic, and hover, go to definition
 // and completion answer. Plain Node, no packages:

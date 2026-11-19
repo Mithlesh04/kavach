@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Events of one durable agent that are under way at once (spec 8.5):
 //! each call goes to the journal under its own event, whichever task
 //! makes it, so a restart gives each event its own outcomes.

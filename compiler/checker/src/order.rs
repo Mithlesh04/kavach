@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Which values have an order (spec 1.8), for `<`, `sort`, `min`, `max`
 //! and `sort_by`'s key; and the waits refused inside `Shared.update`
 //! (spec 6.2).

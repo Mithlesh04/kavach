@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Glyphs drawn as distances (spec 14.31): each glyph's outline cut into
 //! straight lines, each pixel given its distance to the nearest line,
 //! inside or out by the outline's winding, and the glyphs packed into

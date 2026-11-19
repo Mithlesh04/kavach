@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Optionals, unions, errors and decimals, as in the Cranelift backend
 //! (`cranelift/src/data.rs`, `cranelift/src/errors.rs`). `none` is 0; a
 //! present optional is the value itself, or a box for a number. A union

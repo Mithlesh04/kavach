@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Values shared by every way of running Kavach, so the interpreter and
 //! native code behave exactly alike: exact decimals (spec 2.1), how
 //! floats print (spec 1.11), JSON text (spec 2.12) and the bookkeeping of

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // HTTP/2 (RFC 9113) for std.http (decision 0022): frames, streams and
 // flow control on one connection. `std.http` speaks it to `https://`
 // servers that choose `h2`, and to clients that start with the HTTP/2

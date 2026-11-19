@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The fakes of `Fs` and `Clock` in generated tests (spec 11.5): a case
 //! never touches the real world. Files live in memory, on a disk that is
 //! full for some paths, and the clock

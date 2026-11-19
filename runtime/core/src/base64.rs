@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.base64` (spec 14.20): bytes as text and back, in the standard
 //! alphabet or the URL-safe one (RFC 4648). Decoding is strict, so one
 //! value has one text: signed tokens rely on that.

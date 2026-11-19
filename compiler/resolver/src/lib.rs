@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The Kavach resolver: links every name in a file to its declaration
 //! (spec 1.4, 1.5, 10.1) and checks the rules that only need names:
 //! unknown names, duplicates, naming styles, and assignments to `let`

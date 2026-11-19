@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Reductions a loop doesn't wait for (spec 15.2, decision 0067): the
 //! runtime side of the code `compiler/kir/src/gpu_later.rs` makes. Each
 //! round's reduction goes into the GPU's queue, and into a queue here. The

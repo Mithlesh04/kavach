@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `compare`, the runner of the speed kit: a download with the benchmark
 //! programs already built in Kavach and in C++, and their source, so
 //! anyone can time them on their own machine with nothing installed.

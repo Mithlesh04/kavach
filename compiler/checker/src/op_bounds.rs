@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Operator bounds (spec 2.16, 2.9, decision 0115): `T: Add` lets generic
 //! code use `a + b` on two `T`s, which calls `add`: a program's own
 //! type's method, or a number's, as every number type meets `Add`, `Sub`,

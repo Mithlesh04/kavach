@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A plain loop's chunk for `kv_par_for` (`par.rs`): the call site that
 //! fans it out, with the loop as written behind it, and the chunk
 //! function, the loop's body over `lo..hi` with every local renumbered.

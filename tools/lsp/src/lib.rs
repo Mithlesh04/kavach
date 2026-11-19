@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The Kavach language server, behind `kavach lsp`: it speaks the Language
 //! Server Protocol over stdin and stdout, so any editor can show Kavach's
 //! errors as you type, the type under the cursor, and where a name is

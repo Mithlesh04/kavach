@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Lists kept in GPU memory (spec 15.2, decision 0055): which lists
 //! have their items there, bringing them back when the CPU reads them,
 //! and letting go of them.

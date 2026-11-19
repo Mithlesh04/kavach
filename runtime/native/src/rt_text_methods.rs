@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Text methods in native code (spec 14.2), from
 //! `kavach_runtime_core::text_methods`, as the interpreter calls them.
 //! An entry of its own, as each feature group has (decision 0024).

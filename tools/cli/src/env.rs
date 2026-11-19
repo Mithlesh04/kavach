@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `.env` files and single variables for `kavach run`, `test` and
 //! `build` (spec 10.13, decision 0084): `--env-file <path>`, `--env
 //! NAME=value`, `--no-env-file` and `[env]` in `kavach.toml`.

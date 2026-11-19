@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Tasks as coroutines (decision 0048): the main task's thread, the
 //! host, runs the tasks it spawns as stackful coroutines (`corosensei`),
 //! so passing the turn between them switches stacks, with no system

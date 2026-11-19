@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.base64` in the interpreter (spec 14.20), from
 //! `kavach_runtime_core::base64`, as native code does; and `std.text`'s
 //! Unicode normal forms (14.9), the other text encoding the runtime gives.

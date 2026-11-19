@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Destructuring (spec 1.12): one part of a list, map or record, for a
 //! name or a nested pattern. A missing part, or `none` where there is a
 //! default or a nested pattern, takes the default; without one, every

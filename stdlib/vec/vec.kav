@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.vec (spec 14.28, decision 0115): vectors over any number type
 // (`T: Number`), their lengths and directions only for `T: Floating`
 // (`where`, spec 2.9); matrices and quaternions over `T: Floating`. Each

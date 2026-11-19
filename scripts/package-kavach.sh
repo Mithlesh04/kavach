@@ -1,4 +1,8 @@
 #!/bin/sh
+# Copyright (c) 2026 Mithlesh and the Kavach contributors
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 # Packages an installable Kavach (decision 0080) for this machine's
 # system: a tar.gz with bin/ (kavach, kv), lib/ (the runtime library),
 # llvm/ (opt and llc from the Rust toolchain) and the licences, plus a

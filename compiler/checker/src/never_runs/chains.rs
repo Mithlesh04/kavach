@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! An `else if` that can't be true (spec 4.7): its condition compares a
 //! variable with a literal, and an earlier condition of the same chain is
 //! true whenever it is (`x > 20` after `x > 10`), so that branch ran.

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `json.decode<T>(text)` straight from the text (spec 2.12), with no
 //! `Json` or tree in between: the decoder asks the reader
 //! (`kavach_runtime_core::json::Pull`) for what type `T` expects next.

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Dependencies (spec 10.12): other Kavach packages a project uses, from a
 //! folder (`path`) or a git repository (`git`, with a `tag`, `branch` or
 //! `rev`). `kavach.lock` records the exact commit of each git dependency,
@@ -7,10 +11,10 @@
 //! compiling reads the lock and the folders.
 
 use crate::fetch_checks::{is_commit, is_device_name, unsafe_url};
+use crate::git_fetch::{checkout, commit_of};
+use crate::lock_file::{lock_text, plain, read_lock};
 use crate::project::Source;
-use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
-use std::process::Command;
 
 /// Where a dependency comes from.
 #[derive(Clone, Debug, PartialEq)]
@@ -41,7 +45,7 @@ pub struct Package {
     /// dependency of a dependency no more than that one was granted.
     pub granted: Vec<String>,
     /// The repository and commit, for a git dependency.
-    git: Option<(String, String)>,
+    pub(crate) git: Option<(String, String)>,
 }
 
 /// Whether `name` can be used as a module name: `use name`.
@@ -167,167 +171,6 @@ fn declared(root: &Path) -> Result<Vec<Dep>, String> {
         });
     }
     Ok(out)
-}
-
-/// The git commits `kavach.lock` records: by name, the repository and
-/// commit.
-fn read_lock(root: &Path) -> BTreeMap<String, (String, String)> {
-    let Ok(text) = std::fs::read_to_string(root.join("kavach.lock")) else {
-        return BTreeMap::new();
-    };
-    let Ok(table) = text.parse::<toml::Table>() else {
-        return BTreeMap::new();
-    };
-    let packages = table.get("package").and_then(|p| p.as_array());
-    packages
-        .into_iter()
-        .flatten()
-        .filter_map(|p| {
-            let s = |k: &str| p.get(k)?.as_str().map(str::to_string);
-            Some((s("name")?, (s("git")?, s("commit")?)))
-        })
-        .collect()
-}
-
-/// `kavach.lock` for `packages`: one entry per dependency, in name order.
-/// In a workspace, the git entries of other members (`kept`) stay.
-fn lock_text(
-    root: &Path,
-    packages: &[Package],
-    kept: Option<&BTreeMap<String, (String, String)>>,
-) -> String {
-    let mut out = String::from(
-        "# The exact source of each dependency (spec 10.12). Written by kavach: commit it, don't edit it.\n",
-    );
-    let mut sorted: Vec<Package> = packages.to_vec();
-    for (name, (url, commit)) in kept.into_iter().flatten() {
-        if !sorted.iter().any(|p| &p.name == name) {
-            sorted.push(Package {
-                name: name.clone(),
-                root: PathBuf::new(),
-                allow_unsafe: false,
-                granted: Vec::new(),
-                git: Some((url.clone(), commit.clone())),
-            });
-        }
-    }
-    sorted.sort_by(|a, b| a.name.cmp(&b.name));
-    for p in &sorted {
-        out.push_str(&format!("\n[[package]]\nname = \"{}\"\n", p.name));
-        match &p.git {
-            Some((url, commit)) => {
-                out.push_str(&format!("git = \"{url}\"\ncommit = \"{commit}\"\n"))
-            }
-            None => out.push_str(&format!("path = \"{}\"\n", relative(root, &p.root))),
-        }
-    }
-    out
-}
-
-/// `path` without Windows' `\\?\` prefix, which `canonicalize` adds.
-fn plain(path: &Path) -> PathBuf {
-    let text = path.to_string_lossy();
-    PathBuf::from(text.strip_prefix(r"\\?\").unwrap_or(&text))
-}
-
-/// `to` written relative to the folder `from`, with `..` where needed.
-fn relative(from: &Path, to: &Path) -> String {
-    let (from, to) = (plain(from), plain(to));
-    let a: Vec<_> = from.components().collect();
-    let b: Vec<_> = to.components().collect();
-    let common = a.iter().zip(&b).take_while(|(x, y)| x == y).count();
-    if common == 0 {
-        return to.to_string_lossy().replace('\\', "/");
-    }
-    let mut parts: Vec<String> = vec!["..".into(); a.len() - common];
-    parts.extend(
-        b[common..]
-            .iter()
-            .map(|c| c.as_os_str().to_string_lossy().to_string()),
-    );
-    if parts.is_empty() {
-        ".".into()
-    } else {
-        parts.join("/")
-    }
-}
-
-fn git(args: &[&str]) -> Result<String, String> {
-    let out = Command::new("git")
-        .args(args)
-        .output()
-        .map_err(|e| format!("can't run git: {e}"))?;
-    if !out.status.success() {
-        return Err(format!(
-            "git {} failed: {}",
-            args.join(" "),
-            String::from_utf8_lossy(&out.stderr).trim()
-        ));
-    }
-    Ok(String::from_utf8_lossy(&out.stdout).trim().to_string())
-}
-
-/// The commit that `want` (a tag, branch or commit; the default branch
-/// without one) names in repository `url`.
-fn commit_of(url: &str, want: &Option<(String, String)>) -> Result<String, String> {
-    let wanted = match want {
-        Some((kind, rev)) if kind == "rev" => return Ok(rev.clone()),
-        Some((kind, name)) if kind == "tag" => format!("refs/tags/{name}"),
-        Some((_, name)) => format!("refs/heads/{name}"),
-        None => "HEAD".to_string(),
-    };
-    // A tag that points at a tag object is listed again with `^{}`: that
-    // line names the commit.
-    let listed = git(&["ls-remote", "--", url, &wanted, &format!("{wanted}^{{}}")])?;
-    let lines: Vec<&str> = listed.lines().collect();
-    let line = lines
-        .iter()
-        .find(|l| l.ends_with("^{}"))
-        .or(lines.first())
-        .ok_or_else(|| format!("{url} has no `{wanted}`"))?;
-    Ok(line.split_whitespace().next().unwrap_or("").to_string())
-}
-
-/// The folder holding `commit` of `url`: `kavach_modules/<name>/` of the
-/// project at `top`, fetched (or moved to `commit`) when `fetch` allows it.
-fn checkout(
-    top: &Path,
-    name: &str,
-    url: &str,
-    commit: &str,
-    fetch: bool,
-) -> Result<PathBuf, String> {
-    if !is_commit(commit) {
-        return Err(format!(
-            "dependency `{name}`: `{commit}` in kavach.lock is not a commit: run `kavach update`"
-        ));
-    }
-    let dir = top.join("kavach_modules").join(name);
-    // A checked-out commit leaves HEAD detached, holding the commit itself
-    // (in full, where `rev` may give its start).
-    let head = std::fs::read_to_string(dir.join(".git").join("HEAD")).unwrap_or_default();
-    // A checkout is renamed into place only once it is whole, and the
-    // package may be in a folder of it (`dir`), so the commit says enough.
-    if head.trim().starts_with(commit) {
-        return Ok(dir);
-    }
-    if !fetch {
-        let why = if dir.exists() {
-            "is at another commit"
-        } else {
-            "is not fetched yet"
-        };
-        return Err(format!("dependency `{name}` {why}: run `kavach update`"));
-    }
-    let part = dir.with_extension("part");
-    let _ = std::fs::remove_dir_all(&part);
-    std::fs::create_dir_all(dir.parent().unwrap_or(top)).map_err(|e| e.to_string())?;
-    let part_s = part.to_string_lossy().to_string();
-    git(&["clone", "--quiet", "--", url, &part_s])?;
-    git(&["-C", &part_s, "checkout", "--quiet", commit, "--"])?;
-    let _ = std::fs::remove_dir_all(&dir);
-    std::fs::rename(&part, &dir).map_err(|e| e.to_string())?;
-    Ok(dir)
 }
 
 /// Every dependency of the project at `top`, its dependencies' too, each

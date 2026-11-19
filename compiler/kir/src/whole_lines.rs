@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A printed line comes out whole (spec 9.8): the values of a `print`
 //! that can wait (a wait, or a call that can wait, as `cancel.rs` finds)
 //! are all worked out first, in order, and only then is the line written.

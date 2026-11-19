@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Textures (spec 15.3): pictures a `gpu fragment fn` reads with
 //! `sample`, kept on the GPU by number. A pipeline whose fragment fn takes
 //! textures has a second bind group: one sampler, blending between the

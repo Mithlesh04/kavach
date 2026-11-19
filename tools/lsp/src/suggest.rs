@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Fixes for the compiler's suggestions (spec 12.7): the change a message
 //! asks for, made. Each is found from the message and where it points.
 

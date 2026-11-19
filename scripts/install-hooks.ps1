@@ -1,3 +1,7 @@
+# Copyright (c) 2026 Mithlesh and the Kavach contributors
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 # Points git at the versioned hooks in scripts/hooks (rules: AGENTS.md section 10).
 # Usage: powershell -File scripts/install-hooks.ps1     Twin: scripts/install-hooks.sh
 # The hooks themselves are sh scripts; Git for Windows runs them with its own sh.

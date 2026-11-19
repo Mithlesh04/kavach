@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `extern c library Name { fn … }` (spec 10.7): the functions of a C
 //! library the program loads while running. The block becomes the type
 //! `Name`: a record holding each function's address (a field no program

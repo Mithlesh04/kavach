@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The bookkeeping of an agent's guard (spec 8.3, 8.5, 8.6), shared by the
 //! interpreter and native code so both decide alike: limit totals over
 //! rolling windows, the state file that keeps them across restarts,

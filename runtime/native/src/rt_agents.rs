@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Agents in native code (spec 8.3): the guards of started agents, the
 //! stack of running agents, and the checks of each capability call. The
 //! bookkeeping is `kavach_runtime_core::agents`, the interpreter's too, so

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.app`'s folders and crash reports (spec 14.30, decision 0118):
 //! each system's per-user folder for a program, by its rule, and a report
 //! written when a panic ends the program. Dialogs are `runtime/dialog`'s.

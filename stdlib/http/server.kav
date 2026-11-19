@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // The HTTP server of std.http (spec 14.11): each connection in a task on
 // any core, HTTP/1.1 requests one after another, or HTTP/2 when the
 // client starts with its preface. Every client is held to the server's

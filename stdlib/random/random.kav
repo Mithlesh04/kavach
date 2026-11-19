@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.random (spec 14.15): random numbers behind the `Random` capability.
 // The runtime gives 64 bits at a time from the operating system's
 // cryptographically secure generator (`random_bits`), or from the test

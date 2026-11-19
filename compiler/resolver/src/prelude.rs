@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Names that every module can use without `use` (spec 10.2, 8.1, 6.4).
 
 /// Built-in types (spec 2.1, 2.2, 6, 9) and the interfaces the language

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Conversions between built-in types, one form for all: `T(value)`
 //! (spec 2.1). Text read as a number, `Bool` or `Char` can fail; a
 //! literal is read here, so `Int("2")` can't fail and `Int("abc")` is an

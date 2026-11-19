@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `kavach test --keep` (spec 11.4): a found case that now passes becomes
 //! an `example` clause on its function, so the fixed bug is documented
 //! where people read the function. The example says what the call gives

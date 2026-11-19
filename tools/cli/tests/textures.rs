@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Textures (spec 15.3) on the CPU: `sample` gives what the GPU gives, a
 //! color made linear from sRGB, blended between the nearest pixels,
 //! interpreted and in native code alike. A machine with no GPU can't

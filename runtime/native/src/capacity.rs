@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Lists, maps and sets made by `capacity(n)`: at most `n` entries, with
 //! room for all of them made at once (spec 2.2). The limit is kept in
 //! the object's header (`heap::Obj::limit`), and copies keep it

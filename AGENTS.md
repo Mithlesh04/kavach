@@ -115,7 +115,7 @@ The goal is that **every behaviour is checked, with as few hand-written test fil
   powershell -File scripts/check-repo.ps1   # Windows
   ```
 
-  It fails on files over 500 lines and on broken relative links. Fix everything it reports.
+  It fails on files over 500 lines, on broken relative links, and on source files without the license header (section 8). Fix everything it reports.
 - **If you changed Rust code**, also run `cargo test`, `cargo clippy --all-targets` (no warnings) and `cargo fmt --check`.
 - Delete things that are wrong or unused. Don't leave commented-out code or stale TODOs.
 - Every script in `scripts/` works on Windows too (a `.ps1` twin).
@@ -133,6 +133,20 @@ The goal is that **every behaviour is checked, with as few hand-written test fil
 - `unsafe` Rust is denied workspace-wide. The only exception is `runtime/native`, the run-time library of native programs ([decision 0016](docs/decisions/0016-native-runtime-and-executables.md)), where each use has a `SAFETY:` comment, one call in `runtime/gpu` that compiles a kernel whose loops surely end ([decision 0077](docs/decisions/0077-kernels-whose-loops-end.md)), and `runtime/process`, the system calls that run other programs as trees and read what machine the program runs on ([decision 0105](docs/decisions/0105-std-process.md), [decision 0110](docs/decisions/0110-std-system.md)), each with a `SAFETY:` comment, and the one call into `gemm` in `runtime/matrix` ([decision 0111](docs/decisions/0111-matrices.md)). Don't add `unsafe` anywhere else without a decision record.
 - Kavach: `kavach fmt`.
 - Match the style of the surrounding code: naming, comment density, idioms.
+- **License header.** Every new source file starts with these lines ([decision 0133](docs/decisions/0133-license-headers.md)):
+
+  ```
+  // Copyright (c) 2026 Mithlesh and the Kavach contributors
+  // SPDX-License-Identifier: Apache-2.0 OR MIT
+  // https://kavachlang.com | https://github.com/Mithlesh04/kavach
+  ```
+
+  - The year is the year the file was created. Never update it.
+  - It goes in `.rs`, `.kav`, `.sh`, `.ps1`, `.js`, `.mjs` and `.ts` files, and the git hooks, under `compiler/`, `runtime/`, `tools/`, `stdlib/`, `interop/`, `scripts/` and `editors/`. Rust test files there get it too.
+  - Shell scripts, PowerShell scripts and hooks use `#` instead of `//`. A shebang (`#!`) stays the first line, with the header right after it. In Rust, the header comes before the `//!` lines.
+  - Left out: `tests/`, `examples/`, `website/`, `benchmarks/`, generated and vendored files, Markdown, JSON, TOML, and test fixtures whose text or line numbers a test compares. The list lives in `scripts/check-repo.sh` and its `.ps1` twin.
+  - The header's lines count toward the 500-line limit (section 3).
+  - The repo check fails on a file without it. `sh scripts/add-license-headers.sh` (or `.ps1`) adds it.
 
 ## 9. For AI sessions and agents
 

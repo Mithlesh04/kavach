@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `json.decode<T>` and `json.decode_value<T>` (spec 2.12) in native code:
 //! JSON into a value of type `T`, read from the program's shape table,
 //! exactly as the interpreter does (`compiler/interp/src/json_decode.rs`).

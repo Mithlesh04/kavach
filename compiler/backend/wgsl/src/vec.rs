@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.vec`'s types and operations in WGSL (spec 14.28, decision 0115).
 //! A record `Vec2`, `Vec3` or `Vec4` of `Float32` fields `x`, `y`, `z`,
 //! `w`, and a `Mat3` or `Mat4` of three `Vec3` or four `Vec4` columns, are WGSL's own

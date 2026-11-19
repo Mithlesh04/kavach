@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `ask<T>` (spec 8.4) end to end, against a fake model server on this
 //! machine (`KAVACH_AI_URL`): no real API is called, so nothing costs.
 //! Each test runs with the interpreter and as native code, which must

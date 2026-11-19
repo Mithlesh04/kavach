@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Blocks given to a call (spec 4.8, decision 0107): `log.span(name,
 //! from) { … }` and `random.seeded(seed) { … }`. The call's op puts an
 //! entry on the task's scope stack (`runtime/native/src/rt_scopes.rs`)

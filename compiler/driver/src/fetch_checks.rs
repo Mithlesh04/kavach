@@ -1,6 +1,10 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! What a dependency may name (spec 10.12): sources that are safe to
 //! fetch, commits that can't be read as options, and folder names that
-//! every system can make. Used by `deps.rs`.
+//! every system can make. Used by `deps.rs` and `git_fetch.rs`.
 
 /// Why `url` can't be fetched, if it can't: only `https://`, `ssh://`,
 /// `user@host:path` and local folders, so nothing travels unencrypted,

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A range as the list of its numbers (spec 2.2): `(0..n).map(f)` reads
 //! the list `[0, 1, …, n - 1]`, which a loop builds. The checker types a
 //! range a list method is called on as that list.

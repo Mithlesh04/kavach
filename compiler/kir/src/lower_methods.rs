@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Method calls (spec 2.5, 2.15, 3.4): user methods, methods through
 //! interface values, and fields holding functions. Split from
 //! `lower_calls.rs` (named functions and arguments).

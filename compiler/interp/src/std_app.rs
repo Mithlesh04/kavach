@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.app` in the interpreter (spec 14.30): folders and crash reports
 //! from `kavach_runtime_core::app`, dialogs from `kavach_runtime_dialog`,
 //! as native code does. Under `kavach test` folders are fake paths and no

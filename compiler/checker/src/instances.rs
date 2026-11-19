@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A generic type's instances: fresh type arguments for each use, or the
 //! ones written at a construction (`Box<Shout>(raw: …)`, spec 2.9).
 

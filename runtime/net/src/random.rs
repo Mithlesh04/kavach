@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Random bits for `std.random` (spec 14.15): from the operating
 //! system's cryptographically secure generator, through the `ring`
 //! provider TLS already uses (decision 0021), so no new dependency. In

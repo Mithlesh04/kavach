@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The short form of an answer's type, written into the prompt of an
 //! `ask`'s first try (decision 0057): made from the same JSON Schema the
 //! answer is checked against, so it can't say something else. A record

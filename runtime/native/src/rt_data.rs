@@ -1,8 +1,13 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Run-time functions for heap values. Every function that takes an
 //! object pointer consumes the caller's reference unless its name ends in
 //! `_raw` (borrowed). Results are owned by the caller.
 
-use crate::display::{boxed, equal};
+use crate::display::boxed;
+use crate::equality::equal;
 use crate::heap::{
     Data, alloc, innermost, items_of, len_of, new_str, obj, release, release_slot, retain, shape,
     slot_at, unique, with_str,

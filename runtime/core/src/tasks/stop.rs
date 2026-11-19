@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `task.cancel()` (spec 9.6, decision 0075): a task cancelled this way
 //! stops at once, at its next wait, the end of a loop's round or the
 //! start of a call, even when it only computes. Code checks `must_stop`

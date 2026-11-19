@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Items copied to the GPU through buffers of our own, used in turn.
 //!
 //! `queue.write_buffer` copies into a staging buffer of `wgpu`'s, and makes a

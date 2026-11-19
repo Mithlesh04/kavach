@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Holds on a program's stop (spec 5.8, decision 0088), for the
 //! interpreter and native code alike. While a hold is kept, the first
 //! stop signal doesn't end the program: the signal's thread marks the

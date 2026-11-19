@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Agents in a project (spec 8.5, 8.6): their `settings`, modes, the audit
 //! log, and the state kept by default. Each test writes a small project to
 //! a folder of its own and runs it.

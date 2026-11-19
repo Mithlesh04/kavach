@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Which statements of a loop can run later (spec 15.2).
 
 use super::{defined_in, mention_counts, one_statement, take_out_list};

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Lists of text in generated code (`docs/architecture/flat-lists.md`):
 //! each item is two words, holding short text itself or a pointer to a
 //! text object (`runtime/native/src/text_items.rs`). Items go in and out

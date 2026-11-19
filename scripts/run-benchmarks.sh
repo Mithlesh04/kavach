@@ -1,4 +1,8 @@
 #!/bin/sh
+# Copyright (c) 2026 Mithlesh and the Kavach contributors
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 # Builds and times every benchmark in a folder (benchmarks/loops unless
 # another is named), in Kavach and in C++ (g++ -O2), and prints the best
 # of 9 runs in milliseconds. Runs of the languages alternate, so other

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The AI tools give exact, compact answers (spec chapter 13).
 
 use kavach_ai::{Index, messages_json, outline, query};

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Once tests run, no action changes the machine (spec 14.25): each is
 //! refused before any system call. In its own process, so the switch
 //! doesn't reach the other tests. Nothing here can end a program or change

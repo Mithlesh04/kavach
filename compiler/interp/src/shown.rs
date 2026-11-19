@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `Display` (spec 1.11): a value whose type implements it shows as its
 //! `display()` gives, at the top and inside collections and records.
 

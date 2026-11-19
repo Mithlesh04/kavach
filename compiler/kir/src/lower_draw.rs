@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `gpu.pipeline(v, f)` and a frame's draws (spec 15.3, decision 0106).
 //! A pipeline is its number: `DrawPipeline` takes the two gpu fns, as
 //! closures, and the WGSL the backend writes for them (`attach` in

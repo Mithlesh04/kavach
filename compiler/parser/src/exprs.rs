@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Operators and postfix chains (spec 1.8): `catch` is loosest, then the
 //! binary precedence table, then unary operators, then calls and fields.
 

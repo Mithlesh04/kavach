@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Changing the machine on Windows (spec 14.25): `TerminateProcess` for
 //! programs, the network management calls for users, `LockWorkStation`
 //! to lock. Each `unsafe` call has its `SAFETY:` comment.

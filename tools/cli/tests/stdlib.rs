@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The standard library modules written in Kavach (`stdlib/`) pass
 //! `kavach test`: their examples, and tests generated from their types and
 //! contracts (spec 11), like any other Kavach code.

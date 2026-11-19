@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The name of every built-in method (spec 14.2), so tools such as code
 //! completion can list what a value has: [`crate::builtin_methods`] keeps
 //! the names the checker accepts for a type. A test below checks this

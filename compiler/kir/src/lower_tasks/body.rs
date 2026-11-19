@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The function a spawned task runs (spec 9, `lower_tasks.rs`): its
 //! captured values, the parts of its call read before it started
 //! (`args.rs`), then `x`, given back or done.

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `.unwrap()` outside tests (spec 2.7): a warning, as it panics on
 //! `none` with no word of why. `test` blocks and `example` clauses may
 //! use it freely. A `.unwrap()` the compiler knows always panics is an

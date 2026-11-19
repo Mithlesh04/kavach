@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Enums in native code (spec 2.6): `Type.all()` is a list of the
 //! variants; `Type.parse(text)` and `Type.from(n)` compare with each
 //! variant's name or number in turn; `v.name()` and `v.value()` test the

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Every part of the machine (spec 14.25, decision 0112): each kind of
 //! part as rows of text, a fixed number of fields a row, which
 //! `stdlib/system/system.kav` turns into records. Each system's code is in

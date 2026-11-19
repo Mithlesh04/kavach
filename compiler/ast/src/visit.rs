@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A mutable walk over the whole tree. A pass implements [`VisitMut`],
 //! overrides the methods for the nodes it changes, and calls the `walk_*`
 //! function inside them to keep going.

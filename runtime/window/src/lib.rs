@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Windows and the input that comes to them (spec 14.22, decision 0104),
 //! for the interpreter and native code alike, through `winit`.
 //!

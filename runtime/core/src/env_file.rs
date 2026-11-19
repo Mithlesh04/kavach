@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Environment variables and `.env` files (spec 10.13, decision 0084):
 //! reading a file, and looking a name up in the order that decides which
 //! value wins. The process's own environment is never changed, so other

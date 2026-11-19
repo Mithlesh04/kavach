@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.window` in native code (spec 14.22, decision 0104), from
 //! `kavach_runtime_window`, by the window's number, as the interpreter
 //! does. An entry of its own, so only a program that opens windows links

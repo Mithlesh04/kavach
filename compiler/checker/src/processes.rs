@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `spawn process f(args)` (spec 9.8, decision 0075): the call runs in a
 //! process of its own, so what goes in and comes out is copied, as JSON.
 //! It must be a call of a function by its name, not generic, and its

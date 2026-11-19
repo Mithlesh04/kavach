@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.crypto` (spec 14.19, decision 0093): hashes, HMAC, constant-time
 //! comparison, random bytes, Ed25519, ECDSA P-256 and AES-256-GCM from
 //! `ring`, which TLS already uses; Argon2id passwords from `argon2`. Not a

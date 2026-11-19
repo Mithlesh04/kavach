@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! OpenTelemetry export of `std.log` events (spec 14.12): OTLP over HTTP
 //! with JSON (`POST <endpoint>/v1/logs`), and of spans (`/v1/traces`,
 //! `otlp_traces.rs`) through the same queue. A thread of its own sends them

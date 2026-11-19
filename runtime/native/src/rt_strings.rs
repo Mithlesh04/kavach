@@ -1,9 +1,14 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Text in native code: making it, printing values into it (string
 //! interpolation), its length, comparing and joining it (`+`, which grows
 //! text with one holder in place, spec 6.1). Split from `rt_data.rs`,
 //! which re-exports these.
 
-use crate::display::{append_display, compare, display};
+use crate::display::{append_display, display};
+use crate::equality::compare;
 use crate::heap::{Data, new_str, obj, release, release_slot, str_of, unique, with_str};
 use crate::rt::{text, type_of};
 

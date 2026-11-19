@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! What may leave an `arena` (spec 6.3): only its block's value. A value
 //! that holds memory and is made from a variable declared in the arena
 //! can't be kept outside: assigned or stored into something declared

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Code that always breaks a contract (spec 7.7): a call's arguments are
 //! known, and a `require` that compares a parameter with a number is false
 //! for them; or a value a function returns is known, and an `ensure` that

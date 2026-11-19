@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Conversions in a kernel, checked as the CPU checks them, and the
 //! `std.math` functions a `Float32` power or root arrives as.
 

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Code that never runs (spec 4.7): a `match` arm that can't match, an
 //! `else if` that can't be true, and a `while` loop that never ends. Each
 //! is a warning that says what to change. The checks look only at what

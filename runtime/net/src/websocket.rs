@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! What the runtime gives a WebSocket handshake (spec 14.11, decision
 //! 0092): the server's accept value, SHA-1 of the client's key and RFC
 //! 6455's fixed text, in base64; a client's random key; and the random

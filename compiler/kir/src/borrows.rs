@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A closure's function borrows its closure (`lower_closure.rs`): the
 //! caller keeps its reference while the call runs, as a C++ program
 //! calls a `std::function`, so a call through a function value changes

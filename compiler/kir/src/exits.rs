@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Values computed before an early exit in the same expression, as in
 //! `a + (x ?? return none)`, `f(s, try g())` or `"{a}{x ?? continue}"`.
 //! Leaving skips the rest of the expression, so a value already computed

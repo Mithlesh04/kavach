@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The type arguments of a generic function's call. The interpreter runs
 //! one body for every instance, so where the type matters at run time
 //! (`json.decode<T>`, spec 2.12), it uses the arguments of the call that

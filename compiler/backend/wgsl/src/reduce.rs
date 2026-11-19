@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Kernels for `sum`, `min` and `max` of `Int32` or `UInt32` on the GPU
 //! (spec 15.2). Each workgroup combines its 256 items in their order and
 //! writes one partial into `out`, three words per group; the runtime

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Code completion. After a `.`, the fields and methods of what is before
 //! it; anywhere else, the names in scope: the program's declarations, the
 //! enclosing function's parameters and the locals before the cursor, and

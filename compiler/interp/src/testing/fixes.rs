@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Crash fix suggestions (spec 11.10). A panic in a generated case is a
 //! bug; these are the ways to fix it, each with when to choose it. They
 //! are only shown: the developer picks one, because only they know what

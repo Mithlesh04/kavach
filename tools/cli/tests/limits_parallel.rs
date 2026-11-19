@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A limit's total holds when many handlers call at once (spec 8.3,
 //! 8.4): 30 refunds of 100 started together against `sum(amount) <= 1000
 //! per day` pay exactly 10, in the interpreter and native code, every

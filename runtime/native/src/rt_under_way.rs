@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A `tokens` limit in native code (spec 8.3): what `tokens` reads, with
 //! the `ask`s still waiting for their answer counted as the agent's
 //! settings say; a rule's verdict, which under `UnderWay::Average` can be

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Run-time functions that native code calls: printing, panics and the
 //! stack limit. Their output must match the interpreter exactly (decision 0014):
 //! the conformance cross-check compares the two.

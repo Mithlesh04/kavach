@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Passing the turn between task threads (decision 0020). The thread
 //! whose turn it is wakes alone: a server with a thousand connections
 //! wakes one thread per hand-over, not a thousand. A thread whose turn

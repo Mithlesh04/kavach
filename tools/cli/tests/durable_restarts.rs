@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Durable agents across bad restarts (spec 8.5, decision 0073): an event
 //! that keeps stopping the program is set aside, and a second program
 //! can't start an agent another program runs.

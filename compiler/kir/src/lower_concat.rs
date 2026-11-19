@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `xs + ys` and `xs += ys` on lists (spec 2.2), as pushes onto a list,
 //! so each backend's kinds of list (flat, text, packed) need nothing new;
 //! and `xs.pop()` (spec 14.2), as its last item and a shorter list;

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `spawn process f(args)` in native code (spec 9.8, decision 0075), as
 //! the interpreter runs it (`compiler/interp/src/processes.rs`). The
 //! program starts itself again (`runtime/core/src/processes.rs`); the

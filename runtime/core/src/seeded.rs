@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The numbers of `random.seeded(seed) { … }` (spec 14.15, decision
 //! 0107): xoshiro256**, its state made from the seed by SplitMix64, as
 //! their published versions (Blackman and Vigna) make them. Named in the

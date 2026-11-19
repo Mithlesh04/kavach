@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A function's unwind codes for Windows x64, written from Cranelift's
 //! description of its prologue (`buffer.unwind_info`) instead of through
 //! Cranelift's own encoder. That encoder (0.125, and still in 0.137) has

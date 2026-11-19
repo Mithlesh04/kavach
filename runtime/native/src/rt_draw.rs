@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.gpu`'s drawing in native code (spec 14.24, decision 0106), from
 //! `kavach_runtime_gpu::draw`, by number, as the interpreter does
 //! (`compiler/interp/src/std_gpu.rs`). The window comes from

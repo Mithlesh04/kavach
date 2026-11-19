@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Method calls: dispatch to a type's own methods, built-in methods,
 //! `.timeout(d)`, and fields holding functions (spec 3.4).
 

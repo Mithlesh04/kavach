@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Traces (spec 14.12, decision 0107): the ids of spans, and the W3C
 //! `traceparent` header that carries them between services
 //! (`00-<trace>-<span>-<flags>`). Ids must be unique, not secret, so

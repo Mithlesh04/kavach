@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // WebSockets (RFC 6455) and server-sent events for std.http (spec 14.11,
 // decision 0092). A handler returns `http.websocket(r, session)` or
 // `http.events(r, feed)`: the server sends the response's head, then the

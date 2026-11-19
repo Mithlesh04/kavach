@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The type of a name used as a value: a local, a function, a type
 //! through which a variant or constructor is reached, a field inside an
 //! `invariant`, and the tags of literals, which can't stand alone.

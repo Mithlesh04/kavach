@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Every part of the machine on Windows (spec 14.25, decision 0112): the
 //! board, BIOS, model and installed applications from the registry, memory
 //! modules and ids from the SMBIOS tables, volumes, the battery and

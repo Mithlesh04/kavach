@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `b[i]` on `Bytes` (spec 2.13): the bytes' address and length from the
 //! runtime, a bounds check and one load, with no reference count and no
 //! trip through the runtime's op entry per byte (as `compiler/backend/

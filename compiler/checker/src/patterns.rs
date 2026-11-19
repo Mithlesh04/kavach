@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Patterns, branching (`if`, `if let`, `match`) and match coverage (spec 4).
 
 use crate::checker::{Checker, FieldInfo, Shape};

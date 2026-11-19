@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Lowering `for tick in time.every_ms(ms)` (spec 14.4): a loop whose
 //! rounds each wait for their start.
 

@@ -1,6 +1,11 @@
+# Copyright (c) 2026 Mithlesh and the Kavach contributors
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 # Checks the repository rules from AGENTS.md:
 #   1. no file we write is longer than 500 lines
 #   2. every relative Markdown link points to a file (and heading) that exists
+#   3. every source file starts with the license header (decision 0133)
 # Usage: powershell -File scripts/check-repo.ps1     Twin: scripts/check-repo.sh (keep both in sync)
 
 $MaxLines = 500
@@ -66,6 +71,31 @@ foreach ($f in $files | Where-Object { $_.Extension -eq '.md' }) {
             Write-Output "BROKEN    $(Get-Rel $f.FullName) -> $link (no such heading)"
             $fail = $true
         }
+    }
+}
+
+# 3. License header: within its first 5 lines, each source file in scope
+# names the copyright holders and the SPDX license (decision 0133). A file
+# marked `@generated` or "do not edit" there is skipped. Keep the scope and
+# the skip list in sync with the .sh twin.
+$HeaderScope = '^\./(compiler|runtime|tools|stdlib|interop|scripts|editors)/.*\.(rs|kav|sh|ps1|mjs|ts|js)$|^\./scripts/hooks/[^/.]+$'
+# Left out: test fixtures whose text or line numbers a test compares.
+$HeaderSkip = @(
+    '^\./editors/vscode/tests/[^/]*\.kav$'
+)
+foreach ($f in $files) {
+    $rel = Get-Rel $f.FullName
+    if ($rel -cnotmatch $HeaderScope) { continue }
+    if ($HeaderSkip | Where-Object { $rel -cmatch $_ }) { continue }
+    $reader = [IO.File]::OpenText($f.FullName)
+    $head = @(for ($i = 0; $i -lt 5 -and -not $reader.EndOfStream; $i++) { $reader.ReadLine() })
+    $reader.Dispose()
+    $holder = $head -cmatch 'Copyright \(c\) [0-9]{4} Mithlesh and the Kavach contributors\s*$'
+    $spdx = $head -cmatch 'SPDX-License-Identifier: Apache-2\.0 OR MIT\s*$'
+    $made = $head -match '@generated|do not edit'
+    if (-not (($holder -and $spdx) -or $made)) {
+        Write-Output "NO HEADER ${rel}: no license header in its first 5 lines. Add it with scripts/add-license-headers.sh or .ps1."
+        $fail = $true
     }
 }
 

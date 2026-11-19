@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Programs, ports and users on Windows (spec 14.25, decision 0112): a
 //! Toolhelp snapshot of the processes, the IP helper's tables of
 //! connections with their owners, the process token, and the network

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Tasks in native code (spec 9, decisions 0020 and 0048). They take
 //! turns through the scheduler the interpreter uses too
 //! (`kavach_runtime_core::tasks`), so both run tasks in the same order.

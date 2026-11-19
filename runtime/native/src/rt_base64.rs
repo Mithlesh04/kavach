@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.base64` in native code (spec 14.20), from
 //! `kavach_runtime_core::base64`, as the interpreter does. An entry of its
 //! own, so a program that doesn't use it links none of it (decision 0024).

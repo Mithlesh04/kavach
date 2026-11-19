@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The runtime's op entries (`RtOp::entry`, `compiler/kir/src/rt_op/groups.rs`):
 //! each takes an op's code, three operands, the code of the result's type
 //! and the line, and gives one value, so they share one signature.

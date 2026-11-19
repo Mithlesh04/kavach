@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Lowering lambdas written where they are used (spec 3.3): they are
 //! inlined. `items.filter(.paid)` becomes a loop that builds the new
 //! list, with the lambda's body in place, so it needs no closure object.

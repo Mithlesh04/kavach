@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Expressions that branch: `if`/`else`, `fallback` and the
 //! short-circuit `and`/`or`. Each merges its value through a stack slot,
 //! which LLVM turns into a register. Split from `expr.rs`.

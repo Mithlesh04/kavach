@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Every part of the machine on Linux (spec 14.25, decision 0112), from
 //! `/sys` and `/proc`; volumes' sizes from `statvfs` and addresses from
 //! `getifaddrs`, the only `unsafe` here, each with its `SAFETY:` comment.

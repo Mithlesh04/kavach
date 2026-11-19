@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Items of a list of text (`docs/architecture/flat-lists.md`): two words
 //! each. Text up to 15 bytes is stored in them; its last byte is a tag
 //! (`INLINE`, the `ASCII` flag and the length). Longer text is a pointer

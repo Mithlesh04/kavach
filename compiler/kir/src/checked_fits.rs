@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `x.checked_mul(y) ?? d`, `if let v = x.checked_add(y)` and the like on
 //! `Int` (spec 5.6), without making the optional. An `Int?` is an object
 //! on the heap, so a `checked_*` call cost an allocation and three runtime

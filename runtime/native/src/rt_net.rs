@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.net` in native code (spec 14.10), with the code in `runtime/core`
 //! and the same waiting as the interpreter (`compiler/interp/src/net.rs`):
 //! a try that can't go on yet waits through the scheduler, until the

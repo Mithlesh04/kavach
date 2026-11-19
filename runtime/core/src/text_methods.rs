@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Text methods (spec 14.2) that the interpreter and native code share:
 //! `capitalize`, `title`, `words`, padding, `truncate`, `is_blank`,
 //! `trim_start` and `trim_end`, `last_index_of`, `count`, and removing a

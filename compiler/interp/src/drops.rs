@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `Drop` (spec 6.1): a value of a type that implements it runs `drop`
 //! once, when the last holder of it ends. A block's variables end at the
 //! block's end, the last made first (`stmts.rs`), a temporary at the end

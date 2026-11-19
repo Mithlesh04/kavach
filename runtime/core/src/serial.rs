@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Serial ports for `std.devices` (spec 14.18, decision 0068), through
 //! `serial2`, for the interpreter and native code alike. Open ports are
 //! kept here by number, as an operating system keeps open files.

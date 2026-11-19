@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Module constants in native code (spec 1.13): each becomes a function
 //! that works its value out, made when first read. A read calls it, and
 //! the program's start calls those something reads, in the order they are

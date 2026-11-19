@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The walk over a `gpu fn`'s body (spec 15.1): what it may use, with a
 //! message naming anything else, and the `gpu fn`s it calls.
 

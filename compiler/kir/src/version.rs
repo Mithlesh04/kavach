@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Loop versioning. A counted loop that multiplies by a local it never
 //! changes keeps its overflow checks when that local could be anything:
 //! `total = (total + i * seed) % m` must check `i * seed` and the sum. So

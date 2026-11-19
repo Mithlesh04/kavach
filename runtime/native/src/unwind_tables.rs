@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Registers the unwind tables of code the JIT made (`kavach run
 //! --native`; decision 0065, step 3), so a panic can unwind through it to
 //! the start of its task. Built programs carry their tables in the

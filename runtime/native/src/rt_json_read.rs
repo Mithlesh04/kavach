@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Reading `Json` values (spec 2.12) without making their lists and maps
 //! (decision 0032): `j["key"]`, `j[i]` and the methods `list`, `object`,
 //! `int`, `float`, `text`, `bool`, `is_null` and `len` in native code. On

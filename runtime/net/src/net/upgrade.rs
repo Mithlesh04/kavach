@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! TLS begun on a connection that already spoke plain TCP (spec 14.10):
 //! `conn.start_tls(host, …)` as a client, `conn.accept_tls(cert, key, …)`
 //! as a server, the way PostgreSQL's `SSLRequest` and SMTP's `STARTTLS`

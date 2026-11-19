@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A remainder by a constant in a counted loop: `i % 7` in `for i in
 //! 0..n`. Each round `i` grows by one, so `i % 7` goes 0, 1, …, 6, 0, …:
 //! a counter that wraps gives it with an add and a compare, where the

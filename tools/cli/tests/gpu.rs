@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `map` on the GPU (spec 15.2), in native code: forced on with
 //! `KAVACH_GPU=on`, and compared with the CPU by `KAVACH_GPU=check`.
 //! Without a GPU the runtime uses the CPU, so these pass either way.

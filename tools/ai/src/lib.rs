@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Tools that let AI assistants ask the compiler instead of reading files
 //! (spec chapter 13, decision 0015): `outline`, `query` and compact
 //! machine-readable messages. `query` and `context` answer from the

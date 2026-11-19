@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.app (spec 14.30, decision 0118): a program's own folders, crash
 // reports, and the system's dialogs. The folders and reports are the
 // runtime's (`runtime/core/src/app.rs`), the dialogs `runtime/dialog`'s.

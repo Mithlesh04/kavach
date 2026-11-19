@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `map["key"]` for a constant key, as generated code calls it.
 //!
 //! A constant key's address names its text for the whole run, so a slot

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Making small objects in generated code: a record, tuple or union value
 //! with at most `MAX_SLOTS` fields is taken from the runtime's object pool
 //! (`runtime/native/src/pool.rs`) without a call: pop the free list for its

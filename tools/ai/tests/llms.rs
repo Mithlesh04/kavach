@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `llms.txt` (spec 13.8) stays small and correct: under 4,000 tokens,
 //! every Kavach code block in it parses, and none teaches a habit the
 //! compiler refuses.

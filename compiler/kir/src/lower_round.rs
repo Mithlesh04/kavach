@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The task one round of an `on threads` loop runs, and what the loop
 //! does with it when it is waited for (spec 4.9, `lower_threads.rs`).
 

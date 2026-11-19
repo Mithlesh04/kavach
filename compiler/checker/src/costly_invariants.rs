@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A change to a record whose `invariant` walks a collection, made in a
 //! loop (spec 7.3): the invariant is checked after every change, so the
 //! loop walks the collection each round, which grows with the square of

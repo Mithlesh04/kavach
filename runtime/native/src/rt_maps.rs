@@ -1,9 +1,13 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Maps, `Shared` values and `list[i] = v` (spec 2.2, 6.2).
 //!
 //! A map keeps its entries in a hash table that remembers insertion order
 //! (`table.rs`).
 
-use crate::display::hash_slot;
+use crate::equality::hash_slot;
 use crate::heap::{
     Data, alloc, alloc_slots, items_of, len_of, obj, release, release_slot, retain, shape, slot_at,
     unique,
@@ -63,7 +67,7 @@ pub(crate) fn find(map: i64, key: i64, kt: Type) -> Option<usize> {
         Data::Map(t) if !int_key(kt) => {
             let hash = hash_slot(key, kt);
             (
-                t.find(hash, |k| crate::display::same_key(k as i64, key, kt)),
+                t.find(hash, |k| crate::equality::same_key(k as i64, key, kt)),
                 false,
             )
         }

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! TLS servers and mutual TLS (spec 14.10): a Kavach server proves who it
 //! is with its certificate and asks each client for one; a client trusts
 //! a private certificate authority (`roots`) and shows its own. The

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Dependencies from git (spec 10.12): `kavach add` fetches one and writes
 //! `kavach.lock` with its exact commit; later builds keep that commit,
 //! even after the repository moves on, until `kavach update`; and a

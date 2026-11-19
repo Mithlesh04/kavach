@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // Forms sent as `multipart/form-data`, for std.http (spec 14.11,
 // decision 0090): read a part at a time, each part's data as it comes,
 // from a body read whole or one read with `read_body`, so a large upload

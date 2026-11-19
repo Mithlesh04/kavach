@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Network adapters, displays, temperatures and every device on Windows
 //! (spec 14.25, decision 0112): the IP helper, the display
 //! configuration, performance counters and SetupAPI. Each `unsafe` call

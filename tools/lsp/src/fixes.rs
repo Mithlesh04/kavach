@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Quick fixes: for code that never runs (spec 4.7), the `match` arm that
 //! can't match, or the `else if` that can't be true, taken out (the code
 //! is found in the compile's syntax tree, so the edit takes exactly it);

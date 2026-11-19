@@ -1,4 +1,8 @@
 #!/bin/sh
+# Copyright (c) 2026 Mithlesh and the Kavach contributors
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 # Packages the speed kit for this machine's system (to-do: "A speed
 # comparison anyone can run"): every benchmark that has a C++ twin and
 # runs alone, built in Kavach (`kavach build`) and in C++ (`g++ -O2`,

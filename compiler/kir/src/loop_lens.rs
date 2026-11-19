@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `while i < data.len()`: the length of a variable the loop never sets
 //! is the same every round, as values never change behind a name
 //! (spec 6.1). So it is read once, before the loop, into a local of its

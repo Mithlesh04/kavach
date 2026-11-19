@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Programs, ports and users on Linux (spec 14.25, decision 0112): the
 //! programs and their sockets from `/proc`, the users from `/etc/passwd`
 //! and `/etc/group`. The user's own id comes from `geteuid`, the only

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! C's pointer syntax on `Ptr<T>` (spec 6.4): `*p`, `p[i]` and `p + n`,
 //! the same operations as `p.read(0)`, `p.read(i)` and an address `n`
 //! values on. Only inside `unsafe`.

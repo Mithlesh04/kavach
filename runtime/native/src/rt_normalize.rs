@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.text`'s Unicode normal forms in native code (spec 14.9, decision
 //! 0102), from `kavach_runtime_core::normalize`, as the interpreter does.
 //! An entry of its own, so a program that doesn't use them links none of

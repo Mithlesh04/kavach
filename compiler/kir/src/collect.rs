@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Lowering every function of the program. A function native code can't
 //! lower yet stops the build only when the program can reach it: a
 //! standard library method no one calls (`Gen.pick`, generic) doesn't

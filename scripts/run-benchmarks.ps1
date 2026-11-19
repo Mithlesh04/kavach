@@ -1,3 +1,7 @@
+# Copyright (c) 2026 Mithlesh and the Kavach contributors
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 # Runs scripts/run-benchmarks.sh in WSL (the benchmarks compare with g++).
 # Usage: powershell -File scripts/run-benchmarks.ps1 [kavach] [benchmarks/math]
 $root = (Resolve-Path "$PSScriptRoot\..").Path

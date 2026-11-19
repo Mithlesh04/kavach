@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A send to an agent (`bot.request(order)`, spec 8.8, decision 0076):
 //! the handler runs at once, in the sender's own task, and a panic in it
 //! stops only the handler. The send fails with `panicked: …`, the panic

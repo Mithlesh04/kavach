@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! What changes the machine (spec 14.25), tested so the machine that runs
 //! the tests never changes. Outside a container, a test only ends a program
 //! it started itself (kept unreaped, so its id can't be another program's),

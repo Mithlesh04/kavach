@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The `Model` of each agent and of each `ask` that names one (spec 8.4,
 //! decision 0056), worked out when the program is built: native code
 //! builds each request then. A `Model(…)` written with plain values, or

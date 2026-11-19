@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Watching a folder made for the test, in the system's temporary folder.
 
 use crate::{CHANGED, CREATED, REMOVED, changes, close, own_temp, poll, shown, watch};

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `kavach build` gives a Windows executable a manifest, and the icon
 //! `[build] icon` names (spec 10.5, decision 0120); an icon that isn't a
 //! PNG is an error on every system.

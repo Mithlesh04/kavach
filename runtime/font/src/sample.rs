@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A tiny TrueType font made by our own code, for tests here and in
 //! `tools/cli`: 1,000 units to the em, and four glyphs: 0 (`.notdef`,
 //! empty), 1 a square for `A`, 2 an empty space for ` `, and 3 a square

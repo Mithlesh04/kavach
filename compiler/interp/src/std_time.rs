@@ -1,5 +1,9 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.time` (spec 14.4): clocks, sleeping, intervals and timers. A wait
-//! lets other tasks run (`tasks.rs`).
+//! lets other tasks run (`task_waits.rs`).
 
 use crate::interp::Interp;
 use crate::value::{Eval, Value};

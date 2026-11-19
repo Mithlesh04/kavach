@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Heap values for native code: text, lists, tuples, records, unions and
 //! boxed optionals (spec 6.1). Each object is reference-counted; changing a
 //! shared object copies it first (copy-on-write), so values never alias.

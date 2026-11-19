@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Channels in native code (spec 9.4), as in the interpreter
 //! (`compiler/interp/src/channels.rs`): values passed between tasks in
 //! order. `put` waits while the channel is full, `take` while it is

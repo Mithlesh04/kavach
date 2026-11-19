@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The parts of the LLVM module outside function bodies: declarations of
 //! runtime functions and intrinsics, text constants, the runtime's
 //! globals, and the C `main` that starts the program (as in decision

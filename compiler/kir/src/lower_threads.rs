@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `on threads(n) for …` (spec 4.9) in native code: each round a task of
 //! its own, as `spawn thread` makes it, at most `n` at once; before round
 //! `k` starts, round `k - n` is waited for, as `parallel_map` does (9.3).

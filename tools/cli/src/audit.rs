@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `kavach audit` (spec 10.5): list unsafe code, revealed secrets, calls
 //! of `audited fn`s (spec 10.15) and capability use across the program
 //! and everything it pulls in, so a review sees every place the safety

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The rewrite half of scalar replacement: once `scalarize` has
 //! chosen the locals to split, every use of them is rewritten to the
 //! per-field locals. See the module doc in `sroa.rs`.

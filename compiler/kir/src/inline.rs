@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Inlining small functions into their callers, so a call costs nothing.
 //! A call becomes a block: a `let` for each parameter, then a copy of the
 //! function's body, with the function's locals renumbered as new locals of

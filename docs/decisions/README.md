@@ -138,6 +138,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0130](0130-map-renamed-dict.md) | `Map` renamed `Dict` | Accepted |
 | [0131](0131-plain-strings-and-backtick-templates.md) | Plain strings in quotes, templates in backticks | Accepted |
 | [0132](0132-json-for-every-value.md) | JSON for every value and key | Accepted |
+| [0133](0133-license-headers.md) | A short license header in every source file | Accepted |
 
 ## Open decisions
 

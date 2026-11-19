@@ -1,3 +1,7 @@
+# Copyright (c) 2026 Mithlesh and the Kavach contributors
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 # Packages the VS Code extension (editors/vscode) as a .vsix, without npm:
 # the extension uses no npm packages, so the .vsix is its files plus two
 # small manifests. Writes .kavach/kavach-vscode-<version>.vsix.

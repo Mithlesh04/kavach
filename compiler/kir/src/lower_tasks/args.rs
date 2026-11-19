@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The arguments of a spawned call worked out before its task starts
 //! (Sakshi's S10): `spawn cores work_on(r.flag, 5)` gave the task all of
 //! `r` to read `r.flag` from, copying a big record for each task. A field

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A small HTTP/1.1 client for the model call: one POST on a connection
 //! that closes after it. It runs on the call's helper thread, so it may
 //! block; `wait` tries the non-blocking network steps until a deadline.

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Channels (spec 9.4): values passed between tasks, in order. Both ends
 //! share one channel. `put` waits while it is full, `take` while it is
 //! empty; the tasks waiting on a channel go on in the order they started

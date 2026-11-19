@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The standard library modules written in Kavach (spec 14), and which of
 //! them a program gets: only the ones it uses (decision 0024). A module is
 //! used when the program, or a module already in, writes `std.<name>`, or

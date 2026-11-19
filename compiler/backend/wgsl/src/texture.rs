@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Textures in a fragment fn (spec 15.3): a `Texture` parameter is a
 //! `texture_2d<f32>`, and `t.sample(u, v)` is `ksample`, which reads it
 //! through the pipeline's one sampler (`runtime/gpu/src/texture.rs`).

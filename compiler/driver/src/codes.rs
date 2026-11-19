@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The stable code of each message (spec 13.6): what kind of mistake it
 //! is, for tools and AI assistants that act on the kind, not the wording.
 //! The parser's messages are `syntax`, the size limits' `too-long` and a

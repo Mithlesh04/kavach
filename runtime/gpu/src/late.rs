@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The stop flags of the `map`s that didn't wait (decision 0061): a `map`
 //! whose list stays on the GPU goes on at once, and whether one of its
 //! items stopped is read later, at `finish`, oldest first.

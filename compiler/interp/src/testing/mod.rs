@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Generated tests (spec 11.2–11.4, 11.10): every function is called with
 //! generated arguments that meet its `require`; a panic, broken `ensure`
 //! or broken invariant is a failure, shrunk to the smallest input, saved

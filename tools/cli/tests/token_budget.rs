@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A `tokens` limit with many `ask`s at once (spec 8.3, "`ask`s under
 //! way"): 10 `ask`s started together under `tokens <= 200 per day`, each
 //! answer 70 tokens, each `ask` at most 3 × (1 + 30) = 93. How many run

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.image (spec 14.29, decision 0117): pictures as values. The runtime
 // decodes PNG and JPEG files to RGBA pixels and writes PNG
 // (`runtime/image`); this file gives them their type.

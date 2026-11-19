@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Checks on a thread of their own, so the server answers the editor
 //! (hover, completion, colors) while a file is being checked. What a
 //! check found comes back as an event among the editor's messages

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A list's items, and the most it may hold when it was made with
 //! `List.capacity(n)` (spec 2.2). Used as a `Vec`: the limit is checked
 //! where items are added.

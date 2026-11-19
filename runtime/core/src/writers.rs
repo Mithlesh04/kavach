@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Files written piece by piece (`fs.create_writer`, spec 14.3): open
 //! writers by number, for the interpreter and native code. Writes are
 //! gathered in memory and go to the file 64 KB at a time; `finish` writes

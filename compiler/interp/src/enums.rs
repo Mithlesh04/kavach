@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Enums (spec 2.6): `Type.all()`, `Type.parse(text)`, `Type.from(n)`,
 //! and `v.name()` and `v.value()` on a union value. The checker has made
 //! sure each is used only where it may be.

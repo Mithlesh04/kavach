@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! What an ended task leaves for whoever waits for it, when it didn't end
 //! with its value: the error of a task that was cancelled or panicked
 //! (spec 9.6, 9.1). And an error nobody reads is not lost (decision 0075):

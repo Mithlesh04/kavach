@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A `for` over a range the compiler knows (spec 1.8): its body's statements
 //! that always run see the loop's values, as the run will. If the first or
 //! the last value panics, the program always panics, and the first round

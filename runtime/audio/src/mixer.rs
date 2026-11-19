@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The mixer (decision 0114): every playing voice added into the
 //! device's buffer, on the real-time thread. It never allocates, locks or
 //! waits: a voice's volume, pan and stop are atomics the program sets,

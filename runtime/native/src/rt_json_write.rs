@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `json.stringify` and `json.of` in native code (spec 2.12, decision
 //! 0132): any value straight to JSON text, with no `Tree` in between.
 //! Every value has a form: dict keys as text, a `secret` field as

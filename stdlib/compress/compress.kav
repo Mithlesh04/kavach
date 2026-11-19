@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.compress (spec 14.21, decision 0103): bytes compressed and made
 // whole again. Compressing is built into the runtime
 // (`runtime/core/src/compress.rs`), by the format's number; this file

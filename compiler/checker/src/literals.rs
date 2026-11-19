@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Tagged literals (spec 10.15): a `literal` declaration's type and
 //! checker, and each `sql"…"`, typed as its tag's type and kept, with its
 //! text, for the checker to run on once the program is checked.

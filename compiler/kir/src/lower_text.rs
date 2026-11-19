@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Text methods (spec 14.2) that each lower to one op: those that came
 //! from `std.text` (`capitalize`, `words`, padding, …) and those added
 //! with them. `pad_left` and `pad_right` fill with a space when `fill:`

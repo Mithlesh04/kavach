@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The speakers (decision 0114): the system's default output, opened at
 //! the first `play` on a thread of its own, which keeps the `cpal` stream.
 //! The stream's callback mixes on the real-time thread. New voices reach

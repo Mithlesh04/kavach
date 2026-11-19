@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `a ** b` in native code (spec 1.8): floats through the op `math.pow`
 //! uses, whole numbers through `IntPow`, which panics when the result
 //! doesn't fit the type, as `*` does.

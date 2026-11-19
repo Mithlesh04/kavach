@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.audio` in native code (spec 14.27, decision 0114), from
 //! `kavach_runtime_audio`, as the interpreter does: sounds and voices by
 //! number. An entry of its own, so only a program with sound links

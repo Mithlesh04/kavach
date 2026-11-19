@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Text and lists of text, as in the Cranelift backend
 //! (`cranelift/src/text_lists.rs`, `cranelift/src/data.rs`): text is a
 //! runtime object; a list of text keeps each item in two words, short

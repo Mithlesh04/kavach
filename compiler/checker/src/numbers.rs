@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Number bounds (spec 2.9, decision 0115): `T: Number` and `T: Floating`
 //! let generic code do arithmetic on `T`. A literal may be a `T`
 //! (`infer.rs`), `T(x)` converts a number to `T`, `std.math` takes a

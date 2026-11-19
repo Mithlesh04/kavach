@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! TLS connections (decision 0021): rustls with ring. A client checks the
 //! server against Mozilla's root certificates, built in, and any roots
 //! the program adds; a server proves who it is with its certificate, and

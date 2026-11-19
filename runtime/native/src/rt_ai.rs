@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `ask<T>(prompt)` in native code (spec 8.4): the model call of
 //! `kavach_runtime_net::ai`, the interpreter's too, then the answer
 //! decoded as a `T` like `json.decode<T>`, and asked again (twice at most)

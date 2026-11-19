@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A client certificate's names, for mutual TLS (spec 14.10, decision
 //! 0099): the common name and the DNS and URI subject-alternative names of
 //! the certificate the handshake already checked. Nothing here decides

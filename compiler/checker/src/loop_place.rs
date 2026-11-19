@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `on cores` and `on threads` before a `for` (spec 4.9): where a loop's
 //! rounds run. An `on cores` loop must give the one-core result, so each
 //! round may write only its own slot (`out[i]`) or row (`grid[i * w + j]`

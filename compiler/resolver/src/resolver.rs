@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Scopes, definitions and lookups.
 
 use crate::naming::{mixed_scripts, pascal_case_fix, snake_case_fix};

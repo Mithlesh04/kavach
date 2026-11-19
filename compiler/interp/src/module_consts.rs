@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Module constants (spec 1.13): `const count = 10` at the top level of a
 //! file. Each is worked out the first time it is read and kept; `main`'s
 //! run works them all out first, so a panic in one comes before `main`.

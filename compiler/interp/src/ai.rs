@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `ask<T>(prompt)` (spec 8.4): the model's answer as a checked `T`. The
 //! answer's shape is a JSON Schema built from `T` (`kavach_driver::
 //! ask_schema`); the reply is decoded like `json.decode<T>`, and asked

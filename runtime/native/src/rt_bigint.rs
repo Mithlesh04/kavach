@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `BigInt` in native code (spec 2.1, decision 0041). It shares the calls
 //! of `Decimal` (`rt_numbers.rs`): each one sees which number it holds.
 //! Messages must match the interpreter (`compiler/interp/src/bigint.rs`).

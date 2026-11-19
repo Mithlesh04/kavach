@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Copying a value for a task that runs at the same time as others
 //! (decision 0020). Reference counts are not atomic, so two threads
 //! running at once must never hold the same object: a task that runs

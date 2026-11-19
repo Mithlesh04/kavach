@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A project's index (spec 13.9): saved in `.kavach/index`, used while
 //! no file changes, rebuilt when one does; names may carry their module.
 

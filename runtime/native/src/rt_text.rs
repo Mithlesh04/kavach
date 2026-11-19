@@ -1,7 +1,11 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! More methods of text and lists (spec 14.2). Results must match the
 //! interpreter (`compiler/interp/src/std_lib.rs`).
 
-use crate::display::compare;
+use crate::equality::compare;
 use crate::heap::{alloc_slots, items_of, new_str, obj, release, retain, shape, str_of, with_str};
 use crate::rt::type_of;
 use crate::rt_data::optional;
@@ -227,7 +231,7 @@ pub fn list_op(op: RtOp, a: i64, b: i64, code: i64) -> i64 {
         RtOp::ListIndexOf => {
             let at = slots
                 .iter()
-                .position(|s| crate::display::equal(*s as i64, b, item));
+                .position(|s| crate::equality::equal(*s as i64, b, item));
             crate::heap::release_slot(b, item);
             optional(at.map(|i| i as i64), code)
         }

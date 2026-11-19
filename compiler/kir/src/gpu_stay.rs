@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! GPU results that stay on the GPU until the CPU reads them (spec 15.2,
 //! decision 0055). A local that a GPU `map` sets (`xs = xs.map(step)`)
 //! may hold a list whose items are only in GPU memory. Its `map`s become

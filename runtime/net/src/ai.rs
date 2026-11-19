@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The model call behind `ask<T>` (spec 8.4), shared by the interpreter and
 //! native code: one request to Anthropic's Messages API with structured
 //! outputs (`output_config.format`), so the reply's text is JSON in the

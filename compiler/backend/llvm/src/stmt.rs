@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Statements: `let`, loops, `return`, `print` and contracts. Loops keep
 //! the semantics of the Cranelift backend (`cranelift/src/loops.rs`): a
 //! range's end is computed once, and `..=` stops before `+ 1` overflows.

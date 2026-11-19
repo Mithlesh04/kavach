@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `Int(text)` and friends in native code (spec 2.1): text read as a
 //! number, `Bool` or `Char`. A literal was checked while compiling, so it
 //! becomes its value here; other text is read when the program runs, a

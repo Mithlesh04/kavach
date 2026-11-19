@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.audio (spec 14.27, decision 0114): sound, and the microphone. The
 // runtime keeps the sounds and recordings and mixes the voices on the
 // device's real-time thread (`runtime/audio`), by number; this file gives

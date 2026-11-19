@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.app` in native code (spec 14.30, decision 0118): the program's
 //! folders and crash reports from `kavach_runtime_core::app`, and the
 //! dialogs from `kavach_runtime_dialog`, as the interpreter does. The

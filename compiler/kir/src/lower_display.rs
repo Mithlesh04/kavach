@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `Display` (spec 1.11): at its start, a program registers each type's
 //! `display` with the runtime (`DisplayRegister`), which shows the type's
 //! values as it gives (`runtime/native/src/rt_display.rs`).

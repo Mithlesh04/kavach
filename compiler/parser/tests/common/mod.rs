@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Prints syntax trees as short S-expressions, e.g. `(+ 1 (* 2 3))`, so
 //! tests can compare a whole tree in one line.
 // Each test file uses a different subset of these helpers.

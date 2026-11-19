@@ -20,9 +20,11 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/c_abi.rs` | How this machine's C passes a `struct` by value (Windows x64, x86-64 System V), and the descriptor the backends follow; `src/c_abi/tests.rs` checks the ABI documents' examples |
 | `src/types.rs` | KIR types for checker and written types; the shape table |
 | `src/written_types.rs` | The KIR type of a type written in the source |
-| `src/lower.rs` | The file, functions, methods, contracts, optional wrapping |
+| `src/lower.rs` | The file: the lowering state, its items, functions and methods, `main`, and the finished program |
+| `src/lower_body.rs` | What lowering every body uses: lines and text, locals and names, coercion (optional wrapping, interface boxes), blocks, `ensure` checks |
 | `src/lower_stmt.rs` | Statements: `const`, assignment to fields, loops |
-| `src/lower_expr.rs` | Expressions, `if`, `if let`, `??` |
+| `src/lower_expr.rs` | Expressions, names and text interpolation |
+| `src/lower_if.rs` | `if`, `if let`, `match` and blocks, as values or as statements |
 | `src/lower_calls.rs` | Calls to named functions, and their arguments |
 | `src/lower_methods.rs` | Method calls: user methods, through interface values (2.15), and fields holding functions (3.4) |
 | `src/lower_c.rs` | C functions (`extern c`, spec 10.7): a function with no body, called as the C symbol of its name |

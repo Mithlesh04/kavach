@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.font` in native code (spec 14.31, decision 0121), from
 //! `kavach_runtime_font`, as the interpreter does. An entry of its own,
 //! so only a program with fonts links the shaper (decision 0024).

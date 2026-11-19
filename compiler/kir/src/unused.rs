@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Values nobody reads are not computed (spec 1.4): `const [head,
 //! ...rest] = names` with `rest` unused makes no list. A `let` whose local
 //! is never read is dropped when its value is quiet: it changes nothing,

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Packed executables (spec 10.5, decision 0081). A packed file is the
 //! starter (`kavach-unpack`), then the compressed program, then a
 //! trailer:

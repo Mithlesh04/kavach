@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `b.read<T>(at, big_endian)`, `Bytes.of<T>(n, big_endian)` and
 //! `Bytes.of_list<T>(xs, big_endian)` (spec 2.13), each an op of the bytes
 //! entry (`runtime/native/src/rt_bytes.rs`). `read`'s result type names

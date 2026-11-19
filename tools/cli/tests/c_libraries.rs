@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Libraries loaded while running (`extern c library`, spec 10.7): a
 //! Kavach library built with `kavach build --lib` is loaded by another
 //! program, in memory and built with each backend; a function it lacks

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Small blocks for everything the runtime and the compiler allocate: a
 //! list's header, a short buffer, a map's table. Each thread takes them from
 //! a free list per size, or cuts them from a span of its own, with no lock

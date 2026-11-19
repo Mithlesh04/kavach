@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Fonts for `std.font` (spec 14.31, decision 0121): OpenType and
 //! TrueType files read through `ttf-parser`, text shaped through
 //! `rustybuzz`, and glyphs drawn as distances into an atlas by our own

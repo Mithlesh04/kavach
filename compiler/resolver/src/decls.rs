@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Declarations. Pass 1 (`collect`) records every top-level name, so they
 //! can be used before they appear (spec 1.4). Pass 2 (`item`) resolves the
 //! inside of each declaration.

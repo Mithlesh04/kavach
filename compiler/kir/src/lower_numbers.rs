@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Lowering methods of numbers (spec 14.2): `abs`, `min`, `max`, `clamp`,
 //! `div_floor` and `mod`, and the zero of a number type.
 

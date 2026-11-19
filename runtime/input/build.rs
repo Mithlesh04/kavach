@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! SDL3 is built from its source with CMake (decision 0124). Without
 //! CMake, stop here and say how to get it on this system, instead of
 //! failing deep inside SDL's build.

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Reading a map in place in generated code: `m[k] ?? d` for integer
 //! keys, and `m[k]` and `m[k] ?? d` for text keys, with no call through
 //! the runtime's generic entry; a text key that is an item of a list of

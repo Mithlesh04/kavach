@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.process` in native code (spec 14.23, decision 0105), from
 //! `kavach_runtime_process`, by the child's number, as the interpreter
 //! does (`compiler/interp/src/std_process.rs`). Waiting for a child lets

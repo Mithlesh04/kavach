@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `cli.parse<T>()` in native code (spec 14.6). The runtime reads the
 //! arguments and converts each to its field's type (`CliParse`); the
 //! compiled code then fills in defaults, which are Kavach expressions,

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! An error nobody reads is not lost (spec 9.1, decision 0075): when the
 //! last holder of a task that failed lets it go and no `.wait()` read its
 //! error, the error is printed to standard error, with where the task was

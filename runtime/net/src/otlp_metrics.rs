@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Metrics as OTLP over HTTP with JSON (spec 14.12, decision 0107):
 //! `log.count`, `log.gauge` and `log.histogram` are kept here, and a
 //! thread of their own sends them every 10 seconds

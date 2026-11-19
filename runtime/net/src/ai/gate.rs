@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The gate every `ask` of the program passes (spec 8.4), and the waits
 //! between tries. Many `ask`s at once meet the provider's limit on calls
 //! at the same time: 300 started together, each sent again after the

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Guard inlining: a function that starts with a quick exit, such as
 //! `if n < 2 { n } else { … }`, has that test copied into each call left
 //! after inlining: `f(a)` becomes `if a < 2 { a } else { f(a) }`. The

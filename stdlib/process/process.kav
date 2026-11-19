@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.process (spec 14.23, decision 0105): other programs, run with no
 // shell, as trees that end together. The runtime starts them and reads
 // their output (`runtime/process`), by the child's number; this file

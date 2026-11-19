@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Sound played from its file a piece at a time (`audio.stream`, spec
 //! 14.27): long music without holding it whole in memory. A decoder
 //! thread reads the file and fills a ring of about a second; the mixer's

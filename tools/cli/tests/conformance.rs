@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The conformance runner (tests/conformance/README.md): checks, runs or
 //! tests every conformance file and compares the result with its header.
 //! Also runs the examples, which must succeed.

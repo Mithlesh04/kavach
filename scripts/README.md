@@ -5,7 +5,8 @@ Helper scripts for developing Kavach itself: building everything, running all te
 | Script | Does |
 |---|---|
 | `run-benchmarks.sh` / `run-benchmarks.ps1` | Builds and times [benchmarks/loops](../benchmarks/loops/README.md) in Kavach and C++ (`g++ -O2`). Linux or WSL. |
-| `check-repo.sh` / `check-repo.ps1` | Fails on files over 500 lines and broken relative Markdown links, in the files git keeps (what `.gitignore` leaves out is skipped). Run before finishing any change. |
+| `check-repo.sh` / `check-repo.ps1` | Fails on files over 500 lines, broken relative Markdown links, and source files without the license header ([decision 0133](../docs/decisions/0133-license-headers.md)), in the files git keeps (what `.gitignore` leaves out is skipped). Run before finishing any change. |
+| `add-license-headers.sh` / `add-license-headers.ps1` | Adds the license header, with this year, to every source file `check-repo` reports without one, or to the files named. Never changes a header already there ([decision 0133](../docs/decisions/0133-license-headers.md)). |
 | `package-vscode.sh` / `package-vscode.ps1` | Packages the VS Code extension as `.kavach/kavach-vscode-<version>.vsix`, without npm ([editors/vscode](../editors/vscode/README.md#install)). |
 | `package-kavach.sh` / `package-kavach.ps1` | Packages an installable Kavach for this machine as `.kavach/dist/kavach-<version>-<system>-<arch>.tar.gz` (`.zip` on Windows) with a `.sha256`: `bin/` (`kavach`, `kv`), `lib/` (the runtime library), `llvm/` (`opt`, `llc`) ([decision 0080](../docs/decisions/0080-installing-kavach.md)). Needs rustup's `llvm-tools`. |
 | `package-speed-kit.sh` / `package-speed-kit.ps1` | Packages the speed kit as `.kavach/dist/kavach-speed-<version>-<system>-<arch>.tar.gz` (`.zip` on Windows): each benchmark with a C++ twin that runs alone, built in Kavach and C++, their source, and [`compare`](../tools/speedkit/README.md). |

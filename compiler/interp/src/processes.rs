@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `spawn process f(args)` (spec 9.8, decision 0075) in the interpreter.
 //! The parent writes the arguments as JSON and runs the program again in
 //! a child (`runtime/core/src/processes.rs`), which runs only that call:

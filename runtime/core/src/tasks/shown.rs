@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The task panics printed so far (spec 9.1): a panic is printed when it
 //! happens, and `.wait()` gives it as the error `panicked: … at …`. When
 //! that error ends `main`, the last line says the panic above ended the

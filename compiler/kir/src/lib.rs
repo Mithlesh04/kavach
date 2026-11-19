@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! KIR, the Kavach IR: a small, typed, structured form of a checked
 //! program. Code generators read KIR, not the syntax tree.
 //!
@@ -32,6 +36,7 @@ mod lower_ai;
 mod lower_arena;
 mod lower_assert;
 mod lower_base64;
+mod lower_body;
 mod lower_bytes;
 mod lower_bytes_text;
 mod lower_c;
@@ -61,6 +66,7 @@ mod lower_fn_errors;
 mod lower_generic;
 mod lower_gpu;
 mod lower_guard;
+mod lower_if;
 mod lower_iface;
 mod lower_inout;
 mod lower_json;

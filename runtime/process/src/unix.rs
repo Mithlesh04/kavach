@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A program's tree on Linux and macOS (decision 0105): a process group
 //! of its own, which `killpg` ends whole. `wait4` gives the program's end
 //! with its processor time and largest resident set, its own and those of

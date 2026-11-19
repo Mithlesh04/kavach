@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Standard library functions carried out by one op each family, the
 //! function chosen by its number in operand `c`: `std.crypto` (spec
 //! 14.19, `RtOp::Crypto` and `CryptoFails`) and a WebSocket handshake's

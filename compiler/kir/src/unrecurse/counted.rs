@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A recursion that counts one parameter down to zero, as a counted loop:
 //! `fn down(n, s) = if n == 0 { base } else { each + down(n - 1, s) }`
 //! becomes

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A tuple made only to be taken apart: a function with `inout`
 //! parameters gives back a tuple of its value and the parameters' last
 //! values (`lower_inout.rs`), which the caller reads item by item. Once

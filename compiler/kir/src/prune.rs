@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Only functions reachable from the entry are kept (decision 0024): a
 //! program pays in compile time and size only for the functions it calls,
 //! not for every function of every module it has.

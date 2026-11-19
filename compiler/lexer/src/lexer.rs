@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The main loop: spaces, comments, line breaks, names and punctuation.
 //! Numbers and characters are in `literals.rs`, strings in `strings.rs`.
 

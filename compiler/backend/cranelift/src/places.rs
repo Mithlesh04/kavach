@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Places: a local, or an item or field inside one, reached without
 //! changing any local. Its value can be read without taking a reference,
 //! because the local keeps it alive; so can a field of the closure a

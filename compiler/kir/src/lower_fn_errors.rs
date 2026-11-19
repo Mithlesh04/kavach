@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Function values that can fail, in native code (spec 3.4, 5.2,
 //! decision 0085). A function type that can fail is a `Shape::Func` with
 //! an error type, and its closures return a value and an error, as a

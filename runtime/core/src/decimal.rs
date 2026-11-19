@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Exact base-10 numbers for money (spec 2.1): `0.1 + 0.2 == 0.3`.
 
 use std::cmp::Ordering;

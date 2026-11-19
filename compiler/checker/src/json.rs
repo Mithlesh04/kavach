@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `Json` in the checker (spec 2.12): literals that become a `Json` where
 //! one is expected, and which types can be read back from JSON. Every
 //! value can be written as JSON (decision 0132).

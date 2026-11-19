@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `kavach fmt` fixes names (spec 1.5): a declaration in the wrong style
 //! (`orderCount`, `order_status` for a type) is renamed, with every use.
 //! The resolver links most uses to their declaration; fields and methods

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! How much work a kernel does per item, roughly: the runtime sends a
 //! `map` to the GPU only when the work is worth starting it for (spec
 //! 15.2). One unit is one operation; a loop counts its body once per

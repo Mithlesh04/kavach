@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.net` (spec 14.10): TCP with the code in `runtime/core`, the same as
 //! native code (`runtime/native/src/rt_net.rs`). A wait lasts until the
 //! socket is ready (decision 0046), or a short sleep for the sockets the

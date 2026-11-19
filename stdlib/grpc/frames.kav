@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // The framing of gRPC for std.grpc: each message behind a 5-byte
 // prefix (not compressed, then its length), the status trailers, and why
 // a call failed. Public so std.grpc can use it from its client and its

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `arena { … }` (spec 6.3): it waits for the tasks spawned in it, which
 //! may use its values, before it ends, as native code does
 //! (`compiler/kir/src/lower_arena.rs`).

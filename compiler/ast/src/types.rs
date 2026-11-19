@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Types as written in source: `Int`, `[Order]`, `[String: Int]`, `User?`.
 
 use crate::{Ident, Path, Span};

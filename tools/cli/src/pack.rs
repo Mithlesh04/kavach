@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `kavach build --compress` and `--compress=max` (spec 10.5, decision
 //! 0081): the built executable, packed behind the starter of
 //! `runtime/unpack`.

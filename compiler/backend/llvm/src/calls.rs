@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Calls: of program functions and through function values. A closure's
 //! function borrows its closure (`kavach_kir::borrows`): the caller keeps
 //! its reference while the call runs, and lets go of a closure it made

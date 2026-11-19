@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Serial ports in native code (spec 14.18, decision 0068), from
 //! `kavach_runtime_core::serial`, by the port's number. A module and entry
 //! of its own, so only a program that uses them links `serial2` (decision

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // The VS Code side of the Kavach language server (`kavach lsp`, spec 10.4):
 // errors as you type, hover, go to definition and completion for `.kav`
 // files. The

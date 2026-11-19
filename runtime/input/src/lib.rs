@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Gamepads for `std.input` (spec 14.26, decision 0124), through SDL3 on
 //! a thread of the runtime's own. It keeps each connected pad's state,
 //! gyroscope included, which `pads` copies, and gives each change to every

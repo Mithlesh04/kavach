@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The run-time library of native Kavach programs (decision 0016): heap
 //! values with reference counting, printing, panics and errors.
 //!
@@ -14,6 +18,7 @@
 
 mod capacity;
 pub mod display;
+pub mod equality;
 pub mod flat;
 pub mod hashing;
 pub mod heap;

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! What a library exports, and its C header (spec 10.10, decision 0026):
 //! every `pub fn` of the library's own file that C can call, under the
 //! name `<package>_<fn>`; `<package>_free` for the text it gives; and

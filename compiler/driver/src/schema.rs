@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The JSON Schema `ask<T>` sends the model (spec 8.4), built from `T`,
 //! with the doc comments of types and fields as descriptions. Structured
 //! outputs need an object at the top, with every object closed

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Errors as values (spec 5): `try`, `fail`, `return`, and which error
 //! types fit together; plus the `unsafe` opt-in (spec 6.4).
 

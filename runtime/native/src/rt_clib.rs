@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Libraries loaded while running (`extern c library`, spec 10.7): a
 //! library loaded by the system's own loader, `dlopen` or
 //! `LoadLibraryW`, and its functions found by name. A library stays

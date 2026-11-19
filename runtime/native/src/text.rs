@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The contents of a text value. Short text (up to `INLINE` bytes, which
 //! covers most words, names and keys) is stored inside the object itself;
 //! longer text in a heap buffer. So splitting text into a million words

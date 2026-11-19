@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `Display` in native code (spec 1.11), as in the interpreter
 //! (`compiler/interp/src/shown.rs`): the program registers each type's
 //! `display` at its start (`DisplayRegister`), and `display.rs` shows the

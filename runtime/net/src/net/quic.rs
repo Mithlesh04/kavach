@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! QUIC client connections (decision 0022): `quinn-proto`'s state machine,
 //! with no I/O of its own, driven by a UDP socket and the caller's
 //! try-and-wait loop, as TCP is. Every try first "pumps": it takes in the

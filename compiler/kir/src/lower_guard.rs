@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! An agent's guarded call of a capability method in native code (spec
 //! 8.3, "The order of the checks"): the limits, then who must approve,
 //! then the implementation, with the audit log written by the runtime

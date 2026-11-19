@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `list.map(f)` on the GPU (spec 15.2, decision 0044): the runtime side
 //! of `GpuMap`. It gives the mapped list, or 0 (`none`) when the CPU
 //! should run the `map`: no kernel, a short list, no GPU, or

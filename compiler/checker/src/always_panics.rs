@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Arithmetic that always panics (spec 1.8): a whole-number division or
 //! remainder by a `0` the compiler knows, and `+`, `-` or `*` of values
 //! it knows (literals, `const`s set to them, and `let`s where nothing may

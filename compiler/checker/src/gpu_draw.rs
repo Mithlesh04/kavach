@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `gpu vertex fn` and `gpu fragment fn` (spec 15.3): what each takes and
 //! gives; `gpu.pipeline(v, f)`, typed by what `v` takes and whether `f`
 //! takes textures; and the arguments of `frame.draw`, which must give what

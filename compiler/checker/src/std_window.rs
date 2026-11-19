@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The signatures of `std.window`'s built-in functions (spec 14.22):
 //! what `window.open` and the methods of `AppWindow`, written in Kavach,
 //! are built on, by the window's number; `std.input`'s (spec 14.26),

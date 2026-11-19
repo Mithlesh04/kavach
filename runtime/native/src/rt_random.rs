@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Random bits for `std.random` in native code (spec 14.15), from
 //! `kavach_runtime_net::random`. A module and entry of its own, so only a
 //! program that uses random numbers links the generator (decision 0024).

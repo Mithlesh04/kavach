@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Warnings: code that works but rarely means what it says (spec 1.8,
 //! 3.3, 5.2), on the right line, and none where the code is fine.
 

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! What several test targets share: the interpreter's run of a test
 //! program, and a watch that names a program still running after a
 //! minute, so a run that hangs says where.

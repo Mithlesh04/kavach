@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Labeled loops (spec 4.6, decision 0054): `break outer` and
 //! `continue outer` from inside an inner loop. KIR's `Break` and
 //! `Continue` leave only the innermost loop, which every pass and backend

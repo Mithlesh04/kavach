@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! KTX2 files of compressed textures (spec 14.24): blocks a GPU reads as
 //! they are, BC on desktops and ASTC on phones, 4 to 8 times smaller in
 //! its memory than RGBA. Read here, with no library: its header, then

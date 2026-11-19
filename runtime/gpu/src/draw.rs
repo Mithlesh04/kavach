@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Drawing into windows (spec 14.24, decision 0106), by number, as the
 //! interpreter and native code call it. A screen is a surface on a
 //! window, made from the instance the program's device came from and

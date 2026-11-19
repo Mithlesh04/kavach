@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Agents (spec 8.2, 8.3, 8.8): `Agent.start(…)`, its handlers, and the
 //! capability calls they make. A handler runs with its agent on a stack,
 //! so every function it calls reaches the same implementations; a call

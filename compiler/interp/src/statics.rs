@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Functions of built-in types, called on the type's name: `Bytes.of` and
 //! `Bytes.of_list` (spec 2.13), `Float.from_bits`, `TextBuilder.capacity`
 //! (2.18), `Set.of`, and `capacity` of lists, maps, sets and rings (2.2).

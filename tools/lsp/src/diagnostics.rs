@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Checking a document, and its errors and warnings as LSP diagnostics.
 //! The messages are the compiler's own, so they read the same as in
 //! `kavach check`.

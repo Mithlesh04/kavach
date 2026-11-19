@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Where `std.log` writes (spec 14.12), shared by the interpreter and
 //! native code: standard output, and a file that starts afresh when it
 //! grows past a size, as `[log]` in `kavach.toml` sets.

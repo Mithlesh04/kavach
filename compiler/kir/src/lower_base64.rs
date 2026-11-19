@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.base64` (spec 14.20): `base64.encode(data, url, pad)` and
 //! `base64.decode(text, url)`, each an op of the runtime's own entry
 //! (`runtime/native/src/rt_base64.rs`), its flags given in place.

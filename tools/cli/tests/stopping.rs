@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Finishing before a stop (spec 5.8 and 14.11, decision 0088): a program
 //! holding its stop finishes its work after `SIGTERM`, and a server
 //! answers the request under way before the program ends, in the

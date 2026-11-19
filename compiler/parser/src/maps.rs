@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Dict literals, written with braces (spec 2.2, decision 0129):
 //! `{"asha": 31}`, `{name: "Asha"}` (a plain name is that text),
 //! `{[key]: 1}` (the value of `key`), and `{:}`, the empty dict. Where a

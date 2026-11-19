@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Durable agents in the interpreter (spec 8.5, decision 0025): events
 //! and calls go to the agent's journal (`kavach_runtime_core::journal`),
 //! and the events a crash left unfinished run again when it starts.

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! KIR function bodies as WGSL functions. Every value an expression
 //! needs statements for (an `if` with a value, a block) goes through a
 //! temporary declared at the top of the function, so expressions stay

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The machine's facts on Windows (spec 14.25, decision 0110): the
 //! system's version and the processor from the registry (`registry.rs`),
 //! the rest from system calls, each `unsafe` with its `SAFETY:` comment.

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Text views and builders (spec 2.18): the methods of `StrView` and
 //! `TextBuilder`, and `s.view()` on a `String`.
 

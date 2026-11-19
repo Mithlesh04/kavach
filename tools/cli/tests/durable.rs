@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Durable agents (spec 8.5, decision 0025): a handler stopped half way
 //! runs again when the agent starts, and a call its journal already has
 //! does not run twice.

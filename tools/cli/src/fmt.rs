@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `kavach fmt [file.kav] [--check]` (spec 10.5, 12.6): one style, no
 //! options. Without a file, it formats every `.kav` file of the project.
 

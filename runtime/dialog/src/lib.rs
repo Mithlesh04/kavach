@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The system's dialogs for `std.app` (spec 14.30, decision 0118),
 //! through `rfd`: open, save, folder, message and confirm. Each waits for
 //! the person. On a machine with no screen, `rfd` gives what cancelling

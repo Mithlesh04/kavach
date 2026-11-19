@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Durable agents and time (spec 8.5, decision 0062): a run after a
 //! crash sees the time the first run saw, and its waits (`sleep`, `every`,
 //! `.timeout`) end when they would have, not a whole wait later.

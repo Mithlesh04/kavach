@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Chained comparisons (spec 1.8, decision 0040): `a < b <= c` compares
 //! each pair of neighbours, so every operand has the type of the first.
 

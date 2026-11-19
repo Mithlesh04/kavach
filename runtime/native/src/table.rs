@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The hash table behind maps and sets. Entries stay in insertion order
 //! (keys and values in turn, spec 2.2); an open-addressing index finds a
 //! key's entry in a few probes however big the map is. Each entry's hash is

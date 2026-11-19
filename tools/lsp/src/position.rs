@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Positions. The compiler counts bytes from the start of a file; the
 //! Language Server Protocol counts lines and, within a line, UTF-16 code
 //! units (its default encoding).

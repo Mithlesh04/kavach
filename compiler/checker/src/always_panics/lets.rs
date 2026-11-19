@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A `let` whose value is known where it is read (spec 1.8): set to a known
 //! value, with nothing between that could have changed it another way. A
 //! branch, a loop or a lambda may or may not run, so what one sets is known

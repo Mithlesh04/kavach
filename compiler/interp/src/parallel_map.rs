@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `items.parallel_map(f, max: m)` (spec 9.3) in the interpreter: a task
 //! for each item, then each result in order.
 

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Self-recursion into a loop: `fn down(n) = if c { base } else { e +
 //! down(step) }` sums `e` in an accumulator instead of a call per round,
 //! the transformation C++ compilers do. The loop is the fast half of a

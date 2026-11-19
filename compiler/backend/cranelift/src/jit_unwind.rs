@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Unwind tables for code the JIT makes (`kavach run --native`; decision
 //! 0065, step 3), as `unwind.rs` writes them into object files: so a
 //! panic unwinds through compiled Kavach code to the start of its task.

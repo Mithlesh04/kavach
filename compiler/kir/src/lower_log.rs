@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Logging in native code (spec 14.12): each `log_write` of `std.log`,
 //! with its event's lowest level worked out when compiling, and the
 //! `[log]` settings handed to the runtime at the start of `main`;

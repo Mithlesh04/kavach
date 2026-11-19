@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! C functions (spec 10.7) and raw memory (6.4): native code calls them,
 //! as `kavach run --native` and as an executable from `kavach build`; the
 //! interpreter stops at the first call and says to run the program

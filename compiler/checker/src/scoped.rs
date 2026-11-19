@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Blocks given to a call (spec 4.8): `log.span(name) { … }` and
 //! `random.seeded(seed) { … }`. The call is checked here; the block is a
 //! plain block, whose value is the expression's.

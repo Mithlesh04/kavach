@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.reflect` (spec 14.32): the compiler worked each answer out while
 //! compiling. `x.has_member(name)` is its `Bool`; `T.members()` and
 //! `m.members()` read its JSON with `std.reflect`'s `members_from`.

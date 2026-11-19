@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Operators for a program's own types (spec 2.16, decision 0109): a type
 //! that implements `Add`, `Sub`, `Mul`, `Div`, `Rem`, `Neg`, `MatMul` or
 //! `Comparable` gets the operator, which calls its method. Each use is

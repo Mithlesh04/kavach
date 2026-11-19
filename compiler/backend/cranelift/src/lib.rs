@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Native code generation with Cranelift (decision 0005): KIR → machine
 //! code, either compiled in memory and run (JIT) for `kavach run --native`,
 //! or written to an executable for `kavach build` (decision 0016).

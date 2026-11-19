@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Reading the Windows registry (spec 14.25, decisions 0110 and 0112):
 //! text and numbers by key and name, and a key's subkeys. Each `unsafe`
 //! call has its `SAFETY:` comment.

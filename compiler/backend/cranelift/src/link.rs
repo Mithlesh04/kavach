@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Linking an object file with the runtime library into an executable,
 //! or a shared library (decision 0026), using the platform's linker
 //! (decision 0016): MSVC `link.exe` on Windows, the C compiler driver

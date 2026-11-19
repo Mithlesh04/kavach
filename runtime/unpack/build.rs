@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Compiles the starter of packed programs (`starter/starter.c`, with the
 //! vendored tinf and xz-embedded decoders) into a small executable that
 //! the library embeds (`STARTER`, decision 0081), with the C compiler

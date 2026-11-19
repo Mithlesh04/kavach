@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Approvals that wait (spec 8.3, decision 0072): a request a person
 //! answers later, maybe after the program has restarted. Each request is
 //! a file in the agent's folder, `approvals/<id>.json`; an answer is

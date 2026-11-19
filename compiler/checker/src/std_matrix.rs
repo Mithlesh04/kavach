@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The signatures of `std.matrix`'s built-in functions (spec 2.17,
 //! decision 0111): the work on a matrix's flat list of items, written
 //! `matrix.product_id<T>(…)` inside `Matrix<T>`'s own methods, so the item

@@ -37,3 +37,5 @@ After cloning, install the commit hook once: `sh scripts/install-hooks.sh` (or `
 ## License of contributions
 
 When you send a contribution to Kavach, you agree that it can be used under both licenses, Apache-2.0 and MIT, with no extra terms. If you don't want that, say so when you send it. "Contribution" means what it means in the Apache-2.0 license.
+
+Every source file starts with a short license header: copyright, SPDX license and links. `sh scripts/add-license-headers.sh` (or `.ps1`) adds it to new files ([decision 0133](docs/decisions/0133-license-headers.md)).

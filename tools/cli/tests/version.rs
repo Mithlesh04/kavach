@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! What built a program (spec 10.5): `kavach --version`, `kavach version
 //! <program>`, and `--version` answered by the program only when `[build]
 //! version_flag` says, however it runs.

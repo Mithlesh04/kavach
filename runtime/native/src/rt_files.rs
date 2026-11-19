@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Streamed reads in native code (spec 14.3), as in the interpreter
 //! (`compiler/interp/src/files.rs`): `fs.lines(path)` and `fs.chunks(path,
 //! size)` read as a `for` loop goes. Reading is an effect, so a task

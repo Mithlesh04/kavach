@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Many `ask`s at once against a provider that takes only a few calls at
 //! the same time (spec 8.4): every one gets its answer, through the gate
 //! all of a program's `ask`s share, in the interpreter and native code.

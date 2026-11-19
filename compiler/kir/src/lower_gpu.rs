@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `list.map(f)` that may run on the GPU (spec 15.2). The runtime's
 //! `GpuMap` gives the GPU's list, or `none` when the CPU should do it
 //! (a short list, no GPU, `KAVACH_GPU=off`); then the same `map` runs

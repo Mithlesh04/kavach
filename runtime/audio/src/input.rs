@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The microphone (spec 14.27): the system's default input, opened by each
 //! `listen` on a thread of its own, which keeps the `cpal` stream until
 //! the recording stops. The stream's callback writes into a ring made

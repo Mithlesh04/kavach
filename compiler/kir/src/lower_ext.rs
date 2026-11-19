@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The type a method's `self` has, and methods added to lists, maps, sets
 //! and rings with `extend<T> [T]` (spec 2.5). Those are made once per item
 //! type when called, as generic functions are (`lower_generic.rs`).

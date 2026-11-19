@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! What a running task's calls set up, in native code, as the
 //! interpreter keeps it (`fs_scopes`): the folders of `uses Fs("…")`
 //! (spec 8.1), the program of `uses Process("…")` (14.23), and the spans

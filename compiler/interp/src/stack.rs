@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! How deep interpreted calls may go (spec 3.8): the interpreter recurses
 //! on its thread's stack, so it measures how much of the stack is in use
 //! instead of counting calls.

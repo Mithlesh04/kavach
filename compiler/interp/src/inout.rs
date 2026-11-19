@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `inout` arguments (spec 3.9): lent to a call that can't fail, so a
 //! list or map in them changes in place there, and written back after.
 

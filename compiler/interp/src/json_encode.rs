@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Values as JSON (spec 2.12, decision 0132): every value has a form.
 //! `json.of` and `json.stringify` hide `secret` fields and may write big
 //! numbers as text; the agent journal and other processes keep values

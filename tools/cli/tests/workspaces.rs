@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Workspaces and packages in a folder of a repository (spec 10.12 and
 //! 10.14, decision 0091): members share one `kavach.lock` and one
 //! `kavach_modules/` at the root, use each other by `path`, and `check`

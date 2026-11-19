@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The signatures of `std.log`'s built-in functions (spec 14.12): what
 //! its metrics, `trace_id` and `traceparent`, written in Kavach, are
 //! built on. Like logging, they need no capability.

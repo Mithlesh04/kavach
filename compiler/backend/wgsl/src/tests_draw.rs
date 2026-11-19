@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Depth, textures and indices (spec 15.3, 14.24), written and drawn
 //! off-screen. The drawing tests are skipped on a machine with no GPU.
 

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `Decimal` in native code, in either form (spec 2.1, decision 0042):
 //! the fast 128-bit one, or `BigDecimal` for a value that doesn't fit.
 //! Printing, `==`, hashing and ordering reach the big form through hooks

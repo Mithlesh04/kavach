@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A pipeline's shaders (spec 15.3, decision 0106): one WGSL module with
 //! the `gpu vertex fn` and `gpu fragment fn`, as the WGSL backend writes
 //! any gpu fn, and `vs_main` and `fs_main` around them. Its first line

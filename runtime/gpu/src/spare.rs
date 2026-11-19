@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Buffers of items and results no list holds any more, kept for the next
 //! `map` of the same size. A new buffer is filled with zeros before its first use;
 //! one used before isn't, so a frame loop writes into the buffers of the

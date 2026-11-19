@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.reflect` (spec 14.32): `T.members()`, `m.members()` and
 //! `x.has_member(name)`, worked out while compiling. A list is written as
 //! JSON, which `std.reflect` reads back (`members_from`); a `has_member`

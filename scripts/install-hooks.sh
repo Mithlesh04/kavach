@@ -1,4 +1,8 @@
 #!/bin/sh
+# Copyright (c) 2026 Mithlesh and the Kavach contributors
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 # Points git at the versioned hooks in scripts/hooks (rules: AGENTS.md section 10).
 # Usage: sh scripts/install-hooks.sh     Twin: scripts/install-hooks.ps1
 cd "$(dirname "$0")/.." || exit 2

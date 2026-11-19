@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Secrets (spec 2.11, 8.7): where a secret value may go, and where it
 //! may not: text, prints, parameters and results that aren't `secret`.
 

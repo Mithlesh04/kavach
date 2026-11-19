@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The signatures of `std.gpu`'s built-in functions (spec 14.24): what
 //! `gpu.screen` and the methods of `Screen` and `Frame`, written in
 //! Kavach, are built on, by number.

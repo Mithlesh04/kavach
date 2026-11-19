@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The capability a call into the standard library needs (spec 8.1): the
 //! module's own (`stdlib.rs`'s `MODULES`), the ones read freely, the
 //! narrower ones (`Fs.read`, `Input`), and the calls a contract may not

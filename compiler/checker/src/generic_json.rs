@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Values read from JSON through generic code (spec 2.12):
 //! `json.decode<T>` of a type parameter is checked where `T` becomes a
 //! real type, at the generic call, as it is when the type is written out.

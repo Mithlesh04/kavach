@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // An HTTP/2 connection that takes many requests (`h2.connect`, spec
 // 14.11), so a service pays for connecting once, not per call. Requests
 // from several tasks are open at once, each on a stream of its own:

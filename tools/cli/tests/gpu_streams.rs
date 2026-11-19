@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Sums a loop doesn't wait for (spec 15.2, decision 0067), in native code:
 //! the same answers and the same panics as the CPU, wherever they run; and
 //! a kernel's multiply at the limits of its check. Without a GPU the

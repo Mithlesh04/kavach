@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The compiler never panics on hostile input (to-do item 4): any text,
 //! however broken, gets error messages, not a crash. Deterministic and
 //! seeded, so a failure reproduces; it prints the input that crashed.

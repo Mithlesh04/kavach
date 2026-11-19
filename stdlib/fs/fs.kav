@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.fs (spec 14.3): the errors of file operations, and a file's
 // details. The operations themselves (`fs.read_text`, …) need the
 // operating system, so the runtime provides them; they fail with these

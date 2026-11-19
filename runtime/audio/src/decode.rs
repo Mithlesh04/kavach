@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Sound files into samples (decision 0114): WAV, read here, and Ogg
 //! Vorbis, through `lewton`. A file of more than two channels keeps its
 //! first two.

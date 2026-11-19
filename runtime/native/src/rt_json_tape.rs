@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A parsed JSON document on a tape (decision 0032): every value is one
 //! word, and an array or object is a run of words, all in one list of
 //! words per document. Strings and numbers are their place in the parsed

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Agents and declared capabilities in native code (spec 8.2, 8.3, 8.8).
 //!
 //! A started agent is a record: a handle to its guard in the runtime

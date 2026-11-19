@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Flat lists: a list of plain records or tuples keeps their fields in
 //! its own buffer, `width` words per item, instead of a pointer to an
 //! object per item (`docs/architecture/flat-lists.md`).

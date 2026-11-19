@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.test (spec 14.7): `Sample`, for types that make their own values in
 // generated tests (spec 11.3), and `Gen`, the random choices they make
 // them from. `kavach test` seeds the choices, so a run can be repeated;

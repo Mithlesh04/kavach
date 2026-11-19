@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Lowering `Json` and `std.json` (spec 2.12). A `Json` literal is built
 //! from the union's variants right here. Other values are encoded by the
 //! runtime: they go in a one-item tuple, whose type says how to encode

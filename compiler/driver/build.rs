@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Records the commit the compiler is built from (spec 10.5): `kavach
 //! --version` prints it, and every executable `kavach build` writes
 //! carries it. `KAVACH_COMMIT` set by hand wins; without git it is

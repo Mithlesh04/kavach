@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Which loops may go on all cores (decision 0031), and what they
 //! capture: the analysis behind `par.rs`. A loop qualifies when its
 //! body only does arithmetic, reads lists it doesn't write, and stores

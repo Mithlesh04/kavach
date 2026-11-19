@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `kavach outline` (spec 13.3): every declaration as written, with
 //! function bodies replaced by `{ … }`. Doc comments, signatures,
 //! contracts and examples stay: they are what callers need.

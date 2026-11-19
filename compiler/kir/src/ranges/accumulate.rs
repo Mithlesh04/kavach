@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Accumulators in a counted loop: `total += x` in `for i in 0..n`.
 //!
 //! The fixed point widens a local that grows every round to its type's

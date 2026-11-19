@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Run-time functions for numbers beyond plain machine arithmetic:
 //! `Decimal` values, `wrapping_*` and `checked_*` methods, and `parse`.
 //! Messages must match the interpreter (`compiler/interp/src/ops.rs`).

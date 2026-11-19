@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Calls to a deprecated function (spec 12.6): a warning that shows the
 //! message. `kavach fix` and the editor's quick fix rewrite the call with
 //! the `fix` expression (`tools/lsp/src/fixes.rs`).

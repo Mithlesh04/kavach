@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Agents in native code (spec 8.3–8.7) decide, log and keep totals
 //! exactly like the interpreter: both run the same project, then each
 //! runs again on the state file the other wrote.

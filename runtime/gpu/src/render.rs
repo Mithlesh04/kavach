@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Pipelines and draws (spec 15.3, decision 0106). A pipeline is its WGSL
 //! module, written by the compiler (`compiler/backend/wgsl/src/render.rs`),
 //! whose first line gives the buffers' layout: `// draw f f | f f f | 1 |

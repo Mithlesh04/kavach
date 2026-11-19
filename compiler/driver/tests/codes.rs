@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Every message has a code saying its kind (spec 13.6), and the table
 //! knows the kind of every error the conformance tests expect: a new
 //! message whose wording the table doesn't know fails here, not quietly

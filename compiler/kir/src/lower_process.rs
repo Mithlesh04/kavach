@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `spawn process f(args)` (spec 9.8, decision 0075). In the parent it is
 //! a task whose thunk runs the call in a child (`ProcessRun`, which can
 //! fail) and hands its value or error over, as any task's thunk does. In

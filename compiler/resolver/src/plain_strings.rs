@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A string in quotes is exactly what is written (spec 1.7, decision 0131).
 //! One that looks like it wanted a template gets a warning that says to
 //! write it in backticks: `"Hello, {name}"` where `name` is in scope, or

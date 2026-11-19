@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Sound for `std.audio` (spec 14.27, decision 0114), through `cpal`:
 //! sounds and voices by number, as the interpreter and native code call
 //! them. The program's side keeps the sounds and each voice's controls;

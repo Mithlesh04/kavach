@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Changing the machine on Linux and macOS (spec 14.25): `kill` for
 //! programs, the system's own `useradd`, `userdel` and `chpasswd` for
 //! users (run with arguments, no shell), and `loginctl` to lock.

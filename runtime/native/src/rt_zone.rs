@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Time zones in native code (spec 14.4, decision 0064): a zone's offset
 //! from `kavach_runtime_core::zones`. A module and entry of its own, so
 //! only a program that uses zones links `jiff` and the zone data

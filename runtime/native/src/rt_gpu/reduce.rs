@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `sum`, `min` and `max` of `Int32` or `UInt32` on the GPU (spec 15.2):
 //! the runtime side of `GpuSum`, `GpuMin` and `GpuMax`. They run only on
 //! a list already in GPU memory (unless `KAVACH_GPU=on`): copying a list

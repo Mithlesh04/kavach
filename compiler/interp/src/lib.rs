@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A development interpreter for Kavach (decision 0014). It runs a checked
 //! program straight from its syntax tree, for `kavach run`, `kavach test`
 //! and the conformance tests. Shipped programs are compiled to native code.
@@ -66,6 +70,7 @@ mod std_window;
 mod std_writers;
 mod stmts;
 mod task_errors;
+mod task_waits;
 mod tasks;
 mod testing;
 mod text_methods;

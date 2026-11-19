@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Declarations, function bodies, blocks and statements.
 
 use crate::checker::{Checker, Ctx, FieldInfo, Shape};

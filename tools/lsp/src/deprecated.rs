@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The fix for a call to a deprecated function (spec 12.6): the call
 //! becomes the function's `fix` expression, its parameters replaced by
 //! the call's arguments.

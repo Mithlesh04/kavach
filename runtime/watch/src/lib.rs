@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Watching files and folders for `std.fs` (spec 14.3, decision 0116),
 //! through `notify`, by the watcher's number, as the interpreter and
 //! native code call it. Each watcher keeps the changes that came until

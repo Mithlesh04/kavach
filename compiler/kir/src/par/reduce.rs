@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The reduction half of decision 0031: building a sum's chunk
 //! function and the call site that combines the partial sums exactly.
 //! Split from `par.rs`.

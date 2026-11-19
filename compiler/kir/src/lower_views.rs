@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Text views and builders (spec 2.18). Both are text in native code for
 //! now: a view is a copy of its part, and a builder a `String` that
 //! `push` grows in place while it has one holder (`kv_concat`, spec 6.1).

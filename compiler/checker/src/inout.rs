@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `inout` parameters (spec 3.9, decision 0038): each argument for one is
 //! a place the caller could assign to, and its variable appears nowhere
 //! else in the call, so the function never sees two names for one value.

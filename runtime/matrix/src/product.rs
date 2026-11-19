@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The matrix product (spec 2.17, decision 0111). By default each item
 //! adds its products in order, `k` from 0 up, a multiply then an add: the
 //! inner loop runs along a row of the result, so the compiler turns it into

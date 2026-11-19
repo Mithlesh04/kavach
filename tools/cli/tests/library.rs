@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `kavach build --lib` (spec 10.10, decision 0026): a library package
 //! becomes a shared library with a C header, and another language calls
 //! it. Python's `ctypes` is the caller here, as it would be for anyone.

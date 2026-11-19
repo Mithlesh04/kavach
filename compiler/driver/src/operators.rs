@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Operators on a program's own types become the method calls they stand
 //! for (spec 2.16), once the checker has typed them: `a + b` is
 //! `a.add(b)`, `-a` is `a.neg()`, `a < b` is `a.compare(b) < 0`, and

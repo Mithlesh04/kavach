@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A versioned loop's copy with locals of its own. `ranges.rs` gives each
 //! local one range for the whole function, so a copy that shares its
 //! locals with the loop as written shares their ranges too: where the

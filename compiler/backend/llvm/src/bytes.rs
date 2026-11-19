@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `b[i]` on `Bytes` (spec 2.13) in generated code: the bytes' address
 //! and length from two runtime functions that only read, which LLVM may
 //! move out of a loop, then a bounds check and one load. A byte scan reads

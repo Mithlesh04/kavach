@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Interface values (spec 2.15, decision 0029): a concrete value wrapped
 //! into a box of `[value, its type code, one closure per method]`, and
 //! method calls through the box. The closures reuse the machinery of

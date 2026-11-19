@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.window (spec 14.22, decision 0104): windows and the input that
 // comes to them. The runtime opens them and gathers their events
 // (`runtime/window`), by the window's number; this file gives windows

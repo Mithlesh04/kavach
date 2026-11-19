@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.json` (spec 2.12) in native code: JSON text to and from `Json`
 //! values, with the parser and writer the interpreter uses too
 //! (`kavach_runtime_core::json`), so both read and write exactly alike.

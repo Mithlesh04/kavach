@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Workspaces (spec 10.14, decision 0091): a root `kavach.toml` with
 //! `[workspace] members = ["packages/*"]` makes the listed folders one
 //! workspace, with one `kavach.lock` and one `kavach_modules/` at the

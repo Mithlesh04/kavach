@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! A send to an agent (`bot.request(order)`, spec 8.8, decision 0076):
 //! the event's function (`event_fn` in `lower_agents.rs`, which pushes the
 //! agent, journals the event and calls the handler) runs through

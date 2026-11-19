@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Methods of numbers (spec 14.2): `abs`, `near`, `bits`, `min`, `max`,
 //! `clamp`, and `div_floor`, `mod`, `round`, `round_even` (decision 0051).
 

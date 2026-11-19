@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The playground's engine (decision 0078): reads a Kavach program on
 //! standard input, checks it with the same pipeline every tool uses, and
 //! writes the messages as JSON on standard output. The docs site builds

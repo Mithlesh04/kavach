@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! File and function length limits (spec 12.1). Every line counts:
 //! code, comments and blank lines. A long file gets a suggested split.
 

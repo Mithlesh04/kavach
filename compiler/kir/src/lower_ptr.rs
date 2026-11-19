@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Raw memory (`Ptr<T>`, spec 6.4) and text passed to C (10.7) in native
 //! code. A `Ptr<T>` is an address (`I64`). `alloc` and `free` are C's
 //! `calloc` and `free` (`runtime/native/src/rt_ptr.rs`); `p.read(i)` and

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // std.term (spec 14.13): colors and styles for text printed to a
 // terminal, written in Kavach. Whether standard output shows colors
 // (`io.colors()`) and is a terminal (`io.is_terminal()`) comes from the

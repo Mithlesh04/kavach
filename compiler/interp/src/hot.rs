@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `kavach run --hot` (spec 10.5): functions swapped while the program
 //! runs, keeping its values. Each change checked is a new *generation* of
 //! the program. The interpreter knows things by where they are written,

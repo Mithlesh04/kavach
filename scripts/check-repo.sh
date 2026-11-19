@@ -1,7 +1,12 @@
 #!/bin/sh
+# Copyright (c) 2026 Mithlesh and the Kavach contributors
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 # Checks the repository rules from AGENTS.md:
 #   1. no file we write is longer than 500 lines
 #   2. every relative Markdown link points to a file (and heading) that exists
+#   3. every source file starts with the license header (decision 0133)
 # Usage: sh scripts/check-repo.sh     Twin: scripts/check-repo.ps1 (keep both in sync)
 #
 # Each check is one pass over all the files, not a program per file:
@@ -84,6 +89,35 @@ if [ -s "$tmp/anchors" ]; then
         !(($3 "\t" $4) in have) { printf "BROKEN    %s -> %s (no such heading)\n", $1, $2; bad = 1 }
         END { exit bad }' "$tmp/slugs" "$tmp/anchors" || fail=1
 fi
+
+# 3. License header: within its first 5 lines, each source file in scope
+# names the copyright holders and the SPDX license (decision 0133). A file
+# marked `@generated` or "do not edit" there is skipped. Keep the scope and
+# the skip list in sync with the .ps1 twin.
+HEADER_SCOPE='^\./(compiler|runtime|tools|stdlib|interop|scripts|editors)/.*\.(rs|kav|sh|ps1|mjs|ts|js)$|^\./scripts/hooks/[^/.]+$'
+# Left out: test fixtures whose text or line numbers a test compares.
+# One regex per line.
+cat > "$tmp/header-skip" <<'SKIP'
+^\./editors/vscode/tests/[^/]*\.kav$
+SKIP
+grep -E "$HEADER_SCOPE" "$tmp/files" | grep -v -E -f "$tmp/header-skip" > "$tmp/headed"
+tr '\n' '\0' < "$tmp/headed" | xargs -0 awk '
+    function verdict() {
+        if (file == "" || (holder && spdx) || made) return
+        printf "NO HEADER %s: no license header in its first 5 lines. Add it with scripts/add-license-headers.sh or .ps1.\n", file
+        bad = 1
+    }
+    # Empty files have no first line, so awk never reads them: each file
+    # awk skipped before this one (or before the end) gets a verdict too.
+    function empties_before(name) {
+        while (++arg < ARGC && ARGV[arg] != name) { file = ARGV[arg]; holder = spdx = made = 0; verdict() }
+    }
+    FNR == 1 { verdict(); empties_before(FILENAME); file = FILENAME; holder = spdx = made = 0 }
+    FNR > 5 { nextfile }
+    /Copyright \(c\) [0-9][0-9][0-9][0-9] Mithlesh and the Kavach contributors[ \t\r]*$/ { holder = 1 }
+    /SPDX-License-Identifier: Apache-2\.0 OR MIT[ \t\r]*$/ { spdx = 1 }
+    tolower($0) ~ /@generated|do not edit/ { made = 1 }
+    END { verdict(); file = ""; empties_before(""); exit bad }' || fail=1
 
 if [ "$fail" -eq 0 ]; then
     echo "check-repo: all good"

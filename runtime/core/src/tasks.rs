@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Tasks taking turns (spec 9.7, decision 0020): the one scheduler of
 //! the interpreter and native code, so both run tasks in the same order.
 //!

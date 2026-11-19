@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Runs the compiler pipeline (lexer → parser → resolver → checker) on one
 //! file and renders its messages. The CLI, the interpreter and (later) the
 //! language server all use this, so messages look the same everywhere.
@@ -7,8 +11,10 @@ pub mod codes;
 mod config;
 pub mod deps;
 mod fetch_checks;
+mod git_fetch;
 mod grants;
 mod limits;
+mod lock_file;
 mod operators;
 mod project;
 mod run_config;

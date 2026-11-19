@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! C functions (`extern c`, spec 10.7) in native code: a function with no
 //! body and its library recorded. The backends declare it as the C symbol
 //! of its name, and the linker finds it in the library.

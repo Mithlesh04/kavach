@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The KIR type of a type written in the source (`Map<K, V>`, `[T]`,
 //! `Pipeline<V, I, S, T>`, a record's name): what a declaration, a cast or
 //! a type argument says, as `types.rs` does for the checker's types.

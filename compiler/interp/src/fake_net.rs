@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The fake network of generated tests (spec 11.5): nothing goes on the
 //! network. A connection fails with a generated `NetError`, or reaches a
 //! fake server that takes what the case writes and answers once: an HTTP

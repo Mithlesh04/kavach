@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Reductions: `sum`, `min` and `max` on the GPU. [`reduce_later`] puts one
 //! in the GPU's queue and goes on, so a loop's next chunk is read and
 //! copied over while the GPU works (spec 15.2, decision 0067); its

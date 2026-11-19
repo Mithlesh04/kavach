@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Streamed reads (spec 14.3): `fs.lines(path)` and `fs.chunks(path,
 //! size)`, read as a `for` loop goes, so only the part being looked at
 //! is in memory. Native code does the same (`runtime/native/src/rt_files.rs`).

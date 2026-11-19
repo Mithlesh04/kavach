@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Time zones for `std.time` (spec 14.4, decision 0064): a zone's offset
 //! from UTC at a moment, from the IANA database through `jiff`. The rest
 //! of zones is written in Kavach (`stdlib/time/time.kav`).

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Running out of memory is a panic (spec 5.6): an allocation the system
 //! refuses ends the program with `panic: out of memory` and exit code
 //! 101, as other panics do, instead of Rust's abort. Every allocation goes

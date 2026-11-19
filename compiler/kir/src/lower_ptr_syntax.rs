@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! C's pointer syntax on `Ptr<T>` in native code (spec 6.4): `*p` and
 //! `p[i]` read, `*p = v` and `p[i] = v` write, `p + n` and `p - n` move
 //! the address. The same loads, stores and address arithmetic as

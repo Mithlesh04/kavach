@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // The wire side of HTTP/2 (RFC 9113) for std.http.h2: frames, header
 // blocks, flow control and the state of one side of a connection. Its
 // names are public so std.http.h2 can use them; programs use std.http.h2

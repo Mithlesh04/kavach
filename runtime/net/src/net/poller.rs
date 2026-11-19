@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The I/O event loop (decision 0046): the system's readiness queue
 //! (epoll on Linux, kqueue on macOS, IOCP on Windows, through `mio`)
 //! wakes the tasks waiting for a socket.

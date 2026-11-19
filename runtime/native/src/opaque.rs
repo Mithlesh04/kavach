@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Values of a feature's own type, such as a socket or a regular
 //! expression, inside a heap object (`Data`). Only the feature's code
 //! knows the type: an [`Opaque`] is a pointer made by `Arc::into_raw`,

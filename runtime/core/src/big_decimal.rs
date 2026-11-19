@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `Decimal` values too big or too precise for its 128-bit form (spec
 //! 2.1, decision 0042): `num-bigint` digits with a scale. A result that
 //! fits the fast form goes back to it, so each value has one form.

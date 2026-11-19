@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 // HTTP/1.1 messages for std.http (spec 14.11): finding where a message's
 // head ends, reading its first line and headers, reading a body sent in
 // chunks (`transfer-encoding: chunked`, RFC 9112 7.1), and finding where

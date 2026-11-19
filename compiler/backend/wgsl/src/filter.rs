@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The kernel of `list.filter(f)` on the GPU (spec 15.2), for items of
 //! one word. It runs twice, told which by the word after the captured
 //! values in `info`. First each workgroup counts the items it keeps;

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The standard library's types (spec 14): `Set`, and the modules
 //! brought in with `use std.<module>` (more methods of built-in types are
 //! in `more_methods.rs`).

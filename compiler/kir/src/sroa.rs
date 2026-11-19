@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Scalar replacement: a record local the function never shares is split
 //! into one local per field, so copying it, changing a field and reading
 //! one are plain moves between locals — no allocation, no reference

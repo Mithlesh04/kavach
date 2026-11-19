@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `pub(read)` fields (spec 10.1): other modules read them, but only the
 //! module that declares the type changes them, so it keeps the type's
 //! invariants. A change elsewhere is a compile error that says so.

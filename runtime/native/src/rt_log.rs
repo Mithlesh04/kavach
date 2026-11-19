@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `std.log`'s lines in native code (spec 14.12), written as the `[log]`
 //! settings in `kavach.toml` say. The compiler read them and passes them
 //! once, at the start of `main` (`LogConfigure`); the writing itself is

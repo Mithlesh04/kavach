@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Compressing and decompressing bytes (spec 14.21, decision 0103): gzip
 //! and deflate through `flate2` on its pure-Rust backend, zstd, brotli
 //! and lz4 (its frame format), the same in the interpreter and native

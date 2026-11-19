@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `BigInt`, whole numbers of any size (spec 2.1, decision 0041): the
 //! constants the checker worked out, arithmetic, and conversions.
 

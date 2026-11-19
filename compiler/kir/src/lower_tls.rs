@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `net.connect_tls` and `net.listen_tls` (spec 14.10) in native code. A
 //! runtime op takes three operands, so the call becomes: the address, the
 //! protocols, and the other texts in a list (`roots`, `cert`, `key` for a

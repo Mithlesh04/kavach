@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! What changes a value in place (spec 2.2): `items.push(x)` and the like
 //! need `items` to be a `let`, as assignment does.
 

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The standard library modules written in Kavach (spec 14), each with
 //! the path tools show, its module name and its source. Which of them a
 //! program gets is `std_modules.rs`'s.

@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! The codes `unwind_info` writes, undone as Windows' unwinder does
 //! (`RtlVirtualUnwind`) on a model stack: every saved register must come
 //! back from its own slot, and the stack must end above the return

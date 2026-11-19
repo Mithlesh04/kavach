@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `arena { … }` (spec 6.3): a block whose values are freed together when
 //! it ends. A task spawned in it may use them, so the arena waits for the
 //! tasks spawned in it before it ends: `mark; value = block; join(mark,

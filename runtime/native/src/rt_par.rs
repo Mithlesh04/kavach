@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Chunked loops on all cores (decision 0031). `kv_par_for` runs a
 //! compiler-made chunk function over `lo..hi` split across threads, and
 //! returns 0 when every chunk ran clean. It returns 1 — "run the plain

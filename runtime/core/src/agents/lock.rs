@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! One program per agent (spec 8.5, decision 0073): the program that
 //! starts an agent locks its folder, so a second program can't share its
 //! state file and journal. The lock is the operating system's, so a

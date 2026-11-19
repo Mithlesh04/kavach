@@ -1,4 +1,8 @@
 #!/bin/sh
+# Copyright (c) 2026 Mithlesh and the Kavach contributors
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 # Installs Kavach on Linux or macOS (decision 0080): downloads the
 # newest release archive for this machine (or takes one with
 # `--from <file>`), unpacks it to ~/.kavach, and links kavach and kv

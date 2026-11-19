@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Prefetching the list and map reads a loop will make (to-do item 1). In
 //! a loop whose list index or integer map key comes from a pure
 //! recurrence and not from what was read,

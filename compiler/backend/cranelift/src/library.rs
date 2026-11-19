@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `kavach build --lib` (decision 0026): the program's functions in an
 //! object file with one exported C function per export, each in front of
 //! the Kavach function: it sets up the runtime (`kv_lib_enter`), turns C

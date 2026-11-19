@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Where a task cancelled with `task.cancel()` stops even when it only
 //! computes (spec 9.6, decision 0075): the start of each function and the
 //! start of each loop's round (which is where the last round ended, after

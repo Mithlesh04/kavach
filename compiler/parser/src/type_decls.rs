@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! `type` declarations: unions (`type Status = Pending | Paid`) and records
 //! with fields, invariants and methods (spec 2.4-2.6, 7.3).
 

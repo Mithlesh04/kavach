@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! What the LLVM backend supports so far. A program that uses anything
 //! else is built with Cranelift instead (decision 0018), so this list only
 //! ever grows.

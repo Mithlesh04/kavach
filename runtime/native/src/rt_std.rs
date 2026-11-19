@@ -1,3 +1,7 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
 //! Standard library modules in native code (spec 14.3–14.6): files,
 //! clocks, math, the terminal and the command line. Messages must match
 //! the interpreter (`compiler/interp/src/std_lib.rs`).
