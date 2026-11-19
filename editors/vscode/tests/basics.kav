@@ -255,3 +255,8 @@ const small = a < b and c > d
 //                        ^ keyword.operator.kavach
 const fits = i<n
 //            ^ keyword.operator.kavach
+const last = xs[#1]
+//              ^ keyword.operator.from-end.kavach
+//               ^ constant.numeric.integer.kavach
+const spread = t.var(correction: 0)
+//               ^^^ entity.name.function.call.kavach

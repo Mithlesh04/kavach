@@ -17,6 +17,8 @@ export const kavachTheme = {
     { scope: ["constant.numeric", "constant.language", "keyword.other.unit"], settings: { foreground: "#d9a0c7" } },
     // A number's name in a type (`[Int]<max: 2>`) reads with its number, in italics, as in the editor.
     { scope: ["variable.parameter.type-number"], settings: { foreground: "#d9a0c7", fontStyle: "italic" } },
+    // `#` in `xs[#1]` counts from the end: bold, so it reads apart from the number after it.
+    { scope: ["keyword.operator.from-end"], settings: { foreground: "#e6a23c", fontStyle: "bold" } },
     { scope: ["comment"], settings: { foreground: "#857c6e" } },
     // `///` apart from `//`: a doc comment on a field is sent to the model by ask<T> (spec 8.4).
     { scope: ["comment.line.documentation"], settings: { foreground: "#4fa8a8" } },

@@ -208,9 +208,9 @@
     "keywords": {
       "patterns": [
         {
-          "comment": "`var` is not Kavach (decision 0034): show it as an error",
+          "comment": "`var` is not Kavach (decision 0034): show it as an error; a method named `var`, as a tensor's `t.var()`, is a call",
           "name": "invalid.illegal.var.kavach",
-          "match": "\\bvar\\b"
+          "match": "(?<!\\.)\\bvar\\b"
         },
         {
           "name": "keyword.control.kavach",
@@ -408,6 +408,7 @@
     },
     "operators": {
       "patterns": [
+        { "comment": "`#k` counts from the end inside `[ ]` (spec 2.19)", "name": "keyword.operator.from-end.kavach", "match": "#" },
         { "name": "storage.type.function.arrow.kavach", "match": "=>|->" },
         { "name": "keyword.operator.optional.kavach", "match": "\\?\\?|\\?\\." },
         { "name": "keyword.operator.range.kavach", "match": "\\.\\.=?" },

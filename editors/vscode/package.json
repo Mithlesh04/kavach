@@ -78,6 +78,10 @@
           {
             "scope": "variable.parameter.type-number.kavach",
             "settings": { "foreground": "#B5CEA8", "fontStyle": "italic" }
+          },
+          {
+            "scope": "keyword.operator.from-end.kavach",
+            "settings": { "foreground": "#C586C0", "fontStyle": "bold" }
           }
         ],
         "[*Light*]": {
@@ -97,6 +101,10 @@
             {
               "scope": "variable.parameter.type-number.kavach",
               "settings": { "foreground": "#098658", "fontStyle": "italic" }
+            },
+            {
+              "scope": "keyword.operator.from-end.kavach",
+              "settings": { "foreground": "#AF00DB", "fontStyle": "bold" }
             }
           ]
         }

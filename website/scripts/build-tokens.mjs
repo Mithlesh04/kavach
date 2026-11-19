@@ -53,7 +53,19 @@ for (const line of lines.split(/\r?\n/).filter(Boolean)) {
   const file = path.resolve(root, entry.file);
   const text = fs.readFileSync(file, "utf8");
   // Only the marks that change a color: imported names and built-in methods.
-  const kept = entry.tokens.filter(([, , , type, mods]) => mods.includes("imported") || (type === "method" && mods.includes("defaultLibrary")));
+  // A mark must cover one whole name as written: an operator's method
+  // (`a @ b` calls `matmul`) is marked at the operator, and coloring that
+  // span would split the names around it.
+  const rows = text.replace(/\r\n/g, "\n").split("\n");
+  const name = /^[\p{L}_][\p{L}\p{N}_]*$/u;
+  const word = /[\p{L}\p{N}_]/u;
+  const whole = ([line, col, len]) => {
+    const row = rows[line] ?? "";
+    return name.test(row.slice(col, col + len)) && !word.test(row[col - 1] ?? "") && !word.test(row[col + len] ?? "");
+  };
+  const kept = entry.tokens.filter(
+    (t) => whole(t) && (t[4].includes("imported") || (t[3] === "method" && t[4].includes("defaultLibrary"))),
+  );
   if (!kept.length) continue;
   files++;
   for (const key of new Set([asProjectFile(text), asSample(text)])) marks[key] = kept;
