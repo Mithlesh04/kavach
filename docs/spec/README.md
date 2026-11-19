@@ -9,7 +9,7 @@ This specification is the source of truth for the language. If the compiler and 
 | # | Chapter | Covers |
 |---|---|---|
 | 1 | [Basics](01-basics.md) | Files, comments, variables, literals, operators |
-| 2 | [Types](02-types/README.md) | Built-in types, records, unions, optionals, interfaces, generics, `Json`, `Bytes`, indexing and slicing |
+| 2 | [Types](02-types/README.md) | Built-in types, records, unions, optionals, interfaces, generics, `Json`, `Bytes`, indexing and slicing, frozen values |
 | 3 | [Functions](03-functions.md) | Functions, named arguments, lambdas, signatures |
 | 4 | [Control flow](04-control-flow.md) | `if`, `match`, loops |
 | 5 | [Errors](05-errors.md) | Errors as values, `try`, `catch`, `fail`, panics |

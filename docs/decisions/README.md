@@ -146,6 +146,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0138](0138-spawn-arguments-first.md) | A spawned call's arguments are worked out at the spawn, as Go's `go f(x)` | Accepted |
 | [0139](0139-choosing-gpus.md) | Several GPUs: the system chooses, and code can say where | Accepted |
 | [0140](0140-ai-providers.md) | AI providers other than Anthropic: a provider is a Kavach interface that translates, the runtime sends; errors a program can tell apart; prices that say how far to trust them | Accepted |
+| [0141](0141-freeze.md) | Frozen values: `x.freeze()` gives a `Frozen<T>` that never changes, deep by default, sealed with a key; it goes where a `T` is written only to a function that only reads it | Accepted |
 
 ## Open decisions
 

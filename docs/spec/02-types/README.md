@@ -25,6 +25,7 @@ Each section is a file of its own: new sections go at the end, with the next num
 | 2.17 Matrices: now tensors of two dimensions (14.33) | [17-matrices.md](17-matrices.md) |
 | 2.18 Text views and builders | [18-text-views.md](18-text-views.md) |
 | 2.19 Indexing and slicing | [19-indexing-and-slicing.md](19-indexing-and-slicing.md) |
+| 2.20 Frozen values | [20-frozen-values.md](20-frozen-values.md) |
 
 ## Open questions
 
