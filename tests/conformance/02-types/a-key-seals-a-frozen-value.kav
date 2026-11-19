@@ -1,0 +1,42 @@
+// Rule: `x.freeze(key: k)` gives a `Frozen<T, K>` that reads as its value and opens only with `unfreeze(key:)` and an equal key.
+// Spec: 2.20
+// expect output: asha ["reader"]
+// expect output: reader
+// expect output: Session(user: "asha", roles: ["reader", "admin"])
+// expect output: 1
+
+type SessionKey {
+    n: Int
+}
+
+type Session {
+    user: String
+    roles: [String]
+}
+
+const key = SessionKey(n: 1)
+
+fn open(user: String) -> Frozen<Session, SessionKey> {
+    Session(user: user, roles: ["reader"]).freeze(key: key)
+}
+
+fn promote(s: Frozen<Session, SessionKey>) -> Frozen<Session, SessionKey> {
+    let changed = s.unfreeze(key: key)
+    changed.roles.push("admin")
+    changed.freeze(key: key)
+}
+
+fn count(s: Session) -> Int {
+    s.roles.len()
+}
+
+fn main() {
+    const s = open("asha")
+    print(`{s.user} {s.roles}`)
+    for role in s.roles {
+        print(role)
+    }
+    const t = promote(s)
+    print(t.unfreeze(key: SessionKey(n: 1)))
+    print(count(s))
+}

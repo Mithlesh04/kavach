@@ -165,6 +165,9 @@ impl Checker<'_> {
             .map(|p| (p.name.clone(), self.inf.subst(&p.ty, &subst), p.has_default))
             .collect();
         let secret: Vec<bool> = sig.params.iter().map(|p| p.secret).collect();
+        if let Some(def) = sig.def {
+            self.frozen.callee = crate::frozen::Callee::Fn(def);
+        }
         self.args_with(
             args,
             &params,
@@ -282,6 +285,7 @@ impl Checker<'_> {
             }
             return;
         }
+        let callee = std::mem::take(&mut self.frozen.callee);
         let mut filled = vec![false; params.len()];
         let mut next = 0;
         // A built-in method passes on the errors of the functions it is
@@ -325,7 +329,10 @@ impl Checker<'_> {
             let actual = self.value(&a.value, Some(want));
             self.rethrow = passing.take();
             self.fitting = Some(self.made(&a.value));
+            self.frozen.at = Some((callee, index, a.value.span));
+            self.frozen.at_name = crate::frozen::shown(&a.value);
             let fits = self.coerce(&actual, want) || self.number_as_tensor(&a.value, &actual, want);
+            self.frozen.at = None;
             self.fitting = None;
             if !fits {
                 self.mismatch(&a.value, want, &actual);

@@ -354,14 +354,16 @@ impl Checker<'_> {
             }
             ExprKind::Match { scrutinee, arms } => {
                 let t = self.infer(scrutinee, None);
+                let read = self.frozen_scrutinee(&t, arms, scrutinee.span);
                 for arm in arms {
-                    self.bind(&arm.pattern, &t);
+                    let named = matches!(arm.pattern.kind, PatternKind::Binding(_));
+                    self.bind(&arm.pattern, if named { &t } else { &read });
                     if let Some(g) = &arm.guard {
                         self.check_expect(g, &Ty::Prim(Prim::Bool));
                     }
                     types.push(self.branch(&arm.body, expected, want_value));
                 }
-                self.check_coverage(arms, &t, e.span);
+                self.check_coverage(arms, &read, e.span);
             }
             _ => return Ty::Error,
         }

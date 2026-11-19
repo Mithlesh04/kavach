@@ -1,0 +1,29 @@
+// Rule: Reading a frozen value works as on its type: fields, items, methods that don't change it, `for`, `print`, text, comparisons and `==`.
+// Spec: 2.20
+// expect output: 7 2 tea
+// expect output: tea
+// expect output: cake
+// expect output: Order(id: 7, lines: ["tea", "cake"])
+// expect output: true true
+// expect output: 2 [1, 2, 3]
+// expect output: 512
+
+type Order {
+    id: Int
+    lines: [String]
+}
+
+fn main() {
+    const order = Order(id: 7, lines: ["tea", "cake"]).freeze()
+    print(`{order.id} {order.lines.len()} {order.lines[0]}`)
+    for line in order.lines {
+        print(line)
+    }
+    print(order)
+    const plain = Order(id: 7, lines: ["tea", "cake"])
+    print(`{order == plain.freeze()} {order.id > 5}`)
+    const xs = [1, 2, 3].freeze()
+    print(`{xs[1]} {xs}`)
+    const limits = {"cpu": 2, "memory": 512}.freeze()
+    print(limits["memory"] ?? 0)
+}

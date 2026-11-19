@@ -88,6 +88,8 @@ impl Checker<'_> {
                 }
             }
             Ty::Builtin(n, ts) => format!("{n}{}", args(&ts)),
+            Ty::Frozen(t, _, None) => format!("Frozen<{}>", self.show(&t)),
+            Ty::Frozen(t, _, Some(k)) => format!("Frozen<{}, {}>", self.show(&t), self.show(&k)),
             Ty::Param(d) => self.def_name(d).to_string(),
             Ty::Result(o, _) => self.show(&o),
             Ty::Var(v) => match self.inf.kind(v) {

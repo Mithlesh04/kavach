@@ -1,0 +1,35 @@
+// Rule: A frozen value given to a function that does more than read that parameter, such as giving it back or putting it in a variable, is a compile error that says why.
+// Spec: 2.20
+// expect compile error
+
+type Order {
+    id: Int
+    lines: [String]
+
+    fn same(self) -> Order {
+        self
+    }
+}
+
+fn keep(o: Order) -> Order {
+    o
+}
+
+fn copy(o: Order) -> Int {
+    let mine = o
+    mine.id = 9
+    mine.id
+}
+
+fn pass_on(o: Order) -> Order {
+    keep(o)
+}
+
+fn main() {
+    const order = Order(id: 7, lines: ["tea"]).freeze()
+    print(keep(order))                      // error: `keep` gives `o` back
+    print(copy(order))                      // error: `copy` puts `o` in a variable
+    print(pass_on(order))                   // error: `pass_on` passes `o` to `keep`
+    print(order.same())                     // error: `same` gives `self` back
+    print(keep(order.unfreeze()))
+}

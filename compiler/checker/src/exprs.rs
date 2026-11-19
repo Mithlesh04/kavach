@@ -394,7 +394,7 @@ impl Checker<'_> {
                 }
                 // A view and a `String` compare by their text (spec 2.18).
                 if !self.compare_text(&lt, r) {
-                    self.check_expect(r, &lt);
+                    self.expect_read(r, &lt);
                     self.check_compare(op, l, r, &lt);
                 }
                 if !matches!(op, Eq | NotEq) {

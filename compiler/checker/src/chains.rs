@@ -14,7 +14,7 @@ impl Checker<'_> {
         let t = self.plain_value(first);
         let mut left = first;
         for (op, x) in links {
-            self.check_expect(x, &t);
+            self.expect_read(x, &t);
             self.check_compare(*op, left, x, &t);
             left = x;
         }

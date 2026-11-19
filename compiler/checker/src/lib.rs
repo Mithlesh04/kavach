@@ -40,6 +40,9 @@ mod exprs;
 mod failures;
 mod fields;
 mod fn_values;
+mod frozen;
+mod frozen_reads;
+mod frozen_sealed;
 mod generic_json;
 mod gpu;
 mod gpu_choice;
@@ -103,6 +106,7 @@ mod where_bounds;
 
 pub use agent_settings::{AgentSetup, AuditSetup};
 pub use ai_models::AiModel;
+pub use frozen::{FrozenCall, WRONG_KEY};
 pub use json::json_literal_kind;
 use kavach_ast::File;
 pub use kavach_resolver::Diagnostic;
@@ -214,6 +218,12 @@ pub struct Checked {
     pub literal_uses: Vec<LiteralUse>,
     /// Numbers in types that code generation needs (spec 2.9).
     pub numbers: Settled,
+    /// Each call of the built-in `freeze` and `unfreeze`, by span (spec
+    /// 2.20).
+    pub frozen_calls: HashMap<(u32, u32), FrozenCall>,
+    /// Where a sealed value, `(value, key)` while running, is read as
+    /// its value, by span.
+    pub frozen_reads: HashSet<(u32, u32)>,
 }
 
 /// The built-in methods a value of type `t` has (spec 14.2), for tools
@@ -236,6 +246,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     checker.check_capability_errors(file);
     checker.collect_gpu_fns(file);
     checker.check_file(file);
+    checker.check_frozen_passes(file);
     checker.check_numbers_later();
     checker.check_tensor_items();
     checker.check_pointees();
@@ -374,5 +385,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
         agent_settings,
         literal_uses: std::mem::take(&mut checker.literal_uses),
         numbers,
+        frozen_calls: std::mem::take(&mut checker.frozen.calls),
+        frozen_reads: std::mem::take(&mut checker.frozen.reads),
     }
 }

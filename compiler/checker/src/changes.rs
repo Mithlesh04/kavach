@@ -15,6 +15,7 @@ impl Checker<'_> {
         self.check_round_change(base, method);
         self.check_invariant_in_loop(base);
         self.check_read_only_target(base, &format!("changed with `{method}`"));
+        self.check_frozen_target(base, &format!("changed with `{method}`"), false, false);
         let mut root = base;
         while let ExprKind::Field { base, .. }
         | ExprKind::TupleField { base, .. }

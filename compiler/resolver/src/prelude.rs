@@ -28,6 +28,7 @@ pub const TYPES: &[&str] = &[
     "Set",
     "Shared",
     "Weak",
+    "Frozen",
     "Ring",
     "StrView",
     "TextBuilder",

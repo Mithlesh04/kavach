@@ -119,6 +119,11 @@ pub enum Ty {
     /// sees through it, so code that doesn't care about the number sees
     /// the plain type.
     Sized(Box<Ty>, SizeKind, Box<Ty>),
+    /// `Frozen<T>` and `Frozen<T, K>` (spec 2.20): a value whose fields
+    /// and items never change; `true` when frozen all the way down, and
+    /// the key's type when sealed with one. `Infer::shallow` sees through
+    /// it, so reading works as on `T`.
+    Frozen(Box<Ty>, bool, Option<Box<Ty>>),
 }
 
 /// What a collection's number says (spec 2.2).

@@ -1,0 +1,17 @@
+// Rule: A `match` on a sealed value that both reads its parts and names the whole value in another arm is a compile error.
+// Spec: 2.20
+// expect compile error
+
+type Key {
+    n: Int
+}
+
+type Shape = Circle(r: Int) | Square(a: Int)
+
+fn main() {
+    const sq = Shape.Square(a: 3).freeze(key: Key(n: 1))
+    match sq {                              // error: reads its parts or names the whole value, not both
+        Shape.Circle(r) => print(r),
+        other => print(other),
+    }
+}

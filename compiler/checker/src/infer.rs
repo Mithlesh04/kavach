@@ -40,7 +40,7 @@ impl Infer {
     /// number in a collection's type (`[Int]<max: 2>` is a `[Int]` here).
     pub(crate) fn shallow(&self, ty: &Ty) -> Ty {
         let mut ty = self.shallow_keep(ty);
-        while let Ty::Sized(base, ..) = ty {
+        while let Ty::Sized(base, ..) | Ty::Frozen(base, ..) = ty {
             ty = self.shallow_keep(&base);
         }
         ty
@@ -67,8 +67,13 @@ impl Infer {
     }
 
     /// Replaces every bound variable, all the way down, without any
-    /// collection's number: the types code generation sees.
+    /// collection's number: the types code generation sees. A frozen
+    /// value is its `T`, and a sealed one `(T, K)`: the value and its key
+    /// (spec 2.20).
     pub(crate) fn resolve_plain(&self, ty: &Ty) -> Ty {
+        if let Ty::Frozen(inner, _, Some(key)) = self.shallow_keep(ty) {
+            return Ty::Tuple(vec![self.resolve_plain(&inner), self.resolve_plain(&key)]);
+        }
         self.map(&self.shallow(ty), &|t| Some(self.resolve_plain(t)))
     }
 
@@ -121,6 +126,7 @@ impl Infer {
             Ty::Adt(d, ts) => Ty::Adt(*d, ts.iter().map(g).collect()),
             Ty::Builtin(n, ts) => Ty::Builtin(n, ts.iter().map(g).collect()),
             Ty::Sized(t, k, n) => Ty::Sized(b(t), *k, b(n)),
+            Ty::Frozen(t, deep, key) => Ty::Frozen(b(t), *deep, key.as_ref().map(|k| b(k))),
             other => other.clone(),
         }
     }
@@ -154,6 +160,18 @@ impl Infer {
                 k1 == k2 && self.unify(x, y) && self.unify(n1, n2)
             }
             (Ty::Sized(x, ..), t) | (t, Ty::Sized(x, ..)) => self.unify(x, t),
+            // Frozen all the way down or not, one type (spec 2.20); a key
+            // on one side only is two types. A plain value on one side is
+            // checked where a value is given (`Checker::coerce_frozen`).
+            (Ty::Frozen(x, _, k1), Ty::Frozen(y, _, k2)) => {
+                self.unify(x, y)
+                    && match (k1, k2) {
+                        (Some(k1), Some(k2)) => self.unify(k1, k2),
+                        (None, None) => true,
+                        _ => false,
+                    }
+            }
+            (Ty::Frozen(x, _, None), t) | (t, Ty::Frozen(x, _, None)) => self.unify(x, t),
             (Ty::Num(x), Ty::Num(y)) => x == y,
             (Ty::Prim(p), Ty::Prim(q)) => p == q,
             (Ty::Unit, Ty::Unit) => true,
@@ -202,6 +220,9 @@ fn contains_var(ty: &Ty, var: u32) -> bool {
         Ty::Var(v) => *v == var,
         Ty::List(t) | Ty::Set(t) | Ty::Optional(t) | Ty::Range(t) => contains_var(t, var),
         Ty::Sized(t, _, n) => contains_var(t, var) || contains_var(n, var),
+        Ty::Frozen(t, _, k) => {
+            contains_var(t, var) || k.as_ref().is_some_and(|k| contains_var(k, var))
+        }
         Ty::Map(a, b) | Ty::Result(a, b) => contains_var(a, var) || contains_var(b, var),
         Ty::Tuple(ts) | Ty::Adt(_, ts) | Ty::Builtin(_, ts) => {
             ts.iter().any(|t| contains_var(t, var))

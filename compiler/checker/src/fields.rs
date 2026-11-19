@@ -229,7 +229,11 @@ impl Checker<'_> {
                 }
             }
         }
-        t
+        // A new value, not frozen (spec 2.20).
+        match self.inf.shallow_keep(&t) {
+            Ty::Frozen(..) => Ty::Adt(def, args),
+            _ => t,
+        }
     }
 
     /// Inside an `arena`, storing a value made there into something from

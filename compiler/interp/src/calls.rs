@@ -32,6 +32,9 @@ impl<'a> Interp<'a> {
         if let Some(answer) = self.reflected(e) {
             return answer;
         }
+        if let Some(opened) = self.sealed_unfreeze(e, callee, args) {
+            return opened;
+        }
         let mut values: Args<'a> = Vec::new();
         for a in args {
             values.push((

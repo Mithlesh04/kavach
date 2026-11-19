@@ -1,0 +1,34 @@
+// Rule: A `match` on a frozen value reads its parts as on its type; an arm that names the whole value keeps it frozen.
+// Spec: 2.20
+// expect output: 12
+// expect output: 9
+// expect output: 3
+// expect output: Circle(r: 2)
+
+type Key {
+    n: Int
+}
+
+type Shape = Circle(r: Int) | Square(a: Int)
+
+fn area(s: Shape) -> Int {
+    match s {
+        Shape.Circle(r) => r * r * 3,
+        Shape.Square(a) => a * a,
+    }
+}
+
+fn main() {
+    const c = Shape.Circle(r: 2).freeze()
+    print(area(c))
+    const sq = Shape.Square(a: 3).freeze(key: Key(n: 1))
+    print(area(sq))
+    match sq {
+        Shape.Circle(r) => print(r),
+        Shape.Square(a) => print(a),
+    }
+    const named = match c {
+        whole => whole,
+    }
+    print(named)
+}

@@ -312,6 +312,7 @@ impl Checker<'_> {
             }
             StmtKind::Assign { target, op, value } => {
                 let t = self.value(target, None);
+                self.check_frozen_assign(target, *op);
                 if self.own_index_set(target, *op, value) {
                     return;
                 }

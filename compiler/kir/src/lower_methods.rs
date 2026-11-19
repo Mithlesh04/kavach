@@ -41,6 +41,9 @@ impl<'a> Lowerer<'a> {
         if let Some(on) = self.map_on_device(base, name, args, ty, line, call) {
             return on;
         }
+        if name.name == "unfreeze" && self.c.sealed_unfreezes.contains(&(span.start, span.end)) {
+            return self.sealed_unfreeze(base, args, ty, line);
+        }
         if name.name == "pop"
             && let Some(popped) = self.list_pop(base, ty, line)?
         {

@@ -14,6 +14,9 @@ impl Checker<'_> {
         if let Some(message) = self.sized_mismatch(expected, actual) {
             return self.error(e.span, message);
         }
+        if let Some(message) = self.frozen_mismatch(e, expected, actual) {
+            return self.error(e.span, message);
+        }
         let (want, got) = (self.show(expected), self.show(actual));
         let (we, ga) = (self.inf.resolve(expected), self.inf.resolve(actual));
         let message = match (&we, &ga, &e.kind) {

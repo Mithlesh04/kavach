@@ -101,6 +101,18 @@ impl Lowerer<'_> {
                     {
                         self.shapes.intern(Shape::Socket)
                     }
+                    // A frozen value is its value; a sealed one `(value,
+                    // key)` (spec 2.20).
+                    Some(DefKind::Builtin) if first.name == "Frozen" => {
+                        let parts = args
+                            .iter()
+                            .map(|t| self.written_type(t))
+                            .collect::<Lowered<Vec<_>>>()?;
+                        match parts.as_slice() {
+                            [value] => *value,
+                            _ => self.shapes.intern(Shape::Tuple(parts)),
+                        }
+                    }
                     Some(DefKind::Builtin) if first.name == "Bytes" => {
                         self.shapes.intern(Shape::Bytes)
                     }

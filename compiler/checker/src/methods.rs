@@ -27,6 +27,9 @@ impl Checker<'_> {
         {
             return t;
         }
+        if let Some(t) = self.frozen_method(e, base, name, args) {
+            return t;
+        }
         let mut recv = self.value(base, None);
         // A literal receiver such as `5.wrapping_add(1)` is an `Int` by default.
         if let Ty::Var(v) = self.inf.shallow(&recv) {
@@ -42,6 +45,7 @@ impl Checker<'_> {
         }
         self.check_arena_call(base, name, args);
         self.check_fixed_change(&recv, &name.name, name.span);
+        let held = recv.clone();
         let recv = self.inf.resolve(&recv);
         // A range has the list methods that read it (spec 2.2): it is the
         // list of its numbers, which lowering builds (`lower_range.rs`).
@@ -134,6 +138,7 @@ impl Checker<'_> {
                     .unwrap_or_else(|| name.name.clone());
                 self.check_wheres(*owner, &n, &subst, e.span);
             }
+            self.note_frozen_self(base, &held, sig.def);
             let t = self.apply(&sig, subst, generics, args, e.span, &name.name);
             self.settle_stats(&name.name, &sig, args, &t);
             // `frame.draw(p, …)` gives what `p`'s vertex fn takes (15.3).
@@ -235,7 +240,11 @@ impl Checker<'_> {
             let secret: Vec<bool> = (params.iter().enumerate())
                 .map(|(i, p)| tls && (p.0 == "key" || (name.name == "accept_tls" && i == 1)))
                 .collect();
+            let reads = !changes_in_place(&recv, &name.name);
             let ret = self.passing_errors_on(m.ret, e.span, |c| {
+                if reads {
+                    c.frozen.callee = crate::frozen::Callee::Reads;
+                }
                 c.args_with(args, &params, &secret, e.span, &label, "argument");
             });
             self.updating -= u32::from(update);
@@ -397,7 +406,7 @@ pub(crate) fn kavach_name(recv: &Ty, name: &str) -> Option<&'static str> {
 
 /// Whether method `name` changes a receiver of type `recv` in place, so
 /// the receiver must be a `let` (spec 2.2).
-fn changes_in_place(recv: &Ty, name: &str) -> bool {
+pub(crate) fn changes_in_place(recv: &Ty, name: &str) -> bool {
     matches!(
         (recv, name),
         (Ty::List(_), "push" | "pop")

@@ -23,6 +23,7 @@ mod eval;
 mod fake_net;
 mod fakes;
 mod files;
+mod frozen;
 mod generics;
 mod gpu_choice;
 mod guard;

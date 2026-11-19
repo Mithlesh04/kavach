@@ -11,6 +11,7 @@ pub mod codes;
 mod config;
 pub mod deps;
 mod fetch_checks;
+mod frozen;
 mod git_fetch;
 mod grants;
 mod indexing;
@@ -123,6 +124,9 @@ pub struct Compiled {
     pub literal_uses: Vec<kavach_checker::LiteralUse>,
     /// Numbers in types (spec 2.9): limits, checks and number arguments.
     pub numbers: kavach_checker::Settled,
+    /// Each `f.unfreeze(key: k)`, by span: the key is checked while
+    /// running (spec 2.20).
+    pub sealed_unfreezes: std::collections::HashSet<(u32, u32)>,
     pub messages: Vec<Message>,
 }
 
@@ -282,6 +286,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
     operators::to_method_calls(&mut parsed.file, &mut checked);
     indexing::to_method_calls(&mut parsed.file, &mut checked, &mut resolution);
     tensors::to_calls(&mut parsed.file, &mut checked, &mut resolution);
+    frozen::lower(&mut parsed.file, &mut checked);
 
     let error = |text: &String, span: Span| Message {
         severity: Severity::Error,
@@ -403,6 +408,10 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
         ask_models: checked.ask_models,
         literal_uses: checked.literal_uses,
         numbers: checked.numbers,
+        sealed_unfreezes: (checked.frozen_calls.iter())
+            .filter(|(_, c)| **c == kavach_checker::FrozenCall::Unfreeze(true))
+            .map(|(s, _)| *s)
+            .collect(),
         messages,
     }
 }

@@ -1,0 +1,4 @@
+[package]
+name = "a-private-key-seals-for-other-modules"
+version = "0.1.0"
+edition = "2026"

@@ -1,0 +1,16 @@
+// Rule: `freeze()` freezes the whole value: the lists, dicts and records inside it can't change either.
+// Spec: 2.20
+// expect compile error
+
+type Shop {
+    name: String
+    stock: {String: [Int]}
+}
+
+fn main() {
+    let grid = [[0, 0], [0, 0]].freeze()
+    grid[0][1] = 5                          // error: `grid` is frozen, all the way down
+    let shop = Shop(name: "a", stock: {"tea": [1]}).freeze()
+    shop.stock["tea"].push(2)               // error: `shop` is frozen, all the way down
+    print(`{grid} {shop}`)
+}

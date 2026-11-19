@@ -65,6 +65,7 @@ mod lower_expr;
 mod lower_ext;
 mod lower_fn;
 mod lower_fn_errors;
+mod lower_frozen;
 mod lower_generic;
 mod lower_gpu;
 mod lower_gpu_choice;

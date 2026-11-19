@@ -1,0 +1,22 @@
+// Rule: `unfreeze()` gives a copy that can change all the way down; the frozen value stays as it was.
+// Spec: 2.20
+// expect output: Order(id: 8, lines: ["tea", "cake"])
+// expect output: Order(id: 7, lines: ["tea"])
+// expect output: [[0, 5], [0, 0]]
+
+type Order {
+    id: Int
+    lines: [String]
+}
+
+fn main() {
+    const order = Order(id: 7, lines: ["tea"]).freeze()
+    let copy = order.unfreeze()
+    copy.id = 8
+    copy.lines.push("cake")
+    print(copy)
+    print(order)
+    let grid = [[0, 0], [0, 0]].freeze().unfreeze()
+    grid[0][1] = 5
+    print(grid)
+}

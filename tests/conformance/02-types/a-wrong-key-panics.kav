@@ -1,0 +1,13 @@
+// Rule: `unfreeze(key: k)` with a key of the right type that isn't equal to the one the value was sealed with is a panic.
+// Spec: 2.20
+// expect panic: isn't the one the value was sealed with
+
+type Key {
+    n: Int
+}
+
+fn main() {
+    const s = [1, 2].freeze(key: Key(n: 1))
+    print(s.unfreeze(key: Key(n: 1)))
+    print(s.unfreeze(key: Key(n: 2)))
+}

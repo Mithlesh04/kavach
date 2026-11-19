@@ -1,0 +1,11 @@
+// Rule: A `let` holding a frozen value may be given another frozen value of its type: only what the value holds is fixed.
+// Spec: 2.20
+// expect output: [1, 2]
+// expect output: [3]
+
+fn main() {
+    let xs = [1, 2].freeze()
+    print(xs)
+    xs = [3].freeze()
+    print(xs)
+}

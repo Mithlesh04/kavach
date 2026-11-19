@@ -1,0 +1,14 @@
+// Rule: When a sealed value's key type is private to its module, `unfreeze(key: …)` anywhere else is a compile error that names the module, even with a key of that type.
+// Spec: 2.20
+// expect compile error
+
+use session
+
+fn main() {
+    const s = session.open("asha")
+    print(s.roles)
+    const t = session.promote(s)
+    print(t.roles)
+    const opened = t.unfreeze(key: session.leaked())    // error: only module `session` can unfreeze it
+    print(opened.user)
+}

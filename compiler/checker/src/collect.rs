@@ -60,6 +60,7 @@ impl Checker<'_> {
                         self.sized_type(&name, base, &nums)
                     }
                     DefKind::Builtin => {
+                        self.frozen.used |= d.name == "Frozen";
                         let t = builtin_type(&d.name, args, self_ty);
                         if let Ty::Builtin("Ptr", pointee) = &t
                             && let Some(p) = pointee.first()
@@ -457,6 +458,11 @@ pub(crate) fn builtin_type(name: &str, args: Vec<Ty>, self_ty: Option<&Ty>) -> T
             Ty::Map(k, next())
         }
         "Self" => self_ty.cloned().unwrap_or(Ty::Error),
+        // `Frozen<T>`, or `Frozen<T, K>` sealed with a key (spec 2.20).
+        "Frozen" => {
+            let t = next();
+            Ty::Frozen(t, true, args.next().map(Box::new))
+        }
         other => Ty::Builtin(builtin_name(other), args.collect()),
     }
 }

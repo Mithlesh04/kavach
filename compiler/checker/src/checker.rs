@@ -190,6 +190,8 @@ pub(crate) struct Checker<'a> {
     pub(crate) rounds: Vec<crate::loop_place::Round>,
     /// Where a `pub(read)` field is named outside its type's module.
     pub(crate) read_only_uses: std::collections::HashSet<u32>,
+    /// Frozen values (spec 2.20).
+    pub(crate) frozen: crate::frozen::State,
     /// The lambdas and `spawn` blocks being checked, innermost last: where
     /// each body starts, and what it is. Outside variables are copies
     /// inside them (spec 3.3, 9.5).
@@ -343,6 +345,7 @@ impl<'a> Checker<'a> {
             arenas: Vec::new(),
             rounds: Vec::new(),
             read_only_uses: Default::default(),
+            frozen: Default::default(),
             copies: Vec::new(),
             spawns: Default::default(),
             updating: 0,

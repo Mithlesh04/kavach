@@ -1,0 +1,17 @@
+// Rule: `f with { … }` on a frozen record gives a new value that isn't frozen.
+// Spec: 2.20, 2.4
+// expect output: Order(id: 8, lines: ["tea", "cake"])
+// expect output: Order(id: 7, lines: ["tea"])
+
+type Order {
+    id: Int
+    lines: [String]
+}
+
+fn main() {
+    const order = Order(id: 7, lines: ["tea"]).freeze()
+    let next = order with { id: 8 }
+    next.lines.push("cake")
+    print(next)
+    print(order)
+}

@@ -1,0 +1,11 @@
+// Rule: A value frozen with `nested: false` still can't have its own fields and items assigned, added or taken away.
+// Spec: 2.20
+// expect compile error
+
+fn main() {
+    let grid = [[0, 0], [0, 0]].freeze(nested: false)
+    grid[1][0] = 3
+    grid[0] = [1, 1]            // error: `grid` is frozen
+    grid.push([2, 2])           // error: `grid` is frozen
+    print(grid)
+}
