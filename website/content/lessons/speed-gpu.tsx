@@ -295,6 +295,10 @@ export const gpuWhereDoc: LessonDoc = {
         results. <C>KAVACH_GPU</C> set when the program starts wins over it:
       </P>
       <Files name="gpu/on-cpu" first={["kavach.toml", "src/main.kav"]} />
+      <P>
+        For one value only, write <C>on cpu</C> before it: <C>on cpu pixels.map(shade)</C> (
+        <Link href="/docs/speed/loops-on-all-cores/#before-a-value">on before a value</Link>).
+      </P>
       <P>The setting takes <C>&quot;cpu&quot;</C> or <C>&quot;auto&quot;</C>, the default. Anything else is refused, with both:</P>
       <Files name="gpu/setting-typo.fails" first={["kavach.toml"]} outcome="refused" />
       <div className="flex flex-wrap gap-2.5">

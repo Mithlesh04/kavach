@@ -215,6 +215,29 @@ export const coresDoc: LessonDoc = {
         <SrcRef file="tests/conformance/04-control-flow/on-threads-runs-at-most-n-rounds.kav" label="at most n, tested" />
         <SrcRef file="tests/conformance/04-control-flow/on-threads-leaving-early-runs-in-order.kav" label="leaving early, tested" />
       </div>
+      <H2>Before a value</H2>
+      <P>
+        <C>on</C> also goes before a value, to say where the work inside it runs. <C>on cores(n)</C> limits library
+        work, such as a big <C>sort</C> or a matrix <C>@</C>, to at most <C>n</C> cores. <C>on cpu</C> keeps its{" "}
+        <Link href="/docs/speed/gpu/">GPU maps</Link> on the CPU:
+      </P>
+      <Ex name="speed/on-value" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>It covers the one value after it, and gives the same value as without it.</li>
+        <li>A count of 0 or less is a compile error when written as a number, and a panic when worked out while running:</li>
+      </ul>
+      <Ex name="speed/on-value-zero.fails" />
+      <Ex name="speed/on-value-zero.panics" />
+      <P>
+        <C>on gpu(n)</C>, to choose which GPU runs the maps, isn&apos;t built yet. Until it is, it is a compile error
+        that says what to write instead:
+      </P>
+      <Ex name="speed/on-gpu-n.fails" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/04-control-flow/on-before-a-value-gives-the-same-value.kav" label="the same value, tested" />
+        <SrcRef file="tests/conformance/04-control-flow/on-cores-before-a-value-count-of-zero-is-an-error.kav" label="a count of 0, tested" />
+        <SrcRef file="tests/conformance/04-control-flow/on-cores-before-a-value-count-under-one-panics.kav" label="a count under 1, tested" />
+      </div>
     </>
   ),
   deeper: (

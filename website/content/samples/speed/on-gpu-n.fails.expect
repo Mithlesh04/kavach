@@ -1,0 +1,1 @@
+error: choosing a GPU with `on gpu(n)` isn't built yet: leave it out and the system chooses, or write `on cpu` (to-do 16)

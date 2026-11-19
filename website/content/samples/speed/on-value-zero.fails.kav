@@ -1,0 +1,4 @@
+fn main() {
+    const xs = [2, 1]
+    print(on cores(0) xs.sort())
+}

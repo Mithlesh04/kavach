@@ -1,0 +1,4 @@
+fn main() {
+    const n = [1].len() - 1
+    print(on cores(n) [2, 1].sort())
+}
