@@ -39,7 +39,7 @@ export const listsDoc: LessonDoc = {
       </P>
       <Limits id="lists" />
       <div className="flex flex-wrap gap-2.5">
-        <SrcRef file="runtime/native/src/flat.rs" line={60} symbol="get_item" />
+        <SrcRef file="runtime/native/src/flat.rs" line={64} symbol="get_item" />
         <SrcRef file="docs/decisions/0030-byte-packed-lists.md" label="decision 0030" />
         <SrcRef file="docs/decisions/0045-packed-lists-of-small-numbers.md" label="decision 0045" />
       </div>
@@ -181,7 +181,8 @@ export const pipelineDoc: LessonDoc = {
       <P>
         Each job has one method. A name another language uses for the same job is a compile error that names
         Kavach&apos;s: <C>some</C> names <C>any</C>, <C>every</C> names <C>all</C>, <C>includes</C> names{" "}
-        <C>contains</C>, and <C>each</C> and <C>forEach</C> name <C>for_each</C>:
+        <C>contains</C>, <C>each</C> and <C>forEach</C> name <C>for_each</C>, and <C>find_first_index</C> names{" "}
+        <C>find_index</C>, as <C>index_of</C> finds the first <C>x</C>:
       </P>
       <Ex name="lists/some.fails" />
       <P>Method names are <C>snake_case</C>, like every name of a value, so a camelCase name says which one to write:</P>
@@ -260,7 +261,7 @@ export const mapsDoc: LessonDoc = {
         heap node per entry: one more hop. Kavach promised insertion order and no aliasing instead. Check both:
       </P>
       <div className="flex flex-wrap gap-2.5">
-        <SrcRef file="runtime/native/src/table.rs" line={188} symbol="bucket_of" />
+        <SrcRef file="runtime/native/src/table.rs" line={213} symbol="bucket_of" />
         <SrcRef
           file="libstdc%2B%2B-v3/include/bits/hashtable.h"
           symbol="_M_find_before_node"

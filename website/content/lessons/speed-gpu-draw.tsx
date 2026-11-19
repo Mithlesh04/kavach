@@ -135,9 +135,9 @@ export const gpuDrawDoc: LessonDoc = {
         <SrcRef file="docs/spec/15-gpu.md" label="spec 15.3 · drawing" />
         <SrcRef file="docs/spec/14-standard-library/24-gpu.md" label="spec 14.24 · std.gpu" />
         <SrcRef file="tests/conformance/15-gpu/gpu-vertex-and-fragment-fns-run-on-the-cpu.kav" label="on the CPU, tested" />
-        <SrcRef file="compiler/backend/wgsl/src/tests.rs" symbol="a_pipeline_draws_what_its_gpu_fns_say" line={230} label="real pixels, tested" />
-        <SrcRef file="compiler/backend/wgsl/src/tests.rs" symbol="a_pipeline_compiles_before_its_first_draw" line={253} label="compiled before a draw, tested" />
-        <SrcRef file="compiler/kir/src/gpu_stay.rs" symbol="a_list_drawn_is_not_fetched" line={381} label="drawn in place, tested" />
+        <SrcRef file="compiler/backend/wgsl/src/tests.rs" symbol="a_pipeline_draws_what_its_gpu_fns_say" line={270} label="real pixels, tested" />
+        <SrcRef file="compiler/backend/wgsl/src/tests.rs" symbol="a_pipeline_compiles_before_its_first_draw" line={293} label="compiled before a draw, tested" />
+        <SrcRef file="compiler/kir/src/gpu_stay.rs" symbol="a_list_drawn_is_not_fetched" line={385} label="drawn in place, tested" />
         <SrcRef file="docs/decisions/0106-drawing-on-the-gpu.md" label="decision 0106" />
         <SrcRef file="tests/conformance/15-gpu/gpu-pipeline-depth-is-true-or-false.kav" label="depth, tested" />
         <SrcRef file="tests/conformance/15-gpu/gpu-fragment-fn-takes-textures-after-its-input.kav" label="textures, tested" />

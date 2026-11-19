@@ -127,7 +127,7 @@ export const monitorDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/08-capabilities-and-agents/06-audit-log.md" label="spec 8.6 · audit log" />
         <SrcRef file="docs/spec/14-standard-library/12-log.md" label="spec 14.12 · std.log" />
-        <SrcRef file="tools/cli/tests/log.rs" line={230} symbol="audit_entries_go_to_the_collector_too" label="the collector's test" />
+        <SrcRef file="tools/cli/tests/log.rs" line={234} symbol="audit_entries_go_to_the_collector_too" label="the collector's test" />
       </div>
     </>
   ),

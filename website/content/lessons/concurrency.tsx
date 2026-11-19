@@ -194,7 +194,7 @@ export const manyDoc: LessonDoc = {
         <Link href="/docs/speed/loops-on-all-cores/"><C>on cores for</C></Link>. <C>parallel_map</C> is for items
         that can&apos;t spread themselves like that: downloads, files, work of uneven sizes.
       </P>
-      <div><SrcRef file="docs/spec/09-concurrency.md" line={66} symbol="Each task runs as `spawn thread` makes it" label="spec 9.3" /></div>
+      <div><SrcRef file="docs/spec/09-concurrency.md" line={68} symbol="Each task runs as `spawn thread` makes it" label="spec 9.3" /></div>
       <H2>When an item fails or panics</H2>
       <P>
         Given a function that can fail, <C>parallel_map</C> fails with the first error in the items&apos; order. A panic

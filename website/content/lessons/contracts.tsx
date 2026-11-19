@@ -219,7 +219,7 @@ export const testingDoc: LessonDoc = {
         <C>Run(events: [], passed: false)</C> breaks <C>passed == events.is_empty()</C>, so the case was dropped and
         the run went on with the rest.
       </P>
-      <SrcRef file="tools/cli/tests/project.rs" line={159} symbol="found_cases_that_break_an_invariant_are_dropped" label="dropped cases, tested" />
+      <SrcRef file="tools/cli/tests/project.rs" line={175} symbol="found_cases_that_break_an_invariant_are_dropped" label="dropped cases, tested" />
       <H2>What you write, what gets tested</H2>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Types and invariants: valid values of every type, edge cases first.</li>

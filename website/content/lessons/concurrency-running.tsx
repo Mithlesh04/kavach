@@ -51,7 +51,7 @@ export const turnsDoc: LessonDoc = {
         A machine that stalls can&apos;t be written in Kavach, so this rule is tested in the runtime&apos;s own Rust
         tests, where a turn can be made to start late:
       </P>
-      <SrcRef file="runtime/core/src/tasks/tests.rs" line={266} symbol="a_late_turn_does_not_reorder_sleepers" label="a late turn, tested" />
+      <SrcRef file="runtime/core/src/tasks/tests.rs" line={270} symbol="a_late_turn_does_not_reorder_sleepers" label="a late turn, tested" />
       <Note>
         Why it matters: a bug in a program with threads often shows up once in a hundred runs. With fixed turns, the
         same program does the same thing every time, so a bug that happens once happens every time, and can be found.

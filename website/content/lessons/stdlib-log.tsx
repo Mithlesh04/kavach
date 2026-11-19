@@ -83,7 +83,7 @@ export const loggingDoc: LessonDoc = {
         </li>
       </ul>
       <div className="flex flex-wrap gap-2.5">
-        <SrcRef file="tools/cli/tests/frames.rs" line={116} symbol="only_a_program_built_with_tracy_holds_it" label="--tracy, tested" />
+        <SrcRef file="tools/cli/tests/frames.rs" line={120} symbol="only_a_program_built_with_tracy_holds_it" label="--tracy, tested" />
         <SrcRef file="docs/decisions/0123-tracy-for-live-profiling.md" label="decision 0123" />
       </div>
       <H2>Metrics</H2>
@@ -112,7 +112,7 @@ export const loggingDoc: LessonDoc = {
         <SrcRef file={`docs/spec/14-standard-library/${LOG}`} label="spec 14.12 · traces and metrics" />
         <SrcRef file="tests/conformance/14-standard-library/spans-carry-the-trace.kav" label="spans, tested" />
         <SrcRef file="tools/cli/tests/log.rs" symbol="spans_and_metrics_go_to_the_collector" line={LOG_TEST_LINE} label="sent to a collector, tested" />
-        <SrcRef file="tools/cli/tests/log.rs" symbol="server_spans_are_named_by_method_not_path" line={375} label="named by method, tested" />
+        <SrcRef file="tools/cli/tests/log.rs" symbol="server_spans_are_named_by_method_not_path" line={381} label="named by method, tested" />
         <SrcRef file="docs/decisions/0107-traces-and-metrics.md" label="decision 0107" />
         <SrcRef file="tools/cli/tests/frames.rs" symbol="a_frame_is_timed_and_written_as_a_chrome_trace" label="Chrome trace, tested" />
       </div>

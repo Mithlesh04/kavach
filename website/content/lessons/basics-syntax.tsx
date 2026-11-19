@@ -133,7 +133,7 @@ export const keywordsDoc: LessonDoc = {
       <P>A keyword can&apos;t name a field either: the field could never be read, since <C>r.agent</C> can&apos;t be written.</P>
       <Ex name="syntax/keyword-field.fails" />
       <div className="flex flex-wrap gap-2.5">
-        <SrcRef file="docs/spec/01-basics.md" line={82} symbol="Keywords" label="spec 1.6 · the full list" />
+        <SrcRef file="docs/spec/01-basics.md" line={85} symbol="Keywords" label="spec 1.6 · the full list" />
         <SrcRef file="tests/conformance/02-types/a-keyword-cant-name-a-field.kav" label="a keyword as a field, tested" />
       </div>
     </>

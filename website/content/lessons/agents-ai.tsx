@@ -173,7 +173,7 @@ export const aiFailsDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/08-capabilities-and-agents/04-typed-ai-calls.md" label="spec 8.4 · busy providers" />
         <SrcRef file="runtime/net/src/ai/gate.rs" label="the gate" />
-        <SrcRef file="tools/cli/tests/ai_crowd.rs" line={103} symbol="forty_asks_at_once_all_get_through_a_provider_that_takes_four" label="its test: 40 asks, a provider that takes 4" />
+        <SrcRef file="tools/cli/tests/ai_crowd.rs" line={107} symbol="forty_asks_at_once_all_get_through_a_provider_that_takes_four" label="its test: 40 asks, a provider that takes 4" />
       </div>
     </>
   ),
@@ -288,8 +288,8 @@ export const modelDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/08-capabilities-and-agents/04-typed-ai-calls.md" label="spec 8.4 · ask<T>" />
         <SrcRef file="docs/decisions/0056-the-model-is-chosen-in-code.md" label="decision 0056" />
-        <SrcRef file="runtime/net/src/ai.rs" line={153} label="where the key is read" />
-        <SrcRef file="runtime/net/src/ai/tests.rs" line={106} symbol="a_key_from_the_env_file_is_sent" label="a key in .env, tested" />
+        <SrcRef file="runtime/net/src/ai.rs" line={157} label="where the key is read" />
+        <SrcRef file="runtime/net/src/ai/tests.rs" line={110} symbol="a_key_from_the_env_file_is_sent" label="a key in .env, tested" />
       </div>
     </>
   ),

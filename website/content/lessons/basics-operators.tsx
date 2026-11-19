@@ -140,8 +140,8 @@ export const comparisonDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/01-basics.md" label="spec 1.8 · equality" />
         <SrcRef file="docs/decisions/0039-equality-is-deep-and-fast.md" label="decision 0039" />
-        <SrcRef file="compiler/interp/src/value.rs" line={217} symbol="ptr_eq" label="the quick check, run" />
-        <SrcRef file="runtime/native/src/display.rs" line={257} symbol="if a == b" label="the quick check, native" />
+        <SrcRef file="compiler/interp/src/value.rs" line={221} symbol="ptr_eq" label="the quick check, run" />
+        <SrcRef file="runtime/native/src/equality.rs" line={45} symbol="if a == b" label="the quick check, native" />
       </div>
       <H2>Lists in order</H2>
       <P>

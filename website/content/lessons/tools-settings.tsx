@@ -175,7 +175,7 @@ export const envDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${SPEC("13-environment-variables.md")}`} label="spec 10.13 · environment variables" />
         <SrcRef file="docs/decisions/0084-environment-variables-and-granted-capabilities.md" label="decision 0084" />
-        <SrcRef file="tools/cli/tests/env_files.rs" symbol="programs_read_the_dot_env_file" line={28} label="every source and the built copy, tested" />
+        <SrcRef file="tools/cli/tests/env_files.rs" symbol="programs_read_the_dot_env_file" line={32} label="every source and the built copy, tested" />
         <SrcRef file="tests/conformance/10-modules/env-values-are-secret.kav" label="secret, tested" />
       </div>
     </>

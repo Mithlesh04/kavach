@@ -59,7 +59,7 @@ export const fontDoc: LessonDoc = {
       </P>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${FILE}`} label="spec 14.31 · std.font" />
-        <SrcRef file="tools/cli/tests/fonts.rs" line={43} symbol="text_is_shaped_and_drawn_into_an_atlas" label="shaping and atlas, tested" />
+        <SrcRef file="tools/cli/tests/fonts.rs" line={47} symbol="text_is_shaped_and_drawn_into_an_atlas" label="shaping and atlas, tested" />
         <SrcRef file="tests/conformance/14-standard-library/bytes-that-are-not-a-font-are-bad-font.kav" label="BadFont, tested" />
         <SrcRef file="stdlib/font/font.kav" label="font.kav" />
         <SrcRef file="docs/decisions/0121-fonts-through-rustybuzz.md" label="decision 0121" />

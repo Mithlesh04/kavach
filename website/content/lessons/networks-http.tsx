@@ -178,7 +178,7 @@ export const httpServeDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="tests/conformance/14-standard-library/http-joins-traces.kav" label="joined traces, tested" />
         <SrcRef file="tests/conformance/14-standard-library/http-servers-can-start-their-own-traces.kav" label="own traces, tested" />
-        <SrcRef file="tools/cli/tests/log.rs" symbol="server_spans_are_named_by_method_not_path" line={375} label="named by method, tested" />
+        <SrcRef file="tools/cli/tests/log.rs" symbol="server_spans_are_named_by_method_not_path" line={381} label="named by method, tested" />
       </div>
       <H2>Limits</H2>
       <P>

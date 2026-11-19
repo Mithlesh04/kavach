@@ -150,7 +150,7 @@ export const cRecordsDoc: LessonDoc = {
         <li>It is passed as the system&apos;s C passes a <C>struct</C>: in registers, on the stack, or through a hidden pointer.</li>
         <li>This works on x86-64 (Windows, Linux, macOS on Intel) for now; elsewhere it is a compile error.</li>
       </ul>
-      <SrcRef file="tools/cli/tests/c_libraries.rs" line={187} symbol="records_go_to_a_c_library_by_value" label="by value, tested" />
+      <SrcRef file="tools/cli/tests/c_libraries.rs" line={191} symbol="records_go_to_a_c_library_by_value" label="by value, tested" />
     </>
   ),
 };
@@ -197,7 +197,7 @@ export const cLoadedDoc: LessonDoc = {
       <P>Loading runs the library&apos;s own start-up code, so <C>open</C> and each call go inside <C>unsafe</C>:</P>
       <CodeBlock code={loadedUnsafe.files[0].code} file="src/main.kav" output={loadedUnsafe.output} outcome="refused" />
       <div className="flex flex-wrap gap-2.5">
-        <SrcRef file="tools/cli/tests/c_libraries.rs" line={60} symbol="a_program_loads_a_library_while_running" label="tested" />
+        <SrcRef file="tools/cli/tests/c_libraries.rs" line={64} symbol="a_program_loads_a_library_while_running" label="tested" />
         <SrcRef file="tests/conformance/10-modules/loaded-library-calls-need-unsafe/src/main.kav" label="unsafe, tested" />
       </div>
     </>
@@ -226,7 +226,7 @@ export const libraryDoc: LessonDoc = {
         and call it from the code you have. The repository&apos;s own test does exactly this from Python.
       </Note>
       <div className="flex flex-wrap gap-2.5">
-        <SrcRef file="tools/cli/tests/library.rs" line={93} symbol="other_languages_call_a_kavach_library" />
+        <SrcRef file="tools/cli/tests/library.rs" line={97} symbol="other_languages_call_a_kavach_library" />
         <SrcRef file="docs/decisions/0026-a-library-for-other-languages.md" label="decision 0026" />
       </div>
     </>

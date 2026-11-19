@@ -397,10 +397,10 @@ export const recursionDoc: LessonDoc = {
       </P>
       <Note>For a long repetition, a <Link href="/docs/basics/for-loop/">for</Link> or <Link href="/docs/basics/while-loop/">while</Link> loop is the right tool.</Note>
       <div className="flex flex-wrap gap-2.5">
-        <SrcRef file="compiler/interp/src/stack.rs" line={10} symbol="STACK_USE" />
-        <SrcRef file="compiler/interp/src/lib.rs" line={92} symbol="STACK_SIZE" />
-        <SrcRef file="runtime/native/src/lib.rs" line={119} symbol="STACK_SIZE" />
-        <SrcRef file="runtime/native/src/lib_calls.rs" line={21} symbol="LIB_STACK" />
+        <SrcRef file="compiler/interp/src/stack.rs" line={14} symbol="STACK_USE" />
+        <SrcRef file="compiler/interp/src/lib.rs" line={99} symbol="STACK_SIZE" />
+        <SrcRef file="runtime/native/src/lib.rs" line={150} symbol="STACK_SIZE" />
+        <SrcRef file="runtime/native/src/lib_calls.rs" line={25} symbol="LIB_STACK" />
       </div>
     </>
   ),

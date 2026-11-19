@@ -229,10 +229,29 @@ export const buildDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/10-modules-and-packages/05-command-line.md" label="spec 10.5 · a program's version" />
         <SrcRef file="tools/cli/tests/packed.rs" label="packed executables, tested" />
-        <SrcRef file="tools/cli/tests/windows_resources.rs" line={95} symbol="a_built_program_has_its_icon_and_a_manifest" label="icon and manifest, tested" />
+        <SrcRef file="tools/cli/tests/windows_resources.rs" line={100} symbol="a_built_program_has_its_icon_and_a_manifest" label="icon and manifest, tested" />
         <SrcRef file="docs/decisions/0120-windows-icon-and-manifest.md" label="decision 0120" />
-        <SrcRef file="tools/cli/tests/version.rs" line={26} symbol="a_program_says_what_built_it_and_answers_version_only_when_asked_to" label="its test, in every way of running" />
-        <SrcRef file="runtime/native/src/rt_std.rs" line={404} symbol="a_program_for_other_operations_is_stopped_with_a_reason" label="the run-time library's check" />
+        <SrcRef file="tools/cli/tests/version.rs" line={44} symbol="a_program_says_what_built_it_and_answers_version_only_when_asked_to" label="its test, in every way of running" />
+        <SrcRef file="runtime/native/src/rt_std.rs" line={444} symbol="a_program_for_other_operations_is_stopped_with_a_reason" label="the run-time library's check" />
+      </div>
+      <H2>No console window on Windows</H2>
+      <P>
+        A program that shows a window doesn&apos;t want a console window beside it. With <C>console = false</C> under{" "}
+        <C>[build]</C>, <C>kavach build</C> makes it a Windows window program, which starts with no console window:
+      </P>
+      <CodeBlock code={specBlockWith("10-modules-and-packages/05-command-line.md", "10.5", "console = ")} lang="toml" file="kavach.toml, from spec 10.5" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>What it prints goes nowhere, as nothing shows it.</li>
+        <li>
+          A panic still ends it, and goes to the{" "}
+          <Link href="/docs/standard-library/desktop-apps/#crash-reports">crash reports</Link> of <C>std.app</C> when
+          the program asks for them.
+        </li>
+        <li>The default is <C>true</C>. Other systems have no such kind of program, so there the setting is checked but not used.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/10-modules-and-packages/05-command-line.md" label="spec 10.5 · no console window" />
+        <SrcRef file="tools/cli/tests/windows_resources.rs" line={128} symbol="console_false_makes_a_window_program" label="tested" />
       </div>
     </>
   ),
@@ -280,7 +299,7 @@ export const checkDoc: LessonDoc = {
       <P>
         A file with syntax errors gets only those. A string left open turns the lines after it into text, so later
         checks would only mislead whoever fixes the first error.{" "}
-        <SrcRef file="compiler/driver/tests/syntax_first.rs" symbol="syntax_errors_come_alone" line={7} label="tested" />
+        <SrcRef file="compiler/driver/tests/syntax_first.rs" symbol="syntax_errors_come_alone" line={11} label="tested" />
       </P>
     </>
   ),
