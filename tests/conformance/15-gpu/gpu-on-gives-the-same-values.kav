@@ -1,0 +1,26 @@
+// Rule: A `map` gives the same values on every device `gpu.on` or `on:` chooses.
+// Spec: 15.6, 14.24
+// expect output: same
+
+use std.gpu
+
+gpu fn step(x: Float32) -> Float32 {
+    x * 2.0 + 1.0
+}
+
+fn main() {
+    let xs: [Float32] = []
+    for i in 0..100 {
+        xs.push(Float32(i))
+    }
+    const want = xs.map(step)
+    for d in gpu.devices() {
+        const got = gpu.on(d) {
+            xs.map(step)
+        }
+        if got != want or xs.map(step, on: d) != want {
+            print(`{d.name} differs`)
+        }
+    }
+    print("same")
+}

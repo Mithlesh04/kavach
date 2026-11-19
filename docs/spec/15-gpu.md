@@ -126,7 +126,7 @@ print(lit.map(x => step(x)).sum(x => x))
 const lit = pixels.map(p => scale(p, gain)).map(p => glow(p, 0.5))   // one pass on the GPU
 ```
 
-The environment variable `KAVACH_GPU` changes where it runs, for debugging: `off` (or `cpu`) runs everything on the CPU, `on` uses the GPU for any length, and `check` runs both and panics at the first item whose results differ (floats compared with `near`, 14.2). `[run] gpu = "cpu"` in `kavach.toml` keeps a program's maps on the CPU the same way, as on a machine whose GPU it shouldn't use; `KAVACH_GPU` at launch wins (decision 0126).
+The environment variable `KAVACH_GPU` changes where it runs, for debugging: `off` (or `cpu`) runs everything on the CPU, `on` uses the GPU for any length, and `check` runs both and panics at the first item whose results differ (floats compared with `near`, 14.2). `[run] gpu = "cpu"` in `kavach.toml` keeps a program's maps on the CPU the same way, as on a machine whose GPU it shouldn't use; `KAVACH_GPU` at launch wins (decision 0126). Both can name a device too (15.6).
 
 ## 15.3 Drawing
 
@@ -258,8 +258,67 @@ const strongest = hits.max_by(.energy)
 - **Joins.** `inner_join` and `left_join` with keys of the four types match on the GPU. The `row` lambda runs on the GPU when it fits a `gpu fn`, and on the CPU otherwise. The rows come in the CPU's order: that of `items`, then that of `other`.
 - A result stays in GPU memory until the CPU reads it, as a `map`'s does ([decision 0055](../decisions/0055-gpu-results-stay-until-read.md)). `KAVACH_GPU=check` (15.2) runs both and compares them.
 
+## 15.6 Choosing a GPU
+
+A machine may have several GPUs, of any vendors: an NVIDIA or AMD card, the processor's own Intel or AMD GPU, a software one. Each is a **device**, numbered from 0 as `system.gpus()` (14.25) and `gpu.devices()` (14.24) list them, the best first ([decision 0139](../decisions/0139-choosing-gpus.md)). GPUs of different vendors share no memory, so a list one GPU holds and another must read goes through main memory.
+
+**By default the system decides.** A program needs no code to use the right GPU:
+
+- **The devices are ranked once, at the first GPU work:** discrete GPUs, then integrated ones, then virtual and other ones, each kind in the order the system lists them. The CPU comes last. A software GPU (`GpuKind.Software`, which draws on the processor) runs work only when chosen, as the CPU runs Kavach's own code faster.
+- **New work goes to the least busy device:** the one with the least work in its queue, by Kavach's own count of the work it sent and hasn't finished; on a tie, the best ranked. A list already in one GPU's memory (15.2) is worked on there.
+- **A device that fails is skipped from then on:** one that can't be opened, is lost, or runs out of memory. Its work goes to the next device in the ranking, and to the CPU after the last. The results are the same on any device (15.2), so only the time shows it.
+
+**A developer can choose**, in four ways:
+
+```kavach
+use std.gpu
+
+gpu fn step(x: Float32) -> Float32 {
+    x * 0.5 + 1.0
+}
+
+gpu(1) fn shade(x: Float32) -> Float32 {     // this function's maps on device 1
+    x * x
+}
+
+fn main() uses Console, Gpu {
+    const devices = gpu.devices()            // [GpuDevice], the best first
+    for d in devices {
+        print(`{d.index}: {d.name} ({d.vendor})`)
+    }
+    const a = gpu.on(devices[0]) {
+        xs.map(step)                         // device 0, as every GPU map in the block
+    }
+    const b = xs.map(step, on: devices[0])   // this call on device 0
+    const c = on gpu(1) xs.map(step)         // device 1, by its number (4.9)
+    const d = xs.map(shade)                  // device 1: `shade` says so
+}
+```
+
+- **A block:** `gpu.on(device) { … }` is a block given to a call (4.8). Every GPU `map`, `filter`, `sum`, `min` and `max` in it runs on `device`, and so does the GPU work of the tasks it spawns (9.1).
+- **An argument on a call:** `xs.map(f, on: device)` runs that one `map` on `device`, with any GPU work in working out `xs`. It wins over a block around it. `on:` comes after `f`.
+- **A value:** `on gpu(n) x` (4.9) runs the GPU work of `x` on device `n`, as a block does.
+- **A function:** `gpu(n) fn` runs the GPU work of the function on device `n`: a `map` given the function, or a lambda calling it (15.2). `n` is a whole number written in the code, 0 or more. A lambda calling `gpu(n) fn`s of two numbers is a compile error. Called from another `gpu fn`, its number means nothing: the outer function's work decides.
+
+Where several choices cover one call, the nearest wins: the call's `on:`, then the innermost `gpu.on`, `on gpu(n)` or `on cpu` around it, then `gpu(n) fn`, then the settings below, then the system. A choice says only where: whether a `map` is big enough to run on a GPU at all is still decided as 15.2 says, and the values are the same as without it.
+
+- **Choosing a device or listing them needs `uses Gpu`** (8.1): `gpu.devices()`, `gpu.on`, `on:`, `on gpu(n)`, and a `map` of a `gpu(n) fn`. A `gpu fn` and its `map` with no choice need nothing, as before.
+- **A missing device stops the program at its start,** before any of its code runs, with exit code 1 and a message naming the device and the ones the machine has: a `gpu(n) fn` or an `on gpu(n)` with a number written in the code, or `KAVACH_GPU` or `[run] gpu` naming a device that isn't there. A number worked out while running that names no device is a panic. A device the list has but that can't be opened is skipped, as a device that fails.
+
+**With no code change**, for one run or for a project:
+
+- `KAVACH_GPU` at launch takes a vendor's name (`nvidia`, `amd`, `intel`, `apple`, `qualcomm`, `arm` or `microsoft`, in any case: the best device of that maker), a device's number (`KAVACH_GPU=1`), or `cpu`. A name or number takes the system's place; the code's own choices still win. `cpu` (or `off`) keeps every GPU `map` on the CPU, the code's choices too, as do `on` and `check` (15.2).
+- `[run] gpu` in `kavach.toml` takes the same: `gpu = "amd"`, `gpu = "1"`, `gpu = "cpu"`, or `"auto"`, the default, for the system's choice (10.11). `KAVACH_GPU` at launch wins.
+- Drawing (15.3, 14.24) uses the program's GPU: the device `KAVACH_GPU` or `[run] gpu` names, or else the best one. A list a `map` left on another device is copied over to be drawn.
+- `KAVACH_PAR_LOG=1` notes each device when it opens, and each device skipped, with why.
+
+*Not built yet:*
+
+- **A big job splits across all GPUs:** a large `map`, `filter`, sum or matrix product is cut into parts, one for each device, sized to each device's speed, when its size pays for moving the data, as an `on cores` loop is cut across cores (4.9). The results are the same, in the same order.
+- **Ranking by memory:** within a kind, the device with the most memory first. The GPU interfaces Kavach uses don't report it yet, so ties keep the system's order.
+
 ## Open questions
 
 - A `Slice` method in a `gpu fn`: its `Part` holds `Int?`s, which a `gpu fn` can't take (15.1).
 - `min` and `max` of `Float32` on the GPU, and `filter` of records and tuples. Float `min` and `max` must keep `NaN` last (14.2). Float sums are decided: exact and rounded once, in any order ([decision 0135](../decisions/0135-tables-and-grouping.md), which replaces [decision 0031](../decisions/0031-loops-on-all-cores.md)'s in-order float sums for lists).
-- A `Gpu` capability for code that chooses the device or keeps GPU memory, as the platform plan describes.
+- Whether code that keeps GPU memory itself, as the platform plan describes, needs `uses Gpu` too, as choosing a device does (15.6).

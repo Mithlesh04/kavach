@@ -65,6 +65,8 @@ impl Checker<'_> {
                 ("audio", "listen_id" | "take_id" | "stop_listening_id" | "record_id") => {
                     "Microphone"
                 }
+                // Listing the GPUs to choose one (spec 15.6).
+                ("gpu", "devices_id") => "Gpu",
                 // Parts `System` doesn't cover (spec 14.25, decision 0112).
                 ("system", "critical_id") => "System.critical.read",
                 ("system", "act_id") => "System.critical.write",

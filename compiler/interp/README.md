@@ -59,6 +59,7 @@ Not supported yet: agents, capabilities, `ask` and `unsafe` (Phase 2 and the nat
 | `src/std_writers.rs` | `FileWriter` (spec 14.3), on real files or the fake file system of `kavach test` |
 | `src/std_log.rs` | `std.log` (spec 14.12): events, spans and seeds run as blocks given to a call (4.8), metrics, to the collector of `[log.otlp]` |
 | `src/std_gpu.rs` | `std.gpu`'s drawing (spec 14.24), from `runtime/gpu/src/draw.rs` |
+| `src/gpu_choice.rs` | Choosing a GPU (spec 15.6): the start's check of every GPU the code names, and `gpu.on`, `on:` and `on gpu(n)`, whose maps run on the CPU here |
 | `src/std_process.rs` | `std.process` (spec 14.23), from `runtime/process`; waiting for a child lets other tasks run |
 | `src/std_window.rs` | `std.window` (spec 14.22), from `runtime/window`, and `std.input`'s gamepads (14.26), from `runtime/input` |
 | `src/std_audio.rs` | `std.audio` (spec 14.27), from `runtime/audio`: sounds and voices by number |

@@ -144,6 +144,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0136](0136-tensor-the-one-array-type.md) | `Tensor` is the one array type, like NumPy's `ndarray`; `Matrix` goes (a 2-D tensor, `Tensor<T, dims: 2>`, does its job); NumPy's methods in six steps, the same bits on CPU and GPU | Accepted |
 | [0137](0137-numbers-in-types.md) | Numbers in types: types positional, numbers named (`List<Int, max: 2>`, `Int<bits: 24>`, `Tensor<Float, dims: 2>`) | Accepted |
 | [0138](0138-spawn-arguments-first.md) | A spawned call's arguments are worked out at the spawn, as Go's `go f(x)` | Accepted |
+| [0139](0139-choosing-gpus.md) | Several GPUs: the system chooses, and code can say where | Accepted |
 | [0140](0140-ai-providers.md) | AI providers other than Anthropic: a provider is a Kavach interface that translates, the runtime sends; errors a program can tell apart; prices that say how far to trust them | Accepted |
 
 ## Open decisions

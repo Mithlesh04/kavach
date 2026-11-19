@@ -44,6 +44,8 @@ impl<'a> Lowerer<'a> {
                 Stmt::Expr(at(K::Rt(RtOp::RunCores, vec![n, cpu, threads]), Type::Unit)),
             );
         }
+        // Every GPU the code names by number, and `[run] gpu`'s (15.6).
+        out.extend(self.gpu_start(run.gpu.as_deref()));
         if spawns_on_cores(&self.c.file) {
             out.push(Stmt::Expr(ir::Expr {
                 kind: K::Rt(RtOp::TaskParallel, Vec::new()),

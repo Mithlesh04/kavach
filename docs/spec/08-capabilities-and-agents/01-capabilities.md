@@ -14,6 +14,7 @@ A capability is permission to affect the outside world. Built-in capabilities:
 | `Clipboard` | Reading and writing the clipboard (14.17): what a person copied is private |
 | `Serial` | Serial ports (14.18): boards, sensors, modems and other devices on a cable |
 | `Window` | Opening windows and reading their window events (14.22) |
+| `Gpu` | Choosing which GPU runs the program's GPU work, and listing the GPUs (15.6). Running a `gpu fn` needs none |
 | `Input` | The keyboard, the mouse and text typed in a program's own windows (14.22), and gamepads (14.26) |
 | `Process` | Running other programs (14.23); `Process("name")` only that one |
 | `Audio` | Playing sound (14.27) |

@@ -7,13 +7,16 @@
 //! copied over while the GPU works (spec 15.2, decision 0067); its
 //! [`Later::wait`] gives the partials when they are needed.
 
-use crate::{GpuError, Items, dispatch, gpu};
+use crate::{Gpu, GpuError, Items, Pending, dispatch};
 
 /// A reduction in the GPU's queue.
 pub struct Later {
     staging: wgpu::Buffer,
     index: wgpu::SubmissionIndex,
     words: usize,
+    /// The device it runs on, which counts it as work until it is read.
+    gpu: &'static Gpu,
+    _pending: Pending,
 }
 
 /// Queues reduce kernel `wgsl` (`compiler/backend/wgsl/src/reduce.rs`) over
@@ -24,7 +27,19 @@ pub fn reduce_later(
     n: usize,
     captures: &[u32],
 ) -> Result<Later, GpuError> {
-    let gpu = gpu().ok_or(GpuError::Unavailable)?;
+    crate::map::on_device(wgsl, items, |gpu, items| {
+        later_on(gpu, wgsl, items, n, captures)
+    })
+}
+
+/// `reduce_later` on device `gpu`.
+fn later_on(
+    gpu: &'static Gpu,
+    wgsl: &str,
+    items: Items,
+    n: usize,
+    captures: &[u32],
+) -> Result<Later, GpuError> {
     if n > gpu.max_items {
         return Err(GpuError::Unavailable);
     }
@@ -42,6 +57,8 @@ pub fn reduce_later(
         staging: run.staging,
         index: run.index,
         words,
+        gpu,
+        _pending: run.pending,
     })
 }
 
@@ -50,7 +67,7 @@ impl Later {
     /// for each workgroup, in order, for the caller to combine. Work queued
     /// after it goes on.
     pub fn wait(self) -> Result<Vec<u32>, GpuError> {
-        let gpu = gpu().ok_or(GpuError::Unavailable)?;
+        let gpu = self.gpu;
         let mut out = vec![0u8; self.words * 4];
         let back = out.len() as u64;
         gpu.read_back(&self.staging, back, Some(&mut out), Some(self.index))?;

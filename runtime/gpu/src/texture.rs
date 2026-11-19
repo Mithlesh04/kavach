@@ -7,7 +7,7 @@
 //! textures has a second bind group: one sampler, blending between the
 //! nearest pixels and clamping at the edges, then each texture in turn.
 
-use crate::device::gpu;
+use crate::devices::gpu;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, MutexGuard, OnceLock};
 

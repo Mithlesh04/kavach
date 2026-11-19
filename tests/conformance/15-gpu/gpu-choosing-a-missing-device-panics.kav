@@ -1,0 +1,13 @@
+// Rule: A GPU number worked out while running that names no device is a panic.
+// Spec: 15.6
+// expect panic: there is no GPU 4096
+
+gpu fn double(x: Float32) -> Float32 {
+    x * 2.0
+}
+
+fn main() {
+    const n = 4000 + 96
+    const xs: [Float32] = [1.0]
+    print(on gpu(n) xs.map(double))
+}

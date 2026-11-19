@@ -7,12 +7,14 @@
 //! types are not checked yet.
 
 mod exprs;
+mod gpu_numbers;
 mod items;
 pub mod rounds;
 mod types;
 pub mod visit;
 
 pub use exprs::*;
+pub use gpu_numbers::{GpuNumberAt, highest_gpu};
 pub use items::*;
 pub use kavach_lexer::Span;
 pub use types::*;

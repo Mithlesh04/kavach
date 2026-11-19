@@ -43,7 +43,7 @@ impl Parser<'_> {
             // `greet("Asha") { … }`: a block after a call (spec 4.8).
             if self.at(&TokenKind::LBrace) && self.previous() == Some(&TokenKind::RParen) {
                 self.error_here(
-                    "only `log.span(name)` and `random.seeded(seed)` take a block after them (spec 4.8): start the block on a new line, or call one of them",
+                    "only `log.span(name)`, `random.seeded(seed)` and `gpu.on(device)` take a block after them (spec 4.8): start the block on a new line, or call one of them",
                 );
                 self.recover_line();
                 return;

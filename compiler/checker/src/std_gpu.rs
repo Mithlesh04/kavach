@@ -33,6 +33,8 @@ impl Checker<'_> {
                 Ty::Unit,
             ),
             "show_id" | "drop_frame_id" | "close_id" | "drop_texture_id" => (vec![id], Ty::Unit),
+            // Each device's name, vendor, kind and interface (spec 15.6).
+            "devices_id" => (vec![], Ty::List(Box::new(Ty::Prim(Prim::String)))),
             // A texture's size and its pixels (spec 15.3).
             "texture_id" => {
                 let bytes = Ty::List(Box::new(Ty::Prim(Prim::UInt8)));

@@ -30,8 +30,14 @@ impl<'a> Lowerer<'a> {
         let ast::ExprKind::Call { callee, args, .. } = &call.kind else {
             return Err(self.unsupported("this block", call.span));
         };
-        let seeded =
-            matches!(&callee.kind, ast::ExprKind::Field { name, .. } if name.name == "seeded");
+        let named =
+            |n: &str| matches!(&callee.kind, ast::ExprKind::Field { name, .. } if name.name == n);
+        let seeded = named("seeded");
+        // `gpu.on(device) { … }` (spec 15.6): the device's number.
+        let operands = match (named("on"), args.first()) {
+            (true, Some(device)) => Some(vec![self.device_number(&device.value)?]),
+            _ => None,
+        };
         let (op, wanted): (RtOp, &[&str]) = if seeded {
             (RtOp::ScopeSeeded, &["seed"])
         } else {
@@ -47,14 +53,20 @@ impl<'a> Lowerer<'a> {
                 *slot = Some(&a.value);
             }
         }
-        let mut operands = Vec::new();
-        for g in given {
-            operands.push(match g {
-                Some(e) => self.expr(e)?,
-                // No `from`: 0, no text.
-                None => self.at(K::Int(0), Type::I64, line),
-            });
-        }
+        let (op, operands) = match operands {
+            Some(device) => (RtOp::GpuPlace, device),
+            None => {
+                let mut operands = Vec::new();
+                for g in given {
+                    operands.push(match g {
+                        Some(e) => self.expr(e)?,
+                        // No `from`: 0, no text.
+                        None => self.at(K::Int(0), Type::I64, line),
+                    });
+                }
+                (op, operands)
+            }
+        };
         let depth = self.new_local(Type::I64);
         let mut block = ir::Block::default();
         block.stmts.push(Stmt::Let(
@@ -100,24 +112,52 @@ impl<'a> Lowerer<'a> {
             ast::ValuePlace::Cores(Some(n)) => (self.expr(n)?, 2),
             ast::ValuePlace::Cores(None) => (self.at(K::Int(0), Type::I64, line), 0),
             ast::ValuePlace::Cpu => (self.at(K::Int(0), Type::I64, line), 1),
-            ast::ValuePlace::Gpu(n) => return Err(self.unsupported("`on gpu(n)`", n.span)),
+            // `on gpu(n) x` (spec 15.6).
+            ast::ValuePlace::Gpu(n) => {
+                let start = K::Rt(RtOp::GpuPlace, vec![self.expr(n)?]);
+                return self.within(start, ty, line, |me, stmts| me.value_into(value, ty, stmts));
+            }
         };
         let flags = self.at(K::Int(flags), Type::I64, line);
+        let start = K::Rt(RtOp::ScopePlace, vec![count, flags]);
+        self.within(start, ty, line, |me, stmts| me.value_into(value, ty, stmts))
+    }
+
+    /// `value` worked out into `stmts`: as a statement when it has no
+    /// type (`on cores(2) print(…)`), else the value.
+    fn value_into(
+        &mut self,
+        value: &'a ast::Expr,
+        ty: Type,
+        stmts: &mut Vec<Stmt>,
+    ) -> Lowered<Option<ir::Expr>> {
+        match ty {
+            Type::Unit => self.expr_stmt(value, stmts).map(|_| None),
+            _ => self.expr(value).map(Some),
+        }
+    }
+
+    /// What `inner` lowers, inside the place op `start` puts on the scope
+    /// stack, which is left however it ends (spec 4.9, 15.6).
+    pub(crate) fn within(
+        &mut self,
+        start: K,
+        ty: Type,
+        line: u32,
+        inner: impl FnOnce(&mut Self, &mut Vec<Stmt>) -> Lowered<Option<ir::Expr>>,
+    ) -> Lowered<ir::Expr> {
         let depth = self.new_local(Type::I64);
         let mut block = ir::Block::default();
-        block.stmts.push(Stmt::Let(
-            depth,
-            self.at(K::Rt(RtOp::ScopePlace, vec![count, flags]), Type::I64, line),
-        ));
+        block
+            .stmts
+            .push(Stmt::Let(depth, self.at(start, Type::I64, line)));
         self.scoped_depths.push((depth, self.loop_frames.len()));
-        // A value of no type (`on cores(2) print(…)`) as a statement.
         let result = self.new_local(ty);
-        let lowered = match ty {
-            Type::Unit => self.expr_stmt(value, &mut block.stmts),
-            _ => self
-                .expr(value)
-                .map(|v| block.stmts.push(Stmt::Let(result, v))),
-        };
+        let lowered = inner(self, &mut block.stmts).map(|v| {
+            if let Some(v) = v {
+                block.stmts.push(Stmt::Let(result, v));
+            }
+        });
         self.scoped_depths.pop();
         lowered?;
         block.stmts.push(Stmt::Expr(self.leave(depth, line)));
@@ -151,7 +191,10 @@ pub(crate) fn scope_blocks(functions: &[Function]) -> Vec<usize> {
     let starts = |e: &ir::Expr| {
         matches!(
             e.kind,
-            K::Rt(RtOp::ScopeSpan | RtOp::ScopeSeeded | RtOp::ScopePlace, _)
+            K::Rt(
+                RtOp::ScopeSpan | RtOp::ScopeSeeded | RtOp::ScopePlace | RtOp::GpuPlace,
+                _
+            )
         )
     };
     (functions.iter().enumerate())

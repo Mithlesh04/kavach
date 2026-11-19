@@ -69,3 +69,12 @@ DrawDraw,
 /// (can fail); and letting texture `a` go.
 DrawTexture,
 DrawDropTexture,
+/// `on gpu(n) x`, `gpu.on(d) { … }` and `xs.map(f, on: d)` (spec 15.6):
+/// puts a place on the task's scope stack with GPU work on device `a`,
+/// and gives its depth, as `ScopePlace`; a device the machine doesn't
+/// have is a panic.
+GpuPlace,
+/// At the program's start (spec 15.6): `a`, the highest GPU number
+/// written in the code (`gpu(n) fn`, `on gpu(n)`), or -1; `b`, the text
+/// of `[run] gpu`. A device that isn't there stops the program.
+GpuStart,

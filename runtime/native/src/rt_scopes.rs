@@ -54,12 +54,12 @@ pub(crate) fn current_span() -> Option<SpanId> {
     SCOPES.with(|s| scope::current_span(&s.borrow()))
 }
 
-/// The task's place (`on cores(n) x`, `on cpu x`), which the runtime
-/// core's `cores` and `gpu_mode` ask for.
-fn current_place() -> (usize, bool) {
+/// The task's place (`on cores(n) x`, `on cpu x`, `on gpu(n) x`), which
+/// the runtime core's `cores`, `gpu_mode` and `gpu_place` ask for.
+pub(crate) fn current_place() -> (usize, scope::GpuPlace) {
     SCOPES
         .try_with(|s| scope::place(&s.borrow()))
-        .unwrap_or((0, false))
+        .unwrap_or_default()
 }
 
 /// 64 bits from the innermost `random.seeded` block, if any.
@@ -67,7 +67,7 @@ pub(crate) fn seeded_bits() -> Option<u64> {
     SCOPES.with(|s| scope::seeded_bits(&s.borrow()))
 }
 
-fn push(entry: Scope) -> i64 {
+pub(crate) fn push(entry: Scope) -> i64 {
     SCOPES.with(|s| {
         let mut s = s.borrow_mut();
         s.push(entry);
@@ -103,9 +103,13 @@ crate::rt_data::entry!(kv_rt_scopes, |op, a, b, _c, code, line| {
                 crate::rt::panic_with(&kavach_runtime_core::place_count_panic(a), line);
             }
             kavach_runtime_core::set_place_hook(current_place);
+            let gpu = match b & 1 {
+                0 => scope::GpuPlace::Any,
+                _ => scope::GpuPlace::Cpu,
+            };
             push(Scope::Place {
                 cores: a.max(0) as usize,
-                cpu: b & 1 != 0,
+                gpu,
             })
         }
         RtOp::ScopeRename => {

@@ -12,13 +12,16 @@
 use std::sync::{Arc, Mutex};
 use wgpu::util::DeviceExt;
 
+mod choice;
 mod device;
+mod devices;
 pub mod draw;
 mod picture;
 pub mod render;
 pub mod texture;
-use device::{Gpu, gpu};
-pub use device::{available, ready};
+use device::{Gpu, Pending};
+use devices::gpu;
+pub use devices::{available, check_launch, missing, ready, start};
 mod listing;
 pub use listing::adapters;
 
@@ -47,13 +50,15 @@ pub struct Resident {
     buffer: Arc<wgpu::Buffer>,
     /// Its 32-bit words: an item may take several.
     words: usize,
+    /// The device whose memory holds it (spec 15.6).
+    gpu: &'static Gpu,
 }
 
 /// The last holder of a result buffer leaves it for a later `map`.
 impl Drop for Resident {
     fn drop(&mut self) {
         if Arc::strong_count(&self.buffer) == 1 {
-            spare::give(&self.buffer);
+            spare::give(self.gpu.index, &self.buffer);
         }
     }
 }
@@ -68,10 +73,16 @@ impl Resident {
     pub(crate) fn parts(&self) -> (&wgpu::Buffer, usize) {
         (&self.buffer, self.words)
     }
+
+    /// The number of the device holding it.
+    pub(crate) fn device(&self) -> usize {
+        self.gpu.index
+    }
 }
 
 /// The items a `map` reads: 32-bit words (little-endian) to copy over, or
 /// ones already in GPU memory.
+#[derive(Clone, Copy)]
 pub enum Items<'a> {
     Bytes(&'a [u8]),
     Resident(&'a Resident),
@@ -115,7 +126,7 @@ impl Gpu {
     /// when no spare one is there.
     fn load(&self, items: &[u8]) -> wgpu::Buffer {
         let size = items.len().max(4) as u64;
-        let buffer = spare::take(size).unwrap_or_else(|| {
+        let buffer = spare::take(self.index, size).unwrap_or_else(|| {
             self.device.create_buffer(&wgpu::BufferDescriptor {
                 label: None,
                 size,
@@ -172,7 +183,7 @@ impl Gpu {
     /// there: the items' own buffer, for a `map` that writes over them.
     #[allow(clippy::too_many_arguments)]
     fn run(
-        &self,
+        &'static self,
         pipeline: &wgpu::ComputePipeline,
         input: &wgpu::Buffer,
         n: usize,
@@ -184,7 +195,7 @@ impl Gpu {
     ) -> Result<wgpu::Buffer, GpuError> {
         let run = self.submit(pipeline, input, n, out_words, captures, out.is_some(), into);
         if let (None, Some(kernel)) = (&out, late) {
-            late::keep(self, run.staging, kernel, run.index);
+            late::keep(run.staging, kernel, run.index, run.pending);
             return Ok(run.output);
         }
         self.read_back(&run.staging, run.back, out, None)?;
@@ -195,7 +206,7 @@ impl Gpu {
     /// `out_words` words of results when `back`, for reading later.
     #[allow(clippy::too_many_arguments)]
     fn submit(
-        &self,
+        &'static self,
         pipeline: &wgpu::ComputePipeline,
         input: &wgpu::Buffer,
         n: usize,
@@ -211,7 +222,7 @@ impl Gpu {
         info.extend_from_slice(captures);
         let info = init(&bytes(&info), wgpu::BufferUsages::STORAGE);
         let out_size = (out_words.max(1) * 4) as u64;
-        let output = into.cloned().or_else(|| spare::take(out_size));
+        let output = into.cloned().or_else(|| spare::take(self.index, out_size));
         let output = output.unwrap_or_else(|| {
             self.device.create_buffer(&wgpu::BufferDescriptor {
                 label: None,
@@ -269,6 +280,7 @@ impl Gpu {
             staging,
             back,
             index,
+            pending: Pending::new(self),
         }
     }
 
@@ -319,6 +331,8 @@ struct Submitted {
     /// The bytes of results copied to `staging`, ahead of the stop flag.
     back: u64,
     index: wgpu::SubmissionIndex,
+    /// Counts it in the device's work until it is read.
+    pending: Pending,
 }
 
 /// The workgroups for `n` items, as a grid: at most 65,535 across.
@@ -328,142 +342,10 @@ fn dispatch(n: usize) -> (u32, u32) {
     (x, groups.div_ceil(x))
 }
 
-/// Opens the GPU and compiles `wgsl`, so a later `map` with it starts
-/// at once.
-pub fn prepare(wgsl: &str) {
-    if let Some(gpu) = gpu() {
-        gpu.pipeline(wgsl, false);
-    }
-}
-
-/// `items` mapped by kernel `wgsl` into `out`, one 32-bit word
-/// (little-endian) per result, with `captures` (one word each) for the
-/// values its lambda captured. An item may be several words (the fields
-/// of a tuple or record), as many for each. Neither side is copied more than the GPU
-/// needs; what stays in GPU memory comes back for later `map`s. With
-/// `stay`, results that fit one dispatch stay on the GPU only, not
-/// written into `out`: `read` brings them back when they are needed.
-/// With `in_place` too (nothing else holds the items), results as many
-/// words as the items are written over them, in their own buffer.
-pub fn map(
-    wgsl: &str,
-    items: Items,
-    captures: &[u32],
-    out: &mut [u8],
-    stay: bool,
-    in_place: bool,
-) -> Result<Kept, GpuError> {
-    let gpu = gpu().ok_or(GpuError::Unavailable)?;
-    // A record or tuple result is several words per item: the kernel's
-    // header says how many (`// out 4`).
-    let out_width = out_width(wgsl);
-    let words = out.len() / 4;
-    let n = words / out_width;
-    let bytes = match items {
-        Items::Resident(r) => {
-            // Each item's fields are all read before its results are
-            // written, at the same words.
-            let over = stay && in_place && r.words == words && wgsl.contains(ITEMS);
-            let pipeline = gpu.pipeline(wgsl, over);
-            let results = gpu.run(
-                &pipeline,
-                &r.buffer,
-                n,
-                words,
-                captures,
-                (!stay).then_some(out),
-                stay.then_some(wgsl),
-                over.then_some(&*r.buffer),
-            )?;
-            let buffer = match over {
-                true => r.buffer.clone(),
-                false => Arc::new(results),
-            };
-            return Ok(Kept {
-                items: None,
-                results: Some(Resident { buffer, words }),
-            });
-        }
-        Items::Bytes(b) => b,
-    };
-    let pipeline = gpu.pipeline(wgsl, false);
-    let width = (bytes.len() / 4).checked_div(n).unwrap_or(1).max(1);
-    let chunk = (gpu.max_items / width.max(out_width)).max(1);
-    if n > chunk {
-        let items = bytes.chunks(4 * width * chunk);
-        for (items, out) in items.zip(out.chunks_mut(4 * out_width * chunk)) {
-            let input = gpu.load(items);
-            let words = out.len() / 4;
-            gpu.run(
-                &pipeline,
-                &input,
-                words / out_width,
-                words,
-                captures,
-                Some(out),
-                None,
-                None,
-            )?;
-        }
-        return Ok(Kept {
-            items: None,
-            results: None,
-        });
-    }
-    let input = Arc::new(gpu.load(bytes));
-    let results = gpu.run(
-        &pipeline,
-        &input,
-        n,
-        words,
-        captures,
-        (!stay).then_some(out),
-        stay.then_some(wgsl),
-        None,
-    )?;
-    let resident = |buffer, words| Some(Resident { buffer, words });
-    Ok(Kept {
-        items: resident(input, n * width),
-        results: resident(Arc::new(results), words),
-    })
-}
-
-/// How many words each item's result takes: 1, or what a kernel's header
-/// says for a record or tuple result (`// out 4`).
-pub fn out_width(wgsl: &str) -> usize {
-    (wgsl.lines().take_while(|l| l.starts_with("//")))
-        .find_map(|l| l.strip_prefix("// out "))
-        .and_then(|w| w.parse().ok())
-        .unwrap_or(1)
-}
-
-/// The words of `items`, in GPU memory, copied into `out`.
-pub fn read(items: &Resident, out: &mut [u8]) -> Result<(), GpuError> {
-    let gpu = gpu().ok_or(GpuError::Unavailable)?;
-    let size = (items.bytes().max(4)) as u64;
-    let staging = gpu.device.create_buffer(&wgpu::BufferDescriptor {
-        label: None,
-        size,
-        usage: wgpu::BufferUsages::MAP_READ | wgpu::BufferUsages::COPY_DST,
-        mapped_at_creation: false,
-    });
-    let mut encoder = gpu.device.create_command_encoder(&Default::default());
-    encoder.copy_buffer_to_buffer(&items.buffer, 0, &staging, 0, size);
-    gpu.queue.submit([encoder.finish()]);
-    gpu.wait_mapped(&staging, None)?;
-    let view = staging
-        .slice(..)
-        .get_mapped_range()
-        .map_err(|_| GpuError::Unavailable)?;
-    let n = out.len().min(items.bytes());
-    out[..n].copy_from_slice(&view[..n]);
-    drop(view);
-    staging.unmap();
-    Ok(())
-}
-
 mod filter;
 pub use filter::filter;
+mod map;
+pub use map::{map, out_width, prepare, read};
 pub mod ktx2;
 mod late;
 mod later;

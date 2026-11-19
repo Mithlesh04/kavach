@@ -166,7 +166,14 @@ impl Checker<'_> {
             }
             ValuePlace::Gpu(n) => {
                 self.check_expect(n, &Ty::Prim(Prim::Int));
-                self.error(n.span, "choosing a GPU with `on gpu(n)` isn't built yet: leave it out and the system chooses, or write `on cpu` (to-do 16)");
+                if matches!(n.kind, ExprKind::Unary(UnaryOp::Neg, _)) {
+                    self.error(
+                        n.span,
+                        "GPUs are numbered from 0, as `system.gpus()` lists them: give 0 or more (spec 15.6)",
+                    );
+                }
+                // Choosing a GPU needs `uses Gpu` (spec 15.6).
+                self.note_cap("Gpu", n.span);
             }
             _ => {}
         }

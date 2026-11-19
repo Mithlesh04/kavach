@@ -8,8 +8,8 @@
 //! says where each group writes; the second run writes them there, in
 //! order.
 
-use crate::GpuError;
-use crate::{Items, Kept, Resident, dispatch, gpu};
+use crate::{Gpu, GpuError};
+use crate::{Items, Kept, Resident, dispatch};
 use std::sync::Arc;
 
 /// The items of `items` (`n` one-word items) kernel `wgsl` keeps, with
@@ -22,7 +22,20 @@ pub fn filter(
     captures: &[u32],
     stay: bool,
 ) -> Result<(usize, Kept, Option<Vec<u8>>), GpuError> {
-    let gpu = gpu().ok_or(GpuError::Unavailable)?;
+    crate::map::on_device(wgsl, items, |gpu, items| {
+        filter_on(gpu, wgsl, items, n, captures, stay)
+    })
+}
+
+/// `filter` on device `gpu`.
+fn filter_on(
+    gpu: &'static Gpu,
+    wgsl: &str,
+    items: Items,
+    n: usize,
+    captures: &[u32],
+    stay: bool,
+) -> Result<(usize, Kept, Option<Vec<u8>>), GpuError> {
     if n == 0 || n > gpu.max_items {
         return Err(GpuError::Unavailable);
     }
@@ -34,6 +47,7 @@ pub fn filter(
             let sent = Resident {
                 buffer: buffer.clone(),
                 words: n,
+                gpu,
             };
             (buffer, Some(sent))
         }
@@ -79,6 +93,7 @@ pub fn filter(
         results: Some(Resident {
             buffer: Arc::new(results),
             words: len,
+            gpu,
         }),
     };
     Ok((len, kept, out))

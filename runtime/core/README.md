@@ -11,6 +11,7 @@ Code that both the interpreter and native code use, so the two give exactly the 
 | `src/json.rs` | JSON text (spec 2.12): a strict parser with limits and line/column errors, and the words decoding uses in its errors (its loop in `src/json/parse.rs`, the pieces of text in `src/json/read.rs`, writer in `src/json/write.rs`, tests in `src/json/tests.rs`); values are made by a `Build`er, a tree or a program's own values, or read piece by piece for decoding (`src/json/pull.rs`) |
 | `src/input.rs` | A line typed without being shown (`io.read_hidden`, spec 14.6, decision 0036) |
 | `src/fs_scope.rs` | What a narrowed `uses` allows while its function runs: folders file access is kept inside (`uses Fs("./data")`, spec 8.1), resolving a path's `..` and links, and the programs that may run (`uses Process("git")`, 14.23); and the spans and seeds of blocks given to a call (4.8): the current span, what a spawned task keeps, ending spans |
+| `src/gpu_setting.rs` | What `KAVACH_GPU` and `[run] gpu` ask for (spec 15.6): the system's choice, the CPU, a device's number or a vendor |
 | `src/trace.rs` | Span ids and the W3C `traceparent` header (spec 14.12, decision 0107) |
 | `src/writers.rs` | Files written piece by piece (`fs.create_writer`, spec 14.3): open writers by number, 64 KB gathered at a time, an unfinished file deleted |
 | `src/seeded.rs` | `random.seeded`'s numbers: xoshiro256** seeded through SplitMix64 (spec 14.15) |

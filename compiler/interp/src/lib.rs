@@ -24,6 +24,7 @@ mod fake_net;
 mod fakes;
 mod files;
 mod generics;
+mod gpu_choice;
 mod guard;
 mod hot;
 mod inout;
@@ -183,6 +184,11 @@ fn main_of(i: &mut interp::Interp<'_>, args: &[String], dry_run: bool) -> i32 {
     }
     if run.on_cpu() {
         kavach_runtime_core::set_file_gpu_cpu();
+    }
+    // Every GPU the code or `[run] gpu` names must be there (spec 15.6).
+    if let Err(why) = i.gpu_start(run.gpu.as_deref()) {
+        i.err.push_str(&format!("error: {why}\n"));
+        return 1;
     }
     if let (Some(n), Some(tasks)) = (run.threads, &i.tasks) {
         tasks.rounds.set_most(n as usize);

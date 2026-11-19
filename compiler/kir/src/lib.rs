@@ -67,6 +67,7 @@ mod lower_fn;
 mod lower_fn_errors;
 mod lower_generic;
 mod lower_gpu;
+mod lower_gpu_choice;
 mod lower_guard;
 mod lower_if;
 mod lower_iface;

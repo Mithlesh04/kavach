@@ -99,6 +99,26 @@ impl<'a> Parser<'a> {
         self.at(&TokenKind::Ident) && self.text() == word
     }
 
+    /// `(n)` after the `gpu` of `gpu(n) fn` (spec 15.6): a device's number
+    /// written in the code.
+    pub(crate) fn gpu_device(&mut self) -> Option<u64> {
+        if !self.eat(&TokenKind::LParen) {
+            return None;
+        }
+        let n = match *self.kind() {
+            TokenKind::Int(n) => Some(n),
+            _ => {
+                self.error_here(
+                    "`gpu(n) fn` takes a device's number written in the code, 0 or more: `gpu(1) fn` (spec 15.6)",
+                );
+                None
+            }
+        };
+        self.bump();
+        self.expect(&TokenKind::RParen, "`)`");
+        n
+    }
+
     /// At `gpu fn`, `gpu vertex fn` or `gpu fragment fn` (spec 15), with
     /// `gpu` the current word.
     pub(crate) fn at_gpu_fn(&self) -> bool {
@@ -107,6 +127,10 @@ impl<'a> Parser<'a> {
             || (*self.nth(1) == TokenKind::Ident
                 && matches!(self.nth_text(1), "vertex" | "fragment")
                 && *self.nth(2) == fn_kw)
+            // `gpu(1) fn` (spec 15.6); `gpu(n) fn` too, refused later.
+            || (*self.nth(1) == TokenKind::LParen
+                && *self.nth(3) == TokenKind::RParen
+                && *self.nth(4) == fn_kw)
     }
 
     pub(crate) fn at_end_of_line(&self) -> bool {

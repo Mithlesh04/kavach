@@ -196,8 +196,8 @@
           }
         },
         {
-          "comment": "An agent's handler, `on message(…)`; not `on cores(2) for`, a loop's place (spec 4.9)",
-          "match": "\\b(on)\\s+(?!(?:cores|threads)\\s*\\([^)]*\\)\\s*for\\b)([\\p{L}_][\\p{L}\\p{N}_]*)\\s*(?=\\()",
+          "comment": "An agent's handler, `on message(…)`; not `on cores(2) for`, a loop's place (spec 4.9), nor `on gpu(1) x`, a value's (spec 15.6)",
+          "match": "\\b(on)\\s+(?!(?:cores|threads)\\s*\\([^)]*\\)\\s*for\\b|gpu\\s*\\()([\\p{L}_][\\p{L}\\p{N}_]*)\\s*(?=\\()",
           "captures": {
             "1": { "name": "keyword.other.agent.kavach" },
             "2": { "name": "entity.name.function.kavach" }
@@ -303,6 +303,11 @@
           "match": "\\bcontext\\b(?=\\s+r?\")"
         },
         {
+          "comment": "`gpu(1) fn`: `gpu` is a keyword before a device's number and `fn` (spec 15.6)",
+          "name": "storage.modifier.kavach",
+          "match": "\\bgpu(?=\\s*\\(\\s*\\d+\\s*\\)\\s+fn\\b)"
+        },
+        {
           "comment": "`gpu` is a keyword only before `fn` (spec 15.1), and `vertex` and `fragment` only between `gpu` and `fn` (spec 15.3)",
           "match": "\\b(gpu)(?:\\s+(vertex|fragment))?(?=\\s+fn\\b)",
           "captures": {
@@ -316,8 +321,8 @@
           "match": "\\baudited\\b(?=\\s+fn\\b)"
         },
         {
-          "comment": "`on cores` and `on threads` before a loop say where its rounds run (spec 4.9); `on` and the place are keywords only there, with a scope of their own so they are coloured apart from other keywords",
-          "match": "\\b(on)\\s+(cores|threads)\\b(?=\\s*(?:\\(|for\\b))",
+          "comment": "`on cores` and `on threads` before a loop say where its rounds run (spec 4.9), and `on gpu(n)` before a value which GPU (spec 15.6); `on` and the place are keywords only there, with a scope of their own so they are coloured apart from other keywords",
+          "match": "\\b(on)\\s+(cores|threads|gpu)\\b(?=\\s*(?:\\(|for\\b))",
           "captures": {
             "1": { "name": "keyword.other.place.kavach" },
             "2": { "name": "keyword.other.place.kavach" }

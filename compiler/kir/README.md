@@ -40,6 +40,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/lower_lambda.rs` | Inlined lambdas, list methods that take them, `Shared.update` |
 | `src/lower_concat.rs` | `xs + ys`, `xs += ys` and `xs.pop()` on lists, as pushes and a cut (spec 2.2, 14.2) |
 | `src/lower_draw.rs` | `gpu.pipeline(v, f)` and a frame's draws (spec 15.3) |
+| `src/lower_gpu_choice.rs` | Choosing a GPU (spec 15.6): `xs.map(f, on: device)` inside a `GpuPlace` scope, a `gpu(n) fn`'s `// gpu n` kernel line, and `GpuStart` at the program's start |
 | `src/lower_range.rs` | A range a list method reads, built as the list of its numbers (spec 2.2) |
 | `src/lower_text.rs` | Text methods that are one op each: `capitalize`, `words`, padding and the rest (spec 14.2) |
 | `src/lower_views.rs` | Text views and builders (spec 2.18): text in native code for now; a builder's `push` grows it in place, `insert`, `replace` and `remove` join the parts around the change |

@@ -63,6 +63,7 @@ impl Parser<'_> {
             c_loaded: None,
             is_gpu: false,
             gpu_stage: GpuStage::Compute,
+            gpu_device: None,
             deprecated: None,
         }
     }

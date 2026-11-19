@@ -105,6 +105,8 @@ pub struct FnDecl {
     pub is_gpu: bool,
     /// `gpu vertex fn` or `gpu fragment fn` (spec 15.3).
     pub gpu_stage: GpuStage,
+    /// `gpu(n) fn`: its GPU work on device `n` (spec 15.6).
+    pub gpu_device: Option<u64>,
     /// `deprecated "…" fix …` on the line before (spec 12.6).
     pub deprecated: Option<Box<Deprecation>>,
 }

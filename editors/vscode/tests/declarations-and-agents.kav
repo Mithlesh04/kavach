@@ -74,6 +74,18 @@ gpu fn glow(x: Float32) -> Float32 {
     x
 }
 
+gpu(1) fn shade_on_one(x: Float32) -> Float32 {
+// <--- storage.modifier.kavach
+//     ^^ storage.type.function.kavach
+    x
+}
+
+fn chosen(xs: [Float32]) -> [Float32] {
+    on gpu(1) xs.map(glow)
+//  ^^ keyword.other.place.kavach
+//     ^^^ keyword.other.place.kavach
+}
+
 gpu vertex fn place(c: Corner) -> Lit {
 // <--- storage.modifier.kavach
 //  ^^^^^^ storage.modifier.kavach

@@ -243,6 +243,8 @@ pub(crate) struct Checker<'a> {
     pub(crate) gpu_fns: HashSet<DefId>,
     /// Each `gpu fn`'s stage: a `map`'s, or a draw's (spec 15.3).
     pub(crate) gpu_stages: HashMap<DefId, kavach_ast::GpuStage>,
+    /// Each `gpu(n) fn`'s device (spec 15.6).
+    pub(crate) gpu_devices: HashMap<DefId, u64>,
     /// Each `gpu.pipeline(v, f)` call's vertex and fragment fns, by span.
     pub(crate) pipelines: HashMap<(u32, u32), (DefId, DefId)>,
     pub(crate) gpu_candidates: Vec<crate::gpu::GpuCandidate>,
@@ -362,6 +364,7 @@ impl<'a> Checker<'a> {
             exact_constants: Vec::new(),
             gpu_fns: HashSet::new(),
             gpu_stages: HashMap::new(),
+            gpu_devices: HashMap::new(),
             pipelines: HashMap::new(),
             gpu_candidates: Vec::new(),
             expr_types: Vec::new(),

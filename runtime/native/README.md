@@ -71,6 +71,7 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_base64.rs` | `std.base64` (spec 14.20): its own entry |
 | `src/rt_compress.rs` | `std.compress` (spec 14.21): its own entry |
 | `src/rt_draw.rs` | `std.gpu`'s drawing (spec 14.24): its own entry, by number |
+| `src/rt_gpu/choice.rs` | Choosing a GPU (spec 15.6): the `GpuPlace` scope runtime/gpu asks, and the start's check that every GPU the program names is there |
 | `src/rt_run.rs` | `std.process` (spec 14.23): its own entry, by the child's number; waiting lets other tasks run |
 | `src/rt_window.rs` | `std.window` (spec 14.22): its own entry, so only programs with windows link `winit` |
 | `src/rt_input.rs` | `std.input` (spec 14.26): its own entry, so only programs that read gamepads link SDL3 |

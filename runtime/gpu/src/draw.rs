@@ -8,7 +8,7 @@
 //! sized to the window at each frame. A frame is the surface's next
 //! picture: what is drawn into it is recorded, and `show` sends it.
 
-use crate::device::gpu;
+use crate::devices::gpu;
 use std::collections::HashMap;
 use std::sync::{Mutex, MutexGuard, OnceLock};
 

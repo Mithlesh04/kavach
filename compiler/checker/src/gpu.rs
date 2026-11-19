@@ -91,6 +91,9 @@ impl Checker<'_> {
             {
                 self.gpu_fns.insert(def);
                 self.gpu_stages.insert(def, f.gpu_stage);
+                if let Some(n) = f.gpu_device {
+                    self.gpu_devices.insert(def, n);
+                }
             }
         }
     }

@@ -179,7 +179,7 @@ while n < 10 {              // warning: never ends: `n` doesn't change in the lo
 
 ## 4.8 Blocks given to a call
 
-A few standard library functions run a block inside something they set up, and end it however the block ends ([decision 0107](../decisions/0107-traces-and-metrics.md)): `log.span("checkout") { … }` runs the block as one span of a trace (14.12), and `random.seeded(42) { … }` draws the block's random numbers from a seed (14.15).
+A few standard library functions run a block inside something they set up, and end it however the block ends ([decision 0107](../decisions/0107-traces-and-metrics.md)): `log.span("checkout") { … }` runs the block as one span of a trace (14.12), `random.seeded(42) { … }` draws the block's random numbers from a seed (14.15), and `gpu.on(device) { … }` runs the block's GPU work on one GPU (15.6).
 
 ```kavach
 const total = log.span("checkout") {
@@ -231,7 +231,7 @@ A list is written one way in a loop: its own slots or its rows, with one `w`. Wr
 - **Leaving early works as on one core.** `continue`, `break`, labels, `return`, `fail` and `?` are allowed: the first round in order that leaves decides, and rounds after it change nothing.
 - **How many cores:** `cores` is all the program may use (`[run] cores` in `kavach.toml`, or `KAVACH_CORES`, which wins when both are set; all of the machine's by default, never more than a container or CPU affinity allows). `cores(n)` asks for at most `n`; more than exist uses all it may. A count of 0 or less is a compile error when written as a number, a panic when worked out while running. `threads(n)` may exceed the cores, as its rounds mostly wait, up to `[run] threads` (256 by default) in all: when that many rounds of all the program's `on threads` loops run, a loop waits for its own oldest round before starting another, and a loop with none running still starts one, so nested loops can't wait for each other forever.
 - `while` can't take `on`: each round depends on the one before. `on`, `cores` and `threads` are names everywhere else.
-- `on` also goes before a value, for library work and the GPU (15.2): `on cores(1) numbers.sort()` works the value out with library work (a big `sort`, a matrix `@`) on at most 1 core, `on cpu particles.map(step)` keeps its GPU maps on the CPU, and `on gpu(1) particles.map(step)` runs them on GPU 1. It covers the one value after it, and gives the same value as without it. A count of 0 or less is a compile error when written as a number, a panic when worked out while running. `on gpu(n)` comes with choosing a GPU (16 in the [to-do](../vision/todo.md)); until then it is a compile error that says so.
+- `on` also goes before a value, for library work and the GPU (15.2): `on cores(1) numbers.sort()` works the value out with library work (a big `sort`, a matrix `@`) on at most 1 core, `on cpu particles.map(step)` keeps its GPU maps on the CPU, and `on gpu(1) particles.map(step)` runs them on GPU 1. It covers the one value after it, and gives the same value as without it. A count of 0 or less is a compile error when written as a number, a panic when worked out while running. `on gpu(n)` numbers the GPUs from 0, as `system.gpus()` lists them; a negative number written in the code is a compile error, and choosing a GPU needs `uses Gpu` (15.6).
 
 ```kavach
 const sorted = on cores(1) numbers.sort()    // library work on 1 core

@@ -41,6 +41,7 @@ mod fields;
 mod fn_values;
 mod generic_json;
 mod gpu;
+mod gpu_choice;
 mod gpu_draw;
 mod gpu_fit;
 mod gpu_walk;

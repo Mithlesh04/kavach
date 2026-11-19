@@ -45,7 +45,8 @@ impl<'a> Lowerer<'a> {
         let held = self.new_local(list.ty);
         let maybe = self.shapes_intern(Shape::Optional(ty));
         let got = self.new_local(maybe);
-        let text = at(K::Str(String::new()), self.str_type());
+        // A `gpu(n) fn`'s device, before the kernel (spec 15.6).
+        let text = at(K::Str(self.kernel_device_line(f)), self.str_type());
         let gpu = at(
             K::Rt(op, vec![self.local_expr(held, line), closure, text]),
             maybe,
@@ -117,7 +118,8 @@ impl<'a> Lowerer<'a> {
             _ => return Err(self.unsupported(format!("`{name}` on the GPU"), span)),
         };
         let value = self.new_local(value_ty);
-        let text = at(K::Str(String::new()), self.str_type());
+        let device = f.map(|f| self.kernel_device_line(f)).unwrap_or_default();
+        let text = at(K::Str(device), self.str_type());
         let gpu = at(
             K::Rt(op, vec![self.local_expr(held, line), closure, text]),
             value_ty,
@@ -214,7 +216,11 @@ impl<'a> Lowerer<'a> {
         // Both closures, as a pair: the kernel calls one after the other.
         let pair_ty = self.shapes_intern(Shape::Tuple(vec![first.ty, second.ty]));
         let pair = at(K::Tuple(vec![first, second]), pair_ty);
-        let text = at(K::Str(String::new()), self.str_type());
+        // A `gpu(n) fn`'s device: the outer `map`'s, else the inner's.
+        let device = Some(self.kernel_device_line(g))
+            .filter(|d| !d.is_empty())
+            .unwrap_or_else(|| self.kernel_device_line(f));
+        let text = at(K::Str(device), self.str_type());
         let gpu = at(
             K::Rt(RtOp::GpuMap, vec![self.local_expr(held, line), pair, text]),
             maybe,

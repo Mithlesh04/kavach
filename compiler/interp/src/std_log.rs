@@ -65,6 +65,10 @@ impl<'a> Interp<'a> {
         let ExprKind::Call { callee, args, .. } = &call.kind else {
             return self.block(body);
         };
+        // `gpu.on(device) { … }` (spec 15.6).
+        if matches!(&callee.kind, ExprKind::Field { name, .. } if name.name == "on") {
+            return self.gpu_on(args, body);
+        }
         let seeded = matches!(&callee.kind, ExprKind::Field { name, .. } if name.name == "seeded");
         let mut given = Vec::new();
         for a in args {

@@ -43,6 +43,8 @@ fn main() ! Error uses Window {
 | `gpu.compressed_texture(file) -> Texture ! GpuError` | A texture of the compressed blocks in a KTX2 file's bytes, given to the GPU as they are, mip levels and all: 4 to 8 times less of its memory than `gpu.texture`'s pixels. The blocks are BC1 to BC7, which desktop GPUs read, or ASTC 4×4, which phones read; width and height are each a multiple of 4. A file that isn't such a KTX2 file is `BadTexture`; a GPU that can't read its blocks is `Unavailable`. Only the GPU reads it, so `sample` on the CPU is a panic (a contract) |
 | `texture.width`, `texture.height: Int` | Its size in pixels |
 | `texture.sample(u, v) -> (Float32, Float32, Float32, Float32)` | The texture's color at `u` (0 left, 1 right) and `v` (0 top, 1 bottom), blended between the nearest pixels; in a `gpu fragment fn` and on the CPU alike |
+| `gpu.devices() -> [GpuDevice]` | Each GPU the program could use, the best first, as `system.gpus()` lists them (14.25): `GpuDevice(index:, name:, vendor:, kind:, backend:)`, `index` its number from 0, the rest as `GpuInfo`'s. Needs `Gpu` |
+| `gpu.on(device) { … }` | The block, with its GPU work on `device` (15.6): a block given to a call (4.8). Needs `Gpu` |
 
 - `GpuError` is `Unavailable(reason: String)`: there is no GPU, or the window can't be drawn into, as on a server with no screen; or `BadTexture(reason: String)`: a KTX2 file that can't be read. A frame that can't be had (the window is minimized, or its surface was lost) is `Unavailable` too; the next `frame()` tries again.
 - A frame not shown before its last holder ends is thrown away: nothing reaches the screen.
@@ -50,6 +52,7 @@ fn main() ! Error uses Window {
 - A list that a GPU `map` made, and that is still in GPU memory (15.2), is drawn from there with nothing copied, as vertices or as instances: a particle swarm moved by a `map` each frame is drawn where it is, and never comes back to the CPU.
 - `frame.draw` without `instances:` or `shared:` that its pipeline's vertex fn takes is a compile error.
 - A texture's width and height are each 1 to 8192 pixels.
+- Choosing a GPU (15.6) needs `Gpu`, not `Window`: `gpu.devices()` and `gpu.on` draw nothing. `GpuKind` is `std.system`'s.
 - `gpu.screen_id`, `frame_id`, `clear_id`, `show_id` and `close_id` are what these are built on, by number.
 - Generated tests (11.5) skip functions that use `Window`: there is no fake screen yet.
 

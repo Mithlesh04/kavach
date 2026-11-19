@@ -22,6 +22,8 @@ const TAKES_A_BLOCK: &[(&str, &str, &[Param])] = &[
         &[("name", Prim::String, false), ("from", Prim::String, true)],
     ),
     ("random", "seeded", &[("seed", Prim::Int, false)]),
+    // The device is a `GpuDevice`, checked apart (spec 15.6).
+    ("gpu", "on", &[("device", Prim::Int, false)]),
 ];
 
 impl Checker<'_> {
@@ -34,6 +36,15 @@ impl Checker<'_> {
     /// The call a block is given to, and its argument.
     pub(crate) fn check_scoped_call(&mut self, call: &Expr) {
         match self.scoped_call(call) {
+            Some(("gpu", "on", _)) => match &call.kind {
+                ExprKind::Call { args, .. } if args.len() == 1 && args[0].name.is_none() => {
+                    self.check_gpu_device(&args[0].value, "`gpu.on`");
+                }
+                _ => self.error(
+                    call.span,
+                    "`gpu.on` takes one device: `gpu.on(gpu.devices()[0]) { … }` (spec 15.6)",
+                ),
+            },
             Some((module, name, given)) => {
                 if let ExprKind::Call { args, .. } = &call.kind {
                     let params: Vec<_> = (given.iter())
@@ -45,7 +56,7 @@ impl Checker<'_> {
             }
             None => self.error(
                 call.span,
-                "only `log.span(name)` and `random.seeded(seed)` take a block after them (spec 4.8)",
+                "only `log.span(name)`, `random.seeded(seed)` and `gpu.on(device)` take a block after them (spec 4.8)",
             ),
         }
     }

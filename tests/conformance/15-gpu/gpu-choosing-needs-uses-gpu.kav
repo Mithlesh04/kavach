@@ -1,0 +1,14 @@
+// Rule: Choosing a GPU needs `uses Gpu`: a `pub` function with `on gpu(n)` must say so.
+// Spec: 15.6, 8.1
+// expect compile error
+
+gpu fn double(x: Float32) -> Float32 {
+    x * 2.0
+}
+
+pub fn twice(xs: [Float32]) -> [Float32] {
+    on gpu(0) xs.map(double)     // error: `twice` is `pub`, so it must say it uses `Gpu`
+}
+
+fn main() {
+}

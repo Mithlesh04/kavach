@@ -5,7 +5,7 @@
 //! Drawing into a picture off the screen (decision 0106): for tests now,
 //! and later for programs that draw into a texture.
 
-use crate::device::gpu;
+use crate::devices::gpu;
 use crate::render::{Draw, Target, draw_into, has_depth, ready_for};
 
 /// Draws `draws`, in turn, into a new picture of `size` pixels, cleared

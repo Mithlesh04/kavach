@@ -1,0 +1,12 @@
+// Rule: `gpu(n) fn` takes a device's number written in the code.
+// Spec: 15.6
+// expect compile error
+
+const n = 1
+
+gpu(n) fn double(x: Float32) -> Float32 {     // error: write the number itself
+    x * 2.0
+}
+
+fn main() {
+}

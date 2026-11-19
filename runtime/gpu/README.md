@@ -1,13 +1,16 @@
 # runtime/gpu/
 
-GPU compute for `gpu fn` (spec [chapter 15](../../docs/spec/15-gpu.md), [decision 0044](../../docs/decisions/0044-gpu-through-wgpu.md)), through `wgpu`: one device for the program, a pipeline compiled once per kernel, and `map` over 32-bit items. Native code reaches it through `kv_rt_gpu` (`runtime/native/src/rt_gpu.rs`), so programs without GPU code don't link it (decision 0024). The kernels' WGSL comes from `compiler/backend/wgsl`.
+GPU compute for `gpu fn` (spec [chapter 15](../../docs/spec/15-gpu.md), [decision 0044](../../docs/decisions/0044-gpu-through-wgpu.md)), through `wgpu`: a table of every device, the least busy or the chosen one running each piece of work (spec 15.6), a pipeline compiled once per kernel and device, and `map` over 32-bit items. Native code reaches it through `kv_rt_gpu` (`runtime/native/src/rt_gpu.rs`), so programs without GPU code don't link it (decision 0024). The kernels' WGSL comes from `compiler/backend/wgsl`.
 
 | File | Job |
 |---|---|
-| [src/lib.rs](src/lib.rs) | Caching pipelines, running a `map` in chunks the device can hold, leaving results in GPU memory, `read` |
+| [src/lib.rs](src/lib.rs) | Running a dispatch and reading its results back, leaving results in GPU memory |
 | [src/later.rs](src/later.rs) | `reduce`: a `sum`, `min` or `max` in the GPU's queue, whose partials are read when they are needed |
-| [src/device.rs](src/device.rs) | Opening the program's one device, Vulkan first, keeping its instance and adapter for surfaces |
-| [src/listing.rs](src/listing.rs) | Listing every GPU for `system.gpus()` (spec 14.25), best kind first, without opening one; vendors by PCI ID; `KAVACH_FAKE_GPUS` in its place for tests |
+| [src/device.rs](src/device.rs) | Opening one device, keeping its instance and adapter for surfaces; its count of work not finished, and a watch for its loss or running out of memory |
+| [src/devices.rs](src/devices.rs) | The program's devices (spec 15.6): one table listed once, each opened when work first goes to it, skipped once it fails; `pick` for each piece of work, the program's GPU for drawing, and the start's check |
+| [src/choice.rs](src/choice.rs) | Which device gets the work, as plain functions tested on any machine: the least busy, a chosen one then the rest, a `gpu(n) fn`'s kernel line, `KAVACH_GPU` and `[run] gpu`, the start's messages |
+| [src/map.rs](src/map.rs) | `map` and `read`, and running work on the chosen device with its items moved there through main memory, the next device when one is lost |
+| [src/listing.rs](src/listing.rs) | Listing every GPU for `system.gpus()` (spec 14.25), best kind first, without opening one; two of one model told apart by their bus; vendors by PCI ID; `KAVACH_FAKE_GPUS` in its place for tests |
 | [src/draw.rs](src/draw.rs) | Drawing into windows for `std.gpu` (spec 14.24, decision 0106): a screen is a surface made on the window's own thread, sized at each frame; frames cleared and shown, by number |
 | [src/render.rs](src/render.rs) | Pipelines compiled ahead (when a screen opens, or when made once one is open), with depth or not, and draws from 32-bit words into a frame (spec 15.3) |
 | [src/picture.rs](src/picture.rs) | `picture`: draws into a texture off the screen, read back, for tests (decision 0106) |

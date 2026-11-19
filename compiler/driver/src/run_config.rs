@@ -17,7 +17,8 @@ pub struct RunConfig {
     /// (spec 4.9); `None`: 256.
     pub threads: Option<u32>,
     /// `"cpu"` keeps every `map` with a `gpu fn` on the CPU; `"auto"`, the
-    /// default, lets the runtime choose. `KAVACH_GPU` at launch wins.
+    /// default, lets the runtime choose; a vendor's name or a device's
+    /// number chooses the device (spec 15.6). `KAVACH_GPU` at launch wins.
     pub gpu: Option<String>,
 }
 
@@ -41,11 +42,18 @@ impl RunConfig {
                     .into(),
             );
         }
+        use kavach_runtime_core::gpu_setting::{self, GpuSetting};
         match self.gpu.as_deref() {
             None | Some("cpu" | "auto") => None,
-            Some(other) => Some(format!(
-                "`[run] gpu = \"{other}\"`: write \"cpu\" to keep every GPU `map` on the CPU, or \"auto\" (spec 15.2)"
-            )),
+            Some(t)
+                if matches!(
+                    gpu_setting::read(t),
+                    Some(GpuSetting::Number(_) | GpuSetting::Vendor(_))
+                ) =>
+            {
+                None
+            }
+            Some(other) => Some(gpu_setting::takes(&format!("`[run] gpu = \"{other}\"`"))),
         }
     }
 }

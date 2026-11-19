@@ -13,6 +13,7 @@
 //! written) is added after it. A path is inside a folder when the folder,
 //! resolved the same way, starts it.
 
+pub use crate::GpuPlace;
 use crate::seeded::Seeded;
 use crate::trace::{Finished, SpanId};
 use std::path::{Component, Path, PathBuf};
@@ -64,24 +65,27 @@ pub enum Scope {
     },
     /// `random.seeded(seed) { … }` (14.15): the task's generator there.
     Seeded(Arc<Mutex<Seeded>>),
-    /// `on cores(n) x` and `on cpu x` (spec 4.9): at most `cores` cores
-    /// (0: no cap), and the GPU maps on the CPU when `cpu`.
-    Place { cores: usize, cpu: bool },
+    /// `on cores(n) x`, `on cpu x`, `on gpu(n) x` and `gpu.on(d) { … }`
+    /// (spec 4.9, 15.6): at most `cores` cores (0: no cap), and where the
+    /// GPU work goes.
+    Place { cores: usize, gpu: GpuPlace },
 }
 
 /// Where the code runs now: the fewest cores an `on cores(n)` around it
-/// allows (0: no cap), and whether an `on cpu` is around it.
-pub fn place(scopes: &[Scope]) -> (usize, bool) {
-    let (mut most, mut cpu) = (0, false);
+/// allows (0: no cap), and the innermost GPU choice around it.
+pub fn place(scopes: &[Scope]) -> (usize, GpuPlace) {
+    let (mut most, mut gpu) = (0, GpuPlace::Any);
     for s in scopes {
-        if let Scope::Place { cores, cpu: c } = s {
+        if let Scope::Place { cores, gpu: g } = s {
             if *cores > 0 && (most == 0 || *cores < most) {
                 most = *cores;
             }
-            cpu |= *c;
+            if *g != GpuPlace::Any {
+                gpu = *g;
+            }
         }
     }
-    (most, cpu)
+    (most, gpu)
 }
 
 /// The span the code runs in, if any.

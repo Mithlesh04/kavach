@@ -122,6 +122,10 @@ impl<'a> Interp<'a> {
         value: &'a Expr,
         span: Span,
     ) -> Eval<'a> {
+        // `on gpu(n) x` (spec 15.6).
+        if let kavach_ast::ValuePlace::Gpu(n) = place {
+            return self.on_gpu(n, value);
+        }
         if let kavach_ast::ValuePlace::Cores(Some(n)) = place
             && let Value::Int(k, _) = self.eval(n)?
             && k < 1

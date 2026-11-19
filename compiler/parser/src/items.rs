@@ -79,6 +79,7 @@ impl Parser<'_> {
             // (15.3): words only before `fn`.
             TokenKind::Ident if self.at_word("gpu") && self.at_gpu_fn() => {
                 self.bump();
+                let device = self.gpu_device();
                 let stage = match self.text() {
                     "vertex" => GpuStage::Vertex,
                     "fragment" => GpuStage::Fragment,
@@ -90,6 +91,7 @@ impl Parser<'_> {
                 let mut f = self.fn_decl(true);
                 f.is_gpu = true;
                 f.gpu_stage = stage;
+                f.gpu_device = device;
                 ItemKind::Fn(f)
             }
             TokenKind::Keyword(Keyword::Type) => ItemKind::Type(self.type_decl()),

@@ -294,7 +294,7 @@ impl Parser<'_> {
         }
     }
 
-    /// A block given to `log.span(…)` or `random.seeded(…)` on the same
+    /// A block given to `log.span(…)`, `random.seeded(…)` or `gpu.on(…)` on the same
     /// line (spec 4.8); any other call is left as it is, so `if f(x) {`
     /// keeps its meaning. The checker makes sure they are the standard
     /// library's.
@@ -310,6 +310,9 @@ impl Parser<'_> {
                 ) || matches!(
                     (&base.kind, name.name.as_str()),
                     (ExprKind::Name(m), "seeded") if m.name == "random"
+                ) || matches!(
+                    (&base.kind, name.name.as_str()),
+                    (ExprKind::Name(m), "on") if m.name == "gpu"
                 )
             }
             _ => false,

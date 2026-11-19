@@ -1,0 +1,16 @@
+// Rule: A lambda given to `map` can't call `gpu(n) fn`s of two numbers: one `map` runs on one GPU.
+// Spec: 15.6
+// expect compile error
+
+gpu(0) fn double(x: Float32) -> Float32 {
+    x * 2.0
+}
+
+gpu(1) fn halve(x: Float32) -> Float32 {
+    x * 0.5
+}
+
+fn main() {
+    const xs: [Float32] = [1.0, 2.0]
+    print(xs.map(x => double(halve(x))))     // error: two GPUs in one `map`
+}

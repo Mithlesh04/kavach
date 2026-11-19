@@ -20,6 +20,7 @@ pub mod file_info;
 pub mod files;
 pub mod fine_clock;
 pub mod fs_scope;
+pub mod gpu_setting;
 pub mod inbox;
 pub mod input;
 pub mod journal;
@@ -292,18 +293,35 @@ pub fn place_count_panic(n: i64) -> String {
     format!("work runs on at least one core, but the count is {n} (spec 4.9)")
 }
 
-/// Where the value being worked out runs (`on cores(n) x`, `on cpu x`,
-/// spec 4.9): its most cores (0: no cap) and whether its GPU maps run on
-/// the CPU. The native runtime keeps it per task and sets this hook.
-static PLACE: std::sync::OnceLock<fn() -> (usize, bool)> = std::sync::OnceLock::new();
+/// Where GPU work goes (spec 4.9, 15.6): as the system or the settings
+/// choose, on the CPU (`on cpu x`), or on device `n` (`on gpu(n) x`,
+/// `gpu.on(d) { … }`, `xs.map(f, on: d)`), numbered as `system.gpus()`
+/// lists them.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum GpuPlace {
+    #[default]
+    Any,
+    Cpu,
+    Device(usize),
+}
 
-/// Sets the hook `cores` and `gpu_mode` ask for the place.
-pub fn set_place_hook(f: fn() -> (usize, bool)) {
+/// Where the value being worked out runs (`on cores(n) x`, `on cpu x`,
+/// `on gpu(n) x`, spec 4.9): its most cores (0: no cap) and where its GPU
+/// work goes. The native runtime keeps it per task and sets this hook.
+static PLACE: std::sync::OnceLock<fn() -> (usize, GpuPlace)> = std::sync::OnceLock::new();
+
+/// Sets the hook `cores`, `gpu_mode` and `gpu_place` ask for the place.
+pub fn set_place_hook(f: fn() -> (usize, GpuPlace)) {
     let _ = PLACE.set(f);
 }
 
-fn place() -> (usize, bool) {
-    PLACE.get().map_or((0, false), |f| f())
+fn place() -> (usize, GpuPlace) {
+    PLACE.get().map_or((0, GpuPlace::Any), |f| f())
+}
+
+/// The innermost GPU choice around the code running now (spec 15.6).
+pub fn gpu_place() -> GpuPlace {
+    place().1
 }
 
 /// How many cores this program may use (spec 4.9, decision 0126): the
@@ -344,16 +362,35 @@ static FILE_CORES: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsi
 /// `[run] gpu = "cpu"` in `kavach.toml` (spec 15.2), set at the start.
 static FILE_GPU_CPU: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
+/// `[run] gpu` naming a device (spec 15.6): a vendor or a number.
+static FILE_GPU: std::sync::OnceLock<String> = std::sync::OnceLock::new();
+
 /// Sets `[run] gpu = "cpu"`; `KAVACH_GPU` at launch still wins.
 pub fn set_file_gpu_cpu() {
     FILE_GPU_CPU.store(true, std::sync::atomic::Ordering::Relaxed);
+}
+
+/// Sets `[run] gpu`: `"cpu"`, or a device's vendor or number (15.6).
+pub fn set_file_gpu(text: &str) {
+    match text {
+        "cpu" => set_file_gpu_cpu(),
+        "auto" | "" => {}
+        device => {
+            let _ = FILE_GPU.set(device.to_string());
+        }
+    }
+}
+
+/// The device `[run] gpu` names, if it names one.
+pub fn file_gpu() -> Option<&'static str> {
+    FILE_GPU.get().map(String::as_str)
 }
 
 /// Where a `map` with a `gpu fn` runs (spec 15.2): `KAVACH_GPU` (`cpu`
 /// is `off`), else `off` with `[run] gpu = "cpu"`, else `""`, the usual.
 pub fn gpu_mode() -> String {
     // `on cpu x` (spec 4.9) keeps `x`'s maps on the CPU.
-    if place().1 {
+    if place().1 == GpuPlace::Cpu {
         return "off".into();
     }
     match std::env::var("KAVACH_GPU") {

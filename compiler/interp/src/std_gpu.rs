@@ -102,6 +102,12 @@ impl<'a> Interp<'a> {
         };
         let n = int(0);
         match name {
+            // Each device's name, vendor, kind and interface (spec 15.6).
+            "devices_id" => {
+                let texts = kavach_runtime_gpu::adapters().into_iter().flatten();
+                let texts = texts.map(|t| self.str_value(&t)).collect();
+                return Ok(Value::List(std::rc::Rc::new(texts)));
+            }
             "screen_id" => {
                 return number(draw::screen_on(n, size(n)), self);
             }

@@ -7,7 +7,7 @@ fn greet(name: String) -> String {
 }
 
 fn main() {
-    const text = greet("Asha") {     // error: only `log.span(name)` and `random.seeded(seed)` take a block after them
+    const text = greet("Asha") {     // error: only `log.span(name)`, `random.seeded(seed)` and `gpu.on(device)` take a block after them
         print("x")
     }
     print(text)

@@ -13,6 +13,7 @@ use crate::rt::{panic_with, type_of};
 use kavach_kir::{RtOp, Shape, Type};
 use kavach_runtime_core::format_float;
 
+mod choice;
 mod filter;
 mod kept;
 mod later;
@@ -30,12 +31,10 @@ const WORTH_NS: u64 = 2_000_000;
 const OPENING_NS: u64 = 300_000_000;
 
 /// Whether `n` items of `kernel`'s work are worth the GPU (spec 15.2):
-/// the kernel's first line, `// work <n>`, is its work per item.
+/// the kernel's header line `// work <n>` is its work per item.
 fn worth_it(kernel: &str, n: usize) -> bool {
-    let work = kernel
-        .lines()
-        .next()
-        .and_then(|l| l.strip_prefix("// work "))
+    let work = (kernel.lines().take_while(|l| l.starts_with("//")))
+        .find_map(|l| l.strip_prefix("// work "))
         .and_then(|w| w.parse::<u64>().ok())
         .unwrap_or(1);
     // The CPU's time, at about 0.1 ns per unit of work: measured from
@@ -65,6 +64,8 @@ crate::rt_data::entry!(kv_rt_gpu, |op, a, b, c, code, line| match op {
     RtOp::GpuFilterStay => filter::filter(a, b, c, code, line, true),
     RtOp::GpuCheck => check(a, line),
     RtOp::GpuWarm => warm(a),
+    RtOp::GpuPlace => choice::place(a, line),
+    RtOp::GpuStart => choice::start(a, b, c),
     _ => 0,
 });
 
@@ -131,6 +132,9 @@ fn warm(kernels: i64) -> i64 {
     if kavach_runtime_core::gpu_mode() == "off" {
         return 0;
     }
+    // `KAVACH_GPU` naming a device that isn't there stops the program
+    // now (spec 15.6).
+    choice::check_launch();
     std::thread::spawn(move || {
         for kernel in text.split('\0') {
             kavach_runtime_gpu::prepare(kernel);

@@ -38,6 +38,9 @@ impl<'a> Lowerer<'a> {
                 line,
             });
         }
+        if let Some(on) = self.map_on_device(base, name, args, ty, line, call) {
+            return on;
+        }
         if name.name == "pop"
             && let Some(popped) = self.list_pop(base, ty, line)?
         {

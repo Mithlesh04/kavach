@@ -1,0 +1,12 @@
+// Rule: Listing the GPUs with `gpu.devices()` needs `uses Gpu`.
+// Spec: 15.6, 14.24, 8.1
+// expect compile error
+
+use std.gpu
+
+pub fn count() -> Int {
+    gpu.devices().len()     // error: `count` is `pub`, so it must say it uses `Gpu`
+}
+
+fn main() {
+}

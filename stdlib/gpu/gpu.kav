@@ -9,6 +9,7 @@
 
 use std.gpu
 use std.math
+use std.system
 use std.window
 
 /// Why there is nothing to draw into: no GPU, a window that can't be
@@ -147,4 +148,28 @@ pub fn texture(width: Int, height: Int, pixels: [UInt8]) -> Texture ! GpuError u
 pub fn compressed_texture(file: Bytes) -> Texture ! GpuError uses Window {
     const parts = try gpu.compressed_id(file)
     Texture(id: parts[0], width: parts[1], height: parts[2], pixels: [], compressed: true)
+}
+
+/// One GPU the program could use: its number from 0, as `system.gpus()`
+/// lists them, with its name, maker, kind and interface (spec 15.6).
+pub type GpuDevice {
+    pub index: Int
+    pub name: String
+    pub vendor: String
+    pub kind: GpuKind
+    pub backend: String
+}
+
+/// Each GPU the program could use, the best first, to choose one with
+/// `gpu.on(device) { … }` or `xs.map(f, on: device)` (spec 15.6).
+pub fn devices() -> [GpuDevice] uses Gpu {
+    const texts = gpu.devices_id()
+    let out: [GpuDevice] = []
+    let i = 0
+    while i + 3 < texts.len() {
+        const kind = GpuKind.parse(texts[i + 2]) ?? GpuKind.Other
+        out.push(GpuDevice(index: i / 4, name: texts[i], vendor: texts[i + 1], kind: kind, backend: texts[i + 3]))
+        i += 4
+    }
+    out
 }

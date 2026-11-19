@@ -80,7 +80,15 @@ impl Checker<'_> {
         if matches!(recv, Ty::Prim(Prim::Bytes)) && name.name == "read" {
             return self.bytes_read(generics, args, name.span);
         }
+        // `xs.map(f, on: device)`: the device, then the `map` (spec 15.6).
+        let args = match (&recv, name.name.as_str()) {
+            (Ty::List(_), "map") => self.map_device(args),
+            _ => args,
+        };
         if let Ty::List(item) = &recv {
+            if let (Some(f), "map" | "filter" | "sum") = (args.first(), name.name.as_str()) {
+                self.check_gpu_fn_choice(&f.value);
+            }
             let kind = match name.name.as_str() {
                 "map" => Some(crate::gpu::GpuCall::Map),
                 "sum" => Some(crate::gpu::GpuCall::Sum),

@@ -299,7 +299,13 @@ pub fn attach(program: &mut Program) {
             if let ExprKind::Rt(_, args) = &mut e.kind
                 && let Some(slot) = args.get_mut(2)
             {
-                slot.kind = ExprKind::Str(text);
+                // A `gpu(n) fn`'s `// gpu n` line stays before the kernel
+                // (spec 15.6); with no kernel, the text stays empty.
+                let device = match &slot.kind {
+                    ExprKind::Str(d) if !text.is_empty() => d.clone(),
+                    _ => String::new(),
+                };
+                slot.kind = ExprKind::Str(device + &text);
             }
         });
     }

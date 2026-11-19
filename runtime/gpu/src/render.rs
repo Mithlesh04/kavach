@@ -11,7 +11,7 @@
 //! every screen's color format when the screen opens, and when it is made
 //! while a screen is open.
 
-use crate::device::gpu;
+use crate::devices::gpu;
 pub use crate::picture::picture;
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex, MutexGuard, OnceLock};
@@ -310,25 +310,35 @@ pub(crate) fn draw_into(
             })
     };
     // Words go over in a buffer of their own; a kept list is drawn where
-    // it is. Either way: the buffer, and how many items it holds.
+    // it is, or copied over from another device's memory (spec 15.6).
+    // Either way: the buffer, and how many items it holds.
     fn source<'b>(
         items: &Items<'b>,
         width: usize,
+        here: usize,
         make: impl Fn(&[u32]) -> wgpu::Buffer,
     ) -> (std::borrow::Cow<'b, wgpu::Buffer>, u32) {
         let width = width.max(1);
         match *items {
             Items::Words(w) => (std::borrow::Cow::Owned(make(w)), (w.len() / width) as u32),
-            Items::Kept(r) => {
+            Items::Kept(r) if r.device() == here => {
                 let (b, words) = r.parts();
                 (std::borrow::Cow::Borrowed(b), (words / width) as u32)
+            }
+            Items::Kept(r) => {
+                let mut bytes = vec![0u8; r.bytes()];
+                let _ = crate::read(r, &mut bytes);
+                let w: Vec<u32> = (bytes.as_chunks::<4>().0.iter())
+                    .map(|b| u32::from_le_bytes(*b))
+                    .collect();
+                (std::borrow::Cow::Owned(make(&w)), (w.len() / width) as u32)
             }
         }
     }
     let vertex = |w: &[u32]| buffer(w, wgpu::BufferUsages::VERTEX);
-    let (vb, count) = source(&vertices, layout.vertex.len(), vertex);
-    let ib =
-        (!layout.instance.is_empty()).then(|| source(&instances, layout.instance.len(), vertex));
+    let (vb, count) = source(&vertices, layout.vertex.len(), g.index, vertex);
+    let ib = (!layout.instance.is_empty())
+        .then(|| source(&instances, layout.instance.len(), g.index, vertex));
     let times = ib.as_ref().map_or(1, |(_, n)| *n);
     // Every index names a vertex there is (spec 14.24).
     let indices = match draw.indices {

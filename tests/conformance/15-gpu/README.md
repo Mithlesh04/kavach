@@ -1,6 +1,6 @@
 # tests/conformance/15-gpu/
 
-Conformance tests for spec chapter [15. GPU](../../../docs/spec/15-gpu.md). Format: [../README.md](../README.md). These lists are short, so they run on the CPU; `tools/cli/tests/textures.rs` samples textures, and `tools/cli/tests/gpu.rs` runs `map`s, `filter`, `sum`, `min` and `max` on the GPU (`KAVACH_GPU=on` and `check`).
+Conformance tests for spec chapter [15. GPU](../../../docs/spec/15-gpu.md). Format: [../README.md](../README.md). These lists are short, so they run on the CPU; `tools/cli/tests/textures.rs` samples textures, `tools/cli/tests/gpu.rs` runs `map`s, `filter`, `sum`, `min` and `max` on the GPU (`KAVACH_GPU=on` and `check`), and `tools/cli/tests/gpu_choice.rs` chooses among GPUs listed by `KAVACH_FAKE_GPUS` and real ones (15.6).
 
 | Section | Test | Rule | Result |
 |---|---|---|---|
@@ -60,3 +60,13 @@ Conformance tests for spec chapter [15. GPU](../../../docs/spec/15-gpu.md). Form
 | 15.3, 5.6 | [gpu-vertex-fn-panics-on-the-cpu.kav](gpu-vertex-fn-panics-on-the-cpu.kav) | A `gpu vertex fn` called on the CPU panics on whole-number overflow, as any other function does. | panic |
 | 15.3 | [gpu-vertex-fn-takes-at-most-three-records.kav](gpu-vertex-fn-takes-at-most-three-records.kav) | A `gpu vertex fn` takes one, two or three records: the vertex, the instance and the shared value. | compile error |
 | 15.3 | [gpu-vertex-fn-takes-records.kav](gpu-vertex-fn-takes-records.kav) | What a `gpu vertex fn` takes are records, not bare numbers. | compile error |
+| 15.6, 8.1 | [gpu-choosing-needs-uses-gpu.kav](gpu-choosing-needs-uses-gpu.kav) | Choosing a GPU needs `uses Gpu`: a `pub` function with `on gpu(n)` must say so. | compile error |
+| 15.6, 14.24, 8.1 | [gpu-devices-needs-uses-gpu.kav](gpu-devices-needs-uses-gpu.kav) | Listing the GPUs with `gpu.devices()` needs `uses Gpu`. | compile error |
+| 15.6 | [gpu-map-needs-no-capability.kav](gpu-map-needs-no-capability.kav) | A `gpu fn` and its `map` need no capability when the code chooses no GPU. | runs |
+| 15.6, 4.9 | [gpu-numbers-start-at-zero.kav](gpu-numbers-start-at-zero.kav) | GPUs are numbered from 0: a negative number written in `on gpu(n)` is a compile error. | compile error |
+| 15.6 | [gpu-n-fn-takes-a-number.kav](gpu-n-fn-takes-a-number.kav) | `gpu(n) fn` takes a device's number written in the code. | compile error |
+| 15.6 | [gpu-map-on-takes-a-device.kav](gpu-map-on-takes-a-device.kav) | `on:` on a `map` takes a `GpuDevice` from `gpu.devices()`, not a number. | compile error |
+| 15.6 | [gpu-one-map-runs-on-one-gpu.kav](gpu-one-map-runs-on-one-gpu.kav) | A lambda given to `map` can't call `gpu(n) fn`s of two numbers. | compile error |
+| 15.6, 14.24 | [gpu-on-gives-the-same-values.kav](gpu-on-gives-the-same-values.kav) | A `map` gives the same values on every device `gpu.on` or `on:` chooses. | runs |
+| 15.6 | [gpu-missing-device-stops-at-start.kav](gpu-missing-device-stops-at-start.kav) | A `gpu(n) fn` naming a GPU the machine doesn't have stops the program at its start. | exit 1 |
+| 15.6 | [gpu-choosing-a-missing-device-panics.kav](gpu-choosing-a-missing-device-panics.kav) | A GPU number worked out while running that names no device is a panic. | panic |

@@ -86,7 +86,7 @@ pub(crate) fn std_op(module: &str, name: &str) -> Option<RtOp> {
         ("process", "cpu_ms_id") => RtOp::RunCpu,
         ("system", "basic_text_id" | "text_id") => RtOp::MachineText,
         ("system", "basic_number_id" | "number_id") => RtOp::MachineNumber,
-        ("system", "gpus_id") => RtOp::MachineGpus,
+        ("system", "gpus_id") | ("gpu", "devices_id") => RtOp::MachineGpus,
         ("system", "rows_id") => RtOp::MachineRows,
         ("system", "critical_id") => RtOp::MachineCritical,
         ("system", "act_id") => RtOp::MachineAct,

@@ -87,31 +87,51 @@ pub(crate) struct Listed {
     pub(crate) vendor: u32,
     pub(crate) kind: Kind,
     pub(crate) backend: String,
+    /// Where it is on the PCI bus, when the interface says (`""` if not):
+    /// two GPUs of one model are told apart by it.
+    pub(crate) bus: String,
+    /// The model's PCI device ID, 0 when not known: one GPU may have
+    /// another name through another interface.
+    pub(crate) model: u32,
+}
+
+impl Listed {
+    /// Its name, vendor, kind and interface, as `system.gpus()` gives them.
+    pub(crate) fn info(&self) -> [String; 4] {
+        [
+            self.name.clone(),
+            vendor(self.vendor).into(),
+            self.kind.name().into(),
+            self.backend.clone(),
+        ]
+    }
+
+    /// Whether `other` is this GPU listed again through another
+    /// interface: the same vendor and model (or the same name, when a
+    /// model isn't known), and the same bus where both say.
+    fn again(&self, other: &Listed) -> bool {
+        let same = match (self.model, other.model) {
+            (0, _) | (_, 0) => self.name == other.name,
+            (a, b) => a == b && self.vendor == other.vendor,
+        };
+        same && self.backend != other.backend
+            && (self.bus == other.bus || self.bus.is_empty() || other.bus.is_empty())
+    }
 }
 
 /// The GPUs best first: discrete, integrated, virtual, other, software,
 /// each kind in the order they were listed. A GPU listed again through
-/// another interface keeps only its first. Each comes out as its name,
-/// vendor, kind and interface.
-pub(crate) fn ranked(listed: Vec<Listed>) -> Vec<[String; 4]> {
-    let mut once: Vec<Listed> = Vec::new();
+/// another interface keeps only its first. `of` gives each item's GPU.
+pub(crate) fn ranked<T>(listed: Vec<T>, of: impl Fn(&T) -> &Listed) -> Vec<T> {
+    let mut once: Vec<T> = Vec::new();
     for g in listed {
-        if !once.iter().any(|o| o.name == g.name) {
+        if !once.iter().any(|o| of(o).again(of(&g))) {
             once.push(g);
         }
     }
     // A stable sort: ties keep the order they were listed in.
-    once.sort_by_key(|g| g.kind);
-    once.into_iter()
-        .map(|g| {
-            [
-                g.name,
-                vendor(g.vendor).into(),
-                g.kind.name().into(),
-                g.backend,
-            ]
-        })
-        .collect()
+    once.sort_by_key(|g| of(g).kind);
+    once
 }
 
 /// The GPUs `KAVACH_FAKE_GPUS` names, for tests: entries split by `;`,
@@ -134,14 +154,19 @@ pub(crate) fn fake(text: &str) -> Vec<Listed> {
             vendor,
             kind,
             backend: backend.to_ascii_lowercase(),
+            bus: String::new(),
+            model: 0,
         })
     };
     text.split(';').filter_map(entry).collect()
 }
 
+/// A GPU the machine has, and how to open it.
+pub(crate) type Real = (Listed, wgpu::Instance, wgpu::Adapter);
+
 /// Every GPU through Vulkan, Metal, DirectX 12 and OpenGL, in that
 /// order. Nothing is opened.
-fn real() -> Vec<Listed> {
+pub(crate) fn real() -> Vec<Real> {
     let mut listed = Vec::new();
     for backends in [
         wgpu::Backends::VULKAN,
@@ -154,12 +179,15 @@ fn real() -> Vec<Listed> {
         let instance = wgpu::Instance::new(desc);
         for a in crate::device::block_on(instance.enumerate_adapters(backends)) {
             let info = a.get_info();
-            listed.push(Listed {
+            let gpu = Listed {
                 name: info.name,
                 vendor: info.vendor,
                 kind: Kind::of(info.device_type),
                 backend: backend(info.backend).into(),
-            });
+                bus: info.device_pci_bus_id,
+                model: info.device,
+            };
+            listed.push((gpu, instance.clone(), a));
         }
     }
     listed
@@ -167,14 +195,14 @@ fn real() -> Vec<Listed> {
 
 /// Every GPU this machine has (spec 14.25): name, vendor, kind and the
 /// interface it is reached through, discrete ones first, then integrated,
-/// the rest last. Each appears once, through the first interface that
-/// lists it; nothing is opened. With `KAVACH_FAKE_GPUS` set, its list
-/// stands in for the machine's.
+/// the rest last, numbered as the program's devices are (15.6). Each
+/// appears once, through the first interface that lists it; nothing is
+/// opened. With `KAVACH_FAKE_GPUS` set, its list stands in for the
+/// machine's.
 pub fn adapters() -> Vec<[String; 4]> {
-    match std::env::var("KAVACH_FAKE_GPUS") {
-        Ok(text) => ranked(fake(&text)),
-        Err(_) => ranked(real()),
-    }
+    (crate::devices::table().iter())
+        .map(|d| d.listed.info())
+        .collect()
 }
 
 #[cfg(test)]
@@ -221,13 +249,15 @@ mod tests {
         assert_eq!(Kind::parse("gpu"), None);
     }
 
-    fn gpu(name: &str, vendor: u32, kind: Kind) -> Listed {
+    pub(crate) fn gpu(name: &str, vendor: u32, kind: Kind) -> Listed {
         let backend = "vulkan".into();
         Listed {
             name: name.into(),
             vendor,
             kind,
             backend,
+            bus: String::new(),
+            model: 0,
         }
     }
 
@@ -242,7 +272,7 @@ mod tests {
             gpu("igpu b", 0x1002, Kind::Integrated),
             gpu("dgpu b", 0x10de, Kind::Discrete),
         ];
-        let names: Vec<String> = ranked(listed).into_iter().map(|g| g[0].clone()).collect();
+        let names: Vec<String> = ranked(listed, |g| g).into_iter().map(|g| g.name).collect();
         let order = [
             "dgpu a", "dgpu b", "igpu a", "igpu b", "virtual", "other", "soft",
         ];
@@ -255,7 +285,43 @@ mod tests {
         again.backend = "dx12".into();
         let listed = vec![gpu("dgpu", 0x10de, Kind::Discrete), again];
         let want = ["dgpu", "NVIDIA", "Discrete", "vulkan"].map(String::from);
-        assert_eq!(ranked(listed), vec![want]);
+        let got: Vec<_> = ranked(listed, |g| g).iter().map(Listed::info).collect();
+        assert_eq!(got, vec![want]);
+    }
+
+    #[test]
+    fn two_gpus_of_one_model_are_two_devices() {
+        // Each GPU listed, as (name, interface, bus), and which are kept.
+        let table = [
+            (vec![("a", "vulkan", "1"), ("a", "vulkan", "2")], vec![0, 1]),
+            (vec![("a", "vulkan", "1"), ("a", "dx12", "")], vec![0]),
+            (vec![("a", "vulkan", "1"), ("a", "dx12", "2")], vec![0, 1]),
+            (vec![("a", "vulkan", ""), ("a", "vulkan", "")], vec![0, 1]),
+            (vec![("a", "vulkan", ""), ("a", "dx12", "7")], vec![0]),
+            (vec![("a", "vulkan", "1"), ("b", "dx12", "1")], vec![0, 1]),
+        ];
+        // One GPU named apart by two interfaces: its model tells.
+        let mut vk = gpu("Intel(R) UHD Graphics 770", 0x8086, Kind::Integrated);
+        let mut dx = gpu("Intel(R) UHD Graphics", 0x8086, Kind::Integrated);
+        dx.backend = "dx12".into();
+        (vk.model, dx.model) = (0x4680, 0x4680);
+        let once = ranked(vec![vk.clone(), dx.clone()], |g| g);
+        assert_eq!(once, vec![vk.clone()]);
+        // Two models of one vendor stay two.
+        dx.model = 0x4682;
+        assert_eq!(ranked(vec![vk.clone(), dx.clone()], |g| g).len(), 2);
+        for (listed, kept) in table {
+            let gpus: Vec<(usize, Listed)> = (listed.iter().enumerate())
+                .map(|(i, (name, backend, bus))| {
+                    let mut g = gpu(name, 0x10de, Kind::Discrete);
+                    g.backend = backend.to_string();
+                    g.bus = bus.to_string();
+                    (i, g)
+                })
+                .collect();
+            let got: Vec<usize> = ranked(gpus, |g| &g.1).iter().map(|g| g.0).collect();
+            assert_eq!(got, kept, "{listed:?}");
+        }
     }
 
     #[test]
@@ -269,18 +335,24 @@ mod tests {
                 vendor: 0x1002,
                 kind: Kind::Discrete,
                 backend: "vulkan".into(),
+                bus: String::new(),
+                model: 0,
             },
             Listed {
                 name: "Intel UHD 770".into(),
                 vendor: 0x8086,
                 kind: Kind::Integrated,
                 backend: "dx12".into(),
+                bus: String::new(),
+                model: 0,
             },
             Listed {
                 name: "a:b name".into(),
                 vendor: 0x10de,
                 kind: Kind::Discrete,
                 backend: "metal".into(),
+                bus: String::new(),
+                model: 0,
             },
         ];
         assert_eq!(fake(text), want);
