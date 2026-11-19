@@ -74,6 +74,10 @@
           {
             "scope": "keyword.other.place.kavach",
             "settings": { "foreground": "#FF8A65", "fontStyle": "bold" }
+          },
+          {
+            "scope": "variable.parameter.type-number.kavach",
+            "settings": { "foreground": "#B5CEA8", "fontStyle": "italic" }
           }
         ],
         "[*Light*]": {
@@ -89,6 +93,10 @@
             {
               "scope": "keyword.other.place.kavach",
               "settings": { "foreground": "#C2410C", "fontStyle": "bold" }
+            },
+            {
+              "scope": "variable.parameter.type-number.kavach",
+              "settings": { "foreground": "#098658", "fontStyle": "italic" }
             }
           ]
         }

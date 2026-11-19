@@ -15,6 +15,8 @@ export const kavachTheme = {
     { scope: ["string"], settings: { foreground: "#9bb97f" } },
     // A unit after a number (`5.seconds`) reads with its number as one value, as `px` does in CSS.
     { scope: ["constant.numeric", "constant.language", "keyword.other.unit"], settings: { foreground: "#d9a0c7" } },
+    // A number's name in a type (`[Int]<max: 2>`) reads with its number, in italics, as in the editor.
+    { scope: ["variable.parameter.type-number"], settings: { foreground: "#d9a0c7", fontStyle: "italic" } },
     { scope: ["comment"], settings: { foreground: "#857c6e" } },
     // `///` apart from `//`: a doc comment on a field is sent to the model by ask<T> (spec 8.4).
     { scope: ["comment.line.documentation"], settings: { foreground: "#4fa8a8" } },

@@ -9,6 +9,7 @@
     { "include": "#chars" },
     { "include": "#numbers" },
     { "include": "#labels" },
+    { "include": "#type-arguments" },
     { "include": "#declarations" },
     { "include": "#keywords" },
     { "include": "#constants" },
@@ -372,9 +373,23 @@
       "name": "entity.name.type.kavach",
       "match": "\\b[A-Z][\\p{L}\\p{N}_]*\\b"
     },
+    "type-arguments": {
+      "comment": "`<…>` written right after a name, `]` or `}`, closed on the line: a type's arguments, not a comparison. A number's name in it (`[Int]<max: 2>`, `Grid<T, width: 2>`) gets a color of its own (spec 2.9)",
+      "begin": "(?<=[\\p{L}\\p{N}_\\]\\}])(<)(?![=<])(?=(?:[^<>()=\\n]|=(?!>))*(?:<(?:[^<>()=\\n]|=(?!>))*>(?:[^<>()=\\n]|=(?!>))*)*>)",
+      "end": ">",
+      "beginCaptures": { "1": { "name": "punctuation.definition.typeparameters.begin.kavach" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.typeparameters.end.kavach" } },
+      "patterns": [
+        {
+          "match": "(?<=<|,|, )\\s*([\\p{Ll}_][\\p{L}\\p{N}_]*)\\s*(?=:)",
+          "captures": { "1": { "name": "variable.parameter.type-number.kavach" } }
+        },
+        { "include": "$self" }
+      ]
+    },
     "function-calls": {
-      "comment": "A name before `(`, or before type arguments and `(`: read<Row>(v), json.decode_value<[Row]>(v)",
-      "match": "\\b([\\p{L}_][\\p{L}\\p{N}_]*)(?=(?:<[\\p{Lu}\\[][^<>()]*(?:<[^<>()]*>[^<>()]*)*>)?\\s*\\()",
+      "comment": "A name before `(`, or before type arguments and `(`: read<Row>(v), json.decode_value<[Row]>(v), zeros<n: 4>()",
+      "match": "\\b([\\p{L}_][\\p{L}\\p{N}_]*)(?=(?:<(?:[\\p{Lu}\\[]|[\\p{Ll}_][\\p{L}\\p{N}_]*\\s*:)[^<>()]*(?:<[^<>()]*>[^<>()]*)*>)?\\s*\\()",
       "captures": { "1": { "name": "entity.name.function.call.kavach" } }
     },
     "variables": {

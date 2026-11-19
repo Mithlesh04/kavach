@@ -230,3 +230,28 @@ fn spread(n: Int) {
 //        ^^ variable.other.readwrite.kavach
 }
 `}`
+const recent: [Float]<len: 3> = [1.0, 2.0, 3.0]
+//                   ^ punctuation.definition.typeparameters.begin.kavach
+//                    ^^^ variable.parameter.type-number.kavach
+//                         ^ constant.numeric.integer.kavach
+//                          ^ punctuation.definition.typeparameters.end.kavach
+let grid: Grid<Float, width: 2, height: 3> = make()
+//             ^^^^^ support.type.primitive.kavach
+//                    ^^^^^ variable.parameter.type-number.kavach
+//                              ^^^^^^ variable.parameter.type-number.kavach
+let ages: {String: Int}<max: 100> = {:}
+//                      ^^^ variable.parameter.type-number.kavach
+fn dot<n: Int>(a: [Float]<len: n>) -> Float { a[0] }
+//     ^ variable.parameter.type-number.kavach
+//                        ^^^ variable.parameter.type-number.kavach
+//                             ^ variable.other.readwrite.kavach
+const z = zeros<n: 4>()
+//        ^^^^^ entity.name.function.call.kavach
+//              ^ variable.parameter.type-number.kavach
+type Buffer<T, size: Int = 64> { items: [T] }
+//             ^^^^ variable.parameter.type-number.kavach
+const small = a < b and c > d
+//              ^ keyword.operator.kavach
+//                        ^ keyword.operator.kavach
+const fits = i<n
+//            ^ keyword.operator.kavach
