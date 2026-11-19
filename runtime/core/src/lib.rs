@@ -258,11 +258,41 @@ fn invisible(c: char) -> bool {
     )
 }
 
+/// How many cores this program may use now (spec 4.9, decision 0126):
+/// `program_cores`, capped by an `on cores(n)` around the value being
+/// worked out.
+pub fn cores() -> usize {
+    let all = program_cores();
+    match place().0 {
+        0 => all,
+        n => n.min(all),
+    }
+}
+
+/// The panic of `on cores(n) x` with a count under 1 (spec 4.9).
+pub fn place_count_panic(n: i64) -> String {
+    format!("work runs on at least one core, but the count is {n} (spec 4.9)")
+}
+
+/// Where the value being worked out runs (`on cores(n) x`, `on cpu x`,
+/// spec 4.9): its most cores (0: no cap) and whether its GPU maps run on
+/// the CPU. The native runtime keeps it per task and sets this hook.
+static PLACE: std::sync::OnceLock<fn() -> (usize, bool)> = std::sync::OnceLock::new();
+
+/// Sets the hook `cores` and `gpu_mode` ask for the place.
+pub fn set_place_hook(f: fn() -> (usize, bool)) {
+    let _ = PLACE.set(f);
+}
+
+fn place() -> (usize, bool) {
+    PLACE.get().map_or((0, false), |f| f())
+}
+
 /// How many cores this program may use (spec 4.9, decision 0126): the
 /// machine's, as a container or CPU affinity allows, capped by
 /// `KAVACH_CORES` (`[run] cores` in `kavach.toml`); `KAVACH_SERIAL` is
 /// `KAVACH_CORES=1`. At least 1.
-pub fn cores() -> usize {
+pub fn program_cores() -> usize {
     static CORES: std::sync::OnceLock<usize> = std::sync::OnceLock::new();
     *CORES.get_or_init(|| {
         let machine = std::thread::available_parallelism().map_or(1, |n| n.get());
@@ -304,6 +334,10 @@ pub fn set_file_gpu_cpu() {
 /// Where a `map` with a `gpu fn` runs (spec 15.2): `KAVACH_GPU` (`cpu`
 /// is `off`), else `off` with `[run] gpu = "cpu"`, else `""`, the usual.
 pub fn gpu_mode() -> String {
+    // `on cpu x` (spec 4.9) keeps `x`'s maps on the CPU.
+    if place().1 {
+        return "off".into();
+    }
     match std::env::var("KAVACH_GPU") {
         Ok(m) if m == "cpu" => "off".into(),
         Ok(m) => m,

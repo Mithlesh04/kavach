@@ -213,6 +213,7 @@ impl<'a> Interp<'a> {
             ExprKind::Arena(b) => self.arena(b, e.span),
             ExprKind::Block(b) | ExprKind::Unsafe(b) => self.block(b),
             ExprKind::Scoped { call, body } => self.scoped(call, body),
+            ExprKind::On { place, value } => self.placed(place, value, e.span),
             ExprKind::Lambda { params, body } => Ok(self.closure(
                 params
                     .iter()

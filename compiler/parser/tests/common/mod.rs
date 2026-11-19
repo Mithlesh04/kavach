@@ -402,6 +402,15 @@ pub fn expr(e: &Expr) -> String {
         ExprKind::Arena(b) => format!("(arena {})", block(b)),
         ExprKind::Unsafe(b) => format!("(unsafe {})", block(b)),
         ExprKind::Scoped { call, body } => format!("(scoped {} {})", expr(call), block(body)),
+        ExprKind::On { place, value } => {
+            let place = match place {
+                kavach_ast::ValuePlace::Cores(None) => "cores".to_string(),
+                kavach_ast::ValuePlace::Cores(Some(n)) => format!("cores {}", expr(n)),
+                kavach_ast::ValuePlace::Cpu => "cpu".to_string(),
+                kavach_ast::ValuePlace::Gpu(n) => format!("gpu {}", expr(n)),
+            };
+            format!("(on {place} {})", expr(value))
+        }
         ExprKind::Error => "ERR".to_string(),
     }
 }

@@ -248,6 +248,7 @@ fn rewrite(
                     Stmt::Let(l, e) if *l == list => Some(e.line),
                     _ => None,
                 });
+                let list_line = on_cores.unwrap_or(0);
                 let on_cores =
                     on_cores.is_some_and(|line| ON_CORES.with(|m| m.borrow().contains(&line)));
                 let plan = reduction(body, &[var, index], locals).filter(|p| {
@@ -288,6 +289,29 @@ fn rewrite(
                         name,
                     ));
                     b.stmts.extend(stmts);
+                    continue;
+                }
+                // `for (i, x) in xs.enumerate()` writing `out[i]`: the
+                // counted loop it is, spread like one (spec 4.9).
+                let as_range = (on_cores && !locals[var as usize].is_ref())
+                    .then(|| counted(var, index, list, body, locals, list_line));
+                if let Some(
+                    as_range @ Stmt::ForRange {
+                        body: counted_body,
+                        start,
+                        end,
+                        ..
+                    },
+                ) = &as_range
+                    && let Some(plan) = eligible(counted_body, index, fresh, locals)
+                {
+                    let chunk = next + chunks.len();
+                    let cores = loop_cores(&b.stmts, list_line);
+                    let (flag_stmt, guard) =
+                        call_site(as_range, &plan, chunk, locals, start, end, cores);
+                    chunks.push(make_chunk(as_range, &plan, locals, name));
+                    b.stmts.push(flag_stmt);
+                    b.stmts.push(guard);
                     continue;
                 }
                 if let Stmt::ForEach { body, .. } = &mut s {
@@ -340,6 +364,37 @@ fn nested(
             rewrite(b, locals, name, &mut inside, next, chunks, shapes, scratch);
         }
     });
+}
+
+/// `for (i, x) in xs.enumerate()` as the counted loop it is: `i` over
+/// `0..xs.len()`, with `x = xs[i]` first. The runtime checks its size.
+fn counted(
+    var: Local,
+    index: Local,
+    list: Local,
+    body: &Block,
+    locals: &[Type],
+    line: u32,
+) -> Stmt {
+    let at = |kind, ty| Expr { kind, ty, line };
+    let xs = at(ExprKind::Local(list), locals[list as usize]);
+    let i = at(ExprKind::Local(index), Type::I64);
+    let item = at(
+        ExprKind::Index(Box::new(xs.clone()), Box::new(i)),
+        locals[var as usize],
+    );
+    let mut stmts = vec![Stmt::Let(var, item)];
+    stmts.extend(body.stmts.iter().cloned());
+    Stmt::ForRange {
+        var: index,
+        start: at(ExprKind::Int(0), Type::I64),
+        end: at(ExprKind::Rt(RtOp::ListLen, vec![xs]), Type::I64),
+        inclusive: false,
+        body: Block {
+            stmts,
+            value: body.value.clone(),
+        },
+    }
 }
 
 /// A loop of rows (`for j in 0..w` inside) with enough items in all to be

@@ -82,6 +82,47 @@ impl<'a> Lowerer<'a> {
         Ok(self.at(K::Block(block), ty, line))
     }
 
+    /// `on cores(n) x` and `on cpu x` (spec 4.9): `x` worked out inside a
+    /// place, which the runtime's library work and GPU maps ask for.
+    pub(crate) fn placed(
+        &mut self,
+        place: &'a ast::ValuePlace,
+        value: &'a ast::Expr,
+        ty: Type,
+        line: u32,
+    ) -> Lowered<ir::Expr> {
+        // `b`: 1 for the CPU, 2 when a count is given.
+        let (count, flags) = match place {
+            ast::ValuePlace::Cores(Some(n)) => (self.expr(n)?, 2),
+            ast::ValuePlace::Cores(None) => (self.at(K::Int(0), Type::I64, line), 0),
+            ast::ValuePlace::Cpu => (self.at(K::Int(0), Type::I64, line), 1),
+            ast::ValuePlace::Gpu(n) => return Err(self.unsupported("`on gpu(n)`", n.span)),
+        };
+        let flags = self.at(K::Int(flags), Type::I64, line);
+        let depth = self.new_local(Type::I64);
+        let mut block = ir::Block::default();
+        block.stmts.push(Stmt::Let(
+            depth,
+            self.at(K::Rt(RtOp::ScopePlace, vec![count, flags]), Type::I64, line),
+        ));
+        self.scoped_depths.push((depth, self.loop_frames.len()));
+        // A value of no type (`on cores(2) print(…)`) as a statement.
+        let result = self.new_local(ty);
+        let lowered = match ty {
+            Type::Unit => self.expr_stmt(value, &mut block.stmts),
+            _ => self
+                .expr(value)
+                .map(|v| block.stmts.push(Stmt::Let(result, v))),
+        };
+        self.scoped_depths.pop();
+        lowered?;
+        block.stmts.push(Stmt::Expr(self.leave(depth, line)));
+        if ty != Type::Unit {
+            block.value = Some(Box::new(self.local_expr(result, line)));
+        }
+        Ok(self.at(K::Block(block), ty, line))
+    }
+
     /// `FsScopeLeave` back to the depth in local `depth`.
     fn leave(&self, depth: ir::Local, line: u32) -> ir::Expr {
         let back = vec![
@@ -103,7 +144,12 @@ impl<'a> Lowerer<'a> {
 /// The functions holding a block given to a call: each goes back to the
 /// scope depth it started at however it ends.
 pub(crate) fn scope_blocks(functions: &[Function]) -> Vec<usize> {
-    let starts = |e: &ir::Expr| matches!(e.kind, K::Rt(RtOp::ScopeSpan | RtOp::ScopeSeeded, _));
+    let starts = |e: &ir::Expr| {
+        matches!(
+            e.kind,
+            K::Rt(RtOp::ScopeSpan | RtOp::ScopeSeeded | RtOp::ScopePlace, _)
+        )
+    };
     (functions.iter().enumerate())
         .filter(|(_, f)| crate::walk::any_in_block(&f.body, &mut |e| starts(e)))
         .map(|(i, _)| i)

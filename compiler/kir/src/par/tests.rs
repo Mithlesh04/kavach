@@ -102,3 +102,23 @@ fn main() {{
     assert!(spreads_rows(&src("on cores ", "w")));
     assert!(!spreads_rows(&src("", "w")));
 }
+
+/// `on cores for (i, x) in xs.enumerate()` writing `out[i]` goes on all
+/// cores as the counted loop it is; a loop not written `on cores` doesn't.
+#[test]
+fn an_enumerate_loop_writing_its_slot_is_spread_when_written_on_cores() {
+    let spreads = |place: &str| {
+        let src = format!(
+            "fn scale(xs: [Int]) -> [Int] {{\n    let out: [Int] = List.capacity(xs.len())\n    for _ in 0..xs.len() {{\n        out.push(0)\n    }}\n    {place}for (i, x) in xs.enumerate() {{\n        out[i] = x * 3 + i\n    }}\n    return out\n}}\n\nfn main() {{\n    print(scale([1, 2, 3]).len())\n}}\n"
+        );
+        let c = kavach_driver::compile(&src, "t.kav", Default::default());
+        let p = crate::lower(&c).expect("lowers");
+        p.functions.iter().any(|f| {
+            crate::walk::any_in_block(&f.body, &mut |e| {
+                matches!(e.kind, ExprKind::Rt(crate::rt_op::RtOp::ParFor, _))
+            })
+        })
+    };
+    assert!(spreads("on cores "));
+    assert!(!spreads(""));
+}

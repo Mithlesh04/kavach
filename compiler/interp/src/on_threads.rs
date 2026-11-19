@@ -110,6 +110,24 @@ impl<'a> Interp<'a> {
         Ok(Some(Value::Unit))
     }
 
+    /// `on cores(n) x` and `on cpu x` (spec 4.9): `x`, as where it runs
+    /// can't change it; a count under 1 panics.
+    pub(crate) fn placed(
+        &mut self,
+        place: &'a kavach_ast::ValuePlace,
+        value: &'a Expr,
+        span: Span,
+    ) -> Eval<'a> {
+        if let kavach_ast::ValuePlace::Cores(Some(n)) = place
+            && let Value::Int(k, _) = self.eval(n)?
+            && k < 1
+        {
+            let why = kavach_runtime_core::place_count_panic(k as i64);
+            return Err(self.panic(why, span));
+        }
+        self.eval(value)
+    }
+
     fn bind_round(&mut self, pattern: &'a Pattern, item: &Value<'a>) -> Result<(), Flow<'a>> {
         if let Some(bindings) = self.matches(pattern, item)? {
             for (def, v) in bindings {

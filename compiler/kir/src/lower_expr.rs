@@ -281,6 +281,7 @@ impl<'a> Lowerer<'a> {
                 return self.branching(e, true);
             }
             ExprKind::Scoped { call, body } => return self.scoped(call, body, ty, line),
+            ExprKind::On { place, value } => return self.placed(place, value, ty, line),
             _ => {
                 return Err(
                     self.unsupported(format!("`{}`", first_word(self.text(e.span))), e.span)

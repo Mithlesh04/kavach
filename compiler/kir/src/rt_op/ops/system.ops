@@ -274,3 +274,8 @@ AudioVoiceFeed,
 /// 1) or waited for (`a` -1).
 RunRoundsFull,
 RunRoundsAdd,
+/// `on cores(n) x` and `on cpu x` (spec 4.9): a scope, on the task's scope
+/// stack, with at most `a` cores (0: no cap) and the GPU maps on the CPU
+/// (`b` 1); `b` 2 when a count is given, which panics under 1. Gives the
+/// depth `FsScopeLeave` goes back to (`runtime/native/src/rt_scopes.rs`).
+ScopePlace,

@@ -169,6 +169,7 @@ impl Parser<'_> {
                 });
                 ExprKind::Spawn(kind, x, within)
             }
+            TokenKind::Ident if self.at_value_place() => self.value_place(),
             _ => {
                 let primary = self.primary();
                 let base = self.postfix(primary);

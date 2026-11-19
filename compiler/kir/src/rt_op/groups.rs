@@ -172,6 +172,7 @@ impl RtOp {
                 | RtOp::ScopeTraceId
                 | RtOp::ScopeTraceparent
                 | RtOp::ScopeRename
+                | RtOp::ScopePlace
         ) {
             // Spans and seeds (spec 4.8): only programs with them link it.
             "kv_rt_scopes"

@@ -25,6 +25,18 @@ pub struct LoopPlace {
     pub span: Span,
 }
 
+/// Where a value is worked out (spec 4.9): `on cores(n) x`, `on cpu x`,
+/// `on gpu(n) x`.
+#[derive(Clone, Debug, PartialEq)]
+pub enum ValuePlace {
+    /// `on cores` or `on cores(n)`: library work on at most `n` cores.
+    Cores(Option<Box<Expr>>),
+    /// `on cpu`: its GPU maps on the CPU.
+    Cpu,
+    /// `on gpu(n)`: its GPU maps on GPU `n`.
+    Gpu(Box<Expr>),
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum StmtKind {
     Let {
@@ -205,6 +217,11 @@ pub enum ExprKind {
     Scoped {
         call: Box<Expr>,
         body: Block,
+    },
+    /// `on cores(n) x`, `on cpu x` or `on gpu(n) x` (spec 4.9).
+    On {
+        place: ValuePlace,
+        value: Box<Expr>,
     },
     /// Stands in for an expression that had a syntax error.
     Error,

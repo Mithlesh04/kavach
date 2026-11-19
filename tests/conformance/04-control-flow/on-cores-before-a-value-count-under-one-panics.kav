@@ -1,0 +1,8 @@
+// Rule: a count under 1 worked out while running, before a value, panics.
+// Spec: 4.9
+// expect panic: work runs on at least one core, but the count is 0 (spec 4.9)
+
+fn main() {
+    const n = [1].len() - 1
+    print(on cores(n) [2, 1].sort())
+}

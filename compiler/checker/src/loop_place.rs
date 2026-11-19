@@ -143,6 +143,32 @@ impl Checker<'_> {
         })
     }
 
+    /// `on cores(n) x`, `on cpu x` or `on gpu(n) x` (spec 4.9): `x`'s type.
+    pub(crate) fn placed_value(
+        &mut self,
+        place: &ValuePlace,
+        value: &Expr,
+        expected: Option<&Ty>,
+    ) -> Ty {
+        match place {
+            ValuePlace::Cores(Some(n)) => {
+                self.check_expect(n, &Ty::Prim(Prim::Int));
+                if matches!(n.kind, ExprKind::Int(0) | ExprKind::Unary(UnaryOp::Neg, _)) {
+                    self.error(
+                        n.span,
+                        "work runs on at least one core: give 1 or more (spec 4.9)",
+                    );
+                }
+            }
+            ValuePlace::Gpu(n) => {
+                self.check_expect(n, &Ty::Prim(Prim::Int));
+                self.error(n.span, "choosing a GPU with `on gpu(n)` isn't built yet: leave it out and the system chooses, or write `on cpu` (to-do 16)");
+            }
+            _ => {}
+        }
+        self.value(value, expected)
+    }
+
     /// Whether `e`'s root variable was declared before the innermost
     /// round: something the round shares with the others.
     fn outside_round(&self, e: &Expr) -> Option<(Round, String)> {

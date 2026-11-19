@@ -60,6 +60,24 @@ pub enum Scope {
     },
     /// `random.seeded(seed) { … }` (14.15): the task's generator there.
     Seeded(Arc<Mutex<Seeded>>),
+    /// `on cores(n) x` and `on cpu x` (spec 4.9): at most `cores` cores
+    /// (0: no cap), and the GPU maps on the CPU when `cpu`.
+    Place { cores: usize, cpu: bool },
+}
+
+/// Where the code runs now: the fewest cores an `on cores(n)` around it
+/// allows (0: no cap), and whether an `on cpu` is around it.
+pub fn place(scopes: &[Scope]) -> (usize, bool) {
+    let (mut most, mut cpu) = (0, false);
+    for s in scopes {
+        if let Scope::Place { cores, cpu: c } = s {
+            if *cores > 0 && (most == 0 || *cores < most) {
+                most = *cores;
+            }
+            cpu |= *c;
+        }
+    }
+    (most, cpu)
 }
 
 /// The span the code runs in, if any.

@@ -1,0 +1,17 @@
+// Rule: `on cores(n)`, `on cores` and `on cpu` go before a value: it is worked out there and is the same value; `on` stays a name elsewhere.
+// Spec: 4.9
+// expect output: [1, 2, 3]
+// expect output: [1, 2, 3]
+// expect output: [6, 2, 4]
+// expect output: once
+// expect output: 6
+
+fn main() {
+    const xs = [3, 1, 2]
+    print(on cores(1) xs.sort())
+    print(on cores xs.sort())
+    print(on cpu xs.map(x => x * 2))
+    on cores(2) print("once")
+    const on = 5
+    print(on + 1)
+}

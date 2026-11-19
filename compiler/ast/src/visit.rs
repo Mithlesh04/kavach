@@ -323,6 +323,12 @@ pub fn walk_expr<V: VisitMut + ?Sized>(v: &mut V, e: &mut Expr) {
             v.expr(call);
             walk_block(v, body);
         }
+        ExprKind::On { place, value } => {
+            if let ValuePlace::Cores(Some(n)) | ValuePlace::Gpu(n) = place {
+                v.expr(n);
+            }
+            v.expr(value);
+        }
         ExprKind::Lambda { params, body } => {
             for p in params {
                 if let Some(t) = &mut p.ty {

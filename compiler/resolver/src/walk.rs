@@ -209,6 +209,12 @@ impl Resolver {
                 self.expr(call);
                 self.block(body);
             }
+            ExprKind::On { place, value } => {
+                if let kavach_ast::ValuePlace::Cores(Some(n)) | kavach_ast::ValuePlace::Gpu(n) = place {
+                    self.expr(n);
+                }
+                self.expr(value);
+            }
             ExprKind::Lambda { params, body } => {
                 self.push();
                 for p in params {

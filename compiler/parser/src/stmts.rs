@@ -86,7 +86,12 @@ impl Parser<'_> {
             }
             TokenKind::Keyword(Keyword::For | Keyword::While) => self.loop_stmt(None),
             // `on cores for …` (spec 4.9).
-            TokenKind::Ident if self.at_loop_place(0) => self.loop_stmt(None),
+            TokenKind::Ident
+                if self.at_loop_place(0)
+                    && (self.place_then_for() || self.nth_text(1) == "threads") =>
+            {
+                self.loop_stmt(None)
+            }
             TokenKind::Keyword(Keyword::Assert) => {
                 self.bump();
                 StmtKind::Assert(self.expr())
@@ -170,6 +175,70 @@ impl Parser<'_> {
                 self.nth(at + 2),
                 TokenKind::Keyword(Keyword::For) | TokenKind::LParen
             )
+    }
+
+    /// Whether a `for` follows the place at the start (`on cores(n) for`),
+    /// past the count's parentheses; else it goes before a value.
+    fn place_then_for(&self) -> bool {
+        let mut k = 2;
+        if *self.nth(k) == TokenKind::LParen {
+            let mut depth = 0;
+            loop {
+                match self.nth(k) {
+                    TokenKind::LParen => depth += 1,
+                    TokenKind::RParen => depth -= 1,
+                    TokenKind::Eof => return false,
+                    _ => {}
+                }
+                k += 1;
+                if depth == 0 {
+                    break;
+                }
+            }
+        }
+        *self.nth(k) == TokenKind::Keyword(Keyword::For)
+    }
+
+    /// Whether a value's place starts here: `on cores`, `on cpu` or `on gpu`
+    /// with something after it on the line (spec 4.9).
+    pub(crate) fn at_value_place(&self) -> bool {
+        let word = |k: usize, w: &str| *self.nth(k) == TokenKind::Ident && self.nth_text(k) == w;
+        word(0, "on")
+            && (word(1, "cores") || word(1, "cpu") || word(1, "gpu"))
+            && matches!(
+                self.nth(2),
+                TokenKind::Ident | TokenKind::LParen | TokenKind::Keyword(Keyword::SelfValue)
+            )
+    }
+
+    /// `on cores(n) x`, `on cpu x` or `on gpu(n) x`: the place, then the
+    /// value.
+    pub(crate) fn value_place(&mut self) -> ExprKind {
+        self.bump();
+        let word = self.text().to_string();
+        self.bump();
+        let count = |p: &mut Self| {
+            p.eat(&TokenKind::LParen).then(|| {
+                let n = p.expr();
+                p.expect(&TokenKind::RParen, "`)`");
+                Box::new(n)
+            })
+        };
+        let place = match word.as_str() {
+            "cores" => kavach_ast::ValuePlace::Cores(count(self)),
+            "cpu" => kavach_ast::ValuePlace::Cpu,
+            _ => match count(self) {
+                Some(n) => kavach_ast::ValuePlace::Gpu(n),
+                None => {
+                    self.error_here("`on gpu` names its GPU: `on gpu(1) xs.map(f)` (spec 4.9)");
+                    kavach_ast::ValuePlace::Cpu
+                }
+            },
+        };
+        ExprKind::On {
+            place,
+            value: Box::new(self.unary()),
+        }
     }
 
     /// `on cores`, `on cores(n)` or `on threads(n)` before a `for`.

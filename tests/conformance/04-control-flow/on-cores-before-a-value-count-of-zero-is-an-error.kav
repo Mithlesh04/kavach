@@ -1,0 +1,8 @@
+// Rule: `on cores(0)` before a value is a compile error: work runs on at least one core.
+// Spec: 4.9
+// expect compile error
+
+fn main() {
+    const xs = [2, 1]
+    print(on cores(0) xs.sort())    // error: give 1 or more
+}

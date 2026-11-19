@@ -50,6 +50,14 @@ pub(crate) fn current_span() -> Option<SpanId> {
     SCOPES.with(|s| scope::current_span(&s.borrow()))
 }
 
+/// The task's place (`on cores(n) x`, `on cpu x`), which the runtime
+/// core's `cores` and `gpu_mode` ask for.
+fn current_place() -> (usize, bool) {
+    SCOPES
+        .try_with(|s| scope::place(&s.borrow()))
+        .unwrap_or((0, false))
+}
+
 /// 64 bits from the innermost `random.seeded` block, if any.
 pub(crate) fn seeded_bits() -> Option<u64> {
     SCOPES.with(|s| scope::seeded_bits(&s.borrow()))
@@ -65,7 +73,7 @@ fn push(entry: Scope) -> i64 {
 
 // Spans and seeds: an entry of their own, so a program without them
 // doesn't link their code (decision 0024).
-crate::rt_data::entry!(kv_rt_scopes, |op, a, b, _c, code, _line| {
+crate::rt_data::entry!(kv_rt_scopes, |op, a, b, _c, code, line| {
     // From the first span or seed on, leaving ends spans too.
     let _ = LEAVE.set(leave_ending_spans);
     match op {
@@ -84,6 +92,18 @@ crate::rt_data::entry!(kv_rt_scopes, |op, a, b, _c, code, _line| {
             push(Scope::Seeded(Arc::new(Mutex::new(g))))
         }
         RtOp::ScopeMark => SCOPES.with(|s| s.borrow().len() as i64),
+        // `on cores(n) x`, `on cpu x` (spec 4.9): `b` 1 for the CPU, 2
+        // when a count is given.
+        RtOp::ScopePlace => {
+            if b & 2 != 0 && a < 1 {
+                crate::rt::panic_with(&kavach_runtime_core::place_count_panic(a), line);
+            }
+            kavach_runtime_core::set_place_hook(current_place);
+            push(Scope::Place {
+                cores: a.max(0) as usize,
+                cpu: b & 1 != 0,
+            })
+        }
         RtOp::ScopeRename => {
             let name = str_of(a);
             release(a);

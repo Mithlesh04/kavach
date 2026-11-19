@@ -280,6 +280,7 @@ impl Checker<'_> {
                 t
             }
             ExprKind::Scoped { call, body } => self.scoped(call, body, expected),
+            ExprKind::On { place, value } => self.placed_value(place, value, expected),
             ExprKind::Error => Ty::Error,
         }
     }
