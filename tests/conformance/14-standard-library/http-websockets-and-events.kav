@@ -51,7 +51,7 @@ fn main() ! Error {
         all = all + ((try conn.read()) ?? break)
     }
     const text = all.text() ?? ""
-    for line in text.slice(text.index_of(`{crlf}{crlf}`) ?? 0, text.len()).split(`\n`) {
+    for line in text[text.index_of(`{crlf}{crlf}`) ?? 0:].split(`\n`) {
         if line.starts_with("event") or line.starts_with("data") {
             print(line)
         }

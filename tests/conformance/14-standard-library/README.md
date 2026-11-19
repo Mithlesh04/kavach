@@ -20,10 +20,10 @@ The tests are listed in four files, by area:
 | 14.1 | [std-types-are-named-by-use.kav](std-types-are-named-by-use.kav) | `use std.time.{Date}` names the type itself, which makes values and is checked like any type. | compile error |
 | 14.1 | [runtime-functions-are-not-named-alone.kav](runtime-functions-are-not-named-alone.kav) | `use std.fs.{read_text}` is a compile error: a function the runtime provides is called through its module. | compile error |
 | 14.2 | [number-methods.kav](number-methods.kav) | Numbers have abs, min, max and clamp. | runs |
-| 14.2 | [text-methods.kav](text-methods.kav) | Text has replace, lines, chars, index_of and slice; positions count characters. | runs |
+| 14.2 | [text-methods.kav](text-methods.kav) | Text has replace, lines, chars and index_of, and slices; positions count characters. | runs |
 | 14.2 | [text-split.kav](text-split.kav) | split returns the parts between separators, empty parts included. | runs |
-| 14.2 | [list-methods.kav](list-methods.kav) | Lists have join, sort, sort_by, reverse, take, skip, find, count, index_of, min and max. | runs |
-| 14.2 | [list-slice-takes-a-range-of-items.kav](list-slice-takes-a-range-of-items.kav) | `xs.slice(start, end)` gives items `start..end`, both clamped to the list, as `String.slice` does. | runs |
+| 14.2 | [list-methods.kav](list-methods.kav) | Lists have join, sort, sort_by, find, count, index_of, min and max, and slices give a reversed copy, the first items and the rest. | runs |
+| 14.2 | [list-slice-takes-a-range-of-items.kav](list-slice-takes-a-range-of-items.kav) | `xs[start:end]` gives items `start..end`, both clamped to the list: a computed start below 0 counts as the start. | runs |
 | 14.2 | [chars-join-and-text-contains-a-char.kav](chars-join-and-text-contains-a-char.kav) | A `[Char]` joins into text, and `contains` looks for a `Char` as for a `String`. | runs |
 | 14.2 | [pop-takes-the-last-item.kav](pop-takes-the-last-item.kav) | `xs.pop()` takes out and gives the last item, or `none` for an empty list; a copy made before keeps it. | runs |
 | 14.2 | [pop-on-a-const-list-is-an-error.kav](pop-on-a-const-list-is-an-error.kav) | `xs.pop()` changes `xs`, so `xs` must be a `let`. | compile error |
@@ -37,7 +37,7 @@ The tests are listed in four files, by area:
 | 14.2, 1.5 | [camel-case-method-names-name-snake-case.kav](camel-case-method-names-name-snake-case.kav) | A camelCase method name is a compile error that names Kavach's `snake_case` method. | compile error |
 | 14.2 | [lists-and-sets-walk-with-for-each-and-find-index.kav](lists-and-sets-walk-with-for-each-and-find-index.kav) | `for_each`, `find_index` and `find_last_index` on lists of any values, and `for_each` on sets. | runs |
 | 14.2 | [set-changes-need-a-var.kav](set-changes-need-a-var.kav) | Changing a set with `add` or `remove` needs a `let`. | compile error |
-| 14.2 | [text-pads-words-and-capitals.kav](text-pads-words-and-capitals.kav) | Text pads, splits into words, capitalizes, truncates, finds blank text, trims one side, counts and finds the last part, and removes a prefix or suffix, with methods. | runs |
+| 14.2 | [text-pads-words-and-capitals.kav](text-pads-words-and-capitals.kav) | Text pads, splits into words, capitalizes, finds blank text, trims one side, counts and finds the last part, and removes a prefix or suffix, with methods; a slice cuts it short. | runs |
 | 14.2 | [float-near.kav](float-near.kav) | `x.near(y)` is true for floats equal but for rounding, never for `NaN`. | runs |
 | 14.2 | [sort-puts-nan-last.kav](sort-puts-nan-last.kav) | `NaN` sorts after every number, so a list holding one still sorts. | runs |
 | 14.2 | [sort-by-needs-an-ordered-key.kav](sort-by-needs-an-ordered-key.kav) | `sort_by`'s key must have an order: a record key is a compile error, not a list left unsorted. | compile error |
@@ -57,14 +57,14 @@ The tests are listed in four files, by area:
 | 14.2 | [sets-hold-equal-values-once.kav](sets-hold-equal-values-once.kav) | A set holds each value once by value, as `==` compares: equal lists, tuples, records and maps are one item. | runs |
 | 14.2 | [sort-by-keeps-equal-keys-in-order.kav](sort-by-keeps-equal-keys-in-order.kav) | `sort_by` keeps items with equal keys in the order they had, in a long list too. | runs |
 | 14.2 | [sort-needs-items-with-an-order.kav](sort-needs-items-with-an-order.kav) | `sort()` is for lists of values with an order; a list of records has none, so sorting it is a compile error. | compile error |
-| 14.2 | [sort-reverse-and-sort-by-give-copies.kav](sort-reverse-and-sort-by-give-copies.kav) | `sort`, `sort_by` and `reverse` give a new list; the list they are called on doesn't change. | runs |
-| 14.2 | [take-and-skip-past-the-end.kav](take-and-skip-past-the-end.kav) | `take(n)` gives the first `n` items and `skip(n)` all but them; with `n` past the end, `take` gives every item and `skip` none. | runs |
+| 14.2 | [sort-and-slices-give-copies.kav](sort-and-slices-give-copies.kav) | `sort`, `sort_by` and the slice `xs[::-1]` give a new list; the list they are made from doesn't change. | runs |
+| 14.2 | [first-and-rest-past-the-end.kav](first-and-rest-past-the-end.kav) | `xs[:n]` gives the first `n` items and `xs[n:]` all but them; with `n` past the end, `xs[:n]` gives every item and `xs[n:]` none. | runs |
 | 14.2 | [text-already-wide-enough-is-not-padded.kav](text-already-wide-enough-is-not-padded.kav) | `pad_left` and `pad_right` count characters, take any `Char` as fill, and leave text that is already `width` long as it was. | runs |
 | 14.2 | [text-capitalize-changes-only-the-first-character.kav](text-capitalize-changes-only-the-first-character.kav) | `capitalize` puts only the first character in upper case and keeps the rest, where `title` lowers the rest of each word; empty and blank text are handled. | runs |
 | 14.2 | [text-counts-characters-in-any-script.kav](text-counts-characters-in-any-script.kav) | Text's `len` counts characters, not bytes, and `upper`, `lower`, `starts_with`, `ends_with`, `repeat` and `is_empty` work on text in any script. | runs |
 | 14.2 | [text-lines-drop-crlf-endings.kav](text-lines-drop-crlf-endings.kav) | `lines` gives the lines without their line endings, a Windows `\r\n` ending included. | runs |
 | 14.2 | [text-pad-width-over-a-million-panics.kav](text-pad-width-over-a-million-panics.kav) | The `width` of `pad_left` and `pad_right` is at most 1,000,000; a wider pad panics instead of filling memory. | panic |
-| 14.2 | [text-positions-past-the-end-are-clamped.kav](text-positions-past-the-end-are-clamped.kav) | `slice` clamps positions past the end of the text, and `truncate` gives at most `max` characters: the whole text when it is shorter. | runs |
+| 14.2 | [text-positions-past-the-end-are-clamped.kav](text-positions-past-the-end-are-clamped.kav) | A slice clamps positions past the end of the text: `s[:max]` gives at most `max` characters, the whole text when it is shorter. | runs |
 | 14.2 | [decimal-round-even-on-negatives-and-ties.kav](decimal-round-even-on-negatives-and-ties.kav) | `d.round_even(places)` rounds a half to the even digit for negative values too, while `round` rounds it away from zero; a `Decimal` with fewer places is given back as it is. | runs |
 | 14.2 | [decimal-round-even-to-negative-places-panics.kav](decimal-round-even-to-negative-places-panics.kav) | `d.round_even(places)` with `places` below 0 panics, as `round` does. | panic |
 | 14.2 | [decimal-round-is-only-for-decimal.kav](decimal-round-is-only-for-decimal.kav) | `round(places)` is a `Decimal` method; a `Float` has none, so calling it is a compile error. | compile error |
@@ -100,11 +100,10 @@ The tests are listed in four files, by area:
 | 14.2 | [text-pad-left-width-over-a-million-panics.kav](text-pad-left-width-over-a-million-panics.kav) | `pad_left`'s `width` is at most 1,000,000, as `pad_right`'s is; a wider pad panics instead of filling memory. | panic |
 | 14.2 | [text-remove-prefix-takes-one-copy.kav](text-remove-prefix-takes-one-copy.kav) | `remove_prefix` and `remove_suffix` take `p` off once; text that doesn't start or end with `p`, or an empty `p`, gives `s` itself. | runs |
 | 14.2 | [text-replace-changes-every-match.kav](text-replace-changes-every-match.kav) | `s.replace(old, new)` replaces every `old`, without overlaps, in any script; with no `old` in `s`, it gives `s` as it was. | runs |
-| 14.2 | [text-slice-clamps-both-ends.kav](text-slice-clamps-both-ends.kav) | `s.slice(start, end)` clamps both positions to the text, as a list's `slice` does: a start below 0 counts as 0, and an end before the start gives empty text; positions count characters. | runs |
-| 14.2 | [text-slice-needs-start-and-end.kav](text-slice-needs-start-and-end.kav) | `s.slice(start, end)` takes both positions; leaving out the end is a compile error. | compile error |
+| 14.2 | [text-slice-clamps-both-ends.kav](text-slice-clamps-both-ends.kav) | `s[start:end]` clamps both positions to the text, as a list's slice does: a computed start below 0 counts as the start, and an end before the start gives empty text; positions count characters. | runs |
 | 14.2 | [text-title-and-words-in-any-script.kav](text-title-and-words-in-any-script.kav) | `words` splits at spaces, tabs and line breaks in text of any script, and `title` capitalizes each such word, accented letters too, keeping what is between them. | runs |
 | 14.2 | [text-trim-start-and-end-take-tabs-and-line-breaks.kav](text-trim-start-and-end-take-tabs-and-line-breaks.kav) | `trim_start` and `trim_end` take off spaces, tabs and line breaks (Windows `\r\n` too) at one side only, as `trim` does at both. | runs |
-| 14.2 | [text-truncate-counts-code-points.kav](text-truncate-counts-code-points.kav) | `s.truncate(max)` keeps at most `max` characters as `len` counts them: whole emoji, and a combining mark apart from its letter. | runs |
+| 14.2 | [text-slices-count-code-points.kav](text-slices-count-code-points.kav) | `s[:max]` keeps at most `max` characters as `len` counts them: whole emoji, and a combining mark apart from its letter. | runs |
 | 14.2 | [text-upper-is-not-a-number-method.kav](text-upper-is-not-a-number-method.kav) | Text methods are not number methods: `upper` on an `Int` is a compile error. | compile error |
 | 14.2 | [min-max-and-clamp-give-nan-for-nan.kav](min-max-and-clamp-give-nan-for-nan.kav) | `min`, `max` and `clamp` give `NaN` when any value is `NaN`, on either side. | runs |
 | 14.2 | [clamp-with-lo-above-hi-panics.kav](clamp-with-lo-above-hi-panics.kav) | `x.clamp(lo, hi)` with `lo` above `hi` breaks its contract: a panic. | panic |
@@ -238,6 +237,6 @@ The tests are listed in four files, by area:
 | 14.9 | [text-finds-numbers-after-any-letter.kav](text-finds-numbers-after-any-letter.kav) | A `-` that follows a letter or digit, in any script, is not a sign; `find_ints` and `find_float` read the numbers on each side of it. | runs |
 | 14.9 | [text-finds-the-smallest-int.kav](text-finds-the-smallest-int.kav) | `find_ints` leaves out a number too big for `Int`, either way, but keeps every number that fits, the smallest `Int` too. | runs |
 | 14.9 | [text-nfkd-splits-compatibility-characters.kav](text-nfkd-splits-compatibility-characters.kav) | `text.nfkd` splits accents off their letters and turns compatibility characters into plain ones; `nfd` leaves those characters as they are. | runs |
-| 14.2 | [negative-counts-count-as-zero.kav](negative-counts-count-as-zero.kav) | A negative count or width counts as 0: `repeat`, `take`, `skip`, `truncate` and `pad_left` don't panic on one. | runs |
+| 14.2 | [negative-counts-count-as-zero.kav](negative-counts-count-as-zero.kav) | A negative count or width counts as 0: `repeat` and `pad_left` don't panic on one, and a slice's computed negative end is before the start. | runs |
 | 14.2 | [text-methods-on-empty-text.kav](text-methods-on-empty-text.kav) | `"".lines()` is `[]`; an empty part is found at once: `contains("")` is true, `index_of("")` is 0. | runs |
 | 14.2 | [split-on-empty-text-panics.kav](split-on-empty-text-panics.kav) | `s.split("")` panics and says to use `chars()`. | panic |

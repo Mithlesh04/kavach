@@ -243,7 +243,7 @@ fn fields(data: Bytes) -> {Int: [Raw]} ! ProtoError {
                 }
                 const end = len.next + Int(len.value)
                 at = end
-                Raw.Chunk(data: data.slice(len.next, end))
+                Raw.Chunk(data: data[len.next:end])
             }
             5 => {
                 const v = try read_fixed(data, at, 4)

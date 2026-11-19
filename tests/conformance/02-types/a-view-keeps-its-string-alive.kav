@@ -10,7 +10,7 @@ type Token {
 
 fn first_word() -> StrView {
     const s = "hello world".upper()
-    s.view(0, 5)
+    s.view()[:5]
 }
 
 fn main() {
@@ -20,7 +20,7 @@ fn main() {
     const v = s.view()
     s = "xyz"
     print(`{v} {s}`)
-    const kept = [w, v.view(1, 3)]
+    const kept = [w, v[1:3]]
     const t = Token(text: w)
     print(`{kept} {t.text}`)
 }

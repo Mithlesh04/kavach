@@ -104,6 +104,12 @@ fn messages_point_at_the_problem() {
         ),
         ("}", &["1: unexpected `}`: nothing here to close"]),
         (
+            "const x = #1",
+            &[
+                "1: `#` counts from the end, and is written only inside `[ ]`: `xs[#1]` is the last item (spec 2.19)",
+            ],
+        ),
+        (
             "const x = 1;",
             &["1: Kavach has no semicolons: a statement ends at the end of its line"],
         ),

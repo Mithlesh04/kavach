@@ -22,7 +22,7 @@ fn main() {
     const data = "Hello, World! ".repeat(200).bytes()
     for format in [Format.Gzip, Format.Deflate, Format.Zstd, Format.Brotli, Format.Lz4] {
         const packed = compress.encode(data, format)
-        const half = packed.slice(0, packed.len() / 2)
+        const half = packed[:packed.len() / 2]
         print(`{format.name()} {outcome(half, format)} {outcome(Bytes([]), format)}`)
     }
 }

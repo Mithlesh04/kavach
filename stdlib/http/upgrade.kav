@@ -168,11 +168,11 @@ pub type WebSocket {
             return none
         }
         h = self.held.get()
-        let data = h.slice(at, at + length)
+        let data = h[at:at + length]
         if masked_frame {
-            data = masked(data, h.slice(key_at, key_at + 4))
+            data = masked(data, h[key_at:key_at + 4])
         }
-        self.held.update(_ => h.slice(at + length, h.len()))
+        self.held.update(_ => h[at + length:])
         Frame(fin: b0 >= 128, opcode: b0 % 16, data: data)
     }
 
@@ -294,14 +294,14 @@ pub fn connect(url: String) -> WebSocket ! HttpError uses Net {
     if not secure and not url.starts_with("ws://") {
         fail HttpError.BadUrl(url: url)
     }
-    const rest = url.slice(if secure { 6 } else { 5 }, url.len())
+    const rest = url[if secure { 6 } else { 5 }:]
     const slash = rest.index_of("/") ?? rest.len()
-    let host = rest.slice(0, slash)
-    const name = host.slice(0, host.index_of(":") ?? host.len())
+    let host = rest[:slash]
+    const name = host[:host.index_of(":") ?? host.len()]
     if not host.contains(":") {
         host = host + if secure { ":443" } else { ":80" }
     }
-    const path = if slash < rest.len() { rest.slice(slash, rest.len()) } else { "/" }
+    const path = if slash < rest.len() { rest[slash:] } else { "/" }
     const conn = if secure {
         net.connect_tls(host, protocols: ["http/1.1"]) catch e => fail HttpError.Network(error: e)
     } else {

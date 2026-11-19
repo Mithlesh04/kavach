@@ -1,0 +1,11 @@
+// Rule: `xs.get(i)` with a negative `i` gives `none`, as for any index out of range.
+// Spec: 2.19
+// expect output: none
+
+fn before(xs: [Int], i: Int) -> Int? {
+    xs.get(i - 1)
+}
+
+fn main() {
+    print(before([10, 20, 30], 0))
+}

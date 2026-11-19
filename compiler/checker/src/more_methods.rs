@@ -156,14 +156,13 @@ impl Checker<'_> {
                 "lines" => sig(vec![], list(string)),
                 "chars" => sig(vec![], list(Ty::Prim(Prim::Char))),
                 "index_of" => sig(vec![string], opt(int)),
-                "slice" => sig(vec![int.clone(), int], string),
                 _ => None,
             },
             Ty::List(t) => {
                 let t = (**t).clone();
                 let item = self.inf.resolve(&t);
                 match name {
-                    // `[Char]` joins too: `s.chars().reverse().join("")` (spec 14.2).
+                    // `[Char]` joins too: `s.chars()[::-1].join("")` (spec 14.2).
                     "join" if matches!(item, Ty::Prim(Prim::Char)) => {
                         sig(vec![string.clone()], string)
                     }
@@ -175,9 +174,6 @@ impl Checker<'_> {
                         let key = self.fresh();
                         sig(vec![f(t.clone(), key)], list(t))
                     }
-                    "reverse" => sig(vec![], list(t)),
-                    "take" | "skip" => sig(vec![int.clone()], list(t.clone())),
-                    "slice" => sig(vec![int.clone(), int], list(t)),
                     "find" => sig(vec![f(t.clone(), boolean)], opt(t)),
                     "count" => sig(vec![f(t, boolean)], int),
                     "index_of" => sig(vec![t], opt(int)),

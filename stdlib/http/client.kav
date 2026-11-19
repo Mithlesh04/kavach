@@ -27,16 +27,16 @@ pub fn split_url(url: String) -> Target ! HttpError {
     if not secure and not url.starts_with("http://") {
         fail HttpError.BadUrl(url: url)
     }
-    const rest = url.slice(if secure { 8 } else { 7 }, url.len())
+    const rest = url[if secure { 8 } else { 7 }:]
     const slash = rest.index_of("/") ?? rest.len()
-    let host = rest.slice(0, slash)
+    let host = rest[:slash]
     if host.is_empty() {
         fail HttpError.BadUrl(url: url)
     }
     if not host.contains(":") {
         host = host + if secure { ":443" } else { ":80" }
     }
-    const path = if slash < rest.len() { rest.slice(slash, rest.len()) } else { "/" }
+    const path = if slash < rest.len() { rest[slash:] } else { "/" }
     Target(host: host, path: path, secure: secure)
 }
 
@@ -71,7 +71,7 @@ pub fn own_header(name: String) -> Bool {
 pub fn call(method: String, url: String, given: [Header], body: Bytes) -> Response ! HttpError uses Net {
     const headers = traced(given)
     const target = try split_url(url)
-    const name = target.host.slice(0, target.host.index_of(":") ?? target.host.len())
+    const name = target.host[:target.host.index_of(":") ?? target.host.len()]
     const conn = connect(target) catch e => {
         fail HttpError.Network(error: e)
     }

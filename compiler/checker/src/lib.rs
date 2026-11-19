@@ -23,6 +23,7 @@ mod chains;
 mod changes;
 mod checker;
 mod cli_parse;
+mod coerce;
 mod collect;
 mod conform;
 mod constants;
@@ -70,6 +71,7 @@ mod reflect;
 mod scoped;
 mod secrets;
 mod show;
+mod slicing;
 mod spawn_parts;
 mod std_base64;
 mod std_caps;
@@ -86,6 +88,7 @@ mod stdlib;
 mod text_views;
 mod ty;
 mod unwraps;
+mod user_index;
 mod user_ops;
 mod where_bounds;
 
@@ -176,6 +179,10 @@ pub struct Checked {
     pub user_ops: HashMap<(u32, u32), &'static str>,
     pub user_negs: HashSet<(u32, u32)>,
     pub user_assigns: HashMap<(u32, u32), &'static str>,
+    /// Indexing and slicing on a program's own types (spec 2.16), by
+    /// `(base start, index end)`: `"index"`, `"index#"`, `"slice"` or
+    /// `"set"` (`user_index.rs`).
+    pub user_index: HashMap<(u32, u32), &'static str>,
     /// The variables whose values are or hold a `Drop` value: they live
     /// until the end of their block, so they count as used.
     pub drop_locals: HashSet<DefId>,
@@ -216,6 +223,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     checker.check_generic_json();
     checker.check_capabilities(file);
     checker.check_operator_methods();
+    checker.check_indexer_methods();
     checker.check_never_runs(file);
     checker.check_always_panics(file);
     checker.check_deprecated(file);
@@ -331,6 +339,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
         user_ops: std::mem::take(&mut checker.user_ops),
         user_negs: std::mem::take(&mut checker.user_negs),
         user_assigns: std::mem::take(&mut checker.user_assigns),
+        user_index: std::mem::take(&mut checker.user_index),
         drop_locals,
         agent_models,
         ask_models,

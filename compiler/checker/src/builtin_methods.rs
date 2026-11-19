@@ -182,7 +182,6 @@ impl Checker<'_> {
                 "last_index_of" => sig(vec![string], opt(int)),
                 "count" => sig(vec![string], int),
                 "remove_prefix" | "remove_suffix" => sig(vec![string.clone()], string),
-                "truncate" => sig(vec![int], string),
                 // `fill` is a `Char`, a space when not given (spec 14.2).
                 "pad_left" | "pad_right" => Some(MethodSig {
                     params: vec![int],
@@ -202,7 +201,6 @@ impl Checker<'_> {
                     "len" => sig(vec![], int),
                     "is_empty" => sig(vec![], Ty::Prim(Prim::Bool)),
                     "get" => sig(vec![int], opt(byte)),
-                    "slice" => sig(vec![int.clone(), int.clone()], bytes.clone()),
                     "index_of" => sig(vec![bytes], opt(int)),
                     // `b.text(start, end)`: one copy of a range (2.13).
                     "text" => Some(MethodSig {

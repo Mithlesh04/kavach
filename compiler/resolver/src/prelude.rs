@@ -60,6 +60,9 @@ pub const TYPES: &[&str] = &[
     "MatMul",
     "Neg",
     "Comparable",
+    "Index",
+    "IndexSet",
+    "Slice",
     "Number",
     "Floating",
 ];

@@ -11,8 +11,8 @@ fn unhex(h: String) -> Bytes {
     let out: [UInt8] = []
     let i = 0
     while i + 2 <= h.len() {
-        const high = digits.index_of(h.slice(i, i + 1)) ?? 0
-        const low = digits.index_of(h.slice(i + 1, i + 2)) ?? 0
+        const high = digits.index_of(h[i:i + 1]) ?? 0
+        const low = digits.index_of(h[i + 1:i + 2]) ?? 0
         out.push(UInt8(high * 16 + low))
         i += 2
     }
@@ -26,6 +26,6 @@ const public2 = unhex("3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12
 const sig2 = unhex("92a009a9f0d4cab8720e820b5f642540a2b27b5416503f8fb3762223ebdb69da085ac1e43e15996e458f3613d0f11d8c387b2eaeb4302aeeb00d291612bb0c00")
 const data2 = Bytes([114])
 print(`{crypto.ed25519_verify(public1, "".bytes(), sig1)} {crypto.ed25519_verify(public2, data2, sig2)}`)
-const changed_sig = sig2.slice(0, 10) + Bytes([sig2[10] ^ 1]) + sig2.slice(11, 64)
+const changed_sig = sig2[:10] + Bytes([sig2[10] ^ 1]) + sig2[11:64]
 print(`{crypto.ed25519_verify(public2, Bytes([115]), sig2)} {crypto.ed25519_verify(public2, data2, changed_sig)}`)
-print(`{crypto.ed25519_verify(public1, data2, sig2)} {crypto.ed25519_verify(public2, data2, sig2.slice(0, 63))}`)
+print(`{crypto.ed25519_verify(public1, data2, sig2)} {crypto.ed25519_verify(public2, data2, sig2[:63])}`)

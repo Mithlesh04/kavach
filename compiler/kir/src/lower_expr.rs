@@ -219,9 +219,15 @@ impl<'a> Lowerer<'a> {
                 return self.ptr_load(base, Some(index), line);
             }
             ExprKind::Index { base, index } => {
+                // `x[#k]` and `x[a:b:step]` (spec 2.19).
+                if let Some(e) = self.index_form(base, index, ty, line) {
+                    return e;
+                }
                 let base = self.expr(base)?;
                 match self.shapes.shape(base.ty).cloned() {
                     Some(Shape::List(_)) => K::Index(Box::new(base), Box::new(self.expr(index)?)),
+                    // A text's characters (spec 2.19).
+                    Some(Shape::Str) => K::Rt(RtOp::StrAt, vec![base, self.expr(index)?]),
                     Some(Shape::Bytes) => K::Rt(RtOp::BytesAt, vec![base, self.expr(index)?]),
                     // `map[key]` is an optional (spec 2.2), or the value
                     // a changing method works on (`lower_optional.rs`).

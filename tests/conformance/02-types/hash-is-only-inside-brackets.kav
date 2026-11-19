@@ -1,0 +1,8 @@
+// Rule: `#` is written only inside `[ ]`; anywhere else it is a compile error.
+// Spec: 2.19
+// expect compile error
+
+fn main() {
+    const k = #1            // error: `#` counts from the end only inside `[ ]`
+    print(k)
+}

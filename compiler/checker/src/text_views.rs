@@ -37,11 +37,9 @@ impl Checker<'_> {
         };
         let views = Ty::List(Box::new(view.clone()));
         match (recv, name) {
-            (Ty::Prim(Prim::String), "view") => sig(vec![int.clone(), int], view),
             (Ty::Builtin("StrView", _), _) => match name {
                 "len" => sig(vec![], int),
                 "is_empty" => sig(vec![], boolean),
-                "view" => sig(vec![int.clone(), int], view),
                 "trim" | "trim_start" | "trim_end" => sig(vec![], view),
                 "split" => sig(vec![string], views),
                 "lines" => sig(vec![], views),

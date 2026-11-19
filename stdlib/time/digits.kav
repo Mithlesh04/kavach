@@ -56,7 +56,7 @@ pub fn offset(text: String) -> Int?
     if not west and not text.starts_with("+") {
         return none
     }
-    const parts = text.slice(1, text.len()).split(":")
+    const parts = text[1:].split(":")
     if parts.len() < 2 or parts.len() > 3 {
         return none
     }

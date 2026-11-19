@@ -8,7 +8,7 @@ use std.net
 
 fn who(r: Request) -> Response {
     // Only the address, not the port the client was given.
-    http.text(200, `from {r.peer.slice(0, r.peer.index_of(":") ?? r.peer.len())}`)
+    http.text(200, `from {r.peer[:r.peer.index_of(":") ?? r.peer.len()]}`)
 }
 
 fn main() ! Error {

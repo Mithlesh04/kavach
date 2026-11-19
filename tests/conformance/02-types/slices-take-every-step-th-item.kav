@@ -1,0 +1,12 @@
+// Rule: `xs[start:end:step]` gives the items from `start` up to, not including, `end`, every `step`th; each part is optional.
+// Spec: 2.19
+// expect output: [20, 30]
+// expect output: [30, 40, 50] [10, 20] [10, 30, 50]
+// expect output: [10, 20, 30, 40, 50]
+
+fn main() {
+    const xs = [10, 20, 30, 40, 50]
+    print(xs[1:3])
+    print(`{xs[2:]} {xs[:2]} {xs[::2]}`)
+    print(xs[:])
+}

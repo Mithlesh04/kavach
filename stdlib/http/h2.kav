@@ -84,7 +84,7 @@ pub fn pull(link: Link) -> Pulled ! H2Error uses Net {
     while true {
         if not l.done.is_empty() {
             const m = l.done[0]
-            l.done = l.done.skip(1)
+            l.done = l.done[1:]
             return Pulled(link: l, data: m.body, ended: true, trailers: m.headers)
         }
         if let p = l.partial.get(1) {
@@ -116,12 +116,12 @@ pub fn accept(conn: Connection, data: Bytes) -> Link ! H2Error uses Net {
         }
         got = got + (piece ?? fail H2Error.Protocol(reason: "no HTTP/2 preface"))
     }
-    if got.slice(0, 24) != wire.preface() {
+    if got[:24] != wire.preface() {
         fail H2Error.Protocol(reason: "no HTTP/2 preface")
     }
     const hello = wire.frame(4, 0, 0, wire.setting(3, wire.most_streams()) + wire.setting(4, wire.big_window()))
     try wire.write(conn, hello + wire.frame(8, 0, 0, wire.four(wire.big_window() - 65_535)))
-    wire.start(conn, got.slice(24, got.len()))
+    wire.start(conn, got[24:])
 }
 
 /// The next whole request, or none once the client is done.
@@ -135,7 +135,7 @@ pub fn next(link: Link) -> Next ! H2Error uses Net {
         l = stepped ?? return Next(link: l, message: none)
     }
     const m = l.done[0]
-    l.done = l.done.skip(1)
+    l.done = l.done[1:]
     Next(link: l, message: m)
 }
 
@@ -169,7 +169,7 @@ pub fn watch(link: Link) -> H2Watched ! H2Error uses Net {
                 l.done[0] = rest
                 return H2Watched(link: l, event: H2Event.StreamData(stream: m.stream, data: m.body))
             }
-            l.done = l.done.skip(1)
+            l.done = l.done[1:]
             l.announced.remove(m.stream)
             return H2Watched(link: l, event: H2Event.StreamEnded(stream: m.stream))
         }

@@ -7,5 +7,5 @@
 fn main() {
     print(Bytes([]).is_empty())
     print("hi".bytes().is_empty())
-    print("hi".bytes().slice(2, 2).is_empty())
+    print("hi".bytes()[2:2].is_empty())
 }

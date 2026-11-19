@@ -9,7 +9,7 @@ This specification is the source of truth for the language. If the compiler and 
 | # | Chapter | Covers |
 |---|---|---|
 | 1 | [Basics](01-basics.md) | Files, comments, variables, literals, operators |
-| 2 | [Types](02-types/README.md) | Built-in types, records, unions, optionals, interfaces, generics, `Json`, `Bytes` |
+| 2 | [Types](02-types/README.md) | Built-in types, records, unions, optionals, interfaces, generics, `Json`, `Bytes`, indexing and slicing |
 | 3 | [Functions](03-functions.md) | Functions, named arguments, lambdas, signatures |
 | 4 | [Control flow](04-control-flow.md) | `if`, `match`, loops |
 | 5 | [Errors](05-errors.md) | Errors as values, `try`, `catch`, `fail`, panics |
@@ -22,7 +22,7 @@ This specification is the source of truth for the language. If the compiler and 
 | 12 | [Maintainability at scale](12-maintainability.md) | File and function limits, workspaces, architecture rules, API checks, deprecation |
 | 13 | {Tooling for AI: fewer tokens}(13-ai-tooling.md) | `query`, `outline`, `context`, edit by name, errors with fixes, MCP server, token benchmark |
 | 14 | [Standard library](14-standard-library/README.md) | Methods of built-in types, `std.fs`, `std.time`, `std.math`, `std.io`, `std.cli`, `std.tensor` (arrays and matrices), `std.table` |
-| 15 | [GPU](15-gpu.md) | `gpu fn`, `map` on the GPU, same results as the CPU, drawing with `gpu vertex fn` and `gpu fragment fn`, grouping and tables |
+| 15 | [GPU](15-gpu.md) | `gpu fn`, `map` on the GPU, same results as the CPU, drawing with `gpu vertex fn` and `gpu fragment fn`, grouping and tables, slicing on the GPU |
 
 ## Conventions in this spec
 

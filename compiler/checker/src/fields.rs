@@ -148,7 +148,16 @@ impl Checker<'_> {
 
     pub(crate) fn index(&mut self, base: &Expr, index: &Expr) -> Ty {
         let t = self.value(base, None);
+        // `x[#k]`, `x[a:b:step]`, `x[i, j]` (spec 2.19).
+        if let Some(ty) = self.sliced(base, &t, index) {
+            return ty;
+        }
         match self.inf.resolve(&t) {
+            // A text's characters, counted as `len` counts (spec 2.19).
+            Ty::Prim(Prim::String) | Ty::Builtin("StrView", _) => {
+                self.check_expect(index, &Ty::Prim(Prim::Int));
+                Ty::Prim(Prim::Char)
+            }
             Ty::List(item) => {
                 self.check_expect(index, &Ty::Prim(Prim::Int));
                 *item

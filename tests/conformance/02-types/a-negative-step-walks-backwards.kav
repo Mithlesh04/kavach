@@ -1,0 +1,12 @@
+// Rule: A negative step walks backwards, from `start` down to, not including, `end`; with it, a missing `start` is the last item and a missing `end` is before the first.
+// Spec: 2.19
+// expect output: [50, 40, 30, 20, 10]
+// expect output: [40, 30, 20] [50, 30, 10]
+// expect output: cba
+
+fn main() {
+    const xs = [10, 20, 30, 40, 50]
+    print(xs[::-1])
+    print(`{xs[3:0:-1]} {xs[::-2]}`)
+    print("abc"[::-1])
+}

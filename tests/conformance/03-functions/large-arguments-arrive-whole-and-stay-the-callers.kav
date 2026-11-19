@@ -38,6 +38,6 @@ fn main() {
     const s = "x".repeat(1_048_576)
     print(`{s.len()} {same(s)}`)
     const t = longer(s)
-    print(`{t.len()} {t.slice(t.len() - 1, t.len())}`)
-    print(`{s.len()} {s.slice(s.len() - 1, s.len())}`)
+    print(`{t.len()} {t[t.len() - 1:]}`)
+    print(`{s.len()} {s[s.len() - 1:]}`)
 }

@@ -1,4 +1,4 @@
-// Rule: A negative count or width counts as 0: `repeat`, `take`, `skip`, `truncate` and `pad_left` don't panic on one.
+// Rule: A negative count or width counts as 0: `repeat` and `pad_left` don't panic on one, and a slice's computed negative end is before the start.
 // Spec: 14.2
 // expect output: [] [] [1, 2] [] [ab]
 
@@ -8,5 +8,5 @@ fn below(n: Int) -> Int {
 
 fn main() {
     const n = below(1)
-    print(`[{"ab".repeat(n)}] {[1, 2].take(n)} {[1, 2].skip(n)} [{"ab".truncate(n)}] [{"ab".pad_left(n)}]`)
+    print(`[{"ab".repeat(n)}] {[1, 2][:n]} {[1, 2][n:]} [{"ab"[:n]}] [{"ab".pad_left(n)}]`)
 }

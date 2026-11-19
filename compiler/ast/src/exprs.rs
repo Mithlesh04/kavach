@@ -161,6 +161,17 @@ pub enum ExprKind {
         base: Box<Expr>,
         index: Box<Expr>,
     },
+    /// `#k` inside `[ ]`: the position `k` from the end (spec 2.19).
+    FromEnd(Box<Expr>),
+    /// `start:end:step` inside `[ ]`, each part optional: the index of a
+    /// slice (spec 2.19).
+    Part {
+        start: Option<Box<Expr>>,
+        end: Option<Box<Expr>>,
+        step: Option<Box<Expr>>,
+    },
+    /// `m[1, 2]`: one part per dimension, inside `[ ]` (spec 2.19).
+    Dims(Vec<Expr>),
     /// `user with { age: 32 }` (spec 2.4).
     With {
         base: Box<Expr>,

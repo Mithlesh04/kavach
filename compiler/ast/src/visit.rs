@@ -246,7 +246,15 @@ pub fn walk_expr<V: VisitMut + ?Sized>(v: &mut V, e: &mut Expr) {
                 }
             }
         }
-        ExprKind::List(items) | ExprKind::Tuple(items) => items.iter_mut().for_each(|x| v.expr(x)),
+        ExprKind::List(items) | ExprKind::Tuple(items) | ExprKind::Dims(items) => {
+            items.iter_mut().for_each(|x| v.expr(x))
+        }
+        ExprKind::FromEnd(x) => v.expr(x),
+        ExprKind::Part { start, end, step } => {
+            for x in [start, end, step].into_iter().flatten() {
+                v.expr(x);
+            }
+        }
         ExprKind::Tagged { args, .. } => args.iter_mut().for_each(|a| v.expr(&mut a.value)),
         ExprKind::AnonRecord(fields) => fields.iter_mut().for_each(|(_, x)| v.expr(x)),
         ExprKind::Map(entries) => {

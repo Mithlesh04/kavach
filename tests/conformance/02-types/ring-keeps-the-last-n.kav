@@ -41,6 +41,6 @@ fn main() {
 
     let copy = recent
     copy.push(5.0)
-    print(copy.to_list().skip(1))
+    print(copy.to_list()[1:])
     print(recent.to_list())
 }

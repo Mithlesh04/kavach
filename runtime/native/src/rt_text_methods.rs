@@ -48,7 +48,6 @@ crate::rt_data::entry!(kv_rt_text_methods, |op, a, b, c, code, line| {
         RtOp::TextRemovePrefix => new_str(tm::remove_prefix(&s, &take(b)).to_string(), result),
         RtOp::TextRemoveSuffix => new_str(tm::remove_suffix(&s, &take(b)).to_string(), result),
         // A negative count counts as 0 (spec 14.2).
-        RtOp::TextTruncate => new_str(tm::truncate(&s, b.max(0) as usize).to_string(), result),
         _ => {
             let left = op == RtOp::TextPadLeft;
             let b = b.max(0);

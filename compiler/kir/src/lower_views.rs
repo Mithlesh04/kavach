@@ -31,15 +31,9 @@ impl<'a> Lowerer<'a> {
             _ => return Ok(None),
         };
         let text = self.str_type();
-        let rt = |op, args| ir::Expr {
-            kind: K::Rt(op, args),
-            ty: text,
-            line,
-        };
         let mut v = std::mem::take(values);
         let made = match (kind, name, v.len()) {
             (_, "view", 1) | ("StrView" | "TextBuilder", "to_string", 1) => v.pop(),
-            (_, "view", 3) => Some(rt(RtOp::StrSlice, v)),
             ("StrView", "find", 2) => Some(ir::Expr {
                 kind: K::Rt(RtOp::StrIndexOf, v),
                 ty,

@@ -104,6 +104,10 @@ TextLastIndexOf,
 TextCount,
 TextRemovePrefix,
 TextRemoveSuffix,
-TextTruncate,
 TextPadLeft,
 TextPadRight,
+/// `s[a:b:step]` (spec 2.19): the text, and a list of the slice's four
+/// words, as `ListSlicePart`; by characters.
+StrSlicePart,
+/// `s[i]`: character `i` of the text; panics when out of range.
+StrAt,

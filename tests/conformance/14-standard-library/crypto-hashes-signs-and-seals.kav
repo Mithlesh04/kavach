@@ -16,7 +16,7 @@ fn hex(b: Bytes) -> String {
     let out = ""
     for i in 0..b.len() {
         const n = Int(b[i])
-        out = out + digits.slice(n / 16, n / 16 + 1) + digits.slice(n % 16, n % 16 + 1)
+        out = out + digits[n / 16:n / 16 + 1] + digits[n % 16:n % 16 + 1]
     }
     out
 }
@@ -41,7 +41,7 @@ fn main() ! CryptoError {
     print((try crypto.decrypt(key, sealed)).text() ?? "")
     // A byte that surely differs: "x" unless the byte there already is one.
     const other = if sealed[20] == 120 { "y" } else { "x" }
-    const changed = sealed.slice(0, 20) + other.bytes() + sealed.slice(21, sealed.len())
+    const changed = sealed[:20] + other.bytes() + sealed[21:]
     const opened = crypto.decrypt(key, changed) catch e => match e {
         CryptoError.Tampered => "tampered".bytes(),
         CryptoError.BadKey(_) => "bad key".bytes(),

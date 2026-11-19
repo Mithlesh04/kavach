@@ -1,0 +1,10 @@
+// Rule: Text is indexed and cut by characters, as `len()` counts them: `s[i]` is a `Char`, `s[#1]` the last one, and a slice is text.
+// Spec: 2.19
+// expect output: é o
+// expect output: él olléh
+
+fn main() {
+    const s = "héllo"
+    print(`{s[1]} {s[#1]}`)
+    print(`{s[1:3]} {s[::-1]}`)
+}

@@ -7,7 +7,7 @@ The standard library, imported as `std.<module>`, e.g. `use std.fs`. Its content
 | Folder | Module | Contents | Phase |
 |---|---|---|---|
 | `core/` | prelude | `Int`, `String`, `Option`, errors, `print`, `debug`, `ask`, … (always available) | 1 |
-| `collections/` | `std.collections` | `collections.kav`: chunks, zip, unique items, counting, flattening | 1 |
+| `collections/` | `std.collections` | `collections.kav`: chunks, zip, unique items, counting, flattening, and `Part`, a slice as a type's own `slice` method is given it (spec 2.16) | 1 |
 | `text/` | `std.text` | `text.kav`: padding, words, capitalizing, truncating, blank text | 1 |
 | `math/` | `std.math` | `math.kav`: `gcd`, `lcm`, `factorial`, `is_prime`, `mean` | 1 |
 | `time/` | `std.time`, `std.time.digits` | `digits.kav`: the digits and offsets of times as text; `time.kav`: `Duration` (`5.seconds`), `Date`, `Time`, `DateTime`, `Weekday`; clocks, sleeping and intervals come from the runtime (spec 14.4) | 1 |

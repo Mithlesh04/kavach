@@ -10,12 +10,7 @@ use kavach_ast::*;
 use kavach_resolver::{DefId, DefKind};
 use std::rc::Rc;
 
-/// One step from a variable to the part being assigned: `.field`, `[i]`, `.0`.
-enum Step<'a> {
-    Field(&'a str),
-    Index(Value<'a>),
-    Tuple(usize),
-}
+use crate::places::{Step, set};
 
 impl<'a> Interp<'a> {
     pub(crate) fn block(&mut self, b: &'a Block) -> Eval<'a> {
@@ -264,7 +259,11 @@ impl<'a> Interp<'a> {
                     root = base;
                 }
                 ExprKind::Index { base, index } => {
-                    steps.push(Step::Index(self.eval(index)?));
+                    steps.push(match &index.kind {
+                        ExprKind::FromEnd(k) => Step::FromEnd(self.int_of(k)?),
+                        ExprKind::Part { .. } => Step::Slice(self.part(index)?),
+                        _ => Step::Index(self.eval(index)?),
+                    });
                     root = base;
                 }
                 ExprKind::TupleField { base, index } => {
@@ -422,45 +421,6 @@ impl<'a> Interp<'a> {
             }
             _ => false,
         })
-    }
-}
-
-/// Follows `steps` inside `slot` and stores `value` there.
-fn set<'a>(slot: &mut Value<'a>, steps: &[Step<'a>], value: Value<'a>) -> Result<(), String> {
-    let Some((step, rest)) = steps.split_first() else {
-        *slot = value;
-        return Ok(());
-    };
-    let next = match (step, slot) {
-        (Step::Field(name), Value::Record { fields, life, .. }) => {
-            let field = fields.iter_mut().find(|f| *f.name == **name);
-            let Some(field) = field else {
-                return Err("can't assign here".to_string());
-            };
-            set(&mut field.value, rest, value)?;
-            // Changed in place: the same value, unless a copy shares it.
-            crate::drops::renew(life, fields, false);
-            return Ok(());
-        }
-        (Step::Index(Value::Int(i, _)), Value::List(items)) => {
-            let items = Rc::make_mut(items);
-            let len = items.len();
-            let item = usize::try_from(*i).ok().and_then(|i| items.get_mut(i));
-            if item.is_none() {
-                return Err(kavach_runtime_core::list_index_panic(*i, len));
-            }
-            item
-        }
-        (Step::Index(key), Value::Map(m)) => {
-            m.room_for(key, "map")?;
-            Some(Rc::make_mut(m).slot(key.clone()))
-        }
-        (Step::Tuple(i), Value::Tuple(items)) => items.get_mut(*i),
-        _ => None,
-    };
-    match next {
-        Some(next) => set(next, rest, value),
-        None => Err("can't assign here".to_string()),
     }
 }
 

@@ -139,6 +139,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0131](0131-plain-strings-and-backtick-templates.md) | Plain strings in quotes, templates in backticks | Accepted |
 | [0132](0132-json-for-every-value.md) | JSON for every value and key | Accepted |
 | [0133](0133-license-headers.md) | A short license header in every source file | Accepted |
+| [0134](0134-slicing-and-indexing.md) | Slicing with `xs[a:b:step]`, `#k` from the end, and indexing through interfaces | Accepted |
 | [0135](0135-tables-and-grouping.md) | Tables and grouping, for researchers | Accepted |
 | [0136](0136-tensor-the-one-array-type.md) | `Tensor` is the one array type, like NumPy's `ndarray`; `Matrix` goes (a 2-D tensor, `Tensor<T, dims: 2>`, does its job); NumPy's methods in six steps, the same bits on CPU and GPU | Accepted |
 | [0137](0137-numbers-in-types.md) | Numbers in types: types positional, numbers named (`List<Int, max: 2>`, `Int<bits: 24>`, `Tensor<Float, dims: 2>`) | Accepted |

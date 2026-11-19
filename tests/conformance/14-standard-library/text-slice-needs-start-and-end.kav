@@ -1,8 +1,0 @@
-// Rule: `s.slice(start, end)` takes both positions; leaving out the end is a compile error.
-// Spec: 14.2
-// expect compile error
-
-fn main() {
-    const s = "Kavach"
-    print(s.slice(2))        // error: `slice` needs `end` too
-}

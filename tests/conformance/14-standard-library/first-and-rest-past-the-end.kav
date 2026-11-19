@@ -1,0 +1,10 @@
+// Rule: `xs[:n]` gives the first `n` items and `xs[n:]` all but them; with `n` past the end, `xs[:n]` gives every item and `xs[n:]` none.
+// Spec: 14.2
+// expect output: [1, 2, 3] []
+// expect output: [] [1, 2, 3]
+
+fn main() {
+    const xs = [1, 2, 3]
+    print(`{xs[:5]} {xs[5:]}`)
+    print(`{xs[:0]} {xs[0:]}`)
+}

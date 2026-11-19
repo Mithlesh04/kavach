@@ -153,7 +153,7 @@ fn opening(target: String, method: String) -> Opening ! GrpcError uses Net {
     if not secure and not target.starts_with("http://") {
         fail GrpcError.Protocol(reason: `a target starts with \`http://\` or \`https://\`: {target}`)
     }
-    const host = target.slice(if secure { 8 } else { 7 }, target.len())
+    const host = target[if secure { 8 } else { 7 }:]
     const conn = if secure {
         net.connect_tls(host, ["h2"]) catch e => fail GrpcError.Network(error: e)
     } else {

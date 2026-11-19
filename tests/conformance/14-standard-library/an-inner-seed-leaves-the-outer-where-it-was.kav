@@ -23,6 +23,6 @@ fn with_inner() -> [Int] uses Random {
 
 fn main() uses Random {
     const outer = with_inner()
-    print(outer.take(3) == plain())
+    print(outer[:3] == plain())
     print(outer[3] == random.seeded(2) { random.int(0, 1_000_000) })
 }

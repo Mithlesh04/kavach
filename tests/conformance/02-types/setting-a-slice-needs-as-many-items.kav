@@ -1,0 +1,10 @@
+// Rule: A slice is set only with as many items as it has: another length is a panic that names both lengths.
+// Spec: 2.19
+// expect panic: the slice has 2 items, but 1 was given
+
+fn main() {
+    let xs = [1, 2, 3, 4, 5]
+    const given = [6]
+    xs[0:2] = given
+    print(xs)
+}

@@ -32,8 +32,6 @@ ListJoin,
 ListSort,
 /// Sorts the list (first operand) by the keys in the second list.
 ListSortBy,
-ListReverse,
-ListTake,
 ListSkip,
 ListIndexOf,
 ListMin,
@@ -48,7 +46,6 @@ BytesNew,
 BytesAt,
 BytesLen,
 BytesGet,
-BytesSlice,
 BytesText,
 BytesToList,
 BytesAsList,
@@ -153,3 +150,11 @@ BytesTextRange,
 /// call (`compiler/kir/src/inout_stash.rs`, Sakshi's S11).
 InoutStash,
 InoutTake,
+/// `xs[a:b:step]` (spec 2.19): the list, and a list of the slice's four
+/// words (`kavach_runtime_core::slices::Part::words`).
+ListSlicePart,
+/// `xs[a:b:step] = ys`: the list, the four words and the items, as many
+/// as the slice has; in place when nothing else holds the list.
+ListSetPart,
+/// `b[a:b:step]` on `Bytes`, as `ListSlicePart`.
+BytesSlicePart,

@@ -10,10 +10,10 @@ fn merge(a: [Int], b: [Int]) -> [Int] {
             j += 1
         }
     }
-    for x in a.skip(i) {
+    for x in a[i:] {
         out.push(x)
     }
-    for x in b.skip(j) {
+    for x in b[j:] {
         out.push(x)
     }
     out

@@ -5,7 +5,7 @@
 
 ## Context
 
-Spec 9.1 ran a spawned expression in its new task, all of it. So in `spawn cores total(xs.slice(0, 1000))` the task got all of `xs` and cut it there: each task copied the whole list. Sakshi measured it (to-do item 10, S16): 1M records split into 8 tasks cost 2.3 s for flat records and up to 9.5 s for nested ones, against 0.1 s to make the same records inside the tasks. kavach-sdc's `check` stayed on one core because of it.
+Spec 9.1 ran a spawned expression in its new task, all of it. So in `spawn cores total(xs[:1000])` the task got all of `xs` and cut it there: each task copied the whole list. Sakshi measured it (to-do item 10, S16): 1M records split into 8 tasks cost 2.3 s for flat records and up to 9.5 s for nested ones, against 0.1 s to make the same records inside the tasks. kavach-sdc's `check` stayed on one core because of it.
 
 How other languages do it:
 
@@ -17,7 +17,7 @@ How other languages do it:
 
 A maintainer chose (2026-11-19) Go's rule. In `spawn f(a, b)` and `spawn x.m(a, b)`, the spawning code works out the value before the dot and the arguments, in the order they are written; the task then makes the call with those values. A panic there happens at the spawn's line, and a `try` there passes its error on from the spawning function.
 
-The call itself, a spawned block, a call through `?.`, `w.timeout(d)`, `inout` arguments and the list a changing method is called on still run in the task (spec 9.1 has the list). To work an argument out in the task, spawn a block: `spawn { total(xs.slice(0, 1000)) }`.
+The call itself, a spawned block, a call through `?.`, `w.timeout(d)`, `inout` arguments and the list a changing method is called on still run in the task (spec 9.1 has the list). To work an argument out in the task, spawn a block: `spawn { total(xs[:1000]) }`.
 
 The checker finds the parts once (`compiler/checker/src/spawn_parts.rs`); the interpreter and code generation both read that list, so they always agree.
 

@@ -32,9 +32,9 @@ fn main() {
     print(grpc.encode(Test1(a: 150)).to_list())
     print(grpc.encode(Test2(a: 150, b: "testing")).to_list())
     // -1 takes ten bytes; 2.5 is field 2's eight little-endian bytes.
-    const negative = grpc.encode(Test2(a: -1, b: "")).slice(0, 11)
+    const negative = grpc.encode(Test2(a: -1, b: ""))[:11]
     const double = grpc.encode(Mixed(a: 0, d: 2.5, tags: [], on: false, inner: Test1(a: 0), note: none))
-    print((negative + double.slice(2, 11)).to_list())
+    print((negative + double[2:11]).to_list())
     const m = Mixed(a: -1, d: 2.5, tags: [3, 270], on: true, inner: Test1(a: 150), note: none)
     const back = grpc.decode<Mixed>(grpc.encode(m)) catch _ => m
     print(back)

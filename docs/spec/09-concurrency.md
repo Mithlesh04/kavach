@@ -22,7 +22,7 @@ Both fetches run at the same time.
 
 `spawn` takes the call right after it, so `spawn count(i) * 10` is `(spawn count(i)) * 10`, a task times a number, and a compile error. Write the arithmetic inside the call (`spawn count(i * 10)`), or multiply what `.wait()` gives.
 
-**The call's arguments are worked out at the spawn**, as Go's `go f(x)` does. In `spawn f(a, b)` and `spawn x.m(a, b)`, the spawning code works out the arguments `a` and `b`, and the value `x` the method is called on, in the order they are written. Then the new task makes the call with those values. So a task gets only what its call is given: `spawn cores total(xs.slice(0, 1000))` copies a thousand items into the task, not all of `xs`.
+**The call's arguments are worked out at the spawn**, as Go's `go f(x)` does. In `spawn f(a, b)` and `spawn x.m(a, b)`, the spawning code works out the arguments `a` and `b`, and the value `x` the method is called on, in the order they are written. Then the new task makes the call with those values. So a task gets only what its call is given: `spawn cores total(xs[:1000])` copies a thousand items into the task, not all of `xs`.
 
 ```kavach
 fn total(xs: [Int]) -> Int {
@@ -30,7 +30,7 @@ fn total(xs: [Int]) -> Int {
 }
 
 fn show(xs: [Int], i: Int) {
-    const t = spawn total(xs.slice(0, i))   // the task gets i items, not all of `xs`
+    const t = spawn total(xs[:i])           // the task gets i items, not all of `xs`
     print(t.wait() catch 0)
     const _u = spawn total([xs[i]])         // i = 3: panics here, in `show`, not in the task
 }
@@ -46,7 +46,7 @@ What is worked out at the spawn is part of the spawning code:
 - A `try` in an argument passes the error on from the spawning function, as anywhere else in it. An error of the call itself comes out of `.wait()`.
 - `within d` (9.6): `d` is worked out at the spawn too, after the arguments.
 
-Everything else runs in the task: the call itself (its default arguments and its body), and a spawned expression that is not a call, such as a block. To work an argument out inside the task, spawn a block: `spawn { total(xs.slice(0, 1000)) }`. Three kinds of call or part are worked out in the task as well:
+Everything else runs in the task: the call itself (its default arguments and its body), and a spawned expression that is not a call, such as a block. To work an argument out inside the task, spawn a block: `spawn { total(xs[:1000]) }`. Three kinds of call or part are worked out in the task as well:
 
 - A call through `?.` (2.7), all of it: its arguments are worked out only when there is a value.
 - A wait with a time limit, `w.timeout(d)` (9.6), all of it: it is one wait.

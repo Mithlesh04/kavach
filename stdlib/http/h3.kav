@@ -78,7 +78,7 @@ fn response(data: Bytes) -> H3Message ! H3Error {
         if end > data.len() {
             fail H3Error.Protocol(reason: "a frame is cut off")
         }
-        const payload = data.slice(size.next, end)
+        const payload = data[size.next:end]
         if kind.value == 1 and not final {
             headers = {:}
             for h in try decode(payload) {
@@ -278,7 +278,7 @@ fn string(data: Bytes, at: Int, n: Int) -> Text ! H3Error
     if end > data.len() {
         fail H3Error.Protocol(reason: "a string is cut off")
     }
-    const raw = data.slice(size.next, end)
+    const raw = data[size.next:end]
     const bytes = if (first & (1 << n)) != 0 {
         hpack.huffman(raw) catch e => {
             fail H3Error.Protocol(reason: "a Huffman code is broken")

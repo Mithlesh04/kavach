@@ -11,7 +11,7 @@ type Stack {
         if self.items.is_empty() {
             return self
         }
-        Stack(items: self.items.take(self.items.len() - 1))
+        Stack(items: self.items[:self.items.len() - 1])
     }
 
     fn top(self) -> Int? {

@@ -11,7 +11,7 @@ fn vowels(s: String) -> Int {
 }
 
 fn main() {
-    print("kavach".chars().reverse().join(""))
+    print("kavach".chars()[::-1].join(""))
     print(['a', 'b', 'c'].join("-"))
     print(vowels("education"))
     print("héllo".contains('é'))

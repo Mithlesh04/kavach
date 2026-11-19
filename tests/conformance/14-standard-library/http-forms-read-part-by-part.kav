@@ -39,7 +39,7 @@ fn post(address: String, body: String) -> String ! NetError uses Net {
         all = all + ((try conn.read()) ?? break)
     }
     const text = all.text() ?? ""
-    text.slice((text.index_of(`{crlf}{crlf}`) ?? 0) + 4, text.len())
+    text[(text.index_of(`{crlf}{crlf}`) ?? 0) + 4:]
 }
 
 fn main() ! Error {

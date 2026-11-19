@@ -8,7 +8,7 @@ fn balanced(text: String) -> Bool {
             if stack.last() != want {
                 return false
             }
-            stack = stack.take(stack.len() - 1)
+            stack = stack[:stack.len() - 1]
         }
     }
     stack.is_empty()

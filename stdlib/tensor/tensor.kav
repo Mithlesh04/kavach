@@ -121,13 +121,13 @@ pub type Tensor<T: Number>: Add, Sub, Mul, MatMul {
         }
         const n = self.shape.len()
         const (m, k, k2, p) = (self.shape[n - 2], self.shape[n - 1], other.shape[n - 2], other.shape[n - 1])
-        if k != k2 or self.shape.slice(0, n - 2) != other.shape.slice(0, n - 2) {
+        if k != k2 or self.shape[:n - 2] != other.shape[:n - 2] {
             panic(`\`@\` needs {self.shape}'s last size ({k}) to match {other.shape}'s next to last ({k2}), and the sizes before them to be the same`)
         }
         let out: [T] = []
         for b in 0..(self.items.len() / (m * k).max(1)) {
-            const left = matrix.Matrix(rows: m, cols: k, items: self.items.slice(b * m * k, (b + 1) * m * k))
-            const right = matrix.Matrix(rows: k, cols: p, items: other.items.slice(b * k * p, (b + 1) * k * p))
+            const left = matrix.Matrix(rows: m, cols: k, items: self.items[b * m * k:(b + 1) * m * k])
+            const right = matrix.Matrix(rows: k, cols: p, items: other.items[b * k * p:(b + 1) * k * p])
             out += (left @ right).items
         }
         let shape = self.shape

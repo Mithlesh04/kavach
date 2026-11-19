@@ -1,0 +1,11 @@
+// Rule: A plain number always counts from the start: a negative index is out of range, and the panic names it.
+// Spec: 2.19
+// expect panic: index -1 is out of range: the list has 3 items
+
+fn before(xs: [Int], i: Int) -> Int {
+    xs[i - 1]
+}
+
+fn main() {
+    print(before([10, 20, 30], 0))
+}

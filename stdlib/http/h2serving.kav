@@ -183,7 +183,7 @@ fn send_data(out: Out, stream: Int, data: Bytes, end: Bool) ! H2Error uses Net {
         const last = end and done + size == data.len()
         const flags = if last { 1 } else { 0 }
         let failed: H2Error? = none
-        wire.write(s.conn, wire.frame(0, flags, stream, data.slice(done, done + size))) catch e => {
+        wire.write(s.conn, wire.frame(0, flags, stream, data[done:done + size])) catch e => {
             failed = e
         }
         s.sent += size

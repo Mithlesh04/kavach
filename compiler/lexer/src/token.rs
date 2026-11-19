@@ -113,6 +113,8 @@ pub enum TokenKind {
     Tilde,
     Shl,
     Shr,
+    /// `#k` in brackets: `k` from the end (spec 2.19).
+    Hash,
 
     /// The end of a statement (spec 1.1).
     Newline,
@@ -173,6 +175,7 @@ pub(crate) const PUNCTUATION: &[(&str, TokenKind)] = &[
     ("|", TokenKind::Pipe),
     ("^", TokenKind::Caret),
     ("~", TokenKind::Tilde),
+    ("#", TokenKind::Hash),
 ];
 
 /// Whether a line that ends with this token continues on the next line

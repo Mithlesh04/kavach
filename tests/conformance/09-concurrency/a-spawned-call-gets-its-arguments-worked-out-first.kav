@@ -39,11 +39,11 @@ fn total(xs: [Int]) -> Int {
 
 fn main() {
     const xs = [1, 2, 3, 4]
-    const t = spawn total(xs.slice(noted("start", 1), noted("end", 3)))
+    const t = spawn total(xs[noted("start", 1):noted("end", 3)])
     const u = spawn bag().total_with(noted("extra", 10))
     print("spawned")
     print(t.wait() catch 0)
     print(u.wait() catch 0)
-    const v = spawn { total(xs.slice(noted("in the task", 0), 2)) }
+    const v = spawn { total(xs[noted("in the task", 0):2]) }
     print(v.wait() catch 0)
 }

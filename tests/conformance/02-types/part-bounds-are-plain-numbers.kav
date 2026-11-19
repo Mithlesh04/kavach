@@ -1,0 +1,11 @@
+// Rule: `part.bounds(len)` gives `start`, `end` and `step` as plain numbers, as Python's `slice.indices` does: `#k` is `len - k`, missing parts filled in, both ends clamped.
+// Spec: 2.16
+// expect output: (1, 5, 1)
+// expect output: (2, -1, -1)
+// expect output: (3, 5, 1)
+
+fn main() {
+    print(Part(start: 1, end: 99).bounds(5))
+    print(Part(step: -1).bounds(3))
+    print(Part(start: 2, start_from_end: true).bounds(5))
+}

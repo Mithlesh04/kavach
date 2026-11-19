@@ -4,7 +4,7 @@ fn simulate(commands: [Int]) -> [Int] {
         if c > 0 {
             q.push(c)
         } else if not q.is_empty() {
-            q = q.skip(1)
+            q = q[1:]
         }
     }
     q

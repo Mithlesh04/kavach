@@ -287,6 +287,12 @@ impl Known<'_, '_> {
 
     /// `xs[i]` with an `i` outside a list whose length is known.
     fn index(&mut self, e: &Expr, base: &Expr, index: &Expr) {
+        // `xs[-1]` is an error of its own, naming `xs[#1]` (spec 2.19).
+        if let ExprKind::Unary(UnaryOp::Neg, x) = &index.kind
+            && matches!(x.kind, ExprKind::Int(_))
+        {
+            return;
+        }
         let len = match &base.kind {
             ExprKind::List(items) => items.len(),
             ExprKind::Name(id) => {

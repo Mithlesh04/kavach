@@ -320,6 +320,12 @@ pub fn expr(e: &Expr) -> String {
         ),
         ExprKind::TupleField { base, index } => format!("(. {} {index})", expr(base)),
         ExprKind::Index { base, index } => format!("(index {} {})", expr(base), expr(index)),
+        ExprKind::FromEnd(k) => format!("(from-end {})", expr(k)),
+        ExprKind::Part { start, end, step } => {
+            let part = |x: &Option<Box<Expr>>| x.as_deref().map_or("_".to_string(), expr);
+            format!("(part {} {} {})", part(start), part(end), part(step))
+        }
+        ExprKind::Dims(parts) => format!("(dims {})", list(parts, expr)),
         ExprKind::With { base, fields } => format!(
             "(with {} {})",
             expr(base),

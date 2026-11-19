@@ -1,0 +1,11 @@
+// Rule: `#0` as an index is out of range, as `xs[xs.len()]` is.
+// Spec: 2.19
+// expect panic: index 3 is out of range
+
+fn last(xs: [Int], k: Int) -> Int {
+    xs[#k]
+}
+
+fn main() {
+    print(last([1, 2, 3], 0))
+}

@@ -19,7 +19,7 @@ fn serve(listener: Listener) ! H2Error uses Net {
         link = next.link
         asked.push(next.message ?? return)
     }
-    for m in asked.reverse() {
+    for m in asked[::-1] {
         const path = m.headers.get(":path") ?? "?"
         const ok = [Header(name: ":status", value: "200")]
         link = try h2.respond(link, m.stream, ok, `{path} got {m.body.len()} bytes`.bytes())

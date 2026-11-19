@@ -176,7 +176,7 @@ extend H2Client {
             }
             const size = room.min(body.len() - done)
             const end = if done + size == body.len() { 1 } else { 0 }
-            try wire.write(s.conn, wire.frame(0, end, stream, body.slice(done, done + size)))
+            try wire.write(s.conn, wire.frame(0, end, stream, body[done:done + size]))
             done += size
             s.sent += size
             s.sent_on[stream] = (s.sent_on.get(stream) ?? 0) + size

@@ -1,0 +1,8 @@
+// Rule: A step of 0 written in a slice is a compile error.
+// Spec: 2.19
+// expect compile error
+
+fn main() {
+    const xs = [1, 2, 3]
+    print(xs[::0])          // error: the step of a slice can't be 0
+}

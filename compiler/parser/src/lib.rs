@@ -10,6 +10,7 @@
 
 mod exprs;
 mod fns;
+mod index;
 mod items;
 mod literals;
 mod loaded;

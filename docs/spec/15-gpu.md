@@ -214,6 +214,26 @@ frame.draw(tiles, square, textures: [skin])
 - `frame.draw` gives one texture for each `Texture` the fragment fn takes, in order, as `textures:`. Leaving `textures:` out when the fragment fn takes one is a compile error; a list of another length is a panic.
 - `sample` is the one call on a `Texture` a `gpu fn` can make, and only a `gpu fragment fn` takes textures. On the CPU, `sample` reads the same pixels and gives the same colors, up to rounding.
 
+## 15.4 Slicing on the GPU
+
+*Not built yet.*
+
+Slices (2.19) of a list in GPU memory (15.2) run on the GPU, so a pipeline doesn't stop to copy the list back ([decision 0134](../decisions/0134-slicing-and-indexing.md)).
+
+- **A slice of a list in GPU memory is made there.** `ys[a:b:step]` copies nothing back to the CPU, and the slice stays in GPU memory like a `map`'s result, so a `map`, `filter`, `sum`, `min` or `max` can follow it there.
+- **`xs[a:b:step].map(f)` reads the slice where it is**: from its first item, every `step`th item, with nothing copied in between. When `xs` is in GPU memory, the slice is never made as a list of its own. The same holds for `filter` and the other calls of 15.2 after a slice.
+- **Tensors** in GPU memory, once they can stay there (14.33), are sliced there the same way: `t[0:2, 1:]`, `t[:, #1]`.
+- **A program's own `Index` and `Slice` methods** (2.16) may be called in a `gpu fn` (`v[i]`, `v[1:3]`) when the method fits a `gpu fn` itself (15.1): pure, and only numbers, records and tuples of the four types.
+- **The results are those of the CPU:** the same `#k`, the same clamping, the same step. The step and the ends are worked out on the CPU before the GPU starts, so a step of 0 panics at the same line as on the CPU. An index out of range in a `gpu fn`'s `index` method panics with the CPU's message and line, as overflow does (15.2).
+
+```kavach
+for _ in 0..100 {
+    xs = xs.map(x => step(x))          // xs stays in GPU memory
+}
+const firsts = xs[0:1000]              // made on the GPU: no copy back
+const lit = xs[::2].map(x => glow(x, 0.5))   // reads every other item in place
+```
+
 ## 15.5 Grouping and tables on the GPU
 
 *Not built yet.*
@@ -240,5 +260,6 @@ const strongest = hits.max_by(.energy)
 
 ## Open questions
 
+- A `Slice` method in a `gpu fn`: its `Part` holds `Int?`s, which a `gpu fn` can't take (15.1).
 - `min` and `max` of `Float32` on the GPU, and `filter` of records and tuples. Float `min` and `max` must keep `NaN` last (14.2). Float sums are decided: exact and rounded once, in any order ([decision 0135](../decisions/0135-tables-and-grouping.md), which replaces [decision 0031](../decisions/0031-loops-on-all-cores.md)'s in-order float sums for lists).
 - A `Gpu` capability for code that chooses the device or keeps GPU memory, as the platform plan describes.

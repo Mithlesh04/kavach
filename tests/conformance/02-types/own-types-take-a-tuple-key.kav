@@ -1,0 +1,24 @@
+// Rule: Parts separated by commas give a program's own type a tuple key: `g[1, 2]` is `g.index((1, 2))`.
+// Spec: 2.16
+// expect output: 6
+// expect output: [[1, 2, 3], [4, 5, 0]]
+
+type Grid: Index<(Int, Int), Int>, IndexSet<(Int, Int), Int> {
+    cols: Int
+    cells: [Int]
+
+    fn index(self, key: (Int, Int)) -> Int { self.cells[key.0 * self.cols + key.1] }
+
+    fn index_set(self, key: (Int, Int), value: Int) -> Grid {
+        let cells = self.cells
+        cells[key.0 * self.cols + key.1] = value
+        Grid(cols: self.cols, cells: cells)
+    }
+}
+
+fn main() {
+    let g = Grid(cols: 3, cells: [1, 2, 3, 4, 5, 6])
+    print(g[1, 2])
+    g[1, 2] = 0
+    print([g.cells[:3], g.cells[3:]])
+}

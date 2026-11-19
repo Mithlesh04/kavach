@@ -1,0 +1,13 @@
+// Rule: `#k` is the position `k` from the end, `len - k`, in an index or at either end of a slice; `#` covers the whole part after it, and `xs[#n:]` with `n` of 0 is empty.
+// Spec: 2.19
+// expect output: 50 40
+// expect output: [40, 50] [10, 20, 30, 40] [30, 40]
+// expect output: [] [10, 20, 30, 40, 50] 50
+
+fn main() {
+    const xs = [10, 20, 30, 40, 50]
+    print(`{xs[#1]} {xs[#2]}`)
+    print(`{xs[#2:]} {xs[:#1]} {xs[#3:#1]}`)
+    const n = 0
+    print(`{xs[#n:]} {xs[:#n]} {xs[#n + 1]}`)
+}

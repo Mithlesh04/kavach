@@ -84,6 +84,16 @@ fn calls_fields_and_indexing() {
         ),
         ("user?.name", "(?. user name)"),
         ("names[0]", "(index names 0)"),
+        // Spec 2.19: `#k`, slices with each part optional, and commas.
+        ("xs[#1]", "(index xs (from-end 1))"),
+        ("xs[#n + 1]", "(index xs (from-end (+ n 1)))"),
+        ("xs[1:3]", "(index xs (part 1 3 _))"),
+        ("xs[::-1]", "(index xs (part _ _ (- 1)))"),
+        ("xs[#2:]", "(index xs (part (from-end 2) _ _))"),
+        ("xs[:#1]", "(index xs (part _ (from-end 1) _))"),
+        ("xs[:]", "(index xs (part _ _ _))"),
+        ("m[1, 2]", "(index m (dims 1 2))"),
+        ("m[0:2, #1]", "(index m (dims (part 0 2 _) (from-end 1)))"),
         ("result.0.balance", "(. (. result 0) balance)"),
         (
             "ask<RefundDecision>(prompt)",

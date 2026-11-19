@@ -10,8 +10,8 @@ fn unhex(h: String) -> Bytes {
     let out: [UInt8] = []
     let i = 0
     while i + 2 <= h.len() {
-        const high = digits.index_of(h.slice(i, i + 1)) ?? 0
-        const low = digits.index_of(h.slice(i + 1, i + 2)) ?? 0
+        const high = digits.index_of(h[i:i + 1]) ?? 0
+        const low = digits.index_of(h[i + 1:i + 2]) ?? 0
         out.push(UInt8(high * 16 + low))
         i += 2
     }

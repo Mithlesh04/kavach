@@ -1,0 +1,16 @@
+// Rule: An `Index` method can't use capabilities or fail, as an operator method can't.
+// Spec: 2.16
+// expect compile error
+
+type Loud: Index<Int, Int> {     // error: `index` gives `[…]`, so it can't use capabilities
+    n: Int
+
+    fn index(self, key: Int) -> Int uses Console {
+        print(key)
+        self.n
+    }
+}
+
+fn main() {
+    print(Loud(n: 1)[0])
+}

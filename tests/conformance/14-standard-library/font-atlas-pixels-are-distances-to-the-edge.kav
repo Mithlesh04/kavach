@@ -29,7 +29,7 @@ fn middle(atlas: Atlas, id: Int) -> [UInt8] {
     const col = Int(22.4 - Float(b.left))
     const row = Int(Float(b.top) - 22.4)
     const at = ((b.y + row) * atlas.image.width + b.x + col) * 4
-    atlas.image.pixels.slice(at, at + 4)
+    atlas.image.pixels[at:at + 4]
 }
 
 fn main() ! Error {

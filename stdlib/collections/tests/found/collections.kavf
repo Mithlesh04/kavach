@@ -1,0 +1,4 @@
+// Found by `kavach test` (spec 11.4). Generated: commit it, never edit it.
+counted(-4867357568761825162, true, 4356014468092950646)
+Part.bounds(Part(start: none, end: 0, step: none, start_from_end: false, end_from_end: false), -1)
+Part.bounds(Part(start: none, end: 0, step: 0, start_from_end: false, end_from_end: false), 0)

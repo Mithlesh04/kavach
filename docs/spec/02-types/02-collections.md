@@ -9,7 +9,9 @@ Type | Shorthand | Literal |
 ```kavach
 const names = ["Asha", "Ravi"]
 const first = names[0]           // panics if out of range
-const maybe = names.get(5)       // returns String? (none if out of range)
+const last = names[#1]           // "Ravi": `#1` is the last item (2.19)
+const maybe = names.get(5)       // returns String? (none if out of range, or below 0)
+const rest = names[1:]           // ["Ravi"]: a slice (2.19)
 
 const ages = {"asha": 31}
 const age = ages["asha"]         // returns Int? (dicts always return optionals)

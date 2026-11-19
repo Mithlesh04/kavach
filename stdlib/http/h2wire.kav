@@ -113,7 +113,7 @@ pub fn block_frames(stream: Int, headers: [Header], end: Bool, most: Int) -> Byt
         const last = if at + size >= encoded.len() { 4 } else { 0 }
         const kind = if frames.is_empty() { 1 } else { 9 }
         const ending = if kind == 1 and end { 1 } else { 0 }
-        frames = frames + frame(kind, ending | last, stream, encoded.slice(at, at + size))
+        frames = frames + frame(kind, ending | last, stream, encoded[at:at + size])
         at += size
     }
     frames
@@ -207,10 +207,10 @@ pub fn step(l: Link) -> Link? ! H2Error uses Net {
         kind: Int(data[3]),
         flags: Int(data[4]),
         stream: number32(data, 5) & 2_147_483_647,
-        payload: data.slice(9, 9 + n),
+        payload: data[9:9 + n],
     )
     let next = l
-    next.buffer = data.slice(9 + n, data.len())
+    next.buffer = data[9 + n:]
     try handle(next, f)
 }
 
@@ -235,7 +235,7 @@ pub fn handle(link: Link, f: Frame) -> Link ! H2Error uses Net {
     } else if f.kind == 5 {
         fail H2Error.Protocol(reason: "server push was not allowed")
     } else if f.kind == 6 and f.flags & 1 == 0 {
-        try write(l.conn, frame(6, 1, 0, f.payload.slice(0, 8)))
+        try write(l.conn, frame(6, 1, 0, f.payload[:8]))
     } else if f.kind == 7 {
         l.leaving = true
     } else if f.kind == 8 and f.payload.len() == 4 {
@@ -281,7 +281,7 @@ pub fn header_frame(link: Link, f: Frame) -> Link ! H2Error uses Net {
         payload = try unpad(f)
         if f.flags & 32 != 0 {
             // A priority (ignored).
-            payload = payload.slice(5, payload.len())
+            payload = payload[5:]
         }
     }
     let p = l.partial.get(f.stream) ?? Partial(
@@ -352,7 +352,7 @@ pub fn unpad(f: Frame) -> Bytes ! H2Error {
     if pad + 1 > f.payload.len() {
         fail H2Error.Protocol(reason: "more padding than payload")
     }
-    f.payload.slice(1, f.payload.len() - pad)
+    f.payload[1:f.payload.len() - pad]
 }
 
 /// Moves the message on `stream` to the complete ones.
@@ -388,7 +388,7 @@ pub fn block(link: Link, stream: Int, headers: [Header], end: Bool) -> Link ! H2
     let first = true
     while first or at < encoded.len() {
         const size = (encoded.len() - at).min(link.max_frame)
-        const piece = encoded.slice(at, at + size)
+        const piece = encoded[at:at + size]
         at += size
         const last = if at >= encoded.len() { 4 } else { 0 }
         try write(link.conn, if first { frame(1, ending | last, stream, piece) } else { frame(9, last, stream, piece) })
@@ -420,7 +420,7 @@ pub fn data(link: Link, stream: Int, body: Bytes, end: Bool) -> Link ! H2Error u
         }
         const size = room.min(body.len() - sent)
         const flags = if end and sent + size == body.len() { 1 } else { 0 }
-        try write(l.conn, frame(0, flags, stream, body.slice(sent, sent + size)))
+        try write(l.conn, frame(0, flags, stream, body[sent:sent + size]))
         sent += size
         l.window -= size
         l.windows[stream] = (l.windows.get(stream) ?? l.initial) - size

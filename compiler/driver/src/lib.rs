@@ -13,6 +13,7 @@ pub mod deps;
 mod fetch_checks;
 mod git_fetch;
 mod grants;
+mod indexing;
 mod limits;
 mod lock_file;
 mod operators;
@@ -270,6 +271,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
         .module_consts
         .retain(|d| !checked.script_consts.contains(d));
     operators::to_method_calls(&mut parsed.file, &mut checked);
+    indexing::to_method_calls(&mut parsed.file, &mut checked, &mut resolution);
 
     let error = |text: &String, span: Span| Message {
         severity: Severity::Error,

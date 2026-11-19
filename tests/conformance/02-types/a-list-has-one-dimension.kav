@@ -1,0 +1,9 @@
+// Rule: A list has one dimension: `rows[1, 2]` on a list is a compile error; nested lists chain, `rows[1][2]`.
+// Spec: 2.19
+// expect compile error
+
+fn main() {
+    const rows = [[1, 2, 3], [4, 5, 6]]
+    print(rows[1][2])
+    print(rows[1, 2])       // error: write one index at a time
+}

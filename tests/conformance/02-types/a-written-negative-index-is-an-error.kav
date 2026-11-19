@@ -1,0 +1,8 @@
+// Rule: A negative number written as an index is a compile error that names the `#` form.
+// Spec: 2.19
+// expect compile error
+
+fn main() {
+    const xs = [10, 20, 30]
+    print(xs[-1])           // error: Kavach counts from the end with `#`: write `xs[#1]`
+}

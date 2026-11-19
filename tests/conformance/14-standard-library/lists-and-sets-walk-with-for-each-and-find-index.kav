@@ -32,7 +32,7 @@ fn main() {
     const xs = [4, 7, 1, 7, 9]
     print(`{xs.find_index(x => x == 7)} {xs.find_last_index(x => x == 7)} {xs.find_index(x => x > 100)}`)
     const words = ["fig", "pear", "plum"]
-    words.take(2).for_each(w => print(w.upper()))
+    words[:2].for_each(w => print(w.upper()))
     print(`{words.find_index(w => w.starts_with("p"))} {words.find_last_index(w => w.starts_with("p"))}`)
     Set.of("a", "b", "a").for_each(t => print(`tag {t}`))
     const items = [Item(name: "pen", price: 1.5), Item(name: "ink", price: 4.0)]

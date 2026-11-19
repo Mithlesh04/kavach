@@ -85,6 +85,7 @@ mod rt_replays;
 mod rt_run;
 mod rt_scopes;
 mod rt_serial;
+mod rt_slices;
 pub mod rt_std;
 pub mod rt_stop;
 mod rt_strings;

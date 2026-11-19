@@ -118,7 +118,7 @@ fn rows(texts: [String], width: Int) -> [[String]]
     let out: [[String]] = []
     let i = 0
     while i + width <= texts.len() {
-        out.push(texts.slice(i, i + width))
+        out.push(texts[i:i + width])
         i += width
     }
     out
@@ -250,7 +250,7 @@ fn done(outcome: String) ! SystemError {
         return
     }
     const parts = outcome.split(":")
-    const why = outcome.slice(parts[0].len() + 1, outcome.len())
+    const why = outcome[parts[0].len() + 1:outcome.len()]
     match parts[0] {
         "NotFound" => fail SystemError.NotFound(what: why),
         "Denied" => fail SystemError.Denied(reason: why),
@@ -277,7 +277,7 @@ pub fn terminate(pid: Int, force: Bool = false) ! SystemError uses System.critic
 pub fn free_port(port: Int, force: Bool = false) -> [Int] ! SystemError uses System.critical.write {
     const outcome = system.act_id(1, if force { "force" } else { "" }, port)
     try done(outcome)
-    words(outcome.slice(6, outcome.len())).map(p => number(p))
+    words(outcome[6:]).map(p => number(p))
 }
 
 /// The user this program runs as.

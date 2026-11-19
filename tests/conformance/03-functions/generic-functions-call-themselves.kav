@@ -7,7 +7,7 @@ fn reversed<T>(xs: [T]) -> [T] {
     if xs.len() <= 1 {
         return xs
     }
-    reversed(xs.slice(1, xs.len())) + [xs[0]]
+    reversed(xs[1:]) + [xs[0]]
 }
 
 fn evens<T>(xs: [T], at: Int, out: [T]) -> [T] {

@@ -5,7 +5,7 @@ fn common_prefix(words: [String]) -> String {
     let p = words[0]
     for w in words {
         while not w.starts_with(p) {
-            p = p.slice(0, p.len() - 1)
+            p = p[:p.len() - 1]
         }
     }
     p

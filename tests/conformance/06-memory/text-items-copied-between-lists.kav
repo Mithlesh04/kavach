@@ -13,7 +13,7 @@ fn main() {
     }
     out.push("z")
     src[0] = "b"
-    print(out.slice(0, 3))
+    print(out[:3])
     print(out)
     print(src)
     let many: [String] = []

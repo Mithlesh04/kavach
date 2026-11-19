@@ -1,0 +1,11 @@
+// Rule: A text's character out of range is a panic that names the index and the text's length.
+// Spec: 2.19
+// expect panic: index 9 is out of range: the text has 5 characters
+
+fn at(s: String, i: Int) -> Char {
+    s[i]
+}
+
+fn main() {
+    print(at("héllo", 9))
+}

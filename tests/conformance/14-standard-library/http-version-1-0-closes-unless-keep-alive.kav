@@ -17,7 +17,7 @@ fn answers(address: String, text: String) -> String ! NetError uses Net {
     }
     conn.close()
     const lines = (all.text() ?? "").split(`\u{D}\n`)
-    lines.filter(l => l.starts_with("answer")).map(l => l.slice(0, 9)).join(", ")
+    lines.filter(l => l.starts_with("answer")).map(l => l[:9]).join(", ")
 }
 
 fn main() ! Error {

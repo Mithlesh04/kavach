@@ -161,6 +161,9 @@ impl<'a> Interp<'a> {
                 _ => Err(self.panic("not a tuple", e.span)),
             },
             ExprKind::Index { base, index } => {
+                if let Some(v) = self.index_form(base, index, e.span) {
+                    return v;
+                }
                 let (b, i) = (self.eval(base)?, self.eval(index)?);
                 if let Value::Variant { union, .. } = &b
                     && crate::json::is_json(*union)
@@ -288,6 +291,10 @@ impl<'a> Interp<'a> {
             )),
             ExprKind::Spawn(kind, x, within) => self.spawn_within(*kind, x, within.as_deref()),
             ExprKind::Error => Err(self.panic("this code has a compile error", e.span)),
+            // Only inside `[ ]`, where `index_form` reads them (spec 2.19).
+            ExprKind::FromEnd(_) | ExprKind::Part { .. } | ExprKind::Dims(_) => {
+                Err(self.panic("this is only written inside `[ ]`", e.span))
+            }
         }
     }
 
@@ -411,6 +418,10 @@ impl<'a> Interp<'a> {
             }
             (Value::Map(m), key) => Ok(m.get(&key).cloned().unwrap_or(Value::None)),
             (Value::Bytes(b), Value::Int(i, _)) => self.byte_at(&b, i, span),
+            // A text's characters (spec 2.19).
+            (Value::Str(s), Value::Int(i, _)) => kavach_runtime_core::slices::char_at(&s, i)
+                .map(Value::Char)
+                .map_err(|m| self.panic(m, span)),
             _ => Err(self.panic("this can't be indexed", span)),
         }
     }

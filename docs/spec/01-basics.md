@@ -173,11 +173,12 @@ print(`a literal \{ brace and a \` backtick`)
 | Bits | `& \| ^ << >> ~` | Integers only. `a << n` panics when the result doesn't fit (5.6); both shifts panic when `n` is negative or not less than the type's width in bits. `>>` keeps the sign |
 | Optional | `??` `?.` | See 2.7 |
 | Range | `..` `..=` | `0..10` excludes 10; `0..=10` includes it |
+| Index and slice | `x[i]` `x[a:b:step]` `x[#k]` `m[i, j]` | One item, a slice, `k` from the end, one part per dimension (2.19). A program's own types get them through interfaces (2.16) |
 | Assignment | `= += -= *= /= %= **= @= &= \|= ^= <<= >>=` | Assignment is a statement, not an expression. `x op= v` is `x = x op v`, checked as that operator is |
 
 Precedence, from highest to lowest:
 
-1. `.` `?.` calls, indexing
+1. `.` `?.` calls, indexing and slicing
 2. `**`, right to left: `2 ** 3 ** 2` is `2 ** 9`. It binds tighter than a minus on its left, as in mathematics: `-2 ** 2` is `-(2 ** 2)`, `-4`
 3. `not` `~` unary `-`
 4. `* / % @`

@@ -49,10 +49,10 @@ pub fn split_messages(pending: Bytes) -> Split ! GrpcError {
         if n > pending.len() - at - 5 {
             break
         }
-        messages.push(pending.slice(at + 5, at + 5 + n))
+        messages.push(pending[at + 5:at + 5 + n])
         at += 5 + n
     }
-    Split(messages: messages, rest: pending.slice(at, pending.len()))
+    Split(messages: messages, rest: pending[at:])
 }
 
 /// A message behind gRPC's prefix: not compressed (0), then its length in
@@ -67,7 +67,7 @@ pub fn unframed_all(body: Bytes) -> [Bytes] ! GrpcError {
     let messages: [Bytes] = []
     let at = 0
     while at < body.len() {
-        const rest = body.slice(at, body.len())
+        const rest = body[at:]
         const m = try unframed(rest)
         messages.push(m)
         at += 5 + m.len()
@@ -87,7 +87,7 @@ pub fn unframed(body: Bytes) -> Bytes ! GrpcError {
     if n > body.len() - 5 {
         fail GrpcError.Protocol(reason: "a message is cut off")
     }
-    body.slice(5, 5 + n)
+    body[5:5 + n]
 }
 
 pub fn from_h2(e: H2Error) -> GrpcError {

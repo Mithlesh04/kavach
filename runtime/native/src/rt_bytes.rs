@@ -82,14 +82,6 @@ pub fn bytes_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             });
             crate::rt_data::optional(at.map(|x| x as i64), code)
         }
-        RtOp::BytesSlice => {
-            let data = with_bytes(a, |d| {
-                let clamp = |n: i64| n.clamp(0, d.len() as i64) as usize;
-                let (start, end) = (clamp(b), clamp(c));
-                d[start..end.max(start)].to_vec()
-            });
-            new_bytes(data, result)
-        }
         RtOp::BytesTextRange => with_bytes(a, |d| {
             let clamp = |n: i64| n.clamp(0, d.len() as i64) as usize;
             let (start, end) = (clamp(b), clamp(c));

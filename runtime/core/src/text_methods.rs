@@ -3,7 +3,7 @@
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
 //! Text methods (spec 14.2) that the interpreter and native code share:
-//! `capitalize`, `title`, `words`, padding, `truncate`, `is_blank`,
+//! `capitalize`, `title`, `words`, padding, `is_blank`,
 //! `trim_start` and `trim_end`, `last_index_of`, `count`, and removing a
 //! prefix or suffix. Positions and lengths count characters.
 
@@ -63,14 +63,6 @@ pub fn pad(s: &str, width: usize, fill: char, left: bool) -> String {
 /// The most a padded text may be wide (spec 14.2).
 pub const MOST_WIDTH: i64 = 1_000_000;
 
-/// At most `max` characters of `s`.
-pub fn truncate(s: &str, max: usize) -> &str {
-    match s.char_indices().nth(max) {
-        Some((byte, _)) => &s[..byte],
-        None => s,
-    }
-}
-
 /// Whether `s` has only spaces, tabs and line breaks, or nothing.
 pub fn is_blank(s: &str) -> bool {
     s.chars().all(is_space)
@@ -117,9 +109,6 @@ mod tests {
         assert_eq!(pad("ab", 4, '.', false), "ab..");
         assert_eq!(pad("hello", 3, ' ', true), "hello");
         assert_eq!(pad("é", 3, '-', true), "--é", "counts characters");
-        assert_eq!(truncate("Kavach", 3), "Kav");
-        assert_eq!(truncate("hi", 5), "hi");
-        assert_eq!(truncate("नमस्ते", 2), "नम");
         assert!(is_blank(" \t\n") && is_blank(""));
         assert!(!is_blank(" a "));
         assert_eq!(last_index_of("a-b-c", "-"), Some(3));

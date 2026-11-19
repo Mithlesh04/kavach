@@ -3,8 +3,8 @@ fn rotate(xs: [Int], k: Int) -> [Int] {
         return xs
     }
     const s = k % xs.len()
-    let out = xs.skip(s)
-    for x in xs.take(s) {
+    let out = xs[s:]
+    for x in xs[:s] {
         out.push(x)
     }
     out

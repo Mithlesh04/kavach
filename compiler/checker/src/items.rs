@@ -308,6 +308,9 @@ impl Checker<'_> {
             }
             StmtKind::Assign { target, op, value } => {
                 let t = self.value(target, None);
+                if self.own_index_set(target, *op, value) {
+                    return;
+                }
                 // `c += a` on a program's own type: `c = c.add(a)` (2.16).
                 let user = op
                     .binary()
@@ -316,6 +319,7 @@ impl Checker<'_> {
                     self.check_compound(bin, target, &t);
                 }
                 self.check_unsafe_index_target(target);
+                self.check_slice_target(target, *op);
                 self.check_round_assign(target, *op, value);
                 self.check_invariant_in_loop(target);
                 self.check_read_only_target(target, "assigned");

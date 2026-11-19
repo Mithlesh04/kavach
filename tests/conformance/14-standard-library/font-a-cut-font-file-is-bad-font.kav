@@ -27,7 +27,7 @@ fn bad(bytes: Bytes) -> String {
 
 fn main() ! Error {
     const whole = try base64.decode(sample_file)
-    print(bad(whole.slice(0, 100)))          // cut short
+    print(bad(whole[:100]))          // cut short
     print(bad(Bytes([])))                    // empty
     print(bad(whole))                        // the whole file reads
 }

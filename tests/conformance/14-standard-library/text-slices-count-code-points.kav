@@ -1,0 +1,10 @@
+// Rule: `s[:max]` keeps at most `max` characters as `len` counts them: whole emoji, and a combining mark apart from its letter.
+// Spec: 14.2
+// expect output: 👍👍 2
+// expect output: true []
+
+fn main() {
+    const thumbs = "👍👍👍"[:2]
+    print(`{thumbs} {thumbs.len()}`)
+    print(`{`e\u{301}x`[:1] == "e"} [{"नमस्ते"[:0]}]`)
+}

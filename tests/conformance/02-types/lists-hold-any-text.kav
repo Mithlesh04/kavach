@@ -38,7 +38,7 @@ fn main() {
     print(words[0])
     print(words.join("-"))
     print(words.sort())
-    print(words.reverse())
+    print(words[::-1])
     print(words.contains("ünï"))
     print(words.map(w => w.upper()))
 }

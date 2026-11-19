@@ -57,6 +57,9 @@ impl Checker<'_> {
         i: &TypeExpr,
         self_ty: &Ty,
     ) -> bool {
+        if let Some(noted) = self.note_indexer(owner, i, self_ty) {
+            return noted;
+        }
         let TypeKind::Named { path, args } = &i.kind else {
             return false;
         };
@@ -97,6 +100,7 @@ impl Checker<'_> {
         let mut wanted: Vec<_> = self
             .operators
             .iter()
+            .filter(|((_, m), _)| !interface_of(m).is_empty())
             .map(|(k, v)| (*k, v.clone()))
             .collect();
         wanted.sort_by_key(|((def, m), _)| (*def, *m));

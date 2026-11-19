@@ -14,7 +14,7 @@ fn is_bad(bytes: Bytes) -> Bool {
 
 fn main() {
     const file = image.png(image.new(4, 4, (0..64).map(i => UInt8(i * 3))))
-    print(is_bad(file.slice(0, 40)))                                         // a PNG cut short
+    print(is_bad(file[:40]))                                         // a PNG cut short
     print(is_bad(Bytes([255, 216, 255, 224] + (0..40).map(_ => UInt8(9)))))  // a JPEG start, then rubbish
     print(is_bad(file))                                                       // the whole file is fine
 }

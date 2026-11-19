@@ -32,7 +32,6 @@ impl Lowerer<'_> {
             "count" => RtOp::TextCount,
             "remove_prefix" => RtOp::TextRemovePrefix,
             "remove_suffix" => RtOp::TextRemoveSuffix,
-            "truncate" => RtOp::TextTruncate,
             "pad_left" => RtOp::TextPadLeft,
             "pad_right" => RtOp::TextPadRight,
             _ => return None,

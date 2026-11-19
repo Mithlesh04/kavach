@@ -197,6 +197,8 @@ impl Checker<'_> {
                 }
             }
             ExprKind::Index { base, index } => self.index(base, index),
+            // Only inside `[ ]`, where `index` types them (spec 2.19).
+            ExprKind::FromEnd(_) | ExprKind::Part { .. } | ExprKind::Dims(_) => Ty::Error,
             ExprKind::With { base, fields } => self.with(base, fields),
             ExprKind::If { .. } | ExprKind::IfLet { .. } | ExprKind::Match { .. } => {
                 self.branching(e, expected)

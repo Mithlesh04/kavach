@@ -154,12 +154,7 @@ impl<'a> Interp<'a> {
                 Some(x) => byte(*x),
                 None => Value::None,
             },
-            "slice" => {
-                let clamp = |n: i128| n.clamp(0, b.len() as i128) as usize;
-                let (start, end) = (clamp(int(0)), clamp(int(1)));
-                Value::Bytes(b[start..end.max(start)].into())
-            }
-            // `b.text(start, end)`: a range, clamped as `slice` (2.13).
+            // `b.text(start, end)`: a range, clamped as a slice is (2.13).
             "text" => {
                 let clamp = |n: i128| n.clamp(0, b.len() as i128) as usize;
                 let start = clamp(int(0));

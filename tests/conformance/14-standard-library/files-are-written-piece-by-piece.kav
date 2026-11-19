@@ -24,7 +24,7 @@ fn main() ! FsError uses Fs, Console {
     }
     print(try w.finish(sync: true))
     print(try w.finish())
-    print((try fs.read_bytes(path)).slice(0, 5))
+    print((try fs.read_bytes(path))[:5])
     try fs.remove(path)
     try unfinished("kavach-test-unfinished.bin")
     print(fs.exists("kavach-test-unfinished.bin"))

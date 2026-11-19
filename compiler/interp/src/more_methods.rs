@@ -71,10 +71,6 @@ impl<'a> Interp<'a> {
             Some(Value::Str(t)) => t.to_string(),
             _ => String::new(),
         };
-        let number = |i: usize| match args.get(i) {
-            Some(Value::Int(n, _)) => (*n).max(0) as usize,
-            _ => 0,
-        };
         Some(match name {
             "replace" => self.str_value(&s.replace(&text(0), &text(1))),
             "lines" => Value::List(Rc::new(s.lines().map(|l| self.str_value(l)).collect())),
@@ -85,12 +81,6 @@ impl<'a> Interp<'a> {
                 Some(byte) => int(s[..byte].chars().count()),
                 None => Value::None,
             },
-            "slice" | "view" => self.str_value(
-                &s.chars()
-                    .skip(number(0))
-                    .take(number(1).saturating_sub(number(0)))
-                    .collect::<String>(),
-            ),
             _ => return None,
         })
     }
@@ -105,10 +95,6 @@ impl<'a> Interp<'a> {
         let order = crate::ops::list_order;
         let arg = args.first().cloned().unwrap_or(Value::Unit);
         let list = |xs: Vec<Value<'a>>| Value::List(Rc::new(xs.into()));
-        let count = |v: &Value<'a>| match v {
-            Value::Int(n, _) => (*n).max(0) as usize,
-            _ => 0,
-        };
         Ok(Some(match name {
             // `f` on every item, in order, for what it does (spec 14.2).
             "for_each" => {
@@ -149,15 +135,6 @@ impl<'a> Interp<'a> {
                 keyed.sort_by(|a, b| order(&a.0, &b.0));
                 list(keyed.into_iter().map(|(_, x)| x).collect())
             }
-            "reverse" => list(items.iter().rev().cloned().collect()),
-            "take" => list(items.iter().take(count(&arg)).cloned().collect()),
-            // Items `start..end`, both clamped to the list (spec 14.2).
-            "slice" => {
-                let start = count(&arg).min(items.len());
-                let end = count(args.get(1).unwrap_or(&Value::Unit)).clamp(start, items.len());
-                list(items[start..end].to_vec())
-            }
-            "skip" => list(items.iter().skip(count(&arg)).cloned().collect()),
             "find" | "count" => {
                 let mut found = Vec::new();
                 for x in items.iter() {

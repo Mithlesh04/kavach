@@ -435,7 +435,6 @@ impl<'a> Lowerer<'a> {
             (Some(Shape::Socket), "send") => RtOp::NetSend,
             (Some(Shape::Socket), "receive") => RtOp::NetReceive,
             (Some(Shape::Bytes), "get") => RtOp::BytesGet,
-            (Some(Shape::Bytes), "slice") => RtOp::BytesSlice,
             (Some(Shape::Bytes), "index_of") => RtOp::BytesIndexOf,
             (Some(Shape::Bytes), "text") => RtOp::BytesText,
             (Some(Shape::Bytes), "to_list") => RtOp::BytesToList,

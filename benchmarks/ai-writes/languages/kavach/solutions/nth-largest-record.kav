@@ -4,5 +4,5 @@ type Player {
 }
 
 fn top(players: [Player], k: Int) -> [String] {
-    players.sort_by(p => -p.score).take(k).map(p => p.name)
+    players.sort_by(p => -p.score)[:k].map(p => p.name)
 }

@@ -48,23 +48,23 @@ pub type Form {
         const d = self.delimiter.len()
         try self.fill_until(d + 2)
         const h = self.held.get()
-        if h.slice(0, d) != self.delimiter {
+        if h[:d] != self.delimiter {
             fail bad("a part doesn't start with the boundary")
         }
-        if h.slice(d, d + 2) == "--".bytes() {
+        if h[d:d + 2] == "--".bytes() {
             self.ended.update(_ => true)
             return none
         }
-        self.held.update(_ => h.slice(d + 2, h.len()))
+        self.held.update(_ => h[d + 2:])
         const end = try self.find(`\u{D}\n\u{D}\n`.bytes(), most_head())
         const all = self.held.get()
-        const head = all.slice(0, end).text() ?? fail bad("a part's headers aren't text")
-        self.held.update(_ => all.slice(end + 4, all.len()))
+        const head = all[:end].text() ?? fail bad("a part's headers aren't text")
+        self.held.update(_ => all[end + 4:])
         self.in_part.update(_ => true)
         let headers: [Header] = []
         for line in head.split(`\u{D}\n`) {
             const colon = line.index_of(":") ?? continue
-            headers.push(Header(name: line.slice(0, colon).trim().lower(), value: line.slice(colon + 1, line.len()).trim()))
+            headers.push(Header(name: line[:colon].trim().lower(), value: line[colon + 1:].trim()))
         }
         const about = message.first_header(headers, "content-disposition") ?? ""
         FormPart(
@@ -87,14 +87,14 @@ pub type Form {
                     self.in_part.update(_ => false)
                     return none
                 }
-                self.held.update(_ => h.slice(at, h.len()))
-                return h.slice(0, at)
+                self.held.update(_ => h[at:])
+                return h[:at]
             }
             // The end of `held` may be the start of the delimiter.
             const keep = self.delimiter.len() - 1
             if h.len() > keep {
-                self.held.update(_ => h.slice(h.len() - keep, h.len()))
-                return h.slice(0, h.len() - keep)
+                self.held.update(_ => h[h.len() - keep:])
+                return h[:h.len() - keep]
             }
             if not (try self.more()) {
                 fail bad("the form is cut off")
@@ -194,10 +194,10 @@ fn param(header: String, key: String) -> String? {
     for item in header.split(";") {
         const pair = item.trim()
         const eq = pair.index_of("=") ?? continue
-        if pair.slice(0, eq).trim().lower() == key {
-            const value = pair.slice(eq + 1, pair.len()).trim()
+        if pair[:eq].trim().lower() == key {
+            const value = pair[eq + 1:].trim()
             const quoted = value.len() >= 2 and value.starts_with(`"`) and value.ends_with(`"`)
-            return if quoted { value.slice(1, value.len() - 1) } else { value }
+            return if quoted { value[1:value.len() - 1] } else { value }
         }
     }
     none

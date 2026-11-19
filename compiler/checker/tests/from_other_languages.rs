@@ -31,7 +31,8 @@ fn habits_from_other_languages_get_clear_errors() {
         (main("const f = (inout n: Int) => n + 1"), "2: a lambda can't have `inout` parameters (spec 3.9)"),
         (main("let x: String? = null\nprint(x ?? \"a\")"), "2: Kavach has no `null`: a value that may be missing has an optional type"),
         (main("const prices = [1, 2]\nprint(prices.sum())"), "3: `sum` takes a function that gives each item's number"),
-        (main("print(\"abcd\".slice(-4))"), "2: `slice` takes where to start and where to end"),
+        (main("print(\"abcd\".slice(-4))"), "2: `slice` is gone: write the slice"),
+        (main("const xs = [1, 2]\nprint(xs[-1])"),"3: Kavach counts from the end with `#`: write `xs[#1]`"),
         (main("const ready = false\nprint(!ready)"), "3: Kavach has no `!` for \"not\": write `not`, as in `not ready` (spec 1.8)"),
         (
             "fn total(prices: [Int]) -> Int {\n    prices.sum(x => x)\n}\nfn main() {\n    print(total(4, 8, 15))\n}\n".into(),

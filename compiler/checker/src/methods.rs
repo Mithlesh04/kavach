@@ -143,6 +143,10 @@ impl Checker<'_> {
         if let Some(t) = self.reflect_has_member(&recv, name, args, e) {
             return t;
         }
+        // `xs.slice(1, 3)`, `xs.take(n)`…: gone, for the slice (spec 2.19).
+        if let Some(t) = self.removed_for_slice(&recv, base, name, args) {
+            return t;
+        }
         if let Some(t) = self.view_call(&recv, &name.name, args) {
             if matches!(recv, Ty::Builtin("TextBuilder", _)) && name.name != "view" {
                 self.require_var(base, &name.name);
@@ -179,7 +183,7 @@ impl Checker<'_> {
                 (Ty::List(_), "sort_by", Some(Ty::Fn(_, key, _))) => Some((**key).clone()),
                 _ => None,
             };
-            // `prices.sum()`, `s.slice(-4)`: say what the call takes.
+            // `prices.sum()`: say what the call takes.
             if let Some(hint) = takes(&recv, &name.name, args.len(), m.params.len()) {
                 self.error(e.span, hint);
                 for a in args {
@@ -330,7 +334,6 @@ fn takes(recv: &Ty, method: &str, given: usize, wanted: usize) -> Option<String>
     let list = matches!(recv, Ty::List(_));
     Some(match method {
         "sum" if list => "`sum` takes a function that gives each item's number: `prices.sum(p => p)`, or `orders.sum(o => o.total)`".to_string(),
-        "slice" => "`slice` takes where to start and where to end: `s.slice(0, 4)`. Positions start at 0 and aren't negative: the last 4 are `s.slice(s.len() - 4, s.len())`".to_string(),
         "count" if list => "`count` takes a test and counts the items it holds for: `xs.count(x => x > 0)`. The number of items is `xs.len()`".to_string(),
         _ => return None,
     })
@@ -360,7 +363,7 @@ pub(crate) fn kavach_name(recv: &Ty, name: &str) -> Option<&'static str> {
         "indexOf" if list => "index_of(x)",
         "find" | "indexOf" if text => "index_of(part)",
         "indexOf" if list => "index_of(x)",
-        "reversed" if list => "reverse()",
+        "reversed" if list => "xs[::-1]",
         "sorted" if list => "sort()",
         "join" | "await" | "get" | "result" if matches!(recv, Ty::Builtin("Task", _)) => "wait()",
         _ => return None,

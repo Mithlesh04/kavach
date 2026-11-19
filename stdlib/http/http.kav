@@ -75,9 +75,9 @@ pub type Request {
         const take = piece.len().min(s.left.get())
         s.left.update(n => n - take)
         if take < piece.len() {
-            s.after.update(_ => piece.slice(take, piece.len()))
+            s.after.update(_ => piece[take:])
         }
-        piece.slice(0, take)
+        piece[:take]
     }
 }
 
@@ -269,7 +269,7 @@ pub fn get3(url: String) -> Response ! HttpError uses Net {
     if not target.secure {
         fail HttpError.BadUrl(url: url)
     }
-    const name = target.host.slice(0, target.host.index_of(":") ?? target.host.len())
+    const name = target.host[:target.host.index_of(":") ?? target.host.len()]
     const conn = net.connect_quic(target.host, ["h3"]) catch e => {
         fail HttpError.Network(error: e)
     }
@@ -366,7 +366,7 @@ pub fn open(url: String) -> Session ! HttpError uses Net {
     } else {
         net.connect(target.host) catch e => fail HttpError.Network(error: e)
     }
-    const host = target.host.slice(0, target.host.index_of(":") ?? target.host.len())
+    const host = target.host[:target.host.index_of(":") ?? target.host.len()]
     Session(conn: conn, host: host)
 }
 

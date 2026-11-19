@@ -100,6 +100,14 @@ impl Parser<'_> {
                 self.bump();
                 ExprKind::Unary(kavach_ast::UnaryOp::Not, Box::new(self.unary()))
             }
+            // `#k` outside `[ ]` (spec 2.19).
+            TokenKind::Hash => {
+                self.error_here(
+                    "`#` counts from the end, and is written only inside `[ ]`: `xs[#1]` is the last item (spec 2.19)",
+                );
+                self.bump();
+                return self.unary();
+            }
             TokenKind::Dot => {
                 self.error_here(
                     "a leading `.` only works as a function argument, like `items.filter(.paid)`",

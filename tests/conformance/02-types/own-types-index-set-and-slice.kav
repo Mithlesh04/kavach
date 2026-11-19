@@ -1,0 +1,37 @@
+// Rule: A type gets `x[k]` from `Index`, `x[k] = v` from `IndexSet` and `x[a:b:step]` from `Slice`, whose method is given the slice as a `Part`; `x[#k]` is `x.index(x.len() - k)`.
+// Spec: 2.16
+// expect output: 3.0
+// expect output: [3.0, 2.0, 9.0]
+// expect output: [2.0]
+
+type Row: Index<Int, Float>, IndexSet<Int, Float>, Slice {
+    cells: [Float]
+
+    fn len(self) -> Int { self.cells.len() }
+    fn index(self, key: Int) -> Float { self.cells[key] }
+
+    fn index_set(self, key: Int, value: Float) -> Row {
+        let cells = self.cells
+        cells[key] = value
+        Row(cells: cells)
+    }
+
+    fn slice(self, part: Part) -> Row {
+        const (start, end, step) = part.bounds(self.cells.len())
+        let out: [Float] = []
+        let i = start
+        while (step > 0 and i < end) or (step < 0 and i > end) {
+            out.push(self.cells[i])
+            i += step
+        }
+        Row(cells: out)
+    }
+}
+
+fn main() {
+    let r = Row(cells: [1.0, 2.0, 3.0])
+    print(r[#1])
+    r[0] = 9.0
+    print(r[::-1].cells)
+    print(r[#2:#1].cells)
+}

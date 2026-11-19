@@ -49,8 +49,6 @@ impl<'a> Interp<'a> {
             "count" => number(tm::count(s, &text(0))),
             "remove_prefix" => self.str_value(tm::remove_prefix(s, &text(0))),
             "remove_suffix" => self.str_value(tm::remove_suffix(s, &text(0))),
-            // A negative count counts as 0 (spec 14.2).
-            "truncate" => self.str_value(tm::truncate(s, int(0).max(0) as usize)),
             "pad_left" | "pad_right" => {
                 let width = int(0).max(0);
                 if width > i128::from(tm::MOST_WIDTH) {

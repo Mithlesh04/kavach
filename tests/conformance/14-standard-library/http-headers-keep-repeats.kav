@@ -37,5 +37,5 @@ fn main() ! Error {
         all = all + ((try conn.read()) ?? break)
     }
     const text = all.text() ?? ""
-    print(text.slice(text.index_of("cookie seen") ?? 0, text.len()))
+    print(text[text.index_of("cookie seen") ?? 0:])
 }

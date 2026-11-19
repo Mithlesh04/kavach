@@ -35,7 +35,7 @@ pub type Matrix<T: Number>: Add, Sub, Mul, Neg, MatMul {
     pub fn row(self, i: Int) -> [T]
         require i >= 0 and i < self.rows
     {
-        self.items.slice(i * self.cols, (i + 1) * self.cols)
+        self.items[i * self.cols:(i + 1) * self.cols]
     }
 
     /// Column `j`.
@@ -53,7 +53,7 @@ pub type Matrix<T: Number>: Add, Sub, Mul, Neg, MatMul {
     pub fn to_rows(self) -> [[T]] {
         let out: [[T]] = []
         for i in 0..self.rows {
-            out.push(self.items.slice(i * self.cols, (i + 1) * self.cols))
+            out.push(self.items[i * self.cols:(i + 1) * self.cols])
         }
         out
     }
@@ -138,7 +138,7 @@ pub type Matrix<T: Number>: Add, Sub, Mul, Neg, MatMul {
     {
         let items: [T] = []
         for i in row_start..row_end {
-            items += self.items.slice(i * self.cols + col_start, i * self.cols + col_end)
+            items += self.items[i * self.cols + col_start:i * self.cols + col_end]
         }
         Matrix(rows: row_end - row_start, cols: col_end - col_start, items: items)
     }

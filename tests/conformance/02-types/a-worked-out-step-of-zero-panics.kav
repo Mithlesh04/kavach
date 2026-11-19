@@ -1,0 +1,11 @@
+// Rule: A step of 0 worked out while the program runs is a panic.
+// Spec: 2.19
+// expect panic: the step of a slice can't be 0
+
+fn every(xs: [Int], step: Int) -> [Int] {
+    xs[::step]
+}
+
+fn main() {
+    print(every([1, 2, 3], 0))
+}

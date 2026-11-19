@@ -18,7 +18,7 @@ fn main() {
     print(greeting)
     print(greeting.text() ?? "?")
     print(header.text() ?? "not text")
-    print((greeting + header).slice(1, 4))
+    print((greeting + header)[1:4])
     print(header.get(9) ?? 0)
     print(header.to_list())
     print("hi".bytes() == greeting)

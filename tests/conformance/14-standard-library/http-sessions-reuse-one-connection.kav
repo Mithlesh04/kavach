@@ -29,8 +29,8 @@ fn one_connection(listener: Listener) -> Int ! NetError uses Net {
                 size += 3
             }
             answered += 1
-            const first = data.slice(0, data.index_of(" HTTP") ?? 0)
-            data = data.slice(size, data.len())
+            const first = data[:data.index_of(" HTTP") ?? 0]
+            data = data[size:]
             if answered == 2 {
                 const body = `5{crlf}hello{crlf}0{crlf}{crlf}`
                 try conn.write(`HTTP/1.1 200 OK{crlf}transfer-encoding: chunked{crlf}{crlf}{body}`.bytes())

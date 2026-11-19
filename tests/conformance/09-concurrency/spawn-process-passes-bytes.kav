@@ -3,7 +3,7 @@
 // expect output: Bytes(030201)
 
 fn reversed(data: Bytes) -> Bytes {
-    Bytes(data.to_list().reverse())
+    Bytes(data.to_list()[::-1])
 }
 
 fn main() ! Error {

@@ -50,7 +50,7 @@ pub fn pads() -> [Pad] uses Input {
     const names = input.names_id()
     let out: [Pad] = []
     for i in 0..names.len() {
-        out.push(pad_of(numbers.slice(i * 12, i * 12 + 12), names[i]))
+        out.push(pad_of(numbers[i * 12:i * 12 + 12], names[i]))
     }
     out
 }

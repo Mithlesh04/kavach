@@ -56,7 +56,7 @@ fn sort(list: i64, item: Type) -> i64 {
 }
 
 /// A new list of type `code` holding these slots, each retained.
-fn list_of(slots: &[u64], item: Type, code: i64) -> i64 {
+pub(crate) fn list_of(slots: &[u64], item: Type, code: i64) -> i64 {
     if item.is_ref() {
         slots.iter().for_each(|s| retain(*s as i64));
     }
@@ -215,18 +215,9 @@ pub fn list_op(op: RtOp, a: i64, b: i64, code: i64) -> i64 {
             let sorted: Vec<u64> = index.iter().map(|i| slots[*i]).collect();
             list_of(&sorted, item, code)
         }
-        RtOp::ListReverse => {
-            let reversed: Vec<u64> = slots.iter().rev().copied().collect();
-            list_of(&reversed, item, code)
-        }
-        RtOp::ListTake | RtOp::ListSkip => {
+        RtOp::ListSkip => {
             let n = (b.max(0) as usize).min(slots.len());
-            let part = if op == RtOp::ListTake {
-                &slots[..n]
-            } else {
-                &slots[n..]
-            };
-            list_of(part, item, code)
+            list_of(&slots[n..], item, code)
         }
         RtOp::ListIndexOf => {
             let at = slots

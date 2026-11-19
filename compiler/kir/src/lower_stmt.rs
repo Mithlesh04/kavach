@@ -193,6 +193,16 @@ impl<'a> Lowerer<'a> {
                 Ok(Stmt::Expr(self.ptr_store(base, Some(index), value)?))
             }
             ExprKind::Index { base, index } => {
+                // `xs[#k] = v` and `xs[a:b] = ys` (spec 2.19).
+                if matches!(index.kind, ExprKind::FromEnd(_) | ExprKind::Part { .. }) {
+                    let (mut stmts, changed) = self.set_part(base, index, value, line)?;
+                    self.change_in_place(base, changed, &mut stmts)?;
+                    return Ok(Stmt::Expr(ir::Expr {
+                        kind: ir::ExprKind::Block(ir::Block { stmts, value: None }),
+                        ty: Type::Unit,
+                        line,
+                    }));
+                }
                 // `items[i] = v` and `ages[name] = v`: a changed copy of the
                 // list or map, stored back (changed in place when unshared).
                 let base_value = self.expr(base)?;

@@ -1,4 +1,4 @@
-// Rule: Text has replace, lines, chars, index_of and slice; positions count characters.
+// Rule: Text has replace, lines, chars and index_of, and slices; positions count characters.
 // Spec: 14.2
 // expect output: hell0 w0rld
 // expect output: ["a", "b"]
@@ -13,5 +13,5 @@ fn main() {
     print("नम".chars())
     print("नमस्ते".index_of("म") ?? 0)
     print("abc".index_of("z"))
-    print("नमस्ते".slice(1, 4))
+    print("नमस्ते"[1:4])
 }

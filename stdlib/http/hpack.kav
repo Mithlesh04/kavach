@@ -257,7 +257,7 @@ fn string(data: Bytes, at: Int) -> Text ! HpackError {
     if end > data.len() {
         fail HpackError.Malformed(reason: "a string is cut off")
     }
-    const raw = data.slice(n.next, end)
+    const raw = data[n.next:end]
     const bytes = if Int(first) & 128 != 0 { try huffman(raw) } else { raw }
     const value = bytes.text() ?? fail HpackError.Malformed(reason: "a header is not UTF-8")
     Text(value: value, next: end)
@@ -298,7 +298,7 @@ fn fit(entries: [Header], limit: Int) -> Table {
         size -= size_of(entries[drop])
         drop += 1
     }
-    Table(entries: entries.skip(drop), size: size, limit: limit)
+    Table(entries: entries[drop:], size: size, limit: limit)
 }
 
 /// Decodes Huffman-coded bytes (RFC 7541 appendix B). The code is

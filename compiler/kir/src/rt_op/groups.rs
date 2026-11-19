@@ -13,7 +13,12 @@ impl RtOp {
     pub fn changes_receiver(self) -> bool {
         matches!(
             self,
-            RtOp::ListPush | RtOp::ListSet | RtOp::ListTruncate | RtOp::MapInsert | RtOp::MapRemove
+            RtOp::ListPush
+                | RtOp::ListSet
+                | RtOp::ListSetPart
+                | RtOp::ListTruncate
+                | RtOp::MapInsert
+                | RtOp::MapRemove
         )
     }
 

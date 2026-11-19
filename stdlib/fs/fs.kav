@@ -122,10 +122,10 @@ fn change_of(row: String) -> FileChange
     example change_of("0 a/b.txt") == FileChange(path: "a/b.txt", kind: ChangeKind.Created)
     example change_of("2 x") == FileChange(path: "x", kind: ChangeKind.Removed)
 {
-    const kind = match row.slice(0, 1) {
+    const kind = match row[:1] {
         "0" => ChangeKind.Created,
         "2" => ChangeKind.Removed,
         _ => ChangeKind.Changed,
     }
-    FileChange(path: row.slice(2, row.len()), kind: kind)
+    FileChange(path: row[2:], kind: kind)
 }

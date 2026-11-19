@@ -67,7 +67,7 @@ fn main() {
     }
     const moved = ps.map(p => step(p.x, p.v, p.alive))
     print(`{moved[0]} {moved[1]} {moved[999]}`)
-    const m = collections.zip(a, a.reverse()).map(t => madd(t.0, t.1))
+    const m = collections.zip(a, a[::-1]).map(t => madd(t.0, t.1))
     print(`{m[0]} {m[999]} {m.len()}`)
 }
 ";
@@ -255,7 +255,7 @@ fn main() {
     }
     xs = xs.map(step)
     let ys = xs.filter(x => x > 400)
-    print(`{ys.len()} {ys[0]} {ys[ys.len() - 1]} {ys.take(4)}`)
+    print(`{ys.len()} {ys[0]} {ys[ys.len() - 1]} {ys[:4]}`)
     ys = ys.map(step)
     print(ys.sum(y => y))
     let nothing = xs.filter(x => x > 1000)

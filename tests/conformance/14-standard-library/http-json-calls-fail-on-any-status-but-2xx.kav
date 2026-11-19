@@ -14,7 +14,7 @@ use std.net
 
 /// Answers `/N` with status N and the JSON `7`.
 fn statuses(r: Request) -> Response {
-    const status = Int(r.path.slice(1, r.path.len())) catch _ => 400
+    const status = Int(r.path[1:]) catch _ => 400
     http.json_response(status, json.of(7))
 }
 

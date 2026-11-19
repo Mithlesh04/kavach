@@ -352,7 +352,7 @@ pub fn parse_date(text: String) -> Date ! DateError
     const written = text
     const west = written.starts_with("-")
     const signed = west or written.starts_with("+")
-    const parts = (if signed { written.slice(1, written.len()) } else { written }).split("-")
+    const parts = (if signed { written[1:] } else { written }).split("-")
     if parts.len() != 3 or parts[0].len() < 4 or parts[0].len() > 7 {
         fail DateError.Invalid(text: text)
     }
@@ -420,11 +420,11 @@ pub fn parse_moment(text: String) -> Int ! DateError
     const offset = if zulu {
         0
     } else {
-        digits.offset(clock.slice(from, clock.len())) ?? fail DateError.Invalid(text: text)
+        digits.offset(clock[from:]) ?? fail DateError.Invalid(text: text)
     }
     const dt = DateTime(
         date: parse_date(parts[0]) catch _ => fail DateError.Invalid(text: text),
-        time: time_of(clock.slice(0, from)) ?? fail DateError.Invalid(text: text),
+        time: time_of(clock[:from]) ?? fail DateError.Invalid(text: text),
     )
     dt.utc_ms() - offset * 1_000
 }
@@ -451,7 +451,7 @@ fn time_of(text: String) -> Time? {
         return none
     }
     const _all_digits = digits.read(fraction, fraction.len()) ?? return none
-    const ms = digits.read(`{fraction}00`.slice(0, 3), 3) ?? return none
+    const ms = digits.read(`{fraction}00`[:3], 3) ?? return none
     Time(hour: hour, minute: minute, second: second, ms: ms)
 }
 

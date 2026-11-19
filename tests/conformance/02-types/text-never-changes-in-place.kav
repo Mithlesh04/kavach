@@ -1,0 +1,9 @@
+// Rule: Text never changes in place: setting a character of a `String` is a compile error.
+// Spec: 2.19
+// expect compile error
+
+fn main() {
+    let s = "abc"
+    s[0] = 'x'              // error: text never changes in place
+    print(s)
+}

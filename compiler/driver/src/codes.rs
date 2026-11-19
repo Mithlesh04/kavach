@@ -22,6 +22,8 @@ const TABLE: &[(&str, &[&str])] = &[
             "Kavach's way",
             "is not Kavach",
             "is gone: write",
+            "counts from the end with `#`",
+            "a list has one dimension",
         ],
     ),
     // Found at compile time: a call that always breaks its contract or

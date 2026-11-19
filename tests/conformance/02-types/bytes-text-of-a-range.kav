@@ -1,4 +1,4 @@
-// Rule: `b.text(start, end)` is the bytes `start..end` as UTF-8 text, positions clamped as `slice` clamps them, or `none` when they aren't valid UTF-8; `b.slice(start, end).text()` gives the same.
+// Rule: `b.text(start, end)` is the bytes `start..end` as UTF-8 text, positions clamped as a slice clamps them, or `none` when they aren't valid UTF-8; `b[start:end].text()` gives the same.
 // Spec: 2.13
 // expect output: wire DIH" VGND
 // expect output: wire DIH" VGND
@@ -10,7 +10,7 @@
 fn main() {
     const line = `$var wire 1 DIH" VGND $end`.bytes()
     print(`{line.text(5, 9) ?? "?"} {line.text(12, 16) ?? "?"} {line.text(17, 21) ?? "?"}`)
-    print(`{line.slice(5, 9).text() ?? "?"} {line.slice(12, 16).text() ?? "?"} {line.slice(17, 21).text() ?? "?"}`)
+    print(`{line[5:9].text() ?? "?"} {line[12:16].text() ?? "?"} {line[17:21].text() ?? "?"}`)
     print(line.text(start: 17, end: 100) ?? "?")
     print(line.text(end: 4) ?? "?")
     const broken = Bytes([104, 255, 105])

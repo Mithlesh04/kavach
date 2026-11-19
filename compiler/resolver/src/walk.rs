@@ -92,8 +92,13 @@ impl Resolver {
                     self.expr(x);
                 }
             }
-            ExprKind::List(items) | ExprKind::Tuple(items) => {
+            ExprKind::List(items) | ExprKind::Tuple(items) | ExprKind::Dims(items) => {
                 items.iter().for_each(|x| self.expr(x))
+            }
+            ExprKind::Part { start, end, step } => {
+                for x in [start, end, step].into_iter().flatten() {
+                    self.expr(x);
+                }
             }
             ExprKind::Map(entries) => {
                 for (k, v) in entries {
@@ -129,6 +134,7 @@ impl Resolver {
                 self.member(m, name);
             }
             ExprKind::Unary(_, x)
+            | ExprKind::FromEnd(x)
             | ExprKind::Field { base: x, .. }
             | ExprKind::TupleField { base: x, .. }
             | ExprKind::DotLambda(x)

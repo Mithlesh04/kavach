@@ -85,7 +85,7 @@ fn answer(conn: Connection, handler: fn(Request) -> Response, limits: ServeLimit
                     return finish(conn, load)
                 }
                 // What came after the request: the start of the next one.
-                data = all.slice(used, all.len()) + kept.extra
+                data = all[used:] + kept.extra
             }
             // A body too large to read whole: the handler reads it.
             Got.Streamed(m, length, first) => {
@@ -124,7 +124,7 @@ fn read_request(conn: Connection, data: Bytes, limits: ServeLimits, stop: StopHo
     let started = if all.is_empty() { -1 } else { time.monotonic_ms() }
     const waited = time.monotonic_ms()
     while true {
-        if all.len() >= 4 and all.slice(0, 4) == "PRI ".bytes() {
+        if all.len() >= 4 and all[:4] == "PRI ".bytes() {
             return Got.Preface(data: all)
         }
         if let end = message.head_end(all) {

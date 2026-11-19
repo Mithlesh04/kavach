@@ -1,0 +1,8 @@
+// Rule: The methods that did a slice's job (`slice`, `take`, `skip`, `reverse`, `truncate`, `view(start, end)`) are gone: each is a compile error that names the slice.
+// Spec: 2.19
+// expect compile error
+
+fn main() {
+    const xs = [1, 2, 3]
+    print(xs.take(2))       // error: `take` is gone: write the slice `xs[:2]`
+}

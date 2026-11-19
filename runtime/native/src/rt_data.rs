@@ -281,6 +281,12 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         | RtOp::CheckedDiv => crate::rt_numbers::int_method(op, a, b, code),
         RtOp::CheckedFits => i64::from(crate::rt_numbers::fits(a, b, c)),
         RtOp::ListSet => crate::rt_maps::list_set(a, b, c, line),
+        // Slices and a text's characters (spec 2.19).
+        RtOp::ListSlicePart | RtOp::ListSetPart => {
+            crate::rt_slices::list_part(op, a, b, c, code, line)
+        }
+        RtOp::StrSlicePart | RtOp::StrAt => crate::rt_slices::text_part(op, a, b, code, line),
+        RtOp::BytesSlicePart => crate::rt_slices::bytes_part(a, b, code, line),
         RtOp::StrSplit => crate::rt_text::split_checked(a, b, code, line),
         RtOp::StrReplace | RtOp::StrLines | RtOp::StrChars | RtOp::StrIndexOf | RtOp::StrSlice => {
             crate::rt_text::text_op(op, a, b, c, code)
@@ -288,8 +294,6 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         RtOp::ListJoin
         | RtOp::ListSort
         | RtOp::ListSortBy
-        | RtOp::ListReverse
-        | RtOp::ListTake
         | RtOp::ListSkip
         | RtOp::ListIndexOf
         | RtOp::ListMin
@@ -299,7 +303,6 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         | RtOp::BytesAt
         | RtOp::BytesLen
         | RtOp::BytesGet
-        | RtOp::BytesSlice
         | RtOp::BytesText
         | RtOp::BytesTextRange
         | RtOp::BytesToList

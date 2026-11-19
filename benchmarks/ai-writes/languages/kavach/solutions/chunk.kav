@@ -2,7 +2,7 @@ fn chunks(xs: [Int], n: Int) -> [[Int]] {
     let out: [[Int]] = []
     let i = 0
     while i < xs.len() {
-        out.push(xs.skip(i).take(n))
+        out.push(xs[i:][:n])
         i += n
     }
     out

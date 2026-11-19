@@ -1,4 +1,4 @@
-// Rule: `v.view(start, end)` counts characters from the view's own start and clamps as `slice` does; `trim_start`, `trim_end` and `to_string` work on views of any script.
+// Rule: a slice of a view, `v[start:end]`, counts characters from the view's own start and clamps as any slice does; `trim_start`, `trim_end` and `to_string` work on views of any script.
 // Spec: 2.18
 // expect output: or ld []
 // expect output: [x  ] [  x] x
@@ -6,12 +6,12 @@
 // expect output: WORLD 2.5
 
 fn main() {
-    const v = "hello world".view(6, 11)
-    print(`{v.view(1, 3)} {v.view(3, 99)} [{v.view(7, 9)}]`)
+    const v = "hello world".view()[6:11]
+    print(`{v[1:3]} {v[3:99]} [{v[7:9]}]`)
     const padded = "  x  ".view()
     print(`[{padded.trim_start()}] [{padded.trim_end()}] {padded.trim()}`)
-    const part = "नमस्ते".view(2, 4)
+    const part = "नमस्ते".view()[2:4]
     print(`{part} {part.len()}`)
     const kept: String = v.to_string()
-    print(`{kept.upper()} {Float("x=2.5".view(2, 5)) catch 0.0}`)
+    print(`{kept.upper()} {Float("x=2.5".view()[2:5]) catch 0.0}`)
 }

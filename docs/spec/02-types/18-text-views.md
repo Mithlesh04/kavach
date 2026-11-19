@@ -1,6 +1,6 @@
 # 2.18 Text views and builders
 
-A `String` is a value that never changes (1.7), and `s.slice(a, b)` gives a copy. Two built-in types make text work fast without giving that up: a `StrView` is part of a string with nothing copied, for parsing; a `TextBuilder` is text being made, changed in place, for building.
+A `String` is a value that never changes (1.7), and a slice `s[a:b]` (2.19) gives a copy. Two built-in types make text work fast without giving that up: a `StrView` is part of a string with nothing copied, for parsing; a `TextBuilder` is text being made, changed in place, for building.
 
 ```kavach
 const line = "  id=42, name=Asha  "
@@ -20,12 +20,13 @@ out.replace(0, 4, "ITEM")                          // the first "item" only
 const text = out.to_string()                       // "ITEM 1\nitem 2\nitem 3\n"
 ```
 
-**Views.** `s.view()` is all of `s`, and `s.view(start, end)` characters `start..end` of it, clamped as `slice` clamps. A view keeps its string alive and can't change it.
+**Views.** `s.view()` is all of `s`, and a slice of a view is a view: `s.view()[start:end]` is characters `start..end` of `s`, clamped as any slice is (2.19), with nothing copied. A view keeps its string alive and can't change it. `view(start, end)` is a compile error that names the slice (2.19).
 
 | Method | Gives |
 |---|---|
 | `v.len()`, `v.is_empty()` | Its length in characters, and whether it has none |
-| `v.view(start, end)` | Part of it, as a view of the same string |
+| `v[i]` | Its character `i`, a `Char`, as for a `String` (2.19) |
+| `v[start:end:step]` | A slice of it (2.19), as a view: of the same string, or, with a step other than 1, of a new string holding those characters |
 | `v.trim()`, `v.trim_start()`, `v.trim_end()` | It without the spaces at its ends, as a view |
 | `v.split(sep) -> [StrView]` | Its parts between each `sep`, as views |
 | `v.lines() -> [StrView]` | Its lines, without their line ends, as views |
@@ -50,7 +51,7 @@ const text = out.to_string()                       // "ITEM 1\nitem 2\nitem 3\n"
 | `b.view() -> StrView` | Its text now, as a view, with nothing copied |
 | `b.to_string() -> String` | Its text, copied |
 
-- A position past the end is clamped, as for `slice`; `start` after `end` is a panic (a contract).
+- A position past the end is clamped, as in a slice (2.19); `start` after `end` is a panic (a contract).
 - A copy of a builder (`let c = b`) is a builder of its own: changing one never changes the other (6.1).
 - A view of a builder keeps the text it had: when the builder changes while a view of it is held, the builder copies its text first, once, as any value shared by two holders does (6.1).
 

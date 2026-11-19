@@ -71,3 +71,50 @@ pub fn flatten<T>(lists: [[T]]) -> [T]
 {
     lists.flat_map(x => x)
 }
+
+/// A slice as written between `[ ]`, which a type's own `slice` method
+/// is given (spec 2.16): each part, `none` when it isn't written, and
+/// whether an end was written with `#`, counted from the end.
+pub type Part {
+    pub start?: Int
+    pub end?: Int
+    pub step?: Int
+    pub start_from_end: Bool = false
+    pub end_from_end: Bool = false
+
+    /// `start`, `end` and `step` as plain numbers for `len` items, as
+    /// Python's `slice.indices` gives them: `#k` is `len - k`, the
+    /// missing parts are filled in, and both ends are clamped, to
+    /// `0..=len`, or to `-1..=len - 1` for a negative step (spec 2.16).
+    pub fn bounds(self, len: Int) -> (Int, Int, Int)
+        require len >= 0
+        require (self.step ?? 1) != 0
+        example Part(start: 1, end: 99).bounds(5) == (1, 5, 1)
+        example Part(step: -1).bounds(3) == (2, -1, -1)
+        example Part(start: 2, start_from_end: true).bounds(5) == (3, 5, 1)
+    {
+        const step = self.step ?? 1
+        const start = counted(self.start, self.start_from_end, len)
+        const end = counted(self.end, self.end_from_end, len)
+        if step > 0 {
+            ((start ?? 0).clamp(0, len), (end ?? len).clamp(0, len), step)
+        } else {
+            ((start ?? len - 1).clamp(-1, len - 1), (end ?? -1).clamp(-1, len - 1), step)
+        }
+    }
+}
+
+/// An end of a slice as a position: `#k` is `len - k`. A `k` too far
+/// either way gives a position past that end, which `bounds` clamps.
+fn counted(at: Int?, from_end: Bool, len: Int) -> Int?
+    require len >= 0
+    example counted(2, true, 5) == 3
+    example counted(2, false, 5) == 2
+    example counted(none, true, 5) == none
+{
+    if let n = at {
+        if from_end { len.checked_sub(n) ?? (if n > 0 { -1 } else { len }) } else { n }
+    } else {
+        none
+    }
+}

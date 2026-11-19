@@ -1,0 +1,8 @@
+// Rule: A negative number written at an end of a slice is a compile error that names the `#` form.
+// Spec: 2.19
+// expect compile error
+
+fn main() {
+    const xs = [10, 20, 30]
+    print(xs[-2:])          // error: write `xs[#2:]`
+}

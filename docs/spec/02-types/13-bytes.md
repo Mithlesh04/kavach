@@ -18,14 +18,14 @@ print(greeting.text() ?? "?")          // hi
 | `Bytes<len: 32>` | The type of exactly 32 bytes (below) (not built yet) |
 | `b.len()` | `Int`: how many bytes |
 | `b.is_empty()` | `Bool`: whether there are none |
-| `b[i]` | `UInt8`: byte `i`; panics when `i` is out of range |
+| `b[i]` | `UInt8`: byte `i`, and `b[#1]` the last (2.19); panics when `i` is out of range |
 | `b.get(i)` | `UInt8?`: byte `i`, or `none` |
-| `b.slice(start, end)` | `Bytes` `start..end`; positions past the end are clamped |
+| `b[start:end:step]` | `Bytes`: a slice (2.19); positions past the end are clamped |
 | `b.index_of(part)` | `Int?`: where the bytes `part` first appear in `b`, or `none`; an empty `part` is at 0 |
 | `b.crc32c()` | The CRC32C checksum (Castagnoli, as iSCSI, ext4 and gRPC use), an `Int` in `0..2^32`; the processor computes it where it can |
 | `b.xxhash64()` | The XXH64 hash (seed 0), a `UInt64`: a fast check that data didn't change by accident, as storage engines use it; not for passwords or signatures |
 | `b.text()` | `String?`: the bytes as UTF-8 text, or `none` when they aren't valid UTF-8 |
-| `b.text(start, end)` | `String?`: the bytes `start..end` as UTF-8 text, positions clamped as `slice` clamps them, or `none` when they aren't valid UTF-8; the text is copied once, with no `Bytes` in between. `b.slice(start, end).text()` does the same |
+| `b.text(start, end)` | `String?`: the bytes `start..end` as UTF-8 text, positions clamped as a slice clamps them, or `none` when they aren't valid UTF-8; the text is copied once, with no `Bytes` in between. `b[start:end].text()` does the same |
 | `b.to_list()` | `[UInt8]` |
 | `b.as_list<T>()` | `[T]?`: the bytes read as numbers of type `T`, or `none` when their length isn't a whole number of them |
 | `b.read<T>(at, big_endian: false)` | `T?`: the number of type `T` whose bytes start at `at`, or `none` when they don't all fit |
@@ -42,7 +42,7 @@ print(greeting.text() ?? "?")          // hi
 const data = Bytes([0, 0, 128, 63, 0, 0, 0, 64])
 print(data.as_list<Float32>() ?? [])     // [1.0, 2.0]
 print(data.as_list<Int>() ?? [])         // [4611686019492741120]
-print(data.slice(0, 3).as_list<Int32>()) // none: 3 bytes are no whole `Int32`
+print(data[0:3].as_list<Int32>())       // none: 3 bytes are no whole `Int32`
 ```
 
 `b.read<T>(at)` reads one number where a file format or a network message puts it, and `Bytes.of<T>(n)` gives a number's bytes to build one, joined with `+`. `T` is a number of fixed size, as for `as_list`. The bytes are little-endian unless `big_endian: true`, the order network protocols and some file formats (GDSII, PNG) use. A `read` out of range gives `none`, as `b.get(i)` does; a negative `at` too.

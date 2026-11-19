@@ -26,7 +26,8 @@ Text (`String`):
 | `s.lines()` | The lines, without line endings; `"".lines()` is `[]`, as Python's `splitlines` and Rust's `lines` give |
 | `s.chars()` | The characters, as `[Char]` |
 | `s.index_of(part)` | The character position of the first `part`, or `none`; an empty `part` is found at once, at `0` |
-| `s.slice(start, end)` | Characters `start..end`; positions past the end are clamped |
+| `s[i]`, `s[#k]` | Character `i`, or `k` from the end, as a `Char` (2.19); counted as `len` counts; out of range panics |
+| `s[start:end:step]` | A slice (2.19): characters `start..end`, every `step`th; positions past the end are clamped. `s[:n]` is at most `n` characters, and `s[::-1]` is `s` reversed. There are no `slice` and `truncate` methods |
 | `s.trim_start()`, `s.trim_end()` | `s` without the white space at its start, or at its end, as `trim` takes it off both |
 | `s.last_index_of(part)` | The character position of the last `part`, or `none` |
 | `s.count(part)` | How many times `part` is in `s`, not counting overlaps: `"banana".count("ana")` is `1`. An empty `part` is counted between every two characters and at both ends: `s.len() + 1` |
@@ -35,28 +36,25 @@ Text (`String`):
 | `s.title()` | Each word of `s` with its first character in upper case and the rest in lower case: `"the tALE of two".title()` is `"The Tale Of Two"`. Words are as `words()` finds them, and the spaces between them stay as they were |
 | `s.words()` | The parts of `s` between runs of spaces, tabs and line breaks: `"  to be	or ".words()` is `["to", "be", "or"]` |
 | `s.pad_left(width, fill: ' ')`, `s.pad_right(width, fill: ' ')` | `s` with `fill` (a `Char`) added before it, or after it, until it is `width` characters long: `"7".pad_left(3, '0')` is `"007"`. Text already that long is as it was. `width` is at most 1,000,000 |
-| `s.truncate(max)` | At most `max` characters of `s` |
 | `s.is_blank()` | Whether `s` has only spaces, tabs and line breaks, or nothing |
 
 Lists, in addition to 2.2:
 
 | Method | Gives |
 |---|---|
-| `items.join(sep)` | For `[String]` and `[Char]`: the items with `sep` between them: `s.chars().reverse().join("")` |
+| `items.join(sep)` | For `[String]` and `[Char]`: the items with `sep` between them: `["a", "b"].join("-")` is `"a-b"` |
 | `items.sort()` | A sorted copy, for lists of values with an order (1.8): numbers, text, characters, `Bool` and tuples of them. `NaN` sorts after every number, here and in `sort_by`, `min` and `max`, so a list holding one still sorts |
 | `items.sort_by(key)` | A copy sorted by `key(item)`, which must have an order (1.8); equal keys keep their order. A tuple sorts by several keys: `people.sort_by(p => (p.age, p.name))` |
-| `items.reverse()` | A reversed copy |
 | `items.find(f)` | The first item where `f` is true, or `none` |
 | `items.find_index(f)`, `items.find_last_index(f)` | The position of the first item where `f` is true, or of the last, or `none` |
 | `items.for_each(f)` | Calls `f` on every item, in order, for what it does; gives nothing: `names.for_each(n => print(n))` |
 | `items.count(f)` | How many items `f` is true for |
-| `items.take(n)`, `items.skip(n)` | The first `n` items, or all but them |
-| `items.slice(start, end)` | Items `start..end`, both clamped to the list, as `String`'s `slice` |
+| `items[start:end:step]` | A slice (2.19): items `start..end`, every `step`th, clamped to the list, as for text. `xs[:n]` is the first `n` items, `xs[n:]` all but them, and `xs[::-1]` a reversed copy. There are no `slice`, `take`, `skip` and `reverse` methods (2.19) |
 | `items.index_of(x)` | The position of the first `x`, or `none` |
 | `items.min()`, `items.max()` | The smallest or largest item, or `none` for an empty list |
 | `items.pop()` | The last item, which it takes out of the list, or `none` for an empty list. It changes the list, so like `push` it needs a `let` (2.2), and it takes the item out in place when nothing else holds the list: `const top = stack.pop() ?? 0` |
 
-A negative count or width counts as 0, as for `List.capacity` (2.2): `"ab".repeat(-1)` is `""`, `xs.take(-1)` is `[]`, `"ab".truncate(-1)` is `""`, and `"ab".pad_left(-1)` is `"ab"`.
+A negative count or width counts as 0, as for `List.capacity` (2.2): `"ab".repeat(-1)` is `""`, and `"ab".pad_left(-1)` is `"ab"`.
 
 Sets keep insertion order (2.2) and hold each value once:
 

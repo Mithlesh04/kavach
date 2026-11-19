@@ -253,7 +253,7 @@ impl Parser<'_> {
                 }
                 TokenKind::LBracket => {
                     self.bump();
-                    let index = self.expr();
+                    let index = self.index_inside();
                     self.expect(&TokenKind::RBracket, "`]`");
                     ExprKind::Index {
                         base: Box::new(expr),

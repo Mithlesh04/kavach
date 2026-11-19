@@ -1,0 +1,11 @@
+// Rule: A slice out of range is clamped, never a panic: a part past the end counts as the end, a computed part below 0 as before the first item, and a start after the end gives an empty slice.
+// Spec: 2.19
+// expect output: [20, 30] [] []
+// expect output: [10, 20, 30]
+
+fn main() {
+    const xs = [10, 20, 30]
+    print(`{xs[1:99]} {xs[5:]} {xs[2:1]}`)
+    const a = -2
+    print(xs[a:])
+}
