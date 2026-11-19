@@ -1,6 +1,6 @@
 # 0140. AI providers other than Anthropic
 
-- **Status:** Proposed (the frame is a maintainer's, from to-do item 17, 2026-11-16; the choices below are for a maintainer)
+- **Status:** Accepted (a maintainer, 2026-11-19: the frame as written, and the recommended option on all ten choices; the frame itself is a maintainer's, from to-do item 17, 2026-11-16)
 - **Date:** 2026-11-19
 - **Builds on:** [decision 0056](0056-the-model-is-chosen-in-code.md), [decision 0057](0057-ask-puts-the-type-in-the-prompt.md), [decision 0059](0059-model-settings-follow-the-providers.md); would change spec 8.3, 8.4 and 8.6
 
@@ -49,7 +49,7 @@ Things that matter most for the design:
 
 ## Decision
 
-Only the frame below is proposed for acceptance now. The choices after it are for a maintainer; each gives a recommendation.
+The frame below, then the ten choices a maintainer made on 2026-11-19.
 
 ### 1. A provider is a Kavach interface that translates; the runtime sends
 
@@ -213,115 +213,111 @@ pub type Estimate { tokens: Int, how: String }   // "about 4 bytes a token"
 
 - A model with no known price has a cost of `none`, never 0.
 
-## Choices for a maintainer
+## Choices made
+
+A maintainer chose the recommended option on all ten choices (2026-11-19). Each choice below says what was chosen, then the options considered.
 
 ### Choice 1. Which providers come first
 
-| Option | Reaches | Trade-off |
-|---|---|---|
-| **A. The OpenAI-shaped Chat Completions API first** | OpenAI, Azure (v1), Ollama, llama.cpp, vLLM, and Gemini and Vertex through their OpenAI-shaped endpoints | One adapter reaches the most. But Gemini's and Vertex's OpenAI endpoints are beta and hide their own errors and thinking. |
-| B. OpenAI's Responses API first | OpenAI, Azure, partly the local servers | OpenAI's newer API, with a counting endpoint; but no stop text, and Ollama's support is partial. |
-| C. The big clouds first (Bedrock, Vertex) | Companies that must stay in their cloud | Needs request signing first (choice 5). |
-| D. All at once | Everything | The most work before anyone can use one. |
+A maintainer chose (2026-11-19): **the OpenAI-shaped Chat Completions API first**, then each provider's own API in this order: Gemini (`generateContent`, choice 6), Bedrock Converse, Vertex (Gemini, and Claude through `rawPredict`, which is almost Anthropic's format), then OpenAI's Responses API. One adapter reaches OpenAI, Azure (v1), Ollama, llama.cpp and vLLM: Chat Completions is the one API every local server speaks fully, and Azure's v1 takes it with only another key header.
 
-**Recommendation: A, then each provider's own API in this order:** Gemini (`generateContent`, choice 6), Bedrock Converse, Vertex (Gemini, and Claude through `rawPredict`, which is almost Anthropic's format), then Responses. Chat Completions is the one API every local server speaks fully, and Azure's v1 now takes it with only another key header.
+Options considered:
+
+- **Chat Completions first** (chosen): reaches the most with one adapter.
+- **Responses first:** OpenAI's newer API, with a counting endpoint; but no stop text, and Ollama supports it only in part.
+- **The big clouds first** (Bedrock, Vertex): needs request signing first (choice 5).
+- **All at once:** the most work before anyone can use one.
 
 ### Choice 2. How a `Model` names its provider
 
-| Option | Example | Trade-off |
-|---|---|---|
-| **A. A `provider` field holding a provider value** | `Model(name: "gpt-5.5", provider: OpenAi())` | Clear, and checked when the program is built. A program's own provider fits the same way. One more field to write. |
-| B. Read from `api_url` | `api_url: "https://api.openai.com"` | Nothing new to learn; but it can't tell a proxy, a company domain, or Ollama's two APIs apart. |
-| C. A prefix in the name | `name: "openai/gpt-5.5"` | Short, as LiteLLM does; but it is a string the compiler can't check, and has no room for a region or a project. |
-| D. A field, guessed from `api_url` when left out | — | Short when the guess is right; wrong guesses are quiet. |
+A maintainer chose (2026-11-19): **a `provider` field holding a provider value**, `Model(name: "gpt-5.5", provider: OpenAi())`. The provider is written with plain values, like the rest of `Model`, so the compiler still works it out when it builds the program (spec 8.4), and runs its `check`. Leaving it out means `Anthropic()`, so every program today keeps working. A provider's details are its own fields: `Bedrock(region: "eu-west-1")`, `Vertex(project: "shop", location: "global")`, `Azure(resource: "shop-ai")`. Each provider gives its own default key variable (`OPENAI_API_KEY`, `GEMINI_API_KEY`, `AZURE_OPENAI_API_KEY`, `AWS_BEARER_TOKEN_BEDROCK`) and address.
 
-**Recommendation: A.** The provider is a value written with plain values, like the rest of `Model`, so the compiler still works it out when it builds the program (spec 8.4), and runs its `check`. Leaving it out means `Anthropic()`, so every program today keeps working. A provider's details are its own fields: `Bedrock(region: "eu-west-1")`, `Vertex(project: "shop", location: "global")`, `Azure(resource: "shop-ai")`. Each provider also gives its own default key variable (`OPENAI_API_KEY`, `GEMINI_API_KEY`, `AZURE_OPENAI_API_KEY`, `AWS_BEARER_TOKEN_BEDROCK`) and address.
+Options considered:
+
+- **A `provider` field** (chosen): clear, and checked when the program is built.
+- **Read from `api_url`:** can't tell a proxy, a company domain, or Ollama's two APIs apart.
+- **A prefix in the name** (`"openai/gpt-5.5"`, as LiteLLM does): a string the compiler can't check, with no room for a region or a project.
+- **A field, guessed from `api_url` when left out:** wrong guesses are quiet.
 
 ### Choice 3. How fallbacks are written
 
-| Option | Example | Trade-off |
-|---|---|---|
-| **A. `model` takes a list, tried in turn** | `model [careful(), backup()]`; `ask<T>(p, model: [a, b])` | One idea covers other models, other providers and other keys. |
-| B. A `fallback` field on `Model` | `Model(…, fallback: backup())` | A chain of models inside models; harder to read. |
-| C. No new form: `catch` in code | `ask<T>(p) catch _ => try ask<T>(p, model: backup())` | Works today; but it is repeated at every call, and agents can't share it. |
-| D. A `Models` value with its own rules | `Models(each: [a, b], when: …)` | Most control; one more type to learn. |
+A maintainer chose (2026-11-19): **`model` takes a list, tried in turn**: `model [careful(), backup()]` in an agent, `ask<T>(p, model: [a, b])` in a call. Several keys of one provider are the same model with another `api_key_env` in the list.
 
-**Recommendation: A.** Several keys of one provider are the same model with another `api_key_env` in the list. Two parts of this need a choice too:
+- **When it moves on:** on `RateLimited`, `QuotaUsedUp`, `Overloaded`, `BadKey`, `NotFound`, `TimedOut` and `Network`. Never on `Denied`, which is a limit, nor on `Refused`, so a fallback can't be used to get round a safety filter.
+- **At once:** a busy model hands the call to the next one at once. The waits of spec 8.4 start only when every model in the list is busy, so a second key never waits while it is free.
+- The error is the last model's. The audit log has a line for each model tried.
 
-- **When to move on.** Recommended: on `RateLimited`, `QuotaUsedUp`, `Overloaded`, `BadKey`, `NotFound`, `TimedOut` and `Network`. Never on `Denied`, which is a limit, nor `Refused`, so a fallback can't be used to get round a safety filter.
-- **Move on at once, or wait first.** Recommended: a busy model hands the call to the next one at once; the waits of spec 8.4 start only when every model in the list is busy. Otherwise a second key waits 15 seconds while it is free.
+Options considered:
 
-The error is the last model's. The audit log has a line for each model tried.
+- **A list** (chosen): one idea covers other models, other providers and other keys.
+- **A `fallback` field on `Model`:** a chain of models inside models, harder to read.
+- **`catch` in code only:** works today, but is repeated at every call, and agents can't share it.
+- **A `Models` value with its own rules:** the most control, and one more type to learn.
 
 ### Choice 4. Where prices come from
 
-| Option | Trade-off |
-|---|---|
-| A. Built in: a table for the models Kavach knows | Works with no setup; out of date the day a provider changes a price. |
-| B. Set by the program only | Always the program's own numbers; nothing works until it gives them. |
-| **C. Both: a dated table in each adapter, and the program's own over it** | Works at once, and a program can correct it. The table must be kept up. |
-| D. Read from the providers' price services | None gives prices by model name (Azure's and Google's are by meter or SKU, Bedrock's lists Claude through Marketplace). Not possible today. |
+A maintainer chose (2026-11-19): **both: a dated table in each adapter, with the program's own table winning.** Each table says its date and source. The tables of the providers outside `std.ai` live in their package (choice 8), so a new price needs no Kavach release. A price is in US dollars, the currency of the providers' price pages.
 
-**Recommendation: C.** Each adapter's table says its date and source, and the program's table wins. With choice 8's recommendation, the tables live in packages, so a new price needs no Kavach release. A price is in US dollars, the currency of the providers' price pages.
+Options considered:
+
+- **Both** (chosen): works at once, and a program can correct it. The tables must be kept up.
+- **Built in only:** out of date the day a provider changes a price.
+- **Set by the program only:** nothing works until the program gives them.
+- **Read from the providers' price services:** none gives prices by model name (Azure's and Google's are by meter or SKU, Bedrock's lists Claude through Marketplace).
 
 ### Choice 5. Keys that cloud providers sign or renew
 
-| Option | Trade-off |
-|---|---|
-| **A. Plain keys first, signing later** | Bedrock API keys (`Bearer`), Azure `api-key`, a Vertex token a program puts in a variable. Works soon; but a Vertex token lasts an hour and a Bedrock short-term key 12 hours, so long runs need renewing outside Kavach. |
-| B. SigV4 and Google service accounts in the runtime from the start | Works as the clouds intend; but more native code (SigV4 is HMAC-SHA-256, a Google token needs an RS256 signature and one more call), all of it written before the first cloud call. |
-| C. Signing in provider code, with the key as a `secret` parameter | No runtime work; but provider code then holds the key, which the frame of section 1 avoids. |
+A maintainer chose (2026-11-19): **plain keys first, then signing in the runtime.** First a Bedrock API key (`Bearer`), Azure's `api-key`, and a Vertex token a program puts in a variable. Then SigV4 (`Auth.AwsSignature`) and Google service-account tokens (`Auth.GoogleToken`), signed and renewed by the runtime; `std.crypto` (decision 0093) has the pieces. Until then, a Vertex token lasts an hour and a Bedrock short-term key 12 hours, so long runs renew them outside Kavach.
 
-**Recommendation: A, then B** (`Auth.AwsSignature` and `Auth.GoogleToken`). `std.crypto` (decision 0093) already has the pieces.
+Options considered:
+
+- **Plain keys, then signing** (chosen): works soon, and as the clouds intend later.
+- **Signing from the start:** all the native code before the first cloud call.
+- **Signing in provider code, with the key as a `secret` parameter:** provider code would then hold the key, which the frame of section 1 avoids.
 
 ### Choice 6. Gemini: `generateContent` or the Interactions API
 
-Google now names `generateContent` "legacy" and puts a new Interactions API first, with other field names and another error body. Vertex speaks only `generateContent`.
+A maintainer chose (2026-11-19): **`generateContent`**: one adapter for the Gemini API and Vertex, which speaks only `generateContent`. Google calls it "legacy" but says it stays supported, with no end date. Interactions can come as its own adapter when Vertex takes it.
 
-| Option | Trade-off |
-|---|---|
-| **A. `generateContent`** | One adapter for the Gemini API and Vertex. Google says it stays supported, with no end date. |
-| B. Interactions | Google's newest; a second adapter for Vertex. It already broke its schema once (May 2026). |
-
-**Recommendation: A**, with Interactions as its own adapter when Vertex takes it.
+Options considered: **`generateContent`** (chosen); **the Interactions API**, Google's newest, with other field names and another error body, a second adapter for Vertex, and a schema already broken once (May 2026).
 
 ### Choice 7. How code reads an `ask`'s tokens and cost
 
-| Option | Example | Trade-off |
-|---|---|---|
-| **A. A second form that gives the details** | `const a = try ai.ask_full<Verdict>(p)`; `a.value`, `a.usage`, `a.cost`, `a.model` | Clear and typed; `ask<T>` stays as short as now. |
-| B. The last `ask`'s details, per task | `ai.last_usage()` | No new form; but hidden state, and wrong when calls overlap. |
-| C. Totals only | `agents.spent(RefundBot)` | Enough for budgets, not for one call. |
+A maintainer chose (2026-11-19): **a second form, `ai.ask_full<T>`, and totals per agent and per run.** `const a = try ai.ask_full<Verdict>(p)` gives `a.value`, `a.usage`, `a.cost` and `a.model`; `ask<T>` stays as short as now. `a.cost` is a `Cost?` that carries its trust note, so printing it prints the note.
 
-**Recommendation: A, and C for an agent's and a run's totals.** `a.cost` is a `Cost?` that carries its trust note, so printing it prints the note.
+Options considered:
+
+- **A second form, plus totals** (chosen): clear and typed.
+- **The last `ask`'s details, per task** (`ai.last_usage()`): hidden state, wrong when calls overlap.
+- **Totals only:** enough for budgets, not for one call.
 
 ### Choice 8. Where the adapters live
 
-| Option | Trade-off |
-|---|---|
-| A. All in `std.ai` | One place; every provider change waits for a Kavach release, which the frame rules out. |
-| **B. Anthropic's in `std.ai`; the others in a package of their own repository** (decision 0098) | `ask` works with no dependency; other providers change without a Kavach release. One more dependency for a program that uses them. |
-| C. Native adapters in the runtime | Fastest; but nobody can change them without a release. |
+A maintainer chose (2026-11-19): **Anthropic's adapter in `std.ai`, rewritten in Kavach against the same interface; the others in a package with its own repository** (decision 0098). So `ask` works with no dependency, Anthropic's adapter is a default a program can wrap like any other, and other providers change without a Kavach release. Translating a request takes microseconds beside a call of seconds.
 
-**Recommendation: B.** Anthropic's adapter is rewritten in Kavach against the same interface, so it is a default a program can wrap like any other. Translating a request takes microseconds beside a call of seconds.
+Options considered:
+
+- **Anthropic's in `std.ai`, the others in a package** (chosen).
+- **All in `std.ai`:** every provider change waits for a Kavach release, which the frame rules out.
+- **Native adapters in the runtime:** nobody can change them without a release.
 
 ### Choice 9. Money budgets in `limit Ai`
 
-The chapter's open questions ask about this. Option A: `cost <= 5.00 per day`, in US dollars, worked out from each model's price. Option B: tokens only, as now, with cost only reported. Option C: a money budget with a currency named.
+A maintainer chose (2026-11-19): **`cost <= 5.00 per day`, in US dollars**, worked out from each model's price. A call to a model with no known price under a `cost` limit is refused with `Denied` ("no price for gpt-5.5: give one, decision 0140"), never counted as free. Like `tokens`, the call that crosses the budget still runs (8.3), and the message says so.
 
-**Recommendation: A.** A call to a model with no known price under a `cost` limit is refused with `Denied` ("no price for gpt-5.5: give one, decision 0140"), never counted as free. Like `tokens`, the call that crosses the budget still runs (8.3), and the message says so.
+Options considered: **a budget in US dollars** (chosen); **tokens only**, with cost only reported; **a budget with a currency named**.
 
 ### Choice 10. Counting a prompt's tokens before sending
 
-Option A: the provider's counting call where there is one (OpenAI Responses, Gemini, Vertex, Bedrock, llama.cpp, vLLM), else its offline estimate, marked as one. Option B: offline estimates only, with no network. Option C: the counting call only, `none` without one.
+A maintainer chose (2026-11-19): **the provider's counting call where there is one** (OpenAI Responses, Gemini, Vertex, Bedrock, llama.cpp, vLLM), **else its offline estimate, marked as one**: `ai.count(prompt, model)` gives a `Count` that says whether it is exact. A counting call needs `Ai`, is in the audit log, and doesn't count toward `limit Ai`'s `tokens`.
 
-**Recommendation: A**, as `ai.count(prompt, model)` giving a `Count` that says whether it is exact. A counting call needs `Ai`, is in the audit log, and doesn't count toward `limit Ai`'s `tokens`.
+Options considered: **the counting call, else an estimate** (chosen); **offline estimates only**; **the counting call only**, `none` without one.
 
 ## Consequences
 
 - Programs can use any provider with an HTTP API, and a package can add one without a Kavach release.
 - `AiError` gains variants. Programs that match `Failed(status: 429, …)` change to `RateLimited`; there are no users yet, so no shim.
-- Spec 8.3, 8.4 and 8.6 change, with conformance tests, when the choices are made.
+- Spec 8.3, 8.4 and 8.6 change, with conformance tests, when this is built.
 - Each adapter needs a fake server in its tests, as Anthropic's has today, with the provider's real error bodies.
 - Price tables must be kept up. Their dates make a stale one visible.
 - The runtime's one gate becomes one per provider and key.
