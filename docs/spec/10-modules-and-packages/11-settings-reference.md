@@ -12,6 +12,7 @@ Every setting a program can have, in one place. A key or section that isn't list
 | `[package]` | `unsafe` | `true`, `false` | `false` | 6.4 |
 | `[build]` | `version_flag` | `true`, `false` | `false` | 10.5: the program answers `--version` itself |
 | `[build]` | `icon` | a PNG file's path, relative to `kavach.toml` | none | 10.5: the Windows executable's icon |
+| `[build]` | `console` | `true`, `false` | `true` | 10.5: `false` makes a Windows program with no console window |
 | `[limits]` | `file_lines` | a whole number | `500` | 12.1 |
 | `[limits]` | `fn_lines` | a whole number | `80` | 12.1 |
 | `[limits]` | `level` | `"error"`, `"warn"`, `"off"` | `"error"` | 12.1 |

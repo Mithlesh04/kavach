@@ -4,7 +4,8 @@
 
 //! `kavach build` gives a Windows executable a manifest, and the icon
 //! `[build] icon` names (spec 10.5, decision 0120); an icon that isn't a
-//! PNG is an error on every system.
+//! PNG is an error on every system. `[build] console = false` makes a
+//! window program.
 
 use std::path::Path;
 use std::process::Command;
@@ -114,4 +115,63 @@ fn a_built_program_has_its_icon_and_a_manifest() {
     assert!(!not_png.status.success());
     let err = String::from_utf8_lossy(&not_png.stderr);
     assert!(err.contains("the icon must be a PNG file"), "{err}");
+}
+
+/// The subsystem a PE file asks for: 2 a window program, 3 a console one.
+fn subsystem(exe: &[u8]) -> u16 {
+    let pe = u32::from_le_bytes(exe[0x3C..0x40].try_into().unwrap()) as usize;
+    let at = pe + 24 + 68;
+    u16::from_le_bytes([exe[at], exe[at + 1]])
+}
+
+#[test]
+fn console_false_makes_a_window_program() {
+    let dir = std::env::temp_dir().join(format!("kavach-console-{}", std::process::id()));
+    let made = |sub: &str, build: &str| {
+        let d = dir.join(sub);
+        std::fs::create_dir_all(&d).unwrap();
+        let toml = format!(
+            "[package]
+name = \"{sub}\"
+{build}"
+        );
+        std::fs::write(d.join("kavach.toml"), toml).unwrap();
+        std::fs::write(
+            d.join("main.kav"),
+            "fn main() {
+    print(\"hi\")
+}
+",
+        )
+        .unwrap();
+        let out = Command::new(env!("CARGO_BIN_EXE_kavach"))
+            .args(["build", "main.kav"])
+            .current_dir(&d)
+            .output()
+            .unwrap();
+        assert!(
+            out.status.success(),
+            "{}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        d.join(format!("main{}", std::env::consts::EXE_SUFFIX))
+    };
+    let window = made(
+        "window",
+        "
+[build]
+console = false
+",
+    );
+    let console = made("console", "");
+    let (window_exe, console_exe) = (std::fs::read(&window), std::fs::read(&console));
+    // A window program still runs, and what it prints reaches a pipe.
+    let ran = Command::new(&window).output().unwrap();
+    let _ = std::fs::remove_dir_all(&dir);
+    assert!(ran.status.success());
+    if cfg!(windows) {
+        assert_eq!(subsystem(&window_exe.unwrap()), 2);
+        assert_eq!(subsystem(&console_exe.unwrap()), 3);
+        assert_eq!(String::from_utf8_lossy(&ran.stdout).trim(), "hi");
+    }
 }

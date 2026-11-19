@@ -355,7 +355,7 @@ pub(crate) fn kavach_name(recv: &Ty, name: &str) -> Option<&'static str> {
         "every" if walks => "all(test)",
         "includes" if text || walks => "contains(x)",
         "each" | "forEach" | "foreach" if walks => "for_each(f)",
-        "findIndex" | "findindex" if list => "find_index(test)",
+        "findIndex" | "findindex" | "find_first_index" if list => "find_index(test)",
         "findLastIndex" if list => "find_last_index(test)",
         "indexOf" if list => "index_of(x)",
         "find" | "indexOf" if text => "index_of(part)",

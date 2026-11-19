@@ -245,7 +245,7 @@ pub struct AgentConfig {
 }
 
 /// `[build]` (spec 10.11).
-#[derive(Clone, Debug, Default, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct BuildConfig {
     /// The program answers `--version` itself (spec 10.5).
@@ -253,8 +253,21 @@ pub struct BuildConfig {
     /// A PNG, relative to `kavach.toml`: the Windows executable's icon
     /// (spec 10.5).
     pub icon: Option<String>,
+    /// `false`: a Windows program with no console window (spec 10.5).
+    pub console: bool,
     /// `[build.release]` (chapter 7): accepted, not read yet.
     pub release: Option<toml::Value>,
+}
+
+impl Default for BuildConfig {
+    fn default() -> Self {
+        BuildConfig {
+            version_flag: false,
+            icon: None,
+            console: true,
+            release: None,
+        }
+    }
 }
 
 /// `[env]` (spec 10.13): the `.env` file to read, and single variables

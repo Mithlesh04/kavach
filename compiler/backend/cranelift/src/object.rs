@@ -17,9 +17,8 @@ use cranelift_object::{ObjectBuilder, ObjectModule};
 use kavach_kir::{Program, encode_shapes};
 use std::path::Path;
 
-/// Compiles `program` and writes the executable `out`, with the Windows
-/// icon `icon` (a PNG) when given.
-pub fn build(program: &Program, out: &Path, icon: Option<&[u8]>) -> Result<(), String> {
+/// Compiles `program` and writes the executable `out`, as `exe` asks.
+pub fn build(program: &Program, out: &Path, exe: link::Exe) -> Result<(), String> {
     // Executables on Linux and macOS are position-independent.
     let isa = new_isa(!cfg!(windows))?;
     let builder = ObjectBuilder::new(isa.clone(), "kavach_program", default_libcall_names())
@@ -52,7 +51,7 @@ pub fn build(program: &Program, out: &Path, icon: Option<&[u8]>) -> Result<(), S
         l.dedup();
         l
     };
-    let linked = link::link(&object, out, &libs, icon);
+    let linked = link::link(&object, out, &libs, exe);
     let _ = std::fs::remove_dir_all(&dir);
     linked
 }

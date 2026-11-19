@@ -86,6 +86,6 @@ print(sizes.map(w => w.len() % 2))        // Set.of(0, 1): equal results kept on
 print(sizes.filter(w => w.contains("p"))) // Set.of("pear", "apple")
 ```
 
-Each job has one method. Names other languages use for the same job are compile errors that name Kavach's: `some` names `any(test)`, `every` names `all(test)`, `includes` names `contains(x)`, and `each` and `forEach` name `for_each(f)`. Method names are `snake_case`, as all names of values are (1.5): `findIndex` and `indexOf` name `find_index(test)` and `index_of(x)`.
+Each job has one method. Names other languages use for the same job are compile errors that name Kavach's: `some` names `any(test)`, `every` names `all(test)`, `includes` names `contains(x)`, and `each` and `forEach` name `for_each(f)`. Method names are `snake_case`, as all names of values are (1.5): `findIndex` and `indexOf` name `find_index(test)` and `index_of(x)`. `find_index` finds the first match, as `index_of` finds the first `x`, so `find_first_index` names `find_index(test)` too.
 
 A ring (`Ring<T>`, 2.2) has `push`, `len`, `is_empty`, `is_full`, `first`, `last`, `get`, `contains` and `to_list`, oldest item first; a push onto a full ring drops the oldest.

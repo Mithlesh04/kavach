@@ -70,6 +70,13 @@ icon = "assets/icon.png"      # a PNG of at most 256 × 256 pixels
 
 The path is relative to `kavach.toml`. A file that isn't a PNG, or one larger than 256 × 256, is an error that says so. Kavach writes the Windows resources itself, so no Windows SDK is needed ([decision 0120](../../decisions/0120-windows-icon-and-manifest.md)). Other systems give a program its icon outside the executable (a `.desktop` file on Linux, an app bundle on macOS), so there the setting is checked but not used.
 
+**No console window on Windows.** A program that shows a window doesn't want a console window beside it. With `console = false` under `[build]`, `kavach build` makes it a Windows window program: it starts with no console window, and what it prints goes nowhere, as nothing shows it. A panic still ends it, and goes to the crash reports of `std.app` when the program asks for them (14.30). The default is `true`. Other systems have no such kind of program, so there the setting is checked but not used.
+
+```toml
+[build]
+console = false
+```
+
 **A packed executable.** `kavach build --compress` writes the program packed, with nothing lost: a little under half its size (deflate), or about a third to two fifths with `--compress=max` (xz). Run, it unpacks itself into a cache folder and runs the unpacked copy, which behaves exactly as the program built without `--compress`: the same output, exit code, arguments and environment, and the same messages for panics and errors. The copy is named by a hash of its contents, so the first start unpacks it (a few milliseconds with `--compress`, tens of milliseconds with `--compress=max`) and later starts run it at once; deleting the cache folder is always safe. The folder is `KAVACH_UNPACKED` when set, else `%LOCALAPPDATA%\Kavach\unpacked` on Windows, `~/Library/Caches/kavach/unpacked` on macOS, and `$XDG_CACHE_HOME/kavach/unpacked` (or `~/.cache/kavach/unpacked`) elsewhere. `kavach version` reads a packed program too.
 
 ```

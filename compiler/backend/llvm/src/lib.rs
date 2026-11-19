@@ -43,9 +43,12 @@ pub enum NotBuilt {
     Failed(String),
 }
 
-/// Compiles `program` and writes the executable `out`, with the Windows
-/// icon `icon` (a PNG) when given.
-pub fn build(program: &Program, out: &Path, icon: Option<&[u8]>) -> Result<(), NotBuilt> {
+/// Compiles `program` and writes the executable `out`, as `exe` asks.
+pub fn build(
+    program: &Program,
+    out: &Path,
+    exe: kavach_backend_cranelift::Exe,
+) -> Result<(), NotBuilt> {
     if let Some(what) = check::unsupported(program) {
         // `KAVACH_LLVM_IR=1` (below) also says why LLVM isn't used.
         if std::env::var_os("KAVACH_LLVM_IR").is_some() {
@@ -63,7 +66,7 @@ pub fn build(program: &Program, out: &Path, icon: Option<&[u8]>) -> Result<(), N
         eprintln!("{ir}");
     }
     let dir = kavach_backend_cranelift::build_folder("kavach-llvm");
-    let built = compile(&bin, &dir, &ir, out, &c_libraries(program), icon);
+    let built = compile(&bin, &dir, &ir, out, &c_libraries(program), exe);
     let _ = std::fs::remove_dir_all(&dir);
     built.map_err(NotBuilt::Failed)
 }
@@ -149,7 +152,7 @@ fn compile(
     ir: &str,
     out: &Path,
     libs: &[String],
-    icon: Option<&[u8]>,
+    exe: kavach_backend_cranelift::Exe,
 ) -> Result<(), String> {
     std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
     let (ll, bc) = (dir.join("program.ll"), dir.join("program.bc"));
@@ -171,7 +174,7 @@ fn compile(
         llc.arg("-relocation-model=pic");
     }
     run(llc.arg(&bc).arg("-o").arg(&object))?;
-    kavach_backend_cranelift::link(&object, out, libs, icon)
+    kavach_backend_cranelift::link(&object, out, libs, exe)
 }
 
 pub(crate) fn run(cmd: &mut Command) -> Result<(), String> {

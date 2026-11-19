@@ -94,8 +94,15 @@ pub(crate) fn build(
             return ExitCode::from(2);
         }
     };
-    let built = build_with_best_backend(&program, &out, icon.as_deref())
-        .and_then(|()| env::write_beside(&out));
+    let exe = kavach_backend_cranelift::Exe {
+        icon: icon.as_deref(),
+        // A program with no `kavach.toml` is a console program.
+        console: match kavach_driver::Config::for_file(std::path::Path::new(path)) {
+            Ok(config) => config.build.console,
+            Err(_) => true,
+        },
+    };
+    let built = build_with_best_backend(&program, &out, exe).and_then(|()| env::write_beside(&out));
     let packed = built.and_then(|()| compress.map(|m| pack::pack(&out, m)).transpose());
     match packed {
         Ok(sizes) => {
@@ -117,16 +124,16 @@ pub(crate) fn build(
 pub(crate) fn build_with_best_backend(
     program: &kavach_kir::Program,
     out: &std::path::Path,
-    icon: Option<&[u8]>,
+    exe: kavach_backend_cranelift::Exe,
 ) -> Result<(), String> {
     if std::env::var("KAVACH_BACKEND").as_deref() != Ok("cranelift") {
-        match kavach_backend_llvm::build(program, out, icon) {
+        match kavach_backend_llvm::build(program, out, exe) {
             Ok(()) => return Ok(()),
             Err(kavach_backend_llvm::NotBuilt::Failed(e)) => return Err(e),
             Err(kavach_backend_llvm::NotBuilt::Unsupported(_)) => {}
         }
     }
-    kavach_backend_cranelift::build(program, out, icon)
+    kavach_backend_cranelift::build(program, out, exe)
 }
 
 /// `kavach run --native`: KIR → Cranelift → machine code, run in memory.

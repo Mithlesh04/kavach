@@ -92,18 +92,42 @@ fn remove_old(dir: &Path, prefix: &str, age: std::time::Duration) {
     }
 }
 
+/// What `[build]` asks of an executable on Windows (spec 10.5): its icon
+/// (a PNG), if any, and whether it is a console program.
+#[derive(Clone, Copy, Debug)]
+pub struct Exe<'a> {
+    pub icon: Option<&'a [u8]>,
+    pub console: bool,
+}
+
+impl Default for Exe<'_> {
+    fn default() -> Self {
+        Exe {
+            icon: None,
+            console: true,
+        }
+    }
+}
+
 /// Links `object` with the runtime into the executable `out`. On
-/// Windows it also gets its resources: a manifest, and `icon` (a PNG)
-/// when given (spec 10.5, `resources.rs`).
-pub fn link(object: &Path, out: &Path, libs: &[String], icon: Option<&[u8]>) -> Result<(), String> {
+/// Windows it also gets its resources: a manifest, and the icon when
+/// given (spec 10.5, `resources.rs`); with `console` false, it is a
+/// window program, which starts with no console window.
+pub fn link(object: &Path, out: &Path, libs: &[String], exe: Exe) -> Result<(), String> {
     let libs: Vec<&String> = libs.iter().filter(|l| *l != "c" && *l != "m").collect();
     let lib = runtime_lib()?;
     let mut cmd = linker()?;
     if cfg!(windows) {
         let res = object.with_extension("res");
-        std::fs::write(&res, crate::resources::resource_file(icon)).map_err(|e| e.to_string())?;
-        cmd.arg("/NOLOGO")
-            .arg("/SUBSYSTEM:CONSOLE")
+        std::fs::write(&res, crate::resources::resource_file(exe.icon))
+            .map_err(|e| e.to_string())?;
+        cmd.arg("/NOLOGO");
+        // A window program still starts at the C runtime's `main`.
+        match exe.console {
+            true => cmd.arg("/SUBSYSTEM:CONSOLE"),
+            false => cmd.args(["/SUBSYSTEM:WINDOWS", "/ENTRY:mainCRTStartup"]),
+        };
+        cmd
             // The manifest is the one in `res`, not one of the linker's.
             .arg("/MANIFEST:NO")
             .arg(format!("/OUT:{}", out.display()))

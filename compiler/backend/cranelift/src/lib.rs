@@ -46,7 +46,7 @@ use kavach_runtime_native as runtime;
 use std::collections::HashMap;
 
 pub use library::build_library;
-pub use link::{build_folder, link};
+pub use link::{Exe, build_folder, link};
 pub mod resources;
 pub use object::build;
 
