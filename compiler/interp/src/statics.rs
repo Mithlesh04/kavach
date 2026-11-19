@@ -33,6 +33,7 @@ impl<'a> Interp<'a> {
             ("TextBuilder", "capacity", _) => Ok(self.builder_with_room(int(&args))),
             ("Set", "of", _) => Ok(self.set_of(args.into_iter().map(|(_, v)| v).collect())),
             ("List" | "Dict" | "Set" | "Ring", "capacity", _) => self.capacity(owner, args, span),
+            ("List", "filled", _) => Ok(self.list_filled(args, span)),
             _ => return Err(args),
         })
     }

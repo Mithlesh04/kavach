@@ -134,7 +134,9 @@ fn dot<n: Int>(a: [Float]<len: n>, b: [Float]<len: n>) -> Float {
     sum
 }
 
-fn zeros<n: Int>() -> [Float]<len: n> { … }
+fn zeros<n: Int>() -> [Float]<len: n> {
+    List<Float, len: n>.filled(0.0)     // n items, each 0.0 (2.2)
+}
 
 const u: [Float]<len: 3> = [1.0, 2.0, 3.0]
 dot(u, [4.0, 5.0, 6.0])         // 32.0, with `n` 3
@@ -191,6 +193,24 @@ const p = List<Int, max: 2>([1, 2, 3].map(x => x * 2)) catch e => {
 }
 ```
 
+**Variables and operators.** The numbers of a collection's own type follow these rules:
+
+- A `let` with no written type takes its value's type without the collection's own number, as it may change; a `const` keeps it, and so does a `let` whose type is written. The value keeps a `max` while running either way (2.2).
+- Comparisons and arithmetic don't look at a collection's own number: `Bytes([2]) < Bytes([1, 9])` compares two `Bytes`, and `xs + ys` is a plain list (2.2).
+- Inside code with a number parameter, a literal can't be checked against `len: n`, as `n` is known only for each call: it is a compile error. `List<T, len: n>.filled(v)` makes the list (2.2), and `try` or `catch` still converts one.
+
+```kavach
+let out = Bytes([1])                     // a `Bytes`: it may grow
+out = out + Bytes([2, 3])
+const key = Bytes([1, 2])                // a `Bytes<len: 2>`
+let kept: Bytes<len: 2> = Bytes([3, 4])  // the written type keeps it
+print(Bytes([2]) < Bytes([1, 9]))        // false
+
+fn ones<n: Int>() -> [Int]<len: n> {
+    [1, 1]                               // compile error: `n` is known only for each call
+}
+```
+
 *Not built yet:* Number conversions are as before: `UInt<bits: 12>(x)` and `Int<range: 1..=65535>(x)` panic when `x` doesn't fit, as `Int8(300)` does (2.1).
 
 ## Open questions
@@ -199,8 +219,5 @@ const p = List<Int, max: 2>([1, 2, 3].map(x => x * 2)) catch e => {
 - **Other kinds of number parameters** for a program's own types: a list of numbers (a shape, as `Tensor`'s), a `Bool`, a range. Today a program's own number parameters are `Int`s, and the checker knows `std.tensor`'s shape rules itself (14.33).
 - **A number left open:** `Tensor<Float32, shape: [_, 768]>`, or a program's own type with a number left out to mean "any, checked while running", as `Tensor<Float>` has. A function's number parameter covers most uses today: `fn embed<b: Int>(x: Tensor<Float32, shape: [b, 768]>)`.
 - **A name for a type with numbers:** `type Port = Int<range: 1..=65535>` as an alias. Aliases exist only for anonymous records (2.14).
-- **A literal against a number parameter:** inside `fn zeros<n: Int>() -> [Float]<len: n>`, a list literal can't be checked against `len: n`, as `n` is known only for each call, so it is a compile error, and the list is made with `try` or `catch`. A way to make a list of `n` items without one (`List<Float, len: n>.filled(0.0)`) is open.
-- **A fixed length while running:** a `[Float]<len: 3>` given where a plain `[Float]` is expected is a plain list there, which may grow; a `max` limit goes with the value (2.2). Whether `len` should go with it too, as a limit of `n`, is open.
 - **Numbers deeper inside a type:** a `[[Float]]` given where a `[[Float]<len: 3>]` is expected is not yet refused; only a collection's own numbers are compared, and an item's when both types have them.
-- **A `let` with no written type** takes its value's type without the collection's own number, as it may change (`let out = Bytes([])`, then `out = out + more`); a `const` keeps it, and the value keeps its `max` while running. Settled this way for now; a `let` that keeps the number writes its type.
 - **`extend` blocks of types with numbers** (`extend<T, width: Int> Grid<T, width: width>`) are not built: methods of such a type go in its declaration.

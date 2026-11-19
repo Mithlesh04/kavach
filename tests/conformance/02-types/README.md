@@ -55,6 +55,7 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.2 | [a-fixed-length-list-has-no-push.kav](a-fixed-length-list-has-no-push.kav) | A list of fixed length (`len`) can't `push`, `pop`, `remove` or `+=`. | compile error |
 | 2.2 | [a-fixed-length-index-past-the-end-is-an-error.kav](a-fixed-length-index-past-the-end-is-an-error.kav) | An index written as a number past a list's `len` is a compile error. | compile error |
 | 2.2 | [a-fixed-length-literal-has-len-items.kav](a-fixed-length-literal-has-len-items.kav) | A literal given for `[T]<len: n>` must have exactly `n` items. | compile error |
+| 2.2 | [a-fixed-length-list-is-filled.kav](a-fixed-length-list-is-filled.kav) | `List<T, len: n>.filled(v)` makes exactly `n` items, each `v`, with no `try`; `n` may be a number parameter. | runs |
 | 2.2 | [a-plain-list-becomes-limited-only-through-try.kav](a-plain-list-becomes-limited-only-through-try.kav) | A plain list given where a limited one is expected is a compile error: it takes `try`. | compile error |
 | 2.9 | [a-conversion-into-a-limit-needs-try.kav](a-conversion-into-a-limit-needs-try.kav) | `List<Int, max: 2>(xs)` without `try` or `catch` is a compile error. | compile error |
 | 2.9 | [try-into-a-limit-fails-with-a-size-error.kav](try-into-a-limit-fails-with-a-size-error.kav) | `try List<Int, max: 2>(xs)` fails with a `SizeError` when `xs` doesn't fit; one that fits keeps the limit. | runs |

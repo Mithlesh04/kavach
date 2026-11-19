@@ -37,6 +37,8 @@ pub(crate) struct Sizes {
     /// `try List<Int, max: 2>(xs)`: conversions checked while running.
     /// The type as it is shown, with `{n}` for its number.
     pub(crate) checks: HashMap<(u32, u32), (SizeKind, Ty, String)>,
+    /// `List<T, len: n>.filled(v)`: how many items each makes, by span.
+    pub(crate) filled: HashMap<(u32, u32), Ty>,
     /// The number arguments of each call of a function with number
     /// parameters, by its span.
     pub(crate) calls: Vec<NumCall>,

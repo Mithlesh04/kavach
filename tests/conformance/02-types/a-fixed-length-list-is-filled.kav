@@ -1,0 +1,16 @@
+// Rule: `List<T, len: n>.filled(v)` makes exactly `n` items, each `v`, with no `try`; `n` may be a number parameter.
+// Spec: 2.2
+// expect output: [0.0, 0.0, 0.0]
+// expect output: ["-", "-"]
+// expect output: 4
+
+fn zeros<n: Int>() -> [Float]<len: n> {
+    List<Float, len: n>.filled(0.0)
+}
+
+fn main() {
+    const z: [Float]<len: 3> = zeros()
+    print(z)
+    print(List<String, len: 2>.filled("-"))
+    print(zeros<n: 4>().len())
+}

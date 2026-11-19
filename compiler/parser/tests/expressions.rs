@@ -99,6 +99,11 @@ fn calls_fields_and_indexing() {
             "ask<RefundDecision>(prompt)",
             "(call ask<RefundDecision> prompt)",
         ),
+        // A type's function with its numbers (spec 2.2, 2.9).
+        (
+            "List<Float, len: n>.filled(0.0) + zeros<n: 4>()",
+            "(+ (call (. List filled)<Float len:n> 0.0) (call zeros<n:4>))",
+        ),
         (
             "json.decode<[Rates]>(body)",
             "(call (. json decode)<[Rates]> body)",

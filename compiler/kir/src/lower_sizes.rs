@@ -135,6 +135,42 @@ impl<'a> Lowerer<'a> {
         Some(self.size_checked(&arg.value, kind, &n, &shown, ty, line, span))
     }
 
+    /// `List<T, len: n>.filled(v)`: a loop pushes `v` `n` times (spec
+    /// 2.2), `v` worked out once.
+    pub(crate) fn list_filled(
+        &mut self,
+        args: &'a [ast::Arg],
+        ty: Type,
+        line: u32,
+        span: ast::Span,
+    ) -> Lowered<ir::Expr> {
+        let n = (self.c.numbers.filled.get(&(span.start, span.end)).cloned())
+            .and_then(|t| self.number_of(&t))
+            .ok_or_else(|| self.unsupported("this `filled`", span))?;
+        let Some(Shape::List(item_ty)) = self.shapes.shape(ty).cloned() else {
+            return Err(self.unsupported("this `filled`", span));
+        };
+        let arg = args
+            .first()
+            .ok_or_else(|| self.unsupported("`filled()`", span))?;
+        let value = self.expr(&arg.value)?;
+        let value = self.coerce(value, item_ty)?;
+        let (acc, item) = (self.new_local(ty), self.new_local(item_ty));
+        let var = self.new_local(Type::I64);
+        let empty = self.at(K::List(Vec::new()), ty, line);
+        let body = self.push_to(acc, self.local_expr(item, line));
+        let fill = Stmt::ForRange {
+            var,
+            start: self.at(K::Int(0), Type::I64, line),
+            end: self.at(K::Int(i128::from(n)), Type::I64, line),
+            inclusive: false,
+            body,
+        };
+        let stmts = vec![Stmt::Let(item, value), Stmt::Let(acc, empty), fill];
+        let value = Some(Box::new(self.local_expr(acc, line)));
+        Ok(self.at(K::Block(Block { stmts, value }), ty, line))
+    }
+
     /// `Ring<T, max: n>(items)` or `Ring()`: the last `n` items.
     fn ring_made(
         &mut self,

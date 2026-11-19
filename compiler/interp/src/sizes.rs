@@ -64,6 +64,15 @@ impl<'a> Interp<'a> {
         self.capacity(kind, vec![(None, n), (None, first)], span)
     }
 
+    /// `List<T, len: n>.filled(v)`: `n` items, each `v` (spec 2.2).
+    pub(crate) fn list_filled(&self, args: Args<'a>, span: Span) -> Value<'a> {
+        let n = (self.c.numbers.filled.get(&(span.start, span.end)))
+            .and_then(|t| self.number_of(t))
+            .unwrap_or(0);
+        let v = args.into_iter().next().map_or(Value::Unit, |(_, v)| v);
+        Value::List(Rc::new(Items::new(vec![v; n.max(0) as usize])))
+    }
+
     /// `List<Int, max: 2>(xs)` and the other built-in types with numbers
     /// called with a value (spec 2.9), and `Ring<T, max: n>(items)`.
     /// `None` for any other call.

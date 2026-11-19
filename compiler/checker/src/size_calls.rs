@@ -145,6 +145,45 @@ impl Checker<'_> {
         target
     }
 
+    /// `List<Float, len: n>.filled(v)`: exactly `n` items, each `v`
+    /// (spec 2.2). It never fails, so it needs no `try`.
+    pub(crate) fn list_filled(&mut self, generics: &[TypeExpr], args: &[Arg], span: Span) -> Ty {
+        let nums: Vec<&TypeExpr> = (generics.iter())
+            .filter(|g| matches!(g.kind, TypeKind::Num { .. }))
+            .collect();
+        let item = match generics
+            .iter()
+            .find(|g| !matches!(g.kind, TypeKind::Num { .. }))
+        {
+            Some(g) => self.lower(g, None),
+            None => self.fresh(),
+        };
+        let target = self.sized_type("List", Ty::List(Box::new(item.clone())), &nums);
+        let n = match &target {
+            Ty::Sized(_, SizeKind::Len, n) => (**n).clone(),
+            _ => {
+                self.error(span, "`filled` makes a list of fixed length: write its length, as `List<Float, len: 3>.filled(0.0)` (spec 2.2)");
+                for a in args {
+                    self.value(&a.value, None);
+                }
+                return Ty::Error;
+            }
+        };
+        match args {
+            [a] if a.name.is_none() => {
+                self.check_expect(&a.value, &item);
+            }
+            _ => {
+                self.error(span, "`filled` takes the value every item has: `List<Float, len: 3>.filled(0.0)` (spec 2.2)");
+                for a in args {
+                    self.value(&a.value, None);
+                }
+            }
+        }
+        self.sizes.filled.insert((span.start, span.end), n);
+        target
+    }
+
     /// `Bytes([1, 2, 3])`: bytes from a list literal of `n` numbers are a
     /// `Bytes<len: n>` (spec 2.13).
     pub(crate) fn bytes_of_literal(&self, args: &[Arg]) -> Ty {
@@ -191,6 +230,9 @@ impl Checker<'_> {
         let limits = (self.sizes.limits.iter())
             .map(|(k, t)| (*k, self.inf.resolve_keep(t)))
             .collect();
+        let filled = (self.sizes.filled.iter())
+            .map(|(k, t)| (*k, self.inf.resolve_keep(t)))
+            .collect();
         let checks = (self.sizes.checks.iter())
             .map(|(k, (kind, t, s))| (*k, (*kind, self.inf.resolve_keep(t), s.clone())))
             .collect();
@@ -200,6 +242,7 @@ impl Checker<'_> {
         Settled {
             calls,
             limits,
+            filled,
             checks,
             params: self.sizes.params.keys().copied().collect(),
             consts: self.sizes.consts.clone(),
@@ -216,6 +259,8 @@ pub struct Settled {
     pub calls: HashMap<(u32, u32), Vec<(DefId, Ty)>>,
     /// Values made with a `max` limit, by span: a `Num` or a `Param`.
     pub limits: HashMap<(u32, u32), Ty>,
+    /// `List<T, len: n>.filled(v)`: how many items each makes, by span.
+    pub filled: HashMap<(u32, u32), Ty>,
     /// Conversions checked while running, by span, with the type as it
     /// is shown, `{n}` standing for its number.
     pub checks: HashMap<(u32, u32), (SizeKind, Ty, String)>,

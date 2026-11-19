@@ -65,6 +65,25 @@ v.push(4.0)              // compile error: a `[Float]<len: 3>` always holds 3 it
 print(v[3])              // compile error: index 3 is past a list of 3
 ```
 
+`List<T, len: n>.filled(v)` makes a list of fixed length: exactly `n` items, each `v`. It never fails, so it needs no `try`, and `n` may be a number parameter (2.9). It is written with `List<…>`: `[T]` in code is a list literal.
+
+A list of fixed length given where a plain list is expected is a plain list there: its length doesn't go with it while running, so the code that takes it may change how many items it holds. A `max` limit goes with the value (below).
+
+```kavach
+fn zeros<n: Int>() -> [Float]<len: n> {
+    List<Float, len: n>.filled(0.0)
+}
+
+fn grow(xs: [Float]) -> [Float] {
+    let more = xs
+    more.push(9.0)           // a plain list here
+    more
+}
+
+const z: [Float]<len: 3> = zeros()     // [0.0, 0.0, 0.0]
+print(grow(z).len())                   // 4
+```
+
 **Making a plain collection limited.** Only `try` (or `catch`) does it. The type with its limit, called with the collection, fails with a `SizeError` when it has too many entries (for `len`, not exactly that many), as `try Int(text)` fails (2.1). Without `try` or `catch` it is a compile error, unless the collection is a literal. The other way needs nothing: a limited collection may be given where a plain one is expected, and it keeps its limit, as one made by `capacity` does (below).
 
 ```kavach

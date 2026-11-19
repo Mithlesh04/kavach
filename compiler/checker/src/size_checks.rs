@@ -59,7 +59,7 @@ impl Checker<'_> {
                 let p = self.def_name(*p).to_string();
                 self.error(
                     e.span,
-                    format!("`{p}` is known only for each call, so a literal can't be checked against `{shown}`: make it with `try` (spec 2.9)"),
+                    format!("`{p}` is known only for each call, so a literal can't be checked against `{shown}`: make the list with `List<T, len: {p}>.filled(v)`, or with `try` (spec 2.9)"),
                 );
             }
             _ => {}

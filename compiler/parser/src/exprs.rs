@@ -245,8 +245,26 @@ impl Parser<'_> {
                 }
                 TokenKind::Lt if self.generic_call_follows(&expr) => {
                     let generics = self.type_args();
+                    // `List<Float, len: n>.filled(0.0)`: a function of the
+                    // type with its numbers (spec 2.2).
+                    let callee = match self.eat(&TokenKind::Dot) {
+                        true => {
+                            let name = self.ident("a function name after `.`");
+                            let (base, optional) = (Box::new(expr), false);
+                            let kind = ExprKind::Field {
+                                base,
+                                name,
+                                optional,
+                            };
+                            Expr {
+                                kind,
+                                span: self.span_from(start),
+                            }
+                        }
+                        false => expr,
+                    };
                     ExprKind::Call {
-                        callee: Box::new(expr),
+                        callee: Box::new(callee),
                         generics,
                         args: self.args(),
                     }
@@ -332,7 +350,10 @@ impl Parser<'_> {
                 _ => return false,
             }
             if depth <= 0 {
-                return depth == 0 && *self.token_at(i + 1) == LParen;
+                let then = |k: usize| self.token_at(i + k).clone();
+                let named = matches!(callee.kind, ExprKind::Name(_));
+                let function = named && (then(1), then(2), then(3)) == (Dot, Ident, LParen);
+                return depth == 0 && (then(1) == LParen || function);
             }
         }
         false

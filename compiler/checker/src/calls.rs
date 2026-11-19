@@ -401,6 +401,9 @@ impl Checker<'_> {
             DefKind::Agent if name.name == "start" => Some(self.agent_start(def, args, span)),
             DefKind::Import => self.std_call(def, &name.name, generics, args, span),
             DefKind::Builtin if type_name == "Set" && name.name == "of" => Some(self.set_of(args)),
+            DefKind::Builtin if type_name == "List" && name.name == "filled" => {
+                Some(self.list_filled(generics, args, span))
+            }
             // `List.capacity(n)`, `Map.capacity(n)`, `Set.capacity(n)`, at
             // most `n` entries, maybe with the first ones (spec 2.2). With
             // none, the types come from where the value goes, as `{:}`.

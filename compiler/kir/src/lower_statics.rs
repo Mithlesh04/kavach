@@ -29,6 +29,7 @@ impl<'a> Lowerer<'a> {
         let builtin = self.c.resolution.defs[def].kind == DefKind::Builtin;
         Some(match (owner, name) {
             ("Set", "of") if builtin => self.set_of(args, ty, line),
+            ("List", "filled") if builtin => self.list_filled(args, ty, line, span),
             ("Dict" | "Set" | "List" | "Ring", "capacity") if builtin => {
                 self.capacity(owner, args, ty, line, span)
             }
