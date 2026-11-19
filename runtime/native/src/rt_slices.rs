@@ -6,8 +6,9 @@
 //! The rules are `kavach_runtime_core::slices`, which the interpreter
 //! uses too, so both give the same items and the same panics.
 
-use crate::heap::{items_of, new_str, obj, release, shape, str_of};
+use crate::heap::{items_of, new_str, obj, release, shape};
 use crate::rt::{panic_with, type_of};
+use crate::shapes::with_str;
 use kavach_kir::{RtOp, Shape, Type};
 use kavach_runtime_core::slices::{self, Part};
 
@@ -46,6 +47,9 @@ pub fn list_part(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 
         release(c);
         return list;
     }
+    if let Some(out) = flat_part(a, &part, code, line) {
+        return out;
+    }
     let item = item_type(a);
     let slots = items_of(a);
     let picked = slices::pick(&slots, &part).unwrap_or_else(|m| panic_with(m, line));
@@ -57,17 +61,62 @@ pub fn list_part(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 
 
 /// `s[a:b:step]` and `s[i]`. `a` is the text (owned), `b` the slice's
 /// words or the position.
-pub fn text_part(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
-    let s = str_of(a);
+/// A slice of a flat list, whose items are words in place (text, or
+/// records laid out flat): only the picked items' words are copied, and
+/// what they point to retained. Going through `items_of` made an object
+/// of every item of the whole list first: 8 slices of a million short
+/// strings took 350 ms, against 33 ms for records (Sakshi's S17).
+fn flat_part(a: i64, part: &Part, code: i64, line: i32) -> Option<i64> {
+    let ty = obj(a).ty();
+    let width = crate::flat::width(ty);
+    if width == 0 || crate::flat::width(type_of(code)) != width {
+        return None;
+    }
+    let n = crate::heap::list_len_items_pub(a);
+    let words = crate::heap::slots(a);
+    let mut out = Vec::new();
+    if part.step.unwrap_or(1) == 1 {
+        let (start, end, _) = part.bounds(n).unwrap_or_else(|m| panic_with(m, line));
+        let (start, end) = (start as usize, end.max(start) as usize);
+        out.extend_from_slice(&words[start * width..end * width]);
+    } else {
+        let at = part.positions(n).unwrap_or_else(|m| panic_with(m, line));
+        out.reserve(at.len() * width);
+        for i in at {
+            out.extend_from_slice(&words[i * width..(i + 1) * width]);
+        }
+    }
+    if crate::flat::is_text(ty) {
+        crate::text_items::retain_all(&out);
+    } else {
+        let item = crate::flat::item_type(ty);
+        for (j, w) in out.iter().enumerate() {
+            if crate::flat::field_type(item, j % width).is_ref() {
+                crate::heap::retain(*w as i64);
+            }
+        }
+    }
     release(a);
+    Some(crate::heap::alloc_words(
+        type_of(code),
+        crate::flat::fit(out, width),
+    ))
+}
+
+pub fn text_part(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
+    // The text is read in place, not copied first.
     if op == RtOp::StrAt {
-        return match slices::char_at(&s, i128::from(b)) {
+        let c = with_str(a, |s| slices::char_at(s, i128::from(b)));
+        release(a);
+        return match c {
             Ok(c) => c as i64,
             Err(m) => panic_with(&m, line),
         };
     }
     let part = part_of(b);
-    let t = slices::text(&s, &part).unwrap_or_else(|m| panic_with(m, line));
+    let t = with_str(a, |s| slices::text(s, &part));
+    release(a);
+    let t = t.unwrap_or_else(|m| panic_with(m, line));
     new_str(t, type_of(code))
 }
 

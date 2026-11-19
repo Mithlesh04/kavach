@@ -1,0 +1,38 @@
+// Rule: A slice of a list of text or records keeps its items, short or long, after the list it came from is gone or changed.
+// Spec: 2.19
+// expect output: ["a word longer than fifteen bytes", "another quite long piece of text"]
+// expect output: b: 2
+// expect output: the third line, also long enough: 3
+// expect output: ["a word longer than fifteen bytes", "x"]
+// expect output: ["x", "changed"]
+
+type Line {
+    name: String
+    line: Int
+}
+
+fn some_words() -> [String] {
+    const words = ["short", "a word longer than fifteen bytes", "mid", "another quite long piece of text"]
+    words[1::2]
+}
+
+fn last_lines() -> [Line] {
+    const lines = [
+        Line(name: "the first line, long enough to sit apart", line: 1),
+        Line(name: "b", line: 2),
+        Line(name: "the third line, also long enough", line: 3),
+    ]
+    lines[#2:]
+}
+
+fn main() {
+    print(some_words())
+    for l in last_lines() {
+        print(`{l.name}: {l.line}`)
+    }
+    let words = ["x", "a word longer than fifteen bytes"]
+    const kept = words[::-1]
+    words[1] = "changed"
+    print(kept)
+    print(words)
+}
