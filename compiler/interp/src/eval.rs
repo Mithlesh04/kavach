@@ -227,7 +227,7 @@ impl<'a> Interp<'a> {
                 false,
             )),
             ExprKind::DotLambda(body) => Ok(self.closure(Vec::new(), body, true)),
-            ExprKind::Try { expr, context } => match self.eval(expr) {
+            ExprKind::Try { expr, context } => match self.eval_checked(expr) {
                 Err(Flow::Fail(err)) => {
                     let err = match context {
                         Some(c) => {
@@ -247,7 +247,7 @@ impl<'a> Interp<'a> {
                 handler,
             } => {
                 self.leaving = false;
-                let caught = self.eval(expr);
+                let caught = self.eval_checked(expr);
                 match caught {
                     // One raised by `fail` or `try` in an argument leaves the
                     // function instead (spec 5.3).

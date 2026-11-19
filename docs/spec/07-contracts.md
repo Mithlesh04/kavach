@@ -69,6 +69,25 @@ fn fill(n: Int) -> Track {
 }
 ```
 
+**Making a value whose invariant may not hold.** Data read from outside (a binary file, a chip file format) may break a type's invariant, and that is no bug in the program. `try T(...)` and `T(...) catch e => ...` make the value, and when an invariant doesn't hold they fail with an `InvariantError` instead of panicking. Its text names the type and the invariant. Without `try` or `catch`, a broken invariant is a panic, as before. Only the value made there is checked this way: a value made inside its fields still panics.
+
+```kavach
+type Dump {
+    count: Int
+
+    invariant count >= 0
+}
+
+fn read(n: Int) -> Dump ! InvariantError {
+    try Dump(count: n)
+}
+
+const d = Dump(count: -1) catch e => {
+    print(e)                          // invariant of `Dump` failed: count >= 0
+    Dump(count: 0)
+}
+```
+
 ## 7.4 How contracts are checked
 
 | Build | Checked |

@@ -269,6 +269,7 @@ impl<'a> Interp<'a> {
             gen_rng: crate::testing::values::Rng::new(0),
             random: self.random.as_ref().map(|r| r.fork(id as u64)),
             inout_out: Vec::new(),
+            checked_ctor: None,
             next_generics: None,
             leaving: false,
             fake: self.fake.clone(),

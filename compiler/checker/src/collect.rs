@@ -303,9 +303,12 @@ impl Checker<'_> {
             return;
         };
         if let TypeBody::Record(r) = &t.body
-            && r.invariants.iter().any(crate::costly_invariants::walks)
+            && !r.invariants.is_empty()
         {
-            self.costly_invariants.insert(def);
+            self.invariant_records.insert(def);
+            if r.invariants.iter().any(crate::costly_invariants::walks) {
+                self.costly_invariants.insert(def);
+            }
         }
         let generics: Vec<_> = t
             .generics

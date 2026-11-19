@@ -1,0 +1,34 @@
+// Rule: `try T(...)` and `T(...) catch e => ...` make a value whose invariant may not hold: a broken invariant fails with an `InvariantError` naming the type and the first invariant broken, instead of panicking.
+// Spec: 7.3
+// expect output: Dump(count: 3, names: [])
+// expect output: invariant of `Dump` failed: count >= 0
+// expect output: 0
+// expect output: caught: invariant of `Dump` failed: names.len() <= 2
+// expect output: ["x"]
+
+type Dump {
+    count: Int
+    names: [String]
+
+    invariant count >= 0
+    invariant names.len() <= 2
+}
+
+fn read(n: Int) -> Dump ! InvariantError {
+    try Dump(count: n, names: [])
+}
+
+fn main() {
+    print(read(3) catch _ => Dump(count: 0, names: []))
+    const bad = read(0 - 1) catch e => {
+        print(e)
+        Dump(count: 0, names: [])
+    }
+    print(bad.count)
+    const many = Dump(count: 1, names: ["a", "b", "c"]) catch e => {
+        print(`caught: {e}`)
+        Dump(count: 1, names: [])
+    }
+    const ok = Dump(count: many.count + 1, names: ["x"]) catch _ => Dump(count: 0, names: [])
+    print(ok.names)
+}

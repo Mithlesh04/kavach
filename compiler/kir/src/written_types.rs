@@ -39,7 +39,12 @@ impl Lowerer<'_> {
                     Some(DefKind::Builtin)
                         if matches!(
                             first.name.as_str(),
-                            "Error" | "ParseError" | "CliError" | "RegexError" | "LibraryError"
+                            "Error"
+                                | "ParseError"
+                                | "InvariantError"
+                                | "CliError"
+                                | "RegexError"
+                                | "LibraryError"
                         ) =>
                     {
                         self.error_type()

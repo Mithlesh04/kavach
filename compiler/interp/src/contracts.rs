@@ -46,6 +46,13 @@ impl<'a> Interp<'a> {
             .iter()
             .try_for_each(|inv| match self.eval(inv) {
                 Ok(Value::Bool(true)) => Ok(()),
+                // Made under `try` or `catch`: an error (spec 7.3).
+                Ok(_) if self.checked_ctor == Some(span) => {
+                    let name = &self.c.resolution.defs[*def].name;
+                    let text = self.text(inv.span);
+                    let why = format!("invariant of `{name}` failed: {text}");
+                    Err(Flow::Fail(Value::BuiltinError(why.into())))
+                }
                 Ok(_) => Err(self.panic(
                     format!("contract failed: invariant {}", self.text(inv.span)),
                     span,
@@ -79,5 +86,26 @@ impl<'a> Interp<'a> {
         }
         self.invariant_fields.pop();
         Ok(broken)
+    }
+}
+
+impl<'a> Interp<'a> {
+    /// `expr` under `try` or `catch`: a record it makes (spec 7.3) fails
+    /// on a broken invariant instead of panicking, when the checker typed
+    /// it as a call that can fail.
+    pub(crate) fn eval_checked(&mut self, expr: &'a kavach_ast::Expr) -> Eval<'a> {
+        let failing = matches!(
+            self.c.expr_types.get(&(expr.span.start, expr.span.end)),
+            Some(kavach_checker::Ty::Result(..))
+        );
+        let ctor = matches!(&expr.kind, kavach_ast::ExprKind::Call { callee, .. }
+            if matches!(&callee.kind, kavach_ast::ExprKind::Name(_)));
+        if !(failing && ctor) {
+            return self.eval(expr);
+        }
+        let outer = self.checked_ctor.replace(expr.span);
+        let made = self.eval(expr);
+        self.checked_ctor = outer;
+        made
     }
 }

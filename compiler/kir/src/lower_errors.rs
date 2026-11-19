@@ -50,7 +50,16 @@ impl<'a> Lowerer<'a> {
         }
         self.inout_pending = None;
         let outer = self.pending_error.take();
-        let lowered = self.expr(e)?;
+        // A record made here fails on a broken invariant (spec 7.3).
+        let ctor = matches!(&e.kind, ast::ExprKind::Call { callee, .. }
+            if matches!(&callee.kind, ast::ExprKind::Name(_)));
+        let outer_ctor = std::mem::replace(
+            &mut self.checked_ctor,
+            ctor.then_some((e.span.start, e.span.end)),
+        );
+        let lowered = self.expr(e);
+        self.checked_ctor = outer_ctor;
+        let lowered = lowered?;
         // A built-in loop given a function that can fail: its own error.
         if let Some(error) = std::mem::replace(&mut self.pending_error, outer) {
             let value = self.new_local(lowered.ty);

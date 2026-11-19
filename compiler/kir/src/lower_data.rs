@@ -72,7 +72,58 @@ impl<'a> Lowerer<'a> {
         if variant.is_some() {
             return Ok(record);
         }
+        // Made under `try` or `catch`: a broken invariant fails (7.3).
+        if self.checked_ctor == Some((span.start, span.end)) {
+            return self.with_invariant_error(record);
+        }
         self.with_invariants(record)
+    }
+
+    /// `value` made under `try` or `catch` (spec 7.3): an invariant that
+    /// doesn't hold sets the error `outcome` reads (`pending_error`) to
+    /// its text, the first one kept, instead of panicking.
+    fn with_invariant_error(&mut self, value: ir::Expr) -> Lowered<ir::Expr> {
+        let Some(def) = self.shapes.def_of(value.ty) else {
+            return Ok(value);
+        };
+        let invariants = self.invariants_of(value.ty);
+        let name = self.c.resolution.defs[def].name.clone();
+        let (ty, line) = (value.ty, value.line);
+        let at = |kind, ty| ir::Expr { kind, ty, line };
+        let (err_ty, text_ty) = (self.error_type(), self.str_type());
+        let (tmp, error) = (self.new_local(ty), self.new_local(err_ty));
+        let mut stmts = vec![Stmt::Let(tmp, value), Stmt::Let(error, at(K::None, err_ty))];
+        let outer = self.invariant_of.replace((tmp, ty));
+        for inv in invariants {
+            let cond = match self.expr(inv) {
+                Ok(c) => c,
+                Err(e) => {
+                    self.invariant_of = outer;
+                    return Err(e);
+                }
+            };
+            // The text stays text: an error shows as its own value.
+            let text = format!("invariant of `{name}` failed: {}", self.text(inv.span));
+            let set = at(
+                K::Assign(error, Box::new(at(K::Str(text), text_ty))),
+                Type::Unit,
+            );
+            let broken = at(K::Unary(ir::UnOp::Not, Box::new(cond)), Type::Bool);
+            let first = self.succeeded(error, line);
+            let both = at(K::And(Box::new(broken), Box::new(first)), Type::Bool);
+            let then = Block {
+                stmts: vec![Stmt::Expr(set)],
+                value: None,
+            };
+            stmts.push(Stmt::Expr(at(
+                K::If(Box::new(both), then, Block::default()),
+                Type::Unit,
+            )));
+        }
+        self.invariant_of = outer;
+        self.pending_error = Some(error);
+        let value = Some(Box::new(self.local_expr(tmp, line)));
+        Ok(at(K::Block(Block { stmts, value }), ty))
     }
     /// Default `d` of a field of type `def`, made as type `ty`: a default
     /// of generic type (`items: [Item<S>] = []`) takes `ty`'s arguments.

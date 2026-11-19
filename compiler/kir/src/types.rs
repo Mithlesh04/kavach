@@ -236,9 +236,11 @@ impl Lowerer<'_> {
             }
             // A call that can fail: its success value (spec 5).
             Ty::Result(ok, _) => self.kir_type(ok, span)?,
-            Ty::Builtin("Error" | "ParseError" | "CliError" | "RegexError" | "LibraryError", _) => {
-                self.error_type()
-            }
+            Ty::Builtin(
+                "Error" | "ParseError" | "InvariantError" | "CliError" | "RegexError"
+                | "LibraryError",
+                _,
+            ) => self.error_type(),
             Ty::Builtin("Regex", _) => self.shapes.intern(Shape::Regex),
             // Text in native code for now (`lower_views.rs`).
             Ty::Builtin("StrView" | "TextBuilder", _) => self.str_type(),

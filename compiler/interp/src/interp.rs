@@ -99,6 +99,9 @@ pub(crate) struct Interp<'a> {
     /// The `inout` parameters of the call that just returned, for its
     /// caller to write back (spec 3.9): name, position, last value.
     pub(crate) inout_out: Vec<(&'a str, usize, Value<'a>)>,
+    /// The record made under `try` or `catch` right now, by its call's
+    /// span: its broken invariant fails instead of panicking (spec 7.3).
+    pub(crate) checked_ctor: Option<Span>,
     /// The type arguments for the generic function about to be called.
     pub(crate) next_generics: Option<HashMap<DefId, kavach_checker::Ty>>,
     /// Whether the failure travelling now was raised by `fail` or `try` in
@@ -185,6 +188,7 @@ impl<'a> Interp<'a> {
             gen_rng: crate::testing::values::Rng::new(0),
             random: None,
             inout_out: Vec::new(),
+            checked_ctor: None,
             next_generics: None,
             leaving: false,
             fake: None,

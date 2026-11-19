@@ -1,0 +1,21 @@
+// Rule: under `try` or `catch`, only the value made there fails on a broken invariant; a value made inside its fields still panics.
+// Spec: 7.3
+// expect panic: contract failed: invariant count >= 0
+
+type Dump {
+    count: Int
+
+    invariant count >= 0
+}
+
+type Pair {
+    left: Dump
+
+    invariant left.count < 100
+}
+
+fn main() {
+    const n = 0 - 1
+    const p = Pair(left: Dump(count: n)) catch _ => Pair(left: Dump(count: 0))
+    print(p)
+}

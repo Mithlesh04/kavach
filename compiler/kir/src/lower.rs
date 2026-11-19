@@ -47,6 +47,9 @@ pub(crate) struct Lowerer<'a> {
     /// The error of a built-in loop just lowered, given a function that
     /// can fail (`lower_fn_errors.rs`).
     pub(crate) pending_error: Option<Local>,
+    /// The record made under `try` or `catch` now, by its call's span: its
+    /// invariants set an error instead of panicking (spec 7.3).
+    pub(crate) checked_ctor: Option<(u32, u32)>,
     pub(crate) shapes: Shapes,
     /// Locals of the function being lowered.
     pub(crate) locals: Vec<Type>,
@@ -158,6 +161,7 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
         wrappers: HashMap::new(),
         adapters: HashMap::new(),
         pending_error: None,
+        checked_ctor: None,
         generic_fns: HashMap::new(),
         generic_methods: HashMap::new(),
         ext: Default::default(),

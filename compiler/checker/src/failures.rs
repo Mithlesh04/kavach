@@ -69,7 +69,8 @@ impl Checker<'_> {
         if let Some(c) = context {
             self.check_expect(c, &STRING);
         }
-        let (ok, err) = match self.infer(expr, None) {
+        let checked = self.checked_construction(expr, None);
+        let (ok, err) = match checked.unwrap_or_else(|| self.infer(expr, None)) {
             Ty::Result(ok, err) => (ok, err),
             Ty::Error => return Ty::Error,
             t => {
@@ -156,7 +157,8 @@ impl Checker<'_> {
         handler: &Expr,
         expected: Option<&Ty>,
     ) -> Ty {
-        match self.infer(expr, expected) {
+        let checked = self.checked_construction(expr, expected);
+        match checked.unwrap_or_else(|| self.infer(expr, expected)) {
             Ty::Result(ok, err) => {
                 if let Some(def) = binding.and_then(|b| self.decl.get(&b.span.start).copied()) {
                     self.locals.insert(def, *err);
@@ -172,5 +174,29 @@ impl Checker<'_> {
                 t
             }
         }
+    }
+
+    /// `T(...)` under `try` or `catch`, for a record `T` with an invariant
+    /// (spec 7.3): its type as a call that fails with an `InvariantError`
+    /// when an invariant doesn't hold, recorded so code generation sees
+    /// it; `None` for anything else.
+    fn checked_construction(&mut self, expr: &Expr, expected: Option<&Ty>) -> Option<Ty> {
+        let ExprKind::Call { callee, .. } = &expr.kind else {
+            return None;
+        };
+        let ExprKind::Name(id) = &callee.kind else {
+            return None;
+        };
+        let def = *self.res.uses.get(&id.span.start)?;
+        if !self.invariant_records.contains(&def) {
+            return None;
+        }
+        let made = self.infer(expr, expected);
+        let failing = Ty::Result(
+            Box::new(made),
+            Box::new(Ty::Builtin("InvariantError", Vec::new())),
+        );
+        self.expr_types.push((expr.span, failing.clone()));
+        Some(failing)
     }
 }
