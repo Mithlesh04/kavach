@@ -17,6 +17,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | File | Job |
 |---|---|
 | `src/ir.rs` | The KIR types, including heap shapes (`Shape`) |
+| `src/list_layout.rs` | How a list lays out its items: flat records and tuples, packed small numbers, text in two words |
 | `src/c_abi.rs` | How this machine's C passes a `struct` by value (Windows x64, x86-64 System V), and the descriptor the backends follow; `src/c_abi/tests.rs` checks the ABI documents' examples |
 | `src/types.rs` | KIR types for checker and written types; the shape table |
 | `src/written_types.rs` | The KIR type of a type written in the source |
@@ -48,6 +49,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/lower_lambda/scan.rs` | What a lambda's body reads and changes, so a lambda changes only copies |
 | `src/lower_lambda/called.rs` | Lambdas and functions called, not inlined: a named function, and a lambda with a `return` of its own (spec 3.3) |
 | `src/lower_generic.rs` | Generic functions: type arguments and instances |
+| `src/lower_sizes.rs` | Numbers in types (spec 2.9): limits from a type, `try List<Int, max: 2>(xs)`, `Ring<T, max: n>(…)`, number parameters |
 | `src/lower_numbers.rs` | Methods of numbers: `abs`, `min`, `max`, `clamp`, `div_floor`, `mod` (spec 14.2) |
 | `src/lower_std.rs` | The standard library: `std` modules, more methods, sets (spec 14) |
 | `src/lower_base64.rs` | `std.base64` (spec 14.20): its two ops, flags in place |

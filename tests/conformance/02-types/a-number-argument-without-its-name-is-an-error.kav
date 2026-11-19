@@ -1,0 +1,15 @@
+// Rule: A number argument is given with its name: without it, a compile error shows the named form.
+// Spec: 2.9
+// expect compile error
+
+type Grid<T, width: Int, height: Int> {
+    rows: [[T]<len: width>]<len: height>
+
+    fn at(self, x: Int, y: Int) -> T { self.rows[y][x] }
+    fn cells(self) -> Int { width * height }
+}
+
+fn main() {
+    const g = Grid<Float, 2, 3>(rows: [[0.0, 1.0], [2.0, 3.0], [4.0, 5.0]])     // error: write `width: 2, height: 3`
+    print(g.cells())
+}

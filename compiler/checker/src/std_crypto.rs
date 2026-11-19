@@ -6,7 +6,7 @@
 //! passwords, signatures and encryption, none needing a capability.
 
 use crate::checker::Checker;
-use crate::ty::{Prim, Ty};
+use crate::ty::{Prim, SizeKind, Ty};
 
 type Signature = (Vec<(String, Ty, bool)>, Ty);
 
@@ -28,9 +28,14 @@ impl Checker<'_> {
         let b = |names: &[&str]| -> Vec<(String, Ty, bool)> {
             names.iter().map(|n| p(n, &bytes)).collect()
         };
+        // A digest's length is in its type (spec 2.13): `Bytes<len: 32>`.
+        let digest =
+            |n: i64| Ty::Sized(Box::new(bytes.clone()), SizeKind::Len, Box::new(Ty::Num(n)));
         Some(match name {
-            "sha256" | "sha384" | "sha512" => (b(&["data"]), bytes.clone()),
-            "hmac_sha256" => (b(&["key", "data"]), bytes.clone()),
+            "sha256" => (b(&["data"]), digest(32)),
+            "sha384" => (b(&["data"]), digest(48)),
+            "sha512" => (b(&["data"]), digest(64)),
+            "hmac_sha256" => (b(&["key", "data"]), digest(32)),
             "equal" => (b(&["a", "b"]), boolean),
             "random_bytes" => (vec![p("n", &int)], bytes.clone()),
             "token" => (vec![], string),

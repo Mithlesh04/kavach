@@ -1,0 +1,26 @@
+// Rule: A list, dict or set with `max` in its type holds at most that many entries; `is_full()` says when; equal set values count once.
+// Spec: 2.2
+// expect output: [0.5, 1.5, 2.5]
+// expect output: true
+// expect output: {"asha": 32, "ravi": 27}
+// expect output: true
+// expect output: 1
+// expect output: false
+
+fn main() {
+    let recent: [Float]<max: 3> = [0.5]
+    recent.push(1.5)
+    recent.push(2.5)
+    print(recent)
+    print(recent.is_full())
+
+    let ages: {String: Int}<max: 2> = {"asha": 31}
+    ages["asha"] = 32
+    ages["ravi"] = 27
+    print(ages)
+    print(ages.is_full())
+
+    let seen: Set<Int, max: 2> = Set.of(7, 7)
+    print(seen.len())
+    print(seen.is_full())
+}

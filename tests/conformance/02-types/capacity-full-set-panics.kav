@@ -4,7 +4,8 @@
 // expect panic: the set is full (capacity 2)
 
 fn main() {
-    let s: Set<String> = Set.capacity(2, ["x", "y"])
+    let n = 2
+    let s: Set<String> = Set.capacity(n, ["x", "y"])
     s.add("x")
     print(s.len())
     s.add("z")

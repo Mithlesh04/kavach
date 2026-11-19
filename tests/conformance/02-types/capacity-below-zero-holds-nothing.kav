@@ -6,8 +6,9 @@
 // expect panic
 
 fn main() {
-    let m: {String: Int} = Dict.capacity(-7)
-    let s: Set<Int> = Set.capacity(-1)
+    let (seven, one) = (-7, -1)
+    let m: {String: Int} = Dict.capacity(seven)
+    let s: Set<Int> = Set.capacity(one)
     print(m.is_full())
     print(s.is_full())
     print(m.len() + s.len())

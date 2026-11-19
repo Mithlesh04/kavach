@@ -1,0 +1,19 @@
+// Rule: A type with a limit may leave out its item types, which are inferred as for `[]`.
+// Spec: 2.2
+// expect output: [1, 2]
+// expect output: true
+// expect output: {"a": 1}
+// expect output: 1
+
+fn main() {
+    let a: List<max: 2> = []
+    a.push(1)
+    a.push(2)
+    print(a)
+    print(a.is_full())
+    let d: Dict<max: 3> = {:}
+    d["a"] = 1
+    print(d)
+    let s: Set<max: 2> = Set.of(4)
+    print(s.len())
+}

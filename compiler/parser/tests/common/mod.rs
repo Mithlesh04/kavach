@@ -95,6 +95,11 @@ pub fn ty(t: &TypeExpr) -> String {
                 .unwrap_or_default();
             format!("fn({}){r}{e}{u}", list(params, ty))
         }
+        TypeKind::Num { name, value } => match name {
+            Some(n) => format!("{}:{}", n.name, expr(value)),
+            None => format!("(unnamed {})", expr(value)),
+        },
+        TypeKind::WithNums(base, nums) => format!("{}<{}>", ty(base), list(nums, ty)),
         TypeKind::Error => "ERR".to_string(),
     }
 }

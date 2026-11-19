@@ -32,6 +32,12 @@ impl<'a> Interp<'a> {
     /// The type arguments of the call `e` of generic function `f`.
     pub(crate) fn type_args(&self, f: &FnDecl, e: &Expr, args: &[Arg]) -> HashMap<DefId, Ty> {
         let mut out = HashMap::new();
+        // Number parameters: the checker settled them (spec 2.9).
+        if let Some(nums) = self.c.numbers.calls.get(&(e.span.start, e.span.end)) {
+            for (g, t) in nums {
+                out.insert(*g, self.concrete(t));
+            }
+        }
         let types = &self.c.expr_types;
         if let ExprKind::Call { generics, .. } = &e.kind {
             for (g, written) in f.generics.iter().zip(generics) {
@@ -131,6 +137,8 @@ impl<'a> Interp<'a> {
             }
         };
         match (&w.kind, actual) {
+            // `[T]<max: 2>`: the numbers are settled by the checker.
+            (TypeKind::WithNums(base, _), t) => self.bind(base, t, out),
             (TypeKind::Named { path, args }, t) => {
                 let res = &self.c.resolution;
                 let Some(&def) = res.uses.get(&path.segments[0].span.start) else {

@@ -7,6 +7,6 @@ fn total(xs: [Int]) -> Int {
 }
 
 fn main() {
-    const r: Ring<Int> = Ring.capacity(2, [1, 2])
+    const r = Ring<Int, max: 2>([1, 2])
     print(total(r))     // error: expected `[Int]`, found `Ring<Int>`
 }

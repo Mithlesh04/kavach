@@ -121,6 +121,8 @@ impl Checker<'_> {
             DefKind::Builtin if matches!(self.res.defs[def].name.as_str(), "count" | "tokens") => {
                 Ty::Prim(Prim::Int)
             }
+            // A number parameter is a constant `Int` (spec 2.9).
+            DefKind::GenericParam if self.is_num_param(def) => Ty::Prim(Prim::Int),
             DefKind::Builtin | DefKind::Import | DefKind::GenericParam => Ty::Error,
             // A tag goes right before its text (spec 10.15).
             DefKind::Literal => {

@@ -133,6 +133,18 @@ pub struct GenericParam {
     pub name: Ident,
     /// `T: Comparable` bounds.
     pub bounds: Vec<TypeExpr>,
+    /// `size: Int = 64`: a number parameter's default (spec 2.9).
+    pub default: Option<Expr>,
+}
+
+impl GenericParam {
+    /// Whether this is a number parameter, `width: Int` (spec 2.9),
+    /// rather than a type parameter.
+    pub fn is_number(&self) -> bool {
+        matches!(self.bounds.as_slice(), [b] if matches!(&b.kind,
+            crate::TypeKind::Named { path, args }
+                if args.is_empty() && path.segments.len() == 1 && path.segments[0].name == "Int"))
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]

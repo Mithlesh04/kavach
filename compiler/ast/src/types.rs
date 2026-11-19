@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
-//! Types as written in source: `Int`, `[Order]`, `[String: Int]`, `User?`.
+//! Types as written in source: `Int`, `[Order]`, `{String: Int}`, `User?`,
+//! `[Float]<len: 3>`.
 
 use crate::{Ident, Path, Span};
 
@@ -36,6 +37,15 @@ pub enum TypeKind {
         /// limit, `Some([])` is never written.
         uses: Option<Vec<crate::Path>>,
     },
+    /// `max: 2` in `<…>`: a number argument (spec 2.9). A number written
+    /// without its name has `name: None`, a compile error that shows it.
+    Num {
+        name: Option<Ident>,
+        value: Box<crate::Expr>,
+    },
+    /// `[Int]<max: 2>`, `{K: V}<max: 100>`: numbers after a list's or a
+    /// dict's type (spec 2.2); each is a `Num`.
+    WithNums(Box<TypeExpr>, Vec<TypeExpr>),
     /// Stands in for a type that had a syntax error.
     Error,
 }

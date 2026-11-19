@@ -1,0 +1,9 @@
+// Rule: A number argument is a literal, a constant worked out while compiling, or a number parameter; a number known only while running is a compile error.
+// Spec: 2.9
+// expect compile error
+
+fn main() {
+    let n = 2
+    const xs: [Int]<max: n> = []     // error: `n` is known only while running
+    print(xs)
+}

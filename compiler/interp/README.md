@@ -24,6 +24,7 @@ Not supported yet: agents, capabilities, `ask` and `unsafe` (Phase 2 and the nat
 | `src/net.rs` | `std.net` (spec 14.10): TCP, with the code in `runtime/core` |
 | `src/fakes.rs` | The fakes of `Fs` and `Clock` in generated tests (spec 11.5): files in memory, a clock that jumps |
 | `src/generics.rs` | The type arguments of a generic function's call, for what needs the type at run time (`json.decode<T>`) |
+| `src/sizes.rs` | Numbers in types (spec 2.9) while running: limits from a type, `try List<Int, max: 2>(xs)`'s `SizeError`, number parameters' values |
 | `src/fake_net.rs` | The fake network of generated tests (spec 11.5): connections that fail, or reach a fake server answering HTTP with HTTP |
 | `src/files.rs` | Files read as a `for` loop goes: `fs.lines`, `fs.chunks` (spec 14.3), from disk or from a generated test's memory |
 | `src/tasks.rs` | Tasks (spec 9): each on its own thread, taking turns through the scheduler in `runtime/core` |

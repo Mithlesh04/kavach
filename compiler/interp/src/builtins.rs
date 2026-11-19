@@ -15,7 +15,11 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 impl<'a> Interp<'a> {
-    pub(crate) fn builtin_fn(&mut self, name: &str, args: Args<'a>, span: Span) -> Eval<'a> {
+    pub(crate) fn builtin_fn(&mut self, name: &str, mut args: Args<'a>, span: Span) -> Eval<'a> {
+        // `try List<Int, max: 2>(xs)`, `Ring<T, max: n>(items)` (2.9).
+        if let Some(made) = self.sized_builtin(name, &mut args, span) {
+            return made;
+        }
         if name == "Bytes" {
             let list = args.into_iter().next().map_or(Value::Unit, |(_, v)| v);
             return Ok(self.bytes_of(list));

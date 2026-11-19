@@ -26,6 +26,10 @@ impl Checker<'_> {
     /// `t`), as it would in `x op v`. A map item (`ages[name] += 1`) is
     /// its value.
     pub(crate) fn check_compound(&mut self, op: BinaryOp, target: &Expr, t: &Ty) {
+        // `v += xs` on a list of fixed length (spec 2.2).
+        if op == BinaryOp::Add {
+            self.check_fixed_change(t, "+=", target.span);
+        }
         let t = match self.inf.resolve(t) {
             Ty::Optional(inner) => *inner,
             other => other,

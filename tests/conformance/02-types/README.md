@@ -45,6 +45,37 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.2 | [ring-keeps-the-last-n.kav](ring-keeps-the-last-n.kav) | `Ring.capacity(n)` keeps the last `n` items pushed, oldest first; first items beyond `n` keep the last `n`. | runs |
 | 2.2 | [ring-holds-records.kav](ring-holds-records.kav) | A ring holds records and text, and may be a record field. | runs |
 | 2.2 | [ring-is-not-a-list.kav](ring-is-not-a-list.kav) | `Ring<T>` is not a list: a function that takes `[T]` is not given one. | compile error |
+| 2.2 | [a-limit-in-the-type-holds-at-most-max.kav](a-limit-in-the-type-holds-at-most-max.kav) | `[T]<max: n>`, `{K: V}<max: n>` and `Set<T, max: n>` hold at most `n` entries; `is_full()` says when; equal set values count once. | runs |
+| 2.2 | [a-push-past-a-limit-in-the-type-panics.kav](a-push-past-a-limit-in-the-type-panics.kav) | A `push` past the `max` in a list's type panics. | panic |
+| 2.2 | [a-literal-longer-than-max-is-an-error.kav](a-literal-longer-than-max-is-an-error.kav) | A literal with more entries than the `max` in its type is a compile error. | compile error |
+| 2.2 | [a-limit-may-leave-out-item-types.kav](a-limit-may-leave-out-item-types.kav) | `List<max: n>`, `Dict<max: n>` and `Set<max: n>` leave out their item types, which are inferred. | runs |
+| 2.2 | [a-limit-past-the-largest-is-an-error.kav](a-limit-past-the-largest-is-an-error.kav) | A limit in a type is from 0 to 4,294,967,294. | compile error |
+| 2.2 | [a-limit-goes-after-the-list-type.kav](a-limit-goes-after-the-list-type.kav) | `[Int, max: 2]` is a compile error that shows `[Int]<max: 2>`. | compile error |
+| 2.9 | [a-number-in-a-type-has-a-name.kav](a-number-in-a-type-has-a-name.kav) | A number in a type without its name is a compile error that shows the name. | compile error |
+| 2.2 | [a-fixed-length-list-has-no-push.kav](a-fixed-length-list-has-no-push.kav) | A list of fixed length (`len`) can't `push`, `pop`, `remove` or `+=`. | compile error |
+| 2.2 | [a-fixed-length-index-past-the-end-is-an-error.kav](a-fixed-length-index-past-the-end-is-an-error.kav) | An index written as a number past a list's `len` is a compile error. | compile error |
+| 2.2 | [a-fixed-length-literal-has-len-items.kav](a-fixed-length-literal-has-len-items.kav) | A literal given for `[T]<len: n>` must have exactly `n` items. | compile error |
+| 2.2 | [a-plain-list-becomes-limited-only-through-try.kav](a-plain-list-becomes-limited-only-through-try.kav) | A plain list given where a limited one is expected is a compile error: it takes `try`. | compile error |
+| 2.9 | [a-conversion-into-a-limit-needs-try.kav](a-conversion-into-a-limit-needs-try.kav) | `List<Int, max: 2>(xs)` without `try` or `catch` is a compile error. | compile error |
+| 2.9 | [try-into-a-limit-fails-with-a-size-error.kav](try-into-a-limit-fails-with-a-size-error.kav) | `try List<Int, max: 2>(xs)` fails with a `SizeError` when `xs` doesn't fit; one that fits keeps the limit. | runs |
+| 2.2 | [a-limited-list-fits-where-a-plain-one-is-expected.kav](a-limited-list-fits-where-a-plain-one-is-expected.kav) | A list with a limit may be given where a plain list is expected, and keeps its limit. | runs |
+| 2.9 | [two-numbers-make-two-types.kav](two-numbers-make-two-types.kav) | A type given where the same type with other numbers is expected is a compile error. | compile error |
+| 2.2 | [capacity-with-a-known-number-is-an-error.kav](capacity-with-a-known-number-is-an-error.kav) | `List.capacity(5)` with a number known while compiling is a compile error naming `List<max: 5>`. | compile error |
+| 2.2 | [a-ring-in-its-type-keeps-the-last-n.kav](a-ring-in-its-type-keeps-the-last-n.kav) | `Ring<T, max: n>` keeps the last `n` items; `Ring()` takes its size from its type, and `Ring<T, max: n>(items)` keeps the last `n` of them. | runs |
+| 2.9 | [a-type-takes-number-parameters.kav](a-type-takes-number-parameters.kav) | A program's own type may take numbers, named after its types; inside, a number parameter is a constant `Int`. | runs |
+| 2.9 | [number-arguments-are-named-in-any-order.kav](number-arguments-are-named-in-any-order.kav) | Number arguments go by name, in any order: the names count, not the order. | runs |
+| 2.9 | [a-number-argument-without-its-name-is-an-error.kav](a-number-argument-without-its-name-is-an-error.kav) | `Grid<Float, 2, 3>` is a compile error that shows `width: 2, height: 3`. | compile error |
+| 2.9 | [a-type-argument-with-a-name-is-an-error.kav](a-type-argument-with-a-name-is-an-error.kav) | A type argument written with a name is a compile error. | compile error |
+| 2.9 | [a-missing-number-argument-is-an-error.kav](a-missing-number-argument-is-an-error.kav) | A number parameter with no default must be given where the type is written. | compile error |
+| 2.9 | [a-number-parameter-may-have-a-default.kav](a-number-parameter-may-have-a-default.kav) | A number parameter may have a default, used when it isn't given. | runs |
+| 2.9 | [a-number-argument-known-only-while-running-is-an-error.kav](a-number-argument-known-only-while-running-is-an-error.kav) | A number argument is a literal, a constant or a number parameter; a variable is a compile error. | compile error |
+| 2.9 | [a-number-argument-may-be-a-constant.kav](a-number-argument-may-be-a-constant.kav) | A constant worked out while compiling may be a number argument. | runs |
+| 2.9 | [a-functions-number-parameter-is-worked-out.kav](a-functions-number-parameter-is-worked-out.kav) | A function's number parameter is worked out from its arguments, and is a constant inside. | runs |
+| 2.9 | [a-functions-number-parameter-has-one-value.kav](a-functions-number-parameter-has-one-value.kav) | Arguments that give a number parameter two values are a compile error. | compile error |
+| 2.9 | [a-functions-number-parameter-written-at-the-call.kav](a-functions-number-parameter-written-at-the-call.kav) | A number parameter nothing shows is written at the call, with its name. | runs |
+| 2.13, 14.19 | [fixed-bytes-index-past-the-end-is-an-error.kav](fixed-bytes-index-past-the-end-is-an-error.kav) | `crypto.sha256` gives a `Bytes<len: 32>`; an index written as a number past it is a compile error. | compile error |
+| 2.13 | [fixed-bytes-fit-where-bytes-are-expected.kav](fixed-bytes-fit-where-bytes-are-expected.kav) | A `Bytes<len: n>` may go where `Bytes` is expected; plain `Bytes` become fixed only through `try` or `catch`. | runs |
+| 2.13 | [bytes-of-a-list-literal-have-its-length.kav](bytes-of-a-list-literal-have-its-length.kav) | `Bytes([…])` of a list literal of `n` numbers is a `Bytes<len: n>`. | compile error |
 | 2.2 | [small-signed-lists-keep-their-sign.kav](small-signed-lists-keep-their-sign.kav) | A list of `Int8` holds negative numbers, which print, compare and sort as numbers. | runs |
 | 2.2 | [small-number-lists-keep-every-value.kav](small-number-lists-keep-every-value.kav) | A list of 16- or 32-bit numbers holds every value of its item type, which it gives back, sorts and copies unchanged. | runs |
 | 2.2 | [plus-joins-two-lists.kav](plus-joins-two-lists.kav) | `xs + ys` is a new list, the items of `xs` then those of `ys`; neither changes. | runs |

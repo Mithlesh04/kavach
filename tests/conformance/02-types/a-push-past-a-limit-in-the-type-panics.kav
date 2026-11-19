@@ -1,0 +1,11 @@
+// Rule: A `push` past the `max` in a list's type panics.
+// Spec: 2.2
+// expect output: true
+// expect panic
+
+fn main() {
+    let recent: List<Float, max: 2> = [0.5, 1.5]
+    print(recent.is_full())
+    recent.push(2.5)
+    print(recent)
+}

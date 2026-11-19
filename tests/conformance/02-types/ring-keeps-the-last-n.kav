@@ -13,7 +13,8 @@
 // expect output: [2.0, 3.0, 4.0]
 
 fn main() {
-    let recent: Ring<Float> = Ring.capacity(3)
+    let (zero, two, three) = (0, 2, 3)
+    let recent: Ring<Float> = Ring.capacity(three)
     for t in [1.0, 2.0, 3.0, 4.0] {
         recent.push(t)
     }
@@ -28,14 +29,14 @@ fn main() {
     }
     print(shown)
 
-    let kept = Ring.capacity(2, ["a", "b", "c"])
+    let kept = Ring.capacity(two, ["a", "b", "c"])
     print(kept)
-    let flags: Ring<Bool> = Ring.capacity(3, [true, true])
+    let flags: Ring<Bool> = Ring.capacity(three, [true, true])
     flags.push(false)
     flags.push(true)
     flags.push(true)
     print(flags)
-    let empty: Ring<Int> = Ring.capacity(0)
+    let empty: Ring<Int> = Ring.capacity(zero)
     empty.push(1)
     print(empty.len())
 

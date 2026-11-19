@@ -31,11 +31,15 @@ impl<'a> Lowerer<'a> {
         let mut subst = HashMap::new();
         if let ast::ExprKind::Call { generics, .. } = &e.kind {
             for (g, written) in f.generics.iter().zip(generics) {
+                if matches!(written.kind, TypeKind::Num { .. }) {
+                    continue;
+                }
                 if let Some(&p) = self.decl.get(&g.name.span.start) {
                     subst.insert(p, self.written_type(written)?);
                 }
             }
         }
+        self.call_numbers(span, &mut subst)?;
         let params = f.params.iter().filter_map(|p| p.ty.as_ref());
         for (value, written) in values.iter().zip(params.clone()) {
             self.infer_args(written, value.ty, &mut subst);
@@ -188,11 +192,15 @@ impl<'a> Lowerer<'a> {
         // The method's own type arguments written at the call (`get<Row>()`).
         if let ast::ExprKind::Call { generics, .. } = &call.kind {
             for (g, written) in f.generics.iter().zip(generics) {
+                if matches!(written.kind, TypeKind::Num { .. }) {
+                    continue;
+                }
                 if let Some(&p) = self.decl.get(&g.name.span.start) {
                     subst.insert(p, self.written_type(written)?);
                 }
             }
         }
+        self.call_numbers(span, &mut subst)?;
         let values = self.argument_values(f, args, span)?;
         let params = f.params.iter().filter_map(|p| p.ty.as_ref());
         for (value, written) in values.iter().zip(params.clone()) {
@@ -294,6 +302,10 @@ impl<'a> Lowerer<'a> {
         out: &mut HashMap<DefId, Type>,
     ) {
         let shape = self.shapes.shape(ty).cloned();
+        // `[T]<max: 2>`: the numbers come from the checker (spec 2.9).
+        if let TypeKind::WithNums(base, _) = &written.kind {
+            return self.infer_args(base, ty, out);
+        }
         match (&written.kind, shape) {
             (TypeKind::Named { path, args }, shape) => {
                 let first = &path.segments[0];

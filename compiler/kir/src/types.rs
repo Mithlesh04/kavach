@@ -169,7 +169,7 @@ impl Lowerer<'_> {
             }
             // A ring is a list with a limit that drops its oldest item
             // when full (spec 2.2): the runtime's ring flag says so.
-            Ty::Builtin("Ring", args) if args.len() == 1 => {
+            Ty::Builtin("Ring", args) if !args.is_empty() => {
                 let item = self.kir_type(&args[0], span)?;
                 self.list_type(item)
             }
@@ -234,10 +234,12 @@ impl Lowerer<'_> {
                 let ret = self.kir_type(ret, span)?;
                 self.shapes.intern(Shape::Func(params, ret, err))
             }
+            // A number in a type (spec 2.9).
+            Ty::Num(n) => self.shapes.intern(Shape::Num(*n)),
             // A call that can fail: its success value (spec 5).
             Ty::Result(ok, _) => self.kir_type(ok, span)?,
             Ty::Builtin(
-                "Error" | "ParseError" | "InvariantError" | "CliError" | "RegexError"
+                "Error" | "ParseError" | "InvariantError" | "SizeError" | "CliError" | "RegexError"
                 | "LibraryError",
                 _,
             ) => self.error_type(),

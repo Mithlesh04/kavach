@@ -123,12 +123,30 @@ impl Checker<'_> {
         if sig.ret_secret {
             self.secret.insert((span.start, span.end));
         }
-        for (i, (g, _)) in sig.generics.iter().enumerate() {
-            let t = match explicit.get(i) {
-                Some(t) => self.lower(t, None),
-                None => self.fresh(),
-            };
-            subst.insert(*g, t);
+        let gdefs: Vec<DefId> = sig.generics.iter().map(|(g, _)| *g).collect();
+        let numbered = gdefs.iter().any(|g| self.is_num_param(*g))
+            || explicit
+                .iter()
+                .any(|w| matches!(w.kind, TypeKind::Num { .. }));
+        if numbered {
+            // Types in order, numbers by name (spec 2.9).
+            let given = self.explicit_generics(&gdefs, explicit, name);
+            for g in &gdefs {
+                let t = given.get(g).cloned().unwrap_or_else(|| self.fresh());
+                subst.insert(*g, t);
+            }
+            let nums = (gdefs.iter().filter(|g| self.is_num_param(**g)))
+                .map(|g| (*g, subst[g].clone()))
+                .collect();
+            self.sizes.calls.push((span, name.to_string(), nums));
+        } else {
+            for (i, (g, _)) in sig.generics.iter().enumerate() {
+                let t = match explicit.get(i) {
+                    Some(t) => self.lower(t, None),
+                    None => self.fresh(),
+                };
+                subst.insert(*g, t);
+            }
         }
         if let Some(def) = sig.def.filter(|_| !sig.generics.is_empty()) {
             let args = sig
@@ -390,6 +408,7 @@ impl Checker<'_> {
                 if matches!(type_name.as_str(), "Dict" | "Set" | "List" | "Ring")
                     && name.name == "capacity" =>
             {
+                self.check_known_capacity(&type_name, args);
                 let (made, first) = match type_name.as_str() {
                     "Dict" => {
                         let (k, v) = (Box::new(self.fresh()), Box::new(self.fresh()));

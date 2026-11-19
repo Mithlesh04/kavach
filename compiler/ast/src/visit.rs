@@ -93,6 +93,9 @@ pub fn walk_item<V: VisitMut + ?Sized>(v: &mut V, item: &mut Item) {
 fn walk_generics<V: VisitMut + ?Sized>(v: &mut V, generics: &mut [GenericParam]) {
     for g in generics {
         g.bounds.iter_mut().for_each(|b| v.type_expr(b));
+        if let Some(d) = &mut g.default {
+            v.expr(d);
+        }
     }
 }
 
@@ -232,6 +235,11 @@ pub fn walk_type<V: VisitMut + ?Sized>(v: &mut V, t: &mut TypeExpr) {
             for r in ret.iter_mut().chain(errors.iter_mut()) {
                 v.type_expr(r);
             }
+        }
+        TypeKind::Num { value, .. } => v.expr(value),
+        TypeKind::WithNums(base, nums) => {
+            v.type_expr(base);
+            nums.iter_mut().for_each(|x| v.type_expr(x));
         }
         TypeKind::Error => {}
     }

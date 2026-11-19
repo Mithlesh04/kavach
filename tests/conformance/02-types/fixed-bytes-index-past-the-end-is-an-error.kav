@@ -1,0 +1,11 @@
+// Rule: `crypto.sha256` gives `Bytes<len: 32>`, and an index written as a number past 31 is a compile error.
+// Spec: 2.13
+// expect compile error
+
+use std.crypto
+
+fn main() {
+    const k = crypto.sha256("asha".bytes())
+    print(k[31])
+    print(k[32])     // error: index 32 is past `Bytes<len: 32>`
+}

@@ -3,6 +3,7 @@
 // expect panic: `List.capacity(2)` was given 3 first entries
 
 fn main() {
-    const xs: [Int] = List.capacity(2, [1, 2, 3])
+    let n = 2
+    const xs: [Int] = List.capacity(n, [1, 2, 3])
     print(xs)
 }

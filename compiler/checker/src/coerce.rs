@@ -13,6 +13,10 @@ impl Checker<'_> {
     /// Whether a value of type `actual` fits where `expected` is needed.
     /// A `T` fits where a `T?` is expected (spec 2.7).
     pub(crate) fn coerce(&mut self, actual: &Ty, expected: &Ty) -> bool {
+        // Numbers in types (spec 2.9).
+        if let Some(fits) = self.coerce_sized(actual, expected) {
+            return fits;
+        }
         let (a, e) = (self.inf.shallow(actual), self.inf.shallow(expected));
         // A value of a type that implements the interface fits where the
         // interface is expected (spec 2.15).

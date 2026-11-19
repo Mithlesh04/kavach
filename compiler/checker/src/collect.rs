@@ -15,8 +15,10 @@ impl Checker<'_> {
     pub(crate) fn lower(&mut self, t: &TypeExpr, self_ty: Option<&Ty>) -> Ty {
         let boxed = |c: &mut Self, t: &TypeExpr| Box::new(c.lower(t, self_ty));
         match &t.kind {
-            TypeKind::Named { path, args } => {
-                let args: Vec<Ty> = args.iter().map(|a| self.lower(a, self_ty)).collect();
+            TypeKind::Named {
+                path,
+                args: written,
+            } => {
                 // `regex.Regex`, `fs.FsError`: the type is the last name.
                 let named = path.segments.last().unwrap_or(&path.segments[0]);
                 let Some(&def) = self.res.uses.get(&named.span.start) else {
@@ -25,12 +27,38 @@ impl Checker<'_> {
                 if let Some(t) = self.aliases.get(&def) {
                     return t.clone();
                 }
+                let kind = self.res.defs[def].kind;
+                if matches!(kind, DefKind::Type) {
+                    let args = self.adt_args(def, written, self_ty, t.span, false);
+                    return Ty::Adt(def, args);
+                }
+                // Numbers come after the types (spec 2.9).
+                let nums: Vec<&TypeExpr> = (written.iter())
+                    .filter(|a| matches!(a.kind, TypeKind::Num { .. }))
+                    .collect();
+                let args: Vec<Ty> = (written.iter())
+                    .filter(|a| !matches!(a.kind, TypeKind::Num { .. }))
+                    .map(|a| self.lower(a, self_ty))
+                    .collect();
                 let d = &self.res.defs[def];
                 match d.kind {
-                    DefKind::Type | DefKind::Interface | DefKind::Capability | DefKind::Agent => {
-                        Ty::Adt(def, args)
+                    DefKind::Interface | DefKind::Capability | DefKind::Agent => Ty::Adt(def, args),
+                    DefKind::GenericParam if self.is_num_param(def) => {
+                        self.error(t.span, format!("`{}` is a number, not a type: it goes in `<…>` with a name, as `[Float]<len: {0}>` (spec 2.9)", d.name));
+                        Ty::Error
                     }
                     DefKind::GenericParam => Ty::Param(def),
+                    DefKind::Builtin if !nums.is_empty() => {
+                        let name = d.name.clone();
+                        // `List<max: 2>`: the item types are inferred.
+                        let args = match (args.is_empty(), name.as_str()) {
+                            (true, "Dict") => vec![self.fresh(), self.fresh()],
+                            (true, _) => vec![self.fresh()],
+                            (false, _) => args,
+                        };
+                        let base = builtin_type(&name, args, self_ty);
+                        self.sized_type(&name, base, &nums)
+                    }
                     DefKind::Builtin => {
                         let t = builtin_type(&d.name, args, self_ty);
                         if let Ty::Builtin("Ptr", pointee) = &t
@@ -90,6 +118,26 @@ impl Checker<'_> {
                     Box::new(r),
                     limit,
                 )
+            }
+            // `[Int]<max: 2>`, `{K: V}<max: 100>` (spec 2.2).
+            TypeKind::WithNums(base, nums) => {
+                let what = match base.kind {
+                    TypeKind::Map(..) => "Dict",
+                    _ => "List",
+                };
+                let lowered = self.lower(base, self_ty);
+                let nums: Vec<&TypeExpr> = nums.iter().collect();
+                for n in &nums {
+                    if !matches!(n.kind, TypeKind::Num { .. }) {
+                        self.error(n.span, format!("a type in `<…>` after a {} type: write the item type inside it (spec 2.2)", if what == "Dict" { "dict's" } else { "list's" }));
+                    }
+                }
+                self.sized_type(what, lowered, &nums)
+            }
+            // A number alone where a type goes.
+            TypeKind::Num { .. } => {
+                self.error(t.span, "a number goes in `<…>` after the types (spec 2.9)");
+                Ty::Error
             }
             TypeKind::Error => Ty::Error,
         }
@@ -175,6 +223,7 @@ impl Checker<'_> {
     }
 
     pub(crate) fn collect(&mut self, file: &File) {
+        self.collect_numbers(file);
         // Aliases first, so a signature below can use one (spec 2.14).
         for item in &file.items {
             if let ItemKind::Type(t) = &item.kind
@@ -394,7 +443,7 @@ impl Checker<'_> {
     }
 }
 
-fn builtin_type(name: &str, args: Vec<Ty>, self_ty: Option<&Ty>) -> Ty {
+pub(crate) fn builtin_type(name: &str, args: Vec<Ty>, self_ty: Option<&Ty>) -> Ty {
     if let Some(p) = Prim::from_name(name) {
         return Ty::Prim(p);
     }

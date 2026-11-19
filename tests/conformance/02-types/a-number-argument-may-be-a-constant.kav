@@ -1,0 +1,10 @@
+// Rule: A constant worked out while compiling may be given as a number in a type.
+// Spec: 2.9
+// expect output: [1.0, 2.0, 3.0]
+
+const size = 3
+
+fn main() {
+    const v: [Float]<len: size> = [1.0, 2.0, 3.0]
+    print(v)
+}

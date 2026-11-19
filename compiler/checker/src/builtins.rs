@@ -40,6 +40,9 @@ impl Checker<'_> {
         {
             self.error(span, format!("a contract can't call `{name}`: it uses {cap}, and contracts must be pure (spec 7.5)"));
         }
+        if let Some(t) = self.sized_call(name, generics, args, span, expected) {
+            return t;
+        }
         let string = Ty::Prim(Prim::String);
         let one = |c: &mut Self, ty: Option<Ty>| -> Ty {
             if args.len() != 1 {
@@ -209,7 +212,7 @@ impl Checker<'_> {
             // `Bytes([104, 105])`: bytes from a list of `UInt8` (spec 2.13).
             "Bytes" => {
                 one(self, Some(Ty::List(Box::new(Ty::Prim(Prim::UInt8)))));
-                Ty::Prim(Prim::Bytes)
+                self.bytes_of_literal(args)
             }
             // `TextBuilder()`, `TextBuilder(text)` (spec 2.18).
             "TextBuilder" => {

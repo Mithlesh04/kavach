@@ -1,0 +1,11 @@
+// Rule: A conversion into a type with numbers can fail, so it needs `try` or `catch`.
+// Spec: 2.9
+// expect compile error
+
+fn pair(xs: [Int]) -> [Int]<max: 2> {
+    List<Int, max: 2>(xs)     // error: it fails with a `SizeError` when `xs` doesn't fit
+}
+
+fn main() {
+    print(pair([1]))
+}

@@ -42,6 +42,7 @@ pub const TYPES: &[&str] = &[
     "Error",
     "ParseError",
     "InvariantError",
+    "SizeError",
     "CliError",
     "LibraryError",
     "Regex",

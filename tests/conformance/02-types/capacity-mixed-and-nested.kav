@@ -1,4 +1,4 @@
-// Rule: A list, map or set with a limit may hold items of different kinds through a union, and other collections with limits of their own; a copy keeps the limit, a new list from `xs + ys` has none.
+// Rule: A list, dict or set with a limit in its type may hold items of different kinds through a union, and other collections with limits of their own; a copy keeps the limit, a new list from `xs + ys` has none.
 // Spec: 2.2
 // expect output: 2
 // expect output: heat 21.5
@@ -23,7 +23,7 @@ type Reading = Heat(celsius: Float) | Note(text: String)
 type Color = Red | Green | Blue
 
 fn main() {
-    let log: [Reading] = List.capacity(2)
+    let log: [Reading]<max: 2> = []
     log.push(Reading.Heat(celsius: 21.5))
     log.push(Reading.Note(text: "door opened"))
     print(log.len())
@@ -35,15 +35,15 @@ fn main() {
     }
     print(log.is_full())
 
-    let groups: {String: [Int]} = Dict.capacity(1)
-    groups["small"] = List.capacity(3, [1, 2, 3])
+    let groups: {String: [Int]<max: 3>}<max: 1> = {:}
+    groups["small"] = [1, 2, 3]
     print(groups)
     const inner = groups["small"] ?? []
     print(inner.is_full())
     print(groups.is_full())
 
-    let grid: [[Int]] = List.capacity(2)
-    grid.push(List.capacity(2, [1]))
+    let grid: [[Int]<max: 2>]<max: 2> = []
+    grid.push([1])
     grid[0].push(2)
     print(grid)
     print(grid[0].is_full())
@@ -56,18 +56,18 @@ fn main() {
     print(all.len())
     print(all.is_full())
 
-    let latest: {String: Reading} = Dict.capacity(2)
+    let latest: {String: Reading}<max: 2> = {:}
     latest["kitchen"] = Reading.Heat(celsius: 21.5)
     latest["door"] = Reading.Note(text: "opened")
     print(latest.len())
     print(latest.is_full())
 
-    let colors: Set<Color> = Set.capacity(2, [Color.Red])
+    let colors: Set<Color, max: 2> = Set.of(Color.Red)
     colors.add(Color.Blue)
     print(colors.is_full())
 
-    let rooms: {String: {String: Int}} = Dict.capacity(2)
-    rooms["hall"] = Dict.capacity(1, {"lamps": 2})
+    let rooms: {String: {String: Int}<max: 1>}<max: 2> = {:}
+    rooms["hall"] = {"lamps": 2}
     const hall = rooms["hall"] ?? {:}
     print(hall.is_full())
     print(rooms)

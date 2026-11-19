@@ -212,6 +212,19 @@ pub fn capacity_panic(kind: &str, n: i64, first: usize) -> String {
     format!("`{kind}.capacity({n})` was given {first} first entries")
 }
 
+/// The `SizeError` of `try List<Int, max: 2>(xs)` and the other
+/// conversions into a type with numbers (spec 2.9): `what` ("list",
+/// "dict", "set", "bytes") of `count` entries doesn't fit type `shown`.
+pub fn size_error(what: &str, count: usize, shown: &str) -> String {
+    let s = if count == 1 { "" } else { "s" };
+    match what {
+        "bytes" => format!("{count} byte{s} don't fit `{shown}`"),
+        "dict" => format!("a dict of {count} key{s} doesn't fit `{shown}`"),
+        "set" => format!("a set of {count} value{s} doesn't fit `{shown}`"),
+        _ => format!("a list of {count} item{s} doesn't fit `{shown}`"),
+    }
+}
+
 /// The panic of index `i` past the end of a list of `n` items.
 pub fn list_index_panic(i: i128, n: usize) -> String {
     let items = if n == 1 { "item" } else { "items" };

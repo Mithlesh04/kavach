@@ -277,8 +277,12 @@ impl Checker<'_> {
     pub(crate) fn stmt(&mut self, s: &Stmt) {
         match &s.kind {
             StmtKind::Let {
-                pattern, ty, value, ..
+                pattern,
+                ty,
+                value,
+                mutable,
             } => {
+                self.note_const(pattern, value, *mutable);
                 if ty.is_none() && self.defer_lambda(pattern, value) {
                     return;
                 }
@@ -294,7 +298,7 @@ impl Checker<'_> {
                         format!("{what} returns nothing, so there is no value to keep"),
                     );
                 }
-                let ty = declared.unwrap_or(actual);
+                let ty = declared.unwrap_or_else(|| self.let_type(actual, *mutable));
                 self.warn_unnamed_drop(pattern, &ty);
                 if !self.destructure(pattern, &ty, value) {
                     self.bind(pattern, &ty);
@@ -329,6 +333,7 @@ impl Checker<'_> {
                     // `m[k] = v` stores a value, not the optional a read
                     // of `m[k]` gives (spec 2.2).
                     let slot = self.map_slot(target).unwrap_or(t);
+                    let slot = self.assigned_slot(*op, slot);
                     self.check_expect(value, &slot);
                 }
                 self.check_arena_store(target, value);

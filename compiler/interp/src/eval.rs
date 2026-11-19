@@ -92,7 +92,10 @@ impl<'a> Interp<'a> {
                 .last()
                 .and_then(|f| f.its.last().cloned())
                 .unwrap_or(Value::Unit)),
-            ExprKind::List(items) => Ok(Value::List(Rc::new(self.eval_all(items)?.into()))),
+            ExprKind::List(items) => {
+                let list = Value::List(Rc::new(self.eval_all(items)?.into()));
+                self.limited(e.span, list)
+            }
             ExprKind::Tuple(items) => Ok(Value::Tuple(self.eval_all(items)?)),
             ExprKind::Map(entries) => {
                 let mut map = MapValue::default();
@@ -100,7 +103,7 @@ impl<'a> Interp<'a> {
                     let (k, v) = (self.eval(k)?, self.eval(v)?);
                     map.insert(k, v);
                 }
-                Ok(Value::Map(Rc::new(map)))
+                self.limited(e.span, Value::Map(Rc::new(map)))
             }
             ExprKind::AnonRecord(fs) => {
                 // Fields are evaluated as written, kept sorted by name so
@@ -128,7 +131,10 @@ impl<'a> Interp<'a> {
             }
             ExprKind::Binary(op, l, r) => self.binary(*op, l, r, e.span),
             ExprKind::Compare(first, links) => self.chain(first, links, e.span),
-            ExprKind::Call { callee, args, .. } => self.call(e, callee, args),
+            ExprKind::Call { callee, args, .. } => {
+                let made = self.call(e, callee, args)?;
+                self.limited(e.span, made)
+            }
             ExprKind::Field {
                 base,
                 name,
@@ -324,6 +330,10 @@ impl<'a> Interp<'a> {
                 .and_then(|fs| fs.iter().find(|f| *f.name == *id.name))
                 .map_or(Value::Unit, |f| f.value.clone())),
             DefKind::Fn => Ok(Value::Func(def)),
+            // A number parameter: the number its call was given (2.9).
+            DefKind::GenericParam if self.c.numbers.params.contains(&def) => self
+                .number_param(def)
+                .ok_or_else(|| self.panic(format!("`{}` has no number here", id.name), span)),
             // `count` in a `limit` rule: the window's calls, this one too.
             DefKind::Builtin if id.name == "count" => match self.totals.as_mut() {
                 Some(t) => {

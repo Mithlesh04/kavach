@@ -10,11 +10,12 @@ type Basket {
 }
 
 fn main() {
-    let xs: [Int] = List.capacity(4, [1])
+    let (two, four) = (2, 4)
+    let xs: [Int] = List.capacity(four, [1])
     xs += [2, 3]
     print(xs)
     print(xs.is_full())
-    let b = Basket(items: List.capacity(2))
+    let b = Basket(items: List.capacity(two))
     b.items.push("apple")
     b.items += ["pear"]
     print(b.items.is_full())

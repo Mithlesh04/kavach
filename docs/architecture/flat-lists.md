@@ -1,6 +1,6 @@
 # Flat lists
 
-How native Kavach stores a list of plain records or of text, and why. The code is in [runtime/native/src/flat.rs](../../runtime/native/src/flat.rs) and [compiler/backend/cranelift/src/flat.rs](../../compiler/backend/cranelift/src/flat.rs). The rule for which lists are flat is `flat_width` in [compiler/kir/src/ir.rs](../../compiler/kir/src/ir.rs), shared by both.
+How native Kavach stores a list of plain records or of text, and why. The code is in [runtime/native/src/flat.rs](../../runtime/native/src/flat.rs) and [compiler/backend/cranelift/src/flat.rs](../../compiler/backend/cranelift/src/flat.rs). The rule for which lists are flat is `flat_width` in [compiler/kir/src/list_layout.rs](../../compiler/kir/src/list_layout.rs), shared by both.
 
 ## The problem
 

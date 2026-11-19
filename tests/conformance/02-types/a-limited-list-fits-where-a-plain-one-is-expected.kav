@@ -1,0 +1,18 @@
+// Rule: A list with a limit may be given where a plain list is expected, and it keeps its limit.
+// Spec: 2.2
+// expect output: 3
+// expect output: true
+
+fn total(xs: [Int]) -> Int {
+    xs.sum(x => x)
+}
+
+fn full(xs: [Int]) -> Bool {
+    xs.is_full()
+}
+
+fn main() {
+    const xs: [Int]<max: 2> = [1, 2]
+    print(total(xs))
+    print(full(xs))
+}

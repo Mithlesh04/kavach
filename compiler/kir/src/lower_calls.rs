@@ -190,6 +190,9 @@ impl<'a> Lowerer<'a> {
         line: u32,
         span: ast::Span,
     ) -> Lowered<ir::Expr> {
+        if let Some(made) = self.sized_builtin(name, args, ty, line, span) {
+            return made;
+        }
         if let ("log_write", [level, text, event]) = (name, args) {
             return self.log_write_call(level, text, event, line);
         }

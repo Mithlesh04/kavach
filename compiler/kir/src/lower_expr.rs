@@ -28,6 +28,16 @@ impl<'a> Lowerer<'a> {
     /// Lowers `e`, whose type is `ty`. (A dot lambda and its body share a
     /// span, so the checker's type for that span is the lambda's.)
     pub(crate) fn expr_as(&mut self, e: &'a ast::Expr, ty: Type) -> Lowered<ir::Expr> {
+        // Made where its type has a `max` (spec 2.2): with that limit.
+        if let Some(n) = self.limit_of(e) {
+            let made = self.expr_plain(e, ty)?;
+            return self.with_limit(made, &n, e.span);
+        }
+        self.expr_plain(e, ty)
+    }
+
+    /// `expr_as`, without a limit from the type.
+    fn expr_plain(&mut self, e: &'a ast::Expr, ty: Type) -> Lowered<ir::Expr> {
         let line = self.line(e.span);
         // `return`, `break` or `continue` where a value is expected (a
         // `match` arm that gives one): the jump, in a block whose value
@@ -327,6 +337,10 @@ impl<'a> Lowerer<'a> {
 
     fn name(&mut self, id: &'a ast::Ident, ty: Type, line: u32) -> Lowered<ir::Expr> {
         let def = self.c.resolution.uses.get(&id.span.start).copied();
+        // A number parameter (spec 2.9).
+        if let Some(n) = def.and_then(|d| self.number_param(d, line)) {
+            return Ok(n);
+        }
         match def.map(|d| self.c.resolution.defs[d].kind) {
             Some(DefKind::Variant { .. }) => {
                 self.variant_value(ty, &id.name, Vec::new(), line, id.span)

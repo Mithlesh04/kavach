@@ -5,7 +5,8 @@
 // expect panic: the list is full (capacity 2)
 
 fn main() {
-    let a: [Int32] = List.capacity(2, [1])
+    let n = 2
+    let a: [Int32] = List.capacity(n, [1])
     let b = a
     b.push(2)
     print(b)

@@ -241,7 +241,14 @@ impl Resolver {
 
     fn generics(&mut self, generics: &[GenericParam]) {
         for g in generics {
-            self.check_pascal(&g.name, "type parameters");
+            // `width: Int`: a number parameter, named as a value is (2.9).
+            match g.is_number() {
+                true => self.check_snake(&g.name, "number parameters"),
+                false => self.check_pascal(&g.name, "type parameters"),
+            }
+            if let Some(d) = &g.default {
+                self.expr(d);
+            }
             self.define(&g.name, DefKind::GenericParam);
             for bound in &g.bounds {
                 self.type_expr(bound);

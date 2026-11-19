@@ -1,0 +1,16 @@
+// Rule: `Ring<T, max: n>` keeps the last `n` items pushed; `Ring()` takes its size from the variable's type; given more first items than `n`, it keeps the last `n`.
+// Spec: 2.2
+// expect output: [2.0, 3.0, 4.0]
+// expect output: 2.0
+// expect output: ["b", "c"]
+
+fn main() {
+    let recent: Ring<Float, max: 3> = Ring()
+    for t in [1.0, 2.0, 3.0, 4.0] {
+        recent.push(t)
+    }
+    print(recent)
+    print(recent.first() ?? 0.0)
+    const kept = Ring<String, max: 2>(["a", "b", "c"])
+    print(kept)
+}

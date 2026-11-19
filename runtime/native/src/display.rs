@@ -143,6 +143,8 @@ fn display_ref(p: i64, ty: Type, top: bool) -> String {
         Shape::Decimal => crate::rt_big_decimal::show(p),
         Shape::BigInt => crate::rt_bigint::show(p),
         Shape::Regex => format!("Regex({:?})", crate::opaque::describe(p)),
+        // A number in a type (spec 2.9) is no value's type.
+        Shape::Num(n) => n.to_string(),
         // Any error: the object knows its own type.
         Shape::Error => display(p, obj(p).ty(), top),
         Shape::Str if top => str_of(p),

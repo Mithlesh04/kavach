@@ -36,8 +36,19 @@ impl Infer {
         self.vars[var as usize].1
     }
 
-    /// Follows bound variables at the top level.
+    /// Follows bound variables at the top level, and sees through a
+    /// number in a collection's type (`[Int]<max: 2>` is a `[Int]` here).
     pub(crate) fn shallow(&self, ty: &Ty) -> Ty {
+        let mut ty = self.shallow_keep(ty);
+        while let Ty::Sized(base, ..) = ty {
+            ty = self.shallow_keep(&base);
+        }
+        ty
+    }
+
+    /// Follows bound variables at the top level, keeping a collection's
+    /// number (spec 2.9).
+    pub(crate) fn shallow_keep(&self, ty: &Ty) -> Ty {
         let mut ty = ty.clone();
         while let Ty::Var(v) = ty {
             match &self.vars[v as usize].0 {
@@ -48,14 +59,28 @@ impl Infer {
         ty
     }
 
-    /// Replaces every bound variable, all the way down.
+    /// Replaces every bound variable, all the way down, without the
+    /// number of the collection's own type: its items keep theirs
+    /// (`[[Int]<max: 2>]` stays a list of limited lists).
     pub(crate) fn resolve(&self, ty: &Ty) -> Ty {
-        self.map(&self.shallow(ty), &|t| Some(self.resolve(t)))
+        self.map(&self.shallow(ty), &|t| Some(self.resolve_keep(t)))
+    }
+
+    /// Replaces every bound variable, all the way down, without any
+    /// collection's number: the types code generation sees.
+    pub(crate) fn resolve_plain(&self, ty: &Ty) -> Ty {
+        self.map(&self.shallow(ty), &|t| Some(self.resolve_plain(t)))
+    }
+
+    /// Replaces every bound variable, all the way down, keeping the
+    /// numbers of collections' types.
+    pub(crate) fn resolve_keep(&self, ty: &Ty) -> Ty {
+        self.map(&self.shallow_keep(ty), &|t| Some(self.resolve_keep(t)))
     }
 
     /// Replaces generic parameters using `subst`.
     pub(crate) fn subst(&self, ty: &Ty, subst: &HashMap<DefId, Ty>) -> Ty {
-        match self.shallow(ty) {
+        match self.shallow_keep(ty) {
             Ty::Param(p) => subst.get(&p).cloned().unwrap_or(Ty::Param(p)),
             other => self.map(&other, &|t| Some(self.subst(t, subst))),
         }
@@ -64,7 +89,7 @@ impl Infer {
     /// The generic parameters in `ty`, all the way down.
     pub(crate) fn params(&self, ty: &Ty) -> Vec<DefId> {
         let found = std::cell::RefCell::new(Vec::new());
-        self.collect_params(&self.resolve(ty), &found);
+        self.collect_params(&self.resolve_keep(ty), &found);
         found.into_inner()
     }
 
@@ -95,6 +120,7 @@ impl Infer {
             Ty::Fn(ps, r, u) => Ty::Fn(ps.iter().map(g).collect(), b(r), u.clone()),
             Ty::Adt(d, ts) => Ty::Adt(*d, ts.iter().map(g).collect()),
             Ty::Builtin(n, ts) => Ty::Builtin(n, ts.iter().map(g).collect()),
+            Ty::Sized(t, k, n) => Ty::Sized(b(t), *k, b(n)),
             other => other.clone(),
         }
     }
@@ -102,7 +128,7 @@ impl Infer {
     /// Makes `a` and `b` the same type if possible. Returns false if they
     /// can't be.
     pub(crate) fn unify(&mut self, a: &Ty, b: &Ty) -> bool {
-        let (a, b) = (self.shallow(a), self.shallow(b));
+        let (a, b) = (self.shallow_keep(a), self.shallow_keep(b));
         match (&a, &b) {
             (Ty::Error, _) | (_, Ty::Error) | (Ty::Never, _) | (_, Ty::Never) => true,
             (Ty::Var(x), Ty::Var(y)) if x == y => true,
@@ -121,6 +147,14 @@ impl Infer {
                 self.vars[*x as usize].0 = Some(t.clone());
                 true
             }
+            // `[Float]<len: 3>` and `[Float]<len: 2>` are two types; a
+            // number on one side only is checked where a value is given
+            // (`Checker::coerce`, spec 2.9).
+            (Ty::Sized(x, k1, n1), Ty::Sized(y, k2, n2)) => {
+                k1 == k2 && self.unify(x, y) && self.unify(n1, n2)
+            }
+            (Ty::Sized(x, ..), t) | (t, Ty::Sized(x, ..)) => self.unify(x, t),
+            (Ty::Num(x), Ty::Num(y)) => x == y,
             (Ty::Prim(p), Ty::Prim(q)) => p == q,
             (Ty::Unit, Ty::Unit) => true,
             (Ty::List(x), Ty::List(y))
@@ -167,6 +201,7 @@ fn contains_var(ty: &Ty, var: u32) -> bool {
     match ty {
         Ty::Var(v) => *v == var,
         Ty::List(t) | Ty::Set(t) | Ty::Optional(t) | Ty::Range(t) => contains_var(t, var),
+        Ty::Sized(t, _, n) => contains_var(t, var) || contains_var(n, var),
         Ty::Map(a, b) | Ty::Result(a, b) => contains_var(a, var) || contains_var(b, var),
         Ty::Tuple(ts) | Ty::Adt(_, ts) | Ty::Builtin(_, ts) => {
             ts.iter().any(|t| contains_var(t, var))

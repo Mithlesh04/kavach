@@ -17,7 +17,10 @@ impl<'a> Lowerer<'a> {
             StmtKind::Let {
                 pattern, ty, value, ..
             } => {
-                let declared = ty.as_ref().map(|t| self.written_type(t)).transpose()?;
+                let declared = match ty {
+                    Some(t) => Some(self.declared_type(t, pattern)?),
+                    None => None,
+                };
                 // How many items a list literal shows (spec 1.12).
                 let known = match &value.kind {
                     ExprKind::List(xs) => xs.len(),

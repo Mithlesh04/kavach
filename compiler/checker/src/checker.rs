@@ -266,6 +266,8 @@ pub(crate) struct Checker<'a> {
     /// The tags for literals, and each literal written (spec 10.15).
     pub(crate) literal_tags: HashMap<DefId, crate::literals::LiteralTag>,
     pub(crate) literal_uses: Vec<crate::literals::LiteralUse>,
+    /// Numbers in types (spec 2.9, `sizes.rs`).
+    pub(crate) sizes: crate::sizes::Sizes,
 }
 
 impl<'a> Checker<'a> {
@@ -362,6 +364,7 @@ impl<'a> Checker<'a> {
             extending: None,
             literal_tags: HashMap::new(),
             literal_uses: Vec::new(),
+            sizes: Default::default(),
         }
     }
 

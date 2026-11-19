@@ -71,6 +71,9 @@ mod reflect;
 mod scoped;
 mod secrets;
 mod show;
+mod size_calls;
+mod size_checks;
+mod sizes;
 mod slicing;
 mod spawn_parts;
 mod std_base64;
@@ -99,8 +102,9 @@ use kavach_ast::File;
 pub use kavach_resolver::Diagnostic;
 use kavach_resolver::{DefId, Resolution};
 pub use literals::LiteralUse;
+pub use size_calls::Settled;
 use std::collections::{HashMap, HashSet};
-pub use ty::{Prim, Ty};
+pub use ty::{Prim, SizeKind, Ty};
 
 /// The units a whole number can be followed by to make a `Duration`
 /// (`5.seconds`, spec 14.4), and their length in milliseconds.
@@ -194,6 +198,8 @@ pub struct Checked {
     pub agent_settings: HashMap<String, AgentSetup>,
     /// Each tagged literal, for its tag's checker (spec 10.15).
     pub literal_uses: Vec<LiteralUse>,
+    /// Numbers in types that code generation needs (spec 2.9).
+    pub numbers: Settled,
 }
 
 /// The built-in methods a value of type `t` has (spec 14.2), for tools
@@ -309,6 +315,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
         .iter()
         .map(|(def, ty)| (*def, checker.defaulted(ty)))
         .collect();
+    let numbers = checker.settle_numbers();
     let drop_types = checker.drop_types.clone();
     let display_types = checker.display_types.clone();
     let drop_locals = (checker.locals.iter())
@@ -345,5 +352,6 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
         ask_models,
         agent_settings,
         literal_uses: std::mem::take(&mut checker.literal_uses),
+        numbers,
     }
 }

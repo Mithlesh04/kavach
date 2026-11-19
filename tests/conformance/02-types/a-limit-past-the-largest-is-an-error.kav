@@ -1,0 +1,8 @@
+// Rule: A limit in a type is from 0 to 4,294,967,294; another is a compile error.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    const xs: [Int]<max: 4_294_967_295> = []     // error: past 2^32 - 2
+    print(xs)
+}

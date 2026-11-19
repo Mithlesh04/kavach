@@ -23,6 +23,10 @@ fn messages_point_at_the_problem() {
             &["1: a signature has only one `->`"],
         ),
         (
+            "fn f(xs: [Int, max: 2]) {}",
+            &["1: a list's numbers go after its type: write `[Int]<max: 2>` (spec 2.2)"],
+        ),
+        (
             "fn f() -> Int",
             &["1: expected `{` to start the body of `f`"],
         ),

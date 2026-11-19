@@ -119,6 +119,8 @@ pub struct Compiled {
     /// Each tagged literal, for its tag's checker (spec 10.15), which the
     /// interpreter runs (`kavach_interp::check_literals`).
     pub literal_uses: Vec<kavach_checker::LiteralUse>,
+    /// Numbers in types (spec 2.9): limits, checks and number arguments.
+    pub numbers: kavach_checker::Settled,
     pub messages: Vec<Message>,
 }
 
@@ -392,6 +394,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
         agent_settings: checked.agent_settings,
         ask_models: checked.ask_models,
         literal_uses: checked.literal_uses,
+        numbers: checked.numbers,
         messages,
     }
 }

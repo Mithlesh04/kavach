@@ -1,0 +1,9 @@
+// Rule: A plain list given where a list with a limit is expected is a compile error: it takes `try`.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    const xs = [1, 2, 3]
+    const p: [Int]<max: 2> = xs     // error: only `try List<Int, max: 2>(xs)` makes one
+    print(p)
+}

@@ -48,7 +48,7 @@ fn main() {
     print({"a": 1, "b": 2}.has_all(["a", "b"]))
     print({"a": 1}.has_all(["a", "z"]))
     print(Set.of(1, 2).size_twice())
-    let recent: Ring<Int> = Ring.capacity(2)
+    let recent: Ring<Int, max: 2> = Ring()
     recent.push(1)
     recent.push(2)
     recent.push(3)

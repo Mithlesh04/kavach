@@ -1,0 +1,17 @@
+// Rule: A number parameter may have a default, as a function's parameter may.
+// Spec: 2.9
+// expect output: 63
+// expect output: 7
+
+type Buffer<T, size: Int = 64> {
+    items: [T]
+
+    fn room(self) -> Int { size - self.items.len() }
+}
+
+fn main() {
+    const b: Buffer<Int> = Buffer(items: [1])
+    print(b.room())
+    const small = Buffer<Int, size: 8>(items: [1])
+    print(small.room())
+}

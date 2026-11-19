@@ -1,0 +1,8 @@
+// Rule: A literal given for a list of fixed length must have exactly that many items.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    const v: List<Float, len: 3> = [1.0, 2.0]     // error: 2 items, and the type holds exactly 3
+    print(v)
+}

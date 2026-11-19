@@ -42,6 +42,7 @@ impl Checker<'_> {
             }
         }
         self.check_arena_call(base, name, args);
+        self.check_fixed_change(&recv, &name.name, name.span);
         let recv = self.inf.resolve(&recv);
         // A range has the list methods that read it (spec 2.2): it is the
         // list of its numbers, which lowering builds (`lower_range.rs`).

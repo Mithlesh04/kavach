@@ -13,10 +13,11 @@ use kavach_ast::{Expr, ExprKind, Span};
 use kavach_resolver::DefKind;
 
 /// The built-in error types, which carry their message across.
-const ERRORS: [&str; 6] = [
+const ERRORS: [&str; 7] = [
     "Error",
     "ParseError",
     "InvariantError",
+    "SizeError",
     "CliError",
     "RegexError",
     "LibraryError",

@@ -16,7 +16,7 @@ type Feed {
 }
 
 fn main() {
-    let feed = Feed(events: Ring.capacity(2))
+    let feed = Feed(events: Ring<Event, max: 2>())
     for (i, name) in ["a", "b", "c", "d"].enumerate() {
         feed.events.push(Event(id: i + 1, name: name))
     }

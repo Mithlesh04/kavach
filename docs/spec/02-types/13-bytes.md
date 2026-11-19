@@ -15,7 +15,7 @@ print(greeting.text() ?? "?")          // hi
 |---|---|
 | `s.bytes()` | The text `s` as UTF-8 `Bytes` |
 | `Bytes(list)` | `Bytes` from a `[UInt8]` |
-| `Bytes<len: 32>` | The type of exactly 32 bytes (below) (not built yet) |
+| `Bytes<len: 32>` | The type of exactly 32 bytes (below) |
 | `b.len()` | `Int`: how many bytes |
 | `b.is_empty()` | `Bool`: whether there are none |
 | `b[i]` | `UInt8`: byte `i`, and `b[#1]` the last (2.19); panics when `i` is out of range |
@@ -65,7 +65,7 @@ print(data.as_list<Float32>() ?? [])                 // [1.0, 2.0]
 print(Bytes.of_list<UInt16>([1, 2], big_endian: true)) // Bytes(00010002)
 ```
 
-*Not built yet:* **A fixed length: `Bytes<len: n>`** ([decision 0137](../../decisions/0137-numbers-in-types.md), 2.9). `Bytes<len: 32>` is exactly 32 bytes: a hash, a key, a field of a file format. `crypto.sha256` gives one (14.19). An index written as a number is checked while compiling.
+**A fixed length: `Bytes<len: n>`** ([decision 0137](../../decisions/0137-numbers-in-types.md), 2.9). `Bytes<len: 32>` is exactly 32 bytes: a hash, a key, a field of a file format. `crypto.sha256` gives one (14.19). An index written as a number is checked while compiling.
 
 ```kavach
 use std.crypto
@@ -81,6 +81,6 @@ const plain: Bytes = k           // a fixed length may go where any length may
 const back = Bytes<len: 32>(plain) catch e => k   // `SizeError` when `plain` isn't 32 bytes
 ```
 
-- *Not built yet:* A plain `Bytes` becomes a `Bytes<len: n>` only through `try` or `catch`, which fails with a `SizeError` when the length is another (2.9).
-- *Not built yet:* `Bytes([…])` of a list literal of `n` numbers is a `Bytes<len: n>`.
-- *Not built yet:* `a + b` and the methods that make new bytes give a plain `Bytes`.
+- A plain `Bytes` becomes a `Bytes<len: n>` only through `try` or `catch`, which fails with a `SizeError` when the length is another (2.9).
+- `Bytes([…])` of a list literal of `n` numbers is a `Bytes<len: n>`.
+- `a + b` and the methods that make new bytes give a plain `Bytes`.

@@ -76,6 +76,19 @@ fn functions_and_signatures() {
             "fn first<T>(items: [T]) -> T? {}",
             "(fn first <T> (items:[T]) -> T? {})",
         ),
+        // Numbers in types (spec 2.9): types positional, numbers named.
+        (
+            "fn dot<n: Int, k: Int = 2>(a: [Float]<len: n>, b: List<Float, max: 16>) -> {String: Int}<max: 100> {}",
+            "(fn dot <n:Int k:Int=2> (a:[Float]<len:n> b:List<Float max:16>) -> {String: Int}<max:100> {})",
+        ),
+        (
+            "fn key(g: Grid<Float, width: 4, height: 3>, b: Bytes<len: 32>, r: Ring<Float, max: 100>?) {}",
+            "(fn key (g:Grid<Float width:4 height:3> b:Bytes<len:32> r:Ring<Float max:100>?) {})",
+        ),
+        (
+            "fn bad(a: Grid<Float, 2, 3>) {}",
+            "(fn bad (a:Grid<Float (unnamed 2) (unnamed 3)>) {})",
+        ),
         (
             "pub fn withdraw(a: Account, amount: Decimal) -> Account ! BankError uses Payments\n    require amount > 0\n    ensure result.balance == a.balance - amount\n    example withdraw(acct, 10) fails Low(needed: 5)\n{\n}",
             "(pub fn withdraw (a:Account amount:Decimal) -> Account ! BankError uses Payments (require (> amount 0)) (ensure (== (. result balance) (- (. a balance) amount))) (example (call withdraw acct 10) fails (call Low needed:5)) {})",

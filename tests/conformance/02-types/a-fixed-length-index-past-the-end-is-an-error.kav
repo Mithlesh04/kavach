@@ -1,0 +1,9 @@
+// Rule: An index written as a number past a list's `len` is a compile error.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    const v: [Float]<len: 3> = [1.0, 2.0, 3.0]
+    print(v[2])
+    print(v[3])              // error: index 3 is past a list of 3
+}

@@ -22,7 +22,7 @@ impl Parser<'_> {
                 );
                 let value = Box::new(self.type_expr());
                 self.expect(&TokenKind::RBrace, "`}`");
-                TypeKind::Map(key, value)
+                self.with_nums(TypeKind::Map(key, value), start)
             }
             TokenKind::LBracket => {
                 let open = self.span();
@@ -37,8 +37,26 @@ impl Parser<'_> {
                 } else {
                     TypeKind::List(item)
                 };
+                // `[Int, max: 2]` reads as a list of two items: the number
+                // goes after the type (spec 2.2, decision 0137).
+                if self.at(&TokenKind::Comma) {
+                    let at = self.span();
+                    let mut nums = Vec::new();
+                    while self.eat(&TokenKind::Comma) && !self.at(&TokenKind::RBracket) {
+                        nums.push(self.num_arg());
+                    }
+                    let shown = nums.iter().map(show_num).collect::<Vec<_>>().join(", ");
+                    let item = match &kind {
+                        TypeKind::List(item) => show_type(item),
+                        _ => "T".to_string(),
+                    };
+                    self.error(
+                        at,
+                        format!("a list's numbers go after its type: write `[{item}]<{shown}>` (spec 2.2)"),
+                    );
+                }
                 self.expect(&TokenKind::RBracket, "`]`");
-                kind
+                self.with_nums(kind, start)
             }
             TokenKind::LParen
                 if *self.nth(1) == TokenKind::Ident && *self.nth(2) == TokenKind::Colon =>
@@ -143,15 +161,54 @@ impl Parser<'_> {
         types
     }
 
-    /// `<A, B>` after a type or a call.
+    /// `<A, B>` after a type or a call, maybe with numbers: `<Float,
+    /// len: 3>` (spec 2.9).
     pub(crate) fn type_args(&mut self) -> Vec<TypeExpr> {
         self.bump();
-        let mut args = vec![self.type_expr()];
+        let mut args = vec![self.type_arg()];
         while self.eat(&TokenKind::Comma) {
-            args.push(self.type_expr());
+            args.push(self.type_arg());
         }
         self.close_angle();
         args
+    }
+
+    /// A type, or a number with or without its name (`max: 2`, `2`).
+    fn type_arg(&mut self) -> TypeExpr {
+        let named = self.at(&TokenKind::Ident) && *self.nth(1) == TokenKind::Colon;
+        if named || matches!(self.kind(), TokenKind::Int(_) | TokenKind::Minus) {
+            return self.num_arg();
+        }
+        self.type_expr()
+    }
+
+    /// `max: 2`, or `2` alone, which the checker reports with its name.
+    fn num_arg(&mut self) -> TypeExpr {
+        let start = self.span();
+        let name = (self.at(&TokenKind::Ident) && *self.nth(1) == TokenKind::Colon).then(|| {
+            let name = self.ident("a number's name");
+            self.bump();
+            name
+        });
+        let value = Box::new(self.unary());
+        TypeExpr {
+            kind: TypeKind::Num { name, value },
+            span: self.span_from(start),
+        }
+    }
+
+    /// `[Int]<max: 2>`, `{K: V}<max: 100>`: numbers after a list's or a
+    /// dict's type (spec 2.2).
+    fn with_nums(&mut self, kind: TypeKind, start: kavach_ast::Span) -> TypeKind {
+        if !self.at(&TokenKind::Lt) {
+            return kind;
+        }
+        let base = TypeExpr {
+            kind,
+            span: self.span_from(start),
+        };
+        let nums = self.type_args();
+        TypeKind::WithNums(Box::new(base), nums)
     }
 
     /// `<T, U: Comparable>` after a function or type name.
@@ -169,7 +226,13 @@ impl Parser<'_> {
                     bounds.push(self.type_expr());
                 }
             }
-            params.push(GenericParam { name, bounds });
+            // `size: Int = 64`: a number parameter's default (spec 2.9).
+            let default = self.eat(&TokenKind::Eq).then(|| self.unary());
+            params.push(GenericParam {
+                name,
+                bounds,
+                default,
+            });
             if !self.eat(&TokenKind::Comma) {
                 break;
             }
@@ -188,5 +251,39 @@ impl Parser<'_> {
             }
         }
         types
+    }
+}
+
+/// A number argument as written, for messages.
+pub(crate) fn show_num(t: &TypeExpr) -> String {
+    match &t.kind {
+        TypeKind::Num { name, value } => {
+            let v = match &value.kind {
+                kavach_ast::ExprKind::Int(n) => n.to_string(),
+                kavach_ast::ExprKind::Name(id) => id.name.clone(),
+                _ => "…".to_string(),
+            };
+            match name {
+                Some(n) => format!("{}: {v}", n.name),
+                None => v,
+            }
+        }
+        _ => show_type(t),
+    }
+}
+
+/// A simple type as written, for messages.
+pub(crate) fn show_type(t: &TypeExpr) -> String {
+    match &t.kind {
+        TypeKind::Named { path, args } => {
+            let name: Vec<&str> = path.segments.iter().map(|s| s.name.as_str()).collect();
+            let args: Vec<String> = args.iter().map(show_num).collect();
+            match args.is_empty() {
+                true => name.join("."),
+                false => format!("{}<{}>", name.join("."), args.join(", ")),
+            }
+        }
+        TypeKind::List(t) => format!("[{}]", show_type(t)),
+        _ => "T".to_string(),
     }
 }

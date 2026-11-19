@@ -1,0 +1,15 @@
+// Rule: Every number parameter without a default is given where the type is written; a missing one is a compile error naming it.
+// Spec: 2.9
+// expect compile error
+
+type Grid<T, width: Int, height: Int> {
+    rows: [[T]<len: width>]<len: height>
+
+    fn at(self, x: Int, y: Int) -> T { self.rows[y][x] }
+    fn cells(self) -> Int { width * height }
+}
+
+fn main() {
+    const g: Grid<Float, width: 2> = Grid(rows: [[0.0, 1.0]])     // error: `height` is missing
+    print(g.cells())
+}

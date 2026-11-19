@@ -25,7 +25,7 @@ impl Checker<'_> {
                 format!("<{}>", list(ts))
             }
         };
-        match self.inf.resolve(ty) {
+        match self.inf.resolve_keep(ty) {
             Ty::Prim(p) => p.name().to_string(),
             Ty::Unit => "nothing".to_string(),
             Ty::Never => "never".to_string(),
@@ -59,7 +59,34 @@ impl Checker<'_> {
                     r => format!("fn({}) -> {}{uses}", list(&ps), self.show(&r)),
                 }
             }
-            Ty::Adt(d, ts) => format!("{}{}", self.def_name(d), args(&ts)),
+            Ty::Adt(d, ts) => {
+                // Numbers with their names (spec 2.9).
+                let generics = self.generic_list(d);
+                let shown: Vec<String> = (ts.iter().enumerate())
+                    .map(
+                        |(i, t)| match generics.get(i).filter(|g| self.is_num_param(**g)) {
+                            Some(g) => format!("{}: {}", self.def_name(*g), self.show(t)),
+                            None => self.show(t),
+                        },
+                    )
+                    .collect();
+                match shown.is_empty() {
+                    true => self.def_name(d).to_string(),
+                    false => format!("{}<{}>", self.def_name(d), shown.join(", ")),
+                }
+            }
+            Ty::Num(n) => n.to_string(),
+            Ty::Sized(base, kind, n) => {
+                let n = format!("{}: {}", kind.name(), self.show(&n));
+                match self.inf.resolve_keep(&base) {
+                    Ty::List(_) | Ty::Map(..) => format!("{}<{n}>", self.show(&base)),
+                    Ty::Set(t) => format!("Set<{}, {n}>", self.show(&t)),
+                    Ty::Builtin(name, ts) if !ts.is_empty() => {
+                        format!("{name}<{}, {n}>", list(&ts))
+                    }
+                    other => format!("{}<{n}>", self.show(&other)),
+                }
+            }
             Ty::Builtin(n, ts) => format!("{n}{}", args(&ts)),
             Ty::Param(d) => self.def_name(d).to_string(),
             Ty::Result(o, _) => self.show(&o),
@@ -74,7 +101,7 @@ impl Checker<'_> {
     /// `ty` with every variable replaced, number literals defaulting to
     /// `Int` and `Float`, and unknowns becoming `Error`.
     pub(crate) fn defaulted(&self, ty: &Ty) -> Ty {
-        let resolved = self.inf.resolve(ty);
+        let resolved = self.inf.resolve_plain(ty);
         self.default_vars(&resolved)
     }
 

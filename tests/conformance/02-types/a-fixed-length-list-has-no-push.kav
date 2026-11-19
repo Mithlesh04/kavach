@@ -1,0 +1,10 @@
+// Rule: A list of fixed length always holds its `len` items: `push` on one is a compile error.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    let v: [Float]<len: 3> = [1.0, 2.0, 3.0]
+    v[0] = 0.5
+    v.push(4.0)              // error: a `[Float]<len: 3>` always holds 3 items
+    print(v)
+}

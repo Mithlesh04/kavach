@@ -11,7 +11,7 @@ use kavach_ast::*;
 
 impl Checker<'_> {
     pub(crate) fn chain(&mut self, first: &Expr, links: &[(BinaryOp, Expr)]) -> Ty {
-        let t = self.value(first, None);
+        let t = self.plain_value(first);
         let mut left = first;
         for (op, x) in links {
             self.check_expect(x, &t);

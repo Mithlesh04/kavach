@@ -15,6 +15,10 @@ use kavach_resolver::{DefId, DefKind};
 impl Checker<'_> {
     /// Notes that type parameter `def` has a number bound, if `g` has one.
     pub(crate) fn note_number_bound(&mut self, g: &GenericParam, def: DefId) {
+        // `width: Int` is a number parameter, not a bound (spec 2.9).
+        if g.is_number() {
+            return;
+        }
         self.note_op_bounds(g, def);
         for b in &g.bounds {
             let TypeKind::Named { path, args } = &b.kind else {
@@ -177,9 +181,13 @@ impl Checker<'_> {
             let owner = (self.res.defs.iter().zip(0..))
                 .find(|(_, d)| self.types.get(d).is_some_and(|t| t.generics.contains(&g)))
                 .map_or(String::new(), |(d, _)| d.name.clone());
+            let example = match self.is_num_param(g) {
+                true => format!("`{owner}<…, {name}: 3>(…)`"),
+                false => format!("`{owner}<Int>(…)`"),
+            };
             self.error(
                 span,
-                format!("nothing here says what `{name}` of `{owner}` is: write it, as `{owner}<Int>(…)` (spec 2.9)"),
+                format!("nothing here says what `{name}` of `{owner}` is: write it, as {example} (spec 2.9)"),
             );
         }
     }

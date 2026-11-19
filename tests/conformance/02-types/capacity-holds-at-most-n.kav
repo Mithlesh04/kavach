@@ -13,37 +13,39 @@
 // expect output: true
 
 fn main() {
-    let recent: [Float] = List.capacity(3, [0.5])
+    // Numbers known only while running: a `let` may change.
+    let (two, three, many, below) = (2, 3, 2000, -5)
+    let recent: [Float] = List.capacity(three, [0.5])
     recent.push(1.5)
     recent.push(2.5)
     print(recent)
     print(recent.is_full())
 
-    let ages: {String: Int} = Dict.capacity(2, {"asha": 31})
+    let ages: {String: Int} = Dict.capacity(two, {"asha": 31})
     ages["asha"] = 32
     ages["ravi"] = 27
     print(ages)
     print(ages.is_full())
 
-    let seen: Set<Int> = Set.capacity(2, [7, 7])
+    let seen: Set<Int> = Set.capacity(two, [7, 7])
     print(seen.len())
     print(seen.is_full())
     seen.add(7)
     seen.add(8)
     print(seen.is_full())
 
-    let squares: {Int: Int} = Dict.capacity(2000)
+    let squares: {Int: Int} = Dict.capacity(many)
     for i in 0..2000 {
         squares[i] = i * i
     }
     print(squares.len())
     print(squares[1999] ?? 0)
 
-    let small: [Int32] = List.capacity(3)
+    let small: [Int32] = List.capacity(three)
     for i in 1..=3 {
         small.push(Int32(i))
     }
     print(small)
-    const nothing: [Int] = List.capacity(-5)
+    const nothing: [Int] = List.capacity(below)
     print(nothing.is_full())
 }

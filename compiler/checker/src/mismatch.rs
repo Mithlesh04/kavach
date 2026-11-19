@@ -11,6 +11,9 @@ use kavach_ast::{Expr, ExprKind};
 
 impl Checker<'_> {
     pub(crate) fn mismatch(&mut self, e: &Expr, expected: &Ty, actual: &Ty) {
+        if let Some(message) = self.sized_mismatch(expected, actual) {
+            return self.error(e.span, message);
+        }
         let (want, got) = (self.show(expected), self.show(actual));
         let (we, ga) = (self.inf.resolve(expected), self.inf.resolve(actual));
         let message = match (&we, &ga, &e.kind) {

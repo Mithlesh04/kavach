@@ -38,6 +38,9 @@ Hindley–Milner-style inference with unification. A number literal starts as an
 | `src/module_consts.rs` | Module constants (spec 1.13), checked before the functions that read them |
 | `src/reflect.rs` | `T.members()`, `m.members()` and `x.has_member(name)` (spec 14.32), worked out while compiling |
 | `src/collect.rs` | Written types → checker types; signatures of functions, types and methods |
+| `src/sizes.rs` | Numbers in types (spec 2.9): number parameters, number arguments, `[T]<max: n>` and the other built-in types with numbers |
+| `src/size_checks.rs` | What is checked about numbers in types: literals that don't fit, values given for other numbers, indexes past a `len`, changing a fixed-length list |
+| `src/size_calls.rs` | `try List<Int, max: 2>(xs)` and the other conversions, `Ring<T, max: n>(…)`, and the numbers code generation needs (`Settled`) |
 | `src/drops.rs` | `Drop` (spec 6.1): which types implement it, which values hold one, and that making one needs what its `drop` uses |
 | `src/items.rs` | Declarations, function bodies, blocks, statements, unused values |
 | `src/exprs.rs` | Expressions: names, operators, lambdas |

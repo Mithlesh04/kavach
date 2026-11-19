@@ -1,0 +1,8 @@
+// Rule: `capacity(n)` is for a number known only while running; with one known while compiling it is a compile error naming the type.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    let r: [Int] = List.capacity(5)     // error: write `List<max: 5>`
+    print(r)
+}

@@ -198,7 +198,11 @@ impl Parser<'_> {
                     bounds.push(self.type_expr());
                 }
             }
-            f.where_bounds.push(GenericParam { name, bounds });
+            f.where_bounds.push(GenericParam {
+                name,
+                bounds,
+                default: None,
+            });
             if !self.eat(&TokenKind::Comma) {
                 break;
             }

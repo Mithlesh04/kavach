@@ -100,8 +100,6 @@ counts.mean()                       // error: `mean` needs `T: Floating`, and `T
 
 ## Numbers in types
 
-*Not built yet.*
-
 A generic type may take numbers as well as types ([decision 0137](../../decisions/0137-numbers-in-types.md)). One rule says how: **types are positional, numbers are named**, as named arguments are in a call (3.2). The types come first, in order; then each number, with its name, in any order.
 
 ```kavach
@@ -148,16 +146,16 @@ const z = zeros<n: 4>()         // [0.0, 0.0, 0.0, 0.0]
 
 | Written | Means | Spec |
 |---|---|---|
-| `Int<bits: 24>`, `UInt<bits: 12>` | A whole number of exactly 24 bits, signed; of 12 bits, not signed | [2.1](01-built-in-types.md) |
-| `Int<range: 1..=65535>` | A whole number always from 1 to 65,535 | [2.1](01-built-in-types.md) |
-| `Decimal<digits: 10, places: 2>` | At most 10 digits, 2 of them after the point | [2.1](01-built-in-types.md) |
+| `Int<bits: 24>`, `UInt<bits: 12>` | A whole number of exactly 24 bits, signed; of 12 bits, not signed | [2.1](01-built-in-types.md) (not built yet) |
+| `Int<range: 1..=65535>` | A whole number always from 1 to 65,535 | [2.1](01-built-in-types.md) (not built yet) |
+| `Decimal<digits: 10, places: 2>` | At most 10 digits, 2 of them after the point | [2.1](01-built-in-types.md) (not built yet) |
 | `[Float]<len: 3>`, `List<Float, len: 3>` | A list of exactly 3 items | [2.2](02-collections.md) |
 | `[Float]<max: 16>`, `List<Float, max: 16>` | A list of at most 16 items | [2.2](02-collections.md) |
 | `{String: Int}<max: 100>`, `Dict<String, Int, max: 100>` | A dict of at most 100 keys | [2.2](02-collections.md) |
 | `Set<Int, max: 10>`, `Ring<Float, max: 100>` | A set of at most 10 values; a ring of the last 100 pushed | [2.2](02-collections.md) |
 | `Bytes<len: 32>` | Exactly 32 bytes, as `crypto.sha256` gives | [2.13](13-bytes.md) |
-| `Tensor<Float, dims: 2>`, `Tensor<Float, shape: [3, 4]>` | Exactly two dimensions; exactly 3 × 4 | [14.33](../14-standard-library/33-tensor.md) |
-| `Simd<Float32, lanes: 8>` | 8 `Float32`s worked on at once | Comes with to-do item 14 |
+| `Tensor<Float, dims: 2>`, `Tensor<Float, shape: [3, 4]>` | Exactly two dimensions; exactly 3 × 4 | [14.33](../14-standard-library/33-tensor.md) (not built yet) |
+| `Simd<Float32, lanes: 8>` | 8 `Float32`s worked on at once | Comes with to-do item 14 (not built yet) |
 
 A built-in type's numbers may be left out: `Int` is `Int<bits: 64>`, `[Int]` has no limit, and `Tensor<Float>` has any number of dimensions.
 
@@ -165,7 +163,7 @@ A built-in type's numbers may be left out: `Int` is `Int<bits: 64>`, `[Int]` has
 
 ```kavach
 const a: {String: [Int]<max: 5>} = {"small": [1, 2]}    // a dict of lists of at most 5
-const b: {String: Int<bits: 8>} = {"x": 100}            // a dict of 8-bit numbers
+const b: {String: Int<bits: 8>} = {"x": 100}            // a dict of 8-bit numbers (not built yet)
 const c: [[Float]<len: 3>]<max: 100> = []               // at most 100 lists of 3
 const d: [Int, max: 2] = []                             // compile error: write `[Int]<max: 2>`
 ```
@@ -174,11 +172,11 @@ const d: [Int, max: 2] = []                             // compile error: write 
 
 | While compiling | While running |
 |---|---|
-| A number argument's name and value, and a missing one | A sum or product of `bits` or `range` numbers that doesn't fit: a panic, as overflow is (5.6) |
+| A number argument's name and value, and a missing one | A sum or product of `bits` or `range` numbers that doesn't fit: a panic, as overflow is (5.6) (not built yet) |
 | A literal that doesn't fit: `4096` as a `UInt<bits: 12>`, 3 items into `[Int]<max: 2>`, `1.234` with `places: 2` | A `push` past `max`: a panic; `is_full()` checks first (2.2) |
 | A type given for the same type with other numbers | A `try` into a type with numbers (below) |
 | An index written as a number past a `len`: `v[3]` of a `[Float]<len: 3>` | An index worked out while running, as for any list |
-| `a @ b` of two tensors whose shapes are in their types | Tensor shapes the types leave out (14.33) |
+| `a @ b` of two tensors whose shapes are in their types | Tensor shapes the types leave out (14.33) (not built yet) |
 
 **Into a type with numbers.** A value whose type has the numbers may be given where the type without them is expected: a `Bytes<len: 32>` where `Bytes` is, a `Tensor<Float, shape: [3, 4]>` where `Tensor<Float, dims: 2>` is. The other way takes `try` or `catch`: the type with its numbers, called with the value, fails with a `SizeError` when the value doesn't fit, as `try Int(text)` fails with a `ParseError` (2.1) and `try Dump(...)` with an `InvariantError` (7.3). Without `try` or `catch` it is a compile error, unless the value is a literal, which is checked while compiling.
 
@@ -193,7 +191,7 @@ const p = List<Int, max: 2>([1, 2, 3].map(x => x * 2)) catch e => {
 }
 ```
 
-Number conversions are as before: `UInt<bits: 12>(x)` and `Int<range: 1..=65535>(x)` panic when `x` doesn't fit, as `Int8(300)` does (2.1).
+*Not built yet:* Number conversions are as before: `UInt<bits: 12>(x)` and `Int<range: 1..=65535>(x)` panic when `x` doesn't fit, as `Int8(300)` does (2.1).
 
 ## Open questions
 
@@ -201,4 +199,8 @@ Number conversions are as before: `UInt<bits: 12>(x)` and `Int<range: 1..=65535>
 - **Other kinds of number parameters** for a program's own types: a list of numbers (a shape, as `Tensor`'s), a `Bool`, a range. Today a program's own number parameters are `Int`s, and the checker knows `std.tensor`'s shape rules itself (14.33).
 - **A number left open:** `Tensor<Float32, shape: [_, 768]>`, or a program's own type with a number left out to mean "any, checked while running", as `Tensor<Float>` has. A function's number parameter covers most uses today: `fn embed<b: Int>(x: Tensor<Float32, shape: [b, 768]>)`.
 - **A name for a type with numbers:** `type Port = Int<range: 1..=65535>` as an alias. Aliases exist only for anonymous records (2.14).
-- **`SizeError`:** an error of its own, as written here, or one shared by every failed conversion.
+- **A literal against a number parameter:** inside `fn zeros<n: Int>() -> [Float]<len: n>`, a list literal can't be checked against `len: n`, as `n` is known only for each call, so it is a compile error, and the list is made with `try` or `catch`. A way to make a list of `n` items without one (`List<Float, len: n>.filled(0.0)`) is open.
+- **A fixed length while running:** a `[Float]<len: 3>` given where a plain `[Float]` is expected is a plain list there, which may grow; a `max` limit goes with the value (2.2). Whether `len` should go with it too, as a limit of `n`, is open.
+- **Numbers deeper inside a type:** a `[[Float]]` given where a `[[Float]<len: 3>]` is expected is not yet refused; only a collection's own numbers are compared, and an item's when both types have them.
+- **A `let` with no written type** takes its value's type without the collection's own number, as it may change (`let out = Bytes([])`, then `out = out + more`); a `const` keeps it, and the value keeps its `max` while running. Settled this way for now; a `let` that keeps the number writes its type.
+- **`extend` blocks of types with numbers** (`extend<T, width: Int> Grid<T, width: width>`) are not built: methods of such a type go in its declaration.

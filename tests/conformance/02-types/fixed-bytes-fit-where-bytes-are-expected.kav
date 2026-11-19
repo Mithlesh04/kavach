@@ -1,0 +1,25 @@
+// Rule: `Bytes<len: n>` may go where `Bytes` is expected; plain `Bytes` become a `Bytes<len: n>` only through `try` or `catch`, a `SizeError` when the length is another.
+// Spec: 2.13
+// expect output: 32
+// expect output: true
+// expect output: 3 bytes don't fit `Bytes<len: 32>`
+// expect output: false
+
+use std.crypto
+
+fn key_of(text: String) -> Bytes<len: 32> {
+    crypto.sha256(text.bytes())
+}
+
+fn main() {
+    const k = key_of("asha")
+    const plain: Bytes = k
+    print(plain.len())
+    const back = Bytes<len: 32>(plain) catch _ => k
+    print(back == k)
+    const short = Bytes<len: 32>(Bytes([1, 2, 3])) catch e => {
+        print(e)
+        k
+    }
+    print(short.len() == 0)
+}

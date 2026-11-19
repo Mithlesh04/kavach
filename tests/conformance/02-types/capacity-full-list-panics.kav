@@ -4,7 +4,8 @@
 // expect panic: the list is full (capacity 3)
 
 fn main() {
-    let xs: [Int] = List.capacity(3)
+    let n = 3
+    let xs: [Int] = List.capacity(n)
     for i in 0..3 {
         xs.push(i)
     }

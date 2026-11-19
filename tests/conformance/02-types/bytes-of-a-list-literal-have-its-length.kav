@@ -1,0 +1,10 @@
+// Rule: `Bytes([…])` of a list literal of `n` numbers is a `Bytes<len: n>`, so it doesn't fit another length.
+// Spec: 2.13
+// expect compile error
+
+fn main() {
+    const two: Bytes<len: 2> = Bytes([1, 2])
+    const three: Bytes<len: 2> = Bytes([1, 2, 3])     // error: `Bytes<len: 3>` is not `Bytes<len: 2>`
+    print(two)
+    print(three)
+}

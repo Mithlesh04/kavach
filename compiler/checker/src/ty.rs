@@ -111,6 +111,32 @@ pub enum Ty {
     Result(Box<Ty>, Box<Ty>),
     /// An unknown type being inferred.
     Var(u32),
+    /// A number in a type (spec 2.9): `3` in `Grid<Float, width: 3>`.
+    Num(i64),
+    /// A list, dict, set, ring or `Bytes` with a number in its type
+    /// (spec 2.2, 2.13): `[Int]<max: 2>`, `Bytes<len: 32>`. The number is
+    /// a `Num`, a number parameter's `Param`, or a `Var`. `Infer::shallow`
+    /// sees through it, so code that doesn't care about the number sees
+    /// the plain type.
+    Sized(Box<Ty>, SizeKind, Box<Ty>),
+}
+
+/// What a collection's number says (spec 2.2).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum SizeKind {
+    /// `max`: at most that many entries.
+    Max,
+    /// `len`: exactly that many.
+    Len,
+}
+
+impl SizeKind {
+    pub fn name(self) -> &'static str {
+        match self {
+            SizeKind::Max => "max",
+            SizeKind::Len => "len",
+        }
+    }
 }
 
 /// Names of built-in types that are not scalars, as `&'static str`.
@@ -132,6 +158,7 @@ pub(crate) fn builtin_name(name: &str) -> &'static str {
         "Error",
         "ParseError",
         "InvariantError",
+        "SizeError",
         "CliError",
         "LibraryError",
         "Regex",

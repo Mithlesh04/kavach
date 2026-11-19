@@ -4,7 +4,8 @@
 // expect panic: the map is full (capacity 1)
 
 fn main() {
-    let m: {String: Int} = Dict.capacity(1, {"a": 1})
+    let n = 1
+    let m: {String: Int} = Dict.capacity(n, {"a": 1})
     m["a"] = 3
     print(m)
     m["b"] = 2

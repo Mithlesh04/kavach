@@ -1,0 +1,11 @@
+// Rule: A number parameter the arguments don't show is written at the call, with its name.
+// Spec: 2.9
+// expect output: 8
+
+fn twice<n: Int>() -> Int {
+    n * 2
+}
+
+fn main() {
+    print(twice<n: 4>())
+}

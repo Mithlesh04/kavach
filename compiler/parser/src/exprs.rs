@@ -327,6 +327,8 @@ impl Parser<'_> {
                 Ident | Comma | Dot | Question | LBracket | RBracket | LBrace | RBrace | Colon
                 | Arrow => {}
                 Keyword(self::Keyword::Fn) | LParen | RParen if depth > 0 => {}
+                // `zeros<n: 4>()`, `List<Int, max: 2>(xs)`: a named number.
+                Int(_) if depth > 0 && matches!(self.token_at(i - 1), Colon | Comma | Lt) => {}
                 _ => return false,
             }
             if depth <= 0 {

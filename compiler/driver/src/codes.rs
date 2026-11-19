@@ -28,7 +28,11 @@ const TABLE: &[(&str, &[&str])] = &[
     ),
     // Found at compile time: a call that always breaks its contract or
     // an index always out of range (spec 7.7).
-    ("always-fails", &["always panics", "always breaks"]),
+    // An index written as a number past a fixed length (spec 2.2).
+    (
+        "always-fails",
+        &["always panics", "always breaks", "is past `"],
+    ),
     ("unsafe", &["points at memory C lays out", "`unsafe"]),
     ("gpu", &["`gpu fn`", "(spec 15."]),
     ("contract", &["a contract can't", "contracts must"]),
@@ -187,6 +191,10 @@ const TABLE: &[(&str, &[&str])] = &[
             ", and this is",
             "of a fixed size",
             "only when `",
+            // Numbers in types (spec 2.9).
+            "a limit is from",
+            "a number in a type",
+            "the limit is known while compiling",
         ],
     ),
 ];

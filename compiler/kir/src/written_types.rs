@@ -18,6 +18,13 @@ impl Lowerer<'_> {
     pub(crate) fn written_type(&mut self, t: &TypeExpr) -> Lowered<Type> {
         let span = t.span;
         Ok(match &t.kind {
+            // A collection's numbers don't change its layout (spec 2.2).
+            TypeKind::WithNums(base, _) => return self.written_type(base),
+            TypeKind::Named { path, args }
+                if args.iter().any(|a| matches!(a.kind, TypeKind::Num { .. })) =>
+            {
+                return self.numbered_type(t, path, args);
+            }
             TypeKind::Named { path, args } => {
                 // `regex.Regex`, `fs.FsError`: the type is the last name.
                 let first = path.segments.last().unwrap_or(&path.segments[0]);
@@ -42,6 +49,7 @@ impl Lowerer<'_> {
                             "Error"
                                 | "ParseError"
                                 | "InvariantError"
+                                | "SizeError"
                                 | "CliError"
                                 | "RegexError"
                                 | "LibraryError"

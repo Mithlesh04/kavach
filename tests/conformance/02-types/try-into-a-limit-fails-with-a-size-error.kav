@@ -1,0 +1,30 @@
+// Rule: `try List<Int, max: 2>(xs)` fails with a `SizeError` when `xs` doesn't fit; a list that fits gets the limit.
+// Spec: 2.9
+// expect output: [1]
+// expect output: a list of 3 items doesn't fit `List<Int, max: 2>`
+// expect output: []
+// expect output: true
+// expect output: a dict of 2 keys doesn't fit `Dict<String, Int, max: 1>`
+// expect output: 0
+
+fn pair(xs: [Int]) -> [Int]<max: 2> ! SizeError {
+    try List<Int, max: 2>(xs)
+}
+
+fn main() {
+    let ok = pair([1]) catch _ => []
+    print(ok)
+    const p = List<Int, max: 2>([1, 2, 3].map(x => x * 2)) catch e => {
+        print(e)
+        []
+    }
+    print(p)
+    ok.push(2)
+    print(ok.is_full())
+    const ages = {"asha": 31, "ravi": 27}
+    const one = Dict<String, Int, max: 1>(ages) catch e => {
+        print(e)
+        {:}
+    }
+    print(one.len())
+}

@@ -89,7 +89,12 @@ pub fn item(item: &Item) -> String {
 fn function(head: &str, f: &FnDecl) -> String {
     let mut out = format!("{head} {}", f.name.name);
     if !f.generics.is_empty() {
-        out += &format!(" <{}>", list(&f.generics, |g| g.name.name.clone()));
+        let generic = |g: &GenericParam| match (g.is_number(), &g.default) {
+            (true, Some(d)) => format!("{}:Int={}", g.name.name, expr(d)),
+            (true, None) => format!("{}:Int", g.name.name),
+            _ => g.name.name.clone(),
+        };
+        out += &format!(" <{}>", list(&f.generics, generic));
     }
     out += &format!(
         " ({})",

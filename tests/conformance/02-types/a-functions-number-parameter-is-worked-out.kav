@@ -1,0 +1,18 @@
+// Rule: A function's number parameters are worked out from its arguments, as type arguments are; inside, each is a constant `Int`.
+// Spec: 2.9
+// expect output: 32.0
+// expect output: 11.0
+
+fn dot<n: Int>(a: [Float]<len: n>, b: [Float]<len: n>) -> Float {
+    let sum = 0.0
+    for i in 0..n {
+        sum += a[i] * b[i]
+    }
+    sum
+}
+
+fn main() {
+    const u: [Float]<len: 3> = [1.0, 2.0, 3.0]
+    print(dot(u, [4.0, 5.0, 6.0]))
+    print(dot([1.0, 2.0], [3.0, 4.0]))
+}

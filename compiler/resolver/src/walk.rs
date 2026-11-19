@@ -442,6 +442,12 @@ impl Resolver {
                     self.use_type(&path.segments[0]);
                 }
             }
+            // `len: n`: a literal, a constant or a number parameter (2.9).
+            TypeKind::Num { value, .. } => self.expr(value),
+            TypeKind::WithNums(base, nums) => {
+                self.type_expr(base);
+                nums.iter().for_each(|x| self.type_expr(x));
+            }
             TypeKind::Error => {}
         }
     }

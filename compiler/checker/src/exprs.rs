@@ -22,7 +22,17 @@ impl Checker<'_> {
                 // `xs.filter(x => valid(x))`: a lambda fails only through
                 // its own `try` (spec 3.3).
                 let in_lambda = self.ctx.as_ref().is_some_and(|c| c.name == "this lambda");
-                let message = if in_lambda {
+                let checked = self.sizes.checks.get(&(e.span.start, e.span.end));
+                let message = if let Some((_, n, shown)) = checked {
+                    let n = match self.inf.resolve_keep(n) {
+                        Ty::Num(v) => v.to_string(),
+                        other => self.show(&other),
+                    };
+                    let shown = shown.replace("{n}", &n);
+                    format!(
+                        "a value may not fit `{shown}`, so making one can fail: write `try {shown}(…)`, or handle the `SizeError` with `catch` (spec 2.9)"
+                    )
+                } else if in_lambda {
                     format!(
                         "{what} can fail: write `try` before it to pass the error on from this lambda, which the call that takes the lambda then passes on (spec 3.3), or handle it here with `catch` or `match`"
                     )
@@ -39,6 +49,7 @@ impl Checker<'_> {
     /// The type of `e`; a call that can fail gives `Ty::Result`.
     pub(crate) fn infer(&mut self, e: &Expr, expected: Option<&Ty>) -> Ty {
         let t = self.infer_kind(e, expected);
+        let t = self.size_literal(e, expected, t);
         self.expr_types.push((e.span, t.clone()));
         t
     }
@@ -196,7 +207,11 @@ impl Checker<'_> {
                     }
                 }
             }
-            ExprKind::Index { base, index } => self.index(base, index),
+            ExprKind::Index { base, index } => {
+                let t = self.index(base, index);
+                self.check_fixed_index(base, index);
+                t
+            }
             // Only inside `[ ]`, where `index` types them (spec 2.19).
             ExprKind::FromEnd(_) | ExprKind::Part { .. } | ExprKind::Dims(_) => Ty::Error,
             ExprKind::With { base, fields } => self.with(base, fields),
@@ -369,8 +384,9 @@ impl Checker<'_> {
                 self.check_expect(r, &BOOL);
                 BOOL
             }
+            // A collection's number doesn't matter to an operator (2.9).
             Eq | NotEq | Lt | Le | Gt | Ge => {
-                let lt = self.value(l, None);
+                let lt = self.plain_value(l);
                 if !matches!(op, Eq | NotEq)
                     && let Some(t) = self.user_binary(op, l, r, &lt)
                 {
@@ -421,7 +437,7 @@ impl Checker<'_> {
                 Ty::Range(Box::new(lt))
             }
             _ => {
-                let lt = self.value(l, None);
+                let lt = self.plain_value(l);
                 if let Some(t) = self.ptr_offset(op, &lt, r, l.span) {
                     return t;
                 }

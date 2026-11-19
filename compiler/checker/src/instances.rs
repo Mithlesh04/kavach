@@ -36,7 +36,17 @@ impl Checker<'_> {
         let Ty::Adt(_, args) = &instance else {
             return (instance, subst);
         };
-        if !written.is_empty() && written.len() != args.len() {
+        let numbered = (self.generic_list(def).iter().any(|g| self.is_num_param(*g)))
+            || written
+                .iter()
+                .any(|w| matches!(w.kind, kavach_ast::TypeKind::Num { .. }));
+        if numbered && !written.is_empty() {
+            // Types in order, numbers by name (spec 2.9).
+            let given = self.adt_args(def, written, None, span, true);
+            for (arg, t) in args.clone().iter().zip(&given) {
+                self.inf.unify(arg, t);
+            }
+        } else if !written.is_empty() && written.len() != args.len() {
             let name = self.res.defs[def].name.clone();
             let takes = match args.len() {
                 1 => "1 type argument".to_string(),
