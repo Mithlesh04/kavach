@@ -24,3 +24,4 @@ Each section is a file of its own: new sections go at the end, with the next num
 - Where approval requests are delivered (webhook, Slack, email) and the timeout setting.
 - Should `limit Ai` also take a budget in money, worked out from each model's price? Tokens are counted today (`tokens`, 8.3).
 - Should `limit` support cost budgets for AI calls (tokens or currency)?
+- AI providers other than Anthropic ([decision 0140](../../decisions/0140-ai-providers.md), proposed): which providers come first; how a `Model` names its provider (a field, or read from `api_url`); how fallbacks to other models, providers and keys are written, and when they move on; where prices come from (built in, set by the program, or both); keys that cloud providers sign or renew (Bedrock, Vertex); Gemini's `generateContent` or its Interactions API; how code reads an `ask`'s tokens and cost; where the adapters live; counting a prompt's tokens before sending.
