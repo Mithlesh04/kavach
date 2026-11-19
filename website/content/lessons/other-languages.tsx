@@ -5,8 +5,7 @@ import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject, loadSample } from "@/lib/samples";
-import { specBlockWith } from "@/lib/spec-tables";
-import { Ex, H2, Note, P, Syntax } from "./parts";
+import { Ex, H2, Note, P, SpecCode, Syntax } from "./parts";
 
 const croot = loadProject("interop/croot.native", ["kavach.toml", "src/main.kav"]);
 const numbers = loadProject("interop/numbers.native", ["src/main.kav"]);
@@ -187,7 +186,7 @@ export const cLoadedDoc: LessonDoc = {
   minutes: 3,
   body: (
     <>
-      <CodeBlock code={specBlockWith("10-modules-and-packages/07-interop.md", "10.7", "extern c library")} file="main.kav, from spec 10.7" />
+      <SpecCode file="10-modules-and-packages/07-interop.md" number="10.7" text={"extern c library"} name="main.kav" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>The library isn&apos;t linked. <C>Adder</C> is a type, and <C>Adder.open(path)</C> loads the library at <C>path</C>; a file name alone is looked for as the system does.</li>
         <li>It finds each function of the block in the library, and each is then a method of the value: <C>lib.add(2, 3)</C>.</li>

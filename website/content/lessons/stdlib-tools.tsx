@@ -1,11 +1,10 @@
 import Link from "next/link";
-import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import type { LessonDoc } from "@/lib/chapter";
-import { Ex, H2, Note, P } from "./parts";
+import { Ex, H2, Note, P, SpecCode } from "./parts";
 import { Limits } from "./limits";
 import { ModuleTable } from "./spec-table";
-import { fileFigure, specBlock } from "@/lib/spec-tables";
+import { fileFigure } from "@/lib/spec-tables";
 import { SrcRef } from "@/components/src-ref";
 
 // ---------- The Terminal ----------
@@ -285,7 +284,7 @@ export const clipboardDoc: LessonDoc = {
   before: ["agents/capabilities"],
   body: (
     <>
-      <CodeBlock code={specBlock("14-standard-library/17-clipboard.md", "14.17")} file="main.kav, from spec 14.17" />
+      <SpecCode file="14-standard-library/17-clipboard.md" number="14.17" name="main.kav" />
       <ModuleTable file="17-clipboard.md" number="14.17" first="Function" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>ClipboardError</C> is <C>Empty</C>, or <C>Unavailable(reason)</C> on a machine with no clipboard: a server, a container, a terminal with no desktop.</li>
@@ -314,7 +313,7 @@ export const devicesDoc: LessonDoc = {
   before: ["standard-library/bytes"],
   body: (
     <>
-      <CodeBlock code={specBlock("14-standard-library/18-devices.md", "14.18")} file="main.kav, from spec 14.18" />
+      <SpecCode file="14-standard-library/18-devices.md" number="14.18" name="main.kav" />
       <P>
         It lists the ports, opens one at 115,200 bits a second, sends <C>ping</C> and prints the answer. A port is
         named as the system names it: <C>COM3</C> on Windows, <C>/dev/ttyUSB0</C> on Linux.

@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { specBlockWith } from "@/lib/spec-tables";
-import { Ex, H2, P } from "./parts";
+import { Ex, H2, P, SpecCode } from "./parts";
 import { ModuleTable } from "./spec-table";
 
 // ---------- GPU Screens ----------
@@ -22,7 +20,7 @@ export const gpuScreenDoc: LessonDoc = {
   before: ["standard-library/windows"],
   body: (
     <>
-      <CodeBlock code={specBlockWith(FILE, "14.24", "gpu.screen(win)")} file="main.kav, from spec 14.24" />
+      <SpecCode file={FILE} number="14.24" text={"gpu.screen(win)"} name="main.kav" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>gpu.screen(win)</C> gives what draws into the window, using the program&apos;s GPU.</li>
         <li><C>screen.frame()</C> gives the next picture, as big as the window is now. It waits for the screen&apos;s next refresh when the last picture isn&apos;t shown yet (vsync), so the loop runs at the screen&apos;s rate.</li>

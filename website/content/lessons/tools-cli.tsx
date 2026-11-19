@@ -6,7 +6,7 @@ import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
 import { fileFigure, fileTables, specBlock, specBlockWith } from "@/lib/spec-tables";
-import { H2, Note, P } from "./parts";
+import { H2, Note, P, SpecCode } from "./parts";
 import { Table } from "./spec-table";
 
 // The commands `kavach --help` lists today; spec 10.5 has the rest, which
@@ -220,7 +220,7 @@ export const buildDoc: LessonDoc = {
         administrator prompt; it is sharp on high-DPI screens; and it may use paths longer than 260 characters. With{" "}
         <C>icon</C> under <C>[build]</C>, the executable also has that icon, which Explorer and the taskbar show:
       </P>
-      <CodeBlock code={specBlockWith("10-modules-and-packages/05-command-line.md", "10.5", "icon = ")} lang="toml" file="kavach.toml, from spec 10.5" />
+      <SpecCode file="10-modules-and-packages/05-command-line.md" number="10.5" text={"icon = "} name="kavach.toml" lang="toml" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>The path is relative to <C>kavach.toml</C>. A file that isn&apos;t a PNG, or one larger than 256 × 256, is an error that says so.</li>
         <li>Kavach writes the Windows resources itself, so no Windows SDK is needed.</li>
@@ -239,7 +239,7 @@ export const buildDoc: LessonDoc = {
         A program that shows a window doesn&apos;t want a console window beside it. With <C>console = false</C> under{" "}
         <C>[build]</C>, <C>kavach build</C> makes it a Windows window program, which starts with no console window:
       </P>
-      <CodeBlock code={specBlockWith("10-modules-and-packages/05-command-line.md", "10.5", "console = ")} lang="toml" file="kavach.toml, from spec 10.5" />
+      <SpecCode file="10-modules-and-packages/05-command-line.md" number="10.5" text={"console = "} name="kavach.toml" lang="toml" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>What it prints goes nowhere, as nothing shows it.</li>
         <li>

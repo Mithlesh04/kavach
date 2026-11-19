@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { specBlockWith } from "@/lib/spec-tables";
-import { Ex, H2, Note, P } from "./parts";
+import { Ex, H2, Note, P, SpecCode } from "./parts";
 import { ModuleTable } from "./spec-table";
 
 // ---------- Gamepads ----------
@@ -27,7 +25,7 @@ export const gamepadDoc: LessonDoc = {
         A game loop asks for the pads once a frame and reads each one. This is the spec&apos;s example. It reads the
         pads plugged into the machine, and shakes one, so it is shown here, not run:
       </P>
-      <CodeBlock code={specBlockWith(FILE, "14.26", "fn steer(")} file="from spec 14.26" />
+      <SpecCode file={FILE} number="14.26" text={"fn steer("} />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>input.pads()</C> gives each pad connected now, as a <C>Pad</C>. The first call starts watching them.</li>
         <li><C>pad.is_down(&quot;South&quot;)</C> says whether a button is held.</li>

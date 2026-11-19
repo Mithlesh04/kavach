@@ -1,7 +1,11 @@
 import { isValidElement, type ReactNode } from "react";
+import fs from "node:fs";
+import path from "node:path";
 import { CodeBlock } from "@/components/code-block";
+import { SrcRef } from "@/components/src-ref";
 import type { HoverNote } from "@/lib/chapter";
 import { loadProjectFiles, loadSample } from "@/lib/samples";
+import { specBlock, specBlockWith } from "@/lib/spec-tables";
 
 // Small building blocks every lesson page uses, so pages stay prose and
 // samples. Samples come from content/samples/ and are run by the real
@@ -67,4 +71,42 @@ export function P({ children }: { children: ReactNode }) {
 /** A short aside: a rule worth remembering. */
 export function Note({ children }: { children: ReactNode }) {
   return <p className="m-0 rounded-[10px] border border-line bg-panel px-4 py-3 text-[15px] text-muted">{children}</p>;
+}
+
+/**
+ * A code block of the spec, shown and not run, as the spec writes it: the
+ * one in section `number` of `file` (under docs/spec/) that holds `text`,
+ * or the section's first block. Its tab shows `name`, the file the code
+ * would be in, when the page gives one (`main.kav`, `kavach.toml`); the link
+ * under it names the spec file and the line the code starts on.
+ */
+export function SpecCode({
+  file,
+  number,
+  text,
+  name,
+  lang,
+}: {
+  file: string;
+  number: string;
+  text?: string;
+  name?: string;
+  lang?: string;
+}) {
+  const code = text === undefined ? specBlock(file, number) : specBlockWith(file, number, text);
+  const rel = `docs/spec/${file}`;
+  const raw = fs.readFileSync(path.join(process.cwd(), "..", rel), "utf8").split(/\r?\n/);
+  // The block's first line: the line after a fence where every line of the code follows.
+  const lines = code.split(/\r?\n/).map((l) => l.trim());
+  const at = raw.findIndex(
+    (_, i) => raw[i - 1]?.trim().startsWith("```") && lines.every((l, k) => raw[i + k]?.trim() === l),
+  );
+  return (
+    <div className="flex flex-col gap-2">
+      <CodeBlock code={code} file={name} lang={lang} />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file={rel} line={at >= 0 ? at + 1 : undefined} label={`from spec ${number}`} />
+      </div>
+    </div>
+  );
 }

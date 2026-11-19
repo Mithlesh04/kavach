@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { specBlockWith } from "@/lib/spec-tables";
-import { Ex, H2, Note, P } from "./parts";
+import { Ex, H2, Note, P, SpecCode } from "./parts";
 import { ModuleTable } from "./spec-table";
 
 // ---------- Windows ----------
@@ -21,7 +19,7 @@ export const windowDoc: LessonDoc = {
   before: ["agents/capabilities"],
   body: (
     <>
-      <CodeBlock code={specBlockWith(FILE, "14.22", 'window.open("Swarm"')} file="main.kav, from spec 14.22" />
+      <SpecCode file={FILE} number="14.22" text={'window.open("Swarm"'} name="main.kav" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>window.open</C> shows a window of 1280 × 720 pixels at once.</li>
         <li><C>events()</C> waits for at least one event, then gives every event that came.</li>
@@ -42,7 +40,7 @@ export const windowDoc: LessonDoc = {
         <li><C>win.poll()</C> never waits, and is empty when nothing came: a game calls it once a frame.</li>
         <li><C>win.run(f)</C> calls <C>f</C> for each event until <C>f</C> gives <C>false</C> or the window closes:</li>
       </ul>
-      <CodeBlock code={specBlockWith(FILE, "14.22", "win.run(")} file="from spec 14.22" />
+      <SpecCode file={FILE} number="14.22" text={"win.run("} />
       <P>
         The system&apos;s event loop runs on a thread of the runtime&apos;s own, so a slow frame never freezes the
         window.

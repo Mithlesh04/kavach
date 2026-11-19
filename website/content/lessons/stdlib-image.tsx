@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { specBlockWith } from "@/lib/spec-tables";
-import { Ex, H2, P } from "./parts";
+import { Ex, H2, P, SpecCode } from "./parts";
 import { ModuleTable } from "./spec-table";
 
 // ---------- Images ----------
@@ -37,7 +35,7 @@ export const imageDoc: LessonDoc = {
         Reading a file needs <C>Fs.read</C>, as always; the picture itself needs nothing. Its pixels are what{" "}
         <C>gpu.texture</C> takes, so a picture goes to the GPU as it is. Shown, not run, as it reads a file:
       </P>
-      <CodeBlock code={specBlockWith(FILE, "14.29", "image.decode(")} file="from spec 14.29" />
+      <SpecCode file={FILE} number="14.29" text={"image.decode("} />
       <P>
         Every image is read as 8 bits a part, with opacity: a grey image&apos;s three colors are the same, and an
         image without opacity is fully opaque. See{" "}

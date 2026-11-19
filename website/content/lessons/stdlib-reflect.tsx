@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { specBlockWith, specTables } from "@/lib/spec-tables";
-import { Ex, Files, H2, P } from "./parts";
+import { specTables } from "@/lib/spec-tables";
+import { Ex, Files, H2, P, SpecCode } from "./parts";
 import { Table } from "./spec-table";
 
 // ---------- Reflection ----------
@@ -88,7 +87,7 @@ export const reflectDoc: LessonDoc = {
       <Files name="reflect/own-module" first={["src/shop.kav", "src/main.kav"]} />
       <H2>The types</H2>
       <P>Every call gives these types, declared in <C>stdlib/reflect/reflect.kav</C>:</P>
-      <CodeBlock code={specBlockWith(FILE, "14.32", "pub type Member")} file="from spec 14.32" />
+      <SpecCode file={FILE} number="14.32" text={"pub type Member"} />
       <P>
         Types are written as in code: <C>[Int]</C>, <C>String?</C>, <C>fn(Int) -&gt; Bool</C>. A member that
         isn&apos;t <C>pub</C> is listed only inside its own package, where it can be used.

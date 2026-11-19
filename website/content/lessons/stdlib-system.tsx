@@ -4,8 +4,7 @@ import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
-import { specBlockWith } from "@/lib/spec-tables";
-import { Ex, H2, Note, P } from "./parts";
+import { Ex, H2, Note, P, SpecCode } from "./parts";
 import { ModuleTable } from "./spec-table";
 
 // ---------- The Machine ----------
@@ -73,7 +72,7 @@ export const systemDoc: LessonDoc = {
       </P>
       <Ex name="system/parts" />
       <P>From the spec: free space, the battery and the Bluetooth devices. It prints this machine&apos;s details, so it is shown here, not run:</P>
-      <CodeBlock code={specBlockWith(FILE, "14.25", "fn report()")} file="from spec 14.25" />
+      <SpecCode file={FILE} number="14.25" text={"fn report()"} />
       <ModuleTable file="25-system.md" number="14.25" first="Function" heading="Every part of the machine" />
       <H2>What is critical needs System.critical</H2>
       <P>
@@ -97,7 +96,7 @@ export const systemDoc: LessonDoc = {
         From the spec: free port 8080 by ending the programs that listen on it. It changes the machine, so it is shown
         here, never run:
       </P>
-      <CodeBlock code={specBlockWith(FILE, "14.25", "fn free_8080()")} file="from spec 14.25" />
+      <SpecCode file={FILE} number="14.25" text={"fn free_8080()"} />
       <ModuleTable file="25-system.md" number="14.25" first="Function" heading="Programs, ports and users" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>
@@ -117,7 +116,7 @@ export const systemDoc: LessonDoc = {
         From the spec: the line a bug report or a benchmark starts with. It prints this machine&apos;s details, so it
         is shown here, not run:
       </P>
-      <CodeBlock code={specBlockWith(FILE, "14.25", "fn header()")} file="from spec 14.25" />
+      <SpecCode file={FILE} number="14.25" text={"fn header()"} />
       <H2>Every function</H2>
       <ModuleTable file="25-system.md" number="14.25" first="Function" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">

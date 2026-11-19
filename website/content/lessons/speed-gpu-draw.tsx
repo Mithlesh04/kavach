@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { specBlockWith } from "@/lib/spec-tables";
-import { Ex, H2, Note, P } from "./parts";
+import { Ex, H2, Note, P, SpecCode } from "./parts";
 
 // ---------- GPU › Drawing triangles ----------
 //
@@ -23,7 +21,7 @@ export const gpuDrawDoc: LessonDoc = {
         This is the spec&apos;s example: dots of a swarm, each drawn as a square, under a camera. It draws into a
         window, so it is shown here, not run:
       </P>
-      <CodeBlock code={specBlockWith("15-gpu.md", "15.3", "gpu vertex fn")} file="from spec 15.3" />
+      <SpecCode file="15-gpu.md" number="15.3" text={"gpu vertex fn"} />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>
           A <C>gpu vertex fn</C> takes the vertex, then the instance and the value shared by the whole draw, if the
@@ -59,7 +57,7 @@ export const gpuDrawDoc: LessonDoc = {
         A pipeline made with <C>depth: true</C> draws a pixel only where it is nearer than what is already there. So a
         3D scene can be drawn in any order, and a near box still hides the wall behind it. Shown, not run:
       </P>
-      <CodeBlock code={specBlockWith("15-gpu.md", "15.3", "depth: true")} file="from spec 15.3" />
+      <SpecCode file="15-gpu.md" number="15.3" text={"depth: true"} />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>A pixel&apos;s depth is the third part of <C>position</C> divided by the fourth: 0 is nearest, 1 farthest. Only pixels from 0 to 1 are drawn.</li>
         <li>Each frame keeps one depth for each pixel. They start at 1, the farthest, and <C>frame.clear</C> sets them back to 1.</li>
@@ -76,7 +74,7 @@ export const gpuDrawDoc: LessonDoc = {
         <C>t.sample(u, v)</C> gives the color of texture <C>t</C> at <C>u</C> (0 left, 1 right) and <C>v</C> (0 top, 1
         bottom). Shown, not run:
       </P>
-      <CodeBlock code={specBlockWith("15-gpu.md", "15.3", "fn paint(")} file="from spec 15.3" />
+      <SpecCode file="15-gpu.md" number="15.3" text={"fn paint("} />
       <P>
         <C>gpu.texture(width, height, pixels)</C> makes a texture from its pixels, four numbers each: red, green, blue
         and opacity, row by row from the top. <C>sample</C> works on the CPU too, with the same colors, so this runs

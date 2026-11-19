@@ -6,7 +6,7 @@ import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
 import { specBlockWith } from "@/lib/spec-tables";
-import { Ex, H2, Note, P } from "./parts";
+import { Ex, H2, Note, P, SpecCode } from "./parts";
 import { ModuleTable } from "./spec-table";
 
 // ---------- Files ----------
@@ -127,7 +127,7 @@ export const writingDoc: LessonDoc = {
         Unlike <C>write_text</C>, the file is written in place, not replaced at once: other programs can see it grow.
         When that matters, write to another name and rename it, as the spec&apos;s example does:
       </P>
-      <CodeBlock code={specBlockWith("14-standard-library/03-fs.md", "14.3", "fn save(pieces")} file="from spec 14.3" />
+      <SpecCode file="14-standard-library/03-fs.md" number="14.3" text={"fn save(pieces"} />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/14-standard-library/03-fs.md" label="spec 14.3 · piece by piece" />
         <SrcRef file="tests/conformance/14-standard-library/files-are-written-piece-by-piece.kav" label="tested" />
@@ -204,7 +204,7 @@ export const watchDoc: LessonDoc = {
   body: (
     <>
       <P>A game loop asks once a frame what changed. It watches a real folder, so it is shown here, not run:</P>
-      <CodeBlock code={specBlockWith("14-standard-library/03-fs.md", "14.3", "fs.watch(")} file="from spec 14.3" />
+      <SpecCode file="14-standard-library/03-fs.md" number="14.3" text={"fs.watch("} />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>fs.watch(path)</C> watches a file, or a folder and everything in it. It fails with <C>NotFound</C> when there is nothing there.</li>
         <li><C>w.poll()</C> gives the changes since the last call, without waiting; <C>w.next()</C> waits for the next one.</li>

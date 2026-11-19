@@ -4,9 +4,8 @@ import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
-import { specBlockWith } from "@/lib/spec-tables";
 import { Limits } from "./limits";
-import { Ex, H2, P } from "./parts";
+import { Ex, H2, P, SpecCode } from "./parts";
 import { ModuleTable } from "./spec-table";
 
 const LOG = "12-log.md";
@@ -91,7 +90,7 @@ export const loggingDoc: LessonDoc = {
         Numbers a program counts or measures go to the collector every 10 seconds as OpenTelemetry metrics, when{" "}
         <C>[log.otlp]</C> is set. Without it, they are kept nowhere and cost almost nothing:
       </P>
-      <CodeBlock code={specBlockWith(`14-standard-library/${LOG}`, "14.12", "log.count(")} file="from spec 14.12" />
+      <SpecCode file={`14-standard-library/${LOG}`} number="14.12" text={"log.count("} />
       <ModuleTable file="12-log.md" number="14.12" first="Function" heading="Metrics" />
       <P>
         Each also takes <C>attributes</C>, a <C>{"{String: String}"}</C> dict that is empty unless given. Each name and set

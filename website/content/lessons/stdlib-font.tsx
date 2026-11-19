@@ -1,10 +1,8 @@
 import Link from "next/link";
-import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { specBlockWith } from "@/lib/spec-tables";
-import { Ex, H2, P } from "./parts";
+import { Ex, H2, P, SpecCode } from "./parts";
 import { ModuleTable } from "./spec-table";
 
 // ---------- Fonts ----------
@@ -25,7 +23,7 @@ export const fontDoc: LessonDoc = {
         Load a font, shape a line in English and Hindi, and draw an atlas for the GPU. It reads a font file, so it is
         shown here, not run:
       </P>
-      <CodeBlock code={specBlockWith(FILE, "14.31", "font.load(")} file="main.kav, from spec 14.31" />
+      <SpecCode file={FILE} number="14.31" text={"font.load("} name="main.kav" />
       <ModuleTable file="31-font.md" number="14.31" first="Function or method" />
       <H2>Shaping</H2>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">

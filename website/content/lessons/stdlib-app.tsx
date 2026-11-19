@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { specBlockWith, specTables } from "@/lib/spec-tables";
-import { Ex, H2, Note, P } from "./parts";
+import { specTables } from "@/lib/spec-tables";
+import { Ex, H2, Note, P, SpecCode } from "./parts";
 import { Table } from "./spec-table";
 
 // ---------- Desktop Apps ----------
@@ -33,7 +32,7 @@ export const appDoc: LessonDoc = {
         A game finds its save folder, turns on crash reports, and asks which level to load. It makes folders and shows a
         dialog, so it is shown here, not run:
       </P>
-      <CodeBlock code={specBlockWith(FILE, "14.30", "app.data_dir(")} file="main.kav, from spec 14.30" />
+      <SpecCode file={FILE} number="14.30" text={"app.data_dir("} name="main.kav" />
       <H2>The program&apos;s folders</H2>
       <P>
         Each takes the program&apos;s name and gives the folder for it on this system, made with its parents if it is
@@ -53,7 +52,7 @@ export const appDoc: LessonDoc = {
         <Link href="/docs/errors/panics/">Panics</Link>.
       </P>
       <P>The functions are listed innermost first, each with where it is defined, after the line that panicked:</P>
-      <CodeBlock code={specBlockWith(FILE, "14.30", "in price_of")} lang="text" file="crash-<time>.txt, from spec 14.30" />
+      <SpecCode file={FILE} number="14.30" text={"in price_of"} name="crash-<time>.txt" lang="text" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>
           A built program finds them by walking its stack, with a table of its functions that <C>kavach build</C>{" "}

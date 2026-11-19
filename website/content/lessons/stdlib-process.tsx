@@ -1,9 +1,7 @@
-import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { specBlockWith } from "@/lib/spec-tables";
-import { Ex, H2, Note, P } from "./parts";
+import { Ex, H2, Note, P, SpecCode } from "./parts";
 import { ModuleTable } from "./spec-table";
 
 // ---------- Running Programs ----------
@@ -60,7 +58,7 @@ export const processDoc: LessonDoc = {
         <li>Waiting for a line or for the end lets other tasks take their turns, so a program can run several tools at once, each in its own task.</li>
       </ul>
       <P>A longer one, from the spec: a simulator whose errors are picked out of its output.</P>
-      <CodeBlock code={specBlockWith(FILE, "14.23", "process.start(\"vsim\"")} file="from spec 14.23" />
+      <SpecCode file={FILE} number="14.23" text={"process.start(\"vsim\""} />
       <H2>A program is a tree</H2>
       <P>
         What a program starts is part of it. <C>kill()</C>, a <C>Child</C> nothing holds any more, a task cancelled

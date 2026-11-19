@@ -1,9 +1,8 @@
-import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { specBlockWith, specTables } from "@/lib/spec-tables";
-import { Ex, H2, Note, P } from "./parts";
+import { specTables } from "@/lib/spec-tables";
+import { Ex, H2, Note, P, SpecCode } from "./parts";
 import { Table } from "./spec-table";
 
 // ---------- Sound ----------
@@ -34,7 +33,7 @@ export const soundDoc: LessonDoc = {
         Load two sounds, play music on a loop, and an effect on the left. This is the spec&apos;s example. It makes a
         sound, so it is shown here, not run:
       </P>
-      <CodeBlock code={specBlockWith(FILE, "14.27", "audio.play(music")} file="main.kav, from spec 14.27" />
+      <SpecCode file={FILE} number="14.27" text={"audio.play(music"} name="main.kav" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>audio.decode(bytes)</C> reads a WAV or an Ogg Vorbis file, told apart by their first bytes.</li>
         <li><C>audio.play</C> starts the sound and gives a <C>Voice</C> at once: the program doesn&apos;t wait.</li>
@@ -64,7 +63,7 @@ export const soundDoc: LessonDoc = {
         calls <C>next</C> for every sound frame the voice has room for, about 50 ms ahead. This plays a tone, so it is
         shown here, not run:
       </P>
-      <CodeBlock code={specBlockWith(FILE, "14.27", "audio.voice()")} file="tone.kav, from spec 14.27" />
+      <SpecCode file={FILE} number="14.27" text={"audio.voice()"} name="tone.kav" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>next</C> takes the state and gives the state after the frame, then its left and right, as <C>Float32</C>s.</li>
         <li>The state goes from one call to the next, so a function can keep a phase, a filter or an envelope.</li>
@@ -109,7 +108,7 @@ export const soundDoc: LessonDoc = {
         a <C>Recording</C> at once; each <C>take()</C> gives what was heard since the one before, so a loop can show a
         level meter or send the voice on. It records the room, so it is shown here, not run:
       </P>
-      <CodeBlock code={specBlockWith(FILE, "14.27", "audio.listen(")} file="main.kav, from spec 14.27" />
+      <SpecCode file={FILE} number="14.27" text={"audio.listen("} name="main.kav" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>It records the system&apos;s default microphone, at its own rate and with its first two channels.</li>
         <li>What it hears is a <C>Sound</C>, like any other: play it, or read its samples.</li>
