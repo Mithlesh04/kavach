@@ -22,7 +22,7 @@ Both fetches run at the same time.
 
 `spawn` takes the call right after it, so `spawn count(i) * 10` is `(spawn count(i)) * 10`, a task times a number, and a compile error. Write the arithmetic inside the call (`spawn count(i * 10)`), or multiply what `.wait()` gives.
 
-**The call's arguments are worked out at the spawn**, as Go's `go f(x)` does. In `spawn f(a, b)` and `spawn x.m(a, b)`, the spawning code works out the arguments `a` and `b`, and the value `x` the method is called on, in the order they are written. Then the new task makes the call with those values. So a task gets only what its call is given: `spawn cores total(xs[:1000])` copies a thousand items into the task, not all of `xs`.
+**The call's arguments are worked out at the spawn**, as Go's `go f(x)` does. In `spawn f(a, b)` and `spawn x.m(a, b)`, the spawning code works out the arguments `a` and `b`, and the value `x` the method is called on, in the order they are written. A function worked out from an expression is worked out there too, first: in `spawn handler_for(kind)(job)`, `handler_for(kind)` and then `job`. Then the new task makes the call with those values. So a task gets only what its call is given: `spawn cores total(xs[:1000])` copies a thousand items into the task, not all of `xs`.
 
 ```kavach
 fn total(xs: [Int]) -> Int {
@@ -322,4 +322,3 @@ spawn cores render(frame)     // on any core of the machine
 - `spawn process` of a generic function: refused for now, since the arguments and the result go between the processes as JSON. (`Bytes` go as base64 text, 2.12.)
 - A time limit on any call that waits inside (`download(url).timeout(5.seconds)`): cancel the call's work when the time passes, like a task's.
 - Closing a channel when its last `Sender` is gone, instead of with `close()`: when that happens differs between the interpreter and native code, which frees a variable after its last use.
-- A spawned call whose function is worked out from an expression, as `spawn handler_for(kind)(job)`: today `handler_for(kind)` is worked out in the task (9.1 names only the arguments and the value before the dot). Go works the function out at the spawn too.

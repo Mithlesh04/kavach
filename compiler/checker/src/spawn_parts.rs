@@ -3,8 +3,8 @@
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
 //! The parts of a spawned call worked out before its task starts (spec
-//! 9.1): its arguments, and the value a method is called on, as Go's
-//! `go f(x)` does. The interpreter and code generation both read the
+//! 9.1): its arguments, the value a method is called on, and a function
+//! worked out from an expression, as Go's `go f(x)` does. The interpreter and code generation both read the
 //! parts found here, so they work out the same ones.
 //!
 //! A part whose value is the same wherever it is worked out (a name, a
@@ -64,6 +64,9 @@ impl Checker<'_> {
             {
                 parts.push(base);
             }
+        } else if !same_anywhere(callee) {
+            // A function worked out from an expression, first (9.1).
+            parts.push(callee);
         }
         for a in args {
             let span = (a.value.span.start, a.value.span.end);

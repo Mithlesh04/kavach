@@ -13,6 +13,7 @@ Conformance tests for spec chapter [9. Concurrency](../../../docs/spec/09-concur
 | 9.1 | [a-panic-in-a-spawned-argument-happens-at-the-spawn.kav](a-panic-in-a-spawned-argument-happens-at-the-spawn.kav) | A panic while a spawned call's arguments are worked out happens at the spawn, in the spawning code, and no task starts. | panic |
 | 9.1 | [a-try-in-a-spawned-argument-is-the-spawners.kav](a-try-in-a-spawned-argument-is-the-spawners.kav) | A `try` in a spawned call's argument passes the error on from the spawning function, before any task starts. | runs |
 | 9.1, 2.7 | [a-spawned-call-through-optional-runs-in-the-task.kav](a-spawned-call-through-optional-runs-in-the-task.kav) | A spawned call through `?.` runs whole in the task: its arguments are worked out there, and only when there is a value. | runs |
+| 9.1 | [a-spawned-function-is-worked-out-at-the-spawn.kav](a-spawned-function-is-worked-out-at-the-spawn.kav) | A spawned call whose function is worked out from an expression works it out at the spawn, before the arguments, as Go does. | runs |
 | 9.2 | [functions-wait-for-their-tasks.kav](functions-wait-for-their-tasks.kav) | When a function returns, its tasks are cancelled and waited for. | runs |
 | 9.2 | [ended-tasks-are-let-go.kav](ended-tasks-are-let-go.kav) | A task that has ended is let go of while its function runs; a handle the program kept still gives the result. | runs |
 | 9.7 | [tasks-take-turns.kav](tasks-take-turns.kav) | A spawned task runs when the running one waits; ready tasks run in the order they became ready. | runs |

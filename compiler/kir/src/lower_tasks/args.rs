@@ -14,8 +14,8 @@ use kavach_ast as ast;
 
 impl<'a> Lowerer<'a> {
     /// The parts of spawned `x` worked out before its task, in the order
-    /// they are written: the value a method is called on, then the
-    /// arguments.
+    /// they are written: the value a method is called on or the function
+    /// worked out from an expression, then the arguments.
     pub(crate) fn task_parts(&self, x: &'a ast::Expr) -> Vec<&'a ast::Expr> {
         let ast::ExprKind::Call { callee, args, .. } = &x.kind else {
             return Vec::new();
@@ -24,9 +24,11 @@ impl<'a> Lowerer<'a> {
         if self.is_builtin(callee, "debug") {
             return Vec::new();
         }
+        // The value before the dot, or a function worked out from an
+        // expression; the checker leaves out a plain name.
         let receiver = match &callee.kind {
             ast::ExprKind::Field { base, .. } => Some(&**base),
-            _ => None,
+            _ => Some(&**callee),
         };
         receiver
             .into_iter()

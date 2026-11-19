@@ -174,14 +174,17 @@ impl<'a> Interp<'a> {
 
     /// The parts of spawned call `x` that are worked out before its task
     /// starts (spec 9.1, found by the checker), in the order they are
-    /// written: the value a method is called on, then the arguments.
+    /// written: the value a method is called on or the function worked
+    /// out from an expression, then the arguments.
     fn spawn_parts(&mut self, x: &'a Expr) -> Result<Held<'a>, Flow<'a>> {
         let kavach_ast::ExprKind::Call { callee, args, .. } = &x.kind else {
             return Ok(Vec::new());
         };
+        // The value before the dot, or a function worked out from an
+        // expression; the checker leaves out a plain name.
         let receiver = match &callee.kind {
             kavach_ast::ExprKind::Field { base, .. } => Some(&**base),
-            _ => None,
+            _ => Some(&**callee),
         };
         // A part of this task's own spawned call, not yet used, is no part
         // of this one.

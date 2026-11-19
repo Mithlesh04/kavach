@@ -1,0 +1,30 @@
+// Rule: A spawned call whose function is worked out from an expression works it out at the spawn, before the arguments, as Go does.
+// Spec: 9.1
+// expect output: choosing double
+// expect output: working out 4
+// expect output: spawned
+// expect output: 8
+
+fn double(n: Int) -> Int {
+    n * 2
+}
+
+fn triple(n: Int) -> Int {
+    n * 3
+}
+
+fn handler_for(kind: String) -> fn(Int) -> Int {
+    print(`choosing {kind}`)
+    if kind == "double" { double } else { triple }
+}
+
+fn noted(n: Int) -> Int {
+    print(`working out {n}`)
+    n
+}
+
+fn main() {
+    const t = spawn handler_for("double")(noted(4))
+    print("spawned")
+    print(t.wait() catch 0)
+}

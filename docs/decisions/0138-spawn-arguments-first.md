@@ -15,7 +15,7 @@ How other languages do it:
 
 ## Decision
 
-A maintainer chose (2026-11-19) Go's rule. In `spawn f(a, b)` and `spawn x.m(a, b)`, the spawning code works out the value before the dot and the arguments, in the order they are written; the task then makes the call with those values. A panic there happens at the spawn's line, and a `try` there passes its error on from the spawning function.
+A maintainer chose (2026-11-19) Go's rule. In `spawn f(a, b)` and `spawn x.m(a, b)`, the spawning code works out the value before the dot and the arguments, in the order they are written; the task then makes the call with those values. A panic there happens at the spawn's line, and a `try` there passes its error on from the spawning function. A function worked out from an expression, `spawn handler_for(kind)(job)`, is worked out at the spawn too, before the arguments (a maintainer, the same day), as Go does.
 
 The call itself, a spawned block, a call through `?.`, `w.timeout(d)`, `inout` arguments and the list a changing method is called on still run in the task (spec 9.1 has the list). To work an argument out in the task, spawn a block: `spawn { total(xs[:1000]) }`.
 
