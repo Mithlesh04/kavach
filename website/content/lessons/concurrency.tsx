@@ -61,6 +61,36 @@ export const tasksDoc: LessonDoc = {
         error. Put the arithmetic inside the call, <C>spawn count(4 * 10)</C>, or multiply what <C>.wait()</C> gives:
       </P>
       <Ex name="tasks/spawn-times.fails" />
+      <H2>What the task is given</H2>
+      <P>
+        The call&apos;s arguments are worked out at the spawn, before the task starts, as Go&apos;s{" "}
+        <C>go f(x)</C> does. The task then makes the call with those values. A block after <C>spawn</C> runs whole in
+        the task:
+      </P>
+      <Ex name="tasks/spawn-args" />
+      <P>
+        So a task gets only what its call is given. Working an argument out is part of the spawning code, so a panic
+        there happens at the spawn&apos;s line, and no task starts:
+      </P>
+      <Ex name="tasks/spawn-arg.panics" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>In <C>spawn x.m(a, b)</C>, the value <C>x</C> is worked out at the spawn too, then <C>a</C> and <C>b</C>, in the order they are written.</li>
+        <li>A <C>try</C> in an argument passes its error on from the spawning function. An error of the call itself comes out of <C>.wait()</C>.</li>
+        <li><C>within d</C>: <C>d</C> is worked out at the spawn, after the arguments.</li>
+        <li>
+          Worked out in the task instead: a call through <C>?.</C>, a wait with a time limit, an <C>inout</C>{" "}
+          argument, and the list, dict or set a changing method such as <C>push</C> is called on. These last two are
+          places, not values: the task changes its own copy.
+        </li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/09-concurrency.md" label="spec 9.1 · arguments at the spawn" />
+        <SrcRef file="docs/decisions/0138-spawn-arguments-first.md" label="decision 0138" />
+        <SrcRef file="tests/conformance/09-concurrency/a-spawned-call-gets-its-arguments-worked-out-first.kav" label="tested" />
+        <SrcRef file="tests/conformance/09-concurrency/a-panic-in-a-spawned-argument-happens-at-the-spawn.kav" label="panic at the spawn, tested" />
+        <SrcRef file="tests/conformance/09-concurrency/a-try-in-a-spawned-argument-is-the-spawners.kav" label="try, tested" />
+        <SrcRef file="tests/conformance/09-concurrency/a-spawned-call-through-optional-runs-in-the-task.kav" label="?. in the task, tested" />
+      </div>
       <H2>Two things at once</H2>
       <Ex name="tasks/sub-turns" />
       <P>The two sleeps overlap, so the program takes about {sleeps.slow} ms, not {sleeps.slow + sleeps.fast}. Why it prints in exactly this order is on <Link href="/docs/concurrency/taking-turns/">Taking Turns</Link>.</P>

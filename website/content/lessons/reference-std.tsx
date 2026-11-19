@@ -6,6 +6,7 @@ import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
 import { course } from "@/lib/course";
+import { NOT_BUILT } from "@/lib/built-spec";
 import { findNode } from "@/lib/nav";
 import { filesOf, moduleDecls, moduleNameOf, stdlibFolders, type Decl } from "@/lib/outline";
 import { fileTables, specTables, type SpecTable } from "@/lib/spec-tables";
@@ -42,8 +43,10 @@ const chapterFiles = fs
   .filter((f) => /^\d\d-/.test(f) && !/^0[12]-/.test(f))
   .sort()
   .map((f) => {
-    const [, number, title] = fs.readFileSync(path.join(SPEC_DIR, CHAPTER, f), "utf8").match(/^# (14\.\d+) (.+)/)!;
-    return { file: `${CHAPTER}/${f}`, number, title: title.trim() };
+    const text = fs.readFileSync(path.join(SPEC_DIR, CHAPTER, f), "utf8").replace(/\r\n/g, "\n");
+    const [, number, title] = text.match(/^# (14\.\d+) (.+)/)!;
+    const notBuilt = text.split("\n").find((l, i) => i > 0 && l.trim())?.trim() === NOT_BUILT;
+    return { file: `${CHAPTER}/${f}`, number, title: title.trim(), notBuilt };
   });
 
 /** The part's pages after its first, All Modules: one per module. */
@@ -58,18 +61,10 @@ export const stdModules: StdModule[] = modulePages.map((s) => {
   return { title: s.title, key: `std/${s.slug}`, file, number, folders };
 });
 
-/**
- * Modules the spec designs that have no code yet: no page until they land.
- * Each fails the build once its stdlib folder exists, so it gets its page then.
- */
-const DESIGNED: Record<string, string> = { "std.table": "table" };
-for (const [title, folder] of Object.entries(DESIGNED)) {
-  if (fs.existsSync(path.join(process.cwd(), "..", "stdlib", folder))) throw new Error(`Reference: ${title} has code now (stdlib/${folder}/): give it a page and take it out of DESIGNED`);
-}
-
 // Every module has its page: a spec section or a stdlib folder without one fails the build.
+// A section the spec marks as not built yet (lib/built-spec.ts) gets its page when its code lands.
 for (const c of chapterFiles) {
-  if (c.title in DESIGNED) continue;
+  if (c.notBuilt) continue;
   if (!stdModules.some((m) => m.title === c.title)) throw new Error(`Reference: spec ${c.number} ${c.title} has no page in lib/course.ts`);
 }
 for (const f of stdlibFolders()) {

@@ -1,7 +1,6 @@
-import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { builtOnly } from "./built-spec";
+import { specText } from "./built-spec";
 
 // Reference pages read the spec itself, at build time, instead of a typed
 // copy that could drift: the tables and code blocks of one spec section.
@@ -9,10 +8,10 @@ import { builtOnly } from "./built-spec";
 // held to the code by tests (spec 10.11's settings, by
 // compiler/driver/tests/settings.rs).
 
-/** A file of the repository; a spec file without what it marks as not built yet (lib/built-spec.ts). */
+/** A file of the repository; a spec file as the site shows it, only what is built (lib/built-spec.ts). */
 function readRepo(rel: string): string {
-  const text = fs.readFileSync(path.join(process.cwd(), "..", rel), "utf8").replace(/\r\n/g, "\n");
-  return rel.startsWith("docs/spec/") ? builtOnly(text) : text;
+  if (rel.startsWith("docs/spec/")) return specText(rel);
+  return fs.readFileSync(path.join(process.cwd(), "..", rel), "utf8").replace(/\r\n/g, "\n");
 }
 
 /** `caption`: the line just before the table when it ends with ":", as "Text (`String`):" does in 14.2. */
@@ -64,24 +63,6 @@ export const specTables = (file: string, number: string): SpecTable[] => tablesI
 
 /** Every Markdown table in a file of the repository (a decision record, a README). */
 export const fileTables = (rel: string): SpecTable[] => tablesIn(readRepo(rel), rel);
-
-/**
- * Every Markdown table in a file as it was at `commit`: for a page whose
- * spec text was replaced by a design that isn't built yet, while the old
- * feature still works.
- */
-export const fileTablesAt = (commit: string, rel: string): SpecTable[] => tablesIn(readAt(commit, rel), `${rel} at ${commit}`);
-
-/** A file of the repository as it was at `commit`. */
-const readAt = (commit: string, rel: string): string =>
-  execFileSync("git", ["show", `${commit}:${rel}`], { cwd: path.join(process.cwd(), ".."), encoding: "utf8" }).replace(/\r\n/g, "\n");
-
-/** As fileFigure, from the file as it was at `commit`: a sentence a design not built yet has rewritten. */
-export function fileFigureAt(commit: string, rel: string, pattern: RegExp): string {
-  const found = readAt(commit, rel).match(pattern);
-  if (!found) throw new Error(`${rel} at ${commit}: nothing matches ${pattern}`);
-  return found[1];
-}
 
 /** The first capture of `pattern` in a file of the repository: a figure the file gives in a sentence, not a table. */
 export function fileFigure(rel: string, pattern: RegExp): string {

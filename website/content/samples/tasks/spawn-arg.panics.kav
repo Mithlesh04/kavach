@@ -1,0 +1,13 @@
+fn total(xs: [Int]) -> Int {
+    xs.sum(x => x)
+}
+
+fn first_of(xs: [Int], i: Int) -> Int {
+    const t = spawn total([xs[i]])    // xs[i] is worked out here, in first_of
+    t.wait() catch 0
+}
+
+fn main() {
+    print(first_of([1, 2, 3], 0))
+    print(first_of([1, 2, 3], 3))
+}

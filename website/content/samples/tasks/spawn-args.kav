@@ -1,0 +1,19 @@
+fn noted(what: String, n: Int) -> Int {
+    print(`working out {what}`)
+    n
+}
+
+fn square(n: Int) -> Int {
+    print(`the task squares {n}`)
+    n * n
+}
+
+fn main() {
+    const a = spawn square(noted("the argument", 7))
+    print("spawned")
+    print(a.wait() catch 0)
+
+    const b = spawn { square(noted("inside the block", 8)) }
+    print("spawned the block")
+    print(b.wait() catch 0)
+}

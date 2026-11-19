@@ -2,7 +2,7 @@ import Link from "next/link";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { fileFigure, fileTablesAt } from "@/lib/spec-tables";
+import { fileFigure, fileTables } from "@/lib/spec-tables";
 import { Ex, H2, Note, P } from "./parts";
 import { Table } from "./spec-table";
 
@@ -13,12 +13,6 @@ import { Table } from "./spec-table";
 // spec's own, read at build time.
 
 const SPEC = "docs/spec/02-types/17-matrices.md";
-/**
- * Spec 2.17 now says Tensor replaces Matrix (decision 0136), which isn't built
- * yet, so this page reads 2.17 as it was before. When Tensor's code lands,
- * this page goes and the tensor page takes its place.
- */
-const PINNED = "81e236e3";
 const TESTS = "tests/conformance/02-types";
 const BENCH = "benchmarks/math/README.md";
 
@@ -30,8 +24,8 @@ const matmul = () => ({
 
 /** The spec's table of ways to make and use a matrix. */
 const written = () => {
-  const t = fileTablesAt(PINNED, SPEC).find((x) => x.header[0] === "Written");
-  if (!t) throw new Error(`${SPEC} at ${PINNED}: no Written table`);
+  const t = fileTables(SPEC).find((x) => x.header[0] === "Written");
+  if (!t) throw new Error(`${SPEC}: no Written table`);
   return t;
 };
 
