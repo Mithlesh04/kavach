@@ -43,7 +43,7 @@ Each phase ends with a clear **exit test**. We move on only when it passes. No d
 - C interop
 - Language server + VS Code extension
 - AI tooling ([spec 13](../spec/13-ai-tooling.md)): `kavach context`, MCP server, `llms.txt`, errors with fixes, the index
-- Browser playground on the docs site (https://mithlesh04.github.io/kavach/)
+- Browser playground on the docs site (https://kavachlang.com/)
 
 **Exit test:** a developer who has never seen Kavach builds a guarded agent in under 30 minutes. We run one agent of our own in production.
 

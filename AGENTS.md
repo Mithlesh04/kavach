@@ -30,7 +30,7 @@ Put every change in the right place the first time. Follow these steps **before*
 | A developer tool (CLI, formatter, LSP…) | `tools/<tool>/` |
 | Calling another language | `interop/<language>/` |
 | An editor extension | `editors/<editor>/` |
-| The docs site (https://mithlesh04.github.io/kavach/): pages, components, content | `website/` — **read [website/README.md](website/README.md) first**; its rules bind every change there |
+| The docs site (https://kavachlang.com/): pages, components, content | `website/` — **read [website/README.md](website/README.md) first**; its rules bind every change there |
 | A test of one spec rule | `tests/conformance/<NN-chapter>/<rule>.kav` |
 | A test across many features | `tests/integration/` |
 | A Rust unit test | Next to the code: a `#[cfg(test)] mod tests` in the same file, or a sibling `tests.rs` |

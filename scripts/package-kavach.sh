@@ -60,7 +60,7 @@ Kavach $version
 
 Add bin/ to your PATH, or run scripts/install-kavach.sh from the
 repository. Building programs also needs a C compiler (cc) for linking;
-kavach says so if it is missing. Docs: https://mithlesh04.github.io/kavach/
+kavach says so if it is missing. Docs: https://kavachlang.com/
 EOF
 
 tar -czf ".kavach/dist/$name.tar.gz" -C .kavach/dist "$name"

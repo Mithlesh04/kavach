@@ -68,7 +68,7 @@ kavach/
 │
 ├── interop/                C, Python, JavaScript
 ├── editors/                VS Code (syntax highlighting now) and future editors
-├── website/                the official docs site, mithlesh04.github.io/kavach (decision 0033)
+├── website/                the official docs site, kavachlang.com (decision 0033)
 ├── examples/               example programs, numbered in learning order
 ├── tests/                  conformance + integration tests
 ├── benchmarks/             performance comparisons

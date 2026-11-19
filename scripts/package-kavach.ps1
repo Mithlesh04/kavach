@@ -55,7 +55,7 @@ Kavach $version
 Add bin\ to your PATH, or run scripts\install-kavach.ps1 from the
 repository. Building programs also needs the Visual Studio Build Tools
 (C++ workload) for linking; kavach says so if they are missing.
-Docs: https://mithlesh04.github.io/kavach/
+Docs: https://kavachlang.com/
 "@ | Out-File -Encoding utf8 "$dist\README.txt"
 
 Compress-Archive -Path $dist -DestinationPath ".kavach\dist\$name.zip" -Force
