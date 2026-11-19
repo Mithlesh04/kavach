@@ -1,0 +1,9 @@
+fn main() {
+    const sizes = Set.of("pear", "fig", "apple")
+    print(sizes.all(w => w.len() >= 3))
+    print(sizes.sum(w => w.len()))
+    print(sizes.find(w => w.starts_with("f")) ?? "none")
+    print(sizes.map(w => w.len() % 2))       // a set: equal results kept once
+    print(sizes.filter(w => w.contains("p")))
+    sizes.for_each(w => print(w.upper()))
+}

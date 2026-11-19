@@ -1,0 +1,13 @@
+type Track {
+    times: [Int]
+
+    invariant times.all(t => t >= 0)
+}
+
+fn main() {
+    let track = Track(times: [])
+    for i in 0..3 {
+        track.times.push(i * 10)
+    }
+    print(track.times)
+}

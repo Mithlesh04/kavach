@@ -113,6 +113,23 @@ export const invariantDoc: LessonDoc = {
       </P>
       <Ex name="contracts/invariant-push.panics" />
       <SrcRef file="tests/conformance/07-contracts/invariant-checked-when-a-field-list-grows.kav" label="tested" />
+      <H2>Invariants that walk a collection</H2>
+      <P>
+        An invariant like <C>times.all(…)</C> reads every item, so each change costs a walk of the collection. In a
+        loop, that walk happens every round, and the work grows with the square of the size. A change like that in a
+        loop is a warning:
+      </P>
+      <Ex name="contracts/costly-invariant.warns" />
+      <P>Build the collection first, then make the value once, so the invariant is checked once:</P>
+      <Ex name="contracts/costly-invariant-built" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The methods that read every item count: <C>all</C>, <C>any</C>, <C>sum</C>, <C>count</C>, <C>contains</C> and the like.</li>
+        <li>An invariant that walks nothing, such as <C>n &gt;= 0</C>, gives no warning in a loop, and neither does one change outside a loop.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/07-contracts.md" label="spec 7.3 · invariants" />
+        <SrcRef file="tests/conformance/07-contracts/a-costly-invariant-changed-in-a-loop-warns.kav" label="tested" />
+      </div>
     </>
   ),
 };

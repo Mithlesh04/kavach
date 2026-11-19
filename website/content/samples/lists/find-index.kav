@@ -1,0 +1,7 @@
+fn main() {
+    const scores = [40, 75, 90, 75, 20]
+    print(scores.find_index(s => s >= 75) ?? -1)
+    print(scores.find_last_index(s => s >= 75) ?? -1)
+    print(scores.find_index(s => s > 100))
+    scores.take(2).for_each(s => print(`score {s}`))
+}

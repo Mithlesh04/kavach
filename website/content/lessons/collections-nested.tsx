@@ -49,14 +49,14 @@ const methodKinds: [type: string, change: React.ReactNode, read: React.ReactNode
   [
     "List",
     <><C>push</C>, <C>pop</C>, <C>items[i] = v</C>, <C>+=</C></>,
-    <><C>len</C>, <C>is_empty</C>, <C>is_full</C>, <C>get</C>, <C>first</C>, <C>last</C>, <C>contains</C>, <C>index_of</C>, <C>count</C>, <C>find</C>, <C>min</C>, <C>max</C>, <C>sum</C>, <C>map</C>, <C>filter</C>, <C>flat_map</C>, <C>any</C>, <C>all</C>, <C>enumerate</C>, <C>sort</C>, <C>sort_by</C>, <C>reverse</C>, <C>take</C>, <C>skip</C>, <C>slice</C>, <C>join</C>, <C>+</C></>,
+    <><C>len</C>, <C>is_empty</C>, <C>is_full</C>, <C>get</C>, <C>first</C>, <C>last</C>, <C>contains</C>, <C>index_of</C>, <C>count</C>, <C>find</C>, <C>find_index</C>, <C>find_last_index</C>, <C>for_each</C>, <C>min</C>, <C>max</C>, <C>sum</C>, <C>map</C>, <C>filter</C>, <C>flat_map</C>, <C>any</C>, <C>all</C>, <C>enumerate</C>, <C>sort</C>, <C>sort_by</C>, <C>reverse</C>, <C>take</C>, <C>skip</C>, <C>slice</C>, <C>join</C>, <C>+</C></>,
   ],
   [
     "Dict",
     <><C>m[k] = v</C>, <C>remove</C></>,
     <><C>m[k]</C>, <C>get</C>, <C>len</C>, <C>is_empty</C>, <C>is_full</C>, <C>contains_key</C>, <C>keys</C>, <C>values</C></>,
   ],
-  ["Set", <><C>add</C>, <C>remove</C></>, <><C>contains</C>, <C>len</C>, <C>is_empty</C>, <C>is_full</C>, <C>to_list</C></>],
+  ["Set", <><C>add</C>, <C>remove</C></>, <><C>contains</C>, <C>len</C>, <C>is_empty</C>, <C>is_full</C>, <C>to_list</C>, <C>any</C>, <C>all</C>, <C>count</C>, <C>sum</C>, <C>find</C>, <C>for_each</C>, <C>map</C>, <C>filter</C></>],
   [
     "Ring",
     <><C>push</C></>,

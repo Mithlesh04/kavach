@@ -1,6 +1,8 @@
 len 4, is_empty false, is_full false
 first 5, last 2, get(1) 2, n[1] 2
 contains 8: true, index_of 2: 1, count 2s: 2
+find_index 1, find_last_index 3
+for_each 5
 min 2, max 8, sum 17, find 5
 map [50, 20, 80, 20], filter [5, 8], flat_map [5, 5, 2, 2, 8, 8, 2, 2]
 any true, all true, enumerate [(0, 5), (1, 2)]
@@ -9,6 +11,10 @@ take [5, 2], skip [8, 2], slice [2, 8], + [5, 2, 8, 2, 9]
 join pen, ink
 still [5, 2, 8, 2]
 set: true 2 false false ["new", "cheap"]
+set: true true 1 8 cheap
+set: Set.of(3, 5) Set.of("cheap")
+set for_each new
+set for_each cheap
 dict: 31 27 2 false false
 dict: true ["asha", "ravi"] [31, 27]
 ring: 3 false true 2 4 2 true [2, 3, 4]

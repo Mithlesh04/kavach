@@ -1,0 +1,2 @@
+warning: a `Track` has an invariant that walks a collection, checked after every change (spec 7.3): changing one in a loop walks the collection each round; build the collection first, then make the `Track` once
+[0, 10, 20]

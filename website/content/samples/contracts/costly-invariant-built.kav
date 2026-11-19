@@ -1,0 +1,14 @@
+type Track {
+    times: [Int]
+
+    invariant times.all(t => t >= 0)
+}
+
+fn main() {
+    let times: [Int] = []
+    for i in 0..3 {
+        times.push(i * 10)
+    }
+    const track = Track(times: times)   // checked once
+    print(track.times)
+}

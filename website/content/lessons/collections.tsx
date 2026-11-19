@@ -169,6 +169,28 @@ export const pipelineDoc: LessonDoc = {
       </P>
       <Ex name="lists/slice" />
       <SrcRef file="tests/conformance/14-standard-library/list-slice-takes-a-range-of-items.kav" label="tested" />
+      <H2>Where an item is, and doing something with each</H2>
+      <P>
+        <C>find_index(test)</C> gives the position of the first item that passes, and <C>find_last_index(test)</C>{" "}
+        that of the last, or <C>none</C>. <C>for_each(f)</C> calls <C>f</C> on every item, in order, for what it does,
+        and gives nothing:
+      </P>
+      <Ex name="lists/find-index" />
+      <SrcRef file="tests/conformance/14-standard-library/lists-and-sets-walk-with-for-each-and-find-index.kav" label="tested" />
+      <H2>One name for each job</H2>
+      <P>
+        Each job has one method. A name another language uses for the same job is a compile error that names
+        Kavach&apos;s: <C>some</C> names <C>any</C>, <C>every</C> names <C>all</C>, <C>includes</C> names{" "}
+        <C>contains</C>, and <C>each</C> and <C>forEach</C> name <C>for_each</C>:
+      </P>
+      <Ex name="lists/some.fails" />
+      <P>Method names are <C>snake_case</C>, like every name of a value, so a camelCase name says which one to write:</P>
+      <Ex name="lists/find-index-camel.fails" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/14-standard-library/02-built-in-methods.md" label="spec 14.2 · one name per job" />
+        <SrcRef file="tests/conformance/14-standard-library/other-languages-method-names-say-kavachs.kav" label="some, tested" />
+        <SrcRef file="tests/conformance/14-standard-library/camel-case-method-names-name-snake-case.kav" label="camelCase, tested" />
+      </div>
     </>
   ),
 };
@@ -359,7 +381,23 @@ export const checkSetDoc: LessonDoc = {
   lead: "contains asks whether a value is in the set; a loop visits the values in insertion order.",
   simple: <>Like checking the guest list at the door: is this name on it, yes or no? You can also read the whole list, in the order the names were added.</>,
   minutes: 2,
-  body: <Ex name="sets/sub-walk" />,
+  body: (
+    <>
+      <Ex name="sets/sub-walk" />
+      <H2>Asking about every value</H2>
+      <P>
+        A set has the list methods that ask about every value: <C>any</C>, <C>all</C>, <C>count</C>, <C>sum</C>,{" "}
+        <C>find</C> and <C>for_each</C>, over its values in insertion order. <C>map</C> and <C>filter</C> give a new
+        set, so equal results are kept once:
+      </P>
+      <Ex name="sets/methods" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/02-types/02-collections.md" label="spec 2.2 · sets" />
+        <SrcRef file="tests/conformance/14-standard-library/sets-walk-like-lists.kav" label="any, all, sum, find, tested" />
+        <SrcRef file="tests/conformance/14-standard-library/set-map-and-filter-give-sets.kav" label="map and filter, tested" />
+      </div>
+    </>
+  ),
 };
 
 // ---------- Tuples ----------

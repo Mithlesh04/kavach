@@ -18,6 +18,8 @@ fn main() {
     print(`len {n.len()}, is_empty {n.is_empty()}, is_full {n.is_full()}`)
     print(`first {n.first() ?? 0}, last {n.last() ?? 0}, get(1) {n.get(1) ?? 0}, n[1] {n[1]}`)
     print(`contains 8: {n.contains(8)}, index_of 2: {n.index_of(2) ?? -1}, count 2s: {n.count(x => x == 2)}`)
+    print(`find_index {n.find_index(x => x == 2) ?? -1}, find_last_index {n.find_last_index(x => x == 2) ?? -1}`)
+    n.take(1).for_each(x => print(`for_each {x}`))
     print(`min {n.min() ?? 0}, max {n.max() ?? 0}, sum {n.sum(x => x)}, find {n.find(x => x > 4) ?? 0}`)
     print(`map {n.map(x => x * 10)}, filter {n.filter(x => x > 2)}, flat_map {n.flat_map(x => [x, x])}`)
     print(`any {n.any(x => x > 7)}, all {n.all(x => x > 0)}, enumerate {n.take(2).enumerate()}`)
@@ -26,6 +28,10 @@ fn main() {
     print(`join {shelf.names.join(", ")}`)
     print(`still {shelf.numbers}`)
     print(`set: {shelf.tags.contains("new")} {shelf.tags.len()} {shelf.tags.is_empty()} {shelf.tags.is_full()} {shelf.tags.to_list()}`)
+    const t = shelf.tags
+    print(`set: {t.any(x => x == "new")} {t.all(x => x.len() > 2)} {t.count(x => x != "new")} {t.sum(x => x.len())} {t.find(x => x.len() > 3) ?? "-"}`)
+    print(`set: {t.map(x => x.len())} {t.filter(x => x != "new")}`)
+    t.for_each(x => print(`set for_each {x}`))
     print(`dict: {shelf.ages["asha"] ?? 0} {shelf.ages.get("ravi") ?? 0} {shelf.ages.len()} {shelf.ages.is_empty()} {shelf.ages.is_full()}`)
     print(`dict: {shelf.ages.contains_key("asha")} {shelf.ages.keys()} {shelf.ages.values()}`)
     const r = shelf.recent

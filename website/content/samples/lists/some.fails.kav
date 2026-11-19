@@ -1,0 +1,4 @@
+fn main() {
+    const scores = [40, 75, 90]
+    print(scores.some(s => s > 80))
+}
