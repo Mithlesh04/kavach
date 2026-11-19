@@ -1,0 +1,1 @@
+panic: contract failed: invariant celsius >= -273

@@ -92,6 +92,7 @@ function groups(): { title: string; entries: Entry[] }[] {
       entries: [
         { names: ["Error"], says: said("05-errors.md", /(For scripts and application code that just wants to stop on any error, `! Error` accepts every error type)/), number: "5.5", file: "05-errors.md" },
         { names: ["ParseError"], says: said("02-types/01-built-in-types.md", /(It \*\*can fail\*\* with a `ParseError`, so it takes `try` or `catch`\. `Int\("23sd"\)` fails, as does `Int\("300"\)` into `Int8`\.)/), number: "2.1", file: "02-types/01-built-in-types.md" },
+        { names: ["InvariantError"], says: said("07-contracts.md", /(`try T\(\.\.\.\)` and `T\(\.\.\.\) catch e => \.\.\.` make the value, and when an invariant doesn't hold they fail with an `InvariantError` instead of panicking\.)/), number: "7.3", file: "07-contracts.md" },
         { names: ["LibraryError"], says: said("10-modules-and-packages/07-interop.md", /(or it fails with a `LibraryError`, whose text says which library couldn't be loaded, and why, or which function it lacks\.)/), number: "10.7", file: "10-modules-and-packages/07-interop.md" },
         { names: ["JsonError"], says: json.find((d) => d.name === "JsonError")!.doc, number: "2.12", file: "02-types/12-json.md", defined: fromStd("JsonError") },
       ],

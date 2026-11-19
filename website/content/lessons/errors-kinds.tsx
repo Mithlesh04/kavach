@@ -21,6 +21,7 @@ const kinds: [string, string, string, string][] = [
 
 const stdErrors: [string, string, string][] = [
   ["ParseError", "Reading text as a number, Bool or Char: Int(text)", "02-types/01-built-in-types.md"],
+  ["InvariantError", "Making a value whose invariant doesn't hold, under try or catch: try T(...)", "07-contracts.md"],
   ["FsError", "Files: NotFound(path), Denied(path), IsFolder(path), NotEmpty(path), NotText(path), Failed(path, reason)", "14-standard-library/03-fs.md"],
   ["NetError", "Connections: Refused, TimedOut, Failed", "14-standard-library/10-net.md"],
   ["HttpError", "HTTP: the network, a bad URL, a bad message, an error status, or JSON that doesn't fit", "14-standard-library/11-http.md"],

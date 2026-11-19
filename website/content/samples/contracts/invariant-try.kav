@@ -1,0 +1,23 @@
+type Reading {
+    sensor: String
+    celsius: Int
+
+    invariant celsius >= -273
+}
+
+// Text from a file may hold any number, so the invariant may not hold.
+fn read(line: String) -> Reading ! Error {
+    const parts = line.split(" ")
+    const celsius = try Int(parts[1])
+    try Reading(sensor: parts[0], celsius: celsius)
+}
+
+fn main() {
+    for line in ["hall 21", "roof -300", "cellar 12"] {
+        const r = read(line) catch e => {
+            print(`skipped "{line}": {e}`)
+            continue
+        }
+        print(r)
+    }
+}

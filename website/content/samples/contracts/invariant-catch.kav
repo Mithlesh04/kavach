@@ -1,0 +1,18 @@
+type Reading {
+    sensor: String
+    celsius: Int
+
+    invariant celsius >= -273
+}
+
+fn record(sensor: String, celsius: Int) -> Reading {
+    Reading(sensor: sensor, celsius: celsius) catch e => {
+        print(e)
+        Reading(sensor: sensor, celsius: -273)
+    }
+}
+
+fn main() {
+    print(record("hall", 21).celsius)
+    print(record("roof", -300).celsius)
+}

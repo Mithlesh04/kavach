@@ -1,0 +1,3 @@
+Reading(sensor: "hall", celsius: 21)
+skipped "roof -300": invariant of `Reading` failed: celsius >= -273
+Reading(sensor: "cellar", celsius: 12)

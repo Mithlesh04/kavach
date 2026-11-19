@@ -1,0 +1,21 @@
+type Reading {
+    celsius: Int
+
+    invariant celsius >= -273
+}
+
+type Room {
+    name: String
+    now: Reading
+
+    invariant name.len() > 0
+}
+
+fn room(name: String, celsius: Int) -> Room {
+    // `catch` covers the Room made here, not the Reading made in its fields.
+    Room(name: name, now: Reading(celsius: celsius)) catch _ => Room(name: name, now: Reading(celsius: 0))
+}
+
+fn main() {
+    print(room("roof", -300).name)
+}

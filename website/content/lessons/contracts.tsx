@@ -130,6 +130,33 @@ export const invariantDoc: LessonDoc = {
         <SrcRef file="docs/spec/07-contracts.md" label="spec 7.3 · invariants" />
         <SrcRef file="tests/conformance/07-contracts/a-costly-invariant-changed-in-a-loop-warns.kav" label="tested" />
       </div>
+      <H2>When the data comes from outside</H2>
+      <P>
+        Data read from a file, a network or a device may break an invariant, and that is no bug in the program. Write{" "}
+        <C>try</C> before making the value, and a broken invariant fails with an <C>InvariantError</C> instead of
+        panicking. The caller decides what to do:
+      </P>
+      <Ex name="contracts/invariant-try" />
+      <P>
+        <C>catch</C> works on the value directly too. The error&apos;s text names the type and the invariant that
+        doesn&apos;t hold:
+      </P>
+      <Ex name="contracts/invariant-catch" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>InvariantError</C> is built in, like <C>ParseError</C>: no import needed.</li>
+        <li>Without <C>try</C> or <C>catch</C>, a broken invariant is still a panic.</li>
+        <li>
+          Only the value made right there is checked this way. A value made inside its fields still panics, so make
+          each one with its own <C>try</C>:
+        </li>
+      </ul>
+      <Ex name="contracts/invariant-in-fields.panics" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/07-contracts.md" label="spec 7.3 · a value whose invariant may not hold" />
+        <SrcRef file="tests/conformance/07-contracts/try-makes-a-value-whose-invariant-may-not-hold.kav" label="tested" />
+        <SrcRef file="tests/conformance/07-contracts/a-value-made-in-the-fields-still-panics.kav" label="fields still panic, tested" />
+        <SrcRef file="compiler/checker/src/failures.rs" line={183} symbol="fn checked_construction" label="defined in the checker" />
+      </div>
     </>
   ),
 };
