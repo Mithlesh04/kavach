@@ -137,6 +137,9 @@ const TABLE: &[(&str, &[&str])] = &[
             "must be able to change",
             "would change a copy",
             "but it is a parameter",
+            "is already frozen",
+            "is sealed with a key",
+            "a sealed value's `match`",
         ],
     ),
     (

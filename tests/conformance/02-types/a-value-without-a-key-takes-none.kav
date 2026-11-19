@@ -1,0 +1,12 @@
+// Rule: `unfreeze(key: …)` on a value frozen without a key is a compile error.
+// Spec: 2.20
+// expect compile error
+
+type Key {
+    n: Int
+}
+
+fn main() {
+    const xs = [3].freeze()
+    print(xs.unfreeze(key: Key(n: 1)))      // error: isn't sealed with a key
+}

@@ -1,0 +1,9 @@
+// Rule: `+=` and the other `op=` on a frozen value are compile errors.
+// Spec: 2.20
+// expect compile error
+
+fn main() {
+    let xs = [1, 2, 3].freeze()
+    xs += [4]                       // error: `xs` is frozen
+    print(xs)
+}

@@ -1,0 +1,18 @@
+// Rule: Passing a frozen value, or a part of it, to an `inout` parameter is a compile error.
+// Spec: 2.20
+// expect compile error
+
+type Order {
+    id: Int
+    lines: [String]
+}
+
+fn bump(inout n: Int) {
+    n += 1
+}
+
+fn main() {
+    let order = Order(id: 7, lines: ["tea"]).freeze()
+    bump(order.id)                  // error: `order` is frozen
+    print(order)
+}

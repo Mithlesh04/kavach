@@ -1,0 +1,14 @@
+// Rule: Assigning a field of a frozen value is a compile error that says to call `unfreeze()`.
+// Spec: 2.20
+// expect compile error
+
+type Order {
+    id: Int
+    lines: [String]
+}
+
+fn main() {
+    let order = Order(id: 7, lines: ["tea"]).freeze()
+    order.id = 8                    // error: `order` is frozen
+    print(order)
+}

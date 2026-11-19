@@ -1,0 +1,9 @@
+// Rule: Assigning an item of a frozen list or dict is a compile error.
+// Spec: 2.20
+// expect compile error
+
+fn main() {
+    let ages = {"asha": 31}.freeze()
+    ages["ravi"] = 27               // error: `ages` is frozen
+    print(ages)
+}

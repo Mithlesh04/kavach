@@ -1,0 +1,9 @@
+// Rule: A method that changes a value in place, such as `push`, on a frozen value is a compile error.
+// Spec: 2.20
+// expect compile error
+
+fn main() {
+    let xs = [1, 2, 3].freeze()
+    xs.push(4)                      // error: `xs` is frozen
+    print(xs)
+}

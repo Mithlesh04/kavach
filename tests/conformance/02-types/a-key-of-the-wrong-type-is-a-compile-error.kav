@@ -1,0 +1,12 @@
+// Rule: The key given to `unfreeze` must be of the type the value was sealed with.
+// Spec: 2.20
+// expect compile error
+
+type Key {
+    n: Int
+}
+
+fn main() {
+    const s = [1, 2].freeze(key: Key(n: 1))
+    print(s.unfreeze(key: 1))               // error: expected `Key`
+}

@@ -1,0 +1,17 @@
+// Rule: A method called on a frozen value must only read `self`: one that gives it back is a compile error.
+// Spec: 2.20
+// expect compile error
+
+type Order {
+    id: Int
+    lines: [String]
+
+    fn same(self) -> Order {
+        self
+    }
+}
+
+fn main() {
+    const order = Order(id: 7, lines: ["tea"]).freeze()
+    print(order.same())                     // error: `same` gives `self` back
+}

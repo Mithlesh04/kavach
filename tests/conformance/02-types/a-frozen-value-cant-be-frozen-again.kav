@@ -1,0 +1,8 @@
+// Rule: Freezing a value that is already frozen is a compile error.
+// Spec: 2.20
+// expect compile error
+
+fn main() {
+    const xs = [1, 2].freeze()
+    print(xs.freeze())                      // error: already frozen
+}

@@ -1,0 +1,7 @@
+// Rule: Unfreezing a value that isn't frozen is a compile error.
+// Spec: 2.20
+// expect compile error
+
+fn main() {
+    print([3].unfreeze())                   // error: not frozen
+}

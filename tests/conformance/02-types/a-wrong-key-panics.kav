@@ -1,5 +1,6 @@
 // Rule: `unfreeze(key: k)` with a key of the right type that isn't equal to the one the value was sealed with is a panic.
 // Spec: 2.20
+// expect output: [1, 2]
 // expect panic: isn't the one the value was sealed with
 
 type Key {

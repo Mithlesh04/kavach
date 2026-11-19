@@ -1,17 +1,11 @@
-// Rule: Outside a call to a function that only reads it, a frozen value doesn't go where a plain type is written, and a plain value doesn't go where a frozen one is.
+// Rule: Outside a call to a function that only reads it, a frozen value doesn't go where a plain type is written; where the type is worked out, it stays frozen.
 // Spec: 2.20
 // expect compile error
-
-type Box {
-    items: [Int]
-}
 
 fn main() {
     const xs = [1, 2].freeze()
     const plain: [Int] = xs                   // error: `xs` is a `Frozen<[Int]>`
-    const b = Box(items: xs)                // error: `xs` is a `Frozen<[Int]>`
-    const f: Frozen<[Int]> = [3, 4]         // error: call `.freeze()`
     const kept: Frozen<[Int]> = xs
     const copy = xs
-    print(`{plain} {b} {f} {kept} {copy}`)
+    print(`{plain} {kept} {copy}`)
 }

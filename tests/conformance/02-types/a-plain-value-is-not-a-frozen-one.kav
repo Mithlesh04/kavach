@@ -1,0 +1,8 @@
+// Rule: A plain value doesn't go where a `Frozen<T>` is written: `.freeze()` makes one.
+// Spec: 2.20
+// expect compile error
+
+fn main() {
+    const f: Frozen<[Int]> = [3, 4]         // error: call `.freeze()`
+    print(f)
+}

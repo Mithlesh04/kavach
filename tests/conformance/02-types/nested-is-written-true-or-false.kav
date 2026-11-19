@@ -1,0 +1,8 @@
+// Rule: `nested:` is written `true` or `false`, as it is part of the frozen value's type.
+// Spec: 2.20
+// expect compile error
+
+fn main() {
+    const deep = true
+    print([4].freeze(nested: deep))         // error: `nested:` is written `true` or `false`
+}

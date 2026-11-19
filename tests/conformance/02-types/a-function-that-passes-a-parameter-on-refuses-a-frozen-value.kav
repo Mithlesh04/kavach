@@ -1,0 +1,21 @@
+// Rule: A function that passes its parameter to one that does more than read it doesn't only read it either.
+// Spec: 2.20
+// expect compile error
+
+type Order {
+    id: Int
+    lines: [String]
+}
+
+fn keep(o: Order) -> Order {
+    o
+}
+
+fn pass_on(o: Order) -> Order {
+    keep(o)
+}
+
+fn main() {
+    const order = Order(id: 7, lines: ["tea"]).freeze()
+    print(pass_on(order))                   // error: `pass_on` passes `o` to `keep`
+}
