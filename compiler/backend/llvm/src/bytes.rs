@@ -37,6 +37,18 @@ impl FnEmit<'_> {
         }
         Some(byte)
     }
+
+    /// `b.len()` on `Bytes`: one runtime function that only reads, which
+    /// LLVM may move out of a loop, not the runtime's general `BytesLen`
+    /// (Sakshi's S18: an invariant reading `data.len()` cost 27 ns a check).
+    pub(crate) fn bytes_len(&mut self, b: &Expr) -> Option<String> {
+        let (bytes, owned) = self.borrow(b, true)?;
+        let len = self.call_rt("kv_bytes_count", "i64", &[("i64", bytes.clone())], false);
+        if owned {
+            self.release(&bytes);
+        }
+        Some(len)
+    }
 }
 
 #[cfg(test)]
@@ -58,5 +70,23 @@ mod tests {
             ),
             "{ir}"
         );
+    }
+
+    /// Sakshi's S18: `data.len()` went through the runtime's general
+    /// `BytesLen`; now it is the length function LLVM can hoist.
+    #[test]
+    fn a_length_of_bytes_is_read_where_it_is() {
+        let src = "fn size(data: Bytes) -> Int {
+    data.len()
+}
+
+fn main() {
+    print(size(\"ab\".bytes()))
+}
+";
+        let c = kavach_driver::compile(src, "main.kav", Default::default());
+        let program = kavach_kir::lower(&c).expect("lowers");
+        let ir = crate::emit(&program);
+        assert!(ir.contains("call i64 @kv_bytes_count("), "{ir}");
     }
 }

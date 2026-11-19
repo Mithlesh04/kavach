@@ -71,6 +71,7 @@ impl FnEmit<'_> {
                 Some(self.ref_binary(*op, l.ty, &a, &b))
             }
             ExprKind::Rt(kavach_kir::RtOp::StrLen, args) => self.str_len(&args[0]),
+            ExprKind::Rt(kavach_kir::RtOp::BytesLen, args) => self.bytes_len(&args[0]),
             ExprKind::Rt(kavach_kir::RtOp::BytesAt, args) => {
                 self.bytes_at(&args[0], &args[1], e.line)
             }
