@@ -4,6 +4,6 @@ fn vowels(word: String) -> Int {
 
 fn main() {
     const word = "banana"
-    print(word.chars().reverse().join(""))
+    print(word.chars()[::-1].join(""))
     print(vowels(word))
 }

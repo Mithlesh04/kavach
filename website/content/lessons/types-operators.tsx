@@ -21,6 +21,13 @@ const interfaces = () => {
   return t;
 };
 
+/** The spec's table of the interfaces for indexing and slicing. */
+const indexing = () => {
+  const t = fileTables(SPEC).find((x) => x.header[0] === "Interface" && x.header[1] === "Written");
+  if (!t) throw new Error(`${SPEC}: no table of the indexing interfaces`);
+  return t;
+};
+
 export const ownOperatorsDoc: LessonDoc = {
   lead: "A type gets +, -, *, /, % and < by implementing Add, Sub, Mul, Div, Rem or Comparable. Then vectors, money and units read like numbers.",
   simple: <>Numbers can be added with <C>+</C>. Your own type can be too, once it says how: you write an <C>add</C> method, and <C>a + b</C> calls it. Nothing happens by magic, and a type without the method has no <C>+</C>.</>,
@@ -120,6 +127,47 @@ export const ownOperatorsDoc: LessonDoc = {
       </ul>
       <P>A type given for such a <C>T</C> must have the operator. <C>String</C> has no <C>Add</C>:</P>
       <Ex name="types/operator-bound-string.fails" />
+      <H2>Indexing and slicing</H2>
+      <P>
+        <C>x[k]</C>, <C>x[k] = v</C> and <C>x[start:end:step]</C> (see{" "}
+        <Link href="/docs/collections/indexing-and-slicing/">Indexing and Slicing</Link>) come through interfaces too:
+      </P>
+      <Table header={indexing().header} rows={indexing().rows} />
+      <Ex name="types/own-index" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>p[0]</C> calls <C>p.index(0)</C>, and <C>p[1] = &quot;storm&quot;</C> is <C>p = p.index_set(1, &quot;storm&quot;)</C>, so it needs a <C>let</C>, as <C>+=</C> does.</li>
+        <li><C>p[#1]</C> is <C>p.index(p.len() - 1)</C>: <C>#</C> needs a method <C>fn len(self) -&gt; Int</C>.</li>
+        <li><C>slice</C> is given a <C>Part</C>: what was written between the brackets, with <C>none</C> for a part left out.</li>
+        <li>Like the other operator methods, these are pure. An index out of range may panic, as a list&apos;s does.</li>
+      </ul>
+      <P>
+        <C>Part</C> is a record of <Link href="/docs/std/std-text-and-std-collections/">std.collections</Link>, written in Kavach,
+        which every file sees without a <C>use</C>. <C>part.bounds(len)</C> gives its start, end and step as plain
+        numbers for <C>len</C> items, as Python&apos;s <C>slice.indices</C> does: <C>#k</C> becomes{" "}
+        <C>len - k</C>, a missing step is 1, the missing ends are filled in, and both ends are clamped:
+      </P>
+      <Ex name="types/part-bounds" />
+      <P>
+        With a negative step, an end of -1 means before the first item, so a slice of a list made from those numbers
+        walks back to the start, as <C>Playlist</C>&apos;s does. A step of 0 is a panic. Without <C>len</C>,{" "}
+        <C>#</C> is refused:
+      </P>
+      <Ex name="types/own-index-len.fails" />
+      <P>
+        Parts separated by commas give a tuple key: <C>g[1, 2]</C> is <C>g.index((1, 2))</C>, for a type with{" "}
+        <C>Index&lt;(Int, Int), Out&gt;</C>. When every part is a slice, <C>g[0:2, 1:]</C> is{" "}
+        <C>g.slice((first, second))</C>, two <C>Part</C>s, for <C>Slice&lt;(Part, Part)&gt;</C>.
+      </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/decisions/0134-slicing-and-indexing.md" label="decision 0134" />
+        <SrcRef file="stdlib/collections/collections.kav" line={78} symbol="type Part" />
+        <SrcRef file="compiler/checker/src/user_index.rs" line={147} symbol="fn own_index" />
+        <SrcRef file={`${TESTS}/own-types-index-set-and-slice.kav`} label="index, set and slice, tested" />
+        <SrcRef file={`${TESTS}/own-types-take-a-tuple-key.kav`} label="a tuple key, tested" />
+        <SrcRef file={`${TESTS}/part-bounds-are-plain-numbers.kav`} label="bounds, tested" />
+        <SrcRef file={`${TESTS}/hash-on-an-own-type-needs-len.kav`} label="# needs len, tested" />
+        <SrcRef file={`${TESTS}/an-index-method-is-pure.kav`} label="pure, tested" />
+      </div>
       <H2>What is refused</H2>
       <P>Your type goes on the left. <C>2.0 * v</C> is an error that says to write <C>v * 2.0</C>:</P>
       <Ex name="types/operators-left.fails" />

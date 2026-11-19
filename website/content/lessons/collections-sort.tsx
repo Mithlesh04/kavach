@@ -29,7 +29,7 @@ export const sortingDoc: LessonDoc = {
     <>
       <Ex name="sort/numbers" />
       <P>
-        Both give a new list and leave the original as it was. For the largest first, add <C>.reverse()</C>.
+        Both give a new list and leave the original as it was. For the largest first, add <C>[::-1]</C>, a slice that walks the list backwards (<Link href="/docs/collections/indexing-and-slicing/">Indexing and Slicing</Link>).
       </P>
       <H2>How each type sorts</H2>
       <div className="overflow-x-auto">

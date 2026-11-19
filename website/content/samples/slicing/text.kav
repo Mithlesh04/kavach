@@ -1,0 +1,8 @@
+fn main() {
+    const s = "héllo"
+    print(s[1])              // a Char, counted in characters
+    print(s[#1])
+    print(s[1:3])            // text
+    print(s[::-1])
+    print(s.len())
+}

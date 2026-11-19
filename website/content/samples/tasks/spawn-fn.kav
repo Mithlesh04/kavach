@@ -1,0 +1,18 @@
+fn resize(job: Int) -> String {
+    `resized image {job}`
+}
+
+fn compress(job: Int) -> String {
+    `compressed file {job}`
+}
+
+fn handler_for(kind: String) -> fn(Int) -> String {
+    print(`choosing a handler for {kind}`)
+    if kind == "image" { resize } else { compress }
+}
+
+fn main() {
+    const t = spawn handler_for("image")(42)
+    print("spawned")
+    print(t.wait() catch "failed")
+}

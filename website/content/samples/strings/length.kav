@@ -1,7 +1,7 @@
 fn main() {
     const word = "kavach"
     print(word.len())
-    print(word.slice(0, 3))
+    print(word[0:3])
     print(word.chars())
     print("".is_empty())
     print("नमस्ते".len())

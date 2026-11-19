@@ -6,7 +6,7 @@ fn main() ! Error {
         const id = log.trace_id() ?? ""
         print(`trace id: {id.len()} hex digits`)
         const header = log.traceparent() ?? ""
-        print(`traceparent: {header.len()} characters, starts {header.slice(0, 3)}`)
+        print(`traceparent: {header.len()} characters, starts {header[:3]}`)
         const task = spawn log.trace_id()
         print(`a task keeps it: {(try task.wait()) == id}`)
     }

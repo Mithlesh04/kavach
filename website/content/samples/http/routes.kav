@@ -6,7 +6,7 @@ fn shop(r: Request) -> Response {
         return http.text(200, "Welcome to the shop")
     }
     if r.method == "GET" and r.path.starts_with("/items/") {
-        const id = r.path.slice(7, r.path.len())
+        const id = r.path[7:]
         return http.text(200, `item {id}`)
     }
     if r.method == "POST" and r.path == "/orders" {

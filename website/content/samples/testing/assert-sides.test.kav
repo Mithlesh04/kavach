@@ -1,7 +1,7 @@
 test "the total adds every price" {
     const prices = [2, 3, 5]
     let total = 0
-    for p in prices.skip(1) {
+    for p in prices[1:] {
         total += p
     }
     assert total == 10

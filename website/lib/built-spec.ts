@@ -14,10 +14,12 @@
 //
 // Some text mixes what works with what doesn't, in one table row or one
 // sentence, where no marker fits. The site reads those files as they were
-// before the design, in PINNED, until its code lands.
+// before the design, in PINNED, until its code lands, with the changes of
+// later commits that built something laid on top.
 
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 const REPO = path.join(process.cwd(), "..");
@@ -25,38 +27,69 @@ const REPO = path.join(process.cwd(), "..");
 /** The commit before decisions 0135–0137 (tables, one Tensor type, numbers in types) were written into the spec. */
 const BEFORE_DESIGNS = "81e236e3";
 
+/** The commits that wrote those designs into the spec, and marked them. */
+const DESIGNS = ["f35e8eb6", "9357ff02"];
+
+/** Slicing, decision 0134: built, so its changes to a pinned file are shown. */
+const SLICING = "d570b0d2";
+
 /**
- * Spec files read as they were at a commit, and the commits since that may
- * change them: the designs and their markers. Any other commit that changes
- * one fails the build, so built text there is never missed: look at what it
- * changed, then move the pin or take the file out.
+ * Spec files read as they were at a commit (`at`), with the changes of the
+ * `built` commits since laid on top; `DESIGNS` may change them too. Any
+ * other commit that changes one fails the build, so built text there is
+ * never missed: look at what it changed, then add it to `built`, move the
+ * pin, or take the file out.
  */
-const PINNED: Record<string, { at: string; since: string[] }> = Object.fromEntries(
-  [
-    "02-types/01-built-in-types.md", // Int8 and Decimal rows name Int<bits: n> and Decimal<digits, places>
-    "02-types/02-collections.md", // Ring<T, max: n> and limits in the type, in sentences that also hold what works
-    "02-types/17-matrices.md", // says Matrix is gone; it still works until Tensor lands
-    "14-standard-library/05-math.md", // math.mean still works
-    "14-standard-library/09-text-and-collections.md", // collections.unique and counts still work
-    "14-standard-library/19-crypto.md", // digests typed Bytes<len: n>
-    "14-standard-library/33-tensor.md", // rows rewritten with Tensor<T, dims: n>
-  ].map((f) => [`docs/spec/${f}`, { at: BEFORE_DESIGNS, since: ["f35e8eb6", "9357ff02"] }]),
+const PINNED: Record<string, { at: string; built: string[] }> = Object.fromEntries(
+  (
+    [
+      ["02-types/01-built-in-types.md", []], // Int8 and Decimal rows name Int<bits: n> and Decimal<digits, places>
+      ["02-types/02-collections.md", [SLICING]], // Ring<T, max: n> and limits in the type, in sentences that also hold what works
+      ["02-types/17-matrices.md", []], // says Matrix is gone; it still works until Tensor lands
+      ["14-standard-library/05-math.md", []], // math.mean still works
+      ["14-standard-library/09-text-and-collections.md", [SLICING]], // collections.unique and counts still work
+      ["14-standard-library/19-crypto.md", []], // digests typed Bytes<len: n>
+      ["14-standard-library/33-tensor.md", []], // rows rewritten with Tensor<T, dims: n>
+    ] as [string, string[]][]
+  ).map(([f, built]) => [`docs/spec/${f}`, { at: BEFORE_DESIGNS, built }]),
 );
 
 const git = (args: string[]) => execFileSync("git", args, { cwd: REPO, encoding: "utf8" });
+const same = (a: string, b: string) => a.startsWith(b) || b.startsWith(a);
 
-for (const [rel, { at, since }] of Object.entries(PINNED)) {
+for (const [rel, { at, built }] of Object.entries(PINNED)) {
   const changed = git(["log", "--format=%h", `${at}..HEAD`, "--", rel]).split("\n").filter(Boolean);
-  const other = changed.filter((c) => !since.some((s) => c.startsWith(s) || s.startsWith(c)));
+  const other = changed.filter((c) => ![...DESIGNS, ...built].some((s) => same(c, s)));
   if (other.length) throw new Error(`${rel} is pinned at ${at}, and ${other.join(", ")} changed it since: see what it built, then move the pin (lib/built-spec.ts)`);
+}
+
+const show = (commit: string, rel: string) => git(["show", `${commit}:${rel}`]).replace(/\r\n/g, "\n");
+
+/** `text` with the change `commit` made to `rel`, by a three-way merge; a change that doesn't fit fails the build. */
+function withChange(text: string, rel: string, commit: string): string {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "kavach-spec-"));
+  const [ours, base, theirs] = ["ours", "base", "theirs"].map((n) => path.join(dir, n));
+  try {
+    fs.writeFileSync(ours, text);
+    fs.writeFileSync(base, show(`${commit}^`, rel));
+    fs.writeFileSync(theirs, show(commit, rel));
+    return execFileSync("git", ["merge-file", "-p", ours, base, theirs], { encoding: "utf8" });
+  } catch {
+    throw new Error(`${rel}: ${commit}'s change doesn't fit the text pinned (lib/built-spec.ts)`);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 }
 
 /** A spec file (`docs/spec/…`) as the site shows it: pinned, or without what is marked as not built yet. */
 export function specText(rel: string): string {
   const pin = PINNED[rel];
-  if (pin) return git(["show", `${pin.at}:${rel}`]).replace(/\r\n/g, "\n");
-  return builtOnly(fs.readFileSync(path.join(REPO, rel), "utf8").replace(/\r\n/g, "\n"));
+  if (!pin) return builtOnly(fs.readFileSync(path.join(REPO, rel), "utf8").replace(/\r\n/g, "\n"));
+  if (!pinnedText.has(rel)) pinnedText.set(rel, pin.built.reduce((text, c) => withChange(text, rel, c), show(pin.at, rel)));
+  return pinnedText.get(rel)!;
 }
+
+const pinnedText = new Map<string, string>();
 
 export const NOT_BUILT = "*Not built yet.*";
 

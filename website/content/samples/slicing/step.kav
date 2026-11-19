@@ -1,0 +1,6 @@
+fn main() {
+    const xs = [10, 20, 30, 40, 50]
+    print(xs[3:0:-1])        // from 3 back to, not including, 0
+    print(xs[::-2])          // from the last, every second one
+    print(xs[1::2])          // from 1, every second one
+}

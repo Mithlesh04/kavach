@@ -1,0 +1,8 @@
+fn letter(word: String, i: Int) -> Char {
+    word[i]
+}
+
+fn main() {
+    print(letter("héllo", 1))
+    print(letter("héllo", 9))
+}

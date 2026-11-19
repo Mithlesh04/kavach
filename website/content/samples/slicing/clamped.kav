@@ -1,0 +1,12 @@
+fn first(scores: [Int], n: Int) -> [Int] {
+    scores[:n]
+}
+
+fn main() {
+    const scores = [10, 20, 30]
+    print(scores[1:99])      // an end past the list stops at its end
+    print(scores[5:])        // a start past the list: nothing
+    print(scores[2:1])       // a start after the end: nothing
+    print(first(scores, 10)) // more than there are: what there is
+    print(first(scores, -1)) // below 0 counts as before the first item
+}

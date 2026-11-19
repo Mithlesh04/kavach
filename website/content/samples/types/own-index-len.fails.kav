@@ -1,0 +1,11 @@
+type Pair: Index<Int, Int> {
+    a: Int
+    b: Int
+
+    fn index(self, key: Int) -> Int { if key == 0 { self.a } else { self.b } }
+}
+
+fn main() {
+    const p = Pair(a: 1, b: 2)
+    print(p[#1])
+}

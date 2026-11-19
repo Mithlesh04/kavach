@@ -120,6 +120,7 @@ import {
   pipelineDoc, readListDoc, readMapDoc, setsDoc, sortListDoc, tuplesDoc, walkMapDoc,
 } from "./collections";
 import { capacityDoc, ringDoc } from "./collections-limits";
+import { slicingDoc } from "./collections-slicing";
 import { nestedDoc } from "./collections-nested";
 import {
   declaringDoc, defaultsDoc, dotDoc, fnValuesDoc, functionsDoc, lambdasDoc, namedArgsDoc, namedDoc, parametersDoc,
@@ -256,6 +257,7 @@ export const lessons: Record<string, LessonDoc> = {
   "functions/deprecating-a-function": deprecateDoc,
 
   "collections/lists": listsDoc,
+  "collections/indexing-and-slicing": slicingDoc,
   "collections/lists/making-a-list": makeListDoc,
   "collections/lists/reading-by-index": readListDoc,
   "collections/lists/changing-items": changeListDoc,

@@ -102,9 +102,9 @@ export const bytesDoc: LessonDoc = {
       </P>
       <Ex name="bytes/text-range" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li>Places past the end are clamped, as <C>slice</C> clamps them: <C>end: 100</C> stops at the last byte.</li>
+        <li>Places past the end are clamped, as a slice clamps them: <C>end: 100</C> stops at the last byte.</li>
         <li>Bytes that aren&apos;t valid UTF-8 give <C>none</C>, as <C>b.text()</C> does.</li>
-        <li><C>b.slice(start, end).text()</C> does the same, also copying the text once.</li>
+        <li><C>b[start:end].text()</C> does the same, also copying the text once.</li>
       </ul>
       <SrcRef file="tests/conformance/02-types/bytes-text-of-a-range.kav" label="text of a range, tested" />
       <H2>In JSON</H2>

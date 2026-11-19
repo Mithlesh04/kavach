@@ -1,0 +1,1 @@
+error: Kavach counts from the end with `#`: write `xs[#1]`; a plain number always counts from the start (spec 2.19)

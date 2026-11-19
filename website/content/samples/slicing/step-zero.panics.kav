@@ -1,0 +1,8 @@
+fn every(xs: [Int], step: Int) -> [Int] {
+    xs[::step]
+}
+
+fn main() {
+    print(every([10, 20, 30], 2))
+    print(every([10, 20, 30], 0))
+}

@@ -1,6 +1,6 @@
 fn main() {
     const data = "hello, world".bytes()
-    print(data.slice(0, 5).text() ?? "?")
+    print(data[:5].text() ?? "?")
     print(data.get(100) ?? 0)
     print(data.crc32c())
     print(data.xxhash64())

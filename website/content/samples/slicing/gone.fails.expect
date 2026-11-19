@@ -1,0 +1,1 @@
+error: `take` is gone: write the slice `queue[:2]` (spec 2.19)

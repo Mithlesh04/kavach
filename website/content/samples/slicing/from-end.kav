@@ -1,0 +1,13 @@
+fn last(xs: [Int], n: Int) -> [Int] {
+    xs[#n:]
+}
+
+fn main() {
+    const xs = [10, 20, 30, 40, 50]
+    print(xs[#2])            // 40
+    print(xs[#3:#1])         // [30, 40]
+    print(last(xs, 2))       // the last 2
+    print(last(xs, 0))       // the last 0: nothing
+    const n = 0
+    print(xs[#n + 1])        // `#` covers `n + 1`: the last item
+}

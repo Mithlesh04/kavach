@@ -1,0 +1,4 @@
+fn main() {
+    const ages = {"asha": 31, "ravi": 27}
+    print(ages[0:1])
+}

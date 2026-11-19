@@ -1,0 +1,5 @@
+fn main() {
+    print(Part(start: 1, end: 99).bounds(5))                 // the end is clamped to 5
+    print(Part(step: -1).bounds(3))                          // backwards, from the last
+    print(Part(start: 2, start_from_end: true).bounds(5))    // #2 is 5 - 2
+}

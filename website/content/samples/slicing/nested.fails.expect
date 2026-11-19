@@ -1,0 +1,1 @@
+error: a list has one dimension: write one index at a time, as `rows[…][…]` (spec 2.19)

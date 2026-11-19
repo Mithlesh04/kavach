@@ -1,0 +1,4 @@
+fn main() {
+    const rows = [[1, 2, 3], [4, 5, 6]]
+    print(rows[1, 2])
+}

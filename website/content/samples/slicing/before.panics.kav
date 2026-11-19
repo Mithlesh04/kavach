@@ -1,0 +1,12 @@
+fn before(xs: [Int], i: Int) -> Int? {
+    xs.get(i - 1)
+}
+
+fn item_before(xs: [Int], i: Int) -> Int {
+    xs[i - 1]
+}
+
+fn main() {
+    print(before([10, 20, 30], 0))
+    print(item_before([10, 20, 30], 0))
+}

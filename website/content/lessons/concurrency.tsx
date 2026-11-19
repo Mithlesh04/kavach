@@ -83,6 +83,12 @@ export const tasksDoc: LessonDoc = {
           places, not values: the task changes its own copy.
         </li>
       </ul>
+      <P>
+        A function worked out from an expression is worked out at the spawn too, first: in{" "}
+        <C>spawn handler_for(kind)(job)</C>, <C>handler_for(kind)</C> and then <C>job</C>. Only the call runs in the
+        task:
+      </P>
+      <Ex name="tasks/spawn-fn" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/09-concurrency.md" label="spec 9.1 · arguments at the spawn" />
         <SrcRef file="docs/decisions/0138-spawn-arguments-first.md" label="decision 0138" />
@@ -90,6 +96,7 @@ export const tasksDoc: LessonDoc = {
         <SrcRef file="tests/conformance/09-concurrency/a-panic-in-a-spawned-argument-happens-at-the-spawn.kav" label="panic at the spawn, tested" />
         <SrcRef file="tests/conformance/09-concurrency/a-try-in-a-spawned-argument-is-the-spawners.kav" label="try, tested" />
         <SrcRef file="tests/conformance/09-concurrency/a-spawned-call-through-optional-runs-in-the-task.kav" label="?. in the task, tested" />
+        <SrcRef file="tests/conformance/09-concurrency/a-spawned-function-is-worked-out-at-the-spawn.kav" label="the function first, tested" />
       </div>
       <H2>Two things at once</H2>
       <Ex name="tasks/sub-turns" />

@@ -132,8 +132,8 @@ export const addRemoveDoc: LessonDoc = {
 };
 
 export const sortListDoc: LessonDoc = {
-  lead: "sort() gives a sorted copy; sort_by sorts by a key; reverse() turns a list around.",
-  simple: <>Like making a tidy copy of a messy list: <C>sort</C> puts the copy in order, <C>sort_by</C> orders it by something you choose, such as a score, and <C>reverse</C> turns it around. The original stays as it was.</>,
+  lead: "sort() gives a sorted copy; sort_by sorts by a key; the slice [::-1] turns a list around.",
+  simple: <>Like making a tidy copy of a messy list: <C>sort</C> puts the copy in order, <C>sort_by</C> orders it by something you choose, such as a score, and <C>[::-1]</C> turns it around. The original stays as it was.</>,
   minutes: 3,
   body: (
     <>
@@ -160,15 +160,11 @@ export const pipelineDoc: LessonDoc = {
       <P>Chained, they read like a sentence, and run as a single loop with no list built between the steps:</P>
       <Ex name="functions/dot" />
       <H2>The first items, and the rest</H2>
-      <P><C>take(n)</C> gives the first <C>n</C> items, and <C>skip(n)</C> all but them. Asking for more than the list holds gives what there is:</P>
-      <Ex name="lists/take-skip" />
       <P>
-        <C>slice(start, end)</C> gives the items from <C>start</C> up to, not including, <C>end</C>. Both are kept
-        within the list, as with a string&apos;s <C>slice</C>, so an end past the list gives what there is, and an end
-        before the start gives an empty list:
+        <C>scores[:2]</C> is the first two items, and <C>scores[2:]</C> all but them: a <em>slice</em>, written in
+        brackets. Asking for more than the list holds gives what there is. Slices, steps and <C>#</C> for counting from
+        the end are in <Link href="/docs/collections/indexing-and-slicing/">Indexing and Slicing</Link>.
       </P>
-      <Ex name="lists/slice" />
-      <SrcRef file="tests/conformance/14-standard-library/list-slice-takes-a-range-of-items.kav" label="tested" />
       <H2>Where an item is, and doing something with each</H2>
       <P>
         <C>find_index(test)</C> gives the position of the first item that passes, and <C>find_last_index(test)</C>{" "}

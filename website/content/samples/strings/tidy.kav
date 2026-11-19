@@ -3,6 +3,6 @@ fn main() {
     print("the tALE of two".title())
     print(`[{"  menu  ".trim_start()}]`)
     print(`[{"  menu  ".trim_end()}]`)
-    print("A very long title".truncate(6))
+    print("A very long title"[:6])
     print(` \t\n`.is_blank())
 }

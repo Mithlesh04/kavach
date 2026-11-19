@@ -13,7 +13,7 @@ fn domain(email: Email) -> String
     ensure result.contains(".")
     example domain(Email(value: "asha@example.com")) == "example.com"
 {
-    email.value.slice((email.value.index_of("@") ?? 0) + 1, email.value.len())
+    email.value[(email.value.index_of("@") ?? 0) + 1:]
 }
 
 fn main() {

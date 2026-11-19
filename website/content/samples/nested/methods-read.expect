@@ -6,8 +6,8 @@ for_each 5
 min 2, max 8, sum 17, find 5
 map [50, 20, 80, 20], filter [5, 8], flat_map [5, 5, 2, 2, 8, 8, 2, 2]
 any true, all true, enumerate [(0, 5), (1, 2)]
-sort [2, 2, 5, 8], sort_by [8, 5, 2, 2], reverse [2, 8, 2, 5]
-take [5, 2], skip [8, 2], slice [2, 8], + [5, 2, 8, 2, 9]
+sort [2, 2, 5, 8], sort_by [8, 5, 2, 2], reversed [2, 8, 2, 5]
+first two [5, 2], after two [8, 2], slice [2, 8], + [5, 2, 8, 2, 9]
 join pen, ink
 still [5, 2, 8, 2]
 set: true 2 false false ["new", "cheap"]

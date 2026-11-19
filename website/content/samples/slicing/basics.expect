@@ -1,0 +1,9 @@
+asha
+lin
+["asha", "ravi"]
+["meera", "john", "lin"]
+["ravi", "meera"]
+["john", "lin"]
+["asha", "ravi", "meera", "john"]
+["asha", "meera", "lin"]
+["lin", "john", "meera", "ravi", "asha"]

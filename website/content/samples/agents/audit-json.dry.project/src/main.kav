@@ -40,6 +40,6 @@ fn main() ! Error {
     bot.handle(8, 900, "It broke on day one.") catch e => print(`refused: {e}`)
     for line in try fs.lines("agents/Support/audit.log") {
         // The time changes every run, so it is cut out here.
-        print(`{line.slice(0, 9)}…{line.slice(29, line.len())}`)
+        print(`{line[:9]}…{line[29:]}`)
     }
 }

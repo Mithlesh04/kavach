@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import { RaceChart } from "@/components/race-chart";
@@ -140,7 +141,7 @@ export const joinDoc: LessonDoc = {
 };
 
 export const lengthDoc: LessonDoc = {
-  lead: "len() counts the characters of a string; slice() and chars() take it apart.",
+  lead: "len() counts the characters of a string; a slice such as word[0:3], and chars(), take it apart.",
   simple: <>Think of text as a row of letter tiles. You can count the tiles, take out a stretch of them, or pick them up one by one, and a letter from any language counts as one tile.</>,
   minutes: 3,
   body: (
@@ -148,7 +149,8 @@ export const lengthDoc: LessonDoc = {
       <Ex name="strings/length" />
       <P>
         <C>len()</C> counts characters, not bytes, so text in any script is measured the same way.{" "}
-        <C>slice(0, 3)</C> gives characters 0, 1 and 2.
+        <C>word[0:3]</C> gives characters 0, 1 and 2, and <C>word[0]</C> the first, as a <C>Char</C>. More in{" "}
+        <Link href="/docs/collections/indexing-and-slicing/">Indexing and Slicing</Link>.
       </P>
     </>
   ),
@@ -209,7 +211,7 @@ export const splitDoc: LessonDoc = {
 };
 
 export const tidyDoc: LessonDoc = {
-  lead: "capitalize, title, trim_start, trim_end, truncate and is_blank tidy text; pad_left and pad_right line it up in columns.",
+  lead: "capitalize, title, trim_start, trim_end and is_blank tidy text, and a slice cuts it short; pad_left and pad_right line it up in columns.",
   simple: <>Like tidying a form before you file it: a capital letter at the start of a name, no stray spaces, a title that fits the box, numbers lined up in a column. Each method gives a new, tidy string.</>,
   minutes: 3,
   body: (
@@ -219,7 +221,7 @@ export const tidyDoc: LessonDoc = {
         <li><C>capitalize()</C> puts the first character in upper case and leaves the rest.</li>
         <li><C>title()</C> does that to each word, and puts the rest of each word in lower case.</li>
         <li><C>trim_start()</C> and <C>trim_end()</C> take white space off one side; <C>trim()</C> takes it off both.</li>
-        <li><C>truncate(max)</C> keeps at most <C>max</C> characters; <C>is_blank()</C> says whether there is only white space, or nothing.</li>
+        <li><C>s[:max]</C>, a slice, keeps at most <C>max</C> characters; <C>is_blank()</C> says whether there is only white space, or nothing.</li>
       </ul>
       <H2>Padding</H2>
       <P>
@@ -229,8 +231,9 @@ export const tidyDoc: LessonDoc = {
       <Ex name="strings/pad" />
       <P>Text already that long stays as it was. The width is at most 1,000,000.</P>
       <P>
-        A negative count or width counts as 0, as it does everywhere a method takes one: <C>repeat</C>,{" "}
-        <C>truncate</C>, <C>pad_left</C>, and a list&apos;s <C>take</C>:
+        A negative count or width counts as 0, as it does everywhere a method takes one, such as <C>repeat</C> and{" "}
+        <C>pad_left</C>. In a slice, a number below 0 counts as before the first character, so <C>s[:n]</C> with{" "}
+        <C>n</C> of -1 is empty:
       </P>
       <Ex name="strings/negative-counts" />
       <SrcRef file="tests/conformance/14-standard-library/text-pads-words-and-capitals.kav" label="tested" />
@@ -272,14 +275,15 @@ export const textViewsDoc: LessonDoc = {
   body: (
     <>
       <P>
-        A <C>String</C> never changes, and <C>s.slice(a, b)</C> gives a copy. For most programs that is fast enough.
+        A <C>String</C> never changes, and a slice <C>s[a:b]</C> gives a copy. For most programs that is fast enough.
         For a parser that reads a big file, or code that builds long text a piece at a time, two built-in types skip
         the copies.
       </P>
       <H2>Views: reading without copying</H2>
       <P>
-        <C>s.view()</C> is all of <C>s</C>, and <C>s.view(start, end)</C> characters <C>start..end</C> of it. Its{" "}
-        <C>trim</C>, <C>split</C> and <C>lines</C> give views too, so a line is taken apart with no text copied:
+        <C>s.view()</C> is all of <C>s</C>, and a slice of a view is a view: <C>s.view()[start:end]</C> is characters{" "}
+        <C>start..end</C> of <C>s</C>, with nothing copied. Its <C>trim</C>, <C>split</C> and <C>lines</C> give views
+        too, so a line is taken apart with no text copied:
       </P>
       <Ex name="strings/view" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
@@ -303,7 +307,7 @@ export const textViewsDoc: LessonDoc = {
         it had when it was taken:
       </P>
       <Ex name="strings/builder-copy" />
-      <P>A position past the end is clamped, as for <C>slice</C>. A start after its end is a panic:</P>
+      <P>A position past the end is clamped, as in a slice. A start after its end is a panic:</P>
       <Ex name="strings/builder-range.panics" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${VIEWS}`} label="spec 2.18 · text views and builders" />

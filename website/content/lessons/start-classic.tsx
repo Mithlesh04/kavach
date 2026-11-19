@@ -28,7 +28,7 @@ const habits: [habit: string, from: string, ours: string, sample: string][] = [
   ["const match = 3", "any", "match_value", "habits/keyword.fails"],
   ["const 2nd_place", "any", "place_2nd", "variables/digit.fails"],
   ["prices.sum()", "Python, JavaScript", "prices.sum(p => p)", "habits/sum.fails"],
-  ["s.slice(-4)", "Python, JavaScript", "s.slice(s.len() - 4, s.len())", "habits/slice.fails"],
+  ["s[-4:]", "Python", "s[#4:]", "habits/slice.fails"],
   ["(inout n) => …", "C#, Swift", "a named fn with inout", "habits/lambda-inout.fails"],
   ['log.info("…")', "most languages", "a LogEvent record", "habits/log-text.fails"],
   ["let mut count = 0", "Rust", "let count = 0", "habits/let-mut.fails"],
