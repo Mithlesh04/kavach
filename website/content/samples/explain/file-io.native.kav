@@ -1,0 +1,14 @@
+use std.fs
+
+fn main() ! Error {
+    try fs.write_text("notes.txt", `tea\ncake\n`)
+    const all = try fs.read_text("notes.txt")
+    print(all.len())
+    for line in try fs.lines("notes.txt") {
+        print(line)
+    }
+    for piece in try fs.chunks("notes.txt", 4) {
+        print(piece.len())
+    }
+    try fs.remove("notes.txt")
+}

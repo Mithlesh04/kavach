@@ -1,0 +1,9 @@
+fn main() {
+    let ages = {"asha": 31, "ravi": 27, "omar": 45}
+    print(ages["ravi"] ?? 0)
+    print(ages["zoe"] ?? 0)
+    for name in ["bo", "cy", "di", "ed", "fay", "gus"] {
+        ages[name] = 20
+    }
+    print(ages["omar"] ?? 0)
+}

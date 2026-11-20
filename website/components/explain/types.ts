@@ -59,8 +59,18 @@ export type Slot = { name: string; value: string; note?: string };
 /** One call on the call stack: the function, and its slots. */
 export type CallFrame = { fn: string; slots: Slot[] };
 
-/** One object on the heap, drawn as a row of 8-byte cells. */
-export type HeapObject = { title: string; cells: { text: string; addr?: string }[]; tint?: string };
+/**
+ * One object or buffer on the heap, drawn as a row of cells at its fixed
+ * address. A cell may be lit (read or written this step), dim (free room,
+ * or memory not made yet) and carry a note. A freed one stays where it
+ * was, grey.
+ */
+export type HeapObject = {
+  title: string;
+  cells: { text: string; addr?: string; lit?: boolean; dim?: boolean; note?: string }[];
+  tint?: string;
+  freed?: boolean;
+};
 
 /** What a task, thread, core or call is doing at one step. */
 export type LaneState = "run" | "ready" | "wait" | "sleep" | "done";
@@ -111,6 +121,8 @@ export type SceneFrame = Step & {
   /** The call stack, oldest call first. */
   stack?: CallFrame[];
   heap?: HeapObject[];
+  /** The GPU's own memory (VRAM): its buffers, each at one fixed place for the whole scene. */
+  vram?: HeapObject[];
   /** What each lane of the timeline does this step; a lane left out is idle. */
   lanes?: Record<string, LaneState>;
   /** Where each lane runs this step: `{ main: "thread 1 on core 0" }`. */
@@ -133,11 +145,16 @@ export type Scene = Omit<SceneInfo, "steps"> & {
   lanesAre?: string;
   frames: SceneFrame[];
   /** The panels under the board, in this order of choice. */
-  panels?: ("regs" | "stack" | "heap" | "timeline")[];
+  panels?: ("regs" | "stack" | "heap" | "vram" | "timeline")[];
   /** What the heap panel says while it is empty. */
   heapEmpty?: string;
   /** A note under the picture: what is an example, what is simplified. */
   note?: string;
   /** The spec section the scene shows, such as "3.8". */
   spec?: string;
+  /**
+   * The names whose last use is on each line (from 0), as the compiler
+   * marks them while compiling: a badge on the code from the first step.
+   */
+  lastUse?: Record<number, string[]>;
 };

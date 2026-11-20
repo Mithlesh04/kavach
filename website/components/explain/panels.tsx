@@ -89,14 +89,17 @@ export function CallStackPanel({ stack, before }: { stack: CallFrame[]; before?:
   );
 }
 
-/** The heap's objects, in the memory step-through's cell look. */
-export function HeapPanel({ heap, empty }: { heap: HeapObject[]; empty: string }) {
+/**
+ * The heap's objects, in the memory step-through's cell look; with a
+ * `title` and `hint`, another memory's: the GPU's buffers in its VRAM.
+ */
+export function HeapPanel({ heap, empty, title = "Heap", hint = "in RAM" }: { heap: HeapObject[]; empty: string; title?: string; hint?: string }) {
   return (
-    <div className={CELL_PANEL} role="group" aria-label="The heap">
-      <PanelTitle hint="in RAM">Heap</PanelTitle>
+    <div className={CELL_PANEL} role="group" aria-label={title === "Heap" ? "The heap" : title}>
+      <PanelTitle hint={hint}>{title}</PanelTitle>
       {heap.length === 0 && <span className="text-[12px] leading-snug text-[#9aa0a6]">{empty}</span>}
       {heap.map((o) => (
-        <RunView key={o.title} run={{ title: o.title, tint: o.tint, cells: o.cells.map((c) => ({ ...c, tint: o.tint })) }} />
+        <RunView key={o.title} run={{ title: o.title, tint: o.tint, freed: o.freed, cells: o.cells.map((c) => ({ ...c, tint: o.tint })) }} />
       ))}
     </div>
   );

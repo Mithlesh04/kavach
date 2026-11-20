@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
+import { Explainer } from "@/components/explain/explainer";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
@@ -46,6 +47,18 @@ export const filesDoc: LessonDoc = {
         Reading or writing files needs the <C>Fs</C> capability. A <C>pub</C> function says so with{" "}
         <C>uses Fs</C>, or only <C>uses Fs.read</C>: see <Link href="/docs/agents/capabilities/narrower-file-access/">Narrower file access</Link>.
       </Note>
+      <H2>What the machine does</H2>
+      <P>
+        A file&apos;s bytes pass through the operating system on their way to and from the disk. Step through a write,
+        a whole read, and the two readers:
+      </P>
+      <Explainer id="file-io" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="runtime/core/src/files.rs" line={50} symbol="through_temp" />
+        <SrcRef file="runtime/native/src/rt_std.rs" line={197} symbol="FsReadText" />
+        <SrcRef file="runtime/native/src/rt_files.rs" line={118} symbol="pub fn open" />
+        <SrcRef file="runtime/native/src/rt_files.rs" line={22} symbol="READ_AHEAD" />
+      </div>
     </>
   ),
   tryIt: {

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { GpuFlow } from "@/components/gpu-flow";
 import { CodeBlock } from "@/components/code-block";
+import { Explainer } from "@/components/explain/explainer";
 import { C } from "@/components/inline-code";
 import { RaceChart } from "@/components/race-chart";
 import { SrcRef } from "@/components/src-ref";
@@ -50,9 +50,20 @@ export const gpuDoc: LessonDoc = {
         <li>This list has three items, so it ran on the CPU: sending it to the GPU would cost more than the work. A long list goes to the GPU, with the same code.</li>
         <li>It runs on NVIDIA, AMD, Intel and Apple GPUs, through Vulkan, DirectX 12 and Metal.</li>
       </ul>
-      <H2>How a GPU map works</H2>
-      <P>Step through both, or press Play: one CPU core takes the items one by one; the GPU pays for a trip over and back, then does every item at once.</P>
-      <GpuFlow />
+      <H2>What the machine does</H2>
+      <P>
+        Step through a <C>map</C> of a million pixels on a machine with a GPU: the list goes over to the GPU&apos;s
+        own memory, every item runs at once, and the result stays there until the CPU reads it.
+      </P>
+      <Explainer id="gpu-map" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="runtime/native/src/rt_gpu.rs" line={35} symbol="worth_it" />
+        <SrcRef file="runtime/native/src/rt_gpu.rs" line={204} symbol="with_kernel_bytes" />
+        <SrcRef file="compiler/kir/src/gpu_stay.rs" line={77} symbol="set_by_gpu" />
+        <SrcRef file="runtime/gpu/src/late.rs" line={61} symbol="finish" />
+        <SrcRef file="runtime/native/src/rt_gpu/kept.rs" line={19} symbol="KEEP" />
+        <SrcRef file="docs/decisions/0061-gpu-maps-dont-wait.md" label="decision 0061 · GPU maps don't wait" />
+      </div>
       <H2>What runs where today</H2>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-[15px]">

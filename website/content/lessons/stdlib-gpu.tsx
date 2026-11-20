@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Explainer } from "@/components/explain/explainer";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
@@ -54,6 +55,18 @@ export const gpuScreenDoc: LessonDoc = {
         <li>A list a GPU <C>map</C> made is drawn from GPU memory, with nothing copied.</li>
         <li>A pipeline is compiled for the GPU when it is made, or when a screen opens, never in the middle of a frame.</li>
       </ul>
+      <H2>What the machine does</H2>
+      <P>
+        Step through one frame of a window program that draws two squares. It opens a window, so it is shown here,
+        not run; the compiler checked it:
+      </P>
+      <Explainer id="gpu-draw" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="compiler/backend/wgsl/src/render.rs" line={5} label="render.rs · the pipeline's WGSL" />
+        <SrcRef file="runtime/gpu/src/render.rs" line={117} symbol="ready_for" />
+        <SrcRef file="runtime/gpu/src/render.rs" line={287} symbol="draw_into" />
+        <SrcRef file="runtime/gpu/src/draw.rs" line={90} label="draw.rs:90 · Fifo, 2 frames" />
+      </div>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${FILE}`} label="spec 14.24 · std.gpu" />
         <SrcRef file="docs/spec/15-gpu.md" label="spec 15.3 · drawing" />

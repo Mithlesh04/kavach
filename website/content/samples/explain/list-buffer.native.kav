@@ -1,0 +1,10 @@
+fn main() {
+    let xs = [3, 1, 4]
+    print(xs[1])
+    xs.push(5)
+    xs.push(9)
+    const firsts = xs[:2]
+    xs[0] = 7
+    print(firsts)
+    print(xs)
+}

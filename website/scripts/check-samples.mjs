@@ -43,6 +43,8 @@ function argsFor(kind, file) {
       return ["test", ...target, "--seed", "7"];
     case "lib":
       return ["build", "--lib", ...target, "-o", "out"];
+    case "shown":
+      return ["check", ...target];
     default:
       return ["run", ...target];
   }
@@ -106,11 +108,26 @@ function dryRun(kavach, file, dir) {
   return [r.stdout.trimEnd(), ...calls].filter(Boolean).join("\n");
 }
 
+/**
+ * A .shown sample: a program the site shows and never runs, such as one
+ * that opens a window. The compiler must accept it with no warning; what
+ * `kavach check` printed is its result.
+ */
+function checkOnly(kavach, file, dir) {
+  const r = spawnSync(kavach, argsFor("shown", file), { cwd: dir, encoding: "utf8", timeout: 120_000 });
+  if (r.error) throw r.error;
+  const said = `${r.stdout}${r.stderr}`.trim();
+  if (r.status !== 0) throw new Error(`doesn't compile\n${said}`);
+  if (/^warning:/m.test(said)) throw new Error(`a .shown sample must check without warnings\n${said}`);
+  return said;
+}
+
 /** Runs one sample in `dir`; gives what it printed, or throws a message. */
 function run(kavach, kind, file, dir, input) {
   if (!file && fs.existsSync(path.join(dir, "runs"))) return story(kavach, dir);
   if (kind === "warns") return warned(kavach, file, dir);
   if (kind === "dry") return dryRun(kavach, file, dir);
+  if (kind === "shown") return checkOnly(kavach, file, dir);
   // What a person would type, when the sample has a .stdin file.
   const stdio = [input === undefined ? "ignore" : "pipe", "pipe", "pipe"];
   const opts = { cwd: dir, encoding: "utf8", timeout: 120_000, stdio, input };

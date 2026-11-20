@@ -1,0 +1,5 @@
+fn main() {
+    const prices = [120, 40, 300, 75]
+    const total = prices.map(p => p * 2).filter(p => p > 100).sum(p => p)
+    print(total)
+}

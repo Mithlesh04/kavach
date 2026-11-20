@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Explainer } from "@/components/explain/explainer";
 import { HopDiagram } from "@/components/hop-diagram";
 import { C } from "@/components/inline-code";
 import { RaceChart } from "@/components/race-chart";
@@ -24,6 +25,18 @@ export const listsDoc: LessonDoc = {
         <li><C>push</C> adds to the end. It changes the list, so the list must be a <C>let</C>.</li>
       </ul>
       <Note>All the items of a list have the same type. To group values of different types, use a <Link href="/docs/collections/tuples/">tuple</Link> or a <Link href="/docs/types/records/">record</Link>. Lists of lists, lists of dicts, and items of different kinds through a union are in <Link href="/docs/collections/nested-and-mixed-collections/">Nested and Mixed Collections</Link>.</Note>
+      <H2>What the machine does</H2>
+      <P>
+        A list is two pieces of memory: a small object that knows where the items are and how many there are, and a
+        buffer with the items side by side. Step through reading, adding and slicing:
+      </P>
+      <Explainer id="list-buffer" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="runtime/native/src/heap.rs" line={109} symbol="ListObj" />
+        <SrcRef file="compiler/backend/cranelift/src/inline.rs" line={96} symbol="check_index" />
+        <SrcRef file="compiler/backend/cranelift/src/inline.rs" line={294} symbol="list_push" />
+        <SrcRef file="runtime/native/src/rt_slices.rs" line={35} symbol="list_part" />
+      </div>
     </>
   ),
   tryIt: {
@@ -157,8 +170,20 @@ export const pipelineDoc: LessonDoc = {
   body: (
     <>
       <Ex name="lists/pipeline" />
-      <P>Chained, they read like a sentence, and run as a single loop with no list built between the steps:</P>
+      <P>
+        Chained, they read like a sentence. In a program built with <C>kavach build</C>, they also run as a single
+        loop, with no list built between the steps:
+      </P>
       <Ex name="functions/dot" />
+      <H2>What the machine does</H2>
+      <P>The same chain, step by step: as written, then fused into one loop.</P>
+      <Explainer id="chain" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="compiler/kir/src/lower_lambda.rs" line={22} symbol="LIST_LOOPS" />
+        <SrcRef file="compiler/kir/src/fuse.rs" line={24} symbol="fuse_loops" />
+        <SrcRef file="compiler/backend/llvm/src/expr.rs" line={331} symbol="Fallback" />
+        <SrcRef file="compiler/backend/cranelift/src/codegen.rs" line={435} symbol="only the LLVM backend" />
+      </div>
       <H2>The first items, and the rest</H2>
       <P>
         <C>scores[:2]</C> is the first two items, and <C>scores[2:]</C> all but them: a <em>slice</em>, written in
@@ -302,6 +327,24 @@ export const readMapDoc: LessonDoc = {
         <C>(groups[&quot;small&quot;] ?? []).len()</C> counts a missing key as an empty list.
       </P>
       <SrcRef file="tests/conformance/02-types/reading-a-dict-entry-gives-an-optional.kav" label="tested" />
+      <H2>What the machine does</H2>
+      <P>
+        A dict keeps its entries in the order they were added, each with its key&apos;s hash. Step through a lookup in
+        a small dict, then in one big enough to have an index:
+      </P>
+      <Explainer id="dict-lookup" />
+      <P>
+        When you know how many entries are coming, <C>Dict.capacity(n)</C> makes room for them in one go: room for
+        the entries at once, and an index of the size they need when the dict first builds one. It also makes{" "}
+        <C>n</C> the most the dict may hold (<Link href="/docs/collections/collections-with-a-limit/">Collections with a Limit</Link>).
+        The room made ahead stops at 2^26 entries, so a hostile number can&apos;t ask for all the memory at once.
+      </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="runtime/native/src/table.rs" line={164} symbol="pub fn find" />
+        <SrcRef file="runtime/native/src/rt_maps.rs" line={106} symbol="text_hash" />
+        <SrcRef file="runtime/native/src/hashing.rs" line={13} symbol="fn seed" />
+        <SrcRef file="runtime/native/src/table.rs" line={136} symbol="with_room" />
+      </div>
     </>
   ),
 };

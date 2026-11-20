@@ -25,7 +25,7 @@ export function ScenePlayer({ scene, html }: { scene: Scene; html: string[] }) {
     <div className="flex min-w-0 flex-col gap-4 rounded-xl border border-line bg-panel px-4 py-4 sm:px-5" role="group" aria-label={`${scene.title}, step by step`}>
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <div className="flex min-w-0 flex-col gap-2">
-          <CodeLines html={html} line={f.line} />
+          <CodeLines html={html} line={f.line} lastUse={scene.lastUse} />
           {printed && <Printed text={f.output ?? ""} label="Printed so far (checked against a real run):" />}
         </div>
         <div className="flex min-w-0 flex-col items-center justify-start">
@@ -37,6 +37,7 @@ export function ScenePlayer({ scene, html }: { scene: Scene; html: string[] }) {
           {panels.includes("regs") && <RegistersPanel regs={f.regs ?? []} before={prev?.regs} />}
           {panels.includes("stack") && <CallStackPanel stack={f.stack ?? []} before={prev?.stack} />}
           {panels.includes("heap") && <HeapPanel heap={f.heap ?? []} empty={scene.heapEmpty ?? "Nothing on the heap."} />}
+          {panels.includes("vram") && <HeapPanel heap={f.vram ?? []} empty="Nothing of this program's yet." title="GPU memory" hint="VRAM, on the graphics card" />}
         </div>
       )}
       {f.pipeline && <PipelineStrip view={f.pipeline} />}

@@ -1,5 +1,12 @@
 import { SCENARIOS } from "../memory-scenarios";
+import { dictLookupScene } from "./scene-dict-lookup";
 import { factorialScene } from "./scene-factorial";
+import { fileIoScene } from "./scene-file-io";
+import { listBufferScene } from "./scene-list-buffer";
+import { chainScene } from "./scene-chain";
+import { sortingScene } from "./scene-sorting";
+import { gpuDrawScene } from "./scene-gpu-draw";
+import { gpuMapScene } from "./scene-gpu-map";
 import type { Scene, SceneInfo } from "./types";
 
 // Every explainer scene on the site, by id: the ones the kit draws
@@ -11,6 +18,13 @@ import type { Scene, SceneInfo } from "./types";
 /** The scenes the kit draws, by id. */
 export const KIT_SCENES: Record<string, Scene> = {
   [factorialScene.id]: factorialScene,
+  [listBufferScene.id]: listBufferScene,
+  [dictLookupScene.id]: dictLookupScene,
+  [sortingScene.id]: sortingScene,
+  [chainScene.id]: chainScene,
+  [fileIoScene.id]: fileIoScene,
+  [gpuMapScene.id]: gpuMapScene,
+  [gpuDrawScene.id]: gpuDrawScene,
 };
 
 /** Each memory step-through's title and caveman summary, by scenario name. */

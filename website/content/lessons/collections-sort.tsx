@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Explainer } from "@/components/explain/explainer";
 import { C } from "@/components/inline-code";
 import { RadixDemo } from "@/components/radix-demo";
 import { SrcRef } from "@/components/src-ref";
@@ -94,6 +95,17 @@ export const sortingDoc: LessonDoc = {
             ))}
           </tbody>
         </table>
+      </div>
+      <H2>What the machine does</H2>
+      <P>
+        Step through a copy and a sort in place, a comparison sort, a stable sort of text, and a radix sort of 1,000
+        numbers. The radix passes on decimal digits are drawn above.
+      </P>
+      <Explainer id="sorting" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="runtime/native/src/rt_text.rs" line={48} symbol="fn sort" />
+        <SrcRef file="runtime/native/src/rc.rs" line={157} symbol="pub fn unique" />
+        <SrcRef file="runtime/native/src/radix.rs" line={30} symbol="pub fn sort" />
       </div>
       <P>
         <C>kavach run</C> uses the stable merge sort for everything; the results are the same. A million numbers, sorted

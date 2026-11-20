@@ -93,8 +93,9 @@ npm run check      # BEFORE finishing any change: types + lint + static build
   (refused by the compiler; pass `outcome="refused"` to `CodeBlock`), `panics`
   (`outcome="panic"`), `warns` (runs, and its warnings are shown before the
   output; `outcome="warned"`), `dry` (`--dry-run`, so `ask<T>` calls no model), `test`
-  (`kavach test --seed 7`), `lib` (the header `build --lib` writes) or
-  `native`. A file `name.stdin` next to a sample is typed into it, as its
+  (`kavach test --seed 7`), `lib` (the header `build --lib` writes),
+  `native`, or `shown` (`kavach check` only, never run: a program that
+  opens a window). A file `name.stdin` next to a sample is typed into it, as its
   standard input. The list and its meanings live in one place:
   `lib/sample-kinds.mjs`.
 - Never type an `.expect`: run `node scripts/check-samples.mjs --write`, which

@@ -8,7 +8,7 @@
 // `name.stdin` next to a sample is what a person types: its standard
 // input (see `inputOf`).
 
-/** @typedef {"run" | "fails" | "panics" | "warns" | "dry" | "test" | "lib" | "native"} SampleKind */
+/** @typedef {"run" | "fails" | "panics" | "warns" | "dry" | "test" | "lib" | "native" | "shown"} SampleKind */
 
 /** What each kind means, for the checker and for writers. */
 export const kinds = {
@@ -20,6 +20,7 @@ export const kinds = {
   test: "runs `kavach test --seed 7`; .expect is the test report",
   lib: "runs `kavach build --lib`; .expect is the generated C header",
   native: "runs with `kavach run --native` (needed for C calls)",
+  shown: "checked by `kavach check` and never run (a program that opens a window); .expect is what check prints",
 };
 
 /**
@@ -40,7 +41,7 @@ export function inputOf(file, exists, read) {
  * @returns {SampleKind}
  */
 export function kindOf(name) {
-  const m = name.match(/\.(fails|panics|warns|dry|test|lib|native)\.(kav|project)$/);
+  const m = name.match(/\.(fails|panics|warns|dry|test|lib|native|shown)\.(kav|project)$/);
   return /** @type {SampleKind} */ (m ? m[1] : "run");
 }
 
@@ -51,5 +52,5 @@ export function kindOf(name) {
  * @param {string} base
  */
 export function shownName(base) {
-  return base.replace(/^sub-/, "").replace(/\.(fails|panics|warns|dry|test|lib|native)\.kav$/, ".kav");
+  return base.replace(/^sub-/, "").replace(/\.(fails|panics|warns|dry|test|lib|native|shown)\.kav$/, ".kav");
 }

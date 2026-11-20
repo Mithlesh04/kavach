@@ -15,7 +15,9 @@ links under it, and nothing else: the text versions find it in the page.
 ## Making a scene
 
 1. Write the sample under `content/samples/` and run
-   `node scripts/check-samples.mjs --write`; read the `.expect`.
+   `node scripts/check-samples.mjs --write`; read the `.expect`. A program
+   that opens a window is a `.shown` sample: the compiler checks it, and
+   nothing runs it.
 2. Write the scene as data (`scene-<name>.ts`, typed by `types.ts`): the
    board's resources, and frames with `line`, `at`, `caption`, and what is
    lit, moving, on the stack, on the heap, in the timeline.
@@ -32,7 +34,8 @@ argument, the stack check before a call) or "the runtime, while running"
 caption is also the step's text, so "Every step, as text" says it too. A
 step-through of names also marks each name's last use in its code panel
 (`CodeLines`' `lastUse`: "a: last use, marked by the compiler while
-compiling").
+compiling"); a kit scene gives them as `Scene.lastUse`. A kit scene's heap
+uses `heap-cells.ts`, whose `checkHeap` holds it to the rule below.
 
 ## Places and addresses stay put
 
@@ -55,6 +58,14 @@ its position, so it can't move.
 | `types.ts` | The shapes: `SceneInfo`, `Scene`, `SceneFrame`, packets, slots, views |
 | `scenes.ts` | Every scene by id: the kit's, and the memory step-throughs' titles and caveman lines |
 | `scene-factorial.ts` | The first kit scene: `factorial(10)`, the two calls native code really makes (Functions › Recursion) |
+| `scene-list-buffer.ts` | A list in memory: index check, push in place, growth, a slice copied (Collections › Lists) |
+| `scene-dict-lookup.ts` | A dict lookup by stored hashes, then through the index past 8 entries (Dicts › Reading a value) |
+| `scene-sorting.ts` | Which sort runs for which items, and when sorting copies (Collections › Sorting) |
+| `scene-chain.ts` | map → filter → sum as written (Cranelift) and fused into one loop (LLVM) (Lists › map, filter, sum) |
+| `scene-file-io.ts` | A file's bytes through the page cache; read whole, by lines, in pieces (Standard Library › Files) |
+| `heap-cells.ts` | The heap for kit scenes: places at fixed example addresses, and `checkHeap`, which fails the build when a place moves |
+| `scene-gpu-map.ts` | A `map` of a million pixels on the GPU: the cost check, the copy over PCIe, the kernel, the result left in VRAM and read back late (Speed › GPU) |
+| `scene-gpu-draw.ts` | One frame through a drawing pipeline: WGSL ahead, new buffers each draw, the index check, vsync (Standard Library › GPU Screens) |
 | `explainer.tsx` | `Explainer` and `SceneShell`: caveman line, the animation, every step as text; checks the sample |
 | `scene-text.ts` | A scene as text: the step list, Markdown for `/explainers.txt`, schema.org data; `sceneCode` checks each step's line |
 | `scene-pages.ts` | Which scenes a page shows, read from its content |
@@ -68,7 +79,7 @@ its position, so it can't move.
 | `pictures-network.tsx` | Network card, internet and remote server; the OS kernel band |
 | `pictures-io.tsx` | Screen with a terminal, keyboard |
 | `cells.tsx` | 8-byte memory cells on a dark panel, shared with `../memory-blocks.tsx` |
-| `panels.tsx` | Registers, call stack (frames pushed and popped), heap |
+| `panels.tsx` | Registers, call stack (frames pushed and popped), heap, and the GPU's memory (VRAM) |
 | `timeline.tsx` | Who runs when: tasks, threads, cores or calls over the steps |
 | `strips.tsx` | A pipeline strip (stages in a row) and a ring buffer |
 | `bits.tsx` | A value as bits with the CPU's flags, and a latency ladder (figures come from a cited data file, never typed) |
