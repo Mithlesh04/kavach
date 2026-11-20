@@ -81,10 +81,10 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Strings: Making strings](https://kavachlang.com/docs/basics/strings/making-strings/): Text in quotes is exactly what is written. Triple quotes hold several lines, or quotes inside. Backticks make a template.
 - [Strings: Interpolation](https://kavachlang.com/docs/basics/strings/interpolation/): Write text in backticks, a template, and any expression in braces inside it is put in its place.
 - [Strings: Joining](https://kavachlang.com/docs/basics/strings/joining/): + joins two strings; join() puts a list of strings together; repeat() repeats one.
-- [Strings: Length and characters](https://kavachlang.com/docs/basics/strings/length-and-characters/): len() counts the characters of a string; slice() and chars() take it apart.
+- [Strings: Length and characters](https://kavachlang.com/docs/basics/strings/length-and-characters/): len() counts the characters of a string; a slice such as word[0:3], and chars(), take it apart.
 - [Strings: Searching](https://kavachlang.com/docs/basics/strings/searching/): contains, starts_with and ends_with answer yes or no; index_of says where; replace swaps parts.
 - [Strings: Splitting](https://kavachlang.com/docs/basics/strings/splitting/): split(sep) cuts a string into a list of strings; lines() cuts it at line breaks.
-- [Strings: Tidying and padding](https://kavachlang.com/docs/basics/strings/tidying-and-padding/): capitalize, title, trim_start, trim_end, truncate and is_blank tidy text; pad_left and pad_right line it up in columns.
+- [Strings: Tidying and padding](https://kavachlang.com/docs/basics/strings/tidying-and-padding/): capitalize, title, trim_start, trim_end and is_blank tidy text, and a slice cuts it short; pad_left and pad_right line it up in columns.
 - [Strings: Strings to numbers](https://kavachlang.com/docs/basics/strings/strings-to-numbers/): Int(text) reads a whole string as a number, and can fail; std.text finds numbers inside other text.
 - [Strings: Text views and builders](https://kavachlang.com/docs/basics/strings/text-views-and-builders/): A StrView is part of a string with nothing copied, for reading text fast. A TextBuilder is text being made, changed in place.
 - [Math](https://kavachlang.com/docs/basics/math/): std.math has square roots, powers, rounding, pi and more.
@@ -139,8 +139,10 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Lists: Reading by index](https://kavachlang.com/docs/collections/lists/reading-by-index/): list[i] reads the item at position i, counting from 0; list.get(i) gives none instead of stopping.
 - [Lists: Changing items](https://kavachlang.com/docs/collections/lists/changing-items/): list[i] = value replaces an item. The list must be a let.
 - [Lists: Adding and removing](https://kavachlang.com/docs/collections/lists/adding-and-removing/): push adds an item to the end and pop takes the last one off; + joins two lists; filter keeps only the items you want.
-- [Lists: Sorting](https://kavachlang.com/docs/collections/lists/sorting/): sort() gives a sorted copy; sort_by sorts by a key; reverse() turns a list around.
+- [Lists: Sorting](https://kavachlang.com/docs/collections/lists/sorting/): sort() gives a sorted copy; sort_by sorts by a key; the slice [::-1] turns a list around.
 - [Lists: map, filter, sum](https://kavachlang.com/docs/collections/lists/map-filter-sum/): map changes every item, filter keeps some, sum adds them up, and count, any, all and find ask questions.
+- [Indexing and Slicing](https://kavachlang.com/docs/collections/indexing-and-slicing/): xs[i] reads one item. xs[start:end:step] is a slice: a new list with the items from start up to, not including, end. #k counts from the end.
+- [Grouping and Statistics](https://kavachlang.com/docs/collections/grouping-and-statistics/): A list of records works like a table: group_by, count_by and unique split it by a key, mean, median, std and describe sum it up, and inner_join and left_join join two lists on a key.
 - [Dicts](https://kavachlang.com/docs/collections/dicts/): A dict stores values under keys: {"asha": 31} keeps 31 under the key "asha".
 - [Dicts: Making a dict](https://kavachlang.com/docs/collections/dicts/making-a-dict/): Write key: value pairs in braces, or start empty with {:} and a type.
 - [Dicts: Reading a value](https://kavachlang.com/docs/collections/dicts/reading-a-value/): dict[key] gives an optional: the value, or none when the key isn't there.
@@ -149,8 +151,8 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Sets](https://kavachlang.com/docs/collections/sets/): A set holds each value once. Adding a value it already has changes nothing.
 - [Sets: Making a set](https://kavachlang.com/docs/collections/sets/making-a-set/): Set.of(…) makes a set; add and remove change it, so it must be a let.
 - [Sets: Adding and checking](https://kavachlang.com/docs/collections/sets/adding-and-checking/): contains asks whether a value is in the set; a loop visits the values in insertion order.
-- [Collections with a Limit](https://kavachlang.com/docs/collections/collections-with-a-limit/): List.capacity(n), Dict.capacity(n) and Set.capacity(n) make a collection that holds at most n entries. Room for all n is made at once, and adding to a full one is a panic.
-- [Rings](https://kavachlang.com/docs/collections/rings/): A Ring<T> keeps the last n items pushed. When it is full, push drops the oldest item to make room.
+- [Collections with a Limit](https://kavachlang.com/docs/collections/collections-with-a-limit/): A list, dict or set may say in its type how many entries it holds at most: [Int]<max: 3>. Room for all of them is made at once, and adding to a full one is a panic.
+- [Rings](https://kavachlang.com/docs/collections/rings/): A Ring<T, max: n> keeps the last n items pushed. When it is full, push drops the oldest item to make room.
 - [Tuples](https://kavachlang.com/docs/collections/tuples/): A tuple groups a few values, of any types, in brackets: (200, "OK").
 - [Nested and Mixed Collections](https://kavachlang.com/docs/collections/nested-and-mixed-collections/): Collections can hold collections: lists of lists, dicts of lists, lists of dicts, sets and tuples inside any of them, at any depth. Items of different types go in one collection through a union, or as Json.
 - [Sorting](https://kavachlang.com/docs/collections/sorting/): list.sort() gives a sorted copy of a list of numbers, text, characters, Bools or tuples. sort_by(key) sorts anything else, by a key you choose.
@@ -175,10 +177,12 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Optionals: What an optional is](https://kavachlang.com/docs/types/optionals/what-an-optional-is/): T? means a T or none. Lookups that can find nothing give one.
 - [Optionals: Reading one safely](https://kavachlang.com/docs/types/optionals/reading-one-safely/): Read an optional with ?? for a default, ?. to read through, or if let to act only when it is there.
 - [Anonymous Records](https://kavachlang.com/docs/types/anonymous-records/): (times: 3, wait_ms: 200) is a record written on the spot, with no type declared for it.
-- [Generics](https://kavachlang.com/docs/types/generics/): A generic function or type works for any type: fn first<T>(items: [T]) -> T? works on a list of anything.
+- [Generics](https://kavachlang.com/docs/types/generics/): A generic function or type works for any type: fn first<T>(items: [T]) -> T? works on a list of anything. A type may take numbers too, as Grid<Float, width: 2, height: 3>.
 - [Interfaces](https://kavachlang.com/docs/types/interfaces/): An interface names methods a type promises to have. A type keeps the promise only when it says so.
 - [Interface Values](https://kavachlang.com/docs/types/interface-values/): An interface is also a type for values: a [Describe] can hold users and rectangles together.
-- [Operators for Your Types](https://kavachlang.com/docs/types/operators-for-your-types/): A type gets +, -, *, /, % and < by implementing Add, Sub, Mul, Div, Rem or Comparable. Then vectors, money and units read like numbers.
+- [Operators for Your Types](https://kavachlang.com/docs/types/operators-for-your-types/): A type gets +, -, *, /, %, ** and < by implementing Add, Sub, Mul, Div, Rem, Pow or Comparable. Then vectors, money and units read like numbers.
+- [Frozen Values](https://kavachlang.com/docs/types/frozen-values/): x.freeze() gives a Frozen<T>: a value whose fields and items never change, even in a let, all the way down. unfreeze() gives a copy that can change.
+- [Frozen Values: Sealed with a Key](https://kavachlang.com/docs/types/frozen-values/sealed-with-a-key/): x.freeze(key: k) seals a value: only unfreeze(key: k), with an equal key, opens it. A library makes the key a type of its own, so only the library unfreezes what it froze.
 - [Matrices](https://kavachlang.com/docs/types/matrices/): A Matrix<T> is a grid of numbers in std.matrix. a @ b is the matrix product, + - * work item by item, and a product gives the same bits on every machine.
 - [Classes and Inheritance](https://kavachlang.com/docs/types/classes-and-inheritance/): Kavach has no classes and no inheritance. Records, methods, interfaces and composition do the same jobs, with fewer surprises.
 - [Writing Types](https://kavachlang.com/docs/types/writing-types/): Types are written where people read them: parameters, results and record fields. Everywhere else they are worked out.
@@ -235,7 +239,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Time](https://kavachlang.com/docs/standard-library/time/): std.time tells the time, measures how long something takes, waits, repeats work at an interval, works with dates and time zones, and reads and writes times as text.
 - [Random Numbers](https://kavachlang.com/docs/standard-library/random-numbers/): std.random gives random whole numbers, picks and shuffles. Its numbers are safe for passwords and keys, unless a block asks for repeatable ones from a seed.
 - [Regex](https://kavachlang.com/docs/standard-library/regex/): A regular expression is a pattern that text can match. regex.new makes one; its methods find, capture, replace and split.
-- [Text and Collections](https://kavachlang.com/docs/standard-library/text-and-collections/): std.text finds numbers in text and writes Unicode one way; std.collections holds small helpers for lists: chunks, pairs, counts. They are written in Kavach itself.
+- [Text and Collections](https://kavachlang.com/docs/standard-library/text-and-collections/): std.text finds numbers in text and writes Unicode one way; std.collections holds small helpers for lists: chunks, pairs, flattening. They are written in Kavach itself.
 - [Logging](https://kavachlang.com/docs/standard-library/logging/): A log event is a record you define, not a string. log.info, warn, error and debug write it, and the program's owner decides where it goes.
 - [Agents](https://kavachlang.com/docs/standard-library/agents/): std.agents gives a capability's implementation the key of the call it is running, so a service can drop a repeated call, and lets a program answer agents' approval requests.
 - [Clipboard](https://kavachlang.com/docs/standard-library/clipboard/): std.clipboard reads and writes the system clipboard's text. What a person copied can be private, so it needs the capability Clipboard.
@@ -254,7 +258,13 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Desktop Apps](https://kavachlang.com/docs/standard-library/desktop-apps/): std.app gives a desktop program or game what it needs from the system: its own folders for saves, settings and caches, a crash report when it crashes, and the system's file and message dialogs.
 - [Fonts](https://kavachlang.com/docs/standard-library/fonts/): std.font reads OpenType and TrueType fonts, shapes text into glyphs and their places, and draws glyphs into an atlas the GPU can draw text from at any size. A font is data, so it needs no capability.
 - [Reflection](https://kavachlang.com/docs/standard-library/reflection/): std.reflect tells a program what a type or a module offers: its members, each a field, method, function, type or constant, with its parameters, what it gives, and where it comes from.
-- [Tensors](https://kavachlang.com/docs/standard-library/tensors/): std.tensor gives Tensor<T>: numbers in any number of dimensions, for machine learning and science. Every operation checks its shapes, and every result is the same on every machine.
+- [Tensors](https://kavachlang.com/docs/standard-library/tensors/): std.tensor gives Tensor<T>: numbers in any number of dimensions, Kavach's one array type, as NumPy's ndarray is Python's. Every operation checks its shapes, and every result is the same on every machine.
+- [Tensors: Making tensors](https://kavachlang.com/docs/standard-library/tensors/making-tensors/): tensor.of, of_rows, zeros, ones, full and eye make a tensor from numbers; arange and linspace count; random and normal draw, the same under one seed on every machine.
+- [Tensors: Indexing](https://kavachlang.com/docs/standard-library/tensors/indexing/): t[i, j] reads one number, with one index per dimension; t[0:2, :, #1] is a slice of each dimension, as NumPy writes them. #k counts from the end of its own dimension.
+- [Tensors: Arithmetic and broadcasting](https://kavachlang.com/docs/standard-library/tensors/arithmetic-and-broadcasting/): + - * / % and ** work item by item on two tensors, or on a tensor and a number. Tensors of different shapes are broadcast to one, as NumPy does.
+- [Tensors: Masks](https://kavachlang.com/docs/standard-library/tensors/masks/): t > 0.5 compares item by item and gives a mask, a Tensor<Bool>. t[mask] picks the numbers where it is true, and tensor.where chooses between two tensors.
+- [Tensors: Reductions](https://kavachlang.com/docs/standard-library/tensors/reductions/): sum, prod, min, max, mean, var and std work on every number, or along one axis: m.sum(axis: 0) sums each column. A float sum is exact, so it is the same on every machine.
+- [Tensors: Sorting and joining](https://kavachlang.com/docs/standard-library/tensors/sorting-and-joining/): sort, argsort, unique and percentile order a tensor's numbers; concatenate, stack, split and split_at join tensors and cut them apart.
 - [JSON](https://kavachlang.com/docs/standard-library/json/): JSON is text that carries data between programs. Kavach reads it straight into your own types, or into a Json value when its shape is known only while the program runs.
 - [JSON: Json values](https://kavachlang.com/docs/standard-library/json/json-values/): A Json value holds JSON whose shape is known only while the program runs. It is a union of six cases, one for each kind of JSON value.
 - [JSON: Reading](https://kavachlang.com/docs/standard-library/json/reading/): json.parse gives a Json value; doc["key"] and doc[i] read into it, and .text(), .int() and the others give the value as an optional.
@@ -380,10 +390,11 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [GPU: map on the GPU](https://kavachlang.com/docs/speed/gpu/map-on-the-gpu/): list.map(f) runs on the GPU when f is a gpu fn, the items are 32-bit numbers, and the list is long enough to be worth it.
 - [GPU: Records and two lists](https://kavachlang.com/docs/speed/gpu/records-and-two-lists/): Items can be records or tuples of 1 to 8 GPU-type fields, and two lists can run together through collections.zip.
 - [GPU: Same results as the CPU](https://kavachlang.com/docs/speed/gpu/same-results-as-the-cpu/): The GPU gives the CPU's answers: overflow still panics with the same message, and + - * give the same bits.
-- [GPU: CPU or GPU](https://kavachlang.com/docs/speed/gpu/cpu-or-gpu/): The runtime chooses CPU or GPU for each map. KAVACH_GPU overrides it, to debug or to compare.
+- [GPU: CPU or GPU](https://kavachlang.com/docs/speed/gpu/cpu-or-gpu/): The runtime chooses CPU or GPU for each map, and which GPU. KAVACH_GPU overrides it, to debug or to compare.
 - [GPU: Can I use it on the GPU?](https://kavachlang.com/docs/speed/gpu/can-i-use-it-on-the-gpu/): Pointers, inout, files and recursion stay on the CPU; helpers, loops and pipelines of maps run on the GPU. Every rule is checked when compiling.
 - [GPU: Sums in a loop](https://kavachlang.com/docs/speed/gpu/sums-in-a-loop/): A loop that adds up what the GPU works out doesn't wait for each sum, so the next chunk is read and copied over while the GPU works.
 - [GPU: Drawing triangles](https://kavachlang.com/docs/speed/gpu/drawing-triangles/): A gpu vertex fn places each corner of a triangle, a gpu fragment fn colors each pixel inside it, and gpu.pipeline joins the two for frame.draw, with depth for 3D and textures for pictures.
+- [GPU: Choosing a GPU](https://kavachlang.com/docs/speed/gpu/choosing-a-gpu/): A machine may have several GPUs, of any vendors. Kavach numbers them from 0, the best first, and sends each map to the least busy one; gpu.on, on:, on gpu(n) and gpu(n) fn choose one yourself.
 - [GPU: Use cases](https://kavachlang.com/docs/speed/gpu/use-cases/): Work that does the same thing to many items, with enough math in each, is GPU work: images, audio, maps, finance, science and simulation.
 - [Native Executables](https://kavachlang.com/docs/speed/native-executables/): kavach build turns a program into one executable file of native machine code, about half a megabyte, that runs on its own.
 
