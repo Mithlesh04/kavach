@@ -50,6 +50,8 @@ Hindley–Milner-style inference with unification. A number literal starts as an
 | `src/changes.rs` | What changes a value in place: `items.push(x)` needs `items` to be a `let` (spec 2.2) |
 | `src/numbers.rs` | Number bounds: `T: Number` and `T: Floating`, `T(x)`, literals of type `T`, and the check that each call and value gives a number type (spec 2.9) |
 | `src/methods.rs` | Method calls: a type's own, built-ins, `.timeout(d)`, and fields holding functions (spec 3.4) |
+| `src/collection_ext.rs` | Methods added to lists, dicts, sets and rings with `extend<T> [T]` (spec 2.5) |
+| `src/table_methods.rs` | Grouping and statistics (spec 14.2): the result type of `mean` and `median`, other tools' names, and the removed `math.mean` and `collections.unique` and `counts` |
 | `src/c_functions.rs` | C functions (spec 10.7): the types their signatures may use, and the Kavach functions C calls back |
 | `src/fields.rs` | Fields, indexing, `with`, and arena escapes |
 | `src/patterns.rs` | Patterns, `if`/`match` branches, match coverage |

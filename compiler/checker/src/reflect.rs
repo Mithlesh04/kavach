@@ -207,7 +207,7 @@ impl Checker<'_> {
             other => {
                 let kind = match other {
                     Ty::Prim(p) => Some(p.name()),
-                    t => crate::methods::collection_kind(t),
+                    t => crate::collection_ext::collection_kind(t),
                 };
                 (kind
                     .and_then(|k| self.ext_methods.get(k))

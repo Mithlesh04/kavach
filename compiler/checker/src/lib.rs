@@ -25,6 +25,7 @@ mod checker;
 mod cli_parse;
 mod coerce;
 mod collect;
+mod collection_ext;
 mod conform;
 mod constants;
 mod construct;
