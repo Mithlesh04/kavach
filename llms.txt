@@ -34,6 +34,7 @@ Integer overflow and division by zero panic. `Int / Int` is an `Int`. Convert ex
 ```kavach
 type Status = Pending | Paid | Refunded
 type Shape = Circle(radius: Float) | Rect(width: Float, height: Float)
+type Method = Get = "GET" | Post = "POST"  // .value() is "GET", Method.from("POST"), JSON writes the text
 
 type Order {
     id: Int

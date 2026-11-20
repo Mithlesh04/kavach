@@ -1,0 +1,22 @@
+// Rule: A `match` on an enum whose variants carry text works as on any enum: each case names a variant by its name, not its text.
+// Spec: 2.6
+// expect output: read
+// expect output: write
+// expect output: write
+
+type Method = Get = "GET" | Post = "POST" | Put = "PUT" | Delete = "DELETE"
+
+fn kind(m: Method) -> String {
+    match m {
+        Method.Get => "read",
+        Method.Post => "write",
+        Method.Put => "write",
+        Method.Delete => "write",
+    }
+}
+
+fn main() {
+    print(kind(Method.from("GET") ?? Method.Delete))
+    print(kind(Method.Post))
+    print(kind(Method.from("DELETE") ?? Method.Get))
+}

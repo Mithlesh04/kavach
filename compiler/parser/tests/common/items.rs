@@ -35,10 +35,14 @@ pub fn item(item: &Item) -> String {
                 TypeBody::Union(vs) => format!(
                     "= {}",
                     list(vs, |v| {
+                        let value = v
+                            .value
+                            .as_ref()
+                            .map_or(String::new(), |x| format!("={}", x.shown()));
                         if v.fields.is_empty() {
-                            v.name.name.clone()
+                            format!("{}{value}", v.name.name)
                         } else {
-                            format!("({} {})", v.name.name, list(&v.fields, field))
+                            format!("({} {}){value}", v.name.name, list(&v.fields, field))
                         }
                     })
                 ),

@@ -7,6 +7,7 @@
 //! (`kavach_runtime_core::json`), so both read and write exactly alike.
 
 use crate::calls::Args;
+use crate::enums::Unions;
 use crate::interp::Interp;
 use crate::json_encode::{Encode, encode};
 pub(crate) use crate::json_encode::{json_encode, json_tree};
@@ -54,8 +55,9 @@ pub(crate) fn arrange<'a>(args: Args<'a>, names: &[&str]) -> Vec<Option<Value<'a
 
 /// How `json.of` and `json.stringify` write: secrets hidden, and big
 /// numbers as text when `big_as_text` is true (decision 0132).
-fn written(big_as_text: &Option<Value<'_>>) -> Encode {
+fn written<'u>(big_as_text: &Option<Value<'_>>, unions: &'u Unions<'u>) -> Encode<'u> {
     Encode {
+        unions: Some(unions),
         hide_secrets: true,
         big_as_text: matches!(big_as_text, Some(Value::Bool(true))),
     }
@@ -102,7 +104,7 @@ impl<'a> Interp<'a> {
             }
             "of" => {
                 let a = arrange(args, &["value", "big_as_text"]);
-                let o = written(&a[1]);
+                let o = written(&a[1], &self.unions);
                 Ok(self.json_value(a[0].as_ref().map_or(Tree::Null, |v| encode(v, o))))
             }
             // The type's shape (spec 2.12); inside a generic function,
@@ -159,7 +161,7 @@ impl<'a> Interp<'a> {
             }
             "stringify" => {
                 let a = arrange(args, &["value", "indent", "big_as_text"]);
-                let o = written(&a[2]);
+                let o = written(&a[2], &self.unions);
                 let tree = a[0].as_ref().map_or(Tree::Null, |v| encode(v, o));
                 Ok(self.str_value(&json::write(&tree, int_or(&a[1], 0))))
             }
@@ -240,7 +242,8 @@ impl<'a> Interp<'a> {
             return self.json_literal(e);
         }
         let v = self.eval(e)?;
-        Ok(self.json_value(encode(&v, written(&None))))
+        let tree = encode(&v, written(&None, &self.unions));
+        Ok(self.json_value(tree))
     }
 
     /// `j["key"]` and `j[i]`: the `get` and `at` methods of `Json`

@@ -1,0 +1,20 @@
+// Rule: Text on a variant doesn't change its name: it prints as its name, in templates too, `name()` gives the name, and `parse` reads a name.
+// Spec: 2.6
+// expect output: UnitedStates
+// expect output: from UnitedStates
+// expect output: UnitedStates
+// expect output: India
+// expect output: true
+// expect output: [India, UnitedStates, UnitedKingdom]
+
+type Country = India = "IN" | UnitedStates = "US" | UnitedKingdom = "GB"
+
+fn main() {
+    const c = Country.from("US") ?? Country.India
+    print(c)
+    print(`from {c}`)
+    print(c.name())
+    print(Country.parse("India") ?? Country.UnitedKingdom)
+    print(Country.parse("IN") == none)
+    print(Country.all())
+}

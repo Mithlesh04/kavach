@@ -158,8 +158,8 @@ impl<'a> Interp<'a> {
             return Ok(());
         };
         let outcome = match result {
-            Ok(v) => Outcome::Ok(json_encode(v)),
-            Err(Flow::Fail(e)) => Outcome::Err(json_encode(e)),
+            Ok(v) => Outcome::Ok(json_encode(v, &self.unions)),
+            Err(Flow::Fail(e)) => Outcome::Err(json_encode(e, &self.unions)),
             Err(_) => return Ok(()),
         };
         let Some(&event) = self.events.last() else {
@@ -185,7 +185,10 @@ impl<'a> Interp<'a> {
         let begun = match unfinished {
             Some(u) => journal.borrow_mut().again(u),
             None => {
-                let trees = args.iter().map(|(_, v)| json_encode(v)).collect();
+                let trees = args
+                    .iter()
+                    .map(|(_, v)| json_encode(v, &self.unions))
+                    .collect();
                 journal.borrow_mut().begin(&f.name.name, trees)
             }
         };
@@ -331,7 +334,10 @@ impl<'a> Interp<'a> {
         if replays.is_empty() {
             return None;
         }
-        let trees: Vec<Tree> = args.iter().map(|(_, v)| json_encode(v)).collect();
+        let trees: Vec<Tree> = args
+            .iter()
+            .map(|(_, v)| json_encode(v, &self.unions))
+            .collect();
         replays
             .iter()
             .find(|w| w.handler == name && w.args == trees)

@@ -1,0 +1,9 @@
+// Rule: An enum's values are all numbers or all text, never both.
+// Spec: 2.6
+// expect compile error
+
+type Code = Ok = 200 | NotFound = "Not Found"      // error: a number and a text in one type
+
+fn main() {
+    print(Code.Ok)
+}

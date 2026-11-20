@@ -58,7 +58,7 @@ impl<'a> Interp<'a> {
         };
         let mut values = Vec::new();
         for a in args {
-            values.push(json_encode(&self.eval(&a.value)?));
+            values.push(json_encode(&self.eval(&a.value)?, &self.unions));
         }
         let process = Process {
             span: x.span,
@@ -194,8 +194,10 @@ impl<'a> Interp<'a> {
             values.push((None, v));
         }
         let outcome = match self.call_fn(f, None, values, call.span) {
-            Ok(v) => Tree::Object(vec![("ok".into(), json_encode(&v))]),
-            Err(Flow::Fail(e)) => Tree::Object(vec![("error".into(), error_tree(&e))]),
+            Ok(v) => Tree::Object(vec![("ok".into(), json_encode(&v, &self.unions))]),
+            Err(Flow::Fail(e)) => {
+                Tree::Object(vec![("error".into(), error_tree(&e, &self.unions))])
+            }
             Err(Flow::Panic(message, at)) => {
                 let (path, line) = self.c.shown_location(at.start);
                 let why = format!("panicked: {message} at {path}:{line}");
@@ -216,7 +218,7 @@ impl<'a> Interp<'a> {
 
 /// An error, for the parent: a value of a declared type by that type's
 /// definition, any other by its text.
-fn error_tree(e: &Value<'_>) -> Tree {
+fn error_tree(e: &Value<'_>, unions: &crate::enums::Unions<'_>) -> Tree {
     let def = match e {
         Value::Record { def, .. } => Some(*def),
         Value::Variant { union, .. } => Some(*union),
@@ -225,7 +227,7 @@ fn error_tree(e: &Value<'_>) -> Tree {
     match def {
         Some(def) => Tree::Object(vec![
             ("def".into(), Tree::Int(def as i64)),
-            ("value".into(), json_encode(e)),
+            ("value".into(), json_encode(e, unions)),
         ]),
         None => Tree::Object(vec![("text".into(), Tree::Text(e.display().to_string()))]),
     }

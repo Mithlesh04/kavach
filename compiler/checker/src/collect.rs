@@ -418,7 +418,7 @@ impl Checker<'_> {
                             .copied()
                             .unwrap_or(usize::MAX),
                         fields: self.fields(&v.fields, &self_ty),
-                        value: v.value,
+                        value: v.value.clone(),
                     })
                     .collect(),
             ),

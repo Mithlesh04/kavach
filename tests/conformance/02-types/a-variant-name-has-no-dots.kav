@@ -1,0 +1,9 @@
+// Rule: A variant's name is one name with no dots: the compile error says to put the text in a value, `US = "U.S"`.
+// Spec: 2.6
+// expect compile error
+
+type Country = India | U.S | Japan      // error: write `US = "U.S"`
+
+fn main() {
+    print(Country.India)
+}

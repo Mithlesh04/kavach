@@ -75,13 +75,13 @@ const order: Json = {
 
 - Numbers (sized integers too), `Bool`, `String`, and `Char` (text of one character). `Decimal` and `BigInt` are numbers with all their digits; `big_as_text: true` writes them as text instead, for readers such as JavaScript that round numbers past 2^53. `NaN` and infinities are written as `null`, and a negative zero `Float` as `0.0`, as JavaScript does; JSON text read in and written back keeps its own `-0.0`.
 - Lists, sets and tuples are arrays. Records are objects, with the fields in declared order. Dicts are objects, with their keys as text (below).
-- An optional is its value, or `null` for `none`. A union variant without fields is its name as text; one with fields is `{"Variant": {fields}}`.
+- An optional is its value, or `null` for `none`. A union variant without fields is its name as text; one with fields is `{"Variant": {fields}}`. A variant that carries a value (2.6) is that value instead: its text, or its number (below).
 - `Bytes` is base64 text, and `std.time`'s `Date`, `Time` and `DateTime` are ISO 8601 text (both below). `Json` is itself.
 - `Shared(x)` is `x`. A `Weak` is its value while it lives, and `null` once it was freed.
 - A `secret` field (2.11) is written `"<secret>"`, as `print` shows it (1.11), so a secret never reaches JSON.
 - Values with no JSON meaning, such as functions, `Task`, `Channel`, files and sockets, are written as their printed form, `"<function>"`. This goes one way: `json.decode` of a type that holds one is a compile error.
 
-**Keys.** A JSON key is text, so each dict key is written as text: a `String` as itself; numbers, `Bool`, `Char` and `BigInt` as their text; a union variant without fields as its name; and any other key (a list, tuple, record, dict or set) as its own compact JSON, as text. Decoding reads each key back as the dict's key type says, and a key that doesn't read as one is a `Mismatch` at its path.
+**Keys.** A JSON key is text, so each dict key is written as text: a `String` as itself; numbers, `Bool`, `Char` and `BigInt` as their text; a union variant without fields as its name, or as its value when it carries one; and any other key (a list, tuple, record, dict or set) as its own compact JSON, as text. Decoding reads each key back as the dict's key type says, and a key that doesn't read as one is a `Mismatch` at its path.
 
 ```kavach
 print(json.of({1: "x", 2: "y"}))          // {"1":"x","2":"y"}
@@ -91,6 +91,23 @@ const back = try json.decode<{Int: String}>(`\{"1": "x"}`)
 print(back[1])                            // x
 ```
 
+**Variants that carry values** (2.6) are written and read as their values, so a type can hold what another system sends. Writing gives the text, or the number; reading takes only a value, not a name, and anything else is a `Mismatch` expecting "a variant of `PaymentStatus`". A variant still prints as its name.
+
+```kavach
+use std.json
+
+type PaymentStatus = Succeeded = "succeeded" | Processing = "processing" | RequiresAction = "requires_action"
+
+type Payment {
+    id: String
+    status: PaymentStatus
+}
+
+const p = try json.decode<Payment>(`\{"id": "pi_1", "status": "requires_action"}`)
+print(p.status)                // RequiresAction
+print(json.stringify(p))       // {"id":"pi_1","status":"requires_action"}
+print(json.of(Code.NotFound))  // 404, for `type Code = Ok = 200 | NotFound = 404`
+```
 
 **Decoding** is the reverse, and strict about values: an integer field takes only a number written without a fraction or exponent that fits its type, and a `BigInt` field one of any size, or one written as text; a `Float` field takes any number, as the nearest `Float`; a `Decimal` field takes any number exactly, or one written as text; text, booleans, arrays and objects must match. A number that doesn't fit its field is a `Mismatch`, as any other value that doesn't fit is. A missing field takes its default or `none` if it has one, otherwise decoding fails. A field the type doesn't have is a problem too, at its path, expecting "no field of this name", as the type's schema says (`additionalProperties: false`), so a misspelled or smuggled field is caught ([decision 0096](../../decisions/0096-unknown-fields-are-refused.md)). To read another service's answers, which may gain fields, write `unknown: JsonUnknown.Ignore`: such fields are then skipped. `std.http`'s client does this for the responses it decodes (14.11). In a generic function, `json.decode<T>` of a type parameter is checked where the parameter gets a real type: the call `load<Step>(text)` is the compile error when `Step` holds a function, and so is each call through other generic functions that pass the parameter on.
 
@@ -126,7 +143,7 @@ const a = json.decode<Order>(text)                               // Invalid: `no
 const b = json.decode<Order>(text, unknown: JsonUnknown.Ignore)  // `note` is skipped
 ```
 
-**A type's schema** is a `Json` value a program can read: a record is `{"type": "object", "properties": {...}, "required": [...]}` with its fields in the order they are declared, `Int` and the sized integers are `{"type": "integer"}`, with `"minimum": 0` for the unsigned ones (`UInt8` to `UInt64`), `Float` and `Decimal` `{"type": "number"}`, `Bool` `{"type": "boolean"}`, `String` `{"type": "string"}`, a list `{"type": "array", "items": ...}`, an optional `{"anyOf": [..., {"type": "null"}]}`, a union `{"anyOf": [...]}` of its variants as JSON writes them, and a dict with `String` keys `{"type": "object", "additionalProperties": ...}`. A type's doc comment (`///`) becomes its schema's `"description"`, and so does a field's. When both a field and its type have one, the field's comes first in one `"description"`, then the type's: `"How sure the model is. How sure."`. A type with no schema (dicts with other keys, sets, tuples, functions) is a compile error, and so is a record or union holding one, however deep. `ask<T>` (8.4) still refuses dicts: a model answers closed objects only.
+**A type's schema** is a `Json` value a program can read: a record is `{"type": "object", "properties": {...}, "required": [...]}` with its fields in the order they are declared, `Int` and the sized integers are `{"type": "integer"}`, with `"minimum": 0` for the unsigned ones (`UInt8` to `UInt64`), `Float` and `Decimal` `{"type": "number"}`, `Bool` `{"type": "boolean"}`, `String` `{"type": "string"}`, a list `{"type": "array", "items": ...}`, an optional `{"anyOf": [..., {"type": "null"}]}`, a union `{"anyOf": [...]}` of its variants as JSON writes them (for variants that carry values, `{"type": "string", "enum": [...]}` of the texts or `{"type": "integer", "enum": [...]}` of the numbers), and a dict with `String` keys `{"type": "object", "additionalProperties": ...}`. A type's doc comment (`///`) becomes its schema's `"description"`, and so does a field's. When both a field and its type have one, the field's comes first in one `"description"`, then the type's: `"How sure the model is. How sure."`. A type with no schema (dicts with other keys, sets, tuples, functions) is a compile error, and so is a record or union holding one, however deep. `ask<T>` (8.4) still refuses dicts: a model answers closed objects only.
 
 ```kavach
 type Point {

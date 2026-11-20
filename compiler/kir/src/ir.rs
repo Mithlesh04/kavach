@@ -189,7 +189,11 @@ pub struct FieldShape {
 pub struct VariantShape {
     pub name: String,
     pub fields: Vec<FieldShape>,
+    /// The value an enum variant carries, which JSON writes (spec 2.6).
+    pub value: Option<VariantValue>,
 }
+
+pub use kavach_ast::VariantValue;
 
 pub struct Program {
     pub path: String,

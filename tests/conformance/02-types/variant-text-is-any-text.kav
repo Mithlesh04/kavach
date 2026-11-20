@@ -1,0 +1,31 @@
+// Rule: A variant's text is exactly what is written: spaces, dots, any script, a quote (in backticks, with nothing filled in), and empty text.
+// Spec: 2.6
+// expect output: US East (N. Virginia)
+// expect output: हिन्दी
+// expect output: தமிழ்
+// expect output: "
+// expect output: '
+// expect output: []
+// expect output: Plain
+// expect output: Inch
+// expect output: Hindi
+
+type Region = UsEast = "US East (N. Virginia)" | EuWest = "Europe (Ireland)"
+
+type Language = Hindi = "हिन्दी" | Tamil = "தமிழ்"
+
+type Unit = Inch = `"` | Foot = "'" | Metre = "m"
+
+type Suffix = Plain = "" | Junior = "Jr."
+
+fn main() {
+    print(Region.UsEast.value())
+    print(Language.Hindi.value())
+    print(Language.Tamil.value())
+    print(Unit.Inch.value())
+    print(Unit.Foot.value())
+    print(`[{Suffix.Plain.value()}]`)
+    print(Suffix.from("") ?? Suffix.Junior)
+    print(Unit.from(`"`) ?? Unit.Metre)
+    print(Language.from("हिन्दी") ?? Language.Tamil)
+}

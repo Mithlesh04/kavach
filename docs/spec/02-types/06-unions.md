@@ -35,7 +35,7 @@ const chosen = Status.parse("Paid") ?? Status.Pending
 - `s.name()` gives the variant's name as text (`"Paid"`). It works on any union value.
 - `Status.parse(text)` gives the variant with that name, or `none`.
 
-Each variant of an enum may have a whole number, for wire formats, files and C:
+Each variant of an enum may carry a **value**: a whole number, for wire formats, files and C, or a text, for the names other systems use, which often aren't names a variant can have:
 
 ```kavach
 type Code = Ok = 200 | NotFound = 404 | Failed = 500
@@ -44,6 +44,20 @@ print(Code.NotFound.value())              // 404
 const c = Code.from(500) ?? Code.Failed
 ```
 
-- `c.value()` gives its number; `Code.from(n)` gives the variant with number `n`, or `none`.
-- Either every variant has a number or none does, and no two have the same one.
+```kavach
+type Method = Get = "GET" | Post = "POST" | Put = "PUT" | Delete = "DELETE"
+type Country = India = "IN" | UnitedStates = "US" | UnitedKingdom = "GB"
+type Currency = Rupee = "INR" | Dollar = "USD" | Euro = "EUR"
+type Mime = Json = "application/json" | Html = "text/html"
+
+print(Method.Post.value())                // POST
+const home = Country.from("GB") ?? Country.India
+print(home)                               // UnitedKingdom
+```
+
+- `c.value()` gives its value: an `Int` for numbers, a `String` for text. `Code.from(value)` gives the variant with that value, or `none`.
+- Past `value()` and `from`, the value changes only JSON, which writes and reads it instead of the name (2.12). A variant still prints as its name, `home.name()` is `"UnitedKingdom"`, `Country.parse(text)` reads a name, and `match` works as on any enum.
+- Either every variant has a value or none does, no two have the same one, and one type's values are all numbers or all text.
+- A text value is written in quotes, exactly as it is: spaces, dots, any script (`Hindi = "हिन्दी"`), and empty text too. Text with a `"` in it is written in backticks with nothing filled in: `` Inch = `"` ``. A value is fixed when compiling, so a `{…}` to fill in is a compile error.
+- A variant's name is one name, with no dots or spaces; the text other systems use goes in the value. `type Country = India | U.S` is a compile error that says to write `US = "U.S"`, and so is a variant written as text, as TypeScript writes a union, `type Lang = "en" | "hi"`, which says to write `En = "en"`.
 - A function or method the type declares itself with one of these names (`all`, `name`, `parse`, `value`, `from`) is used instead.

@@ -123,6 +123,15 @@ fn types() {
             "type Status = Pending | Paid | Refunded",
             "(type Status = Pending Paid Refunded)",
         ),
+        // Variants that carry values (spec 2.6).
+        (
+            "type Code = Ok = 200 | Low = -1",
+            "(type Code = Ok=200 Low=-1)",
+        ),
+        (
+            "type Region = UsEast = \"US East (N. Virginia)\" | Inch = `\"` | Plain = \"\"",
+            "(type Region = UsEast=\"US East (N. Virginia)\" Inch=\"\"\" Plain=\"\")",
+        ),
         (
             "type Shape = Circle(radius: Float) | Rect(w: Float, h: Float)",
             "(type Shape = (Circle radius:Float) (Rect w:Float h:Float))",

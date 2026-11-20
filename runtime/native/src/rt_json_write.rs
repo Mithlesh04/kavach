@@ -13,7 +13,7 @@ use crate::flat;
 use crate::heap::{slots, tag_of};
 use crate::rt_big_decimal::any_decimal_of;
 use crate::shapes::{innermost, shape, with_str};
-use kavach_kir::{FieldShape, Shape, Type};
+use kavach_kir::{FieldShape, Shape, Type, VariantValue};
 use kavach_runtime_core::json::{self, write_int, write_text};
 use kavach_runtime_core::{AnyDecimal, push_float};
 
@@ -37,8 +37,8 @@ pub(crate) fn text_of(slot: i64, ty: Type, indent: usize, o: Encode) -> String {
 }
 
 /// A dict key as JSON text (decision 0132): text as itself, numbers,
-/// `Bool`, `Char` and a variant without fields as they print, any other
-/// key as its own compact JSON.
+/// `Bool`, `Char` and a variant without fields as they print (or as its
+/// value, when it carries one), any other key as its own compact JSON.
 pub(crate) fn key_text(slot: i64, ty: Type, o: Encode) -> String {
     if !ty.is_ref() {
         return crate::display::display(slot, ty, true);
@@ -48,9 +48,11 @@ pub(crate) fn key_text(slot: i64, ty: Type, o: Encode) -> String {
         Shape::Decimal | Shape::BigInt => crate::display::display(slot, ty, true),
         Shape::Union { variants, .. } if !crate::rt_json::is_json(ty) => {
             let v = &variants[tag_of(innermost(slot)) as usize];
-            match v.fields.is_empty() {
-                true => v.name.clone(),
-                false => text_of(slot, ty, 0, o),
+            match (v.fields.is_empty(), &v.value) {
+                (true, Some(VariantValue::Int(n))) => n.to_string(),
+                (true, Some(VariantValue::Text(t))) => t.clone(),
+                (true, None) => v.name.clone(),
+                (false, _) => text_of(slot, ty, 0, o),
             }
         }
         _ => text_of(slot, ty, 0, o),
@@ -310,7 +312,12 @@ impl Writer {
                 let inner = innermost(p);
                 let variant = &variants[tag_of(inner) as usize];
                 if variant.fields.is_empty() {
-                    return write_text(&mut self.out, &variant.name);
+                    // Its value when it carries one (spec 2.6).
+                    return match &variant.value {
+                        Some(VariantValue::Int(n)) => self.out.push_str(&n.to_string()),
+                        Some(VariantValue::Text(t)) => write_text(&mut self.out, t),
+                        None => write_text(&mut self.out, &variant.name),
+                    };
                 }
                 self.object(1, level, |w, _| {
                     w.key(&variant.name);

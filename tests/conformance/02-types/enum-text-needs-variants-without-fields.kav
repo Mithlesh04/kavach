@@ -1,0 +1,9 @@
+// Rule: Only an enum's variants carry text: a union whose variants have fields can't.
+// Spec: 2.6
+// expect compile error
+
+type Shape = Circle(radius: Float) = "circle" | Square = "square"      // error: Circle has fields
+
+fn main() {
+    print(Shape.Square)
+}

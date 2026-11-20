@@ -458,3 +458,19 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.20 | [a-match-reads-a-frozen-union.kav](a-match-reads-a-frozen-union.kav) | A `match` on a frozen value reads its parts as on its type; an arm that names the whole value keeps it frozen. | runs |
 | 2.20 | [a-match-on-a-sealed-value-reads-or-names-it.kav](a-match-on-a-sealed-value-reads-or-names-it.kav) | A `match` on a sealed value that both reads its parts and names the whole value in another arm is a compile error. | compile error |
 | 2.20 | [a-private-key-seals-for-other-modules/](a-private-key-seals-for-other-modules/src/main.kav) | When a sealed value's key type is private to its module, `unfreeze(key: …)` anywhere else is a compile error that names the module, even with a key of that type. | compile error |
+| 2.6 | [enum-variants-carry-text.kav](enum-variants-carry-text.kav) | An enum's variants may carry text: `value()` gives it, `from(text)` gives the variant or `none`. | runs |
+| 2.6 | [variant-text-leaves-the-name-as-it-is.kav](variant-text-leaves-the-name-as-it-is.kav) | A variant with text still prints as its name; `name()` and `parse` stay by name. | runs |
+| 2.6 | [match-on-variants-with-text.kav](match-on-variants-with-text.kav) | A `match` on variants that carry text works as on any enum. | runs |
+| 2.6 | [variant-text-is-any-text.kav](variant-text-is-any-text.kav) | A variant's text may hold spaces, dots, any script, a quote, or nothing. | runs |
+| 2.6 | [enum-text-is-all-or-none.kav](enum-text-is-all-or-none.kav) | Every variant carries text, or none does. | compile error |
+| 2.6 | [enum-text-is-unique.kav](enum-text-is-unique.kav) | No two variants carry the same text. | compile error |
+| 2.6 | [enum-values-are-all-numbers-or-all-text.kav](enum-values-are-all-numbers-or-all-text.kav) | One type's values are all numbers or all text. | compile error |
+| 2.6 | [enum-text-needs-variants-without-fields.kav](enum-text-needs-variants-without-fields.kav) | Only an enum's variants carry text. | compile error |
+| 2.6 | [variant-text-has-nothing-filled-in.kav](variant-text-has-nothing-filled-in.kav) | A variant's text has no `{…}` to fill in. | compile error |
+| 2.6 | [a-variant-name-has-no-dots.kav](a-variant-name-has-no-dots.kav) | A dot in a variant's name is refused, with the text form to write: `US = "U.S"`. | compile error |
+| 2.6 | [a-variant-name-has-no-spaces.kav](a-variant-name-has-no-spaces.kav) | A space in a variant's name is refused, with the text form to write. | compile error |
+| 2.6 | [a-variant-is-a-name-not-text.kav](a-variant-is-a-name-not-text.kav) | A variant written as text (`"INDIA" \| "US"`) is refused, with the form to write: `India = "INDIA"`. | compile error |
+| 2.12 | [json-writes-and-reads-variant-text.kav](json-writes-and-reads-variant-text.kav) | JSON writes a variant's text and reads it back from that text only. | runs |
+| 2.12 | [json-writes-variant-numbers.kav](json-writes-variant-numbers.kav) | JSON writes a variant's number and reads it back from the number only. | runs |
+| 2.12 | [json-keys-of-variants-with-values.kav](json-keys-of-variants-with-values.kav) | A dict key that is a variant with a value is written as that value. | runs |
+| 2.12 | [json-schema-of-variants-with-values.kav](json-schema-of-variants-with-values.kav) | A schema lists an enum's texts or numbers. | runs |

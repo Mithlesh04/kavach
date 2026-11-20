@@ -38,6 +38,7 @@ fn set_shapes() {
         let variant = |name: &str, f: FieldShape| VariantShape {
             name: name.into(),
             fields: vec![f],
+            value: None,
         };
         let record = |name: &str, fields| Shape::Record {
             name: name.into(),

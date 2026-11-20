@@ -1,0 +1,9 @@
+// Rule: A variant's name is one name with no spaces: the compile error says to put the text in a value, `GreatBritain = "GREAT BRITAIN"`.
+// Spec: 2.6
+// expect compile error
+
+type Country = India | GREAT BRITAIN      // error: write `GreatBritain = "GREAT BRITAIN"`
+
+fn main() {
+    print(Country.India)
+}

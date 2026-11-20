@@ -1,0 +1,21 @@
+// Rule: A dict key that is a variant carrying a value is written as that value, as text, and read back from it.
+// Spec: 2.12
+// expect output: {"INR":83,"USD":1}
+// expect output: {"200":"OK","404":"Not Found"}
+// expect output: {Rupee: 83, Dollar: 1}
+// expect output: {Ok: "OK", NotFound: "Not Found"}
+
+use std.json
+
+type Currency = Rupee = "INR" | Dollar = "USD" | Euro = "EUR"
+
+type Code = Ok = 200 | NotFound = 404
+
+fn main() ! Error {
+    const rates = {[Currency.Rupee]: 83, [Currency.Dollar]: 1}
+    const reasons = {[Code.Ok]: "OK", [Code.NotFound]: "Not Found"}
+    print(json.of(rates))
+    print(json.of(reasons))
+    print(try json.decode<{Currency: Int}>(json.stringify(rates)))
+    print(try json.decode<{Code: String}>(json.stringify(reasons)))
+}

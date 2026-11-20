@@ -6,6 +6,14 @@ type Shape = Circle(radius: Float) | Rect(width: Float, height: Float)
 //           ^^^^^^ entity.name.type.kavach
 //                          ^^^^^ support.type.primitive.kavach
 
+type Method = Get = "GET" | Post = "POST"
+// <---- storage.type.kavach
+//   ^^^^^^ entity.name.type.kavach
+//            ^^^ entity.name.type.kavach
+//                  ^^^^^ string.quoted.double.kavach
+//                          ^^^^ entity.name.type.kavach
+//                                 ^^^^^^ string.quoted.double.kavach
+
 agent RefundBot {
 // <----- storage.type.kavach
 //    ^^^^^^^^^ entity.name.type.kavach

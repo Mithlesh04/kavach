@@ -1,0 +1,21 @@
+// Rule: JSON writes a variant that carries a number as that number, and reads it back from the number only.
+// Spec: 2.12
+// expect output: {"code":404}
+// expect output: NotFound
+// expect output: true
+
+use std.json
+
+type Code = Ok = 200 | NotFound = 404 | Failed = 500
+
+type Reply {
+    code: Code
+}
+
+fn main() ! Error {
+    print(json.of(Reply(code: Code.NotFound)))
+    const back = try json.decode<Reply>(`\{"code": 404}`)
+    print(back.code)
+    const by_name = json.decode<Reply>(`\{"code": "NotFound"}`) catch _ => Reply(code: Code.Ok)
+    print(by_name.code == Code.Ok)
+}

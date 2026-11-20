@@ -10,7 +10,7 @@
 //! The interpreter and native code both send this schema.
 
 use crate::Compiled;
-use kavach_ast::{Field, ItemKind, TypeBody, TypeDecl};
+use kavach_ast::{Field, ItemKind, TypeBody, TypeDecl, VariantValue};
 use kavach_checker::{Prim, Ty};
 use kavach_resolver::DefId;
 use kavach_runtime_core::json::Tree;
@@ -276,15 +276,25 @@ impl<'c> Schemas<'c> {
             // declared types (spec 2.14).
             TypeBody::Alias(_) => return None,
         };
+        // A variant without fields is its name, or the value it carries
+        // (spec 2.6): text, or a whole number.
+        let mut kind = "string";
         let plain: Vec<Tree> = vs
             .iter()
             .filter(|v| v.fields.is_empty())
-            .map(|v| text(&v.name.name))
+            .map(|v| match &v.value {
+                Some(VariantValue::Int(n)) => {
+                    kind = "integer";
+                    i64::try_from(*n).map_or(Tree::Number(n.to_string()), Tree::Int)
+                }
+                Some(VariantValue::Text(t)) => text(t),
+                None => text(&v.name.name),
+            })
             .collect();
         let mut options = Vec::new();
         if !plain.is_empty() {
             options.push(Tree::Object(vec![
-                ("type".into(), text("string")),
+                ("type".into(), text(kind)),
                 ("enum".into(), Tree::Array(plain)),
             ]));
         }

@@ -8,10 +8,11 @@
 //! same messages (`kavach_runtime_core::json::expected`).
 
 use crate::calls::Args;
+use crate::enums::is_carried;
 use crate::interp::Interp;
 use crate::map::MapValue;
 use crate::value::{Eval, Field, Flow, Value};
-use kavach_ast::TypeBody;
+use kavach_ast::{TypeBody, VariantValue};
 use kavach_checker::{Prim, Ty};
 use kavach_runtime_core::Decimal;
 use kavach_runtime_core::json::dates::{self, Kind};
@@ -282,6 +283,12 @@ impl<'a> Interp<'a> {
                     let kind = match &**key {
                         Ty::Prim(Prim::String | Prim::Char) => json::KeyKind::Text,
                         Ty::Prim(_) => json::KeyKind::Scalar,
+                        // Keyed by the value a variant carries (2.6).
+                        Ty::Adt(def, _) => match self.first_carried(*def) {
+                            Some(VariantValue::Int(_)) => json::KeyKind::Scalar,
+                            Some(VariantValue::Text(_)) => json::KeyKind::Text,
+                            None => json::KeyKind::Other,
+                        },
                         _ => json::KeyKind::Other,
                     };
                     let key = self.decode(&json::key_tree(k, kind), key, &at)?;
@@ -294,6 +301,14 @@ impl<'a> Interp<'a> {
             (Ty::Adt(def, _), _) if crate::json::is_json(*def) => Ok(self.json_value(t.clone())),
             (Ty::Adt(def, _), _) => self.decode_type(t, *def, path),
             _ => wrong(expected::OBJECT),
+        }
+    }
+
+    /// The value the first variant of union `def` carries, if any.
+    fn first_carried(&self, def: usize) -> Option<&'a VariantValue> {
+        match &self.unions.get(&def)?.body {
+            TypeBody::Union(vs) => vs.first()?.value.as_ref(),
+            _ => None,
         }
     }
 
@@ -320,7 +335,13 @@ impl<'a> Interp<'a> {
         let Some(TypeBody::Union(variants)) = self.unions.get(&def).map(|d| &d.body) else {
             return self.problem(path, expected::OBJECT);
         };
+        // By the value variants carry, when they do (spec 2.6).
+        let carry = variants.iter().any(|x| x.value.is_some());
         let found = match t {
+            _ if carry => variants
+                .iter()
+                .find(|x| x.value.as_ref().is_some_and(|v| is_carried(t, v)))
+                .map(|x| (x, Vec::new())),
             Tree::Text(v) => variants
                 .iter()
                 .find(|x| x.name.name == *v && x.fields.is_empty())

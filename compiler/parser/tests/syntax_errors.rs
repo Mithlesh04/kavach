@@ -117,6 +117,30 @@ fn messages_point_at_the_problem() {
             "const x = 1;",
             &["1: Kavach has no semicolons: a statement ends at the end of its line"],
         ),
+        // A variant's name is one word; text goes in its value (spec 2.6).
+        (
+            "type Country = India | U.S | UnitedKingdom",
+            &[
+                "1: `U.S` is not a variant name: a name is one word, with no dots or spaces. To keep this text, write `US = \"U.S\"` (spec 2.6)",
+            ],
+        ),
+        (
+            "type Country = India | GREAT AMERICA",
+            &[
+                "1: `GREAT AMERICA` is not a variant name: a name is one word, with no dots or spaces. To keep this text, write `GreatAmerica = \"GREAT AMERICA\"` (spec 2.6)",
+            ],
+        ),
+        (
+            "type Country = \"INDIA\" | \"US\"",
+            &[
+                "1: a variant is a name, not text: to keep the text, write `India = \"INDIA\"` (spec 2.6)",
+                "1: a variant is a name, not text: to keep the text, write `US = \"US\"` (spec 2.6)",
+            ],
+        ),
+        (
+            "type Status = Paid = `{x}`",
+            &["1: a variant's text is fixed when compiling: write it without `{…}` (spec 2.6)"],
+        ),
     ];
     let failures: Vec<String> = cases
         .iter()

@@ -1,0 +1,9 @@
+// Rule: Either every variant of an enum carries text or none does.
+// Spec: 2.6
+// expect compile error
+
+type Country = India = "IN" | UnitedStates       // error: UnitedStates has no text
+
+fn main() {
+    print(Country.India)
+}

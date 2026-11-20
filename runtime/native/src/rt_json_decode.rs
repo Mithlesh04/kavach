@@ -17,7 +17,7 @@ use crate::heap::{
 use crate::rt::{type_code, type_of};
 use crate::rt_errors::set_error;
 use crate::shapes::{new_text, shape, with_str};
-use kavach_kir::{FieldShape, RtOp, Shape, Type};
+use kavach_kir::{FieldShape, RtOp, Shape, Type, VariantValue};
 use kavach_runtime_core::json::{self, Limits, Tree, expected, path_field, path_item};
 use kavach_runtime_core::{Decimal, format_float};
 
@@ -300,10 +300,9 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
         }
         (Shape::Union { name, variants }, _) => {
             let found = match t {
-                Tree::Text(v) => variants
-                    .iter()
-                    .position(|x| x.name == *v && x.fields.is_empty())
-                    .map(|i| (i, Vec::new())),
+                Tree::Text(_) | Tree::Int(_) | Tree::Number(_) => {
+                    crate::rt_json::plain_variant_at(variants, t).map(|i| (i, Vec::new()))
+                }
                 Tree::Object(one) if one.len() == 1 => {
                     match (&one[0].1, variants.iter().position(|x| x.name == one[0].0)) {
                         (Tree::Object(given), Some(i)) => Some((i, given.clone())),
@@ -405,6 +404,14 @@ pub(crate) fn key_kind(ty: Type) -> json::KeyKind {
         t => match shape(t) {
             Shape::Str => json::KeyKind::Text,
             Shape::Decimal | Shape::BigInt => json::KeyKind::Scalar,
+            // A variant that carries a value is keyed by it (spec 2.6).
+            Shape::Union { variants, .. } => {
+                match variants.first().and_then(|v| v.value.as_ref()) {
+                    Some(VariantValue::Int(_)) => json::KeyKind::Scalar,
+                    Some(VariantValue::Text(_)) => json::KeyKind::Text,
+                    None => json::KeyKind::Other,
+                }
+            }
             _ => json::KeyKind::Other,
         },
     }

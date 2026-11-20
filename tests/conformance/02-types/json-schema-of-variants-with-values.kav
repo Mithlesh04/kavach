@@ -1,0 +1,15 @@
+// Rule: In a schema, an enum whose variants carry text is a `string` with its texts as the `enum`, and one whose variants carry numbers an `integer` with its numbers.
+// Spec: 2.12
+// expect output: {"anyOf":[{"type":"string","enum":["GET","POST"]}]}
+// expect output: {"anyOf":[{"type":"integer","enum":[200,404]}]}
+
+use std.json
+
+type Method = Get = "GET" | Post = "POST"
+
+type Code = Ok = 200 | NotFound = 404
+
+fn main() {
+    print(json.schema<Method>())
+    print(json.schema<Code>())
+}

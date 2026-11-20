@@ -1,0 +1,9 @@
+// Rule: No two variants of an enum carry the same text.
+// Spec: 2.6
+// expect compile error
+
+type Currency = Rupee = "INR" | Dollar = "USD" | Peso = "USD"      // error: "USD" is already `Dollar`'s
+
+fn main() {
+    print(Currency.Rupee.value())
+}

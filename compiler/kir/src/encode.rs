@@ -12,10 +12,13 @@
 //! union Name Variant=field:T,field:T…
 //! ```
 //!
+//! A variant that carries a value (spec 2.6) has it after its name:
+//! `NotFound~i404=`, or `Get~t474554=`, the text's UTF-8 bytes in hex.
+//!
 //! Types are `i8`…`u64`, `f64`, `f32`, `bool`, `char`, `unit`, or `r<id>` for a
 //! heap type. Names are identifiers, so they never hold the separators.
 
-use crate::ir::{FieldShape, Shape, Type, VariantShape};
+use crate::ir::{FieldShape, Shape, Type, VariantShape, VariantValue};
 
 const SCALARS: [(Type, &str); 13] = [
     (Type::I8, "i8"),
@@ -65,6 +68,30 @@ fn parse_field(text: &str) -> Option<FieldShape> {
         ty,
         secret: parts.next() == Some("s"),
     })
+}
+
+/// A variant's value after its name: `~i404`, `~t474554`, or nothing.
+fn value(v: &Option<VariantValue>) -> String {
+    match v {
+        Some(VariantValue::Int(n)) => format!("~i{n}"),
+        Some(VariantValue::Text(t)) => {
+            let hex: String = t.bytes().map(|b| format!("{b:02x}")).collect();
+            format!("~t{hex}")
+        }
+        None => String::new(),
+    }
+}
+
+fn parse_value(text: &str) -> Option<VariantValue> {
+    if let Some(n) = text.strip_prefix('i') {
+        return n.parse().ok().map(VariantValue::Int);
+    }
+    let hex = text.strip_prefix('t')?.as_bytes();
+    let bytes = hex
+        .chunks(2)
+        .map(|b| u8::from_str_radix(std::str::from_utf8(b).ok()?, 16).ok())
+        .collect::<Option<Vec<u8>>>()?;
+    String::from_utf8(bytes).ok().map(VariantValue::Text)
 }
 
 pub fn encode_shapes(shapes: &[Shape]) -> String {
@@ -124,7 +151,7 @@ pub fn encode_shapes(shapes: &[Shape]) -> String {
                 .iter()
                 .map(|v| {
                     let fields: Vec<String> = v.fields.iter().map(field).collect();
-                    format!("{}={}", v.name, fields.join(","))
+                    format!("{}{}={}", v.name, value(&v.value), fields.join(","))
                 })
                 .collect();
             format!("union {name} {}", vs.join(" "))
@@ -199,8 +226,13 @@ pub fn decode_shapes(text: &str) -> Option<Vec<Shape>> {
                         .iter()
                         .map(|v| {
                             let (name, fields) = v.split_once('=')?;
+                            let (name, value) = match name.split_once('~') {
+                                Some((name, v)) => (name, Some(parse_value(v)?)),
+                                None => (name, None),
+                            };
                             Some(VariantShape {
                                 name: name.to_string(),
+                                value,
                                 fields: fields
                                     .split(',')
                                     .filter(|f| !f.is_empty())
@@ -262,12 +294,38 @@ mod tests {
                     VariantShape {
                         name: "Paid".into(),
                         fields: Vec::new(),
+                        value: None,
                     },
                     VariantShape {
                         name: "Late".into(),
                         fields: vec![f("days", Type::I64, false), f("note", Type::Ref(0), false)],
+                        value: None,
                     },
                 ],
+            },
+            Shape::Union {
+                name: "Unit".into(),
+                variants: [
+                    ("Inch", "\""),
+                    ("Space", "a b=c,d~e"),
+                    ("Hindi", "हिन्दी"),
+                    ("None", ""),
+                ]
+                .iter()
+                .map(|(name, text)| VariantShape {
+                    name: (*name).into(),
+                    fields: Vec::new(),
+                    value: Some(VariantValue::Text((*text).into())),
+                })
+                .collect(),
+            },
+            Shape::Union {
+                name: "Code".into(),
+                variants: vec![VariantShape {
+                    name: "Low".into(),
+                    fields: Vec::new(),
+                    value: Some(VariantValue::Int(-1)),
+                }],
             },
         ];
         assert_eq!(decode_shapes(&encode_shapes(&shapes)), Some(shapes));

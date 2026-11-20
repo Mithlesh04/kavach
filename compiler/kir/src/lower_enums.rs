@@ -3,14 +3,14 @@
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
 //! Enums in native code (spec 2.6): `Type.all()` is a list of the
-//! variants; `Type.parse(text)` and `Type.from(n)` compare with each
-//! variant's name or number in turn; `v.name()` and `v.value()` test the
+//! variants; `Type.parse(text)` and `Type.from(value)` compare with each
+//! variant's name or value in turn; `v.name()` and `v.value()` test the
 //! variant in turn. Everything is known when compiling, so this is plain
 //! KIR: no runtime support.
 
 use crate::ir::{self, Block, ExprKind as K, Stmt, Type};
 use crate::lower::{Lowered, Lowerer};
-use kavach_ast::{self as ast, ItemKind, TypeBody};
+use kavach_ast::{self as ast, ItemKind, TypeBody, VariantValue};
 use kavach_resolver::DefId;
 
 impl<'a> Lowerer<'a> {
@@ -26,7 +26,7 @@ impl<'a> Lowerer<'a> {
         })
     }
 
-    /// `Type.all()`, `Type.parse(text)` or `Type.from(n)` on union `def`,
+    /// `Type.all()`, `Type.parse(text)` or `Type.from(value)` on union `def`,
     /// giving `ty`; `None` when `name` is none of them.
     pub(crate) fn enum_call(
         &mut self,
@@ -92,8 +92,9 @@ impl<'a> Lowerer<'a> {
             let key = if name == "parse" {
                 K::Str(v.name.name.clone())
             } else {
-                match v.value {
-                    Some(n) => K::Int(n),
+                match &v.value {
+                    Some(VariantValue::Int(n)) => K::Int(*n),
+                    Some(VariantValue::Text(t)) => K::Str(t.clone()),
                     None => continue,
                 }
             };
@@ -140,17 +141,16 @@ impl<'a> Lowerer<'a> {
             return None;
         }
         let vs = self.declared_variants(def)?;
-        let ty = if name == "name" {
-            self.str_type()
-        } else {
-            Type::I64
-        };
+        let first = vs.first().and_then(|v| v.value.as_ref());
+        let text = name == "name" || matches!(first, Some(VariantValue::Text(_)));
+        let ty = if text { self.str_type() } else { Type::I64 };
         let held = self.new_local(receiver.ty);
         let constant = |v: &ast::Variant| ir::Expr {
-            kind: if name == "name" {
-                K::Str(v.name.name.clone())
-            } else {
-                K::Int(v.value.unwrap_or(0))
+            kind: match (&v.value, name == "name") {
+                (_, true) => K::Str(v.name.name.clone()),
+                (Some(VariantValue::Text(t)), _) => K::Str(t.clone()),
+                (Some(VariantValue::Int(n)), _) => K::Int(*n),
+                (None, _) => K::Int(0),
             },
             ty,
             line,

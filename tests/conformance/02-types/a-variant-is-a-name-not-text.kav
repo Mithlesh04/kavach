@@ -1,0 +1,9 @@
+// Rule: A variant written as text, as TypeScript writes a union, is a compile error that says to name it and keep the text as its value: `India = "INDIA"`.
+// Spec: 2.6
+// expect compile error
+
+type Country = "INDIA" | "US"      // error: write `India = "INDIA" | US = "US"`
+
+fn main() {
+    print("none")
+}

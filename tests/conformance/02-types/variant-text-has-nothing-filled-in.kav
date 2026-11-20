@@ -1,0 +1,11 @@
+// Rule: A variant's text is fixed when compiling: a template with `{…}` to fill in is a compile error.
+// Spec: 2.6
+// expect compile error
+
+const region = "IN"
+
+type Server = Main = `api-{region}`      // error: nothing is filled in
+
+fn main() {
+    print(Server.Main)
+}

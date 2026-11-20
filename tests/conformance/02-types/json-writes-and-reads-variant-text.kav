@@ -1,0 +1,38 @@
+// Rule: JSON writes a variant that carries text as its text, and reads it back from that text only, so a type can hold the status another system sends.
+// Spec: 2.12
+// expect output: RequiresAction
+// expect output: {"id":"pi_1","status":"requires_action"}
+// expect output: ["succeeded","processing"]
+// expect output: [Succeeded, Processing]
+// expect output: Invalid at status
+// expect output: Invalid at status
+
+use std.json
+
+type PaymentStatus = Succeeded = "succeeded" | Processing = "processing" | RequiresAction = "requires_action"
+
+type Payment {
+    id: String
+    status: PaymentStatus
+}
+
+fn problem(text: String) {
+    match json.decode<Payment>(text) {
+        ok(p) => print(`decoded {p}`),
+        err(e) => match e {
+            JsonError.Invalid(problems) => print(`Invalid at {problems.map(p => p.path).join(", ")}`),
+            _ => print(`other: {e}`),
+        },
+    }
+}
+
+fn main() ! Error {
+    const p = try json.decode<Payment>(`\{"id": "pi_1", "status": "requires_action"}`)
+    print(p.status)
+    print(json.stringify(p))
+    const list = [PaymentStatus.Succeeded, PaymentStatus.Processing]
+    print(json.of(list))
+    print(try json.decode<[PaymentStatus]>(json.stringify(list)))
+    problem(`\{"id": "pi_2", "status": "canceled"}`)
+    problem(`\{"id": "pi_3", "status": "RequiresAction"}`)
+}

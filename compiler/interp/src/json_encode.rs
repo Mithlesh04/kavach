@@ -7,12 +7,15 @@
 //! numbers as text; the agent journal and other processes keep values
 //! whole, as state (8.5, 9.8).
 
+use crate::enums::{Unions, carried, carried_tree};
 use crate::value::{Field, Value};
 use kavach_runtime_core::json::{self, Tree};
 
 /// How a value is written.
 #[derive(Clone, Copy, Default)]
-pub(crate) struct Encode {
+pub(crate) struct Encode<'u> {
+    /// The program's unions, for the values variants carry (spec 2.6).
+    pub(crate) unions: Option<&'u Unions<'u>>,
     /// A `secret` field as `"<secret>"`, as `print` shows it.
     pub(crate) hide_secrets: bool,
     /// `BigInt` and `Decimal` as text, for readers that round numbers
@@ -21,8 +24,17 @@ pub(crate) struct Encode {
 }
 
 /// `v` written whole: secrets kept, big numbers as numbers.
-pub(crate) fn json_encode(v: &Value<'_>) -> Tree {
-    encode(v, Encode::default())
+pub(crate) fn json_encode(v: &Value<'_>, unions: &Unions<'_>) -> Tree {
+    let o = Encode {
+        unions: Some(unions),
+        ..Encode::default()
+    };
+    encode(v, o)
+}
+
+/// The value variant `name` of `union` carries, when it carries one.
+fn carried_by(o: Encode<'_>, union: usize, name: &str) -> Option<Tree> {
+    carried(o.unions?, union, name).map(carried_tree)
 }
 
 /// `v` as `json.of` and `json.stringify` write it.
@@ -78,7 +90,14 @@ pub(crate) fn encode(v: &Value<'_>, o: Encode) -> Tree {
             Some((kind, n)) => Tree::Text(json::dates::write(kind, &n)),
             None => object(fields),
         },
-        Value::Variant { name, fields, .. } if fields.is_empty() => Tree::Text(name.to_string()),
+        Value::Variant {
+            union,
+            name,
+            fields,
+            ..
+        } if fields.is_empty() => {
+            carried_by(o, *union, name).unwrap_or_else(|| Tree::Text(name.to_string()))
+        }
         Value::Variant { name, fields, .. } => {
             Tree::Object(vec![(name.to_string(), object(fields))])
         }
@@ -93,8 +112,8 @@ pub(crate) fn encode(v: &Value<'_>, o: Encode) -> Tree {
 }
 
 /// A dict key as JSON text (decision 0132): text as itself, numbers,
-/// `Bool`, `Char` and a variant without fields as they print, any other
-/// key as its own compact JSON.
+/// `Bool`, `Char` and a variant without fields as they print (or as its
+/// value, when it carries one), any other key as its own compact JSON.
 pub(crate) fn key_text(k: &Value<'_>, o: Encode) -> String {
     match k {
         Value::Str(s) => s.to_string(),
@@ -103,7 +122,14 @@ pub(crate) fn key_text(k: &Value<'_>, o: Encode) -> String {
             name,
             fields,
             ..
-        } if fields.is_empty() && !crate::json::is_json(*union) => name.to_string(),
+        } if fields.is_empty() && !crate::json::is_json(*union) => {
+            match carried_by(o, *union, name) {
+                Some(Tree::Text(t)) => t,
+                Some(Tree::Int(n)) => n.to_string(),
+                Some(Tree::Number(n)) => n,
+                _ => name.to_string(),
+            }
+        }
         Value::Int(..)
         | Value::Float(_)
         | Value::Float32(_)

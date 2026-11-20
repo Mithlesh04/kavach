@@ -214,8 +214,25 @@ pub struct Field {
 pub struct Variant {
     pub name: Ident,
     pub fields: Vec<Field>,
-    /// An enum variant's number: `NotFound = 404` (spec 2.6).
-    pub value: Option<i128>,
+    /// An enum variant's value: `NotFound = 404`, `Get = "GET"` (spec 2.6).
+    pub value: Option<VariantValue>,
+}
+
+/// The value an enum variant carries (spec 2.6): a whole number or a text.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum VariantValue {
+    Int(i128),
+    Text(String),
+}
+
+impl VariantValue {
+    /// The value as it is written in a message: `404`, `"GET"`.
+    pub fn shown(&self) -> String {
+        match self {
+            VariantValue::Int(n) => n.to_string(),
+            VariantValue::Text(t) => format!("\"{t}\""),
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]

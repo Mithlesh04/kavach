@@ -238,6 +238,7 @@ impl<'a> Lowerer<'a> {
                         ty,
                         secret: false,
                     }],
+                    value: None,
                 });
             }
             let ty = self.shapes_intern(Shape::Union {

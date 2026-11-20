@@ -1,0 +1,22 @@
+// Rule: An enum's variants may each carry text: `v.value()` gives it, and `Type.from(text)` gives the variant with that text, or `none` for any other text, a name included.
+// Spec: 2.6
+// expect output: POST
+// expect output: Euro
+// expect output: true
+// expect output: true
+// expect output: GB
+
+type Method = Get = "GET" | Post = "POST" | Put = "PUT" | Delete = "DELETE"
+
+type Currency = Rupee = "INR" | Dollar = "USD" | Euro = "EUR"
+
+type Country = India = "IN" | UnitedStates = "US" | UnitedKingdom = "GB"
+
+fn main() {
+    print(Method.Post.value())
+    print(Currency.from("EUR") ?? Currency.Rupee)
+    print(Currency.from("eur") == none)
+    print(Currency.from("Euro") == none)
+    const home = Country.UnitedKingdom
+    print(home.value())
+}

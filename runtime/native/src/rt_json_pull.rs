@@ -146,12 +146,15 @@ fn read(r: &mut Pull<'_>, ty: Type, templates: i64) -> Read {
             let built = fields_of(r, fields, ty, templates)?;
             Ok(fixed(ty, 0, &built))
         }
-        Shape::Union { variants, .. } if r.peek() == Some(b'"') => {
-            let name = r.text().map_err(|_| Wrong)?;
-            match variants
-                .iter()
-                .position(|x| x.name == *name && x.fields.is_empty())
-            {
+        // A name, or the text or number a variant carries (spec 2.6).
+        Shape::Union { variants, .. } if r.peek() != Some(b'{') => {
+            let t = match r.peek() {
+                Some(b'"') => {
+                    kavach_runtime_core::json::Tree::Text(r.text().map_err(|_| Wrong)?.into_owned())
+                }
+                _ => r.number().map_err(|_| Wrong)?,
+            };
+            match crate::rt_json::plain_variant_at(variants, &t) {
                 Some(i) => Ok(fixed(ty, i as u32, &[])),
                 None => Err(Wrong),
             }

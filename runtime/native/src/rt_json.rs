@@ -14,7 +14,7 @@ use crate::heap::{alloc_zeroed, items_of, obj, release, slots, slots_mut, tag_of
 use crate::rt::type_of;
 use crate::rt_errors::set_error;
 use crate::shapes::{new_text, shape, with_str};
-use kavach_kir::{RtOp, Shape, Type};
+use kavach_kir::{RtOp, Shape, Type, VariantShape, VariantValue};
 use kavach_runtime_core::json::dates::{self, Kind};
 use kavach_runtime_core::json::{self, Error, Limits, Tree};
 
@@ -23,6 +23,34 @@ use kavach_runtime_core::json::{self, Error, Limits, Tree};
 pub fn is_json(ty: Type) -> bool {
     matches!(shape(ty), Shape::Union { name, variants }
         if name == "Json" && variants.first().is_some_and(|v| v.name == "Null"))
+}
+
+/// A variant without fields as JSON (spec 2.6, 2.12): the value it
+/// carries, or else its name.
+pub(crate) fn plain_variant(v: &VariantShape) -> Tree {
+    match &v.value {
+        Some(VariantValue::Int(n)) => {
+            i64::try_from(*n).map_or(Tree::Number(n.to_string()), Tree::Int)
+        }
+        Some(VariantValue::Text(t)) => Tree::Text(t.clone()),
+        None => Tree::Text(v.name.clone()),
+    }
+}
+
+/// Which variant without fields of `variants` the JSON value `t` is: by
+/// value when they carry values, else by name.
+pub(crate) fn plain_variant_at(variants: &[VariantShape], t: &Tree) -> Option<usize> {
+    let carry = variants.iter().any(|v| v.value.is_some());
+    variants.iter().position(|v| {
+        v.fields.is_empty()
+            && match (&v.value, t) {
+                (Some(VariantValue::Text(x)), Tree::Text(y)) => x == y,
+                (Some(VariantValue::Int(n)), Tree::Int(m)) => *n == i128::from(*m),
+                (Some(VariantValue::Int(n)), Tree::Number(d)) => d.parse::<i128>().ok() == Some(*n),
+                (None, Tree::Text(y)) => !carry && v.name == *y,
+                _ => false,
+            }
+    })
 }
 
 /// `std.time`'s `Date`, `Time` or `DateTime`, which JSON holds as ISO 8601
@@ -272,7 +300,7 @@ pub(crate) fn encode(slot: i64, ty: Type) -> Tree {
         Shape::Union { variants, .. } => {
             let v = &variants[tag_of(crate::shapes::innermost(p)) as usize];
             if v.fields.is_empty() {
-                return Tree::Text(v.name.clone());
+                return plain_variant(v);
             }
             let fields = object(
                 v.fields.iter().map(|f| f.name.as_str()).collect(),

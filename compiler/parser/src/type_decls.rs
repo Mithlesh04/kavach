@@ -44,7 +44,15 @@ impl Parser<'_> {
     }
 
     fn variant(&mut self) -> Variant {
-        let name = self.ident("a variant name");
+        // `"IN" | "US"`, as TypeScript writes a union (spec 2.6).
+        if self.at(&TokenKind::StrStart) {
+            return self.text_variant();
+        }
+        let mut name = self.ident("a variant name");
+        // `U.S` or `New Zealand`: text that isn't one name (spec 2.6).
+        if matches!(self.kind(), TokenKind::Dot | TokenKind::Ident) {
+            name = self.spaced_variant(name);
+        }
         let mut fields = Vec::new();
         if self.eat(&TokenKind::LParen) {
             while !self.at(&TokenKind::RParen) && !self.at(&TokenKind::Eof) {
@@ -55,22 +63,100 @@ impl Parser<'_> {
             }
             self.expect(&TokenKind::RParen, "`)`");
         }
-        // `NotFound = 404`: an enum variant's number (spec 2.6).
-        let mut value = None;
-        if self.eat(&TokenKind::Eq) {
-            let negative = self.eat(&TokenKind::Minus);
-            match self.kind().clone() {
-                TokenKind::Int(n) => {
-                    self.bump();
-                    value = Some(if negative { -(n as i128) } else { n as i128 });
-                }
-                _ => self.error_here("expected a whole number for the variant"),
-            }
-        }
+        // `NotFound = 404`, `Get = "GET"`: an enum variant's value (2.6).
+        let value = self
+            .eat(&TokenKind::Eq)
+            .then(|| self.variant_value())
+            .flatten();
         Variant {
             name,
             fields,
             value,
+        }
+    }
+
+    /// A variant's value: a whole number, or plain text in quotes (or in
+    /// backticks, with nothing filled in).
+    fn variant_value(&mut self) -> Option<VariantValue> {
+        let negative = self.eat(&TokenKind::Minus);
+        match self.kind().clone() {
+            TokenKind::Int(n) => {
+                self.bump();
+                Some(VariantValue::Int(if negative {
+                    -(n as i128)
+                } else {
+                    n as i128
+                }))
+            }
+            TokenKind::StrStart if !negative => {
+                let start = self.span();
+                let ExprKind::Str(parts) = self.string() else {
+                    return None;
+                };
+                let mut text = String::new();
+                for part in parts {
+                    match part {
+                        StrPart::Text(t) => text.push_str(&t),
+                        StrPart::Expr(_) => {
+                            let span = self.span_from(start);
+                            self.error(span, "a variant's text is fixed when compiling: write it without `{…}` (spec 2.6)");
+                            return None;
+                        }
+                    }
+                }
+                Some(VariantValue::Text(text))
+            }
+            _ => {
+                self.error_here("expected a whole number or text in quotes for the variant");
+                None
+            }
+        }
+    }
+
+    /// `U.S` or `New Zealand` where a variant's name goes: refused, with
+    /// the name and text to write instead. Gives that name.
+    fn spaced_variant(&mut self, first: Ident) -> Ident {
+        let start = first.span;
+        while matches!(self.kind(), TokenKind::Dot | TokenKind::Ident) {
+            self.bump();
+        }
+        let span = self.span_from(start);
+        let text = span.text(self.src).to_string();
+        let name = name_for(&text);
+        self.error(
+            span,
+            format!(
+                "`{text}` is not a variant name: a name is one word, with no dots or spaces. To keep this text, write `{name} = \"{text}\"` (spec 2.6)"
+            ),
+        );
+        Ident { name, span }
+    }
+
+    /// `"IN"` where a variant goes: refused, with the name to write.
+    fn text_variant(&mut self) -> Variant {
+        let start = self.span();
+        let text = match self.string() {
+            ExprKind::Str(parts) => parts
+                .iter()
+                .map(|p| match p {
+                    StrPart::Text(t) => t.as_str(),
+                    StrPart::Expr(_) => "",
+                })
+                .collect::<String>(),
+            _ => String::new(),
+        };
+        let span = self.span_from(start);
+        let name = name_for(&text);
+        self.error(
+            span,
+            format!(
+                "a variant is a name, not text: to keep the text, write `{name} = \"{text}\"` (spec 2.6)"
+            ),
+        );
+        Variant {
+            name: Ident { name, span },
+            fields: Vec::new(),
+            value: Some(VariantValue::Text(text)),
         }
     }
 
@@ -172,5 +258,32 @@ impl Parser<'_> {
             }
         });
         body
+    }
+}
+
+/// A variant name for `text`, for a message: each word capitalized,
+/// short words in capitals kept (`U.S` is `US`, `"INDIA"` is `India`).
+fn name_for(text: &str) -> String {
+    let words =
+        text.split(|c: char| c.is_whitespace() || (c.is_ascii() && !c.is_ascii_alphanumeric()));
+    let mut name = String::new();
+    for word in words.filter(|w| !w.is_empty()) {
+        if word.len() <= 3
+            && word
+                .chars()
+                .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit())
+        {
+            name.push_str(word);
+            continue;
+        }
+        let mut chars = word.chars();
+        if let Some(c) = chars.next() {
+            name.extend(c.to_uppercase());
+            name.extend(chars.flat_map(char::to_lowercase));
+        }
+    }
+    match name.chars().next() {
+        Some(c) if c.is_alphabetic() => name,
+        _ => "Name".to_string(),
     }
 }

@@ -53,8 +53,8 @@ pub(crate) struct VariantInfo {
     pub(crate) name: String,
     pub(crate) def: DefId,
     pub(crate) fields: Vec<FieldInfo>,
-    /// An enum variant's number (spec 2.6).
-    pub(crate) value: Option<i128>,
+    /// An enum variant's value (spec 2.6).
+    pub(crate) value: Option<kavach_ast::VariantValue>,
 }
 
 #[derive(Clone, Debug)]

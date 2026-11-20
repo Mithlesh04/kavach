@@ -331,6 +331,7 @@ impl Lowerer<'_> {
                     Ok(VariantShape {
                         name: v.name.name.clone(),
                         fields: fields(self, &v.fields)?,
+                        value: v.value.clone(),
                     })
                 })
                 .collect::<Lowered<Vec<_>>>()
