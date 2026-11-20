@@ -1,0 +1,25 @@
+// Rule: `is_nan`, `is_finite` and `is_infinite` say whether a float is `NaN`, an ordinary number, or `inf` or `-inf`, for `Float32` too.
+// Spec: 14.2
+// expect output: true false false
+// expect output: false false true
+// expect output: false false true
+// expect output: false true false
+// expect output: true false false
+// expect output: [1.5, 2.5]
+
+fn kinds(x: Float) -> String {
+    `{x.is_nan()} {x.is_finite()} {x.is_infinite()}`
+}
+
+fn main() {
+    const nan = 0.0 / 0.0
+    const inf = 1.0 / 0.0
+    print(kinds(nan))
+    print(kinds(inf))
+    print(kinds(-inf))
+    print(kinds(1.5))
+    const n32: Float32 = Float32(nan)
+    print(`{n32.is_nan()} {n32.is_finite()} {n32.is_infinite()}`)
+    const xs = [1.5, nan, 2.5]
+    print(xs.filter(x => not x.is_nan()))
+}

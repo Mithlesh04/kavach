@@ -54,4 +54,38 @@ impl Lowerer<'_> {
             ty,
         )
     }
+
+    /// `x.is_nan()`, `x.is_finite()` and `x.is_infinite()` (spec 14.2), as
+    /// compares with no call: `NaN` is the one value not equal to itself,
+    /// and `x - x` is `NaN` exactly when `x` is `NaN` or an infinity.
+    pub(crate) fn float_check(&mut self, name: &str, x: ir::Expr, line: u32) -> ir::Expr {
+        let at = |kind, ty| ir::Expr { kind, ty, line };
+        let wide = at(K::Convert(Box::new(x), false), Type::F64);
+        let held = self.new_local(Type::F64);
+        let get = |s: &Self| s.local_expr(held, line);
+        let cmp =
+            |op, a: ir::Expr, b: ir::Expr| at(K::Binary(op, Box::new(a), Box::new(b)), Type::Bool);
+        let diff = |s: &Self| {
+            at(
+                K::Binary(ir::BinOp::Sub, Box::new(get(s)), Box::new(get(s))),
+                Type::F64,
+            )
+        };
+        let value = match name {
+            "is_nan" => cmp(ir::BinOp::Ne, get(self), get(self)),
+            "is_finite" => cmp(ir::BinOp::Eq, diff(self), diff(self)),
+            _ => {
+                let number = cmp(ir::BinOp::Eq, get(self), get(self));
+                let endless = cmp(ir::BinOp::Ne, diff(self), diff(self));
+                at(K::And(Box::new(number), Box::new(endless)), Type::Bool)
+            }
+        };
+        at(
+            K::Block(ir::Block {
+                stmts: vec![ir::Stmt::Let(held, wide)],
+                value: Some(Box::new(value)),
+            }),
+            Type::Bool,
+        )
+    }
 }

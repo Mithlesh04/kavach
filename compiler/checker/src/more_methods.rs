@@ -137,6 +137,11 @@ impl Checker<'_> {
                 "fract" if matches!(t, Ty::Prim(Prim::Float | Prim::Float32)) => {
                     sig(vec![], t.clone())
                 }
+                "is_nan" | "is_finite" | "is_infinite"
+                    if matches!(t, Ty::Prim(Prim::Float | Prim::Float32)) =>
+                {
+                    sig(vec![], Ty::Prim(Prim::Bool))
+                }
                 "near" if matches!(t, Ty::Prim(Prim::Float | Prim::Float32)) => {
                     sig(vec![t.clone()], Ty::Prim(Prim::Bool))
                 }

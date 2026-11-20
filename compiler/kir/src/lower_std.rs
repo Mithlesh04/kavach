@@ -207,6 +207,10 @@ impl<'a> Lowerer<'a> {
             values.push(self.at(K::Int(i128::from(name == "round_even")), Type::I64, line));
             return Some(Ok(self.at(K::Rt(RtOp::DecRound, values), ty, line)));
         }
+        if recv.is_float() && matches!(name, "is_nan" | "is_finite" | "is_infinite") {
+            let x = values.pop().expect("the receiver");
+            return Some(Ok(self.float_check(name, x, line)));
+        }
         if recv.is_float() && name == "fract" {
             let x = values.pop().expect("the receiver");
             return Some(Ok(self.fract(x, line)));

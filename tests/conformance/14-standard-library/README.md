@@ -109,6 +109,7 @@ The tests are listed in four files, by area:
 | 14.5 | [math-mean-is-a-list-method.kav](math-mean-is-a-list-method.kav) | `math.mean(xs)` is a compile error that names the list method `xs.mean(x => x)`. | compile error |
 | 14.9 | [collections-unique-and-counts-are-list-methods.kav](collections-unique-and-counts-are-list-methods.kav) | `collections.unique(items)` and `collections.counts(items)` are compile errors that name the list methods `items.unique()` and `items.count_by(x => x)`. | compile error |
 | 14.2 | [float-near-nan-is-near-nothing.kav](float-near-nan-is-near-nothing.kav) | `NaN` is near nothing: not a number, not infinity, not zero, from either side, for `Float32` too. | runs |
+| 14.2 | [float-is-nan-finite-and-infinite.kav](float-is-nan-finite-and-infinite.kav) | `is_nan`, `is_finite` and `is_infinite` say whether a float is `NaN`, an ordinary number, or `inf` or `-inf`, for `Float32` too. | runs |
 | 14.2 | [list-count-needs-a-bool-test.kav](list-count-needs-a-bool-test.kav) | `items.count(f)` takes an `f` that gives a `Bool`; one that gives a number is a compile error. | compile error |
 | 14.2 | [list-index-of-compares-by-value.kav](list-index-of-compares-by-value.kav) | `index_of` finds the first item equal to `x` by value, as `==` compares: records, tuples, text and lists. | runs |
 | 14.2 | [list-join-of-empty-and-one-item.kav](list-join-of-empty-and-one-item.kav) | `join` puts `sep` only between items: an empty list gives empty text, one item gives that item, and empty items stay. | runs |
