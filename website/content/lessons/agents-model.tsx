@@ -27,6 +27,7 @@ const fieldRange: Record<string, React.ReactNode> = {
   api_url: <>The address of a service that speaks Anthropic&apos;s Messages API: another account, a proxy, a gateway</>,
   api_key_env: <>The name of an environment variable</>,
   extra: <>The text of a JSON object, checked when built</>,
+  provider: <>Any value whose type implements <C>Provider</C>: <C>Anthropic()</C>, or a package&apos;s own</>,
 };
 
 const fieldMeans: Record<string, React.ReactNode> = {
@@ -41,6 +42,7 @@ const fieldMeans: Record<string, React.ReactNode> = {
   api_url: <>Where this model&apos;s calls go, instead of Anthropic&apos;s own address.</>,
   api_key_env: <>Which environment variable holds the key for this model, so two models can use two accounts. The key itself never goes in the code.</>,
   extra: <>More request fields, added as they are, for a provider setting Kavach doesn&apos;t name yet. A field here replaces one Kavach would send.</>,
+  provider: <>Whose API the model is reached through. A provider only translates each <C>ask</C> into its API and its answers back; the runtime keeps the key, the retries and the limits.</>,
 };
 
 // ---------- Agents: model ----------

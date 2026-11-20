@@ -289,7 +289,7 @@ export const modelDoc: LessonDoc = {
         <SrcRef file="docs/spec/08-capabilities-and-agents/04-typed-ai-calls.md" label="spec 8.4 · ask<T>" />
         <SrcRef file="docs/decisions/0056-the-model-is-chosen-in-code.md" label="decision 0056" />
         <SrcRef file="runtime/net/src/ai.rs" line={157} label="where the key is read" />
-        <SrcRef file="runtime/net/src/ai/tests.rs" line={110} symbol="a_key_from_the_env_file_is_sent" label="a key in .env, tested" />
+        <SrcRef file="runtime/net/src/ai/tests.rs" line={148} symbol="the_key_goes_where_the_provider_says_and_the_answer_is_read" label="a key in .env, tested" />
       </div>
     </>
   ),
