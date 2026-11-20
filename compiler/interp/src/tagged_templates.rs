@@ -14,6 +14,10 @@ use kavach_checker::{LiteralUse, ParamConv, Prim};
 use kavach_resolver::DefId;
 use std::rc::Rc;
 
+/// A template's checked text, and where each of its characters is in
+/// the source (`None` if that can't be worked out).
+type Checked = (String, Option<Vec<(usize, usize)>>);
+
 impl<'a> Interp<'a> {
     /// The tagged literal of type `def` whose text is `args`, when its
     /// tag takes parameters (`param`); `None` for any other.
@@ -88,7 +92,7 @@ impl<'a> Interp<'a> {
         &mut self,
         u: &LiteralUse,
         steps: u64,
-    ) -> Result<(String, Option<Vec<(usize, usize)>>), String> {
+    ) -> Result<Checked, String> {
         let mut placeholders = Vec::new();
         if let Some(f) = u.param.and_then(|p| self.fns.get(&p).copied()) {
             for n in 1..=u.holes.len() {
@@ -255,4 +259,37 @@ pub(crate) fn template_places(
         }
     }
     places
+}
+
+#[cfg(test)]
+mod tests {
+    use super::template_places;
+    use kavach_ast::Span;
+
+    /// Each character of the checked text, as the source text it is at.
+    fn shown(src: &str, holes: &[&str], lengths: &[usize]) -> Vec<String> {
+        let holes: Vec<Span> = holes
+            .iter()
+            .map(|h| {
+                let start = src.find(h).unwrap() as u32;
+                Span::new(start as usize, start as usize + h.len())
+            })
+            .collect();
+        let places = template_places(src, src.find('`').unwrap(), &holes, lengths);
+        places.iter().map(|&(s, e)| src[s..e].to_string()).collect()
+    }
+
+    #[test]
+    fn escapes_and_holes_on_one_line() {
+        // `a\n{x}b`: `a`, the escape, `$1` (two characters), `b`.
+        let src = "q = t`a\n{x}b`";
+        assert_eq!(shown(src, &["x"], &[2]), ["a", "\n", "{x}", "{x}", "b"]);
+    }
+
+    #[test]
+    fn lines_lose_their_common_indentation() {
+        // The text is "s\n  {x}": the closing line and its line break go.
+        let src = "q = t`\n    s\n      {x}\n    `";
+        assert_eq!(shown(src, &["x"], &[1]), ["s", "\n", " ", " ", "{x}"]);
+    }
 }

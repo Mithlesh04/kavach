@@ -11,6 +11,11 @@ use crate::lower_expr::wrap;
 use kavach_ast::{self as ast, ExprKind, ItemKind, TypeBody};
 use kavach_resolver::{DefId, DefKind};
 
+/// What `construct_given` asks for each field: its value, by index and
+/// name, or `None` for its default.
+pub(crate) type GivenField<'g, 'a> =
+    dyn FnMut(&mut Lowerer<'a>, usize, &str) -> Lowered<Option<ir::Expr>> + 'g;
+
 impl<'a> Lowerer<'a> {
     /// A record (`variant` is `None`) or a union variant, from named arguments.
     pub(crate) fn construct(
@@ -40,7 +45,7 @@ impl<'a> Lowerer<'a> {
         ty: Type,
         line: u32,
         span: ast::Span,
-        given: &mut dyn FnMut(&mut Self, usize, &str) -> Lowered<Option<ir::Expr>>,
+        given: &mut GivenField<'_, 'a>,
     ) -> Lowered<ir::Expr> {
         let decl_span = self.c.resolution.defs[def].span;
         let decl = self.c.file.items.iter().find_map(|item| match &item.kind {
