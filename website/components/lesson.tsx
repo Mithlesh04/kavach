@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { QuizAnswers } from "@/components/quiz-answers";
 import { QuizBlock } from "@/components/quiz-block";
 import { SmartBox } from "@/components/smart-box";
 import type { LessonDoc } from "@/lib/chapter";
@@ -80,9 +81,10 @@ export function Lesson({ node, doc, nextTitle }: { node: CourseNode; doc: Lesson
       )}
 
       {doc.quiz && doc.quiz.length > 0 && (
-        <section aria-label="Quiz" className="mt-10">
+        <section aria-label="Quiz" id="quiz" className="mt-10">
           <h2 className="m-0 mb-3 text-lg font-extrabold">Check yourself</h2>
           <QuizBlock questions={doc.quiz} nextTitle={nextTitle} />
+          <QuizAnswers questions={doc.quiz} />
         </section>
       )}
     </div>

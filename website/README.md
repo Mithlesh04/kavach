@@ -27,6 +27,7 @@ npm run check      # BEFORE finishing any change: types + lint + static build
 | `lib/course.ts` | The course tree: parts → pages → sub-pages, each page tied to a spec section |
 | `lib/nav.ts`, `lib/site.ts` | Addresses in the tree; which pages have content (sidebar, routes, sitemap, prev/next) |
 | `lib/chapter.ts` | The types a chapter's content must fit |
+| `lib/quiz-text.ts` | A quiz as plain questions and answers, for what doesn't run it: the closed "All questions, with answers" list under each quiz, the page's schema.org `Quiz` data, and `/quizzes.txt` (linked from `/llms.txt`) |
 | `app/globals.css` | Every color, token, keyframe and scrollbar rule |
 | `components/nav-drawer.tsx`, `components/page-toc.tsx` | The course menu below `lg` (1024 px), and "On this page" from 1440 px |
 

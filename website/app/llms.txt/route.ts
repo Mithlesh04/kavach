@@ -42,6 +42,7 @@ export function GET() {
     lines.push(`- [${title}](${SITE_URL}${node.href})${lead ? `: ${lead}` : ""}`);
   }
   lines.push("", "## Benchmarks", "", `- [Benchmarks](${SITE_URL}/docs/benchmarks/): every suite against C++ and Python, wins and losses, each with one command to reproduce it.`);
+  lines.push("", "## Quizzes", "", `- [Every quiz, with answers](${SITE_URL}/quizzes.txt): each page's "check yourself" questions, its correct answer and why, to quiz a learner or check an answer.`);
   lines.push("", "## Source", "", "- [Repository](https://github.com/Mithlesh04/kavach)", "");
   return new Response(lines.join("\n"), {
     headers: { "content-type": "text/plain; charset=utf-8" },

@@ -5,6 +5,7 @@ import { lessons } from "@/content/lessons";
 import project from "@/data/project.json";
 import { aliases } from "@/lib/aliases";
 import { findNode } from "@/lib/nav";
+import { quizStructured } from "@/lib/quiz-text";
 import { CARD, PUBLISHER, SITE_URL, neighbors } from "@/lib/site";
 
 /** One course page or sub-page: a one-idea lesson (decision 0047). */
@@ -40,6 +41,8 @@ export function DocPage({ nodeKey }: { nodeKey: string }) {
         ...(node.sub ? [{ name: node.sub.title, url: `${site}${node.href}` }] : []),
       ].map((item, i) => ({ "@type": "ListItem", position: i + 1, name: item.name, item: item.url })),
     },
+    // The quiz runs in the browser; its questions and answers, for readers that don't run it.
+    ...(lesson.quiz?.length ? [quizStructured(title, `${site}${node.href}`, lesson.quiz)] : []),
   ];
 
   return (
