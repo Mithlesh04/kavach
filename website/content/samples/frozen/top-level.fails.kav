@@ -1,0 +1,4 @@
+fn main() {
+    let grid = [[0, 0], [0, 0]].freeze(nested: false)
+    grid.push([1, 1])
+}

@@ -1,0 +1,4 @@
+fn main() {
+    let limits = {"cpu": 2, "memory": 512}.freeze()
+    limits["cpu"] = 4
+}

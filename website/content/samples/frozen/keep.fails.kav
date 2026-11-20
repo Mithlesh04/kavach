@@ -1,0 +1,13 @@
+type Order {
+    id: Int
+    lines: [String]
+}
+
+fn keep(o: Order) -> Order {
+    o                                   // gives `o` back
+}
+
+fn main() {
+    const order = Order(id: 7, lines: ["tea"]).freeze()
+    print(keep(order))
+}

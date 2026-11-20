@@ -1,0 +1,1 @@
+error: `s` is sealed with a key: only `s.unfreeze(key: …)`, with the key it was frozen with, opens it (spec 2.20)

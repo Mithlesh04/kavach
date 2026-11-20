@@ -1,0 +1,15 @@
+pub type Query {
+    text: String
+}
+
+pub literal sql: Query check check_sql
+
+fn check_sql(text: String) -> [LiteralProblem] {
+    []
+}
+
+fn main() {
+    const owner = "asha"
+    const q = sql`select id from orders where owner = {owner}`
+    print(q.text)
+}

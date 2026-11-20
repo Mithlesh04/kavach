@@ -1,0 +1,24 @@
+pub type Param = Text(value: String) | Number(value: Int)
+
+pub type Query {
+    text: String
+    params: [Param] = []
+}
+
+/// SQL for SQLite, whose parameters are all written `?`.
+pub literal sql: Query check check_sql param lite_param
+
+fn check_sql(text: String) -> [LiteralProblem] {
+    []
+}
+
+fn lite_param(n: Int) -> String {
+    "?"
+}
+
+fn main() {
+    const owner = "asha"
+    const q = sql`select id from orders where owner = {owner} and qty > {1 + 2}`
+    print(q.text)
+    print(q.params)
+}

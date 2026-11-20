@@ -1,0 +1,1 @@
+error: this `Bool` doesn't convert to `Param`, the type of `sql`'s parameters: give a `Param`, or a value that one of its variants holds as its only field (spec 10.15)

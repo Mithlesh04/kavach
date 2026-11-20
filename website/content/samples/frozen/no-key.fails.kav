@@ -1,0 +1,8 @@
+type Key {
+    n: Int
+}
+
+fn main() {
+    const s = [1, 2].freeze(key: Key(n: 1))
+    print(s.unfreeze())
+}

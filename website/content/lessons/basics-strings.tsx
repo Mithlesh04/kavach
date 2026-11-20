@@ -113,6 +113,11 @@ export const interpolationDoc: LessonDoc = {
         <C>{"` or t == `"}</C> inside its braces, not two comparisons:
       </P>
       <Ex name="strings/brace-text.warns" />
+      <P>
+        A package&apos;s tag may go right before a template: <C>{"sql`… where owner = {owner}`"}</C>. Then each{" "}
+        <C>{"{…}"}</C> is a parameter the tag writes its own way, as <C>$1</C>, never pasted into the text. See{" "}
+        <Link href="/docs/tools/tagged-literals/">Tagged Literals</Link>.
+      </P>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="tests/conformance/01-basics/string-interpolation.kav" label="templates, tested" />
         <SrcRef file="tests/conformance/01-basics/a-template-spans-lines.kav" label="over lines, tested" />

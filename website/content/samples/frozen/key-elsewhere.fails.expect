@@ -1,0 +1,1 @@
+error: only module `session` can unfreeze this value: its key's type `SessionKey` is private there (spec 2.20)

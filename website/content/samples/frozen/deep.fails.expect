@@ -1,0 +1,1 @@
+error: `deep` is frozen, all the way down, so it can't be assigned: call `deep.unfreeze()` for a copy that can change (spec 2.20)

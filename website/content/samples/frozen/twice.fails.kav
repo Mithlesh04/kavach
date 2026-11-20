@@ -1,0 +1,4 @@
+fn main() {
+    const xs = [1, 2].freeze()
+    print(xs.freeze())
+}

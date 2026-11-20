@@ -1,0 +1,1 @@
+error: `sql` takes no parameters, so a `{…}` can't go in its text: its `literal` names no `param` function. Write `\{` for a brace (spec 10.15)

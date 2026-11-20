@@ -1,0 +1,4 @@
+fn main() {
+    const xs: Frozen<[Int]> = [1, 2]
+    print(xs)
+}

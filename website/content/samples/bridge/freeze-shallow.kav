@@ -1,0 +1,10 @@
+type Shop {
+    name: String
+    tags: [String]
+}
+
+fn main() {
+    let shop = Shop(name: "pens", tags: ["cheap"]).freeze(nested: false)
+    shop.tags.push("new")               // as Object.freeze: the array inside still changes
+    print(shop)
+}

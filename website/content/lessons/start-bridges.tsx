@@ -6,7 +6,7 @@ import type { LessonDoc } from "@/lib/chapter";
 import { findNode } from "@/lib/nav";
 import { otherSource } from "@/lib/samples";
 import { fileTables } from "@/lib/spec-tables";
-import { Ex, H2, Note, P } from "./parts";
+import { Ex, Files, H2, Note, P } from "./parts";
 import { Cell, Table } from "./spec-table";
 
 const DECORATORS = "docs/decisions/0108-no-user-defined-decorators.md";
@@ -179,8 +179,9 @@ export const javascriptDoc = bridge({
     ["`orders.reduce((s, o) => s + o.cost(), 0)`", "`orders.sum(o => o.cost())`", "collections/lists/map-filter-sum"],
     ["every number is a float, and `Math.trunc`", "`Int` for whole numbers, whose `/` gives a whole number; `Decimal` for exact amounts", "basics/data-types"],
     ["objects and arrays shared by reference", "values: `b = a` copies", "memory/values-not-references/coming-from-javascript-and-python"],
-    ["`Object.freeze(obj)`", "`const obj = …`: nothing in it can change, however deep", "basics/variables/const"],
-    ["unfreezing: `{ ...obj }` or `structuredClone(obj)`", "`let copy = obj`: a copy that can change, with the original as it was", "basics/variables/let"],
+    ["`Object.freeze(obj)`", "`obj.freeze()`: frozen however deep, and every change refused before the program runs", "types/frozen-values"],
+    ["unfreezing: `{ ...obj }` or `structuredClone(obj)`", "`obj.unfreeze()`: a copy that can change, with the original as it was", "types/frozen-values"],
+    ["a `#private` field with a getter", "`pub(read)`: other modules read the field, only its own module changes it", "tools/modules/pub"],
     ["`Array.prototype.chunks = function …`", "`extend<T> [T] { fn chunks(self, …) }`: checked, and never replacing a built-in method", "types/extend"],
     ["`async`, `await` and promises", "`spawn` and `.wait()`, with no `async` and no `await`", "concurrency/tasks"],
     ["`npm` and `package.json`", "`kavach.toml`, and `kavach add`", "tools/packages"],
@@ -190,16 +191,37 @@ export const javascriptDoc = bridge({
     <>
       <H2>Freezing</H2>
       <P>
-        Kavach has no <C>Object.freeze</C>, as <C>const</C> already does it, and more. <C>Object.freeze</C> is
-        shallow: a frozen object&apos;s inner arrays can still change. A <C>const</C> can&apos;t change at any depth,
-        and the compiler says so before the program runs:
+        <C>Object.freeze</C> is shallow: a frozen object&apos;s inner arrays can still change. And a change to a
+        frozen property is found only when the program runs: a <C>TypeError</C> in strict mode, silently ignored
+        outside it. Kavach&apos;s <C>freeze()</C> freezes the whole value, and the compiler refuses every change
+        before the program runs:
       </P>
       <Ex name="bridge/freeze-deep.fails" />
       <P>
-        To change a frozen value, copy it into a <C>let</C>. Values are copies, never shared, so the copy changes and
-        the original stays as it was, with no <C>structuredClone</C>:
+        <C>freeze(nested: false)</C> is JavaScript&apos;s shallow freeze: the top level is fixed, the values inside
+        may still change:
+      </P>
+      <Ex name="bridge/freeze-shallow" />
+      <P>
+        Where JavaScript copies a frozen object to change it, with <C>{"{ ...obj }"}</C> or{" "}
+        <C>structuredClone</C>, <C>unfreeze()</C> gives a copy that can change, and the frozen value stays as it was:
       </P>
       <Ex name="bridge/unfreeze" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A <C>const</C> never changes either, however deep. <C>freeze()</C> is for a value handed on: the code that gets it can&apos;t change it, even in a <C>let</C>.</li>
+        <li>
+          A library can seal a frozen value with a key, so only the library unfreezes it. JavaScript has nothing like
+          it: <Link href="/docs/types/frozen-values/sealed-with-a-key/">sealed with a key</Link>.
+        </li>
+      </ul>
+      <H2>Read-only fields, like a getter</H2>
+      <P>
+        JavaScript keeps a field read-only with a <C>#private</C> field and a getter. Kavach writes{" "}
+        <C>pub(read)</C> before the field: other modules read it, and only the module that declares the type changes it:
+      </P>
+      <Files name="modules/pub-read" first={["src/bank.kav", "src/main.kav"]} />
+      <P>Another module that changes the field is refused before the program runs, where JavaScript finds an assignment to a getter-only field only at run time:</P>
+      <Files name="modules/pub-read.fails" first={["src/main.kav"]} outcome="refused" />
       <H2>Adding methods, like a prototype</H2>
       <P>
         Where JavaScript adds a method to <C>Array.prototype</C>, Kavach uses <C>extend</C>. <C>{"extend<T> [T]"}</C>{" "}

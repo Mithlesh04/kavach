@@ -1,0 +1,18 @@
+type Order {
+    id: Int
+    lines: [String]
+
+    fn describe(self) -> String {
+        `{self.lines.len()} lines`      // only reads `self`
+    }
+}
+
+fn total(o: Order) -> Int {
+    o.lines.len() * 10                  // only reads `o`
+}
+
+fn main() {
+    const order = Order(id: 7, lines: ["tea", "cake"]).freeze()
+    print(total(order))
+    print(order.describe())
+}

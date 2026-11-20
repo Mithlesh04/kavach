@@ -4,6 +4,6 @@ type Shop {
 }
 
 fn main() {
-    const shop = Shop(name: "pens", tags: ["cheap"])
+    const shop = Shop(name: "pens", tags: ["cheap"]).freeze()
     shop.tags.push("new")
 }

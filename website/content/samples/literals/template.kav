@@ -1,0 +1,23 @@
+pub type Query {
+    text: String
+    params: [Json] = []
+}
+
+/// SQL for PostgreSQL. `param` says how a parameter is written.
+pub literal sql: Query check check_sql param pg_param
+
+fn check_sql(text: String) -> [LiteralProblem] {
+    []
+}
+
+fn pg_param(n: Int) -> String {
+    `${n}`
+}
+
+fn main() {
+    const owner = "asha"
+    const newest = 40
+    const q = sql`select id, item from orders where owner = {owner} and id > {newest}`
+    print(q.text)
+    print(q.params)
+}

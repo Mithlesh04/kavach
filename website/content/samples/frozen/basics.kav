@@ -1,0 +1,8 @@
+fn main() {
+    let limits = {"cpu": 2, "memory": 512}.freeze()   // a Frozen<{String: Int}>
+    print(limits["cpu"] ?? 0)                          // reading works as on the dict
+    let mine = limits.unfreeze()                       // a {String: Int} that can change
+    mine["cpu"] = 4
+    print(mine)
+    print(limits)                                      // as it was made
+}

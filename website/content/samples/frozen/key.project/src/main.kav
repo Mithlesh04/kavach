@@ -1,0 +1,9 @@
+use session
+
+fn main() {
+    const s = session.open("asha")
+    print(s.roles)                      // other modules read it
+    const t = session.promote(s)
+    print(t.roles)
+    print(s.user)
+}

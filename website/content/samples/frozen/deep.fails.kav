@@ -1,0 +1,4 @@
+fn main() {
+    let deep = [[0, 0], [0, 0]].freeze()
+    deep[0][1] = 5
+}

@@ -1,1 +1,1 @@
-error: `on:` takes a `GpuDevice`, one of `gpu.devices()`, not a `Int` (spec 15.6); write `on gpu(n)` before the value to choose by number
+error: `on:` takes a `GpuDevice`, one of `gpu.devices()`, not an `Int` (spec 15.6); write `on gpu(n)` before the value to choose by number

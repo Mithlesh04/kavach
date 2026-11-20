@@ -1,0 +1,13 @@
+type Key {
+    n: Int
+}
+
+type Shape = Circle(r: Int) | Square(a: Int)
+
+fn main() {
+    const sq = Shape.Square(a: 3).freeze(key: Key(n: 1))
+    match sq {
+        Shape.Circle(r) => print(r),    // reading its parts
+        Shape.Square(a) => print(a),
+    }
+}

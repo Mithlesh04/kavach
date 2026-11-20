@@ -1,0 +1,1 @@
+error: expected `Frozen<[Int]>`, found `[Int]`: call `.freeze()` on the value to make one (spec 2.20)

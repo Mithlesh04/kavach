@@ -1,0 +1,24 @@
+type SessionKey {
+    n: Int
+}
+
+const key = SessionKey(n: 1)
+
+pub type Session {
+    pub user: String
+    pub roles: [String]
+}
+
+pub fn open(user: String) -> Frozen<Session, SessionKey> {
+    Session(user: user, roles: ["reader"]).freeze(key: key)
+}
+
+pub fn promote(s: Frozen<Session, SessionKey>) -> Frozen<Session, SessionKey> {
+    let changed = s.unfreeze(key: key)
+    changed.roles.push("admin")
+    changed.freeze(key: key)
+}
+
+pub fn leaked() -> SessionKey {
+    key
+}

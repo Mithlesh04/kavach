@@ -1,0 +1,2 @@
+select id from orders where owner = ? and qty > ?
+[Text(value: "asha"), Number(value: 3)]

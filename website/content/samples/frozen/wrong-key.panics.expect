@@ -1,0 +1,2 @@
+[1, 2]
+panic: this key isn't the one the value was sealed with, so `unfreeze` can't open it (spec 2.20)

@@ -1,0 +1,9 @@
+fn same<T>(x: T) -> T {
+    x
+}
+
+fn main() {
+    const xs = [1, 2].freeze()
+    let copy = same(xs)                 // a Frozen<[Int]>: the type worked out keeps it
+    copy.push(3)
+}

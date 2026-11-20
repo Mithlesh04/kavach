@@ -110,6 +110,10 @@ export const pubDoc: LessonDoc = {
         <li>Changing it in place (<C>a.history.push(x)</C>), passing it to an <C>inout</C> parameter and setting it with <C>with</C> are refused the same way.</li>
         <li>A record with a <C>pub(read)</C> field is made only in its own module, as with a private field: other modules call a <C>pub fn</C> such as <C>open</C>.</li>
         <li>The type&apos;s own module, and an <C>extend</C> of the type in its package, use the field as any other.</li>
+        <li>
+          To keep a whole value from changing, or a list or dict the library didn&apos;t declare, use{" "}
+          <Link href="/docs/types/frozen-values/">frozen values</Link>: <C>x.freeze()</C>.
+        </li>
       </ul>
       <SrcRef file="tests/conformance/10-modules/pub-read-fields-change-only-in-their-module/src/main.kav" label="pub(read), tested" />
       <H2>Constants</H2>

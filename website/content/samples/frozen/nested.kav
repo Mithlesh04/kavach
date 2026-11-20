@@ -1,0 +1,12 @@
+type Bag {
+    items: [Int]
+}
+
+fn main() {
+    let grid = [[0, 0], [0, 0]].freeze(nested: false)
+    grid[0][1] = 5                      // the rows inside may change
+    print(grid)
+    let bag = Bag(items: [1]).freeze(nested: false)
+    bag.items.push(2)
+    print(bag)
+}

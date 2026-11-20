@@ -1,0 +1,24 @@
+pub type Query {
+    text: String
+    params: [Int] = []
+}
+
+pub literal sql: Query check check_sql param pg_param
+
+fn check_sql(text: String) -> [LiteralProblem] {
+    []
+}
+
+fn pg_param(n: Int) -> String {
+    `${n}`
+}
+
+fn main() {
+    const q = sql`select '\{a}' from t where x = {7}`
+    print(q.text)
+    const lines = sql`
+        select id
+          from t
+        `
+    print(lines.text)
+}

@@ -1,0 +1,9 @@
+type Order {
+    id: Int
+    lines: [String]
+}
+
+fn main() {
+    let order = Order(id: 7, lines: ["tea"]).freeze()
+    order.lines.push("cake")
+}

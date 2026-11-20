@@ -59,18 +59,54 @@ export const taggedLiteralsDoc: LessonDoc = {
       </div>
       <H2>The text is raw</H2>
       <P>
-        As in any text in quotes, <C>\</C> and <C>{"{"}</C> are characters like any other inside a tagged literal:
+        As in any text in quotes, <C>\</C> and <C>{"{"}</C> are characters like any other inside <C>sql&quot;…&quot;</C>:
         no escapes and nothing filled in, so values can&apos;t be pasted into it. Values go in separately, as{" "}
         <C>$1</C> does in SQL. Three quotes let a literal span lines, as other text does:
       </P>
       <Ex name="literals/raw" />
-      <P>
-        A tag before a template in backticks, with values filled in as parameters, isn&apos;t built yet. Writing one
-        is an error that says to write the text in quotes:
-      </P>
-      <Files name="literals/tag-template.fails" first={["src/main.kav"]} outcome="refused" />
-      <SrcRef file="tests/conformance/10-modules/a-tag-before-a-template-is-not-built-yet.kav" label="not built yet, tested" />
       <SrcRef file="tests/conformance/10-modules/tagged-literals-make-their-type.kav" label="tested" />
+      <H2>Tagged templates: values as parameters</H2>
+      <P>
+        A tag may go before a template in backticks too: <C>{"sql`… where owner = {owner}`"}</C>. Each{" "}
+        <C>{"{…}"}</C> is then a <strong>parameter</strong>. Its value is never pasted into the text, so a value
+        can&apos;t change what the text means, as it would in SQL injection. The tag says how a parameter is
+        written with <C>param</C>:
+      </P>
+      <Syntax code={'pub(out) literal name: T check f param p language "x"'} />
+      <Ex name="literals/template" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>
+          <C>p</C> is <C>fn p(n: Int) -&gt; String</C>, pure like the checker. The n-th <C>{"{…}"}</C>, counting from
+          1, is replaced in the text by <C>p(n)</C>: here <C>$1</C>, <C>$2</C>, as PostgreSQL writes them.
+        </li>
+        <li>The values go in the record&apos;s field <C>params: [P]</C>, in the order they are written. A literal with no <C>{"{…}"}</C> has <C>params: []</C>.</li>
+        <li>The checker gets the text with the placeholders in, so it checks what the database gets.</li>
+      </ul>
+      <P>
+        Each value is converted to <C>P</C> while the program is compiled. A value that is a <C>P</C> stays as it
+        is; when <C>P</C> is <C>Json</C>, any value converts as an item of a <C>Json</C> list does, as above. When{" "}
+        <C>P</C> is a union, a value becomes the one variant whose only field has its type. SQLite writes every
+        parameter as <C>?</C>:
+      </P>
+      <Ex name="literals/template-union" />
+      <P>Any other value is a compile error at its <C>{"{…}"}</C>:</P>
+      <Ex name="literals/template-convert.fails" />
+      <P>A tag without <C>param</C> takes no parameters, so a <C>{"{…}"}</C> in its template is refused:</P>
+      <Ex name="literals/template-no-param.fails" />
+      <P>
+        A tagged template reads escapes as every template does: <C>{"\\{"}</C> is a brace, <C>\n</C> a new line.
+        It spans lines when its text starts on the line after the backtick:
+      </P>
+      <Ex name="literals/template-escapes" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/10-modules/tagged-template-parameters-in-order.kav" label="parameters, tested" />
+        <SrcRef file="tests/conformance/10-modules/tagged-template-values-become-json.kav" label="Json values, tested" />
+        <SrcRef file="tests/conformance/10-modules/a-tagged-template-value-must-convert.kav" label="converting, tested" />
+        <SrcRef file="tests/conformance/10-modules/a-tag-without-param-refuses-braces.kav" label="no param, tested" />
+        <SrcRef file="tests/conformance/10-modules/tagged-templates-read-escapes.kav" label="escapes, tested" />
+        <SrcRef file="tests/conformance/10-modules/quoted-tagged-literals-stay-raw.kav" label="quotes stay raw, tested" />
+        <SrcRef file="docs/decisions/0142-tagged-template-parameters.md" label="decision 0142" />
+      </div>
       <H2>Text known only when the program runs</H2>
       <P>
         Inside its package, code may still build a <C>T</C> from any text. A function that does so for text known only

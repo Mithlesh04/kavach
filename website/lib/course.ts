@@ -89,6 +89,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Interfaces", "2.8"],
     ["Interface Values", "2.15"],
     ["Operators for Your Types", "2.16"],
+    ["Frozen Values", "2.20", ["Sealed with a Key"]],
     ["Matrices", "2.17"],
     ["Classes and Inheritance", "2.8"],
     ["Writing Types", "2.10"],

@@ -1,0 +1,1 @@
+error: `order` is frozen, so it goes where a plain type is written only to a function that only reads that parameter, and `keep` gives `o` back: pass `order.unfreeze()`, or make the parameter a `Frozen<…>` (spec 2.20)

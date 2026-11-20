@@ -1,0 +1,7 @@
+use session
+
+fn main() {
+    const s = session.open("asha")
+    const opened = s.unfreeze(key: session.leaked())
+    print(opened.user)
+}

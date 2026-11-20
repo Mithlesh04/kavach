@@ -1,0 +1,13 @@
+type Order {
+    id: Int
+    lines: [String]
+}
+
+fn main() {
+    let order = Order(id: 7, lines: ["tea"]).freeze()
+    order = Order(id: 8, lines: ["cake"]).freeze()   // another frozen Order: fine
+    let next = order with { id: 9 }                    // `with` gives a plain Order
+    next.lines.push("tea")
+    print(order)
+    print(next)
+}

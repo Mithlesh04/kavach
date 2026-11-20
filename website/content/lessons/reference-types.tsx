@@ -49,6 +49,7 @@ function givenBy(file: string, signature: string): string {
 const NET = "14-standard-library/10-net.md";
 
 const MEMORY = "06-memory.md";
+const FROZEN = "02-types/20-frozen-values.md";
 const TASKS = "09-concurrency.md";
 
 /** Groups of types, each type with the spec's words for it. */
@@ -78,6 +79,7 @@ function groups(): { title: string; entries: Entry[] }[] {
         ...basics,
         { names: ["StrView"], says: said(VIEWS, /(a `StrView` is part of a string with nothing copied, for parsing)/), number: "2.18", file: VIEWS },
         { names: ["TextBuilder"], says: said(VIEWS, /(a `TextBuilder` is text being made, changed in place, for building)/), number: "2.18", file: VIEWS },
+        { names: ["Frozen"], says: said(FROZEN, /(`x\.freeze\(\)` gives a `Frozen<T>`: a value whose fields and items never change, even in a `let`\. `f\.unfreeze\(\)` gives a copy that can change\.)/), number: "2.20", file: FROZEN },
       ],
     },
     {

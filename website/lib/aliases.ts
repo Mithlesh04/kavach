@@ -48,7 +48,7 @@ export const aliases: Record<string, string> = {
   "start/install": "setup download get started build from source toolchain rustup cargo system requirements requirements supported platforms operating system windows linux macos arm64 apple silicon x86-64 cmake linker visual studio build tools gcc gpu",
   "start/your-first-program": "first program getting started main entry point hello world print tutorial",
   "basics/variables":
-    "variable constant const let var declare assignment type inference integer float boolean string interpolation format immutable mutable naming rules valid name identifier name length snake_case freeze object.freeze frozen unfreeze readonly deep freeze",
+    "variable constant const let var declare assignment type inference integer float boolean string interpolation format immutable mutable naming rules valid name identifier name length snake_case",
   "basics/for-loop": "for each foreach iterate iteration loop range step counter index enumerate array traversal",
   "basics/while-loop": "while loop repeat until condition endless infinite do while",
   "basics/break-continue": "break continue exit leave loop skip next iteration",
@@ -60,6 +60,8 @@ export const aliases: Record<string, string> = {
   "basics/data-types": "data types datatypes mix mixing int plus float implicit conversion coercion promote primitive integer int long short byte float double decimal money currency char character string boolean conversion cast overflow number",
   "types/optionals": "null nil none undefined nullable maybe option optional chaining null pointer exception safe navigation elvis coalescing",
   "collections/tuples": "tuple pair triple destructuring unpack multiple return values",
+  "types/frozen-values": "freeze frozen unfreeze object.freeze immutable readonly read only deep freeze shallow freeze nested",
+  "types/frozen-values/sealed-with-a-key": "seal sealed key unfreeze key private key library framework lock",
   "types/generics": "generic template type parameter parametric polymorphism type variable const generics number parameter numbers in types width size",
   "types/interfaces": "interface trait protocol abstract class polymorphism dynamic dispatch virtual method duck typing implements inheritance",
   "standard-library/json/json-values": "dynamic type any unknown type duck typing schemaless untyped object dict mixed int float parse api response bigint decimal exact digits big number precision 0.1 lossless",
