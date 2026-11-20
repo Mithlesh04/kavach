@@ -1,1 +1,1 @@
-error: `Tensor<Int>` has `/` for a `Tensor<Int>` or a `Int` on the right, and this is a `Float` (spec 2.16)
+error: `Tensor<Int>` has `/` for a `Tensor<Int>` or an `Int` on the right, and this is a `Float` (spec 2.16)

@@ -1,2 +1,2 @@
 true
-panic: the list is full (capacity 3)
+panic: the list is full (max 3)

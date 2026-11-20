@@ -1,0 +1,29 @@
+type Reader {
+    line: Int
+    at: Int
+    limit: Int
+    invariant line >= 1
+    invariant at >= 0 and at <= limit
+}
+
+type Holder {
+    reader: Reader
+    invariant reader.line < 100
+}
+
+fn step(inout r: Reader) {
+    r.at = r.at + 1           // checks `at >= 0 and at <= limit` only
+    r.line = r.line + 1       // checks `line >= 1` only
+}
+
+fn main() {
+    let r = Reader(line: 1, at: 0, limit: 5)
+    for _ in 0..3 {
+        step(r)
+    }
+    print(`{r.line} {r.at}`)
+    let h = Holder(reader: r)
+    h.reader.at = 5           // a record inside another is checked too
+    print(h.reader.at)
+    h.reader.limit = 4        // at 5 is now past the limit
+}

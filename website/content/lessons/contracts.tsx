@@ -113,6 +113,14 @@ export const invariantDoc: LessonDoc = {
       </P>
       <Ex name="contracts/invariant-push.panics" />
       <SrcRef file="tests/conformance/07-contracts/invariant-checked-when-a-field-list-grows.kav" label="tested" />
+      <H2>Only the invariants a change reads</H2>
+      <P>
+        A change to one field checks again only the invariants that name that field, or <C>self</C>: the others still
+        hold, as they did before the change. It holds on every path a change can take: a variable, an{" "}
+        <C>inout</C> parameter, or a record inside another:
+      </P>
+      <Ex name="contracts/invariant-paths.panics" />
+      <SrcRef file="tests/conformance/07-contracts/invariant-checked-on-every-path-of-a-change.kav" label="every path, tested" />
       <H2>Invariants that walk a collection</H2>
       <P>
         An invariant like <C>times.all(…)</C> reads every item, so each change costs a walk of the collection. In a

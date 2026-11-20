@@ -1,2 +1,2 @@
 [1, 2]
-panic: the list is full (capacity 2)
+panic: the list is full (max 2)

@@ -1,0 +1,9 @@
+use std.tensor
+
+fn main() {
+    const a = tensor.of([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0]).reshape([2, 2, 2])   // two 2 × 2 matrices
+    const c = a @ a                                                                      // one product for each
+    print(c.shape)
+    print(c[0, :, :].to_rows())
+    print(c[1, :, :].to_rows())
+}

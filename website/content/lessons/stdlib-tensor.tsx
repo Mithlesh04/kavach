@@ -75,6 +75,11 @@ export const tensorDoc: LessonDoc = {
       <P>The inner sizes must match. Another pair is a panic that names both shapes:</P>
       <Ex name="tensor/matmul.panics" />
       <P>
+        With more than two dimensions, the last two are the matrices and the others are a batch: <C>[2, 2, 2] @ [2, 2, 2]</C>{" "}
+        is one product for each of the 2. Both batches have the same shape:
+      </P>
+      <Ex name="tensor/batches" />
+      <P>
         Each number of <C>a @ b</C> adds its products in one order, a multiply then an add, never fused. The work is
         still spread over the cores, so the result has the same bits on every machine and at every thread count.
         A layer of a small neural network is a product, a sum and a function on every number, here ReLU:
@@ -94,7 +99,7 @@ export const tensorDoc: LessonDoc = {
         The spec&apos;s tables write how many dimensions a result has in its type, as{" "}
         <C>Tensor&lt;T, dims: 2&gt;</C>. Writing <C>dims:</C> or <C>shape:</C> in a type is not built yet: write{" "}
         <C>Tensor&lt;T&gt;</C>, and the shapes are checked while the program runs. Not built yet either: <C>@</C>{" "}
-        of a vector, or of batches of matrices broadcast to one shape, linear algebra (<C>inv</C>, <C>solve</C>,{" "}
+        of a vector, or of batches of different shapes, linear algebra (<C>inv</C>, <C>solve</C>,{" "}
         <C>det</C>, <C>eig</C>, <C>svd</C>), the FFT and the GPU.
       </Note>
       <div className="flex flex-wrap gap-2.5">
@@ -104,6 +109,7 @@ export const tensorDoc: LessonDoc = {
         <SrcRef file="docs/decisions/0136-tensor-the-one-array-type.md" label="decision 0136" />
         <SrcRef file="docs/decisions/0125-kavach-for-ai-work.md" label="decision 0125" />
         <SrcRef file={`${TENSOR_TESTS}/tensors-check-their-shapes.kav`} label="shapes, tested" />
+        <SrcRef file={`${TENSOR_TESTS}/tensor-matmul-of-equal-batches.kav`} label="batches, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-of-text-is-an-error.kav`} label="numbers only, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-numpy-names-are-errors.kav`} label="NumPy's names, tested" />
       </div>
