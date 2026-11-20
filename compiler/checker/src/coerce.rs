@@ -47,6 +47,13 @@ impl Checker<'_> {
         {
             return self.iface_args_fit(x, y);
         }
+        // And where an optional of the interface is (spec 2.7).
+        if let Ty::Optional(y) = &e
+            && self.implements_interface(&a, &self.inf.shallow(y))
+        {
+            let y = self.inf.shallow(y);
+            return self.iface_args_fit(&a, &y);
+        }
         if let (Ty::Fn(..), Ty::Fn(..)) = (&a, &e) {
             return self.fn_fits(&a, &e);
         }

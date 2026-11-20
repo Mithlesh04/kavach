@@ -1,0 +1,34 @@
+// Rule: A value of a type that implements an interface fits where an optional of that interface is expected, as a `T` fits a `T?`.
+// Spec: 2.15, 2.7
+// expect output: plain x
+// expect output: plain y
+// expect output: nobody
+
+interface Talker {
+    fn talk(self, s: String) -> String
+}
+
+type Plain: Talker {
+    fn talk(self, s: String) -> String {
+        `plain {s}`
+    }
+}
+
+type Holder {
+    t?: Talker
+}
+
+fn say(t: Talker?, s: String) -> String {
+    if let found = t {
+        found.talk(s)
+    } else {
+        "nobody"
+    }
+}
+
+fn main() {
+    print(say(Plain(), "x"))
+    const h = Holder(t: Plain())
+    print(say(h.t, "y"))
+    print(say(none, "z"))
+}

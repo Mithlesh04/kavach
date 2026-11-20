@@ -75,6 +75,16 @@ impl<'a> Lowerer<'a> {
                 })
             }
             Some(Shape::Iface { .. }) if expr.ty != want => self.iface_value(expr, want),
+            // A value where an optional interface is: boxed, then present.
+            Some(Shape::Optional(inner))
+                if expr.ty != want
+                    && matches!(self.shapes.shape(*inner), Some(Shape::Iface { .. }))
+                    && expr.ty != *inner =>
+            {
+                let inner = *inner;
+                let boxed = self.iface_value(expr, inner)?;
+                self.coerce(boxed, want)
+            }
             // A function that can't fail where one that can is wanted.
             Some(Shape::Func(_, _, Some(_))) if self.fn_error(expr.ty).is_none() => {
                 self.never_failing(expr, want)
