@@ -43,6 +43,7 @@ export function GET() {
   }
   lines.push("", "## Benchmarks", "", `- [Benchmarks](${SITE_URL}/docs/benchmarks/): every suite against C++ and Python, wins and losses, each with one command to reproduce it.`);
   lines.push("", "## Quizzes", "", `- [Every quiz, with answers](${SITE_URL}/quizzes.txt): each page's "check yourself" questions, its correct answer and why, to quiz a learner or check an answer.`);
+  lines.push("", "## Explainers", "", `- [Every animation, as text](${SITE_URL}/explainers.txt): how code runs on the machine (CPU, RAM, stack, heap, OS), each step with the line it runs and what happens, and a very short summary.`);
   lines.push("", "## Source", "", "- [Repository](https://github.com/Mithlesh04/kavach)", "");
   return new Response(lines.join("\n"), {
     headers: { "content-type": "text/plain; charset=utf-8" },

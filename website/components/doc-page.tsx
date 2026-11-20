@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { pageScenes } from "@/components/explain/scene-pages";
+import { sceneStructured } from "@/components/explain/scene-text";
 import { Lesson } from "@/components/lesson";
 import { lessons } from "@/content/lessons";
 import project from "@/data/project.json";
@@ -43,6 +45,8 @@ export function DocPage({ nodeKey }: { nodeKey: string }) {
     },
     // The quiz runs in the browser; its questions and answers, for readers that don't run it.
     ...(lesson.quiz?.length ? [quizStructured(title, `${site}${node.href}`, lesson.quiz)] : []),
+    // The step-by-step animations run in the browser; each one's steps, as text.
+    ...pageScenes(lesson).map((s) => sceneStructured(s, `${site}${node.href}`)),
   ];
 
   return (

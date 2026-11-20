@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Explainer } from "@/components/explain/explainer";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
@@ -358,6 +359,20 @@ export const recursionDoc: LessonDoc = {
         <C>factorial(5)</C> is <C>5 * factorial(4)</C>, and so on down to <C>factorial(1)</C>, which is just{" "}
         <C>1</C>: the case that stops.
       </P>
+      <H2>What the machine does</H2>
+      <P>
+        Each real call gets its own <strong>frame</strong> on the stack, a block of memory in RAM, and gives it back
+        when it returns. The compiler copies a small recursive function into itself first, so native code makes far
+        fewer calls than the code shows; the interpreter makes every one. Step through <C>factorial(10)</C> on one
+        core of the CPU:
+      </P>
+      <Explainer id="factorial" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="compiler/kir/src/inline.rs" line={41} symbol="RECURSION_LEVELS" />
+        <SrcRef file="compiler/backend/cranelift/src/codegen.rs" line={174} symbol="check_stack" />
+        <SrcRef file="compiler/backend/cranelift/src/abi.rs" line={46} symbol="make_signature" />
+        <SrcRef file="compiler/backend/llvm/src/calls.rs" line={62} symbol="notail" />
+      </div>
       <H2>Too deep</H2>
       <P>Each call waits for the next, and the waiting calls take room. Far too many stop the program, cleanly:</P>
       <Ex name="functions/deep.panics" />

@@ -259,9 +259,9 @@ pre::-webkit-scrollbar-thumb {
 @keyframes race {
   0% { width: 0; }
 }
-/* memory step-through (components/memory-blocks.tsx): an object appears, a count changes */
+/* memory step-through (components/memory-blocks.tsx): an object appears where it is (it never slides: places are fixed), a count changes */
 @keyframes mem-in {
-  from { opacity: 0; transform: translateY(6px) scale(0.97); }
+  from { opacity: 0; }
 }
 @keyframes mem-flash {
   0%, 30% { box-shadow: 0 0 0 4px var(--glow); border-color: var(--accent); }
@@ -272,6 +272,11 @@ pre::-webkit-scrollbar-thumb {
   50% { fill: #5a3f14; }
 }
 .mem-chip { animation: mem-chip 2.2s ease-in-out infinite; }
+/* the explainer kit (components/explain/): a part that turns busy glows twice, then stays lit */
+@keyframes scene-lit {
+  50% { opacity: 0.6; }
+}
+.scene-lit { animation: scene-lit 1.1s ease-in-out 2; }
 @keyframes reveal {
   from { opacity: 0; }
   to { opacity: 1; }

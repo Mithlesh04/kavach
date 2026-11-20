@@ -89,6 +89,7 @@ export const automaticDoc: LessonDoc = {
       <P>
         Kavach frees a value the moment its last use ends. There is no collector running in the background, so a
         program never stops for one, and memory comes back at a point you can predict.
+        The compiler finds each last use while compiling (<Link href="/docs/memory/automatic-memory/freed-immediately/#how-it-knows-when">how it knows when</Link>).
       </P>
       <P>
         Copying every value would be slow, so the compiler avoids it without you noticing. The sub-pages show how.
@@ -145,6 +146,86 @@ export const fastDoc: LessonDoc = {
         task. A record a function never shares may never become an object at all: its fields stay in place, like
         numbers. A program can&apos;t tell the difference.
       </P>
+      <H2>Why numbers aren&apos;t shared</H2>
+      <P>
+        <C>let t = s</C> shares text instead of copying it, so why does <C>let b = a</C> copy a number? Because a
+        number is as small as the address that would point to it. Think of a phone number on a sticky note: writing
+        the number itself on your note is quicker than writing &quot;see the note in drawer 7&quot; and walking to
+        the drawer every time you need it.
+      </P>
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-[15px]">
+          <thead>
+            <tr className="border-b border-line text-left text-soft">
+              <th className="py-2 pr-4 font-bold"><C>b = a</C>, where <C>a</C> is…</th>
+              <th className="py-2 pr-4 font-bold">A number, copied</th>
+              <th className="py-2 font-bold">Text or a list, shared</th>
+            </tr>
+          </thead>
+          <tbody className="text-muted">
+            <tr className="border-b border-line"><td className="py-2 pr-4 text-ink">What is copied</td><td className="py-2 pr-4">the number: 8 bytes</td><td className="py-2">its address: 8 bytes</td></tr>
+            <tr className="border-b border-line"><td className="py-2 pr-4 text-ink">Memory it needs</td><td className="py-2 pr-4">those 8 bytes</td><td className="py-2">the address, and an object: a 24-byte header with the count, then the value</td></tr>
+            <tr className="border-b border-line"><td className="py-2 pr-4 text-ink">Reading it</td><td className="py-2 pr-4">at once, from where it is</td><td className="py-2">follow the address to memory first</td></tr>
+            <tr className="border-b border-line"><td className="py-2 pr-4 text-ink">Changing <C>b</C></td><td className="py-2 pr-4">just change it</td><td className="py-2">check the count first, and copy if someone else holds it</td></tr>
+            <tr className="border-b border-line"><td className="py-2 pr-4 text-ink">When it is no longer used</td><td className="py-2 pr-4">nothing to free</td><td className="py-2">count down, and free at 0</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Sharing a number would still copy 8 bytes, the address, and then add an object, a count and a trip to memory on every read. It costs more and saves nothing.</li>
+        <li>Text, lists and dicts can be any size. Copying a long text means copying all of it; sharing it copies 8 bytes. That is why they are shared until one side changes.</li>
+        <li>The rule: <strong>as small as an address, copied; bigger, shared</strong>. <C>Bool</C> and <C>Char</C> are copied like numbers.</li>
+        <li>
+          Short text follows the same idea inside a list: in a built program, text of up to 15 bytes is kept right in
+          the list&apos;s item, with no object and no count.
+        </li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/06-memory.md" label="spec 6.1 · where values live" />
+        <SrcRef file="runtime/native/src/heap.rs" label="the 24-byte header" />
+        <SrcRef file="runtime/native/src/text_items.rs" label="short text in a list" />
+      </div>
+      <P>What others say, if you want to read more:</P>
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>
+          <strong className="text-ink">Python</strong> makes every number an object with a count: at least 28 bytes
+          for one whole number, and it keeps -5 to 256 ready-made to soften the cost.{" "}
+          <a href="https://towardsdatascience.com/why-does-an-integer-need-28-bytes-in-python-e8adf91f821f/">Why an integer needs 28 bytes</a>
+          {" · "}
+          <a href="https://arpitbhayani.me/blogs/python-caches-integers">Python&apos;s integer cache</a>
+        </li>
+        <li>
+          <strong className="text-ink">Java</strong>&apos;s boxed <C>Integer</C> takes about 16 bytes where an{" "}
+          <C>int</C> takes 4, and reading it takes two trips to memory instead of one.{" "}
+          <a href="https://riptutorial.com/java/example/10864/memory-and-computational-overhead-of-autoboxing">The cost of autoboxing</a>
+          {" · "}
+          <a href="https://dzone.com/articles/whats-wrong-with-java-boxed-numbers">What&apos;s wrong with boxed numbers</a>
+        </li>
+        <li>
+          <strong className="text-ink">Java&apos;s Project Valhalla</strong> is adding value classes so that more
+          types can be copied freely like numbers, &quot;just their bits&quot;, with no object identity.{" "}
+          <a href="https://openjdk.org/projects/valhalla/design-notes/state-of-valhalla/02-object-model">State of Valhalla</a>
+        </li>
+        <li>
+          <strong className="text-ink">JavaScript&apos;s V8</strong> keeps small whole numbers right in the value,
+          &quot;not allocated in the heap&quot;, as Kavach does.{" "}
+          <a href="https://chromium.googlesource.com/v8/v8.git/+/refs/heads/main/src/objects/smi.h">V8&apos;s smi.h</a>
+          {" · "}
+          <a href="https://medium.com/fhinkel/v8-internals-how-small-is-a-small-integer-e0badc18b6da">How small is a small integer?</a>
+        </li>
+        <li>
+          <strong className="text-ink">Rust</strong>&apos;s advice is to pass small values by copy, and its linter,
+          Clippy, warns when a tiny value is passed by reference instead.{" "}
+          <a href="https://users.rust-lang.org/t/what-is-faster-copy-or-passing-reference/80733">Copy or reference?</a>
+          {" · "}
+          <a href="https://rust-lang.github.io/rust-clippy/master/index.html#trivially_copy_pass_by_ref">Clippy: trivially_copy_pass_by_ref</a>
+        </li>
+        <li>
+          <strong className="text-ink">Counting across threads</strong> gets slow when many cores update one count,
+          as they fight over the same piece of cache. Numbers that are copied have no count to fight over.{" "}
+          <a href="https://blocklisted.github.io/blog/arc_str_vs_string_is_it_really_faster">Arc&lt;str&gt; vs String, measured</a>
+        </li>
+      </ul>
       <H2>Nested lists and maps</H2>
       <P>
         The same holds at every depth. A list of lists, a list three deep, or a dict of lists: change the copy anywhere

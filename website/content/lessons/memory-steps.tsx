@@ -44,6 +44,16 @@ export const memoryStepsDoc: LessonDoc = {
         the count stays 1, and the name <C>a</C> just ends.
       </P>
       <MemorySteps name="move" />
+      <H2>How does the program know it&apos;s the last use?</H2>
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The compiler knows, not the running program. While compiling, it reads each function backwards and finds the last read of each name.</li>
+        <li>It turns that read into a hand-over (a move), or puts a let-go after it: count − 1, freed at 0. That step is already in the machine code, so while running nothing searches: the step just runs.</li>
+        <li>In a loop, a name read again in the next round isn&apos;t at its last use until the loop is done. The code panels on this page mark each last use.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <Link href="/docs/memory/automatic-memory/freed-immediately/#how-it-knows-when">Freed immediately: how it knows when</Link>
+        <SrcRef file="compiler/kir/src/moves.rs" line={12} symbol="liveness" />
+      </div>
       <P>
         <C>const</C> and <C>let</C> are the same in memory. <C>const</C> doesn&apos;t freeze anything there; it
         only means that name can&apos;t change.
@@ -52,6 +62,11 @@ export const memoryStepsDoc: LessonDoc = {
       <MemoryLayouts />
       <H2>Numbers</H2>
       <P>A number is never an object, so <C>b = a</C> copies its 8 bytes, and a change to <C>b</C> leaves <C>a</C>:</P>
+      <P>
+        Why not share a number, as text is shared? A number is as small as the address that would point to it, so
+        sharing would save nothing. See{" "}
+        <Link href="/docs/memory/automatic-memory/how-it-stays-fast/#why-numbers-aren-t-shared">why numbers aren&apos;t shared</Link>.
+      </P>
       <MemorySteps name="numbers" />
       <H2>A change while shared: copied then</H2>
       <P>

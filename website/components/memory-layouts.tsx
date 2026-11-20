@@ -21,7 +21,7 @@ type Row = { what: React.ReactNode; where: React.ReactNode; picture: React.React
 const ROWS: Row[] = [
   {
     what: <>Numbers, <C>Bool</C>, <C>Char</C></>,
-    where: "In place: 8 bytes in the variable, or inside the list or record that holds them. No object, no count, never freed on their own. b = a copies the 8 bytes.",
+    where: "In place: 8 bytes in the variable, or inside the list or record that holds them. No object, no count, never freed on their own. b = a copies the 8 bytes: an address to share would be 8 bytes too, so sharing would save nothing.",
     picture: <><Name n="a" /> <span className={box}>7</span> <Name n="b" /> <span className={box}>7</span></>,
   },
   {

@@ -1,0 +1,11 @@
+fn factorial(n: Int) -> Int {
+    if n <= 1 {
+        return 1
+    }
+    n * factorial(n - 1)
+}
+
+fn main() {
+    const x = factorial(10)
+    print(x)
+}
