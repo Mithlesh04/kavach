@@ -1,0 +1,11 @@
+fn main() {
+    const name = "Asha"
+    const letter = `
+        Dear {name},
+
+          your order is on its way.
+        She said "thanks" and paid \{in full}.
+        `
+    print(letter)
+    print("(the end)")
+}

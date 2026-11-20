@@ -1,0 +1,6 @@
+fn main() {
+    const poem = """
+        Roses are red
+        """
+    print(poem)
+}

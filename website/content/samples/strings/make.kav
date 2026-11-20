@@ -1,12 +1,12 @@
 fn main() {
     print("C:\users\{name}")            // exactly what is written
-    const poem = """
+    const poem = `
         Roses are red,
           violets are blue
-        """
+        `
     print(poem)
-    print("""
+    print(`
         She said "hi" to me
-        """)
+        `)
     print(`Tab:\tdone`)                  // a template reads escapes
 }

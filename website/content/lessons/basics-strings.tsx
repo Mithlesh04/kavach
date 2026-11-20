@@ -52,19 +52,40 @@ export const stringsDoc: LessonDoc = {
 };
 
 export const makeStringsDoc: LessonDoc = {
-  lead: "Text in quotes is exactly what is written. Triple quotes hold several lines, or quotes inside. Backticks make a template.",
-  simple: <>Text in quotes is taken exactly as you type it, backslashes and braces too, so a folder path or a pattern needs nothing special. A long note over several lines goes in triple quotes. When you want values filled in, or a tab or a new line, use backticks.</>,
-  minutes: 3,
+  lead: "Text in quotes is exactly what is written, on one line. Backticks make a template, the one way to write text over several lines.",
+  simple: <>Text in quotes is taken exactly as you type it, backslashes and braces too, so a folder path or a pattern needs nothing special. When you want values filled in, a tab, a quote mark inside, or a long note over several lines, use backticks.</>,
+  minutes: 4,
   body: (
     <>
       <Ex name="strings/make" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
-        <li><C>&quot;…&quot;</C> has no escapes and fills nothing in: a backslash and a brace are characters like any other.</li>
-        <li><C>&quot;&quot;&quot; … &quot;&quot;&quot;</C> holds several lines, or text with a <C>&quot;</C> in it. The indentation the lines share is removed, so the text can sit neatly in your code.</li>
-        <li>In a template, in backticks, <C>\t</C> is a tab, <C>\n</C> a new line, <C>\r</C> a carriage return (as protocols that end lines with <C>\r\n</C> need), <C>{"\\`"}</C> a backtick and <C>{"\\{"}</C> a brace.</li>
+        <li><C>&quot;…&quot;</C> stays on one line, has no escapes and fills nothing in: a backslash and a brace are characters like any other.</li>
+        <li>Text over several lines, or with a <C>&quot;</C> in it, goes in backticks.</li>
+        <li>In a template, in backticks, <C>\t</C> is a tab, <C>\n</C> a new line, <C>\r</C> a carriage return (as protocols that end lines with <C>\r\n</C> need), <C>{"\\`"}</C> a backtick, <C>{"\\{"}</C> a brace and <C>{"\\\\"}</C> a backslash.</li>
       </ul>
-      <P>So JSON, SQL and regular expressions go in quotes as they are, with nothing to escape:</P>
+      <P>
+        So a path or a regular expression goes in quotes as it is, with nothing to escape. JSON has quote marks in
+        it, so it goes in a template: write <C>{"\\{"}</C> for each opening brace and <C>{"\\\\"}</C> for each
+        backslash. A <C>{"}"}</C> needs nothing:
+      </P>
       <Ex name="strings/raw-many" />
+      <H2>Text over lines</H2>
+      <P>
+        A template whose text starts on the line after its backtick spans lines. Its lines can be indented like
+        the code around them:
+      </P>
+      <Ex name="strings/over-lines" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The line break right after the opening backtick is left out, and so is the one before a closing backtick on its own line.</li>
+        <li>The indentation the lines share is removed. A line indented deeper keeps the rest, as <C>your order</C> does.</li>
+        <li>Empty lines stay. <C>{"{name}"}</C> is filled in and escapes are read, as in every template; <C>&quot;</C> needs no escape.</li>
+        <li>A template whose text starts on the same line as its backtick stays on that line. A line break in it is an error that says to start the text on the next line.</li>
+      </ul>
+      <P>
+        Python writes text over lines in three quotes. Kavach has one form for it, backticks, so{" "}
+        <C>&quot;&quot;&quot;</C> is an error that shows the backtick form:
+      </P>
+      <Ex name="habits/triple-quotes.fails" />
       <P>
         A string in quotes that looks as if it wanted a template gets a warning that says to use backticks: braces
         around a name in scope, or a <C>\n</C> or <C>\t</C> that isn&apos;t part of a Windows path:
@@ -77,8 +98,14 @@ export const makeStringsDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/01-basics.md" label="spec 1.7 · plain strings and templates" />
         <SrcRef file="docs/decisions/0131-plain-strings-and-backtick-templates.md" label="decision 0131" />
+        <SrcRef file="docs/decisions/0143-text-over-lines-in-backticks.md" label="decision 0143 · text over lines" />
         <SrcRef file="tests/conformance/01-basics/a-quoted-string-is-plain.kav" label="plain, tested" />
-        <SrcRef file="tests/conformance/01-basics/quoted-text-over-many-lines-is-plain.kav" label="over many lines, tested" />
+        <SrcRef file="tests/conformance/01-basics/quoted-text-stays-on-one-line.kav" label="one line, tested" />
+        <SrcRef file="tests/conformance/01-basics/a-template-over-lines-drops-common-indentation.kav" label="over lines, tested" />
+        <SrcRef file="tests/conformance/01-basics/a-template-over-lines-keeps-empty-lines.kav" label="empty lines, tested" />
+        <SrcRef file="tests/conformance/01-basics/a-template-on-its-backticks-line-stays-there.kav" label="on its line, tested" />
+        <SrcRef file="tests/conformance/01-basics/json-over-lines-in-a-template.kav" label="JSON over lines, tested" />
+        <SrcRef file="tests/conformance/01-basics/triple-quotes-are-not-kavach.kav" label="no triple quotes, tested" />
         <SrcRef file="tests/conformance/01-basics/a-quoted-string-that-looks-like-a-template-warns.kav" label="the warning, tested" />
         <SrcRef file="tests/conformance/01-basics/r-strings-are-not-kavach.kav" label="no r, tested" />
       </div>
@@ -101,8 +128,9 @@ export const interpolationDoc: LessonDoc = {
       <P>The braces can hold a calculation too. To write a brace itself in a template, put a backslash before it:</P>
       <Ex name="values/sub-interp" />
       <P>
-        A template may go over several lines when its text starts on the line after the backtick. As with{" "}
-        <C>&quot;&quot;&quot;</C>, the indentation the lines share is removed:
+        A template may go over several lines when its text starts on the line after the backtick, and the
+        indentation the lines share is removed (more in{" "}
+        <Link href="/docs/basics/strings/making-strings/">Making strings</Link>):
       </P>
       <Ex name="strings/template-lines" />
       <P>In a template, a <C>{"{"}</C> must close on its own line. One left open is an error at the brace:</P>

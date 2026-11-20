@@ -7,9 +7,9 @@ type Order {
 
 fn shop(r: Request) -> Response {
     if r.path == "/orders/7" {
-        return http.text(200, """
-            {"id": 7}
-            """)
+        return http.text(200, `
+            \{"id": 7}
+            `)
     }
     http.text(404, "no such order")
 }

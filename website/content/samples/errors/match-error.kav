@@ -11,9 +11,9 @@ fn load(path: String) -> Settings ! Error {
 }
 
 fn main() ! Error {
-    try fs.write_text("broken.json", """
-        {"port": 80
-        """)
+    try fs.write_text("broken.json", `
+        \{"port": 80
+        `)
     for path in ["missing.json", "broken.json"] {
         const settings = load(path) catch e => match e {
             FsError.NotFound(p) => {

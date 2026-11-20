@@ -1,9 +1,9 @@
 use std.json
 
 fn main() ! Error {
-    const text = """
+    const text = `
         [1, 2.5, "three", true, null, [4]]
-        """
+        `
     const items = try json.parse(text)
     for item in items.list() ?? [] {
         match item {

@@ -77,6 +77,7 @@ export const aliases: Record<string, string> = {
   "collections/nested-and-mixed-collections": "nested list of lists 2d array matrix grid jagged map of lists list of maps dict of lists array of objects nested dict multidimensional mixed types heterogeneous any object tuple keys set of tuples deep copy nested object json-like records inside maps map of functions dispatch table functions in a map",
   "collections/rings": "ring buffer circular buffer ringbuffer deque recent last n history rolling window drop oldest",
   "basics/strings": "string substring concat format trim case uppercase lowercase split join parse search",
+  "basics/strings/making-strings": "multiline string multi-line text over lines triple quotes heredoc here document raw string verbatim string backtick template literal escape quote inside",
   "basics/strings/text-views-and-builders": "StrView TextBuilder string view slice str span string builder StringBuilder StringBuffer append zero copy parse fast",
   "basics/variables/module-constants": "module constant global constant top level const static final define constexpr pub const UPPER_CASE capitals",
   "errors/errors":
@@ -99,6 +100,8 @@ export const aliases: Record<string, string> = {
   "agents/agents-in-practice": "benchmark tokens cost langchain agentexecutor tool calling structured output prompt injection refund triage insurance health devops legal contract logistics shipment real world comparison python",
   "agents/monitoring-agents": "monitoring observability telemetry opentelemetry otlp analytics logs export grafana datadog elastic siem dashboard tracing",
   "agents/ask": "llm prompt structured output json schema function calling typed response model openai claude retry",
+  "agents/ask/when-the-ai-fails": "rate limit 429 529 quota billing overloaded timeout retry-after backoff exponential backoff error handling api error refusal max tokens",
+  "agents/ask/providers": "provider adapter llm gateway proxy litellm openai compatible azure ollama bedrock vertex gemini custom endpoint base url api key header middleware",
   "agents/agents/approve": "approval approve deny human in the loop sign off pending request wait deadline timeout within kavach approvals review queue restart join duplicate request sent twice",
   "agents/audit-log": "audit trail compliance log record history who did what accountability soc2 disk full no space left write failure",
   "speed/gpu/sums-in-a-loop": "overlap streaming pipeline stall reduce accumulate running total big file chunks kavach check note waits async dma",

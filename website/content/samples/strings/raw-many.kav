@@ -1,7 +1,7 @@
 fn main() {
-    const body = """
-        {"name": "Ana", "path": "C:\new\{x}"}
-        """
+    const body = `
+        \{"name": "Ana", "path": "C:\\new\\\{x}"}
+        `
     print(body)
     const pattern = "\d+\.\d+"
     print(pattern)

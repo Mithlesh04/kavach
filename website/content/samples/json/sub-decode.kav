@@ -6,9 +6,9 @@ type Order {
 }
 
 fn main() ! Error {
-    const text = """
-        [{"id": 1, "total": 9.5}, {"id": 2, "total": 3.0}]
-        """
+    const text = `
+        [\{"id": 1, "total": 9.5}, \{"id": 2, "total": 3.0}]
+        `
     const orders = try json.decode<[Order]>(text)
     for o in orders {
         print(`order {o.id}: {o.total}`)

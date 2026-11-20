@@ -54,17 +54,27 @@ export const taggedLiteralsDoc: LessonDoc = {
       </ul>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="tests/conformance/10-modules/tagged-literals-are-checked-when-compiled.kav" label="tested" />
-        <SrcRef file="tests/conformance/10-modules/tagged-literal-problems-show-on-their-line.kav" label="over lines, tested" />
+        <SrcRef file="tests/conformance/10-modules/tagged-literal-problems-show-on-their-line.kav" label="a problem over lines, tested" />
         <SrcRef file="tests/conformance/10-modules/a-tag-checker-uses-nothing.kav" label="pure checker, tested" />
       </div>
-      <H2>The text is raw</H2>
+      <H2>Text in quotes is raw</H2>
       <P>
         As in any text in quotes, <C>\</C> and <C>{"{"}</C> are characters like any other inside <C>sql&quot;…&quot;</C>:
         no escapes and nothing filled in, so values can&apos;t be pasted into it. Values go in separately, as{" "}
-        <C>$1</C> does in SQL. Three quotes let a literal span lines, as other text does:
+        <C>$1</C> does in SQL. Text in quotes stays on one line. A literal over lines is written in backticks, as
+        all text over lines is: <C>{"sql`…`"}</C>, a tagged template (below), whose text starts on the line after
+        the backtick:
       </P>
       <Ex name="literals/raw" />
-      <SrcRef file="tests/conformance/10-modules/tagged-literals-make-their-type.kav" label="tested" />
+      <P>
+        <C>sql&quot;&quot;&quot;…&quot;&quot;&quot;</C> is an error that says to write <C>{"sql`…`"}</C> instead.
+      </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/10-modules/tagged-literals-make-their-type.kav" label="tested" />
+        <SrcRef file="tests/conformance/10-modules/a-tagged-template-over-lines.kav" label="over lines, tested" />
+        <SrcRef file="tests/conformance/10-modules/triple-quoted-tagged-literals-are-not-kavach.kav" label="no triple quotes, tested" />
+        <SrcRef file="docs/decisions/0143-text-over-lines-in-backticks.md" label="decision 0143" />
+      </div>
       <H2>Tagged templates: values as parameters</H2>
       <P>
         A tag may go before a template in backticks too: <C>{"sql`… where owner = {owner}`"}</C>. Each{" "}

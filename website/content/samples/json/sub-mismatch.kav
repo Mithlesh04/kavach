@@ -6,9 +6,9 @@ type Item {
 }
 
 fn main() {
-    const text = """
-        [{"name": 5, "qty": 1}, {"qty": 2}, {"name": "cup", "qty": "x"}]
-        """
+    const text = `
+        [\{"name": 5, "qty": 1}, \{"qty": 2}, \{"name": "cup", "qty": "x"}]
+        `
     const items = json.decode<[Item]>(text) catch e => match e {
         JsonError.Invalid(problems) => {
             print(`{problems.len()} problems:`)
