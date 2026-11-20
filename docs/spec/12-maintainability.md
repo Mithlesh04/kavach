@@ -166,7 +166,7 @@ Many small rules matter at scale because they remove arguments between teams:
   - one more level for a line that continues the one before (after an operator, a line starting with `.`, or a signature clause such as `require`), except inside `( … )` and `[ … ]`, which already indent it;
   - a comment line is indented like the code below it;
   - no trailing spaces, at most one blank line in a row, none just inside `{ … }`, and one newline at the end of the file;
-  - multi-line strings are never changed.
+  - text over lines is never changed.
 
   `kavach fmt --check` reports files that are not formatted, for CI.
 - **One project layout** (10.3). Anyone can open any package and find their way.

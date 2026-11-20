@@ -21,7 +21,10 @@ count += 1
 const price: Decimal = 499.00       // exact; literals take their type from context
 const big = 1_000_000 + 0xff + 0b1010
 print(`Hi {name}, {count + 1}\n`) // backticks fill in {expr} and read \n \t \{ \`
-const path = "C:\new\{x}"           // quotes: exactly what is written; no r"…" or f"…"
+const path = "C:\new\{x}"           // quotes: exactly what is written, one line; no r"…" or f"…"
+const body = `
+    \{"name": "{name}"}
+    `                               // text over lines: only backticks (no """), \{ for a brace
 const ok = not false and (1 < 2 or false)
 const label = user?.name ?? "guest" // ?. reads through optionals, ?? gives a default
 ```

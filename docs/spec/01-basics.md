@@ -118,20 +118,9 @@ var         while       with
 | Float | `3.14`, `1e9`, `2.5e-3` |
 | Bool | `true`, `false` |
 | Char | `'a'`, `'क'`, `'\n'` |
-| String | `"C:\temp\{name}"`: exactly what is written |
-| Multi-line string | `"""` … `"""` (common leading indentation is removed) |
-| Template | `` `Hello, {name}!` ``: fills in `{…}` and reads escapes |
+| String | `"C:\temp\{name}"`: exactly what is written, on one line |
+| Template | `` `Hello, {name}!` ``: fills in `{…}` and reads escapes; the one form for text over lines |
 | Empty optional | `none` |
-
-In a multi-line string, the line break right after the opening `"""` and the one right before the closing `"""` are not part of the string. Then the common leading indentation is removed:
-
-```kavach
-const text = """
-    first
-      second
-    """
-// text is the two lines "first" and "  second"
-```
 
 Number literals take their type from context. `const price: Decimal = 499.99` is an exact decimal, not a float. Without context, integers are `Int` and decimals are `Float`.
 
@@ -139,14 +128,12 @@ A minus written before a whole-number literal belongs to it, so the smallest val
 
 ### Plain strings and templates
 
-Text in quotes is exactly what is written: no escapes, and nothing filled in ([decision 0131](../decisions/0131-plain-strings-and-backtick-templates.md)). Paths, regular expressions and JSON need nothing special. A `"` inside one goes in `"""…"""`.
+Text in quotes is exactly what is written, on one line: no escapes, and nothing filled in ([decision 0131](../decisions/0131-plain-strings-and-backtick-templates.md)). Paths, regular expressions and JSON need nothing special. Text that holds a `"`, or goes over lines, is written in backticks.
 
 ```kavach
 const path = "C:\temp\{name}"          // these characters, backslashes and braces too
 const pattern = "\d+\.\d+"
-const body = """
-    {"name": "Ana", "tags": ["a", "b"]}
-    """
+const digits = "\d{3}"                 // the 5 characters as written
 ```
 
 Text in backticks is a **template**: any expression inside `{}` is filled in, and escapes are read.
@@ -158,10 +145,33 @@ print(`a literal \{ brace and a \` backtick`)
 ```
 
 - Escapes in a template: `\n`, `\r` (a carriage return, as protocols that end lines with `\r\n` need), `\t`, `\\`, `` \` ``, `\{`, `\u{1F600}`. A `Char` reads the same escapes: `'\n'`.
-- A template may span lines: as in `"""…"""`, the line break after the opening backtick and the one before the closing backtick are left out, and the common leading indentation is removed.
 - In a template, a `{` must close on its own line.
 - A string in quotes that looks like it wanted a template gets a warning that says to write it in backticks: `"Hello, {name}"` when `name` is a name in scope there, and `"a\nb"` when every backslash is `\n`, `\t` or `\r` and the text isn't a Windows path; `"…"` holding braces or backslashes meant as text needs nothing.
 - `r"…"` and Python's `f"…"` are compile errors that say what to write: a quoted string is raw already, and a template is written in backticks.
+
+### Text over lines
+
+Text over lines is written only in backticks ([decision 0143](../decisions/0143-text-over-lines-in-backticks.md)). A template whose text starts on the line after its opening backtick spans lines:
+
+- The line break right after the opening backtick is left out. So is the one right before the closing backtick, when that backtick is on a line of its own.
+- Then the common leading indentation is removed: the smallest indentation of the lines that hold text. A line indented deeper keeps the rest of its indentation.
+- Empty lines stay. A line of only spaces doesn't count when the common indentation is found, and loses as much of it as it has.
+- It is a template like any other: `{…}` is filled in and escapes are read, so `\{` writes a brace, `` \` `` a backtick and `\\` a backslash. `"` and `'` need no escape.
+- A template whose text starts on the same line as its opening backtick stays on that line: a line break in its text is a compile error that says to start the text on the line after the backtick.
+- `"""…"""` is a compile error that shows the backtick form: write the text in backticks, with `\{` for a brace, `` \` `` for a backtick and `\\` for a backslash. So is a tagged `sql"""…"""` (10.15), which is written `` sql`…` ``.
+
+```kavach
+const text = `
+    first
+      second
+    `
+// text is the two lines "first" and "  second"
+
+const body = `
+    \{"name": "{name}", "tags": ["a", "b"]}
+    `
+// with name "Ana", body is {"name": "Ana", "tags": ["a", "b"]}
+```
 
 ## 1.8 Operators
 
@@ -401,6 +411,7 @@ The difference keeps a script's first line, `const text = try fs.read_text(path)
 
 ## Open questions
 
+- **Tabs in the indentation of text over lines (1.7):** today a tab and a space each count as one character when the common indentation is found, so a file that mixes them may keep or remove the wrong amount. Refusing a mix, counting a tab as four spaces, or allowing only spaces are the options.
 - **List patterns in `match`:** there a pattern would test the length (`[a, b]` only for two items), unlike `const`, which never fails. Wanted, but the two meanings must not be confused.
 
 Decisions are recorded in [0013](../decisions/0013-core-language-decisions.md).
