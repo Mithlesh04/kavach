@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
@@ -57,7 +58,11 @@ export const systemDoc: LessonDoc = {
         <li>Each entry is <C>name:vendor:kind:backend</C>, and entries are separated by <C>;</C>. A name may have spaces: quote the whole value in a shell, <C>KAVACH_FAKE_GPUS=&quot;AMD Radeon RX 7900:0x1002:discrete:vulkan&quot;</C>.</li>
         <li>The vendor is written as a PCI vendor ID, such as <C>0x10de</C>, and read back as the maker&apos;s name: NVIDIA, AMD, Intel, Apple, Qualcomm, ARM or Microsoft. An ID it doesn&apos;t know reads as <C>&quot;&quot;</C>.</li>
         <li>The Intel GPU was listed first, but the discrete AMD one comes first in the list.</li>
-        <li>It changes only the list. The GPU that runs <C>map</C> is still the machine&apos;s.</li>
+        <li>
+          Choosing among them works as with real GPUs: work goes to the machine&apos;s GPU of the same name, and an
+          entry the machine has no GPU for is skipped, so its work goes to the next device, or the CPU. See{" "}
+          <Link href="/docs/speed/gpu/choosing-a-gpu/">Choosing a GPU</Link>.
+        </li>
       </ul>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${FILE}`} label="spec 14.25" />

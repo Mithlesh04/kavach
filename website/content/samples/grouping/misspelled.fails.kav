@@ -1,0 +1,8 @@
+type Sale {
+    region: String
+}
+
+fn main() {
+    const sales = [Sale(region: "north")]
+    print(sales.count_by(.regoin))
+}

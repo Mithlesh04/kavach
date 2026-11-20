@@ -1,0 +1,9 @@
+fn main() {
+    const marks = [72, 85, 90, 64, 85]
+    print(marks.mean(x => x) ?? 0.0)          // a Float for whole numbers
+    print(marks.median(x => x) ?? 0.0)
+    print(marks.std(x => x) ?? 0.0)           // divided by the count minus 1
+    print(marks.var(x => x, correction: 0) ?? 0.0)
+    print(marks.min_by(x => x) ?? 0)
+    print([2.0, 4.0, 4.0, 5.0].describe(x => x))
+}

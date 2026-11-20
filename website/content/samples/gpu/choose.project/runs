@@ -1,0 +1,1 @@
+KAVACH_FAKE_GPUS=Made-up-GPU-A:0x1002:discrete:vulkan;Made-up-GPU-B:0x8086:integrated:dx12 run src/main.kav

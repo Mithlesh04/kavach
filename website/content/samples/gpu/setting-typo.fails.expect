@@ -1,1 +1,1 @@
-error: `[run] gpu = "fast"`: write "cpu" to keep every GPU `map` on the CPU, or "auto" (spec 15.2)
+error: `[run] gpu = "fast"`: write cpu, auto, a device's number from 0, or a vendor: nvidia, amd, intel, apple, qualcomm, arm, microsoft (spec 15.6)

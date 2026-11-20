@@ -256,7 +256,7 @@ export const gpuSameDoc: LessonDoc = {
 };
 
 export const gpuWhereDoc: LessonDoc = {
-  lead: "The runtime chooses CPU or GPU for each map. KAVACH_GPU overrides it, to debug or to compare.",
+  lead: "The runtime chooses CPU or GPU for each map, and which GPU. KAVACH_GPU overrides it, to debug or to compare.",
   simple: <>Kavach picks the CPU or the GPU for each job, like a shop choosing a bike courier or a lorry by the size of the load. The <C>KAVACH_GPU</C> setting lets you choose yourself, to find a bug or to compare.</>,
   minutes: 2,
   body: (
@@ -275,6 +275,7 @@ export const gpuWhereDoc: LessonDoc = {
               ["off or cpu", "everything on the CPU: use a debugger, or measure the CPU"],
               ["on", "the GPU for a list of any length"],
               ["check", "runs both, and panics at the first item whose results differ (floats compared with near)"],
+              ["nvidia, amd, intel, … or 1", "the best device of that maker, or device 1: see Choosing a GPU"],
             ].map(([v, d]) => (
               <tr key={v} className="border-b border-line">
                 <td className="py-2 pr-4 whitespace-nowrap"><C>{v}</C></td>
@@ -299,7 +300,10 @@ export const gpuWhereDoc: LessonDoc = {
         For one value only, write <C>on cpu</C> before it: <C>on cpu pixels.map(shade)</C> (
         <Link href="/docs/speed/loops-on-all-cores/#before-a-value">on before a value</Link>).
       </P>
-      <P>The setting takes <C>&quot;cpu&quot;</C> or <C>&quot;auto&quot;</C>, the default. Anything else is refused, with both:</P>
+      <P>
+        The setting takes <C>&quot;cpu&quot;</C>, <C>&quot;auto&quot;</C>, the default, or a device: a maker&apos;s name
+        or a number (see <Link href="/docs/speed/gpu/choosing-a-gpu/">Choosing a GPU</Link>). Anything else is refused:
+      </P>
       <Files name="gpu/setting-typo.fails" first={["kavach.toml"]} outcome="refused" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/15-gpu.md" label="spec 15.2 · where it runs" />

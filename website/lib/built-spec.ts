@@ -30,9 +30,6 @@ const BEFORE_DESIGNS = "81e236e3";
 /** The commits that wrote those designs into the spec, and marked them. */
 const DESIGNS = ["f35e8eb6", "9357ff02"];
 
-/** Slicing, decision 0134: built, so its changes to a pinned file are shown. */
-const SLICING = "d570b0d2";
-
 /**
  * Spec files read as they were at a commit (`at`), with the changes of the
  * `built` commits since laid on top; `DESIGNS` may change them too. Any
@@ -45,8 +42,6 @@ const PINNED: Record<string, { at: string; built: string[] }> = Object.fromEntri
     [
       ["02-types/01-built-in-types.md", []], // Int8 and Decimal rows name Int<bits: n> and Decimal<digits, places>
       ["02-types/17-matrices.md", []], // says Matrix is gone; it still works until Tensor lands
-      ["14-standard-library/05-math.md", []], // math.mean still works
-      ["14-standard-library/09-text-and-collections.md", [SLICING]], // collections.unique and counts still work
     ] as [string, string[]][]
   ).map(([f, built]) => [`docs/spec/${f}`, { at: BEFORE_DESIGNS, built }]),
 );

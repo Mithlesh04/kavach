@@ -1,6 +1,5 @@
-["factorial", "gcd", "is_prime", "lcm", "mean"]
+["factorial", "gcd", "is_prime", "lcm"]
 Function factorial -> Int
 Function gcd -> Int
 Function is_prime -> Bool
 Function lcm -> Int?
-Function mean -> Float?

@@ -4,7 +4,7 @@ fn main() {
     const items = ["pen", "ink", "pen", "pad", "pen"]
     print(collections.chunks([1, 2, 3, 4, 5], 2))
     print(collections.zip(["a", "b", "c"], [1, 2]))
-    print(collections.unique(items))
-    print(collections.counts(items))
     print(collections.flatten([[1, 2], [], [3]]))
+    print(items.unique())             // list methods now (14.2)
+    print(items.count_by(x => x))
 }

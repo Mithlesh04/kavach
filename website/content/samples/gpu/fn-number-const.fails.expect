@@ -1,0 +1,1 @@
+error: `gpu(n) fn` takes a device's number written in the code, 0 or more: `gpu(1) fn` (spec 15.6)

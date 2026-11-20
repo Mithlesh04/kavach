@@ -229,10 +229,9 @@ export const coresDoc: LessonDoc = {
       <Ex name="speed/on-value-zero.fails" />
       <Ex name="speed/on-value-zero.panics" />
       <P>
-        <C>on gpu(n)</C>, to choose which GPU runs the maps, isn&apos;t built yet. Until it is, it is a compile error
-        that says what to write instead:
+        <C>on gpu(n) x</C> runs the GPU work of <C>x</C> on device <C>n</C>, of a machine with several GPUs: see{" "}
+        <Link href="/docs/speed/gpu/choosing-a-gpu/">Choosing a GPU</Link>.
       </P>
-      <Ex name="speed/on-gpu-n.fails" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="tests/conformance/04-control-flow/on-before-a-value-gives-the-same-value.kav" label="the same value, tested" />
         <SrcRef file="tests/conformance/04-control-flow/on-cores-before-a-value-count-of-zero-is-an-error.kav" label="a count of 0, tested" />

@@ -8,7 +8,7 @@ import { ModuleTable } from "./spec-table";
 // ---------- Text and Collections ----------
 
 export const textCollectionsDoc: LessonDoc = {
-  lead: "std.text finds numbers in text and writes Unicode one way; std.collections holds small helpers for lists: chunks, pairs, counts. They are written in Kavach itself.",
+  lead: "std.text finds numbers in text and writes Unicode one way; std.collections holds small helpers for lists: chunks, pairs, flattening. They are written in Kavach itself.",
   simple: <>These are the small tools you would otherwise write again in every program: finding the numbers in a line of text, comparing text typed on different machines, counting how often each item appears. They come ready, tested, and written in Kavach.</>,
   minutes: 3,
   before: ["basics/strings", "collections/lists"],
@@ -42,8 +42,14 @@ export const textCollectionsDoc: LessonDoc = {
       <Ex name="collections/helpers" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>zip</C> stops at the shorter list, so <C>&quot;c&quot;</C> has no pair.</li>
-        <li><C>unique</C> and <C>counts</C> keep the order in which items were first seen.</li>
+        <li>
+          Each item once and how many times each appears are list methods, <C>items.unique()</C> and{" "}
+          <C>items.count_by(x =&gt; x)</C>, which keep the order in which items were first seen. See{" "}
+          <Link href="/docs/collections/grouping-and-statistics/">Grouping and Statistics</Link>.
+        </li>
       </ul>
+      <P><C>collections.unique</C> and <C>collections.counts</C> are gone; each is a compile error that names the method:</P>
+      <Ex name="collections/counts.fails" />
       <H2>Every function</H2>
       <ModuleTable file="09-text-and-collections.md" number="14.9" first="Function" />
       <P>

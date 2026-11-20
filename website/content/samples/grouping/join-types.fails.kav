@@ -1,0 +1,8 @@
+type User {
+    name: String
+}
+
+fn main() {
+    const users = [User(name: "asha")]
+    print([1, 2].inner_join(users, x => x, u => u.name, (x, u) => x).len())
+}

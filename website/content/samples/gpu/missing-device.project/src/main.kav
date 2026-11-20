@@ -1,0 +1,9 @@
+gpu(7) fn double(x: Float32) -> Float32 {
+    x * 2.0
+}
+
+fn main() {
+    print("this never runs")
+    const xs: [Float32] = [1.0]
+    print(xs.map(double))
+}

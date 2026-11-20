@@ -1,0 +1,6 @@
+$ KAVACH_FAKE_GPUS=Made-up-GPU-A:0x1002:discrete:vulkan;Made-up-GPU-B:0x8086:integrated:dx12 kavach run src/main.kav
+0: Made-up-GPU-A (AMD, Discrete)
+1: Made-up-GPU-B (Intel, Integrated)
+[1.5, 2.0, 2.5]
+true
+[1.0, 4.0, 9.0]

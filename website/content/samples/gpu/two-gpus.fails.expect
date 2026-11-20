@@ -1,0 +1,1 @@
+error: this runs `gpu(0) fn double` and `gpu(1) fn halve`, and one `map` runs on one GPU: give both the same number, or map them apart (spec 15.6)

@@ -1,0 +1,8 @@
+const n = 1
+
+gpu(n) fn double(x: Float32) -> Float32 {
+    x * 2.0
+}
+
+fn main() {
+}

@@ -1,0 +1,10 @@
+gpu fn step(x: Float32) -> Float32 {
+    x * 0.5 + 1.0
+}
+
+pub fn twice(xs: [Float32]) -> [Float32] {
+    on gpu(0) xs.map(step)
+}
+
+fn main() {
+}

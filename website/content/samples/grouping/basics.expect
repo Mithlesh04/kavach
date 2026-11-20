@@ -1,0 +1,5 @@
+{"north": 2, "south": 1}
+{"north": 220.0, "south": 80.0}
+100.0
+1
+[(amount: 120.0, region: "north"), (amount: 80.0, region: "south"), (amount: 100.0, region: "north")]

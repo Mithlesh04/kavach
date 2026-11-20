@@ -1,0 +1,4 @@
+fn main() {
+    const xs = [1, 2, 3]
+    print(xs.sum_by(x => x % 2, x => x))
+}

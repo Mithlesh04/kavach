@@ -1,0 +1,26 @@
+use std.gpu
+
+gpu fn step(x: Float32) -> Float32 {
+    x * 0.5 + 1.0
+}
+
+gpu(1) fn shade(x: Float32) -> Float32 {     // this function's maps on device 1
+    x * x
+}
+
+fn main() uses Console, Gpu {
+    const devices = gpu.devices()            // the best first
+    for d in devices {
+        print(`{d.index}: {d.name} ({d.vendor}, {d.kind})`)
+    }
+    const xs: [Float32] = [1.0, 2.0, 3.0]
+    const a = gpu.on(devices[0]) {
+        xs.map(step)                         // every GPU map in the block on device 0
+    }
+    const b = xs.map(step, on: devices[1])   // this call on device 1
+    const c = on gpu(1) xs.map(step)         // device 1, by its number
+    const d = xs.map(shade)                  // device 1: `shade` says so
+    print(a)
+    print(a == b and b == c)                 // the same values on every device
+    print(d)
+}

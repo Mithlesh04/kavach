@@ -1,0 +1,21 @@
+type Sale {
+    region: String
+    month: Int
+    amount: Float
+}
+
+fn main() {
+    const sales = [
+        Sale(region: "north", month: 1, amount: 120.0),
+        Sale(region: "south", month: 1, amount: 80.0),
+        Sale(region: "north", month: 2, amount: 100.0),
+    ]
+    const groups = sales.group_by(.region)                 // {String: [Sale]}
+    print(groups.map_values(g => g.len()))
+    print(groups.to_list().map(p => p.0))                  // the keys, in the order first seen
+    print(sales.group_by(s => (s.region, s.month)).len())  // a tuple groups by two keys
+    print([3, 1, 3, 2, 1].unique())
+    print(sales.unique_by(.region).map(s => s.amount))     // the first sale of each region
+    const words = ["to", "be", "or", "not", "to", "be"]
+    print(words.count_by(w => w).to_list().sort_by(p => -p.1)[:2])
+}

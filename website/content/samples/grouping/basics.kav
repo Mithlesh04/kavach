@@ -1,0 +1,18 @@
+type Sale {
+    region: String
+    month: Int
+    amount: Float
+}
+
+fn main() {
+    const sales = [
+        Sale(region: "north", month: 1, amount: 120.0),
+        Sale(region: "south", month: 1, amount: 80.0),
+        Sale(region: "north", month: 2, amount: 100.0),
+    ]
+    print(sales.count_by(.region))                                    // how many in each region
+    print(sales.group_by(.region).map_values(g => g.sum(.amount)))   // the total of each
+    print(sales.mean(.amount) ?? 0.0)
+    print(sales.max_by(.amount)?.month ?? 0)                          // the month of the biggest sale
+    print(sales.map(s => (region: s.region, amount: s.amount)))       // two columns picked out
+}

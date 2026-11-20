@@ -1,0 +1,12 @@
+gpu(0) fn double(x: Float32) -> Float32 {
+    x * 2.0
+}
+
+gpu(1) fn halve(x: Float32) -> Float32 {
+    x * 0.5
+}
+
+fn main() {
+    const xs: [Float32] = [1.0, 2.0]
+    print(xs.map(x => double(halve(x))))
+}

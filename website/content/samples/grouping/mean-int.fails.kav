@@ -1,0 +1,4 @@
+fn main() {
+    const m: Int? = [1, 2].mean(x => x)
+    print(m ?? 0)
+}

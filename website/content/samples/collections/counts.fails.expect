@@ -1,0 +1,1 @@
+error: `collections.counts` is gone: write the list method `items.count_by(x => x)` (spec 14.2, decision 0135)

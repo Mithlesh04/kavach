@@ -1,0 +1,1 @@
+error: `min_by`'s key needs values with an order (numbers, text, characters, `Bool`, `Bytes`, text views, or tuples, lists and rings of them), and `Point` has none

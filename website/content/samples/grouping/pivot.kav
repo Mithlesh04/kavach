@@ -1,0 +1,17 @@
+type Sale {
+    region: String
+    month: Int
+    amount: Float
+}
+
+fn main() {
+    const sales = [
+        Sale(region: "north", month: 1, amount: 120.0),
+        Sale(region: "south", month: 1, amount: 80.0),
+        Sale(region: "north", month: 2, amount: 100.0),
+    ]
+    const by_month = sales.pivot(.region, .month, g => g.sum(.amount))
+    print(by_month)
+    print((by_month["north"] ?? {:})[2] ?? 0.0)
+    print((by_month["south"] ?? {:})[2] ?? 0.0)     // no sale there
+}

@@ -1,8 +1,0 @@
-gpu fn brighten(p: Float32) -> Float32 {
-    (p * 1.5).clamp(0.0, 1.0)
-}
-
-fn main() {
-    const pixels: [Float32] = [0.2, 0.5, 0.8]
-    print(on gpu(1) pixels.map(brighten))
-}

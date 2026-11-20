@@ -61,6 +61,7 @@ import {
 import { sortingDoc, sortKeyDoc, sortNumbersDoc, sortTextDoc, sortTwoKeysDoc } from "./collections-sort";
 import { gpuCanDoc, gpuDoc, gpuFnDoc, gpuMapDoc, gpuRecordsDoc, gpuSameDoc, gpuUsesDoc, gpuWhereDoc } from "./speed-gpu";
 import { gpuSumsDoc } from "./gpu-streams";
+import { gpuChooseDoc } from "./speed-gpu-choose";
 import { gpuDrawDoc } from "./speed-gpu-draw";
 import {
   capabilitiesDoc, declareCapDoc, fsNarrowDoc, implementCapDoc, ownCapsDoc, pureDoc, refusedCapDoc, usesDoc,
@@ -95,6 +96,7 @@ import {
 } from "./collections";
 import { capacityDoc, ringDoc } from "./collections-limits";
 import { slicingDoc } from "./collections-slicing";
+import { groupingDoc } from "./collections-grouping";
 import { nestedDoc } from "./collections-nested";
 import {
   declaringDoc, defaultsDoc, dotDoc, fnValuesDoc, functionsDoc, lambdasDoc, namedArgsDoc, namedDoc, parametersDoc,
@@ -232,6 +234,7 @@ export const lessons: Record<string, LessonDoc> = {
 
   "collections/lists": listsDoc,
   "collections/indexing-and-slicing": slicingDoc,
+  "collections/grouping-and-statistics": groupingDoc,
   "collections/lists/making-a-list": makeListDoc,
   "collections/lists/reading-by-index": readListDoc,
   "collections/lists/changing-items": changeListDoc,
@@ -326,6 +329,7 @@ export const lessons: Record<string, LessonDoc> = {
   "speed/gpu/can-i-use-it-on-the-gpu": gpuCanDoc,
   "speed/gpu/sums-in-a-loop": gpuSumsDoc,
   "speed/gpu/drawing-triangles": gpuDrawDoc,
+  "speed/gpu/choosing-a-gpu": gpuChooseDoc,
   "speed/gpu/use-cases": gpuUsesDoc,
   "networks/http": httpDoc,
   "networks/http/calling-an-api": httpCallDoc,

@@ -68,6 +68,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
   ["collections", "Collections", "beginner", [
     ["Lists", "2.2", ["Making a list", "Reading by index", "Changing items", "Adding and removing", "Sorting", "map, filter, sum"]],
     ["Indexing and Slicing", "2.19"],
+    ["Grouping and Statistics", "14.2"],
     ["Dicts", "2.2", ["Making a dict", "Reading a value", "Adding and changing", "Looping over a dict"]],
     ["Sets", "2.2", ["Making a set", "Adding and checking"]],
     ["Collections with a Limit", "2.2"],
@@ -193,7 +194,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Byte-packed Lists", "—"],
     ["Fast Sorting", "—"],
     ["As Data Grows", "—"],
-    ["GPU", "15", ["gpu fn", "map on the GPU", "Records and two lists", "Same results as the CPU", "CPU or GPU", "Can I use it on the GPU?", "Sums in a loop", "Drawing triangles", "Use cases"]],
+    ["GPU", "15", ["gpu fn", "map on the GPU", "Records and two lists", "Same results as the CPU", "CPU or GPU", "Can I use it on the GPU?", "Sums in a loop", "Drawing triangles", "Choosing a GPU", "Use cases"]],
     ["Native Executables", "—"],
   ]],
   ["other-languages", "Other Languages", "advanced", [

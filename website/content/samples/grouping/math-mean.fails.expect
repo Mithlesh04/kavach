@@ -1,0 +1,1 @@
+error: `math.mean` is gone: write the list method `xs.mean(x => x)` (spec 14.2, decision 0135)

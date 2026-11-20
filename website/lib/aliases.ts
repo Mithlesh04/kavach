@@ -69,6 +69,7 @@ export const aliases: Record<string, string> = {
   "collections/sorting": "sort order sorted ascending descending alphabetical radix quicksort merge sort stable compare key orderby sort_by case insensitive",
   "collections/sets": "unique distinct duplicates hashset membership contains deduplicate",
   "collections/collections-with-a-limit": "capacity limit bounded fixed size reserve preallocate is_full full memory with_capacity max len fixed length array filled SizeError",
+  "collections/grouping-and-statistics": "group by groupby count value_counts unique distinct mean average median std variance describe statistics join merge inner left pivot pandas dplyr aggregate",
   "collections/nested-and-mixed-collections": "nested list of lists 2d array matrix grid jagged map of lists list of maps dict of lists array of objects nested dict multidimensional mixed types heterogeneous any object tuple keys set of tuples deep copy nested object json-like records inside maps map of functions dispatch table functions in a map",
   "collections/rings": "ring buffer circular buffer ringbuffer deque recent last n history rolling window drop oldest",
   "basics/strings": "string substring concat format trim case uppercase lowercase split join parse search",

@@ -1,0 +1,16 @@
+type User {
+    id: Int
+    name: String
+}
+
+type Order {
+    user_id: Int
+    total: Float
+}
+
+fn main() {
+    const users = [User(id: 1, name: "asha"), User(id: 2, name: "ravi")]
+    const orders = [Order(user_id: 2, total: 5.0), Order(user_id: 3, total: 7.0), Order(user_id: 1, total: 2.5)]
+    print(orders.inner_join(users, .user_id, .id, (o, u) => (name: u.name, total: o.total)))
+    print(orders.left_join(users, .user_id, .id, (o, u) => (name: u?.name ?? "unknown", total: o.total)))
+}
