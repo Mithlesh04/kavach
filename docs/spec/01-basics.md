@@ -70,6 +70,23 @@ const limit: Int = 10  // an explicit type is optional
 - Declarations at the top of a module (`fn`, `type`, `interface`, …) can be used anywhere in that module, before or after they appear. Local variables can be used only after their `const` or `let`.
 - A variable that is never used (a `const`, a `let`, a name a pattern takes, `...rest`, a `for` variable, a `catch` name) gets a warning, so code being written still runs. A name starting with `_` (`_draft`, or `_` alone) is unused on purpose and gets none. Functions, types and module constants nothing uses get one too (10.1). `_` alone is not a name: it throws the value away, so it may be written any number of times and is never read; reading it (`print(_)`) is a compile error that says to give the value a name, such as `_t`.
 - A never-used variable that hides a `let` of the same name in an outer scope says so, since it is almost always meant to change that one: `let total = total + i` inside a loop makes a new `total`. The warning says to write `total = total + i`.
+- A function or method parameter that the function never reads gets a warning too: "`times` is never used: remove it, or name it `_times` if it must stay". A read inside a lambda in the body counts, and so does a read in a `require` or `ensure` (7.1, 7.2): the contract is checked at every call. A parameter named `_` or starting with `_` gets none. Nor does one whose signature something else fixes: a method that implements an interface or a capability (2.8, the operators of 2.16, 8.2), a function used as a value anywhere in the program (passed, stored, or named by a `literal`'s `check` or `param`; 3.4, 10.15), `main`, an agent's `on` handler (8.3), a `gpu fn` (15) and a function with no body (`extern`, 10.7). A lambda's parameters get no warning.
+
+  ```kavach
+  fn repeat(text: String, times: Int) -> String {   // warning: `times` is never used
+      text
+  }
+
+  fn shout(text: String, _times: Int) -> String {   // `_times`: kept on purpose
+      text.upper()
+  }
+
+  fn twice(text: String, times: Int) -> String     // read only by the contract: used
+      require times == 2
+  {
+      text + text
+  }
+  ```
 - Native code doesn't compute a value nobody reads, when computing it does nothing a program could see: an unused `...rest` makes no list.
 
 ## 1.5 Names
