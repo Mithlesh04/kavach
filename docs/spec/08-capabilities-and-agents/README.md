@@ -22,4 +22,4 @@ Each section is a file of its own: new sections go at the end, with the next num
 - A folder that comes from a value (`uses Fs(config.dir)`), not only written text.
 - How events reach agents in production: HTTP, queues, schedules. Probably a `std.ai` server helper.
 - Where approval requests are delivered (webhook, Slack, email) and the timeout setting.
-- AI providers other than Anthropic, fallbacks, prices and money budgets in `limit Ai`: settled by [decision 0140](../../decisions/0140-ai-providers.md); the spec rules come with the build.
+- Fallbacks, prices and money budgets in `limit Ai`: settled by [decision 0140](../../decisions/0140-ai-providers.md), and *not built yet*; their rules join 8.3, 8.4 and 8.6 when they are built. Providers other than Anthropic are in 8.4.

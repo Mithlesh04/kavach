@@ -313,6 +313,25 @@ A maintainer chose (2026-11-19): **the provider's counting call where there is o
 
 Options considered: **the counting call, else an estimate** (chosen); **offline estimates only**; **the counting call only**, `none` without one.
 
+## Built first, and points for a maintainer's review
+
+The first part was built on 2026-11-20: the `Provider` interface, `Anthropic`'s adapter rewritten in Kavach in `std.ai`, and the richer `AiError` (spec 8.4). Where this record didn't settle a point, the simplest option that fits it was taken. Each is **for a maintainer's review**:
+
+1. **The interface has only the methods built so far:** `check`, `key_variable`, `auth`, `request` and `read`. `count_request`, `read_count`, `estimate` and `price` join it with counting and prices; there are no users yet, so adding methods later breaks no one.
+2. **`key_variable(self) -> String`** is a method this record didn't have: each provider gives its own default key variable (choice 2), and the interface needed a place for it.
+3. **How the runtime calls a provider:** through `std.ai`'s private `wire(provider, settings)`, which gives a `fn(String) -> String` that takes and gives JSON text. So the runtime needs no Kavach types, and native code calls one closure, as it calls a `display` method.
+4. **`KAVACH_AI_URL`** now keeps the path the provider wrote and changes only the scheme, host and port (plus a path in front), so it works for every provider.
+5. **A gate's key is the provider's type name and the key's variable name.** Two variables holding the same key get two gates.
+6. **A gate counts a call as turned away by its status (429),** not by the kind `read` gives, as a try's gate is left on the helper thread that sent it, which keeps a cancelled task from holding a place at the gate.
+7. **The wait after a hint** is the longer of the hint and the usual step, capped at the `timeout`.
+8. **Anthropic's mapping:** 402 and `billing_error` are `QuotaUsedUp`; 504 is `TimedOut`; every other 5xx is `Overloaded`; 400 and 413 are `BadRequest`; a refusal has no reason, as Anthropic gives none. Cached input tokens (`cache_read_input_tokens`, `cache_creation_input_tokens`) are added into `input`.
+9. **A count a reply lacks** counts as 0 for `limit Ai` and the audit log, until usage and costs are built (choice 7).
+10. **`check` runs on each `Model` the program writes,** at the place it is given, not on the default model. It runs in the interpreter while the program is compiled, as a tagged literal's checker does, with the same step limit.
+11. **A provider's value is a constructor written with plain values** (or a `const` or a function with no parameters that gives one), lowered or run where the `ask` is.
+12. **`std.ai`'s variant names don't bring the module in.** `NotFound`, `Answer` and `Other` are common words; every program that needs `std.ai` writes `ask`, `Model` or one of its type names anyway.
+13. **The key goes to the address in the provider's request,** so a package's provider decides where a program's key is sent. The spec says to use providers from packages you trust.
+14. **`Auth.AwsSignature` and `Auth.GoogleToken`** fail an `ask` with `Failed(status: 0, …)` until signing is built (choice 5).
+
 ## Consequences
 
 - Programs can use any provider with an HTTP API, and a package can add one without a Kavach release.
