@@ -1,0 +1,17 @@
+// Rule: An agent's `on` handler gets no warning for a parameter it never reads, as its senders fix its signature; a plain function does.
+// Spec: 1.4, 8.3
+// expect warning
+// expect output: 7
+
+agent Echo {
+    on send(n: Int, note: String) -> Int {
+        n
+    }
+}
+
+fn plain(x: Int, unread: Int) -> Int { x }   // warning: `unread` is never used
+
+fn main() {
+    const bot = Echo.start()
+    print(bot.send(plain(7, 0), "hi") catch _ => 0)
+}

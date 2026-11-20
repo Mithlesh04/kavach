@@ -114,9 +114,9 @@ impl Resolver {
             ItemKind::Type(t) => self.type_decl(t),
             ItemKind::Literal(l) => {
                 self.type_expr(&l.ty);
-                self.use_name(&l.check);
+                self.use_value(&l.check);
                 if let Some(p) = &l.param {
-                    self.use_name(p);
+                    self.use_value(p);
                 }
             }
             ItemKind::Interface(i) => {

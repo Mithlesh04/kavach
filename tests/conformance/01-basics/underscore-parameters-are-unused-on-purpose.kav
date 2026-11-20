@@ -1,0 +1,12 @@
+// Rule: A parameter named `_` or starting with `_` is unused on purpose and gets no warning, while a plain unused one beside it does.
+// Spec: 1.4
+// expect warning
+// expect output: hi
+
+fn shout(text: String, _times: Int, _: Bool, loud: Bool) -> String {   // warning: `loud` is never used
+    text
+}
+
+fn main() {
+    print(shout("hi", 3, true, false))
+}

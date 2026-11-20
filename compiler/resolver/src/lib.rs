@@ -21,6 +21,7 @@ mod prelude;
 pub use prelude::{APART, cap_covers};
 mod resolver;
 mod unused;
+mod unused_params;
 mod walk;
 
 use kavach_ast::{File, Span};

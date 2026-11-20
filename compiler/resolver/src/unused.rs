@@ -46,6 +46,11 @@ impl Resolver {
                 continue;
             }
             let Some(span) = d.span else { continue };
+            // An `inout` parameter is a variable, but a parameter's own
+            // rule decides (`unused_params.rs`).
+            if self.param_spans.contains(&span.start) {
+                continue;
+            }
             let at = self.res.module_at(span.start);
             let module = &self.res.modules[at];
             if module.name.starts_with("std.")

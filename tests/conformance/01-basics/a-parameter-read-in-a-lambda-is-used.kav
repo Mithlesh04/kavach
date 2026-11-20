@@ -1,0 +1,12 @@
+// Rule: A parameter read only inside a lambda in the function's body is used, and gets no warning.
+// Spec: 1.4, 3.3
+// expect warning
+// expect output: [3, 4]
+
+fn add_all(xs: [Int], step: Int) -> [Int] {
+    xs.map(x => x + step)
+}
+
+fn main() {
+    print(add_all([1, 2], 2))
+}

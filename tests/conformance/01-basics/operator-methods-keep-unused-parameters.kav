@@ -1,0 +1,16 @@
+// Rule: A method that implements one of the operator interfaces gets no warning for a parameter it never reads.
+// Spec: 1.4, 2.16
+// expect warning
+// expect output: 1
+
+type Max: Add, Index<Int, Int> {
+    value: Int
+
+    fn add(self, other: Max) -> Max { self }
+    fn index(self, key: Int) -> Int { self.value }
+}
+
+fn main() {
+    const m = Max(value: 1) + Max(value: 2)
+    print(m[0])
+}

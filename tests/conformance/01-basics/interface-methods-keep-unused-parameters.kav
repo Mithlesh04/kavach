@@ -1,0 +1,26 @@
+// Rule: A method that implements an interface or a capability gets no warning for a parameter it never reads, as the interface fixes its signature; another method of the same type does.
+// Spec: 1.4, 2.8
+// expect warning
+// expect output: plain
+
+interface Render {
+    fn render(self, width: Int, indent: Int) -> String
+}
+
+type Plain: Render {
+    text: String
+
+    fn render(self, width: Int, indent: Int) -> String {
+        self.text
+    }
+
+    fn short(self, width: Int) -> String {   // warning: `width` is never used
+        self.text
+    }
+}
+
+fn main() {
+    const p = Plain(text: "plain")
+    print(p.render(80, 2))
+    const _s = p.short(3)
+}

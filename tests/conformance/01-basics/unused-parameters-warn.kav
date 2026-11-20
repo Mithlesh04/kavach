@@ -1,0 +1,22 @@
+// Rule: A function or method parameter that the function never reads gets a warning, and the program still runs.
+// Spec: 1.4
+// expect warning
+// expect output: hi
+// expect output: 5
+
+type Counter {
+    count: Int
+
+    fn shown(self, prefix: String) -> Int {   // warning: `prefix` is never used
+        self.count
+    }
+}
+
+fn repeat(text: String, times: Int) -> String {   // warning: `times` is never used
+    text
+}
+
+fn main() {
+    print(repeat("hi", 3))
+    print(Counter(count: 5).shown("n = "))
+}

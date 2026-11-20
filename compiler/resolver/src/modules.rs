@@ -208,6 +208,7 @@ impl Resolver {
                 }
             }
         }
+        self.warn_unused_params(file);
         self.warn_unused();
         self.res.public = self.modules.public.clone();
         self.finish()

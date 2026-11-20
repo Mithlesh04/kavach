@@ -58,7 +58,7 @@ Create records with named arguments: `Order(id: 1, amount: 10, card: "x")`. Copy
 
 ## Functions
 ```kavach
-pub fn transfer(from: Account, amount: Decimal, note: String = "") -> Account ! BankError
+pub fn transfer(from: Account, amount: Decimal, _note: String = "") -> Account ! BankError
     uses Payments
     require amount > 0
     ensure result.balance == from.balance - amount

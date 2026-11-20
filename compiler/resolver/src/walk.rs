@@ -78,7 +78,7 @@ impl Resolver {
 
     pub(crate) fn expr(&mut self, e: &Expr) {
         match &e.kind {
-            ExprKind::Name(ident) => self.use_name(ident),
+            ExprKind::Name(ident) => self.use_value(ident),
             ExprKind::Str(parts) => {
                 self.plain_string_hint(e.span, parts);
                 for part in parts {
@@ -118,6 +118,7 @@ impl Resolver {
             ExprKind::Field { base, name, .. } if self.module_of(base).is_some() => {
                 let m = self.module_of(base).unwrap_or(0);
                 self.member(m, name);
+                self.values.insert(name.span.start);
             }
             ExprKind::Unary(_, x)
             | ExprKind::FromEnd(x)
@@ -145,7 +146,7 @@ impl Resolver {
                 args,
             } => {
                 if !self.method_as_function(callee, args) {
-                    self.expr(callee);
+                    self.callee(callee);
                 }
                 generics.iter().for_each(|t| self.type_expr(t));
                 args.iter().for_each(|a| self.expr(&a.value));
@@ -481,7 +482,7 @@ fn binding_names(p: &Pattern, out: &mut Vec<String>) {
 
 impl Resolver {
     /// The module `e` names, if it is a name brought in by `use orders`.
-    fn module_of(&mut self, e: &Expr) -> Option<usize> {
+    pub(crate) fn module_of(&mut self, e: &Expr) -> Option<usize> {
         let ExprKind::Name(id) = &e.kind else {
             return None;
         };

@@ -1,0 +1,19 @@
+// Rule: A function a `literal` names as its `check` or `param` is used as a value, so it gets no warning for a parameter it never reads.
+// Spec: 1.4, 10.15
+// expect warning
+// expect output: any text
+
+type Note {
+    text: String
+}
+
+literal note: Note check accept_all
+
+fn accept_all(text: String) -> [LiteralProblem] {
+    []
+}
+
+fn main() {
+    const n = note"any text"
+    print(n.text)
+}

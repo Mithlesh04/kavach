@@ -1,0 +1,15 @@
+// Rule: A parameter read only in a `require` or an `ensure` is used, as the contract is checked at every call, and gets no warning.
+// Spec: 1.4, 7.1, 7.2
+// expect warning
+// expect output: hihi
+
+fn twice(text: String, times: Int, limit: Int) -> String
+    require times == 2
+    ensure result.len() <= limit
+{
+    text + text
+}
+
+fn main() {
+    print(twice("hi", 2, 10))
+}

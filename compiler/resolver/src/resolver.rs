@@ -46,6 +46,11 @@ pub(crate) struct Resolver {
     /// Names a `for` or a `match` arm takes (spec 4.4): `const`, but not
     /// declared with `const`, so changing one gets its own advice.
     pub(crate) taken: std::collections::HashSet<DefId>,
+    /// Where a name is read as a value, not called: a function named
+    /// there is used as a value (spec 1.4), so its signature is fixed.
+    pub(crate) values: std::collections::HashSet<u32>,
+    /// Where each parameter of a function with a body is named.
+    pub(crate) param_spans: std::collections::HashSet<u32>,
 }
 
 impl Resolver {
@@ -67,6 +72,8 @@ impl Resolver {
             extend_params: Vec::new(),
             const_spans: Default::default(),
             plain_strings: Vec::new(),
+            values: Default::default(),
+            param_spans: Default::default(),
         };
         let builtins = prelude::TYPES
             .iter()
