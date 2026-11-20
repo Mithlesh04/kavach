@@ -1,0 +1,8 @@
+// Rule: Text in quotes stays on one line: a line break before its closing quote is a compile error that says to close it, or to write text over lines in backticks.
+// Spec: 1.7
+// expect compile error
+
+fn main() {
+    print("Hello,    // error: text in quotes can't continue on the next line
+    )
+}

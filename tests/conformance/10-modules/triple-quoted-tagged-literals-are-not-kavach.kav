@@ -1,0 +1,20 @@
+// Rule: `sql"""…"""` is a compile error that says to write a tagged literal over lines in backticks, `` sql`…` ``.
+// Spec: 10.15
+// expect compile error
+
+pub type Query {
+    text: String
+}
+
+pub literal sql: Query check check_sql
+
+fn check_sql(text: String) -> [LiteralProblem] {
+    []
+}
+
+fn main() {
+    const q = sql"""    // error: write sql`…` instead
+        select id
+        """
+    print(q.text)
+}

@@ -31,9 +31,11 @@ Conformance tests for spec chapter [10. Modules and packages](../../../docs/spec
 | 10.7 | [loaded-library-calls-need-unsafe/](loaded-library-calls-need-unsafe/src/main.kav) | A library loaded while running is opened and called inside `unsafe`. | compile error |
 | 10.7 | [c-records-hold-c-types/](c-records-hold-c-types/src/main.kav) | A `Ptr` going to C points to a number, a `Bool`, a `Ptr`, or a record of only those. | compile error |
 | 10.7 | [c-callbacks-are-named-functions/](c-callbacks-are-named-functions/src/main.kav) | A C callback is the name of a Kavach function that can't fail; a lambda or closure is a compile error. | compile error |
-| 10.15 | [tagged-literals-make-their-type.kav](tagged-literals-make-their-type.kav) | `literal sql: Query check f` declares a tag; `sql"…"` is a `Query` holding its raw text, over lines with three quotes. | runs |
+| 10.15 | [tagged-literals-make-their-type.kav](tagged-literals-make-their-type.kav) | `literal sql: Query check f` declares a tag; `sql"…"` is a `Query` holding its raw text; `` sql`…` `` over lines holds its lines. | runs |
+| 10.15 | [triple-quoted-tagged-literals-are-not-kavach.kav](triple-quoted-tagged-literals-are-not-kavach.kav) | `sql"""…"""` is a compile error that says to write `` sql`…` ``. | compile error |
+| 10.15 | [a-tagged-template-over-lines.kav](a-tagged-template-over-lines.kav) | A tagged template over lines loses its common indentation, and its checker and value get the text with the placeholders in. | runs |
 | 10.15 | [tagged-literals-are-checked-when-compiled.kav](tagged-literals-are-checked-when-compiled.kav) | The compiler runs a tag's checker on each literal, and each problem is a compile error at its place. | compile error |
-| 10.15 | [tagged-literal-problems-show-on-their-line.kav](tagged-literal-problems-show-on-their-line.kav) | A problem in a tagged literal over lines is shown on its own line and column. | compile error |
+| 10.15 | [tagged-literal-problems-show-on-their-line.kav](tagged-literal-problems-show-on-their-line.kav) | A problem in a tagged template over lines is shown on its own line, with the placeholders in. | warning |
 | 10.15 | [a-tag-checker-uses-nothing.kav](a-tag-checker-uses-nothing.kav) | A tag's checker takes the text, gives `[LiteralProblem]`, and has no `!` and no `uses`. | compile error |
 | 10.15 | [tagged-template-parameters-in-order.kav](tagged-template-parameters-in-order.kav) | In a tagged template, the n-th `{…}` is written in the text by the tag's `param` function, and its value goes in `params`, in order. | runs |
 | 10.15 | [tagged-template-values-become-json.kav](tagged-template-values-become-json.kav) | When the parameter type is `Json`, each value converts as an item of a `Json` list does. | runs |

@@ -1,0 +1,16 @@
+// Rule: A template over lines loses the common indentation of its lines, and a line indented deeper keeps the rest of its indentation.
+// Spec: 1.7
+// expect output: [def main():]
+// expect output: [    return 1]
+// expect output: [  # done]
+
+fn main() {
+    const code = `
+        def main():
+            return 1
+          # done
+        `
+    for line in code.lines() {
+        print(`[{line}]`)
+    }
+}

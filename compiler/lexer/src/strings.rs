@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
-//! String literals (spec 1.7, decision 0131): `"…"` and `"""…"""` are
-//! exactly what is written; a template in backticks fills in `{…}` and
-//! reads escapes, and spans lines when its text starts on the next line.
+//! String literals (spec 1.7, decisions 0131 and 0143): `"…"` is exactly
+//! what is written, on one line; a template in backticks fills in `{…}`
+//! and reads escapes, and spans lines when its text starts on the next
+//! line. `"""…"""` is an error, read as text over lines to recover.
 //!
 //! A string becomes StrStart, Text and interpolation tokens, then StrEnd.
 //! While an interpolation is open, the main loop reads its tokens; the `}`
@@ -14,7 +15,7 @@ use crate::lexer::{Delim, Lexer, StrKind};
 use crate::token::{Token, TokenKind};
 
 /// Indentation bookkeeping for one open multi-line string. The common
-/// indentation is only known at the closing `"""`, so line starts are
+/// indentation is only known at the closing delimiter, so line starts are
 /// recorded and the indentation is removed from the Text tokens at the end.
 pub(crate) struct MultiLine {
     lines: Vec<LineStart>,
@@ -34,6 +35,18 @@ struct LineStart {
 }
 
 impl Lexer<'_> {
+    /// `"""…"""` and `tag"""…"""` are gone: text over lines is written in
+    /// backticks (spec 1.7, decision 0143). One error, from `start` (the
+    /// tag, if any) to the quotes' end. The text is still read up to its
+    /// closing `"""`, so the rest of the file is checked as usual.
+    pub(crate) fn triple_quotes(&mut self, start: usize, tag: &str) {
+        let message = format!(
+            "Kavach has no `{tag}\"\"\"`: write the text in backticks, `` {tag}`…` ``, and write `\\{{` for a brace, `` \\` `` for a backtick and `\\\\` for a backslash (spec 1.7)"
+        );
+        self.error(start, self.pos + 3, message);
+        self.open_string(StrKind::RawMulti, 3);
+    }
+
     pub(crate) fn open_string(&mut self, kind: StrKind, delimiter_len: usize) {
         let start = self.pos;
         let tagged = matches!(self.tokens.last(), Some(t) if t.kind == TokenKind::Ident && t.span.end as usize == start);
@@ -47,12 +60,6 @@ impl Lexer<'_> {
             self.eat_while(|c| c == ' ' || c == '\t' || c == '\r');
             if self.peek() == Some('\n') {
                 self.pos += 1;
-            } else {
-                self.error(
-                    start,
-                    self.pos,
-                    "multi-line text starts on the line after `\"\"\"`",
-                );
             }
             self.multiline.push(MultiLine {
                 lines: Vec::new(),
@@ -88,10 +95,24 @@ impl Lexer<'_> {
                     }
                     let message = match kind {
                         StrKind::Template => {
-                            "a template on one line can't continue on the next: start its text on the line after the backtick to span lines"
+                            let message = "a template on one line can't continue on the next: start its text on the line after the backtick to span lines";
+                            if self.goes_on_over_lines() {
+                                // Read on to its backtick as text over
+                                // lines, so the mistake is reported once.
+                                self.error(self.pos, self.pos, message);
+                                self.pos += 1;
+                                self.multiline.push(MultiLine {
+                                    lines: Vec::new(),
+                                    at_line_start: true,
+                                    line_has_content: false,
+                                });
+                                self.in_string = Some(StrKind::TemplateMulti);
+                                return;
+                            }
+                            message
                         }
                         _ => {
-                            "text can't continue on the next line: close it with `\"`, or use `\"\"\"` for multi-line text"
+                            "text in quotes can't continue on the next line: close it with `\"`, or write text over lines in backticks (spec 1.7)"
                         }
                     };
                     return self.unterminated(kind, message);
@@ -127,6 +148,33 @@ impl Lexer<'_> {
                 }
             }
         }
+    }
+
+    /// At a line break in a one-line template outside any `{…}`: whether
+    /// its text looks meant to go on over lines, as a JavaScript template
+    /// does, because the next backtick is the last on its line. A
+    /// forgotten closing backtick usually meets another template's
+    /// opening one instead, with its closing one after it.
+    fn goes_on_over_lines(&self) -> bool {
+        if self
+            .delims
+            .iter()
+            .any(|(d, _)| matches!(d, Delim::Interp(_)))
+        {
+            return false;
+        }
+        let rest = self.rest();
+        let mut chars = rest.char_indices();
+        while let Some((i, c)) = chars.next() {
+            match c {
+                '\\' => {
+                    chars.next();
+                }
+                '`' => return !rest[i + 1..].split('\n').next().unwrap_or("").contains('`'),
+                _ => {}
+            }
+        }
+        false
     }
 
     fn multi(&mut self) -> &mut MultiLine {
@@ -176,7 +224,7 @@ impl Lexer<'_> {
 
     fn close_string(&mut self, kind: StrKind, text: &mut String, text_start: usize) {
         if kind.is_multi() && !self.multi().line_has_content {
-            // The closing `"""` is on its own line: that line and the line
+            // The closing delimiter is on its own line: that line and the line
             // break before it are not part of the string.
             if let Some(line) = self.multi().lines.pop() {
                 let cut = if line.offset > 0 { line.offset - 1 } else { 0 };

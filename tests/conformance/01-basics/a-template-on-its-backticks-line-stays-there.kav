@@ -1,0 +1,9 @@
+// Rule: A template whose text starts on the same line as its opening backtick stays on that line: a line break in its text is a compile error that says to start the text on the line after the backtick.
+// Spec: 1.7
+// expect compile error
+
+fn main() {
+    const letter = `Dear Asha,    // error: start the text on the line after the backtick
+        your order is on its way.`
+    print(letter)
+}

@@ -1,0 +1,10 @@
+// Rule: `"""…"""` is a compile error that says to write text over lines in backticks, with `\{` for a brace, `` \` `` for a backtick and `\\` for a backslash.
+// Spec: 1.7
+// expect compile error
+
+fn main() {
+    const body = """    // error: write the text in backticks
+        {"name": "Ana"}
+        """
+    print(body)
+}

@@ -1,0 +1,12 @@
+// Rule: A template over lines reads escapes as any template does: `` \` `` writes a backtick, `\\` a backslash and `\{` a brace.
+// Spec: 1.7
+// expect output: run `kavach build` in C:\work\app
+// expect output: then {done}
+
+fn main() {
+    const hint = `
+        run \`kavach build\` in C:\\work\\app
+        then \{done}
+        `
+    print(hint)
+}

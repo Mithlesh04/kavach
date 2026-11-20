@@ -60,7 +60,7 @@
       "patterns": [{ "include": "#tagged-strings" }, { "include": "#plain-strings" }]
     },
     "tagged-strings": {
-      "comment": "A tagged literal, `sql\"…\"` or `sql\"\"\"…\"\"\"` (spec 10.15): the tag right before the quote, colored as a function; the text is exactly what is written, as any text in quotes. A tagged template, `sql` followed by text in backticks, reads escapes, and its `{…}` are parameters, colored as a template's are. Inside `sql`, the text is colored as SQL",
+      "comment": "A tagged literal, `sql\"…\"` (spec 10.15): the tag right before the quote, colored as a function; the text is exactly what is written, as any text in quotes. A tagged template, `sql` followed by text in backticks, reads escapes, spans lines, and its `{…}` are parameters, colored as a template's are. Inside `sql`, the text is colored as SQL",
       "patterns": [
         {
           "name": "string.template.tagged.kavach",
@@ -78,12 +78,15 @@
           "patterns": [{ "include": "#template-parts" }]
         },
         {
+          "comment": "`sql\"\"\"…\"\"\"` is a compile error (spec 1.7, decision 0143): text over lines is written `` sql`…` ``. Its quotes are marked, and its text is read up to the closing quotes, so the code after it is coloured as code",
           "name": "string.quoted.triple.tagged.kavach",
-          "begin": "\\b(sql)(\"\"\")",
+          "begin": "\\b([\\p{L}_][\\p{L}\\p{N}_]*)(\"\"\")",
           "end": "\"\"\"",
-          "beginCaptures": { "1": { "name": "entity.name.function.tag.kavach" } },
-          "contentName": "meta.embedded.block.sql",
-          "patterns": [{ "include": "source.sql" }]
+          "beginCaptures": {
+            "1": { "name": "entity.name.function.tag.kavach" },
+            "2": { "name": "invalid.illegal.triple-quote.kavach" }
+          },
+          "endCaptures": { "0": { "name": "invalid.illegal.triple-quote.kavach" } }
         },
         {
           "name": "string.quoted.double.tagged.kavach",
@@ -94,12 +97,6 @@
           "patterns": [{ "include": "source.sql" }]
         },
         {
-          "name": "string.quoted.triple.tagged.kavach",
-          "begin": "\\b([\\p{L}_][\\p{L}\\p{N}_]*)(\"\"\")",
-          "end": "\"\"\"",
-          "beginCaptures": { "1": { "name": "entity.name.function.tag.kavach" } }
-        },
-        {
           "name": "string.quoted.double.tagged.kavach",
           "begin": "\\b([\\p{L}_][\\p{L}\\p{N}_]*)(\")",
           "end": "\"",
@@ -108,9 +105,15 @@
       ]
     },
     "plain-strings": {
-      "comment": "Text in quotes is exactly what is written: no escapes, nothing filled in (spec 1.7, decision 0131). A template in backticks fills in `{…}` and reads escapes, over one line or many",
+      "comment": "Text in quotes is exactly what is written, on one line: no escapes, nothing filled in (spec 1.7, decision 0131). A template in backticks fills in `{…}` and reads escapes, over one line or many. `\"\"\"…\"\"\"` is a compile error (decision 0143): its quotes are marked, and its text is read up to the closing quotes, so the code after it is coloured as code",
       "patterns": [
-        { "name": "string.quoted.triple.kavach", "begin": "\"\"\"", "end": "\"\"\"" },
+        {
+          "name": "string.quoted.triple.kavach",
+          "begin": "\"\"\"",
+          "end": "\"\"\"",
+          "beginCaptures": { "0": { "name": "invalid.illegal.triple-quote.kavach" } },
+          "endCaptures": { "0": { "name": "invalid.illegal.triple-quote.kavach" } }
+        },
         { "name": "string.quoted.double.kavach", "begin": "\"", "end": "\"" },
         {
           "name": "string.template.kavach",

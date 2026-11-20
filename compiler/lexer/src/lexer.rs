@@ -18,7 +18,8 @@ pub(crate) enum StrKind {
     Raw,
     /// A template whose text starts on the line after its backtick.
     TemplateMulti,
-    /// `"""…"""`, and `sql"""…"""`, over lines: exactly what is written.
+    /// `"""…"""`, and `sql"""…"""`: a compile error (decision 0143), read
+    /// to its closing `"""` as text over lines, so one error is reported.
     RawMulti,
 }
 
@@ -228,18 +229,17 @@ impl<'a> Lexer<'a> {
         let Some(c) = self.peek() else { return };
         // `r"…"`: a quoted string is raw already (spec 1.7, decision 0131).
         if c == 'r' && rest[1..].starts_with('"') {
-            self.error(
-                start,
-                start + 1,
-                "a string in quotes is exactly what is written already: drop the `r` (spec 1.7)",
-            );
             self.pos += 1;
-            let kind = if self.rest().starts_with("\"\"\"") {
-                StrKind::RawMulti
+            if self.rest().starts_with("\"\"\"") {
+                self.triple_quotes(start, "");
             } else {
-                StrKind::Raw
-            };
-            self.open_string(kind, if kind == StrKind::RawMulti { 3 } else { 1 });
+                self.error(
+                    start,
+                    start + 1,
+                    "a string in quotes is exactly what is written already: drop the `r` (spec 1.7)",
+                );
+                self.open_string(StrKind::Raw, 1);
+            }
         } else if c == '`' {
             self.open_template();
         } else if is_ident_start(c) {
@@ -255,7 +255,8 @@ impl<'a> Lexer<'a> {
             if ident {
                 let rest = self.rest();
                 if rest.starts_with("\"\"\"") {
-                    self.open_string(StrKind::RawMulti, 3);
+                    let src = self.src;
+                    self.triple_quotes(start, &src[start..self.pos]);
                 } else if rest.starts_with('"') {
                     self.open_string(StrKind::Raw, 1);
                 } else if rest.starts_with('`') {
@@ -265,7 +266,7 @@ impl<'a> Lexer<'a> {
         } else if c.is_ascii_digit() {
             self.number();
         } else if rest.starts_with("\"\"\"") {
-            self.open_string(StrKind::RawMulti, 3);
+            self.triple_quotes(start, "");
         } else if c == '"' {
             self.open_string(StrKind::Raw, 1);
         } else if c == '\'' {

@@ -1,0 +1,28 @@
+// Rule: In a template over lines `\{` writes a brace, so JSON over lines is written with `\{`, and values fill in its `{…}`.
+// Spec: 1.7
+// expect output: Order(id: 7, owner: "Asha", items: ["pen", "ink"])
+
+use std.json
+
+type Order {
+    id: Int
+    owner: String
+    items: [String]
+}
+
+fn main() {
+    const id = 7
+    const owner = "Asha"
+    const body = `
+        \{
+          "id": {id},
+          "owner": "{owner}",
+          "items": ["pen", "ink"]
+        }
+        `
+    const order = json.decode<Order>(body) catch e => {
+        print(`not JSON: {e}`)
+        return
+    }
+    print(order)
+}

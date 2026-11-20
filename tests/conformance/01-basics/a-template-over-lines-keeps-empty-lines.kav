@@ -1,0 +1,20 @@
+// Rule: Empty lines inside a template over lines stay, and a line of only spaces (the fourth holds two) does not count when the common indentation is found.
+// Spec: 1.7
+// expect output: [a]
+// expect output: []
+// expect output: [b]
+// expect output: []
+// expect output: [  c]
+
+fn main() {
+    const text = `
+        a
+
+        b
+  
+          c
+        `
+    for line in text.lines() {
+        print(`[{line}]`)
+    }
+}

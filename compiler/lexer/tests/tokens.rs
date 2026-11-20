@@ -103,31 +103,64 @@ fn interpolation() {
 
 #[test]
 fn multi_line_strings() {
-    // 1.7: line breaks next to the delimiters are dropped, then the common indentation.
+    // 1.7: a template whose text starts on the next line spans lines; the
+    // line breaks next to the backticks are dropped, then the common
+    // indentation.
     check_all(&[
         (
-            "\"\"\"\n    first\n      second\n    \"\"\"",
+            "`\n    first\n      second\n    `",
             "\"< text:\"first\\n  second\" >\"",
         ),
-        ("\"\"\"\n  a\n\n  b\n  \"\"\"", "\"< text:\"a\\n\\nb\" >\""),
-        (
-            "\"\"\"\n  Hi {name},\n    bye\n  \"\"\"",
-            "\"< text:\"Hi {name},\\n  bye\" >\"",
-        ),
-        // A template whose text starts on the next line spans lines.
+        ("`\n  a\n\n  b\n  `", "\"< text:\"a\\n\\nb\" >\""),
+        // A line of only spaces doesn't count for the indentation.
+        ("`\n    a\n \n    b\n    `", "\"< text:\"a\\n\\nb\" >\""),
         (
             "`\n  Hi {name},\n    bye\n  `",
             "\"< text:\"Hi \" ${ name }$ text:\",\\n  bye\" >\"",
         ),
         ("`\n  {x}\n  y\n  `", "\"< ${ x }$ text:\"\\ny\" >\""),
         ("`\n  last`", "\"< text:\"last\" >\""),
-        ("\"\"\"\n  last\"\"\"", "\"< text:\"last\" >\""),
-        ("\"\"\"\n\"\"\"", "\"< >\""),
+        ("`\n`", "\"< >\""),
         (
-            "\"\"\"\n  say \"hi\"\n  \"\"\"",
-            "\"< text:\"say \\\"hi\\\"\" >\"",
+            "`\n  say \"hi\" \\{ \\` \\\\\n  `",
+            "\"< text:\"say \\\"hi\\\" { ` \\\\\" >\"",
+        ),
+        // Spaces after the opening backtick, and `\r\n`, are not text.
+        ("` \r\n  a\r\n  b\r\n  `", "\"< text:\"a\\nb\" >\""),
+    ]);
+}
+
+#[test]
+fn triple_quotes_are_an_error_and_lexing_goes_on() {
+    // 1.7, decision 0143: one error at the quotes, then the text is read
+    // to its closing `"""` and the rest of the file as code.
+    let plain = r#"1: Kavach has no `"""`: write the text in backticks, `` `…` ``, and write `\{` for a brace, `` \` `` for a backtick and `\\` for a backslash (spec 1.7)"#;
+    assert_eq!(
+        errors("const a = \"\"\"\n  x\n  \"\"\"\nconst b = 1"),
+        [plain]
+    );
+    assert_eq!(errors("const a = r\"\"\"\n  x\n  \"\"\""), [plain]);
+    // On one line too, with no second error.
+    assert_eq!(errors("const a = \"\"\"x\"\"\""), [plain]);
+    assert_eq!(
+        errors("const q = sql\"\"\"\n  select\n  \"\"\""),
+        [
+            r#"1: Kavach has no `sql"""`: write the text in backticks, `` sql`…` ``, and write `\{` for a brace, `` \` `` for a backtick and `\\` for a backslash (spec 1.7)"#
+        ]
+    );
+    // The text and the code after it are tokens as before.
+    check_all(&[
+        (
+            "const a = \"\"\"\n  {x}\n  \"\"\"\nconst b = 1",
+            "const a = \"< text:\"{x}\" >\" ⏎ const b = int:1",
+        ),
+        (
+            "f(sql\"\"\"\n  a\n  \"\"\", 2)",
+            "f ( sql \"< text:\"a\" >\" , int:2 )",
         ),
     ]);
+    // Never closed: the error, and the text runs to the end.
+    assert_eq!(errors("\"\"\"\n  open").len(), 2);
 }
 
 #[test]
@@ -216,7 +249,7 @@ fn errors_are_reported_and_lexing_continues() {
         errors("const x = 1;\n\"open\nx"),
         [
             "1: Kavach has no semicolons: a statement ends at the end of its line",
-            "2: text can't continue on the next line: close it with `\"`, or use `\"\"\"` for multi-line text",
+            "2: text in quotes can't continue on the next line: close it with `\"`, or write text over lines in backticks (spec 1.7)",
         ]
     );
     // An unclosed comment runs to the end: nothing after it is read.
@@ -242,7 +275,16 @@ fn errors_are_reported_and_lexing_continues() {
     );
     // A tag before a template is a tagged template (spec 10.15).
     assert_eq!(errors(r"sql`a = {x}\n`"), [] as [&str; 0]);
-    assert_eq!(errors("\"\"\"\n  open"), ["2: this text is never closed"]);
+    assert_eq!(errors("`\n  open"), ["2: this text is never closed"]);
+    // A template whose text starts on its backtick's line stays there:
+    // one error, and when a later backtick ends its line, as in
+    // JavaScript, the text is read on to it.
+    let on_one_line = "1: a template on one line can't continue on the next: start its text on the line after the backtick to span lines";
+    assert_eq!(errors("`a\nb`"), [on_one_line]);
+    assert_eq!(errors("f(`a\n  {b}\n  c`)\nx"), [on_one_line]);
+    check_all(&[("f(`a\n  b`)\nx", "f ( \"< text:\"a\" text:\"b\" >\" ) ⏎ x")]);
+    // A forgotten backtick: the text ends at its line.
+    assert_eq!(errors("f(`a)\nf(`b`)"), [on_one_line]);
 }
 
 #[test]

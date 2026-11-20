@@ -1,0 +1,12 @@
+// Rule: Text in quotes is exactly the characters between its quotes: `"\d{3}"` is 5 characters, its backslash and braces among them.
+// Spec: 1.7
+// expect output: \d{3}
+// expect output: 5
+// expect output: true
+
+fn main() {
+    const pattern = "\d{3}"
+    print(pattern)
+    print(pattern.len())
+    print(pattern == `\\d\{3}`)
+}

@@ -16,7 +16,17 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.4 | [hiding-let-that-is-never-used-warns.kav](hiding-let-that-is-never-used-warns.kav) | A never-used variable that hides an outer `let` gets a warning that says so. | warning |
 | 1.4 | [let-cannot-be-reassigned.kav](let-cannot-be-reassigned.kav) | A `const` binding cannot be reassigned. | compile error |
 | 1.4 | [let-mut-is-not-kavach.kav](let-mut-is-not-kavach.kav) | `let mut` is a compile error that says to write `let`. | compile error |
-| 1.7 | [quoted-text-over-many-lines-is-plain.kav](quoted-text-over-many-lines-is-plain.kav) | `"""…"""` is text over many lines exactly as written, its indentation removed. | runs |
+| 1.7 | [triple-quotes-are-not-kavach.kav](triple-quotes-are-not-kavach.kav) | `"""…"""` is a compile error that says to write text over lines in backticks, with `\{`, `` \` `` and `\\`. | compile error |
+| 1.7 | [a-template-on-its-backticks-line-stays-there.kav](a-template-on-its-backticks-line-stays-there.kav) | A template whose text starts on its backtick's line can't go on to the next line: a compile error that says to start the text on the next line. | compile error |
+| 1.7 | [quoted-text-stays-on-one-line.kav](quoted-text-stays-on-one-line.kav) | Text in quotes stays on one line: a line break before its closing quote is a compile error. | compile error |
+| 1.7 | [quoted-text-is-the-characters-written.kav](quoted-text-is-the-characters-written.kav) | `"\d{3}"` is the 5 characters between its quotes. | runs |
+| 1.7 | [a-template-over-lines-drops-common-indentation.kav](a-template-over-lines-drops-common-indentation.kav) | A template over lines loses the common indentation; deeper lines keep the rest of theirs. | runs |
+| 1.7 | [a-template-over-lines-keeps-empty-lines.kav](a-template-over-lines-keeps-empty-lines.kav) | Empty lines stay, and a line of only spaces doesn't count for the common indentation. | runs |
+| 1.7 | [a-template-line-of-only-a-value.kav](a-template-line-of-only-a-value.kav) | A line of a template over lines may hold only a `{…}`. | runs |
+| 1.7 | [json-over-lines-in-a-template.kav](json-over-lines-in-a-template.kav) | JSON over lines is written with `\{` for a brace, and decodes through `json`. | runs |
+| 1.7 | [a-template-over-lines-reads-escapes.kav](a-template-over-lines-reads-escapes.kav) | A template over lines reads `` \` ``, `\\` and `\{`. | runs |
+| 1.7 | [quotes-in-a-template-over-lines.kav](quotes-in-a-template-over-lines.kav) | `"` and `'` in a template over lines need no escape. | runs |
+| 1.7 | [a-template-over-lines-is-an-argument-and-a-result.kav](a-template-over-lines-is-an-argument-and-a-result.kav) | A template over lines can be given to a function and returned from one. | runs |
 | 1.7 | [f-strings-are-not-kavach.kav](f-strings-are-not-kavach.kav) | `f"…"` is a compile error that says a template is written in backticks. | compile error |
 | 1.4 | [locals-only-after-let.kav](locals-only-after-let.kav) | A local variable can be used only after its `const`. | compile error |
 | 1.4 | [no-duplicate-name-in-scope.kav](no-duplicate-name-in-scope.kav) | A name must not be declared twice in the same scope. | compile error |
@@ -29,11 +39,11 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.5 | [capital-names-in-a-const-are-variants.kav](capital-names-in-a-const-are-variants.kav) | A capitalized name in a pattern is a variant: `const COUNT = 10` is an error saying to write `count`. | compile error |
 | 1.7 | [decimal-literal-from-context.kav](decimal-literal-from-context.kav) | A number literal takes its type from context, so a Decimal literal is exact. | runs |
 | 1.7 | [integer-literals.kav](integer-literals.kav) | Integer literals may use `_` separators, hex (0x), octal (0o) and binary (0b). | runs |
-| 1.7 | [multi-line-string.kav](multi-line-string.kav) | A multi-line string drops the line breaks next to its delimiters and the common indentation. | runs |
+| 1.7 | [multi-line-string.kav](multi-line-string.kav) | Text over lines leaves out the line break after its opening backtick, and the one before a closing backtick on its own line. | runs |
 | 1.7 | [a-quoted-string-is-plain.kav](a-quoted-string-is-plain.kav) | A string in quotes has no escapes and fills nothing in. | runs |
 | 1.7 | [a-quoted-string-that-looks-like-a-template-warns.kav](a-quoted-string-that-looks-like-a-template-warns.kav) | `"Hello, {name}"` with `name` in scope, or `"a\nb"`, warns to use backticks; a path or a pattern doesn't. | warning |
 | 1.7 | [r-strings-are-not-kavach.kav](r-strings-are-not-kavach.kav) | `r"…"` is a compile error that says to drop the `r`. | compile error |
-| 1.7 | [a-template-spans-lines.kav](a-template-spans-lines.kav) | A template whose text starts on the next line spans lines, its indentation removed. | runs |
+| 1.7 | [a-template-spans-lines.kav](a-template-spans-lines.kav) | A template whose text starts on the next line spans lines, and fills in `{…}` there. | runs |
 | 1.7 | [string-escapes.kav](string-escapes.kav) | Templates read the escapes \` \\ \{ and \u{…}; a `"` needs none. | runs |
 | 1.7 | [string-interpolation.kav](string-interpolation.kav) | Any expression inside {} in a template is inserted; \{ is a literal brace. | runs |
 | 1.7 | [interpolation-closes-on-its-line.kav](interpolation-closes-on-its-line.kav) | In a one-line template, a `{` must close on its line: `` `{` `` is one error at the `{`. | compile error |

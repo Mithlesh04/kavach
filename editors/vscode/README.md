@@ -116,6 +116,7 @@ Colors come from your theme. The grammar only names each token, using the standa
 | `{` and `}` around code in a string (`"{a + b.c}"`) | `punctuation.definition.template-expression` (as JavaScript's `${…}`) |
 | The code inside them | `meta.embedded.line`, then its own scopes, so it is coloured like code, not like the string |
 | `var` (not Kavach since decision 0034) | `invalid.illegal` |
+| The quotes of `"""…"""` and `sql"""…"""` (text over lines is in backticks since decision 0143) | `invalid.illegal.triple-quote` |
 | `// note` and `/* note */` | `comment.line.double-slash`, `comment.block` |
 | `/// doc comment` | `comment.line.documentation` |
 

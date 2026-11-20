@@ -1,0 +1,12 @@
+// Rule: `"` and `'` inside a template over lines need no escape.
+// Spec: 1.7
+// expect output: She said "it's ready".
+// expect output: 'a' is a Char; "a" is a String.
+
+fn main() {
+    const text = `
+        She said "it's ready".
+        'a' is a Char; "a" is a String.
+        `
+    print(text)
+}

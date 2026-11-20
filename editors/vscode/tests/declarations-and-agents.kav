@@ -179,9 +179,17 @@ fn tags() {
 //                ^^^^^^^^^^^^^^ string.quoted.double.tagged.kavach
     const lines = sql"""
 //                ^^^ entity.name.function.tag.kavach
+//                   ^^^ invalid.illegal.triple-quote.kavach
         select id
 //      ^^^^^^^^^ string.quoted.triple.tagged.kavach
         """
+//      ^^^ invalid.illegal.triple-quote.kavach
+    const many = sql`
+//               ^^^ entity.name.function.tag.kavach
+        select id from c where owner = {owner}
+//      ^^^^^^ string.template.tagged.kavach
+//                                     ^ punctuation.definition.template-expression.begin.kavach
+        `
     const t = sql`select id from c where owner = {owner} and n = \{x}`
 //            ^^^ entity.name.function.tag.kavach
 //                ^^^^^^^^^ string.template.tagged.kavach

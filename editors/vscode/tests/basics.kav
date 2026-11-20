@@ -72,15 +72,25 @@ const path = "C:\path\{x}"
 //                   ^^ string.quoted.double.kavach - constant.character.escape.kavach
 //                     ^^^ string.quoted.double.kavach - meta.template.expression.kavach
 
-const body = """
-//           ^^^ string.quoted.triple.kavach
-    {"path": "C:\new\{x}"}
+const body = `
+//           ^ string.template.kavach
+    \{"path": "C:\\new", "name": "{name}"}
+//  ^^ constant.character.escape.kavach
+//               ^^ constant.character.escape.kavach
+//                                ^ punctuation.definition.template-expression.begin.kavach
+    `
+//  ^ string.template.kavach
+const after = 1
+// <----- storage.type.const.kavach
+
+const old = """
+//          ^^^ invalid.illegal.triple-quote.kavach
+    {"path": "C:\new"}
 //  ^ string.quoted.triple.kavach - punctuation.definition.template-expression.begin.kavach
 //              ^^ string.quoted.triple.kavach - constant.character.escape.kavach
-//                  ^^ string.quoted.triple.kavach - constant.character.escape.kavach
     """
-//  ^^^ string.quoted.triple.kavach
-const after = 1
+//  ^^^ invalid.illegal.triple-quote.kavach
+const later = 1
 // <----- storage.type.const.kavach
 
 const big = 1_000_000 + 0xff + 0b1010 + 2.5e-3

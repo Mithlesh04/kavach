@@ -12,7 +12,7 @@
 //!   with `.`);
 //! - trailing spaces removed, `\r\n` turned into `\n`, one final newline;
 //! - at most one blank line in a row, and none just inside `{ … }`;
-//! - multi-line strings are left exactly as they are.
+//! - text over lines is left exactly as it is.
 //!
 //! Comments stay where they are. After formatting, the file's tokens must
 //! be the same as before; if not, nothing is changed.
@@ -128,8 +128,8 @@ pub fn format(src: &str) -> Result<String, String> {
             next += 1;
         }
         let depth = levels(&stack);
-        // Lines inside a multi-line string, and the one with its closing
-        // `"""`, are part of the string: that line's indentation decides
+        // Lines inside text over lines, and the one with its closing
+        // backtick, are part of the string: that line's indentation decides
         // how much is removed from the text.
         // So are the lines inside a `/* … */` comment after its first.
         if strings
@@ -228,8 +228,8 @@ fn levels(stack: &[(bool, usize)]) -> i64 {
     lines.len() as i64
 }
 
-/// The byte ranges of multi-line strings: `"""` … `"""`, and templates
-/// whose text starts on the line after the backtick (spec 1.7).
+/// The byte ranges of text over lines: templates whose text starts on
+/// the line after the backtick (spec 1.7).
 fn multi_line_strings(src: &str, tokens: &[&Token]) -> Vec<(usize, usize)> {
     let mut out = Vec::new();
     let mut open: Vec<(usize, bool)> = Vec::new();
@@ -237,11 +237,10 @@ fn multi_line_strings(src: &str, tokens: &[&Token]) -> Vec<(usize, usize)> {
         let (a, b) = (t.span.start as usize, t.span.end as usize);
         match t.kind {
             T::StrStart => {
-                let opener = src[a..b].trim_start_matches('r');
                 let next_line = src[b..]
                     .trim_start_matches([' ', '\t', '\r'])
                     .starts_with('\n');
-                let multi = opener.starts_with("\"\"\"") || (opener == "`" && next_line);
+                let multi = &src[a..b] == "`" && next_line;
                 open.push((a, multi));
             }
             T::StrEnd => {

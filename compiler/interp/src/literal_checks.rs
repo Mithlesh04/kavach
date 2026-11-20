@@ -21,12 +21,9 @@ impl Interp<'_> {
             let Some(f) = self.fns.get(&u.check).copied() else {
                 continue;
             };
-            let quote = if c.src[u.span.start as usize..].starts_with("\"\"\"") {
-                3
-            } else {
-                1
-            };
-            let text_start = u.span.start + quote;
+            // Text over lines is a template (spec 1.7); text in quotes is
+            // on one line, after its `"`.
+            let text_start = u.span.start + 1;
             let whole = u.span;
             // A tagged template: escapes read, placeholders in (10.15).
             let template = c.src[u.span.start as usize..].starts_with('`');
@@ -85,10 +82,7 @@ impl Interp<'_> {
                 let warning = matches!(get("warning"), Some(Value::Bool(true)));
                 // Characters of the text to bytes of the source.
                 let (at, length) = (int("at"), int("length").max(1));
-                let place = |i: usize| match quote {
-                    1 => text_start as usize + byte_of(&u.text, i),
-                    _ => in_lines(&c.src, text_start as usize, &u.text, i),
-                };
+                let place = |i: usize| text_start as usize + byte_of(&u.text, i);
                 let span = match (&places, template) {
                     (Some(places), _) => in_template(places, at, length, whole),
                     (None, true) => whole,
@@ -144,24 +138,4 @@ fn in_template(
 /// The byte where character `i` of `text` starts (its end, past the last).
 fn byte_of(text: &str, i: usize) -> usize {
     text.char_indices().nth(i).map_or(text.len(), |(b, _)| b)
-}
-
-/// Where character `i` of multi-line text `text` is in `src`, whose
-/// `"""` ends at `after_quotes`: the text's lines are the source's
-/// lines after that one, each with the common indentation removed
-/// (spec 1.7), and a tagged literal has no escapes (spec 10.15).
-fn in_lines(src: &str, after_quotes: usize, text: &str, i: usize) -> usize {
-    let next_line = |from: usize| src[from..].find('\n').map_or(src.len(), |n| from + n + 1);
-    let at = byte_of(text, i);
-    let line = text[..at].matches('\n').count();
-    let line_start = text[..at].rfind('\n').map_or(0, |n| n + 1);
-    let text_line = text[line_start..].split('\n').next().unwrap_or("");
-    let mut start = next_line(after_quotes);
-    for _ in 0..line {
-        start = next_line(start);
-    }
-    let src_line = src[start..].split('\n').next().unwrap_or("");
-    let src_line = src_line.strip_suffix('\r').unwrap_or(src_line);
-    let indent = src_line.len().saturating_sub(text_line.len());
-    (start + indent + (at - line_start)).min(src.len())
 }

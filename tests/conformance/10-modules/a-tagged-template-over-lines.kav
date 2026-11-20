@@ -1,0 +1,39 @@
+// Rule: A tagged template over lines loses its common indentation as any template does, and its `{…}` are parameters: the checker and the value get the text with the placeholders in.
+// Spec: 10.15
+// expect output: select id, item
+// expect output: from orders
+// expect output: where owner = $1
+// expect output:   and id > $2
+// expect output: ["Asha", 7]
+
+pub type Query {
+    text: String
+    params: [Json] = []
+}
+
+pub literal sql: Query check check_sql param pg_param
+
+/// A problem unless the checker gets exactly this text.
+fn check_sql(text: String) -> [LiteralProblem] {
+    if text == `select id, item\nfrom orders\nwhere owner = $1\n  and id > $2` {
+        return []
+    }
+    [LiteralProblem(at: 0, message: "the checker got other text")]
+}
+
+fn pg_param(n: Int) -> String {
+    `${n}`
+}
+
+fn main() {
+    const owner = "Asha"
+    const newest = 7
+    const q = sql`
+        select id, item
+        from orders
+        where owner = {owner}
+          and id > {newest}
+        `
+    print(q.text)
+    print(q.params)
+}

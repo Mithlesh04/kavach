@@ -1,0 +1,25 @@
+// Rule: A template over lines is a value like any other: it can be given to a function, and returned from one.
+// Spec: 1.7
+// expect output: 2 lines
+// expect output: Dear Asha,
+// expect output: thank you.
+
+fn count_lines(text: String) -> Int {
+    text.lines().len()
+}
+
+fn letter(name: String) -> String {
+    `
+    Dear {name},
+    thank you.
+    `
+}
+
+fn main() {
+    const n = count_lines(`
+        one
+        two
+        `)
+    print(`{n} lines`)
+    print(letter("Asha"))
+}

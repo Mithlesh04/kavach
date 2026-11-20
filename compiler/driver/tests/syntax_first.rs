@@ -25,12 +25,17 @@ fn syntax_errors_come_alone() {
         "{shown:?}"
     );
     assert!(
-        shown.iter().any(|t| t.starts_with("text can't continue")),
+        shown
+            .iter()
+            .any(|t| t.starts_with("text in quotes can't continue")),
         "{shown:?}"
     );
+    // The checks' messages: an unknown `create_writer`, or a `main` too
+    // many lines long.
     assert!(
         !shown
             .iter()
+            .filter(|t| !t.starts_with("text in quotes"))
             .any(|t| t.contains("create_writer") || t.contains("lines")),
         "{shown:?}"
     );

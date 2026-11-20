@@ -1,23 +1,30 @@
-// Rule: A problem in a tagged literal over lines is shown on its own line, at its column there, not at the literal's start.
+// Rule: A problem in a tagged literal over lines is shown on its own line, not at the literal's start, after the common indentation is removed and the placeholders are in.
 // Spec: 10.15
-// expect compile error
+// expect warning
+// expect output: ["Asha"]
 
 pub type Query {
     text: String
+    params: [Json] = []
 }
 
-pub literal sql: Query check check_sql
+pub literal sql: Query check check_sql param pg_param
 
 fn check_sql(text: String) -> [LiteralProblem] {
     const at = text.index_of("selct") ?? return []
-    [LiteralProblem(at: at, length: 5, message: "did you mean `select`?")]
+    [LiteralProblem(at: at, length: 5, message: "did you mean `select`?", warning: true)]
+}
+
+fn pg_param(n: Int) -> String {
+    `${n}`
 }
 
 fn main() {
-    const q = sql"""
+    const owner = "Asha"
+    const q = sql`
         with recent as (
-          selct id from orders
+          selct id from orders where owner = {owner} // warning: at selct, on its own line
         )
-        """    // error: from check_sql, two lines up, at `selct`
-    print(q.text)
+        `
+    print(q.params)
 }

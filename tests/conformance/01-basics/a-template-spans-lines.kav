@@ -1,4 +1,4 @@
-// Rule: A template whose text starts on the line after its backtick spans lines: the line breaks next to the backticks and the common indentation are dropped, as in `"""`.
+// Rule: A template whose text starts on the line after its backtick spans lines, and fills in each `{…}` there.
 // Spec: 1.7
 // expect output: Dear Asha,
 // expect output:   your order 7 is on its way.

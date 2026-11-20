@@ -71,10 +71,10 @@ const big = a >>
     b
 ",
     ),
-    // A multi-line string is left exactly as it is.
+    // Text over lines is left exactly as it is.
     (
-        "fn a() {\nconst s = \"\"\"\n   keep   \n  this\n   \"\"\"\n}\n",
-        "fn a() {\n    const s = \"\"\"\n   keep   \n  this\n   \"\"\"\n}\n",
+        "fn a() {\nconst s = `\n   keep   \n  this\n   `\n}\n",
+        "fn a() {\n    const s = `\n   keep   \n  this\n   `\n}\n",
     ),
 ];
 
@@ -83,6 +83,18 @@ fn formats_layout_only() {
     for (input, want) in CASES {
         assert_eq!(format(input).as_deref(), Ok(*want), "input: {input:?}");
     }
+}
+
+/// `"""` is gone (spec 1.7): a file using it is left as it is, and the
+/// lexer's error says why.
+#[test]
+fn triple_quotes_are_not_formatted() {
+    let got = format("fn a() {\nconst s = \"\"\"\n  x\n  \"\"\"\n}\n");
+    assert!(
+        got.as_ref()
+            .is_err_and(|e| e.contains("write the text in backticks")),
+        "{got:?}"
+    );
 }
 
 #[test]

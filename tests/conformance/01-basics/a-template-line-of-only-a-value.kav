@@ -1,0 +1,15 @@
+// Rule: A line of a template over lines may hold only a `{…}`: its value is filled in at that line's place, with the common indentation removed.
+// Spec: 1.7
+// expect output: Total:
+// expect output: 42
+// expect output:   done
+
+fn main() {
+    const total = 42
+    const report = `
+        Total:
+        {total}
+          done
+        `
+    print(report)
+}
