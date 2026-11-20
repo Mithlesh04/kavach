@@ -317,7 +317,7 @@ fn f(e: Event) {}",
             // `Model`'s `timeout` is a `Duration`.
             (
                 "const a = ask<Bool>(\"?\")",
-                vec!["std.time.digits", "std.time", "std.ai"],
+                vec!["std.json", "std.time.digits", "std.time", "std.ai"],
             ),
         ] {
             assert_eq!(modules_for(text), want, "{text}");
