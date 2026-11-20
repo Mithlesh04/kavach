@@ -1,0 +1,333 @@
+# Kavach quizzes, with answers
+
+> Each page of the Kavach course ends with a short "check yourself" quiz.
+> Here is every question, its correct answer, and why. The code is Kavach;
+> every answer was written against the page it belongs to.
+
+## Part 0: Start here
+
+### [Why Kavach?](https://kavachlang.com/docs/start/why-kavach/)
+
+1. Multiple choice: What is the main reason Kavach exists?
+
+   Choices: `So that what code may do is part of the code, checked by the compiler and the runtime, which matters when AI writes code and agents act`, `To replace Python, JavaScript and Go for everything`, `To be the fastest language at any cost`
+
+   Answer: `So that what code may do is part of the code, checked by the compiler and the runtime, which matters when AI writes code and agents act`
+
+   Why: Speed and ease are table stakes. The reason is guarantees about what code, and the agents it runs, can do.
+
+### [What a Program Is](https://kavachlang.com/docs/start/what-a-program-is/)
+
+1. True or false: The compiler runs your program even when it finds a mistake, and the mistake shows up later.
+
+   Choices: `True`, `False`
+
+   Answer: `False`
+
+   Why: Kavach checks the whole file first. A mistake it can find is reported before anything runs.
+
+### [Install](https://kavachlang.com/docs/start/install/)
+
+1. Multiple choice: You wrote hello.kav. Which command runs it?
+
+   Choices: `kavach run hello.kav`, `kavach hello.kav --exec`, `kavach compile hello.kav`
+
+   Answer: `kavach run hello.kav`
+
+   Why: run checks the file and runs it at once; build makes an executable instead.
+
+### [Your First Program](https://kavachlang.com/docs/start/your-first-program/)
+
+1. Multiple choice: You wrote hello.kav. Which command makes a file you can give to someone without Kavach?
+
+   Choices: `kavach build hello.kav`, `kavach run hello.kav`, `kavach check hello.kav`
+
+   Answer: `kavach build hello.kav`
+
+   Why: build compiles to machine code: one executable file. run starts it now; check only looks for errors.
+
+## Part 1: Basics
+
+### [Variables](https://kavachlang.com/docs/basics/variables/)
+
+1. Multiple choice: What happens when you run this program?
+
+```kavach
+const price = 40
+price = price + 2
+print(price)
+```
+
+   Choices: `It prints 42`, `It prints 40`, `It doesn't run: the compiler refuses it, because price is a const`
+
+   Answer: `It doesn't run: the compiler refuses it, because price is a const`
+
+   Why: price is a const, so it can't change. The compiler stops at the second line, before anything runs, and says to declare it with let.
+
+### [Data Types](https://kavachlang.com/docs/basics/data-types/)
+
+1. Multiple choice: Which type should hold a price like 499.99?
+
+   Choices: `Decimal`, `Float`, `Int`
+
+   Answer: `Decimal`
+
+   Why: Decimal is exact. A Float rounds in binary, so cents can drift.
+
+### [If...Else](https://kavachlang.com/docs/basics/if-else/)
+
+1. Type the output: What does this print?
+
+```kavach
+const stock = 0
+if stock == 0 {
+    print("Sold out")
+} else if stock < 5 {
+    print("Few left")
+} else {
+    print("In stock")
+}
+```
+
+   Answer: `Sold out`
+
+   Why: The first true condition wins; the others aren't even looked at.
+
+### [For Loop](https://kavachlang.com/docs/basics/for-loop/)
+
+1. Multiple choice: What does `for i in 1..4 { print(i) }` print?
+
+   Choices: `1  2  3`, `1  2  3  4`, `0  1  2  3`
+
+   Answer: `1  2  3`
+
+   Why: The end of .. is left out; write 1..=4 to include it.
+
+2. Put in order: Build a loop that prints each fruit: click the lines into order.
+
+   Lines, shuffled on the page:
+
+```kavach
+    print(fruit)
+for fruit in ["mango", "fig"] {
+}
+```
+
+   Answer:
+
+```kavach
+for fruit in ["mango", "fig"] {
+    print(fruit)
+}
+```
+
+   Why: Open the loop, do the work, close the block.
+
+### [While Loop](https://kavachlang.com/docs/basics/while-loop/)
+
+1. Type the output: What is the last line this prints?
+
+```kavach
+let fuel = 3
+while fuel > 0 {
+    print("burn {fuel}")
+    fuel -= 1
+}
+print("empty")
+```
+
+   Answer: `empty`
+
+   Why: When fuel reaches 0 the condition is false, the loop ends, and the line after it runs.
+
+## Part 2: Functions
+
+### [Functions](https://kavachlang.com/docs/functions/functions/)
+
+1. Type the output: What does this print?
+
+```kavach
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
+
+print(add(2, 3))
+```
+
+   Answer: `5`
+
+   Why: The last line, a + b, is the result.
+
+## Part 3: Collections
+
+### [Sorting](https://kavachlang.com/docs/collections/sorting/)
+
+1. Multiple choice: What does `["banana", "Apple", "apple"].sort()` give?
+
+   Choices: `["Apple", "apple", "banana"]`, `["apple", "Apple", "banana"]`, `["banana", "Apple", "apple"]`
+
+   Answer: `["Apple", "apple", "banana"]`
+
+   Why: Text sorts by Unicode code point, and uppercase letters come before lowercase ones. For an order that ignores case, use sort_by(w => w.lower()).
+
+## Part 5: Errors & Contracts
+
+### [Kinds of Errors](https://kavachlang.com/docs/errors/kinds-of-errors/)
+
+1. Multiple choice: A user types "abc" where your program asked for a number. What should that be?
+
+   Choices: `An error the program handles`, `A panic`, `A compile error`
+
+   Answer: `An error the program handles`
+
+   Why: Bad input happens in correct programs, so it is an error value: Int(text) can fail, and the code says what to do.
+
+## Part 7: Standard Library
+
+### [Files](https://kavachlang.com/docs/standard-library/files/)
+
+1. Multiple choice: The power goes off while `fs.write_text` is replacing a file. What is in the file afterwards?
+
+   Choices: `Either all of the old text or all of the new, never half`, `Half of the new text`, `Nothing: the file is empty`
+
+   Answer: `Either all of the old text or all of the new, never half`
+
+   Why: write_text writes a temporary file and then renames it, so a crash never leaves half a file.
+
+## Part 8: Networks
+
+### [HTTP](https://kavachlang.com/docs/networks/http/)
+
+1. Multiple choice: What happens to a server started with `spawn http.serve(…)` when the function that started it returns?
+
+   Choices: `It is cancelled: tasks never outlive the function that started them`, `It keeps running in the background`, `The program waits for it forever`
+
+   Answer: `It is cancelled: tasks never outlive the function that started them`
+
+   Why: A task belongs to the function that spawned it and is cancelled when that function returns (spec 9.2).
+
+## Part 9: Concurrency
+
+### [Tasks](https://kavachlang.com/docs/concurrency/tasks/)
+
+1. Multiple choice: A function calls `time.sleep_ms(100)` inside a task. What do the program's other tasks do meanwhile?
+
+   Choices: `They run: a waiting task gives up its turn`, `They wait too`, `Nothing: sleep needs an await`
+
+   Answer: `They run: a waiting task gives up its turn`
+
+   Why: Waiting lets other tasks run. Kavach has no await: any function can wait.
+
+## Part 10: Capabilities & Agents
+
+### [Capabilities](https://kavachlang.com/docs/agents/capabilities/)
+
+1. Multiple choice: A library you use has `pub fn format_price(p: Decimal) -> String`, with no `uses`. What can it do?
+
+   Choices: `Only compute its result: it can't read files, use the network or print`, `Anything, as long as it returns a String`, `Read files, but not use the network`
+
+   Answer: `Only compute its result: it can't read files, use the network or print`
+
+   Why: A pub function must list what it touches. No uses means it touches nothing, and the compiler checks that.
+
+### [Agents](https://kavachlang.com/docs/agents/agents/)
+
+1. Multiple choice: The AI inside an agent is tricked into trying a bank transfer the agent has no `can` for. What stops it?
+
+   Choices: `The compiler: a handler that could make that call never compiles`, `A system prompt asking the model not to`, `A code review later`
+
+   Answer: `The compiler: a handler that could make that call never compiles`
+
+   Why: can is checked when compiling. A call outside it can't be in the program at all.
+
+### [ask<T>](https://kavachlang.com/docs/agents/ask/)
+
+1. Multiple choice: What can `ask<Verdict>(…)` give your code?
+
+   Choices: `A Verdict that passed the checks, or an error`, `Whatever text the model wrote`, `A Verdict, or an empty value when the model is unsure`
+
+   Answer: `A Verdict that passed the checks, or an error`
+
+   Why: The answer is checked against Verdict. One that doesn't fit is asked again, then the call fails.
+
+### [Agent Modes](https://kavachlang.com/docs/agents/agent-modes/)
+
+1. Multiple choice: In `observe` mode, a call breaks a limit. What happens?
+
+   Choices: `It runs, and the audit log says it would be refused`, `It is refused, as in enforce`, `The program stops`
+
+   Answer: `It runs, and the audit log says it would be refused`
+
+   Why: observe only reports. It is how an agent earns trust before its rules act.
+
+### [Durable Agents](https://kavachlang.com/docs/agents/durable-agents/)
+
+1. Multiple choice: After the restart, what happens to the refund that was paid before the power cut?
+
+   Choices: `Its result comes from the journal: it is not paid again`, `It is paid a second time`, `The agent stops with an error`
+
+   Answer: `Its result comes from the journal: it is not paid again`
+
+   Why: A call in the journal gives its recorded result without running again.
+
+### [Secrets](https://kavachlang.com/docs/agents/secrets/)
+
+1. Multiple choice: You really must show part of a secret once. What do you write?
+
+   Choices: `reveal(value): easy to spot in review, and listed by kavach audit`, `Nothing special: print it`, `Turn secrets off in kavach.toml`
+
+   Answer: `reveal(value): easy to spot in review, and listed by kavach audit`
+
+   Why: Revealing is allowed, but never silent.
+
+## Part 12: Speed
+
+### [Loops on All Cores](https://kavachlang.com/docs/speed/loops-on-all-cores/)
+
+1. Multiple choice: A plain `for` loop, with no `on` before it, sums a million numbers. Where does it run?
+
+   Choices: `On one core, in order`, `On every core`, `On the GPU`
+
+   Answer: `On one core, in order`
+
+   Why: Every loop runs on one core unless on cores says otherwise.
+
+2. Multiple choice: A round of an `on cores` loop hits an overflow. What does the program print?
+
+   Choices: `The exact panic the one-core loop gives`, `A special parallel-overflow error`, `Nothing: the chunk is skipped`
+
+   Answer: `The exact panic the one-core loop gives`
+
+   Why: The loop runs again on one core and panics at the same round, with the same message.
+
+### [As Data Grows](https://kavachlang.com/docs/speed/as-data-grows/)
+
+1. Multiple choice: Why do reads get slower as the list grows, though the number of reads is the same?
+
+   Choices: `The list stops fitting in the caches, so reads wait for main memory`, `Bigger lists have slower indexes`, `The language checks more bounds`
+
+   Answer: `The list stops fitting in the caches, so reads wait for main memory`
+
+   Why: The work is identical; only where the data lives changes.
+
+### [GPU](https://kavachlang.com/docs/speed/gpu/)
+
+1. Multiple choice: You `map` a list of 3 numbers with a `gpu fn`. Where does it run?
+
+   Choices: `On the CPU: three items aren't worth sending to the GPU`, `Always on the GPU`, `It doesn't compile: the list is too short`
+
+   Answer: `On the CPU: three items aren't worth sending to the GPU`
+
+   Why: The runtime sends a map to the GPU only when the list is long and the work per item big enough. The code and the results are the same either way.
+
+## Part 13: Other Languages
+
+### [Calling C](https://kavachlang.com/docs/other-languages/calling-c/)
+
+1. Multiple choice: Why must a call to a C function be inside `unsafe`?
+
+   Choices: `C can do anything to memory, and Kavach can't check it`, `C functions are slow`, `C has no types`
+
+   Answer: `C can do anything to memory, and Kavach can't check it`
+
+   Why: Kavach checks its own code; C's it can't. unsafe marks the place, and kavach audit lists every one.

@@ -216,6 +216,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Values, Not References](https://kavachlang.com/docs/memory/values-not-references/): Every value in Kavach is a value: assigning or passing it never makes two names share it.
 - [Values, Not References: Coming from JavaScript and Python](https://kavachlang.com/docs/memory/values-not-references/coming-from-javascript-and-python/): In JavaScript and Python, b = a gives one list two names. In Kavach, b gets its own value. Here is each case side by side.
 - [Automatic Memory](https://kavachlang.com/docs/memory/automatic-memory/): You never allocate or free memory yourself, and there is no garbage collector that pauses your program.
+- [Automatic Memory: Memory, Step by Step](https://kavachlang.com/docs/memory/automatic-memory/memory-step-by-step/): Does let b = a take new memory? Step through what memory holds at each line: sharing, moving, copying on change, changing in place, for numbers, text, lists, dicts, sets and Shared.
 - [Automatic Memory: How it stays fast](https://kavachlang.com/docs/memory/automatic-memory/how-it-stays-fast/): Values look copied, but the compiler moves them, shares them and copies only when it must.
 - [Automatic Memory: Freed immediately](https://kavachlang.com/docs/memory/automatic-memory/freed-immediately/): A value is freed when its last use ends: no garbage collector, no pauses. A type can run its own cleanup with Drop.
 - [Shared State](https://kavachlang.com/docs/memory/shared-state/): When several parts of a program must change the same thing, say so with Shared<T>: the one value that is shared.
@@ -478,6 +479,10 @@ version's git tag; benchmarks carry one command to reproduce them.
 ## Benchmarks
 
 - [Benchmarks](https://kavachlang.com/docs/benchmarks/): every suite against C++ and Python, wins and losses, each with one command to reproduce it.
+
+## Quizzes
+
+- [Every quiz, with answers](https://kavachlang.com/quizzes.txt): each page's "check yourself" questions, its correct answer and why, to quiz a learner or check an answer.
 
 ## Source
 
