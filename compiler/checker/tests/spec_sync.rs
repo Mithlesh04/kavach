@@ -61,10 +61,11 @@ fn conformance_tests_and_examples_check_on_a_deep_stack() {
             .lines()
             .position(|l| l.contains("// error:"))
             .map(|i| i + 1);
-        // An error a tag's checker finds comes after this stage, when
-        // `kavach` runs the checker (spec 10.15); the conformance runner
-        // checks those.
-        if src.contains("// error: from check_sql") {
+        // An error a tag's checker or a model's provider finds comes
+        // after this stage, when `kavach` runs Kavach code (spec 10.15,
+        // 8.4), marked `// error: from …`; the conformance runner checks
+        // those.
+        if src.contains("// error: from ") {
             continue;
         }
         let ok = match marked {

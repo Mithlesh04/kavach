@@ -3,7 +3,7 @@
 // expect compile error
 
 agent Reviewer {
-    model Model(name: "claude-opus-5-5", thinking: false)    // error: always thinks before it answers
+    model Model(name: "claude-opus-5-5", thinking: false)    // error: from Anthropic's check: always thinks before it answers
     can Ai
     on check(text: String) -> Bool ! Error {
         try ask<Bool>(text)

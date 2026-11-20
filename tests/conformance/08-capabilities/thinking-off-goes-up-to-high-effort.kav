@@ -7,7 +7,7 @@ fn quick() -> Model {
 }
 
 agent Sorter {
-    model quick()    // error: `thinking: false` can't go with `effort: Max`
+    model quick()    // error: from Anthropic's check: `thinking: false` can't go with `effort: Max`
     can Ai
     on sort(text: String) -> Bool ! Error {
         try ask<Bool>(text)
