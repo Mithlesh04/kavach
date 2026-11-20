@@ -1,0 +1,5 @@
+https://api.anthropic.com/v1/messages
+{"anthropic-version": "2023-06-01", "content-type": "application/json"}
+{"model":"claude-sonnet-5-5","max_tokens":300,"messages":[{"role":"user","content":"Refund?"}],"output_config":{"format":{"type":"json_schema","schema":{"type":"object"}},"effort":"high"},"system":"Be brief.","stop_sequences":["END"]}
+InHeader(name: "x-api-key")
+ANTHROPIC_API_KEY

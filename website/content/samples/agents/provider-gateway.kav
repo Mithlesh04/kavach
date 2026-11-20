@@ -1,0 +1,30 @@
+/// Anthropic, through the shop's gateway, which wants its own header.
+type Gateway: Provider {
+    base: Anthropic
+
+    fn request(self, call: AskCall) -> HttpCall {
+        const r = self.base.request(call)
+        let headers = r.headers
+        headers["x-shop-team"] = "refunds"
+        HttpCall(url: r.url, headers: headers, body: r.body)
+    }
+    fn check(self, model: Model) -> [String] { self.base.check(model) }
+    fn key_variable(self) -> String { "SHOP_GATEWAY_KEY" }
+    fn auth(self, model: Model) -> Auth { self.base.auth(model) }
+    fn read(self, call: AskCall, reply: HttpReply) -> Reply { self.base.read(call, reply) }
+}
+
+fn gateway() -> Model {
+    Model(name: "claude-haiku-5-5", provider: Gateway(base: Anthropic()), api_url: "https://ai.shop.example")
+}
+
+fn main() {
+    // Only to look at what the gateway writes: nothing is sent here.
+    const m = gateway()
+    const p: Provider = m.provider ?? Anthropic()
+    const r = p.request(AskCall(model: m, prompt: "Refund order 7?", schema: Json.Null, strict: false))
+    print(r.url)
+    print(r.headers)
+    print(p.key_variable())
+    print(p.auth(m))
+}

@@ -1,0 +1,24 @@
+fn advice(e: AiError) -> String {
+    match e {
+        AiError.RateLimited(_) => "wait and try later",
+        AiError.Overloaded(_) => "wait and try later",
+        AiError.QuotaUsedUp(_) => "pay the bill",
+        AiError.BadKey(_) => "check the key",
+        AiError.Refused(reason: r) => `refused: {r ?? "no reason given"}`,
+        AiError.CutOff(max_tokens: n) => `cut off at {n} tokens`,
+        AiError.TimedOut(after: d) => `no answer after {d.ms} ms`,
+        AiError.Failed(status: s, message: _) => `something else: {s}`,
+        _ => "pass it on",
+    }
+}
+
+fn main() {
+    print(advice(AiError.RateLimited(message: "slow down")))
+    print(advice(AiError.QuotaUsedUp(message: "no credit left")))
+    print(advice(AiError.BadKey(message: "invalid x-api-key")))
+    print(advice(AiError.Refused(reason: none)))
+    print(advice(AiError.CutOff(max_tokens: 300)))
+    print(advice(AiError.TimedOut(after: 30.seconds)))
+    print(advice(AiError.Failed(status: 418, message: "teapot")))
+    print(advice(AiError.NoKey(variable: "ANTHROPIC_API_KEY")))
+}

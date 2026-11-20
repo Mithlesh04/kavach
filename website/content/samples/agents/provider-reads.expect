@@ -1,0 +1,9 @@
+Answer(text: "{}", usage: Usage(input: 70, output: 10, cached_input: 10, thinking: none))
+Refused(reason: none, usage: Usage(input: 1, output: 0, cached_input: none, thinking: none))
+429: RateLimited
+529: Overloaded
+402: QuotaUsedUp
+401: BadKey
+504: TimedOut
+418: Other(status: 418)
+retry-after: 3 gives a wait of 3000 ms

@@ -342,7 +342,7 @@ export const practiceDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>
           A provider turns away too many calls at once. Now a busy or dropped call is sent again after a growing, random
-          wait, and a program&apos;s <C>ask</C>s share a gate, so 300 started together all get their answer: see{" "}
+          wait, and the <C>ask</C>s to one provider with one key share a gate, so 300 started together all get their answer: see{" "}
           <Link href="/docs/agents/ask/when-the-ai-fails/">When the AI fails</Link>.
         </li>
         <li>

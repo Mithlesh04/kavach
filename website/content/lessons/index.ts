@@ -74,6 +74,7 @@ import {
 import { approveDoc } from "./agents-approve";
 import { durableDoc, stateDoc } from "./agents-durable";
 import { aiFailsDoc, askDoc, modelDoc, typedAnswersDoc } from "./agents-ai";
+import { providersDoc } from "./agents-providers";
 import {
   auditDoc, dryRunDoc, enforceDoc, modesDoc, observeDoc, suggestDoc,
 } from "./agents-trust";
@@ -395,6 +396,7 @@ export const lessons: Record<string, LessonDoc> = {
   "agents/ask/typed-answers": typedAnswersDoc,
   "agents/ask/when-the-ai-fails": aiFailsDoc,
   "agents/ask/choosing-the-model": modelDoc,
+  "agents/ask/providers": providersDoc,
   "agents/agent-modes": modesDoc,
   "agents/agent-modes/observe": observeDoc,
   "agents/agent-modes/suggest": suggestDoc,

@@ -319,6 +319,18 @@ export const interfaceValuesDoc: LessonDoc = {
         methods can be used on such a value. To tell a closed set of types apart, use a{" "}
         <Link href="/docs/types/unions/">union</Link> instead.
       </P>
+      <H2>Maybe a value</H2>
+      <P>
+        An interface can be <Link href="/docs/types/optionals/">optional</Link> too: <C>Describe?</C> holds a value
+        of any type that implements <C>Describe</C>, or <C>none</C>. A <C>User</C> fits there without anything
+        extra, as an <C>Int</C> fits an <C>Int?</C>:
+      </P>
+      <Ex name="types/interface-optional" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/02-types/15-interface-values.md" label="spec 2.15 · interface values" />
+        <SrcRef file="docs/spec/02-types/07-optionals.md" label="spec 2.7 · optionals" />
+        <SrcRef file="tests/conformance/02-types/a-value-fits-an-optional-interface.kav" label="its test" />
+      </div>
     </>
   ),
 };

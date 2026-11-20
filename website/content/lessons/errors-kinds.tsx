@@ -29,7 +29,7 @@ const stdErrors: [string, string, string][] = [
   ["GrpcError", "gRPC calls", "14-standard-library/14-grpc.md"],
   ["RegexError", "A pattern that isn't valid", "14-standard-library/08-regex.md"],
   ["CliError", "Command-line arguments that don't fit", "14-standard-library/06-io-and-cli.md"],
-  ["AiError", "Asking an AI model: no key set, the provider refused, an answer of the wrong shape, or a limit said no", "08-capabilities-and-agents/04-typed-ai-calls.md"],
+  ["AiError", "Asking an AI model: no key, rate limited, quota used up, overloaded, a bad key or model, a refusal, an answer cut off, a timeout, the network, an answer of the wrong shape, or a limit said no", "08-capabilities-and-agents/04-typed-ai-calls.md"],
   ["Error", "Any error at all: the catch-all for scripts and main", "05-errors.md"],
 ];
 

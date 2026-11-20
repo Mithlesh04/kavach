@@ -1,0 +1,29 @@
+interface Describe {
+    fn describe(self) -> String
+}
+
+type User: Describe {
+    name: String
+
+    fn describe(self) -> String { `User {self.name}` }
+}
+
+type Order {
+    id: Int
+    owner?: Describe
+}
+
+fn show(d: Describe?) -> String {
+    if let found = d {
+        found.describe()
+    } else {
+        "nobody"
+    }
+}
+
+fn main() {
+    print(show(User(name: "Asha")))
+    const order = Order(id: 7, owner: User(name: "Ravi"))
+    print(show(order.owner))
+    print(show(none))
+}

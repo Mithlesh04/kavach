@@ -1,0 +1,4 @@
+https://ai.shop.example/v1/messages
+{"anthropic-version": "2023-06-01", "content-type": "application/json", "x-shop-team": "refunds"}
+SHOP_GATEWAY_KEY
+InHeader(name: "x-api-key")

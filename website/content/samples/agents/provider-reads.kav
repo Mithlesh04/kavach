@@ -1,0 +1,25 @@
+// Replies written by hand, as Anthropic would send them: nothing is sent.
+fn read(status: Int, body: String, headers: {String: String} = {:}) -> Reply {
+    const call = AskCall(model: Model(name: "claude-haiku-5-5"), prompt: "?", schema: Json.Null, strict: false)
+    Anthropic().read(call, HttpReply(status: status, headers: headers, body: body))
+}
+
+fn error(kind: String) -> String {
+    `\{"type":"error","error":\{"type":"{kind}","message":"no"}}`
+}
+
+fn main() {
+    print(read(200, `\{"content":[\{"type":"text","text":"\{}"}],"stop_reason":"end_turn","usage":\{"input_tokens":60,"cache_read_input_tokens":10,"output_tokens":10}}`))
+    print(read(200, `\{"content":[],"stop_reason":"refusal","usage":\{"input_tokens":1,"output_tokens":0}}`))
+    for (status, kind) in [(429, "rate_limit_error"), (529, "overloaded_error"), (402, "billing_error"),
+        (401, "authentication_error"), (504, "timeout_error"), (418, "teapot")] {
+        match read(status, error(kind)) {
+            Reply.Problem(kind: k, message: _, wait: _) => print(`{status}: {k}`),
+            other => print(other),
+        }
+    }
+    match read(429, error("rate_limit_error"), {"retry-after": "3"}) {
+        Reply.Problem(kind: _, message: _, wait: w) => print(`retry-after: 3 gives a wait of {w?.ms ?? 0} ms`),
+        other => print(other),
+    }
+}

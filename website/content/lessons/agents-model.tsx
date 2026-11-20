@@ -24,7 +24,7 @@ const fieldRange: Record<string, React.ReactNode> = {
   stop: <>A list of texts</>,
   timeout: <>A <C>Duration</C>, such as <C>60.seconds</C></>,
   retries: <><C>0</C> to <C>10</C>, checked when built</>,
-  api_url: <>The address of a service that speaks Anthropic&apos;s Messages API: another account, a proxy, a gateway</>,
+  api_url: <>The address of a service that speaks the provider&apos;s API: another account, a proxy, a gateway</>,
   api_key_env: <>The name of an environment variable</>,
   extra: <>The text of a JSON object, checked when built</>,
   provider: <>Any value whose type implements <C>Provider</C>: <C>Anthropic()</C>, or a package&apos;s own</>,
@@ -33,16 +33,16 @@ const fieldRange: Record<string, React.ReactNode> = {
 const fieldMeans: Record<string, React.ReactNode> = {
   name: <>Which model answers, by the provider&apos;s name for it. Bigger models usually cost more per token; smaller ones are usually quicker and cheaper.</>,
   effort: <>How hard the model works on an answer: more effort, better answers and more tokens. The provider&apos;s main control of quality against cost.</>,
-  max_tokens: <>The longest answer allowed, thinking included. An answer cut off at this length fails with <C>Failed</C>, without asking again.</>,
+  max_tokens: <>The longest answer allowed, thinking included. An answer cut off at this length fails with <C>CutOff</C>, without asking again.</>,
   thinking: <><C>false</C> asks the model to answer straight away, without thinking first: far fewer output tokens, but it can get some answers wrong. See <Link href="/docs/agents/ask/choosing-the-model/">Choosing the model</Link> for what it measured.</>,
   instructions: <>Standing instructions the model gets with every <C>ask</C>, such as who it works for and how to answer: a system prompt.</>,
   stop: <>The answer ends where the model writes one of these texts.</>,
   timeout: <>How long one try may take. A try that takes longer is sent again, like a busy one.</>,
-  retries: <>How many times a busy, dropped or late call is sent again, after waits of 1, 2, 4 and 8 seconds, then 8 again, each a random time between half and all of that. Then the <C>ask</C> fails with <C>Failed</C>.</>,
-  api_url: <>Where this model&apos;s calls go, instead of Anthropic&apos;s own address.</>,
+  retries: <>How many times a busy, dropped or late call is sent again, after waits of 1, 2, 4 and 8 seconds, then 8 again, each a random time between half and all of that. Then the <C>ask</C> fails with <C>RateLimited</C>, <C>Overloaded</C>, <C>Network</C> or <C>TimedOut</C>. Trouble a wait can&apos;t fix, such as a used-up quota or a bad key, is never sent again.</>,
+  api_url: <>Where this model&apos;s calls go, instead of the provider&apos;s own address.</>,
   api_key_env: <>Which environment variable holds the key for this model, so two models can use two accounts. The key itself never goes in the code.</>,
   extra: <>More request fields, added as they are, for a provider setting Kavach doesn&apos;t name yet. A field here replaces one Kavach would send.</>,
-  provider: <>Whose API the model is reached through. A provider only translates each <C>ask</C> into its API and its answers back; the runtime keeps the key, the retries and the limits.</>,
+  provider: <>Whose API the model is reached through. A provider only translates each <C>ask</C> into its API and its answers back; the runtime keeps the key, the retries and the limits. See <Link href="/docs/agents/ask/providers/">Providers</Link>.</>,
 };
 
 // ---------- Agents: model ----------
@@ -74,7 +74,7 @@ export const agentModelDoc: LessonDoc = {
       <FieldTable type="Model" means={fieldMeans} range={fieldRange} />
       <Note>
         A value marked &quot;checked when built&quot; is refused by the compiler, with a message. Everything else goes to
-        the provider as it is, and a value the provider refuses fails the call with <C>Failed</C> and the
+        the provider as it is, and a value the provider refuses fails the call with <C>BadRequest</C> and the
         provider&apos;s message. The ranges follow Anthropic&apos;s{" "}
         <a href="https://platform.claude.com/docs/en/api/messages/create">Messages API reference</a>.
       </Note>

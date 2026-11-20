@@ -1,0 +1,25 @@
+/// A server on this machine that takes no stop text.
+type Local: Provider {
+    base: Anthropic
+
+    fn check(self, model: Model) -> [String] {
+        if (model.stop ?? []).is_empty() { [] } else { ["this server takes no `stop` text"] }
+    }
+    fn key_variable(self) -> String { "LOCAL_AI_KEY" }
+    fn auth(self, model: Model) -> Auth { Auth.NoKey }
+    fn request(self, call: AskCall) -> HttpCall { self.base.request(call) }
+    fn read(self, call: AskCall, reply: HttpReply) -> Reply { self.base.read(call, reply) }
+}
+
+agent Sorter {
+    model Model(name: "small", stop: ["END"], provider: Local(base: Anthropic()))
+    can Ai
+
+    on sort(text: String) -> Bool ! Error {
+        try ask<Bool>(text)
+    }
+}
+
+fn main() {
+    print("never runs")
+}
