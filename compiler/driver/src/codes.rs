@@ -93,14 +93,20 @@ const TABLE: &[(&str, &[&str])] = &[
         "duplicate",
         &[
             "is given twice",
-            "have the number",
+            "have the value",
             "already declared",
             "already has a method",
         ],
     ),
     (
         "variant",
-        &["is a variant of", "every variant of", "is for enums"],
+        &[
+            "is a variant of",
+            "every variant of",
+            "is for enums",
+            "only an enum's variants have values",
+            "mixes numbers and text",
+        ],
     ),
     (
         "wrong-place",
