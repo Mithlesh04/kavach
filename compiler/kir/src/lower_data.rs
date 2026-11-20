@@ -22,6 +22,26 @@ impl<'a> Lowerer<'a> {
         line: u32,
         span: ast::Span,
     ) -> Lowered<ir::Expr> {
+        self.construct_given(def, variant, ty, line, span, &mut |l, i, name| {
+            let given = args
+                .iter()
+                .find(|a| a.name.as_ref().is_some_and(|n| n.name == name))
+                .or_else(|| args.get(i).filter(|a| a.name.is_none()));
+            given.map(|a| l.expr(&a.value)).transpose()
+        })
+    }
+
+    /// `construct`, with field `i` named `name` given by `given` (`None`:
+    /// its default): from lowered values, as a tagged template's.
+    pub(crate) fn construct_given(
+        &mut self,
+        def: DefId,
+        variant: Option<&str>,
+        ty: Type,
+        line: u32,
+        span: ast::Span,
+        given: &mut dyn FnMut(&mut Self, usize, &str) -> Lowered<Option<ir::Expr>>,
+    ) -> Lowered<ir::Expr> {
         let decl_span = self.c.resolution.defs[def].span;
         let decl = self.c.file.items.iter().find_map(|item| match &item.kind {
             ItemKind::Type(t) if Some(t.name.span) == decl_span => Some(t),
@@ -50,12 +70,8 @@ impl<'a> Lowerer<'a> {
         };
         let mut values = Vec::new();
         for (i, f) in fields.iter().enumerate() {
-            let given = args
-                .iter()
-                .find(|a| a.name.as_ref().is_some_and(|n| n.name == f.name.name))
-                .or_else(|| args.get(i).filter(|a| a.name.is_none()));
-            let value = match (given, &f.default) {
-                (Some(a), _) => self.expr(&a.value)?,
+            let value = match (given(self, i, &f.name.name)?, &f.default) {
+                (Some(v), _) => v,
                 (None, Some(d)) => self.field_default(def, d, ty)?,
                 (None, None) => return Err(self.unsupported("this constructor", span)),
             };

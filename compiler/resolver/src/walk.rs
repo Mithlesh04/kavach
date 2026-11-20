@@ -106,28 +106,14 @@ impl Resolver {
                     self.expr(v);
                 }
             }
-            // `sql"…"` or `pg.sql"…"` (spec 10.15).
-            ExprKind::Tagged { tag, .. } => match tag.segments.as_slice() {
-                // Python's `f"hi {name}"`: a template is written in backticks.
-                [name] if name.name == "f" && self.lookup("f").is_none() => self.error(
-                    name.span,
-                    "Kavach has no f-strings: a template that fills in `{…}` is written in backticks, `` `hi {name}` `` (spec 1.7)",
-                ),
-                [name] => self.use_name(name),
-                [module, name] => {
-                    let base = Expr {
-                        kind: ExprKind::Name(module.clone()),
-                        span: module.span,
-                    };
-                    match self.module_of(&base) {
-                        Some(m) => {
-                            self.member(m, name);
-                        }
-                        None => self.use_name(module),
-                    }
+            // `sql"…"` or `pg.sql"…"` (spec 10.15); a tagged template's
+            // `{…}` are its parameters.
+            ExprKind::Tagged { tag, args } => {
+                for a in args {
+                    self.expr(&a.value);
                 }
-                _ => {}
-            },
+                self.tag(tag);
+            }
             // `orders.total`: a name in another module (spec 10.2).
             ExprKind::Field { base, name, .. } if self.module_of(base).is_some() => {
                 let m = self.module_of(base).unwrap_or(0);
@@ -220,7 +206,9 @@ impl Resolver {
                 self.block(body);
             }
             ExprKind::On { place, value } => {
-                if let kavach_ast::ValuePlace::Cores(Some(n)) | kavach_ast::ValuePlace::Gpu(n) = place {
+                if let kavach_ast::ValuePlace::Cores(Some(n)) | kavach_ast::ValuePlace::Gpu(n) =
+                    place
+                {
                     self.expr(n);
                 }
                 self.expr(value);
@@ -319,6 +307,31 @@ impl Resolver {
                 }
             }
             PatternKind::Wildcard | PatternKind::None => {}
+        }
+    }
+
+    /// The tag of `sql"…"` or `pg.sql"…"` (spec 10.15).
+    fn tag(&mut self, tag: &Path) {
+        match tag.segments.as_slice() {
+            // Python's `f"hi {name}"`: a template is written in backticks.
+            [name] if name.name == "f" && self.lookup("f").is_none() => self.error(
+                name.span,
+                "Kavach has no f-strings: a template that fills in `{…}` is written in backticks, `` `hi {name}` `` (spec 1.7)",
+            ),
+            [name] => self.use_name(name),
+            [module, name] => {
+                let base = Expr {
+                    kind: ExprKind::Name(module.clone()),
+                    span: module.span,
+                };
+                match self.module_of(&base) {
+                    Some(m) => {
+                        self.member(m, name);
+                    }
+                    None => self.use_name(module),
+                }
+            }
+            _ => {}
         }
     }
 

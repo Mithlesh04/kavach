@@ -49,6 +49,9 @@ pub struct LiteralDecl {
     pub name: Ident,
     pub ty: TypeExpr,
     pub check: Ident,
+    /// `param p`: the function writing the n-th `{…}` of a tagged
+    /// template in its text, as `$1`.
+    pub param: Option<Ident>,
     /// What editors colour the inside as.
     pub language: Option<String>,
 }

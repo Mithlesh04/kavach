@@ -235,7 +235,7 @@ impl<'a> Interp<'a> {
 
     /// An item or field inside a `Json` literal: another literal, or any
     /// value, written as `json.of` writes it (secrets hidden, 0132).
-    fn json_item(&mut self, e: &'a Expr) -> Eval<'a> {
+    pub(crate) fn json_item(&mut self, e: &'a Expr) -> Eval<'a> {
         if kavach_checker::json_literal_kind(e) {
             return self.json_literal(e);
         }

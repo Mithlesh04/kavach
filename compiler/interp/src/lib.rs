@@ -74,6 +74,7 @@ mod std_watch;
 mod std_window;
 mod std_writers;
 mod stmts;
+mod tagged_templates;
 mod task_errors;
 mod task_waits;
 mod tasks;

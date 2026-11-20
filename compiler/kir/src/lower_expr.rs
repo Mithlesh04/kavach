@@ -80,6 +80,9 @@ impl<'a> Lowerer<'a> {
                 .shapes
                 .def_of(ty)
                 .ok_or_else(|| self.unsupported("this tagged literal", e.span))?;
+            if let Some(value) = self.tagged_template(def, args, ty, line, e.span) {
+                return value;
+            }
             return self.construct(def, None, args, ty, line, e.span);
         }
         let kind = match &e.kind {

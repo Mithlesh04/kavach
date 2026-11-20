@@ -155,6 +155,11 @@ pub literal sql: Query check check_sql language "sql"
 //                                     ^^^^^^^^ keyword.other.kavach
 //                                              ^^^^^ string.quoted.double.kavach
 
+pub literal lite: Query check check_lite param lite_param
+//          ^^^^ entity.name.function.tag.kavach
+//                                       ^^^^^ keyword.other.kavach
+//                                             ^^^^^^^^^^ entity.name.function.kavach
+
 audited fn unchecked(text: String) -> Query {
 // <------- storage.modifier.kavach
 //      ^^ storage.type.function.kavach
@@ -177,6 +182,15 @@ fn tags() {
         select id
 //      ^^^^^^^^^ string.quoted.triple.tagged.kavach
         """
+    const t = sql`select id from c where owner = {owner} and n = \{x}`
+//            ^^^ entity.name.function.tag.kavach
+//                ^^^^^^^^^ string.template.tagged.kavach
+//                                               ^ punctuation.definition.template-expression.begin.kavach
+//                                                ^^^^^ meta.template.expression.kavach
+//                                                               ^^ constant.character.escape.kavach
+    const u = glob`src/{dir}/*.kav`
+//            ^^^^ entity.name.function.tag.kavach
+//                      ^^^ meta.template.expression.kavach
     const plain = "C:\tmp"
 //                ^^^^^^^^ string.quoted.double.kavach - constant.character.escape.kavach
     let literal = 3

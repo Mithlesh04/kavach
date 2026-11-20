@@ -1,0 +1,27 @@
+// Rule: When a tag's parameter type is `Json`, each value in a tagged template converts as an item of a `Json` list does.
+// Spec: 10.15
+// expect output: delete from carts where owner = ? and items = ?
+// expect output: ["asha", ["pen","ink"]]
+
+pub type Query {
+    text: String
+    params: [Json] = []
+}
+
+pub literal sql: Query check check_sql param lite_param
+
+fn check_sql(text: String) -> [LiteralProblem] {
+    []
+}
+
+fn lite_param(n: Int) -> String {
+    "?"
+}
+
+fn main() {
+    const owner = "asha"
+    const items = ["pen", "ink"]
+    const q = sql`delete from carts where owner = {owner} and items = {items}`
+    print(q.text)
+    print(q.params)
+}

@@ -3,8 +3,9 @@
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
 //! Tagged literals (spec 10.15): a `literal` declaration's type and
-//! checker, and each `sql"…"`, typed as its tag's type and kept, with its
-//! text, for the checker to run on once the program is checked.
+//! checker, and each `sql"…"` or `` sql`…` ``, typed as its tag's type and
+//! kept, with its text, for the checker to run on once the program is
+//! checked. A tagged template's `{…}` are in `tagged_templates.rs`.
 
 use crate::checker::{Checker, Shape};
 use crate::ty::{Prim, Ty};
@@ -16,6 +17,8 @@ use kavach_resolver::{DefId, DefKind};
 pub(crate) struct LiteralTag {
     pub(crate) ty: Ty,
     pub(crate) check: Option<DefId>,
+    /// The function writing a parameter's placeholder (`param`).
+    pub(crate) param: Option<DefId>,
 }
 
 /// One tagged literal, for its tag's checker to run on when the program
@@ -25,9 +28,17 @@ pub struct LiteralUse {
     pub tag: String,
     /// The checking function.
     pub check: DefId,
+    /// The text, without the placeholders of a template's parameters.
     pub text: String,
     /// The string after the tag, quotes included.
     pub span: Span,
+    /// The tag's `param` function: the literal's text then has `param(n)`
+    /// in place of the n-th `{…}`, and its record a field `params`.
+    pub param: Option<DefId>,
+    /// The text between the `{…}`: one more piece than there are.
+    pub pieces: Vec<String>,
+    /// Each `{…}`, in order.
+    pub holes: Vec<crate::tagged_templates::Hole>,
 }
 
 impl Checker<'_> {
@@ -37,7 +48,12 @@ impl Checker<'_> {
         };
         let ty = self.lower(&l.ty, None);
         let check = self.res.uses.get(&l.check.span.start).copied();
-        self.literal_tags.insert(def, LiteralTag { ty, check });
+        let param = l
+            .param
+            .as_ref()
+            .and_then(|p| self.res.uses.get(&p.span.start).copied());
+        self.literal_tags
+            .insert(def, LiteralTag { ty, check, param });
     }
 
     /// The type is a record whose first field is its text; the checker
@@ -78,6 +94,9 @@ impl Checker<'_> {
         if !fits {
             self.error(l.check.span, format!("`{}` checks the text of `{}` literals: it must be `fn {}(text: String) -> [LiteralProblem]`, with no `!` and no `uses`, as it runs while the program is compiled (spec 10.15)", l.check.name, l.name.name, l.check.name));
         }
+        if let Some(p) = &l.param {
+            self.check_param(l, p, &tag);
+        }
     }
 
     /// `sql"…"`: a value of the tag's type, its text kept for the check.
@@ -97,24 +116,35 @@ impl Checker<'_> {
         let Some(arg) = args.first() else {
             return Ty::Error;
         };
-        // Typed, so code generation knows the text is a `String`.
-        self.value(&arg.value, Some(&Ty::Prim(Prim::String)));
-        let text = match &arg.value.kind {
-            ExprKind::Str(parts) => parts
-                .iter()
-                .filter_map(|p| match p {
-                    StrPart::Text(t) => Some(t.as_str()),
-                    StrPart::Expr(_) => None,
-                })
-                .collect(),
-            _ => String::new(),
+        let parts: &[StrPart] = match &arg.value.kind {
+            ExprKind::Str(parts) => parts,
+            _ => &[],
         };
+        let holes = if parts.iter().any(|p| matches!(p, StrPart::Expr(_))) {
+            // Typed, so code generation knows the text is a `String`.
+            self.expr_types
+                .push((arg.value.span, Ty::Prim(Prim::String)));
+            self.holes(&last.name, &found, parts)
+        } else {
+            self.value(&arg.value, Some(&Ty::Prim(Prim::String)));
+            Vec::new()
+        };
+        let mut pieces = vec![String::new()];
+        for p in parts {
+            match (p, pieces.last_mut()) {
+                (StrPart::Text(t), Some(piece)) => piece.push_str(t),
+                _ => pieces.push(String::new()),
+            }
+        }
         if let Some(check) = found.check {
             self.literal_uses.push(LiteralUse {
                 tag: self.res.defs[def].name.clone(),
                 check,
-                text,
+                text: pieces.concat(),
                 span: arg.value.span,
+                param: found.param,
+                pieces,
+                holes,
             });
         }
         found.ty

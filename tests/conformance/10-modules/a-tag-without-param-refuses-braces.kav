@@ -1,4 +1,4 @@
-// Rule: A tag in front of a template, `` sql`…{x}…` ``, isn't built yet: it is a compile error that says to write the text in quotes.
+// Rule: A tag that names no `param` function takes no parameters: a `{…}` in its tagged template is a compile error.
 // Spec: 10.15
 // expect compile error
 
@@ -14,6 +14,6 @@ fn check_sql(text: String) -> [LiteralProblem] {
 
 fn main() {
     const owner = "asha"
-    const q = sql`select id from orders where owner = {owner}`     // error: isn't built yet
+    const q = sql`select id from orders where owner = {owner}`     // error: sql takes no parameters
     print(q.text)
 }

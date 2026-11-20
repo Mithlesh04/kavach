@@ -35,7 +35,13 @@ Conformance tests for spec chapter [10. Modules and packages](../../../docs/spec
 | 10.15 | [tagged-literals-are-checked-when-compiled.kav](tagged-literals-are-checked-when-compiled.kav) | The compiler runs a tag's checker on each literal, and each problem is a compile error at its place. | compile error |
 | 10.15 | [tagged-literal-problems-show-on-their-line.kav](tagged-literal-problems-show-on-their-line.kav) | A problem in a tagged literal over lines is shown on its own line and column. | compile error |
 | 10.15 | [a-tag-checker-uses-nothing.kav](a-tag-checker-uses-nothing.kav) | A tag's checker takes the text, gives `[LiteralProblem]`, and has no `!` and no `uses`. | compile error |
-| 10.15 | [a-tag-before-a-template-is-not-built-yet.kav](a-tag-before-a-template-is-not-built-yet.kav) | A tag in front of a template, `` sql`…{x}…` ``, is a compile error until parameters in a tagged template are decided. | compile error |
+| 10.15 | [tagged-template-parameters-in-order.kav](tagged-template-parameters-in-order.kav) | In a tagged template, the n-th `{…}` is written in the text by the tag's `param` function, and its value goes in `params`, in order. | runs |
+| 10.15 | [tagged-template-values-become-json.kav](tagged-template-values-become-json.kav) | When the parameter type is `Json`, each value converts as an item of a `Json` list does. | runs |
+| 10.15 | [a-tagged-template-value-must-convert.kav](a-tagged-template-value-must-convert.kav) | A value that doesn't convert to the tag's parameter type is a compile error. | compile error |
+| 10.15 | [a-tag-without-param-refuses-braces.kav](a-tag-without-param-refuses-braces.kav) | A tag with no `param` function refuses `{…}` in its tagged template. | compile error |
+| 10.15 | [tagged-templates-read-escapes.kav](tagged-templates-read-escapes.kav) | A tagged template reads escapes and spans lines as every template does. | runs |
+| 10.15 | [a-tag-checker-sees-the-placeholders.kav](a-tag-checker-sees-the-placeholders.kav) | The checker reads the text with the placeholders in; a problem in one is shown at its `{…}`. | warning |
+| 10.15 | [quoted-tagged-literals-stay-raw.kav](quoted-tagged-literals-stay-raw.kav) | `sql"…"` stays exactly what is written, with `params: []`, even when its tag takes parameters. | runs |
 | 10.1, 1.13 | [pub-consts-are-read-from-other-modules/](pub-consts-are-read-from-other-modules/src/main.kav) | A `pub const` is read from other modules; one without `pub` stays in its module. | runs |
 | 14.32, 10.1 | [a-modules-members-are-what-it-offers/](a-modules-members-are-what-it-offers/src/main.kav) | `m.members()` of a program's own module lists what it offers to the code that uses it: its `pub` functions, types and constants, sorted by name, not its private ones. | runs |
 | 10.1 | [pub-out-is-only-for-libraries.kav](pub-out-is-only-for-libraries.kav) | `pub(out)` offers a name to other packages, so in an application it is a compile error. | compile error |

@@ -303,7 +303,7 @@ impl<'a> Lowerer<'a> {
 
     /// An item or field inside a `Json` literal: another literal, a
     /// `Json`, or any value that can be encoded.
-    fn json_item(&mut self, e: &'a ast::Expr, json: Type) -> Lowered<ir::Expr> {
+    pub(crate) fn json_item(&mut self, e: &'a ast::Expr, json: Type) -> Lowered<ir::Expr> {
         if kavach_checker::json_literal_kind(e) {
             return self.json_literal(e, json);
         }

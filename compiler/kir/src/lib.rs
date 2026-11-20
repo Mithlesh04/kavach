@@ -101,6 +101,7 @@ mod lower_slices;
 mod lower_statics;
 mod lower_std;
 mod lower_stmt;
+mod lower_tagged;
 mod lower_tasks;
 mod lower_text;
 mod lower_threads;

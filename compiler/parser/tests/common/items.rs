@@ -13,10 +13,13 @@ pub fn item(item: &Item) -> String {
     match &item.kind {
         ItemKind::Fn(f) => format!("({p}{})", function("fn", f)),
         ItemKind::Literal(l) => format!(
-            "({p}literal {} {} check {}{})",
+            "({p}literal {} {} check {}{}{})",
             l.name.name,
             ty(&l.ty),
             l.check.name,
+            l.param
+                .as_ref()
+                .map_or(String::new(), |x| format!(" param {}", x.name)),
             l.language
                 .as_ref()
                 .map_or(String::new(), |x| format!(" language {x:?}"))

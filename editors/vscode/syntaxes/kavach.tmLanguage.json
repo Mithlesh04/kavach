@@ -60,8 +60,23 @@
       "patterns": [{ "include": "#tagged-strings" }, { "include": "#plain-strings" }]
     },
     "tagged-strings": {
-      "comment": "A tagged literal, `sql\"…\"` or `sql\"\"\"…\"\"\"` (spec 10.15): the tag right before the quote, colored as a function; the text is exactly what is written, as any text in quotes. Inside `sql`, the text is colored as SQL",
+      "comment": "A tagged literal, `sql\"…\"` or `sql\"\"\"…\"\"\"` (spec 10.15): the tag right before the quote, colored as a function; the text is exactly what is written, as any text in quotes. A tagged template, `sql` followed by text in backticks, reads escapes, and its `{…}` are parameters, colored as a template's are. Inside `sql`, the text is colored as SQL",
       "patterns": [
+        {
+          "name": "string.template.tagged.kavach",
+          "begin": "\\b(sql)(`)",
+          "end": "`",
+          "beginCaptures": { "1": { "name": "entity.name.function.tag.kavach" } },
+          "contentName": "meta.embedded.block.sql",
+          "patterns": [{ "include": "#template-parts" }, { "include": "source.sql" }]
+        },
+        {
+          "name": "string.template.tagged.kavach",
+          "begin": "\\b([\\p{L}_][\\p{L}\\p{N}_]*)(`)",
+          "end": "`",
+          "beginCaptures": { "1": { "name": "entity.name.function.tag.kavach" } },
+          "patterns": [{ "include": "#template-parts" }]
+        },
         {
           "name": "string.quoted.triple.tagged.kavach",
           "begin": "\\b(sql)(\"\"\")",
@@ -101,16 +116,20 @@
           "name": "string.template.kavach",
           "begin": "`",
           "end": "`",
-          "patterns": [
-            { "include": "#escapes" },
-            {
-              "comment": "A `{` with no `}` after it on its line is never closed: an error at the brace (spec 1.7), and the text goes on as text",
-              "name": "invalid.illegal.unclosed-brace.kavach",
-              "match": "\\{(?![^\\n]*\\})"
-            },
-            { "include": "#interpolation" }
-          ]
+          "patterns": [{ "include": "#template-parts" }]
         }
+      ]
+    },
+    "template-parts": {
+      "comment": "Inside a template, tagged or not: escapes, and each `{…}`, filled in (spec 1.7) or a tag's parameter (spec 10.15)",
+      "patterns": [
+        { "include": "#escapes" },
+        {
+          "comment": "A `{` with no `}` after it on its line is never closed: an error at the brace (spec 1.7), and the text goes on as text",
+          "name": "invalid.illegal.unclosed-brace.kavach",
+          "match": "\\{(?![^\\n]*\\})"
+        },
+        { "include": "#interpolation" }
       ]
     },
     "escapes": {
@@ -160,7 +179,7 @@
     "declarations": {
       "patterns": [
         {
-          "comment": "A tag's declaration, `pub literal sql: Query check check_sql language \"sql\"` (spec 10.15): `literal`, `check` and `language` are keywords only on this line, so names already called `literal` keep their color",
+          "comment": "A tag's declaration, `pub literal sql: Query check check_sql param pg_param language \"sql\"` (spec 10.15): `literal`, `check`, `param` and `language` are keywords only on this line, so names already called `literal` keep their color",
           "begin": "^\\s*(?:(?:(pub\\s*\\(\\s*out\\s*\\))|(pub))\\s+)?(literal)\\s+([\\p{L}_][\\p{L}\\p{N}_]*)(?=\\s*:)",
           "end": "$",
           "beginCaptures": {
@@ -171,7 +190,7 @@
           },
           "patterns": [
             {
-              "match": "\\b(check)\\s+([\\p{L}_][\\p{L}\\p{N}_]*)",
+              "match": "\\b(check|param)\\s+([\\p{L}_][\\p{L}\\p{N}_]*)",
               "captures": {
                 "1": { "name": "keyword.other.kavach" },
                 "2": { "name": "entity.name.function.kavach" }

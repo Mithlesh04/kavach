@@ -97,6 +97,7 @@ mod std_window;
 mod std_writers;
 mod stdlib;
 mod table_methods;
+mod tagged_templates;
 mod text_views;
 mod ty;
 mod unwraps;
@@ -114,6 +115,7 @@ use kavach_resolver::{DefId, Resolution};
 pub use literals::LiteralUse;
 pub use size_calls::Settled;
 use std::collections::{HashMap, HashSet};
+pub use tagged_templates::{Hole, ParamConv};
 pub use ty::{Prim, SizeKind, Ty};
 
 /// The units a whole number can be followed by to make a `Duration`

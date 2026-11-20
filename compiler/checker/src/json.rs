@@ -64,7 +64,7 @@ impl Checker<'_> {
 
     /// An item or field value inside a `Json` literal: another literal,
     /// or any value, which `json.of` converts (decision 0132).
-    fn json_item(&mut self, e: &Expr, json: &Ty) {
+    pub(crate) fn json_item(&mut self, e: &Expr, json: &Ty) {
         if json_literal_kind(e) {
             self.infer(e, Some(json));
             return;

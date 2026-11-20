@@ -147,6 +147,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0139](0139-choosing-gpus.md) | Several GPUs: the system chooses, and code can say where | Accepted |
 | [0140](0140-ai-providers.md) | AI providers other than Anthropic: a provider is a Kavach interface that translates, the runtime sends; errors a program can tell apart; prices that say how far to trust them | Accepted |
 | [0141](0141-freeze.md) | Frozen values: `x.freeze()` gives a `Frozen<T>` that never changes, deep by default, sealed with a key; it goes where a `T` is written only to a function that only reads it | Accepted |
+| [0142](0142-tagged-template-parameters.md) | Parameters in a tagged template: `` sql`…{x}…` `` writes each `{…}` as the tag's `param` function says (`$1`, `?`), and holds the values in the record's `params: [P]` | Accepted |
 
 ## Open decisions
 

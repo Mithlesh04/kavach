@@ -114,6 +114,19 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    /// A template; one whose text starts on the next line spans lines.
+    fn open_template(&mut self) {
+        let next_line = self.rest()[1..]
+            .trim_start_matches([' ', '\t', '\r'])
+            .starts_with('\n');
+        let kind = if next_line {
+            StrKind::TemplateMulti
+        } else {
+            StrKind::Template
+        };
+        self.open_string(kind, 1);
+    }
+
     pub(crate) fn rest(&self) -> &'a str {
         &self.src[self.pos..]
     }
@@ -228,16 +241,7 @@ impl<'a> Lexer<'a> {
             };
             self.open_string(kind, if kind == StrKind::RawMulti { 3 } else { 1 });
         } else if c == '`' {
-            // A template; one whose text starts on the next line spans lines.
-            let next_line = rest[1..]
-                .trim_start_matches([' ', '\t', '\r'])
-                .starts_with('\n');
-            let kind = if next_line {
-                StrKind::TemplateMulti
-            } else {
-                StrKind::Template
-            };
-            self.open_string(kind, 1);
+            self.open_template();
         } else if is_ident_start(c) {
             self.eat_while(is_ident_continue);
             let kind = match Keyword::lookup(&self.src[start..self.pos]) {
@@ -246,8 +250,8 @@ impl<'a> Lexer<'a> {
             };
             let ident = kind == TokenKind::Ident;
             self.push(kind, start);
-            // `sql"…"`: a name right before a quote tags a raw literal
-            // (spec 10.15).
+            // `sql"…"`: a name right before a quote tags a raw literal, and
+            // one right before a backtick a template (spec 10.15).
             if ident {
                 let rest = self.rest();
                 if rest.starts_with("\"\"\"") {
@@ -255,8 +259,7 @@ impl<'a> Lexer<'a> {
                 } else if rest.starts_with('"') {
                     self.open_string(StrKind::Raw, 1);
                 } else if rest.starts_with('`') {
-                    let at = self.pos;
-                    self.error(at, at + 1, "a tag before a template, with parameters, isn't built yet: write the text in quotes (spec 10.15)");
+                    self.open_template();
                 }
             }
         } else if c.is_ascii_digit() {

@@ -214,3 +214,19 @@ fn pub_read_marks_a_field_others_only_read() {
     let marks: Vec<(bool, bool)> = r.fields.iter().map(|f| (f.is_pub, f.is_read)).collect();
     assert_eq!(marks, [(true, true), (true, false), (false, false)]);
 }
+
+/// A tag with `param`, and a tagged template whose `{…}` are its
+/// parameters (spec 10.15).
+#[test]
+fn tags_and_tagged_templates() {
+    check_all(&[
+        (
+            "literal sql: Query check check_sql param pg_param language \"sql\"",
+            "(literal sql Query check check_sql param pg_param language \"sql\")",
+        ),
+        (
+            "const q = sql`a = {x} and b = {y}`",
+            "(const q (tagged sql (str \"a = \" x \" and b = \" y)))",
+        ),
+    ]);
+}

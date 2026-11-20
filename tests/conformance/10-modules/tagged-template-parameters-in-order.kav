@@ -1,0 +1,28 @@
+// Rule: In a tagged template, the n-th `{…}` is replaced in the text by the tag's `param` function given n, and its value goes in the record's `params`, in order.
+// Spec: 10.15
+// expect output: select id from orders where owner = $1 and qty > $2
+// expect output: [Text(value: "asha"), Number(value: 3)]
+
+pub type Param = Text(value: String) | Number(value: Int)
+
+pub type Query {
+    text: String
+    params: [Param] = []
+}
+
+pub literal sql: Query check check_sql param pg_param
+
+fn check_sql(text: String) -> [LiteralProblem] {
+    []
+}
+
+fn pg_param(n: Int) -> String {
+    `${n}`
+}
+
+fn main() {
+    const owner = "asha"
+    const q = sql`select id from orders where owner = {owner} and qty > {1 + 2}`
+    print(q.text)
+    print(q.params)
+}

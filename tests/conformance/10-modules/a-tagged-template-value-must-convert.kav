@@ -1,0 +1,26 @@
+// Rule: Each value in a tagged template must convert to the tag's parameter type: a value that is neither one nor held by exactly one of its variants is a compile error.
+// Spec: 10.15
+// expect compile error
+
+pub type Param = Text(value: String) | Number(value: Int)
+
+pub type Query {
+    text: String
+    params: [Param] = []
+}
+
+pub literal sql: Query check check_sql param pg_param
+
+fn check_sql(text: String) -> [LiteralProblem] {
+    []
+}
+
+fn pg_param(n: Int) -> String {
+    `${n}`
+}
+
+fn main() {
+    const paid = true
+    const q = sql`select id from orders where paid = {paid}`     // error: a Bool is no Param
+    print(q.text)
+}

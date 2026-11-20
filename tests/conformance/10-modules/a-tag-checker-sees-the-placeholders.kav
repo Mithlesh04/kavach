@@ -1,0 +1,30 @@
+// Rule: A tag's checker reads a tagged template's text with the placeholders in, and a problem inside a placeholder is shown at its `{…}`, on its own line.
+// Spec: 10.15
+// expect warning
+// expect output: select id from orders
+// expect output: where owner = $1 and id > $2
+
+pub type Query {
+    text: String
+    params: [Int] = []
+}
+
+pub literal sql: Query check check_sql param pg_param
+
+/// Warns at `$2`, as a server that knows only one parameter would.
+fn check_sql(text: String) -> [LiteralProblem] {
+    const at = text.index_of("$2") ?? return []
+    [LiteralProblem(at: at, length: 2, message: "this query has one parameter", warning: true)]
+}
+
+fn pg_param(n: Int) -> String {
+    `${n}`
+}
+
+fn main() {
+    const q = sql`
+        select id from orders
+        where owner = {1} and id > {2}
+        `    // the warning is on the line above, at `{2}`
+    print(q.text)
+}

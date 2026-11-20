@@ -62,6 +62,10 @@ impl<'a> Interp<'a> {
                     Some(kavach_checker::Ty::Adt(def, _)) => *def,
                     _ => return Err(self.panic("this tagged literal has no type", e.span)),
                 };
+                // A tag that takes parameters (`` sql`…{x}…` ``).
+                if let Some(value) = self.tagged_template(def, args, e.span) {
+                    return value;
+                }
                 let mut values = Vec::new();
                 for a in args {
                     values.push((None, self.eval(&a.value)?));

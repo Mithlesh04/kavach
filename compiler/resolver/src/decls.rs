@@ -115,6 +115,9 @@ impl Resolver {
             ItemKind::Literal(l) => {
                 self.type_expr(&l.ty);
                 self.use_name(&l.check);
+                if let Some(p) = &l.param {
+                    self.use_name(p);
+                }
             }
             ItemKind::Interface(i) => {
                 self.push();

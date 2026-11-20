@@ -240,12 +240,8 @@ fn errors_are_reported_and_lexing_continues() {
         errors(r#"r"\d""#),
         ["1: a string in quotes is exactly what is written already: drop the `r` (spec 1.7)"]
     );
-    assert_eq!(
-        errors("sql`x`"),
-        [
-            "1: a tag before a template, with parameters, isn't built yet: write the text in quotes (spec 10.15)"
-        ]
-    );
+    // A tag before a template is a tagged template (spec 10.15).
+    assert_eq!(errors(r"sql`a = {x}\n`"), [] as [&str; 0]);
     assert_eq!(errors("\"\"\"\n  open"), ["2: this text is never closed"]);
 }
 

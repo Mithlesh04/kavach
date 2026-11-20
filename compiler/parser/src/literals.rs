@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
-//! Tagged literals (spec 10.15): the `literal` declaration, and `sql"…"`
-//! or `pg.sql"…"`, a name written right before a string.
+//! Tagged literals (spec 10.15): the `literal` declaration, and `sql"…"`,
+//! `` sql`…` `` or `pg.sql"…"`, a name written right before a string.
 
 use crate::parser::Parser;
 use kavach_ast::*;
@@ -35,7 +35,7 @@ impl Parser<'_> {
         }
     }
 
-    /// `literal sql: Query check check_sql language "sql"`.
+    /// `literal sql: Query check check_sql param pg_param language "sql"`.
     pub(crate) fn literal_decl(&mut self) -> LiteralDecl {
         self.bump(); // `literal`
         let name = self.ident("the tag's name");
@@ -47,6 +47,10 @@ impl Parser<'_> {
             self.error_here("`check` and the function that checks the text: `check check_sql`");
         }
         let check = self.ident("the function that checks the text");
+        let param = self.at_word("param").then(|| {
+            self.bump();
+            self.ident("the function that writes a parameter: `param pg_param`")
+        });
         let mut language = None;
         if self.at_word("language") {
             self.bump();
@@ -62,6 +66,7 @@ impl Parser<'_> {
             name,
             ty,
             check,
+            param,
             language,
         }
     }

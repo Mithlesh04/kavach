@@ -28,9 +28,30 @@ impl Interp<'_> {
             };
             let text_start = u.span.start + quote;
             let whole = u.span;
+            // A tagged template: escapes read, placeholders in (10.15).
+            let template = c.src[u.span.start as usize..].starts_with('`');
+            let (checked, places) = match template {
+                true => match self.checked_template(u, CHECK_STEPS) {
+                    Ok(found) => found,
+                    Err(why) => {
+                        let text = format!(
+                            "the `param` function of `{}` stopped: {why} (spec 10.15)",
+                            u.tag
+                        );
+                        out.push(Message {
+                            severity: Severity::Error,
+                            code: "literal",
+                            text,
+                            span: whole,
+                        });
+                        continue;
+                    }
+                },
+                false => (u.text.clone(), None),
+            };
             self.steps = 0;
             self.step_limit = Some(CHECK_STEPS);
-            let arg = self.str_value(&u.text);
+            let arg = self.str_value(&checked);
             let result = self.call_fn(f, None, vec![(None, arg)], whole);
             self.step_limit = None;
             let items = match result {
@@ -68,9 +89,13 @@ impl Interp<'_> {
                     1 => text_start as usize + byte_of(&u.text, i),
                     _ => in_lines(&c.src, text_start as usize, &u.text, i),
                 };
-                let span = kavach_ast::Span {
-                    start: place(at) as u32,
-                    end: place(at + length) as u32,
+                let span = match (&places, template) {
+                    (Some(places), _) => in_template(places, at, length, whole),
+                    (None, true) => whole,
+                    (None, false) => kavach_ast::Span {
+                        start: place(at) as u32,
+                        end: place(at + length) as u32,
+                    },
                 };
                 let hint = text("hint");
                 let mut message = format!("{}: {}", u.tag, text("message"));
@@ -91,6 +116,28 @@ impl Interp<'_> {
             }
         }
         out
+    }
+}
+
+/// Characters `at` to `at + length` of a template's checked text, in the
+/// source: `places` holds where each character is (`template_places`).
+fn in_template(
+    places: &[(usize, usize)],
+    at: usize,
+    length: usize,
+    whole: kavach_ast::Span,
+) -> kavach_ast::Span {
+    let Some(&(_, last_end)) = places.last() else {
+        return whole;
+    };
+    let start = places.get(at).map_or(last_end, |p| p.0);
+    let end = places
+        .get(at + length - 1)
+        .map_or(last_end, |p| p.1)
+        .max(start);
+    kavach_ast::Span {
+        start: start as u32,
+        end: end as u32,
     }
 }
 
