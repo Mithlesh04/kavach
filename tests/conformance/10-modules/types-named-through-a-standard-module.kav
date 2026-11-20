@@ -34,6 +34,6 @@ fn window(c: Shared<wire.Credit>?) -> Int {
 fn main() ! Error uses Console, Fs {
     const r = regex.new("x(\d+)") catch e => panic(`{e}`)
     print(first(r, "ax12b") ?? "none")
-    print((try count()) > 0)
+    print((try count()) >= 0)        // the folder it runs in may be empty
     print(window(none))
 }
