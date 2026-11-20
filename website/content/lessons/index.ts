@@ -31,6 +31,7 @@ import { whyDoc } from "./start-why";
 import { arenasDoc, automaticDoc, fastDoc, sharedDoc, unsafeDoc, valuesDoc } from "./memory";
 import { fromJsPythonDoc } from "./memory-from";
 import { freedDoc } from "./memory-freed";
+import { memoryStepsDoc } from "./memory-steps";
 import { errorKindsDoc } from "./errors-kinds";
 import { monitorDoc } from "./agents-monitor";
 import { practiceDoc } from "./agents-practice";
@@ -309,6 +310,7 @@ export const lessons: Record<string, LessonDoc> = {
   "memory/values-not-references": valuesDoc,
   "memory/values-not-references/coming-from-javascript-and-python": fromJsPythonDoc,
   "memory/automatic-memory": automaticDoc,
+  "memory/automatic-memory/memory-step-by-step": memoryStepsDoc,
   "memory/automatic-memory/how-it-stays-fast": fastDoc,
   "memory/automatic-memory/freed-immediately": freedDoc,
   "memory/shared-state": sharedDoc,

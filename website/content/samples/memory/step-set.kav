@@ -1,0 +1,6 @@
+fn main() {
+    let seen = Set.of("tea", "cake")
+    seen.add("tea")
+    seen.add("jam")
+    print(seen)
+}

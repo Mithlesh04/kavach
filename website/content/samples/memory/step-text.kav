@@ -1,0 +1,7 @@
+fn main() {
+    const s = "tea"
+    let t = s
+    t += " and cake"
+    print(`s={s}`)
+    print(`t={t}`)
+}

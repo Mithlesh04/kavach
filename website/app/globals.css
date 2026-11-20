@@ -259,6 +259,19 @@ pre::-webkit-scrollbar-thumb {
 @keyframes race {
   0% { width: 0; }
 }
+/* memory step-through (components/memory-blocks.tsx): an object appears, a count changes */
+@keyframes mem-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.97); }
+}
+@keyframes mem-flash {
+  0%, 30% { box-shadow: 0 0 0 4px var(--glow); border-color: var(--accent); }
+}
+.mem-in { animation: mem-in 0.35s ease-out; }
+.mem-flash { animation: mem-flash 1.1s ease-out; }
+@keyframes mem-chip {
+  50% { fill: #5a3f14; }
+}
+.mem-chip { animation: mem-chip 2.2s ease-in-out infinite; }
 @keyframes reveal {
   from { opacity: 0; }
   to { opacity: 1; }

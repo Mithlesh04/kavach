@@ -1,0 +1,7 @@
+fn main() {
+    let items: [Int] = []
+    for i in 0..3 {
+        items.push(i * 10)
+    }
+    print(items)
+}

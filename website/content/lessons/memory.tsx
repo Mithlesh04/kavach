@@ -3,7 +3,7 @@ import { CodeBlock } from "@/components/code-block";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
-import { MemoryShare } from "@/components/memory-share";
+import { MemorySteps } from "@/components/memory-steps";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject } from "@/lib/samples";
 import { specTables } from "@/lib/spec-tables";
@@ -40,6 +40,11 @@ export const valuesDoc: LessonDoc = {
         in the other. That &quot;who else changed my list?&quot; bug can&apos;t happen here. Each case, side by side:{" "}
         <Link href="/docs/memory/values-not-references/coming-from-javascript-and-python/">coming from JavaScript and Python</Link>.
       </Note>
+      <P>
+        Does <C>b = a</C> take new memory, then? No: inside, <C>b</C> shares <C>a</C>&apos;s object until one of
+        them changes, so nothing is copied until it must be. See it step by step:{" "}
+        <Link href="/docs/memory/automatic-memory/memory-step-by-step/">Memory, Step by Step</Link>.
+      </P>
       <H2>Four levels of control</H2>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-[15px]">
@@ -104,11 +109,12 @@ export const fastDoc: LessonDoc = {
         <li><strong className="text-ink">Shared and counted.</strong> A large value is shared inside, with a count of who holds it. The compiler removes most count updates while compiling.</li>
         <li><strong className="text-ink">Copied only on change.</strong> A value is copied only when it is changed while someone else still holds it. If nobody else does, it is changed in place. So <C>text += part</C> or <C>items.push(x)</C> in a loop copies only what is added, not the whole value each time.</li>
       </ol>
-      <P>Step through what happens in memory, line by line:</P>
-      <MemoryShare />
-      <P>Its first lines as a program you can run:</P>
-      <Ex name="memory/values" />
-      <P>Here <C>b.push(4)</C> is the moment the list is really copied: <C>a</C> still holds the old one.</P>
+      <P>
+        Step through what happens in memory, line by line. Every case, for every type, is on{" "}
+        <Link href="/docs/memory/automatic-memory/memory-step-by-step/">Memory, Step by Step</Link>:
+      </P>
+      <MemorySteps name="copy" />
+      <P>Here <C>b.push(6)</C> is the moment the list is really copied: <C>a</C> still holds the old one.</P>
       <P>
         Sharing makes comparing quick too: before the copy, <C>a == b</C> is <C>true</C> without looking at the items
         (see <Link href="/docs/basics/operators/comparison/#contents-not-places">Comparison</Link>).

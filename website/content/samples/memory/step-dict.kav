@@ -1,0 +1,9 @@
+fn main() {
+    let stock: {String: Int} = {:}
+    stock["tea"] = 3
+    stock["cake"] = 5
+    for i in 0..7 {
+        stock[`item{i}`] = i
+    }
+    print(stock.len())
+}

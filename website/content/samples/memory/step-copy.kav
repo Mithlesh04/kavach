@@ -1,0 +1,7 @@
+fn main() {
+    const a = [2, 3, 4, 5]
+    let b = a
+    b.push(6)
+    print(`a={a}`)
+    print(`b={b}`)
+}

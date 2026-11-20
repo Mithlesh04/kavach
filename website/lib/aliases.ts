@@ -63,6 +63,7 @@ export const aliases: Record<string, string> = {
   "collections/tuples": "tuple pair triple destructuring unpack multiple return values",
   "types/frozen-values": "freeze frozen unfreeze object.freeze immutable readonly read only deep freeze shallow freeze nested",
   "types/frozen-values/sealed-with-a-key": "seal sealed key unfreeze key private key library framework lock",
+  "memory/automatic-memory/memory-step-by-step": "memory layout heap stack allocation allocate reference count refcount rc arc copy on write cow move semantics ownership pointer share shallow copy deep copy does assignment copy new memory how much memory hash table hashmap index probe small string inline animation visualize",
   "types/generics": "generic template type parameter parametric polymorphism type variable const generics number parameter numbers in types width size",
   "types/interfaces": "interface trait protocol abstract class polymorphism dynamic dispatch virtual method duck typing implements inheritance",
   "standard-library/json/json-values": "dynamic type any unknown type duck typing schemaless untyped object dict mixed int float parse api response bigint decimal exact digits big number precision 0.1 lossless",

@@ -108,7 +108,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
   ]],
   ["memory", "Memory", "advanced", [
     ["Values, Not References", "6.1", ["Coming from JavaScript and Python"]],
-    ["Automatic Memory", "6.1", ["How it stays fast", "Freed immediately"]],
+    ["Automatic Memory", "6.1", ["Memory, Step by Step", "How it stays fast", "Freed immediately"]],
     ["Shared State", "6.2"],
     ["Arenas", "6.3"],
     ["Unsafe", "6.4"],

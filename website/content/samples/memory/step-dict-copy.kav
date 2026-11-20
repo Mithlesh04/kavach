@@ -1,0 +1,7 @@
+fn main() {
+    const prices = {"tea": 3, "cake": 5}
+    let sale = prices
+    sale["tea"] = 2
+    print(`prices={prices}`)
+    print(`sale={sale}`)
+}

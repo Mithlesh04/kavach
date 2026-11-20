@@ -1,0 +1,6 @@
+fn main() {
+    const a = Shared([2, 3])
+    const b = a
+    b.update(list => list + [4])
+    print(a.get())
+}
