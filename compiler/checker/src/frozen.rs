@@ -271,7 +271,9 @@ impl Checker<'_> {
                     n => format!("`{n}`"),
                 };
                 Some(format!(
-                    "{name} is a `{got}`, which never changes, so it can't go where a `{want}` is: call {fix} for a copy that can change (spec 2.20)"
+                    "{name} is {}, which never changes, so it can't go where {} is: call {fix} for a copy that can change (spec 2.20)",
+                    crate::op_impls::a_shown(&got),
+                    crate::op_impls::a_shown(&want)
                 ))
             }
             (_, Ty::Frozen(..)) => Some(format!(

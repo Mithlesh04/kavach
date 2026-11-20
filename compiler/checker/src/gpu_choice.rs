@@ -29,7 +29,7 @@ impl Checker<'_> {
             let shown = self.show(&t);
             self.error(
                 device.span,
-                format!("{owner} takes a `GpuDevice`, one of `gpu.devices()`, not a `{shown}` (spec 15.6); write `on gpu(n)` before the value to choose by number"),
+                format!("{owner} takes a `GpuDevice`, one of `gpu.devices()`, not {} (spec 15.6); write `on gpu(n)` before the value to choose by number", crate::op_impls::a_shown(&shown)),
             );
         }
         self.note_cap("Gpu", device.span);

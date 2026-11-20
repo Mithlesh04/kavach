@@ -160,7 +160,10 @@ impl Checker<'_> {
         }
         self.error(
             index.span,
-            format!("this key is a `{shown}`, but `{ty}` is indexed with {takes} (spec 2.16)"),
+            format!(
+                "this key is {}, but `{ty}` is indexed with {takes} (spec 2.16)",
+                crate::op_impls::a_shown(&shown)
+            ),
         );
         Some(Ty::Error)
     }

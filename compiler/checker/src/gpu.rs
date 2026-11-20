@@ -184,7 +184,11 @@ impl Checker<'_> {
                 let shown = self.show(&t);
                 self.error(
                     p.name.span,
-                    format!("`{}` is a `{shown}`, and {WHY}", p.name.name),
+                    format!(
+                        "`{}` is {}, and {WHY}",
+                        p.name.name,
+                        crate::op_impls::a_shown(&shown)
+                    ),
                 );
             }
         }
@@ -205,7 +209,11 @@ impl Checker<'_> {
             let shown = self.show(&ret);
             self.error(
                 f.name.span,
-                format!("`{}` gives a `{shown}`, and {WHY}", f.name.name),
+                format!(
+                    "`{}` gives {}, and {WHY}",
+                    f.name.name,
+                    crate::op_impls::a_shown(&shown)
+                ),
             );
         }
     }

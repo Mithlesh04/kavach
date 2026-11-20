@@ -271,7 +271,11 @@ impl Checker<'_> {
             let (g, w) = (self.show(got), self.show(want));
             self.error(
                 index.span,
-                format!("this key is a `{g}`, but the type is indexed with a `{w}` (spec 2.16)"),
+                format!(
+                    "this key is {}, but the type is indexed with {} (spec 2.16)",
+                    crate::op_impls::a_shown(&g),
+                    crate::op_impls::a_shown(&w)
+                ),
             );
         }
     }

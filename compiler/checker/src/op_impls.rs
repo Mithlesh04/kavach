@@ -135,7 +135,7 @@ impl Checker<'_> {
             let o = self.inf.resolve(o);
             if impls[..i].iter().any(|(p, ..)| self.inf.resolve(p) == o) {
                 let (ty, shown) = (self.res.defs[def].name.clone(), self.show(&o));
-                self.error(*span, format!("`{ty}` implements `{iface}` twice for a `{shown}` {what}: each implementation takes another type (spec 2.16)"));
+                self.error(*span, format!("`{ty}` implements `{iface}` twice for {} {what}: each implementation takes another type (spec 2.16)", a_shown(&shown)));
             }
         }
     }

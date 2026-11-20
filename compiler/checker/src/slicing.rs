@@ -195,7 +195,10 @@ impl Checker<'_> {
                 let shown = self.show(&t);
                 self.error(
                     target.span,
-                    format!("only a list's slice can be set, not a `{shown}`'s (spec 2.19)"),
+                    format!(
+                        "only a list's slice can be set, not {}'s (spec 2.19)",
+                        crate::op_impls::a_shown(&shown)
+                    ),
                 );
             }
             return;

@@ -169,7 +169,8 @@ impl<'t> Walk<'t> {
             self.errors.push((
                 e.span,
                 format!(
-                    "this is a `{shown}`, and {WHY}: write the type, as `const k: Float32 = 0.5`"
+                    "this is {}, and {WHY}: write the type, as `const k: Float32 = 0.5`",
+                    crate::op_impls::a_shown(&shown)
                 ),
             ));
             return;
