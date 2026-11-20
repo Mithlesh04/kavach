@@ -178,6 +178,21 @@ export const floatDoc: LessonDoc = {
         <C>-inf</C>:
       </P>
       <Ex name="datatypes/negative-zero" />
+      <H2>NaN and infinities</H2>
+      <P>
+        <C>0.0 / 0.0</C> is <C>NaN</C>, &quot;not a number&quot;, and <C>1.0 / 0.0</C> is <C>inf</C>. Three methods
+        of <C>Float</C> and <C>Float32</C> say which a value is: <C>x.is_nan()</C>, <C>x.is_infinite()</C> for{" "}
+        <C>inf</C> or <C>-inf</C>, and <C>x.is_finite()</C> for a number that is neither:
+      </P>
+      <Ex name="datatypes/float-checks" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>NaN</C> is the one value <C>==</C> never holds for, itself included, so <C>x == NaN</C> can&apos;t find one: ask <C>x.is_nan()</C>.</li>
+        <li>To leave <C>NaN</C> out of a list, filter it: <C>xs.filter(x =&gt; not x.is_nan())</C>, as in <Link href="/docs/collections/grouping-and-statistics/">statistics</Link>.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/14-standard-library/02-built-in-methods.md" label="spec 14.2 · is_nan, is_finite, is_infinite" />
+        <SrcRef file="tests/conformance/14-standard-library/float-is-nan-finite-and-infinite.kav" label="tested" />
+      </div>
       <H2>Its 64 bits</H2>
       <P>
         Binary formats store a <C>Float</C> as its 64 bits in IEEE 754 form. <C>x.bits()</C> gives them as a{" "}

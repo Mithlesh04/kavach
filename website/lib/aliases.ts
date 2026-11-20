@@ -57,6 +57,7 @@ export const aliases: Record<string, string> = {
   "start/kavach-home": "what is kavach compiled interpreted scripting language static typing garbage collector overview introduction",
   "start/what-kavach-does-for-you": "features why kavach benefits smart defaults safety speed",
   "functions/functions": "method procedure arguments parameters return call signature",
+  "basics/data-types/float-and-float32": "float double float32 single precision nan isnan is_nan infinity infinite isinf isfinite is_finite not a number ieee 754 negative zero",
   "basics/data-types": "data types datatypes mix mixing int plus float implicit conversion coercion promote primitive integer int long short byte float double decimal money currency char character string boolean conversion cast overflow number",
   "types/optionals": "null nil none undefined nullable maybe option optional chaining null pointer exception safe navigation elvis coalescing",
   "collections/tuples": "tuple pair triple destructuring unpack multiple return values",

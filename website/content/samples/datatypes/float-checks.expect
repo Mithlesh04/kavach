@@ -1,0 +1,5 @@
+1.5: is_nan false, is_finite true, is_infinite false
+NaN: is_nan true, is_finite false, is_infinite false
+inf: is_nan false, is_finite false, is_infinite true
+-2.0: is_nan false, is_finite true, is_infinite false
+[1.5, -2.0]

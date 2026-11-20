@@ -3,5 +3,5 @@ fn main() {
     const xs = [1.0, nan, 3.0]
     print(xs.mean(x => x) ?? 0.0)             // NaN: nothing is skipped
     print(xs.median(x => x) ?? 0.0)           // NaN sorts last
-    print(xs.filter(x => x.near(x)).mean(x => x) ?? 0.0)   // NaN is near nothing: left out on purpose
+    print(xs.filter(x => not x.is_nan()).mean(x => x) ?? 0.0)   // NaN left out on purpose
 }
