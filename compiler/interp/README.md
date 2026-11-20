@@ -52,6 +52,7 @@ Not supported yet: agents, capabilities, `ask` and `unsafe` (Phase 2 and the nat
 | `src/agents.rs` | Agents (spec 8.2, 8.3): `start`, handlers, capability calls through the guard, dry runs and test fakes |
 | `src/guard.rs` | An agent's limits and approvals, evaluated per call; the bookkeeping is `runtime/core`'s |
 | `src/ai.rs` | `ask<T>` (spec 8.4): through the guard, the model call, the answer checked against `T` |
+| `src/ai_checks.rs` | Each `Model` checked by its provider's `check` while the program is compiled (spec 8.4) |
 | `src/journal.rs` | Durable agents (spec 8.5, decision 0025): events and calls written to the journal (`runtime/core`), and events run again after a crash |
 | `src/run.rs` | The two ways to run a file: `main` and its tests (`example` and `test`) |
 | `src/std_crypto.rs` | `std.crypto` (spec 14.19), from `runtime/net` |

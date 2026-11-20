@@ -9,20 +9,33 @@
 use crate::net::{self, NetFail, Try};
 use std::time::Instant;
 
-/// Sends `body` to `url` (`http://` or `https://`) and gives the status
-/// and body of the response.
+/// Why no reply came.
+pub(crate) enum Trouble {
+    /// The `timeout` passed.
+    TimedOut(String),
+    /// No connection, or it dropped.
+    Network(String),
+}
+
+/// A reply: its status, headers (names in lowercase) and body.
+pub(crate) type Whole = (i64, Vec<(String, String)>, Vec<u8>);
+
+/// Sends `body` to `url` (`http://` or `https://`) and gives the status,
+/// headers and body of the response.
 pub(crate) fn post(
     url: &str,
     headers: &[(&str, &str)],
     body: &[u8],
     timeout: std::time::Duration,
-) -> Result<(i64, Vec<u8>), String> {
+) -> Result<Whole, Trouble> {
     let (secure, rest) = if let Some(r) = url.strip_prefix("https://") {
         (true, r)
     } else if let Some(r) = url.strip_prefix("http://") {
         (false, r)
     } else {
-        return Err(format!("`{url}` is not an http:// or https:// address"));
+        return Err(Trouble::Network(format!(
+            "`{url}` is not an http:// or https:// address"
+        )));
     };
     let slash = rest.find('/').unwrap_or(rest.len());
     let host = &rest[..slash];
@@ -66,21 +79,25 @@ pub(crate) fn post(
         reply.extend(piece);
     }
     conn.close();
-    parse(&reply)
+    parse(&reply).map_err(|m| Trouble::Network(m.to_string()))
 }
 
 /// Tries `once` until it is done or fails, or `deadline` passes.
-fn wait<T>(deadline: Instant, mut once: impl FnMut() -> Try<T>) -> Result<T, String> {
+fn wait<T>(deadline: Instant, mut once: impl FnMut() -> Try<T>) -> Result<T, Trouble> {
     let mut n = 0;
     loop {
         match once() {
             Try::Done(v) => return Ok(v),
-            Try::Fail(NetFail::Refused) => return Err("the connection was refused".into()),
-            Try::Fail(NetFail::TimedOut) => return Err("the network timed out".into()),
-            Try::Fail(NetFail::Failed(why)) => return Err(why),
+            Try::Fail(NetFail::Refused) => {
+                return Err(Trouble::Network("the connection was refused".into()));
+            }
+            Try::Fail(NetFail::TimedOut) => {
+                return Err(Trouble::TimedOut("the network timed out".into()));
+            }
+            Try::Fail(NetFail::Failed(why)) => return Err(Trouble::Network(why)),
             Try::Wait => {
                 if Instant::now() >= deadline {
-                    return Err("the call took too long".into());
+                    return Err(Trouble::TimedOut("the call took too long".into()));
                 }
                 std::thread::sleep(net::backoff(n));
                 n += 1;
@@ -89,8 +106,8 @@ fn wait<T>(deadline: Instant, mut once: impl FnMut() -> Try<T>) -> Result<T, Str
     }
 }
 
-/// The status and body of a whole response.
-pub(super) fn parse(reply: &[u8]) -> Result<(i64, Vec<u8>), String> {
+/// The status, headers and body of a whole response.
+pub(super) fn parse(reply: &[u8]) -> Result<Whole, &'static str> {
     let end = reply
         .windows(4)
         .position(|w| w == b"\r\n\r\n")
@@ -102,13 +119,16 @@ pub(super) fn parse(reply: &[u8]) -> Result<(i64, Vec<u8>), String> {
         .and_then(|l| l.split(' ').nth(1))
         .and_then(|s| s.parse().ok())
         .ok_or("the reply has no status")?;
-    let chunked = lines.any(|l| {
-        let l = l.to_ascii_lowercase();
-        l.starts_with("transfer-encoding:") && l.contains("chunked")
-    });
+    let headers: Vec<(String, String)> = lines
+        .filter_map(|l| l.split_once(':'))
+        .map(|(k, v)| (k.trim().to_ascii_lowercase(), v.trim().to_string()))
+        .collect();
+    let chunked = (headers.iter())
+        .any(|(k, v)| k == "transfer-encoding" && v.to_ascii_lowercase().contains("chunked"));
     let body = &reply[end + 4..];
     Ok((
         status,
+        headers,
         if chunked {
             dechunk(body)?
         } else {
@@ -119,7 +139,7 @@ pub(super) fn parse(reply: &[u8]) -> Result<(i64, Vec<u8>), String> {
 
 /// A body sent in chunks: each a length in hex, a line end, that many
 /// bytes and a line end; a length of 0 ends it.
-pub(super) fn dechunk(mut data: &[u8]) -> Result<Vec<u8>, String> {
+pub(super) fn dechunk(mut data: &[u8]) -> Result<Vec<u8>, &'static str> {
     let mut out = Vec::new();
     loop {
         let line = data
@@ -134,7 +154,7 @@ pub(super) fn dechunk(mut data: &[u8]) -> Result<Vec<u8>, String> {
             return Ok(out);
         }
         if data.len() < size + 2 {
-            return Err("a chunk is cut off".into());
+            return Err("a chunk is cut off");
         }
         out.extend_from_slice(&data[..size]);
         data = &data[size + 2..];

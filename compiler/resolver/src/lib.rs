@@ -124,6 +124,18 @@ impl Resolution {
         })
     }
 
+    /// The function `name` declared by the standard library module
+    /// `module`, such as `wire` in `std.ai` (spec 8.4).
+    pub fn builtin_fn(&self, module: &str, name: &str) -> Option<DefId> {
+        let m = self.modules.iter().find(|m| m.name == module)?;
+        self.defs.iter().position(|d| {
+            d.name == name
+                && d.kind == DefKind::Fn
+                && d.span
+                    .is_some_and(|s| s.start >= m.start && s.start < m.end)
+        })
+    }
+
     /// A type declared by any standard library module written in Kavach
     /// (`Json`, `FsError`).
     pub fn std_type(&self, name: &str) -> Option<DefId> {

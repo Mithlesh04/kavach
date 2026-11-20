@@ -1,0 +1,22 @@
+// Rule: `Anthropic()`, the provider of a `Model` that names none, writes a request for Anthropic's Messages API from the `Model`'s settings.
+// Spec: 8.4
+// expect output: https://api.anthropic.com/v1/messages
+// expect output: {"anthropic-version": "2023-06-01", "content-type": "application/json"}
+// expect output: {"model":"claude-sonnet-5-5","max_tokens":300,"messages":[{"role":"user","content":"Refund?"}],"output_config":{"format":{"type":"json_schema","schema":{"type":"object"}},"effort":"high"},"thinking":{"type":"between_tools"},"system":"Be brief.","stop_sequences":["END"]}
+// expect output: InHeader(name: "x-api-key")
+// expect output: ANTHROPIC_API_KEY
+
+use std.json
+
+fn main() {
+    const m = Model(name: "claude-sonnet-5-5", effort: Effort.High, max_tokens: 300, thinking: false,
+        instructions: "Be brief.", stop: ["END"])
+    const schema = json.parse(`\{"type":"object"}`) catch _e => Json.Null
+    const p = Anthropic()
+    const r = p.request(AskCall(model: m, prompt: "Refund?", schema: schema, strict: true))
+    print(r.url)
+    print(r.headers)
+    print(r.body)
+    print(p.auth(m))
+    print(p.key_variable())
+}

@@ -1,0 +1,30 @@
+// Rule: `AiError` has a variant for each kind of trouble, the same for every provider, so a program tells them apart with `match`.
+// Spec: 8.4
+// expect output: wait and try later
+// expect output: pay the bill
+// expect output: refused: none
+// expect output: cut off at 300
+// expect output: after 30000 ms
+// expect output: other: 418
+
+fn advice(e: AiError) -> String {
+    match e {
+        AiError.RateLimited(_) => "wait and try later",
+        AiError.Overloaded(_) => "wait and try later",
+        AiError.QuotaUsedUp(_) => "pay the bill",
+        AiError.Refused(reason: r) => `refused: {r ?? "none"}`,
+        AiError.CutOff(max_tokens: n) => `cut off at {n}`,
+        AiError.TimedOut(after: d) => `after {d.ms} ms`,
+        AiError.Failed(status: s, message: _) => `other: {s}`,
+        _ => "something else",
+    }
+}
+
+fn main() {
+    print(advice(AiError.RateLimited(message: "slow down")))
+    print(advice(AiError.QuotaUsedUp(message: "no credit")))
+    print(advice(AiError.Refused(reason: none)))
+    print(advice(AiError.CutOff(max_tokens: 300)))
+    print(advice(AiError.TimedOut(after: 30.seconds)))
+    print(advice(AiError.Failed(status: 418, message: "teapot")))
+}

@@ -1,0 +1,15 @@
+// Rule: A `Model`'s `provider` is worked out when the program is built, so one made from a value known only at run time is a compile error.
+// Spec: 8.4
+// expect compile error
+
+fn pick(name: String) -> Anthropic {
+    debug(name)
+    Anthropic()
+}
+
+fn main() {
+    const name = "anthropic"
+    const m = Model(name: "claude-haiku-5-5", provider: pick(name))
+    const v = ask<Bool>("Is it fine?", model: m) catch _e => false    // error: a model is chosen when the program is built
+    print(v)
+}

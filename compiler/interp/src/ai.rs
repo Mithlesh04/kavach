@@ -6,20 +6,18 @@
 //! answer's shape is a JSON Schema built from `T` (`kavach_driver::
 //! ask_schema`); the reply is decoded like `json.decode<T>`, and asked
 //! again (twice at most) when it doesn't fit. The call itself is
-//! `kavach_runtime_net::ai`; waiting for it lets other tasks run.
+//! `kavach_runtime_net::ai`, which calls the model's provider, written in
+//! Kavach (decision 0140); waiting for it lets other tasks run.
 
 use crate::calls::Args;
 use crate::interp::Interp;
 use crate::value::{Eval, Flow, Value};
 use kavach_ast::Expr;
-use kavach_checker::{Prim, Ty};
+use kavach_checker::Ty;
 use kavach_runtime_core::agents::{Asked, largest_ask};
 use kavach_runtime_core::json::{self, Tree};
-use kavach_runtime_net::ai::{self, Outcome, Request, Tokens};
+use kavach_runtime_net::ai::{self, Tokens};
 use std::time::Instant;
-
-/// How many times an answer that doesn't fit `T` is asked for again.
-const RETRIES: usize = 2;
 
 impl<'a> Interp<'a> {
     pub(crate) fn ask(&mut self, args: Args<'a>, e: &'a Expr) -> Eval<'a> {
@@ -131,8 +129,10 @@ impl<'a> Interp<'a> {
         result
     }
 
-    /// The model call itself, retried while the answer doesn't fit `t`;
-    /// with the tokens every try took.
+    /// The model call itself, through the runtime's driver
+    /// (`kavach_runtime_net::ai::ask`), with the model's provider written
+    /// in Kavach doing the translating (decision 0140); with the tokens
+    /// every try took.
     fn ask_model(
         &mut self,
         t: &Ty,
@@ -140,82 +140,102 @@ impl<'a> Interp<'a> {
         model: &kavach_driver::AiModel,
         span: kavach_ast::Span,
     ) -> (Eval<'a>, Tokens) {
-        let mut used = Tokens::default();
-        let result = self.ask_tries(t, prompt, model, span, &mut used);
-        (result, used)
-    }
-
-    fn ask_tries(
-        &mut self,
-        t: &Ty,
-        prompt: &str,
-        model: &kavach_driver::AiModel,
-        span: kavach_ast::Span,
-        used: &mut Tokens,
-    ) -> Eval<'a> {
         // Built where native code builds it (`kavach_driver::ask_schema`).
         let Some((schema, wrapped)) = kavach_driver::ask_schema(self.c, t) else {
-            return Err(self.panic(kavach_driver::NO_SCHEMA, span));
+            return (
+                Err(self.panic(kavach_driver::NO_SCHEMA, span)),
+                Tokens::default(),
+            );
         };
-        let mut last = String::new();
-        for attempt in 0..=RETRIES {
-            // The type in the prompt first; then held to it (0057).
-            let settings = kavach_driver::model_settings(model);
-            let request = Request::new(&settings, prompt.to_string(), schema.clone(), attempt > 0);
-            let pending = ai::start(request);
-            let mut n = 0;
-            let outcome = loop {
-                if let Some(o) = pending.poll() {
-                    break o;
-                }
-                let until = Instant::now() + kavach_runtime_net::net::backoff(n);
-                self.sleep_until(until, span)?;
-                n += 1;
-            };
-            let answer = match outcome {
-                Outcome::NoKey(variable) => {
-                    let v = vec![("variable", self.str_value(&variable))];
-                    return Err(Flow::Fail(self.builtin_variant("AiError", "NoKey", v)));
-                }
-                Outcome::Failed { status, message } => {
-                    let v = vec![
-                        ("status", Value::Int(i128::from(status), Prim::Int)),
-                        ("message", self.str_value(&message)),
-                    ];
-                    return Err(Flow::Fail(self.builtin_variant("AiError", "Failed", v)));
-                }
-                Outcome::Answer(tree, tokens) => {
-                    used.input += tokens.input;
-                    used.output += tokens.output;
-                    tree
-                }
-            };
-            let answer = if wrapped {
-                field(&answer, "value")
-            } else {
-                answer
-            };
-            if let Ok(v) = self.decode(&answer, t, "") {
-                return Ok(v);
-            }
-            last = json::write(&answer, 0);
+        let settings = kavach_driver::model_settings(model);
+        let wire = match self.provider_wire(model, &settings, span) {
+            Ok(w) => w,
+            Err(e) => return (Err(e), Tokens::default()),
+        };
+        let mut side = Asking {
+            i: self,
+            wire,
+            t: t.clone(),
+            span,
+        };
+        let asked = match ai::ask(&mut side, &settings, prompt, &schema, wrapped) {
+            Ok(a) => a,
+            Err(stop) => return (Err(stop), Tokens::default()),
+        };
+        let result = match asked.result {
+            Ok(v) => Ok(v),
+            Err(f) => Err(self.ai_error(&f.tree(), span)),
+        };
+        (result, asked.tokens)
+    }
+
+    /// The function `std.ai`'s `wire` gives for `model`'s provider: what
+    /// the runtime translates every request and reply with.
+    pub(crate) fn provider_wire(
+        &mut self,
+        model: &kavach_driver::AiModel,
+        settings: &Tree,
+        span: kavach_ast::Span,
+    ) -> Eval<'a> {
+        let c = self.c;
+        let wire = c.resolution.builtin_fn("std.ai", "wire");
+        let Some(f) = wire.and_then(|d| self.fns.get(&d).copied()) else {
+            return Err(self.panic("`ask` needs `std.ai`'s `wire`", span));
+        };
+        let provider = match model
+            .provider
+            .as_ref()
+            .and_then(|(at, _)| c.ai_providers.get(at))
+        {
+            Some(e) => self.eval(e)?,
+            None => Value::None,
+        };
+        let settings = self.str_value(&json::write(settings, 0));
+        self.call_fn(f, None, vec![(None, provider), (None, settings)], span)
+    }
+
+    /// `AiError` from its JSON (spec 2.12).
+    fn ai_error(&mut self, tree: &Tree, span: kavach_ast::Span) -> Flow<'a> {
+        let ty = self
+            .c
+            .resolution
+            .std_type("AiError")
+            .map(|d| Ty::Adt(d, Vec::new()));
+        match ty.map(|ty| self.decode(tree, &ty, "")) {
+            Some(Ok(v)) => Flow::Fail(v),
+            _ => self.panic("`AiError` is missing from the program", span),
         }
-        let v = vec![("answer", self.str_value(&last))];
-        Err(Flow::Fail(self.builtin_variant(
-            "AiError",
-            "InvalidOutput",
-            v,
-        )))
     }
 }
 
-/// Field `name` of an object, or `null`.
-fn field(tree: &Tree, name: &str) -> Tree {
-    match tree {
-        Tree::Object(fields) => fields
-            .iter()
-            .find(|(k, _)| k == name)
-            .map_or(Tree::Null, |(_, v)| v.clone()),
-        _ => Tree::Null,
+/// The interpreter's side of an `ask`: its provider's `wire` function,
+/// and the type its answer must have.
+struct Asking<'i, 'a> {
+    i: &'i mut Interp<'a>,
+    wire: Value<'a>,
+    t: Ty,
+    span: kavach_ast::Span,
+}
+
+impl<'a> ai::Side for Asking<'_, 'a> {
+    type Value = Value<'a>;
+    type Stop = Flow<'a>;
+
+    fn translate(&mut self, input: &str) -> Result<String, Flow<'a>> {
+        let arg = self.i.str_value(input);
+        Ok(
+            match self.i.call_value(self.wire.clone(), vec![arg], self.span)? {
+                Value::Str(s) => s.to_string(),
+                _ => "null".into(),
+            },
+        )
+    }
+
+    fn wait_until(&mut self, until: Instant) -> Result<(), Flow<'a>> {
+        self.i.sleep_until(until, self.span)
+    }
+
+    fn fits(&mut self, answer: &Tree) -> Option<Value<'a>> {
+        self.i.decode(answer, &self.t, "").ok()
     }
 }

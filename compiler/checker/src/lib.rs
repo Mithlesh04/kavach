@@ -106,10 +106,10 @@ mod user_ops;
 mod where_bounds;
 
 pub use agent_settings::{AgentSetup, AuditSetup};
-pub use ai_models::AiModel;
+pub use ai_models::{AiModel, AiModels};
 pub use frozen::{FrozenCall, WRONG_KEY};
 pub use json::json_literal_kind;
-use kavach_ast::File;
+use kavach_ast::{Expr, File, Span};
 pub use kavach_resolver::Diagnostic;
 use kavach_resolver::{DefId, Resolution};
 pub use literals::LiteralUse;
@@ -214,6 +214,10 @@ pub struct Checked {
     pub agent_models: HashMap<String, AiModel>,
     /// Each `ask`'s own `model:`, by the call's span.
     pub ask_models: HashMap<(u32, u32), AiModel>,
+    /// Each model's provider's expression, by its span, and each model
+    /// as written, for its provider's `check` (decision 0140).
+    pub ai_providers: HashMap<(u32, u32), Expr>,
+    pub ai_written: Vec<(Span, AiModel)>,
     /// Each agent's `settings`, by its name (decision 0060).
     pub agent_settings: HashMap<String, AgentSetup>,
     /// Each tagged literal, for its tag's checker (spec 10.15).
@@ -262,7 +266,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     checker.check_always_panics(file);
     checker.check_deprecated(file);
     checker.check_unwraps(file);
-    let (agent_models, ask_models) = checker.ai_models(file);
+    let models = checker.ai_models(file);
     let agent_settings = checker.agent_settings(file);
     let param_literals = (checker.literals.iter())
         .filter_map(|(start, ty)| match checker.inf.resolve(ty) {
@@ -382,8 +386,10 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
         tensor_casts: std::mem::take(&mut checker.tensor_casts),
         as_tensors,
         drop_locals,
-        agent_models,
-        ask_models,
+        agent_models: models.agents,
+        ask_models: models.asks,
+        ai_providers: models.providers,
+        ai_written: models.written,
         agent_settings,
         literal_uses: std::mem::take(&mut checker.literal_uses),
         numbers,

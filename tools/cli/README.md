@@ -46,7 +46,8 @@ Exit codes: 0 success, 1 compile errors or an error returned from `main`, 101 a 
 | `tests/tls.rs` | TLS servers and mutual TLS, with certificates made for the test by `openssl` |
 | [`tests/approvals/`](tests/approvals/README.md) | Approvals that wait for a person, across restarts, and answered in code (spec 8.3) |
 | [`tests/common/`](tests/common/README.md) | Code the test targets share: a watch that names a program still running after a minute |
-| `tests/ai_crowd.rs` | Forty `ask`s at once against a fake provider that takes four at a time: all get through the shared gate (spec 8.4) |
+| `tests/ai_crowd.rs` | Forty `ask`s at once against a fake provider that takes four at a time: all get through their provider's gate (spec 8.4) |
+| `tests/ai_providers.rs` | Each kind of trouble as its own `AiError`, `retry-after` honoured, and a program's own provider, against a fake server (spec 8.4, decision 0140) |
 | `tests/fake_gpus.rs` | `system.gpus()` with `KAVACH_FAKE_GPUS`: AMD, NVIDIA and Intel GPUs on any machine, best kind first, interpreted and natively (spec 14.25) |
 | `tests/gpu_choice.rs` | Choosing a GPU (spec 15.6): `gpu.devices()`, a missing GPU stopping the start, `gpu.on`, `on:`, `on gpu(n)` and `gpu(n) fn` with fake AMD and NVIDIA GPUs and Windows' WARP as a real second device, and each real GPU by number, interpreted and natively |
 | `tests/limits_parallel.rs` | A limit's total holds when 30 handlers pay at once: exactly 10 refunds of 100 under `sum(amount) <= 1000 per day` |

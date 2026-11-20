@@ -2,23 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
-//! `ask<T>(prompt)` in native code (spec 8.4): the model call of
-//! `kavach_runtime_net::ai`, the interpreter's too, then the answer
-//! decoded as a `T` like `json.decode<T>`, and asked again (twice at most)
-//! when it doesn't fit. Waiting for the reply lets other tasks run.
+//! `ask<T>(prompt)` in native code (spec 8.4): the runtime's driver
+//! (`kavach_runtime_net::ai::ask`), the interpreter's too, with the
+//! model's provider, written in Kavach, called through the function
+//! `std.ai`'s `wire` gave (decision 0140); the answer decoded as a `T`
+//! like `json.decode<T>`. Waiting for the reply lets other tasks run.
 
-use crate::heap::{first_of, release};
+use crate::heap::{first_of, release, slots};
 use crate::rt::type_of;
 use crate::rt_errors::set_error;
-use crate::rt_json::new_variant;
-use crate::shapes::{find_union, new_text, with_str};
+use crate::shapes::{find_union, new_text, str_of, with_str};
 use kavach_kir::{Shape, Type};
 use kavach_runtime_core::json::{self, Tree};
-use kavach_runtime_net::ai::{self, Outcome, Request};
+use kavach_runtime_net::ai;
 use std::time::Instant;
-
-/// How many times an answer that doesn't fit `T` is asked for again.
-const RETRIES: usize = 2;
 
 thread_local! {
     /// The model of this thread's last `ask` and the tokens it took, for
@@ -32,20 +29,65 @@ pub(crate) fn take_last() -> Option<(kavach_runtime_core::agents::Asked, i64)> {
     LAST.with(|l| l.borrow_mut().take())
 }
 
-/// `ask` with `prompt` (owned text), the request the compiler described
-/// in `request` (owned text: the model, its token limit, the schema, and
-/// whether the answer is wrapped in `{"value": …}`) and the decoding
-/// templates of `T` (owned). Gives a `T` of type `code`, or 0 with an
-/// `AiError` set.
-pub fn ask(prompt: i64, request: i64, templates: i64, code: i64, line: i32) -> i64 {
+/// Native code's side of an `ask`.
+struct Asking {
+    /// The `fn(String) -> String` closure `wire` gave.
+    wire: i64,
+    ty: Type,
+    templates: i64,
+    line: i32,
+}
+
+/// The task was cancelled while it waited.
+struct Cancelled;
+
+impl ai::Side for Asking {
+    type Value = u64;
+    type Stop = Cancelled;
+
+    fn translate(&mut self, input: &str) -> Result<String, Cancelled> {
+        let f = slots(self.wire)[0] as usize;
+        // SAFETY: slot 0 of a closure is its function's address; the code
+        // generator compiled `wire`'s lambda as `fn(closure, String) ->
+        // String`, borrowing the closure and taking the text, and the code
+        // lives as long as the program.
+        #[allow(unsafe_code)]
+        let f: extern "C-unwind" fn(i64, i64) -> i64 = unsafe { std::mem::transmute(f) };
+        let given = new_text(input, text_type());
+        let out = f(self.wire, given);
+        let text = str_of(out);
+        release(out);
+        Ok(text)
+    }
+
+    fn wait_until(&mut self, until: Instant) -> Result<(), Cancelled> {
+        crate::rt_tasks::sleep_until(until, self.line);
+        match crate::rt_tasks::cancelling() {
+            true => Err(Cancelled),
+            false => Ok(()),
+        }
+    }
+
+    fn fits(&mut self, answer: &Tree) -> Option<u64> {
+        crate::rt_json_decode::decode(answer, self.ty, "", self.templates).ok()
+    }
+}
+
+/// `ask` with `pair` (owned: the prompt's text, and the closure `wire`
+/// gave), the settings the compiler described in `request` (owned text:
+/// the model's, the schema, and whether the answer is wrapped in
+/// `{"value": …}`) and the decoding templates of `T` (owned). Gives a `T`
+/// of type `code`, or 0 with an `AiError` set.
+pub fn ask(pair: i64, request: i64, templates: i64, code: i64, line: i32) -> i64 {
     crate::rt_tasks::turn();
     crate::rt_tasks::refuse_if_held(line);
+    let [prompt, wire] = [slots(pair)[0] as i64, slots(pair)[1] as i64];
     let prompt_text = with_str(prompt, |s| s.to_string());
     let described = with_str(request, |s| json::parse(s, &json::Limits::default()));
-    release(prompt);
     release(request);
-    let field = |name: &str| match &described {
-        Ok(Tree::Object(fs)) => fs.iter().find(|(k, _)| k == name).map(|(_, v)| v.clone()),
+    let settings = described.unwrap_or(Tree::Null);
+    let field = |name: &str| match &settings {
+        Tree::Object(fs) => fs.iter().find(|(k, _)| k == name).map(|(_, v)| v.clone()),
         _ => None,
     };
     let model = match field("model") {
@@ -53,78 +95,47 @@ pub fn ask(prompt: i64, request: i64, templates: i64, code: i64, line: i32) -> i
         _ => String::new(),
     };
     let wrapped = matches!(field("wrapped"), Some(Tree::Bool(true)));
-    let mut used = ai::Tokens::default();
     let schema = field("schema").unwrap_or(Tree::Null);
-    let ty = type_of(code);
-    let mut last = String::new();
-    for attempt in 0..=RETRIES {
-        // The type in the prompt first; then held to it (0057).
-        let settings = described.as_ref().unwrap_or(&Tree::Null);
-        let request = Request::new(settings, prompt_text.clone(), schema.clone(), attempt > 0);
-        let pending = ai::start(request);
-        let mut n = 0;
-        let outcome = loop {
-            if let Some(o) = pending.poll() {
-                break o;
-            }
-            let until = Instant::now() + kavach_runtime_net::net::backoff(n);
-            crate::rt_tasks::sleep_until(until, line);
-            if crate::rt_tasks::cancelling() {
-                release(templates);
-                return 0;
-            }
-            n += 1;
+    let mut side = Asking {
+        wire,
+        ty: type_of(code),
+        templates,
+        line,
+    };
+    let asked = ai::ask(&mut side, &settings, &prompt_text, &schema, wrapped);
+    // The pair holds the closure: it goes once the asking is done.
+    release(pair);
+    let Ok(asked) = asked else {
+        release(templates);
+        return 0;
+    };
+    if asked.read {
+        let shown = kavach_runtime_core::agents::Asked {
+            model,
+            tokens: Some((asked.tokens.input, asked.tokens.output)),
         };
-        let answer = match outcome {
-            Outcome::NoKey(name) => {
-                let variable = new_text(&name, text_type());
-                return fail(templates, "NoKey", &[variable as u64]);
-            }
-            Outcome::Failed { status, message } => {
-                let message = new_text(&message, text_type());
-                return fail(templates, "Failed", &[status as u64, message as u64]);
-            }
-            Outcome::Answer(tree, tokens) => {
-                used.input += tokens.input;
-                used.output += tokens.output;
-                let shown = kavach_runtime_core::agents::Asked {
-                    model: model.clone(),
-                    tokens: Some((used.input, used.output)),
-                };
-                let took = i64::try_from(used.input + used.output).unwrap_or(i64::MAX);
-                LAST.with(|l| *l.borrow_mut() = Some((shown, took)));
-                tree
-            }
-        };
-        let answer = match (wrapped, &answer) {
-            (true, Tree::Object(fs)) => fs
-                .iter()
-                .find(|(k, _)| k == "value")
-                .map_or(Tree::Null, |(_, v)| v.clone()),
-            _ => answer,
-        };
-        if let Ok(slot) = crate::rt_json_decode::decode(&answer, ty, "", templates) {
-            release(templates);
-            return slot as i64;
-        }
-        last = json::write(&answer, 0);
+        let took = i64::try_from(asked.tokens.input + asked.tokens.output).unwrap_or(i64::MAX);
+        LAST.with(|l| *l.borrow_mut() = Some((shown, took)));
     }
-    let answer = new_text(&last, text_type());
-    fail(templates, "InvalidOutput", &[answer as u64])
+    let result = match asked.result {
+        Ok(slot) => slot as i64,
+        Err(f) => {
+            match find_union("AiError", "NoKey") {
+                Some(ty) => match crate::rt_json_decode::decode(&f.tree(), ty, "", templates) {
+                    Ok(e) => set_error(e as i64),
+                    Err(_) => crate::rt::panic_with("`AiError` can't hold this error", 0),
+                },
+                None => crate::rt::panic_with("`AiError` is missing from the program", 0),
+            }
+            0
+        }
+    };
+    release(templates);
+    result
 }
 
 fn text_type() -> Type {
     first_of(&Shape::Str)
-}
-
-/// Sets the error `AiError.<name>(fields)` and gives 0.
-fn fail(templates: i64, name: &str, fields: &[u64]) -> i64 {
-    release(templates);
-    match find_union("AiError", "NoKey") {
-        Some(ty) => set_error(new_variant(ty, name, fields)),
-        None => crate::rt::panic_with("`AiError` is missing from the program", 0),
-    }
-    0
 }
 
 // The group's runtime entry (`RtOp::entry`, decision 0024).

@@ -27,7 +27,7 @@ fn names() -> &'static Vec<HashSet<String>> {
     NAMES.get_or_init(|| {
         BUILTIN
             .iter()
-            .map(|(.., text)| {
+            .map(|(_, module, text)| {
                 let mut out = HashSet::new();
                 for item in kavach_parser::parse(text).file.items {
                     if !item.is_pub {
@@ -42,6 +42,12 @@ fn names() -> &'static Vec<HashSet<String>> {
                         _ => continue,
                     };
                     out.insert(t.name.name.clone());
+                    // `std.ai`'s variants (`NotFound`, `Answer`, `Other`)
+                    // are common words, and every use of one goes with
+                    // `ask` or a type of its own (decision 0140).
+                    if *module == "std.ai" {
+                        continue;
+                    }
                     if let TypeBody::Union(vs) = &t.body {
                         out.extend(vs.iter().map(|v| v.name.name.clone()));
                     }

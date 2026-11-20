@@ -6,38 +6,279 @@ use super::*;
 use std::io::{Read, Write};
 use std::net::TcpListener;
 
-fn request() -> Request {
-    let settings = Tree::Object(vec![
+/// A provider written in Rust, as `std.ai`'s `wire` answers: the request
+/// goes to `url` with the key in `x-api-key` (or none with `no_key`); a
+/// 200 is an answer, its body the answer's text; other statuses are the
+/// trouble the test names in `kinds`.
+struct Fake {
+    url: String,
+    no_key: bool,
+    kinds: Vec<(i64, &'static str)>,
+    waited: Vec<Duration>,
+}
+
+impl Side for Fake {
+    type Value = Tree;
+    type Stop = ();
+
+    fn translate(&mut self, input: &str) -> Result<String, ()> {
+        Ok(self.answer(input))
+    }
+
+    fn wait_until(&mut self, until: Instant) -> Result<(), ()> {
+        let left = until.saturating_duration_since(Instant::now());
+        if left > Duration::from_millis(50) {
+            // A retry's wait: noted, not waited, so tests stay fast.
+            self.waited.push(left);
+            return Ok(());
+        }
+        std::thread::sleep(left);
+        Ok(())
+    }
+
+    fn fits(&mut self, answer: &Tree) -> Option<Tree> {
+        matches!(answer, Tree::Object(_)).then(|| answer.clone())
+    }
+}
+
+impl Fake {
+    fn answer(&mut self, input: &str) -> String {
+        let tree = json::parse(input, &Limits::default()).unwrap();
+        let op = wire::field(&tree, "op").cloned();
+        if op == Some(Tree::Text("request".into())) {
+            let auth = match self.no_key {
+                true => r#""NoKey""#.to_string(),
+                false => r#"{"InHeader":{"name":"x-api-key"}}"#.to_string(),
+            };
+            return format!(
+                r#"{{"url":"{}/v1/messages","headers":{{"content-type":"application/json"}},"body":"{{}}","auth":{auth},"key_variable":"TEST_FAKE_AI_KEY"}}"#,
+                self.url
+            );
+        }
+        let Some(Tree::Int(status)) = wire::field(&tree, "status").cloned() else {
+            panic!("no status in {input}");
+        };
+        let Some(Tree::Text(body)) = wire::field(&tree, "body").cloned() else {
+            panic!("no body in {input}");
+        };
+        if status == 200 {
+            let text = json::write(&Tree::Text(body), 0);
+            return format!(
+                r#"{{"Answer":{{"text":{text},"usage":{{"input":5,"output":null}}}}}}"#
+            );
+        }
+        let kind = (self.kinds.iter().find(|(s, _)| *s == status))
+            .map_or(format!(r#"{{"Other":{{"status":{status}}}}}"#), |(_, k)| {
+                format!("\"{k}\"")
+            });
+        format!(r#"{{"Problem":{{"kind":{kind},"message":"no","wait":{{"ms":1}}}}}}"#)
+    }
+}
+
+/// A server that answers one request per reply, in order, and gives back
+/// what it was sent.
+fn fake_server(replies: Vec<&'static str>) -> (String, std::thread::JoinHandle<Vec<String>>) {
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let address = listener.local_addr().unwrap();
+    let handle = std::thread::spawn(move || {
+        let mut all = Vec::new();
+        for reply in replies {
+            let (mut s, _) = listener.accept().unwrap();
+            let mut got = Vec::new();
+            let mut buf = [0u8; 4096];
+            loop {
+                let n = s.read(&mut buf).unwrap();
+                got.extend_from_slice(&buf[..n]);
+                let text = String::from_utf8_lossy(&got);
+                if let Some(end) = text.find("\r\n\r\n") {
+                    let length = (text[..end].lines())
+                        .find_map(|l| l.strip_prefix("content-length: "))
+                        .and_then(|v| v.trim().parse::<usize>().ok())
+                        .unwrap_or(0);
+                    if got.len() >= end + 4 + length || n == 0 {
+                        break;
+                    }
+                }
+            }
+            s.write_all(reply.as_bytes()).unwrap();
+            all.push(String::from_utf8_lossy(&got).into_owned());
+        }
+        all
+    });
+    (format!("http://{address}"), handle)
+}
+
+fn settings(retries: i64) -> Tree {
+    Tree::Object(vec![
         ("model".into(), Tree::Text("test-model".into())),
         ("max_tokens".into(), Tree::Int(64)),
-    ]);
+        ("retries".into(), Tree::Int(retries)),
+        ("api_key_env".into(), Tree::Text("TEST_FAKE_AI_KEY".into())),
+        ("provider".into(), Tree::Text("Fake".into())),
+    ])
+}
+
+fn ask_fake(fake: &mut Fake, retries: i64) -> Asked<Tree> {
+    kavach_runtime_core::env_file::set(
+        Vec::new(),
+        vec![("TEST_FAKE_AI_KEY".into(), "sk-t".into())],
+    );
     let schema = Tree::Object(vec![("type".into(), Tree::Text("object".into()))]);
-    Request::new(&settings, "Refund order 7?".into(), schema, true)
+    let Ok(asked) = ask(fake, &settings(retries), "Refund?", &schema, false) else {
+        panic!("stopped");
+    };
+    asked
+}
+
+fn fake(url: &str) -> Fake {
+    Fake {
+        url: url.to_string(),
+        no_key: false,
+        kinds: vec![(429, "RateLimited"), (402, "QuotaUsedUp")],
+        waited: Vec::new(),
+    }
+}
+
+const OK: &str =
+    "HTTP/1.1 200 OK\r\nconnection: close\r\ncontent-length: 14\r\n\r\n{\"approve\":1}\n";
+const BUSY: &str = "HTTP/1.1 429 Too Many Requests\r\nretry-after: 3\r\ncontent-length: 0\r\n\r\n";
+const BROKE: &str = "HTTP/1.1 402 Payment Required\r\ncontent-length: 0\r\n\r\n";
+
+#[test]
+fn the_key_goes_where_the_provider_says_and_the_answer_is_read() {
+    let (url, server) = fake_server(vec![OK]);
+    let mut f = fake(&url);
+    let asked = ask_fake(&mut f, 0);
+    let sent = server.join().unwrap();
+    assert!(
+        sent[0].starts_with("POST /v1/messages HTTP/1.1"),
+        "{}",
+        sent[0]
+    );
+    assert!(sent[0].contains("x-api-key: sk-t"), "{}", sent[0]);
+    assert!(
+        sent[0].contains("content-type: application/json"),
+        "{}",
+        sent[0]
+    );
+    assert!(matches!(asked.result, Ok(Tree::Object(_))));
+    // An output count the provider didn't give is 0.
+    assert_eq!(
+        asked.tokens,
+        Tokens {
+            input: 5,
+            output: 0
+        }
+    );
 }
 
 #[test]
-fn the_body_asks_for_the_schema() {
-    let tree = json::parse(&body(&request()), &Limits::default()).unwrap();
-    assert!(matches!(field(&tree, "model"), Some(Tree::Text(m)) if m == "test-model"));
-    assert!(matches!(field(&tree, "max_tokens"), Some(Tree::Int(64))));
-    let format = field(field(&tree, "output_config").unwrap(), "format").unwrap();
-    assert!(matches!(field(format, "type"), Some(Tree::Text(t)) if t == "json_schema"));
-    assert!(field(format, "schema").is_some());
-    // No forced tool call: newer models refuse one.
-    assert!(field(&tree, "tools").is_none() && field(&tree, "tool_choice").is_none());
+fn a_rate_limited_call_waits_as_the_provider_asks_then_goes_again() {
+    let (url, server) = fake_server(vec![BUSY, OK]);
+    let mut f = fake(&url);
+    let asked = ask_fake(&mut f, 2);
+    assert_eq!(server.join().unwrap().len(), 2);
+    assert!(asked.result.is_ok());
+    assert_eq!(f.waited.len(), 1);
 }
 
 #[test]
-fn the_answer_is_the_first_text_block() {
-    let reply = r#"{"content":[{"type":"thinking","thinking":""},{"type":"text","text":"{\"approve\":true}"}]}"#;
-    let tree = json::parse(reply, &Limits::default()).unwrap();
-    assert_eq!(answer_text(&tree).as_deref(), Some(r#"{"approve":true}"#));
-    let error = json::parse(
-        r#"{"type":"error","error":{"type":"invalid_request_error","message":"bad model"}}"#,
-        &Limits::default(),
-    )
-    .unwrap();
-    assert_eq!(error_message(&error).as_deref(), Some("bad model"));
+fn a_quota_used_up_is_never_sent_again() {
+    let (url, server) = fake_server(vec![BROKE]);
+    let mut f = fake(&url);
+    let asked = ask_fake(&mut f, 4);
+    assert_eq!(server.join().unwrap().len(), 1);
+    assert_eq!(asked.result, Err(Failure::QuotaUsedUp("no".into())));
+}
+
+#[test]
+fn trouble_the_provider_cant_place_is_failed_with_its_status() {
+    let (url, server) = fake_server(vec!["HTTP/1.1 418 Teapot\r\ncontent-length: 0\r\n\r\n"]);
+    let mut f = fake(&url);
+    let asked = ask_fake(&mut f, 4);
+    server.join().unwrap();
+    assert_eq!(asked.result, Err(Failure::Failed(418, "no".into())));
+}
+
+#[test]
+fn no_connection_is_a_network_failure_after_the_retries() {
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let url = format!("http://{}", listener.local_addr().unwrap());
+    drop(listener);
+    let mut f = fake(&url);
+    let asked = ask_fake(&mut f, 1);
+    assert!(
+        matches!(asked.result, Err(Failure::Network(_))),
+        "{:?}",
+        asked.result.err()
+    );
+    assert_eq!(f.waited.len(), 1);
+}
+
+#[test]
+fn a_provider_without_a_key_reads_no_variable() {
+    let (url, server) = fake_server(vec![OK]);
+    let mut f = fake(&url);
+    f.no_key = true;
+    let schema = Tree::Object(Vec::new());
+    let mut s = settings(0);
+    if let Tree::Object(fs) = &mut s {
+        fs.retain(|(k, _)| k != "api_key_env");
+    }
+    let Ok(asked) = ask(&mut f, &s, "?", &schema, false) else {
+        panic!("stopped");
+    };
+    let sent = server.join().unwrap();
+    assert!(asked.result.is_ok());
+    assert!(!sent[0].contains("x-api-key"), "{}", sent[0]);
+}
+
+#[test]
+fn a_missing_key_sends_nothing() {
+    let mut f = fake("http://127.0.0.1:9");
+    let mut s = settings(0);
+    if let Tree::Object(fs) = &mut s {
+        fs.retain(|(k, _)| k != "api_key_env");
+        fs.push((
+            "api_key_env".into(),
+            Tree::Text("TEST_NOT_SET_AI_KEY".into()),
+        ));
+    }
+    let Ok(asked) = ask(&mut f, &s, "?", &Tree::Object(Vec::new()), false) else {
+        panic!("stopped");
+    };
+    assert_eq!(
+        asked.result,
+        Err(Failure::NoKey("TEST_NOT_SET_AI_KEY".into()))
+    );
+}
+
+#[test]
+fn an_error_is_the_ai_errors_json() {
+    let t = json::write(&Failure::TimedOut(30_000).tree(), 0);
+    assert_eq!(t, r#"{"TimedOut":{"after":{"ms":30000}}}"#);
+    let t = json::write(&Failure::Refused(None).tree(), 0);
+    assert_eq!(t, r#"{"Refused":{"reason":null}}"#);
+}
+
+#[test]
+fn kavach_ai_url_keeps_the_providers_path() {
+    let to = "http://127.0.0.1:5/proxy/";
+    assert_eq!(
+        send::moved("https://api.anthropic.com/v1/messages", to),
+        "http://127.0.0.1:5/proxy/v1/messages"
+    );
+}
+
+#[test]
+fn a_reply_the_runtime_cant_read_fails_the_ask() {
+    assert!(matches!(
+        wire::Reply::read("null"),
+        Err(Failure::Failed(0, _))
+    ));
+    assert!(
+        matches!(wire::Call::read(r#"{"url":"x","auth":{"AwsSignature":{}}}"#), Err(Failure::Failed(0, m)) if m.contains("not built yet"))
+    );
 }
 
 #[test]
@@ -47,141 +288,23 @@ fn chunked_bodies_are_joined() {
         b"Wikipedia"
     );
     assert!(http::dechunk(b"9\r\nshort\r\n").is_err());
-    let (status, body) =
-        http::parse(b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n2\r\nhi\r\n0\r\n\r\n")
-            .unwrap();
+    let (status, headers, body) = http::parse(
+        b"HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nRetry-After: 2\r\n\r\n2\r\nhi\r\n0\r\n\r\n",
+    )
+    .unwrap();
     assert_eq!((status, body.as_slice()), (200, &b"hi"[..]));
-}
-
-/// A server that answers one request with `reply`, and gives back what it
-/// was sent.
-fn fake_server(reply: &'static str) -> (String, std::thread::JoinHandle<String>) {
-    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
-    let address = listener.local_addr().unwrap();
-    let handle = std::thread::spawn(move || {
-        let (mut s, _) = listener.accept().unwrap();
-        let mut got = Vec::new();
-        let mut buf = [0u8; 4096];
-        // Read the head and the body announced by content-length.
-        loop {
-            let n = s.read(&mut buf).unwrap();
-            got.extend_from_slice(&buf[..n]);
-            let text = String::from_utf8_lossy(&got);
-            if let Some(end) = text.find("\r\n\r\n") {
-                let length = text[..end]
-                    .lines()
-                    .find_map(|l| l.strip_prefix("content-length: "))
-                    .and_then(|v| v.trim().parse::<usize>().ok())
-                    .unwrap_or(0);
-                if got.len() >= end + 4 + length {
-                    break;
-                }
-            }
-            if n == 0 {
-                break;
-            }
-        }
-        s.write_all(reply.as_bytes()).unwrap();
-        String::from_utf8_lossy(&got).into_owned()
-    });
-    (format!("http://{address}"), handle)
+    assert!(headers.contains(&("retry-after".to_string(), "2".to_string())));
 }
 
 #[test]
-fn a_call_reaches_the_server_and_reads_the_answer() {
-    let (base, server) = fake_server(
-        "HTTP/1.1 200 OK\r\ncontent-type: application/json\r\nconnection: close\r\n\r\n\
-         {\"content\":[{\"type\":\"text\",\"text\":\"{\\\"approve\\\":false}\"}],\"stop_reason\":\"end_turn\"}",
-    );
-    let outcome = call(&base, "sk-test", &request());
-    let sent = server.join().unwrap();
-    assert!(sent.starts_with("POST /v1/messages HTTP/1.1"));
-    assert!(sent.contains("x-api-key: sk-test"));
-    assert!(sent.contains("anthropic-version: 2023-06-01"));
-    match outcome {
-        Outcome::Answer(t, _) => assert!(matches!(field(&t, "approve"), Some(Tree::Bool(false)))),
-        other => panic!("{other:?}"),
-    }
+fn each_provider_and_key_has_its_own_gate() {
+    let a = gate::of("Fake A");
+    a.enter();
+    a.leave(true, false);
+    assert_eq!(a.limit(), 1.0);
+    assert_eq!(gate::of("Fake A").limit(), 1.0);
+    assert_eq!(gate::of("Fake B").limit(), gate::MOST);
 }
-
-/// A key in a project's `.env` (or `[env.vars]`), not the shell, reaches
-/// the call (spec 10.13).
-#[test]
-fn a_key_from_the_env_file_is_sent() {
-    let (base, server) = fake_server(
-        "HTTP/1.1 200 OK
-content-type: application/json
-connection: close
-
-         {\"content\":[{\"type\":\"text\",\"text\":\"{}\"}],\"stop_reason\":\"end_turn\"}",
-    );
-    let variable = "TEST_AI_KEY_FROM_FILE";
-    kavach_runtime_core::env_file::set(Vec::new(), vec![(variable.into(), "sk-from-file".into())]);
-    let mut req = request();
-    req.api_url = Some(base);
-    req.api_key_env = Some(variable.into());
-    let pending = start(req);
-    let outcome = loop {
-        if let Some(o) = pending.poll() {
-            break o;
-        }
-        std::thread::sleep(std::time::Duration::from_millis(5));
-    };
-    let sent = server.join().unwrap();
-    kavach_runtime_core::env_file::set(Vec::new(), Vec::new());
-    assert!(sent.contains("x-api-key: sk-from-file"), "{sent}");
-    assert!(!matches!(outcome, Outcome::NoKey(_)), "{outcome:?}");
-}
-
-#[test]
-fn a_refusal_gives_its_status_and_message() {
-    let (base, server) = fake_server(
-        "HTTP/1.1 401 Unauthorized\r\nconnection: close\r\n\r\n\
-         {\"type\":\"error\",\"error\":{\"type\":\"authentication_error\",\"message\":\"invalid x-api-key\"}}",
-    );
-    let outcome = call(&base, "wrong", &request());
-    server.join().unwrap();
-    match outcome {
-        Outcome::Failed { status, message } => {
-            assert_eq!((status, message.as_str()), (401, "invalid x-api-key"));
-        }
-        other => panic!("{other:?}"),
-    }
-}
-
-#[test]
-fn a_refusal_is_not_an_answer() {
-    let (base, server) = fake_server(
-        "HTTP/1.1 200 OK\r\nconnection: close\r\n\r\n\
-         {\"content\":[],\"stop_reason\":\"refusal\"}",
-    );
-    let outcome = call(&base, "sk-test", &request());
-    server.join().unwrap();
-    match outcome {
-        Outcome::Failed { status, message } => {
-            assert_eq!(
-                (status, message.as_str()),
-                (200, "the model refused to answer")
-            );
-        }
-        other => panic!("{other:?}"),
-    }
-}
-
-#[test]
-fn an_answer_cut_off_is_not_asked_again() {
-    let (base, server) = fake_server(
-        "HTTP/1.1 200 OK\r\nconnection: close\r\n\r\n\
-         {\"content\":[{\"type\":\"text\",\"text\":\"{\\\"appr\"}],\"stop_reason\":\"max_tokens\"}",
-    );
-    let outcome = call(&base, "sk-test", &request());
-    server.join().unwrap();
-    assert!(
-        matches!(&outcome, Outcome::Failed { status: 200, message } if message.contains("max_tokens (64)")),
-        "{outcome:?}"
-    );
-}
-
 #[test]
 fn the_gate_lets_through_what_the_provider_takes() {
     let g = gate::Gate::new();

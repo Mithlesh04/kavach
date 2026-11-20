@@ -1,0 +1,39 @@
+// Rule: `Anthropic()` reads each reply into what it means: an answer with its usage, a refusal, an answer cut off, or the kind of trouble, with the wait `retry-after` asks for.
+// Spec: 8.4
+// expect output: Answer(text: "{}", usage: Usage(input: 70, output: 10, cached_input: 10, thinking: none))
+// expect output: Refused(reason: none, usage: Usage(input: 1, output: 0, cached_input: none, thinking: none))
+// expect output: CutOff(usage: Usage(input: 1, output: 300, cached_input: none, thinking: none))
+// expect output: RateLimited 3000
+// expect output: Overloaded
+// expect output: QuotaUsedUp
+// expect output: BadKey
+// expect output: NotFound
+// expect output: BadRequest
+// expect output: TimedOut
+// expect output: Other(status: 418)
+
+fn read(status: Int, body: String, headers: {String: String} = {:}) -> Reply {
+    const call = AskCall(model: Model(name: "claude-haiku-5-5"), prompt: "?", schema: Json.Null, strict: false)
+    Anthropic().read(call, HttpReply(status: status, headers: headers, body: body))
+}
+
+fn error(kind: String) -> String {
+    `\{"type":"error","error":\{"type":"{kind}","message":"no"}}`
+}
+
+fn main() {
+    print(read(200, `\{"content":[\{"type":"thinking","thinking":""},\{"type":"text","text":"\{}"}],"stop_reason":"end_turn","usage":\{"input_tokens":60,"cache_read_input_tokens":10,"output_tokens":10}}`))
+    print(read(200, `\{"content":[],"stop_reason":"refusal","usage":\{"input_tokens":1,"output_tokens":0}}`))
+    print(read(200, `\{"content":[],"stop_reason":"max_tokens","usage":\{"input_tokens":1,"output_tokens":300}}`))
+    for (status, kind) in [(429, "rate_limit_error"), (529, "overloaded_error"), (402, "billing_error"),
+        (401, "authentication_error"), (404, "not_found_error"), (400, "invalid_request_error"),
+        (504, "timeout_error"), (418, "teapot")] {
+        match read(status, error(kind), {"retry-after": "3"}) {
+            Reply.Problem(kind: k, message: _, wait: w) => {
+                const shown = `{k}`
+                print(if shown == "RateLimited" { `{shown} {w?.ms ?? 0}` } else { shown })
+            }
+            other => print(other),
+        }
+    }
+}

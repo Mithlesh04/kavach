@@ -114,5 +114,7 @@ pub fn model_settings(m: &kavach_checker::AiModel) -> kavach_runtime_core::json:
     add("api_url", m.api_url.as_deref().map(text));
     add("api_key_env", m.api_key_env.as_deref().map(text));
     add("extra", m.extra.as_deref().map(text));
+    // The provider's type, for its gate (decision 0140).
+    add("provider", m.provider.as_ref().map(|(_, name)| text(name)));
     Tree::Object(fields)
 }

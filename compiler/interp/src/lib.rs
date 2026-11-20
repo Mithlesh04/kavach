@@ -8,6 +8,7 @@
 
 mod agents;
 mod ai;
+mod ai_checks;
 mod arena;
 mod bigint;
 mod builtins;
@@ -237,15 +238,17 @@ pub fn end_hooks() {
     let _ = std::io::Write::flush(&mut std::io::stdout());
 }
 
-/// Runs each tag's checker on each tagged literal (spec 10.15): the
-/// problems found, as compile errors and warnings.
+/// Runs each tag's checker on each tagged literal (spec 10.15), and each
+/// model's provider's `check` on it (spec 8.4): the problems found, as
+/// compile errors and warnings.
 pub fn check_literals(program: &Compiled) -> Vec<kavach_driver::Message> {
-    if program.literal_uses.is_empty() {
+    if program.literal_uses.is_empty() && program.ai_written.is_empty() {
         return Vec::new();
     }
     let found = std::sync::Mutex::new(Vec::new());
     on_big_stack(program, false, Arc::default(), |i| {
-        let problems = i.literal_problems();
+        let mut problems = i.literal_problems();
+        problems.extend(i.model_problems());
         *found.lock().unwrap_or_else(|e| e.into_inner()) = problems;
         0
     });

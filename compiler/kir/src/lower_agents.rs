@@ -41,7 +41,7 @@ pub(crate) enum Synth {
         err: Ty,
         span: ast::Span,
         /// The call's own `model:` (decision 0056).
-        model: Option<kavach_driver::AiModel>,
+        model: Option<Box<kavach_driver::AiModel>>,
     },
     /// A durable agent's `start` runs its unfinished events again.
     Resume { agent: DefId },
@@ -158,7 +158,7 @@ impl<'a> Lowerer<'a> {
                 err,
                 span,
                 model,
-            } => self.ask_fn(&ok, &err, span, model),
+            } => self.ask_fn(&ok, &err, span, model.map(|m| *m)),
             Synth::Resume { agent } => self.resume_fn(agent),
         }
     }

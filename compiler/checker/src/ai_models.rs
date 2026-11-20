@@ -10,7 +10,7 @@
 use crate::checker::Checker;
 use kavach_ast::visit::{VisitMut, walk_file, walk_stmt};
 use kavach_ast::*;
-use kavach_resolver::DefId;
+use kavach_resolver::{DefId, DefKind};
 use std::collections::HashMap;
 
 /// A model and its settings, as an `ask` sends them (decision 0059).
@@ -34,22 +34,29 @@ pub struct AiModel {
     pub api_key_env: Option<String>,
     /// More request fields, as the text of a JSON object.
     pub extra: Option<String>,
+    /// The provider's value, worked out when the program is built: where
+    /// its expression is (a key of `AiModels::providers`), and its type's
+    /// name (decision 0140). `None`: `Anthropic()`.
+    pub provider: Option<((u32, u32), String)>,
 }
 
-/// Why the compiler refuses `m`, a model it knows something about.
+/// The models of a program (decision 0056) and their providers (0140).
+#[derive(Default)]
+pub struct AiModels {
+    /// Each agent's model, by the agent's name.
+    pub agents: HashMap<String, AiModel>,
+    /// Each `ask`'s own `model:`, by the call's span.
+    pub asks: HashMap<(u32, u32), AiModel>,
+    /// Each provider's expression, by its span: a constructor written
+    /// with plain values.
+    pub providers: HashMap<(u32, u32), Expr>,
+    /// Each model as written, with where: for its provider's `check`.
+    pub written: Vec<(Span, AiModel)>,
+}
+
+/// Why the compiler refuses `m`, whatever its provider. What a provider
+/// can't take, its own `check` says (spec 8.4).
 fn refused(m: &AiModel) -> Option<String> {
-    let name = &m.name;
-    if m.thinking == Some(false) && name.starts_with("claude-opus-5-5") {
-        return Some(format!(
-            "`{name}` always thinks before it answers, so `thinking: false` would fail: leave it out, and lower `effort` for fewer tokens (spec 8.4)"
-        ));
-    }
-    if let (Some(false), Some(e @ ("xhigh" | "max"))) = (m.thinking, m.effort.as_deref()) {
-        let shown = if e == "xhigh" { "XHigh" } else { "Max" };
-        return Some(format!(
-            "`thinking: false` can't go with `effort: Effort.{shown}`: with thinking off, effort goes up to `Effort.High` (spec 8.4)"
-        ));
-    }
     if m.max_tokens.is_some_and(|n| n == 0 || n > 128_000) {
         return Some("`max_tokens` is from 1 to 128,000 (spec 8.4)".into());
     }
@@ -79,18 +86,16 @@ pub(crate) fn text(e: &Expr) -> Option<String> {
     }
 }
 
-const NOT_KNOWN: &str = "a model is chosen when the program is built: write `Model(name: \"…\")` with plain values, or call a function with no parameters that gives one, such as `careful()` (spec 8.4)";
+const NOT_KNOWN: &str = "a model is chosen when the program is built: write `Model(name: \"…\")` with plain values (its `provider` too), or call a function with no parameters that gives one, such as `careful()` (spec 8.4)";
 
 impl Checker<'_> {
     /// Each agent's model, by the agent's name, and each `ask`'s own, by
     /// the call's span.
-    pub(crate) fn ai_models(
-        &mut self,
-        file: &File,
-    ) -> (HashMap<String, AiModel>, HashMap<(u32, u32), AiModel>) {
+    pub(crate) fn ai_models(&mut self, file: &File) -> AiModels {
         let consts = self.known_values(file);
         let mut agents = HashMap::new();
         let mut asks = HashMap::new();
+        let mut providers = HashMap::new();
         let mut wrong = Vec::new();
         // Each model worked out, with where it is written, to check.
         let mut checked = Vec::new();
@@ -100,7 +105,7 @@ impl Checker<'_> {
             };
             for m in &a.members {
                 if let AgentMember::Model(e) = m {
-                    match self.model_of(e, &consts, 0) {
+                    match self.model_of(e, &consts, 0, &mut providers) {
                         Some(model) => {
                             checked.push((e.span, model.clone()));
                             agents.insert(a.name.name.clone(), model);
@@ -113,7 +118,7 @@ impl Checker<'_> {
         let mut calls = Asks { found: Vec::new() };
         walk_file(&mut calls, &mut file.clone());
         for (call, e) in calls.found {
-            match self.model_of(&e, &consts, 0) {
+            match self.model_of(&e, &consts, 0, &mut providers) {
                 Some(model) => {
                     checked.push((e.span, model.clone()));
                     asks.insert(call, model);
@@ -124,12 +129,17 @@ impl Checker<'_> {
         for span in wrong {
             self.error(span, NOT_KNOWN);
         }
-        for (span, model) in checked {
-            if let Some(why) = refused(&model) {
-                self.error(span, why);
+        for (span, model) in &checked {
+            if let Some(why) = refused(model) {
+                self.error(*span, why);
             }
         }
-        (agents, asks)
+        AiModels {
+            agents,
+            asks,
+            providers,
+            written: checked,
+        }
     }
 
     /// What the compiler knows the value of: each `const`, and each
@@ -158,11 +168,17 @@ impl Checker<'_> {
     }
 
     /// The model `e` gives, if it can be worked out now.
-    fn model_of(&self, e: &Expr, consts: &HashMap<DefId, Expr>, depth: u32) -> Option<AiModel> {
+    fn model_of(
+        &self,
+        e: &Expr,
+        consts: &HashMap<DefId, Expr>,
+        depth: u32,
+        providers: &mut HashMap<(u32, u32), Expr>,
+    ) -> Option<AiModel> {
         match &e.kind {
             ExprKind::Name(id) if depth < 8 => {
                 let d = self.res.uses.get(&id.span.start)?;
-                self.model_of(consts.get(d)?, consts, depth + 1)
+                self.model_of(consts.get(d)?, consts, depth + 1, providers)
             }
             ExprKind::Call { callee, args, .. } => {
                 let ExprKind::Name(f) = &callee.kind else {
@@ -172,7 +188,7 @@ impl Checker<'_> {
                     // `careful()`: a function that gives one.
                     let d = self.res.uses.get(&f.span.start)?;
                     return match (args.is_empty(), depth < 8) {
-                        (true, true) => self.model_of(consts.get(d)?, consts, depth + 1),
+                        (true, true) => self.model_of(consts.get(d)?, consts, depth + 1, providers),
                         _ => None,
                     };
                 }
@@ -211,6 +227,18 @@ impl Checker<'_> {
                         ("api_url", _) => model.api_url = Some(text(v)?),
                         ("api_key_env", _) => model.api_key_env = Some(text(v)?),
                         ("extra", _) => model.extra = Some(text(v)?),
+                        ("provider", _) => {
+                            let p = self.provider_of(v, consts, 0)?;
+                            let at = (p.span.start, p.span.end);
+                            let ExprKind::Call { callee, .. } = &p.kind else {
+                                return None;
+                            };
+                            let ExprKind::Name(name) = &callee.kind else {
+                                return None;
+                            };
+                            model.provider = Some((at, name.name.clone()));
+                            providers.insert(at, p);
+                        }
                         ("stop", ExprKind::List(items)) => {
                             model.stop = items.iter().map(text).collect::<Option<_>>()?;
                         }
@@ -223,6 +251,47 @@ impl Checker<'_> {
             }
             _ => None,
         }
+    }
+}
+
+impl Checker<'_> {
+    /// The provider `e` gives, as the constructor call it comes to: one
+    /// written with plain values, a `const` set to one, or a function
+    /// with no parameters that gives one (spec 8.4).
+    fn provider_of(&self, e: &Expr, consts: &HashMap<DefId, Expr>, depth: u32) -> Option<Expr> {
+        let followed = |id: &Ident| {
+            let d = self.res.uses.get(&id.span.start)?;
+            (depth < 8).then(|| self.provider_of(consts.get(d)?, consts, depth + 1))?
+        };
+        match &e.kind {
+            ExprKind::Name(id) => followed(id),
+            ExprKind::Call { callee, args, .. } => {
+                let ExprKind::Name(f) = &callee.kind else {
+                    return None;
+                };
+                let d = *self.res.uses.get(&f.span.start)?;
+                if self.res.defs.get(d)?.kind == DefKind::Type {
+                    return args.iter().all(|a| plain(&a.value)).then(|| e.clone());
+                }
+                args.is_empty().then(|| followed(f))?
+            }
+            _ => None,
+        }
+    }
+}
+
+/// Whether `e` is written with plain values only: literals, lists of
+/// them, variants, durations, and constructors of them.
+fn plain(e: &Expr) -> bool {
+    match &e.kind {
+        ExprKind::Int(_) | ExprKind::Float(_) | ExprKind::Bool(_) | ExprKind::None => true,
+        ExprKind::Str(_) => text(e).is_some(),
+        ExprKind::List(items) => items.iter().all(plain),
+        ExprKind::Field { base, .. } => matches!(base.kind, ExprKind::Name(_) | ExprKind::Int(_)),
+        ExprKind::Call { callee, args, .. } => {
+            matches!(callee.kind, ExprKind::Name(_)) && args.iter().all(|a| plain(&a.value))
+        }
+        _ => false,
     }
 }
 

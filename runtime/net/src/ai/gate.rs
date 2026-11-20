@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
-//! The gate every `ask` of the program passes (spec 8.4), and the waits
+//! The gates the `ask`s of the program pass (spec 8.4), one for each
+//! provider and key, and the waits
 //! between tries. Many `ask`s at once meet the provider's limit on calls
 //! at the same time: 300 started together, each sent again after the
 //! same 1, 2, 4 and 8 seconds, came back together and were turned away
@@ -12,7 +13,8 @@
 //! Each wait is a random part of its step, so calls turned away together
 //! come back apart.
 
-use std::sync::{Condvar, Mutex};
+use std::collections::HashMap;
+use std::sync::{Arc, Condvar, Mutex, OnceLock};
 use std::time::Duration;
 
 /// The most calls under way at once.
@@ -30,8 +32,18 @@ struct State {
     limit: f64,
 }
 
-/// The program's one gate.
-pub(super) static GATE: Gate = Gate::new();
+/// The gate of one provider and key (decision 0140): a provider's limit
+/// slows only the calls that meet it.
+pub(super) fn of(name: &str) -> Arc<Gate> {
+    static GATES: OnceLock<Mutex<HashMap<String, Arc<Gate>>>> = OnceLock::new();
+    let mut all = GATES
+        .get_or_init(Mutex::default)
+        .lock()
+        .unwrap_or_else(|e| e.into_inner());
+    all.entry(name.to_string())
+        .or_insert_with(|| Arc::new(Gate::new()))
+        .clone()
+}
 
 impl Gate {
     pub(super) const fn new() -> Gate {

@@ -117,6 +117,10 @@ pub struct Compiled {
     pub agent_models: HashMap<String, kavach_checker::AiModel>,
     /// Each `ask`'s own `model:`, by the call's span.
     pub ask_models: HashMap<(u32, u32), kavach_checker::AiModel>,
+    /// Each model's provider's expression, by its span (decision 0140).
+    pub ai_providers: HashMap<(u32, u32), kavach_ast::Expr>,
+    /// Each model as written, with where, for its provider's `check`.
+    pub ai_written: Vec<(kavach_ast::Span, kavach_checker::AiModel)>,
     /// Each agent's `settings`, as written (decision 0060).
     pub agent_settings: HashMap<String, kavach_checker::AgentSetup>,
     /// Each tagged literal, for its tag's checker (spec 10.15), which the
@@ -406,6 +410,8 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
         agent_models: checked.agent_models,
         agent_settings: checked.agent_settings,
         ask_models: checked.ask_models,
+        ai_providers: checked.ai_providers,
+        ai_written: checked.ai_written,
         literal_uses: checked.literal_uses,
         numbers: checked.numbers,
         sealed_unfreezes: (checked.frozen_calls.iter())

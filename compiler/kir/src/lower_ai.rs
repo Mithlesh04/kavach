@@ -42,7 +42,7 @@ impl<'a> Lowerer<'a> {
                     ok,
                     err,
                     span,
-                    model,
+                    model: model.map(Box::new),
                 };
                 self.agents.synth.insert(fid, synth);
                 self.agents.asks.insert(key, fid);
@@ -177,10 +177,65 @@ impl<'a> Lowerer<'a> {
         }
         let line = self.line(span);
         let text = self.str_type();
+        // The prompt, and the function the runtime translates with: the
+        // model's provider through `std.ai`'s `wire` (decision 0140).
+        let wire = self.provider_wire(model, span)?;
+        let pair_ty = self.tuple_type(vec![text, wire.ty]);
+        let pair = expr(
+            K::Tuple(vec![self.local_expr(prompt, line), wire]),
+            pair_ty,
+            line,
+        );
         let request = expr(K::Str(request), text, line);
         let templates = self.templates(ret, line, span)?;
-        let args = vec![self.local_expr(prompt, line), request, templates];
-        Ok(rt(RtOp::AiAsk, args, ret, line))
+        Ok(rt(RtOp::AiAsk, vec![pair, request, templates], ret, line))
+    }
+
+    /// `wire(provider, settings)` from `std.ai`: a `fn(String) -> String`
+    /// that translates with `model`'s provider, `none` giving
+    /// `Anthropic()`. The provider's expression is a constructor written
+    /// with plain values (spec 8.4), so it is lowered here as it is.
+    fn provider_wire(
+        &mut self,
+        model: &kavach_driver::AiModel,
+        span: ast::Span,
+    ) -> Lowered<ir::Expr> {
+        let c = self.c;
+        let def = c.resolution.builtin_fn("std.ai", "wire");
+        let found = def.and_then(|d| self.fn_ids.get(&d).copied());
+        let decl = found
+            .and_then(|f| self.fns.get(f as usize))
+            .and_then(|(d, _)| *d);
+        let (Some(fid), Some(decl)) = (found, decl) else {
+            return Err(self.unsupported("`ask` without `std.ai`'s `wire`", span));
+        };
+        let line = self.line(span);
+        let Some(given) = decl.params.first().and_then(|p| p.ty.as_ref()) else {
+            return Err(self.unsupported("`wire`'s provider", span));
+        };
+        let given = self.written_type(given)?;
+        let Some(crate::ir::Shape::Optional(iface)) = self.shapes.shape(given).cloned() else {
+            return Err(self.unsupported("`wire`'s provider", span));
+        };
+        let provider = match model
+            .provider
+            .as_ref()
+            .and_then(|(at, _)| c.ai_providers.get(at))
+        {
+            Some(e) => {
+                let value = self.expr(e)?;
+                let boxed = self.coerce(value, iface)?;
+                self.coerce(boxed, given)?
+            }
+            None => expr(K::None, given, line),
+        };
+        let Some(ret) = decl.ret.as_ref() else {
+            return Err(self.unsupported("`wire`'s result", span));
+        };
+        let wire_ty = self.written_type(ret)?;
+        let settings = json::write(&kavach_driver::model_settings(model), 0);
+        let settings = expr(K::Str(settings), self.str_type(), line);
+        Ok(expr(K::Call(fid, vec![provider, settings]), wire_ty, line))
     }
 }
 
