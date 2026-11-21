@@ -250,6 +250,34 @@ print(add(2, 3))
 
    Why: The answer is checked against Verdict. One that doesn't fit is asked again, then the call fails.
 
+### [ask<T>: When the AI fails](https://kavachlang.com/docs/agents/ask/when-the-ai-fails/)
+
+1. Multiple choice: The account's money ran out. What does `ask` do?
+
+   Choices: `Fails at once with QuotaUsedUp`, `Waits and sends the call again, then fails with RateLimited`, `Fails with Failed(status: 402, …)`
+
+   Answer: `Fails at once with QuotaUsedUp`
+
+   Why: Waiting can't put money in the account, so QuotaUsedUp is never sent again.
+
+### [ask<T>: Providers](https://kavachlang.com/docs/agents/ask/providers/)
+
+1. Multiple choice: A provider from a package writes the request for each `ask`. Who reads the API key and puts it in the request?
+
+   Choices: `The runtime, where the provider's auth says`, `The provider's request method`, `The program, before each ask`
+
+   Answer: `The runtime, where the provider's auth says`
+
+   Why: A provider only translates. The runtime reads the key and puts it where auth says, so provider code never holds it.
+
+2. Multiple choice: Your company's gateway needs one more header on every request. What do you write?
+
+   Choices: `A type that implements Provider, wraps Anthropic, changes request and passes the other methods on`, `A new Kavach release`, `A setting in kavach.toml`
+
+   Answer: `A type that implements Provider, wraps Anthropic, changes request and passes the other methods on`
+
+   Why: An interface's methods have no default bodies, so you wrap the provider and pass the methods you don't change to it.
+
 ### [Agent Modes](https://kavachlang.com/docs/agents/agent-modes/)
 
 1. Multiple choice: In `observe` mode, a call breaks a limit. What happens?

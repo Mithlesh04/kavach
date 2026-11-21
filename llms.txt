@@ -78,7 +78,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Operators: Logical](https://kavachlang.com/docs/basics/operators/logical/): and is true when both sides are; or when either is; not turns true to false.
 - [Operators: Precedence](https://kavachlang.com/docs/basics/operators/precedence/): * and / come before + and -, as in school. When in doubt, use parentheses.
 - [Strings](https://kavachlang.com/docs/basics/strings/): A String is text: letters, digits, spaces, any script. Write it in double quotes, or in backticks to fill in values.
-- [Strings: Making strings](https://kavachlang.com/docs/basics/strings/making-strings/): Text in quotes is exactly what is written. Triple quotes hold several lines, or quotes inside. Backticks make a template.
+- [Strings: Making strings](https://kavachlang.com/docs/basics/strings/making-strings/): Text in quotes is exactly what is written, on one line. Backticks make a template, the one way to write text over several lines.
 - [Strings: Interpolation](https://kavachlang.com/docs/basics/strings/interpolation/): Write text in backticks, a template, and any expression in braces inside it is put in its place.
 - [Strings: Joining](https://kavachlang.com/docs/basics/strings/joining/): + joins two strings; join() puts a list of strings together; repeat() repeats one.
 - [Strings: Length and characters](https://kavachlang.com/docs/basics/strings/length-and-characters/): len() counts the characters of a string; a slice such as word[0:3], and chars(), take it apart.
@@ -330,8 +330,9 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Running an Agent](https://kavachlang.com/docs/agents/running-an-agent/): Start an agent with Name.start(…), giving one implementation for each capability it can use. Each on handler is then a method you call, and that call can always fail.
 - [ask<T>](https://kavachlang.com/docs/agents/ask/): ask<T>(prompt) asks an AI model and gives back a checked value of type T, never loose text to parse.
 - [ask<T>: Typed answers](https://kavachlang.com/docs/agents/ask/typed-answers/): The answer's type can hold anything a type can: true or false, text, numbers, lists and unions.
-- [ask<T>: When the AI fails](https://kavachlang.com/docs/agents/ask/when-the-ai-fails/): ask can fail: no key, a network or provider error, an answer that never fits the type, or a limit. Handle it like any error.
+- [ask<T>: When the AI fails](https://kavachlang.com/docs/agents/ask/when-the-ai-fails/): ask can fail: no key, a busy or refusing provider, an answer that never fits the type, or a limit. Each kind of trouble has its own AiError, the same for every provider.
 - [ask<T>: Choosing the model](https://kavachlang.com/docs/agents/ask/choosing-the-model/): An agent chooses its AI model in code, with model; a single call can choose another, with model:. The key comes from an environment variable, never from a file.
+- [ask<T>: Providers](https://kavachlang.com/docs/agents/ask/providers/): A provider is how ask speaks to one AI service's API. It is a Kavach interface that only translates; the runtime keeps the key, sends, retries and keeps the limits.
 - [Agent Modes](https://kavachlang.com/docs/agents/agent-modes/): Each agent runs in a mode, set in its settings: Observe only reports, Suggest asks a person every time, Enforce acts. Trust is earned step by step.
 - [Agent Modes: observe](https://kavachlang.com/docs/agents/agent-modes/observe/): observe: calls run normally, and limits and approvals are only reported.
 - [Agent Modes: suggest](https://kavachlang.com/docs/agents/agent-modes/suggest/): suggest: every capability call waits for a person to approve it.
@@ -483,6 +484,10 @@ version's git tag; benchmarks carry one command to reproduce them.
 ## Quizzes
 
 - [Every quiz, with answers](https://kavachlang.com/quizzes.txt): each page's "check yourself" questions, its correct answer and why, to quiz a learner or check an answer.
+
+## Explainers
+
+- [Every animation, as text](https://kavachlang.com/explainers.txt): how code runs on the machine (CPU, RAM, stack, heap, OS), each step with the line it runs and what happens, and a very short summary.
 
 ## Source
 

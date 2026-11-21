@@ -1137,6 +1137,10 @@
 <priority>0.6</priority>
 </url>
 <url>
+<loc>https://kavachlang.com/docs/agents/ask/providers/</loc>
+<priority>0.6</priority>
+</url>
+<url>
 <loc>https://kavachlang.com/docs/agents/agent-modes/</loc>
 <priority>0.8</priority>
 </url>

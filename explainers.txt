@@ -1,0 +1,592 @@
+# Kavach explainers, step by step
+
+> The Kavach course shows how code runs on the machine as animations:
+> the CPU, RAM, the stack, the heap, the OS. Here is each one as text:
+> a very short "caveman" summary, the code (a sample checked against a
+> real run), and every step with the line it runs and what happens.
+
+## Part 2: Functions
+
+### [factorial(10): the calls that really happen](https://kavachlang.com/docs/functions/recursion/#scene-factorial)
+
+Caveman says: Compiler copy factorial into itself. One real call do four step. main do 10, call 9. factorial(9) do 9, 8, 7, 6, call 5. factorial(5) do 5, 4, 3, 2. 1? Stop, no call. Answers multiply back. Two box on stack, not ten.
+
+```kavach
+fn factorial(n: Int) -> Int {
+    if n <= 1 {
+        return 1
+    }
+    n * factorial(n - 1)
+}
+
+fn main() {
+    const x = factorial(10)
+    print(x)
+}
+```
+
+It prints, checked against a real run:
+
+```
+3628800
+```
+
+1. Line 9, `const x = factorial(10)`: The compiler, while compiling, copied factorial into main once, so main does the first level itself: 10 is not <= 1. It also copied factorial's quick exit in front of the call: 9 <= 1? No. The OS picked a core to run it (here core 0), while running.
+2. Line 9, `const x = factorial(10)`: A real call, factorial(9), with 9 in the argument register. First a check the compiler put there: is there room on the stack? The limit sits 8 MB above the stack's bottom, so this check fires long before the guard page below, which is only a backstop. Then the call writes the return address and jumps.
+3. Line 1, `fn factorial(n: Int) -> Int {`: factorial(9) begins. Its first instructions save registers of main's it will use, into its own frame. Then it keeps n = 9 in rbx and n - 1 = 8 in rsi.
+4. Line 2, `if n <= 1 {`: The compiler copied factorial into itself, so this one call checks four levels at once, all in registers: 9, 8, 7 and 6 are not <= 1. No call is made for 8, 7 or 6.
+5. Line 5, `n * factorial(n - 1)`: The quick exit for the next level: 5 <= 1? No. So, after the same stack check, a second real call: factorial(5). 9 and 8 wait in rbx and rsi.
+6. Line 1, `fn factorial(n: Int) -> Int {`: factorial(5) begins, with the same code. It needs rbx and rsi itself, so it first saves factorial(9)'s 9 and 8 into its own frame. That is where the waiting values really are.
+7. Line 2, `if n <= 1 {`: 5, 4, 3 and 2 are not <= 1. Then the quick exit: 1 <= 1 is true. factorial(1) is just 1, and no call is made.
+8. Line 5, `n * factorial(n - 1)`: On the way back, the multiplies run in registers: 2 × 1 = 2, 3 × 2 = 6, 4 × 6 = 24, 5 × 24 = 120. Every multiply is checked for overflow. 120 goes in rax.
+9. Line 5, `n * factorial(n - 1)`: factorial(5) puts 9 and 8 back into rbx and rsi, reads its return address and jumps back. Its frame is popped by code the compiler wrote: no count, no search, those bytes are free again at once.
+10. Line 5, `n * factorial(n - 1)`: Back in factorial(9): 6 × 120 = 720, 7 × 720 = 5040, 8 × 5040 = 40320, 9 × 40320 = 362880. It puts main's registers back and returns. Only main's frame is left.
+11. Line 9, `const x = factorial(10)`: main does its own level: 10 × 362880 = 3628800, so x is 3628800. Two real calls did the work of ten.
+12. Line 10, `print(x)`: print asks the operating system's kernel to write 3628800 to the program's output. Each real call's frame was freed the moment it returned.
+
+## Part 3: Collections
+
+### [A list in memory: index, push, grow, slice](https://kavachlang.com/docs/collections/lists/#scene-list-buffer)
+
+Caveman says: List is box with count. Items in other box, side by side. Read item: check, then one load. Push: room? Put there. No room? Bigger box. Slice: new list, copy.
+
+```kavach
+let xs = [3, 1, 4]
+print(xs[1])
+xs.push(5)
+xs.push(9)
+const firsts = xs[:2]
+xs[0] = 7
+print(firsts)
+print(xs)
+```
+
+It prints, checked against a real run:
+
+```
+1
+[3, 1]
+[7, 1, 4, 5, 9]
+```
+
+1. Line 1, `let xs = [3, 1, 4]`: The runtime makes the list while running, in two pieces: a 48-byte list object (a 24-byte header with the count, then the buffer's address, the length and the capacity), and apart from it a buffer of exactly 3 slots. Whole numbers sit in the buffer itself, 8 bytes each: no object per item.
+2. Line 2, `print(xs[1])`: Reading xs[1]: code the compiler wrote checks the index with one compare, 1 < len 3. A negative index counts as a huge unsigned number here, so the same compare catches it too. Then one load from ptr + 1 × 8 = 0x2008 gives 1.
+3. Line 3, `xs.push(5)`: push checks two things inline: the count is 1, and len < cap. 3 < 3 is false, so the code calls the runtime. The runtime, while running, grows the buffer the way Rust's Vec does: room for 6, double. 5 goes in slot 3, len 4. A bigger buffer may move to a new address, with the items copied there: the allocator decides that, while running. It is drawn in place.
+4. Line 4, `xs.push(9)`: Now there is room: count 1 and 4 < 6, so the code the compiler wrote stores 9 at ptr + 4 × 8 and sets len to 5. The runtime isn't called at all.
+5. Line 5, `const firsts = xs[:2]`: A slice is a new value: the language says so, and the runtime copies at once, while running. It makes a new list object and a buffer of exactly 2 slots, and copies 3 and 1 into them. xs is not changed: still count 1.
+6. Line 6, `xs[0] = 7`: Setting an item checks the same way inline: count 1, and 0 < len 5. 7 goes in place at 0x2000. firsts still holds 3: it is a copy, not a view of xs.
+7. Line 7, `print(firsts)`: firsts' last use, marked by the compiler while compiling: print takes the list and lets it go. Its count falls to 0, so the runtime frees its object and buffer while running. They go grey where they were.
+8. Line 8, `print(xs)`: xs's last use, also marked by the compiler: freed the same way. Nothing searched for garbage: each list was let go at its last use.
+
+### [map, filter, sum: as written, and fused into one loop](https://kavachlang.com/docs/collections/lists/map-filter-sum/#scene-chain)
+
+Caveman says: As written: map make list, filter make list, sum add. Fused: one loop, each item go all the way, no list in middle. Same answer.
+
+```kavach
+const prices = [120, 40, 300, 75]
+const total = prices.map(p => p * 2).filter(p => p > 100).sum(p => p)
+print(total)
+```
+
+It prints, checked against a real run:
+
+```
+990
+```
+
+1. Line 1, `const prices = [120, 40, 300, 75]`: Four prices: one list object and its buffer.
+2. Line 2, `const total = prices.map(p => p * 2).filter(p => p > 100).sum(p => p)`: kavach run --native (Cranelift) runs the chain as written. The compiler, while compiling, wrote each lambda straight into a loop: no call per item, no closure object. First map's loop builds a new list: each price times 2, each multiply checked for overflow.
+3. Line 2, `const total = prices.map(p => p * 2).filter(p => p > 100).sum(p => p)`: Then filter's loop reads that list and builds another: 240, 600 and 150 pass p > 100, and 80 doesn't. Nothing reads map's list after this, but filter's loop keeps it in a local of main. In native code, Cranelift or LLVM alike, main lets go of nothing its locals still hold: the operating system takes that memory back when the program ends. The compiler decided that while compiling.
+4. Line 2, `const total = prices.map(p => p * 2).filter(p => p > 100).sum(p => p)`: Then sum's loop adds the items up in a register, each + checked for overflow. No list this time. Two lists were built on the way, each written item by item and read once.
+5. Line 3, `print(total)`: 990 is printed.
+6. Line 2, `const total = prices.map(p => p * 2).filter(p => p > 100).sum(p => p)`: The same line in a program built with kavach build (LLVM). While compiling, the compiler saw that each list in between is read only by the next loop, and fused the three loops into one. Each price goes through map, then filter, then into the total, in registers: 120 × 2 = 240, kept, total 240.
+7. Line 2, `const total = prices.map(p => p * 2).filter(p => p > 100).sum(p => p)`: 40 × 2 = 80 fails p > 100 and is left out at once; 300 × 2 = 600 is added: total 840. No item is written to memory.
+8. Line 2, `const total = prices.map(p => p * 2).filter(p => p > 100).sum(p => p)`: 75 × 2 = 150 is added: 990, the same answer, and no list was ever built. A fused loop does the work in a new order, so a failed check could stop at another place. So the compiler keeps the code as written beside it: if a check in the fused loop fails, that code runs instead, and the panic names the right line.
+9. Line 3, `print(total)`: 990 again: both ways print the same.
+
+### [Finding a key in a dict, before and after it has an index](https://kavachlang.com/docs/collections/dicts/reading-a-value/#scene-dict-lookup)
+
+Caveman says: Dict keep things in order. Each key keep its hash. Few things? Check hashes one by one. Many things? Index say where. Few steps. Seed new each run.
+
+```kavach
+let ages = {"asha": 31, "ravi": 27, "omar": 45}
+print(ages["ravi"] ?? 0)
+print(ages["zoe"] ?? 0)
+for name in ["bo", "cy", "di", "ed", "fay", "gus"] {
+    ages[name] = 20
+}
+print(ages["omar"] ?? 0)
+```
+
+It prints, checked against a real run:
+
+```
+27
+0
+45
+```
+
+1. Line 1, `let ages = {"asha": 31, "ravi": 27, "omar": 45}`: The runtime makes the dict while running: one 64-byte object with the count, pointing to its table. The entries sit in the order they were added, key then value, and each key's hash is kept beside them. A key is a pointer to its text. With up to 8 entries, and keys that aren't whole numbers, there is no index.
+2. Line 2, `print(ages["ravi"] ?? 0)`: To find "ravi", the core hashes its bytes, 8 at a time, mixed with this run's seed. The runtime picked the seed at random when the program started, so nobody can know ahead which keys collide.
+3. Line 2, `print(ages["ravi"] ?? 0)`: No index, so the runtime compares the stored hashes in order: h(asha) differs, h(ravi) matches. It compares the key's text too, to be sure, then reads the value beside it: 27. With text keys and plain values, whole numbers here, a read with ?? is one runtime call that makes no optional value.
+4. Line 3, `print(ages["zoe"] ?? 0)`: h(zoe) matches none of the three stored hashes, so "zoe" isn't there, and no key text needed comparing. The read gives none, and ?? gives 0.
+5. Line 5, `ages[name] = 20`: Five rounds add bo to fay. Nobody else holds the dict: the runtime sees count 1 while running, so each new entry goes at the end, in place, with its hash. 8 entries: still no index. When a buffer is full the runtime grows it while running, and it may move; it is drawn in place.
+6. Line 5, `ages[name] = 20`: The 9th entry, "gus": past 8, the runtime builds an index while running. 32 positions, a power of two at least twice the entries, so it stays at most half full. Each entry goes in at its hash's position, or the next free one. Here "fay" found position 12 taken, so it went on to 13. The hashes were kept, so no key is hashed again.
+7. Line 7, `print(ages["omar"] ?? 0)`: Now a lookup goes through the index: h(omar) & 31 gives position 0. It holds 3: entry 3. Its kept hash matches and its key is "omar": 45. A few probes at most, however big the dict grows.
+
+### [Which sort runs, and when sorting copies](https://kavachlang.com/docs/collections/sorting/#scene-sorting)
+
+Caveman says: Whole numbers? Sort by digits, no compare. Few numbers? Compare. Text? Compare, keep equal ones in order. Nobody else hold list? Sort it where it is. Someone else hold it? Copy first.
+
+```kavach
+const ages = [42, -7, 0, 1_000, 3]
+const sorted = ages.sort()
+print(ages)
+print(sorted)
+print(["pear", "Fig", "apple"].sort())
+let big: [Int] = []
+for i in 0..1_000 {
+    big.push(i * 7_919 % 1_000)
+}
+const order = big.sort()
+print(`{order[0]} {order[1]} {order[999]}`)
+```
+
+It prints, checked against a real run:
+
+```
+[42, -7, 0, 1000, 3]
+[-7, 0, 3, 42, 1000]
+["Fig", "apple", "pear"]
+0 1 999
+```
+
+1. Line 1, `const ages = [42, -7, 0, 1_000, 3]`: A list of 5 whole numbers: one list object, and a buffer with the numbers in it.
+2. Line 2, `const sorted = ages.sort()`: ages is read again on the next line, so the compiler, while compiling, makes sort get a second hold: count 2. While running, the runtime sees count 2 and copies first: sorted gets its own list, and ages keeps its order. The compiler passed the item type, Int; the runtime picks the sort from it and the length. Under 512 items: a comparison sort, Rust's unstable one, a quicksort kind. Equal whole numbers can't be told apart, so their order doesn't matter.
+3. Line 3, `print(ages)`: ages's last use, marked by the compiler while compiling: printed, then freed. It was never changed.
+4. Line 4, `print(sorted)`: sorted's last use: printed, then freed.
+5. Line 5, `print(["pear", "Fig", "apple"].sort())`: Text needs comparing, so the runtime, while running, picks a stable merge sort (Rust's standard sort), by Unicode code point: capital F comes before small a. This list is held by nobody else (count 1), so it isn't copied first. Its short texts sit inside its buffer, 16 bytes each; for the sort they are made into text objects and put back. Printed, then freed.
+6. Line 8, `big.push(i * 7_919 % 1_000)`: 1,000 pushes fill big with 0 to 999 in a mixed order. The buffer grows as it fills, while running; it may move, and is drawn in place.
+7. Line 10, `const order = big.sort()`: big's last use, marked by the compiler while compiling: sort takes it over (a move), so the count stays 1 and the runtime sorts it where it is, no copy. order is the same list. 1,000 whole numbers, 512 or more: a radix sort. The runtime makes a scratch buffer of 1,000 slots for it, while running.
+8. Line 10, `const order = big.sort()`: One read counts every 8-bit digit of every number. The sign bit is flipped first, so negative numbers would come first; then the 54 high bits are the same in every number, and are skipped: 0 to 999 need only 10 bits, so 2 passes. Pass 1 places each number into the scratch buffer by its low 8 bits, keeping the order of numbers with the same digit. No two numbers are ever compared.
+9. Line 10, `const order = big.sort()`: Pass 2 places them back into big's own buffer by bits 8 and 9: sorted. Two passes end where they began, so nothing is copied back; with an odd number of passes, the result would be in the scratch buffer and the runtime would copy it back. The runtime frees the scratch buffer.
+10. Line 11, `print(`{order[0]} {order[1]} {order[999]}`)`: order[0] is 0, order[1] is 1, order[999] is 999: three loads, each after its index check.
+
+## Part 6: Memory
+
+### [Does b = a take new memory?](https://kavachlang.com/docs/memory/automatic-memory/memory-step-by-step/#scene-memory-share)
+
+Caveman says: Two name. One list. No copy. Count go up. Compiler look ahead. Know last use. Let go there.
+
+```kavach
+const a = [2, 3, 4, 5]
+const b = a
+print(`a={a}`)
+print(`b={b}`)
+```
+
+It prints, checked against a real run:
+
+```
+a=[2, 3, 4, 5]
+b=[2, 3, 4, 5]
+```
+
+1. Line 1, `const a = [2, 3, 4, 5]`: One object: a header holding the count, then the four numbers side by side. The numbers are not objects of their own.
+2. Line 2, `const b = a`: Nothing is allocated and nothing is copied. b holds the same object, and its count goes from 1 to 2.
+3. Line 3, `print(`a={a}`)`: The compiler marked this as a's last use while compiling, so a lets go here: count 2 → 1.
+4. Line 4, `print(`b={b}`)`: b's last use, marked by the compiler: count 1 → 0, and the object is freed at once.
+
+### [A move: the last use hands the object over](https://kavachlang.com/docs/memory/automatic-memory/memory-step-by-step/#scene-memory-move)
+
+Caveman says: Compiler look ahead. Old name not used again? Hand list over. No copy. Count stay same.
+
+```kavach
+const a = [2, 3, 4, 5]
+const b = a
+print(`b={b}`)
+```
+
+It prints, checked against a real run:
+
+```
+b=[2, 3, 4, 5]
+```
+
+1. Line 1, `const a = [2, 3, 4, 5]`: One object, held by a: count 1.
+2. Line 2, `const b = a`: The compiler saw, while compiling, that a is never used again, so this is a move: b takes the object, the count stays 1, and a just ends. No count update runs.
+3. Line 3, `print(`b={b}`)`: b's last use, marked by the compiler: count 1 → 0, and the object is freed.
+
+### [Numbers are copied, 8 bytes at a time](https://kavachlang.com/docs/memory/automatic-memory/memory-step-by-step/#scene-memory-numbers)
+
+Caveman says: Number small. Copy number. No need share. Change one? Other same.
+
+```kavach
+const a = 7
+let b = a
+b += 1
+print(`a={a} b={b}`)
+```
+
+It prints, checked against a real run:
+
+```
+a=7 b=8
+```
+
+1. Line 1, `const a = 7`: A number is kept in place, in the variable itself: 8 bytes, often in a register. No object, no count.
+2. Line 2, `let b = a`: b = a copies the 8 bytes. Copying a number costs no more than pointing at it would.
+3. Line 3, `b += 1`: b changes its own 8 bytes; a keeps 7.
+4. Line 4, `print(`a={a} b={b}`)`: The last use of a and b, but nothing to free: numbers were never objects. Bool and Char work the same way.
+
+### [A list changed while shared is copied then](https://kavachlang.com/docs/memory/automatic-memory/memory-step-by-step/#scene-memory-copy)
+
+Caveman says: Two name. One list. Change list? Copy first. Now two list.
+
+```kavach
+const a = [2, 3, 4, 5]
+let b = a
+b.push(6)
+print(`a={a}`)
+print(`b={b}`)
+```
+
+It prints, checked against a real run:
+
+```
+a=[2, 3, 4, 5]
+b=[2, 3, 4, 5, 6]
+```
+
+1. Line 1, `const a = [2, 3, 4, 5]`: One object, held by a.
+2. Line 2, `let b = a`: b holds the same object: count 2, nothing copied yet.
+3. Line 3, `b.push(6)`: b changes while a still holds the object. The runtime sees count 2 while running, so now, and only now, it copies: b gets its own object with 6 added, and a keeps the original.
+4. Line 4, `print(`a={a}`)`: a's last use, marked by the compiler: count 1 → 0, and its object is freed.
+5. Line 5, `print(`b={b}`)`: b's last use, marked by the compiler: its object is freed too.
+
+### [Text is shared and copied as a list is](https://kavachlang.com/docs/memory/automatic-memory/memory-step-by-step/#scene-memory-text)
+
+Caveman says: Text same as list. Share. Change? Copy first.
+
+```kavach
+const s = "tea"
+let t = s
+t += " and cake"
+print(`s={s}`)
+print(`t={t}`)
+```
+
+It prints, checked against a real run:
+
+```
+s=tea
+t=tea and cake
+```
+
+1. Line 1, `const s = "tea"`: Text is one object: the count, then its characters.
+2. Line 2, `let t = s`: As with a list: t holds the same object, count 2, nothing copied.
+3. Line 3, `t += " and cake"`: t changes while s holds the text: the runtime sees count 2 while running, so t gets its own copy with the part added. With no other holder, += adds only the part, in place.
+4. Line 4, `print(`s={s}`)`: s's last use, marked by the compiler: its text is freed.
+5. Line 5, `print(`t={t}`)`: t's last use, marked by the compiler: freed too.
+
+### [A list with one holder changes in place](https://kavachlang.com/docs/memory/automatic-memory/memory-step-by-step/#scene-memory-loop)
+
+Caveman says: One name hold list. Push. No copy. List grow where it is.
+
+```kavach
+let items: [Int] = []
+for i in 0..3 {
+    items.push(i * 10)
+}
+print(items)
+```
+
+It prints, checked against a real run:
+
+```
+[0, 10, 20]
+```
+
+1. Line 1, `let items: [Int] = []`: An empty list is one object with no items yet.
+2. Line 3, `items.push(i * 10)`: The runtime checks the count while running: 1, nobody else holds the list, so push changes it in place. Only the new number is written.
+3. Line 3, `items.push(i * 10)`: Round 2: in place again. items is read in the next round, so this is not its last use. When the buffer is full, the runtime grows it while running, and it may move to a bigger place; a push costs the same on average.
+4. Line 3, `items.push(i * 10)`: Round 3: in place again. items is read in the next round, so this is not its last use. When the buffer is full, the runtime grows it while running, and it may move to a bigger place; a push costs the same on average.
+5. Line 5, `print(items)`: After the loop, the last use, marked by the compiler: the list is freed.
+
+### [A dict keeps its entries in order, and an index past 8](https://kavachlang.com/docs/memory/automatic-memory/memory-step-by-step/#scene-memory-dict)
+
+Caveman says: Dict keep order. Small dict: no index. Big dict: index. Find fast.
+
+```kavach
+let stock: {String: Int} = {:}
+stock["tea"] = 3
+stock["cake"] = 5
+for i in 0..7 {
+    stock[`item{i}`] = i
+}
+print(stock.len())
+```
+
+It prints, checked against a real run:
+
+```
+9
+```
+
+1. Line 1, `let stock: {String: Int} = {:}`: A dict is one object with a count, like a list. It holds its entries in the order they were added.
+2. Line 2, `stock["tea"] = 3`: The entry goes in place, with its key's hash kept beside it. With up to 8 entries and keys that aren't whole numbers, there is no index: a lookup compares the few stored hashes.
+3. Line 3, `stock["cake"] = 5`: Nobody else holds the dict, so it changes in place, the new entry after the first.
+4. Line 5, `stock[`item{i}`] = i`: After the 7 rounds it holds 9 entries. Past 8, the runtime builds an index beside them while running, which finds a key in a few probes however big the dict is. The kept hashes mean growing it never hashes a key again.
+5. Line 7, `print(stock.len())`: The last use, marked by the compiler: the dict, its entries and its index are freed together.
+
+### [A dict changed while shared is copied then](https://kavachlang.com/docs/memory/automatic-memory/memory-step-by-step/#scene-memory-dict-copy)
+
+Caveman says: Two name. One dict. Change dict? Copy first.
+
+```kavach
+const prices = {"tea": 3, "cake": 5}
+let sale = prices
+sale["tea"] = 2
+print(`prices={prices}`)
+print(`sale={sale}`)
+```
+
+It prints, checked against a real run:
+
+```
+prices={"tea": 3, "cake": 5}
+sale={"tea": 2, "cake": 5}
+```
+
+1. Line 1, `const prices = {"tea": 3, "cake": 5}`: One dict object, count 1.
+2. Line 2, `let sale = prices`: Shared, as a list is: count 2, nothing allocated.
+3. Line 3, `sale["tea"] = 2`: sale changes while prices still holds the dict: the runtime sees count 2 while running, so sale gets its own copy. prices keeps its entries.
+4. Line 4, `print(`prices={prices}`)`: prices's last use, marked by the compiler: its dict is freed.
+5. Line 5, `print(`sale={sale}`)`: sale's last use, marked by the compiler: freed too.
+
+### [A set is a dict with keys only](https://kavachlang.com/docs/memory/automatic-memory/memory-step-by-step/#scene-memory-set)
+
+Caveman says: Set is dict, keys only. Same key again? Nothing happen.
+
+```kavach
+let seen = Set.of("tea", "cake")
+seen.add("tea")
+seen.add("jam")
+print(seen)
+```
+
+It prints, checked against a real run:
+
+```
+Set.of("tea", "cake", "jam")
+```
+
+1. Line 1, `let seen = Set.of("tea", "cake")`: A set is the same table as a dict, with keys only: in the order added, each with its hash.
+2. Line 2, `seen.add("tea")`: "tea" is there already, so nothing changes.
+3. Line 3, `seen.add("jam")`: A new key goes at the end, in place: the runtime sees count 1 while running, so nobody else holds the set.
+4. Line 4, `print(seen)`: The last use, marked by the compiler: the set is freed.
+
+### [Shared: two names, one changing value](https://kavachlang.com/docs/memory/automatic-memory/memory-step-by-step/#scene-memory-shared)
+
+Caveman says: Shared is one box. Two name hold box. One change, both see.
+
+```kavach
+const a = Shared([2, 3])
+const b = a
+b.update(list => list + [4])
+print(a.get())
+```
+
+It prints, checked against a real run:
+
+```
+[2, 3, 4]
+```
+
+1. Line 1, `const a = Shared([2, 3])`: A Shared is an object of its own, holding the list.
+2. Line 2, `const b = a`: Copying a Shared copies the handle: a and b hold the one Shared, count 2. This is the one way two names see one changing value.
+3. Line 3, `b.update(list => list + [4])`: After update, the Shared holds [2, 3, 4], so a sees it too: both names hold the one Shared. It was b's last use, marked by the compiler, so b lets go: count 2 → 1.
+4. Line 4, `print(a.get())`: a's last use, marked by the compiler: the Shared is freed, and with it the list it held.
+
+### [A list changed while shared is copied then](https://kavachlang.com/docs/memory/automatic-memory/how-it-stays-fast/#scene-memory-copy)
+
+Caveman says: Two name. One list. Change list? Copy first. Now two list.
+
+```kavach
+const a = [2, 3, 4, 5]
+let b = a
+b.push(6)
+print(`a={a}`)
+print(`b={b}`)
+```
+
+It prints, checked against a real run:
+
+```
+a=[2, 3, 4, 5]
+b=[2, 3, 4, 5, 6]
+```
+
+1. Line 1, `const a = [2, 3, 4, 5]`: One object, held by a.
+2. Line 2, `let b = a`: b holds the same object: count 2, nothing copied yet.
+3. Line 3, `b.push(6)`: b changes while a still holds the object. The runtime sees count 2 while running, so now, and only now, it copies: b gets its own object with 6 added, and a keeps the original.
+4. Line 4, `print(`a={a}`)`: a's last use, marked by the compiler: count 1 → 0, and its object is freed.
+5. Line 5, `print(`b={b}`)`: b's last use, marked by the compiler: its object is freed too.
+
+## Part 7: Standard Library
+
+### [A file's bytes: program, page cache, SSD](https://kavachlang.com/docs/standard-library/files/#scene-file-io)
+
+Caveman says: Write: bytes go to OS. OS keep them in RAM, write to disk later. Read: OS give bytes back from RAM, fast. Lines: small bucket, fill, take one line, fill again.
+
+```kavach
+use std.fs
+
+fn main() ! Error {
+    try fs.write_text("notes.txt", `tea\ncake\n`)
+    const all = try fs.read_text("notes.txt")
+    print(all.len())
+    for line in try fs.lines("notes.txt") {
+        print(line)
+    }
+    for piece in try fs.chunks("notes.txt", 4) {
+        print(piece.len())
+    }
+    try fs.remove("notes.txt")
+}
+```
+
+It prints, checked against a real run:
+
+```
+9
+tea
+cake
+4
+4
+1
+```
+
+1. Line 4, `try fs.write_text("notes.txt", `tea\ncake\n`)`: The runtime, while running, checks that notes.txt is inside the folders this task may use. Then it asks the OS, through system calls, to make a temporary file beside it and write the 9 bytes. During that call, the OS copies them from the program's memory into its page cache: memory in RAM that the OS keeps for files.
+2. Line 4, `try fs.write_text("notes.txt", `tea\ncake\n`)`: Then the runtime renames the temporary file over notes.txt, so a crash leaves the old file or the new one, never half of one. There is no wait for the disk: the OS decides, while the program goes on, when to copy the pages to the SSD, usually seconds later. fs.write_durable waits for the disk instead. The text was the write's to let go: freed.
+3. Line 5, `const all = try fs.read_text("notes.txt")`: read_text reads the whole file at once. Its pages are still in the page cache, so the OS copies them from there into the program's memory, most likely without touching the SSD; if they weren't, the OS would first read them from the SSD into the cache. The runtime makes one text value: up to 30 bytes fit inside its 64-byte object.
+4. Line 6, `print(all.len())`: 9 characters: "tea", a line break, "cake", a line break.
+5. Line 7, `for line in try fs.lines("notes.txt") {`: fs.lines opens the file and gives a reader with an 8 KB buffer, Rust's default size. The first line asked for makes one read call for up to 8 KB: the whole 9-byte file lands in the buffer. A big file comes in 8 KB at a time, never all at once.
+6. Line 8, `print(line)`: The runtime cuts the buffer at the first line break and makes a new text value, "tea". print writes it.
+7. Line 8, `print(line)`: "cake" comes from the same buffer: no system call this time. Each round's line is let go at its last use, the print: the compiler marked it while compiling, and print frees it. The next read finds the end of the file, and the loop stops.
+8. Line 10, `for piece in try fs.chunks("notes.txt", 4) {`: fs.chunks opens a reader of its own, also with an 8 KB buffer. Each piece is a new Bytes value of at most 4 bytes. Pieces this small are read through that buffer, when the loop asks. Pieces of 1 MB or more skip the buffer: a helper thread the runtime starts reads them through a second handle to the file, one piece ahead, so the disk and the loop work at the same time.
+9. Line 11, `print(piece.len())`: Three pieces: 4 bytes, 4 bytes, then the last 1.
+10. Line 13, `try fs.remove("notes.txt")`: fs.remove asks the OS to remove notes.txt.
+
+### [One frame through a drawing pipeline](https://kavachlang.com/docs/standard-library/gpu-screens/#scene-gpu-draw)
+
+Caveman says: Two small fn. One say where corner go. One say what color pixel is. Compiler turn both into GPU program. Runtime ready it before any frame. Each draw: send corners and dots to GPU. GPU paint. Screen show at its beat.
+
+```kavach
+use std.window
+use std.gpu
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Dot {
+    x: Float32
+    y: Float32
+    heat: Float32
+}
+
+type Camera {
+    zoom: Float32
+}
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+    heat: Float32
+}
+
+gpu vertex fn place(c: Corner, d: Dot, cam: Camera) -> Lit {
+    Lit(position: ((c.x + d.x) * cam.zoom, (c.y + d.y) * cam.zoom, 0.0, 1.0), heat: d.heat)
+}
+
+gpu fragment fn glow(l: Lit) -> (Float32, Float32, Float32, Float32) {
+    (l.heat, 0.2, 1.0 - l.heat, 1.0)
+}
+
+fn main() ! Error uses Window {
+    const win = try window.open("Swarm", 640, 480)
+    const screen = try gpu.screen(win)
+    const dots = gpu.pipeline(place, glow)
+    const square = [Corner(x: -0.1, y: -0.1), Corner(x: 0.1, y: -0.1), Corner(x: 0.1, y: 0.1), Corner(x: -0.1, y: 0.1)]
+    const corners: [UInt32] = [0, 1, 2, 0, 2, 3]
+    const swarm = [Dot(x: -0.5, y: 0.0, heat: 0.2), Dot(x: 0.5, y: 0.25, heat: 0.9)]
+    for _ in 0..600 {
+        const frame = try screen.frame()
+        frame.clear(0.0, 0.0, 0.0)
+        frame.draw(dots, square, instances: swarm, shared: Camera(zoom: 1.0), indices: corners)
+        frame.show()
+    }
+}
+```
+
+It prints, checked against a real run:
+
+```
+gpu-draw.kav: no errors
+```
+
+1. Line 24, `gpu vertex fn place(c: Corner, d: Dot, cam: Camera) -> Lit {`: While compiling, the compiler checks place and glow, and that glow takes what place gives. It writes both into one WGSL module, a GPU program. Its first line tells the runtime how the buffers are laid out: a corner is 2 Float32s, a dot 3, the shared Camera 1.
+2. Line 34, `const screen = try gpu.screen(win)`: The runtime, while running, readies the window for the program's own GPU, the one the settings name or else the best one: an sRGB color format when the screen offers one, else its first format, and Fifo, which shows each picture at the screen's next refresh (vsync), with at most 2 pictures waiting. A pipeline made before this would be compiled for its color format now.
+3. Line 35, `const dots = gpu.pipeline(place, glow)`: A pipeline made while a screen is open is compiled at once, for each open screen's color format: ahead, never in the middle of a frame. The GPU's driver turns the WGSL into the GPU's own code and holds it, ready for every frame; where it keeps it is the driver's choice. Kavach keeps only a handle to it, and saves nothing between runs.
+4. Line 40, `const frame = try screen.frame()`: The next picture to draw into, as big as the window is now. When 2 pictures already wait for the screen, this waits for its next refresh, so the loop runs at the screen's rate. clear then fills it with black.
+5. Line 42, `frame.draw(dots, square, instances: swarm, shared: Camera(zoom: 1.0), indices: corners)`: Before anything is drawn, the runtime checks, while running, that each of the 6 indices names one of square's 4 corners. An index of 4 or more would stop the program here with a panic, and nothing would be drawn.
+6. Line 42, `frame.draw(dots, square, instances: swarm, shared: Camera(zoom: 1.0), indices: corners)`: Each draw makes new buffers in VRAM and copies them over: the vertices, the instances, the indices and the shared value. Only a list a GPU map left in GPU memory is drawn where it is, with nothing copied. The draw is noted in the frame; the GPU hasn't drawn yet.
+7. Line 43, `frame.show()`: show sends the frame's work, the clear and the draw, to the GPU in one go, and asks for the picture to be shown. The CPU goes on to the next round of the loop while the GPU draws.
+8. Line 25, `Lit(position: ((c.x + d.x) * cam.zoom, (c.y + d.y) * cam.zoom, 0.0, 1.0), heat: d.heat)`: The GPU runs place on its many small cores, for each corner of each dot: 4 corners × 2 dots. Corner (-0.1, -0.1) of dot 0 lands at (-0.6, -0.1). heat goes on to glow. An overflow here gives a wrong value, not a panic: the GPU can't stop in the middle of a frame.
+9. Line 29, `(l.heat, 0.2, 1.0 - l.heat, 1.0)`: The GPU joins the corners into triangles, finds the pixels inside each, and runs glow once for each of them: dot 0's pixels get (0.2, 0.2, 0.8), blue; dot 1's (0.9, 0.2, about 0.1), red. Each lands in the picture.
+10. Line 43, `frame.show()`: At the screen's next refresh the picture is shown: Fifo, vsync. Then the loop draws the next frame, 600 in all, with new buffers each time.
+
+## Part 12: Speed
+
+### [A map on the GPU: copied over, run at once, left there](https://kavachlang.com/docs/speed/gpu/#scene-gpu-map)
+
+Caveman says: Big list, heavy work? Runtime send to GPU. List go over. Many small cores work at once. Answer stay on GPU. CPU no wait. CPU read answer? Then answer come back. Once.
+
+```kavach
+gpu fn glow(x: Float32, gain: Float32) -> Float32 {
+    let v = x
+    for _ in 0..1000 {
+        v = v * 0.99 + gain
+    }
+    v
+}
+
+fn main() {
+    let pixels: [Float32] = []
+    for i in 0..1_000_000 {
+        pixels.push(Float32(i % 256) / 255.0)
+    }
+    const gain: Float32 = 0.25
+    const lit = pixels.map(p => glow(p, gain))
+    print(pixels.len())
+    print(lit.all(v => 24.9 < v < 25.1))
+}
+```
+
+It prints, checked against a real run:
+
+```
+1000000
+true
+```
+
+1. Line 1, `gpu fn glow(x: Float32, gain: Float32) -> Float32 {`: While compiling, the compiler checks that glow uses only what a GPU can do, and writes it, with the lambda that calls it, as a WGSL kernel: a small GPU program kept inside this one. It also counts glow's work per item: 1000 rounds of a multiply and an add. As the program starts, the runtime opens the GPU and compiles that kernel for it, on a background thread, unless the GPU is set off.
+2. Line 12, `pixels.push(Float32(i % 256) / 255.0)`: The CPU fills pixels in RAM: a million Float32s, 4 bytes each, side by side: 4 MB. A list of Float32 is packed, so its items are already in the form a GPU reads.
+3. Line 15, `const lit = pixels.map(p => glow(p, gain))`: CPU or GPU? The runtime decides while running. The compiler counted about 7,000 steps per item; a million items make about 700 ms of CPU time. That is over the 2 ms that makes the GPU worth it, and over the 300 ms worth waiting for a GPU still opening, so if the GPU isn't open yet, the map waits for it. Less work stays on the CPU, as does every map on a machine with no usable GPU: the same output, more slowly. KAVACH_GPU, or [run] gpu in kavach.toml, changes this: on and check skip the check, cpu or off keep every map on the CPU, and a maker's name or a GPU number picks the GPU.
+4. Line 15, `const lit = pixels.map(p => glow(p, gain))`: The runtime copies pixels over the PCIe link into the GPU's own memory, VRAM, as it is. Only lists already packed at 4 bytes (Int32, UInt32, Float32) go as they are: a [Bool] is widened to 4-byte words, and a record's fields narrowed from 8 to 4 bytes, on the CPU first. Every field of every item goes up. So do the captured values: gain, after the item count.
+5. Line 4, `v = v * 0.99 + gain`: The GPU runs the kernel: one thread per item, in 3,907 groups of 256, on its many small cores at once. Each thread runs glow's 1000 rounds on its own pixel and writes the result into lit's buffer in VRAM. An item that overflowed a whole number, or divided by zero, would set the stop flag: what happened, its two numbers and the line.
+6. Line 16, `print(pixels.len())`: The map didn't wait. lit is kept in a local, so the compiler, while compiling, marked this map to leave its result on the GPU (decision 0061): the runtime queued the work and went on. lit's list in RAM is made, filled with zeros until its items come back. The CPU prints 1000000 while the GPU may still be working. (With KAVACH_GPU=check, a result like a [Bool] that isn't packed at 4 bytes, or a list too big for one pass, the map waits and copies back instead.)
+7. Line 17, `print(lit.all(v => 24.9 < v < 25.1))`: The first CPU read of lit. The compiler put a fetch before it, while compiling. The runtime waits for the GPU and reads the stop flag: 20 bytes back over PCIe. Had an item failed, its panic would show here, with glow's line, after line 16 had run. Another GPU wait, or the program's end, reads the flag too.
+8. Line 17, `print(lit.all(v => 24.9 < v < 25.1))`: The flag is clear, so the runtime copies lit's 4 MB back over PCIe into its list in RAM, once. A map whose result is read at once, not kept in a local, waits for the GPU and copies it back by itself.
+9. Line 17, `print(lit.all(v => 24.9 < v < 25.1))`: all runs on the CPU over lit's items: each is near 25, so it prints true. pixels and lit stay in GPU memory too: pixels went up in one piece, so it is kept. The runtime keeps up to 4 lists a map read or made, 512 MB at most, so a later map of either copies nothing over.
