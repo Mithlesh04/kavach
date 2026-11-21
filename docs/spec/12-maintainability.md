@@ -171,7 +171,7 @@ Many small rules matter at scale because they remove arguments between teams:
   `kavach fmt --check` reports files that are not formatted, for CI.
 - **One project layout** (10.3). Anyone can open any package and find their way.
 - **Errors with fixes.** Every compiler error says what to change, and `kavach fix` applies the fix when it is safe: when it has one right answer, and adds no error. Today that is code that never runs taken out (4.7), a call to a deprecated function rewritten (12.6), `=` in a condition made `==` (4.1), `0..=xs.len()` made `0..xs.len()` (4.4), `x % 2 == 1` made `x % 2 != 0` (1.8), a changed `const` made `let`, and the `uses` a `pub` function needs added (8.1). The editor offers each as a quick fix, and also the fixes that may be wrong, which `kavach fix` leaves: a misspelled name changed to the closest one, and a `let` that hides an outer variable (1.4) made a change to that one.
-- **No warnings in release builds** by default: `kavach build --release` treats warnings as errors unless `[build.release] warnings = "allow"`.
+- *Not built yet:* **No warnings in release builds** by default: `kavach build --release` treats warnings as errors unless `[build.release] warnings = "allow"`.
 
 ## Open questions
 

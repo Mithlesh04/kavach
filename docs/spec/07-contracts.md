@@ -93,9 +93,9 @@ const d = Dump(count: -1) catch e => {
 | Build | Checked |
 |---|---|
 | `kavach run`, `kavach test`, debug builds | Every contract, at run time |
-| `kavach build --release` | Contracts of `pub` functions and all invariants (default) |
+| `kavach build --release` | Contracts of `pub` functions and all invariants (default) (not built yet) |
 
-Configure release checking in `kavach.toml`:
+*Not built yet:* configure release checking in `kavach.toml` (the section is read but has no effect today):
 
 ```toml
 [build.release]

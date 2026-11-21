@@ -95,7 +95,7 @@ A task that has ended is let go of while the function that spawned it still runs
 const pages = urls.parallel_map(url => download(url), max: 10)
 ```
 
-`parallel_map` runs the function on each item in a task of its own, at most `max` tasks at a time, and returns the results in the original order. Each task runs as `spawn thread` makes it (9.8), so in a release build the items compute on several cores at once. Without `max` (or with 0), every task starts at once. Before it starts the task for item `i`, it waits for the task of item `i - max`, so the turns (9.7) are the same on every run.
+`parallel_map` runs the function on each item in a task of its own, at most `max` tasks at a time, and returns the results in the original order. Each task runs as `spawn thread` makes it (9.8), so in an LLVM build (`kavach build`) the items compute on several cores at once. Without `max` (or with 0), every task starts at once. Before it starts the task for item `i`, it waits for the task of item `i - max`, so the turns (9.7) are the same on every run.
 
 Given a function that can fail, `parallel_map` fails with the first error in the items' order (5.2). A panic in an item's task is printed when it happens, as any task's is (9.1), and is then a panic where `parallel_map` was called: the call can't fail by its type, so there is no error to give back. Its message is "an item of `parallel_map` panicked:", then the task's message and where it happened. Rust's Rayon and Java's parallel streams pass a task's panic on the same way.
 
@@ -259,7 +259,7 @@ const next = receive.take().timeout(200.ms) catch e => Taken.Closed
 
 ## 9.7 Taking turns
 
-Tasks take turns in an order the language defines, so a program prints the same every time it runs, in development and in a release build:
+Tasks take turns in an order the language defines, so a program prints the same every time it runs, whether it is interpreted or built:
 
 - `spawn` makes the new task ready. The task that spawned it keeps running.
 - A task runs until it **waits**: for another task (`.wait()`, or a function that spawned tasks returning, 9.2), for time (`time.sleep_ms`, a round of `time.every_ms`), and later for channels and I/O. Then the task that became ready first runs.
@@ -289,7 +289,7 @@ fn main() ! Error {
 
 The two sleeps overlap, so `main` takes about 200 ms, not 300.
 
-Turns fix the order of what tasks do that others can see, not when they compute. For a task spawned with `spawn thread` (9.8), a release build (`kavach build`) lets a new task compute ahead, on another core, until its first such effect (printing, files, channels, spawning, waiting, ending), which then waits for its turn ([decision 0020](../decisions/0020-tasks-take-turns.md)). Values are copied into a task (9.5), so this changes no program's results, only how fast it runs.
+Turns fix the order of what tasks do that others can see, not when they compute. For a task spawned with `spawn thread` (9.8), an LLVM build (`kavach build`, decision 0018) lets a new task compute ahead, on another core, until its first such effect (printing, files, channels, spawning, waiting, ending), which then waits for its turn ([decision 0020](../decisions/0020-tasks-take-turns.md)). Values are copied into a task (9.5), so this changes no program's results, only how fast it runs.
 
 ## 9.8 How tasks run
 
@@ -304,7 +304,7 @@ spawn cores render(frame)     // on any core of the machine
 | Written | How the task runs | Best for |
 |---|---|---|
 | `spawn` | A coroutine on the thread of the task that spawned it: passing the turn needs no operating system ([decision 0048](../decisions/0048-tasks-as-coroutines-per-core.md)) | Many tasks that mostly wait on each other, such as the stages of a pipeline passing values on |
-| `spawn thread` | An operating-system thread of its own; a release build (`kavach build`) lets it compute ahead on another core until its first effect (9.7) | A task that blocks inside a C library, or computes for long |
+| `spawn thread` | An operating-system thread of its own; an LLVM build (`kavach build`) lets it compute ahead on another core until its first effect (9.7) | A task that blocks inside a C library, or computes for long |
 | `spawn cores` | On a worker thread per core, the next one in turn, started when the first such task is spawned | Heavy computing, spread over every core, and a server's task per connection (`http.serve` uses it, 14.11) |
 | `spawn process` | An operating-system process of its own, running the program's code; the call's arguments and its result are copied in and out | Code Kavach can't check, such as a C or Python library that may hang: `cancel()` ends the process at once |
 
@@ -313,7 +313,7 @@ spawn cores render(frame)     // on any core of the machine
 - `thread`, `cores` and `process` are words only right after `spawn`; anywhere else they are names like any other.
 - `spawn process` takes a call of a function, not a block. Its arguments and its result must be values that can be copied out of the program: no `Shared` values, channels, tasks, functions or agents; the compiler says which one can't. What the task prints goes to the program's output, in turn like any task's. Cancelling it ends the process at once: it shares nothing, so nothing is left half-changed ([decision 0075](../decisions/0075-cancelling-tasks.md)). The function's error comes out of `.wait()`, as any task's does, and so does a panic in it, as `panicked: <message> at <file>:<line>` (9.1). Starting a process takes milliseconds, so it is for long or risky work. A thread is never ended this way: one stopped in the middle of anything can leave what it shares half-changed.
 - Every kind takes turns as 9.7 says, so whichever is chosen, a program prints the same: only its speed changes. A `spawn cores` task keeps a looser order, the one of [decision 0049](../decisions/0049-tasks-on-all-cores-keep-the-programs-order.md): its own lines come out in the order it prints them, whole, and a line printed before a task sends a value, spawns a task or ends comes before what the receiver prints after that. Channels and `Shared` values work across cores: a value going through either is copied for the task that gets it, and `update` holds its value's lock (6.2).
-- Only a release build runs `spawn cores` tasks on every core today. Other runs (`kavach run`, `run --native`) run them on one core, in turn, and print the same.
+- Only an LLVM build (`kavach build`, decision 0018) runs `spawn cores` tasks on every core today. Other runs run them on one core, in turn, and print the same: `kavach run`, `run --native`, and a program `kavach build` makes with Cranelift (`KAVACH_BACKEND=cranelift`, or a program LLVM doesn't build yet).
 - How tasks run is no setting of `kavach.toml`: `tasks =` there is an error that says to choose in the code.
 
 ## Open questions

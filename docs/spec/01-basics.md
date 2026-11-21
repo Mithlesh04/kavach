@@ -145,7 +145,7 @@ A minus written before a whole-number literal belongs to it, so the smallest val
 
 ### Plain strings and templates
 
-Text in quotes is exactly what is written, on one line: no escapes, and nothing filled in ([decision 0131](../decisions/0131-plain-strings-and-backtick-templates.md)). Paths, regular expressions and JSON need nothing special. Text that holds a `"`, or goes over lines, is written in backticks.
+Text in quotes is exactly what is written, on one line: no escapes, and nothing filled in ([decision 0131](../decisions/0131-plain-strings-and-backtick-templates.md)). Paths and regular expressions need nothing special. Text that holds a `"`, as JSON almost always does, or goes over lines, is written in backticks, with `\{` for each brace (`` `{"id": 7}` `` would fill in a value).
 
 ```kavach
 const path = "C:\temp\{name}"          // these characters, backslashes and braces too

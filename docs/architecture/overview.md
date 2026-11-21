@@ -23,7 +23,7 @@ How Kavach source code becomes a running program.
            ▼                         ▼
    backend/cranelift          backend/llvm
    fast compile               fully optimized
-   (kavach run, debug)        (kavach build --release, WASM)
+   (kavach run --native)      (kavach build)
            │                         │
            └───────────┬─────────────┘
                        ▼
@@ -79,10 +79,13 @@ Two layers. Neither one depends on the AI model behaving well.
 
 | Command | Backend | Contracts checked | Used for |
 |---|---|---|---|
-| `kavach run` | Cranelift | all | development, instant feedback |
-| `kavach build` | LLVM where it supports the program so far, otherwise Cranelift ([decision 0018](../decisions/0018-llvm-backend-through-llvm-tools.md)) | all | executables |
-| `kavach build --release` | LLVM | public functions (configurable) | production |
-| `kavach build --target wasm` | LLVM | configurable | browser and edge |
+| `kavach run` | none: the interpreter (`compiler/interp`) | all | development, instant feedback |
+| `kavach run --native` | Cranelift, compiled in memory | all | checking native code quickly |
+| `kavach build` | LLVM where it supports the program so far, otherwise Cranelift ([decision 0018](../decisions/0018-llvm-backend-through-llvm-tools.md)); `KAVACH_BACKEND=cranelift` always uses Cranelift | all | executables |
+| `kavach build --release` (not built yet) | LLVM | public functions (configurable, spec 7.4) | production |
+| `kavach build --target wasm` (not built yet) | LLVM | configurable | browser and edge |
+
+A program built with Cranelift runs on one core and as written: `spawn cores` tasks take turns on one core, and loop conversions and fused loops run only in LLVM builds.
 
 ## Tools on top of the compiler
 
