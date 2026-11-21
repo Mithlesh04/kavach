@@ -70,6 +70,32 @@ fn try_and_catch_on_what_cant_fail() {
     assert_eq!(warnings(fails), Vec::<String>::new());
 }
 
+/// A conversion of a constant the compiler reads, which fits, can't
+/// fail (spec 2.1); one of a value known only while running can.
+#[test]
+fn conversions_under_catch() {
+    let main = |body: &str| format!("fn main() {{\n{body}\n}}");
+    let warns = ["2: `catch` does nothing here:"];
+    let cases: &[(&str, &[&str])] = &[
+        ("print(Int(\"2\") catch 0)", &warns),
+        ("print(Int(2) catch 0)", &warns),
+        ("print(Int8(100) catch 0)", &warns),
+        ("print(Int(2.5) catch 0)", &warns),
+        ("print(UInt<bits: 12>(\"4095\") catch 0)", &warns),
+        ("const x = 300\nprint(Int8(x) catch 0)", &[]),
+        ("const f = 2.5\nprint(Int(f) catch 0)", &[]),
+        ("const s = \"7\"\nprint(Int(s) catch 0)", &[]),
+    ];
+    let failures: Vec<String> = cases
+        .iter()
+        .filter_map(|(body, want)| {
+            let got = warnings(&main(body));
+            (got != *want).then(|| format!("body: {body:?}\n  want: {want:?}\n   got: {got:?}"))
+        })
+        .collect();
+    assert!(failures.is_empty(), "\n{}", failures.join("\n"));
+}
+
 #[test]
 fn changes_to_a_copy_inside_a_lambda_or_task() {
     let main = |body: &str| format!("fn main() {{\n{body}\n}}");

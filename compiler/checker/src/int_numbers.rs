@@ -230,6 +230,9 @@ impl Checker<'_> {
             return None;
         }
         match self.infer(expr, expected) {
+            // A constant the compiler reads, and which fits, can't fail:
+            // `Int("2") catch 0` keeps its warning (spec 2.1, 5.3).
+            Ty::Prim(p) if p.is_int() && constant_fits(expr, p) => None,
             made @ Ty::Prim(p) if p.is_int() => {
                 let failing = Ty::Result(
                     Box::new(made),
@@ -241,7 +244,35 @@ impl Checker<'_> {
             other => Some(other),
         }
     }
+}
 
+/// Whether the one argument of conversion call `call` is a constant the
+/// compiler reads (a whole number, a plain text literal or a float
+/// literal) whose value fits whole-number type `p`.
+fn constant_fits(call: &Expr, p: Prim) -> bool {
+    let ExprKind::Call { args, .. } = &call.kind else {
+        return false;
+    };
+    let [arg] = args.as_slice() else {
+        return false;
+    };
+    let value = match &arg.value.kind {
+        ExprKind::Str(parts) => match parts.as_slice() {
+            [StrPart::Text(t)] => t.parse::<num_bigint::BigInt>().ok(),
+            _ => None,
+        },
+        ExprKind::Float(f) => f
+            .replace('_', "")
+            .parse::<f64>()
+            .ok()
+            .filter(|x| x.is_finite() && x.abs() < 9.0e15)
+            .map(|x| num_bigint::BigInt::from(x.trunc() as i64)),
+        _ => crate::constants::const_int(&arg.value),
+    };
+    value.is_some_and(|v| crate::constants::fits(&v, p))
+}
+
+impl Checker<'_> {
     /// `p & 1`, `~p`, `p << 2` on a range: an error, as a range is about
     /// values, not bits (spec 2.1). Whether it was one.
     pub(crate) fn no_bits_on_range(&mut self, e: &Expr, t: &Ty, op: &str) -> bool {
