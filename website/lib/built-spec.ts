@@ -40,7 +40,6 @@ const DESIGNS = ["f35e8eb6", "9357ff02"];
 const PINNED: Record<string, { at: string; built: string[] }> = Object.fromEntries(
   (
     [
-      ["02-types/01-built-in-types.md", []], // Int8 and Decimal rows name Int<bits: n> and Decimal<digits, places>
       ["02-types/17-matrices.md", []], // says Matrix is gone; it still works until Tensor lands
     ] as [string, string[]][]
   ).map(([f, built]) => [`docs/spec/${f}`, { at: BEFORE_DESIGNS, built }]),

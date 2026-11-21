@@ -1,0 +1,4 @@
+fn main() {
+    const addr: UInt<bits: 12> = 4096
+    print(addr)
+}

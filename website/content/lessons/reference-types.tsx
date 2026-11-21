@@ -61,8 +61,10 @@ function groups(): { title: string; entries: Entry[] }[] {
   };
   const basics = specTables("02-types/01-built-in-types.md", "2.1")[0].rows.map(([cell, meaning]) => {
     const names = [...cell.matchAll(/`(\w+)`/g)].map((m) => m[1]);
+    // Decimal<digits, places> is not built yet, and the row names it in passing (spec 2.1).
+    const says = meaning.replace(/; `Decimal<digits: 10, places: 2>` fixes the places \(below\)/, "");
     // Json is written in Kavach, in std.json, which every program gets.
-    return { names, says: meaning, number: "2.1", file: "02-types/01-built-in-types.md", defined: names[0] === "Json" ? fromStd("Json") : undefined };
+    return { names, says, number: "2.1", file: "02-types/01-built-in-types.md", defined: names[0] === "Json" ? fromStd("Json") : undefined };
   });
   const collections = specTables("02-types/02-collections.md", "2.2")[0].rows.map(([type, short, literal]) => ({
     names: [type.match(/`(\w+)/)![1]],
@@ -77,6 +79,7 @@ function groups(): { title: string; entries: Entry[] }[] {
       title: "Numbers, text and values",
       entries: [
         ...basics,
+        { names: ["UInt"], says: `${said("02-types/01-built-in-types.md", /(A whole number of exactly `n` bits, signed or not, for hardware registers, chip design and file formats\.)/)} ${said("02-types/01-built-in-types.md", /(`UInt` is always written with its bits)\./)}: \`UInt<bits: 12>\`, or \`UInt32\` for 32.`, number: "2.1", file: "02-types/01-built-in-types.md" },
         { names: ["StrView"], says: said(VIEWS, /(a `StrView` is part of a string with nothing copied, for parsing)/), number: "2.18", file: VIEWS },
         { names: ["TextBuilder"], says: said(VIEWS, /(a `TextBuilder` is text being made, changed in place, for building)/), number: "2.18", file: VIEWS },
         { names: ["Frozen"], says: said(FROZEN, /(`x\.freeze\(\)` gives a `Frozen<T>`: a value whose fields and items never change, even in a `let`\. `f\.unfreeze\(\)` gives a copy that can change\.)/), number: "2.20", file: FROZEN },

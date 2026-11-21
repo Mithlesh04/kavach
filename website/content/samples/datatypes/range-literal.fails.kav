@@ -1,0 +1,4 @@
+fn main() {
+    const port: Int<range: 1..=65535> = 0
+    print(port)
+}

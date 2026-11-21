@@ -1,0 +1,1 @@
+error: `&` works on bits, and `Int<range: 1..=9>` is a range: convert it first, as `Int(x) & …`, or use an `Int<bits: n>` (spec 2.1)

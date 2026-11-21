@@ -1,0 +1,4 @@
+fn main() {
+    let p: Int<range: 10..=20> = 15
+    print(p.wrapping_add(10))
+}

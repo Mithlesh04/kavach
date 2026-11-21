@@ -94,7 +94,6 @@ export const providersDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Other providers. They will come in a package of their own repository: first OpenAI-shaped Chat Completions (OpenAI, Azure, Ollama, llama.cpp, vLLM), then Gemini, Bedrock, Vertex and OpenAI&apos;s Responses API. Today only <C>Anthropic()</C> ships; a service that speaks Anthropic&apos;s API is reached through <C>api_url</C>.</li>
         <li>Signed keys: <C>Auth.AwsSignature</C> and <C>Auth.GoogleToken</C>. For now, an <C>ask</C> whose provider gives one fails with <C>Failed(status: 0, …)</C>.</li>
-        <li><C>model</C> taking a list of models, tried in turn.</li>
         <li><C>ai.ask_full&lt;T&gt;</C>, which would give an <C>ask</C>&apos;s usage and cost.</li>
         <li>Prices, costs and money budgets in <C>limit Ai</C>.</li>
         <li>Counting a prompt&apos;s tokens before it is sent (<C>ai.count</C>).</li>

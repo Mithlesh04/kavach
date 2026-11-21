@@ -1,0 +1,48 @@
+use std.fs
+
+type Verdict {
+    /// true if the text is risky
+    risky: Bool
+}
+
+fn careful() -> Model {
+    Model(name: "claude-opus-5-5", effort: Effort.High)
+}
+
+/// The same model, through the team's second account.
+fn careful_second_key() -> Model {
+    Model(name: "claude-opus-5-5", effort: Effort.High, api_key_env: "ANTHROPIC_API_KEY_2")
+}
+
+fn backup() -> Model {
+    Model(name: "claude-haiku-5-5")
+}
+
+fn logged() -> AgentSettings {
+    AgentSettings(audit: Audit())
+}
+
+agent Reviewer {
+    model [careful(), careful_second_key(), backup()]
+    settings logged()
+    can Ai
+    on check(text: String) -> Verdict ! Error {
+        try ask<Verdict>(`Is this clause risky? {text}`)
+    }
+    on quick(text: String) -> Verdict ! Error {
+        try ask<Verdict>(`Is this rude? {text}`, model: [backup(), careful()])
+    }
+}
+
+fn main() ! Error {
+    const bot = Reviewer.start()
+    const _c = try bot.check("The buyer pays all fees.")
+    const _q = try bot.quick("Hello there!")
+    for line in try fs.lines("agents/Reviewer/audit.log") {
+        if line.trim().starts_with("model:") {
+            print(line.trim())
+        } else if not line.starts_with(" ") {
+            print(line.split("Z ").last() ?? line)
+        }
+    }
+}

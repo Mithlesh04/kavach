@@ -1,0 +1,8 @@
+fn next(pc: UInt<bits: 12>) -> UInt<bits: 12> {
+    pc + 1
+}
+
+fn main() {
+    print(next(4094))
+    print(next(4095))
+}

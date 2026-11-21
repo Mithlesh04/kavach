@@ -1,0 +1,2 @@
+9
+panic: 10 doesn't fit in Int<range: 0..=9>

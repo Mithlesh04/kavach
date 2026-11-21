@@ -57,6 +57,8 @@ export const aliases: Record<string, string> = {
   "start/kavach-home": "what is kavach compiled interpreted scripting language static typing garbage collector overview introduction",
   "start/what-kavach-does-for-you": "features why kavach benefits smart defaults safety speed",
   "functions/functions": "method procedure arguments parameters return call signature",
+  "basics/data-types/any-bit-width": "bits bit width uint12 int24 arbitrary width integer register hardware verilog vhdl zig u12 i24 wrapping wrap around wrapping_add bitfield bit field",
+  "basics/data-types/ranged-integers": "range type ranged integer bounded integer subrange ada pascal refinement type port number 1..=65535 between min max clamp",
   "basics/data-types/float-and-float32": "float double float32 single precision nan isnan is_nan infinity infinite isinf isfinite is_finite not a number ieee 754 negative zero",
   "basics/data-types": "data types datatypes mix mixing int plus float implicit conversion coercion promote primitive integer int long short byte float double decimal money currency char character string boolean conversion cast overflow number",
   "types/optionals": "null nil none undefined nullable maybe option optional chaining null pointer exception safe navigation elvis coalescing",

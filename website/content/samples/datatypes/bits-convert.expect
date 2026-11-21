@@ -1,0 +1,5 @@
+5000
+5000 doesn't fit in UInt<bits: 12>
+0
+300 doesn't fit in Int8
+-1

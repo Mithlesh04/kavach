@@ -1,0 +1,1 @@
+error: `Int<range: 10..=20>` has no method `wrapping_add`: wrapping has no meaning for a range: use `checked_add` and the others, which give `none` outside it

@@ -5,10 +5,12 @@ import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
 import { typeChoices } from "@/lib/ai-model";
 import { loadProject } from "@/lib/samples";
+import { specBlockWith } from "@/lib/spec-tables";
 import { FieldTable } from "./field-table";
 import { Ex, H2, Note, P, Syntax } from "./parts";
 
 const agentModel = loadProject("agents/agent-model.dry", ["src/main.kav"]);
+const modelList = loadProject("agents/model-list.dry", ["src/main.kav"]);
 
 // What each Model field is for, in plain words, and the values it takes.
 // The fields themselves, their types and defaults come from
@@ -46,6 +48,15 @@ const fieldMeans: Record<string, React.ReactNode> = {
 };
 
 // ---------- Agents: model ----------
+
+// When a list of models moves on (spec 8.4, Fallbacks).
+const moves: [string, string][] = [
+  ["RateLimited Overloaded TimedOut Network", "Busy: moves on to the next model at once"],
+  ["QuotaUsedUp BadKey NotFound", "Moves on, and leaves this model out for the rest of the call"],
+  ["Refused", "Fails: a fallback can't be used to get round a safety filter"],
+  ["Denied", "Fails: it is a limit the program set, not trouble with the model"],
+  ["BadRequest CutOff InvalidOutput NoKey Failed", "Fails: the request or the program's setup is at fault, and the next model shares it"],
+];
 
 export const agentModelDoc: LessonDoc = {
   lead: "model names the AI model, and its settings, for every ask in the agent's handlers.",
@@ -85,12 +96,53 @@ export const agentModelDoc: LessonDoc = {
       <Ex name="agents/model-temperature.fails" />
       <P>The compiler also refuses what a model it knows can&apos;t do:</P>
       <Ex name="agents/model-always-thinks.fails" />
+      <H2>A list of models, tried in turn</H2>
+      <P>
+        <C>model</C> also takes a list: <C>model [careful(), backup()]</C> in an agent, or{" "}
+        <C>ask&lt;T&gt;(prompt, model: [careful(), backup()])</C> for one call. The first model is asked first. When
+        it can&apos;t answer for a reason the next one may not share, such as a rate limit or a bad key, the call goes
+        to the next model. Several keys of one provider are the same model with another <C>api_key_env</C>:
+      </P>
+      <CodeBlock code={modelList.files[0].code} file="src/main.kav" output={modelList.output} />
+      <P>
+        This was a dry run, so no model was asked, and each line names the first model in its list. Each item is
+        written as a single model is: a <C>Model(…)</C> with plain values, a <C>const</C>, or a function with no
+        parameters. A model may be in the list more than once. An empty list is refused:
+      </P>
+      <Ex name="agents/model-list-empty.fails" />
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse text-[15px]">
+          <thead>
+            <tr className="border-b border-line text-left text-soft">
+              <th className="py-2 pr-4 font-bold">The model fails with</th>
+              <th className="py-2 font-bold">What the call does</th>
+            </tr>
+          </thead>
+          <tbody>
+            {moves.map(([errs, what]) => (
+              <tr key={errs} className="border-b border-line">
+                <td className="py-2 pr-4">{errs.split(" ").map((e, i) => <span key={e}>{i > 0 && ", "}<C>{e}</C></span>)}</td>
+                <td className="py-2 text-muted">{what}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A busy model hands the call over at once, so a second key never waits while it is free. Only when every model left is busy does the call wait, as each <C>Model</C>&apos;s <C>retries</C> say, then try them in turn again.</li>
+        <li>When every model fails, the call fails with the error of its last try.</li>
+        <li>However many models it tries, the call is one <C>ask</C> for <C>count</C> in <C>limit Ai</C>; <C>tokens</C> counts the tokens of every try.</li>
+      </ul>
+      <P>In a real run, the audit log has a line for each model the call moved on from, with the error that moved it on:</P>
+      <CodeBlock code={specBlockWith("08-capabilities-and-agents/06-audit-log.md", "8.6", "moved on:")} file="audit.log, as spec 8.6 shows it" lang="text" />
       <P>
         One <C>ask</C> can choose another model for itself, and the key, the address calls go to, and what each
         call costs are on <Link href="/docs/agents/ask/choosing-the-model/">Choosing the model</Link>.
       </P>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/08-capabilities-and-agents/03-agents.md" label="spec 8.3 · model" />
+        <SrcRef file="docs/spec/08-capabilities-and-agents/04-typed-ai-calls.md" label="spec 8.4 · a list of models" />
+        <SrcRef file="docs/decisions/0140-ai-providers.md" label="decision 0140" />
         <SrcRef file="docs/decisions/0056-the-model-is-chosen-in-code.md" label="decision 0056" />
         <SrcRef file="docs/decisions/0059-model-settings-follow-the-providers.md" label="decision 0059" />
         <SrcRef file="stdlib/ai/ai.kav" label="std.ai: Model, as declared" />

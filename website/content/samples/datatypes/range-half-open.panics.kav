@@ -1,0 +1,8 @@
+fn digit(n: Int) -> Int<range: 0..10> {
+    Int<range: 0..10>(n)
+}
+
+fn main() {
+    print(digit(9))
+    print(digit(10))
+}

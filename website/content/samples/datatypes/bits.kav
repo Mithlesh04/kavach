@@ -1,0 +1,9 @@
+fn main() {
+    const addr: UInt<bits: 12> = 4095          // the largest 12-bit number
+    const temp: Int<bits: 24> = -8_388_608     // the smallest 24-bit number
+    print(addr)
+    print(temp + 8_388_607)
+    const small: Int8 = -100
+    const same: Int<bits: 8> = small           // Int8 is Int<bits: 8>: one type
+    print(same)
+}

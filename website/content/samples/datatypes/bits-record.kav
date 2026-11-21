@@ -1,0 +1,15 @@
+use std.json
+
+type Reg {
+    addr: UInt<bits: 12>
+    temp: Int<bits: 24>
+    port: Int<range: 1..=65535>
+}
+
+fn main() {
+    const xs: [UInt<bits: 12>] = [7, 1, 4095]
+    print(xs.sort())
+    const r = Reg(addr: 4095, temp: -1, port: 443)
+    print(r)
+    print(json.stringify(r))
+}

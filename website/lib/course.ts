@@ -41,7 +41,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Comments", "1.2"],
     ["Variables", "1.4", ["const", "let", "Changing a value", "Destructuring", "Tuple assignment", "Module constants"]],
     ["User Input", "14.13", ["Ask for text", "Ask for a number", "Ask for a password"]],
-    ["Data Types", "2.1", ["Int", "Sized integers", "Float and Float32", "Decimal", "BigInt", "Bool", "Char", "Converting types"]],
+    ["Data Types", "2.1", ["Int", "Sized integers", "Any bit width", "Ranged integers", "Float and Float32", "Decimal", "BigInt", "Bool", "Char", "Converting types"]],
     ["Operators", "1.8", ["Arithmetic", "Assignment", "Comparison", "Logical", "Precedence"]],
     ["Strings", "2.1", ["Making strings", "Interpolation", "Joining", "Length and characters", "Searching", "Splitting", "Tidying and padding", "Strings to numbers", "Text views and builders"]],
     ["Math", "14.5", ["Math functions", "Rounding", "Exact numbers"]],

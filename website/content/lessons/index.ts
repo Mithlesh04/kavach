@@ -110,6 +110,7 @@ import { inoutDoc } from "./functions-inout";
 import { errorsIntroDoc, installDoc, programDoc, terminalDoc } from "./start-first-steps";
 import { askNumberDoc, askPasswordDoc, askTextDoc, inputDoc } from "./basics-input";
 import { bigintDoc, boolDoc, charDoc, convertDoc, dataTypesDoc, decimalDoc, floatDoc, intDoc, sizedDoc } from "./basics-types";
+import { bitsDoc, rangeDoc } from "./basics-types-bits";
 import { interpolationDoc, joinDoc, lengthDoc, makeStringsDoc, searchDoc, splitDoc, stringsDoc, textViewsDoc, tidyDoc, toNumbersDoc } from "./basics-strings";
 import {
   arithmeticDoc, assignmentDoc, booleansDoc, comparisonDoc, exactDoc, logicalDoc, mathDoc, mathFunctionsDoc,
@@ -172,6 +173,8 @@ export const lessons: Record<string, LessonDoc> = {
   "basics/data-types": dataTypesDoc,
   "basics/data-types/int": intDoc,
   "basics/data-types/sized-integers": sizedDoc,
+  "basics/data-types/any-bit-width": bitsDoc,
+  "basics/data-types/ranged-integers": rangeDoc,
   "basics/data-types/float-and-float32": floatDoc,
   "basics/data-types/decimal": decimalDoc,
   "basics/data-types/bigint": bigintDoc,

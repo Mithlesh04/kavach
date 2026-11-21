@@ -1,0 +1,12 @@
+fn port_of(n: Int) -> Int<range: 1..=65535> ! SizeError {
+    try Int<range: 1..=65535>(n)
+}
+
+fn main() {
+    print(port_of(443) catch _ => 1)
+    const p = port_of(70000) catch e => {
+        print(e)
+        1
+    }
+    print(p)
+}

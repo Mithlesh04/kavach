@@ -1,0 +1,15 @@
+fn main() {
+    const n = 5000
+    const ok = UInt<bits: 13>(n)
+    print(ok)
+    const small = UInt<bits: 12>(n) catch e => {
+        print(e)
+        UInt<bits: 12>(0)
+    }
+    print(small)
+    const byte = Int8(300) catch e => {
+        print(e)
+        Int8(-1)
+    }
+    print(byte)
+}

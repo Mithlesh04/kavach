@@ -257,6 +257,7 @@ export const modelDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>model careful()</C> sets the model for every <C>ask</C> in the agent&apos;s handlers.</li>
         <li><C>ask&lt;T&gt;(prompt, model: quick())</C> chooses another for one call. The call&apos;s model wins over the agent&apos;s.</li>
+        <li>Either can be a list, <C>model: [careful(), quick()]</C>, tried in turn when a model is busy or can&apos;t be reached: see <Link href="/docs/agents/agents/model/">Agents: model</Link>.</li>
         <li>With neither, <C>ask</C> uses <C>claude-haiku-5-5</C> with answers of at most 4,096 tokens.</li>
         <li>This ran with <C>kavach run --dry-run</C>, so no model was called and nothing cost.</li>
       </ul>

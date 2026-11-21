@@ -1,0 +1,1 @@
+error: `UInt` is written with its width: `UInt<bits: 32>`, or `UInt32` (spec 2.1)

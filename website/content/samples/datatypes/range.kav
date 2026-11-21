@@ -1,0 +1,10 @@
+fn main() {
+    let p: Int<range: 10..=20> = 15
+    print(p - 1)                         // 1 need not be in the range
+    p += 5
+    print(p)
+    print(p > 0)
+    print(p.checked_add(p))              // 40 is out of the range: none
+    const port: Int<range: 1..=65535> = 8080
+    print(Int(port) * 2)                 // an Int again
+}

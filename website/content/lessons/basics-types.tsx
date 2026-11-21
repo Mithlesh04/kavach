@@ -13,6 +13,8 @@ const single: [string, string, string, string][] = [
   ["Int", "a whole number, 64 bits", "31, -7, 1_000_000", "/docs/basics/data-types/int/"],
   ["Int8 Int16 Int32", "a smaller whole number", "-128", "/docs/basics/data-types/sized-integers/"],
   ["UInt8 … UInt64", "a whole number that is never negative", "200", "/docs/basics/data-types/sized-integers/"],
+  ["Int<bits: n>", "a whole number of exactly n bits; UInt<bits: n> for one never negative", "UInt<bits: 12>", "/docs/basics/data-types/any-bit-width/"],
+  ["Int<range: a..=b>", "a whole number always from a to b", "Int<range: 1..=65535>", "/docs/basics/data-types/ranged-integers/"],
   ["Float", "a number with a fraction, 64 bits", "1.68", "/docs/basics/data-types/float-and-float32/"],
   ["Float32", "a 32-bit float, what GPUs compute fastest", "0.5", "/docs/basics/data-types/float-and-float32/"],
   ["Decimal", "an exact decimal of any size: Kavach's big decimal, for money", "499.99", "/docs/basics/data-types/decimal/"],
@@ -152,6 +154,11 @@ export const sizedDoc: LessonDoc = {
       <Ex name="types/sub-overflow-known.fails" />
       <P>The smallest value has no positive twin, so even dividing it by -1 doesn&apos;t fit, and is caught the same way:</P>
       <Ex name="datatypes/narrow-div.panics" />
+      <P>
+        These are short names for widths of 8, 16, 32 and 64 bits. For any other width, such as a 12-bit register,
+        see <Link href="/docs/basics/data-types/any-bit-width/">Any bit width</Link>; for a number between two ends,
+        such as a port, see <Link href="/docs/basics/data-types/ranged-integers/">Ranged integers</Link>.
+      </P>
     </>
   ),
 };

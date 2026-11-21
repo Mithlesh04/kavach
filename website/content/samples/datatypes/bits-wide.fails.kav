@@ -1,0 +1,4 @@
+fn main() {
+    const wide: UInt<bits: 128> = 1
+    print(wide)
+}

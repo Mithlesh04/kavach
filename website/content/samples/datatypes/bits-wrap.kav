@@ -1,0 +1,8 @@
+fn main() {
+    let pc: UInt<bits: 12> = 4090
+    print(pc.wrapping_add(10))           // wraps at 12 bits, as a register does
+    let zero: UInt<bits: 12> = 0
+    print(zero.wrapping_sub(1))
+    print(pc.checked_add(5) ?? 0)
+    print(pc.checked_add(6))             // 4096 doesn't fit: none
+}

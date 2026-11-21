@@ -1,0 +1,7 @@
+fn odd(p: Int<range: 1..=9>) -> Bool {
+    p & 1 == 1
+}
+
+fn main() {
+    print(odd(3))
+}

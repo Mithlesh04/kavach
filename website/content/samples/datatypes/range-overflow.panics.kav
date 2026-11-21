@@ -1,0 +1,8 @@
+fn next(p: Int<range: 1..=65535>) -> Int<range: 1..=65535> {
+    p + 1
+}
+
+fn main() {
+    print(next(8080))
+    print(next(65535))
+}
