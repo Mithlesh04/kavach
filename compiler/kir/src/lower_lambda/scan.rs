@@ -8,7 +8,17 @@ use kavach_ast::{self as ast, ExprKind};
 
 /// The methods that change the value they are called on (as the checker
 /// has them, `compiler/checker/src/methods.rs`).
-const CHANGING: [&str; 4] = ["push", "remove", "add", "swap"];
+const CHANGING: [&str; 9] = [
+    "push",
+    "pop",
+    "remove",
+    "add",
+    "swap",
+    "push_char",
+    "insert",
+    "replace",
+    "clear",
+];
 
 /// The variable at the root of `x`, `x.f`, `x.0` or `x[i]`.
 fn root_name(mut e: &ast::Expr) -> Option<&ast::Ident> {

@@ -1,0 +1,12 @@
+// Rule: A lambda that calls `pop` on an outside list changes its own copy, which each call starts from again; the outside list stays as it was.
+// Spec: 3.3
+// expect warning
+// expect output: [13, 23]
+// expect output: [1, 2, 3]
+
+fn main() {
+    let stack = [1, 2, 3]
+    const got = [10, 20].map(x => x + (stack.pop() ?? 0))   // warning: `stack` is a copy inside this lambda
+    print(got)
+    print(stack)
+}
