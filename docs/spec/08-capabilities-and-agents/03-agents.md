@@ -33,7 +33,7 @@ agent RefundBot {
 
 ### `model`: the AI model its `ask`s use
 
-`model` names the model, and its settings, for every `ask` in the agent's handlers ([decision 0056](../../decisions/0056-the-model-is-chosen-in-code.md)). It is a `Model` value (8.4). To share one between agents, give it a function with no parameters: agents that call the same function are a group, and changing that function changes all of them.
+`model` names the model, and its settings, for every `ask` in the agent's handlers ([decision 0056](../../decisions/0056-the-model-is-chosen-in-code.md)). It is a `Model` value (8.4), or a list of them tried in turn, `model [careful(), backup()]` (8.4, *Fallbacks*). To share one between agents, give it a function with no parameters: agents that call the same function are a group, and changing that function changes all of them.
 
 ```kavach
 fn careful() -> Model {

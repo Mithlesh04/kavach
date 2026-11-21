@@ -54,7 +54,7 @@ fn careful() -> Model {
   - `provider` says whose API the model is reached through: `Anthropic()` from `std.ai` unless the `Model` names another (*Providers*, below).
   - `extra` is added to each request as it is, for a provider setting Kavach doesn't name yet: `` extra: `\{"metadata": \{"user_id": "shop-7"}}` ``, on one line or over several (`\{` is a brace in a template, 1.7). The compiler checks that it is a JSON object.
 
-  An agent's `model` (8.3) sets it for its handlers, and a call's `model:` sets it for that call: `ask<T>(prompt, model: quick())`. The call's wins over the agent's. The compiler works the value out when it builds the program, so it is a `Model(…)` written with plain values, a `const` set to one, or a call of a function with no parameters that gives one; anything else is a compile error that says so.
+  An agent's `model` (8.3) sets it for its handlers, and a call's `model:` sets it for that call: `ask<T>(prompt, model: quick())`. The call's wins over the agent's. Either can be a list of models, tried in turn (*Fallbacks*, below). The compiler works the value out when it builds the program, so it is a `Model(…)` written with plain values, a `const` set to one, or a call of a function with no parameters that gives one; anything else is a compile error that says so.
 
   Not every model takes every setting. The compiler refuses what a model it knows can't do: `thinking: false` on `claude-opus-5-5`, which always thinks first, and `thinking: false` with `effort: Effort.XHigh` or `Effort.Max`. A setting a model refuses at run time fails the call with `AiError.BadRequest` and the provider's message.
 
@@ -198,4 +198,46 @@ fn gateway() -> Model {
 
 - The key goes to the address in the provider's request. So a package's provider decides where a program's key is sent, as a package's code does with any secret it is given: use providers from packages you trust.
 
-*Not built yet* (decision 0140 sets how each works): the other providers, in a package of their own repository, starting with OpenAI-shaped Chat Completions (OpenAI, Azure, Ollama, llama.cpp, vLLM), then Gemini, Bedrock, Vertex and OpenAI's Responses API; `Auth.AwsSignature` and `Auth.GoogleToken`, for now an `ask` whose provider gives one fails with `Failed(status: 0, …)`; `model` taking a list of models tried in turn; `ai.ask_full<T>`, with an `ask`'s usage and cost; prices, costs and money budgets in `limit Ai`; counting a prompt's tokens before it is sent (`ai.count`). The interface gains the methods those need (`count_request`, `read_count`, `estimate` and `price`) when they are built.
+## Fallbacks: a list of models
+
+`model` takes a list of models too, tried in turn: `model [careful(), backup()]` in an agent, `ask<T>(prompt, model: [careful(), backup()])` in a call ([decision 0140](../../decisions/0140-ai-providers.md), choice 3). The first model is asked first. When it can't answer for a reason another model may not have, such as a rate limit or a bad key, the call goes to the next one. Several keys of one provider are the same model with another `api_key_env`:
+
+```kavach
+fn careful() -> Model {
+    Model(name: "claude-opus-5-5", effort: Effort.High)
+}
+
+/// The same model, through the team's second account.
+fn careful_second_key() -> Model {
+    Model(name: "claude-opus-5-5", effort: Effort.High, api_key_env: "ANTHROPIC_API_KEY_2")
+}
+
+fn backup() -> Model {
+    Model(name: "claude-haiku-5-5")
+}
+
+agent Reviewer {
+    model [careful(), careful_second_key(), backup()]
+    can Ai
+    on check(text: String) -> Verdict ! Error { try ask<Verdict>(text) }
+}
+```
+
+- **How it is written.** A list literal, `[…]`, where a model goes. Each item is a model written as above: a `Model(…)` with plain values, a `const` set to one, or a call of a function with no parameters that gives one. A model may be in the list more than once. An empty list is a compile error, `a list of models needs at least one model`. Each model's provider `check`s it (*Providers*, above).
+- **When it moves on:** after `RateLimited`, `QuotaUsedUp`, `Overloaded`, `BadKey`, `NotFound`, `TimedOut` or `Network`. Never after `Refused`, so a fallback can't be used to get round a safety filter, nor after `Denied`, which is a limit: these fail the call as they do with one model. `BadRequest`, `CutOff`, `InvalidOutput`, `NoKey` and `Failed` don't move on either: they come from the request or the program's setup, which the next model shares (for a maintainer's review).
+
+```kavach
+const v = ask<Verdict>(text, model: [careful(), backup()]) catch e => match e {
+    AiError.Refused(_) => Verdict(risky: true, reason: "refused"),   // backup() was never asked
+    _ => fail e,
+}
+```
+
+- **At once.** A model that is busy (`RateLimited`, `Overloaded`, `TimedOut`, `Network`) hands the call to the next model at once, so a second key never waits while it is free. The waits above start only when every model left is busy: the call waits until the first of their waits is over, then tries the models in turn again, each one whose wait is over. Each model waits and is sent again as its own `Model` says (`retries`, `timeout`, its provider's hint). A model is left out for the rest of the call once its `retries` are used up, or after `QuotaUsedUp`, `BadKey` or `NotFound`, which waiting can't fix.
+- **When every model fails,** the call fails with the error of its last try, which is the last model's when the models are tried once each (for a maintainer's review: decision 0140 says "the last model's").
+- An answer that isn't a valid `T` is asked for again (above) from the start of the list: the first model left whose wait is over (for a maintainer's review).
+- **Limits and gates.** However many models it tries, the call is one `ask`: `count` in `limit Ai` (8.3) counts it once, and `tokens` counts the tokens of every try. `UnderWay.Largest` counts it with the largest `max_tokens` in the list (for a maintainer's review). Each try passes the gate of its own provider and key (above), so a model that is busy never slows the next one.
+- **The audit log** (8.6) has a line for each model the call moved on from, then one for the model that answered, or that was tried last.
+- A dry run or a generated test (8.5, 11.5) asks no model; its audit line names the first model in the list.
+
+*Not built yet* (decision 0140 sets how each works): the other providers, in a package of their own repository, starting with OpenAI-shaped Chat Completions (OpenAI, Azure, Ollama, llama.cpp, vLLM), then Gemini, Bedrock, Vertex and OpenAI's Responses API; `Auth.AwsSignature` and `Auth.GoogleToken`, for now an `ask` whose provider gives one fails with `Failed(status: 0, …)`; `ai.ask_full<T>`, with an `ask`'s usage and cost; prices, costs and money budgets in `limit Ai`; counting a prompt's tokens before it is sent (`ai.count`). The interface gains the methods those need (`count_request`, `read_count`, `estimate` and `price`) when they are built.

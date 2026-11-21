@@ -17,15 +17,25 @@ An `ask` is a call too (`Ai.ask`), and its lines say which model answered and ho
   result: ok Verdict(risky: true, reason: "…")
 ```
 
+An `ask` with a list of models (8.4, *Fallbacks*) has a `model:` line for each model it moved on from, saying the error that moved it on, then the line of the model that answered, or that was tried last:
+
+```
+2026-11-04T22:40:12Z Reviewer request#4 ask("Review this clause: …")
+  verdict: allowed
+  model: claude-opus-5-5, moved on: RateLimited
+  model: claude-haiku-5-5, tokens: 412 in, 96 out
+  result: ok Verdict(risky: false, reason: "…")
+```
+
 Under `kavach run --dry-run` (8.5), no model is asked, and the line says which one a real run would use: `model: claude-opus-5-5 (dry run: no tokens)`. So each call's model can be checked before a run that costs.
 
-With `Audit(format: AuditFormat.JsonLines)` in the agent's settings, each entry is one JSON object on a line of its own instead, for log shippers (Vector, Fluent Bit, the OpenTelemetry Collector's file receiver): `time`, `agent`, `request`, `call`, `shown`, `verdict`, then `model`, `input_tokens` and `output_tokens` for an `ask`, and `result`.
+With `Audit(format: AuditFormat.JsonLines)` in the agent's settings, each entry is one JSON object on a line of its own instead, for log shippers (Vector, Fluent Bit, the OpenTelemetry Collector's file receiver): `time`, `agent`, `request`, `call`, `shown`, `verdict`, then `model`, `input_tokens` and `output_tokens` for an `ask`, and `result`. An `ask` that moved on from a model has `moved_on` before `model`, a list with one `{"model": …, "error": …}` for each.
 
 ```
 {"time":"2026-11-04T22:40:12Z","agent":"Reviewer","request":3,"call":"Ai.ask","shown":"ask(\"Review this clause: …\")","verdict":"allowed","model":"claude-opus-5-5","input_tokens":412,"output_tokens":96,"result":"ok Verdict(risky: true, reason: \"…\")"}
 ```
 
-With `otlp: true` as well, and a collector in `[log.otlp]` (14.12), each entry also goes to that collector as an OpenTelemetry log record named `AgentAudit`, with the JSON line's fields as attributes (`agent`, `request`, `call`, `verdict`, `model`, `input_tokens`, `output_tokens`, `result`) and `WARN` for a refused call, `INFO` otherwise. It is sent in batches by the thread that sends `std.log` events, so a slow collector never holds up an agent, and the file stays the record that counts. `otlp: true` without a `[log.otlp]` section is an error.
+With `otlp: true` as well, and a collector in `[log.otlp]` (14.12), each entry also goes to that collector as an OpenTelemetry log record named `AgentAudit`, with the JSON line's fields as attributes (`agent`, `request`, `call`, `verdict`, `moved_on`, `model`, `input_tokens`, `output_tokens`, `result`; `moved_on` as text, `claude-opus-5-5: RateLimited`, joined by `; `) and `WARN` for a refused call, `INFO` otherwise. It is sent in batches by the thread that sends `std.log` events, so a slow collector never holds up an agent, and the file stays the record that counts. `otlp: true` without a `[log.otlp]` section is an error.
 
 The audit log is append-only. Secret values (8.7) appear as `<secret>`.
 

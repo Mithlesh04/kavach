@@ -332,6 +332,16 @@ The first part was built on 2026-11-20: the `Provider` interface, `Anthropic`'s 
 13. **The key goes to the address in the provider's request,** so a package's provider decides where a program's key is sent. The spec says to use providers from packages you trust.
 14. **`Auth.AwsSignature` and `Auth.GoogleToken`** fail an `ask` with `Failed(status: 0, …)` until signing is built (choice 5).
 
+Fallbacks (choice 3) were built on 2026-11-22: `model` takes a list literal of models, in an agent and in `ask` (spec 8.4, *Fallbacks*). Points this record didn't settle, each **for a maintainer's review**:
+
+15. **What doesn't move on, besides `Refused` and `Denied`:** `BadRequest`, `CutOff`, `InvalidOutput`, `NoKey` and `Failed`. They come from the request or the program's setup, which the next model shares; a key variable that isn't set is a mistake to show, not to skip.
+16. **"The last model's" error** is the last try's. With waits, the last try can be an earlier model of the list, after the last one was left out.
+17. **After a wait, the models are tried in turn again,** each one whose wait is over; a model is left out once its own `retries` are used up, or after `QuotaUsedUp`, `BadKey` or `NotFound`.
+18. **An answer that isn't a valid `T`** is asked for again from the start of the list, skipping the models left out.
+19. **`limit Ai`:** the call counts once for `count`; `tokens` counts every try; `UnderWay.Largest` takes the largest `max_tokens` in the list.
+20. **The audit log** has a `model: …, moved on: RateLimited` line for each change of model, with the error's variant but not its message, which can be a long provider body. A model tried twice in a row (sent again after a wait) gets no line, so one model logs as before.
+21. **Only a list literal** is a list of models; a `const` or a function that gives a list is not, for now.
+
 ## Consequences
 
 - Programs can use any provider with an HTTP API, and a package can add one without a Kavach release.
