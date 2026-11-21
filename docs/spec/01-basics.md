@@ -231,6 +231,8 @@ print(-2 ** 2)                         // -4
 
 When in doubt, use parentheses. `kavach fmt` never removes parentheses that help readability.
 
+Operands are worked out left to right, as written: the left one before the right one, and a method's value before its arguments ([3.10](03-functions.md#310-the-order-things-are-worked-out-in)).
+
 **Equality** (`==`, `!=`) compares contents, at every depth: two lists are equal when they hold equal items in the same order, two records when their fields are equal, two dicts and two sets when they hold the same keys (with equal values), **in any order**. Shared values are equal at once: a copy not yet changed (spec 6.1) is not looked inside ([decision 0039](../decisions/0039-equality-is-deep-and-fast.md)).
 
 ```kavach
@@ -256,7 +258,7 @@ print([[2, 1], [1, 9]].sort())         // [[1, 9], [2, 1]]
 const by_age = people.sort_by(p => (p.age, p.name))
 ```
 
-**Comparisons chain**, as in mathematics and Python: `a op1 b op2 c` means `a op1 b and b op2 c`, for any mix of `== != < <= > >=` and any length ([decision 0040](../decisions/0040-chained-comparisons.md)). Each operand is worked out once, left to right, and the chain stops at the first link that is false. Only neighbours are compared: `a != b != c` says nothing about `a` and `c`. Parentheses group as usual, and ranges don't chain.
+**Comparisons chain**, as in mathematics and Python: `a op1 b op2 c` means `a op1 b and b op2 c`, for any mix of `== != < <= > >=` and any length ([decision 0040](../decisions/0040-chained-comparisons.md)). Each operand is worked out once, left to right (3.10), and the chain stops at the first link that is false. Only neighbours are compared: `a != b != c` says nothing about `a` and `c`. Parentheses group as usual, and ranges don't chain.
 
 ```kavach
 if 0 <= i < items.len() { print(items[i]) }
@@ -431,7 +433,7 @@ The difference keeps a script's first line, `const text = try fs.read_text(path)
 
 ## 1.14 Tuple assignment
 
-One `=` can set several places, written as a tuple (2.3) on each side. Every value on the right is worked out first, then each place on the left is set, left to right. So two places swap with no temporary variable, as in Python and Go.
+One `=` can set several places, written as a tuple (2.3) on each side. Every value on the right is worked out first, then each place on the left is set, left to right: the one exception to the left-to-right order of [3.10](03-functions.md#310-the-order-things-are-worked-out-in). So two places swap with no temporary variable, as in Python and Go.
 
 ```kavach
 let a = 1

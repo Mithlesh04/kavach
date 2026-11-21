@@ -270,6 +270,39 @@ swap(x, y)                     // x is 2, y is 1
 - A function with `inout` parameters can't be used as a function value (3.4). So a lambda, which is one, can't have `inout` parameters: give the function a name.
 - An interface method can have `inout` parameters. Each type that implements it marks the same parameters `inout` (2.8), so a call through an interface value (2.15) changes the caller's variable too.
 
+## 3.10 The order things are worked out in
+
+Everything is worked out once, left to right, as it is written. So code that prints, reads a file or draws a random number does it in the order it reads, the same in the interpreter and in native code.
+
+```kavach
+fn say(n: Int) -> Int {
+    print(n)
+    n
+}
+
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
+
+const a = say(1).wrapping_add(say(2))     // prints 1, then 2
+const b = add(say(3), say(4))             // prints 3, then 4
+const c = say(5) + say(6)                 // prints 5, then 6
+const p = Point(y: say(7), x: say(8))     // prints 7, then 8
+```
+
+- **A method call:** the value it is called on first, then its arguments, left to right. This holds for every method: a number's, a text's, a list's, a program's own, and an operator a type implements (2.16), which is a call of its method.
+- **A function call:** its arguments left to right, as written, named ones too, in whatever order the parameters are declared. Defaults (3.2) are worked out after the arguments written, in the parameters' order. A function worked out from an expression comes before its arguments: in `handler_for(kind)(job)`, `handler_for(kind)`, then `job`.
+- **An operator:** its left operand before its right. `and`, `or` and `??` work out the right one only when it is needed. A chain of comparisons works out each operand once (1.8).
+- **Indexing and slicing:** the value before its key, `xs` before `k` in `xs[k]`; a slice's parts after the value (2.19).
+- **Values written out:** a record's fields, an anonymous record's (2.14), the items of a list or tuple, a dict's keys and values (each key before its value), and a text template's parts, in the order written.
+- **Assignment:** `place = value` works out the place's keys first, left to right, then the value, then sets the place: `grid[row()][col()] = next()` calls `row`, `col`, then `next`. `place op= value` reads the place, works out the value, then sets the same place: each key is worked out once, though `place` is both read and set. A method that changes its value in place (2.2) works out the place's keys once, before its arguments: `rows[pick()].push(say(1))` calls `pick`, then `say`.
+- **Tuple assignment** is the one exception to the order: its whole right side first, then each place, left to right (1.14).
+- **An `inout` argument** (3.9) is the one place whose keys are worked out twice: with the call's other arguments, and again when its value goes back after the call. So `bump(xs[pick()])` calls `pick` twice.
+- `spawn` works out a call's receiver and arguments the same way, before the task starts (9.1).
+
 ## Open questions
 
-None right now. Decisions are recorded in [0013](../decisions/0013-core-language-decisions.md).
+- **For a maintainer's review: the order of 3.10.** Left to right as written was chosen under the standing rule to take the recommended option, as Java, C#, JavaScript and Go do. In particular, `place = value` works out the place's keys before the value, while a tuple assignment (1.14) keeps its right side first, as Python does for both.
+- **An `inout` argument's keys once (3.10):** today they are worked out again when the value goes back. Working them out once, with the arguments, as every other place is, is planned.
+
+Decisions are recorded in [0013](../decisions/0013-core-language-decisions.md).
