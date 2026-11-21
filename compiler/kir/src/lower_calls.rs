@@ -291,6 +291,7 @@ impl<'a> Lowerer<'a> {
                 self.c.expr_types.get(&(base.span.start, base.span.end))
             ),
             ("push", Some(Ty::List(_) | Ty::Builtin("Ring", _)))
+                | ("swap", Some(Ty::List(_)))
                 | ("remove", Some(Ty::Map(..) | Ty::Set(_)))
                 | ("add", Some(Ty::Set(_)))
                 | (

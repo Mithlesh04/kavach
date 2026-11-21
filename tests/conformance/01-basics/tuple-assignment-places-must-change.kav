@@ -1,0 +1,10 @@
+// Rule: Each place of a tuple assignment is one `=` could set alone: a `const` among them is a compile error.
+// Spec: 1.14
+// expect compile error
+
+fn main() {
+    let a = 1
+    const b = 2
+    (a, b) = (b, a)     // error: `b` is a `const`, so it can't change
+    print(`{a} {b}`)
+}

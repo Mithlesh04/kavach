@@ -134,6 +134,8 @@ impl Checker<'_> {
                     "get" => sig(vec![int], opt(t)),
                     "first" | "last" => sig(vec![], opt(t.clone())),
                     "pop" => sig(vec![], opt(t)),
+                    // Swaps two items in place (spec 2.2).
+                    "swap" => sig(vec![int.clone(), int], Ty::Unit),
                     "contains" => sig(vec![t], boolean),
                     "filter" => sig(vec![f(t.clone(), boolean)], list(t)),
                     "any" | "all" => sig(vec![f(t, boolean.clone())], boolean),

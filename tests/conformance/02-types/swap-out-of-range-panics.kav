@@ -1,0 +1,14 @@
+// Rule: `xs.swap(i, j)` with an index out of range panics with the message `xs[i]` gives.
+// Spec: 2.2
+// expect output: 3
+// expect panic: index 3 is out of range: the list has 3 items
+
+fn main() {
+    let words: [String] = []
+    for w in ["a", "b", "c"] {
+        words.push(w)
+    }
+    print(words.len())
+    words.swap(0, 3)
+    print(words)
+}

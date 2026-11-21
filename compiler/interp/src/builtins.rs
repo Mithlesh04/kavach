@@ -185,6 +185,7 @@ impl<'a> Interp<'a> {
                 crate::items::push(&mut items, item).map_err(|m| self.panic(m, span))?;
                 Ok(Value::List(items))
             }
+            (Value::List(items), "swap") => self.list_swap(items, args, span),
             (Value::Set(mut set), "add") => {
                 let item = args.next().unwrap_or(Value::Unit);
                 set.room_for(&item, "set")

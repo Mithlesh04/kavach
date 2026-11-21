@@ -8,7 +8,7 @@ use kavach_ast::{self as ast, ExprKind};
 
 /// The methods that change the value they are called on (as the checker
 /// has them, `compiler/checker/src/methods.rs`).
-const CHANGING: [&str; 3] = ["push", "remove", "add"];
+const CHANGING: [&str; 4] = ["push", "remove", "add", "swap"];
 
 /// The variable at the root of `x`, `x.f`, `x.0` or `x[i]`.
 fn root_name(mut e: &ast::Expr) -> Option<&ast::Ident> {
@@ -50,7 +50,7 @@ pub(super) fn assigned(
     impl kavach_ast::visit::VisitMut for Find<'_> {
         fn stmt(&mut self, s: &mut ast::Stmt) {
             if let ast::StmtKind::Assign { target, .. } = &s.kind {
-                self.note(target);
+                target.places().into_iter().for_each(|p| self.note(p));
             }
             kavach_ast::visit::walk_stmt(self, s);
         }

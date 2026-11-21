@@ -17,6 +17,7 @@ impl RtOp {
                 | RtOp::ListSet
                 | RtOp::ListSetPart
                 | RtOp::ListTruncate
+                | RtOp::ListSwap
                 | RtOp::MapInsert
                 | RtOp::MapRemove
         )

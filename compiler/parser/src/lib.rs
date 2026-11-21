@@ -17,6 +17,7 @@ mod loaded;
 mod maps;
 mod parser;
 mod patterns;
+mod places;
 mod primary;
 mod stmts;
 mod type_decls;

@@ -311,6 +311,9 @@ impl Checker<'_> {
                 }
             }
             StmtKind::Assign { target, op, value } => {
+                if matches!(target.kind, ExprKind::Tuple(_)) {
+                    return self.assign_tuple(target, value);
+                }
                 let t = self.value(target, None);
                 self.check_frozen_assign(target, *op);
                 if self.own_index_set(target, *op, value) {

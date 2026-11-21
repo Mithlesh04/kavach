@@ -11,6 +11,9 @@ ListSet,
 /// `xs.pop()`'s second half: the list cut to its first `n` items, in
 /// place when nothing else holds it (spec 14.2).
 ListTruncate,
+/// `xs.swap(i, j)`: the list with two items swapped, in place when
+/// nothing else holds it; panics when out of range (spec 2.2).
+ListSwap,
 MapGet,
 MapInsert,
 MapRemove,

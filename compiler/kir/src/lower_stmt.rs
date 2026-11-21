@@ -48,6 +48,9 @@ impl<'a> Lowerer<'a> {
                 }
             }
             StmtKind::Assign { target, op, value } => {
+                if matches!(target.kind, ExprKind::Tuple(_)) {
+                    return self.assign_tuple(target, value, out);
+                }
                 // `ps = ps.map(f)`: each item replaced in place.
                 if *op == ast::AssignOp::Set
                     && let Some(s) = self.map_in_place(target, value)?
@@ -191,6 +194,7 @@ impl<'a> Lowerer<'a> {
                 let changed = self.with_invariants_on(changed, Some(&name.name))?;
                 self.assign_path(base, changed)
             }
+            ExprKind::TupleField { base, index } => self.set_tuple_field(base, *index, value),
             // `*p = v` and `p[i] = v` (spec 6.4).
             ExprKind::Unary(ast::UnaryOp::Deref, x) => {
                 Ok(Stmt::Expr(self.ptr_store(x, None, value)?))

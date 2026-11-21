@@ -32,6 +32,7 @@ pub(crate) struct SpawnParts {
 const CHANGING: &[&str] = &[
     "push",
     "pop",
+    "swap",
     "add",
     "remove",
     "insert",

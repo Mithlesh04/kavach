@@ -1,0 +1,9 @@
+// Rule: A tuple field of a `let` tuple is a place a tuple assignment can set.
+// Spec: 1.14
+// expect output: ("right", "left")
+
+fn main() {
+    let pair = ("left", "right")
+    (pair.0, pair.1) = (pair.1, pair.0)
+    print(pair)
+}

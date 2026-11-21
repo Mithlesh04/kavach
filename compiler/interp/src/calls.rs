@@ -18,6 +18,7 @@ pub(crate) type Args<'a> = Vec<(Option<&'a str>, Value<'a>)>;
 /// ring's or `TextBuilder`'s (spec 2.18).
 const MUTATING: &[&str] = &[
     "push",
+    "swap",
     "remove",
     "add",
     "push_char",

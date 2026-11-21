@@ -1,0 +1,10 @@
+// Rule: The right side of a tuple assignment has one value for each place; another number is a compile error.
+// Spec: 1.14
+// expect compile error
+
+fn main() {
+    let a = 1
+    let b = 2
+    (a, b) = (b, a, 3)  // error: the left side has 2 places and the right side 3 values
+    print(`{a} {b}`)
+}

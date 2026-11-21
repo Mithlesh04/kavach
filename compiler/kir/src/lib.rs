@@ -106,6 +106,7 @@ mod lower_tasks;
 mod lower_text;
 mod lower_threads;
 mod lower_tls;
+mod lower_tuple_assign;
 mod lower_views;
 mod moves;
 mod par;

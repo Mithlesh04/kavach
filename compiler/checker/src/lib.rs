@@ -99,6 +99,7 @@ mod stdlib;
 mod table_methods;
 mod tagged_templates;
 mod text_views;
+mod tuple_assign;
 mod ty;
 mod unwraps;
 mod user_index;

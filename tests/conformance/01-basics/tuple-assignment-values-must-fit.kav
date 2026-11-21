@@ -1,0 +1,10 @@
+// Rule: Each value of a tuple assignment must fit its place, as for `=`.
+// Spec: 1.14
+// expect compile error
+
+fn main() {
+    let count = 1
+    let name = "Asha"
+    (count, name) = (name, count)   // error: expected `Int`, found `String`
+    print(`{count} {name}`)
+}

@@ -109,6 +109,7 @@ pub(crate) const NAMES: &[&str] = &[
     "starts_with",
     "sub",
     "sum",
+    "swap",
     "take",
     "text",
     "title",

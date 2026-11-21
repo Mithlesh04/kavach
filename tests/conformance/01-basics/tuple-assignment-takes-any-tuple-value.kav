@@ -1,0 +1,20 @@
+// Rule: The right side of a tuple assignment may be any value whose type is a tuple, and tuples nest on both sides.
+// Spec: 1.14
+// expect output: 1 9
+// expect output: 3 2 1
+
+fn bounds(xs: [Int]) -> (Int, Int) {
+    (xs.min() ?? 0, xs.max() ?? 0)
+}
+
+fn main() {
+    let low = 0
+    let high = 0
+    (low, high) = bounds([4, 1, 9])
+    print(`{low} {high}`)
+    let a = 1
+    let b = 2
+    let c = 3
+    ((a, b), c) = ((c, b), a)
+    print(`{a} {b} {c}`)
+}

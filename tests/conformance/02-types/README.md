@@ -474,3 +474,8 @@ Conformance tests for spec chapter [2. Types](../../../docs/spec/02-types/README
 | 2.12 | [json-writes-variant-numbers.kav](json-writes-variant-numbers.kav) | JSON writes a variant's number and reads it back from the number only. | runs |
 | 2.12 | [json-keys-of-variants-with-values.kav](json-keys-of-variants-with-values.kav) | A dict key that is a variant with a value is written as that value. | runs |
 | 2.12 | [json-schema-of-variants-with-values.kav](json-schema-of-variants-with-values.kav) | A schema lists an enum's texts or numbers. | runs |
+| 2.2 | [swap-changes-two-items-in-place.kav](swap-changes-two-items-in-place.kav) | `xs.swap(i, j)` swaps two items of a `let` list in place: numbers, text, records and tuples. | runs |
+| 2.2 | [swapping-an-item-with-itself-changes-nothing.kav](swapping-an-item-with-itself-changes-nothing.kav) | `xs.swap(i, i)` changes nothing. | runs |
+| 2.2 | [swap-works-on-an-item-and-a-dict-entry.kav](swap-works-on-an-item-and-a-dict-entry.kav) | `swap` changes a list held in an item, a field or a dict entry where it is. | runs |
+| 2.2 | [swap-out-of-range-panics.kav](swap-out-of-range-panics.kav) | `swap` with an index out of range panics with the message `xs[i]` gives. | panic |
+| 2.2 | [swap-needs-a-let.kav](swap-needs-a-let.kav) | `swap` changes the list, so like `push` it is a compile error on a `const`. | compile error |

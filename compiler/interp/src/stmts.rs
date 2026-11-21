@@ -71,6 +71,11 @@ impl<'a> Interp<'a> {
             }
             StmtKind::Assign { target, op, value } => {
                 let mut v = self.eval(value)?;
+                // `(a, b) = (b, a)`: the whole right side first (spec 1.14).
+                if matches!(target.kind, ExprKind::Tuple(_)) {
+                    self.assign_parts(target, v, s.span)?;
+                    return Ok(Value::Unit);
+                }
                 if let Some(bin) = op.binary() {
                     let current = self.eval(target)?;
                     self.require_entry(target, &current)?;
@@ -240,6 +245,25 @@ impl<'a> Interp<'a> {
                 Ok(Value::Unit)
             }
             StmtKind::Assert(e) => self.assert_stmt(e),
+        }
+    }
+
+    /// Stores each part of tuple `value` into its place of `target`, left
+    /// to right, a tuple of places too (spec 1.14).
+    fn assign_parts(
+        &mut self,
+        target: &'a Expr,
+        value: Value<'a>,
+        span: Span,
+    ) -> Result<(), Flow<'a>> {
+        match (&target.kind, value) {
+            (ExprKind::Tuple(places), Value::Tuple(parts)) => {
+                for (place, part) in places.iter().zip(parts) {
+                    self.assign_parts(place, part, span)?;
+                }
+                Ok(())
+            }
+            (_, value) => self.assign(target, value, span),
         }
     }
 

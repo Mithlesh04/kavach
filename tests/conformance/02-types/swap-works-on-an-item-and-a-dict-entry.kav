@@ -1,0 +1,21 @@
+// Rule: `swap` is a changing method, so it changes a list held in an item, a field or a dict entry where it is.
+// Spec: 2.2
+// expect output: [[2, 1], [3, 4]]
+// expect output: {"small": [6, 5]}
+// expect output: ["late", "early"]
+
+type Day {
+    tasks: [String]
+}
+
+fn main() {
+    let rows = [[1, 2], [3, 4]]
+    rows[0].swap(0, 1)
+    print(rows)
+    let groups = {"small": [5, 6]}
+    groups["small"].swap(0, 1)
+    print(groups)
+    let day = Day(tasks: ["early", "late"])
+    day.tasks.swap(0, 1)
+    print(day.tasks)
+}

@@ -1,0 +1,9 @@
+// Rule: `swap` changes the list, so like `push` it is a compile error on a `const`.
+// Spec: 2.2
+// expect compile error
+
+fn main() {
+    const fixed = [1, 2]
+    fixed.swap(0, 1)    // error: `fixed` is a `const`, so `swap` can't change it
+    print(fixed)
+}

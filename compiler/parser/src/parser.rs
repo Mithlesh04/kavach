@@ -52,6 +52,12 @@ impl<'a> Parser<'a> {
         self.tokens[i].span.text(self.src)
     }
 
+    /// Where the token `n` places ahead is.
+    pub(crate) fn nth_span(&self, n: usize) -> Span {
+        let i = (self.pos + n).min(self.tokens.len() - 1);
+        self.tokens[i].span
+    }
+
     pub(crate) fn token_at(&self, i: usize) -> &TokenKind {
         &self.tokens[i.min(self.tokens.len() - 1)].kind
     }

@@ -1,0 +1,27 @@
+// Rule: `(p, q) = (v, w)` sets several places at once: names, items, fields and dict entries.
+// Spec: 1.14
+// expect output: 2 1
+// expect output: [30, 20, 10]
+// expect output: Point(x: 5, y: 1)
+// expect output: {"a": 2, "b": 1}
+
+type Point {
+    x: Int
+    y: Int
+}
+
+fn main() {
+    let a = 1
+    let b = 2
+    (a, b) = (b, a)
+    print(`{a} {b}`)
+    let xs = [10, 20, 30]
+    (xs[0], xs[2]) = (xs[2], xs[0])
+    print(xs)
+    let p = Point(x: 1, y: 5)
+    (p.x, p.y) = (p.y, p.x)
+    print(p)
+    let d = {"a": 1, "b": 2}
+    (d["a"], d["b"]) = (2, 1)
+    print(d)
+}

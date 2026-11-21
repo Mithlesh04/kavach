@@ -169,6 +169,45 @@ pub fn push_item(p: i64, item: u64) {
     }
 }
 
+/// `xs.swap(i, j)` (spec 2.2): list `p` (owned) with items `i` and `j`
+/// swapped, in place when nothing else holds it. Only the items' words
+/// move, so nothing is counted or copied: text and records included. An
+/// index out of range panics as `xs[i]` does.
+pub fn swap_checked(p: i64, i: i64, j: i64, line: i32) -> i64 {
+    let n = crate::heap::len_of(p);
+    for k in [i, j] {
+        if k < 0 || k >= n as i64 {
+            crate::rt::panic_with(
+                &kavach_runtime_core::list_index_panic(i128::from(k), n),
+                line,
+            )
+        }
+    }
+    if i == j {
+        return p;
+    }
+    let q = crate::heap::unique(p);
+    let (i, j) = (i as usize, j as usize);
+    let ty = obj(q).ty();
+    if let size @ 1.. = crate::flat::item_size(ty) {
+        with_packed(q, |_, w| {
+            let (a, b) = (
+                crate::flat::get_item(w, i, size),
+                crate::flat::get_item(w, j, size),
+            );
+            crate::flat::set_item(w, i, size, b);
+            crate::flat::set_item(w, j, size, a);
+        });
+        return q;
+    }
+    let width = crate::flat::width(ty).max(1);
+    let words = crate::heap::slots_mut(q);
+    for k in 0..width {
+        words.swap(i * width + k, j * width + k);
+    }
+    q
+}
+
 /// Cuts list `p` (held only by the caller) to its first `n` items,
 /// releasing what the others held: the second half of `xs.pop()`.
 pub fn truncate_list(p: i64, n: usize) {

@@ -229,6 +229,8 @@ impl<'a> Lowerer<'a> {
             (Some(Shape::List(_)), "index_of") => RtOp::ListIndexOf,
             (Some(Shape::List(_)), "min") => RtOp::ListMin,
             (Some(Shape::List(_)), "max") => RtOp::ListMax,
+            // Two items swapped in place (spec 2.2).
+            (Some(Shape::List(_)), "swap") => RtOp::ListSwap,
             (Some(Shape::Regex), "is_match") => RtOp::RegexIsMatch,
             (Some(Shape::Regex), "find") => RtOp::RegexFind,
             (Some(Shape::Regex), "find_all") => RtOp::RegexFindAll,

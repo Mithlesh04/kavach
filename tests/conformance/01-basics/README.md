@@ -165,3 +165,13 @@ Conformance tests for spec chapter [1. Basics](../../../docs/spec/01-basics.md).
 | 1.11 | [a-type-shows-as-its-display-gives.kav](a-type-shows-as-its-display-gives.kav) | A type implementing `Display` prints as its `display()` gives: with `print`, in interpolation, with `String(v)`, and inside collections and other records. | runs |
 | 1.4 | [underscore-throws-a-value-away.kav](underscore-throws-a-value-away.kav) | `_` alone is not a name: it throws a value away, may be written any number of times, and reading it is a compile error. | compile error |
 | 1.13 | [an-unread-module-constant-is-left-out.kav](an-unread-module-constant-is-left-out.kav) | A module constant nothing reads is left out: it isn't worked out before `main`, so its panic never happens. | warning |
+| 1.14 | [tuple-assignment-sets-several-places.kav](tuple-assignment-sets-several-places.kav) | `(p, q) = (v, w)` sets several places at once: names, items, fields and dict entries. | runs |
+| 1.14 | [tuple-assignment-sets-tuple-fields.kav](tuple-assignment-sets-tuple-fields.kav) | A tuple field of a `let` tuple is a place a tuple assignment can set. | runs |
+| 1.14 | [tuple-assignment-takes-any-tuple-value.kav](tuple-assignment-takes-any-tuple-value.kav) | The right side may be any value whose type is a tuple, and tuples nest on both sides. | runs |
+| 1.14 | [tuple-assignment-works-out-the-right-side-first.kav](tuple-assignment-works-out-the-right-side-first.kav) | Every value on the right is worked out before any place on the left is set. | runs |
+| 1.14 | [tuple-assignment-sets-places-in-order.kav](tuple-assignment-sets-places-in-order.kav) | The places are set left to right, each worked out when it is set. | runs |
+| 1.14 | [tuple-assignment-needs-one-value-per-place.kav](tuple-assignment-needs-one-value-per-place.kav) | The right side has one value for each place; another number is a compile error. | compile error |
+| 1.14 | [tuple-assignment-values-must-fit.kav](tuple-assignment-values-must-fit.kav) | Each value must fit its place, as for `=`. | compile error |
+| 1.14 | [tuple-assignment-places-must-change.kav](tuple-assignment-places-must-change.kav) | Each place is one `=` could set alone: a `const` among them is a compile error. | compile error |
+| 1.14 | [tuple-assignment-is-only-equals.kav](tuple-assignment-is-only-equals.kav) | Only `=` sets several places at once: `(a, b) += (1, 1)` is a compile error. | compile error |
+| 1.14 | [tuple-assignment-needs-parentheses.kav](tuple-assignment-needs-parentheses.kav) | Python's `a, b = b, a`, without parentheses, is a compile error that shows the form with them. | compile error |

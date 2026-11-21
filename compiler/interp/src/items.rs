@@ -160,4 +160,32 @@ impl<'a> Interp<'a> {
         }
         Ok(made)
     }
+
+    /// `xs.swap(i, j)` (spec 2.2): the items at `i` and `j` change places,
+    /// in the list's own buffer when nothing else holds it. An index out
+    /// of range panics as `xs[i]` does, and nothing changes.
+    pub(crate) fn list_swap(
+        &mut self,
+        mut items: Rc<Items<'a>>,
+        mut args: impl Iterator<Item = Value<'a>>,
+        span: Span,
+    ) -> Eval<'a> {
+        let n = items.len();
+        let mut at = [0usize; 2];
+        for slot in &mut at {
+            let i = match args.next() {
+                Some(Value::Int(i, _)) => i,
+                _ => 0,
+            };
+            if i < 0 || i >= n as i128 {
+                let message = kavach_runtime_core::list_index_panic(i, n);
+                return Err(self.panic(message, span));
+            }
+            *slot = i as usize;
+        }
+        if at[0] != at[1] {
+            Rc::make_mut(&mut items).swap(at[0], at[1]);
+        }
+        Ok(Value::List(items))
+    }
 }

@@ -1,0 +1,31 @@
+// Rule: `xs.swap(i, j)` swaps the items at `i` and `j` of a `let` list in place, for items of any type and size.
+// Spec: 2.2
+// expect output: [3, 2, 1]
+// expect output: [9, 2, 3, 5, 4, 6, 7, 8, 1]
+// expect output: ["c", "b", "a"]
+// expect output: [Point(x: 3, y: 4), Point(x: 1, y: 2)]
+// expect output: [(2, "two"), (1, "one")]
+
+type Point {
+    x: Int
+    y: Int
+}
+
+fn main() {
+    let numbers = [1, 2, 3]
+    numbers.swap(0, 2)
+    print(numbers)
+    let bytes: [UInt8] = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    bytes.swap(0, 8)
+    bytes.swap(4, 3)
+    print(bytes)
+    let words = ["a", "b", "c"]
+    words.swap(2, 0)
+    print(words)
+    let points = [Point(x: 1, y: 2), Point(x: 3, y: 4)]
+    points.swap(0, 1)
+    print(points)
+    let pairs = [(1, "one"), (2, "two")]
+    pairs.swap(0, 1)
+    print(pairs)
+}

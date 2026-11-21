@@ -109,7 +109,12 @@ impl<'t> Walk<'t> {
                     self.expr(c, value);
                 }
                 StmtKind::Assign { target, value, .. } => {
-                    if !matches!(target.kind, ExprKind::Name(_)) {
+                    if matches!(target.kind, ExprKind::Tuple(_)) {
+                        self.no(
+                            target.span,
+                            "several places set at once: set each on its own line",
+                        );
+                    } else if !matches!(target.kind, ExprKind::Name(_)) {
                         self.no(target.span, "fields or items: assign to a variable");
                     }
                     self.expr(c, value);

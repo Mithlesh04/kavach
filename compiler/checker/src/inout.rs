@@ -58,9 +58,18 @@ impl Checker<'_> {
             for (j, other) in args.iter().enumerate() {
                 if j != *i && self.names(&other.value, *root) {
                     let name = self.res.defs[*root].name.clone();
+                    // `swap(xs[i], xs[j])`: two items of one list.
+                    let items = [&args[*i].value, &other.value]
+                        .iter()
+                        .all(|a| matches!(a.kind, ExprKind::Index { .. }));
+                    let hint = if items {
+                        format!(": to swap two items, write `{name}.swap(i, j)` (spec 2.2)")
+                    } else {
+                        String::new()
+                    };
                     self.error(
                         other.value.span,
-                        format!("`{name}` is given as `inout` in this call, so it can't be another argument too (spec 3.9)"),
+                        format!("`{name}` is given as `inout` in this call, so it can't be another argument too (spec 3.9){hint}"),
                     );
                 }
             }

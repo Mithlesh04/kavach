@@ -409,7 +409,7 @@ pub(crate) fn kavach_name(recv: &Ty, name: &str) -> Option<&'static str> {
 pub(crate) fn changes_in_place(recv: &Ty, name: &str) -> bool {
     matches!(
         (recv, name),
-        (Ty::List(_), "push" | "pop")
+        (Ty::List(_), "push" | "pop" | "swap")
             | (Ty::Builtin("Ring", _), "push")
             | (
                 Ty::Builtin("TextBuilder", _),

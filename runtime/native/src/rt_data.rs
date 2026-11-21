@@ -281,6 +281,7 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         | RtOp::CheckedDiv => crate::rt_numbers::int_method(op, a, b, code),
         RtOp::CheckedFits => i64::from(crate::rt_numbers::fits(a, b, c)),
         RtOp::ListSet => crate::rt_maps::list_set(a, b, c, line),
+        RtOp::ListSwap => crate::lists::swap_checked(a, b, c, line),
         // Slices and a text's characters (spec 2.19).
         RtOp::ListSlicePart | RtOp::ListSetPart => {
             crate::rt_slices::list_part(op, a, b, c, code, line)

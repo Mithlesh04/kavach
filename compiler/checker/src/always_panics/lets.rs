@@ -30,11 +30,14 @@ impl Mentions<'_, '_, '_> {
 
 impl VisitMut for Mentions<'_, '_, '_> {
     fn stmt(&mut self, s: &mut Stmt) {
-        if let StmtKind::Assign { target, .. } = &s.kind
-            && let ExprKind::Name(id) = &target.kind
-            && let Some(d) = self.def(id)
-        {
-            self.set.insert(d);
+        if let StmtKind::Assign { target, .. } = &s.kind {
+            for p in target.places() {
+                if let ExprKind::Name(id) = &p.kind
+                    && let Some(d) = self.def(id)
+                {
+                    self.set.insert(d);
+                }
+            }
         }
         walk_stmt(self, s);
     }
@@ -113,6 +116,17 @@ impl Known<'_, '_> {
     /// `x = v` or `x op= v`, on a local: what the run would panic on, and
     /// what `x` is now.
     pub(super) fn assign(&mut self, s: &Stmt, target: &Expr, op: AssignOp, value: &Expr) {
+        // `(a, b) = (b, a)` (spec 1.14): what its names hold is not known.
+        if matches!(target.kind, ExprKind::Tuple(_)) {
+            for p in target.places() {
+                if let ExprKind::Name(id) = &p.kind
+                    && let Some(&d) = self.checker.res.uses.get(&id.span.start)
+                {
+                    self.lets.remove(&d);
+                }
+            }
+            return;
+        }
         let ExprKind::Name(id) = &target.kind else {
             return;
         };

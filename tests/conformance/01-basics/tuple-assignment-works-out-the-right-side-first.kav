@@ -1,0 +1,17 @@
+// Rule: Every value on the right of a tuple assignment is worked out before any place on the left is set.
+// Spec: 1.14
+// expect output: reading 2
+// expect output: reading 1
+// expect output: 2 1
+
+fn reading(x: Int) -> Int {
+    print(`reading {x}`)
+    x
+}
+
+fn main() {
+    let a = 1
+    let b = 2
+    (a, b) = (reading(b), reading(a))
+    print(`{a} {b}`)
+}

@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
-//! Which assignment targets may change (spec 1.4, 2.4, 3.1, 4.4): only
-//! `let` bindings, with advice that fits what was named.
+//! Which assignment targets may change (spec 1.4, 1.14, 2.4, 3.1, 4.4):
+//! only `let` bindings, with advice that fits what was named.
 
 use crate::DefKind;
 use crate::resolver::Resolver;
@@ -12,6 +12,13 @@ use kavach_ast::*;
 impl Resolver {
     /// Only `let` bindings can change (spec 1.4, 2.4, 3.1).
     pub(crate) fn check_assignable(&mut self, target: &Expr) {
+        // `(a, b) = (b, a)`: each place, as if set alone (spec 1.14).
+        if matches!(target.kind, ExprKind::Tuple(_)) {
+            return target
+                .places()
+                .into_iter()
+                .for_each(|p| self.check_assignable(p));
+        }
         // `p[i] = v` writes through a pointer, not to `p`: inside `unsafe`
         // the checker, which knows the types, decides (spec 6.4).
         if self.in_unsafe > 0 && matches!(target.kind, ExprKind::Index { .. }) {

@@ -187,7 +187,7 @@ impl Inside<'_, '_> {
 impl VisitMut for Inside<'_, '_> {
     fn stmt(&mut self, s: &mut Stmt) {
         if let StmtKind::Assign { target, .. } = &s.kind {
-            self.changes |= self.names_one(target);
+            self.changes |= target.places().iter().any(|p| self.names_one(p));
         }
         walk_stmt(self, s);
     }

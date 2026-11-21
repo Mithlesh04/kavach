@@ -1,0 +1,9 @@
+// Rule: `xs.swap(i, i)` changes nothing.
+// Spec: 2.2
+// expect output: ["a", "b", "c"]
+
+fn main() {
+    let words = ["a", "b", "c"]
+    words.swap(1, 1)
+    print(words)
+}

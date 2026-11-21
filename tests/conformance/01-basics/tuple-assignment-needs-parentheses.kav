@@ -1,0 +1,9 @@
+// Rule: Python's `a, b = b, a`, without parentheses, is a compile error that shows the form with them.
+// Spec: 1.14
+// expect compile error
+
+fn main() {
+    let xs = [1, 2, 3]
+    xs[0], xs[2] = xs[2], xs[0]     // error: write `(xs[0], xs[2]) = (xs[2], xs[0])`, or `xs.swap(i, j)`
+    print(xs)
+}

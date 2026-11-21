@@ -1,0 +1,10 @@
+// Rule: A tuple assignment sets its places left to right, each worked out when it is set.
+// Spec: 1.14
+// expect output: 1 [0, 9, 0]
+
+fn main() {
+    let i = 0
+    let xs = [0, 0, 0]
+    (i, xs[i]) = (1, 9)
+    print(`{i} {xs}`)
+}

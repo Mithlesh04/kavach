@@ -1,0 +1,10 @@
+// Rule: Only `=` sets several places at once: `(a, b) += (1, 1)` is a compile error.
+// Spec: 1.14
+// expect compile error
+
+fn main() {
+    let a = 1
+    let b = 2
+    (a, b) += (1, 1)    // error: only `=` sets several places at once
+    print(`{a} {b}`)
+}

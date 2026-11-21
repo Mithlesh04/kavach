@@ -116,6 +116,17 @@ pub struct Expr {
     pub span: Span,
 }
 
+impl Expr {
+    /// The places an assignment to this sets: itself, or each place of a
+    /// tuple of places, as in `(a, (b, c)) = …` (spec 1.14).
+    pub fn places(&self) -> Vec<&Expr> {
+        match &self.kind {
+            ExprKind::Tuple(parts) => parts.iter().flat_map(Expr::places).collect(),
+            _ => vec![self],
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub enum ExprKind {
     Int(u64),

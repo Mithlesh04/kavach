@@ -5,7 +5,7 @@
 //! Blocks and statements (spec 1.4, 4.4, 4.5).
 
 use crate::parser::Parser;
-use kavach_ast::{AssignOp, Block, ExprKind, Ident, Stmt, StmtKind, UnaryOp};
+use kavach_ast::{AssignOp, Block, ExprKind, Ident, Stmt, StmtKind};
 use kavach_lexer::{Keyword, TokenKind};
 
 impl Parser<'_> {
@@ -110,23 +110,13 @@ impl Parser<'_> {
 
     fn expr_or_assign(&mut self) -> StmtKind {
         let target = self.expr();
+        if self.at(&TokenKind::Comma) && self.python_assign(&target) {
+            return StmtKind::Expr(target);
+        }
         let Some(op) = assign_op(self.kind()) else {
             return StmtKind::Expr(target);
         };
-        if !matches!(
-            target.kind,
-            ExprKind::Name(_)
-                | ExprKind::Field { .. }
-                | ExprKind::TupleField { .. }
-                | ExprKind::Index { .. }
-                | ExprKind::Unary(UnaryOp::Deref, _)
-                | ExprKind::Error
-        ) {
-            self.error(
-                target.span,
-                "only a variable, field or index can be assigned to",
-            );
-        }
+        self.check_target(&target, op);
         self.bump();
         let value = self.expr();
         if assign_op(self.kind()).is_some() {
