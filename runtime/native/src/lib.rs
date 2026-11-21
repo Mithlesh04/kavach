@@ -134,6 +134,7 @@ pub use rt_std::kv_rt_version;
 pub use rt_tasks::kv_rt_tasks;
 pub use rt_text_methods::kv_rt_text_methods;
 pub use rt_watch::kv_rt_watch;
+pub use rt_whole::kv_rt_whole;
 pub use rt_window::kv_rt_window;
 pub use rt_writers::kv_rt_writers;
 pub use rt_zone::kv_rt_zone;

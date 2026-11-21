@@ -50,6 +50,12 @@ fn exact(slot: i64, t: Type) -> Option<i128> {
     }
 }
 
+// Numbers with bits or a range: an entry of their own, so a program
+// without them doesn't link their checks (decision 0024).
+crate::rt_data::entry!(kv_rt_whole, |_op, a, b, c, code, line| {
+    whole_op(a, b, c, code, line)
+});
+
 /// `IntWhole`: `c` holds the op's place in `WHOLE_OPS` (above bit 32)
 /// and the type's code; `code` is the result's type.
 pub fn whole_op(a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
