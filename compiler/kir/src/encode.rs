@@ -84,7 +84,7 @@ fn value(v: &Option<VariantValue>) -> String {
 
 fn parse_value(text: &str) -> Option<VariantValue> {
     if let Some(n) = text.strip_prefix('i') {
-        return n.parse().ok().map(VariantValue::Int);
+        return whole(n).map(VariantValue::Int);
     }
     let hex = text.strip_prefix('t')?.as_bytes();
     let bytes = hex
@@ -92,6 +92,25 @@ fn parse_value(text: &str) -> Option<VariantValue> {
         .map(|b| u8::from_str_radix(std::str::from_utf8(b).ok()?, 16).ok())
         .collect::<Option<Vec<u8>>>()?;
     String::from_utf8(bytes).ok().map(VariantValue::Text)
+}
+
+/// A whole number written in decimal, read digit by digit: every program's
+/// runtime reads the shape table, and `str::parse::<i128>` would link
+/// 128-bit parsing into each of them (decision 0024).
+fn whole(text: &str) -> Option<i128> {
+    let (minus, digits) = match text.strip_prefix('-') {
+        Some(d) => (true, d),
+        None => (false, text),
+    };
+    if digits.is_empty() {
+        return None;
+    }
+    let mut n: i128 = 0;
+    for b in digits.bytes() {
+        let d = i128::from(b.checked_sub(b'0').filter(|d| *d < 10)?);
+        n = n.checked_mul(10)?.checked_add(d)?;
+    }
+    Some(if minus { -n } else { n })
 }
 
 pub fn encode_shapes(shapes: &[Shape]) -> String {

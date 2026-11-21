@@ -25,7 +25,11 @@ use std::process::Command;
 /// by a program that turns crash reports on. Text inside collections
 /// printed as written, escaping only control and invisible characters
 /// (spec 1.11), replaced Rust's own quoting: 761 KB on Linux (2026-11-17).
-const BUDGET: u64 = 764 * 1024;
+/// Union variants carrying a number or text (spec 2.6), which every
+/// program's shape table now holds and the runtime reads at start: 778 KB
+/// on Linux (2026-11-21), the numbers read digit by digit, not through
+/// Rust's 128-bit parsing.
+const BUDGET: u64 = 780 * 1024;
 
 #[test]
 fn hello_world_stays_small() {
