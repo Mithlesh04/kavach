@@ -1,0 +1,5 @@
+fn main() {
+    const order = ["tea", "toast", "eggs"]
+    order.swap(0, 2)
+    print(order)
+}

@@ -189,6 +189,56 @@ export const destructuringDoc: LessonDoc = {
         <li><C>= &quot;8080&quot;</C> is a default, used when the value is missing.</li>
         <li><C>_</C> skips an item you don&apos;t need.</li>
       </ul>
+      <P>
+        To set variables that already exist from a tuple, use{" "}
+        <Link href="/docs/basics/variables/tuple-assignment/">tuple assignment</Link>: <C>(low, high) = (high, low)</C>.
+      </P>
+    </>
+  ),
+};
+
+export const tupleAssignDoc: LessonDoc = {
+  lead: "(a, b) = (b, a) sets several places with one =. Two values swap with no temporary variable.",
+  simple: <>Like two people swapping seats at the same moment: each sees where the other sits first, then both move. Nobody needs a spare chair.</>,
+  minutes: 3,
+  before: ["basics/variables/changing-a-value", "collections/tuples"],
+  body: (
+    <>
+      <P>
+        Write a tuple on each side of <C>=</C>. Every value on the right is worked out first, then each place on the
+        left is set, left to right, as in Python and Go:
+      </P>
+      <Ex name="variables/tuple-assign" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Each place is one <C>=</C> can set alone: a <C>let</C> variable, or a field, item, dict entry or tuple field of one. A <C>const</C> or a parameter is refused, as for <C>=</C>.</li>
+        <li>The right side is a tuple written out, or any value whose type is a tuple, as <C>bounds</C> gives.</li>
+        <li>Tuples nest on both sides: <C>((a, b), c) = ((b, a), c)</C>.</li>
+        <li>For two items of one list, <C>xs.swap(i, j)</C> says the same in fewer words (<Link href="/docs/collections/lists/swapping-items/">swapping items</Link>).</li>
+      </ul>
+      <H2>Set in order</H2>
+      <P>Each place is worked out when it is set, as in Python. So here <C>i</C> is set first, and <C>xs[i]</C> is then <C>xs[1]</C>:</P>
+      <Ex name="variables/tuple-assign-order" />
+      <H2>Mistakes it catches</H2>
+      <P>Python writes it without parentheses. In Kavach that is an error that shows the form with them:</P>
+      <Ex name="variables/tuple-assign-python.fails" />
+      <P>The right side needs one value for each place:</P>
+      <Ex name="variables/tuple-assign-count.fails" />
+      <P>Only <C>=</C> sets several places. <C>+=</C> and the others work on one place at a time:</P>
+      <Ex name="variables/tuple-assign-op.fails" />
+      <Note>
+        An item of a program&apos;s own type, such as <C>grid[k]</C> through <C>IndexSet</C>, can&apos;t be a place yet:
+        set it on its own line. <C>_</C> can&apos;t be a place either, so <C>(a, _) = pair()</C> is refused today.
+      </Note>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/01-basics.md" label="spec 1.14 · tuple assignment" />
+        <SrcRef file="tests/conformance/01-basics/tuple-assignment-sets-several-places.kav" label="tested" />
+        <SrcRef file="tests/conformance/01-basics/tuple-assignment-works-out-the-right-side-first.kav" label="right side first, tested" />
+        <SrcRef file="tests/conformance/01-basics/tuple-assignment-sets-places-in-order.kav" label="in order, tested" />
+        <SrcRef file="tests/conformance/01-basics/tuple-assignment-takes-any-tuple-value.kav" label="any tuple value, tested" />
+        <SrcRef file="tests/conformance/01-basics/tuple-assignment-needs-parentheses.kav" label="parentheses, tested" />
+        <SrcRef file="tests/conformance/01-basics/tuple-assignment-needs-one-value-per-place.kav" label="one value each, tested" />
+        <SrcRef file="tests/conformance/01-basics/tuple-assignment-is-only-equals.kav" label="only =, tested" />
+      </div>
     </>
   ),
 };

@@ -39,7 +39,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Syntax", "1.1", ["Source files", "The main function", "Blocks are values", "Names", "Keywords"]],
     ["Output", "1.10", ["print", "How values print", "debug"]],
     ["Comments", "1.2"],
-    ["Variables", "1.4", ["const", "let", "Changing a value", "Destructuring", "Module constants"]],
+    ["Variables", "1.4", ["const", "let", "Changing a value", "Destructuring", "Tuple assignment", "Module constants"]],
     ["User Input", "14.13", ["Ask for text", "Ask for a number", "Ask for a password"]],
     ["Data Types", "2.1", ["Int", "Sized integers", "Float and Float32", "Decimal", "BigInt", "Bool", "Char", "Converting types"]],
     ["Operators", "1.8", ["Arithmetic", "Assignment", "Comparison", "Logical", "Precedence"]],
@@ -66,7 +66,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Deprecating a Function", "12.6"],
   ]],
   ["collections", "Collections", "beginner", [
-    ["Lists", "2.2", ["Making a list", "Reading by index", "Changing items", "Adding and removing", "Sorting", "map, filter, sum"]],
+    ["Lists", "2.2", ["Making a list", "Reading by index", "Changing items", "Swapping items", "Adding and removing", "Sorting", "map, filter, sum"]],
     ["Indexing and Slicing", "2.19"],
     ["Grouping and Statistics", "14.2"],
     ["Dicts", "2.2", ["Making a dict", "Reading a value", "Adding and changing", "Looping over a dict"]],

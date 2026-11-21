@@ -1,0 +1,10 @@
+fn main() {
+    let order = ["tea", "toast", "eggs"]
+    order.swap(0, 2)
+    print(order)
+    order.swap(1, 1)
+    print(order)
+    let rows = [[1, 2], [3, 4]]
+    rows[1].swap(0, 1)
+    print(rows)
+}

@@ -58,7 +58,7 @@ its position, so it can't move.
 | `types.ts` | The shapes: `SceneInfo`, `Scene`, `SceneFrame`, packets, slots, views |
 | `scenes.ts` | Every scene by id: the kit's, and the memory step-throughs' titles and caveman lines |
 | `scene-factorial.ts` | The first kit scene: `factorial(10)`, the two calls native code really makes (Functions › Recursion) |
-| `scene-list-buffer.ts` | A list in memory: index check, push in place, growth, a slice copied (Collections › Lists) |
+| `scene-list-buffer.ts` | A list in memory: index check, push in place, growth, a slice copied, two items swapped (Collections › Lists) |
 | `scene-dict-lookup.ts` | A dict lookup by stored hashes, then through the index past 8 entries (Dicts › Reading a value) |
 | `scene-sorting.ts` | Which sort runs for which items, and when sorting copies (Collections › Sorting) |
 | `scene-chain.ts` | map → filter → sum as written (Cranelift) and fused into one loop (LLVM) (Lists › map, filter, sum) |

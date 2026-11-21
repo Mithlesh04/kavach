@@ -1,0 +1,7 @@
+fn main() {
+    let i = 0
+    let xs = [0, 0, 0]
+    (i, xs[i]) = (1, 9)
+    print(i)
+    print(xs)
+}

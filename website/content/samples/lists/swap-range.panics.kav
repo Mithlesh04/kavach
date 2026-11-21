@@ -1,0 +1,5 @@
+fn main() {
+    let order = ["tea", "toast", "eggs"]
+    order.swap(0, 3)
+    print(order)
+}

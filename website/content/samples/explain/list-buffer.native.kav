@@ -5,6 +5,7 @@ fn main() {
     xs.push(9)
     const firsts = xs[:2]
     xs[0] = 7
+    xs.swap(0, 4)
     print(firsts)
     print(xs)
 }

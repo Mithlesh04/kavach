@@ -79,6 +79,8 @@ export const aliases: Record<string, string> = {
   "basics/strings": "string substring concat format trim case uppercase lowercase split join parse search",
   "basics/strings/making-strings": "multiline string multi-line text over lines triple quotes heredoc here document raw string verbatim string backtick template literal escape quote inside",
   "basics/strings/text-views-and-builders": "StrView TextBuilder string view slice str span string builder StringBuilder StringBuffer append zero copy parse fast",
+  "basics/variables/tuple-assignment": "tuple assignment multiple assignment parallel assignment swap two variables a, b = b, a destructuring assignment unpacking temp variable",
+  "collections/lists/swapping-items": "swap items swap elements exchange array swap std::swap list swap index reorder",
   "basics/variables/module-constants": "module constant global constant top level const static final define constexpr pub const UPPER_CASE capitals",
   "errors/errors":
     "exception try catch throw panic crash null undefined result option handling failure recover",

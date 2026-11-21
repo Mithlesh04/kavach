@@ -57,6 +57,11 @@ export const mainFunctionDoc: LessonDoc = {
         <C>main</C> calls <C>greet</C> although <C>greet</C> is written below it: functions and types can be used
         anywhere in their file. Local variables are different: they exist only from their line on.
       </P>
+      <P>
+        <C>main</C> takes no parameters. A program reads its command-line arguments with <C>cli.args()</C>, so{" "}
+        <C>fn main(args: [String])</C> is refused with that fix:
+      </P>
+      <Ex name="syntax/main-args.fails" />
       <H2>Scripts</H2>
       <P>For a quick script, leave <C>main</C> out. The lines at the top level become its body:</P>
       <Ex name="start/script" />

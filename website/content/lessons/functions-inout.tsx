@@ -93,7 +93,8 @@ export const inoutDoc: LessonDoc = {
     <P>
       Nothing is shared while the function runs, so no other part of the program can see half a change. If the
       function fails, the caller&apos;s variable keeps its old value. Giving the same variable twice in one call, as
-      in <C>swap(x, x)</C>, is refused: it would be two names for one value.
+      in <C>swap(x, x)</C>, is refused: it would be two names for one value. So is <C>swap(xs[i], xs[j])</C>, two items
+      of one list: the error says to write <C>xs.swap(i, j)</C>, and <C>(xs[i], xs[j]) = (xs[j], xs[i])</C> works too.
     </P>
   ),
 };

@@ -7,7 +7,7 @@ import { blockGivenDoc, breakDoc, whileDoc, whileEndlessDoc, whilePlainDoc } fro
 import { forDoc, forIndexDoc, forListDoc, forMapDoc, forRangeDoc, forTimesDoc } from "./basics-for";
 import { commentsDoc, debugDoc, outputDoc, printDoc, valuesPrintDoc } from "./basics-output";
 import { blocksDoc, keywordsDoc, mainFunctionDoc, namesDoc, sourceFilesDoc, syntaxDoc } from "./basics-syntax";
-import { changeDoc, constDoc, destructuringDoc, letDoc, moduleConstDoc, variablesDoc } from "./basics-variables";
+import { changeDoc, constDoc, destructuringDoc, letDoc, moduleConstDoc, tupleAssignDoc, variablesDoc } from "./basics-variables";
 import { firstProgramDoc, homeDoc, smartDoc } from "./start";
 import { editionsDoc, envDoc, layoutDoc, settingsDoc } from "./tools-settings";
 import { taggedLiteralsDoc } from "./tools-literals";
@@ -61,6 +61,7 @@ import {
   tlsDoc, udpDoc,
 } from "./networks-net";
 import { sortingDoc, sortKeyDoc, sortNumbersDoc, sortTextDoc, sortTwoKeysDoc } from "./collections-sort";
+import { swapListDoc } from "./collections-swap";
 import { gpuCanDoc, gpuDoc, gpuFnDoc, gpuMapDoc, gpuRecordsDoc, gpuSameDoc, gpuUsesDoc, gpuWhereDoc } from "./speed-gpu";
 import { gpuSumsDoc } from "./gpu-streams";
 import { gpuChooseDoc } from "./speed-gpu-choose";
@@ -162,6 +163,7 @@ export const lessons: Record<string, LessonDoc> = {
   "basics/variables/let": letDoc,
   "basics/variables/changing-a-value": changeDoc,
   "basics/variables/destructuring": destructuringDoc,
+  "basics/variables/tuple-assignment": tupleAssignDoc,
   "basics/variables/module-constants": moduleConstDoc,
   "basics/user-input": inputDoc,
   "basics/user-input/ask-for-text": askTextDoc,
@@ -241,6 +243,7 @@ export const lessons: Record<string, LessonDoc> = {
   "collections/lists/making-a-list": makeListDoc,
   "collections/lists/reading-by-index": readListDoc,
   "collections/lists/changing-items": changeListDoc,
+  "collections/lists/swapping-items": swapListDoc,
   "collections/lists/adding-and-removing": addRemoveDoc,
   "collections/lists/sorting": sortListDoc,
   "collections/lists/map-filter-sum": pipelineDoc,

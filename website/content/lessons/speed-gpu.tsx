@@ -300,6 +300,11 @@ export const gpuWhereDoc: LessonDoc = {
         The runtime estimates each <C>gpu fn</C>&apos;s work from its operations, with a loop counted once per round. A
         machine with no GPU runs everything on the CPU, with the same code and the same results.
       </P>
+      <P>
+        <C>KAVACH_GPU</C> is read in any case: <C>KAVACH_GPU=CPU</C> is <C>cpu</C>. A <C>map</C> too big for one pass
+        of the GPU runs in several passes, with the same results. For tests, <C>KAVACH_GPU_WORDS=1000</C> lets one pass
+        hold at most 1,000 32-bit words, so a small list tests the passes on any machine.
+      </P>
       <H2>Keep a program on the CPU</H2>
       <P>
         For a machine whose GPU the program shouldn&apos;t use, write <C>gpu = &quot;cpu&quot;</C> under{" "}
@@ -312,8 +317,8 @@ export const gpuWhereDoc: LessonDoc = {
         <Link href="/docs/speed/loops-on-all-cores/#before-a-value">on before a value</Link>).
       </P>
       <P>
-        The setting takes <C>&quot;cpu&quot;</C>, <C>&quot;auto&quot;</C>, the default, or a device: a maker&apos;s name
-        or a number (see <Link href="/docs/speed/gpu/choosing-a-gpu/">Choosing a GPU</Link>). Anything else is refused:
+        The setting takes <C>&quot;cpu&quot;</C> (or <C>&quot;off&quot;</C>), <C>&quot;auto&quot;</C>, the default, or a device: a maker&apos;s name
+        or a number (see <Link href="/docs/speed/gpu/choosing-a-gpu/">Choosing a GPU</Link>), in any case: <C>&quot;Off&quot;</C> is <C>&quot;off&quot;</C>. Anything else is refused:
       </P>
       <Files name="gpu/setting-typo.fails" first={["kavach.toml"]} outcome="refused" />
       <div className="flex flex-wrap gap-2.5">

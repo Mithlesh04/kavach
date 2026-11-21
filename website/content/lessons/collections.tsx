@@ -103,6 +103,7 @@ export const changeListDoc: LessonDoc = {
   body: (
     <>
       <Ex name="lists/set-item" />
+      <P>To swap two items, write <C>xs.swap(i, j)</C> (<Link href="/docs/collections/lists/swapping-items/">swapping items</Link>).</P>
       <P>Changing a <C>const</C> list is refused, with the fix:</P>
       <Ex name="lists/const-push.fails" />
     </>

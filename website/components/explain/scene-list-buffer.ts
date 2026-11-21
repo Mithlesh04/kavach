@@ -25,9 +25,11 @@ import type { HeapObject, Scene, SceneFrame, Slot } from "./types";
 //   copies the picked items into a new list of exactly that many.
 // - list[i] = v: inline, count == 1 and i in range, stored in place
 //   (inline.rs list_set, 332-345).
-// No swap: Kavach has no xs.swap(i, j), no tuple assignment, and
-// swap(xs[i], xs[j]) with inout parameters is refused (spec 3.9), so the
-// scene shows none.
+// - xs.swap(i, j): lowered to the runtime's ListSwap (compiler/kir/src/
+//   lower_std.rs:233), runtime/native/src/lists.rs swap_checked (176-209):
+//   both indices checked against len, `unique` copies only when something
+//   else holds the list, then the two items' words change places. Nothing
+//   is counted, text and records included (the maintainer's checker).
 // Packed lists round their room up to whole 8-byte words (heap.rs:407-417):
 // the note says so.
 
@@ -62,6 +64,7 @@ const START: Xs = { len: 3, cap: 3, items: ["3", "1", "4"] };
 const GROWN: Xs = { len: 4, cap: 6, items: ["3", "1", "4", lit("5"), ROOM, ROOM] };
 const FIVE: Xs = { len: 5, cap: 6, items: ["3", "1", "4", "5", lit("9"), ROOM] };
 const SEVEN: Xs = { len: 5, cap: 6, items: [lit("7"), "1", "4", "5", "9", ROOM] };
+const SWAPPED: Xs = { len: 5, cap: 6, items: [lit("9"), "1", "4", "5", lit("7"), ROOM] };
 
 const frames: SceneFrame[] = [
   {
@@ -129,23 +132,34 @@ const frames: SceneFrame[] = [
   },
   {
     line: 6,
+    at: "xs.swap(0, 4)",
+    lit: [core, xsChip],
+    labels: { [core]: "swap", [xsChip]: "xs" },
+    regs: regs(["i, j", "0, 4"], ["i, j < len", "0 < 5, 4 < 5: yes"], ["count", "1", "nobody else holds it: no copy"]),
+    heap: heap(SWAPPED, "live"),
+    output: "1",
+    caption:
+      "swap is a call into the runtime, while running. It checks both indices against len 5, as xs[i] does: an index out of range would stop the program, with xs unchanged. The count is 1, so nothing else holds xs and nothing is copied. The two 8-byte words at 0x2000 and 0x2020 change places. Nothing is counted: text and records swap the same way, their words moving.",
+  },
+  {
+    line: 7,
     at: "print(firsts)",
     lit: [core, "kernel.files"],
     labels: { "kernel.files": "output" },
     packets: [{ from: core, to: "kernel.files", label: "[3, 1]" }],
-    heap: heap({ ...SEVEN, items: ["7", "1", "4", "5", "9", ROOM] }, "freed"),
+    heap: heap({ ...SWAPPED, items: ["9", "1", "4", "5", "7", ROOM] }, "freed"),
     output: "1\n[3, 1]",
     caption:
       "firsts' last use, marked by the compiler while compiling: print takes the list and lets it go. Its count falls to 0, so the runtime frees its object and buffer while running. They go grey where they were.",
   },
   {
-    line: 7,
+    line: 8,
     at: "print(xs)",
     lit: [core, "kernel.files"],
     labels: { "kernel.files": "output" },
-    packets: [{ from: core, to: "kernel.files", label: "[7, 1, 4, 5, 9]" }],
-    heap: heap({ ...SEVEN, count: 0, items: ["7", "1", "4", "5", "9", ROOM] }, "freed", true),
-    output: "1\n[3, 1]\n[7, 1, 4, 5, 9]",
+    packets: [{ from: core, to: "kernel.files", label: "[9, 1, 4, 5, 7]" }],
+    heap: heap({ ...SWAPPED, count: 0, items: ["9", "1", "4", "5", "7", ROOM] }, "freed", true),
+    output: "1\n[3, 1]\n[9, 1, 4, 5, 7]",
     caption: "xs's last use, also marked by the compiler: freed the same way. Nothing searched for garbage: each list was let go at its last use.",
   },
 ];
@@ -154,8 +168,8 @@ checkHeap("list-buffer", frames);
 
 export const listBufferScene: Scene = {
   id: "list-buffer",
-  title: "A list in memory: index, push, grow, slice",
-  caveman: "List is box with count. Items in other box, side by side. Read item: check, then one load. Push: room? Put there. No room? Bigger box. Slice: new list, copy.",
+  title: "A list in memory: index, push, grow, slice, swap",
+  caveman: "List is box with count. Items in other box, side by side. Read item: check, then one load. Push: room? Put there. No room? Bigger box. Slice: new list, copy. Swap: two item trade place, nothing copy.",
   sample: "explain/list-buffer.native",
   code: "main",
   board: [
@@ -165,7 +179,7 @@ export const listBufferScene: Scene = {
   ],
   panels: ["regs", "heap"],
   heapEmpty: "Nothing yet.",
-  lastUse: { 6: ["firsts"], 7: ["xs"] },
+  lastUse: { 7: ["firsts"], 8: ["xs"] },
   spec: "2.2",
   frames,
   note: `Drawn for kavach run --native. Every object starts with the same 24-byte header: the count, then words saying what kind of object it is and its type. "room" is space the buffer has but doesn't use yet; "·" alone is free memory. A list written out gets room for exactly its items, as here; a list of small numbers, packed, rounds that up to whole 8-byte words: [UInt8] of 3 has room for 8, [Int32] of 3 for 4. Addresses are examples: they differ on every run.`,

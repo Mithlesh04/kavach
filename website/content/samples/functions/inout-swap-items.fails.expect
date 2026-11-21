@@ -1,0 +1,1 @@
+error: `order` is given as `inout` in this call, so it can't be another argument too (spec 3.9): to swap two items, write `order.swap(i, j)` (spec 2.2)

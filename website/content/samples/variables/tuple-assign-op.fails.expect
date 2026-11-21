@@ -1,0 +1,1 @@
+error: only `=` sets several places at once: write each `op=` on its own line (spec 1.14)

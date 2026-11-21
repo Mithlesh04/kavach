@@ -1,0 +1,28 @@
+type Point {
+    x: Int
+    y: Int
+}
+
+fn bounds(scores: [Int]) -> (Int, Int) {
+    (scores.min() ?? 0, scores.max() ?? 0)
+}
+
+fn main() {
+    let a = 1
+    let b = 2
+    (a, b) = (b, a)
+    print(`{a} {b}`)
+
+    let xs = [10, 20, 30]
+    (xs[0], xs[2]) = (xs[2], xs[0])
+    print(xs)
+
+    let p = Point(x: 1, y: 5)
+    (p.x, p.y) = (p.y, p.x)
+    print(p)
+
+    let low = 0
+    let high = 0
+    (low, high) = bounds([7, 3, 9])
+    print(`{low} to {high}`)
+}
