@@ -278,8 +278,8 @@ print(reply.headers[":status"])       // 200
 
 | Function | Gives |
 |---|---|
-| `hpack.new_table(limit) -> Table` | An empty table of at most `limit` bytes (HTTP/2 starts with 4096) |
-| `hpack.decode(block, table) -> Decoded ! HpackError` | `Decoded(headers: [Header], table: Table)`; `Malformed(reason)` for a broken block |
+| `hpack.new_table(limit) -> HeaderTable` | An empty table of at most `limit` bytes (HTTP/2 starts with 4096) |
+| `hpack.decode(block, table) -> Decoded ! HpackError` | `Decoded(headers: [Header], table: HeaderTable)`; `Malformed(reason)` for a broken block |
 | `hpack.encode(headers) -> Bytes` | A block for each `Header(name:, value:)`, names in lower case: a header the static table holds whole is its index, one whose name it holds is that index and the value, and text is Huffman-coded where that is shorter. It adds nothing to the dynamic table, so it needs no table of its own |
 | `hpack.huffman(data) -> Bytes ! HpackError` | Decodes Huffman-coded text (RFC 7541 appendix B); QPACK uses the same code |
 

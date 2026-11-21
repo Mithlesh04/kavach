@@ -39,7 +39,7 @@ Each section is a file of its own: new sections go at the end, with the next num
 | 14.31 std.font | [31-font.md](31-font.md) |
 | 14.32 std.reflect | [32-reflect.md](32-reflect.md) |
 | 14.33 std.tensor: Kavach's one array type, as NumPy's | [33-tensor.md](33-tensor.md) |
-| 14.34 std.table | [34-table.md](34-table.md) (not built yet) |
+| 14.34 std.table | [34-table.md](34-table.md) (on the GPU: not built yet) |
 
 ## Open questions
 

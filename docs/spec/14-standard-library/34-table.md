@@ -1,8 +1,6 @@
 # 14.34 std.table
 
-*Not built yet.*
-
-A `Table<R>` holds rows of the record type `R`, kept as columns: each field's values side by side. It is for big data read from CSV or JSON, as pandas, polars and R's data frames are ([decision 0135](../../decisions/0135-tables-and-grouping.md)). It has the same methods as a list of records (14.2), so code moves from a list to a table with no change. Its columns are the fields of `R`, so the compiler checks every column a program names.
+A `Table<R>` holds rows of the record type `R`, kept as columns: each field's values side by side (*not built yet:* today a table keeps its rows as one list, and a column is made when it is read). It is for big data read from CSV or JSON, as pandas, polars and R's data frames are ([decision 0135](../../decisions/0135-tables-and-grouping.md)). It has the same methods as a list of records (14.2), so code moves from a list to a table with no change. Its columns are the fields of `R`, so the compiler checks every column a program names.
 
 ```kavach
 use std.table
@@ -69,8 +67,8 @@ Any other field type (a list, a record, a dict) is a compile error that names th
 | `t["name"]` | The column `name`, as a list: `sales["amount"]` is a `[Float]` |
 | `t.rows() -> [R]` | Every row, as a list |
 
-- `t["name"]` takes a name written in the code. A name that is not a field of `R` is a compile error that names the fields there are. The list shares the table's storage, so reading a column copies nothing.
-- A column of numbers is a tensor's items with no copy: `tensor.of(t["amount"])` (14.33).
+- `t["name"]` takes a name written in the code. A name that is not a field of `R` is a compile error that names the fields there are. *Not built yet:* the list shares the table's storage, so reading a column copies nothing.
+- *Not built yet:* a column of numbers is a tensor's items with no copy: `tensor.of(t["amount"])` (14.33). Today the column is copied once.
 - A table is a value, as a list is (6.1): a copy shares its columns until one of them changes.
 
 ```kavach
@@ -92,9 +90,9 @@ Where a list's method gives a list of records, a table's gives a table:
 | `t.map(f)` | A `Table<S>` when `f` gives a record `S` whose fields a cell can hold; otherwise a list, as on a list |
 | `t.group_by(key)` | A `{K: Table<R>}` |
 | `t.inner_join(other, key, other_key, row)`, `t.left_join(…)` | A `Table<S>` of the records `row` makes; `other` is a table or a list |
-| `t.describe()` | With no lambda: a `{String: Summary}`, the summary (14.2) of each number column, in column order |
+| `t.describe()` | With no lambda: a `{String: Summary}`, the summary (14.2) of each number column, in column order. An optional column is left out, as nothing is skipped without saying (for a maintainer's review) |
 
-`pivot` gives a dict of dicts, as on a list: its columns come from the data, so their names are not known when the program is compiled, and a table's columns must be.
+`pivot`'s `cell` takes the table of the rows with both keys, as `group_by` gives tables (for a maintainer's review). `pivot` gives a dict of dicts, as on a list: its columns come from the data, so their names are not known when the program is compiled, and a table's columns must be.
 
 A row picked out of a join is a flat record, so a join's result is a table too:
 
@@ -109,14 +107,14 @@ Adding a column makes a new record with every field: `t.map(s => (region: s.regi
 
 Reading follows RFC 4180:
 
-- Cells are separated by `sep`. A cell in double quotes may hold `sep`, line breaks, and `""` for one quote. Lines end with `\n` or `\r\n`. The text is UTF-8; a byte order mark at the start is skipped.
-- The first line names the columns. Each name matches a field of `R` exactly; the columns may come in any order.
+- Cells are separated by `sep`. A cell in double quotes may hold `sep`, line breaks, and `""` for one quote. Lines end with `\n` or `\r\n`. The text is UTF-8; a byte order mark at the start is skipped. A line break inside quotes is read as `\n`, whichever ending the file uses (for a maintainer's review).
+- The first line names the columns. Each name matches a field of `R` exactly; the columns may come in any order. A name written twice fails with `Syntax`; a text with no lines has no columns (for a maintainer's review).
 - A field with no column takes its default, or `none` if it is optional; otherwise reading fails with `Missing`. A column with no field fails with `Unknown`, as JSON refuses unknown fields ([decision 0096](../../decisions/0096-unknown-fields-are-refused.md)), unless `unknown: CsvUnknown.Ignore` is given.
 - A cell is read strictly, as `Int(s)`, `Float(s)` and `Decimal(s)` read text (2.1): `1,299` is not a number, and neither is ` 12`. A `Bool` is `true` or `false`; a category its variant's name; a `Date` and a `DateTime` as ISO 8601 writes them (14.4). A cell that doesn't fit fails with `Value`, naming its line and column.
 - An empty cell is `none` for an optional field, `""` for a `String`, and the default for a field with one. Anywhere else it fails with `Value`.
-- Each row is checked against `R`'s `invariant`s (7.3); a row that breaks one fails with `Value`, its `expected` the invariant, as a JSON decode does (2.12).
+- Each row is checked against `R`'s `invariant`s (7.3); a row that breaks one fails with `Value`, its `expected` the invariant, as a JSON decode does (2.12). Its `column` is the field the problem names, or `""` when it names none, as for an invariant over several fields; its `found` is then the row's cells, joined by `,` (for a maintainer's review).
 
-Writing gives back what reading takes: a line of column names, then one line for each row, each ending with `\n`. A cell is quoted only when it holds `sep`, a quote or a line break. Numbers are written as `print` writes them, `none` as an empty cell, and a `secret` field as `<secret>`, as JSON writes it ([decision 0132](../../decisions/0132-json-for-every-value.md)).
+Writing gives back what reading takes: a line of column names, then one line for each row, each ending with `\n`. A cell is quoted only when it holds `sep`, a quote or a line break. Numbers are written as `print` writes them, `none` as an empty cell, and a `secret` field as `<secret>`, as JSON writes it ([decision 0132](../../decisions/0132-json-for-every-value.md)). *Not built yet:* a cell is written as JSON writes it, so a `Float32` has the digits of the `Float` it widens to (`0.10000000149011612` for `0.1`), and NaN and the infinities are empty cells.
 
 ```kavach
 pub type CsvUnknown = Refuse | Ignore
@@ -128,11 +126,11 @@ pub type CsvError = File(error: FsError) |
     Value(line: Int, column: String, expected: String, found: String)
 ```
 
-`Syntax` is a quote left open, or a line with more or fewer cells than the first. `File` holds the error of the file itself (14.3).
+`Syntax` is a quote left open, or a line with more or fewer cells than the first. A quote inside a cell that doesn't start with one, and text after a cell's closing quote, are `Syntax` too, as RFC 4180 has them (for a maintainer's review). `File` holds the error of the file itself (14.3).
 
 ## Printing
 
-`print(t)` writes the column names, then the rows, each column as wide as its widest cell: numbers to the right, everything else to the left. A table of more than 10 rows shows its first 5 and last 5, with a `…` line between, and then its size:
+`print(t)` writes the column names, then the rows, each column as wide as its widest cell: numbers to the right, everything else to the left. A number column's name is to the right too, and the last line says `1 row` or `1 column` for one (for a maintainer's review). Spaces at the end of a line are left out. A table of more than 10 rows shows its first 5 and last 5, with a `…` line between, and then its size:
 
 ```
 region  month  amount  note
@@ -143,6 +141,8 @@ north       2   100.0
 ```
 
 ## On the GPU
+
+*Not built yet.*
 
 A table keeps its columns side by side, which is how a GPU reads data, so a column of `Float32`, `Int32`, `UInt32` or `Bool` goes to the GPU with no packing. Its methods run there under the rules of 15.5, as a list's do: `filter`, `map`, `count_by`, `group_by` followed by `map_values` of a sum, count, minimum or maximum, `unique`, `sort_by`, `min_by`, `max_by`, `median` and the joins.
 
