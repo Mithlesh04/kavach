@@ -38,6 +38,23 @@ pub struct AiModel {
     /// its expression is (a key of `AiModels::providers`), and its type's
     /// name (decision 0140). `None`: `Anthropic()`.
     pub provider: Option<((u32, u32), String)>,
+    /// The models tried after this one, in turn, when `model` is a list
+    /// (spec 8.4, *Fallbacks*); each has none of its own.
+    pub then: Vec<AiModel>,
+}
+
+impl AiModel {
+    /// This model, then each one tried after it.
+    pub fn in_turn(&self) -> impl Iterator<Item = &AiModel> {
+        std::iter::once(self).chain(&self.then)
+    }
+
+    /// The largest `max_tokens` of the models tried, `default` for one
+    /// that doesn't say.
+    pub fn most_tokens(&self, default: u32) -> u32 {
+        let each = self.in_turn().map(|m| m.max_tokens.unwrap_or(default));
+        each.max().unwrap_or(default)
+    }
 }
 
 /// The models of a program (decision 0056) and their providers (0140).
@@ -88,6 +105,8 @@ pub(crate) fn text(e: &Expr) -> Option<String> {
 
 const NOT_KNOWN: &str = "a model is chosen when the program is built: write `Model(name: \"…\")` with plain values (its `provider` too), or call a function with no parameters that gives one, such as `careful()` (spec 8.4)";
 
+const EMPTY: &str = "a list of models needs at least one model: they are tried in turn, the first one first (spec 8.4)";
+
 impl Checker<'_> {
     /// Each agent's model, by the agent's name, and each `ask`'s own, by
     /// the call's span.
@@ -99,35 +118,36 @@ impl Checker<'_> {
         let mut wrong = Vec::new();
         // Each model worked out, with where it is written, to check.
         let mut checked = Vec::new();
+        let mut found = |e: &Expr, checked: &mut Vec<(Span, AiModel)>| {
+            let models = self.models_of(e, &consts, &mut providers);
+            let models = models.map_err(|why| wrong.push((e.span, why))).ok()?;
+            checked.extend(models.iter().map(|m| (e.span, m.clone())));
+            let mut models = models.into_iter();
+            let mut first = models.next()?;
+            first.then = models.collect();
+            Some(first)
+        };
         for item in &file.items {
             let ItemKind::Agent(a) = &item.kind else {
                 continue;
             };
             for m in &a.members {
-                if let AgentMember::Model(e) = m {
-                    match self.model_of(e, &consts, 0, &mut providers) {
-                        Some(model) => {
-                            checked.push((e.span, model.clone()));
-                            agents.insert(a.name.name.clone(), model);
-                        }
-                        None => wrong.push(e.span),
-                    }
+                if let AgentMember::Model(e) = m
+                    && let Some(model) = found(e, &mut checked)
+                {
+                    agents.insert(a.name.name.clone(), model);
                 }
             }
         }
         let mut calls = Asks { found: Vec::new() };
         walk_file(&mut calls, &mut file.clone());
         for (call, e) in calls.found {
-            match self.model_of(&e, &consts, 0, &mut providers) {
-                Some(model) => {
-                    checked.push((e.span, model.clone()));
-                    asks.insert(call, model);
-                }
-                None => wrong.push(e.span),
+            if let Some(model) = found(&e, &mut checked) {
+                asks.insert(call, model);
             }
         }
-        for span in wrong {
-            self.error(span, NOT_KNOWN);
+        for (span, why) in wrong {
+            self.error(span, why);
         }
         for (span, model) in &checked {
             if let Some(why) = refused(model) {
@@ -165,6 +185,27 @@ impl Checker<'_> {
             }
         }
         consts
+    }
+
+    /// The models `e` gives, in the order they are tried: one, or each of
+    /// a list of them (spec 8.4, *Fallbacks*); or why they can't be
+    /// worked out now.
+    fn models_of(
+        &self,
+        e: &Expr,
+        consts: &HashMap<DefId, Expr>,
+        providers: &mut HashMap<(u32, u32), Expr>,
+    ) -> Result<Vec<AiModel>, &'static str> {
+        let one = |e: &Expr, providers: &mut HashMap<(u32, u32), Expr>| {
+            self.model_of(e, consts, 0, providers)
+        };
+        match &e.kind {
+            ExprKind::List(items) if items.is_empty() => Err(EMPTY),
+            ExprKind::List(items) => (items.iter())
+                .map(|m| one(m, providers).ok_or(NOT_KNOWN))
+                .collect(),
+            _ => one(e, providers).map(|m| vec![m]).ok_or(NOT_KNOWN),
+        }
     }
 
     /// The model `e` gives, if it can be worked out now.
@@ -255,6 +296,16 @@ impl Checker<'_> {
 }
 
 impl Checker<'_> {
+    /// An agent's `model`, or a call's `model:`: a `Model`, or a list
+    /// literal of them, tried in turn (spec 8.4, *Fallbacks*).
+    pub(crate) fn check_model(&mut self, e: &Expr) {
+        let model = self.builtin_ty("Model");
+        match &e.kind {
+            ExprKind::List(_) => self.check_expect(e, &crate::ty::Ty::List(Box::new(model))),
+            _ => self.check_expect(e, &model),
+        };
+    }
+
     /// The provider `e` gives, as the constructor call it comes to: one
     /// written with plain values, a `const` set to one, or a function
     /// with no parameters that gives one (spec 8.4).

@@ -148,8 +148,8 @@ impl<'a> Lowerer<'a> {
         (stmts, value)
     }
 
-    /// The runtime's call of `model` with the text in local `prompt`, for
-    /// an answer of type `ok`.
+    /// The runtime's call of `model`, and of each model tried after it,
+    /// with the text in local `prompt`, for an answer of type `ok`.
     pub(crate) fn model_call(
         &mut self,
         ok: &Ty,
@@ -161,12 +161,14 @@ impl<'a> Lowerer<'a> {
         let Some((schema, wrapped)) = kavach_driver::ask_schema(self.c, ok) else {
             return Err(self.unsupported(kavach_driver::NO_SCHEMA, span));
         };
-        // The model's settings, as the interpreter sends them.
-        let Tree::Object(mut fields) = kavach_driver::model_settings(model) else {
-            unreachable!("settings are an object");
-        };
-        fields.push(("schema".into(), schema));
-        fields.push(("wrapped".into(), Tree::Bool(wrapped)));
+        // Each model's settings, in the order they are tried (spec 8.4,
+        // *Fallbacks*), as the interpreter sends them.
+        let models = model.in_turn().map(kavach_driver::model_settings);
+        let fields = vec![
+            ("models".into(), Tree::Array(models.collect())),
+            ("schema".into(), schema),
+            ("wrapped".into(), Tree::Bool(wrapped)),
+        ];
         let request = json::write(&Tree::Object(fields), 0);
         // The runtime reads it back when `ask` runs; one it couldn't read
         // would go out with no model and no shape, so it stops the build
@@ -177,15 +179,14 @@ impl<'a> Lowerer<'a> {
         }
         let line = self.line(span);
         let text = self.str_type();
-        // The prompt, and the function the runtime translates with: the
+        // The prompt, and the functions the runtime translates with: each
         // model's provider through `std.ai`'s `wire` (decision 0140).
-        let wire = self.provider_wire(model, span)?;
-        let pair_ty = self.tuple_type(vec![text, wire.ty]);
-        let pair = expr(
-            K::Tuple(vec![self.local_expr(prompt, line), wire]),
-            pair_ty,
-            line,
-        );
+        let mut given = vec![self.local_expr(prompt, line)];
+        for m in model.in_turn() {
+            given.push(self.provider_wire(m, span)?);
+        }
+        let pair_ty = self.tuple_type(given.iter().map(|e| e.ty).collect());
+        let pair = expr(K::Tuple(given), pair_ty, line);
         let request = expr(K::Str(request), text, line);
         let templates = self.templates(ret, line, span)?;
         Ok(rt(RtOp::AiAsk, vec![pair, request, templates], ret, line))

@@ -66,15 +66,14 @@ impl<'a> Lowerer<'a> {
         // An `ask`: the most it can take, for a `tokens` limit (spec 8.3).
         if let Called::Ask { model, .. } = &called {
             let name = self.c.resolution.defs[agent].name.clone();
+            // The largest of a list's models (spec 8.4, *Fallbacks*).
             let most = match model {
-                Some(m) => m.max_tokens,
+                Some(m) => m.most_tokens(kavach_driver::DEFAULT_MAX_TOKENS),
                 None => {
-                    self.c
-                        .ask_model((u32::MAX, u32::MAX), Some(&name))
-                        .max_tokens
+                    let m = self.c.ask_model((u32::MAX, u32::MAX), Some(&name));
+                    m.most_tokens(kavach_driver::DEFAULT_MAX_TOKENS)
                 }
             };
-            let most = most.unwrap_or(kavach_driver::DEFAULT_MAX_TOKENS);
             let given = vec![self.local_expr(check, line), int(most as usize, line)];
             stmts.push(Stmt::Expr(rt(RtOp::AgentBound, given, Type::Unit, line)));
         }

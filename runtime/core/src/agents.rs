@@ -95,18 +95,25 @@ pub fn set_audit_sink(sink: AuditSink) {
 }
 
 /// The model that answered an `Ai.ask`, and the tokens it took (`None`
-/// on a dry run, which asks no one).
+/// on a dry run, which asks no one); before it, each model the call
+/// moved on from, with the error's variant (spec 8.4, *Fallbacks*).
 #[derive(Clone, Debug, Default)]
 pub struct Asked {
     pub model: String,
     pub tokens: Option<(u64, u64)>,
+    pub moved: Vec<(String, String)>,
 }
 
 impl Asked {
-    fn line(&self) -> String {
-        match self.tokens {
-            Some((i, o)) => format!("{}, tokens: {i} in, {o} out", self.model),
-            None => format!("{} (dry run: no tokens)", self.model),
+    /// Its `model:` lines in the audit log (spec 8.6).
+    fn lines(&self) -> String {
+        let mut out = String::new();
+        for (model, why) in &self.moved {
+            out.push_str(&format!("  model: {model}, moved on: {why}\n"));
+        }
+        out + &match self.tokens {
+            Some((i, o)) => format!("  model: {}, tokens: {i} in, {o} out\n", self.model),
+            None => format!("  model: {} (dry run: no tokens)\n", self.model),
         }
     }
 }

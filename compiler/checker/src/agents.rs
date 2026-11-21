@@ -161,10 +161,7 @@ impl Checker<'_> {
                     });
                 }
                 AgentMember::Model(e) => {
-                    let model = self.builtin_ty("Model");
-                    self.with_ctx("model", Ty::Unit, None, None, |c| {
-                        c.check_expect(e, &model);
-                    });
+                    self.with_ctx("model", Ty::Unit, None, None, |c| c.check_model(e));
                 }
                 AgentMember::Settings(e) => {
                     let settings = self.builtin_ty("AgentSettings");

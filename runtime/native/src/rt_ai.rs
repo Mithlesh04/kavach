@@ -31,8 +31,9 @@ pub(crate) fn take_last() -> Option<(kavach_runtime_core::agents::Asked, i64)> {
 
 /// Native code's side of an `ask`.
 struct Asking {
-    /// The `fn(String) -> String` closure `wire` gave.
-    wire: i64,
+    /// The `fn(String) -> String` closure `wire` gave for each model's
+    /// provider, in the order the models are tried.
+    wires: Vec<i64>,
     ty: Type,
     templates: i64,
     line: i32,
@@ -45,8 +46,9 @@ impl ai::Side for Asking {
     type Value = u64;
     type Stop = Cancelled;
 
-    fn translate(&mut self, input: &str) -> Result<String, Cancelled> {
-        let f = slots(self.wire)[0] as usize;
+    fn translate(&mut self, model: usize, input: &str) -> Result<String, Cancelled> {
+        let wire = self.wires[model];
+        let f = slots(wire)[0] as usize;
         // SAFETY: slot 0 of a closure is its function's address; the code
         // generator compiled `wire`'s lambda as `fn(closure, String) ->
         // String`, borrowing the closure and taking the text, and the code
@@ -54,7 +56,7 @@ impl ai::Side for Asking {
         #[allow(unsafe_code)]
         let f: extern "C-unwind" fn(i64, i64) -> i64 = unsafe { std::mem::transmute(f) };
         let given = new_text(input, text_type());
-        let out = f(self.wire, given);
+        let out = f(wire, given);
         let text = str_of(out);
         release(out);
         Ok(text)
@@ -73,15 +75,16 @@ impl ai::Side for Asking {
     }
 }
 
-/// `ask` with `pair` (owned: the prompt's text, and the closure `wire`
-/// gave), the settings the compiler described in `request` (owned text:
-/// the model's, the schema, and whether the answer is wrapped in
-/// `{"value": …}`) and the decoding templates of `T` (owned). Gives a `T`
-/// of type `code`, or 0 with an `AiError` set.
+/// `ask` with `pair` (owned: the prompt's text, then the closure `wire`
+/// gave for each model), the settings the compiler described in `request`
+/// (owned text: each model's, in the order they are tried, the schema,
+/// and whether the answer is wrapped in `{"value": …}`) and the decoding
+/// templates of `T` (owned). Gives a `T` of type `code`, or 0 with an
+/// `AiError` set.
 pub fn ask(pair: i64, request: i64, templates: i64, code: i64, line: i32) -> i64 {
     crate::rt_tasks::turn();
     crate::rt_tasks::refuse_if_held(line);
-    let [prompt, wire] = [slots(pair)[0] as i64, slots(pair)[1] as i64];
+    let prompt = slots(pair)[0] as i64;
     let prompt_text = with_str(prompt, |s| s.to_string());
     let described = with_str(request, |s| json::parse(s, &json::Limits::default()));
     release(request);
@@ -90,33 +93,47 @@ pub fn ask(pair: i64, request: i64, templates: i64, code: i64, line: i32) -> i64
         Tree::Object(fs) => fs.iter().find(|(k, _)| k == name).map(|(_, v)| v.clone()),
         _ => None,
     };
-    let model = match field("model") {
-        Some(Tree::Text(m)) => m,
-        _ => String::new(),
+    let models = match field("models") {
+        Some(Tree::Array(ms)) => ms,
+        _ => Vec::new(),
+    };
+    let name = |i: usize| match models.get(i) {
+        Some(Tree::Object(fs)) => {
+            fs.iter()
+                .find(|(k, _)| k == "model")
+                .and_then(|(_, v)| match v {
+                    Tree::Text(m) => Some(m.clone()),
+                    _ => None,
+                })
+        }
+        _ => None,
     };
     let wrapped = matches!(field("wrapped"), Some(Tree::Bool(true)));
     let schema = field("schema").unwrap_or(Tree::Null);
+    let wires = (1..=models.len()).map(|i| slots(pair)[i] as i64).collect();
     let mut side = Asking {
-        wire,
+        wires,
         ty: type_of(code),
         templates,
         line,
     };
-    let asked = ai::ask(&mut side, &settings, &prompt_text, &schema, wrapped);
-    // The pair holds the closure: it goes once the asking is done.
+    let asked = ai::ask(&mut side, &models, &prompt_text, &schema, wrapped);
+    // The pair holds the closures: they go once the asking is done.
     release(pair);
     let Ok(asked) = asked else {
         release(templates);
         return 0;
     };
-    if asked.read {
-        let shown = kavach_runtime_core::agents::Asked {
-            model,
-            tokens: Some((asked.tokens.input, asked.tokens.output)),
-        };
-        let took = i64::try_from(asked.tokens.input + asked.tokens.output).unwrap_or(i64::MAX);
-        LAST.with(|l| *l.borrow_mut() = Some((shown, took)));
-    }
+    // The model of the last try, and each one moved on from (spec 8.6).
+    let shown = kavach_runtime_core::agents::Asked {
+        model: name(asked.used).unwrap_or_default(),
+        tokens: Some((asked.tokens.input, asked.tokens.output)),
+        moved: (asked.moved.iter())
+            .map(|(i, f)| (name(*i).unwrap_or_default(), f.variant()))
+            .collect(),
+    };
+    let took = i64::try_from(asked.tokens.input + asked.tokens.output).unwrap_or(i64::MAX);
+    LAST.with(|l| *l.borrow_mut() = Some((shown, took)));
     let result = match asked.result {
         Ok(slot) => slot as i64,
         Err(f) => {

@@ -6,6 +6,8 @@ use super::*;
 use std::io::{Read, Write};
 use std::net::TcpListener;
 
+mod fallbacks;
+
 /// A provider written in Rust, as `std.ai`'s `wire` answers: the request
 /// goes to `url` with the key in `x-api-key` (or none with `no_key`); a
 /// 200 is an answer, its body the answer's text; other statuses are the
@@ -21,8 +23,8 @@ impl Side for Fake {
     type Value = Tree;
     type Stop = ();
 
-    fn translate(&mut self, input: &str) -> Result<String, ()> {
-        Ok(self.answer(input))
+    fn translate(&mut self, model: usize, input: &str) -> Result<String, ()> {
+        Ok(self.answer(model, input))
     }
 
     fn wait_until(&mut self, until: Instant) -> Result<(), ()> {
@@ -42,7 +44,7 @@ impl Side for Fake {
 }
 
 impl Fake {
-    fn answer(&mut self, input: &str) -> String {
+    fn answer(&mut self, model: usize, input: &str) -> String {
         let tree = json::parse(input, &Limits::default()).unwrap();
         let op = wire::field(&tree, "op").cloned();
         if op == Some(Tree::Text("request".into())) {
@@ -51,7 +53,7 @@ impl Fake {
                 false => r#"{"InHeader":{"name":"x-api-key"}}"#.to_string(),
             };
             return format!(
-                r#"{{"url":"{}/v1/messages","headers":{{"content-type":"application/json"}},"body":"{{}}","auth":{auth},"key_variable":"TEST_FAKE_AI_KEY"}}"#,
+                r#"{{"url":"{}/v1/messages","headers":{{"content-type":"application/json","x-model":"{model}"}},"body":"{{}}","auth":{auth},"key_variable":"TEST_FAKE_AI_KEY"}}"#,
                 self.url
             );
         }
@@ -61,6 +63,9 @@ impl Fake {
         let Some(Tree::Text(body)) = wire::field(&tree, "body").cloned() else {
             panic!("no body in {input}");
         };
+        if status == 451 {
+            return r#"{"Refused":{"reason":"no","usage":{}}}"#.into();
+        }
         if status == 200 {
             let text = json::write(&Tree::Text(body), 0);
             return format!(
@@ -124,7 +129,7 @@ fn ask_fake(fake: &mut Fake, retries: i64) -> Asked<Tree> {
         vec![("TEST_FAKE_AI_KEY".into(), "sk-t".into())],
     );
     let schema = Tree::Object(vec![("type".into(), Tree::Text("object".into()))]);
-    let Ok(asked) = ask(fake, &settings(retries), "Refund?", &schema, false) else {
+    let Ok(asked) = ask(fake, &[settings(retries)], "Refund?", &schema, false) else {
         panic!("stopped");
     };
     asked
@@ -225,7 +230,7 @@ fn a_provider_without_a_key_reads_no_variable() {
     if let Tree::Object(fs) = &mut s {
         fs.retain(|(k, _)| k != "api_key_env");
     }
-    let Ok(asked) = ask(&mut f, &s, "?", &schema, false) else {
+    let Ok(asked) = ask(&mut f, &[s], "?", &schema, false) else {
         panic!("stopped");
     };
     let sent = server.join().unwrap();
@@ -244,7 +249,7 @@ fn a_missing_key_sends_nothing() {
             Tree::Text("TEST_NOT_SET_AI_KEY".into()),
         ));
     }
-    let Ok(asked) = ask(&mut f, &s, "?", &Tree::Object(Vec::new()), false) else {
+    let Ok(asked) = ask(&mut f, &[s], "?", &Tree::Object(Vec::new()), false) else {
         panic!("stopped");
     };
     assert_eq!(

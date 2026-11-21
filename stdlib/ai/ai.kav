@@ -33,7 +33,8 @@ pub type AiError = NoKey(variable: String) |
 pub type Effort = Low | Medium | High | XHigh | Max
 
 /// Which model an `ask` uses, and with what settings (spec 8.4, decisions
-/// 0056 and 0059): an agent's `model`, or a call's `model:`.
+/// 0056 and 0059): an agent's `model`, or a call's `model:`, alone or in a
+/// list of models tried in turn (spec 8.4, *Fallbacks*).
 pub type Model {
     /// the provider's name for the model, such as "claude-haiku-5-5"
     pub name: String

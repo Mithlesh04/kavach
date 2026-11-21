@@ -82,9 +82,10 @@ pub trait Side {
     type Value;
     /// Why the program stopped waiting (a panic, or a task cancelled).
     type Stop;
-    /// One call of the provider's `wire` function (`std.ai`): JSON text
-    /// in, JSON text out.
-    fn translate(&mut self, input: &str) -> Result<String, Self::Stop>;
+    /// One call of the `wire` function (`std.ai`) of the provider of
+    /// model `model`, counted in the order the models are tried: JSON
+    /// text in, JSON text out.
+    fn translate(&mut self, model: usize, input: &str) -> Result<String, Self::Stop>;
     /// Waits until `until`, letting other tasks run.
     fn wait_until(&mut self, until: Instant) -> Result<(), Self::Stop>;
     /// `answer` as a `T`, when it fits.
@@ -92,27 +93,44 @@ pub trait Side {
 }
 
 /// What an `ask` gave: its value or error, the tokens every try took,
-/// and whether any reply was read.
+/// whether any reply was read, the model of its last try, and each model
+/// it moved on from, with why (spec 8.4, *Fallbacks*). Models are counted
+/// in the order they are tried.
 pub struct Asked<V> {
     pub result: Result<V, Failure>,
     pub tokens: Tokens,
     pub read: bool,
+    pub used: usize,
+    pub moved: Vec<(usize, Failure)>,
 }
 
 /// Asks for a `T` with `prompt`, its JSON Schema `schema` (`wrapped`: the
-/// answer is `{"value": …}`), and a model's `settings`.
+/// answer is `{"value": …}`), and the settings of each model, in the
+/// order they are tried (spec 8.4, *Fallbacks*).
 pub fn ask<S: Side>(
     side: &mut S,
-    settings: &Tree,
+    models: &[Tree],
     prompt: &str,
     schema: &Tree,
     wrapped: bool,
 ) -> Result<Asked<S::Value>, S::Stop> {
-    let req = Request::new(settings);
+    let reqs: Vec<Request> = models.iter().map(Request::new).collect();
     let mut asked = Asked {
-        result: Err(Failure::Failed(0, String::new())),
+        result: Err(Failure::Failed(
+            0,
+            "an `ask` with no model (spec 8.4)".into(),
+        )),
         tokens: Tokens::default(),
         read: false,
+        used: 0,
+        moved: Vec::new(),
+    };
+    if reqs.is_empty() {
+        return Ok(asked);
+    }
+    let mut turns = Turns {
+        ready: vec![Instant::now(); reqs.len()],
+        out: vec![false; reqs.len()],
     };
     let mut last = String::new();
     for attempt in 0..=RETRIES {
@@ -122,7 +140,12 @@ pub fn ask<S: Side>(
             true => prompt.to_string(),
             false => format!("{prompt}\n\n{}", compact::instruction(schema)),
         };
-        let reply = match one_try(side, &req, &text, schema, strict)? {
+        let tried = Try {
+            prompt: &text,
+            schema,
+            strict,
+        };
+        let reply = match tried.run(side, &reqs, &mut turns, &mut asked)? {
             Ok(r) => r,
             Err(f) => {
                 asked.result = Err(f);
@@ -137,7 +160,7 @@ pub fn ask<S: Side>(
         let answer = match reply {
             wire::Reply::Answer(text, _) => text,
             other => {
-                asked.result = Err(other.failure(&req));
+                asked.result = Err(other.failure(&reqs[asked.used]));
                 return Ok(asked);
             }
         };
@@ -159,35 +182,111 @@ pub fn ask<S: Side>(
     Ok(asked)
 }
 
-/// The provider's request for one attempt, sent until it is answered or
-/// the trouble is one a wait can't fix; with the reply as the provider
-/// reads it.
-fn one_try<S: Side>(
-    side: &mut S,
-    req: &Request,
-    prompt: &str,
-    schema: &Tree,
+/// Where each model of an `ask` stands, from one attempt to the next:
+/// when it may be sent again, and whether it is left out for the rest of
+/// the call (spec 8.4, *Fallbacks*).
+struct Turns {
+    ready: Vec<Instant>,
+    out: Vec<bool>,
+}
+
+/// One attempt of an `ask`: its prompt, and whether the answer is held to
+/// the schema.
+struct Try<'t> {
+    prompt: &'t str,
+    schema: &'t Tree,
     strict: bool,
-) -> Result<Result<wire::Reply, Failure>, S::Stop> {
-    let input = |op: &str| -> Vec<(String, Tree)> {
+}
+
+impl Try<'_> {
+    /// The input of one call of a provider's `wire`.
+    fn input(&self, op: &str) -> Vec<(String, Tree)> {
         vec![
             ("op".into(), Tree::Text(op.into())),
-            ("prompt".into(), Tree::Text(prompt.into())),
-            ("schema".into(), schema.clone()),
-            ("strict".into(), Tree::Bool(strict)),
+            ("prompt".into(), Tree::Text(self.prompt.into())),
+            ("schema".into(), self.schema.clone()),
+            ("strict".into(), Tree::Bool(self.strict)),
         ]
-    };
-    let asked = json::write(&Tree::Object(input("request")), 0);
-    let call = match wire::Call::read(&side.translate(&asked)?) {
-        Ok(c) => c,
-        Err(f) => return Ok(Err(f)),
-    };
-    let sending = match send::Sending::new(call, req) {
-        Ok(s) => s,
-        Err(f) => return Ok(Err(f)),
-    };
-    let mut k = 0;
-    loop {
+    }
+
+    /// The attempt, sent to the models in turn until one gives a reply
+    /// that ends it: an answer, or trouble that doesn't move on. A busy
+    /// model hands the call to the next one at once; the waits start only
+    /// when every model left is busy. When every model is left out, the
+    /// last try's trouble.
+    fn run<S: Side>(
+        &self,
+        side: &mut S,
+        reqs: &[Request],
+        turns: &mut Turns,
+        asked: &mut Asked<S::Value>,
+    ) -> Result<Result<wire::Reply, Failure>, S::Stop> {
+        let request = json::write(&Tree::Object(self.input("request")), 0);
+        let mut sending: Vec<Option<send::Sending>> = reqs.iter().map(|_| None).collect();
+        // Each model's busy replies in this attempt, for its waits.
+        let mut tries = vec![0usize; reqs.len()];
+        // The last try that didn't end the attempt: its model, and why.
+        let mut previous: Option<(usize, Failure)> = None;
+        let mut now = Instant::now();
+        loop {
+            let left: Vec<usize> = (0..reqs.len()).filter(|&i| !turns.out[i]).collect();
+            let Some(&i) = left.iter().find(|&&i| turns.ready[i] <= now) else {
+                match left.iter().map(|&i| turns.ready[i]).min() {
+                    Some(t) => {
+                        side.wait_until(t)?;
+                        now = t.max(Instant::now());
+                        continue;
+                    }
+                    None => {
+                        let why = previous.map(|(_, f)| f);
+                        return Ok(Err(why.unwrap_or(Failure::Failed(0, String::new()))));
+                    }
+                }
+            };
+            if let Some((j, why)) = previous.take()
+                && j != i
+            {
+                asked.moved.push((j, why));
+            }
+            asked.used = i;
+            if sending[i].is_none() {
+                let call = match wire::Call::read(&side.translate(i, &request)?) {
+                    Ok(c) => c,
+                    Err(f) => return Ok(Err(f)),
+                };
+                match send::Sending::new(call, &reqs[i]) {
+                    Ok(s) => sending[i] = Some(s),
+                    Err(f) => return Ok(Err(f)),
+                }
+            }
+            let Some(s) = &sending[i] else {
+                unreachable!("the request was just made");
+            };
+            let reply = match self.send(side, i, s)? {
+                Ok(r) => r,
+                Err(f) => return Ok(Err(f)),
+            };
+            now = Instant::now();
+            match reply.wait(tries[i], &reqs[i]) {
+                Some(wait) => {
+                    turns.ready[i] = now + wait;
+                    tries[i] += 1;
+                }
+                None if reply.moves_on() => turns.out[i] = true,
+                None => return Ok(Ok(reply)),
+            }
+            previous = Some((i, reply.failure(&reqs[i])));
+        }
+    }
+
+    /// Sends model `i`'s request once, and reads the reply with its
+    /// provider.
+    fn send<S: Side>(
+        &self,
+        side: &mut S,
+        i: usize,
+        sending: &send::Sending,
+    ) -> Result<Result<wire::Reply, Failure>, S::Stop> {
         let pending = sending.start();
         let mut n = 0;
         let sent = loop {
@@ -197,26 +296,18 @@ fn one_try<S: Side>(
             side.wait_until(Instant::now() + crate::net::backoff(n))?;
             n += 1;
         };
-        let reply = match sent {
+        Ok(match sent {
             send::Sent::Reply(status, headers, body) => {
-                let mut fields = input("read");
+                let mut fields = self.input("read");
                 fields.push(("status".into(), Tree::Int(status)));
                 let headers = headers.into_iter().map(|(k, v)| (k, Tree::Text(v)));
                 fields.push(("headers".into(), Tree::Object(headers.collect())));
                 fields.push(("body".into(), Tree::Text(body)));
-                let read = side.translate(&json::write(&Tree::Object(fields), 0))?;
-                match wire::Reply::read(&read) {
-                    Ok(r) => r,
-                    Err(f) => return Ok(Err(f)),
-                }
+                let read = side.translate(i, &json::write(&Tree::Object(fields), 0))?;
+                wire::Reply::read(&read)
             }
-            send::Sent::Failed(kind, message) => wire::Reply::Problem(kind, message, None),
-        };
-        match reply.wait(k, req) {
-            Some(wait) => side.wait_until(Instant::now() + wait)?,
-            None => return Ok(Ok(reply)),
-        }
-        k += 1;
+            send::Sent::Failed(kind, message) => Ok(wire::Reply::Problem(kind, message, None)),
+        })
     }
 }
 

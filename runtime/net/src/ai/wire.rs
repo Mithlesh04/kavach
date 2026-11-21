@@ -31,6 +31,15 @@ pub enum Failure {
 }
 
 impl Failure {
+    /// The variant's name, as the audit log shows a model an `ask` moved
+    /// on from (spec 8.6): `RateLimited`.
+    pub fn variant(&self) -> String {
+        match self.tree() {
+            Tree::Object(mut fields) if !fields.is_empty() => fields.swap_remove(0).0,
+            _ => String::new(),
+        }
+    }
+
     /// The `AiError` value as JSON (spec 2.12): `{"Variant": {fields}}`.
     pub fn tree(&self) -> Tree {
         let text = |s: &str| Tree::Text(s.to_string());
@@ -251,23 +260,45 @@ impl Reply {
         Some(hint.map_or(step, |h| h.min(req.timeout).max(step)))
     }
 
+    /// Whether the call goes on to the next model after this reply,
+    /// when `model` is a list: never after a refusal, so a fallback
+    /// can't get round a safety filter (spec 8.4, *Fallbacks*).
+    pub(crate) fn moves_on(&self) -> bool {
+        matches!(
+            self,
+            Reply::Problem(
+                Kind::RateLimited
+                    | Kind::QuotaUsedUp
+                    | Kind::Overloaded
+                    | Kind::BadKey
+                    | Kind::NotFound
+                    | Kind::TimedOut
+                    | Kind::Network,
+                ..
+            )
+        )
+    }
+
     /// The `AiError` a reply that is not an answer fails the `ask` with.
-    pub(crate) fn failure(self, req: &Request) -> Failure {
+    pub(crate) fn failure(&self, req: &Request) -> Failure {
         match self {
             Reply::Answer(..) => Failure::Failed(200, String::new()),
-            Reply::Refused(reason, _) => Failure::Refused(reason),
+            Reply::Refused(reason, _) => Failure::Refused(reason.clone()),
             Reply::CutOff(_) => Failure::CutOff(req.max_tokens),
-            Reply::Problem(kind, m, _) => match kind {
-                Kind::RateLimited => Failure::RateLimited(m),
-                Kind::QuotaUsedUp => Failure::QuotaUsedUp(m),
-                Kind::Overloaded => Failure::Overloaded(m),
-                Kind::BadKey => Failure::BadKey(m),
-                Kind::NotFound => Failure::NotFound(req.model.clone()),
-                Kind::BadRequest => Failure::BadRequest(m),
-                Kind::TimedOut => Failure::TimedOut(req.timeout.as_millis() as u64),
-                Kind::Network => Failure::Network(m),
-                Kind::Other(status) => Failure::Failed(status, m),
-            },
+            Reply::Problem(kind, m, _) => {
+                let m = m.clone();
+                match kind {
+                    Kind::RateLimited => Failure::RateLimited(m),
+                    Kind::QuotaUsedUp => Failure::QuotaUsedUp(m),
+                    Kind::Overloaded => Failure::Overloaded(m),
+                    Kind::BadKey => Failure::BadKey(m),
+                    Kind::NotFound => Failure::NotFound(req.model.clone()),
+                    Kind::BadRequest => Failure::BadRequest(m),
+                    Kind::TimedOut => Failure::TimedOut(req.timeout.as_millis() as u64),
+                    Kind::Network => Failure::Network(m),
+                    Kind::Other(status) => Failure::Failed(*status, m),
+                }
+            }
         }
     }
 }

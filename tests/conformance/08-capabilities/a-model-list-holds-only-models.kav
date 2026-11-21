@@ -1,0 +1,16 @@
+// Rule: Each item of a list of models is a `Model`; anything else is a compile error.
+// Spec: 8.4
+// expect compile error
+
+type Verdict {
+    ok: Bool
+}
+
+fn careful() -> Model {
+    Model(name: "claude-opus-5-5")
+}
+
+fn main() {
+    const v = ask<Verdict>("Fine?", model: [careful(), "claude-haiku-5-5"]) catch _e => Verdict(ok: false)    // error: expected Model, found String
+    print(v.ok)
+}

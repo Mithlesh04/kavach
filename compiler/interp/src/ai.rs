@@ -16,7 +16,7 @@ use kavach_ast::Expr;
 use kavach_checker::Ty;
 use kavach_runtime_core::agents::{Asked, largest_ask};
 use kavach_runtime_core::json::{self, Tree};
-use kavach_runtime_net::ai::{self, Tokens};
+use kavach_runtime_net::ai;
 use std::time::Instant;
 
 impl<'a> Interp<'a> {
@@ -52,9 +52,8 @@ impl<'a> Interp<'a> {
         let mut check = None;
         if let Some(agent) = &agent {
             let args = vec![("prompt".to_string(), self.str_value(&prompt))];
-            let max_tokens = model
-                .max_tokens
-                .unwrap_or(kavach_driver::DEFAULT_MAX_TOKENS);
+            // The largest a model of the list may give (spec 8.4).
+            let max_tokens = model.most_tokens(kavach_driver::DEFAULT_MAX_TOKENS);
             let max_tokens = i64::from(max_tokens);
             let bound = largest_ask(prompt.len(), max_tokens);
             let c = self.check_call(agent, ("Ai.ask", &shown, bound), &args, span)?;
@@ -87,30 +86,25 @@ impl<'a> Interp<'a> {
                 kavach_ast::ExprKind::Call { generics, .. } => generics.first(),
                 _ => None,
             };
-            // Which model a real run would use, at no cost (spec 8.6).
+            // Which model a real run would use first, at no cost (spec 8.6).
             dry = Some(model.name.clone());
             Ok(self.simulate(written, &shown))
         } else {
-            let (result, tokens) = self.ask_model(&t, &prompt, &model, span);
-            used = Some((model.name, tokens));
+            let (result, asked) = self.ask_model(&t, &prompt, &model, span);
+            used = Some(asked);
             result
         };
         if let (Some(agent), Some(mut c)) = (&agent, check) {
             if self.dry_run {
                 c.notes.push("dry run".into());
             }
-            if let Some((_, t)) = &used {
-                c.took(i64::try_from(t.input + t.output).unwrap_or(i64::MAX));
+            if let Some((i, o)) = used.as_ref().and_then(|a| a.tokens) {
+                c.took(i64::try_from(i + o).unwrap_or(i64::MAX));
             }
-            c.model = used
-                .map(|(model, t)| Asked {
-                    model,
-                    tokens: Some((t.input, t.output)),
-                })
-                .or(dry.map(|model| Asked {
-                    model,
-                    tokens: None,
-                }));
+            c.model = used.or(dry.map(|model| Asked {
+                model,
+                ..Asked::default()
+            }));
             let mut guard = agent.guard.borrow_mut();
             let shown_result = match &result {
                 Ok(answer) => {
@@ -130,43 +124,57 @@ impl<'a> Interp<'a> {
     }
 
     /// The model call itself, through the runtime's driver
-    /// (`kavach_runtime_net::ai::ask`), with the model's provider written
-    /// in Kavach doing the translating (decision 0140); with the tokens
-    /// every try took.
+    /// (`kavach_runtime_net::ai::ask`), with each model's provider written
+    /// in Kavach doing the translating (decision 0140); with the model of
+    /// the last try, the tokens every try took, and the models moved on
+    /// from (spec 8.4, *Fallbacks*), for the audit log.
     fn ask_model(
         &mut self,
         t: &Ty,
         prompt: &str,
         model: &kavach_driver::AiModel,
         span: kavach_ast::Span,
-    ) -> (Eval<'a>, Tokens) {
+    ) -> (Eval<'a>, Asked) {
+        let names: Vec<String> = model.in_turn().map(|m| m.name.clone()).collect();
+        let mut shown = Asked {
+            model: model.name.clone(),
+            tokens: Some((0, 0)),
+            moved: Vec::new(),
+        };
         // Built where native code builds it (`kavach_driver::ask_schema`).
         let Some((schema, wrapped)) = kavach_driver::ask_schema(self.c, t) else {
-            return (
-                Err(self.panic(kavach_driver::NO_SCHEMA, span)),
-                Tokens::default(),
-            );
+            return (Err(self.panic(kavach_driver::NO_SCHEMA, span)), shown);
         };
-        let settings = kavach_driver::model_settings(model);
-        let wire = match self.provider_wire(model, &settings, span) {
-            Ok(w) => w,
-            Err(e) => return (Err(e), Tokens::default()),
-        };
+        let mut settings = Vec::new();
+        let mut wires = Vec::new();
+        for m in model.in_turn() {
+            let s = kavach_driver::model_settings(m);
+            match self.provider_wire(m, &s, span) {
+                Ok(w) => wires.push(w),
+                Err(e) => return (Err(e), shown),
+            }
+            settings.push(s);
+        }
         let mut side = Asking {
             i: self,
-            wire,
+            wires,
             t: t.clone(),
             span,
         };
         let asked = match ai::ask(&mut side, &settings, prompt, &schema, wrapped) {
             Ok(a) => a,
-            Err(stop) => return (Err(stop), Tokens::default()),
+            Err(stop) => return (Err(stop), shown),
         };
+        shown.model = names[asked.used].clone();
+        shown.tokens = Some((asked.tokens.input, asked.tokens.output));
+        shown.moved = (asked.moved.iter())
+            .map(|(i, f)| (names[*i].clone(), f.variant()))
+            .collect();
         let result = match asked.result {
             Ok(v) => Ok(v),
             Err(f) => Err(self.ai_error(&f.tree(), span)),
         };
-        (result, asked.tokens)
+        (result, shown)
     }
 
     /// The function `std.ai`'s `wire` gives for `model`'s provider: what
@@ -208,11 +216,11 @@ impl<'a> Interp<'a> {
     }
 }
 
-/// The interpreter's side of an `ask`: its provider's `wire` function,
-/// and the type its answer must have.
+/// The interpreter's side of an `ask`: the `wire` function of each
+/// model's provider, and the type its answer must have.
 struct Asking<'i, 'a> {
     i: &'i mut Interp<'a>,
-    wire: Value<'a>,
+    wires: Vec<Value<'a>>,
     t: Ty,
     span: kavach_ast::Span,
 }
@@ -221,14 +229,13 @@ impl<'a> ai::Side for Asking<'_, 'a> {
     type Value = Value<'a>;
     type Stop = Flow<'a>;
 
-    fn translate(&mut self, input: &str) -> Result<String, Flow<'a>> {
+    fn translate(&mut self, model: usize, input: &str) -> Result<String, Flow<'a>> {
         let arg = self.i.str_value(input);
-        Ok(
-            match self.i.call_value(self.wire.clone(), vec![arg], self.span)? {
-                Value::Str(s) => s.to_string(),
-                _ => "null".into(),
-            },
-        )
+        let wire = self.wires[model].clone();
+        Ok(match self.i.call_value(wire, vec![arg], self.span)? {
+            Value::Str(s) => s.to_string(),
+            _ => "null".into(),
+        })
     }
 
     fn wait_until(&mut self, until: Instant) -> Result<(), Flow<'a>> {

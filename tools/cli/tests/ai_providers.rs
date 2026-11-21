@@ -100,6 +100,12 @@ fn main() {
 /// Runs `program`, the interpreter's way or as native code, with the
 /// fake server's address in `KAVACH_AI_URL` and a key in `key_variable`.
 fn run(program: &str, url: &str, key_variable: &str, native: bool) -> String {
+    run_with(program, url, &[(key_variable, "sk-fake")], native).0
+}
+
+/// `run` with each of `keys` set; with the audit log `audit.log` beside
+/// the program, if it wrote one.
+fn run_with(program: &str, url: &str, keys: &[(&str, &str)], native: bool) -> (String, String) {
     use std::sync::atomic::{AtomicU32, Ordering};
     static NEXT: AtomicU32 = AtomicU32::new(0);
     let n = NEXT.fetch_add(1, Ordering::Relaxed);
@@ -112,15 +118,18 @@ fn run(program: &str, url: &str, key_variable: &str, native: bool) -> String {
     if native {
         cmd.arg("--native").env("KAVACH_CHECK_LEAKS", "1");
     }
-    let out = cmd
-        .arg(&file)
+    cmd.arg(&file)
         .env_remove("ANTHROPIC_API_KEY")
-        .env("KAVACH_AI_URL", url)
-        .env(key_variable, "sk-fake")
-        .output()
-        .unwrap();
+        .env("KAVACH_AI_URL", url);
+    for (variable, key) in keys {
+        cmd.env(variable, key);
+    }
+    let out = cmd.output().unwrap();
+    let log = std::fs::read_to_string(dir.join("audit.log")).unwrap_or_default();
     std::fs::remove_dir_all(&dir).unwrap();
-    String::from_utf8_lossy(&out.stdout).into_owned() + &String::from_utf8_lossy(&out.stderr)
+    let printed =
+        String::from_utf8_lossy(&out.stdout).into_owned() + &String::from_utf8_lossy(&out.stderr);
+    (printed, log)
 }
 
 const MODES: [bool; 2] = [false, true];
@@ -284,4 +293,139 @@ fn a_programs_own_provider_translates_and_the_runtime_sends() {
         sent[0], sent[1],
         "native code sends what the interpreter sends"
     );
+}
+
+/// An agent asking with a list of models (spec 8.4, *Fallbacks*): two
+/// keys of one provider, then another model; and its audit log.
+const LISTED: &str = "type Yes {
+    ok: Bool
+}
+
+fn first() -> Model {
+    Model(name: \"claude-opus-5-5\", retries: 0)
+}
+
+fn second_key() -> Model {
+    Model(name: \"claude-opus-5-5\", retries: 0, api_key_env: \"SECOND_AI_KEY\")
+}
+
+agent Bot {
+    model [first(), second_key(), Model(name: \"claude-haiku-5-5\", retries: 0)]
+    settings AgentSettings(audit: Audit(file: \"audit.log\"))
+    can Ai
+    on check() -> Bool ! Error {
+        (try ask<Yes>(\"Fine?\")).ok
+    }
+}
+
+fn main() uses Ai {
+    const ok = Bot.start().check() catch e => {
+        print(`failed: {e}`)
+        return
+    }
+    print(ok)
+}
+";
+
+/// Runs `LISTED` with each of `replies` in turn; gives what it printed,
+/// its audit log, and the model and key of each request sent.
+fn listed(
+    replies: Vec<(&'static str, &'static str, String)>,
+    native: bool,
+) -> (String, String, Vec<(String, String)>) {
+    let (url, server) = fake_server(replies);
+    let keys = [("ANTHROPIC_API_KEY", "sk-one"), ("SECOND_AI_KEY", "sk-two")];
+    let (out, log) = run_with(LISTED, &url, &keys, native);
+    let found = |r: &str, at: &str, end: char| {
+        let rest = r.split_once(at).map_or("", |(_, rest)| rest);
+        rest.split(end).next().unwrap_or("").to_string()
+    };
+    let sent = (server.join().unwrap().iter())
+        .map(|r| (found(r, "\"model\":\"", '"'), found(r, "x-api-key: ", '\r')))
+        .collect();
+    (out, log, sent)
+}
+
+#[test]
+fn a_busy_model_hands_the_call_to_the_next_at_once() {
+    for native in MODES {
+        // A wait of 5 seconds asked for: the next model doesn't wait.
+        let busy = ("429 Too Many Requests", "retry-after: 5\r\n", String::new());
+        let started = Instant::now();
+        let (out, log, sent) = listed(vec![busy, answer(r#"{"ok":true}"#, "end_turn")], native);
+        assert_eq!(out, "true\n", "native: {native}");
+        assert!(
+            started.elapsed() < Duration::from_secs(4),
+            "native: {native}"
+        );
+        let opus = "claude-opus-5-5".to_string();
+        let want = [(opus.clone(), "sk-one".into()), (opus, "sk-two".into())];
+        assert_eq!(sent, want, "native: {native}");
+        assert!(
+            log.contains("  model: claude-opus-5-5, moved on: RateLimited\n  model: claude-opus-5-5, tokens: 60 in, 10 out\n"),
+            "native: {native}: {log}"
+        );
+    }
+}
+
+#[test]
+fn a_bad_key_moves_on_and_the_error_is_the_last_models() {
+    for native in MODES {
+        let replies = vec![
+            error("401 Unauthorized", "authentication_error", "bad key"),
+            error("402 Payment Required", "billing_error", "no credit"),
+            error("529 Overloaded", "overloaded_error", "busy"),
+        ];
+        let (out, log, sent) = listed(replies, native);
+        assert_eq!(
+            out, "failed: Overloaded(message: \"busy\")\n",
+            "native: {native}"
+        );
+        let keys: Vec<&str> = sent.iter().map(|(_, k)| k.as_str()).collect();
+        assert_eq!(keys, ["sk-one", "sk-two", "sk-one"], "native: {native}");
+        assert_eq!(sent[2].0, "claude-haiku-5-5", "native: {native}");
+        for line in [
+            "  model: claude-opus-5-5, moved on: BadKey\n",
+            "  model: claude-opus-5-5, moved on: QuotaUsedUp\n",
+            "  model: claude-haiku-5-5, tokens: 0 in, 0 out\n",
+        ] {
+            assert!(log.contains(line), "native: {native}: {log}");
+        }
+    }
+}
+
+#[test]
+fn a_refusal_or_a_bad_request_never_moves_on() {
+    let cases = [
+        (answer("", "refusal"), "failed: Refused(reason: none)\n"),
+        (
+            error("400 Bad Request", "invalid_request_error", "bad"),
+            "failed: BadRequest(message: \"bad\")\n",
+        ),
+    ];
+    for native in MODES {
+        for (reply, printed) in &cases {
+            // One reply: a call that moved on would find no server.
+            let (out, _, sent) = listed(vec![reply.clone()], native);
+            assert_eq!(&out, printed, "native: {native}");
+            assert_eq!(sent.len(), 1, "native: {native}");
+        }
+    }
+}
+
+#[test]
+fn a_limit_refuses_the_call_before_any_model() {
+    let program = LISTED.replace(
+        "    can Ai\n",
+        "    can Ai\n    limit Ai {\n        count <= 0 per day\n    }\n",
+    );
+    for native in MODES {
+        let (url, server) = fake_server(Vec::new());
+        let (out, _) = run_with(&program, &url, &[("ANTHROPIC_API_KEY", "sk-one")], native);
+        assert!(
+            out.starts_with("failed: Denied(reason: "),
+            "native: {native}: {out}"
+        );
+        assert!(server.join().unwrap().is_empty(), "native: {native}");
+    }
 }

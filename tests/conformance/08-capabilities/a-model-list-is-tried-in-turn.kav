@@ -1,0 +1,34 @@
+// Rule: An agent's `model` and a call's `model:` can be a list of models, tried in turn; a model may be in it more than once, as with several keys of one provider.
+// Spec: 8.3, 8.4
+// expect output: checked
+
+type Verdict {
+    ok: Bool
+}
+
+fn careful() -> Model {
+    Model(name: "claude-opus-5-5", max_tokens: 2000)
+}
+
+/// The same model, through a second account.
+fn careful_second_key() -> Model {
+    Model(name: "claude-opus-5-5", max_tokens: 2000, api_key_env: "ANTHROPIC_API_KEY_2")
+}
+
+const quick = Model(name: "claude-haiku-5-5")
+
+agent Reviewer {
+    model [careful(), careful_second_key(), quick]
+    can Ai
+    on check(text: String) -> Bool ! Error {
+        (try ask<Verdict>(`Is this fine? {text}`)).ok
+    }
+    on fast(text: String) -> Bool ! Error {
+        (try ask<Verdict>(text, model: [quick, quick, Model(name: "claude-sonnet-5-5")])).ok
+    }
+}
+
+fn main() {
+    // Never asked: a test must not reach a paid model.
+    print("checked")
+}

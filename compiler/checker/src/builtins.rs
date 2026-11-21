@@ -85,10 +85,9 @@ impl Checker<'_> {
                 for a in named {
                     let label = a.name.as_ref().map_or("", |n| n.name.as_str());
                     if label == "model" {
-                        let model = self.builtin_ty("Model");
-                        self.check_expect(&a.value, &model);
+                        self.check_model(&a.value);
                     } else {
-                        self.error(a.value.span, format!("`ask` has no option `{label}`: its one option is `model:`, a `Model` (spec 8.4)"));
+                        self.error(a.value.span, format!("`ask` has no option `{label}`: its one option is `model:`, a `Model` or a list of them (spec 8.4)"));
                     }
                 }
                 let answer = match generics.first() {

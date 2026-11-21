@@ -30,6 +30,10 @@ impl Guard {
                 ("verdict".to_string(), verdict.clone()),
             ];
             if let Some(m) = &c.model {
+                if !m.moved.is_empty() {
+                    let each = m.moved.iter().map(|(model, why)| format!("{model}: {why}"));
+                    attributes.push(("moved_on".into(), each.collect::<Vec<_>>().join("; ")));
+                }
                 attributes.push(("model".into(), m.model.clone()));
                 if let Some((i, o)) = m.tokens {
                     attributes.push(("input_tokens".into(), i.to_string()));
@@ -56,6 +60,14 @@ impl Guard {
                 ("verdict".into(), text(&verdict)),
             ];
             if let Some(m) = &c.model {
+                if !m.moved.is_empty() {
+                    let each = (m.moved.iter()).map(|(model, why)| {
+                        let fields =
+                            vec![("model".into(), text(model)), ("error".into(), text(why))];
+                        Tree::Object(fields)
+                    });
+                    fields.push(("moved_on".into(), Tree::Array(each.collect())));
+                }
                 fields.push(("model".into(), text(&m.model)));
                 if let Some((i, o)) = m.tokens {
                     fields.push(("input_tokens".into(), Tree::Int(i as i64)));
@@ -65,11 +77,7 @@ impl Guard {
             fields.push(("result".into(), text(result)));
             format!("{}\n", json::write(&Tree::Object(fields), 0))
         } else {
-            let model = c
-                .model
-                .as_ref()
-                .map(|m| format!("  model: {}\n", m.line()))
-                .unwrap_or_default();
+            let model = c.model.as_ref().map(|m| m.lines()).unwrap_or_default();
             format!(
                 "{} {} request#{} {}\n  verdict: {verdict}\n{model}  result: {result}\n",
                 utc_now(),
