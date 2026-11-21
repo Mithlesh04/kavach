@@ -29,6 +29,7 @@ impl FnGen<'_, '_> {
                     return;
                 };
                 let id = self.funcs[*f as usize];
+                self.check_stack(call.line);
                 let results = self.call(id, &values);
                 if let Some(c) = made {
                     self.release(c);

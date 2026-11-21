@@ -26,6 +26,7 @@ Conformance tests for spec chapter [3. Functions](../../../docs/spec/03-function
 | 3.7 | [discard-with-underscore.kav](discard-with-underscore.kav) | `const _ =` throws a value away on purpose. | runs |
 | 3.7 | [unused-result-is-an-error.kav](unused-result-is-an-error.kav) | A call's value must be used or discarded with `const _ =`. | compile error |
 | 3.8, 5.6 | [stack-overflow-panics.kav](stack-overflow-panics.kav) | Running out of stack is a panic, at the line of the call that went too deep. | panic |
+| 3.8, 5.6 | [stack-overflow-through-failing-calls-panics.kav](stack-overflow-through-failing-calls-panics.kav) | Running out of stack through calls to a function that can fail is the same panic, at the line of the call that went too deep. | panic |
 | 3.8 | [deep-recursion-runs.kav](deep-recursion-runs.kav) | Recursion runs as deep as the stack allows: 4,000 calls deep, in every build. | runs |
 | 3.9 | [inout-changes-the-callers-variable.kav](inout-changes-the-callers-variable.kav) | An `inout` parameter's last value goes back to the caller's variable, field or item. | runs |
 | 3.9 | [inout-needs-a-let.kav](inout-needs-a-let.kav) | An `inout` argument must be able to change: not a `const`. | compile error |
