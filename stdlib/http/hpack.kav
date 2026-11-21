@@ -18,7 +18,7 @@ pub type Header {
 pub type HpackError = Malformed(reason: String)
 
 /// The dynamic table: entries oldest first, their size, and its limit.
-pub type Table {
+pub type HeaderTable {
     pub entries: [Header]
     pub size: Int
     pub limit: Int
@@ -27,16 +27,16 @@ pub type Table {
 /// A header block's headers, and the table after it.
 pub type Decoded {
     pub headers: [Header]
-    pub table: Table
+    pub table: HeaderTable
 }
 
 /// An empty table that holds up to `limit` bytes (4096 to start with).
-pub fn new_table(limit: Int) -> Table {
-    Table(entries: [], size: 0, limit: limit)
+pub fn new_table(limit: Int) -> HeaderTable {
+    HeaderTable(entries: [], size: 0, limit: limit)
 }
 
 /// Reads a header block, with the table the earlier blocks left.
-pub fn decode(block: Bytes, table: Table) -> Decoded ! HpackError {
+pub fn decode(block: Bytes, table: HeaderTable) -> Decoded ! HpackError {
     let t = table
     let headers: [Header] = []
     let i = 0
@@ -225,7 +225,7 @@ type Field {
 }
 
 /// A literal header: its name (indexed, or a string) and value.
-fn literal(data: Bytes, at: Int, n: Int, t: Table) -> Field ! HpackError
+fn literal(data: Bytes, at: Int, n: Int, t: HeaderTable) -> Field ! HpackError
     require at >= 0 and at < data.len()
     require n >= 1 and n <= 8
 {
@@ -265,7 +265,7 @@ fn string(data: Bytes, at: Int) -> Text ! HpackError {
 
 /// Entry `index`: 1 to 61 in the static table, then the dynamic
 /// table, newest first.
-fn entry(t: Table, index: Int) -> Header ! HpackError {
+fn entry(t: HeaderTable, index: Int) -> Header ! HpackError {
     if index < 1 or index - 61 > t.entries.len() {
         fail HpackError.Malformed(reason: `no header at index {index}`)
     }
@@ -281,14 +281,14 @@ fn size_of(h: Header) -> Int {
 }
 
 /// `t` with `h` added, the oldest entries dropped to make room.
-fn add(t: Table, h: Header) -> Table {
+fn add(t: HeaderTable, h: Header) -> HeaderTable {
     let entries = t.entries
     entries.push(h)
     fit(entries, t.limit)
 }
 
 /// A table of `entries` without the oldest, until they fit in `limit`.
-fn fit(entries: [Header], limit: Int) -> Table {
+fn fit(entries: [Header], limit: Int) -> HeaderTable {
     let size = 0
     for h in entries {
         size += size_of(h)
@@ -298,7 +298,7 @@ fn fit(entries: [Header], limit: Int) -> Table {
         size -= size_of(entries[drop])
         drop += 1
     }
-    Table(entries: entries[drop:], size: size, limit: limit)
+    HeaderTable(entries: entries[drop:], size: size, limit: limit)
 }
 
 /// Decodes Huffman-coded bytes (RFC 7541 appendix B). The code is

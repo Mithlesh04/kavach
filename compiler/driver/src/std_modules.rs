@@ -45,7 +45,9 @@ fn names() -> &'static Vec<HashSet<String>> {
                     // `std.ai`'s variants (`NotFound`, `Answer`, `Other`)
                     // are common words, and every use of one goes with
                     // `ask` or a type of its own (decision 0140).
-                    if *module == "std.ai" {
+                    // So are `std.table`'s (`File`, `Value`, `Unknown`):
+                    // a program reading a CSV names `CsvError` or `table`.
+                    if *module == "std.ai" || module.starts_with("std.table") {
                         continue;
                     }
                     if let TypeBody::Union(vs) = &t.body {
@@ -314,6 +316,8 @@ fn f(e: Event) {}",
                 vec!["std.window", "std.input"],
             ),
             ("const d = 5.seconds", vec!["std.time.digits", "std.time"]),
+            // `std.table`'s variants are common words (`Value`, `File`).
+            ("print(Value)", vec![]),
             // `Model`'s `timeout` is a `Duration`.
             (
                 "const a = ask<Bool>(\"?\")",

@@ -1,0 +1,15 @@
+// Rule: each CSV column name matches a field exactly, and the columns may come in any order.
+// Spec: 14.34
+// expect output: north 120.0
+
+use std.table
+
+type Sale {
+    region: String
+    amount: Float
+}
+
+fn main() ! CsvError {
+    const sales = try table.parse_csv<Sale>(`amount,region\n120.0,north\n`)
+    print(`{sales[0].region} {sales[0].amount}`)
+}

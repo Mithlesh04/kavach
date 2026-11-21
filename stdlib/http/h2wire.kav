@@ -29,7 +29,7 @@ pub type Link {
     /// Bytes read but not used yet.
     pub buffer: Bytes
     /// The header table for blocks the other side sends.
-    pub table: Table
+    pub table: HeaderTable
     /// How much this side may still send: on the connection, and per
     /// stream (`initial` for a stream not listed).
     pub window: Int

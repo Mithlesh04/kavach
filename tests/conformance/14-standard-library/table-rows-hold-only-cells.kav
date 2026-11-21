@@ -1,0 +1,15 @@
+// Rule: a table's row type may only have fields a cell can hold; a list field is a compile error that names the field.
+// Spec: 14.34
+// expect compile error
+
+use std.table
+
+type Order {
+    id: Int
+    items: [String]
+}
+
+fn main() {
+    const orders = table.of([Order(id: 1, items: ["pen"])])     // error: `items: [String]` can't be a cell
+    print(orders.len())
+}

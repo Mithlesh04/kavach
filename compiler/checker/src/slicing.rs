@@ -51,6 +51,10 @@ impl Checker<'_> {
     /// types. `t` is the type of `base`, already worked out.
     pub(crate) fn sliced(&mut self, base: &Expr, t: &Ty, index: &Expr) -> Option<Ty> {
         let t = self.inf.resolve(t);
+        // `t["amount"]`, a table's column (spec 14.34).
+        if let Some(ty) = self.table_column(base, &t, index) {
+            return Some(ty);
+        }
         // A program's own type, through `Index` and `Slice` (spec 2.16).
         if let Some(ty) = self.own_index(base, &t, index) {
             return Some(ty);

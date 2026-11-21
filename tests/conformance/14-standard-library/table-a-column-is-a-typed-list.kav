@@ -1,0 +1,24 @@
+// Rule: `t["name"]` is the column `name` as a list of its field's type.
+// Spec: 14.34
+// expect output: [120.0, 80.0, 100.0]
+// expect output: 300.0
+// expect output: ["north", "south", "north"]
+
+use std.table
+
+type Sale {
+    region: String
+    amount: Float
+}
+
+fn main() {
+    const sales = table.of([
+        Sale(region: "north", amount: 120.0),
+        Sale(region: "south", amount: 80.0),
+        Sale(region: "north", amount: 100.0),
+    ])
+    const amounts: [Float] = sales["amount"]
+    print(amounts)
+    print(amounts.sum(x => x))
+    print(sales["region"])
+}

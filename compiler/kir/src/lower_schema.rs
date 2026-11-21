@@ -296,6 +296,14 @@ impl<'a> Lowerer<'a> {
                         Box::new(self.checker_ty(*k)?),
                         Box::new(self.checker_ty(*v)?),
                     )),
+                    // An anonymous record (spec 2.14) has no name.
+                    Shape::Record { name, fields, .. } if name.is_empty() => {
+                        let fields = fields.clone();
+                        let fields = (fields.iter())
+                            .map(|f| Some((f.name.clone(), self.checker_ty(f.ty)?)))
+                            .collect::<Option<Vec<_>>>()?;
+                        Some(Ty::Anon(fields))
+                    }
                     // A generic record's instance keeps its type arguments:
                     // `Page<Item>`'s fields are described with `T` as `Item`.
                     Shape::Record { .. } | Shape::Union { .. } => {

@@ -164,6 +164,21 @@ pub(crate) const BUILTIN: &[(&str, &str, &str)] = &[
         include_str!("../../../stdlib/collections/stats.kav"),
     ),
     (
+        "std/table/csv.kav",
+        "std.table.csv",
+        include_str!("../../../stdlib/table/csv.kav"),
+    ),
+    (
+        "std/table/grid.kav",
+        "std.table.grid",
+        include_str!("../../../stdlib/table/grid.kav"),
+    ),
+    (
+        "std/table.kav",
+        "std.table",
+        include_str!("../../../stdlib/table/table.kav"),
+    ),
+    (
         "std/app.kav",
         "std.app",
         include_str!("../../../stdlib/app/app.kav"),

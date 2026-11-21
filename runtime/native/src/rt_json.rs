@@ -14,7 +14,7 @@ use crate::heap::{alloc_zeroed, items_of, obj, release, slots, slots_mut, tag_of
 use crate::rt::type_of;
 use crate::rt_errors::set_error;
 use crate::shapes::{new_text, shape, with_str};
-use kavach_kir::{RtOp, Shape, Type, VariantShape, VariantValue};
+use kavach_kir::{FieldShape, RtOp, Shape, Type, VariantShape, VariantValue};
 use kavach_runtime_core::json::dates::{self, Kind};
 use kavach_runtime_core::json::{self, Error, Limits, Tree};
 
@@ -51,6 +51,14 @@ pub(crate) fn plain_variant_at(variants: &[VariantShape], t: &Tree) -> Option<us
                 _ => false,
             }
     })
+}
+
+/// Whether a record is `std.table`'s `Table`, which JSON holds as the
+/// array of its rows (spec 14.34): its fields are `kept`, the rows, and
+/// `plan`, its columns.
+pub(crate) fn is_table(name: &str, fields: &[FieldShape]) -> bool {
+    let names: Vec<&str> = fields.iter().map(|f| f.name.as_str()).collect();
+    name == "Table" && names == ["kept", "plan"]
 }
 
 /// `std.time`'s `Date`, `Time` or `DateTime`, which JSON holds as ISO 8601

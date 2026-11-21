@@ -1,0 +1,15 @@
+// Rule: `t["name"]` with a name that is not a field of the row type is a compile error that names the fields there are.
+// Spec: 14.34
+// expect compile error
+
+use std.table
+
+type Sale {
+    region: String
+    amount: Float
+}
+
+fn main() {
+    const sales = table.of([Sale(region: "north", amount: 120.0)])
+    print(sales["amont"])            // error: `Sale` has no field `amont`; it has region, amount
+}

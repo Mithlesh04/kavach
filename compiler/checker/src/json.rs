@@ -121,6 +121,7 @@ impl Checker<'_> {
             Ty::Prim(_) | Ty::Param(_) | Ty::Error | Ty::Var(_) => None,
             Ty::List(x) | Ty::Optional(x) => self.schema_in(x, seen),
             Ty::Map(k, v) if self.inf.resolve(k) == STRING => self.schema_in(v, seen),
+            Ty::Anon(fs) => fs.iter().find_map(|(_, x)| self.schema_in(x, seen)),
             Ty::Adt(def, _) if seen.contains(def) || self.is_json(&t) => None,
             Ty::Adt(def, _) => {
                 seen.push(*def);

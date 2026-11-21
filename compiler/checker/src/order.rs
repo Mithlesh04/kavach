@@ -60,7 +60,10 @@ impl Checker<'_> {
 
     /// Reports a value without an order where one is needed.
     pub(crate) fn require_order(&mut self, t: &Ty, span: Span, what: &str) {
-        if self.ordered(t) == Some(false) && !self.number_param(t, false) {
+        if self.ordered(t) == Some(false)
+            && !self.number_param(t, false)
+            && !self.table_key_param(t)
+        {
             let shown = self.show(t);
             // A set or a map: its items, sorted, have one (spec 1.8).
             let hint = match self.inf.resolve(t) {

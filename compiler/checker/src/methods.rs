@@ -108,6 +108,8 @@ impl Checker<'_> {
                 // A method written more than once (`op_impls.rs`).
                 self.check_written_axis(*def, args);
                 let chosen = self.call_variant(*def, &name.name, args);
+                // A table joined with a list (spec 14.34).
+                let chosen = self.table_join(&recv, name, args).or(chosen);
                 if let Some(v) = &chosen {
                     self.chosen
                         .insert((name.span.start, name.span.end), v.clone());
@@ -141,6 +143,9 @@ impl Checker<'_> {
             self.note_frozen_self(base, &held, sig.def);
             let t = self.apply(&sig, subst, generics, args, e.span, &name.name);
             self.settle_stats(&name.name, &sig, args, &t);
+            // `t.map(f)` that makes rows gives a table (spec 14.34).
+            let t = self.table_map(&recv, name, t);
+            self.table_key(&recv, name, args);
             // `frame.draw(p, …)` gives what `p`'s vertex fn takes (15.3).
             if name.name == "draw"
                 && matches!(&recv, Ty::Adt(d, _) if self.res.defs[*d].name == "Frame")

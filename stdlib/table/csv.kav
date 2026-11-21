@@ -1,0 +1,394 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
+// std.table.csv (spec 14.34): CSV read and written by RFC 4180, strict
+// as JSON decoding is. A row type's columns come from its JSON Schema
+// (`json.schema<R>()`, spec 2.12); each row's cells become a JSON object,
+// one value of the right kind for each field, which `json.decode_value`
+// turns into the row, with its defaults and invariants.
+
+use std.json
+use std.fs
+
+/// What reading a CSV does with a column the row type has no field for:
+/// `Refuse` makes it an `Unknown`; `Ignore` skips it.
+pub type CsvUnknown = Refuse | Ignore
+
+/// Why a CSV could not be read or written (spec 14.34).
+pub type CsvError = File(error: FsError) |
+    Syntax(line: Int, message: String) |
+    Missing(column: String) |
+    Unknown(column: String) |
+    Value(line: Int, column: String, expected: String, found: String)
+
+/// The columns of `R`, in the order its fields are written: each one's
+/// name; what its cells hold (`whole`, `number`, `bool`, `string` for a
+/// `String`, `text` for other text: a `Char`, a date or a category);
+/// whether a cell may be empty for `none`; and whether the column must
+/// be there.
+pub fn columns<R>() -> [(name: String, kind: String, optional: Bool, required: Bool)] {
+    const schema = json.schema<R>()
+    const required = (schema.get("required").list() ?? []).map(j => j.text() ?? "")
+    let out: [(name: String, kind: String, optional: Bool, required: Bool)] = []
+    for (name, field) in schema.get("properties").object() ?? {:} {
+        const (kind, optional) = kind_of(field)
+        out.push((name: name, kind: kind, optional: optional, required: required.contains(name)))
+    }
+    out
+}
+
+/// What a field's schema says its cells hold, and whether it is optional.
+fn kind_of(field: Json) -> (String, Bool)
+    example kind_of({"type": "integer"}) == ("whole", false)
+    example kind_of({"anyOf": [{"type": "number"}, {"type": "null"}]}) == ("number", true)
+    example kind_of({"type": "string", "format": "date"}) == ("text", false)
+{
+    const any = field.get("anyOf").list() ?? []
+    if any.len() == 2 and any[1].get("type").text() == "null" {
+        return (kind_of(any[0]).0, true)
+    }
+    if not any.is_empty() {
+        return ("text", false)
+    }
+    const kind = match field.get("type").text() ?? "" {
+        "integer" => "whole",
+        "number" => "number",
+        "boolean" => "bool",
+        "string" => if plain_text(field) { "string" } else { "text" },
+        _ => "text",
+    }
+    (kind, false)
+}
+
+/// Whether a `"string"` schema is a `String`'s: no format, pattern,
+/// length or list of values, which a `Char`, a date or a category has.
+fn plain_text(field: Json) -> Bool {
+    for key in ["format", "pattern", "enum", "minLength", "maxLength", "contentEncoding"] {
+        if not field.get(key).is_null() {
+            return false
+        }
+    }
+    true
+}
+
+/// The cells being read: a row may go on over several lines inside a
+/// quoted cell.
+type Reader {
+    sep: Char
+    /// The line read last, counted from 1.
+    line: Int = 0
+    /// The line the row being read started on.
+    start: Int = 0
+    cells: [String] = []
+    cell: [Char] = []
+    /// Inside quotes that go on to the next line.
+    open: Bool = false
+    /// The cell being read was quoted, and its quotes are closed.
+    closed: Bool = false
+}
+
+/// Reads one line into `r`: the cells of the row it ends, or `none`
+/// when a quoted cell goes on to the next line.
+fn feed(inout r: Reader, text: String) -> [String]? ! CsvError
+    require r.line >= 0 and r.line < 1 << 62
+{
+    r.line += 1
+    if r.open {
+        r.cell.push('\n')
+    } else {
+        r.start = r.line
+        r.cells = []
+        r.cell = []
+        r.closed = false
+    }
+    let quoted = r.open
+    const chars = text.chars()
+    let i = if r.line == 1 and not chars.is_empty() and chars[0] == '\u{FEFF}' { 1 } else { 0 }
+    while i < chars.len() {
+        const c = chars[i]
+        i += 1
+        if quoted {
+            if c != '"' {
+                r.cell.push(c)
+            } else if i < chars.len() and chars[i] == '"' {
+                r.cell.push('"')
+                i += 1
+            } else {
+                quoted = false
+                r.closed = true
+            }
+        } else if c == r.sep {
+            r.cells.push(r.cell.join(""))
+            r.cell = []
+            r.closed = false
+        } else if r.closed {
+            fail CsvError.Syntax(line: r.line, message: `text after a cell's closing quote: \`{c}\``)
+        } else if c == '"' {
+            if not r.cell.is_empty() {
+                fail CsvError.Syntax(line: r.line, message: "a quote inside a cell that doesn't start with one")
+            }
+            quoted = true
+        } else {
+            r.cell.push(c)
+        }
+    }
+    r.open = quoted
+    if quoted {
+        return none
+    }
+    r.cells.push(r.cell.join(""))
+    r.cells
+}
+
+/// The rows of CSV lines, read as the lines come: the first names the
+/// columns.
+type Rows<R> {
+    plan: [(name: String, kind: String, optional: Bool, required: Bool)]
+    unknown: CsvUnknown
+    /// For each column of the file, its place in `plan`, or -1 when
+    /// `R` has no field for it.
+    slots: [Int] = []
+    header: [String] = []
+    /// The line of column names was read.
+    named: Bool = false
+    rows: [R] = []
+}
+
+/// Takes the cells of one row of the file: the column names first.
+fn take<R>(inout into: Rows<R>, cells: [String], line: Int) ! CsvError {
+    if not into.named {
+        return try name_columns(into, cells)
+    }
+    if cells.len() != into.header.len() {
+        const what = if cells.len() == 1 { "1 cell" } else { `{cells.len()} cells` }
+        fail CsvError.Syntax(line: line, message: `{what}, and the first line has {into.header.len()}`)
+    }
+    let fields: {String: Json} = {:}
+    for (i, cell) in cells.enumerate() {
+        const at = into.slots[i]
+        if at >= 0 {
+            const column = into.plan[at]
+            if let value = try cell_value(column, cell, line) {
+                fields[column.name] = value
+            }
+        }
+    }
+    const row = json.decode_value<R>(Json.Object(fields: fields)) catch e => {
+        fail refused(e, line, into.header, cells)
+    }
+    into.rows.push(row)
+}
+
+/// Reads the line of column names.
+fn name_columns<R>(inout into: Rows<R>, names: [String]) ! CsvError {
+    for (i, name) in names.enumerate() {
+        if names[0:i].contains(name) {
+            fail CsvError.Syntax(line: 1, message: `the column \`{name}\` is named twice`)
+        }
+        const at = into.plan.find_index(c => c.name == name) ?? -1
+        if at < 0 and into.unknown == CsvUnknown.Refuse {
+            fail CsvError.Unknown(column: name)
+        }
+        into.slots.push(at)
+    }
+    for column in into.plan {
+        if column.required and not column.optional and not names.contains(column.name) {
+            fail CsvError.Missing(column: column.name)
+        }
+    }
+    into.header = names
+    into.named = true
+}
+
+/// The JSON value of one cell, or `none` for an empty cell that takes
+/// the field's default.
+fn cell_value(column: (name: String, kind: String, optional: Bool, required: Bool), cell: String, line: Int) -> Json? ! CsvError {
+    if cell == "" {
+        if column.optional {
+            return Json.Null
+        }
+        if column.kind == "string" {
+            return Json.Text(value: "")
+        }
+        if not column.required {
+            return none
+        }
+    }
+    // Strict: `Int(s)` allows spaces around a number, a cell doesn't.
+    const spaced = cell != cell.trim()
+    match column.kind {
+        "whole" => match BigInt(cell) {
+            ok(n) if not spaced => Json.Number(digits: String(n)),
+            _ => fail CsvError.Value(line: line, column: column.name, expected: "a whole number", found: cell),
+        },
+        "number" => match Float(cell) {
+            ok(_) if not spaced => Json.Number(digits: number_digits(cell)),
+            _ => fail CsvError.Value(line: line, column: column.name, expected: "a number", found: cell),
+        },
+        "bool" => match cell {
+            "true" => Json.Boolean(value: true),
+            "false" => Json.Boolean(value: false),
+            _ => fail CsvError.Value(line: line, column: column.name, expected: "`true` or `false`", found: cell),
+        },
+        _ => Json.Text(value: cell),
+    }
+}
+
+/// The digits JSON reads for the number `cell` reads as: the cell's
+/// own, exactly, when JSON writes numbers so (`Decimal` keeps them all),
+/// else as `Decimal` writes it (`1.` is `1`), else as `Float` does (`NaN`).
+fn number_digits(cell: String) -> String
+    example number_digits("120.5") == "120.5"
+    example number_digits("1.") == "1"
+{
+    if json_number(cell) {
+        return cell
+    }
+    match Decimal(cell) {
+        ok(d) => String(d),
+        err(_) => cell,
+    }
+}
+
+/// Whether `s` is a number as JSON writes one: `-12.5e3`.
+fn json_number(s: String) -> Bool
+    example json_number("-12.5e3")
+    example not json_number(".5")
+    example not json_number("1.")
+    example not json_number("007")
+{
+    const cs = s.chars()
+    let i = if not cs.is_empty() and cs[0] == '-' { 1 } else { 0 }
+    const whole = digits_from(cs, i)
+    if whole == i or (cs[i] == '0' and whole > i + 1) {
+        return false
+    }
+    i = whole
+    if i < cs.len() and cs[i] == '.' {
+        const after = digits_from(cs, i + 1)
+        if after == i + 1 {
+            return false
+        }
+        i = after
+    }
+    if i < cs.len() and (cs[i] == 'e' or cs[i] == 'E') {
+        i += 1
+        if i < cs.len() and (cs[i] == '+' or cs[i] == '-') {
+            i += 1
+        }
+        const after = digits_from(cs, i)
+        if after == i {
+            return false
+        }
+        i = after
+    }
+    i == cs.len()
+}
+
+/// Where the digits that start at `from` end.
+fn digits_from(cs: [Char], from: Int) -> Int
+    require from >= 0
+    example digits_from(['1', '2', '.'], 0) == 2
+{
+    let j = from
+    while j < cs.len() and cs[j] >= '0' and cs[j] <= '9' {
+        j += 1
+    }
+    j
+}
+
+/// A decoding problem as a `Value` error, at the column its path names;
+/// an invariant (7.3) is at no one column, so its `found` is the row.
+fn refused(e: JsonError, line: Int, header: [String], cells: [String]) -> CsvError
+    require header.len() == cells.len()
+{
+    const problem = match e {
+        JsonError.Invalid(problems) if not problems.is_empty() => problems[0],
+        _ => JsonProblem(path: "", expected: String(e)),
+    }
+    const column = problem.path.remove_prefix("$").remove_prefix(".")
+    let found = cells.join(",")
+    if let at = header.index_of(column) {
+        found = cells[at]
+    }
+    CsvError.Value(line: line, column: column, expected: problem.expected, found: found)
+}
+
+/// The rows of the CSV `text`.
+pub fn parse<R>(text: String, sep: Char, unknown: CsvUnknown) -> [R] ! CsvError {
+    let r = Reader(sep: sep)
+    let into = Rows<R>(plan: columns<R>(), unknown: unknown)
+    for line in text.lines() {
+        if let cells = try feed(r, line) {
+            try take(into, cells, r.start)
+        }
+    }
+    try finish(r, into)
+    into.rows
+}
+
+/// The rows of the CSV file at `path`, read line by line.
+pub fn read<R>(path: String, sep: Char, unknown: CsvUnknown) -> [R] ! CsvError uses Fs.read {
+    let r = Reader(sep: sep)
+    let into = Rows<R>(plan: columns<R>(), unknown: unknown)
+    for line in fs.lines(path) catch e => {
+        fail CsvError.File(error: e)
+    } {
+        if let cells = try feed(r, line) {
+            try take(into, cells, r.start)
+        }
+    }
+    try finish(r, into)
+    into.rows
+}
+
+/// The end of the text: no quote left open, and the column names read.
+fn finish<R>(r: Reader, inout into: Rows<R>) ! CsvError {
+    if r.open {
+        fail CsvError.Syntax(line: r.start, message: "a quote left open")
+    }
+    if not into.named {
+        try name_columns(into, [])
+    }
+}
+
+/// `rows` as CSV text: a line of column names, then a line for each row.
+pub fn write<R>(rows: [R], plan: [(name: String, kind: String, optional: Bool, required: Bool)], sep: Char) -> String {
+    let out = TextBuilder()
+    out.push(plan.map(c => quoted(c.name, sep)).join(String(sep)))
+    out.push_char('\n')
+    for row in rows {
+        const j = json.of(row)
+        out.push(plan.map(c => quoted(cell_text(j.get(c.name)), sep)).join(String(sep)))
+        out.push_char('\n')
+    }
+    out.to_string()
+}
+
+/// A cell's text, from its JSON value: `none` is an empty cell.
+pub fn cell_text(j: Json) -> String
+    example cell_text(Json.Number(digits: "1.5")) == "1.5"
+    example cell_text(Json.Null) == ""
+{
+    match j {
+        Json.Null => "",
+        Json.Text(value) => value,
+        Json.Number(digits) => digits,
+        Json.Boolean(value) => String(value),
+        other => json.stringify(other),
+    }
+}
+
+/// `cell` quoted when it holds `sep`, a quote or a line break.
+fn quoted(cell: String, sep: Char) -> String
+    example quoted("late, paid", ',') == `"late, paid"`
+    example quoted("north", ',') == "north"
+    example quoted(`say "hi"`, ',') == `"say ""hi"""`
+{
+    if cell.contains(sep) or cell.contains('"') or cell.contains('\n') or cell.contains('\r') {
+        const doubled = cell.replace(`"`, `""`)
+        return `"{doubled}"`
+    }
+    cell
+}

@@ -92,6 +92,7 @@ mod std_gpu;
 mod std_log;
 mod std_matrix;
 mod std_process;
+mod std_table;
 mod std_tensor;
 mod std_window;
 mod std_writers;
@@ -200,6 +201,9 @@ pub struct Checked {
     /// `(base start, index end)`: `"index"`, `"index#"`, `"slice"` or
     /// `"set"` (`user_index.rs`).
     pub user_index: HashMap<(u32, u32), &'static str>,
+    /// `t["name"]` on a table (spec 14.34), by `(base start, index end)`:
+    /// the column's name, the row type and the field's type.
+    pub table_columns: HashMap<(u32, u32), (String, Ty, Ty)>,
     /// The method written more than once that an operator, index or call
     /// chose (`op_impls.rs`): by the operator's or index's key, or by a
     /// method call's name.
@@ -260,6 +264,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     checker.check_float32_literals();
     checker.check_gpu_fns(file);
     checker.check_generic_json();
+    checker.check_table_rows();
     checker.check_capabilities(file);
     checker.check_operator_methods();
     checker.check_indexer_methods();
@@ -358,6 +363,9 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     let as_tensors = (checker.as_tensors.iter())
         .map(|(span, t)| (*span, checker.defaulted(t)))
         .collect();
+    let table_columns = (checker.table_columns.iter())
+        .map(|(at, (n, r, f))| (*at, (n.clone(), checker.defaulted(r), checker.defaulted(f))))
+        .collect();
     let mut errors = checker.errors;
     errors.sort_by_key(|e| e.span.start);
     errors.dedup_by_key(|e| e.span.start);
@@ -383,6 +391,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
         user_negs: std::mem::take(&mut checker.user_negs),
         user_assigns: std::mem::take(&mut checker.user_assigns),
         user_index: std::mem::take(&mut checker.user_index),
+        table_columns,
         chosen: std::mem::take(&mut checker.chosen),
         tensor_casts: std::mem::take(&mut checker.tensor_casts),
         as_tensors,

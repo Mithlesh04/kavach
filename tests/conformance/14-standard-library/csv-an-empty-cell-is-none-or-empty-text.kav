@@ -1,0 +1,22 @@
+// Rule: an empty CSV cell is `none` for an optional field, `""` for a `String`, and the default for a field with one; anywhere else it fails with `Value`.
+// Spec: 14.34
+// expect output: none "" 0
+// expect output: Value(line: 2, column: "price", expected: "a number", found: "")
+
+use std.table
+
+type Item {
+    note: String?
+    name: String
+    stock: Int = 0
+    price: Float
+}
+
+fn main() {
+    const items = table.parse_csv<Item>(`note,name,stock,price\n,,,2.5\n`) catch _ => table.of([])
+    print(`{items[0].note} "{items[0].name}" {items[0].stock}`)
+    const _bad = table.parse_csv<Item>(`note,name,stock,price\n,pen,1,\n`) catch e => {
+        print(e)
+        table.of([])
+    }
+}

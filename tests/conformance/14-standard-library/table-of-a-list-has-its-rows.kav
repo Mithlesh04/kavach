@@ -1,0 +1,24 @@
+// Rule: `table.of(rows)` makes a table of a list of records: `len`, `columns`, `t[i]`, `t[#k]`, `get` and `rows` read it as a list is read.
+// Spec: 14.34
+// expect output: 3 ["region", "month", "amount"]
+// expect output: south 100.0
+// expect output: true 3
+
+use std.table
+
+type Sale {
+    region: String
+    month: Int
+    amount: Float
+}
+
+fn main() {
+    const sales = table.of([
+        Sale(region: "north", month: 1, amount: 120.0),
+        Sale(region: "south", month: 1, amount: 80.0),
+        Sale(region: "north", month: 2, amount: 100.0),
+    ])
+    print(`{sales.len()} {sales.columns()}`)
+    print(`{sales[1].region} {sales[#1].amount}`)
+    print(`{sales.get(3) == none} {sales.rows().len()}`)
+}

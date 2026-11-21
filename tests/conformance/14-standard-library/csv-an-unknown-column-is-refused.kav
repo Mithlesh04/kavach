@@ -1,0 +1,22 @@
+// Rule: a CSV column with no field fails with `Unknown`, unless `unknown: CsvUnknown.Ignore` is given.
+// Spec: 14.34
+// Checks: misuse
+// expect output: Unknown(column: "shop")
+// expect output: 1
+
+use std.table
+
+type Sale {
+    region: String
+    amount: Float
+}
+
+fn main() {
+    const text = `region,shop,amount\nnorth,s1,120.0\n`
+    const refused = table.parse_csv<Sale>(text) catch e => {
+        print(e)
+        table.of([])
+    }
+    const kept = table.parse_csv<Sale>(text, unknown: CsvUnknown.Ignore) catch _ => table.of([])
+    print(kept.len() + refused.len())
+}

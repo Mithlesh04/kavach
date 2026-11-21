@@ -91,7 +91,13 @@ impl Checker<'_> {
         let Some(span) = sig.def.and_then(|d| self.res.defs[d].span) else {
             return;
         };
-        if self.res.modules[self.res.module_at(span.start)].name != STATS {
+        // `std.table`'s `mean` and `median` give what a list's give (14.34).
+        if !matches!(
+            self.res.modules[self.res.module_at(span.start)]
+                .name
+                .as_str(),
+            STATS | "std.table"
+        ) {
             return;
         }
         let Some(arg) = args.first() else {

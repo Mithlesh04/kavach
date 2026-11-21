@@ -156,6 +156,13 @@ impl Writer {
             self.array(words.len() / width, level, |w, i| {
                 let fields = &words[i * width..(i + 1) * width];
                 match shape(item) {
+                    Shape::Record {
+                        name,
+                        fields: named,
+                        ..
+                    } if crate::rt_json::is_table(name, named) => {
+                        w.value(fields[0] as i64, named[0].ty, level + 1);
+                    }
                     Shape::Record { fields: named, .. } => {
                         match crate::rt_json::date_text(item, fields) {
                             Some(text) => write_text(&mut w.out, &text),
@@ -303,6 +310,10 @@ impl Writer {
             }
             Shape::Map(k, v) => self.entries(p, *k, *v, level),
             // `std.time`'s types as ISO 8601 text (spec 2.12).
+            // A `std.table` table as its rows (spec 14.34).
+            Shape::Record { name, fields, .. } if crate::rt_json::is_table(name, fields) => {
+                self.value(slots(p)[0] as i64, fields[0].ty, level);
+            }
             Shape::Record { fields, .. } => match crate::rt_json::date_text(ty, slots(p)) {
                 Some(text) => write_text(&mut self.out, &text),
                 None => self.fields(fields, slots(p), level),

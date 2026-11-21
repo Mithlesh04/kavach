@@ -1,0 +1,23 @@
+// Rule: a CSV cell of a category is its variant's name, and a `Date` is read as ISO 8601 writes it; anything else fails with `Value`.
+// Spec: 14.34
+// expect output: South 2024-03-01
+// expect output: Value(line: 2, column: "region", expected: "a variant of `Region`", found: "east")
+
+use std.table
+use std.time.{Date}
+
+type Region = North | South
+
+type Visit {
+    region: Region
+    day: Date
+}
+
+fn main() {
+    const visits = table.parse_csv<Visit>(`region,day\nSouth,2024-03-01\n`) catch _ => table.of([])
+    print(`{visits[0].region} {visits[0].day.iso()}`)
+    const _bad = table.parse_csv<Visit>(`region,day\neast,2024-03-01\n`) catch e => {
+        print(e)
+        table.of([])
+    }
+}

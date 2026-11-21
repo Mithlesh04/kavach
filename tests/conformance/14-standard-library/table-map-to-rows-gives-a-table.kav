@@ -1,0 +1,26 @@
+// Rule: `t.map(f)` gives a table when `f` makes a record whose fields are cells, and a list otherwise.
+// Spec: 14.34
+// expect output: ["region", "tax"]
+// expect output: 55.0
+// expect output: [1, 1, 2]
+
+use std.table
+
+type Sale {
+    region: String
+    month: Int
+    amount: Float
+}
+
+fn main() {
+    const sales = table.of([
+        Sale(region: "north", month: 1, amount: 120.0),
+        Sale(region: "south", month: 1, amount: 80.0),
+        Sale(region: "north", month: 2, amount: 100.0),
+    ])
+    const taxed = sales.map(s => (region: s.region, tax: s.amount / 4.0))
+    print(taxed.columns())
+    print(taxed.filter(.region == "north").sum(.tax))
+    const months: [Int] = sales.map(s => s.month)
+    print(months)
+}

@@ -1,0 +1,24 @@
+// Rule: CSV is read by RFC 4180: the first line names the columns, a quoted cell may hold the separator and `""` for a quote, and an empty cell is `none` for an optional field.
+// Spec: 14.34
+// expect output: 3
+// expect output: late, paid in cash
+// expect output: say "hi"
+// expect output: true 220.0
+
+use std.table
+
+type Sale {
+    region: String
+    month: Int
+    amount: Float
+    note: String?
+}
+
+fn main() ! CsvError {
+    const text = `region,month,amount,note\nnorth,1,120.0,\nsouth,1,80.0,"late, paid in cash"\nnorth,2,100.0,"say ""hi"""\n`
+    const sales = try table.parse_csv<Sale>(text)
+    print(sales.len())
+    print(sales[1].note ?? "")
+    print(sales[2].note ?? "")
+    print(`{sales[0].note == none} {sales.filter(.region == "north").sum(.amount)}`)
+}

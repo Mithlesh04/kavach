@@ -1,0 +1,87 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
+// std.table.grid (spec 14.34): a table printed as a grid, and the summary
+// of each of its number columns. Cells are read through each row's JSON
+// (`json.of`), as CSV writes them.
+
+use std.json
+use std.table.csv
+use std.collections.stats
+
+/// The rows `rows`, of the columns `plan`, as a grid: the column names, then the rows, each
+/// column as wide as its widest cell, numbers to the right. More than 10
+/// rows show the first 5 and the last 5, with a `…` line between; the
+/// size comes last.
+pub fn shown<R>(rows: [R], plan: [(name: String, kind: String, optional: Bool, required: Bool)]) -> String {
+    let picked: [R] = rows
+    if rows.len() > 10 {
+        picked = rows[:5] + rows[#5:]
+    }
+    let grid: [[String]] = [plan.map(c => c.name)]
+    for row in picked {
+        const j = json.of(row)
+        grid.push(plan.map(c => csv.cell_text(j.get(c.name))))
+    }
+    let widths: [Int] = plan.map(c => 0)
+    for line in grid {
+        for (i, cell) in line.enumerate() {
+            widths[i] = widths[i].max(cell.len())
+        }
+    }
+    const right = plan.map(c => c.kind == "whole" or c.kind == "number")
+    let out = TextBuilder()
+    for (n, line) in grid.enumerate() {
+        if n == 6 and rows.len() > 10 {
+            out.push(`…\n`)
+        }
+        let cells: [String] = []
+        for (i, cell) in line.enumerate() {
+            cells.push(if right[i] { cell.pad_left(widths[i]) } else { cell.pad_right(widths[i]) })
+        }
+        out.push(cells.join("  ").trim_end())
+        out.push_char('\n')
+    }
+    out.push(`[{counted(rows.len(), "row")} × {counted(plan.len(), "column")}]`)
+    out.to_string()
+}
+
+/// NaN: JSON writes NaN and the infinities as `null`, so a number cell
+/// that reads as `null` was one of them.
+fn nan() -> Float
+    example nan().is_nan()
+{
+    0.0 / 0.0
+}
+
+/// `n` and `what`, with an `s` unless `n` is 1.
+fn counted(n: Int, what: String) -> String
+    example counted(1, "row") == "1 row"
+    example counted(3, "column") == "3 columns"
+{
+    if n == 1 { `1 {what}` } else { `{n} {what}s` }
+}
+
+/// The summary (14.2) of each number column of `rows` that has no empty
+/// cells, in column order: whole numbers as `Int`s, the others as
+/// `Float`s. An empty table gives an empty dict.
+pub fn summaries<R>(rows: [R], plan: [(name: String, kind: String, optional: Bool, required: Bool)]) -> {String: (count: Int, mean: Float, std: Float?, min: Float, q1: Float, median: Float, q3: Float, max: Float)} {
+    let out: {String: (count: Int, mean: Float, std: Float?, min: Float, q1: Float, median: Float, q3: Float, max: Float)} = {:}
+    const js = rows.map(r => json.of(r))
+    for c in plan {
+        if c.optional or (c.kind != "whole" and c.kind != "number") {
+            continue
+        }
+        const whole = c.kind == "whole" and js.all(j => j.get(c.name).int() != none)
+        const summary = if whole {
+            js.describe(j => j.get(c.name).int() ?? 0)
+        } else {
+            js.describe(j => j.get(c.name).float() ?? nan())
+        }
+        if let s = summary {
+            out[c.name] = s
+        }
+    }
+    out
+}

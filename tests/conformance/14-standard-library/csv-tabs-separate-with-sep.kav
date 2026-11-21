@@ -1,0 +1,17 @@
+// Rule: `sep:` is the character between CSV cells, `','` unless given; reading and writing take it.
+// Spec: 14.34
+// expect output: north	a, b
+// expect output: a, b
+
+use std.table
+
+type Row {
+    region: String
+    note: String
+}
+
+fn main() ! CsvError {
+    const rows = try table.parse_csv<Row>(`region\tnote\nnorth\ta, b\n`, sep: '\t')
+    print(rows.to_csv(sep: '\t').lines()[1])
+    print(rows[0].note)
+}

@@ -1,0 +1,18 @@
+// Rule: JSON goes through `std.json`: `json.stringify(t)` writes a table as an array of rows, and `table.of(json.decode<[R]>(text))` reads one.
+// Spec: 14.34
+// expect output: [{"region":"north","amount":120.5}]
+// expect output: 1 north
+
+use std.json
+use std.table
+
+type Sale {
+    region: String
+    amount: Float
+}
+
+fn main() ! JsonError {
+    const sales = table.of(try json.decode<[Sale]>(`[\{"region": "north", "amount": 120.5}]`))
+    print(json.stringify(sales))
+    print(`{sales.len()} {sales[0].region}`)
+}

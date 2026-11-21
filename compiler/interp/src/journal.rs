@@ -72,6 +72,15 @@ impl<'a> Interp<'a> {
             TypeKind::List(item) => Ty::List(Box::new(self.ty_of(item)?)),
             TypeKind::Optional(inner) => Ty::Optional(Box::new(self.ty_of(inner)?)),
             TypeKind::Map(k, v) => Ty::Map(Box::new(self.ty_of(k)?), Box::new(self.ty_of(v)?)),
+            // An anonymous record (spec 2.14): its fields sorted by name,
+            // as the checker keeps them.
+            TypeKind::AnonRecord(fs) => {
+                let mut fs = (fs.iter())
+                    .map(|(n, t)| Some((n.name.clone(), self.ty_of(t)?)))
+                    .collect::<Option<Vec<_>>>()?;
+                fs.sort_by(|a, b| a.0.cmp(&b.0));
+                Ty::Anon(fs)
+            }
             _ => return None,
         })
     }

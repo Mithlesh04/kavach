@@ -1,0 +1,22 @@
+// Rule: each CSV row is checked against its type's invariants; a row that breaks one fails with `Value`, its `found` the row when no one column broke it.
+// Spec: 14.34
+// Checks: misuse
+// expect output: 4 nib,-1
+
+use std.table
+
+type Stock {
+    item: String
+    count: Int
+    invariant count >= 0
+}
+
+fn main() {
+    const _t = table.parse_csv<Stock>(`item,count\npen,4\nink,0\nnib,-1\n`) catch e => {
+        match e {
+            CsvError.Value(line, _, _, found) => print(`{line} {found}`),
+            _ => print("other"),
+        }
+        table.of([])
+    }
+}

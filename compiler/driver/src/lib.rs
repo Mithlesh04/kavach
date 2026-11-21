@@ -23,6 +23,7 @@ mod run_config;
 mod schema;
 mod std_modules;
 mod std_table;
+mod tables;
 mod tensors;
 mod variants;
 mod version;
@@ -290,6 +291,7 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
     operators::to_method_calls(&mut parsed.file, &mut checked);
     indexing::to_method_calls(&mut parsed.file, &mut checked, &mut resolution);
     tensors::to_calls(&mut parsed.file, &mut checked, &mut resolution);
+    tables::to_calls(&mut parsed.file, &mut checked);
     frozen::lower(&mut parsed.file, &mut checked);
 
     let error = |text: &String, span: Span| Message {

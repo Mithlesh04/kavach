@@ -1,0 +1,24 @@
+// Rule: `print(t)` writes the column names, then the rows, each column as wide as its widest cell, numbers to the right, and then its size.
+// Spec: 14.34
+// expect output: region  month  amount  note
+// expect output: north       1   120.0
+// expect output: south       1    80.0  late, paid in cash
+// expect output: north       2   100.0
+// expect output: [3 rows × 4 columns]
+
+use std.table
+
+type Sale {
+    region: String
+    month: Int
+    amount: Float
+    note: String?
+}
+
+fn main() {
+    print(table.of([
+        Sale(region: "north", month: 1, amount: 120.0, note: none),
+        Sale(region: "south", month: 1, amount: 80.0, note: "late, paid in cash"),
+        Sale(region: "north", month: 2, amount: 100.0, note: none),
+    ]))
+}

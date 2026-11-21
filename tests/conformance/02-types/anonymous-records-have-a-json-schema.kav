@@ -1,0 +1,9 @@
+// Rule: an anonymous record's JSON Schema is an object like a record's, its fields in the order of their names, an optional one not required.
+// Spec: 2.12
+// expect output: {"type":"object","properties":{"a":{"type":"integer"},"b":{"anyOf":[{"type":"string"},{"type":"null"}]}},"required":["a"],"additionalProperties":false}
+
+use std.json
+
+fn main() {
+    print(json.schema<(b: String?, a: Int)>())
+}

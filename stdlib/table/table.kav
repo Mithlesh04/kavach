@@ -1,0 +1,241 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
+// std.table (spec 14.34, decision 0135): `Table<R>`, rows of the record
+// type `R` for big data, read from and written to CSV, with the methods
+// of a list of records (14.2) and the same results. CSV is in `csv.kav`;
+// printing and the summary of every number column in `grid.kav`. The
+// compiler checks that `R`'s fields are cells, types `t["name"]` as the
+// column's list, and gives `map` a table when it makes rows.
+
+use std.fs
+use std.collections
+use std.collections.grouping
+use std.collections.stats
+use std.table.csv
+use std.table.grid
+
+/// Rows of the record type `R`, each field a column.
+pub type Table<R>: Index<Int, R>, Slice, Display {
+    kept: [R]
+    /// The columns of `R` (`csv.columns`), worked out once.
+    plan: [(name: String, kind: String, optional: Bool, required: Bool)]
+
+    /// A table of `rows`, with this one's columns.
+    fn with_rows(self, rows: [R]) -> Table<R> {
+        Table(kept: rows, plan: self.plan)
+    }
+
+    /// How many rows it has.
+    pub fn len(self) -> Int {
+        self.kept.len()
+    }
+
+    /// The names of its columns, in order.
+    pub fn columns(self) -> [String] {
+        self.plan.map(c => c.name)
+    }
+
+    /// `t[i]`: row `i`; out of range is a panic, as for a list.
+    pub fn index(self, i: Int) -> R {
+        self.kept[i]
+    }
+
+    /// Row `i`, or `none`.
+    pub fn get(self, i: Int) -> R? {
+        self.kept.get(i)
+    }
+
+    /// `t[a:b:step]`: a table of those rows, as a list is sliced.
+    pub fn slice(self, part: Part) -> Table<R> {
+        const (start, end, step) = part.bounds(self.kept.len())
+        let out: [R] = []
+        let i = start
+        while (step > 0 and i < end) or (step < 0 and i > end) {
+            out.push(self.kept[i])
+            i += step
+        }
+        self.with_rows(out)
+    }
+
+    /// `t["name"]` is the column `name` as a list; the compiler makes it
+    /// a call of this, with the field's lambda.
+    fn column<F>(self, field: fn(R) -> F) -> [F] {
+        self.kept.map(field)
+    }
+
+    /// Every row, as a list.
+    pub fn rows(self) -> [R] {
+        self.kept
+    }
+
+    /// The rows where `f` is true.
+    pub fn filter(self, f: fn(R) -> Bool) -> Table<R> {
+        self.with_rows(self.kept.filter(f))
+    }
+
+    /// `f` of each row, as a list.
+    pub fn map<S>(self, f: fn(R) -> S) -> [S] {
+        self.kept.map(f)
+    }
+
+    /// `f` of each row, as a table: what `map` gives when `f` makes a
+    /// record whose fields are cells; the compiler chooses it.
+    pub fn map<S>(self, f: fn(R) -> S) -> Table<S> {
+        of(self.kept.map(f))
+    }
+
+    /// The rows sorted by `key`; equal keys keep their order.
+    pub fn sort_by<K>(self, key: fn(R) -> K) -> Table<R> {
+        self.with_rows(self.kept.sort_by(key))
+    }
+
+    /// The first row where `f` is true, or `none`.
+    pub fn find(self, f: fn(R) -> Bool) -> R? {
+        self.kept.find(f)
+    }
+
+    /// Whether `f` is true for some row.
+    pub fn any(self, f: fn(R) -> Bool) -> Bool {
+        self.kept.any(f)
+    }
+
+    /// Whether `f` is true for every row.
+    pub fn all(self, f: fn(R) -> Bool) -> Bool {
+        self.kept.all(f)
+    }
+
+    /// How many rows `f` is true for.
+    pub fn count(self, f: fn(R) -> Bool) -> Int {
+        self.kept.count(f)
+    }
+
+    /// The sum of `f` of each row.
+    pub fn sum<N: Number>(self, f: fn(R) -> N) -> N {
+        self.kept.sum(f)
+    }
+
+    /// Calls `f` on every row, in order.
+    pub fn for_each(self, f: fn(R)) {
+        self.kept.for_each(f)
+    }
+
+    /// The rows for each `key(row)`: keys in the order first seen.
+    pub fn group_by<K>(self, key: fn(R) -> K) -> {K: Table<R>} {
+        self.kept.group_by(key).map_values(g => self.with_rows(g))
+    }
+
+    /// How many rows have each key, in the order first seen.
+    pub fn count_by<K>(self, key: fn(R) -> K) -> {K: Int} {
+        self.kept.count_by(key)
+    }
+
+    /// Each row once, in the order first seen.
+    pub fn unique(self) -> Table<R> {
+        self.with_rows(self.kept.unique())
+    }
+
+    /// The first row with each key, in order.
+    pub fn unique_by<K>(self, key: fn(R) -> K) -> Table<R> {
+        self.with_rows(self.kept.unique_by(key))
+    }
+
+    /// The row whose `f(row)` is smallest; the first on a tie.
+    pub fn min_by<K>(self, f: fn(R) -> K) -> R? {
+        self.kept.min_by(f)
+    }
+
+    /// The row whose `f(row)` is largest; the first on a tie.
+    pub fn max_by<K>(self, f: fn(R) -> K) -> R? {
+        self.kept.max_by(f)
+    }
+
+    /// The average of `f(row)`, or `none` for an empty table.
+    pub fn mean<N: Number, M: Number>(self, f: fn(R) -> N) -> M? {
+        self.kept.mean<N, M>(f)
+    }
+
+    /// The middle `f(row)` in sorted order, or `none` for an empty table.
+    pub fn median<N: Number, M: Number>(self, f: fn(R) -> N) -> M? {
+        self.kept.median<N, M>(f)
+    }
+
+    /// The variance of `f(row)`, divided by the count minus `correction`.
+    pub fn var<N: Number>(self, f: fn(R) -> N, correction: Int = 1) -> Float? {
+        self.kept.var(f, correction: correction)
+    }
+
+    /// The standard deviation of `f(row)`.
+    pub fn std<N: Number>(self, f: fn(R) -> N, correction: Int = 1) -> Float? {
+        self.kept.std(f, correction: correction)
+    }
+
+    /// A summary of `f(row)`, or `none` for an empty table.
+    pub fn describe<N: Number>(self, f: fn(R) -> N) -> (count: Int, mean: Float, std: Float?, min: Float, q1: Float, median: Float, q3: Float, max: Float)? {
+        self.kept.describe(f)
+    }
+
+    /// The summary of each number column, in column order.
+    pub fn describe(self) -> {String: (count: Int, mean: Float, std: Float?, min: Float, q1: Float, median: Float, q3: Float, max: Float)} {
+        grid.summaries(self.kept, self.plan)
+    }
+
+    /// `row(a, b)` for each row `a` and row `b` of `other` with equal keys.
+    pub fn inner_join<U, K, S>(self, other: Table<U>, key: fn(R) -> K, other_key: fn(U) -> K, row: fn(R, U) -> S) -> Table<S> {
+        of(self.kept.inner_join(other.kept, key, other_key, row))
+    }
+
+    /// The same, joined with a list.
+    pub fn inner_join<U, K, S>(self, other: [U], key: fn(R) -> K, other_key: fn(U) -> K, row: fn(R, U) -> S) -> Table<S> {
+        of(self.kept.inner_join(other, key, other_key, row))
+    }
+
+    /// As `inner_join`, and `row(a, none)` for each row that matches nothing.
+    pub fn left_join<U, K, S>(self, other: Table<U>, key: fn(R) -> K, other_key: fn(U) -> K, row: fn(R, U?) -> S) -> Table<S> {
+        of(self.kept.left_join(other.kept, key, other_key, row))
+    }
+
+    /// The same, joined with a list.
+    pub fn left_join<U, K, S>(self, other: [U], key: fn(R) -> K, other_key: fn(U) -> K, row: fn(R, U?) -> S) -> Table<S> {
+        of(self.kept.left_join(other, key, other_key, row))
+    }
+
+    /// For each `row_key(row)`, and in it each `column_key(row)`, `cell`
+    /// of the rows with both keys.
+    pub fn pivot<P, C, V>(self, row_key: fn(R) -> P, column_key: fn(R) -> C, cell: fn(Table<R>) -> V) -> {P: {C: V}} {
+        self.group_by(row_key).map_values(g => g.group_by(column_key).map_values(cell))
+    }
+
+    /// The table as CSV text: a line of column names, then one per row.
+    pub fn to_csv(self, sep: Char = ',') -> String {
+        csv.write(self.kept, self.plan, sep)
+    }
+
+    /// Writes the table as CSV to the file at `path`, atomically.
+    pub fn write_csv(self, path: String, sep: Char = ',') ! CsvError uses Fs.write {
+        fs.write_text(path, csv.write(self.kept, self.plan, sep)) catch e => {
+            fail CsvError.File(error: e)
+        }
+    }
+
+    /// The column names, then the rows, as a grid.
+    pub fn display(self) -> String {
+        grid.shown(self.kept, self.plan)
+    }
+}
+
+/// A table of the list `rows`.
+pub fn of<R>(rows: [R]) -> Table<R> {
+    Table(kept: rows, plan: csv.columns<R>())
+}
+
+/// The rows of the CSV file at `path`, read as the file is read.
+pub fn read_csv<R>(path: String, sep: Char = ',', unknown: CsvUnknown = CsvUnknown.Refuse) -> Table<R> ! CsvError uses Fs.read {
+    of(try csv.read<R>(path, sep, unknown))
+}
+
+/// The rows of the CSV `text`, such as the body of a web response.
+pub fn parse_csv<R>(text: String, sep: Char = ',', unknown: CsvUnknown = CsvUnknown.Refuse) -> Table<R> ! CsvError {
+    of(try csv.parse<R>(text, sep, unknown))
+}

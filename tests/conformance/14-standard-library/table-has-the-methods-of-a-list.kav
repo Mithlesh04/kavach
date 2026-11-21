@@ -1,0 +1,29 @@
+// Rule: a table has the methods of a list of records, with the same results; where a list's gives a list of records, a table's gives a table.
+// Spec: 14.34
+// expect output: {"north": 220.0, "south": 80.0}
+// expect output: {"north": 2, "south": 1}
+// expect output: 2 [80.0, 100.0, 120.0]
+// expect output: 100.0 100.0 1
+// expect output: true 2 300.0
+
+use std.table
+
+type Sale {
+    region: String
+    month: Int
+    amount: Float
+}
+
+fn main() {
+    const sales = table.of([
+        Sale(region: "north", month: 1, amount: 120.0),
+        Sale(region: "south", month: 1, amount: 80.0),
+        Sale(region: "north", month: 2, amount: 100.0),
+    ])
+    print(sales.group_by(.region).map_values(g => g.sum(.amount)))
+    print(sales.count_by(.region))
+    const big = sales.filter(.amount > 90.0)
+    print(`{big.len()} {sales.sort_by(.amount)["amount"]}`)
+    print(`{sales.mean(.amount) ?? 0.0} {sales.median(.amount) ?? 0.0} {sales.max_by(.amount)?.month ?? 0}`)
+    print(`{sales.any(.region == "south")} {sales.count(.month == 1)} {sales.sum(.amount)}`)
+}

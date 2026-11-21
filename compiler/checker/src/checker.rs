@@ -163,6 +163,9 @@ pub(crate) struct Checker<'a> {
     pub(crate) user_assigns: HashMap<(u32, u32), &'static str>,
     /// `x[k]`, `x[a:b]` and `x[k] = v` on a program's own type (`user_index.rs`).
     pub(crate) user_index: HashMap<(u32, u32), &'static str>,
+    /// `t["name"]` on a table: the column's name, the row type and the
+    /// field's type (`std_table.rs`).
+    pub(crate) table_columns: HashMap<(u32, u32), (String, Ty, Ty)>,
     /// The variant each variant pattern names, by the span start of its
     /// last name: settled from the matched value's type (`patterns.rs`).
     pub(crate) pattern_variants: HashMap<u32, DefId>,
@@ -333,6 +336,7 @@ impl<'a> Checker<'a> {
             user_negs: HashSet::new(),
             user_assigns: HashMap::new(),
             user_index: HashMap::new(),
+            table_columns: HashMap::new(),
             pattern_variants: HashMap::new(),
             ext_implements: HashMap::new(),
             agent_needs: HashMap::new(),

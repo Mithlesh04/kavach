@@ -1,0 +1,20 @@
+// Rule: `t[a:b:step]` gives a table of those rows, as a list is sliced.
+// Spec: 14.34
+// expect output: [1, 2]
+// expect output: [3, 4]
+// expect output: [1, 3]
+// expect output: [4, 3, 2, 1]
+
+use std.table
+
+type Day {
+    n: Int
+}
+
+fn main() {
+    const days = table.of([Day(n: 1), Day(n: 2), Day(n: 3), Day(n: 4)])
+    print(days[0:2]["n"])
+    print(days[#2:]["n"])
+    print(days[::2]["n"])
+    print(days[::-1]["n"])
+}

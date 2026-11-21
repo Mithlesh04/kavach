@@ -1,0 +1,27 @@
+// Rule: a CSV cell is read strictly, as `Int(s)` and `Float(s)` read text: a cell that doesn't fit fails with `Value`, naming its line and column.
+// Spec: 14.34
+// Checks: misuse
+// expect output: Value(line: 3, column: "units", expected: "a whole number", found: "1,299")
+// expect output: Value(line: 2, column: "units", expected: "a whole number", found: " 12")
+// expect output: Value(line: 2, column: "paid", expected: "`true` or `false`", found: "yes")
+
+use std.table
+
+type Item {
+    name: String
+    units: Int
+    paid: Bool = false
+}
+
+fn show(text: String) {
+    const _t = table.parse_csv<Item>(text) catch e => {
+        print(e)
+        table.of([])
+    }
+}
+
+fn main() {
+    show(`name,units\npen,4\nink,"1,299"\n`)
+    show(`name,units\npen, 12\n`)
+    show(`name,units,paid\npen,4,yes\n`)
+}

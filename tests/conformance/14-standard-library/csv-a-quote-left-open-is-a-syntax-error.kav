@@ -1,0 +1,25 @@
+// Rule: a quote left open, or a line with more or fewer cells than the first, fails reading a CSV with `Syntax`.
+// Spec: 14.34
+// Checks: misuse
+// expect output: Syntax(line: 2, message: "a quote left open")
+// expect output: Syntax(line: 3, message: "2 cells, and the first line has 3")
+
+use std.table
+
+type Row {
+    a: String
+    b: String
+    c: String
+}
+
+fn show(text: String) {
+    const _t = table.parse_csv<Row>(text) catch e => {
+        print(e)
+        table.of([])
+    }
+}
+
+fn main() {
+    show(`a,b,c\nx,"y,z\n`)
+    show(`a,b,c\nx,y,z\nx,y\n`)
+}

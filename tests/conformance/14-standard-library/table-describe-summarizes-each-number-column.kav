@@ -1,0 +1,26 @@
+// Rule: `t.describe()` with no lambda gives the summary of each number column, by its name, in column order.
+// Spec: 14.34
+// expect output: ["month", "amount"]
+// expect output: 3 100.0 120.0
+// expect output: 1.5
+
+use std.table
+
+type Sale {
+    region: String
+    month: Int
+    amount: Float
+}
+
+fn main() {
+    const sales = table.of([
+        Sale(region: "north", month: 1, amount: 120.0),
+        Sale(region: "south", month: 1, amount: 80.0),
+        Sale(region: "north", month: 2, amount: 100.0),
+    ])
+    const all = sales.describe()
+    print(all.keys())
+    const amount = all["amount"] ?? return
+    print(`{amount.count} {amount.mean} {amount.max}`)
+    print((sales.describe(.month)?.q3 ?? 0.0))
+}

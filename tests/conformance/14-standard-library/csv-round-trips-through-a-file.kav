@@ -1,0 +1,25 @@
+// Rule: `write_csv` writes a table to a file and `read_csv` reads it back, the file read line by line; both need the `Fs` capability.
+// Spec: 14.34
+// expect output: 2 south 80.0
+// expect output: File(error: NotFound(path: "kavach-test-no-such.csv"))
+
+use std.fs
+use std.table
+
+type Sale {
+    region: String
+    amount: Float
+}
+
+fn main() ! CsvError uses Fs, Console {
+    const path = "kavach-test-sales.csv"
+    const sales = table.of([Sale(region: "north", amount: 120.0), Sale(region: "south", amount: 80.0)])
+    try sales.write_csv(path)
+    const back = try table.read_csv<Sale>(path)
+    print(`{back.len()} {back[1].region} {back[1].amount}`)
+    fs.remove(path) catch e => print(e)
+    const _gone = table.read_csv<Sale>("kavach-test-no-such.csv") catch e => {
+        print(e)
+        table.of([])
+    }
+}

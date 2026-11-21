@@ -86,6 +86,15 @@ pub(crate) fn encode(v: &Value<'_>, o: Encode) -> Tree {
                 .map(|(k, v)| (key_text(k, o), encode(v, o)))
                 .collect(),
         ),
+        // A `std.table` table as its rows (spec 14.34).
+        Value::Record { name, fields, .. }
+            if &**name == "Table"
+                && fields.len() == 2
+                && &*fields[0].name == "kept"
+                && &*fields[1].name == "plan" =>
+        {
+            encode(&fields[0].value, o)
+        }
         Value::Record { name, fields, .. } => match date_numbers(name, fields) {
             Some((kind, n)) => Tree::Text(json::dates::write(kind, &n)),
             None => object(fields),

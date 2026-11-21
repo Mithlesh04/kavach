@@ -1,0 +1,22 @@
+// Rule: writing CSV gives a line of column names, then a line for each row; a cell is quoted only when it holds the separator, a quote or a line break, and `none` is an empty cell.
+// Spec: 14.34
+// expect output: region,month,amount,note
+// expect output: north,1,120.0,
+// expect output: south,1,80.0,"late, paid in cash"
+
+use std.table
+
+type Sale {
+    region: String
+    month: Int
+    amount: Float
+    note: String?
+}
+
+fn main() {
+    const sales = table.of([
+        Sale(region: "north", month: 1, amount: 120.0, note: none),
+        Sale(region: "south", month: 1, amount: 80.0, note: "late, paid in cash"),
+    ])
+    print(sales.to_csv().trim_end())
+}

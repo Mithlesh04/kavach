@@ -2,7 +2,7 @@
 
 Conformance tests for spec chapter [14. Standard library](../../../docs/spec/14-standard-library/README.md). Format: [../README.md](../README.md).
 
-The tests are listed in four files, by area:
+The tests are listed in five files, by area:
 
 | Area | Sections | List |
 |---|---|---|
@@ -10,6 +10,7 @@ The tests are listed in four files, by area:
 | Networking | 14.10, 14.11, 14.14 | [network.md](network.md) |
 | Services and tools | 14.12, 14.13, 14.15, 14.16, 14.19 to 14.21, 14.23, 14.32 | [services-and-tools.md](services-and-tools.md) |
 | The machine and media | 14.17, 14.18, 14.22, 14.24 to 14.31, 14.33 | [machine-and-media.md](machine-and-media.md) |
+| Tables | 14.34 | [tables.md](tables.md) |
 
 ## The core modules
 

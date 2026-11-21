@@ -96,6 +96,15 @@ const BUILTIN: [(&str, &str); 60] = [
         "std.collections.stats",
         include_str!("../../../stdlib/collections/stats.kav"),
     ),
+    (
+        "std.table.csv",
+        include_str!("../../../stdlib/table/csv.kav"),
+    ),
+    (
+        "std.table.grid",
+        include_str!("../../../stdlib/table/grid.kav"),
+    ),
+    ("std.table", include_str!("../../../stdlib/table/table.kav")),
     ("std.app", include_str!("../../../stdlib/app/app.kav")),
     (
         "std.process",

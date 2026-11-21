@@ -1,0 +1,22 @@
+// Rule: a field with no CSV column takes its default, or `none` if it is optional; otherwise reading fails with `Missing`.
+// Spec: 14.34
+// expect output: EUR none
+// expect output: Missing(column: "amount")
+
+use std.table
+
+type Sale {
+    region: String
+    amount: Float
+    currency: String = "EUR"
+    note: String?
+}
+
+fn main() {
+    const sales = table.parse_csv<Sale>(`region,amount\nnorth,1.5\n`) catch _ => table.of([])
+    print(`{sales[0].currency} {sales[0].note}`)
+    const _none = table.parse_csv<Sale>(`region\nnorth\n`) catch e => {
+        print(e)
+        table.of([])
+    }
+}

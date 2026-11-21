@@ -163,6 +163,7 @@ impl<'c> Schemas<'c> {
             Ty::Map(k, v) => Ty::Map(one(k), one(v)),
             Ty::Tuple(xs) => Ty::Tuple(xs.iter().map(|x| self.apply(x)).collect()),
             Ty::Adt(d, xs) => Ty::Adt(*d, xs.iter().map(|x| self.apply(x)).collect()),
+            Ty::Anon(fs) => Ty::Anon(fs.iter().map(|(n, x)| (n.clone(), self.apply(x))).collect()),
             other => other.clone(),
         }
     }
@@ -233,6 +234,20 @@ impl<'c> Schemas<'c> {
                 ("additionalProperties".into(), self.schema(v)?),
             ]),
             Ty::Adt(def, args) => self.instance_schema(*def, args)?,
+            // An anonymous record (spec 2.14): an object with its fields,
+            // in the order of their names.
+            Ty::Anon(fs) => {
+                let mut properties = Vec::new();
+                let mut required = Vec::new();
+                for (name, ty) in fs {
+                    let ty = self.apply(ty);
+                    properties.push((name.clone(), self.schema(&ty)?));
+                    if !matches!(ty, Ty::Optional(_)) {
+                        required.push(text(name));
+                    }
+                }
+                closed(properties, required)
+            }
             // A generic record's field: what `T` stands for here.
             Ty::Param(_) => match self.apply(t) {
                 Ty::Param(_) => return None,

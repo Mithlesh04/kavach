@@ -1,0 +1,25 @@
+// Rule: a printed table of more than 10 rows shows its first 5 and last 5, with a `…` line between, then its size.
+// Spec: 14.34
+// expect output: id
+// expect output: r1
+// expect output: r2
+// expect output: r3
+// expect output: r4
+// expect output: r5
+// expect output: …
+// expect output: r26
+// expect output: r27
+// expect output: r28
+// expect output: r29
+// expect output: r30
+// expect output: [30 rows × 1 column]
+
+use std.table
+
+type Row {
+    id: String
+}
+
+fn main() {
+    print(table.of((1..=30).map(i => Row(id: `r{i}`))))
+}

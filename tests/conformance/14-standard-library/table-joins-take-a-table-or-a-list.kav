@@ -1,0 +1,30 @@
+// Rule: a table's `inner_join` and `left_join` take a table or a list, and give a table of the rows `row` makes.
+// Spec: 14.34
+// expect output: ["asha", "ravi", "asha"]
+// expect output: ["asha", "ravi", "asha", "unknown"]
+
+use std.table
+
+type User {
+    id: Int
+    name: String
+}
+
+type Order {
+    user_id: Int
+    total: Float
+}
+
+fn main() {
+    const users = [User(id: 1, name: "asha"), User(id: 2, name: "ravi")]
+    const orders = table.of([
+        Order(user_id: 1, total: 10.0),
+        Order(user_id: 2, total: 5.0),
+        Order(user_id: 1, total: 7.5),
+        Order(user_id: 9, total: 1.0),
+    ])
+    const named = orders.inner_join(table.of(users), .user_id, .id, (o, u) => (name: u.name, total: o.total))
+    print(named["name"])
+    const listed = orders.left_join(users, .user_id, .id, (o, u) => (name: u?.name ?? "unknown", total: o.total))
+    print(listed["name"])
+}
