@@ -1,0 +1,19 @@
+// Rule: `place op= value` and a method that changes a place work out the place's keys once, before the value or arguments.
+// Spec: 3.10
+// expect output: 1
+// expect output: 5
+// expect output: 0
+// expect output: 9
+// expect output: [[1], [7, 9]]
+
+fn say(n: Int) -> Int {
+    print(n)
+    n
+}
+
+fn main() {
+    let rows = [[1], [2]]
+    rows[say(1)][0] += say(5)
+    rows[say(0) + 1].push(say(9))
+    print(rows)
+}

@@ -1,0 +1,22 @@
+// Rule: A method of a program's own type works out the value it is called on before its argument.
+// Spec: 3.10
+// expect output: 1
+// expect output: 2
+// expect output: 3
+
+type Money {
+    cents: Int
+
+    fn plus(self, other: Money) -> Money {
+        Money(cents: self.cents + other.cents)
+    }
+}
+
+fn money(n: Int) -> Money {
+    print(n)
+    Money(cents: n)
+}
+
+fn main() {
+    print(money(1).plus(money(2)).cents)
+}

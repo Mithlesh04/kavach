@@ -1,0 +1,14 @@
+// Rule: An operator works out its left operand before its right one.
+// Spec: 3.10
+// expect output: 1
+// expect output: 2
+// expect output: 3
+
+fn say(n: Int) -> Int {
+    print(n)
+    n
+}
+
+fn main() {
+    print(say(1) + say(2))
+}

@@ -1,0 +1,17 @@
+// Rule: An assignment works out its place's keys, left to right, before the value.
+// Spec: 3.10
+// expect output: 1
+// expect output: 0
+// expect output: 7
+// expect output: [[0, 0], [7, 0]]
+
+fn say(n: Int) -> Int {
+    print(n)
+    n
+}
+
+fn main() {
+    let grid = [[0, 0], [0, 0]]
+    grid[say(1)][say(0)] = say(7)
+    print(grid)
+}

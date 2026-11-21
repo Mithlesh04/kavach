@@ -1,0 +1,23 @@
+// Rule: A record's fields are worked out in the order written, whatever the order they are declared in; an anonymous record's too.
+// Spec: 3.10
+// expect output: 1
+// expect output: 2
+// expect output: 3
+// expect output: 4
+// expect output: Point(x: 2, y: 1)
+
+type Point {
+    x: Int
+    y: Int
+}
+
+fn say(n: Int) -> Int {
+    print(n)
+    n
+}
+
+fn main() {
+    const p = Point(y: say(1), x: say(2))
+    const _ = (y: say(3), x: say(4))
+    print(p)
+}

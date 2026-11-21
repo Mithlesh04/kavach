@@ -12,9 +12,10 @@ use kavach_ast::{self as ast, ExprKind, ItemKind, TypeBody};
 use kavach_resolver::{DefId, DefKind};
 
 /// What `construct_given` asks for each field: its value, by index and
-/// name, or `None` for its default.
+/// name, with where it was written among the arguments (spec 3.10), or
+/// `None` for its default.
 pub(crate) type GivenField<'g, 'a> =
-    dyn FnMut(&mut Lowerer<'a>, usize, &str) -> Lowered<Option<ir::Expr>> + 'g;
+    dyn FnMut(&mut Lowerer<'a>, usize, &str) -> Lowered<Option<(ir::Expr, Option<usize>)>> + 'g;
 
 impl<'a> Lowerer<'a> {
     /// A record (`variant` is `None`) or a union variant, from named arguments.
@@ -28,16 +29,18 @@ impl<'a> Lowerer<'a> {
         span: ast::Span,
     ) -> Lowered<ir::Expr> {
         self.construct_given(def, variant, ty, line, span, &mut |l, i, name| {
-            let given = args
-                .iter()
-                .find(|a| a.name.as_ref().is_some_and(|n| n.name == name))
-                .or_else(|| args.get(i).filter(|a| a.name.is_none()));
-            given.map(|a| l.expr(&a.value)).transpose()
+            // Where field `i`, named `name`, was written among the arguments.
+            let at = (args.iter())
+                .position(|a| a.name.as_ref().is_some_and(|n| n.name == name))
+                .or_else(|| args.get(i).filter(|a| a.name.is_none()).map(|_| i));
+            at.map(|j| Ok((l.expr(&args[j].value)?, Some(j))))
+                .transpose()
         })
     }
 
     /// `construct`, with field `i` named `name` given by `given` (`None`:
-    /// its default): from lowered values, as a tagged template's.
+    /// its default): from lowered values, as a tagged template's. The
+    /// values are worked out in the order they were written (spec 3.10).
     pub(crate) fn construct_given(
         &mut self,
         def: DefId,
@@ -74,14 +77,23 @@ impl<'a> Lowerer<'a> {
             _ => return Err(self.unsupported("this constructor", span)),
         };
         let mut values = Vec::new();
+        let (mut at, mut acts) = (Vec::new(), Vec::new());
         for (i, f) in fields.iter().enumerate() {
             let value = match (given(self, i, &f.name.name)?, &f.default) {
-                (Some(v), _) => v,
-                (None, Some(d)) => self.field_default(def, d, ty)?,
+                (Some((v, written)), _) => {
+                    at.push(written);
+                    v
+                }
+                (None, Some(d)) => {
+                    at.push(None);
+                    self.field_default(def, d, ty)?
+                }
                 (None, None) => return Err(self.unsupported("this constructor", span)),
             };
+            acts.push(crate::lower_order::may_act(&value));
             values.push(self.coerce(value, types[i])?);
         }
+        self.in_written_order(&mut values, &at, &acts);
         let record = ir::Expr {
             kind: K::Record {
                 variant: index,

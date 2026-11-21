@@ -125,6 +125,37 @@ impl Expr {
             _ => vec![self],
         }
     }
+
+    /// Whether working this out can't be seen: names, number and other
+    /// plain literals, fields, and arithmetic on them. A call, or anything
+    /// that may hold one, can be (spec 3.10).
+    pub fn is_plain(&self) -> bool {
+        match &self.kind {
+            ExprKind::Int(_)
+            | ExprKind::Float(_)
+            | ExprKind::Bool(_)
+            | ExprKind::Char(_)
+            | ExprKind::Name(_)
+            | ExprKind::SelfValue
+            | ExprKind::It => true,
+            ExprKind::Field { base, .. } | ExprKind::TupleField { base, .. } => base.is_plain(),
+            ExprKind::Unary(_, x) => x.is_plain(),
+            ExprKind::Binary(_, l, r) => l.is_plain() && r.is_plain(),
+            _ => false,
+        }
+    }
+
+    /// Whether every key in this place is plain (`is_plain`): `xs[i][j + 1]`,
+    /// not `xs[pick()]`.
+    pub fn has_plain_keys(&self) -> bool {
+        match &self.kind {
+            ExprKind::Field { base, .. } | ExprKind::TupleField { base, .. } => {
+                base.has_plain_keys()
+            }
+            ExprKind::Index { base, index } => index.is_plain() && base.has_plain_keys(),
+            _ => true,
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]

@@ -152,8 +152,12 @@ impl<'a> Lowerer<'a> {
         let defaulted = (params.iter().enumerate()).any(|(i, p)| given_at(i, p).is_none());
         let mut bound = Vec::new();
         let mut values = Vec::new();
+        // Where each was written, and whether working it out can be seen.
+        let (mut written, mut acts) = (Vec::new(), Vec::new());
         for (i, p) in params.iter().enumerate() {
-            let mut value = match (given_at(i, p), &p.default) {
+            let given = given_at(i, p);
+            written.push(given.and_then(|a| args.iter().position(|b| std::ptr::eq(a, b))));
+            let mut value = match (given, &p.default) {
                 (Some(a), _) => self.expr(&a.value)?,
                 (None, Some(d)) => {
                     let outer = self.subst.clone();
@@ -164,6 +168,7 @@ impl<'a> Lowerer<'a> {
                 }
                 (None, None) => return Err(self.unsupported("this call", span)),
             };
+            acts.push(crate::lower_order::may_act(&value));
             if defaulted {
                 let line = value.line;
                 let held = self.new_local(value.ty);
@@ -189,6 +194,8 @@ impl<'a> Lowerer<'a> {
                 None => self.local_ids.remove(&def),
             };
         }
+        // Worked out as written (spec 3.10), not in the parameters' order.
+        self.in_written_order(&mut values, &written, &acts);
         Ok(values)
     }
 

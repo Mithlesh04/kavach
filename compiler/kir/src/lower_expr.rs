@@ -213,15 +213,19 @@ impl<'a> Lowerer<'a> {
                 let Some(Shape::Record { fields, .. }) = self.shapes.shape(ty).cloned() else {
                     return Err(self.unsupported("this record here", e.span));
                 };
-                let mut exprs = Vec::new();
+                let (mut exprs, mut written, mut acts) = (Vec::new(), Vec::new(), Vec::new());
                 for f in &fields {
-                    let (_, x) = fs
+                    let at = fs
                         .iter()
-                        .find(|(n, _)| n.name == f.name)
+                        .position(|(n, _)| n.name == f.name)
                         .ok_or_else(|| self.unsupported("this record here", e.span))?;
-                    let v = self.expr(x)?;
+                    let v = self.expr(&fs[at].1)?;
+                    written.push(Some(at));
+                    acts.push(crate::lower_order::may_act(&v));
                     exprs.push(self.coerce(v, f.ty)?);
                 }
+                // Worked out as written (spec 3.10).
+                self.in_written_order(&mut exprs, &written, &acts);
                 K::Record {
                     variant: 0,
                     fields: exprs,

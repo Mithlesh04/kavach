@@ -48,6 +48,7 @@ mod ops;
 mod parallel_map;
 mod places;
 mod processes;
+mod receivers;
 mod reflect;
 mod run;
 mod shown;

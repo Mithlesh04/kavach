@@ -84,6 +84,7 @@ mod lower_methods;
 mod lower_numbers;
 mod lower_ops;
 mod lower_optional;
+mod lower_order;
 mod lower_power;
 mod lower_process;
 mod lower_ptr;

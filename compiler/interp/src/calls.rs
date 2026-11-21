@@ -5,6 +5,7 @@
 //! Calls: functions, closures, records, variants and methods.
 
 use crate::interp::{Frame, Interp};
+use crate::receivers::Receiver;
 use crate::value::{Eval, Field, Flow, Value};
 use kavach_ast::*;
 use kavach_checker::Prim;
@@ -12,20 +13,6 @@ use kavach_resolver::{DefId, DefKind};
 use std::rc::Rc;
 
 pub(crate) type Args<'a> = Vec<(Option<&'a str>, Value<'a>)>;
-
-/// Built-in methods that change their receiver, which must be a variable.
-/// Methods that change their receiver in place: a list's, map's, set's,
-/// ring's or `TextBuilder`'s (spec 2.18).
-const MUTATING: &[&str] = &[
-    "push",
-    "swap",
-    "remove",
-    "add",
-    "push_char",
-    "insert",
-    "replace",
-    "clear",
-];
 
 impl<'a> Interp<'a> {
     pub(crate) fn call(&mut self, e: &'a Expr, callee: &'a Expr, args: &'a [Arg]) -> Eval<'a> {
@@ -36,6 +23,10 @@ impl<'a> Interp<'a> {
         if let Some(opened) = self.sealed_unfreeze(e, callee, args) {
             return opened;
         }
+        // Worked out before the arguments, as written (spec 3.10): a
+        // method's receiver, or the place it changes, and a function
+        // worked out from an expression.
+        let first = self.first_of(callee, e.span)?;
         let mut values: Args<'a> = Vec::new();
         for a in args {
             values.push((
@@ -114,13 +105,16 @@ impl<'a> Interp<'a> {
                     ExprKind::Call { generics, .. } => generics.as_slice(),
                     _ => &[],
                 };
-                let v = self.method(e, base, name, generics, values)?;
+                let v = self.method(e, base, name, generics, values, first)?;
                 self.write_back(args, e.span)?;
                 return Ok(v);
             }
             _ => {}
         }
-        let f = self.eval(callee)?;
+        let f = match first {
+            Receiver::Value(f) => f,
+            _ => self.eval(callee)?,
+        };
         self.call_value(f, values.into_iter().map(|(_, v)| v).collect(), e.span)
     }
 
@@ -255,6 +249,7 @@ impl<'a> Interp<'a> {
         name: &'a Ident,
         generics: &'a [kavach_ast::TypeExpr],
         mut args: Args<'a>,
+        first: Receiver<'a>,
     ) -> Eval<'a> {
         let span = call.span;
         if name.name == "timeout"
@@ -314,65 +309,19 @@ impl<'a> Interp<'a> {
                 _ => {}
             }
         }
-        // A user type's own `add` or `push` is a method like any other.
-        let user_type = matches!(
-            self.c.expr_types.get(&(base.span.start, base.span.end)),
-            Some(kavach_checker::Ty::Adt(..) | kavach_checker::Ty::Param(_))
-        );
-        // `xs.pop()` (spec 14.2): the last item, and the list without it.
-        if name.name == "pop"
-            && matches!(
-                self.c.expr_types.get(&(base.span.start, base.span.end)),
-                Some(kavach_checker::Ty::List(_))
-            )
-        {
-            let Value::List(mut items) = self.eval(base)? else {
-                unreachable!("a list");
-            };
-            // The variable lets go first, so the list shrinks in place.
-            self.assign(base, Value::Unit, span)?;
-            let last = Rc::make_mut(&mut items).pop();
-            self.assign(base, Value::List(items), span)?;
-            return Ok(last.unwrap_or(Value::None));
+        let first = match first {
+            Receiver::Later if self.in_place(base, name) => {
+                Receiver::Place(self.place(base, span)?)
+            }
+            first => first,
+        };
+        if let Receiver::Place(place) = first {
+            return self.change_in_place(base, name, args, place, span);
         }
-        // Only a list, map or set changes in place: `7.add(2)` is `7 + 2`.
-        let collection = matches!(
-            self.c.expr_types.get(&(base.span.start, base.span.end)),
-            Some(
-                kavach_checker::Ty::List(_)
-                    | kavach_checker::Ty::Map(..)
-                    | kavach_checker::Ty::Set(_)
-                    | kavach_checker::Ty::Builtin("Ring" | "TextBuilder", _)
-            )
-        );
-        if MUTATING.contains(&name.name.as_str()) && !user_type && collection {
-            // A variable's list or map moves out while it changes, so
-            // `items.push(x)` doesn't copy the whole list.
-            let local = match &base.kind {
-                ExprKind::Name(id) => self.c.resolution.uses.get(&id.span.start).copied(),
-                _ => None,
-            };
-            let taken = local.and_then(|d| self.frame().vars.remove(&d));
-            let receiver = match taken {
-                Some(v) => v,
-                // A field's or item's list: its place lets go while it
-                // changes, so it changes in place too (Sakshi's S6).
-                None => {
-                    let v = self.eval(base)?;
-                    self.require_entry(base, &v)?;
-                    // No invariant sees the empty place (spec 7.3).
-                    self.emptying = true;
-                    let emptied = self.assign(base, Value::Unit, span);
-                    self.emptying = false;
-                    emptied?;
-                    v
-                }
-            };
-            let changed = self.mutate(receiver, &name.name, args, span)?;
-            self.assign(base, changed, span)?;
-            return Ok(Value::Unit);
-        }
-        let receiver = self.eval(base)?;
+        let receiver = match first {
+            Receiver::Value(v) => v,
+            _ => self.eval(base)?,
+        };
         if let Value::Agent(agent) = &receiver {
             return self.agent_event(agent.clone(), &name.name, args, span);
         }

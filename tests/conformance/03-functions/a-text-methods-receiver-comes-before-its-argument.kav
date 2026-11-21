@@ -1,0 +1,14 @@
+// Rule: A text method works out the text it is called on before its argument.
+// Spec: 3.10
+// expect output: whole
+// expect output: hole
+// expect output: true
+
+fn say(t: String) -> String {
+    print(t)
+    t
+}
+
+fn main() {
+    print(say("whole").contains(say("hole")))
+}

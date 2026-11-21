@@ -1,0 +1,30 @@
+// Rule: An operator a program's own type implements works out its left operand before its right one.
+// Spec: 3.10, 2.16
+// expect output: 1
+// expect output: 2
+// expect output: 3
+// expect output: 4
+// expect output: 5
+// expect output: true
+
+type Money: Add, Comparable {
+    cents: Int
+
+    fn add(self, other: Money) -> Money {
+        Money(cents: self.cents + other.cents)
+    }
+
+    fn compare(self, other: Money) -> Int {
+        self.cents - other.cents
+    }
+}
+
+fn money(n: Int) -> Money {
+    print(n)
+    Money(cents: n)
+}
+
+fn main() {
+    print((money(1) + money(2)).cents)
+    print(money(4) < money(5))
+}

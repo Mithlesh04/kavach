@@ -1,0 +1,19 @@
+// Rule: A list method works out the list it is called on before its argument.
+// Spec: 3.10
+// expect output: list
+// expect output: item
+// expect output: true
+
+fn items() -> [Int] {
+    print("list")
+    [1, 2]
+}
+
+fn item() -> Int {
+    print("item")
+    2
+}
+
+fn main() {
+    print(items().contains(item()))
+}

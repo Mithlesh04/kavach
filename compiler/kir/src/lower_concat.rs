@@ -74,6 +74,22 @@ impl<'a> Lowerer<'a> {
         if !matches!(typed, Some(kavach_checker::Ty::List(_))) {
             return Ok(None);
         }
+        // `rows[pick()].pop()`: the place's keys once (spec 3.10).
+        let mut stmts = Vec::new();
+        let held = self.hold_keys(base, &mut stmts)?;
+        let popped = self.list_pop_held(base, ty, line, stmts);
+        self.release(held);
+        popped.map(Some)
+    }
+
+    /// `list_pop`, the keys of `base` held by `stmts`.
+    fn list_pop_held(
+        &mut self,
+        base: &'a ast::Expr,
+        ty: Type,
+        line: u32,
+        mut stmts: Vec<Stmt>,
+    ) -> Lowered<ir::Expr> {
         let list = self.expr(base)?;
         let list_ty = list.ty;
         let at = |kind, ty| ir::Expr { kind, ty, line };
@@ -92,18 +108,18 @@ impl<'a> Lowerer<'a> {
             K::Rt(RtOp::ListTruncate, vec![self.expr(base)?, keep]),
             list_ty,
         );
-        let stmts = vec![
+        stmts.extend([
             Stmt::Let(len, at(K::Rt(RtOp::ListLen, vec![list]), Type::I64)),
             Stmt::Let(item, last),
             self.assign_path(base, cut)?,
-        ];
-        Ok(Some(at(
+        ]);
+        Ok(at(
             K::Block(Block {
                 stmts,
                 value: Some(Box::new(self.local_expr(item, line))),
             }),
             ty,
-        )))
+        ))
     }
 
     /// `b.items.push(x)`, `ls[0].push(x)`: `changed` is the op on what

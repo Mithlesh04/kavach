@@ -305,6 +305,7 @@ impl<'a> Interp<'a> {
             result: Vec::new(),
             invariant_fields: Vec::new(),
             emptying: false,
+            held_receiver: None,
             panic_trail: Vec::new(),
             out: String::new(),
             err: String::new(),

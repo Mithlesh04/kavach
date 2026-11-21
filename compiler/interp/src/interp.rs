@@ -66,6 +66,10 @@ pub(crate) struct Interp<'a> {
     /// A place is emptied for a moment while its list changes in place:
     /// invariants are checked when the list is put back (spec 7.3).
     pub(crate) emptying: bool,
+    /// `c[k] += a` on a program's own type is `c[k] = c[k].add(a)`
+    /// (spec 2.16): the receiver `c[k]`, by its span, is the place's
+    /// value, so its keys are worked out once (spec 3.10).
+    pub(crate) held_receiver: Option<((u32, u32), Value<'a>)>,
     /// The functions a panic left, innermost first, each `name
     /// (file:line)`: for a crash report (spec 14.30).
     pub(crate) panic_trail: Vec<String>,
@@ -177,6 +181,7 @@ impl<'a> Interp<'a> {
             result: Vec::new(),
             invariant_fields: Vec::new(),
             emptying: false,
+            held_receiver: None,
             panic_trail: Vec::new(),
             out: String::new(),
             err: String::new(),

@@ -1,0 +1,23 @@
+// Rule: A function worked out from an expression is worked out before the call's arguments.
+// Spec: 3.10
+// expect output: pick
+// expect output: argument
+// expect output: 14
+
+fn double(n: Int) -> Int {
+    n * 2
+}
+
+fn pick() -> fn(Int) -> Int {
+    print("pick")
+    double
+}
+
+fn argument() -> Int {
+    print("argument")
+    7
+}
+
+fn main() {
+    print(pick()(argument()))
+}

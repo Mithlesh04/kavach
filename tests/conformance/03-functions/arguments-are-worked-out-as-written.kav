@@ -1,0 +1,23 @@
+// Rule: A call's arguments are worked out left to right as written, named ones too, whatever the parameters' order.
+// Spec: 3.10
+// expect output: 1
+// expect output: 2
+// expect output: 3
+// expect output: 4
+// expect output: true
+// expect output: 2-1
+
+fn say(n: Int) -> Int {
+    print(n)
+    n
+}
+
+fn pair(a: Int, b: Int) -> String {
+    `{a}-{b}`
+}
+
+fn main() {
+    const _ = pair(say(1), say(2))
+    print(pair(b: say(3), a: say(4)) == "4-3")
+    print(pair(b: 1, a: 2))
+}

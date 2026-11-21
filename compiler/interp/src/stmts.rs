@@ -10,8 +10,6 @@ use kavach_ast::*;
 use kavach_resolver::{DefId, DefKind};
 use std::rc::Rc;
 
-use crate::places::{Step, set};
-
 impl<'a> Interp<'a> {
     pub(crate) fn block(&mut self, b: &'a Block) -> Eval<'a> {
         self.block_lets.push(Vec::new());
@@ -70,39 +68,7 @@ impl<'a> Interp<'a> {
                 Ok(Value::Unit)
             }
             StmtKind::Assign { target, op, value } => {
-                let mut v = self.eval(value)?;
-                // `(a, b) = (b, a)`: the whole right side first (spec 1.14).
-                if matches!(target.kind, ExprKind::Tuple(_)) {
-                    self.assign_parts(target, v, s.span)?;
-                    return Ok(Value::Unit);
-                }
-                if let Some(bin) = op.binary() {
-                    let current = self.eval(target)?;
-                    self.require_entry(target, &current)?;
-                    // `xs += ys` and `s += part`: the variable lets go of its
-                    // list or text first, so it grows in place, not in a
-                    // copy (spec 2.2, 6.1).
-                    if matches!(current, Value::List(_) | Value::Str(_)) {
-                        // No invariant sees the empty place (spec 7.3).
-                        self.emptying = true;
-                        let emptied = self.assign(target, Value::Unit, s.span);
-                        self.emptying = false;
-                        emptied?;
-                    }
-                    v = match (current, v) {
-                        // A list with a limit keeps it, and fills up to it
-                        // (spec 2.2).
-                        (Value::List(mut xs), Value::List(ys)) if xs.limit.is_some() => {
-                            for y in ys.iter() {
-                                crate::items::push(&mut xs, y.clone())
-                                    .map_err(|m| self.panic(m, s.span))?;
-                            }
-                            Value::List(xs)
-                        }
-                        (current, v) => self.arith(bin, current, v, s.span)?,
-                    };
-                }
-                self.assign(target, v, s.span)?;
+                self.assign_stmt(target, *op, value, s.span)?;
                 Ok(Value::Unit)
             }
             // `on cores` and `on threads` (spec 4.9) give the one-core
@@ -250,7 +216,7 @@ impl<'a> Interp<'a> {
 
     /// Stores each part of tuple `value` into its place of `target`, left
     /// to right, a tuple of places too (spec 1.14).
-    fn assign_parts(
+    pub(crate) fn assign_parts(
         &mut self,
         target: &'a Expr,
         value: Value<'a>,
@@ -265,63 +231,6 @@ impl<'a> Interp<'a> {
             }
             (_, value) => self.assign(target, value, span),
         }
-    }
-
-    /// Stores `value` into a variable, field, index or tuple element.
-    pub(crate) fn assign(
-        &mut self,
-        target: &'a Expr,
-        value: Value<'a>,
-        span: Span,
-    ) -> Result<(), Flow<'a>> {
-        let mut steps = Vec::new();
-        let mut root = target;
-        loop {
-            match &root.kind {
-                ExprKind::Field { base, name, .. } => {
-                    steps.push(Step::Field(name.name.as_str()));
-                    root = base;
-                }
-                ExprKind::Index { base, index } => {
-                    steps.push(match &index.kind {
-                        ExprKind::FromEnd(k) => Step::FromEnd(self.int_of(k)?),
-                        ExprKind::Part { .. } => Step::Slice(self.part(index)?),
-                        _ => Step::Index(self.eval(index)?),
-                    });
-                    root = base;
-                }
-                ExprKind::TupleField { base, index } => {
-                    steps.push(Step::Tuple(*index as usize));
-                    root = base;
-                }
-                _ => break,
-            }
-        }
-        steps.reverse();
-        let ExprKind::Name(id) = &root.kind else {
-            return Err(self.panic("can't assign here", span));
-        };
-        let Some(&def) = self.c.resolution.uses.get(&id.span.start) else {
-            return Ok(());
-        };
-        let mut slot = self.frame().vars.remove(&def).unwrap_or(Value::Unit);
-        let result = set(&mut slot, &steps, value);
-        // Each record on the path holds the changed value: its invariants
-        // are checked, the innermost first (spec 7.3).
-        let mut checked = Ok(());
-        if result.is_ok() {
-            for k in (0..steps.len().max(1)).rev() {
-                if let Some(inner) = crate::places::get(&slot, &steps[..k])
-                    && let Err(e) = self.check_invariants(inner, span)
-                {
-                    checked = Err(e);
-                    break;
-                }
-            }
-        }
-        self.frame().vars.insert(def, slot);
-        result.map_err(|m| self.panic(m, span))?;
-        checked
     }
 
     /// The bindings `p` makes when it matches `v`, or `None` if it doesn't.

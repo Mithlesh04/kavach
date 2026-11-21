@@ -90,11 +90,12 @@ impl<'a> Lowerer<'a> {
         let mut text = Some(at(K::Format(text), str_ty));
         let mut list = Some(at(K::List(values), list_ty));
         self.construct_given(def, None, ty, line, span, &mut |_, i, name| {
-            Ok(match (i, name) {
+            let made = match (i, name) {
                 (0, _) => text.take(),
                 (_, "params") => list.take(),
                 _ => None,
-            })
+            };
+            Ok(made.map(|x| (x, None)))
         })
     }
 

@@ -58,20 +58,11 @@ impl<'a> Lowerer<'a> {
                     out.push(s);
                     return Ok(());
                 }
-                let mut value = self.expr(value)?;
-                // `log += ["step"]`: pushes onto the variable (spec 2.2).
-                if *op == ast::AssignOp::Add
-                    && let ExprKind::Name(id) = &target.kind
-                    && let Ok(local) = self.local(id)
-                    && self.is_list_type(self.locals[local as usize])
-                {
-                    out.extend(self.list_extend(local, value, line)?);
-                    return Ok(());
-                }
-                if let Some(bin) = op.binary() {
-                    value = self.compound(bin, target, value, line, s.span)?;
-                }
-                out.push(self.assign_path(target, value)?);
+                // The place's keys once, before the value (spec 3.10).
+                let held = self.hold_keys(target, out)?;
+                let done = self.assign_stmt(target, *op, value, line, s.span, out);
+                self.release(held);
+                done?;
             }
             StmtKind::For {
                 label,
@@ -452,8 +443,12 @@ impl<'a> Lowerer<'a> {
                 let ExprKind::Field { base, .. } = &callee.kind else {
                     return Err(self.unsupported("this call", e.span));
                 };
-                let changed = self.expr(e)?;
-                self.change_in_place(base, changed, out)?;
+                // The place's keys once, before the arguments (spec 3.10).
+                let held = self.hold_keys(base, out)?;
+                let changed = self.expr(e);
+                let done = changed.and_then(|c| self.change_in_place(base, c, out));
+                self.release(held);
+                done?;
             }
             ExprKind::If { .. }
             | ExprKind::IfLet { .. }

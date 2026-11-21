@@ -39,7 +39,11 @@ impl<'a> Interp<'a> {
                 .find(|a| a.name.as_ref().is_some_and(|n| n.name == p.name.name));
             // A `Drop` value it replaces is freed after the call, in the
             // caller (6.1): such a value isn't lent.
+            // A place with a key that calls something isn't lent: its
+            // keys are worked out with the argument, and again when the
+            // value goes back, as in native code (spec 3.10).
             if let Some(a) = named.or_else(|| positional.get(k).copied())
+                && a.value.has_plain_keys()
                 && let Some(t) = self
                     .c
                     .expr_types
