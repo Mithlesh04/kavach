@@ -175,9 +175,14 @@ impl Resolver {
                     _ => None,
                 })
                 .collect();
-            let has_main = items
-                .iter()
-                .any(|i| matches!(&i.kind, ItemKind::Fn(f) if f.name.name == "main"));
+            let main = items.iter().find_map(|i| match &i.kind {
+                ItemKind::Fn(f) if f.name.name == "main" => Some(f),
+                _ => None,
+            });
+            let has_main = main.is_some();
+            if let Some(f) = main.filter(|f| m == 0 && !f.params.is_empty()) {
+                self.error(f.name.span, "`main` takes no parameters (spec 1.3): read the program's arguments with `cli.args()` (14.6)");
+            }
             if m == 0 && has_main {
                 // With `fn main`, a statement outside it would never run (1.3).
                 let (consts, others): (Vec<_>, Vec<_>) = stmts.into_iter().partition(is_const);

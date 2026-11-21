@@ -1,0 +1,7 @@
+// Rule: `main` takes no parameters: a program reads its arguments with `cli.args()`.
+// Spec: 1.3
+// expect compile error
+
+fn main(args: [String]) {          // error: `main` takes no parameters
+    print(args)
+}

@@ -42,6 +42,8 @@ fn main() {
 }
 ```
 
+`main` takes no parameters: `fn main(args: [String])` is a compile error. A program reads its arguments with `cli.args()` (14.6).
+
 For scripts, the entry file may contain top-level statements instead. They become the body of `main`. A top-level `const` is a module constant instead (1.13), in any file, even one with `fn main`; in a script, one that uses a capability stays a statement, as 1.13 shows.
 
 ```kavach
