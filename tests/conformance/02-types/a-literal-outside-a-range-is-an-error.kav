@@ -1,0 +1,11 @@
+// Rule: A literal given as a range value must be in the range.
+// Spec: 2.1
+// expect compile error
+
+const port: Int<range: 1..=65535> = 8080
+const none_yet: Int<range: 1..=65535> = 0       // error: 0 is not in 1..=65535
+
+fn main() {
+    print(port)
+    print(none_yet)
+}

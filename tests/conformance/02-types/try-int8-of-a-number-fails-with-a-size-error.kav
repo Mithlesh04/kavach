@@ -1,0 +1,13 @@
+// Rule: `Int8` is a `bits` type, so a number converted to it under `catch` fails with a `SizeError` too.
+// Spec: 2.1
+// expect output: 300 doesn't fit in Int8
+// expect output: -1
+
+fn main() {
+    let n = 300
+    let small = Int8(n) catch e => {
+        print(e)
+        Int8(-1)
+    }
+    print(small)
+}

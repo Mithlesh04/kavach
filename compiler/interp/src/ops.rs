@@ -12,16 +12,8 @@ use std::cmp::Ordering;
 
 /// The values an integer type can hold.
 pub(crate) fn int_range(p: Prim) -> (i128, i128) {
-    match p {
-        Prim::Int8 => (i8::MIN as i128, i8::MAX as i128),
-        Prim::Int16 => (i16::MIN as i128, i16::MAX as i128),
-        Prim::Int32 => (i32::MIN as i128, i32::MAX as i128),
-        Prim::UInt8 => (0, u8::MAX as i128),
-        Prim::UInt16 => (0, u16::MAX as i128),
-        Prim::UInt32 => (0, u32::MAX as i128),
-        Prim::UInt64 => (0, u64::MAX as i128),
-        _ => (i64::MIN as i128, i64::MAX as i128),
-    }
+    p.int_range()
+        .unwrap_or((i64::MIN as i128, i64::MAX as i128))
 }
 
 /// How many bits `p` has.
@@ -37,6 +29,22 @@ pub(crate) fn fits(n: i128, p: Prim) -> Option<i128> {
 }
 
 impl<'a> Interp<'a> {
+    /// The type `UInt<bits: 12>(x)` or `Int<range: 1..=9>(x)` at `span`
+    /// converts to (spec 2.1), from the checker; `None` for other calls.
+    pub(crate) fn int_type_target(&self, name: &str, span: Span) -> Option<Prim> {
+        if !matches!(name, "Int" | "UInt") {
+            return None;
+        }
+        match self.c.expr_types.get(&(span.start, span.end))? {
+            kavach_checker::Ty::Prim(p) => Some(*p),
+            kavach_checker::Ty::Result(ok, _) => match **ok {
+                kavach_checker::Ty::Prim(p) => Some(p),
+                _ => None,
+            },
+            _ => None,
+        }
+    }
+
     pub(crate) fn unary(&mut self, op: UnaryOp, v: Value<'a>, span: Span) -> Eval<'a> {
         Ok(match (op, v) {
             (UnaryOp::Not, Value::Bool(b)) => Value::Bool(!b),

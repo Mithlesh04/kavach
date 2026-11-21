@@ -345,7 +345,11 @@ impl Checker<'_> {
     /// `x`, compared with a value of type `t`: reading, so a frozen `x`
     /// fits a plain `t` (spec 2.20).
     pub(crate) fn expect_read(&mut self, x: &Expr, t: &Ty) {
+        // `p > 0` on a range: any `Int` literal compares (spec 2.1).
+        self.range_operand = matches!(self.inf.resolve(t), Ty::Prim(crate::ty::Prim::Ranged(..)))
+            && crate::constants::const_int(x).is_some();
         let actual = self.value(x, Some(t));
+        self.range_operand = false;
         self.fitting = Some(self.made(x));
         self.frozen.at = Some((Callee::Reads, 0, x.span));
         let fits = self.coerce(&actual, t);

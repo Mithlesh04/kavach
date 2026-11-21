@@ -1,0 +1,14 @@
+// Rule: `Int<range: a..b>` leaves `b` out: it is the type `Int<range: a..=b-1>`.
+// Spec: 2.1
+// expect output: 9
+// expect panic: 10 doesn't fit in Int<range: 0..=9>
+
+fn digit(n: Int) -> Int<range: 0..10> {
+    Int<range: 0..10>(n)
+}
+
+fn main() {
+    const d: Int<range: 0..=9> = digit(9)
+    print(d)
+    print(digit(10))
+}

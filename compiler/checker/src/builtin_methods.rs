@@ -219,7 +219,12 @@ impl Checker<'_> {
             Ty::Prim(p) if p.is_int() => {
                 let t = Ty::Prim(*p);
                 match name {
-                    "wrapping_add" | "wrapping_sub" | "wrapping_mul" => sig(vec![t.clone()], t),
+                    // Wrapping has no meaning for a range (spec 2.1).
+                    "wrapping_add" | "wrapping_sub" | "wrapping_mul"
+                        if !matches!(p, Prim::Ranged(..)) =>
+                    {
+                        sig(vec![t.clone()], t)
+                    }
                     "checked_add" | "checked_sub" | "checked_mul" | "checked_div" => {
                         sig(vec![t.clone()], opt(t))
                     }

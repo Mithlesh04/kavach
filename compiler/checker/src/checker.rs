@@ -214,6 +214,9 @@ pub(crate) struct Checker<'a> {
     /// of function types that named functions and lambdas were given to,
     /// checked once capabilities are known (spec 3.4).
     pub(crate) fitting: Option<crate::fn_values::Made>,
+    /// Whether the constant being checked is the right side of an
+    /// operator on a range (`p + 1`): it need only fit an `Int` (2.1).
+    pub(crate) range_operand: bool,
     pub(crate) uses_limits: Vec<(crate::fn_values::Made, Vec<String>)>,
     /// The lambdas being checked, innermost last, and what each needs.
     pub(crate) lambdas: Vec<Span>,
@@ -356,6 +359,7 @@ impl<'a> Checker<'a> {
             rethrow: None,
             lambda_failed: false,
             fitting: None,
+            range_operand: false,
             uses_limits: Vec::new(),
             lambdas: Vec::new(),
             lambda_needs: HashMap::new(),

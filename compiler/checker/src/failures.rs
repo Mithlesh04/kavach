@@ -188,6 +188,9 @@ impl Checker<'_> {
             return None;
         };
         let def = *self.res.uses.get(&id.span.start)?;
+        if self.res.defs[def].kind == kavach_resolver::DefKind::Builtin {
+            return self.checked_int_conversion(&id.name, expr, expected);
+        }
         if !self.invariant_records.contains(&def) {
             return None;
         }

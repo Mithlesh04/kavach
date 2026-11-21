@@ -6,11 +6,14 @@
 //! generic `T: Add`'s `a + b` is `a.add(b)`, which for a number is its own
 //! `+`, so each copy of the function runs it as one instruction.
 //! `compare` gives -1, 0 or 1, and 0 when neither comes first (a `NaN`).
+//! And compound assignment, `x op= v`.
 
-use crate::ir::{self, BinOp, Block, ExprKind as K, Stmt, Type, UnOp};
-use crate::lower::Lowerer;
+use crate::ir::{self, BinOp, Block, ExprKind as K, Shape, Stmt, Type, UnOp};
+use crate::lower::{Lowered, Lowerer};
+use crate::rt_op::RtOp;
+use kavach_ast as ast;
 
-impl Lowerer<'_> {
+impl<'a> Lowerer<'a> {
     /// `a.name(b)` (or `a.neg()`) on a number or text, with `values` the
     /// receiver then the argument; `None` when `name` isn't one of these.
     pub(crate) fn op_method(
@@ -78,5 +81,49 @@ impl Lowerer<'_> {
             Type::I64,
             line,
         ))
+    }
+
+    /// The new value of `target op= value` (spec 1.8): `ages[name] += 1`
+    /// changes the value under that key, and a list grows by another.
+    pub(crate) fn compound(
+        &mut self,
+        bin: ast::BinaryOp,
+        target: &'a ast::Expr,
+        value: ir::Expr,
+        line: u32,
+        span: ast::Span,
+    ) -> Lowered<ir::Expr> {
+        let mut current = self.expr(target)?;
+        if let Some(Shape::Optional(inner)) = self.shapes.shape(current.ty).cloned() {
+            // `ages[name] += 1` changes the value under that key;
+            // a missing key panics, naming it.
+            current = match current.kind {
+                ir::ExprKind::Rt(RtOp::MapGet, _) => self.dict_entry(ir::Expr {
+                    ty: inner,
+                    ..current
+                }),
+                _ => ir::Expr {
+                    kind: ir::ExprKind::Unwrap(Box::new(current)),
+                    ty: inner,
+                    line,
+                },
+            };
+        }
+        let ty = current.ty;
+        let whole = self.whole_of(target);
+        Ok(match crate::lower_expr::binary_op(bin) {
+            // `x += 1` on an `Int<bits: n>` or a range (spec 2.1).
+            _ if let Some(p) = whole => self.whole_binary(bin, current, value, p, line),
+            _ if bin == ast::BinaryOp::Pow => self.power(current, value, line),
+            _ if self.is_list_type(ty) => self.list_concat(current, value, line, true)?,
+            Some(bin) => ir::Expr {
+                kind: ir::ExprKind::Binary(bin, Box::new(current), Box::new(value)),
+                ty,
+                line,
+            },
+            None => {
+                return Err(self.unsupported(format!("`{}=`", bin.as_str()), span));
+            }
+        })
     }
 }

@@ -17,6 +17,7 @@ mod calls;
 mod channels;
 mod cli;
 mod contracts;
+mod conversions;
 mod destructure;
 mod drops;
 mod enums;

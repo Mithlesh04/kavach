@@ -1,0 +1,16 @@
+// Rule: `wrapping_add` and the other wrapping methods wrap at the type's width; `checked_add` gives `none` past it.
+// Spec: 2.1, 5.6
+// expect output: 4
+// expect output: 4095
+// expect output: 11
+// expect output: none
+
+fn main() {
+    let pc: UInt<bits: 12> = 4090
+    print(pc.wrapping_add(10))
+    let zero: UInt<bits: 12> = 0
+    print(zero.wrapping_sub(1))
+    let s: Int<bits: 5> = -3
+    print(s.wrapping_mul(7))
+    print(pc.checked_add(6))
+}

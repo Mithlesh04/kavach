@@ -1,0 +1,18 @@
+// Rule: Under `try` or `catch`, a number that doesn't fit its whole-number type fails with a `SizeError`.
+// Spec: 2.1, 2.9
+// expect output: 300
+// expect output: 5000 doesn't fit in UInt<bits: 12>
+// expect output: 0
+
+fn addr(n: Int) -> UInt<bits: 12> ! SizeError {
+    try UInt<bits: 12>(n)
+}
+
+fn main() {
+    print(addr(300) catch _ => 0)
+    let a = addr(5000) catch e => {
+        print(e)
+        0
+    }
+    print(a)
+}

@@ -1,0 +1,13 @@
+// Rule: A literal on the right of an operator or a comparison on a range need only be an `Int`: the result is checked.
+// Spec: 2.1
+// expect output: 14
+// expect output: 20
+// expect output: true
+
+fn main() {
+    let p: Int<range: 10..=20> = 15
+    print(p - 1)
+    p += 5
+    print(p)
+    print(p > 0)
+}

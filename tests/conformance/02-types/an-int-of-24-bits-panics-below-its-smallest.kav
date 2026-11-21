@@ -1,0 +1,13 @@
+// Rule: A result below an `Int<bits: 24>`'s smallest value panics.
+// Spec: 2.1, 5.6
+// expect output: -8388607
+// expect panic: integer overflow: -8388608 - 1 doesn't fit in Int<bits: 24>
+
+fn less(a: Int<bits: 24>) -> Int<bits: 24> {
+    a - 1
+}
+
+fn main() {
+    print(less(-8_388_606))
+    print(less(-8_388_608))
+}

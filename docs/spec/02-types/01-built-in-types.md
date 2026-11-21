@@ -75,7 +75,7 @@ print(a * b + 3.3)        // 5.720000000000001 everywhere: a multiply, then an a
 print(math.sin(1e22))     // -0.8522008497671888 everywhere
 ```
 
-*Not built yet:* **Any width: `Int<bits: n>` and `UInt<bits: n>`** ([decision 0137](../../decisions/0137-numbers-in-types.md), 2.9). A whole number of exactly `n` bits, signed or not, for hardware registers, chip design and file formats. `n` is from 1 to 65,535, as in Zig. The sized names are short spellings of these: `Int8` is `Int<bits: 8>`, `UInt64` is `UInt<bits: 64>`, and `Int` is `Int<bits: 64>`. `UInt` is always written with its bits.
+**Any width: `Int<bits: n>` and `UInt<bits: n>`** ([decision 0137](../../decisions/0137-numbers-in-types.md), 2.9). A whole number of exactly `n` bits, signed or not, for hardware registers, chip design and file formats. `n` is from 1 to 65,535, as in Zig. The sized names are short spellings of these: `Int8` is `Int<bits: 8>`, `UInt64` is `UInt<bits: 64>`, and `Int` is `Int<bits: 64>`: each pair is one type. `UInt` is always written with its bits. The width is a literal or a constant known while compiling.
 
 ```kavach
 const addr: UInt<bits: 12> = 4095          // the largest 12-bit number
@@ -83,14 +83,18 @@ const temp: Int<bits: 24> = -8_388_608     // the smallest 24-bit number
 const over: UInt<bits: 12> = 4096          // compile error: 4096 doesn't fit in 12 bits
 let pc: UInt<bits: 12> = 4090
 pc = pc.wrapping_add(10)                   // 4: wraps at 12 bits, as a register does
-const wide: UInt<bits: 128> = 2 ** 100     // fits: 128 bits are enough
+const wide: UInt<bits: 128> = 2 ** 100     // fits: 128 bits are enough (not built yet)
 ```
 
-- *Not built yet:* `+ - * / %`, the comparisons and the bit operators work as on the other whole numbers (1.8). Both sides have the same type, and a result that doesn't fit panics (5.6). `wrapping_add` and `checked_add` (5.6) work at the type's width; `~` flips its `n` bits.
-- *Not built yet:* `UInt<bits: 12>(x)` converts, and panics when `x` doesn't fit, as `Int8(300)` does.
-- *Not built yet:* A value is kept in the smallest of 1, 2, 4 or 8 bytes that holds it; a wider one in whole 8-byte words.
+- `+ - * / % **`, the comparisons and the bit operators work as on the other whole numbers (1.8). Both sides have the same type, and a result that doesn't fit panics (5.6): `integer overflow: 4095 + 1 doesn't fit in UInt<bits: 12>`. `wrapping_add` and `checked_add` (5.6) work at the type's width; `~` flips its `n` bits; `<<` and `>>` take a shift from 0 to `n - 1`.
+- `UInt<bits: 12>(x)` converts any number, and panics when `x` doesn't fit, as `Int8(300)` does: `5000 doesn't fit in UInt<bits: 12>`. A float is cut to its whole part first.
+- Under `try` or `catch`, a conversion of a number into any whole-number type fails with a `SizeError` instead of panicking (2.9), with the same text. This holds for `Int8` … `UInt64` too, as they are `bits` types: `try Int8(n)`. Text read as a number still fails with a `ParseError`.
+- It prints, compares, goes in lists, dicts and records, and is written to JSON as the number it is. Read from JSON, a number that doesn't fit is an error (2.12): ``a whole number that fits `UInt<bits: 12>` ``.
+- *Not built yet:* widths over 64 bits. Up to then, `Int<bits: 128>` is a compile error that names `BigInt`.
+- *Not built yet:* A value is kept in the smallest of 1, 2, 4 or 8 bytes that holds it; a wider one in whole 8-byte words. Today every one is kept in 8 bytes, as an `Int`.
+- *Not built yet:* in native code, reading JSON into a type that holds a `bits` or range number (`json.decode`), and a generic function given one (`fn twice<T: Add>(x: T)`); the interpreter runs both.
 
-*Not built yet:* **A range: `Int<range: a..=b>`.** A whole number that is always in the range: an `Int` whose smallest and largest are `a` and `b`. Both ends are known while compiling; `a..b` leaves `b` out, as a range does (1.8). An empty range is a compile error.
+**A range: `Int<range: a..=b>`.** A whole number that is always in the range: an `Int` whose smallest and largest are `a` and `b`. Both ends are known while compiling; `a..b` leaves `b` out, as a range does (1.8), so `Int<range: 0..10>` is `Int<range: 0..=9>`, one type, and is shown that way. An empty range is a compile error.
 
 ```kavach
 const port: Int<range: 1..=65535> = 8080
@@ -105,8 +109,10 @@ fn port_of(n: Int) -> Int<range: 1..=65535> {
 }
 ```
 
-- *Not built yet:* Arithmetic of two values of one range type gives that type; a result out of the range panics, as overflow does (5.6), and `checked_add` gives `none`. Wrapping has no meaning for a range: `wrapping_add` on one is a compile error.
-- *Not built yet:* Two ranges are two types, and a range is not a `bits` type: `Int<range: 0..=255>` is not `UInt8`. `Int(port)` always converts back.
+- Arithmetic of two values of one range type gives that type; a result out of the range panics, as overflow does (5.6): `integer overflow: 65535 + 1 doesn't fit in Int<range: 1..=65535>`. `checked_add` gives `none`. Wrapping has no meaning for a range: `wrapping_add` on one is a compile error.
+- A literal given as a range value must be in the range: `const none_yet` above is an error. A literal on the right of an operator or a comparison need only be an `Int`, as the result is what is checked: `p - 1` and `p > 0` are allowed when `1` and `0` are not in the range.
+- The bit operators `& | ^ << >> ~` work on bits, not on values in a range: they are compile errors on a range. `Int(p) & 1` converts first.
+- Two ranges are two types, and a range is not a `bits` type: `Int<range: 0..=255>` is not `UInt8`. `Int(port)` always converts back. `Int<range: 1..=65535>(n)` converts, and panics when `n` is out of the range; under `try` or `catch` it fails with a `SizeError`, as above.
 
 *Not built yet:* **Fixed places: `Decimal<digits: 10, places: 2>`.** At most 10 digits in all, 2 of them after the point, as SQL's `NUMERIC(10, 2)`: from −99,999,999.99 to 99,999,999.99. `places` is from 0 to `digits`. A plain `Decimal` keeps any number of digits, as above.
 

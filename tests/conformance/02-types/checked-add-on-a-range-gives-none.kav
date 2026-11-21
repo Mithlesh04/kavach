@@ -1,0 +1,12 @@
+// Rule: `checked_add` on a range gives `none` when the sum is out of the range.
+// Spec: 2.1, 5.6
+// expect output: 15
+// expect output: none
+
+fn main() {
+    let p: Int<range: 10..=20> = 15
+    let five: Int<range: 0..=20> = 5
+    let ten: Int<range: 0..=20> = 10
+    print(five.checked_add(ten) ?? 0)
+    print(p.checked_add(p))
+}

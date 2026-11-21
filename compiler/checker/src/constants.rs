@@ -49,16 +49,7 @@ pub(crate) fn const_int(e: &Expr) -> Option<BigInt> {
 
 /// The smallest and largest value of whole-number type `p`.
 fn range(p: Prim) -> (i128, i128) {
-    match p {
-        Prim::Int8 => (i8::MIN.into(), i8::MAX.into()),
-        Prim::Int16 => (i16::MIN.into(), i16::MAX.into()),
-        Prim::Int32 => (i32::MIN.into(), i32::MAX.into()),
-        Prim::UInt8 => (0, u8::MAX.into()),
-        Prim::UInt16 => (0, u16::MAX.into()),
-        Prim::UInt32 => (0, u32::MAX.into()),
-        Prim::UInt64 => (0, u64::MAX.into()),
-        _ => (i64::MIN.into(), i64::MAX.into()),
-    }
+    p.int_range().unwrap_or((i64::MIN.into(), i64::MAX.into()))
 }
 
 /// Whether `v` fits whole-number type `p`.
@@ -72,7 +63,9 @@ pub(crate) fn fits(v: &BigInt, p: Prim) -> bool {
 fn suggestion(v: &BigInt, p: Prim) -> String {
     let signed = [Prim::Int8, Prim::Int16, Prim::Int32, Prim::Int];
     let unsigned = [Prim::UInt8, Prim::UInt16, Prim::UInt32, Prim::UInt64];
-    let order = if unsigned.contains(&p) && v.sign() != Sign::Minus {
+    let order = if (unsigned.contains(&p) || matches!(p, Prim::Bits(_, false)))
+        && v.sign() != Sign::Minus
+    {
         &unsigned
     } else {
         &signed
@@ -94,7 +87,12 @@ impl Checker<'_> {
         let ExprKind::Int(n) = inner.kind else {
             return None;
         };
-        if n <= i64::MAX as u64 && !matches!(p, Prim::Int8 | Prim::Int16 | Prim::Int32) {
+        if n <= i64::MAX as u64
+            && !matches!(
+                p,
+                Prim::Int8 | Prim::Int16 | Prim::Int32 | Prim::Bits(..) | Prim::Ranged(..)
+            )
+        {
             return None;
         }
         self.literals.push((inner.span.start, Ty::Prim(p)));
@@ -119,10 +117,17 @@ impl Checker<'_> {
         match expected.map(|t| self.inf.resolve(t)) {
             Some(Ty::Prim(Prim::BigInt)) => {}
             Some(Ty::Prim(p)) if p.is_int() => {
-                if fits(&v, p) {
+                if fits(&v, p) || (self.range_operand && fits(&v, Prim::Int)) {
                     return self.negative_literal(e, p);
                 }
                 let (name, (lo, hi)) = (p.name(), range(p));
+                if let Prim::Ranged(..) = p {
+                    self.error(
+                        e.span,
+                        format!("`{v}` is not in `{name}`, which holds {lo} to {hi} (spec 2.1)"),
+                    );
+                    return Some(Ty::Prim(p));
+                }
                 let fix = suggestion(&v, p);
                 self.error(
                     e.span,

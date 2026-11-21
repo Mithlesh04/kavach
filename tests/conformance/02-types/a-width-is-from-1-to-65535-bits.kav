@@ -1,0 +1,9 @@
+// Rule: A width is from 1 to 65,535 bits.
+// Spec: 2.1
+// expect compile error
+
+const n: Int<bits: 0> = 0     // error: a width is from 1 to 65,535 bits
+
+fn main() {
+    print(n)
+}

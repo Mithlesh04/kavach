@@ -1,0 +1,11 @@
+// Rule: Wrapping has no meaning for a range: `wrapping_add` on one is a compile error.
+// Spec: 2.1
+// expect compile error
+
+fn next(p: Int<range: 1..=9>) -> Int<range: 1..=9> {
+    p.wrapping_add(1)     // error: a range doesn't wrap
+}
+
+fn main() {
+    print(next(3))
+}

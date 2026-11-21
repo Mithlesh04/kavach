@@ -380,7 +380,7 @@
       "patterns": [
         {
           "name": "support.type.primitive.kavach",
-          "match": "\\b(Int|Int8|Int16|Int32|UInt8|UInt16|UInt32|UInt64|Float|Float32|Decimal|Bool|Char|String|Bytes|Json)\\b"
+          "match": "\\b(Int|Int8|Int16|Int32|UInt8|UInt16|UInt32|UInt64|UInt|Float|Float32|Decimal|Bool|Char|String|Bytes|Json)\\b"
         },
         {
           "name": "support.type.kavach",

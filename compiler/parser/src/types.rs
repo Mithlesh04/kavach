@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
-//! Types and generic parameters (spec 2).
+//! Types and generic parameters (spec 2), and whether a `<` after a
+//! name starts the type arguments of a call.
 
 use crate::parser::Parser;
-use kavach_ast::{GenericParam, Path, TypeExpr, TypeKind};
+use kavach_ast::{Expr, ExprKind, GenericParam, Path, TypeExpr, TypeKind};
 use kavach_lexer::{Keyword, TokenKind};
 
 impl Parser<'_> {
@@ -190,7 +191,23 @@ impl Parser<'_> {
             self.bump();
             name
         });
-        let value = Box::new(self.unary());
+        let value_start = self.span();
+        let mut value = self.unary();
+        // `range: 1..=65535` (spec 2.1): both ends are numbers.
+        let op = match self.kind() {
+            TokenKind::DotDot => Some(kavach_ast::BinaryOp::Range),
+            TokenKind::DotDotEq => Some(kavach_ast::BinaryOp::RangeInclusive),
+            _ => None,
+        };
+        if let Some(op) = op {
+            self.bump();
+            let end = self.unary();
+            value = kavach_ast::Expr {
+                kind: kavach_ast::ExprKind::Binary(op, Box::new(value), Box::new(end)),
+                span: self.span_from(value_start),
+            };
+        }
+        let value = Box::new(value);
         TypeExpr {
             kind: TypeKind::Num { name, value },
             span: self.span_from(start),
@@ -239,6 +256,47 @@ impl Parser<'_> {
         }
         self.close_angle();
         params
+    }
+
+    /// Whether `<` starts type arguments of a call (`ask<Decision>(…)`) rather
+    /// than a comparison: the angle brackets must hold only type syntax and
+    /// be followed by `(`.
+    pub(crate) fn generic_call_follows(&self, callee: &Expr) -> bool {
+        use TokenKind::*;
+        if !matches!(callee.kind, ExprKind::Name(_) | ExprKind::Field { .. }) {
+            return false;
+        }
+        let mut depth = 0i32;
+        let start = self.position();
+        for i in start..start + 64 {
+            match self.token_at(i) {
+                Lt => depth += 1,
+                Gt => depth -= 1,
+                Shr => depth -= 2,
+                Ident | Comma | Dot | Question | LBracket | RBracket | LBrace | RBrace | Colon
+                | Arrow => {}
+                Keyword(self::Keyword::Fn) | LParen | RParen if depth > 0 => {}
+                // `zeros<n: 4>()`, `List<Int, max: 2>(xs)`: a named number.
+                // `Int<range: -5..=5>(x)`: a range of numbers (spec 2.1).
+                Int(_) | Minus
+                    if depth > 0
+                        && matches!(
+                            self.token_at(i - 1),
+                            Colon | Comma | Lt | DotDot | DotDotEq
+                        ) => {}
+                Int(_) if depth > 0 && matches!(self.token_at(i - 1), Minus) => {}
+                DotDot | DotDotEq
+                    if depth > 0 && matches!(self.token_at(i - 1), Int(_) | Ident) => {}
+                _ => return false,
+            }
+            if depth <= 0 {
+                let then = |k: usize| self.token_at(i + k).clone();
+                let named = matches!(callee.kind, ExprKind::Name(_));
+                let function = named && (then(1), then(2), then(3)) == (Dot, Ident, LParen);
+                return depth == 0 && (then(1) == LParen || function);
+            }
+        }
+        false
     }
 
     /// `: A, B` after a type name: the interfaces it implements.

@@ -1,0 +1,9 @@
+// Rule: A range type with no values is a compile error.
+// Spec: 2.1
+// expect compile error
+
+const n: Int<range: 5..5> = 5     // error: the range `5..5` is empty
+
+fn main() {
+    print(n)
+}

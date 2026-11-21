@@ -253,26 +253,20 @@ impl<'a> Lowerer<'a> {
             return self.bytes_read(receiver, args, ty, line);
         }
         let is_list = matches!(self.shapes.shape(receiver.ty), Some(Shape::List(_)));
-        // A `map` that may run on the GPU (spec 15.2).
-        if let ([f], true) = (
-            args,
-            is_list && name.name == "map" && self.c.gpu_maps.contains(&(span.start, span.end)),
-        ) {
-            return self.gpu_map(receiver, &f.value, ty, span);
-        }
-        if let ([f], true) = (
-            args,
-            is_list && name.name == "filter" && self.c.gpu_maps.contains(&(span.start, span.end)),
-        ) {
-            return self.gpu_list_op(RtOp::GpuFilter, "filter", receiver, &f.value, ty, span);
-        }
-        // `sum`, `min` and `max` that may run on the GPU (spec 15.2).
-        if is_list
-            && matches!(name.name.as_str(), "sum" | "min" | "max")
-            && self.c.gpu_maps.contains(&(span.start, span.end))
-        {
-            let f = args.first().map(|a| &a.value);
-            return self.gpu_reduce(&name.name, receiver, f, ty, span);
+        // `map`, `filter`, `sum`, `min` and `max` on the GPU (spec 15.2).
+        if is_list && self.c.gpu_maps.contains(&(span.start, span.end)) {
+            match (name.name.as_str(), args) {
+                ("map", [f]) => return self.gpu_map(receiver, &f.value, ty, span),
+                ("filter", [f]) => {
+                    let op = RtOp::GpuFilter;
+                    return self.gpu_list_op(op, "filter", receiver, &f.value, ty, span);
+                }
+                ("sum" | "min" | "max", _) => {
+                    let f = args.first().map(|a| &a.value);
+                    return self.gpu_reduce(&name.name, receiver, f, ty, span);
+                }
+                _ => {}
+            }
         }
         if let ([f], true) = (args, is_list && LIST_LOOPS.contains(&name.name.as_str())) {
             return self.list_loop(&name.name, receiver, &f.value, ty, span);
@@ -304,6 +298,11 @@ impl<'a> Lowerer<'a> {
             values.push(self.expr(&a.value)?);
         }
         if let Some(made) = self.view_method(base, &name.name, &mut values, ty, line)? {
+            return Ok(made);
+        }
+        if let Some(p) = self.whole_of(base)
+            && let Some(made) = self.whole_method(&name.name, &mut values, p, ty, line)
+        {
             return Ok(made);
         }
         let shape = self.shapes.shape(values[0].ty).cloned();

@@ -1,0 +1,26 @@
+// Rule: `bits` and range numbers print, sort, go in lists, dicts and records, and are written to JSON as numbers.
+// Spec: 2.1, 2.12
+// expect output: [7, 1, 4095]
+// expect output: [1, 7, 4095]
+// expect output: {"x": 100}
+// expect output: Reg(addr: 4095, temp: -1, port: 443)
+// expect output: {"addr":4095,"temp":-1,"port":443}
+
+use std.json
+
+type Reg {
+    addr: UInt<bits: 12>
+    temp: Int<bits: 24>
+    port: Int<range: 1..=65535>
+}
+
+fn main() {
+    const xs: [UInt<bits: 12>] = [7, 1, 4095]
+    print(xs)
+    print(xs.sort())
+    const d: {String: Int<bits: 8>} = {"x": 100}
+    print(d)
+    const r = Reg(addr: 4095, temp: -1, port: 443)
+    print(r)
+    print(json.stringify(r))
+}

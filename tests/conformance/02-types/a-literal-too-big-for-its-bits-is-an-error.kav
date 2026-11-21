@@ -1,0 +1,11 @@
+// Rule: A literal that doesn't fit a `bits` type is a compile error.
+// Spec: 2.1, 2.9
+// expect compile error
+
+const addr: UInt<bits: 12> = 4095
+const over: UInt<bits: 12> = 4096     // error: 4096 doesn't fit in 12 bits
+
+fn main() {
+    print(addr)
+    print(over)
+}

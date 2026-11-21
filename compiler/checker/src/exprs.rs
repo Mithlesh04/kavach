@@ -332,7 +332,9 @@ impl Checker<'_> {
                 {
                     return out;
                 }
-                if self.require_number(x, &t, op == UnaryOp::BitNot) {
+                if op == UnaryOp::BitNot && self.no_bits_on_range(x, &t, "~") {
+                    Ty::Error
+                } else if self.require_number(x, &t, op == UnaryOp::BitNot) {
                     t
                 } else {
                     Ty::Error
@@ -468,7 +470,8 @@ impl Checker<'_> {
                     return STRING;
                 }
                 let int_only = matches!(op, BitAnd | BitOr | BitXor | Shl | Shr);
-                let number = self.require_number(l, &lt, int_only);
+                let number = self.require_number(l, &lt, int_only)
+                    && !(int_only && self.no_bits_on_range(l, &lt, op.as_str()));
                 if !number || (op == Pow && !self.check_power(l, &lt)) {
                     self.value(r, None);
                     return Ty::Error;

@@ -1,0 +1,15 @@
+// Rule: The bit operators work on a `bits` number; `~` flips its `n` bits.
+// Spec: 2.1, 1.8
+// expect output: 2572 2749 1347
+// expect output: 1347
+// expect output: 171 2
+// expect output: 2
+
+fn main() {
+    let u: UInt<bits: 12> = 0xABC
+    print(`{u & 0xF0F} {u | 1} {u ^ 0xFFF}`)
+    print(~u)
+    print(`{u >> 4} {u >> 10}`)
+    let s: Int<bits: 5> = -3
+    print(~s)
+}

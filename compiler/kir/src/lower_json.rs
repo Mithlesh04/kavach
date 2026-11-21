@@ -55,6 +55,12 @@ impl<'a> Lowerer<'a> {
         let Some(first) = given[0] else {
             return Err(self.unsupported(format!("`json.{name}()`"), span));
         };
+        if self.decodes_whole(span) {
+            return Err(self.unsupported(
+                "decoding JSON into an `Int<bits: n>` or an `Int<range: …>`",
+                span,
+            ));
+        }
         let first = self.expr(first)?;
         // `unknown: JsonUnknown.Ignore` (variant 1) as 1, last of the
         // numbers the runtime is given (decision 0096).

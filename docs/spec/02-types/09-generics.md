@@ -148,8 +148,8 @@ const z = zeros<n: 4>()         // [0.0, 0.0, 0.0, 0.0]
 
 | Written | Means | Spec |
 |---|---|---|
-| `Int<bits: 24>`, `UInt<bits: 12>` | A whole number of exactly 24 bits, signed; of 12 bits, not signed | [2.1](01-built-in-types.md) (not built yet) |
-| `Int<range: 1..=65535>` | A whole number always from 1 to 65,535 | [2.1](01-built-in-types.md) (not built yet) |
+| `Int<bits: 24>`, `UInt<bits: 12>` | A whole number of exactly 24 bits, signed; of 12 bits, not signed | [2.1](01-built-in-types.md) (up to 64 bits) |
+| `Int<range: 1..=65535>` | A whole number always from 1 to 65,535 | [2.1](01-built-in-types.md) |
 | `Decimal<digits: 10, places: 2>` | At most 10 digits, 2 of them after the point | [2.1](01-built-in-types.md) (not built yet) |
 | `[Float]<len: 3>`, `List<Float, len: 3>` | A list of exactly 3 items | [2.2](02-collections.md) |
 | `[Float]<max: 16>`, `List<Float, max: 16>` | A list of at most 16 items | [2.2](02-collections.md) |
@@ -165,7 +165,7 @@ A built-in type's numbers may be left out: `Int` is `Int<bits: 64>`, `[Int]` has
 
 ```kavach
 const a: {String: [Int]<max: 5>} = {"small": [1, 2]}    // a dict of lists of at most 5
-const b: {String: Int<bits: 8>} = {"x": 100}            // a dict of 8-bit numbers (not built yet)
+const b: {String: Int<bits: 8>} = {"x": 100}            // a dict of 8-bit numbers
 const c: [[Float]<len: 3>]<max: 100> = []               // at most 100 lists of 3
 const d: [Int, max: 2] = []                             // compile error: write `[Int]<max: 2>`
 ```
@@ -174,7 +174,7 @@ const d: [Int, max: 2] = []                             // compile error: write 
 
 | While compiling | While running |
 |---|---|
-| A number argument's name and value, and a missing one | A sum or product of `bits` or `range` numbers that doesn't fit: a panic, as overflow is (5.6) (not built yet) |
+| A number argument's name and value, and a missing one | A sum or product of `bits` or `range` numbers that doesn't fit: a panic, as overflow is (5.6) |
 | A literal that doesn't fit: `4096` as a `UInt<bits: 12>`, 3 items into `[Int]<max: 2>`, `1.234` with `places: 2` | A `push` past `max`: a panic; `is_full()` checks first (2.2) |
 | A type given for the same type with other numbers | A `try` into a type with numbers (below) |
 | An index written as a number past a `len`: `v[3]` of a `[Float]<len: 3>` | An index worked out while running, as for any list |
@@ -211,7 +211,13 @@ fn ones<n: Int>() -> [Int]<len: n> {
 }
 ```
 
-*Not built yet:* Number conversions are as before: `UInt<bits: 12>(x)` and `Int<range: 1..=65535>(x)` panic when `x` doesn't fit, as `Int8(300)` does (2.1).
+Number conversions are as before: `UInt<bits: 12>(x)` and `Int<range: 1..=65535>(x)` panic when `x` doesn't fit, as `Int8(300)` does (2.1). Under `try` or `catch`, they fail with a `SizeError` instead, as every conversion of a number into a whole-number type does:
+
+```kavach
+fn port_of(n: Int) -> Int<range: 1..=65535> ! SizeError {
+    try Int<range: 1..=65535>(n)     // `0 doesn't fit in Int<range: 1..=65535>`
+}
+```
 
 ## Open questions
 

@@ -69,37 +69,7 @@ impl<'a> Lowerer<'a> {
                     return Ok(());
                 }
                 if let Some(bin) = op.binary() {
-                    let mut current = self.expr(target)?;
-                    if let Some(Shape::Optional(inner)) = self.shapes.shape(current.ty).cloned() {
-                        // `ages[name] += 1` changes the value under that key;
-                        // a missing key panics, naming it.
-                        current = match current.kind {
-                            ir::ExprKind::Rt(RtOp::MapGet, _) => self.dict_entry(ir::Expr {
-                                ty: inner,
-                                ..current
-                            }),
-                            _ => ir::Expr {
-                                kind: ir::ExprKind::Unwrap(Box::new(current)),
-                                ty: inner,
-                                line,
-                            },
-                        };
-                    }
-                    let ty = current.ty;
-                    value = match crate::lower_expr::binary_op(bin) {
-                        _ if bin == ast::BinaryOp::Pow => self.power(current, value, line),
-                        _ if self.is_list_type(ty) => {
-                            self.list_concat(current, value, line, true)?
-                        }
-                        Some(bin) => ir::Expr {
-                            kind: ir::ExprKind::Binary(bin, Box::new(current), Box::new(value)),
-                            ty,
-                            line,
-                        },
-                        None => {
-                            return Err(self.unsupported(format!("`{}=`", bin.as_str()), s.span));
-                        }
-                    };
+                    value = self.compound(bin, target, value, line, s.span)?;
                 }
                 out.push(self.assign_path(target, value)?);
             }

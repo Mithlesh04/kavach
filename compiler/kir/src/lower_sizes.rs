@@ -322,6 +322,11 @@ impl<'a> Lowerer<'a> {
         args: &[ast::TypeExpr],
     ) -> Lowered<Type> {
         let last = path.segments.last().unwrap_or(&path.segments[0]);
+        // `Int<bits: 24>`, `Int<range: 1..=9>`: kept in an `Int` (2.1),
+        // and `Int<bits: 8>` is `Int8`.
+        if matches!(last.name.as_str(), "Int" | "UInt") {
+            return Ok(self.written_int(&last.name, args));
+        }
         let def = self.c.resolution.uses.get(&last.span.start).copied();
         let is_num = |a: &ast::TypeExpr| matches!(a.kind, ast::TypeKind::Num { .. });
         let Some(def) =

@@ -15,6 +15,7 @@ pub const TYPES: &[&str] = &[
     "UInt16",
     "UInt32",
     "UInt64",
+    "UInt",
     "Float",
     "Float32",
     "Decimal",

@@ -338,7 +338,7 @@ impl Checker<'_> {
                     // of `m[k]` gives (spec 2.2).
                     let slot = self.map_slot(target).unwrap_or(t);
                     let slot = self.assigned_slot(*op, slot);
-                    self.check_expect(value, &slot);
+                    self.check_assigned(value, &slot, *op);
                 }
                 self.check_arena_store(target, value);
             }

@@ -48,6 +48,14 @@ impl Checker<'_> {
                         Ty::Error
                     }
                     DefKind::GenericParam => Ty::Param(def),
+                    // `Int<bits: 24>`, `Int<range: 1..=65535>` (spec 2.1).
+                    DefKind::Builtin
+                        if matches!(d.name.as_str(), "Int" | "UInt") && !nums.is_empty() =>
+                    {
+                        let name = d.name.clone();
+                        self.int_type(&name, &nums, t.span)
+                    }
+                    DefKind::Builtin if d.name == "UInt" => self.bare_uint(t.span),
                     DefKind::Builtin if !nums.is_empty() => {
                         let name = d.name.clone();
                         // `List<max: 2>`: the item types are inferred.

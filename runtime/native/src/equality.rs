@@ -64,7 +64,7 @@ pub fn equal(a: i64, b: i64, ty: Type) -> bool {
                 Shape::BigInt => crate::rt_bigint::order(a, b) == Some(Ordering::Equal),
                 Shape::Regex => crate::opaque::describe(a) == crate::opaque::describe(b),
                 // A number in a type (spec 2.9) is no value's type.
-                Shape::Num(_) => false,
+                Shape::Num(_) | Shape::Whole { .. } => false,
                 // Copies of one cell are the same value (`send.rs`).
                 Shape::Shared(_)
                 | Shape::Task(_)
@@ -234,7 +234,7 @@ fn hash_into(slot: i64, ty: Type, h: &mut FastHasher) {
             Shape::Decimal => crate::rt_big_decimal::to_f64(slot).to_bits().hash(h),
             Shape::BigInt => crate::rt_bigint::hash(slot).hash(h),
             Shape::Regex => crate::opaque::describe(slot).hash(h),
-            Shape::Num(_) => {}
+            Shape::Num(_) | Shape::Whole { .. } => {}
             Shape::Shared(_)
             | Shape::Task(_)
             | Shape::Channel(_)

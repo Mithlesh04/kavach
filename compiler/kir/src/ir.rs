@@ -176,7 +176,43 @@ pub enum Shape {
     /// record or function: `width: 3` in `Grid<Float, width: 3>`. No value
     /// has this type; a number parameter reads its number.
     Num(i64),
+    /// A whole-number type with its own limits (spec 2.1): `Int<bits:
+    /// 24>` (`bits` 24) or `Int<range: 1..=9>` (`bits` 0). No value has
+    /// this type: such values are `I64`s, and `RtOp::IntWhole` reads the
+    /// limits and the name for its checks from here.
+    Whole {
+        lo: i64,
+        hi: i64,
+        bits: u16,
+    },
 }
+
+/// What `RtOp::IntWhole` does, by its place here: the operators, `neg`
+/// and `~`, `fits` (whether a number fits the type, `b` its type's
+/// code), and the `wrapping_*` and `checked_*` methods (spec 5.6).
+pub const WHOLE_OPS: [&str; 21] = [
+    "+",
+    "-",
+    "*",
+    "/",
+    "%",
+    "<<",
+    ">>",
+    "**",
+    "&",
+    "|",
+    "^",
+    "neg",
+    "~",
+    "fits",
+    "wrapping_add",
+    "wrapping_sub",
+    "wrapping_mul",
+    "checked_add",
+    "checked_sub",
+    "checked_mul",
+    "checked_div",
+];
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct FieldShape {

@@ -43,6 +43,9 @@ impl Checker<'_> {
         if let Some(t) = self.sized_call(name, generics, args, span, expected) {
             return t;
         }
+        if let Some(t) = self.int_type_call(name, generics, args, span) {
+            return t;
+        }
         let string = Ty::Prim(Prim::String);
         let one = |c: &mut Self, ty: Option<Ty>| -> Ty {
             if args.len() != 1 {

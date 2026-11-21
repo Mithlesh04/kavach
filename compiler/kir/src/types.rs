@@ -85,6 +85,8 @@ pub(crate) fn prim_type(p: Prim) -> Option<Type> {
         Prim::Float32 => Type::F32,
         Prim::Bool => Type::Bool,
         Prim::Char => Type::Char,
+        // Kept in an `Int`; their own limits are checked (`lower_whole.rs`).
+        Prim::Bits(..) | Prim::Ranged(..) => Type::I64,
         _ => return None,
     })
 }

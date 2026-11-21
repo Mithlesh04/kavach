@@ -1,0 +1,18 @@
+// Rule: `Int8` … `UInt64` are short spellings of `bits` types, and `Int` is `Int<bits: 64>`: each pair is one type.
+// Spec: 2.1
+// expect output: 100 200
+// expect output: 9223372036854775807
+
+fn twice(n: Int8) -> Int<bits: 8> {
+    n + n
+}
+
+fn main() {
+    const a: Int<bits: 8> = 50
+    const b: UInt<bits: 8> = 200
+    const c: UInt8 = b
+    print(`{twice(a)} {c}`)
+    const big: Int<bits: 64> = 9_223_372_036_854_775_807
+    const same: Int = big
+    print(same)
+}

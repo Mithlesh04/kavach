@@ -26,6 +26,13 @@ pub enum Prim {
     Char,
     String,
     Bytes,
+    /// `Int<bits: n>` or `UInt<bits: n>` (spec 2.1) of a width other than
+    /// 8, 16, 32 and 64, which are `Int8` … `UInt64`: the width, and
+    /// whether it has a sign. Kept in an `Int`'s 64 bits.
+    Bits(u16, bool),
+    /// `Int<range: lo..=hi>` (spec 2.1): a whole number always in the
+    /// range. `Int<range: 1..10>` is `Int<range: 1..=9>`.
+    Ranged(i64, i64),
 }
 
 const PRIMS: &[(&str, Prim)] = &[
@@ -53,19 +60,47 @@ impl Prim {
     }
 
     pub fn name(self) -> &'static str {
-        PRIMS
-            .iter()
-            .find(|(_, p)| *p == self)
-            .map(|(n, _)| *n)
-            .unwrap_or("?")
+        match self {
+            Prim::Bits(..) | Prim::Ranged(..) => crate::int_numbers::name(self),
+            _ => PRIMS
+                .iter()
+                .find(|(_, p)| *p == self)
+                .map(|(n, _)| *n)
+                .unwrap_or("?"),
+        }
     }
 
     pub fn is_int(self) -> bool {
         use Prim::*;
         matches!(
             self,
-            Int | Int8 | Int16 | Int32 | UInt8 | UInt16 | UInt32 | UInt64
+            Int | Int8 | Int16 | Int32 | UInt8 | UInt16 | UInt32 | UInt64 | Bits(..) | Ranged(..)
         )
+    }
+
+    /// The smallest and largest value of a whole-number type; `None` for
+    /// the others, and for `BigInt`, which has no limits.
+    pub fn int_range(self) -> Option<(i128, i128)> {
+        Some(match self {
+            Prim::Int => (i64::MIN.into(), i64::MAX.into()),
+            Prim::Int8 => (i8::MIN.into(), i8::MAX.into()),
+            Prim::Int16 => (i16::MIN.into(), i16::MAX.into()),
+            Prim::Int32 => (i32::MIN.into(), i32::MAX.into()),
+            Prim::UInt8 => (0, u8::MAX.into()),
+            Prim::UInt16 => (0, u16::MAX.into()),
+            Prim::UInt32 => (0, u32::MAX.into()),
+            Prim::UInt64 => (0, u64::MAX.into()),
+            Prim::Bits(n, true) => (-(1i128 << (n - 1)), (1i128 << (n - 1)) - 1),
+            Prim::Bits(n, false) => (0, (1i128 << n) - 1),
+            Prim::Ranged(lo, hi) => (lo.into(), hi.into()),
+            _ => return None,
+        })
+    }
+
+    /// An `Int<bits: n>` or `Int<range: …>` other than `Int8` …
+    /// `UInt64`: kept in an `Int`, with its own limits checked.
+    pub fn is_narrow(self) -> bool {
+        matches!(self, Prim::Bits(..) | Prim::Ranged(..))
     }
 
     pub fn is_numeric(self) -> bool {

@@ -308,7 +308,8 @@ impl Checker<'_> {
         }
         if !matches!(recv, Ty::Error | Ty::Var(_)) {
             let shown = self.show(&recv);
-            let hint = self.dict_read_hint(base, &recv, &name.name, args.len());
+            let hint = (self.dict_read_hint(base, &recv, &name.name, args.len()))
+                .or_else(|| crate::int_numbers::range_hint(&recv, &name.name));
             self.error(
                 name.span,
                 match (kavach_name(&recv, &name.name).or(self.numpy_name(&recv, &name.name)))

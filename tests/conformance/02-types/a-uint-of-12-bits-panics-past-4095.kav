@@ -1,0 +1,13 @@
+// Rule: A sum that doesn't fit an `UInt<bits: 12>` panics, as overflow does.
+// Spec: 2.1, 5.6
+// expect output: 4095
+// expect panic: integer overflow: 4095 + 1 doesn't fit in UInt<bits: 12>
+
+fn next(pc: UInt<bits: 12>) -> UInt<bits: 12> {
+    pc + 1
+}
+
+fn main() {
+    print(next(4094))
+    print(next(4095))
+}

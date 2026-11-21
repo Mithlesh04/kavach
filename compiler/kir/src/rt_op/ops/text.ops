@@ -111,3 +111,9 @@ TextPadRight,
 StrSlicePart,
 /// `s[i]`: character `i` of the text; panics when out of range.
 StrAt,
+/// Arithmetic and checks on a whole-number type with its own limits
+/// (`Int<bits: 24>`, `Int<range: 1..=9>`, spec 2.1): `c` is the place
+/// of the op in `WHOLE_OPS`, shifted left 32 bits, joined with the code
+/// of the type's `Shape::Whole` (or of `Int8` … `UInt64`). Panics as
+/// the interpreter does when a result doesn't fit.
+IntWhole,

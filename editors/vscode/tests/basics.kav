@@ -270,3 +270,8 @@ const last = xs[#1]
 //               ^ constant.numeric.integer.kavach
 const spread = t.var(correction: 0)
 //               ^^^ entity.name.function.call.kavach
+
+fn register(addr: UInt<bits: 12>) -> Int {
+//                ^^^^ support.type.primitive.kavach
+    Int(addr)
+}

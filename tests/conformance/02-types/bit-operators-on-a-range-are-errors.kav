@@ -1,0 +1,11 @@
+// Rule: The bit operators work on bits, not on a range: they are compile errors on one.
+// Spec: 2.1
+// expect compile error
+
+fn odd(p: Int<range: 1..=9>) -> Bool {
+    p & 1 == 1     // error: convert first, as `Int(p) & 1`
+}
+
+fn main() {
+    print(odd(3))
+}

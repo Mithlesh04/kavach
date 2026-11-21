@@ -330,38 +330,6 @@ impl Parser<'_> {
         }
     }
 
-    /// Whether `<` starts type arguments of a call (`ask<Decision>(…)`) rather
-    /// than a comparison: the angle brackets must hold only type syntax and
-    /// be followed by `(`.
-    fn generic_call_follows(&self, callee: &Expr) -> bool {
-        use TokenKind::*;
-        if !matches!(callee.kind, ExprKind::Name(_) | ExprKind::Field { .. }) {
-            return false;
-        }
-        let mut depth = 0i32;
-        let start = self.position();
-        for i in start..start + 64 {
-            match self.token_at(i) {
-                Lt => depth += 1,
-                Gt => depth -= 1,
-                Shr => depth -= 2,
-                Ident | Comma | Dot | Question | LBracket | RBracket | LBrace | RBrace | Colon
-                | Arrow => {}
-                Keyword(self::Keyword::Fn) | LParen | RParen if depth > 0 => {}
-                // `zeros<n: 4>()`, `List<Int, max: 2>(xs)`: a named number.
-                Int(_) if depth > 0 && matches!(self.token_at(i - 1), Colon | Comma | Lt) => {}
-                _ => return false,
-            }
-            if depth <= 0 {
-                let then = |k: usize| self.token_at(i + k).clone();
-                let named = matches!(callee.kind, ExprKind::Name(_));
-                let function = named && (then(1), then(2), then(3)) == (Dot, Ident, LParen);
-                return depth == 0 && (then(1) == LParen || function);
-            }
-        }
-        false
-    }
-
     /// `(a, name: b, .field > 2)`. Positional arguments come first (spec 3.2).
     pub(crate) fn args(&mut self) -> Vec<Arg> {
         self.bump();

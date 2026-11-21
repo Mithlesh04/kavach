@@ -307,7 +307,11 @@ impl Checker<'_> {
     /// The right of `n op r` with `n` a number: as `check_expect`, but
     /// `2.0 * v` with `v` of a program's own type says to swap them.
     pub(crate) fn number_then_own(&mut self, op: BinaryOp, r: &Expr, lt: &Ty) {
+        // `p + 1` on a range: the result is checked, not the 1 (spec 2.1).
+        self.range_operand = matches!(self.inf.resolve(lt), Ty::Prim(Prim::Ranged(..)))
+            && crate::constants::const_int(r).is_some();
         let rt = self.value(r, Some(lt));
+        self.range_operand = false;
         self.fitting = Some(self.made(r));
         let fits = self.coerce(&rt, lt);
         self.fitting = None;

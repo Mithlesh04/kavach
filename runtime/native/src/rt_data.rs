@@ -196,6 +196,7 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
             }
         }
         RtOp::IntPow => crate::rt::int_pow(a, b, result, line),
+        RtOp::IntWhole => crate::rt_whole::whole_op(a, b, c, code, line),
         RtOp::DisplayRegister => crate::rt_display::register(a, b),
         // `inout` values handed back past a call (`kir/src/inout_stash.rs`).
         RtOp::InoutStash => {

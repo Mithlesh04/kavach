@@ -42,6 +42,9 @@ impl Checker<'_> {
             op,
             BinaryOp::BitAnd | BinaryOp::BitOr | BinaryOp::BitXor | BinaryOp::Shl | BinaryOp::Shr
         );
+        if int_only && self.no_bits_on_range(target, &t, op.as_str()) {
+            return;
+        }
         if self.require_number(target, &t, int_only) && op == BinaryOp::Pow {
             self.check_power(target, &t);
         }

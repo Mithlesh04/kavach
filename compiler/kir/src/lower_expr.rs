@@ -141,6 +141,15 @@ impl<'a> Lowerer<'a> {
                 };
                 K::Int(-(n as i128))
             }
+            // `-x` and `~x` of an `Int<bits: n>` or a range (spec 2.1).
+            ExprKind::Unary(op @ (UnaryOp::Neg | UnaryOp::BitNot), x)
+                if self.whole_of(e).is_some() =>
+            {
+                let p = self.whole_of(e).expect("checked above");
+                let x = self.expr(x)?;
+                let op = if *op == UnaryOp::Neg { "neg" } else { "~" };
+                return Ok(self.whole_unary(op, x, p, line));
+            }
             ExprKind::Unary(op, x) => {
                 let op = match op {
                     UnaryOp::Neg => UnOp::Neg,
@@ -175,6 +184,11 @@ impl<'a> Lowerer<'a> {
                         ty,
                         line,
                     });
+                }
+                if let Some(p) = self.whole_of(e)
+                    && (binary_op(*op).is_some() || *op == BinaryOp::Pow)
+                {
+                    return Ok(self.whole_binary(*op, l, r, p, line));
                 }
                 if *op == BinaryOp::Pow {
                     return Ok(self.power(l, r, line));

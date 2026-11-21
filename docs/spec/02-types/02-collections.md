@@ -33,7 +33,7 @@ const roles = {[key]: "admin"}               // a key in brackets is the value o
 | `Set<Int, max: 10>` | At most 10 values |
 | `Ring<Float, max: 100>` | The last 100 items pushed (below) |
 
-`<…>` belongs to the type just before it: `{String: [Int]<max: 5>}` is a dict of lists of at most 5 items each, with no limit on its keys, and `{String: Int<bits: 8>}` is a dict of 8-bit numbers (2.1, not built yet). `[Int, max: 2]` and `[Float, len: 3]` are compile errors that show `[Int]<max: 2>` and `[Float]<len: 3>`: they read as lists of two items.
+`<…>` belongs to the type just before it: `{String: [Int]<max: 5>}` is a dict of lists of at most 5 items each, with no limit on its keys, and `{String: Int<bits: 8>}` is a dict of 8-bit numbers (2.1). `[Int, max: 2]` and `[Float, len: 3]` are compile errors that show `[Int]<max: 2>` and `[Float]<len: 3>`: they read as lists of two items.
 
 ```kavach
 let recent: [Float]<max: 3> = [0.5]        // 0.5, and room for 2 more

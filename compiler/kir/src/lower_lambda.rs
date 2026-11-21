@@ -247,7 +247,11 @@ impl<'a> Lowerer<'a> {
             }
             "sum" => {
                 let total = self.local_expr(acc, line);
-                let added = at(K::Binary(BinOp::Add, Box::new(total), Box::new(value)), ty);
+                let added = match self.whole_at(span) {
+                    // A sum of `Int<bits: n>`s is checked at `n` bits (2.1).
+                    Some(p) => self.whole_binary(ast::BinaryOp::Add, total, value, p, line),
+                    None => at(K::Binary(BinOp::Add, Box::new(total), Box::new(value)), ty),
+                };
                 at(K::Block(self.assign(acc, added)), Type::Unit)
             }
             _ => self.flat_push(acc, value, line)?,

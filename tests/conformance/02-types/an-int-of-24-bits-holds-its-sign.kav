@@ -1,0 +1,18 @@
+// Rule: An `Int<bits: 24>` holds -8,388,608 to 8,388,607, and keeps its sign through arithmetic.
+// Spec: 2.1
+// expect output: -8388608 8388607
+// expect output: -1
+// expect output: -8388607
+// expect output: -4194304
+// expect output: -1000
+
+fn main() {
+    const low: Int<bits: 24> = -8_388_608
+    const high: Int<bits: 24> = 8_388_607
+    print(`{low} {high}`)
+    print(low + high)
+    print(-high)
+    print(low / 2)
+    let t: Int<bits: 24> = 1000
+    print(t * -1)
+}

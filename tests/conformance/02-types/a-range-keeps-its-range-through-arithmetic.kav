@@ -1,0 +1,14 @@
+// Rule: Arithmetic on a range gives the range; a result out of it panics.
+// Spec: 2.1, 5.6
+// expect output: 8081
+// expect panic: integer overflow: 65535 + 1 doesn't fit in Int<range: 1..=65535>
+
+fn next(p: Int<range: 1..=65535>) -> Int<range: 1..=65535> {
+    p + 1
+}
+
+fn main() {
+    const port: Int<range: 1..=65535> = 8080
+    print(next(port))
+    print(next(65535))
+}

@@ -1,0 +1,14 @@
+// Rule: `Int<range: a..=b>(n)` panics when `n` is out of the range; `Int(p)` converts back.
+// Spec: 2.1, 5.6
+// expect output: 80 81
+// expect panic: 0 doesn't fit in Int<range: 1..=65535>
+
+fn port_of(n: Int) -> Int<range: 1..=65535> {
+    Int<range: 1..=65535>(n)
+}
+
+fn main() {
+    const p = port_of(80)
+    print(`{p} {Int(p) + 1}`)
+    print(port_of(0))
+}

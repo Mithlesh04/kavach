@@ -1,0 +1,9 @@
+// Rule: `UInt` is always written with its bits.
+// Spec: 2.1
+// expect compile error
+
+const n: UInt = 5     // error: write `UInt<bits: 32>` or `UInt32`
+
+fn main() {
+    print(n)
+}

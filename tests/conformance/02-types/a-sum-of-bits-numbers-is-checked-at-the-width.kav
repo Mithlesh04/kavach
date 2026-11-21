@@ -1,0 +1,13 @@
+// Rule: A sum of `bits` numbers panics when a partial sum doesn't fit the width.
+// Spec: 2.1, 2.2, 5.6
+// expect output: 4000
+// expect panic: integer overflow: 4000 + 100 doesn't fit in UInt<bits: 12>
+
+fn total(xs: [UInt<bits: 12>]) -> UInt<bits: 12> {
+    xs.sum(x => x)
+}
+
+fn main() {
+    print(total([1000, 3000]))
+    print(total([1000, 3000, 100]))
+}

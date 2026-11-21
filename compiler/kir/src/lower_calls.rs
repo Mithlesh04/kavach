@@ -271,6 +271,10 @@ impl<'a> Lowerer<'a> {
                 return self.convert_text(arg, ty, line, span);
             }
             "Char" if self.ty_of(arg)?.is_int() => return self.char_of(arg, ty, line),
+            // `UInt<bits: 12>(x)`, and `try Int8(x)` (spec 2.1).
+            _ if let Some((p, checked)) = self.whole_target(name, span) => {
+                return self.whole_convert(arg, p, ty, line, checked);
+            }
             _ if Prim::from_name(name).and_then(prim_type).is_some()
                 || matches!(name, "Decimal" | "BigInt") =>
             {

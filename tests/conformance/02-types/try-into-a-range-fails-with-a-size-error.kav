@@ -1,0 +1,17 @@
+// Rule: `try Int<range: a..=b>(n)` fails with a `SizeError` when `n` is out of the range.
+// Spec: 2.1, 2.9
+// expect output: 443
+// expect output: 70000 doesn't fit in Int<range: 1..=65535>
+
+fn port_of(n: Int) -> Int<range: 1..=65535> ! SizeError {
+    try Int<range: 1..=65535>(n)
+}
+
+fn main() {
+    print(port_of(443) catch _ => 1)
+    let p = port_of(70000) catch e => {
+        print(e)
+        1
+    }
+    let _ = p
+}

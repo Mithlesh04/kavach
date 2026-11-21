@@ -24,6 +24,7 @@ impl<'a> Lowerer<'a> {
         line: u32,
     ) -> Lowered<ir::Expr> {
         let span = e.span;
+        self.no_whole_in_generic(e, args)?;
         let f = self.generic_fns[&def];
         // The type arguments written at the call (`read<Point>(…)`), then
         // the ones the argument and result types show.
@@ -198,6 +199,7 @@ impl<'a> Lowerer<'a> {
         call: &'a ast::Expr,
     ) -> Lowered<ir::Expr> {
         let span = call.span;
+        self.no_whole_in_generic(call, args)?;
         let type_params = self.type_generics(owner);
         let mut subst = HashMap::new();
         if let Some(r) = &receiver {
