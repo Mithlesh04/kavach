@@ -1,0 +1,9 @@
+fn slow_double(n: Int) -> Int {
+    n * 2
+}
+
+fn main() ! Error {
+    const t = spawn slow_double(21)
+    print("working meanwhile")
+    print(try t.wait())
+}

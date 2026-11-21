@@ -1,0 +1,6 @@
+fn main() {
+    const price = 40
+    print("Hello")
+    print(price * 3)
+    print([1, 2, 3])
+}

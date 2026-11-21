@@ -1,12 +1,21 @@
 import { SCENARIOS } from "../memory-scenarios";
+import { callScene } from "./scene-call";
+import { chainScene } from "./scene-chain";
+import { channelScene } from "./scene-channel";
+import { compilerScene } from "./scene-compiler";
+import { coresLoopScene } from "./scene-cores-loop";
 import { dictLookupScene } from "./scene-dict-lookup";
 import { factorialScene } from "./scene-factorial";
 import { fileIoScene } from "./scene-file-io";
-import { listBufferScene } from "./scene-list-buffer";
-import { chainScene } from "./scene-chain";
-import { sortingScene } from "./scene-sorting";
 import { gpuDrawScene } from "./scene-gpu-draw";
 import { gpuMapScene } from "./scene-gpu-map";
+import { listBufferScene } from "./scene-list-buffer";
+import { printScene } from "./scene-print";
+import { sortingScene } from "./scene-sorting";
+import { spawnScene } from "./scene-spawn";
+import { spawnKindsScene } from "./scene-spawn-kinds";
+import { tickerScene } from "./scene-ticker";
+import { turnsScene } from "./scene-turns";
 import type { Scene, SceneInfo } from "./types";
 
 // Every explainer scene on the site, by id: the ones the kit draws
@@ -25,6 +34,15 @@ export const KIT_SCENES: Record<string, Scene> = {
   [fileIoScene.id]: fileIoScene,
   [gpuMapScene.id]: gpuMapScene,
   [gpuDrawScene.id]: gpuDrawScene,
+  [spawnScene.id]: spawnScene,
+  [turnsScene.id]: turnsScene,
+  [tickerScene.id]: tickerScene,
+  [channelScene.id]: channelScene,
+  [spawnKindsScene.id]: spawnKindsScene,
+  [coresLoopScene.id]: coresLoopScene,
+  [callScene.id]: callScene,
+  [compilerScene.id]: compilerScene,
+  [printScene.id]: printScene,
 };
 
 /** Each memory step-through's title and caveman summary, by scenario name. */

@@ -1,0 +1,15 @@
+fn days_to_save(goal: Int, per_day: Int) -> Int {
+    let saved = 0
+    for day in 1..=goal {
+        saved += per_day
+        if saved >= goal {
+            return day
+        }
+    }
+    0
+}
+
+fn main() {
+    const days = days_to_save(100, 30)
+    print(days)
+}

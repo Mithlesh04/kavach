@@ -1,0 +1,15 @@
+use std.time
+
+fn watch() {
+    const _ticker = spawn {
+        for tick in time.every_ms(400) {
+            print(`tick {tick}`)
+        }
+    }
+    time.sleep_ms(1000)
+}
+
+fn main() {
+    watch()
+    print("watching stopped")
+}

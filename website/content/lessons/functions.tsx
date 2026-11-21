@@ -97,6 +97,18 @@ export const returningDoc: LessonDoc = {
         can&apos;t end with a value, because it would be thrown away; the compiler says what to add:
       </P>
       <Ex name="functions/no-arrow.fails" />
+      <H2>What the machine does</H2>
+      <P>
+        A call hands its arguments over in registers, inside the CPU, and the result comes back the same way. The
+        stack in RAM keeps where to go back to. The compiler copies most small functions into their callers, so
+        no call is made at all; this one returns from inside a loop, so its call is real. Step through it:
+      </P>
+      <Explainer id="call" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="compiler/backend/cranelift/src/abi.rs" line={46} symbol="make_signature" />
+        <SrcRef file="compiler/backend/cranelift/src/codegen.rs" line={175} symbol="check_stack" />
+        <SrcRef file="compiler/kir/src/inline.rs" line={297} symbol="has_return" />
+      </div>
     </>
   ),
 };

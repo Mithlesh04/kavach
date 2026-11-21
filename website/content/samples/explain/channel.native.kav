@@ -1,0 +1,12 @@
+fn main() {
+    const (send, receive) = Channel<Int>(capacity: 2)
+    const _producer = spawn {
+        for i in 1..5 {
+            send.put(i * 10)
+        }
+        send.close()
+    }
+    for n in receive {
+        print(n)
+    }
+}

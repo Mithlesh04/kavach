@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
+import { Explainer } from "@/components/explain/explainer";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
@@ -97,6 +98,19 @@ export const commandDoc: LessonDoc = {
         <li>Tasks already running go on with their code; tasks started later run the new code.</li>
         <li>It runs the program in the interpreter only, and is for working on a program.</li>
       </ul>
+      <H2>What the machine does</H2>
+      <P>
+        <C>run</C>, <C>run --native</C> and <C>build</C> start the same way: the file is read and checked. Then
+        they part: the interpreter runs the checked program as it is, Cranelift makes machine code in memory, and
+        LLVM makes an executable. Step through one small file, with a <C>gpu fn</C>:
+      </P>
+      <Explainer id="compiler" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="compiler/driver/src/lib.rs" line={206} symbol="compile" />
+        <SrcRef file="tools/cli/src/native.rs" line={124} symbol="build_with_best_backend" />
+        <SrcRef file="compiler/backend/wgsl/src/lib.rs" line={254} symbol="attach" />
+        <SrcRef file="compiler/backend/llvm/src/lib.rs" line={165} symbol="opt" />
+      </div>
       <Note>Coming later, as spec 10.5 describes: {later.join(", ")}.</Note>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/10-modules-and-packages/05-command-line.md" label="spec 10.5 · command line" />

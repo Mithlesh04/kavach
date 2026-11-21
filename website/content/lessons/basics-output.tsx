@@ -1,3 +1,4 @@
+import { Explainer } from "@/components/explain/explainer";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
@@ -45,6 +46,24 @@ export const printDoc: LessonDoc = {
         works it out, so a beginner never notices. A <C>pub</C> function, one other files may call, must say it
         with <C>uses Console</C>: its first line then tells every caller that it writes to the screen.
       </P>
+      <H2>What the machine does</H2>
+      <P>
+        A program can&apos;t draw on the screen itself. It hands its text to the operating system, which passes it
+        to the terminal. <C>print</C> first builds the whole line in memory, then hands it over in one go:
+      </P>
+      <Explainer id="print" />
+      <P>
+        In detail: the interpreter (<C>kavach run</C>), and native code with tasks on several cores, build each line
+        in a buffer of their own before writing it. Native code on one core writes each piece as it comes, into the
+        standard output&apos;s own buffer, which holds the bytes until the newline. With one core, no other task&apos;s
+        output can land in the middle, so the result is the same. When a value of the line has to wait, for a
+        task for example, the compiler works out every value first, so a line never stops half way.
+      </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="compiler/interp/src/tasks.rs" line={424} symbol="flush" />
+        <SrcRef file="runtime/native/src/rt.rs" line={279} symbol="kv_print_end" />
+        <SrcRef file="compiler/kir/src/whole_lines.rs" line={18} symbol="print_whole_lines" />
+      </div>
     </>
   ),
 };

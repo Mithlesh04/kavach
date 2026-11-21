@@ -4,8 +4,8 @@ import type { LaneState, SceneFrame } from "./types";
 // step, filled up to the step shown; later steps are dotted outlines. Each
 // state has its own pattern as well as its color, and the row ends with
 // this step's state in words, and where it runs ("thread 1 on core 0")
-// when the scene says. Long scenes scroll in their own box. It generalises
-// components/task-turns.tsx.
+// when the scene says. Long scenes scroll in their own box. It took over
+// from the first one-off widget of task turns (Concurrency › Taking Turns).
 
 const LOOK: Record<LaneState, string> = {
   run: "bg-accent",

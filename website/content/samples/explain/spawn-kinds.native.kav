@@ -1,0 +1,15 @@
+fn sum_to(n: Int) -> Int {
+    let total = 0
+    for i in 0..n {
+        total += i
+    }
+    total
+}
+
+fn main() ! Error {
+    const a = spawn sum_to(10)
+    const b = spawn cores sum_to(20)
+    const c = spawn cores sum_to(30)
+    const d = spawn thread sum_to(40)
+    print(`{try a.wait()} {try b.wait()} {try c.wait()} {try d.wait()}`)
+}

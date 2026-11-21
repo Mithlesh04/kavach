@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
 import { CoresSplit } from "@/components/cores-split";
+import { Explainer } from "@/components/explain/explainer";
 import { C } from "@/components/inline-code";
 import { RaceChart } from "@/components/race-chart";
 import { RadixDemo } from "@/components/radix-demo";
@@ -66,7 +67,7 @@ export const howFastDoc: LessonDoc = {
 
 export const coresDoc: LessonDoc = {
   lead: "Every loop runs on one core, in order, unless you write on cores before it. Then its rounds run on all the program's cores, and the compiler checks that the answer is the one-core answer, exactly.",
-  simple: <>Like splitting a pile of exam papers among several teachers: each marks a part, and the totals are added at the end. You ask for it with <C>on cores</C>, and Kavach agrees only when the answer comes out exactly the same.</>,
+  simple: <>Like a pile of exam papers marked by several teachers: each takes the next small stack until none are left, and the totals are added at the end. You ask for it with <C>on cores</C>, and Kavach agrees only when the answer comes out exactly the same.</>,
   minutes: 6,
   before: ["basics/for-loop", "speed/how-kavach-is-fast"],
   body: (
@@ -74,8 +75,8 @@ export const coresDoc: LessonDoc = {
       <CoresSplit />
       <P>
         A plain <C>for</C> runs on one core, in order, as in C, Go, Rust and JavaScript. Write <C>on cores</C>{" "}
-        before it, and its rounds are cut into chunks that run on all the program&apos;s cores at once. Each round
-        here writes its own item, <C>ys[i]</C>:
+        before it, and its rounds are cut into many small ranges, and each core takes the next free range until
+        none are left. Each round here writes its own item, <C>ys[i]</C>:
       </P>
       <Ex name="speed/sub-elementwise" />
       <P>
@@ -83,8 +84,8 @@ export const coresDoc: LessonDoc = {
       </P>
       <Ex name="speed/cores-enumerate" />
       <P>
-        A round may also add whole numbers into a <C>let</C> with <C>+=</C>. Each core sums its part, and the parts
-        are added at the end, since whole numbers add up the same in any grouping:
+        A round may also add whole numbers into a <C>let</C> with <C>+=</C>. Each range is summed on its own, and the
+        sums are added at the end, since whole numbers add up the same in any grouping:
       </P>
       <Ex name="speed/sub-sum" />
       <P>
@@ -237,14 +238,22 @@ export const coresDoc: LessonDoc = {
         <SrcRef file="tests/conformance/04-control-flow/on-cores-before-a-value-count-of-zero-is-an-error.kav" label="a count of 0, tested" />
         <SrcRef file="tests/conformance/04-control-flow/on-cores-before-a-value-count-under-one-panics.kav" label="a count under 1, tested" />
       </div>
+      <H2>What the machine does</H2>
+      <P>The loop above, step by step, as a program built with <C>kavach build</C> runs it on 4 cores:</P>
+      <Explainer id="cores-loop" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="compiler/kir/src/par.rs" line={5} symbol="outlined into a chunk function" label="the compiler moves the body out" />
+        <SrcRef file="runtime/native/src/rt_par.rs" line={254} symbol="fn fan_out" />
+        <SrcRef file="runtime/native/src/rt_par.rs" line={156} symbol="fn run_shares" label="taking the next free range" />
+      </div>
     </>
   ),
   deeper: (
     <>
       <P>
-        Each chunk runs quietly: where the plain loop would panic, the chunk returns a flag instead. The runtime then
-        throws the chunks&apos; work away and runs the plain loop on one core, which panics at the exact round and line
-        you would have seen. Whole-number sums also record the highest and lowest each chunk&apos;s total reached, so a
+        Each range runs quietly: where the plain loop would panic, the range returns a flag instead. The runtime then
+        throws the ranges&apos; work away and runs the plain loop on one core, which panics at the exact round and line
+        you would have seen. Whole-number sums also record the highest and lowest each range&apos;s total reached, so a
         total that would overflow in the middle, in one-core order, is caught too.
       </P>
       <P>
@@ -275,7 +284,7 @@ export const coresDoc: LessonDoc = {
     {
       type: "choice",
       prompt: <>A round of an <C>on cores</C> loop hits an overflow. What does the program print?</>,
-      options: ["The exact panic the one-core loop gives", "A special parallel-overflow error", "Nothing: the chunk is skipped"],
+      options: ["The exact panic the one-core loop gives", "A special parallel-overflow error", "Nothing: the range is skipped"],
       answer: 0,
       explain: "The loop runs again on one core and panics at the same round, with the same message.",
     },

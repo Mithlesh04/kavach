@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
+import { Explainer } from "@/components/explain/explainer";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
@@ -17,7 +18,7 @@ const watchMs = (() => {
 })();
 
 /** How long slow and fast sleep in tasks/sub-turns, read from the sample. */
-export function turnSleeps(code: string) {
+function turnSleeps(code: string) {
   const ms = (name: string) => {
     const found = code.match(new RegExp(`report\\("${name}", (\\d+)\\)`))?.[1];
     if (!found) throw new Error(`tasks/sub-turns: no report("${name}", …) to name`);
@@ -101,6 +102,14 @@ export const tasksDoc: LessonDoc = {
       <H2>Two things at once</H2>
       <Ex name="tasks/sub-turns" />
       <P>The two sleeps overlap, so the program takes about {sleeps.slow} ms, not {sleeps.slow + sleeps.fast}. Why it prints in exactly this order is on <Link href="/docs/concurrency/taking-turns/">Taking Turns</Link>.</P>
+      <H2>What the machine does</H2>
+      <P>A plain <C>spawn</C> starts no thread. In native code the task runs on the thread that spawned it, with a stack of its own:</P>
+      <Explainer id="spawn" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="runtime/native/src/rt_tasks.rs" line={246} symbol="fn spawn" />
+        <SrcRef file="runtime/native/src/rt_coroutines.rs" line={194} symbol="pub(crate) fn start" />
+        <SrcRef file="runtime/core/src/tasks/pick.rs" line={35} symbol="fn pick" />
+      </div>
     </>
   ),
   tryIt: {
@@ -191,6 +200,15 @@ export const leakDoc: LessonDoc = {
         <C>watch</C> spawns a ticker that would tick forever, then returns after {watchMs} ms. The ticker is cancelled at
         that moment, so nothing keeps running in the background by mistake.
       </P>
+      <H2>What the machine does</H2>
+      <P>Sleeping tasks hold no core, and the ticker&apos;s first tick waits one interval:</P>
+      <Explainer id="ticker" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="compiler/kir/src/lower_every.rs" line={76} symbol="Stmt::Let(next, clock)" label="every_ms: the first tick" />
+        <SrcRef file="compiler/kir/src/lower_tasks.rs" line={272} symbol="join_tasks" label="the wait at return" />
+        <SrcRef file="runtime/core/src/tasks.rs" line={369} symbol="pub fn cancel" />
+        <SrcRef file="runtime/core/src/tasks/pick.rs" line={144} symbol="wait_timeout" label="the thread waits" />
+      </div>
       <H2>When one part fails, the others stop</H2>
       <Ex name="tasks/siblings" />
       <P>
@@ -259,9 +277,17 @@ export const channelsDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>put</C> waits when the channel already holds <C>capacity</C> values: a fast producer can&apos;t run ahead and fill memory.</li>
         <li><C>for n in receive</C> takes values until the channel is closed and empty.</li>
-        <li>Each value is copied into the channel, so the two tasks never share it.</li>
+        <li>Each value goes in as a value of its own: changing yours afterwards never changes what the taker gets. The runtime makes no copy unless one is needed. With one worker, an object goes in shared, its count raised; with several workers it is copied, as tasks on other threads must not share counts.</li>
       </ul>
-      <Note>Channels are how tasks talk without sharing anything: one task produces, another consumes, and neither waits for a lock.</Note>
+      <Note>Channels are how tasks talk without sharing anything: one task produces, another consumes. There is no lock you can see, hold or wait on: a channel&apos;s own bookkeeping takes a few nanoseconds inside the runtime, and a full or empty channel parks only the task, never a thread or a core.</Note>
+      <H2>What the machine does</H2>
+      <P>A producer and a consumer, with room for only 2 values between them:</P>
+      <Explainer id="channel" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="runtime/native/src/rt_channels.rs" line={137} symbol="struct ChanState" />
+        <SrcRef file="runtime/native/src/rt_channels.rs" line={317} symbol="fn put" />
+        <SrcRef file="runtime/native/src/rt_channels.rs" line={395} symbol="fn next" label="take" />
+      </div>
       <H2>Putting without waiting</H2>
       <P>
         <C>send.try_put(v)</C> adds <C>v</C> if the channel has room and gives <C>true</C>. When it is full or

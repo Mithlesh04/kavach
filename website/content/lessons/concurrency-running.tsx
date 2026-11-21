@@ -1,12 +1,11 @@
 import { CodeBlock } from "@/components/code-block";
+import { Explainer } from "@/components/explain/explainer";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
-import { TaskTurns } from "@/components/task-turns";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject, loadSample } from "@/lib/samples";
 import { fileFigure, fileTables, specBlock, specTables } from "@/lib/spec-tables";
 import { Ex, H2, Note, P, Syntax } from "./parts";
-import { turnSleeps } from "./concurrency";
 import { Table } from "./spec-table";
 
 const SPEC = "docs/spec/09-concurrency.md";
@@ -36,8 +35,13 @@ export const turnsDoc: LessonDoc = {
   body: (
     <>
       <CodeBlock code={turns.code} file="turns.kav" output={turns.output} />
-      <P>Step through it:</P>
-      <TaskTurns output={(turns.output ?? "").split("\n")} {...turnSleeps(turns.code)} />
+      <P>Step through it, with what the machine does between the turns:</P>
+      <Explainer id="turns" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="runtime/core/src/tasks/wait.rs" line={33} symbol="pub fn sleep_until" />
+        <SrcRef file="runtime/core/src/tasks/pick.rs" line={35} symbol="fn pick" />
+        <SrcRef file="runtime/native/src/rt_waits.rs" line={19} symbol="pub fn sleep_until" label="no task: a plain sleep" />
+      </div>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>spawn</C> makes the new task ready; the task that spawned it keeps running.</li>
         <li>A task runs until it waits. Then the task that became ready first runs.</li>
@@ -95,6 +99,14 @@ export const howTasksRunDoc: LessonDoc = {
         </li>
         <li>Only a release build (<C>kavach build</C>) runs <C>spawn cores</C> tasks on every core today. <C>kavach run</C> runs them on one core, in turn, and prints the same.</li>
       </ul>
+      <H2>What the machine does</H2>
+      <P>Which thread runs each kind, in a program built with <C>kavach build</C> on 4 cores:</P>
+      <Explainer id="spawn-kinds" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="runtime/native/src/rt_tasks.rs" line={246} symbol="fn spawn" />
+        <SrcRef file="runtime/native/src/rt_workers.rs" line={22} symbol="fn count" label="a worker per core: LLVM builds" />
+        <SrcRef file="compiler/kir/src/lower_drops.rs" line={140} symbol="fn spawns_on_cores" label="workers start at the top" />
+      </div>
       <H2>Waiting for the network</H2>
       <P>
         A thread with nothing to run looks at its sockets for a moment before it sleeps. A reply usually comes in that
