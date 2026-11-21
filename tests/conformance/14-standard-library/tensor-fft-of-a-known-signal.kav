@@ -1,0 +1,23 @@
+// Rule: `t.fft()` gives the discrete Fourier transform of a real tensor as a `Spectrum`, its real and imaginary parts, not scaled; any length works.
+// Spec: 14.33
+// expect output: [0.0, 2.0, 0.0, 2.0]
+// expect output: [0.0, 0.0, 0.0, 0.0]
+// expect output: [8.0, 0.0, 0.0, 0.0]
+// expect output: true true
+
+use std.math
+use std.tensor
+
+fn main() {
+    const s = tensor.of([1.0, 0.0, -1.0, 0.0]).fft()
+    print(s.re.items)
+    print(s.im.items)
+    print(tensor.ones<Float>([8]).fft().abs().items[::2])
+
+    // A length that isn't a power of two: [1, 2, 3] gives 6 and -1.5 ∓ (√3 / 2)i.
+    const t = tensor.of([1.0, 2.0, 3.0]).fft()
+    const half = math.sqrt(3.0) / 2.0
+    const re_ok = ((t.re - tensor.of([6.0, -1.5, -1.5])).map(x => x.abs()).max() ?? 1.0) < 1e-12
+    const im_ok = ((t.im - tensor.of([0.0, half, -half])).map(x => x.abs()).max() ?? 1.0) < 1e-12
+    print(`{re_ok} {im_ok}`)
+}

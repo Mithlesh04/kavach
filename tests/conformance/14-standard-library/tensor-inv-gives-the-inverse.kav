@@ -1,0 +1,23 @@
+// Rule: `a.inv()` gives the inverse of a square matrix, worked out by LU decomposition with partial pivoting.
+// Spec: 14.33
+// expect output: [1.0, -1.0, -1.0, 2.0]
+// expect output: [3, 3]
+// expect output: true true
+
+use std.tensor
+
+/// The largest distance between two tensors' numbers.
+fn apart(a: Tensor<Float>, b: Tensor<Float>) -> Float {
+    (a - b).map(x => x.abs()).max() ?? 0.0
+}
+
+fn main() {
+    const two = tensor.of_rows([[2.0, 1.0], [1.0, 1.0]])
+    print((two.inv() catch tensor.zeros<Float>([2, 2])).items)
+
+    const a = tensor.of_rows([[1.0, 2.0, 3.0], [0.0, 1.0, 4.0], [5.0, 6.0, 0.0]])
+    const known = tensor.of_rows([[-24.0, 18.0, 5.0], [20.0, -15.0, -4.0], [-5.0, 4.0, 1.0]])
+    const inverse = a.inv() catch tensor.zeros<Float>([3, 3])
+    print(inverse.shape)
+    print(`{apart(inverse, known) < 1e-12} {apart(a @ inverse, tensor.eye<Float>(3)) < 1e-12}`)
+}

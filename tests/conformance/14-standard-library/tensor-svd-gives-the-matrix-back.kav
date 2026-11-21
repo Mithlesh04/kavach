@@ -1,0 +1,34 @@
+// Rule: `a.svd()` gives the reduced singular value decomposition: `u`, `s` largest first, and `vt`, with `a == u @ diag(s) @ vt` up to rounding.
+// Spec: 14.33
+// expect output: [2, 2] [2] [2, 3]
+// expect output: true true true
+// expect output: [3, 2] [2] [2, 2]
+// expect output: true true
+// expect output: [3, 3] [3] [3, 3]
+// expect output: true true
+
+use std.tensor
+
+fn apart(a: Tensor<Float>, b: Tensor<Float>) -> Float {
+    (a - b).map(x => x.abs()).max() ?? 0.0
+}
+
+fn main() {
+    const a = tensor.of_rows([[3.0, 2.0, 2.0], [2.0, 3.0, -2.0]])
+    const d = a.svd()
+    print(`{d.u.shape} {d.s.shape} {d.vt.shape}`)
+    // This matrix's singular values are 5 and 3. `u * s` scales u's
+    // columns, as `u @ diag(s)` does.
+    const known = apart(d.s, tensor.of([5.0, 3.0])) < 1e-12
+    print(`{known} {apart(d.u * d.s @ d.vt, a) < 1e-12} {apart(d.u.transpose() @ d.u, tensor.eye<Float>(2)) < 1e-12}`)
+
+    const b = a.transpose().svd()
+    print(`{b.u.shape} {b.s.shape} {b.vt.shape}`)
+    print(`{apart(b.s, d.s) < 1e-12} {apart(b.u * b.s @ b.vt, a.transpose()) < 1e-12}`)
+
+    // A singular matrix: a singular value of 0, and `u` still orthonormal.
+    const c = tensor.of_rows([[1.0, 2.0, 3.0], [2.0, 4.0, 6.0], [1.0, 0.0, 1.0]])
+    const e = c.svd()
+    print(`{e.u.shape} {e.s.shape} {e.vt.shape}`)
+    print(`{apart(e.u * e.s @ e.vt, c) < 1e-12} {apart(e.u.transpose() @ e.u, tensor.eye<Float>(3)) < 1e-12}`)
+}

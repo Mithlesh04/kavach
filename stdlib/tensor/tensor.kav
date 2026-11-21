@@ -6,8 +6,10 @@
 // of dimensions, kept in one flat list, the last dimension's items next
 // to each other. Every operation checks its shapes as it runs; every
 // result is the same on every machine. The type's other methods are in
-// `ops.kav` (operators), `reduce.kav` (reductions) and `order.kav`
-// (sorting, joining and splitting); the work on shapes is in `shape.kav`.
+// `ops.kav` (operators), `reduce.kav` (reductions), `order.kav`
+// (sorting, joining and splitting), `linalg.kav` and `decompose.kav`
+// (linear algebra) and `fft.kav` (the FFT); the work on shapes is in
+// `shapes.kav`.
 
 use std.math
 use std.random as draw
@@ -15,6 +17,9 @@ use std.tensor.shapes
 use std.tensor.ops
 use std.tensor.reduce
 use std.tensor.order
+use std.tensor.linalg
+use std.tensor.decompose
+use std.tensor.fft
 
 /// Numbers in `shape.len()` dimensions: `items` holds them, the last
 /// dimension's next to each other. A tensor of `Bool` is a mask.
@@ -179,6 +184,36 @@ pub type Tensor<T>: Index<[Part], T>, Index<Tensor<Bool>, Tensor<T>>, Slice<[Par
     pub fn count(self, f: fn(T) -> Bool) -> Int {
         self.items.count(f)
     }
+}
+
+/// The error of `inv` and `solve`: the matrix has no inverse, as a pivot
+/// of its LU decomposition is exactly 0.
+pub type Singular {
+    /// The matrix's shape.
+    pub shape: [Int]
+}
+
+/// What `a.eig()` gives for a symmetric matrix: the eigenvalues, smallest
+/// first, and the eigenvectors, one column for each value.
+pub type Eig<T> {
+    pub values: Tensor<T>
+    pub vectors: Tensor<T>
+}
+
+/// What `a.svd()` gives: `a == u @ diag(s) @ vt`, up to rounding, with the
+/// singular values `s` largest first.
+pub type Svd<T> {
+    pub u: Tensor<T>
+    pub s: Tensor<T>
+    pub vt: Tensor<T>
+}
+
+/// Complex numbers as two tensors of one shape: the real parts and the
+/// imaginary parts. What the FFT gives and takes; its methods check that
+/// the two have one shape.
+pub type Spectrum<T> {
+    pub re: Tensor<T>
+    pub im: Tensor<T>
 }
 
 /// A tensor of `shape`, every number `value`.

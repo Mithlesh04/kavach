@@ -1,0 +1,18 @@
+// Rule: In `a @ b`, a 1-D `a` is a row and a 1-D `b` a column, and that dimension is taken out of the result: two vectors give their dot product, of shape `[]`.
+// Spec: 14.33
+// expect output: [2] [5.0, 11.0]
+// expect output: [2] [7.0, 10.0]
+// expect output: [] 11.0
+
+use std.tensor
+
+fn main() {
+    const m = tensor.of_rows([[1.0, 2.0], [3.0, 4.0]])
+    const v = tensor.of([1.0, 2.0])
+    const mv = m @ v
+    print(`{mv.shape} {mv.items}`)
+    const vm = v @ m
+    print(`{vm.shape} {vm.items}`)
+    const dot = v @ tensor.of([3.0, 4.0])
+    print(`{dot.shape} {dot.item()}`)
+}

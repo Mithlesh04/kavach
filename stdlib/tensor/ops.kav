@@ -113,27 +113,58 @@ extend<T> Tensor<T>: Add<Tensor<T>>, Add<T>, Sub<Tensor<T>>, Sub<T>, Mul<Tensor<
         self.map(x => if lo != lo { lo } else if hi != hi { hi } else if x < lo { lo } else if x > hi { hi } else { x })
     }
 
-    /// `a @ b`: the matrix product of the last two dimensions, for each of
-    /// the others, which must match.
+    /// `a @ b`: the matrix product, each number adding its products in
+    /// order, so every machine gives the same bits.
     pub fn matmul(self, other: Tensor<T>) -> Tensor<T> where T: Number {
-        if self.shape.len() < 2 or other.shape.len() != self.shape.len() {
-            panic(`\`@\` needs two tensors of the same number of dimensions, 2 or more: {self.shape} and {other.shape}`)
-        }
-        const n = self.shape.len()
-        const (m, k, k2, p) = (self.shape[n - 2], self.shape[n - 1], other.shape[n - 2], other.shape[n - 1])
-        if k != k2 or self.shape[:n - 2] != other.shape[:n - 2] {
-            panic(`\`@\` needs {self.shape}'s last size ({k}) to match {other.shape}'s next to last ({k2}), and the sizes before them to be the same`)
-        }
-        let out: [T] = []
-        for b in 0..(self.items.len() / (m * k).max(1)) {
-            const left = matrix.Matrix(rows: m, cols: k, items: self.items[b * m * k:(b + 1) * m * k])
-            const right = matrix.Matrix(rows: k, cols: p, items: other.items[b * k * p:(b + 1) * k * p])
-            out += (left @ right).items
-        }
-        let shape = self.shape
-        shape[n - 1] = p
-        Tensor(shape: shape, items: out)
+        product(self, other, false)
     }
+
+    /// The same product; with `fast`, floats go through `gemm`, as fast as
+    /// the machine allows, and may differ in their last bits.
+    pub fn matmul(self, other: Tensor<T>, fast: Bool) -> Tensor<T> where T: Number {
+        product(self, other, fast)
+    }
+}
+
+/// The matrix product of the last two dimensions, as NumPy's `matmul`. A
+/// 1-D `a` is a row and a 1-D `b` a column, that dimension taken out of
+/// the result; the dimensions before the last two are a batch, broadcast
+/// as `+` broadcasts.
+fn product<T: Number>(a: Tensor<T>, b: Tensor<T>, fast: Bool) -> Tensor<T> {
+    if a.shape.len() == 0 or b.shape.len() == 0 {
+        panic(`\`@\` needs tensors of 1 dimension or more: {a.shape} and {b.shape}`)
+    }
+    const sa = if a.shape.len() == 1 { [1, a.shape[0]] } else { a.shape }
+    const sb = if b.shape.len() == 1 { [b.shape[0], 1] } else { b.shape }
+    const (na, nb) = (sa.len(), sb.len())
+    const (m, k, k2, p) = (sa[na - 2], sa[na - 1], sb[nb - 2], sb[nb - 1])
+    if k != k2 {
+        const which = if b.shape.len() == 1 { "size" } else { "next to last" }
+        panic(`\`@\` needs {a.shape}'s last size ({k}) to match {b.shape}'s {which} ({k2})`)
+    }
+    const batch = shapes.broadcast(sa[:na - 2], sb[:nb - 2]) ?? panic(shapes.no_broadcast(sa[:na - 2], sb[:nb - 2], "@"))
+    const xa = shapes.spread(sa, a.items, batch + [m, k])
+    const xb = shapes.spread(sb, b.items, batch + [k, p])
+    let out: [T] = []
+    for at in 0..shapes.sized(batch) {
+        if k == 0 {
+            for _ in 0..m * p {
+                out.push(T(0))
+            }
+            continue
+        }
+        const left = matrix.Matrix(rows: m, cols: k, items: xa[at * m * k:(at + 1) * m * k])
+        const right = matrix.Matrix(rows: k, cols: p, items: xb[at * k * p:(at + 1) * k * p])
+        out += left.product(right, fast: fast).items
+    }
+    let shape = batch
+    if a.shape.len() > 1 {
+        shape.push(m)
+    }
+    if b.shape.len() > 1 {
+        shape.push(p)
+    }
+    Tensor(shape: shape, items: out)
 }
 
 /// `f(x, y)` for each pair of numbers of `a` and `b`, broadcast to one

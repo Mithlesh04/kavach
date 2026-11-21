@@ -178,3 +178,20 @@ Conformance tests for std.clipboard (14.17), std.devices (14.18), std.window (14
 | 14.33 | [tensor-split-cuts-equal-parts.kav](tensor-split-cuts-equal-parts.kav) | `t.split(count)` cuts `count` equal parts along an axis, and `t.split_at(points)` cuts before each point. | runs |
 | 14.33 | [tensor-split-that-doesnt-divide-panics.kav](tensor-split-that-doesnt-divide-panics.kav) | `t.split(count)` of a size that `count` doesn't divide is a panic naming both. | panic |
 | 14.33 | [tensor-numpy-names-are-errors.kav](tensor-numpy-names-are-errors.kav) | NumPy's names for a tensor's methods are compile errors that name Kavach's: `t.rank()` names `t.dims()`. | compile error |
+| 14.33 | [tensor-matmul-of-vectors.kav](tensor-matmul-of-vectors.kav) | In `a @ b`, a 1-D `a` is a row and a 1-D `b` a column, that dimension taken out: two vectors give their dot product, of shape `[]`. | runs |
+| 14.33 | [tensor-matmul-broadcasts-batches.kav](tensor-matmul-broadcasts-batches.kav) | In `a @ b`, the dimensions before the last two are a batch, broadcast as `+` broadcasts; batches that don't fit are a panic naming both. | panic |
+| 14.33 | [tensor-matmul-fast-is-the-same-product.kav](tensor-matmul-fast-is-the-same-product.kav) | `a.matmul(b, fast: true)` is the product `a @ b`: floats may differ in their last bits, whole numbers are the same. | runs |
+| 14.33 | [tensor-inv-gives-the-inverse.kav](tensor-inv-gives-the-inverse.kav) | `a.inv()` gives the inverse of a square matrix. | runs |
+| 14.33 | [tensor-singular-matrix-fails.kav](tensor-singular-matrix-fails.kav) | `inv` and `solve` of a matrix with a pivot of exactly 0 fail with `tensor.Singular`; its `det` is 0.0. | runs |
+| 14.33 | [tensor-solve-without-the-inverse.kav](tensor-solve-without-the-inverse.kav) | `a.solve(b)` gives the `x` with `a @ x == b`, for a `b` of 1 or 2 dimensions. | runs |
+| 14.33 | [tensor-solve-of-other-sizes-panics.kav](tensor-solve-of-other-sizes-panics.kav) | `solve` of a `b` whose first size isn't the matrix's is a panic naming both shapes. | panic |
+| 14.33 | [tensor-det-of-a-known-matrix.kav](tensor-det-of-a-known-matrix.kav) | `a.det()` multiplies the pivots of the LU decomposition, negated for an odd number of row swaps. | runs |
+| 14.33 | [tensor-matrix-not-square-panics.kav](tensor-matrix-not-square-panics.kav) | A matrix that isn't square where one is needed is a panic naming its shape. | panic |
+| 14.33 | [tensor-linear-algebra-needs-floating.kav](tensor-linear-algebra-needs-floating.kav) | Linear algebra needs `T: Floating`: `det` of whole numbers is a compile error naming the bound. | compile error |
+| 14.33 | [tensor-norm-is-the-root-of-the-squares.kav](tensor-norm-is-the-root-of-the-squares.kav) | `t.norm()` is the square root of the sum of the squares; `norm(axis:)` works along an axis. | runs |
+| 14.33 | [tensor-eig-of-a-symmetric-matrix.kav](tensor-eig-of-a-symmetric-matrix.kav) | `a.eig()` gives the eigenvalues, smallest first, and the eigenvectors as columns, each turned so its number of largest size is positive. | runs |
+| 14.33 | [tensor-eig-of-a-non-symmetric-matrix-panics.kav](tensor-eig-of-a-non-symmetric-matrix-panics.kav) | `eig` of a matrix that isn't exactly symmetric is a panic naming its shape. | panic |
+| 14.33 | [tensor-svd-gives-the-matrix-back.kav](tensor-svd-gives-the-matrix-back.kav) | `a.svd()` gives the reduced `u`, `s` (largest first) and `vt`, with `u @ diag(s) @ vt` the matrix up to rounding. | runs |
+| 14.33 | [tensor-fft-of-a-known-signal.kav](tensor-fft-of-a-known-signal.kav) | `t.fft()` gives the discrete Fourier transform as a `Spectrum`, not scaled, for any length. | runs |
+| 14.33 | [tensor-ifft-gives-the-signal-back.kav](tensor-ifft-gives-the-signal-back.kav) | `s.ifft()` divides by the length, so `t.fft().ifft()` gives `t` back; both work along an axis. | runs |
+| 14.33 | [tensor-spectrum-of-two-shapes-panics.kav](tensor-spectrum-of-two-shapes-panics.kav) | A `Spectrum`'s `re` and `im` have one shape: `fft`, `ifft` or `abs` of two shapes is a panic naming both. | panic |

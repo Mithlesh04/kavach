@@ -1,0 +1,9 @@
+// Rule: A matrix that isn't square where one is needed is a panic naming its shape.
+// Spec: 14.33
+// expect panic: `det` needs a square matrix, and has shape [2, 3]
+
+use std.tensor
+
+fn main() {
+    print(tensor.zeros<Float>([2, 3]).det())
+}

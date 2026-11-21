@@ -253,13 +253,13 @@ The products and solvers of linear algebra take matrices: tensors of two dimensi
 | Written | Gives |
 |---|---|
 | `a @ b` | The matrix product (2.16 `MatMul`), as NumPy's `matmul`: below |
-| `a.matmul(b, fast: true)` | The same product, as fast as the machine allows (below) (not built yet) |
-| `a.inv() -> Tensor<T, dims: 2> ! Singular` | The inverse of a square matrix; fails with `tensor.Singular` when it has none (not built yet) |
-| `a.solve(b) -> Tensor<T> ! Singular` | The `x` with `a @ x == b`, for a square `a` and a `b` of 1 or 2 dimensions, without working out the inverse (not built yet) |
-| `a.det() -> T` | The determinant of a square matrix (not built yet) |
-| `t.norm()`, `t.norm(axis: Int)` | The square root of the sum of the squares (the Euclidean norm), of every number or along an axis (not built yet) |
-| `a.eig() -> Eig<T>` | For a symmetric matrix: `values`, smallest first, and `vectors`, one column for each value (not built yet) |
-| `a.svd() -> Svd<T>` | The singular value decomposition, `a == u @ diag(s) @ vt` up to rounding: `u`, `s` (largest first) and `vt` (not built yet) |
+| `a.matmul(b, fast: true)` | The same product, as fast as the machine allows (below) |
+| `a.inv() -> Tensor<T, dims: 2> ! Singular` | The inverse of a square matrix; fails with `tensor.Singular` when it has none |
+| `a.solve(b) -> Tensor<T> ! Singular` | The `x` with `a @ x == b`, for a square `a` and a `b` of 1 or 2 dimensions, without working out the inverse; `x` has `b`'s shape |
+| `a.det() -> T` | The determinant of a square matrix |
+| `t.norm()`, `t.norm(axis: Int)` | The square root of the sum of the squares (the Euclidean norm), of every number or along an axis |
+| `a.eig() -> Eig<T>` | For a symmetric matrix: `values`, smallest first, and `vectors`, one column for each value |
+| `a.svd() -> Svd<T>` | The singular value decomposition, `a == u @ diag(s) @ vt` up to rounding: `u`, `s` (largest first) and `vt` |
 
 ```kavach
 const a = tensor.of_rows([[2.0, 1.0], [1.0, 3.0]])
@@ -273,29 +273,27 @@ print(tensor.of([3.0, 4.0]).norm())   // 5.0
 **`a @ b`** follows NumPy's `matmul`:
 
 - Two matrices, `[n, k]` and `[k, m]`, give `[n, m]`. The inner sizes must match.
-- *Not built yet:* A 1-D `a` is a row and a 1-D `b` a column; that dimension is taken out of the result. So a vector and a matrix give a vector, and two vectors of one length give their dot product, a tensor of shape `[]` (`(u @ v).item()`).
-- With more than two dimensions, the last two are the matrices, and the others are a batch: `[3, 2, 2] @ [3, 2, 2]` is `[3, 2, 2]`, one product for each of the 3. *Not built yet:* batches of different shapes, broadcast as above: `[8, 2, 3] @ [3, 4]` is `[8, 2, 4]`.
+- A 1-D `a` is a row and a 1-D `b` a column; that dimension is taken out of the result. So a vector and a matrix give a vector, and two vectors of one length give their dot product, a tensor of shape `[]` (`(u @ v).item()`).
+- With more than two dimensions, the last two are the matrices, and the others are a batch: `[3, 2, 2] @ [3, 2, 2]` is `[3, 2, 2]`, one product for each of the 3. Batches of different shapes are broadcast as above: `[8, 2, 3] @ [3, 4]` is `[8, 2, 4]`.
 - `@=` is `a = a @ b`.
 
 **The same bits, or `fast`.** By default each number of `a @ b` adds its products in one order, `k` from 0 up, a multiply then an add, never fused (decision 0111). The work is still spread over the cores and the vector units, and a 2-D block of `Float` or `Float32` runs the exact kernel of `runtime/matrix`. `a.matmul(b, fast: true)` may add in another order and fuse multiplies with adds, through `gemm`, for the full speed of the machine; a float result may then differ in its last bits between machines. For whole numbers both give the same result, and overflow panics.
 
 - `a @ b` needs `T: Number`; the other calls here need `T: Floating`.
-- *Not built yet:* `Eig<T>` and `Svd<T>` are records of `std.tensor`, with the fields named above; `Singular` is its error type (5.1).
-- *Not built yet:* `inv`, `solve` and `det` use LU decomposition with partial pivoting. `eig` uses the Jacobi method, `svd` the one-sided Jacobi method. Each is one fixed algorithm, so its result has the same bits everywhere.
-- *Not built yet:* Each eigenvector and singular vector is turned so that its largest number (the first, if several) is positive. So the result is the same everywhere, not only up to a sign.
-- *Not built yet:* `svd` gives the reduced form: for an `[m, n]` matrix and `k = min(m, n)`, `u` is `[m, k]`, `s` is `[k]` and `vt` is `[k, n]`.
-- *Not built yet:* A matrix that isn't square where one is needed, or a non-symmetric one given to `eig`, is a panic naming its shape. `eig` checks symmetry exactly: `a[i, j] == a[j, i]` for every pair.
-- *Not built yet:* `Singular` is reported when a pivot is exactly 0; `det` of such a matrix is 0.0.
+- `Eig<T>` and `Svd<T>` are records of `std.tensor`, with the fields named above; `Singular` is its error type (5.1).
+- `inv`, `solve` and `det` use LU decomposition with partial pivoting. `eig` uses the Jacobi method, `svd` the one-sided Jacobi method. Each is one fixed algorithm, so its result has the same bits everywhere.
+- Each eigenvector and singular vector is turned so that its number of largest size (the first, if several) is positive. So the result is the same everywhere, not only up to a sign. For `svd`, each column of `u` is turned so, and the row of `vt` that goes with it is turned with it.
+- `svd` gives the reduced form: for an `[m, n]` matrix and `k = min(m, n)`, `u` is `[m, k]`, `s` is `[k]` and `vt` is `[k, n]`.
+- A matrix that isn't square where one is needed, or a non-symmetric one given to `eig`, is a panic naming its shape. `eig` checks symmetry exactly: `a[i, j] == a[j, i]` for every pair.
+- `Singular` is reported when a pivot is exactly 0; `det` of such a matrix is 0.0. The pivot of each column is the first number of largest size on or below the diagonal.
 
 ## The FFT
 
-*Not built yet.*
-
 | Written | Gives |
 |---|---|
-| `t.fft(axis: Int = self.dims() - 1) -> Spectrum<T>` | The discrete Fourier transform of a real tensor along the axis |
-| `s.fft(axis: …)`, `s.ifft(axis: …) -> Spectrum<T>` | The transform, or its inverse, of complex numbers |
-| `tensor.Spectrum(re: Tensor<T>, im: Tensor<T>)` | Complex numbers as two tensors of one shape: the real parts and the imaginary parts |
+| `t.fft(axis: Int? = none) -> Spectrum<T>` | The discrete Fourier transform of a real tensor along the axis, the last one for `none` |
+| `s.fft(axis: Int? = none)`, `s.ifft(axis: Int? = none) -> Spectrum<T>` | The transform, or its inverse, of complex numbers |
+| `tensor.Spectrum(re: Tensor<T>, im: Tensor<T>)` | Complex numbers as two tensors of one shape: the real parts and the imaginary parts; `fft`, `ifft` or `abs` of two shapes is a panic naming both |
 | `s.abs() -> Tensor<T>` | Each number's size, `sqrt(re² + im²)` |
 
 ```kavach
@@ -307,7 +305,8 @@ print(s.ifft().re.items)          // [1.0, 0.0, -1.0, 0.0]
 ```
 
 - As in NumPy, `fft` doesn't scale and `ifft` divides by the length.
-- Any length works. A length that is a power of two uses the radix-2 algorithm; others use Bluestein's. The angles come from `std.math`'s `sin` and `cos`, so the result has the same bits everywhere (decision 0122).
+- Any length works. A length that is a power of two uses the radix-2 algorithm; others use Bluestein's, through radix-2 transforms of a power of two at least twice as long. The angles come from `std.math`'s `sin` and `cos`, each from an angle of at most π/4, so quarter turns are exact; the result has the same bits everywhere (decision 0122).
+- `ifft` is the transform of the complex conjugates, conjugated and divided by the length.
 - `T` is `Float` or `Float32`.
 
 ## On the GPU
@@ -371,12 +370,14 @@ fn embed<b: Int>(x: Tensor<Float32, shape: [b, 768]>) -> Tensor<Float32, shape: 
 
 - **`&`, `|` and `~` on masks** need bit operators for a program's own types (2.16, Open questions). Until then `tensor.where` and `map` do their job.
 - **`t[i]` of a tensor of more than one dimension.** NumPy gives row `i`. Here a key of numbers only gives a `T`, so it needs one number for each dimension, and `t[i, :]` gives the row. Once `dims:` is in the type (to-do 29), `t[i]` of a matrix could give the row.
-- **`random_int`'s limit.** `tensor.random_int` makes at most 65,536 numbers at a time, as `random.bytes(n)` does, so the tests `kavach test` makes for it end within their budget (11.9). NumPy has no such limit; lifting it needs a way to bound generated shapes, or the work moved into the runtime.
+- **`random_int`'s limit.** `tensor.random_int` makes at most 65,536 numbers at a time, as `random.bytes(n)` does, so the tests `kavach test` makes for it end within their budget (11.9). NumPy has no such limit. A maintainer chose (2026-11-20) to lift it by drawing in the runtime. That needs a new runtime call, in the checker, the interpreter and native code, so it is not in this module alone; and generated tests try shapes as large as `Int`'s largest, so a bound stays needed even then: on the shape in a `require`, or a budget charged per number drawn, as `repeat` charges per kilobyte.
 - **Choices made where this page said nothing, closest to NumPy, for review:** `normal`'s order of draws (above); a `Float32` draw of 1.0 drawn again; `percentile` of numbers with a `NaN` is `NaN`, as NumPy's; `percentile` interpolates as NumPy's `_lerp`, from the upper number when the fraction is 0.5 or more; `split_at` panics on points outside `0` to the size; and `cumsum`, `sort` and `argsort` take `axis: Int? = none`, `none` meaning the last axis, as a default can't name `self`.
 - **How `dims:` rules are written.** `@` and `sum(axis:)` work out the result's `dims` from the operands'. This needs arithmetic on numbers in types (`dims: n - 1`) or rules the checker knows for `std.tensor` (to-do 29).
 - **Passing a plain `Tensor<T>` where `dims: 2` is asked for.** Written here as `try Tensor<T, dims: 2>(t)`, as to-do 29 does for limited lists; it could instead be checked as the program runs, with no `try`.
 - **Exact routines on every GPU.** Some GPUs fuse a multiply with an add (15.2). Whether every vendor can be made not to, or such GPUs fall back to the CPU for floats, needs testing on real hardware.
 - **Random tensors on the GPU.** Making them there with the CPU's numbers needs a generator that can jump ahead (a counter-based one, such as Philox). `random.seeded`'s generator (14.15) doesn't say which it is.
+- **Choices made for linear algebra and the FFT, closest to NumPy, for review:** `Singular` is a record holding the matrix's shape; `solve`'s `x` has `b`'s shape; `det` of a `[0, 0]` matrix is 1.0 and its `inv` is `[0, 0]`, as NumPy's; the pivot of each column is the first number of largest size; a vector's sign is set by its number of largest size, and for `svd` by `u`'s column, `vt`'s row turned with it; `svd` fills a column of `u` for a singular value of 0 with the first unit vector not in the others' span, made orthogonal to them, so `u` stays orthonormal; `eig` and `svd` stop after 100 sweeps if they have not settled; `fft`'s `axis` is `Int? = none`, `none` meaning the last, as `cumsum`'s; the products and sums inside `solve`, `eig`, `svd` and the FFT go in order, not exactly as `sum` does, while `norm` sums its squares exactly; `@` of a tensor of shape `[]` is a panic naming both shapes.
+- **`t[0:2, :] = u`** needs a way to assign to a slice of a program's own type (2.16), which the language doesn't have yet.
 - **`cumsum` without an axis.** NumPy's flattens the tensor first; here it runs along the last axis, as `sort` does.
 - **More of NumPy:** several axes at once (`axis: [0, 1]`), keeping the reduced dimension (`keepdims`), `cumprod`, other norms (`ord`), `eig` of matrices that aren't symmetric (complex results), `svd`'s full form, linear algebra on batches of matrices, and `unique`'s counts.
 - **A `Complex` number type**, which would make `Spectrum<T>` a `Tensor<Complex<T>>`.

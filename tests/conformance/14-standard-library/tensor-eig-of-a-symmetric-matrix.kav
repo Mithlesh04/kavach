@@ -1,0 +1,25 @@
+// Rule: `a.eig()` of a symmetric matrix gives its eigenvalues, smallest first, and its eigenvectors, one column each, turned so that the number of largest size is positive.
+// Spec: 14.33
+// expect output: [2]
+// expect output: true true
+// expect output: true
+// expect output: [1.0, 2.0, 4.0]
+// expect output: [[0.0, 0.0, 1.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
+
+use std.math
+use std.tensor
+
+fn main() {
+    const a = tensor.of_rows([[2.0, 1.0], [1.0, 3.0]])
+    const e = a.eig()
+    print(e.values.shape)
+    // (5 ∓ √5) / 2
+    const root = math.sqrt(5.0)
+    print(`{(e.values[0] - (5.0 - root) / 2.0).abs() < 1e-12} {(e.values[1] - (5.0 + root) / 2.0).abs() < 1e-12}`)
+    // a @ v == v * values, column by column.
+    print(((a @ e.vectors - e.vectors * e.values).map(x => x.abs()).max() ?? 1.0) < 1e-12)
+
+    const d = tensor.of_rows([[4.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 2.0]]).eig()
+    print(d.values.items)
+    print(d.vectors.to_rows())
+}

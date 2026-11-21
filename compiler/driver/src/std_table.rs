@@ -134,6 +134,21 @@ pub(crate) const BUILTIN: &[(&str, &str, &str)] = &[
         include_str!("../../../stdlib/tensor/order.kav"),
     ),
     (
+        "std/tensor/linalg.kav",
+        "std.tensor.linalg",
+        include_str!("../../../stdlib/tensor/linalg.kav"),
+    ),
+    (
+        "std/tensor/decompose.kav",
+        "std.tensor.decompose",
+        include_str!("../../../stdlib/tensor/decompose.kav"),
+    ),
+    (
+        "std/tensor/fft.kav",
+        "std.tensor.fft",
+        include_str!("../../../stdlib/tensor/fft.kav"),
+    ),
+    (
         "std/tensor.kav",
         "std.tensor",
         include_str!("../../../stdlib/tensor/tensor.kav"),

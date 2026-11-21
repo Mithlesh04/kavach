@@ -1,0 +1,11 @@
+// Rule: `a.solve(b)` needs `b`'s first size to be the matrix's; another is a panic naming both shapes.
+// Spec: 14.33
+// expect panic: `solve` needs a `b` of 1 or 2 dimensions whose first size is [2, 2]'s (2), and has [3]
+
+use std.tensor
+
+fn main() {
+    const a = tensor.of_rows([[2.0, 1.0], [1.0, 3.0]])
+    const x = a.solve(tensor.of([1.0, 2.0, 3.0])) catch a
+    print(x.items)
+}

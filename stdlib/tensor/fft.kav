@@ -1,0 +1,236 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
+// std.tensor.fft (spec 14.33, decision 0136): the discrete Fourier
+// transform along one axis, as NumPy's `fft` and `ifft`. A length that is
+// a power of two uses the radix-2 algorithm; others use Bluestein's,
+// through radix-2 transforms of a power of two. The angles come from
+// `std.math`'s `sin` and `cos`, so the result has the same bits on every
+// machine (decision 0122). The inverse is the transform of the complex
+// conjugates, conjugated, divided by the length.
+
+use std.math
+use std.tensor.{Tensor, Spectrum}
+use std.tensor.shapes
+
+extend<T> Tensor<T> {
+    /// The discrete Fourier transform of real numbers along `axis`, the
+    /// last when it isn't given.
+    pub fn fft(self, axis: Int? = none) -> Spectrum<T> where T: Floating {
+        Spectrum(re: self, im: self.map(_ => T(0))).fft(axis)
+    }
+}
+
+extend<T> Spectrum<T> {
+    /// The discrete Fourier transform along `axis`, the last when it isn't
+    /// given; not scaled.
+    pub fn fft(self, axis: Int? = none) -> Spectrum<T> where T: Floating {
+        along(self, axis, false)
+    }
+
+    /// The inverse transform along `axis`, divided by its length.
+    pub fn ifft(self, axis: Int? = none) -> Spectrum<T> where T: Floating {
+        along(self, axis, true)
+    }
+
+    /// Each number's size, `sqrt(re² + im²)`.
+    pub fn abs(self) -> Tensor<T> where T: Floating {
+        same_shape(self, "abs")
+        let out: [T] = []
+        for i in 0..self.re.items.len() {
+            const (x, y) = (self.re.items[i], self.im.items[i])
+            out.push(math.sqrt(x * x + y * y))
+        }
+        Tensor(shape: self.re.shape, items: out)
+    }
+}
+
+/// A panic naming both shapes when `s`'s parts have two.
+fn same_shape<T>(s: Spectrum<T>, what: String) {
+    if s.re.shape != s.im.shape {
+        panic(`\`{what}\` needs a spectrum's \`re\` and \`im\` of one shape, and has {s.re.shape} and {s.im.shape}`)
+    }
+}
+
+/// The transform, or its inverse, of each lane along `axis`.
+fn along<T: Floating>(s: Spectrum<T>, axis: Int?, inverse: Bool) -> Spectrum<T> {
+    const what = if inverse { "ifft" } else { "fft" }
+    same_shape(s, what)
+    const a = shapes.axis_in(s.re, axis, what)
+    const res = shapes.lanes(s.re.shape, s.re.items, a)
+    const ims = shapes.lanes(s.im.shape, s.im.items, a)
+    let out_re: [[T]] = []
+    let out_im: [[T]] = []
+    for i in 0..res.len() {
+        const (r, m) = if inverse { inverted(res[i], ims[i]) } else { transformed(res[i], ims[i]) }
+        out_re.push(r)
+        out_im.push(m)
+    }
+    const shape = s.re.shape
+    Spectrum(re: Tensor(shape: shape, items: shapes.from_lanes(shape, out_re, a)), im: Tensor(shape: shape, items: shapes.from_lanes(shape, out_im, a)))
+}
+
+/// `0 - x`: `-x`, but 0 for 0, never `-0.0`.
+fn negated<T: Number>(x: T) -> T {
+    T(0) - x
+}
+
+/// The cosine and sine of `2π k / n`, worked out from an angle of at most
+/// π/4, so the quarter turns are exact and the halves of a turn agree.
+fn turn(k: Int, n: Int) -> (Float, Float)
+    require n > 0 and n < (1 << 60) and k >= 0
+    example turn(0, 4) == (1.0, 0.0)
+    example turn(1, 4) == (0.0, 1.0)
+    example turn(2, 4) == (-1.0, 0.0)
+{
+    const q = (4 * (k % n)) / n
+    const r = 4 * (k % n) - q * n
+    let c = 1.0
+    let s = 0.0
+    if r != 0 {
+        const near = 2 * r <= n
+        const angle = math.pi / 2.0 * Float(if near { r } else { n - r }) / Float(n)
+        c = if near { math.cos(angle) } else { math.sin(angle) }
+        s = if near { math.sin(angle) } else { math.cos(angle) }
+    }
+    match q % 4 {
+        0 => (c, s),
+        1 => (negated(s), c),
+        2 => (negated(c), negated(s)),
+        _ => (s, negated(c)),
+    }
+}
+
+/// Whether `n` is a power of two.
+fn power_of_two(n: Int) -> Bool
+    example power_of_two(8)
+    example not power_of_two(6)
+{
+    n > 0 and (n & (n - 1)) == 0
+}
+
+/// The transform of the complex numbers `re` and `im`, as long.
+fn transformed<T: Floating>(re: [T], im: [T]) -> ([T], [T])
+    require re.len() == im.len()
+{
+    if power_of_two(re.len()) { radix2(re, im) } else { bluestein(re, im) }
+}
+
+/// The inverse transform: the conjugates transformed, conjugated, and
+/// divided by the length.
+fn inverted<T: Floating>(re: [T], im: [T]) -> ([T], [T])
+    require re.len() == im.len()
+{
+    const (r, m) = transformed(re, im.map(x => negated(x)))
+    const n = T(re.len())
+    (r.map(x => x / n), m.map(x => negated(x) / n))
+}
+
+/// The radix-2 transform of a length that is a power of two: the numbers
+/// put in bit-reversed order, then joined in butterflies of 2, 4, 8 …
+fn radix2<T: Floating>(re_in: [T], im_in: [T]) -> ([T], [T])
+    require power_of_two(re_in.len()) and re_in.len() == im_in.len()
+{
+    const n = re_in.len()
+    let bits = 0
+    while (1 << bits) < n {
+        bits += 1
+    }
+    let re = re_in
+    let im = im_in
+    for i in 0..n {
+        let j = 0
+        for b in 0..bits {
+            j = j | (((i >> b) & 1) << (bits - 1 - b))
+        }
+        re[i] = re_in[j]
+        im[i] = im_in[j]
+    }
+    let wr: [T] = []
+    let wi: [T] = []
+    for k in 0..n / 2 {
+        const (c, s) = turn(k, n)
+        wr.push(T(c))
+        wi.push(negated(T(s)))
+    }
+    let size = 2
+    while size <= n {
+        const half = size / 2
+        const step = n / size
+        let start = 0
+        while start < n {
+            for k in 0..half {
+                const (cr, ci) = (wr[k * step], wi[k * step])
+                const (i, j) = (start + k, start + k + half)
+                const tr = cr * re[j] - ci * im[j]
+                const ti = cr * im[j] + ci * re[j]
+                re[j] = re[i] - tr
+                im[j] = im[i] - ti
+                re[i] = re[i] + tr
+                im[i] = im[i] + ti
+            }
+            start += size
+        }
+        size *= 2
+    }
+    (re, im)
+}
+
+/// Bluestein's transform of any length `n`: the numbers times a chirp,
+/// `exp(-πi k² / n)`, convolved with the chirp's conjugate through radix-2
+/// transforms of a power of two at least `2n - 1` long, then times the
+/// chirp again.
+fn bluestein<T: Floating>(re: [T], im: [T]) -> ([T], [T])
+    require re.len() == im.len() and re.len() > 0
+{
+    const n = re.len()
+    let size = 1
+    while size < 2 * n - 1 {
+        size *= 2
+    }
+    // The chirp's cosines and sines: `k²` counted modulo `2n`, as
+    // `exp(-πi k² / n)` repeats every `2n`.
+    let cr: [T] = []
+    let ci: [T] = []
+    let square = 0
+    for k in 0..n {
+        const (c, s) = turn(square, 2 * n)
+        cr.push(T(c))
+        ci.push(negated(T(s)))
+        square = (square + 2 * k + 1) % (2 * n)
+    }
+    let ar: [T] = []
+    for _ in 0..size {
+        ar.push(T(0))
+    }
+    let ai = ar
+    let br = ar
+    let bi = ar
+    for k in 0..n {
+        ar[k] = re[k] * cr[k] - im[k] * ci[k]
+        ai[k] = re[k] * ci[k] + im[k] * cr[k]
+        br[k] = cr[k]
+        bi[k] = negated(ci[k])
+        if k > 0 {
+            br[size - k] = cr[k]
+            bi[size - k] = negated(ci[k])
+        }
+    }
+    const (fa_re, fa_im) = radix2(ar, ai)
+    const (fb_re, fb_im) = radix2(br, bi)
+    let pr: [T] = []
+    let pi: [T] = []
+    for k in 0..size {
+        pr.push(fa_re[k] * fb_re[k] - fa_im[k] * fb_im[k])
+        pi.push(fa_re[k] * fb_im[k] + fa_im[k] * fb_re[k])
+    }
+    const (vr, vi) = inverted(pr, pi)
+    let out_re: [T] = []
+    let out_im: [T] = []
+    for k in 0..n {
+        out_re.push(vr[k] * cr[k] - vi[k] * ci[k])
+        out_im.push(vr[k] * ci[k] + vi[k] * cr[k])
+    }
+    (out_re, out_im)
+}

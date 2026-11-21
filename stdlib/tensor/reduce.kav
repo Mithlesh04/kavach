@@ -3,9 +3,10 @@
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
 // std.tensor.reduce (spec 14.33, decisions 0135 and 0136): reductions of
-// every number, or along one axis. Each method is written twice: without
-// `axis:` it gives one number, and with it a tensor with that dimension
-// taken out, each number worked out by the same function from one lane.
+// every number, or along one axis, `norm` among them. Each method is
+// written twice: without `axis:` it gives one number, and with it a
+// tensor with that dimension taken out, each number worked out by the
+// same function from one lane.
 // A float sum is exact, rounded once (`exact.kav`).
 
 use std.math
@@ -98,6 +99,16 @@ extend<T> Tensor<T> {
         spread(self, axis, correction, "std", xs => math.sqrt(variance(xs, correction) ?? T(0)))
     }
 
+    /// The Euclidean norm: the square root of the sum of the squares,
+    /// the sum exact, rounded once.
+    pub fn norm(self) -> T where T: Floating {
+        root_of_squares(self.items)
+    }
+
+    pub fn norm(self, axis: Int) -> Tensor<T> where T: Floating {
+        lanes_to(self, axis, "norm", false, xs => root_of_squares(xs))
+    }
+
     /// The running sums along `axis`, the last when it isn't given; each
     /// exact, rounded once, for floats.
     pub fn cumsum(self, axis: Int? = none) -> Tensor<T> where T: Number {
@@ -131,6 +142,13 @@ fn running<T: Number>(xs: [T]) -> [T] {
         out.push(s)
     }
     out
+}
+
+/// The square root of the exact sum of the squares of `xs`, a float type.
+fn root_of_squares<T: Floating>(xs: [T]) -> T
+    example root_of_squares([3.0, 4.0]) == 5.0
+{
+    math.sqrt(exact.sum(xs.map(x => x * x), 1))
 }
 
 fn product<T: Number>(xs: [T]) -> T {

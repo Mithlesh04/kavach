@@ -1,0 +1,20 @@
+// Rule: `inv` and `solve` of a matrix with no inverse, where a pivot is exactly 0, fail with `tensor.Singular`; its `det` is 0.0.
+// Spec: 14.33
+// expect output: singular [2, 2]
+// expect output: singular [2, 2]
+// expect output: 0.0
+
+use std.tensor
+
+fn main() {
+    const a = tensor.of_rows([[1.0, 2.0], [2.0, 4.0]])
+    const i = a.inv() catch e => {
+        print(`singular {e.shape}`)
+        a
+    }
+    const _x = a.solve(tensor.of([1.0, 2.0])) catch e => {
+        print(`singular {e.shape}`)
+        i
+    }
+    print(a.det())
+}

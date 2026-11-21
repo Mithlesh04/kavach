@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 
 /// The standard library modules every program has, as the driver adds
 /// them after the program's own file.
-const BUILTIN: [(&str, &str); 57] = [
+const BUILTIN: [(&str, &str); 60] = [
     ("std.json", include_str!("../../../stdlib/json/json.kav")),
     ("std.text", include_str!("../../../stdlib/text/text.kav")),
     (
@@ -71,6 +71,18 @@ const BUILTIN: [(&str, &str); 57] = [
     (
         "std.tensor.order",
         include_str!("../../../stdlib/tensor/order.kav"),
+    ),
+    (
+        "std.tensor.linalg",
+        include_str!("../../../stdlib/tensor/linalg.kav"),
+    ),
+    (
+        "std.tensor.decompose",
+        include_str!("../../../stdlib/tensor/decompose.kav"),
+    ),
+    (
+        "std.tensor.fft",
+        include_str!("../../../stdlib/tensor/fft.kav"),
     ),
     (
         "std.tensor",

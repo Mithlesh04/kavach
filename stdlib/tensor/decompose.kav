@@ -1,0 +1,281 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
+// std.tensor.decompose (spec 14.33, decision 0136): `eig` of a symmetric
+// matrix, by the Jacobi method, and `svd`, by the one-sided Jacobi
+// method. Each rotates in one fixed order, pair by pair, sweep after
+// sweep, with plain `+ - * /` and `sqrt`, never fused, so the result has
+// the same bits on every machine (decision 0122). Each vector is turned
+// so that its number of largest size (the first, if several) is positive.
+
+use std.math
+use std.tensor.{Tensor, Eig, Svd}
+
+extend<T> Tensor<T> {
+    /// The eigenvalues of a symmetric matrix, smallest first, and its
+    /// eigenvectors, one column for each value.
+    pub fn eig(self) -> Eig<T> where T: Floating {
+        if self.shape.len() != 2 or self.shape[0] != self.shape[1] {
+            panic(`\`eig\` needs a square matrix, and has shape {self.shape}`)
+        }
+        const n = self.shape[0]
+        for i in 0..n {
+            for j in i + 1..n {
+                if self.items[i * n + j] != self.items[j * n + i] {
+                    panic(`\`eig\` needs a symmetric matrix, and {self.shape} has [{i}, {j}] and [{j}, {i}] unequal`)
+                }
+            }
+        }
+        const (a, v) = jacobi(self.items, n)
+        const by = (0..n).to_list().sort_by(i => a[i * n + i])
+        let vectors: [T] = []
+        for r in 0..n {
+            for c in by {
+                vectors.push(v[r * n + c])
+            }
+        }
+        Eig(values: Tensor(shape: [n], items: by.map(i => a[i * n + i])), vectors: Tensor(shape: [n, n], items: turned(vectors, n, n)))
+    }
+
+    /// The reduced singular value decomposition: for an `[m, n]` matrix and
+    /// `k = min(m, n)`, `u` is `[m, k]`, `s` is `[k]`, largest first, and
+    /// `vt` is `[k, n]`.
+    pub fn svd(self) -> Svd<T> where T: Floating {
+        if self.shape.len() != 2 {
+            panic(`\`svd\` needs a matrix, of 2 dimensions, and {self.shape} has {self.shape.len()}`)
+        }
+        const (m, n) = (self.shape[0], self.shape[1])
+        if m < n {
+            const s = one_sided(self.transpose().items, n, m)
+            return flipped(Svd(u: s.vt.transpose(), s: s.s, vt: s.u.transpose()))
+        }
+        flipped(one_sided(self.items, m, n))
+    }
+}
+
+/// The smallest step of `T` from 1: 2^-52 for a `Float`, 2^-23 for a
+/// `Float32`.
+fn epsilon<T: Floating>() -> T
+    example epsilon<Float>() == 1.0 / 4_503_599_627_370_496.0
+    example epsilon<Float32>() == Float32(1.0) / Float32(8_388_608.0)
+{
+    if T(16_777_217) == T(16_777_216) { T(0.00000011920928955078125) } else { T(0.0000000000000002220446049250313) }
+}
+
+/// How far `x` is from 0, its sign dropped.
+fn size_of<T: Number>(x: T) -> T {
+    if x < T(0) { T(0) - x } else { x }
+}
+
+/// The cosine `c`, sine `s` and tangent `t` of a rotation: `t` is the
+/// root of `t² + 2 zeta t - 1` of least size.
+fn rotation<T: Floating>(zeta: T) -> (T, T, T)
+    example rotation(0.0) == (1.0 / math.sqrt(2.0), 1.0 / math.sqrt(2.0), 1.0)
+    example rotation(0.75) == (1.0 / math.sqrt(1.25), 1.0 / math.sqrt(1.25) * 0.5, 0.5)
+{
+    const z = size_of(zeta)
+    let t = if z * z == z * z + T(1) and z > T(1) { T(1) / (z + z) } else { T(1) / (z + math.sqrt(z * z + T(1))) }
+    if zeta < T(0) {
+        t = T(0) - t
+    }
+    const c = T(1) / math.sqrt(t * t + T(1))
+    (c, c * t, t)
+}
+
+/// The Jacobi method on the symmetric `n` × `n` matrix `a`: rotations in
+/// the order of the pairs `(p, q)`, `p < q`, row by row, until every
+/// number off the diagonal is 0. Gives the matrix, its diagonal the
+/// eigenvalues, and the rotations, `V`, its columns the eigenvectors.
+fn jacobi<T: Floating>(items: [T], n: Int) -> ([T], [T])
+    require items.len() == n * n
+{
+    let a = items
+    let v: [T] = []
+    for i in 0..n * n {
+        v.push(if i % (n + 1) == 0 { T(1) } else { T(0) })
+    }
+    for sweep in 0..100 {
+        let off = false
+        for p in 0..n {
+            for q in p + 1..n {
+                const apq = a[p * n + q]
+                if apq == T(0) {
+                    continue
+                }
+                const (app, aqq) = (a[p * n + p], a[q * n + q])
+                // From the fourth sweep, a number too small to change
+                // either diagonal number is taken as 0.
+                const g = T(100) * size_of(apq)
+                if sweep > 3 and size_of(app) + g == size_of(app) and size_of(aqq) + g == size_of(aqq) {
+                    a[p * n + q] = T(0)
+                    a[q * n + p] = T(0)
+                    continue
+                }
+                off = true
+                const (c, s, t) = rotation((aqq - app) / (apq + apq))
+                for r in 0..n {
+                    if r != p and r != q {
+                        const (arp, arq) = (a[r * n + p], a[r * n + q])
+                        const (np, nq) = (c * arp - s * arq, s * arp + c * arq)
+                        a[r * n + p] = np
+                        a[p * n + r] = np
+                        a[r * n + q] = nq
+                        a[q * n + r] = nq
+                    }
+                }
+                a[p * n + p] = app - t * apq
+                a[q * n + q] = aqq + t * apq
+                a[p * n + q] = T(0)
+                a[q * n + p] = T(0)
+                for r in 0..n {
+                    const (vp, vq) = (v[r * n + p], v[r * n + q])
+                    v[r * n + p] = c * vp - s * vq
+                    v[r * n + q] = s * vp + c * vq
+                }
+            }
+        }
+        if not off {
+            break
+        }
+    }
+    (a, v)
+}
+
+/// The sum of `x[i] * y[i]`, in order.
+fn dot<T: Number>(x: [T], y: [T]) -> T
+    example dot([1.0, 2.0], [3.0, 4.0]) == 11.0
+{
+    let s = T(0)
+    for i in 0..x.len() {
+        s = s + x[i] * y[i]
+    }
+    s
+}
+
+/// The one-sided Jacobi method on the `m` × `n` matrix `a`, `m >= n`: its
+/// columns rotated in pairs, in order, until each pair is orthogonal to
+/// within `epsilon`. Their sizes are the singular values; the columns over
+/// their sizes are `u`'s; the rotations are `v`'s.
+fn one_sided<T: Floating>(items: [T], m: Int, n: Int) -> Svd<T>
+    require items.len() == m * n and m >= n
+{
+    let cols: [[T]] = []
+    let v: [[T]] = []
+    for j in 0..n {
+        cols.push((0..m).to_list().map(i => items[i * n + j]))
+        v.push((0..n).to_list().map(i => if i == j { T(1) } else { T(0) }))
+    }
+    for _ in 0..100 {
+        let turned_any = false
+        for i in 0..n {
+            for j in i + 1..n {
+                const (alpha, beta, gamma) = (dot(cols[i], cols[i]), dot(cols[j], cols[j]), dot(cols[i], cols[j]))
+                if size_of(gamma) <= epsilon<T>() * math.sqrt(alpha) * math.sqrt(beta) {
+                    continue
+                }
+                turned_any = true
+                const (c, s, _) = rotation((beta - alpha) / (gamma + gamma))
+                const (ci, cj) = (cols[i], cols[j])
+                cols[i] = (0..m).to_list().map(k => c * ci[k] - s * cj[k])
+                cols[j] = (0..m).to_list().map(k => s * ci[k] + c * cj[k])
+                const (vi, vj) = (v[i], v[j])
+                v[i] = (0..n).to_list().map(k => c * vi[k] - s * vj[k])
+                v[j] = (0..n).to_list().map(k => s * vi[k] + c * vj[k])
+            }
+        }
+        if not turned_any {
+            break
+        }
+    }
+    const sizes = cols.map(x => math.sqrt(dot(x, x)))
+    const by = (0..n).to_list().sort_by(i => T(0) - sizes[i])
+    let u: [[T]] = by.map(i => if sizes[i] == T(0) { [] } else { cols[i].map(x => x / sizes[i]) })
+    u = completed(u, m)
+    let ui: [T] = []
+    for r in 0..m {
+        for c in 0..n {
+            ui.push(u[c][r])
+        }
+    }
+    let vt: [T] = []
+    for i in by {
+        vt += v[i]
+    }
+    Svd(u: Tensor(shape: [m, n], items: ui), s: Tensor(shape: [n], items: by.map(i => sizes[i])), vt: Tensor(shape: [n, n], items: vt))
+}
+
+/// `u`'s columns, each empty one (for a singular value of 0) filled with
+/// the first unit vector `e_i` that is not in the others' span, with
+/// their parts taken out (Gram and Schmidt), so the columns are
+/// orthonormal.
+fn completed<T: Floating>(columns: [[T]], m: Int) -> [[T]] {
+    let u = columns
+    for k in 0..u.len() {
+        if not u[k].is_empty() {
+            continue
+        }
+        for i in 0..m {
+            let w = (0..m).to_list().map(r => if r == i { T(1) } else { T(0) })
+            for c in u {
+                if not c.is_empty() {
+                    const d = dot(c, w)
+                    w = (0..m).to_list().map(r => w[r] - d * c[r])
+                }
+            }
+            const size = math.sqrt(dot(w, w))
+            if size > T(0.5) {
+                u[k] = w.map(x => x / size)
+                break
+            }
+        }
+    }
+    u
+}
+
+/// The `rows` × `cols` matrix `items` with each column turned so that its
+/// number of largest size, the first if several, is positive.
+fn turned<T: Number>(items: [T], rows: Int, cols: Int) -> [T]
+    example turned([-2.0, 1.0, 1.0, -3.0], 2, 2) == [2.0, -1.0, -1.0, 3.0]
+{
+    let out = items
+    for c in 0..cols {
+        let at = 0
+        for r in 1..rows {
+            if size_of(out[r * cols + c]) > size_of(out[at * cols + c]) {
+                at = r
+            }
+        }
+        if rows > 0 and out[at * cols + c] < T(0) {
+            for r in 0..rows {
+                out[r * cols + c] = T(0) - out[r * cols + c]
+            }
+        }
+    }
+    out
+}
+
+/// `d` with each column of `u` turned so that its number of largest size
+/// is positive, and the row of `vt` that goes with it turned with it.
+fn flipped<T: Floating>(d: Svd<T>) -> Svd<T> {
+    const (m, k, n) = (d.u.shape[0], d.u.shape[1], d.vt.shape[1])
+    let u = d.u.items
+    let vt = d.vt.items
+    for c in 0..k {
+        let at = 0
+        for r in 1..m {
+            if size_of(u[r * k + c]) > size_of(u[at * k + c]) {
+                at = r
+            }
+        }
+        if m > 0 and u[at * k + c] < T(0) {
+            for r in 0..m {
+                u[r * k + c] = T(0) - u[r * k + c]
+            }
+            for j in 0..n {
+                vt[c * n + j] = T(0) - vt[c * n + j]
+            }
+        }
+    }
+    Svd(u: Tensor(shape: d.u.shape, items: u), s: d.s, vt: Tensor(shape: d.vt.shape, items: vt))
+}

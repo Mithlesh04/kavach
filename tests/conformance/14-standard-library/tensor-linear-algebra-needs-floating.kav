@@ -1,0 +1,10 @@
+// Rule: Linear algebra and the FFT need `T: Floating`: `det` of a tensor of whole numbers is a compile error naming the bound.
+// Spec: 14.33
+// expect compile error
+
+use std.tensor
+
+fn main() {
+    const t = tensor.eye<Int>(2)
+    print(t.det())   // error: `det` needs `T: Floating`
+}

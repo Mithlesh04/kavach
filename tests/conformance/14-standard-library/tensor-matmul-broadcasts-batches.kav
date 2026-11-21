@@ -1,0 +1,15 @@
+// Rule: In `a @ b`, the dimensions before the last two are a batch, broadcast as `+` broadcasts: `[2, 2, 3] @ [3, 2]` is `[2, 2, 2]`.
+// Spec: 14.33
+// expect output: [2, 2, 2]
+// expect output: [3.0, 3.0, 12.0, 12.0, 21.0, 21.0, 30.0, 30.0]
+// expect panic: `@` can't broadcast [2] with [3]
+
+use std.tensor
+
+fn main() {
+    const a = tensor.arange(0.0, 12.0).reshape([2, 2, 3])
+    const c = a @ tensor.ones<Float>([3, 2])
+    print(c.shape)
+    print(c.items)
+    print((a @ tensor.ones<Float>([3, 3, 2])).shape)
+}

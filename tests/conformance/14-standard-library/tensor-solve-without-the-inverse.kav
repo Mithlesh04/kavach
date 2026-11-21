@@ -1,0 +1,19 @@
+// Rule: `a.solve(b)` gives the `x` with `a @ x == b`, for a square `a` and a `b` of 1 or 2 dimensions.
+// Spec: 14.33
+// expect output: [0.8, 1.4]
+// expect output: [3, 2]
+// expect output: true
+
+use std.tensor
+
+fn main() {
+    const a = tensor.of_rows([[2.0, 1.0], [1.0, 3.0]])
+    print((a.solve(tensor.of([3.0, 5.0])) catch tensor.zeros<Float>([2])).items)
+
+    const m = tensor.of_rows([[4.0, -2.0, 1.0], [-2.0, 4.0, -2.0], [1.0, -2.0, 4.0]])
+    const b = tensor.of_rows([[11.0, 1.0], [-16.0, 0.0], [17.0, 2.0]])
+    const x = m.solve(b) catch tensor.zeros<Float>([3, 2])
+    print(x.shape)
+    // Multiplied back, `m @ x` is `b`.
+    print(((m @ x - b).map(v => v.abs()).max() ?? 1.0) < 1e-12)
+}

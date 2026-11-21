@@ -1,0 +1,10 @@
+// Rule: A `Spectrum`'s `re` and `im` have one shape: `fft`, `ifft` or `abs` of two shapes is a panic naming both.
+// Spec: 14.33
+// expect panic: `ifft` needs a spectrum's `re` and `im` of one shape, and has [2] and [3]
+
+use std.tensor
+
+fn main() {
+    const s = tensor.Spectrum(re: tensor.of([1.0, 0.0]), im: tensor.of([0.0, 0.0, 0.0]))
+    print(s.ifft().re.items)
+}

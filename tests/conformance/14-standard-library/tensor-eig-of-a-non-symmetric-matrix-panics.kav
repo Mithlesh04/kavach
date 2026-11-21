@@ -1,0 +1,9 @@
+// Rule: `eig` checks that its matrix is symmetric, exactly; another is a panic naming its shape.
+// Spec: 14.33
+// expect panic: `eig` needs a symmetric matrix, and [2, 2] has [0, 1] and [1, 0] unequal
+
+use std.tensor
+
+fn main() {
+    print(tensor.of_rows([[1.0, 2.0], [3.0, 4.0]]).eig().values.items)
+}
