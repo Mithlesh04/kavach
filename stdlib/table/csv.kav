@@ -152,13 +152,15 @@ type Rows<R> {
     header: [String] = []
     /// The line of column names was read.
     named: Bool = false
-    rows: [R] = []
 }
 
-/// Takes the cells of one row of the file: the column names first.
-fn take<R>(inout into: Rows<R>, cells: [String], line: Int) ! CsvError {
+/// The row of one line's cells, or `none` for the line of column
+/// names, which comes first. The rows are kept by the caller, so
+/// `into` stays small to pass.
+fn take<R>(inout into: Rows<R>, cells: [String], line: Int) -> R? ! CsvError {
     if not into.named {
-        return try name_columns(into, cells)
+        try name_columns(into, cells)
+        return none
     }
     if cells.len() != into.header.len() {
         const what = if cells.len() == 1 { "1 cell" } else { `{cells.len()} cells` }
@@ -174,10 +176,9 @@ fn take<R>(inout into: Rows<R>, cells: [String], line: Int) ! CsvError {
             }
         }
     }
-    const row = json.decode_value<R>(Json.Object(fields: fields)) catch e => {
+    json.decode_value<R>(Json.Object(fields: fields)) catch e => {
         fail refused(e, line, into.header, cells)
     }
-    into.rows.push(row)
 }
 
 /// Reads the line of column names.
@@ -319,28 +320,34 @@ fn refused(e: JsonError, line: Int, header: [String], cells: [String]) -> CsvErr
 pub fn parse<R>(text: String, sep: Char, unknown: CsvUnknown) -> [R] ! CsvError {
     let r = Reader(sep: sep)
     let into = Rows<R>(plan: columns<R>(), unknown: unknown)
+    let rows: [R] = []
     for line in text.lines() {
         if let cells = try feed(r, line) {
-            try take(into, cells, r.start)
+            if let row = try take(into, cells, r.start) {
+                rows.push(row)
+            }
         }
     }
     try finish(r, into)
-    into.rows
+    rows
 }
 
 /// The rows of the CSV file at `path`, read line by line.
 pub fn read<R>(path: String, sep: Char, unknown: CsvUnknown) -> [R] ! CsvError uses Fs.read {
     let r = Reader(sep: sep)
     let into = Rows<R>(plan: columns<R>(), unknown: unknown)
+    let rows: [R] = []
     for line in fs.lines(path) catch e => {
         fail CsvError.File(error: e)
     } {
         if let cells = try feed(r, line) {
-            try take(into, cells, r.start)
+            if let row = try take(into, cells, r.start) {
+                rows.push(row)
+            }
         }
     }
     try finish(r, into)
-    into.rows
+    rows
 }
 
 /// The end of the text: no quote left open, and the column names read.
