@@ -1,0 +1,12 @@
+use std.tensor
+
+fn main() {
+    const batch = tensor.arange(0.0, 12.0).reshape([2, 2, 3])   // two 2 × 3 matrices
+    const w = tensor.ones<Float>([3, 2])                         // one 3 × 2, used for both
+    const c = batch @ w
+    print(c.shape)
+    print(c.items)
+    const i = tensor.arange(0, 6).reshape([2, 3])
+    const j = tensor.arange(0, 6).reshape([3, 2])
+    print(i @ j == i.matmul(j, fast: true))                      // whole numbers: the same
+}

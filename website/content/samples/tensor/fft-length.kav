@@ -1,0 +1,11 @@
+use std.tensor
+
+fn main() {
+    // 8 numbers, a power of two
+    print(tensor.ones<Float>([8]).fft().abs().items[::2])
+    // 3 numbers: any length works
+    const s = tensor.of([1.0, 2.0, 3.0]).fft()
+    print(s.re.items[0])
+    const back = s.ifft().re
+    print(((back - tensor.of([1.0, 2.0, 3.0])).map(x => x.abs()).max() ?? 1.0) < 1e-12)
+}

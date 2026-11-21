@@ -1,0 +1,10 @@
+use std.tensor
+
+fn main() {
+    const a = tensor.of_rows([[3.0, 2.0, 2.0], [2.0, 3.0, -2.0]])   // [2, 3]
+    const d = a.svd()
+    print(`{d.u.shape} {d.s.shape} {d.vt.shape}`)
+    print(d.s.items)                                               // largest first
+    const back = d.u * d.s @ d.vt                                  // u @ diag(s) @ vt
+    print(((back - a).map(x => x.abs()).max() ?? 1.0) < 1e-12)
+}

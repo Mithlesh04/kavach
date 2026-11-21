@@ -223,13 +223,17 @@ export const lambdasDoc: LessonDoc = {
       </P>
       <Ex name="functions/lambda-copy.warns" />
       <P>
-        A change to the copy, with <C>=</C>, <C>+=</C> or a method that changes a value (<C>push</C>, <C>add</C>,{" "}
-        <C>remove</C>), lasts only for that call: each call starts again from the copy taken when the lambda was
+        A change to the copy, with <C>=</C>, <C>+=</C> or a method that changes a value (<C>push</C>, <C>pop</C>,{" "}
+        <C>add</C>, <C>remove</C>), lasts only for that call: each call starts again from the copy taken when the lambda was
         made. So each sum below is just its own item, each call&apos;s log is <C>[0]</C> and one item, and the real{" "}
         <C>total</C> and <C>log</C> never change:
       </P>
       <Ex name="functions/lambda-change.warns" />
       <P>To count from inside, give the new value back from the lambda, or share it on purpose with <C>Shared</C>.</P>
+      <P>A native build does the same: a lambda that pops an outside list pops its own copy, and the list outside keeps every item.</P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/03-functions/a-lambda-popping-a-captured-list-changes-its-copy.kav" label="pop, tested" />
+      </div>
       <H2>try inside a lambda</H2>
       <P>
         A <C>try</C> or <C>fail</C> inside a lambda belongs to the lambda: it ends that call of the lambda with the

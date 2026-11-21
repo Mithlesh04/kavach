@@ -1,0 +1,9 @@
+use std.tensor
+
+fn main() {
+    print(tensor.of([3.0, 4.0]).norm())     // √(3² + 4²)
+    const m = tensor.of_rows([[3.0, 4.0], [5.0, 12.0]])
+    print(m.norm())                         // every number
+    print(m.norm(axis: 1).items)            // each row
+    print(m.transpose().norm(axis: 0).items) // each column
+}

@@ -19,6 +19,7 @@ import { tensorDoc } from "./stdlib-tensor";
 import { tensorIndexDoc, tensorMakeDoc } from "./stdlib-tensor-make";
 import { tensorMasksDoc, tensorMathDoc } from "./stdlib-tensor-math";
 import { tensorReduceDoc, tensorSortDoc } from "./stdlib-tensor-reduce";
+import { tensorFftDoc, tensorLinalgDoc } from "./stdlib-tensor-linalg";
 import { loggingDoc } from "./stdlib-log";
 import { gpuScreenDoc } from "./stdlib-gpu";
 import { textCollectionsDoc } from "./stdlib-text";
@@ -72,6 +73,8 @@ export const stdlibLessons: Record<string, LessonDoc> = {
   "standard-library/tensors/masks": tensorMasksDoc,
   "standard-library/tensors/reductions": tensorReduceDoc,
   "standard-library/tensors/sorting-and-joining": tensorSortDoc,
+  "standard-library/tensors/linear-algebra": tensorLinalgDoc,
+  "standard-library/tensors/the-fft": tensorFftDoc,
   "standard-library/json": jsonDoc,
   "standard-library/json/json-values": jsonValuesDoc,
   "standard-library/json/nested-data": jsonNestedDoc,

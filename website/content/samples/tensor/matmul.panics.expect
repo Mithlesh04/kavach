@@ -1,1 +1,1 @@
-panic: `@` needs [2, 3]'s last size (3) to match [2, 3]'s next to last (2), and the sizes before them to be the same
+panic: `@` needs [2, 3]'s last size (3) to match [2, 3]'s next to last (2)

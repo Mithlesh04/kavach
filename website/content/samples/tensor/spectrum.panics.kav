@@ -1,0 +1,6 @@
+use std.tensor
+
+fn main() {
+    const s = tensor.Spectrum(re: tensor.of([1.0, 0.0]), im: tensor.of([0.0, 0.0, 0.0]))
+    print(s.abs().items)
+}

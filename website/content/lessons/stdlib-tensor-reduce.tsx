@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
@@ -33,6 +34,16 @@ export const tensorReduceDoc: LessonDoc = {
         Adding one at a time would lose the <C>1.0</C> next to <C>1e20</C>, and give <C>0.0</C> or <C>1.0</C>{" "}
         depending on the order.
       </P>
+      <H2>The norm</H2>
+      <P>
+        <C>norm()</C> is the square root of the sum of the squares, the length of a vector. With <C>axis:</C>, it is
+        one for each row or column. The squares are summed exactly, as above, then the root is taken:
+      </P>
+      <Ex name="tensor/norm" />
+      <P>
+        It needs <C>T: Floating</C>, and is listed with{" "}
+        <Link href="/docs/standard-library/tensors/linear-algebra/">linear algebra</Link>, as in the spec.
+      </P>
       <H2>What is refused</H2>
       <P><C>mean</C>, <C>var</C>, <C>std</C> and <C>percentile</C> need a <C>T: Floating</C>. Convert whole numbers first, with <C>Tensor&lt;Float&gt;(t)</C>:</P>
       <Ex name="tensor/mean-int.fails" />
@@ -47,11 +58,13 @@ export const tensorReduceDoc: LessonDoc = {
         <SrcRef file={`${TENSOR_SRC}/reduce.kav`} line={17} symbol="fn sum" />
         <SrcRef file={`${TENSOR_SRC}/reduce.kav`} line={73} symbol="fn mean" />
         <SrcRef file={`${TENSOR_SRC}/exact.kav`} line={202} symbol="fn sum (exact)" />
+        <SrcRef file={`${TENSOR_SRC}/reduce.kav`} line={104} symbol="fn norm" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-sum-along-an-axis.kav`} label="axes, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-float-sum-is-exact.kav`} label="exact sums, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-mean-var-and-std.kav`} label="mean, var, std, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-min-max-and-their-places.kav`} label="min and max, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-cumsum-runs-along-the-last-axis.kav`} label="cumsum, tested" />
+        <SrcRef file={`${TENSOR_TESTS}/tensor-norm-is-the-root-of-the-squares.kav`} label="norm, tested" />
       </div>
     </>
   ),

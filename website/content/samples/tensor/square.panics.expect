@@ -1,0 +1,1 @@
+panic: `det` needs a square matrix, and has shape [2, 3]

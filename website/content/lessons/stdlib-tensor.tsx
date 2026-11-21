@@ -10,7 +10,8 @@ import { Table } from "./spec-table";
 //
 // Spec 14.33 (decision 0136): Tensor<T>, Kavach's one array type. The
 // overview has the matrix product and NumPy's names; making, indexing,
-// arithmetic, masks, reductions and sorting have pages of their own
+// arithmetic, masks, reductions, sorting, linear algebra and the FFT have
+// pages of their own
 // (stdlib-tensor-*.tsx). Every table comes from the spec itself, only the
 // rows that are built (lib/built-spec.ts).
 
@@ -35,6 +36,8 @@ const PAGES: [string, string, string][] = [
   ["masks", "Masks", "comparisons that give a Tensor<Bool>, t[mask], tensor.where, eq"],
   ["reductions", "Reductions", "sum, min, max, mean, std along an axis or over every number; exact float sums"],
   ["sorting-and-joining", "Sorting and joining", "sort, argsort, unique, percentile, concatenate, stack, split"],
+  ["linear-algebra", "Linear algebra", "inv, solve, det, eig, svd, and Singular for a matrix with no inverse"],
+  ["the-fft", "The FFT", "fft, ifft, a Spectrum of complex numbers, any length"],
 ];
 
 export const tensorDoc: LessonDoc = {
@@ -75,14 +78,30 @@ export const tensorDoc: LessonDoc = {
       <P>The inner sizes must match. Another pair is a panic that names both shapes:</P>
       <Ex name="tensor/matmul.panics" />
       <P>
+        A vector works too. On the left it is a row, on the right a column, and that dimension is taken out of the
+        result. Two vectors of one length give their dot product, a tensor of shape <C>[]</C>; <C>item()</C> reads its
+        number:
+      </P>
+      <Ex name="tensor/matmul-vectors" />
+      <P>
         With more than two dimensions, the last two are the matrices and the others are a batch: <C>[2, 2, 2] @ [2, 2, 2]</C>{" "}
-        is one product for each of the 2. Both batches have the same shape:
+        is one product for each of the 2:
       </P>
       <Ex name="tensor/batches" />
       <P>
+        Batches of different shapes are broadcast, as <C>+</C>{" "}
+        <Link href="/docs/standard-library/tensors/arithmetic-and-broadcasting/">broadcasts</Link>: one{" "}
+        <C>[3, 2]</C> matrix is used for every matrix of a <C>[2, 2, 3]</C> batch, without being copied:
+      </P>
+      <Ex name="tensor/matmul-broadcast" />
+      <P>
         Each number of <C>a @ b</C> adds its products in one order, a multiply then an add, never fused. The work is
-        still spread over the cores, so the result has the same bits on every machine and at every thread count.
-        A layer of a small neural network is a product, a sum and a function on every number, here ReLU:
+        still spread over the cores, so the result has the same bits on every machine and at every thread count.{" "}
+        <C>a.matmul(b, fast: true)</C> is the same product as fast as the machine allows: it may add in another order
+        and fuse a multiply with an add, so a float result may differ in its last bits between machines. For whole
+        numbers both give the same result, as the batch sample&apos;s last line shows.
+      </P>
+      <P>A layer of a small neural network is a product, a sum and a function on every number, here ReLU:
       </P>
       <Ex name="tensor/layer" />
       <H2>A tensor is a value</H2>
@@ -98,9 +117,8 @@ export const tensorDoc: LessonDoc = {
       <Note>
         The spec&apos;s tables write how many dimensions a result has in its type, as{" "}
         <C>Tensor&lt;T, dims: 2&gt;</C>. Writing <C>dims:</C> or <C>shape:</C> in a type is not built yet: write{" "}
-        <C>Tensor&lt;T&gt;</C>, and the shapes are checked while the program runs. Not built yet either: <C>@</C>{" "}
-        of a vector, or of batches of different shapes, linear algebra (<C>inv</C>, <C>solve</C>,{" "}
-        <C>det</C>, <C>eig</C>, <C>svd</C>), the FFT and the GPU.
+        <C>Tensor&lt;T&gt;</C>, and the shapes are checked while the program runs. Tensors on the GPU are not built
+        yet either.
       </Note>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${TENSOR_SPEC}`} label="spec 14.33 · std.tensor" />
@@ -109,7 +127,11 @@ export const tensorDoc: LessonDoc = {
         <SrcRef file="docs/decisions/0136-tensor-the-one-array-type.md" label="decision 0136" />
         <SrcRef file="docs/decisions/0125-kavach-for-ai-work.md" label="decision 0125" />
         <SrcRef file={`${TENSOR_TESTS}/tensors-check-their-shapes.kav`} label="shapes, tested" />
+        <SrcRef file={`${TENSOR_SRC}/ops.kav`} line={124} symbol="fn matmul (fast)" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-matmul-of-equal-batches.kav`} label="batches, tested" />
+        <SrcRef file={`${TENSOR_TESTS}/tensor-matmul-of-vectors.kav`} label="vectors, tested" />
+        <SrcRef file={`${TENSOR_TESTS}/tensor-matmul-broadcasts-batches.kav`} label="broadcast batches, tested" />
+        <SrcRef file={`${TENSOR_TESTS}/tensor-matmul-fast-is-the-same-product.kav`} label="fast, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-of-text-is-an-error.kav`} label="numbers only, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-numpy-names-are-errors.kav`} label="NumPy's names, tested" />
       </div>

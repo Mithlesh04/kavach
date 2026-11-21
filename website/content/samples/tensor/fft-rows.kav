@@ -1,0 +1,7 @@
+use std.tensor
+
+fn main() {
+    const m = tensor.of_rows([[1.0, 1.0, 1.0, 1.0], [1.0, -1.0, 1.0, -1.0]])
+    print(m.fft().re.to_rows())               // each row, along the last axis
+    print(m.fft(axis: 0).re.to_rows())        // each column
+}

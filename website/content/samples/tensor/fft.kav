@@ -1,0 +1,10 @@
+use std.tensor
+
+fn main() {
+    const signal = tensor.of([1.0, 0.0, -1.0, 0.0])
+    const s = signal.fft()
+    print(s.re.items)                // real parts
+    print(s.im.items)                // imaginary parts
+    print(s.abs().items)             // each number's size
+    print(s.ifft().re.items)         // the signal back
+}

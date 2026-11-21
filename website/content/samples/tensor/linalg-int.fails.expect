@@ -1,0 +1,1 @@
+error: `det` needs `T: Floating`, and `T` is `Int` here (spec 2.9)

@@ -1,0 +1,6 @@
+use std.tensor
+
+fn main() {
+    const a = tensor.of_rows([[1.0, 2.0], [3.0, 4.0]])
+    print(a.eig().values.items)
+}

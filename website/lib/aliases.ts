@@ -130,6 +130,8 @@ export const aliases: Record<string, string> = {
   "standard-library/tensors/masks": "mask boolean indexing where np.where filter compare eq ne",
   "standard-library/tensors/reductions": "sum mean std var min max argmax argmin cumsum axis reduce aggregate kahan exact",
   "standard-library/tensors/sorting-and-joining": "sort argsort unique percentile median concatenate concat stack split hstack vstack",
+  "standard-library/tensors/linear-algebra": "linalg np.linalg inverse inv solve linear equations determinant det eigenvalues eigenvectors eig eigh svd singular value decomposition lu decomposition jacobi norm Singular",
+  "standard-library/tensors/the-fft": "fft ifft fourier transform dft discrete spectrum frequency frequencies complex signal np.fft rfft bluestein radix-2",
   "standard-library/desktop-apps": "app desktop game save folder appdata application support xdg config cache directory crash report dialog open file save file pick folder message box confirm",
   "tools/editions": "edition version compatibility breaking change backwards compatible upgrade migrate stability 2026",
   "networks/sockets": "socket tcp udp tls ssl quic connection listen accept datagram certificate mtls timeout port",

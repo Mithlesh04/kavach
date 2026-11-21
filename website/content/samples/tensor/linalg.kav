@@ -1,0 +1,12 @@
+use std.tensor
+
+fn main() {
+    const a = tensor.of_rows([[2.0, 1.0], [1.0, 3.0]])
+    print(a.det())                                  // the determinant
+    const inverse = a.inv() catch tensor.zeros<Float>([2, 2])
+    print(inverse.to_rows())
+    const x = a.solve(tensor.of([3.0, 5.0])) catch tensor.zeros<Float>([2])
+    print(x.items)                                  // a @ x is [3.0, 5.0]
+    print((a @ x).items)
+    print(tensor.of([3.0, 4.0]).norm())             // √(9 + 16)
+}
