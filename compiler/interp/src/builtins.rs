@@ -35,14 +35,11 @@ impl<'a> Interp<'a> {
             return self.new_channel(capacity, span);
         }
         if name == "random_bits" {
-            // A `random.seeded` block's numbers first (spec 14.15).
-            let seeded = kavach_runtime_core::fs_scope::seeded_bits(&self.fs_scopes);
-            let bits = match (seeded, &mut self.random) {
-                (Some(bits), _) => bits,
-                (None, Some(fake)) => fake.next(),
-                (None, None) => kavach_runtime_net::random::bits(),
-            };
+            let bits = self.random_bits();
             return Ok(Value::Int(bits as i64 as i128, Prim::Int));
+        }
+        if name == "random_ints" {
+            return Ok(self.random_ints(&args));
         }
         if name == "test_random" {
             let span_of = match args.first() {

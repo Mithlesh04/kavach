@@ -41,6 +41,7 @@ Conformance tests for std.log (14.12), std.term (14.13), std.random (14.15), std
 | 14.15 | [random-bytes-are-at-most-64-kib.kav](random-bytes-are-at-most-64-kib.kav) | `random.bytes(n)` takes at most 65,536 bytes at a time. | panic |
 | 14.15 | [random-needs-the-random-capability.kav](random-needs-the-random-capability.kav) | Every `std.random` function needs the `Random` capability. | compile error |
 | 14.15 | [random-bits-is-only-for-std-random.kav](random-bits-is-only-for-std-random.kav) | `random_bits`, how `std.random` gets bits from the runtime, can't be called by a program. | compile error |
+| 14.15, 14.33 | [random-ints-is-only-for-the-standard-library.kav](random-ints-is-only-for-the-standard-library.kav) | `random_ints`, how `tensor.random_int` gets many numbers from the runtime at once, can't be called by a program. | compile error |
 | 14.15 | [an-inner-seed-leaves-the-outer-where-it-was.kav](an-inner-seed-leaves-the-outer-where-it-was.kav) | Seeds nest: an inner `seeded` block draws from its own seed, and the outer one goes on after it where it left off. | runs |
 | 14.15 | [every-random-function-follows-the-seed.kav](every-random-function-follows-the-seed.kav) | Inside `random.seeded`, every `std.random` function draws from the seed: `float`, `bool`, `pick`, `shuffle` and `bytes` repeat with it as `int` does. | runs |
 | 14.15 | [random-ints-reach-every-value.kav](random-ints-reach-every-value.kav) | `random.int` gives each number of its range, the first included and the end left out, and `random.bool` both values. | runs |

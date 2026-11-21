@@ -1,0 +1,13 @@
+// Rule: `tensor.random_int` draws more than 65,536 numbers at once, each from `from` up to, not including, `until`.
+// Spec: 14.33
+// expect output: [300, 300] 90000
+// expect output: true true true
+
+use std.tensor
+
+fn main() uses Random {
+    const t = tensor.random_int([300, 300], -5, 5)
+    print(`{t.shape} {t.len()}`)
+    const seen = t.unique()
+    print(`{(t.min() ?? -6) >= -5} {(t.max() ?? 5) < 5} {seen.len() == 10}`)
+}

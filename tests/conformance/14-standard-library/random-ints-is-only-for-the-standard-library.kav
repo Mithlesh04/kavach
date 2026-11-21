@@ -1,0 +1,7 @@
+// Rule: `random_ints`, how `tensor.random_int` gets many numbers from the runtime at once, can't be called by a program.
+// Spec: 14.15, 14.33
+// expect compile error
+
+fn main() uses Random {
+    print(random_ints(3, 0, 10))    // error: only the standard library may call it
+}

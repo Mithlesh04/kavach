@@ -25,6 +25,8 @@ Under `kavach test`, the `Random` fake (11.5) gives numbers from the test run's 
 
 `std.random` asks the runtime for 64 random bits at a time, with `random_bits()`, which only the standard library may call. Everything else is Kavach code in the module: a whole number in a range takes bits until they fall in an unbiased span, so no value comes up more often than another.
 
+`tensor.random_int` (14.33) asks the runtime for many whole numbers at once, with `random_ints(n, from, until)`, which only the standard library may call either. The runtime draws each one from the same bits, in the same way, as `random.int`, so a seed gives the same numbers whichever is called.
+
 ## Seeded
 
 `random.seeded(seed) { … }` runs its block with every `std.random` function drawing from `seed` instead of the operating system (4.8, [decision 0107](../../decisions/0107-traces-and-metrics.md)). The same seed gives the same numbers, on every machine and in every version of Kavach: for simulations, generated worlds and games whose players must all see the same thing.

@@ -71,6 +71,7 @@ mod std_log;
 mod std_math;
 mod std_matrix;
 mod std_process;
+mod std_random;
 mod std_time;
 mod std_watch;
 mod std_window;

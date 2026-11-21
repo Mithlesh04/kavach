@@ -118,9 +118,10 @@ pub const CAPABILITIES: &[&str] = &[
 ];
 
 /// Prelude functions (spec 10.2), `reveal` (8.7), the `unsafe` memory
-/// functions (6.4), and `log_write`, `test_random` and `random_bits`,
-/// which only the standard library's `std.log` (14.12), `std.test` (14.7)
-/// and `std.random` (14.15) may call.
+/// functions (6.4), and `log_write`, `test_random`, `random_bits` and
+/// `random_ints`, which only the standard library's `std.log` (14.12),
+/// `std.test` (14.7), `std.random` (14.15) and `std.tensor` (14.33) may
+/// call.
 pub(crate) const FUNCTIONS: &[&str] = &[
     "print",
     "debug",
@@ -133,6 +134,7 @@ pub(crate) const FUNCTIONS: &[&str] = &[
     "log_write",
     "test_random",
     "random_bits",
+    "random_ints",
 ];
 
 /// Functions available only inside an agent's `limit` rules (spec 8.3).

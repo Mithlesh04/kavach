@@ -279,3 +279,6 @@ RunRoundsAdd,
 /// (`b` 1); `b` 2 when a count is given, which panics under 1. Gives the
 /// depth `FsScopeLeave` goes back to (`runtime/native/src/rt_scopes.rs`).
 ScopePlace,
+/// `random_ints(n, from, until)` (spec 14.33): `n` whole numbers, each as
+/// `random.int(from, until)` draws it, for `tensor.random_int`.
+RandomInts,

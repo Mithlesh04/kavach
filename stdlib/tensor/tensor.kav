@@ -330,16 +330,13 @@ pub fn normal<T: Floating>(shape: [Int], mean: T = 0.0, std: T = 1.0) -> Tensor<
 }
 
 /// Each a whole number from `from` up to, not including, `until`, as
-/// `random.int`; at most 65,536 numbers at a time, as `random.bytes`.
+/// `random.int` draws it; the runtime draws them all at once. At most
+/// 16,777,216 (2^24) numbers at a time.
 pub fn random_int(shape: [Int], from: Int, until: Int) -> Tensor<Int> uses Random
-    require (shapes.count(shape) ?? -1) >= 0 and (shapes.count(shape) ?? 0) <= 65_536
+    require (shapes.count(shape) ?? -1) >= 0 and (shapes.count(shape) ?? 0) <= 16_777_216
     require until > from
 {
-    let items: [Int] = []
-    for _ in 0..shapes.sized(shape) {
-        items.push(draw.int(from, until))
-    }
-    Tensor(shape: shape, items: items)
+    Tensor(shape: shape, items: random_ints(shapes.sized(shape), from, until))
 }
 
 /// `a`'s number where `mask` is `true`, else `b`'s; all three broadcast to

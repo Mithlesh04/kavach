@@ -22,6 +22,7 @@ const IMPURE: &[(&str, &str)] = &[
     ("ask", "Ai"),
     ("env", "Env"),
     ("random_bits", "Random"),
+    ("random_ints", "Random"),
 ];
 
 impl Checker<'_> {
@@ -210,6 +211,26 @@ impl Checker<'_> {
                     self.error(span, "`random_bits` takes no arguments");
                 }
                 Ty::Prim(Prim::Int)
+            }
+            // `tensor.random_int`'s numbers, many at once (spec 14.33).
+            "random_ints" => {
+                let module = &self.res.modules[self.res.module_at(span.start)].name;
+                if !module.starts_with("std.") {
+                    self.error(
+                        span,
+                        "`random_ints` is for `std.tensor`: use `tensor.random_int(shape, from, until)` (spec 14.33)",
+                    );
+                }
+                let int = Ty::Prim(Prim::Int);
+                match args {
+                    [n, from, until] => {
+                        for a in [n, from, until] {
+                            self.check_expect(&a.value, &int);
+                        }
+                    }
+                    _ => self.error(span, "`random_ints` takes how many, `from` and `until`"),
+                }
+                Ty::List(Box::new(int))
             }
             // `Bytes([104, 105])`: bytes from a list of `UInt8` (spec 2.13).
             "Bytes" => {

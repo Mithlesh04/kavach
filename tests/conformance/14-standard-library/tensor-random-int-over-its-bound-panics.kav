@@ -1,0 +1,10 @@
+// Rule: `tensor.random_int` draws at most 16,777,216 (2^24) numbers at a time; asking for more is a contract failure.
+// Spec: 14.33
+// expect panic: contract failed
+
+use std.tensor
+
+fn main() uses Random {
+    const t = tensor.random_int([4_096, 4_097], 0, 10)
+    print(t.len())
+}

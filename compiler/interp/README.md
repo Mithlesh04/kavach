@@ -63,6 +63,7 @@ Not supported yet: agents, capabilities, `ask` and `unsafe` (Phase 2 and the nat
 | `src/std_gpu.rs` | `std.gpu`'s drawing (spec 14.24), from `runtime/gpu/src/draw.rs` |
 | `src/gpu_choice.rs` | Choosing a GPU (spec 15.6): the start's check of every GPU the code names, and `gpu.on`, `on:` and `on gpu(n)`, whose maps run on the CPU here |
 | `src/std_process.rs` | `std.process` (spec 14.23), from `runtime/process`; waiting for a child lets other tasks run |
+| `src/std_random.rs` | Random bits for `std.random` (spec 14.15), from a `random.seeded` block, the `Random` fake or the system, and many numbers at once for `tensor.random_int` (14.33) |
 | `src/std_window.rs` | `std.window` (spec 14.22), from `runtime/window`, and `std.input`'s gamepads (14.26), from `runtime/input` |
 | `src/std_audio.rs` | `std.audio` (spec 14.27), from `runtime/audio`: sounds and voices by number |
 | `src/std_watch.rs` | `std.fs`'s `Watcher` (spec 14.3), from `runtime/watch`; on the fake file system of `kavach test`, no changes |

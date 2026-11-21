@@ -1,0 +1,35 @@
+// Rule: `tensor.random_int` draws each number as `random.int` does, from the same bits, so under one seed both give the same numbers, and what is drawn after them is the same too.
+// Spec: 14.33, 14.15
+// expect output: true true
+// expect output: true
+// expect output: [5, 3, 5, 3, 1, 4, 5, 5, 5, 2, 495]
+
+use std.random
+use std.tensor
+
+fn one_by_one(seed: Int, n: Int, from: Int, until: Int) -> [Int] uses Random {
+    random.seeded(seed) {
+        let items: [Int] = []
+        for _ in 0..n {
+            items.push(random.int(from, until))
+        }
+        items.push(random.int(0, 1_000))
+        items
+    }
+}
+
+fn at_once(seed: Int, shape: [Int], from: Int, until: Int) -> [Int] uses Random {
+    random.seeded(seed) {
+        let items = tensor.random_int(shape, from, until).items
+        items.push(random.int(0, 1_000))
+        items
+    }
+}
+
+fn main() uses Random {
+    const small = at_once(7, [2, 5], 1, 7)
+    const wide = at_once(7, [6], -9_223_372_036_854_775_807 - 1, 9_223_372_036_854_775_807)
+    print(`{small == one_by_one(7, 10, 1, 7)} {wide == one_by_one(7, 6, -9_223_372_036_854_775_807 - 1, 9_223_372_036_854_775_807)}`)
+    print(at_once(3, [0], 0, 10) == one_by_one(3, 0, 0, 10))
+    print(small)
+}

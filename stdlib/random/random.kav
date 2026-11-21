@@ -29,7 +29,10 @@ pub fn int(from: Int, until: Int) -> Int uses Random
     // kept when in it, as more than half of them are.
     const span = until.checked_sub(from) ?? {
         while true {
-            const v = bits63().wrapping_mul(2).wrapping_add(bits63() % 2)
+            // The high bits first, so every way of running gives the
+            // same numbers from one seed (`random_ints` draws so too).
+            const high = bits63().wrapping_mul(2)
+            const v = high.wrapping_add(bits63() % 2)
             if v >= from and v < until {
                 return v
             }

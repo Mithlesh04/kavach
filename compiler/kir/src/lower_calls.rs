@@ -213,6 +213,17 @@ impl<'a> Lowerer<'a> {
                 line,
             });
         }
+        if name == "random_ints" {
+            let args = args
+                .iter()
+                .map(|a| self.expr(&a.value))
+                .collect::<Result<Vec<_>, _>>()?;
+            return Ok(ir::Expr {
+                kind: K::Rt(RtOp::RandomInts, args),
+                ty,
+                line,
+            });
+        }
         // `TextBuilder()`, `TextBuilder(text)` (spec 2.18): text here.
         if name == "TextBuilder" {
             return match args.first() {
