@@ -206,6 +206,10 @@ const TABLE: &[(&str, &[&str])] = &[
             "a limit is from",
             "a number in a type",
             "the limit is known while compiling",
+            // Widths and ranges (spec 2.1).
+            "a width is from",
+            "a value could never be in it",
+            "works on bits",
         ],
     ),
 ];
