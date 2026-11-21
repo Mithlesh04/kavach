@@ -119,6 +119,8 @@ export const jsonDoc: LessonDoc = {
       <Ex name="json/schema-secret" />
       <P>An unsigned whole number (<C>UInt8</C> to <C>UInt64</C>) can&apos;t be negative, so its schema says <C>&quot;minimum&quot;: 0</C>:</P>
       <Ex name="json/schema-unsigned" />
+      <P>An anonymous record&apos;s schema is an object like a record&apos;s, its fields in the order of their names:</P>
+      <Ex name="json/schema-anonymous" />
       <H2>A function described</H2>
       <P>
         <C>json.describe(f)</C> describes a function from its signature, when the program is compiled: its name,
@@ -146,6 +148,7 @@ export const jsonDoc: LessonDoc = {
         <SrcRef file="tests/conformance/02-types/json-describe-describes-a-function.kav" label="describe, tested" />
         <SrcRef file="tests/conformance/02-types/json-describe-takes-function-values.kav" label="function values, tested" />
         <SrcRef file="tests/conformance/02-types/json-schema-carries-doc-comments.kav" label="descriptions, tested" />
+        <SrcRef file="tests/conformance/02-types/anonymous-records-have-a-json-schema.kav" label="anonymous records, tested" />
         <SrcRef file="docs/decisions/0085-function-types-with-errors-and-uses.md" label="decision 0085" />
       </div>
       <H2>Safe with hostile input</H2>

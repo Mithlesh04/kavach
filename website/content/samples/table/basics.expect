@@ -1,0 +1,8 @@
+3
+[120.0, 80.0, 100.0]
+{"north": 220.0, "south": 80.0}
+region  month  amount  note
+north       1   120.0
+south       1    80.0  late, paid in cash
+north       2   100.0
+[3 rows × 4 columns]

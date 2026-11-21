@@ -131,6 +131,8 @@ export const aliases: Record<string, string> = {
   "standard-library/tensors/reductions": "sum mean std var min max argmax argmin cumsum axis reduce aggregate kahan exact",
   "standard-library/tensors/sorting-and-joining": "sort argsort unique percentile median concatenate concat stack split hstack vstack",
   "standard-library/tensors/linear-algebra": "linalg np.linalg inverse inv solve linear equations determinant det eigenvalues eigenvectors eig eigh svd singular value decomposition lu decomposition jacobi norm Singular",
+  "standard-library/tables": "table tables dataframe data frame pandas polars dplyr r spreadsheet excel rows columns column df group_by describe join pivot data analysis",
+  "standard-library/tables/csv": "csv tsv comma separated tab separated read_csv to_csv write_csv parse_csv rfc 4180 spreadsheet import export excel header quote CsvError",
   "standard-library/tensors/the-fft": "fft ifft fourier transform dft discrete spectrum frequency frequencies complex signal np.fft rfft bluestein radix-2",
   "standard-library/desktop-apps": "app desktop game save folder appdata application support xdg config cache directory crash report dialog open file save file pick folder message box confirm",
   "tools/editions": "edition version compatibility breaking change backwards compatible upgrade migrate stability 2026",

@@ -1,0 +1,25 @@
+use std.table
+
+type User {
+    id: Int
+    name: String
+}
+
+type Order {
+    user_id: Int
+    total: Float
+}
+
+fn main() {
+    const users = [User(id: 1, name: "asha"), User(id: 2, name: "ravi")]
+    const orders = table.of([
+        Order(user_id: 1, total: 10.0),
+        Order(user_id: 2, total: 5.0),
+        Order(user_id: 1, total: 7.5),
+        Order(user_id: 9, total: 1.0),
+    ])
+    const named = orders.inner_join(users, .user_id, .id, (o, u) => (name: u.name, total: o.total))
+    print(named)
+    const all = orders.left_join(users, .user_id, .id, (o, u) => (name: u?.name ?? "unknown", total: o.total))
+    print(all.group_by(.name).map_values(g => g.sum(.total)))
+}

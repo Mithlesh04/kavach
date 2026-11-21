@@ -1,0 +1,11 @@
+use std.table
+
+type Order {
+    id: Int
+    items: [String]
+}
+
+fn main() {
+    const orders = table.of([Order(id: 1, items: ["pen"])])
+    print(orders.len())
+}

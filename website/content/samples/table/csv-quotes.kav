@@ -1,0 +1,14 @@
+use std.table
+
+type Note {
+    id: Int
+    text: String
+}
+
+fn main() ! CsvError {
+    const text = `id,text\n1,"a, b"\n2,"say ""hi"""\n3,"first line\nsecond line"\n`
+    const notes = try table.parse_csv<Note>(text)
+    for n in notes.rows() {
+        print(`{n.id}: {n.text}`)
+    }
+}

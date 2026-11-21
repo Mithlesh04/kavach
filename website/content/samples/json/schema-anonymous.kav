@@ -1,0 +1,5 @@
+use std.json
+
+fn main() {
+    print(json.schema<(region: String, tax: Float?)>())
+}

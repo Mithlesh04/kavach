@@ -1,0 +1,6 @@
+region,amount,note
+north,120.0,
+south,80.0,"late, paid in cash"
+region	amount	note
+north	120.0	
+south	80.0	late, paid in cash

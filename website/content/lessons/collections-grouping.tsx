@@ -97,8 +97,8 @@ export const groupingDoc: LessonDoc = {
       <P>Dicts:</P>
       <Table header={tables()[1].header} rows={tables()[1].rows} wrapFirst />
       <P>
-        A range has these too, as it has every method that reads a list. For a big table kept in columns,{" "}
-        <C>std.table</C> is planned with the same methods; for numbers in many dimensions, see{" "}
+        A range has these too, as it has every method that reads a list. For data read from CSV, a{" "}
+        <Link href="/docs/standard-library/tables/">table</Link> has the same methods; for numbers in many dimensions, see{" "}
         <Link href="/docs/standard-library/tensors/reductions/">Tensors: Reductions</Link>.
       </P>
       <div className="flex flex-wrap gap-2.5">

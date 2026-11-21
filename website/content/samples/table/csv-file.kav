@@ -1,0 +1,19 @@
+use std.fs
+use std.table
+
+type Sale {
+    region: String
+    amount: Float
+}
+
+fn main() ! CsvError uses Fs, Console {
+    const sales = table.of([Sale(region: "north", amount: 120.0), Sale(region: "south", amount: 80.0)])
+    try sales.write_csv("sales.csv")
+    const back = try table.read_csv<Sale>("sales.csv")
+    print(back.filter(.amount > 100.0))
+    fs.remove("sales.csv") catch e => print(e)
+    const _gone = table.read_csv<Sale>("no-such.csv") catch e => {
+        print(e)
+        table.of([])
+    }
+}

@@ -1,0 +1,1 @@
+error: `Table<Order>` can't hold `Order`'s field `items: [String]`: a cell holds a number, `Bool`, `Char`, `String`, `Decimal`, a `Date` or `DateTime`, a category (a union whose variants have no fields), or an optional of one (spec 14.34)

@@ -1,0 +1,6 @@
+name  total
+asha   10.0
+ravi    5.0
+asha    7.5
+[3 rows × 2 columns]
+{"asha": 17.5, "ravi": 5.0, "unknown": 1.0}

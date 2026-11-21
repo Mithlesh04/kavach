@@ -1,0 +1,14 @@
+use std.table
+
+type Sale {
+    region: String
+    amount: Float
+}
+
+fn main() {
+    const sales = table.of([Sale(region: "north", amount: 120.0), Sale(region: "south", amount: 80.0)])
+    const taxed = sales.map(s => (region: s.region, amount: s.amount, tax: s.amount / 4.0))
+    print(taxed)                                        // a record per row: a table
+    const regions: [String] = sales.map(s => s.region.upper())
+    print(regions)                                      // a String per row: a list
+}

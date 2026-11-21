@@ -140,6 +140,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Fonts", "14.31"],
     ["Reflection", "14.32"],
     ["Tensors", "14.33", ["Making tensors", "Indexing", "Arithmetic and broadcasting", "Masks", "Reductions", "Sorting and joining", "Linear algebra", "The FFT"]],
+    ["Tables", "14.34", ["CSV"]],
     ["JSON", "2.12", ["Json values", "Reading", "Nested data", "Building", "Decoding into a type"]],
     ["Bytes", "2.13"],
   ]],
@@ -250,6 +251,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["std.matrix", "—"],
     ["std.reflect", "—"],
     ["std.tensor", "—"],
+    ["std.table", "—"],
     ["std.literals", "—"],
   ]],
 ];

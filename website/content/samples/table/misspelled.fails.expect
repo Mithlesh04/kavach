@@ -1,0 +1,1 @@
+error: `Sale` has no field `amont`; it has region, amount (spec 14.34)

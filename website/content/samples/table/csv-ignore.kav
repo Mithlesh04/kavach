@@ -1,0 +1,12 @@
+use std.table
+
+type Sale {
+    region: String
+    amount: Float
+}
+
+fn main() ! CsvError {
+    const text = `region,shop,amount\nnorth,s1,120.0\n`
+    const sales = try table.parse_csv<Sale>(text, unknown: CsvUnknown.Ignore)
+    print(sales)
+}

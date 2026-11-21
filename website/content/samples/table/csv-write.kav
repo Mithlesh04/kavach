@@ -1,0 +1,16 @@
+use std.table
+
+type Sale {
+    region: String
+    amount: Float
+    note: String?
+}
+
+fn main() {
+    const sales = table.of([
+        Sale(region: "north", amount: 120.0, note: none),
+        Sale(region: "south", amount: 80.0, note: "late, paid in cash"),
+    ])
+    print(sales.to_csv().trim_end())
+    print(sales.to_csv(sep: '\t').trim_end())
+}

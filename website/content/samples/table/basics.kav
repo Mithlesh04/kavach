@@ -1,0 +1,22 @@
+use std.table
+
+type Sale {
+    region: String
+    month: Int
+    amount: Float
+    note: String?
+}
+
+fn main() ! CsvError {
+    const text = `
+        region,month,amount,note
+        north,1,120.0,
+        south,1,80.0,"late, paid in cash"
+        north,2,100.0,
+        `
+    const sales = try table.parse_csv<Sale>(text)
+    print(sales.len())
+    print(sales["amount"])                                          // a column, as a [Float]
+    print(sales.group_by(.region).map_values(g => g.sum(.amount)))
+    print(sales)
+}

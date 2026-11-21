@@ -1,0 +1,9 @@
+region  month  amount
+north       1   120.0
+north       2   100.0
+[2 rows × 3 columns]
+[80.0, 100.0, 120.0]
+{"north": 2, "south": 1}
+100.0
+1
+{"north": {1: 120.0, 2: 100.0}, "south": {1: 80.0}}

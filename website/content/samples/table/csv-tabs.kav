@@ -1,0 +1,11 @@
+use std.table
+
+type Row {
+    region: String
+    note: String
+}
+
+fn main() ! CsvError {
+    const rows = try table.parse_csv<Row>(`region\tnote\nnorth\ta, b\n`, sep: '\t')
+    print(rows[0].note)
+}

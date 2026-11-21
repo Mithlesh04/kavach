@@ -1,0 +1,5 @@
+amount  region   tax
+ 120.0  north   30.0
+  80.0  south   20.0
+[2 rows × 3 columns]
+["NORTH", "SOUTH"]

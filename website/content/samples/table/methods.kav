@@ -1,0 +1,22 @@
+use std.table
+
+type Sale {
+    region: String
+    month: Int
+    amount: Float
+}
+
+fn main() {
+    const sales = table.of([
+        Sale(region: "north", month: 1, amount: 120.0),
+        Sale(region: "south", month: 1, amount: 80.0),
+        Sale(region: "north", month: 2, amount: 100.0),
+    ])
+    const big = sales.filter(.amount > 90.0)            // a Table<Sale>
+    print(big)
+    print(sales.sort_by(.amount)["amount"])
+    print(sales.count_by(.region))
+    print(sales.mean(.amount) ?? 0.0)
+    print(sales.max_by(.amount)?.month ?? 0)
+    print(sales.pivot(.region, .month, g => g.sum(.amount)))
+}

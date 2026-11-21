@@ -1,0 +1,24 @@
+use std.table
+
+type Sale {
+    region: String
+    month: Int
+    amount: Float
+}
+
+fn main() {
+    const sales = table.of([
+        Sale(region: "north", month: 1, amount: 120.0),
+        Sale(region: "south", month: 1, amount: 80.0),
+        Sale(region: "north", month: 2, amount: 100.0),
+    ])
+    print(sales.columns())
+    print(sales[1].region)           // a row is a Sale
+    print(sales[#1].amount)          // the last row
+    print(sales.get(3) == none)      // no row 3
+    print(sales[0:2]["month"])       // a slice is a table
+    print(sales[::-1]["amount"])
+    const amounts: [Float] = sales["amount"]
+    print(amounts.sum(x => x))
+    print(sales.rows().len())        // every row, as a [Sale]
+}

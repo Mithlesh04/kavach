@@ -1,0 +1,13 @@
+use std.json
+use std.table
+
+type Sale {
+    region: String
+    amount: Float
+}
+
+fn main() ! JsonError {
+    const sales = table.of(try json.decode<[Sale]>(`[\{"region": "north", "amount": 120.5}, \{"region": "south", "amount": 80.0}]`))
+    print(sales.len())
+    print(json.stringify(sales))
+}

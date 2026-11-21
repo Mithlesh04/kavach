@@ -1,0 +1,19 @@
+use std.table
+use std.time.{Date}
+
+type Region = North | South
+
+type Visit {
+    region: Region
+    day: Date
+    paid: Bool
+}
+
+fn main() {
+    const visits = table.parse_csv<Visit>(`region,day,paid\nSouth,2024-03-01,true\n`) catch _ => table.of([])
+    print(`{visits[0].region} {visits[0].day.iso()} {visits[0].paid}`)
+    const _bad = table.parse_csv<Visit>(`region,day,paid\neast,2024-03-01,true\n`) catch e => {
+        print(e)
+        table.of([])
+    }
+}

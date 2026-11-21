@@ -1,0 +1,11 @@
+use std.table
+
+type Sale {
+    region: String
+    amount: Float
+}
+
+fn main() {
+    const sales = table.of([Sale(region: "north", amount: 120.0)])
+    print(sales["amont"])
+}

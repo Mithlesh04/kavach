@@ -1,0 +1,14 @@
+use std.table
+
+type Stock {
+    item: String
+    count: Int
+    invariant count >= 0
+}
+
+fn main() {
+    const _t = table.parse_csv<Stock>(`item,count\npen,4\nnib,-1\n`) catch e => {
+        print(e)
+        table.of([])
+    }
+}

@@ -1,0 +1,1 @@
+Value(line: 3, column: "", expected: "invariant `count >= 0`", found: "nib,-1")

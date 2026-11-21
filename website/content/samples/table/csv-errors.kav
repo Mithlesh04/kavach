@@ -1,0 +1,22 @@
+use std.table
+
+type Item {
+    name: String
+    units: Int
+}
+
+fn show(text: String) {
+    const _t = table.parse_csv<Item>(text) catch e => {
+        print(e)
+        table.of([])
+    }
+}
+
+fn main() {
+    show(`name\npen\n`)                        // no units column, and no default
+    show(`name,units,shop\npen,4,s1\n`)        // a column Item has no field for
+    show(`name,units\nink,"1,299"\n`)          // not a whole number
+    show(`name,units\npen, 12\n`)              // a space is not a digit
+    show(`name,units\npen,4\nink\n`)           // one cell, and the first line has 2
+    show(`name,units\n"pen,4\n`)               // a quote left open
+}

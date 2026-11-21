@@ -1,0 +1,6 @@
+Missing(column: "units")
+Unknown(column: "shop")
+Value(line: 2, column: "units", expected: "a whole number", found: "1,299")
+Value(line: 2, column: "units", expected: "a whole number", found: " 12")
+Syntax(line: 3, message: "1 cell, and the first line has 2")
+Syntax(line: 2, message: "a quote left open")

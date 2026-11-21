@@ -1,0 +1,1 @@
+{"type":"object","properties":{"region":{"type":"string"},"tax":{"anyOf":[{"type":"number"},{"type":"null"}]}},"required":["region"],"additionalProperties":false}

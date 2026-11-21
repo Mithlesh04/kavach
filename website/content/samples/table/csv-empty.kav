@@ -1,0 +1,16 @@
+use std.table
+
+type Item {
+    name: String
+    note: String?
+    stock: Int = 0
+    currency: String = "EUR"
+    price: Float
+}
+
+fn main() ! CsvError {
+    // No currency column; empty name, note and stock.
+    const items = try table.parse_csv<Item>(`price,name,note,stock\n2.5,,,\n`)
+    const i = items[0]
+    print(`"{i.name}" {i.note} {i.stock} {i.currency} {i.price}`)
+}

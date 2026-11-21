@@ -1,0 +1,10 @@
+use std.table
+
+type Reading {
+    hour: Int
+    celsius: Float
+}
+
+fn main() {
+    print(table.of((0..24).map(h => Reading(hour: h, celsius: 20.0 + Float(h % 6)))))
+}
