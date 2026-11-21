@@ -126,7 +126,7 @@ print(lit.map(x => step(x)).sum(x => x))
 const lit = pixels.map(p => scale(p, gain)).map(p => glow(p, 0.5))   // one pass on the GPU
 ```
 
-The environment variable `KAVACH_GPU` changes where it runs, for debugging: `off` (or `cpu`) runs everything on the CPU, `on` uses the GPU for any length, and `check` runs both and panics at the first item whose results differ (floats compared with `near`, 14.2). `[run] gpu = "cpu"` in `kavach.toml` keeps a program's maps on the CPU the same way, as on a machine whose GPU it shouldn't use; `KAVACH_GPU` at launch wins (decision 0126). Both can name a device too (15.6).
+The environment variable `KAVACH_GPU` changes where it runs, for debugging: `off` (or `cpu`) runs everything on the CPU, `on` uses the GPU for any length, and `check` runs both and panics at the first item whose results differ (floats compared with `near`, 14.2). `[run] gpu = "cpu"` in `kavach.toml` keeps a program's maps on the CPU the same way, as on a machine whose GPU it shouldn't use; `KAVACH_GPU` at launch wins (decision 0126). Both can name a device too (15.6). Both are read in any case: `KAVACH_GPU=CPU` is `cpu`, and `gpu = "Off"` is `"off"`.
 
 ## 15.3 Drawing
 

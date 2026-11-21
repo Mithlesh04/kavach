@@ -372,11 +372,11 @@ pub fn set_file_gpu_cpu() {
 
 /// Sets `[run] gpu`: `"cpu"`, or a device's vendor or number (15.6).
 pub fn set_file_gpu(text: &str) {
-    match text {
-        "cpu" => set_file_gpu_cpu(),
-        "auto" | "" => {}
-        device => {
-            let _ = FILE_GPU.set(device.to_string());
+    match gpu_setting::read(text) {
+        Some(gpu_setting::GpuSetting::Cpu) => set_file_gpu_cpu(),
+        Some(gpu_setting::GpuSetting::System) => {}
+        _ => {
+            let _ = FILE_GPU.set(text.to_string());
         }
     }
 }
@@ -393,11 +393,18 @@ pub fn gpu_mode() -> String {
     if place().1 == GpuPlace::Cpu {
         return "off".into();
     }
-    match std::env::var("KAVACH_GPU") {
-        Ok(m) if m == "cpu" => "off".into(),
-        Ok(m) => m,
-        Err(_) if FILE_GPU_CPU.load(std::sync::atomic::Ordering::Relaxed) => "off".into(),
-        Err(_) => String::new(),
+    let file_cpu = FILE_GPU_CPU.load(std::sync::atomic::Ordering::Relaxed);
+    mode_of(std::env::var("KAVACH_GPU").ok().as_deref(), file_cpu)
+}
+
+/// `gpu_mode` from `KAVACH_GPU` (`env`, read in any case, as
+/// `gpu_setting` reads it) and whether `[run] gpu` says the CPU.
+fn mode_of(env: Option<&str>, file_cpu: bool) -> String {
+    match env.map(|m| m.trim().to_ascii_lowercase()) {
+        Some(m) if m == "cpu" => "off".into(),
+        Some(m) => m,
+        None if file_cpu => "off".into(),
+        None => String::new(),
     }
 }
 
@@ -466,5 +473,27 @@ mod tests {
         );
         assert_eq!(super::cap_note(10, 10), None);
         assert_eq!(super::cap_note(1, 10), None);
+    }
+
+    /// `KAVACH_GPU`'s values are read in any case, as `gpu_setting`
+    /// reads them (spec 15.2).
+    #[test]
+    fn gpu_modes_are_read_in_any_case() {
+        let table = [
+            (Some("cpu"), "off"),
+            (Some("CPU"), "off"),
+            (Some("Off"), "off"),
+            (Some(" off "), "off"),
+            (Some("ON"), "on"),
+            (Some("Check"), "check"),
+            (Some("auto"), "auto"),
+            (Some("AUTO"), "auto"),
+            (None, ""),
+        ];
+        for (env, want) in table {
+            assert_eq!(super::mode_of(env, false), want, "{env:?}");
+        }
+        assert_eq!(super::mode_of(None, true), "off");
+        assert_eq!(super::mode_of(Some("on"), true), "on");
     }
 }

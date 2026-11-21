@@ -23,9 +23,10 @@ pub struct RunConfig {
 }
 
 impl RunConfig {
-    /// Whether `gpu = "cpu"`.
+    /// Whether `gpu = "cpu"` (or `"off"`, in any case).
     pub fn on_cpu(&self) -> bool {
-        self.gpu.as_deref() == Some("cpu")
+        use kavach_runtime_core::gpu_setting::{self, GpuSetting};
+        self.gpu.as_deref().and_then(gpu_setting::read) == Some(GpuSetting::Cpu)
     }
 
     /// What is wrong with the section, if anything.
@@ -44,16 +45,40 @@ impl RunConfig {
         }
         use kavach_runtime_core::gpu_setting::{self, GpuSetting};
         match self.gpu.as_deref() {
-            None | Some("cpu" | "auto") => None,
+            None => None,
+            Some(t) if t.trim().eq_ignore_ascii_case("auto") => None,
             Some(t)
                 if matches!(
                     gpu_setting::read(t),
-                    Some(GpuSetting::Number(_) | GpuSetting::Vendor(_))
+                    Some(GpuSetting::Cpu | GpuSetting::Number(_) | GpuSetting::Vendor(_))
                 ) =>
             {
                 None
             }
             Some(other) => Some(gpu_setting::takes(&format!("`[run] gpu = \"{other}\"`"))),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::RunConfig;
+
+    /// `[run] gpu` is read in any case, as `KAVACH_GPU` is (spec 15.2).
+    #[test]
+    fn gpu_is_read_in_any_case() {
+        let run = |gpu: &str| RunConfig {
+            gpu: Some(gpu.into()),
+            ..RunConfig::default()
+        };
+        for cpu in ["cpu", "CPU", "Off"] {
+            assert!(run(cpu).on_cpu(), "{cpu}");
+            assert_eq!(run(cpu).wrong(), None, "{cpu}");
+        }
+        for other in ["auto", "AUTO", "Nvidia", "1"] {
+            assert!(!run(other).on_cpu(), "{other}");
+            assert_eq!(run(other).wrong(), None, "{other}");
+        }
+        assert!(run("fast").wrong().is_some());
     }
 }

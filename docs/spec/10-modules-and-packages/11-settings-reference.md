@@ -21,7 +21,7 @@ Every setting a program can have, in one place. A key or section that isn't list
 | `[limits.files]` | a file's path | a whole number: that file's own limit | none | 12.1 |
 | `[run]` | `cores` | a whole number, 1 or more | all the machine gives the program | 4.9: the most cores the program uses; `KAVACH_CORES` wins |
 | `[run]` | `threads` | a whole number, 1 or more | `256` | 4.9: the most `on threads` rounds running at once in the whole program |
-| `[run]` | `gpu` | `"cpu"`, `"auto"`, a vendor's name (`"amd"`), a device's number (`"1"`) | `"auto"` | 15.2, 15.6: `"cpu"` keeps every `map` with a `gpu fn` on the CPU; a name or number chooses the device; `KAVACH_GPU` wins |
+| `[run]` | `gpu` | `"cpu"` (or `"off"`), `"auto"`, a vendor's name (`"amd"`), a device's number (`"1"`), in any case | `"auto"` | 15.2, 15.6: `"cpu"` keeps every `map` with a `gpu fn` on the CPU; a name or number chooses the device; `KAVACH_GPU` wins |
 | `[test]` | `cases` | a whole number | `200` | 11.9 |
 | `[test]` | `deep_cases` | a whole number | `10000` | 11.9 |
 | `[test]` | `time_budget` | a time per call: `"500ms"`, `"1s"`, `"2m"` | `"1s"` | 11.9 |
@@ -48,7 +48,7 @@ For running programs:
 
 | Variable | Values | What it does | Spec |
 |---|---|---|---|
-| `KAVACH_GPU` | `off` (or `cpu`), `on`, `check` | Where `map` with a `gpu fn` runs | 15.2 |
+| `KAVACH_GPU` | `off` (or `cpu`), `on`, `check`, a vendor or a number (15.6), in any case | Where `map` with a `gpu fn` runs | 15.2 |
 | `KAVACH_FAKE_GPUS` | entries `name:vendor:kind:backend` split by `;`, the vendor a PCI ID (`0x1002`) | For tests: `system.gpus()` lists these instead of the machine's GPUs; an entry that doesn't read so is left out | 14.25 |
 | `ANTHROPIC_API_KEY` | a key | The key `ask` uses; never in `kavach.toml` | 8.4 |
 | `KAVACH_AI_URL` | a URL | Where `ask` sends its requests (a test server) | 8.4 |
