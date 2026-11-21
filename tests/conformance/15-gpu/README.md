@@ -1,6 +1,6 @@
 # tests/conformance/15-gpu/
 
-Conformance tests for spec chapter [15. GPU](../../../docs/spec/15-gpu.md). Format: [../README.md](../README.md). These lists are short, so they run on the CPU; `tools/cli/tests/textures.rs` samples textures, `tools/cli/tests/gpu.rs` runs `map`s, `filter`, `sum`, `min` and `max` on the GPU (`KAVACH_GPU=on` and `check`), and `tools/cli/tests/gpu_choice.rs` chooses among GPUs listed by `KAVACH_FAKE_GPUS` and real ones (15.6).
+Conformance tests for spec chapter [15. GPU](../../../docs/spec/15-gpu.md). Format: [../README.md](../README.md). These lists are short, so they run on the CPU; `tools/cli/tests/textures.rs` samples textures, `tools/cli/tests/gpu.rs` runs `map`s, `filter`, `sum`, `min` and `max` on the GPU (`KAVACH_GPU=on` and `check`), `tools/cli/tests/gpu_choice.rs` chooses among GPUs listed by `KAVACH_FAKE_GPUS` and real ones (15.6), and `tools/cli/tests/gpu_passes.rs` runs a `map` in several passes of the GPU.
 
 | Section | Test | Rule | Result |
 |---|---|---|---|

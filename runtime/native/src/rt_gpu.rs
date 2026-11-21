@@ -285,6 +285,9 @@ fn map(list: i64, closure: i64, text: i64, code: i64, line: i32, stay: bool) -> 
             kavach_runtime_gpu::map(&kernel, items, captures, bytes, stay, false)
         }),
     };
+    // Results too big for one pass came back into `out` (spec 15.2):
+    // none stay on the GPU to be fetched.
+    let stay = stay && matches!(&res, Ok(k) if k.results.is_some());
     if over && res.is_ok() {
         forget(list);
     }

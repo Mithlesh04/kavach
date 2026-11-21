@@ -128,6 +128,8 @@ const lit = pixels.map(p => scale(p, gain)).map(p => glow(p, 0.5))   // one pass
 
 The environment variable `KAVACH_GPU` changes where it runs, for debugging: `off` (or `cpu`) runs everything on the CPU, `on` uses the GPU for any length, and `check` runs both and panics at the first item whose results differ (floats compared with `near`, 14.2). `[run] gpu = "cpu"` in `kavach.toml` keeps a program's maps on the CPU the same way, as on a machine whose GPU it shouldn't use; `KAVACH_GPU` at launch wins (decision 0126). Both can name a device too (15.6). Both are read in any case: `KAVACH_GPU=CPU` is `cpu`, and `gpu = "Off"` is `"off"`.
 
+A `map` too big for one pass of the GPU runs in several passes, with the same results. For tests, `KAVACH_GPU_WORDS=1000` lets one pass hold at most 1000 32-bit words, so small lists test this on any machine.
+
 ## 15.3 Drawing
 
 A picture is drawn by two kinds of `gpu fn` ([decision 0106](../decisions/0106-drawing-on-the-gpu.md)): a `gpu vertex fn` works out where each corner of a triangle goes on the screen, and a `gpu fragment fn` gives the color of each pixel inside it. `gpu.pipeline` puts the two together, and a frame draws with it (14.24).

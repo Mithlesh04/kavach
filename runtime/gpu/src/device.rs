@@ -132,10 +132,16 @@ pub(crate) fn open(
         })
     };
     let (layout, in_place) = (layout(true), layout(false));
-    let words = limits
-        .max_storage_buffer_binding_size
+    // For tests, `KAVACH_GPU_WORDS` holds one pass to fewer words, so
+    // work too big for one pass is tested with small lists (spec 15.2).
+    let cap = (std::env::var("KAVACH_GPU_WORDS").ok())
+        .and_then(|w| w.trim().parse::<u64>().ok())
+        .filter(|w| *w > 0)
+        .unwrap_or(u64::MAX);
+    let words = (limits.max_storage_buffer_binding_size)
         .min(limits.max_buffer_size)
-        / 4;
+        .div_euclid(4)
+        .min(cap);
     Ok(Gpu {
         index,
         instance,
