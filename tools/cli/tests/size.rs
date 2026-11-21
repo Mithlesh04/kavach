@@ -28,8 +28,11 @@ use std::process::Command;
 /// Union variants carrying a number or text (spec 2.6), which every
 /// program's shape table now holds and the runtime reads at start: 778 KB
 /// on Linux (2026-11-21), the numbers read digit by digit, not through
-/// Rust's 128-bit parsing.
-const BUDGET: u64 = 780 * 1024;
+/// Rust's 128-bit parsing. Numbers with bits or a range (spec 2.1),
+/// whose shapes the same table holds: 782 KB on Linux (2026-11-22); their
+/// checks have an entry of their own (`kv_rt_whole`), so only the
+/// shape reading is in every program.
+const BUDGET: u64 = 784 * 1024;
 
 #[test]
 fn hello_world_stays_small() {
