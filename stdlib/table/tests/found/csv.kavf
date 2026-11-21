@@ -1,0 +1,4 @@
+// Found by `kavach test` (spec 11.4). Generated: commit it, never edit it.
+feed(Reader(sep: 'a', line: 9223372036854775807, start: 0, cells: [], cell: [], open: false, closed: false), "")
+digits_from([], -1)
+refused(JsonError.TooLarge(limit: 0), 0, [""], [])
