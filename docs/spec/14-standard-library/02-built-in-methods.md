@@ -54,6 +54,7 @@ Lists, in addition to 2.2:
 | `items.index_of(x)` | The position of the first `x`, or `none` |
 | `items.min()`, `items.max()` | The smallest or largest item, or `none` for an empty list |
 | `items.pop()` | The last item, which it takes out of the list, or `none` for an empty list. It changes the list, so like `push` it needs a `let` (2.2), and it takes the item out in place when nothing else holds the list: `const top = stack.pop() ?? 0` |
+| `items.swap(i, j)` | Nothing: it swaps the items at `i` and `j` in place (2.2). It changes the list, so like `push` it needs a `let`; an index out of range panics, as `items[i]` does: `order.swap(0, 2)` |
 
 A negative count or width counts as 0, as for `List.capacity` (2.2): `"ab".repeat(-1)` is `""`, and `"ab".pad_left(-1)` is `"ab"`.
 

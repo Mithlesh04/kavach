@@ -56,7 +56,7 @@ const three: [Int]<max: 2> = [1, 2, 3]      // compile error: 3 items, and the t
 - The item types may be left out and are inferred, as for `let a = []`: `List<max: 2>`, `Dict<max: 100>`, `Set<max: 10>`.
 - A limit is from 0 to 4,294,967,294 (2³² − 2); another is a compile error.
 
-**A list of fixed length**, `[Float]<len: 3>`, holds exactly 3 items, always. An item may be set in place; `push`, `pop`, `remove` and `+=` are compile errors. An index written as a number is checked while compiling.
+**A list of fixed length**, `[Float]<len: 3>`, holds exactly 3 items, always. An item may be set in place, and two items swapped (`swap`, below); `push`, `pop`, `remove` and `+=` are compile errors. An index written as a number is checked while compiling.
 
 ```kavach
 let v: [Float]<len: 3> = [1.0, 2.0, 3.0]
@@ -119,7 +119,7 @@ A limit goes with the collection: a copy has it too (`let b = a`), and so does t
 
 Dicts and sets keep **insertion order**: iterating visits items in the order they were first added, so output and tests are always repeatable.
 
-Methods of lists: `len`, `is_empty`, `is_full`, `get`, `first`, `last`, `contains`, `enumerate`, `push`, and `filter`, `map`, `flat_map`, `any`, `all`, `sum` with a lambda (an empty list's `sum` is the zero of the lambda's result: `0`, or `0.0` for a `Float`). Methods of dicts: `len`, `is_empty`, `is_full`, `get`, `contains_key`, `keys`, `values`, `remove`. Sets have `any`, `all`, `count`, `sum`, `find`, `for_each`, `map` and `filter` too, over their values in insertion order. More methods, and sets', are in [14.2](../14-standard-library/02-built-in-methods.md#142-methods-of-built-in-types).
+Methods of lists: `len`, `is_empty`, `is_full`, `get`, `first`, `last`, `contains`, `enumerate`, `push`, `swap`, and `filter`, `map`, `flat_map`, `any`, `all`, `sum` with a lambda (an empty list's `sum` is the zero of the lambda's result: `0`, or `0.0` for a `Float`). Methods of dicts: `len`, `is_empty`, `is_full`, `get`, `contains_key`, `keys`, `values`, `remove`. Sets have `any`, `all`, `count`, `sum`, `find`, `for_each`, `map` and `filter` too, over their values in insertion order. More methods, and sets', are in [14.2](../14-standard-library/02-built-in-methods.md#142-methods-of-built-in-types).
 
 There is one way to set an item: `items[i] = v` changes an item of a list, and `ages[name] = v` adds or changes a key. `push` and `remove` change the collection they are called on, so like assignment they need a `let`:
 
@@ -132,7 +132,7 @@ const fixed = [1, 2]
 fixed.push(3)                  // error: `fixed` is a `const`: declare it with `let`
 ```
 
-A changing method (`push`, `pop`, `add`, `remove`) also works on an item or a dict entry, and changes it where it is, so `rows[i].push(x)` and `groups["small"].push(x)` change the list inside. On a dict entry it means what `groups["small"] += [x]` means, and a missing key panics, naming it, as an index out of range does for a list. Any other use of `groups["small"]` reads it, and a read is an optional (`none` when the key is missing), so a method that only reads goes through `?.` or `??`:
+A changing method (`push`, `pop`, `swap`, `add`, `remove`) also works on an item or a dict entry, and changes it where it is, so `rows[i].push(x)` and `groups["small"].push(x)` change the list inside. On a dict entry it means what `groups["small"] += [x]` means, and a missing key panics, naming it, as an index out of range does for a list. Any other use of `groups["small"]` reads it, and a read is an optional (`none` when the key is missing), so a method that only reads goes through `?.` or `??`:
 
 ```kavach
 let groups = {"small": [1, 2]}
@@ -141,6 +141,17 @@ groups["large"].push(9)                  // panic: the dict has no key `large`
 print(groups["small"]?.len())            // 3
 print((groups["large"] ?? []).len())     // 0
 ```
+
+**Swapping two items.** `xs.swap(i, j)` swaps the items at positions `i` and `j`, in place, and gives nothing. It changes the list, so like `push` it needs a `let`: on a `const` or a frozen value (2.20) it is a compile error. It works on an item or a dict entry too, as above: `rows[k].swap(0, 1)`. An index out of range panics with the message `xs[i]` gives, and the list doesn't change. `xs.swap(i, i)` changes nothing. When nothing else holds the list, the two items change places where they are, with nothing copied (6.1), text and records included.
+
+```kavach
+let xs = ["a", "b", "c"]
+xs.swap(0, 2)                  // ["c", "b", "a"]
+xs.swap(1, 1)                  // no change
+xs.swap(0, 3)                  // panic: index 3 is out of range: the list has 3 items
+```
+
+Tuple assignment (1.14) swaps any two places, items of two lists or fields too: `(xs[i], ys[j]) = (ys[j], xs[i])`.
 
 `xs + ys` is a new list: the items of `xs`, then those of `ys`. Both are lists of the same type, and neither changes. `xs += ys` adds the items of `ys` to the end of `xs`, so like `push` it needs a `let`; when nothing else holds `xs`, it grows in place (6.1), without copying what it holds:
 

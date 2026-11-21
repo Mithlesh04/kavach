@@ -203,7 +203,7 @@ const body = `
 | Optional | `??` `?.` | See 2.7 |
 | Range | `..` `..=` | `0..10` excludes 10; `0..=10` includes it |
 | Index and slice | `x[i]` `x[a:b:step]` `x[#k]` `m[i, j]` | One item, a slice, `k` from the end, one part per dimension (2.19). A program's own types get them through interfaces (2.16) |
-| Assignment | `= += -= *= /= %= **= @= &= \|= ^= <<= >>=` | Assignment is a statement, not an expression. `x op= v` is `x = x op v`, checked as that operator is |
+| Assignment | `= += -= *= /= %= **= @= &= \|= ^= <<= >>=` | Assignment is a statement, not an expression. `x op= v` is `x = x op v`, checked as that operator is. `(a, b) = (b, a)` sets several places at once (1.14) |
 
 Precedence, from highest to lowest:
 
@@ -377,6 +377,7 @@ const [config: [port = 8080]] = settings  // settings: {String: {String: Int}}
 
 - When the part a nested pattern takes apart may be missing (a list item, a dict value, a `T?` field), every name inside it is `none` when it is, so their types are optional, unless they have defaults. A part with a default of its own (`[x, y] = [0, 0]`) is never missing.
 - With `let`, the names are variables; with `const`, they never change.
+- To set variables that already exist from a tuple, use tuple assignment (1.14): `(low, high) = (high, low)`.
 
 ## 1.13 Module constants
 
@@ -428,9 +429,39 @@ The difference keeps a script's first line, `const text = try fs.read_text(path)
 - Its name is `snake_case`, as any value's (1.5): `const COUNT = 10` is an error that says so.
 - A panic while working one out stops the program before `main` starts, with the constant's line.
 
+## 1.14 Tuple assignment
+
+One `=` can set several places, written as a tuple (2.3) on each side. Every value on the right is worked out first, then each place on the left is set, left to right. So two places swap with no temporary variable, as in Python and Go.
+
+```kavach
+let a = 1
+let b = 2
+(a, b) = (b, a)                          // a is 2, b is 1
+
+let xs = [10, 20, 30]
+(xs[0], xs[2]) = (xs[2], xs[0])          // [30, 20, 10]; `xs.swap(0, 2)` does the same (2.2)
+
+let p = Point(x: 1, y: 5)
+(p.x, p.y) = (p.y, p.x)                  // Point(x: 5, y: 1)
+
+let low = 0
+let high = 0
+(low, high) = bounds(scores)             // any tuple value works on the right
+```
+
+- Each place is one that `=` can set alone (1.4, 1.8): a `let` variable, or a field, item, dict entry or tuple field of one. A `const` or a parameter among them is the same compile error as for `=`.
+- The right side has one value for each place: a tuple written out, or any value whose type is a tuple. Another number is a compile error that gives both numbers, and each value must fit its place, as for `=`.
+- Tuples nest on both sides: `((a, b), c) = ((b, a), c)`.
+- The places are set in order, each worked out when it is set, as in Python: `(i, xs[i]) = (1, 9)` sets `i` first, so `xs[1]` becomes 9.
+- Only `=` sets several places: `(a, b) += (1, 1)` is a compile error that says to write each on its own line.
+- An item of a program's own type (`grid[k]` through `IndexSet`, 2.16) can't be a place yet: set it on its own line.
+- Python writes it without parentheses, `a, b = b, a`. In Kavach that is a compile error that shows the form with them, and `xs.swap(i, j)` for two items of a list.
+
 ## Open questions
 
 - **Tabs in the indentation of text over lines (1.7):** today a tab and a space each count as one character when the common indentation is found, so a file that mixes them may keep or remove the wrong amount. Refusing a mix, counting a tab as four spaces, or allowing only spaces are the options.
+- **The same place twice in a tuple assignment (1.14):** `(a, a) = (1, 2)` sets `a` to 1, then to 2, as in Python. A compile error may be clearer.
+- **Throwing a value away in a tuple assignment (1.14):** `(a, _) = pair()` is not allowed today, as `_` is not a place. Allowing it, as `const (a, _) = pair()` does, is an option.
 - **List patterns in `match`:** there a pattern would test the length (`[a, b]` only for two items), unlike `const`, which never fails. Wanted, but the two meanings must not be confused.
 
 Decisions are recorded in [0013](../decisions/0013-core-language-decisions.md).
