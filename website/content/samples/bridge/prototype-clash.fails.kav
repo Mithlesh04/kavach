@@ -1,6 +1,6 @@
 // JavaScript lets this replace the built-in includes for every array.
 extend<T> [T] {
-    fn contains(self, item: T) -> Bool {
+    fn contains(self, _item: T) -> Bool {
         false
     }
 }

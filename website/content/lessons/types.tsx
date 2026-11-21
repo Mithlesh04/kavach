@@ -116,6 +116,38 @@ export const unionsDoc: LessonDoc = {
       <P>A union whose variants carry nothing is an enum. It can list its variants, name them, and read them back from text:</P>
       <Ex name="records/sub-enum" />
       <Note>Other languages call these enums, tagged unions, sum types or variants.</Note>
+      <H2>Values on variants</H2>
+      <P>
+        Each variant of an enum may carry a <strong>value</strong>: a whole number, for wire formats, files and C, as{" "}
+        <C>Code</C> above does, or a text, for the names other systems use. Those names often aren&apos;t names a
+        variant can have: <C>requires_action</C>, <C>U.S</C>, <C>application/json</C>.
+      </P>
+      <Ex name="records/enum-text" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>value()</C> gives the value: an <C>Int</C> for numbers, a <C>String</C> for text. <C>Country.from(value)</C> gives the variant with that value, or <C>none</C>.</li>
+        <li>
+          Apart from <C>value()</C> and <C>from</C>, the value changes only JSON, which writes and reads the value
+          instead of the name (<Link href="/docs/standard-library/json/building/#how-each-type-is-written">how each type is written</Link>).
+          A variant still prints as its name, <C>name()</C> gives its name, <C>parse</C> reads a name, and{" "}
+          <C>match</C> works as on any enum.
+        </li>
+        <li>Either every variant has a value or none does, no two have the same one, and one type&apos;s values are all numbers or all text.</li>
+        <li>A text value is written in quotes, exactly as it is: spaces, dots, any script, even empty text. It is fixed when compiling, so nothing can be filled in. Text with a <C>&quot;</C> in it goes in backticks:</li>
+      </ul>
+      <Ex name="records/enum-quote" />
+      <P>A variant&apos;s name is one name, with no dots or spaces. The other system&apos;s text goes in the value, and the error says how:</P>
+      <Ex name="records/enum-dot-name.fails" />
+      <P>A union written as text, as TypeScript writes one, gets the same help:</P>
+      <Ex name="records/enum-text-only.fails" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/02-types/06-unions.md" label="spec 2.6 · unions" />
+        <SrcRef file="tests/conformance/02-types/enum-variants-carry-text.kav" label="text values, tested" />
+        <SrcRef file="tests/conformance/02-types/enum-variants-have-numbers.kav" label="numbers, tested" />
+        <SrcRef file="tests/conformance/02-types/variant-text-is-any-text.kav" label="any text, tested" />
+        <SrcRef file="tests/conformance/02-types/enum-values-are-all-numbers-or-all-text.kav" label="one kind, tested" />
+        <SrcRef file="tests/conformance/02-types/a-variant-name-has-no-dots.kav" label="no dots, tested" />
+        <SrcRef file="tests/conformance/02-types/a-variant-is-a-name-not-text.kav" label="names, not text, tested" />
+      </div>
     </>
   ),
 };

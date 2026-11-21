@@ -241,7 +241,7 @@ export const manyDoc: LessonDoc = {
       </P>
       <P>
         Each task runs as <C>spawn thread</C> makes it (<Link href="/docs/concurrency/how-tasks-run/">How Tasks Run</Link>),
-        so in a release build the items compute on several cores at once. In{" "}
+        so in an LLVM build (<C>kavach build</C>) the items compute on several cores at once. In{" "}
         <Link href="/docs/benchmarks/#tasks">the benchmark</Link>, eight sums of 150 million rounds each take{" "}
         {kavachMs("parallel")} ms with <C>parallel_map</C> — and {kavachMs("serial")} ms with plain <C>map</C>.
         That was measured before loops needed <C>on cores</C> (decision 0126), when each of these math loops was

@@ -1,0 +1,1 @@
+error: `U.S` is not a variant name: a name is one word, with no dots or spaces. To keep this text, write `US = "U.S"` (spec 2.6)

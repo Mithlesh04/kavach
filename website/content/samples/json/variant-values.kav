@@ -1,0 +1,17 @@
+use std.json
+
+type PaymentStatus = Succeeded = "succeeded" | Processing = "processing" | RequiresAction = "requires_action"
+
+type Payment {
+    id: String
+    status: PaymentStatus
+}
+
+type Code = Ok = 200 | NotFound = 404 | Failed = 500
+
+fn main() ! Error {
+    const p = try json.decode<Payment>(`\{"id": "pi_1", "status": "requires_action"}`)
+    print(p.status)
+    print(json.stringify(p))
+    print(json.of(Code.NotFound))
+}

@@ -97,7 +97,7 @@ export const howTasksRunDoc: LessonDoc = {
           changes. A <C>spawn cores</C> task keeps a looser order: its own lines come out in order, whole, and a line
           it prints before it sends a value, spawns a task or ends comes before what the receiver prints after that.
         </li>
-        <li>Only a release build (<C>kavach build</C>) runs <C>spawn cores</C> tasks on every core today. <C>kavach run</C> runs them on one core, in turn, and prints the same.</li>
+        <li>Only an LLVM build (<C>kavach build</C>) runs <C>spawn cores</C> tasks on every core today. Other runs run them on one core, in turn, and print the same: <C>kavach run</C>, <C>run --native</C>, and a program <C>kavach build</C> makes with Cranelift (<C>KAVACH_BACKEND=cranelift</C>, or a program LLVM doesn&apos;t build yet).</li>
       </ul>
       <H2>What the machine does</H2>
       <P>Which thread runs each kind, in a program built with <C>kavach build</C> on 4 cores:</P>

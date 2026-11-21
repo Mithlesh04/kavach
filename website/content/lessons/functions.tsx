@@ -81,6 +81,29 @@ export const parametersDoc: LessonDoc = {
       <Ex name="functions/params" />
       <P>A parameter is like a <C>const</C>: the function can&apos;t change it. Trying to is refused, with the fix:</P>
       <Ex name="functions/param-const.fails" />
+      <H2>A parameter nobody reads</H2>
+      <P>A parameter the function never reads gets a warning, as an unused variable does. The program still runs:</P>
+      <Ex name="functions/param-unused.warns" />
+      <P>Remove it, or start its name with <C>_</C> if it must stay, for callers that already pass it:</P>
+      <Ex name="functions/param-underscore" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>A read inside a lambda in the body counts, and so does a read in a <C>require</C> or <C>ensure</C>: the contract is checked at every call.</li>
+        <li>
+          No warning where something else fixes the signature: a method that implements an interface, a capability or
+          an operator; a function used as a value anywhere, including a tag&apos;s <C>check</C> and <C>param</C>;{" "}
+          <C>main</C>; an agent&apos;s <C>on</C> handler; a <C>gpu fn</C>; and an <C>extern</C> function.
+        </li>
+        <li>A lambda&apos;s parameters get no warning.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/01-basics.md" label="spec 1.4" />
+        <SrcRef file="tests/conformance/01-basics/unused-parameters-warn.kav" label="tested" />
+        <SrcRef file="tests/conformance/01-basics/underscore-parameters-are-unused-on-purpose.kav" label="_ names, tested" />
+        <SrcRef file="tests/conformance/01-basics/a-parameter-read-in-a-lambda-is-used.kav" label="read in a lambda, tested" />
+        <SrcRef file="tests/conformance/01-basics/a-parameter-read-in-a-contract-is-used.kav" label="read in a contract, tested" />
+        <SrcRef file="tests/conformance/01-basics/interface-methods-keep-unused-parameters.kav" label="interface methods, tested" />
+        <SrcRef file="tests/conformance/01-basics/a-function-used-as-a-value-keeps-unused-parameters.kav" label="functions as values, tested" />
+      </div>
     </>
   ),
 };

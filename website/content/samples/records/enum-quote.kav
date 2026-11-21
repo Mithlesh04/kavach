@@ -1,0 +1,6 @@
+type Size = Inch = `"` | Foot = "'"
+
+fn main() {
+    print(Size.Inch.value())
+    print(Size.Foot.value())
+}

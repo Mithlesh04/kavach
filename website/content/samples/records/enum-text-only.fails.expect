@@ -1,0 +1,1 @@
+error: a variant is a name, not text: to keep the text, write `En = "en"` (spec 2.6)

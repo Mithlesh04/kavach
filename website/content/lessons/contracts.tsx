@@ -194,8 +194,8 @@ export const exampleDoc: LessonDoc = {
 };
 
 export const checkedDoc: LessonDoc = {
-  lead: "While you develop, every contract is checked. In a release build, public functions' contracts and every invariant are.",
-  simple: <>While you are building, Kavach checks every contract, like a teacher checking every step of homework. In the finished program, it keeps the checks on functions marked <C>pub</C>, and on every always-true rule.</>,
+  lead: "Every contract is checked today, in every build. A release build that keeps only public functions' contracts and every invariant is planned, not built yet.",
+  simple: <>Kavach checks every contract, like a teacher checking every step of homework. A planned release build will keep only the checks on functions marked <C>pub</C>, and on every always-true rule.</>,
   minutes: 3,
   body: (
     <>
@@ -203,10 +203,14 @@ export const checkedDoc: LessonDoc = {
         <table className="w-full border-collapse text-[15px]">
           <tbody>
             <tr className="border-b border-line"><td className="py-2 pr-4"><C>kavach run</C>, <C>kavach test</C>, debug builds</td><td className="py-2">every contract</td></tr>
-            <tr className="border-b border-line"><td className="py-2 pr-4">release builds</td><td className="py-2">contracts of <C>pub</C> functions, and every invariant</td></tr>
+            <tr className="border-b border-line"><td className="py-2 pr-4"><C>kavach build --release</C> (not built yet)</td><td className="py-2">contracts of <C>pub</C> functions, and every invariant</td></tr>
           </tbody>
         </table>
       </div>
+      <P>
+        The <C>[build.release]</C> section of <C>kavach.toml</C>, which will choose what a release build checks, is read
+        today but changes nothing yet.
+      </P>
       <P>A contract must only read values: it can&apos;t change anything or use a capability, so checking it never changes what the program does.</P>
       <div><SrcRef file="docs/spec/07-contracts.md" label="spec 7.4 · release settings" /></div>
     </>

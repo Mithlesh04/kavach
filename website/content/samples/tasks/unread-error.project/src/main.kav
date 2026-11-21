@@ -1,7 +1,7 @@
 use std.time
 
 fn save(report: String) -> Int ! Error {
-    fail Error("disk full")
+    fail Error(`no room for {report}`)
 }
 
 fn main() uses Console, Clock {

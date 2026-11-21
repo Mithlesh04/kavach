@@ -1,0 +1,16 @@
+type Method = Get = "GET" | Post = "POST" | Put = "PUT" | Delete = "DELETE"
+
+type Country = India = "IN" | UnitedStates = "US" | UnitedKingdom = "GB"
+
+fn main() {
+    print(Method.Post.value())
+    const home = Country.from("GB") ?? Country.India
+    print(home)
+    print(home.name())
+    print(Country.from("FR") ?? Country.India)
+    match home {
+        Country.India => print("₹")
+        Country.UnitedStates => print("$")
+        Country.UnitedKingdom => print("£")
+    }
+}

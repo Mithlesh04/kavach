@@ -283,19 +283,37 @@ export const jsonBuildingDoc: LessonDoc = {
         <li>A <C>Decimal</C> and a <C>BigInt</C> are written as numbers with all their digits: <C>5.00</C> stays <C>5.00</C>.</li>
         <li>A <C>Char</C> is text of one character; an optional that is <C>none</C> is <C>null</C>.</li>
         <li>A union case without fields is its name; one with fields is an object holding them, under its name.</li>
+        <li>A variant that carries a value (<Link href="/docs/types/unions/#values-on-variants">values on variants</Link>) is that value instead: its text, or its number.</li>
         <li>A <C>Date</C>, <C>Time</C> or <C>DateTime</C> is ISO 8601 text, a <C>DateTime</C> in UTC: see <Link href="/docs/standard-library/json/decoding-into-a-type/#dates-and-times">Dates and times</Link>.</li>
         <li><C>Shared(x)</C> is written as <C>x</C>. A <C>Weak</C> is its value while it lives, and <C>null</C> once it was freed.</li>
       </ul>
       <P>Every value can be written; none is a compile error.</P>
+      <P>
+        Values on variants let a type hold what another system sends. Reading takes only a value, not a name; anything
+        else is a problem that expects &quot;a variant of <C>PaymentStatus</C>&quot;. A variant still prints as its name:
+      </P>
+      <Ex name="json/variant-values" />
+      <P>
+        A type&apos;s schema lists the values: <C>{'{"type": "string", "enum": [...]}'}</C> of the texts, or{" "}
+        <C>{'{"type": "integer", "enum": [...]}'}</C> of the numbers.
+      </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/02-types/json-writes-and-reads-variant-text.kav" label="text, tested" />
+        <SrcRef file="tests/conformance/02-types/json-writes-variant-numbers.kav" label="numbers, tested" />
+        <SrcRef file="tests/conformance/02-types/json-schema-of-variants-with-values.kav" label="schema, tested" />
+      </div>
       <H2>Dict keys</H2>
       <P>
         A JSON key is always text, so each dict key is written as text. Numbers, <C>Bool</C>, <C>Char</C> and{" "}
-        <C>BigInt</C> are their text, and a union case without fields is its name. Any other key, such as a list, is its
+        <C>BigInt</C> are their text, and a union case without fields is its name, or its value when it carries one. Any other key, such as a list, is its
         own compact JSON, as text:
       </P>
       <Ex name="json/keys" />
       <P>Decoding reads each key back as the dict&apos;s key type says. A key that doesn&apos;t read as one is a problem at its path.</P>
-      <SrcRef file="tests/conformance/02-types/json-keys-are-written-as-text.kav" label="keys, tested" />
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/02-types/json-keys-are-written-as-text.kav" label="keys, tested" />
+        <SrcRef file="tests/conformance/02-types/json-keys-of-variants-with-values.kav" label="keys of variants with values, tested" />
+      </div>
       <H2>Big numbers as text</H2>
       <P>
         A <C>BigInt</C> or <C>Decimal</C> is a number with all its digits. Some readers, such as JavaScript, round

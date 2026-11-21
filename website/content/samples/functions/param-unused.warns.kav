@@ -1,0 +1,7 @@
+fn shout(text: String, times: Int) -> String {
+    text.upper() + "!"
+}
+
+fn main() {
+    print(shout("hello", 3))
+}
