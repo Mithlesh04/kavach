@@ -105,6 +105,13 @@ fn folders_are_made_and_a_panic_writes_a_report() {
             "{}",
             reports[0]
         );
+        // The program by its main file, in every mode (spec 14.30): not
+        // `kavach`, nor the executable's path.
+        assert!(
+            reports[0].contains("\nprogram: main\n"),
+            "{mode:?}: {}",
+            reports[0]
+        );
         // The functions running, innermost first (spec 14.30): `fall`
         // uses what it calls itself for twice, so no compiler turns it
         // into a loop, and 40 calls deep, more than LLVM inlines (a

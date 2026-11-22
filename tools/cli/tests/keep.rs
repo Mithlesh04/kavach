@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
-//! `kavach test --keep` (spec 11.4): a found case that now passes becomes
-//! an `example` on its function and leaves the found file; one that still
-//! fails stays.
+//! Found cases (spec 11.4): where they are saved, and `kavach test
+//! --keep`: a found case that now passes becomes an `example` on its
+//! function and leaves the found file; one that still fails stays.
 
 use std::process::Command;
 
@@ -56,4 +56,28 @@ fn passing_found_cases_become_examples() {
         "{left}"
     );
     let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// A file in no project keeps its found cases in `tests/found/` beside it
+/// (spec 11.4), whatever the file is.
+#[test]
+fn a_lone_files_found_cases_go_beside_it() {
+    let dir = std::env::temp_dir().join(format!("kavach-lone-{}", std::process::id()));
+    std::fs::create_dir_all(dir.join("tools")).unwrap();
+    std::fs::write(
+        dir.join("tools/fee.kav"),
+        "fn fee(amount: Int) -> Int {\n    amount + 1\n}\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_kavach"))
+        .current_dir(&dir)
+        .args(["test", "tools/fee.kav", "--seed", "7"])
+        .output()
+        .unwrap();
+    let text =
+        String::from_utf8_lossy(&out.stdout).to_string() + &String::from_utf8_lossy(&out.stderr);
+    let saved = dir.join("tools/tests/found/fee.kavf").is_file();
+    let _ = std::fs::remove_dir_all(&dir);
+    assert!(!out.status.success(), "{text}");
+    assert!(saved, "{text}");
 }

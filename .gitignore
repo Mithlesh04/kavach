@@ -8,6 +8,8 @@ examples/*/audit/
 examples/*/state/
 examples/*/agents/
 benchmarks/agents/kavach/agents/
+# Found cases `kavach test` saves beside a conformance test (spec 11.4)
+tests/conformance/**/tests/found/
 
 # VS Code extension dependencies and packages
 node_modules/
