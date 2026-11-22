@@ -70,16 +70,19 @@ impl Drop for Finishing<'_> {
 
 /// The interpreter's run of the test program at `path`. A program that
 /// starts itself again (`spawn process`, spec 9.8) or reads standard
-/// input runs through `kavach run`: inside this test, it would have only
-/// the test to start again, and would read the test's own input, which
-/// may never end; a child's input is closed, so a read gets `none`.
+/// input (`io.read`, or `std.term`'s questions) runs through `kavach
+/// run`: inside this test, it would have only the test to start again,
+/// and would read the test's own input, which may never end (a gate once
+/// hung 20 minutes on `term.confirm`); a child's input is closed, so a
+/// read gets `none`.
 pub fn interpret(
     compiled: &kavach_driver::Compiled,
     path: &std::path::Path,
     src: &str,
     args: &[String],
 ) -> kavach_interp::Output {
-    if !src.contains("spawn process") && !src.contains("io.read") {
+    let reads = src.contains("io.read") || src.contains("use std.term");
+    if !src.contains("spawn process") && !reads {
         return kavach_interp::run_with_args(compiled, args);
     }
     let out = std::process::Command::new(env!("CARGO_BIN_EXE_kavach"))
