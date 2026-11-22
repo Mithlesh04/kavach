@@ -5,6 +5,7 @@
 
 export const aliases: Record<string, string> = {
   "start/what-a-program-is": "what is programming code source compiler beginner computer instructions",
+  "start/faq": "faq frequently asked questions why kavach why new language why learn ai writes code trust production ready adoption compare python rust go typescript who makes it license free",
   "start/the-terminal": "terminal command line shell console powershell cmd bash cd ls dir prompt",
   "start/reading-errors": "error message compile error panic crash stack trace debugging fix typo did you mean",
   "basics/user-input": "input read line stdin prompt ask scanf cin readline keyboard password",

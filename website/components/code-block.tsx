@@ -126,6 +126,20 @@ export async function codeLines(code: string, lang = "kavach"): Promise<string[]
   );
 }
 
+// Says which language a block is in, the way HTML does it: `language-kavach`
+// on <code> and `data-language` on <pre>. Readers that turn a page into
+// Markdown, search engines and AI crawlers among them, read it to label the
+// block, so the code they show keeps its language instead of arriving as
+// plain text with no name.
+const labelled = (lang: string): ShikiTransformer => ({
+  pre(node) {
+    node.properties["data-language"] = lang;
+  },
+  code(node) {
+    this.addClassToHast(node, `language-${lang}`);
+  },
+});
+
 /** Code as highlighted HTML, through the repository's own grammar; hover notes attached. */
 export async function codeHtml(code: string, lang = "kavach", notes: HoverNote[] = []): Promise<string> {
   const hl = await highlighter();
@@ -133,7 +147,7 @@ export async function codeHtml(code: string, lang = "kavach", notes: HoverNote[]
     lang: lang === "sh" ? "shellscript" : lang,
     theme: "kavach-dark",
     decorations: decorations(code, notes),
-    transformers: lang === "kavach" ? [semantic(code)] : [],
+    transformers: lang === "kavach" ? [semantic(code), labelled(lang)] : [labelled(lang)],
   });
 }
 

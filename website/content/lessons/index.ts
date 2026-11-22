@@ -27,6 +27,7 @@ import { stdlibLessons } from "./index-stdlib";
 import { typesRefDoc } from "./reference-types";
 import { bridgeDoc, cppDoc, goDoc, javascriptDoc, pythonDoc, rustDoc } from "./start-bridges";
 import { buildDoc, whoDoc } from "./start-who";
+import { faqDoc } from "./start-faq";
 import { whyDoc } from "./start-why";
 import { arenasDoc, automaticDoc, fastDoc, sharedDoc, unsafeDoc, valuesDoc } from "./memory";
 import { fromJsPythonDoc } from "./memory-from";
@@ -138,6 +139,7 @@ export const lessons: Record<string, LessonDoc> = {
   "start/classic-mistakes-fixed": classicDoc,
   "start/mistakes-caught-before-a-run": mistakesDoc,
   "start/who-kavach-is-for": whoDoc,
+  "start/faq": faqDoc,
   "start/coming-from-another-language": bridgeDoc,
   "start/coming-from-another-language/python": pythonDoc,
   "start/coming-from-another-language/javascript": javascriptDoc,
