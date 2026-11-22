@@ -52,6 +52,8 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt_strings.rs` | Text: making it, string interpolation, its length, comparing and `+` (growing text with one holder in place); split from `rt_data.rs`, which re-exports these |
 | `src/rt_scopes.rs` | Each task's scope stack: folders of `uses Fs(…)`, the program of `uses Process(…)`, spans and seeds of blocks given to a call (spec 4.8), swapped as tasks take turns |
 | `src/rt_files.rs` | Files read as a `for` loop goes: `fs.lines`, `fs.chunks` (spec 14.3) |
+| `src/rt_map.rs` | `fs.map` (spec 14.3): a file mapped into memory, read only, as the bytes of a `Bytes` value; let go with its last holder |
+| `src/rt_nan.rs` | The NaN watch (spec 5.9): a watched float operation worked out and checked; its own entry, so only programs built with the watch link it |
 | `src/send.rs` | Deep copies of a value for a task that runs ahead on another thread; cells that copies share (`Shared`, channels, tasks) |
 | `src/live.rs` | Counting live objects for the leak check, per thread when tasks run at once |
 | `src/rt_regex.rs` | `std.regex`, with the engine from `runtime/core` |
