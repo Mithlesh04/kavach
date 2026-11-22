@@ -185,9 +185,29 @@ export const lengthDoc: LessonDoc = {
         <C>word[0:3]</C> gives characters 0, 1 and 2, and <C>word[0]</C> the first, as a <C>Char</C>. More in{" "}
         <Link href="/docs/collections/indexing-and-slicing/">Indexing and Slicing</Link>.
       </P>
+      <H2>What kind of character</H2>
+      <P>A <C>Char</C> says what kind of character it is, in any script:</P>
+      <CharKinds />
+      <Ex name="strings/char-kinds" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li><C>is_digit()</C> is only <C>0</C> to <C>9</C>, the digits <C>Int(text)</C> reads. So <C>&apos;٣&apos;</C>, the Arabic-Indic three, gives <C>false</C>.</li>
+        <li>Letters, white space and case follow Unicode, so <C>&apos;ß&apos;</C>, a lower-case letter, isn&apos;t upper-case.</li>
+        <li>A <C>Char</C> has no <C>upper()</C>, as one character can become two: change the text&apos;s case instead, <C>`{"{c}"}`.upper()</C>, which turns <C>ß</C> into <C>SS</C>.</li>
+      </ul>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="docs/spec/14-standard-library/02-built-in-methods.md" label="spec 14.2 · Characters" />
+        <SrcRef file="tests/conformance/14-standard-library/a-char-says-what-kind-it-is.kav" label="tested" />
+      </div>
     </>
   ),
 };
+
+/** Spec 14.2's table of a Char's kind checks. */
+function CharKinds() {
+  const t = specTables("14-standard-library/02-built-in-methods.md", "14.2").find((x) => x.header[0] === "Method" && x.rows.some((r) => r[0].includes("is_digit")));
+  if (!t) throw new Error("spec 14.2: no table of a Char's kind checks");
+  return <Table header={t.header} rows={t.rows} wrapFirst />;
+}
 
 export const searchDoc: LessonDoc = {
   lead: "contains, starts_with and ends_with answer yes or no; index_of says where; replace swaps parts.",

@@ -236,10 +236,15 @@ export const mapsDoc: LessonDoc = {
       <H2>Keys</H2>
       <P>
         A key written as a plain name is that text, as in JavaScript: <C>{"{name: \"Asha\"}"}</C> has the key{" "}
-        <C>&quot;name&quot;</C>. For the value of a variable, put it in brackets. Other keys are written as values:
-        text in quotes, numbers, <C>true</C> and <C>false</C>:
+        <C>&quot;name&quot;</C>. For the value of a variable, put it in brackets. Other keys are literals, such as
+        text in quotes, numbers, <C>true</C> and <C>false</C>, or tuples, <C>{"{(x, 1): \"a\"}"}</C>:
       </P>
       <Ex name="maps/keys" />
+      <P>
+        A key worked out by code, such as a call or a sum, goes in brackets too: <C>{"{[key_for(7)]: \"Asha\"}"}</C>.
+        Without them the braces read as a block, and the error says to add them:
+      </P>
+      <Ex name="maps/key-code.fails" />
       <P>
         <C>{"{}"}</C> is an empty block, not a dict, so an empty dict is <C>{"{:}"}</C>. Brackets, as Swift writes a
         dict, are refused with the fix:

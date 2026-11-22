@@ -1,5 +1,3 @@
-use std.ai
-
 fn main() {
     if let p = Anthropic().price("claude-opus-5-5") {
         print(`{p.input} in, {p.output} out, {p.cached_input ?? p.input} cached, per {p.per} tokens`)

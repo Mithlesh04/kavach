@@ -1,0 +1,7 @@
+fn main() {
+    const p = Anthropic()
+    const plain = Model(name: "claude-haiku-5-5")
+    print(p.estimate(AskCall(model: plain, prompt: "Refund order 7?", schema: Json.Null, strict: false)))
+    const briefed = Model(name: "claude-haiku-5-5", instructions: "Be brief, please.")
+    print(p.estimate(AskCall(model: briefed, prompt: "Refund order 7?", schema: Json.Null, strict: false))?.tokens ?? -1)
+}

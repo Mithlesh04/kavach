@@ -1,0 +1,1 @@
+error: expected the end of the statement, found `:`: a dict key worked out by code goes in brackets, `{[k()]: 1}` (spec 2.2)

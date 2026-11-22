@@ -1,0 +1,1 @@
+error: `ai.count` has no option `effort`: its one option is `model:`, a `Model` or a list of them (spec 8.4)

@@ -45,6 +45,10 @@ export function MoneyBudget() {
         <C>{refused}</C>. That holds for any model of a list, even when an earlier one would answer. Give the price
         by wrapping the provider (<Link href="/docs/agents/ask/usage-and-cost/#your-own-prices">your own prices</Link>).
       </P>
+      <P>
+        Counting a prompt&apos;s tokens with <Link href="/docs/agents/ask/counting-tokens/">ai.count</Link> is free,
+        so no rule of <C>limit Ai</C> counts or refuses it, <C>count</C> included.
+      </P>
       <P>Money is counted only for AI calls, so on any other capability <C>cost</C> is a compile error:</P>
       <Ex name="agents/limit-cost-other.fails" />
       <P>The budget is a number of dollars, not text:</P>

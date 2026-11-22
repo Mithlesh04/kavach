@@ -278,7 +278,7 @@ export const limitDoc: LessonDoc = {
       <MoneyBudget />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/08-capabilities-and-agents/03-agents.md" label="spec 8.3 · limit windows" />
-        <SrcRef file="runtime/core/src/agents.rs" line={115} symbol="window" label="the window lengths, in the runtime" />
+        <SrcRef file="runtime/core/src/agents.rs" line={196} symbol="window" label="the window lengths, in the runtime" />
         <SrcRef file="tools/cli/tests/ai.rs" line={427} symbol="a_token_budget_refuses_asks_past_it" label="the token budget's test" />
       </div>
     </>

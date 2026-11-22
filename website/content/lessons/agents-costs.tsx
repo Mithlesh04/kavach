@@ -2,11 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import Link from "next/link";
 import { CodeBlock } from "@/components/code-block";
-import { C, withCode } from "@/components/inline-code";
+import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import type { LessonDoc } from "@/lib/chapter";
-import { typeFields } from "@/lib/ai-model";
 import { rustConst, rustLet, rustStrings } from "@/lib/rust-tests";
+import { AiFields } from "./ai-fields";
 import { Ex, H2, Note, P } from "./parts";
 
 // ---------- ask<T> › Usage and cost ----------
@@ -42,36 +42,6 @@ function anthropicPrices() {
   if (at < 0 || !day || per !== "1_000_000" || rows.length === 0) throw new Error(`${ANTHROPIC}: the price table changed shape`);
   const date = `${day[1]}-${day[2].padStart(2, "0")}-${day[3].padStart(2, "0")}`;
   return { date, line: text.slice(0, at).split("\n").length, rows: rows.map((m) => ({ model: m[1], input: m[2], output: m[3], cached: m[4] })) };
-}
-
-/** A std.ai record's fields, as declared, with each field's own doc line. */
-function Fields({ type, extra = {} }: { type: string; extra?: Record<string, string> }) {
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-[15px]">
-        <thead>
-          <tr className="border-b border-line text-left text-soft">
-            <th className="py-2 pr-4 font-bold">Field</th>
-            <th className="py-2 pr-4 font-bold">Type</th>
-            <th className="py-2 font-bold">What it holds</th>
-          </tr>
-        </thead>
-        <tbody>
-          {typeFields(type).map((f) => {
-            const says = f.doc || extra[f.name];
-            if (!says) throw new Error(`std.ai ${type}.${f.name} has no doc line and the page gives none`);
-            return (
-              <tr key={f.name} className="border-b border-line align-top">
-                <td className="py-2 pr-4"><C>{f.name}</C></td>
-                <td className="py-2 pr-4 whitespace-nowrap"><C>{f.optional ? `${f.type}?` : f.type}</C></td>
-                <td className="py-2 text-muted">{withCode(says)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
 }
 
 const cases = fullCases();
@@ -123,9 +93,9 @@ export const costsDoc: LessonDoc = {
       </div>
       <P>A model with no known price costs <C>none</C>, never 0: a made-up 0 would hide real spending.</P>
       <H2>What it gives</H2>
-      <Fields type="Asked<T>" extra={{ value: "the answer: the `T` that `ask<T>` would give" }} />
+      <AiFields type="Asked<T>" extra={{ value: "the answer: the `T` that `ask<T>` would give" }} />
       <P><C>Cost</C> is a <C>Display</C> type, so printing it prints the dollars and the note:</P>
-      <Fields type="Cost: Display" />
+      <AiFields type="Cost: Display" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><strong className="text-ink">The usage adds up every try</strong> that got a reply: an answer asked for again because it wasn&apos;t a valid <C>T</C>, and each model of a list. A count no reply gave is <C>none</C>.</li>
         <li><strong className="text-ink">The cost</strong> is each try&apos;s tokens at its own model&apos;s price: input tokens at <C>input</C>, those read from the provider&apos;s cache at <C>cached_input</C>, and output tokens at <C>output</C>, each divided by <C>per</C>.</li>
@@ -143,7 +113,7 @@ export const costsDoc: LessonDoc = {
         <Link href="/docs/agents/ask/providers/">providers</Link>). A price is in US dollars, the currency of the
         providers&apos; price pages, and says when it was known and where from:
       </P>
-      <Fields type="Price" extra={{ from: "where the price comes from: `PriceSource.Kavach`, `PriceSource.Program` or `PriceSource.Package(name)`" }} />
+      <AiFields type="Price" extra={{ from: "where the price comes from: `PriceSource.Kavach`, `PriceSource.Program` or `PriceSource.Package(name)`" }} />
       <P>
         <C>Anthropic()</C>&apos;s prices are a table in <C>std.ai</C>, read from{" "}
         <a href="https://platform.claude.com/docs/en/about-claude/pricing">Anthropic&apos;s pricing page</a> on{" "}
@@ -182,6 +152,9 @@ export const costsDoc: LessonDoc = {
         A cost is an estimate. A price may have changed since its date, and the provider&apos;s bill is what counts.
         Two cases make the estimate low: a <C>claude-haiku-5-5</C> prompt over 100,000 tokens costs five times as
         much, and writing to the cache costs 1.25 or 2 times <C>input</C>, but both are counted at the prices above.
+        A setting passed through <C>extra</C> that changes the price isn&apos;t seen either: fast mode (Opus 5.5 at $8
+        and $40, Fable 5.2 at $16 and $80 per million tokens), US-only inference (<C>inference_geo: &quot;us&quot;</C>,
+        1.1 times) and the Batch API (half price).
       </Note>
       <H2>Your own prices</H2>
       <P>
@@ -196,7 +169,7 @@ export const costsDoc: LessonDoc = {
         what one agent&apos;s took, since the program started. Before any <C>ask</C>, nothing:
       </P>
       <Ex name="agents/spent" />
-      <Fields type="Spent" />
+      <AiFields type="Spent" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>An <C>ask</C> counts once it reached a model, whether it answered or failed. A dry run or a generated test reaches none, so it adds nothing.</li>
         <li><C>ask</C> and <C>ai.ask_full</C> count alike.</li>
@@ -204,7 +177,9 @@ export const costsDoc: LessonDoc = {
         <li><C>ai.spent</C> needs no capability. Its totals last while the program runs.</li>
       </ul>
       <P>
-        To stop spending at a budget, give an agent a <Link href="/docs/agents/agents/limit/">money limit</Link>,{" "}
+        To see a prompt&apos;s size before sending it, count it with{" "}
+        <Link href="/docs/agents/ask/counting-tokens/">ai.count</Link>, which is free. To stop spending at a budget,
+        give an agent a <Link href="/docs/agents/agents/limit/">money limit</Link>,{" "}
         <C>cost &lt;= 5.00 per day</C>. Each <C>ask</C>&apos;s cost is also in the{" "}
         <Link href="/docs/agents/audit-log/">audit log</Link>.
       </P>

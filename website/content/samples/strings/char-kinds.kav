@@ -1,0 +1,12 @@
+fn main() {
+    const id = "user_42"
+    print(id.chars().all(c => c.is_alphanumeric() or c == '_'))
+    print('7'.is_digit())
+    print('٣'.is_digit())
+    print('é'.is_letter())
+    print('क'.is_alphanumeric())
+    print('\t'.is_whitespace())
+    print('Ж'.is_upper())
+    print('ß'.is_upper())
+    print(`{'ß'}`.upper())
+}

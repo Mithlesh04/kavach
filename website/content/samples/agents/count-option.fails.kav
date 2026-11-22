@@ -1,0 +1,9 @@
+use std.ai
+
+fn main() {
+    const n = ai.count("Refund order 7?", effort: Effort.High) catch e => {
+        print(`failed: {e}`)
+        return
+    }
+    print(n)
+}

@@ -1,0 +1,8 @@
+fn key_for(id: Int) -> String {
+    `user-{id}`
+}
+
+fn main() {
+    const names = {key_for(7): "Asha"}
+    print(names)
+}

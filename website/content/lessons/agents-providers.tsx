@@ -31,6 +31,7 @@ export const providersDoc: LessonDoc = {
         <li><C>request</C> writes the request for one <C>ask</C>: once for the first try, with <C>strict: false</C>, and once more for each try after an answer that isn&apos;t a valid <C>T</C>, with <C>strict: true</C>.</li>
         <li><C>read</C> is called for every reply, whatever its status. It says what the reply means: an <C>Answer</C>, a refusal, an answer cut off, or a <C>Problem</C> of some kind.</li>
         <li><C>price</C> gives the price of a model&apos;s tokens, or <C>none</C> when it isn&apos;t known. It runs when the program is built, as <C>check</C> does (<Link href="/docs/agents/ask/usage-and-cost/">usage and cost</Link>).</li>
+        <li><C>count_request</C> writes the call that counts a prompt&apos;s tokens, or gives <C>none</C> when the provider has none; <C>read_count</C> reads the count from its reply; <C>estimate</C> counts without the network, or gives <C>none</C> (<Link href="/docs/agents/ask/counting-tokens/">counting tokens</Link>).</li>
       </ul>
       <H2>A provider only translates</H2>
       <P>
@@ -95,12 +96,8 @@ export const providersDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Other providers. They will come in a package of their own repository: first OpenAI-shaped Chat Completions (OpenAI, Azure, Ollama, llama.cpp, vLLM), then Gemini, Bedrock, Vertex and OpenAI&apos;s Responses API. Today only <C>Anthropic()</C> ships; a service that speaks Anthropic&apos;s API is reached through <C>api_url</C>.</li>
         <li>Signed keys: <C>Auth.AwsSignature</C> and <C>Auth.GoogleToken</C>. For now, an <C>ask</C> whose provider gives one fails with <C>Failed(status: 0, …)</C>.</li>
-        <li>Counting a prompt&apos;s tokens before it is sent (<C>ai.count</C>).</li>
+        <li>A counting call for each of those providers that has one.</li>
       </ul>
-      <P>
-        The interface gains the methods counting needs (<C>count_request</C>, <C>read_count</C> and{" "}
-        <C>estimate</C>) when it is built.
-      </P>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/08-capabilities-and-agents/04-typed-ai-calls.md" label="spec 8.4 · Providers" />
         <SrcRef file="docs/decisions/0140-ai-providers.md" label="decision 0140" />

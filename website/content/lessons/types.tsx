@@ -252,6 +252,14 @@ export const optionalReadDoc: LessonDoc = {
         with <C>?? panic(&quot;…&quot;)</C>. And on a value the compiler already knows is <C>none</C>,{" "}
         <C>.unwrap()</C> won&apos;t even compile: see <Link href="/docs/errors/kinds-of-errors/">Kinds of Errors</Link>.
       </Note>
+      <H2>?? with an optional on the right</H2>
+      <P>
+        <C>a ?? b</C> with a <C>T</C> on the right gives a <C>T</C>. With a <C>T?</C> on the right it gives a{" "}
+        <C>T?</C>: the first of the two that holds a value, and <C>none</C> only when both are. So <C>??</C> chains,
+        and only a plain value at the end makes the whole a plain value:
+      </P>
+      <Ex name="types/optionals-chain" />
+      <SrcRef file="tests/conformance/02-types/a-default-that-may-be-missing-gives-an-optional.kav" label="tested" />
       <H2>Optionals don&apos;t nest</H2>
       <P>
         A <C>T??</C> is a <C>T?</C>. So reading an optional field through an optional value gives one <C>none</C>, not

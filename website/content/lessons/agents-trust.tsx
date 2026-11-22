@@ -189,6 +189,12 @@ export const auditDoc: LessonDoc = {
       <P>A model with no known price says so, and the cost is never written as 0:</P>
       <CodeBlock code={specBlockWith("08-capabilities-and-agents/06-audit-log.md", "8.6", "cost: not known")} file="audit.log, as spec 8.6 shows it" lang="text" />
       <P>
+        A count of a prompt&apos;s tokens (<Link href="/docs/agents/ask/counting-tokens/">ai.count</Link>) has an entry
+        too, <C>Ai.count</C>. Its result is the count, so a count made offline says so. It takes no tokens and has no{" "}
+        <C>cost:</C> line:
+      </P>
+      <CodeBlock code={specBlockWith("08-capabilities-and-agents/06-audit-log.md", "8.6", "ai.count(")} file="audit.log, as spec 8.6 shows it" lang="text" />
+      <P>
         In the JSON Lines format, the entry&apos;s <C>cost</C> is <C>{'{"dollars": "0.003568", "note": "estimate: …"}'}</C>,
         with the dollars as text so no digit is lost, or <C>{'{"unknown": "no price for gpt-5.5"}'}</C>.
       </P>

@@ -1,0 +1,14 @@
+fn pick(nick: String?, name: String?) -> String? {
+    nick ?? name
+}
+
+fn main() {
+    print(pick("Ravi", "Asha") ?? "guest")
+    print(pick(none, "Asha") ?? "guest")
+    print(pick(none, none) ?? "guest")
+
+    const phone: Int? = none
+    const email: Int? = none
+    const office: Int? = 3
+    print(phone ?? email ?? office ?? 0)
+}

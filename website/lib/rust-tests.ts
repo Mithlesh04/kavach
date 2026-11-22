@@ -40,9 +40,23 @@ function fnAt(rel: string, name: string): { text: string; at: number } {
 
 /** The string a test function sets with `let name = "…"`. */
 export function rustLet(rel: string, fn: string, name: string): string {
+  return rustStringAfter(rel, fn, `let ${name} =`);
+}
+
+/** The first string literal at or after `marker` in a test function, such as `out, "`. */
+export function rustStringAfter(rel: string, fn: string, marker: string): string {
   const { text, at } = fnAt(rel, fn);
-  const set = text.indexOf(`let ${name} =`, at);
-  return literal(text, set, `${rel} ${fn} ${name}`);
+  return literal(text, text.indexOf(marker, at), `${rel} ${fn} ${marker}`);
+}
+
+/** The first raw string, `r#"…"#`, after `marker` in a test function. */
+export function rustRaw(rel: string, fn: string, marker: string): string {
+  const { text, at } = fnAt(rel, fn);
+  const from = text.indexOf(marker, at);
+  const start = from < 0 ? -1 : text.indexOf('r#"', from);
+  const end = start < 0 ? -1 : text.indexOf('"#', start + 3);
+  if (end < 0) throw new Error(`${rel} ${fn}: no r#"…"# after ${marker}`);
+  return text.slice(start + 3, end);
 }
 
 /** Every string literal of a test function from `marker` to the `];` that ends its list, in order. */

@@ -108,6 +108,7 @@ export const aliases: Record<string, string> = {
   "agents/ask/when-the-ai-fails": "rate limit 429 529 quota billing overloaded timeout retry-after backoff exponential backoff error handling api error refusal max tokens",
   "agents/ask/providers": "provider adapter llm gateway proxy litellm openai compatible azure ollama bedrock vertex gemini custom endpoint base url api key header middleware",
   "agents/ask/usage-and-cost": "cost price pricing usage tokens spend spending budget money dollars bill billing token count usage tracking ask_full spent per million tokens cost estimate",
+  "agents/ask/counting-tokens": "count tokens token counting tokenizer tiktoken prompt size context window fits estimate count_tokens input tokens before sending",
   "agents/agents/approve": "approval approve deny human in the loop sign off pending request wait deadline timeout within kavach approvals review queue restart join duplicate request sent twice",
   "agents/audit-log": "audit trail compliance log record history who did what accountability soc2 disk full no space left write failure",
   "speed/gpu/sums-in-a-loop": "overlap streaming pipeline stall reduce accumulate running total big file chunks kavach check note waits async dma",
