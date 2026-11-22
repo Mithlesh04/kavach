@@ -53,7 +53,7 @@ fn main() {
 | `// expect panic: <text>` | The panic message must contain `<text>`. Used only where the spec defines the message, e.g. contract failures (7.4). |
 | `// expect stderr: …` | One line of standard error, like `expect output`; a place in the test's own file shows as its name alone (`name.kav:9`). Without it, standard error isn't checked. |
 | `// expect no stderr` | Standard error must be empty. |
-| `// expect test pass` / `// expect test fail` | Run with `kavach test` instead of `kavach run`. |
+| `// expect test pass` / `// expect test fail` | Run with `kavach test` instead of `kavach run`. The runner keeps no found cases; `kavach test` on the file by hand saves them in `tests/found/` beside it (spec 11.4); delete them. |
 | `// args: …` | The program's arguments, separated by spaces (14.6). Default: none. |
 
 ## Rules for writing tests

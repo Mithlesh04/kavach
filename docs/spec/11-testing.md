@@ -99,6 +99,11 @@ When a run fails, Kavach **shrinks** the input to the smallest one that still fa
 ```
 
 - Failing inputs are saved in `tests/found/`, one file per module (`tests/found/bank.kavf` for `bank.kav`). These files are **generated**: commit them, but never edit them by hand.
+- In a project, `tests/found/` is the project's own (10.3). A file in no project (no `kavach.toml` in its folder or above it) keeps its found cases in `tests/found/` beside it, whatever the file is, a conformance test too:
+
+  ```
+  kavach test tools/fee.kav     # saves tools/tests/found/fee.kavf
+  ```
 - Each line is one call, with its arguments written the way Kavach code writes values, so the file is easy to read in a review:
 
   ```
@@ -331,3 +336,4 @@ If a crash still reaches production, it stays contained: a panic stops only the 
 - Should `kavach test` also mutate function bodies to find contracts that are too weak to catch bugs (mutation testing)?
 - How a `test` block scripts specific AI answers and approval decisions, e.g. `with ask<RefundDecision> = [...]`.
 - Default `cases` per function: is 200 the right balance between speed and confidence?
+- Found cases of a file in no project (11.4, chosen 2026-11-22, for a maintainer's review): saved beside the file, as Rust's proptest saves its regressions beside the source, rather than not saved at all. Conformance tests are no exception; their runner checks them in memory and saves nothing.
