@@ -50,7 +50,11 @@ fn a_program_says_what_built_it_and_answers_version_only_when_asked_to() {
     let version = compiler.trim_start_matches("kavach ").trim();
     let says = format!("app 2.3.0\nbuilt by kavach {version}\n");
 
-    let dir = std::env::temp_dir().join(format!("kavach-version-{}", std::process::id()));
+    // In Cargo's own folder for this test's files, not the system's temp
+    // folder: on Windows a new program there was sometimes not yet on
+    // disk when the test looked for it, under a full test run.
+    let dir = Path::new(env!("CARGO_TARGET_TMPDIR"))
+        .join(format!("kavach-version-{}", std::process::id()));
     std::fs::create_dir_all(dir.join("src")).unwrap();
     let toml = "[package]\nname = \"app\"\nversion = \"2.3.0\"\n";
     std::fs::write(dir.join("kavach.toml"), toml).unwrap();
