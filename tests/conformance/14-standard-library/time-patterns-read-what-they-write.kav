@@ -1,0 +1,38 @@
+// Rule: `parse_date`, `parse_time` and `parse_datetime` with a pattern read the text `format` writes with it, and fail with `Invalid(text)` for anything else: other digits or names, a weekday that isn't the date's, an impossible date or time.
+// Spec: 14.4
+// expect output: 2026-11-04
+// expect output: 21:05:00
+// expect output: 1793783130000
+// expect output: Invalid(text: "04 nov 2026")
+// expect output: Invalid(text: "4 Nov 26")
+// expect output: Invalid(text: "Tue, 04 Nov 2026")
+// expect output: Invalid(text: "31 Feb 2026")
+// expect output: Invalid(text: "4 Nov 2026 ")
+// expect output: Invalid(text: "13:05 PM")
+
+use std.time
+
+fn show(text: String, pattern: String) {
+    const d = time.parse_date(text, pattern) catch e => {
+        print(`{e}`)
+        return
+    }
+    print(d.iso())
+}
+
+fn main() ! DateError {
+    show("4 Nov 2026", "D MMM YYYY")
+    print((try time.parse_time("9:05 PM", "h:mm A")).iso())
+    const http = try time.parse_datetime("Wed, 04 Nov 2026 09:05:30 GMT", "ddd, DD MMM YYYY HH:mm:ss 'GMT'")
+    print(http.utc_ms())
+    show("04 nov 2026", "DD MMM YYYY")
+    show("4 Nov 26", "D MMM YYYY")
+    show("Tue, 04 Nov 2026", "ddd, DD MMM YYYY")
+    show("31 Feb 2026", "D MMM YYYY")
+    show("4 Nov 2026 ", "D MMM YYYY")
+    const late = time.parse_time("13:05 PM", "h:mm A") catch e => {
+        print(`{e}`)
+        return
+    }
+    print(late.iso())
+}

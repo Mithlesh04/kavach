@@ -44,6 +44,11 @@ pub(crate) const BUILTIN: &[(&str, &str, &str)] = &[
         include_str!("../../../stdlib/time/time.kav"),
     ),
     (
+        "std/time/format.kav",
+        "std.time.format",
+        include_str!("../../../stdlib/time/format.kav"),
+    ),
+    (
         "std/net.kav",
         "std.net",
         include_str!("../../../stdlib/net/net.kav"),

@@ -1,0 +1,442 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
+// std.time.format (spec 14.4): dates and times as text, both ways. ISO
+// 8601, as `iso` writes it, and patterns (`D MMM YYYY`). `std.time`
+// gives the `parse_` functions under its own name.
+
+use std.time
+use std.time.digits
+
+/// The date `text` writes as ISO 8601 does: `2026-11-04`. A year before
+/// 0 or after 9999 has a sign or more digits, as `iso` writes it:
+/// `-0005-01-01`, `12345-06-07`, `+12345-06-07`. With a `pattern`, the
+/// date `text` writes that way.
+pub fn parse_date(text: String, pattern: String? = none) -> Date ! DateError
+    require fits(pattern ?? "YYYY-MM-DD", "date", true)
+    example parse_date("2026-11-04") == Date(year: 2026, month: 11, day: 4)
+    example parse_date("-0005-01-01") == Date(year: -5, month: 1, day: 1)
+    example parse_date("+12345-06-07") == Date(year: 12_345, month: 6, day: 7)
+    example parse_date("2026-02-30") fails DateError.Invalid(text: "2026-02-30")
+    example parse_date("4 Nov 2026") fails DateError.Invalid(text: "4 Nov 2026")
+    example parse_date("4 Nov 2026", "D MMM YYYY") == Date(year: 2026, month: 11, day: 4)
+    example parse_date("Tue, 4 Nov 2026", "ddd, D MMM YYYY") fails DateError.Invalid(text: "Tue, 4 Nov 2026")
+    example parse_date("2026-+1-04") fails DateError.Invalid(text: "2026-+1-04")
+    example parse_date("026-01-01") fails DateError.Invalid(text: "026-01-01")
+    example parse_date("2000000-01-01") fails DateError.Invalid(text: "2000000-01-01")
+{
+    if let p = pattern {
+        return (read(text, p, "date") ?? fail DateError.Invalid(text: text)).date
+    }
+    const written = text
+    const west = written.starts_with("-")
+    const signed = west or written.starts_with("+")
+    const parts = (if signed { written[1:] } else { written }).split("-")
+    if parts.len() != 3 or parts[0].len() < 4 or parts[0].len() > 7 {
+        fail DateError.Invalid(text: text)
+    }
+    const size = digits.read(parts[0], parts[0].len()) ?? fail DateError.Invalid(text: text)
+    if size > 1_000_000 {
+        fail DateError.Invalid(text: text)
+    }
+    const year = if west { -size } else { size }
+    const month = digits.read(parts[1], 2) ?? fail DateError.Invalid(text: text)
+    const day = digits.read(parts[2], 2) ?? fail DateError.Invalid(text: text)
+    if month < 1 or month > 12 or day < 1 or day > time.days_in_month(year, month) {
+        fail DateError.Invalid(text: text)
+    }
+    Date(year: year, month: month, day: day)
+}
+
+/// The time of day `text` writes: `09:05`, `09:05:30`, `09:05:30.250`;
+/// with a `pattern`, the time `text` writes that way.
+pub fn parse_time(text: String, pattern: String? = none) -> Time ! DateError
+    require fits(pattern ?? "HH:mm", "time", true)
+    example parse_time("09:05") == Time(hour: 9, minute: 5, second: 0, ms: 0)
+    example parse_time("09:05:30.25") == Time(hour: 9, minute: 5, second: 30, ms: 250)
+    example parse_time("09:05:30.1239") == Time(hour: 9, minute: 5, second: 30, ms: 123)
+    example parse_time("24:00") fails DateError.Invalid(text: "24:00")
+    example parse_time("9:05") fails DateError.Invalid(text: "9:05")
+    example parse_time("09:05.5") fails DateError.Invalid(text: "09:05.5")
+    example parse_time("9:05 PM", "h:mm A") == Time(hour: 21, minute: 5, second: 0, ms: 0)
+    example parse_time("12:30 AM", "h:mm A") == Time(hour: 0, minute: 30, second: 0, ms: 0)
+    example parse_time("13:30 PM", "h:mm A") fails DateError.Invalid(text: "13:30 PM")
+{
+    if let p = pattern {
+        return (read(text, p, "time") ?? fail DateError.Invalid(text: text)).time
+    }
+    time_of(text) ?? fail DateError.Invalid(text: text)
+}
+
+/// The date and time of day `text` writes, with no zone:
+/// `2026-11-04T09:05:30`; with a `pattern`, as `text` writes it that way.
+pub fn parse_datetime(text: String, pattern: String? = none) -> DateTime ! DateError
+    require fits(pattern ?? "YYYY-MM-DD HH:mm", "datetime", true)
+    example parse_datetime("2026-11-04T09:05").iso() == "2026-11-04T09:05:00"
+    example parse_datetime("2026-11-04T09:05:30Z") fails DateError.Invalid(text: "2026-11-04T09:05:30Z")
+    example parse_datetime("2026-11-04") fails DateError.Invalid(text: "2026-11-04")
+    example parse_datetime("Wed, 04 Nov 2026 09:05:30 GMT", "ddd, DD MMM YYYY HH:mm:ss 'GMT'").utc_ms() == 1_793_783_130_000
+{
+    if let p = pattern {
+        return read(text, p, "datetime") ?? fail DateError.Invalid(text: text)
+    }
+    const parts = text.split("T")
+    if parts.len() != 2 {
+        fail DateError.Invalid(text: text)
+    }
+    DateTime(
+        date: parse_date(parts[0]) catch _ => fail DateError.Invalid(text: text),
+        time: time_of(parts[1]) ?? fail DateError.Invalid(text: text),
+    )
+}
+
+/// The moment `text` writes, which must say its offset from UTC:
+/// `2026-11-04T09:05:30Z`, `2026-11-04T14:35:30+05:30`.
+pub fn parse_moment(text: String) -> Int ! DateError
+    example parse_moment("1970-01-01T05:30:00+05:30") == 0
+    example parse_moment("1969-12-31T16:00:00-08:00") == 0
+    example parse_moment("1970-01-01T00:00:00.250Z") == 250
+    example parse_moment("1970-01-01T00:00:00") fails DateError.Invalid(text: "1970-01-01T00:00:00")
+{
+    const parts = text.split("T")
+    if parts.len() != 2 {
+        fail DateError.Invalid(text: text)
+    }
+    const clock = parts[1]
+    const zulu = clock.ends_with("Z")
+    const from = if zulu {
+        clock.len() - 1
+    } else {
+        clock.index_of("+") ?? (clock.index_of("-") ?? fail DateError.Invalid(text: text))
+    }
+    const offset = if zulu {
+        0
+    } else {
+        digits.offset(clock[from:]) ?? fail DateError.Invalid(text: text)
+    }
+    const dt = DateTime(
+        date: parse_date(parts[0]) catch _ => fail DateError.Invalid(text: text),
+        time: time_of(clock[:from]) ?? fail DateError.Invalid(text: text),
+    )
+    dt.utc_ms() - offset * 1_000
+}
+
+/// The time of day `text` writes, if it writes one.
+fn time_of(text: String) -> Time? {
+    const fields = text.split(".")
+    const parts = fields[0].split(":")
+    if fields.len() > 2 or parts.len() < 2 or parts.len() > 3 {
+        return none
+    }
+    const hour = digits.read(parts[0], 2) ?? return none
+    const minute = digits.read(parts[1], 2) ?? return none
+    const second = if parts.len() == 3 { digits.read(parts[2], 2) ?? return none } else { 0 }
+    if hour > 23 or minute > 59 or second > 59 {
+        return none
+    }
+    if fields.len() == 1 {
+        return Time(hour: hour, minute: minute, second: second, ms: 0)
+    }
+    // A fraction: 1 to 9 digits, of which the first three count.
+    const fraction = fields[1]
+    if parts.len() != 3 or fraction.len() < 1 or fraction.len() > 9 {
+        return none
+    }
+    const _all_digits = digits.read(fraction, fraction.len()) ?? return none
+    const ms = digits.read(`{fraction}00`[:3], 3) ?? return none
+    Time(hour: hour, minute: minute, second: second, ms: ms)
+}
+
+/// A pattern's pieces: a field (`YYYY`, `MMM`, …) or text written as it
+/// is.
+type Piece = Field(token: String) | Plain(text: String)
+
+/// The text `pattern` makes of `dt`, whose fields `kind` (`date`, `time`
+/// or `datetime`) allows.
+pub fn with_pattern(pattern: String, kind: String, dt: DateTime) -> String
+    require fits(pattern, kind, false)
+    example with_pattern("D MMM YYYY", "date", time.utc(1_793_783_130_000)) == "4 Nov 2026"
+    example with_pattern("dddd, MMMM D", "date", time.utc(1_793_783_130_000)) == "Wednesday, November 4"
+    example with_pattern("hh:mm:ss.SSS A", "time", time.utc(1_793_825_130_250)) == "08:45:30.250 PM"
+    example with_pattern("'at' H 'o''clock'", "time", time.utc(0)) == "at 0 o'clock"
+{
+    let out = ""
+    for piece in pieces(pattern) ?? [] {
+        out += match piece {
+            Piece.Plain(text) => text,
+            Piece.Field(token) => field_text(token, dt),
+        }
+    }
+    out
+}
+
+/// Whether `pattern` keeps the rules of patterns (spec 14.4) for a `kind`
+/// (`date`, `time` or `datetime`): only known fields, each once, those of
+/// the kind; minutes with an hour, a month number with a day or a year,
+/// a 12-hour clock with AM or PM; and when `reading`, every field the
+/// kind needs.
+pub fn fits(pattern: String, kind: String, reading: Bool) -> Bool
+    example fits("D MMM YYYY", "date", true)
+    example not fits("YYYY-mm-DD", "date", false)
+    example not fits("HH:MM", "time", false)
+    example not fits("hh:mm", "time", false)
+    example not fits("dd/MM/yyyy", "date", false)
+    example not fits("D MMM", "date", true)
+{
+    const all = pieces(pattern) ?? return false
+    let tokens: [String] = []
+    let fields: [String] = []
+    for piece in all {
+        const token = match piece {
+            Piece.Field(token) => token,
+            Piece.Plain(_) => continue,
+        }
+        const field = field_of(token)
+        if fields.contains(field) {
+            return false
+        }
+        const of_date = ["year", "month", "day", "weekday"].contains(field)
+        if (kind == "date" and not of_date) or (kind == "time" and of_date) {
+            return false
+        }
+        tokens.push(token)
+        fields.push(field)
+    }
+    const twelve = tokens.contains("h") or tokens.contains("hh")
+    const number_month = tokens.contains("M") or tokens.contains("MM")
+    if (tokens.contains("mm") and not fields.contains("hour")) or twelve != tokens.contains("A") {
+        return false
+    }
+    if number_month and not fields.contains("day") and not fields.contains("year") {
+        return false
+    }
+    const needs = if kind == "date" {
+        ["year", "month", "day"]
+    } else if kind == "time" {
+        ["hour", "minutes"]
+    } else if kind == "datetime" {
+        ["year", "month", "day", "hour", "minutes"]
+    } else {
+        return false
+    }
+    not reading or needs.all(need => fields.contains(need))
+}
+
+/// The pieces of `pattern`: runs of one letter are fields, text in single
+/// quotes is written as it is, and `''` is one quote; `none` for letters
+/// that are no field, or a quote not closed.
+fn pieces(pattern: String) -> [Piece]?
+    example pieces("D 'at' H") == [Piece.Field(token: "D"), Piece.Plain(text: " at "), Piece.Field(token: "H")]
+    example pieces("yyyy") == none
+    example pieces("'at") == none
+{
+    let all: [Piece] = []
+    let plain = ""
+    let quoted = false
+    let i = 0
+    while i < pattern.len() {
+        const c = pattern[i]
+        if c == '\'' {
+            if pattern[i + 1:i + 2] == "'" {
+                plain += "'"
+                i += 2
+            } else {
+                quoted = not quoted
+                i += 1
+            }
+            continue
+        }
+        if quoted or not ((c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z')) {
+            plain += `{c}`
+            i += 1
+            continue
+        }
+        let end = i
+        while end < pattern.len() and pattern[end] == c {
+            end += 1
+        }
+        const token = pattern[i:end]
+        if not ["YYYY", "M", "MM", "MMM", "MMMM", "D", "DD", "ddd", "dddd", "H", "HH", "h", "hh", "A", "mm", "ss", "SSS"].contains(token) {
+            return none
+        }
+        if plain != "" {
+            all.push(Piece.Plain(text: plain))
+            plain = ""
+        }
+        all.push(Piece.Field(token: token))
+        i = end
+    }
+    if quoted {
+        return none
+    }
+    if plain != "" {
+        all.push(Piece.Plain(text: plain))
+    }
+    all
+}
+
+/// The field a token writes.
+fn field_of(token: String) -> String {
+    match token[:1] {
+        "Y" => "year",
+        "M" => "month",
+        "D" => "day",
+        "d" => "weekday",
+        "H" => "hour",
+        "h" => "hour",
+        "A" => "AM or PM",
+        "m" => "minutes",
+        "s" => "seconds",
+        _ => "milliseconds",
+    }
+}
+
+/// What one field writes of `dt`.
+fn field_text(token: String, dt: DateTime) -> String
+    example field_text("MMM", time.utc(0)) == "Jan"
+    example field_text("A", time.utc(0)) == "AM"
+{
+    const d = dt.date
+    const t = dt.time
+    const twelve = (t.hour + 11) % 12 + 1
+    match token {
+        "YYYY" => digits.padded(d.year, 4),
+        "M" => `{d.month}`,
+        "MM" => digits.padded(d.month, 2),
+        "MMM" => month_names()[d.month - 1][:3],
+        "MMMM" => month_names()[d.month - 1],
+        "D" => `{d.day}`,
+        "DD" => digits.padded(d.day, 2),
+        "ddd" => `{d.weekday()}`[:3],
+        "dddd" => `{d.weekday()}`,
+        "H" => `{t.hour}`,
+        "HH" => digits.padded(t.hour, 2),
+        "h" => `{twelve}`,
+        "hh" => digits.padded(twelve, 2),
+        "A" => if t.hour < 12 { "AM" } else { "PM" },
+        "mm" => digits.padded(t.minute, 2),
+        "ss" => digits.padded(t.second, 2),
+        _ => digits.padded(t.ms, 3),
+    }
+}
+
+/// The date and time `text` writes in `pattern`, if it does. Fields the
+/// pattern leaves out are those of 1970-01-01 00:00.
+fn read(text: String, pattern: String, kind: String) -> DateTime?
+    require fits(pattern, kind, true)
+    example read("9:05 PM", "h:mm A", "time")?.time == Time(hour: 21, minute: 5, second: 0, ms: 0)
+    example read("4 May 2026", "D MMMM YYYY", "date")?.date == Date(year: 2026, month: 5, day: 4)
+    example read("4 June 2026", "D MMM YYYY", "date") == none
+{
+    let at = 0
+    let year = 1970
+    let month = 1
+    let day = 1
+    let weekday = ""
+    let hour = 0
+    let half = ""
+    let minute = 0
+    let second = 0
+    let ms = 0
+    for piece in pieces(pattern) ?? [] {
+        const token = match piece {
+            Piece.Plain(plain) => {
+                if text[at:at + plain.len()] != plain {
+                    return none
+                }
+                at += plain.len()
+                continue
+            }
+            Piece.Field(token) => token,
+        }
+        const rest = text[at:]
+        if token == "MMM" or token == "MMMM" {
+            month = name_at(rest, month_names(), token.len()) ?? return none
+            at += if token == "MMM" { 3 } else { month_names()[month - 1].len() }
+        } else if token == "ddd" or token == "dddd" {
+            const n = name_at(rest, weekday_names(), token.len()) ?? return none
+            weekday = weekday_names()[n - 1]
+            at += if token == "ddd" { 3 } else { weekday.len() }
+        } else if token == "A" {
+            half = rest[:2]
+            if half != "AM" and half != "PM" {
+                return none
+            }
+            at += 2
+        } else {
+            const size = digits_at(rest, token) ?? return none
+            const n = digits.read(rest[:size], size) ?? return none
+            at += size
+            match token[:1] {
+                "Y" => { year = n }
+                "M" => { month = n }
+                "D" => { day = n }
+                "H" => { hour = n }
+                "h" => { hour = n }
+                "m" => { minute = n }
+                "s" => { second = n }
+                _ => { ms = n }
+            }
+        }
+    }
+    if at != text.len() {
+        return none
+    }
+    if half != "" {
+        if hour < 1 or hour > 12 {
+            return none
+        }
+        hour = hour % 12 + if half == "PM" { 12 } else { 0 }
+    }
+    if month < 1 or month > 12 or day < 1 or day > time.days_in_month(year, month) {
+        return none
+    }
+    if hour > 23 or minute > 59 or second > 59 {
+        return none
+    }
+    const date = Date(year: year, month: month, day: day)
+    if weekday != "" and `{date.weekday()}` != weekday {
+        return none
+    }
+    DateTime(date: date, time: Time(hour: hour, minute: minute, second: second, ms: ms))
+}
+
+/// How many digits the number field `token` takes at the start of
+/// `rest`: exactly its letters' count, or 1 or 2 for `M`, `D`, `H` and
+/// `h`, 2 when 2 are there.
+fn digits_at(rest: String, token: String) -> Int?
+    require ["YYYY", "M", "MM", "D", "DD", "H", "HH", "h", "hh", "mm", "ss", "SSS"].contains(token)
+    example digits_at("12:30", "H") == 2
+    example digits_at("9:30", "H") == 1
+    example digits_at("9:30", "HH") == none
+{
+    const is_digit = (i: Int) => i < rest.len() and rest[i].is_digit()
+    if token.len() > 1 {
+        return if digits.read(rest[:token.len()], token.len()) != none { token.len() } else { none }
+    }
+    if not is_digit(0) {
+        return none
+    }
+    if is_digit(1) { 2 } else { 1 }
+}
+
+/// Which of `names` (1 for the first) `rest` starts with, cut to 3
+/// letters when `size` is 3.
+fn name_at(rest: String, names: [String], size: Int) -> Int? {
+    for i in 0..names.len() {
+        const name = if size == 3 { names[i][:3] } else { names[i] }
+        if rest.starts_with(name) {
+            return i + 1
+        }
+    }
+    none
+}
+
+fn month_names() -> [String] {
+    ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+}
+
+fn weekday_names() -> [String] {
+    ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+}

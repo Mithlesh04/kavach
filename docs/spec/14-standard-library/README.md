@@ -44,7 +44,7 @@ Each section is a file of its own: new sections go at the end, with the next num
 ## Open questions
 
 - Matching on kinds of the other standard errors (`RegexError`, `CliError`).
-- `std.time`: formats other than ISO 8601 (`4 Nov 2026`), for both reading and writing.
+- `std.time`: formats other than ISO 8601 (`4 Nov 2026`), for both reading and writing. Chosen 2026-11-22, for a maintainer's review: patterns with a small fixed set of fields and English names (14.4, "Patterns"), rather than `strftime`'s `%` codes or named formats. Not in yet: an offset field (`+0530`, for RFC 2822 mail dates) and reading a moment with a pattern in one step.
 - `std.clipboard`: images, and other kinds of content (HTML, files).
 - `std.devices`: a serial wait that lets other tasks run (as the network's do, 9.7), and line settings other than 8N1.
 - `std.devices` (14.18, chosen 2026-11-22, for a maintainer's review): baud 0 is refused, not taken as "hang up"; a file or folder is `Failed(path, "not a serial port")` on every system; `read(0)` and a negative `max` give empty `Bytes` at once, as negative counts do in 14.2.

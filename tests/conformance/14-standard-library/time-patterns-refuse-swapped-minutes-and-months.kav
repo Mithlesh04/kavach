@@ -1,0 +1,9 @@
+// Rule: A pattern with minutes (`mm`) but no hour is a mistake in the program, a panic: it breaks `format`'s `require`, so a month written `mm` by mistake never writes the minutes.
+// Spec: 14.4
+// expect panic: contract failed: require format.fits(pattern, "date", false)
+
+use std.time
+
+fn main() {
+    print(time.Date(year: 2026, month: 11, day: 4).format("YYYY-mm-DD"))
+}

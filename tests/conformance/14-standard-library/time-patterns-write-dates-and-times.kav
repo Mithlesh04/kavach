@@ -1,0 +1,21 @@
+// Rule: `format` writes a `Date`, `Time` or `DateTime` as a pattern says: its letters are fields, with English names, and other text, or text in quotes, is written as it is.
+// Spec: 14.4
+// expect output: 4 Nov 2026
+// expect output: Wednesday, November 4
+// expect output: Wed, 04 Nov 2026 09:05:30 GMT
+// expect output: 9:05 AM
+// expect output: 08:45:30.250 PM
+// expect output: 4/11/2026 at 9 o'clock
+
+use std.time
+
+fn main() {
+    const day = time.Date(year: 2026, month: 11, day: 4)
+    print(day.format("D MMM YYYY"))
+    print(day.format("dddd, MMMM D"))
+    const at = time.utc(1_793_783_130_000)
+    print(at.format("ddd, DD MMM YYYY HH:mm:ss 'GMT'"))
+    print(at.time.format("h:mm A"))
+    print(time.utc(1_793_825_130_250).time.format("hh:mm:ss.SSS A"))
+    print(at.format("D/M/YYYY 'at' H 'o''clock'"))
+}

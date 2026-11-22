@@ -1,0 +1,9 @@
+// Rule: Only the letters of the pattern table are fields: any other letter outside quotes, such as Java's `yyyy` or a two-digit year `YY`, breaks `format`'s `require`, a panic.
+// Spec: 14.4
+// expect panic: contract failed: require format.fits(pattern, "date", false)
+
+use std.time
+
+fn main() {
+    print(time.Date(year: 2026, month: 11, day: 4).format("dd/MM/yyyy"))
+}

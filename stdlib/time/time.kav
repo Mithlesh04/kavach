@@ -7,6 +7,8 @@
 
 use std.time
 use std.time.digits
+use std.time.format
+pub use std.time.format.{parse_date, parse_time, parse_datetime, parse_moment}
 
 /// A length of time, in milliseconds. Written with a unit after a whole
 /// number: `200.ms`, `5.seconds`, `2.minutes`, `1.hours`, `3.days`.
@@ -125,6 +127,15 @@ pub type Date {
     {
         `{digits.padded(self.year, 4)}-{digits.padded(self.month, 2)}-{digits.padded(self.day, 2)}`
     }
+
+    /// The date as `pattern` writes it (spec 14.4): `D MMM YYYY` gives
+    /// `4 Nov 2026`.
+    pub fn format(self, pattern: String) -> String
+        require format.fits(pattern, "date", false)
+        example Date(year: 2026, month: 11, day: 4).format("D MMM YYYY") == "4 Nov 2026"
+    {
+        format.with_pattern(pattern, "date", DateTime(date: self, time: Time(hour: 0, minute: 0, second: 0, ms: 0)))
+    }
 }
 
 /// A time of day, with no date and no zone.
@@ -150,6 +161,15 @@ pub type Time {
         }
         `{base}.{digits.padded(self.ms, 3)}`
     }
+
+    /// The time as `pattern` writes it (spec 14.4): `h:mm A` gives
+    /// `9:05 PM`.
+    pub fn format(self, pattern: String) -> String
+        require format.fits(pattern, "time", false)
+        example Time(hour: 21, minute: 5, second: 0, ms: 0).format("h:mm A") == "9:05 PM"
+    {
+        format.with_pattern(pattern, "time", DateTime(date: Date(year: 1970, month: 1, day: 1), time: self))
+    }
 }
 
 /// A date and a time of day, with no zone: what a wall clock and a
@@ -164,6 +184,14 @@ pub type DateTime {
         example utc(1_762_247_130_000).iso() == "2025-11-04T09:05:30"
     {
         `{self.date.iso()}T{self.time.iso()}`
+    }
+
+    /// The date and time as `pattern` writes them (spec 14.4).
+    pub fn format(self, pattern: String) -> String
+        require format.fits(pattern, "datetime", false)
+        example utc(0).format("DD/MM/YYYY HH:mm") == "01/01/1970 00:00"
+    {
+        format.with_pattern(pattern, "datetime", self)
     }
 
     /// The moment this is in UTC, in milliseconds since 1970-01-01 UTC.
@@ -334,125 +362,6 @@ pub fn today() -> Date {
 /// The date and time of day now, in UTC.
 pub fn now() -> DateTime {
     utc(time.now_ms())
-}
-
-/// The date `text` writes as ISO 8601 does: `2026-11-04`. A year before
-/// 0 or after 9999 has a sign or more digits, as `iso` writes it:
-/// `-0005-01-01`, `12345-06-07`, `+12345-06-07`.
-pub fn parse_date(text: String) -> Date ! DateError
-    example parse_date("2026-11-04") == Date(year: 2026, month: 11, day: 4)
-    example parse_date("-0005-01-01") == Date(year: -5, month: 1, day: 1)
-    example parse_date("+12345-06-07") == Date(year: 12_345, month: 6, day: 7)
-    example parse_date("2026-02-30") fails DateError.Invalid(text: "2026-02-30")
-    example parse_date("4 Nov 2026") fails DateError.Invalid(text: "4 Nov 2026")
-    example parse_date("2026-+1-04") fails DateError.Invalid(text: "2026-+1-04")
-    example parse_date("026-01-01") fails DateError.Invalid(text: "026-01-01")
-    example parse_date("2000000-01-01") fails DateError.Invalid(text: "2000000-01-01")
-{
-    const written = text
-    const west = written.starts_with("-")
-    const signed = west or written.starts_with("+")
-    const parts = (if signed { written[1:] } else { written }).split("-")
-    if parts.len() != 3 or parts[0].len() < 4 or parts[0].len() > 7 {
-        fail DateError.Invalid(text: text)
-    }
-    const size = digits.read(parts[0], parts[0].len()) ?? fail DateError.Invalid(text: text)
-    if size > 1_000_000 {
-        fail DateError.Invalid(text: text)
-    }
-    const year = if west { -size } else { size }
-    const month = digits.read(parts[1], 2) ?? fail DateError.Invalid(text: text)
-    const day = digits.read(parts[2], 2) ?? fail DateError.Invalid(text: text)
-    if month < 1 or month > 12 or day < 1 or day > days_in_month(year, month) {
-        fail DateError.Invalid(text: text)
-    }
-    Date(year: year, month: month, day: day)
-}
-
-/// The time of day `text` writes: `09:05`, `09:05:30`, `09:05:30.250`.
-pub fn parse_time(text: String) -> Time ! DateError
-    example parse_time("09:05") == Time(hour: 9, minute: 5, second: 0, ms: 0)
-    example parse_time("09:05:30.25") == Time(hour: 9, minute: 5, second: 30, ms: 250)
-    example parse_time("09:05:30.1239") == Time(hour: 9, minute: 5, second: 30, ms: 123)
-    example parse_time("24:00") fails DateError.Invalid(text: "24:00")
-    example parse_time("9:05") fails DateError.Invalid(text: "9:05")
-    example parse_time("09:05.5") fails DateError.Invalid(text: "09:05.5")
-{
-    time_of(text) ?? fail DateError.Invalid(text: text)
-}
-
-/// The date and time of day `text` writes, with no zone:
-/// `2026-11-04T09:05:30`.
-pub fn parse_datetime(text: String) -> DateTime ! DateError
-    example parse_datetime("2026-11-04T09:05").iso() == "2026-11-04T09:05:00"
-    example parse_datetime("2026-11-04T09:05:30Z") fails DateError.Invalid(text: "2026-11-04T09:05:30Z")
-    example parse_datetime("2026-11-04") fails DateError.Invalid(text: "2026-11-04")
-{
-    const parts = text.split("T")
-    if parts.len() != 2 {
-        fail DateError.Invalid(text: text)
-    }
-    DateTime(
-        date: parse_date(parts[0]) catch _ => fail DateError.Invalid(text: text),
-        time: time_of(parts[1]) ?? fail DateError.Invalid(text: text),
-    )
-}
-
-/// The moment `text` writes, which must say its offset from UTC:
-/// `2026-11-04T09:05:30Z`, `2026-11-04T14:35:30+05:30`.
-pub fn parse_moment(text: String) -> Int ! DateError
-    example parse_moment("1970-01-01T05:30:00+05:30") == 0
-    example parse_moment("1969-12-31T16:00:00-08:00") == 0
-    example parse_moment("1970-01-01T00:00:00.250Z") == 250
-    example parse_moment("1970-01-01T00:00:00") fails DateError.Invalid(text: "1970-01-01T00:00:00")
-{
-    const parts = text.split("T")
-    if parts.len() != 2 {
-        fail DateError.Invalid(text: text)
-    }
-    const clock = parts[1]
-    const zulu = clock.ends_with("Z")
-    const from = if zulu {
-        clock.len() - 1
-    } else {
-        clock.index_of("+") ?? (clock.index_of("-") ?? fail DateError.Invalid(text: text))
-    }
-    const offset = if zulu {
-        0
-    } else {
-        digits.offset(clock[from:]) ?? fail DateError.Invalid(text: text)
-    }
-    const dt = DateTime(
-        date: parse_date(parts[0]) catch _ => fail DateError.Invalid(text: text),
-        time: time_of(clock[:from]) ?? fail DateError.Invalid(text: text),
-    )
-    dt.utc_ms() - offset * 1_000
-}
-
-/// The time of day `text` writes, if it writes one.
-fn time_of(text: String) -> Time? {
-    const fields = text.split(".")
-    const parts = fields[0].split(":")
-    if fields.len() > 2 or parts.len() < 2 or parts.len() > 3 {
-        return none
-    }
-    const hour = digits.read(parts[0], 2) ?? return none
-    const minute = digits.read(parts[1], 2) ?? return none
-    const second = if parts.len() == 3 { digits.read(parts[2], 2) ?? return none } else { 0 }
-    if hour > 23 or minute > 59 or second > 59 {
-        return none
-    }
-    if fields.len() == 1 {
-        return Time(hour: hour, minute: minute, second: second, ms: 0)
-    }
-    // A fraction: 1 to 9 digits, of which the first three count.
-    const fraction = fields[1]
-    if parts.len() != 3 or fraction.len() < 1 or fraction.len() > 9 {
-        return none
-    }
-    const _all_digits = digits.read(fraction, fraction.len()) ?? return none
-    const ms = digits.read(`{fraction}00`[:3], 3) ?? return none
-    Time(hour: hour, minute: minute, second: second, ms: ms)
 }
 
 /// Days since 1970-01-01 of a date (Howard Hinnant's `days_from_civil`).

@@ -194,6 +194,11 @@ The tests are listed in five files, by area:
 | 14.4 | [zones-write-moments-with-their-offset.kav](zones-write-moments-with-their-offset.kav) | `z.iso(ms)` writes a moment with its offset, and `parse_moment` reads it back. | runs |
 | 14.4 | [times-are-read-from-text.kav](times-are-read-from-text.kav) | `parse_time` and `parse_datetime` read what `iso` writes; anything else fails with `Invalid`. | runs |
 | 14.4 | [moments-are-read-only-with-an-offset.kav](moments-are-read-only-with-an-offset.kav) | `parse_moment` needs `Z` or an offset: a time with no zone is no moment. | runs |
+| 14.4 | [time-patterns-write-dates-and-times.kav](time-patterns-write-dates-and-times.kav) | `format` writes a `Date`, `Time` or `DateTime` as a pattern says: its letters are fields, with English names, and other text, or text in quotes, is written as it is. | runs |
+| 14.4 | [time-patterns-read-what-they-write.kav](time-patterns-read-what-they-write.kav) | `parse_date`, `parse_time` and `parse_datetime` with a pattern read what `format` writes with it, and fail with `Invalid(text)` for anything else. | runs |
+| 14.4 | [time-patterns-refuse-swapped-minutes-and-months.kav](time-patterns-refuse-swapped-minutes-and-months.kav) | A pattern with minutes (`mm`) but no hour breaks `format`'s `require`, a panic. | panic |
+| 14.4 | [time-patterns-have-only-their-fields.kav](time-patterns-have-only-their-fields.kav) | Only the letters of the pattern table are fields: `yyyy`, `dd` or `YY` breaks `format`'s `require`, a panic. | panic |
+| 14.4 | [time-patterns-twelve-hours-need-am-or-pm.kav](time-patterns-twelve-hours-need-am-or-pm.kav) | A 12-hour clock (`h`, `hh`) in a pattern needs `A`, AM or PM. | panic |
 | 14.4 | [dates-follow-the-gregorian-calendar.kav](dates-follow-the-gregorian-calendar.kav) | Dates follow the Gregorian calendar with months 1 to 12; adding a month keeps the day or gives the month's last; a moment becomes a `DateTime` in UTC. | runs |
 | 14.4, 8.1 | [reading-the-clock-needs-no-capability.kav](reading-the-clock-needs-no-capability.kav) | Reading the clock needs no capability, even in a `pub` function. | runs |
 | 14.4 | [contracts-cannot-read-the-clock.kav](contracts-cannot-read-the-clock.kav) | A contract may not read the clock. | compile error |

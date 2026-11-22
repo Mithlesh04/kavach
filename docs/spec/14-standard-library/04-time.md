@@ -171,7 +171,59 @@ const none_of_it = time.parse_moment("2026-11-04T09:05:30") catch e => {
 
 In JSON, a `Date`, `Time` and `DateTime` are this text too, with a `DateTime` in UTC (spec [2.12](../02-types/12-json.md)).
 
-Formats other than these are an open question.
+## Patterns
+
+A **pattern** writes a date or a time the way people or other systems want it: `4 Nov 2026`, `Wed, 04 Nov 2026 09:05:30 GMT`. Its letters are fields, from the table below; everything else is written as it is. Text in single quotes is written as it is too, letters and all (`'GMT'`, `'at'`), and `''` is one quote.
+
+| Method or function | Gives |
+|---|---|
+| `d.format(pattern)`, `t.format(pattern)`, `dt.format(pattern)` | The text `pattern` makes of it |
+| `time.parse_date(text, pattern)`, `time.parse_time(text, pattern)`, `time.parse_datetime(text, pattern)` | What `text`, written that way, says; fails with `Invalid(text)` for anything else. Without a pattern they read ISO 8601, as above |
+
+| Field | Is | Example |
+|---|---|---|
+| `YYYY` | The year, at least 4 digits | `2026` |
+| `M`, `MM` | The month as a number; `MM` with a zero in front | `3`, `03` |
+| `MMM`, `MMMM` | The month's name, short and in full | `Nov`, `November` |
+| `D`, `DD` | The day of the month; `DD` with a zero in front | `4`, `04` |
+| `ddd`, `dddd` | The weekday's name, short and in full | `Wed`, `Wednesday` |
+| `H`, `HH` | The hour, 0 to 23; `HH` with a zero in front | `9`, `09` |
+| `h`, `hh` | The hour on a 12-hour clock, 1 to 12, with `A` | `9`, `09` |
+| `A` | `AM` or `PM` | `PM` |
+| `mm` | The minutes | `05` |
+| `ss` | The seconds | `30` |
+| `SSS` | The milliseconds | `250` |
+
+```kavach
+use std.time
+
+const day = time.Date(year: 2026, month: 11, day: 4)
+print(day.format("D MMM YYYY"))                          // 4 Nov 2026
+print(day.format("dddd, MMMM D"))                        // Wednesday, November 4
+const at = time.utc(1_793_783_130_000)
+print(at.format("ddd, DD MMM YYYY HH:mm:ss 'GMT'"))      // Wed, 04 Nov 2026 09:05:30 GMT
+print(at.time.format("h:mm A"))                          // 9:05 AM
+const due = try time.parse_date("4 Nov 2026", "D MMM YYYY")
+print(due.iso())                                         // 2026-11-04
+```
+
+The third line there is an HTTP date (RFC 9110): a moment in UTC, through `time.utc`. A moment in another zone is written through it, `z.at(ms).format(pattern)`, and read back with `z.moment`.
+
+The rules that keep the usual pattern mistakes out:
+
+- **Names are English, always.** A pattern never depends on the machine's language or region, as C's `strftime` and Java's `MMM` do, so a program writes the same text on every machine, and reads it back.
+- **Only the letters in the table are fields.** Any other letter outside quotes is a mistake, so `yyyy`, `dd` and `%Y` don't silently write something else. There is no two-digit year (`YY`): a year is never cut to two digits, the year 2000 problem. `YYYY` is the calendar year, never Java's year of the week, which differs around New Year.
+- **Minutes and months can't be swapped.** `mm` (minutes) needs an hour in the same pattern, and `M` or `MM` (the month) a day or a year: so `YYYY-mm-DD` and `HH:MM` are mistakes.
+- **A 12-hour clock says AM or PM.** `h` and `hh` need `A`, and `A` needs one of them.
+- **Each field appears once**, and a `Date` takes only the fields of a date, a `Time` only those of a time: `d.format("HH:mm")` is a mistake.
+- A pattern that breaks these rules is a mistake in the program, not in its data: it breaks the `require` of `format` or `parse_*` (7.4), a panic. `d.format("YYYY-mm-DD")` stops with `contract failed: require format.fits(pattern, "date", false)`, and generated tests (11.5) try only patterns that keep the rules.
+
+Reading takes only what `format` writes:
+
+- `YYYY` is exactly 4 digits, `SSS` 3, and `MM`, `DD`, `HH`, `hh`, `mm` and `ss` 2. `M`, `D`, `H` and `h` are 1 or 2 digits, 2 when 2 are there. Names are written as in the table: `Nov`, not `nov` or `NOV`.
+- `parse_date`'s pattern needs the year, the month and the day; `parse_time`'s the hour and the minutes; `parse_datetime`'s all five. Seconds and milliseconds a pattern leaves out are 0.
+- A weekday must be the date's: `Tue, 04 Nov 2026` fails, since that day is a Wednesday.
+- An impossible date or time fails, as in ISO 8601 text: `31 Feb 2026`, `25:00`.
 
 ## The clock in tests
 
