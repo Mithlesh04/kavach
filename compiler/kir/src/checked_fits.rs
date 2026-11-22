@@ -3,7 +3,7 @@
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
 //! `x.checked_mul(y) ?? d`, `if let v = x.checked_add(y)` and the like on
-//! `Int` (spec 5.6), without making the optional. An `Int?` is an object
+//! `Int` (spec 5.6), `checked_div` too, without making the optional. An `Int?` is an object
 //! on the heap, so a `checked_*` call cost an allocation and three runtime
 //! calls (Sakshi's S14: 30 ns against 0.3 ns for `x * y`). When a `Let`
 //! keeps such a result and the rest of its block only asks whether it is
@@ -12,7 +12,7 @@
 //! plain operation where it fits. Where it doesn't, the unwrap is left as
 //! it was, so it panics as before.
 
-use crate::ir::{Block, Expr, ExprKind as K, Function, Local, Shape, Stmt, Type};
+use crate::ir::{BinOp, Block, Expr, ExprKind as K, Function, Local, Shape, Stmt, Type};
 use crate::rt_op::RtOp;
 
 /// Rewrites every such `Let` in `f`.
@@ -27,12 +27,14 @@ pub(crate) fn checked_fits(f: &mut Function, shapes: &[Shape]) {
     f.locals = locals;
 }
 
-/// The operation's number for `CheckedFits`, and the one that wraps.
-fn wrapping(op: RtOp) -> Option<(i128, RtOp)> {
+/// The operation's number for `CheckedFits`, and the one that wraps
+/// (`None` for `checked_div`, whose result where it fits is `a / b`).
+fn wrapping(op: RtOp) -> Option<(i128, Option<RtOp>)> {
     match op {
-        RtOp::CheckedAdd => Some((0, RtOp::WrappingAdd)),
-        RtOp::CheckedSub => Some((1, RtOp::WrappingSub)),
-        RtOp::CheckedMul => Some((2, RtOp::WrappingMul)),
+        RtOp::CheckedAdd => Some((0, Some(RtOp::WrappingAdd))),
+        RtOp::CheckedSub => Some((1, Some(RtOp::WrappingSub))),
+        RtOp::CheckedMul => Some((2, Some(RtOp::WrappingMul))),
+        RtOp::CheckedDiv => Some((3, None)),
         _ => None,
     }
 }
@@ -113,8 +115,13 @@ fn rewrite_at(b: &mut Block, i: usize, locals: &mut Vec<Type>, shapes: &[Shape])
     crate::walk::exprs_mut(&mut rest, &mut |e| match &e.kind {
         K::IsSome(x) if is(x, t) => e.kind = K::Local(ok),
         K::Unwrap(x) if is(x, t) => {
+            let [a, c]: [Expr; 2] = operands().try_into().expect("two operands");
+            let kind = match wraps {
+                Some(wraps) => K::Rt(wraps, vec![a, c]),
+                None => K::Binary(BinOp::Div, Box::new(a), Box::new(c)),
+            };
             let done = Expr {
-                kind: K::Rt(wraps, operands()),
+                kind,
                 ty: Type::I64,
                 line,
             };

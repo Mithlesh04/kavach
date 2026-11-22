@@ -51,12 +51,13 @@ pub fn int_method(op: RtOp, a: i64, b: i64, code: i64) -> i64 {
     optional(fits.map(|x| x as i64), code)
 }
 
-/// Whether `Int`s `a` and `b` added (`kind` 0), subtracted (1) or
-/// multiplied (2) fit in an `Int` (`RtOp::CheckedFits`).
+/// Whether `Int`s `a` and `b` added (`kind` 0), subtracted (1),
+/// multiplied (2) or divided (3) fit in an `Int` (`RtOp::CheckedFits`).
 pub fn fits(a: i64, b: i64, kind: i64) -> bool {
     match kind {
         0 => a.checked_add(b).is_some(),
         1 => a.checked_sub(b).is_some(),
+        3 => a.checked_div(b).is_some(),
         _ => a.checked_mul(b).is_some(),
     }
 }

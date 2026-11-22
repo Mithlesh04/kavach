@@ -190,6 +190,15 @@ impl FnEmit<'_> {
                 let kind = match args[2].kind {
                     ExprKind::Int(0) => "sadd",
                     ExprKind::Int(1) => "ssub",
+                    // `checked_div`: not by 0, and not `MIN / -1`.
+                    ExprKind::Int(3) => {
+                        let zero = self.val(format!("icmp eq i64 {b}, 0"));
+                        let minus_one = self.val(format!("icmp eq i64 {b}, -1"));
+                        let min = self.val(format!("icmp eq i64 {a}, {}", i64::MIN));
+                        let over = self.val(format!("and i1 {minus_one}, {min}"));
+                        let bad = self.val(format!("or i1 {zero}, {over}"));
+                        return Some(self.val(format!("xor i1 {bad}, true")));
+                    }
                     _ => "smul",
                 };
                 let (_, overflow) = self.with_overflow(kind, Type::I64, &a, &b);

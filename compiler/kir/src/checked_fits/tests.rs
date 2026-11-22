@@ -49,3 +49,22 @@ fn a_checked_result_kept_whole_stays_optional() {
     let src = "use std.cli\n\nfn main() {\n    const f = cli.args().len()\n    const x = f.checked_mul(3)\n    print(x)\n}\n";
     assert!(!fits(&lowered(src)));
 }
+
+/// `checked_div` too: `?? d` and `if let` make no optional (S14).
+#[test]
+fn a_checked_division_asked_and_unwrapped_makes_no_optional() {
+    for use_it in [
+        "s += i.checked_div(f) ?? 0",
+        "if let x = i.checked_div(f) {\n            s += x\n        }",
+    ] {
+        let src = format!(
+            "use std.cli\n\nfn main() {{\n    const f = cli.args().len()\n    let s = 0\n    for i in 0..10 {{\n        {use_it}\n    }}\n    print(s)\n}}\n"
+        );
+        let program = lowered(&src);
+        assert!(fits(&program), "{use_it}");
+        assert!(
+            !has(&program, |k| matches!(k, ExprKind::Some(_))),
+            "{use_it}"
+        );
+    }
+}

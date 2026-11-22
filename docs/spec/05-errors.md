@@ -153,7 +153,7 @@ A **panic** is a bug, not an expected failure. It stops the current task. Panics
 
 Panics are not caught by normal code. An agent handler that panics is stopped, logged in the audit log, and the agent keeps serving other requests: the send that started it fails with `panicked: <message> at <file>:<line>` (8.8, [decision 0076](../decisions/0076-every-send-to-an-agent-can-fail.md)).
 
-Integer overflow is **always checked**, in debug and release builds alike. A silent wrap-around is a security bug. When wrapping is intended, say so: `a.wrapping_add(b)`. When overflow is possible and should be handled, use `a.checked_add(b)`, which returns `none` on overflow (also `checked_sub`, `checked_mul`, `checked_div`).
+Integer overflow is **always checked**, in debug and release builds alike. A silent wrap-around is a security bug. When wrapping is intended, say so: `a.wrapping_add(b)`. When overflow is possible and should be handled, use `a.checked_add(b)`, which returns `none` on overflow (also `checked_sub`, `checked_mul`, `checked_div`; `checked_div` returns `none` for a division by zero too).
 
 ## 5.7 Adding context
 
