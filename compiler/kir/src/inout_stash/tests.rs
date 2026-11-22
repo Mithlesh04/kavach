@@ -111,3 +111,82 @@ fn main() {
         "a function `drop` reaches used the slots"
     );
 }
+
+/// A `drop` that calls a function value may reach only functions whose
+/// address is taken: a function called only directly still gives its
+/// value alone, in a program with `Drop` types (S11).
+#[test]
+fn a_drop_calling_a_function_value_leaves_direct_calls_alone() {
+    let src = padded(
+        r#"type Guard: Drop {
+    name: String
+    say: fn(String) -> String
+
+    fn drop(self) {
+        print(self.say(self.name))
+    }
+}
+
+fn step(inout n: Int, by: Int) -> Bool {
+    n += by
+    // padding
+    n % 2 != 0
+}
+
+fn main() {
+    let n = 0
+    for i in 0..3 {
+        const g = Guard(name: `g{i}`, say: s => `drop {s}`)
+        if step(n, i) {
+            print(n)
+        }
+    }
+}
+"#,
+        "n",
+    );
+    assert!(stashes(&lowered(&src)), "a direct call kept its tuple");
+}
+
+/// A function a `drop` reaches through a function value keeps its tuple.
+#[test]
+fn a_function_a_drop_reaches_through_a_value_keeps_its_tuple() {
+    let src = padded(
+        r#"type Guard: Drop {
+    name: String
+    say: fn(String) -> String
+
+    fn drop(self) {
+        print(self.say(self.name))
+    }
+}
+
+fn step(inout n: Int, by: Int) -> Bool {
+    n += by
+    // padding
+    n % 2 != 0
+}
+
+fn noted(s: String) -> String {
+    let k = 0
+    const odd = step(k, 3)
+    `drop {s} {k} {odd}`
+}
+
+fn main() {
+    let n = 0
+    for i in 0..3 {
+        const g = Guard(name: `g{i}`, say: noted)
+        if step(n, i) {
+            print(n)
+        }
+    }
+}
+"#,
+        "n",
+    );
+    assert!(
+        !stashes(&lowered(&src)),
+        "a function a `drop` reaches used the slots"
+    );
+}

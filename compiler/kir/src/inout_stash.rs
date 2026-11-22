@@ -59,7 +59,7 @@ pub fn stash_inout_tuples(
         let lead = items.len().wrapping_sub(n);
         // A `drop` waiting to run between the stash and the take could
         // call it again and overwrite the slots.
-        let dropped = from_drops.as_ref().is_none_or(|r| r.contains(&id));
+        let dropped = from_drops.contains(&id);
         if f.fails
             || floats
             || n > SLOTS
@@ -81,9 +81,10 @@ pub fn stash_inout_tuples(
 }
 
 /// The functions a `drop` method (registered with `DropRegister`) may
-/// call, itself included; `None` when one calls a function value, which
-/// could be any function.
-fn reached_by_drops(functions: &[Function]) -> Option<HashSet<FuncId>> {
+/// call, itself included. A function value called from one may be any
+/// function whose address the program takes (a lambda, a function used
+/// as a value, an interface's method), so those count as reached too.
+fn reached_by_drops(functions: &[Function]) -> HashSet<FuncId> {
     let mut todo: Vec<FuncId> = Vec::new();
     for f in functions {
         any_in_block(&f.body, &mut |e| {
@@ -96,6 +97,7 @@ fn reached_by_drops(functions: &[Function]) -> Option<HashSet<FuncId>> {
         });
     }
     let mut seen = HashSet::new();
+    let mut values_reached = false;
     while let Some(id) = todo.pop() {
         if !seen.insert(id) {
             continue;
@@ -112,11 +114,27 @@ fn reached_by_drops(functions: &[Function]) -> Option<HashSet<FuncId>> {
             }
             false
         });
-        if indirect {
-            return None;
+        if indirect && !values_reached {
+            values_reached = true;
+            todo.extend(address_taken(functions));
         }
     }
-    Some(seen)
+    seen
+}
+
+/// Every function whose address the program takes: the only ones a
+/// function value can call.
+fn address_taken(functions: &[Function]) -> Vec<FuncId> {
+    let mut taken = Vec::new();
+    for f in functions {
+        any_in_block(&f.body, &mut |e| {
+            if let ExprKind::Closure { func, .. } = e.kind {
+                taken.push(func);
+            }
+            false
+        });
+    }
+    taken
 }
 
 /// Function `f` returns its value alone, after putting each `inout` value
