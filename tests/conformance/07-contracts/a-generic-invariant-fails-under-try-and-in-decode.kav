@@ -1,0 +1,40 @@
+// Rule: A generic type's invariant makes `try` fail and is a problem `json.decode` reports, as for any other type.
+// Spec: 7.3, 2.12
+// expect output: invariant of `Range` failed: low <= high
+// expect output: 0
+// expect output: [1]: invariant `low <= high`
+// expect output: b
+
+use std.json
+
+type Range<T: Comparable> {
+    low: T
+    high: T
+
+    invariant low <= high
+}
+
+fn read(a: Int, b: Int) -> Range<Int> ! InvariantError {
+    try Range(low: a, high: b)
+}
+
+fn main() {
+    const r = read(5, 2) catch e => {
+        print(e)
+        Range(low: 0, high: 0)
+    }
+    print(r.low)
+    match json.decode<[Range<Int>]>(`[\{"low": 1, "high": 2}, \{"low": 5, "high": 2}]`) {
+        ok(_) => print("decoded"),
+        err(e) => match e {
+            JsonError.Invalid(problems) => {
+                for p in problems {
+                    print(`{p.path}: {p.expected}`)
+                }
+            }
+            _ => print("other"),
+        },
+    }
+    const fine = json.decode<Range<String>>(`\{"low": "a", "high": "b"}`) catch _ => Range(low: "", high: "")
+    print(fine.high)
+}

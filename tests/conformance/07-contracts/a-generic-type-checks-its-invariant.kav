@@ -1,0 +1,25 @@
+// Rule: A generic type's invariant is checked for each type the value is made with, on create and on change.
+// Spec: 7.3, 2.9
+// expect output: 3
+// expect output: a
+// expect output: 2.0
+// expect panic: contract failed: invariant low <= high
+
+type Range<T: Comparable> {
+    low: T
+    high: T
+
+    invariant low <= high
+}
+
+fn main() {
+    const r = Range(low: 1, high: 3)
+    print(r.high)
+    const s = Range<String>(low: "a", high: "b")
+    print(s.low)
+    let t = Range(low: 1.5, high: 2.5)
+    t.low = 2.0
+    print(t.low)
+    const bad = Range(low: 3, high: 1)
+    print(bad.low)
+}

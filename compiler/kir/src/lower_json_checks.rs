@@ -117,7 +117,7 @@ impl<'a> Lowerer<'a> {
             self.new_local(Type::I64),
         );
         let mut stmts = vec![Stmt::Let(bits, at(K::Int(0), Type::I64))];
-        let outer = self.invariant_of.replace((value, t));
+        let outer = self.enter_invariant(value, t);
         let mut failed = None;
         for (i, inv) in invariants.iter().enumerate().take(64) {
             let cond = match self.expr(inv) {
@@ -146,7 +146,7 @@ impl<'a> Lowerer<'a> {
                 Type::Unit,
             )));
         }
-        self.invariant_of = outer;
+        self.leave_invariant(outer);
         let f = ir::Function {
             name: "invariant check".into(),
             params: vec![env, value],

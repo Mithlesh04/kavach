@@ -126,12 +126,12 @@ impl<'a> Lowerer<'a> {
         let (err_ty, text_ty) = (self.error_type(), self.str_type());
         let (tmp, error) = (self.new_local(ty), self.new_local(err_ty));
         let mut stmts = vec![Stmt::Let(tmp, value), Stmt::Let(error, at(K::None, err_ty))];
-        let outer = self.invariant_of.replace((tmp, ty));
+        let outer = self.enter_invariant(tmp, ty);
         for inv in invariants {
             let cond = match self.expr(inv) {
                 Ok(c) => c,
                 Err(e) => {
-                    self.invariant_of = outer;
+                    self.leave_invariant(outer);
                     return Err(e);
                 }
             };
@@ -153,7 +153,7 @@ impl<'a> Lowerer<'a> {
                 Type::Unit,
             )));
         }
-        self.invariant_of = outer;
+        self.leave_invariant(outer);
         self.pending_error = Some(error);
         let value = Some(Box::new(self.local_expr(tmp, line)));
         Ok(at(K::Block(Block { stmts, value }), ty))

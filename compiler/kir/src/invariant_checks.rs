@@ -13,6 +13,8 @@ use crate::ir::{self, Local, Stmt, Type};
 use crate::lower::{Lowered, Lowerer};
 use kavach_ast::visit::{VisitMut, walk_expr};
 use kavach_ast::{self as ast, ExprKind};
+use kavach_resolver::DefId;
+use std::collections::HashMap;
 
 /// Whether invariant clause `inv` may read field `field`: it names it,
 /// or it uses `self`, which may read any field.
@@ -32,7 +34,35 @@ pub(crate) fn may_read(inv: &ast::Expr, field: &str) -> bool {
     reads.1
 }
 
+/// What `enter_invariant` replaced, for `leave_invariant` to put back.
+pub(crate) struct OuterInvariant {
+    of: Option<(Local, Type)>,
+    subst: HashMap<DefId, Type>,
+}
+
 impl<'a> Lowerer<'a> {
+    /// Starts lowering an invariant of record type `ty` on the record held
+    /// in `local`: its fields read that record, and the type's generic
+    /// parameters stand for its type arguments, so an invariant of
+    /// `Range<T>` is lowered for each type it is made with (`Range<Int>`).
+    pub(crate) fn enter_invariant(&mut self, local: Local, ty: Type) -> OuterInvariant {
+        let mut subst = self.subst.clone();
+        if let Some(def) = self.shapes.def_of(ty) {
+            let args = self.shapes.args_of(ty).unwrap_or_default().to_vec();
+            subst.extend(self.type_generics(def).into_iter().zip(args));
+        }
+        OuterInvariant {
+            of: self.invariant_of.replace((local, ty)),
+            subst: std::mem::replace(&mut self.subst, subst),
+        }
+    }
+
+    /// Ends what `enter_invariant` started.
+    pub(crate) fn leave_invariant(&mut self, outer: OuterInvariant) {
+        self.invariant_of = outer.of;
+        self.subst = outer.subst;
+    }
+
     /// The checks of the invariants of `ty`, reading the record held in
     /// `local`. With `changed`, only the clauses that may read that field.
     pub(crate) fn checks_on_change(
@@ -47,7 +77,7 @@ impl<'a> Lowerer<'a> {
         }
         let invariants = self.invariants_of(ty);
         let mut checks = Vec::new();
-        let outer = self.invariant_of.replace((local, ty));
+        let outer = self.enter_invariant(local, ty);
         for inv in invariants {
             if changed.is_some_and(|f| !may_read(inv, f)) {
                 continue;
@@ -55,7 +85,7 @@ impl<'a> Lowerer<'a> {
             let cond = match self.expr(inv) {
                 Ok(c) => c,
                 Err(e) => {
-                    self.invariant_of = outer;
+                    self.leave_invariant(outer);
                     return Err(e);
                 }
             };
@@ -65,7 +95,7 @@ impl<'a> Lowerer<'a> {
                 line,
             });
         }
-        self.invariant_of = outer;
+        self.leave_invariant(outer);
         Ok(checks)
     }
 
