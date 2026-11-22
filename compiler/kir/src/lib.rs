@@ -110,6 +110,7 @@ mod lower_text;
 mod lower_threads;
 mod lower_tls;
 mod lower_tuple_assign;
+mod lower_value_methods;
 mod lower_views;
 mod lower_whole;
 mod moves;

@@ -28,6 +28,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/lower_if.rs` | `if`, `if let`, `match` and blocks, as values or as statements |
 | `src/lower_calls.rs` | Calls to named functions, and their arguments |
 | `src/lower_methods.rs` | Method calls: user methods, through interface values (2.15), and fields holding functions (3.4) |
+| `src/lower_value_methods.rs` | Built-in methods that are one run-time operation each: text, lists, dicts, `Bytes`, sockets, channels, optionals, whole numbers |
 | `src/lower_c.rs` | C functions (`extern c`, spec 10.7): a function with no body, called as the C symbol of its name |
 | `src/lower_ptr.rs` | Raw memory (`Ptr<T>`, spec 6.4): `alloc`, `free`, the address of a `read` or `write`, records laid out as C structs, `p.text()`; text copied for a C call, and callbacks as bare addresses (10.7) |
 | `src/lower_c_records.rs` | Records to C and back by value (spec 10.7): copied into C memory and passed as `c_abi.rs` says, through `RtOp::CallC` |
