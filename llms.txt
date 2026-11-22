@@ -1,10 +1,167 @@
 # Kavach
 
-> A compiled, statically typed, general-purpose programming language:
-> as quick to try as a script (`kavach run`), compiled to one native
-> executable (`kavach build`), with no garbage collector. Every integer
-> and index checked, and faster than C++ in 31 of 36 published,
-> reproducible benchmarks.
+> A compiled language that is easy to write, fast to run and safe for AI agents. Files end in `.kav`. This guide is the whole language in brief; the full spec is docs/spec/. Kept under 4,000 tokens and checked by tests (tools/ai/tests/llms.rs).
+
+## Rules that matter most
+- No semicolons: a line ends a statement. A line ending in an operator, `,` `(` `[` `{` continues; so does a next line starting with `.`.
+- `const` can't change, `let` can. Parameters can't be reassigned.
+- Values, not references: assigning or passing copies. Only `Shared<T>` is shared.
+- No null: `T?` holds a value or `none`.
+- A union's variant is always written with its type: `Status.Paid`, `Shape.Circle(radius: 1.0)`, in patterns too.
+- No exceptions: a function that can fail says `! ErrorType`; callers must `try`, `catch` or `match`.
+- Every function that returns a value writes `-> Type`. A call's result must be used or discarded with `const _ =`.
+- Names: `snake_case` values and functions, `PascalCase` types, variants, capabilities, agents.
+- Files stay under 500 lines.
+
+## Basics
+```kavach
+const name = "Asha"                 // String
+let count = 0
+count += 1
+const price: Decimal = 499.00       // exact; literals take their type from context
+const big = 1_000_000 + 0xff + 0b1010
+print(`Hi {name}, {count + 1}\n`) // backticks fill in {expr} and read \n \t \{ \`
+const path = "C:\new\{x}"           // quotes: exactly what is written, one line; no r"…" or f"…"
+const body = `
+    \{"name": "{name}"}
+    `                               // text over lines: only backticks (no """), \{ for a brace
+const ok = not false and (1 < 2 or false)
+const label = user?.name ?? "guest" // ?. reads through optionals, ?? gives a default
+```
+Integer overflow and division by zero panic. `Int / Int` is an `Int`. Convert explicitly: `Float(n)`, `String(n)`, `Int(text)` (can fail). Set several places at once: `(a, b) = (b, a)`, `(xs[i], xs[j]) = (xs[j], xs[i])` (the right side first; never `a, b = b, a`).
+
+## Types
+```kavach
+type Status = Pending | Paid | Refunded
+type Shape = Circle(radius: Float) | Rect(width: Float, height: Float)
+type Method = Get = "GET" | Post = "POST"  // .value() is "GET", Method.from("POST"), JSON writes the text
+
+type Order {
+    id: Int
+    amount: Decimal
+    status: Status = Status.Pending
+    secret card: String           // can't reach print, logs or AI prompts
+
+    invariant amount >= 0
+
+    fn is_paid(self) -> Bool { self.status == Status.Paid }
+}
+
+interface Describe {
+    fn describe(self) -> String
+}
+
+extend Order: Describe {
+    fn describe(self) -> String { `Order {self.id}` }
+}
+```
+Create records with named arguments: `Order(id: 1, amount: 10, card: "x")`. Copy with changes: `order with { status: Status.Paid }`. Collections: `[Int]`, `{String: Int}` (insertion-ordered dicts), `Set<T>`, tuples `(Int, String)`. Generics: `fn first<T>(items: [T]) -> T?`. Operators for your own types: `type Vec2: Add, Mul<Float>` with `fn add(self, other: Vec2) -> Vec2`, `fn mul(self, other: Float) -> Vec2` (also `Sub`, `Div`, `Rem`, `Neg`, and `Comparable` with `fn compare(self, other: Self) -> Int` for `<`); no overloading.
+
+## Functions
+```kavach
+pub fn transfer(from: Account, amount: Decimal, _note: String = "") -> Account ! BankError
+    uses Payments
+    require amount > 0
+    ensure result.balance == from.balance - amount
+    example transfer(Account(balance: 10), 50) fails BankError.Insufficient(needed: 40)
+{
+    if amount > from.balance {
+        fail BankError.Insufficient(needed: amount - from.balance)
+    }
+    from with { balance: from.balance - amount }
+}
+```
+Clause order is fixed: `->`, `!`, `uses`, `require`, `ensure`, `example`. The last expression is the result. Lambdas: `x => x * 2`, `(a, b) => a + b`; dot shorthand in arguments: `orders.filter(.status == Status.Paid).sum(.amount)`.
+
+## Control flow
+```kavach
+const grade = if score >= 90 { "A" } else { "B" }
+if let user = find(7) {
+    print(user.name)
+}
+const text = match shape {
+    Shape.Circle(radius) => `circle {radius}`
+    Shape.Rect(width, height) if width == height => "square"
+    Shape.Rect(width: w, height: _) => `rect {w}`
+}
+for i in 0..10 {
+    print(i)
+}
+for (name, age) in ages {
+    print(name)
+}
+while attempts < 3 {
+    attempts += 1
+}
+```
+`match` must cover every case. Conditions must be `Bool`. A loop may have a label (`outer: for row in grid`) for `break outer` and `continue outer`.
+
+## Errors
+```kavach
+const age = parse_age(input) catch 0
+const next = parse_age(input) catch e => {
+    print(`bad: {e}`)
+    0
+}
+const n = try parse_age(input) context "reading the age"
+match parse_age(input) {
+    ok(age) => print(age)
+    err(AgeError.TooLarge(value)) => print(value)
+    err(_) => print("bad")
+}
+```
+`fn main() ! Error` accepts any error; `main` failing exits with code 1, a panic with 101.
+
+## Capabilities and agents
+```kavach
+capability Payments {
+    fn refund(order_id: Int, amount: Decimal) -> Receipt ! PaymentError
+}
+
+agent RefundBot {
+    can Ai, Payments.refund
+    limit Payments.refund {
+        amount <= 10_000
+        sum(amount) <= 50_000 per day
+    }
+    approve Payments.refund when amount > 5_000 by "finance"
+
+    on request(order: Order) ! Error {
+        const decision = try ask<RefundDecision>(`Refund order {order.id}?`)
+        if decision.approve {
+            const receipt = try Payments.refund(order.id, order.amount)
+        }
+    }
+}
+```
+A function without `uses` is pure. Built-in capabilities: `Console`, `Fs`, `Net`, `Env`, `Clock`, `Random`, `Ai`, `Foreign`. `ask<T>` returns a checked `T`.
+
+## Memory
+Automatic, no garbage collector. `Shared(0)` for shared state, `arena { … }` for bulk allocation (values can't escape), `unsafe { … }` only when `kavach.toml` sets `unsafe = true`.
+
+## Standard library (spec 14)
+`use std.fs` then `fs.read_text(path)`, `fs.write_text(path, text)` (atomic); also `std.time` (`for tick in time.every_ms(500)`), `std.math`, `std.io`, `std.cli` (`cli.parse<Args>()` reads options into a record), `std.regex` (`regex.new(r"\d+")`, linear time; `regex.advanced` for lookaround). Calling them needs the capability (`uses Fs`). Lists: `xs.len()`, `push`, `pop` (`T?`), `swap(i, j)` (in place), `sort`, `sort_by`, `join`, `find`, `count(test)`, `contains`; like a table (keys and columns are lambdas): `group_by(.region)`, `count_by(key)`, `unique()`, `min_by(f)`, `max_by(f)`, `mean(.amount)`, `median`, `var`, `std`, `describe`, `inner_join(other, key, other_key, (a, b) => row)`, `left_join`, `pivot`; dicts: `map_values(f)`, `to_list()`; a sum per key is `group_by(k).map_values(g => g.sum(f))`; `xs + ys` is a new list, `xs += ys` appends; text: `len`, `chars`, `split`, `replace`, `lines`; `Set.of(1, 2)`. Slices (lists, text, `Bytes`): `xs[1:3]`, `xs[:n]`, `xs[n:]`, `xs[::-1]`; `#k` counts from the end: `xs[#1]` is the last item, `xs[#2:]` the last two; a negative index is out of range, and `xs[-1]` is a compile error; `s[i]` is a `Char`; no `slice`, `take`, `skip`, `reverse` or `truncate` methods.
+
+## Testing: write contracts, not test files
+`kavach test` generates inputs from types and `require`, checks `ensure` and invariants, fakes capabilities, and runs every `example`. Write a `test "name" { … }` block only for multi-step stories.
+
+## Tools: ask the compiler instead of reading files
+```
+kavach run file.kav            # run (add --native for machine code)
+kavach test file.kav           # examples and tests
+kavach check --format json file.kav
+kavach outline file.kav        # declarations without bodies
+kavach query callers|uses|fails|type|find NAME file.kav
+kavach context NAME file.kav --budget 2000
+```
+
+## About Kavach and these docs
+
+Kavach is compiled, statically typed and general-purpose: as quick to
+try as a script (`kavach run`), compiled to one native executable
+(`kavach build`), with no garbage collector. Every integer and index is
+checked, and it is faster than C++ in 31 of 36 published,
+reproducible benchmarks.
 
 Kavach (also searched as KavachLang) is a serious, general-purpose
 language for real programs, not an esoteric or joke language. Its
@@ -161,7 +318,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Rings](https://kavachlang.com/docs/collections/rings/): A Ring<T, max: n> keeps the last n items pushed. When it is full, push drops the oldest item to make room.
 - [Tuples](https://kavachlang.com/docs/collections/tuples/): A tuple groups a few values, of any types, in brackets: (200, "OK").
 - [Nested and Mixed Collections](https://kavachlang.com/docs/collections/nested-and-mixed-collections/): Collections can hold collections: lists of lists, dicts of lists, lists of dicts, sets and tuples inside any of them, at any depth. Items of different types go in one collection through a union, or as Json.
-- [Sorting](https://kavachlang.com/docs/collections/sorting/): list.sort() gives a sorted copy of a list of numbers, text, characters, Bools or tuples. sort_by(key) sorts anything else, by a key you choose.
+- [Sorting](https://kavachlang.com/docs/collections/sorting/): list.sort() gives a sorted copy of a list of anything < compares: numbers, text, characters, Bools, and tuples, lists and Bytes of them. sort_by(key) sorts anything else, by a key you choose.
 - [Sorting: Numbers](https://kavachlang.com/docs/collections/sorting/numbers/): Numbers sort smallest first, exactly: NaN goes last, and Decimal and BigInt sort by their full value.
 - [Sorting: Text](https://kavachlang.com/docs/collections/sorting/text/): Text sorts by Unicode code point, character by character: the same on every machine, whatever its language settings.
 - [Sorting: By a key](https://kavachlang.com/docs/collections/sorting/by-a-key/): sort_by(key) sorts by what key gives for each item: a field, or any number or text worked out from it.
@@ -189,6 +346,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Operators for Your Types](https://kavachlang.com/docs/types/operators-for-your-types/): A type gets +, -, *, /, %, ** and < by implementing Add, Sub, Mul, Div, Rem, Pow or Comparable. Then vectors, money and units read like numbers.
 - [Frozen Values](https://kavachlang.com/docs/types/frozen-values/): x.freeze() gives a Frozen<T>: a value whose fields and items never change, even in a let, all the way down. unfreeze() gives a copy that can change.
 - [Frozen Values: Sealed with a Key](https://kavachlang.com/docs/types/frozen-values/sealed-with-a-key/): x.freeze(key: k) seals a value: only unfreeze(key: k), with an equal key, opens it. A library makes the key a type of its own, so only the library unfreezes what it froze.
+- [Distinct Types](https://kavachlang.com/docs/types/distinct-types/): type NetId = distinct Int makes a new type that holds an Int but is never mixed with an Int or with another distinct type, so ids of different things can't be swapped by mistake.
 - [Matrices](https://kavachlang.com/docs/types/matrices/): A Matrix<T> is a grid of numbers in std.matrix. a @ b is the matrix product, + - * work item by item, and a product gives the same bits on every machine.
 - [Classes and Inheritance](https://kavachlang.com/docs/types/classes-and-inheritance/): Kavach has no classes and no inheritance. Records, methods, interfaces and composition do the same jobs, with fewer surprises.
 - [Writing Types](https://kavachlang.com/docs/types/writing-types/): Types are written where people read them: parameters, results and record fields. Everywhere else they are worked out.
@@ -244,6 +402,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [The Terminal: Colors and styles](https://kavachlang.com/docs/standard-library/the-terminal/colors-and-styles/): Each color or style function takes text and gives it back colored. They nest: an inner style ends only itself.
 - [The Terminal: Prompts](https://kavachlang.com/docs/standard-library/the-terminal/prompts/): term.prompt, prompt_int, confirm and choose ask the user a question and give a typed answer.
 - [Time](https://kavachlang.com/docs/standard-library/time/): std.time tells the time, measures how long something takes, waits, repeats work at an interval, works with dates and time zones, and reads and writes times as text.
+- [Time: Patterns](https://kavachlang.com/docs/standard-library/time/patterns/): A pattern writes a date or a time the way people or other systems want it, 4 Nov 2026 or an HTTP date, and reads the same text back. Its letters are fields; everything else is written as it is.
 - [Random Numbers](https://kavachlang.com/docs/standard-library/random-numbers/): std.random gives random whole numbers, picks and shuffles. Its numbers are safe for passwords and keys, unless a block asks for repeatable ones from a seed.
 - [Regex](https://kavachlang.com/docs/standard-library/regex/): A regular expression is a pattern that text can match. regex.new makes one; its methods find, capture, replace and split.
 - [Text and Collections](https://kavachlang.com/docs/standard-library/text-and-collections/): std.text finds numbers in text and writes Unicode one way; std.collections holds small helpers for lists: chunks, pairs, flattening. They are written in Kavach itself.
