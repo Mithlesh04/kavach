@@ -52,6 +52,8 @@ For running programs:
 | `KAVACH_GPU_WORDS` | a whole number, 1 or more | For tests: one pass of the GPU holds at most this many 32-bit words, so a small `map` runs in several passes | 15.2 |
 | `KAVACH_FAKE_GPUS` | entries `name:vendor:kind:backend` split by `;`, the vendor a PCI ID (`0x1002`) | For tests: `system.gpus()` lists these instead of the machine's GPUs; an entry that doesn't read so is left out | 14.25 |
 | `ANTHROPIC_API_KEY` | a key | The key `ask` uses; never in `kavach.toml` | 8.4 |
+| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | an AWS access key's ID and secret | The credentials a provider's `Auth.AwsSignature` signs with; never in `kavach.toml` | 8.4 |
+| `AWS_SESSION_TOKEN` | a session token | Short-term AWS credentials' token, sent as `x-amz-security-token` and signed | 8.4 |
 | `KAVACH_AI_URL` | a URL | Where `ask` sends its requests (a test server) | 8.4 |
 | `NO_COLOR` | any text | No colors in what the program prints | 14.12 |
 | `KAVACH_CHECK_LEAKS` | any value | At the end, report heap objects that were never freed | 6.1 |

@@ -152,7 +152,7 @@ pub type HttpReply { status: Int, headers: {String: String}, body: String }
 pub type Auth = NoKey                    // a server that takes none
     | Bearer                             // `authorization: Bearer <key>`
     | InHeader(name: String)             // `x-api-key`, `api-key`, `x-goog-api-key`
-    | AwsSignature(service: String, region: String)
+    | AwsSignature(service: String, region: String)   // signed by the runtime (below)
     | GoogleToken(scope: String)
 
 pub type Reply = Answer(text: String, usage: Usage)
@@ -210,6 +210,26 @@ fn gateway() -> Model {
 ```
 
 - The key goes to the address in the provider's request. So a package's provider decides where a program's key is sent, as a package's code does with any secret it is given: use providers from packages you trust.
+
+### Signing AWS requests: `Auth.AwsSignature`
+
+A provider for an AWS service, such as Bedrock, gives `Auth.AwsSignature(service:, region:)`. The runtime signs each of its requests with AWS Signature Version 4 (SigV4), as AWS's own libraries do, so provider code never holds the secret.
+
+```kavach
+type Bedrock: Provider {
+    fn auth(self, model: Model) -> Auth { Auth.AwsSignature(service: "bedrock", region: "us-east-1") }
+    // … the other methods
+}
+```
+
+- **The credentials** come from AWS's standard variables: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN` for short-term credentials. They are looked up as a key is (above): `--env`, the environment, `[env.vars]` and `.env`. A variable set to empty text counts as not set. Without the first two, the call fails with `AiError.NoKey` naming the first one missing: `NoKey(variable: "AWS_ACCESS_KEY_ID")`. The `Model`'s `api_key_env` and the provider's `key_variable` decide nothing here.
+- **What is signed:** the method (`POST`), the path and query the request is sent to, the SHA-256 of the body, and the headers `host`, `x-amz-date`, `x-amz-security-token` (with a session token) and every header the provider wrote. The runtime adds `x-amz-date`, `x-amz-security-token` and `authorization: AWS4-HMAC-SHA256 Credential=<key id>/<date>/<region>/<service>/aws4_request, SignedHeaders=…, Signature=…`. A header the provider wrote with one of those names, or `host`, gives way to the runtime's.
+- **The path is signed as it is sent,** with every byte but letters, digits, `-`, `.`, `_`, `~` and `/` percent-encoded once more, as AWS does for every service but S3. A query's names and values are sorted.
+- **Each try is signed again,** just before it is sent, with the time then. So a call that waited at the gate, or is sent again after a busy reply, has a fresh signature.
+- **`KAVACH_AI_URL`:** the request is signed for the address it is actually sent to, after `KAVACH_AI_URL` changes it. So a test server or a proxy that checks signatures finds one that matches.
+- **The time** is the machine's clock, in UTC. AWS refuses a request signed more than 5 minutes from its own time; the provider reads that reply as it reads any other. The runtime doesn't correct the clock.
+- **`service` and `region`** are made of letters, digits and `-`. Anything else, or an empty one, fails the call with `Failed(status: 0, …)` before any variable is read.
+- The secret and the signature never appear in an error, the journal or the audit log. A counting call (`ai.count`, below) is signed in the same way.
 
 ## Fallbacks: a list of models
 
@@ -397,4 +417,4 @@ pub type Estimate {
 - A dry run or a generated test (8.5, 11.5) counts nothing and calls no provider method: the count is `about 0 tokens (dry run: nothing was counted)`.
 - A count isn't kept in an agent's journal (8.5): an event run again after a restart counts again (for a maintainer's review).
 
-*Not built yet* (decision 0140 sets how each works): the other providers, in a package of their own repository, starting with OpenAI-shaped Chat Completions (OpenAI, Azure, Ollama, llama.cpp, vLLM), then Gemini, Bedrock, Vertex and OpenAI's Responses API; `Auth.AwsSignature` and `Auth.GoogleToken`, for now an `ask` whose provider gives one fails with `Failed(status: 0, …)`; a counting call for each of those providers that has one.
+*Not built yet* (decision 0140 sets how each works): the other providers, in a package of their own repository, starting with OpenAI-shaped Chat Completions (OpenAI, Azure, Ollama, llama.cpp, vLLM), then Gemini, Bedrock, Vertex and OpenAI's Responses API; `Auth.GoogleToken`, for now an `ask` whose provider gives it fails with `Failed(status: 0, …)`; for `Auth.AwsSignature`, credentials from AWS's files (`~/.aws/credentials`, `~/.aws/config`) and profiles, and from roles (the instance metadata service, containers, web identity, single sign-on): only the variables above are read; a counting call for each of those providers that has one.

@@ -330,7 +330,7 @@ The first part was built on 2026-11-20: the `Provider` interface, `Anthropic`'s 
 11. **A provider's value is a constructor written with plain values** (or a `const` or a function with no parameters that gives one), lowered or run where the `ask` is.
 12. **`std.ai`'s variant names don't bring the module in.** `NotFound`, `Answer` and `Other` are common words; every program that needs `std.ai` writes `ask`, `Model` or one of its type names anyway.
 13. **The key goes to the address in the provider's request,** so a package's provider decides where a program's key is sent. The spec says to use providers from packages you trust.
-14. **`Auth.AwsSignature` and `Auth.GoogleToken`** fail an `ask` with `Failed(status: 0, …)` until signing is built (choice 5).
+14. **`Auth.AwsSignature` and `Auth.GoogleToken`** fail an `ask` with `Failed(status: 0, …)` until signing is built (choice 5). (`Auth.AwsSignature` was built on 2026-11-22, below.)
 
 Fallbacks (choice 3) were built on 2026-11-22: `model` takes a list literal of models, in an agent and in `ask` (spec 8.4, *Fallbacks*). Points this record didn't settle, each **for a maintainer's review**:
 
@@ -365,6 +365,16 @@ Counting a prompt's tokens before sending (choice 10) was built on 2026-11-22: `
 37. **`Anthropic`'s estimate** is one token for every 4 characters of the prompt and `instructions`, rounded up (`how`: `about 4 characters a token`). Newer Claude models take about 30% more tokens for the same text, so it is low for them.
 38. **`Count`** has `tokens`, `exact` and `note`; `exact` means the provider's own count, which Anthropic says can differ by a few tokens. It prints as `412 tokens (counted by the provider)` or `about 103 tokens (estimate: about 4 characters a token)`.
 39. **A dry run or a generated test** calls no provider method, and the count is `about 0 tokens (dry run: nothing was counted)`.
+
+Signing AWS requests (choice 5, `Auth.AwsSignature`) was built on 2026-11-22: the runtime signs each try with SigV4 just before it is sent, in `runtime/net`, for the interpreter and native code (spec 8.4, *Signing AWS requests*). `Auth.GoogleToken` is still to come. Points this record didn't settle, each **for a maintainer's review**:
+
+40. **Credentials come only from the variables** `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_SESSION_TOKEN`, looked up as a key is. AWS's files (`~/.aws/credentials`, `~/.aws/config`), profiles and roles (instance metadata, containers, web identity, single sign-on) are not read yet. A variable set to empty text counts as not set. Without the first two, the call fails with `NoKey` naming the first one missing.
+41. **The `Model`'s `api_key_env` and the provider's `key_variable` decide nothing** for a signed call. So a program can't use two AWS accounts at once yet; the gate's key is the provider's type and `AWS_ACCESS_KEY_ID`.
+42. **Signed headers:** `host`, `x-amz-date`, `x-amz-security-token` (with a session token) and every header the provider wrote. The runtime's `authorization`, `x-amz-date` and `x-amz-security-token` replace the provider's own of those names. No `x-amz-content-sha256` header is added: the body's hash is in the canonical request, and only S3 needs the header.
+43. **The path** is signed as it is sent, percent-encoded once more, as AWS does for every service but S3, and not normalized. S3 is not served.
+44. **The clock** is the machine's, with no correction for skew. AWS refuses a request more than 5 minutes off; the provider reads that reply as any other.
+45. **`service` and `region`** must be letters, digits and `-`; anything else fails the call with `Failed(status: 0, …)` before any variable is read.
+46. **A request's `host` header** now has its port when it is not the scheme's own (`127.0.0.1:8080`), as HTTP/1.1 says, so a signature matches the header sent. It was the host's name alone before.
 
 ## Consequences
 
