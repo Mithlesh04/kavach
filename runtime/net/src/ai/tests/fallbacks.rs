@@ -62,7 +62,14 @@ fn the_waits_start_when_every_model_is_busy() {
     assert_eq!(asked_models[..2], ["0", "1"]);
     assert_eq!(asked_models.len(), 3);
     assert!(asked.result.is_ok());
-    assert_eq!(f.waited.len(), 1);
+    // It fails now and then under load: say what happened (to-do).
+    assert_eq!(
+        f.waited.len(),
+        1,
+        "waited {:?}, moved {:?}, asked {asked_models:?}",
+        f.waited,
+        asked.moved
+    );
     // A line for each change of model: none when the second goes again.
     let changes = if asked_models[2] == "0" { 2 } else { 1 };
     assert_eq!(asked.moved.len(), changes);
