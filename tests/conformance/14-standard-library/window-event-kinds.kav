@@ -1,7 +1,9 @@
-// Rule: `Event` is `Closed`, `Resized`, `Scaled`, `Focused`, `Key`, `Text`, `MouseMoved`, `MouseButton`, `Wheel`, `Motion`, `PadConnected`, `PadGone`, `PadButton`, `PadAxis` or `Touch`, with the fields the spec names.
+// Rule: `Event` is `Closed`, `Resized`, `Scaled`, `Focused`, `Key`, `Text`, `MouseMoved`, `MouseButton`, `Wheel`, `Motion`, `PadConnected`, `PadGone`, `PadButton`, `PadAxis`, `Touch`, `Redraw` or `Woken`, with the fields the spec names.
 // Spec: 14.22
 // expect output: Touch(id: 3, x: 1.5, y: 2.5, phase: "Began", pressure: 1.0) 3 Began
 // expect output: PadAxis(pad: 0, axis: "LeftX", value: -1.0) LeftX
+// expect output: Redraw draw again
+// expect output: Woken look again
 
 use std.window
 
@@ -22,6 +24,8 @@ fn said(e: Event) -> String {
         Event.PadButton(pad, button, down) => `{pad} {button} {down}`,
         Event.PadAxis(_, axis, _) => axis,
         Event.Touch(id, _, _, phase, _) => `{id} {phase}`,
+        Event.Redraw => "draw again",
+        Event.Woken => "look again",
     }
 }
 
@@ -29,6 +33,8 @@ fn main() {
     const events = [
         Event.Touch(id: 3, x: 1.5, y: 2.5, phase: "Began", pressure: 1.0),
         Event.PadAxis(pad: 0, axis: "LeftX", value: -1.0),
+        Event.Redraw,
+        Event.Woken,
     ]
     for e in events {
         print(`{e} {said(e)}`)

@@ -16,14 +16,14 @@ pub type WindowError = Unavailable(reason: String)
 
 /// Something that happened to a window, or to a gamepad (spec 14.26).
 /// From `Key` on, they come only after `listen_input()`.
-pub type Event = Closed | Resized(width: Int, height: Int) | Scaled(factor: Float) | Focused(on: Bool) | Key(key: String, down: Bool) | Text(text: String) | MouseMoved(x: Float, y: Float) | MouseButton(button: Int, down: Bool) | Wheel(x: Float, y: Float) | Motion(x: Float, y: Float) | PadConnected(pad: Int, name: String) | PadGone(pad: Int) | PadButton(pad: Int, button: String, down: Bool) | PadAxis(pad: Int, axis: String, value: Float) | Touch(id: Int, x: Float, y: Float, phase: String, pressure: Float)
+pub type Event = Closed | Resized(width: Int, height: Int) | Scaled(factor: Float) | Focused(on: Bool) | Key(key: String, down: Bool) | Text(text: String) | MouseMoved(x: Float, y: Float) | MouseButton(button: Int, down: Bool) | Wheel(x: Float, y: Float) | Motion(x: Float, y: Float) | PadConnected(pad: Int, name: String) | PadGone(pad: Int) | PadButton(pad: Int, button: String, down: Bool) | PadAxis(pad: Int, axis: String, value: Float) | Touch(id: Int, x: Float, y: Float, phase: String, pressure: Float) | Redraw | Woken
 
 /// An open window. It closes when its last holder ends, or at `close()`.
 pub type AppWindow: Drop {
     id: Int
 
-    /// The events that came, waiting for at least one; none once the
-    /// window is closed.
+    /// The events that came, waiting for at least one while other tasks
+    /// run; none once the window is closed.
     pub fn events(self) -> [Event] uses Window {
         decoded(self.id, window.events_id(self.id, true))
     }
@@ -82,6 +82,12 @@ pub type AppWindow: Drop {
         window.lock_cursor_id(self.id, on)
     }
 
+    /// Makes a waiting `events()` give a `Woken` event, from any task:
+    /// several wakes before the events are read give one.
+    pub fn wake(self) uses Window {
+        window.wake_id(self.id)
+    }
+
     /// The window's number, which `std.gpu` draws into it by.
     pub fn number(self) -> Int {
         self.id
@@ -135,6 +141,7 @@ fn event_of(kind: Int, a: Float, b: Float, text: String) -> Event
     example event_of(1, 640.0, 480.0, "") == Event.Resized(width: 640, height: 480)
     example event_of(4, 1.0, 0.0, "KeyW") == Event.Key(key: "KeyW", down: true)
     example event_of(12, 3.0, 1.0, "South") == Event.PadButton(pad: 3, button: "South", down: true)
+    example event_of(16, 0.0, 0.0, "") == Event.Woken
 {
     match kind {
         0 => Event.Closed,
@@ -151,6 +158,8 @@ fn event_of(kind: Int, a: Float, b: Float, text: String) -> Event
         11 => Event.PadGone(pad: Int(a)),
         12 => Event.PadButton(pad: Int(a), button: text, down: b > 0.0),
         13 => Event.PadAxis(pad: Int(a), axis: text, value: b),
+        15 => Event.Redraw,
+        16 => Event.Woken,
         _ => touch_of(a, b, text),
     }
 }

@@ -13,6 +13,8 @@ use std::collections::HashMap;
 use std::sync::{Mutex, MutexGuard, OnceLock};
 
 struct Screen {
+    /// The window's number (`kavach_runtime_window`).
+    window: i64,
     surface: wgpu::Surface<'static>,
     config: wgpu::SurfaceConfiguration,
     /// Its depths, made at the first draw with depth, and their size.
@@ -53,7 +55,8 @@ pub fn screen_on(n: i64, size: (u32, u32)) -> Result<i64, String> {
     if gpu().is_none() {
         return Err("this machine has no GPU".into());
     }
-    let n = kavach_runtime_window::with_window(n, move |window| screen(window, size.0, size.1))
+    let window = n;
+    let n = kavach_runtime_window::with_window(n, move |w| screen(w, window, size.0, size.1))
         .unwrap_or_else(|| Err("the window is closed".into()))?;
     // Compiled here, on the program's thread, not on the window's.
     let format = drawing().screens.get(&n).map(|s| s.config.format);
@@ -63,10 +66,11 @@ pub fn screen_on(n: i64, size: (u32, u32)) -> Result<i64, String> {
     Ok(n)
 }
 
-/// A screen on `window`, now `width` × `height` pixels: its number, or
-/// why it can't be drawn into.
+/// A screen on `window`, number `number`, now `width` × `height` pixels:
+/// its number, or why it can't be drawn into.
 fn screen(
     window: impl Into<wgpu::SurfaceTarget<'static>>,
+    number: i64,
     width: u32,
     height: u32,
 ) -> Result<i64, String> {
@@ -104,6 +108,7 @@ fn screen(
     d.screens.insert(
         n,
         Screen {
+            window: number,
             surface,
             config,
             depth: None,
@@ -213,11 +218,15 @@ pub fn draw(f: i64, draw: crate::render::Draw<'_>) -> Result<(), String> {
     Ok(())
 }
 
-/// Sends what was drawn into frame `f` and puts it on the screen.
+/// Sends what was drawn into frame `f` and puts it on the screen, which
+/// answers a `Redraw` its window's event loop waits on (spec 14.22).
 pub fn show(f: i64) {
-    let Some(mut frame) = drawing().frames.remove(&f) else {
+    let mut d = drawing();
+    let Some(mut frame) = d.frames.remove(&f) else {
         return;
     };
+    let window = d.screens.get(&frame.screen).map(|s| s.window);
+    drop(d);
     if let Some(g) = gpu() {
         if let Some(t) = &frame.timer {
             crate::timers::stop(&mut frame.encoder, t);
@@ -225,6 +234,9 @@ pub fn show(f: i64) {
         g.queue.submit([frame.encoder.finish()]);
         crate::timers::sent(&g.device, &g.queue, frame.timer);
         g.queue.present(frame.texture);
+    }
+    if let Some(w) = window {
+        kavach_runtime_window::frame_shown(w);
     }
 }
 

@@ -12,9 +12,10 @@ A function that only draws needs no `Input`, so it can't read what a person type
 | Function or method | Gives |
 |---|---|
 | `window.open(title, width, height) -> AppWindow ! WindowError` | A new window of `width` × `height` pixels, shown at once |
-| `win.events() -> [Event]` | The events that came, waiting for at least one |
+| `win.events() -> [Event]` | The events that came, waiting for at least one while other tasks run (9.7) |
 | `win.poll() -> [Event]` | The events that came, without waiting; empty when none did |
 | `win.run(f)` | Calls `f(event)` for each event as it comes, until `f` gives `false` or the window closes |
+| `win.wake()` | Makes the window's waiting `events()` give a `Woken` event, from any task: a task that finished work, or a timer, tells the window's loop to look |
 | `win.listen_input()` | From now on, keyboard, mouse, text and gamepad events come too. Needs `Input` |
 | `win.size() -> (width: Int, height: Int)` | The inside of the window, in pixels; `(0, 0)` once `close()` was called |
 | `win.scale() -> Float` | How many pixels make one point on this screen: `2.0` on most high-DPI screens |
@@ -43,6 +44,8 @@ A function that only draws needs no `Input`, so it can't read what a person type
 | `PadButton(pad: Int, button: String, down: Bool)` | A button of the standard layout went down or up, named by its place: `South`, `Start`, `DPadUp` (14.26) |
 | `PadAxis(pad: Int, axis: String, value: Float)` | A stick or trigger moved: `LeftX`, `LeftY`, `RightX`, `RightY` from -1 to 1, `LeftTrigger`, `RightTrigger` from 0 to 1 |
 | `Touch(id: Int, x: Float, y: Float, phase: String, pressure: Float)` | A finger or pen on a touch screen, in pixels from the window's top left. `phase` is `Began`, `Moved`, `Ended` or `Cancelled` (the system took the touch away); `id` is the same from `Began` to its end, so several fingers are told apart. `pressure` is from 0 to 1, or 1 where the screen doesn't measure it |
+| `Redraw` | The system asks for the window to be drawn again: it was shown, uncovered or resized |
+| `Woken` | `win.wake()` was called |
 
 The events from `Key` on come only after `listen_input()`. Gamepad events come to every window that listens to input.
 
@@ -77,11 +80,48 @@ win.run(e => match e {
 })
 ```
 
-- The system's event loop runs on a thread of the runtime's own, so a slow frame never freezes a window. `events()` holds the task's turn while it waits (9.7).
-- `window.open_id`, `events_id`, `texts_id`, `listen_id`, `size_id`, `scale_id`, `set_title_id`, `set_fullscreen_id`, `lock_cursor_id` and `close_id` are what `open` and the methods are built on, by the window's number.
+- The system's event loop runs on a thread of the runtime's own, so a slow frame never freezes a window.
+- `window.open_id`, `events_id`, `texts_id`, `listen_id`, `size_id`, `scale_id`, `set_title_id`, `set_fullscreen_id`, `lock_cursor_id`, `wake_id` and `close_id` are what `open` and the methods are built on, by the window's number.
 - Generated tests (11.5) skip functions that use `Window` or `Input`: there is no fake screen yet.
+
+## 14.22.1 Waking and drawing again
+
+A program that only answers events sleeps in `events()` until something happens, so it costs no power while nothing does. Other tasks run while it waits (9.7), as they do while a task waits for a socket. When one of them has something to show, it calls `win.wake()`, and the waiting `events()` gives a `Woken` event:
+
+```kavach
+use std.window
+use std.time
+
+fn main() ! WindowError uses Window, Console, Clock {
+    const win = try window.open("Clock", 320, 200)
+    const _ticks = spawn {
+        for _ in 0..3 {
+            time.sleep_ms(1000)
+            win.wake()                  // the loop below looks again
+        }
+    }
+    let woken = 0
+    while woken < 3 {
+        for e in win.events() {
+            match e {
+                Event.Woken => {
+                    woken += 1
+                },
+                Event.Redraw => print("draw the window"),
+                _ => {}
+            }
+        }
+    }
+}
+```
+
+- `wake()` may be called from any task, and from a task on another core (9.8). Several wakes before the events are taken give one `Woken`, and so do several `Redraw`s: each says "look again", not how many times.
+- `wake()` on a closed window does nothing.
+- `Redraw` comes when the system needs the window's picture: when it is first shown, uncovered or resized. A program that draws only when something changes draws at each `Redraw`, and after its own changes.
+- **Resizing on Windows.** While a person drags a window's border, Windows runs its own loop, and the window's events wait. A window that `std.gpu` (14.24) has drawn into is drawn again at each step: after each `Redraw`, the system waits up to 50 ms for the program's next `frame.show()`, so the picture follows the border instead of stretching. A program that doesn't draw in time is not stopped: the resize goes on.
 
 ## Open questions
 
 - macOS shows windows only from a program's first thread. Until the runtime gives that thread to the event loop, `window.open` there fails with `Unavailable`.
-- A pen's tilt and its buttons. Drawing into a window is `std.gpu` (14.24).
+- A pen's tilt and its buttons.
+- For a maintainer's review (14.22.1): `wake()` gives an event of its own, `Woken`, beside the system's `Redraw`, so a program can tell its own wakes from the system's; a program's own "draw again" (`winit`'s `request_redraw`) is left out, as `wake()` covers it. The 50 ms a resize waits for a frame is three frames at 60 Hz. Drawing into a window is `std.gpu` (14.24).

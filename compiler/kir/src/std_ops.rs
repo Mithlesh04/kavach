@@ -58,6 +58,7 @@ pub(crate) fn std_op(module: &str, name: &str) -> Option<RtOp> {
         ("window", "set_fullscreen_id") => RtOp::WindowFullscreen,
         ("window", "lock_cursor_id") => RtOp::WindowLockCursor,
         ("window", "close_id") => RtOp::WindowClose,
+        ("window", "wake_id") => RtOp::WindowWake,
         ("input", "start_id") => RtOp::InputStart,
         ("input", "pads_id") => RtOp::InputPads,
         ("input", "names_id") => RtOp::InputNames,

@@ -284,3 +284,6 @@ ScopePlace,
 /// `random_ints(n, from, until)` (spec 14.33): `n` whole numbers, each as
 /// `random.int(from, until)` draws it, for `tensor.random_int`.
 RandomInts,
+/// `win.wake()` (spec 14.22): window `a`'s waiting `events()` gives a
+/// `Woken` event, from any task (`runtime/native/src/rt_window.rs`).
+WindowWake,

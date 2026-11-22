@@ -1,0 +1,30 @@
+// Rule: Other tasks run while `events()` waits, so a task can wake the window that waits.
+// Spec: 14.22.1, 9.7
+// expect output: the task ran
+// expect output: woken
+
+use std.window
+use std.time
+
+fn wait_for_wake(win: AppWindow) uses Window, Console, Clock {
+    const _waker = spawn {
+        time.sleep_ms(20)
+        print("the task ran")
+        win.wake()
+    }
+    let woken = false
+    while not woken {
+        woken = win.events().any(e => e == Event.Woken)
+    }
+    print("woken")
+}
+
+fn main() uses Window, Console, Clock {
+    match window.open("Kavach wait", 320, 200) {
+        ok(win) => wait_for_wake(win),
+        err(WindowError.Unavailable(_)) => {
+            print("the task ran")
+            print("woken")
+        }
+    }
+}

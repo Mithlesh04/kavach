@@ -37,15 +37,38 @@ fn item(code: i64) -> Type {
 
 // `a` is the window's number, or the title (owned) for `WindowOpen`;
 // `b` and `c` are the width and height, a flag, or a title (owned).
-crate::rt_data::entry!(kv_rt_window, |op, a, b, c, code, _line| {
+/// Waits until window `n` has an event or is closed, while other tasks
+/// run (spec 14.22); without tasks, `take` waits alone.
+fn wait_for_events(n: i64, line: i32) {
+    while !win::ready(n) {
+        let me = crate::rt_tasks::me();
+        let tasks = crate::rt_tasks::wait_outside(None, line, |wake| {
+            win::on_event(
+                n,
+                Box::new(move || {
+                    wake();
+                    kavach_runtime_core::tasks::interrupt_queue_of(me);
+                }),
+            )
+        });
+        if !tasks || crate::rt_tasks::cancelling() {
+            return;
+        }
+    }
+}
+
+crate::rt_data::entry!(kv_rt_window, |op, a, b, c, code, line| {
     match op {
         RtOp::WindowOpen => {
             let title = str_of(a);
             release(a);
             win::open(&title, b, c).unwrap_or_else(|why| fail(&why))
         }
-        // Waiting holds the task's turn (spec 14.22).
+        // Other tasks run while it waits (spec 14.22).
         RtOp::WindowEvents => {
+            if b != 0 {
+                wait_for_events(a, line);
+            }
             let numbers = win::take_numbers(a, b != 0);
             alloc_slots(
                 type_of(code),
@@ -82,6 +105,10 @@ crate::rt_data::entry!(kv_rt_window, |op, a, b, c, code, _line| {
         }
         RtOp::WindowLockCursor => {
             win::lock_cursor(a, b != 0);
+            0
+        }
+        RtOp::WindowWake => {
+            win::wake(a);
             0
         }
         _ => {

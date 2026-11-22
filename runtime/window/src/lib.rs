@@ -10,73 +10,27 @@
 //! loop through its proxy; events come back into each window's inbox,
 //! where `take` finds them.
 
-use std::collections::{HashMap, VecDeque};
-use std::sync::{Arc, Condvar, Mutex, OnceLock, mpsc};
+use std::collections::HashMap;
+use std::sync::{Arc, OnceLock, mpsc};
 use std::time::Duration;
 use winit::application::ApplicationHandler;
 use winit::dpi::PhysicalSize;
-use winit::event::{
-    DeviceEvent, DeviceId, ElementState, Ime, MouseButton, MouseScrollDelta, TouchPhase,
-    WindowEvent,
-};
+use winit::event::{DeviceEvent, DeviceId, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, EventLoop, EventLoopProxy};
-use winit::keyboard::PhysicalKey;
 use winit::window::{CursorGrabMode, Fullscreen, Window, WindowId};
 
-/// The kinds of event, numbered as `std.window`'s `Event` variants are.
-pub const CLOSED: i64 = 0;
-pub const RESIZED: i64 = 1;
-pub const SCALED: i64 = 2;
-pub const FOCUSED: i64 = 3;
-pub const KEY: i64 = 4;
-pub const TEXT: i64 = 5;
-pub const MOUSE_MOVED: i64 = 6;
-pub const MOUSE_BUTTON: i64 = 7;
-pub const WHEEL: i64 = 8;
-pub const MOTION: i64 = 9;
-/// Gamepads' events, from `kavach_runtime_input` (spec 14.26): a pad
-/// connected (its number, its name), gone, a button, and a stick or
-/// trigger moved.
-pub const PAD_CONNECTED: i64 = 10;
-pub const PAD_GONE: i64 = 11;
-pub const PAD_BUTTON: i64 = 12;
-pub const PAD_AXIS: i64 = 13;
-/// A touch: where (`a`, `b`), and in its text its phase, its id and its
-/// pressure, as `Began 3 0.5`.
-pub const TOUCH: i64 = 14;
+mod events;
+mod inbox;
+pub use events::*;
+use inbox::{Inbox, hub};
+pub use inbox::{
+    Waker, deliver_input, frame_shown, listen_input, on_event, ready, scale, size, take,
+    take_numbers, texts, wake,
+};
 
-/// One event: its kind, two numbers, and the text of a key or of typing.
-#[derive(Clone, Debug, PartialEq)]
-pub struct Event {
-    pub kind: i64,
-    pub a: f64,
-    pub b: f64,
-    pub text: String,
-}
-
-/// What a window has that its program reads.
-#[derive(Default)]
-struct Inbox {
-    events: VecDeque<Event>,
-    /// Whether keyboard, mouse and text events come (`listen_input`).
-    input: bool,
-    size: (u32, u32),
-    scale: f64,
-}
-
-/// Every window's inbox, and a signal when one gets an event.
-struct Hub {
-    inboxes: Mutex<HashMap<i64, Inbox>>,
-    ready: Condvar,
-}
-
-fn hub() -> &'static Hub {
-    static HUB: OnceLock<Hub> = OnceLock::new();
-    HUB.get_or_init(|| Hub {
-        inboxes: Mutex::new(HashMap::new()),
-        ready: Condvar::new(),
-    })
-}
+/// How long the event loop waits for a frame after a `Redraw`, while the
+/// system may be in its own loop of a resize (spec 14.22).
+const FRAME_WAIT: Duration = Duration::from_millis(50);
 
 /// What a program asks the event loop to do.
 enum Command {
@@ -158,11 +112,7 @@ impl App {
             scale: window.scale_factor(),
             ..Inbox::default()
         };
-        hub()
-            .inboxes
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .insert(n, inbox);
+        hub().add(n, inbox);
         self.numbers.insert(window.id(), n);
         self.windows.insert(n, window);
         Ok(n)
@@ -206,12 +156,7 @@ impl ApplicationHandler<Command> for App {
                 if let Some(w) = self.windows.remove(&n) {
                     self.numbers.remove(&w.id());
                 }
-                hub()
-                    .inboxes
-                    .lock()
-                    .unwrap_or_else(|e| e.into_inner())
-                    .remove(&n);
-                hub().ready.notify_all();
+                hub().remove(n);
             }
         }
     }
@@ -223,118 +168,32 @@ impl ApplicationHandler<Command> for App {
         if let WindowEvent::Focused(on) = event {
             self.focused = on.then_some(n);
         }
-        let mut all = hub().inboxes.lock().unwrap_or_else(|e| e.into_inner());
-        let Some(inbox) = all.get_mut(&n) else { return };
-        let events = translate(event, inbox);
-        if events.is_empty() {
-            return;
+        let redraw = matches!(event, WindowEvent::RedrawRequested);
+        let seen = inbox::shown(n);
+        hub().change(n, |inbox| {
+            let events = events::translate(event, inbox);
+            let any = !events.is_empty();
+            events.into_iter().for_each(|e| inbox.push(e));
+            any
+        });
+        // A window the program draws into is drawn again before the
+        // system goes on: so while a person drags its border, it is drawn
+        // at each new size (spec 14.22).
+        if let (true, Some(seen @ 1..)) = (redraw, seen) {
+            inbox::wait_for_frame(n, seen, FRAME_WAIT);
         }
-        inbox.events.extend(events);
-        drop(all);
-        hub().ready.notify_all();
     }
 
     fn device_event(&mut self, _: &ActiveEventLoop, _: DeviceId, event: DeviceEvent) {
         let (DeviceEvent::MouseMotion { delta }, Some(n)) = (event, self.focused) else {
             return;
         };
-        let mut all = hub().inboxes.lock().unwrap_or_else(|e| e.into_inner());
-        if let Some(inbox) = all.get_mut(&n).filter(|i| i.input) {
-            inbox.events.push_back(plain(MOTION, delta.0, delta.1));
-            drop(all);
-            hub().ready.notify_all();
-        }
-    }
-}
-
-fn plain(kind: i64, a: f64, b: f64) -> Event {
-    Event {
-        kind,
-        a,
-        b,
-        text: String::new(),
-    }
-}
-
-/// What a window event means to a program, keeping the inbox's size and
-/// scale up to date; input events only once it listens.
-fn translate(event: WindowEvent, inbox: &mut Inbox) -> Vec<Event> {
-    let input = inbox.input;
-    let flag = |on: bool| if on { 1.0 } else { 0.0 };
-    match event {
-        WindowEvent::CloseRequested => vec![plain(CLOSED, 0.0, 0.0)],
-        WindowEvent::Resized(size) => {
-            inbox.size = (size.width, size.height);
-            vec![plain(
-                RESIZED,
-                f64::from(size.width),
-                f64::from(size.height),
-            )]
-        }
-        WindowEvent::ScaleFactorChanged { scale_factor, .. } => {
-            inbox.scale = scale_factor;
-            vec![plain(SCALED, scale_factor, 0.0)]
-        }
-        WindowEvent::Focused(on) => vec![plain(FOCUSED, flag(on), 0.0)],
-        WindowEvent::KeyboardInput { event, .. } if input => {
-            let down = event.state == ElementState::Pressed;
-            let mut out = Vec::new();
-            if let (PhysicalKey::Code(code), false) = (event.physical_key, event.repeat) {
-                let mut e = plain(KEY, flag(down), 0.0);
-                e.text = format!("{code:?}");
-                out.push(e);
+        hub().change(n, |inbox| {
+            if inbox.input {
+                inbox.push(plain(MOTION, delta.0, delta.1));
             }
-            if let (Some(text), true) = (event.text, down) {
-                let mut e = plain(TEXT, 0.0, 0.0);
-                e.text = text.to_string();
-                out.push(e);
-            }
-            out
-        }
-        WindowEvent::Ime(Ime::Commit(text)) if input => {
-            let mut e = plain(TEXT, 0.0, 0.0);
-            e.text = text;
-            vec![e]
-        }
-        WindowEvent::CursorMoved { position, .. } if input => {
-            vec![plain(MOUSE_MOVED, position.x, position.y)]
-        }
-        WindowEvent::MouseInput { state, button, .. } if input => {
-            let number = match button {
-                MouseButton::Left => 0.0,
-                MouseButton::Right => 1.0,
-                MouseButton::Middle => 2.0,
-                MouseButton::Back => 3.0,
-                MouseButton::Forward => 4.0,
-                MouseButton::Other(n) => f64::from(n),
-            };
-            vec![plain(
-                MOUSE_BUTTON,
-                number,
-                flag(state == ElementState::Pressed),
-            )]
-        }
-        WindowEvent::MouseWheel { delta, .. } if input => {
-            let (x, y) = match delta {
-                MouseScrollDelta::LineDelta(x, y) => (f64::from(x), f64::from(y)),
-                // About 20 pixels make a line, as browsers count them.
-                MouseScrollDelta::PixelDelta(p) => (p.x / 20.0, p.y / 20.0),
-            };
-            vec![plain(WHEEL, x, y)]
-        }
-        WindowEvent::Touch(t) if input => {
-            let phase = match t.phase {
-                TouchPhase::Started => "Began",
-                TouchPhase::Moved => "Moved",
-                TouchPhase::Ended => "Ended",
-                TouchPhase::Cancelled => "Cancelled",
-            };
-            let pressure = t.force.map_or(1.0, |f| f.normalized());
-            let mut e = plain(TOUCH, t.location.x, t.location.y);
-            e.text = format!("{phase} {} {pressure}", t.id);
-            vec![e]
-        }
-        _ => Vec::new(),
+            inbox.input
+        });
     }
 }
 
@@ -367,80 +226,6 @@ pub fn open(title: &str, width: i64, height: i64) -> Result<i64, String> {
     answer.recv().map_err(|e| e.to_string())?
 }
 
-/// The events window `n` has had since the last `take`; with `wait`,
-/// waiting for at least one first. None once the window is closed.
-pub fn take(n: i64, wait: bool) -> Vec<Event> {
-    let mut all = hub().inboxes.lock().unwrap_or_else(|e| e.into_inner());
-    loop {
-        let Some(inbox) = all.get_mut(&n) else {
-            return Vec::new();
-        };
-        if !inbox.events.is_empty() || !wait {
-            return inbox.events.drain(..).collect();
-        }
-        all = (hub().ready)
-            .wait_timeout(all, Duration::from_millis(250))
-            .unwrap_or_else(|e| e.into_inner())
-            .0;
-    }
-}
-
-/// `take`, as `std.window` reads it: three numbers an event (its kind and
-/// two numbers), with the texts kept for `texts`, one an event.
-pub fn take_numbers(n: i64, wait: bool) -> Vec<f64> {
-    let got = take(n, wait);
-    let texts = got.iter().map(|e| e.text.clone()).collect();
-    last_texts()
-        .lock()
-        .unwrap_or_else(|e| e.into_inner())
-        .insert(n, texts);
-    got.iter().flat_map(|e| [e.kind as f64, e.a, e.b]).collect()
-}
-
-/// The texts of window `n`'s last `take_numbers`: a key's name, or text
-/// typed; empty for other events.
-pub fn texts(n: i64) -> Vec<String> {
-    let mut all = last_texts().lock().unwrap_or_else(|e| e.into_inner());
-    all.remove(&n).unwrap_or_default()
-}
-
-fn last_texts() -> &'static Mutex<HashMap<i64, Vec<String>>> {
-    static LAST: OnceLock<Mutex<HashMap<i64, Vec<String>>>> = OnceLock::new();
-    LAST.get_or_init(|| Mutex::new(HashMap::new()))
-}
-
-/// Gives `event`, which no window had (a gamepad's), to every window
-/// that listens to input, waking any that waits.
-pub fn deliver_input(event: Event) {
-    let mut all = hub().inboxes.lock().unwrap_or_else(|e| e.into_inner());
-    for inbox in all.values_mut().filter(|i| i.input) {
-        inbox.events.push_back(event.clone());
-    }
-    drop(all);
-    hub().ready.notify_all();
-}
-
-/// From now on, keyboard, mouse and text events come to window `n` too.
-pub fn listen_input(n: i64) {
-    let mut all = hub().inboxes.lock().unwrap_or_else(|e| e.into_inner());
-    if let Some(inbox) = all.get_mut(&n) {
-        inbox.input = true;
-    }
-}
-
-/// The inside of window `n`, in pixels; `(0, 0)` once it is closed.
-pub fn size(n: i64) -> (i64, i64) {
-    let all = hub().inboxes.lock().unwrap_or_else(|e| e.into_inner());
-    all.get(&n)
-        .map_or((0, 0), |i| (i64::from(i.size.0), i64::from(i.size.1)))
-}
-
-/// How many pixels make a point on window `n`'s screen.
-pub fn scale(n: i64) -> f64 {
-    let all = hub().inboxes.lock().unwrap_or_else(|e| e.into_inner());
-    all.get(&n).map_or(1.0, |i| i.scale)
-}
-
 fn tell(command: Command) {
     if let Ok(p) = proxy() {
         let _ = p.send_event(command);
@@ -463,14 +248,7 @@ pub fn lock_cursor(n: i64, on: bool) {
 /// once, before the event loop closes it, so `size()` right after is
 /// `(0, 0)` and `poll()` gives nothing, in both modes (spec 14.22).
 pub fn close(n: i64) {
-    let gone = hub()
-        .inboxes
-        .lock()
-        .unwrap_or_else(|e| e.into_inner())
-        .remove(&n);
-    if gone.is_some() {
-        hub().ready.notify_all();
-    }
+    hub().remove(n);
     tell(Command::Close(n));
 }
 

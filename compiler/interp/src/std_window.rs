@@ -8,14 +8,16 @@
 
 use crate::interp::Interp;
 use crate::value::{Eval, Flow, Value};
+use kavach_ast::Span;
 use kavach_checker::Prim;
 use kavach_runtime_window as win;
 use std::rc::Rc;
+use std::sync::Arc;
 
 impl<'a> Interp<'a> {
     /// `window.open_id`, `events_id` and the rest, with every argument
     /// given.
-    pub(crate) fn window_call(&mut self, name: &str, args: &[Value<'a>]) -> Eval<'a> {
+    pub(crate) fn window_call(&mut self, name: &str, args: &[Value<'a>], span: Span) -> Eval<'a> {
         let int = |i: usize| match args.get(i) {
             Some(Value::Int(n, _)) => (*n).clamp(i64::MIN as i128, i64::MAX as i128) as i64,
             _ => 0,
@@ -39,7 +41,9 @@ impl<'a> Interp<'a> {
                 }
             },
             "events_id" => {
-                // Held while waiting: the task keeps its turn (spec 14.22).
+                if flag(1) {
+                    self.wait_for_events(n, span)?;
+                }
                 self.flush();
                 let numbers = win::take_numbers(n, flag(1));
                 Value::List(Rc::new(numbers.into_iter().map(Value::Float).collect()))
@@ -70,11 +74,35 @@ impl<'a> Interp<'a> {
                 win::lock_cursor(n, flag(1));
                 Value::Unit
             }
+            "wake_id" => {
+                win::wake(n);
+                Value::Unit
+            }
             _ => {
                 win::close(n);
                 Value::Unit
             }
         })
+    }
+
+    /// Waits until window `n` has an event or is closed, while other
+    /// tasks run (spec 14.22); without tasks, `take` waits alone.
+    fn wait_for_events(&mut self, n: i64, span: Span) -> Result<(), Flow<'a>> {
+        let Some(sched) = self.tasks.as_ref().map(|t| Arc::clone(&t.sched)) else {
+            return Ok(());
+        };
+        while !win::ready(n) {
+            self.flush();
+            let me = self.task;
+            let (wait, waker) = (sched.next_wait(me), Arc::clone(&sched));
+            if !win::on_event(n, Box::new(move || waker.wake_from_thread(me, wait))) {
+                continue;
+            }
+            if let Err(stop) = sched.wait_io(me, None) {
+                return Err(self.stopped(stop, span));
+            }
+        }
+        Ok(())
     }
 
     /// `input.pads_id`, `names_id`, `rumble_id` and `start_id`.

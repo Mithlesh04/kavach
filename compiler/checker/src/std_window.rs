@@ -34,7 +34,7 @@ impl Checker<'_> {
             "scale_id" => (vec![id], float),
             "set_title_id" => (vec![id, p("title", &string)], Ty::Unit),
             "set_fullscreen_id" | "lock_cursor_id" => (vec![id, p("on", &boolean)], Ty::Unit),
-            "listen_id" | "close_id" => (vec![id], Ty::Unit),
+            "listen_id" | "close_id" | "wake_id" => (vec![id], Ty::Unit),
             _ => return None,
         })
     }

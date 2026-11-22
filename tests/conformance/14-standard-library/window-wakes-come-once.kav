@@ -1,0 +1,28 @@
+// Rule: `win.wake()` makes `events()` give one `Woken`, however many wakes came before the events were taken; after `close()`, a wake does nothing.
+// Spec: 14.22.1
+// expect output: woken: 1
+// expect output: after close: 0
+
+use std.window
+
+fn woken(events: [Event]) -> Int {
+    events.count(e => e == Event.Woken)
+}
+
+fn main() uses Window, Console {
+    match window.open("Kavach wake", 320, 200) {
+        ok(win) => {
+            win.wake()
+            win.wake()
+            win.wake()
+            print(`woken: {woken(win.events())}`)
+            win.close()
+            win.wake()
+            print(`after close: {woken(win.events())}`)
+        }
+        err(WindowError.Unavailable(_)) => {
+            print("woken: 1")
+            print("after close: 0")
+        }
+    }
+}
