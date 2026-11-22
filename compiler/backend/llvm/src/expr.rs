@@ -71,6 +71,9 @@ impl FnEmit<'_> {
                 Some(self.ref_binary(*op, l.ty, &a, &b))
             }
             ExprKind::Rt(kavach_kir::RtOp::StrLen, args) => self.str_len(&args[0]),
+            ExprKind::Rt(kavach_kir::RtOp::StrIsEmpty, args) if self.is_text_view(&args[0]) => {
+                self.view_is_empty(&args[0])
+            }
             ExprKind::Rt(kavach_kir::RtOp::BytesLen, args) => self.bytes_len(&args[0]),
             ExprKind::Rt(kavach_kir::RtOp::BytesAt, args) => {
                 self.bytes_at(&args[0], &args[1], e.line)
@@ -443,6 +446,9 @@ impl FnEmit<'_> {
             && op.changes_receiver()
             && is_l(&args[0])
         {
+            if *op == kavach_kir::RtOp::MapInsert && self.map_set_item(l, value, args) {
+                return;
+            }
             // The other operands first: they may read the local.
             let mut slots: Vec<String> = args[1..].iter().map(|a| self.slot_of(a)).collect();
             slots.resize(2, "0".into());

@@ -58,8 +58,25 @@ impl<'a> Lowerer<'a> {
                     out.push(s);
                     return Ok(());
                 }
-                // The place's keys once, before the value (spec 3.10).
-                let held = self.hold_keys(target, out)?;
+                // The place's keys once, before the value (spec 3.10). In
+                // `m[k] = v`, with one key and a value that is a name or a
+                // literal, the key is worked out once and first anyway, so
+                // it stays where it is: `m[xs[i]] = v` reads its key in its
+                // list (`rt_maps/item_keys.rs`).
+                let settled = matches!(
+                    value.kind,
+                    ExprKind::Name(_)
+                        | ExprKind::Int(_)
+                        | ExprKind::Float(_)
+                        | ExprKind::Bool(_)
+                        | ExprKind::Char(_)
+                ) && matches!(&target.kind, ExprKind::Index { base, .. }
+                    if matches!(base.kind, ExprKind::Name(_)));
+                let held = if *op == ast::AssignOp::Set && settled {
+                    Vec::new()
+                } else {
+                    self.hold_keys(target, out)?
+                };
                 let done = self.assign_stmt(target, *op, value, line, s.span, out);
                 self.release(held);
                 done?;

@@ -1,0 +1,23 @@
+// Rule: a slice of text, `s[a:b]`, `s[a:]` or `s[:b]`, counts characters, not bytes, and clamps as any slice does, whether the text is ASCII or not, short or long.
+// Spec: 2.19
+// expect output: [b] [bc] [] [] [abc] [a]
+// expect output: [é] [éllo] [hé] [] [wörld]
+// expect output: [日本] [テキスト] []
+// expect output: [a much longer] [text than fifteen bytes]
+// expect output: [ab]
+
+fn main() {
+    const words = ["abc", "héllo wörld", "日本語テキスト", "a much longer text than fifteen bytes"]
+    const a = words[0]
+    const lo = -3
+    print(`[{a[1:2]}] [{a[1:]}] [{a[2:1]}] [{a[5:]}] [{a[lo:99]}] [{a[:1]}]`)
+    const h = words[1]
+    print(`[{h[1:2]}] [{h[1:5]}] [{h[:2]}] [{h[20:]}] [{h[6:]}]`)
+    const j = words[2]
+    print(`[{j[:2]}] [{j[3:]}] [{j[7:9]}]`)
+    const l = words[3]
+    print(`[{l[:13]}] [{l[14:]}]`)
+    let s = "abcdef"
+    s = s[:2]
+    print(`[{s}]`)
+}

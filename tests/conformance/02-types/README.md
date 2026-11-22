@@ -19,6 +19,8 @@ The tests are listed in two files, by section:
 | 2.2 | [a-list-mapped-into-itself-keeps-its-copies.kav](a-list-mapped-into-itself-keeps-its-copies.kav) | `xs = xs.map(f)` gives `xs` the new items and leaves every copy of the old list as it was. | runs |
 | 2.2 | [maps-keep-insertion-order.kav](maps-keep-insertion-order.kav) | Maps keep insertion order when iterated. | runs |
 | 2.2 | [map-keys-read-from-lists-of-text.kav](map-keys-read-from-lists-of-text.kav) | A map with text keys finds a key read from a list of text, short or long. | runs |
+| 2.2 | [map-keys-set-from-lists-of-text.kav](map-keys-set-from-lists-of-text.kav) | `m[xs[i]] = v` with a key read from a list of text sets a key already there and adds a new one, short or long, leaving the list and copies of the map as they were. | runs |
+| 2.2 | [filter-keeps-text-items.kav](filter-keeps-text-items.kav) | `filter` over a list of text keeps the items its test holds for, as they are, short or long, ASCII or not. | runs |
 | 2.16 | [matmul-calls-the-types-own-method.kav](matmul-calls-the-types-own-method.kav) | `a @ b` calls `matmul` of a type with `MatMul`; `@=` too. | runs |
 | 2.17 | [matmul-is-not-for-numbers.kav](matmul-is-not-for-numbers.kav) | `@` on numbers is a compile error that says to use `*`. | compile error |
 | 2.17 | [matrices-multiply-and-work-item-by-item.kav](matrices-multiply-and-work-item-by-item.kav) | `a @ b`, `+ - *` and `-` item by item, transposes, sums, slices, rows and columns, for floats and whole numbers. | runs |
@@ -349,6 +351,7 @@ The tests are listed in two files, by section:
 | 2.7, 2.2 | [an-optional-call-cannot-change-the-value-inside.kav](an-optional-call-cannot-change-the-value-inside.kav) | A changing method through `?.` is an error: it would change a copy; test first and change the value itself. | compile error |
 | 2.19 | [slices-take-every-step-th-item.kav](slices-take-every-step-th-item.kav) | `xs[start:end:step]` gives the items from `start` up to, not including, `end`, every `step`th; each part is optional. | runs |
 | 2.19 | [a-slice-out-of-range-is-clamped.kav](a-slice-out-of-range-is-clamped.kav) | A slice out of range is clamped, never a panic: a part past the end counts as the end, a computed part below 0 as before the first item, and a start after the end gives an empty slice. | runs |
+| 2.19 | [text-slices-count-characters-and-clamp.kav](text-slices-count-characters-and-clamp.kav) | A slice of text counts characters, not bytes, and clamps as any slice does, ASCII or not, short or long. | runs |
 | 2.19 | [a-negative-step-walks-backwards.kav](a-negative-step-walks-backwards.kav) | A negative step walks backwards, from `start` down to, not including, `end`; with it, a missing `start` is the last item and a missing `end` is before the first. | runs |
 | 2.19 | [a-written-step-of-zero-is-an-error.kav](a-written-step-of-zero-is-an-error.kav) | A step of 0 written in a slice is a compile error. | compile error |
 | 2.19 | [a-worked-out-step-of-zero-panics.kav](a-worked-out-step-of-zero-panics.kav) | A step of 0 worked out while the program runs is a panic. | panic |

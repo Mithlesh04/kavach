@@ -114,7 +114,7 @@ impl FnEmit<'_> {
 
     /// The item address held by `e` when it is a `for` variable that is a
     /// view of an item of a list of text (see `text_views`).
-    fn text_view(&mut self, e: &Expr) -> Option<String> {
+    pub(crate) fn text_view(&mut self, e: &Expr) -> Option<String> {
         match e.kind {
             ExprKind::Local(l) | ExprKind::Move(l) if self.text_views[l as usize] => {
                 self.load_local(l)
@@ -159,6 +159,10 @@ impl FnEmit<'_> {
         // A short literal is its item already, and an item of another list
         // of text is copied as it is: neither becomes an object (Sakshi's
         // S7: 2,000,000 pushes of "" took 166 ms).
+        // A `for` variable's view of an item: its words, copied.
+        if let Some(from) = self.text_view(text) {
+            return Pushed::Item(self.item_copy(&from), Self::code(text.ty));
+        }
         match &text.kind {
             ExprKind::Str(s) if s.len() <= SHORT => {
                 let item = self.slot_of_type("[2 x i64]");
@@ -307,9 +311,19 @@ impl FnEmit<'_> {
         let index = self.expr(i)?;
         self.check_index(&index, &len, line);
         let from = self.flat_addr(&ptr, &index, WIDTH);
+        let addr = self.item_copy(&from);
+        if owned {
+            self.release(&list);
+        }
+        Some(addr)
+    }
+
+    /// The item at `from` copied onto the stack, with one more holder for
+    /// long text (whose first word is its object). Gives its address.
+    pub(crate) fn item_copy(&mut self, from: &str) -> String {
         let item = self.slot_of_type("[2 x i64]");
         let addr = self.val(format!("ptrtoint ptr {item} to i64"));
-        let (first, second) = (self.load_item_at(&from, 0), self.load_item_at(&from, 8));
+        let (first, second) = (self.load_item_at(from, 0), self.load_item_at(from, 8));
         self.store_item_at(&first, &addr, 0);
         self.store_item_at(&second, &addr, 8);
         let tag = self.val(format!("lshr i64 {second}, 56"));
@@ -321,10 +335,7 @@ impl FnEmit<'_> {
         self.retain(&first);
         self.br(&done);
         self.start(&done);
-        if owned {
-            self.release(&list);
-        }
-        Some(addr)
+        addr
     }
 }
 

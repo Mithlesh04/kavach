@@ -9,8 +9,8 @@
 use crate::display::boxed;
 use crate::equality::equal;
 use crate::heap::{
-    Data, alloc, innermost, items_of, len_of, new_str, obj, release, release_slot, retain, shape,
-    slot_at, unique, with_str,
+    Data, alloc, innermost, items_of, len_of, new_str, new_text, obj, release, release_slot,
+    retain, shape, slot_at, unique, with_str,
 };
 use crate::rt::{panic_with, type_of};
 use kavach_kir::{RtOp, Shape, Type};
@@ -213,7 +213,13 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         RtOp::StrLower => new_str(read(a, str::to_lowercase), result),
         // Text with nothing to trim is given back as it is (Sakshi's S8).
         RtOp::StrTrim if with_str(a, |s| s.trim().len() == s.len()) => a,
-        RtOp::StrTrim => new_str(read(a, |s| s.trim().to_string()), result),
+        // Copied once, from the text in place (S8): short text needs no
+        // buffer of its own.
+        RtOp::StrTrim => {
+            let t = with_str(a, |s| new_text(s.trim(), result));
+            release(a);
+            t
+        }
         RtOp::StrContains | RtOp::StrStartsWith | RtOp::StrEndsWith => {
             let yes = read(a, |s| {
                 read(b, |t| match op {
@@ -285,6 +291,15 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
         // Slices and a text's characters (spec 2.19).
         RtOp::ListSlicePart | RtOp::ListSetPart => {
             crate::rt_slices::list_part(op, a, b, c, code, line)
+        }
+        // `s[a:b]` with no step and no `#` (Sakshi's S8): no list of
+        // words, and the part is copied once, from the text in place.
+        RtOp::StrSliceRange => {
+            let t = with_str(a, |s| {
+                new_text(kavach_runtime_core::slices::text_range(s, b, c), result)
+            });
+            release(a);
+            t
         }
         RtOp::StrSlicePart | RtOp::StrAt => crate::rt_slices::text_part(op, a, b, code, line),
         RtOp::BytesSlicePart => crate::rt_slices::bytes_part(a, b, code, line),

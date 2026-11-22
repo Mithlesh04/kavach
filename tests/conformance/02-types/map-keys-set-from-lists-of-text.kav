@@ -1,0 +1,22 @@
+// Rule: `m[xs[i]] = v` with a key read from a list of text sets the value of a key already in the map and adds a new one, short or long, and leaves the list and any copy of the map as they were.
+// Spec: 2.2
+// expect output: {"a": 3, "a much longer key than fifteen": 4, "b": 2, "é": 5}
+// expect output: {"a": [3], "a much longer key than fifteen": [4], "b": [2], "é": [5]}
+// expect output: 4 99
+// expect output: ["a", "a much longer key than fifteen", "b", "a", "a much longer key than fifteen", "é"]
+
+fn main() {
+    const keys = ["a", "a much longer key than fifteen", "b", "a", "a much longer key than fifteen", "é"]
+    let m: {String: Int} = {:}
+    let r: {String: [Int]} = {:}
+    for i in 0..keys.len() {
+        m[keys[i]] = i
+        r[keys[i]] = [i]
+    }
+    print(m)
+    print(r)
+    const before = m
+    m[keys[1]] = 99
+    print(`{before.get(keys[1]) ?? -1} {m.get(keys[1]) ?? -1}`)
+    print(keys)
+}

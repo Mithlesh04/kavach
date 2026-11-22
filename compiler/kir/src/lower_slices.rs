@@ -104,6 +104,37 @@ impl<'a> Lowerer<'a> {
         line: u32,
     ) -> Lowered<ir::Expr> {
         let b = self.expr(base)?;
+        // `s[a:b]` with no step and no `#`: the ends alone, no list.
+        if let (
+            Some(Shape::Str),
+            ExprKind::Part {
+                start,
+                end,
+                step: None,
+            },
+        ) = (self.shapes.shape(b.ty), &index.kind)
+            && [start, end].iter().all(|x| {
+                !matches!(
+                    x.as_deref(),
+                    Some(ast::Expr {
+                        kind: ExprKind::FromEnd(_),
+                        ..
+                    })
+                )
+            })
+        {
+            let mut ends = Vec::new();
+            for (x, missing) in [(start, 0), (end, i64::MAX)] {
+                let v = match x.as_deref() {
+                    Some(x) => self.expr(x)?,
+                    None => self.at(K::Int(i128::from(missing)), Type::I64, line),
+                };
+                ends.push(self.coerce(v, Type::I64)?);
+            }
+            let mut args = vec![b];
+            args.extend(ends);
+            return Ok(self.at(K::Rt(RtOp::StrSliceRange, args), ty, line));
+        }
         let op = match self.shapes.shape(b.ty) {
             Some(Shape::List(_)) => RtOp::ListSlicePart,
             Some(Shape::Str) => RtOp::StrSlicePart,
@@ -202,5 +233,47 @@ impl<'a> Lowerer<'a> {
             }
         };
         Ok((first, changed))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::ir::ExprKind;
+    use crate::rt_op::RtOp;
+
+    /// The ops a program's functions call.
+    fn ops(src: &str) -> Vec<RtOp> {
+        let c = kavach_driver::compile(src, "t.kav", Default::default());
+        let program = crate::lower(&c).expect("lowers");
+        let mut ops = Vec::new();
+        for f in &program.functions {
+            crate::walk::any_in_block(&f.body, &mut |e| {
+                if let ExprKind::Rt(op, _) = &e.kind {
+                    ops.push(*op);
+                }
+                false
+            });
+        }
+        ops
+    }
+
+    /// `s[a:b]`, `s[a:]` and `s[:b]` take their ends alone, with no list
+    /// of words (S8); a step or a `#` still takes the words.
+    #[test]
+    fn a_text_range_takes_its_ends_alone() {
+        for (slice, range) in [
+            ("s[1:2]", true),
+            ("s[1:]", true),
+            ("s[:n]", true),
+            ("s[::2]", false),
+            ("s[#2:]", false),
+        ] {
+            let src = format!(
+                "use std.cli\n\nfn main() {{\n    const s = `x{{cli.args().len()}}yz`\n    const n = s.len()\n    print({slice})\n}}\n"
+            );
+            let ops = ops(&src);
+            assert_eq!(ops.contains(&RtOp::StrSliceRange), range, "{slice}");
+            assert_eq!(ops.contains(&RtOp::StrSlicePart), !range, "{slice}");
+        }
     }
 }

@@ -29,6 +29,7 @@ mod pointers;
 mod records;
 mod stmt;
 mod text;
+mod text_views;
 
 use kavach_kir::Program;
 use std::path::{Path, PathBuf};

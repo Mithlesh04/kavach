@@ -286,7 +286,7 @@ impl FnEmit<'_> {
         // when the body only asks its length; otherwise each is boxed.
         let text = self.text_list(self.f.locals[list as usize]);
         if text {
-            let view = moves == 0 && uses == 0;
+            let view = (moves == 0 && uses == 0) || self.text_view_ok(body, var);
             self.text_views[var as usize] = view;
             self.borrowed[var as usize] = view;
         }

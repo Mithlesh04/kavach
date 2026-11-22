@@ -102,3 +102,33 @@ impl FnEmit<'_> {
         }
     }
 }
+
+impl FnEmit<'_> {
+    /// `m[xs[i]] = v` into local `l` with text keys: the key is read where
+    /// it is (`runtime/native/src/rt_maps/item_keys.rs`). Whether it was.
+    pub(crate) fn map_set_item(
+        &mut self,
+        l: kavach_kir::Local,
+        value: &Expr,
+        args: &[Expr],
+    ) -> bool {
+        if !(self.text_keys(value.ty) || self.text_keys_plain(value.ty)) {
+            return false;
+        }
+        let Some((addr, copy)) = self.key_item(&args[1]) else {
+            return false;
+        };
+        let slot = self.slot_of(&args[2]);
+        let current = self.load_local(l).expect("a map");
+        let call = [
+            ("i64", current),
+            ("i64", addr),
+            ("i64", (copy as i64).to_string()),
+            ("i64", slot),
+            ("i32", value.line.to_string()),
+        ];
+        let changed = self.call_rt("kv_map_set_item", "i64", &call, false);
+        self.store_local(l, &changed);
+        true
+    }
+}

@@ -169,6 +169,22 @@ pub fn text(s: &str, part: &Part) -> Result<String, &'static str> {
         .collect())
 }
 
+/// `s[start:end]` with no step and no `#`, borrowed from `s`: both ends
+/// clamped to the text, as `text` clamps them. ASCII text is cut by
+/// bytes, with no walk over its characters.
+pub fn text_range(s: &str, start: i64, end: i64) -> &str {
+    if s.is_ascii() {
+        let n = s.len() as i64;
+        let (a, b) = (start.clamp(0, n), end.clamp(0, n));
+        return &s[a as usize..b.max(a) as usize];
+    }
+    let n = s.chars().count() as i64;
+    let a = start.clamp(0, n);
+    let b = end.clamp(0, n).max(a);
+    let at = |k: i64| s.char_indices().nth(k as usize).map_or(s.len(), |(i, _)| i);
+    &s[at(a)..at(b)]
+}
+
 /// Character `i` of `s`, or the panic when it is out of range.
 pub fn char_at(s: &str, i: i128) -> Result<char, String> {
     let found = usize::try_from(i).ok().and_then(|i| s.chars().nth(i));
@@ -192,6 +208,25 @@ pub fn pick<T: Clone>(items: &[T], part: &Part) -> Result<Vec<T>, &'static str> 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// `text_range` cuts as `text` does, ASCII or not, past the ends too.
+    #[test]
+    fn a_range_cuts_as_a_part_does() {
+        for s in ["", "abc", "héllo wörld", "日本語テキスト"] {
+            for (a, b) in [
+                (0, 0),
+                (1, 2),
+                (0, i64::MAX),
+                (2, 1),
+                (3, 99),
+                (-5, 2),
+                (0, -1),
+            ] {
+                let p = part(Some(a), Some(b), None);
+                assert_eq!(text_range(s, a, b), text(s, &p).unwrap(), "{s} {a} {b}");
+            }
+        }
+    }
 
     fn part(start: Option<i64>, end: Option<i64>, step: Option<i64>) -> Part {
         Part {

@@ -16,6 +16,7 @@ use crate::rt::{panic_with, type_of};
 use crate::rt_data::optional;
 use kavach_kir::{RtOp, Shape, Type};
 
+mod item_keys;
 pub(crate) mod known_keys;
 
 /// `list[i] = v`: a copy of the list (unless unshared) with item `i` set.
@@ -44,7 +45,7 @@ pub fn list_set(list: i64, i: i64, value: i64, line: i32) -> i64 {
     q
 }
 
-fn key_value_types(map: i64) -> (Type, Type) {
+pub(crate) fn key_value_types(map: i64) -> (Type, Type) {
     match shape(obj(map).ty()) {
         Shape::Map(k, v) => (*k, *v),
         Shape::Set(t) => (*t, Type::Unit),

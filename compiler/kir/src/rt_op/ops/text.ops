@@ -121,3 +121,7 @@ StrAt,
 /// of the type's `Shape::Whole` (or of `Int8` … `UInt64`). Panics as
 /// the interpreter does when a result doesn't fit.
 IntWhole,
+/// `s[a:b]`, `s[a:]` and `s[:b]` (spec 2.19) with no step and no `#`:
+/// the text, the start (0 when not written) and the end (the largest
+/// `Int` when not written), with no list of words (Sakshi's S8).
+StrSliceRange,
