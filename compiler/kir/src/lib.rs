@@ -113,6 +113,7 @@ mod lower_tuple_assign;
 mod lower_views;
 mod lower_whole;
 mod moves;
+mod nan_watch;
 mod par;
 mod passes;
 mod prefetch;

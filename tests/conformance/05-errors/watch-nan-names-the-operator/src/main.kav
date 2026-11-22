@@ -1,0 +1,17 @@
+// Rule: With `[run] watch_nan = true`, a float operator of the program that gives `NaN` panics, naming the operation and its operands.
+// Spec: 5.9, 10.11
+// expect output: 1.5
+// expect panic: NaN watch: 0.0 / 0.0 gives NaN
+
+fn mean(xs: [Float]) -> Float {
+    let total = 0.0
+    for x in xs {
+        total += x
+    }
+    total / Float(xs.len())
+}
+
+fn main() {
+    print(mean([1.0, 2.0]))
+    print(mean([]))
+}

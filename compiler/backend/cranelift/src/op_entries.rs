@@ -116,6 +116,7 @@ pub(crate) fn op_entries() -> Vec<RuntimeFn> {
             "kv_rt_whole",
             kavach_runtime_native::kv_rt_whole as *const u8,
         ),
+        ("kv_rt_nan", kavach_runtime_native::kv_rt_nan as *const u8),
         ("kv_rt_draw", kavach_runtime_native::kv_rt_draw as *const u8),
         (
             "kv_rt_normalize",

@@ -242,14 +242,26 @@ impl<'a> Interp<'a> {
                 };
                 let x = wide(0);
                 match crate::std_math::float_fn(name, x, wide(1)) {
-                    Some(v) => Value::Float32(v as f32),
+                    Some(v) => {
+                        if v.is_nan() {
+                            let message =
+                                kavach_runtime_core::math::nan_watch_call(name, x, wide(1));
+                            self.watch_nan(message, span)?;
+                        }
+                        Value::Float32(v as f32)
+                    }
                     None => {
                         return Err(self.panic(format!("`math.{name}` takes no `Float32`"), span));
                     }
                 }
             }
             ("math", n) if crate::std_math::float_fn(n, 0.0, 0.0).is_some() => {
-                Value::Float(crate::std_math::float_fn(n, float(0), float(1)).unwrap_or(0.0))
+                let v = crate::std_math::float_fn(n, float(0), float(1)).unwrap_or(0.0);
+                if v.is_nan() {
+                    let message = kavach_runtime_core::math::nan_watch_call(n, float(0), float(1));
+                    self.watch_nan(message, span)?;
+                }
+                Value::Float(v)
             }
             ("math", "sqrt") => Value::Float(float(0).sqrt()),
             ("math", "pow") => Value::Float(kavach_runtime_core::math::pow(float(0), float(1))),

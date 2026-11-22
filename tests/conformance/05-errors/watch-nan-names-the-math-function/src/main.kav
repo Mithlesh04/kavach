@@ -1,0 +1,12 @@
+// Rule: With `[run] watch_nan = true`, a `std.math` function of floats that gives `NaN` panics, naming the function and its argument.
+// Spec: 5.9
+// expect output: 2.0
+// expect panic: NaN watch: math.sqrt(-4.0) gives NaN
+
+use std.math
+
+fn main() {
+    for x in [4.0, -4.0] {
+        print(math.sqrt(x))
+    }
+}

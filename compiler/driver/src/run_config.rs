@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
-//! `[run]` in `kavach.toml`: how the program runs (spec 4.9, 15.2).
+//! `[run]` in `kavach.toml`: how the program runs (spec 4.9, 15.2, 5.9).
 
 use serde::Deserialize;
 
@@ -20,6 +20,24 @@ pub struct RunConfig {
     /// default, lets the runtime choose; a vendor's name or a device's
     /// number chooses the device (spec 15.6). `KAVACH_GPU` at launch wins.
     pub gpu: Option<String>,
+    /// The NaN watch (spec 5.9): a float operation of the program's code
+    /// that gives `NaN` panics. `--watch-nan` turns it on too.
+    pub watch_nan: bool,
+}
+
+/// `--watch-nan` was given on the command line (spec 5.9).
+static WATCH_NAN: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Turns the NaN watch on for this run of the compiler (`--watch-nan`).
+pub fn set_watch_nan() {
+    WATCH_NAN.store(true, std::sync::atomic::Ordering::Relaxed);
+}
+
+/// Whether the program at `file` is watched for NaN (spec 5.9): by
+/// `--watch-nan`, or `[run] watch_nan` in its `kavach.toml`.
+pub fn watch_nan(file: &std::path::Path) -> bool {
+    WATCH_NAN.load(std::sync::atomic::Ordering::Relaxed)
+        || crate::Config::for_file(file).is_ok_and(|c| c.run.watch_nan)
 }
 
 impl RunConfig {

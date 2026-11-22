@@ -19,6 +19,8 @@ usage:
   kavach run --hot <f>      swap in changed functions while it runs, keeping its values (spec 10.5)
   kavach run --tracy <f>    show its spans and GPU work live in the Tracy profiler;
                             `kavach build --tracy` builds a program that does (spec 14.12)
+  kavach run --watch-nan <f>   panic at the first float operation that gives NaN;
+                            `kavach build --watch-nan` builds a program that does (spec 5.9)
   kavach build [--compress[=max]] <file.kav> [-o <out>]   write an executable (named after the file), packed smaller if asked
   kavach build --lib <lib.kav> [-o <dir>]   write a shared library and a C header
                             for other languages (spec 10.10)

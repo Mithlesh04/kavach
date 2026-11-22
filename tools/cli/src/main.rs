@@ -76,6 +76,8 @@ fn cli() -> ExitCode {
     let (args, compress) = pack::take_flag(args);
     // `--tracy`: live in the Tracy profiler (spec 14.12, decision 0123).
     let args = native::take_tracy(args);
+    // `--watch-nan`: the NaN watch (spec 5.9).
+    let args = native::take_watch_nan(args);
     // The `.env` file and `--env` values (spec 10.13).
     if let ([command, ..], Some(path)) = (&args[..], args.iter().find(|a| a.ends_with(".kav")))
         && matches!(command.as_str(), "run" | "test" | "build")

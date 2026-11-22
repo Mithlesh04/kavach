@@ -73,6 +73,9 @@ PanicText,
 IntPow,
 /// `a.near(b)` on floats (spec 14.2).
 FloatNear,
+/// The NaN watch (spec 5.9, `nan_watch.rs`): float operator or
+/// `std.math` function `c` of `a` (and `b`), panicking when it gives NaN.
+NanWatch,
 /// `d.round(places)` (`c` is 0) and `d.round_even(places)` (`c` is 1)
 /// on a `Decimal` (spec 14.2).
 DecRound,

@@ -1,0 +1,13 @@
+// Rule: Without the NaN watch, a float operation with no answer gives `NaN` and the program goes on.
+// Spec: 5.9
+// expect output: true
+// expect output: done
+
+use std.math
+
+fn main() {
+    const zero = 0.0
+    const x = zero / zero + math.sqrt(-1.0)
+    print(x.is_nan())
+    print("done")
+}

@@ -59,6 +59,20 @@ pub(crate) fn take_tracy(mut args: Vec<String>) -> Vec<String> {
     args
 }
 
+/// `args` without `--watch-nan` among Kavach's own flags, before the
+/// file (spec 5.9): with it, the program is watched for NaN.
+pub(crate) fn take_watch_nan(mut args: Vec<String>) -> Vec<String> {
+    let mine = args
+        .iter()
+        .position(|a| a.ends_with(".kav") || a == "--")
+        .unwrap_or(args.len());
+    if let Some(at) = args[..mine].iter().position(|a| a == "--watch-nan") {
+        args.remove(at);
+        kavach_driver::set_watch_nan();
+    }
+    args
+}
+
 /// `kavach build`: an executable file, named after the source file and
 /// written to the current folder unless `-o` says otherwise (spec 10.9).
 pub(crate) fn build(
@@ -71,6 +85,9 @@ pub(crate) fn build(
     let mut options: Vec<String> = Vec::new();
     if tracy {
         options.push("--tracy".into());
+    }
+    if kavach_driver::watch_nan(std::path::Path::new(path)) {
+        options.push("--watch-nan".into());
     }
     match compress {
         Some(kavach_runtime_unpack::Method::Deflate) => options.push("--compress".into()),

@@ -206,6 +206,9 @@ impl RtOp {
             "kv_rt_process"
         } else if self == RtOp::CliVersion {
             "kv_rt_version"
+        } else if self == RtOp::NanWatch {
+            // Only a program built with the NaN watch links it (5.9).
+            "kv_rt_nan"
         } else if self == RtOp::IntWhole {
             // Numbers with bits or a range (spec 2.1): only programs
             // with them link their checks.

@@ -73,9 +73,59 @@ pub fn lgamma(x: f64) -> f64 {
     libm::lgamma(x)
 }
 
+/// The NaN watch's panic for an operator of `Float`s, or of `Float32`s
+/// when `narrow` (spec 5.9): `NaN watch: 0.0 / 0.0 gives NaN`.
+pub fn nan_watch_op(x: f64, op: &str, y: f64, narrow: bool) -> String {
+    let show = |v: f64| {
+        if narrow {
+            crate::format_float32(v as f32)
+        } else {
+            crate::format_float(v)
+        }
+    };
+    format!("NaN watch: {} {op} {} gives NaN", show(x), show(y))
+}
+
+/// The NaN watch's panic for `math.name(x)`, or `(x, y)` for the
+/// functions of two (spec 5.9); `pow` shows as `x ** y`.
+pub fn nan_watch_call(name: &str, x: f64, y: f64) -> String {
+    let show = crate::format_float;
+    match name {
+        "pow" => nan_watch_op(x, "**", y, false),
+        "atan2" | "hypot" | "remainder" => {
+            format!("NaN watch: math.{name}({}, {}) gives NaN", show(x), show(y))
+        }
+        _ => format!("NaN watch: math.{name}({}) gives NaN", show(x)),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_nan_watch_names_the_operation_and_its_operands() {
+        let cases = [
+            (nan_watch_op(0.0, "/", 0.0, false), "0.0 / 0.0"),
+            (
+                nan_watch_op(f64::INFINITY, "-", f64::INFINITY, false),
+                "inf - inf",
+            ),
+            (
+                nan_watch_op(0.1f32 as f64, "*", f64::INFINITY, true),
+                "0.1 * inf",
+            ),
+            (nan_watch_call("sqrt", -1.0, 0.0), "math.sqrt(-1.0)"),
+            (nan_watch_call("pow", -8.0, 0.5), "-8.0 ** 0.5"),
+            (
+                nan_watch_call("remainder", 1.0, 0.0),
+                "math.remainder(1.0, 0.0)",
+            ),
+        ];
+        for (got, what) in cases {
+            assert_eq!(got, format!("NaN watch: {what} gives NaN"));
+        }
+    }
 
     /// musl's results, which every system now gives: `sin(1e22)` needs
     /// the full argument reduction some C libraries cut short.

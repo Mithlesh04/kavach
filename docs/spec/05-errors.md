@@ -212,8 +212,42 @@ In debug builds, an error also records every `try` it passed through. When `main
 
 These messages never go to standard output, so a program's real output stays clean.
 
+## 5.9 Watching for NaN
+
+A float operation with no answer gives `NaN`, as IEEE 754 says: `0.0 / 0.0`, `inf - inf`, `math.sqrt(-1.0)`. The program goes on, and the `NaN` spreads through every sum it touches, so a model's loss turns into `NaN` far from the bug. The **NaN watch** stops the program at the first operation that makes one, and names it:
+
+```toml
+[run]
+watch_nan = true
+```
+
+```kavach
+fn mean(xs: [Float]) -> Float {
+    let total = 0.0
+    for x in xs {
+        total += x
+    }
+    total / Float(xs.len())      // 0.0 / 0.0 for an empty list
+}
+
+fn main() {
+    print(mean([]))
+}
+```
+
+```
+panic: NaN watch: 0.0 / 0.0 gives NaN
+  at mean.kav:6
+```
+
+- **Watched:** the operators `+`, `-`, `*`, `/`, `%` and `**` on `Float` and `Float32`, `+=` and the others too, and `std.math`'s functions of floats (14.5), as the program's code writes them. When one gives `NaN`, the program panics (5.6) with the operation and its operands: `NaN watch: inf - inf gives NaN`, `NaN watch: math.sqrt(-1.0) gives NaN`. `math.pow(x, y)` shows as `x ** y`. A `NaN` that comes from outside, from a file or `Float.parse`, stops the program at the first watched operation it reaches.
+- **Not watched:** the standard library's own code, which makes `NaN` on purpose (a missing value in a table, 14.34); methods of lists, such as `sum`; and a `map` that runs on the GPU (15.2).
+- **Turning it on:** `watch_nan = true` under `[run]` in `kavach.toml` (10.11), or `--watch-nan` for one run or build: `kavach run --watch-nan train.kav`. It works the same in the interpreter, `kavach run --native` and `kavach build`, which names it in the program's build line (10.5). `kavach test` doesn't watch: a test may make `NaN` on purpose, to check what a function does with it.
+- **Its cost:** off, as it is by default, nothing: the checks are compiled only into a program that asks for them. On, each watched operation goes through the runtime and is checked, so a loop of float arithmetic runs about seven times slower; it is for finding a bug, not for production.
+
 ## Open questions
 
 - Where a panic in the standard library points (5.6, chosen 2026-11-22, for a maintainer's review): at the program's innermost call into the library that is running, as Rust's `#[track_caller]` points at the caller. A package's (10.12) panics still point inside the package, and a library function called through a function value points inside the library in native code. Native code pays for it only on calls of library functions that can panic: two quick calls into the runtime each.
+- The NaN watch (5.9, chosen 2026-11-23, for a maintainer's review): a setting read when the program is compiled, so it costs nothing when off, rather than a check while it runs or the processor's floating-point traps (fast when on, but each system reports them its own way). It watches the program's own code and stops at the first `NaN`, even one that came from outside; not yet the methods of lists (`sum`, `mean`) or the GPU.
 
 Decisions are recorded in [0013](../decisions/0013-core-language-decisions.md).

@@ -220,23 +220,41 @@ impl<'a> Interp<'a> {
                     )),
                 }
             }
-            (Value::Float32(x), Value::Float32(y)) => Ok(Value::Float32(match op {
-                Add => x + y,
-                Sub => x - y,
-                Mul => x * y,
-                Div => x / y,
-                // As a `Float`, then rounded once: native code does the same.
-                Pow => kavach_runtime_core::math::pow(f64::from(x), f64::from(y)) as f32,
-                _ => x % y,
-            })),
-            (Value::Float(x), Value::Float(y)) => Ok(Value::Float(match op {
-                Add => x + y,
-                Sub => x - y,
-                Mul => x * y,
-                Div => x / y,
-                Pow => kavach_runtime_core::math::pow(x, y),
-                _ => x % y,
-            })),
+            (Value::Float32(x), Value::Float32(y)) => {
+                let got = match op {
+                    Add => x + y,
+                    Sub => x - y,
+                    Mul => x * y,
+                    Div => x / y,
+                    // As a `Float`, then rounded once: native code does the same.
+                    Pow => kavach_runtime_core::math::pow(f64::from(x), f64::from(y)) as f32,
+                    _ => x % y,
+                };
+                if got.is_nan() {
+                    // `**` is worked out as a `Float`, so shown as one.
+                    let narrow = op != Pow;
+                    let (x, y) = (f64::from(x), f64::from(y));
+                    let message =
+                        kavach_runtime_core::math::nan_watch_op(x, op.as_str(), y, narrow);
+                    self.watch_nan(message, span)?;
+                }
+                Ok(Value::Float32(got))
+            }
+            (Value::Float(x), Value::Float(y)) => {
+                let got = match op {
+                    Add => x + y,
+                    Sub => x - y,
+                    Mul => x * y,
+                    Div => x / y,
+                    Pow => kavach_runtime_core::math::pow(x, y),
+                    _ => x % y,
+                };
+                if got.is_nan() {
+                    let message = kavach_runtime_core::math::nan_watch_op(x, op.as_str(), y, false);
+                    self.watch_nan(message, span)?;
+                }
+                Ok(Value::Float(got))
+            }
             (Value::BigInt(x), Value::BigInt(y)) => self.big_arith(op, &x, &y, span),
             (a, b) if crate::bigint::any_decimal(&a).is_some() => {
                 match (
@@ -279,6 +297,27 @@ impl<'a> Interp<'a> {
                 span,
             )),
         }
+    }
+}
+
+/// Whether the program is watched for NaN (spec 5.9): `[run] watch_nan`
+/// or `--watch-nan`, set as `main` starts.
+pub(crate) static WATCH_NAN: std::sync::atomic::AtomicBool =
+    std::sync::atomic::AtomicBool::new(false);
+
+impl<'a> Interp<'a> {
+    /// The NaN watch's panic, for an operation at `span` that gave `NaN`:
+    /// when the watch is on and `span` is the program's own code.
+    pub(crate) fn watch_nan(
+        &self,
+        message: String,
+        span: Span,
+    ) -> Result<(), crate::value::Flow<'a>> {
+        let on = WATCH_NAN.load(std::sync::atomic::Ordering::Relaxed);
+        if on && !self.c.in_std(span.start) {
+            return Err(self.panic(message, span));
+        }
+        Ok(())
     }
 }
 

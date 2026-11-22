@@ -13,6 +13,7 @@
 | `kavach build --lib` | Compile a library into a shared library with a C header, for other languages (10.10) |
 | `kavach build --compress` / `--compress=max` | Write a smaller executable, packed without losing anything; it unpacks itself when it starts (below) |
 | `kavach run --tracy`, `kavach build --tracy` | Run or build the program with Tracy's client, so the Tracy profiler shows its spans, tasks and GPU work live (14.12) |
+| `kavach run --watch-nan`, `kavach build --watch-nan` | Run or build the program with the NaN watch: the first float operation that gives `NaN` panics, naming it (5.9) |
 | `kavach test` | Run generated and hand-written tests (chapter 11) |
 | `kavach fmt` | Format all code |
 | `kavach add <name> --path <folder>` / `kavach add <name> --git <url> [--tag T \| --branch B \| --rev C] [--unsafe]` | Add a dependency, fetch it, write the capabilities it uses into its `can` and write `kavach.lock` (10.12) |
@@ -46,7 +47,7 @@ built by kavach 0.1.0 (commit 8f8ae051)
 built 2026-11-23T09:41:07Z for x86_64-linux with --tracy
 ```
 
-- The third line gives when `kavach build` ran, as a moment in UTC; the system the program runs on, as `<processor>-<system>` (`x86_64-windows`, `aarch64-macos`); and the options that change what is built: `--tracy`, `--compress` or `--compress=max`, and `KAVACH_BACKEND=cranelift` (10.11). Without them, the line ends after the system.
+- The third line gives when `kavach build` ran, as a moment in UTC; the system the program runs on, as `<processor>-<system>` (`x86_64-windows`, `aarch64-macos`); and the options that change what is built: `--tracy`, `--watch-nan` (given, or set in `kavach.toml`), `--compress` or `--compress=max`, and `KAVACH_BACKEND=cranelift` (10.11). Without them, the line ends after the system.
 - With `SOURCE_DATE_EPOCH` set to a whole number of seconds since 1970, as tools for repeatable builds set it, the moment is that one instead of the clock's, so building the same source again doesn't change the text.
 - `kavach run` keeps no executable, so a program run that way has the first two lines only.
 

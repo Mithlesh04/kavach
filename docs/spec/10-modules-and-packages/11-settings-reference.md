@@ -22,6 +22,7 @@ Every setting a program can have, in one place. A key or section that isn't list
 | `[run]` | `cores` | a whole number, 1 or more | all the machine gives the program | 4.9: the most cores the program uses; `KAVACH_CORES` wins |
 | `[run]` | `threads` | a whole number, 1 or more | `256` | 4.9: the most `on threads` rounds running at once in the whole program |
 | `[run]` | `gpu` | `"cpu"` (or `"off"`), `"auto"`, a vendor's name (`"amd"`), a device's number (`"1"`), in any case | `"auto"` | 15.2, 15.6: `"cpu"` keeps every `map` with a `gpu fn` on the CPU; a name or number chooses the device; `KAVACH_GPU` wins |
+| `[run]` | `watch_nan` | `true`, `false` | `false` | 5.9: a float operation of the program's code that gives `NaN` panics, naming it; `--watch-nan` turns it on for one run or build |
 | `[test]` | `cases` | a whole number | `200` | 11.9 |
 | `[test]` | `deep_cases` | a whole number | `10000` | 11.9 |
 | `[test]` | `time_budget` | a time per call: `"500ms"`, `"1s"`, `"2m"` | `"1s"` | 11.9 |

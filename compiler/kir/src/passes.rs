@@ -40,6 +40,15 @@ pub(crate) fn finish(
     let std_from =
         (c.files.iter().find(|f| c.in_std(f.start))).map_or(u32::MAX, |f| f.first_line as u32);
     crate::caller_lines::mark_calls(&mut functions, std_from);
+    // The NaN watch (spec 5.9), before inlining and the loop passes, and
+    // never in a `gpu fn`, which the GPU runs as it is.
+    if kavach_driver::watch_nan(std::path::Path::new(&c.path)) {
+        for (f, (decl, _)) in functions.iter_mut().zip(&l.fns) {
+            if !matches!(decl, Some(d) if d.is_gpu) {
+                crate::nan_watch::watch_nan(f, std_from);
+            }
+        }
+    }
     for (i, f) in functions.iter_mut().enumerate() {
         crate::unrecurse::unrecurse(i as crate::ir::FuncId, f);
     }
