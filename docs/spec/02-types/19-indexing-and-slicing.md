@@ -59,7 +59,7 @@ print("kavach"[0:3])    // kav
   print(s[9])           // panic: index 9 is out of range: the text has 5 characters
   ```
 
-- The parts are worked out left to right, after the value being cut: `xs`, then `start`, `end` and `step`.
+- The parts are worked out left to right, after the value being cut, as everything is ([3.10](../03-functions.md#310-the-order-things-are-worked-out-in)): `xs`, then `start`, `end` and `step`.
 
 ## From the end: `#k`
 

@@ -6,7 +6,7 @@
 | `Int8`, `Int16`, `Int32`, `UInt8`, `UInt16`, `UInt32`, `UInt64` | Sized integers; any other width is `Int<bits: n>` or `UInt<bits: n>`, and a range is `Int<range: a..=b>` (below) |
 | `Float` | 64-bit floating point |
 | `Float32` | 32-bit floating point: rounded to single precision at every step, and printed as the shortest text that reads back as the same `Float32` (`0.1`). What GPUs compute fastest (chapter 15) |
-| `Decimal` | Exact base-10 number, with as many digits as it needs. Use it for money; `Decimal<digits: 10, places: 2>` fixes the places (below) |
+| `Decimal` | Exact base-10 number, with as many digits as it needs. Use it for money; `Decimal<digits: 10, places: 2>` fixes the places (below; *not built yet*) |
 | `BigInt` | A whole number of any size. Slower than `Int`: use it when values may not fit in 64 bits |
 | `Bool` | `true` or `false` |
 | `Char` | One Unicode character |
