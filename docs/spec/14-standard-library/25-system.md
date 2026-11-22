@@ -103,7 +103,14 @@ fn free_8080() ! SystemError uses System.critical.read, System.critical.write, C
 | `net.is_free(port) -> Bool` | Whether this program could listen on `port` now | `Net` |
 
 - `SystemError` is `NotFound(what:)`, `Denied(reason:)` or `Failed(reason:)`.
-- `add_user` fails with `Failed` before changing anything when the name or the password holds a line break or a NUL character, or the name holds `:`: the system's tools read them as the end of the line, so such a password could set another account's.
+- `add_user` fails with `Failed` before changing anything when the password holds a line break or a NUL character: the system's tools read them as the end of the line, so such a password could set another account's.
+- A new user's name is 1 to 20 characters: ASCII letters, digits, `_`, `-` and `.`, the first a letter or `_`. Every system takes such a name (20 is Windows' limit), so a program that makes users works the same everywhere. Any other name fails with `Failed` before anything changes:
+
+  ```kavach
+  system.add_user("web-01", pw)        // a name every system takes
+  system.add_user("Web Team", pw)      // Failed: a space
+  system.add_user("2nd", pw)           // Failed: starts with a digit
+  ```
 - A port found free can be taken by another program before this one listens on it: a server that can should listen on port 0 and read the port it got (14.10).
 - Their tests change the machine, so they run only in a throwaway container: the tests in the repository check what is refused without the rights.
 
@@ -116,3 +123,4 @@ fn free_8080() ! SystemError uses System.critical.read, System.critical.write, C
 - macOS through IOKit: disks, displays, devices and sensors.
 - Each GPU's memory, and the memory a GPU has free.
 - Changes while the program runs: memory available now, the processor's current speed, its temperature.
+- A new user's name (chosen 2026-11-22, for a maintainer's review): the characters every system takes, at most 20 of them, rather than whatever this system's own tools take. `remove_user` takes any name, as old accounts may have others.

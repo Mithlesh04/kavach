@@ -100,6 +100,17 @@ fn unseen(row: &[String]) -> bool {
     row[4].is_empty() || row[4] == "0"
 }
 
+/// Whether `name` may name a new user (spec 14.25): 1 to 20 characters,
+/// ASCII letters, digits, `_`, `-` and `.`, the first a letter or `_`.
+/// Every system takes such a name: 20 is Windows' limit, and Linux's
+/// `useradd` takes these characters.
+fn user_name(name: &str) -> bool {
+    let first = name.chars().next();
+    (1..=20).contains(&name.len())
+        && first.is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
+        && (name.chars()).all(|c| c.is_ascii_alphanumeric() || matches!(c, '_' | '-' | '.'))
+}
+
 /// The account `add_user` makes: `name`, `password` and `admin` or `""`,
 /// NUL between them. A NUL inside one would add a part (`"pw\0admin"`
 /// makes an administrator), and a line break ends a line the system's
@@ -107,9 +118,9 @@ fn unseen(row: &[String]) -> bool {
 fn account(text: &str) -> Result<(&str, &str, bool), Refused> {
     let parts: Vec<&str> = text.split('\0').collect();
     match parts[..] {
-        [name, _, _] if name.is_empty() || name.contains(['/', '\\', ':', '\n', '\r']) => {
-            Err(Refused::Failed(format!("`{name}` can't name a user")))
-        }
+        [name, _, _] if !user_name(name) => Err(Refused::Failed(format!(
+            "`{name}` can't name a user: write 1 to 20 letters, digits, `_`, `-` or `.`, starting with a letter or `_`"
+        ))),
         [_, password, _] if password.contains(['\n', '\r']) => Err(Refused::Failed(
             "a password can't hold a line break or a NUL".into(),
         )),
@@ -151,6 +162,34 @@ mod tests {
             "\0pw\0",
         ] {
             assert!(matches!(account(text), Err(Refused::Failed(_))), "{text:?}");
+        }
+    }
+
+    #[test]
+    fn a_user_name_is_short_and_plain() {
+        for good in [
+            "asha",
+            "_build",
+            "web-01",
+            "Asha.K",
+            "a",
+            "abcdefghij0123456789",
+        ] {
+            assert!(user_name(good), "{good}");
+        }
+        for bad in [
+            "",
+            "1st",
+            "-x",
+            ".hidden",
+            "a b",
+            "a/b",
+            "a\\b",
+            "a:b",
+            "ásha",
+            "abcdefghij01234567890",
+        ] {
+            assert!(!user_name(bad), "{bad:?}");
         }
     }
 }

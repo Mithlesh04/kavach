@@ -1,0 +1,26 @@
+// Rule: a new user's name is 1 to 20 ASCII letters, digits, `_`, `-` or `.`, the first a letter or `_`; `add_user` with any other name fails with `Failed` before anything changes.
+// Spec: 14.25
+// Checks: misuse
+// expect output: Failed(reason: "`web team?` can't name a user: write 1 to 20 letters, digits, `_`, `-` or `.`, starting with a letter or `_`")
+// expect output: `` refused
+// expect output: `2nd|` refused
+// expect output: `-x;` refused
+// expect output: `a:b` refused
+// expect output: `[ásha]` refused
+// expect output: `abcdefghij0123456789*` refused
+
+use std.system
+
+// Each name also holds a character Linux's and Windows' own tools refuse,
+// so even a broken check could make no user on any machine.
+fn main() uses System.critical.write, Console {
+    system.add_user("web team?", "Pw-1234567!") catch e => print(e)
+    for name in ["", "2nd|", "-x;", "a:b", "[ásha]", "abcdefghij0123456789*"] {
+        system.add_user(name, "Pw-1234567!") catch e => {
+            match e {
+                SystemError.Failed(_) => print(`\`{name}\` refused`)
+                _ => print(`\`{name}\`: {e}`)
+            }
+        }
+    }
+}
