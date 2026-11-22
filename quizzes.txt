@@ -322,7 +322,7 @@ print(add(2, 3))
 
 2. Multiple choice: A round of an `on cores` loop hits an overflow. What does the program print?
 
-   Choices: `The exact panic the one-core loop gives`, `A special parallel-overflow error`, `Nothing: the chunk is skipped`
+   Choices: `The exact panic the one-core loop gives`, `A special parallel-overflow error`, `Nothing: the range is skipped`
 
    Answer: `The exact panic the one-core loop gives`
 

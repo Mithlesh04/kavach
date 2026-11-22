@@ -57,6 +57,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Variables: let](https://kavachlang.com/docs/basics/variables/let/): let names a variable: a value that can change later.
 - [Variables: Changing a value](https://kavachlang.com/docs/basics/variables/changing-a-value/): Give a let a new value with =, or change it in place with +=, -=, *= and the others.
 - [Variables: Destructuring](https://kavachlang.com/docs/basics/variables/destructuring/): Take a list, a record or a dict apart into several names in one line.
+- [Variables: Tuple assignment](https://kavachlang.com/docs/basics/variables/tuple-assignment/): (a, b) = (b, a) sets several places with one =. Two values swap with no temporary variable.
 - [Variables: Module constants](https://kavachlang.com/docs/basics/variables/module-constants/): A const at the top level of a file, outside any function, is a module constant: every function in the file can read it.
 - [User Input](https://kavachlang.com/docs/basics/user-input/): term.prompt(question) prints a question and gives back the line the user types.
 - [User Input: Ask for text](https://kavachlang.com/docs/basics/user-input/ask-for-text/): term.prompt gives the line typed, as text, or none when the input has ended.
@@ -65,6 +66,8 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Data Types](https://kavachlang.com/docs/basics/data-types/): Every value has a type: whole numbers are Int, text is String, true and false are Bool, and so on.
 - [Data Types: Int](https://kavachlang.com/docs/basics/data-types/int/): Int is a whole number, positive or negative, up to about nine quintillion.
 - [Data Types: Sized integers](https://kavachlang.com/docs/basics/data-types/sized-integers/): Int8 to Int32 and UInt8 to UInt64 hold whole numbers in less space, or only positive ones.
+- [Data Types: Any bit width](https://kavachlang.com/docs/basics/data-types/any-bit-width/): Int<bits: n> and UInt<bits: n> hold a whole number of exactly n bits, for hardware registers, chip design and file formats; Int8 is Int<bits: 8>.
+- [Data Types: Ranged integers](https://kavachlang.com/docs/basics/data-types/ranged-integers/): Int<range: a..=b> is a whole number that is always in the range, such as a port from 1 to 65535; a value outside it never gets in.
 - [Data Types: Float and Float32](https://kavachlang.com/docs/basics/data-types/float-and-float32/): Float is a number with a fraction, in 64 bits; Float32 is the 32-bit kind that GPUs compute fastest.
 - [Data Types: Decimal](https://kavachlang.com/docs/basics/data-types/decimal/): Decimal holds decimal numbers exactly, with as many digits as they need: it is Kavach's big decimal. Use it for money.
 - [Data Types: BigInt](https://kavachlang.com/docs/basics/data-types/bigint/): BigInt is a whole number of any size, worked out exactly.
@@ -129,6 +132,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Functions as Values](https://kavachlang.com/docs/functions/functions-as-values/): A function is a value: store it in a variable, or pass it to another function.
 - [Recursion](https://kavachlang.com/docs/functions/recursion/): A function may call itself, as long as each call gets closer to a case that stops.
 - [inout Parameters](https://kavachlang.com/docs/functions/inout-parameters/): A parameter marked inout lets the function change the caller's variable, and only when it succeeds.
+- [Evaluation Order](https://kavachlang.com/docs/functions/evaluation-order/): Everything is worked out once, left to right, as it is written: the same in kavach run and in a built program.
 - [Signatures](https://kavachlang.com/docs/functions/signatures/): A function's first lines say what it takes, gives, may fail with, may touch, and promises.
 - [Deprecating a Function](https://kavachlang.com/docs/functions/deprecating-a-function/): deprecated marks a function that is on its way out: every call warns, and kavach fix rewrites the calls to the new one.
 
@@ -138,6 +142,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Lists: Making a list](https://kavachlang.com/docs/collections/lists/making-a-list/): Write the items in square brackets, or start empty with a type and push.
 - [Lists: Reading by index](https://kavachlang.com/docs/collections/lists/reading-by-index/): list[i] reads the item at position i, counting from 0; list.get(i) gives none instead of stopping.
 - [Lists: Changing items](https://kavachlang.com/docs/collections/lists/changing-items/): list[i] = value replaces an item. The list must be a let.
+- [Lists: Swapping items](https://kavachlang.com/docs/collections/lists/swapping-items/): xs.swap(i, j) swaps two items of a list, in place.
 - [Lists: Adding and removing](https://kavachlang.com/docs/collections/lists/adding-and-removing/): push adds an item to the end and pop takes the last one off; + joins two lists; filter keeps only the items you want.
 - [Lists: Sorting](https://kavachlang.com/docs/collections/lists/sorting/): sort() gives a sorted copy; sort_by sorts by a key; the slice [::-1] turns a list around.
 - [Lists: map, filter, sum](https://kavachlang.com/docs/collections/lists/map-filter-sum/): map changes every item, filter keeps some, sum adds them up, and count, any, all and find ask questions.
@@ -204,7 +209,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Contracts: ensure](https://kavachlang.com/docs/errors/contracts/ensure/): ensure states what the function promises; result is the value it gives back.
 - [Contracts: invariant](https://kavachlang.com/docs/errors/contracts/invariant/): invariant states what is always true of a type. A value that breaks it can't exist.
 - [Contracts: example](https://kavachlang.com/docs/errors/contracts/example/): example shows one real call and its expected result. kavach test runs every one.
-- [Contracts: How they are checked](https://kavachlang.com/docs/errors/contracts/how-they-are-checked/): While you develop, every contract is checked. In a release build, public functions' contracts and every invariant are.
+- [Contracts: How they are checked](https://kavachlang.com/docs/errors/contracts/how-they-are-checked/): Every contract is checked today, in every build. A release build that keeps only public functions' contracts and every invariant is planned, not built yet.
 - [Testing](https://kavachlang.com/docs/errors/testing/): kavach test tests every function from its types and contracts. Most code needs no test file at all.
 - [Testing: Tests from types](https://kavachlang.com/docs/errors/testing/tests-from-types/): From a function's types and contracts alone, kavach test makes the inputs and checks the results.
 - [Testing: Your own values](https://kavachlang.com/docs/errors/testing/your-own-values/): When the values kavach test makes up don't suit a type, the type makes its own: it implements Sample, and builds a value from a Gen.
@@ -266,6 +271,10 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [Tensors: Masks](https://kavachlang.com/docs/standard-library/tensors/masks/): t > 0.5 compares item by item and gives a mask, a Tensor<Bool>. t[mask] picks the numbers where it is true, and tensor.where chooses between two tensors.
 - [Tensors: Reductions](https://kavachlang.com/docs/standard-library/tensors/reductions/): sum, prod, min, max, mean, var and std work on every number, or along one axis: m.sum(axis: 0) sums each column. A float sum is exact, so it is the same on every machine.
 - [Tensors: Sorting and joining](https://kavachlang.com/docs/standard-library/tensors/sorting-and-joining/): sort, argsort, unique and percentile order a tensor's numbers; concatenate, stack, split and split_at join tensors and cut them apart.
+- [Tensors: Linear algebra](https://kavachlang.com/docs/standard-library/tensors/linear-algebra/): a.inv(), a.solve(b), a.det(), a.eig() and a.svd() work on a matrix of floats: a tensor of two dimensions. Each is one fixed algorithm, so its result has the same bits on every machine.
+- [Tensors: The FFT](https://kavachlang.com/docs/standard-library/tensors/the-fft/): t.fft() gives the discrete Fourier transform of a tensor of floats, as a Spectrum: its real parts and its imaginary parts. s.ifft() gives the signal back. Any length works.
+- [Tables](https://kavachlang.com/docs/standard-library/tables/): std.table gives Table<R>: rows of a record type, for data read from CSV or JSON, as pandas and R's data frames are. It has the methods of a list of records, and the compiler checks every column a program names.
+- [Tables: CSV](https://kavachlang.com/docs/standard-library/tables/csv/): table.read_csv<R>(path) and table.parse_csv<R>(text) read CSV by RFC 4180 into rows of R, strictly: a cell that doesn't fit its field fails with a CsvError naming its line and column. write_csv and to_csv write it back.
 - [JSON](https://kavachlang.com/docs/standard-library/json/): JSON is text that carries data between programs. Kavach reads it straight into your own types, or into a Json value when its shape is known only while the program runs.
 - [JSON: Json values](https://kavachlang.com/docs/standard-library/json/json-values/): A Json value holds JSON whose shape is known only while the program runs. It is a union of six cases, one for each kind of JSON value.
 - [JSON: Reading](https://kavachlang.com/docs/standard-library/json/reading/): json.parse gives a Json value; doc["key"] and doc[i] read into it, and .text(), .int() and the others give the value as an optional.
@@ -333,6 +342,8 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [ask<T>: When the AI fails](https://kavachlang.com/docs/agents/ask/when-the-ai-fails/): ask can fail: no key, a busy or refusing provider, an answer that never fits the type, or a limit. Each kind of trouble has its own AiError, the same for every provider.
 - [ask<T>: Choosing the model](https://kavachlang.com/docs/agents/ask/choosing-the-model/): An agent chooses its AI model in code, with model; a single call can choose another, with model:. The key comes from an environment variable, never from a file.
 - [ask<T>: Providers](https://kavachlang.com/docs/agents/ask/providers/): A provider is how ask speaks to one AI service's API. It is a Kavach interface that only translates; the runtime keeps the key, sends, retries and keeps the limits.
+- [ask<T>: Usage and cost](https://kavachlang.com/docs/agents/ask/usage-and-cost/): ai.ask_full<T> gives an answer with the tokens it took, the model that gave it and what it cost. ai.spent() adds up every ask of the run.
+- [ask<T>: Counting tokens](https://kavachlang.com/docs/agents/ask/counting-tokens/): ai.count counts a prompt's input tokens before it is sent, so a program can see whether it fits a model or a budget before it asks.
 - [Agent Modes](https://kavachlang.com/docs/agents/agent-modes/): Each agent runs in a mode, set in its settings: Observe only reports, Suggest asks a person every time, Enforce acts. Trust is earned step by step.
 - [Agent Modes: observe](https://kavachlang.com/docs/agents/agent-modes/observe/): observe: calls run normally, and limits and approvals are only reported.
 - [Agent Modes: suggest](https://kavachlang.com/docs/agents/agent-modes/suggest/): suggest: every capability call waits for a person to approve it.
@@ -475,6 +486,7 @@ version's git tag; benchmarks carry one command to reproduce them.
 - [std.matrix](https://kavachlang.com/docs/std/std-matrix/): Every type, method and function of std.matrix: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 - [std.reflect](https://kavachlang.com/docs/std/std-reflect/): Every type, method and function of std.reflect: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 - [std.tensor](https://kavachlang.com/docs/std/std-tensor/): Every type, method and function of std.tensor: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
+- [std.table](https://kavachlang.com/docs/std/std-table/): Every type, method and function of std.table: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 - [std.literals](https://kavachlang.com/docs/std/std-literals/): Every type, method and function of std.literals: what the spec lists, then each declaration in its source, with its examples and the line that declares it.
 
 ## Benchmarks

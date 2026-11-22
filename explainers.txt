@@ -5,7 +5,81 @@
 > a very short "caveman" summary, the code (a sample checked against a
 > real run), and every step with the line it runs and what happens.
 
+## Part 1: Basics
+
+### [print: a line is built, then written in one go](https://kavachlang.com/docs/basics/output/print/#scene-print)
+
+Caveman says: Print make whole line first, in memory. Number turn into digit. Line end with newline. Then whole line go to OS. OS give to screen. No half line.
+
+```kavach
+fn main() {
+    const price = 40
+    print("Hello")
+    print(price * 3)
+    print([1, 2, 3])
+}
+```
+
+It prints, checked against a real run:
+
+```
+Hello
+120
+[1, 2, 3]
+```
+
+1. Line 3, `print("Hello")`: print starts a line in a buffer in RAM. "Hello" is text, so it is bytes already: its 5 bytes are copied in.
+2. Line 3, `print("Hello")`: print adds the end of the line, one newline byte (\n). The line is whole: 6 bytes.
+3. Line 3, `print("Hello")`: Now the line is written in one go: a system call hands its 6 bytes to the OS kernel, which passes them to the terminal, and the terminal draws them. The runtime decides when, while running: once the line is whole. The next line starts in an empty buffer.
+4. Line 4, `print(price * 3)`: Before print can start, price * 3 is worked out in the core: 120, a whole number. A number is held in binary, not as text.
+5. Line 4, `print(price * 3)`: The runtime, while running, turns 120 into the digits 1, 2 and 0: three bytes of text. Then the newline: the line is whole, 4 bytes.
+6. Line 4, `print(price * 3)`: Written in one go, like the first: the terminal shows 120 on a line of its own.
+7. Line 5, `print([1, 2, 3])`: The list is turned into text piece by piece: [, then 1, then a comma and a space, and so on to ], then the newline. 10 bytes: more than one 8-byte cell. Nothing is written while the line is half made.
+8. Line 5, `print([1, 2, 3])`: The whole line goes to the kernel in one go. So another task's print can never land in the middle of it: each line comes out whole.
+
 ## Part 2: Functions
+
+### [days_to_save(100, 30): one call, step by step](https://kavachlang.com/docs/functions/functions/returning-a-value/#scene-call)
+
+Caveman says: Main call function. 100 and 30 go in register. Call push way-back on stack. Function count in register only. Answer 4 go in rax. Frame pop. Main take 4.
+
+```kavach
+fn days_to_save(goal: Int, per_day: Int) -> Int {
+    let saved = 0
+    for day in 1..=goal {
+        saved += per_day
+        if saved >= goal {
+            return day
+        }
+    }
+    0
+}
+
+fn main() {
+    const days = days_to_save(100, 30)
+    print(days)
+}
+```
+
+It prints, checked against a real run:
+
+```
+4
+```
+
+1. Line 13, `const days = days_to_save(100, 30)`: main calls days_to_save(100, 30). The OS picked a core to run it (here core 0), while running. The compiler, while compiling, put 100 and 30 straight into the first two argument registers, as the platform's calling convention says. It also kept this a real call: a function that returns from inside a loop is not copied into its caller.
+2. Line 13, `const days = days_to_save(100, 30)`: Before the call, a check the compiler put there runs: the core compares the stack pointer with the stack's limit. There is room, so the call goes on. Past the limit, the program would stop with a clear panic.
+3. Line 1, `fn days_to_save(goal: Int, per_day: Int) -> Int {`: The call writes the return address, where main goes on, onto the stack in RAM, and jumps to days_to_save. A new frame starts below main's.
+4. Line 1, `fn days_to_save(goal: Int, per_day: Int) -> Int {`: The function's first instructions, which the compiler wrote, save three of main's registers into the frame: main's frame pointer, and two registers this function will use. The convention says it must put them back, so main finds them as it left them.
+5. Line 2, `let saved = 0`: saved starts at 0, in a register. goal, per_day, saved and day all stay in registers for the whole call: the frame holds none of them.
+6. Line 4, `saved += per_day`: Round 1: day is 1, and saved becomes 30. After each add, the core checks the overflow flag: a sum too big for an Int would stop the program.
+7. Line 5, `if saved >= goal {`: Is 30 at least 100? No, so the loop goes round again.
+8. Line 4, `saved += per_day`: Rounds 2 and 3: saved becomes 60, then 90. Each round only changes registers inside the core; nothing touches memory.
+9. Line 5, `if saved >= goal {`: Round 4: saved becomes 120, and 120 >= 100 is true.
+10. Line 6, `return day`: return day puts 4 in rax, where a result goes back. The last instructions, which the compiler wrote, put main's three registers back from the frame.
+11. Line 6, `return day`: ret reads the return address from the stack and jumps back into main. The frame is popped: the stack pointer moves back up, and those bytes are free at once. Code the compiler wrote does it: nothing is counted or searched.
+12. Line 13, `const days = days_to_save(100, 30)`: main takes the result from rax: days is 4. It never goes to memory either: it goes straight on to print.
+13. Line 14, `print(days)`: print asks the operating system's kernel to write 4 to the program's output. The stack holds only main's frame again.
 
 ### [factorial(10): the calls that really happen](https://kavachlang.com/docs/functions/recursion/#scene-factorial)
 
@@ -46,9 +120,9 @@ It prints, checked against a real run:
 
 ## Part 3: Collections
 
-### [A list in memory: index, push, grow, slice](https://kavachlang.com/docs/collections/lists/#scene-list-buffer)
+### [A list in memory: index, push, grow, slice, swap](https://kavachlang.com/docs/collections/lists/#scene-list-buffer)
 
-Caveman says: List is box with count. Items in other box, side by side. Read item: check, then one load. Push: room? Put there. No room? Bigger box. Slice: new list, copy.
+Caveman says: List is box with count. Items in other box, side by side. Read item: check, then one load. Push: room? Put there. No room? Bigger box. Slice: new list, copy. Swap: two item trade place, nothing copy.
 
 ```kavach
 let xs = [3, 1, 4]
@@ -57,6 +131,7 @@ xs.push(5)
 xs.push(9)
 const firsts = xs[:2]
 xs[0] = 7
+xs.swap(0, 4)
 print(firsts)
 print(xs)
 ```
@@ -66,7 +141,7 @@ It prints, checked against a real run:
 ```
 1
 [3, 1]
-[7, 1, 4, 5, 9]
+[9, 1, 4, 5, 7]
 ```
 
 1. Line 1, `let xs = [3, 1, 4]`: The runtime makes the list while running, in two pieces: a 48-byte list object (a 24-byte header with the count, then the buffer's address, the length and the capacity), and apart from it a buffer of exactly 3 slots. Whole numbers sit in the buffer itself, 8 bytes each: no object per item.
@@ -75,8 +150,43 @@ It prints, checked against a real run:
 4. Line 4, `xs.push(9)`: Now there is room: count 1 and 4 < 6, so the code the compiler wrote stores 9 at ptr + 4 × 8 and sets len to 5. The runtime isn't called at all.
 5. Line 5, `const firsts = xs[:2]`: A slice is a new value: the language says so, and the runtime copies at once, while running. It makes a new list object and a buffer of exactly 2 slots, and copies 3 and 1 into them. xs is not changed: still count 1.
 6. Line 6, `xs[0] = 7`: Setting an item checks the same way inline: count 1, and 0 < len 5. 7 goes in place at 0x2000. firsts still holds 3: it is a copy, not a view of xs.
-7. Line 7, `print(firsts)`: firsts' last use, marked by the compiler while compiling: print takes the list and lets it go. Its count falls to 0, so the runtime frees its object and buffer while running. They go grey where they were.
-8. Line 8, `print(xs)`: xs's last use, also marked by the compiler: freed the same way. Nothing searched for garbage: each list was let go at its last use.
+7. Line 7, `xs.swap(0, 4)`: swap is a call into the runtime, while running. It checks both indices against len 5, as xs[i] does: an index out of range would stop the program, with xs unchanged. The count is 1, so nothing else holds xs and nothing is copied. The two 8-byte words at 0x2000 and 0x2020 change places. Nothing is counted: text and records swap the same way, their words moving.
+8. Line 8, `print(firsts)`: firsts' last use, marked by the compiler while compiling: print takes the list and lets it go. Its count falls to 0, so the runtime frees its object and buffer while running. They go grey where they were.
+9. Line 9, `print(xs)`: xs's last use, also marked by the compiler: freed the same way. Nothing searched for garbage: each list was let go at its last use.
+
+### [A list in memory: index, push, grow, slice, swap](https://kavachlang.com/docs/collections/lists/swapping-items/#scene-list-buffer)
+
+Caveman says: List is box with count. Items in other box, side by side. Read item: check, then one load. Push: room? Put there. No room? Bigger box. Slice: new list, copy. Swap: two item trade place, nothing copy.
+
+```kavach
+let xs = [3, 1, 4]
+print(xs[1])
+xs.push(5)
+xs.push(9)
+const firsts = xs[:2]
+xs[0] = 7
+xs.swap(0, 4)
+print(firsts)
+print(xs)
+```
+
+It prints, checked against a real run:
+
+```
+1
+[3, 1]
+[9, 1, 4, 5, 7]
+```
+
+1. Line 1, `let xs = [3, 1, 4]`: The runtime makes the list while running, in two pieces: a 48-byte list object (a 24-byte header with the count, then the buffer's address, the length and the capacity), and apart from it a buffer of exactly 3 slots. Whole numbers sit in the buffer itself, 8 bytes each: no object per item.
+2. Line 2, `print(xs[1])`: Reading xs[1]: code the compiler wrote checks the index with one compare, 1 < len 3. A negative index counts as a huge unsigned number here, so the same compare catches it too. Then one load from ptr + 1 × 8 = 0x2008 gives 1.
+3. Line 3, `xs.push(5)`: push checks two things inline: the count is 1, and len < cap. 3 < 3 is false, so the code calls the runtime. The runtime, while running, grows the buffer the way Rust's Vec does: room for 6, double. 5 goes in slot 3, len 4. A bigger buffer may move to a new address, with the items copied there: the allocator decides that, while running. It is drawn in place.
+4. Line 4, `xs.push(9)`: Now there is room: count 1 and 4 < 6, so the code the compiler wrote stores 9 at ptr + 4 × 8 and sets len to 5. The runtime isn't called at all.
+5. Line 5, `const firsts = xs[:2]`: A slice is a new value: the language says so, and the runtime copies at once, while running. It makes a new list object and a buffer of exactly 2 slots, and copies 3 and 1 into them. xs is not changed: still count 1.
+6. Line 6, `xs[0] = 7`: Setting an item checks the same way inline: count 1, and 0 < len 5. 7 goes in place at 0x2000. firsts still holds 3: it is a copy, not a view of xs.
+7. Line 7, `xs.swap(0, 4)`: swap is a call into the runtime, while running. It checks both indices against len 5, as xs[i] does: an index out of range would stop the program, with xs unchanged. The count is 1, so nothing else holds xs and nothing is copied. The two 8-byte words at 0x2000 and 0x2020 change places. Nothing is counted: text and records swap the same way, their words moving.
+8. Line 8, `print(firsts)`: firsts' last use, marked by the compiler while compiling: print takes the list and lets it go. Its count falls to 0, so the runtime frees its object and buffer while running. They go grey where they were.
+9. Line 9, `print(xs)`: xs's last use, also marked by the compiler: freed the same way. Nothing searched for garbage: each list was let go at its last use.
 
 ### [map, filter, sum: as written, and fused into one loop](https://kavachlang.com/docs/collections/lists/map-filter-sum/#scene-chain)
 
@@ -547,7 +657,272 @@ gpu-draw.kav: no errors
 9. Line 29, `(l.heat, 0.2, 1.0 - l.heat, 1.0)`: The GPU joins the corners into triangles, finds the pixels inside each, and runs glow once for each of them: dot 0's pixels get (0.2, 0.2, 0.8), blue; dot 1's (0.9, 0.2, about 0.1), red. Each lands in the picture.
 10. Line 43, `frame.show()`: At the screen's next refresh the picture is shown: Fifo, vsync. Then the loop draws the next frame, 600 in all, with new buffers each time.
 
+## Part 9: Concurrency
+
+### [spawn: a task on the same thread](https://kavachlang.com/docs/concurrency/tasks/#scene-spawn)
+
+Caveman says: Spawn make small task. Same thread, own stack. Task wait in line. Main wait? Task run. Task done? Main go on.
+
+```kavach
+fn slow_double(n: Int) -> Int {
+    n * 2
+}
+
+fn main() ! Error {
+    const t = spawn slow_double(21)
+    print("working meanwhile")
+    print(try t.wait())
+}
+```
+
+It prints, checked against a real run:
+
+```
+working meanwhile
+42
+```
+
+1. Line 6, `const t = spawn slow_double(21)`: main works out the argument, 21, then spawns. main's thread hosts coroutines, so the runtime, while running, makes the task a coroutine on that same thread: no new OS thread. It gets a stack of its own (512 MB of address space; the OS gives it memory only as it is used) and a Task object on the heap. The scheduler puts it at the back of the ready queue, and main keeps the turn.
+2. Line 7, `print("working meanwhile")`: main still has the turn, so it goes on. Its line goes out through the OS. The task waits in the ready queue: nothing runs it until main waits.
+3. Line 8, `print(try t.wait())`: t.wait(): the task hasn't ended, so main waits and gives up the turn. The scheduler, while running, picks the first ready task. Passing the turn switches stacks on the same thread, with no system call: the OS sees nothing.
+4. Line 2, `n * 2`: slow_double runs on the same core and the same thread, with its own stack: 21 * 2 = 42.
+5. Line 3, `}`: It returns: 42 goes into the Task object on the heap, and the task ends. The runtime drops its coroutine, and the task's stack with it, at once. main's wait is over, so the scheduler, while running, makes main ready.
+6. Line 8, `print(try t.wait())`: main runs again: wait() reads 42 from the Task object, and print writes it out. One thread did all of it, on one core, taking turns.
+
+### [A ticker, its timers, and its end](https://kavachlang.com/docs/concurrency/tasks-never-leak/#scene-ticker)
+
+Caveman says: Ticker wait one beat, then tick. Tick 0, tick 1. Sleep not hold core. Function end? Ticker stop. Nothing left running.
+
+```kavach
+use std.time
+
+fn watch() {
+    const _ticker = spawn {
+        for tick in time.every_ms(400) {
+            print(`tick {tick}`)
+        }
+    }
+    time.sleep_ms(1000)
+}
+
+fn main() {
+    watch()
+    print("watching stopped")
+}
+```
+
+It prints, checked against a real run:
+
+```
+tick 0
+tick 1
+watching stopped
+```
+
+1. Line 13, `watch()`: main calls watch(): a plain call, in the same task. watch spawns, so the compiler, while compiling, wrapped it: when it returns, it cancels the tasks it spawned that still run, then waits for them.
+2. Line 4, `const _ticker = spawn {`: The runtime, while running, makes the ticker a coroutine on main's thread, with its own stack. It is ready; watch keeps the turn.
+3. Line 9, `time.sleep_ms(1000)`: watch sleeps 1000 ms: the scheduler notes a timer and parks it, so the ticker runs.
+4. Line 5, `for tick in time.every_ms(400) {`: every_ms(400) doesn't tick at once: the compiler, while compiling, made each round a sleep until its start, and the first start is one interval from now. So the ticker parks with a timer at 400 ms.
+5. Line 5, `for tick in time.every_ms(400) {`: Nothing is ready. The scheduler, while running, takes the earliest timer, 400 ms, and the thread waits on a condition variable until then. The OS takes it off the core: no core is held while tasks sleep.
+6. Line 6, `print(`tick {tick}`)`: At 400 ms the OS wakes the thread, and the scheduler runs the ticker: its first round. Ticks count from 0. The next round starts 400 ms after this one did, at 800 ms. A late round doesn't catch up: the next one still waits 400 ms from when this one really started.
+7. Line 6, `print(`tick {tick}`)`: At 800 ms, tick 1. Its next round would start at 1200 ms, so it parks with that timer.
+8. Line 9, `time.sleep_ms(1000)`: At 1000 ms watch's timer comes first: the scheduler runs watch, and its sleep ends. The ticker still waits for 1200 ms.
+9. Line 10, `}`: watch returns, and the join the compiler put at the end of the function runs: first it cancels the ticker, then it waits for it to end. The runtime ends the ticker's wait at once, long before 1200 ms. Each function on the ticker's stack returns at once, letting go of what it holds. Its timer is left behind; the scheduler skips it.
+10. Line 14, `print("watching stopped")`: The ticker has ended, and its stack is freed. watch is back in main, which prints. Nothing is left running in the background.
+
+### [A channel between two tasks: full makes the sender wait, empty the receiver](https://kavachlang.com/docs/concurrency/channels/#scene-channel)
+
+Caveman says: Channel is small line of box. Line full? Putter wait. Line empty? Taker wait. Waiting task not hold core. Close? Taker stop when line empty.
+
+```kavach
+fn main() {
+    const (send, receive) = Channel<Int>(capacity: 2)
+    const _producer = spawn {
+        for i in 1..5 {
+            send.put(i * 10)
+        }
+        send.close()
+    }
+    for n in receive {
+        print(n)
+    }
+}
+```
+
+It prints, checked against a real run:
+
+```
+10
+20
+30
+40
+```
+
+1. Line 2, `const (send, receive) = Channel<Int>(capacity: 2)`: Channel<Int>(capacity: 2) makes one channel object on the heap; send and receive both point to it. It holds a queue with room for 2 values, two lists of tasks waiting (to take, and to put), and a lock the runtime holds only while a value or a waiter goes in or out.
+2. Line 3, `const _producer = spawn {`: The producer becomes a coroutine on main's thread (the runtime, while running), ready. main keeps the turn.
+3. Line 9, `for n in receive {`: main takes: the queue is empty and open, so the runtime, while running, notes main as a taker and parks it. The scheduler gives the turn to the producer.
+4. Line 5, `send.put(i * 10)`: put(10): there is room, so 10 goes in, and the runtime makes the first waiting taker, main, ready. Ready doesn't mean running: the producer keeps the turn until it waits.
+5. Line 5, `send.put(i * 10)`: put(20): room for one more. Now the queue holds 2 values: it is full.
+6. Line 5, `send.put(i * 10)`: put(30): full. The runtime, while running, notes the producer as a putter and parks it, so a fast producer can't fill memory. The scheduler runs main, ready since put(10).
+7. Line 10, `print(n)`: main takes 10, the oldest value. That makes room, so the runtime makes the waiting producer ready. main keeps the turn and prints 10.
+8. Line 10, `print(n)`: main takes 20 and prints it. The queue is empty again.
+9. Line 9, `for n in receive {`: main takes again: empty, so the runtime parks it. The producer runs: its put(30) tries again.
+10. Line 5, `send.put(i * 10)`: 30 goes in, and the runtime makes main ready.
+11. Line 5, `send.put(i * 10)`: 40 goes in: full again, but the loop is over.
+12. Line 7, `send.close()`: close() marks the channel closed and wakes every task waiting on it; none is. The values in it stay to be taken. Then the producer ends, and its stack is freed.
+13. Line 10, `print(n)`: main runs: it takes 30 and prints it.
+14. Line 10, `print(n)`: Then 40.
+15. Line 9, `for n in receive {`: main takes once more: empty and closed, so the loop ends, without waiting. The values came out in the order they went in.
+
+### [Two tasks sleep: who wakes them, and when](https://kavachlang.com/docs/concurrency/taking-turns/#scene-turns)
+
+Caveman says: Task sleep? Not hold core. Scheduler write down wake time. Nothing to do? Thread sleep in OS. Time come? OS wake thread. Short sleep wake first.
+
+```kavach
+use std.time
+
+fn report(name: String, ms: Int) -> String {
+    time.sleep_ms(ms)
+    print(`{name} done`)
+    name
+}
+
+fn main() ! Error {
+    const slow = spawn report("slow", 400)
+    const fast = spawn report("fast", 100)
+    print("both started")
+    print(`{try slow.wait()} and {try fast.wait()} are back`)
+}
+```
+
+It prints, checked against a real run:
+
+```
+both started
+fast done
+slow done
+slow and fast are back
+```
+
+1. Line 10, `const slow = spawn report("slow", 400)`: main spawns slow. The runtime, while running, makes it a coroutine on main's thread, with its own stack, and puts it in the ready queue. The task that spawned it keeps running.
+2. Line 11, `const fast = spawn report("fast", 100)`: fast too, behind slow in the ready queue. Both are ready, but main still has the turn.
+3. Line 12, `print("both started")`: So main prints first.
+4. Line 13, `print(`{try slow.wait()} and {try fast.wait()} are back`)`: main waits for slow and gives up its turn. The scheduler, while running, runs the task that became ready first: slow. The switch is a change of stacks on the same thread, with no system call.
+5. Line 4, `time.sleep_ms(ms)`: slow asks to sleep 400 ms. The scheduler notes a timer, counted from when slow became ready, and parks slow: no thread sleeps for it, and no core is held. fast runs.
+6. Line 4, `time.sleep_ms(ms)`: fast parks too, with a timer at 100 ms. Now nothing is ready. The scheduler, while running, takes the earliest timer, 100 ms, and the thread waits on a condition variable until then: the OS takes it off the core, which is free for other programs. (A task waiting on a socket would make it wait on the OS's readiness queue instead: epoll, kqueue or IOCP.)
+7. Line 5, `print(`{name} done`)`: At 100 ms the OS wakes the thread. The scheduler finds fast's time has come and makes it ready, and it is the only one: fast prints.
+8. Line 6, `name`: fast returns its name and ends; its stack is freed. Nothing is ready, so the thread waits again, now until 400 ms.
+9. Line 5, `print(`{name} done`)`: At 400 ms slow wakes and prints. The sleeps overlapped: slow's 400 ms began at the same moment as fast's 100.
+10. Line 13, `print(`{try slow.wait()} and {try fast.wait()} are back`)`: slow ended, which main waited for, so main runs. fast ended long ago, so fast.wait() doesn't wait. About 400 ms in all, not 500, and the same order on every run: the scheduler decides it from the program, not from the machine.
+
+### [spawn, spawn cores, spawn thread: which thread runs each task](https://kavachlang.com/docs/concurrency/how-tasks-run/#scene-spawn-kinds)
+
+Caveman says: Plain spawn: same thread, take turn. Spawn cores: next worker, maybe other core. Spawn thread: new thread, always. Same answer every way.
+
+```kavach
+fn sum_to(n: Int) -> Int {
+    let total = 0
+    for i in 0..n {
+        total += i
+    }
+    total
+}
+
+fn main() ! Error {
+    const a = spawn sum_to(10)
+    const b = spawn cores sum_to(20)
+    const c = spawn cores sum_to(30)
+    const d = spawn thread sum_to(40)
+    print(`{try a.wait()} {try b.wait()} {try c.wait()} {try d.wait()}`)
+}
+```
+
+It prints, checked against a real run:
+
+```
+45 190 435 780
+```
+
+1. Line 9, `fn main() ! Error {`: The file has a spawn cores, so the compiler, while compiling, put a call at the very top that starts the workers, one per core. The runtime, while running, starts threads for workers 1 to 3; worker 0 is main's own thread. A worker with nothing to do sleeps, on no core.
+2. Line 10, `const a = spawn sum_to(10)`: A plain spawn on main's thread is a coroutine there (the runtime, while running): its own stack, the same thread, and a place in worker 0's ready queue. main keeps the turn.
+3. Line 11, `const b = spawn cores sum_to(20)`: spawn cores sends its task to the next worker in turn, counting from worker 0. So this first one lands on worker 0, main's own: it becomes a coroutine here, just like a, with nothing copied.
+4. Line 12, `const c = spawn cores sum_to(30)`: The next one goes to worker 1. It gets a copy of its values, here one number, so no object is shared between threads, and waits in worker 1's inbox. Worker 1's thread wakes and runs it as a coroutine there, while main goes on: each worker has its own turns. The OS picks the core.
+5. Line 13, `const d = spawn thread sum_to(40)`: spawn thread always makes a new OS thread, with a 512 MB stack. Built by LLVM, it runs ahead: on a copy of its values, it computes at once, and waits for its turn only before something others could see, such as ending. A plain spawn inside d would make a thread too: d's thread hosts no coroutines.
+6. Line 14, `print(`{try a.wait()} {try b.wait()} {try c.wait()} {try d.wait()}`)`: main waits for a. On worker 0 the scheduler, while running, gives the turn to the first ready task, a: a switch of stacks on the same thread.
+7. Line 4, `total += i`: a adds up to 45 and ends, so main is ready, behind b and d. b, next in worker 0's ready queue, runs its loop.
+8. Line 6, `total`: b ends with 190. Now d's turn comes: it has worked out 780 on its own thread, or finishes first, and only now does it end, in turn. Its thread ends with it.
+9. Line 14, `print(`{try a.wait()} {try b.wait()} {try c.wait()} {try d.wait()}`)`: main runs and reads each result. c ran on worker 1 alongside all this: it has ended, or main waits for it here. Three ways to run, one output, the same on every run.
+
+## Part 11: Projects & Tools
+
+### [From a .kav file to a running program, three ways](https://kavachlang.com/docs/tools/the-kavach-command/#scene-compiler)
+
+Caveman says: Read file. Cut in words. Make tree. Find names. Check types. Then three road. run: walk tree. run --native: make machine code in memory, go. build: make machine code, glue runtime, write file. GPU part get own code too.
+
+```kavach
+gpu fn double(x: Float32) -> Float32 {
+    x * 2.0
+}
+
+fn main() {
+    const xs: [Float32] = [1.0, 2.0, 3.0]
+    print(xs.map(x => double(x)))
+}
+```
+
+It prints, checked against a real run:
+
+```
+[2.0, 4.0, 6.0]
+```
+
+1. Line 1, `gpu fn double(x: Float32) -> Float32 {`: You type kavach run compiler.kav. kavach is a program running on the CPU: it asks the OS kernel to read the file, and the file's bytes come from the SSD into RAM. The first five stages are the same for every command.
+2. Line 7, `print(xs.map(x => double(x)))`: The lexer cuts the text into tokens, the words of the language: print, (, xs, ., map, (, x, =>, double, and so on.
+3. Line 7, `print(xs.map(x => double(x)))`: The parser arranges the tokens into a syntax tree: a call of print, holding a call of map on xs, holding a lambda that calls double.
+4. Line 7, `print(xs.map(x => double(x)))`: The resolver links each name to what it means: double to the gpu fn on line 1, xs to the const on line 6, print to the built-in print.
+5. Line 6, `const xs: [Float32] = [1.0, 2.0, 3.0]`: The checker works out every type and checks every rule: xs is a [Float32], and double takes and gives a Float32, so the call fits. kavach check stops here and says: no errors. A mistake stops every command here, before anything runs.
+6. Line 7, `print(xs.map(x => double(x)))`: kavach run makes no machine code. The interpreter, part of kavach, walks the checked tree and does what each part says. It runs every map on the CPU, one item after another, and prints the list. It doesn't touch the GPU at all, unless KAVACH_GPU names a device, by number or by maker (or can't be read): then it looks for that device, to check it is there.
+7. Line 2, `x * 2.0`: kavach run --native goes on from the checked tree to KIR, a simpler form of the program made for code generators. Its passes, while compiling, mark each name's last use and copy small functions into their callers.
+8. Line 1, `gpu fn double(x: Float32) -> Float32 {`: The map might be worth running on the GPU, so the compiler, while compiling, also writes its kernel in WGSL, the GPU's own language, and keeps that text in the program. The GPU is not touched yet.
+9. Line 7, `print(xs.map(x => double(x)))`: Cranelift turns the KIR into machine code for this CPU, straight into RAM. Nothing is written to the SSD.
+10. Line 7, `print(xs.map(x => double(x)))`: The CPU runs that code at once. At its start, the runtime begins opening the GPU on a background thread, where the GPU's driver compiles the WGSL. A map of 3 items is far less work than using the GPU costs, so the runtime's cost check, while running, keeps it on the CPU. Once the GPU is open, a map goes there when it would take the CPU at least 2 ms; while the GPU is still opening, only one that would take 300 ms. KAVACH_GPU=on or check skips the cost check. The same list is printed.
+11. Line 7, `print(xs.map(x => double(x)))`: kavach build makes the same KIR, then decides, while building: LLVM when it supports the program and its tools are found, else Cranelift. LLVM gets the KIR as LLVM IR text; opt -O3 makes it faster, and llc -O3 turns it into an object file of machine code.
+12. Line 5, `fn main() {`: The platform's linker (link.exe on Windows, cc elsewhere) joins the object file with Kavach's runtime library into one executable, and the OS writes it to the SSD. Nothing has run yet: you run that file later, as often as you like, without kavach.
+
 ## Part 12: Speed
+
+### [on cores: small ranges, taken in turn by every core](https://kavachlang.com/docs/speed/loops-on-all-cores/#scene-cores-loop)
+
+Caveman says: Many rounds. Cut in small piles. Each core take next pile, again and again. Each round write own box. Answer same as one core.
+
+```kavach
+fn main() {
+    let xs: [Float] = []
+    let ys: [Float] = []
+    for i in 0..1_000_000 {
+        xs.push(Float(i % 1000) * 0.125)
+        ys.push(0.0)
+    }
+    on cores for i in 0..1_000_000 {
+        ys[i] = xs[i] * 2.5 + 1.0
+    }
+    print(ys[999_999])
+}
+```
+
+It prints, checked against a real run:
+
+```
+313.1875
+```
+
+1. Line 4, `for i in 0..1_000_000 {`: A plain for fills xs and ys: one core, in order, round after round.
+2. Line 8, `on cores for i in 0..1_000_000 {`: The compiler, while compiling, proved each round writes only its own ys[i], and moved the body into a function that runs a range of rounds. The runtime, while running, checks: 1,000,000 rounds (65,536 at least), few values from outside the loop (6 at most), 4 cores. So it spreads the loop: a range is the largest of 1,000,000 / (4 × 4), 4,096 and 1,000,000 / 256 + 1, so 62,500 rounds, 16 ranges. It wakes the threads it keeps for loops, and 3 of them join this one.
+3. Line 9, `ys[i] = xs[i] * 2.5 + 1.0`: Each thread takes the next free range from a shared counter, one atomic add, and runs it. The OS puts the threads on cores. Each round writes only its own slot, so no two threads touch the same item.
+4. Line 9, `ys[i] = xs[i] * 2.5 + 1.0`: A thread that finishes takes the next free range at once, so none waits for a slow one. Which thread takes which range changes from run to run: this is one run.
+5. Line 9, `ys[i] = xs[i] * 2.5 + 1.0`: The last four ranges. When the counter passes 1,000,000, a thread finds no range left and stops.
+6. Line 10, `}`: The loop's thread waits until the others have left, then checks: did any range fail a check, such as an overflow? None did, so the loop is over. Had one failed, the runtime would throw the work away and run the plain loop on one core, so the panic comes at the same round and line.
+7. Line 11, `print(ys[999_999])`: Every round wrote its own slot, so ys is exactly what the plain loop makes, in round order.
 
 ### [A map on the GPU: copied over, run at once, left there](https://kavachlang.com/docs/speed/gpu/#scene-gpu-map)
 
