@@ -358,6 +358,11 @@ impl<'a> Interp<'a> {
             return self.sampled(def, sample, rng);
         }
         match &decl.body {
+            // A distinct type is the value it holds (spec 2.21).
+            TypeBody::Record(r) if r.distinct => {
+                let g = self.gen_of(&r.fields.first()?.ty)?;
+                self.generate(&g, pick, near, rng, depth + 1)
+            }
             TypeBody::Record(r) => {
                 for attempt in 0..20 {
                     let p = match (pick, attempt) {

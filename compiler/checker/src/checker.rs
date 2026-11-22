@@ -125,6 +125,8 @@ pub(crate) struct Checker<'a> {
     pub(crate) implements: HashMap<DefId, HashSet<DefId>>,
     /// The record types that implement `Drop` (`drops.rs`).
     pub(crate) drop_types: HashSet<DefId>,
+    /// The distinct types (spec 2.21, `distinct.rs`).
+    pub(crate) distinct: HashSet<DefId>,
     pub(crate) display_types: HashSet<DefId>,
     /// Each type's operators (spec 2.16, `user_ops.rs`): by type and
     /// method, the other operand's type, the result's, and where.
@@ -325,6 +327,7 @@ impl<'a> Checker<'a> {
             extended_methods: HashSet::new(),
             implements: HashMap::new(),
             drop_types: HashSet::new(),
+            distinct: HashSet::new(),
             display_types: HashSet::new(),
             operators: HashMap::new(),
             more_impls: HashMap::new(),

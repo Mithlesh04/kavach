@@ -409,6 +409,11 @@ impl Checker<'_> {
         let shape = match &t.body {
             TypeBody::Record(r) => {
                 let fields = self.fields(&r.fields, &self_ty);
+                if r.distinct
+                    && let Some(f) = fields.first()
+                {
+                    self.note_distinct(def, t, &f.ty.clone());
+                }
                 let sigs = self.method_sigs(&r.methods, Some(&self_ty));
                 self.note_private(&r.methods);
                 self.methods.entry(def).or_default().extend(sigs);

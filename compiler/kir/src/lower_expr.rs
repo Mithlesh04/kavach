@@ -278,6 +278,14 @@ impl<'a> Lowerer<'a> {
             }
             ExprKind::With { base, fields } => {
                 let mut value = self.expr(base)?;
+                // A distinct type's `value` is itself (spec 2.21).
+                if self.distinct_expr(base) {
+                    for (_, v) in fields {
+                        let v = self.expr(v)?;
+                        value = self.coerce(v, ty)?;
+                    }
+                    return Ok(value);
+                }
                 for (name, v) in fields {
                     let (index, field_ty) = self.field_index(value.ty, &name.name, name.span)?;
                     let v = self.expr(v)?;

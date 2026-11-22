@@ -35,6 +35,7 @@ mod costly_invariants;
 mod coverage;
 mod deprecated;
 mod destructure;
+mod distinct;
 mod drops;
 mod enums;
 mod exprs;
@@ -263,6 +264,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
     checker.check_capability_errors(file);
     checker.collect_gpu_fns(file);
     checker.check_file(file);
+    checker.no_distinct_methods(file);
     checker.check_frozen_passes(file);
     checker.check_numbers_later();
     checker.check_tensor_items();

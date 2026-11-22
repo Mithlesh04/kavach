@@ -58,6 +58,15 @@ impl<'a> Lowerer<'a> {
         let Some(decl) = decl else {
             return Err(self.unsupported("this type", span));
         };
+        // A distinct type is the value it holds (spec 2.21).
+        if let (TypeBody::Record(r), None) = (&decl.body, variant)
+            && r.distinct
+        {
+            return match given(self, 0, "value")? {
+                Some((v, _)) => self.coerce(v, ty),
+                None => Err(self.unsupported("this constructor", span)),
+            };
+        }
         let (index, fields): (u32, &'a [ast::Field]) = match (&decl.body, variant) {
             (TypeBody::Record(r), None) => (0, &r.fields),
             (TypeBody::Union(vs), Some(v)) => match vs.iter().position(|x| x.name.name == v) {
@@ -250,6 +259,10 @@ impl<'a> Lowerer<'a> {
             }
         }
         let value = self.expr(base)?;
+        // A distinct type's `value` is itself (spec 2.21).
+        if !optional && self.distinct_expr(base) {
+            return self.coerce(value, ty);
+        }
         if !optional {
             let (index, _) = self.field_index(value.ty, &name.name, name.span)?;
             return Ok(ir::Expr {

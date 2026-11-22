@@ -320,6 +320,12 @@ impl<'a> Interp<'a> {
         let name: Rc<str> = Rc::from(self.c.resolution.defs[def].name.as_str());
         // `Box<Yes>`: its fields' `T` is `Yes` (spec 2.12).
         let params = self.type_params(def, args);
+        // A distinct type is read as the value it holds (spec 2.21).
+        if self.distinct_def(def)
+            && let Some(held) = self.field_ty(def, "value")
+        {
+            return self.decode(t, &held, path);
+        }
         if let Some(decl) = self.records.get(&def).copied() {
             if let TypeBody::Record(r) = &decl.body
                 && let Some(kind) = Kind::of(&name, r.fields.iter().map(|f| &*f.name.name))

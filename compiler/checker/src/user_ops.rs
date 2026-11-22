@@ -202,6 +202,17 @@ impl Checker<'_> {
         let Ty::Adt(def, args) = self.inf.resolve(lt) else {
             return None;
         };
+        // A distinct type compares as its value does, and has no
+        // arithmetic (spec 2.21).
+        if self.distinct.contains(&def) {
+            if compare_method(op).is_some() {
+                return None;
+            }
+            let ty = self.show(lt);
+            self.error(l.span, format!("a distinct type has no `{}`: work on `.value` and make a new one, as in `{ty}(n.value + 1)` (spec 2.21)", op.as_str()));
+            self.value(r, None);
+            return Some(Ty::Error);
+        }
         let mut method = method_of(op)?;
         if let Some(m) = compare_method(op)
             && !self.operators.contains_key(&(def, "compare"))

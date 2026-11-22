@@ -406,6 +406,11 @@ The tests are listed in two files, by section:
 | 2.20 | [a-match-reads-a-frozen-union.kav](a-match-reads-a-frozen-union.kav) | A `match` on a frozen value reads its parts as on its type; an arm that names the whole value keeps it frozen. | runs |
 | 2.20 | [a-match-on-a-sealed-value-reads-or-names-it.kav](a-match-on-a-sealed-value-reads-or-names-it.kav) | A `match` on a sealed value that both reads its parts and names the whole value in another arm is a compile error. | compile error |
 | 2.20 | [a-private-key-seals-for-other-modules/](a-private-key-seals-for-other-modules/src/main.kav) | When a sealed value's key type is private to its module, `unfreeze(key: …)` anywhere else is a compile error that names the module, even with a key of that type. | compile error |
+| 2.21 | [distinct-types-hold-a-value.kav](distinct-types-hold-a-value.kav) | A distinct type is made from the value it holds, gives it back as `.value`, compares, sorts and prints as that value, works as a dict key, and is written to and read from JSON as that value. | runs |
+| 2.21 | [distinct-types-are-not-mixed.kav](distinct-types-are-not-mixed.kav) | A value of a distinct type is never mixed with the type it holds or with another distinct type. | compile error |
+| 2.21 | [distinct-types-have-no-arithmetic.kav](distinct-types-have-no-arithmetic.kav) | A distinct type has no arithmetic: work on its `.value` and make a new one. | compile error |
+| 2.21 | [distinct-types-hold-built-in-values.kav](distinct-types-hold-built-in-values.kav) | A distinct type holds a built-in number, `Bool`, `Char` or `String`, nothing else. | compile error |
+| 2.21 | [distinct-types-have-no-methods-yet.kav](distinct-types-have-no-methods-yet.kav) | A distinct type has no methods of its own yet: `extend` of one is a compile error. | compile error |
 | 2.6 | [enum-variants-carry-text.kav](enum-variants-carry-text.kav) | An enum's variants may carry text: `value()` gives it, `from(text)` gives the variant or `none`. | runs |
 | 2.6 | [variant-text-leaves-the-name-as-it-is.kav](variant-text-leaves-the-name-as-it-is.kav) | A variant with text still prints as its name; `name()` and `parse` stay by name. | runs |
 | 2.6 | [match-on-variants-with-text.kav](match-on-variants-with-text.kav) | A `match` on variants that carry text works as on any enum. | runs |

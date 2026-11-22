@@ -39,7 +39,19 @@ impl Checker<'_> {
             self.note_drop(def, span);
             self.check_construct_access(def, &fields, span, name);
         }
-        if args.iter().any(|a| a.name.is_none()) && !fields.is_empty() {
+        // A distinct type is made from its value alone (spec 2.21).
+        let distinct = variant.is_none() && self.distinct.contains(&def);
+        if distinct && (args.len() != 1 || args[0].name.is_some()) {
+            self.error(
+                span,
+                format!("a distinct type is made from the value it holds alone: write `{name}(value)` (spec 2.21)"),
+            );
+            for a in args {
+                self.value(&a.value, None);
+            }
+            return instance;
+        }
+        if !distinct && args.iter().any(|a| a.name.is_none()) && !fields.is_empty() {
             let example = fields
                 .iter()
                 .map(|f| format!("{}: …", f.name))

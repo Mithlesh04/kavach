@@ -1,0 +1,8 @@
+// Rule: a distinct type holds a built-in number, `Bool`, `Char` or `String`, nothing else.
+// Spec: 2.21
+// expect compile error
+
+type Ids = distinct [Int]       // error: a list can't be held
+
+fn main() {
+}

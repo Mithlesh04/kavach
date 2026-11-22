@@ -1,0 +1,44 @@
+// Rule: a distinct type is made from the value it holds, gives it back as `.value`, compares and prints as that value, and works as a dict key.
+// Spec: 2.21
+// expect output: 14 7
+// expect output: true false true
+// expect output: Asha 4
+// expect output: [2, 5, 9]
+// expect output: Pin(net: 7, cell: 14)
+// expect output: {"net":7,"cell":14}
+// expect output: 7
+
+use std.json
+
+type NetId = distinct Int
+type CellId = distinct Int
+type Seat = distinct Int
+
+type Pin {
+    net: NetId
+    cell: CellId
+}
+
+fn driver(net: NetId) -> CellId {
+    CellId(net.value * 2)
+}
+
+fn main() ! Error {
+    const n = NetId(7)
+    const c = driver(n)
+    print(`{c.value} {n}`)
+    print(`{n == NetId(7)} {n == NetId(8)} {NetId(3) < n}`)
+    let seats: {Seat: String} = {:}
+    seats[Seat(3)] = "Asha"
+    let s = Seat(3)
+    s.value += 1
+    print(`{seats.get(Seat(3)) ?? "free"} {s}`)
+    const ids = [NetId(9), NetId(2), NetId(5)].sort()
+    print(ids)
+    const pin = Pin(net: n, cell: c)
+    print(pin)
+    const text = json.stringify(pin)
+    print(text)
+    const back = try json.decode<Pin>(text)
+    print(back.net)
+}

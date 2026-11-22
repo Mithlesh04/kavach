@@ -152,6 +152,12 @@ impl<'a> Lowerer<'a> {
                     line,
                 }))
             }
+            // A distinct type's `value` is the value itself (spec 2.21).
+            ExprKind::Field {
+                base,
+                optional: false,
+                ..
+            } if self.distinct_expr(base) => self.assign_path(base, value),
             ExprKind::Field {
                 base,
                 name,

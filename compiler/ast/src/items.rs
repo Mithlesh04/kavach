@@ -195,6 +195,9 @@ pub struct RecordBody {
     pub fields: Vec<Field>,
     pub methods: Vec<Item>,
     pub invariants: Vec<Expr>,
+    /// `type NetId = distinct Int` (spec 2.21): a record whose one field,
+    /// `value`, is what it holds, made as that value alone.
+    pub distinct: bool,
 }
 
 #[derive(Clone, Debug, PartialEq)]

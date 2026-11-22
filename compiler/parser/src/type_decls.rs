@@ -24,6 +24,40 @@ impl Parser<'_> {
                     body: TypeBody::Alias(self.type_expr()),
                 };
             }
+            // `type NetId = distinct Int` (spec 2.21).
+            if self.at_word("distinct")
+                && matches!(
+                    self.nth(1),
+                    TokenKind::Ident | TokenKind::LBracket | TokenKind::LBrace
+                )
+            {
+                let span = self.span();
+                self.bump();
+                let field = Field {
+                    name: Ident {
+                        name: "value".to_string(),
+                        span,
+                    },
+                    ty: self.type_expr(),
+                    default: None,
+                    is_pub: true,
+                    is_read: false,
+                    is_secret: false,
+                    docs: Vec::new(),
+                };
+                let body = RecordBody {
+                    fields: vec![field],
+                    methods: Vec::new(),
+                    invariants: Vec::new(),
+                    distinct: true,
+                };
+                return TypeDecl {
+                    name,
+                    generics,
+                    implements,
+                    body: TypeBody::Record(body),
+                };
+            }
             let mut variants = vec![self.variant()];
             while self.eat(&TokenKind::Pipe) {
                 variants.push(self.variant());
@@ -214,6 +248,7 @@ impl Parser<'_> {
             fields: Vec::new(),
             methods: Vec::new(),
             invariants: Vec::new(),
+            distinct: false,
         };
         self.members(|p| {
             let start = p.span();

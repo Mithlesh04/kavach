@@ -107,6 +107,7 @@ impl Parser<'_> {
             fields: vec![addresses],
             methods,
             invariants: Vec::new(),
+            distinct: false,
         };
         Item {
             kind: ItemKind::Type(TypeDecl {

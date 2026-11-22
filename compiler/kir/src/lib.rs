@@ -17,6 +17,7 @@ mod coalesce;
 mod collect;
 mod counters;
 mod devirt;
+mod distinct;
 mod drop_scopes;
 mod encode;
 mod exits;

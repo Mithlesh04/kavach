@@ -1,0 +1,15 @@
+// Rule: a value of a distinct type is never mixed with the type it holds or with another distinct type.
+// Spec: 2.21
+// expect compile error
+
+type NetId = distinct Int
+type CellId = distinct Int
+
+fn driver(net: NetId) -> Int {
+    net.value
+}
+
+fn main() {
+    const c = CellId(7)
+    print(driver(c))            // error: driver takes a NetId, not a CellId
+}

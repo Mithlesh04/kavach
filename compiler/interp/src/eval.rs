@@ -150,6 +150,10 @@ impl<'a> Interp<'a> {
                 if let Some(d) = self.duration(base, name, e.span) {
                     return d;
                 }
+                // A distinct type's `value` is itself (spec 2.21).
+                if !*optional && self.distinct_expr(base) {
+                    return self.eval(base);
+                }
                 // `math.pi`: a constant of a standard module (spec 14.5).
                 if let ExprKind::Name(id) = &base.kind {
                     let def = self.c.resolution.uses.get(&id.span.start);

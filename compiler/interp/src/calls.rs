@@ -204,6 +204,10 @@ impl<'a> Interp<'a> {
         let Some(decl) = decl.copied() else {
             return Ok(Value::Unit);
         };
+        // A distinct type's value is what it holds (spec 2.21).
+        if variant.is_none() && self.distinct_def(def) && args.len() == 1 {
+            return Ok(args.swap_remove(0).1);
+        }
         let declared: &'a [kavach_ast::Field] = match (&decl.body, variant) {
             (TypeBody::Record(r), None) => &r.fields,
             (TypeBody::Union(vs), Some(v)) => vs

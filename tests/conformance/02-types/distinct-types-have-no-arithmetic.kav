@@ -1,0 +1,10 @@
+// Rule: a distinct type has no arithmetic: work on its `.value` and make a new one.
+// Spec: 2.21
+// expect compile error
+
+type NetId = distinct Int
+
+fn main() {
+    const n = NetId(7)
+    print(n + NetId(1))         // error: no `+` on a distinct type
+}

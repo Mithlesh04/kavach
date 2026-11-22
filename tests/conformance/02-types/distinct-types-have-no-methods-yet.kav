@@ -1,0 +1,14 @@
+// Rule: a distinct type has no methods of its own yet: `extend` of one is a compile error.
+// Spec: 2.21
+// expect compile error
+
+type NetId = distinct Int
+
+extend NetId {              // error: a distinct type has no methods yet
+    fn next(self) -> NetId {
+        NetId(self.value + 1)
+    }
+}
+
+fn main() {
+}

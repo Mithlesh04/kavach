@@ -26,9 +26,11 @@ Each section is a file of its own: new sections go at the end, with the next num
 | 2.18 Text views and builders | [18-text-views.md](18-text-views.md) |
 | 2.19 Indexing and slicing | [19-indexing-and-slicing.md](19-indexing-and-slicing.md) |
 | 2.20 Frozen values | [20-frozen-values.md](20-frozen-values.md) |
+| 2.21 Distinct types | [21-distinct-types.md](21-distinct-types.md) |
 
 ## Open questions
 
+- **Distinct types** (2.21), built 2026-11-22 for Sakshi's request 10 (7), for a maintainer's review: the keyword `distinct` with no new syntax beyond it; made with `NetId(7)` and read back with `.value`; only `==`, `!=` and the ordering comparisons, no arithmetic; printed and written to JSON as the value it holds; only built-in number types, `Bool`, `Char` and `String` can be held. Not decided: methods, interfaces and invariants on a distinct type, and arithmetic it could keep from the held type (as Go's `type NetId int` does).
 - **`a ?? b` with an optional `b`** gives a `T?`, the first that holds a value (2.7), as in Swift, C# and Kotlin. Built 2026-11-22, for a maintainer's review.
 - **Changing a `Json` in place.** `doc["name"] = "Ravi"` on a `let` holding an object would be convenient; today you change the dict from `object()` and build a new `Json`.
 - **Decoding unions:** the `{"Variant": {…}}` form only, or also a tag field (`"type": "Circle"`) chosen on the union?

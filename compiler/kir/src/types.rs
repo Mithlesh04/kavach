@@ -296,6 +296,13 @@ impl Lowerer<'_> {
         if let TypeBody::Alias(t) = &decl.body {
             return self.written_type(t);
         }
+        // A distinct type is what it holds (spec 2.21).
+        if let TypeBody::Record(r) = &decl.body
+            && r.distinct
+            && let Some(f) = r.fields.first()
+        {
+            return self.written_type(&f.ty);
+        }
         if decl.generics.len() != args.len() {
             return Err(self.unsupported("this generic type", span));
         }

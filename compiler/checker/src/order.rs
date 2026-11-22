@@ -49,6 +49,10 @@ impl Checker<'_> {
         if self.number_param(&t, false) {
             return Some(true);
         }
+        // A distinct type has the order of what it holds (spec 2.21).
+        if let Some(held) = self.distinct_held(&t) {
+            return Some(orderable(&held));
+        }
         let unknown = |t: &Ty| matches!(t, Ty::Var(_) | Ty::Error);
         let open = match &t {
             Ty::Tuple(items) => items.iter().any(unknown),

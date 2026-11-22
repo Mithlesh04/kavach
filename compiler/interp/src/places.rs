@@ -140,6 +140,12 @@ impl<'a> Interp<'a> {
         let def = self.c.resolution.uses.get(&id.span.start).copied();
         let mut steps = Vec::new();
         for part in chain.into_iter().rev() {
+            // A distinct type's `value` is the value itself (spec 2.21).
+            if let ExprKind::Field { base, .. } = &part.kind
+                && self.distinct_expr(base)
+            {
+                continue;
+            }
             steps.push(match &part.kind {
                 ExprKind::Field { name, .. } => Step::Field(name.name.as_str()),
                 ExprKind::Index { index, .. } => match &index.kind {

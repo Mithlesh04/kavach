@@ -30,7 +30,7 @@ pub fn ask_schema(c: &Compiled, t: &Ty) -> Option<(Tree, bool)> {
         return None;
     }
     if let Ty::Adt(def, _) = t
-        && matches!(s.decl(*def), Some(d) if matches!(d.body, TypeBody::Record(_)))
+        && matches!(s.decl(*def), Some(d) if matches!(&d.body, TypeBody::Record(r) if !r.distinct))
     {
         return Some((inner, false));
     }
@@ -274,6 +274,11 @@ impl<'c> Schemas<'c> {
     /// as JSON writes them (spec 2.12): a name, or `{"Name": {fields}}`.
     fn shape_schema(&self, def: DefId, decl: &TypeDecl) -> Option<Tree> {
         let vs = match &decl.body {
+            // A distinct type is the value it holds (spec 2.21).
+            TypeBody::Record(r) if r.distinct => {
+                let held = self.c.field_types.get(&(def, "value".to_string()))?;
+                return self.schema(held);
+            }
             // `std.time`'s types are ISO 8601 text in JSON.
             TypeBody::Record(r) => {
                 let names = r.fields.iter().map(|f| f.name.name.as_str());

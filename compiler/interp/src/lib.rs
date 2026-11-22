@@ -19,6 +19,7 @@ mod cli;
 mod contracts;
 mod conversions;
 mod destructure;
+mod distinct;
 mod drops;
 mod enums;
 mod eval;
