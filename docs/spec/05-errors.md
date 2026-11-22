@@ -153,6 +153,18 @@ A **panic** is a bug, not an expected failure. It stops the current task. Panics
 
 Panics are not caught by normal code. An agent handler that panics is stopped, logged in the audit log, and the agent keeps serving other requests: the send that started it fails with `panicked: <message> at <file>:<line>` (8.8, [decision 0076](../decisions/0076-every-send-to-an-agent-can-fail.md)).
 
+**Where a panic points.** A panic shows `at` the line where it happened. When that line is in the standard library's own code, the panic shows the line of the program's code that called into the library instead: the call that passed the wrong value, which is the line a person can change. A `require` of a library function points at the call the same way, as the caller has the bug (7.1). A crash report (14.30) still lists the library's functions that were running.
+
+```kavach
+use std.tensor
+
+fn main() {
+    const a = tensor.of_rows([[1.0, 2.0]])          // shape [1, 2]
+    const b = tensor.of_rows([[1.0], [2.0], [3.0]]) // shape [3, 1]
+    print(a @ b)    // panic: `@` needs [1, 2]'s last size (2) to match [3, 1]'s …
+}                   //   at main.kav:6, not a line of std/tensor/ops.kav
+```
+
 Integer overflow is **always checked**, in debug and release builds alike. A silent wrap-around is a security bug. When wrapping is intended, say so: `a.wrapping_add(b)`. When overflow is possible and should be handled, use `a.checked_add(b)`, which returns `none` on overflow (also `checked_sub`, `checked_mul`, `checked_div`; `checked_div` returns `none` for a division by zero too).
 
 ## 5.7 Adding context
@@ -202,4 +214,6 @@ These messages never go to standard output, so a program's real output stays cle
 
 ## Open questions
 
-None right now. Decisions are recorded in [0013](../decisions/0013-core-language-decisions.md).
+- Where a panic in the standard library points (5.6, chosen 2026-11-22, for a maintainer's review): at the program's innermost call into the library that is running, as Rust's `#[track_caller]` points at the caller. A package's (10.12) panics still point inside the package, and a library function called through a function value points inside the library in native code. Native code pays for it only on calls of library functions that can panic: two quick calls into the runtime each.
+
+Decisions are recorded in [0013](../decisions/0013-core-language-decisions.md).

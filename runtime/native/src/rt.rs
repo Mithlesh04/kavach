@@ -11,8 +11,21 @@ use std::io::Write;
 use std::sync::OnceLock;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-/// The program's files: (first line in the program, path), by first line.
-static FILES: OnceLock<Vec<(i32, String)>> = OnceLock::new();
+/// The program's files: (first line in the program, path, whether it is
+/// a standard library module), by first line.
+static FILES: OnceLock<Vec<(i32, String, bool)>> = OnceLock::new();
+
+thread_local! {
+    /// The line of the program's call into the standard library that
+    /// runs now on this thread, or 0 (`RtOp::CallLineSwap`).
+    static CALL_LINE: std::cell::Cell<i32> = const { std::cell::Cell::new(0) };
+}
+
+/// Sets the line of the program's call into the standard library that
+/// runs now; gives the line it was.
+pub(crate) fn call_line(line: i32) -> i32 {
+    CALL_LINE.with(|c| c.replace(line))
+}
 
 /// The lowest stack address generated code may reach: below it, a call
 /// is a stack overflow, a panic (spec 3.8). Each function compares the
@@ -99,13 +112,20 @@ pub fn set_stack_use(usable: usize) {
 }
 
 /// Sets the file table: `first line<TAB>path` per file (KIR's
-/// `Program::path`), or a plain path for a single file.
+/// `Program::path`), with `<TAB>std` after a standard library module's,
+/// or a plain path for a single file.
 pub fn set_path(table: &str) {
     let files = table
         .lines()
-        .map(|l| match l.split_once('\t') {
-            Some((n, p)) => (n.parse().unwrap_or(1), p.to_string()),
-            None => (1, l.to_string()),
+        .map(|l| {
+            let mut parts = l.split('\t');
+            match (parts.next(), parts.next()) {
+                (Some(n), Some(p)) => {
+                    let std = parts.next() == Some("std");
+                    (n.parse().unwrap_or(1), p.to_string(), std)
+                }
+                _ => (1, l.to_string(), false),
+            }
         })
         .collect();
     let _ = FILES.set(files);
@@ -113,15 +133,29 @@ pub fn set_path(table: &str) {
 
 /// The program's main file, as messages show it: the first file.
 pub(crate) fn main_file() -> &'static str {
-    FILES.get().and_then(|f| f.first()).map_or("", |f| f.1.as_str())
+    FILES
+        .get()
+        .and_then(|f| f.first())
+        .map_or("", |f| f.1.as_str())
 }
 
 /// The file and the line in it of line `line` of the program.
 pub(crate) fn location(line: i32) -> (&'static str, i32) {
     let files = FILES.get().map_or(&[][..], Vec::as_slice);
-    match files.iter().rev().find(|(first, _)| *first <= line) {
-        Some((first, path)) => (path, line - first + 1),
+    match files.iter().rev().find(|f| f.0 <= line) {
+        Some((first, path, _)) => (path, line - first + 1),
         None => ("?", line),
+    }
+}
+
+/// Where a panic at line `line` shows: a line in the standard library's
+/// code shows as the program's call into it, when one runs (spec 5.6).
+fn panic_location(line: i32) -> (&'static str, i32) {
+    let files = FILES.get().map_or(&[][..], Vec::as_slice);
+    let in_std = (files.iter().rev().find(|f| f.0 <= line)).is_some_and(|f| f.2);
+    match CALL_LINE.with(std::cell::Cell::get) {
+        call if in_std && call > 0 => location(call),
+        _ => location(line),
     }
 }
 
@@ -207,7 +241,7 @@ pub(crate) struct TaskPanic(pub(crate) String);
 pub fn panic_with(message: &str, line: i32) -> ! {
     crate::rt_tasks::turn();
     let _ = std::io::stdout().flush();
-    let (path, line) = location(line);
+    let (path, line) = panic_location(line);
     if crate::rt_task_errors::in_spawned_task() {
         eprintln!("panic: {message}\n  at {path}:{line}");
         let why = format!("panicked: {message} at {path}:{line}");

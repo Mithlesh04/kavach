@@ -125,3 +125,9 @@ IntWhole,
 /// the text, the start (0 when not written) and the end (the largest
 /// `Int` when not written), with no list of words (Sakshi's S8).
 StrSliceRange,
+/// The line of the program's call into the standard library that runs
+/// now, which a panic in the library's code shows (spec 5.6,
+/// `compiler/kir/src/caller_lines.rs`): set to `a`, giving the line it
+/// was; and set back to `a`.
+CallLineSwap,
+CallLineSet,

@@ -46,6 +46,7 @@ mod net;
 mod numbers;
 mod on_threads;
 mod ops;
+mod panic_places;
 mod parallel_map;
 mod places;
 mod processes;

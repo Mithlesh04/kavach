@@ -20,6 +20,7 @@ Not supported yet: agents, capabilities, `ask` and `unsafe` (Phase 2 and the nat
 | `src/frozen.rs` | `f.unfreeze(key: k)` (spec 2.20): the sealed value's key checked, its value given back |
 | `src/inout.rs` | `inout` arguments: lent to a call that can't fail, then written back (spec 3.9) |
 | `src/ops.rs` | Operators, with overflow checks per integer type |
+| `src/panic_places.rs` | Where a panic is shown: one from the standard library's code, leaving it for the program's, points at the program's call (spec 5.6); the functions a crash report lists (14.30) |
 | `src/builtins.rs` | Prelude functions and methods of built-in types |
 | `src/bytes.rs` | `Bytes` (spec 2.13) |
 | `src/net.rs` | `std.net` (spec 14.10): TCP, with the code in `runtime/core` |

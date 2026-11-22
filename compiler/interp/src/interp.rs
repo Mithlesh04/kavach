@@ -407,10 +407,7 @@ impl<'a> Interp<'a> {
         self.leaving = false;
         self.fs_scopes.truncate(before);
         self.frames.pop();
-        if let Err(Flow::Panic(..)) = &result {
-            let (path, line) = self.c.shown_location(f.name.span.start);
-            (self.panic_trail).push(format!("{} ({path}:{line})", f.name.name));
-        }
+        let result = self.left_call(f, result, span);
         match result {
             Err(e @ (Flow::Panic(..) | Flow::Exit(_))) => Err(e),
             // Its parameters end with the call (spec 6.1).

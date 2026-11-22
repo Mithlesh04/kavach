@@ -203,6 +203,12 @@ impl Compiled {
         offset < end && package.is_none_or(str::is_empty)
     }
 
+    /// Whether the source at `offset` is in a standard library module
+    /// (`BUILTIN`): a panic there points at the program's call (5.6).
+    pub fn in_std(&self, offset: u32) -> bool {
+        is_builtin(&self.file_at(offset).path)
+    }
+
     /// The 1-based line of a byte offset.
     pub fn line_of(&self, offset: u32) -> usize {
         self.src[..offset as usize].matches('\n').count() + 1

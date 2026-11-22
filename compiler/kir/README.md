@@ -99,6 +99,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/whole_lines.rs` | A printed line comes out whole (spec 9.8): a `print` whose values call anything works them out before it writes |
 | `src/borrows.rs` | A closure's function borrows its closure, and the captures it never changes: which functions and locals, for both backends |
 | `src/cancel.rs` | Cancellation (spec 9.6): after each wait, and each call that can wait, a check that returns when the task is cancelled |
+| `src/caller_lines.rs` | A panic in the standard library's code points at the program's call (spec 5.6): each call of a library function that can panic sets its thread's call line, and sets it back after (tests in `src/caller_lines/tests.rs`) |
 | `src/inline/guard.rs` | Copying a function's quick exit in front of its calls |
 | `src/jam.rs` | Unroll and jam of loops that sum an inner loop (building in `src/jam/build.rs`, tests in `src/jam/tests.rs`) |
 | `src/gpu_stay.rs` | GPU `map` results kept in a local, or read only by a GPU op, stay on the GPU; other reads of the local fetch them first |

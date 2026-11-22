@@ -11,6 +11,7 @@
 
 pub mod borrows;
 pub mod c_abi;
+mod caller_lines;
 mod cancel;
 mod checked_fits;
 mod coalesce;

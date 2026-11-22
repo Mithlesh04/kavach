@@ -345,6 +345,7 @@ fn run(id: TaskId, closure: i64, task: i64, ahead: bool) {
     if ahead || s.begin(id).is_ok() {
         TASK.set(task);
         crate::rt::set_stack_limit(crate::STACK_SIZE);
+        crate::rt::call_line(0);
         let thunk = crate::heap::slots(closure)[0] as usize;
         // SAFETY: slot 0 of a closure is its function's address, and the
         // code generator compiled a task's thunk as `fn(closure)`; the

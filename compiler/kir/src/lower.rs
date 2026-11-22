@@ -306,12 +306,17 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
         .copied()
         .zip(exports.iter().map(|n| n.to_string()));
     Ok(Program {
-        // `first line<TAB>path`, one line per file: runtime messages map a
-        // line of the program back to its file.
+        // `first line<TAB>path`, one line per file, and `<TAB>std` after a
+        // standard library module's: runtime messages map a line of the
+        // program back to its file (spec 5.6).
         path: c
             .files
             .iter()
-            .map(|f| format!("{}\t{}", f.first_line, kavach_driver::display_path(&f.path)))
+            .map(|f| {
+                let std = if c.in_std(f.start) { "\tstd" } else { "" };
+                let path = kavach_driver::display_path(&f.path);
+                format!("{}\t{path}{std}", f.first_line)
+            })
             .collect::<Vec<_>>()
             .join("\n"),
         functions,
@@ -328,8 +333,8 @@ impl Program {
     /// The file, and the line in it, of line `line` of the whole program.
     pub fn location(&self, line: u32) -> (&str, u32) {
         let mut files = self.path.lines().filter_map(|l| {
-            let (first, path) = l.split_once('\t')?;
-            Some((first.parse::<u32>().ok()?, path))
+            let mut parts = l.split('\t');
+            Some((parts.next()?.parse::<u32>().ok()?, parts.next()?))
         });
         match files.rfind(|(first, _)| *first <= line) {
             Some((first, path)) => (path, line - first + 1),

@@ -1,0 +1,19 @@
+// Rule: a panic in the standard library's own code shows `at` the line of the program's call into the library, the line a person can change: inside the program's own function that called it.
+// Spec: 5.6
+// expect output: [5.0]
+// expect panic: needs [1, 2]'s last size (2) to match [3, 1]'s
+// expect stderr: panic: `@` needs [1, 2]'s last size (2) to match [3, 1]'s next to last (3)
+// expect stderr:   at a-panic-in-the-library-points-at-the-call.kav:11
+
+use std.tensor
+
+fn product(a: Tensor<Float>, b: Tensor<Float>) -> Tensor<Float> {
+    a @ b
+}
+
+fn main() {
+    const a = tensor.of_rows([[1.0, 2.0]])
+    const b = tensor.of_rows([[1.0], [2.0], [3.0]])
+    print(product(a, a.transpose()).items)
+    print(product(a, b).items)
+}

@@ -1,0 +1,15 @@
+// Rule: a `require` of a standard library function that fails shows `at` the program's call, not a line of the library.
+// Spec: 5.6, 7.1
+// expect output: 6
+// expect panic: contract failed: require a >= 0
+// expect stderr: panic: contract failed: require a >= 0
+// expect stderr:   at a-library-require-points-at-the-call.kav:13
+
+use std.math
+
+fn main() {
+    const pairs = [(12, 18), (-4, 6)]
+    for (a, b) in pairs {
+        print(math.gcd(a, b))
+    }
+}

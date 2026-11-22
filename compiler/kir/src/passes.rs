@@ -36,6 +36,10 @@ pub(crate) fn finish(
     crate::lower_tasks::scope_files(&mut functions, &scoped, error_ty, text_ty);
     crate::lower_tasks::scope_blocks(&mut functions, error_ty);
     crate::lower_tasks::join_tasks(&mut functions, error_ty);
+    // A panic in the standard library points at the program's call (5.6).
+    let std_from =
+        (c.files.iter().find(|f| c.in_std(f.start))).map_or(u32::MAX, |f| f.first_line as u32);
+    crate::caller_lines::mark_calls(&mut functions, std_from);
     for (i, f) in functions.iter_mut().enumerate() {
         crate::unrecurse::unrecurse(i as crate::ir::FuncId, f);
     }

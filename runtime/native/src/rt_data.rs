@@ -203,6 +203,12 @@ pub extern "C-unwind" fn kv_rt(op: i64, a: i64, b: i64, c: i64, code: i64, line:
             0
         }
         RtOp::InoutTake => INOUT.with(|s| s[a as usize % INOUT_SLOTS].replace(0)),
+        // The program's call into the standard library (spec 5.6).
+        RtOp::CallLineSwap => i64::from(crate::rt::call_line(a as i32)),
+        RtOp::CallLineSet => {
+            crate::rt::call_line(a as i32);
+            0
+        }
         RtOp::PanicText => {
             let message = with_str(a, str::to_string);
             panic_with(&message, line)
