@@ -332,14 +332,13 @@ How it is cut, and what it gives:
 - `KAVACH_PAR_LOG=1` notes each split, with each device's items: `kavach: a map of 4096 items split across GPUs: 0 (2048), 1 (2048)`.
 - For tests and comparisons, `KAVACH_GPU_SPLIT=on` splits every `map` that may split, at any size, opening the devices it needs first; `KAVACH_GPU_SPLIT=off` never splits.
 
-*Not built yet:*
+**Devices of one kind are not ranked by memory.** The GPU interface Kavach uses, `wgpu`, doesn't report a device's memory: reading it needs calls of each system's own interface (Vulkan's memory heaps, DirectX's adapter description) that Kavach's safe code can't make. So within a kind the system's order stays, as `system.gpus()` lists it (14.25).
 
-- **A matrix product split across GPUs.** Kavach's matrix products run on the CPU for now (14.33).
-- **Ranking by memory:** within a kind, the device with the most memory first. The GPU interfaces Kavach uses don't report it yet, so ties keep the system's order.
+*Not built yet:* a matrix product split across GPUs. Kavach's matrix products run on the CPU for now (14.33).
 
 ## Open questions
 
 - A `Slice` method in a `gpu fn`: its `Part` holds `Int?`s, which a `gpu fn` can't take (15.1).
 - `min` and `max` of `Float32` on the GPU, and `filter` of records and tuples. Float `min` and `max` must keep `NaN` last (14.2). Float sums are decided: exact and rounded once, in any order ([decision 0135](../decisions/0135-tables-and-grouping.md), which replaces [decision 0031](../decisions/0031-loops-on-all-cores.md)'s in-order float sums for lists).
 - Whether code that keeps GPU memory itself, as the platform plan describes, needs `uses Gpu` too, as choosing a device does (15.6).
-- **For a maintainer's review** (15.6, decision 0144): the size that pays for a split (a second of the CPU's time, 100 units of work for each word moved, then a tenth sooner by measured speeds with 2 ms a part); speeds guessed by kind at first (a discrete GPU as 8 integrated ones), then measured; a device not open yet not waited for; the first part's panic reported; `KAVACH_GPU_SPLIT`.
+- **For a maintainer's review** (15.6, decision 0144): the size that pays for a split (a second of the CPU's time, 100 units of work for each word moved, then a tenth sooner by measured speeds with 2 ms a part); speeds guessed by kind at first (a discrete GPU as 8 integrated ones), then measured; a device not open yet not waited for; the first part's panic reported; `KAVACH_GPU_SPLIT`; no ranking by memory unless Kavach reads it through each system's own interface, which needs `unsafe` code and a decision record.

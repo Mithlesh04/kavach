@@ -27,6 +27,7 @@ Spec 15.6, "A big job splits across the GPUs":
 6. **A device that fails during its part** is skipped from then on (15.6), and its part runs on the next device by the usual choice, or the whole `map` on the CPU when none is left.
 7. **A device not open yet is opened in the background** and joins later work, rather than holding this one up: opening a GPU takes 100–500 ms, more than the GPU time of most maps. *For a maintainer's review.*
 8. **`KAVACH_GPU_SPLIT`**, for tests and comparisons: `on` splits every `map` that may split, at any size, opening its devices first; `off` never splits. *For a maintainer's review.*
+9. **Devices are not ranked by memory.** `wgpu` (30) reports a GPU's name, vendor, kind and interface, but not its memory. Reading it needs each system's own interface under `wgpu` (Vulkan's memory heaps, DXGI's adapter description), through `unsafe` calls Kavach's GPU runtime doesn't make. So within a kind the system's order stays. *For a maintainer's review:* reading it that way needs `unsafe` code and its own decision record; waiting for `wgpu` to report it needs none.
 
 ## Consequences
 
