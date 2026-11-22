@@ -248,7 +248,7 @@ swap(x, y)                     // x is 2, y is 1
 ```
 
 - Inside the function, an `inout` parameter is a variable: it can be assigned and changed (`n += 1`, `items.push(4)`).
-- The argument is a place the caller could assign to: a `let` variable, or a field or list item of one (`bump(user.age)`, `bump(scores[0])`). A `const`, a value or a call is a compile error.
+- The argument is a place the caller could assign to: a `let` variable, or a field or list item of one (`bump(user.age)`, `bump(scores[0])`). A `const`, a value or a call is a compile error. So is a dict's entry (`bump(ages[k])`): it may be missing, and reading it gives an optional (2.2), so there is no place to give the value back to. Change the dict itself: `ages[k] = (ages[k] ?? 0) + 1`.
 - When the function returns, the parameter's last value goes back to that place. Nothing is shared while the function runs: it changes its own copy, so no other name sees half a change. When the function fails (chapter 5), the place keeps its old value.
 - The same variable can't be given twice in one call when one of them is `inout` (`swap(x, x)`, or `bump(x)` beside another argument naming `x`): that would be two names for one value, and is a compile error. So `swap(xs[i], xs[j])` is refused too: write `xs.swap(i, j)` (2.2) or `(xs[i], xs[j]) = (xs[j], xs[i])` (1.14), and the error says so.
 - An `inout` parameter is itself a place: a function can pass it on as `inout` to another call, a recursive one too, and every change reaches the first caller's variable:

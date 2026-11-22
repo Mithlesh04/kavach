@@ -96,9 +96,20 @@ impl Checker<'_> {
                     )),
                 }
             }
+            // A dict's entry may be missing, so reading it gives an
+            // optional: there is no place to write back to (spec 3.9).
+            ExprKind::Index { base, .. } if self.is_dict(base) => Err(
+                "a dict's entry can't be its argument, as it may be missing: change the dict itself, as `ages[k] = (ages[k] ?? 0) + 1`".into(),
+            ),
             ExprKind::Field { base, .. } | ExprKind::Index { base, .. } => self.place_root(base),
             _ => Err("its argument must be a `let` variable, or a field or item of one".into()),
         }
+    }
+
+    /// Whether `e`'s checked type is a dict.
+    fn is_dict(&self, e: &Expr) -> bool {
+        let recorded = (self.expr_types.iter().rev()).find(|(sp, _)| *sp == e.span);
+        recorded.is_some_and(|(_, t)| matches!(self.inf.resolve(t), crate::ty::Ty::Map(..)))
     }
 
     /// Whether `e` reads variable `def` anywhere.

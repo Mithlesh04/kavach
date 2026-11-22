@@ -1,0 +1,13 @@
+// Rule: a dict's entry can't be an `inout` argument: it may be missing, and reading it gives an optional, so there is no place to give the value back to.
+// Spec: 3.9
+// expect compile error
+
+fn mark(inout n: Int?) {
+    n = 10
+}
+
+fn main() {
+    let ages = {"a": 1}
+    mark(ages["a"])      // error: a dict's entry can't be its argument
+    print(ages)
+}
