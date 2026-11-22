@@ -187,6 +187,11 @@ impl<'a> Lowerer<'a> {
         {
             return Some(Ok(e));
         }
+        if recv == Type::Char
+            && let Some(e) = self.char_check(name, values.clone(), ty, line)
+        {
+            return Some(Ok(e));
+        }
         let numeric = recv.is_int()
             || recv.is_float()
             || matches!(shape, Some(Shape::Decimal | Shape::BigInt));

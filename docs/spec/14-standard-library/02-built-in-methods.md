@@ -187,3 +187,25 @@ print((by_month["south"] ?? {:})[2] ?? 0.0)     // 0.0: no sale there
 **One name for each job.** Picking columns out is `map` to an anonymous record (2.14), as the first example does; there is no `select`. A sum per key is `group_by(key).map_values(g => g.sum(f))`. Names other tools use are compile errors that name Kavach's: `sum_by` names that form and `sum(f)`, `value_counts` names `count_by`, `distinct` and `drop_duplicates` name `unique` and `unique_by`, `merge` and a `join` given lambdas name `inner_join`, `select` names `map`, and `average` and `avg` name `mean`. A range has them too, as it has every method that reads a list (2.2).
 
 These replace `collections.unique(items)` and `collections.counts(items)` (14.9), now `items.unique()` and `items.count_by(x => x)`, and `math.mean(xs)` (14.5), now `xs.mean(x => x)`.
+
+### Characters
+
+A `Char` says what kind of character it is:
+
+| Method | Gives `true` when the character is |
+|---|---|
+| `c.is_digit()` | `0` to `9`: the digits `Int(text)` reads |
+| `c.is_letter()` | a letter in any script: `'a'`, `'Ж'`, `'क'` |
+| `c.is_alphanumeric()` | a letter or a digit, as above |
+| `c.is_whitespace()` | white space: a space, a tab, a line break, and Unicode's other spaces |
+| `c.is_upper()`, `c.is_lower()` | an upper-case or a lower-case letter; a character with no case is neither |
+
+```kavach
+const id = "user_42"
+print(id.chars().all(c => c.is_alphanumeric() or c == '_'))    // true
+print('7'.is_digit())                                          // true
+print('٣'.is_digit())                                          // false: Arabic-Indic three
+print('é'.is_letter())                                         // true
+```
+
+Letters, white space and case are Unicode's (its `Alphabetic`, `White_Space`, `Uppercase` and `Lowercase` properties). Digits are only `0` to `9`, so a character `is_digit()` accepts is one a number can be read from. To change a character's case, change the text's: `c.upper()` isn't a method, as one character can become two (`'ß'` is `"SS"`); write `` `{c}`.upper() ``.

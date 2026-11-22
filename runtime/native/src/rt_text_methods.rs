@@ -23,6 +23,11 @@ fn take(p: i64) -> String {
 // `a` is the text (owned); `b` a `String` (owned) or an `Int`; `c` the
 // fill `Char` of padding.
 crate::rt_data::entry!(kv_rt_text_methods, |op, a, b, c, code, line| {
+    // A `Char`'s kind check: `a` is a code point, not text.
+    if op == RtOp::TextCharIs {
+        let ch = char::from_u32(a as u32).unwrap_or(char::REPLACEMENT_CHARACTER);
+        return i64::from(tm::char_check(ch, b as usize));
+    }
     let result = type_of(code);
     let s = take(a);
     match op {

@@ -195,6 +195,12 @@ impl Checker<'_> {
                 "bytes" => sig(vec![], Ty::Prim(Prim::Bytes)),
                 _ => None,
             },
+            // Spec 14.2, *Characters*.
+            Ty::Prim(Prim::Char) => match name {
+                "is_digit" | "is_letter" | "is_alphanumeric" | "is_whitespace" | "is_upper"
+                | "is_lower" => sig(vec![], boolean),
+                _ => None,
+            },
             // Spec 2.13.
             Ty::Prim(Prim::Bytes) => {
                 let byte = Ty::Prim(Prim::UInt8);

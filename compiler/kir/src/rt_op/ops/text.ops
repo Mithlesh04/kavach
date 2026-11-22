@@ -106,6 +106,10 @@ TextRemovePrefix,
 TextRemoveSuffix,
 TextPadLeft,
 TextPadRight,
+/// A `Char`'s kind check (spec 14.2, *Characters*): the character's
+/// code point in `a`, and in `b` the check's place in
+/// `kavach_runtime_core::text_methods::CHAR_CHECKS`.
+TextCharIs,
 /// `s[a:b:step]` (spec 2.19): the text, and a list of the slice's four
 /// words, as `ListSlicePart`; by characters.
 StrSlicePart,

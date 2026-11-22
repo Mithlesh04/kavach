@@ -1,0 +1,23 @@
+// Rule: a `Char` says what kind of character it is: `is_digit` (only `0` to `9`), `is_letter`, `is_alphanumeric`, `is_whitespace`, `is_upper` and `is_lower`, in any script.
+// Spec: 14.2
+// expect output: true
+// expect output: false
+// expect output: true
+// expect output: true
+// expect output: true
+// expect output: false
+// expect output: true
+// expect output: true
+// expect output: false
+
+fn main() uses Console {
+    print('7'.is_digit())
+    print('٣'.is_digit())
+    print('é'.is_letter())
+    print('क'.is_alphanumeric())
+    print('\t'.is_whitespace())
+    print('_'.is_alphanumeric())
+    print('Ж'.is_upper())
+    print("user_42".chars().all(c => c.is_alphanumeric() or c == '_'))
+    print('ß'.is_upper())
+}

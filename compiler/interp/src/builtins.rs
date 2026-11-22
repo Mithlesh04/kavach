@@ -10,6 +10,7 @@ use crate::ops::{fits, int_range};
 use crate::value::{Eval, Flow, Value};
 use kavach_ast::{BinaryOp, Span};
 use kavach_checker::Prim;
+use kavach_runtime_core::text_methods as tm;
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -217,6 +218,12 @@ impl<'a> Interp<'a> {
             (Value::Channel(c, None), "close") => return self.channel_close(c),
             (Value::Channel(c, Some(_)), "take") => return self.channel_take(c, None, span),
             _ => {}
+        }
+        // A `Char`'s kind checks (spec 14.2, *Characters*).
+        if let Value::Char(c) = &recv
+            && let Some(i) = tm::CHAR_CHECKS.iter().position(|n| *n == name)
+        {
+            return Ok(Value::Bool(tm::char_check(*c, i)));
         }
         // Text methods that came from `std.text` (spec 14.2).
         if let Value::Str(s) = &recv

@@ -5,7 +5,8 @@
 //! Text methods (spec 14.2) that the interpreter and native code share:
 //! `capitalize`, `title`, `words`, padding, `is_blank`,
 //! `trim_start` and `trim_end`, `last_index_of`, `count`, and removing a
-//! prefix or suffix. Positions and lengths count characters.
+//! prefix or suffix. Positions and lengths count characters. Also the
+//! kind checks of a `Char` (`is_digit`, `is_letter`, …).
 
 /// Whether `c` separates words: a space, tab or line break.
 fn is_space(c: char) -> bool {
@@ -92,6 +93,31 @@ pub fn remove_suffix<'s>(s: &'s str, suffix: &str) -> &'s str {
     s.strip_suffix(suffix).unwrap_or(s)
 }
 
+/// A `Char`'s kind checks (spec 14.2, *Characters*), numbered by their
+/// place here, as native code passes the number.
+pub const CHAR_CHECKS: [&str; 6] = [
+    "is_digit",
+    "is_letter",
+    "is_alphanumeric",
+    "is_whitespace",
+    "is_upper",
+    "is_lower",
+];
+
+/// Check `check` of [`CHAR_CHECKS`] on `c`. Digits are only `0` to `9`,
+/// the ones a number is read from; the rest are Unicode's.
+pub fn char_check(c: char, check: usize) -> bool {
+    match check {
+        0 => c.is_ascii_digit(),
+        1 => c.is_alphabetic(),
+        2 => c.is_alphabetic() || c.is_ascii_digit(),
+        3 => c.is_whitespace(),
+        4 => c.is_uppercase(),
+        5 => c.is_lowercase(),
+        _ => false,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -120,5 +146,26 @@ mod tests {
         assert_eq!(remove_prefix("v1.2", "v"), "1.2");
         assert_eq!(remove_prefix("1.2", "v"), "1.2");
         assert_eq!(remove_suffix("main.kav", ".kav"), "main");
+    }
+
+    /// Each check on characters it takes and refuses, in every script.
+    #[test]
+    fn each_char_check_gives_what_the_spec_says() {
+        let check = |name: &str| CHAR_CHECKS.iter().position(|n| *n == name).unwrap();
+        for (name, yes, no) in [
+            ("is_digit", "0789", "a٣²½ "),
+            ("is_letter", "aZéЖक", "7_ -"),
+            ("is_alphanumeric", "a7Ж9", "_-٣ "),
+            ("is_whitespace", " \t\n\r\u{a0}\u{3000}", "a_0"),
+            ("is_upper", "AÉЖ", "aé7क"),
+            ("is_lower", "aéжß", "A7क_"),
+        ] {
+            for c in yes.chars() {
+                assert!(char_check(c, check(name)), "{name}({c:?})");
+            }
+            for c in no.chars() {
+                assert!(!char_check(c, check(name)), "not {name}({c:?})");
+            }
+        }
     }
 }

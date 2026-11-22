@@ -5,11 +5,12 @@
 //! Text methods (spec 14.2) that each lower to one op: those that came
 //! from `std.text` (`capitalize`, `words`, padding, …) and those added
 //! with them. `pad_left` and `pad_right` fill with a space when `fill:`
-//! isn't given.
+//! isn't given. Also a `Char`'s kind checks.
 
 use crate::ir::{self, ExprKind as K, Type};
 use crate::lower::Lowerer;
 use crate::rt_op::RtOp;
+use kavach_runtime_core::text_methods::CHAR_CHECKS;
 
 impl Lowerer<'_> {
     /// `s.name(…)` on text, with `values` the text then the arguments;
@@ -40,5 +41,20 @@ impl Lowerer<'_> {
             values.push(self.at(K::Char(' '), Type::Char, line));
         }
         Some(self.at(K::Rt(op, values), ty, line))
+    }
+
+    /// `c.is_digit()` and the other kind checks of a `Char` (spec 14.2,
+    /// *Characters*), with `values` the character; `None` when `name`
+    /// isn't one of them.
+    pub(crate) fn char_check(
+        &mut self,
+        name: &str,
+        mut values: Vec<ir::Expr>,
+        ty: Type,
+        line: u32,
+    ) -> Option<ir::Expr> {
+        let check = CHAR_CHECKS.iter().position(|n| *n == name)?;
+        values.push(self.at(K::Int(check as i128), Type::I64, line));
+        Some(self.at(K::Rt(RtOp::TextCharIs, values), ty, line))
     }
 }

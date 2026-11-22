@@ -23,6 +23,7 @@ The tests are listed in five files, by area:
 | 14.2 | [number-methods.kav](number-methods.kav) | Numbers have abs, min, max and clamp. | runs |
 | 14.2 | [text-methods.kav](text-methods.kav) | Text has replace, lines, chars and index_of, and slices; positions count characters. | runs |
 | 14.2 | [text-split.kav](text-split.kav) | split returns the parts between separators, empty parts included. | runs |
+| 14.2 | [a-char-says-what-kind-it-is.kav](a-char-says-what-kind-it-is.kav) | A `Char` says what kind it is: `is_digit` (only `0` to `9`), `is_letter`, `is_alphanumeric`, `is_whitespace`, `is_upper`, `is_lower`. | runs |
 | 14.2 | [list-methods.kav](list-methods.kav) | Lists have join, sort, sort_by, find, count, index_of, min and max, and slices give a reversed copy, the first items and the rest. | runs |
 | 14.2 | [list-slice-takes-a-range-of-items.kav](list-slice-takes-a-range-of-items.kav) | `xs[start:end]` gives items `start..end`, both clamped to the list: a computed start below 0 counts as the start. | runs |
 | 14.2 | [chars-join-and-text-contains-a-char.kav](chars-join-and-text-contains-a-char.kav) | A `[Char]` joins into text, and `contains` looks for a `Char` as for a `String`. | runs |
