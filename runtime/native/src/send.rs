@@ -308,7 +308,14 @@ pub fn copy(slot: u64, ty: Type) -> u64 {
     let p = slot as i64;
     let (own, tag) = (obj(p).ty(), obj(p).tag);
     if has_data(p) {
-        let mut d = data(p).borrow().clone();
+        // SAFETY: copying only reads `p`. An object two threads can reach
+        // has more than one holder, so nothing changes it in place (it is
+        // copied on write); reading it through `borrow()` would write the
+        // `RefCell`'s borrow count, which isn't atomic, so two threads
+        // copying one object, or one copying while another reads it, could
+        // corrupt the count ("already mutably borrowed", seen under load
+        // in `06-memory/drop-runs-once-for-copies-on-other-cores.kav`).
+        let mut d = unsafe { (*data(p).as_ptr()).clone() };
         match &mut d {
             Data::Map(t) => {
                 for (i, s) in t.slots.iter_mut().enumerate() {
