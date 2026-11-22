@@ -150,7 +150,7 @@ fn native_code_matches_the_interpreter() {
     kav_files(&root.join("tests/conformance"), &mut files);
     kav_files(&root.join("examples"), &mut files);
 
-    let out_dir = std::env::temp_dir().join(format!("kavach-native-test-{}", std::process::id()));
+    let out_dir = scratch().join(format!("kavach-native-test-{}", std::process::id()));
     // A working folder of its own: the conformance suite runs the same
     // programs at the same time, and two runs of a program that writes
     // `kavach-test-bytes.bin` would remove each other's file.
@@ -219,7 +219,7 @@ fn native_code_matches_the_interpreter() {
 /// used to copy the whole list or map, so this took half a minute.
 #[test]
 fn big_collections_are_not_copied() {
-    let dir = std::env::temp_dir().join(format!("kavach-big-{}", std::process::id()));
+    let dir = scratch().join(format!("kavach-big-{}", std::process::id()));
     fs::create_dir_all(&dir).unwrap();
     let path = dir.join("big.kav");
     let src = "let m: {Int: Int} = {:}\nlet items = []\nfor i in 0..200000 {\n    m[i] = i\n    items.push(i)\n}\nlet total = 0\nfor i in 0..200000 {\n    total += (m[i] ?? 0) + items[i]\n}\nprint(total)\n";
@@ -241,7 +241,7 @@ fn big_collections_are_not_copied() {
 /// is still used afterwards keeps its value (spec 6.1).
 #[test]
 fn last_use_moves_instead_of_copying() {
-    let dir = std::env::temp_dir().join(format!("kavach-moves-{}", std::process::id()));
+    let dir = scratch().join(format!("kavach-moves-{}", std::process::id()));
     fs::create_dir_all(&dir).unwrap();
     let path = dir.join("moves.kav");
     let src = "fn add_one(items: [Int]) -> [Int] {\n    let copy = items\n    copy.push(1)\n    copy\n}\n\nlet xs = []\nfor _ in 0..100000 {\n    xs = add_one(xs)\n}\nprint(xs.len())\nconst original = [7]\nconst bigger = add_one(original)\nprint(`{original.len()} {bigger.len()}`)\n";
@@ -269,7 +269,7 @@ fn last_use_moves_instead_of_copying() {
 #[cfg(unix)]
 #[test]
 fn a_stop_signal_ends_the_program_cleanly() {
-    let dir = std::env::temp_dir().join(format!("kavach-stop-{}", std::process::id()));
+    let dir = scratch().join(format!("kavach-stop-{}", std::process::id()));
     let _ = fs::remove_dir_all(&dir);
     fs::create_dir_all(&dir).unwrap();
     let ready = dir.join("ready");
@@ -347,7 +347,7 @@ fn a_stop_signal_ends_the_program_cleanly() {
 #[cfg(target_os = "linux")]
 #[test]
 fn running_out_of_memory_is_a_panic() {
-    let dir = std::env::temp_dir().join(format!("kavach-oom-{}", std::process::id()));
+    let dir = scratch().join(format!("kavach-oom-{}", std::process::id()));
     let _ = fs::remove_dir_all(&dir);
     fs::create_dir_all(&dir).unwrap();
     let file = dir.join("main.kav");
@@ -430,8 +430,7 @@ fn main() ! Error uses Serial, Console {
         let mut path = String::new();
         let stdout = side.stdout.take().unwrap();
         std::io::BufRead::read_line(&mut std::io::BufReader::new(stdout), &mut path).unwrap();
-        let dir =
-            std::env::temp_dir().join(format!("kavach-serial-{native}-{}", std::process::id()));
+        let dir = scratch().join(format!("kavach-serial-{native}-{}", std::process::id()));
         fs::create_dir_all(&dir).unwrap();
         let file = dir.join("main.kav");
         fs::write(&file, program.replace("PATH", path.trim())).unwrap();
@@ -451,4 +450,11 @@ fn main() ! Error uses Serial, Console {
             "native {native}: {said}"
         );
     }
+}
+
+/// Where these tests build: Cargo's folder for a test's own files, on the
+/// build drive, not the system's temp folder, where a run that was stopped
+/// left gigabytes of programs behind on C: (2026-11-22).
+fn scratch() -> PathBuf {
+    PathBuf::from(env!("CARGO_TARGET_TMPDIR"))
 }
