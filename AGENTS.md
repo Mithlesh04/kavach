@@ -6,7 +6,7 @@ If a rule here conflicts with a request, follow the request and say which rule i
 
 ## 1. Where things stand
 
-- Kavach is in **Phase 1**. The front end and a development interpreter run spec chapters 1–7; see the [roadmap](docs/vision/roadmap.md).
+- Kavach is pre-alpha: **Phase 1 is done and Phase 2 is under way**. The interpreter and native code run the spec's chapters; see the [roadmap](docs/vision/roadmap.md).
 - Run a program: `cargo run -p kavach-cli -- run file.kav`. Build an executable: `cargo run -p kavach-cli -- build file.kav`. Run all conformance tests: `cargo test -p kavach-cli`.
 - The [language spec](docs/spec/README.md) is the source of truth. If code and spec disagree, the code is wrong.
 - Where files go is defined in [repo-structure.md](docs/architecture/repo-structure.md). Follow it.
