@@ -1,0 +1,15 @@
+// Rule: a generic type's invariant may read its number parameters (2.9), in both modes.
+// Spec: 7.3, 2.9
+// expect output: 2
+// expect panic: contract failed: invariant items.len() <= size
+
+type Batch<T, size: Int> {
+    items: [T]
+    invariant items.len() <= size
+}
+
+fn main() {
+    const ok = Batch<Int, size: 3>(items: [1, 2])
+    print(ok.items.len())
+    const _too_many = Batch<Int, size: 2>(items: [1, 2, 3])
+}

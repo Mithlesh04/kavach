@@ -8,6 +8,8 @@
 use crate::interp::Interp;
 use crate::value::{Eval, Flow, Value};
 use kavach_ast::{Expr, Span, TypeBody};
+use kavach_checker::Ty;
+use std::collections::HashMap;
 
 impl<'a> Interp<'a> {
     /// A `require`, `ensure` or `invariant`: false is a panic that shows the
@@ -41,6 +43,20 @@ impl<'a> Interp<'a> {
             return Ok(());
         }
         self.invariant_fields.push(fields.clone());
+        // A generic type's parameters, its number parameters too, from the
+        // checked type of the value made at `span` (spec 2.9, 7.3).
+        let params = match self.c.expr_types.get(&(span.start, span.end)) {
+            Some(Ty::Adt(d, args)) if d == def && !args.is_empty() => self.type_params(*d, args),
+            _ => HashMap::new(),
+        };
+        let outer = (!params.is_empty())
+            .then(|| self.frames.last_mut())
+            .flatten()
+            .map(|f| {
+                let outer = f.generics.clone();
+                f.generics.extend(params);
+                outer
+            });
         let result = r
             .invariants
             .iter()
@@ -60,6 +76,9 @@ impl<'a> Interp<'a> {
                 Err(flow) => Err(flow),
             });
         self.invariant_fields.pop();
+        if let (Some(outer), Some(f)) = (outer, self.frames.last_mut()) {
+            f.generics = outer;
+        }
         result
     }
 

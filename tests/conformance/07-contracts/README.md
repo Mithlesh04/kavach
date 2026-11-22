@@ -17,6 +17,7 @@ Conformance tests for spec chapter [7. Contracts](../../../docs/spec/07-contract
 | 7.3, 7.4 | [invariant-checked-on-create.kav](invariant-checked-on-create.kav) | An invariant is checked when a value is created. | panic |
 | 7.3 | [invariants-call-methods-on-fields.kav](invariants-call-methods-on-fields.kav) | An invariant may call methods on the fields it names, in native code as in the interpreter. | panic |
 | 7.3, 2.9 | [a-generic-type-checks-its-invariant.kav](a-generic-type-checks-its-invariant.kav) | A generic type's invariant is checked for each type the value is made with, on create and on change. | panic |
+| 7.3, 2.9 | [a-generic-invariant-reads-a-number-parameter.kav](a-generic-invariant-reads-a-number-parameter.kav) | A generic type's invariant may read its number parameters, in both modes. | panic |
 | 7.3, 2.12 | [a-generic-invariant-fails-under-try-and-in-decode.kav](a-generic-invariant-fails-under-try-and-in-decode.kav) | A generic type's invariant makes `try` fail and is a problem `json.decode` reports, as for any other type. | runs |
 | 7.5 | [contracts-must-be-pure.kav](contracts-must-be-pure.kav) | A contract must not use any capability. | compile error |
 | 7.6 | [examples-pass.kav](examples-pass.kav) | `kavach test` runs every example, including `fails` examples. | kavach test |
