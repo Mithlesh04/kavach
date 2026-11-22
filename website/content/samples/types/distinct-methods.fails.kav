@@ -1,0 +1,11 @@
+type NetId = distinct Int
+
+extend NetId {
+    fn next(self) -> NetId {
+        NetId(self.value + 1)
+    }
+}
+
+fn main() {
+    print(NetId(7).next())
+}

@@ -123,6 +123,19 @@ export const writingDoc: LessonDoc = {
         <li><C>write_text</C> replaces the whole file, atomically: a crash leaves the old text or the new, never half.</li>
         <li><C>fs.write_durable</C> also waits until the data is on the disk, so even a power cut keeps it. Databases build on it.</li>
       </ul>
+      <H2>Writes cut short</H2>
+      <P>
+        <C>write_text</C>, <C>write_bytes</C> and <C>write_durable</C> write a hidden temporary file beside the
+        target, <C>.name.kavach-&lt;program&gt;-&lt;n&gt;.tmp</C>, then rename it over the target. A write cut short by a
+        crash, a kill or a power cut may leave that file behind. The first of these writes into a folder, in each run,
+        removes the ones left there, so a program that crashed cleans up when it runs again:
+      </P>
+      <Ex name="files/cut-short" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>Only names of exactly that form are removed: <C>.notes.txt.tmp</C> stays, and nothing else in the folder is touched.</li>
+        <li>A write in progress keeps its temporary file locked, so a write in another program never removes it.</li>
+      </ul>
+      <SrcRef file="tests/conformance/14-standard-library/fs-writes-cut-short-are-cleaned-up.kav" label="cleaned up, tested" />
       <H2>Piece by piece</H2>
       <P>
         <C>fs.create_writer(path)</C> gives a <C>FileWriter</C>, which writes a file as its data comes. A large upload

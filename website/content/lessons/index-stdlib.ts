@@ -30,6 +30,7 @@ import {
   argumentsDoc, cliDoc, commandsDoc, fileInfoDoc, filesDoc, foldersDoc, readingDoc, watchDoc, writingDoc,
 } from "./stdlib-files";
 import { clipboardDoc, colorsDoc, devicesDoc, promptsDoc, randomDoc, regexDoc, termDoc, timeDoc } from "./stdlib-tools";
+import { timePatternsDoc } from "./stdlib-time-patterns";
 import { agentsStdDoc } from "./stdlib-agents";
 
 export const stdlibLessons: Record<string, LessonDoc> = {
@@ -46,6 +47,7 @@ export const stdlibLessons: Record<string, LessonDoc> = {
   "standard-library/the-terminal/colors-and-styles": colorsDoc,
   "standard-library/the-terminal/prompts": promptsDoc,
   "standard-library/time": timeDoc,
+  "standard-library/time/patterns": timePatternsDoc,
   "standard-library/random-numbers": randomDoc,
   "standard-library/regex": regexDoc,
   "standard-library/text-and-collections": textCollectionsDoc,

@@ -1,0 +1,1 @@
+error: a distinct type is made from the value it holds alone: write `NetId(value)` (spec 2.21)

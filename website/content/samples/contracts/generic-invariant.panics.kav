@@ -1,0 +1,15 @@
+type Range<T: Comparable> {
+    low: T
+    high: T
+
+    invariant low <= high
+}
+
+fn main() {
+    const r = Range(low: 1, high: 3)
+    print(r.high)
+    const s = Range(low: "a", high: "b")
+    print(s.low)
+    const bad = Range(low: "b", high: "a")
+    print(bad.low)
+}

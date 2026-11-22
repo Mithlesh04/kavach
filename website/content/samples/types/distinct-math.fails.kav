@@ -1,0 +1,6 @@
+type NetId = distinct Int
+
+fn main() {
+    const n = NetId(7)
+    print(n + NetId(1))
+}

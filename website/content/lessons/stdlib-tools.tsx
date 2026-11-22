@@ -215,7 +215,7 @@ export const timeDoc: LessonDoc = {
         <li>A leap second (<C>23:59:60</C>) fails: a <C>Time</C> has no such second.</li>
         <li>In JSON, a <C>Date</C>, <C>Time</C> and <C>DateTime</C> are this text too, with a <C>DateTime</C> in UTC: see <Link href="/docs/standard-library/json/decoding-into-a-type/#dates-and-times">Dates and times</Link>.</li>
         <li><C>parse_moment</C> reads back any moment <C>z.iso</C> wrote, seconds in the offset included.</li>
-        <li>Other formats, such as <C>4 Nov 2026</C>, are not read: they are an open question.</li>
+        <li>Other formats, such as <C>4 Nov 2026</C> or an HTTP date, take a pattern: see <Link href="/docs/standard-library/time/patterns/">Patterns</Link>.</li>
       </ul>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/14-standard-library/04-time.md" label="spec 14.4 · times as text" />
@@ -330,6 +330,13 @@ export const devicesDoc: LessonDoc = {
         may not open it) or <C>Failed(path, reason)</C>:
       </P>
       <Ex name="devices/not-found" />
+      <P>
+        A baud rate must be a whole number above 0, and a file or a folder isn&apos;t a port. Both fail before
+        anything is opened, with the same words on every system. On Linux and macOS a rate of 0 would hang the line up
+        instead of setting a speed:
+      </P>
+      <Ex name="devices/refused" />
+      <P><C>port.read(0)</C> gives empty <C>Bytes</C> at once, without waiting; a negative count counts as 0.</P>
       <H2>It needs Serial</H2>
       <P>A function that reaches a port says so in its <C>uses</C>, or it doesn&apos;t compile:</P>
       <Ex name="devices/needs.fails" />

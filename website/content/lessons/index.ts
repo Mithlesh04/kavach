@@ -55,6 +55,7 @@ import {
 import { howTasksRunDoc, turnsDoc } from "./concurrency-running";
 import { httpCallDoc, httpDoc, httpJsonDoc, httpServeDoc, httpSessionDoc, httpSocketsDoc } from "./networks-http";
 import { frozenDoc, frozenKeyDoc } from "./types-frozen";
+import { distinctDoc } from "./types-distinct";
 import { matricesDoc } from "./types-matrices";
 import { aiWritesDoc } from "./tools-ai-writes";
 import {
@@ -294,6 +295,7 @@ export const lessons: Record<string, LessonDoc> = {
   "types/operators-for-your-types": ownOperatorsDoc,
   "types/frozen-values": frozenDoc,
   "types/frozen-values/sealed-with-a-key": frozenKeyDoc,
+  "types/distinct-types": distinctDoc,
   "types/matrices": matricesDoc,
   "types/classes-and-inheritance": classesDoc,
   "types/writing-types": writingTypesDoc,

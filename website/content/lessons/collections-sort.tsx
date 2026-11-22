@@ -22,7 +22,7 @@ const orders: [type: string, order: string, page: string][] = [
 // ---------- Sorting ----------
 
 export const sortingDoc: LessonDoc = {
-  lead: "list.sort() gives a sorted copy of a list of numbers, text, characters, Bools or tuples. sort_by(key) sorts anything else, by a key you choose.",
+  lead: "list.sort() gives a sorted copy of a list of anything < compares: numbers, text, characters, Bools, and tuples, lists and Bytes of them. sort_by(key) sorts anything else, by a key you choose.",
   simple: <>Sorting puts things in order, like lining children up by height or books by title. Numbers and text already have an order; for anything else, you say what to order by.</>,
   minutes: 6,
   before: ["collections/lists"],
@@ -180,10 +180,15 @@ export const sortKeyDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li><C>sort_by(.score)</C> sorts by a field. Equal scores keep their order: Zoe stays before Omar. This is a stable sort.</li>
         <li><C>p =&gt; -p.score</C> sorts the highest score first.</li>
-        <li>The key can be a number, text, a character, a <C>Bool</C>, or a tuple of them.</li>
+        <li>The key can be anything <C>&lt;</C> compares: a number, text, a character, a <C>Bool</C>, or a tuple or list of them.</li>
       </ul>
       <P><C>Bool</C>s sort <C>false</C> first, and tuples item by item:</P>
       <Ex name="sort/bools" />
+      <P>
+        Lists sort item by item too, and a list that is the start of a longer one comes first. <C>min</C> and{" "}
+        <C>max</C> use the same order:
+      </P>
+      <Ex name="sort/lists" />
       <P>A record has no single natural order, so neither <C>sort()</C> nor a record key is allowed; the compiler asks for a key it can order:</P>
       <Ex name="sort/records.fails" />
       <Ex name="sort/record-key.fails" />

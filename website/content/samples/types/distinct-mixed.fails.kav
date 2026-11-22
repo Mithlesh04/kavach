@@ -1,0 +1,11 @@
+type NetId = distinct Int
+type CellId = distinct Int
+
+fn driver(net: NetId) -> Int {
+    net.value
+}
+
+fn main() {
+    const c = CellId(7)
+    print(driver(c))
+}

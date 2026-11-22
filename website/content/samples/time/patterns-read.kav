@@ -1,0 +1,18 @@
+use std.time
+
+fn show(text: String, pattern: String) {
+    const d = time.parse_date(text, pattern) catch e => {
+        print(`{e}`)
+        return
+    }
+    print(d.iso())
+}
+
+fn main() ! DateError {
+    show("4 Nov 2026", "D MMM YYYY")
+    print((try time.parse_time("9:05 PM", "h:mm A")).iso())
+    show("04 nov 2026", "DD MMM YYYY")
+    show("4 Nov 26", "D MMM YYYY")
+    show("Tue, 04 Nov 2026", "ddd, DD MMM YYYY")
+    show("31 Feb 2026", "D MMM YYYY")
+}

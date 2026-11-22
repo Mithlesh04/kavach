@@ -1,0 +1,14 @@
+type NetId = distinct Int
+type CellId = distinct Int
+
+fn driver(net: NetId) -> CellId {
+    CellId(net.value * 2)
+}
+
+fn main() {
+    const n = NetId(7)
+    const c = driver(n)
+    print(c.value)
+    print(n)
+    print(`{n == NetId(7)} {n == NetId(8)} {NetId(3) < n}`)
+}

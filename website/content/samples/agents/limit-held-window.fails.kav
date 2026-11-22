@@ -1,0 +1,23 @@
+type Report {
+    job: Int
+}
+type ToolError = Failed | Denied(reason: String)
+
+capability Tools {
+    fn simulate(job: Int) -> Report ! ToolError
+}
+
+agent Lab {
+    can Tools.simulate
+
+    limit Tools.simulate {
+        held <= 2 per day
+    }
+
+    on run(job: Int) -> Report ! ToolError {
+        try Tools.simulate(job)
+    }
+}
+
+fn main() {
+}

@@ -97,3 +97,30 @@ export const sectionTitles: Map<string, string> = (() => {
   walk(path.join(repo, "docs", "spec"));
   return titles;
 })();
+
+/**
+ * A conformance test as a page shows it: its program, without its header,
+ * and what it prints, read from its `// expect output:` lines, then its
+ * `// expect stderr:` lines. For what a sample's .expect can't hold, such
+ * as the `at` line a panic prints under its message. The program is shown
+ * as `file`, so a place the test expects (`at <test>.kav:11`) is
+ * renumbered to the line shown and named as `file`: the same line of the
+ * same code.
+ */
+export function conformanceRun(rel: string, file = "main.kav"): { code: string; output: string } {
+  const lines = fs.readFileSync(path.join(repo, rel), "utf8").replace(/\r\n/g, "\n").split("\n");
+  const body = lines.findIndex((l) => !l.startsWith("//") && l.trim() !== "");
+  if (body < 0) throw new Error(`${rel}: no program after its header`);
+  const said = (kind: string) =>
+    lines.slice(0, body).filter((l) => l.startsWith(`// expect ${kind}: `)).map((l) => l.slice(`// expect ${kind}: `.length));
+  const name = path.basename(rel).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const output = [...said("output"), ...said("stderr")].map((l) =>
+    l.replace(new RegExp(`${name}:(\\d+)`, "g"), (_, n: string) => {
+      const shown = Number(n) - body;
+      if (shown < 1) throw new Error(`${rel}: expects a place in its own header, line ${n}`);
+      return `${file}:${shown}`;
+    }),
+  );
+  if (!output.length) throw new Error(`${rel}: its header expects no output`);
+  return { code: lines.slice(body).join("\n").trimEnd(), output: output.join("\n") };
+}

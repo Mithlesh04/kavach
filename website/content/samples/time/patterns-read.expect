@@ -1,0 +1,6 @@
+2026-11-04
+21:05:00
+Invalid(text: "04 nov 2026")
+Invalid(text: "4 Nov 26")
+Invalid(text: "Tue, 04 Nov 2026")
+Invalid(text: "31 Feb 2026")

@@ -1,0 +1,27 @@
+use std.json
+
+type NetId = distinct Int
+type CellId = distinct Int
+type Seat = distinct Int
+
+type Pin {
+    net: NetId
+    cell: CellId
+}
+
+fn main() ! Error {
+    let seats: {Seat: String} = {:}
+    seats[Seat(3)] = "Asha"
+    let s = Seat(3)
+    s.value += 1
+    print(`{seats.get(Seat(3)) ?? "free"} {s}`)
+
+    print([NetId(9), NetId(2), NetId(5)].sort())
+
+    const pin = Pin(net: NetId(7), cell: CellId(14))
+    print(pin)
+    const text = json.stringify(pin)
+    print(text)
+    const back = try json.decode<Pin>(text)
+    print(back.net)
+}

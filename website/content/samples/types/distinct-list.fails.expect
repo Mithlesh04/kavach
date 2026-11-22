@@ -1,0 +1,1 @@
+error: a distinct type holds a built-in number, `Bool`, `Char` or `String`, not `[Int]`: for more, declare a record (spec 2.21)

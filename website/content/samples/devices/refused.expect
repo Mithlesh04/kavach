@@ -1,0 +1,2 @@
+Failed(path: "COM250", reason: "0 isn't a baud rate")
+Failed(path: ".", reason: "not a serial port")

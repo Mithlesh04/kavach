@@ -60,7 +60,13 @@ export const appDoc: LessonDoc = {
         </li>
         <li>A function the compiler inlined into its caller has no frame of its own, so it isn&apos;t listed.</li>
         <li>This holds however the program runs: <C>kavach run</C>, <C>run --native</C> and the built program.</li>
+        <li>
+          <C>program:</C> is the main file&apos;s name without <C>.kav</C>, as <C>cli.parse</C>&apos;s usage names it:{" "}
+          <C>shop</C> for <C>shop.kav</C>, and <C>main</C> in a project. Never <C>kavach</C> or the path of the
+          executable.
+        </li>
       </ul>
+      <SrcRef file="tests/conformance/14-standard-library/app-a-crash-report-names-the-program.kav" label="the program's name, tested" />
       <H2>Dialogs</H2>
       <P>
         Each shows the system&apos;s own dialog and waits for the person. A dialog is a window, so it needs{" "}

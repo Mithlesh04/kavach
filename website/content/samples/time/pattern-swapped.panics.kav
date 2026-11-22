@@ -1,0 +1,7 @@
+use std.time
+
+fn main() {
+    const day = time.Date(year: 2026, month: 11, day: 4)
+    print(day.format("YYYY-MM-DD"))
+    print(day.format("YYYY-mm-DD"))
+}

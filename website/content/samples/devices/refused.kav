@@ -1,0 +1,14 @@
+use std.devices
+
+fn try_open(path: String, baud: Int) uses Serial, Console {
+    const port = devices.open_serial(path, baud) catch e => {
+        print(e)
+        return
+    }
+    port.close()
+}
+
+fn main() uses Serial, Console {
+    try_open("COM250", 0)
+    try_open(".", 9_600)
+}

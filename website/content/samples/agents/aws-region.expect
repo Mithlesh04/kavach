@@ -1,0 +1,1 @@
+0: `Auth.AwsSignature` needs a service and a region made of letters, digits and `-`, not "bedrock" and "us east 1" (spec 8.4)

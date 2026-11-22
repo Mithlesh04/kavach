@@ -116,6 +116,15 @@ export const systemDoc: LessonDoc = {
         </li>
         <li>Tests can&apos;t change the machine: a test that calls one of these changes is refused.</li>
       </ul>
+      <P>
+        A new user&apos;s name is 1 to 20 characters: ASCII letters, digits, <C>_</C>, <C>-</C> and <C>.</C>, the first a
+        letter or <C>_</C>. Every system takes such a name (20 is Windows&apos; limit), so a program that makes users
+        works the same everywhere. Any other name fails with <C>Failed</C> before anything changes. From the spec, shown
+        here, never run:
+      </P>
+      <SpecCode file={FILE} number="14.25" text={'add_user("web-01"'} />
+      <P><C>remove_user</C> takes any name, as old accounts may have others.</P>
+      <SrcRef file="tests/conformance/14-standard-library/system-a-new-user-name-is-plain.kav" label="names, tested" />
       <H2>A report&apos;s header</H2>
       <P>
         From the spec: the line a bug report or a benchmark starts with. It prints this machine&apos;s details, so it

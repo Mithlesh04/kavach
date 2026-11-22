@@ -259,6 +259,20 @@ export const limitDoc: LessonDoc = {
         <li><strong className="text-ink">No time zones, no daylight saving.</strong> Time is measured on a clock that never jumps, so a day is always exactly 24 hours, in every country.</li>
         <li><strong className="text-ink">Across restarts</strong>, with a <Link href="/docs/agents/durable-agents/limits-across-restarts/">state file</Link>, each call&apos;s time is saved in UTC, so the window carries on where it was.</li>
       </ul>
+      <H2>Calls under way at once</H2>
+      <P>
+        <C>held &lt;= n</C> counts the calls running right now, this one included, not the calls made. A call holds
+        its place from when it starts until it returns or fails. Use it for licence seats, GPU slots or database
+        connections. Here two calls run at once and each takes a while, so a third, made while they run, is refused;
+        a fourth, made after they returned, runs:
+      </P>
+      <Ex name="agents/limit-held" />
+      <P>It counts what is happening now, so it takes no window:</P>
+      <Ex name="agents/limit-held-window.fails" />
+      <P>
+        Calls under way end with the program, so a <Link href="/docs/agents/durable-agents/limits-across-restarts/">state file</Link>{" "}
+        keeps none: after a restart, <C>held</C> starts from nothing.
+      </P>
       <H2>A token budget for AI calls</H2>
       <P>
         In <C>limit Ai</C>, <C>tokens</C> counts the tokens, in and out, that the window&apos;s earlier <C>ask</C>s
@@ -278,8 +292,9 @@ export const limitDoc: LessonDoc = {
       <MoneyBudget />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/08-capabilities-and-agents/03-agents.md" label="spec 8.3 · limit windows" />
-        <SrcRef file="runtime/core/src/agents.rs" line={196} symbol="window" label="the window lengths, in the runtime" />
+        <SrcRef file="runtime/core/src/agents/rules.rs" line={50} symbol="window" label="the window lengths, in the runtime" />
         <SrcRef file="tools/cli/tests/ai.rs" line={427} symbol="a_token_budget_refuses_asks_past_it" label="the token budget's test" />
+        <SrcRef file="tests/conformance/08-capabilities/held-counts-calls-under-way.kav" label="held, tested" />
       </div>
     </>
   ),

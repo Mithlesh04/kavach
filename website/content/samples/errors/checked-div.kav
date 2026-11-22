@@ -1,0 +1,13 @@
+fn main() {
+    const min = -9_223_372_036_854_775_807 - 1
+    for d in [3, 0, -1] {
+        print((-9).checked_div(d) ?? 0)
+        if let m = min.checked_div(d) {
+            print(m)
+        } else if d == 0 {
+            print("by zero")
+        } else {
+            print("too big")
+        }
+    }
+}

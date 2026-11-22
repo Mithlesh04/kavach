@@ -1,0 +1,5 @@
+type NetId = distinct Int
+
+fn main() {
+    print(NetId(value: 7))
+}

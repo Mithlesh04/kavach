@@ -121,6 +121,23 @@ export const invariantDoc: LessonDoc = {
       </P>
       <Ex name="contracts/invariant-paths.panics" />
       <SrcRef file="tests/conformance/07-contracts/invariant-checked-on-every-path-of-a-change.kav" label="every path, tested" />
+      <H2>Generic types</H2>
+      <P>
+        A <Link href="/docs/types/generics/">generic</Link> type&apos;s invariant is checked for each type the value is
+        made with. <C>Range&lt;T&gt;</C> holds for numbers and for text alike:
+      </P>
+      <Ex name="contracts/generic-invariant.panics" />
+      <P>It may read the type&apos;s number parameters too:</P>
+      <Ex name="contracts/generic-invariant-size.panics" />
+      <P>
+        Under <C>try</C> it fails as any invariant does, with <C>invariant of `Range` failed: low &lt;= high</C>, and{" "}
+        <C>json.decode</C> reports it as a problem in the text it reads.
+      </P>
+      <div className="flex flex-wrap gap-2.5">
+        <SrcRef file="tests/conformance/07-contracts/a-generic-type-checks-its-invariant.kav" label="generic types, tested" />
+        <SrcRef file="tests/conformance/07-contracts/a-generic-invariant-reads-a-number-parameter.kav" label="number parameters, tested" />
+        <SrcRef file="tests/conformance/07-contracts/a-generic-invariant-fails-under-try-and-in-decode.kav" label="under try and in decode, tested" />
+      </div>
       <H2>Invariants that walk a collection</H2>
       <P>
         An invariant like <C>times.all(…)</C> reads every item, so each change costs a walk of the collection. In a
@@ -234,7 +251,9 @@ export const testingDoc: LessonDoc = {
       </P>
       <H2>A found case becomes an example</H2>
       <P>
-        Found cases are saved in <C>tests/found/</C>, one file per module, each line one call. The files are
+        Found cases are saved in <C>tests/found/</C>, one file per module, each line one call: the project&apos;s own
+        folder in a project, and beside the file for a file in no project, so <C>kavach test tools/fee.kav</C> saves{" "}
+        <C>tools/tests/found/fee.kavf</C>. The files are
         generated: commit them, but never edit them. Once the bug is fixed, <C>kavach test --keep</C> turns each
         found case that now passes into an <C>example</C> on its function, so it becomes documentation:
       </P>

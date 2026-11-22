@@ -1,0 +1,48 @@
+use std.time
+
+type Report {
+    job: Int
+}
+type ToolError = Failed | Denied(reason: String)
+
+capability Tools {
+    fn simulate(job: Int) -> Report ! ToolError
+}
+
+type Seats: Tools {
+    fn simulate(self, job: Int) -> Report ! ToolError {
+        time.sleep(1500.ms)
+        Report(job: job)
+    }
+}
+
+agent Lab {
+    can Tools.simulate
+
+    limit Tools.simulate {
+        held <= 2
+    }
+
+    on run(job: Int) -> Report ! ToolError {
+        try Tools.simulate(job)
+    }
+}
+
+fn tried(lab: Lab, job: Int) -> String {
+    const _r = lab.run(job) catch e => match e {
+        ToolError.Denied(reason) => return `{job}: denied, {reason}`
+        _ => return `{job}: {e}`
+    }
+    `{job}: ran`
+}
+
+fn main() ! Error {
+    const lab = Lab.start(Tools: Seats())
+    const first = spawn tried(lab, 1)
+    const second = spawn tried(lab, 2)
+    time.sleep(300.ms)        // both are under way now
+    print(tried(lab, 3))
+    print(try first.wait())
+    print(try second.wait())
+    print(tried(lab, 4))
+}

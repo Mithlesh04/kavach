@@ -1,0 +1,2 @@
+2
+panic: contract failed: invariant items.len() <= size

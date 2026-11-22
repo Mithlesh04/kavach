@@ -1,0 +1,1 @@
+error: a distinct type has no `+`: work on `.value` and make a new one, as in `NetId(n.value + 1)` (spec 2.21)

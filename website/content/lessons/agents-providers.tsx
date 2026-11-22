@@ -86,6 +86,20 @@ export const providersDoc: LessonDoc = {
         <C>Gateway(base: Anthropic())</C>), a <C>const</C> set to one, or a call of a function with no parameters that
         gives one. Anything else is a compile error.
       </P>
+      <H2>Signing AWS requests</H2>
+      <P>
+        A provider for an AWS service, such as Bedrock, gives <C>Auth.AwsSignature(service:, region:)</C>. The runtime
+        signs each request with AWS Signature Version 4, as AWS&apos;s own libraries do, so provider code never holds
+        the secret:
+      </P>
+      <CodeBlock code={specBlockWith(SPEC_84, "8.4", "type Bedrock: Provider")} file="std.ai, as spec 8.4 gives it" />
+      <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
+        <li>The credentials come from AWS&apos;s standard variables, <C>AWS_ACCESS_KEY_ID</C> and <C>AWS_SECRET_ACCESS_KEY</C>, and <C>AWS_SESSION_TOKEN</C> for short-term credentials, looked up as a key is. Without the first two, the call fails with <C>NoKey</C> naming the first one missing.</li>
+        <li>Each try is signed again just before it is sent, so a call that waited or was sent again has a fresh signature. A request sent elsewhere by <C>KAVACH_AI_URL</C> is signed for where it actually goes.</li>
+        <li>The secret and the signature never appear in an error, the journal or the audit log.</li>
+      </ul>
+      <P>The service and the region are letters, digits and <C>-</C>. Anything else fails the call before any variable is read, so nothing is sent:</P>
+      <Ex name="agents/aws-region" />
       <H2>Trust the providers you use</H2>
       <Note>
         The key goes to the address in the provider&apos;s request. So a package&apos;s provider decides where your key is
@@ -95,7 +109,8 @@ export const providersDoc: LessonDoc = {
       <P>Decision 0140 sets how each of these will work, but none works today:</P>
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Other providers. They will come in a package of their own repository: first OpenAI-shaped Chat Completions (OpenAI, Azure, Ollama, llama.cpp, vLLM), then Gemini, Bedrock, Vertex and OpenAI&apos;s Responses API. Today only <C>Anthropic()</C> ships; a service that speaks Anthropic&apos;s API is reached through <C>api_url</C>.</li>
-        <li>Signed keys: <C>Auth.AwsSignature</C> and <C>Auth.GoogleToken</C>. For now, an <C>ask</C> whose provider gives one fails with <C>Failed(status: 0, …)</C>.</li>
+        <li>Google&apos;s signed tokens, <C>Auth.GoogleToken</C>. For now, an <C>ask</C> whose provider gives one fails with <C>Failed(status: 0, …)</C>.</li>
+        <li>For <C>Auth.AwsSignature</C>, credentials from AWS&apos;s files (<C>~/.aws/credentials</C>, <C>~/.aws/config</C>) and profiles, and from roles: only the variables above are read.</li>
         <li>A counting call for each of those providers that has one.</li>
       </ul>
       <div className="flex flex-wrap gap-2.5">
@@ -106,6 +121,7 @@ export const providersDoc: LessonDoc = {
         <SrcRef file="tests/conformance/08-capabilities/a-provider-wraps-another.kav" label="test: a provider wraps another" />
         <SrcRef file="tests/conformance/08-capabilities/anthropic-reads-each-kind-of-trouble.kav" label="test: each kind of trouble read" />
         <SrcRef file="tests/conformance/08-capabilities/a-providers-check-refuses-a-model.kav" label="test: check refuses a model" />
+        <SrcRef file="tests/conformance/08-capabilities/aws-signature-scopes-are-plain-names.kav" label="test: AWS service and region" />
         <SrcRef file="tools/cli/tests/ai_providers.rs" line={163} symbol="a_programs_own_provider_translates_and_the_runtime_sends" label="test: a program's own provider, end to end" />
       </div>
     </>

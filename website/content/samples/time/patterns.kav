@@ -1,0 +1,12 @@
+use std.time
+
+fn main() {
+    const day = time.Date(year: 2026, month: 11, day: 4)
+    print(day.format("D MMM YYYY"))
+    print(day.format("dddd, MMMM D"))
+    const at = time.utc(1_793_783_130_000)
+    print(at.format("ddd, DD MMM YYYY HH:mm:ss 'GMT'"))
+    print(at.time.format("h:mm A"))
+    print(time.utc(1_793_825_130_250).time.format("hh:mm:ss.SSS A"))
+    print(at.format("D/M/YYYY 'at' H 'o''clock'"))
+}

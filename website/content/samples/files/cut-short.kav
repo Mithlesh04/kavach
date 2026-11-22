@@ -1,0 +1,17 @@
+use std.fs
+
+fn main() ! FsError uses Fs, Console {
+    try fs.create_dir("notes")
+    // What a write cut short leaves: a hidden temporary file beside the target.
+    const cut = try fs.create_writer("notes/.notes.txt.kavach-4120-0.tmp")
+    try cut.write_text("half a fi")
+    const _cut = try cut.finish()
+    // A name of another form is not one of them, and stays.
+    const other = try fs.create_writer("notes/.notes.txt.tmp")
+    const _other = try other.finish()
+
+    try fs.write_text("notes/notes.txt", "whole")
+    print(try fs.list("notes"))
+    print(try fs.read_text("notes/notes.txt"))
+    try fs.remove_all("notes")
+}

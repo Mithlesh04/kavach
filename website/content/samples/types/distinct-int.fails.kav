@@ -1,0 +1,9 @@
+type NetId = distinct Int
+
+fn driver(net: NetId) -> Int {
+    net.value
+}
+
+fn main() {
+    print(driver(7))
+}

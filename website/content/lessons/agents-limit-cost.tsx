@@ -56,7 +56,7 @@ export function MoneyBudget() {
       <P>A rule reads <C>tokens</C> or <C>cost</C>, not both. Write two rules instead:</P>
       <Ex name="agents/limit-cost-both.fails" />
       <div className="flex flex-wrap gap-2.5">
-        <SrcRef file="runtime/core/src/agents.rs" line={245} symbol="pub costs" label="the rules that read cost, in the runtime" />
+        <SrcRef file="runtime/core/src/agents.rs" line={203} symbol="pub costs" label="the rules that read cost, in the runtime" />
         <SrcRef file={TESTS} line={152} symbol={CROSSING} label="the money budget's test" />
         <SrcRef file="tests/conformance/08-capabilities/cost-is-for-limit-ai.kav" label="test: cost is for limit Ai" />
         <SrcRef file="tests/conformance/08-capabilities/a-rule-reads-tokens-or-cost.kav" label="test: tokens or cost" />

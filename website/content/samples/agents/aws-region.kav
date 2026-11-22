@@ -1,0 +1,36 @@
+type Yes {
+    ok: Bool
+}
+
+/// A provider for an AWS service whose region has spaces. Its address is
+/// never reached: the call fails first.
+type Aws: Provider {
+    fn check(self, model: Model) -> [String] { [] }
+    fn key_variable(self) -> String { "UNUSED_AI_KEY" }
+    fn auth(self, model: Model) -> Auth { Auth.AwsSignature(service: "bedrock", region: "us east 1") }
+    fn request(self, call: AskCall) -> HttpCall {
+        HttpCall(url: "http://127.0.0.1:9/never", headers: {:}, body: call.prompt)
+    }
+    fn read(self, call: AskCall, reply: HttpReply) -> Reply {
+        Reply.Problem(kind: Trouble.Other(status: reply.status), message: reply.body, wait: none)
+    }
+    fn price(self, model: String) -> Price? { none }
+    fn count_request(self, call: AskCall) -> HttpCall? { none }
+    fn read_count(self, call: AskCall, reply: HttpReply) -> Int? { none }
+    fn estimate(self, call: AskCall) -> Estimate? { none }
+}
+
+fn aws() -> Model {
+    Model(name: "m1", provider: Aws(), retries: 0)
+}
+
+fn main() {
+    const y = ask<Yes>("Fine?", model: aws()) catch e => {
+        match e {
+            AiError.Failed(status: s, message: m) => print(`{s}: {m}`),
+            _ => print(`another error: {e}`),
+        }
+        return
+    }
+    print(y.ok)
+}

@@ -1,0 +1,5 @@
+type Ids = distinct [Int]
+
+fn main() {
+    print("never")
+}

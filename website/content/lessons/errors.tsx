@@ -4,6 +4,7 @@ import { C } from "@/components/inline-code";
 import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
+import { conformanceRun } from "@/lib/conformance";
 import { loadProject } from "@/lib/samples";
 import { specBlockWith, specTables } from "@/lib/spec-tables";
 import { Ex, H2, Note, P, Syntax } from "./parts";
@@ -13,6 +14,10 @@ import { Table } from "./spec-table";
 const stops = specTables("05-errors.md", "5.8")[0];
 
 const panicInTask = loadProject("tasks/panic-in-task", ["src/main.kav"]);
+const LIBRARY_PANIC = "tests/conformance/05-errors/a-panic-in-the-library-points-at-the-call.kav";
+const LIBRARY_REQUIRE = "tests/conformance/05-errors/a-library-require-points-at-the-call.kav";
+const libraryPanic = conformanceRun(LIBRARY_PANIC);
+const libraryRequire = conformanceRun(LIBRARY_REQUIRE);
 
 // ---------- Errors ----------
 
@@ -213,6 +218,20 @@ export const panicsDoc: LessonDoc = {
         Expected failures, such as bad input or a missing file, are errors (<C>!</C>), not panics. A panic means the
         program itself is wrong.
       </Note>
+      <H2>Where a panic points</H2>
+      <P>
+        A panic shows <C>at</C> the line where it happened. When that line is inside the standard library, it shows
+        the line of your code that called into the library instead: the call that passed the wrong value, which is the
+        line you can change. Here the shapes don&apos;t fit, and the panic points at <C>a @ b</C> in{" "}
+        <C>product</C>, not at a line of <C>std.tensor</C>:
+      </P>
+      <CodeBlock code={libraryPanic.code} file="main.kav" output={libraryPanic.output} outcome="panic" />
+      <P>A library function&apos;s <C>require</C> points at your call the same way, as the caller has the bug:</P>
+      <CodeBlock code={libraryRequire.code} file="main.kav" output={libraryRequire.output} outcome="panic" />
+      <P>
+        A <Link href="/docs/standard-library/desktop-apps/#crash-reports">crash report</Link> still lists the library&apos;s
+        functions that were running.
+      </P>
       <H2>A panic in a task</H2>
       <P>
         A panic in a <Link href="/docs/concurrency/tasks/">task</Link> stops only that task, as in Tokio and Java.
@@ -239,6 +258,8 @@ export const panicsDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/decisions/0065-a-panic-stops-only-its-task.md" label="decision 0065 · a panic stops only its task" />
         <SrcRef file="tests/conformance/09-concurrency/a-panic-stops-only-its-task.kav" label="a panic in a task, tested" />
+        <SrcRef file={LIBRARY_PANIC} label="where a library panic points, tested" />
+        <SrcRef file={LIBRARY_REQUIRE} label="a library require, tested" />
       </div>
     </>
   ),
@@ -263,9 +284,15 @@ export const panicsWhatDoc: LessonDoc = {
         little more than plain arithmetic:
       </P>
       <Ex name="errors/checked-each-round" />
+      <P>
+        <C>checked_div</C> gives <C>none</C> for a division by zero too, as well as for the one division that
+        overflows, the smallest <C>Int</C> divided by -1:
+      </P>
+      <Ex name="errors/checked-div" />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/05-errors.md" label="spec 5.6 · overflow" />
         <SrcRef file="tests/conformance/05-errors/checked-results-are-asked-each-round.kav" label="asked each round, tested" />
+        <SrcRef file="tests/conformance/05-errors/checked-division-is-asked-each-round.kav" label="checked_div, tested" />
         <SrcRef file="compiler/kir/src/checked_fits.rs" label="the pass that drops the optional" />
       </div>
     </>

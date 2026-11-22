@@ -1,0 +1,12 @@
+type Batch<T, size: Int> {
+    items: [T]
+
+    invariant items.len() <= size
+}
+
+fn main() {
+    const ok = Batch<Int, size: 3>(items: [1, 2])
+    print(ok.items.len())
+    const too_many = Batch<Int, size: 2>(items: [1, 2, 3])
+    print(too_many.items.len())
+}

@@ -1,0 +1,3 @@
+3
+a
+panic: contract failed: invariant low <= high
