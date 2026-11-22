@@ -56,6 +56,7 @@ export default async function Home() {
           <nav aria-label="Main" className="flex gap-5 text-[14.5px] font-semibold max-sm:gap-3 max-sm:text-sm max-[359px]:gap-2 max-[359px]:text-[13px]">
             <Link href="/docs/start/kavach-home/" className="text-muted no-underline">Learn</Link>
             <Link href="/docs/benchmarks/" className="text-muted no-underline max-[359px]:hidden">Benchmarks</Link>
+            <Link href="/docs/start/faq/" className="text-muted no-underline max-[479px]:hidden">FAQ</Link>
             <Link href="/playground/" className="text-muted no-underline max-[419px]:hidden">Playground</Link>
             <a href={versions.repo} className="text-muted no-underline max-sm:hidden">GitHub</a>
           </nav>

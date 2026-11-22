@@ -39,6 +39,9 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
             <Link href="/docs/benchmarks/" className="text-muted no-underline">
               Benchmarks
             </Link>
+            <Link href="/docs/start/faq/" className="text-muted no-underline">
+              FAQ
+            </Link>
             <a href={versions.repo} className="text-muted no-underline">
               GitHub
             </a>
@@ -55,6 +58,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
           links={[
             { title: "Learn", href: "/docs/start/kavach-home/" },
             { title: "Benchmarks", href: "/docs/benchmarks/" },
+            { title: "FAQ", href: "/docs/start/faq/" },
             { title: "GitHub", href: versions.repo },
           ]}
         />
