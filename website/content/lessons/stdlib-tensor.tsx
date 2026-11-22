@@ -19,13 +19,11 @@ export const TENSOR_SPEC = "14-standard-library/33-tensor.md";
 export const TENSOR_TESTS = "tests/conformance/14-standard-library";
 export const TENSOR_SRC = "stdlib/tensor";
 
-/** The spec's table under a `##` heading of 14.33, without what a maintainer chose not to state yet. */
+/** The spec's table under a `##` heading of 14.33. */
 export function tensorTable(heading: string) {
   const t = specTables(TENSOR_SPEC, "14.33").find((x) => x.heading === heading);
   if (!t) throw new Error(`spec 14.33: no table under "${heading}"`);
-  // random_int's cap of 65,536 numbers is going away (a maintainer's choice, 2026-11-19): not stated.
-  const rows = t.rows.map((r) => r.map((c) => c.replace(/; at most 65,536 numbers at a time, as `random\.bytes\(n\)` \(14\.15\)/, "")));
-  return <Table header={t.header} rows={rows} wrapFirst />;
+  return <Table header={t.header} rows={t.rows} wrapFirst />;
 }
 
 /** The sub-pages, in order, for the overview's list. */
@@ -122,7 +120,7 @@ export const tensorDoc: LessonDoc = {
       </Note>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${TENSOR_SPEC}`} label="spec 14.33 · std.tensor" />
-        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={21} symbol="type Tensor" />
+        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={26} symbol="type Tensor" />
         <SrcRef file={`${TENSOR_SRC}/ops.kav`} line={118} symbol="fn matmul" />
         <SrcRef file="docs/decisions/0136-tensor-the-one-array-type.md" label="decision 0136" />
         <SrcRef file="docs/decisions/0125-kavach-for-ai-work.md" label="decision 0125" />

@@ -88,8 +88,8 @@ export const tensorMasksDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${TENSOR_SPEC}`} label="spec 14.33 · masks" />
         <SrcRef file={`${TENSOR_SRC}/ops.kav`} line={99} symbol="fn eq" />
-        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={60} symbol="fn index (a mask)" />
-        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={312} symbol="fn where" />
+        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={65} symbol="fn index (a mask)" />
+        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={344} symbol="fn where" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-comparison-gives-a-mask.kav`} label="comparisons, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-mask-picks-numbers.kav`} label="masks, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-where-chooses-item-by-item.kav`} label="where, tested" />

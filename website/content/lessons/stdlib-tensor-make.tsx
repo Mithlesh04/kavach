@@ -38,6 +38,17 @@ export const tensorMakeDoc: LessonDoc = {
         <C>Random</C> fake gives repeatable ones:
       </P>
       <Ex name="tensor/random" />
+      <P>
+        <C>random_int</C> draws each number exactly as <C>random.int</C> draws it, so under one seed a tensor of 10
+        gives the same numbers as 10 calls of <C>random.int</C>:
+      </P>
+      <Ex name="tensor/random-int" />
+      <P>
+        One call draws at most 16,777,216 (2<sup>24</sup>) numbers, a 4,096 × 4,096 matrix. Asking for more breaks
+        the function&apos;s <Link href="/docs/contracts/">contract</Link>:
+      </P>
+      <Ex name="tensor/random-int-bound.panics" />
+      <P>The bound lets the tests <C>kavach test</C> makes from that contract end in time: they skip shapes it rules out.</P>
       <P>They need <C>uses Random</C>, as every random number does. <C>normal</C> uses the Box–Muller method, with <C>std.math</C>&apos;s functions, which give the same bits everywhere.</P>
       <H2>Converting</H2>
       <P><C>Tensor&lt;U&gt;(t)</C> converts each number to <C>U</C>, as <C>U(x)</C> converts one:</P>
@@ -46,13 +57,17 @@ export const tensorMakeDoc: LessonDoc = {
       {tensorTable("Making tensors")}
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${TENSOR_SPEC}`} label="spec 14.33 · making tensors" />
-        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={204} symbol="fn of" />
-        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={233} symbol="fn arange" />
-        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={267} symbol="fn random" />
+        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={239} symbol="fn of" />
+        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={268} symbol="fn arange" />
+        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={302} symbol="fn random" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-arange-counts-by-its-step.kav`} label="arange, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-linspace-ends-exactly-at-end.kav`} label="linspace, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-eye-has-ones-on-the-diagonal.kav`} label="eye, tested" />
+        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={335} symbol="fn random_int" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-random-repeats-under-a-seed.kav`} label="random, tested" />
+        <SrcRef file={`${TENSOR_TESTS}/tensor-random-int-draws-as-random-int-does.kav`} label="random_int as random.int, tested" />
+        <SrcRef file={`${TENSOR_TESTS}/tensor-random-int-draws-many-at-once.kav`} label="many at once, tested" />
+        <SrcRef file={`${TENSOR_TESTS}/tensor-random-int-over-its-bound-panics.kav`} label="the bound, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-conversion-converts-each-number.kav`} label="converting, tested" />
       </div>
     </>
@@ -99,9 +114,9 @@ export const tensorIndexDoc: LessonDoc = {
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={`docs/spec/${TENSOR_SPEC}`} label="spec 14.33 · indexing" />
         <SrcRef file="docs/spec/02-types/19-indexing-and-slicing.md" label="spec 2.19 · many dimensions" />
-        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={52} symbol="fn index" />
-        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={72} symbol="fn slice" />
-        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={78} symbol="fn index_set" />
+        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={57} symbol="fn index" />
+        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={77} symbol="fn slice" />
+        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={83} symbol="fn index_set" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-index-takes-a-number-per-dimension.kav`} label="tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-slice-keeps-its-dimensions.kav`} label="slices, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-index-set-changes-one-number.kav`} label="setting, tested" />

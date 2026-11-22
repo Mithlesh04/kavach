@@ -1,0 +1,6 @@
+use std.tensor
+
+fn main() {
+    const t = tensor.random_int([4_096, 4_097], 0, 10)
+    print(t.len())
+}

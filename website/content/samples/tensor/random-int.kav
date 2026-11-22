@@ -1,0 +1,18 @@
+use std.random
+use std.tensor
+
+fn main() {
+    const board = tensor.random_int([300, 300], -5, 5)
+    print(`{board.shape} {board.len()}`)
+    print(board.all(x => x >= -5 and x < 5))
+    random.seeded(7) {
+        print(tensor.random_int([2, 5], 1, 7).items)
+    }
+    random.seeded(7) {
+        let one_by_one: [Int] = []
+        for _ in 0..10 {
+            one_by_one.push(random.int(1, 7))
+        }
+        print(one_by_one)                          // the same numbers
+    }
+}

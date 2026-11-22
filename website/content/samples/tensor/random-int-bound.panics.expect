@@ -1,0 +1,1 @@
+panic: contract failed: require (shapes.count(shape) ?? -1) >= 0 and (shapes.count(shape) ?? 0) <= 16_777_216

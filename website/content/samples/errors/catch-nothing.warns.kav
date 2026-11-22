@@ -1,4 +1,4 @@
 fn main() {
-    const n = "pen".len() catch 0
-    print(n)
+    const two = Int("2") catch 0
+    print(two)
 }

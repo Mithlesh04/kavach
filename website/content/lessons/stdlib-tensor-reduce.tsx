@@ -98,7 +98,7 @@ export const tensorSortDoc: LessonDoc = {
         <SrcRef file={`docs/spec/${TENSOR_SPEC}`} label="spec 14.33 · sorting and joining" />
         <SrcRef file={`${TENSOR_SRC}/order.kav`} line={15} symbol="fn sort" />
         <SrcRef file={`${TENSOR_SRC}/order.kav`} line={47} symbol="fn percentile" />
-        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={326} symbol="fn concatenate" />
+        <SrcRef file={`${TENSOR_SRC}/tensor.kav`} line={358} symbol="fn concatenate" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-sort-and-argsort.kav`} label="sorting, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-percentile-interpolates.kav`} label="percentile, tested" />
         <SrcRef file={`${TENSOR_TESTS}/tensor-concatenate-and-stack.kav`} label="joining, tested" />
