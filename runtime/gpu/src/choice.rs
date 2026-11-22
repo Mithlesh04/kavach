@@ -23,7 +23,7 @@ pub(crate) struct Seen {
 }
 
 /// The devices automatic work may go to, best first.
-fn usable(seen: &[Seen]) -> Vec<usize> {
+pub(crate) fn usable(seen: &[Seen]) -> Vec<usize> {
     (0..seen.len())
         .filter(|&i| !seen[i].software && !seen[i].failed)
         .collect()

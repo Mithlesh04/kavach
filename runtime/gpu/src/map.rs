@@ -2,12 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
-//! `map` on the device chosen for it (spec 15.2, 15.6), `read` of a list
-//! left in GPU memory, and moving items to another device through main
-//! memory. Work on a device that is lost meanwhile moves on to the next.
+//! `map` on the device chosen for it (spec 15.2, 15.6), or split across
+//! the GPUs when it is big (decision 0144), `read` of a list left in GPU
+//! memory, and moving items to another device through main memory. Work
+//! on a device that is lost meanwhile moves on to the next.
 
 use crate::{Gpu, ITEMS};
-use crate::{GpuError, Items, Kept, Resident, devices, gpu};
+use crate::{GpuError, Items, Kept, Resident, devices, gpu, split};
+use std::ops::Range;
 use std::sync::Arc;
 
 /// Opens the GPU and compiles `wgsl`, so a later `map` with it starts
@@ -58,7 +60,8 @@ pub(crate) fn on_device<T>(
 /// only, not written into `out`: `read` brings them back when they are
 /// needed. With `in_place` too (nothing else holds the items), results
 /// as many words as the items are written over them, in their own
-/// buffer.
+/// buffer. A big `map` of items in main memory may split across the
+/// GPUs (spec 15.6): its results all come back into `out`.
 pub fn map(
     wgsl: &str,
     items: Items,
@@ -67,6 +70,22 @@ pub fn map(
     stay: bool,
     in_place: bool,
 ) -> Result<Kept, GpuError> {
+    let out_width = out_width(wgsl);
+    let n = out.len() / 4 / out_width;
+    if let (Items::Bytes(bytes), 1..) = (items, n) {
+        let width = (bytes.len() / 4 / n).max(1);
+        if let Some(parts) = devices::split(wgsl, n, width + out_width) {
+            let runs = Runs {
+                items: 4 * width,
+                out: 4 * out_width,
+            };
+            split_map(wgsl, bytes, captures, out, &parts, runs)?;
+            return Ok(Kept {
+                items: None,
+                results: None,
+            });
+        }
+    }
     on_device(wgsl, items, |gpu, items| {
         map_on(gpu, wgsl, items, captures, out, stay, in_place)
     })
@@ -154,6 +173,75 @@ fn map_on(
         items: resident(input, n * width),
         results: resident(Arc::new(results), words),
     })
+}
+
+/// The bytes of one item, and of its result.
+#[derive(Clone, Copy)]
+struct Runs {
+    items: usize,
+    out: usize,
+}
+
+impl Runs {
+    fn items<'a>(&self, bytes: &'a [u8], r: &Range<usize>) -> &'a [u8] {
+        &bytes[r.start * self.items..r.end * self.items]
+    }
+}
+
+/// The parts of a split `map` (spec 15.6), at once, one thread for each
+/// device, each writing its own run of `out`. A part whose device fails
+/// goes to the next device by the usual choice; the first part in order
+/// that stops, or can't run anywhere, is the error.
+fn split_map(
+    wgsl: &str,
+    bytes: &[u8],
+    captures: &[u32],
+    out: &mut [u8],
+    parts: &[(usize, Range<usize>)],
+    runs: Runs,
+) -> Result<(), GpuError> {
+    let work = split::work_per_item(wgsl);
+    let mut outs: Vec<&mut [u8]> = Vec::new();
+    let mut rest = out;
+    for (_, r) in parts {
+        let (part, after) = rest.split_at_mut(r.len() * runs.out);
+        outs.push(part);
+        rest = after;
+    }
+    let done: Vec<Result<(), GpuError>> = std::thread::scope(|s| {
+        let threads: Vec<_> = (parts.iter().zip(outs.iter_mut()))
+            .map(|((i, r), out)| {
+                let items = runs.items(bytes, r);
+                s.spawn(move || {
+                    let gpu = devices::device(*i).ok_or(GpuError::Unavailable)?;
+                    // Compiled before the clock starts: its speed is the
+                    // work's.
+                    gpu.pipeline(wgsl, false);
+                    let t = std::time::Instant::now();
+                    let items = Items::Bytes(items);
+                    map_on(gpu, wgsl, items, captures, out, false, false)?;
+                    devices::measured(*i, r.len() as u64 * work, t.elapsed().as_nanos());
+                    Ok(())
+                })
+            })
+            .collect();
+        (threads.into_iter())
+            .map(|t| t.join().unwrap_or_else(|e| std::panic::resume_unwind(e)))
+            .collect()
+    });
+    for (k, done) in done.into_iter().enumerate() {
+        match done {
+            Err(GpuError::Unavailable) => {
+                let items = Items::Bytes(runs.items(bytes, &parts[k].1));
+                let out = &mut *outs[k];
+                on_device(wgsl, items, |gpu, items| {
+                    map_on(gpu, wgsl, items, captures, out, false, false).map(|_| ())
+                })?;
+            }
+            done => done?,
+        }
+    }
+    Ok(())
 }
 
 /// How many words each item's result takes: 1, or what a kernel's header

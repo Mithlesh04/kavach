@@ -50,6 +50,7 @@ For running programs:
 |---|---|---|---|
 | `KAVACH_GPU` | `off` (or `cpu`), `on`, `check`, a vendor or a number (15.6), in any case | Where `map` with a `gpu fn` runs | 15.2 |
 | `KAVACH_GPU_WORDS` | a whole number, 1 or more | For tests: one pass of the GPU holds at most this many 32-bit words, so a small `map` runs in several passes | 15.2 |
+| `KAVACH_GPU_SPLIT` | `on` or `off`, in any case | For tests and comparisons: `on` splits every `map` that may split across the GPUs, at any size; `off` never splits | 15.6 |
 | `KAVACH_FAKE_GPUS` | entries `name:vendor:kind:backend` split by `;`, the vendor a PCI ID (`0x1002`) | For tests: `system.gpus()` lists these instead of the machine's GPUs; an entry that doesn't read so is left out | 14.25 |
 | `ANTHROPIC_API_KEY` | a key | The key `ask` uses; never in `kavach.toml` | 8.4 |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | an AWS access key's ID and secret | The credentials a provider's `Auth.AwsSignature` signs with; never in `kavach.toml` | 8.4 |
@@ -78,7 +79,7 @@ For work on the compiler (they print what a pass did, or turn one off):
 | `KAVACH_SROA_LOG` | Prints each record split |
 | `KAVACH_FUSE_LOG` | Prints each pair of loops fused into one |
 | `KAVACH_FUSE_SKELETON` | Prints `main`'s loops before and after fusing |
-| `KAVACH_PAR_LOG` | Prints each `on cores` loop spread over the cores, when building; when running, a note when `[run] cores` or `KAVACH_CORES` asks for more cores than the machine has, and each GPU device opened or skipped (15.6) |
+| `KAVACH_PAR_LOG` | Prints each `on cores` loop spread over the cores, when building; when running, a note when `[run] cores` or `KAVACH_CORES` asks for more cores than the machine has, each GPU device opened or skipped, and each `map` split across GPUs (15.6) |
 | `KAVACH_UNRECURSE_LOG` | Prints why a recursion did or didn't become a loop |
 | `KAVACH_FUZZ_CASES` | How many cases the fuzz tests try |
 | `KAVACH_ISOLATED` | `1` in a throwaway container: the runtime's tests may then free ports and add and remove users (14.25); they also need Docker's own `/.dockerenv`, so the setting alone changes nothing on a real machine |

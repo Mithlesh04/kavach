@@ -11,9 +11,11 @@
 use crate::choice::{self, Seen};
 use crate::device::{self, Gpu};
 use crate::listing::{self, Kind, Listed, Real};
+use crate::split::{self, Mode};
 use kavach_runtime_core::GpuPlace;
+use std::ops::Range;
 use std::sync::OnceLock;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
 /// One device of the table.
 pub(crate) struct Device {
@@ -26,6 +28,9 @@ pub(crate) struct Device {
     failed: AtomicBool,
     /// Being opened in the background, for when its betters are busy.
     opening: AtomicBool,
+    /// Its measured speed on parts of split maps, work per nanosecond
+    /// (an `f64`'s bits; 0 before its first part).
+    speed: AtomicU64,
 }
 
 static TABLE: OnceLock<Vec<Device>> = OnceLock::new();
@@ -55,6 +60,7 @@ pub(crate) fn table() -> &'static [Device] {
                     opened: OnceLock::new(),
                     failed: AtomicBool::new(false),
                     opening: AtomicBool::new(false),
+                    speed: AtomicU64::new(0),
                 }
             })
             .collect()
@@ -87,7 +93,7 @@ fn seen() -> Vec<Seen> {
 }
 
 /// Device `i`, opened now if it isn't yet; `None` when it can't be.
-fn device(i: usize) -> Option<&'static Gpu> {
+pub(crate) fn device(i: usize) -> Option<&'static Gpu> {
     let d = table().get(i)?;
     if d.failed.load(Ordering::Relaxed) {
         return None;
@@ -180,6 +186,74 @@ fn open_later(i: usize) {
             device(i);
         });
     }
+}
+
+/// How a `map` of kernel `kernel` over `n` items in main memory, of
+/// `words` 32-bit words of item and result each, splits across the GPUs
+/// (spec 15.6): each device's number and its run of items, in order.
+/// `None` when it doesn't split: a device is chosen, fewer than two
+/// devices are open, or its size doesn't pay. A device not open yet
+/// opens in the background for later work, or now with
+/// `KAVACH_GPU_SPLIT=on`.
+pub(crate) fn split(kernel: &str, n: usize, words: usize) -> Option<Vec<(usize, Range<usize>)>> {
+    static MODE: OnceLock<Mode> = OnceLock::new();
+    let mode = *MODE.get_or_init(|| Mode::of(std::env::var("KAVACH_GPU_SPLIT").ok().as_deref()));
+    let work = split::work_per_item(kernel);
+    if !split::pays(mode, n, work, words) || asked(kernel).is_some() {
+        return None;
+    }
+    let seen = seen();
+    let mut taking = Vec::new();
+    for i in choice::usable(&seen) {
+        match (seen[i].open, mode) {
+            (true, _) => taking.push(i),
+            (false, Mode::Always) => {
+                if device(i).is_some() {
+                    taking.push(i);
+                }
+            }
+            (false, _) => open_later(i),
+        }
+    }
+    let each: Vec<(f64, f64)> = (taking.iter())
+        .map(|&i| {
+            let d = &table()[i];
+            let measured = f64::from_bits(d.speed.load(Ordering::Relaxed));
+            (measured, split::guess(d.listed.kind))
+        })
+        .collect();
+    let speeds = split::speeds(&each);
+    let parts = split::parts(n, &speeds)?;
+    // Once every device has a measured speed, a split must beat the
+    // fastest alone.
+    let measured = each.iter().all(|(m, _)| *m > 0.0);
+    if mode == Mode::Auto && measured && !split::beats_one(n, work, &speeds, &parts) {
+        return None;
+    }
+    let parts: Vec<(usize, Range<usize>)> = (taking.into_iter().zip(parts))
+        .filter_map(|(i, run)| run.map(|r| (i, r)))
+        .collect();
+    if std::env::var_os("KAVACH_PAR_LOG").is_some() {
+        let each: Vec<String> = (parts.iter())
+            .map(|(i, r)| format!("{i} ({})", r.len()))
+            .collect();
+        eprintln!(
+            "kavach: a map of {n} items split across GPUs: {}",
+            each.join(", ")
+        );
+    }
+    Some(parts)
+}
+
+/// Device `i` did `work` units in `ns` nanoseconds of a split map.
+pub(crate) fn measured(i: usize, work: u64, ns: u128) {
+    if ns == 0 {
+        return;
+    }
+    let speed = &table()[i].speed;
+    let last = f64::from_bits(speed.load(Ordering::Relaxed));
+    let now = split::averaged(last, work as f64 / ns as f64);
+    speed.store(now.to_bits(), Ordering::Relaxed);
 }
 
 /// The program's GPU, for drawing and for compiling kernels ahead: the

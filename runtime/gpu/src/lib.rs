@@ -351,6 +351,8 @@ mod late;
 mod later;
 mod pipeline;
 mod spare;
+mod split;
+pub use split::{cpu_ns, work_per_item};
 mod timers;
 mod upload;
 pub use late::{Stop, finish, finish_before, flags_so_far};

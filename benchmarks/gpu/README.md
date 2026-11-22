@@ -9,6 +9,7 @@
 | [kavach/frames.kav](kavach/frames.kav) | A game-style loop: 1 million particles (records of four `Float32`s) moved and bounced for 300 frames, each frame a `map` of the last |
 | [kavach/frames-lambda.kav](kavach/frames-lambda.kav) | The same step written in the `map`'s lambda, on the CPU |
 | [kavach/stream.kav](kavach/stream.kav) | A file of `Int32`s worked on by the GPU in chunks of 64 MB, the sum of each kept |
+| [kavach/split.kav](kavach/split.kav) | 4 million `Float32` items through 4,000 steps, five times on a new list each: one `map` split across two GPUs, or not |
 | [cpp/frames.cpp](cpp/frames.cpp) | The same in C++, an array of structs, with an OpenMP loop |
 | [cpp/frames.cu](cpp/frames.cu) | The same in CUDA: one kernel launch per frame, the particles kept on the GPU |
 | [cpp/stream.cu](cpp/stream.cu) | `stream.kav` in CUDA, by hand: a ring of slots, each with pinned memory and a stream of its own |
@@ -105,6 +106,24 @@ Kavach's GPU now beats one C++ core, but most of its time is spent before the fi
 
 Heavier work per particle (more steps, forces between neighbours) is where the GPU's 9× over all cores (above) shows.
 
+## One map across two GPUs
+
+A big `map` of a list in main memory may split across the GPUs (spec 15.6, [decision 0144](../../docs/decisions/0144-one-map-across-gpus.md)). Measured 2026-11-23 on the same laptop, whose second GPU is the processor's Intel UHD Graphics 770, with `kavach build` of branch `multi-gpu-b` (a debug build of the compiler; the runtime's time is in the GPU). `split.kav` times rounds 1 to 5 after a round 0 that waits for the GPUs to open; each way ran twice, in turns. In ms:
+
+| Way | Round 1 | Best of rounds 1–5 |
+|---|---|---|
+| One GPU (`KAVACH_GPU_SPLIT=off`), the RTX 4050 | 11–12 | 8 |
+| The system's choice: split once, then measured | 24 | 8 |
+| Every `map` split (`KAVACH_GPU_SPLIT=on`) | 15–16 | 11 |
+
+Every way printed the same last item and the same exact sum of the 4 million results, in every round. With 40,000 steps instead of 4,000, one GPU took 34 ms at best and every `map` split 33, with rounds from 33 to 121 ms either way.
+
+**What the numbers say:**
+
+- **On this laptop, the integrated GPU doesn't help.** The RTX 4050 does the whole `map` in about 8 ms; the UHD 770's part, even a tenth of it, ends later than the RTX's, and each part costs its own dispatch, read back and thread. The two GPUs also share the laptop's power, so the heavy rounds swing by 3×.
+- **The measure stops splits that don't pay.** The first split is sized by kind (a discrete GPU as 8 integrated ones: 3,555,328 and 444,672 items). Its measured speeds then show that the parts can't beat the RTX alone, so rounds 2 to 5 run on it alone, as fast as with splitting off.
+- **Where splitting pays** is two GPUs of about the same speed, as two discrete cards: then each does half. This machine has no second discrete GPU, so that is left to measure on one that has.
+
 ## Running it
 
 ```
@@ -116,4 +135,8 @@ kavach build benchmarks/gpu/kavach/frames.kav -o frames && ./frames
 g++ -O2 benchmarks/gpu/cpp/frames.cpp -o frames-cpp && ./frames-cpp
 nvcc -O2 benchmarks/gpu/cpp/frames.cu -o frames-cuda && ./frames-cuda
 nvcc -O2 benchmarks/gpu/cpp/stream.cu -o stream-cuda && ./stream-cuda data.bin 200 2
+kavach build benchmarks/gpu/kavach/split.kav -o split
+./split                          # the system's choice
+KAVACH_GPU_SPLIT=off ./split     # one GPU
+KAVACH_GPU_SPLIT=on ./split      # every map split
 ```

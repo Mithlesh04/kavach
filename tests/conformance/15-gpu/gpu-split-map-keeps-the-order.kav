@@ -1,0 +1,24 @@
+// Rule: A `map` split across GPUs gives each item what its `gpu fn` gives it, in the list's order, and the sum of the results is the same exact sum.
+// Spec: 15.6, 15.5
+// expect output: 0 in the wrong place
+// expect output: 24995000
+
+gpu fn twice(n: Int32) -> Int32 {
+    n * 2
+}
+
+fn main() {
+    let ns: [Int32] = []
+    for i in 0..5000 {
+        ns.push(Int32(i))
+    }
+    const ms = ns.map(twice)
+    let wrong = 0
+    for i in 0..5000 {
+        if ms[i] != twice(Int32(i)) {
+            wrong += 1
+        }
+    }
+    print(`{wrong} in the wrong place`)
+    print(ms.sum(x => x))
+}

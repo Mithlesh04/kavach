@@ -314,9 +314,27 @@ Where several choices cover one call, the nearest wins: the call's `on:`, then t
 - Drawing (15.3, 14.24) uses the program's GPU: the device `KAVACH_GPU` or `[run] gpu` names, or else the best one. A list a `map` left on another device is copied over to be drawn.
 - `KAVACH_PAR_LOG=1` notes each device when it opens, and each device skipped, with why.
 
+**A big job splits across the GPUs** ([decision 0144](../decisions/0144-one-map-across-gpus.md)), as an `on cores` loop is cut across cores (4.9). A `map` (or `map`s chained into one, 15.2) is cut into parts, one for each device, when all of these hold:
+
+- **No choice covers it:** no `on:`, `gpu.on`, `on gpu(n)` or `gpu(n) fn`, and no device named by `KAVACH_GPU` or `[run] gpu`. A choice says where the work goes, so it goes there whole.
+- **Its items are in main memory.** A list already in one GPU's memory is worked on there (above), and so are `filter`, `sum`, `min` and `max`, which run only on a list a GPU holds (15.2).
+- **Two or more devices may take automatic work:** not software, not failed, and open. A device not open yet doesn't hold the work up: it opens meanwhile, and takes parts of later work.
+- **Its size pays for moving the data:** the work would take the CPU at least a second, and is at least 100 units for each 32-bit word of an item and its result that crosses to a GPU and back, where a unit is the compiler's estimate of one simple operation (15.2). The results of a split come back to main memory, where those of one device could have stayed, so light work stays on one device. Once each device has done parts of earlier work, its speed is known, and a `map` splits only when its parts would end at least a tenth sooner than the fastest device alone, counting 2 ms for each part's own cost.
+
+How it is cut, and what it gives:
+
+- **One part for each device, in the ranking's order:** the first items go to the best device, the next to the second, and so on. Each part is a run of whole items, as long as each device's speed: at first by kind (a discrete GPU counted as 8 integrated ones), then by how fast each did its parts of earlier work. A device whose part would be under 256 items is left out.
+- **The parts run at once**, each in its own device's memory, and their results go back into one list, in the list's order.
+- **The results are exactly those of one device, and of the CPU** (15.2): each item is worked out by the same `gpu fn`, on its own. A sum of the results is the CPU's in any split, as a sum is exact in any order (15.5).
+- **A panic in a part stops the work** with its message, as on one device. When items fail in several parts, the first part's is reported.
+- **A device that fails during its part** (lost, out of memory) is skipped, as above, and its part goes to the next device, or to the CPU.
+- A split's results come back to main memory: they don't stay in GPU memory for a later `map` (15.2).
+- `KAVACH_PAR_LOG=1` notes each split, with each device's items: `kavach: a map of 4096 items split across GPUs: 0 (2048), 1 (2048)`.
+- For tests and comparisons, `KAVACH_GPU_SPLIT=on` splits every `map` that may split, at any size, opening the devices it needs first; `KAVACH_GPU_SPLIT=off` never splits.
+
 *Not built yet:*
 
-- **A big job splits across all GPUs:** a large `map`, `filter`, sum or matrix product is cut into parts, one for each device, sized to each device's speed, when its size pays for moving the data, as an `on cores` loop is cut across cores (4.9). The results are the same, in the same order.
+- **A matrix product split across GPUs.** Kavach's matrix products run on the CPU for now (14.33).
 - **Ranking by memory:** within a kind, the device with the most memory first. The GPU interfaces Kavach uses don't report it yet, so ties keep the system's order.
 
 ## Open questions
@@ -324,3 +342,4 @@ Where several choices cover one call, the nearest wins: the call's `on:`, then t
 - A `Slice` method in a `gpu fn`: its `Part` holds `Int?`s, which a `gpu fn` can't take (15.1).
 - `min` and `max` of `Float32` on the GPU, and `filter` of records and tuples. Float `min` and `max` must keep `NaN` last (14.2). Float sums are decided: exact and rounded once, in any order ([decision 0135](../decisions/0135-tables-and-grouping.md), which replaces [decision 0031](../decisions/0031-loops-on-all-cores.md)'s in-order float sums for lists).
 - Whether code that keeps GPU memory itself, as the platform plan describes, needs `uses Gpu` too, as choosing a device does (15.6).
+- **For a maintainer's review** (15.6, decision 0144): the size that pays for a split (a second of the CPU's time, 100 units of work for each word moved, then a tenth sooner by measured speeds with 2 ms a part); speeds guessed by kind at first (a discrete GPU as 8 integrated ones), then measured; a device not open yet not waited for; the first part's panic reported; `KAVACH_GPU_SPLIT`.

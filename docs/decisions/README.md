@@ -149,6 +149,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0141](0141-freeze.md) | Frozen values: `x.freeze()` gives a `Frozen<T>` that never changes, deep by default, sealed with a key; it goes where a `T` is written only to a function that only reads it | Accepted |
 | [0142](0142-tagged-template-parameters.md) | Parameters in a tagged template: `` sql`…{x}…` `` writes each `{…}` as the tag's `param` function says (`$1`, `?`), and holds the values in the record's `params: [P]` | Accepted |
 | [0143](0143-text-over-lines-in-backticks.md) | Text over lines only in backticks: `"""…"""` and `sql"""…"""` are compile errors that show the template form | Accepted |
+| [0144](0144-one-map-across-gpus.md) | One big `map` across several GPUs: parts sized to each device's speed, run at once, results in order; only when nothing chooses the device and the size pays | Accepted |
 
 ## Open decisions
 

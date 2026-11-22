@@ -8,8 +8,9 @@ GPU compute for `gpu fn` (spec [chapter 15](../../docs/spec/15-gpu.md), [decisio
 | [src/later.rs](src/later.rs) | `reduce`: a `sum`, `min` or `max` in the GPU's queue, whose partials are read when they are needed |
 | [src/device.rs](src/device.rs) | Opening one device, keeping its instance and adapter for surfaces; its count of work not finished, and a watch for its loss or running out of memory |
 | [src/devices.rs](src/devices.rs) | The program's devices (spec 15.6): one table listed once, each opened when work first goes to it, skipped once it fails; `pick` for each piece of work, the program's GPU for drawing, and the start's check |
+| [src/split.rs](src/split.rs) | Splitting one big `map` across the GPUs (spec 15.6, decision 0144), as plain functions tested on any machine: whether its size pays, each device's speed (guessed by kind, then measured), and the run of items each takes |
 | [src/choice.rs](src/choice.rs) | Which device gets the work, as plain functions tested on any machine: the least busy, a chosen one then the rest, a `gpu(n) fn`'s kernel line, `KAVACH_GPU` and `[run] gpu`, the start's messages |
-| [src/map.rs](src/map.rs) | `map` and `read`, and running work on the chosen device with its items moved there through main memory, the next device when one is lost |
+| [src/map.rs](src/map.rs) | `map` and `read`, and running work on the chosen device with its items moved there through main memory, the next device when one is lost; a split `map`'s parts at once, one thread for each device |
 | [src/listing.rs](src/listing.rs) | Listing every GPU for `system.gpus()` (spec 14.25), best kind first, without opening one; two of one model told apart by their bus; vendors by PCI ID; `KAVACH_FAKE_GPUS` in its place for tests |
 | [src/draw.rs](src/draw.rs) | Drawing into windows for `std.gpu` (spec 14.24, decision 0106): a screen is a surface made on the window's own thread, sized at each frame; frames cleared and shown, by number |
 | [src/render.rs](src/render.rs) | Pipelines compiled ahead (when a screen opens, or when made once one is open), with depth or not, and draws from 32-bit words into a frame (spec 15.3) |

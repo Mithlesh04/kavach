@@ -33,14 +33,10 @@ const OPENING_NS: u64 = 300_000_000;
 /// Whether `n` items of `kernel`'s work are worth the GPU (spec 15.2):
 /// the kernel's header line `// work <n>` is its work per item.
 fn worth_it(kernel: &str, n: usize) -> bool {
-    let work = (kernel.lines().take_while(|l| l.starts_with("//")))
-        .find_map(|l| l.strip_prefix("// work "))
-        .and_then(|w| w.parse::<u64>().ok())
-        .unwrap_or(1);
     // The CPU's time, at about 0.1 ns per unit of work: measured from
     // 0.05 (short loops it vectorizes) to 0.35 (light work, where memory
     // is the limit), with long dependent loops at 0.2.
-    let cpu = (n as u64).saturating_mul(work) / 10;
+    let cpu = kavach_runtime_gpu::cpu_ns(n, kavach_runtime_gpu::work_per_item(kernel));
     match kavach_runtime_gpu::ready() {
         true => cpu >= WORTH_NS,
         false => cpu >= OPENING_NS,
