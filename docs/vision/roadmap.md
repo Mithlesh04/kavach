@@ -2,7 +2,7 @@
 
 Each phase ends with a clear **exit test**. We move on only when it passes. No dates are promised until Phase 1 is underway.
 
-## Phase 0: Design (now)
+## Phase 0: Design
 
 - Language spec v0.1 ([docs/spec](../spec/README.md))
 - Example programs that read well on paper ([examples](../../examples/README.md))
@@ -31,7 +31,7 @@ Each phase ends with a clear **exit test**. We move on only when it passes. No d
 
 ## Phase 2: Agents (the "wow" release)
 
-**Status (2026-11-01):** agents work end to end, in the interpreter and in native code: capabilities, `can`, `limit`, `approve`, `ask<T>` with `std.ai`, the modes, `--dry-run`, the audit log, secrets, and limit totals kept across restarts ([refund example](../../examples/05-refund-bot/README.md)). Durable handlers work in both too: a journal, and events a crash cut short finish when the agent starts again ([decision 0025](../decisions/0025-agents-resume-by-replaying-a-journal.md)). Approvals that wait across restarts are still open.
+**Status (2026-11-01), the phase under way now:** agents work end to end, in the interpreter and in native code: capabilities, `can`, `limit`, `approve`, `ask<T>` with `std.ai`, the modes, `--dry-run`, the audit log, secrets, and limit totals kept across restarts ([refund example](../../examples/05-refund-bot/README.md)). Durable handlers work in both too: a journal, and events a crash cut short finish when the agent starts again ([decision 0025](../decisions/0025-agents-resume-by-replaying-a-journal.md)). Approvals wait across restarts, answered with `kavach approve` or in code ([decision 0072](../decisions/0072-approvals-that-wait-across-restarts.md), spec 8.3).
 
 - `capability`, `agent`, `limit`, `approve`, `ask<T>`
 - Agent modes `observe | suggest | enforce`, `--dry-run`, audit log, secrets

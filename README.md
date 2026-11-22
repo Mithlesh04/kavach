@@ -3,7 +3,7 @@
 > **कवच (Kavach)** means *armor*.
 > A programming language that is **easy to write, fast to run, and safe for AI agents.**
 
-**Status:** pre-alpha, Phase 1. Programs using spec chapters 1–7 can be checked and run with `kavach run` (interpreted), and compiled to native code with `kavach run --native` and `kavach build` for a growing subset. The [language spec](docs/spec/README.md) is the source of truth.
+**Status:** pre-alpha. Phase 1 done; Phase 2 under way ([roadmap](docs/vision/roadmap.md)). Programs can be checked and run with `kavach run` (interpreted), and compiled to native code with `kavach run --native` and `kavach build` for a growing subset. The [language spec](docs/spec/README.md) is the source of truth.
 
 Website: [kavachlang.com](https://kavachlang.com/)
 

@@ -186,12 +186,14 @@ Backend developers who build web services and APIs today with Node.js (Express, 
 
 ## GPU compute and pipelines
 
-`std.gpu`, behind a `Gpu` capability.
+Built as [spec chapter 15](../spec/15-gpu.md) describes, through `wgpu` ([decision 0044](../decisions/0044-gpu-through-wgpu.md)):
 
-- Kernels are Kavach functions marked `gpu fn`, using a safe subset of the language (no heap allocation, no capabilities). They are compiled to SPIR-V and run through Vulkan, Metal and DirectX 12.
-- Buffers are typed (`GpuBuffer<Float32>`), with bounds checks in debug builds, so a kernel can't read outside its data.
-- A pipeline is a typed chain of stages. The compiler checks that each stage's output type matches the next stage's input.
-- Data stays on the GPU between stages; copies to and from the CPU are explicit.
+- Kernels are Kavach functions marked `gpu fn`, using a safe subset of the language (no heap allocation, no capabilities). They are translated to WGSL and run through Vulkan, Metal and DirectX 12.
+- There are no buffers, indices or launches in the code: `list.map(f)` with a `gpu fn` runs on the GPU, so a kernel can't read outside its data.
+- Data stays in GPU memory between `map`s and `filter`s; a result comes back when the CPU reads it.
+- Running a `gpu fn` needs no capability; choosing a device needs `uses Gpu` (spec 15.6).
+
+Still a plan: code that keeps GPU memory itself, and typed chains of stages beyond `map` and `filter` (spec 15, Open questions).
 
 ## Embedded and microcontrollers
 
