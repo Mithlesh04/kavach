@@ -7,14 +7,16 @@ use std::io::{Read, Write};
 use std::net::TcpListener;
 
 mod fallbacks;
+mod signing;
 
 /// A provider written in Rust, as `std.ai`'s `wire` answers: the request
-/// goes to `url` with the key in `x-api-key` (or none with `no_key`); a
+/// goes to `url` with the key where `auth` says (`x-api-key`); a
 /// 200 is an answer, its body the answer's text; other statuses are the
 /// trouble the test names in `kinds`.
 struct Fake {
     url: String,
-    no_key: bool,
+    /// `Auth` as `json.stringify` writes it.
+    auth: &'static str,
     kinds: Vec<(i64, &'static str)>,
     waited: Vec<Duration>,
 }
@@ -48,10 +50,7 @@ impl Fake {
         let tree = json::parse(input, &Limits::default()).unwrap();
         let op = wire::field(&tree, "op").cloned();
         if op == Some(Tree::Text("request".into())) {
-            let auth = match self.no_key {
-                true => r#""NoKey""#.to_string(),
-                false => r#"{"InHeader":{"name":"x-api-key"}}"#.to_string(),
-            };
+            let auth = self.auth;
             return format!(
                 r#"{{"url":"{}/v1/messages","headers":{{"content-type":"application/json","x-model":"{model}"}},"body":"{{}}","auth":{auth},"key_variable":"TEST_FAKE_AI_KEY"}}"#,
                 self.url
@@ -123,11 +122,24 @@ fn settings(retries: i64) -> Tree {
     ])
 }
 
-fn ask_fake(fake: &mut Fake, retries: i64) -> Asked<Tree> {
+/// The keys every test sees: fake AWS credentials as `--env` values,
+/// which beat the real environment, so no test reads real ones; and a
+/// plain key. Every test sets the same, as tests run at once.
+fn set_keys() {
+    let forced = [
+        ("AWS_ACCESS_KEY_ID", "FAKEKEY"),
+        ("AWS_SECRET_ACCESS_KEY", "fake-secret"),
+        ("AWS_SESSION_TOKEN", "fake-token"),
+    ];
+    let forced = forced.iter().map(|(k, v)| (k.to_string(), v.to_string()));
     kavach_runtime_core::env_file::set(
-        Vec::new(),
+        forced.collect(),
         vec![("TEST_FAKE_AI_KEY".into(), "sk-t".into())],
     );
+}
+
+fn ask_fake(fake: &mut Fake, retries: i64) -> Asked<Tree> {
+    set_keys();
     let schema = Tree::Object(vec![("type".into(), Tree::Text("object".into()))]);
     let Ok(asked) = ask(fake, &[settings(retries)], "Refund?", &schema, false) else {
         panic!("stopped");
@@ -138,7 +150,7 @@ fn ask_fake(fake: &mut Fake, retries: i64) -> Asked<Tree> {
 fn fake(url: &str) -> Fake {
     Fake {
         url: url.to_string(),
-        no_key: false,
+        auth: r#"{"InHeader":{"name":"x-api-key"}}"#,
         kinds: vec![(429, "RateLimited"), (402, "QuotaUsedUp")],
         waited: Vec::new(),
     }
@@ -226,7 +238,7 @@ fn no_connection_is_a_network_failure_after_the_retries() {
 fn a_provider_without_a_key_reads_no_variable() {
     let (url, server) = fake_server(vec![OK]);
     let mut f = fake(&url);
-    f.no_key = true;
+    f.auth = r#""NoKey""#;
     let schema = Tree::Object(Vec::new());
     let mut s = settings(0);
     if let Tree::Object(fs) = &mut s {
@@ -284,7 +296,7 @@ fn a_reply_the_runtime_cant_read_fails_the_ask() {
         Err(Failure::Failed(0, _))
     ));
     assert!(
-        matches!(wire::Call::read(r#"{"url":"x","auth":{"AwsSignature":{}}}"#), Err(Failure::Failed(0, m)) if m.contains("not built yet"))
+        matches!(wire::Call::read(r#"{"url":"x","auth":{"GoogleToken":{"scope":"s"}}}"#), Err(Failure::Failed(0, m)) if m.contains("not built yet"))
     );
 }
 

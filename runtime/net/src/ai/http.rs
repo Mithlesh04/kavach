@@ -20,6 +20,58 @@ pub(crate) enum Trouble {
 /// A reply: its status, headers (names in lowercase) and body.
 pub(crate) type Whole = (i64, Vec<(String, String)>, Vec<u8>);
 
+/// Where a request to a URL goes: whether over TLS, the address to
+/// connect to, the `host` header, and the path with its query.
+pub(crate) struct Target<'u> {
+    pub secure: bool,
+    pub address: String,
+    pub host: &'u str,
+    pub path: &'u str,
+}
+
+impl Target<'_> {
+    /// `url` (`http://` or `https://`) taken apart.
+    pub(crate) fn of(url: &str) -> Result<Target<'_>, Trouble> {
+        let (secure, rest) = if let Some(r) = url.strip_prefix("https://") {
+            (true, r)
+        } else if let Some(r) = url.strip_prefix("http://") {
+            (false, r)
+        } else {
+            return Err(Trouble::Network(format!(
+                "`{url}` is not an http:// or https:// address"
+            )));
+        };
+        let slash = rest.find('/').unwrap_or(rest.len());
+        let authority = &rest[..slash];
+        let path = if slash < rest.len() {
+            &rest[slash..]
+        } else {
+            "/"
+        };
+        let port: u16 = if secure { 443 } else { 80 };
+        let name = authority.split(':').next().unwrap_or(authority);
+        // The `host` header has the port only when it isn't the scheme's
+        // own, as HTTP/1.1 says: a signature (spec 8.4) covers it.
+        let host = match authority
+            .strip_prefix(name)
+            .and_then(|p| p.strip_prefix(':'))
+        {
+            Some(p) if p.parse::<u16>().ok() == Some(port) => name,
+            _ => authority,
+        };
+        let address = match authority.contains(':') {
+            true => authority.to_string(),
+            false => format!("{authority}:{port}"),
+        };
+        Ok(Target {
+            secure,
+            address,
+            host,
+            path,
+        })
+    }
+}
+
 /// Sends `body` to `url` (`http://` or `https://`) and gives the status,
 /// headers and body of the response.
 pub(crate) fn post(
@@ -28,29 +80,12 @@ pub(crate) fn post(
     body: &[u8],
     timeout: std::time::Duration,
 ) -> Result<Whole, Trouble> {
-    let (secure, rest) = if let Some(r) = url.strip_prefix("https://") {
-        (true, r)
-    } else if let Some(r) = url.strip_prefix("http://") {
-        (false, r)
-    } else {
-        return Err(Trouble::Network(format!(
-            "`{url}` is not an http:// or https:// address"
-        )));
-    };
-    let slash = rest.find('/').unwrap_or(rest.len());
-    let host = &rest[..slash];
-    let path = if slash < rest.len() {
-        &rest[slash..]
-    } else {
-        "/"
-    };
-    let port = if secure { 443 } else { 80 };
-    let address = if host.contains(':') {
-        host.to_string()
-    } else {
-        format!("{host}:{port}")
-    };
-    let name = host.split(':').next().unwrap_or(host);
+    let Target {
+        secure,
+        address,
+        host,
+        path,
+    } = Target::of(url)?;
     let deadline = Instant::now() + timeout;
     let connecting = if secure {
         net::connect_tls(
@@ -63,7 +98,7 @@ pub(crate) fn post(
     };
     let conn = wait(deadline, || connecting.poll())?;
     let mut head = format!(
-        "POST {path} HTTP/1.1\r\nhost: {name}\r\ncontent-length: {}\r\nconnection: close\r\n",
+        "POST {path} HTTP/1.1\r\nhost: {host}\r\ncontent-length: {}\r\nconnection: close\r\n",
         body.len()
     );
     for (k, v) in headers {

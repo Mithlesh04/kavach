@@ -110,8 +110,13 @@ pub fn run_with(program: &str, url: &str, keys: &[(&str, &str)], native: bool) -
     if native {
         cmd.arg("--native").env("KAVACH_CHECK_LEAKS", "1");
     }
+    // No real key or AWS credential reaches the program: only the fake
+    // ones a test gives.
     cmd.arg(&file)
         .env_remove("ANTHROPIC_API_KEY")
+        .env_remove("AWS_ACCESS_KEY_ID")
+        .env_remove("AWS_SECRET_ACCESS_KEY")
+        .env_remove("AWS_SESSION_TOKEN")
         .env("KAVACH_AI_URL", url);
     for (variable, key) in keys {
         cmd.env(variable, key);

@@ -183,7 +183,11 @@ fn a_programs_own_provider_translates_and_the_runtime_sends() {
             request.contains("Fine?\n\nAnswer with only this JSON"),
             "{request}"
         );
-        sent.push(got);
+        // The `host` header has the server's port, which each run's
+        // server chooses anew.
+        let host = format!("host: {}\r\n", url.strip_prefix("http://").unwrap());
+        assert!(request.contains(&host), "{request}");
+        sent.push(got.iter().map(|r| r.replace(&host, "")).collect::<Vec<_>>());
     }
     assert_eq!(
         sent[0], sent[1],

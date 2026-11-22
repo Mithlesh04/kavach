@@ -7,6 +7,7 @@
 //! with where its key goes, and of a `Reply`. And `AiError`, as the JSON
 //! each backend decodes into the program's value.
 
+use super::sigv4::Scope;
 use super::{Request, gate};
 use kavach_runtime_core::agents::costs::Usage;
 use kavach_runtime_core::json::{self, Limits, Tree};
@@ -124,6 +125,8 @@ pub(crate) enum Auth {
     NoKey,
     Bearer,
     InHeader(String),
+    /// Signed with SigV4 for this service and region (spec 8.4).
+    AwsSignature(Scope),
 }
 
 /// A request to send, as the provider wrote it.
@@ -150,6 +153,22 @@ impl Call {
             Some(("NoKey", _)) => Auth::NoKey,
             Some(("Bearer", _)) => Auth::Bearer,
             Some(("InHeader", f)) => Auth::InHeader(text_of(field(f, "name")).unwrap_or_default()),
+            Some(("AwsSignature", f)) => {
+                let scope = Scope {
+                    service: text_of(field(f, "service")).unwrap_or_default(),
+                    region: text_of(field(f, "region")).unwrap_or_default(),
+                };
+                if !scope.valid() {
+                    return Err(Failure::Failed(
+                        0,
+                        format!(
+                            "`Auth.AwsSignature` needs a service and a region made of letters, digits and `-`, not {:?} and {:?} (spec 8.4)",
+                            scope.service, scope.region
+                        ),
+                    ));
+                }
+                Auth::AwsSignature(scope)
+            }
             Some((other, _)) => {
                 return Err(Failure::Failed(
                     0,

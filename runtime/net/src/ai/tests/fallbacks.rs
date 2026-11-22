@@ -12,10 +12,7 @@ const BAD_REQUEST: &str = "HTTP/1.1 400 Bad Request\r\ncontent-length: 0\r\n\r\n
 
 /// Asks with `n` models, each with `retries`.
 fn ask_list(fake: &mut Fake, n: usize, retries: i64) -> Asked<Tree> {
-    kavach_runtime_core::env_file::set(
-        Vec::new(),
-        vec![("TEST_FAKE_AI_KEY".into(), "sk-t".into())],
-    );
+    set_keys();
     let schema = Tree::Object(vec![("type".into(), Tree::Text("object".into()))]);
     let models = vec![settings(retries); n];
     let Ok(asked) = ask(fake, &models, "Refund?", &schema, false) else {

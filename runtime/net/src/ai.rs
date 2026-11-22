@@ -387,6 +387,7 @@ mod compact;
 mod count;
 mod gate;
 mod send;
+mod sigv4;
 mod wire;
 
 pub use count::{Counted, count};

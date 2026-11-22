@@ -4,11 +4,12 @@
 
 //! Sending one try of an `ask` (spec 8.4): the key read and put where the
 //! provider's `auth` says, the address `KAVACH_AI_URL` may change, and the
-//! gate of the provider and key. Provider code never sees the key.
+//! gate of the provider and key. Provider code never sees the key. A
+//! request for AWS is signed on each try, just before it is sent.
 
 use super::wire::{Auth, Call, Failure, Kind};
-use super::{Request, gate, http};
-use std::sync::mpsc;
+use super::{Request, gate, http, sigv4};
+use std::sync::{Arc, mpsc};
 
 /// A request ready to send, as often as it is sent again.
 pub(crate) struct Sending {
@@ -17,6 +18,13 @@ pub(crate) struct Sending {
     body: String,
     timeout: std::time::Duration,
     gate: String,
+    /// The credentials and scope a request for AWS is signed with.
+    aws: Option<Arc<Signer>>,
+}
+
+struct Signer {
+    keys: sigv4::Keys,
+    scope: sigv4::Scope,
 }
 
 /// What one try gave: a reply (its status, headers in lowercase, and
@@ -46,24 +54,34 @@ impl Pending {
 
 impl Sending {
     /// `call` with its key, or why it can't be sent: its key's variable
-    /// (the `Model`'s `api_key_env`, else the provider's) is not set.
+    /// (the `Model`'s `api_key_env`, else the provider's) is not set, or
+    /// for AWS, a credential's (spec 8.4).
     pub(crate) fn new(call: Call, req: &Request) -> Result<Sending, Failure> {
-        let variable = req.api_key_env.clone().unwrap_or(call.key_variable);
         // As the program sees variables: `--env`, the environment, then
         // `[env.vars]` and `.env` (spec 10.13).
         let get = kavach_runtime_core::env_file::get;
-        let key = match call.auth {
-            Auth::NoKey => None,
-            _ => Some(get(&variable).ok_or_else(|| Failure::NoKey(variable.clone()))?),
-        };
         let mut headers = Vec::new();
-        match (&call.auth, key) {
-            (Auth::Bearer, Some(k)) => {
-                headers.push(("authorization".into(), format!("Bearer {}", k.trim())));
+        let mut aws = None;
+        let variable = match call.auth {
+            Auth::AwsSignature(scope) => {
+                let keys = sigv4::Keys::read(get).map_err(|v| Failure::NoKey(v.into()))?;
+                aws = Some(Arc::new(Signer { keys, scope }));
+                sigv4::KEY_ID.to_string()
             }
-            (Auth::InHeader(name), Some(k)) => headers.push((name.clone(), k.trim().to_string())),
-            _ => {}
-        }
+            Auth::NoKey => req.api_key_env.clone().unwrap_or(call.key_variable),
+            auth => {
+                let variable = req.api_key_env.clone().unwrap_or(call.key_variable);
+                let key = get(&variable).ok_or_else(|| Failure::NoKey(variable.clone()))?;
+                match auth {
+                    Auth::Bearer => {
+                        headers.push(("authorization".into(), format!("Bearer {}", key.trim())));
+                    }
+                    Auth::InHeader(name) => headers.push((name, key.trim().to_string())),
+                    _ => {}
+                }
+                variable
+            }
+        };
         headers.extend(call.headers);
         let url = match (&req.api_url, get("KAVACH_AI_URL")) {
             (None, Some(to)) => moved(&call.url, &to),
@@ -75,6 +93,7 @@ impl Sending {
             body: call.body,
             timeout: req.timeout,
             gate: format!("{} {variable}", req.provider),
+            aws,
         })
     }
 
@@ -91,8 +110,13 @@ impl Sending {
         let (url, body, timeout) = (self.url.clone(), self.body.clone(), self.timeout);
         let headers = self.headers.clone();
         let gate = gate::of(&self.gate);
+        let aws = self.aws.clone();
         std::thread::spawn(move || {
             gate.enter();
+            let headers = match &aws {
+                Some(signer) => signed(&url, headers, &body, signer),
+                None => headers,
+            };
             let shown: Vec<(&str, &str)> = (headers.iter())
                 .map(|(k, v)| (k.as_str(), v.as_str()))
                 .collect();
@@ -112,6 +136,46 @@ impl Sending {
         });
         Pending { done }
     }
+}
+
+/// `headers` with what signing the request to `url` (after any
+/// `KAVACH_AI_URL`) with `body` adds, now: the provider's own `host`,
+/// `authorization`, `x-amz-date` and `x-amz-security-token` give way.
+fn signed(
+    url: &str,
+    mut headers: Vec<(String, String)>,
+    body: &str,
+    signer: &Signer,
+) -> Vec<(String, String)> {
+    // An address `post` can't read: it says why.
+    let Ok(target) = http::Target::of(url) else {
+        return headers;
+    };
+    let runtimes = [
+        "host",
+        "authorization",
+        "x-amz-date",
+        "x-amz-security-token",
+    ];
+    headers.retain(|(k, _)| !runtimes.contains(&k.to_ascii_lowercase().as_str()));
+    let mut covered = headers.clone();
+    covered.push(("host".into(), target.host.to_string()));
+    let ms = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_millis() as i64);
+    let date = sigv4::amz_date(ms);
+    let (keys, scope) = (&signer.keys, &signer.scope);
+    let made = sigv4::sign(
+        "POST",
+        target.path,
+        &covered,
+        body.as_bytes(),
+        keys,
+        scope,
+        &date,
+    );
+    headers.extend(made.headers);
+    headers
 }
 
 /// `url` sent to `to` (`KAVACH_AI_URL`) instead: its path after `to`'s
