@@ -1,0 +1,1 @@
+error: `n` is `inout`, so a dict's entry can't be its argument, as it may be missing: change the dict itself, as `ages[k] = (ages[k] ?? 0) + 1` (spec 3.9)

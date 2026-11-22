@@ -68,21 +68,17 @@ export const orderDoc: LessonDoc = {
         its value in place, as <C>push</C> does, works out the keys once, before its arguments:
       </P>
       <Ex name="functions/order-places" />
-      <H2>The two exceptions</H2>
+      <P>
+        An <Link href="/docs/functions/inout-parameters/">inout</Link> argument is a place like any other. Its keys
+        are worked out once, with the call&apos;s other arguments, in the order written. After the call, its new value
+        goes back to the place those keys named, and they are not worked out again:
+      </P>
+      <Ex name="functions/order-inout" />
+      <H2>The one exception</H2>
       <P>
         <strong className="text-ink">Tuple assignment</strong> works out its whole right side first, then sets each
         place, left to right. That is what lets <C>(a, b) = (b, a)</C> swap two values (
         <Link href="/docs/basics/variables/tuple-assignment/">tuple assignment</Link>).
-      </P>
-      <P>
-        <strong className="text-ink">An inout argument</strong> has its keys worked out twice: once with the
-        call&apos;s other arguments, and again when its new value goes back after the call (
-        <Link href="/docs/functions/inout-parameters/">inout parameters</Link>). So <C>pick</C> runs twice here:
-      </P>
-      <Ex name="functions/order-inout" />
-      <P>
-        This one is planned to change: the spec lists it as an open question, and the plan is to work the keys out
-        once, with the arguments, as for every other place.
       </P>
       <P>
         <C>spawn</C> works out a call&apos;s value and arguments the same way, before the task starts (
@@ -97,6 +93,7 @@ export const orderDoc: LessonDoc = {
         <SrcRef file={`${TESTS}/arguments-are-worked-out-as-written.kav`} label="arguments, tested" />
         <SrcRef file={`${TESTS}/operands-are-worked-out-left-to-right.kav`} label="operands, tested" />
         <SrcRef file={`${TESTS}/a-changed-places-keys-are-worked-out-once.kav`} label="keys once, tested" />
+        <SrcRef file={`${TESTS}/an-inout-arguments-keys-are-worked-out-once.kav`} label="inout keys once, tested" />
       </div>
       <WhatIsTested number="3.10" />
     </>

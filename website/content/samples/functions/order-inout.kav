@@ -2,11 +2,26 @@ fn bump(inout n: Int) {
     n += 1
 }
 
+fn grow(inout n: Int, by: Int) {
+    n += by
+}
+
 fn pick() -> Int {
     print("pick")
     0
 }
 
-let xs = [1, 2]
-bump(xs[pick()])
-print(xs)
+fn say(n: Int) -> Int {
+    print(n)
+    n
+}
+
+fn main() {
+    let xs = [1, 2]
+    bump(xs[pick()])
+    print(xs)
+
+    let grid = [[1, 2], [3, 4]]
+    grow(grid[say(1)][say(0)], say(37))
+    print(grid)
+}

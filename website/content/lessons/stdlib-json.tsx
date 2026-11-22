@@ -382,6 +382,13 @@ export const jsonDecodingDoc: LessonDoc = {
         with all of them at once:
       </P>
       <Ex name="json/sub-mismatch" />
+      <H2>Generic types</H2>
+      <P>
+        A generic record or union decodes with its type arguments put in for its parameters:{" "}
+        <C>Box&lt;Yes&gt;</C> reads its <C>value</C> as a <C>Yes</C>, and <C>Box&lt;Int&gt;</C> as an <C>Int</C>:
+      </P>
+      <Ex name="json/decode-generic-type" />
+      <SrcRef file="tests/conformance/02-types/json-decode-fills-in-a-generic-type.kav" label="tested" />
       <H2>Invariants are checked too</H2>
       <P>
         A decoded value is checked against its type&apos;s <C>invariant</C>s, as any value is when it is made. Text

@@ -1,0 +1,9 @@
+fn mark(inout n: Int?) {
+    n = 10
+}
+
+fn main() {
+    let ages = {"asha": 31}
+    mark(ages["asha"])
+    print(ages)
+}

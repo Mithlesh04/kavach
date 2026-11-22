@@ -31,7 +31,7 @@ export const inoutDoc: LessonDoc = {
         was: never half-changed.
       </P>
       <H2>Fields and list items</H2>
-      <P>Anything the caller could assign to works: an item of a list, or a field of a record held in a <C>let</C>.</P>
+      <P>An item of a list, or a field of a record, held in a <C>let</C> works too. A dict&apos;s entry doesn&apos;t (<Link href="#not-a-dict-s-entry">below</Link>).</P>
       <Ex name="functions/inout-places" />
       <H2>Passing it on</H2>
       <P>
@@ -63,6 +63,15 @@ export const inoutDoc: LessonDoc = {
           </tbody>
         </table>
       </div>
+      <H2>Not a dict&apos;s entry</H2>
+      <P>
+        A dict&apos;s entry may be missing, and reading one gives an optional, so there is no place to give the value
+        back to. With an <C>Int</C> parameter, <C>bump(ages[k])</C> is refused because <C>ages[k]</C> is an{" "}
+        <C>Int?</C>. With an <C>Int?</C> parameter, it is refused as an entry:
+      </P>
+      <Ex name="functions/inout-dict.fails" />
+      <P>Change the dict itself instead. A missing entry starts at 0:</P>
+      <Ex name="functions/inout-dict-fix" />
       <H2>Not the same variable twice</H2>
       <P>Giving one variable to two parameters of the same call would make two names for one value, so it is refused:</P>
       <Ex name="functions/inout-twice.fails" />

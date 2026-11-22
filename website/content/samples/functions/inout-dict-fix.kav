@@ -1,0 +1,6 @@
+fn main() {
+    let ages = {"asha": 31}
+    ages["asha"] = (ages["asha"] ?? 0) + 1
+    ages["ravi"] = (ages["ravi"] ?? 0) + 1
+    print(ages)
+}

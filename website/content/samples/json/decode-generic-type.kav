@@ -1,0 +1,24 @@
+use std.json
+
+type Box<T> {
+    value: T
+    note: String
+}
+
+type Yes {
+    ok: Bool
+}
+
+type Maybe<T> = Got(value: T) | Nothing
+
+fn main() {
+    const b = json.decode<Box<Yes>>(`\{"value": \{"ok": true}, "note": "n"}`) catch e => panic(`{e}`)
+    print(b.value.ok)
+    const c = json.decode<Box<Int>>(`\{"value": 3, "note": "m"}`) catch e => panic(`{e}`)
+    print(c.value + 1)
+    const m = json.decode<Maybe<Int>>(`\{"Got": \{"value": 7}}`) catch e => panic(`{e}`)
+    match m {
+        Maybe.Got(value) => print(value)
+        Maybe.Nothing => print("nothing")
+    }
+}
