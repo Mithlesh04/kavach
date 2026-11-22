@@ -1,0 +1,12 @@
+// Rule: A dict key worked out by code goes in brackets, `{[k()]: 1}`; `{k(): 1}` reads as a block, and the compile error says to add the brackets.
+// Spec: 2.2
+// expect compile error
+
+fn k() -> String {
+    "a"
+}
+
+fn main() {
+    const d = {k(): 1}      // error: a dict key worked out by code goes in brackets
+    print(d)
+}

@@ -338,6 +338,7 @@ The tests are listed in two files, by section:
 | 2.12 | [json-text-past-max-bytes-is-an-error.kav](json-text-past-max-bytes-is-an-error.kav) | By default, parsing text longer than `max_bytes: 64_000_000` is an error, `TooLarge`, not a memory blow-up. | runs |
 | 2.2 | [a-ring-past-the-limit-panics.kav](a-ring-past-the-limit-panics.kav) | `Ring.capacity(n)` with `n` above 4,294,967,294 is a panic, as for a list. | panic |
 | 2.2 | [a-list-key-goes-in-two-pairs-of-brackets.kav](a-list-key-goes-in-two-pairs-of-brackets.kav) | A key in brackets is one expression: a list key is written `{[["red", "big"]]: 3}`, and `{["red", "big"]: 3}` is an error that says so. | compile error |
+| 2.2 | [a-worked-out-key-goes-in-brackets.kav](a-worked-out-key-goes-in-brackets.kav) | A key worked out by code goes in brackets, `{[k()]: 1}`; `{k(): 1}` reads as a block, and the error says to add them. | compile error |
 | 2.2, 6.1 | [a-changing-method-on-a-dict-entry-changes-it.kav](a-changing-method-on-a-dict-entry-changes-it.kav) | `d[k].push(x)`, `pop`, `add`, `remove` change the value under the key in place; the variable it came from doesn't change. | runs |
 | 2.2 | [a-changing-method-on-a-missing-dict-key-panics.kav](a-changing-method-on-a-missing-dict-key-panics.kav) | A changing method on a missing key panics, naming the key. | panic |
 | 2.2 | [adding-into-a-missing-dict-key-panics.kav](adding-into-a-missing-dict-key-panics.kav) | `d[k] += v` with the key missing panics, naming the key, the same in every mode. | panic |

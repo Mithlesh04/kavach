@@ -48,6 +48,15 @@ impl Parser<'_> {
                 self.recover_line();
                 return;
             }
+            // `{k(): 1}`: a dict key worked out by code reads as a block
+            // (spec 2.2), so the `:` comes where the statement should end.
+            if self.at(&TokenKind::Colon) {
+                self.error_here(
+                    "expected the end of the statement, found `:`: a dict key worked out by code goes in brackets, `{[k()]: 1}` (spec 2.2)",
+                );
+                self.recover_line();
+                return;
+            }
             self.error_here("expected the end of the statement: start a new line");
             self.recover_line();
         }
