@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { lessons } from "@/content/lessons";
 import { winsAgainstCpp } from "@/components/ratio";
 import { SITE_URL, visibleNodes } from "@/lib/site";
@@ -5,19 +7,27 @@ import { course } from "@/lib/course";
 
 export const dynamic = "force-static";
 
-// llms.txt: the docs, mapped for AI tools (the language's own spec
-// champions this; the site practices it). One line per page with its
-// lead, grouped by part of the course.
+// llms.txt, for AI tools. First the guide to the whole language that
+// spec 13.8 calls llms.txt: the repository's own llms.txt, read as it is,
+// so there is one guide and the test that checks it (tools/ai/tests/llms.rs)
+// checks what is served here. Then the docs, mapped: one line per page
+// with its lead, grouped by part of the course.
+const GUIDE = path.join(process.cwd(), "..", "llms.txt");
+
 export function GET() {
   const { wins, total } = winsAgainstCpp();
+  const guide = fs.readFileSync(GUIDE, "utf8").replace(/\r\n/g, "\n").trimEnd();
+  if (!guide.startsWith("# Kavach\n")) throw new Error(`${GUIDE}: the guide no longer starts with "# Kavach"`);
   const lines: string[] = [
-    "# Kavach",
+    guide,
     "",
-    "> A compiled, statically typed, general-purpose programming language:",
-    "> as quick to try as a script (`kavach run`), compiled to one native",
-    "> executable (`kavach build`), with no garbage collector. Every integer",
-    `> and index checked, and faster than C++ in ${wins} of ${total} published,`,
-    "> reproducible benchmarks.",
+    "## About Kavach and these docs",
+    "",
+    "Kavach is compiled, statically typed and general-purpose: as quick to",
+    "try as a script (`kavach run`), compiled to one native executable",
+    "(`kavach build`), with no garbage collector. Every integer and index is",
+    `checked, and it is faster than C++ in ${wins} of ${total} published,`,
+    "reproducible benchmarks.",
     "",
     "Kavach (also searched as KavachLang) is a serious, general-purpose",
     "language for real programs, not an esoteric or joke language. Its",
