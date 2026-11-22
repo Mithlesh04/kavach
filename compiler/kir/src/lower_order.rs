@@ -12,6 +12,10 @@ use crate::lower::{Lowered, Lowerer};
 use crate::walk::any_expr;
 use kavach_ast::{self as ast, ExprKind};
 
+/// The keys of a place worked out into locals: each key's span, and
+/// the local that holds it.
+pub(crate) type HeldKeys = Vec<((u32, u32), crate::ir::Local)>;
+
 /// Whether working out `e` could be seen: it calls something, runs a
 /// runtime operation, fails or panics. Reading locals and arithmetic
 /// can't be.
@@ -153,5 +157,65 @@ impl<'a> Lowerer<'a> {
         for span in held {
             self.held_parts.remove(&span);
         }
+    }
+
+    /// Argument `a` of a call of `decl` with arguments `args`: an `inout`
+    /// one through `inout_arg`, any other worked out as it is.
+    pub(crate) fn arg_of(
+        &mut self,
+        decl: Option<&'a ast::FnDecl>,
+        args: &'a [ast::Arg],
+        a: &'a ast::Arg,
+    ) -> Lowered<ir::Expr> {
+        let positional = args.iter().filter(|b| b.name.is_none());
+        let at = positional.take_while(|b| !std::ptr::eq(*b, a)).count();
+        let inout = decl.and_then(|d| {
+            let mut params = d.params.iter().filter(|p| p.name.name != "self");
+            match &a.name {
+                Some(n) => params.find(|p| p.name.name == n.name),
+                None => params.nth(at),
+            }
+        });
+        match inout.is_some_and(|p| p.is_inout) {
+            true => self.inout_arg(&a.value),
+            false => self.expr(&a.value),
+        }
+    }
+
+    /// An `inout` argument (spec 3.9): its keys that could be seen working
+    /// out (a call) are worked out once, here, with the call's other
+    /// arguments, as written, and kept for the place its value goes back
+    /// to (`assign_inout`): `bump(xs[pick()])` calls `pick` once (3.10).
+    pub(crate) fn inout_arg(&mut self, value: &'a ast::Expr) -> Lowered<ir::Expr> {
+        if value.has_plain_keys() {
+            return self.expr(value);
+        }
+        let mut stmts = Vec::new();
+        let held = self.hold_keys(value, &mut stmts)?;
+        let keys = (held.iter())
+            .filter_map(|s| self.held_parts.get(s).map(|(l, _)| (*s, *l)))
+            .collect();
+        let read = self.expr(value);
+        self.release(held);
+        let read = read?;
+        self.inout_keys
+            .insert((value.span.start, value.span.end), keys);
+        let (ty, line) = (read.ty, read.line);
+        let value = Some(Box::new(read));
+        let kind = K::Block(Block { stmts, value });
+        Ok(ir::Expr { kind, ty, line })
+    }
+
+    /// Puts `value` into the place `inout` argument `target` names, with
+    /// the keys `inout_arg` worked out for it, not worked out again.
+    pub(crate) fn assign_inout(&mut self, target: &'a ast::Expr, value: ir::Expr) -> Lowered<Stmt> {
+        let at = (target.span.start, target.span.end);
+        let keys = self.inout_keys.remove(&at).unwrap_or_default();
+        for (span, local) in &keys {
+            self.held_parts.insert(*span, (*local, false));
+        }
+        let stmt = self.assign_path(target, value);
+        self.release(keys.into_iter().map(|(span, _)| span).collect());
+        stmt
     }
 }

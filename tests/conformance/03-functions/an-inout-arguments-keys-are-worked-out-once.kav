@@ -1,0 +1,54 @@
+// Rule: An `inout` argument's keys (indexes, a field's path) are worked out once, with the call's other arguments, as written, and its value goes back to the place they named.
+// Spec: 3.10, 3.9
+// expect output: 1
+// expect output: [5, 21]
+// expect output: 1
+// expect output: [31, 40]
+// expect output: 1
+// expect output: 0
+// expect output: 37
+// expect output: [[1, 2], [40, 4]]
+
+fn bump(inout n: Int) {
+    n += 1
+}
+
+fn grow(inout n: Int, by: Int) {
+    n += by
+}
+
+type User {
+    name: String
+    age: Int
+}
+
+fn pick(inout runs: Int) -> Int {
+    runs += 1
+    1
+}
+
+fn find(inout runs: Int, name: String) -> Int {
+    runs += 1
+    if name == "Ravi" { 1 } else { 0 }
+}
+
+fn say(n: Int) -> Int {
+    print(n)
+    n
+}
+
+fn main() {
+    let picked = 0
+    let xs = [5, 20]
+    bump(xs[pick(picked)])
+    print(picked)
+    print(xs)
+    let looked = 0
+    let users = [User(name: "Asha", age: 30), User(name: "Ravi", age: 40)]
+    bump(users[find(looked, "Asha")].age)
+    print(looked)
+    print(users.map(u => u.age))
+    let grid = [[1, 2], [3, 4]]
+    grow(grid[say(1)][say(0)], say(37))
+    print(grid)
+}

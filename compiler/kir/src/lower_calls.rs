@@ -158,6 +158,7 @@ impl<'a> Lowerer<'a> {
             let given = given_at(i, p);
             written.push(given.and_then(|a| args.iter().position(|b| std::ptr::eq(a, b))));
             let mut value = match (given, &p.default) {
+                (Some(a), _) if p.is_inout => self.inout_arg(&a.value)?,
                 (Some(a), _) => self.expr(&a.value)?,
                 (None, Some(d)) => {
                     let outer = self.subst.clone();

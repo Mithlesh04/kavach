@@ -27,12 +27,17 @@ impl<'a> Interp<'a> {
         // method's receiver, or the place it changes, and a function
         // worked out from an expression.
         let first = self.first_of(callee, e.span)?;
+        // `inout` arguments whose keys call something: those keys are
+        // worked out once, here, and kept for the write-back (3.10).
+        let keyed = self.keyed_inout(callee, &first, args);
+        let mut held = Vec::new();
         let mut values: Args<'a> = Vec::new();
-        for a in args {
-            values.push((
-                a.name.as_ref().map(|n| n.name.as_str()),
-                self.eval(&a.value)?,
-            ));
+        for (i, a) in args.iter().enumerate() {
+            let value = match keyed.checked_shr(i as u32).unwrap_or(0) & 1 {
+                1 => self.hold_inout(&a.value, &mut held, e.span)?,
+                _ => self.eval(&a.value)?,
+            };
+            values.push((a.name.as_ref().map(|n| n.name.as_str()), value));
         }
         // `fs.read_text(path)`: a standard library call (spec 14).
         if let (ExprKind::Field { base, name, .. }, ExprKind::Call { generics, .. }) =
@@ -87,9 +92,9 @@ impl<'a> Interp<'a> {
                             if !f.generics.is_empty() {
                                 self.next_generics = Some(self.type_args(f, e, args));
                             }
-                            self.lend_inout(f, args, e.span)?;
+                            self.lend_inout(f, args, &held, e.span)?;
                             let v = self.call_fn(f, None, values, e.span)?;
-                            self.write_back(args, e.span)?;
+                            self.write_back(args, held, e.span)?;
                             return Ok(v);
                         }
                         DefKind::Type => return self.construct(def, None, values, e.span),
@@ -114,7 +119,7 @@ impl<'a> Interp<'a> {
                     _ => &[],
                 };
                 let v = self.method(e, base, name, generics, values, first)?;
-                self.write_back(args, e.span)?;
+                self.write_back(args, held, e.span)?;
                 return Ok(v);
             }
             _ => {}
@@ -428,7 +433,7 @@ impl<'a> Interp<'a> {
 }
 
 /// The name `extend` uses for a built-in value's type.
-fn type_name(v: &Value<'_>) -> Option<&'static str> {
+pub(crate) fn type_name(v: &Value<'_>) -> Option<&'static str> {
     Some(match v {
         Value::Str(_) => "String",
         Value::Int(_, p) => p.name(),

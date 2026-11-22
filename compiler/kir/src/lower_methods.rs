@@ -214,7 +214,7 @@ impl<'a> Lowerer<'a> {
             };
             let mut values = Vec::new();
             for (a, want) in args.iter().zip(wants) {
-                let v = self.expr(&a.value)?;
+                let v = self.arg_of(self.iface_method_decl(receiver_ty, &name.name), args, a)?;
                 values.push(self.coerce(v, want)?);
             }
             let call = ir::Expr {

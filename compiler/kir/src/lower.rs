@@ -66,6 +66,10 @@ pub(crate) struct Lowerer<'a> {
     /// (`lower_tasks/args.rs`): read from these locals in the task, and
     /// whether the task's code read each.
     pub(crate) held_parts: HashMap<(u32, u32), (Local, bool)>,
+    /// The keys of each `inout` argument worked out with its call's
+    /// arguments, by the argument's span: the place its value goes back
+    /// to reads them, so they are worked out once (spec 3.10).
+    pub(crate) inout_keys: HashMap<(u32, u32), crate::lower_order::HeldKeys>,
     /// The local holding the record whose `invariant` is being lowered.
     pub(crate) invariant_of: Option<(Local, Type)>,
     /// A place is emptied for a moment while its list changes in place:
@@ -152,6 +156,7 @@ pub fn lower_with(c: &Compiled, exports: &[&str]) -> Result<Program, Unsupported
         ensures: &[],
         self_local: None,
         held_parts: HashMap::new(),
+        inout_keys: HashMap::new(),
         invariant_of: None,
         emptying: false,
         its: Vec::new(),

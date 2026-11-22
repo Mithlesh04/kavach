@@ -176,7 +176,7 @@ impl<'a> Lowerer<'a> {
                 true => self.local_expr(held, line),
                 false => self.tuple_item(held, tuple, first + k, p.types[k], line),
             };
-            stmts.push(self.assign_path(&arg.value, part)?);
+            stmts.push(self.assign_inout(&arg.value, part)?);
         }
         Ok(stmts)
     }

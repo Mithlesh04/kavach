@@ -297,12 +297,11 @@ const p = Point(y: say(7), x: say(8))     // prints 7, then 8
 - **Values written out:** a record's fields, an anonymous record's (2.14), the items of a list or tuple, a dict's keys and values (each key before its value), and a text template's parts, in the order written.
 - **Assignment:** `place = value` works out the place's keys first, left to right, then the value, then sets the place: `grid[row()][col()] = next()` calls `row`, `col`, then `next`. `place op= value` reads the place, works out the value, then sets the same place: each key is worked out once, though `place` is both read and set. A method that changes its value in place (2.2) works out the place's keys once, before its arguments: `rows[pick()].push(say(1))` calls `pick`, then `say`.
 - **Tuple assignment** is the one exception to the order: its whole right side first, then each place, left to right (1.14).
-- **An `inout` argument** (3.9) is the one place whose keys are worked out twice: with the call's other arguments, and again when its value goes back after the call. So `bump(xs[pick()])` calls `pick` twice.
+- **An `inout` argument** (3.9) is a place like any other: its keys are worked out once, with the call's other arguments, in the order written. Its value goes back after the call to the place those keys named, and they are not worked out again. So `bump(xs[pick()])` calls `pick` once, and `grow(grid[say(1)][say(0)], say(37))` prints 1, 0, then 37.
 - `spawn` works out a call's receiver and arguments the same way, before the task starts (9.1).
 
 ## Open questions
 
 - **For a maintainer's review: the order of 3.10.** Left to right as written was chosen under the standing rule to take the recommended option, as Java, C#, JavaScript and Go do. In particular, `place = value` works out the place's keys before the value, while a tuple assignment (1.14) keeps its right side first, as Python does for both.
-- **An `inout` argument's keys once (3.10):** today they are worked out again when the value goes back. Working them out once, with the arguments, as every other place is, is planned.
 
 Decisions are recorded in [0013](../decisions/0013-core-language-decisions.md).
