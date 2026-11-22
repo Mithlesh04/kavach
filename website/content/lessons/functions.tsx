@@ -161,7 +161,10 @@ export const namedArgsDoc: LessonDoc = {
   body: (
     <>
       <Ex name="functions/named-order" />
-      <P>Arguments given by position come first; named ones follow, in any order.</P>
+      <P>
+        Arguments given by position come first; named ones follow, in any order. They are worked out in the order
+        you write them (<Link href="/docs/functions/evaluation-order/">evaluation order</Link>).
+      </P>
     </>
   ),
 };

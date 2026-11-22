@@ -62,7 +62,7 @@ function groups(): { title: string; entries: Entry[] }[] {
   const basics = specTables("02-types/01-built-in-types.md", "2.1")[0].rows.map(([cell, meaning]) => {
     const names = [...cell.matchAll(/`(\w+)`/g)].map((m) => m[1]);
     // Decimal<digits, places> is not built yet, and the row names it in passing (spec 2.1).
-    const says = meaning.replace(/; `Decimal<digits: 10, places: 2>` fixes the places \(below\)/, "");
+    const says = meaning.replace(/; `Decimal<digits: 10, places: 2>` fixes the places \(below; \*not built yet\*\)/, "");
     // Json is written in Kavach, in std.json, which every program gets.
     return { names, says, number: "2.1", file: "02-types/01-built-in-types.md", defined: names[0] === "Json" ? fromStd("Json") : undefined };
   });

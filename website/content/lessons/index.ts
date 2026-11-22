@@ -107,6 +107,7 @@ import {
   recursionDoc, resultsDoc, returningDoc, signatureDoc, writingLambdaDoc,
 } from "./functions";
 import { inoutDoc } from "./functions-inout";
+import { orderDoc } from "./functions-order";
 import { errorsIntroDoc, installDoc, programDoc, terminalDoc } from "./start-first-steps";
 import { askNumberDoc, askPasswordDoc, askTextDoc, inputDoc } from "./basics-input";
 import { bigintDoc, boolDoc, charDoc, convertDoc, dataTypesDoc, decimalDoc, floatDoc, intDoc, sizedDoc } from "./basics-types";
@@ -237,6 +238,7 @@ export const lessons: Record<string, LessonDoc> = {
   "functions/functions-as-values": fnValuesDoc,
   "functions/recursion": recursionDoc,
   "functions/inout-parameters": inoutDoc,
+  "functions/evaluation-order": orderDoc,
   "functions/signatures": signatureDoc,
   "functions/deprecating-a-function": deprecateDoc,
 

@@ -1,0 +1,19 @@
+fn say(b: Bool) -> Bool {
+    print(b)
+    b
+}
+
+fn maybe(n: Int?) -> Int? {
+    print(n)
+    n
+}
+
+fn fallback() -> Int {
+    print("fallback")
+    0
+}
+
+print(say(false) and say(true))
+print(say(true) or say(false))
+print(maybe(3) ?? fallback())
+print(maybe(none) ?? fallback())

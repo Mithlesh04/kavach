@@ -18,6 +18,7 @@ export const aliases: Record<string, string> = {
   "functions/named-arguments": "named arguments keyword arguments kwargs default parameters optional parameters",
   "functions/recursion": "recursion recursive call itself stack overflow factorial fibonacci",
   "functions/inout-parameters": "inout ref out parameter pass by reference mutate argument swap pointer",
+  "functions/evaluation-order": "evaluation order order of evaluation left to right side effects sequence point argument order operand order short circuit",
   "functions/functions-as-values": "first class function higher order function pointer delegate callback rest parameters variadic varargs ...args *args spread any number of arguments",
   "types/unions": "union enum enumeration variant tagged union sum type algebraic data type discriminated",
   "types/methods": "method member function self this extend extension impl",

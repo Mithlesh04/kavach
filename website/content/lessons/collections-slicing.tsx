@@ -25,6 +25,7 @@ export const slicingDoc: LessonDoc = {
         <li><C>queue[#1]</C> is the last item, <C>queue[#2]</C> the one before it.</li>
         <li>A slice <C>queue[start:end]</C> holds the items from <C>start</C> up to, not including, <C>end</C>. A missing <C>start</C> is the first item, and a missing <C>end</C> is past the last.</li>
         <li>A third part is the step: <C>queue[::2]</C> takes every second item, and <C>queue[::-1]</C> walks backwards.</li>
+        <li>The parts are worked out after the value being cut, left to right, as everything is (<Link href="/docs/functions/evaluation-order/">evaluation order</Link>): <C>queue</C>, then <C>start</C>, <C>end</C> and <C>step</C>.</li>
       </ul>
       <P>The same brackets work on text, <C>Bytes</C> and text views:</P>
       <div className="overflow-x-auto">

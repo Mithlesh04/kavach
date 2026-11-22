@@ -62,6 +62,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Functions as Values", "3.4"],
     ["Recursion", "3.8"],
     ["inout Parameters", "3.9"],
+    ["Evaluation Order", "3.10"],
     ["Signatures", "3.5"],
     ["Deprecating a Function", "12.6"],
   ]],

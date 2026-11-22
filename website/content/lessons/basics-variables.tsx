@@ -206,7 +206,8 @@ export const tupleAssignDoc: LessonDoc = {
     <>
       <P>
         Write a tuple on each side of <C>=</C>. Every value on the right is worked out first, then each place on the
-        left is set, left to right, as in Python and Go:
+        left is set, left to right, as in Python and Go. It is the one exception to the{" "}
+        <Link href="/docs/functions/evaluation-order/">left-to-right order</Link> everything else follows:
       </P>
       <Ex name="variables/tuple-assign" />
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">

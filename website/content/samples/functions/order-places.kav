@@ -1,0 +1,15 @@
+fn say(n: Int) -> Int {
+    print(`value {n}`)
+    n
+}
+
+fn pick(i: Int) -> Int {
+    print(`key {i}`)
+    i
+}
+
+let rows = [[1], [2]]
+rows[pick(1)].push(say(3))
+let totals = [10, 20]
+totals[pick(0)] += say(5)
+print(`{rows} {totals}`)

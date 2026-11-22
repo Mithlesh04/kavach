@@ -1,0 +1,9 @@
+fn say(s: String) -> String {
+    print(s)
+    s
+}
+
+const items = [say("a"), say("b")]
+const ages = {[say("ann")]: say("31"), [say("bo")]: say("27")}
+const line = `{say("x")}-{say("y")}`
+print(`{items} {ages} {line}`)

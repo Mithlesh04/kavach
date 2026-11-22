@@ -1,0 +1,12 @@
+fn bump(inout n: Int) {
+    n += 1
+}
+
+fn pick() -> Int {
+    print("pick")
+    0
+}
+
+let xs = [1, 2]
+bump(xs[pick()])
+print(xs)

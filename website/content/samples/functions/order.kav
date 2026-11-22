@@ -1,0 +1,21 @@
+type Point {
+    x: Int
+    y: Int
+}
+
+fn say(n: Int) -> Int {
+    print(n)
+    n
+}
+
+fn add(a: Int, b: Int) -> Int {
+    a + b
+}
+
+const a = say(1).wrapping_add(say(2))
+const b = add(b: say(3), a: say(4))
+const c = say(5) + say(6)
+const p = Point(y: say(7), x: say(8))
+let grid = [[0, 0], [0, 0]]
+grid[say(1)][say(0)] += say(9)
+print(`{a} {b} {c} {p} {grid}`)

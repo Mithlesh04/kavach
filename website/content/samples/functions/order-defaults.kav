@@ -1,0 +1,16 @@
+fn say(n: Int) -> Int {
+    print(n)
+    n
+}
+
+fn box(width: Int, height: Int, depth: Int = say(0)) -> Int {
+    width * height + depth
+}
+
+fn pick(kind: Int) -> fn(Int) -> Int {
+    print("pick")
+    if kind == 1 { n => n * 10 } else { n => n }
+}
+
+print(box(height: say(2), width: say(3)))
+print(pick(1)(say(5)))
