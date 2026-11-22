@@ -69,12 +69,18 @@ pub fn ports() -> Vec<String> {
 /// Opens the port at `path` at `baud`, 8 data bits, no parity, 1 stop
 /// bit, and gives its number.
 pub fn open(path: &str, baud: i64) -> Result<i64, DevError> {
-    let baud = u32::try_from(baud)
-        .map_err(|_| DevError::Failed(path.into(), format!("{baud} isn't a baud rate")))?;
-    let held = hold(path)?;
-    let mut port = serial2::SerialPort::open(path, baud).map_err(|e| error(path, e))?;
+    // 0 is no speed: on Linux and macOS it hangs the line up.
+    let baud = (u32::try_from(baud).ok())
+        .filter(|b| *b > 0)
+        .ok_or_else(|| DevError::Failed(path.into(), format!("{baud} isn't a baud rate")))?;
+    let not_a_port = |e| match is_port(path) {
+        false => DevError::Failed(path.into(), "not a serial port".into()),
+        true => e,
+    };
+    let held = hold(path).map_err(not_a_port)?;
+    let mut port = serial2::SerialPort::open(path, baud).map_err(|e| not_a_port(error(path, e)))?;
     port.set_read_timeout(Duration::from_secs(1))
-        .map_err(|e| error(path, e))?;
+        .map_err(|e| not_a_port(error(path, e)))?;
     let mut ports = PORTS.lock().unwrap_or_else(|e| e.into_inner());
     let id = ports.0;
     ports.0 += 1;
@@ -179,6 +185,24 @@ fn hold(_path: &str) -> Result<Option<std::fs::File>, DevError> {
     Ok(None)
 }
 
+/// Whether `path`, which didn't open as a serial port, may be one: not a
+/// file or a folder (spec 14.18). On Linux and macOS a port is a
+/// character device; asked only after opening failed, so a Windows port
+/// isn't opened twice to look at it.
+#[cfg(all(feature = "devices", unix))]
+fn is_port(path: &str) -> bool {
+    use std::os::unix::fs::FileTypeExt;
+    match std::fs::metadata(path) {
+        Ok(m) => m.file_type().is_char_device(),
+        Err(_) => true,
+    }
+}
+
+#[cfg(all(feature = "devices", not(unix)))]
+fn is_port(path: &str) -> bool {
+    !std::fs::metadata(path).is_ok_and(|m| m.is_dir() || m.is_file())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -196,5 +220,22 @@ mod tests {
         ));
         assert!(read(424_242, 8).is_err());
         close(424_242);
+    }
+
+    #[cfg(feature = "devices")]
+    #[test]
+    fn a_baud_rate_is_positive_and_a_folder_is_no_port() {
+        // Both are refused before any port is opened (spec 14.18).
+        let refused = |path: &str, baud| match open(path, baud) {
+            Err(DevError::Failed(_, why)) => why,
+            other => panic!("{other:?}"),
+        };
+        assert_eq!(refused("kavach-no-port", 0), "0 isn't a baud rate");
+        assert_eq!(refused("kavach-no-port", -1), "-1 isn't a baud rate");
+        let folder = std::env::temp_dir();
+        assert_eq!(
+            refused(&folder.to_string_lossy(), 9_600),
+            "not a serial port"
+        );
     }
 }

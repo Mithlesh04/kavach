@@ -1,0 +1,18 @@
+// Rule: a baud rate is a whole number above 0: opening a serial port at 0 or less fails with `Failed` before the port is opened.
+// Spec: 14.18
+// Checks: misuse
+// expect output: Failed(path: "kavach-no-such-port", reason: "0 isn't a baud rate")
+// expect output: Failed(path: "kavach-no-such-port", reason: "-9600 isn't a baud rate")
+
+use std.devices
+
+fn main() uses Serial, Console {
+    for baud in [0, -9_600] {
+        const port = devices.open_serial("kavach-no-such-port", baud) catch e => {
+            print(e)
+            continue
+        }
+        port.close()
+        print("opened")
+    }
+}

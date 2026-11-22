@@ -1,0 +1,15 @@
+// Rule: opening a file or a folder as a serial port fails with `Failed(path, "not a serial port")` on every system.
+// Spec: 14.18
+// Checks: misuse
+// expect output: Failed(path: ".", reason: "not a serial port")
+
+use std.devices
+
+fn main() uses Serial, Console {
+    const port = devices.open_serial(".", 9_600) catch e => {
+        print(e)
+        return
+    }
+    port.close()
+    print("opened")
+}

@@ -47,6 +47,7 @@ Each section is a file of its own: new sections go at the end, with the next num
 - `std.time`: formats other than ISO 8601 (`4 Nov 2026`), for both reading and writing.
 - `std.clipboard`: images, and other kinds of content (HTML, files).
 - `std.devices`: a serial wait that lets other tasks run (as the network's do, 9.7), and line settings other than 8N1.
+- `std.devices` (14.18, chosen 2026-11-22, for a maintainer's review): baud 0 is refused, not taken as "hang up"; a file or folder is `Failed(path, "not a serial port")` on every system; `read(0)` and a negative `max` give empty `Bytes` at once, as negative counts do in 14.2.
 - Streamed reads that fail part way: an error the loop can see, rather than a panic?
 - `std.term` (14.13): turning colors on with a setting even when output is not a terminal.
 - `std.term`: background colors and colors by number (256 colors, RGB).

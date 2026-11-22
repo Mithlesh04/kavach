@@ -28,4 +28,13 @@ fn main() ! Error uses Serial, Console {
 
 - `devices.open_serial_id(path, baud)`, `read_serial(id, max)`, `write_serial(id, data)` and `close_serial(id)` are what `open_serial` and the methods are built on, by the port's number.
 - A wait for bytes holds the task's turn (9.7), for at most a second.
+- A baud rate is a whole number above 0. Any other `baud` fails with `Failed(path, "0 isn't a baud rate")` before the port is opened: on Linux and macOS, 0 would hang the line up rather than set a speed.
+- A path that is a file or a folder, not a port, fails with `Failed(path, "not a serial port")` on every system, rather than with the system's own words.
+- `port.read(0)` gives empty `Bytes` at once, without waiting. A negative `max` counts as 0, as a negative count does in 14.2.
+
+```kavach
+devices.open_serial("/dev/ttyUSB0", 0)    // Failed(path: "/dev/ttyUSB0", reason: "0 isn't a baud rate")
+devices.open_serial("/home/asha", 9_600)  // Failed(path: "/home/asha", reason: "not a serial port")
+board.read(0)                             // Bytes([]), at once
+```
 - Ports come through the `serial2` crate ([decision 0068](../../decisions/0068-serial-ports-through-serial2.md)). USB, HID, cameras and the rest of item 6 of the to-do come after.
