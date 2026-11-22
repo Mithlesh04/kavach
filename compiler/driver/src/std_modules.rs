@@ -212,6 +212,11 @@ pub(crate) fn used(sources: &[Source]) -> Vec<Source> {
         if own.contains("Channel") {
             seen.insert("std.tasks".to_string());
         }
+        // A provider (`Anthropic`) implements `std.ai`'s `Provider` with
+        // its types, so naming one alone brings `std.ai` too.
+        if module.starts_with("std.ai.") {
+            seen.insert("std.ai".to_string());
+        }
         seen.extend(own.into_iter().filter(|w| w.starts_with("std.")));
         out.push(Source {
             path: path.to_string(),
@@ -321,6 +326,17 @@ fn f(e: Event) {}",
             // `Model`'s `timeout` is a `Duration`.
             (
                 "const a = ask<Bool>(\"?\")",
+                vec![
+                    "std.json",
+                    "std.time.digits",
+                    "std.time",
+                    "std.ai",
+                    "std.ai.anthropic",
+                ],
+            ),
+            // A provider named alone brings the `std.ai` it is built on.
+            (
+                "print(Anthropic().price(\"x\"))",
                 vec![
                     "std.json",
                     "std.time.digits",
