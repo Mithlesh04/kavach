@@ -1,0 +1,27 @@
+// Rule: a spawned block that reads only some fields of a record sees them as they were at the spawn, as with the whole record: the caller changing the record afterwards doesn't change what the task sees.
+// Spec: 9.1
+// expect output: main changed the reader
+// expect output: task saw true 3 at line 7
+
+type Place {
+    line: Int
+    column: Int
+}
+
+type Reader {
+    open: Bool
+    items: [Int]
+    at: Place
+}
+
+fn main() ! Error {
+    let r = Reader(open: true, items: [1, 2, 3], at: Place(line: 7, column: 1))
+    const t = spawn cores {
+        `task saw {r.open} {r.items.len()} at line {r.at.line}`
+    }
+    r.open = false
+    r.items.push(4)
+    r.at.line = 8
+    print("main changed the reader")
+    print(try t.wait())
+}

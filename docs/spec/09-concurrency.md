@@ -52,6 +52,8 @@ Everything else runs in the task: the call itself (its default arguments and its
 - A wait with a time limit, `w.timeout(d)` (9.6), all of it: it is one wait.
 - An `inout` argument (3.9), and the list, dict or set a changing method such as `push` is called on (2.2): these are places, not values, and the task changes its own copy of them.
 
+A spawned block reads copies of the outside variables it uses, taken at the spawn (9.5). When it reads a record only through its fields, as `r.flag` or `r.at.line`, only those fields are copied: a block that reads one field of a record holding a million items doesn't copy the items. What the task sees is the same.
+
 The spawned code can fail without `try`: its error comes out of `.wait()`, which gives `T ! Error`. Above, a failed `fetch_profile` makes `try profile.wait()` pass the error on. A task's value or error stays in the `Task` until it is read; `.wait()` can be called again and gives the same.
 
 **An error nobody reads is not lost** ([decision 0075](../decisions/0075-cancelling-tasks.md)). An error in a task never stops the program. But when a task that failed is let go of and no `.wait()` read its error, the error is printed to standard error, with where the task was spawned. That happens when the function that spawned it returns (9.2), or, for a `Task` handed out of that function, when the last holder lets it go. The program goes on, and its exit code doesn't change:

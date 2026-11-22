@@ -25,6 +25,7 @@ use kavach_ast as ast;
 mod args;
 mod body;
 mod channels;
+mod fields;
 mod parallel_map;
 
 fn at(kind: K, ty: Type, line: u32) -> ir::Expr {
@@ -98,7 +99,33 @@ impl<'a> Lowerer<'a> {
             line,
         );
         self.restore_function(saved);
-        let body = self.add_function(body?);
+        let mut body = body?;
+        // A captured record read only through its fields gives the task
+        // those fields alone (`lower_tasks/fields.rs`).
+        let (values, env_ty) = match fields::narrow(&mut body, types.len(), base, &self.shapes.list)
+        {
+            Some(slots) => {
+                let mut held = Vec::new();
+                let mut narrowed = Vec::new();
+                for s in slots {
+                    match s {
+                        fields::Slot::Whole(i) => {
+                            held.push(types[i]);
+                            narrowed.push(values[i].clone());
+                        }
+                        fields::Slot::Field(i, k, t) => {
+                            held.push(t);
+                            narrowed.push(at(K::GetField(Box::new(values[i].clone()), k), t, line));
+                        }
+                    }
+                }
+                let env_ty = self.shapes_intern(Shape::Closure(held));
+                fields::retype_env(&mut body, env_ty);
+                (narrowed, env_ty)
+            }
+            None => (values, env_ty),
+        };
+        let body = self.add_function(body);
 
         let saved = self.save_function(Type::Unit);
         let error_ty = self.error_type();
