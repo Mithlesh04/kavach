@@ -1,6 +1,6 @@
 # 0031. Math loops on all cores, with the plain loop's exact results
 
-- **Status:** Accepted
+- **Status:** Replaced by [decision 0126](0126-loops-on-one-core-unless-on-cores.md) (2026-11-22)
 - **Date:** 2026-11-02
 
 ## Context

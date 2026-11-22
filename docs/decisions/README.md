@@ -36,7 +36,7 @@ One file per important decision: what was decided, why, and what was rejected. F
 | [0028](0028-anonymous-records.md) | Anonymous records: Python's speed of writing, fully typed | Accepted |
 | [0029](0029-interface-values.md) | Interface values: runtime polymorphism without inheritance | Accepted |
 | [0030](0030-byte-packed-lists.md) | Byte-packed lists: one byte per byte | Accepted |
-| [0031](0031-loops-on-all-cores.md) | Math loops on all cores, with the plain loop's exact results | Accepted |
+| [0031](0031-loops-on-all-cores.md) | Math loops on all cores, with the plain loop's exact results | Replaced by [0126](0126-loops-on-one-core-unless-on-cores.md) |
 | [0032](0032-json-on-a-tape.md) | JSON on a tape: one buffer per document | Accepted |
 | [0033](0033-docs-site-in-the-repo.md) | The docs site lives in this repository | Accepted; point 1 replaced by [0047](0047-docs-one-idea-per-page.md) |
 | [0034](0034-const-and-let.md) | `const` for values that never change, `let` for variables (no `var`) | Accepted |
