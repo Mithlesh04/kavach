@@ -4,13 +4,14 @@
 // expect output: round 3 done
 // expect output: round 2 done
 // expect output: round 0 done
-// expect output: [600, 200, 400, 300] 750 1
+// expect output: [2400, 200, 1400, 800] 2400 6
 // expect output: [0, 1, 2, 3]
 
 use std.time
 
 fn main() {
-    const waits = [300, 100, 200, 150]
+    // Far apart, so a busy machine keeps the order.
+    const waits = [1200, 100, 700, 400]
     let out = [0, 0, 0, 0]
     let total = 0
     let m = 0
