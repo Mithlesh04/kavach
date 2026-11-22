@@ -44,7 +44,7 @@ The journal (spec 8.5, `runtime/core/src/journal.rs`) gets one line per event, c
 
 | Case | What happens today | Status |
 |---|---|---|
-| Crash or kill | The file is written to `state.json.new`, then renamed over: never half | Handled |
+| Crash or kill | The file is written to a temporary file, then renamed over: never half | Handled |
 | Power loss | The file wasn't synced before the rename, so it could be empty; an unreadable file counts as no calls, so every limit reset | Fixed (written as `fs.write_durable` does) |
 | Kill between a call's effect and the save | A call counts when it starts, and the state file is written then; one that fails stops counting, one a crash cut off stays counted | Fixed (decision 0062) |
 | Two programs run the same agent | They share its state file and journal, and overwrite each other's counts | Decided ([0073](../decisions/0073-durable-agents-across-restarts.md)): the folder is locked (`runtime/core/src/agents/lock.rs`); done |
@@ -86,7 +86,7 @@ The journal (spec 8.5, `runtime/core/src/journal.rs`) gets one line per event, c
 | A port a server listened on | Can be bound again at once (Rust sets `SO_REUSEADDR` on Unix) | Handled |
 | Child processes, lock files | None: the runtime starts none and makes none | Handled |
 
-**Left behind after a crash:** a `.name.kavach-<pid>-<n>.tmp` file from a write cut short (the state file is written the same way now, so no `state.json.new` is left), and `kavach-build-<pid>` (and `kavach-llvm-…`, `kavach-lib-…`) folders in the temp folder from a build stopped with Ctrl+C. None stops a restart. A build removes such folders once they are a day old (`compiler/backend/cranelift/src/link.rs`); the temporary files of writes cut short are left. Fixed for build folders; To do for the files.
+**Left behind after a crash:** a `.name.kavach-<pid>-<n>.tmp` file from a write cut short (the state file is written the same way now, so no `state.json.new` is left), and `kavach-build-<pid>` (and `kavach-llvm-…`, `kavach-lib-…`) folders in the temp folder from a build stopped with Ctrl+C. None stops a restart. A build removes such folders once they are a day old (`compiler/backend/cranelift/src/link.rs`). The first whole-file write into a folder in a run removes the temporary files that writes cut short left there, those no write in progress holds locked (spec 14.3, `runtime/core/src/files.rs`). Fixed (`tests/conformance/14-standard-library/fs-writes-cut-short-are-cleaned-up.kav`).
 
 ## Choices for a maintainer
 

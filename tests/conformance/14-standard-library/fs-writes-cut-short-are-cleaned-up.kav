@@ -1,0 +1,22 @@
+// Rule: The first whole-file write into a folder in a run removes the temporary files that writes cut short left there, and no other file.
+// Spec: 14.3
+// expect output: [".notes.txt.tmp", "notes.txt"]
+// expect output: whole
+
+use std.fs
+
+fn main() ! FsError uses Fs, Console {
+    const dir = "kavach-t-fs-cut-short"
+    try fs.create_dir(dir)
+    // What a write cut short leaves: a hidden temporary file beside the target.
+    const cut = try fs.create_writer(`{dir}/.notes.txt.kavach-0-0.tmp`)
+    try cut.write_text("half a fi")
+    const _cut = try cut.finish()
+    // A name of another form is not a temporary file.
+    const other = try fs.create_writer(`{dir}/.notes.txt.tmp`)
+    const _other = try other.finish()
+    try fs.write_text(`{dir}/notes.txt`, "whole")
+    print(try fs.list(dir))
+    print(try fs.read_text(`{dir}/notes.txt`))
+    try fs.remove_all(dir)
+}

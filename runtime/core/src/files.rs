@@ -48,6 +48,21 @@ pub fn write_durably(path: &str, data: &[u8]) -> std::io::Result<()> {
 /// temporary file, so a full disk leaves nothing behind. Its name is
 /// the program's and a count, so two tasks never share one.
 fn through_temp(target: &std::path::Path, data: &[u8], durable: bool) -> std::io::Result<()> {
+    sweep_once(target);
+    // Another program's sweep can take the temporary file in the moment
+    // before it is locked or after it is let go: the rename then finds
+    // nothing, and the write starts again with a new one.
+    for _ in 0..4 {
+        if write_and_rename(target, data, durable)? {
+            return Ok(());
+        }
+    }
+    Err(std::io::Error::other("its temporary file was removed"))
+}
+
+/// One try of `through_temp`: `false` when the temporary file was gone
+/// at the rename.
+fn write_and_rename(target: &std::path::Path, data: &[u8], durable: bool) -> std::io::Result<bool> {
     use std::io::Write;
     use std::sync::atomic::{AtomicU64, Ordering};
     static COUNT: AtomicU64 = AtomicU64::new(0);
@@ -56,18 +71,74 @@ fn through_temp(target: &std::path::Path, data: &[u8], durable: bool) -> std::io
         .map_or("file".into(), |n| n.to_string_lossy().to_string());
     let n = COUNT.fetch_add(1, Ordering::Relaxed);
     let temp = target.with_file_name(format!(".{name}.kavach-{}-{n}.tmp", std::process::id()));
-    let written = std::fs::File::create(&temp).and_then(|mut file| {
-        file.write_all(data)?;
-        if durable {
-            file.sync_all()?;
-        }
-        Ok(())
-    });
-    written
-        .and_then(|()| std::fs::rename(&temp, target))
+    std::fs::File::create(&temp)
+        .and_then(|mut file| {
+            // Held until the file is complete, so a sweep leaves it alone.
+            file.lock()?;
+            file.write_all(data)?;
+            if durable {
+                file.sync_all()?;
+            }
+            Ok(())
+        })
         .inspect_err(|_| {
             let _ = std::fs::remove_file(&temp);
-        })
+        })?;
+    match std::fs::rename(&temp, target) {
+        Ok(()) => Ok(true),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound && !temp.exists() => Ok(false),
+        Err(e) => {
+            let _ = std::fs::remove_file(&temp);
+            Err(e)
+        }
+    }
+}
+
+/// Removes, at the first whole-file write into a folder in a run, the
+/// temporary files that writes cut short left there (spec 14.3): those
+/// of other programs that nobody holds locked. This program's own are
+/// writes in progress. A failure only leaves a file where it was.
+fn sweep_once(target: &std::path::Path) {
+    use std::collections::HashSet;
+    use std::sync::Mutex;
+    static SWEPT: Mutex<Option<HashSet<std::path::PathBuf>>> = Mutex::new(None);
+    let dir = match target.parent() {
+        Some(p) if !p.as_os_str().is_empty() => p,
+        _ => std::path::Path::new("."),
+    };
+    let first = SWEPT
+        .lock()
+        .is_ok_and(|mut swept| swept.get_or_insert_default().insert(dir.to_path_buf()));
+    if !first {
+        return;
+    }
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    let me = std::process::id().to_string();
+    for entry in entries.flatten() {
+        let name = entry.file_name();
+        match name.to_str().and_then(temp_owner) {
+            Some(owner) if owner != me => {}
+            _ => continue,
+        }
+        let path = entry.path();
+        if let Ok(file) = std::fs::File::open(&path)
+            && file.try_lock().is_ok()
+        {
+            let _ = std::fs::remove_file(&path);
+        }
+    }
+}
+
+/// The process number in a temporary file's name,
+/// `.name.kavach-<pid>-<n>.tmp`; `None` for any other name.
+fn temp_owner(name: &str) -> Option<&str> {
+    let middle = name.strip_prefix('.')?.strip_suffix(".tmp")?;
+    let (target, tail) = middle.rsplit_once(".kavach-")?;
+    let (pid, n) = tail.split_once('-')?;
+    let digits = |s: &str| !s.is_empty() && s.bytes().all(|b| b.is_ascii_digit());
+    (!target.is_empty() && digits(pid) && digits(n)).then_some(pid)
 }
 
 /// Where `part` first appears in `data` (`Bytes.index_of`, spec 2.13);
@@ -236,6 +307,54 @@ mod tests {
         assert!(super::write_durably(path, b"x").is_err());
         let left: Vec<_> = std::fs::read_dir(&dir).unwrap().collect();
         assert_eq!(left.len(), 1, "{left:?}");
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn temporary_names_give_their_program() {
+        let cases = [
+            (".a.txt.kavach-12-0.tmp", Some("12")),
+            (".a.kavach-b.kavach-7-31.tmp", Some("7")),
+            (".a.txt.tmp", None),
+            ("a.txt.kavach-12-0.tmp", None),
+            (".a.txt.kavach-12-0.tmp.bak", None),
+            (".a.txt.kavach-12.tmp", None),
+            (".a.txt.kavach--0.tmp", None),
+            (".a.txt.kavach-1x-0.tmp", None),
+            ("..kavach-12-0.tmp", None),
+        ];
+        for (name, owner) in cases {
+            assert_eq!(super::temp_owner(name), owner, "{name}");
+        }
+    }
+
+    /// The first write into a folder removes what writes cut short left
+    /// there, and nothing else: not a file a write in progress holds, not
+    /// this program's own, not a name of another form.
+    #[test]
+    fn the_first_write_into_a_folder_removes_writes_cut_short() {
+        let dir = std::env::temp_dir().join(format!("kavach-sweep-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let mine = format!(".a.txt.kavach-{}-9.tmp", std::process::id());
+        let kept = [".a.txt.tmp", "b.kavach-0-0.tmp", ".b.kavach-1-0.tmp", &mine];
+        for name in kept.iter().chain(&[".a.txt.kavach-0-0.tmp"]) {
+            std::fs::write(dir.join(name), b"half").unwrap();
+        }
+        // A write in progress in another program: its file is locked.
+        let held = std::fs::File::open(dir.join(".b.kavach-1-0.tmp")).unwrap();
+        held.lock().unwrap();
+        super::write_atomically(dir.join("a.txt").to_str().unwrap(), b"whole").unwrap();
+        drop(held);
+        let mut left: Vec<_> = std::fs::read_dir(&dir)
+            .unwrap()
+            .map(|e| e.unwrap().file_name().into_string().unwrap())
+            .collect();
+        left.sort();
+        let mut want: Vec<_> = kept.iter().map(|s| s.to_string()).collect();
+        want.push("a.txt".into());
+        want.sort();
+        assert_eq!(left, want);
+        assert_eq!(std::fs::read(dir.join("a.txt")).unwrap(), b"whole");
         std::fs::remove_dir_all(&dir).unwrap();
     }
 
