@@ -75,7 +75,9 @@ impl Fake {
             .map_or(format!(r#"{{"Other":{{"status":{status}}}}}"#), |(_, k)| {
                 format!("\"{k}\"")
             });
-        format!(r#"{{"Problem":{{"kind":{kind},"message":"no","wait":{{"ms":1}}}}}}"#)
+        // A long hint, so a busy machine never sees a model's wait run out
+        // before the next try: the fake notes waits, never sleeps them.
+        format!(r#"{{"Problem":{{"kind":{kind},"message":"no","wait":{{"ms":60000}}}}}}"#)
     }
 }
 
@@ -158,8 +160,8 @@ fn fake(url: &str) -> Fake {
 
 const OK: &str =
     "HTTP/1.1 200 OK\r\nconnection: close\r\ncontent-length: 14\r\n\r\n{\"approve\":1}\n";
-// A wait long enough that a slow, busy machine never sees it run out
-// before the next try (the fake notes waits, never sleeps them).
+// The provider's wait hint is the fake's own (`answer`, above); this
+// header only reaches it.
 const BUSY: &str = "HTTP/1.1 429 Too Many Requests\r\nretry-after: 60\r\ncontent-length: 0\r\n\r\n";
 const BROKE: &str = "HTTP/1.1 402 Payment Required\r\ncontent-length: 0\r\n\r\n";
 
