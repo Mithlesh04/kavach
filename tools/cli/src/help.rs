@@ -49,7 +49,7 @@ tools for AI assistants (spec 13), which save reading whole files:
   kavach mcp                                serve all of these to AI assistants over MCP (stdin/stdout)
   kavach lsp                                serve errors as you type to an editor (LSP, stdin/stdout)
   kavach --version                          the compiler's version and commit
-  kavach version <program>                  what built an executable (spec 10.5)
+  kavach version <program>                  what built an executable, when and how (spec 10.5)
 ";
 
 /// `kavach <command> --help` (or `-h`): the lines of `HELP` about that

@@ -8,6 +8,7 @@
 
 use crate::Config;
 use std::path::Path;
+use std::sync::OnceLock;
 
 /// Where the text starts and ends inside an executable.
 const START: &str = "<kavach-version>";
@@ -22,9 +23,39 @@ pub fn compiler_version() -> String {
     )
 }
 
+/// How `kavach build` builds the program: `built <moment> for <system>
+/// with <options>`. Unset under `kavach run`, which keeps no executable.
+static BUILT: OnceLock<String> = OnceLock::new();
+
+/// Says that this run of the compiler is `kavach build` with `options`
+/// (`--tracy`, `--compress`, …), before the program is lowered; the moment
+/// is the clock's, or `SOURCE_DATE_EPOCH`'s (spec 10.5).
+pub fn set_build_options(options: &[String]) {
+    let epoch = std::env::var("SOURCE_DATE_EPOCH").ok();
+    let _ = BUILT.set(build_line(epoch.as_deref(), options));
+}
+
+/// The third line of a built program's text (spec 10.5).
+fn build_line(epoch: Option<&str>, options: &[String]) -> String {
+    let ms = match epoch.and_then(|s| s.trim().parse::<i64>().ok()) {
+        Some(secs) => secs.saturating_mul(1000),
+        None => std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_or(0, |d| d.as_millis() as i64),
+    };
+    let moment = kavach_runtime_core::agents::utc_of(ms);
+    let (arch, os) = (std::env::consts::ARCH, std::env::consts::OS);
+    let mut line = format!("built {moment} for {arch}-{os}");
+    if !options.is_empty() {
+        line = format!("{line} with {}", options.join(" "));
+    }
+    line
+}
+
 /// What a program built from `file` says about itself, on two lines
-/// (`my-app 0.1.0`, `built by kavach 0.1.0 (commit 8f8ae051)`), and
-/// whether it answers `--version` itself (`[build] version_flag`).
+/// (`my-app 0.1.0`, `built by kavach 0.1.0 (commit 8f8ae051)`), and a
+/// third under `kavach build` (`set_build_options`); and whether it
+/// answers `--version` itself (`[build] version_flag`).
 pub fn program_version(file: &Path) -> (String, bool) {
     let config = Config::for_file(file).unwrap_or_default();
     let stem = file.file_stem().map(|s| s.to_string_lossy().into_owned());
@@ -36,7 +67,10 @@ pub fn program_version(file: &Path) -> (String, bool) {
         "" => name,
         version => format!("{name} {version}"),
     };
-    let text = format!("{first}\nbuilt by kavach {}", compiler_version());
+    let mut text = format!("{first}\nbuilt by kavach {}", compiler_version());
+    if let Some(line) = BUILT.get() {
+        text = format!("{text}\n{line}");
+    }
     (text, config.build.version_flag)
 }
 
@@ -95,6 +129,34 @@ mod tests {
         bytes.extend_from_slice(b"\0more");
         assert_eq!(find_marked(&bytes).as_deref(), Some(text));
         assert_eq!(find_marked(b"no marks here"), None);
+    }
+
+    #[test]
+    fn the_build_line_names_the_moment_the_system_and_the_options() {
+        let system = format!("{}-{}", std::env::consts::ARCH, std::env::consts::OS);
+        let cases: [(Option<&str>, &[&str], String); 3] = [
+            (
+                Some("0"),
+                &[],
+                format!("built 1970-01-01T00:00:00Z for {system}"),
+            ),
+            (
+                Some("1763890867"),
+                &["--tracy", "--compress"],
+                format!("built 2025-11-23T09:41:07Z for {system} with --tracy --compress"),
+            ),
+            (
+                Some(" 86400 "),
+                &[],
+                format!("built 1970-01-02T00:00:00Z for {system}"),
+            ),
+        ];
+        for (epoch, options, line) in cases {
+            let options: Vec<String> = options.iter().map(|o| o.to_string()).collect();
+            assert_eq!(build_line(epoch, &options), line);
+        }
+        // Without a usable `SOURCE_DATE_EPOCH`, the clock's moment.
+        assert!(build_line(Some("soon"), &[]).starts_with("built 20"));
     }
 
     #[test]

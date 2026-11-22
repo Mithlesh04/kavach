@@ -60,6 +60,7 @@ For running programs:
 | `KAVACH_CHECK_LEAKS` | any value | At the end, report heap objects that were never freed | 6.1 |
 | `KAVACH_TRACE` | a file's path | Write every span to that file as a Chrome trace, for Perfetto and `chrome://tracing` | 14.12 |
 | `KAVACH_BACKEND` | `cranelift` | `kavach build` uses Cranelift instead of LLVM | 10.5 |
+| `SOURCE_DATE_EPOCH` | a whole number of seconds since 1970 | The moment `kavach build` writes into the program, instead of the clock's | 10.5 |
 | `KAVACH_LLVM_BIN` | a folder | Where LLVM's tools are | 10.5 |
 | `KAVACH_RUNTIME_LIB` | a file's path | Where the runtime library is, for linking | 10.5 |
 | `KAVACH_UNPACKED` | a folder | Where a program built with `--compress` unpacks itself | 10.5 |

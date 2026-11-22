@@ -25,7 +25,7 @@
 | `kavach api check` | Find breaking changes in `pub` signatures before a release (12.5) |
 | `kavach repl` / `kavach eval` | Try code interactively or evaluate one expression (10.9) |
 | `kavach --version` | Print the compiler's version and the commit it was built from: `kavach 0.1.0 (commit 8f8ae051)` |
-| `kavach version <program>` | Print what built an executable: its package's name and version, and the compiler's version and commit (below) |
+| `kavach version <program>` | Print what built an executable: its package's name and version, the compiler's version and commit, and when, for which system and with which options it was built (below) |
 | `kavach lsp` | Language server for editors, on stdin and stdout: errors as you type, with the same messages as `kavach check`; the type of what is under the cursor (hover); where a name is declared (go to definition); and the names in scope, or after a `.` the fields and methods of the value (completion) |
 | `kavach <command> --help` | Print that command's usage (`-h` too); `kavach --help` prints them all |
 
@@ -37,13 +37,18 @@ Inside a project (a folder with `kavach.toml`, or any folder below it), `run`, `
 
 `kv` is a short alias for `kavach`.
 
-**A program's version.** Every executable `kavach build` writes carries, as text inside it, its package's `name` and `version` (10.4) and the version and commit of the compiler that built it. `kavach version` prints them, so a program found on a server can be traced to its source:
+**A program's version.** Every executable `kavach build` writes carries, as text inside it, its package's `name` and `version` (10.4), the version and commit of the compiler that built it, and how it was built. `kavach version` prints them, so a program found on a server, or the program that trained a model, can be traced to its source and its build:
 
 ```
 $ kavach version .kavach/bin/my-app
 my-app 0.1.0
 built by kavach 0.1.0 (commit 8f8ae051)
+built 2026-11-23T09:41:07Z for x86_64-linux with --tracy
 ```
+
+- The third line gives when `kavach build` ran, as a moment in UTC; the system the program runs on, as `<processor>-<system>` (`x86_64-windows`, `aarch64-macos`); and the options that change what is built: `--tracy`, `--compress` or `--compress=max`, and `KAVACH_BACKEND=cranelift` (10.11). Without them, the line ends after the system.
+- With `SOURCE_DATE_EPOCH` set to a whole number of seconds since 1970, as tools for repeatable builds set it, the moment is that one instead of the clock's, so building the same source again doesn't change the text.
+- `kavach run` keeps no executable, so a program run that way has the first two lines only.
 
 `kavach run --watch` looks at the project's `src/` folder (or the folder of the one file given) and its `kavach.toml` a few times a second. When one changes, it stops the running program, printing `-- changed: src/orders.kav, running again`, and starts it again; a program that ended waits for the next change. It stops when you press Ctrl+C. It is for working on a program, not for running one in production.
 
@@ -59,7 +64,7 @@ $ kavach run --hot game.kav
 - Tasks already running go on with their code; tasks started later run the new code.
 - It is for working on a program, and runs it in the interpreter only.
 
-A program built from one file (10.9) has the file's name and no version. With `version_flag = true` under `[build]` in `kavach.toml`, the program answers `--version` itself: run with that one argument, it prints the same two lines and ends with exit code 0, before `main` runs. This holds however it runs: `kavach run -- --version`, `run --native` and the built executable. Without the setting, `--version` is an argument like any other, for the program to read.
+A program built from one file (10.9) has the file's name and no version. With `version_flag = true` under `[build]` in `kavach.toml`, the program answers `--version` itself: run with that one argument, it prints the same lines and ends with exit code 0, before `main` runs. This holds however it runs: `kavach run -- --version`, `run --native` and the built executable. Without the setting, `--version` is an argument like any other, for the program to read.
 
 **An icon and a manifest on Windows.** On Windows, `kavach build` gives the executable a manifest: it runs as the user who starts it, with no administrator prompt; it is sharp on high-DPI screens (per-monitor DPI awareness); and it may use paths longer than 260 characters. With `icon = "assets/icon.png"` under `[build]` in `kavach.toml`, the executable also has that icon, which Explorer and the taskbar show:
 

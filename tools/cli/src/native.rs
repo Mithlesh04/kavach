@@ -66,11 +66,26 @@ pub(crate) fn build(
     out: Option<&str>,
     compress: Option<kavach_runtime_unpack::Method>,
 ) -> ExitCode {
+    // What the program will say built it (spec 10.5).
+    let tracy = TRACY.load(std::sync::atomic::Ordering::Relaxed);
+    let mut options: Vec<String> = Vec::new();
+    if tracy {
+        options.push("--tracy".into());
+    }
+    match compress {
+        Some(kavach_runtime_unpack::Method::Deflate) => options.push("--compress".into()),
+        Some(kavach_runtime_unpack::Method::Xz) => options.push("--compress=max".into()),
+        None => {}
+    }
+    if std::env::var("KAVACH_BACKEND").as_deref() == Ok("cranelift") {
+        options.push("KAVACH_BACKEND=cranelift".into());
+    }
+    kavach_driver::set_build_options(&options);
     let mut program = match lowered(path) {
         Ok(p) => p,
         Err(code) => return code,
     };
-    program.tracy = TRACY.load(std::sync::atomic::Ordering::Relaxed);
+    program.tracy = tracy;
     let out = match out {
         Some(o) => std::path::PathBuf::from(o),
         None => {

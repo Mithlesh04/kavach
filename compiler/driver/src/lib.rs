@@ -40,7 +40,9 @@ pub use project::{Source, SourceFile, project_sources};
 pub use schema::{NO_SCHEMA, ask_schema, describe_def, describe_fn, json_schema};
 use std::collections::HashMap;
 use std_modules::{BUILTIN, is_builtin};
-pub use version::{compiler_version, find_marked, marked, program_icon, program_version};
+pub use version::{
+    compiler_version, find_marked, marked, program_icon, program_version, set_build_options,
+};
 
 /// What the compiler is told about a file, usually from `kavach.toml`
 /// (see [`Config::options_for`]).

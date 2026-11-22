@@ -3,16 +3,20 @@
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
 //! What built a program (spec 10.5): `kavach --version`, `kavach version
-//! <program>`, and `--version` answered by the program only when `[build]
-//! version_flag` says, however it runs.
+//! <program>` with how it was built, and `--version` answered by the
+//! program only when `[build] version_flag` says, however it runs.
 
 use std::path::Path;
 use std::process::Command;
 
 fn kavach(dir: &Path, args: &[&str]) -> String {
+    // A fixed build moment, and the options as `kavach build` is given
+    // them, so what a built program says is known exactly.
     let out = Command::new(env!("CARGO_BIN_EXE_kavach"))
         .args(args)
         .current_dir(dir)
+        .env("SOURCE_DATE_EPOCH", "86400")
+        .env_remove("KAVACH_BACKEND")
         .output()
         .unwrap();
     String::from_utf8_lossy(&out.stdout).into_owned()
@@ -25,6 +29,8 @@ fn build(dir: &Path) {
     let out = Command::new(env!("CARGO_BIN_EXE_kavach"))
         .arg("build")
         .current_dir(dir)
+        .env("SOURCE_DATE_EPOCH", "86400")
+        .env_remove("KAVACH_BACKEND")
         .output()
         .unwrap();
     let exe = dir
@@ -71,6 +77,10 @@ fn a_program_says_what_built_it_and_answers_version_only_when_asked_to() {
     );
     let version = compiler.trim_start_matches("kavach ").trim();
     let says = format!("app 2.3.0\nbuilt by kavach {version}\n");
+    // A built executable also says when, for what and how (`kavach run`
+    // keeps none, so says only the first two lines).
+    let system = format!("{}-{}", std::env::consts::ARCH, std::env::consts::OS);
+    let built = format!("{says}built 1970-01-02T00:00:00Z for {system}\n");
 
     // In Cargo's own folder for this test's files, not the system's temp
     // folder: on Windows a new program there was sometimes not yet on
@@ -91,7 +101,7 @@ fn a_program_says_what_built_it_and_answers_version_only_when_asked_to() {
         "[\"--version\"]\n"
     );
     let exe = format!(".kavach/bin/app{}", std::env::consts::EXE_SUFFIX);
-    assert_eq!(kavach(&dir, &["version", &exe]), says);
+    assert_eq!(kavach(&dir, &["version", &exe]), built);
 
     // With it, every way the program runs answers it before `main`.
     std::fs::write(
@@ -100,9 +110,13 @@ fn a_program_says_what_built_it_and_answers_version_only_when_asked_to() {
     )
     .unwrap();
     build(&dir);
-    assert_eq!(program(&dir, "--version"), says);
+    assert_eq!(program(&dir, "--version"), built);
     assert_eq!(program(&dir, "x"), "[\"x\"]\n");
     assert_eq!(kavach(&dir, &["run", "--", "--version"]), says);
     assert_eq!(kavach(&dir, &["run", "--native", "--", "--version"]), says);
+    // The options that change what is built are named.
+    kavach(&dir, &["build", "--compress"]);
+    let compressed = format!("{says}built 1970-01-02T00:00:00Z for {system} with --compress\n");
+    assert_eq!(kavach(&dir, &["version", &exe]), compressed);
     std::fs::remove_dir_all(&dir).unwrap();
 }
