@@ -49,14 +49,19 @@ Each trap was checked by running Kavach, not by reading the spec. Status:
 
 ## Time
 
-`std.time` has only clocks and durations today (14.4), so the date traps can be avoided before dates arrive:
+Dates, zones and text formats are in `std.time` (spec 14.4, decisions [0058](../decisions/0058-dates-in-std-time.md) and [0064](../decisions/0064-time-zones-through-jiff.md)).
 
-- **Months from 0** (JavaScript's `new Date(2024, 1, 1)` is February): months will be 1 to 12.
-- **The 1900 leap year** (Excel treats 1900 as one, for Lotus 1-2-3 compatibility): dates will follow the proleptic Gregorian calendar, with no exceptions.
-- **"Local time" by default**: a date and time without a zone will be a different type from one with a zone, so they can't be mixed by accident. Daylight saving gaps and overlaps (02:30 that happens twice, or never) will be values the program must handle, not silent guesses.
-- **Leap seconds and clocks going back**: `time.monotonic_ms()` already exists for measuring; durations should never come from wall-clock differences.
-
-These go into the spec when dates are designed.
+| Trap | Elsewhere | Kavach |
+|---|---|---|
+| Months from 0 | JavaScript's `new Date(2024, 1, 1)` is February | **Design**: months are 1 to 12 |
+| 1900 as a leap year | Excel, for Lotus 1-2-3 compatibility | **Design**: the Gregorian calendar for every year, with no exceptions |
+| "Local time" by default | Python's naive `datetime`, JavaScript's `Date` read the machine's zone | **Design**: a `DateTime` has no zone and is not a moment; Kavach never reads the machine's zone |
+| Daylight saving's skipped and repeated hours | Silent guesses | **Design**: resolved as RFC 5545 does, and `z.resolve` gives the cases to a program that must choose |
+| Durations from the wall clock | Wrong when the clock jumps | **Design**: waits and `monotonic_ms` use the clock that never jumps |
+| Formats that depend on the machine's language | C's `strftime("%b")`, Java's `MMM` | **Design**: patterns write English names on every machine (14.4) |
+| `YYYY` as the week's year, `mm` as the month | Java's `YYYY-MM-dd` gives the wrong year around New Year; `yyyy-mm-dd` writes minutes | **Fixed**: `YYYY` is the calendar year; `mm` without an hour, or `MM` without a day or year, breaks the `require` of `format` and `parse_*`, a panic; so do unknown letters (`yyyy`, `dd`) |
+| Two-digit years | The year 2000 problem | **Design**: patterns have no `YY` |
+| A 12-hour clock without AM or PM | `hh:mm` in Java and others | **Fixed**: `h` needs `A` |
 
 ## Proposals for the maintainers
 
