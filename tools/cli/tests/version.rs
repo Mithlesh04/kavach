@@ -18,6 +18,28 @@ fn kavach(dir: &Path, args: &[&str]) -> String {
     String::from_utf8_lossy(&out.stdout).into_owned()
 }
 
+/// `kavach build` in `dir`, which must make the program: on Windows under
+/// a full test run it once said "built" with no program there, so a
+/// failure shows what the build itself said.
+fn build(dir: &Path) {
+    let out = Command::new(env!("CARGO_BIN_EXE_kavach"))
+        .arg("build")
+        .current_dir(dir)
+        .output()
+        .unwrap();
+    let exe = dir
+        .join(".kavach/bin")
+        .join(format!("app{}", std::env::consts::EXE_SUFFIX));
+    assert!(
+        out.status.success() && exe.is_file(),
+        "`kavach build` exited {:?}, program there: {}\n{}{}",
+        out.status.code(),
+        exe.is_file(),
+        String::from_utf8_lossy(&out.stdout),
+        String::from_utf8_lossy(&out.stderr)
+    );
+}
+
 fn program(dir: &Path, arg: &str) -> String {
     let exe = dir
         .join(".kavach/bin")
@@ -62,7 +84,7 @@ fn a_program_says_what_built_it_and_answers_version_only_when_asked_to() {
     std::fs::write(dir.join("src/main.kav"), main).unwrap();
 
     // Without the setting, `--version` is the program's own argument.
-    kavach(&dir, &["build"]);
+    build(&dir);
     assert_eq!(program(&dir, "--version"), "[\"--version\"]\n");
     assert_eq!(
         kavach(&dir, &["run", "--", "--version"]),
@@ -77,7 +99,7 @@ fn a_program_says_what_built_it_and_answers_version_only_when_asked_to() {
         format!("{toml}\n[build]\nversion_flag = true\n"),
     )
     .unwrap();
-    kavach(&dir, &["build"]);
+    build(&dir);
     assert_eq!(program(&dir, "--version"), says);
     assert_eq!(program(&dir, "x"), "[\"x\"]\n");
     assert_eq!(kavach(&dir, &["run", "--", "--version"]), says);
