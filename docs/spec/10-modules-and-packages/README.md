@@ -23,3 +23,4 @@ How code is split into modules and packages, how a project is laid out and built
 ## Open questions
 
 - Registry name and URL (e.g. `hub.kavach.io`), version numbers and how they are chosen, and package signing.
+- What a built program says about its build (10.5, chosen 2026-11-23, for a maintainer's review): the moment, the system and the options that change the program, with `SOURCE_DATE_EPOCH` for repeatable builds. Not yet: the commit of the program's own source, or a hash of its files.
