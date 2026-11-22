@@ -45,7 +45,7 @@ impl<'a> Interp<'a> {
                     Err(why) => return Err(fail(self, why)),
                 }
             }
-            "crash_id" => match app::crash_reports(&text(0)) {
+            "crash_id" => match app::crash_reports(&text(0), &self.c.path) {
                 Ok(()) => Value::Unit,
                 Err(why) => return Err(fail(self, why)),
             },

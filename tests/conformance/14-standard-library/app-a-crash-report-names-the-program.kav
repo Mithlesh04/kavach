@@ -1,0 +1,26 @@
+// Rule: a crash report names the program by its main file without `.kav`, not by `kavach` or the executable's path.
+// Spec: 14.30
+// expect output: program: app-a-crash-report-names-the-program
+
+use std.app
+use std.fs
+
+fn crash(folder: String) -> Int ! AppError uses Fs.write {
+    try app.crash_reports(folder)
+    panic("boom")
+}
+
+fn main() ! Error uses Fs, Console {
+    const folder = "kavach-t-crash-names"
+    // The panic ends only the process it runs in (9.8), after its report.
+    const job = spawn process crash(folder)
+    const _n = job.wait() catch _ => 0
+    for name in try fs.list(folder) {
+        for line in (try fs.read_text(`{folder}/{name}`)).lines() {
+            if line.starts_with("program: ") {
+                print(line)
+            }
+        }
+    }
+    try fs.remove_all(folder)
+}

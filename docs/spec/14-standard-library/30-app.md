@@ -36,7 +36,13 @@ panic: index 5 is out of range: the list has 2 items
   in price_of (shop.kav:12)
   in total (shop.kav:7)
   in main (shop.kav:2)
+program: shop
+kavach: 0.1.0
+system: linux x86_64
+time: 1794950605 (seconds since 1970, UTC)
 ```
+
+The program is named by its main file without `.kav`, as `cli.parse`'s usage names it (14.6): `shop` for `shop.kav`, under `kavach run`, `kavach run --native` and in a built program alike, never `kavach` or the path of the executable.
 
 A built program finds them by walking its stack with the system's unwinder and a table of its functions that `kavach build` writes ([decision 0118](../../decisions/0118-app-folders-crash-reports-and-dialogs.md)), so they cost nothing until a panic. A function the compiler inlined into its caller has no frame of its own, so it isn't listed.
 
@@ -60,3 +66,4 @@ A built program finds them by walking its stack with the system's unwinder and a
 
 - The line of each call in the list, which needs line tables (debug info) in built programs.
 - File type filters in `open_file`.
+- The program's name in a crash report (chosen 2026-11-22, for a maintainer's review): its main file's name, as the usage of `cli.parse` gives it, so a project's report says `main`. Its package's `name` (10.4) would say more.

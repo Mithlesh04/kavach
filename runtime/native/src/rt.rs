@@ -111,6 +111,11 @@ pub fn set_path(table: &str) {
     let _ = FILES.set(files);
 }
 
+/// The program's main file, as messages show it: the first file.
+pub(crate) fn main_file() -> &'static str {
+    FILES.get().and_then(|f| f.first()).map_or("", |f| f.1.as_str())
+}
+
 /// The file and the line in it of line `line` of the program.
 pub(crate) fn location(line: i32) -> (&'static str, i32) {
     let files = FILES.get().map_or(&[][..], Vec::as_slice);

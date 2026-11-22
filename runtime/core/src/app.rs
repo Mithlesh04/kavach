@@ -74,8 +74,9 @@ pub fn folder(kind: Kind, name: &str) -> Result<String, String> {
     Ok(path.to_string_lossy().into_owned())
 }
 
-fn crash_folder() -> &'static Mutex<Option<PathBuf>> {
-    static FOLDER: OnceLock<Mutex<Option<PathBuf>>> = OnceLock::new();
+/// Where crash reports go, and the program's name they give.
+fn crash_folder() -> &'static Mutex<Option<(PathBuf, String)>> {
+    static FOLDER: OnceLock<Mutex<Option<(PathBuf, String)>>> = OnceLock::new();
     FOLDER.get_or_init(Mutex::default)
 }
 
@@ -103,10 +104,14 @@ pub fn running() -> Vec<String> {
 }
 
 /// From now on, a panic that ends the program writes a report into
-/// `folder`, which is made now.
-pub fn crash_reports(folder: &str) -> Result<(), String> {
+/// `folder`, which is made now. `main_file` is the program's main source
+/// file: the report names the program by it (spec 14.30).
+pub fn crash_reports(folder: &str, main_file: &str) -> Result<(), String> {
     std::fs::create_dir_all(folder).map_err(|e| format!("{folder} can't be made: {e}"))?;
-    *crash_folder().lock().unwrap_or_else(|e| e.into_inner()) = Some(PathBuf::from(folder));
+    let name = std::path::Path::new(main_file)
+        .file_stem()
+        .map_or("program".into(), |s| s.to_string_lossy().into_owned());
+    *crash_folder().lock().unwrap_or_else(|e| e.into_inner()) = Some((PathBuf::from(folder), name));
     Ok(())
 }
 
@@ -117,7 +122,7 @@ pub fn crash_reports(folder: &str) -> Result<(), String> {
 /// can't be written is let go: the panic is reported on the terminal
 /// anyway.
 pub fn report(message: &str, place: &str, running: &[String]) {
-    let Some(folder) = crash_folder()
+    let Some((folder, program)) = crash_folder()
         .lock()
         .unwrap_or_else(|e| e.into_inner())
         .clone()
@@ -126,7 +131,6 @@ pub fn report(message: &str, place: &str, running: &[String]) {
     };
     let secs = (std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH))
         .map_or(0, |d| d.as_secs());
-    let program = std::env::args().next().unwrap_or_default();
     let calls: String = running.iter().map(|f| format!("  in {f}\n")).collect();
     let text = format!(
         "panic: {message}\n  at {place}\n{calls}program: {program}\nkavach: {}\nsystem: {} {}\ntime: {secs} (seconds since 1970, UTC)\n",
