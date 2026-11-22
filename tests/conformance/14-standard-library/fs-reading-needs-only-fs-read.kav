@@ -1,7 +1,7 @@
-// Rule: reading calls (`read_text`, `read_bytes`, `lines`, `chunks`, `exists`, `list`, `info`, `watch`) need only `Fs.read`.
+// Rule: reading calls (`read_text`, `read_bytes`, `map`, `lines`, `chunks`, `exists`, `list`, `info`, `watch`) need only `Fs.read`.
 // Spec: 14.3, 8.1
 // expect output: true 2 File
-// expect output: 1 1 1 [] 0
+// expect output: 1 1 1 [] 0 2
 
 use std.fs
 
@@ -18,7 +18,7 @@ fn look(dir: String) -> String ! FsError uses Fs.read {
     }
     const w = try fs.watch(dir)
     const first = `{fs.exists(path)} {(try fs.read_text(path)).len()} {info.kind}`
-    `{first}\n{lines} {pieces} {(try fs.list(dir)).len()} {w.poll()} {(try fs.read_bytes(path)).len() - 2}`
+    `{first}\n{lines} {pieces} {(try fs.list(dir)).len()} {w.poll()} {(try fs.read_bytes(path)).len() - 2} {(try fs.map(path)).len()}`
 }
 
 fn main() ! FsError uses Fs, Console {

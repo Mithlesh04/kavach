@@ -16,6 +16,7 @@ pub(crate) fn std_op(module: &str, name: &str) -> Option<RtOp> {
         ("fs", "append_text") => RtOp::FsAppendText,
         ("fs", "exists") => RtOp::FsExists,
         ("fs", "read_bytes") => RtOp::FsReadBytes,
+        ("fs", "map") => RtOp::FsMap,
         ("fs", "lines") => RtOp::FsLines,
         ("net", "listen") => RtOp::NetListen,
         ("net", "connect") => RtOp::NetConnect,

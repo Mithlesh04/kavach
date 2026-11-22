@@ -143,6 +143,9 @@ pub enum Data {
     /// (`rt_files.rs`), whose buffer can become a list's (`rt_bytes.rs`).
     /// Boxed, so `Data` fits in 32 bytes.
     Words(Box<(Vec<u64>, usize)>),
+    /// Raw data in a file mapped into memory (`fs.map`, spec 14.3,
+    /// `rt_map.rs`).
+    Mapped(std::sync::Arc<crate::rt_map::Mapping>),
     /// A file read as a `for` loop goes (spec 14.3, `rt_files.rs`).
     Reader(crate::rt_files::Shared),
     /// A TCP listener or connection (spec 14.10, `rt_net.rs`): a

@@ -21,8 +21,14 @@ pub fn with_bytes<R>(p: i64, f: impl FnOnce(&[u8]) -> R) -> R {
     match &*crate::heap::data(p).borrow() {
         Data::Bytes(b) => f(b),
         Data::Words(w) => f(&words_as_bytes(&w.0)[..w.1]),
+        Data::Mapped(m) => f(m.bytes()),
         _ => f(&[]),
     }
+}
+
+/// A new `Bytes` object of type `ty` holding the mapped file `m`.
+pub fn new_mapped(m: std::sync::Arc<crate::rt_map::Mapping>, ty: Type) -> i64 {
+    alloc(ty, Data::Mapped(m))
 }
 
 /// A new `Bytes` object of type `ty` holding `len` bytes in `words`.
@@ -272,6 +278,7 @@ fn bytes_view(p: i64) -> (i64, i64) {
     match data {
         Data::Bytes(b) => (b.as_ptr() as i64, b.len() as i64),
         Data::Words(w) => (w.0.as_ptr() as i64, w.1 as i64),
+        Data::Mapped(m) => (m.bytes().as_ptr() as i64, m.bytes().len() as i64),
         _ => (0, 0),
     }
 }

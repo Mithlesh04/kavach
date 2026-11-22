@@ -174,6 +174,7 @@ pub fn std_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
             | RtOp::FsRemove
             | RtOp::FsCreateDir
             | RtOp::FsReadBytes
+            | RtOp::FsMap
             | RtOp::FsWriteBytes
             | RtOp::FsWriteDurable
     );
@@ -206,6 +207,13 @@ pub fn std_op(op: RtOp, a: i64, b: i64, code: i64, line: i32) -> i64 {
             match std::fs::read(&path) {
                 Ok(b) => crate::rt_bytes::new_bytes(b, type_of(code)),
                 Err(e) => fail("read", &path, e),
+            }
+        }
+        RtOp::FsMap => {
+            let path = text(a);
+            match crate::rt_map::map(&path) {
+                Ok(m) => crate::rt_bytes::new_mapped(m, type_of(code)),
+                Err(e) => fail("map", &path, e),
             }
         }
         RtOp::FsWriteBytes | RtOp::FsWriteDurable => {

@@ -1,0 +1,27 @@
+// Rule: `fs.map(path)` gives the file's contents as ordinary `Bytes`, and an empty file gives empty `Bytes`.
+// Spec: 14.3, 2.13
+// expect output: Bytes(00ff7f41)
+// expect output: 4 255 Bytes(ff7f) true
+// expect output: 0 true
+
+use std.fs
+
+fn look(path: String) -> String ! FsError uses Fs.read {
+    const data = try fs.map(path)
+    `{data}\n{data.len()} {data[1]} {data[1:3]} {data == Bytes([0, 255, 127, 65])}`
+}
+
+fn empty(path: String) -> String ! FsError uses Fs.read {
+    const data = try fs.map(path)
+    `{data.len()} {data.is_empty()}`
+}
+
+fn main() ! FsError uses Fs, Console {
+    const dir = "kavach-t-fs-map"
+    try fs.create_dir(dir)
+    try fs.write_bytes(`{dir}/a.bin`, Bytes([0, 255, 127, 65]))
+    try fs.write_bytes(`{dir}/empty.bin`, Bytes([]))
+    print(try look(`{dir}/a.bin`))
+    print(try empty(`{dir}/empty.bin`))
+    try fs.remove_all(dir)
+}

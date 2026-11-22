@@ -170,7 +170,8 @@ impl<'a> Interp<'a> {
                 };
                 return self.open_reader(&path, Some(size));
             }
-            ("fs", "read_bytes") => {
+            // The interpreter reads a mapped file whole (spec 14.3).
+            ("fs", "read_bytes" | "map") => {
                 let b = std::fs::read(&path).map_err(|e| self.fs_error(&path, e))?;
                 Value::Bytes(b.into())
             }

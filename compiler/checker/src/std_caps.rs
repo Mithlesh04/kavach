@@ -54,8 +54,8 @@ impl Checker<'_> {
                 ("window", "listen_id" | "lock_cursor_id") => "Input",
                 (
                     "fs",
-                    "read_text" | "read_bytes" | "lines" | "chunks" | "exists" | "list" | "stat"
-                    | "watch_open_id" | "watch_next_id" | "watch_poll_id",
+                    "read_text" | "read_bytes" | "map" | "lines" | "chunks" | "exists" | "list"
+                    | "stat" | "watch_open_id" | "watch_next_id" | "watch_poll_id",
                 ) => "Fs.read",
                 ("fs", _) => "Fs.write",
                 // Folders and crash reports make folders; a dialog is a window (14.30).

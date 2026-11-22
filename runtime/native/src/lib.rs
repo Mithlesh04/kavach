@@ -71,6 +71,7 @@ pub mod rt_json_tape;
 mod rt_json_write;
 mod rt_log;
 mod rt_machine;
+mod rt_map;
 pub mod rt_maps;
 mod rt_matrix;
 mod rt_memory;

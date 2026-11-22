@@ -30,12 +30,12 @@ kavach-kir = { path = "../../compiler/kir" }
 # Tasks as stackful coroutines (decision 0048).
 corosensei = "0.3"
 
-# Ctrl+C and SIGTERM (decision 0063).
+# Ctrl+C and SIGTERM (decision 0063); files mapped by `fs.map` (spec 14.3).
 [target.'cfg(unix)'.dependencies]
 libc = "0.2"
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.61", features = ["Win32_System_Console", "Win32_System_Diagnostics_Debug", "Win32_System_Kernel", "Win32_System_LibraryLoader", "Win32_Foundation"] }
+windows-sys = { version = "0.61", features = ["Win32_System_Console", "Win32_System_Diagnostics_Debug", "Win32_System_Kernel", "Win32_System_LibraryLoader", "Win32_Foundation", "Win32_System_Memory", "Win32_Security"] }
 
 [lints]
 workspace = true

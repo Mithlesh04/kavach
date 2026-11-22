@@ -35,6 +35,8 @@ ProcessFailed,
 FsReadBytes,
 FsWriteBytes,
 FsWriteDurable,
+/// `fs.map(path)` (spec 14.3): the file mapped into memory as `Bytes`.
+FsMap,
 /// Streamed reads (spec 14.3): opening (which can fail), and the next
 /// line or piece, an optional.
 FsLines,

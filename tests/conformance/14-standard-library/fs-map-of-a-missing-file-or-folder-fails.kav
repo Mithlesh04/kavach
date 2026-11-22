@@ -1,0 +1,23 @@
+// Rule: `fs.map` of a missing file fails with `NotFound`, and of a folder with `IsFolder`.
+// Spec: 14.3
+// Checks: misuse
+// expect output: not found
+// expect output: a folder
+
+use std.fs
+
+fn main() ! FsError uses Fs, Console {
+    const dir = "kavach-t-fs-map-fails"
+    try fs.create_dir(dir)
+    for path in [`{dir}/missing.bin`, dir] {
+        const _data = fs.map(path) catch e => {
+            match e {
+                fs.NotFound(_) => print("not found")
+                fs.IsFolder(_) => print("a folder")
+                _ => print(e)
+            }
+            Bytes([])
+        }
+    }
+    try fs.remove_all(dir)
+}

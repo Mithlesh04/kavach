@@ -81,6 +81,7 @@ impl RtOp {
                 | RtOp::TaskWait
                 | RtOp::TaskWaitFor
                 | RtOp::FsReadBytes
+                | RtOp::FsMap
                 | RtOp::FsWriteBytes
                 | RtOp::FsWriteDurable
                 | RtOp::FsLines

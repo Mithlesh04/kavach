@@ -154,7 +154,7 @@ impl<'a> Interp<'a> {
         let fail = |l: &Self, e: std::io::Error| Err(l.fs_error(&shown, e));
         let is_dir = || std::io::Error::other("is a folder");
         Ok(match name {
-            "read_text" | "read_bytes" | "lines" | "chunks" => {
+            "read_text" | "read_bytes" | "map" | "lines" | "chunks" => {
                 let data = match w.entry(&path) {
                     Entry::File(d) => d,
                     Entry::Folder => return fail(self, is_dir()),
@@ -162,7 +162,7 @@ impl<'a> Interp<'a> {
                 };
                 drop(w);
                 match name {
-                    "read_bytes" => Value::Bytes(data.into()),
+                    "read_bytes" | "map" => Value::Bytes(data.into()),
                     "read_text" => match String::from_utf8(data) {
                         Ok(s) => self.str_value(&s),
                         Err(_) => {
