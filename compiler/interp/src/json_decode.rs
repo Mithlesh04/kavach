@@ -9,14 +9,17 @@
 
 use crate::calls::Args;
 use crate::enums::is_carried;
+use crate::generics::subst;
 use crate::interp::Interp;
 use crate::map::MapValue;
 use crate::value::{Eval, Field, Flow, Value};
 use kavach_ast::{TypeBody, VariantValue};
 use kavach_checker::{Prim, Ty};
+use kavach_resolver::DefId;
 use kavach_runtime_core::Decimal;
 use kavach_runtime_core::json::dates::{self, Kind};
 use kavach_runtime_core::json::{self, Limits, Tree, expected, path_field, path_item};
+use std::collections::HashMap;
 use std::rc::Rc;
 
 type Decoded<'a> = Result<Value<'a>, Flow<'a>>;
@@ -299,7 +302,7 @@ impl<'a> Interp<'a> {
             }
             (Ty::Map(..), _) => wrong(expected::OBJECT),
             (Ty::Adt(def, _), _) if crate::json::is_json(*def) => Ok(self.json_value(t.clone())),
-            (Ty::Adt(def, _), _) => self.decode_type(t, *def, path),
+            (Ty::Adt(def, args), _) => self.decode_type(t, *def, args, path),
             _ => wrong(expected::OBJECT),
         }
     }
@@ -313,8 +316,10 @@ impl<'a> Interp<'a> {
     }
 
     /// A record or union value of type `def`.
-    fn decode_type(&mut self, t: &Tree, def: usize, path: &str) -> Decoded<'a> {
+    fn decode_type(&mut self, t: &Tree, def: usize, args: &[Ty], path: &str) -> Decoded<'a> {
         let name: Rc<str> = Rc::from(self.c.resolution.defs[def].name.as_str());
+        // `Box<Yes>`: its fields' `T` is `Yes` (spec 2.12).
+        let params = self.type_params(def, args);
         if let Some(decl) = self.records.get(&def).copied() {
             if let TypeBody::Record(r) = &decl.body
                 && let Some(kind) = Kind::of(&name, r.fields.iter().map(|f| &*f.name.name))
@@ -324,7 +329,7 @@ impl<'a> Interp<'a> {
             let (Tree::Object(given), TypeBody::Record(r)) = (t, &decl.body) else {
                 return self.problem(path, expected::OBJECT);
             };
-            let fields = self.decode_fields(given, &r.fields, def, path)?;
+            let fields = self.decode_fields(given, &r.fields, def, &params, path)?;
             return Ok(Value::Record {
                 def,
                 name,
@@ -364,7 +369,7 @@ impl<'a> Interp<'a> {
             .get(&variant.name.span.start)
             .copied()
             .unwrap_or(def);
-        let fields = self.decode_fields(&given, &variant.fields, owner, &at)?;
+        let fields = self.decode_fields(&given, &variant.fields, owner, &params, &at)?;
         let name = Rc::from(variant.name.name.as_str());
         let life = self.variant_life(def, &name, &fields);
         Ok(Value::Variant {
@@ -430,6 +435,7 @@ impl<'a> Interp<'a> {
         given: &[(String, Tree)],
         declared: &'a [kavach_ast::Field],
         owner: usize,
+        params: &HashMap<DefId, Ty>,
         path: &str,
     ) -> Result<Vec<Field<'a>>, Flow<'a>> {
         let mut out = Vec::with_capacity(declared.len());
@@ -443,7 +449,7 @@ impl<'a> Interp<'a> {
         }
         for f in declared {
             let name = f.name.name.as_str();
-            let ty = self.field_ty(owner, name);
+            let ty = self.field_ty(owner, name).map(|t| subst(&t, params));
             let at = path_field(path, name);
             let value = match (given.iter().find(|(k, _)| k == name), &f.default, &ty) {
                 (Some((_, t)), _, Some(ty)) => self.decode(t, ty, &at)?,

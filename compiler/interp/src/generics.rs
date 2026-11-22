@@ -29,6 +29,18 @@ impl<'a> Interp<'a> {
         subst(ty, generics)
     }
 
+    /// The type arguments `args` of the generic record or union `def`, by
+    /// its parameters: `Box<Yes>` puts `Yes` in for `Box`'s `T`.
+    pub(crate) fn type_params(&self, def: DefId, args: &[Ty]) -> HashMap<DefId, Ty> {
+        let decl = self.records.get(&def).or_else(|| self.unions.get(&def));
+        let Some(decl) = decl else {
+            return HashMap::new();
+        };
+        let params = decl.generics.iter();
+        let ids = params.filter_map(|g| self.decl.get(&g.name.span.start).copied());
+        ids.zip(args.iter().map(|a| self.concrete(a))).collect()
+    }
+
     /// The type arguments of the call `e` of generic function `f`.
     pub(crate) fn type_args(&self, f: &FnDecl, e: &Expr, args: &[Arg]) -> HashMap<DefId, Ty> {
         let mut out = HashMap::new();
@@ -193,7 +205,7 @@ impl<'a> Interp<'a> {
 }
 
 /// `ty` with `generics` put in for its generic parameters.
-fn subst(ty: &Ty, generics: &HashMap<DefId, Ty>) -> Ty {
+pub(crate) fn subst(ty: &Ty, generics: &HashMap<DefId, Ty>) -> Ty {
     let all = |ts: &[Ty]| ts.iter().map(|t| subst(t, generics)).collect();
     let one = |t: &Ty| Box::new(subst(t, generics));
     match ty {

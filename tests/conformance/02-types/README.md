@@ -27,6 +27,7 @@ The tests are listed in two files, by section:
 | 2.17 | [matrix-sizes-must-match.kav](matrix-sizes-must-match.kav) | A product whose inner sizes differ breaks `matmul`'s `require`. | panic |
 | 2.12 | [json-decode-of-a-generic-is-checked-where-it-is-used.kav](json-decode-of-a-generic-is-checked-where-it-is-used.kav) | `json.decode<T>` of a type parameter is a compile error at the generic call that gives it a type holding a function, through other generic functions too. | compile error |
 | 2.12 | [json-decode-in-a-generic-method-is-checked-where-it-is-used.kav](json-decode-in-a-generic-method-is-checked-where-it-is-used.kav) | A generic method reading its type parameter from JSON is checked at each call. | compile error |
+| 2.12 | [json-decode-fills-in-a-generic-type.kav](json-decode-fills-in-a-generic-type.kav) | `json.decode<Box<Yes>>` decodes a generic record or union with its type arguments put in for its parameters. | runs |
 | 2.12 | [json-schema-marks-secret-fields.kav](json-schema-marks-secret-fields.kav) | `json.schema<T>()` marks a `secret` field `"writeOnly": true`. | runs |
 | 2.2 | [push-needs-a-var.kav](push-needs-a-var.kav) | Methods that change a collection (`push`, `remove`) need a `let`. | compile error |
 | 2.2 | [lists-hold-any-text.kav](lists-hold-any-text.kav) | A list of text gives back every item as it was put in, short or long, ASCII or not, and copies of the list are independent. | runs |
