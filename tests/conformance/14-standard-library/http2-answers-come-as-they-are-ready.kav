@@ -10,7 +10,8 @@ use std.time
 
 fn handle(r: Request) -> Response uses Clock {
     if r.path == "/report" {
-        time.sleep(300.ms)
+        // Long enough that a busy machine still answers `/ping` first.
+        time.sleep(2.seconds)
     }
     http.text(200, r.path)
 }
