@@ -44,7 +44,7 @@ Lists, in addition to 2.2:
 | Method | Gives |
 |---|---|
 | `items.join(sep)` | For `[String]` and `[Char]`: the items with `sep` between them: `["a", "b"].join("-")` is `"a-b"` |
-| `items.sort()` | A sorted copy, for lists of values with an order (1.8): numbers, text, characters, `Bool` and tuples of them. `NaN` sorts after every number, here and in `sort_by`, `min` and `max`, so a list holding one still sorts |
+| `items.sort()` | A sorted copy, for lists of values with an order: every type `<` compares (1.8), which is numbers, text, characters, `Bool`, `Bytes`, and tuples, lists, rings and text views of them. `[[2, 1], [1, 9]].sort()` is `[[1, 9], [2, 1]]`. `NaN` sorts after every number, here and in `sort_by`, `min` and `max`, so a list holding one still sorts |
 | `items.sort_by(key)` | A copy sorted by `key(item)`, which must have an order (1.8); equal keys keep their order. A tuple sorts by several keys: `people.sort_by(p => (p.age, p.name))` |
 | `items.find(f)` | The first item where `f` is true, or `none` |
 | `items.find_index(f)`, `items.find_last_index(f)` | The position of the first item where `f` is true, or of the last, or `none` |
@@ -52,7 +52,7 @@ Lists, in addition to 2.2:
 | `items.count(f)` | How many items `f` is true for |
 | `items[start:end:step]` | A slice (2.19): items `start..end`, every `step`th, clamped to the list, as for text. `xs[:n]` is the first `n` items, `xs[n:]` all but them, and `xs[::-1]` a reversed copy. There are no `slice`, `take`, `skip` and `reverse` methods (2.19) |
 | `items.index_of(x)` | The position of the first `x`, or `none` |
-| `items.min()`, `items.max()` | The smallest or largest item, or `none` for an empty list |
+| `items.min()`, `items.max()` | The smallest or largest item, by the order of 1.8, or `none` for an empty list: `[[1, 2], [1]].min()` is `[1]` |
 | `items.pop()` | The last item, which it takes out of the list, or `none` for an empty list. It changes the list, so like `push` it needs a `let` (2.2), and it takes the item out in place when nothing else holds the list: `const top = stack.pop() ?? 0` |
 | `items.swap(i, j)` | Nothing: it swaps the items at `i` and `j` in place (2.2). It changes the list, so like `push` it needs a `let`; an index out of range panics, as `items[i]` does: `order.swap(0, 2)` |
 

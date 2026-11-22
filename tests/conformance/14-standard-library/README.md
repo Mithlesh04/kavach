@@ -278,3 +278,4 @@ The tests are listed in five files, by area:
 | 14.2 | [negative-counts-count-as-zero.kav](negative-counts-count-as-zero.kav) | A negative count or width counts as 0: `repeat` and `pad_left` don't panic on one, and a slice's computed negative end is before the start. | runs |
 | 14.2 | [text-methods-on-empty-text.kav](text-methods-on-empty-text.kav) | `"".lines()` is `[]`; an empty part is found at once: `contains("")` is true, `index_of("")` is 0. | runs |
 | 14.2 | [split-on-empty-text-panics.kav](split-on-empty-text-panics.kav) | `s.split("")` panics and says to use `chars()`. | panic |
+| 14.2, 1.8 | [sort-takes-every-ordered-type.kav](sort-takes-every-ordered-type.kav) | `sort`, `sort_by`, `min` and `max` take a list of any type `<` compares: lists, `Bytes` and text views too. | runs |

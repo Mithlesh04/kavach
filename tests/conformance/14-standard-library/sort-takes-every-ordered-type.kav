@@ -1,0 +1,17 @@
+// Rule: `sort`, `sort_by`, `min` and `max` take a list of any type `<` compares (1.8): lists, `Bytes` and text views too, not only numbers, text, characters, `Bool` and tuples.
+// Spec: 14.2, 1.8
+// expect output: [[1, 9], [2, 1], [2, 1, 0]]
+// expect output: [1, 5]
+// expect output: [1]
+// expect output: cherry
+// expect output: [[3], [2, 2]]
+
+fn main() {
+    print([[2, 1, 0], [1, 9], [2, 1]].sort())
+    const sorted = [Bytes([2]), Bytes([1, 5])].sort()
+    print(sorted[0].to_list())
+    print(([[1, 2], [1]].min() ?? []))
+    const words = "pear,cherry,fig".view().split(",")
+    print(words.min() ?? "".view())
+    print([[2, 2], [3]].sort_by(xs => [xs.len()]))
+}

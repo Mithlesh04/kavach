@@ -56,4 +56,5 @@ Each section is a file of its own: new sections go at the end, with the next num
 - 14.2: `xs.sum()`, `xs.mean()` and the others with no lambda, for a list of numbers, in place of `xs.mean(x => x)`.
 - 14.2: methods on dicts beyond `map_values` and `to_list` (`filter` by key or value, `sort_by` of the entries).
 - 14.2: `mean` or `median` in generic code, where the lambda gives a type parameter `N`. The result's type depends on `N` (a `Float` for whole numbers, `N` itself for floats and `Decimal`), and a generic function can't name it. Today the call's context or its type arguments say (`xs.mean<N, Float>(f)`), and nothing says it otherwise. A compile error asking for the type, always a `Float`, or a bound on `N`?
+- 14.2's sortable types (chosen 2026-11-22, for a maintainer's review): exactly the types 1.8 gives an order, so `sort`, `sort_by`, `min` and `max` take lists of lists, rings, `Bytes` and text views too, not only numbers, text, characters, `Bool` and tuples.
 - 14.2: `var` and `std` with a negative `correction:`, which divides by more than the count. Allowed, as NumPy allows a negative `ddof`, or a panic?
