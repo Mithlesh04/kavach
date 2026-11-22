@@ -52,12 +52,13 @@ kavach/
 │   ├── tracy/              spans shown live in Tracy, linked only with --tracy
 │   ├── dialog/             the system's dialogs for std.app, through rfd
 │   ├── process/            other programs for std.process, as trees (unsafe allowed, decision 0105)
+│   ├── matrix/             fixed-order and fast products for std.matrix (gemm)
 │   ├── native/             run-time library of native programs
 │   ├── unpack/             packed executables: the format and the C starter
-│   ├── memory/
-│   ├── tasks/
-│   ├── agents/
-│   └── durable/
+│   ├── memory/             empty for now (runtime/README.md says where the code is)
+│   ├── tasks/              empty for now
+│   ├── agents/             empty for now
+│   └── durable/            empty for now
 │
 ├── stdlib/                 standard library, written in Kavach
 │   ├── core/  collections/  text/  math/  time/

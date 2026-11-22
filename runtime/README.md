@@ -19,9 +19,9 @@ Code that is linked into every Kavach program and runs alongside it. Written in 
 | [matrix/](matrix/README.md) | The work of `std.matrix`: products in one fixed order, and fast ones through `gemm`, on flat lists of numbers (`kavach-runtime-matrix`, decision 0111) |
 | [native/](native/README.md) | The run-time library of native programs: heap values, printing, panics; linked into executables (`kavach-runtime-native`) |
 | [unpack/](unpack/README.md) | Packed executables: the format and the small C starter that unpacks a program built with `kavach build --compress` (`kavach-runtime-unpack`, decision 0081) |
-| `memory/` | Allocation, reference counting, arenas, cycle detection (debug) |
-| `tasks/` | Lightweight task scheduler and non-blocking I/O |
-| `agents/` | Enforces capabilities, limits and approvals at runtime; writes the audit log |
-| `durable/` | Checkpoints so agent handlers survive crashes and can pause for approvals |
+| `memory/` | Empty: kept for allocation, arenas and cycle detection (debug) if they move out of `native/` |
+| `tasks/` | Empty: the task scheduler lives in `core/` (`src/tasks.rs`), its native side in `native/` (`src/rt_tasks.rs`) |
+| `agents/` | Empty: agents' guards (limits, approvals, the audit log) live in `core/` (`src/agents.rs`) and `native/` (`src/rt_agents.rs`) |
+| `durable/` | Empty: the journal of durable handlers lives in `core/` (`src/journal.rs`) and `native/` (`src/rt_journal.rs`, `src/rt_replays.rs`) |
 
-**Status:** `core/`, `net/` and `native/` are in use. `native/` holds reference counting for now; it moves into `memory/` when arenas and cycle detection arrive. `memory/` and `tasks/` start in Phase 1; `agents/` and `durable/` in Phase 2.
+**Status:** every folder with a README is in use. Reference counting and the allocator live in `native/`; arenas are lowered by the compiler (`compiler/kir`). Tasks, agents and durable handlers were built in `core/`, so the interpreter and native code share them; the four empty folders are only places they could move to.

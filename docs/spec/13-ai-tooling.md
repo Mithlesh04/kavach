@@ -144,7 +144,9 @@ kavach context orders.refund      # so does this
 
 ## 13.10 Measuring it
 
-The claim must be measured, not assumed. `benchmarks/tokens/` holds realistic tasks done by an AI agent twice: once with plain file tools (read, search, write) and once with the Kavach tools.
+*Not built yet.* The benchmark arrives in Phase 3 (13.11).
+
+The claim must be measured, not assumed. `benchmarks/tokens/` will hold realistic tasks done by an AI agent twice: once with plain file tools (read, search, write) and once with the Kavach tools.
 
 | Task | Example |
 |---|---|
