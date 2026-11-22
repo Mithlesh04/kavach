@@ -269,7 +269,9 @@ impl<'a> Interp<'a> {
                 guard.unrecord(&check);
                 guard.audit(&check, &shown_result);
             }
-            Err(_) => {}
+            // A panic or a cancel: the call still counts, but it no
+            // longer holds a place (`held`, spec 8.3).
+            Err(_) => agent.guard.borrow_mut().let_go(&check),
         }
         result
     }

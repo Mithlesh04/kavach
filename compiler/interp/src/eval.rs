@@ -346,6 +346,14 @@ impl<'a> Interp<'a> {
                 }
                 None => Err(self.panic("`count` is only for `limit` rules", span)),
             },
+            // `held`: the calls under way, this one too (spec 8.3).
+            DefKind::Builtin if id.name == "held" => match self.totals.as_mut() {
+                Some(t) => {
+                    t.held = true;
+                    Ok(Value::Int(t.held_now + 1, Prim::Int))
+                }
+                None => Err(self.panic("`held` is only for `limit` rules", span)),
+            },
             // `tokens` in `limit Ai`: what the window's asks took, with
             // those under way counted as the settings say (spec 8.3).
             DefKind::Builtin if id.name == "tokens" => match self.totals.as_mut() {

@@ -117,8 +117,13 @@ impl Checker<'_> {
                 );
                 Ty::Error
             }
-            // `count` in a `limit` rule (spec 8.3).
-            DefKind::Builtin if matches!(self.res.defs[def].name.as_str(), "count" | "tokens") => {
+            // `count` and `held` in a `limit` rule (spec 8.3).
+            DefKind::Builtin
+                if matches!(
+                    self.res.defs[def].name.as_str(),
+                    "count" | "tokens" | "held"
+                ) =>
+            {
                 Ty::Prim(Prim::Int)
             }
             // `cost` in `limit Ai`: US dollars (spec 8.3).

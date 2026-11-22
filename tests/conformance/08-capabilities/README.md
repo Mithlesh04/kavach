@@ -24,6 +24,8 @@ Conformance tests for spec chapter [8. Capabilities and agents](../../../docs/sp
 | 8.8, 5.6 | [a-caught-panic-leaves-the-senders-values.kav](a-caught-panic-leaves-the-senders-values.kav) | After a send fails with a handler's panic, the sender goes on with all its own values as they were (on Windows, Cranelift's unwind tables once gave them back from the wrong slots). | runs |
 | 8.3 | [limits-refuse-calls.kav](limits-refuse-calls.kav) | A call that breaks a `limit` rule is not executed; it fails with `Denied`, naming the rule. | runs |
 | 8.3 | [limit-windows-count-calls-that-ran.kav](limit-windows-count-calls-that-ran.kav) | `sum(…)` and `count` count the calls that ran in the window, this one included. | runs |
+| 8.3 | [held-counts-calls-under-way.kav](held-counts-calls-under-way.kav) | `held <= n` counts the calls under way at once, this one included: a call past it is refused while the others run, and one made after they returned runs. | runs |
+| 8.3 | [held-takes-no-window.kav](held-takes-no-window.kav) | `held` counts calls under way now, so a rule with `held` takes no window. | compile error |
 | 8.3 | [approvals-need-a-person.kav](approvals-need-a-person.kav) | When an `approve` condition holds, a person must approve; with no one to ask the call is refused. | runs |
 | 8.3 | [limit-rules-are-typed-like-code.kav](limit-rules-are-typed-like-code.kav) | `limit` rules and `approve` conditions are checked like code, with the limited method's parameter types. | runs |
 | 8.7 | [secrets-stay-out-of-text.kav](secrets-stay-out-of-text.kav) | A secret can't be interpolated into text anywhere. | compile error |

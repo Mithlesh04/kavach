@@ -1,0 +1,27 @@
+// Rule: `held` counts calls under way now, so a rule with `held` takes no window.
+// Spec: 8.3
+// expect compile error
+
+type Report {
+    job: Int
+}
+type ToolError = Failed | Denied(reason: String)
+
+capability Tools {
+    fn simulate(job: Int) -> Report ! ToolError
+}
+
+agent Lab {
+    can Tools.simulate
+
+    limit Tools.simulate {
+        held <= 2 per day           // error: `held` takes no window
+    }
+
+    on run(job: Int) -> Report ! ToolError {
+        try Tools.simulate(job)
+    }
+}
+
+fn main() {
+}

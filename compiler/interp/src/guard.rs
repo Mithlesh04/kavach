@@ -61,6 +61,9 @@ pub(crate) struct Totals<'a> {
     /// Whether it read `cost`, and what `cost` reads (`Guard::cost`).
     pub(crate) cost: bool,
     pub(crate) cost_now: Option<Decimal>,
+    /// Whether it read `held`, and the calls under way it reads.
+    pub(crate) held: bool,
+    pub(crate) held_now: i128,
 }
 
 fn target_of(path: &Path) -> String {
@@ -191,6 +194,7 @@ impl<'a> Interp<'a> {
                 let (sum, count) = agent.guard.borrow_mut().totals(i);
                 let tokens_now = agent.guard.borrow_mut().tokens(i, &c);
                 let cost_now = agent.guard.borrow_mut().cost(i, &c);
+                let held_now = agent.guard.borrow().held(i);
                 self.totals = Some(Totals {
                     sum: sum.map(value_of),
                     count: i128::from(count),
@@ -200,6 +204,8 @@ impl<'a> Interp<'a> {
                     tokens_now: i128::from(tokens_now),
                     cost: false,
                     cost_now: Some(cost_now),
+                    held: false,
+                    held_now: i128::from(held_now),
                 });
                 let code = &agent.rules[i];
                 let ok = self.with_args(code.expr, &code.params, args);
@@ -211,6 +217,9 @@ impl<'a> Interp<'a> {
                 }
                 if totals.cost && !c.costs.contains(&i) {
                     c.costs.push(i);
+                }
+                if totals.held && !c.holds.contains(&i) {
+                    c.holds.push(i);
                 }
                 // `ask`s under way that may leave room: wait for their
                 // answers, then check again (spec 8.3).

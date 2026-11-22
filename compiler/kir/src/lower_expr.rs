@@ -379,6 +379,9 @@ impl<'a> Lowerer<'a> {
             Some(DefKind::Builtin) if id.name == "count" => self
                 .rule_count(line)
                 .ok_or_else(|| self.unsupported("`count` outside a `limit` rule", id.span)),
+            Some(DefKind::Builtin) if id.name == "held" => self
+                .rule_held(line)
+                .ok_or_else(|| self.unsupported("`held` outside a `limit` rule", id.span)),
             Some(DefKind::Builtin) if id.name == "tokens" => self
                 .rule_tokens(line)
                 .ok_or_else(|| self.unsupported("`tokens` outside a `limit` rule", id.span)),

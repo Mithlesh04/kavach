@@ -11,7 +11,7 @@
 use crate::Decimal;
 use crate::json::Tree;
 use std::path::PathBuf;
-use std::time::{Duration, Instant, SystemTime};
+use std::time::{Instant, SystemTime};
 
 /// How an agent's guard acts (spec 8.5).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -157,60 +157,6 @@ impl Asked {
     }
 }
 
-/// One limit rule: what it limits, how (as written), and the calls that
-/// ran inside its window with what `sum(…)` added for each.
-#[derive(Debug)]
-pub struct Rule {
-    /// `Payments.refund`, or `Ai` for a whole capability.
-    pub target: String,
-    /// `sum(amount) <= 100 per day`.
-    pub text: String,
-    window: Option<Duration>,
-    /// Each call's time on the steady clock (`steady_ms`), which is
-    /// negative for a call from before the program started; what it
-    /// added; and the id of a call still running (0 for one that ended).
-    history: Vec<(i64, Option<Num>, u64)>,
-}
-
-impl Rule {
-    /// A rule; `per` is its window's unit (`day`), if it has one.
-    pub fn new(target: &str, expr: &str, per: Option<&str>) -> Rule {
-        Rule {
-            target: target.to_string(),
-            text: match per {
-                Some(p) => format!("{expr} per {p}"),
-                None => expr.to_string(),
-            },
-            window: per.and_then(window),
-            history: Vec::new(),
-        }
-    }
-
-    /// The key its calls are kept under in the state file: what it limits
-    /// and how, so a rule that changed starts again from nothing.
-    fn key(&self) -> String {
-        format!("{}: {}", self.target, self.text)
-    }
-}
-
-fn window(per: &str) -> Option<Duration> {
-    let hour = 3600;
-    Some(Duration::from_secs(match per {
-        "minute" => 60,
-        "hour" => hour,
-        "day" => 24 * hour,
-        "week" => 7 * 24 * hour,
-        "month" => 30 * 24 * hour,
-        _ => return None,
-    }))
-}
-
-/// Whether a rule or approval for `target` covers a call of `call`
-/// (`Cap.method`): the method itself, or its whole capability.
-pub fn covers(target: &str, call: &str) -> bool {
-    target == call || call.split('.').next() == Some(target)
-}
-
 /// A started agent's guard.
 #[derive(Debug)]
 pub struct Guard {
@@ -262,6 +208,10 @@ pub struct Check {
     /// The calls counted when it started (`Guard::start`): each rule's
     /// index and the id of its entry.
     started: Vec<(usize, u64)>,
+    /// The rules that read `held`: the call holds a place in each while
+    /// it runs (spec 8.3), with the id it holds it by once started.
+    pub holds: Vec<usize>,
+    holding: Vec<(usize, u64)>,
 }
 
 impl Check {
@@ -329,6 +279,8 @@ impl Guard {
             cost_bound: Decimal::from_int(0),
             unpriced: None,
             started: Vec::new(),
+            holds: Vec::new(),
+            holding: Vec::new(),
         }
     }
 
@@ -419,12 +371,18 @@ impl Guard {
             self.rules[*i].history.push((now, x.clone(), id));
             c.started.push((*i, id));
         }
+        for &i in &c.holds {
+            let id = NEXT.fetch_add(1, Ordering::Relaxed);
+            self.rules[i].under_way.push(id);
+            c.holding.push((i, id));
+        }
         self.save_state();
     }
 
     /// The call ran: it counts, with what it added (an `ask`'s tokens are
     /// known only now), and the state file is written.
     pub fn record(&mut self, c: &Check) {
+        self.let_go(c);
         if c.started.is_empty() {
             let now = steady_ms();
             for (i, x) in &c.record {
@@ -441,6 +399,7 @@ impl Guard {
 
     /// The call failed: it no longer counts.
     pub fn unrecord(&mut self, c: &Check) {
+        self.let_go(c);
         for (i, id) in &c.started {
             self.rules[*i].history.retain(|e| e.2 != *id);
         }
@@ -481,10 +440,12 @@ pub(crate) fn unix_ms() -> i64 {
 }
 
 mod approvals;
+mod rules;
 pub use approvals::{
     Answer, AnswerError, DEFAULT_WAIT_MS, Step, answer_request, read_answer, request_fields,
     waiting,
 };
+pub use rules::{Rule, covers};
 mod audit;
 mod lock;
 pub use lock::{lock_folder, unlock_all};

@@ -136,6 +136,9 @@ impl Checker<'_> {
                     let on_ai = target.segments.first().is_some_and(|s| s.name == "Ai");
                     for r in rules {
                         self.ai_totals_in(&r.expr, on_ai);
+                        if r.per.is_some() {
+                            self.held_without_window(&r.expr);
+                        }
                         self.bind_rule_params(target, &r.expr);
                         self.with_ctx("limit", Ty::Unit, None, None, |c| {
                             c.check_expect(&r.expr, &bool_ty);
@@ -181,9 +184,8 @@ impl Checker<'_> {
         }
     }
 
-    /// `tokens` and `cost` in a rule: what `ask`s took counts only for
-    /// `Ai`, and a rule keeps one of the two (spec 8.3).
-    fn ai_totals_in(&mut self, e: &kavach_ast::Expr, on_ai: bool) {
+    /// The limit names `tokens`, `cost` and `held` used in rule `e`.
+    fn totals_in(&self, e: &kavach_ast::Expr) -> Vec<(kavach_ast::Span, String)> {
         let mut found = Vec::new();
         kavach_ast::visit::walk_expr(
             &mut TokensIn {
@@ -192,6 +194,27 @@ impl Checker<'_> {
             },
             &mut e.clone(),
         );
+        found
+    }
+
+    /// `held` counts calls under way now: a rule with it takes no window
+    /// (spec 8.3).
+    fn held_without_window(&mut self, e: &kavach_ast::Expr) {
+        for (span, name) in self.totals_in(e) {
+            if name == "held" {
+                self.error(
+                    span,
+                    "`held` counts the calls under way now: it takes no window, so write the rule without `per` (spec 8.3)",
+                );
+            }
+        }
+    }
+
+    /// `tokens` and `cost` in a rule: what `ask`s took counts only for
+    /// `Ai`, and a rule keeps one of the two (spec 8.3).
+    fn ai_totals_in(&mut self, e: &kavach_ast::Expr, on_ai: bool) {
+        let mut found = self.totals_in(e);
+        found.retain(|(_, n)| n != "held");
         if on_ai {
             let both =
                 found.iter().any(|(_, n)| n == "tokens") && found.iter().any(|(_, n)| n == "cost");
@@ -253,7 +276,7 @@ impl Checker<'_> {
     }
 }
 
-/// The uses of the limit names `tokens` and `cost` in a rule.
+/// The uses of the limit names `tokens`, `cost` and `held` in a rule.
 struct TokensIn<'r, 'f> {
     res: &'r kavach_resolver::Resolution,
     found: &'f mut Vec<(kavach_ast::Span, String)>,
@@ -267,7 +290,7 @@ impl kavach_ast::visit::VisitMut for TokensIn<'_, '_> {
                 .uses
                 .get(&id.span.start)
                 .is_some_and(|d| self.res.defs[*d].kind == kavach_resolver::DefKind::Builtin);
-            if builtin && matches!(id.name.as_str(), "tokens" | "cost") {
+            if builtin && matches!(id.name.as_str(), "tokens" | "cost" | "held") {
                 self.found.push((id.span, id.name.clone()));
             }
         }

@@ -72,10 +72,37 @@ Inside a `limit` block, the arguments of the limited method are in scope by name
 | `amount <= 10_000` | Every single call must satisfy this |
 | `sum(amount) <= 50_000 per day` | Total across calls in the window |
 | `count <= 100 per day` | Number of calls in the window |
+| `held <= 8` | Number of calls under way at once, this one included: a call holds its place from when it starts until it returns or fails. For licence seats, GPU slots and database connections. It takes no window: `held <= 8 per day` is a compile error. |
 | `tokens <= 200_000 per day` | In `limit Ai`: the tokens (in and out) the window's earlier `ask`s took, with those still waiting for their answer counted as the agent's settings say (below). Once they pass the limit, the next `ask` is refused; the one that crosses it still runs, since an answer's size is known only after it. Anywhere else, `tokens` is a compile error. |
 | `cost <= 5.00 per day` | In `limit Ai`: the US dollars the window's earlier `ask`s cost, worked out from each model's price (8.4, *Prices*), with those still waiting counted as for `tokens`. The one that crosses the limit still runs, as with `tokens`, and the refusal of the next one says so. An `ask` whose list has a model with no known price is refused, never counted as free. Anywhere else, `cost` is a compile error. |
 
 Windows: `per minute`, `per hour`, `per day`, `per week`, `per month`.
+
+**`held`** counts calls under way, not calls made. Tasks (9.1) let a handler make many calls at once; a ninth call while eight run is refused with `Denied`, `limit broken: held <= 8`, and a call after one of them returned may run:
+
+```kavach
+agent Simulator {
+    can Tools.simulate
+
+    limit Tools.simulate {
+        held <= 8                       // 8 licence seats
+    }
+
+    on run(jobs: [Job]) -> [Report] ! Error {
+        let tasks: [Task<Report>] = []
+        for j in jobs {
+            tasks.push(spawn Tools.simulate(j))
+        }
+        let reports: [Report] = []
+        for t in tasks {
+            reports.push(try t.wait())
+        }
+        reports
+    }
+}
+```
+
+Calls under way end with the program, so the state file (8.5) keeps none: after a restart, `held` starts from nothing.
 
 Windows are rolling, not calendar periods. Before each call, a limit counts the calls of the last 60 seconds (`per minute`), 1 hour, 24 hours (`per day`), 7 days (`per week`) or 30 days (`per month`). Time is measured on a clock that never jumps, so time zones, daylight saving time and the lengths of months don't change a window: `per day` never resets at midnight. With a state file (8.5), each call is saved with its time in UTC, so the windows carry on across restarts, a reboot of the machine too. A saved call the clock says is still to come (the clock was set back while the program was down) counts as made just now, so a limit never loosens. A clock set forward while the program was down does the opposite: saved calls look older and can leave their window early, and nothing on the machine can tell such a jump from time passing ([decision 0062](../../decisions/0062-crashes-restarts-and-clocks.md)).
 

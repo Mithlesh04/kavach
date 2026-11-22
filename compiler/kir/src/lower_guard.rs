@@ -414,6 +414,13 @@ impl<'a> Lowerer<'a> {
         Some(rt(RtOp::AgentCount, args, Type::I64, line))
     }
 
+    /// `held` in a `limit` rule: the calls under way, this one too.
+    pub(crate) fn rule_held(&self, line: u32) -> Option<ir::Expr> {
+        let (check, rule) = self.agents.rule?;
+        let args = vec![self.local_expr(check, line), int(rule, line)];
+        Some(rt(RtOp::AgentHeld, args, Type::I64, line))
+    }
+
     /// `tokens` in a `limit Ai` rule: what the window's earlier asks took.
     /// A rule's verdict (`report`: the check, the rule, its value), while
     /// no earlier rule refused: 0 passes, 1 refuses (into `refused`), 2

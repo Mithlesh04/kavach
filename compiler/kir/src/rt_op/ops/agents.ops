@@ -84,3 +84,6 @@ AiSpent,
 /// the decoding templates of `Count`; waits, can fail
 /// (`runtime/native/src/rt_ai_count.rs`).
 AiCount,
+/// `held` in a `limit` rule (spec 8.3): the call being checked and the
+/// rule; gives the calls under way that hold a place, this one too.
+AgentHeld,

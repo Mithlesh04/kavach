@@ -167,6 +167,13 @@ pub fn agent_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             p.used = true;
             s.guard.totals(b as usize).1 + 1
         }),
+        // `held`: the calls under way, this one too (spec 8.3).
+        RtOp::AgentHeld => with_pending(a, |p, s| {
+            if !p.check.holds.contains(&(b as usize)) {
+                p.check.holds.push(b as usize);
+            }
+            s.guard.held(b as usize) + 1
+        }),
         RtOp::AgentTokens
         | RtOp::AgentLimit
         | RtOp::AgentBound
