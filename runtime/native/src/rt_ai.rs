@@ -30,20 +30,20 @@ pub(crate) fn take_last() -> Option<(kavach_runtime_core::agents::Asked, i64)> {
     LAST.with(|l| l.borrow_mut().take())
 }
 
-/// Native code's side of an `ask`.
-struct Asking {
+/// Native code's side of an `ask`, or of a count.
+pub(crate) struct Asking {
     /// The `fn(String) -> String` closure `wire` gave for each model's
     /// provider, in the order the models are tried.
-    wires: Vec<i64>,
-    ty: Type,
-    templates: i64,
-    line: i32,
+    pub(crate) wires: Vec<i64>,
+    pub(crate) ty: Type,
+    pub(crate) templates: i64,
+    pub(crate) line: i32,
     /// `ty` is `Asked<T>` (`ai.ask_full`): an answer fits as its `value`.
-    full: bool,
+    pub(crate) full: bool,
 }
 
 /// The task was cancelled while it waited.
-struct Cancelled;
+pub(crate) struct Cancelled;
 
 impl ai::Side for Asking {
     type Value = u64;
@@ -151,6 +151,7 @@ pub fn ask(pair: i64, request: i64, templates: i64, code: i64, line: i32) -> i64
             .collect(),
         usage: asked.usage,
         cost: asked.cost.clone(),
+        counted: false,
     };
     let took = i64::try_from(asked.tokens.input + asked.tokens.output).unwrap_or(i64::MAX);
     LAST.with(|l| *l.borrow_mut() = Some((shown, took)));
@@ -193,6 +194,7 @@ crate::rt_data::entry!(kv_rt_ai, |op, a, b, c, code, line| {
             let spent = kavach_runtime_core::agents::costs::spent_json(&agent);
             new_text(&spent, type_of(code))
         }
+        kavach_kir::RtOp::AiCount => crate::rt_ai_count::count(a, b, c, code, line),
         _ => ask(a, b, c, code, line),
     }
 });

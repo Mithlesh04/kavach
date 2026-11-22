@@ -4,10 +4,10 @@
 
 // std.ai (spec 8.4): the error `ask<T>` fails with, the `Model` it asks,
 // the `Provider` interface that translates an `ask` into one provider's
-// API (decision 0140), and what an `ask` took and cost. Sending, keys,
-// retries, gates and limits are the runtime's. `Anthropic`, the default
-// provider, is in `std.ai.anthropic`, and `wire` is how the runtime calls
-// a provider.
+// API (decision 0140), what an `ask` took and cost, and a prompt's
+// tokens counted before it is sent. Sending, keys, retries, gates and
+// limits are the runtime's. `Anthropic`, the default provider, is in
+// `std.ai.anthropic`, and `wire` is how the runtime calls a provider.
 
 use std.json
 use std.ai
@@ -130,6 +130,14 @@ pub interface Provider {
     /// The price of a model's tokens; none: not known. Worked out when
     /// the program is built, as `check` is (spec 8.4, *Prices*).
     fn price(self, model: String) -> Price?
+    /// The request that counts a call's input tokens; none: the provider
+    /// has no counting call (`ai.count`, spec 8.4).
+    fn count_request(self, call: AskCall) -> HttpCall?
+    /// The count in that request's reply; none: the reply has none, and
+    /// `read` says why.
+    fn read_count(self, call: AskCall, reply: HttpReply) -> Int?
+    /// A count made without the network; none: no way to make one.
+    fn estimate(self, call: AskCall) -> Estimate?
 }
 
 /// One `ask`, as the provider sees it.
@@ -221,6 +229,36 @@ pub type Cost: Display {
     }
 }
 
+/// A count of tokens made without the network, and how it was made
+/// (spec 8.4, *Counting tokens before sending*).
+pub type Estimate {
+    pub tokens: Int
+    /// how it was made, for the note of a count: "about 4 characters a
+    /// token"
+    pub how: String
+}
+
+/// A prompt's input tokens, counted before it is sent (`ai.count`, spec
+/// 8.4), and how far to trust the count.
+pub type Count: Display {
+    pub tokens: Int
+    /// true: the provider counted them; false: an estimate made without
+    /// the network
+    pub exact: Bool
+    /// how far to trust it
+    pub note: String
+
+    /// `412 tokens (counted by the provider)`, or `about 103 tokens
+    /// (estimate: about 4 characters a token)`.
+    pub fn display(self) -> String
+        example Count(tokens: 412, exact: true, note: "counted by the provider").display() == "412 tokens (counted by the provider)"
+        example Count(tokens: 3, exact: false, note: "estimate").display() == "about 3 tokens (estimate)"
+    {
+        const about = if self.exact { "" } else { "about " }
+        `{about}{self.tokens} tokens ({self.note})`
+    }
+}
+
 /// An answer, with what it took (`ai.ask_full<T>`, spec 8.4).
 pub type Asked<T> {
     pub value: T
@@ -268,7 +306,8 @@ type WireModel {
 }
 
 /// What the runtime asks of a provider: `op` is `check`, `price`,
-/// `request` or `read`; a reply's fields come with `read`.
+/// `request`, `read`, `count_request`, `read_count` or `estimate`; a
+/// reply's fields come with `read` and `read_count`.
 type WireIn {
     op: String
     prompt?: String
@@ -330,7 +369,21 @@ fn wire(given: Provider?, settings: String) -> fn(String) -> String {
             return json.stringify(WireOut(url: r.url, headers: r.headers, body: r.body,
                 auth: p.auth(model), key_variable: p.key_variable()))
         }
+        // Counting a prompt's tokens (`ai.count`, spec 8.4).
+        if w.op == "count_request" {
+            if let r = p.count_request(call) {
+                return json.stringify(WireOut(url: r.url, headers: r.headers, body: r.body,
+                    auth: p.auth(model), key_variable: p.key_variable()))
+            }
+            return "null"
+        }
+        if w.op == "estimate" {
+            return json.stringify(p.estimate(call))
+        }
         const reply = HttpReply(status: w.status ?? 0, headers: w.headers ?? {:}, body: w.body ?? "")
+        if w.op == "read_count" {
+            return json.stringify(p.read_count(call, reply))
+        }
         json.stringify(p.read(call, reply))
     }
 }

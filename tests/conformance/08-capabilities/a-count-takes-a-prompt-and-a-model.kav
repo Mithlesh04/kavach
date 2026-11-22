@@ -1,0 +1,10 @@
+// Rule: `ai.count` takes one prompt and, like `ask`, an optional `model:`; any other option is a compile error.
+// Spec: 8.4
+// expect compile error
+
+use std.ai
+
+fn main() {
+    const n = ai.count("Refund?", effort: Effort.High) catch _e => Count(tokens: 0, exact: false, note: "")      // error: `ai.count` has no option `effort`
+    print(n)
+}

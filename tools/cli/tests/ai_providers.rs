@@ -144,6 +144,9 @@ type Plain: Provider {
         }
     }
     fn price(self, model: String) -> Price? { none }
+    fn count_request(self, call: AskCall) -> HttpCall? { none }
+    fn read_count(self, call: AskCall, reply: HttpReply) -> Int? { none }
+    fn estimate(self, call: AskCall) -> Estimate? { none }
 }
 
 fn plain() -> Model {

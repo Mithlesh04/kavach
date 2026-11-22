@@ -1,0 +1,17 @@
+// Rule: `ai.count` needs the `Ai` capability: an agent that doesn't list it can't count.
+// Spec: 8.4
+// expect compile error
+
+use std.ai
+
+agent Sizer {
+    can Fs
+    on size(text: String) -> Int ! Error {
+        const n = try ai.count(text)      // error: the handler `size` uses Ai, but the agent `Sizer` can't
+        n.tokens
+    }
+}
+
+fn main() {
+    print("never runs")
+}

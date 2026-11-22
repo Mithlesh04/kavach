@@ -4,7 +4,8 @@
 
 // std.ai.anthropic (spec 8.4, decision 0140): `Anthropic`, the provider
 // of every `Model` that names none, written against `std.ai`'s
-// `Provider` like any other provider, with Anthropic's prices.
+// `Provider` like any other provider, with Anthropic's prices and its
+// token counting endpoint.
 
 use std.json
 
@@ -47,12 +48,7 @@ pub type Anthropic: Provider {
     pub fn request(self, call: AskCall) -> HttpCall
         example Anthropic().request(AskCall(model: Model(name: "m"), prompt: "p", schema: Json.Null, strict: false)).url == "https://api.anthropic.com/v1/messages"
     {
-        let base = call.model.api_url ?? "https://api.anthropic.com"
-        while base.ends_with("/") {
-            base = base[:base.len() - 1]
-        }
-        const headers = {"anthropic-version": "2023-06-01", "content-type": "application/json"}
-        HttpCall(url: base + "/v1/messages", headers: headers, body: json.stringify(anthropic_body(call)))
+        anthropic_call(call, "/v1/messages", false)
     }
 
     pub fn read(self, call: AskCall, reply: HttpReply) -> Reply {
@@ -84,6 +80,46 @@ pub type Anthropic: Provider {
     {
         anthropic_prices().get(model)
     }
+
+    /// Anthropic's token counting endpoint (spec 8.4): free, with rate
+    /// limits apart from the Messages API's.
+    pub fn count_request(self, call: AskCall) -> HttpCall?
+        example Anthropic().count_request(AskCall(model: Model(name: "m"), prompt: "p", schema: Json.Null, strict: false))?.url == "https://api.anthropic.com/v1/messages/count_tokens"
+    {
+        anthropic_call(call, "/v1/messages/count_tokens", true)
+    }
+
+    /// `input_tokens` of a 200 reply; none for any other.
+    pub fn read_count(self, call: AskCall, reply: HttpReply) -> Int?
+        example Anthropic().read_count(AskCall(model: Model(name: "m"), prompt: "p", schema: Json.Null, strict: false), HttpReply(status: 200, headers: {:}, body: `\{"input_tokens": 14}`)) == 14
+    {
+        if reply.status != 200 {
+            return none
+        }
+        const doc = json.parse(reply.body) catch e => Json.Null
+        doc.get("input_tokens").int()
+    }
+
+    /// One token for every 4 characters of the prompt and the
+    /// instructions, rounded up: a rough guide, for a provider that wraps
+    /// this one and has no counting call (spec 8.4).
+    pub fn estimate(self, call: AskCall) -> Estimate?
+        example Anthropic().estimate(AskCall(model: Model(name: "m"), prompt: "Refund order 7?", schema: Json.Null, strict: false))?.tokens == 4
+    {
+        const characters = call.prompt.len() + (call.model.instructions ?? "").len()
+        Estimate(tokens: (characters + 3) / 4, how: "about 4 characters a token")
+    }
+}
+
+/// A request to `path` at the `Model`'s `api_url`, or Anthropic's own
+/// address; `counting`: for the token counting endpoint.
+fn anthropic_call(call: AskCall, path: String, counting: Bool) -> HttpCall {
+    let base = call.model.api_url ?? "https://api.anthropic.com"
+    while base.ends_with("/") {
+        base = base[:base.len() - 1]
+    }
+    const headers = {"anthropic-version": "2023-06-01", "content-type": "application/json"}
+    HttpCall(url: base + path, headers: headers, body: json.stringify(anthropic_body(call, counting)))
 }
 
 /// Anthropic's prices in US dollars per million tokens: base input,
@@ -132,12 +168,16 @@ fn anthropic_trouble(status: Int, kind: String) -> Trouble
 }
 
 /// The body of Anthropic's request: the model, the prompt, and each
-/// setting the `Model` gives.
-fn anthropic_body(call: AskCall) -> Json {
+/// setting the `Model` gives. The counting endpoint's (`counting`) has
+/// no `max_tokens` or `stop_sequences`, and no `extra`, which may hold
+/// fields it refuses (spec 8.4).
+fn anthropic_body(call: AskCall, counting: Bool) -> Json {
     const m = call.model
     let fields: {String: Json} = {:}
     fields["model"] = Json.Text(value: m.name)
-    fields["max_tokens"] = Json.Number(digits: `{m.max_tokens ?? 4096}`)
+    if not counting {
+        fields["max_tokens"] = Json.Number(digits: `{m.max_tokens ?? 4096}`)
+    }
     const message = {"role": Json.Text(value: "user"), "content": Json.Text(value: call.prompt)}
     fields["messages"] = Json.Array(items: [Json.Object(fields: message)])
     let config: {String: Json} = {:}
@@ -160,6 +200,9 @@ fn anthropic_body(call: AskCall) -> Json {
         fields["system"] = Json.Text(value: s)
     }
     const stop = m.stop ?? []
+    if counting {
+        return Json.Object(fields: fields)
+    }
     if not stop.is_empty() {
         fields["stop_sequences"] = Json.Array(items: stop.map(t => Json.Text(value: t)))
     }

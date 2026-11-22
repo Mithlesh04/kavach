@@ -200,6 +200,53 @@ impl<'a> Lowerer<'a> {
         Ok(rt(RtOp::AiAsk, vec![pair, request, templates], ret, line))
     }
 
+    /// `ai.count(prompt)` (spec 8.4): the runtime's count, with the model
+    /// of each agent that can use `Ai`, chosen by the agent running when
+    /// it is called, then the model for no agent; or only the call's own
+    /// `model:`. A list counts with its first model.
+    pub(crate) fn count_call(
+        &mut self,
+        span: ast::Span,
+        prompt: &'a ast::Expr,
+        line: u32,
+    ) -> Lowered<ir::Expr> {
+        let Some(Ty::Result(ok, _)) = self.c.expr_types.get(&(span.start, span.end)).cloned()
+        else {
+            return Err(self.unsupported("this `ai.count`", span));
+        };
+        let ret = self.kir_type(&ok, span)?;
+        // The runtime makes its errors as `AiError` values.
+        self.ai_error_type(span)?;
+        let call = (span.start, span.end);
+        let (mut kinds, mut models) = (Vec::new(), Vec::new());
+        if !self.c.ask_models.contains_key(&call) {
+            for (kind, (agent, adecl)) in self.agents.list.clone().into_iter().enumerate() {
+                if can_call(adecl, "Ai.count") {
+                    let name = self.c.resolution.defs[agent].name.clone();
+                    kinds.push(Tree::Int(kind as i64));
+                    models.push(self.c.ask_model(call, Some(&name)));
+                }
+            }
+        }
+        kinds.push(Tree::Int(-1));
+        models.push(self.c.ask_model(call, None));
+        let settings = models.iter().map(kavach_driver::model_settings);
+        let fields = vec![
+            ("kinds".into(), Tree::Array(kinds)),
+            ("models".into(), Tree::Array(settings.collect())),
+        ];
+        let request = json::write(&Tree::Object(fields), 0);
+        let mut given = vec![self.expr(prompt)?];
+        for m in &models {
+            given.push(self.provider_wire(m, span)?);
+        }
+        let pair_ty = self.tuple_type(given.iter().map(|e| e.ty).collect());
+        let pair = expr(K::Tuple(given), pair_ty, line);
+        let request = expr(K::Str(request), self.str_type(), line);
+        let templates = self.templates(ret, line, span)?;
+        Ok(rt(RtOp::AiCount, vec![pair, request, templates], ret, line))
+    }
+
     /// `wire(provider, settings)` from `std.ai`: a `fn(String) -> String`
     /// that translates with `model`'s provider, `none` giving
     /// `Anthropic()`. The provider's expression is a constructor written

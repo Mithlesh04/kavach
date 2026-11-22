@@ -119,6 +119,7 @@ agent Reviewer {
 - **A cost the reply didn't give** (no input or output count) counts as 0, as `tokens` counts it.
 - **The refusal says why it may have been passed:** `limit broken: cost <= 5.00 per day (about $5.0213 so far: the ask that crosses a limit still runs, and costs are estimates)`, with what the window's `ask`s cost.
 - A rule reads `tokens` or `cost`, not both: `tokens <= 1_000 and cost <= 1.00` is a compile error that says to write two rules.
+- **Counting a prompt's tokens** (`ai.count`, 8.4) is not an `ask`: it is free, so no rule of `limit Ai`, `count` included, counts or refuses it, and `approve` doesn't apply to it (for a maintainer's review).
 
 ### `approve`: a person decides
 

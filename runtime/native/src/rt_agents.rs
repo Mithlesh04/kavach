@@ -291,7 +291,7 @@ pub fn agent_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
     }
 }
 
-fn with_agent<R>(handle: usize, f: impl FnOnce(&mut Started) -> R) -> R {
+pub(crate) fn with_agent<R>(handle: usize, f: impl FnOnce(&mut Started) -> R) -> R {
     let mut started = STARTED.lock().unwrap_or_else(|e| e.into_inner());
     f(&mut started[handle])
 }

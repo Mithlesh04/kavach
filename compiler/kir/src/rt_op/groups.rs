@@ -102,6 +102,7 @@ impl RtOp {
                 | RtOp::ChanTakeFor
                 | RtOp::ChanPutFor
                 | RtOp::AiAsk
+                | RtOp::AiCount
                 | RtOp::NetConnectQuic
                 | RtOp::NetOpenStream
                 | RtOp::NetWriteStream
@@ -208,7 +209,7 @@ impl RtOp {
             // Numbers with bits or a range (spec 2.1): only programs
             // with them link their checks.
             "kv_rt_whole"
-        } else if matches!(self, RtOp::AiAsk | RtOp::AiSpent) {
+        } else if matches!(self, RtOp::AiAsk | RtOp::AiSpent | RtOp::AiCount) {
             "kv_rt_ai"
         } else {
             "kv_rt"

@@ -1,0 +1,14 @@
+// Rule: `Anthropic()` counts tokens with Anthropic's token counting endpoint: the Messages request without `max_tokens`, `stop_sequences` and `extra`.
+// Spec: 8.4
+// expect output: https://api.anthropic.com/v1/messages/count_tokens
+// expect output: {"model":"claude-sonnet-5-5","messages":[{"role":"user","content":"Refund?"}],"output_config":{"effort":"high"},"system":"Be brief."}
+
+fn main() {
+    const m = Model(name: "claude-sonnet-5-5", effort: Effort.High, max_tokens: 300,
+        instructions: "Be brief.", stop: ["END"], extra: `\{"metadata": \{"user_id": "shop-7"}}`)
+    const call = AskCall(model: m, prompt: "Refund?", schema: Json.Null, strict: false)
+    if let r = Anthropic().count_request(call) {
+        print(r.url)
+        print(r.body)
+    }
+}

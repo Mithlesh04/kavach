@@ -354,16 +354,7 @@ impl Try<'_> {
         i: usize,
         sending: &send::Sending,
     ) -> Result<Result<wire::Reply, Failure>, S::Stop> {
-        let pending = sending.start();
-        let mut n = 0;
-        let sent = loop {
-            if let Some(s) = pending.poll() {
-                break s;
-            }
-            side.wait_until(Instant::now() + crate::net::backoff(n))?;
-            n += 1;
-        };
-        Ok(match sent {
+        Ok(match sent(side, sending)? {
             send::Sent::Reply(status, headers, body) => {
                 let mut fields = self.input("read");
                 fields.push(("status".into(), Tree::Int(status)));
@@ -378,10 +369,27 @@ impl Try<'_> {
     }
 }
 
+/// Sends `sending` once, on a helper thread, and waits for what came
+/// back, letting other tasks run.
+fn sent<S: Side>(side: &mut S, sending: &send::Sending) -> Result<send::Sent, S::Stop> {
+    let pending = sending.start();
+    let mut n = 0;
+    loop {
+        if let Some(s) = pending.poll() {
+            return Ok(s);
+        }
+        side.wait_until(Instant::now() + crate::net::backoff(n))?;
+        n += 1;
+    }
+}
+
 mod compact;
+mod count;
 mod gate;
 mod send;
 mod wire;
+
+pub use count::{Counted, count};
 
 #[cfg(test)]
 mod tests;

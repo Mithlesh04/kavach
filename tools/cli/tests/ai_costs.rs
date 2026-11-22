@@ -56,6 +56,9 @@ type ShopAi: Provider {
     fn auth(self, model: Model) -> Auth { self.base.auth(model) }
     fn request(self, call: AskCall) -> HttpCall { self.base.request(call) }
     fn read(self, call: AskCall, reply: HttpReply) -> Reply { self.base.read(call, reply) }
+    fn count_request(self, call: AskCall) -> HttpCall? { self.base.count_request(call) }
+    fn read_count(self, call: AskCall, reply: HttpReply) -> Int? { self.base.read_count(call, reply) }
+    fn estimate(self, call: AskCall) -> Estimate? { self.base.estimate(call) }
 }
 
 fn main() {

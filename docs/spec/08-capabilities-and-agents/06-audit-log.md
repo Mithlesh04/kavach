@@ -39,6 +39,15 @@ Each `ask` that reached a model has a `cost:` line after its `model:` lines, wit
   cost: not known (no price for gpt-5.5)
 ```
 
+A count of a prompt's tokens (`ai.count`, 8.4) is a call too (`Ai.count`). Its `model:` line names the model counted for, and its result is the count, so a count made offline says so; it takes no tokens and has no `cost:` line:
+
+```
+2026-11-04T22:40:11Z Reviewer request#3 ai.count("Review this clause: …")
+  verdict: allowed
+  model: claude-opus-5-5
+  result: ok 412 tokens (counted by the provider)
+```
+
 Under `kavach run --dry-run` (8.5), no model is asked, and the line says which one a real run would use: `model: claude-opus-5-5 (dry run: no tokens)`. So each call's model can be checked before a run that costs.
 
 With `Audit(format: AuditFormat.JsonLines)` in the agent's settings, each entry is one JSON object on a line of its own instead, for log shippers (Vector, Fluent Bit, the OpenTelemetry Collector's file receiver): `time`, `agent`, `request`, `call`, `shown`, `verdict`, then `model`, `input_tokens`, `output_tokens` and `cost` for an `ask`, and `result`. `cost` is `{"dollars": "0.003568", "note": "estimate: …"}`, the dollars as text so no digit is lost, or `{"unknown": "no price for gpt-5.5"}`. An `ask` that moved on from a model has `moved_on` before `model`, a list with one `{"model": …, "error": …}` for each.

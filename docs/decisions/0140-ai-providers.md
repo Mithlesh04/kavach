@@ -317,7 +317,7 @@ Options considered: **the counting call, else an estimate** (chosen); **offline 
 
 The first part was built on 2026-11-20: the `Provider` interface, `Anthropic`'s adapter rewritten in Kavach in `std.ai`, and the richer `AiError` (spec 8.4). Where this record didn't settle a point, the simplest option that fits it was taken. Each is **for a maintainer's review**:
 
-1. **The interface has only the methods built so far:** `check`, `key_variable`, `auth`, `request` and `read`. `count_request`, `read_count`, `estimate` and `price` join it with counting and prices; there are no users yet, so adding methods later breaks no one. (`price` joined it on 2026-11-22, below.)
+1. **The interface has only the methods built so far:** `check`, `key_variable`, `auth`, `request` and `read`. `count_request`, `read_count`, `estimate` and `price` join it with counting and prices; there are no users yet, so adding methods later breaks no one. (`price`, `count_request`, `read_count` and `estimate` joined it on 2026-11-22, below.)
 2. **`key_variable(self) -> String`** is a method this record didn't have: each provider gives its own default key variable (choice 2), and the interface needed a place for it.
 3. **How the runtime calls a provider:** through `std.ai`'s private `wire(provider, settings)`, which gives a `fn(String) -> String` that takes and gives JSON text. So the runtime needs no Kavach types, and native code calls one closure, as it calls a `display` method.
 4. **`KAVACH_AI_URL`** now keeps the path the provider wrote and changes only the scheme, host and port (plus a path in front), so it works for every provider.
@@ -352,6 +352,19 @@ Usage, prices and money budgets (choices 4, 7 and 9) were built on 2026-11-22: `
 27. **Totals:** `ai.spent()` for the run and `ai.spent(by: "Name")` for an agent, since the program started, needing no capability; an `ask` counts once it reached a model, answered or not; an `ask` with no known cost is counted in `unpriced` and left out of `cost`.
 28. **`cost <=`** refuses an `ask` whose list has any model with no price, even when an earlier model would answer; a rule can't read both `tokens` and `cost`; a cost a reply gave no counts for counts as 0; the refusal gives the window's cost so far; asks under way are counted as `asks_under_way` says, at the largest cost for `UnderWay.Largest`.
 29. **The note** of a cost names each kind of price with its oldest date: `prices as of …`, `the program's prices as of …`, `prices from <package> as of …`.
+
+Counting a prompt's tokens before sending (choice 10) was built on 2026-11-22: `count_request`, `read_count` and `estimate` on the interface, `Anthropic`'s counting call and estimate, and `ai.count` (spec 8.3, 8.4 *Counting tokens before sending*, 8.6). Points this record didn't settle, each **for a maintainer's review**:
+
+30. **`ai.count(prompt, model: m)`** is written as `ask` is, without a type: the model is worked out when the program is built, and without `model:` it is the running agent's or the default, `claude-haiku-5-5`. A list of models counts with its first model and never moves on.
+31. **What is counted:** the prompt and the `Model`'s `instructions`, not the type `ask<T>` writes into its prompt.
+32. **`read_count(self, call, reply)`** takes the call, as `read` does. When it gives `none`, the reply goes to `read`, so the provider says what went wrong as for an `ask`; a reply `read` finds no trouble in fails with `Failed(status: 200, …)`.
+33. **A counting call that fails** fails `ai.count` with its `AiError` after the usual retries; it doesn't fall back to the estimate. A provider with neither a counting call nor an estimate fails with `Failed(status: 0, …)`.
+34. **Counting calls have a gate of their own** for each provider and key, apart from the `ask`s', as Anthropic limits them apart.
+35. **A count isn't an `ask`:** no rule of `limit Ai` (`count` too) counts or refuses it, `approve` doesn't apply, it adds nothing to `ai.spent`, and it isn't journaled. It has an audit entry, `Ai.count`, with a `model:` line and no tokens, and is refused only while the audit log can't be written.
+36. **`Anthropic`'s counting body** is the Messages body without `max_tokens`, `stop_sequences` and `extra` (which may hold a field the endpoint refuses, such as `metadata`).
+37. **`Anthropic`'s estimate** is one token for every 4 characters of the prompt and `instructions`, rounded up (`how`: `about 4 characters a token`). Newer Claude models take about 30% more tokens for the same text, so it is low for them.
+38. **`Count`** has `tokens`, `exact` and `note`; `exact` means the provider's own count, which Anthropic says can differ by a few tokens. It prints as `412 tokens (counted by the provider)` or `about 103 tokens (estimate: about 4 characters a token)`.
+39. **A dry run or a generated test** calls no provider method, and the count is `about 0 tokens (dry run: nothing was counted)`.
 
 ## Consequences
 

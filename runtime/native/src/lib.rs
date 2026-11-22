@@ -32,6 +32,7 @@ mod rc;
 pub mod rt;
 mod rt_agents;
 mod rt_ai;
+mod rt_ai_count;
 mod rt_app;
 mod rt_approvals;
 mod rt_audio;

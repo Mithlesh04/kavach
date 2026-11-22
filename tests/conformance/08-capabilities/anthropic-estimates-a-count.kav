@@ -1,0 +1,12 @@
+// Rule: `Anthropic()`'s estimate, made without the network, is one token for every 4 characters of the prompt and the instructions, rounded up, and says how it was made.
+// Spec: 8.4
+// expect output: Estimate(tokens: 4, how: "about 4 characters a token")
+// expect output: 8
+
+fn main() {
+    const p = Anthropic()
+    const plain = Model(name: "claude-haiku-5-5")
+    print(p.estimate(AskCall(model: plain, prompt: "Refund order 7?", schema: Json.Null, strict: false)))
+    const briefed = Model(name: "claude-haiku-5-5", instructions: "Be brief, please.")
+    print(p.estimate(AskCall(model: briefed, prompt: "Refund order 7?", schema: Json.Null, strict: false))?.tokens ?? -1)
+}

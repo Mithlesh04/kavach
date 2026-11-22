@@ -98,6 +98,8 @@ pub fn set_audit_sink(sink: AuditSink) {
 /// on a dry run, which asks no one); before it, each model the call
 /// moved on from, with the error's variant (spec 8.4, *Fallbacks*); and
 /// what every try took and cost, or why its cost isn't known (8.4).
+/// `counted`: an `Ai.count`, which takes no tokens (8.4, *Counting
+/// tokens before sending*).
 #[derive(Clone, Debug)]
 pub struct Asked {
     pub model: String,
@@ -105,6 +107,7 @@ pub struct Asked {
     pub moved: Vec<(String, String)>,
     pub usage: costs::Usage,
     pub cost: Result<costs::Spend, String>,
+    pub counted: bool,
 }
 
 impl Default for Asked {
@@ -115,6 +118,7 @@ impl Default for Asked {
             moved: Vec::new(),
             usage: costs::Usage::default(),
             cost: Err(String::new()),
+            counted: false,
         }
     }
 }
@@ -125,6 +129,13 @@ impl Asked {
         let mut out = String::new();
         for (model, why) in &self.moved {
             out.push_str(&format!("  model: {model}, moved on: {why}\n"));
+        }
+        if self.counted {
+            return format!(
+                "  model: {}
+",
+                self.model
+            );
         }
         out + &match self.tokens {
             Some((i, o)) => format!(

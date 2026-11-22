@@ -1,0 +1,17 @@
+// Rule: `Anthropic()` reads a count from the counting call's reply; a reply without one has none, and `read` says what went wrong.
+// Spec: 8.4
+// expect output: 412
+// expect output: none
+// expect output: RateLimited
+
+fn main() {
+    const call = AskCall(model: Model(name: "claude-haiku-5-5"), prompt: "?", schema: Json.Null, strict: false)
+    const p = Anthropic()
+    print(p.read_count(call, HttpReply(status: 200, headers: {:}, body: `\{"input_tokens": 412}`)))
+    const busy = HttpReply(status: 429, headers: {:}, body: `\{"type":"error","error":\{"type":"rate_limit_error","message":"slow down"}}`)
+    print(p.read_count(call, busy))
+    match p.read(call, busy) {
+        Reply.Problem(kind: k, message: _, wait: _) => print(k),
+        other => print(other),
+    }
+}

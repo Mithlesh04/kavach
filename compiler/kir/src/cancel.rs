@@ -35,6 +35,7 @@ fn waits(op: RtOp) -> bool {
             | RtOp::TimeSleepMs
             | RtOp::TimeWaitUntil
             | RtOp::AiAsk
+            | RtOp::AiCount
             | RtOp::AgentDecide
             | RtOp::AgentReplayWait
             | RtOp::NetConnectQuic

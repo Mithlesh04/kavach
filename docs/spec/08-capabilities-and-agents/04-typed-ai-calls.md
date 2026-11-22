@@ -127,6 +127,13 @@ pub interface Provider {
     fn read(self, call: AskCall, reply: HttpReply) -> Reply
     /// The price of a model's tokens; none: not known (*Prices*, below).
     fn price(self, model: String) -> Price?
+    /// The request that counts a call's input tokens; none: the provider
+    /// has no counting call (*Counting tokens before sending*, below).
+    fn count_request(self, call: AskCall) -> HttpCall?
+    /// The count in that request's reply; none: the reply has none.
+    fn read_count(self, call: AskCall, reply: HttpReply) -> Int?
+    /// A count made without the network; none: no way to make one.
+    fn estimate(self, call: AskCall) -> Estimate?
 }
 
 /// One `ask`, as the provider sees it.
@@ -191,6 +198,9 @@ type Gateway: Provider {
     fn auth(self, model: Model) -> Auth { self.base.auth(model) }
     fn read(self, call: AskCall, reply: HttpReply) -> Reply { self.base.read(call, reply) }
     fn price(self, model: String) -> Price? { self.base.price(model) }
+    fn count_request(self, call: AskCall) -> HttpCall? { self.base.count_request(call) }
+    fn read_count(self, call: AskCall, reply: HttpReply) -> Int? { self.base.read_count(call, reply) }
+    fn estimate(self, call: AskCall) -> Estimate? { self.base.estimate(call) }
 }
 
 fn gateway() -> Model {
@@ -284,6 +294,7 @@ type ShopAi: Provider {
 
 - **A price is worked out when the program is built,** as `check` is (*Providers*, above): once for each model the program names, and for the default model. So a built program carries the prices of its build, and their date says how old they are.
 - **A model with no known price** has a cost of `none`, never 0.
+- **A cost uses each model's standard price.** A setting passed through `extra` that changes Anthropic's price isn't seen, so the estimate is off: fast mode (Opus 5.5 at $8 and $40, Fable 5.2 at $16 and $80 per million tokens), US-only inference (`inference_geo: "us"`, 1.1 times) and the Batch API (half price) (for a maintainer's review).
 - **A cost is an estimate.** A price is known as of a date and may have changed; a program's own price is only as good as what it gave; the provider's bill is what counts. So every cost carries a note that says so, and printing a cost prints it (*Usage and cost*, below).
 
 ## Usage and cost: `ai.ask_full<T>`
@@ -342,4 +353,48 @@ print(`{s.asks} asks, {s.usage.input ?? 0} tokens in, cost {s.cost}`)
 - `ai.spent` needs no capability.
 - A cost left out because it isn't known is counted in `unpriced`, and the note says so: `estimate: prices as of 2026-11-22; 2 asks with no known cost left out; the provider's bill is exact`.
 
-*Not built yet* (decision 0140 sets how each works): the other providers, in a package of their own repository, starting with OpenAI-shaped Chat Completions (OpenAI, Azure, Ollama, llama.cpp, vLLM), then Gemini, Bedrock, Vertex and OpenAI's Responses API; `Auth.AwsSignature` and `Auth.GoogleToken`, for now an `ask` whose provider gives one fails with `Failed(status: 0, …)`; counting a prompt's tokens before it is sent (`ai.count`). The interface gains the methods it needs (`count_request`, `read_count` and `estimate`) when it is built.
+## Counting tokens before sending: `ai.count`
+
+`ai.count` counts a prompt's input tokens before it is sent, so a program can see whether it fits a model or a budget before it asks ([decision 0140](../../decisions/0140-ai-providers.md), choice 10):
+
+```kavach
+use std.ai
+
+const prompt = `Is this clause risky? {clause}`
+const n = try ai.count(prompt, model: careful())
+if n.tokens > 50_000 {
+    print(`too long: {n}`)      // too long: 61204 tokens (counted by the provider)
+    return
+}
+const v = try ask<Verdict>(prompt, model: careful())
+```
+
+```kavach
+/// A prompt's input tokens, counted before it is sent.
+pub type Count: Display {
+    tokens: Int
+    exact: Bool        // true: the provider counted them; false: an estimate made without the network
+    note: String       // how far to trust it
+}
+
+/// A count made without the network, and how it was made.
+pub type Estimate {
+    tokens: Int
+    how: String        // "about 4 characters a token"
+}
+```
+
+- **It is written as `ask` is,** without a type: `ai.count(prompt)`, or `ai.count(prompt, model: m)`. The model is chosen as for `ask`: the call's `model:`, else the running agent's `model`, else the default (`claude-haiku-5-5`), and worked out when the program is built. A list of models counts with its first model, the one asked first, and never moves on (for a maintainer's review).
+- **What it counts:** the input tokens an `ask` with that model sends: the prompt and the `Model`'s `instructions`. Not the type `ask<T>` writes into its prompt (decision 0057), a few dozen tokens more, nor the answer.
+- **How it counts:** with the provider's counting call, from `count_request`, where it has one. Else with its `estimate`, made without the network, and marked as one: `exact` is false. A provider with neither fails the call with `Failed(status: 0, "Shop can't count tokens: it has no counting call and no estimate (spec 8.4)")`.
+- **The counting call is sent as an `ask`'s request is:** the runtime reads the key and puts it where `auth` says, sends it to `KAVACH_AI_URL` when that is set, and sends it again after a busy reply, as the `Model`'s `retries`, `timeout` and the provider's wait hint say (above). Counting calls pass a gate of their own for each provider and key, apart from the `ask`s' gate, as providers limit them apart (for a maintainer's review).
+- **`read_count`** is called with each reply. When it gives `none`, the reply goes to `read`, so the provider says what went wrong as it does for an `ask`: a `Problem` is sent again or fails the call with its `AiError`, as above. A reply `read` finds no trouble in fails with `Failed(status: 200, "the counting call's reply had no count (spec 8.4)")`.
+- **A counting call that fails** fails `ai.count` with its `AiError`; it doesn't fall back to the estimate, so a bad key or a used-up quota shows before the `ask` (for a maintainer's review).
+- **`Anthropic()`** counts with Anthropic's token counting endpoint, `POST <api_url>/v1/messages/count_tokens`, which is free and has rate limits apart from the Messages API's. Its body is the Messages request's without `max_tokens` and `stop_sequences`, and without `extra`, which may hold a field the counting call refuses, such as `metadata`; the reply is `{"input_tokens": 412}`. This shape is from Anthropic's API reference (`https://platform.claude.com/docs/en/api/messages-count-tokens`) and its token counting guide (`https://platform.claude.com/docs/en/build-with-claude/token-counting`), read on 2026-11-22. Anthropic says its count can differ by a few tokens from what the message takes.
+- **`Anthropic()`'s estimate** is one token for every 4 characters of the prompt and `instructions`, rounded up, with `how` `about 4 characters a token`. It is a rough guide: Anthropic's newer models take about 30% more tokens for the same text than older ones. `ai.count` uses it only for a provider that wraps `Anthropic()` without its counting call (for a maintainer's review).
+- **Printing a count** prints `412 tokens (counted by the provider)`, or `about 103 tokens (estimate: about 4 characters a token)` for an estimate.
+- **It needs `Ai`,** but it is not an `ask`: counting is free, so it adds nothing to `ai.spent`, and `limit Ai`'s rules (`count`, `tokens` and `cost`) and `approve` don't apply to it (for a maintainer's review). In an agent, it has an entry in the audit log (8.6), `Ai.count`, refused only while the audit log can't be written.
+- A dry run or a generated test (8.5, 11.5) counts nothing and calls no provider method: the count is `about 0 tokens (dry run: nothing was counted)`.
+- A count isn't kept in an agent's journal (8.5): an event run again after a restart counts again (for a maintainer's review).
+
+*Not built yet* (decision 0140 sets how each works): the other providers, in a package of their own repository, starting with OpenAI-shaped Chat Completions (OpenAI, Azure, Ollama, llama.cpp, vLLM), then Gemini, Bedrock, Vertex and OpenAI's Responses API; `Auth.AwsSignature` and `Auth.GoogleToken`, for now an `ask` whose provider gives one fails with `Failed(status: 0, …)`; a counting call for each of those providers that has one.

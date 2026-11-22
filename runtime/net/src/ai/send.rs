@@ -78,6 +78,13 @@ impl Sending {
         })
     }
 
+    /// A counting call (`ai.count`, spec 8.4): it passes a gate of its
+    /// own, as providers limit counting calls apart from asks.
+    pub(crate) fn counting(mut self) -> Sending {
+        self.gate.push_str(" (count)");
+        self
+    }
+
     /// Sends it once, through its gate, on a helper thread.
     pub(crate) fn start(&self) -> Pending {
         let (send, done) = mpsc::channel();

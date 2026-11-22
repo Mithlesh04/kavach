@@ -54,6 +54,12 @@ Conformance tests for spec chapter [8. Capabilities and agents](../../../docs/sp
 | 8.4 | [anthropic-prices-are-dated.kav](anthropic-prices-are-dated.kav) | `Anthropic()`'s prices are a dated table in US dollars, from Kavach; a model it doesn't list has no price. | runs |
 | 8.4 | [a-cost-prints-its-note.kav](a-cost-prints-its-note.kav) | Printing a cost prints its dollars and the note that says how far to trust it. Costs of real asks, the program's own prices, totals and `cost` limits are in `tools/cli/tests/ai_costs.rs`, which needs a fake model. | runs |
 | 8.4 | [ai-spent-starts-at-nothing.kav](ai-spent-starts-at-nothing.kav) | `ai.spent()` gives the run's totals, and `ai.spent(by: name)` an agent's; before any ask, nothing and no cost. | runs |
+| 8.4 | [anthropic-writes-the-count-request.kav](anthropic-writes-the-count-request.kav) | `Anthropic()` counts tokens with Anthropic's token counting endpoint: the Messages request without `max_tokens`, `stop_sequences` and `extra`. | runs |
+| 8.4 | [anthropic-reads-a-count.kav](anthropic-reads-a-count.kav) | `Anthropic()` reads a count from the counting call's reply; a reply without one has none, and `read` says what went wrong. | runs |
+| 8.4 | [anthropic-estimates-a-count.kav](anthropic-estimates-a-count.kav) | `Anthropic()`'s estimate is one token for every 4 characters of the prompt and instructions, rounded up, and says how it was made. | runs |
+| 8.4 | [a-count-prints-how-far-to-trust-it.kav](a-count-prints-how-far-to-trust-it.kav) | Printing a count prints its tokens and how far to trust it; an estimate starts with "about". Counting against a model, failures and the audit log are in `tools/cli/tests/ai_count.rs`, which needs a fake model. | runs |
+| 8.4 | [ai-count-needs-ai.kav](ai-count-needs-ai.kav) | `ai.count` needs the `Ai` capability. | compile error |
+| 8.4 | [a-count-takes-a-prompt-and-a-model.kav](a-count-takes-a-prompt-and-a-model.kav) | `ai.count` takes one prompt and an optional `model:`; any other option is a compile error. | compile error |
 | 8.3 | [cost-is-for-limit-ai.kav](cost-is-for-limit-ai.kav) | `cost` in a limit rule counts what AI calls cost: only for `limit Ai`. | compile error |
 | 8.3 | [a-cost-limit-is-a-decimal.kav](a-cost-limit-is-a-decimal.kav) | `cost` is a `Decimal` of US dollars. | compile error |
 | 8.3 | [a-rule-reads-tokens-or-cost.kav](a-rule-reads-tokens-or-cost.kav) | A rule reads `tokens` or `cost`, not both. | compile error |

@@ -268,7 +268,7 @@ impl<'a> Interp<'a> {
     }
 
     /// `AiError` from its JSON (spec 2.12).
-    fn ai_error(&mut self, tree: &Tree, span: kavach_ast::Span) -> Flow<'a> {
+    pub(crate) fn ai_error(&mut self, tree: &Tree, span: kavach_ast::Span) -> Flow<'a> {
         let ty = self
             .c
             .resolution
@@ -281,13 +281,13 @@ impl<'a> Interp<'a> {
     }
 }
 
-/// The interpreter's side of an `ask`: the `wire` function of each
-/// model's provider, and the type its answer must have.
-struct Asking<'i, 'a> {
-    i: &'i mut Interp<'a>,
-    wires: Vec<Value<'a>>,
-    t: Ty,
-    span: kavach_ast::Span,
+/// The interpreter's side of an `ask`, or of a count: the `wire`
+/// function of each model's provider, and the type its answer must have.
+pub(crate) struct Asking<'i, 'a> {
+    pub(crate) i: &'i mut Interp<'a>,
+    pub(crate) wires: Vec<Value<'a>>,
+    pub(crate) t: Ty,
+    pub(crate) span: kavach_ast::Span,
 }
 
 impl<'a> ai::Side for Asking<'_, 'a> {
@@ -311,3 +311,5 @@ impl<'a> ai::Side for Asking<'_, 'a> {
         self.i.decode(answer, &self.t, "").ok()
     }
 }
+
+mod count;

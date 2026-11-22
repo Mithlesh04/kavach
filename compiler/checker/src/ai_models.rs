@@ -380,19 +380,20 @@ impl VisitMut for Consts<'_, '_> {
     }
 }
 
-/// Each `ask` or `ai.ask_full` with a `model:`: the call's span, and the
-/// model's value.
+/// Each `ask`, `ai.ask_full` or `ai.count` with a `model:`: the call's
+/// span, and the model's value.
 struct Asks {
     found: Vec<((u32, u32), Expr)>,
 }
 
 impl VisitMut for Asks {
     fn expr(&mut self, e: &mut Expr) {
-        // `ask<T>(…)`, or `ai.ask_full<T>(…)` (spec 8.4).
+        // `ask<T>(…)`, `ai.ask_full<T>(…)` or `ai.count(…)` (spec 8.4).
         let asks = |callee: &Expr| match &callee.kind {
             ExprKind::Name(f) => f.name == "ask",
             ExprKind::Field { base, name, .. } => {
-                name.name == "ask_full" && matches!(base.kind, ExprKind::Name(_))
+                matches!(name.name.as_str(), "ask_full" | "count")
+                    && matches!(base.kind, ExprKind::Name(_))
             }
             _ => false,
         };

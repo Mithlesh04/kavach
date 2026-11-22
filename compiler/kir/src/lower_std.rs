@@ -73,6 +73,10 @@ impl<'a> Lowerer<'a> {
             ("ai", "ask_full") if let Some(prompt) = prompt => {
                 return self.ask_call(span, &prompt.value, line);
             }
+            // `ai.count(prompt)`: its tokens, before it is sent (8.4).
+            ("ai", "count") if let Some(prompt) = prompt => {
+                return self.count_call(span, &prompt.value, line);
+            }
             _ if simple.is_some() => simple.expect("just checked"),
             ("net", "connect_tls" | "listen_tls") => {
                 return self.tls_call(name, args, ty, line, span);

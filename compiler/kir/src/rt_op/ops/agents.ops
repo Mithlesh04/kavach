@@ -79,3 +79,8 @@ AgentPrices,
 /// `ai.spent_text(agent)` (spec 8.4): what the run's `ask`s took, or
 /// one agent's, as JSON (`runtime/native/src/rt_ai.rs`).
 AiSpent,
+/// `ai.count(prompt)` (spec 8.4): with the prompt and each model's
+/// `wire` closure, the models' settings and the agents they are for, and
+/// the decoding templates of `Count`; waits, can fail
+/// (`runtime/native/src/rt_ai_count.rs`).
+AiCount,

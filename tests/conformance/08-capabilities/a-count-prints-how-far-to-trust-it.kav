@@ -1,0 +1,9 @@
+// Rule: Printing a count prints its tokens and the note that says how far to trust it; an estimate starts with "about".
+// Spec: 8.4
+// expect output: 412 tokens (counted by the provider)
+// expect output: about 103 tokens (estimate: about 4 characters a token)
+
+fn main() {
+    print(Count(tokens: 412, exact: true, note: "counted by the provider"))
+    print(Count(tokens: 103, exact: false, note: "estimate: about 4 characters a token"))
+}
