@@ -166,9 +166,11 @@ pub fn agent_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             p.used = true;
             s.guard.totals(b as usize).1 + 1
         }),
-        RtOp::AgentTokens | RtOp::AgentLimit | RtOp::AgentBound => {
-            crate::rt_under_way::run(op, a, b, c, line)
-        }
+        RtOp::AgentTokens
+        | RtOp::AgentLimit
+        | RtOp::AgentBound
+        | RtOp::AgentCost
+        | RtOp::AgentPrices => crate::rt_under_way::run(op, a, b, c, code, line),
         RtOp::AgentSum => {
             let ty = type_of(code);
             let x = num_of(c, ty);
@@ -268,6 +270,10 @@ pub fn agent_op(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
             if p.check.call == "Ai.ask"
                 && let Some((shown, took)) = crate::rt_ai::take_last()
             {
+                // A cost that isn't known counts as 0 (spec 8.3).
+                let zero = kavach_runtime_core::Decimal::from_int(0);
+                p.check
+                    .cost(shown.cost.as_ref().map_or(zero, |s| s.dollars));
                 p.check.model = Some(shown);
                 p.check.took(took);
             }

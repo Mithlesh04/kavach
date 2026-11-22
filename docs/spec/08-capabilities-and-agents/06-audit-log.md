@@ -27,15 +27,27 @@ An `ask` with a list of models (8.4, *Fallbacks*) has a `model:` line for each m
   result: ok Verdict(risky: false, reason: "…")
 ```
 
+Each `ask` that reached a model has a `cost:` line after its `model:` lines, with the cost of every try and how far to trust it (8.4, *Usage and cost*), or why it isn't known:
+
+```
+  model: claude-opus-5-5, tokens: 412 in, 96 out
+  cost: about $0.003568 (estimate: prices as of 2026-11-22; the provider's bill is exact)
+```
+
+```
+  model: gpt-5.5, tokens: 412 in, 96 out
+  cost: not known (no price for gpt-5.5)
+```
+
 Under `kavach run --dry-run` (8.5), no model is asked, and the line says which one a real run would use: `model: claude-opus-5-5 (dry run: no tokens)`. So each call's model can be checked before a run that costs.
 
-With `Audit(format: AuditFormat.JsonLines)` in the agent's settings, each entry is one JSON object on a line of its own instead, for log shippers (Vector, Fluent Bit, the OpenTelemetry Collector's file receiver): `time`, `agent`, `request`, `call`, `shown`, `verdict`, then `model`, `input_tokens` and `output_tokens` for an `ask`, and `result`. An `ask` that moved on from a model has `moved_on` before `model`, a list with one `{"model": …, "error": …}` for each.
+With `Audit(format: AuditFormat.JsonLines)` in the agent's settings, each entry is one JSON object on a line of its own instead, for log shippers (Vector, Fluent Bit, the OpenTelemetry Collector's file receiver): `time`, `agent`, `request`, `call`, `shown`, `verdict`, then `model`, `input_tokens`, `output_tokens` and `cost` for an `ask`, and `result`. `cost` is `{"dollars": "0.003568", "note": "estimate: …"}`, the dollars as text so no digit is lost, or `{"unknown": "no price for gpt-5.5"}`. An `ask` that moved on from a model has `moved_on` before `model`, a list with one `{"model": …, "error": …}` for each.
 
 ```
 {"time":"2026-11-04T22:40:12Z","agent":"Reviewer","request":3,"call":"Ai.ask","shown":"ask(\"Review this clause: …\")","verdict":"allowed","model":"claude-opus-5-5","input_tokens":412,"output_tokens":96,"result":"ok Verdict(risky: true, reason: \"…\")"}
 ```
 
-With `otlp: true` as well, and a collector in `[log.otlp]` (14.12), each entry also goes to that collector as an OpenTelemetry log record named `AgentAudit`, with the JSON line's fields as attributes (`agent`, `request`, `call`, `verdict`, `moved_on`, `model`, `input_tokens`, `output_tokens`, `result`; `moved_on` as text, `claude-opus-5-5: RateLimited`, joined by `; `) and `WARN` for a refused call, `INFO` otherwise. It is sent in batches by the thread that sends `std.log` events, so a slow collector never holds up an agent, and the file stays the record that counts. `otlp: true` without a `[log.otlp]` section is an error.
+With `otlp: true` as well, and a collector in `[log.otlp]` (14.12), each entry also goes to that collector as an OpenTelemetry log record named `AgentAudit`, with the JSON line's fields as attributes (`agent`, `request`, `call`, `verdict`, `moved_on`, `model`, `input_tokens`, `output_tokens`, `cost`, `result`; `cost` as the line's text after `cost: `; `moved_on` as text, `claude-opus-5-5: RateLimited`, joined by `; `) and `WARN` for a refused call, `INFO` otherwise. It is sent in batches by the thread that sends `std.log` events, so a slow collector never holds up an agent, and the file stays the record that counts. `otlp: true` without a `[log.otlp]` section is an error.
 
 The audit log is append-only. Secret values (8.7) appear as `<secret>`.
 

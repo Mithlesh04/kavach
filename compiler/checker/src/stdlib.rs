@@ -111,6 +111,9 @@ impl Checker<'_> {
         if module == "gpu" && name == "pipeline" {
             return Some(self.pipeline_call(args, span));
         }
+        if module == "ai" {
+            return Some(self.ai_call(name, generics, args, span));
+        }
         if self.needs_a_block(&module, name, span) {
             return Some(Ty::Error);
         }

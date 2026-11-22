@@ -73,6 +73,7 @@ Inside a `limit` block, the arguments of the limited method are in scope by name
 | `sum(amount) <= 50_000 per day` | Total across calls in the window |
 | `count <= 100 per day` | Number of calls in the window |
 | `tokens <= 200_000 per day` | In `limit Ai`: the tokens (in and out) the window's earlier `ask`s took, with those still waiting for their answer counted as the agent's settings say (below). Once they pass the limit, the next `ask` is refused; the one that crosses it still runs, since an answer's size is known only after it. Anywhere else, `tokens` is a compile error. |
+| `cost <= 5.00 per day` | In `limit Ai`: the US dollars the window's earlier `ask`s cost, worked out from each model's price (8.4, *Prices*), with those still waiting counted as for `tokens`. The one that crosses the limit still runs, as with `tokens`, and the refusal of the next one says so. An `ask` whose list has a model with no known price is refused, never counted as free. Anywhere else, `cost` is a compile error. |
 
 Windows: `per minute`, `per hour`, `per day`, `per week`, `per month`.
 
@@ -100,6 +101,24 @@ agent Writer {
 ```
 
 In `observe` mode (8.5) nothing waits: the limit is only reported.
+
+**`cost`** is the same, in US dollars ([decision 0140](../../decisions/0140-ai-providers.md), choice 9). It is a `Decimal`, and counts every try of an `ask` at its own model's price. An `ask` under way counts as `asks_under_way` says: at the average cost of the window's answered `ask`s, at the most it can cost (`UnderWay.Largest`: for each of its 3 tries, its prompt's bytes at its dearest model's input price, and that model's `max_tokens` at its output price), or not at all.
+
+```kavach
+agent Reviewer {
+    model [careful(), backup()]
+    can Ai
+    limit Ai {
+        cost <= 5.00 per day
+    }
+    on check(text: String) -> Verdict ! Error { try ask<Verdict>(text) }
+}
+```
+
+- **A model with no known price** can't be counted, so an `ask` that could reach one, the call's model or any of its list, is refused with `Denied`, `no price for gpt-5.5: give one, decision 0140`. A program gives one by wrapping its provider (8.4, *Prices*).
+- **A cost the reply didn't give** (no input or output count) counts as 0, as `tokens` counts it.
+- **The refusal says why it may have been passed:** `limit broken: cost <= 5.00 per day (about $5.0213 so far: the ask that crosses a limit still runs, and costs are estimates)`, with what the window's `ask`s cost.
+- A rule reads `tokens` or `cost`, not both: `tokens <= 1_000 and cost <= 1.00` is a compile error that says to write two rules.
 
 ### `approve`: a person decides
 

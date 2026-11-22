@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
-//! `ask<T>(prompt)` (spec 8.4): the model's answer as a checked `T`. The
+//! `ask<T>(prompt)` and `ai.ask_full<T>(prompt)` (spec 8.4): the model's
+//! answer as a checked `T`, alone or with what it took. The
 //! answer's shape is a JSON Schema built from `T` (`kavach_driver::
 //! ask_schema`); the reply is decoded like `json.decode<T>`, and asked
 //! again (twice at most) when it doesn't fit. The call itself is
@@ -14,6 +15,7 @@ use crate::interp::Interp;
 use crate::value::{Eval, Flow, Value};
 use kavach_ast::Expr;
 use kavach_checker::Ty;
+use kavach_runtime_core::agents::costs::Price;
 use kavach_runtime_core::agents::{Asked, largest_ask};
 use kavach_runtime_core::json::{self, Tree};
 use kavach_runtime_net::ai;
@@ -56,7 +58,16 @@ impl<'a> Interp<'a> {
             let max_tokens = model.most_tokens(kavach_driver::DEFAULT_MAX_TOKENS);
             let max_tokens = i64::from(max_tokens);
             let bound = largest_ask(prompt.len(), max_tokens);
-            let c = self.check_call(agent, ("Ai.ask", &shown, bound), &args, span)?;
+            // Each model's price, for a `cost` rule (spec 8.3).
+            let priced: crate::guard::Priced = (model.in_turn())
+                .map(|m| {
+                    let most = m.max_tokens.unwrap_or(kavach_driver::DEFAULT_MAX_TOKENS);
+                    let price = (self.c.price_of(m)).and_then(Price::read);
+                    (m.name.clone(), i64::from(most), price)
+                })
+                .collect();
+            let priced = Some((prompt.len(), &priced));
+            let c = self.check_call(agent, ("Ai.ask", &shown, bound), priced, &args, span)?;
             if let Some(why) = c.refused.clone() {
                 agent.guard.borrow().audit(&c, &format!("denied: {why}"));
                 if self.dry_run && !self.testing {
@@ -101,6 +112,11 @@ impl<'a> Interp<'a> {
             if let Some((i, o)) = used.as_ref().and_then(|a| a.tokens) {
                 c.took(i64::try_from(i + o).unwrap_or(i64::MAX));
             }
+            // A cost that isn't known counts as 0 (spec 8.3).
+            if let Some(a) = &used {
+                let zero = kavach_runtime_core::Decimal::from_int(0);
+                c.cost(a.cost.as_ref().map_or(zero, |s| s.dollars));
+            }
             c.model = used.or(dry.map(|model| Asked {
                 model,
                 ..Asked::default()
@@ -139,16 +155,22 @@ impl<'a> Interp<'a> {
         let mut shown = Asked {
             model: model.name.clone(),
             tokens: Some((0, 0)),
-            moved: Vec::new(),
+            ..Asked::default()
+        };
+        // `ai.ask_full<T>`: `t` is `Asked<T>`, and the model answers a `T`.
+        let full = self.c.full_asks.contains(&(span.start, span.end));
+        let answer = match (full, t) {
+            (true, Ty::Adt(_, args)) => args.first().cloned().unwrap_or(Ty::Error),
+            _ => t.clone(),
         };
         // Built where native code builds it (`kavach_driver::ask_schema`).
-        let Some((schema, wrapped)) = kavach_driver::ask_schema(self.c, t) else {
+        let Some((schema, wrapped)) = kavach_driver::ask_schema(self.c, &answer) else {
             return (Err(self.panic(kavach_driver::NO_SCHEMA, span)), shown);
         };
         let mut settings = Vec::new();
         let mut wires = Vec::new();
         for m in model.in_turn() {
-            let s = kavach_driver::model_settings(m);
+            let s = self.c.priced_settings(m);
             match self.provider_wire(m, &s, span) {
                 Ok(w) => wires.push(w),
                 Err(e) => return (Err(e), shown),
@@ -158,7 +180,7 @@ impl<'a> Interp<'a> {
         let mut side = Asking {
             i: self,
             wires,
-            t: t.clone(),
+            t: answer,
             span,
         };
         let asked = match ai::ask(&mut side, &settings, prompt, &schema, wrapped) {
@@ -170,7 +192,11 @@ impl<'a> Interp<'a> {
         shown.moved = (asked.moved.iter())
             .map(|(i, f)| (names[*i].clone(), f.variant()))
             .collect();
+        shown.usage = asked.usage;
+        shown.cost = asked.cost.clone();
         let result = match asked.result {
+            // With what it took (spec 8.4, *Usage and cost*).
+            Ok(v) if full => self.asked_value(v, &shown, t, span),
             Ok(v) => Ok(v),
             Err(f) => Err(self.ai_error(&f.tree(), span)),
         };
@@ -200,6 +226,45 @@ impl<'a> Interp<'a> {
         };
         let settings = self.str_value(&json::write(settings, 0));
         self.call_fn(f, None, vec![(None, provider), (None, settings)], span)
+    }
+
+    /// The `Asked<T>` (type `t`) of `ai.ask_full`: the answer `value`, and
+    /// what the `ask` took, from the model that answered (spec 8.4).
+    fn asked_value(
+        &mut self,
+        value: Value<'a>,
+        asked: &Asked,
+        t: &Ty,
+        span: kavach_ast::Span,
+    ) -> Eval<'a> {
+        let std_ty = |c: &kavach_driver::Compiled, name| c.resolution.std_type(name);
+        let (Ty::Adt(def, _), Some(usage), Some(cost)) =
+            (t, std_ty(self.c, "Usage"), std_ty(self.c, "Cost"))
+        else {
+            return Err(self.panic("`ai.ask_full` needs `std.ai`'s `Asked`", span));
+        };
+        let usage = self.decode(&asked.usage.tree(), &Ty::Adt(usage, Vec::new()), "")?;
+        let cost = match &asked.cost {
+            Ok(spend) => self.decode(&spend.tree(), &Ty::Adt(cost, Vec::new()), "")?,
+            Err(_) => Value::None,
+        };
+        let model = self.str_value(&asked.model);
+        let field = |name: &str, value| crate::value::Field {
+            name: std::rc::Rc::from(name),
+            value,
+            secret: false,
+        };
+        Ok(Value::Record {
+            def: *def,
+            name: std::rc::Rc::from("Asked"),
+            fields: vec![
+                field("value", value),
+                field("usage", usage),
+                field("cost", cost),
+                field("model", model),
+            ],
+            life: None,
+        })
     }
 
     /// `AiError` from its JSON (spec 2.12).

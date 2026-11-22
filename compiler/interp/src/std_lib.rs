@@ -104,6 +104,11 @@ impl<'a> Interp<'a> {
         if module == "devices" {
             return self.devices_call(name, &args);
         }
+        // What the run's `ask`s took, or one agent's (`ai.spent`, 8.4).
+        if (module, name) == ("ai", "spent_text") {
+            let spent = kavach_runtime_core::agents::costs::spent_json(&text(0));
+            return Ok(self.str_value(&spent));
+        }
         if (module, name) == ("agents", "request_fields")
             || (module, name) == ("agents", "answer_request")
         {

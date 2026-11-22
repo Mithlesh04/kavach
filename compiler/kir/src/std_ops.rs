@@ -42,6 +42,7 @@ pub(crate) fn std_op(module: &str, name: &str) -> Option<RtOp> {
         ("time", "sleep_ns") => RtOp::TimeSleepNs,
         ("time", "zone_offset") => RtOp::ZoneOffset,
         ("agents", "call_key") => RtOp::JournalCallKey,
+        ("ai", "spent_text") => RtOp::AiSpent,
         ("agents", "request_fields") => RtOp::AgentApprovals,
         ("agents", "answer_request") => RtOp::AgentAnswer,
         ("crypto", "ed25519_verify") => RtOp::CryptoEd25519Verify,

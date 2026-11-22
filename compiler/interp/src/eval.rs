@@ -356,6 +356,19 @@ impl<'a> Interp<'a> {
                 }
                 None => Err(self.panic("`tokens` is only for `limit Ai` rules", span)),
             },
+            // `cost` in `limit Ai`: what the window's asks cost, in US
+            // dollars, as `tokens` (spec 8.3).
+            DefKind::Builtin if id.name == "cost" => match self.totals.as_mut() {
+                Some(t) => {
+                    t.used = true;
+                    t.cost = true;
+                    Ok(Value::Decimal(
+                        t.cost_now
+                            .unwrap_or(kavach_runtime_core::Decimal::from_int(0)),
+                    ))
+                }
+                None => Err(self.panic("`cost` is only for `limit Ai` rules", span)),
+            },
             DefKind::Variant { of } => {
                 let name = Rc::from(id.name.as_str());
                 let life = self.variant_life(of, &name, &[]);

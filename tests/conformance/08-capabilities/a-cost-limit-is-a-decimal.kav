@@ -1,0 +1,21 @@
+// Rule: `cost <= 5.00 per day` in `limit Ai` limits the US dollars the window's asks cost; `cost` is a `Decimal`, so comparing it with text is a compile error.
+// Spec: 8.3
+// expect compile error
+
+type Verdict {
+    ok: Bool
+}
+
+agent Reviewer {
+    can Ai
+    limit Ai {
+        cost <= "5 dollars" per day    // error: a Decimal, not a String
+    }
+    on check(text: String) -> Verdict ! Error {
+        try ask<Verdict>(text)
+    }
+}
+
+fn main() {
+    print("never")
+}

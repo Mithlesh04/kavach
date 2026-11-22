@@ -13,6 +13,7 @@ type Local: Provider {
     fn auth(self, model: Model) -> Auth { Auth.NoKey }
     fn request(self, call: AskCall) -> HttpCall { self.base.request(call) }
     fn read(self, call: AskCall, reply: HttpReply) -> Reply { self.base.read(call, reply) }
+    fn price(self, model: String) -> Price? { none }
 }
 
 agent Sorter {

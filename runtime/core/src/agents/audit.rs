@@ -14,6 +14,12 @@ impl Guard {
     /// Appends one call to the audit log (spec 8.6): its verdict and what
     /// came of it (`ok …`, `error …`, `denied: …`).
     pub fn audit(&self, c: &Check, result: &str) {
+        // What an `ask` that reached a model took counts for the agent
+        // (`ai.spent`, spec 8.4).
+        if let Some(m) = c.model.as_ref().filter(|m| m.tokens.is_some()) {
+            let name = Some(self.settings.name.as_str());
+            super::costs::record(name, &m.usage, m.cost.as_ref().ok());
+        }
         let Some(path) = &self.settings.audit else {
             return;
         };
@@ -38,6 +44,7 @@ impl Guard {
                 if let Some((i, o)) = m.tokens {
                     attributes.push(("input_tokens".into(), i.to_string()));
                     attributes.push(("output_tokens".into(), o.to_string()));
+                    attributes.push(("cost".into(), m.cost_shown()));
                 }
             }
             attributes.push(("result".into(), result.to_string()));
@@ -72,6 +79,11 @@ impl Guard {
                 if let Some((i, o)) = m.tokens {
                     fields.push(("input_tokens".into(), Tree::Int(i as i64)));
                     fields.push(("output_tokens".into(), Tree::Int(o as i64)));
+                    let cost = match &m.cost {
+                        Ok(spend) => spend.tree(),
+                        Err(why) => Tree::Object(vec![("unknown".into(), text(why))]),
+                    };
+                    fields.push(("cost".into(), cost));
                 }
             }
             fields.push(("result".into(), text(result)));

@@ -251,6 +251,7 @@ type Plain: Provider {
             Reply.Problem(kind: Trouble.Other(status: reply.status), message: reply.body, wait: none)
         }
     }
+    fn price(self, model: String) -> Price? { none }
 }
 
 fn plain() -> Model {

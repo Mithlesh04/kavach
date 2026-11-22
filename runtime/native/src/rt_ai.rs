@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
-//! `ask<T>(prompt)` in native code (spec 8.4): the runtime's driver
+//! `ask<T>(prompt)` and `ai.ask_full<T>(prompt)` in native code (spec
+//! 8.4): the runtime's driver
 //! (`kavach_runtime_net::ai::ask`), the interpreter's too, with the
 //! model's provider, written in Kavach, called through the function
 //! `std.ai`'s `wire` gave (decision 0140); the answer decoded as a `T`
@@ -37,6 +38,8 @@ struct Asking {
     ty: Type,
     templates: i64,
     line: i32,
+    /// `ty` is `Asked<T>` (`ai.ask_full`): an answer fits as its `value`.
+    full: bool,
 }
 
 /// The task was cancelled while it waited.
@@ -71,7 +74,20 @@ impl ai::Side for Asking {
     }
 
     fn fits(&mut self, answer: &Tree) -> Option<u64> {
-        crate::rt_json_decode::decode(answer, self.ty, "", self.templates).ok()
+        let full;
+        let answer = match self.full {
+            true => {
+                full = ai::as_full(answer);
+                &full
+            }
+            false => answer,
+        };
+        let v = crate::rt_json_decode::decode(answer, self.ty, "", self.templates).ok()?;
+        // The value is decoded again with what the `ask` took (`ask`).
+        if self.full {
+            release(v as i64);
+        }
+        Some(v)
     }
 }
 
@@ -109,6 +125,7 @@ pub fn ask(pair: i64, request: i64, templates: i64, code: i64, line: i32) -> i64
         _ => None,
     };
     let wrapped = matches!(field("wrapped"), Some(Tree::Bool(true)));
+    let full = matches!(field("full"), Some(Tree::Bool(true)));
     let schema = field("schema").unwrap_or(Tree::Null);
     let wires = (1..=models.len()).map(|i| slots(pair)[i] as i64).collect();
     let mut side = Asking {
@@ -116,6 +133,7 @@ pub fn ask(pair: i64, request: i64, templates: i64, code: i64, line: i32) -> i64
         ty: type_of(code),
         templates,
         line,
+        full,
     };
     let asked = ai::ask(&mut side, &models, &prompt_text, &schema, wrapped);
     // The pair holds the closures: they go once the asking is done.
@@ -131,10 +149,20 @@ pub fn ask(pair: i64, request: i64, templates: i64, code: i64, line: i32) -> i64
         moved: (asked.moved.iter())
             .map(|(i, f)| (name(*i).unwrap_or_default(), f.variant()))
             .collect(),
+        usage: asked.usage,
+        cost: asked.cost.clone(),
     };
     let took = i64::try_from(asked.tokens.input + asked.tokens.output).unwrap_or(i64::MAX);
     LAST.with(|l| *l.borrow_mut() = Some((shown, took)));
     let result = match asked.result {
+        // With what it took (spec 8.4, *Usage and cost*).
+        Ok(_) if full => {
+            let whole = ai::full_answer(&asked, &name(asked.used).unwrap_or_default());
+            match crate::rt_json_decode::decode(&whole, type_of(code), "", templates) {
+                Ok(v) => v as i64,
+                Err(_) => crate::rt::panic_with("`Asked` can't hold this answer", line),
+            }
+        }
         Ok(slot) => slot as i64,
         Err(f) => {
             match find_union("AiError", "NoKey") {
@@ -157,6 +185,14 @@ fn text_type() -> Type {
 
 // The group's runtime entry (`RtOp::entry`, decision 0024).
 crate::rt_data::entry!(kv_rt_ai, |op, a, b, c, code, line| {
-    let _ = op;
-    ask(a, b, c, code, line)
+    match op {
+        // What the run's `ask`s took, or one agent's (`ai.spent`, 8.4).
+        kavach_kir::RtOp::AiSpent => {
+            let agent = with_str(a, str::to_string);
+            release(a);
+            let spent = kavach_runtime_core::agents::costs::spent_json(&agent);
+            new_text(&spent, type_of(code))
+        }
+        _ => ask(a, b, c, code, line),
+    }
 });

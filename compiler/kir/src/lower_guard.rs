@@ -63,19 +63,21 @@ impl<'a> Lowerer<'a> {
             check,
             rt(RtOp::AgentBegin, begin, Type::I64, line),
         ));
-        // An `ask`: the most it can take, for a `tokens` limit (spec 8.3).
+        // An `ask`: the most it can take, for a `tokens` limit, and its
+        // models' prices, for a `cost` limit (spec 8.3).
         if let Called::Ask { model, .. } = &called {
             let name = self.c.resolution.defs[agent].name.clone();
-            // The largest of a list's models (spec 8.4, *Fallbacks*).
-            let most = match model {
-                Some(m) => m.most_tokens(kavach_driver::DEFAULT_MAX_TOKENS),
-                None => {
-                    let m = self.c.ask_model((u32::MAX, u32::MAX), Some(&name));
-                    m.most_tokens(kavach_driver::DEFAULT_MAX_TOKENS)
-                }
+            let model = match model {
+                Some(m) => (**m).clone(),
+                None => self.c.ask_model((u32::MAX, u32::MAX), Some(&name)),
             };
+            // The largest of a list's models (spec 8.4, *Fallbacks*).
+            let most = model.most_tokens(kavach_driver::DEFAULT_MAX_TOKENS);
             let given = vec![self.local_expr(check, line), int(most as usize, line)];
             stmts.push(Stmt::Expr(rt(RtOp::AgentBound, given, Type::Unit, line)));
+            let prices = self.ask_prices(&model, line);
+            let given = vec![self.local_expr(check, line), prices];
+            stmts.push(Stmt::Expr(rt(RtOp::AgentPrices, given, Type::Unit, line)));
         }
         let refused = self.new_local(Type::Bool);
         stmts.push(Stmt::Let(refused, expr(K::Bool(false), Type::Bool, line)));
@@ -452,5 +454,13 @@ impl<'a> Lowerer<'a> {
         let (check, rule) = self.agents.rule?;
         let args = vec![self.local_expr(check, line), int(rule, line)];
         Some(rt(RtOp::AgentTokens, args, Type::I64, line))
+    }
+
+    /// `cost` in a `limit Ai` rule: what the window's earlier asks cost,
+    /// a `Decimal` of type `ty` (spec 8.3).
+    pub(crate) fn rule_cost(&self, ty: Type, line: u32) -> Option<ir::Expr> {
+        let (check, rule) = self.agents.rule?;
+        let args = vec![self.local_expr(check, line), int(rule, line)];
+        Some(rt(RtOp::AgentCost, args, ty, line))
     }
 }

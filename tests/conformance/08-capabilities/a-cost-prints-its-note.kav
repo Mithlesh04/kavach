@@ -1,0 +1,8 @@
+// Rule: A cost is an estimate: printing one prints its dollars and the note that says how far to trust it.
+// Spec: 8.4
+// expect output: about $0.003568 (estimate: prices as of 2026-11-22; the provider's bill is exact)
+
+fn main() {
+    const c = Cost(dollars: 0.003568, note: "estimate: prices as of 2026-11-22; the provider's bill is exact")
+    print(c)
+}

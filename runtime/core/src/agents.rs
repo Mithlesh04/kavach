@@ -96,12 +96,27 @@ pub fn set_audit_sink(sink: AuditSink) {
 
 /// The model that answered an `Ai.ask`, and the tokens it took (`None`
 /// on a dry run, which asks no one); before it, each model the call
-/// moved on from, with the error's variant (spec 8.4, *Fallbacks*).
-#[derive(Clone, Debug, Default)]
+/// moved on from, with the error's variant (spec 8.4, *Fallbacks*); and
+/// what every try took and cost, or why its cost isn't known (8.4).
+#[derive(Clone, Debug)]
 pub struct Asked {
     pub model: String,
     pub tokens: Option<(u64, u64)>,
     pub moved: Vec<(String, String)>,
+    pub usage: costs::Usage,
+    pub cost: Result<costs::Spend, String>,
+}
+
+impl Default for Asked {
+    fn default() -> Asked {
+        Asked {
+            model: String::new(),
+            tokens: None,
+            moved: Vec::new(),
+            usage: costs::Usage::default(),
+            cost: Err(String::new()),
+        }
+    }
 }
 
 impl Asked {
@@ -112,8 +127,21 @@ impl Asked {
             out.push_str(&format!("  model: {model}, moved on: {why}\n"));
         }
         out + &match self.tokens {
-            Some((i, o)) => format!("  model: {}, tokens: {i} in, {o} out\n", self.model),
+            Some((i, o)) => format!(
+                "  model: {}, tokens: {i} in, {o} out\n  cost: {}\n",
+                self.model,
+                self.cost_shown()
+            ),
             None => format!("  model: {} (dry run: no tokens)\n", self.model),
+        }
+    }
+
+    /// Its cost as the audit log gives it: `about $0.0042 (estimate: …)`,
+    /// or `not known (no price for gpt-5.5)` (spec 8.6).
+    pub fn cost_shown(&self) -> String {
+        match &self.cost {
+            Ok(spend) => spend.shown(),
+            Err(why) => format!("not known ({why})"),
         }
     }
 }
@@ -214,6 +242,12 @@ pub struct Check {
     pub tokens: Vec<usize>,
     /// For an `ask`: the most it can take (`largest_ask`), else 0.
     pub bound: i64,
+    /// The rules that read `cost`: they add what the `ask` cost (8.3).
+    pub costs: Vec<usize>,
+    /// For an `ask`: the most it can cost (`largest_cost`), and the first
+    /// model of its list with no price, which a `cost` rule refuses.
+    pub cost_bound: Decimal,
+    pub unpriced: Option<String>,
     /// The calls counted when it started (`Guard::start`): each rule's
     /// index and the id of its entry.
     started: Vec<(usize, u64)>,
@@ -225,6 +259,16 @@ impl Check {
         for (i, x) in &mut self.record {
             if self.tokens.contains(i) {
                 *x = Some(Num::Int(n));
+            }
+        }
+    }
+
+    /// The `ask` cost `dollars` (0 when not known): what each rule reading
+    /// `cost` adds (spec 8.3).
+    pub fn cost(&mut self, dollars: Decimal) {
+        for (i, x) in &mut self.record {
+            if self.costs.contains(i) {
+                *x = Some(Num::Decimal(dollars));
             }
         }
     }
@@ -270,6 +314,9 @@ impl Guard {
             record: Vec::new(),
             tokens: Vec::new(),
             bound: 0,
+            costs: Vec::new(),
+            cost_bound: Decimal::from_int(0),
+            unpriced: None,
             started: Vec::new(),
         }
     }
@@ -304,6 +351,12 @@ impl Guard {
     /// whether it used `sum` or `count`, and `added` what `sum` added.
     /// Gives whether the call is refused (checking stops there).
     pub fn limit(&self, c: &mut Check, i: usize, ok: bool, used: bool, added: Option<Num>) -> bool {
+        // A model with no price can't be counted, so it isn't asked (8.3).
+        let unpriced = c.unpriced.as_ref().filter(|_| c.costs.contains(&i));
+        if let Some(model) = unpriced {
+            let why = format!("no price for {model}: give one, decision 0140");
+            return self.refuse(c, why);
+        }
         if ok {
             if used {
                 c.record
@@ -311,7 +364,18 @@ impl Guard {
             }
             return false;
         }
-        let why = format!("limit broken: {}", self.rules[i].text);
+        let mut why = format!("limit broken: {}", self.rules[i].text);
+        if c.costs.contains(&i) {
+            why += &format!(
+                " (about ${} so far: the ask that crosses a limit still runs, and costs are estimates)",
+                self.cost_so_far(i)
+            );
+        }
+        self.refuse(c, why)
+    }
+
+    /// The call is refused for `why`, or would be in observe mode.
+    fn refuse(&self, c: &mut Check, why: String) -> bool {
         if self.settings.mode == Mode::Observe {
             c.notes.push(format!("would be refused ({why})"));
             return false;
@@ -415,8 +479,9 @@ mod lock;
 pub use lock::{lock_folder, unlock_all};
 mod state;
 pub use audit::{utc_now, utc_of};
+pub mod costs;
 mod under_way;
-pub use under_way::{TRIES, UnderWay, largest_ask};
+pub use under_way::{TRIES, UnderWay, largest_ask, largest_cost};
 
 #[cfg(test)]
 mod tests;

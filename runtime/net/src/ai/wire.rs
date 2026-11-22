@@ -7,7 +7,8 @@
 //! with where its key goes, and of a `Reply`. And `AiError`, as the JSON
 //! each backend decodes into the program's value.
 
-use super::{Request, Tokens, gate};
+use super::{Request, gate};
+use kavach_runtime_core::agents::costs::Usage;
 use kavach_runtime_core::json::{self, Limits, Tree};
 use std::time::Duration;
 
@@ -187,9 +188,9 @@ pub(crate) enum Kind {
 /// A reply, as the provider read it (`std.ai`'s `Reply`).
 #[derive(Debug)]
 pub(crate) enum Reply {
-    Answer(String, Tokens),
-    Refused(Option<String>, Tokens),
-    CutOff(Tokens),
+    Answer(String, Usage),
+    Refused(Option<String>, Usage),
+    CutOff(Usage),
     /// What went wrong, the provider's message, and how long it asked to
     /// wait.
     Problem(Kind, String, Option<Duration>),
@@ -200,14 +201,7 @@ impl Reply {
         let tree = parse(text);
         let (name, f) = variant(&tree).ok_or_else(|| unreadable("reply"))?;
         // A count the provider didn't give is none: 0 here (spec 8.4).
-        let usage = |f: &Tree| {
-            let u = field(f, "usage");
-            let count = |n: &str| u.and_then(|u| int_of(field(u, n))).unwrap_or(0).max(0) as u64;
-            Tokens {
-                input: count("input"),
-                output: count("output"),
-            }
-        };
+        let usage = |f: &Tree| Usage::read(field(f, "usage"));
         Ok(match name {
             "Answer" => Reply::Answer(text_of(field(f, "text")).unwrap_or_default(), usage(f)),
             "Refused" => Reply::Refused(text_of(field(f, "reason")), usage(f)),
@@ -234,7 +228,7 @@ impl Reply {
     }
 
     /// The tokens the reply says it took, if it says.
-    pub(crate) fn usage(&self) -> Option<Tokens> {
+    pub(crate) fn usage(&self) -> Option<Usage> {
         match self {
             Reply::Answer(_, t) | Reply::Refused(_, t) | Reply::CutOff(t) => Some(*t),
             Reply::Problem(..) => None,

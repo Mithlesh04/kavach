@@ -51,6 +51,12 @@ Conformance tests for spec chapter [8. Capabilities and agents](../../../docs/sp
 | 8.3, 8.4 | [a-model-list-is-tried-in-turn.kav](a-model-list-is-tried-in-turn.kav) | An agent's `model` and a call's `model:` can be a list of models, tried in turn; a model may be in it more than once. How the list is tried is in `tools/cli/tests/ai_providers.rs`, which needs a fake model. | runs |
 | 8.4 | [a-model-list-needs-a-model.kav](a-model-list-needs-a-model.kav) | An empty list of models is a compile error. | compile error |
 | 8.4 | [a-model-list-holds-only-models.kav](a-model-list-holds-only-models.kav) | Each item of a list of models is a `Model`. | compile error |
+| 8.4 | [anthropic-prices-are-dated.kav](anthropic-prices-are-dated.kav) | `Anthropic()`'s prices are a dated table in US dollars, from Kavach; a model it doesn't list has no price. | runs |
+| 8.4 | [a-cost-prints-its-note.kav](a-cost-prints-its-note.kav) | Printing a cost prints its dollars and the note that says how far to trust it. Costs of real asks, the program's own prices, totals and `cost` limits are in `tools/cli/tests/ai_costs.rs`, which needs a fake model. | runs |
+| 8.4 | [ai-spent-starts-at-nothing.kav](ai-spent-starts-at-nothing.kav) | `ai.spent()` gives the run's totals, and `ai.spent(by: name)` an agent's; before any ask, nothing and no cost. | runs |
+| 8.3 | [cost-is-for-limit-ai.kav](cost-is-for-limit-ai.kav) | `cost` in a limit rule counts what AI calls cost: only for `limit Ai`. | compile error |
+| 8.3 | [a-cost-limit-is-a-decimal.kav](a-cost-limit-is-a-decimal.kav) | `cost` is a `Decimal` of US dollars. | compile error |
+| 8.3 | [a-rule-reads-tokens-or-cost.kav](a-rule-reads-tokens-or-cost.kav) | A rule reads `tokens` or `cost`, not both. | compile error |
 | 8.5 | [agent-settings-change-with-with.kav](agent-settings-change-with-with.kav) | An agent's `settings` are an `AgentSettings`; a function shares them, and `with { … }` changes fields for one agent. | runs |
 | 8.5 | [agent-settings-are-known-when-built.kav](agent-settings-are-known-when-built.kav) | An agent's `settings` are worked out when the program is built. | compile error |
 | 8.3, 8.5 | [asks-under-way-is-known-when-built.kav](asks-under-way-is-known-when-built.kav) | `asks_under_way` is an `UnderWay` variant written in the settings; a value known only at run time is a compile error. Each way's behaviour is in `tools/cli/tests/token_budget.rs`, which needs a fake model. | compile error |

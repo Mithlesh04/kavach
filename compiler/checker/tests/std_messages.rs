@@ -25,3 +25,20 @@ fn a_bare_variant_is_named_from_the_modules_used() {
         "an `Error` can hold any error type: write `FsError.NotFound`"
     );
 }
+
+/// A list of models with an item that isn't a `Model` gets one error, at
+/// the item, not also one saying the list can't be worked out (spec 8.4).
+#[test]
+fn a_wrong_item_in_a_list_of_models_is_one_error() {
+    let src = "type V {\n    ok: Bool\n}\n\nfn careful() -> Model {\n    Model(name: \"claude-opus-5-5\")\n}\n\nfn main() {\n    const v = ask<V>(\"Fine?\", model: [careful(), \"claude-haiku-5-5\"]) catch _e => V(ok: false)\n    print(v.ok)\n}\n";
+    let c = kavach_driver::compile(src, "main.kav", Default::default());
+    let errors: Vec<&str> = (c.messages.iter())
+        .filter(|m| m.severity == kavach_driver::Severity::Error)
+        .map(|m| m.text.as_str())
+        .collect();
+    assert_eq!(errors.len(), 1, "{errors:?}");
+    assert!(
+        errors[0].contains("expected `Model`, found `String`"),
+        "{errors:?}"
+    );
+}

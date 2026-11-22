@@ -289,6 +289,11 @@ pub(crate) const BUILTIN: &[(&str, &str, &str)] = &[
         include_str!("../../../stdlib/ai/ai.kav"),
     ),
     (
+        "std/ai/anthropic.kav",
+        "std.ai.anthropic",
+        include_str!("../../../stdlib/ai/anthropic.kav"),
+    ),
+    (
         "std/random.kav",
         "std.random",
         include_str!("../../../stdlib/random/random.kav"),

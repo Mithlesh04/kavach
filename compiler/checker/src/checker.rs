@@ -138,6 +138,8 @@ pub(crate) struct Checker<'a> {
     /// `Tensor<U>(t)` calls, and numbers given as tensors, by span
     /// (`std_tensor.rs`).
     pub(crate) tensor_casts: HashSet<(u32, u32)>,
+    /// Each `ai.ask_full` call, by its span (spec 8.4).
+    pub(crate) full_asks: HashSet<(u32, u32)>,
     pub(crate) as_tensors: HashMap<(u32, u32), Ty>,
     /// Types given for number-bounded parameters, checked once every
     /// literal's type is known (spec 2.9).
@@ -328,6 +330,7 @@ impl<'a> Checker<'a> {
             more_impls: HashMap::new(),
             chosen: HashMap::new(),
             tensor_casts: HashSet::new(),
+            full_asks: HashSet::new(),
             as_tensors: HashMap::new(),
             number_checks: Vec::new(),
             ptr_checks: Vec::new(),

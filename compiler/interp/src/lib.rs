@@ -242,20 +242,24 @@ pub fn end_hooks() {
 }
 
 /// Runs each tag's checker on each tagged literal (spec 10.15), and each
-/// model's provider's `check` on it (spec 8.4): the problems found, as
-/// compile errors and warnings.
+/// model's provider's `check` and `price` (spec 8.4): the problems join
+/// the program's messages, as compile errors and warnings.
 pub fn check_literals(program: &Compiled) -> Vec<kavach_driver::Message> {
-    if program.literal_uses.is_empty() && program.ai_written.is_empty() {
+    let asks = program.resolution.builtin_fn("std.ai", "wire").is_some();
+    if program.literal_uses.is_empty() && program.ai_written.is_empty() && !asks {
         return Vec::new();
     }
-    let found = std::sync::Mutex::new(Vec::new());
+    let found = std::sync::Mutex::new((Vec::new(), Default::default()));
     on_big_stack(program, false, Arc::default(), |i| {
         let mut problems = i.literal_problems();
         problems.extend(i.model_problems());
-        *found.lock().unwrap_or_else(|e| e.into_inner()) = problems;
+        let prices = i.model_prices();
+        *found.lock().unwrap_or_else(|e| e.into_inner()) = (problems, prices);
         0
     });
-    found.into_inner().unwrap_or_default()
+    let (problems, prices) = found.into_inner().unwrap_or_default();
+    let _ = program.ai_prices.set(prices);
+    problems
 }
 
 /// From now on, nothing in this process may change the machine: for a

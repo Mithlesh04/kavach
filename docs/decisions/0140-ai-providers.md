@@ -317,7 +317,7 @@ Options considered: **the counting call, else an estimate** (chosen); **offline 
 
 The first part was built on 2026-11-20: the `Provider` interface, `Anthropic`'s adapter rewritten in Kavach in `std.ai`, and the richer `AiError` (spec 8.4). Where this record didn't settle a point, the simplest option that fits it was taken. Each is **for a maintainer's review**:
 
-1. **The interface has only the methods built so far:** `check`, `key_variable`, `auth`, `request` and `read`. `count_request`, `read_count`, `estimate` and `price` join it with counting and prices; there are no users yet, so adding methods later breaks no one.
+1. **The interface has only the methods built so far:** `check`, `key_variable`, `auth`, `request` and `read`. `count_request`, `read_count`, `estimate` and `price` join it with counting and prices; there are no users yet, so adding methods later breaks no one. (`price` joined it on 2026-11-22, below.)
 2. **`key_variable(self) -> String`** is a method this record didn't have: each provider gives its own default key variable (choice 2), and the interface needed a place for it.
 3. **How the runtime calls a provider:** through `std.ai`'s private `wire(provider, settings)`, which gives a `fn(String) -> String` that takes and gives JSON text. So the runtime needs no Kavach types, and native code calls one closure, as it calls a `display` method.
 4. **`KAVACH_AI_URL`** now keeps the path the provider wrote and changes only the scheme, host and port (plus a path in front), so it works for every provider.
@@ -341,6 +341,17 @@ Fallbacks (choice 3) were built on 2026-11-22: `model` takes a list literal of m
 19. **`limit Ai`:** the call counts once for `count`; `tokens` counts every try; `UnderWay.Largest` takes the largest `max_tokens` in the list.
 20. **The audit log** has a `model: …, moved on: RateLimited` line for each change of model, with the error's variant but not its message, which can be a long provider body. A model tried twice in a row (sent again after a wait) gets no line, so one model logs as before.
 21. **Only a list literal** is a list of models; a `const` or a function that gives a list is not, for now.
+
+Usage, prices and money budgets (choices 4, 7 and 9) were built on 2026-11-22: `price` on the interface, `Anthropic`'s dated table, `ai.ask_full<T>`, `ai.spent`, `cost <=` in `limit Ai` and a `cost:` line in the audit log (spec 8.3, 8.4 *Prices* and *Usage and cost*, 8.6). Points this record didn't settle, each **for a maintainer's review**:
+
+22. **A program's own prices** are given by wrapping its provider, as section 1's example does; there is no separate table to pass.
+23. **`price` runs when the program is built,** as `check` does, for each model the program writes and the default model. A built program keeps the prices of its build.
+24. **Anthropic's table** has only the four models whose API names Anthropic's models page gives (`claude-fable-5-2`, `claude-opus-5-5`, `claude-sonnet-5-5`, `claude-haiku-5-5`), read from its pricing page on 2026-11-22. Haiku 5.5 is at its price for prompts up to 100,000 tokens: a longer prompt costs five times as much, so its estimate is low. Cache writes are counted at the `input` price, though Anthropic bills them at 1.25 or 2 times it.
+25. **`a.model`** is the answering model's name, not its `Model`.
+26. **A usage count** is the sum of the tries that gave it, `none` when none did.
+27. **Totals:** `ai.spent()` for the run and `ai.spent(by: "Name")` for an agent, since the program started, needing no capability; an `ask` counts once it reached a model, answered or not; an `ask` with no known cost is counted in `unpriced` and left out of `cost`.
+28. **`cost <=`** refuses an `ask` whose list has any model with no price, even when an earlier model would answer; a rule can't read both `tokens` and `cost`; a cost a reply gave no counts for counts as 0; the refusal gives the window's cost so far; asks under way are counted as `asks_under_way` says, at the largest cost for `UnderWay.Largest`.
+29. **The note** of a cost names each kind of price with its oldest date: `prices as of …`, `the program's prices as of …`, `prices from <package> as of …`.
 
 ## Consequences
 

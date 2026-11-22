@@ -1,0 +1,15 @@
+// Rule: `Anthropic()`'s prices are a dated table in US dollars per million tokens, from Kavach; a model it doesn't list has no price, never 0.
+// Spec: 8.4
+// expect output: 4.00 in, 20.00 out, 0.20 cached, per 1000000
+// expect output: 2026-11-22
+// expect output: true
+// expect output: none
+
+fn main() {
+    if let p = Anthropic().price("claude-opus-5-5") {
+        print(`{p.input} in, {p.output} out, {p.cached_input ?? 0.00} cached, per {p.per}`)
+        print(`{p.as_of.year}-{p.as_of.month}-{p.as_of.day}`)
+        print(p.from == PriceSource.Kavach)
+    }
+    print(Anthropic().price("claude-opus-4-1"))
+}

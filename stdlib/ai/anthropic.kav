@@ -1,0 +1,227 @@
+// Copyright (c) 2026 Mithlesh and the Kavach contributors
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// https://kavachlang.com | https://github.com/Mithlesh04/kavach
+
+// std.ai.anthropic (spec 8.4, decision 0140): `Anthropic`, the provider
+// of every `Model` that names none, written against `std.ai`'s
+// `Provider` like any other provider, with Anthropic's prices.
+
+use std.json
+
+/// Anthropic's Messages API (spec 8.4): the provider of every `Model`
+/// that names none.
+pub type Anthropic: Provider {
+    /// `thinking: false` on a model that always thinks first, or with
+    /// more effort than `High`.
+    pub fn check(self, model: Model) -> [String]
+        example Anthropic().check(Model(name: "claude-opus-5-5", thinking: false)).len() == 1
+        example Anthropic().check(Model(name: "claude-haiku-5-5", thinking: false)).is_empty()
+    {
+        let out: [String] = []
+        if not (model.thinking ?? true) {
+            if model.name.starts_with("claude-opus-5-5") {
+                out.push("`" + model.name + "` always thinks before it answers, so `thinking: false` would fail: leave it out, and lower `effort` for fewer tokens (spec 8.4)")
+            }
+            const effort = match model.effort ?? Effort.Low {
+                Effort.XHigh => "XHigh",
+                Effort.Max => "Max",
+                _ => "",
+            }
+            if not effort.is_empty() {
+                out.push("`thinking: false` can't go with `effort: Effort." + effort + "`: with thinking off, effort goes up to `Effort.High` (spec 8.4)")
+            }
+        }
+        out
+    }
+
+    pub fn key_variable(self) -> String
+        example Anthropic().key_variable() == "ANTHROPIC_API_KEY"
+    {
+        "ANTHROPIC_API_KEY"
+    }
+
+    pub fn auth(self, model: Model) -> Auth {
+        Auth.InHeader(name: "x-api-key")
+    }
+
+    pub fn request(self, call: AskCall) -> HttpCall
+        example Anthropic().request(AskCall(model: Model(name: "m"), prompt: "p", schema: Json.Null, strict: false)).url == "https://api.anthropic.com/v1/messages"
+    {
+        let base = call.model.api_url ?? "https://api.anthropic.com"
+        while base.ends_with("/") {
+            base = base[:base.len() - 1]
+        }
+        const headers = {"anthropic-version": "2023-06-01", "content-type": "application/json"}
+        HttpCall(url: base + "/v1/messages", headers: headers, body: json.stringify(anthropic_body(call)))
+    }
+
+    pub fn read(self, call: AskCall, reply: HttpReply) -> Reply {
+        const doc = json.parse(reply.body) catch e => Json.Null
+        const usage = anthropic_usage(doc.get("usage"))
+        if reply.status == 200 {
+            // A refusal, or an answer cut off at `max_tokens`, won't
+            // change when asked again.
+            const stop = doc.get("stop_reason").text() ?? ""
+            if stop == "refusal" {
+                return Reply.Refused(reason: none, usage: usage)
+            }
+            if stop == "max_tokens" {
+                return Reply.CutOff(usage: usage)
+            }
+            return Reply.Answer(text: anthropic_text(doc), usage: usage)
+        }
+        const error = doc.get("error")
+        const message = error.get("message").text() ?? reply.body[:200]
+        const kind = anthropic_trouble(reply.status, error.get("type").text() ?? "")
+        Reply.Problem(kind: kind, message: message, wait: retry_after(reply.headers))
+    }
+
+    /// The price of `model`'s tokens, from Anthropic's table below; none
+    /// for a model it doesn't list.
+    pub fn price(self, model: String) -> Price?
+        example Anthropic().price("claude-opus-5-5")?.output == 20.00
+        example Anthropic().price("claude-opus-4-1") == none
+    {
+        anthropic_prices().get(model)
+    }
+}
+
+/// Anthropic's prices in US dollars per million tokens: base input,
+/// output, and cache hits (`cached_input`), as Anthropic's pricing page
+/// gives them (https://platform.claude.com/docs/en/about-claude/pricing),
+/// read on 2026-11-22. Only the models whose API names that page's
+/// models overview gives are here; any other has no price. Haiku 5.5's
+/// is for prompts up to 100,000 tokens: a longer one costs five times as
+/// much, so its estimate is low. Cache writes cost more than `input`
+/// (1.25 or 2 times), and are counted at `input` (spec 8.4).
+fn anthropic_prices() -> {String: Price} {
+    const day = Date(year: 2026, month: 11, day: 22)
+    const at = (input: Decimal, output: Decimal, cached: Decimal) => Price(input: input,
+        output: output, cached_input: cached, per: 1_000_000, as_of: day, from: PriceSource.Kavach)
+    {
+        "claude-fable-5-2": at(8.00, 40.00, 0.20),
+        "claude-opus-5-5": at(4.00, 20.00, 0.20),
+        "claude-sonnet-5-5": at(2.00, 10.00, 0.10),
+        "claude-haiku-5-5": at(0.10, 0.50, 0.01),
+    }
+}
+
+/// What an error status, and the error's type, mean (spec 8.4).
+fn anthropic_trouble(status: Int, kind: String) -> Trouble
+    example anthropic_trouble(529, "overloaded_error") == Trouble.Overloaded
+    example anthropic_trouble(400, "billing_error") == Trouble.QuotaUsedUp
+{
+    if status == 402 or kind == "billing_error" {
+        return Trouble.QuotaUsedUp
+    }
+    if status == 429 {
+        Trouble.RateLimited
+    } else if status == 401 or status == 403 {
+        Trouble.BadKey
+    } else if status == 404 {
+        Trouble.NotFound
+    } else if status == 400 or status == 413 {
+        Trouble.BadRequest
+    } else if status == 504 {
+        Trouble.TimedOut
+    } else if status >= 500 and status < 600 {
+        Trouble.Overloaded
+    } else {
+        Trouble.Other(status: status)
+    }
+}
+
+/// The body of Anthropic's request: the model, the prompt, and each
+/// setting the `Model` gives.
+fn anthropic_body(call: AskCall) -> Json {
+    const m = call.model
+    let fields: {String: Json} = {:}
+    fields["model"] = Json.Text(value: m.name)
+    fields["max_tokens"] = Json.Number(digits: `{m.max_tokens ?? 4096}`)
+    const message = {"role": Json.Text(value: "user"), "content": Json.Text(value: call.prompt)}
+    fields["messages"] = Json.Array(items: [Json.Object(fields: message)])
+    let config: {String: Json} = {:}
+    if call.strict {
+        config["format"] = Json.Object(fields: {"type": Json.Text(value: "json_schema"), "schema": call.schema})
+    }
+    if let e = m.effort {
+        config["effort"] = Json.Text(value: effort_name(e))
+    }
+    if not config.is_empty() {
+        fields["output_config"] = Json.Object(fields: config)
+    }
+    if not (m.thinking ?? true) {
+        // Each model turns thinking off its own way: Sonnet 5.5 takes
+        // `between_tools`, the others `disabled`, as their errors say.
+        const off = if m.name.contains("sonnet-5-5") { "between_tools" } else { "disabled" }
+        fields["thinking"] = Json.Object(fields: {"type": Json.Text(value: off)})
+    }
+    if let s = m.instructions {
+        fields["system"] = Json.Text(value: s)
+    }
+    const stop = m.stop ?? []
+    if not stop.is_empty() {
+        fields["stop_sequences"] = Json.Array(items: stop.map(t => Json.Text(value: t)))
+    }
+    // A setting Kavach doesn't name: written as it is, in place of one
+    // Kavach would send.
+    const extra = json.parse(m.extra ?? "{}") catch e => Json.Null
+    for (k, v) in extra.object() ?? {:} {
+        fields.remove(k)
+        fields[k] = v
+    }
+    Json.Object(fields: fields)
+}
+
+/// The name the API gives an effort.
+fn effort_name(e: Effort) -> String
+    example effort_name(Effort.XHigh) == "xhigh"
+{
+    match e {
+        Effort.Low => "low",
+        Effort.Medium => "medium",
+        Effort.High => "high",
+        Effort.XHigh => "xhigh",
+        Effort.Max => "max",
+    }
+}
+
+/// The first `text` block of the reply's `content`: reasoning blocks may
+/// come before it.
+fn anthropic_text(doc: Json) -> String
+    example anthropic_text(Json.Null) == ""
+{
+    for block in doc.get("content").list() ?? [] {
+        if block.get("type").text() == "text" {
+            return block.get("text").text() ?? ""
+        }
+    }
+    ""
+}
+
+/// Anthropic's usage, with the cached input tokens it counts apart added
+/// back into `input` (decision 0140).
+fn anthropic_usage(u: Json) -> Usage
+    example anthropic_usage(Json.Null).input == none
+{
+    const read = u.get("cache_read_input_tokens").int()
+    const written = u.get("cache_creation_input_tokens").int()
+    const input = if let n = u.get("input_tokens").int() {
+        n + (read ?? 0) + (written ?? 0)
+    } else {
+        none
+    }
+    Usage(input: input, output: u.get("output_tokens").int(), cached_input: read)
+}
+
+/// The wait a `retry-after` header asks for, in seconds; none without one.
+fn retry_after(headers: {String: String}) -> Duration?
+    example retry_after({"retry-after": "3"}) == Duration(ms: 3000)
+    example retry_after({:}) == none
+{
+    const seconds = Int((headers.get("retry-after") ?? "").trim()) catch e => -1
+    if seconds < 0 {
+        return none
+    }
+    Duration(ms: seconds * 1000)
+}

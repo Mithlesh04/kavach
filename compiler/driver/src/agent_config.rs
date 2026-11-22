@@ -118,3 +118,50 @@ pub fn model_settings(m: &kavach_checker::AiModel) -> kavach_runtime_core::json:
     add("provider", m.provider.as_ref().map(|(_, name)| text(name)));
     Tree::Object(fields)
 }
+
+/// Where a model's price is kept (`Compiled::ai_prices`): where its
+/// provider is written (`None`: `Anthropic()`), and its name.
+pub type AiPriceKey = (Option<(u32, u32)>, String);
+
+/// The key of `m`'s price.
+pub fn price_key(m: &kavach_checker::AiModel) -> AiPriceKey {
+    (m.provider.as_ref().map(|(at, _)| *at), m.name.clone())
+}
+
+impl crate::Compiled {
+    /// `m`'s settings, with its price when the program's build worked one
+    /// out (spec 8.4, *Prices*): what an `ask` sends the runtime.
+    pub fn priced_settings(&self, m: &kavach_checker::AiModel) -> kavach_runtime_core::json::Tree {
+        use kavach_runtime_core::json::Tree;
+        let mut settings = model_settings(m);
+        if let (Tree::Object(fields), Some(price)) = (&mut settings, self.price_of(m)) {
+            fields.push(("price".to_string(), price.clone()));
+        }
+        settings
+    }
+
+    /// `m`'s price as the build worked it out, if it did.
+    pub fn price_of(
+        &self,
+        m: &kavach_checker::AiModel,
+    ) -> Option<&kavach_runtime_core::json::Tree> {
+        self.ai_prices.get()?.get(&price_key(m))
+    }
+
+    /// The models whose prices the build works out: each one the program
+    /// writes, and the default.
+    pub fn priced_models(&self) -> Vec<kavach_checker::AiModel> {
+        let default = kavach_checker::AiModel {
+            name: DEFAULT_MODEL.to_string(),
+            ..Default::default()
+        };
+        let written = self.ai_written.iter().map(|(_, m)| m.clone());
+        let mut out: Vec<kavach_checker::AiModel> = Vec::new();
+        for m in std::iter::once(default).chain(written) {
+            if !out.iter().any(|o| price_key(o) == price_key(&m)) {
+                out.push(m);
+            }
+        }
+        out
+    }
+}

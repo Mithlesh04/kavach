@@ -120,7 +120,8 @@ impl Checker<'_> {
         let mut checked = Vec::new();
         let mut found = |e: &Expr, checked: &mut Vec<(Span, AiModel)>| {
             let models = self.models_of(e, &consts, &mut providers);
-            let models = models.map_err(|why| wrong.push((e.span, why))).ok()?;
+            // An item of the wrong type has its error already (`check_model`).
+            let models = (models.map_err(|why| why.map(|why| wrong.push((e.span, why))))).ok()?;
             checked.extend(models.iter().map(|m| (e.span, m.clone())));
             let mut models = models.into_iter();
             let mut first = models.next()?;
@@ -189,23 +190,33 @@ impl Checker<'_> {
 
     /// The models `e` gives, in the order they are tried: one, or each of
     /// a list of them (spec 8.4, *Fallbacks*); or why they can't be
-    /// worked out now.
+    /// worked out now (`None`: an item isn't a `Model`, which the type
+    /// check reported already).
     fn models_of(
         &self,
         e: &Expr,
         consts: &HashMap<DefId, Expr>,
         providers: &mut HashMap<(u32, u32), Expr>,
-    ) -> Result<Vec<AiModel>, &'static str> {
+    ) -> Result<Vec<AiModel>, Option<&'static str>> {
         let one = |e: &Expr, providers: &mut HashMap<(u32, u32), Expr>| {
             self.model_of(e, consts, 0, providers)
         };
+        let why = |m: &Expr| (!self.not_a_model(m)).then_some(NOT_KNOWN);
         match &e.kind {
-            ExprKind::List(items) if items.is_empty() => Err(EMPTY),
+            ExprKind::List(items) if items.is_empty() => Err(Some(EMPTY)),
             ExprKind::List(items) => (items.iter())
-                .map(|m| one(m, providers).ok_or(NOT_KNOWN))
+                .map(|m| one(m, providers).ok_or_else(|| why(m)))
                 .collect(),
-            _ => one(e, providers).map(|m| vec![m]).ok_or(NOT_KNOWN),
+            _ => one(e, providers).map(|m| vec![m]).ok_or_else(|| why(e)),
         }
+    }
+
+    /// Whether the type check found `e` is not a `Model`.
+    fn not_a_model(&self, e: &Expr) -> bool {
+        let model = self.builtin_ty("Model");
+        (self.expr_types.iter())
+            .find(|(span, _)| *span == e.span)
+            .is_some_and(|(_, t)| self.inf.resolve(t) != model)
     }
 
     /// The model `e` gives, if it can be worked out now.
@@ -369,15 +380,24 @@ impl VisitMut for Consts<'_, '_> {
     }
 }
 
-/// Each `ask` with a `model:`: the call's span, and the model's value.
+/// Each `ask` or `ai.ask_full` with a `model:`: the call's span, and the
+/// model's value.
 struct Asks {
     found: Vec<((u32, u32), Expr)>,
 }
 
 impl VisitMut for Asks {
     fn expr(&mut self, e: &mut Expr) {
+        // `ask<T>(…)`, or `ai.ask_full<T>(…)` (spec 8.4).
+        let asks = |callee: &Expr| match &callee.kind {
+            ExprKind::Name(f) => f.name == "ask",
+            ExprKind::Field { base, name, .. } => {
+                name.name == "ask_full" && matches!(base.kind, ExprKind::Name(_))
+            }
+            _ => false,
+        };
         if let ExprKind::Call { callee, args, .. } = &e.kind
-            && matches!(&callee.kind, ExprKind::Name(f) if f.name == "ask")
+            && asks(callee)
         {
             let model = args
                 .iter()

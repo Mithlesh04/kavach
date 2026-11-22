@@ -135,9 +135,7 @@ impl Checker<'_> {
                 AgentMember::Limit { target, rules } => {
                     let on_ai = target.segments.first().is_some_and(|s| s.name == "Ai");
                     for r in rules {
-                        if !on_ai {
-                            self.tokens_only_on_ai(&r.expr);
-                        }
+                        self.ai_totals_in(&r.expr, on_ai);
                         self.bind_rule_params(target, &r.expr);
                         self.with_ctx("limit", Ty::Unit, None, None, |c| {
                             c.check_expect(&r.expr, &bool_ty);
@@ -183,21 +181,35 @@ impl Checker<'_> {
         }
     }
 
-    /// `tokens` in a rule on another capability: what `ask`s took counts
-    /// only for `Ai` (spec 8.3).
-    fn tokens_only_on_ai(&mut self, e: &kavach_ast::Expr) {
-        let mut spans = Vec::new();
+    /// `tokens` and `cost` in a rule: what `ask`s took counts only for
+    /// `Ai`, and a rule keeps one of the two (spec 8.3).
+    fn ai_totals_in(&mut self, e: &kavach_ast::Expr, on_ai: bool) {
+        let mut found = Vec::new();
         kavach_ast::visit::walk_expr(
             &mut TokensIn {
                 res: self.res,
-                found: &mut spans,
+                found: &mut found,
             },
             &mut e.clone(),
         );
-        for span in spans {
+        if on_ai {
+            let both =
+                found.iter().any(|(_, n)| n == "tokens") && found.iter().any(|(_, n)| n == "cost");
+            if both {
+                self.error(
+                    e.span,
+                    "a `limit Ai` rule reads `tokens` or `cost`, not both: write two rules (spec 8.3)",
+                );
+            }
+            return;
+        }
+        for (span, name) in found {
+            let what = if name == "cost" { "cost" } else { "took" };
             self.error(
                 span,
-                "`tokens` counts what AI calls took: it is for `limit Ai` rules (spec 8.3)",
+                format!(
+                    "`{name}` counts what AI calls {what}: it is for `limit Ai` rules (spec 8.3)"
+                ),
             );
         }
     }
@@ -241,10 +253,10 @@ impl Checker<'_> {
     }
 }
 
-/// The uses of the limit name `tokens` in a rule.
+/// The uses of the limit names `tokens` and `cost` in a rule.
 struct TokensIn<'r, 'f> {
     res: &'r kavach_resolver::Resolution,
-    found: &'f mut Vec<kavach_ast::Span>,
+    found: &'f mut Vec<(kavach_ast::Span, String)>,
 }
 
 impl kavach_ast::visit::VisitMut for TokensIn<'_, '_> {
@@ -255,8 +267,8 @@ impl kavach_ast::visit::VisitMut for TokensIn<'_, '_> {
                 .uses
                 .get(&id.span.start)
                 .is_some_and(|d| self.res.defs[*d].kind == kavach_resolver::DefKind::Builtin);
-            if builtin && id.name == "tokens" {
-                self.found.push(id.span);
+            if builtin && matches!(id.name.as_str(), "tokens" | "cost") {
+                self.found.push((id.span, id.name.clone()));
             }
         }
         kavach_ast::visit::walk_expr(self, e);

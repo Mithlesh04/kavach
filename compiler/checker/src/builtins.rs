@@ -69,39 +69,7 @@ impl Checker<'_> {
                 let _ = t;
                 if name == "panic" { Ty::Never } else { Ty::Unit }
             }
-            "ask" => {
-                self.no_wait_in_update(span, "`ask`");
-                // The prompt, and maybe the call's own `model:` (spec 8.4).
-                let (named, plain): (Vec<_>, Vec<_>) = args.iter().partition(|a| a.name.is_some());
-                if plain.len() != 1 {
-                    self.error(
-                        span,
-                        "`ask` takes one prompt: `ask<T>(prompt)`, or `ask<T>(prompt, model: m)`",
-                    );
-                }
-                if let Some(a) = plain.first() {
-                    self.check_expect(&a.value, &string);
-                    self.check_secret(&a.value, "an AI prompt");
-                }
-                for a in named {
-                    let label = a.name.as_ref().map_or("", |n| n.name.as_str());
-                    if label == "model" {
-                        self.check_model(&a.value);
-                    } else {
-                        self.error(a.value.span, format!("`ask` has no option `{label}`: its one option is `model:`, a `Model` or a list of them (spec 8.4)"));
-                    }
-                }
-                let answer = match generics.first() {
-                    Some(t) => self.lower(t, None),
-                    None => self.fresh(),
-                };
-                // It fails with an `AiError` (spec 8.4), from `std.ai`.
-                let error = match self.builtin_ty("AiError") {
-                    Ty::Error => self.error_ty(),
-                    ai => ai,
-                };
-                Ty::Result(Box::new(answer), Box::new(error))
-            }
+            "ask" => self.ask_type(generics, args, span, false),
             // Its value is a secret (spec 10.13): keys come this way.
             "env" => {
                 self.secret.insert((span.start, span.end));

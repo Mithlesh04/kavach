@@ -3,13 +3,15 @@
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
 // std.ai (spec 8.4): the error `ask<T>` fails with, the `Model` it asks,
-// and the `Provider` interface that translates an `ask` into one
-// provider's API (decision 0140). Sending, keys, retries, gates and
-// limits are the runtime's. `Anthropic`, the default provider, is
-// written below against the same interface, and `wire` is how the
-// runtime calls a provider.
+// the `Provider` interface that translates an `ask` into one provider's
+// API (decision 0140), and what an `ask` took and cost. Sending, keys,
+// retries, gates and limits are the runtime's. `Anthropic`, the default
+// provider, is in `std.ai.anthropic`, and `wire` is how the runtime calls
+// a provider.
 
 use std.json
+use std.ai
+use std.ai.anthropic
 
 /// Why an AI call failed (spec 8.4): each kind of trouble means the same
 /// for every provider.
@@ -125,6 +127,9 @@ pub interface Provider {
     fn request(self, call: AskCall) -> HttpCall
     /// What came back: an answer, or why there is none.
     fn read(self, call: AskCall, reply: HttpReply) -> Reply
+    /// The price of a model's tokens; none: not known. Worked out when
+    /// the program is built, as `check` is (spec 8.4, *Prices*).
+    fn price(self, model: String) -> Price?
 }
 
 /// One `ask`, as the provider sees it.
@@ -179,193 +184,71 @@ pub type Usage {
     pub thinking?: Int
 }
 
-/// Anthropic's Messages API (spec 8.4): the provider of every `Model`
-/// that names none.
-pub type Anthropic: Provider {
-    /// `thinking: false` on a model that always thinks first, or with
-    /// more effort than `High`.
-    pub fn check(self, model: Model) -> [String]
-        example Anthropic().check(Model(name: "claude-opus-5-5", thinking: false)).len() == 1
-        example Anthropic().check(Model(name: "claude-haiku-5-5", thinking: false)).is_empty()
+/// The price of a model's tokens, in US dollars (spec 8.4, *Prices*).
+pub type Price {
+    /// per `per` input tokens
+    pub input: Decimal
+    /// per `per` output tokens, thinking included
+    pub output: Decimal
+    /// per `per` input tokens read from the provider's cache; none: as
+    /// `input`
+    pub cached_input?: Decimal
+    /// usually 1,000,000
+    pub per: Int
+    /// the day the price was read
+    pub as_of: Date
+    pub from: PriceSource
+}
+
+/// Where a price comes from: Kavach's own table, the program, or a
+/// package.
+pub type PriceSource = Kavach | Program | Package(name: String)
+
+/// What an `ask` cost, worked out from prices: an estimate, and how far
+/// to trust it (spec 8.4, *Usage and cost*).
+pub type Cost: Display {
+    /// in US dollars
+    pub dollars: Decimal
+    /// how far to trust it
+    pub note: String
+
+    /// `about $0.0042 (estimate: prices as of 2026-11-16; the provider's
+    /// bill is exact)`.
+    pub fn display(self) -> String
+        example Cost(dollars: 0.0042, note: "estimate").display() == "about $0.0042 (estimate)"
     {
-        let out: [String] = []
-        if not (model.thinking ?? true) {
-            if model.name.starts_with("claude-opus-5-5") {
-                out.push("`" + model.name + "` always thinks before it answers, so `thinking: false` would fail: leave it out, and lower `effort` for fewer tokens (spec 8.4)")
-            }
-            const effort = match model.effort ?? Effort.Low {
-                Effort.XHigh => "XHigh",
-                Effort.Max => "Max",
-                _ => "",
-            }
-            if not effort.is_empty() {
-                out.push("`thinking: false` can't go with `effort: Effort." + effort + "`: with thinking off, effort goes up to `Effort.High` (spec 8.4)")
-            }
-        }
-        out
-    }
-
-    pub fn key_variable(self) -> String
-        example Anthropic().key_variable() == "ANTHROPIC_API_KEY"
-    {
-        "ANTHROPIC_API_KEY"
-    }
-
-    pub fn auth(self, model: Model) -> Auth {
-        Auth.InHeader(name: "x-api-key")
-    }
-
-    pub fn request(self, call: AskCall) -> HttpCall
-        example Anthropic().request(AskCall(model: Model(name: "m"), prompt: "p", schema: Json.Null, strict: false)).url == "https://api.anthropic.com/v1/messages"
-    {
-        let base = call.model.api_url ?? "https://api.anthropic.com"
-        while base.ends_with("/") {
-            base = base[:base.len() - 1]
-        }
-        const headers = {"anthropic-version": "2023-06-01", "content-type": "application/json"}
-        HttpCall(url: base + "/v1/messages", headers: headers, body: json.stringify(anthropic_body(call)))
-    }
-
-    pub fn read(self, call: AskCall, reply: HttpReply) -> Reply {
-        const doc = json.parse(reply.body) catch e => Json.Null
-        const usage = anthropic_usage(doc.get("usage"))
-        if reply.status == 200 {
-            // A refusal, or an answer cut off at `max_tokens`, won't
-            // change when asked again.
-            const stop = doc.get("stop_reason").text() ?? ""
-            if stop == "refusal" {
-                return Reply.Refused(reason: none, usage: usage)
-            }
-            if stop == "max_tokens" {
-                return Reply.CutOff(usage: usage)
-            }
-            return Reply.Answer(text: anthropic_text(doc), usage: usage)
-        }
-        const error = doc.get("error")
-        const message = error.get("message").text() ?? reply.body[:200]
-        const kind = anthropic_trouble(reply.status, error.get("type").text() ?? "")
-        Reply.Problem(kind: kind, message: message, wait: retry_after(reply.headers))
+        `about ${self.dollars} ({self.note})`
     }
 }
 
-/// What an error status, and the error's type, mean (spec 8.4).
-fn anthropic_trouble(status: Int, kind: String) -> Trouble
-    example anthropic_trouble(529, "overloaded_error") == Trouble.Overloaded
-    example anthropic_trouble(400, "billing_error") == Trouble.QuotaUsedUp
-{
-    if status == 402 or kind == "billing_error" {
-        return Trouble.QuotaUsedUp
-    }
-    if status == 429 {
-        Trouble.RateLimited
-    } else if status == 401 or status == 403 {
-        Trouble.BadKey
-    } else if status == 404 {
-        Trouble.NotFound
-    } else if status == 400 or status == 413 {
-        Trouble.BadRequest
-    } else if status == 504 {
-        Trouble.TimedOut
-    } else if status >= 500 and status < 600 {
-        Trouble.Overloaded
-    } else {
-        Trouble.Other(status: status)
-    }
+/// An answer, with what it took (`ai.ask_full<T>`, spec 8.4).
+pub type Asked<T> {
+    pub value: T
+    /// every try's tokens, added up
+    pub usage: Usage
+    /// none: a model it used has no known price, or a reply gave no counts
+    pub cost: Cost?
+    /// the model that answered
+    pub model: String
 }
 
-/// The body of Anthropic's request: the model, the prompt, and each
-/// setting the `Model` gives.
-fn anthropic_body(call: AskCall) -> Json {
-    const m = call.model
-    let fields: {String: Json} = {:}
-    fields["model"] = Json.Text(value: m.name)
-    fields["max_tokens"] = Json.Number(digits: `{m.max_tokens ?? 4096}`)
-    const message = {"role": Json.Text(value: "user"), "content": Json.Text(value: call.prompt)}
-    fields["messages"] = Json.Array(items: [Json.Object(fields: message)])
-    let config: {String: Json} = {:}
-    if call.strict {
-        config["format"] = Json.Object(fields: {"type": Json.Text(value: "json_schema"), "schema": call.schema})
-    }
-    if let e = m.effort {
-        config["effort"] = Json.Text(value: effort_name(e))
-    }
-    if not config.is_empty() {
-        fields["output_config"] = Json.Object(fields: config)
-    }
-    if not (m.thinking ?? true) {
-        // Each model turns thinking off its own way: Sonnet 5.5 takes
-        // `between_tools`, the others `disabled`, as their errors say.
-        const off = if m.name.contains("sonnet-5-5") { "between_tools" } else { "disabled" }
-        fields["thinking"] = Json.Object(fields: {"type": Json.Text(value: off)})
-    }
-    if let s = m.instructions {
-        fields["system"] = Json.Text(value: s)
-    }
-    const stop = m.stop ?? []
-    if not stop.is_empty() {
-        fields["stop_sequences"] = Json.Array(items: stop.map(t => Json.Text(value: t)))
-    }
-    // A setting Kavach doesn't name: written as it is, in place of one
-    // Kavach would send.
-    const extra = json.parse(m.extra ?? "{}") catch e => Json.Null
-    for (k, v) in extra.object() ?? {:} {
-        fields.remove(k)
-        fields[k] = v
-    }
-    Json.Object(fields: fields)
+/// What the `ask`s of a run, or of one agent, took (`ai.spent`, spec 8.4).
+pub type Spent {
+    /// the asks that reached a model
+    pub asks: Int
+    /// their tokens, added up
+    pub usage: Usage
+    /// the asks whose cost is known; none: no such ask
+    pub cost: Cost?
+    /// the asks whose cost isn't known, left out of `cost`
+    pub unpriced: Int
 }
 
-/// The name the API gives an effort.
-fn effort_name(e: Effort) -> String
-    example effort_name(Effort.XHigh) == "xhigh"
-{
-    match e {
-        Effort.Low => "low",
-        Effort.Medium => "medium",
-        Effort.High => "high",
-        Effort.XHigh => "xhigh",
-        Effort.Max => "max",
-    }
-}
-
-/// The first `text` block of the reply's `content`: reasoning blocks may
-/// come before it.
-fn anthropic_text(doc: Json) -> String
-    example anthropic_text(Json.Null) == ""
-{
-    for block in doc.get("content").list() ?? [] {
-        if block.get("type").text() == "text" {
-            return block.get("text").text() ?? ""
-        }
-    }
-    ""
-}
-
-/// Anthropic's usage, with the cached input tokens it counts apart added
-/// back into `input` (decision 0140).
-fn anthropic_usage(u: Json) -> Usage
-    example anthropic_usage(Json.Null).input == none
-{
-    const read = u.get("cache_read_input_tokens").int()
-    const written = u.get("cache_creation_input_tokens").int()
-    const input = if let n = u.get("input_tokens").int() {
-        n + (read ?? 0) + (written ?? 0)
-    } else {
-        none
-    }
-    Usage(input: input, output: u.get("output_tokens").int(), cached_input: read)
-}
-
-/// The wait a `retry-after` header asks for, in seconds; none without one.
-fn retry_after(headers: {String: String}) -> Duration?
-    example retry_after({"retry-after": "3"}) == Duration(ms: 3000)
-    example retry_after({:}) == none
-{
-    const seconds = Int((headers.get("retry-after") ?? "").trim()) catch e => -1
-    if seconds < 0 {
-        return none
-    }
-    Duration(ms: seconds * 1000)
+/// What every `ask` of the run took so far, or, given an agent's name,
+/// what that agent's took, since the program started (spec 8.4).
+pub fn spent(by: String? = none) -> Spent {
+    const empty = Spent(asks: 0, usage: Usage(), cost: none, unpriced: 0)
+    json.decode<Spent>(ai.spent_text(by ?? "")) catch e => empty
 }
 
 /// The settings the compiler worked out for a `Model` (spec 8.4), as the
@@ -384,8 +267,8 @@ type WireModel {
     extra?: String
 }
 
-/// What the runtime asks of a provider: `op` is `check`, `request` or
-/// `read`; a reply's fields come with `read`.
+/// What the runtime asks of a provider: `op` is `check`, `price`,
+/// `request` or `read`; a reply's fields come with `read`.
 type WireIn {
     op: String
     prompt?: String
@@ -436,6 +319,9 @@ fn wire(given: Provider?, settings: String) -> fn(String) -> String {
         const w = json.decode<WireIn>(input) catch e => return "null"
         if w.op == "check" {
             return json.stringify(p.check(model))
+        }
+        if w.op == "price" {
+            return json.stringify(p.price(model.name), big_as_text: true)
         }
         const call = AskCall(model: model, prompt: w.prompt ?? "", schema: w.schema ?? Json.Null,
             strict: w.strict ?? false)

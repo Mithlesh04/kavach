@@ -44,6 +44,10 @@ impl<'a> Interp<'a> {
                 if module == "json" {
                     return self.json_call(&name.name, values, e);
                 }
+                // `ai.ask_full<T>(prompt)`: `ask`, with what it took (8.4).
+                if module == "ai" && name.name == "ask_full" {
+                    return self.ask(values, e);
+                }
                 let values = match (module.as_str(), name.name.as_str()) {
                     ("net", "connect_tls" | "listen_tls") => self.tls_args(&name.name, values),
                     // Named flags in their places; one left out is `Unit`.

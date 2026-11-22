@@ -382,6 +382,9 @@ impl<'a> Lowerer<'a> {
             Some(DefKind::Builtin) if id.name == "tokens" => self
                 .rule_tokens(line)
                 .ok_or_else(|| self.unsupported("`tokens` outside a `limit` rule", id.span)),
+            Some(DefKind::Builtin) if id.name == "cost" => self
+                .rule_cost(ty, line)
+                .ok_or_else(|| self.unsupported("`cost` outside a `limit` rule", id.span)),
             Some(DefKind::Field) => {
                 // A field name inside an `invariant` reads the record being checked.
                 let (local, record_ty) = self

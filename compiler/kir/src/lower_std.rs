@@ -67,7 +67,12 @@ impl<'a> Lowerer<'a> {
         // The functions that are one op each come first, as they came
         // before the others' wildcards (`crypto`).
         let simple = crate::std_ops::std_op(module, name);
+        let prompt = args.iter().find(|a| a.name.is_none());
         let op = match (module, name) {
+            // `ai.ask_full<T>(prompt)`: `ask`, with what it took (8.4).
+            ("ai", "ask_full") if let Some(prompt) = prompt => {
+                return self.ask_call(span, &prompt.value, line);
+            }
             _ if simple.is_some() => simple.expect("just checked"),
             ("net", "connect_tls" | "listen_tls") => {
                 return self.tls_call(name, args, ty, line, span);

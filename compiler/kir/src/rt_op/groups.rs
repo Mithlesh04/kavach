@@ -208,7 +208,7 @@ impl RtOp {
             // Numbers with bits or a range (spec 2.1): only programs
             // with them link their checks.
             "kv_rt_whole"
-        } else if self == RtOp::AiAsk {
+        } else if matches!(self, RtOp::AiAsk | RtOp::AiSpent) {
             "kv_rt_ai"
         } else {
             "kv_rt"

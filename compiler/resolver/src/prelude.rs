@@ -138,7 +138,7 @@ pub(crate) const FUNCTIONS: &[&str] = &[
 ];
 
 /// Functions available only inside an agent's `limit` rules (spec 8.3).
-pub(crate) const LIMIT_FUNCTIONS: &[&str] = &["sum", "count", "tokens"];
+pub(crate) const LIMIT_FUNCTIONS: &[&str] = &["sum", "count", "tokens", "cost"];
 
 #[cfg(test)]
 mod tests {

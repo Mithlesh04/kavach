@@ -2,7 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
-//! `ask<T>(prompt)` in native code (spec 8.4). Each `T` gets a function
+//! `ask<T>(prompt)` and `ai.ask_full<T>(prompt)` in native code (spec
+//! 8.4). Each `T` gets a function
 //! that asks through the running agent's guard when an agent that can use
 //! `Ai` is running (`lower_guard.rs`), and directly otherwise. The model
 //! call, the decoding and the retries are the runtime's
@@ -158,16 +159,23 @@ impl<'a> Lowerer<'a> {
         span: ast::Span,
         model: &kavach_driver::AiModel,
     ) -> Lowered<ir::Expr> {
-        let Some((schema, wrapped)) = kavach_driver::ask_schema(self.c, ok) else {
+        // `ai.ask_full<T>`: `ok` is `Asked<T>`, and the model answers a `T`.
+        let full = self.c.full_asks.contains(&(span.start, span.end));
+        let answer = match (full, ok) {
+            (true, Ty::Adt(_, args)) => args.first().cloned().unwrap_or(Ty::Error),
+            _ => ok.clone(),
+        };
+        let Some((schema, wrapped)) = kavach_driver::ask_schema(self.c, &answer) else {
             return Err(self.unsupported(kavach_driver::NO_SCHEMA, span));
         };
-        // Each model's settings, in the order they are tried (spec 8.4,
-        // *Fallbacks*), as the interpreter sends them.
-        let models = model.in_turn().map(kavach_driver::model_settings);
+        // Each model's settings, with its price, in the order they are
+        // tried (spec 8.4, *Fallbacks*), as the interpreter sends them.
+        let models = model.in_turn().map(|m| self.c.priced_settings(m));
         let fields = vec![
             ("models".into(), Tree::Array(models.collect())),
             ("schema".into(), schema),
             ("wrapped".into(), Tree::Bool(wrapped)),
+            ("full".into(), Tree::Bool(full)),
         ];
         let request = json::write(&Tree::Object(fields), 0);
         // The runtime reads it back when `ask` runs; one it couldn't read
@@ -241,6 +249,22 @@ impl<'a> Lowerer<'a> {
 }
 
 impl Lowerer<'_> {
+    /// The text the runtime reads an `ask`'s models' prices from, for a
+    /// `cost` limit (spec 8.3): each one's name, `max_tokens` and price.
+    pub(crate) fn ask_prices(&mut self, model: &kavach_driver::AiModel, line: u32) -> ir::Expr {
+        let each = model.in_turn().map(|m| {
+            let most = m.max_tokens.unwrap_or(kavach_driver::DEFAULT_MAX_TOKENS);
+            let price = self.c.price_of(m);
+            Tree::Object(vec![
+                ("model".into(), Tree::Text(m.name.clone())),
+                ("max_tokens".into(), Tree::Int(i64::from(most))),
+                ("price".into(), price.cloned().unwrap_or(Tree::Null)),
+            ])
+        });
+        let text = json::write(&Tree::Array(each.collect()), 0);
+        expr(K::Str(text), self.str_type(), line)
+    }
+
     /// `AiError` from `std.ai`, the error `ask` fails with.
     pub(crate) fn ai_error_type(&mut self, span: ast::Span) -> Lowered<Type> {
         let res = &self.c.resolution;

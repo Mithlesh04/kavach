@@ -125,6 +125,8 @@ pub interface Provider {
     fn request(self, call: AskCall) -> HttpCall
     /// What came back: an answer, or why there is none.
     fn read(self, call: AskCall, reply: HttpReply) -> Reply
+    /// The price of a model's tokens; none: not known (*Prices*, below).
+    fn price(self, model: String) -> Price?
 }
 
 /// One `ask`, as the provider sees it.
@@ -188,6 +190,7 @@ type Gateway: Provider {
     fn key_variable(self) -> String { "SHOP_GATEWAY_KEY" }
     fn auth(self, model: Model) -> Auth { self.base.auth(model) }
     fn read(self, call: AskCall, reply: HttpReply) -> Reply { self.base.read(call, reply) }
+    fn price(self, model: String) -> Price? { self.base.price(model) }
 }
 
 fn gateway() -> Model {
@@ -240,4 +243,103 @@ const v = ask<Verdict>(text, model: [careful(), backup()]) catch e => match e {
 - **The audit log** (8.6) has a line for each model the call moved on from, then one for the model that answered, or that was tried last.
 - A dry run or a generated test (8.5, 11.5) asks no model; its audit line names the first model in the list.
 
-*Not built yet* (decision 0140 sets how each works): the other providers, in a package of their own repository, starting with OpenAI-shaped Chat Completions (OpenAI, Azure, Ollama, llama.cpp, vLLM), then Gemini, Bedrock, Vertex and OpenAI's Responses API; `Auth.AwsSignature` and `Auth.GoogleToken`, for now an `ask` whose provider gives one fails with `Failed(status: 0, …)`; `ai.ask_full<T>`, with an `ask`'s usage and cost; prices, costs and money budgets in `limit Ai`; counting a prompt's tokens before it is sent (`ai.count`). The interface gains the methods those need (`count_request`, `read_count`, `estimate` and `price`) when they are built.
+- Every try's tokens and cost count, whichever model gave them (*Usage and cost*, below).
+
+## Prices
+
+Each provider gives the price of a model's tokens with its `price` method ([decision 0140](../../decisions/0140-ai-providers.md), choice 4). Prices are in US dollars, the currency of the providers' price pages, and each says when it was known and where from:
+
+```kavach
+/// The price of a model's tokens, in US dollars.
+pub type Price {
+    input: Decimal              // per `per` input tokens
+    output: Decimal             // per `per` output tokens, thinking included
+    cached_input?: Decimal      // per `per` input tokens read from the provider's cache; none: as `input`
+    per: Int                    // usually 1,000,000
+    as_of: Date                 // the day the price was read
+    from: PriceSource
+}
+
+pub type PriceSource = Kavach | Program | Package(name: String)
+```
+
+- **`Anthropic()`'s prices** are a table in `std.ai`, dated, with its source: Anthropic's pricing page (`https://platform.claude.com/docs/en/about-claude/pricing`), read on 2026-11-22. It has the models of the current line whose names that page gives: `claude-fable-5-2`, `claude-opus-5-5`, `claude-sonnet-5-5` and `claude-haiku-5-5`. Any other name has no price.
+- **A program's own prices win.** A program gives a price by wrapping the provider (*Changing one part*, above) and answering `price` for the models it knows, with `from: PriceSource.Program`, passing the others on:
+
+```kavach
+type ShopAi: Provider {
+    base: Anthropic
+
+    fn price(self, model: String) -> Price? {
+        if model == "claude-haiku-5-5" {
+            // The shop's negotiated price.
+            return Price(input: 0.08, output: 0.40, per: 1_000_000,
+                         as_of: Date(year: 2026, month: 11, day: 1), from: PriceSource.Program)
+        }
+        self.base.price(model)
+    }
+    // … the other methods, each passed to `self.base`
+}
+```
+
+- **A price is worked out when the program is built,** as `check` is (*Providers*, above): once for each model the program names, and for the default model. So a built program carries the prices of its build, and their date says how old they are.
+- **A model with no known price** has a cost of `none`, never 0.
+- **A cost is an estimate.** A price is known as of a date and may have changed; a program's own price is only as good as what it gave; the provider's bill is what counts. So every cost carries a note that says so, and printing a cost prints it (*Usage and cost*, below).
+
+## Usage and cost: `ai.ask_full<T>`
+
+`ai.ask_full<T>` asks as `ask<T>` does, with the same `model:`, retries, fallbacks, limits and errors, and gives the answer with what it took ([decision 0140](../../decisions/0140-ai-providers.md), choice 7). `ask<T>` stays as it is.
+
+```kavach
+use std.ai
+
+const a = try ai.ask_full<Verdict>(`Is this clause risky? {clause}`)
+print(a.value.risky)
+print(a.usage.output)     // 96
+print(a.model)            // claude-haiku-5-5
+print(a.cost)             // about $0.0000892 (estimate: prices as of 2026-11-22; the provider's bill is exact)
+```
+
+```kavach
+/// An answer, with what it took.
+pub type Asked<T> {
+    value: T
+    usage: Usage           // every try's tokens, added up
+    cost: Cost?            // none: a model it used has no known price, or a reply gave no counts
+    model: String          // the model that answered
+}
+
+/// What an `ask` cost, worked out from prices: an estimate.
+pub type Cost: Display {
+    dollars: Decimal       // in US dollars
+    note: String           // how far to trust it
+}
+```
+
+- **`usage`** adds up the `Usage` of every try that got a reply: an answer asked for again because it wasn't a valid `T`, and each model of a list. A count no reply gave is `none`.
+- **`cost`** is each try's tokens at its own model's price: input tokens not read from the cache at `input`, those read from it at `cached_input`, and output tokens at `output`, each divided by `per`. It is `none` when a try's model has no price, or its reply had no input or output count.
+- **Printing a cost** prints `about $<dollars> (<note>)`. The note is `estimate: prices as of <date>; the provider's bill is exact`, with the oldest date of the prices used; a program's own price says `the program's prices as of <date>`, and a package's `prices from <name> as of <date>`.
+
+### Totals per run and per agent
+
+`ai.spent()` gives what every `ask` of the run took so far, and `ai.spent(by: "Reviewer")` what one agent's took, since the program started:
+
+```kavach
+/// What the `ask`s of a run, or of one agent, took.
+pub type Spent {
+    asks: Int              // the asks that reached a model
+    usage: Usage           // their tokens, added up
+    cost: Cost?            // the asks whose cost is known; none: no such ask
+    unpriced: Int          // the asks whose cost isn't known, left out of `cost`
+}
+
+const s = ai.spent()
+print(`{s.asks} asks, {s.usage.input ?? 0} tokens in, cost {s.cost}`)
+```
+
+- An `ask` counts once it reached a model, whether it gave an answer or failed. A dry run or a generated test (8.5, 11.5) reaches none, so it adds nothing.
+- `ask` and `ai.ask_full` count alike. The totals last while the program runs; a limit's totals across restarts are the agent's state file (8.3, 8.5).
+- `ai.spent` needs no capability.
+- A cost left out because it isn't known is counted in `unpriced`, and the note says so: `estimate: prices as of 2026-11-22; 2 asks with no known cost left out; the provider's bill is exact`.
+
+*Not built yet* (decision 0140 sets how each works): the other providers, in a package of their own repository, starting with OpenAI-shaped Chat Completions (OpenAI, Azure, Ollama, llama.cpp, vLLM), then Gemini, Bedrock, Vertex and OpenAI's Responses API; `Auth.AwsSignature` and `Auth.GoogleToken`, for now an `ask` whose provider gives one fails with `Failed(status: 0, …)`; counting a prompt's tokens before it is sent (`ai.count`). The interface gains the methods it needs (`count_request`, `read_count` and `estimate`) when it is built.

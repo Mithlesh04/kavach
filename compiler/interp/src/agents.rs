@@ -226,7 +226,7 @@ impl<'a> Interp<'a> {
         span: Span,
     ) -> Eval<'a> {
         let shown = shown_call(call, &named, decl);
-        let mut check = self.check_call(agent, (call, &shown, 0), &named, span)?;
+        let mut check = self.check_call(agent, (call, &shown, 0), None, &named, span)?;
         if let Some(why) = check.refused.clone() {
             agent
                 .guard

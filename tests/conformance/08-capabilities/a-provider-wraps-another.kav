@@ -18,6 +18,7 @@ type Gateway: Provider {
     fn key_variable(self) -> String { "SHOP_GATEWAY_KEY" }
     fn auth(self, model: Model) -> Auth { self.base.auth(model) }
     fn read(self, call: AskCall, reply: HttpReply) -> Reply { self.base.read(call, reply) }
+    fn price(self, model: String) -> Price? { self.base.price(model) }
 }
 
 fn gateway() -> Model {

@@ -1,0 +1,16 @@
+// Rule: `ai.spent()` gives what the run's asks took so far, and `ai.spent(by: name)` one agent's; before any ask, nothing, with no cost.
+// Spec: 8.4
+// expect output: 0 asks, 0 unpriced
+// expect output: none
+// expect output: none
+// expect output: 0
+
+use std.ai
+
+fn main() {
+    const run = ai.spent()
+    print(`{run.asks} asks, {run.unpriced} unpriced`)
+    print(run.cost)
+    print(run.usage.input)
+    print(ai.spent(by: "Reviewer").asks)
+}

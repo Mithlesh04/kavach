@@ -15,7 +15,13 @@ use crate::value::{Flow, Value};
 use kavach_ast::{AgentMember, Expr, Path, Span};
 use kavach_checker::Prim;
 use kavach_resolver::{DefId, DefKind};
+use kavach_runtime_core::Decimal;
+use kavach_runtime_core::agents::costs::Price;
 use kavach_runtime_core::agents::{Check, Num, Rule, Step, covers};
+
+/// An `ask`'s models, for a `cost` rule (spec 8.3): each one's name,
+/// `max_tokens` and price, in the order they are tried.
+pub(crate) type Priced = Vec<(String, i64, Option<Price>)>;
 
 /// How often an `ask` waiting for those under way looks again (spec 8.3).
 const UNDER_WAY_LOOK: std::time::Duration = std::time::Duration::from_millis(20);
@@ -52,6 +58,9 @@ pub(crate) struct Totals<'a> {
     /// What `tokens` reads: the window's `ask`s, with those under way
     /// counted as the settings say (`Guard::tokens`).
     pub(crate) tokens_now: i128,
+    /// Whether it read `cost`, and what `cost` reads (`Guard::cost`).
+    pub(crate) cost: bool,
+    pub(crate) cost_now: Option<Decimal>,
 }
 
 fn target_of(path: &Path) -> String {
@@ -161,21 +170,27 @@ impl<'a> Interp<'a> {
     }
 
     /// Steps 3 and 4 for one call (`call` is `Cap.method`, `shown` the call
-    /// as the audit log writes it, `bound` the most an `ask` can take).
+    /// as the audit log writes it, `bound` the most an `ask` can take,
+    /// `priced` its prompt's bytes and its models' prices).
     pub(crate) fn check_call(
         &mut self,
         agent: &Running<'a>,
         (call, shown, bound): (&str, &str, i64),
+        priced: Option<(usize, &Priced)>,
         args: &[(String, Value<'a>)],
         span: Span,
     ) -> Result<Check, Flow<'a>> {
         let mut c = agent.guard.borrow().begin(call, shown);
         c.bound = bound;
+        if let Some((bytes, models)) = priced {
+            c.priced(bytes, models);
+        }
         let covering = agent.guard.borrow().rules_for(call);
         for i in covering {
             loop {
                 let (sum, count) = agent.guard.borrow_mut().totals(i);
                 let tokens_now = agent.guard.borrow_mut().tokens(i, &c);
+                let cost_now = agent.guard.borrow_mut().cost(i, &c);
                 self.totals = Some(Totals {
                     sum: sum.map(value_of),
                     count: i128::from(count),
@@ -183,6 +198,8 @@ impl<'a> Interp<'a> {
                     used: false,
                     tokens: false,
                     tokens_now: i128::from(tokens_now),
+                    cost: false,
+                    cost_now: Some(cost_now),
                 });
                 let code = &agent.rules[i];
                 let ok = self.with_args(code.expr, &code.params, args);
@@ -191,6 +208,9 @@ impl<'a> Interp<'a> {
                 let added = totals.added.as_ref().and_then(num_of);
                 if totals.tokens && !c.tokens.contains(&i) {
                     c.tokens.push(i);
+                }
+                if totals.cost && !c.costs.contains(&i) {
+                    c.costs.push(i);
                 }
                 // `ask`s under way that may leave room: wait for their
                 // answers, then check again (spec 8.3).

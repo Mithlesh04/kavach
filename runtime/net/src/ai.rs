@@ -11,6 +11,7 @@
 
 pub(crate) mod http;
 
+use kavach_runtime_core::agents::costs::{self, Price, Spend, Usage};
 use kavach_runtime_core::json::{self, Limits, Tree};
 use std::time::{Duration, Instant};
 
@@ -39,6 +40,8 @@ pub struct Request {
     pub api_key_env: Option<String>,
     /// The provider's type, for its gate.
     pub provider: String,
+    /// The model's price, as the build worked it out (spec 8.4, *Prices*).
+    pub price: Option<Price>,
 }
 
 impl Request {
@@ -63,6 +66,7 @@ impl Request {
             api_url: text("api_url"),
             api_key_env: text("api_key_env"),
             provider: text("provider").unwrap_or_else(|| "Anthropic".into()),
+            price: wire::field(settings, "price").and_then(Price::read),
         }
     }
 }
@@ -95,19 +99,76 @@ pub trait Side {
 /// What an `ask` gave: its value or error, the tokens every try took,
 /// whether any reply was read, the model of its last try, and each model
 /// it moved on from, with why (spec 8.4, *Fallbacks*). Models are counted
-/// in the order they are tried.
+/// in the order they are tried. Also every try's usage, and what they
+/// cost at each one's model's price, or why that isn't known (8.4).
 pub struct Asked<V> {
     pub result: Result<V, Failure>,
     pub tokens: Tokens,
     pub read: bool,
     pub used: usize,
     pub moved: Vec<(usize, Failure)>,
+    pub usage: Usage,
+    pub cost: Result<Spend, String>,
+    /// The answer that fitted `T`, as JSON.
+    pub answer: Tree,
+}
+
+/// `ask_once`, then what it took counted for the run (`ai.spent`).
+pub fn ask<S: Side>(
+    side: &mut S,
+    models: &[Tree],
+    prompt: &str,
+    schema: &Tree,
+    wrapped: bool,
+) -> Result<Asked<S::Value>, S::Stop> {
+    let asked = ask_once(side, models, prompt, schema, wrapped)?;
+    if asked.read {
+        costs::record(None, &asked.usage, asked.cost.as_ref().ok());
+    }
+    Ok(asked)
+}
+
+/// An answer as the `value` of an `Asked<T>` (`ai.ask_full`, spec 8.4),
+/// with nothing taken yet: to see whether it fits.
+pub fn as_full(answer: &Tree) -> Tree {
+    Tree::Object(vec![
+        ("value".into(), answer.clone()),
+        ("usage".into(), Usage::default().tree()),
+        ("cost".into(), Tree::Null),
+        ("model".into(), Tree::Text(String::new())),
+    ])
+}
+
+/// The `Asked<T>` of an `ask` that got an answer, from model `model`.
+pub fn full_answer<V>(asked: &Asked<V>, model: &str) -> Tree {
+    let cost = asked.cost.as_ref().map_or(Tree::Null, Spend::tree);
+    Tree::Object(vec![
+        ("value".into(), asked.answer.clone()),
+        ("usage".into(), asked.usage.tree()),
+        ("cost".into(), cost),
+        ("model".into(), Tree::Text(model.to_string())),
+    ])
+}
+
+/// One try's `usage`, with model `req`'s price, added to `cost`.
+fn count_cost(cost: &mut Result<Spend, String>, req: &Request, usage: &Usage) {
+    let Ok(spend) = cost else {
+        return;
+    };
+    let Some(price) = &req.price else {
+        *cost = Err(format!("no price for {}", req.model));
+        return;
+    };
+    match price.cost(usage) {
+        Some(d) => spend.add(d, price),
+        None => *cost = Err("the reply gave no token counts".into()),
+    }
 }
 
 /// Asks for a `T` with `prompt`, its JSON Schema `schema` (`wrapped`: the
 /// answer is `{"value": …}`), and the settings of each model, in the
 /// order they are tried (spec 8.4, *Fallbacks*).
-pub fn ask<S: Side>(
+fn ask_once<S: Side>(
     side: &mut S,
     models: &[Tree],
     prompt: &str,
@@ -124,6 +185,9 @@ pub fn ask<S: Side>(
         read: false,
         used: 0,
         moved: Vec::new(),
+        usage: Usage::default(),
+        cost: Ok(Spend::default()),
+        answer: Tree::Null,
     };
     if reqs.is_empty() {
         return Ok(asked);
@@ -153,9 +217,11 @@ pub fn ask<S: Side>(
             }
         };
         if let Some(usage) = reply.usage() {
-            asked.tokens.input += usage.input;
-            asked.tokens.output += usage.output;
+            asked.tokens.input += usage.input.unwrap_or(0);
+            asked.tokens.output += usage.output.unwrap_or(0);
+            asked.usage.add(&usage);
             asked.read = true;
+            count_cost(&mut asked.cost, &reqs[asked.used], &usage);
         }
         let answer = match reply {
             wire::Reply::Answer(text, _) => text,
@@ -174,6 +240,7 @@ pub fn ask<S: Side>(
         };
         if let Some(v) = side.fits(&tree) {
             asked.result = Ok(v);
+            asked.answer = tree;
             return Ok(asked);
         }
         last = json::write(&tree, 0);

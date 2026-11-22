@@ -29,7 +29,7 @@ mod variants;
 mod version;
 pub mod workspace;
 
-pub use agent_config::{DEFAULT_MAX_TOKENS, DEFAULT_MODEL, model_settings};
+pub use agent_config::{AiPriceKey, DEFAULT_MAX_TOKENS, DEFAULT_MODEL, model_settings, price_key};
 pub use config::{
     AgentConfig, AgentMode, AiConfig, Config, Level, Limits, TestConfig, relative_path,
 };
@@ -122,6 +122,13 @@ pub struct Compiled {
     pub ai_providers: HashMap<(u32, u32), kavach_ast::Expr>,
     /// Each model as written, with where, for its provider's `check`.
     pub ai_written: Vec<(kavach_ast::Span, kavach_checker::AiModel)>,
+    /// Each `ai.ask_full` call, by its span (spec 8.4).
+    pub full_asks: std::collections::HashSet<(u32, u32)>,
+    /// Each model's price, by its provider's place and its name, as its
+    /// provider's `price` gave it when the program was built (spec 8.4,
+    /// *Prices*): the JSON of a `Price`, or `null`. Set once, by
+    /// `kavach_interp::check_literals`.
+    pub ai_prices: std::sync::OnceLock<HashMap<AiPriceKey, kavach_runtime_core::json::Tree>>,
     /// Each agent's `settings`, as written (decision 0060).
     pub agent_settings: HashMap<String, kavach_checker::AgentSetup>,
     /// Each tagged literal, for its tag's checker (spec 10.15), which the
@@ -414,6 +421,8 @@ pub fn compile_sources(mut sources: Vec<Source>, options: Options) -> Compiled {
         ask_models: checked.ask_models,
         ai_providers: checked.ai_providers,
         ai_written: checked.ai_written,
+        full_asks: checked.full_asks,
+        ai_prices: std::sync::OnceLock::new(),
         literal_uses: checked.literal_uses,
         numbers: checked.numbers,
         sealed_unfreezes: (checked.frozen_calls.iter())

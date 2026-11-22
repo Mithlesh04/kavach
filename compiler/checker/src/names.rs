@@ -121,6 +121,8 @@ impl Checker<'_> {
             DefKind::Builtin if matches!(self.res.defs[def].name.as_str(), "count" | "tokens") => {
                 Ty::Prim(Prim::Int)
             }
+            // `cost` in `limit Ai`: US dollars (spec 8.3).
+            DefKind::Builtin if self.res.defs[def].name == "cost" => Ty::Prim(Prim::Decimal),
             // A number parameter is a constant `Int` (spec 2.9).
             DefKind::GenericParam if self.is_num_param(def) => Ty::Prim(Prim::Int),
             DefKind::Builtin | DefKind::Import | DefKind::GenericParam => Ty::Error,

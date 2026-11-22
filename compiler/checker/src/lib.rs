@@ -14,6 +14,7 @@ mod agents;
 mod ai_models;
 mod always_panics;
 mod arena_escape;
+mod ask_calls;
 mod builtin_methods;
 mod builtins;
 mod c_functions;
@@ -225,6 +226,9 @@ pub struct Checked {
     /// as written, for its provider's `check` (decision 0140).
     pub ai_providers: HashMap<(u32, u32), Expr>,
     pub ai_written: Vec<(Span, AiModel)>,
+    /// Each `ai.ask_full` call, by its span: its answer comes with what
+    /// it took (spec 8.4).
+    pub full_asks: HashSet<(u32, u32)>,
     /// Each agent's `settings`, by its name (decision 0060).
     pub agent_settings: HashMap<String, AgentSetup>,
     /// Each tagged literal, for its tag's checker (spec 10.15).
@@ -402,6 +406,7 @@ pub fn check(file: &File, resolution: &Resolution, options: Options) -> Checked 
         ask_models: models.asks,
         ai_providers: models.providers,
         ai_written: models.written,
+        full_asks: std::mem::take(&mut checker.full_asks),
         agent_settings,
         literal_uses: std::mem::take(&mut checker.literal_uses),
         numbers,

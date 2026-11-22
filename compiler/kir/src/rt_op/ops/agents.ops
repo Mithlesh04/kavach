@@ -69,3 +69,13 @@ AgentJoined,
 /// An `ask`'s check (spec 8.3): `b` is its model's `max_tokens`; with
 /// the prompt's length, the most the `ask` can take.
 AgentBound,
+/// `cost` in a `limit Ai` rule (spec 8.3): the call being checked and
+/// the rule; gives what the window's asks cost, a `Decimal`, with those
+/// under way counted as the agent's settings say.
+AgentCost,
+/// An `ask`'s check (spec 8.3): `b` is the text of each of its models'
+/// name, `max_tokens` and price, for a `cost` rule.
+AgentPrices,
+/// `ai.spent_text(agent)` (spec 8.4): what the run's `ask`s took, or
+/// one agent's, as JSON (`runtime/native/src/rt_ai.rs`).
+AiSpent,
