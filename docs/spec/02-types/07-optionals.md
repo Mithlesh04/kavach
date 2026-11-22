@@ -28,6 +28,15 @@ print(word?.upper() ?? "nothing")       // nothing
 
 - On its own line, `x?.m(a)` calls `m` when `x` holds a value and does nothing when it is `none`, as `logger?.say("hi")`. A method that changes its receiver (`push`, `pop`, `swap`, `add`, `remove`) can't be called through `?.`: it would change the copy `v`, not the value inside, so it is a compile error that says to test first and change the value itself, as `if d.contains_key(k) { d[k].push(x) }` (2.2).
 - An `if` or `match` whose one branch is `none` and other a `T` gives a `T?`: `if found { 5 } else { none }` is an `Int?`.
+- `a ?? b` with a `T` on the right gives a `T`. With a `T?` on the right it gives a `T?`: the first of the two that holds a value, `none` only when both are. So `??` chains, and only a `T` at the end makes the whole a `T`:
+
+```kavach
+fn pick(nick: String?, name: String?) -> String? {
+    nick ?? name                        // String?: none when both are
+}
+print(pick(none, "Asha") ?? "guest")    // Asha
+print(pick(none, none) ?? "guest")      // guest
+```
 - `.unwrap()` returns the value or panics. Outside `test` blocks and `example` clauses it gets a warning, as the panic says nothing of why: handle `none` with `if let`, `match` or `?? default`, or say why it can't happen with `?? panic("…")`. On a value the compiler knows is `none`, it is a compile error (1.8).
 
 ```kavach

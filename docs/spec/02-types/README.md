@@ -29,6 +29,7 @@ Each section is a file of its own: new sections go at the end, with the next num
 
 ## Open questions
 
+- **`a ?? b` with an optional `b`** gives a `T?`, the first that holds a value (2.7), as in Swift, C# and Kotlin. Built 2026-11-22, for a maintainer's review.
 - **Changing a `Json` in place.** `doc["name"] = "Ravi"` on a `let` holding an object would be convenient; today you change the dict from `object()` and build a new `Json`.
 - **Decoding unions:** the `{"Variant": {…}}` form only, or also a tag field (`"type": "Circle"`) chosen on the union?
 - **`bits` and range numbers, for a maintainer's review** (2.1, built 2026-11-21): a conversion of a number into any whole-number type fails with a `SizeError` under `try` or `catch`, `Int8` … `UInt64` included, with the panic's text (`300 doesn't fit in Int8`); a literal on the right of an operator or a comparison on a range (`p - 1`, `p += 5`, `p > 0`) need only be an `Int`; the bit operators are compile errors on a range; `Int<range: 0..10>` is the type `Int<range: 0..=9>` and is shown so; `UInt` alone is an error naming `UInt<bits: 32>`; the JSON Schema of a `bits` or range number is a plain `{"type": "integer"}`, without `minimum` and `maximum`; widths over 64 bits wait (`Int<bits: 128>` names `BigInt`).

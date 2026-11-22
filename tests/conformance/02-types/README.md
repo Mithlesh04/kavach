@@ -119,6 +119,7 @@ The tests are listed in two files, by section:
 | 2.7 | [unwrap-outside-tests-warns.kav](unwrap-outside-tests-warns.kav) | `.unwrap()` outside `test` blocks and `example` clauses gets a warning; `?? panic("…")` says why and gets none. | warning |
 | 2.7 | [unwrap-in-a-test-does-not-warn.kav](unwrap-in-a-test-does-not-warn.kav) | `.unwrap()` in a `test` block or an `example` clause gets no warning. | test pass |
 | 2.7 | [optionals-do-not-nest.kav](optionals-do-not-nest.kav) | Optionals don't nest: `?.` to an optional field gives a `T?`, not a `T??`. | runs |
+| 2.7 | [a-default-that-may-be-missing-gives-an-optional.kav](a-default-that-may-be-missing-gives-an-optional.kav) | `a ?? b` with an optional `b` gives an optional: the first that holds a value. | runs |
 | 2.7 | [question-dot-calls-methods.kav](question-dot-calls-methods.kav) | `?.` calls methods too, giving `none` when the left side is; a `none` branch makes an `if` optional |
 | 2.8 | [interfaces-are-explicit.kav](interfaces-are-explicit.kav) | A type implements an interface only when it says so. | compile error |
 | 2.8 | [interfaces-need-every-method.kav](interfaces-need-every-method.kav) | A type that says it implements an interface has each of its methods. | compile error |

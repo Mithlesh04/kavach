@@ -6,10 +6,39 @@
 //! (spec 1.8): `**` and compound assignment.
 
 use crate::checker::Checker;
+use crate::infer::VarKind;
 use crate::ty::{Prim, Ty};
 use kavach_ast::*;
 
 impl Checker<'_> {
+    /// `a ?? b` (spec 2.7): `a` is a `T?`, and `b` a `T`, giving a `T`, or
+    /// a `T?`, giving the first of the two that holds a value, as a `T?`.
+    pub(crate) fn check_default(&mut self, l: &Expr, r: &Expr) -> Ty {
+        let lt = self.value(l, None);
+        let inner = match self.inf.shallow(&lt) {
+            Ty::Optional(inner) => *inner,
+            Ty::Var(v) if self.inf.kind(v) == VarKind::Any => return self.value(r, None),
+            Ty::Error => return self.value(r, None),
+            other => {
+                let shown = self.show(&other);
+                self.error(l.span, format!("`??` needs an optional value on the left, but this is `{shown}`, which is never `none`"));
+                return self.value(r, None);
+            }
+        };
+        let rt = self.value(r, Some(&inner));
+        let want = match self.inf.shallow(&rt) {
+            Ty::Optional(_) => Ty::Optional(Box::new(inner)),
+            _ => inner,
+        };
+        self.fitting = Some(self.made(r));
+        let fits = self.coerce(&rt, &want);
+        self.fitting = None;
+        if !fits {
+            self.mismatch(r, &want, &rt);
+        }
+        want
+    }
+
     /// `a ** b` works on whole numbers and floats, not on `Decimal`.
     pub(crate) fn check_power(&mut self, e: &Expr, t: &Ty) -> bool {
         if self.inf.resolve(t) != Ty::Prim(Prim::Decimal) {

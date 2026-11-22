@@ -1,0 +1,20 @@
+// Rule: `a ?? b` with an optional `b` gives an optional: the first of the two that holds a value, `none` only when both are.
+// Spec: 2.7
+// expect output: Ravi
+// expect output: Asha
+// expect output: guest
+// expect output: 3
+
+fn pick(nick: String?, name: String?) -> String? {
+    nick ?? name
+}
+
+fn main() uses Console {
+    print(pick("Ravi", "Asha") ?? "guest")
+    print(pick(none, "Asha") ?? "guest")
+    print(pick(none, none) ?? "guest")
+    const a: Int? = none
+    const b: Int? = none
+    const c: Int? = 3
+    print(a ?? b ?? c ?? 0)
+}

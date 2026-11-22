@@ -413,22 +413,7 @@ impl Checker<'_> {
                 );
                 Ty::Error
             }
-            Default => {
-                let lt = self.value(l, None);
-                match self.inf.shallow(&lt) {
-                    Ty::Optional(inner) => {
-                        self.check_expect(r, &inner);
-                        *inner
-                    }
-                    Ty::Var(v) if self.inf.kind(v) == VarKind::Any => self.value(r, None),
-                    Ty::Error => self.value(r, None),
-                    other => {
-                        let shown = self.show(&other);
-                        self.error(l.span, format!("`??` needs an optional value on the left, but this is `{shown}`, which is never `none`"));
-                        self.value(r, None)
-                    }
-                }
-            }
+            Default => self.check_default(l, r),
             Range | RangeInclusive => {
                 let lt = self.value(l, None);
                 if !self.require_number(l, &lt, true) {
