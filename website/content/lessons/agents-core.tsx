@@ -8,6 +8,7 @@ import type { LessonDoc } from "@/lib/chapter";
 import { rustConst, rustExpected } from "@/lib/rust-tests";
 import { loadProject, loadSample } from "@/lib/samples";
 import { specTables } from "@/lib/spec-tables";
+import { MoneyBudget } from "./agents-limit-cost";
 import { AsksUnderWay } from "./agents-under-way";
 import { Ex, H2, Note, P, Syntax } from "./parts";
 
@@ -274,6 +275,7 @@ export const limitDoc: LessonDoc = {
       <P>Tokens are counted only for AI calls, so on any other capability <C>tokens</C> is a compile error:</P>
       <Ex name="agents/limit-tokens.fails" />
       <AsksUnderWay />
+      <MoneyBudget />
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/08-capabilities-and-agents/03-agents.md" label="spec 8.3 · limit windows" />
         <SrcRef file="runtime/core/src/agents.rs" line={115} symbol="window" label="the window lengths, in the runtime" />

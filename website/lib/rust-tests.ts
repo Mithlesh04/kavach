@@ -20,9 +20,54 @@ function literal(text: string, from: number, where: string): string {
       continue;
     }
     const e = text[++i];
+    if (e === "\n") {
+      // A `\` at the end of a line goes on with the next line's first non-space.
+      while (/\s/.test(text[i + 1] ?? "")) i++;
+      continue;
+    }
     out += e === "n" ? "\n" : e === "t" ? "\t" : e;
   }
   throw new Error(`${where}: the string never ends`);
+}
+
+/** Where `fn name` starts in a Rust test file, and the file's text. */
+function fnAt(rel: string, name: string): { text: string; at: number } {
+  const text = read(rel);
+  const at = text.indexOf(`fn ${name}(`);
+  if (at < 0) throw new Error(`${rel}: no fn ${name}`);
+  return { text, at };
+}
+
+/** The string a test function sets with `let name = "…"`. */
+export function rustLet(rel: string, fn: string, name: string): string {
+  const { text, at } = fnAt(rel, fn);
+  const set = text.indexOf(`let ${name} =`, at);
+  return literal(text, set, `${rel} ${fn} ${name}`);
+}
+
+/** Every string literal of a test function from `marker` to the `];` that ends its list, in order. */
+export function rustStrings(rel: string, fn: string, marker: string): string[] {
+  const { text, at } = fnAt(rel, fn);
+  let from = text.indexOf(marker, at);
+  const end = text.indexOf("];", from);
+  if (from < 0 || end < 0) throw new Error(`${rel} ${fn}: no ${marker} … ];`);
+  const out: string[] = [];
+  for (;;) {
+    const start = text.indexOf('"', from);
+    if (start < 0 || start > end) return out;
+    const s = literal(text, start, `${rel} ${fn}`);
+    out.push(s);
+    from = closingQuote(text, start) + 1;
+  }
+}
+
+/** The index of the `"` that closes the literal opening at `start`. */
+function closingQuote(text: string, start: number): number {
+  for (let i = start + 1; i < text.length; i++) {
+    if (text[i] === "\\") i++;
+    else if (text[i] === '"') return i;
+  }
+  throw new Error("a string never ends");
 }
 
 /** A `const NAME: &str = "…";` of a Rust test file. */

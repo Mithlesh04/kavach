@@ -1,0 +1,23 @@
+type Receipt {
+    id: String
+}
+
+type PaymentError = Declined | Denied(reason: String)
+
+capability Payments {
+    fn refund(order_id: Int, amount: Int) -> Receipt ! PaymentError
+}
+
+agent Bot {
+    can Payments.refund
+    limit Payments.refund {
+        cost <= 5.00 per day
+    }
+    on go() -> Receipt ! PaymentError {
+        try Payments.refund(1, 5)
+    }
+}
+
+fn main() {
+    print("never")
+}

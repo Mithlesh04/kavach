@@ -1,0 +1,19 @@
+type Verdict {
+    ok: Bool
+}
+
+fn careful() -> Model {
+    Model(name: "claude-opus-5-5")
+}
+
+agent Reviewer {
+    model [careful(), "claude-haiku-5-5"]
+    can Ai
+    on check(text: String) -> Verdict ! Error {
+        try ask<Verdict>(text)
+    }
+}
+
+fn main() {
+    print("never")
+}

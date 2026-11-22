@@ -165,7 +165,7 @@ const raw: [slug: string, title: string, level: Level, pages: Raw[]][] = [
     ["Your Own Capabilities", "8.2", ["Declaring a capability", "Implementing one", "When a call is refused"]],
     ["Agents", "8.3", ["Declaring an agent", "model", "settings", "can", "limit", "approve", "The order of checks", "on: events"]],
     ["Running an Agent", "8.8"],
-    ["ask<T>", "8.4", ["Typed answers", "When the AI fails", "Choosing the model", "Providers"]],
+    ["ask<T>", "8.4", ["Typed answers", "When the AI fails", "Choosing the model", "Providers", "Usage and cost"]],
     ["Agent Modes", "8.5", ["observe", "suggest", "enforce", "Dry runs"]],
     ["Audit Log", "8.6"],
     ["Monitoring Agents", "8.6"],

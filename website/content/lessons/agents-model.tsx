@@ -110,6 +110,8 @@ export const agentModelDoc: LessonDoc = {
         parameters. A model may be in the list more than once. An empty list is refused:
       </P>
       <Ex name="agents/model-list-empty.fails" />
+      <P>Each item is a <C>Model</C>, so a model&apos;s name as text is refused; write <C>Model(name: …)</C>:</P>
+      <Ex name="agents/model-list-string.fails" />
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-[15px]">
           <thead>

@@ -30,6 +30,7 @@ export const providersDoc: LessonDoc = {
         <li><C>auth</C> says where the key goes in a request. The runtime puts it there.</li>
         <li><C>request</C> writes the request for one <C>ask</C>: once for the first try, with <C>strict: false</C>, and once more for each try after an answer that isn&apos;t a valid <C>T</C>, with <C>strict: true</C>.</li>
         <li><C>read</C> is called for every reply, whatever its status. It says what the reply means: an <C>Answer</C>, a refusal, an answer cut off, or a <C>Problem</C> of some kind.</li>
+        <li><C>price</C> gives the price of a model&apos;s tokens, or <C>none</C> when it isn&apos;t known. It runs when the program is built, as <C>check</C> does (<Link href="/docs/agents/ask/usage-and-cost/">usage and cost</Link>).</li>
       </ul>
       <H2>A provider only translates</H2>
       <P>
@@ -94,23 +95,21 @@ export const providersDoc: LessonDoc = {
       <ul className="m-0 flex list-disc flex-col gap-1.5 pl-5">
         <li>Other providers. They will come in a package of their own repository: first OpenAI-shaped Chat Completions (OpenAI, Azure, Ollama, llama.cpp, vLLM), then Gemini, Bedrock, Vertex and OpenAI&apos;s Responses API. Today only <C>Anthropic()</C> ships; a service that speaks Anthropic&apos;s API is reached through <C>api_url</C>.</li>
         <li>Signed keys: <C>Auth.AwsSignature</C> and <C>Auth.GoogleToken</C>. For now, an <C>ask</C> whose provider gives one fails with <C>Failed(status: 0, …)</C>.</li>
-        <li><C>ai.ask_full&lt;T&gt;</C>, which would give an <C>ask</C>&apos;s usage and cost.</li>
-        <li>Prices, costs and money budgets in <C>limit Ai</C>.</li>
         <li>Counting a prompt&apos;s tokens before it is sent (<C>ai.count</C>).</li>
       </ul>
       <P>
-        The interface gains the methods those need (<C>count_request</C>, <C>read_count</C>, <C>estimate</C> and{" "}
-        <C>price</C>) when they are built.
+        The interface gains the methods counting needs (<C>count_request</C>, <C>read_count</C> and{" "}
+        <C>estimate</C>) when it is built.
       </P>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file="docs/spec/08-capabilities-and-agents/04-typed-ai-calls.md" label="spec 8.4 · Providers" />
         <SrcRef file="docs/decisions/0140-ai-providers.md" label="decision 0140" />
         <SrcRef file="stdlib/ai/ai.kav" line={115} symbol="pub interface Provider" label="std.ai: Provider, as declared" />
-        <SrcRef file="stdlib/ai/ai.kav" line={183} symbol="pub type Anthropic" label="std.ai: Anthropic" />
+        <SrcRef file="stdlib/ai/anthropic.kav" line={13} symbol="pub type Anthropic" label="std.ai: Anthropic" />
         <SrcRef file="tests/conformance/08-capabilities/a-provider-wraps-another.kav" label="test: a provider wraps another" />
         <SrcRef file="tests/conformance/08-capabilities/anthropic-reads-each-kind-of-trouble.kav" label="test: each kind of trouble read" />
         <SrcRef file="tests/conformance/08-capabilities/a-providers-check-refuses-a-model.kav" label="test: check refuses a model" />
-        <SrcRef file="tools/cli/tests/ai_providers.rs" line={261} symbol="a_programs_own_provider_translates_and_the_runtime_sends" label="test: a program's own provider, end to end" />
+        <SrcRef file="tools/cli/tests/ai_providers.rs" line={163} symbol="a_programs_own_provider_translates_and_the_runtime_sends" label="test: a program's own provider, end to end" />
       </div>
     </>
   ),

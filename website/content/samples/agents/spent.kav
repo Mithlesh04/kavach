@@ -1,0 +1,8 @@
+use std.ai
+
+fn main() {
+    const run = ai.spent()
+    print(`{run.asks} asks, {run.unpriced} unpriced`)
+    print(run.cost)
+    print(ai.spent(by: "Reviewer").asks)
+}

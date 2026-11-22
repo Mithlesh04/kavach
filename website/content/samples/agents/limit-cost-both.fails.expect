@@ -1,0 +1,1 @@
+error: a `limit Ai` rule reads `tokens` or `cost`, not both: write two rules (spec 8.3)

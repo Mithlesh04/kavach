@@ -149,8 +149,10 @@ export const aiFailsDoc: LessonDoc = {
       <Ex name="agents/ai-error-kinds" />
       <P>
         Put a <C>limit Ai</C> on an agent to cap its model calls, <C>count &lt;= 1_000 per day</C>, or the tokens they
-        take, <C>tokens &lt;= 200_000 per day</C>: past it, <C>ask</C> fails with <C>Denied</C> instead of running up a
-        bill. See <Link href="/docs/agents/agents/limit/">limit</Link>.
+        take, <C>tokens &lt;= 200_000 per day</C>, or the dollars they cost, <C>cost &lt;= 5.00 per day</C>: past it,{" "}
+        <C>ask</C> fails with <C>Denied</C> instead of running up a bill. See{" "}
+        <Link href="/docs/agents/agents/limit/">limit</Link>. What each <C>ask</C> took and cost:{" "}
+        <Link href="/docs/agents/ask/usage-and-cost/">Usage and cost</Link>.
       </P>
       <H2>What Anthropic&apos;s answers become</H2>
       <P>

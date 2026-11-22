@@ -5,6 +5,7 @@ import { SrcRef } from "@/components/src-ref";
 import { Terminal } from "@/components/terminal";
 import type { LessonDoc } from "@/lib/chapter";
 import { loadProject, loadSample } from "@/lib/samples";
+import { specBlockWith } from "@/lib/spec-tables";
 import { Ex, H2, Note, P } from "./parts";
 
 const SPEC = "docs/spec/08-capabilities-and-agents/06-audit-log.md";
@@ -178,6 +179,19 @@ export const auditDoc: LessonDoc = {
         <li><C>verdict</C> says what the checks decided, and why; <C>result</C> says what happened.</li>
         <li>Refused calls are written too. The log only grows: nothing is ever taken out.</li>
       </ul>
+      <H2>What an ask cost</H2>
+      <P>
+        An <C>ask</C> that reached a model has a <C>model:</C> line with the tokens it took, then a <C>cost:</C> line
+        with what every try cost and how far to trust it (
+        <Link href="/docs/agents/ask/usage-and-cost/">usage and cost</Link>):
+      </P>
+      <CodeBlock code={specBlockWith("08-capabilities-and-agents/06-audit-log.md", "8.6", "cost: about")} file="audit.log, as spec 8.6 shows it" lang="text" />
+      <P>A model with no known price says so, and the cost is never written as 0:</P>
+      <CodeBlock code={specBlockWith("08-capabilities-and-agents/06-audit-log.md", "8.6", "cost: not known")} file="audit.log, as spec 8.6 shows it" lang="text" />
+      <P>
+        In the JSON Lines format, the entry&apos;s <C>cost</C> is <C>{'{"dollars": "0.003568", "note": "estimate: …"}'}</C>,
+        with the dollars as text so no digit is lost, or <C>{'{"unknown": "no price for gpt-5.5"}'}</C>.
+      </P>
       <H2>Secrets stay out</H2>
       <P>An argument of a <C>secret</C> parameter is written as <C>&lt;secret&gt;</C>:</P>
       <CodeBlock code={secretAudit.files[0].code} file="src/main.kav" output={secretAudit.output} />
@@ -241,6 +255,8 @@ export const auditDoc: LessonDoc = {
       </ul>
       <div className="flex flex-wrap gap-2.5">
         <SrcRef file={SPEC} label="spec 8.6 · audit log" />
+        <SrcRef file="runtime/core/src/agents.rs" line={141} symbol="pub fn cost_shown" label="the cost line, in the runtime" />
+        <SrcRef file="tools/cli/tests/ai_costs.rs" line={187} symbol="an_ask_with_no_price_is_counted_apart_in_the_totals" label="cost lines, tested" />
         <SrcRef file="tools/cli/tests/durable_restarts.rs" label="outcomes after a restart, tested" />
         <SrcRef file="docs/decisions/0073-durable-agents-across-restarts.md" label="decision 0073" />
         <SrcRef file="docs/decisions/0072-approvals-that-wait-across-restarts.md" label="decision 0072" />
