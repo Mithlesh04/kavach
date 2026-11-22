@@ -146,7 +146,9 @@ fn fake(url: &str) -> Fake {
 
 const OK: &str =
     "HTTP/1.1 200 OK\r\nconnection: close\r\ncontent-length: 14\r\n\r\n{\"approve\":1}\n";
-const BUSY: &str = "HTTP/1.1 429 Too Many Requests\r\nretry-after: 3\r\ncontent-length: 0\r\n\r\n";
+// A wait long enough that a slow, busy machine never sees it run out
+// before the next try (the fake notes waits, never sleeps them).
+const BUSY: &str = "HTTP/1.1 429 Too Many Requests\r\nretry-after: 60\r\ncontent-length: 0\r\n\r\n";
 const BROKE: &str = "HTTP/1.1 402 Payment Required\r\ncontent-length: 0\r\n\r\n";
 
 #[test]
