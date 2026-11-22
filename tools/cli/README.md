@@ -50,6 +50,7 @@ Exit codes: 0 success, 1 compile errors or an error returned from `main`, 101 a 
 | `tests/ai_providers.rs` | Each kind of trouble as its own `AiError`, `retry-after` honoured, and a program's own provider, against a fake server (spec 8.4, decision 0140) |
 | `tests/fake_gpus.rs` | `system.gpus()` with `KAVACH_FAKE_GPUS`: AMD, NVIDIA and Intel GPUs on any machine, best kind first, interpreted and natively (spec 14.25) |
 | `tests/gpu_choice.rs` | Choosing a GPU (spec 15.6): `gpu.devices()`, a missing GPU stopping the start, `gpu.on`, `on:`, `on gpu(n)` and `gpu(n) fn` with fake AMD and NVIDIA GPUs and Windows' WARP as a real second device, and each real GPU by number, interpreted and natively |
+| `tests/gpu_split.rs` | One `map` split across GPUs (spec 15.6, decision 0144): the CPU's values in order, exact sums, records, several passes a part, `check`, the first part's panic, a chosen device never split, with two fake devices opening this machine's real GPUs |
 | `tests/gpu_passes.rs` | A `map` too big for one pass of the GPU (spec 15.2): records kept in a local after several passes, made small by `KAVACH_GPU_WORDS`, give the CPU's results, natively |
 | `tests/limits_parallel.rs` | A limit's total holds when 30 handlers pay at once: exactly 10 refunds of 100 under `sum(amount) <= 1000 per day` |
 | `tests/version.rs` | `kavach --version`, `kavach version <program>`, and `--version` answered by a program only with `[build] version_flag` (spec 10.5) |
