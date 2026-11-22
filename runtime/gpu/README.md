@@ -23,4 +23,4 @@ GPU compute for `gpu fn` (spec [chapter 15](../../docs/spec/15-gpu.md), [decisio
 | [src/spare.rs](src/spare.rs) | Buffers of items and results no list holds any more, reused by the next `map` of the same size |
 | [src/upload.rs](src/upload.rs) | Items of 1 MB or more copied over through two buffers of our own, used in turn: `write_buffer` made a new 64 MB staging buffer every few chunks of a stream, at 100–280 ms each |
 | [src/timers.rs](src/timers.rs) | The GPU's own time for a frame's drawing and each `map`, from timestamp queries, when a trace or Tracy is on (spec 14.12, decision 0123); read back without waiting |
-| [src/tests.rs](src/tests.rs) | A kernel on a real GPU: results, results left there and read back, a stop, big items through the upload buffers (skipped without a GPU) |
+| [src/tests.rs](src/tests.rs) | A kernel on a real GPU: results, results left there and read back, a stop, big items through the upload buffers (skipped without a GPU); what listing and opening the GPUs costs, timed by hand |

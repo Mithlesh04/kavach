@@ -151,3 +151,50 @@ fn big_items_go_through_upload_buffers_used_in_turn() {
         assert_eq!(wrong, None, "round {round}");
     }
 }
+
+/// What starting the GPUs costs (spec 15.6): listing every interface's
+/// GPUs at once, as the program's first GPU work does (`listing::real`),
+/// then each interface's again, one after another, then opening the
+/// best. The first listing is the one a program pays for; the others
+/// find the drivers loaded. Timings only, run by hand:
+/// `cargo test -p kavach-runtime-gpu --release start_up -- --ignored --nocapture`.
+#[test]
+#[ignore]
+fn start_up_cost() {
+    let ms = |t: std::time::Instant| t.elapsed().as_secs_f64() * 1000.0;
+    let t = std::time::Instant::now();
+    let n = listing::real().len();
+    eprintln!(
+        "every interface at once: {n} GPUs listed in {:.1} ms",
+        ms(t)
+    );
+    let all = std::time::Instant::now();
+    let mut found = Vec::new();
+    for (name, backends) in [
+        ("vulkan", wgpu::Backends::VULKAN),
+        ("metal", wgpu::Backends::METAL),
+        ("dx12", wgpu::Backends::DX12),
+        ("gl", wgpu::Backends::GL),
+    ] {
+        let t = std::time::Instant::now();
+        let mut desc = wgpu::InstanceDescriptor::new_without_display_handle();
+        desc.backends = backends;
+        let instance = wgpu::Instance::new(desc);
+        let adapters = device::block_on(instance.enumerate_adapters(backends));
+        eprintln!("{name}: {} GPUs listed in {:.1} ms", adapters.len(), ms(t));
+        found.extend(adapters.into_iter().map(|a| (instance.clone(), a)));
+    }
+    eprintln!(
+        "every interface again, one after another: {:.1} ms",
+        ms(all)
+    );
+    let best = (found.into_iter()).min_by_key(|(_, a)| listing::Kind::of(a.get_info().device_type));
+    let Some((instance, adapter)) = best else {
+        eprintln!("no GPU: nothing to open");
+        return;
+    };
+    let name = adapter.get_info().name;
+    let t = std::time::Instant::now();
+    let opened = device::open(0, instance, adapter);
+    eprintln!("opening {name}: {:.1} ms ({})", ms(t), opened.is_ok());
+}

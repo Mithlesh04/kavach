@@ -165,19 +165,34 @@ pub(crate) fn fake(text: &str) -> Vec<Listed> {
 pub(crate) type Real = (Listed, wgpu::Instance, wgpu::Adapter);
 
 /// Every GPU through Vulkan, Metal, DirectX 12 and OpenGL, in that
-/// order. Nothing is opened.
+/// order. Nothing is opened. Each interface is asked on a thread of its
+/// own: one after another they took about 500 ms on a Windows laptop,
+/// at once about as long as the slowest, Vulkan's 230 ms.
 pub(crate) fn real() -> Vec<Real> {
-    let mut listed = Vec::new();
-    for backends in [
+    let each = [
         wgpu::Backends::VULKAN,
         wgpu::Backends::METAL,
         wgpu::Backends::DX12,
         wgpu::Backends::GL,
-    ] {
-        let mut desc = wgpu::InstanceDescriptor::new_without_display_handle();
-        desc.backends = backends;
-        let instance = wgpu::Instance::new(desc);
-        for a in crate::device::block_on(instance.enumerate_adapters(backends)) {
+    ];
+    std::thread::scope(|s| {
+        let asked: Vec<_> = (each.into_iter())
+            .map(|backends| s.spawn(move || through(backends)))
+            .collect();
+        (asked.into_iter())
+            .flat_map(|t| t.join().unwrap_or_else(|e| std::panic::resume_unwind(e)))
+            .collect()
+    })
+}
+
+/// Every GPU one interface (`backends`) lists.
+fn through(backends: wgpu::Backends) -> Vec<Real> {
+    let mut desc = wgpu::InstanceDescriptor::new_without_display_handle();
+    desc.backends = backends;
+    let instance = wgpu::Instance::new(desc);
+    let adapters = crate::device::block_on(instance.enumerate_adapters(backends));
+    (adapters.into_iter())
+        .map(|a| {
             let info = a.get_info();
             let gpu = Listed {
                 name: info.name,
@@ -187,10 +202,9 @@ pub(crate) fn real() -> Vec<Real> {
                 bus: info.device_pci_bus_id,
                 model: info.device,
             };
-            listed.push((gpu, instance.clone(), a));
-        }
-    }
-    listed
+            (gpu, instance.clone(), a)
+        })
+        .collect()
 }
 
 /// Every GPU this machine has (spec 14.25): name, vendor, kind and the

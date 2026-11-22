@@ -124,6 +124,21 @@ Every way printed the same last item and the same exact sum of the 4 million res
 - **The measure stops splits that don't pay.** The first split is sized by kind (a discrete GPU as 8 integrated ones: 3,555,328 and 444,672 items). Its measured speeds then show that the parts can't beat the RTX alone, so rounds 2 to 5 run on it alone, as fast as with splitting off.
 - **Where splitting pays** is two GPUs of about the same speed, as two discrete cards: then each does half. This machine has no second discrete GPU, so that is left to measure on one that has.
 
+## Starting the GPUs
+
+The first GPU work lists every GPU through every interface, so that a device's number never changes (spec 15.6), then opens the one the work goes to. Measured 2026-11-23 on the same laptop by `cargo test -p kavach-runtime-gpu start_up -- --ignored --nocapture` (`runtime/gpu/src/tests.rs`), five runs, in ms:
+
+| Step | Time |
+|---|---|
+| Listing through Vulkan (the RTX 4050 and the UHD 770) | 221–236 |
+| Listing through DirectX 12 (the same two, and WARP) | 193–265 |
+| Listing through OpenGL (one, already listed) | 68–75 |
+| All four, one after another, as Kavach did | 483–571 |
+| **All four at once, as Kavach does now** | **296–776, best 296** |
+| Opening the RTX 4050 through Vulkan | 36–48 |
+
+Phase A's listing asked each interface in turn, about 500 ms before any GPU work could start, where finding one GPU through Vulkan and opening it took about 200 before phase A (Frames, above). Each interface is now asked on a thread of its own, so the listing takes about as long as the slowest one. One run of the five took 776 ms, with the machine busy. DirectX 12 is the slow one here and finds only WARP that Vulkan didn't; leaving it out on machines whose Vulkan lists their GPUs would save the rest, but WARP is the device the choosing tests use on Windows.
+
 ## Running it
 
 ```
