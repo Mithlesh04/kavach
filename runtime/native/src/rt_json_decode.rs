@@ -164,13 +164,17 @@ pub(crate) fn decode(t: &Tree, ty: Type, path: &str, templates: i64) -> Result<u
     decode_at(t, ty, path, templates, 0)
 }
 
+/// Whether `v` fits whole-number type `t`, and plan node `n`'s limits
+/// when it has its own.
+#[inline]
+pub(crate) fn int_fits(v: i64, t: Type, n: usize) -> bool {
+    fits(v, t) && (n == 0 || crate::rt_json_wholes::inside(n, v) != Some(false))
+}
+
 /// The name of whole-number type `t`, or of plan node `n`'s whole number
-/// when it has its own limits, and whether `v` fits it.
-pub(crate) fn int_fits(v: i64, t: Type, n: usize) -> (bool, String) {
-    match crate::rt_json_wholes::whole(n, v) {
-        Some((name, inside)) => (inside && fits(v, t), name),
-        None => (fits(v, t), t.kavach_name().to_string()),
-    }
+/// when it has its own limits.
+fn int_name(t: Type, n: usize) -> String {
+    crate::rt_json_wholes::name(n).unwrap_or_else(|| t.kavach_name().to_string())
 }
 
 /// `t` as an owned slot of type `ty`, with node `n` of the plan of
@@ -214,14 +218,13 @@ pub(crate) fn decode_at(
                 Tree::Number(text) => text.parse::<i64>().ok(),
                 _ => None,
             };
-            let (inside, name) = int_fits(v.unwrap_or(0), t, node);
             return match v {
-                Some(v) if inside => Ok(v as u64),
-                _ => wrong(&expected::integer(&name)),
+                Some(v) if int_fits(v, t, node) => Ok(v as u64),
+                _ => wrong(&expected::integer(&int_name(t, node))),
             };
         }
         (t, _) if t.is_int() => {
-            return wrong(&expected::integer(&int_fits(0, t, node).1));
+            return wrong(&expected::integer(&int_name(t, node)));
         }
         (Type::Unit, _) => return Ok(0),
         _ => {}

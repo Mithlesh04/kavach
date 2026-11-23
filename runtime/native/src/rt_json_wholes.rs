@@ -107,8 +107,13 @@ fn with_node<R>(n: usize, f: impl FnOnce(&Node) -> R) -> Option<R> {
     PLAN.with(|p| p.borrow().as_ref().and_then(|nodes| nodes.get(n).map(f)))
 }
 
-/// Part `i` of node `n`: an item, key or value, or field.
+/// Part `i` of node `n`: an item, key or value, or field. Node 0, a
+/// decode with no plan, has none, at no cost.
+#[inline]
 pub(crate) fn part(n: usize, i: usize) -> usize {
+    if n == 0 {
+        return 0;
+    }
     with_node(n, |node| match node {
         Node::Parts(parts) => parts.get(i).copied().unwrap_or(0),
         _ => 0,
@@ -118,6 +123,9 @@ pub(crate) fn part(n: usize, i: usize) -> usize {
 
 /// The fields of variant `v` of node `n`.
 pub(crate) fn variant(n: usize, v: usize) -> Vec<usize> {
+    if n == 0 {
+        return Vec::new();
+    }
     with_node(n, |node| match node {
         Node::Variants(all) => all.get(v).cloned().unwrap_or_default(),
         _ => Vec::new(),
@@ -127,6 +135,7 @@ pub(crate) fn variant(n: usize, v: usize) -> Vec<usize> {
 
 /// Each field's node of record node `n`, `count` fields in all: none
 /// (each 0) for node 0, so a plain decode makes no list.
+#[inline]
 pub(crate) fn fields(n: usize, count: usize) -> Vec<usize> {
     if n == 0 {
         return Vec::new();
@@ -147,23 +156,30 @@ pub(crate) fn wide(n: usize) -> Option<kavach_runtime_core::wide::Wide> {
     .flatten()
 }
 
-/// The name of node `n`'s whole number when it is one with its own
-/// limits, and whether `value` is within them.
-pub(crate) fn whole(n: usize, value: i64) -> Option<(String, bool)> {
+/// Whether `value` is within node `n`'s limits; `None` when the node
+/// is no whole number with its own limits. Asked for every number read,
+/// so it makes nothing.
+pub(crate) fn inside(n: usize, value: i64) -> Option<bool> {
+    with_node(n, |node| match *node {
+        Node::Whole { lo, hi, .. } => Some((lo..=hi).contains(&value)),
+        _ => None,
+    })
+    .flatten()
+}
+
+/// The name of node `n`'s whole number, when it has its own limits.
+pub(crate) fn name(n: usize) -> Option<String> {
     with_node(n, |node| match *node {
         Node::Whole {
             lo,
             hi,
             bits,
             signed,
-        } => {
-            let name = match (bits, signed) {
-                (0, _) => format!("Int<range: {lo}..={hi}>"),
-                (b, true) => format!("Int<bits: {b}>"),
-                (b, false) => format!("UInt<bits: {b}>"),
-            };
-            Some((name, (lo..=hi).contains(&value)))
-        }
+        } => Some(match (bits, signed) {
+            (0, _) => format!("Int<range: {lo}..={hi}>"),
+            (b, true) => format!("Int<bits: {b}>"),
+            (b, false) => format!("UInt<bits: {b}>"),
+        }),
         _ => None,
     })
     .flatten()
@@ -180,9 +196,12 @@ mod tests {
         assert_eq!(plan[1], Node::Parts(vec![2]));
         begin(&[0, 2, 2, 1, 0, 4095, 12, 0]);
         assert_eq!(part(ROOT, 0), 2);
-        assert_eq!(whole(2, 4095), Some(("UInt<bits: 12>".into(), true)));
-        assert_eq!(whole(2, 4096), Some(("UInt<bits: 12>".into(), false)));
-        assert_eq!(whole(ROOT, 1), None);
+        assert_eq!(name(2), Some("UInt<bits: 12>".into()));
+        assert_eq!(
+            (inside(2, 4095), inside(2, 4096)),
+            (Some(true), Some(false))
+        );
+        assert_eq!((inside(ROOT, 1), name(ROOT)), (None, None));
         end();
         assert_eq!(part(ROOT, 0), 0);
         // Broken or empty plans are none.

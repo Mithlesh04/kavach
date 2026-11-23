@@ -68,7 +68,7 @@ fn read(r: &mut Pull<'_>, ty: Type, templates: i64, node: usize) -> Read {
         t if t.is_int() => {
             return match number(r)? {
                 (text, true) => match text.parse::<i64>() {
-                    Ok(n) if int_fits(n, t, node).0 => Ok(n as u64),
+                    Ok(n) if int_fits(n, t, node) => Ok(n as u64),
                     _ => Err(Wrong),
                 },
                 _ => Err(Wrong),
