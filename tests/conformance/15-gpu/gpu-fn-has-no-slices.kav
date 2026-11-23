@@ -1,0 +1,20 @@
+// Rule: A slice in a `gpu fn` is a compile error that says why: a `gpu fn` holds no lists, and a `Slice` method takes a `Part` of `Int?`s.
+// Spec: 15.4
+// expect compile error
+
+type Pair: Slice {
+    a: Float32
+    b: Float32
+
+    fn slice(self, part: Part) -> Pair {
+        Pair(a: self.b, b: self.a)
+    }
+}
+
+gpu fn turn(p: Pair) -> Pair {
+    p[::-1]                         // error: a `gpu fn` can't slice
+}
+
+fn main() {
+    print(turn(Pair(a: 1.0, b: 2.0)))
+}

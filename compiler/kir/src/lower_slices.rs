@@ -142,7 +142,28 @@ impl<'a> Lowerer<'a> {
             _ => return Err(self.unsupported("slicing this", base.span)),
         };
         let words = self.part_words(index, line)?;
+        if op == RtOp::ListSlicePart && !self.c.gpu_maps.is_empty() {
+            return Ok(self.gpu_slice(b, words, ty, line));
+        }
         Ok(self.at(K::Rt(op, vec![b, words]), ty, line))
+    }
+
+    /// `xs[a:b:step]` in a program with GPU `map`s (spec 15.4): a list a
+    /// `map` left in GPU memory is sliced there. Written as `lower_gpu.rs`
+    /// writes a `map`, the list held first, so `gpu_stay.rs` leaves the
+    /// list where it is and the slice there too when the GPU reads it next.
+    fn gpu_slice(&mut self, list: ir::Expr, words: ir::Expr, ty: Type, line: u32) -> ir::Expr {
+        let held = self.new_local(list.ty);
+        let got = self.new_local(ty);
+        let slice = K::Rt(RtOp::GpuSlice, vec![self.local_expr(held, line), words]);
+        let block = Block {
+            stmts: vec![
+                Stmt::Let(held, list),
+                Stmt::Let(got, self.at(slice, ty, line)),
+            ],
+            value: Some(Box::new(self.local_expr(got, line))),
+        };
+        self.at(K::Block(block), ty, line)
     }
 
     /// The slice's four words, as a list of `Int`s: start, end, step and

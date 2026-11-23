@@ -1,0 +1,14 @@
+// Rule: A slice of a list in GPU memory works out its step on the CPU first, so a step of 0 panics as on the CPU.
+// Spec: 15.4, 2.19
+// expect panic: the step of a slice can't be 0
+
+gpu fn step(x: Int32) -> Int32 {
+    x + 1
+}
+
+fn main() {
+    let xs: [Int32] = [1, 2, 3]
+    xs = xs.map(step)
+    const k = xs.len() - 3
+    print(xs[::k])
+}

@@ -1,6 +1,6 @@
 # tests/conformance/15-gpu/
 
-Conformance tests for spec chapter [15. GPU](../../../docs/spec/15-gpu.md). Format: [../README.md](../README.md). These lists are short, so they run on the CPU; `tools/cli/tests/textures.rs` samples textures, `tools/cli/tests/gpu.rs` runs `map`s, `filter`, `sum`, `min` and `max` on the GPU (`KAVACH_GPU=on` and `check`), `tools/cli/tests/gpu_choice.rs` chooses among GPUs listed by `KAVACH_FAKE_GPUS` and real ones (15.6), `tools/cli/tests/gpu_split.rs` splits a `map` across two of them, and `tools/cli/tests/gpu_passes.rs` runs a `map` in several passes of the GPU.
+Conformance tests for spec chapter [15. GPU](../../../docs/spec/15-gpu.md). Format: [../README.md](../README.md). These lists are short, so they run on the CPU; `tools/cli/tests/textures.rs` samples textures, `tools/cli/tests/gpu.rs` runs `map`s, `filter`, `sum`, `min` and `max` on the GPU (`KAVACH_GPU=on` and `check`), `tools/cli/tests/gpu_choice.rs` chooses among GPUs listed by `KAVACH_FAKE_GPUS` and real ones (15.6), `tools/cli/tests/gpu_split.rs` splits a `map` across two of them, and `tools/cli/tests/gpu_passes.rs` runs a `map` in several passes of the GPU, and `tools/cli/tests/gpu_slices.rs` slices lists in GPU memory there (15.4).
 
 | Section | Test | Rule | Result |
 |---|---|---|---|
@@ -71,3 +71,6 @@ Conformance tests for spec chapter [15. GPU](../../../docs/spec/15-gpu.md). Form
 | 15.6 | [gpu-missing-device-stops-at-start.kav](gpu-missing-device-stops-at-start.kav) | A `gpu(n) fn` naming a GPU the machine doesn't have stops the program at its start. | exit 1 |
 | 15.6 | [gpu-choosing-a-missing-device-panics.kav](gpu-choosing-a-missing-device-panics.kav) | A GPU number worked out while running that names no device is a panic. | panic |
 | 15.6, 15.5 | [gpu-split-map-keeps-the-order.kav](gpu-split-map-keeps-the-order.kav) | A `map` split across GPUs gives each item what its `gpu fn` gives it, in the list's order, and the sum of the results is the same exact sum. | runs |
+| 15.4, 2.19 | [gpu-slice-gives-the-cpus-items.kav](gpu-slice-gives-the-cpus-items.kav) | A slice of a list a GPU `map` left in GPU memory gives the CPU's items: the same `#k`, clamping and step, and a `map` or `sum` can follow it. | runs |
+| 15.4, 2.19 | [gpu-slice-step-of-zero-panics.kav](gpu-slice-step-of-zero-panics.kav) | A slice of a list in GPU memory works out its step on the CPU first, so a step of 0 panics as on the CPU. | panic |
+| 15.4 | [gpu-fn-has-no-slices.kav](gpu-fn-has-no-slices.kav) | A slice in a `gpu fn` is a compile error that says why. | compile error |

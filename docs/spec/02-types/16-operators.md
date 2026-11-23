@@ -133,7 +133,7 @@ print(r[::-1].cells)      // [3.0, 2.0, 9.0]
 - **One implementation for each key type** ([decision 0136](../../decisions/0136-tensor-the-one-array-type.md)): a type may implement `Index` several times, once for each type of key, and the key's type picks the method when the program is compiled. A grid can have `Index<(Int, Int), T>` for `g[1, 2]` and `Index<(Int, Part), [T]>` for `g[1, :]`. Two for the same key type are a compile error.
 - `x[k] = v` needs `IndexSet` and a `let`, as `x += v` needs `Add` and a `let`.
 - Built-in types keep their own indexing and slicing (2.19); `extend [T]: Index` is a compile error.
-- In a `gpu fn`, `x[k]` calls `index` when that method fits a `gpu fn` (15.4).
+- In a `gpu fn`, `x[k]` calls `index` when that method fits a `gpu fn` (15.4; not built yet). A slice there, `x[a:b]`, is a compile error (15.4).
 
 ## Open questions
 

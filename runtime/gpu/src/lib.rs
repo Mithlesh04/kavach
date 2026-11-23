@@ -350,6 +350,8 @@ pub mod ktx2;
 mod late;
 mod later;
 mod pipeline;
+mod slice;
+pub use slice::slice;
 mod spare;
 mod split;
 pub use split::{cpu_ns, work_per_item};

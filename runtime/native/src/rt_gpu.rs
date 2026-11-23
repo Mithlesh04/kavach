@@ -18,6 +18,7 @@ mod filter;
 mod kept;
 mod later;
 mod reduce;
+mod slice;
 
 pub(crate) use kept::resident;
 use kept::{bring_back, fetch, forget, keep, take_alone};
@@ -56,6 +57,8 @@ crate::rt_data::entry!(kv_rt_gpu, |op, a, b, c, code, line| match op {
     RtOp::GpuLaterNext => later::next(a, b),
     RtOp::GpuLaterValue => later::value(),
     RtOp::GpuLaterList => later::list(),
+    RtOp::GpuSlice => slice::slice(a, b, code, line, false),
+    RtOp::GpuSliceStay => slice::slice(a, b, code, line, true),
     RtOp::GpuFilter => filter::filter(a, b, c, code, line, false),
     RtOp::GpuFilterStay => filter::filter(a, b, c, code, line, true),
     RtOp::GpuCheck => check(a, line),

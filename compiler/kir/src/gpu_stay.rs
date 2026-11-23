@@ -114,7 +114,8 @@ pub(crate) fn is_gpu_list(e: &Expr) -> bool {
 }
 
 /// The `GpuMap` of `e`, when `e` is a `map` that may run on the GPU, as
-/// `lower_gpu.rs` writes it: the list held, then the GPU's try.
+/// `lower_gpu.rs` writes it: the list held, then the GPU's try. A
+/// `filter`'s and a slice's too (`lower_slices.rs`).
 fn gpu_map(e: &mut Expr) -> Option<&mut RtOp> {
     let K::Block(b) = &mut e.kind else {
         return None;
@@ -128,7 +129,9 @@ fn gpu_map(e: &mut Expr) -> Option<&mut RtOp> {
                         op @ (RtOp::GpuMap
                         | RtOp::GpuMapStay
                         | RtOp::GpuFilter
-                        | RtOp::GpuFilterStay),
+                        | RtOp::GpuFilterStay
+                        | RtOp::GpuSlice
+                        | RtOp::GpuSliceStay),
                         _,
                     ),
                 ..
@@ -142,6 +145,7 @@ fn stay(e: &mut Expr) {
     if let Some(op) = gpu_map(e) {
         *op = match op {
             RtOp::GpuFilter | RtOp::GpuFilterStay => RtOp::GpuFilterStay,
+            RtOp::GpuSlice | RtOp::GpuSliceStay => RtOp::GpuSliceStay,
             _ => RtOp::GpuMapStay,
         };
     }
@@ -160,6 +164,8 @@ fn read_on_gpu(b: &Block) -> bool {
                         | RtOp::GpuMapStay
                         | RtOp::GpuFilter
                         | RtOp::GpuFilterStay
+                        | RtOp::GpuSlice
+                        | RtOp::GpuSliceStay
                         | RtOp::GpuSum
                         | RtOp::GpuMin
                         | RtOp::GpuMax,
@@ -368,6 +374,16 @@ fn main() {
         let src = "gpu fn step(x: Int32) -> Int32 {\n    x + 1\n}\n\nfn main() {\n    let xs: [Int32] = [1, 2]\n    xs = xs.map(step)\n    let ys = xs.filter(x => x > 1)\n    ys = ys.map(step)\n    print(ys)\n}\n";
         assert_eq!(ops(src, RtOp::GpuFilterStay), 1);
         assert_eq!(ops(src, RtOp::GpuMapStay), 2);
+        // Only `print(ys)` reads a list on the CPU.
+        assert_eq!(ops(src, RtOp::GpuFetch), 1);
+    }
+
+    /// A slice of a list in GPU memory reads it there, and stays there
+    /// when it is kept or only a GPU op reads it (spec 15.4).
+    #[test]
+    fn a_slice_of_a_list_on_the_gpu_is_made_there() {
+        let src = "gpu fn step(x: Int32) -> Int32 {\n    x + 1\n}\n\nfn main() {\n    let xs: [Int32] = [1, 2]\n    xs = xs.map(step)\n    const ys = xs[0:1]\n    print(xs[::-1].sum(x => x))\n    print(ys)\n}\n";
+        assert_eq!(ops(src, RtOp::GpuSliceStay), 2);
         // Only `print(ys)` reads a list on the CPU.
         assert_eq!(ops(src, RtOp::GpuFetch), 1);
     }

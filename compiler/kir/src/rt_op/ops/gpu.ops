@@ -46,6 +46,13 @@ GpuFilter,
 /// `GpuFilter` whose result may stay in GPU memory only, as
 /// `GpuMapStay`.
 GpuFilterStay,
+/// `xs[a:b:step]` of a list in a program with GPU `map`s (spec 15.4):
+/// the list and the slice's words, as `ListSlicePart`. Made on the GPU
+/// when the list's items are only in GPU memory, else on the CPU.
+GpuSlice,
+/// `GpuSlice` whose result may stay in GPU memory only, as
+/// `GpuMapStay`: made on the GPU whenever the list's items are there.
+GpuSliceStay,
 /// At the start of a program with GPU kernels: open the GPU and
 /// compile the kernels (its text, joined by `\0`) on a background
 /// thread, while the program does its first work.

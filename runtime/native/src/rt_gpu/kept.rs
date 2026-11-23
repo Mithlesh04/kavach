@@ -49,6 +49,11 @@ pub(crate) fn resident(list: i64) -> Option<kavach_runtime_gpu::Resident> {
     })
 }
 
+/// Whether `list`'s items are only in GPU memory, not written here yet.
+pub(super) fn only_on_gpu(list: i64) -> bool {
+    RESIDENT.with(|r| r.borrow().0.iter().any(|k| k.list == list && k.stale))
+}
+
 /// Keeps `list` (now held here too) with its items in GPU memory,
 /// letting go of the oldest beyond the limits. One only there comes
 /// back first, unless nothing else holds it.

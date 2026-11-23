@@ -1,0 +1,20 @@
+// Rule: A slice of a list a GPU `map` left in GPU memory gives the CPU's items: the same `#k`, clamping and step, and a `map` or `sum` can follow it.
+// Spec: 15.4, 2.19
+// expect output: [10, 11, 12] [19, 18, 17] [11, 13, 15, 17, 19]
+// expect output: [17, 18, 19] [] [22, 26, 30]
+// expect output: 145
+
+gpu fn step(x: Int32) -> Int32 {
+    x + 1
+}
+
+fn main() {
+    let xs: [Int32] = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+    for _ in 0..10 {
+        xs = xs.map(step)                 // stays in GPU memory on a GPU
+    }
+    const firsts = xs[0:3]
+    print(`{firsts} {xs[::-1][0:3]} {xs[1::2]}`)
+    print(`{xs[#3:]} {xs[50:]} {xs[0:5:2].map(x => step(x) * 2)}`)
+    print(xs[#10:100].sum(x => x))
+}

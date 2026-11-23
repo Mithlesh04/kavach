@@ -141,9 +141,9 @@ print(t[0:2, 1:].to_rows())     // [[2, 3], [5, 6]]
 
 ## On the GPU
 
-*Not built yet.*
+A slice of a list in GPU memory is made there, with nothing copied back, so `xs[a:b:step].map(f)` runs on the GPU from start to end (15.4). The results are those of the CPU. A slice in a `gpu fn` is a compile error (15.4).
 
-A slice of a list in GPU memory is made there, and `xs[a:b:step].map(f)` reads the slice where it is (15.4). The results are those of the CPU.
+*Not built yet:* `xs[a:b:step].map(f)` reading the slice in place, without making it first (15.4).
 
 ## No methods that slice
 

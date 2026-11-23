@@ -14,7 +14,7 @@ use kavach_runtime_core::slices::{self, Part};
 
 /// The slice in the list `words` of four numbers (`Part::words`), which
 /// it lets go.
-fn part_of(words: i64) -> Part {
+pub(crate) fn part_of(words: i64) -> Part {
     let w = items_of(words);
     let at = |i: usize| w.get(i).copied().unwrap_or(0) as i64;
     let part = Part::from_words([at(0), at(1), at(2), at(3)]);
@@ -47,12 +47,17 @@ pub fn list_part(op: RtOp, a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 
         release(c);
         return list;
     }
-    if let Some(out) = flat_part(a, &part, code, line) {
+    slice_list(a, &part, code, line)
+}
+
+/// `a[part]`, a new list of type `code`; lets go of `a`.
+pub(crate) fn slice_list(a: i64, part: &Part, code: i64, line: i32) -> i64 {
+    if let Some(out) = flat_part(a, part, code, line) {
         return out;
     }
     let item = item_type(a);
     let slots = items_of(a);
-    let picked = slices::pick(&slots, &part).unwrap_or_else(|m| panic_with(m, line));
+    let picked = slices::pick(&slots, part).unwrap_or_else(|m| panic_with(m, line));
     let out = crate::rt_text::list_of(&picked, item, code);
     drop(slots);
     release(a);

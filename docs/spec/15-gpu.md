@@ -218,23 +218,42 @@ frame.draw(tiles, square, textures: [skin])
 
 ## 15.4 Slicing on the GPU
 
-*Not built yet.*
-
-Slices (2.19) of a list in GPU memory (15.2) run on the GPU, so a pipeline doesn't stop to copy the list back ([decision 0134](../decisions/0134-slicing-and-indexing.md)).
-
-- **A slice of a list in GPU memory is made there.** `ys[a:b:step]` copies nothing back to the CPU, and the slice stays in GPU memory like a `map`'s result, so a `map`, `filter`, `sum`, `min` or `max` can follow it there.
-- **`xs[a:b:step].map(f)` reads the slice where it is**: from its first item, every `step`th item, with nothing copied in between. When `xs` is in GPU memory, the slice is never made as a list of its own. The same holds for `filter` and the other calls of 15.2 after a slice.
-- **Tensors** in GPU memory, once they can stay there (14.33), are sliced there the same way: `t[0:2, 1:]`, `t[:, #1]`.
-- **A program's own `Index` and `Slice` methods** (2.16) may be called in a `gpu fn` (`v[i]`, `v[1:3]`) when the method fits a `gpu fn` itself (15.1): pure, and only numbers, records and tuples of the four types.
-- **The results are those of the CPU:** the same `#k`, the same clamping, the same step. The step and the ends are worked out on the CPU before the GPU starts, so a step of 0 panics at the same line as on the CPU. An index out of range in a `gpu fn`'s `index` method panics with the CPU's message and line, as overflow does (15.2).
+Slices (2.19) of a list in GPU memory (15.2) are made on the GPU, so a pipeline doesn't stop to copy the list back ([decision 0134](../decisions/0134-slicing-and-indexing.md)).
 
 ```kavach
 for _ in 0..100 {
     xs = xs.map(x => step(x))          // xs stays in GPU memory
 }
 const firsts = xs[0:1000]              // made on the GPU: no copy back
-const lit = xs[::2].map(x => glow(x, 0.5))   // reads every other item in place
+const lit = xs[::2].map(x => glow(x, 0.5))   // sliced and mapped on the GPU
+print(firsts[#1])                      // the one copy back: the slice's items
 ```
+
+- **A slice of a list in GPU memory is made there.** `xs[a:b:step]` copies nothing back to the CPU: the GPU copies the slice's items into a new list in its own memory. The slice stays there like a `map`'s result, so a `map`, `filter`, `sum`, `min` or `max` can follow it there. When the CPU reads the slice, only the slice's items come back, not the whole list.
+- **Where it is made.** The GPU makes the slice when the list's items are only in GPU memory, or when the list is there and the slice stays there too (it is kept in a variable, or only a GPU call reads it). Otherwise the CPU makes it, as it makes any slice. An empty slice is made on the CPU.
+- **The results are those of the CPU:** the same `#k`, the same clamping, the same step. The ends and the step are worked out on the CPU before the GPU starts, so a step of 0 panics at the same line, with the same message, as on the CPU.
+- **A slice in a `gpu fn` is a compile error that says why.** A `gpu fn` holds no lists (15.1), and a program's own `Slice` method (2.16) takes a `Part`, whose ends are `Int?`s, which a `gpu fn` can't hold either.
+
+```kavach
+type Pair: Slice {
+    a: Float32
+    b: Float32
+
+    fn slice(self, part: Part) -> Pair {
+        Pair(a: self.b, b: self.a)
+    }
+}
+
+gpu fn turn(p: Pair) -> Pair {
+    p[::-1]       // error: a `gpu fn` can't slice
+}
+```
+
+*Not built yet:*
+
+- **Reading a slice in place.** `xs[a:b:step].map(f)` could read the slice where it is (from its first item, every `step`th), so the slice is never made as a list of its own. Today the GPU makes the slice in its memory first: one copy there, none back.
+- **Tensors** in GPU memory, once they can stay there (14.33), sliced there the same way: `t[0:2, 1:]`, `t[:, #1]`.
+- **A program's own `Index` methods** (2.16) called in a `gpu fn` (`v[i]`) when the method fits a `gpu fn` itself (15.1): pure, and only numbers, records and tuples of the four types. An index out of range would panic with the CPU's message and line, as overflow does (15.2).
 
 ## 15.5 Grouping and tables on the GPU
 
@@ -338,7 +357,8 @@ How it is cut, and what it gives:
 
 ## Open questions
 
-- A `Slice` method in a `gpu fn`: its `Part` holds `Int?`s, which a `gpu fn` can't take (15.1).
+- A `Slice` method in a `gpu fn`: its `Part` holds `Int?`s, which a `gpu fn` can't take (15.1). **Chosen 2026-11-22, for a maintainer's review:** no. Any slice in a `gpu fn` is a compile error that says why (15.4): it is the simplest rule, and the GPU has no lists to slice there. A `Part` of `Int32`s for the GPU could come later.
+- **For a maintainer's review** (15.4, 2026-11-22): the GPU makes a slice of a list in its memory as a copy there, not yet a view read in place; it does so when the list's items are only there, or when the slice stays there too, and otherwise the CPU makes it; an empty slice is made on the CPU.
 - `min` and `max` of `Float32` on the GPU, and `filter` of records and tuples. Float `min` and `max` must keep `NaN` last (14.2). Float sums are decided: exact and rounded once, in any order ([decision 0135](../decisions/0135-tables-and-grouping.md), which replaces [decision 0031](../decisions/0031-loops-on-all-cores.md)'s in-order float sums for lists).
 - Whether code that keeps GPU memory itself, as the platform plan describes, needs `uses Gpu` too, as choosing a device does (15.6).
 - **For a maintainer's review** (15.6, decision 0144): the size that pays for a split (a second of the CPU's time, 100 units of work for each word moved, then a tenth sooner by measured speeds with 2 ms a part); speeds guessed by kind at first (a discrete GPU as 8 integrated ones), then measured; a device not open yet not waited for; the first part's panic reported; `KAVACH_GPU_SPLIT`; no ranking by memory unless Kavach reads it through each system's own interface, which needs `unsafe` code and a decision record.

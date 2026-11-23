@@ -37,6 +37,18 @@ fn is_math(c: &Checker<'_>, e: &Expr) -> bool {
 /// Why a `gpu fn` can't touch the world outside it (spec 15.1).
 const OUTSIDE: &str = "it reaches outside the program (files, the network, the terminal, time, AI), and on the GPU a `gpu fn` runs alone, item by item, with only its own values";
 
+/// Why a `gpu fn` can't slice (spec 15.4).
+const SLICE: &str = "a `gpu fn` can't slice (`x[a:b:step]`): it holds no lists, and a `Slice` method takes a `Part`, whose ends are `Int?`s, which a `gpu fn` can't hold either. Slice the list before the `map` (`xs[a:b].map(f)`), or read the fields you need (spec 15.4)";
+
+/// Whether `index` is a slice, or a key of many dimensions with one.
+fn is_slice(index: &Expr) -> bool {
+    match &index.kind {
+        ExprKind::Part { .. } => true,
+        ExprKind::Tuple(keys) => keys.iter().any(is_slice),
+        _ => false,
+    }
+}
+
 /// Built-ins that reach outside the program.
 const PRINTS: [&str; 4] = ["print", "debug", "ask", "env"];
 
@@ -155,6 +167,12 @@ impl<'t> Walk<'t> {
         // `String` it gives.
         if let Some(what) = outside_call(c, e) {
             self.no(e.span, &format!("`{what}`: {OUTSIDE}"));
+            return;
+        }
+        if let ExprKind::Index { index, .. } = &e.kind
+            && is_slice(index)
+        {
+            self.errors.push((e.span, SLICE.to_string()));
             return;
         }
         if let Some(t) = self.types.get(&(e.span.start, e.span.end))
