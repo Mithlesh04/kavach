@@ -7,6 +7,8 @@
 //! machine-specific paths, so each gives the same bits everywhere. The
 //! interpreter, native code and LLVM builds (`kv_math_*`) all use these.
 
+pub mod exact;
+
 pub fn pow(x: f64, y: f64) -> f64 {
     libm::pow(x, y)
 }

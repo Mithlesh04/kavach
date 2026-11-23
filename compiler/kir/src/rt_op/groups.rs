@@ -177,6 +177,8 @@ impl RtOp {
             "kv_rt_watch"
         } else if group("FsWriter") {
             "kv_rt_writers"
+        } else if group("Exact") {
+            "kv_rt_exact"
         } else if matches!(
             self,
             RtOp::ScopeSpan

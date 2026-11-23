@@ -1,0 +1,15 @@
+// Rule: an exact float sum is NaN for a NaN or infinities of both signs, an infinity for one, an infinity when it rounds past the largest value, `-0.0` only when every value is `-0.0`, and `0.0` when empty.
+// Spec: 14.2
+// expect output: NaN NaN inf -inf
+// expect output: inf 1.7976931348623157e308
+// expect output: -0.0 0.0 0.0 0.0
+
+fn main() {
+    const inf = Float.from_bits(UInt64(2047) << 52)
+    const nan = inf - inf
+    const big = 1.7976931348623157e308
+    print(`{[1.0, nan].sum(x => x)} {[inf, -inf].sum(x => x)} {[inf, 1.0].sum(x => x)} {[-inf, 1.0].sum(x => x)}`)
+    print(`{[big, big].sum(x => x)} {[big, big, -big].sum(x => x)}`)
+    const empty: [Float] = []
+    print(`{[-0.0, -0.0].sum(x => x)} {[-0.0, 0.0].sum(x => x)} {[1.0, -1.0].sum(x => x)} {empty.sum(x => x)}`)
+}

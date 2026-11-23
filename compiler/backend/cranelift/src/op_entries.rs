@@ -109,6 +109,10 @@ pub(crate) fn op_entries() -> Vec<RuntimeFn> {
             kavach_runtime_native::kv_rt_writers as *const u8,
         ),
         (
+            "kv_rt_exact",
+            kavach_runtime_native::kv_rt_exact as *const u8,
+        ),
+        (
             "kv_rt_scopes",
             kavach_runtime_native::kv_rt_scopes as *const u8,
         ),

@@ -378,6 +378,13 @@ impl<'a> Interp<'a> {
                             .collect(),
                     )),
                     _ => {
+                        // Floats add exactly, rounded once (spec 14.2).
+                        let call_ty = self.c.expr_types.get(&(span.start, span.end));
+                        if let Some(kavach_checker::Ty::Prim(p @ (Prim::Float | Prim::Float32))) =
+                            call_ty
+                        {
+                            return Ok(crate::numbers::exact_sum(&mapped, *p));
+                        }
                         let mut values = mapped.into_iter();
                         // An empty sum is the zero of the call's type: `0.0`
                         // for a `Float` lambda, as native code gives.

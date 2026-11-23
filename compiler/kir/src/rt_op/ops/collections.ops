@@ -165,3 +165,12 @@ BytesSlicePart,
 /// in the same order; the first item of the smallest or largest key.
 ListMinBy,
 ListMaxBy,
+/// An exact sum of floats (spec 14.2, decision 0135): `ExactNew` makes
+/// one and gives its address; `ExactAdd` adds the `Float` `b` to the sum
+/// at address `a`, and `ExactAddList` each `Float` of the list `b`;
+/// `ExactEnd` frees the sum at `a` and gives it rounded once to the
+/// result's type, `Float` or `Float32`.
+ExactNew,
+ExactAdd,
+ExactAddList,
+ExactEnd,

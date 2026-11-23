@@ -170,3 +170,20 @@ impl<'a> Interp<'a> {
         }))
     }
 }
+
+/// The exact sum of `values`, floats, rounded once to `p`, `Float` or
+/// `Float32` (spec 14.2): the same bits in any order.
+pub(crate) fn exact_sum<'a>(values: &[Value<'a>], p: Prim) -> Value<'a> {
+    let mut sum = kavach_runtime_core::math::exact::ExactSum::new();
+    for v in values {
+        match v {
+            Value::Float(x) => sum.add(*x),
+            Value::Float32(x) => sum.add(f64::from(*x)),
+            _ => {}
+        }
+    }
+    match p {
+        Prim::Float32 => Value::Float32(sum.value32()),
+        _ => Value::Float(sum.value()),
+    }
+}
