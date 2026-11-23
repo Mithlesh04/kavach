@@ -247,6 +247,7 @@ impl Checker<'_> {
             params: self.sizes.params.keys().copied().collect(),
             consts: self.sizes.consts.clone(),
             defaults,
+            wholes: self.sizes.wholes.clone(),
         }
     }
 }
@@ -270,4 +271,7 @@ pub struct Settled {
     /// defaults.
     pub consts: HashMap<DefId, i64>,
     pub defaults: HashMap<DefId, i64>,
+    /// Each written whole-number type with its own limits, by its span:
+    /// `UInt<bits: 12>`, `Int<range: 1..=65535>` (spec 2.1).
+    pub wholes: HashMap<(u32, u32), crate::ty::Prim>,
 }

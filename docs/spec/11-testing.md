@@ -60,6 +60,7 @@ Every type gets a generator automatically. No code is needed.
 | Type | Values always tried first, then random ones |
 |---|---|
 | `Int`, `Decimal` | `0`, `1`, `-1`, smallest, largest, values next to every number in a `require` |
+| `Int8` … `UInt64`, `Int<bits: n>`, `UInt<bits: n>`, `Int<range: a..=b>` (2.1) | The same, each only when the type holds it: `Int<range: 1..=65535>` gets `1`, `65535` and values between, never `0` |
 | `String` | `""`, one character, whitespace, non-Latin text (`"नमस्ते"`), very long |
 | `[T]`, `Dict`, `Set` | empty, one item, many items, duplicates |
 | `T?` | `none` and a value |

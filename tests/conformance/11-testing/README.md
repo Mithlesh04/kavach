@@ -28,3 +28,5 @@ Conformance tests for spec chapter [11. Testing](../../../docs/spec/11-testing.m
 | 11.8 | [a-failing-assert-shows-both-sides.kav](a-failing-assert-shows-both-sides.kav) | A failing `assert` on a comparison shows both sides: `assertion failed: total == 10 (left: 9, right: 10)`. | panic |
 | 11.8, 11.5 | [a-test-may-ask-for-the-fake-disk.kav](a-test-may-ask-for-the-fake-disk.kav) | `test … uses Fs with Fs = fake` gets an empty file system in memory; nothing it writes reaches the disk. | tests pass |
 | 11.8, 9.2 | [a-test-cancels-the-tasks-it-leaves.kav](a-test-cancels-the-tasks-it-leaves.kav) | A `test` block cancels the tasks it spawned and left running when it ends. | tests pass |
+| 11.3, 2.1 | [generated-bits-numbers-reach-their-largest.kav](generated-bits-numbers-reach-their-largest.kav) | A `bits` number's generated values include its largest, so a sum that doesn't fit is found. | tests fail |
+| 11.3, 2.1 | [generated-range-numbers-stay-in-their-range.kav](generated-range-numbers-stay-in-their-range.kav) | A range number's generated values are always in its range. | tests pass |

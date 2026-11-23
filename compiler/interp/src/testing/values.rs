@@ -109,6 +109,10 @@ impl<'a> Interp<'a> {
     }
 
     pub(crate) fn gen_of(&self, t: &TypeExpr) -> Option<Gen> {
+        // `UInt<bits: 12>`, `Int<range: 1..=65535>` (spec 2.1).
+        if let Some(p) = self.c.numbers.wholes.get(&(t.span.start, t.span.end)) {
+            return Some(Gen::Int(*p));
+        }
         Some(match &t.kind {
             TypeKind::Named { path, args } => {
                 let first = &path.segments[0];
@@ -172,9 +176,12 @@ impl<'a> Interp<'a> {
                 edges.retain(|n| (lo..=hi).contains(n));
                 let n = match edge(edges.len()) {
                     Some(i) => edges[i],
+                    // Small values most often; a range far from 0 has none.
                     None => match rng.below(10) {
-                        0..=4 => rng.range(lo.max(-100), hi.min(100)),
-                        5..=7 => rng.range(lo.max(-1_000_000), hi.min(1_000_000)),
+                        0..=4 if lo <= 100 && hi >= -100 => rng.range(lo.max(-100), hi.min(100)),
+                        5..=7 if lo <= 1_000_000 && hi >= -1_000_000 => {
+                            rng.range(lo.max(-1_000_000), hi.min(1_000_000))
+                        }
                         _ => rng.range(lo, hi),
                     },
                 };

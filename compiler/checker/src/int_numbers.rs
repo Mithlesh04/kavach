@@ -105,15 +105,15 @@ impl Checker<'_> {
         let Some((name, value, at)) = named.first().copied() else {
             return fallback;
         };
-        match (name.name.as_str(), what) {
-            ("bits", _) => self.bits_of(what, value, at).map_or(fallback, Ty::Prim),
-            ("range", "Int") => self.range_of(value).map_or(fallback, Ty::Prim),
+        let made = match (name.name.as_str(), what) {
+            ("bits", _) => self.bits_of(what, value, at),
+            ("range", "Int") => self.range_of(value),
             ("range", _) => {
                 self.error(
                     name.span,
                     "a range is written on `Int`: `Int<range: 0..=4095>` (spec 2.1)",
                 );
-                fallback
+                None
             }
             (other, _) => {
                 self.error(
@@ -122,8 +122,17 @@ impl Checker<'_> {
                         "`{what}` has no number `{other}`: it takes `bits` or `range` (spec 2.1)"
                     ),
                 );
-                fallback
+                None
             }
+        };
+        match made {
+            Some(p) => {
+                if p.is_narrow() {
+                    self.sizes.wholes.insert((span.start, span.end), p);
+                }
+                Ty::Prim(p)
+            }
+            None => fallback,
         }
     }
 

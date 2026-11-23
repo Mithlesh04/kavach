@@ -42,6 +42,9 @@ pub(crate) struct Sizes {
     /// The number arguments of each call of a function with number
     /// parameters, by its span.
     pub(crate) calls: Vec<NumCall>,
+    /// Each written `Int<bits: n>`, `UInt<bits: n>` or `Int<range: …>`
+    /// with its own limits, by the written type's span.
+    pub(crate) wholes: HashMap<(u32, u32), crate::ty::Prim>,
 }
 
 impl Checker<'_> {

@@ -1,0 +1,15 @@
+// Rule: A range number's generated values are always in its range: `Int<range: 1..=65535>` never gets `0`.
+// Spec: 11.3, 2.1
+// expect test pass
+
+fn share(port: Int<range: 1..=65535>) -> Int
+    ensure result >= 0
+{
+    65535 / Int(port)
+}
+
+fn far(n: Int<range: 1000..=2000>) -> Int
+    ensure result >= 1000 and result <= 2000
+{
+    Int(n)
+}

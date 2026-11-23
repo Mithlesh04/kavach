@@ -1,0 +1,7 @@
+// Rule: A `bits` number's generated values include its largest, so a sum that doesn't fit is found.
+// Spec: 11.3, 2.1
+// expect test fail
+
+fn next(pc: UInt<bits: 12>) -> UInt<bits: 12> {
+    pc + 1         // panics for pc = 4095
+}
