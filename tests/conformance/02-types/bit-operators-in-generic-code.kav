@@ -1,0 +1,23 @@
+// Rule: Whole numbers and `Bool` meet `BitAnd`, `BitOr` and `BitNot`: a `T` bounded by them uses `&`, `|` and `~`, which are a `Bool`'s `and`, `or` and `not`.
+// Spec: 2.16
+// expect output: 8 14 -13
+// expect output: false true false
+// expect output: 8 true
+
+fn all<T: BitAnd>(items: [T], start: T) -> T {
+    let out = start
+    for x in items {
+        out = out & x
+    }
+    out
+}
+
+fn flip<T: BitNot>(x: T) -> T { ~x }
+
+fn either<T: BitOr>(a: T, b: T) -> T { a | b }
+
+fn main() {
+    print(`{all([12, 10], 15)} {either(12, 10)} {flip(12)}`)
+    print(`{all([true, false], true)} {either(false, true)} {flip(true)}`)
+    print(`{12.bit_and(10)} {true.bit_or(false)}`)
+}

@@ -16,6 +16,8 @@ use kavach_ast as ast;
 impl<'a> Lowerer<'a> {
     /// `a.name(b)` (or `a.neg()`) on a number or text, with `values` the
     /// receiver then the argument; `None` when `name` isn't one of these.
+    /// `bit_and`, `bit_or` and `bit_not` are a whole number's `&`, `|` and
+    /// `~`, and a `Bool`'s `and`, `or` and `not` (`bool_op`).
     pub(crate) fn op_method(
         &mut self,
         name: &str,
@@ -29,9 +31,15 @@ impl<'a> Lowerer<'a> {
             "mul" => BinOp::Mul,
             "div" => BinOp::Div,
             "rem" => BinOp::Rem,
+            "bit_and" if values[0].ty.is_int() => BinOp::BitAnd,
+            "bit_or" if values[0].ty.is_int() => BinOp::BitOr,
             "neg" => {
                 let x = values.pop()?;
                 return Some(self.at(K::Unary(UnOp::Neg, Box::new(x)), ty, line));
+            }
+            "bit_not" if values[0].ty.is_int() => {
+                let x = values.pop()?;
+                return Some(self.at(K::Unary(UnOp::BitNot, Box::new(x)), ty, line));
             }
             "compare" => return self.compare(values, line),
             _ => return None,
@@ -39,6 +47,38 @@ impl<'a> Lowerer<'a> {
         let r = values.pop()?;
         let l = values.pop()?;
         Some(self.at(K::Binary(op, Box::new(l), Box::new(r)), ty, line))
+    }
+
+    /// `a.bit_and(b)`, `a.bit_or(b)` or `a.bit_not()` on `Bool`s: `and`,
+    /// `or` and `not`, with both sides worked out first (spec 2.16).
+    pub(crate) fn bool_op(
+        &mut self,
+        name: &str,
+        mut values: Vec<ir::Expr>,
+        line: u32,
+    ) -> Option<ir::Expr> {
+        if name == "bit_not" {
+            let x = values.pop()?;
+            return Some(self.at(K::Unary(UnOp::Not, Box::new(x)), Type::Bool, line));
+        }
+        let b = values.pop()?;
+        let a = values.pop()?;
+        let (la, lb) = (self.new_local(a.ty), self.new_local(b.ty));
+        let (x, y) = (self.local_expr(la, line), self.local_expr(lb, line));
+        let both = match name {
+            "bit_and" => K::And(Box::new(x), Box::new(y)),
+            "bit_or" => K::Or(Box::new(x), Box::new(y)),
+            _ => return None,
+        };
+        let both = self.at(both, Type::Bool, line);
+        Some(self.at(
+            K::Block(Block {
+                stmts: vec![Stmt::Let(la, a), Stmt::Let(lb, b)],
+                value: Some(Box::new(both)),
+            }),
+            Type::Bool,
+            line,
+        ))
     }
 
     /// `a.compare(b)`: -1 when `a` comes first, 1 when `b` does, else 0.

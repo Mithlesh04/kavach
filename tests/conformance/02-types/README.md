@@ -211,6 +211,10 @@ The tests are listed in two files, by section:
 | 2.16 | [one-operator-twice-for-one-type-is-an-error.kav](one-operator-twice-for-one-type-is-an-error.kav) | Two implementations of one operator for the same right operand are a compile error. | compile error |
 | 2.16 | [a-method-written-twice-is-an-error.kav](a-method-written-twice-is-an-error.kav) | Only an operator's or indexing method may be written twice in a type; any other name written twice is a compile error. | compile error |
 | 2.16 | [pow-gives-the-power-operator.kav](pow-gives-the-power-operator.kav) | A type that implements `Pow` gets `**`, which calls its `pow`. | runs |
+| 2.16 | [bit-operators-call-the-types-own-methods.kav](bit-operators-call-the-types-own-methods.kav) | A type that implements `BitAnd`, `BitOr` or `BitNot` gets `&`, `\|` or `~`, which call its methods; `x &= v` is `x = x & v`. | runs |
+| 2.16 | [bit-operators-in-generic-code.kav](bit-operators-in-generic-code.kav) | Whole numbers and `Bool` meet `BitAnd`, `BitOr` and `BitNot`; for a `Bool` they are `and`, `or` and `not`. | runs |
+| 2.16 | [bit-operators-on-bools-name-and-or-not.kav](bit-operators-on-bools-name-and-or-not.kav) | `&` and `\|` written on two `Bool`s are compile errors that name `and` and `or`. | compile error |
+| 2.9, 2.16 | [a-where-bound-may-be-an-operator.kav](a-where-bound-may-be-an-operator.kav) | A method's `where` may name an operator's interface; a call needs a `T` that meets it. | compile error |
 | 2.16 | [compare-gives-comparisons-any-result.kav](compare-gives-comparisons-any-result.kav) | `Compare<R, Out>` gives `< <= > >=` each its own method and result type. | runs |
 | 2.16 | [comparable-and-compare-is-an-error.kav](comparable-and-compare-is-an-error.kav) | A type implements `Comparable` or `Compare`, not both. | compile error |
 | 2.16 | [a-key-of-any-length.kav](a-key-of-any-length.kav) | A type indexed with a list of `Part`s takes a key of any length: each place one `Part`, a number with `single: true` and `#k` counted from its own dimension's end; numbers only call `index`, a slice `slice`. | runs |
@@ -269,7 +273,7 @@ The tests are listed in two files, by section:
 | 2.9 | [a-generic-type-takes-its-number-of-type-arguments.kav](a-generic-type-takes-its-number-of-type-arguments.kav) | A generic type is written with as many type arguments as it has parameters. | compile error |
 | 2.9 | [a-generic-types-bound-must-be-met.kav](a-generic-types-bound-must-be-met.kav) | A generic type's bound must be met by the type it is made with: a record that doesn't implement `Comparable` can't fill `T: Comparable`. | compile error |
 | 2.9 | [a-number-bound-is-floating-not-float.kav](a-number-bound-is-floating-not-float.kav) | A bound is an interface: `Float` is a type, so `<T: Float>` is an error, and the bound for floating-point numbers is `Floating`. | compile error |
-| 2.9 | [a-where-bound-is-a-number-bound.kav](a-where-bound-is-a-number-bound.kav) | A method's `where` bound is `Number` or `Floating`; an interface there is an error. | compile error |
+| 2.9 | [a-where-bound-is-a-number-bound.kav](a-where-bound-is-a-number-bound.kav) | A method's `where` bound is `Number`, `Floating` or an operator's interface; another interface there is an error. | compile error |
 | 2.9 | [one-type-parameter-is-one-type.kav](one-type-parameter-is-one-type.kav) | Every use of a type parameter in one call is the same type: `same(1, "one")` finds no `T`. | compile error |
 | 2.9 | [where-is-a-name-elsewhere.kav](where-is-a-name-elsewhere.kav) | `where` is a keyword only after a method's result type: elsewhere it may be a name. | runs |
 | 2.9 | [whole-number-overflow-panics-in-generic-code.kav](whole-number-overflow-panics-in-generic-code.kav) | Whole-number overflow panics in generic code as it does elsewhere. | panic |

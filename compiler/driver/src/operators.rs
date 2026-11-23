@@ -4,7 +4,7 @@
 
 //! Operators on a program's own types become the method calls they stand
 //! for (spec 2.16), once the checker has typed them: `a + b` is
-//! `a.add(b)`, `-a` is `a.neg()`, `a < b` is `a.compare(b) < 0`, and
+//! `a.add(b)`, `-a` is `a.neg()`, `~a` is `a.bit_not()`, `a < b` is `a.compare(b) < 0`, and
 //! `c += a` is `c = c.add(a)`. So the interpreter and native code run
 //! them as any method call. The nodes made here get their types too.
 
@@ -88,8 +88,11 @@ impl VisitMut for Calls<'_> {
                     None => ExprKind::Binary(op, l, r),
                 }
             }
-            ExprKind::Unary(UnaryOp::Neg, x) if self.checked.user_negs.contains(&key(x.span)) => {
-                method_call(*x, "neg", Vec::new(), span).kind
+            ExprKind::Unary(op @ (UnaryOp::Neg | UnaryOp::BitNot), x)
+                if self.checked.user_negs.contains(&key(x.span)) =>
+            {
+                let method = if op == UnaryOp::Neg { "neg" } else { "bit_not" };
+                method_call(*x, method, Vec::new(), span).kind
             }
             other => other,
         };

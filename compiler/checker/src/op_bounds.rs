@@ -6,6 +6,7 @@
 //! code use `a + b` on two `T`s, which calls `add`: a program's own
 //! type's method, or a number's, as every number type meets `Add`, `Sub`,
 //! `Mul`, `Div`, `Rem`, `Neg` and `Comparable`. Text meets `Comparable`.
+//! Whole numbers and `Bool` meet `BitAnd`, `BitOr` and `BitNot`.
 
 use crate::checker::Checker;
 use crate::ty::{Prim, Ty};
@@ -13,7 +14,7 @@ use kavach_ast::*;
 use kavach_resolver::DefId;
 
 /// Each operator interface a bound can name, and its method.
-const BOUNDS: [(&str, &str); 7] = [
+const BOUNDS: [(&str, &str); 10] = [
     ("Add", "add"),
     ("Sub", "sub"),
     ("Mul", "mul"),
@@ -21,7 +22,30 @@ const BOUNDS: [(&str, &str); 7] = [
     ("Rem", "rem"),
     ("Neg", "neg"),
     ("Comparable", "compare"),
+    ("BitAnd", "bit_and"),
+    ("BitOr", "bit_or"),
+    ("BitNot", "bit_not"),
 ];
+
+/// The method of the operator interface a bound names, as `bit_and` for
+/// `BitAnd`.
+pub(crate) fn bound_method(name: &str) -> Option<&'static str> {
+    BOUNDS.iter().find(|(i, _)| *i == name).map(|(_, m)| *m)
+}
+
+/// The interface a bound's method comes from, as `BitAnd` for `bit_and`.
+pub(crate) fn bound_interface(method: &str) -> &'static str {
+    BOUNDS
+        .iter()
+        .find(|(_, m)| *m == method)
+        .map_or("", |(i, _)| *i)
+}
+
+/// Whether `m` is a bit operator's method: whole numbers and `Bool`s
+/// have them, other numbers don't (spec 2.16).
+fn is_bit(m: &str) -> bool {
+    matches!(m, "bit_and" | "bit_or" | "bit_not")
+}
 
 impl Checker<'_> {
     /// Notes `def`'s operator bounds from `g`, with no type arguments.
@@ -68,30 +92,37 @@ impl Checker<'_> {
         })
     }
 
-    /// `-a` with `a` a `T: Neg`.
-    pub(crate) fn param_neg(&mut self, x: &Expr, t: &Ty) -> Option<Ty> {
+    /// `-a` with `a` a `T: Neg`, or `~a` with `a` a `T: BitNot`.
+    pub(crate) fn param_unary(&mut self, method: &str, x: &Expr, t: &Ty) -> Option<Ty> {
         let Ty::Param(p) = self.inf.resolve(t) else {
             return None;
         };
-        if !self.param_ops.get(&p).is_some_and(|ms| ms.contains(&"neg")) {
+        if !self
+            .param_ops
+            .get(&p)
+            .is_some_and(|ms| ms.contains(&method))
+        {
             return None;
         }
         self.user_negs.insert((x.span.start, x.span.end));
         Some(Ty::Param(p))
     }
 
-    /// Whether type `t` has operator method `m`: a number has them all,
-    /// text `compare`, a program's own type the ones it
-    /// implements, and a type parameter those its bounds give.
+    /// Whether type `t` has operator method `m`: a number has them all
+    /// but the bit operators, which only whole numbers and `Bool` have,
+    /// text `compare`, a program's own type the ones it implements, and a
+    /// type parameter those its bounds give.
     pub(crate) fn has_operator(&self, t: &Ty, m: &str) -> Option<bool> {
         Some(match self.inf.resolve(t) {
-            Ty::Prim(p) if p.is_numeric() => true,
+            Ty::Prim(p) if p.is_numeric() => !is_bit(m) || p.is_int(),
+            Ty::Prim(Prim::Bool) => is_bit(m),
             Ty::Prim(Prim::String) => m == "compare",
             Ty::Adt(def, _) => self.operators.contains_key(&(def, m)),
-            // A number type has every operator, so a `Number` `T` does too.
+            // A number type has every arithmetic operator, so a `Number`
+            // `T` does too.
             Ty::Param(q) => {
                 self.param_ops.get(&q).is_some_and(|ms| ms.contains(&m))
-                    || self.inf.numbers.contains_key(&q)
+                    || (self.inf.numbers.contains_key(&q) && !is_bit(m))
             }
             Ty::Var(_) | Ty::Error | Ty::Never => return None,
             _ => false,
@@ -107,7 +138,7 @@ impl Checker<'_> {
         for m in methods {
             if self.has_operator(t, m) == Some(false) {
                 let (shown, name) = (self.show(t), &self.res.defs[g].name);
-                let iface = BOUNDS.iter().find(|(_, x)| *x == m).map_or("", |(i, _)| i);
+                let iface = bound_interface(m);
                 self.error(span, format!("`{shown}` doesn't implement `{iface}`, which `{name}` needs here (spec 2.16)"));
             }
         }

@@ -1,0 +1,10 @@
+// Rule: `&`, `|` and `~` on a tensor need its items to be `Bool`s or whole numbers: on floats they are a compile error naming the bound.
+// Spec: 14.33, 2.16
+// expect compile error
+
+use std.tensor
+
+fn main() {
+    const t = tensor.of([1.0, 2.0])
+    print((t & t).items)   // error: `bit_and` needs `T: BitAnd`
+}

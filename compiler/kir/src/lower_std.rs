@@ -192,6 +192,11 @@ impl<'a> Lowerer<'a> {
         {
             return Some(Ok(e));
         }
+        if recv == Type::Bool
+            && let Some(e) = self.bool_op(name, values.clone(), line)
+        {
+            return Some(Ok(e));
+        }
         let numeric = recv.is_int()
             || recv.is_float()
             || matches!(shape, Some(Shape::Decimal | Shape::BigInt));

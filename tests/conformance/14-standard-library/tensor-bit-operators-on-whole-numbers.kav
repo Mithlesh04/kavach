@@ -1,0 +1,14 @@
+// Rule: On whole-number tensors, `&`, `|` and `~` work on each number's bits, as on numbers; a number on the right is used for every item.
+// Spec: 14.33, 2.16
+// expect output: [8, 2]
+// expect output: [14, 15]
+// expect output: [-13, -4]
+
+use std.tensor
+
+fn main() {
+    const t = tensor.of([12, 3])
+    print((t & tensor.of([10, 6])).items)
+    print((t | 14).items)
+    print((~t).items)
+}

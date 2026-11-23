@@ -1,4 +1,4 @@
-// Rule: A method's `where` bound is `Number` or `Floating`; an interface there is an error.
+// Rule: A method's `where` bound is `Number`, `Floating` or an operator's interface; another interface there is an error.
 // Spec: 2.9
 // expect compile error
 
@@ -10,7 +10,7 @@ type Pair<T> {
     a: T
     b: T
 
-    fn show(self) -> String where T: Describe {      // error: a `where` bound is `Number` or `Floating`
+    fn show(self) -> String where T: Describe {      // error: a `where` bound is `Number`, `Floating` or an operator's interface
         "a pair"
     }
 }

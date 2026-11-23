@@ -41,11 +41,27 @@ impl<'a> Interp<'a> {
             "mul" => Some(BinaryOp::Mul),
             "div" => Some(BinaryOp::Div),
             "rem" => Some(BinaryOp::Rem),
+            "bit_and" => Some(BinaryOp::BitAnd),
+            "bit_or" => Some(BinaryOp::BitOr),
             _ => None,
         };
+        // `Bool` meets `BitAnd`, `BitOr` and `BitNot` as `and`, `or` and
+        // `not`, both sides worked out (spec 2.16).
+        if let Value::Bool(a) = recv {
+            let b = matches!(arg(0), Value::Bool(true));
+            return Ok(match name {
+                "bit_and" => Some(Value::Bool(*a && b)),
+                "bit_or" => Some(Value::Bool(*a || b)),
+                "bit_not" => Some(Value::Bool(!*a)),
+                _ => None,
+            });
+        }
         match (number, op, name) {
             (true, Some(op), _) => return self.arith(op, recv.clone(), arg(0), span).map(Some),
             (true, None, "neg") => return self.unary(UnaryOp::Neg, recv.clone(), span).map(Some),
+            (true, None, "bit_not") => {
+                return self.unary(UnaryOp::BitNot, recv.clone(), span).map(Some);
+            }
             (true, None, "compare") => {
                 let n = order(recv, &arg(0)) as i8;
                 return Ok(Some(Value::Int(i128::from(n), Prim::Int)));

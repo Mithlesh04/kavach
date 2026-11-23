@@ -1,0 +1,25 @@
+// Rule: A type that implements `BitAnd`, `BitOr` or `BitNot` gets `&`, `|` or `~`, which call its `bit_and`, `bit_or` or `bit_not`; `x &= v` is `x = x & v`.
+// Spec: 2.16
+// expect output: Flags(bits: 2)
+// expect output: Flags(bits: 14)
+// expect output: Flags(bits: -11)
+// expect output: Flags(bits: 2)
+
+type Flags: BitAnd, BitOr, BitNot {
+    bits: Int
+
+    fn bit_and(self, other: Flags) -> Flags { Flags(bits: self.bits & other.bits) }
+    fn bit_or(self, other: Flags) -> Flags { Flags(bits: self.bits | other.bits) }
+    fn bit_not(self) -> Flags { Flags(bits: ~self.bits) }
+}
+
+fn main() {
+    const a = Flags(bits: 10)
+    const b = Flags(bits: 6)
+    print(a & b)
+    print(a | b)
+    print(~a)
+    let c = a
+    c &= b
+    print(c)
+}

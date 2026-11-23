@@ -1,0 +1,21 @@
+// Rule: `m & n`, `m | n` and `~m` combine masks item by item, after broadcasting: both, either, not.
+// Spec: 14.33, 2.16
+// expect output: [true, false, false, false]
+// expect output: [true, false, true, true]
+// expect output: [false, true, false, true]
+// expect output: [[true, false], [false, false]]
+// expect output: [3.0]
+
+use std.tensor
+
+fn main() {
+    const t = tensor.of([3.0, -1.0, 4.0, -1.5])
+    print(((t > 0.0) & (t < 3.5)).items)
+    print(((t > 0.0) | t.eq(-1.5)).items)
+    print((~(t > 0.0)).items)
+    const rows = tensor.of_rows([[true, true], [false, true]])
+    print((rows & tensor.of([true, false])).to_rows())
+    let m = t > 0.0
+    m &= t < 3.5
+    print(t[m].items)
+}

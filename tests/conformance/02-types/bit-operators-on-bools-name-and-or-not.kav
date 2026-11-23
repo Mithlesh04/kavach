@@ -1,0 +1,9 @@
+// Rule: `&` and `|` written on two `Bool`s are compile errors that name `and` and `or`: one name per job.
+// Spec: 2.16
+// expect compile error
+
+fn main() {
+    const a = true
+    const b = false
+    print(a & b)       // error: `&` on a `Bool` is written `and`
+}

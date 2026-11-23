@@ -154,6 +154,17 @@ impl Checker<'_> {
                 "round" | "round_even" if *t == Ty::Prim(Prim::Decimal) => {
                     sig(vec![Ty::Prim(Prim::Int)], t.clone())
                 }
+                // The bit operators' methods, for whole numbers (spec 2.16).
+                "bit_and" | "bit_or" if matches!(t, Ty::Prim(p) if p.is_int()) => {
+                    sig(vec![t.clone()], t.clone())
+                }
+                "bit_not" if matches!(t, Ty::Prim(p) if p.is_int()) => sig(vec![], t.clone()),
+                _ => None,
+            },
+            // `Bool` meets `BitAnd`, `BitOr` and `BitNot` (spec 2.16).
+            Ty::Prim(Prim::Bool) => match name {
+                "bit_and" | "bit_or" => sig(vec![boolean.clone()], boolean),
+                "bit_not" => sig(vec![], boolean),
                 _ => None,
             },
             Ty::Prim(Prim::String) => match name {

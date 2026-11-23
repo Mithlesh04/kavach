@@ -152,11 +152,11 @@ pub(crate) struct Checker<'a> {
     /// filled it (2.9).
     pub(crate) filled_checks: Vec<(DefId, Ty, Span)>,
     /// Each method's `where` bounds (spec 2.9), by its type and name: the
-    /// type parameter, and whether it must be `Floating`.
-    pub(crate) wheres: HashMap<(DefId, String), Vec<(DefId, bool)>>,
+    /// type parameter, and the bound.
+    pub(crate) wheres: HashMap<(DefId, String), Vec<(DefId, crate::where_bounds::Bound)>>,
     /// The `where` bounds of the calls seen, checked once literals'
     /// types are known: the bound, the type given, the call and method.
-    pub(crate) where_checks: Vec<(DefId, bool, Ty, Span, String)>,
+    pub(crate) where_checks: Vec<(DefId, crate::where_bounds::Bound, Ty, Span, String)>,
     /// Each type parameter's operator bounds, as their methods (spec 2.16).
     pub(crate) param_ops: HashMap<DefId, Vec<&'static str>>,
     /// The operators used on a program's own types, by `(left start,

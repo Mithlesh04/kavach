@@ -5,12 +5,13 @@
 // std.tensor.ops (spec 14.33, decision 0136): a tensor's operators, item
 // by item after broadcasting (NumPy's rules), each implemented twice: for
 // a tensor on the right and for a number (spec 2.16). Comparisons give a
-// mask, a `Tensor<Bool>`. Products go through `std.matrix`.
+// mask, a `Tensor<Bool>`, and masks combine with `&`, `|` and `~`.
+// Products go through `std.matrix`.
 
 use std.matrix
 use std.tensor.shapes
 
-extend<T> Tensor<T>: Add<Tensor<T>>, Add<T>, Sub<Tensor<T>>, Sub<T>, Mul<Tensor<T>>, Mul<T>, Div<Tensor<T>>, Div<T>, Rem<Tensor<T>>, Rem<T>, Pow<Tensor<T>>, Pow<T>, Neg, MatMul, Compare<Tensor<T>, Tensor<Bool>>, Compare<T, Tensor<Bool>> {
+extend<T> Tensor<T>: Add<Tensor<T>>, Add<T>, Sub<Tensor<T>>, Sub<T>, Mul<Tensor<T>>, Mul<T>, Div<Tensor<T>>, Div<T>, Rem<Tensor<T>>, Rem<T>, Pow<Tensor<T>>, Pow<T>, Neg, MatMul, Compare<Tensor<T>, Tensor<Bool>>, Compare<T, Tensor<Bool>>, BitAnd<Tensor<T>>, BitAnd<T>, BitOr<Tensor<T>>, BitOr<T>, BitNot {
     pub fn add(self, other: Tensor<T>) -> Tensor<T> where T: Number {
         each(self, other, "+", (a, b) => a + b)
     }
@@ -93,6 +94,30 @@ extend<T> Tensor<T>: Add<Tensor<T>>, Add<T>, Sub<Tensor<T>>, Sub<T>, Mul<Tensor<
 
     pub fn ge(self, other: T) -> Tensor<Bool> where T: Number {
         self.map(x => x >= other)
+    }
+
+    /// `m & n`: both, item by item, after broadcasting; the bits of whole
+    /// numbers.
+    pub fn bit_and(self, other: Tensor<T>) -> Tensor<T> where T: BitAnd {
+        each(self, other, "&", (a, b) => a & b)
+    }
+
+    pub fn bit_and(self, other: T) -> Tensor<T> where T: BitAnd {
+        self.map(x => x & other)
+    }
+
+    /// `m | n`: either, item by item, after broadcasting.
+    pub fn bit_or(self, other: Tensor<T>) -> Tensor<T> where T: BitOr {
+        each(self, other, "|", (a, b) => a | b)
+    }
+
+    pub fn bit_or(self, other: T) -> Tensor<T> where T: BitOr {
+        self.map(x => x | other)
+    }
+
+    /// `~m`: each `Bool` turned over; each whole number's bits.
+    pub fn bit_not(self) -> Tensor<T> where T: BitNot {
+        self.map(x => ~x)
     }
 
     /// A mask: whether each number equals `other`'s, after broadcasting.

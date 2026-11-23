@@ -26,7 +26,10 @@ c += a                         // `c = c + a`
 | `MatMul` | `a @ b` | `fn matmul(self, other: R) -> Out`, the matrix product (14.33) |
 | `Comparable` | `a < b`, `a <= b`, `a > b`, `a >= b` | `fn compare(self, other: Self) -> Int`: below 0 when `self` comes first, 0 when neither does, above 0 when `other` does |
 | `Compare<R, Out>` | `a < b`, `a <= b`, `a > b`, `a >= b` | `fn lt(self, other: R) -> Out`, and `le`, `gt`, `ge`: each comparison on its own, giving any type, such as a mask of `Bool`s (14.33) |
+| `BitAnd`, `BitOr` | `a & b`, `a \| b` | `fn bit_and(self, other: R) -> Out`, and `bit_or`: both, or either, as masks combine (14.33) |
+| `BitNot` | `~a` | `fn bit_not(self) -> Out` |
 
+- **The bit operators** work as the others do: `BitAnd<R, Out>` and `BitOr<R, Out>` take the other operand and the result as `Add` does, and `BitNot<Out>` the result as `Neg` does. `x &= m` is `x = x & m`. `^`, `<<` and `>>` have no interfaces yet (Open questions).
 - **The other operand.** `Add` alone takes the same type: `fn add(self, other: Self) -> Self`. `Mul<Float>` takes a `Float` instead, and gives `Self`. `Mul<Meters, Area>` takes `Meters` and gives an `Area`.
 - **One interface, several right operands.** A type may implement an operator's interface more than once, each time for another type on the right: `Mul<Vec2>` and `Mul<Float>`. The right operand's type chooses the method, while compiling. The methods share their name, `mul`; this is the one place a name may be written twice in a type (no overloading elsewhere, 1.4). Two for the same right operand are a compile error.
 
@@ -82,6 +85,8 @@ total([Money(cents: 150), Money(cents: 99)], Money(cents: 0))   // Money(cents: 
 
 - `a + b` on a `T: Add` calls `add`: for a number, its own `+`, so each copy of the function (2.9) runs one instruction; for a program's own type, its method.
 - A number's methods are the operators: `7.add(2)` is `9`, and `7.compare(9)` is `-1`. A float's `compare` gives 0 when neither comes first, as with a `NaN`.
+- **The bit operators in generic code.** The whole-number types meet `BitAnd`, `BitOr` and `BitNot` as they are: `12.bit_and(10)` is `8`. `Bool` meets them too, as `and`, `or` and `not` with both sides worked out: `true.bit_or(false)` is `true`. So a generic type can give `&`, `|` and `~` to its `Bool`s and whole numbers alike, as a tensor does (14.33). Written on two `Bool`s, `&` and `|` stay compile errors that name `and` and `or`: one name per job (14.2).
+- **A method's `where` may name an operator's interface** (2.9): `fn bit_and(self, other: Grid<T>) -> Grid<T> where T: BitAnd` may use `&` on its `T`s, and is called only on a `Grid` whose `T` meets `BitAnd`.
 - A type given for a `T` with operator bounds must have them: `total(["a"], "")` is a compile error, as `String` doesn't meet `Add`.
 
 **Indexing and slicing.** `x[k]`, `x[k] = v` and `x[start:end:step]` (2.19) come through interfaces too ([decision 0134](../../decisions/0134-slicing-and-indexing.md)).
@@ -139,6 +144,7 @@ print(r[::-1].cells)      // [3.0, 2.0, 9.0]
 
 - `sort()`, `min()` and `max()` of a list of a `Comparable` type, and a `Comparable` type as a dict key's order. Until then, `sort_by(m => m.cents)` sorts by a key.
 - Whether the number types meet `Pow`, so generic code may use `**` on a `T: Pow`.
-- Bit operators (`& | ^ << >> ~`) for a program's own types (bit vectors, decision 0041's `BigInt` already has them built in).
+- `^`, `<<` and `>>` for a program's own types (bit vectors; decision 0041's `BigInt` already has them built in). `&`, `|` and `~` have `BitAnd`, `BitOr` and `BitNot` (above).
+- **For a maintainer's review (2026-11-23):** the bit operators' interfaces are `BitAnd`, `BitOr` and `BitNot`, with the methods `bit_and`, `bit_or` and `bit_not` (`and`, `or` and `not` are words of the language); `Bool` meets them as `and`, `or` and `not` with both sides worked out, while `&` and `|` written on two `Bool`s stay errors naming `and` and `or`; and a method's `where` may name an operator's interface (2.9), so a generic type gives `&` to its `Bool`s and whole numbers alone.
 - `#k` inside a tuple key (`g[#1, 0]`): it needs the length of each dimension, which `len` doesn't give. A compile error until decided; a list key (above) has it, as each `Part` is counted against its own dimension.
 - Bounds such as `T: Index<Int, Float>` in generic code, as operators have them (decision 0115).

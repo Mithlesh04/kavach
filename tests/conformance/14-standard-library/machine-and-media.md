@@ -185,6 +185,9 @@ Conformance tests for std.clipboard (14.17), std.devices (14.18), std.window (14
 | 14.33 | [tensor-clamp-limits-each-number.kav](tensor-clamp-limits-each-number.kav) | `t.clamp(lo, hi)` limits each number to `lo..=hi`; NumPy's `clip` is a compile error that names it. | compile error |
 | 14.33 | [tensor-clamp-gives-each-number-limited.kav](tensor-clamp-gives-each-number-limited.kav) | `t.clamp(lo, hi)` limits each number to `lo..=hi`, as a number's `clamp`. | runs |
 | 14.33 | [tensor-comparison-gives-a-mask.kav](tensor-comparison-gives-a-mask.kav) | `< <= > >=` compare item by item, with a tensor or a number on the right, and give a mask, a `Tensor<Bool>`; `==` compares whole tensors. | runs |
+| 14.33, 2.16 | [tensor-masks-combine-with-bit-operators.kav](tensor-masks-combine-with-bit-operators.kav) | `m & n`, `m \| n` and `~m` combine masks item by item, after broadcasting. | runs |
+| 14.33, 2.16 | [tensor-bit-operators-on-whole-numbers.kav](tensor-bit-operators-on-whole-numbers.kav) | On whole-number tensors, `&`, `\|` and `~` work on each number's bits. | runs |
+| 14.33, 2.16 | [tensor-bit-operators-need-bools-or-whole-numbers.kav](tensor-bit-operators-need-bools-or-whole-numbers.kav) | `&` on a tensor of floats is a compile error naming the bound. | compile error |
 | 14.33 | [tensor-eq-compares-item-by-item.kav](tensor-eq-compares-item-by-item.kav) | `t.eq(u)` and `t.ne(u)` compare item by item, giving a mask; a `NaN` equals nothing. | runs |
 | 14.33 | [tensor-mask-picks-numbers.kav](tensor-mask-picks-numbers.kav) | `t[mask]` gives the numbers where the mask is `true`, in order, and `t[mask] = x` sets them. | runs |
 | 14.33 | [tensor-mask-of-another-shape-panics.kav](tensor-mask-of-another-shape-panics.kav) | A mask has the shape of the tensor it picks from; another shape is a panic naming both. | panic |

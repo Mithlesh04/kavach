@@ -327,12 +327,13 @@ impl Checker<'_> {
             UnaryOp::Deref => self.deref(x),
             UnaryOp::Neg | UnaryOp::BitNot => {
                 let t = self.value(x, None);
-                if op == UnaryOp::Neg
-                    && let Some(out) = self.user_neg(x, &t)
-                {
+                let method = if op == UnaryOp::Neg { "neg" } else { "bit_not" };
+                if let Some(out) = self.user_unary(method, x, &t) {
                     return out;
                 }
-                if op == UnaryOp::BitNot && self.no_bits_on_range(x, &t, "~") {
+                if op == UnaryOp::BitNot
+                    && (self.bits_on_bool(x, &t, "~") || self.no_bits_on_range(x, &t, "~"))
+                {
                     Ty::Error
                 } else if self.require_number(x, &t, op == UnaryOp::BitNot) {
                     t
@@ -455,6 +456,10 @@ impl Checker<'_> {
                     return STRING;
                 }
                 let int_only = matches!(op, BitAnd | BitOr | BitXor | Shl | Shr);
+                if int_only && self.bits_on_bool(l, &lt, op.as_str()) {
+                    self.value(r, None);
+                    return Ty::Error;
+                }
                 let number = self.require_number(l, &lt, int_only)
                     && !(int_only && self.no_bits_on_range(l, &lt, op.as_str()));
                 if !number || (op == Pow && !self.check_power(l, &lt)) {

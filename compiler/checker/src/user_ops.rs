@@ -4,7 +4,8 @@
 
 //! Operators for a program's own types (spec 2.16, decision 0109): a type
 //! that implements `Add`, `Sub`, `Mul`, `Div`, `Rem`, `Pow`, `Neg`,
-//! `MatMul`, `Comparable` or `Compare` gets the operator, which calls its
+//! `MatMul`, `Comparable`, `Compare`, `BitAnd`, `BitOr` or `BitNot` gets
+//! the operator, which calls its
 //! method. Each use is noted, and the driver turns it into that method
 //! call. An interface implemented more than once is `op_impls.rs`'s.
 
@@ -28,6 +29,9 @@ const OPERATORS: &[(&str, &str)] = &[
     ("Compare", "le"),
     ("Compare", "gt"),
     ("Compare", "ge"),
+    ("BitAnd", "bit_and"),
+    ("BitOr", "bit_or"),
+    ("BitNot", "bit_not"),
 ];
 
 /// The method of `Compare` (spec 2.16) for a comparison.
@@ -52,6 +56,8 @@ fn method_of(op: BinaryOp) -> Option<&'static str> {
         Rem => "rem",
         Pow => "pow",
         MatMul => "matmul",
+        BitAnd => "bit_and",
+        BitOr => "bit_or",
         Lt | Le | Gt | Ge => "compare",
         _ => return None,
     })
@@ -105,12 +111,12 @@ impl Checker<'_> {
         }
         let me = self_ty.clone();
         let (other, out) = match (method, given.as_slice()) {
-            ("neg", []) => (Ty::Unit, me),
-            ("neg", [out]) => (Ty::Unit, out.clone()),
+            ("neg" | "bit_not", []) => (Ty::Unit, me),
+            ("neg" | "bit_not", [out]) => (Ty::Unit, out.clone()),
             ("compare", []) => (me, Ty::Prim(Prim::Int)),
             (_, []) => (me.clone(), me),
             (_, [other]) => (other.clone(), me),
-            (_, [other, out]) if method != "neg" && method != "compare" => {
+            (_, [other, out]) if !matches!(method, "neg" | "bit_not" | "compare") => {
                 (other.clone(), out.clone())
             }
             _ => {
@@ -141,8 +147,8 @@ impl Checker<'_> {
                 both.push((def, span));
             }
             let (shown_other, shown_out) = (self.show(&other), self.show(&out));
-            let want = if method == "neg" {
-                format!("fn neg(self) -> {shown_out}")
+            let want = if matches!(method, "neg" | "bit_not") {
+                format!("fn {method}(self) -> {shown_out}")
             } else {
                 format!("fn {method}(self, other: {shown_other}) -> {shown_out}")
             };
@@ -157,7 +163,7 @@ impl Checker<'_> {
             let params: Vec<Ty> = sig.params.iter().map(|p| self.inf.resolve(&p.ty)).collect();
             let fits = sig.has_self
                 && match method {
-                    "neg" => params.is_empty(),
+                    "neg" | "bit_not" => params.is_empty(),
                     _ => params.len() == 1 && params[0] == self.inf.resolve(&other),
                 }
                 && self.inf.resolve(&sig.ret) == self.inf.resolve(&out);
@@ -183,7 +189,7 @@ impl Checker<'_> {
         let mut more: Vec<_> = self.more_impls.keys().copied().collect();
         more.sort();
         for (def, m) in more {
-            if !matches!(m, "le" | "gt" | "ge") {
+            if !matches!(m, "le" | "gt" | "ge") && !interface_of(m).is_empty() {
                 self.check_impls_differ(def, m, interface_of(m), "on the right");
             }
         }
@@ -271,23 +277,26 @@ impl Checker<'_> {
         })
     }
 
-    /// `-a` with `a` of a program's own type.
-    pub(crate) fn user_neg(&mut self, x: &Expr, t: &Ty) -> Option<Ty> {
-        if let Some(t) = self.param_neg(x, t) {
+    /// `-a` (`method` is `neg`) or `~a` (`bit_not`) with `a` of a
+    /// program's own type.
+    pub(crate) fn user_unary(&mut self, method: &'static str, x: &Expr, t: &Ty) -> Option<Ty> {
+        if let Some(t) = self.param_unary(method, x, t) {
             return Some(t);
         }
         let Ty::Adt(def, args) = self.inf.resolve(t) else {
             return None;
         };
-        let Some((_, out, _)) = self.operators.get(&(def, "neg")).cloned() else {
-            let ty = self.show(t);
+        let Some((_, out, _)) = self.operators.get(&(def, method)).cloned() else {
+            let (ty, iface) = (self.show(t), interface_of(method));
+            let op = if method == "neg" { "-" } else { "~" };
             self.error(
                 x.span,
-                format!("`{ty}` has no `-`: give it one by implementing `Neg` (spec 2.16)"),
+                format!("`{ty}` has no `{op}`: give it one by implementing `{iface}` (spec 2.16)"),
             );
             return Some(Ty::Error);
         };
         let subst = self.subst_of(def, &args);
+        self.check_wheres(def, method, &subst, x.span);
         self.user_negs.insert((x.span.start, x.span.end));
         Some(self.inf.subst(&out, &subst))
     }
@@ -342,5 +351,24 @@ impl Checker<'_> {
         } else {
             self.mismatch(r, lt, &rt);
         }
+    }
+
+    /// `a & b`, `a | b` or `~a` on a `Bool`: an error naming `and`, `or`
+    /// or `not`, one name per job (spec 2.16). Whether it was one.
+    pub(crate) fn bits_on_bool(&mut self, e: &Expr, t: &Ty, op: &str) -> bool {
+        if self.inf.resolve(t) != Ty::Prim(Prim::Bool) {
+            return false;
+        }
+        let word = match op {
+            "&" => "and",
+            "|" => "or",
+            "~" => "not",
+            _ => return false,
+        };
+        self.error(
+            e.span,
+            format!("`{op}` on a `Bool` is written `{word}` (spec 2.16)"),
+        );
+        true
     }
 }

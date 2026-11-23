@@ -77,7 +77,7 @@ length(Float32(3.0), Float32(4.0))        // 5.0, a Float32
 
 ## Bounds on one method
 
-A method of a generic type may add a bound to the type's parameter with `where`, after its result type. The method is then there only for the types that meet the bound; the type's other methods are there for all of them. A `where` bound is `Number` or `Floating` ([decision 0119](../../decisions/0119-bounds-on-one-method.md)).
+A method of a generic type may add a bound to the type's parameter with `where`, after its result type. The method is then there only for the types that meet the bound; the type's other methods are there for all of them. A `where` bound is `Number` or `Floating` ([decision 0119](../../decisions/0119-bounds-on-one-method.md)), or an operator's interface with no type arguments, as `BitAnd` (2.16).
 
 ```kavach
 type Pair<T: Number> {
@@ -96,6 +96,7 @@ counts.mean()                       // error: `mean` needs `T: Floating`, and `T
 
 - In the method's body the parameter has the bound, so a literal with a fraction and `std.math` may be used on a `T`.
 - A literal with no type of its own becomes a `Float` there, as for a function's bound: `Pair(a: 1, b: 2).mean()` is `1.5`.
+- With an operator's interface, the method may use that operator on a `T`, and a call needs a `T` that meets it: `where T: BitAnd` takes the whole-number types and `Bool` (2.16).
 - `where` is written on the signature's line, and names the type's own parameters; a function writes its bounds in `<T: …>`. `where` is a word only there: elsewhere it may be a name.
 
 ## Numbers in types

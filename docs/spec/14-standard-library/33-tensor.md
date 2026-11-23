@@ -163,7 +163,7 @@ A comparison item by item gives a mask, a `Tensor<Bool>` of the broadcast shape.
 |---|---|
 | `a < b`, `a <= b`, `a > b`, `a >= b` | A mask: the comparison item by item; `b` is a tensor or a number (`t > 0.5`) |
 | `a.eq(b)`, `a.ne(b)` | A mask: equal, or not equal, item by item |
-| `m & n`, `m \| n`, `~m` | Masks combined item by item: both, either, not (not built yet) |
+| `m & n`, `m \| n`, `~m` | Masks combined item by item, after broadcasting: both, either, not. Through `BitAnd`, `BitOr` and `BitNot` (2.16); on whole-number tensors they work on the bits, as on numbers (1.8) |
 | `t[mask] -> Tensor<T, dims: 1>` | The numbers where `mask` is `true`, in order; `mask` has `t`'s shape |
 | `t[mask] = x` | Sets those numbers to `x`; `t` must be a `let` |
 | `tensor.where(mask, a, b) -> Tensor<T>` | `a`'s number where `mask` is `true`, else `b`'s; all three broadcast to one shape; `a` and `b` are tensors or numbers |
@@ -175,10 +175,13 @@ print(t[t > 0.0].items)                           // [3.0, 4.0]
 print(tensor.where(t < 0.0, 0.0, t).items)        // [3.0, 0.0, 4.0, 0.0]
 print(t.eq(4.0).items)                            // [false, false, true, false]
 print(t.count(x => x < 0.0))                      // 2
+print(((t > 0.0) & (t < 3.5)).items)              // [true, false, false, false]
+print((~t.eq(-1.0)).items)                        // [true, false, true, true]
 let u = t
 u[u < 0.0] = 0.0                                  // u is [3.0, 0.0, 4.0, 0.0]
 ```
 
+- `&` and `|` bind tighter than the comparisons (1.8), so each comparison they join is written in parentheses, as in NumPy: `(t > 0.0) & (t < 3.5)`.
 - `a == b` and `a != b` compare whole tensors, as for every type (1.8): the same shape and the same numbers, giving one `Bool`. Equality item by item is the method `eq` (and `ne`), so the two never mix.
 - `Tensor<T>` has no order of its own (`Comparable`), so a list of tensors can't be sorted with `sort()`.
 - A `NaN` is equal to nothing and neither below nor above any number, as IEEE 754 says: `t.eq(t)` is `false` where `t` is `NaN`.
@@ -368,7 +371,6 @@ fn embed<b: Int>(x: Tensor<Float32, shape: [b, 768]>) -> Tensor<Float32, shape: 
 
 ## Open questions
 
-- **`&`, `|` and `~` on masks** need bit operators for a program's own types (2.16, Open questions). Until then `tensor.where` and `map` do their job.
 - **`t[i]` of a tensor of more than one dimension.** NumPy gives row `i`. Here a key of numbers only gives a `T`, so it needs one number for each dimension, and `t[i, :]` gives the row. Once `dims:` is in the type (to-do 29), `t[i]` of a matrix could give the row.
 - **`random_int`'s bound, for a maintainer's review.** The runtime draws `random_int`'s numbers all at once, with `random_ints(n, from, until)`, which only the standard library may call. It takes the same bits and keeps the same ones as `random.int`, so a seeded draw gives the numbers it gave before, and the old limit of 65,536 is gone. A bound stays, as a `require` on the shape, because the tests `kavach test` makes try shapes as large as `Int`'s largest and must end within their budget (11.9). It is 16,777,216 (2^24) numbers, a 4,096 × 4,096 matrix, 128 MB of `Int`s. NumPy has no bound. A budget charged per number drawn, as `repeat` charges per kilobyte, would let a program draw more, but a generated test of a huge shape would then fail on its budget instead of being skipped as a case its `require` rules out.
 - **Choices made where this page said nothing, closest to NumPy, for review:** `normal`'s order of draws (above); a `Float32` draw of 1.0 drawn again; `percentile` of numbers with a `NaN` is `NaN`, as NumPy's; `percentile` interpolates as NumPy's `_lerp`, from the upper number when the fraction is 0.5 or more; `split_at` panics on points outside `0` to the size; and `cumsum`, `sort` and `argsort` take `axis: Int? = none`, `none` meaning the last axis, as a default can't name `self`.
