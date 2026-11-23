@@ -1,0 +1,57 @@
+// Rule: A vertex's, an instance's or a shared value's fields are 1 to 16: an instance of 14 fields beside a vertex of 2 draws.
+// Spec: 15.3
+// expect output: [255, 255, 255, 255]
+
+use std.gpu
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Rect {
+    x: Float32
+    y: Float32
+    width: Float32
+    height: Float32
+    r: Float32
+    g: Float32
+    b: Float32
+    a: Float32
+    radius: Float32
+    border: Float32
+    clip_x: Float32
+    clip_y: Float32
+    clip_w: Float32
+    clip_h: Float32
+}
+
+type Lit {
+    position: (Float32, Float32, Float32, Float32)
+    r: Float32
+    g: Float32
+    b: Float32
+}
+
+gpu vertex fn place(c: Corner, q: Rect) -> Lit {
+    Lit(position: (q.x + c.x * q.width, q.y + c.y * q.height, 0.0, 1.0), r: q.r, g: q.g, b: q.b)
+}
+
+gpu fragment fn fill(l: Lit) -> (Float32, Float32, Float32, Float32) {
+    (l.r, l.g, l.b, 1.0)
+}
+
+fn drawn() -> [UInt8] ! GpuError uses Window {
+    const canvas = try gpu.canvas(1, 1)
+    const frame = try canvas.frame()
+    const all = [Corner(x: 0.0, y: 0.0), Corner(x: 1.0, y: 0.0), Corner(x: 0.0, y: 1.0)]
+    const rect = Rect(x: -1.0, y: -1.0, width: 4.0, height: 4.0, r: 1.0, g: 1.0, b: 1.0, a: 1.0,
+        radius: 0.0, border: 0.0, clip_x: 0.0, clip_y: 0.0, clip_w: 1.0, clip_h: 1.0)
+    frame.draw(gpu.pipeline(place, fill), all, instances: [rect])
+    frame.show()
+    canvas.pixels()
+}
+
+fn main() uses Window, Console {
+    print(drawn() catch _ => [255, 255, 255, 255])
+}

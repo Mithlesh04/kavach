@@ -1,0 +1,49 @@
+// Rule: After `frame.set_premultiplied(true)`, a draw's colour is taken as already multiplied by its opacity; before, a colour is blended by its opacity.
+// Spec: 14.24.1
+// expect output: plain: 137
+// expect output: premultiplied: 188
+
+use std.gpu
+use std.math
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Spot {
+    position: (Float32, Float32, Float32, Float32)
+}
+
+gpu vertex fn place(c: Corner) -> Spot {
+    Spot(position: (c.x, c.y, 0.0, 1.0))
+}
+
+/// Red at 0.5 linear, half opaque: premultiplied, it is red at 1.0.
+gpu fragment fn half(s: Spot) -> (Float32, Float32, Float32, Float32) {
+    (0.5, 0.0, 0.0, 0.5)
+}
+
+fn red(premultiplied: Bool) -> Int ! GpuError uses Window {
+    const canvas = try gpu.canvas(1, 1)
+    const frame = try canvas.frame()
+    frame.clear(0.0, 0.0, 0.0)
+    frame.set_premultiplied(premultiplied)
+    const all = [Corner(x: -1.0, y: -1.0), Corner(x: 3.0, y: -1.0), Corner(x: -1.0, y: 3.0)]
+    frame.draw(gpu.pipeline(place, half), all)
+    frame.show()
+    Int(canvas.pixels()[0])
+}
+
+/// The sRGB byte of a linear value.
+fn byte(linear: Float) -> Int {
+    const s = if linear <= 0.0031308 { linear * 12.92 } else { 1.055 * linear ** (1.0 / 2.4) - 0.055 }
+    Int(math.round(s * 255.0))
+}
+
+fn main() uses Window, Console {
+    // Blended in linear light: 0.5 × 0.5 = 0.25 over black, or 0.5;
+    // the canvas keeps sRGB bytes.
+    print(`plain: {red(false) catch _ => byte(0.25)}`)
+    print(`premultiplied: {red(true) catch _ => byte(0.5)}`)
+}

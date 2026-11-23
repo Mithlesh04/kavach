@@ -118,6 +118,7 @@ impl Checker<'_> {
             self.gpu_signature(f, def);
             let mut walk = Walk::new(&types, &fits);
             walk.told = self.gpu_signature_types(def);
+            walk.fragment = f.gpu_stage == GpuStage::Fragment;
             if let Some(body) = &f.body {
                 walk.block(self, body);
             }

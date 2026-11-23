@@ -1,0 +1,13 @@
+// Rule: A canvas or screen draws each pixel from 1 or 4 samples; any other number is a panic (a contract).
+// Spec: 14.24.1
+// Checks: misuse
+// expect panic
+
+use std.gpu
+
+fn main() uses Window {
+    match gpu.canvas(4, 4, samples: 2) {
+        ok(_) => {},
+        err(_) => {},
+    }
+}

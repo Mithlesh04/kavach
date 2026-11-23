@@ -106,6 +106,11 @@ impl<'a> Lowerer<'a> {
                 format!("std.vec {ty}.{}", f.name.name)
             }
             Some(_) => format!("method {}", f.name.name),
+            // `std.math.fwidth`, which the WGSL backend gives WGSL's own
+            // (spec 15.3).
+            None if f.name.name == "fwidth" && self.declared_in_std_math(f) => {
+                "std.math fwidth".to_string()
+            }
             None => f.name.name.clone(),
         };
         // `inout` parameters go back with the value (spec 3.9).
@@ -148,5 +153,14 @@ impl Lowerer<'_> {
             .filter(|f| f.start <= span.start)
             .max_by_key(|f| f.start);
         file.is_some_and(|f| f.path == "std/vec.kav")
+    }
+
+    /// Whether function `f` is declared in `std/math.kav`.
+    fn declared_in_std_math(&self, f: &ast::FnDecl) -> bool {
+        let start = f.name.span.start;
+        let file = (self.c.files.iter())
+            .filter(|file| file.start <= start)
+            .max_by_key(|file| file.start);
+        file.is_some_and(|file| file.path == "std/math.kav")
     }
 }

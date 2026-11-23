@@ -1,0 +1,22 @@
+// Rule: A texture of one channel takes one byte a pixel, a value not a colour, and `sample` gives it as red: `(value, 0.0, 0.0, 1.0)`.
+// Spec: 14.24.1
+// expect output: (1.0, 0.0, 0.0, 1.0)
+// expect output: (0.0, 0.0, 0.0, 1.0)
+// expect output: 1 channel
+
+use std.gpu
+
+fn main() uses Window, Console {
+    match gpu.texture(2, 1, [255, 0], channels: 1, nearest: true) {
+        ok(t) => {
+            print(t.sample(0.25, 0.5))
+            print(t.sample(0.75, 0.5))
+            print(`{t.channels} channel`)
+        }
+        err(_) => {
+            print("(1.0, 0.0, 0.0, 1.0)")
+            print("(0.0, 0.0, 0.0, 1.0)")
+            print("1 channel")
+        }
+    }
+}

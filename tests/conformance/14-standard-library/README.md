@@ -233,6 +233,7 @@ The tests are listed in five files, by area:
 | 14.5 | [math-out-of-domain-gives-nan.kav](math-out-of-domain-gives-nan.kav) | `asin` and `acos` of a number past -1 to 1, and `ln` of a negative number, are `NaN`; `ln` of 0 is minus infinity. | runs |
 | 14.5 | [math-remainder-differs-from-percent.kav](math-remainder-differs-from-percent.kav) | `math.remainder(x, y)` is `x - n * y` with `n` the whole number nearest `x / y`, an even one at a tie; `%` keeps `x`'s sign. | runs |
 | 14.5 | [math-round-floor-and-ceil-of-negatives.kav](math-round-floor-and-ceil-of-negatives.kav) | `floor` rounds down, `ceil` up, and `round` to the nearest, a half away from zero; all three are exact. | runs |
+| 14.5 | [math-smoothstep-and-mix.kav](math-smoothstep-and-mix.kav) | `math.smoothstep` steps smoothly from 0 to 1 between two edges, `math.mix` gives a point of the way, both for `Float32`; `math.fwidth` is 0 on the CPU. | runs |
 | 14.5 | [math-sqrt-and-pow-keep-float32.kav](math-sqrt-and-pow-keep-float32.kav) | `math.sqrt` and `math.pow` of a `Float32` give a `Float32`, worked out as a `Float` and rounded once. | runs |
 | 14.6 | [cli-parse-reads-options.kav](cli-parse-reads-options.kav) | cli.parse reads options into a record; fields with defaults are optional. | runs |
 | 14.6 | [cli-parse-reports-missing-options.kav](cli-parse-reports-missing-options.kav) | A field with no default is a required option; cli.parse says which is missing, then the usage. | runs |

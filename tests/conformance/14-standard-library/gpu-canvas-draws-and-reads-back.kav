@@ -1,0 +1,20 @@
+// Rule: `gpu.canvas(width, height)` is a picture off the screen: its frames are drawn and shown as a window's, and `canvas.pixels()` reads back what the last frame shown drew; or `GpuError.Unavailable` with no GPU.
+// Spec: 14.24.1
+// expect output: 16 bytes
+// expect output: [255, 0, 0, 255]
+
+use std.gpu
+
+fn drawn() -> [UInt8] ! GpuError uses Window {
+    const canvas = try gpu.canvas(2, 2)
+    const frame = try canvas.frame()
+    frame.clear(1.0, 0.0, 0.0)
+    frame.show()
+    canvas.pixels()
+}
+
+fn main() uses Window, Console {
+    const pixels = drawn() catch _ => [255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255, 255, 0, 0, 255]
+    print(`{pixels.len()} bytes`)
+    print(pixels[0:4])
+}

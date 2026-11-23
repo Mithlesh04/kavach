@@ -419,7 +419,13 @@ impl<'p> Body<'p> {
                 for a in args {
                     vals.push(self.expr(w, a)?);
                 }
-                let name = w.function(*fid, None)?;
+                // A neighbour's difference, which only the GPU knows
+                // (spec 15.3); 0 when it runs on the CPU.
+                let builtin = self.program.functions.get(*fid as usize);
+                let name = match builtin.is_some_and(|f| f.name == "std.math fwidth") {
+                    true => "fwidth".to_string(),
+                    false => w.function(*fid, None)?,
+                };
                 format!("{name}({})", vals.join(", "))
             }
             K::If(c, then, otherwise) => {

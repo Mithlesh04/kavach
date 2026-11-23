@@ -65,6 +65,10 @@ Conformance tests for spec chapter [15. GPU](../../../docs/spec/15-gpu.md). Form
 | 15.6 | [gpu-map-needs-no-capability.kav](gpu-map-needs-no-capability.kav) | A `gpu fn` and its `map` need no capability when the code chooses no GPU. | runs |
 | 15.6, 4.9 | [gpu-numbers-start-at-zero.kav](gpu-numbers-start-at-zero.kav) | GPUs are numbered from 0: a negative number written in `on gpu(n)` is a compile error. | compile error |
 | 15.6 | [gpu-n-fn-takes-a-number.kav](gpu-n-fn-takes-a-number.kav) | `gpu(n) fn` takes a device's number written in the code. | compile error |
+| 15.3 | [gpu-fragment-fn-reads-the-shared-value.kav](gpu-fragment-fn-reads-the-shared-value.kav) | A `gpu fragment fn` may take the draw's shared value after its input; a vertex fn that doesn't read it need not take it. | runs |
+| 15.3, 14.5 | [gpu-fwidth-only-in-a-fragment-fn.kav](gpu-fwidth-only-in-a-fragment-fn.kav) | `math.fwidth` works only in a `gpu fragment fn`. | compile error |
+| 15.3 | [gpu-a-vertex-and-instance-have-16-fields.kav](gpu-a-vertex-and-instance-have-16-fields.kav) | A vertex and an instance have at most 16 fields between them. | compile error |
+| 15.3 | [gpu-an-instance-of-14-fields-draws.kav](gpu-an-instance-of-14-fields-draws.kav) | A vertex's, an instance's or a shared value's fields are 1 to 16: an instance of 14 fields beside a vertex of 2 draws. | runs |
 | 15.6 | [gpu-map-on-takes-a-device.kav](gpu-map-on-takes-a-device.kav) | `on:` on a `map` takes a `GpuDevice` from `gpu.devices()`, not a number. | compile error |
 | 15.6 | [gpu-one-map-runs-on-one-gpu.kav](gpu-one-map-runs-on-one-gpu.kav) | A lambda given to `map` can't call `gpu(n) fn`s of two numbers. | compile error |
 | 15.6, 14.24 | [gpu-on-gives-the-same-values.kav](gpu-on-gives-the-same-values.kav) | A `map` gives the same values on every device `gpu.on` or `on:` chooses. | runs |

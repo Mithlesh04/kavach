@@ -19,7 +19,7 @@ const bright = pixels.map(p => glow(p, 0.5))    // on the GPU for a long list
 A function marked `gpu fn` may run on the GPU, so it uses only what a GPU can do. It **must**:
 
 - take and give only `Float32`, `Int32`, `UInt32` and `Bool` (2.1), and records and tuples of 1 to 8 fields of those types. GPUs compute 32-bit numbers fast; `Float` and `Int` (64 bits) are slow or missing there;
-- use in its body only: `const` and `let` of those types, assignment, `if` and `else`, `while`, `for` over a range (`0..n`), `return`, the operators of 1.8 (`**` on `Float32` only), conversions between those types (`Float32(n)`, `Int32(x)`), the methods `abs`, `min`, `max` and `clamp`, `math.sqrt`, `floor`, `ceil`, `round`, `pow`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `exp` and `ln` (14.5), `std.vec`'s types of `Float32` with their operators and methods (14.28), calls to other `gpu fn`s, and the fields of its records and tuples: reading one (`p.x`, `t.0`), and making a new record or tuple (`Particle(x: x, y: y)`, `(a, b)`).
+- use in its body only: `const` and `let` of those types, assignment, `if` and `else`, `while`, `for` over a range (`0..n`), `return`, the operators of 1.8 (`**` on `Float32` only), conversions between those types (`Float32(n)`, `Int32(x)`), the methods `abs`, `min`, `max` and `clamp`, `math.sqrt`, `floor`, `ceil`, `round`, `pow`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `atan2`, `exp`, `ln`, `smoothstep` and `mix` (14.5), `math.fwidth` in a `gpu fragment fn` (15.3), `std.vec`'s types of `Float32` with their operators and methods (14.28), calls to other `gpu fn`s, and the fields of its records and tuples: reading one (`p.x`, `t.0`), and making a new record or tuple (`Particle(x: x, y: y)`, `(a, b)`).
 
 A `gpu fn` that gives a record moves a whole item at a time, so a game's frame is one `map` of the list of the last frame (15.2):
 
@@ -170,9 +170,27 @@ frame.draw(dots, square, instances: swarm, shared: Camera(zoom: 1.0))
 - Both follow the rules of a `gpu fn` (15.1), and are ordinary functions on the CPU too.
 - A `gpu vertex fn` takes the vertex, then, if the draw has them, the instance and the value shared by the whole draw, in that order: one, two or three records. It gives a record whose field `position` is four `Float32`s, as a tuple or a `Vec4<Float32>` (14.28): where the corner lands, from -1 to 1 across the window (x right, y up), then depth and `w`, as GPUs take them. Its other fields, `Float32`s, go to the fragment fn, blended between the triangle's corners.
 - A `gpu fragment fn` takes the vertex fn's result and gives the pixel's color: red, green, blue and opacity, each from 0 to 1, as four `Float32`s or a `Vec4<Float32>`.
+- **The shared value in the fragment fn.** A `gpu fragment fn` may take the value shared by the draw after its input, before any textures: a colour, a corner radius or a time every pixel reads. It is the same value the vertex fn takes last, of the same type; a vertex fn that doesn't read it need not take it, and the draw still gives it as `shared:`. A vertex fn and a fragment fn taking shared values of two types is a compile error.
+
+```kavach
+type Style {
+    radius: Float32
+    softness: Float32
+}
+
+gpu fragment fn rounded(s: Spot, style: Style) -> (Float32, Float32, Float32, Float32) {
+    const d = corner_distance(s.u, s.v, style.radius)          // a gpu fn of the program's own
+    const edge = math.fwidth(d) * style.softness
+    (1.0, 1.0, 1.0, 1.0 - math.smoothstep(-edge, edge, d))   // soft by one pixel at any size
+}
+
+frame.draw(boxes, corners, instances: rects, shared: Style(radius: 6.0, softness: 1.0))
+```
+
+- **`math.fwidth(x)`** is how much `x` changes from this pixel to the next across, plus to the next down: the GPU works out neighbouring pixels together, and compares them. It is for edges one pixel soft at any scale, as text from a distance atlas (14.31) and rounded corners want. It works only in a `gpu fragment fn`; anywhere else it is a compile error. Every pixel must reach it, as WGSL requires: not inside an `if` or a loop that depends on the pixel. On the CPU, where no neighbours are drawn, it is 0, so an edge drawn there is sharp.
 - `gpu.pipeline(v, f)` is a compile error unless `v` is a `gpu vertex fn`, `f` a `gpu fragment fn`, and `f` takes what `v` gives. `frame.draw` is a compile error unless its vertices, instances and shared value are what `v` takes.
 - `vertex` and `fragment` are words only between `gpu` and `fn`.
-- A vertex's, instance's or shared value's fields are `Float32`s, `Int32`s or `UInt32`s, 1 to 8 of them.
+- A vertex's, instance's or shared value's fields are `Float32`s, `Int32`s or `UInt32`s, 1 to 16 of them. A vertex and an instance have at most 16 fields between them, as a GPU reads at most 16 for each corner: a vertex of 2 fields leaves 14 for the instance, as a user interface's rectangle wants (place, size, colours, corner radii, clip). More is a compile error that says how many there are.
 - A draw can't stop the program, so in a vertex or fragment fn a whole-number overflow or a division by zero gives a wrong value for that corner or pixel, not a panic (5.6): the GPU has no way to say so in the middle of a frame. On the CPU, the same fn panics as any other.
 
 ### Depth

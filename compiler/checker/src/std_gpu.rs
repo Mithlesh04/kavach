@@ -23,8 +23,36 @@ impl Checker<'_> {
             Ty::Result(Box::new(int.clone()), Box::new(error))
         };
         Some(match name {
-            // The window's number.
-            "screen_id" => (vec![p("window", &int)], failing(self)),
+            // The window's number, and the samples a pixel.
+            "screen_id" => (vec![p("window", &int), p("samples", &int)], failing(self)),
+            // A canvas's width, height and samples a pixel (spec 14.24.1).
+            "canvas_id" => (
+                vec![p("sizes", &Ty::List(Box::new(int.clone())))],
+                failing(self),
+            ),
+            "canvas_pixels_id" => (vec![id.clone()], Ty::Prim(Prim::Bytes)),
+            "canvas_texture_id" => (
+                vec![id.clone(), p("nearest", &Ty::Prim(Prim::Bool))],
+                int.clone(),
+            ),
+            // A frame, which part of its state, and the values.
+            "state_id" => (
+                vec![
+                    id.clone(),
+                    p("what", &int),
+                    p("values", &Ty::List(Box::new(int.clone()))),
+                ],
+                Ty::Unit,
+            ),
+            // A texture, the part changed (x, y, width, height), pixels.
+            "update_id" => (
+                vec![
+                    id.clone(),
+                    p("area", &Ty::List(Box::new(int.clone()))),
+                    p("pixels", &Ty::List(Box::new(Ty::Prim(Prim::UInt8)))),
+                ],
+                Ty::Unit,
+            ),
             // The screen's number and its window's.
             "frame_id" => (vec![id, p("window", &int)], failing(self)),
             // Red, green and blue.
@@ -35,11 +63,15 @@ impl Checker<'_> {
             "show_id" | "drop_frame_id" | "close_id" | "drop_texture_id" => (vec![id], Ty::Unit),
             // Each device's name, vendor, kind and interface (spec 15.6).
             "devices_id" => (vec![], Ty::List(Box::new(Ty::Prim(Prim::String)))),
-            // A texture's size and its pixels (spec 15.3).
+            // A texture's width, height, channels and 1 for nearest, and
+            // its pixels (spec 15.3, 14.24.1).
             "texture_id" => {
                 let bytes = Ty::List(Box::new(Ty::Prim(Prim::UInt8)));
                 (
-                    vec![p("width", &int), p("height", &int), p("pixels", &bytes)],
+                    vec![
+                        p("sizes", &Ty::List(Box::new(int.clone()))),
+                        p("pixels", &bytes),
+                    ],
                     failing(self),
                 )
             }

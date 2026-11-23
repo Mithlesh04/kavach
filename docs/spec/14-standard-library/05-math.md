@@ -15,6 +15,9 @@
 | `math.remainder(x, y)` | The same: IEEE's remainder, `x - n * y` with `n` the whole number nearest `x / y` (an even one at a tie), so it lies between `-y / 2` and `y / 2`; unlike `%`, which keeps `x`'s sign |
 | `math.erfc(x)` | The same: the complementary error function, `1 - erf(x)`, exact even where `erf(x)` is near 1 |
 | `math.lgamma(x)` | The same: the natural logarithm of the absolute value of the gamma function, so `lgamma(n + 1.0)` is `ln(n!)` without `n!` overflowing |
+| `math.smoothstep(edge0, edge1, x)` | For `Float32`, as a `gpu fn` (15.1): 0 at `edge0` and below, 1 at `edge1` and above, and a smooth step between, `t * t * (3 - 2 * t)` for `t` the part of the way from `edge0` to `edge1`, kept from 0 to 1: `smoothstep(0.0, 1.0, 0.5)` is `0.5` |
+| `math.mix(a, b, t)` | For `Float32`, as a `gpu fn`: the point `t` of the way from `a` to `b`, `a + (b - a) * t` |
+| `math.fwidth(x)` | For `Float32`, in a `gpu fragment fn` only: how much `x` changes to the next pixel across and down, on the GPU (15.3); 0 on the CPU |
 | `math.gcd(a, b)`, `math.lcm(a, b)` | Greatest common divisor and least common multiple of `Int`s |
 | `math.is_prime(n)` | Whether `n` is a prime number |
 | `math.factorial(n)` | `n!` for `0 <= n <= 20` (larger values don't fit in `Int`) |

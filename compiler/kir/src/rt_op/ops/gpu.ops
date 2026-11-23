@@ -85,3 +85,13 @@ GpuPlace,
 /// written in the code (`gpu(n) fn`, `on gpu(n)`), or -1; `b`, the text
 /// of `[run] gpu`. A device that isn't there stops the program.
 GpuStart,
+/// Drawing for user interfaces (spec 14.24.1): a canvas (`a` the list of
+/// width, height and samples, owned; can fail), its pixels as bytes, its
+/// texture (`b` 1 for nearest); a frame's state (`a` the frame, `b`
+/// which part, `c` the values, owned); and part of texture `a` changed
+/// (`b` the area, `c` the pixels, both owned).
+DrawCanvas,
+DrawCanvasPixels,
+DrawCanvasTexture,
+DrawState,
+DrawUpdate,

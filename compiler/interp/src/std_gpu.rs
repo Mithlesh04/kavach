@@ -49,6 +49,19 @@ fn words(v: &Value<'_>, out: &mut Vec<u32>) {
     }
 }
 
+/// The whole numbers of a `[Int]`.
+fn ints(v: Option<&Value<'_>>) -> Vec<i64> {
+    match v {
+        Some(Value::List(items)) => (items.iter())
+            .map(|x| match x {
+                Value::Int(n, _) => (*n).clamp(i64::MIN as i128, i64::MAX as i128) as i64,
+                _ => 0,
+            })
+            .collect(),
+        _ => Vec::new(),
+    }
+}
+
 /// The bytes of a `[UInt8]`.
 fn bytes(v: Option<&Value<'_>>) -> Vec<u8> {
     match v {
@@ -109,7 +122,37 @@ impl<'a> Interp<'a> {
                 return Ok(Value::List(std::rc::Rc::new(texts)));
             }
             "screen_id" => {
-                return number(draw::screen_on(n, size(n)), self);
+                let samples = u32::try_from(int(1)).unwrap_or(1);
+                return number(draw::screen_on(n, size(n), samples), self);
+            }
+            "canvas_id" => {
+                let s = ints(args.first());
+                let fit = |k: usize| u32::try_from(s.get(k).copied().unwrap_or(0)).unwrap_or(0);
+                return number(draw::canvas(fit(0), fit(1), fit(2)), self);
+            }
+            "canvas_pixels_id" => {
+                return match draw::canvas_pixels(n) {
+                    Ok(px) => Ok(Value::Bytes(px.into())),
+                    Err(why) => Err(self.panic(why, span)),
+                };
+            }
+            "canvas_texture_id" => {
+                let nearest = matches!(args.get(1), Some(Value::Bool(true)));
+                return match draw::canvas_texture(n, nearest) {
+                    Ok(t) => Ok(Value::Int(i128::from(t), Prim::Int)),
+                    Err(why) => Err(self.panic(why, span)),
+                };
+            }
+            "state_id" => draw::set_state(n, int(1), &ints(args.get(2))),
+            "update_id" => {
+                let area = ints(args.get(1));
+                let fit = |k: usize| u32::try_from(area.get(k).copied().unwrap_or(0)).unwrap_or(0);
+                let pixels = bytes(args.get(2));
+                let at = (fit(0), fit(1));
+                let made = kavach_runtime_gpu::texture::update(n, at, (fit(2), fit(3)), &pixels);
+                if let Err(why) = made {
+                    return Err(self.panic(why, span));
+                }
             }
             "frame_id" => {
                 let (w, h) = size(int(1));
@@ -175,9 +218,16 @@ impl<'a> Interp<'a> {
                 }
             }
             "texture_id" => {
-                let fit = |v: i64| u32::try_from(v).unwrap_or(0);
-                let pixels = bytes(args.get(2));
-                let made = kavach_runtime_gpu::texture::texture(fit(n), fit(int(1)), &pixels);
+                let s = ints(args.first());
+                let fit = |k: usize| u32::try_from(s.get(k).copied().unwrap_or(0)).unwrap_or(0);
+                let pixels = bytes(args.get(1));
+                let made = kavach_runtime_gpu::texture::texture_of(
+                    fit(0),
+                    fit(1),
+                    &pixels,
+                    fit(2),
+                    fit(3) == 1,
+                );
                 return number(made, self);
             }
             "drop_texture_id" => kavach_runtime_gpu::texture::drop_texture(n),

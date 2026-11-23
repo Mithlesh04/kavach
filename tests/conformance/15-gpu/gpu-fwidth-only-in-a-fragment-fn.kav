@@ -1,0 +1,13 @@
+// Rule: `math.fwidth` works only in a `gpu fragment fn`; in any other `gpu fn` it is a compile error.
+// Spec: 15.3, 14.5
+// expect compile error
+
+use std.math
+
+gpu fn soft(d: Float32) -> Float32 {
+    math.fwidth(d)   // error: only in a gpu fragment fn
+}
+
+fn main() {
+    print([1.0, 2.0].map(x => soft(Float32(x))))
+}

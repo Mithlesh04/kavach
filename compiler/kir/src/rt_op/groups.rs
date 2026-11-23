@@ -57,6 +57,7 @@ impl RtOp {
                 | RtOp::DrawFrame
                 | RtOp::DrawTexture
                 | RtOp::DrawCompressed
+                | RtOp::DrawCanvas
                 | RtOp::AudioDecode
                 | RtOp::AudioPlay
                 | RtOp::AudioListen

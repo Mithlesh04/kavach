@@ -35,11 +35,50 @@ fn size(n: i64) -> (u32, u32) {
     (fit(w), fit(h))
 }
 
+/// The whole numbers of list `list` (owned), let go.
+fn ints(list: i64) -> Vec<i64> {
+    let all = slots(list).iter().map(|s| *s as i64).collect();
+    release(list);
+    all
+}
+
 // `a` is a window, screen or frame number; `b` the screen's window, or
 // the list of colors (owned) for `DrawClear`.
 crate::rt_data::entry!(kv_rt_draw, |op, a, b, c, _code, line| {
+    let fit = |v: i64| u32::try_from(v).unwrap_or(0);
     match op {
-        RtOp::DrawScreen => draw::screen_on(a, size(a)).unwrap_or_else(|why| fail(&why)),
+        // `a` the window, `b` the samples a pixel.
+        RtOp::DrawScreen => draw::screen_on(a, size(a), fit(b)).unwrap_or_else(|why| fail(&why)),
+        // `a` the list (owned) of width, height and samples.
+        RtOp::DrawCanvas => {
+            let s = ints(a);
+            let part = |k: usize| fit(s.get(k).copied().unwrap_or(0));
+            draw::canvas(part(0), part(1), part(2)).unwrap_or_else(|why| fail(&why))
+        }
+        RtOp::DrawCanvasPixels => match draw::canvas_pixels(a) {
+            Ok(px) => crate::rt_bytes::new_bytes(px, crate::rt::type_of(_code)),
+            Err(why) => crate::rt::panic_with(&why, line),
+        },
+        RtOp::DrawCanvasTexture => {
+            draw::canvas_texture(a, b != 0).unwrap_or_else(|why| crate::rt::panic_with(&why, line))
+        }
+        // `a` the frame, `b` which part, `c` the values (owned).
+        RtOp::DrawState => {
+            draw::set_state(a, b, &ints(c));
+            0
+        }
+        // `a` the texture, `b` the area (owned), `c` the pixels (owned).
+        RtOp::DrawUpdate => {
+            let area = ints(b);
+            let part = |k: usize| fit(area.get(k).copied().unwrap_or(0));
+            let pixels = crate::rt_bytes::list_bytes(c);
+            release(c);
+            let at = (part(0), part(1));
+            match kavach_runtime_gpu::texture::update(a, at, (part(2), part(3)), &pixels) {
+                Ok(()) => 0,
+                Err(why) => crate::rt::panic_with(&why, line),
+            }
+        }
         RtOp::DrawCompressed => {
             let made = crate::rt_bytes::with_bytes(a, kavach_runtime_gpu::texture::compressed);
             release(a);
@@ -82,13 +121,21 @@ crate::rt_data::entry!(kv_rt_draw, |op, a, b, c, _code, line| {
                 Err(why) => crate::rt::panic_with(&why, line),
             }
         }
-        // `a` wide, `b` high, the pixels in list `c` (owned).
+        // `a` the list (owned) of width, height, channels and 1 for
+        // nearest; the pixels in list `b` (owned).
         RtOp::DrawTexture => {
-            let pixels = crate::rt_bytes::list_bytes(c);
-            release(c);
-            let fit = |v: i64| u32::try_from(v).unwrap_or(0);
-            kavach_runtime_gpu::texture::texture(fit(a), fit(b), &pixels)
-                .unwrap_or_else(|why| fail(&why))
+            let s = ints(a);
+            let part = |k: usize| fit(s.get(k).copied().unwrap_or(0));
+            let pixels = crate::rt_bytes::list_bytes(b);
+            release(b);
+            kavach_runtime_gpu::texture::texture_of(
+                part(0),
+                part(1),
+                &pixels,
+                part(2),
+                part(3) == 1,
+            )
+            .unwrap_or_else(|why| fail(&why))
         }
         RtOp::DrawDropTexture => {
             kavach_runtime_gpu::texture::drop_texture(a);
@@ -150,6 +197,13 @@ crate::rt_data::entry!(kv_rt_draw, |op, a, b, c, _code, line| {
 fn list_words(list: i64) -> Vec<u32> {
     let ty = crate::heap::obj(list).ty();
     let item = crate::flat::item_type(ty);
+    // Records of more than 8 fields (spec 15.3) aren't kept flat: one
+    // object an item, read field by field.
+    let record = matches!(crate::heap::shape(item), Shape::Record { .. });
+    if record && crate::flat::width(ty) == 0 {
+        let items = crate::heap::items_of(list);
+        return items.iter().flat_map(|r| record_words(*r as i64)).collect();
+    }
     let n = crate::heap::list_len_items_pub(list);
     crate::rt_gpu::with_kernel_bytes(list, item, n, |bytes| {
         let (words, _) = bytes.as_chunks::<4>();

@@ -2,252 +2,17 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
-//! Pipelines and draws (spec 15.3, decision 0106). A pipeline is its WGSL
-//! module, written by the compiler (`compiler/backend/wgsl/src/render.rs`),
-//! whose first line gives the buffers' layout: `// draw f f | f f f | 1 |
-//! 0 | 0`, the vertex's fields, the instance's, the shared value's words,
-//! whether it has depth (1) and how many textures its fragment fn takes. It
-//! is compiled ahead, never in the middle of a frame (decision 0106): for
-//! every screen's color format when the screen opens, and when it is made
-//! while a screen is open.
+//! Draws (spec 15.3, decision 0106): a pipeline's triangles from 32-bit
+//! words, or from a list a GPU `map` left in GPU memory, into a frame's
+//! picture, with its depths and mask, inside its clip, blended as its
+//! frame says (spec 14.24.1). The pipelines themselves are in
+//! `pipelines.rs`.
 
 use crate::devices::gpu;
-pub use crate::picture::picture;
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex, MutexGuard, OnceLock};
+pub use crate::picture::{picture, picture_with};
+use crate::pipelines::{Form, made};
+pub use crate::pipelines::{Layout, Mask, has_depth, is_made, layout, pipeline};
 use wgpu::util::DeviceExt;
-
-/// What the first line of a pipeline's module says.
-#[derive(Clone, Debug, PartialEq)]
-pub struct Layout {
-    pub vertex: Vec<wgpu::VertexFormat>,
-    pub instance: Vec<wgpu::VertexFormat>,
-    pub shared: usize,
-    /// Whether a pixel is drawn only where it is nearer (spec 15.3).
-    pub depth: bool,
-    /// The textures its fragment fn takes.
-    pub textures: usize,
-}
-
-/// The layout the first line of `wgsl` gives.
-pub fn layout(wgsl: &str) -> Option<Layout> {
-    let line = wgsl.lines().next()?.strip_prefix("// draw ")?;
-    let parts: Vec<&str> = line.split('|').map(str::trim).collect();
-    let (vertex, instance, shared, depth, textures) = match parts[..] {
-        [v, i, s] => (v, i, s, "0", "0"),
-        [v, i, s, d, t] => (v, i, s, d, t),
-        _ => return None,
-    };
-    let formats = |s: &str| {
-        s.split_whitespace()
-            .map(|f| match f {
-                "f" => Some(wgpu::VertexFormat::Float32),
-                "i" => Some(wgpu::VertexFormat::Sint32),
-                "u" => Some(wgpu::VertexFormat::Uint32),
-                _ => None,
-            })
-            .collect::<Option<Vec<_>>>()
-    };
-    Some(Layout {
-        vertex: formats(vertex)?,
-        instance: formats(instance)?,
-        shared: shared.parse().ok()?,
-        depth: depth == "1",
-        textures: textures.parse().ok()?,
-    })
-}
-
-struct Made {
-    pipeline: wgpu::RenderPipeline,
-    shared: Option<wgpu::BindGroupLayout>,
-    textures: Option<wgpu::BindGroupLayout>,
-}
-
-struct Pipeline {
-    wgsl: String,
-    layout: Layout,
-    /// Compiled for each color format it has drawn into.
-    made: HashMap<wgpu::TextureFormat, Arc<Made>>,
-}
-
-#[derive(Default)]
-struct Pipelines {
-    /// The color formats of the screens opened so far.
-    formats: Vec<wgpu::TextureFormat>,
-    all: HashMap<i64, Pipeline>,
-    by_text: HashMap<String, i64>,
-}
-
-fn pipelines() -> MutexGuard<'static, Pipelines> {
-    static PIPELINES: OnceLock<Mutex<Pipelines>> = OnceLock::new();
-    PIPELINES
-        .get_or_init(Mutex::default)
-        .lock()
-        .unwrap_or_else(|e| e.into_inner())
-}
-
-/// The number of the pipeline of module `wgsl`: the same for the same
-/// text. It is compiled now for each screen open.
-pub fn pipeline(wgsl: &str) -> Result<i64, String> {
-    let layout = layout(wgsl).ok_or("this pipeline's shaders couldn't be written for the GPU")?;
-    let mut p = pipelines();
-    if let Some(&n) = p.by_text.get(wgsl) {
-        return Ok(n);
-    }
-    let n = p.all.len() as i64 + 1;
-    p.all.insert(
-        n,
-        Pipeline {
-            wgsl: wgsl.to_string(),
-            layout,
-            made: HashMap::new(),
-        },
-    );
-    p.by_text.insert(wgsl.to_string(), n);
-    let formats = p.formats.clone();
-    drop(p);
-    for format in formats {
-        made(n, format);
-    }
-    Ok(n)
-}
-
-/// Compiles every pipeline made so far for a screen of `format`, and
-/// those made later as they come, so frames never wait for a compile.
-pub(crate) fn ready_for(format: wgpu::TextureFormat) {
-    let mut p = pipelines();
-    if p.formats.contains(&format) {
-        return;
-    }
-    p.formats.push(format);
-    let all: Vec<i64> = p.all.keys().copied().collect();
-    drop(p);
-    for n in all {
-        made(n, format);
-    }
-}
-
-/// Whether pipeline `n` is compiled for some screen or picture yet.
-pub fn is_made(n: i64) -> bool {
-    pipelines().all.get(&n).is_some_and(|p| !p.made.is_empty())
-}
-
-/// Pipeline `n` compiled to draw into `format`, and its layout.
-fn made(n: i64, format: wgpu::TextureFormat) -> Option<(Arc<Made>, Layout)> {
-    let mut p = pipelines();
-    let pipe = p.all.get_mut(&n)?;
-    if let Some(m) = pipe.made.get(&format) {
-        return Some((m.clone(), pipe.layout.clone()));
-    }
-    let m = Arc::new(compile(&pipe.wgsl, &pipe.layout, format)?);
-    pipe.made.insert(format, m.clone());
-    Some((m, pipe.layout.clone()))
-}
-
-fn attributes(formats: &[wgpu::VertexFormat], first: u32) -> Vec<wgpu::VertexAttribute> {
-    (formats.iter().enumerate())
-        .map(|(k, f)| wgpu::VertexAttribute {
-            format: *f,
-            offset: 4 * k as u64,
-            shader_location: first + k as u32,
-        })
-        .collect()
-}
-
-fn compile(wgsl: &str, layout: &Layout, format: wgpu::TextureFormat) -> Option<Made> {
-    let g = gpu()?;
-    let module = g.device.create_shader_module(wgpu::ShaderModuleDescriptor {
-        label: Some("kavach pipeline"),
-        source: wgpu::ShaderSource::Wgsl(wgsl.into()),
-    });
-    let shared = (layout.shared > 0).then(|| {
-        g.device
-            .create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
-                label: Some("kavach shared"),
-                entries: &[wgpu::BindGroupLayoutEntry {
-                    binding: 0,
-                    visibility: wgpu::ShaderStages::VERTEX,
-                    ty: wgpu::BindingType::Buffer {
-                        ty: wgpu::BufferBindingType::Storage { read_only: true },
-                        has_dynamic_offset: false,
-                        min_binding_size: None,
-                    },
-                    count: None,
-                }],
-            })
-    });
-    let textures = (layout.textures > 0)
-        .then(|| crate::texture::layout(layout.textures))
-        .flatten();
-    let mut groups: Vec<Option<&wgpu::BindGroupLayout>> = vec![shared.as_ref()];
-    if let Some(t) = &textures {
-        groups.push(Some(t));
-    }
-    while groups.last() == Some(&None) {
-        groups.pop();
-    }
-    let pipeline_layout = g
-        .device
-        .create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("kavach pipeline"),
-            bind_group_layouts: &groups,
-            immediate_size: 0,
-        });
-    let vertex = attributes(&layout.vertex, 0);
-    let instance = attributes(&layout.instance, layout.vertex.len() as u32);
-    let mut buffers = vec![Some(wgpu::VertexBufferLayout {
-        array_stride: 4 * layout.vertex.len() as u64,
-        step_mode: wgpu::VertexStepMode::Vertex,
-        attributes: &vertex,
-    })];
-    if !instance.is_empty() {
-        buffers.push(Some(wgpu::VertexBufferLayout {
-            array_stride: 4 * layout.instance.len() as u64,
-            step_mode: wgpu::VertexStepMode::Instance,
-            attributes: &instance,
-        }));
-    }
-    let pipeline = g
-        .device
-        .create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            label: Some("kavach pipeline"),
-            layout: Some(&pipeline_layout),
-            vertex: wgpu::VertexState {
-                module: &module,
-                entry_point: Some("vs_main"),
-                compilation_options: Default::default(),
-                buffers: &buffers,
-            },
-            primitive: wgpu::PrimitiveState::default(),
-            // Nearer pixels only, each keeping its depth (spec 15.3).
-            depth_stencil: layout.depth.then(|| wgpu::DepthStencilState {
-                format: crate::texture::DEPTH,
-                depth_write_enabled: Some(true),
-                depth_compare: Some(wgpu::CompareFunction::Less),
-                stencil: wgpu::StencilState::default(),
-                bias: wgpu::DepthBiasState::default(),
-            }),
-            multisample: wgpu::MultisampleState::default(),
-            fragment: Some(wgpu::FragmentState {
-                module: &module,
-                entry_point: Some("fs_main"),
-                compilation_options: Default::default(),
-                // Opacity blends a pixel with what is drawn under it.
-                targets: &[Some(wgpu::ColorTargetState {
-                    format,
-                    blend: Some(wgpu::BlendState::ALPHA_BLENDING),
-                    write_mask: wgpu::ColorWrites::ALL,
-                })],
-            }),
-            multiview_mask: None,
-            cache: None,
-        });
-    Some(Made {
-        pipeline,
-        shared,
-        textures,
-    })
-}
 
 /// A draw's vertices or instances: 32-bit words, the fields in turn, or a
 /// list a GPU `map` left in GPU memory, drawn from there (decision 0106).
@@ -267,17 +32,44 @@ pub struct Draw<'a> {
     pub indices: Option<&'a [u32]>,
 }
 
-/// Where a draw goes: the picture, its color format, and its depths, with
-/// whether they are still to be set to 1, the farthest.
-pub(crate) struct Target<'a> {
-    pub view: &'a wgpu::TextureView,
-    pub format: wgpu::TextureFormat,
-    pub depth: Option<(&'a wgpu::TextureView, bool)>,
+/// How a frame draws now (spec 14.24.1): only inside its clip, `x`, `y`,
+/// width and height in pixels from the top left; blending premultiplied
+/// colors or not; and its use of the mask.
+#[derive(Clone, Copy, Debug, Default, PartialEq)]
+pub struct State {
+    pub clip: Option<[u32; 4]>,
+    pub premultiplied: bool,
+    pub mask: Mask,
 }
 
-/// Whether pipeline `n` draws with depth, so its target needs depths.
-pub fn has_depth(n: i64) -> bool {
-    pipelines().all.get(&n).is_some_and(|p| p.layout.depth)
+/// Where a draw goes: the picture (with samples a pixel, the one they
+/// are resolved into), its color format and size, its depths and mask
+/// (with whether each is still to be cleared), and how it draws now.
+pub(crate) struct Target<'a> {
+    pub view: &'a wgpu::TextureView,
+    pub resolve: Option<&'a wgpu::TextureView>,
+    pub format: wgpu::TextureFormat,
+    pub samples: u32,
+    pub size: (u32, u32),
+    pub depth: Option<(&'a wgpu::TextureView, bool, bool)>,
+    pub state: State,
+}
+
+/// Whether `draw` through pipeline `n` with `state` needs depths or a
+/// mask in its target.
+pub fn needs_depth(n: i64, state: &State) -> bool {
+    has_depth(n) || state.mask != Mask::Off
+}
+
+/// The part of a picture of `size` a clip leaves: `None` when nothing.
+fn clipped(clip: Option<[u32; 4]>, size: (u32, u32)) -> Option<[u32; 4]> {
+    let [x, y, w, h] = clip.unwrap_or([0, 0, size.0, size.1]);
+    let (x0, y0) = (x.min(size.0), y.min(size.1));
+    let (x1, y1) = (
+        x.saturating_add(w).min(size.0),
+        y.saturating_add(h).min(size.1),
+    );
+    (x1 > x0 && y1 > y0).then_some([x0, y0, x1 - x0, y1 - y0])
 }
 
 /// Draws `vertices` through the pipeline into the target, recorded on
@@ -291,12 +83,19 @@ pub(crate) fn draw_into(
 ) -> Result<(), String> {
     let (vertices, instances, shared) = draw.parts;
     let g = gpu().ok_or("this machine has no GPU")?;
-    let (m, layout) = made(draw.pipeline, target.format).ok_or("this pipeline couldn't be made")?;
+    let state = target.state;
+    let form = Form {
+        format: target.format,
+        samples: target.samples,
+        premultiplied: state.premultiplied,
+        mask: state.mask,
+    };
+    let (m, layout) = made(draw.pipeline, form).ok_or("this pipeline couldn't be made")?;
     let textures = match &m.textures {
         Some(l) => Some(crate::texture::group(l, layout.textures, draw.textures)?),
         None => None,
     };
-    let depth = match (layout.depth, target.depth) {
+    let depth = match (layout.depth || state.mask != Mask::Off, target.depth) {
         (false, _) => None,
         (true, Some(d)) => Some(d),
         (true, None) => return Err("this picture has no depths".into()),
@@ -352,6 +151,10 @@ pub(crate) fn draw_into(
         }
         None => None,
     };
+    // A clip that leaves nothing draws nothing.
+    let Some([cx, cy, cw, ch]) = clipped(state.clip, target.size) else {
+        return Ok(());
+    };
     let group = m.shared.as_ref().map(|l| {
         let sb = buffer(shared, wgpu::BufferUsages::STORAGE);
         g.device.create_bind_group(&wgpu::BindGroupDescriptor {
@@ -368,16 +171,16 @@ pub(crate) fn draw_into(
         color_attachments: &[Some(wgpu::RenderPassColorAttachment {
             view: target.view,
             depth_slice: None,
-            resolve_target: None,
+            resolve_target: target.resolve,
             ops: wgpu::Operations {
                 load: wgpu::LoadOp::Load,
                 store: wgpu::StoreOp::Store,
             },
         })],
-        depth_stencil_attachment: depth.map(|(view, fresh)| {
+        depth_stencil_attachment: depth.map(|(view, fresh, fresh_mask)| {
             wgpu::RenderPassDepthStencilAttachment {
                 view,
-                depth_ops: Some(wgpu::Operations {
+                depth_ops: layout.depth.then_some(wgpu::Operations {
                     load: if fresh {
                         wgpu::LoadOp::Clear(1.0)
                     } else {
@@ -385,12 +188,21 @@ pub(crate) fn draw_into(
                     },
                     store: wgpu::StoreOp::Store,
                 }),
-                stencil_ops: None,
+                stencil_ops: (state.mask != Mask::Off).then_some(wgpu::Operations {
+                    load: if fresh_mask {
+                        wgpu::LoadOp::Clear(0)
+                    } else {
+                        wgpu::LoadOp::Load
+                    },
+                    store: wgpu::StoreOp::Store,
+                }),
             }
         }),
         ..Default::default()
     });
     pass.set_pipeline(&m.pipeline);
+    pass.set_scissor_rect(cx, cy, cw, ch);
+    pass.set_stencil_reference(1);
     if let Some(group) = &group {
         pass.set_bind_group(0, group, &[]);
     }
@@ -414,4 +226,19 @@ pub(crate) fn draw_into(
 /// Words as bytes, little-endian as GPUs read them.
 fn bytes_of(words: &[u32]) -> Vec<u8> {
     words.iter().flat_map(|w| w.to_le_bytes()).collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::clipped;
+
+    #[test]
+    fn a_clip_is_cut_to_the_picture() {
+        assert_eq!(clipped(None, (8, 6)), Some([0, 0, 8, 6]));
+        assert_eq!(clipped(Some([2, 1, 3, 2]), (8, 6)), Some([2, 1, 3, 2]));
+        assert_eq!(clipped(Some([6, 4, 10, 10]), (8, 6)), Some([6, 4, 2, 2]));
+        assert_eq!(clipped(Some([9, 0, 3, 3]), (8, 6)), None, "past the edge");
+        assert_eq!(clipped(Some([1, 1, 0, 4]), (8, 6)), None, "no width");
+        assert_eq!(clipped(Some([u32::MAX, 0, u32::MAX, 1]), (8, 6)), None);
+    }
 }

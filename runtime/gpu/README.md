@@ -12,10 +12,11 @@ GPU compute for `gpu fn` (spec [chapter 15](../../docs/spec/15-gpu.md), [decisio
 | [src/choice.rs](src/choice.rs) | Which device gets the work, as plain functions tested on any machine: the least busy, a chosen one then the rest, a `gpu(n) fn`'s kernel line, `KAVACH_GPU` and `[run] gpu`, the start's messages |
 | [src/map.rs](src/map.rs) | `map` and `read`, and running work on the chosen device with its items moved there through main memory, the next device when one is lost; a split `map`'s parts at once, one thread for each device |
 | [src/listing.rs](src/listing.rs) | Listing every GPU for `system.gpus()` (spec 14.25), best kind first, without opening one; two of one model told apart by their bus; vendors by PCI ID; `KAVACH_FAKE_GPUS` in its place for tests |
-| [src/draw.rs](src/draw.rs) | Drawing into windows for `std.gpu` (spec 14.24, decision 0106): a screen is a surface made on the window's own thread, sized at each frame; frames cleared and shown, by number |
-| [src/render.rs](src/render.rs) | Pipelines compiled ahead (when a screen opens, or when made once one is open), with depth or not, and draws from 32-bit words into a frame (spec 15.3) |
-| [src/picture.rs](src/picture.rs) | `picture`: draws into a texture off the screen, read back, for tests (decision 0106) |
-| [src/texture.rs](src/texture.rs) | Textures by number, the one sampler, their bind group, and depth buffers (spec 15.3) |
+| [src/draw.rs](src/draw.rs) | Drawing into windows and canvases for `std.gpu` (spec 14.24, decision 0106): a screen is a surface made on the window's own thread, sized at each frame; a canvas a texture of its own, read back or sampled (14.24.1); either of 1 or 4 samples a pixel; frames cleared, drawn with their clip, blending and mask, and shown, by number |
+| [src/pipelines.rs](src/pipelines.rs) | Pipelines by their module's text, each compiled in a form for each place it draws into (format, samples, blending, use of the mask): the plain form ahead, when a place opens or when made once one is open (spec 15.3) |
+| [src/render.rs](src/render.rs) | Draws from 32-bit words, or a list kept in GPU memory, into a frame, with its depths and mask, inside its clip (spec 15.3, 14.24.1) |
+| [src/picture.rs](src/picture.rs) | `picture`: draws into a texture off the screen, read back, for tests (decision 0106); `read_back`, a texture's pixels, as a canvas's |
+| [src/texture.rs](src/texture.rs) | Textures by number, of four channels or one, changed in part, sampled blended or to the nearest pixel; their bind group, and depth and mask buffers (spec 15.3, 14.24.1) |
 | [src/ktx2.rs](src/ktx2.rs) | KTX2 files of compressed blocks (BC1 to BC7, ASTC 4×4) read with no library: the format, the size and each mip level's bytes, which `texture::compressed` uploads as they are (spec 14.24) |
 | [src/slice.rs](src/slice.rs) | `slice`: a slice of a list in GPU memory made there, item `start + i * step` copied into item `i` (spec 15.4) |
 | [src/filter.rs](src/filter.rs) | `filter`: the kernel's two runs over the same items, and where each workgroup's kept items start |

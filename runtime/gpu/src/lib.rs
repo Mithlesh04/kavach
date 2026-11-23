@@ -17,6 +17,7 @@ mod device;
 mod devices;
 pub mod draw;
 mod picture;
+mod pipelines;
 pub mod render;
 pub mod texture;
 use device::{Gpu, Pending};

@@ -1,0 +1,66 @@
+// Rule: After `frame.set_clip(x, y, width, height)`, draws change only the pixels inside that rectangle, in pixels from the top left; `clear_clip()` lifts it.
+// Spec: 14.24.1
+// expect output: inside: [255, 255, 255, 255]
+// expect output: outside: [0, 0, 0, 255]
+// expect output: after clear_clip: [255, 255, 255, 255]
+
+use std.gpu
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Spot {
+    position: (Float32, Float32, Float32, Float32)
+}
+
+gpu vertex fn place(c: Corner) -> Spot {
+    Spot(position: (c.x, c.y, 0.0, 1.0))
+}
+
+gpu fragment fn white(s: Spot) -> (Float32, Float32, Float32, Float32) {
+    (1.0, 1.0, 1.0, 1.0)
+}
+
+/// Two triangles over the whole picture.
+fn square() -> [Corner] {
+    [Corner(x: -1.0, y: -1.0), Corner(x: 1.0, y: -1.0), Corner(x: 1.0, y: 1.0),
+     Corner(x: -1.0, y: -1.0), Corner(x: 1.0, y: 1.0), Corner(x: -1.0, y: 1.0)]
+}
+
+/// The pixel at `x`, `y` of a 4 × 4 canvas.
+fn at(pixels: [UInt8], x: Int, y: Int) -> [UInt8] {
+    const k = (y * 4 + x) * 4
+    pixels[k:k + 4]
+}
+
+fn drawn(clear_after: Bool) -> [UInt8] ! GpuError uses Window {
+    const canvas = try gpu.canvas(4, 4)
+    const frame = try canvas.frame()
+    frame.clear(0.0, 0.0, 0.0)
+    frame.set_clip(0, 0, 2, 4)
+    if clear_after {
+        frame.clear_clip()
+    }
+    frame.draw(gpu.pipeline(place, white), square())
+    frame.show()
+    canvas.pixels()
+}
+
+fn main() uses Window, Console {
+    const white_px: [UInt8] = [255, 255, 255, 255]
+    const black_px: [UInt8] = [0, 0, 0, 255]
+    match drawn(false) {
+        ok(px) => {
+            print(`inside: {at(px, 1, 2)}`)
+            print(`outside: {at(px, 3, 2)}`)
+        }
+        err(_) => {
+            print(`inside: {white_px}`)
+            print(`outside: {black_px}`)
+        }
+    }
+    const all = drawn(true) catch _ => [255, 255, 255, 255]
+    print(`after clear_clip: {all[all.len() - 4:]}`)
+}

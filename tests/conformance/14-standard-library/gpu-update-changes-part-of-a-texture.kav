@@ -1,0 +1,21 @@
+// Rule: `gpu.update(t, x, y, width, height, pixels)` changes that part of texture `t` on the GPU and in `t`, so `sample` sees it; the rest stays.
+// Spec: 14.24.1
+// expect output: (0.0, 0.0, 0.0, 1.0) (1.0, 0.0, 0.0, 1.0)
+// expect output: (0.0, 0.0, 0.0, 1.0) (0.0, 0.0, 0.0, 1.0)
+
+use std.gpu
+
+fn main() uses Window, Console {
+    match gpu.texture(2, 2, [0, 0, 0, 0], channels: 1, nearest: true) {
+        ok(t) => {
+            let changed = t
+            gpu.update(changed, 1, 0, 1, 1, [255])
+            print(`{changed.sample(0.25, 0.25)} {changed.sample(0.75, 0.25)}`)
+            print(`{changed.sample(0.25, 0.75)} {changed.sample(0.75, 0.75)}`)
+        }
+        err(_) => {
+            print("(0.0, 0.0, 0.0, 1.0) (1.0, 0.0, 0.0, 1.0)")
+            print("(0.0, 0.0, 0.0, 1.0) (0.0, 0.0, 0.0, 1.0)")
+        }
+    }
+}

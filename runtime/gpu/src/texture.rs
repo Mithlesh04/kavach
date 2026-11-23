@@ -5,7 +5,9 @@
 //! Textures (spec 15.3): pictures a `gpu fragment fn` reads with
 //! `sample`, kept on the GPU by number. A pipeline whose fragment fn takes
 //! textures has a second bind group: one sampler, blending between the
-//! nearest pixels and clamping at the edges, then each texture in turn.
+//! nearest pixels or taking the nearest one, and clamping at the edges,
+//! then each texture in turn. A texture has four channels (sRGB colours
+//! and opacity) or one (spec 14.24.1), and part of it can be changed.
 
 use crate::devices::gpu;
 use std::collections::HashMap;
@@ -14,10 +16,43 @@ use std::sync::{Arc, Mutex, MutexGuard, OnceLock};
 /// The largest width or height a texture may have (spec 14.24).
 pub const MOST: u32 = 8192;
 
+/// A texture kept by number: what draws read, and what it is.
+pub(crate) struct Kept {
+    pub(crate) view: Arc<wgpu::TextureView>,
+    /// Kept for changing part of it; `None` for compressed blocks.
+    texture: Option<wgpu::Texture>,
+    /// Sampled to the nearest pixel, not blended (spec 14.24.1).
+    nearest: bool,
+    /// One channel, or four.
+    channels: u32,
+}
+
 #[derive(Default)]
 struct Textures {
-    all: HashMap<i64, Arc<wgpu::TextureView>>,
+    all: HashMap<i64, Kept>,
     next: i64,
+}
+
+/// Keeps a texture: its number.
+pub(crate) fn keep(
+    view: Arc<wgpu::TextureView>,
+    texture: Option<wgpu::Texture>,
+    nearest: bool,
+    channels: u32,
+) -> i64 {
+    let mut t = textures();
+    t.next += 1;
+    let n = t.next;
+    t.all.insert(
+        n,
+        Kept {
+            view,
+            texture,
+            nearest,
+            channels,
+        },
+    );
+    n
 }
 
 fn textures() -> MutexGuard<'static, Textures> {
@@ -28,22 +63,42 @@ fn textures() -> MutexGuard<'static, Textures> {
         .unwrap_or_else(|e| e.into_inner())
 }
 
-/// A texture `width` × `height` pixels of `pixels`, four bytes each (red,
-/// green, blue and opacity, in sRGB), row by row from the top: its
-/// number, or why there is none.
-pub fn texture(width: u32, height: u32, pixels: &[u8]) -> Result<i64, String> {
+/// Why `pixels` can't be a `width` × `height` picture of `channels`
+/// bytes a pixel, if they can't.
+fn check(width: u32, height: u32, channels: u32, pixels: &[u8]) -> Result<(), String> {
     if !(1..=MOST).contains(&width) || !(1..=MOST).contains(&height) {
         return Err(format!(
             "a texture is 1 to {MOST} pixels wide and high, not {width} × {height}"
         ));
     }
-    if pixels.len() as u64 != u64::from(width) * u64::from(height) * 4 {
+    let want = u64::from(width) * u64::from(height) * u64::from(channels);
+    if pixels.len() as u64 != want {
         return Err(format!(
-            "a texture {width} × {height} takes {} bytes of pixels, and {} were given",
-            u64::from(width) * u64::from(height) * 4,
+            "{width} × {height} pixels take {want} bytes, and {} were given",
             pixels.len()
         ));
     }
+    Ok(())
+}
+
+/// A texture `width` × `height` pixels of `pixels`, four bytes each (red,
+/// green, blue and opacity, in sRGB), row by row from the top: its
+/// number, or why there is none.
+pub fn texture(width: u32, height: u32, pixels: &[u8]) -> Result<i64, String> {
+    texture_of(width, height, pixels, 4, false)
+}
+
+/// A texture of `channels` bytes a pixel (4, as `texture` takes, or 1,
+/// a value from 0 to 1 each, not a colour), sampled to the `nearest`
+/// pixel or blended: its number, or why there is none (spec 14.24.1).
+pub fn texture_of(
+    width: u32,
+    height: u32,
+    pixels: &[u8],
+    channels: u32,
+    nearest: bool,
+) -> Result<i64, String> {
+    check(width, height, channels, pixels)?;
     let g = gpu().ok_or("this machine has no GPU")?;
     let size = wgpu::Extent3d {
         width,
@@ -56,8 +111,13 @@ pub fn texture(width: u32, height: u32, pixels: &[u8]) -> Result<i64, String> {
         mip_level_count: 1,
         sample_count: 1,
         dimension: wgpu::TextureDimension::D2,
-        // Sampled as linear colors, which the screen's sRGB turns back.
-        format: wgpu::TextureFormat::Rgba8UnormSrgb,
+        // Sampled as linear colors, which the screen's sRGB turns back;
+        // one channel is a value, as it is.
+        format: if channels == 1 {
+            wgpu::TextureFormat::R8Unorm
+        } else {
+            wgpu::TextureFormat::Rgba8UnormSrgb
+        },
         usage: wgpu::TextureUsages::TEXTURE_BINDING | wgpu::TextureUsages::COPY_DST,
         view_formats: &[],
     });
@@ -66,17 +126,54 @@ pub fn texture(width: u32, height: u32, pixels: &[u8]) -> Result<i64, String> {
         pixels,
         wgpu::TexelCopyBufferLayout {
             offset: 0,
-            bytes_per_row: Some(4 * width),
+            bytes_per_row: Some(channels * width),
             rows_per_image: Some(height),
         },
         size,
     );
     let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-    let mut t = textures();
-    t.next += 1;
-    let n = t.next;
-    t.all.insert(n, Arc::new(view));
-    Ok(n)
+    Ok(keep(Arc::new(view), Some(texture), nearest, channels))
+}
+
+/// Changes the part of texture `n` from pixel `(x, y)`, `width` ×
+/// `height` pixels, to `pixels`, row by row from the top; or why not.
+/// Draws already sent keep what they read (spec 14.24.1).
+pub fn update(n: i64, at: (u32, u32), size: (u32, u32), pixels: &[u8]) -> Result<(), String> {
+    let g = gpu().ok_or("this machine has no GPU")?;
+    let t = textures();
+    let kept = t.all.get(&n).ok_or("the texture is gone")?;
+    let texture = (kept.texture.as_ref()).ok_or("a compressed texture can't be changed")?;
+    let ((x, y), (w, h)) = (at, size);
+    check(w, h, kept.channels, pixels)?;
+    if u64::from(x) + u64::from(w) > u64::from(texture.width())
+        || u64::from(y) + u64::from(h) > u64::from(texture.height())
+    {
+        return Err(format!(
+            "{w} × {h} pixels at ({x}, {y}) go past the texture's {} × {}",
+            texture.width(),
+            texture.height()
+        ));
+    }
+    g.queue.write_texture(
+        wgpu::TexelCopyTextureInfo {
+            texture,
+            mip_level: 0,
+            origin: wgpu::Origin3d { x, y, z: 0 },
+            aspect: wgpu::TextureAspect::All,
+        },
+        pixels,
+        wgpu::TexelCopyBufferLayout {
+            offset: 0,
+            bytes_per_row: Some(kept.channels * w),
+            rows_per_image: Some(h),
+        },
+        wgpu::Extent3d {
+            width: w,
+            height: h,
+            depth_or_array_layers: 1,
+        },
+    );
+    Ok(())
 }
 
 /// A texture of the compressed blocks in KTX2 file `bytes` (`ktx2.rs`),
@@ -135,11 +232,15 @@ pub fn compressed(bytes: &[u8]) -> Result<(i64, u32, u32), (&'static str, String
         );
     }
     let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-    let mut all = textures();
-    all.next += 1;
-    let n = all.next;
-    all.all.insert(n, Arc::new(view));
-    Ok((n, t.width, t.height))
+    Ok((keep(Arc::new(view), None, false, 4), t.width, t.height))
+}
+
+/// Whether texture `n` is `view`: a canvas read while it is drawn into.
+pub(crate) fn is_view(n: i64, view: &Arc<wgpu::TextureView>) -> bool {
+    textures()
+        .all
+        .get(&n)
+        .is_some_and(|k| Arc::ptr_eq(&k.view, view))
 }
 
 /// Lets texture `n` go. A draw already recorded keeps it until it is sent.
@@ -177,24 +278,29 @@ pub(crate) fn layout(count: usize) -> Option<wgpu::BindGroupLayout> {
     )
 }
 
-/// The one sampler: blending between the nearest pixels, the edge's
-/// pixels past an edge (spec 15.3).
-fn sampler() -> Option<&'static wgpu::Sampler> {
-    static SAMPLER: OnceLock<Option<wgpu::Sampler>> = OnceLock::new();
-    SAMPLER
-        .get_or_init(|| {
-            let g = gpu()?;
-            Some(g.device.create_sampler(&wgpu::SamplerDescriptor {
+/// The two samplers: blending between the nearest pixels, or taking the
+/// nearest one; the edge's pixels past an edge (spec 15.3).
+fn sampler(nearest: bool) -> Option<&'static wgpu::Sampler> {
+    static SAMPLERS: OnceLock<Option<[wgpu::Sampler; 2]>> = OnceLock::new();
+    let both = SAMPLERS.get_or_init(|| {
+        let g = gpu()?;
+        let make = |filter| {
+            g.device.create_sampler(&wgpu::SamplerDescriptor {
                 label: Some("kavach sampler"),
                 address_mode_u: wgpu::AddressMode::ClampToEdge,
                 address_mode_v: wgpu::AddressMode::ClampToEdge,
                 address_mode_w: wgpu::AddressMode::ClampToEdge,
-                mag_filter: wgpu::FilterMode::Linear,
-                min_filter: wgpu::FilterMode::Linear,
+                mag_filter: filter,
+                min_filter: filter,
                 ..Default::default()
-            }))
-        })
-        .as_ref()
+            })
+        };
+        Some([
+            make(wgpu::FilterMode::Linear),
+            make(wgpu::FilterMode::Nearest),
+        ])
+    });
+    both.as_ref().map(|b| &b[usize::from(nearest)])
 }
 
 /// The bind group giving textures `ids`, in order, to a draw through a
@@ -211,18 +317,19 @@ pub(crate) fn group(
         ));
     }
     let g = gpu().ok_or("this machine has no GPU")?;
-    let views: Vec<Arc<wgpu::TextureView>> = {
+    let (views, nearest): (Vec<Arc<wgpu::TextureView>>, Vec<bool>) = {
         let t = textures();
-        (ids.iter())
-            .map(|n| {
-                t.all
-                    .get(n)
-                    .cloned()
-                    .ok_or("a texture of this draw is gone")
-            })
-            .collect::<Result<_, _>>()?
+        let kept = (ids.iter())
+            .map(|n| t.all.get(n).ok_or("a texture of this draw is gone"))
+            .collect::<Result<Vec<_>, _>>()?;
+        kept.iter()
+            .map(|k| (Arc::clone(&k.view), k.nearest))
+            .unzip()
     };
-    let sampler = sampler().ok_or("this machine has no GPU")?;
+    if nearest.iter().any(|n| *n != nearest[0]) {
+        return Err("a draw's textures are all sampled to the nearest pixel, or none is".into());
+    }
+    let sampler = sampler(nearest[0]).ok_or("this machine has no GPU")?;
     let mut entries = vec![wgpu::BindGroupEntry {
         binding: 0,
         resource: wgpu::BindingResource::Sampler(sampler),
@@ -240,8 +347,9 @@ pub(crate) fn group(
     }))
 }
 
-/// A depth buffer `width` × `height` pixels, for pipelines with depth.
-pub(crate) fn depth(width: u32, height: u32) -> Option<wgpu::TextureView> {
+/// A depth and mask buffer `width` × `height` pixels, of `samples` a
+/// pixel, for pipelines with depth or a mask (spec 14.24.1).
+pub(crate) fn depth(width: u32, height: u32, samples: u32) -> Option<wgpu::TextureView> {
     let g = gpu()?;
     let texture = g.device.create_texture(&wgpu::TextureDescriptor {
         label: Some("kavach depth"),
@@ -251,7 +359,7 @@ pub(crate) fn depth(width: u32, height: u32) -> Option<wgpu::TextureView> {
             depth_or_array_layers: 1,
         },
         mip_level_count: 1,
-        sample_count: 1,
+        sample_count: samples,
         dimension: wgpu::TextureDimension::D2,
         format: DEPTH,
         usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
@@ -260,5 +368,5 @@ pub(crate) fn depth(width: u32, height: u32) -> Option<wgpu::TextureView> {
     Some(texture.create_view(&wgpu::TextureViewDescriptor::default()))
 }
 
-/// The format of every depth buffer.
-pub(crate) const DEPTH: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
+/// The format of every depth buffer: depths, and the mask's mark.
+pub(crate) const DEPTH: wgpu::TextureFormat = wgpu::TextureFormat::Depth24PlusStencil8;

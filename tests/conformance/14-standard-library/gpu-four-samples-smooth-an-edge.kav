@@ -1,0 +1,42 @@
+// Rule: A canvas of 4 samples a pixel draws a pixel a triangle's edge crosses partly covered, blended when shown; with 1 sample, the pixel is all in or all out.
+// Spec: 14.24.1
+// expect output: 1 sample: 0 or 255
+// expect output: 4 samples: between
+
+use std.gpu
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Spot {
+    position: (Float32, Float32, Float32, Float32)
+}
+
+gpu vertex fn place(c: Corner) -> Spot {
+    Spot(position: (c.x, c.y, 0.0, 1.0))
+}
+
+gpu fragment fn white(s: Spot) -> (Float32, Float32, Float32, Float32) {
+    (1.0, 1.0, 1.0, 1.0)
+}
+
+/// The red byte of the middle pixel of a 3 × 3 canvas, half covered by a
+/// triangle whose edge runs through its center, corner to corner.
+fn middle(samples: Int) -> Int ! GpuError uses Window {
+    const canvas = try gpu.canvas(3, 3, samples: samples)
+    const frame = try canvas.frame()
+    frame.clear(0.0, 0.0, 0.0)
+    const half = [Corner(x: -1.0, y: -1.0), Corner(x: 1.0, y: -1.0), Corner(x: 1.0, y: 1.0)]
+    frame.draw(gpu.pipeline(place, white), half)
+    frame.show()
+    Int(canvas.pixels()[16])
+}
+
+fn main() uses Window, Console {
+    const one = middle(1) catch _ => 0
+    print(`1 sample: {if one == 0 or one == 255 { "0 or 255" } else { "between" }}`)
+    const four = middle(4) catch _ => 128
+    print(`4 samples: {if four > 0 and four < 255 { "between" } else { "0 or 255" }}`)
+}

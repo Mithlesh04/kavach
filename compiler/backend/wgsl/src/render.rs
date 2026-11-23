@@ -12,7 +12,9 @@
 //! value's number of words, whether it has depth, and how many textures
 //! the fragment fn takes. A draw can't stop the program, so in these shaders a
 //! panic only marks itself (`halt` does nothing), and the arithmetic goes
-//! on with the value it has.
+//! on with the value it has. Its two fragment entries are `fs_main`, and
+//! `fs_mask`, which leaves out the pixels of no opacity, for marking a
+//! frame's mask (spec 14.24.1).
 
 use crate::expr::Writer;
 use crate::vec::vec_type;
@@ -111,10 +113,14 @@ pub(crate) fn module(
     );
     let (&venv, inputs) = vf.params.split_first()?;
     let &fenv = ff.params.first()?;
-    // The textures, after the fragment fn's input (spec 15.3).
-    let textures: Vec<Type> = (ff.params.iter().skip(2))
+    // After the fragment fn's input: the draw's shared value, if it reads
+    // it, then the textures (spec 15.3).
+    let after: Vec<Type> = (ff.params.iter().skip(2))
         .map(|p| ff.locals[*p as usize])
         .collect();
+    let is_texture = |t: &Type| is_named(program, *t, "Texture");
+    let fshared = after.first().copied().filter(|t| !is_texture(t));
+    let textures: Vec<Type> = after.iter().copied().filter(is_texture).collect();
     let inputs: Vec<Type> = inputs.iter().map(|p| vf.locals[*p as usize]).collect();
     let corner = fields(program, vf.ret)?;
     let pos = corner.iter().position(|(n, _)| n == "position")?;
@@ -149,19 +155,19 @@ pub(crate) fn module(
     }
     let mut text = String::new();
     // The value shared by the whole draw, as words, read as a map's
-    // captures are.
-    if let Some(&shared) = inputs.get(2) {
+    // captures are, by the vertex fn, the fragment fn or both.
+    let mut shared_value = String::new();
+    if let Some(shared) = inputs.get(2).copied().or(fshared) {
         let fs = fields(program, shared)?;
         header.push(fs.len().to_string());
         text.push_str("@group(0) @binding(0) var<storage, read> shared_words: array<u32>;\n");
         let loads: Vec<String> = (fs.iter().enumerate())
             .map(|(k, (_, t))| load(&format!("shared_words[{k}u]"), *t))
             .collect();
-        made.push(format!(
-            "{}({})",
-            type_name(program, shared)?,
-            loads.join(", ")
-        ));
+        shared_value = format!("{}({})", type_name(program, shared)?, loads.join(", "));
+        if inputs.len() > 2 {
+            made.push(shared_value.clone());
+        }
     } else {
         header.push("0".to_string());
     }
@@ -219,9 +225,13 @@ pub(crate) fn module(
         sets.join("\n")
     ));
     module.push_str(&format!(
-        "@fragment\nfn fs_main(i: VOut) -> @location(0) vec4<f32> {{\n    let c = {fname}(S{}({}){});\n    return {};\n}}\n",
+        "fn fs_color(i: VOut) -> vec4<f32> {{\n    let c = {fname}(S{}({}){}{});\n    return {};\n}}\n",
         struct_id(vf.ret)?,
         back.join(", "),
+        match fshared {
+            Some(_) => format!(", {shared_value}"),
+            None => String::new(),
+        },
         (0..textures.len())
             .map(|k| format!(", ktex{k}"))
             .collect::<String>(),
@@ -231,6 +241,10 @@ pub(crate) fn module(
             None => "vec4<f32>(c.f0, c.f1, c.f2, c.f3)".to_string(),
         }
     ));
+    module.push_str(
+        "@fragment\nfn fs_main(i: VOut) -> @location(0) vec4<f32> {\n    return fs_color(i);\n}\n",
+    );
+    module.push_str("@fragment\nfn fs_mask(i: VOut) -> @location(0) vec4<f32> {\n    let c = fs_color(i);\n    if (c.w <= 0.0) {\n        discard;\n    }\n    return c;\n}\n");
     Some(module)
 }
 
@@ -238,6 +252,12 @@ pub(crate) fn module(
 /// definitions, says it has depth: `12 14 depth`.
 pub fn deep(key: &str) -> bool {
     key.split(' ').nth(2) == Some("depth")
+}
+
+/// Whether `t` is the record named `name`, as `Texture`.
+fn is_named(program: &Program, t: Type, name: &str) -> bool {
+    let shape = struct_id(t).and_then(|id| program.shapes.get(id as usize));
+    matches!(shape, Some(Shape::Record { name: n, .. }) if n == name)
 }
 
 fn struct_id(t: Type) -> Option<u32> {

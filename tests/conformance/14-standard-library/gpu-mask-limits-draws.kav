@@ -1,0 +1,77 @@
+// Rule: With `frame.set_mask(Mask.Write)` a draw marks the pixels it covers and colours none; then `Mask.Inside` draws only on marked pixels and `Mask.Outside` only on others.
+// Spec: 14.24.1
+// expect output: marked, inside: [255, 0, 0, 255]
+// expect output: unmarked, outside: [0, 0, 255, 255]
+
+use std.gpu
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Spot {
+    position: (Float32, Float32, Float32, Float32)
+}
+
+type Paint {
+    r: Float32
+    b: Float32
+}
+
+gpu vertex fn place(c: Corner, p: Paint) -> Spot {
+    Spot(position: (c.x, c.y, 0.0, 1.0))
+}
+
+gpu vertex fn place_painted(c: Corner, p: Paint, s: Paint) -> Painted {
+    Painted(position: (c.x, c.y, 0.0, 1.0), r: s.r, b: s.b)
+}
+
+type Painted {
+    position: (Float32, Float32, Float32, Float32)
+    r: Float32
+    b: Float32
+}
+
+gpu fragment fn solid(s: Spot) -> (Float32, Float32, Float32, Float32) {
+    (1.0, 1.0, 1.0, 1.0)
+}
+
+gpu fragment fn painted(p: Painted) -> (Float32, Float32, Float32, Float32) {
+    (p.r, 0.0, p.b, 1.0)
+}
+
+/// Two triangles from `x0` to `x1` across the picture, top to bottom.
+fn band(x0: Float32, x1: Float32) -> [Corner] {
+    [Corner(x: x0, y: -1.0), Corner(x: x1, y: -1.0), Corner(x: x1, y: 1.0),
+     Corner(x: x0, y: -1.0), Corner(x: x1, y: 1.0), Corner(x: x0, y: 1.0)]
+}
+
+fn drawn() -> [UInt8] ! GpuError uses Window {
+    const canvas = try gpu.canvas(4, 1)
+    const frame = try canvas.frame()
+    frame.clear(0.0, 0.0, 0.0)
+    const one = [Paint(r: 0.0, b: 0.0)]
+    frame.set_mask(Mask.Write)
+    frame.draw(gpu.pipeline(place, solid), band(-1.0, 0.0), instances: one)
+    const colours = gpu.pipeline(place_painted, painted)
+    frame.set_mask(Mask.Inside)
+    frame.draw(colours, band(-1.0, 1.0), instances: one, shared: Paint(r: 1.0, b: 0.0))
+    frame.set_mask(Mask.Outside)
+    frame.draw(colours, band(-1.0, 1.0), instances: one, shared: Paint(r: 0.0, b: 1.0))
+    frame.show()
+    canvas.pixels()
+}
+
+fn main() uses Window, Console {
+    match drawn() {
+        ok(px) => {
+            print(`marked, inside: {px[0:4]}`)
+            print(`unmarked, outside: {px[12:16]}`)
+        }
+        err(_) => {
+            print("marked, inside: [255, 0, 0, 255]")
+            print("unmarked, outside: [0, 0, 255, 255]")
+        }
+    }
+}

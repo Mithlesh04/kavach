@@ -35,6 +35,8 @@ mod reduce;
 mod tests;
 #[cfg(test)]
 mod tests_draw;
+#[cfg(test)]
+mod tests_ui;
 mod texture;
 mod values;
 mod vec;

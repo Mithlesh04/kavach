@@ -15,7 +15,9 @@ use std::collections::HashMap;
 /// The methods a `gpu fn` may call on its numbers.
 const METHODS: [&str; 5] = ["abs", "min", "max", "clamp", "fract"];
 
-/// The functions of `std.math` a `gpu fn` may call (spec 15.1).
+/// The functions of `std.math` a `gpu fn` may call (spec 15.1). Its
+/// `smoothstep`, `mix` and `fwidth` are `gpu fn`s written in Kavach,
+/// called as any other.
 const MATH: [&str; 14] = [
     "sqrt", "floor", "ceil", "round", "pow", "sin", "cos", "tan", "asin", "acos", "atan", "atan2",
     "exp", "ln",
@@ -32,6 +34,18 @@ fn is_math(c: &Checker<'_>, e: &Expr) -> bool {
     let def = c.res.uses.get(&id.span.start);
     def.and_then(|d| c.std_modules.get(d))
         .is_some_and(|m| m == "math")
+}
+
+/// Why `math.fwidth` is for fragment fns alone (spec 15.3).
+const FWIDTH: &str = "`math.fwidth` works only in a `gpu fragment fn`, where the GPU draws neighbouring pixels together (spec 15.3)";
+
+/// Whether `def` is `std.math`'s `fwidth`, a `gpu fn` written in Kavach
+/// that only a fragment fn may call.
+fn is_fwidth(c: &Checker<'_>, def: DefId) -> bool {
+    let d = &c.res.defs[def];
+    d.name == "fwidth"
+        && d.span
+            .is_some_and(|s| c.res.modules[c.res.module_at(s.start)].name == "std.math")
 }
 
 /// Why a `gpu fn` can't touch the world outside it (spec 15.1).
@@ -93,6 +107,8 @@ pub(crate) struct Walk<'t> {
     /// The types already said to be wrong for the GPU, in the signature
     /// or earlier in the body: each is told once.
     pub(crate) told: Vec<Ty>,
+    /// Whether it walks a `gpu fragment fn`, where `math.fwidth` works.
+    pub(crate) fragment: bool,
 }
 
 impl<'t> Walk<'t> {
@@ -103,6 +119,7 @@ impl<'t> Walk<'t> {
             calls: Vec::new(),
             errors: Vec::new(),
             told: Vec::new(),
+            fragment: false,
         }
     }
 
@@ -280,6 +297,9 @@ impl<'t> Walk<'t> {
             ExprKind::Name(id) => {
                 let def = c.res.uses.get(&id.span.start).copied();
                 match def {
+                    Some(d) if is_fwidth(c, d) && !self.fragment => {
+                        self.errors.push((id.span, FWIDTH.into()));
+                    }
                     Some(d) if c.gpu_fns.contains(&d) => self.calls.push(d),
                     Some(d)
                         if c.res.defs[d].kind == DefKind::Builtin

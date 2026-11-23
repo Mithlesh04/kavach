@@ -1,0 +1,44 @@
+// Rule: A vertex and an instance have at most 16 fields between them; more is a compile error.
+// Spec: 15.3
+// expect compile error
+
+use std.gpu
+
+type Corner {
+    x: Float32
+    y: Float32
+    z: Float32
+}
+
+type Box {
+    a: Float32
+    b: Float32
+    c: Float32
+    d: Float32
+    e: Float32
+    f: Float32
+    g: Float32
+    h: Float32
+    i: Float32
+    j: Float32
+    k: Float32
+    l: Float32
+    m: Float32
+    n: Float32
+}
+
+type Spot {
+    position: (Float32, Float32, Float32, Float32)
+}
+
+gpu vertex fn place(c: Corner, b: Box) -> Spot {   // error: 17 fields
+    Spot(position: (c.x + b.a, c.y, c.z, 1.0))
+}
+
+gpu fragment fn white(s: Spot) -> (Float32, Float32, Float32, Float32) {
+    (1.0, 1.0, 1.0, 1.0)
+}
+
+fn main() uses Window {
+    const _ = gpu.pipeline(place, white)
+}

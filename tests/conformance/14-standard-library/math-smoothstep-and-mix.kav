@@ -1,0 +1,16 @@
+// Rule: `math.smoothstep(edge0, edge1, x)` is 0 up to `edge0`, 1 from `edge1`, and a smooth step between; `math.mix(a, b, t)` is the point `t` of the way from `a` to `b`; both for `Float32`, on the CPU and the GPU alike.
+// Spec: 14.5
+// expect output: 0.0 0.5 1.0
+// expect output: 0.15625
+// expect output: 2.5
+// expect output: 0.0
+
+use std.math
+
+fn main() {
+    const steps = [-1.0, 0.5, 2.0].map(x => math.smoothstep(0.0, 1.0, Float32(x)))
+    print(`{steps[0]} {steps[1]} {steps[2]}`)
+    print(math.smoothstep(0.0, 1.0, 0.25))
+    print(math.mix(2.0, 4.0, 0.25))
+    print(math.fwidth(3.0))
+}

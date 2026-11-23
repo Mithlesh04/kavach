@@ -31,6 +31,17 @@ Conformance tests for std.clipboard (14.17), std.devices (14.18), std.window (14
 | 14.22.2, 8.1 | [window-text-input-needs-input.kav](window-text-input-needs-input.kav) | Turning input methods on and saying where the caret is need `Input`. | compile error |
 | 14.22 | [window-run-takes-a-function-that-says-go-on.kav](window-run-takes-a-function-that-says-go-on.kav) | `win.run(f)` calls `f(event)` for each event until `f` gives `false`: so `f` takes an `Event` and gives a `Bool`. | runs |
 | 14.24 | [screens-draw-or-say-why.kav](screens-draw-or-say-why.kav) | `gpu.screen(win)` draws into a window, its frames cleared and shown, or gives `GpuError.Unavailable` with no GPU or screen; the program goes on either way. | runs |
+| 14.24.1 | [gpu-canvas-draws-and-reads-back.kav](gpu-canvas-draws-and-reads-back.kav) | A canvas is a picture off the screen: its frames are drawn and shown as a window's, and `canvas.pixels()` reads back what the last frame shown drew. | runs |
+| 14.24.1 | [gpu-canvas-samples-are-1-or-4.kav](gpu-canvas-samples-are-1-or-4.kav) | A canvas or screen draws each pixel from 1 or 4 samples; any other number is a panic. | panic |
+| 14.24.1 | [gpu-four-samples-smooth-an-edge.kav](gpu-four-samples-smooth-an-edge.kav) | With 4 samples a pixel, a pixel a triangle's edge crosses is partly covered; with 1, all in or all out. | runs |
+| 14.24.1 | [gpu-clip-keeps-draws-inside.kav](gpu-clip-keeps-draws-inside.kav) | After `frame.set_clip`, draws change only the pixels inside the rectangle; `clear_clip()` lifts it. | runs |
+| 14.24.1 | [gpu-mask-limits-draws.kav](gpu-mask-limits-draws.kav) | `Mask.Write` marks the pixels a draw covers and colours none; `Mask.Inside` and `Mask.Outside` draw only on or off them. | runs |
+| 14.24.1 | [gpu-premultiplied-blending.kav](gpu-premultiplied-blending.kav) | After `frame.set_premultiplied(true)`, a colour is taken as already multiplied by its opacity. | runs |
+| 14.24.1 | [gpu-a-canvas-cant-read-itself.kav](gpu-a-canvas-cant-read-itself.kav) | A draw into a canvas that reads the canvas's own texture is a panic. | panic |
+| 14.24.1 | [gpu-one-channel-texture-samples-as-red.kav](gpu-one-channel-texture-samples-as-red.kav) | A one-channel texture takes a byte a pixel, and `sample` gives it as red: `(value, 0, 0, 1)`. | runs |
+| 14.24.1 | [gpu-nearest-texture-takes-one-pixel.kav](gpu-nearest-texture-takes-one-pixel.kav) | A texture made with `nearest: true` is sampled to the pixel under the spot. | runs |
+| 14.24.1 | [gpu-update-changes-part-of-a-texture.kav](gpu-update-changes-part-of-a-texture.kav) | `gpu.update` changes part of a texture on the GPU and in the value, so `sample` sees it. | runs |
+| 14.24.1 | [gpu-update-past-the-edge-panics.kav](gpu-update-past-the-edge-panics.kav) | Updating a part of a texture past its edges is a panic (a contract). | panic |
 | 14.24 | [a-bad-ktx2-file-is-bad-texture.kav](a-bad-ktx2-file-is-bad-texture.kav) | Bytes that aren't a KTX2 file of compressed blocks are `BadTexture`, on any machine |
 | 14.25 | [system-says-what-machine-it-is.kav](system-says-what-machine-it-is.kav) | `system.os()`, `arch()` and `cores()` are free; `memory`, `cpu`, `gpus`, `hostname` and `uptime` need `System`; `process.cpu_ms()` is free. | runs |
 | 14.25 | [system-details-need-the-capability.kav](system-details-need-the-capability.kav) | Reading the machine's details needs `uses System`. | compile error |

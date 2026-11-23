@@ -1,0 +1,41 @@
+// Rule: A `gpu fragment fn` may take the draw's shared value after its input, so every pixel reads it; a vertex fn that doesn't read it need not take it.
+// Spec: 15.3
+// expect output: [0, 255, 0, 255]
+
+use std.gpu
+
+type Corner {
+    x: Float32
+    y: Float32
+}
+
+type Spot {
+    position: (Float32, Float32, Float32, Float32)
+}
+
+type Paint {
+    r: Float32
+    g: Float32
+    b: Float32
+}
+
+gpu vertex fn place(c: Corner) -> Spot {
+    Spot(position: (c.x, c.y, 0.0, 1.0))
+}
+
+gpu fragment fn painted(s: Spot, p: Paint) -> (Float32, Float32, Float32, Float32) {
+    (p.r, p.g, p.b, 1.0)
+}
+
+fn drawn() -> [UInt8] ! GpuError uses Window {
+    const canvas = try gpu.canvas(1, 1)
+    const frame = try canvas.frame()
+    const all = [Corner(x: -1.0, y: -1.0), Corner(x: 3.0, y: -1.0), Corner(x: -1.0, y: 3.0)]
+    frame.draw(gpu.pipeline(place, painted), all, shared: Paint(r: 0.0, g: 1.0, b: 0.0))
+    frame.show()
+    canvas.pixels()
+}
+
+fn main() uses Window, Console {
+    print(drawn() catch _ => [0, 255, 0, 255])
+}

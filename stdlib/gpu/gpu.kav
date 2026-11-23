@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
-// std.gpu (spec 14.24, decision 0106): drawing with the GPU in a window.
-// The runtime makes a surface on the window and the frames drawn into it
-// (`runtime/gpu/src/draw.rs`), by number; this file gives screens and
-// frames their methods.
+// std.gpu (spec 14.24, decision 0106): drawing with the GPU in a window,
+// or into a canvas off the screen (14.24.1). The runtime makes a surface
+// on the window, or a canvas's texture, and the frames drawn into them
+// (`runtime/gpu/src/draw.rs`), by number; this file gives screens,
+// canvases, frames and textures their methods.
 
 use std.gpu
 use std.math
@@ -33,10 +34,50 @@ pub type Screen: Drop {
     }
 }
 
+/// How a draw uses its frame's mask (spec 14.24.1): not at all; marking
+/// the pixels it covers, colouring none; or drawing only inside, or only
+/// outside, the marked pixels.
+pub type Mask = Off | Write | Inside | Outside
+
 /// A picture being drawn. One not shown before its last holder ends is
 /// thrown away.
 pub type Frame: Drop {
     id: Int
+
+    /// From now on, draws change only the pixels inside this rectangle,
+    /// in pixels from the top left (spec 14.24.1).
+    pub fn set_clip(self, x: Int, y: Int, width: Int, height: Int) uses Window
+        require x >= 0 and y >= 0 and width >= 0 and height >= 0
+    {
+        gpu.state_id(self.id, 0, [x, y, width, height])
+    }
+
+    /// From now on, draws change any pixel of the picture again.
+    pub fn clear_clip(self) uses Window {
+        gpu.state_id(self.id, 0, [])
+    }
+
+    /// From now on, draws blend their colours as premultiplied: red,
+    /// green and blue already multiplied by the opacity; or not.
+    pub fn set_premultiplied(self, on: Bool) uses Window {
+        gpu.state_id(self.id, 1, [if on { 1 } else { 0 }])
+    }
+
+    /// From now on, draws use the frame's mask as `mask` says.
+    pub fn set_mask(self, mask: Mask) uses Window {
+        const n = match mask {
+            Mask.Off => 0,
+            Mask.Write => 1,
+            Mask.Inside => 2,
+            Mask.Outside => 3,
+        }
+        gpu.state_id(self.id, 2, [n])
+    }
+
+    /// Unmarks every pixel of the mask.
+    pub fn clear_mask(self) uses Window {
+        gpu.state_id(self.id, 3, [])
+    }
 
     /// Fills the picture with one color, each part from 0 to 1.
     pub fn clear(self, r: Float32, g: Float32, b: Float32) uses Window
@@ -64,11 +105,54 @@ pub type Frame: Drop {
     }
 }
 
-/// What draws into the window `win`, using the program's GPU.
-pub fn screen(win: AppWindow) -> Screen ! GpuError uses Window {
+/// What draws into the window `win`, using the program's GPU, with
+/// `samples` samples a pixel: 1, or 4 for smooth edges.
+pub fn screen(win: AppWindow, samples: Int = 1) -> Screen ! GpuError uses Window
+    require samples == 1 or samples == 4
+{
     const n = win.number()
-    const id = try gpu.screen_id(n)
+    const id = try gpu.screen_id(n, samples)
     Screen(id: id, window: n)
+}
+
+/// A picture off the screen to draw into, and to read back or sample as
+/// a texture (spec 14.24.1).
+pub type Canvas: Drop {
+    id: Int
+    pub width: Int
+    pub height: Int
+
+    /// The next picture to draw into it. Showing it finishes the drawing.
+    pub fn frame(self) -> Frame ! GpuError uses Window {
+        const f = try gpu.frame_id(self.id, -1)
+        Frame(id: f)
+    }
+
+    /// Its pixels as its last frame shown left them: four for each pixel
+    /// (red, green, blue and opacity, in sRGB), row by row from the top.
+    pub fn pixels(self) -> [UInt8] uses Window {
+        gpu.canvas_pixels_id(self.id).to_list()
+    }
+
+    /// The canvas as a texture for fragment fns to read, which changes as
+    /// the canvas is drawn into. Only the GPU reads it.
+    pub fn texture(self, nearest: Bool = false) -> Texture uses Window {
+        const t = gpu.canvas_texture_id(self.id, nearest)
+        Texture(id: t, width: self.width, height: self.height, pixels: [], gpu_only: true, nearest: nearest)
+    }
+
+    fn drop(self) uses Window {
+        gpu.close_id(self.id)
+    }
+}
+
+/// A canvas `width` × `height` pixels, transparent black, with `samples`
+/// samples a pixel: 1, or 4 for smooth edges.
+pub fn canvas(width: Int, height: Int, samples: Int = 1) -> Canvas ! GpuError uses Window
+    require width >= 1 and width <= 8192 and height >= 1 and height <= 8192 and (samples == 1 or samples == 4)
+{
+    const id = try gpu.canvas_id([width, height, samples])
+    Canvas(id: id, width: width, height: height)
 }
 
 /// What a pipeline's vertex fn doesn't take: an instance, or a value
@@ -84,18 +168,32 @@ pub type Texture: Drop {
     pub height: Int
     pixels: [UInt8]
 
-    /// Made from a KTX2 file's compressed blocks, which only the GPU reads:
-    /// it has no pixels here.
-    compressed: Bool = false
+    /// Only the GPU reads it, as a KTX2 file's compressed blocks or a
+    /// canvas: it has no pixels here.
+    gpu_only: Bool = false
+
+    /// Bytes a pixel: 4 (a colour), or 1 (a value).
+    pub channels: Int = 4
+
+    /// Sampled to the nearest pixel, not blended.
+    pub nearest: Bool = false
 
     invariant width >= 1 and width <= 8192 and height >= 1 and height <= 8192
-    invariant compressed or pixels.len() == width * height * 4
+    invariant channels == 1 or channels == 4
+    invariant gpu_only or pixels.len() == width * height * channels
 
     /// The color at `u` (0 left, 1 right) and `v` (0 top, 1 bottom),
-    /// blended between the four nearest pixels, as the GPU blends them.
+    /// blended between the four nearest pixels, as the GPU blends them,
+    /// or the nearest pixel's. A one-channel texture gives its value as
+    /// red: `(value, 0, 0, 1)`.
     pub fn sample(self, u: Float32, v: Float32) -> (Float32, Float32, Float32, Float32)
-        require not self.compressed
+        require not self.gpu_only
     {
+        if self.nearest {
+            const i = Int(math.floor(Float(u) * Float(self.width)))
+            const j = Int(math.floor(Float(v) * Float(self.height)))
+            return (Float32(self.part(i, j, 0)), Float32(self.part(i, j, 1)), Float32(self.part(i, j, 2)), Float32(self.part(i, j, 3)))
+        }
         // Pixel centers are at (k + 0.5) / size; past an edge, the edge.
         const x = (Float(u) * Float(self.width) - 0.5).clamp(-1.0, Float(self.width))
         const y = (Float(v) * Float(self.height) - 0.5).clamp(-1.0, Float(self.height))
@@ -114,11 +212,15 @@ pub type Texture: Drop {
 
     /// Part `k` of the pixel at `x`, `y` (the nearest edge pixel when it
     /// is past one): a color made linear from sRGB, as the GPU reads it,
-    /// or the opacity.
+    /// or the opacity; or a one-channel texture's value, as red.
     fn part(self, x: Int, y: Int, k: Int) -> Float
-        require not self.compressed and k >= 0 and k <= 3
+        require not self.gpu_only and k >= 0 and k <= 3
     {
-        const at = (y.clamp(0, self.height - 1) * self.width + x.clamp(0, self.width - 1)) * 4 + k
+        const place = y.clamp(0, self.height - 1) * self.width + x.clamp(0, self.width - 1)
+        if self.channels == 1 {
+            return if k == 0 { Float(self.pixels[place]) / 255.0 } else if k == 3 { 1.0 } else { 0.0 }
+        }
+        const at = place * 4 + k
         const c = Float(self.pixels[at]) / 255.0
         if k == 3 or c <= 0.04045 {
             if k == 3 { c } else { c / 12.92 }
@@ -133,13 +235,30 @@ pub type Texture: Drop {
 }
 
 /// A picture for fragment fns to read (spec 15.3): `pixels` are four for
-/// each pixel (red, green, blue and opacity, in sRGB), row by row from
-/// the top.
-pub fn texture(width: Int, height: Int, pixels: [UInt8]) -> Texture ! GpuError uses Window
-    require width >= 1 and width <= 8192 and height >= 1 and height <= 8192 and pixels.len() == width * height * 4
+/// each pixel (red, green, blue and opacity, in sRGB), or one (a value),
+/// row by row from the top; sampled blended, or to the `nearest` pixel.
+pub fn texture(width: Int, height: Int, pixels: [UInt8], channels: Int = 4, nearest: Bool = false) -> Texture ! GpuError uses Window
+    require width >= 1 and width <= 8192 and height >= 1 and height <= 8192 and (channels == 1 or channels == 4) and pixels.len() == width * height * channels
 {
-    const id = try gpu.texture_id(width, height, pixels)
-    Texture(id: id, width: width, height: height, pixels: pixels)
+    const id = try gpu.texture_id([width, height, channels, if nearest { 1 } else { 0 }], pixels)
+    Texture(id: id, width: width, height: height, pixels: pixels, channels: channels, nearest: nearest)
+}
+
+/// Changes the part of `t` from pixel `x`, `y`, `width` × `height`
+/// pixels, to `pixels`, row by row from the top, as many to a pixel as
+/// `t` has: on the GPU, and here (spec 14.24.1).
+pub fn update(inout t: Texture, x: Int, y: Int, width: Int, height: Int, pixels: [UInt8]) uses Window
+    require not t.gpu_only and x >= 0 and y >= 0 and width >= 1 and height >= 1 and x + width <= t.width and y + height <= t.height and pixels.len() == width * height * t.channels
+{
+    gpu.update_id(t.id, [x, y, width, height], pixels)
+    const c = t.channels
+    let all = t.pixels
+    for row in 0..height {
+        for k in 0..width * c {
+            all[((y + row) * t.width + x) * c + k] = pixels[row * width * c + k]
+        }
+    }
+    t.pixels = all
 }
 
 /// A texture of the compressed blocks in a KTX2 file's bytes (BC1 to BC7
@@ -147,7 +266,7 @@ pub fn texture(width: Int, height: Int, pixels: [UInt8]) -> Texture ! GpuError u
 /// the GPU reads it: `sample` it in a `gpu fragment fn`.
 pub fn compressed_texture(file: Bytes) -> Texture ! GpuError uses Window {
     const parts = try gpu.compressed_id(file)
-    Texture(id: parts[0], width: parts[1], height: parts[2], pixels: [], compressed: true)
+    Texture(id: parts[0], width: parts[1], height: parts[2], pixels: [], gpu_only: true)
 }
 
 /// One GPU the program could use: its number from 0, as `system.gpus()`

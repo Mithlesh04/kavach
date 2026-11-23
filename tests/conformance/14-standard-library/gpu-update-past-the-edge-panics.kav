@@ -1,0 +1,16 @@
+// Rule: Updating a part of a texture past its edges is a panic (a contract).
+// Spec: 14.24.1
+// Checks: misuse
+// expect panic
+
+use std.gpu
+
+fn main() uses Window {
+    match gpu.texture(2, 2, [0, 0, 0, 0], channels: 1) {
+        ok(t) => {
+            let changed = t
+            gpu.update(changed, 1, 1, 2, 1, [255, 255])
+        }
+        err(_) => panic("no GPU: the contract is checked before the GPU is"),
+    }
+}

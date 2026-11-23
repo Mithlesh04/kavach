@@ -141,3 +141,36 @@ pub fn is_prime(n: Int) -> Bool
     }
     true
 }
+
+/// 0 at `edge0` and below, 1 at `edge1` and above, and between them a
+/// smooth step with no corners (spec 14.5): for soft edges in a `gpu
+/// fragment fn`, as WGSL's `smoothstep`.
+pub gpu fn smoothstep(edge0: Float32, edge1: Float32, x: Float32) -> Float32
+    example smoothstep(0.0, 1.0, 0.5) == 0.5
+    example smoothstep(0.0, 1.0, 2.0) == 1.0
+{
+    // Typed, so each number is a `Float32` on the GPU too.
+    const zero: Float32 = 0.0
+    const one: Float32 = 1.0
+    const two: Float32 = 2.0
+    const three: Float32 = 3.0
+    const t = ((x - edge0) / (edge1 - edge0)).max(zero).min(one)
+    t * t * (three - two * t)
+}
+
+/// The point `t` of the way from `a` to `b`: `a` at 0, `b` at 1, as
+/// WGSL's `mix` (spec 14.5).
+pub gpu fn mix(a: Float32, b: Float32, t: Float32) -> Float32
+    example mix(2.0, 4.0, 0.25) == 2.5
+{
+    a + (b - a) * t
+}
+
+/// How much `x` changes from this pixel to its neighbours, across and
+/// down, in a `gpu fragment fn` on the GPU: for edges one pixel soft at
+/// any scale. The CPU draws no neighbours, so there it is 0 (spec 15.3).
+pub gpu fn fwidth(x: Float32) -> Float32
+    example fwidth(3.0) == 0.0
+{
+    0.0
+}

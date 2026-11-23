@@ -28,7 +28,11 @@ fn four(t: &Ty) -> bool {
     vector(t) && matches!(t, Ty::Tuple(ts) if ts.len() == 4)
 }
 
-const TAKES: &str = "a `gpu vertex fn` takes the vertex, then the instance and the value shared by the draw if it has them: one to three records of 1 to 8 `Float32`, `Int32` or `UInt32` fields (spec 15.3)";
+const TAKES: &str = "a `gpu vertex fn` takes the vertex, then the instance and the value shared by the draw if it has them: one to three records of 1 to 16 `Float32`, `Int32` or `UInt32` fields (spec 15.3)";
+
+/// The most fields a vertex and an instance have between them: what a
+/// GPU reads from its buffers for each corner.
+const ATTRIBUTES: usize = 16;
 const CORNER: &str = "a record with the field `position: (Float32, Float32, Float32, Float32)` and at most 8 more fields, each a `Float32` (spec 15.3)";
 
 impl Checker<'_> {
@@ -50,7 +54,7 @@ impl Checker<'_> {
     /// A vertex, an instance or a shared value.
     fn draw_input(&self, t: &Ty) -> bool {
         self.record_fields(t)
-            .is_some_and(|fs| (1..=8).contains(&fs.len()) && fs.iter().all(|(_, t)| attribute(t)))
+            .is_some_and(|fs| (1..=16).contains(&fs.len()) && fs.iter().all(|(_, t)| attribute(t)))
     }
 
     /// What a vertex fn gives and a fragment fn takes.
@@ -80,6 +84,11 @@ impl Checker<'_> {
             if !(1..=3).contains(&params.len()) || !params.iter().all(|t| self.draw_input(t)) {
                 self.error(f.name.span, TAKES);
             }
+            let count = |t: &Ty| self.record_fields(t).map_or(0, |fs| fs.len());
+            let read: usize = params.iter().take(2).map(count).sum();
+            if read > ATTRIBUTES {
+                self.error(f.name.span, format!("a vertex and an instance have at most {ATTRIBUTES} fields between them, and `{name}` takes {read}: a GPU reads at most {ATTRIBUTES} for each corner (spec 15.3)"));
+            }
             if !self.corner(&ret) {
                 self.error(f.name.span, format!("`{name}` must give {CORNER}"));
             }
@@ -91,8 +100,16 @@ impl Checker<'_> {
                 );
             }
             let texture = self.builtin_ty("Texture");
-            if params.iter().skip(1).any(|t| *t != texture) {
-                self.error(f.name.span, "after what the vertex fn gives, a `gpu fragment fn` takes only `Texture`s (spec 15.3)");
+            // The draw's shared value may come first (spec 15.3).
+            let shared = params
+                .get(1)
+                .is_some_and(|t| *t != texture && self.draw_input(t));
+            if params
+                .iter()
+                .skip(1 + usize::from(shared))
+                .any(|t| *t != texture)
+            {
+                self.error(f.name.span, "after what the vertex fn gives, a `gpu fragment fn` takes the value shared by the draw, if it reads it, then only `Texture`s (spec 15.3)");
             }
             if !self.four_floats(&ret) {
                 self.error(f.name.span, format!("`{name}` must give the pixel's color: `(Float32, Float32, Float32, Float32)`, red, green, blue and opacity, each from 0 to 1 (spec 15.3)"));
@@ -154,8 +171,25 @@ impl Checker<'_> {
                     .map_or(nothing.clone(), |p| self.inf.resolve(&p.ty))
             })
             .collect();
-        inputs.push(match fs.params.len() > 1 {
-            true => self.builtin_ty("Texture"),
+        // The value shared by the draw, which the fragment fn may read
+        // too, or alone (spec 15.3).
+        let texture = self.builtin_ty("Texture");
+        let after: Vec<Ty> = fs
+            .params
+            .iter()
+            .skip(1)
+            .map(|p| self.inf.resolve(&p.ty))
+            .collect();
+        if let Some(shared) = after.first().filter(|t| **t != texture) {
+            if inputs[2] == nothing {
+                inputs[2] = shared.clone();
+            } else if inputs[2] != *shared {
+                let (v, s) = (self.show(&inputs[2]), self.show(shared));
+                self.error(args[1].value.span, format!("the vertex fn takes a shared `{v}` and the fragment fn a `{s}`: a draw has one value shared by both (spec 15.3)"));
+            }
+        }
+        inputs.push(match after.contains(&texture) {
+            true => texture,
             false => nothing,
         });
         Ty::Builtin("Pipeline", inputs)
