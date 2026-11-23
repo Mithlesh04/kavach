@@ -141,6 +141,18 @@ impl<'a> Lowerer<'a> {
                 };
                 K::Int(-(n as i128))
             }
+            // The same in a type wider than 64 bits, held as a `BigInt`.
+            ExprKind::Unary(UnaryOp::Neg, x)
+                if is_decimal
+                    && self.whole_of(e).is_some()
+                    && matches!(x.kind, ExprKind::Int(_) | ExprKind::BigInt(_)) =>
+            {
+                match &x.kind {
+                    ExprKind::Int(n) => K::Decimal(format!("-{n}")),
+                    ExprKind::BigInt(digits) => K::Decimal(format!("-{digits}")),
+                    _ => unreachable!("matched above"),
+                }
+            }
             // `-x` and `~x` of an `Int<bits: n>` or a range (spec 2.1).
             ExprKind::Unary(op @ (UnaryOp::Neg | UnaryOp::BitNot), x)
                 if self.whole_of(e).is_some() =>

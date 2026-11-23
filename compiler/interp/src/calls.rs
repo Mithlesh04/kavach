@@ -410,6 +410,7 @@ impl<'a> Interp<'a> {
                 kavach_runtime_core::AnyDecimal::parse(s).map(crate::bigint::decimal_value)
             }
             Prim::BigInt => s.parse().ok().map(|n| Value::BigInt(std::rc::Rc::new(n))),
+            p if p.is_wide() => crate::wide::from_text(s, p),
             Prim::Bool => match s {
                 "true" => Some(Value::Bool(true)),
                 "false" => Some(Value::Bool(false)),

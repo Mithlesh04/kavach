@@ -51,7 +51,7 @@ After lowering, `lower_tasks.rs` wraps each function that spawns tasks so that i
 | `src/lower_lambda/scan.rs` | What a lambda's body reads and changes, so a lambda changes only copies |
 | `src/lower_lambda/called.rs` | Lambdas and functions called, not inlined: a named function, and a lambda with a `return` of its own (spec 3.3) |
 | `src/lower_generic.rs` | Generic functions: type arguments and instances |
-| `src/lower_whole.rs` | Whole numbers with their own limits (`Int<bits: 24>`, `Int<range: 1..=65535>`, spec 2.1): operators, conversions and methods that check the limits |
+| `src/lower_whole.rs` | Whole numbers with their own limits (`Int<bits: 24>`, `Int<range: 1..=65535>`, spec 2.1): operators, conversions and methods that check the limits; a type wider than 64 bits as `BigInt`s the runtime works on |
 | `src/lower_whole_generic.rs` | A generic function given such a number: a copy of its own, whose operators on `T` check `T`'s limits |
 | `src/lower_sizes.rs` | Numbers in types (spec 2.9): limits from a type, `try List<Int, max: 2>(xs)`, `Ring<T, max: n>(…)`, number parameters |
 | `src/lower_numbers.rs` | Methods of numbers: `abs`, `min`, `max`, `clamp`, `div_floor`, `mod` (spec 14.2) |

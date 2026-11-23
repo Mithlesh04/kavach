@@ -82,6 +82,17 @@ fn read(r: &mut Pull<'_>, ty: Type, templates: i64, node: usize) -> Read {
             let s = r.text().map_err(|_| Wrong)?;
             Ok(new_text(&s, ty) as u64)
         }
+        // A `bits` type wider than 64: a `BigInt` within its width.
+        Shape::BigInt if crate::rt_json_wholes::wide(node).is_some() => {
+            let w = crate::rt_json_wholes::wide(node).ok_or(Wrong)?;
+            match number(r)? {
+                (text, true) => match text.parse::<kavach_runtime_core::BigInt>() {
+                    Ok(n) if w.fits(&n) => Ok(crate::rt_bigint::new_big(n, type_code(ty)) as u64),
+                    _ => Err(Wrong),
+                },
+                _ => Err(Wrong),
+            }
+        }
         // Written as text, as `big_as_text` writes it (decision 0132).
         Shape::Decimal | Shape::BigInt if r.peek() == Some(b'"') => {
             let text = r.text().map_err(|_| Wrong)?;

@@ -28,7 +28,7 @@ impl<'a> Lowerer<'a> {
 
     /// The KIR type of a written `Int<bits: n>`, `UInt<bits: n>` or
     /// `Int<range: …>`: `Int8` … `UInt64` for their widths, else `Int`.
-    pub(crate) fn written_int(&self, name: &str, args: &[ast::TypeExpr]) -> Type {
+    pub(crate) fn written_int(&mut self, name: &str, args: &[ast::TypeExpr]) -> Type {
         let bits = args.iter().find_map(|a| match &a.kind {
             ast::TypeKind::Num {
                 name: Some(n),
@@ -42,6 +42,7 @@ impl<'a> Lowerer<'a> {
             _ => None,
         });
         match bits.and_then(|b| u16::try_from(b).ok()) {
+            Some(b) if b > 64 => self.shapes.intern(Shape::BigInt),
             Some(b) => crate::types::prim_type(kavach_checker::bits_type(b, name == "Int"))
                 .unwrap_or(Type::I64),
             None => Type::I64,
@@ -64,6 +65,12 @@ impl<'a> Lowerer<'a> {
     /// The type whose code `whole_code` gives.
     pub(crate) fn whole_type(&mut self, p: Prim) -> Type {
         match p {
+            // Wider than 64 bits: `lo` gives only the sign (`rt_wide.rs`).
+            Prim::Bits(n, signed) if p.is_wide() => self.shapes.intern(Shape::Whole {
+                lo: -i64::from(signed),
+                hi: 0,
+                bits: n,
+            }),
             Prim::Bits(n, _) => {
                 let (lo, hi) = p.int_range().unwrap_or((0, 0));
                 self.shapes.intern(Shape::Whole {
@@ -104,6 +111,11 @@ impl<'a> Lowerer<'a> {
     ) -> ir::Expr {
         use ast::BinaryOp as B;
         let symbol = op.as_str();
+        // Wider than 64 bits: `BigInt`s, worked out by the runtime.
+        if p.is_wide() {
+            let big = self.shapes.intern(Shape::BigInt);
+            return self.whole_call(symbol, l, r, p, big, line);
+        }
         let (lo, hi) = p.int_range().unwrap_or((0, 0));
         // `&`, `|` and `^` of two numbers of `n` bits have `n` bits.
         if matches!(p, Prim::Bits(..)) && matches!(op, B::BitAnd | B::BitOr | B::BitXor) {
@@ -169,7 +181,16 @@ impl<'a> Lowerer<'a> {
     /// `-x` and `~x` of type `p`.
     pub(crate) fn whole_unary(&mut self, op: &str, x: ir::Expr, p: Prim, line: u32) -> ir::Expr {
         let zero = self.at(K::Int(0), Type::I64, line);
-        self.whole_call(op, x, zero, p, Type::I64, line)
+        let ty = match p.is_wide() {
+            true => self.shapes.intern(Shape::BigInt),
+            false => Type::I64,
+        };
+        // A literal the checker gave no wide type of its own (`~5`).
+        let x = match x.ty.is_int() && ty.is_ref() {
+            true => self.at(K::Convert(Box::new(x), true), ty, line),
+            false => x,
+        };
+        self.whole_call(op, x, zero, p, ty, line)
     }
 
     /// `x.wrapping_add(y)`, `x.checked_add(y)` and the others on a number
@@ -278,6 +299,8 @@ impl<'a> Lowerer<'a> {
         let result = if checked {
             let zero = match ty {
                 Type::F64 | Type::F32 => K::Float(0.0),
+                // A `BigInt`, for a type wider than 64 bits.
+                t if t.is_ref() => K::Decimal("0".into()),
                 _ => K::Int(0),
             };
             self.at(

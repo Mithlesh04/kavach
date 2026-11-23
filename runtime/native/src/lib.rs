@@ -102,6 +102,7 @@ mod rt_under_way;
 mod rt_waits;
 mod rt_watch;
 mod rt_whole;
+mod rt_wide;
 mod rt_window;
 mod rt_workers;
 mod rt_writers;

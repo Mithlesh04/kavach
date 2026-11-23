@@ -1,0 +1,51 @@
+// Rule: A `bits` type wider than 64 bits holds every value of its width, and does arithmetic, bit operators, wrapping, conversions and JSON at that width.
+// Spec: 2.1, 2.12
+// expect output: -170141183460469231731687303715884105728 170141183460469231731687303715884105727
+// expect output: 340282366920938463463374607431768211455
+// expect output: 1267650600228229401496703205376
+// expect output: 0 none
+// expect output: 340282366920938463463374607431768211454 true
+// expect output: [1, 340282366920938463463374607431768211455]
+// expect output: {"a":340282366920938463463374607431768211455}
+// expect output: [0]: a whole number that fits `UInt<bits: 128>`
+// expect output: 5 1000000000000000000000000000000
+// expect output: 1000000000000000000000000000000000000000 doesn't fit in UInt<bits: 128>
+// expect output: 0
+
+use std.json
+
+type Wide {
+    a: UInt<bits: 128>
+}
+
+fn main() {
+    const smallest: Int<bits: 128> = -170141183460469231731687303715884105728
+    const largest: Int<bits: 128> = 170141183460469231731687303715884105727
+    print(`{smallest} {largest}`)
+    const top: UInt<bits: 128> = 340282366920938463463374607431768211455
+    print(top)
+    let x: UInt<bits: 128> = 1
+    x = x << 100
+    print(x)
+    print(`{top.wrapping_add(1)} {top.checked_add(1)}`)
+    print(`{top ^ 1} {top > x}`)
+    print(json.decode<[UInt<bits: 128>]>("[1, 340282366920938463463374607431768211455]") catch _ => [])
+    print(json.stringify(Wide(a: top)))
+    match json.decode<[UInt<bits: 128>]>("[340282366920938463463374607431768211456]") {
+        ok(_) => print("ok"),
+        err(JsonError.Invalid(problems)) => {
+            for p in problems {
+                print(`{p.path}: {p.expected}`)
+            }
+        }
+        err(e) => print(e),
+    }
+    const d: Decimal = 1000000000000000000000000000000.75
+    print(`{Int(UInt<bits: 128>(5))} {UInt<bits: 128>(d)}`)
+    const huge = BigInt(10) ** 39
+    const no = UInt<bits: 128>(huge) catch e => {
+        print(e)
+        0
+    }
+    print(no)
+}

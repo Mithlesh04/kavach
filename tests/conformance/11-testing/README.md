@@ -30,3 +30,4 @@ Conformance tests for spec chapter [11. Testing](../../../docs/spec/11-testing.m
 | 11.8, 9.2 | [a-test-cancels-the-tasks-it-leaves.kav](a-test-cancels-the-tasks-it-leaves.kav) | A `test` block cancels the tasks it spawned and left running when it ends. | tests pass |
 | 11.3, 2.1 | [generated-bits-numbers-reach-their-largest.kav](generated-bits-numbers-reach-their-largest.kav) | A `bits` number's generated values include its largest, so a sum that doesn't fit is found. | tests fail |
 | 11.3, 2.1 | [generated-range-numbers-stay-in-their-range.kav](generated-range-numbers-stay-in-their-range.kav) | A range number's generated values are always in its range. | tests pass |
+| 11.3, 2.1 | [generated-wide-numbers-reach-their-largest.kav](generated-wide-numbers-reach-their-largest.kav) | A `bits` type wider than 64 bits gets generated values too, its largest among them. | tests fail |

@@ -1,0 +1,14 @@
+// Rule: A result that doesn't fit a `bits` type wider than 64 bits panics, as overflow does.
+// Spec: 2.1, 5.6
+// expect output: 340282366920938463463374607431768211455
+// expect panic: integer overflow: 340282366920938463463374607431768211455 + 1 doesn't fit in UInt<bits: 128>
+
+fn next(n: UInt<bits: 128>) -> UInt<bits: 128> {
+    n + 1
+}
+
+fn main() {
+    const top: UInt<bits: 128> = 340282366920938463463374607431768211454
+    print(next(top))
+    print(next(next(top)))
+}

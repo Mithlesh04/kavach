@@ -55,7 +55,8 @@ impl<'a> Interp<'a> {
                 crate::bigint::any_decimal(&v).and_then(|d| crate::bigint::from_big(&d.trunc(), p))
             }
             (Prim::BigInt, v) => crate::bigint::to_big(v).map(|n| Value::BigInt(Rc::new(n))),
-            (p, Value::BigInt(n)) => crate::bigint::from_big(n, p),
+            (p, v) if p.is_wide() => crate::wide::convert(v, p),
+            (p, Value::BigInt(n) | Value::Wide(n, _)) => crate::bigint::from_big(n, p),
             (p, Value::Int(n, _)) => fits(*n, p).map(|n| Value::Int(n, p)),
             (p, Value::Float(f)) if f.is_finite() => {
                 fits(f.trunc() as i128, p).map(|n| Value::Int(n, p))

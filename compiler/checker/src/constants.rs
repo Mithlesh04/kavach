@@ -47,15 +47,27 @@ pub(crate) fn const_int(e: &Expr) -> Option<BigInt> {
     }
 }
 
-/// The smallest and largest value of whole-number type `p`.
-fn range(p: Prim) -> (i128, i128) {
-    p.int_range().unwrap_or((i64::MIN.into(), i64::MAX.into()))
+/// The smallest and largest value of whole-number type `p`; a `bits`
+/// type wider than 64 has limits past `i128` (spec 2.1).
+fn range(p: Prim) -> (BigInt, BigInt) {
+    if let Prim::Bits(n, signed) = p
+        && p.is_wide()
+    {
+        let n = usize::from(n);
+        let one = BigInt::from(1);
+        return match signed {
+            true => (-(&one << (n - 1)), (&one << (n - 1)) - 1),
+            false => (BigInt::from(0), (one << n) - 1),
+        };
+    }
+    let (lo, hi) = p.int_range().unwrap_or((i64::MIN.into(), i64::MAX.into()));
+    (lo.into(), hi.into())
 }
 
 /// Whether `v` fits whole-number type `p`.
 pub(crate) fn fits(v: &BigInt, p: Prim) -> bool {
     let (lo, hi) = range(p);
-    *v >= BigInt::from(lo) && *v <= BigInt::from(hi)
+    *v >= lo && *v <= hi
 }
 
 /// What to write instead when `v` doesn't fit `p`: the smallest bigger
@@ -84,6 +96,12 @@ impl Checker<'_> {
         let ExprKind::Unary(UnaryOp::Neg, inner) = &e.kind else {
             return None;
         };
+        // The smallest `Int<bits: 128>`: digits too long for any literal
+        // but a long one (spec 2.1).
+        if matches!(inner.kind, ExprKind::BigInt(_)) && p.is_wide() {
+            self.literals.push((inner.span.start, Ty::Prim(p)));
+            return Some(Ty::Prim(p));
+        }
         let ExprKind::Int(n) = inner.kind else {
             return None;
         };
@@ -118,6 +136,11 @@ impl Checker<'_> {
             Some(Ty::Prim(Prim::BigInt)) => {}
             Some(Ty::Prim(p)) if p.is_int() => {
                 if fits(&v, p) || (self.range_operand && fits(&v, Prim::Int)) {
+                    // A long literal in a type wider than 64 bits is one.
+                    if p.is_wide() && matches!(e.kind, ExprKind::BigInt(_)) {
+                        self.literals.push((e.span.start, Ty::Prim(p)));
+                        return Some(Ty::Prim(p));
+                    }
                     return self.negative_literal(e, p);
                 }
                 let (name, (lo, hi)) = (p.name(), range(p));

@@ -1,0 +1,9 @@
+// Rule: A literal that doesn't fit a `bits` type wider than 64 bits is a compile error.
+// Spec: 2.1
+// expect compile error
+
+const n: UInt<bits: 128> = 340282366920938463463374607431768211456     // error: doesn't fit in 128 bits
+
+fn main() {
+    print(n)
+}

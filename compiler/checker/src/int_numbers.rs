@@ -13,10 +13,6 @@ use kavach_ast::*;
 use std::collections::HashMap;
 use std::sync::{Mutex, OnceLock};
 
-/// The widest `bits` built so far (spec 2.1): wider ones, up to 65,535,
-/// are a compile error that says so.
-pub(crate) const BUILT_BITS: i64 = 64;
-
 /// The names made so far, by width or range ends and sign.
 type Names = Mutex<HashMap<(i64, i64, bool), &'static str>>;
 
@@ -102,11 +98,11 @@ impl Checker<'_> {
             );
             return fallback;
         }
-        let Some((name, value, at)) = named.first().copied() else {
+        let Some((name, value, _)) = named.first().copied() else {
             return fallback;
         };
         let made = match (name.name.as_str(), what) {
-            ("bits", _) => self.bits_of(what, value, at),
+            ("bits", _) => self.bits_of(what, value),
             ("range", "Int") => self.range_of(value),
             ("range", _) => {
                 self.error(
@@ -137,7 +133,7 @@ impl Checker<'_> {
     }
 
     /// `bits: n`: from 1 to 65,535 (spec 2.1).
-    fn bits_of(&mut self, what: &str, value: &Expr, at: Span) -> Option<Prim> {
+    fn bits_of(&mut self, what: &str, value: &Expr) -> Option<Prim> {
         let Some(n) = self.const_num(value) else {
             self.error(
                 value.span,
@@ -149,13 +145,6 @@ impl Checker<'_> {
             self.error(
                 value.span,
                 format!("a width is from 1 to 65,535 bits, not {n} (spec 2.1)"),
-            );
-            return None;
-        }
-        if n > BUILT_BITS {
-            self.error(
-                at,
-                format!("`{what}<bits: {n}>`: widths over 64 bits are not built yet; `BigInt` holds a whole number of any size (spec 2.1)"),
             );
             return None;
         }

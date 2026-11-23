@@ -226,6 +226,18 @@ pub(crate) fn decode_at(
         (Type::Unit, _) => return Ok(0),
         _ => {}
     }
+    // A `bits` type wider than 64: a `BigInt` within its width.
+    if let Some(w) = crate::rt_json_wholes::wide(node) {
+        let n: Option<kavach_runtime_core::BigInt> = match t {
+            Tree::Int(n) => Some((*n).into()),
+            Tree::Number(text) => text.parse().ok(),
+            _ => None,
+        };
+        return match n.filter(|n| w.fits(n)) {
+            Some(n) => Ok(crate::rt_bigint::new_big(n, type_code(ty)) as u64),
+            None => wrong(&expected::integer(&w.name())),
+        };
+    }
     match (shape(ty), t) {
         (Shape::Str, Tree::Text(s)) => Ok(new_text(s, ty) as u64),
         (Shape::Str, _) => wrong(expected::TEXT),

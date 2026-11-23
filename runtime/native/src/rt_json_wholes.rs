@@ -134,6 +134,19 @@ pub(crate) fn fields(n: usize, count: usize) -> Vec<usize> {
     (0..count).map(|i| part(n, i)).collect()
 }
 
+/// The width and sign of node `n`'s whole number when it is a `bits`
+/// type wider than 64, held as a `BigInt` (`rt_wide.rs`).
+pub(crate) fn wide(n: usize) -> Option<kavach_runtime_core::wide::Wide> {
+    with_node(n, |node| match *node {
+        Node::Whole { bits, signed, .. } if bits > 64 => Some(kavach_runtime_core::wide::Wide {
+            bits: u16::try_from(bits).unwrap_or(u16::MAX),
+            signed,
+        }),
+        _ => None,
+    })
+    .flatten()
+}
+
 /// The name of node `n`'s whole number when it is one with its own
 /// limits, and whether `value` is within them.
 pub(crate) fn whole(n: usize, value: i64) -> Option<(String, bool)> {

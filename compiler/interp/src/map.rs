@@ -110,7 +110,7 @@ fn hash_into(v: &Value<'_>, h: &mut DefaultHasher) {
         Value::Float32(f) => float_bits(f64::from(*f)).hash(h),
         // Equal decimals (1.10 and 1.1) have the same value as a float.
         Value::Decimal(d) => d.to_f64().to_bits().hash(h),
-        Value::BigInt(n) => n.hash(h),
+        Value::BigInt(n) | Value::Wide(n, _) => n.hash(h),
         Value::BigDecimal(_) => crate::bigint::any_decimal(v)
             .map(|d| d.to_f64().to_bits())
             .hash(h),

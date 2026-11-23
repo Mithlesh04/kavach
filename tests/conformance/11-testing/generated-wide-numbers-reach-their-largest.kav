@@ -1,0 +1,7 @@
+// Rule: A `bits` type wider than 64 bits gets generated values too, its largest among them.
+// Spec: 11.3, 2.1
+// expect test fail
+
+fn next(n: UInt<bits: 128>) -> UInt<bits: 128> {
+    n + 1          // panics for the largest
+}

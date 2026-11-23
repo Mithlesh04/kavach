@@ -86,6 +86,8 @@ pub(crate) fn prim_type(p: Prim) -> Option<Type> {
         Prim::Bool => Type::Bool,
         Prim::Char => Type::Char,
         // Kept in an `Int`; their own limits are checked (`lower_whole.rs`).
+        // One wider than 64 bits is a `BigInt` (`Lowerer::kir_type`).
+        Prim::Bits(n, _) if n > 64 => return None,
         Prim::Bits(..) | Prim::Ranged(..) => Type::I64,
         _ => return None,
     })
@@ -130,6 +132,8 @@ impl Lowerer<'_> {
             Ty::Prim(Prim::String) => self.str_type(),
             Ty::Prim(Prim::Decimal) => self.decimal_type(),
             Ty::Prim(Prim::BigInt) => self.shapes.intern(Shape::BigInt),
+            // A `bits` type wider than 64: a `BigInt` (`lower_whole.rs`).
+            Ty::Prim(p) if p.is_wide() => self.shapes.intern(Shape::BigInt),
             Ty::Prim(Prim::Bytes) => self.shapes.intern(Shape::Bytes),
             Ty::Builtin("Listener" | "Connection" | "UdpSocket", _) => {
                 self.shapes.intern(Shape::Socket)

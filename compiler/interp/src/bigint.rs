@@ -60,7 +60,7 @@ impl<'a> Interp<'a> {
 pub(crate) fn to_big(v: &Value<'_>) -> Option<BigInt> {
     match v {
         Value::Int(n, _) => Some(BigInt::from(*n)),
-        Value::BigInt(n) => Some((**n).clone()),
+        Value::BigInt(n) | Value::Wide(n, _) => Some((**n).clone()),
         Value::Decimal(_) | Value::BigDecimal(_) => Some(any_decimal(v)?.trunc()),
         Value::Float(f) if f.is_finite() => format!("{:.0}", f.trunc()).parse().ok(),
         _ => None,

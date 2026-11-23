@@ -51,9 +51,9 @@ fn widths_and_ranges_are_checked_where_they_are_written() {
             &["1: a width is from 1 to 65,535 bits, not 0 (spec 2.1)"],
         ),
         (
-            "fn f() -> Int<bits: 128> {\n  0\n}",
+            "fn f() -> UInt<bits: 128> {\n  -1\n}",
             &[
-                "1: `Int<bits: 128>`: widths over 64 bits are not built yet; `BigInt` holds a whole number of any size (spec 2.1)",
+                "2: `-1` doesn't fit in `UInt<bits: 128>`, which holds 0 to 340282366920938463463374607431768211455: use `Int8`",
             ],
         ),
         (

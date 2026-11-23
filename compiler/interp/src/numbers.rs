@@ -32,6 +32,7 @@ impl<'a> Interp<'a> {
                 | Value::Decimal(_)
                 | Value::BigDecimal(_)
                 | Value::BigInt(_)
+                | Value::Wide(..)
         );
         use kavach_ast::{BinaryOp, UnaryOp};
         let op = match name {
@@ -129,7 +130,8 @@ impl<'a> Interp<'a> {
                 | Value::Float(_)
                 | Value::Float32(_)
                 | Value::Decimal(_)
-                | Value::BigInt(_),
+                | Value::BigInt(_)
+                | Value::Wide(..),
                 "min" | "max" | "clamp",
             ) => {
                 // `NaN` in, `NaN` out (14.2).

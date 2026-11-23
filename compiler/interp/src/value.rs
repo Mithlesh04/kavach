@@ -31,6 +31,9 @@ pub enum Value<'a> {
     BigDecimal(Rc<kavach_runtime_core::BigDecimal>),
     /// A whole number of any size (spec 2.1).
     BigInt(Rc<kavach_runtime_core::BigInt>),
+    /// A whole number of a `bits` type wider than 64 (spec 2.1), with
+    /// its type, as `Int` has (`crate::wide`).
+    Wide(Rc<kavach_runtime_core::BigInt>, Prim),
     Bool(bool),
     Char(char),
     Str(Rc<String>),
@@ -207,7 +210,7 @@ impl PartialEq for Value<'_> {
             (Float(a), Float(b)) => same_float(*a, *b),
             (Float32(a), Float32(b)) => same_float(f64::from(*a), f64::from(*b)),
             (Decimal(a), Decimal(b)) => a == b,
-            (BigInt(a), BigInt(b)) => a == b,
+            (BigInt(a), BigInt(b)) | (Wide(a, _), Wide(b, _)) => a == b,
             // One form per value, so a big decimal never equals a small one.
             (BigDecimal(_), BigDecimal(_)) => crate::bigint::any_decimal(self)
                 .zip(crate::bigint::any_decimal(other))
@@ -363,7 +366,7 @@ impl Value<'_> {
             Value::Decimal(d) => {
                 let _ = write!(out, "{d}");
             }
-            Value::BigInt(n) => {
+            Value::BigInt(n) | Value::Wide(n, _) => {
                 let _ = write!(out, "{n}");
             }
             Value::BigDecimal(d) => {

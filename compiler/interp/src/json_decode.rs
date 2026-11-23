@@ -237,6 +237,11 @@ impl<'a> Interp<'a> {
                 Err(_) => wrong(expected::WHOLE),
             },
             (Ty::Prim(Prim::BigInt), _) => wrong(expected::WHOLE),
+            // Wider than 64 bits (spec 2.1).
+            (Ty::Prim(p), _) if p.is_wide() => match crate::wide::from_tree(t, *p) {
+                Some(v) => Ok(v),
+                None => wrong(&expected::integer(p.name())),
+            },
             (Ty::Prim(p), Tree::Int(n)) if p.is_int() => match crate::ops::fits(*n as i128, *p) {
                 Some(n) => Ok(Value::Int(n, *p)),
                 None => wrong(&expected::integer(p.name())),

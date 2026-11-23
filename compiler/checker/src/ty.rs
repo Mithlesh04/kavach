@@ -79,9 +79,12 @@ impl Prim {
     }
 
     /// The smallest and largest value of a whole-number type; `None` for
-    /// the others, and for `BigInt`, which has no limits.
+    /// the others, for `BigInt`, which has no limits, and for a `bits`
+    /// type wider than 64, whose limits are `BigInt`s
+    /// (`kavach_runtime_core::wide`).
     pub fn int_range(self) -> Option<(i128, i128)> {
         Some(match self {
+            Prim::Bits(n, _) if n > 64 => return None,
             Prim::Int => (i64::MIN.into(), i64::MAX.into()),
             Prim::Int8 => (i8::MIN.into(), i8::MAX.into()),
             Prim::Int16 => (i16::MIN.into(), i16::MAX.into()),
@@ -98,9 +101,16 @@ impl Prim {
     }
 
     /// An `Int<bits: n>` or `Int<range: …>` other than `Int8` …
-    /// `UInt64`: kept in an `Int`, with its own limits checked.
+    /// `UInt64`, with its own limits checked: kept in an `Int`, or, when
+    /// wider than 64 bits, in a `BigInt` (`is_wide`).
     pub fn is_narrow(self) -> bool {
         matches!(self, Prim::Bits(..) | Prim::Ranged(..))
+    }
+
+    /// A `bits` type wider than 64 (spec 2.1): its values are `BigInt`s,
+    /// checked against its width after every operation.
+    pub fn is_wide(self) -> bool {
+        matches!(self, Prim::Bits(n, _) if n > 64)
     }
 
     pub fn is_numeric(self) -> bool {

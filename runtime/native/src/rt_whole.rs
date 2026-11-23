@@ -13,6 +13,21 @@ use crate::rt_data::optional;
 use crate::shapes::shape;
 use kavach_kir::{Shape, Type, WHOLE_OPS};
 
+/// The width and sign of the type whose code is `code`, when it is a
+/// `bits` type wider than 64 (`rt_wide.rs`).
+fn wide(code: i64) -> Option<kavach_runtime_core::wide::Wide> {
+    let t = type_of(code);
+    match shape(t) {
+        Shape::Whole { lo, bits, .. } if t.is_ref() && *bits > 64 => {
+            Some(kavach_runtime_core::wide::Wide {
+                bits: *bits,
+                signed: *lo < 0,
+            })
+        }
+        _ => None,
+    }
+}
+
 /// The limits and the name of the type whose code is `code`.
 fn limits(code: i64) -> (i128, i128, String) {
     let t = type_of(code);
@@ -67,6 +82,9 @@ crate::rt_data::entry!(kv_rt_whole, |_op, a, b, c, code, line| {
 /// and the type's code; `code` is the result's type.
 pub fn whole_op(a: i64, b: i64, c: i64, code: i64, line: i32) -> i64 {
     let op = WHOLE_OPS.get((c >> 32) as usize).copied().unwrap_or("+");
+    if let Some(w) = wide(c & 0xffff_ffff) {
+        return crate::rt_wide::wide_op(op, w, a, b, code, line);
+    }
     let (lo, hi, name) = limits(c & 0xffff_ffff);
     let fits = |n: i128| (lo..=hi).contains(&n);
     let (x, y) = (i128::from(a), i128::from(b));

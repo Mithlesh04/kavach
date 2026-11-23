@@ -64,6 +64,8 @@ impl<'a> Interp<'a> {
                 crate::bigint::decimal_value(d.neg())
             }
             (UnaryOp::Neg, Value::BigInt(n)) => Value::BigInt(std::rc::Rc::new(-&*n)),
+            (UnaryOp::Neg, Value::Wide(n, p)) => return self.wide_op("neg", &n, &n, p, span),
+            (UnaryOp::BitNot, Value::Wide(n, p)) => return self.wide_op("~", &n, &n, p, span),
             (UnaryOp::Deref, _) => {
                 return Err(self.panic(
                     "`*p` reads raw memory, which runs in native code only: run with `kavach run --native` (spec 6.4)",
@@ -256,6 +258,7 @@ impl<'a> Interp<'a> {
                 Ok(Value::Float(got))
             }
             (Value::BigInt(x), Value::BigInt(y)) => self.big_arith(op, &x, &y, span),
+            (Value::Wide(x, p), Value::Wide(y, _)) => self.wide_op(op.as_str(), &x, &y, p, span),
             (a, b) if crate::bigint::any_decimal(&a).is_some() => {
                 match (
                     crate::bigint::any_decimal(&a),
@@ -338,7 +341,9 @@ pub(crate) fn compare(a: &Value<'_>, b: &Value<'_>) -> Option<Ordering> {
         (Value::Decimal(_) | Value::BigDecimal(_), Value::Decimal(_) | Value::BigDecimal(_)) => {
             Some(crate::bigint::any_decimal(a)?.compare(&crate::bigint::any_decimal(b)?))
         }
-        (Value::BigInt(x), Value::BigInt(y)) => Some(x.cmp(y)),
+        (Value::BigInt(x), Value::BigInt(y)) | (Value::Wide(x, _), Value::Wide(y, _)) => {
+            Some(x.cmp(y))
+        }
         (Value::Str(x), Value::Str(y)) => Some(x.cmp(y)),
         (Value::Char(x), Value::Char(y)) => Some(x.cmp(y)),
         // `false` before `true`; tuples item by item (spec 1.8).

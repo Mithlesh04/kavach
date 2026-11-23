@@ -148,7 +148,7 @@ const z = zeros<n: 4>()         // [0.0, 0.0, 0.0, 0.0]
 
 | Written | Means | Spec |
 |---|---|---|
-| `Int<bits: 24>`, `UInt<bits: 12>` | A whole number of exactly 24 bits, signed; of 12 bits, not signed | [2.1](01-built-in-types.md) (up to 64 bits) |
+| `Int<bits: 24>`, `UInt<bits: 12>` | A whole number of exactly 24 bits, signed; of 12 bits, not signed | [2.1](01-built-in-types.md) |
 | `Int<range: 1..=65535>` | A whole number always from 1 to 65,535 | [2.1](01-built-in-types.md) |
 | `Decimal<digits: 10, places: 2>` | At most 10 digits, 2 of them after the point | [2.1](01-built-in-types.md) (not built yet) |
 | `[Float]<len: 3>`, `List<Float, len: 3>` | A list of exactly 3 items | [2.2](02-collections.md) |

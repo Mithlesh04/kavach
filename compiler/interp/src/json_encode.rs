@@ -71,7 +71,7 @@ pub(crate) fn encode(v: &Value<'_>, o: Encode) -> Tree {
         // With all their digits (decision 0071).
         Value::Decimal(d) => big(d.to_string()),
         Value::BigDecimal(d) => big(d.to_string()),
-        Value::BigInt(n) => big(n.to_string()),
+        Value::BigInt(n) | Value::Wide(n, _) => big(n.to_string()),
         Value::Bool(b) => Tree::Bool(*b),
         Value::Char(c) => Tree::Text(c.to_string()),
         Value::Str(s) => Tree::Text(s.to_string()),
@@ -145,6 +145,7 @@ pub(crate) fn key_text(k: &Value<'_>, o: Encode) -> String {
         | Value::Decimal(_)
         | Value::BigDecimal(_)
         | Value::BigInt(_)
+        | Value::Wide(..)
         | Value::Bool(_)
         | Value::Char(_) => k.display(),
         _ => json::write(&encode(k, o), 0),

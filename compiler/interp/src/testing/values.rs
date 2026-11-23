@@ -169,6 +169,13 @@ impl<'a> Interp<'a> {
             Pick::Random => None,
         };
         Some(match g {
+            Gen::Int(p) if p.is_wide() => {
+                let at = match pick {
+                    Pick::Edge(i) => Some(i),
+                    Pick::Random => None,
+                };
+                crate::wide::generate(*p, at, near, rng)
+            }
             Gen::Int(p) => {
                 let (lo, hi) = int_range(*p);
                 let mut edges = vec![0, 1, -1, lo, hi];

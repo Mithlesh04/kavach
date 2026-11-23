@@ -22,6 +22,8 @@ This is the only crate with `unsafe` Rust: exporting unmangled symbols, calling 
 | `src/rt.rs` | Printing, panics, integer checks, the stack limit |
 | `src/rt_data.rs` | Run-time functions for heap values: text, lists, records, optionals |
 | `src/rt_numbers.rs` | `Decimal`, `wrapping_*`/`checked_*`, `parse` |
+| `src/rt_whole.rs` | Whole numbers with their own limits (`UInt<bits: 12>`, `Int<range: 1..=65535>`, spec 2.1): each operation checked against them |
+| `src/rt_wide.rs` | `bits` types wider than 64 (`Int<bits: 128>`): `BigInt` values, each operation checked through `runtime/core`'s `wide.rs` |
 | `src/rt_par.rs` | `on cores` loops (decisions 0031, 0126): a kept pool of workers runs the chunks of one loop at a time, at most `cores(n)` of them; a loop that finds another running (tasks that each run one) runs alone on its own thread, and the workers stop helping while several run |
 | `src/rt_errors.rs` | `context` and the error of a failed `parse` |
 | `src/rt_text.rs` | More methods of text and lists: `replace`, `sort`, `join`, … (spec 14.2) |

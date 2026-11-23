@@ -89,6 +89,7 @@ mod text_methods;
 mod text_views;
 mod timeouts;
 mod value;
+mod wide;
 
 use kavach_driver::Compiled;
 pub use processes::set_restart;

@@ -253,6 +253,15 @@ impl<'a> Interp<'a> {
                 m.entries.iter().map(|(_, v)| v.clone()).collect(),
             ))),
             (Value::Str(s), _) => self.string_method(&s, name, &arg, span),
+            // `wrapping_add` and the others, at a wide type's width.
+            (Value::Wide(n, p), _)
+                if name.starts_with("wrapping_") || name.starts_with("checked_") =>
+            {
+                match arg {
+                    Value::Wide(m, _) => self.wide_op(name, &n, &m, p, span),
+                    _ => Err(self.panic("expected an integer", span)),
+                }
+            }
             (Value::Int(n, p), _) => {
                 let Value::Int(m, _) = arg else {
                     return Err(self.panic("expected an integer", span));
