@@ -23,7 +23,7 @@ use std.tensor.fft
 
 /// Numbers in `shape.len()` dimensions: `items` holds them, the last
 /// dimension's next to each other. A tensor of `Bool` is a mask.
-pub type Tensor<T>: Index<[Part], T>, Index<Tensor<Bool>, Tensor<T>>, Slice<[Part]>, IndexSet<[Part], T>, IndexSet<Tensor<Bool>, T> {
+pub type Tensor<T>: Index<[Part], T>, Index<Tensor<Bool>, Tensor<T>>, Slice<[Part]>, IndexSet<[Part], T>, IndexSet<Tensor<Bool>, T>, IndexSet<[Part], Tensor<T>>, IndexSet<Tensor<Bool>, Tensor<T>> {
     pub shape: [Int]
     pub items: [T]
 
@@ -79,14 +79,38 @@ pub type Tensor<T>: Index<[Part], T>, Index<Tensor<Bool>, Tensor<T>>, Slice<[Par
         Tensor(shape: kept, items: places.map(p => self.items[p]))
     }
 
-    /// `t[i, j] = v`.
+    /// `t[i, j] = v`, and `t[0:2, :] = v`: each number the key picks
+    /// becomes `v`.
     pub fn index_set(self, key: [Part], value: T) -> Tensor<T> {
-        if key.len() != self.shape.len() {
-            panic(`\`t[…] = v\` needs one index for each of the {self.shape.len()} dimensions of {self.shape}, and has {key.len()}`)
-        }
         let out = self
-        out.items[self.picked(key).0[0]] = value
+        for p in self.places_set(key).0 {
+            out.items[p] = value
+        }
         out
+    }
+
+    /// `t[0:2, :] = u`: the numbers the key picks become `u`'s, broadcast
+    /// to the slice's shape.
+    pub fn index_set(self, key: [Part], value: Tensor<T>) -> Tensor<T> {
+        const (places, shape) = self.places_set(key)
+        if shapes.broadcast(value.shape, shape) != shape {
+            panic(`can't set a slice of shape {shape} from {value.shape}`)
+        }
+        const xs = shapes.spread(value.shape, value.items, shape)
+        let out = self
+        for (i, p) in places.enumerate() {
+            out.items[p] = xs[i]
+        }
+        out
+    }
+
+    /// The places `t[…] = v` sets, and the slice's shape. A key of
+    /// numbers only needs one for each dimension.
+    fn places_set(self, key: [Part]) -> ([Int], [Int]) {
+        if key.all(p => p.single) and key.len() != self.shape.len() {
+            panic(`\`t[…] = v\` needs one index for each of the {self.shape.len()} dimensions of {self.shape}, and has {key.len()}: a slice, as \`t[i, :] = v\`, sets the rest`)
+        }
+        self.picked(key)
     }
 
     /// `t[mask] = v`: every number where `mask` is `true` becomes `v`.
@@ -96,6 +120,26 @@ pub type Tensor<T>: Index<[Part], T>, Index<Tensor<Bool>, Tensor<T>>, Slice<[Par
         for (i, keep) in key.items.enumerate() {
             if keep {
                 out.items[i] = value
+            }
+        }
+        out
+    }
+
+    /// `t[mask] = u`: the numbers where `mask` is `true` become `u`'s, in
+    /// order, `u` broadcast to as many as there are.
+    pub fn index_set(self, key: Tensor<Bool>, value: Tensor<T>) -> Tensor<T> {
+        self.check_mask(key)
+        const n = key.items.count(keep => keep)
+        if shapes.broadcast(value.shape, [n]) != [n] {
+            panic(`can't set the {n} numbers a mask picks from {value.shape}`)
+        }
+        const xs = shapes.spread(value.shape, value.items, [n])
+        let out = self
+        let at = 0
+        for (i, keep) in key.items.enumerate() {
+            if keep {
+                out.items[i] = xs[at]
+                at += 1
             }
         }
         out

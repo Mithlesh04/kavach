@@ -65,7 +65,7 @@ random.seeded(7) {
 | `t[i, j, …] -> T` | The number at one index per dimension, each counted from 0; `#k` counts from the end (2.19). An index out of range is a panic naming it and the shape. It needs one number for each dimension: `t[1]` of a matrix is a panic that says to write `t[1, :]` |
 | `t[0:2, :, #1]` | A slice, as a new tensor: a slice keeps its dimension, a number drops it, as in NumPy. Fewer parts than dimensions take the rest whole; more is a panic naming both |
 | `t[i, j] = v` | Changes that number; `t` must be a `let` (2.19) |
-| `t[0:2, :] = u` | Changes those numbers; `u` is broadcast to the slice's shape (below) (not built yet) |
+| `t[0:2, :] = u` | Changes the numbers of the slice to `u`'s, broadcast to the slice's shape (below); a number `x` for `u` sets each of them to `x` |
 | `t.get(at: [Int]) -> T?` | The number at `at`, or `none` when an index is out of range, as a list's `get` |
 | `t.reshape(shape: [Int]) -> Tensor<T>` | The same numbers in another shape with as many; another count is a panic naming both shapes |
 | `t.transpose() -> Tensor<T>` | The last two dimensions swapped; for a tensor of fewer than two, a compile error when its dimensions are known (below) and a panic otherwise |
@@ -79,9 +79,15 @@ print(t[1, #1])               // 5
 print(t[:, #1].items)         // [2, 5]: the last column
 print(t[0:1, ::2].shape)      // [1, 2]
 print(t.transpose().shape)    // [3, 2]
+
+let m = tensor.zeros<Int>([2, 3])
+m[0, :] = tensor.of([1, 2, 3])   // one row
+m[:, #1] = 9                     // the last column
+print(m.to_rows())               // [[1, 2, 9], [0, 0, 9]]
 ```
 
 - A tensor is indexed with a key of any length, a list of `Part`s (2.16): each place between the commas is a number, `#k` or a slice, and `#k` counts from the end of its own dimension.
+- **Setting a slice.** `t[0:2, :] = u` sets the numbers the slice `t[0:2, :]` would give, in its order. `u` is broadcast to the slice's shape (below); a shape that doesn't broadcast to it is a panic naming both: `` can't set a slice of shape [2, 3] from [2] ``. The slice is clamped first, as any slice is (2.19). `u` is read whole before any number changes, so `t[1:, :] = t[:#1, :]` works as NumPy's does.
 - A number given as an argument where a `Tensor<T>` is asked for is a tensor of shape `[]` holding it, as NumPy takes a number for an array: `tensor.where(t < 0.0, 0.0, t)`, `t.eq(4.0)`.
 
 ## The number of dimensions in the type
@@ -166,6 +172,7 @@ A comparison item by item gives a mask, a `Tensor<Bool>` of the broadcast shape.
 | `m & n`, `m \| n`, `~m` | Masks combined item by item, after broadcasting: both, either, not. Through `BitAnd`, `BitOr` and `BitNot` (2.16); on whole-number tensors they work on the bits, as on numbers (1.8) |
 | `t[mask] -> Tensor<T, dims: 1>` | The numbers where `mask` is `true`, in order; `mask` has `t`'s shape |
 | `t[mask] = x` | Sets those numbers to `x`; `t` must be a `let` |
+| `t[mask] = u` | Sets those numbers to `u`'s, in order; `u` is broadcast to one dimension of as many numbers as `mask` has `true`s |
 | `tensor.where(mask, a, b) -> Tensor<T>` | `a`'s number where `mask` is `true`, else `b`'s; all three broadcast to one shape; `a` and `b` are tensors or numbers |
 | `t.any(test)`, `t.all(test)`, `t.count(test)` | As for a list (14.2): whether any or every number passes `test`, or how many do |
 
@@ -379,7 +386,6 @@ fn embed<b: Int>(x: Tensor<Float32, shape: [b, 768]>) -> Tensor<Float32, shape: 
 - **Exact routines on every GPU.** Some GPUs fuse a multiply with an add (15.2). Whether every vendor can be made not to, or such GPUs fall back to the CPU for floats, needs testing on real hardware.
 - **Random tensors on the GPU.** Making them there with the CPU's numbers needs a generator that can jump ahead (a counter-based one, such as Philox). `random.seeded`'s generator (14.15) doesn't say which it is.
 - **Choices made for linear algebra and the FFT, closest to NumPy, for review:** `Singular` is a record holding the matrix's shape; `solve`'s `x` has `b`'s shape; `det` of a `[0, 0]` matrix is 1.0 and its `inv` is `[0, 0]`, as NumPy's; the pivot of each column is the first number of largest size; a vector's sign is set by its number of largest size, and for `svd` by `u`'s column, `vt`'s row turned with it; `svd` fills a column of `u` for a singular value of 0 with the first unit vector not in the others' span, made orthogonal to them, so `u` stays orthonormal; `eig` and `svd` stop after 100 sweeps if they have not settled; `fft`'s `axis` is `Int? = none`, `none` meaning the last, as `cumsum`'s; the products and sums inside `solve`, `eig`, `svd` and the FFT go in order, not exactly as `sum` does, while `norm` sums its squares exactly; `@` of a tensor of shape `[]` is a panic naming both shapes.
-- **`t[0:2, :] = u`** needs a way to assign to a slice of a program's own type (2.16), which the language doesn't have yet.
 - **`cumsum` without an axis.** NumPy's flattens the tensor first; here it runs along the last axis, as `sort` does.
 - **More of NumPy:** several axes at once (`axis: [0, 1]`), keeping the reduced dimension (`keepdims`), `cumprod`, other norms (`ord`), `eig` of matrices that aren't symmetric (complex results), `svd`'s full form, linear algebra on batches of matrices, and `unique`'s counts.
 - **A `Complex` number type**, which would make `Spectrum<T>` a `Tensor<Complex<T>>`.

@@ -190,6 +190,9 @@ Conformance tests for std.clipboard (14.17), std.devices (14.18), std.window (14
 | 14.33, 2.16 | [tensor-bit-operators-need-bools-or-whole-numbers.kav](tensor-bit-operators-need-bools-or-whole-numbers.kav) | `&` on a tensor of floats is a compile error naming the bound. | compile error |
 | 14.33 | [tensor-eq-compares-item-by-item.kav](tensor-eq-compares-item-by-item.kav) | `t.eq(u)` and `t.ne(u)` compare item by item, giving a mask; a `NaN` equals nothing. | runs |
 | 14.33 | [tensor-mask-picks-numbers.kav](tensor-mask-picks-numbers.kav) | `t[mask]` gives the numbers where the mask is `true`, in order, and `t[mask] = x` sets them. | runs |
+| 14.33 | [tensor-mask-set-from-a-tensor.kav](tensor-mask-set-from-a-tensor.kav) | `t[mask] = u` sets the numbers where the mask is `true` to `u`'s, in order. | runs |
+| 14.33, 2.19 | [tensor-setting-a-slice-broadcasts.kav](tensor-setting-a-slice-broadcasts.kav) | `t[0:2, :] = u` sets the slice to `u` broadcast to its shape, or to a number; `u` is read whole first. | runs |
+| 14.33 | [tensor-setting-a-slice-of-another-shape-panics.kav](tensor-setting-a-slice-of-another-shape-panics.kav) | Setting a slice from a shape that doesn't broadcast to it panics naming both. | panic |
 | 14.33 | [tensor-mask-of-another-shape-panics.kav](tensor-mask-of-another-shape-panics.kav) | A mask has the shape of the tensor it picks from; another shape is a panic naming both. | panic |
 | 14.33 | [tensor-where-chooses-item-by-item.kav](tensor-where-chooses-item-by-item.kav) | `tensor.where(mask, a, b)` takes `a`'s number where the mask is `true`, else `b`'s, all broadcast to one shape; a number counts as a tensor of shape `[]`. | runs |
 | 14.33 | [tensor-any-all-and-count.kav](tensor-any-all-and-count.kav) | `t.any(test)`, `t.all(test)` and `t.count(test)` work on the numbers as a list's do. | runs |

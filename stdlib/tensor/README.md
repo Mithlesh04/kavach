@@ -4,7 +4,7 @@
 
 | File | Contents |
 |---|---|
-| `tensor.kav` | `std.tensor`: `Tensor<T>`, its shape, items, indexing, slicing and masks; `of`, `of_rows`, `full`, `zeros`, `ones`, `eye`, `arange`, `linspace`, `random`, `normal`, `random_int`, `where`, `concatenate`, `stack`; the records `Singular`, `Eig`, `Svd` and `Spectrum` |
+| `tensor.kav` | `std.tensor`: `Tensor<T>`, its shape, items, indexing, slicing, masks, and setting numbers, slices and masks; `of`, `of_rows`, `full`, `zeros`, `ones`, `eye`, `arange`, `linspace`, `random`, `normal`, `random_int`, `where`, `concatenate`, `stack`; the records `Singular`, `Eig`, `Svd` and `Spectrum` |
 | `ops.kav` | `std.tensor.ops`: the operators item by item, with broadcasting, each for a tensor or a number on the right; comparisons giving masks, and `&`, `\|`, `~` combining them; `eq`, `ne`, `clamp`; `@` and `matmul(b, fast:)`, with 1-D operands and broadcast batches, through `std.matrix` |
 | `reduce.kav` | `std.tensor.reduce`: `sum`, `prod`, `min`, `max`, `argmin`, `argmax`, `mean`, `var`, `std`, `norm`, each of every number or along an axis; `cumsum` |
 | `order.kav` | `std.tensor.order`: `sort`, `argsort`, `unique`, `percentile`, `split`, `split_at`, and the work of `concatenate` and `stack` |

@@ -1,0 +1,24 @@
+// Rule: `t[0:2, :] = u` sets the numbers of the slice to `u`'s, broadcast to the slice's shape; a number sets each of them; `u` is read whole first.
+// Spec: 14.33, 2.19
+// expect output: [[1, 2, 3], [0, 0, 0]]
+// expect output: [[1, 2, 9], [0, 0, 9]]
+// expect output: [[5, 6, 9], [0, 0, 9]]
+// expect output: [[5, 6, 9], [5, 6, 9]]
+// expect output: [1, 1, 2]
+
+use std.tensor
+
+fn main() {
+    let m = tensor.zeros<Int>([2, 3])
+    m[0, :] = tensor.of([1, 2, 3])
+    print(m.to_rows())
+    m[:, #1] = 9
+    print(m.to_rows())
+    m[0:1, 0:2] = tensor.of([5, 6])
+    print(m.to_rows())
+    m[1:, :] = m[:#1, :]
+    print(m.to_rows())
+    let v = tensor.of([1, 2, 3])
+    v[1:] = v[:#1]
+    print(v.items)
+}

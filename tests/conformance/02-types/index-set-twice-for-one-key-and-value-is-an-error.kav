@@ -1,0 +1,16 @@
+// Rule: Two implementations of `IndexSet` for the same key and value types are a compile error.
+// Spec: 2.16
+// expect compile error
+
+type Row: IndexSet<Int, Float>, IndexSet<Int, Float> {     // error: implements `IndexSet` twice
+    cells: [Float]
+
+    fn index_set(self, key: Int, value: Float) -> Row { self }
+    fn index_set(self, key: Int, value: Float) -> Row { self }
+}
+
+fn main() {
+    let r = Row(cells: [1.0])
+    r[0] = 2.0
+    print(r.cells)
+}

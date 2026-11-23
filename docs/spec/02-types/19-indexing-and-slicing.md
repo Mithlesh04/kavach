@@ -134,9 +134,10 @@ print(t[0:2, 1:].to_rows())     // [[2, 3], [5, 6]]
 |---|---|
 | `t[i, j, …]`, a number for every dimension | `T`: that number |
 | any part a slice | `Tensor<T>`: a new tensor, without the dimensions a number picked |
+| `t[…] = v` | sets the numbers the key picks: to `v`, or to a tensor's numbers broadcast to the slice's shape (14.33) |
 
 - Each part follows the rules above: numbers out of range panic, slices are clamped, and `#k` counts from the end of its own dimension.
-- A program's own type gets a tuple key, or a list of `Part`s for any number of dimensions (2.16).
+- A program's own type gets a tuple key, or a list of `Part`s for any number of dimensions (2.16). Setting a slice of it, `g[0:2, 1:] = v`, calls `index_set` with that key.
 - **Nested lists chain:** a list of lists is a list, one dimension at a time. `rows[1][2]` is item 2 of row 1, and `rows[1:3][0]` is row 1. `rows[1, 2]` on a list is a compile error that names `rows[1][2]`.
 
 ## On the GPU

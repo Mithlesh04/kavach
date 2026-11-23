@@ -14,9 +14,12 @@
 //! - `"index#"`: `x[#k]` is `x.index(x.len() - k)`;
 //! - `"slice"`: `x[a:b:step]` is `x.slice(Part(…))`, and with commas a
 //!   tuple of `Part`s;
-//! - `"set"`: `x[k] = v` is `x = x.index_set(k, v)`;
+//! - `"set"`: `x[k] = v` is `x = x.index_set(k, v)`, and `x[a:b] = v`
+//!   is `x = x.index_set(Part(…), v)`;
 //! - `"set?"`: a read of a type with `IndexSet` but no `Index`, an error
 //!   unless it is the target of `=`.
+//! - `"slice?"`: a slice of a type with `IndexSet` but no `Slice`, the
+//!   same; `x[a:b] = v` calls `index_set` with the slice's key.
 
 use crate::checker::Checker;
 use crate::ty::{Prim, Ty};
@@ -109,7 +112,11 @@ impl Checker<'_> {
                 .iter()
                 .find(|(_, m)| *m == method)
                 .map_or("", |(i, _)| i);
-            let name = self.variant_for(def, method, &key);
+            let name = if method == "index_set" {
+                self.set_variant_for(def, &key, &out)
+            } else {
+                self.variant_for(def, method, &key)
+            };
             let Some(sig) = self.methods.get(&def).and_then(|m| m.get(&name)).cloned() else {
                 self.error(
                     span,
@@ -142,15 +149,21 @@ impl Checker<'_> {
                 self.error(span, format!("`{ty}.{method}` gives `[…]`, so it can't use capabilities (`uses`) or fail (`!`), as an operator can't (spec 2.16)"));
             }
         }
-        // A read of a type that can only be set (`"set?"`, never a target).
-        let mut reads: Vec<(u32, u32)> = (self.user_index.iter())
-            .filter(|(_, u)| **u == "set?")
-            .map(|(k, _)| *k)
+        // A read of a type that can only be set (`"set?"` and `"slice?"`,
+        // never a target).
+        let mut reads: Vec<((u32, u32), &str)> = (self.user_index.iter())
+            .filter(|(_, u)| matches!(**u, "set?" | "slice?"))
+            .map(|(k, u)| (*k, *u))
             .collect();
         reads.sort();
-        for (start, end) in reads {
+        for ((start, end), note) in reads {
             let span = Span::new(start as usize, end as usize);
-            self.error(span, "this type has `IndexSet` but no `Index`: `x[k]` can be set but not read (spec 2.16)");
+            let message = if note == "set?" {
+                "this type has `IndexSet` but no `Index`: `x[k]` can be set but not read (spec 2.16)"
+            } else {
+                "this type has `IndexSet` but no `Slice`: `x[a:b]` can be set but not read (spec 2.16)"
+            };
+            self.error(span, message);
         }
     }
 
@@ -188,6 +201,13 @@ impl Checker<'_> {
             _ => false,
         };
         if all_slices {
+            // A type that can set a slice but not read one: an error
+            // unless this is the target of `=` (`"slice?"`).
+            if slice_of.is_none() && set_of.is_some() {
+                self.key_type(index);
+                self.user_index.insert(key, "slice?");
+                return Some(Ty::Error);
+            }
             let Some((want, me, _)) = slice_of else {
                 self.error(
                     index.span,
@@ -294,7 +314,7 @@ impl Checker<'_> {
             return false;
         };
         let subst = self.subst_of(def, &targs);
-        if self.has_many_keys(def) && matches!(note, "index" | "index[]") {
+        if self.has_many_keys(def) && matches!(note, "index" | "index[]" | "slice[]") {
             if op != AssignOp::Set {
                 self.error(target.span, "`x[k] op= v` is not for a program's own type: write `x[k] = x[k] op v` (spec 2.16)");
                 return true;
@@ -310,8 +330,42 @@ impl Checker<'_> {
             );
             return true;
         };
-        if note == "slice" || matches!(index.kind, ExprKind::FromEnd(_)) {
-            self.error(target.span, "`IndexSet` sets one key: a slice or `#k` of a program's own type can't be set (spec 2.16)");
+        if matches!(index.kind, ExprKind::FromEnd(_)) {
+            self.error(
+                target.span,
+                "`IndexSet` sets one key: `#k` of a program's own type can't be set (spec 2.16)",
+            );
+            return true;
+        }
+        // `x[a:b] = v`: `index_set` with the slice's key (spec 2.16).
+        if matches!(note, "slice" | "slice?") {
+            if op != AssignOp::Set {
+                self.error(target.span, "`x[k] op= v` is not for a program's own type: write `x[k] = x[k] op v` (spec 2.16)");
+                return true;
+            }
+            let Some(key_ty) = self.type_at(index.span) else {
+                return true;
+            };
+            let set_of = self.impls(def, "index_set");
+            // `Part` unknown here means no `IndexSet` takes one.
+            let known = !matches!(self.inf.resolve(&key_ty), Ty::Error);
+            let chosen = known
+                .then(|| self.choose_set(def, &set_of, &subst, &key_ty, value))
+                .flatten();
+            let Some(i) = chosen else {
+                self.value(value, None);
+                let ty = self.show(&Ty::Adt(def, targs));
+                let shown = if known {
+                    self.show(&key_ty)
+                } else {
+                    "Part".to_string()
+                };
+                self.error(target.span, format!("setting a slice calls `index_set` with {} key, and `{ty}` has no `IndexSet<{shown}, …>` (spec 2.16)", crate::op_impls::a_shown(&shown)));
+                return true;
+            };
+            self.check_read_only_target(target, "assigned");
+            self.user_index.insert(key, "set");
+            self.choose_set_variant(key, def, &set_of[i]);
             return true;
         }
         let (set_key, want) = (

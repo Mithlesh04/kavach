@@ -1,0 +1,10 @@
+// Rule: Setting a slice from a tensor whose shape doesn't broadcast to the slice's is a panic naming both shapes.
+// Spec: 14.33
+// expect panic: can't set a slice of shape [2, 3] from [2]
+
+use std.tensor
+
+fn main() {
+    let m = tensor.zeros<Float>([2, 3])
+    m[0:2, :] = tensor.of([1.0, 2.0])
+}

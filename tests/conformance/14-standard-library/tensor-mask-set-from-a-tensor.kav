@@ -1,0 +1,11 @@
+// Rule: `t[mask] = u` sets the numbers where `mask` is `true` to `u`'s, in order.
+// Spec: 14.33
+// expect output: [3.0, 1.0, 4.0, 1.5]
+
+use std.tensor
+
+fn main() {
+    let t = tensor.of([3.0, -1.0, 4.0, -1.5])
+    t[t < 0.0] = -t[t < 0.0]
+    print(t.items)
+}

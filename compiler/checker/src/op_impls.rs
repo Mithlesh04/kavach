@@ -88,6 +88,22 @@ impl Checker<'_> {
         method.to_string()
     }
 
+    /// The `index_set` that implements `IndexSet<key, value>`: the variant
+    /// whose two parameters are `key` and `value`, else the plain name.
+    pub(crate) fn set_variant_for(&self, def: DefId, key: &Ty, value: &Ty) -> String {
+        let (key, value) = (self.inf.resolve(key), self.inf.resolve(value));
+        for name in self.variants(def, "index_set") {
+            let sig = self.methods.get(&def).and_then(|m| m.get(&name));
+            if sig.is_some_and(|s| {
+                let p: Vec<Ty> = s.params.iter().map(|p| self.inf.resolve(&p.ty)).collect();
+                p.len() == 2 && p[0] == key && p[1] == value
+            }) {
+                return name;
+            }
+        }
+        "index_set".to_string()
+    }
+
     /// The implementation, of `impls`, that takes `got`, the type of the
     /// right operand or key, with the type's own parameters as `subst`
     /// gives them. Types are unified only with the one chosen.
@@ -131,9 +147,13 @@ impl Checker<'_> {
         what: &str,
     ) {
         let impls = self.impls(def, method);
-        for (i, (o, _, span)) in impls.iter().enumerate() {
-            let o = self.inf.resolve(o);
-            if impls[..i].iter().any(|(p, ..)| self.inf.resolve(p) == o) {
+        // `IndexSet` may take one key with several values (spec 2.16).
+        let pair = method == "index_set";
+        for (i, (o, v, span)) in impls.iter().enumerate() {
+            let (o, v) = (self.inf.resolve(o), self.inf.resolve(v));
+            let same =
+                |(p, w, _): &Impl| self.inf.resolve(p) == o && (!pair || self.inf.resolve(w) == v);
+            if impls[..i].iter().any(same) {
                 let (ty, shown) = (self.res.defs[def].name.clone(), self.show(&o));
                 self.error(*span, format!("`{ty}` implements `{iface}` twice for {} {what}: each implementation takes another type (spec 2.16)", a_shown(&shown)));
             }

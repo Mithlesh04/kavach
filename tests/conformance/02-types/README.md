@@ -215,6 +215,9 @@ The tests are listed in two files, by section:
 | 2.16 | [bit-operators-in-generic-code.kav](bit-operators-in-generic-code.kav) | Whole numbers and `Bool` meet `BitAnd`, `BitOr` and `BitNot`; for a `Bool` they are `and`, `or` and `not`. | runs |
 | 2.16 | [bit-operators-on-bools-name-and-or-not.kav](bit-operators-on-bools-name-and-or-not.kav) | `&` and `\|` written on two `Bool`s are compile errors that name `and` and `or`. | compile error |
 | 2.9, 2.16 | [a-where-bound-may-be-an-operator.kav](a-where-bound-may-be-an-operator.kav) | A method's `where` may name an operator's interface; a call needs a `T` that meets it. | compile error |
+| 2.16 | [setting-a-slice-calls-index-set.kav](setting-a-slice-calls-index-set.kav) | `x[a:b] = v` calls `index_set` with a `Part` key; `IndexSet` for one key with several values, chosen by the value's type. | runs |
+| 2.16 | [setting-a-slice-needs-index-set-for-its-key.kav](setting-a-slice-needs-index-set-for-its-key.kav) | Setting a slice needs `IndexSet` for the slice's key. | compile error |
+| 2.16 | [index-set-twice-for-one-key-and-value-is-an-error.kav](index-set-twice-for-one-key-and-value-is-an-error.kav) | Two implementations of `IndexSet` for the same key and value types are a compile error. | compile error |
 | 2.16 | [compare-gives-comparisons-any-result.kav](compare-gives-comparisons-any-result.kav) | `Compare<R, Out>` gives `< <= > >=` each its own method and result type. | runs |
 | 2.16 | [comparable-and-compare-is-an-error.kav](comparable-and-compare-is-an-error.kav) | A type implements `Comparable` or `Compare`, not both. | compile error |
 | 2.16 | [a-key-of-any-length.kav](a-key-of-any-length.kav) | A type indexed with a list of `Part`s takes a key of any length: each place one `Part`, a number with `single: true` and `#k` counted from its own dimension's end; numbers only call `index`, a slice `slice`. | runs |

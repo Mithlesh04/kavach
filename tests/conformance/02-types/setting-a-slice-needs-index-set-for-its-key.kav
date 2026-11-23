@@ -1,0 +1,18 @@
+// Rule: Setting a slice of a program's own type needs `IndexSet` for the slice's key, a `Part`.
+// Spec: 2.16
+// expect compile error
+
+type Row: IndexSet<Int, Float> {
+    cells: [Float]
+
+    fn index_set(self, key: Int, value: Float) -> Row {
+        let cells = self.cells
+        cells[key] = value
+        Row(cells: cells)
+    }
+}
+
+fn main() {
+    let r = Row(cells: [1.0, 2.0])
+    r[0:1] = 5.0     // error: setting a slice calls `index_set` with a `Part` key
+}

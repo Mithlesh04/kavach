@@ -10,7 +10,8 @@
 //!
 //! - `"index[]"`: a key of numbers only, as a list, to `index`;
 //! - `"slice[]"`: a key with a slice, as a list, to `slice`;
-//! - `"set[]"`: `x[…] = v` with a list key, to `index_set`.
+//! - `"set[]"`: `x[…] = v` with a list key, to `index_set`, the key
+//!   numbers or slices.
 //!
 //! Another key, such as a mask, chooses its `index` by its type.
 
@@ -183,24 +184,83 @@ impl Checker<'_> {
         let key = at(base, index);
         let note = *self.user_index.get(&key)?;
         let set_of = self.impls(def, "index_set");
-        let (i, takes) = match note {
-            "index[]" => {
-                let i = self.takes_list(&set_of)?;
-                (i, self.list_key())
-            }
-            "index" => {
-                let got = self.type_at(index.span)?;
-                let i = self.choose_impl(&set_of, subst, &got)?;
-                (i, set_of[i].0.clone())
-            }
+        let key_ty = match note {
+            "index[]" | "slice[]" => self.list_key(),
+            "index" => self.type_at(index.span)?,
             _ => return None,
         };
-        let want = self.inf.subst(&set_of[i].1, subst);
-        self.check_expect(value, &want);
+        let i = self.choose_set(def, &set_of, subst, &key_ty, value)?;
         self.check_read_only_target(target, "assigned");
         self.user_index
             .insert(key, if note == "index" { "set" } else { "set[]" });
-        self.choose(key, def, "index_set", &takes);
+        self.choose_set_variant(key, def, &set_of[i]);
         Some(())
+    }
+
+    /// Of `impls` of `index_set`, the one for a key of type `key_ty` and
+    /// for `value`: the key's type chooses, then the value's (spec 2.16).
+    /// Checks `value`. `None` when no implementation takes the key.
+    pub(crate) fn choose_set(
+        &mut self,
+        def: DefId,
+        impls: &[Impl],
+        subst: &HashMap<DefId, Ty>,
+        key_ty: &Ty,
+        value: &Expr,
+    ) -> Option<usize> {
+        let mut fits = Vec::new();
+        for (i, (k, ..)) in impls.iter().enumerate() {
+            let want = self.inf.subst(k, subst);
+            let before = self.inf.clone();
+            if self.inf.unify(key_ty, &want) {
+                fits.push(i);
+            }
+            self.inf = before;
+        }
+        let &first = fits.first()?;
+        if let [only] = fits.as_slice() {
+            let k = self.inf.subst(&impls[*only].0, subst);
+            self.inf.unify(key_ty, &k);
+            let want = self.inf.subst(&impls[*only].1, subst);
+            self.check_expect(value, &want);
+            return Some(*only);
+        }
+        let got = self.value(value, None);
+        for &i in &fits {
+            let want = self.inf.subst(&impls[i].1, subst);
+            let before = self.inf.clone();
+            if self.inf.unify(&got, &want) {
+                let k = self.inf.subst(&impls[i].0, subst);
+                self.inf.unify(key_ty, &k);
+                return Some(i);
+            }
+            self.inf = before;
+        }
+        if !matches!(self.inf.resolve(&got), Ty::Error) {
+            let chosen: Vec<Impl> = (fits.iter())
+                .map(|&i| (impls[i].1.clone(), impls[i].0.clone(), impls[i].2))
+                .collect();
+            let (ty, shown) = (self.res.defs[def].name.clone(), self.show(&got));
+            let takes = self.shown_impls(&chosen, subst);
+            self.error(
+                value.span,
+                format!(
+                    "this value is {}, but `{ty}` is set with {takes} for this key (spec 2.16)",
+                    crate::op_impls::a_shown(&shown)
+                ),
+            );
+        }
+        Some(first)
+    }
+
+    /// Notes the `index_set` chosen for a use, when it isn't the plain
+    /// name: the one whose key and value are `chosen`'s.
+    pub(crate) fn choose_set_variant(&mut self, key: (u32, u32), def: DefId, chosen: &Impl) {
+        let name = self.set_variant_for(def, &chosen.0, &chosen.1);
+        if name == "index_set" {
+            self.chosen.remove(&key);
+        } else {
+            self.chosen.insert(key, name);
+        }
     }
 }
