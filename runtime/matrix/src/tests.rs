@@ -3,7 +3,7 @@
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
 //! The product against a plain loop, bit for bit; `fast` within a
-//! tolerance; whole numbers that overflow; the other kernels.
+//! tolerance; whole numbers that overflow; empty sizes.
 
 use super::*;
 
@@ -77,19 +77,10 @@ fn whole_numbers_say_when_they_overflow() {
         Err(Overflow)
     );
     assert_eq!(product(&[100i8], &[2], (1, 1, 1), false), Err(Overflow));
-    assert_eq!(zip(Op::Add, &[250u8], &[10]), Err(Overflow));
-    assert_eq!(negate(&[i32::MIN]), Err(Overflow));
 }
 
 #[test]
-fn item_by_item_sums_and_transposes() {
-    let a = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
-    assert_eq!(zip(Op::Mul, &a, &a).unwrap()[5], 36.0);
-    assert_eq!(scale(&a, 2.0).unwrap()[0], 2.0);
-    assert_eq!(transpose(&a, 2, 3), vec![1.0, 4.0, 2.0, 5.0, 3.0, 6.0]);
-    assert_eq!(sums(&a, 2, 3, By::All).unwrap(), vec![21.0]);
-    assert_eq!(sums(&a, 2, 3, By::Rows).unwrap(), vec![6.0, 15.0]);
-    assert_eq!(sums(&a, 2, 3, By::Cols).unwrap(), vec![5.0, 7.0, 9.0]);
+fn a_product_with_no_rows_is_empty() {
     assert_eq!(
         product::<f64>(&[], &[], (0, 3, 2), false).unwrap(),
         Vec::<f64>::new()

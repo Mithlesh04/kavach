@@ -85,6 +85,7 @@ const TABLE: &[(&str, &[&str])] = &[
             "is used before its",
             "can't be named alone",
             "is not a standard library module",
+            "is gone: ",
             "unknown name",
             "no such",
         ],

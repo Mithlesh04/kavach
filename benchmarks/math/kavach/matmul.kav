@@ -1,8 +1,8 @@
 // The product of two 1024 × 1024 float matrices, 4 times. Each item adds
-// its products in order, k from 0 up (spec 2.17), the same order as the
+// its products in order, k from 0 up (spec 14.33), the same order as the
 // C++ loop, so both give the same bits; Kavach spreads the rows over the
 // cores.
-use std.matrix
+use std.tensor
 
 fn main() {
     const n = 1024
@@ -12,8 +12,8 @@ fn main() {
         xs.push(Float(i % 97) * 0.01)
         ys.push(Float(i % 89) * 0.02 - 0.5)
     }
-    const a = Matrix(rows: n, cols: n, items: xs)
-    const b = Matrix(rows: n, cols: n, items: ys)
+    const a = tensor.of(xs).reshape([n, n])
+    const b = tensor.of(ys).reshape([n, n])
     let total = 0.0
     for round in 0..4 {
         const c = a @ b

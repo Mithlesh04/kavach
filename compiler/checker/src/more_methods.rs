@@ -109,6 +109,17 @@ impl Checker<'_> {
         item
     }
 
+    /// `Float.from_bits(n)` (spec 14.2): the `Float` with IEEE 754 bits `n`.
+    pub(crate) fn float_from_bits(
+        &mut self,
+        args: &[kavach_ast::Arg],
+        span: kavach_ast::Span,
+    ) -> Ty {
+        let params = [("bits".to_string(), Ty::Prim(Prim::UInt64), false)];
+        self.args(args, &params, span, "`from_bits`", "argument");
+        Ty::Prim(Prim::Float)
+    }
+
     /// More methods of built-in types (spec 14.2).
     pub(crate) fn more_methods(&mut self, recv: &Ty, name: &str) -> Option<MethodSig> {
         let (int, boolean, string) = (

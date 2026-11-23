@@ -13,5 +13,5 @@ print(a.transpose()[0, 1])    // 3.0
 ```
 
 - `a @ b`, its same-bits product and `a.matmul(b, fast: true)` are described in 14.33, under Linear algebra.
-- *Not built yet:* `use std.matrix` and `Matrix<T>` are compile errors that name `std.tensor` and `Tensor<T, dims: 2>`.
+- `use std.matrix` and `Matrix<T>` are compile errors that name `std.tensor` and `Tensor<T, dims: 2>`.
 - Decision 0136 has a table from every `Matrix` call to its tensor form: `matrix.of(rows)` is `tensor.of_rows(rows)`, `m.at(i, j)` is `m[i, j]`, `m.sum_rows()` is `m.sum(axis: 1)`, and so on.

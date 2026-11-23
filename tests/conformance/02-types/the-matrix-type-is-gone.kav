@@ -1,0 +1,11 @@
+// Rule: The type `Matrix<T>` is gone: writing it is a compile error that names `Tensor<T, dims: 2>`.
+// Spec: 2.17
+// expect compile error
+
+fn rows(m: Matrix<Float>) -> Int {      // error: `Matrix` is gone: a matrix is a `Tensor<T, dims: 2>`
+    0
+}
+
+fn main() {
+    print(1)
+}

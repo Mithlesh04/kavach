@@ -1,12 +1,12 @@
-// Rule: A parameter may be a type parameter, an interface value, a `Json` value, a std.vec vector or a `Matrix`, and keeps its value.
-// Spec: 2.9, 2.15, 2.12, 2.17, 14.28
+// Rule: A parameter may be a type parameter, an interface value, a `Json` value, a std.vec vector or a `Tensor`, and keeps its value.
+// Spec: 2.9, 2.15, 2.12, 14.28, 14.33
 // expect output: 7 a true none
 // expect output: Square 3 | Name Asha
 // expect output: {"id":1,"tags":["x"]} 1
 // expect output: Vec3(x: 2.0, y: 4.0, z: 6.0) Vec2(x: 4, y: 6)
 // expect output: [[19.0, 22.0], [43.0, 50.0]] [[1, 2], [3, 4]]
 
-use std.matrix
+use std.tensor
 use std.vec
 
 interface Describe {
@@ -31,8 +31,8 @@ fn both(a: Describe, b: Describe) -> String { `{a.describe()} | {b.describe()}` 
 fn id_of(j: Json) -> Json { j }
 fn twice(v: Vec3<Float>) -> Vec3<Float> { v * 2.0 }
 fn add(a: Vec2<Int>, b: Vec2<Int>) -> Vec2<Int> { a + b }
-fn times(a: Matrix<Float>, b: Matrix<Float>) -> Matrix<Float> { a @ b }
-fn same(m: Matrix<Int8>) -> Matrix<Int8> { m }
+fn times(a: Tensor<Float>, b: Tensor<Float>) -> Tensor<Float> { a @ b }
+fn same(m: Tensor<Int8>) -> Tensor<Int8> { m }
 
 fn main() {
     const empty: [Int] = []
@@ -42,8 +42,8 @@ fn main() {
     const back = id_of(j)
     print(`{back} {back["id"].int() ?? 0}`)
     print(`{twice(Vec3(x: 1.0, y: 2.0, z: 3.0))} {add(Vec2(x: 1, y: 2), Vec2(x: 3, y: 4))}`)
-    const a = matrix.of([[1.0, 2.0], [3.0, 4.0]])
-    const b = matrix.of([[5.0, 6.0], [7.0, 8.0]])
+    const a = tensor.of_rows([[1.0, 2.0], [3.0, 4.0]])
+    const b = tensor.of_rows([[5.0, 6.0], [7.0, 8.0]])
     const small: [[Int8]] = [[1, 2], [3, 4]]
-    print(`{times(a, b).to_rows()} {same(matrix.of(small)).to_rows()}`)
+    print(`{times(a, b).to_rows()} {same(tensor.of_rows(small)).to_rows()}`)
 }

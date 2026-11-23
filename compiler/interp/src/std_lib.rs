@@ -93,7 +93,7 @@ impl<'a> Interp<'a> {
             "app" => return self.app_call(name, &args),
             "process" => return self.process_call(name, &args, span),
             "system" => return self.system_call(name, &args),
-            "matrix" => return self.matrix_call(name, &args, span),
+            "matrix" => return self.matrix_call(&args, span),
             "gpu" => return self.gpu_call(name, &args, span),
             "log" => return self.log_call(name, &args),
             "fs" if name.starts_with("writer_") => return self.writer_call(name, &args),

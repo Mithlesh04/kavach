@@ -23,10 +23,8 @@ The tests are listed in two files, by section:
 | 2.2 | [filter-keeps-text-items.kav](filter-keeps-text-items.kav) | `filter` over a list of text keeps the items its test holds for, as they are, short or long, ASCII or not. | runs |
 | 2.16 | [matmul-calls-the-types-own-method.kav](matmul-calls-the-types-own-method.kav) | `a @ b` calls `matmul` of a type with `MatMul`; `@=` too. | runs |
 | 2.17 | [matmul-is-not-for-numbers.kav](matmul-is-not-for-numbers.kav) | `@` on numbers is a compile error that says to use `*`. | compile error |
-| 2.17 | [matrices-multiply-and-work-item-by-item.kav](matrices-multiply-and-work-item-by-item.kav) | `a @ b`, `+ - *` and `-` item by item, transposes, sums, slices, rows and columns, for floats and whole numbers. | runs |
-| 2.17 | [matrix-products-give-the-same-bits.kav](matrix-products-give-the-same-bits.kav) | `a @ b` gives the bits of a loop written by hand; `fast: true` comes close. | runs |
-| 2.17, 2.9 | [matrix-holds-only-numbers.kav](matrix-holds-only-numbers.kav) | A `Matrix<T>` holds numbers: a matrix of text is a compile error. | compile error |
-| 2.17 | [matrix-sizes-must-match.kav](matrix-sizes-must-match.kav) | A product whose inner sizes differ breaks `matmul`'s `require`. | panic |
+| 2.17 | [std-matrix-is-gone.kav](std-matrix-is-gone.kav) | `use std.matrix` is a compile error that names `std.tensor`. | compile error |
+| 2.17 | [the-matrix-type-is-gone.kav](the-matrix-type-is-gone.kav) | Writing the type `Matrix<T>` is a compile error that names `Tensor<T, dims: 2>`. | compile error |
 | 2.12 | [json-decode-of-a-generic-is-checked-where-it-is-used.kav](json-decode-of-a-generic-is-checked-where-it-is-used.kav) | `json.decode<T>` of a type parameter is a compile error at the generic call that gives it a type holding a function, through other generic functions too. | compile error |
 | 2.12 | [json-decode-in-a-generic-method-is-checked-where-it-is-used.kav](json-decode-in-a-generic-method-is-checked-where-it-is-used.kav) | A generic method reading its type parameter from JSON is checked at each call. | compile error |
 | 2.12 | [json-decode-fills-in-a-generic-type.kav](json-decode-fills-in-a-generic-type.kav) | `json.decode<Box<Yes>>` decodes a generic record or union with its type arguments put in for its parameters. | runs |
@@ -333,13 +331,6 @@ The tests are listed in two files, by section:
 | 2.15, 2.7 | [a-value-fits-an-optional-interface.kav](a-value-fits-an-optional-interface.kav) | A value of a type that implements an interface fits where an optional of that interface is expected, as a `T` fits a `T?`. | runs |
 | 2.16, 1.8 | [decimal-remainder-keeps-the-sign.kav](decimal-remainder-keeps-the-sign.kav) | `Decimal` is a number type, so it meets `Rem`: `%` works on it, keeping the left side's sign as for other numbers. | runs |
 | 2.16 | [float-compare-of-nan-is-zero.kav](float-compare-of-nan-is-zero.kav) | a float's `compare` gives below 0, 0 or above 0 by order, and 0 when neither comes first, as with a `NaN`. | runs |
-| 2.17 | [matrix-fast-product-of-whole-numbers-is-exact.kav](matrix-fast-product-of-whole-numbers-is-exact.kav) | for whole numbers, `a.product(b, fast: true)` gives the same result as `a @ b`. | runs |
-| 2.17 | [matrix-identity-and-filled-of-floats.kav](matrix-identity-and-filled-of-floats.kav) | `matrix.identity(n, one)` has `one` on the diagonal and zeros of its type elsewhere; `matrix.filled` repeats its value. | runs |
-| 2.17 | [matrix-index-out-of-range-breaks-require.kav](matrix-index-out-of-range-breaks-require.kav) | an index outside a matrix breaks a `require`, here a row past the last. | panic |
-| 2.17 | [matrix-item-by-item-needs-the-same-size.kav](matrix-item-by-item-needs-the-same-size.kav) | `a + b`, `a - b` and `a * b` of matrices of different sizes break a `require`. | panic |
-| 2.17 | [matrix-product-needs-columns.kav](matrix-product-needs-columns.kav) | `a @ b` when `a` has no columns breaks a `require`, even though `a.cols` equals `b.rows`. | panic |
-| 2.17 | [matrix-rows-must-be-as-long.kav](matrix-rows-must-be-as-long.kav) | `matrix.of` with rows of different lengths panics. | panic |
-| 2.17, 5.6 | [matrix-whole-number-product-overflow-panics.kav](matrix-whole-number-product-overflow-panics.kav) | a matrix product of whole numbers panics on a sum that doesn't fit, as overflow does anywhere. | panic |
 | 2.18 | [a-view-cannot-change-its-string.kav](a-view-cannot-change-its-string.kav) | A view can't change the string it is part of: it has no changing methods. | compile error |
 | 2.18 | [a-view-is-not-a-string.kav](a-view-is-not-a-string.kav) | A `StrView` is its own type: `to_string()` copies its text out when a `String` is needed. | compile error |
 | 2.18 | [a-view-keeps-its-string-alive.kav](a-view-keeps-its-string-alive.kav) | A view keeps its string alive and keeps the text it had: it outlives the function that made the string, and the variable's next value doesn't change it; views can be stored in lists and records. | runs |

@@ -348,9 +348,9 @@ Each job has one name (14.2). Where NumPy's name differs, it is a compile error 
 | `tensor.concat`, `tensor.cat` | `tensor.concatenate` (not built yet) |
 | `tensor.identity` | `tensor.eye` (not built yet) |
 | `t.scale(k)` | `t * k` |
-| `a.product(b, fast: true)` | `a.matmul(b, fast: true)` (not built yet) |
+| `a.product(b, fast: true)` | `a.matmul(b, fast: true)` |
 
-*Not built yet:* `use std.matrix` and the type `Matrix<T>`, which this module replaces (2.17), are compile errors that name `std.tensor` and `Tensor<T, dims: 2>`.
+`use std.matrix` and the type `Matrix<T>`, which this module replaces (2.17), are compile errors that name `std.tensor` and `Tensor<T, dims: 2>`.
 
 ## Dimensions and shapes in the type
 

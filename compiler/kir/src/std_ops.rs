@@ -96,11 +96,6 @@ pub(crate) fn std_op(module: &str, name: &str) -> Option<RtOp> {
         ("system", "critical_id") => RtOp::MachineCritical,
         ("system", "act_id") => RtOp::MachineAct,
         ("matrix", "product_id") => RtOp::MatrixProduct,
-        ("matrix", "zip_id") => RtOp::MatrixZip,
-        ("matrix", "scale_id") => RtOp::MatrixScale,
-        ("matrix", "negate_id") => RtOp::MatrixNegate,
-        ("matrix", "transpose_id") => RtOp::MatrixTranspose,
-        ("matrix", "sums_id") => RtOp::MatrixSums,
 
         ("gpu", "screen_id") => RtOp::DrawScreen,
         ("gpu", "frame_id") => RtOp::DrawFrame,

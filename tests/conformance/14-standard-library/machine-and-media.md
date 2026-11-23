@@ -217,6 +217,8 @@ Conformance tests for std.clipboard (14.17), std.devices (14.18), std.window (14
 | 14.33 | [tensor-matmul-of-vectors.kav](tensor-matmul-of-vectors.kav) | In `a @ b`, a 1-D `a` is a row and a 1-D `b` a column, that dimension taken out: two vectors give their dot product, of shape `[]`. | runs |
 | 14.33 | [tensor-matmul-broadcasts-batches.kav](tensor-matmul-broadcasts-batches.kav) | In `a @ b`, the dimensions before the last two are a batch, broadcast as `+` broadcasts; batches that don't fit are a panic naming both. | panic |
 | 14.33 | [tensor-matmul-fast-is-the-same-product.kav](tensor-matmul-fast-is-the-same-product.kav) | `a.matmul(b, fast: true)` is the product `a @ b`: floats may differ in their last bits, whole numbers are the same. | runs |
+| 14.33 | [tensor-matmul-gives-the-bits-of-a-loop.kav](tensor-matmul-gives-the-bits-of-a-loop.kav) | `a @ b` adds each number's products in order, so it gives the bits of a loop written by hand. | runs |
+| 14.33, 5.6 | [tensor-whole-number-product-overflow-panics.kav](tensor-whole-number-product-overflow-panics.kav) | A product of whole-number tensors panics on a sum that doesn't fit. | panic |
 | 14.33 | [tensor-inv-gives-the-inverse.kav](tensor-inv-gives-the-inverse.kav) | `a.inv()` gives the inverse of a square matrix. | runs |
 | 14.33 | [tensor-singular-matrix-fails.kav](tensor-singular-matrix-fails.kav) | `inv` and `solve` of a matrix with a pivot of exactly 0 fail with `tensor.Singular`; its `det` is 0.0. | runs |
 | 14.33 | [tensor-solve-without-the-inverse.kav](tensor-solve-without-the-inverse.kav) | `a.solve(b)` gives the `x` with `a @ x == b`, for a `b` of 1 or 2 dimensions. | runs |

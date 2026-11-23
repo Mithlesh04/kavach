@@ -437,7 +437,7 @@ impl Checker<'_> {
                     self.value(r, None);
                     if !matches!(self.inf.resolve(&lt), Ty::Error) {
                         let shown = self.show(&lt);
-                        self.error(l.span, format!("`@` is the matrix product, for a `Matrix` (spec 2.17) or a type with `MatMul` (2.16), and this is `{shown}`: multiply numbers with `*`"));
+                        self.error(l.span, format!("`@` is the matrix product, for a `Tensor` (spec 14.33) or a type with `MatMul` (2.16), and this is `{shown}`: multiply numbers with `*`"));
                     }
                     return Ty::Error;
                 }

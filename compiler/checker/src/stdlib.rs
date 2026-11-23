@@ -74,6 +74,9 @@ impl Checker<'_> {
                 );
                 continue;
             }
+            if self.matrix_gone(module, u.path.span) {
+                continue;
+            }
             if let Some(&def) = self.decl.get(&name.span.start) {
                 self.std_modules.insert(def, module.to_string());
             }
@@ -304,7 +307,7 @@ impl Checker<'_> {
             ("process", _) => self.process_signature(name)?,
             // What machine this is (spec 14.25): the basics free.
             ("system", _) => self.system_signature(name)?,
-            // Matrices (spec 2.17): no capability.
+            // `std.tensor`'s product (spec 14.33), for the standard library.
             ("matrix", _) => self.matrix_signature(name, generics, span)?,
             ("gpu", _) => self.draw_signature(name)?,
             ("log", _) => self.log_signature(name)?,
@@ -490,12 +493,5 @@ impl Checker<'_> {
             Some(def) => Ty::Adt(def, Vec::new()),
             None => Ty::Error,
         }
-    }
-
-    /// `Float.from_bits(n)` (spec 14.2): the `Float` with IEEE 754 bits `n`.
-    pub(crate) fn float_from_bits(&mut self, args: &[Arg], span: Span) -> Ty {
-        let params = [("bits".to_string(), Ty::Prim(Prim::UInt64), false)];
-        self.args(args, &params, span, "`from_bits`", "argument");
-        Ty::Prim(Prim::Float)
     }
 }

@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
-//! The signatures of `std.matrix`'s built-in functions (spec 2.17,
-//! decision 0111): the work on a matrix's flat list of items, written
-//! `matrix.product_id<T>(…)` inside `Matrix<T>`'s own methods, so the item
-//! type comes as a type argument.
+//! The signature of `matrix.product_id<T>(a, b, sizes)`, the product of
+//! `std.tensor`'s `a @ b` on flat lists of items (spec 14.33, decisions
+//! 0111 and 0136). The item type comes as a type argument. Only the
+//! standard library may `use std.matrix` (`stdlib.rs`).
 
 use crate::checker::Checker;
 use crate::ty::{Prim, Ty};
@@ -31,21 +31,22 @@ impl Checker<'_> {
             );
             return Some((Vec::new(), Ty::Error));
         };
-        let int = Ty::Prim(Prim::Int);
-        let items = Ty::List(Box::new(t.clone()));
-        let ints = Ty::List(Box::new(int.clone()));
+        let items = Ty::List(Box::new(t));
+        let ints = Ty::List(Box::new(Ty::Prim(Prim::Int)));
         let p = |n: &str, t: &Ty| (n.to_string(), t.clone(), false);
         let (a, b) = (p("a", &items), p("b", &items));
-        Some(match name {
-            // The sizes: rows, inner, columns, and 1 for `fast`.
-            "product_id" => (vec![a, b, p("sizes", &ints)], items),
-            // 0 add, 1 subtract, 2 multiply.
-            "zip_id" => (vec![a, b, p("op", &int)], items),
-            "scale_id" => (vec![a, p("x", &t)], items),
-            "negate_id" => (vec![a], items),
-            // The sizes: rows, columns, and for sums 0 all, 1 rows, 2 columns.
-            "transpose_id" | "sums_id" => (vec![a, p("sizes", &ints)], items),
-            _ => return None,
-        })
+        // The sizes: rows, inner, columns, and 1 for `fast`.
+        (name == "product_id").then(|| (vec![a, b, p("sizes", &ints)], items))
+    }
+
+    /// `use std.matrix` outside the standard library: an error, as
+    /// `std.matrix` is gone (spec 2.17). Whether it was one.
+    pub(crate) fn matrix_gone(&mut self, module: &str, span: Span) -> bool {
+        let file = &self.res.modules[self.res.module_at(span.start)].name;
+        if module != "matrix" || file.starts_with("std.") {
+            return false;
+        }
+        self.error(span, "`std.matrix` is gone: use `std.tensor`, where a matrix is a `Tensor<T, dims: 2>` (spec 2.17)");
+        true
     }
 }

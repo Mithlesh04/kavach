@@ -1,0 +1,33 @@
+// Rule: `a @ b` adds each number's products in order, a multiply then an add, so it gives the same bits as a loop written by hand.
+// Spec: 14.33
+// expect output: the same bits: true
+
+use std.tensor
+
+fn numbers(n: Int, seed: Int) -> [Float] {
+    let out: [Float] = []
+    let x = seed
+    for _ in 0..n {
+        x = (x * 1103515245 + 12345) % 2147483648
+        out.push((Float(x) / 2147483648.0 - 0.5) * 1000.0)
+    }
+    out
+}
+
+fn main() {
+    const (n, m, p) = (23, 37, 19)
+    const a = tensor.of(numbers(n * m, 1)).reshape([n, m])
+    const b = tensor.of(numbers(m * p, 2)).reshape([m, p])
+    const c = a @ b
+    let same = true
+    for i in 0..n {
+        for j in 0..p {
+            let sum = 0.0
+            for k in 0..m {
+                sum += a[i, k] * b[k, j]
+            }
+            same = same and sum.bits() == c[i, j].bits()
+        }
+    }
+    print(`the same bits: {same}`)
+}

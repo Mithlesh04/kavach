@@ -199,6 +199,7 @@ impl Checker<'_> {
             "dot" => "a @ b",
             "tolist" => "items",
             "scale" => "t * k",
+            "product" => "matmul(b, fast: true)",
             _ => return None,
         })
     }

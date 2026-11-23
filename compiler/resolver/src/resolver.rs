@@ -275,6 +275,8 @@ impl Resolver {
             )
         } else if self.later.iter().any(|names| names.contains(name)) {
             format!("`{name}` is used before its `let`: move the declaration above this line")
+        } else if name == "Matrix" {
+            "`Matrix` is gone: a matrix is a `Tensor<T, dims: 2>`, from `use std.tensor` (spec 2.17)".to_string()
         } else if name == "_" {
             "`_` throws a value away, so it can't be read: give the value a name, such as `_t` (spec 1.4)".to_string()
         } else if self.top_lets.contains(name) {

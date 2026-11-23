@@ -6,7 +6,8 @@
 // by item after broadcasting (NumPy's rules), each implemented twice: for
 // a tensor on the right and for a number (spec 2.16). Comparisons give a
 // mask, a `Tensor<Bool>`, and masks combine with `&`, `|` and `~`.
-// Products go through `std.matrix`.
+// Products are the runtime's (`runtime/matrix`), reached as
+// `matrix.product_id`, which only the standard library may use.
 
 use std.matrix
 use std.tensor.shapes
@@ -170,17 +171,20 @@ fn product<T: Number>(a: Tensor<T>, b: Tensor<T>, fast: Bool) -> Tensor<T> {
     const batch = shapes.broadcast(sa[:na - 2], sb[:nb - 2]) ?? panic(shapes.no_broadcast(sa[:na - 2], sb[:nb - 2], "@"))
     const xa = shapes.spread(sa, a.items, batch + [m, k])
     const xb = shapes.spread(sb, b.items, batch + [k, p])
+    const count = shapes.sized(batch)
+    const sizes = [m, k, p, if fast { 1 } else { 0 }]
     let out: [T] = []
-    for at in 0..shapes.sized(batch) {
-        if k == 0 {
-            for _ in 0..m * p {
-                out.push(T(0))
-            }
-            continue
+    if k == 0 {
+        for _ in 0..count * m * p {
+            out.push(T(0))
         }
-        const left = matrix.Matrix(rows: m, cols: k, items: xa[at * m * k:(at + 1) * m * k])
-        const right = matrix.Matrix(rows: k, cols: p, items: xb[at * k * p:(at + 1) * k * p])
-        out += left.product(right, fast: fast).items
+    } else if count == 1 {
+        out = matrix.product_id<T>(xa, xb, sizes)
+    } else {
+        for at in 0..count {
+            const left = xa[at * m * k:(at + 1) * m * k]
+            out += matrix.product_id<T>(left, xb[at * k * p:(at + 1) * k * p], sizes)
+        }
     }
     let shape = batch
     if a.shape.len() > 1 {

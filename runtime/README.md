@@ -16,7 +16,7 @@ Code that is linked into every Kavach program and runs alongside it. Written in 
 | [tracy/](tracy/README.md) | Spans and GPU work shown live in the Tracy profiler through `tracy-client` (`kavach-runtime-tracy`); linked only with `--tracy` (decision 0123) |
 | [dialog/](dialog/README.md) | The system's dialogs for `std.app` through `rfd` (`kavach-runtime-dialog`); apart from `native/` so programs without dialogs don't link it (decision 0118) |
 | [process/](process/README.md) | Other programs for `std.process`, run with no shell as trees that end together, through each system's own calls (`kavach-runtime-process`, decision 0105) |
-| [matrix/](matrix/README.md) | The work of `std.matrix`: products in one fixed order, and fast ones through `gemm`, on flat lists of numbers (`kavach-runtime-matrix`, decision 0111) |
+| [matrix/](matrix/README.md) | The matrix product of `std.tensor`'s `@`: in one fixed order, or fast through `gemm`, on flat lists of numbers (`kavach-runtime-matrix`, decisions 0111 and 0136) |
 | [native/](native/README.md) | The run-time library of native programs: heap values, printing, panics; linked into executables (`kavach-runtime-native`) |
 | [unpack/](unpack/README.md) | Packed executables: the format and the small C starter that unpacks a program built with `kavach build --compress` (`kavach-runtime-unpack`, decision 0081) |
 | `memory/` | Empty: kept for allocation, arenas and cycle detection (debug) if they move out of `native/` |
