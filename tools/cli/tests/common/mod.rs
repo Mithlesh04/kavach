@@ -74,7 +74,8 @@ impl Drop for Finishing<'_> {
 /// run`: inside this test, it would have only the test to start again,
 /// and would read the test's own input, which may never end (a gate once
 /// hung 20 minutes on `term.confirm`); a child's input is closed, so a
-/// read gets `none`.
+/// read gets `none`. So does a program that makes a GPU pipeline: only
+/// `kavach run` gives the interpreter its shaders (spec 15.3).
 pub fn interpret(
     compiled: &kavach_driver::Compiled,
     path: &std::path::Path,
@@ -82,7 +83,7 @@ pub fn interpret(
     args: &[String],
 ) -> kavach_interp::Output {
     let reads = src.contains("io.read") || src.contains("use std.term");
-    if !src.contains("spawn process") && !reads {
+    if !src.contains("spawn process") && !reads && !src.contains("gpu.pipeline") {
         return kavach_interp::run_with_args(compiled, args);
     }
     let out = std::process::Command::new(env!("CARGO_BIN_EXE_kavach"))
