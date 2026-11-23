@@ -17,7 +17,15 @@ use kavach_runtime_core::math::exact::ExactSum;
 // its bits, or a list of them (owned); `code` is `ExactEnd`'s result type.
 crate::rt_data::entry!(kv_rt_exact, |op, a, b, _c, code, _line| {
     match op {
-        RtOp::ExactNew => Box::into_raw(Box::new(ExactSum::new())) as i64,
+        // `a` is 1 for a compact sum, one of a sum per key's.
+        RtOp::ExactNew => {
+            let sum = if a == 1 {
+                ExactSum::compact()
+            } else {
+                ExactSum::new()
+            };
+            Box::into_raw(Box::new(sum)) as i64
+        }
         RtOp::ExactAdd => {
             // SAFETY: `a` is the address `ExactNew` gave this loop, which
             // only its own `ExactEnd` frees, after its last `ExactAdd`.

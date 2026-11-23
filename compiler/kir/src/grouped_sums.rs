@@ -87,7 +87,8 @@ impl<'a> Lowerer<'a> {
             // The key's sum, made the first time the key is seen.
             let at = self.new_local(Type::I64);
             body.push(Stmt::Let(at, get_or(self, held, k, Type::I64)));
-            let made = self.at(K::Rt(RtOp::ExactNew, Vec::new()), Type::I64, line);
+            let compact = vec![self.at(K::Int(1), Type::I64, line)];
+            let made = self.at(K::Rt(RtOp::ExactNew, compact), Type::I64, line);
             let new = Block {
                 stmts: vec![
                     Stmt::Expr(self.at(K::Assign(at, Box::new(made)), Type::Unit, line)),

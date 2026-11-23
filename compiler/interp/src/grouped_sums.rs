@@ -65,7 +65,7 @@ impl<'a> Interp<'a> {
                 _ => {
                     *place = Value::Int(sums.len() as i128, Prim::Int);
                     sums.push(match float {
-                        Some(_) => Running::Exact(Box::default()),
+                        Some(_) => Running::Exact(Box::new(ExactSum::compact())),
                         None => Running::Total(Value::Unit),
                     });
                     sums.len() - 1

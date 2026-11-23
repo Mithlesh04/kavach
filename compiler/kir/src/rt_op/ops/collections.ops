@@ -166,7 +166,7 @@ BytesSlicePart,
 ListMinBy,
 ListMaxBy,
 /// An exact sum of floats (spec 14.2, decision 0135): `ExactNew` makes
-/// one and gives its address; `ExactAdd` adds the `Float` `b` to the sum
+/// one and gives its address, a compact one when `a` is 1; `ExactAdd` adds the `Float` `b` to the sum
 /// at address `a`, and `ExactAddList` each `Float` of the list `b`;
 /// `ExactEnd` frees the sum at `a` and gives it rounded once to the
 /// result's type, `Float` or `Float32`.

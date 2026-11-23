@@ -23,8 +23,8 @@ const LIMBS: usize = 70;
 /// passed up: each adds less than 2^32 to a piece, and a piece holds 2^62.
 const CARRY_EVERY: u32 = 1 << 30;
 
-/// How many values go straight into the pieces before a sum gets bins:
-/// a short sum, such as each key's in a sum per key (14.2), stays small.
+/// How many values go straight into the pieces before a sum gets bins,
+/// so a short sum stays small.
 const BINS_AFTER: u32 = 64;
 
 /// One bin for each exponent: the sum of the bits of the values that
@@ -48,6 +48,8 @@ pub struct ExactSum {
     seen: bool,
     /// Values put into the pieces so far.
     placed: u32,
+    /// Never gets bins: one of many sums kept at once.
+    compact: bool,
 }
 
 impl Default for ExactSum {
@@ -62,6 +64,7 @@ impl Default for ExactSum {
             negative_zeros: true,
             seen: false,
             placed: 0,
+            compact: false,
         }
     }
 }
@@ -69,6 +72,15 @@ impl Default for ExactSum {
 impl ExactSum {
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// A sum that keeps only the pieces its values reach, never bins:
+    /// for a sum per key (14.2), which keeps one for each key.
+    pub fn compact() -> Self {
+        ExactSum {
+            compact: true,
+            ..Self::default()
+        }
     }
 
     /// Adds `x`, exactly. A `Float32` is added as the `Float` it widens
@@ -101,7 +113,7 @@ impl ExactSum {
             return;
         }
         self.place(p, m, negative);
-        if self.placed == BINS_AFTER {
+        if self.placed == BINS_AFTER && !self.compact {
             self.bins = Some(Box::new([0; 2047]));
         }
     }

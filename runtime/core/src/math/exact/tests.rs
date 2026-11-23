@@ -190,3 +190,13 @@ fn full_bins_are_moved_into_the_pieces() {
     xs.push(3.0e-310);
     assert!(same(sum(xs.iter().copied()), fsum(&xs)));
 }
+
+#[test]
+fn a_compact_sum_gives_the_same_bits() {
+    let mut g = Lcg(5);
+    let xs: Vec<f64> = (0..500).map(|_| g.float(100)).collect();
+    let mut c = ExactSum::compact();
+    xs.iter().for_each(|&x| c.add(x));
+    assert!(c.bins.is_none());
+    assert!(same(c.value(), sum(xs.iter().copied())));
+}
