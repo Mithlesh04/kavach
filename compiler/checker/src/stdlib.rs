@@ -402,6 +402,9 @@ impl Checker<'_> {
                 (Vec::new(), json)
             }
             ("json", "describe") => return Some(self.describe_call(args, span)),
+            ("json", "decode_texts" | "encode_texts") => {
+                self.json_texts_signature(name, generics, span)?
+            }
             ("json", "decode" | "decode_value") => {
                 let Some(t) = generics.first().map(|g| self.lower(g, None)) else {
                     self.error(

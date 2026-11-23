@@ -39,6 +39,7 @@ mod journal;
 mod json;
 mod json_decode;
 mod json_encode;
+mod json_texts;
 mod literal_checks;
 mod map;
 mod module_consts;

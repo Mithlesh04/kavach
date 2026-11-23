@@ -382,6 +382,9 @@ impl<'a> Lowerer<'a> {
         if matches!(name, "decode" | "decode_value") {
             return self.json_decode(name, args, ty, line, span);
         }
+        if matches!(name, "decode_texts" | "encode_texts") {
+            return self.json_texts_call(name, args, ty, line, span);
+        }
         if name == "of" {
             let value = match args.first() {
                 Some(a) => self.expr(&a.value)?,

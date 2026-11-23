@@ -68,9 +68,14 @@ impl<'a> Interp<'a> {
         } else {
             a[0].as_ref().map_or(Tree::Null, crate::json::json_tree)
         };
+        self.decode_tree(&tree, &t, ignore)
+    }
+
+    /// `tree` decoded as `t`, listing every problem, then the invariants.
+    pub(crate) fn decode_tree(&mut self, tree: &Tree, t: &Ty, ignore: bool) -> Eval<'a> {
         PROBLEMS.with(|p| *p.borrow_mut() = Some(Vec::new()));
         IGNORE.with(|i| i.set(ignore));
-        let decoded = self.decode(&tree, &t, "");
+        let decoded = self.decode(tree, t, "");
         IGNORE.with(|i| i.set(true));
         let mut problems = PROBLEMS.with(|p| p.borrow_mut().take()).unwrap_or_default();
         let value = decoded?;
@@ -85,7 +90,7 @@ impl<'a> Interp<'a> {
     }
 
     /// A `JsonError.Invalid` listing `problems` (spec 2.12).
-    fn invalid(&self, problems: &[(String, String)]) -> Value<'a> {
+    pub(crate) fn invalid(&self, problems: &[(String, String)]) -> Value<'a> {
         let list = problems
             .iter()
             .map(|(path, want)| Value::Record {
@@ -478,7 +483,7 @@ impl<'a> Interp<'a> {
     }
 
     /// The checked type of field `name` of record or union `def`.
-    fn field_ty(&self, def: usize, name: &str) -> Option<Ty> {
+    pub(crate) fn field_ty(&self, def: usize, name: &str) -> Option<Ty> {
         self.c.field_types.get(&(def, name.to_string())).cloned()
     }
 }

@@ -81,6 +81,15 @@ impl<'a> Interp<'a> {
                 let ty = ty.map(|t| self.concrete(t));
                 self.json_decode(name, args, ty)
             }
+            "decode_texts" => {
+                let ty = self.c.expr_types.get(&(e.span.start, e.span.end));
+                let ty = ty.map(|t| self.concrete(t));
+                self.json_decode_texts(args, ty, span)
+            }
+            "encode_texts" => {
+                let value = args.into_iter().next().map_or(Value::Unit, |(_, v)| v);
+                self.json_texts(value, span)
+            }
             "parse" => {
                 let a = arrange(
                     args,

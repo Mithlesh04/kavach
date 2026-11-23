@@ -5,5 +5,5 @@
 | File | Module | Contents |
 |---|---|---|
 | `table.kav` | `std.table` | `Table<R>` and its methods; `table.of`, `table.read_csv` and `table.parse_csv` |
-| `csv.kav` | `std.table.csv` | `CsvError` and `CsvUnknown`; a row type's columns from its JSON Schema; reading CSV line by line by RFC 4180, and writing it |
+| `csv.kav` | `std.table.csv` | `CsvError` and `CsvUnknown`; a row type's columns from its JSON Schema; reading CSV line by line by RFC 4180, each row straight into its record (`json.decode_texts`), and writing it as `print` writes each field (`json.encode_texts`) |
 | `grid.kav` | `std.table.grid` | A table printed as a grid, and the summary of each number column (`t.describe()`) |

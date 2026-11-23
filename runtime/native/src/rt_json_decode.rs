@@ -59,7 +59,7 @@ fn problems_noted() -> usize {
 
 /// Decodes `t` as type `ty` for `json.decode`, listing every problem:
 /// those of shape, or, when the shapes fit, each broken invariant.
-fn decode_every(t: &Tree, ty: Type, templates: i64) -> Result<u64, Vec<Failed>> {
+pub(crate) fn decode_every(t: &Tree, ty: Type, templates: i64) -> Result<u64, Vec<Failed>> {
     PROBLEMS.with(|p| *p.borrow_mut() = Some(Vec::new()));
     let result = decode_at(t, ty, "", templates, crate::rt_json_wholes::root());
     let mut problems = PROBLEMS.with(|p| p.borrow_mut().take()).unwrap_or_default();

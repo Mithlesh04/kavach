@@ -4,9 +4,10 @@
 
 // std.table.csv (spec 14.34): CSV read and written by RFC 4180, strict
 // as JSON decoding is. A row type's columns come from its JSON Schema
-// (`json.schema<R>()`, spec 2.12); each row's cells become a JSON object,
-// one value of the right kind for each field, which `json.decode_value`
-// turns into the row, with its defaults and invariants.
+// (`json.schema<R>()`, spec 2.12). Each row's cells are read straight
+// into the row by `json.decode_texts`, each as its field's type reads
+// text, with its defaults and invariants; and written by `json.encode_texts`,
+// each as `print` writes it.
 
 use std.json
 use std.fs
@@ -101,6 +102,10 @@ fn feed(inout r: Reader, text: String) -> [String]? ! CsvError
         r.cells = []
         r.cell = []
         r.closed = false
+        // A line with no quotes, as most are: its cells at once.
+        if not text.contains('"') and not text.starts_with(`\u{FEFF}`) {
+            return text.split(String(r.sep))
+        }
     }
     let quoted = r.open
     const chars = text.chars()
@@ -166,17 +171,24 @@ fn take<R>(inout into: Rows<R>, cells: [String], line: Int) -> R? ! CsvError {
         const what = if cells.len() == 1 { "1 cell" } else { `{cells.len()} cells` }
         fail CsvError.Syntax(line: line, message: `{what}, and the first line has {into.header.len()}`)
     }
-    let fields: {String: Json} = {:}
+    let names: [String] = []
+    let texts: [String?] = []
     for (i, cell) in cells.enumerate() {
         const at = into.slots[i]
         if at >= 0 {
             const column = into.plan[at]
-            if let value = try cell_value(column, cell, line) {
-                fields[column.name] = value
+            // An empty cell: `none`, `""`, or the field's default; else
+            // reading it says what was wanted.
+            if cell == "" and column.optional {
+                names.push(column.name)
+                texts.push(none)
+            } else if cell != "" or column.kind == "string" or column.required {
+                names.push(column.name)
+                texts.push(cell)
             }
         }
     }
-    json.decode_value<R>(Json.Object(fields: fields)) catch e => {
+    json.decode_texts<R>(names, texts) catch e => {
         fail refused(e, line, into.header, cells)
     }
 }
@@ -200,103 +212,6 @@ fn name_columns<R>(inout into: Rows<R>, names: [String]) ! CsvError {
     }
     into.header = names
     into.named = true
-}
-
-/// The JSON value of one cell, or `none` for an empty cell that takes
-/// the field's default.
-fn cell_value(column: (name: String, kind: String, optional: Bool, required: Bool), cell: String, line: Int) -> Json? ! CsvError {
-    if cell == "" {
-        if column.optional {
-            return Json.Null
-        }
-        if column.kind == "string" {
-            return Json.Text(value: "")
-        }
-        if not column.required {
-            return none
-        }
-    }
-    // Strict: `Int(s)` allows spaces around a number, a cell doesn't.
-    const spaced = cell != cell.trim()
-    match column.kind {
-        "whole" => match BigInt(cell) {
-            ok(n) if not spaced => Json.Number(digits: String(n)),
-            _ => fail CsvError.Value(line: line, column: column.name, expected: "a whole number", found: cell),
-        },
-        "number" => match Float(cell) {
-            ok(_) if not spaced => Json.Number(digits: number_digits(cell)),
-            _ => fail CsvError.Value(line: line, column: column.name, expected: "a number", found: cell),
-        },
-        "bool" => match cell {
-            "true" => Json.Boolean(value: true),
-            "false" => Json.Boolean(value: false),
-            _ => fail CsvError.Value(line: line, column: column.name, expected: "`true` or `false`", found: cell),
-        },
-        _ => Json.Text(value: cell),
-    }
-}
-
-/// The digits JSON reads for the number `cell` reads as: the cell's
-/// own, exactly, when JSON writes numbers so (`Decimal` keeps them all),
-/// else as `Decimal` writes it (`1.` is `1`), else as `Float` does (`NaN`).
-fn number_digits(cell: String) -> String
-    example number_digits("120.5") == "120.5"
-    example number_digits("1.") == "1"
-{
-    if json_number(cell) {
-        return cell
-    }
-    match Decimal(cell) {
-        ok(d) => String(d),
-        err(_) => cell,
-    }
-}
-
-/// Whether `s` is a number as JSON writes one: `-12.5e3`.
-fn json_number(s: String) -> Bool
-    example json_number("-12.5e3")
-    example not json_number(".5")
-    example not json_number("1.")
-    example not json_number("007")
-{
-    const cs = s.chars()
-    let i = if not cs.is_empty() and cs[0] == '-' { 1 } else { 0 }
-    const whole = digits_from(cs, i)
-    if whole == i or (cs[i] == '0' and whole > i + 1) {
-        return false
-    }
-    i = whole
-    if i < cs.len() and cs[i] == '.' {
-        const after = digits_from(cs, i + 1)
-        if after == i + 1 {
-            return false
-        }
-        i = after
-    }
-    if i < cs.len() and (cs[i] == 'e' or cs[i] == 'E') {
-        i += 1
-        if i < cs.len() and (cs[i] == '+' or cs[i] == '-') {
-            i += 1
-        }
-        const after = digits_from(cs, i)
-        if after == i {
-            return false
-        }
-        i = after
-    }
-    i == cs.len()
-}
-
-/// Where the digits that start at `from` end.
-fn digits_from(cs: [Char], from: Int) -> Int
-    require from >= 0
-    example digits_from(['1', '2', '.'], 0) == 2
-{
-    let j = from
-    while j < cs.len() and cs[j] >= '0' and cs[j] <= '9' {
-        j += 1
-    }
-    j
 }
 
 /// A decoding problem as a `Value` error, at the column its path names;
@@ -366,25 +281,10 @@ pub fn write<R>(rows: [R], plan: [(name: String, kind: String, optional: Bool, r
     out.push(plan.map(c => quoted(c.name, sep)).join(String(sep)))
     out.push_char('\n')
     for row in rows {
-        const j = json.of(row)
-        out.push(plan.map(c => quoted(cell_text(j.get(c.name)), sep)).join(String(sep)))
+        out.push(json.encode_texts(row).map(t => quoted(t ?? "", sep)).join(String(sep)))
         out.push_char('\n')
     }
     out.to_string()
-}
-
-/// A cell's text, from its JSON value: `none` is an empty cell.
-pub fn cell_text(j: Json) -> String
-    example cell_text(Json.Number(digits: "1.5")) == "1.5"
-    example cell_text(Json.Null) == ""
-{
-    match j {
-        Json.Null => "",
-        Json.Text(value) => value,
-        Json.Number(digits) => digits,
-        Json.Boolean(value) => String(value),
-        other => json.stringify(other),
-    }
 }
 
 /// `cell` quoted when it holds `sep`, a quote or a line break.

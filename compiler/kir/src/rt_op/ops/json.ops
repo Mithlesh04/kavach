@@ -32,3 +32,10 @@ JsonFloatOr,
 /// number `a` are checked by closure `b` (`fn(T) -> Int`, the bits of
 /// the invariants broken), whose invariants' texts are list `c`.
 JsonCheckRegister,
+/// `json.decode_texts<T>(names, texts)` (spec 2.12): list `a` of field
+/// names, list `b` of their texts (`String?`), templates `c`, as
+/// `JsonDecodeValue` takes them.
+JsonDecodeTexts,
+/// `json.encode_texts(value)`: the value in a tuple of one, as `JsonOf` takes
+/// it; a list of `String?`, each field as `print` writes it.
+JsonEncodeTexts,

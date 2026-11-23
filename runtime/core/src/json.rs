@@ -306,6 +306,9 @@ pub use pull::{Keys, Pull};
 mod read;
 use read::Parser;
 
+mod texts;
+pub use texts::{TextKind, text_tree};
+
 mod write;
 pub use write::{write, write_int, write_text};
 

@@ -1,0 +1,30 @@
+// Rule: `json.encode_texts(value)` gives each field of a record, in the order written, as `print` writes it: `none` for a `none`, `<secret>` for a secret field.
+// Spec: 2.12
+// expect output: ["a7", "0.1", "NaN", "-0.0", "inf", "<secret>", "North"]
+// expect output: [none, "x"]
+
+use std.json
+
+type Region = North | South
+
+type Reading {
+    sensor: String
+    value: Float32
+    odd: Float
+    zero: Float
+    far: Float
+    secret key: String
+    region: Region
+}
+
+type Pair {
+    a: Int?
+    b: String
+}
+
+fn main() {
+    const inf = Float.from_bits(UInt64(2047) << 52)
+    const r = Reading(sensor: "a7", value: Float32(0.1), odd: inf - inf, zero: -0.0, far: inf, key: "k", region: Region.North)
+    print(json.encode_texts(r))
+    print(json.encode_texts(Pair(a: none, b: "x")))
+}

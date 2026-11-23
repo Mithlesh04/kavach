@@ -3,11 +3,10 @@
 // https://kavachlang.com | https://github.com/Mithlesh04/kavach
 
 // std.table.grid (spec 14.34): a table printed as a grid, and the summary
-// of each of its number columns. Cells are read through each row's JSON
-// (`json.of`), as CSV writes them.
+// of each of its number columns. Cells are written as CSV writes them,
+// as `print` writes each field (`json.encode_texts`).
 
 use std.json
-use std.table.csv
 use std.collections.stats
 
 /// The rows `rows`, of the columns `plan`, as a grid: the column names, then the rows, each
@@ -21,8 +20,7 @@ pub fn shown<R>(rows: [R], plan: [(name: String, kind: String, optional: Bool, r
     }
     let grid: [[String]] = [plan.map(c => c.name)]
     for row in picked {
-        const j = json.of(row)
-        grid.push(plan.map(c => csv.cell_text(j.get(c.name))))
+        grid.push(json.encode_texts(row).map(t => t ?? ""))
     }
     let widths: [Int] = plan.map(c => 0)
     for line in grid {

@@ -1,0 +1,47 @@
+// Rule: `json.decode_texts<T>(names, texts)` reads each field's text as its type reads text, strictly; a field not named takes its default, a `none` text is `none`, and a text that doesn't fit is a problem at its field.
+// Spec: 2.12
+// expect output: Reading(sensor: "a7", value: 0.1, level: none, ok: true, count: 3)
+// expect output: NaN inf
+// expect output: count: a whole number
+// expect output: ok: `true` or `false`
+// expect output: [JsonProblem(path: "", expected: "invariant `count >= 0`")]
+
+use std.json
+
+type Reading {
+    sensor: String
+    value: Float32
+    level: Float?
+    ok: Bool = true
+    count: Int
+
+    invariant count >= 0
+}
+
+fn problems(e: JsonError) -> [JsonProblem] {
+    match e {
+        JsonError.Invalid(problems) => problems,
+        _ => [],
+    }
+}
+
+fn main() {
+    const r = json.decode_texts<Reading>(["sensor", "value", "level", "count"], ["a7", "0.1", none, "3"]) catch _ => return
+    print(r)
+    const odd = json.decode_texts<Reading>(["sensor", "value", "level", "count"], ["b", "NaN", "inf", "0"]) catch _ => return
+    print(`{odd.value} {odd.level ?? 0.0}`)
+    refused(["sensor", "value", "count"], ["c", "1.5", " 3"])
+    refused(["sensor", "value", "count", "ok"], ["c", "1", "3", "yes"])
+    const _ = json.decode_texts<Reading>(["sensor", "value", "count"], ["c", "1", "-1"]) catch e => {
+        print(problems(e))
+        return
+    }
+}
+
+fn refused(names: [String], texts: [String?]) {
+    const _ = json.decode_texts<Reading>(names, texts) catch e => {
+        const p = problems(e)[0]
+        print(`{p.path}: {p.expected}`)
+        return
+    }
+}

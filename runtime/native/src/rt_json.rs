@@ -415,11 +415,13 @@ pub(crate) fn error(e: Error) -> i64 {
 }
 
 // The group's runtime entry (`RtOp::entry`, decision 0024).
-crate::rt_data::entry!(kv_rt_json, |op, a, b, c, code, _line| {
+crate::rt_data::entry!(kv_rt_json, |op, a, b, c, code, line| {
     match op {
         RtOp::JsonDecode | RtOp::JsonDecodeValue => {
             crate::rt_json_decode::decode_op(op, a, b, c, code)
         }
+        RtOp::JsonDecodeTexts => crate::rt_json_texts::decode_texts(a, b, c, code, line),
+        RtOp::JsonEncodeTexts => crate::rt_json_texts::texts(a, code),
         RtOp::JsonParse | RtOp::JsonStringify | RtOp::JsonOf => json_op(op, a, b, c, code),
         RtOp::JsonCheckRegister => crate::rt_json_checks::register(a, b, c),
         _ => crate::rt_json_read::read_op(op, a, b, code),

@@ -70,6 +70,8 @@ const order: Json = {
 | `json.stringify(value, indent: 0, big_as_text: false)` | JSON text for any value; `indent` above 0 puts each field on its own line |
 | `json.schema<T>()` | The [JSON Schema](https://json-schema.org) of `T` as a `Json`: what `ask<T>` sends a model (8.4), for modules that work from a type's shape (14.14). A `secret` field (2.11) is marked `"writeOnly": true`, so a library sees that it can't be written out |
 | `json.describe(f) -> FnSchema` | The function `f` described: its name, doc comment, parameters with their schemas, the schemas of its result and error, the capabilities it `uses`, and its `example` clauses as text |
+| `json.decode_texts<T>(names, texts) ! JsonError` | A record `T` read from the texts of its fields, such as a CSV row's cells: field `names[i]` from `texts[i]` (below) |
+| `json.encode_texts(value) -> [String?]` | The fields of the record `value`, in the order written, each as `print` writes it: the reverse of `decode_texts` (below) |
 
 **Encoding** works on every value ([decision 0132](../../decisions/0132-json-for-every-value.md)):
 
@@ -236,6 +238,21 @@ const doc = try json.parse(`{\`id": 12345678901234567890, "price": 0.1}`)
 print(doc["id"].bigint())       // 12345678901234567890
 print(doc["id"].int())          // none: too big for Int
 print(doc["price"].decimal())   // 0.1, exactly}`
+```
+
+**Fields read from text.** `json.decode_texts<T>(names, texts)` makes a record `T` from one text for each field, as a CSV row, a form or a query string has them, with no `Json` in between: `names` and `texts` are two lists of the same length (a panic otherwise). Each text is read as its field's type reads text (2.1): `Int(s)`, `Float(s)` or `Decimal(s)` for a number, with no spaces around it; `true` or `false` for a `Bool`; and as a JSON string is read for a `String`, a `Char`, a date or a category (a union whose variants have no fields), by its variant's name. A float takes `NaN`, `inf` and `-inf`, as `print` writes them, and a `Float32` is read straight to single precision. A `none` text is `null`: `none` for an optional field. A field not named takes its default, as in `decode`, and the invariants are checked. A text that doesn't fit is a problem at the field's path, expecting `a whole number`, `a number` or `` `true` or `false` ``; anything else is as `decode` says it. A name `T` has no field for is a problem too. `std.table` reads each CSV row this way (14.34) (for a maintainer's review).
+
+`json.encode_texts(value)` is the reverse: each field of the record `value`, in the order written, as `print` writes it (1.11), so `decode_texts` reads it back: `0.1` for a `Float32`, `NaN`, `inf`, `-0.0`, a date as ISO 8601, a category as its variant's name. A field that is `none` gives `none`, and a `secret` field (2.11) `"<secret>"`. A value that is not a record gives one text, its own. `std.table` writes each CSV row this way (for a maintainer's review).
+
+```kavach
+type Reading {
+    sensor: String
+    value: Float32
+    ok: Bool = true
+}
+
+const r = try json.decode_texts<Reading>(["sensor", "value"], ["a7", "0.1"])
+print(json.encode_texts(r))            // ["a7", "0.1", "true"]
 ```
 
 A `JsonError` says what went wrong and where:

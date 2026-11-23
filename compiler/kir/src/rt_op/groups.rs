@@ -79,6 +79,7 @@ impl RtOp {
                 | RtOp::JsonParse
                 | RtOp::JsonDecode
                 | RtOp::JsonDecodeValue
+                | RtOp::JsonDecodeTexts
                 | RtOp::TaskWait
                 | RtOp::TaskWaitFor
                 | RtOp::FsReadBytes

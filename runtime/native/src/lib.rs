@@ -70,6 +70,7 @@ mod rt_json_fields;
 mod rt_json_pull;
 mod rt_json_read;
 pub mod rt_json_tape;
+mod rt_json_texts;
 mod rt_json_wholes;
 mod rt_json_write;
 mod rt_log;

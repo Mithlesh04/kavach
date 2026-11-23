@@ -58,6 +58,7 @@ mod instances;
 mod int_numbers;
 mod items;
 mod json;
+mod json_texts;
 mod lambdas;
 mod list_keys;
 mod literals;

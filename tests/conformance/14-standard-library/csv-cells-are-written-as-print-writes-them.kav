@@ -1,0 +1,26 @@
+// Rule: a CSV cell is written as `print` writes its field: a `Float32`'s own digits, `NaN`, `inf` and `-0.0`; reading takes them back.
+// Spec: 14.34
+// expect output: name,value,wide
+// expect output: a,0.1,NaN
+// expect output: b,-0.0,inf
+// expect output: true true 0.1
+
+use std.table
+
+type Row {
+    name: String
+    value: Float32
+    wide: Float
+}
+
+fn main() ! CsvError {
+    const inf = Float.from_bits(UInt64(2047) << 52)
+    const t = table.of([
+        Row(name: "a", value: Float32(0.1), wide: inf - inf),
+        Row(name: "b", value: Float32(-0.0), wide: inf),
+    ])
+    const text = t.to_csv()
+    print(text.trim_end())
+    const back = try table.parse_csv<Row>(text)
+    print(`{back[0].wide.is_nan()} {back[1].wide.is_infinite()} {back[0].value}`)
+}

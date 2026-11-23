@@ -78,6 +78,7 @@ mod lower_iface;
 mod lower_inout;
 mod lower_json;
 mod lower_json_checks;
+mod lower_json_texts;
 mod lower_json_wholes;
 mod lower_labels;
 mod lower_lambda;
