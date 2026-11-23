@@ -186,6 +186,12 @@ print((by_month["south"] ?? {:})[2] ?? 0.0)     // 0.0: no sale there
 
 **One name for each job.** Picking columns out is `map` to an anonymous record (2.14), as the first example does; there is no `select`. A sum per key is `group_by(key).map_values(g => g.sum(f))`. Names other tools use are compile errors that name Kavach's: `sum_by` names that form and `sum(f)`, `value_counts` names `count_by`, `distinct` and `drop_duplicates` name `unique` and `unique_by`, `merge` and a `join` given lambdas name `inner_join`, `select` names `map`, and `average` and `avg` name `mean`. A range has them too, as it has every method that reads a list (2.2).
 
+**A sum per key is one pass.** On a list or a table (14.34), `items.group_by(key).map_values(g => g.sum(f))` makes no groups: it goes through the items once, in order, works out `key(item)` and `f(item)` for each, and keeps a running sum for each key, as pandas' `groupby().sum()` does. The result is the same dict: the keys in the order first seen, each sum as `sum` gives it. Floats are added exactly and rounded once; whole numbers are checked, so a running sum that leaves its type panics, as `sum` does. This holds when the lambda is `g => g.sum(f)` and `f` doesn't use `g`; any other lambda gets the groups.
+
+```kavach
+const per_region = sales.group_by(.region).map_values(g => g.sum(.amount))   // one pass, no groups
+```
+
 These replace `collections.unique(items)` and `collections.counts(items)` (14.9), now `items.unique()` and `items.count_by(x => x)`, and `math.mean(xs)` (14.5), now `xs.mean(x => x)`.
 
 ### Characters

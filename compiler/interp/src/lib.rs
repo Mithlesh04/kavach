@@ -29,6 +29,7 @@ mod files;
 mod frozen;
 mod generics;
 mod gpu_choice;
+mod grouped_sums;
 mod guard;
 mod hot;
 mod inout;

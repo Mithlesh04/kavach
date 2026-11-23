@@ -1,0 +1,29 @@
+// Rule: `group_by(key).map_values(g => g.sum(f))` on a list or a table is one pass with no groups made: the sums per key, keys in the order first seen, each as `sum` gives it.
+// Spec: 14.2
+// expect output: {"north": 220.0, "south": 80.0}
+// expect output: {"north": 1.0, "south": 0.5}
+// expect output: {1: 9, 0: 6}
+// expect output: {true: 1.5}
+// expect output: {"north": 220.0, "south": 80.0}
+
+use std.table
+
+type Sale {
+    region: String
+    amount: Float
+}
+
+fn main() {
+    const sales = [
+        Sale(region: "north", amount: 120.0),
+        Sale(region: "south", amount: 80.0),
+        Sale(region: "north", amount: 100.0),
+    ]
+    print(sales.group_by(.region).map_values(g => g.sum(.amount)))
+    // Exact, as `sum` is: the 1e20s cancel.
+    const big = [("north", 1e20), ("south", 0.5), ("north", 1.0), ("north", -1e20)]
+    print(big.group_by(p => p.0).map_values(g => g.sum(p => p.1)))
+    print((1..6).to_list().group_by(x => x % 2).map_values(g => g.sum(x => x)))
+    print([Float32(1.0), Float32(0.5)].group_by(x => x > Float32(0.0)).map_values(g => g.sum(x => Float(x))))
+    print(table.of(sales).group_by(.region).map_values(g => g.sum(.amount)))
+}

@@ -25,6 +25,7 @@ mod exits;
 mod fuse;
 mod gpu_later;
 mod gpu_stay;
+mod grouped_sums;
 mod inline;
 mod inout_stash;
 mod invariant_checks;

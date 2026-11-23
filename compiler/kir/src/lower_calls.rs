@@ -32,6 +32,10 @@ impl<'a> Lowerer<'a> {
         if let Some(described) = self.describe_call(e, callee, args, ty) {
             return described;
         }
+        // A sum per key, as one pass (spec 14.2).
+        if let Some(sums) = self.grouped_sum(e, ty) {
+            return sums;
+        }
         let line = self.line(e.span);
         let res = &self.c.resolution;
         match &callee.kind {

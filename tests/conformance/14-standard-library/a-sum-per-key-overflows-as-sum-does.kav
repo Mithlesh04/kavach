@@ -1,0 +1,8 @@
+// Rule: a whole-number sum per key is checked as `sum` checks it: a running sum that leaves its type panics.
+// Spec: 14.2
+// expect panic
+
+fn main() {
+    const xs = [9_223_372_036_854_775_807, 1, 1]
+    print(xs.group_by(x => x > 0).map_values(g => g.sum(x => x)))
+}

@@ -23,6 +23,10 @@ impl<'a> Interp<'a> {
         if let Some(opened) = self.sealed_unfreeze(e, callee, args) {
             return opened;
         }
+        // A sum per key, as one pass (spec 14.2).
+        if let Some(sums) = self.grouped_sum(e) {
+            return sums;
+        }
         // Worked out before the arguments, as written (spec 3.10): a
         // method's receiver, or the place it changes, and a function
         // worked out from an expression.
