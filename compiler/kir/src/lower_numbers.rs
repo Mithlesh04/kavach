@@ -8,7 +8,6 @@
 use crate::ir::{self, BinOp, Block, ExprKind as K, Shape, Stmt, Type, UnOp};
 use crate::lower::Lowerer;
 use crate::lower_std::wrap_value;
-use crate::rt_op::RtOp;
 
 impl Lowerer<'_> {
     /// `abs`, `min`, `max` and `clamp`, written with compares, so they are
@@ -96,7 +95,9 @@ impl Lowerer<'_> {
             "min" => pick(self, BinOp::Le, locals[0], locals[1]),
             "max" => pick(self, BinOp::Ge, locals[0], locals[1]),
             _ => {
-                // `lo > hi` breaks `clamp`'s contract (14.2).
+                // `lo > hi` breaks `clamp`'s contract (14.2). A message
+                // known here, not text made while running: WGSL writes
+                // it, so `clamp` runs in a `gpu fn` on the GPU too (15.1).
                 let reversed = self.at(
                     K::Binary(
                         BinOp::Gt,
@@ -106,18 +107,9 @@ impl Lowerer<'_> {
                     Type::Bool,
                     line,
                 );
-                let text = self.str_type();
-                let why = self.at(
-                    K::Str("contract failed: `clamp` needs `lo <= hi`".into()),
-                    text,
-                    line,
-                );
+                let why = "contract failed: `clamp` needs `lo <= hi`".to_string();
                 let stop = Block {
-                    stmts: vec![Stmt::Expr(self.at(
-                        K::Rt(RtOp::PanicText, vec![why]),
-                        Type::Unit,
-                        line,
-                    ))],
+                    stmts: vec![Stmt::Expr(self.at(K::Panic(why), Type::Unit, line))],
                     value: None,
                 };
                 stmts.push(Stmt::Expr(self.at(

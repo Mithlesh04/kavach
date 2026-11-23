@@ -321,3 +321,28 @@ pub(crate) fn one<'a>(
         indices: None,
     }
 }
+
+/// The game engine session's bug: `clamp` checks `lo <= hi` with a panic
+/// whose message was text made while running, which WGSL can't write, so
+/// a `map` with `clamp` ran on the CPU and a pipeline had no shaders.
+#[test]
+fn clamp_is_written_for_each_number_type() {
+    for (ty, lo, hi) in [
+        ("Float32", "0.0", "1.0"),
+        ("Int32", "-2", "7"),
+        ("UInt32", "2", "7"),
+    ] {
+        let src = format!(
+            "gpu fn f(x: {ty}) -> {ty} {{\n    x.clamp({lo}, {hi})\n}}\n\nfn main() {{\n    let xs: [{ty}] = []\n    print(xs.map(f))\n}}\n"
+        );
+        let text = kernel_of(&src);
+        assert!(!text.is_empty(), "no kernel for {ty}");
+    }
+    let src = SWARM.replace("(l.heat, 0.2", "(l.heat.clamp(0.0, 1.0), 0.2");
+    assert!(src.contains("clamp"));
+    let text = pipeline_of(&src);
+    assert!(
+        text.starts_with("// draw f f | f f f | 1 | 0 | 0\n"),
+        "{text}"
+    );
+}
